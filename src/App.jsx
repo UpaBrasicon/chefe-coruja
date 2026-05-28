@@ -6,6 +6,8 @@ import Signup from './pages/Signup'
 import Escala from './pages/Escala'
 import AguardandoAprovacao from './pages/AguardandoAprovacao'
 import PainelAdmin from './pages/PainelAdmin'
+import MinhasTrocas from './pages/MinhasTrocas'
+import DesistenciasAbertas from './pages/DesistenciasAbertas'
 
 export default function App() {
   return (
@@ -33,6 +35,17 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/trocas"
+            element={
+              <ProtectedRoute>
+                <MinhasTrocas />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="/desistencias" element={<ProtectedRoute><DesistenciasAbertas /></ProtectedRoute>} />
 
           <Route path="/" element={<Navigate to="/escala" replace />} />
           <Route path="*" element={<Navigate to="/escala" replace />} />

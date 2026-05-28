@@ -20,6 +20,8 @@ export default function EscalaCalendario() {
   const [mes, setMes] = useState(3)
   const [ano, setAno] = useState(2026)
   const [plantoes, setPlantoes] = useState([])
+  const [plantoesPendentes, setPlantoesPendentes] = useState(new Set())
+  const [plantoesSemDesistencia, setPlantoesSemDesistencia] = useState(new Set())
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
   const [filtros, setFiltros] = useState(FILTROS_PADRAO)
@@ -33,23 +35,29 @@ export default function EscalaCalendario() {
       const ultimoDia = new Date(ano, mes, 0).getDate()
       const fim = `${ano}-${String(mes).padStart(2, '0')}-${ultimoDia}`
 
-      const { data, error } = await supabase
-        .from('plantoes')
-        .select(`
-          id, data, slot_num, status, observacoes, profissional_id,
-          setores(id, nome, cor, periodo_padrao, ordem_exibicao),
-          tipos_turno(nome, hora_inicio, hora_fim),
-          profissionais(id, nome)
-        `)
-        .gte('data', inicio)
-        .lte('data', fim)
-        .order('data', { ascending: true })
-        .order('slot_num', { ascending: true })
+      const [resPlantoes, resTrocas, resDesistencias] = await Promise.all([
+        supabase
+          .from('plantoes')
+          .select(`
+            id, data, slot_num, status, observacoes, profissional_id,
+            setores(id, nome, cor, periodo_padrao, ordem_exibicao),
+            tipos_turno(nome, hora_inicio, hora_fim),
+            profissionais(id, nome)
+          `)
+          .gte('data', inicio)
+          .lte('data', fim)
+          .order('data', { ascending: true })
+          .order('slot_num', { ascending: true }),
+        supabase.from('trocas').select('plantao_id').eq('status', 'pendente'),
+        supabase.from('desistencias').select('plantao_id, responsavel_ate').eq('status', 'aguardando_candidato'),
+      ])
 
-      if (error) {
-        setErro('Erro ao carregar escala: ' + error.message)
+      if (resPlantoes.error) {
+        setErro('Erro ao carregar escala: ' + resPlantoes.error.message)
       } else {
-        setPlantoes(data ?? [])
+        setPlantoes(resPlantoes.data ?? [])
+        setPlantoesPendentes(new Set((resTrocas.data ?? []).map(t => t.plantao_id)))
+        setPlantoesSemDesistencia(new Set((resDesistencias.data ?? []).map(d => d.plantao_id)))
       }
       setCarregando(false)
     }
@@ -187,6 +195,10 @@ export default function EscalaCalendario() {
             dia={dia}
             slots={porDia[dia]}
             profissionalId={profissional?.id}
+            plantoesPendentes={plantoesPendentes}
+            plantoesSemDesistencia={plantoesSemDesistencia}
+            onTrocaSolicitada={() => setPlantoesPendentes(prev => new Set(prev))}
+            onDesistencia={() => setPlantoesSemDesistencia(prev => new Set(prev))}
           />
         ))}
       </div>
@@ -194,7 +206,7 @@ export default function EscalaCalendario() {
   )
 }
 
-function DiaCard({ dia, slots, profissionalId }) {
+function DiaCard({ dia, slots, profissionalId, plantoesPendentes, plantoesSemDesistencia, onTrocaSolicitada, onDesistencia }) {
   const [, mesStr, diaStr] = dia.split('-')
   const data = new Date(`${dia}T12:00:00`)
   const nomeDia = DIAS_PT[data.getDay()]
@@ -231,7 +243,7 @@ function DiaCard({ dia, slots, profissionalId }) {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {diurno.map(p => (
-                <PlantaoCard key={p.id} plantao={p} profissionalId={profissionalId} />
+                <PlantaoCard key={p.id} plantao={p} profissionalId={profissionalId} temTrocaPendente={plantoesPendentes?.has(p.id)} temDesistencia={plantoesSemDesistencia?.has(p.id)} onTrocaSolicitada={onTrocaSolicitada} onDesistencia={onDesistencia} />
               ))}
             </div>
           </section>
@@ -244,7 +256,7 @@ function DiaCard({ dia, slots, profissionalId }) {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {noturno.map(p => (
-                <PlantaoCard key={p.id} plantao={p} profissionalId={profissionalId} />
+                <PlantaoCard key={p.id} plantao={p} profissionalId={profissionalId} temTrocaPendente={plantoesPendentes?.has(p.id)} temDesistencia={plantoesSemDesistencia?.has(p.id)} onTrocaSolicitada={onTrocaSolicitada} onDesistencia={onDesistencia} />
               ))}
             </div>
           </section>
