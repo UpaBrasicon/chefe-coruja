@@ -62,9 +62,6 @@ export default function Login() {
           style={{ width: 'clamp(260px, 72vw, 460px)', height: 'clamp(260px, 72vw, 460px)' }}
         />
         <h1 className="text-3xl font-bold text-white tracking-tight">Chefe Coruja</h1>
-        <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.75)' }}>
-          Gestão de escala médica — UPA Aparecida de Goiânia
-        </p>
       </div>
 
       {/* Card glass */}
