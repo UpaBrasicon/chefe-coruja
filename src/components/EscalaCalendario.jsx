@@ -114,7 +114,7 @@ export default function EscalaCalendario() {
   const dias = Object.keys(porDia).sort()
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pb-12">
+    <div className="max-w-6xl mx-auto px-4 pb-12">
       {/* Navegação de mês */}
       <div
         className="flex items-center justify-between py-4 sticky top-[56px] z-10"
@@ -235,32 +235,34 @@ function DiaCard({ dia, slots, profissionalId, plantoesPendentes, plantoesSemDes
         <span className="text-sm opacity-75 capitalize">{nomeDia}</span>
       </div>
 
-      <div className="p-3 space-y-3">
-        {diurno.length > 0 && (
-          <section>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--cor-texto-suave)' }}>
-              ☀ Diurno
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {diurno.map(p => (
-                <PlantaoCard key={p.id} plantao={p} profissionalId={profissionalId} temTrocaPendente={plantoesPendentes?.has(p.id)} temDesistencia={plantoesSemDesistencia?.has(p.id)} onTrocaSolicitada={onTrocaSolicitada} onDesistencia={onDesistencia} />
-              ))}
-            </div>
-          </section>
-        )}
+      <div className="p-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {diurno.length > 0 && (
+            <section>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--cor-texto-suave)' }}>
+                ☀ Diurno
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-2">
+                {diurno.map(p => (
+                  <PlantaoCard key={p.id} plantao={p} profissionalId={profissionalId} temTrocaPendente={plantoesPendentes?.has(p.id)} temDesistencia={plantoesSemDesistencia?.has(p.id)} onTrocaSolicitada={onTrocaSolicitada} onDesistencia={onDesistencia} />
+                ))}
+              </div>
+            </section>
+          )}
 
-        {noturno.length > 0 && (
-          <section>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--cor-texto-suave)' }}>
-              🌙 Noturno
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {noturno.map(p => (
-                <PlantaoCard key={p.id} plantao={p} profissionalId={profissionalId} temTrocaPendente={plantoesPendentes?.has(p.id)} temDesistencia={plantoesSemDesistencia?.has(p.id)} onTrocaSolicitada={onTrocaSolicitada} onDesistencia={onDesistencia} />
-              ))}
-            </div>
-          </section>
-        )}
+          {noturno.length > 0 && (
+            <section>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--cor-texto-suave)' }}>
+                🌙 Noturno
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-2">
+                {noturno.map(p => (
+                  <PlantaoCard key={p.id} plantao={p} profissionalId={profissionalId} temTrocaPendente={plantoesPendentes?.has(p.id)} temDesistencia={plantoesSemDesistencia?.has(p.id)} onTrocaSolicitada={onTrocaSolicitada} onDesistencia={onDesistencia} />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
       </div>
     </div>
   )

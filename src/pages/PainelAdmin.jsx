@@ -144,7 +144,7 @@ export default function PainelAdmin() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--cor-fundo)' }}>
       <Header />
-      <main className="max-w-3xl mx-auto px-4 py-6">
+      <main className="max-w-5xl mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">
           <Link to="/escala" className="text-sm underline" style={{ color: 'var(--cor-texto-suave)' }}>← Voltar</Link>
           <h1 className="text-xl font-bold" style={{ color: 'var(--cor-texto)' }}>Painel Admin</h1>
@@ -166,21 +166,23 @@ export default function PainelAdmin() {
           <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}><img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" /><p>Carregando...</p></div>
         ) : (
           <Tabs defaultValue="medicos">
-            <TabsList className="w-full mb-5 grid grid-cols-4">
-              <TabsTrigger value="medicos" className="relative">
-                Médicos
+            <TabsList className="w-full mb-5 grid grid-cols-4 text-xs sm:text-sm">
+              <TabsTrigger value="medicos" className="relative px-1 sm:px-3">
+                <span className="hidden sm:inline">Médicos</span>
+                <span className="sm:hidden">Médicos</span>
                 {pendentesCount > 0 && (
                   <span className="absolute -top-1 -right-1 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center text-white" style={{ background: 'var(--cor-vago)', fontSize: '10px' }}>{pendentesCount}</span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="escala">Escala</TabsTrigger>
-              <TabsTrigger value="desistencias" className="relative">
-                Desist.
+              <TabsTrigger value="escala" className="px-1 sm:px-3">Escala</TabsTrigger>
+              <TabsTrigger value="desistencias" className="relative px-1 sm:px-3">
+                <span className="hidden sm:inline">Desistências</span>
+                <span className="sm:hidden">Desist.</span>
                 {desistenciasAbertas.length > 0 && (
                   <span className="absolute -top-1 -right-1 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center text-white" style={{ background: 'var(--cor-vago)', fontSize: '10px' }}>{desistenciasAbertas.length}</span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="trocas">Trocas</TabsTrigger>
+              <TabsTrigger value="trocas" className="px-1 sm:px-3">Trocas</TabsTrigger>
             </TabsList>
 
             <TabsContent value="medicos"><TabMedicos /></TabsContent>
