@@ -24,8 +24,7 @@ export default function Header() {
       <div className="flex items-center gap-0.5 sm:gap-1">
         <Link to="/desistencias" className="relative">
           <Button variant="ghost" size="sm" className="text-white hover:text-white hover:bg-white/20 px-2 sm:px-3 text-xs sm:text-sm">
-            <span className="hidden sm:inline">Vagas</span>
-            <span className="sm:hidden">🏥</span>
+            Vagas
             {vagasCount > 0 && (
               <span className="absolute -top-1 -right-1 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center"
                 style={{ background: 'var(--cor-secundaria)', color: '#fff', fontSize: '10px' }}>
@@ -37,8 +36,7 @@ export default function Header() {
 
         <Link to="/trocas" className="relative">
           <Button variant="ghost" size="sm" className="text-white hover:text-white hover:bg-white/20 px-2 sm:px-3 text-xs sm:text-sm">
-            <span className="hidden sm:inline">Trocas</span>
-            <span className="sm:hidden">🔄</span>
+            Trocas
             {trocasCount > 0 && (
               <span className="absolute -top-1 -right-1 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center"
                 style={{ background: 'var(--cor-vago)', color: '#fff', fontSize: '10px' }}>
@@ -51,8 +49,7 @@ export default function Header() {
         {profissional?.role === 'admin' && (
           <Link to="/admin">
             <Button variant="ghost" size="sm" className="text-white hover:text-white hover:bg-white/20 px-2 sm:px-3 text-xs sm:text-sm">
-              <span className="hidden sm:inline">Admin</span>
-              <span className="sm:hidden">⚙️</span>
+              Admin
             </Button>
           </Link>
         )}
