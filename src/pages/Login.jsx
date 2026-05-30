@@ -95,6 +95,14 @@ export default function Login() {
             box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
             outline: none;
           }
+          .btn-zoom {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+          }
+          .btn-zoom:hover, .btn-zoom:focus {
+            transform: scale(1.04);
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
+            outline: none;
+          }
         `}</style>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -144,7 +152,7 @@ export default function Login() {
 
           <Button
             type="submit"
-            className="w-full font-semibold mt-2"
+            className="w-full font-semibold mt-2 btn-zoom"
             disabled={carregando}
             style={{ background: 'rgba(255,255,255,0.95)', color: '#0f766e' }}
           >
