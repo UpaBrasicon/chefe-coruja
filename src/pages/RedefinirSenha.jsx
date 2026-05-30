@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Button } from '../components/ui/button'
@@ -7,11 +7,28 @@ import { Label } from '../components/ui/label'
 
 export default function RedefinirSenha() {
   const navigate = useNavigate()
+  const [pronto, setPronto] = useState(false)       // sessão de recovery detectada
   const [senha, setSenha] = useState('')
   const [confirmar, setConfirmar] = useState('')
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState(false)
   const [carregando, setCarregando] = useState(false)
+
+  // Detecta o token de recovery no hash da URL (#access_token=...&type=recovery)
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setPronto(true)
+      }
+    })
+
+    // Supabase processa o hash automaticamente ao iniciar — força a checagem
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setPronto(true)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const bgStyle = {
     background: 'linear-gradient(145deg, #0d9488 0%, #0f766e 40%, #134e4a 100%)',
@@ -40,7 +57,7 @@ export default function RedefinirSenha() {
     setCarregando(false)
 
     if (error) {
-      setErro('Erro ao redefinir senha. O link pode ter expirado. Tente novamente.')
+      setErro('Erro ao redefinir senha. O link pode ter expirado — solicite um novo.')
     } else {
       setSucesso(true)
       setTimeout(() => navigate('/login'), 3000)
@@ -61,6 +78,16 @@ export default function RedefinirSenha() {
             <h2 className="text-lg font-semibold text-white mb-2">Senha redefinida!</h2>
             <p style={{ color: 'rgba(255,255,255,0.75)' }}>
               Redirecionando para o login em instantes...
+            </p>
+          </div>
+        ) : !pronto ? (
+          <div className="text-center py-6">
+            <p className="text-white font-medium mb-2">Verificando link...</p>
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              Se nada acontecer, o link pode ter expirado.{' '}
+              <button onClick={() => navigate('/login')} className="underline text-white">
+                Voltar ao login
+              </button>
             </p>
           </div>
         ) : (
