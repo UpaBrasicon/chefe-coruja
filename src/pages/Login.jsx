@@ -48,89 +48,112 @@ export default function Login() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: 'var(--cor-fundo)' }}
+      className="min-h-screen flex flex-col items-center justify-center px-4 py-8"
+      style={{
+        background: 'linear-gradient(145deg, #0d9488 0%, #0f766e 40%, #134e4a 100%)',
+      }}
     >
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <img src="/logo.png" alt="Chefe Coruja" className="h-24 w-24 rounded-full object-cover mx-auto mb-2" />
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--cor-texto)' }}>
-            Chefe Coruja
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--cor-texto-suave)' }}>
-            Gestão de escala médica — UPA Aparecida de Goiânia
-          </p>
+      {/* Logo */}
+      <div className="text-center mb-6">
+        <img
+          src="/logo.png"
+          alt="Chefe Coruja"
+          className="rounded-full object-cover mx-auto mb-3 shadow-2xl"
+          style={{ width: 'clamp(100px, 28vw, 180px)', height: 'clamp(100px, 28vw, 180px)' }}
+        />
+        <h1 className="text-3xl font-bold text-white tracking-tight">Chefe Coruja</h1>
+        <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.75)' }}>
+          Gestão de escala médica — UPA Aparecida de Goiânia
+        </p>
+      </div>
+
+      {/* Card glass */}
+      <div
+        className="w-full max-w-md rounded-2xl p-6"
+        style={{
+          background: 'rgba(255,255,255,0.12)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.25)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+        }}
+      >
+        <h2 className="text-lg font-semibold text-white mb-1">Entrar</h2>
+        <p className="text-sm mb-5" style={{ color: 'rgba(255,255,255,0.7)' }}>
+          Acesse com seu e-mail e senha cadastrados
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1">
+            <Label htmlFor="email" className="text-white text-sm font-medium">E-mail</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              style={{
+                background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: '#fff',
+              }}
+              className="placeholder:text-white/50 focus:ring-white/40"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="senha" className="text-white text-sm font-medium">Senha</Label>
+            <Input
+              id="senha"
+              type="password"
+              placeholder="••••••••"
+              value={senha}
+              onChange={e => setSenha(e.target.value)}
+              required
+              autoComplete="current-password"
+              style={{
+                background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: '#fff',
+              }}
+              className="placeholder:text-white/50 focus:ring-white/40"
+            />
+          </div>
+
+          {erro && (
+            <p className="text-sm rounded-lg p-3" style={{ color: '#fca5a5', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}>
+              {erro}
+            </p>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full font-semibold mt-2"
+            disabled={carregando}
+            style={{ background: 'rgba(255,255,255,0.95)', color: '#0f766e' }}
+          >
+            {carregando ? 'Entrando...' : 'Entrar'}
+          </Button>
+        </form>
+
+        <div className="mt-4 flex flex-col gap-2 text-center text-sm">
+          <button
+            type="button"
+            onClick={handleEsqueciSenha}
+            className="underline"
+            style={{ color: 'rgba(255,255,255,0.7)' }}
+          >
+            Esqueci minha senha
+          </button>
+          <span style={{ color: 'rgba(255,255,255,0.7)' }}>
+            Não tem conta?{' '}
+            <Link to="/signup" className="font-semibold underline text-white">
+              Criar conta
+            </Link>
+          </span>
         </div>
-
-        <Card style={{ border: '1px solid var(--cor-borda)' }}>
-          <CardHeader>
-            <CardTitle style={{ color: 'var(--cor-texto)' }}>Entrar</CardTitle>
-            <CardDescription style={{ color: 'var(--cor-texto-suave)' }}>
-              Acesse com seu e-mail e senha cadastrados
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <Label htmlFor="email" style={{ color: 'var(--cor-texto)' }}>E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="senha" style={{ color: 'var(--cor-texto)' }}>Senha</Label>
-                <Input
-                  id="senha"
-                  type="password"
-                  placeholder="••••••••"
-                  value={senha}
-                  onChange={e => setSenha(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
-              </div>
-
-              {erro && (
-                <p className="text-sm rounded-md p-3" style={{ color: 'var(--cor-vago)', background: '#FEF2F2' }}>
-                  {erro}
-                </p>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full font-semibold"
-                disabled={carregando}
-                style={{ background: 'var(--cor-primaria)', color: '#fff' }}
-              >
-                {carregando ? 'Entrando...' : 'Entrar'}
-              </Button>
-            </form>
-
-            <div className="mt-4 flex flex-col gap-2 text-center text-sm">
-              <button
-                type="button"
-                onClick={handleEsqueciSenha}
-                className="underline"
-                style={{ color: 'var(--cor-texto-suave)' }}
-              >
-                Esqueci minha senha
-              </button>
-              <span style={{ color: 'var(--cor-texto-suave)' }}>
-                Não tem conta?{' '}
-                <Link to="/signup" className="font-medium underline" style={{ color: 'var(--cor-primaria)' }}>
-                  Criar conta
-                </Link>
-              </span>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )
