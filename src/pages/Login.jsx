@@ -59,7 +59,7 @@ export default function Login() {
           src="/logo.png"
           alt="Chefe Coruja"
           className="rounded-full object-cover mx-auto mb-3 shadow-2xl"
-          style={{ width: 'clamp(100px, 28vw, 180px)', height: 'clamp(100px, 28vw, 180px)' }}
+          style={{ width: 'clamp(200px, 56vw, 360px)', height: 'clamp(200px, 56vw, 360px)' }}
         />
         <h1 className="text-3xl font-bold text-white tracking-tight">Chefe Coruja</h1>
         <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.75)' }}>
