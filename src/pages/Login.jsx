@@ -81,10 +81,21 @@ export default function Login() {
           boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
         }}
       >
-        <h2 className="text-lg font-semibold text-white mb-1">Entrar</h2>
-        <p className="text-sm mb-5" style={{ color: 'rgba(255,255,255,0.7)' }}>
+        <h2 className="text-lg font-semibold text-white mb-1 text-center">Entrar</h2>
+        <p className="text-sm mb-5 text-center" style={{ color: 'rgba(255,255,255,0.7)' }}>
           Acesse com seu e-mail e senha cadastrados
         </p>
+
+        <style>{`
+          .input-zoom {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+          }
+          .input-zoom:focus {
+            transform: scale(1.04);
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
+            outline: none;
+          }
+        `}</style>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
@@ -102,7 +113,7 @@ export default function Login() {
                 border: '1px solid rgba(255,255,255,0.3)',
                 color: '#fff',
               }}
-              className="placeholder:text-white/50 focus:ring-white/40"
+              className="placeholder:text-white/50 input-zoom"
             />
           </div>
 
@@ -121,7 +132,7 @@ export default function Login() {
                 border: '1px solid rgba(255,255,255,0.3)',
                 color: '#fff',
               }}
-              className="placeholder:text-white/50 focus:ring-white/40"
+              className="placeholder:text-white/50 input-zoom"
             />
           </div>
 
