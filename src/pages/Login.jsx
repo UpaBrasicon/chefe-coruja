@@ -47,15 +47,19 @@ export default function Login() {
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 py-8"
-      style={{
+    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center px-4 py-8">
+      {/* Fundo com blur — extendido para evitar bordas brancas */}
+      <div style={{
+        position: 'absolute',
+        inset: '-20px',
         backgroundImage: 'url(/fundo-login.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
+        filter: 'blur(3px)',
+        zIndex: 0,
+      }} />
+      {/* Conteúdo acima do fundo */}
+      <div className="relative z-10 flex flex-col items-center w-full px-0 py-0">
       {/* Logo */}
       <div className="text-center mb-6">
         <img
@@ -154,6 +158,7 @@ export default function Login() {
             </Link>
           </span>
         </div>
+      </div>
       </div>
     </div>
   )
