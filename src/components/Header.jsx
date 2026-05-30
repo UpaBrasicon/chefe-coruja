@@ -15,7 +15,7 @@ export default function Header() {
       style={{ background: 'var(--cor-primaria)', color: '#fff' }}
     >
       <Link to="/escala" className="flex items-center gap-2 no-underline">
-        <span className="text-2xl">🦉</span>
+        <img src="/logo.png" alt="Chefe Coruja" className="h-8 w-8 rounded-full object-cover" />
         <span className="font-bold text-lg tracking-tight text-white">Chefe Coruja</span>
       </Link>
 

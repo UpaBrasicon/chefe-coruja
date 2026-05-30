@@ -53,7 +53,7 @@ export default function Login() {
     >
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-2">🦉</div>
+          <img src="/logo.png" alt="Chefe Coruja" className="h-24 w-24 rounded-full object-cover mx-auto mb-2" />
           <h1 className="text-2xl font-bold" style={{ color: 'var(--cor-texto)' }}>
             Chefe Coruja
           </h1>

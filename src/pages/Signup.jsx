@@ -77,7 +77,7 @@ export default function Signup() {
     <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'var(--cor-fundo)' }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-2">🦉</div>
+          <img src="/logo.png" alt="Chefe Coruja" className="h-24 w-24 rounded-full object-cover mx-auto mb-2" />
           <h1 className="text-2xl font-bold" style={{ color: 'var(--cor-texto)' }}>Chefe Coruja</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--cor-texto-suave)' }}>Criar nova conta</p>
         </div>

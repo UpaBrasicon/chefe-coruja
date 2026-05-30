@@ -163,7 +163,7 @@ export default function PainelAdmin() {
         {erro && <p className="mb-4 text-sm rounded-lg p-3" style={{ color: 'var(--cor-vago)', background: '#FEF2F2' }}>{erro}</p>}
 
         {carregando ? (
-          <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}><div className="text-3xl mb-2">🦉</div><p>Carregando...</p></div>
+          <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}><img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" /><p>Carregando...</p></div>
         ) : (
           <Tabs defaultValue="medicos">
             <TabsList className="w-full mb-5 grid grid-cols-4">

@@ -155,7 +155,7 @@ export default function EscalaCalendario() {
       {/* Estados */}
       {carregando && (
         <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}>
-          <div className="text-3xl mb-2">🦉</div>
+          <img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" />
           <p>Carregando escala...</p>
         </div>
       )}

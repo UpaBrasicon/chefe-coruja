@@ -8,7 +8,7 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--cor-fundo)' }}>
         <div className="text-center">
-          <div className="text-4xl mb-3">🦉</div>
+          <img src="/logo.png" alt="" className="h-12 w-12 rounded-full object-cover mx-auto mb-3" />
           <p style={{ color: 'var(--cor-texto-suave)' }}>Carregando...</p>
         </div>
       </div>
