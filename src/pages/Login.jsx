@@ -90,7 +90,7 @@ export default function Login() {
           .input-zoom {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
           }
-          .input-zoom:focus {
+          .input-zoom:hover, .input-zoom:focus {
             transform: scale(1.04);
             box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
             outline: none;
