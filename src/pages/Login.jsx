@@ -61,14 +61,13 @@ export default function Login() {
       {/* Conteúdo acima do fundo */}
       <div className="relative z-10 flex flex-col items-center w-full px-0 py-0">
       {/* Logo */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-4">
         <img
-          src="/logo.png"
+          src="/logo-login.png"
           alt="Chefe Coruja"
-          className="rounded-full object-cover mx-auto mb-3 shadow-2xl"
-          style={{ width: 'clamp(260px, 72vw, 460px)', height: 'clamp(260px, 72vw, 460px)' }}
+          className="mx-auto object-contain drop-shadow-2xl"
+          style={{ width: 'clamp(260px, 72vw, 460px)', height: 'auto' }}
         />
-        <h1 className="text-3xl font-bold text-white tracking-tight">Chefe Coruja</h1>
       </div>
 
       {/* Card glass */}
