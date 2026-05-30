@@ -50,7 +50,10 @@ export default function Login() {
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4 py-8"
       style={{
-        background: 'linear-gradient(145deg, #0d9488 0%, #0f766e 40%, #134e4a 100%)',
+        backgroundImage: 'url(/fundo-login.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
       }}
     >
       {/* Logo */}
