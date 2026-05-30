@@ -8,6 +8,7 @@ import AguardandoAprovacao from './pages/AguardandoAprovacao'
 import PainelAdmin from './pages/PainelAdmin'
 import MinhasTrocas from './pages/MinhasTrocas'
 import DesistenciasAbertas from './pages/DesistenciasAbertas'
+import RedefinirSenha from './pages/RedefinirSenha'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/aguardando" element={<AguardandoAprovacao />} />
+          <Route path="/redefinir-senha" element={<RedefinirSenha />} />
 
           <Route
             path="/escala"
