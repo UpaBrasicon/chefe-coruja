@@ -165,14 +165,14 @@ export default function Header() {
             {menuPlantaoAberto && (
               <div className="absolute left-0 top-full pt-1 z-50">
                 <div className="dropdown-enter rounded-xl min-w-[230px] py-1 overflow-hidden" style={dropdownStyle}>
-                  <div className="px-4 py-2" style={{ borderBottom: '1px solid rgba(13,148,136,0.12)' }}>
-                    <p className="text-xs font-semibold" style={{ color: '#0d9488' }}>Parte Médica</p>
-                  </div>
                   {[
                     { label: 'Prescrição Pronto Socorro', icone: '📋', rota: '/plantao/prescricao-ps' },
                     { label: 'Atestado Médico',           icone: '📄', rota: '/plantao/atestado' },
                     { label: 'Prescrição Internação',     icone: '🏥', rota: '/plantao/prescricao-internacao' },
                     { label: 'Evolução Internação',       icone: '📝', rota: '/plantao/evolucao-internacao' },
+                    { label: 'APAC',                      icone: '🗂️', rota: '/plantao/apac' },
+                    { label: 'Encaminhamento',            icone: '↗️', rota: '/plantao/encaminhamento' },
+                    { label: 'Pedido de Exame',           icone: '🔬', rota: '/plantao/pedido-exame' },
                   ].map(item => (
                     <MenuItem key={item.rota} onClick={() => { setMenuPlantaoAberto(false); navigate(item.rota) }}>
                       <span className="flex-1 flex items-center gap-2">{item.icone} {item.label}</span>

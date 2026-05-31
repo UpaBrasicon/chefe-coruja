@@ -70,6 +70,9 @@ export default function App() {
           <Route path="/plantao/atestado" element={<ProtectedRoute><EmBreve icone="📄" titulo="Atestado Médico" descricao="Emita atestados médicos digitais com assinatura eletrônica e registro automático." /></ProtectedRoute>} />
           <Route path="/plantao/prescricao-internacao" element={<ProtectedRoute><EmBreve icone="🏥" titulo="Prescrição de Internação" descricao="Gerenciamento completo de prescrições para pacientes internados, com controle de medicamentos e procedimentos." /></ProtectedRoute>} />
           <Route path="/plantao/evolucao-internacao" element={<ProtectedRoute><EmBreve icone="📝" titulo="Evolução de Internação" descricao="Registre e acompanhe a evolução clínica dos pacientes internados com histórico completo." /></ProtectedRoute>} />
+          <Route path="/plantao/apac" element={<ProtectedRoute><EmBreve icone="🗂️" titulo="APAC" descricao="Autorização de Procedimentos de Alta Complexidade — emissão e acompanhamento digital integrado ao sistema." /></ProtectedRoute>} />
+          <Route path="/plantao/encaminhamento" element={<ProtectedRoute><EmBreve icone="↗️" titulo="Encaminhamento" descricao="Gere encaminhamentos para especialistas e outros serviços de saúde de forma ágil e rastreável." /></ProtectedRoute>} />
+          <Route path="/plantao/pedido-exame" element={<ProtectedRoute><EmBreve icone="🔬" titulo="Pedido de Exame" descricao="Solicite exames laboratoriais e de imagem com histórico completo por paciente." /></ProtectedRoute>} />
 
           {/* Financeiro */}
           <Route path="/financeiro/custos" element={<ProtectedRoute adminOnly><EmBreve icone="📊" titulo="Planilha de Custos" descricao="Controle financeiro completo da unidade: custos por plantão, por médico e por setor." /></ProtectedRoute>} />
