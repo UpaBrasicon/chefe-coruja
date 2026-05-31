@@ -7,11 +7,13 @@ import { Button } from './ui/button'
 import ModalAlterarSenha from './ModalAlterarSenha'
 import ModalConfiguracoes from './ModalConfiguracoes'
 
-const itemClass = `
-  w-full text-left px-4 py-2.5 text-sm text-slate-700 flex items-center gap-2
-  transition-transform duration-150 ease-out
-  hover:bg-slate-50 hover:scale-[1.03] hover:pl-5
-`
+const dropdownStyle = {
+  background: 'rgba(255,255,255,0.85)',
+  backdropFilter: 'blur(16px)',
+  WebkitBackdropFilter: 'blur(16px)',
+  border: '1px solid rgba(13,148,136,0.15)',
+  boxShadow: '0 8px 32px rgba(13,148,136,0.12), 0 2px 8px rgba(0,0,0,0.08)',
+}
 
 export default function Header() {
   const { profissional, signOut } = useAuth()
@@ -34,8 +36,46 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', fecharFora)
   }, [])
 
+  function MenuItem({ onClick, children, danger, divider }) {
+    const [hovered, setHovered] = useState(false)
+    return (
+      <button
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          borderLeft: hovered
+            ? `3px solid ${danger ? '#dc2626' : '#0d9488'}`
+            : '3px solid transparent',
+          background: hovered
+            ? danger
+              ? 'linear-gradient(90deg,rgba(220,38,38,0.07) 0%,transparent 100%)'
+              : 'linear-gradient(90deg,rgba(13,148,136,0.08) 0%,transparent 100%)'
+            : 'transparent',
+          transform: hovered ? 'translateX(2px)' : 'translateX(0)',
+          transition: 'all 0.15s ease',
+          color: danger ? '#dc2626' : hovered ? '#0d9488' : '#374151',
+          borderTop: divider ? '1px solid rgba(13,148,136,0.1)' : 'none',
+        }}
+        className="w-full text-left px-4 py-2.5 text-sm flex items-center gap-2"
+      >
+        {children}
+      </button>
+    )
+  }
+
   return (
     <>
+      <style>{`
+        .dropdown-enter {
+          animation: dropIn 0.15s ease forwards;
+        }
+        @keyframes dropIn {
+          from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)  scale(1); }
+        }
+      `}</style>
+
       <header
         className="flex items-center justify-between px-3 sm:px-5 py-2.5 shadow-sm sticky top-0 z-10"
         style={{ background: 'var(--cor-primaria)', color: '#fff' }}
@@ -49,7 +89,7 @@ export default function Header() {
 
         <div className="flex items-center gap-0.5 sm:gap-1">
 
-          {/* Dropdown Escala — abre no hover */}
+          {/* Dropdown Escala */}
           <div
             className="relative"
             ref={menuEscalaRef}
@@ -72,28 +112,28 @@ export default function Header() {
 
             {menuEscalaAberto && (
               <div className="absolute left-0 top-full pt-1 z-50">
-                <div className="bg-white rounded-xl shadow-xl border border-slate-100 min-w-[210px] py-1 overflow-hidden">
-                  <button onClick={() => { setMenuEscalaAberto(false); navigate('/escala') }} className={itemClass}>
+                <div className="dropdown-enter rounded-xl min-w-[210px] py-1 overflow-hidden" style={dropdownStyle}>
+                  <MenuItem onClick={() => { setMenuEscalaAberto(false); navigate('/escala') }}>
                     📅 Escala
-                  </button>
-                  <button onClick={() => { setMenuEscalaAberto(false); navigate('/desistencias') }} className={`${itemClass} justify-between`}>
-                    <span className="flex items-center gap-2">🏥 Vagas em aberto</span>
+                  </MenuItem>
+                  <MenuItem onClick={() => { setMenuEscalaAberto(false); navigate('/desistencias') }}>
+                    <span className="flex-1 flex items-center gap-2">🏥 Vagas em aberto</span>
                     {vagasCount > 0 && (
                       <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: 'var(--cor-secundaria)', color: '#fff' }}>
                         {vagasCount}
                       </span>
                     )}
-                  </button>
-                  <button onClick={() => { setMenuEscalaAberto(false); navigate('/trocas') }} className={`${itemClass} justify-between`}>
-                    <span className="flex items-center gap-2">🔄 Trocas de plantão</span>
+                  </MenuItem>
+                  <MenuItem onClick={() => { setMenuEscalaAberto(false); navigate('/trocas') }}>
+                    <span className="flex-1 flex items-center gap-2">🔄 Trocas de plantão</span>
                     {trocasCount > 0 && (
                       <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: 'var(--cor-vago)', color: '#fff' }}>
                         {trocasCount}
                       </span>
                     )}
-                  </button>
+                  </MenuItem>
                 </div>
               </div>
             )}
@@ -107,7 +147,7 @@ export default function Header() {
             </Link>
           )}
 
-          {/* Menu do usuário — abre no hover */}
+          {/* Dropdown usuário */}
           <div
             className="relative"
             ref={menuRef}
@@ -124,23 +164,20 @@ export default function Header() {
 
             {menuAberto && (
               <div className="absolute right-0 top-full pt-1 z-50">
-                <div className="bg-white rounded-xl shadow-xl border border-slate-100 min-w-[190px] py-1 overflow-hidden">
-                  <div className="px-4 py-2 border-b border-slate-100">
-                    <p className="text-xs text-slate-400 truncate">{profissional?.nome}</p>
+                <div className="dropdown-enter rounded-xl min-w-[190px] py-1 overflow-hidden" style={dropdownStyle}>
+                  <div className="px-4 py-2.5" style={{ borderBottom: '1px solid rgba(13,148,136,0.12)' }}>
+                    <p className="text-xs font-semibold truncate" style={{ color: '#0d9488' }}>{profissional?.nome}</p>
+                    <p className="text-xs truncate" style={{ color: '#94a3b8' }}>{profissional?.email}</p>
                   </div>
-                  <button onClick={() => { setMenuAberto(false); setModalConfig(true) }} className={itemClass}>
+                  <MenuItem onClick={() => { setMenuAberto(false); setModalConfig(true) }}>
                     ⚙️ Configurações
-                  </button>
-                  <button onClick={() => { setMenuAberto(false); setModalSenha(true) }} className={itemClass}>
+                  </MenuItem>
+                  <MenuItem onClick={() => { setMenuAberto(false); setModalSenha(true) }}>
                     🔑 Alterar senha
-                  </button>
-                  <button
-                    onClick={() => { setMenuAberto(false); signOut() }}
-                    className={`${itemClass} border-t border-slate-100`}
-                    style={{ color: '#dc2626' }}
-                  >
+                  </MenuItem>
+                  <MenuItem onClick={() => { setMenuAberto(false); signOut() }} danger divider>
                     ↪ Sair
-                  </button>
+                  </MenuItem>
                 </div>
               </div>
             )}
