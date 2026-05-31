@@ -341,6 +341,7 @@ export default function EditorEscalaTemplate() {
   const [loading, setLoading] = useState(true)
   const [modalPublicar, setModalPublicar] = useState(false)
   const [modalAddGrupo, setModalAddGrupo] = useState(false)
+  const [erroSave, setErroSave] = useState('')
 
   // Dados base: todos os profissionais (sem filtro — admin precisa de todos)
   useEffect(() => {
@@ -416,18 +417,35 @@ export default function EditorEscalaTemplate() {
 
   // ── Handlers ──
   async function handleSave(setor_id, tipo_turno_id, slot_index, dia_semana, { profissional_id, nome_livre }) {
-    const record = { semana, dia_semana, setor_id, tipo_turno_id, slot_index, profissional_id: profissional_id || null, nome_livre: nome_livre || null }
-    const { data, error } = await supabase
-      .from('escala_template_slots')
-      .upsert(record, { onConflict: 'semana,dia_semana,setor_id,tipo_turno_id,slot_index' })
-      .select('*, profissional:profissionais(id, nome, crm)')
+    setErroSave('')
+    const filtro = { semana, setor_id, tipo_turno_id, slot_index, dia_semana }
+
+    // 1) apaga o registro anterior (se existir) — evita conflito de UNIQUE
+    await supabase.from('escala_template_slots').delete()
+      .eq('semana', semana).eq('setor_id', setor_id).eq('tipo_turno_id', tipo_turno_id)
+      .eq('slot_index', slot_index).eq('dia_semana', dia_semana)
+
+    // 2) insere o novo
+    const { data, error } = await supabase.from('escala_template_slots')
+      .insert({ ...filtro, profissional_id: profissional_id || null, nome_livre: nome_livre || null })
+      .select('id, semana, dia_semana, setor_id, tipo_turno_id, slot_index, profissional_id, nome_livre')
       .single()
-    if (!error && data) {
-      setSlots(prev => [
-        ...prev.filter(s => !(s.setor_id === setor_id && s.tipo_turno_id === tipo_turno_id && s.slot_index === slot_index && s.dia_semana === dia_semana && s.semana === semana)),
-        data,
-      ])
+
+    if (error) {
+      setErroSave('Erro ao salvar: ' + error.message)
+      return
     }
+
+    // 3) enriquece localmente com o objeto profissional (sem depender de join)
+    const profObj = profissional_id
+      ? (profissionais.find(p => p.id === profissional_id) ?? null)
+      : null
+
+    setSlots(prev => [
+      ...prev.filter(s => !(s.setor_id === setor_id && s.tipo_turno_id === tipo_turno_id &&
+        s.slot_index === slot_index && s.dia_semana === dia_semana && s.semana === semana)),
+      { ...data, profissional: profObj },
+    ])
   }
 
   async function handleClear(setor_id, tipo_turno_id, slot_index, dia_semana) {
@@ -746,6 +764,11 @@ export default function EditorEscalaTemplate() {
         <p className="text-xs mt-3" style={{ color: 'rgba(255,255,255,0.2)' }}>
           Clique em qualquer célula para editar · Busca por nome ou CRM · Nomes não cadastrados salvos como texto livre
         </p>
+        {erroSave && (
+          <p className="text-xs mt-2 px-3 py-2 rounded-lg" style={{ color: '#fca5a5', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}>
+            {erroSave}
+          </p>
+        )}
       </main>
 
       <ModalPublicar aberto={modalPublicar} onFechar={() => setModalPublicar(false)} onPublicar={handlePublicar} />
