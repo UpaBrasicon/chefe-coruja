@@ -359,8 +359,8 @@ function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd, onNovoTur
   })
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ background: '#0c1445', border: '1px solid rgba(255,255,255,0.2)' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 99998, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ background: '#0c1445', border: '1px solid rgba(255,255,255,0.2)', zIndex: 99999, position: 'relative' }}>
         <h2 className="text-base font-bold text-white">Adicionar grupo</h2>
 
         {/* Setor */}
@@ -396,16 +396,32 @@ function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd, onNovoTur
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Início</p>
-                <input type="time" value={customIni} onChange={e => setCustomIni(e.target.value)}
+                <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Início (HH:MM)</p>
+                <input
+                  type="text" inputMode="numeric" maxLength={5}
+                  value={customIni}
+                  onChange={e => {
+                    let v = e.target.value.replace(/[^0-9]/g, '')
+                    if (v.length >= 3) v = v.slice(0,2) + ':' + v.slice(2,4)
+                    setCustomIni(v)
+                  }}
+                  placeholder="07:00"
                   className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', colorScheme: 'dark' }} />
+                  style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff' }} />
               </div>
               <div>
-                <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Fim</p>
-                <input type="time" value={customFim} onChange={e => setCustomFim(e.target.value)}
+                <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Fim (HH:MM)</p>
+                <input
+                  type="text" inputMode="numeric" maxLength={5}
+                  value={customFim}
+                  onChange={e => {
+                    let v = e.target.value.replace(/[^0-9]/g, '')
+                    if (v.length >= 3) v = v.slice(0,2) + ':' + v.slice(2,4)
+                    setCustomFim(v)
+                  }}
+                  placeholder="13:00"
                   className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', colorScheme: 'dark' }} />
+                  style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff' }} />
               </div>
             </div>
           </div>
