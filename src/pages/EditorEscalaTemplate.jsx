@@ -24,7 +24,7 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
   const [dropPos, setDropPos] = useState(null)
   const cellRef = useRef()
   const inputRef = useRef()
-  const cancelBlurRef = useRef(false)
+  const dropRef  = useRef()   // referência para o container do dropdown no portal
 
   const nomeAtual = cellData?.profissional?.nome || cellData?.nome_livre || ''
 
@@ -39,7 +39,7 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
   function calcPos() {
     if (cellRef.current) {
       const r = cellRef.current.getBoundingClientRect()
-      setDropPos({ top: r.bottom + 2, left: r.left, width: Math.max(230, r.width) })
+      setDropPos({ top: r.bottom + 2, left: r.left, width: Math.max(240, r.width) })
     }
   }
 
@@ -49,7 +49,6 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
     setTimeout(() => { inputRef.current?.focus(); calcPos() }, 20)
   }
 
-  // Atualiza posição se a página rolar com o dropdown aberto
   useEffect(() => {
     if (!editando) return
     window.addEventListener('scroll', calcPos, true)
@@ -79,6 +78,13 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
     fechar()
   }
 
+  // onBlur: só fecha/salva se o foco NÃO foi para um elemento dentro do dropdown
+  function handleBlur(e) {
+    const paraDropdown = dropRef.current?.contains(e.relatedTarget)
+    if (paraDropdown) return          // clicou num botão do dropdown → não faz nada aqui
+    setTimeout(salvarNomeLivre, 120)  // clicou fora → salva e fecha
+  }
+
   return (
     <div ref={cellRef} style={{ position: 'relative', minWidth: 118, height: 28 }}>
       {editando ? (
@@ -86,10 +92,7 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
           ref={inputRef}
           value={busca}
           onChange={e => setBusca(e.target.value)}
-          onBlur={() => setTimeout(() => {
-            if (cancelBlurRef.current) { cancelBlurRef.current = false; return }
-            salvarNomeLivre()
-          }, 200)}
+          onBlur={handleBlur}
           onKeyDown={e => {
             if (e.key === 'Enter') salvarNomeLivre()
             if (e.key === 'Escape') fechar()
@@ -120,10 +123,10 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
         </div>
       )}
 
-      {/* Dropdown fixo no viewport via portal — não rola junto com a página */}
+      {/* Portal com position:fixed — não rola junto com a página */}
       {editando && dropPos && createPortal(
         <div
-          onMouseDown={e => { e.preventDefault(); cancelBlurRef.current = true }}
+          ref={dropRef}
           style={{
             position: 'fixed',
             top: dropPos.top,
@@ -134,12 +137,12 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
             border: '1px solid #e2e8f0',
             borderRadius: 8,
             boxShadow: '0 8px 32px rgba(0,0,0,0.22)',
-            maxHeight: 260,
+            maxHeight: 220,
             overflowY: 'auto',
           }}>
           {busca.trim() && !profissionais.find(p => p.nome.toLowerCase() === busca.trim().toLowerCase()) && (
             <button
-              onMouseDown={e => { e.preventDefault(); salvarNomeLivre() }}
+              onMouseDown={() => salvarNomeLivre()}
               className="w-full text-left px-3 py-2 text-xs border-b border-gray-100 hover:bg-teal-50"
               style={{ color: '#0d9488' }}>
               Salvar "{busca.trim()}" como nome livre
@@ -150,7 +153,7 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
           )}
           {filtrados.map(p => (
             <button key={p.id}
-              onMouseDown={e => { e.preventDefault(); cancelBlurRef.current = true; salvarProf(p) }}
+              onMouseDown={() => salvarProf(p)}
               className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-50">
               <p className="text-xs font-medium" style={{ color: '#1e293b' }}>{p.nome}</p>
               {p.crm && <p style={{ fontSize: 10, color: '#94a3b8' }}>CRM {p.crm}</p>}
