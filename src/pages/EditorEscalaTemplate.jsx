@@ -284,11 +284,19 @@ function ModalPublicar({ aberto, onFechar, onPublicar }) {
   )
 }
 
+// Normaliza string para comparação sem acentos/caixa
+function norm(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') }
+const SETORES_PERMITIDOS = ['clinica', 'pediatria', 'enfermaria', 'estabilizacao']
+
 // ── Modal Add Grupo ───────────────────────────────────────────────────────────
 function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd }) {
   const [setorId, setSetorId] = useState('')
   const [tipoId, setTipoId] = useState('')
   if (!aberto) return null
+
+  // Filtra apenas os 4 setores operacionais
+  const setoresFiltrados = setores.filter(s => SETORES_PERMITIDOS.includes(norm(s.nome)))
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div className="rounded-2xl p-6 w-full max-w-sm" style={{ background: '#0c1445', border: '1px solid rgba(255,255,255,0.2)' }}>
@@ -300,7 +308,7 @@ function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd }) {
               className="w-full px-3 py-2 rounded-lg text-sm"
               style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff' }}>
               <option value="" style={{ background: '#0c1445' }}>Selecione…</option>
-              {setores.map(s => <option key={s.id} value={s.id} style={{ background: '#0c1445' }}>{s.nome}</option>)}
+              {setoresFiltrados.map(s => <option key={s.id} value={s.id} style={{ background: '#0c1445' }}>{s.nome}</option>)}
             </select>
           </div>
           <div>
@@ -362,10 +370,11 @@ export default function EditorEscalaTemplate() {
   useEffect(() => {
     async function carregarSlots() {
       setLoading(true)
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('escala_template_slots')
         .select('*, profissional:profissionais(id, nome, crm)')
         .eq('semana', semana)
+      if (error) setErroSave('Erro ao carregar slots: ' + error.message)
       const lista = data ?? []
       setSlots(lista)
       const cfg = {}
@@ -773,6 +782,23 @@ export default function EditorEscalaTemplate() {
 
       <ModalPublicar aberto={modalPublicar} onFechar={() => setModalPublicar(false)} onPublicar={handlePublicar} />
       <ModalAddGrupo aberto={modalAddGrupo} onFechar={() => setModalAddGrupo(false)} setores={setores} tiposTurno={tiposTurno} onAdd={addGrupo} />
+
+      {/* ── Painel de erros (dev) ── */}
+      {erroSave && (
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9000,
+          background: '#1e1e1e', borderTop: '2px solid #ef4444',
+          padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        }}>
+          <span style={{ color: '#fca5a5', fontSize: 12, fontFamily: 'monospace' }}>
+            ❌ {erroSave}
+          </span>
+          <button onClick={() => setErroSave('')}
+            style={{ color: '#94a3b8', fontSize: 12, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+            fechar ×
+          </button>
+        </div>
+      )}
     </div>
   )
 }
