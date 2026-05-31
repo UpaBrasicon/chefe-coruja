@@ -284,9 +284,15 @@ function ModalPublicar({ aberto, onFechar, onPublicar }) {
   )
 }
 
-// Normaliza string para comparação sem acentos/caixa
-function norm(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') }
-const SETORES_PERMITIDOS = ['clinica', 'pediatria', 'enfermaria', 'estabilizacao']
+// Retorna true se o nome do setor é um dos 4 permitidos (ignora maiúsculas e acentos)
+function setorPermitido(nome) {
+  const n = nome.toLowerCase()
+  const clinica  = (n.includes('cl') && n.includes('nica') && !n.includes('extra'))
+  const pediatria   = n.includes('pediatria')
+  const enfermaria  = n.includes('enfermaria')
+  const estabilizacao = n.includes('estabiliza')
+  return clinica || pediatria || enfermaria || estabilizacao
+}
 
 // ── Modal Add Grupo ───────────────────────────────────────────────────────────
 function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd }) {
@@ -295,7 +301,7 @@ function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd }) {
   if (!aberto) return null
 
   // Filtra apenas os 4 setores operacionais
-  const setoresFiltrados = setores.filter(s => SETORES_PERMITIDOS.includes(norm(s.nome)))
+  const setoresFiltrados = setores.filter(s => setorPermitido(s.nome))
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
