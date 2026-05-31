@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './routes/ProtectedRoute'
 import Login from './pages/Login'
@@ -10,9 +11,21 @@ import MinhasTrocas from './pages/MinhasTrocas'
 import DesistenciasAbertas from './pages/DesistenciasAbertas'
 import RedefinirSenha from './pages/RedefinirSenha'
 
+function RecoveryRedirect() {
+  const navigate = useNavigate()
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash.includes('type=recovery')) {
+      navigate('/redefinir-senha' + hash, { replace: true })
+    }
+  }, [])
+  return null
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <RecoveryRedirect />
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
