@@ -175,7 +175,7 @@ export default function EscalaCalendario() {
 
       {/* ── Fundo com gradiente teal escuro ── */}
       <div style={{
-        background: 'linear-gradient(145deg, #0a2f2a 0%, #0d4039 40%, #134e4a 100%)',
+        background: 'linear-gradient(145deg, #0c1445 0%, #0e2d6e 45%, #0e4d8a 100%)',
         minHeight: '100vh',
         padding: '24px 16px 48px',
       }}>
