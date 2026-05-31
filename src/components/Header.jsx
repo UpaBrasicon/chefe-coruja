@@ -8,11 +8,12 @@ import ModalAlterarSenha from './ModalAlterarSenha'
 import ModalConfiguracoes from './ModalConfiguracoes'
 
 const dropdownStyle = {
-  background: 'rgba(255,255,255,0.85)',
+  background: 'rgba(248,252,251,0.97)',
   backdropFilter: 'blur(16px)',
   WebkitBackdropFilter: 'blur(16px)',
-  border: '1px solid rgba(13,148,136,0.15)',
-  boxShadow: '0 8px 32px rgba(13,148,136,0.12), 0 2px 8px rgba(0,0,0,0.08)',
+  border: '1px solid rgba(13,148,136,0.25)',
+  borderTop: '3px solid #0d9488',
+  boxShadow: '0 12px 40px rgba(13,148,136,0.18), 0 2px 12px rgba(0,0,0,0.12)',
 }
 
 export default function Header() {
