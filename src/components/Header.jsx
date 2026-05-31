@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTrocasPendentes } from '../hooks/useTrocasPendentes'
 import { useDesistenciasAbertas } from '../hooks/useDesistenciasAbertas'
@@ -12,15 +12,17 @@ export default function Header() {
   const { count: trocasCount } = useTrocasPendentes()
   const { count: vagasCount } = useDesistenciasAbertas()
   const [menuAberto, setMenuAberto] = useState(false)
+  const [menuEscalaAberto, setMenuEscalaAberto] = useState(false)
   const [modalSenha, setModalSenha] = useState(false)
   const [modalConfig, setModalConfig] = useState(false)
   const menuRef = useRef(null)
+  const menuEscalaRef = useRef(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     function fecharFora(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuAberto(false)
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuAberto(false)
+      if (menuEscalaRef.current && !menuEscalaRef.current.contains(e.target)) setMenuEscalaAberto(false)
     }
     document.addEventListener('mousedown', fecharFora)
     return () => document.removeEventListener('mousedown', fecharFora)
@@ -40,29 +42,57 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center gap-0.5 sm:gap-1">
-          <Link to="/desistencias" className="relative">
-            <Button variant="ghost" size="sm" className="text-white hover:text-white hover:bg-white/20 px-2 sm:px-3 text-xs sm:text-sm">
-              Vagas
-              {vagasCount > 0 && (
+          {/* Dropdown Escala */}
+          <div className="relative" ref={menuEscalaRef}>
+            <button
+              onClick={() => setMenuEscalaAberto(v => !v)}
+              className="relative flex items-center gap-1 text-xs sm:text-sm text-white hover:bg-white/20 px-2 sm:px-3 py-1.5 rounded-md transition-colors"
+            >
+              Escala
+              <span className="text-white/70 text-xs">▾</span>
+              {(trocasCount + vagasCount) > 0 && (
                 <span className="absolute -top-1 -right-1 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center"
-                  style={{ background: 'var(--cor-secundaria)', color: '#fff', fontSize: '10px' }}>
-                  {vagasCount}
+                  style={{ background: '#f59e0b', color: '#fff', fontSize: '10px' }}>
+                  {trocasCount + vagasCount}
                 </span>
               )}
-            </Button>
-          </Link>
+            </button>
 
-          <Link to="/trocas" className="relative">
-            <Button variant="ghost" size="sm" className="text-white hover:text-white hover:bg-white/20 px-2 sm:px-3 text-xs sm:text-sm">
-              Trocas
-              {trocasCount > 0 && (
-                <span className="absolute -top-1 -right-1 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center"
-                  style={{ background: 'var(--cor-vago)', color: '#fff', fontSize: '10px' }}>
-                  {trocasCount}
-                </span>
-              )}
-            </Button>
-          </Link>
+            {menuEscalaAberto && (
+              <div className="absolute left-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-slate-100 z-50 min-w-[200px] py-1 overflow-hidden">
+                <button
+                  onClick={() => { setMenuEscalaAberto(false); navigate('/escala') }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                >
+                  📅 Escala
+                </button>
+                <button
+                  onClick={() => { setMenuEscalaAberto(false); navigate('/desistencias') }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">🏥 Vagas em aberto</span>
+                  {vagasCount > 0 && (
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                      style={{ background: 'var(--cor-secundaria)', color: '#fff' }}>
+                      {vagasCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => { setMenuEscalaAberto(false); navigate('/trocas') }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">🔄 Trocas de plantão</span>
+                  {trocasCount > 0 && (
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                      style={{ background: 'var(--cor-vago)', color: '#fff' }}>
+                      {trocasCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
 
           {profissional?.role === 'admin' && (
             <Link to="/admin">
