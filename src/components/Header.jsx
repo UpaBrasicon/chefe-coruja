@@ -5,6 +5,7 @@ import { useTrocasPendentes } from '../hooks/useTrocasPendentes'
 import { useDesistenciasAbertas } from '../hooks/useDesistenciasAbertas'
 import { Button } from './ui/button'
 import ModalAlterarSenha from './ModalAlterarSenha'
+import ModalConfiguracoes from './ModalConfiguracoes'
 
 export default function Header() {
   const { profissional, signOut } = useAuth()
@@ -12,6 +13,7 @@ export default function Header() {
   const { count: vagasCount } = useDesistenciasAbertas()
   const [menuAberto, setMenuAberto] = useState(false)
   const [modalSenha, setModalSenha] = useState(false)
+  const [modalConfig, setModalConfig] = useState(false)
   const menuRef = useRef(null)
 
   useEffect(() => {
@@ -86,6 +88,12 @@ export default function Header() {
                   <p className="text-xs text-slate-400 truncate">{profissional?.nome}</p>
                 </div>
                 <button
+                  onClick={() => { setMenuAberto(false); setModalConfig(true) }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                >
+                  ⚙️ Configurações
+                </button>
+                <button
                   onClick={() => { setMenuAberto(false); setModalSenha(true) }}
                   className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                 >
@@ -112,6 +120,7 @@ export default function Header() {
       </header>
 
       <ModalAlterarSenha aberto={modalSenha} onFechar={() => setModalSenha(false)} />
+      <ModalConfiguracoes aberto={modalConfig} onFechar={() => setModalConfig(false)} />
     </>
   )
 }
