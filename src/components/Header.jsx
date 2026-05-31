@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTrocasPendentes } from '../hooks/useTrocasPendentes'
 import { useDesistenciasAbertas } from '../hooks/useDesistenciasAbertas'
@@ -31,6 +31,11 @@ export default function Header() {
   const menuPlantaoRef = useRef(null)
   const menuFinanceiroRef = useRef(null)
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const paginasNavy = ['/escala', '/desistencias', '/trocas']
+  const bgHeader = paginasNavy.includes(pathname)
+    ? 'linear-gradient(90deg, #0c1445 0%, #0e2d6e 60%, #0e4d8a 100%)'
+    : 'var(--cor-primaria)'
 
   useEffect(() => {
     function fecharFora(e) {
@@ -85,7 +90,7 @@ export default function Header() {
 
       <header
         className="flex items-center justify-between px-3 sm:px-5 py-2.5 shadow-sm sticky top-0 z-10"
-        style={{ background: 'var(--cor-primaria)', color: '#fff' }}
+        style={{ background: bgHeader, color: '#fff', transition: 'background 0.3s ease' }}
       >
         <Link to="/escala" className="flex items-center gap-2 no-underline shrink-0">
           <img src="/logo.png" alt="Chefe Coruja" className="h-9 w-9 rounded-full object-cover" />
