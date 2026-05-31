@@ -291,8 +291,13 @@ function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd }) {
   const [tipoId, setTipoId] = useState('')
   if (!aberto) return null
 
-  // Mostra todos os setores do banco
-  const setoresFiltrados = setores
+  // Exclui Clínica Extra e Enfermaria Cinderela; mantém as 4 categorias principais
+  const setoresFiltrados = setores.filter(s => {
+    const n = s.nome.toLowerCase()
+    if (n.includes('extra')) return false
+    if (n.includes('cinderela')) return false
+    return n.includes('cl') || n.includes('pediatria') || n.includes('enfermaria') || n.includes('estabiliza')
+  })
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
