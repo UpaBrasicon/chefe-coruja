@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavyTheme } from '../hooks/useNavyTheme'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -20,6 +21,7 @@ function formatarData(dataStr) {
 }
 
 export default function DesistenciasAbertas() {
+  useNavyTheme()
   const { profissional } = useAuth()
   const { refetch: refetchBadge } = useDesistenciasAbertas()
   const navigate = useNavigate()

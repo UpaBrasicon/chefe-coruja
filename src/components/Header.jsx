@@ -90,7 +90,14 @@ export default function Header() {
 
       <header
         className="flex items-center justify-between px-3 sm:px-5 py-2.5 shadow-sm sticky top-0 z-10"
-        style={{ background: bgHeader, color: '#fff', transition: 'background 0.3s ease' }}
+        style={{
+          background: bgHeader,
+          color: '#fff',
+          transition: 'background 0.3s ease, box-shadow 0.3s ease',
+          boxShadow: paginasNavy.includes(pathname)
+            ? '0 4px 24px rgba(14,45,110,0.5), 0 1px 0 rgba(255,255,255,0.06)'
+            : '0 1px 4px rgba(0,0,0,0.1)',
+        }}
       >
         <Link to="/escala" className="flex items-center gap-2 no-underline shrink-0">
           <img src="/logo.png" alt="Chefe Coruja" className="h-9 w-9 rounded-full object-cover" />

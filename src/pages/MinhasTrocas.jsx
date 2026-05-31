@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavyTheme } from '../hooks/useNavyTheme'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -129,6 +130,7 @@ function CardTroca({ troca, tipo, onAceitar, onRecusar, onCancelar, carregandoId
 }
 
 export default function MinhasTrocas() {
+  useNavyTheme()
   const { profissional } = useAuth()
   const { refetch: refetchBadge } = useTrocasPendentes()
   const navigate = useNavigate()
