@@ -22,16 +22,22 @@ export default function Header() {
   const { count: vagasCount } = useDesistenciasAbertas()
   const [menuAberto, setMenuAberto] = useState(false)
   const [menuEscalaAberto, setMenuEscalaAberto] = useState(false)
+  const [menuPlantaoAberto, setMenuPlantaoAberto] = useState(false)
+  const [menuFinanceiroAberto, setMenuFinanceiroAberto] = useState(false)
   const [modalSenha, setModalSenha] = useState(false)
   const [modalConfig, setModalConfig] = useState(false)
   const menuRef = useRef(null)
   const menuEscalaRef = useRef(null)
+  const menuPlantaoRef = useRef(null)
+  const menuFinanceiroRef = useRef(null)
   const navigate = useNavigate()
 
   useEffect(() => {
     function fecharFora(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) setMenuAberto(false)
       if (menuEscalaRef.current && !menuEscalaRef.current.contains(e.target)) setMenuEscalaAberto(false)
+      if (menuPlantaoRef.current && !menuPlantaoRef.current.contains(e.target)) setMenuPlantaoAberto(false)
+      if (menuFinanceiroRef.current && !menuFinanceiroRef.current.contains(e.target)) setMenuFinanceiroAberto(false)
     }
     document.addEventListener('mousedown', fecharFora)
     return () => document.removeEventListener('mousedown', fecharFora)
@@ -134,6 +140,78 @@ export default function Header() {
                         {trocasCount}
                       </span>
                     )}
+                  </MenuItem>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Dropdown Plantão */}
+          <div
+            className="relative"
+            ref={menuPlantaoRef}
+            onMouseEnter={() => setMenuPlantaoAberto(true)}
+            onMouseLeave={() => setMenuPlantaoAberto(false)}
+          >
+            <button
+              onClick={() => setMenuPlantaoAberto(v => !v)}
+              className="relative flex items-center gap-1 text-xs sm:text-sm text-white hover:bg-white/20 px-2 sm:px-3 py-1.5 rounded-md transition-colors"
+            >
+              Plantão
+              <span className="text-white/70 text-xs">▾</span>
+              <span className="ml-1 text-xs px-1 rounded" style={{ background: 'rgba(255,255,255,0.2)', fontSize: '9px' }}>em breve</span>
+            </button>
+
+            {menuPlantaoAberto && (
+              <div className="absolute left-0 top-full pt-1 z-50">
+                <div className="dropdown-enter rounded-xl min-w-[230px] py-1 overflow-hidden" style={dropdownStyle}>
+                  <div className="px-4 py-2" style={{ borderBottom: '1px solid rgba(13,148,136,0.12)' }}>
+                    <p className="text-xs font-semibold" style={{ color: '#0d9488' }}>Parte Médica</p>
+                  </div>
+                  {[
+                    { label: 'Prescrição Pronto Socorro', icone: '📋', rota: '/plantao/prescricao-ps' },
+                    { label: 'Atestado Médico',           icone: '📄', rota: '/plantao/atestado' },
+                    { label: 'Prescrição Internação',     icone: '🏥', rota: '/plantao/prescricao-internacao' },
+                    { label: 'Evolução Internação',       icone: '📝', rota: '/plantao/evolucao-internacao' },
+                  ].map(item => (
+                    <MenuItem key={item.rota} onClick={() => { setMenuPlantaoAberto(false); navigate(item.rota) }}>
+                      <span className="flex-1 flex items-center gap-2">{item.icone} {item.label}</span>
+                      <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '10px' }}>em breve</span>
+                    </MenuItem>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Dropdown Financeiro */}
+          <div
+            className="relative"
+            ref={menuFinanceiroRef}
+            onMouseEnter={() => setMenuFinanceiroAberto(true)}
+            onMouseLeave={() => setMenuFinanceiroAberto(false)}
+          >
+            <button
+              onClick={() => setMenuFinanceiroAberto(v => !v)}
+              className="relative flex items-center gap-1 text-xs sm:text-sm text-white hover:bg-white/20 px-2 sm:px-3 py-1.5 rounded-md transition-colors"
+            >
+              Financeiro
+              <span className="text-white/70 text-xs">▾</span>
+              <span className="ml-1 text-xs px-1 rounded" style={{ background: 'rgba(255,255,255,0.2)', fontSize: '9px' }}>em breve</span>
+            </button>
+
+            {menuFinanceiroAberto && (
+              <div className="absolute left-0 top-full pt-1 z-50">
+                <div className="dropdown-enter rounded-xl min-w-[210px] py-1 overflow-hidden" style={dropdownStyle}>
+                  {profissional?.role === 'admin' && (
+                    <MenuItem onClick={() => { setMenuFinanceiroAberto(false); navigate('/financeiro/custos') }}>
+                      <span className="flex-1 flex items-center gap-2">📊 Planilha de Custos</span>
+                      <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '10px' }}>em breve</span>
+                    </MenuItem>
+                  )}
+                  <MenuItem onClick={() => { setMenuFinanceiroAberto(false); navigate('/financeiro/contracheque') }}>
+                    <span className="flex-1 flex items-center gap-2">💰 Contracheque</span>
+                    <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '10px' }}>em breve</span>
                   </MenuItem>
                 </div>
               </div>

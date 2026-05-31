@@ -10,6 +10,7 @@ import PainelAdmin from './pages/PainelAdmin'
 import MinhasTrocas from './pages/MinhasTrocas'
 import DesistenciasAbertas from './pages/DesistenciasAbertas'
 import RedefinirSenha from './pages/RedefinirSenha'
+import EmBreve from './pages/EmBreve'
 
 function RootRedirect() {
   const navigate = useNavigate()
@@ -63,6 +64,16 @@ export default function App() {
           />
 
           <Route path="/desistencias" element={<ProtectedRoute><DesistenciasAbertas /></ProtectedRoute>} />
+
+          {/* Plantão — parte médica */}
+          <Route path="/plantao/prescricao-ps" element={<ProtectedRoute><EmBreve icone="📋" titulo="Prescrição Pronto Socorro" descricao="Crie e gerencie prescrições do Pronto Socorro de forma digital, integrada ao prontuário do paciente." /></ProtectedRoute>} />
+          <Route path="/plantao/atestado" element={<ProtectedRoute><EmBreve icone="📄" titulo="Atestado Médico" descricao="Emita atestados médicos digitais com assinatura eletrônica e registro automático." /></ProtectedRoute>} />
+          <Route path="/plantao/prescricao-internacao" element={<ProtectedRoute><EmBreve icone="🏥" titulo="Prescrição de Internação" descricao="Gerenciamento completo de prescrições para pacientes internados, com controle de medicamentos e procedimentos." /></ProtectedRoute>} />
+          <Route path="/plantao/evolucao-internacao" element={<ProtectedRoute><EmBreve icone="📝" titulo="Evolução de Internação" descricao="Registre e acompanhe a evolução clínica dos pacientes internados com histórico completo." /></ProtectedRoute>} />
+
+          {/* Financeiro */}
+          <Route path="/financeiro/custos" element={<ProtectedRoute adminOnly><EmBreve icone="📊" titulo="Planilha de Custos" descricao="Controle financeiro completo da unidade: custos por plantão, por médico e por setor." /></ProtectedRoute>} />
+          <Route path="/financeiro/contracheque" element={<ProtectedRoute><EmBreve icone="💰" titulo="Contracheque" descricao="Visualize seus comprovantes de pagamento, histórico de plantões remunerados e deduções." /></ProtectedRoute>} />
 
           <Route path="/" element={<RootRedirect />} />
           <Route path="*" element={<RootRedirect />} />
