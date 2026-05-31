@@ -394,35 +394,36 @@ function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd, onNovoTur
                 className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
                 style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff' }} />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Início (HH:MM)</p>
-                <input
-                  type="text" inputMode="numeric" maxLength={5}
-                  value={customIni}
-                  onChange={e => {
-                    let v = e.target.value.replace(/[^0-9]/g, '')
-                    if (v.length >= 3) v = v.slice(0,2) + ':' + v.slice(2,4)
-                    setCustomIni(v)
-                  }}
-                  placeholder="07:00"
-                  className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
-                  style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff' }} />
-              </div>
-              <div>
-                <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Fim (HH:MM)</p>
-                <input
-                  type="text" inputMode="numeric" maxLength={5}
-                  value={customFim}
-                  onChange={e => {
-                    let v = e.target.value.replace(/[^0-9]/g, '')
-                    if (v.length >= 3) v = v.slice(0,2) + ':' + v.slice(2,4)
-                    setCustomFim(v)
-                  }}
-                  placeholder="13:00"
-                  className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
-                  style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff' }} />
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Início', val: customIni, set: setCustomIni },
+                { label: 'Fim',    val: customFim, set: setCustomFim },
+              ].map(({ label, val, set }) => {
+                const [h, m] = (val || '00:00').split(':')
+                const horas  = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
+                return (
+                  <div key={label}>
+                    <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>{label}</p>
+                    <div className="flex items-center gap-1">
+                      <select value={h} onChange={e => set(e.target.value + ':' + (m || '00'))}
+                        className="flex-1 py-2 rounded-lg text-sm text-center focus:outline-none"
+                        style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff' }}>
+                        {horas.map(hr => (
+                          <option key={hr} value={hr} style={{ background: '#0c1445' }}>{hr}h</option>
+                        ))}
+                      </select>
+                      <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>:</span>
+                      <select value={m || '00'} onChange={e => set((h || '00') + ':' + e.target.value)}
+                        className="w-14 py-2 rounded-lg text-sm text-center focus:outline-none"
+                        style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff' }}>
+                        {['00','15','30','45'].map(mn => (
+                          <option key={mn} value={mn} style={{ background: '#0c1445' }}>{mn}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
