@@ -285,53 +285,140 @@ function ModalPublicar({ aberto, onFechar, onPublicar }) {
 }
 
 
+// ── Helpers para matching setor/turno ────────────────────────────────────────
+const BASE_SETORES = ['Clínica', 'Pediatria', 'Enfermaria', 'Estabilização']
+const PERIODOS_STD = ['Diurno', 'Noturno', 'Cinderela']
+
+function sem(s) { // remove acentos e coloca em minúsculo
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+}
+
+// Encontra o setor_id no banco pelo nome base + período
+function encontrarSetor(setores, base, periodo) {
+  const nb = sem(base)
+  const np = sem(periodo)
+  // tenta match exato (nome contém base E período)
+  const exato = setores.find(s => { const n = sem(s.nome); return n.includes(nb) && n.includes(np) })
+  if (exato) return exato.id
+  // fallback: só base
+  return setores.find(s => sem(s.nome).includes(nb))?.id ?? null
+}
+
+// Encontra o tipo_turno_id pelo nome do período
+function encontrarTurno(tiposTurno, periodo) {
+  const np = sem(periodo)
+  return tiposTurno.find(t => sem(t.nome).includes(np))?.id ?? null
+}
+
 // ── Modal Add Grupo ───────────────────────────────────────────────────────────
-function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd }) {
-  const [setorId, setSetorId] = useState('')
-  const [tipoId, setTipoId] = useState('')
+function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd, onNovoTurno }) {
+  const [base, setBase]             = useState('Clínica')
+  const [periodo, setPeriodo]       = useState('Diurno')
+  const [customNome, setCustomNome] = useState('')
+  const [customIni, setCustomIni]   = useState('07:00')
+  const [customFim, setCustomFim]   = useState('13:00')
+  const [salvando, setSalvando]     = useState(false)
+  const [erro, setErro]             = useState('')
+
   if (!aberto) return null
 
-  // Exclui Clínica Extra e Enfermaria Cinderela; mantém as 4 categorias principais
-  const setoresFiltrados = setores.filter(s => {
-    const n = s.nome.toLowerCase()
-    if (n.includes('extra')) return false
-    if (n.includes('cinderela')) return false
-    return n.includes('cl') || n.includes('pediatria') || n.includes('enfermaria') || n.includes('estabiliza')
+  const isCustom = periodo === 'custom'
+
+  async function handleAdicionar() {
+    setErro('')
+    const periodoKey = isCustom ? customNome : periodo
+    const setor_id = encontrarSetor(setores, base, isCustom ? '' : periodo)
+    if (!setor_id) { setErro(`Setor "${base}" não encontrado no banco.`); return }
+
+    let tipo_turno_id
+    if (isCustom) {
+      if (!customNome || !customIni || !customFim) { setErro('Preencha nome, início e fim.'); return }
+      setSalvando(true)
+      const { data, error } = await supabase.from('tipos_turno')
+        .insert({ nome: customNome, hora_inicio: customIni + ':00', hora_fim: customFim + ':00' })
+        .select('id, nome, hora_inicio, hora_fim').single()
+      if (error) { setErro('Erro ao criar turno: ' + error.message); setSalvando(false); return }
+      tipo_turno_id = data.id
+      onNovoTurno?.(data)          // atualiza a lista de turnos no editor
+    } else {
+      tipo_turno_id = encontrarTurno(tiposTurno, periodo)
+      if (!tipo_turno_id) { setErro(`Turno "${periodo}" não encontrado. Tente "Personalizado".`); return }
+    }
+
+    setSalvando(false)
+    onAdd(setor_id, tipo_turno_id)
+    onFechar()
+  }
+
+  const btnStyle = (ativo) => ({
+    background: ativo ? '#0d9488' : 'rgba(255,255,255,0.07)',
+    color: ativo ? '#fff' : 'rgba(255,255,255,0.5)',
+    border: `1px solid ${ativo ? '#0d9488' : 'rgba(255,255,255,0.13)'}`,
+    borderRadius: 8, padding: '8px 10px', fontSize: 12, fontWeight: 600,
+    cursor: 'pointer', textAlign: 'left', transition: 'all .15s',
   })
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div className="rounded-2xl p-6 w-full max-w-sm" style={{ background: '#0c1445', border: '1px solid rgba(255,255,255,0.2)' }}>
-        <h2 className="text-base font-bold text-white mb-4">Adicionar grupo</h2>
-        <div className="space-y-3 mb-4">
-          <div>
-            <label className="text-xs block mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Setor</label>
-            <select value={setorId} onChange={e => setSetorId(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg text-sm"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff' }}>
-              <option value="" style={{ background: '#0c1445' }}>Selecione…</option>
-              {setoresFiltrados.map(s => <option key={s.id} value={s.id} style={{ background: '#0c1445' }}>{s.nome}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs block mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Tipo de turno</label>
-            <select value={tipoId} onChange={e => setTipoId(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg text-sm"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff' }}>
-              <option value="" style={{ background: '#0c1445' }}>Selecione…</option>
-              {tiposTurno.map(t => (
-                <option key={t.id} value={t.id} style={{ background: '#0c1445' }}>
-                  {t.nome} ({t.hora_inicio?.slice(0, 5)}–{t.hora_fim?.slice(0, 5)})
-                </option>
-              ))}
-            </select>
+      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ background: '#0c1445', border: '1px solid rgba(255,255,255,0.2)' }}>
+        <h2 className="text-base font-bold text-white">Adicionar grupo</h2>
+
+        {/* Setor */}
+        <div>
+          <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.45)' }}>Setor</p>
+          <div className="grid grid-cols-2 gap-2">
+            {BASE_SETORES.map(b => (
+              <button key={b} onClick={() => setBase(b)} style={btnStyle(base === b)}>{b}</button>
+            ))}
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={onFechar} className="flex-1" style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.5)' }}>Cancelar</Button>
-          <Button onClick={() => { if (setorId && tipoId) { onAdd(parseInt(setorId), parseInt(tipoId)); setSetorId(''); setTipoId(''); onFechar() } }}
-            disabled={!setorId || !tipoId} className="flex-1" style={{ background: '#0d9488', color: '#fff' }}>
-            Adicionar
+
+        {/* Período */}
+        <div>
+          <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.45)' }}>Período / Turno</p>
+          <div className="grid grid-cols-2 gap-2">
+            {PERIODOS_STD.map(p => (
+              <button key={p} onClick={() => setPeriodo(p)} style={btnStyle(periodo === p)}>{p}</button>
+            ))}
+            <button onClick={() => setPeriodo('custom')} style={btnStyle(isCustom)}>Personalizado…</button>
+          </div>
+        </div>
+
+        {/* Turno personalizado */}
+        {isCustom && (
+          <div className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div>
+              <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Nome do turno</p>
+              <input value={customNome} onChange={e => setCustomNome(e.target.value)}
+                placeholder="Ex: Cinderela 07h–13h"
+                className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff' }} />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Início</p>
+                <input type="time" value={customIni} onChange={e => setCustomIni(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', colorScheme: 'dark' }} />
+              </div>
+              <div>
+                <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Fim</p>
+                <input type="time" value={customFim} onChange={e => setCustomFim(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', colorScheme: 'dark' }} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {erro && <p className="text-xs rounded-lg p-2" style={{ color: '#fca5a5', background: 'rgba(239,68,68,0.1)' }}>{erro}</p>}
+
+        <div className="flex gap-2 pt-1">
+          <Button variant="outline" onClick={onFechar} className="flex-1"
+            style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.5)' }}>Cancelar</Button>
+          <Button onClick={handleAdicionar} disabled={salvando} className="flex-1"
+            style={{ background: '#0d9488', color: '#fff' }}>
+            {salvando ? 'Criando…' : 'Adicionar'}
           </Button>
         </div>
       </div>
@@ -783,7 +870,9 @@ export default function EditorEscalaTemplate() {
       </main>
 
       <ModalPublicar aberto={modalPublicar} onFechar={() => setModalPublicar(false)} onPublicar={handlePublicar} />
-      <ModalAddGrupo aberto={modalAddGrupo} onFechar={() => setModalAddGrupo(false)} setores={setores} tiposTurno={tiposTurno} onAdd={addGrupo} />
+      <ModalAddGrupo aberto={modalAddGrupo} onFechar={() => setModalAddGrupo(false)}
+        setores={setores} tiposTurno={tiposTurno} onAdd={addGrupo}
+        onNovoTurno={t => setTiposTurno(prev => [...prev, t])} />
 
       {/* ── Painel de erros (dev) ── */}
       {erroSave && (
