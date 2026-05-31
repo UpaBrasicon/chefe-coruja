@@ -24,15 +24,16 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
   const [dropPos, setDropPos] = useState(null)
   const cellRef = useRef()
   const inputRef = useRef()
+  const cancelBlurRef = useRef(false)
 
   const nomeAtual = cellData?.profissional?.nome || cellData?.nome_livre || ''
 
   const filtrados = useMemo(() => {
     const b = busca.trim().toLowerCase()
-    if (!b) return profissionais.slice(0, 20)
+    if (!b) return profissionais.slice(0, 5)
     return profissionais.filter(p =>
       p.nome.toLowerCase().includes(b) || (p.crm || '').toLowerCase().includes(b)
-    ).slice(0, 20)
+    ).slice(0, 5)
   }, [busca, profissionais])
 
   function calcPos() {
@@ -85,7 +86,10 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
           ref={inputRef}
           value={busca}
           onChange={e => setBusca(e.target.value)}
-          onBlur={() => setTimeout(salvarNomeLivre, 160)}
+          onBlur={() => setTimeout(() => {
+            if (cancelBlurRef.current) { cancelBlurRef.current = false; return }
+            salvarNomeLivre()
+          }, 200)}
           onKeyDown={e => {
             if (e.key === 'Enter') salvarNomeLivre()
             if (e.key === 'Escape') fechar()
@@ -104,7 +108,7 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
           }}
         >
           <span className="text-xs truncate flex-1" style={{ color: nomeAtual ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 11 }}>
-            {nomeAtual || '—'}
+            {nomeAtual || 'NOME'}
           </span>
           {nomeAtual && (
             <button
@@ -119,7 +123,7 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
       {/* Dropdown fixo no viewport via portal — não rola junto com a página */}
       {editando && dropPos && createPortal(
         <div
-          onMouseDown={e => e.preventDefault()}
+          onMouseDown={e => { e.preventDefault(); cancelBlurRef.current = true }}
           style={{
             position: 'fixed',
             top: dropPos.top,
@@ -146,7 +150,7 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
           )}
           {filtrados.map(p => (
             <button key={p.id}
-              onMouseDown={e => { e.preventDefault(); salvarProf(p) }}
+              onMouseDown={e => { e.preventDefault(); cancelBlurRef.current = true; salvarProf(p) }}
               className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-50">
               <p className="text-xs font-medium" style={{ color: '#1e293b' }}>{p.nome}</p>
               {p.crm && <p style={{ fontSize: 10, color: '#94a3b8' }}>CRM {p.crm}</p>}
@@ -493,7 +497,7 @@ export default function EditorEscalaTemplate() {
   const BORDER_COL = '1px solid rgba(255,255,255,0.08)'
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(145deg, #0c1445 0%, #0e2d6e 45%, #0e4d8a 100%)' }}>
+    <div style={{ minHeight: '100vh', overflow: 'hidden', background: 'linear-gradient(145deg, #0c1445 0%, #0e2d6e 45%, #0e4d8a 100%)' }}>
       <Header />
       <main className="px-2 sm:px-4 pb-16 pt-4">
 
@@ -527,7 +531,7 @@ export default function EditorEscalaTemplate() {
         </div>
 
         {/* Grade */}
-        <div className="rounded-2xl overflow-x-auto" style={GLASS}>
+        <div className="rounded-2xl" style={{ ...GLASS, overflowX: 'auto', overflowY: 'hidden' }}>
           {loading ? (
             <div className="text-center py-16"><p style={{ color: 'rgba(255,255,255,0.4)' }}>Carregando template…</p></div>
           ) : (
