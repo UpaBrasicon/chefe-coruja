@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import TabMedicos from '../components/admin/TabMedicos'
 import TabEscalaAdmin from '../components/admin/TabEscalaAdmin'
+import TabImportarProfissionais from '../components/admin/TabImportarProfissionais'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Button } from '../components/ui/button'
 
@@ -145,9 +146,14 @@ export default function PainelAdmin() {
     <div className="min-h-screen" style={{ background: 'var(--cor-fundo)' }}>
       <Header />
       <main className="max-w-5xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
           <Link to="/escala" className="text-sm underline" style={{ color: 'var(--cor-texto-suave)' }}>← Voltar</Link>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--cor-texto)' }}>Painel Admin</h1>
+          <h1 className="text-xl font-bold flex-1" style={{ color: 'var(--cor-texto)' }}>Painel Admin</h1>
+          <Link to="/admin/editor-escala">
+            <Button style={{ background: 'var(--cor-primaria)', color: '#fff', fontWeight: 600 }}>
+              Editor de Escala
+            </Button>
+          </Link>
         </div>
 
         {/* Alerta 72h */}
@@ -166,7 +172,7 @@ export default function PainelAdmin() {
           <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}><img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" /><p>Carregando...</p></div>
         ) : (
           <Tabs defaultValue="medicos">
-            <TabsList className="w-full mb-5 grid grid-cols-4 text-xs sm:text-sm">
+            <TabsList className="w-full mb-5 grid grid-cols-5 text-xs sm:text-sm">
               <TabsTrigger value="medicos" className="relative px-1 sm:px-3">
                 <span className="hidden sm:inline">Médicos</span>
                 <span className="sm:hidden">Médicos</span>
@@ -183,9 +189,11 @@ export default function PainelAdmin() {
                 )}
               </TabsTrigger>
               <TabsTrigger value="trocas" className="px-1 sm:px-3">Trocas</TabsTrigger>
+              <TabsTrigger value="importar" className="px-1 sm:px-3">Importar</TabsTrigger>
             </TabsList>
 
             <TabsContent value="medicos"><TabMedicos /></TabsContent>
+            <TabsContent value="importar"><TabImportarProfissionais /></TabsContent>
 
             <TabsContent value="escala"><TabEscalaAdmin /></TabsContent>
 

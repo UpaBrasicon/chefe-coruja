@@ -11,6 +11,7 @@ import MinhasTrocas from './pages/MinhasTrocas'
 import DesistenciasAbertas from './pages/DesistenciasAbertas'
 import RedefinirSenha from './pages/RedefinirSenha'
 import EmBreve from './pages/EmBreve'
+import EditorEscalaTemplate from './pages/EditorEscalaTemplate'
 
 function RootRedirect() {
   const navigate = useNavigate()
@@ -64,6 +65,15 @@ export default function App() {
           />
 
           <Route path="/desistencias" element={<ProtectedRoute><DesistenciasAbertas /></ProtectedRoute>} />
+
+          <Route
+            path="/admin/editor-escala"
+            element={
+              <ProtectedRoute adminOnly>
+                <EditorEscalaTemplate />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Plantão — parte médica */}
           <Route path="/plantao/prescricao-ps" element={<ProtectedRoute><EmBreve icone="📋" titulo="Prescrição Pronto Socorro" descricao="Crie e gerencie prescrições do Pronto Socorro de forma digital, integrada ao prontuário do paciente." /></ProtectedRoute>} />
