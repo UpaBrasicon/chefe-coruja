@@ -2,268 +2,393 @@ import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import PlantaoCard from './PlantaoCard'
-import FiltrosEscala from './FiltrosEscala'
 import { Button } from './ui/button'
 
-const MESES_PT = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-]
+const MESES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+const MESES_LONGO = ['janeiro','fevereiro','março','abril','maio','junho',
+  'julho','agosto','setembro','outubro','novembro','dezembro']
+const DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
+const DIAS_NOME = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado']
 
-const DIAS_PT = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado']
+// ── Feriados ──────────────────────────────────────────────────────────────────
+function calcularPascoa(ano) {
+  const a = ano % 19, b = Math.floor(ano / 100), c = ano % 100
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25)
+  const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7
+  const m = Math.floor((a + 11 * h + 22 * l) / 451)
+  const mes = Math.floor((h + l - 7 * m + 114) / 31)
+  const dia = ((h + l - 7 * m + 114) % 31) + 1
+  return new Date(ano, mes - 1, dia)
+}
 
-const FILTROS_PADRAO = { setor: '', turno: 'todos', soMeus: false, soVagos: false }
+function toStr(date) {
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${m}-${d}`
+}
 
+function calcularFeriados(ano) {
+  const f = {}
+  const add = (mes, dia, nome) => {
+    f[`${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`] = nome
+  }
+  add(1,  1,  'Confraternização Universal')
+  add(4,  21, 'Tiradentes')
+  add(5,  1,  'Dia do Trabalho')
+  add(9,  7,  'Independência do Brasil')
+  add(10, 12, 'N. Sra. Aparecida')
+  add(11, 2,  'Finados')
+  add(11, 15, 'Proclamação da República')
+  add(11, 20, 'Consciência Negra')
+  add(12, 25, 'Natal')
+
+  const pascoa = calcularPascoa(ano)
+  const relativo = (dias, nome) => {
+    const d = new Date(pascoa); d.setDate(d.getDate() + dias)
+    f[toStr(d)] = nome
+  }
+  relativo(-48, 'Carnaval')
+  relativo(-47, 'Carnaval')
+  relativo(-2,  'Sexta-feira Santa')
+  relativo(0,   'Páscoa')
+  relativo(60,  'Corpus Christi')
+  return f
+}
+
+// ── Calendário ────────────────────────────────────────────────────────────────
+function gerarDias(mes, ano) {
+  const primeiroDia = new Date(ano, mes - 1, 1).getDay()
+  const ultimoDia   = new Date(ano, mes, 0).getDate()
+  const dias = []
+  for (let i = 0; i < primeiroDia; i++) dias.push(null)
+  for (let d = 1; d <= ultimoDia; d++) {
+    dias.push(`${ano}-${String(mes).padStart(2,'0')}-${String(d).padStart(2,'0')}`)
+  }
+  const resto = (7 - (dias.length % 7)) % 7
+  for (let i = 0; i < resto; i++) dias.push(null)
+  return dias
+}
+
+function formatarDataLonga(dateStr) {
+  const data = new Date(`${dateStr}T12:00:00`)
+  const [, mes, dia] = dateStr.split('-')
+  return `${DIAS_NOME[data.getDay()]}, ${parseInt(dia)} de ${MESES_LONGO[parseInt(mes) - 1]}`
+}
+
+// ── Componente principal ──────────────────────────────────────────────────────
 export default function EscalaCalendario() {
   const { profissional } = useAuth()
-
-  const [mes, setMes] = useState(3)
-  const [ano, setAno] = useState(2026)
-  const [plantoes, setPlantoes] = useState([])
-  const [plantoesPendentes, setPlantoesPendentes] = useState(new Set())
+  const hoje = new Date()
+  const [mes, setMes]   = useState(hoje.getMonth() + 1)
+  const [ano, setAno]   = useState(hoje.getFullYear())
+  const [plantoes, setPlantoes]                         = useState([])
+  const [plantoesPendentes, setPlantoesPendentes]       = useState(new Set())
   const [plantoesSemDesistencia, setPlantoesSemDesistencia] = useState(new Set())
   const [carregando, setCarregando] = useState(true)
-  const [erro, setErro] = useState('')
-  const [filtros, setFiltros] = useState(FILTROS_PADRAO)
+  const [diaSelecionado, setDiaSelecionado] = useState(null)
+  const [filtroDetalhe, setFiltroDetalhe]   = useState('todos')
+
+  const feriados      = useMemo(() => calcularFeriados(ano), [ano])
+  const diasCalendario = useMemo(() => gerarDias(mes, ano), [mes, ano])
+  const hojeStr       = toStr(hoje)
 
   useEffect(() => {
     async function buscar() {
       setCarregando(true)
-      setErro('')
+      const inicio = `${ano}-${String(mes).padStart(2,'0')}-01`
+      const fim    = `${ano}-${String(mes).padStart(2,'0')}-${new Date(ano, mes, 0).getDate()}`
 
-      const inicio = `${ano}-${String(mes).padStart(2, '0')}-01`
-      const ultimoDia = new Date(ano, mes, 0).getDate()
-      const fim = `${ano}-${String(mes).padStart(2, '0')}-${ultimoDia}`
-
-      const [resPlantoes, resTrocas, resDesistencias] = await Promise.all([
-        supabase
-          .from('plantoes')
-          .select(`
-            id, data, slot_num, status, observacoes, profissional_id,
+      const [resP, resT, resD] = await Promise.all([
+        supabase.from('plantoes')
+          .select(`id, data, slot_num, status, observacoes, profissional_id,
             setores(id, nome, cor, periodo_padrao, ordem_exibicao),
             tipos_turno(nome, hora_inicio, hora_fim),
-            profissionais(id, nome)
-          `)
-          .gte('data', inicio)
-          .lte('data', fim)
-          .order('data', { ascending: true })
-          .order('slot_num', { ascending: true }),
+            profissionais(id, nome)`)
+          .gte('data', inicio).lte('data', fim)
+          .order('data').order('slot_num'),
         supabase.from('trocas').select('plantao_id').eq('status', 'pendente'),
-        supabase.from('desistencias').select('plantao_id, responsavel_ate').eq('status', 'aguardando_candidato'),
+        supabase.from('desistencias').select('plantao_id').eq('status', 'aguardando_candidato'),
       ])
 
-      if (resPlantoes.error) {
-        setErro('Erro ao carregar escala: ' + resPlantoes.error.message)
-      } else {
-        setPlantoes(resPlantoes.data ?? [])
-        setPlantoesPendentes(new Set((resTrocas.data ?? []).map(t => t.plantao_id)))
-        setPlantoesSemDesistencia(new Set((resDesistencias.data ?? []).map(d => d.plantao_id)))
-      }
+      setPlantoes(resP.data ?? [])
+      setPlantoesPendentes(new Set((resT.data ?? []).map(t => t.plantao_id)))
+      setPlantoesSemDesistencia(new Set((resD.data ?? []).map(d => d.plantao_id)))
       setCarregando(false)
     }
     buscar()
-    setFiltros(FILTROS_PADRAO)
+    setDiaSelecionado(null)
+    setFiltroDetalhe('todos')
   }, [mes, ano])
 
-  function mesAnterior() {
-    if (mes === 1) { setMes(12); setAno(a => a - 1) }
-    else setMes(m => m - 1)
-  }
-
-  function mesSeguinte() {
-    if (mes === 12) { setMes(1); setAno(a => a + 1) }
-    else setMes(m => m + 1)
-  }
-
-  // Lista de setores únicos para o filtro
-  const setoresUnicos = useMemo(() => {
+  const plantoesPorDia = useMemo(() => {
     const mapa = {}
     for (const p of plantoes) {
-      if (p.setores && !mapa[p.setores.id]) mapa[p.setores.id] = p.setores
-    }
-    return Object.values(mapa).sort((a, b) => a.ordem_exibicao - b.ordem_exibicao)
-  }, [plantoes])
-
-  // Aplica filtros
-  const plantoesFiltrados = useMemo(() => {
-    return plantoes.filter(p => {
-      if (filtros.setor && String(p.setores?.id) !== filtros.setor) return false
-      if (filtros.turno !== 'todos' && p.setores?.periodo_padrao !== filtros.turno) return false
-      if (filtros.soMeus && p.profissional_id !== profissional?.id) return false
-      if (filtros.soVagos && !(p.status === 'vago' || !p.profissional_id)) return false
-      return true
-    })
-  }, [plantoes, filtros, profissional])
-
-  // Agrupa por data
-  const porDia = useMemo(() => {
-    const mapa = {}
-    for (const p of plantoesFiltrados) {
       if (!mapa[p.data]) mapa[p.data] = []
       mapa[p.data].push(p)
     }
-    for (const dia of Object.keys(mapa)) {
-      mapa[dia].sort((a, b) => {
-        const diff = (a.setores?.ordem_exibicao ?? 99) - (b.setores?.ordem_exibicao ?? 99)
-        return diff !== 0 ? diff : a.slot_num - b.slot_num
-      })
-    }
     return mapa
-  }, [plantoesFiltrados])
+  }, [plantoes])
 
-  const dias = Object.keys(porDia).sort()
+  const plantoesDodia = useMemo(() => {
+    if (!diaSelecionado) return []
+    const lista = (plantoesPorDia[diaSelecionado] ?? []).slice().sort((a, b) => {
+      const d = (a.setores?.ordem_exibicao ?? 99) - (b.setores?.ordem_exibicao ?? 99)
+      return d !== 0 ? d : a.slot_num - b.slot_num
+    })
+    return lista.filter(p => {
+      if (filtroDetalhe === 'meus')      return p.profissional_id === profissional?.id
+      if (filtroDetalhe === 'vagos')     return p.status === 'vago' || !p.profissional_id
+      if (filtroDetalhe === 'pendentes') return plantoesPendentes.has(p.id)
+      return true
+    })
+  }, [diaSelecionado, plantoesPorDia, filtroDetalhe, profissional, plantoesPendentes])
+
+  // Contadores para filtros do painel
+  const contadores = useMemo(() => {
+    if (!diaSelecionado) return {}
+    const lista = plantoesPorDia[diaSelecionado] ?? []
+    return {
+      todos:     lista.length,
+      meus:      lista.filter(p => p.profissional_id === profissional?.id).length,
+      vagos:     lista.filter(p => p.status === 'vago' || !p.profissional_id).length,
+      pendentes: lista.filter(p => plantoesPendentes.has(p.id)).length,
+    }
+  }, [diaSelecionado, plantoesPorDia, profissional, plantoesPendentes])
+
+  function mesAnterior() { mes === 1 ? (setMes(12), setAno(a => a - 1)) : setMes(m => m - 1) }
+  function mesSeguinte() { mes === 12 ? (setMes(1),  setAno(a => a + 1)) : setMes(m => m + 1) }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pb-12">
-      {/* Navegação de mês */}
-      <div
-        className="flex items-center justify-between py-4 sticky top-[56px] z-10"
-        style={{ background: 'var(--cor-fundo)' }}
-      >
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={mesAnterior}
-          style={{ borderColor: 'var(--cor-borda)', color: 'var(--cor-texto)' }}
-        >
-          ‹
-        </Button>
-        <h2 className="font-semibold text-lg" style={{ color: 'var(--cor-texto)' }}>
-          {MESES_PT[mes - 1]} {ano}
-        </h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={mesSeguinte}
-          style={{ borderColor: 'var(--cor-borda)', color: 'var(--cor-texto)' }}
-        >
-          ›
-        </Button>
+    <div className="max-w-6xl mx-auto px-3 sm:px-4 pb-12">
+      <style>{`
+        .painel-dia { animation: slideInPainel .2s ease forwards; }
+        @keyframes slideInPainel {
+          from { opacity:0; transform:translateX(24px) scale(.98); }
+          to   { opacity:1; transform:translateX(0)   scale(1); }
+        }
+        .dia-btn { transition: transform .15s ease, box-shadow .15s ease; }
+        .dia-btn:hover { transform: scale(1.07); z-index:2; }
+        .dia-btn:active { transform: scale(.97); }
+      `}</style>
+
+      {/* Navegação */}
+      <div className="flex items-center justify-between py-4 sticky top-[56px] z-10"
+        style={{ background: 'var(--cor-fundo)' }}>
+        <Button variant="outline" size="sm" onClick={mesAnterior}
+          style={{ borderColor: 'var(--cor-borda)', color: 'var(--cor-texto)', minWidth: 36 }}>‹</Button>
+        <div className="text-center select-none">
+          <h2 className="font-bold text-xl leading-tight" style={{ color: 'var(--cor-texto)' }}>
+            {MESES_PT[mes - 1]}
+          </h2>
+          <p className="text-sm font-medium" style={{ color: 'var(--cor-texto-suave)' }}>{ano}</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={mesSeguinte}
+          style={{ borderColor: 'var(--cor-borda)', color: 'var(--cor-texto)', minWidth: 36 }}>›</Button>
       </div>
 
-      {/* Filtros */}
-      {!carregando && plantoes.length > 0 && (
-        <FiltrosEscala
-          setores={setoresUnicos}
-          filtros={filtros}
-          onChange={setFiltros}
-          totalSlots={plantoes.length}
-          slotsVisiveis={plantoesFiltrados.length}
-        />
-      )}
-
-      {/* Estados */}
-      {carregando && (
-        <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}>
-          <img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" />
+      {carregando ? (
+        <div className="text-center py-20" style={{ color: 'var(--cor-texto-suave)' }}>
+          <img src="/logo.png" alt="" className="h-10 w-10 rounded-full mx-auto mb-3 opacity-60 animate-pulse" />
           <p>Carregando escala...</p>
         </div>
-      )}
+      ) : (
+        <div className="flex gap-3 items-start">
 
-      {erro && (
-        <p className="text-center py-8 px-4 rounded-lg" style={{ color: 'var(--cor-vago)', background: '#FEF2F2' }}>
-          {erro}
-        </p>
-      )}
+          {/* ── Grade calendário ── */}
+          <div className={diaSelecionado ? 'hidden md:block md:flex-1 min-w-0' : 'w-full'}>
 
-      {!carregando && !erro && plantoes.length === 0 && (
-        <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}>
-          <p className="text-4xl mb-3">📭</p>
-          <p>Nenhum plantão encontrado para este mês.</p>
-        </div>
-      )}
+            {/* Cabeçalho dias */}
+            <div className="grid grid-cols-7 mb-1">
+              {DIAS_SEMANA.map((d, i) => (
+                <div key={d} className="text-center py-1.5 text-xs font-bold tracking-wide"
+                  style={{ color: i === 0 ? '#ef4444' : 'var(--cor-texto-suave)' }}>
+                  {d}
+                </div>
+              ))}
+            </div>
 
-      {!carregando && !erro && plantoes.length > 0 && dias.length === 0 && (
-        <div className="text-center py-12" style={{ color: 'var(--cor-texto-suave)' }}>
-          <p className="text-3xl mb-3">🔍</p>
-          <p>Nenhum plantão corresponde aos filtros selecionados.</p>
-          <button
-            onClick={() => setFiltros(FILTROS_PADRAO)}
-            className="mt-3 text-sm underline"
-            style={{ color: 'var(--cor-primaria)' }}
-          >
-            Limpar filtros
-          </button>
-        </div>
-      )}
+            {/* Quadrados */}
+            <div className="grid grid-cols-7 gap-1">
+              {diasCalendario.map((data, idx) => {
+                if (!data) return <div key={idx} />
 
-      {/* Lista de dias */}
-      <div className="space-y-4">
-        {dias.map(dia => (
-          <DiaCard
-            key={dia}
-            dia={dia}
-            slots={porDia[dia]}
-            profissionalId={profissional?.id}
-            plantoesPendentes={plantoesPendentes}
-            plantoesSemDesistencia={plantoesSemDesistencia}
-            onTrocaSolicitada={() => setPlantoesPendentes(prev => new Set(prev))}
-            onDesistencia={() => setPlantoesSemDesistencia(prev => new Set(prev))}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
+                const lista     = plantoesPorDia[data] ?? []
+                const temMeu    = lista.some(p => p.profissional_id === profissional?.id)
+                const temVaga   = lista.some(p => p.status === 'vago' || !p.profissional_id)
+                const temTroca  = lista.some(p => plantoesPendentes.has(p.id))
+                const feriado   = feriados[data]
+                const isHoje    = data === hojeStr
+                const isSel     = data === diaSelecionado
+                const ehDom     = new Date(`${data}T12:00`).getDay() === 0
+                const dia       = parseInt(data.split('-')[2], 10)
 
-function DiaCard({ dia, slots, profissionalId, plantoesPendentes, plantoesSemDesistencia, onTrocaSolicitada, onDesistencia }) {
-  const [, mesStr, diaStr] = dia.split('-')
-  const data = new Date(`${dia}T12:00:00`)
-  const nomeDia = DIAS_PT[data.getDay()]
-  const diurno = slots.filter(s => s.setores?.periodo_padrao === 'diurno')
-  const noturno = slots.filter(s => s.setores?.periodo_padrao === 'noturno')
-  const temMeuPlantao = slots.some(s => s.profissional_id === profissionalId)
+                return (
+                  <button
+                    key={data}
+                    onClick={() => {
+                      setDiaSelecionado(prev => prev === data ? null : data)
+                      setFiltroDetalhe('todos')
+                    }}
+                    className="dia-btn aspect-square rounded-xl flex flex-col items-center justify-start pt-1.5 pb-1 px-0.5 relative"
+                    style={{
+                      background: isSel
+                        ? 'var(--cor-primaria)'
+                        : temMeu
+                        ? 'rgba(13,148,136,0.09)'
+                        : feriado
+                        ? 'rgba(239,68,68,0.05)'
+                        : 'var(--cor-superficie)',
+                      border: `1.5px solid ${
+                        isSel   ? 'var(--cor-primaria)'
+                        : isHoje ? 'var(--cor-primaria)'
+                        : temMeu ? 'rgba(13,148,136,0.3)'
+                        : feriado ? 'rgba(239,68,68,0.2)'
+                        : 'var(--cor-borda)'}`,
+                      boxShadow: isSel ? '0 4px 16px rgba(13,148,136,0.35)' : '',
+                    }}
+                  >
+                    {/* Número */}
+                    <span className="text-xs sm:text-sm font-bold leading-none"
+                      style={{
+                        color: isSel ? '#fff'
+                          : feriado || ehDom ? '#ef4444'
+                          : isHoje ? 'var(--cor-primaria)'
+                          : 'var(--cor-texto)',
+                      }}>
+                      {dia}
+                    </span>
 
-  return (
-    <div
-      className="rounded-xl overflow-hidden shadow-sm"
-      style={{
-        border: `1px solid ${temMeuPlantao ? 'var(--cor-primaria)' : 'var(--cor-borda)'}`,
-        background: 'var(--cor-superficie)',
-      }}
-    >
-      <div
-        className="px-4 py-2 flex items-center justify-between"
-        style={{
-          background: temMeuPlantao ? 'var(--cor-primaria)' : '#F1F5F9',
-          color: temMeuPlantao ? '#fff' : 'var(--cor-texto)',
-        }}
-      >
-        <span className="font-semibold">
-          {parseInt(diaStr, 10)} de {MESES_PT[parseInt(mesStr, 10) - 1]}
-        </span>
-        <span className="text-sm opacity-75 capitalize">{nomeDia}</span>
-      </div>
+                    {/* Nome feriado mini */}
+                    {feriado && (
+                      <span className="hidden sm:block text-center leading-none mt-0.5 px-0.5 truncate w-full"
+                        style={{ fontSize: '7px', color: isSel ? 'rgba(255,255,255,0.8)' : '#ef4444' }}>
+                        {feriado.split(' ')[0]}
+                      </span>
+                    )}
 
-      <div className="p-3">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {diurno.length > 0 && (
-            <section>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--cor-texto-suave)' }}>
-                ☀ Diurno
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-2">
-                {diurno.map(p => (
-                  <PlantaoCard key={p.id} plantao={p} profissionalId={profissionalId} temTrocaPendente={plantoesPendentes?.has(p.id)} temDesistencia={plantoesSemDesistencia?.has(p.id)} onTrocaSolicitada={onTrocaSolicitada} onDesistencia={onDesistencia} />
+                    {/* Dots indicadores */}
+                    {(temMeu || temVaga || temTroca) && (
+                      <div className="flex gap-0.5 mt-auto justify-center flex-wrap">
+                        {temMeu   && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: isSel ? '#fff' : '#0d9488' }} />}
+                        {temVaga  && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: isSel ? 'rgba(255,255,255,0.7)' : '#f59e0b' }} />}
+                        {temTroca && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: isSel ? 'rgba(255,255,255,0.7)' : '#8b5cf6' }} />}
+                      </div>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Legenda */}
+            <div className="flex items-center gap-3 sm:gap-5 mt-4 px-1 flex-wrap">
+              {[
+                { cor: '#0d9488', label: 'Meu plantão' },
+                { cor: '#f59e0b', label: 'Vaga aberta' },
+                { cor: '#8b5cf6', label: 'Troca pendente' },
+                { cor: '#ef4444', label: 'Feriado / Dom.' },
+              ].map(l => (
+                <div key={l.label} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--cor-texto-suave)' }}>
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: l.cor }} />
+                  {l.label}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Painel lateral do dia ── */}
+          {diaSelecionado && (
+            <div className="painel-dia w-full md:w-72 lg:w-80 flex-shrink-0 rounded-2xl overflow-hidden"
+              style={{
+                border: '1px solid var(--cor-borda)',
+                background: 'var(--cor-superficie)',
+                boxShadow: '0 8px 32px rgba(13,148,136,0.12)',
+              }}>
+
+              {/* Header */}
+              <div className="px-4 py-3 flex items-start justify-between"
+                style={{ background: 'var(--cor-primaria)' }}>
+                <div>
+                  <p className="text-white font-bold text-sm leading-tight">
+                    {formatarDataLonga(diaSelecionado)}
+                  </p>
+                  {feriados[diaSelecionado] && (
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                      🎉 {feriados[diaSelecionado]}
+                    </p>
+                  )}
+                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                    {(plantoesPorDia[diaSelecionado] ?? []).length} plantão(ões) no dia
+                  </p>
+                </div>
+                <button onClick={() => setDiaSelecionado(null)}
+                  className="text-white/60 hover:text-white text-lg leading-none mt-0.5 transition-colors ml-2">
+                  ✕
+                </button>
+              </div>
+
+              {/* Filtros rápidos */}
+              <div className="flex gap-1 p-2 flex-wrap" style={{ borderBottom: '1px solid var(--cor-borda)' }}>
+                {[
+                  { key: 'todos',     emoji: '',   label: 'Todos',   n: contadores.todos },
+                  { key: 'meus',      emoji: '🟢', label: 'Meus',    n: contadores.meus },
+                  { key: 'vagos',     emoji: '🟡', label: 'Vagos',   n: contadores.vagos },
+                  { key: 'pendentes', emoji: '🟣', label: 'Trocas',  n: contadores.pendentes },
+                ].map(f => (
+                  <button key={f.key} onClick={() => setFiltroDetalhe(f.key)}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all"
+                    style={{
+                      background: filtroDetalhe === f.key ? 'var(--cor-primaria)' : 'var(--cor-fundo)',
+                      color: filtroDetalhe === f.key ? '#fff' : 'var(--cor-texto-suave)',
+                      border: `1px solid ${filtroDetalhe === f.key ? 'var(--cor-primaria)' : 'var(--cor-borda)'}`,
+                    }}>
+                    {f.emoji} {f.label}
+                    {f.n > 0 && (
+                      <span className="ml-0.5 text-xs font-bold"
+                        style={{ color: filtroDetalhe === f.key ? 'rgba(255,255,255,0.8)' : 'var(--cor-texto-suave)' }}>
+                        ({f.n})
+                      </span>
+                    )}
+                  </button>
                 ))}
               </div>
-            </section>
-          )}
 
-          {noturno.length > 0 && (
-            <section>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--cor-texto-suave)' }}>
-                🌙 Noturno
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-2">
-                {noturno.map(p => (
-                  <PlantaoCard key={p.id} plantao={p} profissionalId={profissionalId} temTrocaPendente={plantoesPendentes?.has(p.id)} temDesistencia={plantoesSemDesistencia?.has(p.id)} onTrocaSolicitada={onTrocaSolicitada} onDesistencia={onDesistencia} />
-                ))}
+              {/* Lista */}
+              <div className="overflow-y-auto" style={{ maxHeight: '60vh' }}>
+                {plantoesDodia.length === 0 ? (
+                  <div className="text-center py-10">
+                    <p className="text-3xl mb-2">📭</p>
+                    <p className="text-sm" style={{ color: 'var(--cor-texto-suave)' }}>
+                      Nenhum plantão encontrado.
+                    </p>
+                    {filtroDetalhe !== 'todos' && (
+                      <button onClick={() => setFiltroDetalhe('todos')}
+                        className="mt-2 text-xs underline" style={{ color: 'var(--cor-primaria)' }}>
+                        Ver todos
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-2 space-y-2">
+                    {plantoesDodia.map(p => (
+                      <PlantaoCard
+                        key={p.id}
+                        plantao={p}
+                        profissionalId={profissional?.id}
+                        temTrocaPendente={plantoesPendentes?.has(p.id)}
+                        temDesistencia={plantoesSemDesistencia?.has(p.id)}
+                        onTrocaSolicitada={() => setPlantoesPendentes(prev => new Set(prev))}
+                        onDesistencia={() => setPlantoesSemDesistencia(prev => new Set(prev))}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            </section>
+            </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   )
 }
