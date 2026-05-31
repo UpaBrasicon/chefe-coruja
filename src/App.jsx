@@ -11,12 +11,14 @@ import MinhasTrocas from './pages/MinhasTrocas'
 import DesistenciasAbertas from './pages/DesistenciasAbertas'
 import RedefinirSenha from './pages/RedefinirSenha'
 
-function RecoveryRedirect() {
+function RootRedirect() {
   const navigate = useNavigate()
   useEffect(() => {
     if (sessionStorage.getItem('supabase_recovery')) {
       sessionStorage.removeItem('supabase_recovery')
       navigate('/redefinir-senha', { replace: true })
+    } else {
+      navigate('/escala', { replace: true })
     }
   }, [])
   return null
@@ -25,7 +27,6 @@ function RecoveryRedirect() {
 export default function App() {
   return (
     <BrowserRouter>
-      <RecoveryRedirect />
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -62,8 +63,8 @@ export default function App() {
 
           <Route path="/desistencias" element={<ProtectedRoute><DesistenciasAbertas /></ProtectedRoute>} />
 
-          <Route path="/" element={<Navigate to="/escala" replace />} />
-          <Route path="*" element={<Navigate to="/escala" replace />} />
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="*" element={<RootRedirect />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
