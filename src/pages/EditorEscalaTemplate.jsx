@@ -415,7 +415,7 @@ function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd, onNovoTur
 
         <div className="flex gap-2 pt-1">
           <Button variant="outline" onClick={onFechar} className="flex-1"
-            style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.5)' }}>Cancelar</Button>
+            style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.35)', color: '#fff' }}>Cancelar</Button>
           <Button onClick={handleAdicionar} disabled={salvando} className="flex-1"
             style={{ background: '#0d9488', color: '#fff' }}>
             {salvando ? 'Criando…' : 'Adicionar'}
