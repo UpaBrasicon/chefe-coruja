@@ -24,10 +24,13 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
   const [pos, setPos]           = useState(null)
   const cellRef  = useRef()
   const inputRef = useRef()
+  const dropRef  = useRef()
+  const buscaRef = useRef('')  // ref para acesso no listener global
 
   const nomeAtual = cellData?.profissional?.nome || cellData?.nome_livre || ''
 
-  // Só mostra resultados quando o usuário digitar
+  useEffect(() => { buscaRef.current = busca }, [busca])
+
   const filtrados = useMemo(() => {
     const b = busca.trim().toLowerCase()
     if (!b) return []
@@ -45,44 +48,57 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
     if (editando) return
     getRect()
     setBusca('')
+    buscaRef.current = ''
     setEditando(true)
     setTimeout(() => inputRef.current?.focus(), 30)
   }
 
-  // Mantém o input alinhado com a célula se a página rolar
+  function fechar() {
+    setEditando(false); setPos(null); setBusca(''); buscaRef.current = ''
+  }
+
+  async function salvarProf(prof) {
+    fechar()                                               // fecha imediatamente (UX)
+    await onSave({ profissional_id: prof.id, nome_livre: null })
+  }
+
+  async function salvarTexto() {
+    const t = buscaRef.current.trim()
+    fechar()
+    if (!t) return
+    const match = profissionais.find(p => p.nome.toLowerCase() === t.toLowerCase())
+    if (match) await onSave({ profissional_id: match.id, nome_livre: null })
+    else await onSave({ profissional_id: null, nome_livre: t })
+  }
+
+  // Atualiza posição do input ao rolar/redimensionar
   useEffect(() => {
     if (!editando) return
     window.addEventListener('scroll', getRect, true)
     window.addEventListener('resize', getRect)
-    return () => {
-      window.removeEventListener('scroll', getRect, true)
-      window.removeEventListener('resize', getRect)
-    }
+    return () => { window.removeEventListener('scroll', getRect, true); window.removeEventListener('resize', getRect) }
   }, [editando])
 
-  function fechar() { setEditando(false); setPos(null); setBusca('') }
-
-  async function salvarProf(prof) {
-    await onSave({ profissional_id: prof.id, nome_livre: null })
-    fechar()
-  }
-
-  async function salvarTexto() {
-    const t = busca.trim()
-    if (!t) { if (nomeAtual) await onClear() }
-    else {
-      const match = profissionais.find(p => p.nome.toLowerCase() === t.toLowerCase())
-      if (match) { await salvarProf(match); return }
-      await onSave({ profissional_id: null, nome_livre: t })
+  // Fecha ao clicar fora (sem overlay — não compete com os botões do dropdown)
+  useEffect(() => {
+    if (!editando) return
+    function onDocDown(e) {
+      if (inputRef.current?.contains(e.target)) return
+      if (dropRef.current?.contains(e.target)) return
+      if (cellRef.current?.contains(e.target)) return
+      salvarTexto()
     }
-    fechar()
-  }
+    document.addEventListener('mousedown', onDocDown)
+    return () => document.removeEventListener('mousedown', onDocDown)
+  }, [editando])   // salvarTexto usa buscaRef (ref), não precisa ser dependência
 
-  const W = Math.max(260, pos?.w ?? 0)
+  // Largura: input = tamanho exato da célula; dropdown = pelo menos 220 px
+  const inputW = pos?.w ?? 120
+  const dropW  = Math.max(inputW, 220)
 
   return (
     <>
-      {/* ── Célula visual (sempre visível) ── */}
+      {/* Célula visual */}
       <div
         ref={cellRef}
         onClick={abrir}
@@ -103,30 +119,24 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
         )}
       </div>
 
-      {/* ── Portal: overlay + input flutuante + dropdown ── */}
+      {/* Portal: input + dropdown (sem overlay — sem competição de cliques) */}
       {editando && pos && createPortal(
         <>
-          {/* Overlay transparente: cobre a tela, click fora → fecha */}
-          <div
-            style={{ position: 'fixed', inset: 0, zIndex: 99980 }}
-            onClick={salvarTexto}
-          />
-
-          {/* Input posicionado sobre a célula */}
+          {/* Input flutuante exatamente sobre a célula */}
           <input
             ref={inputRef}
             value={busca}
             onChange={e => setBusca(e.target.value)}
-            onClick={e => e.stopPropagation()}
             onKeyDown={e => {
-              if (e.key === 'Enter') { filtrados.length > 0 ? salvarProf(filtrados[0]) : salvarTexto() }
+              if (e.key === 'Enter') filtrados.length > 0 ? salvarProf(filtrados[0]) : salvarTexto()
               if (e.key === 'Escape') fechar()
             }}
             placeholder="Pesquise um nome…"
             style={{
               position: 'fixed',
               top: pos.top, left: pos.left,
-              width: W, height: pos.h,
+              width: inputW,      // mesmo tamanho da célula — sem overflow
+              height: pos.h,
               zIndex: 99990,
               border: '2px solid #0d9488',
               borderRadius: 4,
@@ -142,12 +152,12 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
           {/* Dropdown de resultados */}
           {(filtrados.length > 0 || busca.trim()) && (
             <div
-              onClick={e => e.stopPropagation()}
+              ref={dropRef}
               style={{
                 position: 'fixed',
                 top: pos.bottom + 3,
                 left: pos.left,
-                width: W,
+                width: dropW,     // pode ser maior que a célula para leitura
                 zIndex: 99995,
                 background: '#fff',
                 border: '1px solid #e2e8f0',
@@ -157,7 +167,9 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
                 overflowY: 'auto',
               }}>
               {filtrados.map(p => (
-                <button key={p.id} onClick={() => salvarProf(p)}
+                <button
+                  key={p.id}
+                  onMouseDown={e => { e.preventDefault(); salvarProf(p) }}
                   className="w-full text-left px-3 py-2 hover:bg-gray-50"
                   style={{ borderBottom: '1px solid #f8fafc', display: 'block' }}>
                   <p className="text-xs font-semibold" style={{ color: '#0f172a' }}>{p.nome}</p>
@@ -165,7 +177,8 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
                 </button>
               ))}
               {filtrados.length === 0 && busca.trim() && (
-                <button onClick={salvarTexto}
+                <button
+                  onMouseDown={e => { e.preventDefault(); salvarTexto() }}
                   className="w-full text-left px-3 py-2.5 text-xs hover:bg-teal-50"
                   style={{ color: '#0d9488' }}>
                   Salvar "{busca.trim()}" como nome livre
