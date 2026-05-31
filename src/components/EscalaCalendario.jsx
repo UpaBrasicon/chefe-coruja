@@ -161,7 +161,7 @@ export default function EscalaCalendario() {
   function mesSeguinte() { mes === 12 ? (setMes(1),  setAno(a => a + 1)) : setMes(m => m + 1) }
 
   return (
-    <div className="max-w-6xl mx-auto px-3 sm:px-4 pb-12">
+    <div className="pb-12">
       <style>{`
         .painel-dia { animation: slideInPainel .2s ease forwards; }
         @keyframes slideInPainel {
@@ -173,37 +173,69 @@ export default function EscalaCalendario() {
         .dia-btn:active { transform: scale(.97); }
       `}</style>
 
-      {/* Navegação */}
-      <div className="flex items-center justify-between py-4 sticky top-[56px] z-10"
-        style={{ background: 'var(--cor-fundo)' }}>
-        <Button variant="outline" size="sm" onClick={mesAnterior}
-          style={{ borderColor: 'var(--cor-borda)', color: 'var(--cor-texto)', minWidth: 36 }}>‹</Button>
-        <div className="text-center select-none">
-          <h2 className="font-bold text-xl leading-tight" style={{ color: 'var(--cor-texto)' }}>
-            {MESES_PT[mes - 1]}
-          </h2>
-          <p className="text-sm font-medium" style={{ color: 'var(--cor-texto-suave)' }}>{ano}</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={mesSeguinte}
-          style={{ borderColor: 'var(--cor-borda)', color: 'var(--cor-texto)', minWidth: 36 }}>›</Button>
-      </div>
+      {/* ── Fundo com gradiente teal escuro ── */}
+      <div style={{
+        background: 'linear-gradient(145deg, #0a2f2a 0%, #0d4039 40%, #134e4a 100%)',
+        minHeight: '100vh',
+        padding: '24px 16px 48px',
+      }}>
+        <div className="max-w-6xl mx-auto">
+
+          {/* Navegação + caixa mês/ano */}
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={mesAnterior}
+              className="flex items-center justify-center w-10 h-10 rounded-full transition-all hover:scale-110 active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: 20 }}>
+              ‹
+            </button>
+
+            {/* Caixa mês/ano destacada */}
+            <div className="text-center px-8 py-3 rounded-2xl select-none"
+              style={{
+                background: 'rgba(255,255,255,0.12)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)',
+              }}>
+              <h2 className="font-bold text-2xl leading-tight text-white tracking-wide">
+                {MESES_PT[mes - 1]}
+              </h2>
+              <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.1em' }}>
+                {ano}
+              </p>
+            </div>
+
+            <button onClick={mesSeguinte}
+              className="flex items-center justify-center w-10 h-10 rounded-full transition-all hover:scale-110 active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: 20 }}>
+              ›
+            </button>
+          </div>
 
       {carregando ? (
-        <div className="text-center py-20" style={{ color: 'var(--cor-texto-suave)' }}>
-          <img src="/logo.png" alt="" className="h-10 w-10 rounded-full mx-auto mb-3 opacity-60 animate-pulse" />
-          <p>Carregando escala...</p>
+        <div className="text-center py-20">
+          <img src="/logo.png" alt="" className="h-10 w-10 rounded-full mx-auto mb-3 opacity-70 animate-pulse" />
+          <p style={{ color: 'rgba(255,255,255,0.6)' }}>Carregando escala...</p>
         </div>
       ) : (
         <div className="flex gap-3 items-start">
 
-          {/* ── Grade calendário ── */}
-          <div className={diaSelecionado ? 'hidden md:block md:flex-1 min-w-0' : 'w-full'}>
+          {/* ── Grade calendário (card glass) ── */}
+          <div className={`${diaSelecionado ? 'hidden md:block md:flex-1 min-w-0' : 'w-full'} rounded-2xl p-3 sm:p-4`}
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+            }}>
 
             {/* Cabeçalho dias */}
-            <div className="grid grid-cols-7 mb-1">
+            <div className="grid grid-cols-7 mb-2">
               {DIAS_SEMANA.map((d, i) => (
                 <div key={d} className="text-center py-1.5 text-xs font-bold tracking-wide"
-                  style={{ color: i === 0 ? '#ef4444' : 'var(--cor-texto-suave)' }}>
+                  style={{ color: i === 0 ? '#fca5a5' : 'rgba(255,255,255,0.5)' }}>
                   {d}
                 </div>
               ))}
@@ -234,28 +266,32 @@ export default function EscalaCalendario() {
                     className="dia-btn aspect-square rounded-xl flex flex-col items-center justify-start pt-1.5 pb-1 px-0.5 relative"
                     style={{
                       background: isSel
-                        ? 'var(--cor-primaria)'
+                        ? '#0d9488'
                         : temMeu
-                        ? 'rgba(13,148,136,0.09)'
+                        ? 'rgba(13,148,136,0.35)'
                         : feriado
-                        ? 'rgba(239,68,68,0.05)'
-                        : 'var(--cor-superficie)',
+                        ? 'rgba(239,68,68,0.18)'
+                        : 'rgba(255,255,255,0.1)',
                       border: `1.5px solid ${
-                        isSel   ? 'var(--cor-primaria)'
-                        : isHoje ? 'var(--cor-primaria)'
-                        : temMeu ? 'rgba(13,148,136,0.3)'
-                        : feriado ? 'rgba(239,68,68,0.2)'
-                        : 'var(--cor-borda)'}`,
-                      boxShadow: isSel ? '0 4px 16px rgba(13,148,136,0.35)' : '',
+                        isSel    ? '#0d9488'
+                        : isHoje  ? 'rgba(255,255,255,0.8)'
+                        : temMeu  ? 'rgba(13,148,136,0.6)'
+                        : feriado ? 'rgba(239,68,68,0.4)'
+                        : 'rgba(255,255,255,0.12)'}`,
+                      boxShadow: isSel
+                        ? '0 4px 16px rgba(13,148,136,0.5)'
+                        : isHoje
+                        ? '0 0 0 2px rgba(255,255,255,0.3)'
+                        : '',
                     }}
                   >
                     {/* Número */}
                     <span className="text-xs sm:text-sm font-bold leading-none"
                       style={{
                         color: isSel ? '#fff'
-                          : feriado || ehDom ? '#ef4444'
-                          : isHoje ? 'var(--cor-primaria)'
-                          : 'var(--cor-texto)',
+                          : feriado || ehDom ? '#fca5a5'
+                          : isHoje ? '#fff'
+                          : 'rgba(255,255,255,0.9)',
                       }}>
                       {dia}
                     </span>
@@ -263,7 +299,7 @@ export default function EscalaCalendario() {
                     {/* Nome feriado mini */}
                     {feriado && (
                       <span className="hidden sm:block text-center leading-none mt-0.5 px-0.5 truncate w-full"
-                        style={{ fontSize: '7px', color: isSel ? 'rgba(255,255,255,0.8)' : '#ef4444' }}>
+                        style={{ fontSize: '7px', color: isSel ? 'rgba(255,255,255,0.8)' : '#fca5a5' }}>
                         {feriado.split(' ')[0]}
                       </span>
                     )}
@@ -287,9 +323,9 @@ export default function EscalaCalendario() {
                 { cor: '#0d9488', label: 'Meu plantão' },
                 { cor: '#f59e0b', label: 'Vaga aberta' },
                 { cor: '#8b5cf6', label: 'Troca pendente' },
-                { cor: '#ef4444', label: 'Feriado / Dom.' },
+                { cor: '#fca5a5', label: 'Feriado / Dom.' },
               ].map(l => (
-                <div key={l.label} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--cor-texto-suave)' }}>
+                <div key={l.label} className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
                   <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: l.cor }} />
                   {l.label}
                 </div>
@@ -301,9 +337,11 @@ export default function EscalaCalendario() {
           {diaSelecionado && (
             <div className="painel-dia w-full md:w-72 lg:w-80 flex-shrink-0 rounded-2xl overflow-hidden"
               style={{
-                border: '1px solid var(--cor-borda)',
-                background: 'var(--cor-superficie)',
-                boxShadow: '0 8px 32px rgba(13,148,136,0.12)',
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15)',
               }}>
 
               {/* Header */}
@@ -389,6 +427,8 @@ export default function EscalaCalendario() {
           )}
         </div>
       )}
+        </div>{/* max-w-6xl */}
+      </div>{/* fundo teal */}
     </div>
   )
 }
