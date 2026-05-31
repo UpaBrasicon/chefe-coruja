@@ -334,8 +334,16 @@ function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd, onNovoTur
     if (isCustom) {
       if (!customNome || !customIni || !customFim) { setErro('Preencha nome, início e fim.'); return }
       setSalvando(true)
+      // Gera código único a partir do nome (ex: "Cinderela 7-13h" → "CIN7-1")
+      const codigo = customNome.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) + '_' + Date.now().toString(36).slice(-4)
+      // Calcula duração em horas
+      const [hIni, mIni] = customIni.split(':').map(Number)
+      const [hFim, mFim] = customFim.split(':').map(Number)
+      let duracao = (hFim * 60 + mFim - hIni * 60 - mIni) / 60
+      if (duracao < 0) duracao += 24  // turno vira a meia-noite
+
       const { data, error } = await supabase.from('tipos_turno')
-        .insert({ nome: customNome, hora_inicio: customIni + ':00', hora_fim: customFim + ':00' })
+        .insert({ codigo, nome: customNome, hora_inicio: customIni + ':00', hora_fim: customFim + ':00', duracao_horas: duracao })
         .select('id, nome, hora_inicio, hora_fim').single()
       if (error) { setErro('Erro ao criar turno: ' + error.message); setSalvando(false); return }
       tipo_turno_id = data.id
