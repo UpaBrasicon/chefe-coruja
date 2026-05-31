@@ -90,9 +90,34 @@ export default function EscalaCalendario() {
   const [diaSelecionado, setDiaSelecionado] = useState(null)
   const [filtroDetalhe, setFiltroDetalhe]   = useState('todos')
 
-  const feriados      = useMemo(() => calcularFeriados(ano), [ano])
+  // Ao montar, busca o mês mais próximo com dados (atual ou passado recente)
+  useEffect(() => {
+    async function encontrarMesComDados() {
+      const { data } = await supabase
+        .from('plantoes')
+        .select('data')
+        .order('data', { ascending: false })
+        .limit(1)
+      if (data && data.length > 0) {
+        const [anoD, mesD] = data[0].data.split('-').map(Number)
+        const maisRecente = new Date(anoD, mesD - 1, 1)
+        const atual = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
+        // Usa o mês atual se tiver dados futuros/presentes, senão o mais recente com dados
+        if (maisRecente >= atual) {
+          setMes(hoje.getMonth() + 1)
+          setAno(hoje.getFullYear())
+        } else {
+          setMes(mesD)
+          setAno(anoD)
+        }
+      }
+    }
+    encontrarMesComDados()
+  }, [])
+
+  const feriados       = useMemo(() => calcularFeriados(ano), [ano])
   const diasCalendario = useMemo(() => gerarDias(mes, ano), [mes, ano])
-  const hojeStr       = toStr(hoje)
+  const hojeStr        = toStr(hoje)
 
   useEffect(() => {
     async function buscar() {
