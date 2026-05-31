@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
@@ -20,6 +21,8 @@ const DIAS = [
 function Celula({ cellData, profissionais, onSave, onClear }) {
   const [editando, setEditando] = useState(false)
   const [busca, setBusca] = useState('')
+  const [dropPos, setDropPos] = useState(null)
+  const cellRef = useRef()
   const inputRef = useRef()
 
   const nomeAtual = cellData?.profissional?.nome || cellData?.nome_livre || ''
@@ -32,10 +35,30 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
     ).slice(0, 20)
   }, [busca, profissionais])
 
+  function calcPos() {
+    if (cellRef.current) {
+      const r = cellRef.current.getBoundingClientRect()
+      setDropPos({ top: r.bottom + 2, left: r.left, width: Math.max(230, r.width) })
+    }
+  }
+
   function abrir() {
     setBusca('')
     setEditando(true)
-    setTimeout(() => inputRef.current?.focus(), 30)
+    setTimeout(() => { inputRef.current?.focus(); calcPos() }, 20)
+  }
+
+  // Atualiza posição se a página rolar com o dropdown aberto
+  useEffect(() => {
+    if (!editando) return
+    window.addEventListener('scroll', calcPos, true)
+    return () => window.removeEventListener('scroll', calcPos, true)
+  }, [editando])
+
+  function fechar() {
+    setEditando(false)
+    setDropPos(null)
+    setBusca('')
   }
 
   async function salvarNomeLivre() {
@@ -47,77 +70,90 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
       if (match) { await salvarProf(match); return }
       await onSave({ profissional_id: null, nome_livre: texto })
     }
-    setEditando(false)
+    fechar()
   }
 
   async function salvarProf(prof) {
     await onSave({ profissional_id: prof.id, nome_livre: null })
-    setEditando(false)
-    setBusca('')
+    fechar()
   }
 
-  if (editando) return (
-    <div style={{ position: 'relative', zIndex: 20 }}>
-      <input
-        ref={inputRef}
-        value={busca}
-        onChange={e => setBusca(e.target.value)}
-        onBlur={() => setTimeout(salvarNomeLivre, 160)}
-        onKeyDown={e => {
-          if (e.key === 'Enter') salvarNomeLivre()
-          if (e.key === 'Escape') { setEditando(false); setBusca('') }
-        }}
-        placeholder={nomeAtual || 'Buscar nome ou CRM…'}
-        className="w-full text-xs px-2 py-1.5 rounded border focus:outline-none"
-        style={{ borderColor: '#0d9488', background: '#fff', color: '#1e293b', minWidth: 120 }}
-      />
-      <div style={{
-        position: 'absolute', top: '100%', left: 0, zIndex: 999,
-        background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.2)', minWidth: 220, maxHeight: 240, overflowY: 'auto',
-      }}>
-        {busca.trim() && !profissionais.find(p => p.nome.toLowerCase() === busca.trim().toLowerCase()) && (
-          <button
-            onMouseDown={e => { e.preventDefault(); salvarNomeLivre() }}
-            className="w-full text-left px-3 py-2 text-xs border-b border-gray-100 hover:bg-teal-50"
-            style={{ color: '#0d9488' }}>
-            Salvar "{busca.trim()}" como nome livre
-          </button>
-        )}
-        {filtrados.length === 0 && (
-          <p className="px-3 py-2 text-xs" style={{ color: '#94a3b8' }}>Nenhum resultado.</p>
-        )}
-        {filtrados.map(p => (
-          <button key={p.id}
-            onMouseDown={e => { e.preventDefault(); salvarProf(p) }}
-            className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-50">
-            <p className="text-xs font-medium" style={{ color: '#1e293b' }}>{p.nome}</p>
-            {p.crm && <p style={{ fontSize: 10, color: '#94a3b8' }}>CRM {p.crm}</p>}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-
   return (
-    <div
-      onClick={abrir}
-      className="rounded cursor-pointer flex items-center justify-between group px-1.5"
-      style={{
-        minWidth: 118, height: 28,
-        background: nomeAtual ? 'rgba(255,255,255,0.13)' : 'rgba(255,255,255,0.04)',
-        border: `1px solid ${nomeAtual ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`,
-      }}
-    >
-      <span className="text-xs truncate flex-1" style={{ color: nomeAtual ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 11 }}>
-        {nomeAtual || '—'}
-      </span>
-      {nomeAtual && (
-        <button
-          onClick={e => { e.stopPropagation(); onClear() }}
-          className="opacity-0 group-hover:opacity-50 hover:!opacity-100 text-white text-xs ml-1 flex-shrink-0">
-          ×
-        </button>
+    <div ref={cellRef} style={{ position: 'relative', minWidth: 118, height: 28 }}>
+      {editando ? (
+        <input
+          ref={inputRef}
+          value={busca}
+          onChange={e => setBusca(e.target.value)}
+          onBlur={() => setTimeout(salvarNomeLivre, 160)}
+          onKeyDown={e => {
+            if (e.key === 'Enter') salvarNomeLivre()
+            if (e.key === 'Escape') fechar()
+          }}
+          placeholder={nomeAtual || 'Buscar nome ou CRM…'}
+          className="w-full h-full text-xs px-2 rounded border focus:outline-none"
+          style={{ borderColor: '#0d9488', background: '#fff', color: '#1e293b' }}
+        />
+      ) : (
+        <div
+          onClick={abrir}
+          className="rounded cursor-pointer flex items-center justify-between group px-1.5 h-full"
+          style={{
+            background: nomeAtual ? 'rgba(255,255,255,0.13)' : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${nomeAtual ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`,
+          }}
+        >
+          <span className="text-xs truncate flex-1" style={{ color: nomeAtual ? '#fff' : 'rgba(255,255,255,0.2)', fontSize: 11 }}>
+            {nomeAtual || '—'}
+          </span>
+          {nomeAtual && (
+            <button
+              onClick={e => { e.stopPropagation(); onClear() }}
+              className="opacity-0 group-hover:opacity-50 hover:!opacity-100 text-white text-xs ml-1 flex-shrink-0">
+              ×
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Dropdown fixo no viewport via portal — não rola junto com a página */}
+      {editando && dropPos && createPortal(
+        <div
+          onMouseDown={e => e.preventDefault()}
+          style={{
+            position: 'fixed',
+            top: dropPos.top,
+            left: dropPos.left,
+            width: dropPos.width,
+            zIndex: 99999,
+            background: '#fff',
+            border: '1px solid #e2e8f0',
+            borderRadius: 8,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.22)',
+            maxHeight: 260,
+            overflowY: 'auto',
+          }}>
+          {busca.trim() && !profissionais.find(p => p.nome.toLowerCase() === busca.trim().toLowerCase()) && (
+            <button
+              onMouseDown={e => { e.preventDefault(); salvarNomeLivre() }}
+              className="w-full text-left px-3 py-2 text-xs border-b border-gray-100 hover:bg-teal-50"
+              style={{ color: '#0d9488' }}>
+              Salvar "{busca.trim()}" como nome livre
+            </button>
+          )}
+          {filtrados.length === 0 && (
+            <p className="px-3 py-2 text-xs" style={{ color: '#94a3b8' }}>Nenhum resultado.</p>
+          )}
+          {filtrados.map(p => (
+            <button key={p.id}
+              onMouseDown={e => { e.preventDefault(); salvarProf(p) }}
+              className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-50">
+              <p className="text-xs font-medium" style={{ color: '#1e293b' }}>{p.nome}</p>
+              {p.crm && <p style={{ fontSize: 10, color: '#94a3b8' }}>CRM {p.crm}</p>}
+            </button>
+          ))}
+        </div>,
+        document.body
       )}
     </div>
   )
