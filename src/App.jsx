@@ -14,9 +14,9 @@ import RedefinirSenha from './pages/RedefinirSenha'
 function RecoveryRedirect() {
   const navigate = useNavigate()
   useEffect(() => {
-    const hash = window.location.hash
-    if (hash.includes('type=recovery')) {
-      navigate('/redefinir-senha' + hash, { replace: true })
+    if (sessionStorage.getItem('supabase_recovery')) {
+      sessionStorage.removeItem('supabase_recovery')
+      navigate('/redefinir-senha', { replace: true })
     }
   }, [])
   return null
