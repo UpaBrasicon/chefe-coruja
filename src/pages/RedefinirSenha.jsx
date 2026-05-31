@@ -14,15 +14,20 @@ export default function RedefinirSenha() {
   const [sucesso, setSucesso] = useState(false)
   const [carregando, setCarregando] = useState(false)
 
-  // Detecta o token de recovery no hash da URL (#access_token=...&type=recovery)
   useEffect(() => {
+    // Chegou pelo link de recovery — mostra o form imediatamente
+    if (sessionStorage.getItem('recovery_landing')) {
+      sessionStorage.removeItem('recovery_landing')
+      setPronto(true)
+      return
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         setPronto(true)
       }
     })
 
-    // Supabase processa o hash automaticamente ao iniciar — força a checagem
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) setPronto(true)
     })

@@ -16,6 +16,7 @@ function RootRedirect() {
   useEffect(() => {
     if (sessionStorage.getItem('supabase_recovery')) {
       sessionStorage.removeItem('supabase_recovery')
+      sessionStorage.setItem('recovery_landing', '1')
       navigate('/redefinir-senha', { replace: true })
     } else {
       navigate('/escala', { replace: true })

@@ -35,7 +35,7 @@ export default function Login() {
     }
     setCarregando(true)
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/redefinir-senha`,
+      redirectTo: 'https://chefecoruja.com.br/redefinir-senha',
     })
     setCarregando(false)
     if (error) {
