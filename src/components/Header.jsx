@@ -7,6 +7,12 @@ import { Button } from './ui/button'
 import ModalAlterarSenha from './ModalAlterarSenha'
 import ModalConfiguracoes from './ModalConfiguracoes'
 
+const itemClass = `
+  w-full text-left px-4 py-2.5 text-sm text-slate-700 flex items-center gap-2
+  transition-transform duration-150 ease-out
+  hover:bg-slate-50 hover:scale-[1.03] hover:pl-5
+`
+
 export default function Header() {
   const { profissional, signOut } = useAuth()
   const { count: trocasCount } = useTrocasPendentes()
@@ -42,8 +48,14 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center gap-0.5 sm:gap-1">
-          {/* Dropdown Escala */}
-          <div className="relative" ref={menuEscalaRef}>
+
+          {/* Dropdown Escala — abre no hover */}
+          <div
+            className="relative"
+            ref={menuEscalaRef}
+            onMouseEnter={() => setMenuEscalaAberto(true)}
+            onMouseLeave={() => setMenuEscalaAberto(false)}
+          >
             <button
               onClick={() => setMenuEscalaAberto(v => !v)}
               className="relative flex items-center gap-1 text-xs sm:text-sm text-white hover:bg-white/20 px-2 sm:px-3 py-1.5 rounded-md transition-colors"
@@ -59,37 +71,30 @@ export default function Header() {
             </button>
 
             {menuEscalaAberto && (
-              <div className="absolute left-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-slate-100 z-50 min-w-[200px] py-1 overflow-hidden">
-                <button
-                  onClick={() => { setMenuEscalaAberto(false); navigate('/escala') }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                >
-                  📅 Escala
-                </button>
-                <button
-                  onClick={() => { setMenuEscalaAberto(false); navigate('/desistencias') }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                >
-                  <span className="flex items-center gap-2">🏥 Vagas em aberto</span>
-                  {vagasCount > 0 && (
-                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                      style={{ background: 'var(--cor-secundaria)', color: '#fff' }}>
-                      {vagasCount}
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={() => { setMenuEscalaAberto(false); navigate('/trocas') }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center justify-between"
-                >
-                  <span className="flex items-center gap-2">🔄 Trocas de plantão</span>
-                  {trocasCount > 0 && (
-                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                      style={{ background: 'var(--cor-vago)', color: '#fff' }}>
-                      {trocasCount}
-                    </span>
-                  )}
-                </button>
+              <div className="absolute left-0 top-full pt-1 z-50">
+                <div className="bg-white rounded-xl shadow-xl border border-slate-100 min-w-[210px] py-1 overflow-hidden">
+                  <button onClick={() => { setMenuEscalaAberto(false); navigate('/escala') }} className={itemClass}>
+                    📅 Escala
+                  </button>
+                  <button onClick={() => { setMenuEscalaAberto(false); navigate('/desistencias') }} className={`${itemClass} justify-between`}>
+                    <span className="flex items-center gap-2">🏥 Vagas em aberto</span>
+                    {vagasCount > 0 && (
+                      <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                        style={{ background: 'var(--cor-secundaria)', color: '#fff' }}>
+                        {vagasCount}
+                      </span>
+                    )}
+                  </button>
+                  <button onClick={() => { setMenuEscalaAberto(false); navigate('/trocas') }} className={`${itemClass} justify-between`}>
+                    <span className="flex items-center gap-2">🔄 Trocas de plantão</span>
+                    {trocasCount > 0 && (
+                      <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                        style={{ background: 'var(--cor-vago)', color: '#fff' }}>
+                        {trocasCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -102,8 +107,13 @@ export default function Header() {
             </Link>
           )}
 
-          {/* Menu do usuário */}
-          <div className="relative" ref={menuRef}>
+          {/* Menu do usuário — abre no hover */}
+          <div
+            className="relative"
+            ref={menuRef}
+            onMouseEnter={() => setMenuAberto(true)}
+            onMouseLeave={() => setMenuAberto(false)}
+          >
             <button
               onClick={() => setMenuAberto(v => !v)}
               className="flex items-center gap-1 text-xs sm:text-sm opacity-90 max-w-[160px] ml-1 text-white hover:opacity-100 transition-opacity"
@@ -113,31 +123,25 @@ export default function Header() {
             </button>
 
             {menuAberto && (
-              <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-slate-100 z-50 min-w-[180px] py-1 overflow-hidden">
-                <div className="px-4 py-2 border-b border-slate-100">
-                  <p className="text-xs text-slate-400 truncate">{profissional?.nome}</p>
+              <div className="absolute right-0 top-full pt-1 z-50">
+                <div className="bg-white rounded-xl shadow-xl border border-slate-100 min-w-[190px] py-1 overflow-hidden">
+                  <div className="px-4 py-2 border-b border-slate-100">
+                    <p className="text-xs text-slate-400 truncate">{profissional?.nome}</p>
+                  </div>
+                  <button onClick={() => { setMenuAberto(false); setModalConfig(true) }} className={itemClass}>
+                    ⚙️ Configurações
+                  </button>
+                  <button onClick={() => { setMenuAberto(false); setModalSenha(true) }} className={itemClass}>
+                    🔑 Alterar senha
+                  </button>
+                  <button
+                    onClick={() => { setMenuAberto(false); signOut() }}
+                    className={`${itemClass} border-t border-slate-100`}
+                    style={{ color: '#dc2626' }}
+                  >
+                    ↪ Sair
+                  </button>
                 </div>
-                <button
-                  onClick={() => { setMenuAberto(false); setModalConfig(true) }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                >
-                  ⚙️ Configurações
-                </button>
-                <button
-                  onClick={() => { setMenuAberto(false); setModalSenha(true) }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                >
-                  🔑 Alterar senha
-                </button>
-                <button
-                  onClick={() => { setMenuAberto(false); signOut() }}
-                  className="w-full text-left px-4 py-2.5 text-sm flex items-center gap-2"
-                  style={{ color: '#dc2626' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
-                  onMouseLeave={e => e.currentTarget.style.background = ''}
-                >
-                  ↪ Sair
-                </button>
               </div>
             )}
           </div>
