@@ -22,12 +22,13 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
   const [editando, setEditando] = useState(false)
   const [busca, setBusca]       = useState('')
   const [pos, setPos]           = useState(null)
+  const [saving, setSaving]     = useState(false)
   const cellRef  = useRef()
   const inputRef = useRef()
   const dropRef  = useRef()
   const buscaRef = useRef('')  // ref para acesso no listener global
 
-  const nomeAtual = cellData?.profissional?.nome || cellData?.nome_livre || ''
+  const nomeAtual = cellData?.profissional?.nome || ''
 
   useEffect(() => { buscaRef.current = busca }, [busca])
 
@@ -58,17 +59,15 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
   }
 
   async function salvarProf(prof) {
-    fechar()                                               // fecha imediatamente (UX)
-    await onSave({ profissional_id: prof.id, nome_livre: null })
+    fechar()
+    setSaving(true)
+    await onSave(prof.id)
+    setSaving(false)
   }
 
-  async function salvarTexto() {
-    const t = buscaRef.current.trim()
+  function salvarTexto() {
+    // clique fora sem selecionar do dropdown — descarta
     fechar()
-    if (!t) return
-    const match = profissionais.find(p => p.nome.toLowerCase() === t.toLowerCase())
-    if (match) await onSave({ profissional_id: match.id, nome_livre: null })
-    else await onSave({ profissional_id: null, nome_livre: t })
   }
 
   // Atualiza posição do input ao rolar/redimensionar
@@ -105,13 +104,14 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
         className="rounded cursor-pointer flex items-center justify-between group px-1.5"
         style={{
           minWidth: 118, height: 28,
-          background: editando ? 'rgba(13,148,136,0.2)' : nomeAtual ? 'rgba(255,255,255,0.13)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${editando ? '#0d9488' : nomeAtual ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`,
+          background: saving ? 'rgba(13,148,136,0.12)' : editando ? 'rgba(13,148,136,0.2)' : nomeAtual ? 'rgba(255,255,255,0.13)' : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${saving ? 'rgba(13,148,136,0.6)' : editando ? '#0d9488' : nomeAtual ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`,
+          opacity: saving ? 0.7 : 1,
         }}>
         <span className="text-xs truncate flex-1" style={{ color: nomeAtual ? '#e2e8f0' : 'rgba(255,255,255,0.2)', fontSize: 11 }}>
-          {nomeAtual || 'NOME'}
+          {saving ? '…' : nomeAtual || 'NOME'}
         </span>
-        {nomeAtual && !editando && (
+        {nomeAtual && !editando && !saving && (
           <button onClick={e => { e.stopPropagation(); onClear() }}
             className="opacity-0 group-hover:opacity-50 hover:!opacity-100 text-white text-xs ml-1 flex-shrink-0">
             ×
@@ -131,7 +131,7 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
               if (e.key === 'Enter') filtrados.length > 0 ? salvarProf(filtrados[0]) : salvarTexto()
               if (e.key === 'Escape') fechar()
             }}
-            placeholder="Pesquise um nome…"
+            placeholder="Pesquise por nome ou CRM…"
             style={{
               position: 'fixed',
               top: pos.top, left: pos.left,
@@ -177,12 +177,9 @@ function Celula({ cellData, profissionais, onSave, onClear }) {
                 </button>
               ))}
               {filtrados.length === 0 && busca.trim() && (
-                <button
-                  onMouseDown={e => { e.preventDefault(); salvarTexto() }}
-                  className="w-full text-left px-3 py-2.5 text-xs hover:bg-teal-50"
-                  style={{ color: '#0d9488' }}>
-                  Salvar "{busca.trim()}" como nome livre
-                </button>
+                <div className="px-3 py-2.5 text-xs" style={{ color: '#94a3b8' }}>
+                  Nenhum profissional encontrado
+                </div>
               )}
             </div>
           )}
@@ -539,31 +536,22 @@ export default function EditorEscalaTemplate() {
   }, [grupos, setores])
 
   // ── Handlers ──
-  async function handleSave(setor_id, tipo_turno_id, slot_index, dia_semana, { profissional_id, nome_livre }) {
+  async function handleSave(setor_id, tipo_turno_id, slot_index, dia_semana, profissional_id) {
     setErroSave('')
     const filtro = { semana, setor_id, tipo_turno_id, slot_index, dia_semana }
 
-    // 1) apaga o registro anterior (se existir) — evita conflito de UNIQUE
     await supabase.from('escala_template_slots').delete()
       .eq('semana', semana).eq('setor_id', setor_id).eq('tipo_turno_id', tipo_turno_id)
       .eq('slot_index', slot_index).eq('dia_semana', dia_semana)
 
-    // 2) insere o novo
     const { data, error } = await supabase.from('escala_template_slots')
-      .insert({ ...filtro, profissional_id: profissional_id || null, nome_livre: nome_livre || null })
-      .select('id, semana, dia_semana, setor_id, tipo_turno_id, slot_index, profissional_id, nome_livre')
+      .insert({ ...filtro, profissional_id })
+      .select('id, semana, dia_semana, setor_id, tipo_turno_id, slot_index, profissional_id')
       .single()
 
-    if (error) {
-      setErroSave('Erro ao salvar: ' + error.message)
-      return
-    }
+    if (error) { setErroSave('Erro ao salvar: ' + error.message); return }
 
-    // 3) enriquece localmente com o objeto profissional (sem depender de join)
-    const profObj = profissional_id
-      ? (profissionais.find(p => p.id === profissional_id) ?? null)
-      : null
-
+    const profObj = profissionais.find(p => p.id === profissional_id) ?? null
     setSlots(prev => [
       ...prev.filter(s => !(s.setor_id === setor_id && s.tipo_turno_id === tipo_turno_id &&
         s.slot_index === slot_index && s.dia_semana === dia_semana && s.semana === semana)),
@@ -586,12 +574,32 @@ export default function EditorEscalaTemplate() {
   }
 
   async function removeSlotRow(setor_id, tipo_turno_id, slot_index) {
+    // Deleta o slot alvo
     await supabase.from('escala_template_slots').delete()
       .eq('semana', semana).eq('setor_id', setor_id).eq('tipo_turno_id', tipo_turno_id).eq('slot_index', slot_index)
-    const novos = slots.filter(s => !(s.setor_id === setor_id && s.tipo_turno_id === tipo_turno_id && s.slot_index === slot_index && s.semana === semana))
+
+    // Renumera slots posteriores para fechar o gap
+    const paraRenumerar = slots.filter(s =>
+      s.setor_id === setor_id && s.tipo_turno_id === tipo_turno_id &&
+      s.semana === semana && s.slot_index > slot_index
+    )
+    if (paraRenumerar.length > 0) {
+      await Promise.all(paraRenumerar.map(s =>
+        supabase.from('escala_template_slots').update({ slot_index: s.slot_index - 1 }).eq('id', s.id)
+      ))
+    }
+
+    const novos = slots
+      .filter(s => !(s.setor_id === setor_id && s.tipo_turno_id === tipo_turno_id && s.slot_index === slot_index && s.semana === semana))
+      .map(s =>
+        (s.setor_id === setor_id && s.tipo_turno_id === tipo_turno_id && s.semana === semana && s.slot_index > slot_index)
+          ? { ...s, slot_index: s.slot_index - 1 }
+          : s
+      )
     setSlots(novos)
     const k = `${setor_id}:${tipo_turno_id}`
-    const newMax = novos.filter(s => s.setor_id === setor_id && s.tipo_turno_id === tipo_turno_id).reduce((m, s) => Math.max(m, s.slot_index), 0)
+    const newMax = novos.filter(s => s.setor_id === setor_id && s.tipo_turno_id === tipo_turno_id && s.semana === semana)
+      .reduce((m, s) => Math.max(m, s.slot_index), 0)
     setGrupConfig(prev => { const n = { ...prev }; if (newMax === 0) delete n[k]; else n[k] = newMax; return n })
   }
 
@@ -629,7 +637,7 @@ export default function EditorEscalaTemplate() {
       const wn = Math.round((getMon(cur) - monInicio) / 604800000)
       const ehA = wn % 2 === 0 ? semanaInicial === 'A' : semanaInicial === 'B'
       const dateStr = cur.toISOString().split('T')[0]
-      for (const slot of (ehA ? sA : sB || []).filter(s => s.dia_semana === dia)) {
+      for (const slot of ((ehA ? (sA ?? []) : (sB ?? [])).filter(s => s.dia_semana === dia))) {
         plantoesParaCriar.push({
           data: dateStr, setor_id: slot.setor_id, tipo_turno_id: slot.tipo_turno_id,
           slot_num: slot.slot_index, profissional_id: slot.profissional_id || null,
@@ -652,6 +660,46 @@ export default function EditorEscalaTemplate() {
       const { error } = await supabase.from('plantoes').insert(plantoesParaCriar.slice(i, i + 100))
       if (error) throw new Error(error.message)
     }
+  }
+
+  async function handleCopiarSemana(de, para) {
+    if (!window.confirm(`Copiar Semana ${de} → Semana ${para}?\nIsso substituirá todo o conteúdo da Semana ${para}.`)) return
+    setLoading(true)
+    setErroSave('')
+    try {
+      const { data: origem, error: errO } = await supabase
+        .from('escala_template_slots')
+        .select('dia_semana, setor_id, tipo_turno_id, slot_index, profissional_id')
+        .eq('semana', de)
+      if (errO) throw new Error(errO.message)
+
+      await supabase.from('escala_template_slots').delete().eq('semana', para)
+
+      if ((origem ?? []).length > 0) {
+        const novos = origem.map(s => ({ ...s, semana: para }))
+        const { error: errI } = await supabase.from('escala_template_slots').insert(novos)
+        if (errI) throw new Error(errI.message)
+      }
+
+      // Se a aba atual for o destino, recarrega
+      if (semana === para) {
+        const { data, error } = await supabase.from('escala_template_slots')
+          .select('*, profissional:profissionais(id, nome, crm)')
+          .eq('semana', semana)
+        if (error) throw new Error(error.message)
+        const lista = data ?? []
+        setSlots(lista)
+        const cfg = {}
+        for (const s of lista) {
+          const k = `${s.setor_id}:${s.tipo_turno_id}`
+          cfg[k] = Math.max(cfg[k] || 0, s.slot_index)
+        }
+        setGrupConfig(cfg)
+      }
+    } catch (e) {
+      setErroSave('Erro ao copiar semana: ' + e.message)
+    }
+    setLoading(false)
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -699,6 +747,22 @@ export default function EditorEscalaTemplate() {
           <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
             {profissionais.length} profissionais disponíveis
           </span>
+          <div className="ml-auto flex gap-1">
+            <button
+              onClick={() => handleCopiarSemana('A', 'B')}
+              className="text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-white/10"
+              style={{ color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.13)' }}
+              title="Copia toda a estrutura e nomes da Semana A para a Semana B">
+              A → B
+            </button>
+            <button
+              onClick={() => handleCopiarSemana('B', 'A')}
+              className="text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-white/10"
+              style={{ color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.13)' }}
+              title="Copia toda a estrutura e nomes da Semana B para a Semana A">
+              B → A
+            </button>
+          </div>
         </div>
 
         {/* Grade */}
@@ -844,7 +908,7 @@ export default function EditorEscalaTemplate() {
                                   <Celula
                                     cellData={slotsMap[`${grupo.setor_id}:${grupo.tipo_turno_id}:${slotIdx}:${d.idx}`]}
                                     profissionais={profissionais}
-                                    onSave={payload => handleSave(grupo.setor_id, grupo.tipo_turno_id, slotIdx, d.idx, payload)}
+                                    onSave={profissional_id => handleSave(grupo.setor_id, grupo.tipo_turno_id, slotIdx, d.idx, profissional_id)}
                                     onClear={() => handleClear(grupo.setor_id, grupo.tipo_turno_id, slotIdx, d.idx)}
                                   />
                                 </td>
@@ -885,7 +949,7 @@ export default function EditorEscalaTemplate() {
         </div>
 
         <p className="text-xs mt-3" style={{ color: 'rgba(255,255,255,0.2)' }}>
-          Clique em qualquer célula para editar · Busca por nome ou CRM · Nomes não cadastrados salvos como texto livre
+          Clique em qualquer célula para editar · Busca por nome ou CRM · Somente profissionais cadastrados podem ser adicionados
         </p>
         {erroSave && (
           <p className="text-xs mt-2 px-3 py-2 rounded-lg" style={{ color: '#fca5a5', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}>
