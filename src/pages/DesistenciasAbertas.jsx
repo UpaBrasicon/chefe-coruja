@@ -36,9 +36,8 @@ export default function DesistenciasAbertas() {
     const { data, error } = await supabase
       .from('desistencias')
       .select(`
-        id, responsavel_ate, motivo, avisado_em,
+        id, responsavel_ate, motivo, avisado_em, profissional_id,
         plantoes(id, data, setores(nome, cor), tipos_turno(hora_inicio, hora_fim)),
-        profissional:profissionais!desistencias_profissional_id_fkey(id, nome),
         candidaturas(id, profissional_id, status, ordem_fila)
       `)
       .eq('status', 'aguardando_candidato')
@@ -118,7 +117,7 @@ export default function DesistenciasAbertas() {
               const candidatos = d.candidaturas ?? []
               const jaCandidatou = candidatos.some(c => c.profissional_id === profissional?.id)
               // Vagas criadas pelo admin não têm "dono" — qualquer médico pode se candidatar
-              const ehDono = d.motivo !== '__vaga_admin__' && d.profissional?.id === profissional?.id
+              const ehDono = d.motivo !== '__vaga_admin__' && d.profissional_id === profissional?.id
               const diasResp = diasRestantes(d.responsavel_ate)
               const msg = mensagens[d.id]
 
@@ -153,14 +152,14 @@ export default function DesistenciasAbertas() {
                   <p className="text-sm" style={{ color: 'var(--cor-texto-suave)' }}>
                     {d.motivo === '__vaga_admin__'
                       ? <span style={{ color: 'var(--cor-primaria)', fontWeight: 500 }}>🏥 Vaga disponível — criada pelo coordenador</span>
-                      : <>Desistência de <strong style={{ color: 'var(--cor-texto)' }}>{d.profissional?.nome}</strong></>
+                      : <span>Vaga por desistência</span>
                     }
                   </p>
 
-                  {/* Motivo */}
-                  {d.motivo && (
+                  {/* Motivo — só para desistências reais, sem expor o interno __vaga_admin__ */}
+                  {d.motivo && d.motivo !== '__vaga_admin__' && (
                     <p className="text-xs italic px-3 py-2 rounded-lg"
-                      style={{ background: '#F8FAFC', color: 'var(--cor-texto-suave)', borderLeft: '3px solid var(--cor-borda)' }}>
+                      style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', borderLeft: '3px solid rgba(255,255,255,0.15)' }}>
                       "{d.motivo}"
                     </p>
                   )}
