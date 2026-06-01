@@ -222,14 +222,29 @@ export default function EscalaCalendario() {
   return (
     <div className="pb-12">
       <style>{`
-        .painel-dia { animation: slideInPainel .2s ease forwards; }
-        @keyframes slideInPainel {
-          from { opacity:0; transform:translateX(24px) scale(.98); }
-          to   { opacity:1; transform:translateX(0)   scale(1); }
+        .painel-dia {
+          animation: slideInPainel .38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          transform-origin: right center;
         }
-        .dia-btn { transition: transform .15s ease, box-shadow .15s ease; }
-        .dia-btn:hover { transform: scale(1.07); z-index:2; }
-        .dia-btn:active { transform: scale(.97); }
+        @keyframes slideInPainel {
+          from {
+            opacity: 0;
+            transform: translateX(40px) scale(0.96);
+            filter: blur(4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            filter: blur(0);
+          }
+        }
+        .dia-btn {
+          transition: transform .15s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      box-shadow .15s ease,
+                      background .12s ease;
+        }
+        .dia-btn:hover { transform: scale(1.08); z-index: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        .dia-btn:active { transform: scale(.95); }
       `}</style>
 
       {/* ── Fundo pastel (herda do pai) ── */}
