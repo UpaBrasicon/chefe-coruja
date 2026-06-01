@@ -88,6 +88,7 @@ export default function EscalaCalendario() {
   const [plantoesSemDesistencia, setPlantoesSemDesistencia] = useState(new Set())
   const [carregando, setCarregando] = useState(true)
   const [diaSelecionado, setDiaSelecionado] = useState(null)
+  const [fechandoPainel, setFechandoPainel] = useState(false)
   const [filtroDetalhe, setFiltroDetalhe]   = useState('todos')
   const [unidades, setUnidades]             = useState([])
   const [setoresList, setSetoresList]       = useState([])
@@ -219,32 +220,56 @@ export default function EscalaCalendario() {
   function mesAnterior() { mes === 1 ? (setMes(12), setAno(a => a - 1)) : setMes(m => m - 1) }
   function mesSeguinte() { mes === 12 ? (setMes(1),  setAno(a => a + 1)) : setMes(m => m + 1) }
 
+  function fecharPainel() {
+    if (fechandoPainel) return
+    setFechandoPainel(true)
+    setTimeout(() => {
+      setDiaSelecionado(null)
+      setFechandoPainel(false)
+      setFiltroDetalhe('todos')
+    }, 320)
+  }
+
+  function handleDiaClick(data) {
+    if (diaSelecionado === data) {
+      fecharPainel()
+    } else {
+      setFechandoPainel(false)
+      setDiaSelecionado(data)
+      setFiltroDetalhe('todos')
+    }
+  }
+
   return (
     <div className="pb-12">
       <style>{`
-        .painel-dia {
-          animation: slideInPainel .38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          transform-origin: right center;
+        /* ── Entrada ── */
+        .painel-entrada {
+          animation: painelEntrar .45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        @keyframes slideInPainel {
-          from {
-            opacity: 0;
-            transform: translateX(40px) scale(0.96);
-            filter: blur(4px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-            filter: blur(0);
-          }
+        @keyframes painelEntrar {
+          0%   { opacity: 0; transform: translateX(72px) scale(0.88); filter: blur(8px); }
+          60%  { opacity: 1; filter: blur(0); }
+          100% { opacity: 1; transform: translateX(0)   scale(1);    filter: blur(0); }
         }
+
+        /* ── Saída ── */
+        .painel-saida {
+          animation: painelSair .32s cubic-bezier(0.55, 0, 0.75, 0) forwards;
+        }
+        @keyframes painelSair {
+          0%   { opacity: 1; transform: translateX(0)   scale(1);    filter: blur(0); }
+          100% { opacity: 0; transform: translateX(72px) scale(0.88); filter: blur(8px); }
+        }
+
+        /* ── Células ── */
         .dia-btn {
-          transition: transform .15s cubic-bezier(0.34, 1.56, 0.64, 1),
+          transition: transform .18s cubic-bezier(0.34, 1.56, 0.64, 1),
                       box-shadow .15s ease,
                       background .12s ease;
         }
-        .dia-btn:hover { transform: scale(1.08); z-index: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-        .dia-btn:active { transform: scale(.95); }
+        .dia-btn:hover { transform: scale(1.09); z-index: 2; box-shadow: 0 6px 16px rgba(0,0,0,0.13); }
+        .dia-btn:active { transform: scale(.93); }
       `}</style>
 
       {/* ── Fundo pastel (herda do pai) ── */}
@@ -369,10 +394,7 @@ export default function EscalaCalendario() {
                 return (
                   <button
                     key={data}
-                    onClick={() => {
-                      setDiaSelecionado(prev => prev === data ? null : data)
-                      setFiltroDetalhe('todos')
-                    }}
+                    onClick={() => handleDiaClick(data)}
                     className="dia-btn rounded-xl flex flex-col items-center justify-start pt-1.5 pb-1 px-0.5 relative"
                     style={{
                       height: 80,
@@ -442,8 +464,8 @@ export default function EscalaCalendario() {
           </div>
 
           {/* ── Painel lateral do dia ── */}
-          {diaSelecionado && (
-            <div className="painel-dia w-full md:w-72 lg:w-80 flex-shrink-0 rounded-2xl overflow-hidden"
+          {(diaSelecionado || fechandoPainel) && (
+            <div className={`${fechandoPainel ? 'painel-saida' : 'painel-entrada'} w-full md:w-72 lg:w-80 flex-shrink-0 rounded-2xl overflow-hidden`}
               style={{
                 background: 'rgba(255,255,255,0.88)',
                 backdropFilter: 'blur(24px)',
@@ -468,7 +490,7 @@ export default function EscalaCalendario() {
                     {(plantoesPorDia[diaSelecionado] ?? []).length} plantão(ões) no dia
                   </p>
                 </div>
-                <button onClick={() => setDiaSelecionado(null)}
+                <button onClick={fecharPainel}
                   className="text-white/60 hover:text-white text-lg leading-none mt-0.5 transition-colors ml-2">
                   ✕
                 </button>
