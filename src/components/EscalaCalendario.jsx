@@ -358,8 +358,9 @@ export default function EscalaCalendario() {
                       setDiaSelecionado(prev => prev === data ? null : data)
                       setFiltroDetalhe('todos')
                     }}
-                    className="dia-btn aspect-square rounded-xl flex flex-col items-center justify-start pt-1.5 pb-1 px-0.5 relative"
+                    className="dia-btn rounded-xl flex flex-col items-center justify-start pt-1.5 pb-1 px-0.5 relative"
                     style={{
+                      height: 80,
                       background: isSel
                         ? '#0d9488'
                         : temMeu
