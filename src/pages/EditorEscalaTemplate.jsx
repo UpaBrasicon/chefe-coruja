@@ -731,8 +731,8 @@ export default function EditorEscalaTemplate() {
         <div className="max-w-full mx-auto mb-4 flex flex-wrap items-center gap-3">
           <Link to="/admin" className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>← Painel Admin</Link>
           <h1 className="text-xl font-bold text-white flex-1">Editor de Escala</h1>
-          <Button onClick={() => setModalImportar(true)} variant="outline"
-            style={{ borderColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
+          <Button onClick={() => setModalImportar(true)}
+            style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.35)', color: '#fff', fontWeight: 600 }}>
             Importar Profissionais
           </Button>
           <Button onClick={() => setModalPublicar(true)}

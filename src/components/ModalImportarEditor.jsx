@@ -63,6 +63,19 @@ function parseHTML(html) {
   return parseTexto(div.textContent)
 }
 
+// ── Download modelo CSV ───────────────────────────────────────────────────────
+function baixarModelo() {
+  const linhas = [
+    ['nome', 'crm', 'email', 'telefone', 'especialidade'],
+    ['Dr Coruja', '12345', 'drcoruja@chefecoruja.com.br', '(62) 99999-0000', 'Clínica Geral'],
+  ]
+  const csv = linhas.map(r => r.map(v => `"${v}"`).join(',')).join('\n')
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' }))
+  a.download = 'modelo_profissionais.csv'
+  a.click()
+}
+
 // ── Modal ─────────────────────────────────────────────────────────────────────
 export default function ModalImportarEditor({ aberto, onFechar, onImportado }) {
   const [preview,    setPreview]    = useState(null)
@@ -151,6 +164,19 @@ export default function ModalImportarEditor({ aberto, onFechar, onImportado }) {
         </div>
 
         <div className="overflow-y-auto px-6 py-4 space-y-4">
+
+          {/* Baixar modelo */}
+          <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: 'rgba(13,148,136,0.1)', border: '1px solid rgba(13,148,136,0.3)' }}>
+            <div>
+              <p className="text-xs font-semibold text-white">Não tem o arquivo?</p>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>Baixe o modelo CSV com as colunas e um exemplo preenchido</p>
+            </div>
+            <button onClick={baixarModelo}
+              className="text-xs font-semibold px-3 py-2 rounded-lg whitespace-nowrap transition-all hover:opacity-80"
+              style={{ background: '#0d9488', color: '#fff' }}>
+              ⬇ Baixar modelo
+            </button>
+          </div>
 
           {/* Upload */}
           <label className="flex flex-col items-center justify-center gap-2 rounded-xl cursor-pointer transition-all hover:bg-white/5"
