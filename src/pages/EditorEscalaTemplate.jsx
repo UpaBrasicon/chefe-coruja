@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import { Button } from '../components/ui/button'
 import { useNavyTheme } from '../hooks/useNavyTheme'
+import ModalImportarEditor from '../components/ModalImportarEditor'
 
 // Seg → Dom (ordem da escala)
 const DIAS = [
@@ -460,6 +461,7 @@ export default function EditorEscalaTemplate() {
   const [loading, setLoading] = useState(true)
   const [modalPublicar, setModalPublicar] = useState(false)
   const [modalAddGrupo, setModalAddGrupo] = useState(false)
+  const [modalImportar, setModalImportar] = useState(false)
   const [erroSave, setErroSave] = useState('')
 
   // Dados base: todos os profissionais (sem filtro — admin precisa de todos)
@@ -702,6 +704,11 @@ export default function EditorEscalaTemplate() {
     setLoading(false)
   }
 
+  async function handleImportado() {
+    const { data } = await supabase.from('profissionais').select('id, nome, crm').order('nome')
+    setProfissionais(data ?? [])
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
   const GLASS = {
     background: 'rgba(255,255,255,0.07)',
@@ -724,6 +731,10 @@ export default function EditorEscalaTemplate() {
         <div className="max-w-full mx-auto mb-4 flex flex-wrap items-center gap-3">
           <Link to="/admin" className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>← Painel Admin</Link>
           <h1 className="text-xl font-bold text-white flex-1">Editor de Escala</h1>
+          <Button onClick={() => setModalImportar(true)} variant="outline"
+            style={{ borderColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
+            Importar Profissionais
+          </Button>
           <Button onClick={() => setModalPublicar(true)}
             style={{ background: '#0d9488', color: '#fff', fontWeight: 600, boxShadow: '0 4px 16px rgba(13,148,136,0.35)' }}>
             Publicar Escala
@@ -959,6 +970,7 @@ export default function EditorEscalaTemplate() {
       </main>
 
       <ModalPublicar aberto={modalPublicar} onFechar={() => setModalPublicar(false)} onPublicar={handlePublicar} />
+      <ModalImportarEditor aberto={modalImportar} onFechar={() => setModalImportar(false)} onImportado={handleImportado} />
       <ModalAddGrupo aberto={modalAddGrupo} onFechar={() => setModalAddGrupo(false)}
         setores={setores} tiposTurno={tiposTurno} onAdd={addGrupo}
         onNovoTurno={t => setTiposTurno(prev => [...prev, t])} />
