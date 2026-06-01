@@ -69,7 +69,7 @@ function baixarModelo() {
     ['nome', 'crm', 'email', 'telefone', 'especialidade'],
     ['Dr Coruja', '12345', 'drcoruja@chefecoruja.com.br', '(62) 99999-0000', 'Clínica Geral'],
   ]
-  const csv = linhas.map(r => r.map(v => `"${v}"`).join(',')).join('\n')
+  const csv = linhas.map(r => r.join(';')).join('\n')
   const a = document.createElement('a')
   a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' }))
   a.download = 'modelo_profissionais.csv'
