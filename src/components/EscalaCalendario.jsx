@@ -270,6 +270,22 @@ export default function EscalaCalendario() {
         }
         .dia-btn:hover { transform: scale(1.09); z-index: 2; box-shadow: 0 6px 16px rgba(0,0,0,0.13); }
         .dia-btn:active { transform: scale(.93); }
+
+        /* ── Layout sincronizado calendário ↔ painel ── */
+        @media (min-width: 768px) {
+          .calendario-container {
+            transition: flex-basis 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .painel-wrapper {
+            overflow: hidden;
+            flex-shrink: 0;
+            width: 320px;
+          }
+          .painel-wrapper.fechando {
+            width: 0;
+            transition: width 0.35s cubic-bezier(0.55, 0, 0.75, 0);
+          }
+        }
       `}</style>
 
       {/* ── Fundo pastel (herda do pai) ── */}
@@ -358,8 +374,11 @@ export default function EscalaCalendario() {
         <div className="flex gap-3 items-start">
 
           {/* ── Grade calendário ── */}
-          <div className={`${diaSelecionado ? 'hidden md:block md:flex-1 min-w-0' : 'w-full'} rounded-2xl p-3 sm:p-4`}
+          <div
+            className={`calendario-container rounded-2xl p-3 sm:p-4 ${(diaSelecionado || fechandoPainel) ? 'hidden md:block' : 'block'}`}
             style={{
+              flex: (diaSelecionado && !fechandoPainel) ? '1 1 0%' : '1 1 100%',
+              minWidth: 0,
               background: '#ffffff',
               border: '1px solid #cbd5e1',
               boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
@@ -465,7 +484,8 @@ export default function EscalaCalendario() {
 
           {/* ── Painel lateral do dia ── */}
           {(diaSelecionado || fechandoPainel) && (
-            <div className={`${fechandoPainel ? 'painel-saida' : 'painel-entrada'} w-full md:w-72 lg:w-80 flex-shrink-0 rounded-2xl overflow-hidden`}
+            <div className={`painel-wrapper ${fechandoPainel ? 'fechando' : ''} w-full md:w-auto`}>
+            <div className={`${fechandoPainel ? 'painel-saida' : 'painel-entrada'} w-full rounded-2xl overflow-hidden`}
               style={{
                 background: 'rgba(255,255,255,0.88)',
                 backdropFilter: 'blur(24px)',
@@ -556,6 +576,7 @@ export default function EscalaCalendario() {
                 )}
               </div>
             </div>
+            </div>{/* painel-wrapper */}
           )}
         </div>
       )}
