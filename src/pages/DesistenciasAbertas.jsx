@@ -88,16 +88,15 @@ export default function DesistenciasAbertas() {
     <div className="min-h-screen" style={{ background: 'linear-gradient(145deg, #0c1445 0%, #0e2d6e 45%, #0e4d8a 100%)' }}>
       <Header />
       <main className="max-w-2xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate('/escala')} className="text-sm underline" style={{ color: 'var(--cor-texto-suave)' }}>
+        <div className="mb-6">
+          <button onClick={() => navigate('/escala')} className="text-sm mb-3 block" style={{ color: 'rgba(255,255,255,0.5)' }}>
             ← Voltar para escala
           </button>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--cor-texto)' }}>Vagas em aberto</h1>
+          <h1 className="text-xl font-bold text-white">Vagas em aberto</h1>
+          <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            Plantões disponíveis por desistência. Candidate-se e aguarde a seleção do coordenador.
+          </p>
         </div>
-
-        <p className="text-sm mb-5" style={{ color: 'var(--cor-texto-suave)' }}>
-          Plantões disponíveis por desistência. Candidate-se e aguarde a seleção do coordenador.
-        </p>
 
         {erro && <p className="mb-4 text-sm rounded-lg p-3" style={{ color: 'var(--cor-vago)', background: '#FEF2F2' }}>{erro}</p>}
 
