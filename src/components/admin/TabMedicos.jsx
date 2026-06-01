@@ -9,7 +9,7 @@ function BadgeStatus({ status, ativo }) {
     aprovado:  { bg: '#DCFCE7', cor: '#166534', label: 'Aprovado' },
     recusado:  { bg: '#FEE2E2', cor: '#991B1B', label: 'Recusado' },
   }
-  const s = map[status] ?? { bg: '#F1F5F9', cor: '#64748B', label: status }
+  const s = map[status] ?? { bg: '#FEF9C3', cor: '#854D0E', label: 'Pendente' }
   return <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: s.bg, color: s.cor }}>{s.label}</span>
 }
 
@@ -80,7 +80,7 @@ export default function TabMedicos() {
     setAcao(null); await carregar()
   }
 
-  const pendentes = medicos.filter(m => m.status_aprovacao === 'pendente')
+  const pendentes = medicos.filter(m => !m.status_aprovacao || m.status_aprovacao === 'pendente')
   const filtrados = filtro === 'todos' ? medicos
     : filtro === 'ativos' ? medicos.filter(m => m.ativo && m.status_aprovacao === 'aprovado')
     : filtro === 'inativos' ? medicos.filter(m => !m.ativo)
@@ -164,6 +164,12 @@ export default function TabMedicos() {
                 </p>
               </div>
               <div className="flex gap-2 shrink-0 flex-wrap">
+                {(!m.status_aprovacao || m.status_aprovacao === 'pendente' || m.status_aprovacao === 'recusado') && (
+                  <Button size="sm" onClick={() => aprovar(m.id)} disabled={acao === m.id}
+                    style={{ background: 'var(--cor-sucesso)', color: '#fff' }}>
+                    {acao === m.id ? '...' : 'Aprovar'}
+                  </Button>
+                )}
                 <button onClick={() => toggleRole(m)} disabled={acao === m.id}
                   className="text-xs px-3 py-1 rounded-lg border transition-colors"
                   style={{ borderColor: 'var(--cor-borda)', color: 'var(--cor-texto-suave)' }}

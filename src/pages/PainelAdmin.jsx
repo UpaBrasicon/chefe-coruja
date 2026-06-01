@@ -131,7 +131,7 @@ export default function PainelAdmin() {
         de_profissional:profissionais!trocas_de_profissional_id_fkey(nome),
         para_profissional:profissionais!trocas_para_profissional_id_fkey(nome)
       `).order('solicitado_em', { ascending: false }).limit(100),
-      supabase.from('profissionais').select('id', { count: 'exact', head: true }).eq('status_aprovacao', 'pendente'),
+      supabase.from('profissionais').select('id', { count: 'exact', head: true }).or('status_aprovacao.eq.pendente,status_aprovacao.is.null'),
     ])
     setDesistencias(resD.data ?? [])
     setTrocas(resT.data ?? [])
