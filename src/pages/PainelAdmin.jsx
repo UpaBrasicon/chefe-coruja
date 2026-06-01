@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import TabMedicos from '../components/admin/TabMedicos'
 import TabEscalaAdmin from '../components/admin/TabEscalaAdmin'
-import TabImportarProfissionais from '../components/admin/TabImportarProfissionais'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Button } from '../components/ui/button'
 
@@ -189,13 +188,10 @@ export default function PainelAdmin() {
                 )}
               </TabsTrigger>
               <TabsTrigger value="trocas" className="px-1 sm:px-3">Trocas</TabsTrigger>
-              <TabsTrigger value="importar" className="px-1 sm:px-3">Importar</TabsTrigger>
             </TabsList>
 
             <TabsContent value="medicos"><TabMedicos /></TabsContent>
-            <TabsContent value="importar"><TabImportarProfissionais /></TabsContent>
-
-            <TabsContent value="escala"><TabEscalaAdmin /></TabsContent>
+<TabsContent value="escala"><TabEscalaAdmin /></TabsContent>
 
             <TabsContent value="desistencias" className="space-y-4">
               {desistenciasAbertas.length === 0 && desistenciasEncerradas.length === 0 && (

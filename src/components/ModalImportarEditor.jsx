@@ -205,7 +205,7 @@ export default function ModalImportarEditor({ aberto, onFechar, onImportado }) {
                   {importando ? 'Importando…' : `Confirmar (${preview.length})`}
                 </Button>
                 <Button variant="outline" onClick={resetar}
-                  style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.5)' }}>
+                  style={{ borderColor: 'rgba(255,255,255,0.5)', color: '#fff', background: 'rgba(255,255,255,0.08)' }}>
                   Cancelar
                 </Button>
               </div>
