@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import TabMedicos from '../components/admin/TabMedicos'
@@ -165,10 +165,7 @@ export default function PainelAdmin() {
     <div className="min-h-screen" style={{ background: 'var(--cor-fundo)' }}>
       <Header />
       <main className="max-w-5xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <Link to="/escala" className="text-sm underline" style={{ color: 'var(--cor-texto-suave)' }}>← Voltar</Link>
-          <h1 className="text-xl font-bold flex-1" style={{ color: 'var(--cor-texto)' }}>Painel Admin</h1>
-        </div>
+        <h1 className="text-xl font-bold mb-6" style={{ color: 'var(--cor-texto)' }}>Painel Admin</h1>
 
         {/* Alerta 72h */}
         {alertas.length > 0 && (
@@ -186,7 +183,7 @@ export default function PainelAdmin() {
           <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}><img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" /><p>Carregando...</p></div>
         ) : (
           <>
-          <div className="flex gap-2 mb-4 flex-wrap items-center">
+          <div className="flex gap-2 mb-4 flex-wrap items-center justify-center">
             <div className="flex items-center gap-1.5 rounded-xl px-3 py-2"
               style={{ background: '#fff', border: '1px solid var(--cor-borda)', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
               <span style={{ fontSize: 14 }}>🏥</span>
