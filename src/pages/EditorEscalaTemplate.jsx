@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import { Button } from '../components/ui/button'
@@ -452,6 +452,7 @@ function ModalAddGrupo({ aberto, onFechar, setores, tiposTurno, onAdd, onNovoTur
 // ── Página principal ──────────────────────────────────────────────────────────
 export default function EditorEscalaTemplate() {
   useNavyTheme()
+  const navigate = useNavigate()
   const [semana, setSemana] = useState('A')
   const [setores, setSetores] = useState([])
   const [tiposTurno, setTiposTurno] = useState([])
@@ -729,8 +730,8 @@ export default function EditorEscalaTemplate() {
 
         {/* Cabeçalho */}
         <div className="max-w-full mx-auto mb-4 flex flex-wrap items-center gap-3">
-          <Link to="/admin" className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>← Painel Admin</Link>
-          <h1 className="text-xl font-bold text-white flex-1">Editor de Escala</h1>
+          <Link to="/escala" className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>← Voltar</Link>
+          <h1 className="text-xl font-bold text-white flex-1">Painel Admin</h1>
           <Button onClick={() => setModalImportar(true)}
             style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.35)', color: '#fff', fontWeight: 600 }}>
             Importar Profissionais
@@ -739,6 +740,28 @@ export default function EditorEscalaTemplate() {
             style={{ background: '#0d9488', color: '#fff', fontWeight: 600, boxShadow: '0 4px 16px rgba(13,148,136,0.35)' }}>
             Publicar Escala
           </Button>
+        </div>
+
+        {/* Barra de abas — igual ao PainelAdmin, Editor ativo */}
+        <div className="mb-5 grid text-xs sm:text-sm"
+          style={{ gridTemplateColumns: 'repeat(5, 1fr)', background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 4, gap: 2 }}>
+          {[
+            { label: 'Médicos',      aba: 'medicos' },
+            { label: 'Escala',       aba: 'escala' },
+            { label: 'Desistências', aba: 'desistencias' },
+            { label: 'Trocas',       aba: 'trocas' },
+          ].map(({ label, aba }) => (
+            <button key={aba}
+              onClick={() => navigate(`/admin?aba=${aba}`)}
+              className="px-1 sm:px-3 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-white/10"
+              style={{ color: 'rgba(255,255,255,0.55)' }}>
+              {label}
+            </button>
+          ))}
+          <div className="px-1 sm:px-3 py-2 rounded-lg font-semibold text-center text-xs sm:text-sm"
+            style={{ background: '#0d9488', color: '#fff' }}>
+            Editor
+          </div>
         </div>
 
         {/* Tabs A / B */}

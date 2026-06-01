@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import TabMedicos from '../components/admin/TabMedicos'
@@ -88,6 +88,8 @@ function DesistenciaCard({ d, onDesignar, designandoId }) {
 
 export default function PainelAdmin() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const abaInicial = searchParams.get('aba') || 'medicos'
   const [desistencias, setDesistencias] = useState([])
   const [trocas, setTrocas] = useState([])
   const [carregando, setCarregando] = useState(true)
@@ -149,11 +151,6 @@ export default function PainelAdmin() {
         <div className="flex items-center gap-3 mb-6 flex-wrap">
           <Link to="/escala" className="text-sm underline" style={{ color: 'var(--cor-texto-suave)' }}>← Voltar</Link>
           <h1 className="text-xl font-bold flex-1" style={{ color: 'var(--cor-texto)' }}>Painel Admin</h1>
-          <Link to="/admin/editor-escala">
-            <Button style={{ background: 'var(--cor-primaria)', color: '#fff', fontWeight: 600 }}>
-              Editor de Escala
-            </Button>
-          </Link>
         </div>
 
         {/* Alerta 72h */}
@@ -171,7 +168,7 @@ export default function PainelAdmin() {
         {carregando ? (
           <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}><img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" /><p>Carregando...</p></div>
         ) : (
-          <Tabs defaultValue="medicos" onValueChange={v => { if (v === 'editor') navigate('/admin/editor-escala') }}>
+          <Tabs defaultValue={abaInicial} onValueChange={v => { if (v === 'editor') navigate('/admin/editor-escala') }}>
             <TabsList className="w-full mb-5 grid grid-cols-5 text-xs sm:text-sm"
               style={{ background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 4, gap: 2 }}>
               <TabsTrigger value="medicos" className="relative px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-white/10">
