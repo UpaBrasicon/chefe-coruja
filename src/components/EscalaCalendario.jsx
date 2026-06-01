@@ -89,6 +89,21 @@ export default function EscalaCalendario() {
   const [carregando, setCarregando] = useState(true)
   const [diaSelecionado, setDiaSelecionado] = useState(null)
   const [filtroDetalhe, setFiltroDetalhe]   = useState('todos')
+  const [unidades, setUnidades]             = useState([])
+  const [setoresList, setSetoresList]       = useState([])
+  const [filtroUnidade, setFiltroUnidade]   = useState('')
+  const [filtroSetor, setFiltroSetor]       = useState('')
+
+  // Carrega unidades e setores para os filtros
+  useEffect(() => {
+    Promise.all([
+      supabase.from('unidades').select('id, nome').eq('ativo', true).order('nome'),
+      supabase.from('setores').select('id, nome, unidade_id, cor').order('nome'),
+    ]).then(([{ data: uns }, { data: setos }]) => {
+      setUnidades(uns ?? [])
+      setSetoresList(setos ?? [])
+    })
+  }, [])
 
   // Ao montar, busca o mês mais próximo com dados (atual ou passado recente)
   useEffect(() => {
@@ -148,14 +163,32 @@ export default function EscalaCalendario() {
     setFiltroDetalhe('todos')
   }, [mes, ano])
 
+  // Setores do dropdown filtrados pela unidade selecionada
+  const setoresFiltrados = useMemo(() =>
+    filtroUnidade
+      ? setoresList.filter(s => s.unidade_id === Number(filtroUnidade))
+      : setoresList
+  , [setoresList, filtroUnidade])
+
+  // Plantões filtrados por unidade/setor
+  const plantoesFiltrados = useMemo(() => {
+    let lista = plantoes
+    if (filtroSetor)   lista = lista.filter(p => p.setores?.id === Number(filtroSetor))
+    else if (filtroUnidade) {
+      const ids = new Set(setoresFiltrados.map(s => s.id))
+      lista = lista.filter(p => ids.has(p.setores?.id))
+    }
+    return lista
+  }, [plantoes, filtroSetor, filtroUnidade, setoresFiltrados])
+
   const plantoesPorDia = useMemo(() => {
     const mapa = {}
-    for (const p of plantoes) {
+    for (const p of plantoesFiltrados) {
       if (!mapa[p.data]) mapa[p.data] = []
       mapa[p.data].push(p)
     }
     return mapa
-  }, [plantoes])
+  }, [plantoesFiltrados])
 
   const plantoesDodia = useMemo(() => {
     if (!diaSelecionado) return []
@@ -233,6 +266,47 @@ export default function EscalaCalendario() {
               style={{ background: 'rgba(255,255,255,0.75)', border: '1px solid rgba(148,163,184,0.4)', color: '#334155', fontSize: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
               ›
             </button>
+          </div>
+
+          {/* ── Filtros Unidade / Setor ── */}
+          <div className="flex gap-2 mb-4 flex-wrap items-center">
+            {/* Unidade */}
+            <div className="flex items-center gap-1.5 rounded-xl px-3 py-2"
+              style={{ background: 'rgba(255,255,255,0.85)', border: '1px solid #cbd5e1', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+              <span style={{ fontSize: 14 }}>🏥</span>
+              <select
+                value={filtroUnidade}
+                onChange={e => { setFiltroUnidade(e.target.value); setFiltroSetor(''); setDiaSelecionado(null) }}
+                className="text-sm font-medium bg-transparent focus:outline-none cursor-pointer"
+                style={{ color: filtroUnidade ? '#0d9488' : '#475569', minWidth: 160 }}>
+                <option value="">Todas as unidades</option>
+                {unidades.map(u => <option key={u.id} value={u.id}>{u.nome}</option>)}
+              </select>
+            </div>
+
+            {/* Setor */}
+            <div className="flex items-center gap-1.5 rounded-xl px-3 py-2"
+              style={{ background: 'rgba(255,255,255,0.85)', border: '1px solid #cbd5e1', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+              <span style={{ fontSize: 14 }}>🏬</span>
+              <select
+                value={filtroSetor}
+                onChange={e => { setFiltroSetor(e.target.value); setDiaSelecionado(null) }}
+                className="text-sm font-medium bg-transparent focus:outline-none cursor-pointer"
+                style={{ color: filtroSetor ? '#0d9488' : '#475569', minWidth: 160 }}>
+                <option value="">Todos os setores</option>
+                {setoresFiltrados.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+              </select>
+            </div>
+
+            {/* Limpar filtros */}
+            {(filtroUnidade || filtroSetor) && (
+              <button
+                onClick={() => { setFiltroUnidade(''); setFiltroSetor(''); setDiaSelecionado(null) }}
+                className="text-xs px-3 py-2 rounded-xl transition-all hover:bg-white/80"
+                style={{ color: '#94a3b8', border: '1px solid #e2e8f0' }}>
+                ✕ Limpar
+              </button>
+            )}
           </div>
 
       {carregando ? (
