@@ -227,11 +227,11 @@ export default function MinhasTrocas() {
     <div className="min-h-screen" style={{ background: 'linear-gradient(145deg, #0c1445 0%, #0e2d6e 45%, #0e4d8a 100%)' }}>
       <Header />
       <main className="max-w-2xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate('/escala')} className="text-sm underline" style={{ color: 'var(--cor-texto-suave)' }}>
+        <div className="mb-6">
+          <button onClick={() => navigate('/escala')} className="text-sm mb-3 block" style={{ color: 'rgba(255,255,255,0.5)' }}>
             ← Voltar para escala
           </button>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--cor-texto)' }}>Minhas Trocas</h1>
+          <h1 className="text-xl font-bold text-white">Minhas Trocas</h1>
         </div>
 
         {erro && (
