@@ -576,7 +576,7 @@ export default function EscalaCalendario() {
                 )}
               </div>
             </div>
-            </div>{/* painel-wrapper */}
+            </div>
           )}
         </div>
       )}

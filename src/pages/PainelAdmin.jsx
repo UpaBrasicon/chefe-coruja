@@ -185,7 +185,7 @@ export default function PainelAdmin() {
         {carregando ? (
           <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}><img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" /><p>Carregando...</p></div>
         ) : (
-          {/* ── Seletores Unidade / Setor ── */}
+          <>
           <div className="flex gap-2 mb-4 flex-wrap items-center">
             <div className="flex items-center gap-1.5 rounded-xl px-3 py-2"
               style={{ background: '#fff', border: '1px solid var(--cor-borda)', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
@@ -299,6 +299,7 @@ export default function PainelAdmin() {
               </div>
             </TabsContent>
           </Tabs>
+          </>
         )}
       </main>
     </div>
