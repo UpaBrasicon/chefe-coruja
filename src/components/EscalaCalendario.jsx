@@ -198,42 +198,38 @@ export default function EscalaCalendario() {
         .dia-btn:active { transform: scale(.97); }
       `}</style>
 
-      {/* ── Fundo com gradiente teal escuro ── */}
-      <div style={{
-        background: 'linear-gradient(145deg, #0c1445 0%, #0e2d6e 45%, #0e4d8a 100%)',
-        minHeight: '100vh',
-        padding: '24px 16px 48px',
-      }}>
+      {/* ── Fundo pastel (herda do pai) ── */}
+      <div style={{ minHeight: '100vh', padding: '24px 16px 48px' }}>
         <div className="max-w-6xl mx-auto">
 
           {/* Navegação + caixa mês/ano */}
           <div className="flex items-center justify-between mb-6">
             <button onClick={mesAnterior}
               className="flex items-center justify-center w-10 h-10 rounded-full transition-all hover:scale-110 active:scale-95"
-              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: 20 }}>
+              style={{ background: 'rgba(255,255,255,0.75)', border: '1px solid rgba(148,163,184,0.4)', color: '#334155', fontSize: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
               ‹
             </button>
 
             {/* Caixa mês/ano destacada */}
             <div className="text-center px-8 py-3 rounded-2xl select-none"
               style={{
-                background: 'rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.85)',
                 backdropFilter: 'blur(16px)',
                 WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.25)',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)',
+                border: '1px solid rgba(148,163,184,0.3)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
               }}>
-              <h2 className="font-bold text-2xl leading-tight text-white tracking-wide">
+              <h2 className="font-bold text-2xl leading-tight tracking-wide" style={{ color: '#0f172a' }}>
                 {MESES_PT[mes - 1]}
               </h2>
-              <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.1em' }}>
+              <p className="text-sm font-semibold" style={{ color: '#64748b', letterSpacing: '0.1em' }}>
                 {ano}
               </p>
             </div>
 
             <button onClick={mesSeguinte}
               className="flex items-center justify-center w-10 h-10 rounded-full transition-all hover:scale-110 active:scale-95"
-              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: 20 }}>
+              style={{ background: 'rgba(255,255,255,0.75)', border: '1px solid rgba(148,163,184,0.4)', color: '#334155', fontSize: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
               ›
             </button>
           </div>
@@ -241,26 +237,26 @@ export default function EscalaCalendario() {
       {carregando ? (
         <div className="text-center py-20">
           <img src="/logo.png" alt="" className="h-10 w-10 rounded-full mx-auto mb-3 opacity-70 animate-pulse" />
-          <p style={{ color: 'rgba(255,255,255,0.6)' }}>Carregando escala...</p>
+          <p style={{ color: '#64748b' }}>Carregando escala...</p>
         </div>
       ) : (
         <div className="flex gap-3 items-start">
 
-          {/* ── Grade calendário (card glass) ── */}
+          {/* ── Grade calendário ── */}
           <div className={`${diaSelecionado ? 'hidden md:block md:flex-1 min-w-0' : 'w-full'} rounded-2xl p-3 sm:p-4`}
             style={{
-              background: 'rgba(255,255,255,0.08)',
+              background: 'rgba(255,255,255,0.75)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+              border: '1px solid rgba(148,163,184,0.25)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
             }}>
 
             {/* Cabeçalho dias */}
             <div className="grid grid-cols-7 mb-2">
               {DIAS_SEMANA.map((d, i) => (
                 <div key={d} className="text-center py-1.5 text-xs font-bold tracking-wide"
-                  style={{ color: i === 0 ? '#fca5a5' : 'rgba(255,255,255,0.5)' }}>
+                  style={{ color: i === 0 ? '#dc2626' : '#64748b' }}>
                   {d}
                 </div>
               ))}
@@ -293,20 +289,22 @@ export default function EscalaCalendario() {
                       background: isSel
                         ? '#0d9488'
                         : temMeu
-                        ? 'rgba(13,148,136,0.35)'
+                        ? 'rgba(13,148,136,0.18)'
                         : feriado
-                        ? 'rgba(239,68,68,0.18)'
-                        : 'rgba(255,255,255,0.1)',
+                        ? 'rgba(220,38,38,0.08)'
+                        : isHoje
+                        ? 'rgba(255,255,255,0.95)'
+                        : 'rgba(255,255,255,0.55)',
                       border: `1.5px solid ${
                         isSel    ? '#0d9488'
-                        : isHoje  ? 'rgba(255,255,255,0.8)'
-                        : temMeu  ? 'rgba(13,148,136,0.6)'
-                        : feriado ? 'rgba(239,68,68,0.4)'
-                        : 'rgba(255,255,255,0.12)'}`,
+                        : isHoje  ? '#0d9488'
+                        : temMeu  ? 'rgba(13,148,136,0.45)'
+                        : feriado ? 'rgba(220,38,38,0.25)'
+                        : 'rgba(148,163,184,0.25)'}`,
                       boxShadow: isSel
-                        ? '0 4px 16px rgba(13,148,136,0.5)'
+                        ? '0 4px 16px rgba(13,148,136,0.35)'
                         : isHoje
-                        ? '0 0 0 2px rgba(255,255,255,0.3)'
+                        ? '0 0 0 2px rgba(13,148,136,0.25)'
                         : '',
                     }}
                   >
@@ -314,9 +312,9 @@ export default function EscalaCalendario() {
                     <span className="text-xs sm:text-sm font-bold leading-none"
                       style={{
                         color: isSel ? '#fff'
-                          : feriado || ehDom ? '#fca5a5'
-                          : isHoje ? '#fff'
-                          : 'rgba(255,255,255,0.9)',
+                          : feriado || ehDom ? '#dc2626'
+                          : isHoje ? '#0d9488'
+                          : '#1e293b',
                       }}>
                       {dia}
                     </span>
@@ -324,7 +322,7 @@ export default function EscalaCalendario() {
                     {/* Nome feriado mini */}
                     {feriado && (
                       <span className="hidden sm:block text-center leading-none mt-0.5 px-0.5 truncate w-full"
-                        style={{ fontSize: '7px', color: isSel ? 'rgba(255,255,255,0.8)' : '#fca5a5' }}>
+                        style={{ fontSize: '7px', color: isSel ? 'rgba(255,255,255,0.9)' : '#dc2626' }}>
                         {feriado.split(' ')[0]}
                       </span>
                     )}
@@ -333,8 +331,8 @@ export default function EscalaCalendario() {
                     {(temMeu || temVaga || temTroca) && (
                       <div className="flex gap-0.5 mt-auto justify-center flex-wrap">
                         {temMeu   && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: isSel ? '#fff' : '#0d9488' }} />}
-                        {temVaga  && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: isSel ? 'rgba(255,255,255,0.7)' : '#f59e0b' }} />}
-                        {temTroca && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: isSel ? 'rgba(255,255,255,0.7)' : '#8b5cf6' }} />}
+                        {temVaga  && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: isSel ? 'rgba(255,255,255,0.8)' : '#f59e0b' }} />}
+                        {temTroca && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: isSel ? 'rgba(255,255,255,0.8)' : '#8b5cf6' }} />}
                       </div>
                     )}
                   </button>
@@ -348,9 +346,9 @@ export default function EscalaCalendario() {
                 { cor: '#0d9488', label: 'Meu plantão' },
                 { cor: '#f59e0b', label: 'Vaga aberta' },
                 { cor: '#8b5cf6', label: 'Troca pendente' },
-                { cor: '#fca5a5', label: 'Feriado / Dom.' },
+                { cor: '#dc2626', label: 'Feriado / Dom.' },
               ].map(l => (
-                <div key={l.label} className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                <div key={l.label} className="flex items-center gap-1.5 text-xs" style={{ color: '#64748b' }}>
                   <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: l.cor }} />
                   {l.label}
                 </div>
@@ -362,11 +360,11 @@ export default function EscalaCalendario() {
           {diaSelecionado && (
             <div className="painel-dia w-full md:w-72 lg:w-80 flex-shrink-0 rounded-2xl overflow-hidden"
               style={{
-                background: 'rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.88)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15)',
+                border: '1px solid rgba(148,163,184,0.25)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
               }}>
 
               {/* Header */}
