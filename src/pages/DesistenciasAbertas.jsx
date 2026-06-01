@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavyTheme } from '../hooks/useNavyTheme'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -21,7 +20,6 @@ function formatarData(dataStr) {
 }
 
 export default function DesistenciasAbertas() {
-  useNavyTheme()
   const { profissional } = useAuth()
   const { refetch: refetchBadge } = useDesistenciasAbertas()
   const navigate = useNavigate()
@@ -84,15 +82,15 @@ export default function DesistenciasAbertas() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(145deg, #0c1445 0%, #0e2d6e 45%, #0e4d8a 100%)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0f9ff 0%, #dbeafe 45%, #f0fdf9 100%)' }}>
       <Header />
       <main className="max-w-2xl mx-auto px-4 py-6">
         <div className="mb-6">
-          <button onClick={() => navigate('/escala')} className="text-sm mb-3 block" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          <button onClick={() => navigate('/escala')} className="text-sm mb-3 block" style={{ color: '#64748b' }}>
             ← Voltar para escala
           </button>
-          <h1 className="text-xl font-bold text-white">Vagas em aberto</h1>
-          <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>Vagas em aberto</h1>
+          <p className="text-sm mt-2" style={{ color: '#64748b' }}>
             Plantões disponíveis por desistência. Candidate-se e aguarde a seleção do coordenador.
           </p>
         </div>

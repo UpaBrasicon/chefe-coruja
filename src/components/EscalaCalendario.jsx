@@ -245,25 +245,24 @@ export default function EscalaCalendario() {
           {/* ── Grade calendário ── */}
           <div className={`${diaSelecionado ? 'hidden md:block md:flex-1 min-w-0' : 'w-full'} rounded-2xl p-3 sm:p-4`}
             style={{
-              background: 'rgba(255,255,255,0.75)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(148,163,184,0.25)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+              background: '#ffffff',
+              border: '1px solid #cbd5e1',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
             }}>
 
             {/* Cabeçalho dias */}
             <div className="grid grid-cols-7 mb-2">
               {DIAS_SEMANA.map((d, i) => (
                 <div key={d} className="text-center py-1.5 text-xs font-bold tracking-wide"
-                  style={{ color: i === 0 ? '#dc2626' : '#64748b' }}>
+                  style={{ color: i === 0 ? '#dc2626' : '#475569' }}>
                   {d}
                 </div>
               ))}
             </div>
 
-            {/* Quadrados */}
-            <div className="grid grid-cols-7 gap-1">
+            {/* Quadrados — fundo do grid visível como linhas de grade */}
+            <div className="grid grid-cols-7 gap-0.5 rounded-xl overflow-hidden"
+              style={{ background: '#cbd5e1' }}>
               {diasCalendario.map((data, idx) => {
                 if (!data) return <div key={idx} />
 
@@ -289,23 +288,17 @@ export default function EscalaCalendario() {
                       background: isSel
                         ? '#0d9488'
                         : temMeu
-                        ? 'rgba(13,148,136,0.18)'
+                        ? '#d1fae5'
                         : feriado
-                        ? 'rgba(220,38,38,0.08)'
+                        ? '#fee2e2'
                         : isHoje
-                        ? 'rgba(255,255,255,0.95)'
-                        : 'rgba(255,255,255,0.55)',
-                      border: `1.5px solid ${
-                        isSel    ? '#0d9488'
-                        : isHoje  ? '#0d9488'
-                        : temMeu  ? 'rgba(13,148,136,0.45)'
-                        : feriado ? 'rgba(220,38,38,0.25)'
-                        : 'rgba(148,163,184,0.25)'}`,
-                      boxShadow: isSel
-                        ? '0 4px 16px rgba(13,148,136,0.35)'
-                        : isHoje
-                        ? '0 0 0 2px rgba(13,148,136,0.25)'
-                        : '',
+                        ? '#f0fdfa'
+                        : '#f8fafc',
+                      outline: isSel ? '2px solid #0d9488'
+                        : isHoje ? '2px solid #0d9488'
+                        : 'none',
+                      outlineOffset: '-2px',
+                      boxShadow: isSel ? '0 4px 16px rgba(13,148,136,0.3)' : 'none',
                     }}
                   >
                     {/* Número */}
@@ -314,7 +307,8 @@ export default function EscalaCalendario() {
                         color: isSel ? '#fff'
                           : feriado || ehDom ? '#dc2626'
                           : isHoje ? '#0d9488'
-                          : '#1e293b',
+                          : '#0f172a',
+                        fontWeight: isHoje || isSel ? 700 : 600,
                       }}>
                       {dia}
                     </span>

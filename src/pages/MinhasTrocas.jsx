@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavyTheme } from '../hooks/useNavyTheme'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -130,7 +129,6 @@ function CardTroca({ troca, tipo, onAceitar, onRecusar, onCancelar, carregandoId
 }
 
 export default function MinhasTrocas() {
-  useNavyTheme()
   const { profissional } = useAuth()
   const { refetch: refetchBadge } = useTrocasPendentes()
   const navigate = useNavigate()
@@ -224,14 +222,14 @@ export default function MinhasTrocas() {
   const pendenteCount = recebidas.filter(t => t.status === 'pendente').length
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(145deg, #0c1445 0%, #0e2d6e 45%, #0e4d8a 100%)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0f9ff 0%, #dbeafe 45%, #f0fdf9 100%)' }}>
       <Header />
       <main className="max-w-2xl mx-auto px-4 py-6">
         <div className="mb-6">
-          <button onClick={() => navigate('/escala')} className="text-sm mb-3 block" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          <button onClick={() => navigate('/escala')} className="text-sm mb-3 block" style={{ color: '#64748b' }}>
             ← Voltar para escala
           </button>
-          <h1 className="text-xl font-bold text-white">Minhas Trocas</h1>
+          <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>Minhas Trocas</h1>
         </div>
 
         {erro && (
