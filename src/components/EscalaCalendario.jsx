@@ -119,29 +119,30 @@ export default function EscalaCalendario() {
   const diasCalendario = useMemo(() => gerarDias(mes, ano), [mes, ano])
   const hojeStr        = toStr(hoje)
 
+  async function buscar() {
+    setCarregando(true)
+    const inicio = `${ano}-${String(mes).padStart(2,'0')}-01`
+    const fim    = `${ano}-${String(mes).padStart(2,'0')}-${new Date(ano, mes, 0).getDate()}`
+
+    const [resP, resT, resD] = await Promise.all([
+      supabase.from('plantoes')
+        .select(`id, data, slot_num, status, observacoes, profissional_id,
+          setores(id, nome, cor, periodo_padrao, ordem_exibicao),
+          tipos_turno(nome, hora_inicio, hora_fim),
+          profissionais(id, nome)`)
+        .gte('data', inicio).lte('data', fim)
+        .order('data').order('slot_num'),
+      supabase.from('trocas').select('plantao_id').eq('status', 'pendente'),
+      supabase.from('desistencias').select('plantao_id').eq('status', 'aguardando_candidato'),
+    ])
+
+    setPlantoes(resP.data ?? [])
+    setPlantoesPendentes(new Set((resT.data ?? []).map(t => t.plantao_id)))
+    setPlantoesSemDesistencia(new Set((resD.data ?? []).map(d => d.plantao_id)))
+    setCarregando(false)
+  }
+
   useEffect(() => {
-    async function buscar() {
-      setCarregando(true)
-      const inicio = `${ano}-${String(mes).padStart(2,'0')}-01`
-      const fim    = `${ano}-${String(mes).padStart(2,'0')}-${new Date(ano, mes, 0).getDate()}`
-
-      const [resP, resT, resD] = await Promise.all([
-        supabase.from('plantoes')
-          .select(`id, data, slot_num, status, observacoes, profissional_id,
-            setores(id, nome, cor, periodo_padrao, ordem_exibicao),
-            tipos_turno(nome, hora_inicio, hora_fim),
-            profissionais(id, nome)`)
-          .gte('data', inicio).lte('data', fim)
-          .order('data').order('slot_num'),
-        supabase.from('trocas').select('plantao_id').eq('status', 'pendente'),
-        supabase.from('desistencias').select('plantao_id').eq('status', 'aguardando_candidato'),
-      ])
-
-      setPlantoes(resP.data ?? [])
-      setPlantoesPendentes(new Set((resT.data ?? []).map(t => t.plantao_id)))
-      setPlantoesSemDesistencia(new Set((resD.data ?? []).map(d => d.plantao_id)))
-      setCarregando(false)
-    }
     buscar()
     setDiaSelecionado(null)
     setFiltroDetalhe('todos')
@@ -435,6 +436,8 @@ export default function EscalaCalendario() {
                         temDesistencia={plantoesSemDesistencia?.has(p.id)}
                         onTrocaSolicitada={() => setPlantoesPendentes(prev => new Set(prev))}
                         onDesistencia={() => setPlantoesSemDesistencia(prev => new Set(prev))}
+                        isAdmin={profissional?.role === 'admin'}
+                        onDesignado={buscar}
                       />
                     ))}
                   </div>

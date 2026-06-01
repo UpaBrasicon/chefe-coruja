@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import ModalPedirTroca from './ModalPedirTroca'
 import ModalDesistir from './ModalDesistir'
+import ModalDesignarAdmin from './ModalDesignarAdmin'
 
-export default function PlantaoCard({ plantao, profissionalId, temTrocaPendente, temDesistencia, onTrocaSolicitada, onDesistencia }) {
+export default function PlantaoCard({ plantao, profissionalId, temTrocaPendente, temDesistencia, onTrocaSolicitada, onDesistencia, isAdmin, onDesignado }) {
   const vago = plantao.status === 'vago' || !plantao.profissional_id
   const ehMeu = !vago && plantao.profissional_id === profissionalId
   const trocaPendente = temTrocaPendente
@@ -11,8 +12,9 @@ export default function PlantaoCard({ plantao, profissionalId, temTrocaPendente,
   const turno = plantao.tipos_turno
   const medico = plantao.profissionais
 
-  const [modalTroca, setModalTroca] = useState(false)
+  const [modalTroca, setModalTroca]       = useState(false)
   const [modalDesistir, setModalDesistir] = useState(false)
+  const [modalDesignar, setModalDesignar] = useState(false)
 
   const borderColor = ehMeu
     ? temDesistencia ? '#F59E0B' : 'var(--cor-primaria)'
@@ -76,10 +78,20 @@ export default function PlantaoCard({ plantao, profissionalId, temTrocaPendente,
             </button>
           </div>
         )}
+
+        {isAdmin && (
+          <button
+            onClick={() => setModalDesignar(true)}
+            className="mt-2 text-xs px-2.5 py-1 rounded-md font-semibold transition-all hover:opacity-80"
+            style={{ background: '#f0fdf4', border: '1px solid #86efac', color: '#166534' }}>
+            ✏️ Designar
+          </button>
+        )}
       </div>
 
       <ModalPedirTroca plantao={plantao} aberto={modalTroca} onFechar={() => setModalTroca(false)} onSucesso={onTrocaSolicitada} />
       <ModalDesistir plantao={plantao} aberto={modalDesistir} onFechar={() => setModalDesistir(false)} onSucesso={onDesistencia} />
+      <ModalDesignarAdmin plantao={plantao} aberto={modalDesignar} onFechar={() => setModalDesignar(false)} onDesignado={onDesignado} />
     </>
   )
 }
