@@ -3,7 +3,6 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import TabMedicos from '../components/admin/TabMedicos'
-import TabEscalaAdmin from '../components/admin/TabEscalaAdmin'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Button } from '../components/ui/button'
 
@@ -97,6 +96,24 @@ export default function PainelAdmin() {
   const [filtroTroca, setFiltroTroca] = useState('todos')
   const [erro, setErro] = useState('')
   const [pendentesCount, setPendentesCount] = useState(0)
+  const [unidades, setUnidades] = useState([])
+  const [setoresList, setSetoresList] = useState([])
+  const [filtroUnidade, setFiltroUnidade] = useState('')
+  const [filtroSetor, setFiltroSetor] = useState('')
+
+  useEffect(() => {
+    Promise.all([
+      supabase.from('unidades').select('id, nome').eq('ativo', true).order('nome'),
+      supabase.from('setores').select('id, nome, unidade_id').order('nome'),
+    ]).then(([{ data: uns }, { data: setos }]) => {
+      setUnidades(uns ?? [])
+      setSetoresList(setos ?? [])
+    })
+  }, [])
+
+  const setoresFiltrados = filtroUnidade
+    ? setoresList.filter(s => s.unidade_id === Number(filtroUnidade))
+    : setoresList
 
   async function carregar() {
     setCarregando(true)
@@ -168,33 +185,66 @@ export default function PainelAdmin() {
         {carregando ? (
           <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}><img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" /><p>Carregando...</p></div>
         ) : (
+          {/* ── Seletores Unidade / Setor ── */}
+          <div className="flex gap-2 mb-4 flex-wrap items-center">
+            <div className="flex items-center gap-1.5 rounded-xl px-3 py-2"
+              style={{ background: '#fff', border: '1px solid var(--cor-borda)', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+              <span style={{ fontSize: 14 }}>🏥</span>
+              <select
+                value={filtroUnidade}
+                onChange={e => { setFiltroUnidade(e.target.value); setFiltroSetor('') }}
+                className="text-sm font-medium bg-transparent focus:outline-none cursor-pointer"
+                style={{ color: filtroUnidade ? 'var(--cor-primaria)' : 'var(--cor-texto-suave)', minWidth: 160 }}>
+                <option value="">Todas as unidades</option>
+                {unidades.map(u => <option key={u.id} value={u.id}>{u.nome}</option>)}
+              </select>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-xl px-3 py-2"
+              style={{ background: '#fff', border: '1px solid var(--cor-borda)', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+              <span style={{ fontSize: 14 }}>🏬</span>
+              <select
+                value={filtroSetor}
+                onChange={e => setFiltroSetor(e.target.value)}
+                className="text-sm font-medium bg-transparent focus:outline-none cursor-pointer"
+                style={{ color: filtroSetor ? 'var(--cor-primaria)' : 'var(--cor-texto-suave)', minWidth: 160 }}>
+                <option value="">Todos os setores</option>
+                {setoresFiltrados.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+              </select>
+            </div>
+            {(filtroUnidade || filtroSetor) && (
+              <button onClick={() => { setFiltroUnidade(''); setFiltroSetor('') }}
+                className="text-xs px-3 py-2 rounded-xl transition-all hover:bg-gray-100"
+                style={{ color: 'var(--cor-texto-suave)', border: '1px solid var(--cor-borda)' }}>
+                ✕ Limpar
+              </button>
+            )}
+          </div>
+
           <Tabs defaultValue={abaInicial} onValueChange={v => { if (v === 'editor') navigate('/admin/editor-escala') }}>
-            <TabsList className="w-full mb-5 grid grid-cols-5 text-xs sm:text-sm"
-              style={{ background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 4, gap: 2 }}>
-              <TabsTrigger value="medicos" className="relative px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-white/10">
+            <TabsList className="w-full mb-5 grid grid-cols-4 text-xs sm:text-sm"
+              style={{ background: 'rgba(0,0,0,0.06)', border: '1px solid var(--cor-borda)', borderRadius: 12, padding: 4, gap: 2 }}>
+              <TabsTrigger value="medicos" className="relative px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-white/80">
                 <span className="hidden sm:inline">Médicos</span>
                 <span className="sm:hidden">Médicos</span>
                 {pendentesCount > 0 && (
                   <span className="absolute -top-1 -right-1 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center text-white" style={{ background: 'var(--cor-vago)', fontSize: '10px' }}>{pendentesCount}</span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="escala" className="px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-white/10">Escala</TabsTrigger>
-              <TabsTrigger value="desistencias" className="relative px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-white/10">
+              <TabsTrigger value="desistencias" className="relative px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-white/80">
                 <span className="hidden sm:inline">Desistências</span>
                 <span className="sm:hidden">Desist.</span>
                 {desistenciasAbertas.length > 0 && (
                   <span className="absolute -top-1 -right-1 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center text-white" style={{ background: 'var(--cor-vago)', fontSize: '10px' }}>{desistenciasAbertas.length}</span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="trocas" className="px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-white/10">Trocas</TabsTrigger>
-              <TabsTrigger value="editor" className="px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-teal-500/20"
+              <TabsTrigger value="trocas" className="px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-white/80">Trocas</TabsTrigger>
+              <TabsTrigger value="editor" className="px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-teal-50"
                 style={{ color: 'var(--cor-primaria)', fontWeight: 600 }}>
                 Editor
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="medicos"><TabMedicos /></TabsContent>
-<TabsContent value="escala"><TabEscalaAdmin /></TabsContent>
 
             <TabsContent value="desistencias" className="space-y-4">
               {desistenciasAbertas.length === 0 && desistenciasEncerradas.length === 0 && (
