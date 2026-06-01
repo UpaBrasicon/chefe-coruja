@@ -147,7 +147,7 @@ export default function TabImportarProfissionais() {
       especialidades: r.especialidade?.trim() ? [r.especialidade.trim()] : [],
       role:            'medico',
       status_aprovacao:'aprovado',
-      ativo:           true,
+      ativo:           false,
     })).filter(r => r.nome)
 
     let ok = 0; const erros = []
