@@ -3,9 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTrocasPendentes } from '../hooks/useTrocasPendentes'
 import { useDesistenciasAbertas } from '../hooks/useDesistenciasAbertas'
-import { CalendarDays, ClipboardList, Wallet, ShieldCheck, LogOut, Settings, KeyRound } from 'lucide-react'
-import ModalAlterarSenha from './ModalAlterarSenha'
-import ModalConfiguracoes from './ModalConfiguracoes'
+import { CalendarDays, ClipboardList, Wallet, ShieldCheck } from 'lucide-react'
 
 const SIDEBAR_BG = 'linear-gradient(180deg, #0a5a56 0%, #0c7470 45%, #0d9488 100%)'
 const FLYOUT_STYLE = {
@@ -110,19 +108,15 @@ function NavItem({ item, active, onNavigate }) {
 }
 
 export default function Sidebar() {
-  const { profissional, signOut } = useAuth()
+  const { profissional } = useAuth()
   const { count: trocasCount } = useTrocasPendentes()
   const { count: vagasCount } = useDesistenciasAbertas()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const [hovUser, setHovUser] = useState(false)
-  const [modalSenha, setModalSenha] = useState(false)
-  const [modalConfig, setModalConfig] = useState(false)
   const isAdmin = profissional?.role === 'admin'
 
   function ir(rota) {
     navigate(rota)
-    setHovUser(false)
   }
 
   const navItems = [
@@ -218,67 +212,6 @@ export default function Sidebar() {
             />
           ))}
         </div>
-
-        {/* Divisor */}
-        <div className="w-10 mt-2 mb-3" style={{ height: '1px', background: 'rgba(255,255,255,0.15)' }} />
-
-        {/* Usuário */}
-        <div
-          className="relative w-full px-2"
-          onMouseEnter={() => setHovUser(true)}
-          onMouseLeave={() => setHovUser(false)}
-        >
-          <button
-            className="flex flex-col items-center justify-center gap-0.5 w-full rounded-xl py-2 transition-all hover:bg-white/10"
-            style={{ color: '#fff' }}
-          >
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-              style={{ background: 'rgba(255,255,255,0.22)', color: '#fff' }}
-            >
-              {profissional?.nome?.charAt(0)?.toUpperCase() ?? '?'}
-            </div>
-            <span
-              className="hidden sm:block text-center truncate w-full"
-              style={{ fontSize: '9px', color: 'rgba(255,255,255,0.65)', maxWidth: '64px', padding: '0 4px' }}
-            >
-              {profissional?.nome?.split(' ')[0] ?? ''}
-            </span>
-          </button>
-
-          {hovUser && (
-            <div
-              className="absolute left-full bottom-0 ml-2 rounded-xl overflow-hidden z-50"
-              style={{ minWidth: '200px', ...FLYOUT_STYLE, animation: 'sidebarFlyIn 0.12s ease forwards' }}
-            >
-              <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <p className="text-sm font-semibold text-white truncate">{profissional?.nome}</p>
-                <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.5)' }}>{profissional?.email}</p>
-              </div>
-              <FlyoutItem
-                label="Configurações"
-                icone={<Settings size={14} />}
-                onClick={() => { setHovUser(false); setModalConfig(true) }}
-              />
-              <FlyoutItem
-                label="Alterar senha"
-                icone={<KeyRound size={14} />}
-                onClick={() => { setHovUser(false); setModalSenha(true) }}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Logout */}
-        <button
-          onClick={signOut}
-          className="flex flex-col items-center justify-center gap-0.5 w-full px-2 py-2 mt-1 rounded-xl hover:bg-red-500/20 transition-all mx-2"
-          style={{ color: 'rgba(255,255,255,0.55)', width: 'calc(100% - 16px)' }}
-          title="Sair"
-        >
-          <LogOut size={18} strokeWidth={1.8} />
-          <span className="hidden sm:block" style={{ fontSize: '9px' }}>Sair</span>
-        </button>
       </nav>
     </>
   )
