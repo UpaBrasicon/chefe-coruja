@@ -62,19 +62,19 @@ function NavItem({ item, active, onNavigate }) {
         title={item.label}
       >
         <div className="relative">
-          <Icon size={20} strokeWidth={1.8} />
+          <Icon size={30} strokeWidth={1.6} />
           {item.badge > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center"
-              style={{ background: '#f59e0b', color: '#fff', fontSize: '9px' }}>
+            <span className="absolute -top-2 -right-2 font-bold w-5 h-5 rounded-full flex items-center justify-center"
+              style={{ background: '#f59e0b', color: '#fff', fontSize: '10px' }}>
               {item.badge > 9 ? '9+' : item.badge}
             </span>
           )}
         </div>
-        <span className="hidden sm:block leading-tight font-medium text-center" style={{ fontSize: '10px' }}>
+        <span className="hidden sm:block leading-tight font-medium text-center" style={{ fontSize: '12px' }}>
           {item.label}
         </span>
         {item.emBreve && (
-          <span className="hidden sm:block leading-none" style={{ fontSize: '8px', color: 'rgba(255,255,255,0.45)' }}>
+          <span className="hidden sm:block leading-none" style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)' }}>
             em breve
           </span>
         )}
@@ -178,9 +178,9 @@ export default function Sidebar() {
       `}</style>
 
       <nav
-        className="fixed left-0 top-0 bottom-0 flex flex-col items-center py-3 z-40"
+        className="fixed left-0 top-0 bottom-0 flex flex-col items-center py-4 z-40"
         style={{
-          width: '72px',
+          width: '108px',
           background: SIDEBAR_BG,
           boxShadow: '3px 0 18px rgba(0,0,0,0.28)',
         }}
@@ -194,12 +194,12 @@ export default function Sidebar() {
             src="/logo.png"
             alt="Chefe Coruja"
             className="rounded-full object-cover"
-            style={{ width: '48px', height: '48px', boxShadow: '0 2px 12px rgba(0,0,0,0.35)' }}
+            style={{ width: '72px', height: '72px', boxShadow: '0 2px 14px rgba(0,0,0,0.35)' }}
           />
         </button>
 
         {/* Divisor */}
-        <div className="w-10 mb-4" style={{ height: '1px', background: 'rgba(255,255,255,0.15)' }} />
+        <div className="mb-4" style={{ width: '60px', height: '1px', background: 'rgba(255,255,255,0.15)' }} />
 
         {/* Nav items */}
         <div className="flex flex-col items-center gap-1 flex-1 w-full px-2">
