@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -17,9 +15,7 @@ export default function Login() {
     e.preventDefault()
     setErro('')
     setCarregando(true)
-
     const { error } = await supabase.auth.signInWithPassword({ email, password: senha })
-
     if (error) {
       setErro(traduzirErro(error.message))
     } else {
@@ -47,67 +43,98 @@ export default function Login() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center px-4 py-8">
-      {/* Fundo com blur — extendido para evitar bordas brancas */}
-      <div style={{
-        position: 'absolute',
-        inset: '-20px',
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4 py-10"
+      style={{
         backgroundImage: 'url(/fundo-login.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        filter: 'blur(3px)',
-        zIndex: 0,
-      }} />
-      {/* Conteúdo acima do fundo */}
-      <div className="relative z-10 flex flex-col items-center w-full px-0 py-0">
-      {/* Logo */}
-      <div className="text-center mb-4">
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      <style>{`
+        .login-input {
+          background: rgba(255,255,255,0.15) !important;
+          border: 1.5px solid rgba(255,255,255,0.35) !important;
+          color: #fff !important;
+          border-radius: 10px !important;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .login-input::placeholder { color: rgba(255,255,255,0.5) !important; }
+        .login-input:focus {
+          border-color: rgba(255,255,255,0.7) !important;
+          box-shadow: 0 0 0 3px rgba(255,255,255,0.12) !important;
+          outline: none !important;
+        }
+        .login-btn {
+          background: rgba(255,255,255,0.95);
+          color: #0f766e;
+          font-weight: 700;
+          font-size: 1rem;
+          border: none;
+          border-radius: 10px;
+          padding: 0.7rem 1rem;
+          width: 100%;
+          cursor: pointer;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+          letter-spacing: 0.01em;
+        }
+        .login-btn:hover:not(:disabled) {
+          transform: scale(1.025);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+        }
+        .login-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+      `}</style>
+
+      {/* Logo + Título */}
+      <div className="flex flex-col items-center mb-6 select-none">
         <img
           src="/logo-login.png"
           alt="Chefe Coruja"
-          className="mx-auto object-contain drop-shadow-2xl"
-          style={{ width: 'clamp(260px, 72vw, 460px)', height: 'auto' }}
+          className="drop-shadow-2xl"
+          style={{ width: 'clamp(200px, 55vw, 320px)', height: 'auto' }}
         />
+        <h1
+          className="font-black tracking-widest uppercase mt-3"
+          style={{ color: '#fff', fontSize: 'clamp(1.6rem, 6vw, 2.4rem)', textShadow: '0 2px 16px rgba(0,0,0,0.4)', letterSpacing: '0.12em' }}
+        >
+          Chefe Coruja
+        </h1>
+        <p
+          className="tracking-widest uppercase text-center"
+          style={{ color: 'rgba(255,255,255,0.82)', fontSize: 'clamp(0.6rem, 2.5vw, 0.75rem)', letterSpacing: '0.22em', marginTop: '4px' }}
+        >
+          Simplificando sua rotina médica
+        </p>
       </div>
 
       {/* Card glass */}
       <div
-        className="w-full max-w-md rounded-2xl p-6"
+        className="w-full rounded-2xl p-7"
         style={{
-          background: 'rgba(255,255,255,0.12)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.25)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          maxWidth: '420px',
+          background: 'rgba(10,60,60,0.52)',
+          backdropFilter: 'blur(22px)',
+          WebkitBackdropFilter: 'blur(22px)',
+          border: '1px solid rgba(255,255,255,0.18)',
+          boxShadow: '0 12px 48px rgba(0,0,0,0.35)',
         }}
       >
-        <h2 className="text-lg font-semibold text-white mb-1 text-center">Entrar</h2>
-        <p className="text-sm mb-5 text-center" style={{ color: 'rgba(255,255,255,0.7)' }}>
+        <h2
+          className="font-bold text-center mb-1"
+          style={{ color: '#fff', fontSize: '1.35rem' }}
+        >
+          Entrar
+        </h2>
+        <p className="text-center text-sm mb-6" style={{ color: 'rgba(255,255,255,0.65)' }}>
           Acesse com seu e-mail e senha cadastrados
         </p>
 
-        <style>{`
-          .input-zoom {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-          }
-          .input-zoom:hover, .input-zoom:focus {
-            transform: scale(1.04);
-            box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
-            outline: none;
-          }
-          .btn-zoom {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-          }
-          .btn-zoom:hover, .btn-zoom:focus {
-            transform: scale(1.04);
-            box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
-            outline: none;
-          }
-        `}</style>
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="email" className="text-white text-sm font-medium">E-mail</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
+              E-mail
+            </Label>
             <Input
               id="email"
               type="email"
@@ -116,17 +143,14 @@ export default function Login() {
               onChange={e => setEmail(e.target.value)}
               required
               autoComplete="email"
-              style={{
-                background: 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                color: '#fff',
-              }}
-              className="placeholder:text-white/50 input-zoom"
+              className="login-input"
             />
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="senha" className="text-white text-sm font-medium">Senha</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="senha" style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
+              Senha
+            </Label>
             <Input
               id="senha"
               type="password"
@@ -135,48 +159,40 @@ export default function Login() {
               onChange={e => setSenha(e.target.value)}
               required
               autoComplete="current-password"
-              style={{
-                background: 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                color: '#fff',
-              }}
-              className="placeholder:text-white/50 input-zoom"
+              className="login-input"
             />
           </div>
 
           {erro && (
-            <p className="text-sm rounded-lg p-3" style={{ color: '#fca5a5', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}>
+            <p
+              className="text-sm rounded-lg p-3"
+              style={{ color: '#fca5a5', background: 'rgba(239,68,68,0.18)', border: '1px solid rgba(239,68,68,0.35)' }}
+            >
               {erro}
             </p>
           )}
 
-          <Button
-            type="submit"
-            className="w-full font-semibold mt-2 btn-zoom"
-            disabled={carregando}
-            style={{ background: 'rgba(255,255,255,0.95)', color: '#0f766e' }}
-          >
+          <button type="submit" className="login-btn mt-1" disabled={carregando}>
             {carregando ? 'Entrando...' : 'Entrar'}
-          </Button>
+          </button>
         </form>
 
-        <div className="mt-4 flex flex-col gap-2 text-center text-sm">
+        <div className="mt-5 flex flex-col gap-2.5 text-center text-sm">
           <button
             type="button"
             onClick={handleEsqueciSenha}
-            className="underline"
-            style={{ color: 'rgba(255,255,255,0.7)' }}
+            className="underline underline-offset-2 transition-opacity hover:opacity-100"
+            style={{ color: 'rgba(255,255,255,0.65)' }}
           >
             Esqueci minha senha
           </button>
-          <span style={{ color: 'rgba(255,255,255,0.7)' }}>
+          <span style={{ color: 'rgba(255,255,255,0.65)' }}>
             Não tem conta?{' '}
-            <Link to="/signup" className="font-semibold underline text-white">
+            <Link to="/signup" className="font-semibold underline underline-offset-2 text-white">
               Criar conta
             </Link>
           </span>
         </div>
-      </div>
       </div>
     </div>
   )
