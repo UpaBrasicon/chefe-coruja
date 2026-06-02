@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useTrocasPendentes } from '../hooks/useTrocasPendentes'
-import Header from '../components/Header'
+import Layout from '../components/Layout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Button } from '../components/ui/button'
 
@@ -222,8 +222,7 @@ export default function MinhasTrocas() {
   const pendenteCount = recebidas.filter(t => t.status === 'pendente').length
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0f9ff 0%, #dbeafe 45%, #f0fdf9 100%)' }}>
-      <Header />
+    <Layout style={{ background: 'linear-gradient(160deg, #f0f9ff 0%, #dbeafe 45%, #f0fdf9 100%)' }}>
       <main className="max-w-2xl mx-auto px-4 py-6">
         <div className="mb-6">
           <button onClick={() => navigate('/escala')} className="text-sm mb-3 block" style={{ color: '#64748b' }}>
@@ -308,6 +307,6 @@ export default function MinhasTrocas() {
           </Tabs>
         )}
       </main>
-    </div>
+    </Layout>
   )
 }

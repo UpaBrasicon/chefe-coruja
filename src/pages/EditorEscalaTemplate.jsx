@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import Header from '../components/Header'
+import Layout from '../components/Layout'
 import { Button } from '../components/ui/button'
 import { useNavyTheme } from '../hooks/useNavyTheme'
 import ModalImportarEditor from '../components/ModalImportarEditor'
@@ -724,8 +724,7 @@ export default function EditorEscalaTemplate() {
   const BORDER_COL = '1px solid rgba(255,255,255,0.08)'
 
   return (
-    <div style={{ minHeight: '100vh', overflow: 'hidden', background: 'linear-gradient(145deg, #0c1445 0%, #0e2d6e 45%, #0e4d8a 100%)' }}>
-      <Header />
+    <Layout style={{ minHeight: '100vh', overflow: 'hidden', background: 'linear-gradient(145deg, #0c1445 0%, #0e2d6e 45%, #0e4d8a 100%)' }}>
       <main className="px-2 sm:px-4 pb-16 pt-4">
 
         {/* Cabeçalho */}
@@ -1014,6 +1013,6 @@ export default function EditorEscalaTemplate() {
           </button>
         </div>
       )}
-    </div>
+    </Layout>
   )
 }

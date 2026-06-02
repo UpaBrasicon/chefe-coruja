@@ -1,5 +1,8 @@
+import Layout from '../components/Layout'
+
 export default function EmBreve({ titulo, descricao, icone = '🚧' }) {
   return (
+    <Layout style={{ background: 'var(--cor-fundo)' }}>
     <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-16">
       <div className="text-center max-w-md">
         <div className="text-6xl mb-6">{icone}</div>
@@ -15,5 +18,6 @@ export default function EmBreve({ titulo, descricao, icone = '🚧' }) {
         </span>
       </div>
     </div>
+    </Layout>
   )
 }

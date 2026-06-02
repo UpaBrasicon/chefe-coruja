@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useDesistenciasAbertas } from '../hooks/useDesistenciasAbertas'
-import Header from '../components/Header'
+import Layout from '../components/Layout'
 import { Button } from '../components/ui/button'
 
 const MESES_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
@@ -82,8 +82,7 @@ export default function DesistenciasAbertas() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0f9ff 0%, #dbeafe 45%, #f0fdf9 100%)' }}>
-      <Header />
+    <Layout style={{ background: 'linear-gradient(160deg, #f0f9ff 0%, #dbeafe 45%, #f0fdf9 100%)' }}>
       <main className="max-w-2xl mx-auto px-4 py-6">
         <div className="mb-6">
           <button onClick={() => navigate('/escala')} className="text-sm mb-3 block" style={{ color: '#64748b' }}>
@@ -204,6 +203,6 @@ export default function DesistenciasAbertas() {
           </div>
         )}
       </main>
-    </div>
+    </Layout>
   )
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import Header from '../components/Header'
+import Layout from '../components/Layout'
 import TabMedicos from '../components/admin/TabMedicos'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Button } from '../components/ui/button'
@@ -162,8 +162,7 @@ export default function PainelAdmin() {
   const contT = { todos: trocas.length, pendente: trocas.filter(t => t.status === 'pendente').length, aceita: trocas.filter(t => t.status === 'aceita').length, recusada: trocas.filter(t => t.status === 'recusada').length }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--cor-fundo)' }}>
-      <Header />
+    <Layout style={{ background: 'var(--cor-fundo)' }}>
       <main className="max-w-5xl mx-auto px-4 py-6">
         <h1 className="text-xl font-bold mb-6" style={{ color: 'var(--cor-texto)' }}>Painel Admin</h1>
 
@@ -299,6 +298,6 @@ export default function PainelAdmin() {
           </>
         )}
       </main>
-    </div>
+    </Layout>
   )
 }
