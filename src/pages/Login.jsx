@@ -43,15 +43,16 @@ export default function Login() {
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 py-10"
-      style={{
+    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center px-4 py-10">
+      <div style={{
+        position: 'absolute',
+        inset: '-20px',
         backgroundImage: 'url(/fundo-login.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
+        filter: 'blur(1.5px)',
+        zIndex: 0,
+      }} />
       <style>{`
         .login-input {
           background: rgba(255,255,255,0.15) !important;
@@ -86,26 +87,15 @@ export default function Login() {
         .login-btn:disabled { opacity: 0.65; cursor: not-allowed; }
       `}</style>
 
-      {/* Logo + Título */}
-      <div className="flex flex-col items-center mb-6 select-none">
+      <div className="relative z-10 flex flex-col items-center w-full">
+      {/* Logo */}
+      <div className="flex flex-col items-center mb-4 select-none">
         <img
           src="/logo-login.png"
           alt="Chefe Coruja"
           className="drop-shadow-2xl"
-          style={{ width: 'clamp(200px, 55vw, 320px)', height: 'auto' }}
+          style={{ width: 'clamp(260px, 72vw, 460px)', height: 'auto' }}
         />
-        <h1
-          className="font-black tracking-widest uppercase mt-3"
-          style={{ color: '#fff', fontSize: 'clamp(1.6rem, 6vw, 2.4rem)', textShadow: '0 2px 16px rgba(0,0,0,0.4)', letterSpacing: '0.12em' }}
-        >
-          Chefe Coruja
-        </h1>
-        <p
-          className="tracking-widest uppercase text-center"
-          style={{ color: 'rgba(255,255,255,0.82)', fontSize: 'clamp(0.6rem, 2.5vw, 0.75rem)', letterSpacing: '0.22em', marginTop: '4px' }}
-        >
-          Simplificando sua rotina médica
-        </p>
       </div>
 
       {/* Card glass */}
@@ -193,6 +183,7 @@ export default function Login() {
             </Link>
           </span>
         </div>
+      </div>
       </div>
     </div>
   )
