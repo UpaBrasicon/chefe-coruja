@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Bell, ChevronDown, Settings, KeyRound, LogOut } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useAvisos } from '../hooks/useAvisos'
 import PainelAvisos from './PainelAvisos'
@@ -29,6 +30,7 @@ function DropItem({ icon, label, onClick, danger, divider }) {
 export default function TopBar() {
   const { profissional, signOut } = useAuth()
   const { avisos, naoLidas, marcarLida, marcarTodasLidas, excluir } = useAvisos()
+  const navigate = useNavigate()
   const [painelAberto, setPainelAberto] = useState(false)
   const [dropAberto, setDropAberto] = useState(false)
   const [modalSenha, setModalSenha] = useState(false)
@@ -156,8 +158,8 @@ export default function TopBar() {
               <div className="py-1">
                 <DropItem
                   icon={<Settings size={14} />}
-                  label="Configurações"
-                  onClick={() => { setDropAberto(false); setModalConfig(true) }}
+                  label="Meu perfil"
+                  onClick={() => { setDropAberto(false); navigate('/perfil') }}
                 />
                 <DropItem
                   icon={<KeyRound size={14} />}

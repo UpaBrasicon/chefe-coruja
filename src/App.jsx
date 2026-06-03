@@ -5,6 +5,7 @@ import ProtectedRoute from './routes/ProtectedRoute'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Home from './pages/Home'
+import Perfil from './pages/Perfil'
 import Escala from './pages/Escala'
 import AguardandoAprovacao from './pages/AguardandoAprovacao'
 import PainelAdmin from './pages/PainelAdmin'
@@ -37,6 +38,8 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/aguardando" element={<AguardandoAprovacao />} />
           <Route path="/redefinir-senha" element={<RedefinirSenha />} />
+
+          <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
 
           <Route
             path="/home"
