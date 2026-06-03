@@ -1,12 +1,54 @@
 import { useState, useRef, useEffect } from 'react'
 import { Bell, ChevronDown, Settings, KeyRound, LogOut } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useAvisos } from '../hooks/useAvisos'
 import PainelAvisos from './PainelAvisos'
 import ModalAlterarSenha from './ModalAlterarSenha'
 
-function DropItem({ icon, label, onClick, danger, divider }) {
+/* Páginas navy — topbar adapta cores para não contrastar com o fundo escuro */
+const NAVY_ROUTES = ['/admin/editor-escala']
+
+function temaTopBar(pathname) {
+  const isNavy = NAVY_ROUTES.some(r => pathname.startsWith(r))
+  return isNavy
+    ? {
+        bg:          'rgba(12, 20, 69, 0.88)',
+        border:      'rgba(255,255,255,0.07)',
+        shadow:      '0 1px 8px rgba(0,0,0,0.28)',
+        iconColor:   'rgba(255,255,255,0.65)',
+        hoverBg:     'rgba(255,255,255,0.10)',
+        avatarBorder:'rgba(255,255,255,0.15)',
+        badgeRing:   '#0e2d6e',
+        dropBg:      '#0e2d6e',
+        dropBorder:  'rgba(255,255,255,0.10)',
+        dropShadow:  '0 8px 32px rgba(0,0,0,0.45)',
+        dropText:    '#f1f5f9',
+        dropSub:     'rgba(255,255,255,0.45)',
+        dropDivider: 'rgba(255,255,255,0.08)',
+        dropHover:   'rgba(255,255,255,0.07)',
+        dropDanger:  '#fca5a5',
+      }
+    : {
+        bg:          'rgba(255,255,255,0.97)',
+        border:      'rgba(0,0,0,0.07)',
+        shadow:      '0 1px 6px rgba(0,0,0,0.05)',
+        iconColor:   '#6b7280',
+        hoverBg:     '#f3f4f6',
+        avatarBorder:'transparent',
+        badgeRing:   '#fff',
+        dropBg:      '#fff',
+        dropBorder:  'rgba(0,0,0,0.07)',
+        dropShadow:  '0 8px 32px rgba(0,0,0,0.12)',
+        dropText:    '#111827',
+        dropSub:     '#9ca3af',
+        dropDivider: '#f3f4f6',
+        dropHover:   '#f9fafb',
+        dropDanger:  '#dc2626',
+      }
+}
+
+function DropItem({ icon, label, onClick, danger, divider, tema }) {
   const [hov, setHov] = useState(false)
   return (
     <button
@@ -15,9 +57,9 @@ function DropItem({ icon, label, onClick, danger, divider }) {
       onMouseLeave={() => setHov(false)}
       className="w-full text-left px-4 py-2.5 flex items-center gap-3 text-sm transition-colors"
       style={{
-        color: danger ? '#dc2626' : '#374151',
-        background: hov ? (danger ? 'rgba(220,38,38,0.06)' : '#f9fafb') : 'transparent',
-        borderTop: divider ? '1px solid #f3f4f6' : 'none',
+        color: danger ? tema.dropDanger : tema.dropText,
+        background: hov ? tema.dropHover : 'transparent',
+        borderTop: divider ? `1px solid ${tema.dropDivider}` : 'none',
       }}
     >
       {icon}
@@ -30,9 +72,12 @@ export default function TopBar() {
   const { profissional, signOut } = useAuth()
   const { avisos, naoLidas, marcarLida, marcarTodasLidas, excluir } = useAvisos()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const tema = temaTopBar(pathname)
+
   const [painelAberto, setPainelAberto] = useState(false)
-  const [dropAberto, setDropAberto] = useState(false)
-  const [modalSenha, setModalSenha] = useState(false)
+  const [dropAberto,   setDropAberto]   = useState(false)
+  const [modalSenha,   setModalSenha]   = useState(false)
   const dropRef = useRef(null)
 
   useEffect(() => {
@@ -58,18 +103,19 @@ export default function TopBar() {
         className="sticky top-0 z-30 flex items-center justify-end gap-1 px-5"
         style={{
           height: '56px',
-          background: 'rgba(255,255,255,0.97)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          borderBottom: '1px solid rgba(0,0,0,0.07)',
-          boxShadow: '0 1px 6px rgba(0,0,0,0.05)',
+          background: tema.bg,
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          borderBottom: `1px solid ${tema.border}`,
+          boxShadow: tema.shadow,
+          transition: 'background 0.3s ease, border-color 0.3s ease',
         }}
       >
         {/* Sino */}
         <button
           className="relative p-2 rounded-full transition-colors"
-          style={{ color: '#6b7280' }}
-          onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
+          style={{ color: tema.iconColor }}
+          onMouseEnter={e => e.currentTarget.style.background = tema.hoverBg}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           onClick={() => setPainelAberto(v => !v)}
           title="Notificações"
@@ -84,9 +130,8 @@ export default function TopBar() {
                 background: '#ef4444',
                 color: '#fff',
                 fontSize: '9px',
-                top: '4px',
-                right: '4px',
-                boxShadow: '0 0 0 2px #fff',
+                top: '4px', right: '4px',
+                boxShadow: `0 0 0 2px ${tema.badgeRing}`,
               }}
             >
               {naoLidas > 9 ? '9+' : naoLidas}
@@ -99,85 +144,49 @@ export default function TopBar() {
           <button
             onClick={() => setDropAberto(v => !v)}
             className="flex items-center gap-1.5 rounded-full pl-0.5 pr-2 py-0.5 transition-colors"
-            style={{ background: dropAberto ? '#f3f4f6' : 'transparent' }}
-            onMouseEnter={e => { if (!dropAberto) e.currentTarget.style.background = '#f3f4f6' }}
+            style={{ background: dropAberto ? tema.hoverBg : 'transparent' }}
+            onMouseEnter={e => { if (!dropAberto) e.currentTarget.style.background = tema.hoverBg }}
             onMouseLeave={e => { if (!dropAberto) e.currentTarget.style.background = 'transparent' }}
           >
             {profissional?.foto_url ? (
-              <img
-                src={profissional.foto_url}
-                alt={profissional.nome}
+              <img src={profissional.foto_url} alt={profissional.nome}
                 className="rounded-full object-cover"
-                style={{ width: '36px', height: '36px' }}
-              />
+                style={{ width: 36, height: 36, border: `2px solid ${tema.avatarBorder}` }} />
             ) : (
-              <div
-                className="rounded-full flex items-center justify-center text-sm font-bold text-white select-none"
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  background: 'linear-gradient(135deg, #0d9488 0%, #0c7470 100%)',
-                  fontSize: '14px',
-                }}
-              >
+              <div className="rounded-full flex items-center justify-center text-sm font-bold text-white select-none"
+                style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#0d9488 0%,#0c7470 100%)', fontSize: 14 }}>
                 {inicial}
               </div>
             )}
-            <ChevronDown
-              size={14}
-              strokeWidth={2.5}
-              style={{
-                color: '#9ca3af',
-                transition: 'transform 0.2s',
-                transform: dropAberto ? 'rotate(180deg)' : 'rotate(0deg)',
-              }}
-            />
+            <ChevronDown size={14} strokeWidth={2.5}
+              style={{ color: tema.iconColor, transition: 'transform 0.2s', transform: dropAberto ? 'rotate(180deg)' : 'rotate(0deg)' }} />
           </button>
 
           {dropAberto && (
             <div
               className="absolute right-0 top-full mt-2 rounded-2xl overflow-hidden"
               style={{
-                minWidth: '210px',
-                background: '#fff',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
-                border: '1px solid rgba(0,0,0,0.07)',
+                minWidth: 210,
+                background: tema.dropBg,
+                boxShadow: tema.dropShadow,
+                border: `1px solid ${tema.dropBorder}`,
                 animation: 'topDropIn 0.15s ease forwards',
               }}
             >
-              <div className="px-4 py-3" style={{ borderBottom: '1px solid #f3f4f6' }}>
-                <p className="text-sm font-semibold truncate" style={{ color: '#111827' }}>
-                  {profissional?.nome}
-                </p>
-                <p className="text-xs truncate mt-0.5" style={{ color: '#9ca3af' }}>
-                  {profissional?.email}
-                </p>
+              <div className="px-4 py-3" style={{ borderBottom: `1px solid ${tema.dropDivider}` }}>
+                <p className="text-sm font-semibold truncate" style={{ color: tema.dropText }}>{profissional?.nome}</p>
+                <p className="text-xs truncate mt-0.5" style={{ color: tema.dropSub }}>{profissional?.email}</p>
               </div>
               <div className="py-1">
-                <DropItem
-                  icon={<Settings size={14} />}
-                  label="Meu perfil"
-                  onClick={() => { setDropAberto(false); navigate('/perfil') }}
-                />
-                <DropItem
-                  icon={<KeyRound size={14} />}
-                  label="Alterar senha"
-                  onClick={() => { setDropAberto(false); setModalSenha(true) }}
-                />
-                <DropItem
-                  icon={<LogOut size={14} />}
-                  label="Sair"
-                  onClick={signOut}
-                  danger
-                  divider
-                />
+                <DropItem tema={tema} icon={<Settings size={14} />}  label="Meu perfil"    onClick={() => { setDropAberto(false); navigate('/perfil') }} />
+                <DropItem tema={tema} icon={<KeyRound size={14} />}  label="Alterar senha" onClick={() => { setDropAberto(false); setModalSenha(true) }} />
+                <DropItem tema={tema} icon={<LogOut size={14} />}    label="Sair"          onClick={signOut} danger divider />
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Painel lateral de avisos */}
       <PainelAvisos
         aberto={painelAberto}
         onFechar={() => setPainelAberto(false)}
