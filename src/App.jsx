@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { AuthProvider } from './contexts/AuthContext'
+import { AvisosProvider } from './contexts/AvisosContext'
 import ProtectedRoute from './routes/ProtectedRoute'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -33,6 +34,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <AvisosProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -104,6 +106,7 @@ export default function App() {
           <Route path="/" element={<RootRedirect />} />
           <Route path="*" element={<RootRedirect />} />
         </Routes>
+        </AvisosProvider>
       </AuthProvider>
     </BrowserRouter>
   )
