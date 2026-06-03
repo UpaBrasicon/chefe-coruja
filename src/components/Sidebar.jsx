@@ -192,7 +192,7 @@ export default function Sidebar() {
       `}</style>
 
       <nav
-        className="fixed left-0 top-0 bottom-0 flex flex-col items-center py-4 z-40"
+        className="hidden md:flex fixed left-0 top-0 bottom-0 flex-col items-center py-4 z-40"
         style={{
           width: '108px',
           background: SIDEBAR_BG,

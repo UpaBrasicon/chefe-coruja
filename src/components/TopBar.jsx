@@ -100,7 +100,7 @@ export default function TopBar() {
       `}</style>
 
       <div
-        className="sticky top-0 z-30 flex items-center justify-end gap-1 px-5"
+        className="sticky top-0 z-30 flex items-center gap-1 px-5"
         style={{
           height: '56px',
           background: tema.bg,
@@ -111,6 +111,20 @@ export default function TopBar() {
           transition: 'background 0.3s ease, border-color 0.3s ease',
         }}
       >
+        {/* Logo — mobile only (sidebar escondido no mobile) */}
+        <button
+          onClick={() => navigate('/home')}
+          className="flex items-center gap-2 md:hidden mr-auto shrink-0"
+        >
+          <img src="/logo.png" alt="" className="rounded-full object-cover" style={{ width: 32, height: 32 }} />
+          <span className="font-bold text-sm" style={{ color: tema.dropText === '#f1f5f9' ? '#fff' : '#1e293b' }}>
+            Chefe Coruja
+          </span>
+        </button>
+
+        {/* Spacer — desktop only (logo fica no sidebar) */}
+        <div className="hidden md:flex flex-1" />
+
         {/* Sino */}
         <button
           className="relative p-2 rounded-full transition-colors"
