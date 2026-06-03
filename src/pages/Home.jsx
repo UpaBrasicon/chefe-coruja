@@ -4,7 +4,7 @@ import { Search, CalendarDays, ArrowLeftRight, Building2, ClipboardList, Wallet,
 import { useAuth } from '../contexts/AuthContext'
 import { useTrocasPendentes } from '../hooks/useTrocasPendentes'
 import { useDesistenciasAbertas } from '../hooks/useDesistenciasAbertas'
-import { useAvisos } from '../hooks/useAvisos'
+import { useAvisos } from '../contexts/AvisosContext'
 import { useProximosPlantoes } from '../hooks/useProximosPlantoes'
 import { supabase } from '../lib/supabase'
 import { SkLine, Skeleton } from '../components/ui/skeleton'

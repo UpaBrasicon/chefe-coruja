@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from './AuthContext'
 
-export function useAvisos() {
+const AvisosContext = createContext(null)
+
+export function AvisosProvider({ children }) {
   const { profissional } = useAuth()
-  const [avisos, setAvisos] = useState([])
+  const [avisos, setAvisos]   = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!profissional?.id) return
 
     async function processarDatasFixas() {
-      const hoje = new Date().toDateString()
-      const chave = `datas_fixas_${profissional.id}_${hoje}`
+      const chave = `datas_fixas_${profissional.id}_${new Date().toDateString()}`
       if (sessionStorage.getItem(chave)) return
       sessionStorage.setItem(chave, '1')
       await supabase.rpc('fn_processar_datas_fixas')
@@ -32,15 +33,10 @@ export function useAvisos() {
     carregar()
     processarDatasFixas()
 
-    // Real-time
     const channel = supabase
       .channel(`avisos-${profissional.id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'avisos',
-        filter: `profissional_id=eq.${profissional.id}`,
-      }, () => carregar())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'avisos', filter: `profissional_id=eq.${profissional.id}` },
+        () => carregar())
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
@@ -55,10 +51,7 @@ export function useAvisos() {
 
   async function marcarTodasLidas() {
     setAvisos(prev => prev.map(a => ({ ...a, lida: true })))
-    await supabase.from('avisos')
-      .update({ lida: true })
-      .eq('profissional_id', profissional.id)
-      .eq('lida', false)
+    await supabase.from('avisos').update({ lida: true }).eq('profissional_id', profissional.id).eq('lida', false)
   }
 
   async function excluir(id) {
@@ -66,5 +59,13 @@ export function useAvisos() {
     await supabase.from('avisos').delete().eq('id', id)
   }
 
-  return { avisos, loading, naoLidas, marcarLida, marcarTodasLidas, excluir }
+  return (
+    <AvisosContext.Provider value={{ avisos, loading, naoLidas, marcarLida, marcarTodasLidas, excluir }}>
+      {children}
+    </AvisosContext.Provider>
+  )
+}
+
+export function useAvisos() {
+  return useContext(AvisosContext)
 }

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Bell, ChevronDown, Settings, KeyRound, LogOut } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { useAvisos } from '../hooks/useAvisos'
+import { useAvisos } from '../contexts/AvisosContext'
 import PainelAvisos from './PainelAvisos'
 import ModalAlterarSenha from './ModalAlterarSenha'
 
