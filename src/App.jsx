@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './routes/ProtectedRoute'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import Home from './pages/Home'
 import Escala from './pages/Escala'
 import AguardandoAprovacao from './pages/AguardandoAprovacao'
 import PainelAdmin from './pages/PainelAdmin'
@@ -21,7 +22,7 @@ function RootRedirect() {
       sessionStorage.setItem('recovery_landing', '1')
       navigate('/redefinir-senha', { replace: true })
     } else {
-      navigate('/escala', { replace: true })
+      navigate('/home', { replace: true })
     }
   }, [])
   return null
@@ -36,6 +37,15 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/aguardando" element={<AguardandoAprovacao />} />
           <Route path="/redefinir-senha" element={<RedefinirSenha />} />
+
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/escala"

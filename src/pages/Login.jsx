@@ -19,7 +19,7 @@ export default function Login() {
     if (error) {
       setErro(traduzirErro(error.message))
     } else {
-      navigate('/escala')
+      navigate('/home')
     }
     setCarregando(false)
   }

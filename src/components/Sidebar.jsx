@@ -200,7 +200,7 @@ export default function Sidebar() {
         }}
       >
         <button
-          onClick={() => ir('/escala')}
+          onClick={() => ir('/home')}
           className="mb-5 mt-1 shrink-0 transition-transform hover:scale-105"
         >
           <img
