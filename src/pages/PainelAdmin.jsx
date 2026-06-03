@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Layout from '../components/Layout'
 import TabMedicos from '../components/admin/TabMedicos'
+import TabAvisos from '../components/admin/TabAvisos'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Button } from '../components/ui/button'
 
@@ -217,11 +218,11 @@ export default function PainelAdmin() {
           </div>
 
           <Tabs defaultValue={abaInicial} onValueChange={v => { if (v === 'editor') navigate('/admin/editor-escala') }}>
-            <TabsList className="w-full mb-5 grid grid-cols-4 text-xs sm:text-sm"
+            <TabsList className="w-full mb-5 grid grid-cols-5 text-xs sm:text-sm"
               style={{ background: 'rgba(0,0,0,0.06)', border: '1px solid var(--cor-borda)', borderRadius: 12, padding: 4, gap: 2 }}>
               <TabsTrigger value="medicos" className="relative px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-white/80">
                 <span className="hidden sm:inline">Médicos</span>
-                <span className="sm:hidden">Médicos</span>
+                <span className="sm:hidden">Méd.</span>
                 {pendentesCount > 0 && (
                   <span className="absolute -top-1 -right-1 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center text-white" style={{ background: 'var(--cor-vago)', fontSize: '10px' }}>{pendentesCount}</span>
                 )}
@@ -234,6 +235,10 @@ export default function PainelAdmin() {
                 )}
               </TabsTrigger>
               <TabsTrigger value="trocas" className="px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-white/80">Trocas</TabsTrigger>
+              <TabsTrigger value="avisos" className="px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-white/80">
+                <span className="hidden sm:inline">Avisos</span>
+                <span className="sm:hidden">Avisos</span>
+              </TabsTrigger>
               <TabsTrigger value="editor" className="px-1 sm:px-3 rounded-lg transition-all duration-200 hover:bg-teal-50"
                 style={{ color: 'var(--cor-primaria)', fontWeight: 600 }}>
                 Editor
@@ -241,6 +246,7 @@ export default function PainelAdmin() {
             </TabsList>
 
             <TabsContent value="medicos"><TabMedicos /></TabsContent>
+            <TabsContent value="avisos"><TabAvisos /></TabsContent>
 
             <TabsContent value="desistencias" className="space-y-4">
               {desistenciasAbertas.length === 0 && desistenciasEncerradas.length === 0 && (

@@ -10,6 +10,14 @@ export function useAvisos() {
   useEffect(() => {
     if (!profissional?.id) return
 
+    async function processarDatasFixas() {
+      const hoje = new Date().toDateString()
+      const chave = `datas_fixas_${profissional.id}_${hoje}`
+      if (sessionStorage.getItem(chave)) return
+      sessionStorage.setItem(chave, '1')
+      await supabase.rpc('fn_processar_datas_fixas')
+    }
+
     async function carregar() {
       const { data } = await supabase
         .from('avisos')
@@ -22,6 +30,7 @@ export function useAvisos() {
     }
 
     carregar()
+    processarDatasFixas()
 
     // Real-time
     const channel = supabase
