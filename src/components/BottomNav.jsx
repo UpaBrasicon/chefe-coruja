@@ -7,7 +7,7 @@ import { useAvisos } from '../contexts/AvisosContext'
 import {
   Home, CalendarDays, ArrowLeftRight, Building2,
   MoreHorizontal, ShieldCheck, Wallet, ClipboardList,
-  LogOut, User, Bell, X,
+  LogOut, User, Bell, X, Crown,
 } from 'lucide-react'
 
 const NAV_BG = 'linear-gradient(90deg, #0a5a56 0%, #0c7470 50%, #0d9488 100%)'
@@ -68,7 +68,8 @@ export default function BottomNav() {
   const navigate   = useNavigate()
   const { pathname } = useLocation()
   const [maisAberto, setMaisAberto] = useState(false)
-  const isAdmin = profissional?.role === 'admin'
+  const isAdmin = ['admin', 'ceo'].includes(profissional?.role)
+  const isCEO   = profissional?.role === 'ceo'
 
   function ir(rota) { navigate(rota); setMaisAberto(false) }
 
@@ -123,6 +124,11 @@ export default function BottomNav() {
 
         {/* Perfil */}
         <SheetItem icon={<User size={18} />} label="Meu perfil" onClick={() => ir('/perfil')} />
+
+        {/* CEO */}
+        {isCEO && (
+          <SheetItem icon={<Crown size={18} />} label="Painel CEO" onClick={() => ir('/ceo')} />
+        )}
 
         {/* Admin */}
         {isAdmin && (

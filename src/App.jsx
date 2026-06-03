@@ -15,6 +15,7 @@ import DesistenciasAbertas from './pages/DesistenciasAbertas'
 import RedefinirSenha from './pages/RedefinirSenha'
 import EmBreve from './pages/EmBreve'
 import EditorEscalaTemplate from './pages/EditorEscalaTemplate'
+import PainelCEO from './pages/PainelCEO'
 
 function RootRedirect() {
   const navigate = useNavigate()
@@ -86,6 +87,15 @@ export default function App() {
             element={
               <ProtectedRoute adminOnly>
                 <EditorEscalaTemplate />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/ceo"
+            element={
+              <ProtectedRoute ceoOnly>
+                <PainelCEO />
               </ProtectedRoute>
             }
           />

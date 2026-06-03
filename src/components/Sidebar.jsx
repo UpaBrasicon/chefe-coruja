@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTrocasPendentes } from '../hooks/useTrocasPendentes'
 import { useDesistenciasAbertas } from '../hooks/useDesistenciasAbertas'
-import { CalendarDays, ClipboardList, Wallet, ShieldCheck } from 'lucide-react'
+import { CalendarDays, ClipboardList, Wallet, ShieldCheck, Crown } from 'lucide-react'
 
 const SIDEBAR_BG = 'linear-gradient(180deg, #0a5a56 0%, #0c7470 45%, #0d9488 100%)'
 const FLYOUT_STYLE = {
@@ -113,7 +113,8 @@ export default function Sidebar() {
   const { count: vagasCount } = useDesistenciasAbertas()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const isAdmin = profissional?.role === 'admin'
+  const isAdmin = ['admin', 'ceo'].includes(profissional?.role)
+  const isCEO   = profissional?.role === 'ceo'
 
   // Estado compartilhado — só um flyout aberto por vez
   const [activeId, setActiveId] = useState(null)
@@ -179,6 +180,13 @@ export default function Sidebar() {
       icon: ShieldCheck,
       activeRoutes: ['/admin'],
       rota: '/admin',
+    }] : []),
+    ...(isCEO ? [{
+      id: 'ceo',
+      label: 'CEO',
+      icon: Crown,
+      activeRoutes: ['/ceo'],
+      rota: '/ceo',
     }] : []),
   ]
 
