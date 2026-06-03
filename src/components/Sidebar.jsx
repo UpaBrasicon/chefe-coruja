@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTrocasPendentes } from '../hooks/useTrocasPendentes'
@@ -44,13 +44,23 @@ function FlyoutItem({ label, icone, onClick, badge, emBreve }) {
 
 function NavItem({ item, active, onNavigate }) {
   const [hov, setHov] = useState(false)
+  const timerRef = useRef(null)
   const Icon = item.icon
+
+  function show() {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    setHov(true)
+  }
+
+  function hide() {
+    timerRef.current = setTimeout(() => setHov(false), 180)
+  }
 
   return (
     <div
       className="relative w-full"
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
+      onMouseEnter={show}
+      onMouseLeave={hide}
     >
       <button
         onClick={() => item.rota && onNavigate(item.rota)}
@@ -80,11 +90,13 @@ function NavItem({ item, active, onNavigate }) {
         )}
       </button>
 
-      {/* Flyout */}
+      {/* Flyout — onMouseEnter/Leave aqui cancela/reinicia o timer */}
       {hov && item.children && (
         <div
-          className="absolute left-full top-0 ml-2 rounded-xl overflow-hidden z-50"
+          className="absolute left-full top-0 ml-1 rounded-xl overflow-hidden z-50"
           style={{ minWidth: '210px', ...FLYOUT_STYLE, animation: 'sidebarFlyIn 0.12s ease forwards' }}
+          onMouseEnter={show}
+          onMouseLeave={hide}
         >
           <div className="px-4 py-2 border-b border-white/10">
             <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.5)' }}>
