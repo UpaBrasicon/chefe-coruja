@@ -656,7 +656,12 @@ export default function EditorEscalaTemplate() {
     const ids = (aEx || []).map(p => p.id)
     for (let i = 0; i < ids.length; i += 200) {
       const b = ids.slice(i, i + 200)
-      await Promise.all([supabase.from('trocas').delete().in('plantao_id', b), supabase.from('desistencias').delete().in('plantao_id', b)])
+      const [rT, rD] = await Promise.all([
+        supabase.from('trocas').delete().in('plantao_id', b),
+        supabase.from('desistencias').delete().in('plantao_id', b),
+      ])
+      if (rT.error) throw new Error('Erro ao limpar trocas: ' + rT.error.message)
+      if (rD.error) throw new Error('Erro ao limpar desistências: ' + rD.error.message)
     }
     await supabase.from('plantoes').delete().gte('data', ini).lt('data', fin)
     for (let i = 0; i < plantoesParaCriar.length; i += 100) {

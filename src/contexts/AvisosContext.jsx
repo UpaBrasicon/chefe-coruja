@@ -50,6 +50,7 @@ export function AvisosProvider({ children }) {
   }
 
   async function marcarTodasLidas() {
+    if (!profissional?.id) return
     setAvisos(prev => prev.map(a => ({ ...a, lida: true })))
     await supabase.from('avisos').update({ lida: true }).eq('profissional_id', profissional.id).eq('lida', false)
   }
@@ -66,6 +67,11 @@ export function AvisosProvider({ children }) {
   )
 }
 
+const AVISOS_VAZIO = {
+  avisos: [], loading: false, naoLidas: 0,
+  marcarLida: async () => {}, marcarTodasLidas: async () => {}, excluir: async () => {},
+}
+
 export function useAvisos() {
-  return useContext(AvisosContext)
+  return useContext(AvisosContext) ?? AVISOS_VAZIO
 }

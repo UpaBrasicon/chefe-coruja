@@ -181,10 +181,17 @@ export default function MinhasTrocas() {
     if (erroTroca) { setErro('Erro ao aceitar: ' + erroTroca.message); setCarregandoId(null); return }
 
     // 2. Transfere o plantão para quem aceitou (este usuário)
+    if (!troca.plantoes?.id) {
+      setErro('Troca registrada, mas plantão não identificado. Avise o admin.')
+      setCarregandoId(null)
+      await carregar()
+      refetchBadge()
+      return
+    }
     const { error: erroPlantao } = await supabase
       .from('plantoes')
       .update({ profissional_id: profissional.id, status: 'confirmado' })
-      .eq('id', troca.plantoes?.id)
+      .eq('id', troca.plantoes.id)
 
     if (erroPlantao) {
       setErro('Troca registrada, mas não foi possível atualizar o plantão automaticamente. Avise o admin. (' + erroPlantao.message + ')')

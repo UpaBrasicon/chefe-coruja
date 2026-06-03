@@ -238,6 +238,7 @@ export default function Perfil() {
     if (!el) return
     const html = el.outerHTML
     const win = window.open('', '_blank', 'width=420,height=680')
+    if (!win) { alert('Seu navegador bloqueou o popup. Libere popups para este site e tente novamente.'); return }
     win.document.write(`<!DOCTYPE html><html><head>
       <title>Crachá — ${profissional?.nome}</title>
       <link rel="preconnect" href="https://fonts.googleapis.com">
