@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useTrocasPendentes } from '../hooks/useTrocasPendentes'
 import Layout from '../components/Layout'
+import { SkCard, SkTabs } from '../components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Button } from '../components/ui/button'
 
@@ -238,9 +239,9 @@ export default function MinhasTrocas() {
         )}
 
         {carregando ? (
-          <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}>
-            <img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" />
-            <p>Carregando...</p>
+          <div className="space-y-3">
+            <SkTabs qtd={2} />
+            {Array.from({ length: 3 }).map((_, i) => <SkCard key={i} linhas={4} />)}
           </div>
         ) : (
           <Tabs defaultValue="recebidas">

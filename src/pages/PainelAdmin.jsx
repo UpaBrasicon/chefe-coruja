@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Layout from '../components/Layout'
+import { SkCard, SkTabs, SkLine } from '../components/ui/skeleton'
 import TabMedicos from '../components/admin/TabMedicos'
 import TabAvisos from '../components/admin/TabAvisos'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
@@ -180,7 +181,11 @@ export default function PainelAdmin() {
         {erro && <p className="mb-4 text-sm rounded-lg p-3" style={{ color: 'var(--cor-vago)', background: '#FEF2F2' }}>{erro}</p>}
 
         {carregando ? (
-          <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}><img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" /><p>Carregando...</p></div>
+          <div className="space-y-4">
+            <SkTabs qtd={5} />
+            <SkLine w="40%" h={18} className="mb-4" />
+            {Array.from({ length: 4 }).map((_, i) => <SkCard key={i} linhas={3} />)}
+          </div>
         ) : (
           <>
           <div className="flex gap-2 mb-4 flex-wrap items-center justify-center">

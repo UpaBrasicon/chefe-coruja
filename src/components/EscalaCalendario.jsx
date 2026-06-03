@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import PlantaoCard from './PlantaoCard'
 import { Button } from './ui/button'
+import { SkCalendario } from './ui/skeleton'
 
 const MESES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
@@ -366,10 +367,7 @@ export default function EscalaCalendario() {
           </div>
 
       {carregando ? (
-        <div className="text-center py-20">
-          <img src="/logo.png" alt="" className="h-10 w-10 rounded-full mx-auto mb-3 opacity-70 animate-pulse" />
-          <p style={{ color: '#64748b' }}>Carregando escala...</p>
-        </div>
+        <SkCalendario semanas={5} />
       ) : (
         <div className="flex gap-3 items-start">
 

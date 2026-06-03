@@ -5,7 +5,6 @@ import { useAuth } from '../contexts/AuthContext'
 import { useAvisos } from '../hooks/useAvisos'
 import PainelAvisos from './PainelAvisos'
 import ModalAlterarSenha from './ModalAlterarSenha'
-import ModalConfiguracoes from './ModalConfiguracoes'
 
 function DropItem({ icon, label, onClick, danger, divider }) {
   const [hov, setHov] = useState(false)
@@ -34,7 +33,6 @@ export default function TopBar() {
   const [painelAberto, setPainelAberto] = useState(false)
   const [dropAberto, setDropAberto] = useState(false)
   const [modalSenha, setModalSenha] = useState(false)
-  const [modalConfig, setModalConfig] = useState(false)
   const dropRef = useRef(null)
 
   useEffect(() => {
@@ -191,7 +189,6 @@ export default function TopBar() {
       />
 
       <ModalAlterarSenha aberto={modalSenha} onFechar={() => setModalSenha(false)} />
-      <ModalConfiguracoes aberto={modalConfig} onFechar={() => setModalConfig(false)} />
     </>
   )
 }

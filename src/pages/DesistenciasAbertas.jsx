@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useDesistenciasAbertas } from '../hooks/useDesistenciasAbertas'
 import Layout from '../components/Layout'
+import { SkCard } from '../components/ui/skeleton'
 import { Button } from '../components/ui/button'
 
 const MESES_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
@@ -97,8 +98,8 @@ export default function DesistenciasAbertas() {
         {erro && <p className="mb-4 text-sm rounded-lg p-3" style={{ color: 'var(--cor-vago)', background: '#FEF2F2' }}>{erro}</p>}
 
         {carregando ? (
-          <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}>
-            <img src="/logo.png" alt="" className="h-10 w-10 rounded-full object-cover mx-auto mb-2" /><p>Carregando...</p>
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => <SkCard key={i} linhas={4} />)}
           </div>
         ) : desistencias.length === 0 ? (
           <div className="text-center py-16" style={{ color: 'var(--cor-texto-suave)' }}>
