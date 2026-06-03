@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Camera, Printer, Save, X, ChevronLeft, User, CreditCard } from 'lucide-react'
+import { Camera, Save, X, ChevronLeft, User } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import Layout from '../components/Layout'
@@ -361,17 +361,7 @@ export default function Perfil() {
             </div>
           </Secao>
 
-          {/* ── Crachá ── */}
-          <Secao icone={CreditCard} titulo="Crachá de identificação">
-            <div className="flex flex-col items-center gap-5">
-              <Cracha profissional={profissional} />
-              <Button onClick={imprimirCracha} variant="outline"
-                className="gap-2 px-6" style={{ borderColor: 'var(--cor-primaria)', color: 'var(--cor-primaria)' }}>
-                <Printer size={15} />
-                Imprimir / Salvar PDF
-              </Button>
-            </div>
-          </Secao>
+          {/* Crachá suspenso temporariamente */}
 
         </div>
       </div>
