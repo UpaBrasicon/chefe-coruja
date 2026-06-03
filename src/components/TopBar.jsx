@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Bell, ChevronDown, Settings, KeyRound, LogOut } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { useAvisos } from '../hooks/useAvisos'
+import PainelAvisos from './PainelAvisos'
 import ModalAlterarSenha from './ModalAlterarSenha'
 import ModalConfiguracoes from './ModalConfiguracoes'
 
@@ -26,6 +28,8 @@ function DropItem({ icon, label, onClick, danger, divider }) {
 
 export default function TopBar() {
   const { profissional, signOut } = useAuth()
+  const { avisos, naoLidas, marcarLida, marcarTodasLidas, excluir } = useAvisos()
+  const [painelAberto, setPainelAberto] = useState(false)
   const [dropAberto, setDropAberto] = useState(false)
   const [modalSenha, setModalSenha] = useState(false)
   const [modalConfig, setModalConfig] = useState(false)
@@ -46,7 +50,7 @@ export default function TopBar() {
       <style>{`
         @keyframes topDropIn {
           from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-          to   { opacity: 1; transform: translateY(0)  scale(1); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}</style>
 
@@ -61,20 +65,33 @@ export default function TopBar() {
           boxShadow: '0 1px 6px rgba(0,0,0,0.05)',
         }}
       >
-        {/* Sino de notificações */}
+        {/* Sino */}
         <button
           className="relative p-2 rounded-full transition-colors"
           style={{ color: '#6b7280' }}
           onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          title="Notificações (em breve)"
+          onClick={() => setPainelAberto(v => !v)}
+          title="Notificações"
         >
           <Bell size={20} strokeWidth={1.8} />
-          {/* Red dot placeholder */}
-          <span
-            className="absolute rounded-full"
-            style={{ width: '8px', height: '8px', background: '#ef4444', top: '7px', right: '7px', boxShadow: '0 0 0 2px #fff' }}
-          />
+          {naoLidas > 0 && (
+            <span
+              className="absolute rounded-full flex items-center justify-center font-bold"
+              style={{
+                width: naoLidas > 9 ? '18px' : '16px',
+                height: '16px',
+                background: '#ef4444',
+                color: '#fff',
+                fontSize: '9px',
+                top: '4px',
+                right: '4px',
+                boxShadow: '0 0 0 2px #fff',
+              }}
+            >
+              {naoLidas > 9 ? '9+' : naoLidas}
+            </span>
+          )}
         </button>
 
         {/* Avatar + chevron */}
@@ -109,7 +126,11 @@ export default function TopBar() {
             <ChevronDown
               size={14}
               strokeWidth={2.5}
-              style={{ color: '#9ca3af', transition: 'transform 0.2s', transform: dropAberto ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              style={{
+                color: '#9ca3af',
+                transition: 'transform 0.2s',
+                transform: dropAberto ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
             />
           </button>
 
@@ -124,7 +145,6 @@ export default function TopBar() {
                 animation: 'topDropIn 0.15s ease forwards',
               }}
             >
-              {/* Info do usuário */}
               <div className="px-4 py-3" style={{ borderBottom: '1px solid #f3f4f6' }}>
                 <p className="text-sm font-semibold truncate" style={{ color: '#111827' }}>
                   {profissional?.nome}
@@ -133,7 +153,6 @@ export default function TopBar() {
                   {profissional?.email}
                 </p>
               </div>
-
               <div className="py-1">
                 <DropItem
                   icon={<Settings size={14} />}
@@ -157,6 +176,17 @@ export default function TopBar() {
           )}
         </div>
       </div>
+
+      {/* Painel lateral de avisos */}
+      <PainelAvisos
+        aberto={painelAberto}
+        onFechar={() => setPainelAberto(false)}
+        avisos={avisos}
+        naoLidas={naoLidas}
+        onMarcarLida={marcarLida}
+        onMarcarTodasLidas={marcarTodasLidas}
+        onExcluir={excluir}
+      />
 
       <ModalAlterarSenha aberto={modalSenha} onFechar={() => setModalSenha(false)} />
       <ModalConfiguracoes aberto={modalConfig} onFechar={() => setModalConfig(false)} />
