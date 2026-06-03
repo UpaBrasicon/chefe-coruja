@@ -42,31 +42,20 @@ function FlyoutItem({ label, icone, onClick, badge, emBreve }) {
   )
 }
 
-function NavItem({ item, active, onNavigate }) {
-  const [hov, setHov] = useState(false)
-  const timerRef = useRef(null)
+function NavItem({ item, active, isOpen, onShow, onHide, onNavigate }) {
   const Icon = item.icon
-
-  function show() {
-    if (timerRef.current) clearTimeout(timerRef.current)
-    setHov(true)
-  }
-
-  function hide() {
-    timerRef.current = setTimeout(() => setHov(false), 180)
-  }
 
   return (
     <div
       className="relative w-full"
-      onMouseEnter={show}
-      onMouseLeave={hide}
+      onMouseEnter={() => onShow(item.id)}
+      onMouseLeave={onHide}
     >
       <button
         onClick={() => item.rota && onNavigate(item.rota)}
         className="relative flex flex-col items-center justify-center gap-0.5 w-full rounded-xl py-2.5 transition-all duration-150"
         style={{
-          background: active ? 'rgba(0,0,0,0.28)' : hov ? 'rgba(255,255,255,0.08)' : 'transparent',
+          background: active ? 'rgba(0,0,0,0.28)' : isOpen ? 'rgba(255,255,255,0.08)' : 'transparent',
           color: '#fff',
         }}
         title={item.label}
@@ -90,13 +79,12 @@ function NavItem({ item, active, onNavigate }) {
         )}
       </button>
 
-      {/* Flyout — onMouseEnter/Leave aqui cancela/reinicia o timer */}
-      {hov && item.children && (
+      {isOpen && item.children && (
         <div
           className="absolute left-full top-0 ml-1 rounded-xl overflow-hidden z-50"
           style={{ minWidth: '210px', ...FLYOUT_STYLE, animation: 'sidebarFlyIn 0.12s ease forwards' }}
-          onMouseEnter={show}
-          onMouseLeave={hide}
+          onMouseEnter={() => onShow(item.id)}
+          onMouseLeave={onHide}
         >
           <div className="px-4 py-2 border-b border-white/10">
             <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.5)' }}>
@@ -127,7 +115,21 @@ export default function Sidebar() {
   const { pathname } = useLocation()
   const isAdmin = profissional?.role === 'admin'
 
+  // Estado compartilhado — só um flyout aberto por vez
+  const [activeId, setActiveId] = useState(null)
+  const timerRef = useRef(null)
+
+  function show(id) {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    setActiveId(id) // fecha o anterior imediatamente
+  }
+
+  function hide() {
+    timerRef.current = setTimeout(() => setActiveId(null), 180)
+  }
+
   function ir(rota) {
+    setActiveId(null)
     navigate(rota)
   }
 
@@ -197,7 +199,6 @@ export default function Sidebar() {
           boxShadow: '3px 0 18px rgba(0,0,0,0.28)',
         }}
       >
-        {/* Logo */}
         <button
           onClick={() => ir('/escala')}
           className="mb-5 mt-1 shrink-0 transition-transform hover:scale-105"
@@ -210,16 +211,17 @@ export default function Sidebar() {
           />
         </button>
 
-        {/* Divisor */}
         <div className="mb-4" style={{ width: '60px', height: '1px', background: 'rgba(255,255,255,0.15)' }} />
 
-        {/* Nav items */}
         <div className="flex flex-col items-center gap-1 flex-1 w-full px-2">
           {navItems.map(item => (
             <NavItem
               key={item.id}
               item={item}
               active={item.activeRoutes?.some(r => pathname.startsWith(r))}
+              isOpen={activeId === item.id}
+              onShow={show}
+              onHide={hide}
               onNavigate={ir}
             />
           ))}
