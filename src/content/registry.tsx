@@ -32,6 +32,13 @@ import { RecrutabilidadePulmonar } from '@/pages/plantonista/ventilacao/Recrutab
 import { SuporteVentilatorio } from '@/pages/plantonista/ventilacao/SuporteVentilatorio'
 import { ManobraRecrutamento } from '@/pages/plantonista/ventilacao/ManobraRecrutamento'
 import { MobilidadeFuncional } from '@/pages/plantonista/ventilacao/MobilidadeFuncional'
+import { ProfilaxiaHdaLamg } from '@/pages/plantonista/protocolos/ProfilaxiaHdaLamg'
+import { Hiperpotassemia } from '@/pages/plantonista/protocolos/Hiperpotassemia'
+import { Abstinencia } from '@/pages/plantonista/protocolos/Abstinencia'
+import { PreparoColonoscopia } from '@/pages/plantonista/protocolos/PreparoColonoscopia'
+import { Decanulacao } from '@/pages/plantonista/protocolos/Decanulacao'
+import { ControleGlicemicoProtocolo } from '@/pages/plantonista/protocolos/ControleGlicemicoProtocolo'
+import { NefropatiaProtocolo } from '@/pages/plantonista/protocolos/NefropatiaProtocolo'
 
 export type ToolDef = {
   slug: string
@@ -96,7 +103,15 @@ export const SECOES: SectionDef[] = [
     label: 'Protocolos',
     description: 'Condutas padronizadas para situações frequentes.',
     icon: ClipboardList,
-    tools: [],
+    tools: [
+      t('hda-lamg', 'Profilaxia HDA/LAMG', 'Prevenção de sangramento digestivo por estresse.', ProfilaxiaHdaLamg),
+      t('hiperpotassemia', 'Hiperpotassemia', 'Manejo da hipercalemia aguda.', Hiperpotassemia),
+      t('controle-glicemico', 'Controle Glicêmico Intensivo', 'Protocolo de insulina em infusão contínua.', ControleGlicemicoProtocolo),
+      t('abstinencia', 'Abstinência', 'Manejo da abstinência de sedativos/opioides.', Abstinencia),
+      t('preparo-colonoscopia', 'Preparo para Colonoscopia', 'Dieta e preparo intestinal por horário.', PreparoColonoscopia),
+      t('decanulacao', 'Decanulação', 'Roteiro para retirada da traqueostomia.', Decanulacao),
+      t('nefropatia-contraste', 'Nefropatia Induzida por Contraste', 'Protocolo de nefroproteção.', NefropatiaProtocolo),
+    ],
   },
   {
     slug: 'dengue',
