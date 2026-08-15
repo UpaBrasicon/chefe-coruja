@@ -15,6 +15,7 @@ import { SeletorUnidade } from '@/pages/SeletorUnidade'
 import { PainelAdmin } from '@/pages/PainelAdmin'
 import { Pessoas } from '@/pages/Pessoas'
 import { Setores } from '@/pages/Setores'
+import Escala from '@/pages/Escala'
 import { Banners } from '@/pages/gestor/Banners'
 import PlantonistaHome from '@/pages/plantonista/PlantonistaHome'
 import SectionHome from '@/pages/plantonista/SectionHome'
@@ -66,6 +67,9 @@ export default function App() {
                     <Route path="/setores" element={<Setores />} />
                   </Route>
                   <Route element={<RequireRole papeis={['gestor', 'admin']} />}>
+                    <Route path="/escala" element={<Escala />} />
+                  </Route>
+                  <Route element={<RequireRole papeis={['gestor', 'admin']} />}>
                     <Route path="/banners" element={<Banners />} />
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin']} />}>
@@ -75,6 +79,7 @@ export default function App() {
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista']} />}>
                     <Route path="/plantao" element={<PlantaoHome />} />
+                    <Route path="/escala" element={<Escala />} />
                     <Route path="/plantao/atendimento-porta" element={<AtendimentoPorta />} />
                     <Route path="/plantao/atendimento-porta/:tool" element={<AtendimentoTool />} />
                     <Route path="/plantao/internacao" element={<Internacao />} />

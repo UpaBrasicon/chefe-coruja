@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Activity,
   BedDouble,
+  CalendarClock,
   Images,
   LayoutDashboard,
   LogOut,
@@ -43,14 +44,19 @@ export function AppShell() {
   }
   if (ehGestor) {
     itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })
+    itens.push({ to: '/escala', label: 'Escala', icon: CalendarClock, end: true })
     itens.push({ to: '/banners', label: 'Imagens da Unidade', icon: Images })
   }
   if (ehAdmin) {
     itens.push(
       { to: '/painel', label: 'Painel', icon: LayoutDashboard, end: true },
       { to: '/pessoas', label: 'Pessoas', icon: Users },
+      { to: '/escala', label: 'Escala', icon: CalendarClock, end: true },
       { to: '/banners', label: 'Imagens da Unidade', icon: Images }
     )
+  }
+  if (ehPlantonista) {
+    itens.push({ to: '/escala', label: 'Minha Escala', icon: CalendarClock, end: true })
   }
   if (!ehPlantonista) {
     itens.push({ to: '/plantonista', label: 'Central Clínica', icon: Stethoscope })
