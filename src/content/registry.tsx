@@ -39,6 +39,12 @@ import { PreparoColonoscopia } from '@/pages/plantonista/protocolos/PreparoColon
 import { Decanulacao } from '@/pages/plantonista/protocolos/Decanulacao'
 import { ControleGlicemicoProtocolo } from '@/pages/plantonista/protocolos/ControleGlicemicoProtocolo'
 import { NefropatiaProtocolo } from '@/pages/plantonista/protocolos/NefropatiaProtocolo'
+import { ClassificacaoDengue } from '@/pages/plantonista/dengue/ClassificacaoDengue'
+import { FluxogramaDengue } from '@/pages/plantonista/dengue/FluxogramaDengue'
+import { ManualDengue } from '@/pages/plantonista/dengue/ManualDengue'
+import { VideoDengue } from '@/pages/plantonista/dengue/VideoDengue'
+import { Infection } from '@/pages/plantonista/games/Infection'
+import { MinigameEmergencia } from '@/pages/plantonista/games/MinigameEmergencia'
 
 export type ToolDef = {
   slug: string
@@ -118,14 +124,22 @@ export const SECOES: SectionDef[] = [
     label: 'Dengue',
     description: 'Classificação, conduta e hidratação da dengue.',
     icon: Wind,
-    tools: [],
+    tools: [
+      t('classificacao-conduta-hidratacao', 'Classificação, Conduta e Hidratação', 'Grupos A–D e hidratação conforme o MS.', ClassificacaoDengue),
+      t('fluxograma-conduta', 'Fluxograma de Conduta', 'Fluxo A–D com a conduta correspondente.', FluxogramaDengue),
+      t('manual-dengue', 'Manual de Dengue', 'Síntese do manejo da dengue (MS).', ManualDengue),
+      t('video-dengue', 'Vídeo Dr. Daniel Wagner', 'Conteúdo do vídeo do infectologista.', VideoDengue),
+    ],
   },
   {
     slug: 'games',
     label: 'Games',
     description: 'Jogos clínicos para fixar o conhecimento.',
     icon: Gamepad2,
-    tools: [],
+    tools: [
+      t('infection-pneumonia', 'Infection — Pneumonia', 'Quiz de antibioticoterapia em pneumonia na UTI.', Infection),
+      t('minigame-emergencia', 'Minigame de Emergência', 'Cenários rápidos de emergência.', MinigameEmergencia),
+    ],
   },
   {
     slug: 'ventilacao-mecanica',
