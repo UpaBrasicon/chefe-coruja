@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      banners: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          descricao: string | null
+          id: string
+          imagem_url: string
+          link_url: string | null
+          ordem: number
+          titulo: string | null
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          imagem_url: string
+          link_url?: string | null
+          ordem?: number
+          titulo?: string | null
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          imagem_url?: string
+          link_url?: string | null
+          ordem?: number
+          titulo?: string | null
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banners_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leitos: {
         Row: {
           ativo: boolean
@@ -522,12 +569,17 @@ export const Constants = {
 } as const
 
 export type Perfis = Database['public']['Tables']['perfis']
+export type Banners = Database['public']['Tables']['banners']
 
 export type Perfil = Perfis['Row']
 
 export type Papel = Database['public']['Enums']['papel']
+
 export type StatusLeito = Database['public']['Enums']['status_leito']
+
 export type TipoLeito = Database['public']['Enums']['tipo_leito']
+
 export type TipoSetor = Database['public']['Enums']['tipo_setor']
+
 export type TipoUnidade = Database['public']['Enums']['tipo_unidade']
 

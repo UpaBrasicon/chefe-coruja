@@ -4,6 +4,7 @@ import { Clock, Search, Star } from 'lucide-react'
 import { SECOES } from '@/content/registry'
 import { fuzzyMatch } from '@/lib/search'
 import { useFavoritos, useRecentes } from '@/lib/useFavoritos'
+import { BannerCarousel } from '@/components/plantonista/BannerCarousel'
 import { SectionCard, ToolCard } from '@/components/plantonista/cards'
 import { Input } from '@/components/ui/input'
 
@@ -53,22 +54,8 @@ export default function PlantonistaHome() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl border bg-card px-6 py-10 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-24 mx-auto h-48 w-96 rounded-full bg-primary/10 blur-3xl"
-        />
-        <div className="relative flex flex-col items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Central do Plantonista
-          </h1>
-          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-            Calculadoras, escores, protocolos e decisões clínicas — tudo em um só lugar, pensado
-            para o ritmo da UPA.
-          </p>
-        </div>
-      </div>
+      {/* Quadro de imagens da unidade (gerenciado pelo gestor) */}
+      <BannerCarousel />
 
       {/* Busca */}
       <div className="relative mx-auto w-full max-w-lg">

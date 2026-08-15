@@ -199,3 +199,92 @@ export async function excluirLeito(id: string, unidadeId: string) {
     unidade_id: unidadeId,
   })
 }
+
+// ── Banners (gestor da unidade) ──────────────────────────────────────────────
+export type BannerInput = {
+  unidade_id: string
+  titulo?: string | null
+  descricao?: string | null
+  imagem_url: string
+  link_url?: string | null
+  ordem?: number
+}
+
+export async function criarBanner(input: BannerInput) {
+  const { data, error } = await supabase
+    .from('banners')
+    .insert(input)
+    .select('id')
+    .single()
+  if (error) throw error
+
+  await registrarAuditoria({
+    acao: 'banner_criado',
+    entidade: 'banners',
+    entidade_id: data.id,
+    unidade_id: input.unidade_id,
+  })
+  return data
+}
+
+export async function atualizarBanner(
+  id: string,
+  unidadeId: string,
+  campos: { titulo?: string | null; descricao?: string | null; link_url?: string | null; ativo?: boolean }
+) {
+  const { error } = await supabase.from('banners').update(campos).eq('id', id)
+  if (error) throw error
+
+  await registrarAuditoria({
+    acao: 'banner_atualizado',
+    entidade: 'banners',
+    entidade_id: id,
+    unidade_id: unidadeId,
+    payload: campos,
+  })
+}
+
+export async function excluirBanner(id: string, unidadeId: string, imagemUrl: string) {
+  await excluirBannerImagem(imagemUrl)
+  const { error } = await supabase.from('banners').delete().eq('id', id)
+  if (error) throw error
+
+  await registrarAuditoria({
+    acao: 'banner_excluido',
+    entidade: 'banners',
+    entidade_id: id,
+    unidade_id: unidadeId,
+  })
+}
+
+export async function reordenarBanners(unidadeId: string, idsEmOrdem: string[]) {
+  for (const [ordem, id] of idsEmOrdem.entries()) {
+    await supabase.from('banners').update({ ordem }).eq('id', id)
+  }
+  await registrarAuditoria({
+    acao: 'banners_reordenados',
+    entidade: 'banners',
+    unidade_id: unidadeId,
+  })
+}
+
+export async function uploadBannerImagem(unidadeId: string, file: File) {
+  const nomeSeguro = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+  const caminho = `${unidadeId}/${crypto.randomUUID()}-${nomeSeguro}`
+  const { error } = await supabase.storage.from('banners').upload(caminho, file, {
+    cacheControl: '3600',
+    upsert: false,
+  })
+  if (error) throw error
+
+  const { data } = supabase.storage.from('banners').getPublicUrl(caminho)
+  return data.publicUrl
+}
+
+export async function excluirBannerImagem(imagemUrl: string) {
+  const prefixo = '/storage/v1/object/public/banners/'
+  const idx = imagemUrl.indexOf(prefixo)
+  if (idx === -1) return
+  const caminho = imagemUrl.slice(idx + prefixo.length)
+  await supabase.storage.from('banners').remove([caminho])
+}

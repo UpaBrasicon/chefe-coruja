@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   BedDouble,
+  Images,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -36,14 +37,16 @@ export function AppShell() {
   if (ehPlantonista) {
     itens.push({ to: '/plantonista', label: 'Central do Plantonista', icon: Stethoscope, end: true })
   }
+  if (ehGestor) {
+    itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })
+    itens.push({ to: '/banners', label: 'Imagens da Unidade', icon: Images })
+  }
   if (ehAdmin) {
     itens.push(
       { to: '/painel', label: 'Painel', icon: LayoutDashboard, end: true },
-      { to: '/pessoas', label: 'Pessoas', icon: Users }
+      { to: '/pessoas', label: 'Pessoas', icon: Users },
+      { to: '/banners', label: 'Imagens da Unidade', icon: Images }
     )
-  }
-  if (ehGestor) {
-    itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })
   }
   if (!ehPlantonista) {
     itens.push({ to: '/plantonista', label: 'Central Clínica', icon: Stethoscope })

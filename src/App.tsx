@@ -14,6 +14,7 @@ import { SeletorUnidade } from '@/pages/SeletorUnidade'
 import { PainelAdmin } from '@/pages/PainelAdmin'
 import { Pessoas } from '@/pages/Pessoas'
 import { Setores } from '@/pages/Setores'
+import { Banners } from '@/pages/gestor/Banners'
 import PlantonistaHome from '@/pages/plantonista/PlantonistaHome'
 import SectionHome from '@/pages/plantonista/SectionHome'
 import { ToolRouter } from '@/pages/plantonista/ToolRouter'
@@ -57,6 +58,9 @@ export default function App() {
                   </Route>
                   <Route element={<RequireRole papeis={['gestor']} />}>
                     <Route path="/setores" element={<Setores />} />
+                  </Route>
+                  <Route element={<RequireRole papeis={['gestor', 'admin']} />}>
+                    <Route path="/banners" element={<Banners />} />
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin']} />}>
                     <Route path="/plantonista" element={<PlantonistaHome />} />
