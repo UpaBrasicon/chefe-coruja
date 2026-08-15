@@ -50,6 +50,7 @@ export default function PlantonistaHome() {
     .map((slug) => todas.find((r) => r.slug === slug))
     .filter((r): r is Resultado => !!r)
     .filter((r) => !favoritosCards.some((f) => f.slug === r.slug))
+    .slice(0, 3)
 
   function CardFerramenta({ r }: { r: Resultado }) {
     const ehFavorito = favoritos.includes(r.slug)
