@@ -27,6 +27,11 @@ import { NihAvc } from '@/pages/plantonista/escores/NihAvc'
 import { News } from '@/pages/plantonista/escores/News'
 import { News2 } from '@/pages/plantonista/escores/News2'
 import { Timi } from '@/pages/plantonista/escores/Timi'
+import { PredicaoFalenciaVni } from '@/pages/plantonista/ventilacao/PredicaoFalenciaVni'
+import { RecrutabilidadePulmonar } from '@/pages/plantonista/ventilacao/RecrutabilidadePulmonar'
+import { SuporteVentilatorio } from '@/pages/plantonista/ventilacao/SuporteVentilatorio'
+import { ManobraRecrutamento } from '@/pages/plantonista/ventilacao/ManobraRecrutamento'
+import { MobilidadeFuncional } from '@/pages/plantonista/ventilacao/MobilidadeFuncional'
 
 export type ToolDef = {
   slug: string
@@ -112,7 +117,13 @@ export const SECOES: SectionDef[] = [
     label: 'Ventilação Mecânica',
     description: 'Suporte ventilatório, VNI e recrutamento pulmonar.',
     icon: Wind,
-    tools: [],
+    tools: [
+      t('predicao-falencia-vni', 'Predição de Falência da VNI', 'Escala HACOR após 1 hora de VNI.', PredicaoFalenciaVni),
+      t('recrutabilidade-pulmonar', 'Recrutabilidade Pulmonar', 'R/I ratio — potencial de recrutamento.', RecrutabilidadePulmonar),
+      t('manobra-recrutamento', 'Manobra de Recrutamento', 'Passo a passo com PEEP progressiva.', ManobraRecrutamento),
+      t('suporte-ventilatorio', 'Suporte Ventilatório', 'Peso predito, VC ideal e P/F.', SuporteVentilatorio),
+      t('mobilidade-funcional', 'Mobilidade Funcional', 'Níveis e critérios de mobilização.', MobilidadeFuncional),
+    ],
   },
 ]
 

@@ -8,6 +8,7 @@ export function NumberField({
   value,
   onChange,
   min = 0,
+  max,
   step = 1,
 }: {
   id: string
@@ -16,6 +17,7 @@ export function NumberField({
   value: number
   onChange: (value: number) => void
   min?: number
+  max?: number
   step?: number
 }) {
   return (
@@ -28,6 +30,7 @@ export function NumberField({
         type="number"
         inputMode="decimal"
         min={min}
+        max={max}
         step={step}
         value={Number.isFinite(value) ? value : ''}
         onChange={(e) => {
