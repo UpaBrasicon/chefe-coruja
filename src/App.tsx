@@ -14,7 +14,9 @@ import { SeletorUnidade } from '@/pages/SeletorUnidade'
 import { PainelAdmin } from '@/pages/PainelAdmin'
 import { Pessoas } from '@/pages/Pessoas'
 import { Setores } from '@/pages/Setores'
-import { HomePlantonista } from '@/pages/HomePlantonista'
+import PlantonistaHome from '@/pages/plantonista/PlantonistaHome'
+import SectionHome from '@/pages/plantonista/SectionHome'
+import { ToolRouter } from '@/pages/plantonista/ToolRouter'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,7 +59,9 @@ export default function App() {
                     <Route path="/setores" element={<Setores />} />
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista']} />}>
-                    <Route path="/plantonista" element={<HomePlantonista />} />
+                    <Route path="/plantonista" element={<PlantonistaHome />} />
+                    <Route path="/plantonista/:section" element={<SectionHome />} />
+                    <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
                   </Route>
                 </Route>
 
