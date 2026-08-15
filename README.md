@@ -64,7 +64,10 @@ npm run dev
 No painel do Supabase: **Authentication → Providers → Email → “Confirm email”**.
 
 ### Usuários de teste
-1. Crie as contas pelo app (Cadastro) — cada conta gera um `perfis` sem vínculo.
+1. Crie as contas pelo app (Cadastro) ou pelo dashboard em
+   **Authentication → Users → Add user** — **nunca insira direto em `auth.users`**
+   via SQL: o GoTrue exige uma linha correspondente em `auth.identities`, sem a
+   qual o login falha com "Database error querying schema".
 2. Vincule papéis via SQL (no dashboard do Supabase → SQL Editor), trocando os e-mails:
 
 ```sql
@@ -96,6 +99,7 @@ e 30 leitos.
 > `super@teste.com`, `admin@teste.com`, `gestor@teste.com` e
 > `plantonista@teste.com` (senha `Teste@1234`) já existem com vínculos e podem
 > ser usados para testar o app. A conta `super@teste.com` é o dono da plataforma.
+> (Criados via API de admin do GoTrue, com `auth.identities` corretas.)
 
 ## Comandos
 
