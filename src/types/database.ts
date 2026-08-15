@@ -1040,6 +1040,7 @@ export type Database = {
       }
     }
     Functions: {
+      data_atual: { Args: never; Returns: string }
       eh_super_admin: { Args: never; Returns: boolean }
       horario_servidor: { Args: never; Returns: string }
       na_escala_agora: { Args: { unidade: string }; Returns: boolean }
@@ -1054,6 +1055,7 @@ export type Database = {
         }
         Returns: string
       }
+      setores_na_escala_agora: { Args: never; Returns: string[] }
       tem_acesso_atendimento: { Args: { unidade: string }; Returns: boolean }
       turno_atual: { Args: never; Returns: string }
     }

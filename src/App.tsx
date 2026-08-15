@@ -19,6 +19,11 @@ import { Banners } from '@/pages/gestor/Banners'
 import PlantonistaHome from '@/pages/plantonista/PlantonistaHome'
 import SectionHome from '@/pages/plantonista/SectionHome'
 import { ToolRouter } from '@/pages/plantonista/ToolRouter'
+import PlantaoHome from '@/pages/plantao/PlantaoHome'
+import AtendimentoPorta from '@/pages/plantao/AtendimentoPorta'
+import AtendimentoTool from '@/pages/plantao/AtendimentoTool'
+import Internacao from '@/pages/plantao/Internacao'
+import InternacaoAIH from '@/pages/plantao/InternacaoAIH'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -68,6 +73,13 @@ export default function App() {
                     <Route path="/plantonista" element={<PlantonistaHome />} />
                     <Route path="/plantonista/:section" element={<SectionHome />} />
                     <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
+                  </Route>
+                  <Route element={<RequireRole papeis={['plantonista']} />}>
+                    <Route path="/plantao" element={<PlantaoHome />} />
+                    <Route path="/plantao/atendimento-porta" element={<AtendimentoPorta />} />
+                    <Route path="/plantao/atendimento-porta/:tool" element={<AtendimentoTool />} />
+                    <Route path="/plantao/internacao" element={<Internacao />} />
+                    <Route path="/plantao/internacao/aih" element={<InternacaoAIH />} />
                   </Route>
                 </Route>
 
