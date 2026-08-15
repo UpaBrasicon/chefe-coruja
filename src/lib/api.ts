@@ -12,9 +12,9 @@ export async function registrarAuditoria(input: {
   const { error } = await supabase.rpc('registrar_auditoria', {
     p_acao: input.acao,
     p_entidade: input.entidade,
-    p_entidade_id: input.entidade_id ?? null,
-    p_unidade_id: input.unidade_id ?? null,
-    p_payload: input.payload ?? null,
+    p_entidade_id: input.entidade_id ?? undefined,
+    p_unidade_id: input.unidade_id ?? undefined,
+    p_payload: input.payload ?? undefined,
   })
   if (error) console.error('Falha ao registrar auditoria:', error)
 }

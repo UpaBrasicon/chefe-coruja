@@ -1,12 +1,4 @@
-/**
- * Tipos gerados a partir do schema do Supabase.
- * Fase 1 — gestão hospitalar (organizações, unidades, vinculos, setores, leitos).
- *
- * Para regenerar depois de aplicar as migrations:
- *   npx supabase gen types typescript --project-id <ref> > src/types/database.ts
- */
-
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -14,339 +6,332 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type TipoUnidade = 'hospital' | 'upa' | 'clinica'
-export type Papel = 'admin' | 'gestor' | 'plantonista'
-export type TipoSetor =
-  | 'emergencia'
-  | 'observacao'
-  | 'internacao'
-  | 'isolamento'
-  | 'uti'
-  | 'outro'
-export type TipoLeito = 'clinico' | 'isolamento' | 'estabilizacao' | 'observacao'
-export type StatusLeito = 'livre' | 'ocupado' | 'bloqueado' | 'higienizacao'
-
-export interface Database {
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.15"
+  }
   public: {
     Tables: {
-      organizacoes: {
-        Row: {
-          id: string
-          nome: string
-          cnpj: string | null
-          ativo: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          nome: string
-          cnpj?: string | null
-          ativo?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          nome?: string
-          cnpj?: string | null
-          ativo?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      unidades: {
-        Row: {
-          id: string
-          organizacao_id: string
-          nome: string
-          tipo: TipoUnidade
-          cnes: string | null
-          municipio: string | null
-          uf: string | null
-          ativo: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          organizacao_id: string
-          nome: string
-          tipo: TipoUnidade
-          cnes?: string | null
-          municipio?: string | null
-          uf?: string | null
-          ativo?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          organizacao_id?: string
-          nome?: string
-          tipo?: TipoUnidade
-          cnes?: string | null
-          municipio?: string | null
-          uf?: string | null
-          ativo?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'unidades_organizacao_id_fkey'
-            columns: ['organizacao_id']
-            isOneToOne: false
-            referencedRelation: 'organizacoes'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      perfis: {
-        Row: {
-          id: string
-          nome_completo: string
-          cpf: string | null
-          crm: string | null
-          uf_crm: string | null
-          telefone: string | null
-          email: string | null
-          ativo: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          nome_completo: string
-          cpf?: string | null
-          crm?: string | null
-          uf_crm?: string | null
-          telefone?: string | null
-          email?: string | null
-          ativo?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          nome_completo?: string
-          cpf?: string | null
-          crm?: string | null
-          uf_crm?: string | null
-          telefone?: string | null
-          email?: string | null
-          ativo?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      vinculos: {
-        Row: {
-          id: string
-          perfil_id: string
-          unidade_id: string
-          papel: Papel
-          ativo: boolean
-          criado_por: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          perfil_id: string
-          unidade_id: string
-          papel: Papel
-          ativo?: boolean
-          criado_por?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          perfil_id?: string
-          unidade_id?: string
-          papel?: Papel
-          ativo?: boolean
-          criado_por?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'vinculos_perfil_id_fkey'
-            columns: ['perfil_id']
-            isOneToOne: false
-            referencedRelation: 'perfis'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'vinculos_unidade_id_fkey'
-            columns: ['unidade_id']
-            isOneToOne: false
-            referencedRelation: 'unidades'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'vinculos_criado_por_fkey'
-            columns: ['criado_por']
-            isOneToOne: false
-            referencedRelation: 'perfis'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      setores: {
-        Row: {
-          id: string
-          unidade_id: string
-          nome: string
-          tipo: TipoSetor
-          ordem: number
-          ativo: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          unidade_id: string
-          nome: string
-          tipo: TipoSetor
-          ordem?: number
-          ativo?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          unidade_id?: string
-          nome?: string
-          tipo?: TipoSetor
-          ordem?: number
-          ativo?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'setores_unidade_id_fkey'
-            columns: ['unidade_id']
-            isOneToOne: false
-            referencedRelation: 'unidades'
-            referencedColumns: ['id']
-          },
-        ]
-      }
       leitos: {
         Row: {
-          id: string
-          setor_id: string
-          identificador: string
-          tipo: TipoLeito
-          status: StatusLeito
           ativo: boolean
           created_at: string
+          id: string
+          identificador: string
+          setor_id: string
+          status: Database["public"]["Enums"]["status_leito"]
+          tipo: Database["public"]["Enums"]["tipo_leito"]
           updated_at: string
         }
         Insert: {
-          id?: string
-          setor_id: string
-          identificador: string
-          tipo: TipoLeito
-          status?: StatusLeito
           ativo?: boolean
           created_at?: string
+          id?: string
+          identificador: string
+          setor_id: string
+          status?: Database["public"]["Enums"]["status_leito"]
+          tipo?: Database["public"]["Enums"]["tipo_leito"]
           updated_at?: string
         }
         Update: {
-          id?: string
-          setor_id?: string
-          identificador?: string
-          tipo?: TipoLeito
-          status?: StatusLeito
           ativo?: boolean
           created_at?: string
+          id?: string
+          identificador?: string
+          setor_id?: string
+          status?: Database["public"]["Enums"]["status_leito"]
+          tipo?: Database["public"]["Enums"]["tipo_leito"]
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'leitos_setor_id_fkey'
-            columns: ['setor_id']
+            foreignKeyName: "leitos_setor_id_fkey"
+            columns: ["setor_id"]
             isOneToOne: false
-            referencedRelation: 'setores'
-            referencedColumns: ['id']
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
           },
         ]
       }
       log_auditoria: {
         Row: {
-          id: string
-          ator_id: string | null
           acao: string
+          ator_id: string | null
+          created_at: string
           entidade: string
           entidade_id: string | null
-          unidade_id: string | null
+          id: string
           payload: Json | null
-          created_at: string
+          unidade_id: string | null
         }
         Insert: {
-          id?: string
-          ator_id?: string | null
           acao: string
+          ator_id?: string | null
+          created_at?: string
           entidade: string
           entidade_id?: string | null
-          unidade_id?: string | null
+          id?: string
           payload?: Json | null
-          created_at?: string
+          unidade_id?: string | null
         }
         Update: {
-          id?: string
-          ator_id?: string | null
           acao?: string
+          ator_id?: string | null
+          created_at?: string
           entidade?: string
           entidade_id?: string | null
-          unidade_id?: string | null
+          id?: string
           payload?: Json | null
-          created_at?: string
+          unidade_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: 'log_auditoria_ator_id_fkey'
-            columns: ['ator_id']
+            foreignKeyName: "log_auditoria_ator_id_fkey"
+            columns: ["ator_id"]
             isOneToOne: false
-            referencedRelation: 'perfis'
-            referencedColumns: ['id']
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'log_auditoria_unidade_id_fkey'
-            columns: ['unidade_id']
+            foreignKeyName: "log_auditoria_unidade_id_fkey"
+            columns: ["unidade_id"]
             isOneToOne: false
-            referencedRelation: 'unidades'
-            referencedColumns: ['id']
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizacoes: {
+        Row: {
+          ativo: boolean
+          cnpj: string | null
+          created_at: string
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          cnpj?: string | null
+          created_at?: string
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          cnpj?: string | null
+          created_at?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      perfis: {
+        Row: {
+          ativo: boolean
+          cpf: string | null
+          created_at: string
+          crm: string | null
+          email: string | null
+          id: string
+          nome_completo: string
+          telefone: string | null
+          uf_crm: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          cpf?: string | null
+          created_at?: string
+          crm?: string | null
+          email?: string | null
+          id: string
+          nome_completo: string
+          telefone?: string | null
+          uf_crm?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          cpf?: string | null
+          created_at?: string
+          crm?: string | null
+          email?: string | null
+          id?: string
+          nome_completo?: string
+          telefone?: string | null
+          uf_crm?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      setores: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          nome: string
+          ordem: number
+          tipo: Database["public"]["Enums"]["tipo_setor"]
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome: string
+          ordem?: number
+          tipo: Database["public"]["Enums"]["tipo_setor"]
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+          ordem?: number
+          tipo?: Database["public"]["Enums"]["tipo_setor"]
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "setores_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
           },
         ]
       }
       super_admins: {
         Row: {
-          perfil_id: string
           created_at: string
+          perfil_id: string
         }
         Insert: {
-          perfil_id: string
           created_at?: string
+          perfil_id: string
         }
         Update: {
-          perfil_id?: string
           created_at?: string
+          perfil_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'super_admins_perfil_id_fkey'
-            columns: ['perfil_id']
+            foreignKeyName: "super_admins_perfil_id_fkey"
+            columns: ["perfil_id"]
             isOneToOne: true
-            referencedRelation: 'perfis'
-            referencedColumns: ['id']
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unidades: {
+        Row: {
+          ativo: boolean
+          cnes: string | null
+          created_at: string
+          id: string
+          municipio: string | null
+          nome: string
+          organizacao_id: string
+          tipo: Database["public"]["Enums"]["tipo_unidade"]
+          uf: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          cnes?: string | null
+          created_at?: string
+          id?: string
+          municipio?: string | null
+          nome: string
+          organizacao_id: string
+          tipo: Database["public"]["Enums"]["tipo_unidade"]
+          uf?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          cnes?: string | null
+          created_at?: string
+          id?: string
+          municipio?: string | null
+          nome?: string
+          organizacao_id?: string
+          tipo?: Database["public"]["Enums"]["tipo_unidade"]
+          uf?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unidades_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vinculos: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          criado_por: string | null
+          id: string
+          papel: Database["public"]["Enums"]["papel"]
+          perfil_id: string
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          criado_por?: string | null
+          id?: string
+          papel: Database["public"]["Enums"]["papel"]
+          perfil_id: string
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          criado_por?: string | null
+          id?: string
+          papel?: Database["public"]["Enums"]["papel"]
+          perfil_id?: string
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vinculos_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vinculos_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vinculos_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -354,61 +339,45 @@ export interface Database {
     Views: {
       vw_censo_unidade: {
         Row: {
-          unidade_id: string
-          unidade_nome: string
-          unidade_tipo: TipoUnidade
-          total_setores: number | null
-          total_leitos: number | null
-          leitos_livres: number | null
-          leitos_ocupados: number | null
           leitos_bloqueados: number | null
           leitos_higienizacao: number | null
+          leitos_livres: number | null
+          leitos_ocupados: number | null
+          total_leitos: number | null
+          total_setores: number | null
+          unidade_id: string | null
+          unidade_nome: string | null
+          unidade_tipo: Database["public"]["Enums"]["tipo_unidade"] | null
         }
-        Relationships: [
-          {
-            foreignKeyName: 'vw_censo_unidade_unidade_id_fkey'
-            columns: ['unidade_id']
-            isOneToOne: false
-            referencedRelation: 'unidades'
-            referencedColumns: ['id']
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
-      papel_na_unidade: {
-        Args: { unidade: string }
-        Returns: string | null
-      }
-      unidades_do_usuario: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
-      }
-      eh_admin_da_organizacao: {
-        Args: { org: string }
-        Returns: boolean
-      }
-      eh_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      eh_super_admin: { Args: never; Returns: boolean }
+      papel_na_unidade: { Args: { unidade: string }; Returns: string }
       registrar_auditoria: {
         Args: {
           p_acao: string
           p_entidade: string
-          p_entidade_id?: string | null
-          p_unidade_id?: string | null
-          p_payload?: Json | null
+          p_entidade_id?: string
+          p_payload?: Json
+          p_unidade_id?: string
         }
         Returns: string
       }
     }
     Enums: {
-      papel: Papel
-      status_leito: StatusLeito
-      tipo_leito: TipoLeito
-      tipo_setor: TipoSetor
-      tipo_unidade: TipoUnidade
+      papel: "admin" | "gestor" | "plantonista"
+      status_leito: "livre" | "ocupado" | "bloqueado" | "higienizacao"
+      tipo_leito: "clinico" | "isolamento" | "estabilizacao" | "observacao"
+      tipo_setor:
+        | "emergencia"
+        | "observacao"
+        | "internacao"
+        | "isolamento"
+        | "uti"
+        | "outro"
+      tipo_unidade: "hospital" | "upa" | "clinica"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -416,5 +385,149 @@ export interface Database {
   }
 }
 
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      papel: ["admin", "gestor", "plantonista"],
+      status_leito: ["livre", "ocupado", "bloqueado", "higienizacao"],
+      tipo_leito: ["clinico", "isolamento", "estabilizacao", "observacao"],
+      tipo_setor: [
+        "emergencia",
+        "observacao",
+        "internacao",
+        "isolamento",
+        "uti",
+        "outro",
+      ],
+      tipo_unidade: ["hospital", "upa", "clinica"],
+    },
+  },
+} as const
+
 export type Perfis = Database['public']['Tables']['perfis']
+
 export type Perfil = Perfis['Row']
+
+export type Papel = Database['public']['Enums']['papel']
+export type StatusLeito = Database['public']['Enums']['status_leito']
+export type TipoLeito = Database['public']['Enums']['tipo_leito']
+export type TipoSetor = Database['public']['Enums']['tipo_setor']
+export type TipoUnidade = Database['public']['Enums']['tipo_unidade']
+

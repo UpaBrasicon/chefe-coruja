@@ -92,6 +92,11 @@ FROM public.perfis p WHERE p.email = 'plantonista@teste.com';
 O seed cria: 1 organização, 2 unidades (UPA Centro + Hospital Regional), 4 setores
 e 30 leitos.
 
+> **Ambiente já provisionado (projeto `saqjrjtrkzkswsxxvdxn`)**: os usuários
+> `super@teste.com`, `admin@teste.com`, `gestor@teste.com` e
+> `plantonista@teste.com` (senha `Teste@1234`) já existem com vínculos e podem
+> ser usados para testar o app. A conta `super@teste.com` é o dono da plataforma.
+
 ## Comandos
 
 | Comando | Descrição |
@@ -117,10 +122,15 @@ src/
 
 ## Critérios de aceite (Fase 1)
 
-- [ ] `plantonista` chamando `setores` de outra unidade recebe **zero linhas** (bloqueio no banco).
-- [ ] `admin` com `select * from leitos` retorna **vazio**; só a `vw_censo_unidade` entrega agregados.
+- [x] `plantonista` chamando `setores` de outra unidade recebe **zero linhas** (bloqueio no banco).
+- [x] `admin` com `select * from leitos` retorna **vazio**; só a `vw_censo_unidade` entrega agregados.
 - [ ] Criar 12 leitos em um setor leva menos de 3 cliques (diálogo com prefixo + quantidade).
-- [ ] Revogar um vínculo derruba o acesso na sessão seguinte e fica no `log_auditoria`.
+- [x] Revogar um vínculo derruba o acesso na sessão seguinte e fica no `log_auditoria`.
+
+> Nota de segurança: a policy de `SELECT` de `leitos`/`setores` usa
+> `unidades_gestor_plantonista()` — unidades onde o usuário é gestor ou
+> plantonista. Isso impede o `admin` de ler dados diretos (migration
+> `20260815000007_fase1_fix_admin_leitos.sql`).
 
 ## Auditoria de RLS (checklist de segurança)
 
