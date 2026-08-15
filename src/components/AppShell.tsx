@@ -1,0 +1,182 @@
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import {
+  BedDouble,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Users,
+  X,
+} from 'lucide-react'
+import * as React from 'react'
+
+import { cn } from '@/lib/utils'
+import { PAPEL_LABEL } from '@/lib/constants'
+import { useAuth } from '@/contexts/AuthContext'
+import { useUnidade } from '@/contexts/UnidadeContext'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Spinner } from '@/components/ui/spinner'
+
+type NavItem = {
+  to: string
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  end?: boolean
+}
+
+export function AppShell() {
+  const { signOut, perfil } = useAuth()
+  const { ehAdmin, ehGestor, ehPlantonista, unidades, unidadeAtiva, papelAtivo, status } =
+    useUnidade()
+  const navigate = useNavigate()
+  const [menuAberto, setMenuAberto] = React.useState(false)
+
+  const itens: NavItem[] = []
+  if (ehAdmin) {
+    itens.push(
+      { to: '/painel', label: 'Painel', icon: LayoutDashboard, end: true },
+      { to: '/pessoas', label: 'Pessoas', icon: Users }
+    )
+  }
+  if (ehGestor) {
+    itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })
+  }
+  if (ehPlantonista) {
+    itens.push({ to: '/plantonista', label: 'Início', icon: Home, end: true })
+  }
+
+  async function handleSair() {
+    await signOut()
+    navigate('/login', { replace: true })
+  }
+
+  const barraTopo = (
+    <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
+      {unidadeAtiva && status === 'ok' ? (
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-sm font-medium">{unidadeAtiva.unidade.nome}</span>
+          <span className="text-xs text-muted-foreground">
+            {papelAtivo ? PAPEL_LABEL[papelAtivo] : ''}
+          </span>
+        </div>
+      ) : (
+        <span className="text-sm text-muted-foreground">Chefe Coruja</span>
+      )}
+      <div className="flex items-center gap-1">
+        {unidades.length > 1 && (
+          <Button variant="outline" size="sm" onClick={() => navigate('/seletor')}>
+            Trocar unidade
+          </Button>
+        )}
+        <Button variant="ghost" size="sm" onClick={handleSair}>
+          <LogOut />
+          Sair
+        </Button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      {/* Sidebar desktop */}
+      <aside className="hidden w-60 shrink-0 flex-col border-r bg-muted/30 md:flex">
+        <div className="flex h-14 items-center gap-2 border-b px-4">
+          <span className="text-lg font-semibold">Chefe Coruja</span>
+          {ehAdmin && <Badge variant="secondary">Admin</Badge>}
+        </div>
+        <nav className="flex flex-1 flex-col gap-1 p-3">
+          {itens.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )
+              }
+            >
+              <item.icon className="size-4" />
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="border-t p-3">
+          <div className="mb-2 truncate text-sm">{perfil?.nome_completo}</div>
+          <div className="truncate text-xs text-muted-foreground">{perfil?.email}</div>
+        </div>
+      </aside>
+
+      {/* Mobile */}
+      <div className="fixed inset-x-0 top-0 z-40 flex items-center justify-between border-b bg-background px-4 py-3 md:hidden">
+        <button
+          aria-label="Abrir menu"
+          className="rounded-md p-1"
+          onClick={() => setMenuAberto((v) => !v)}
+        >
+          {menuAberto ? <X /> : <Menu />}
+        </button>
+        <span className="text-sm font-medium">
+          {unidadeAtiva?.unidade.nome ?? 'Chefe Coruja'}
+        </span>
+        <Button variant="ghost" size="sm" onClick={handleSair}>
+          <LogOut />
+        </Button>
+      </div>
+
+      {menuAberto && (
+        <div className="fixed inset-0 top-14 z-30 bg-background md:hidden">
+          <nav className="flex flex-col gap-1 p-3">
+            {itens.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={() => setMenuAberto(false)}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium',
+                    isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
+                  )
+                }
+              >
+                <item.icon className="size-4" />
+                {item.label}
+              </NavLink>
+            ))}
+            {unidades.length > 1 && (
+              <button
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground"
+                onClick={() => {
+                  setMenuAberto(false)
+                  navigate('/seletor')
+                }}
+              >
+                Trocar unidade
+              </button>
+            )}
+          </nav>
+        </div>
+      )}
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        {status === 'ok' && <div className="hidden md:block">{barraTopo}</div>}
+        <main className="flex-1 px-4 py-6 md:px-8">
+          <div className="mx-auto w-full max-w-6xl">
+            {status === 'carregando' ? (
+              <div className="flex h-40 items-center justify-center">
+                <Spinner />
+              </div>
+            ) : (
+              <Outlet />
+            )}
+          </div>
+        </main>
+      </div>
+    </div>
+  )
+}
