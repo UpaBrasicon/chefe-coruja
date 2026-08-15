@@ -21,6 +21,12 @@ import { NefropatiaContraste } from '@/pages/plantonista/calculadoras/Nefropatia
 import { ProfilaxiaTEV } from '@/pages/plantonista/calculadoras/ProfilaxiaTEV'
 import { AcessoVenoso } from '@/pages/plantonista/calculadoras/AcessoVenoso'
 import { HeparinizacaoAjuste } from '@/pages/plantonista/calculadoras/HeparinizacaoAjuste'
+import { Saps3 } from '@/pages/plantonista/escores/Saps3'
+import { Pesi } from '@/pages/plantonista/escores/Pesi'
+import { NihAvc } from '@/pages/plantonista/escores/NihAvc'
+import { News } from '@/pages/plantonista/escores/News'
+import { News2 } from '@/pages/plantonista/escores/News2'
+import { Timi } from '@/pages/plantonista/escores/Timi'
 
 export type ToolDef = {
   slug: string
@@ -71,7 +77,14 @@ export const SECOES: SectionDef[] = [
     label: 'Escores',
     description: 'Escalas de gravidade e estratificação de risco.',
     icon: GraduationCap,
-    tools: [],
+    tools: [
+      t('saps3', 'SAPS 3', 'Estimativa de mortalidade na admissão em UTI.', Saps3),
+      t('pesi', 'Severidade do TEP (PESI)', 'PESI original e simplificado.', Pesi),
+      t('nih-avc', 'NIH — Classificação AVC', 'Escala de déficit neurológico (NIHSS).', NihAvc),
+      t('news', 'NEWS', 'Identificador precoce de deterioração (NEWS).', News),
+      t('news2', 'NEWS 2', 'Identificador precoce de deterioração (NEWS 2).', News2),
+      t('timi', 'TIMI — Risco', 'Risco em angina instável / IAM sem supra de ST.', Timi),
+    ],
   },
   {
     slug: 'protocolos',
