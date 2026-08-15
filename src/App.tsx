@@ -58,7 +58,7 @@ export default function App() {
                   <Route element={<RequireRole papeis={['gestor']} />}>
                     <Route path="/setores" element={<Setores />} />
                   </Route>
-                  <Route element={<RequireRole papeis={['plantonista']} />}>
+                  <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin']} />}>
                     <Route path="/plantonista" element={<PlantonistaHome />} />
                     <Route path="/plantonista/:section" element={<SectionHome />} />
                     <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />

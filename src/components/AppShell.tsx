@@ -1,10 +1,10 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   BedDouble,
-  Home,
   LayoutDashboard,
   LogOut,
   Menu,
+  Stethoscope,
   Users,
   X,
 } from 'lucide-react'
@@ -33,6 +33,9 @@ export function AppShell() {
   const [menuAberto, setMenuAberto] = React.useState(false)
 
   const itens: NavItem[] = []
+  if (ehPlantonista) {
+    itens.push({ to: '/plantonista', label: 'Central do Plantonista', icon: Stethoscope, end: true })
+  }
   if (ehAdmin) {
     itens.push(
       { to: '/painel', label: 'Painel', icon: LayoutDashboard, end: true },
@@ -42,8 +45,8 @@ export function AppShell() {
   if (ehGestor) {
     itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })
   }
-  if (ehPlantonista) {
-    itens.push({ to: '/plantonista', label: 'Início', icon: Home, end: true })
+  if (!ehPlantonista) {
+    itens.push({ to: '/plantonista', label: 'Central Clínica', icon: Stethoscope })
   }
 
   async function handleSair() {

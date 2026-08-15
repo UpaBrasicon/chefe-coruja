@@ -80,15 +80,15 @@ export default function PlantonistaHome() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+      <div className="text-center">
         <h1 className="text-xl font-semibold">Central do Plantonista</h1>
         <p className="text-sm text-muted-foreground">
           Ferramentas de apoio à decisão clínica durante o plantão.
         </p>
       </div>
 
-      <div className="relative max-w-md">
+      <div className="relative mx-auto w-full max-w-md">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={consulta}
