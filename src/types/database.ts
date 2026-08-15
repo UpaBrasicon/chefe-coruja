@@ -963,6 +963,100 @@ export type Database = {
           },
         ]
       }
+      solicitacoes_escala: {
+        Row: {
+          anexo_url: string | null
+          created_at: string
+          criado_por: string | null
+          decidido_por: string | null
+          destino_perfil_id: string | null
+          escala_plantao_id: string
+          id: string
+          justificativa: string | null
+          perfil_id: string
+          status: string
+          tipo: string
+          tipo_falta: string | null
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          anexo_url?: string | null
+          created_at?: string
+          criado_por?: string | null
+          decidido_por?: string | null
+          destino_perfil_id?: string | null
+          escala_plantao_id: string
+          id?: string
+          justificativa?: string | null
+          perfil_id: string
+          status?: string
+          tipo: string
+          tipo_falta?: string | null
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          anexo_url?: string | null
+          created_at?: string
+          criado_por?: string | null
+          decidido_por?: string | null
+          destino_perfil_id?: string | null
+          escala_plantao_id?: string
+          id?: string
+          justificativa?: string | null
+          perfil_id?: string
+          status?: string
+          tipo?: string
+          tipo_falta?: string | null
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_escala_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solicitacoes_escala_decidido_por_fkey"
+            columns: ["decidido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solicitacoes_escala_destino_perfil_id_fkey"
+            columns: ["destino_perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solicitacoes_escala_escala_plantao_id_fkey"
+            columns: ["escala_plantao_id"]
+            isOneToOne: false
+            referencedRelation: "escala_plantao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solicitacoes_escala_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solicitacoes_escala_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       super_admins: {
         Row: {
           created_at: string
@@ -1122,6 +1216,10 @@ export type Database = {
       horario_servidor: { Args: never; Returns: string }
       na_escala_agora: { Args: { unidade: string }; Returns: boolean }
       papel_na_unidade: { Args: { unidade: string }; Returns: string }
+      passar_plantao: {
+        Args: { p_destino: string; p_escala: string; p_justificativa?: string }
+        Returns: string
+      }
       plantonistas_da_unidade: {
         Args: { p_unidade: string }
         Returns: {
@@ -1307,6 +1405,8 @@ export type Perfil = Perfis['Row']
 export type Banners = Database['public']['Tables']['banners']
 export type EscalaPlantao = Database['public']['Tables']['escala_plantao']['Row']
 export type EscalaPlantaoInsert = Database['public']['Tables']['escala_plantao']['Insert']
+export type SolicitacaoEscala = Database['public']['Tables']['solicitacoes_escala']['Row']
+export type SolicitacaoEscalaInsert = Database['public']['Tables']['solicitacoes_escala']['Insert']
 export type Papel = Database['public']['Enums']['papel']
 export type StatusLeito = Database['public']['Enums']['status_leito']
 export type TipoLeito = Database['public']['Enums']['tipo_leito']
