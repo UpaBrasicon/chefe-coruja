@@ -2,7 +2,10 @@
 
 Plataforma multi-tenant de gestão para hospitais, UPAs e clínicas.
 **Fase 1** entrega a fundação: organizações, unidades, perfis/vínculos por papel,
-setores e leitos — com RLS no banco e auditoria.
+setores e leitos — com RLS no banco e auditoria. A aba do **plantonista** é uma
+**Central Clínica** com ferramentas de apoio à decisão (inspirada no
+[hosppital.com](https://hosppital.com/)): calculadoras, escores, protocolos,
+dengue, games e ventilação mecânica.
 
 > O módulo de escala do projeto anterior (`chefe-coruja`) foi preservado na
 > branch `legacy/escala`. A Fase 2+ importará o banco antigo.
@@ -121,8 +124,24 @@ src/
   hooks/               → queries TanStack Query
   routes/              → RequireAuth, RequireRole, RedirectHome
   pages/               → telas da Fase 1
+  content/registry.tsx → catálogo da Central Clínica do plantonista
+  pages/plantonista/   → calculadoras, escores, protocolos, dengue, games, ventilação
   components/ui/       → shadcn/ui (Base UI)
 ```
+
+## Central Clínica do plantonista
+
+Conteúdo adaptado do site de referência (removendo Nutrição, Enfermagem e
+Cirurgia; renomeando **Fisioterapia → Ventilação Mecânica**):
+
+| Seção | Ferramentas |
+|---|---|
+| Calculadoras (13) | IOT, drogas vasoativas, sedação, bloqueio neuromuscular, controle glicêmico, heparinização (+ajuste TTPa), hipo/hipernatremia, hidantalização, nefropatia por contraste, profilaxia TEV, acesso venoso |
+| Escores (6) | SAPS 3, PESI, NIH AVC, NEWS, NEWS 2, TIMI |
+| Protocolos (7) | HDA/LAMG, hiperpotassemia, glicêmico, abstinência, colonoscopia, decanulação, nefropatia |
+| Dengue (4) | Classificação/conduta/hidratação (MS), fluxograma, manual, vídeo |
+| Games (2) | Infection — Pneumonia, Minigame de Emergência |
+| Ventilação Mecânica (5) | HACOR, R/I ratio, manobra de recrutamento, suporte ventilatório, mobilidade funcional |
 
 ## Critérios de aceite (Fase 1)
 
