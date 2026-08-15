@@ -519,12 +519,6 @@ export default function Escala() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <p className="text-xs text-muted-foreground">
-        <strong>Gestor:</strong> cria a primeira escala e pode criar setores (ex.: Cinderela) na página
-        Setores. <strong>Plantonista:</strong> alterações/passagem de plantão e aviso no WhatsApp entram
-        na próxima etapa.
-      </p>
     </div>
   )
 }
