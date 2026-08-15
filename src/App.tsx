@@ -67,19 +67,16 @@ export default function App() {
                     <Route path="/setores" element={<Setores />} />
                   </Route>
                   <Route element={<RequireRole papeis={['gestor', 'admin']} />}>
-                    <Route path="/escala" element={<Escala />} />
-                  </Route>
-                  <Route element={<RequireRole papeis={['gestor', 'admin']} />}>
                     <Route path="/banners" element={<Banners />} />
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin']} />}>
                     <Route path="/plantonista" element={<PlantonistaHome />} />
                     <Route path="/plantonista/:section" element={<SectionHome />} />
                     <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
+                    <Route path="/escala" element={<Escala />} />
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista']} />}>
                     <Route path="/plantao" element={<PlantaoHome />} />
-                    <Route path="/escala" element={<Escala />} />
                     <Route path="/plantao/atendimento-porta" element={<AtendimentoPorta />} />
                     <Route path="/plantao/atendimento-porta/:tool" element={<AtendimentoTool />} />
                     <Route path="/plantao/internacao" element={<Internacao />} />
