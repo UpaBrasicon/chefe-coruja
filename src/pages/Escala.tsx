@@ -45,6 +45,22 @@ function somaDias(data: string, n: number) {
   return iso(d)
 }
 
+function primeiroDiaDoMes(isoDate: string) {
+  const [y, m] = isoDate.split('-')
+  return `${y}-${m}-01`
+}
+
+function ultimoDiaDoMes(isoDate: string) {
+  const [y, m] = isoDate.split('-')
+  return iso(new Date(Number(y), Number(m), 0))
+}
+
+function fmtMesBR(isoDate: string) {
+  const [y, m] = isoDate.split('-')
+  const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+  return `${meses[Number(m) - 1]}/${y}`
+}
+
 function fmtDiaBR(isoDate: string) {
   const [, m, d] = isoDate.split('-')
   return `${d}/${m}`
@@ -73,6 +89,8 @@ export default function Escala() {
   const dias = React.useMemo(() => Array.from({ length: 7 }, (_, i) => somaDias(semana, i)), [semana])
   const dataInicio = dias[0]
   const dataFim = dias[6]
+  const mesInicio = primeiroDiaDoMes(semana)
+  const mesFim = ultimoDiaDoMes(semana)
 
   const { data: setores, isLoading: carregandoSetores } = useQuery({
     queryKey: ['escala-setores', unidadeId],
@@ -112,6 +130,23 @@ export default function Escala() {
       const { data, error } = await supabase.rpc('plantonistas_da_unidade', { p_unidade: unidadeId! })
       if (error) throw error
       return (data ?? []) as PlantonistaDaUnidade[]
+    },
+  })
+
+  // Contador MENSAL: busca todos os plantões do mês (independente da semana exibida)
+  const { data: escalaMes, isLoading: carregandoMes } = useQuery({
+    queryKey: ['escala-plantao-mes', unidadeId, mesInicio, mesFim],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('escala_plantao')
+        .select('perfil_id, data, turno')
+        .eq('unidade_id', unidadeId!)
+        .eq('ativo', true)
+        .gte('data', mesInicio)
+        .lte('data', mesFim)
+      if (error) throw error
+      return data ?? []
     },
   })
 
@@ -161,7 +196,10 @@ export default function Escala() {
   const plantoesDaCelula = (setorId: string, data: string) =>
     (escala ?? []).filter((e) => e.setor_id === setorId && e.data === data && e.turno === turno)
 
-  const meusPlantoes = React.useMemo(() => (escala ?? []).filter((e) => e.perfil_id === perfil?.id), [escala, perfil?.id])
+  const meusPlantoes = React.useMemo(
+    () => (escalaMes ?? []).filter((e) => e.perfil_id === perfil?.id),
+    [escalaMes, perfil?.id]
+  )
 
   const resumo = React.useMemo(() => {
     const porDia = new Map<string, Set<string>>()
@@ -337,25 +375,32 @@ export default function Escala() {
         </Card>
       )}
 
-      {/* Contador de plantões do plantonista */}
+      {/* Contador de plantões do plantonista — MENSAL */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <CalendarClock className="size-4 text-muted-foreground" />
-            Meus plantões na semana
+            Meus plantões no mês
           </CardTitle>
           <CardDescription>
-            {perfil?.nome_completo ?? 'Você'} · {fmtDiaBR(dataInicio)} – {fmtDiaBR(dataFim)}
+            {perfil?.nome_completo ?? 'Você'} · {fmtMesBR(mesInicio)} ({fmtDiaBR(mesInicio)} –{' '}
+            {fmtDiaBR(mesFim)})
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap items-stretch gap-4">
+          {carregandoMes ? (
+            <div className="flex w-full items-center justify-center py-6">
+              <Spinner />
+            </div>
+          ) : (
+            <>
           <div className="flex flex-1 flex-col rounded-xl border bg-muted/40 p-4">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Horas na semana
+              Horas no mês
             </span>
             <span className="mt-1 text-3xl font-bold">{resumo.horas}h</span>
             <span className="text-xs text-muted-foreground">
-              {resumo.dias} dia(s) escalado(s) nesta semana
+              {resumo.dias} dia(s) escalado(s) em {fmtMesBR(mesInicio)}
             </span>
           </div>
           <div className="flex flex-1 flex-col rounded-xl border bg-sky-50 p-4">
@@ -374,6 +419,8 @@ export default function Escala() {
             <span className="mt-1 text-3xl font-bold text-indigo-800">{resumo.noturnos}</span>
             <span className="text-xs text-indigo-700">{resumo.noturnos * 12}h</span>
           </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
