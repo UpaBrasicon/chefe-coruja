@@ -1,14 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Clock, Search, Star } from 'lucide-react'
+import { Clock, Search, Sparkles, Star } from 'lucide-react'
 
 import { SECOES } from '@/content/registry'
 import { fuzzyMatch } from '@/lib/search'
 import { useFavoritos, useRecentes } from '@/lib/useFavoritos'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { SectionCard, ToolCard } from '@/components/plantonista/cards'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 
 type Resultado = { secao: string; secaoLabel: string; slug: string; label: string; description: string }
 
@@ -31,6 +28,8 @@ export default function PlantonistaHome() {
     []
   )
 
+  const totalFerramentas = todas.length
+
   const resultados = useMemo(() => {
     if (!consulta.trim()) return []
     const q = consulta.trim()
@@ -52,81 +51,86 @@ export default function PlantonistaHome() {
     .filter((r) => !favoritosCards.some((f) => f.slug === r.slug))
     .slice(0, 3)
 
-  function CardFerramenta({ r }: { r: Resultado }) {
-    const ehFavorito = favoritos.includes(r.slug)
-    return (
-      <div className="relative">
-        <Link to={`/plantonista/${r.secao}/${r.slug}`}>
-          <Card className="h-full pr-10 transition-colors hover:border-primary">
-            <CardHeader>
-              <CardTitle className="text-base">{r.label}</CardTitle>
-              <CardDescription>{r.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Badge variant="outline">{r.secaoLabel}</Badge>
-            </CardContent>
-          </Card>
-        </Link>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={ehFavorito ? 'Remover dos favoritos' : 'Favoritar'}
-          className="absolute top-3 right-2"
-          onClick={() => alternarFavorito(r.slug)}
-        >
-          <Star className={ehFavorito ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'} />
-        </Button>
-      </div>
-    )
-  }
+  const secoesComTools = SECOES.filter((s) => s.tools.length > 0)
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div className="text-center">
-        <h1 className="text-xl font-semibold">Central do Plantonista</h1>
-        <p className="text-sm text-muted-foreground">
-          Ferramentas de apoio à decisão clínica durante o plantão.
-        </p>
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
+      {/* Hero */}
+      <div className="relative overflow-hidden rounded-3xl border bg-card px-6 py-10 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -top-24 mx-auto h-48 w-96 rounded-full bg-primary/10 blur-3xl"
+        />
+        <div className="relative flex flex-col items-center gap-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full border bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
+            <Sparkles className="size-3.5" />
+            {totalFerramentas} ferramentas clínicas
+          </span>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Central do Plantonista
+          </h1>
+          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+            Calculadoras, escores, protocolos e decisões clínicas — tudo em um só lugar, pensado
+            para o ritmo da UPA.
+          </p>
+        </div>
       </div>
 
-      <div className="relative mx-auto w-full max-w-md">
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+      {/* Busca */}
+      <div className="relative mx-auto w-full max-w-lg">
+        <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={consulta}
           onChange={(e) => setConsulta(e.target.value)}
-          placeholder="Buscar ferramenta (ex.: noradrenalina, VNI, TTPa…)"
-          className="pl-9"
+          placeholder="Buscar por droga, escore ou conduta…"
+          className="h-11 rounded-xl border-muted bg-card pl-11 text-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus-visible:shadow-[0_4px_16px_-4px_rgba(13,148,136,0.25)]"
         />
       </div>
 
       {resultados.length > 0 && (
         <div className="flex flex-col gap-3">
-          <h2 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <Search className="size-4" />
-            Resultados para “{consulta}” ({resultados.length})
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            Resultados para “{consulta}” <span className="text-muted-foreground/60">({resultados.length})</span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {resultados.map((r) => (
-              <CardFerramenta key={r.slug} r={r} />
+              <ToolCard
+                key={r.slug}
+                to={`/plantonista/${r.secao}/${r.slug}`}
+                label={r.label}
+                description={r.description}
+                badge={r.secaoLabel}
+                favorito={favoritos.includes(r.slug)}
+                onFavoritar={() => alternarFavorito(r.slug)}
+              />
             ))}
           </div>
         </div>
       )}
 
       {consulta.trim() && resultados.length === 0 && (
-        <p className="py-6 text-center text-sm text-muted-foreground">
+        <p className="py-10 text-center text-sm text-muted-foreground">
           Nenhuma ferramenta encontrada para “{consulta}”.
         </p>
       )}
 
       {!consulta.trim() && favoritosCards.length > 0 && (
         <div className="flex flex-col gap-3">
-          <h2 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <Star className="size-4" /> Favoritos
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground/80">
+            <Star className="size-4 text-amber-400" /> Favoritos
           </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {favoritosCards.map((r) => (
-              <CardFerramenta key={r.slug} r={r} />
+              <ToolCard
+                key={r.slug}
+                to={`/plantonista/${r.secao}/${r.slug}`}
+                label={r.label}
+                description={r.description}
+                badge={r.secaoLabel}
+                favorito
+                onFavoritar={() => alternarFavorito(r.slug)}
+              />
             ))}
           </div>
         </div>
@@ -134,12 +138,20 @@ export default function PlantonistaHome() {
 
       {!consulta.trim() && recentesCards.length > 0 && (
         <div className="flex flex-col gap-3">
-          <h2 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <Clock className="size-4" /> Usados recentemente
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground/80">
+            <Clock className="size-4 text-muted-foreground" /> Usados recentemente
           </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {recentesCards.map((r) => (
-              <CardFerramenta key={r.slug} r={r} />
+              <ToolCard
+                key={r.slug}
+                to={`/plantonista/${r.secao}/${r.slug}`}
+                label={r.label}
+                description={r.description}
+                badge={r.secaoLabel}
+                favorito={favoritos.includes(r.slug)}
+                onFavoritar={() => alternarFavorito(r.slug)}
+              />
             ))}
           </div>
         </div>
@@ -147,23 +159,17 @@ export default function PlantonistaHome() {
 
       {!consulta.trim() && (
         <div className="flex flex-col gap-3">
-          <h2 className="text-sm font-medium text-muted-foreground">Seções</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {SECOES.map((secao) => (
-              <Link key={secao.slug} to={`/plantonista/${secao.slug}`}>
-                <Card className="h-full transition-colors hover:border-primary">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <secao.icon className="size-4 text-muted-foreground" />
-                      {secao.label}
-                    </CardTitle>
-                    <CardDescription>{secao.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground">
-                    {secao.tools.length > 0 ? `${secao.tools.length} ferramenta(s)` : 'Em breve'}
-                  </CardContent>
-                </Card>
-              </Link>
+          <h2 className="text-sm font-semibold text-foreground/80">Seções</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {secoesComTools.map((secao) => (
+              <SectionCard
+                key={secao.slug}
+                to={`/plantonista/${secao.slug}`}
+                icon={secao.icon}
+                label={secao.label}
+                description={secao.description}
+                count={secao.tools.length}
+              />
             ))}
           </div>
         </div>

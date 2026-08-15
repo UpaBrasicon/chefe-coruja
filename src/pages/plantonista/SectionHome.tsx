@@ -1,11 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
-import { Star } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 
 import { acharSecao } from '@/content/registry'
 import { useFavoritos } from '@/lib/useFavoritos'
-import { ChevronRight } from 'lucide-react'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { ToolCard } from '@/components/plantonista/cards'
 
 export default function SectionHome() {
   const { section } = useParams()
@@ -17,16 +15,16 @@ export default function SectionHome() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <div className="mb-1 flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/plantonista" className="hover:underline">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <Link to="/plantonista" className="transition-colors hover:text-foreground">
             Central do Plantonista
           </Link>
           <ChevronRight className="size-3.5" />
-          <span>{secao.label}</span>
+          <span className="font-medium text-foreground">{secao.label}</span>
         </div>
-        <h1 className="text-xl font-semibold">{secao.label}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{secao.label}</h1>
         <p className="text-sm text-muted-foreground">{secao.description}</p>
       </div>
 
@@ -35,31 +33,17 @@ export default function SectionHome() {
           Esta seção ainda não tem ferramentas. Em breve.
         </p>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {secao.tools.map((tool) => {
-            const ehFavorito = favoritos.includes(tool.slug)
-            return (
-              <div key={tool.slug} className="relative">
-                <Link to={`/plantonista/${secao.slug}/${tool.slug}`}>
-                  <Card className="h-full pr-10 transition-colors hover:border-primary">
-                    <CardHeader>
-                      <CardTitle className="text-base">{tool.label}</CardTitle>
-                      <CardDescription>{tool.description}</CardDescription>
-                    </CardHeader>
-                  </Card>
-                </Link>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={ehFavorito ? 'Remover dos favoritos' : 'Favoritar'}
-                  className="absolute top-3 right-2"
-                  onClick={() => alternarFavorito(tool.slug)}
-                >
-                  <Star className={ehFavorito ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'} />
-                </Button>
-              </div>
-            )
-          })}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {secao.tools.map((tool) => (
+            <ToolCard
+              key={tool.slug}
+              to={`/plantonista/${secao.slug}/${tool.slug}`}
+              label={tool.label}
+              description={tool.description}
+              favorito={favoritos.includes(tool.slug)}
+              onFavoritar={() => alternarFavorito(tool.slug)}
+            />
+          ))}
         </div>
       )}
     </div>

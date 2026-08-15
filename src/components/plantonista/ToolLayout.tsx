@@ -19,9 +19,11 @@ export function ToolLayout({
 }) {
   return (
     <div className={cn('flex flex-col gap-6', className)}>
-      <div>
-        <h1 className="text-xl font-semibold">{title}</h1>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+      <div className="flex flex-col gap-1.5">
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        {description && (
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>
+        )}
       </div>
       {children}
       <div className="flex flex-col gap-1 border-t pt-3 text-xs text-muted-foreground">

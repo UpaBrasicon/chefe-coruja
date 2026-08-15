@@ -83,9 +83,12 @@ export function AppShell() {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar desktop */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r bg-muted/30 md:flex">
-        <div className="flex h-14 items-center gap-2 border-b px-4">
-          <span className="text-lg font-semibold">Chefe Coruja</span>
+      <aside className="hidden w-60 shrink-0 flex-col border-r bg-card md:flex">
+        <div className="flex h-14 items-center gap-2.5 border-b px-4">
+          <span className="flex size-6 items-center justify-center rounded-lg bg-primary text-[11px] font-bold text-primary-foreground">
+            CC
+          </span>
+          <span className="text-[15px] font-semibold tracking-tight">Chefe Coruja</span>
           {ehAdmin && <Badge variant="secondary">Admin</Badge>}
         </div>
         <nav className="flex flex-1 flex-col gap-1 p-3">
@@ -96,20 +99,25 @@ export function AppShell() {
               end={item.end}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  'group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 )
               }
             >
-              <item.icon className="size-4" />
+              <item.icon
+                className={cn(
+                  'size-4 transition-colors',
+                  'group-hover:text-foreground'
+                )}
+              />
               {item.label}
             </NavLink>
           ))}
         </nav>
         <div className="border-t p-3">
-          <div className="mb-2 truncate text-sm">{perfil?.nome_completo}</div>
+          <div className="mb-1 truncate text-sm font-medium">{perfil?.nome_completo}</div>
           <div className="truncate text-xs text-muted-foreground">{perfil?.email}</div>
         </div>
       </aside>
