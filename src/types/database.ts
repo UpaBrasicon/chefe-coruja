@@ -250,6 +250,83 @@ export type Database = {
           },
         ]
       }
+      escala_plantao: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          criado_por: string | null
+          data: string
+          id: string
+          observacao: string | null
+          perfil_id: string
+          quinzenal: boolean
+          rotulo: string | null
+          setor_id: string
+          turno: string
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          criado_por?: string | null
+          data: string
+          id?: string
+          observacao?: string | null
+          perfil_id: string
+          quinzenal?: boolean
+          rotulo?: string | null
+          setor_id: string
+          turno: string
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          criado_por?: string | null
+          data?: string
+          id?: string
+          observacao?: string | null
+          perfil_id?: string
+          quinzenal?: boolean
+          rotulo?: string | null
+          setor_id?: string
+          turno?: string
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escala_plantao_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_plantao_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_plantao_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_plantao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       escala_plantoes: {
         Row: {
           ativo: boolean
@@ -1045,6 +1122,16 @@ export type Database = {
       horario_servidor: { Args: never; Returns: string }
       na_escala_agora: { Args: { unidade: string }; Returns: boolean }
       papel_na_unidade: { Args: { unidade: string }; Returns: string }
+      plantonistas_da_unidade: {
+        Args: { p_unidade: string }
+        Returns: {
+          crm: string
+          email: string
+          nome_completo: string
+          perfil_id: string
+          uf_crm: string
+        }[]
+      }
       registrar_auditoria: {
         Args: {
           p_acao: string
@@ -1214,19 +1301,15 @@ export const Constants = {
   },
 } as const
 
+// ── Aliases (tipos utilitários de negócio) ─────────────────────────────────
 export type Perfis = Database['public']['Tables']['perfis']
-
 export type Perfil = Perfis['Row']
-
 export type Banners = Database['public']['Tables']['banners']
-
+export type EscalaPlantao = Database['public']['Tables']['escala_plantao']['Row']
+export type EscalaPlantaoInsert = Database['public']['Tables']['escala_plantao']['Insert']
 export type Papel = Database['public']['Enums']['papel']
-
 export type StatusLeito = Database['public']['Enums']['status_leito']
-
 export type TipoLeito = Database['public']['Enums']['tipo_leito']
-
 export type TipoSetor = Database['public']['Enums']['tipo_setor']
-
 export type TipoUnidade = Database['public']['Enums']['tipo_unidade']
-
+export type PlantonistaDaUnidade = Database['public']['Functions']['plantonistas_da_unidade']['Returns'][number]

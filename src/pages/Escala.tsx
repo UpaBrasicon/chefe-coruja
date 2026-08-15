@@ -1,20 +1,168 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { CalendarClock, ChevronRight } from 'lucide-react'
+import { CalendarClock, ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react'
+import * as React from 'react'
 
-import { useUnidade } from '@/contexts/UnidadeContext'
+import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { Badge } from '@/components/ui/badge'
+import { useUnidade } from '@/contexts/UnidadeContext'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Spinner } from '@/components/ui/spinner'
+import type { EscalaPlantao, PlantonistaDaUnidade } from '@/types/database'
+
+const TURNOS = [
+  { id: 'manha', label: 'Manhã', horario: '07h–13h' },
+  { id: 'tarde', label: 'Tarde', horario: '13h–19h' },
+  { id: 'noite', label: 'Noite', horario: '19h–07h' },
+] as const
+
+const DIAS_SEMANA = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM']
+const TURNO_LABEL: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }
+
+function segundaDaSemana(data: string) {
+  const d = new Date(data + 'T12:00:00')
+  const dia = d.getDay()
+  const diff = dia === 0 ? -6 : 1 - dia
+  d.setDate(d.getDate() + diff)
+  return d
+}
+
+function iso(d: Date) {
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
+function somaDias(data: string, n: number) {
+  const d = new Date(data + 'T12:00:00')
+  d.setDate(d.getDate() + n)
+  return iso(d)
+}
+
+function fmtDiaBR(isoDate: string) {
+  const [, m, d] = isoDate.split('-')
+  return `${d}/${m}`
+}
 
 export default function Escala() {
-  const { papelAtivo, unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
   const { perfil } = useAuth()
+  const unidadeId = unidadeAtiva?.unidade_id
+  const queryClient = useQueryClient()
+
+  const [semana, setSemana] = React.useState(() => {
+    const h = new Date()
+    return iso(segundaDaSemana(iso(h)))
+  })
+  const [turno, setTurno] = React.useState<'manha' | 'tarde' | 'noite'>('manha')
+  const [dialogAberto, setDialogAberto] = React.useState(false)
+  const [celula, setCelula] = React.useState<{ setor_id: string; data: string } | null>(null)
+  const [plantonistaId, setPlantonistaId] = React.useState('')
+  const [rotulo, setRotulo] = React.useState('')
+  const [quinzenal, setQuinzenal] = React.useState(false)
 
   const ehGestor = papelAtivo === 'gestor'
   const ehAdmin = papelAtivo === 'admin'
 
+  const dias = React.useMemo(() => Array.from({ length: 7 }, (_, i) => somaDias(semana, i)), [semana])
+  const dataInicio = dias[0]
+  const dataFim = dias[6]
+
+  const { data: setores, isLoading: carregandoSetores } = useQuery({
+    queryKey: ['escala-setores', unidadeId],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('setores')
+        .select('id, nome')
+        .eq('unidade_id', unidadeId!)
+        .eq('ativo', true)
+        .order('ordem', { ascending: true })
+      if (error) throw error
+      return data ?? []
+    },
+  })
+
+  const { data: escala, isLoading: carregandoEscala } = useQuery({
+    queryKey: ['escala-plantao', unidadeId, dataInicio, dataFim],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('escala_plantao')
+        .select('id, setor_id, perfil_id, data, turno, rotulo, observacao, quinzenal, perfis!escala_plantao_perfil_id_fkey(id, nome_completo, crm)')
+        .eq('unidade_id', unidadeId!)
+        .eq('ativo', true)
+        .gte('data', dataInicio)
+        .lte('data', dataFim)
+      if (error) throw error
+      return (data ?? []) as (EscalaPlantao & { perfis: { id: string; nome_completo: string; crm: string | null } | null })[]
+    },
+  })
+
+  const { data: plantonistas, isLoading: carregandoPlant } = useQuery({
+    queryKey: ['escala-plantonistas', unidadeId],
+    enabled: !!unidadeId && (ehGestor || ehAdmin),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('plantonistas_da_unidade', { p_unidade: unidadeId! })
+      if (error) throw error
+      return (data ?? []) as PlantonistaDaUnidade[]
+    },
+  })
+
+  const remover = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('escala_plantao').delete().eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['escala-plantao'] }),
+  })
+
+  const adicionar = useMutation({
+    mutationFn: async () => {
+      if (!unidadeId || !celula || !plantonistaId) return
+      const { error } = await supabase.from('escala_plantao').insert({
+        unidade_id: unidadeId,
+        setor_id: celula.setor_id,
+        perfil_id: plantonistaId,
+        data: celula.data,
+        turno,
+        rotulo: rotulo || null,
+        quinzenal,
+      })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['escala-plantao'] })
+      setDialogAberto(false)
+      setPlantonistaId('')
+      setRotulo('')
+      setQuinzenal(false)
+    },
+  })
+
+  function abrirCelula(setor_id: string, data: string) {
+    setCelula({ setor_id, data })
+    setPlantonistaId('')
+    setRotulo('')
+    setQuinzenal(false)
+    setDialogAberto(true)
+  }
+
+  function mudarSemana(n: number) {
+    setSemana(somaDias(semana, 7 * n))
+  }
+
+  const plantoesDaCelula = (setorId: string, data: string) =>
+    (escala ?? []).filter((e) => e.setor_id === setorId && e.data === data && e.turno === turno)
+
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Link to="/" className="transition-colors hover:text-foreground">
@@ -23,51 +171,238 @@ export default function Escala() {
           <ChevronRight className="size-3.5" />
           <span className="font-medium text-foreground">Escala</span>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Escala de Plantões</h1>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight">Escala de Plantões</h1>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Button size="xs" variant="outline" onClick={() => mudarSemana(-1)}>
+              <ChevronLeft /> Semana
+            </Button>
+            <span className="font-medium text-foreground">
+              {fmtDiaBR(dataInicio)} – {fmtDiaBR(dataFim)}
+            </span>
+            <Button size="xs" variant="outline" onClick={() => mudarSemana(1)}>
+              Semana <ChevronRight />
+            </Button>
+          </div>
+        </div>
         <p className="text-sm text-muted-foreground">
-          {unidadeAtiva?.unidade.nome ?? 'Unidade'} · {perfil?.nome_completo ?? ''}
+          {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
+          {ehGestor ? 'Gestor — monte a escala' : ehAdmin ? 'Admin — todas as unidades' : 'Sua escala'}
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CalendarClock className="size-4 text-muted-foreground" />
-            Escala de plantões
-          </CardTitle>
-          <CardDescription>
-            {ehGestor || ehAdmin
-              ? 'Monte a escala de plantões da unidade por setor, turno e dia.'
-              : 'Consulte a sua escala de plantões e gerencie trocas.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-wrap gap-2">
-            {ehGestor && <Badge variant="secondary">Gestor — cria e edita</Badge>}
-            {ehAdmin && <Badge variant="secondary">Admin — todas as unidades</Badge>}
-            {papelAtivo === 'plantonista' && (
-              <Badge variant="secondary">Plantonista — consulta e passa plantão</Badge>
-            )}
+      {/* Turnos */}
+      <div className="flex flex-wrap gap-2">
+        {TURNOS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTurno(t.id)}
+            className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+              turno === t.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background hover:bg-muted'
+            }`}
+          >
+            {t.label} <span className="opacity-70">· {t.horario}</span>
+          </button>
+        ))}
+      </div>
+
+      {carregandoSetores || carregandoEscala ? (
+        <div className="flex h-40 items-center justify-center">
+          <Spinner />
+        </div>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CalendarClock className="size-4 text-muted-foreground" />
+              {TURNO_LABEL[turno]} · Semana de {fmtDiaBR(dataInicio)}
+            </CardTitle>
+            <CardDescription>
+              {ehGestor || ehAdmin
+                ? 'Clique em uma célula para adicionar ou remover plantonistas.'
+                : 'Células destacadas indicam seus plantões.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] border-collapse text-sm">
+                <thead>
+                  <tr>
+                    <th className="w-40 border-b border-r bg-muted/50 p-2 text-left text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                      Setor
+                    </th>
+                    {dias.map((d, i) => (
+                      <th
+                        key={d}
+                        className={`border-b p-2 text-center text-xs font-bold uppercase tracking-wide ${
+                          i >= 5 ? 'border-r border-r-amber-200 bg-amber-50 text-amber-700' : 'border-r'
+                        }`}
+                      >
+                        {DIAS_SEMANA[i]}
+                        <span className="block text-[10px] font-normal text-muted-foreground">{fmtDiaBR(d)}</span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(setores ?? []).map((s) => (
+                    <tr key={s.id}>
+                      <td className="border-b border-r p-2 align-top font-medium">{s.nome}</td>
+                      {dias.map((d) => {
+                        const plantoes = plantoesDaCelula(s.id, d)
+                        const ehMeu = plantoes.some((p) => p.perfil_id === perfil?.id)
+                        return (
+                          <td
+                            key={d}
+                            className={`border-b border-r p-1 align-top ${
+                              ehMeu ? 'bg-emerald-50' : ''
+                            }`}
+                          >
+                            <button
+                              type="button"
+                              disabled={!ehGestor && !ehAdmin}
+                              onClick={() => abrirCelula(s.id, d)}
+                              className={`flex min-h-[52px] w-full flex-col gap-1 rounded-md p-1 text-left transition-colors ${
+                                ehGestor || ehAdmin ? 'hover:bg-primary/5' : 'cursor-default'
+                              }`}
+                            >
+                              {plantoes.length === 0 && (
+                                <span className="text-[10px] text-muted-foreground/50">
+                                  {ehGestor || ehAdmin ? '+ adicionar' : '—'}
+                                </span>
+                              )}
+                              {plantoes.map((p) => (
+                                <span key={p.id} className="block">
+                                  <span
+                                    className={`block rounded px-1.5 py-0.5 text-[11px] leading-tight ${
+                                      p.perfil_id === perfil?.id
+                                        ? 'bg-emerald-100 font-semibold text-emerald-900'
+                                        : 'bg-muted text-foreground'
+                                    }`}
+                                  >
+                                    {p.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Sem nome'}
+                                    {p.quinzenal && <span className="ml-1 font-bold text-primary">15/15</span>}
+                                  </span>
+                                  {p.rotulo && (
+                                    <span className="block px-1.5 text-[10px] text-muted-foreground">{p.rotulo}</span>
+                                  )}
+                                </span>
+                              ))}
+                            </button>
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Gestor: detalhe dos plantões da célula */}
+      {ehGestor && celula && !dialogAberto && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              {setores?.find((s) => s.id === celula.setor_id)?.nome} · {fmtDiaBR(celula.data)} ·{' '}
+              {TURNO_LABEL[turno]}
+            </CardTitle>
+            <CardDescription>Plantonistas escalados neste plantão.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            {(escala ?? [])
+              .filter((e) => e.setor_id === celula.setor_id && e.data === celula.data && e.turno === turno)
+              .map((e) => (
+                <div key={e.id} className="flex items-center justify-between rounded-lg border p-2">
+                  <div>
+                    <div className="font-medium">{e.perfis?.nome_completo ?? 'Sem nome'}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {e.quinzenal && '15/15 · '}
+                      {e.rotulo || 'sem rótulo'}
+                    </div>
+                  </div>
+                  <Button size="xs" variant="ghost" onClick={() => remover.mutate(e.id)}>
+                    <Trash2 /> Remover
+                  </Button>
+                </div>
+              ))}
+            {!carregandoEscala &&
+              (escala ?? []).filter((e) => e.setor_id === celula.setor_id && e.data === celula.data && e.turno === turno)
+                .length === 0 && <p className="text-sm text-muted-foreground">Nenhum plantonista neste plantão.</p>}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Dialog: adicionar plantonista */}
+      <Dialog open={dialogAberto} onOpenChange={setDialogAberto}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Adicionar plantonista</DialogTitle>
+            <DialogDescription>
+              {setores?.find((s) => s.id === celula?.setor_id)?.nome} ·{' '}
+              {celula ? fmtDiaBR(celula.data) : ''} · {TURNO_LABEL[turno]}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label>Plantonista</Label>
+              <Select value={plantonistaId || null} onValueChange={(v) => setPlantonistaId(v ?? '')}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(plantonistas ?? []).map((p) => (
+                    <SelectItem key={p.perfil_id} value={p.perfil_id}>
+                      {p.nome_completo}
+                      {p.crm ? ` · CRM ${p.crm}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {carregandoPlant && <Spinner />}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="esc-rotulo">Rótulo (opcional)</Label>
+              <Input
+                id="esc-rotulo"
+                value={rotulo}
+                onChange={(e) => setRotulo(e.target.value)}
+                placeholder='Ex: "escala 15/15", "cobertura"' 
+              />
+            </div>
+
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                className="size-4 accent-primary"
+                checked={quinzenal}
+                onChange={(e) => setQuinzenal(e.target.checked)}
+              />
+              Escala quinzenal (15/15)
+            </label>
           </div>
 
-          <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-            <p className="font-medium text-foreground">Em construção</p>
-            <p className="mt-1">
-              A página de escala será implementada a partir do <strong>modelo em Excel</strong> que
-              você vai enviar. O formato seguirá a planilha de escala (setores × turnos × dias ×
-              profissionais).
-            </p>
-            <p className="mt-2 text-xs">
-              Depois da escala, virão: passagem de plantão com registro na escala e gatilho de
-              mensagem no WhatsApp para quem recebeu o plantão.
-            </p>
-          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDialogAberto(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => adicionar.mutate()} disabled={!plantonistaId || adicionar.isPending}>
+              {adicionar.isPending ? <Spinner /> : <Plus />} Adicionar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-          <p className="text-xs text-muted-foreground">
-            Escala atual do servidor: consultada via <code className="rounded bg-muted px-1">turno_atual</code>.
-          </p>
-        </CardContent>
-      </Card>
+      <p className="text-xs text-muted-foreground">
+        <strong>Gestor:</strong> cria a primeira escala e pode criar setores (ex.: Cinderela) na página
+        Setores. <strong>Plantonista:</strong> alterações/passagem de plantão e aviso no WhatsApp entram
+        na próxima etapa.
+      </p>
     </div>
   )
 }
