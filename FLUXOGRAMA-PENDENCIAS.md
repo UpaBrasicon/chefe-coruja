@@ -134,15 +134,27 @@ flowchart TD
 ## Já preparado (sem precisar de você)
 
 - ✅ Schema Fase 2: `medicamentos`, `pacientes`, `cuidados_plantonistas`, `prescricoes`, `prescricao_itens`, `assinaturas`, `receitas_retidas`, `notificacoes_whatsapp`, `configuracoes_unidade`, `links_publicos_receita`
-- ✅ RLS em todas (auditado: 0 tabelas sem RLS). Regra inviolável mantida: **admin só vê agregados** (`vw_indicadores_unidade`); **plantonista só vê pacientes sob seu cuidado**; gestor vê a unidade
+- ✅ **Escala de plantão**: `escala_plantoes` (plantonista × setor × dia × turno manhã/tarde/noite) com **relógio no servidor** (`turno_atual()`, `na_escala_agora()`) — não depende do relógio do Windows; o app reavalia a cada 60s
+- ✅ **Acesso pago (fora da escala)** organizado: tabela `acessos_plantonista` + helper `tem_acesso_atendimento()` — libera futuramente prescrição/admissão/atestado/documento de internação (concessão hoje só por super; futuramente via webhook de pagamento)
+- ✅ **Setores de plantão da UPA**: Porta Clínica Médica, Porta Pediatria, Enfermaria Clínica Médica, Enfermaria Pediatria, Sala Vermelha/Semi-Crítica (seed)
+- ✅ RLS em todas (auditado): **plantonista só vê pacientes do setor onde está na escala agora**; gestor vê a unidade; **admin só agregados**; prescrições/assinaturas do plantonista exigem escala/atendimento
+- ✅ Tela **"Fora do expediente"** quando o plantonista não está na escala (acesso à plataforma bloqueado)
 - ✅ Bucket privado `receitas` (PDFs assinados)
 - ✅ Rota pública de deep link `/r/:tipo/:token` (emissão e consulta)
 - ✅ Placeholders de secrets no `.env.example`
 - ✅ View agregada `vw_indicadores_unidade` (com supressão < 5)
 
+## Pendência extra — montar a escala (gestor)
+
+A escala ainda não tem tela de gestão. Quando voltar, criar a UI do **gestor** para montar a escala
+(plantonista × setor × dia × turno), alimentando `escala_plantoes`. Sem isso, o plantonista só
+funciona se a escala for montada via SQL/seed (como fiz com o usuário de teste `plantonista@teste.com`).
+
 ## Próximo código (quando voltar, em ordem)
 
 1. Edge Functions (Pendência 5) — `gerar-receita-pdf`, `assinar-receita`, `validar-assinatura`, `resolve-receita`, `whatsapp-webhook`
-2. UI do plantonista: criar prescrição (paciente → itens → assinar)
-3. Portal do paciente / farmácia via deep links
-4. Tela de configurações da unidade (configuracoes_unidade)
+2. UI do gestor: montar a **escala** (Pendência extra acima)
+3. UI do plantonista: pacientes do setor → prescrição (itens) → assinar
+4. Portal do paciente / farmácia via deep links
+5. Tela de configurações da unidade (configuracoes_unidade)
+6. Acesso pago: webhook de pagamento → `acessos_plantonista` + módulo "Atendimento"

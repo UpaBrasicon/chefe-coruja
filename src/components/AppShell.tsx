@@ -15,6 +15,8 @@ import { cn } from '@/lib/utils'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { usePlantao } from '@/hooks/usePlantao'
+import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
@@ -55,6 +57,25 @@ export function AppShell() {
   async function handleSair() {
     await signOut()
     navigate('/login', { replace: true })
+  }
+
+  // Portão de plantão: plantonista só acessa a plataforma se estiver na escala
+  // agora (relógio do servidor) ou com acesso pago.
+  const { status: plantaoStatus } = usePlantao(
+    papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined
+  )
+
+  if (papelAtivo === 'plantonista') {
+    if (plantaoStatus === 'carregando') {
+      return (
+        <div className="flex min-h-screen items-center justify-center">
+          <Spinner />
+        </div>
+      )
+    }
+    if (plantaoStatus === 'fora') {
+      return <ForaDoExpediente />
+    }
   }
 
   const barraTopo = (

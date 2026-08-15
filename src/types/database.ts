@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      acessos_plantonista: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          criado_em: string
+          id: string
+          perfil_id: string
+          tipo_acesso: string
+          unidade_id: string
+          valida_ate: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          criado_em?: string
+          id?: string
+          perfil_id: string
+          tipo_acesso?: string
+          unidade_id: string
+          valida_ate?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          criado_em?: string
+          id?: string
+          perfil_id?: string
+          tipo_acesso?: string
+          unidade_id?: string
+          valida_ate?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acessos_plantonista_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acessos_plantonista_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assinaturas: {
         Row: {
           algoritmo: string
@@ -195,6 +243,74 @@ export type Database = {
           },
           {
             foreignKeyName: "cuidados_plantonistas_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escala_plantoes: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          criado_por: string | null
+          data: string
+          id: string
+          perfil_id: string
+          setor_id: string
+          turno: string
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          criado_por?: string | null
+          data: string
+          id?: string
+          perfil_id: string
+          setor_id: string
+          turno: string
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          criado_por?: string | null
+          data?: string
+          id?: string
+          perfil_id?: string
+          setor_id?: string
+          turno?: string
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escala_plantoes_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_plantoes_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_plantoes_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_plantoes_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -473,6 +589,7 @@ export type Database = {
           id: string
           nome: string
           prontuario: string | null
+          setor_id: string | null
           sexo: string | null
           telefone: string | null
           unidade_id: string
@@ -486,6 +603,7 @@ export type Database = {
           id?: string
           nome: string
           prontuario?: string | null
+          setor_id?: string | null
           sexo?: string | null
           telefone?: string | null
           unidade_id: string
@@ -499,12 +617,20 @@ export type Database = {
           id?: string
           nome?: string
           prontuario?: string | null
+          setor_id?: string | null
           sexo?: string | null
           telefone?: string | null
           unidade_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "pacientes_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pacientes_unidade_id_fkey"
             columns: ["unidade_id"]
@@ -915,6 +1041,8 @@ export type Database = {
     }
     Functions: {
       eh_super_admin: { Args: never; Returns: boolean }
+      horario_servidor: { Args: never; Returns: string }
+      na_escala_agora: { Args: { unidade: string }; Returns: boolean }
       papel_na_unidade: { Args: { unidade: string }; Returns: string }
       registrar_auditoria: {
         Args: {
@@ -926,6 +1054,8 @@ export type Database = {
         }
         Returns: string
       }
+      tem_acesso_atendimento: { Args: { unidade: string }; Returns: boolean }
+      turno_atual: { Args: never; Returns: string }
     }
     Enums: {
       papel: "admin" | "gestor" | "plantonista"
