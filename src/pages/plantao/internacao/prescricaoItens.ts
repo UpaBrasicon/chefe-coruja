@@ -1,0 +1,40 @@
+export type Item = { n: number; cat: string; med: string; via: string; pos: string; apr?: string; defaultOn?: boolean }
+
+export const CATEGORIAS: { id: string; label: string; desc?: string }[] = [
+  { id: 'cuidados', label: 'Cuidados Gerais', desc: 'Marcados por padrão' },
+  { id: 'hidratacao', label: 'Hidratação', desc: 'Conforme prescrição médica' },
+  { id: 'analgesia', label: 'Analgesia EV', desc: '' },
+  { id: 'analgesia_vo', label: 'Analgesia / Antitérmico VO', desc: '' },
+  { id: 'antiemetico', label: 'Antieméticos', desc: '' },
+  { id: 'gastroprotecao', label: 'Gastroproteção', desc: '' },
+  { id: 'anticoag', label: 'Anticoagulação', desc: '' },
+  { id: 'suporte', label: 'Suporte / Monitorização', desc: '' },
+]
+
+export const ITENS: Item[] = [
+  { n: 1, cat: 'cuidados', med: 'DIETA', via: '---', pos: '---', apr: '20H 23H 08H 11H 15H', defaultOn: true },
+  { n: 2, cat: 'cuidados', med: 'CABECEIRA ELEVADA, 45°', via: '---', pos: '---', apr: 'MANTER', defaultOn: true },
+  { n: 3, cat: 'cuidados', med: 'PRECAUÇÃO PADRÃO', via: '---', pos: '---', apr: 'OK', defaultOn: true },
+  { n: 4, cat: 'cuidados', med: 'VIGILÂNCIA DE SINTOMAS ÁLGICOS', via: '---', pos: '---', apr: 'ATENÇÃO!', defaultOn: true },
+  { n: 5, cat: 'hidratacao', med: 'SORO FISIOLÓGICO 0,9%', via: 'EV', pos: 'ACM', apr: '' },
+  { n: 6, cat: 'analgesia', med: 'DIPIRONA 01AMP + 15 ML AD', via: 'EV', pos: '06/06H - SOS', apr: '' },
+  { n: 7, cat: 'antiemetico', med: 'BROMOPRIDA 01 AMP + 15 ML AD', via: 'EV', pos: '08/08H - SOS', apr: '' },
+  { n: 8, cat: 'analgesia', med: 'BUSCOPAN COMPOSTO, 01 AMP + SF 0,9%, 100 ML', via: 'EV', pos: '08/08H - SOS', apr: '' },
+  { n: 9, cat: 'gastroprotecao', med: 'OMEPRAZOL, 20 MG, 02 CP', via: 'VO', pos: 'ACM', apr: '' },
+  { n: 10, cat: 'analgesia', med: 'TRAMADOL, 1 AMP + 100 ML SF 0,9%', via: 'EV', pos: '06/06H - SOS', apr: '', defaultOn: false },
+  { n: 11, cat: 'analgesia', med: 'MORFINA, 1 AMP + 09 ML AD, FAZER 3 ML', via: 'EV', pos: 'ACM', apr: '' },
+  { n: 13, cat: 'analgesia_vo', med: 'DIPIRONA, 500 MG, 01 CP, SE DOR OU FEBRE (TAX ≥ 37,8°)', via: 'VO', pos: '06/06H - SOS', apr: '' },
+  { n: 14, cat: 'analgesia_vo', med: 'PARACETAMOL, 500 MG, 01 CP, SE DOR OU FEBRE (TAX ≥ 37,8°)', via: 'VO', pos: '06/06H - SOS', apr: '' },
+  { n: 15, cat: 'antiemetico', med: 'BROMOPRIDA, 10 MG, 01 CP', via: 'VO', pos: '08/08H - SOS', apr: '' },
+  { n: 16, cat: 'anticoag', med: 'ENOXAPARINA, 40 MG SC, SE INDICAÇÃO', via: 'SC', pos: '24/24H', apr: '' },
+  { n: 17, cat: 'suporte', med: 'O₂ CONTÍNUO EM CN 2L/MIN, SE SatO₂ < 92%', via: 'INAL', pos: 'ACM', apr: '' },
+  { n: 18, cat: 'suporte', med: 'GH 50% 40 ML, SE HGT < 70 mg/dL, EM BOLUS', via: 'EV', pos: 'SOS', apr: '' },
+  { n: 19, cat: 'suporte', med: 'AFERIR PA E HGT 01H APÓS CORREÇÃO DE GLICEMIA E PA', via: '---', pos: '---', apr: '' },
+  { n: 20, cat: 'suporte', med: 'INSULINA REGULAR conforme HGT', via: 'SC', pos: 'SOS', apr: '' },
+  { n: 21, cat: 'suporte', med: 'HGT', via: 'SC', pos: '06/06H', apr: '' },
+  { n: 22, cat: 'cuidados', med: 'COMUNICAR INTERCORRÊNCIAS', via: '---', pos: '---', apr: '', defaultOn: true },
+  { n: 23, cat: 'cuidados', med: 'SINAIS VITAIS', via: '---', pos: '06/06H', apr: '08H 14H 20H 02H', defaultOn: true },
+  { n: 24, cat: 'cuidados', med: 'CUIDADOS GERAIS EM ENFERMAGEM', via: '---', pos: '---', apr: '', defaultOn: true },
+  { n: 25, cat: 'cuidados', med: 'MEDICAÇÕES DE USO CONTÍNUO', via: '---', pos: '---', apr: 'MANTER', defaultOn: true },
+  { n: 26, cat: 'cuidados', med: 'MUDANÇA DE DECÚBITO', via: '---', pos: '---', apr: 'ATENÇÃO!' },
+]
