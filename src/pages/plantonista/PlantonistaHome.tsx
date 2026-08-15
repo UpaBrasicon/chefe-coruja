@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Clock, Search, Sparkles, Star } from 'lucide-react'
+import { Clock, Search, Star } from 'lucide-react'
 
 import { SECOES } from '@/content/registry'
 import { fuzzyMatch } from '@/lib/search'
@@ -27,8 +27,6 @@ export default function PlantonistaHome() {
       ),
     []
   )
-
-  const totalFerramentas = todas.length
 
   const resultados = useMemo(() => {
     if (!consulta.trim()) return []
@@ -62,10 +60,6 @@ export default function PlantonistaHome() {
           className="pointer-events-none absolute inset-x-0 -top-24 mx-auto h-48 w-96 rounded-full bg-primary/10 blur-3xl"
         />
         <div className="relative flex flex-col items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full border bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-            <Sparkles className="size-3.5" />
-            {totalFerramentas} ferramentas clínicas
-          </span>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Central do Plantonista
           </h1>
