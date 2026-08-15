@@ -161,6 +161,41 @@ export default function Escala() {
   const plantoesDaCelula = (setorId: string, data: string) =>
     (escala ?? []).filter((e) => e.setor_id === setorId && e.data === data && e.turno === turno)
 
+  const meusPlantoes = React.useMemo(() => (escala ?? []).filter((e) => e.perfil_id === perfil?.id), [escala, perfil?.id])
+
+  const resumo = React.useMemo(() => {
+    const porDia = new Map<string, Set<string>>()
+    for (const p of meusPlantoes) {
+      const set = porDia.get(p.data) ?? new Set()
+      set.add(p.turno)
+      porDia.set(p.data, set)
+    }
+    let horas = 0
+    let diurnos = 0
+    let noturnos = 0
+    let dias = 0
+    for (const turnos of porDia.values()) {
+      dias++
+      const temManha = turnos.has('manha')
+      const temTarde = turnos.has('tarde')
+      const temNoite = turnos.has('noite')
+      // Manhã + tarde no mesmo dia = DIURNO de 12h (não 6h + 6h)
+      if (temManha && temTarde) {
+        diurnos++
+        horas += 12
+      } else if (temManha) {
+        horas += 6
+      } else if (temTarde) {
+        horas += 6
+      }
+      if (temNoite) {
+        noturnos++
+        horas += 12
+      }
+    }
+    return { horas, diurnos, noturnos, dias }
+  }, [meusPlantoes])
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <div className="flex flex-col gap-1">
@@ -301,6 +336,46 @@ export default function Escala() {
           </CardContent>
         </Card>
       )}
+
+      {/* Contador de plantões do plantonista */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CalendarClock className="size-4 text-muted-foreground" />
+            Meus plantões na semana
+          </CardTitle>
+          <CardDescription>
+            {perfil?.nome_completo ?? 'Você'} · {fmtDiaBR(dataInicio)} – {fmtDiaBR(dataFim)}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-stretch gap-4">
+          <div className="flex flex-1 flex-col rounded-xl border bg-muted/40 p-4">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Horas na semana
+            </span>
+            <span className="mt-1 text-3xl font-bold">{resumo.horas}h</span>
+            <span className="text-xs text-muted-foreground">
+              {resumo.dias} dia(s) escalado(s) nesta semana
+            </span>
+          </div>
+          <div className="flex flex-1 flex-col rounded-xl border bg-sky-50 p-4">
+            <span className="text-xs font-semibold uppercase tracking-wide text-sky-700">
+              Diurnos (manhã + tarde = 12h)
+            </span>
+            <span className="mt-1 text-3xl font-bold text-sky-800">{resumo.diurnos}</span>
+            <span className="text-xs text-sky-700">
+              {resumo.diurnos * 12}h · manhã e tarde juntas contam como diurno
+            </span>
+          </div>
+          <div className="flex flex-1 flex-col rounded-xl border bg-indigo-50 p-4">
+            <span className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+              Noturnos (noite = 12h)
+            </span>
+            <span className="mt-1 text-3xl font-bold text-indigo-800">{resumo.noturnos}</span>
+            <span className="text-xs text-indigo-700">{resumo.noturnos * 12}h</span>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Gestor: detalhe dos plantões da célula */}
       {ehGestor && celula && !dialogAberto && (
