@@ -524,22 +524,30 @@ export default function Escala() {
                     const plantoes = plantoesDoDia(c.iso)
                     const turnos = [...new Set(plantoes.map((p) => p.turno))]
                     const eHoje = ehHoje(c.iso)
+                    const selecionado = diaSelecionado === c.iso
                     return (
                       <button
                         key={c.iso}
                         type="button"
-                        onClick={() => abrirDia(c.iso)}
-                        className={`flex min-h-[76px] flex-col gap-1 rounded-lg border p-1.5 text-left transition-colors ${
+                        onClick={() => (plantoes.length ? abrirDia(c.iso) : undefined)}
+                        className={`flex min-h-[76px] flex-col gap-1 rounded-lg border p-1.5 text-left transition-all duration-200 ${
                           plantoes.length
-                            ? 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100'
+                            ? 'border-emerald-600 bg-emerald-500 text-white shadow-md hover:bg-emerald-600 hover:shadow-lg'
                             : 'border-transparent hover:bg-muted/60'
-                        } ${eHoje ? 'ring-2 ring-primary/40' : ''}`}
+                        } ${selecionado ? 'ring-2 ring-primary ring-offset-2' : ''} ${eHoje ? 'ring-2 ring-primary/50' : ''}`}
                       >
-                        <span className={`text-xs font-semibold ${eHoje ? 'text-primary' : ''}`}>{c.dia}</span>
+                        <span className={`text-xs font-bold ${plantoes.length ? 'text-white' : eHoje ? 'text-primary' : ''}`}>
+                          {c.dia}
+                        </span>
                         {turnos.map((t) => (
-                          <Badge key={t} variant="outline" className="justify-start bg-white/70 text-[10px]">
+                          <span
+                            key={t}
+                            className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
+                              plantoes.length ? 'bg-white/25 text-white' : 'bg-muted text-muted-foreground'
+                            }`}
+                          >
                             {TURNO_LABEL[t]}
-                          </Badge>
+                          </span>
                         ))}
                       </button>
                     )
@@ -597,177 +605,210 @@ export default function Escala() {
             </CardContent>
           </Card>
 
-          {/* DIALOG: ações do dia */}
-          <Dialog open={!!diaSelecionado} onOpenChange={(o) => !o && fecharDia()}>
-            <DialogContent className="sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Plantão de {diaSelecionado ? fmtDiaBR(diaSelecionado) : ''}</DialogTitle>
-                <DialogDescription>
-                  {plantoesDoDia(diaSelecionado ?? '')
-                    .map((p) => `${TURNO_LABEL[p.turno]}${p.quinzenal ? ' · 15/15' : ''}`)
-                    .join(' · ')}
-                </DialogDescription>
-              </DialogHeader>
+          {/* PAINEL: ações do dia (zoom-in) */}
+          {diaSelecionado && (
+            <div
+              key={diaSelecionado}
+              className="animate-in fade-in-0 zoom-in-95 duration-200 ease-out"
+            >
+              <Card className="border-emerald-200 bg-emerald-50/50">
+                <CardHeader className="flex-row items-start justify-between space-y-0">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <CalendarClock className="size-4 text-emerald-700" />
+                      Plantão de {fmtDiaBR(diaSelecionado)}
+                    </CardTitle>
+                    <CardDescription>
+                      Período(s) em que você está de plantão:
+                    </CardDescription>
+                  </div>
+                  <Button size="xs" variant="ghost" onClick={fecharDia}>
+                    <X /> Fechar
+                  </Button>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-4">
+                  <div className="flex flex-wrap gap-2">
+                    {plantoesDoDia(diaSelecionado).map((p) => (
+                      <span
+                        key={p.id}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-600 bg-white px-3 py-2 text-sm font-semibold text-emerald-900 shadow-sm"
+                      >
+                        {TURNO_LABEL[p.turno]}
+                        <span className="font-normal text-muted-foreground">
+                          {TURNOS.find((t) => t.id === p.turno)?.horario}
+                        </span>
+                        {p.quinzenal && <span className="text-[10px] font-bold text-primary">15/15</span>}
+                      </span>
+                    ))}
+                  </div>
 
-              {!acao ? (
-                <div className="grid gap-2 sm:grid-cols-3">
-                  <Button
-                    variant="outline"
-                    className="h-auto flex-col items-start gap-1 p-4 text-left"
-                    onClick={() => setAcao('sair_fixo')}
-                  >
-                    <LogOut className="size-4" />
-                    <span className="font-medium">Sair do fixo</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">
-                      Aviso prévio de 15 dias
-                    </span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-auto flex-col items-start gap-1 p-4 text-left"
-                    onClick={() => setAcao('passar_plantao')}
-                  >
-                    <RefreshCcw className="size-4" />
-                    <span className="font-medium">Passar plantão</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">
-                      Transferir para outro plantonista
-                    </span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-auto flex-col items-start gap-1 p-4 text-left"
-                    onClick={() => setAcao('justificar_falta')}
-                  >
-                    <FileText className="size-4" />
-                    <span className="font-medium">Justificar falta</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">
-                      Atestado ou licença
-                    </span>
-                  </Button>
-                </div>
-              ) : acao === 'sair_fixo' ? (
-                <div className="flex flex-col gap-3">
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                    <strong>Aviso prévio:</strong> a saída do plantão fixo deve ser comunicada com{' '}
-                    <strong>pelo menos 15 dias de antecedência</strong>. Faltam{' '}
-                    <strong>{diaSelecionado ? Math.max(0, diasPara(diaSelecionado)) : 0} dia(s)</strong> para
-                    este plantão.
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="sair-just">Justificativa (opcional)</Label>
-                    <Textarea
-                      id="sair-just"
-                      value={justificativa}
-                      onChange={(e) => setJustificativa(e.target.value)}
-                      placeholder="Motivo da saída do plantão fixo…"
-                    />
-                  </div>
-                  {erroAcao && <p className="text-sm text-destructive">{erroAcao}</p>}
-                  {mensagem && <p className="text-sm text-emerald-700">{mensagem}</p>}
-                  <DialogFooter>
-                    <Button variant="ghost" onClick={() => setAcao(null)}>
-                      Voltar
-                    </Button>
-                    <Button onClick={enviarSairFixo}>
-                      <LogOut /> Solicitar saída do fixo
-                    </Button>
-                  </DialogFooter>
-                </div>
-              ) : acao === 'passar_plantao' ? (
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col gap-1.5">
-                    <Label>Passar para</Label>
-                    <Select value={destinoId || null} onValueChange={(v) => setDestinoId(v ?? '')}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione o plantonista" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(plantonistas ?? [])
-                          .filter((p) => p.perfil_id !== perfil?.id)
-                          .map((p) => (
-                            <SelectItem key={p.perfil_id} value={p.perfil_id}>
-                              {p.nome_completo}
-                              {p.crm ? ` · CRM ${p.crm}` : ''}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                    {carregandoPlant && <Spinner />}
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="passar-just">Justificativa (opcional)</Label>
-                    <Textarea
-                      id="passar-just"
-                      value={justificativa}
-                      onChange={(e) => setJustificativa(e.target.value)}
-                      placeholder="Motivo da passagem…"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    A passagem pode ser aplicada na hora ou depender de aprovação do gestor (conforme
-                    configuração da unidade). A pessoa que recebe o plantão será notificada.
-                  </p>
-                  {erroAcao && <p className="text-sm text-destructive">{erroAcao}</p>}
-                  {mensagem && <p className="text-sm text-emerald-700">{mensagem}</p>}
-                  <DialogFooter>
-                    <Button variant="ghost" onClick={() => setAcao(null)}>
-                      Voltar
-                    </Button>
-                    <Button onClick={enviarPassarPlantao} disabled={!destinoId}>
-                      <UserCheck /> Passar plantão
-                    </Button>
-                  </DialogFooter>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col gap-1.5">
-                    <Label>Tipo de justificativa</Label>
-                    <Select
-                      value={tipoFalta}
-                      onValueChange={(v) => setTipoFalta((v as 'atestado_medico' | 'licenca_maternidade') ?? 'atestado_medico')}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="atestado_medico">Atestado médico</SelectItem>
-                        <SelectItem value="licenca_maternidade">Licença-maternidade</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="falta-anexo">Anexar documento (PDF ou imagem)</Label>
-                    <Input
-                      id="falta-anexo"
-                      type="file"
-                      accept=".pdf,image/png,image/jpeg,image/jpg"
-                      onChange={(e) => setAnexo(e.target.files?.[0] ?? null)}
-                    />
-                    {anexo && <span className="text-xs text-muted-foreground">{anexo.name}</span>}
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="falta-just">Justificativa</Label>
-                    <Textarea
-                      id="falta-just"
-                      value={justificativa}
-                      onChange={(e) => setJustificativa(e.target.value)}
-                      placeholder="Descreva o motivo da falta…"
-                    />
-                  </div>
-                  {erroAcao && <p className="text-sm text-destructive">{erroAcao}</p>}
-                  {mensagem && <p className="text-sm text-emerald-700">{mensagem}</p>}
-                  <DialogFooter>
-                    <Button variant="ghost" onClick={() => setAcao(null)}>
-                      Voltar
-                    </Button>
-                    <Button onClick={enviarJustificarFalta} disabled={anexando}>
-                      {anexando ? <Spinner /> : <Check />} Enviar justificativa
-                    </Button>
-                  </DialogFooter>
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
+                  {!acao ? (
+                    <div className="animate-in fade-in-0 zoom-in-95 duration-200 ease-out">
+                      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        O que deseja fazer?
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        <Button
+                          variant="outline"
+                          className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
+                          onClick={() => setAcao('sair_fixo')}
+                        >
+                          <LogOut className="size-4 text-amber-600" />
+                          <span className="font-medium">Sair do fixo</span>
+                          <span className="text-[11px] font-normal text-muted-foreground">
+                            Aviso prévio de 15 dias
+                          </span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
+                          onClick={() => setAcao('passar_plantao')}
+                        >
+                          <RefreshCcw className="size-4 text-sky-600" />
+                          <span className="font-medium">Passar plantão</span>
+                          <span className="text-[11px] font-normal text-muted-foreground">
+                            Transferir para outro plantonista
+                          </span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
+                          onClick={() => setAcao('justificar_falta')}
+                        >
+                          <FileText className="size-4 text-indigo-600" />
+                          <span className="font-medium">Justificar falta</span>
+                          <span className="text-[11px] font-normal text-muted-foreground">
+                            Atestado ou licença
+                          </span>
+                        </Button>
+                      </div>
+                    </div>
+                  ) : acao === 'sair_fixo' ? (
+                    <div className="animate-in fade-in-0 zoom-in-95 duration-200 ease-out">
+                      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                        <strong>Aviso prévio:</strong> a saída do plantão fixo deve ser comunicada com{' '}
+                        <strong>pelo menos 15 dias de antecedência</strong>. Faltam{' '}
+                        <strong>{Math.max(0, diasPara(diaSelecionado))} dia(s)</strong> para este plantão.
+                      </div>
+                      <div className="mt-3 flex flex-col gap-1.5">
+                        <Label htmlFor="sair-just">Justificativa (opcional)</Label>
+                        <Textarea
+                          id="sair-just"
+                          value={justificativa}
+                          onChange={(e) => setJustificativa(e.target.value)}
+                          placeholder="Motivo da saída do plantão fixo…"
+                        />
+                      </div>
+                      {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
+                      {mensagem && <p className="mt-2 text-sm text-emerald-700">{mensagem}</p>}
+                      <div className="mt-3 flex justify-end gap-2">
+                        <Button variant="ghost" onClick={() => setAcao(null)}>
+                          Voltar
+                        </Button>
+                        <Button onClick={enviarSairFixo}>
+                          <LogOut /> Solicitar saída do fixo
+                        </Button>
+                      </div>
+                    </div>
+                  ) : acao === 'passar_plantao' ? (
+                    <div className="animate-in fade-in-0 zoom-in-95 duration-200 ease-out">
+                      <div className="flex flex-col gap-1.5">
+                        <Label>Passar para</Label>
+                        <Select value={destinoId || null} onValueChange={(v) => setDestinoId(v ?? '')}>
+                          <SelectTrigger className="w-full bg-white">
+                            <SelectValue placeholder="Selecione o plantonista" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(plantonistas ?? [])
+                              .filter((p) => p.perfil_id !== perfil?.id)
+                              .map((p) => (
+                                <SelectItem key={p.perfil_id} value={p.perfil_id}>
+                                  {p.nome_completo}
+                                  {p.crm ? ` · CRM ${p.crm}` : ''}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        {carregandoPlant && <Spinner />}
+                      </div>
+                      <div className="mt-3 flex flex-col gap-1.5">
+                        <Label htmlFor="passar-just">Justificativa (opcional)</Label>
+                        <Textarea
+                          id="passar-just"
+                          value={justificativa}
+                          onChange={(e) => setJustificativa(e.target.value)}
+                          placeholder="Motivo da passagem…"
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        A passagem pode ser aplicada na hora ou depender de aprovação do gestor (conforme
+                        configuração da unidade). A pessoa que recebe o plantão será notificada.
+                      </p>
+                      {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
+                      {mensagem && <p className="mt-2 text-sm text-emerald-700">{mensagem}</p>}
+                      <div className="mt-3 flex justify-end gap-2">
+                        <Button variant="ghost" onClick={() => setAcao(null)}>
+                          Voltar
+                        </Button>
+                        <Button onClick={enviarPassarPlantao} disabled={!destinoId}>
+                          <UserCheck /> Passar plantão
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="animate-in fade-in-0 zoom-in-95 duration-200 ease-out">
+                      <div className="flex flex-col gap-1.5">
+                        <Label>Tipo de justificativa</Label>
+                        <Select
+                          value={tipoFalta}
+                          onValueChange={(v) =>
+                            setTipoFalta((v as 'atestado_medico' | 'licenca_maternidade') ?? 'atestado_medico')
+                          }
+                        >
+                          <SelectTrigger className="w-full bg-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="atestado_medico">Atestado médico</SelectItem>
+                            <SelectItem value="licenca_maternidade">Licença-maternidade</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="mt-3 flex flex-col gap-1.5">
+                        <Label htmlFor="falta-anexo">Anexar documento (PDF ou imagem)</Label>
+                        <Input
+                          id="falta-anexo"
+                          type="file"
+                          accept=".pdf,image/png,image/jpeg,image/jpg"
+                          onChange={(e) => setAnexo(e.target.files?.[0] ?? null)}
+                        />
+                        {anexo && <span className="text-xs text-muted-foreground">{anexo.name}</span>}
+                      </div>
+                      <div className="mt-3 flex flex-col gap-1.5">
+                        <Label htmlFor="falta-just">Justificativa</Label>
+                        <Textarea
+                          id="falta-just"
+                          value={justificativa}
+                          onChange={(e) => setJustificativa(e.target.value)}
+                          placeholder="Descreva o motivo da falta…"
+                        />
+                      </div>
+                      {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
+                      {mensagem && <p className="mt-2 text-sm text-emerald-700">{mensagem}</p>}
+                      <div className="mt-3 flex justify-end gap-2">
+                        <Button variant="ghost" onClick={() => setAcao(null)}>
+                          Voltar
+                        </Button>
+                        <Button onClick={enviarJustificarFalta} disabled={anexando}>
+                          {anexando ? <Spinner /> : <Check />} Enviar justificativa
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </>
       ) : (
         <>
