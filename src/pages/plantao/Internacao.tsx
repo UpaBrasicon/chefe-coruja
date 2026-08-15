@@ -1,13 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
 import { CheckCircle2, ChevronRight, ClipboardPlus, Eraser } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Button } from '@/components/ui/button'
-import { DadosPaciente } from './internacao/DadosPaciente'
+import { DadosPaciente } from './shared/DadosPaciente'
+import { useEscalaSetores } from './shared/useEscalaSetores'
 import { PrescricaoTab } from './internacao/PrescricaoTab'
 import { EvolucaoTab } from './internacao/EvolucaoTab'
 import { ExamesTab } from './internacao/ExamesTab'
@@ -22,28 +21,7 @@ export default function Internacao() {
   const perfilId = perfil?.id
 
   const { dados, atualizar, salvoEm, limpar } = useRascunho(unidadeId, perfilId)
-
-  const { data: escalaSetores } = useQuery({
-    queryKey: ['escala-setores-atual'],
-    enabled: !!unidadeId,
-    queryFn: async () => {
-      const [turno, hoje] = await Promise.all([
-        supabase.rpc('turno_atual'),
-        supabase.rpc('data_atual'),
-      ])
-      if (!hoje.data) return []
-      const { data } = await supabase
-        .from('escala_plantoes')
-        .select('setor_id, setores(id, nome)')
-        .eq('perfil_id', perfil!.id)
-        .eq('ativo', true)
-        .eq('data', hoje.data as string)
-        .eq('turno', turno.data as string)
-      return (data ?? [])
-        .map((e) => e.setores as { id: string; nome: string } | null)
-        .filter((s): s is { id: string; nome: string } => !!s)
-    },
-  })
+  const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">

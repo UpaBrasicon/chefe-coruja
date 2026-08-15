@@ -1,16 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import type { DadosPaciente } from '../shared/rascunho'
+import { hojeLocal, useRascunho as useRascunhoBase } from '../shared/rascunho'
 
-export type DadosPaciente = {
-  nome: string
-  nascimento: string
-  dataAtual: string
-  idade: string
-  peso: string
-  alergias: string
-  dieta: string
-  leito: string
-  diagnostico: string
-}
+export type { DadosPaciente } from '../shared/rascunho'
 
 export type Prescricao = {
   marcados: string[]
@@ -146,18 +137,6 @@ export const RASCUNHO_INICIAL: Rascunho = {
   },
 }
 
-function hojeLocal() {
-  const d = new Date()
-  const yyyy = d.getFullYear()
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
-}
-
-export function novaChave(unidadeId?: string, perfilId?: string) {
-  return `cc:rascunho:${perfilId ?? 'anon'}:${unidadeId ?? 'novo'}`
-}
-
 export function carregarRascunho(chave: string): Rascunho {
   try {
     const raw = localStorage.getItem(chave)
@@ -177,52 +156,7 @@ export function carregarRascunho(chave: string): Rascunho {
   }
 }
 
-/**
- * Autosave em memória (localStorage) com debounce — sem cliques.
- * Persiste por unidade + plantonista (ou anônimo).
- */
+/** Autosave da Internação (localStorage por unidade + plantonista). */
 export function useRascunho(unidadeId?: string, perfilId?: string) {
-  const chave = novaChave(unidadeId, perfilId)
-  const [estado, setEstado] = useState<{ chave: string; dados: Rascunho }>(() => ({
-    chave,
-    dados: carregarRascunho(chave),
-  }))
-  const [salvoEm, setSalvoEm] = useState<string | null>(null)
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  if (estado.chave !== chave) {
-    setEstado({ chave, dados: carregarRascunho(chave) })
-  }
-
-  const dados = estado.dados
-
-  const atualizar = useCallback((novo: Partial<Rascunho>) => {
-    setEstado((prev) => ({ ...prev, dados: { ...prev.dados, ...novo } }))
-  }, [])
-
-  useEffect(() => {
-    if (timer.current) clearTimeout(timer.current)
-    timer.current = setTimeout(() => {
-      try {
-        localStorage.setItem(chave, JSON.stringify(dados))
-        setSalvoEm(new Date().toLocaleTimeString('pt-BR'))
-      } catch {
-        // armazenamento indisponível — ignora silenciosamente
-      }
-    }, 500)
-    return () => {
-      if (timer.current) clearTimeout(timer.current)
-    }
-  }, [dados, chave])
-
-  const limpar = useCallback(() => {
-    try {
-      localStorage.removeItem(chave)
-    } catch {
-      // ignora
-    }
-    setEstado({ chave, dados: RASCUNHO_INICIAL })
-  }, [chave])
-
-  return { dados, atualizar, salvoEm, limpar, chave }
+  return useRascunhoBase<Rascunho>('internacao', unidadeId, perfilId, carregarRascunho)
 }

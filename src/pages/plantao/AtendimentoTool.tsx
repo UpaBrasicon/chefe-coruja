@@ -1,6 +1,8 @@
 import { Link, useParams } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 
+import { useAuth } from '@/contexts/AuthContext'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { ReceituarioMedico } from './atendimento/ReceituarioMedico'
 import { AtestadoMedico } from './atendimento/AtestadoMedico'
 import { Encaminhamento } from './atendimento/Encaminhamento'
@@ -15,6 +17,10 @@ const ferramentas = {
 
 export default function AtendimentoTool() {
   const { tool } = useParams()
+  const { unidadeAtiva } = useUnidade()
+  const { perfil } = useAuth()
+  const unidadeId = unidadeAtiva?.unidade_id
+  const perfilId = perfil?.id
   const def = tool ? ferramentas[tool as keyof typeof ferramentas] : undefined
 
   if (!def) {
@@ -36,7 +42,7 @@ export default function AtendimentoTool() {
         <ChevronRight className="size-3.5" />
         <span className="font-medium text-foreground">{label}</span>
       </div>
-      <Component />
+      <Component unidadeId={unidadeId} perfilId={perfilId} />
     </div>
   )
 }

@@ -10,37 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
-import type { DadosPaciente } from './rascunho'
-
-const DIETAS = ['Dieta livre', 'Dieta branda', 'Dieta líquida', 'Dieta zero (jejum)', 'Dieta para diabético', 'Dieta hipossódica', 'Outra']
-
-function idadeTexto(nascimento: string, dataAtual: string) {
-  if (!nascimento || !dataAtual) return ''
-  const partes = nascimento.split('/')
-  if (partes.length !== 3) return ''
-  const dn = new Date(Number(partes[2]), Number(partes[1]) - 1, Number(partes[0]))
-  const da = new Date(dataAtual)
-  if (isNaN(dn.getTime()) || isNaN(da.getTime())) return ''
-  let anos = da.getFullYear() - dn.getFullYear()
-  let meses = da.getMonth() - dn.getMonth()
-  if (meses < 0 || (meses === 0 && da.getDate() < dn.getDate())) {
-    anos--
-    meses += 12
-  }
-  if (da.getDate() < dn.getDate()) meses--
-  if (anos > 0) return `${anos} anos`
-  if (meses > 0) return `${meses} meses`
-  const dias = Math.floor((da.getTime() - dn.getTime()) / (1000 * 3600 * 24))
-  return `${Math.max(0, dias)} dias`
-}
-
-function hoje() {
-  const d = new Date()
-  const yyyy = d.getFullYear()
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
-}
+import { DIETAS, hojeLocal, idadeTexto, type DadosPaciente } from './rascunho'
 
 function normalizarNome(texto: string) {
   return texto
@@ -129,7 +99,7 @@ export function DadosPaciente({
     onChange({
       nome: pacienteEncontrado.nome,
       nascimento: nasc,
-      dataAtual: dados.dataAtual || hoje(),
+      dataAtual: dados.dataAtual || hojeLocal(),
       leito: dados.leito,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
