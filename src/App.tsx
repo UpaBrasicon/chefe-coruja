@@ -9,6 +9,7 @@ import { RedirectHome } from '@/routes/RedirectHome'
 import { AppShell } from '@/components/AppShell'
 import { Login } from '@/pages/Login'
 import { Cadastro } from '@/pages/Cadastro'
+import { LinkReceita } from '@/pages/public/LinkReceita'
 import { AguardandoLiberacao } from '@/pages/AguardandoLiberacao'
 import { SeletorUnidade } from '@/pages/SeletorUnidade'
 import { PainelAdmin } from '@/pages/PainelAdmin'
@@ -44,6 +45,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/cadastro" element={<Cadastro />} />
+            <Route path="/r/:tipo/:token" element={<LinkReceita />} />
 
             <Route element={<RequireAuth />}>
               <Route path="/aguardando" element={<AguardandoLiberacao />} />
