@@ -14,7 +14,9 @@ export function SedacaoContinua() {
   return (
     <ToolLayout
       title="Sedação Contínua"
-      description="Doses de analgosedação em infusão contínua. Referência: Falcão LFR, Macedo GL. Farmacologia Aplicada em Medicina Intensiva."
+      description="Doses de analgosedação em infusão contínua."
+      referencia="Falcão LFR, Macedo GL. Farmacologia Aplicada em Medicina Intensiva. Ed. ROCA, 2011."
+      revisadoEm="Revisado em 08/2026"
     >
       <InfusionDoses drogas={drogas} />
     </ToolLayout>

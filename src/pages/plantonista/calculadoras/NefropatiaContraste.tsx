@@ -33,7 +33,7 @@ export function NefropatiaContraste() {
         <CardContent className="grid gap-4 pt-6 md:grid-cols-2">
           <NumberField id="ncf-idade" label="Idade" unit="anos" value={idade} onChange={setIdade} min={1} />
           <NumberField id="ncf-peso" label="Peso" unit="kg" value={peso} onChange={setPeso} min={1} />
-          <NumberField id="ncf-creat" label="Creatinina" unit="mg/dL" value={creat} onChange={setCreat} min={0.1} step={0.1} />
+          <NumberField id="ncf-creat" label="Creatinina" unit="mg/dL" value={creat} onChange={setCreat} min={0.1} step={0.1} normalMin={0.6} normalMax={1.3} normalLabel="Creatinina normal" />
           <div className="flex flex-col gap-2">
             <Label>Sexo</Label>
             <Select value={sexo} onValueChange={(v) => setSexo((v as 'homem') ?? 'homem')}>

@@ -46,10 +46,10 @@ export function SuporteVentilatorio() {
               </SelectContent>
             </Select>
           </div>
-          <NumberField id="sv-po2" label="PaO₂" unit="mmHg" value={pO2} onChange={setPO2} min={1} />
-          <NumberField id="sv-fio2" label="FiO₂" unit="%" value={fio2} onChange={setFio2} min={21} max={100} />
-          <NumberField id="sv-ph" label="pH" value={ph} onChange={setPh} min={6.5} max={7.9} step={0.01} />
-          <NumberField id="sv-pco2" label="PaCO₂" unit="mmHg" value={pco2} onChange={setPco2} min={1} />
+          <NumberField id="sv-po2" label="PaO₂" unit="mmHg" value={pO2} onChange={setPO2} min={1} normalMin={80} normalMax={100} normalLabel="PaO₂ normal" />
+          <NumberField id="sv-fio2" label="FiO₂" unit="%" value={fio2} onChange={setFio2} min={21} max={100} normalMin={21} normalMax={21} normalLabel="Ar ambiente (21%)" />
+          <NumberField id="sv-ph" label="pH" value={ph} onChange={setPh} min={6.5} max={7.9} step={0.01} normalMin={7.35} normalMax={7.45} normalLabel="pH normal" />
+          <NumberField id="sv-pco2" label="PaCO₂" unit="mmHg" value={pco2} onChange={setPco2} min={1} normalMin={35} normalMax={45} normalLabel="PaCO₂ normal" />
         </CardContent>
       </Card>
 

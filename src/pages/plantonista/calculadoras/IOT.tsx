@@ -4,6 +4,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { CopyResult } from '@/components/plantonista/CopyResult'
 
 type Dose = {
   nome: string
@@ -72,13 +73,26 @@ export function IOT() {
   const [peso, setPeso] = useState(70)
   const { pre, inducao, bloqueio } = calcular(peso)
 
+  const linhas = (doses: Dose[]) =>
+    doses
+      .map((d) => `- ${d.nome}: ${d.doseMg} (${d.volume})${d.observacao ? ` — ${d.observacao}` : ''}`)
+      .join('\n')
+  const textoPronto = [
+    `IOT sequência rápida — peso ${peso} kg:`,
+    `PRÉ-MEDICAÇÃO\n${linhas(pre)}`,
+    `INDUÇÃO\n${linhas(inducao)}`,
+    `BLOQUEIO\n${linhas(bloqueio)}`,
+  ].join('\n\n')
+
   return (
     <ToolLayout
       title="Intubação Orotraqueal — Sequência Rápida"
       description="Doses calculadas pelo peso (mg/kg). Bloqueadores neuromusculares em ordem de preferência."
+      referencia="Doses de sequência rápida — referências padrão de emergência/intensivismo."
+      revisadoEm="Revisado em 08/2026"
     >
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">
           <div className="max-w-xs">
             <NumberField
               id="iot-peso"
@@ -89,6 +103,7 @@ export function IOT() {
               min={1}
             />
           </div>
+          {peso > 0 && <CopyResult texto={textoPronto} rotulo="Copiar doses" />}
         </CardContent>
       </Card>
 

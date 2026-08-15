@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { CopyResult } from '@/components/plantonista/CopyResult'
 import {
   Select,
   SelectContent,
@@ -34,6 +35,15 @@ export function InfusionDoses({ drogas, pesoPadrao = 70 }: { drogas: InfusaoDrog
   const fatorPeso = droga.porPeso ? peso : 1
   const fatorTempo = droga.porMinuto ? 60 : 1
   const vazao = (dose * fatorPeso * fatorTempo) / droga.conc
+  const gotasMin = vazao / 3 // macrogotas: 20 gotas/mL
+  const microGotasMin = vazao // microgotas: 60 gotas/mL
+
+  const textoPronto = [
+    `${droga.nome} em infusão contínua EV.`,
+    `Preparo: ${droga.preparo}.`,
+    `Dose: ${dose} ${droga.unidade}${droga.porPeso ? ` (peso ${peso} kg)` : ''}.`,
+    `Vazão: ${vazao.toFixed(1)} mL/h (${gotasMin.toFixed(0)} gotas/min em macrogotas; ${microGotasMin.toFixed(0)} em microgotas).`,
+  ].join(' ')
 
   return (
     <div className="flex flex-col gap-4">
@@ -83,9 +93,12 @@ export function InfusionDoses({ drogas, pesoPadrao = 70 }: { drogas: InfusaoDrog
           <CardTitle className="text-base">{droga.nome}</CardTitle>
           <CardDescription>{droga.preparo}</CardDescription>
         </CardHeader>
-        <CardContent className="flex items-center gap-3">
+        <CardContent className="flex flex-wrap items-center gap-3">
           <span className="text-sm text-muted-foreground">Vazão da infusão:</span>
           <Badge className="text-base">{vazao.toFixed(1)} mL/h</Badge>
+          <Badge variant="outline">{gotasMin.toFixed(0)} gotas/min (macrogotas)</Badge>
+          <Badge variant="outline">{microGotasMin.toFixed(0)} microgotas/min</Badge>
+          <CopyResult texto={textoPronto} rotulo="Copiar para prescrição" />
         </CardContent>
       </Card>
     </div>

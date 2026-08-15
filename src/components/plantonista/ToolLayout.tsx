@@ -7,11 +7,15 @@ export function ToolLayout({
   description,
   children,
   className,
+  referencia,
+  revisadoEm,
 }: {
   title: string
   description?: string
   children: ReactNode
   className?: string
+  referencia?: string
+  revisadoEm?: string
 }) {
   return (
     <div className={cn('flex flex-col gap-6', className)}>
@@ -20,9 +24,11 @@ export function ToolLayout({
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
       {children}
-      <p className="border-t pt-3 text-xs text-muted-foreground">
-        Apoio à decisão clínica — não substitui o julgamento do profissional responsável.
-      </p>
+      <div className="flex flex-col gap-1 border-t pt-3 text-xs text-muted-foreground">
+        {referencia && <p>Referência: {referencia}</p>}
+        {revisadoEm && <p>Selo de revisão: {revisadoEm}</p>}
+        <p>Apoio à decisão clínica — não substitui o julgamento do profissional responsável.</p>
+      </div>
     </div>
   )
 }

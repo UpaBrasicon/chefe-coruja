@@ -75,6 +75,8 @@ export function ClassificacaoDengue() {
     <ToolLayout
       title="Dengue — Classificação, Conduta e Hidratação (MS)"
       description="Classificação em grupos A–D e orientação de hidratação conforme Ministério da Saúde."
+      referencia="Ministério da Saúde — Manual de Dengue (atualização)."
+      revisadoEm="Revisado em 08/2026"
     >
       <Card>
         <CardContent className="grid gap-4 pt-6 md:grid-cols-3">

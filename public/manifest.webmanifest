@@ -1,0 +1,17 @@
+{
+  "name": "Chefe Coruja — Central Clínica",
+  "short_name": "Chefe Coruja",
+  "description": "Central de calculadoras, escores e protocolos clínicos para o plantão.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0D9488",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

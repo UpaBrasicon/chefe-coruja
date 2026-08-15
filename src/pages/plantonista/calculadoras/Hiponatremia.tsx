@@ -48,8 +48,8 @@ export function Hiponatremia() {
               </SelectContent>
             </Select>
           </div>
-          <NumberField id="hipo-na" label="Sódio atual" unit="mEq/L" value={naAtual} onChange={setNaAtual} min={100} />
-          <NumberField id="hipo-na-des" label="Sódio desejado" unit="mEq/L" value={naDesejado} onChange={setNaDesejado} min={120} />
+          <NumberField id="hipo-na" label="Sódio atual" unit="mEq/L" value={naAtual} onChange={setNaAtual} min={100} normalMin={135} normalMax={145} normalLabel="Na⁺ normal" />
+          <NumberField id="hipo-na-des" label="Sódio desejado" unit="mEq/L" value={naDesejado} onChange={setNaDesejado} min={120} normalMin={135} normalMax={145} normalLabel="Na⁺ normal" />
         </CardContent>
       </Card>
 

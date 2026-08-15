@@ -10,6 +10,9 @@ export function NumberField({
   min = 0,
   max,
   step = 1,
+  normalMin,
+  normalMax,
+  normalLabel,
 }: {
   id: string
   label: string
@@ -19,7 +22,17 @@ export function NumberField({
   min?: number
   max?: number
   step?: number
+  normalMin?: number
+  normalMax?: number
+  normalLabel?: string
 }) {
+  const fora =
+    value !== 0 &&
+    value !== undefined &&
+    normalMin !== undefined &&
+    normalMax !== undefined &&
+    (value < normalMin || value > normalMax)
+
   return (
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={id}>
@@ -43,6 +56,12 @@ export function NumberField({
           if (Number.isFinite(n)) onChange(n)
         }}
       />
+      {normalMin !== undefined && normalMax !== undefined && (
+        <p className={`text-xs ${fora ? 'text-amber-600' : 'text-muted-foreground'}`}>
+          {normalLabel ?? 'Faixa normal'}: {normalMin} – {normalMax}
+          {fora && ' ⚠ fora do intervalo'}
+        </p>
+      )}
     </div>
   )
 }

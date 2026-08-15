@@ -143,6 +143,8 @@ export function Saps3() {
     <ToolLayout
       title="SAPS 3 — Mortalidade na admissão em UTI"
       description="Coleta de variáveis na admissão e estimativa de mortalidade."
+      referencia="Moreno RP, et al. SAPS 3. Intensive Care Med. 2005;31:1336-44."
+      revisadoEm="Revisado em 08/2026"
     >
       <Card>
         <CardContent className="grid gap-4 pt-6 md:grid-cols-2">

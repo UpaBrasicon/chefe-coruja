@@ -1,12 +1,16 @@
 import { Link, useParams } from 'react-router-dom'
+import { Star } from 'lucide-react'
 
 import { acharSecao } from '@/content/registry'
+import { useFavoritos } from '@/lib/useFavoritos'
 import { ChevronRight } from 'lucide-react'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 export default function SectionHome() {
   const { section } = useParams()
   const secao = acharSecao(section ?? '')
+  const { favoritos, alternarFavorito } = useFavoritos()
 
   if (!secao) {
     return <p className="text-sm text-destructive">Seção não encontrada.</p>
@@ -32,16 +36,30 @@ export default function SectionHome() {
         </p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {secao.tools.map((tool) => (
-            <Link key={tool.slug} to={`/plantonista/${secao.slug}/${tool.slug}`}>
-              <Card className="h-full transition-colors hover:border-primary">
-                <CardHeader>
-                  <CardTitle className="text-base">{tool.label}</CardTitle>
-                  <CardDescription>{tool.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-          ))}
+          {secao.tools.map((tool) => {
+            const ehFavorito = favoritos.includes(tool.slug)
+            return (
+              <div key={tool.slug} className="relative">
+                <Link to={`/plantonista/${secao.slug}/${tool.slug}`}>
+                  <Card className="h-full pr-10 transition-colors hover:border-primary">
+                    <CardHeader>
+                      <CardTitle className="text-base">{tool.label}</CardTitle>
+                      <CardDescription>{tool.description}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={ehFavorito ? 'Remover dos favoritos' : 'Favoritar'}
+                  className="absolute top-3 right-2"
+                  onClick={() => alternarFavorito(tool.slug)}
+                >
+                  <Star className={ehFavorito ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'} />
+                </Button>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

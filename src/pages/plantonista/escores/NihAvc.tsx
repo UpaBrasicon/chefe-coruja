@@ -63,6 +63,8 @@ export function NihAvc() {
     <ToolLayout
       title="Classificação de AVC — NIH (NIHSS)"
       description="Escala para mensurar o déficit neurológico no AVC agudo."
+      referencia="Brott T, et al. Measurements of acute cerebral infarction. Stroke. 1989;20(7):864-70."
+      revisadoEm="Revisado em 08/2026"
     >
       <Card>
         <CardHeader>

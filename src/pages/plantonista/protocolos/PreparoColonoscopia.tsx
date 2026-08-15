@@ -21,6 +21,8 @@ export function PreparoColonoscopia() {
     <ToolLayout
       title="Preparo para Colonoscopia"
       description="Dieta, hidratação e preparo intestinal conforme o horário do exame."
+      referencia="Hassan C, et al. Bowel preparation for colonoscopy: ESGE Guideline Update 2019. Endoscopy. 2019;51(8):775-794."
+      revisadoEm="Revisado em 08/2026"
     >
       <Card>
         <CardContent className="pt-6">
