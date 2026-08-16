@@ -27,7 +27,7 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.setores_internacao(uuid) TO authenticated;
 
--- ── RPC: setores de observação (sala de observação, UTI, isolamento) ─────────
+-- ── RPC: setores de observação (só Observação — máx. 6h; sem UTI/isolamento) ─
 CREATE OR REPLACE FUNCTION public.setores_observacao(p_unidade uuid)
 RETURNS TABLE (id uuid, nome text, tipo text, ordem int)
 LANGUAGE sql
@@ -39,8 +39,8 @@ AS $$
   FROM public.setores s
   WHERE s.unidade_id = p_unidade
     AND s.ativo
-    AND s.tipo IN ('observacao', 'uti', 'isolamento')
-    AND NOT (s.tipo = 'observacao' AND position('verm' in lower(s.nome)) > 0)
+    AND s.tipo = 'observacao'
+    AND NOT (position('verm' in lower(s.nome)) > 0)
   ORDER BY s.ordem, s.nome;
 $$;
 

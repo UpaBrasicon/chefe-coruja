@@ -148,7 +148,7 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
           {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
           {modo === 'internacao'
             ? 'Enfermaria Clínica, Enfermaria Pediátrica, Sala Vermelha/Semi-Crítica (e outros setores do gestor).'
-            : 'Setor de Observação, UTI e Isolamento (e outros criados pelo gestor).'}{' '}
+            : 'Setor de Observação — pacientes permanecem em observação por no máximo 6 horas.'}{' '}
           Você só vê os pacientes dos setores onde está na escala agora.
         </p>
       </div>
