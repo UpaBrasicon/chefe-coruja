@@ -143,6 +143,7 @@ export default function Escala() {
   const [abaGestor, setAbaGestor] = React.useState<'fixa' | 'mensal'>('mensal')
   const [abaPlantonista, setAbaPlantonista] = React.useState<'minha' | 'geral'>('minha')
   const [diaGeral, setDiaGeral] = React.useState<string | null>(null)
+  const [fechandoGeral, setFechandoGeral] = React.useState(false)
   const [celula, setCelula] = React.useState<{ setor_id: string; data: string } | null>(null)
   const [celulaFixa, setCelulaFixa] = React.useState<{ setor_id: string; dia_semana: number } | null>(null)
   const [plantonistaId, setPlantonistaId] = React.useState('')
@@ -494,6 +495,15 @@ export default function Escala() {
       setDiaSelecionado(null)
       setAcao(null)
       setFechando(false)
+    }, 300)
+  }
+
+  function fecharDiaGeral() {
+    if (fechandoGeral) return
+    setFechandoGeral(true)
+    setTimeout(() => {
+      setDiaGeral(null)
+      setFechandoGeral(false)
     }, 300)
   }
 
@@ -1035,9 +1045,16 @@ export default function Escala() {
                 </CardDescription>
               </div>
               {diaGeral && (
-                <Button size="xs" variant="ghost" onClick={() => setDiaGeral(null)}>
-                  <X /> Voltar ao mês
-                </Button>
+                <button
+                  type="button"
+                  onClick={fecharDiaGeral}
+                  className="group relative h-14 w-48 shrink-0 rounded-2xl bg-white text-xl font-semibold text-black transition-shadow hover:shadow-md"
+                >
+                  <div className="absolute top-[4px] left-1 z-10 flex h-12 w-1/4 items-center justify-center rounded-xl bg-green-400 duration-500 group-hover:w-[184px]">
+                    <ChevronLeft className="size-6 text-black" />
+                  </div>
+                  <p className="translate-x-2">Voltar</p>
+                </button>
               )}
             </CardHeader>
             <CardContent>
@@ -1047,7 +1064,14 @@ export default function Escala() {
                 </div>
               ) : diaGeral ? (
                 /* DETALHE DO DIA */
-                <div className="animate-in fade-in-0 zoom-in-95 origin-center duration-300 ease-out">
+                <div
+                  key={`painel-geral-${diaGeral}`}
+                  className={`origin-center ${
+                    fechandoGeral
+                      ? 'animate-in fade-in-0 zoom-in-95 duration-300 ease-out animate-out fade-out-0 zoom-out-95'
+                      : 'animate-in fade-in-0 zoom-in-95 duration-300 ease-out'
+                  }`}
+                >
                   <div className="flex flex-col gap-3">
                     {(setores ?? []).map((s) => (
                       <div key={s.id} className="rounded-xl border">
