@@ -22,6 +22,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { usePlantao } from '@/hooks/usePlantao'
 import { useNotificacoesTurno } from '@/hooks/useNotificacoesTurno'
+import { useWebPush } from '@/hooks/useWebPush'
 import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
 import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
 import { Button } from '@/components/ui/button'
@@ -48,6 +49,9 @@ export function AppShell() {
     papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined,
     papelAtivo === 'plantonista'
   )
+
+  // T1: Web Push (base) — ativa notificações do navegador
+  useWebPush(papelAtivo === 'plantonista')
 
   const itens: NavItem[] = []
   if (ehPlantonista) {

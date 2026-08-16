@@ -1200,6 +1200,38 @@ export type Database = {
           },
         ]
       }
+      push_subscriptions: {
+        Row: {
+          criado_em: string
+          endpoint: string
+          id: string
+          perfil_id: string
+          subscription: Json
+        }
+        Insert: {
+          criado_em?: string
+          endpoint: string
+          id?: string
+          perfil_id: string
+          subscription: Json
+        }
+        Update: {
+          criado_em?: string
+          endpoint?: string
+          id?: string
+          perfil_id?: string
+          subscription?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       receitas_retidas: {
         Row: {
           codigo_retencao: string
@@ -1688,6 +1720,10 @@ export type Database = {
           noturnos: number
           perfil_id: string
         }[]
+      }
+      salvar_push_subscription: {
+        Args: { p_subscription: string }
+        Returns: undefined
       }
       setores_internacao: {
         Args: { p_unidade: string }

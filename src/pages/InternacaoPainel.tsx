@@ -229,6 +229,21 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
     if (!error) void queryClient.invalidateQueries({ queryKey: ['alta-paciente'] })
   }
 
+  function exportarAuditoriaCSV() {
+    if (!transferencias || transferencias.length === 0) return
+    const linhas = ['Paciente;Data;Motivo']
+    for (const t of transferencias) {
+      linhas.push(`${t.pacientes?.nome ?? ''};${fmtDia(t.created_at)};${t.motivo || ''}`)
+    }
+    const blob = new Blob(['\uFEFF' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `auditoria_transferencias_${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const transferirMutation = useMutation({
     mutationFn: async () => {
       if (!transferir || !destinoId) return
@@ -391,12 +406,17 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
           {/* Auditoria (gestor/admin) */}
           {(ehGestor || ehAdmin) && (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <ArrowRightLeft className="size-4 text-muted-foreground" />
-                  Transferências recentes
-                </CardTitle>
-                <CardDescription>Registro de auditoria das transferências entre setores.</CardDescription>
+              <CardHeader className="flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <ArrowRightLeft className="size-4 text-muted-foreground" />
+                    Transferências recentes
+                  </CardTitle>
+                  <CardDescription>Registro de auditoria das transferências entre setores.</CardDescription>
+                </div>
+                <Button size="xs" variant="outline" onClick={exportarAuditoriaCSV} disabled={(transferencias ?? []).length === 0}>
+                  Exportar CSV
+                </Button>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 {carregandoTransf ? (

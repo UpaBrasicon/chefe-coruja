@@ -45,3 +45,27 @@ self.addEventListener('fetch', (event) => {
     })
   )
 })
+
+// -- Web Push (base): exibe notificação quando o servidor enviar push --
+self.addEventListener('push', (event) => {
+  let payload = {}
+  try {
+    payload = event.data ? event.data.json() : {}
+  } catch {
+    payload = { title: 'Chefe Coruja', body: event.data ? event.data.text() : 'Nova notificação' }
+  }
+  const title = payload.title || 'Chefe Coruja'
+  const options = {
+    body: payload.body || 'Você tem uma nova notificação.',
+    icon: '/logo.png',
+    badge: '/favicon.svg',
+    data: { url: payload.url || '/' },
+  }
+  event.waitUntil(self.registration.showNotification(title, options))
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = event.notification.data?.url || '/'
+  event.waitUntil(clients.openWindow(url))
+})
