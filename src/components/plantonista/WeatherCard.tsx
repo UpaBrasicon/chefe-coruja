@@ -124,28 +124,36 @@ const WEATHER_CSS = `
   flex-direction: column;
   justify-content: space-between;
 }
+.wx-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
 .wx-header span:first-child {
   display: block;
   font-weight: 800;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 135%;
-  color: rgba(87,77,51,0.8);
-  text-shadow: 0 0 8px rgba(255,255,255,0.7);
+  color: rgba(60,50,25,1);
+  text-shadow: 0 0 10px rgba(255,255,255,0.85);
 }
 .wx-header span:last-child {
   display: block;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 135%;
-  color: rgba(87,77,51,0.5);
-  text-shadow: 0 0 8px rgba(255,255,255,0.7);
+  color: rgba(60,50,25,0.75);
+  text-shadow: 0 0 10px rgba(255,255,255,0.85);
 }
 .wx-temp {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 64px;
   line-height: 77px;
-  color: rgba(87,77,51,1);
-  text-shadow: 0 0 10px rgba(255,255,255,0.8);
+  color: rgba(40,32,8,1);
+  text-shadow:
+    0 0 14px rgba(255,255,255,0.95),
+    0 2px 4px rgba(0,0,0,0.15);
 }
 .wx-temp-scale {
   display: inline-flex;
@@ -165,7 +173,7 @@ const WEATHER_CSS = `
 .wx-bottom {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: center;
   gap: 10px;
 }
 .wx-temp-wrap { display: flex; align-items: flex-end; gap: 10px; }
