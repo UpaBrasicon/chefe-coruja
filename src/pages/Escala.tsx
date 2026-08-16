@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
   CalendarClock,
@@ -30,25 +30,25 @@ import { Textarea } from '@/components/ui/textarea'
 import type { EscalaPlantao, PlantonistaDaUnidade, SolicitacaoEscala } from '@/types/database'
 
 const TURNOS = [
-  { id: 'manha', label: 'Manhã', horario: '07h–13h' },
-  { id: 'tarde', label: 'Tarde', horario: '13h–19h' },
-  { id: 'noite', label: 'Noite', horario: '19h–07h' },
+  { id: 'manha', label: 'ManhÃ£', horario: '07hâ€“13h' },
+  { id: 'tarde', label: 'Tarde', horario: '13hâ€“19h' },
+  { id: 'noite', label: 'Noite', horario: '19hâ€“07h' },
 ] as const
 
-const DIAS_SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
-const DIAS_SEMANA_SEG = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM']
-const TURNO_LABEL: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }
+const DIAS_SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sÃ¡b']
+const DIAS_SEMANA_SEG = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÃB', 'DOM']
+const TURNO_LABEL: Record<string, string> = { manha: 'ManhÃ£', tarde: 'Tarde', noite: 'Noite' }
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 
 const TIPO_SOLICITACAO_LABEL: Record<string, string> = {
   sair_fixo: 'Sair do fixo',
-  passar_plantao: 'Passar plantão',
+  passar_plantao: 'Passar plantÃ£o',
   justificar_falta: 'Justificar falta',
 }
 
 const TIPO_FALTA_LABEL: Record<string, string> = {
-  atestado_medico: 'Atestado médico',
-  licenca_maternidade: 'Licença-maternidade',
+  atestado_medico: 'Atestado mÃ©dico',
+  licenca_maternidade: 'LicenÃ§a-maternidade',
 }
 
 function iso(d: Date) {
@@ -140,7 +140,7 @@ export default function Escala() {
   const [rotulo, setRotulo] = React.useState('')
   const [quinzenal, setQuinzenal] = React.useState(false)
 
-  // Ações do plantonista no dia
+  // AÃ§Ãµes do plantonista no dia
   const [diaSelecionado, setDiaSelecionado] = React.useState<string | null>(null)
   const [fechando, setFechando] = React.useState(false)
   const [acao, setAcao] = React.useState<'sair_fixo' | 'passar_plantao' | 'justificar_falta' | null>(null)
@@ -193,7 +193,7 @@ export default function Escala() {
     },
   })
 
-  // Escala do mês inteiro (contador + calendário do plantonista)
+  // Escala do mÃªs inteiro (contador + calendÃ¡rio do plantonista)
   const { data: escalaMes, isLoading: carregandoMes } = useQuery({
     queryKey: ['escala-plantao-mes', unidadeId, mesInicio, mesFim],
     enabled: !!unidadeId,
@@ -364,7 +364,7 @@ export default function Escala() {
       setDiaSelecionado(null)
       setAcao(null)
       setFechando(false)
-    }, 200)
+    }, 300)
   }
 
   async function enviarSairFixo() {
@@ -385,7 +385,7 @@ export default function Escala() {
       return
     }
     invalidar()
-    setMensagem('Solicitação de saída do fixo enviada.')
+    setMensagem('SolicitaÃ§Ã£o de saÃ­da do fixo enviada.')
     setJustificativa('')
   }
 
@@ -428,7 +428,7 @@ export default function Escala() {
       return
     }
     invalidar()
-    setMensagem('Justificativa enviada. O gestor será notificado.')
+    setMensagem('Justificativa enviada. O gestor serÃ¡ notificado.')
     setJustificativa('')
     setAnexo(null)
   }
@@ -446,11 +446,11 @@ export default function Escala() {
       })
       if (error) throw error
       invalidar()
-      setMensagem(data ? 'Plantão passado com sucesso.' : 'Solicitação de passagem registrada.')
+      setMensagem(data ? 'PlantÃ£o passado com sucesso.' : 'SolicitaÃ§Ã£o de passagem registrada.')
       setJustificativa('')
       setDestinoId('')
     } catch (e) {
-      setErroAcao(e instanceof Error ? e.message : 'Erro ao passar o plantão.')
+      setErroAcao(e instanceof Error ? e.message : 'Erro ao passar o plantÃ£o.')
     }
   }
 
@@ -461,23 +461,23 @@ export default function Escala() {
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Link to="/" className="transition-colors hover:text-foreground">
-            Início
+            InÃ­cio
           </Link>
           <ChevronRight className="size-3.5" />
           <span className="font-medium text-foreground">Escala</span>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h1 className="text-2xl font-semibold tracking-tight">
-            {ehPlantonista ? 'Minha Escala' : 'Escala de Plantões'}
+            {ehPlantonista ? 'Minha Escala' : 'Escala de PlantÃµes'}
           </h1>
           {ehPlantonista ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Button size="xs" variant="outline" onClick={() => mudarMes(-1)}>
-                <ChevronLeft /> Mês
+                <ChevronLeft /> MÃªs
               </Button>
               <span className="font-medium text-foreground">{fmtMesBR(mesInicio)}</span>
               <Button size="xs" variant="outline" onClick={() => mudarMes(1)}>
-                Mês <ChevronRight />
+                MÃªs <ChevronRight />
               </Button>
             </div>
           ) : (
@@ -486,7 +486,7 @@ export default function Escala() {
                 <ChevronLeft /> Semana
               </Button>
               <span className="font-medium text-foreground">
-                {fmtDiaBR(dataInicio)} – {fmtDiaBR(dataFim)}
+                {fmtDiaBR(dataInicio)} â€“ {fmtDiaBR(dataFim)}
               </span>
               <Button size="xs" variant="outline" onClick={() => mudarSemana(1)}>
                 Semana <ChevronRight />
@@ -495,30 +495,30 @@ export default function Escala() {
           )}
         </div>
         <p className="text-sm text-muted-foreground">
-          {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
-          {ehGestor ? 'Gestor — monte a escala' : ehAdmin ? 'Admin — todas as unidades' : 'Sua escala'}
+          {unidadeAtiva?.unidade.nome ?? 'Unidade'} Â·{' '}
+          {ehGestor ? 'Gestor â€” monte a escala' : ehAdmin ? 'Admin â€” todas as unidades' : 'Sua escala'}
         </p>
       </div>
 
       {ehPlantonista ? (
         <>
-          {/* CALENDÁRIO MENSAL — contexto geral do mês */}
+          {/* CALENDÃRIO MENSAL â€” contexto geral do mÃªs */}
           <Card>
             <CardHeader className="flex-row items-start justify-between space-y-0">
               <div>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <CalendarClock className="size-4 text-muted-foreground" />
-                  {diaSelecionado ? `Plantão de ${fmtDiaBR(diaSelecionado)}` : `Visão geral de ${fmtMesBR(mesInicio)}`}
+                  {diaSelecionado ? `PlantÃ£o de ${fmtDiaBR(diaSelecionado)}` : `VisÃ£o geral de ${fmtMesBR(mesInicio)}`}
                 </CardTitle>
                 <CardDescription>
                   {diaSelecionado
-                    ? 'Período(s) em que você está de plantão:'
-                    : 'Clique em um dia com plantão para sair do fixo, passar o plantão ou justificar falta.'}
+                    ? 'PerÃ­odo(s) em que vocÃª estÃ¡ de plantÃ£o:'
+                    : 'Clique em um dia com plantÃ£o para sair do fixo, passar o plantÃ£o ou justificar falta.'}
                 </CardDescription>
               </div>
               {diaSelecionado && (
                 <Button size="xs" variant="ghost" onClick={fecharDia}>
-                  <X /> Voltar ao mês
+                  <X /> Voltar ao mÃªs
                 </Button>
               )}
             </CardHeader>
@@ -530,8 +530,10 @@ export default function Escala() {
               ) : diaSelecionado ? (
                 <div
                   key={`painel-${diaSelecionado}`}
-                  className={`animate-in fade-in-0 zoom-in-95 duration-200 ease-out ${
-                    fechando ? 'animate-out fade-out-0 zoom-out-95' : ''
+                  className={`origin-center ${
+                    fechando
+                      ? 'animate-in fade-in-0 zoom-in-95 duration-300 ease-out animate-out fade-out-0 zoom-out-95'
+                      : 'animate-in fade-in-0 zoom-in-95 duration-300 ease-out'
                   }`}
                 >
                   <div className="flex flex-wrap gap-2">
@@ -550,7 +552,7 @@ export default function Escala() {
                   </div>
 
                   {!acao ? (
-                    <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-200 ease-out">
+                    <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
                       <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         O que deseja fazer?
                       </div>
@@ -563,7 +565,7 @@ export default function Escala() {
                           <LogOut className="size-4 text-amber-600" />
                           <span className="font-medium">Sair do fixo</span>
                           <span className="text-[11px] font-normal text-muted-foreground">
-                            Aviso prévio de 15 dias
+                            Aviso prÃ©vio de 15 dias
                           </span>
                         </Button>
                         <Button
@@ -572,7 +574,7 @@ export default function Escala() {
                           onClick={() => setAcao('passar_plantao')}
                         >
                           <RefreshCcw className="size-4 text-sky-600" />
-                          <span className="font-medium">Passar plantão</span>
+                          <span className="font-medium">Passar plantÃ£o</span>
                           <span className="text-[11px] font-normal text-muted-foreground">
                             Transferir para outro plantonista
                           </span>
@@ -585,17 +587,17 @@ export default function Escala() {
                           <FileText className="size-4 text-indigo-600" />
                           <span className="font-medium">Justificar falta</span>
                           <span className="text-[11px] font-normal text-muted-foreground">
-                            Atestado ou licença
+                            Atestado ou licenÃ§a
                           </span>
                         </Button>
                       </div>
                     </div>
                   ) : acao === 'sair_fixo' ? (
-                    <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-200 ease-out">
+                    <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
                       <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                        <strong>Aviso prévio:</strong> a saída do plantão fixo deve ser comunicada com{' '}
-                        <strong>pelo menos 15 dias de antecedência</strong>. Faltam{' '}
-                        <strong>{Math.max(0, diasPara(diaSelecionado))} dia(s)</strong> para este plantão.
+                        <strong>Aviso prÃ©vio:</strong> a saÃ­da do plantÃ£o fixo deve ser comunicada com{' '}
+                        <strong>pelo menos 15 dias de antecedÃªncia</strong>. Faltam{' '}
+                        <strong>{Math.max(0, diasPara(diaSelecionado))} dia(s)</strong> para este plantÃ£o.
                       </div>
                       <div className="mt-3 flex flex-col gap-1.5">
                         <Label htmlFor="sair-just">Justificativa (opcional)</Label>
@@ -603,7 +605,7 @@ export default function Escala() {
                           id="sair-just"
                           value={justificativa}
                           onChange={(e) => setJustificativa(e.target.value)}
-                          placeholder="Motivo da saída do plantão fixo…"
+                          placeholder="Motivo da saÃ­da do plantÃ£o fixoâ€¦"
                         />
                       </div>
                       {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
@@ -613,12 +615,12 @@ export default function Escala() {
                           Voltar
                         </Button>
                         <Button onClick={enviarSairFixo}>
-                          <LogOut /> Solicitar saída do fixo
+                          <LogOut /> Solicitar saÃ­da do fixo
                         </Button>
                       </div>
                     </div>
                   ) : acao === 'passar_plantao' ? (
-                    <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-200 ease-out">
+                    <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
                       <div className="flex flex-col gap-1.5">
                         <Label>Passar para</Label>
                         <Select value={destinoId || null} onValueChange={(v) => setDestinoId(v ?? '')}>
@@ -631,7 +633,7 @@ export default function Escala() {
                               .map((p) => (
                                 <SelectItem key={p.perfil_id} value={p.perfil_id}>
                                   {p.nome_completo}
-                                  {p.crm ? ` · CRM ${p.crm}` : ''}
+                                  {p.crm ? ` Â· CRM ${p.crm}` : ''}
                                 </SelectItem>
                               ))}
                           </SelectContent>
@@ -644,12 +646,12 @@ export default function Escala() {
                           id="passar-just"
                           value={justificativa}
                           onChange={(e) => setJustificativa(e.target.value)}
-                          placeholder="Motivo da passagem…"
+                          placeholder="Motivo da passagemâ€¦"
                         />
                       </div>
                       <p className="mt-2 text-xs text-muted-foreground">
-                        A passagem pode ser aplicada na hora ou depender de aprovação do gestor (conforme
-                        configuração da unidade). A pessoa que recebe o plantão será notificada.
+                        A passagem pode ser aplicada na hora ou depender de aprovaÃ§Ã£o do gestor (conforme
+                        configuraÃ§Ã£o da unidade). A pessoa que recebe o plantÃ£o serÃ¡ notificada.
                       </p>
                       {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
                       {mensagem && <p className="mt-2 text-sm text-emerald-700">{mensagem}</p>}
@@ -658,12 +660,12 @@ export default function Escala() {
                           Voltar
                         </Button>
                         <Button onClick={enviarPassarPlantao} disabled={!destinoId}>
-                          <UserCheck /> Passar plantão
+                          <UserCheck /> Passar plantÃ£o
                         </Button>
                       </div>
                     </div>
                   ) : (
-                    <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-200 ease-out">
+                    <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
                       <div className="flex flex-col gap-1.5">
                         <Label>Tipo de justificativa</Label>
                         <Select
@@ -676,8 +678,8 @@ export default function Escala() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="atestado_medico">Atestado médico</SelectItem>
-                            <SelectItem value="licenca_maternidade">Licença-maternidade</SelectItem>
+                            <SelectItem value="atestado_medico">Atestado mÃ©dico</SelectItem>
+                            <SelectItem value="licenca_maternidade">LicenÃ§a-maternidade</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -697,7 +699,7 @@ export default function Escala() {
                           id="falta-just"
                           value={justificativa}
                           onChange={(e) => setJustificativa(e.target.value)}
-                          placeholder="Descreva o motivo da falta…"
+                          placeholder="Descreva o motivo da faltaâ€¦"
                         />
                       </div>
                       {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
@@ -763,10 +765,10 @@ export default function Escala() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <CalendarClock className="size-4 text-muted-foreground" />
-                Meus plantões no mês
+                Meus plantÃµes no mÃªs
               </CardTitle>
               <CardDescription>
-                {perfil?.nome_completo ?? 'Você'} · {fmtMesBR(mesInicio)}
+                {perfil?.nome_completo ?? 'VocÃª'} Â· {fmtMesBR(mesInicio)}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap items-stretch gap-4">
@@ -778,7 +780,7 @@ export default function Escala() {
                 <>
                   <div className="flex flex-1 flex-col rounded-xl border bg-muted/40 p-4">
                     <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Horas no mês
+                      Horas no mÃªs
                     </span>
                     <span className="mt-1 text-3xl font-bold">{resumo.horas}h</span>
                     <span className="text-xs text-muted-foreground">
@@ -787,11 +789,11 @@ export default function Escala() {
                   </div>
                   <div className="flex flex-1 flex-col rounded-xl border bg-sky-50 p-4">
                     <span className="text-xs font-semibold uppercase tracking-wide text-sky-700">
-                      Diurnos (manhã + tarde = 12h)
+                      Diurnos (manhÃ£ + tarde = 12h)
                     </span>
                     <span className="mt-1 text-3xl font-bold text-sky-800">{resumo.diurnos}</span>
                     <span className="text-xs text-sky-700">
-                      {resumo.diurnos * 12}h · manhã e tarde juntas contam como diurno
+                      {resumo.diurnos * 12}h Â· manhÃ£ e tarde juntas contam como diurno
                     </span>
                   </div>
                   <div className="flex flex-1 flex-col rounded-xl border bg-indigo-50 p-4">
@@ -822,7 +824,7 @@ export default function Escala() {
                     : 'border-border bg-background hover:bg-muted'
                 }`}
               >
-                {t.label} <span className="opacity-70">· {t.horario}</span>
+                {t.label} <span className="opacity-70">Â· {t.horario}</span>
               </button>
             ))}
           </div>
@@ -836,9 +838,9 @@ export default function Escala() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <CalendarClock className="size-4 text-muted-foreground" />
-                  {TURNO_LABEL[turno]} · Semana de {fmtDiaBR(dataInicio)}
+                  {TURNO_LABEL[turno]} Â· Semana de {fmtDiaBR(dataInicio)}
                 </CardTitle>
-                <CardDescription>Clique em uma célula para adicionar ou remover plantonistas.</CardDescription>
+                <CardDescription>Clique em uma cÃ©lula para adicionar ou remover plantonistas.</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -901,15 +903,15 @@ export default function Escala() {
             </Card>
           )}
 
-          {/* Gestor: detalhe dos plantões da célula */}
+          {/* Gestor: detalhe dos plantÃµes da cÃ©lula */}
           {ehGestor && celula && !dialogAberto && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">
-                  {setores?.find((s) => s.id === celula.setor_id)?.nome} · {fmtDiaBR(celula.data)} ·{' '}
+                  {setores?.find((s) => s.id === celula.setor_id)?.nome} Â· {fmtDiaBR(celula.data)} Â·{' '}
                   {TURNO_LABEL[turno]}
                 </CardTitle>
-                <CardDescription>Plantonistas escalados neste plantão.</CardDescription>
+                <CardDescription>Plantonistas escalados neste plantÃ£o.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 {(escala ?? [])
@@ -919,8 +921,8 @@ export default function Escala() {
                       <div>
                         <div className="font-medium">{e.perfis?.nome_completo ?? 'Sem nome'}</div>
                         <div className="text-xs text-muted-foreground">
-                          {e.quinzenal && '15/15 · '}
-                          {e.rotulo || 'sem rótulo'}
+                          {e.quinzenal && '15/15 Â· '}
+                          {e.rotulo || 'sem rÃ³tulo'}
                         </div>
                       </div>
                       <Button size="xs" variant="ghost" onClick={() => remover.mutate(e.id)}>
@@ -931,19 +933,19 @@ export default function Escala() {
                 {!carregandoEscala &&
                   (escala ?? []).filter(
                     (e) => e.setor_id === celula.setor_id && e.data === celula.data && e.turno === turno
-                  ).length === 0 && <p className="text-sm text-muted-foreground">Nenhum plantonista neste plantão.</p>}
+                  ).length === 0 && <p className="text-sm text-muted-foreground">Nenhum plantonista neste plantÃ£o.</p>}
               </CardContent>
             </Card>
           )}
 
-          {/* Gestor: solicitações de escala */}
+          {/* Gestor: solicitaÃ§Ãµes de escala */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <FileText className="size-4 text-muted-foreground" />
-                Solicitações da escala
+                SolicitaÃ§Ãµes da escala
               </CardTitle>
-              <CardDescription>Pedidos de saída do fixo, passagem de plantão e justificativa de falta.</CardDescription>
+              <CardDescription>Pedidos de saÃ­da do fixo, passagem de plantÃ£o e justificativa de falta.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               {carregandoSolic ? (
@@ -951,7 +953,7 @@ export default function Escala() {
                   <Spinner />
                 </div>
               ) : (solicitacoes ?? []).length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhuma solicitação no momento.</p>
+                <p className="text-sm text-muted-foreground">Nenhuma solicitaÃ§Ã£o no momento.</p>
               ) : (
                 (solicitacoes ?? []).map((s) => (
                   <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3">
@@ -968,9 +970,9 @@ export default function Escala() {
                         </Badge>
                       </div>
                       <div className="mt-0.5 text-xs text-muted-foreground">
-                        {s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'Plantão removido'}
-                        {s.tipo === 'passar_plantao' && s.destino && ` → ${s.destino.nome_completo}`}
-                        {s.tipo === 'justificar_falta' && s.tipo_falta && ` · ${TIPO_FALTA_LABEL[s.tipo_falta]}`}
+                        {s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} Â· ${TURNO_LABEL[s.escala_plantao.turno]}` : 'PlantÃ£o removido'}
+                        {s.tipo === 'passar_plantao' && s.destino && ` â†’ ${s.destino.nome_completo}`}
+                        {s.tipo === 'justificar_falta' && s.tipo_falta && ` Â· ${TIPO_FALTA_LABEL[s.tipo_falta]}`}
                         {s.anexo_url && (
                           <a
                             href={s.anexo_url}
@@ -1008,7 +1010,7 @@ export default function Escala() {
           <DialogHeader>
             <DialogTitle>Adicionar plantonista</DialogTitle>
             <DialogDescription>
-              {setores?.find((s) => s.id === celula?.setor_id)?.nome} · {celula ? fmtDiaBR(celula.data) : ''} ·{' '}
+              {setores?.find((s) => s.id === celula?.setor_id)?.nome} Â· {celula ? fmtDiaBR(celula.data) : ''} Â·{' '}
               {TURNO_LABEL[turno]}
             </DialogDescription>
           </DialogHeader>
@@ -1024,7 +1026,7 @@ export default function Escala() {
                   {(plantonistas ?? []).map((p) => (
                     <SelectItem key={p.perfil_id} value={p.perfil_id}>
                       {p.nome_completo}
-                      {p.crm ? ` · CRM ${p.crm}` : ''}
+                      {p.crm ? ` Â· CRM ${p.crm}` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1033,7 +1035,7 @@ export default function Escala() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="esc-rotulo">Rótulo (opcional)</Label>
+              <Label htmlFor="esc-rotulo">RÃ³tulo (opcional)</Label>
               <Input
                 id="esc-rotulo"
                 value={rotulo}
@@ -1066,3 +1068,4 @@ export default function Escala() {
     </div>
   )
 }
+
