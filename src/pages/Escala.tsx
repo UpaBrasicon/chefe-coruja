@@ -823,8 +823,13 @@ export default function Escala() {
                 </div>
               ) : (
                 <div className="grid grid-cols-7 gap-1 text-center">
-                  {DIAS_SEMANA.map((d) => (
-                    <div key={d} className="py-1 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                  {DIAS_SEMANA.map((d, idx) => (
+                    <div
+                      key={d}
+                      className={`py-1 text-[11px] font-bold uppercase tracking-wide ${
+                        idx === 0 || idx === 6 ? 'text-amber-700' : 'text-muted-foreground'
+                      }`}
+                    >
                       {d}
                     </div>
                   ))}
@@ -834,6 +839,8 @@ export default function Escala() {
                     const turnos = [...new Set(plantoes.map((p) => p.turno))]
                     const eHoje = ehHoje(c.iso)
                     const selecionado = diaSelecionado === c.iso
+                    const dow = new Date(c.iso + 'T12:00:00').getDay()
+                    const fimSemana = dow === 0 || dow === 6
                     return (
                       <button
                         key={c.iso}
@@ -841,18 +848,30 @@ export default function Escala() {
                         onClick={() => (plantoes.length ? abrirDia(c.iso) : undefined)}
                         className={`flex min-h-[76px] flex-col gap-1 rounded-lg border p-1.5 text-left transition-all duration-200 ${
                           plantoes.length
-                            ? 'border-emerald-600 bg-emerald-500 text-white shadow-md hover:bg-emerald-600 hover:shadow-lg'
-                            : 'border-transparent hover:bg-muted/60'
-                        } ${selecionado ? 'ring-2 ring-primary ring-offset-2' : ''} ${eHoje ? 'ring-2 ring-primary/50' : ''}`}
+                            ? 'border-emerald-700 bg-emerald-500 text-white shadow-md hover:bg-emerald-600 hover:shadow-lg'
+                            : fimSemana
+                              ? 'border-amber-200 bg-amber-50 hover:bg-amber-100'
+                              : 'border-border bg-white hover:bg-muted'
+                        } ${selecionado ? 'ring-2 ring-primary ring-offset-2' : ''} ${eHoje ? 'ring-2 ring-primary/60' : ''}`}
                       >
-                        <span className={`text-xs font-bold ${plantoes.length ? 'text-white' : eHoje ? 'text-primary' : ''}`}>
+                        <span
+                          className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold ${
+                            plantoes.length
+                              ? 'bg-white/25 text-white'
+                              : eHoje
+                                ? 'bg-primary text-primary-foreground'
+                                : fimSemana
+                                  ? 'bg-amber-200 text-amber-900'
+                                  : 'bg-slate-100 text-slate-900'
+                          }`}
+                        >
                           {c.dia}
                         </span>
                         {turnos.map((t) => (
                           <span
                             key={t}
                             className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
-                              plantoes.length ? 'bg-white/25 text-white' : 'bg-muted text-muted-foreground'
+                              plantoes.length ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'
                             }`}
                           >
                             {TURNO_LABEL[t]}
