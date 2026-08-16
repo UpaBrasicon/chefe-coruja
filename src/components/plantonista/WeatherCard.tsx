@@ -48,10 +48,7 @@ async function buscarClima(lat: number, lon: number): Promise<Clima> {
   const u = new URL('https://api.open-meteo.com/v1/forecast')
   u.searchParams.set('latitude', String(lat))
   u.searchParams.set('longitude', String(lon))
-  u.searchParams.set(
-    'current',
-    'temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code'
-  )
+  u.searchParams.set('current', 'temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code')
   u.searchParams.set('daily', 'sunrise,sunset')
   u.searchParams.set('timezone', 'auto')
   const r = await fetch(u.toString())
@@ -91,162 +88,206 @@ function horaLocal(offset: number) {
   return agora.getUTCHours() + agora.getUTCMinutes() / 60
 }
 
-// ── Cenário SVG: sol/lua em arco + céu conforme clima ────────────────────────
-function Cenário({
-  clima,
-  offset,
-}: {
-  clima: Clima
-  offset: number
-}) {
-  const hora = horaLocal(offset)
-  const nascer = clima.nascerSol
-  const por = clima.porSol
-  const dia = hora >= nascer && hora <= por
+const WEATHER_CSS = `
+.wx-card {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  padding: 20px;
+  background:
+    radial-gradient(178.94% 106.41% at 26.42% 106.41%, #FFF7B1 0%, rgba(255,255,255,0) 71.88%),
+    #ffffff;
+  box-shadow:
+    0px 155px 62px rgba(0,0,0,0.01),
+    0px 87px 52px rgba(0,0,0,0.05),
+    0px 39px 39px rgba(0,0,0,0.09),
+    0px 10px 21px rgba(0,0,0,0.1),
+    0px 0px 0px rgba(0,0,0,0.1);
+  border-radius: 23px;
+  transition: all 0.8s cubic-bezier(0.15, 0.83, 0.66, 1);
+  overflow: hidden;
+}
+.wx-card:hover { transform: scale(1.02); }
+.wx-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 23px;
+  overflow: hidden;
+}
+.wx-sky svg { width: 100%; height: 100%; display: block; }
+.wx-body {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.wx-header span:first-child {
+  display: block;
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 135%;
+  color: rgba(87,77,51,0.8);
+  text-shadow: 0 0 8px rgba(255,255,255,0.7);
+}
+.wx-header span:last-child {
+  display: block;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 135%;
+  color: rgba(87,77,51,0.5);
+  text-shadow: 0 0 8px rgba(255,255,255,0.7);
+}
+.wx-temp {
+  font-weight: 700;
+  font-size: 64px;
+  line-height: 77px;
+  color: rgba(87,77,51,1);
+  text-shadow: 0 0 10px rgba(255,255,255,0.8);
+}
+.wx-temp-scale {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 9px;
+  padding: 7px 10px;
+}
+.wx-temp-scale span {
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 134.49%;
+  color: rgba(87,77,51,0.7);
+}
+.wx-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+.wx-temp-wrap { display: flex; align-items: flex-end; gap: 10px; }
+.wx-sun {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(to right, #fcbb04, #fffc00);
+  box-shadow: 0 0 40px 10px rgba(252, 187, 4, 0.55);
+  z-index: 3;
+}
+.wx-sunshine {
+  animation: wx-sunshines 2s infinite;
+}
+@keyframes wx-sunshines {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+.wx-moon {
+  position: absolute;
+  top: 14px;
+  right: 22px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, #dfe4ff);
+  box-shadow: 0 0 30px 8px rgba(220, 226, 255, 0.6);
+  z-index: 3;
+}
+.wx-cloud {
+  position: absolute;
+  z-index: 3;
+  animation: wx-clouds 8s ease-in-out infinite;
+}
+.wx-cloud-front { top: 34px; left: 4px; animation-duration: 8s; }
+.wx-cloud-back { top: 70px; right: 8px; animation-duration: 12s; }
+@keyframes wx-clouds {
+  0% { transform: translateX(10px); }
+  50% { transform: translateX(0px); }
+  100% { transform: translateX(10px); }
+}
+.wx-cloud span { display: inline-block; background-color: #4c9beb; }
+.wx-cloud .c1 { width: 45px; height: 45px; border-radius: 50% 50% 50% 0%; }
+.wx-cloud .c2 { width: 65px; height: 65px; border-radius: 50% 50% 0% 50%; }
+.wx-cloud .c3 { width: 50px; height: 50px; border-radius: 50% 50% 50% 0%; margin-left: -20px; }
+.wx-cloud .c4 { width: 30px; height: 30px; border-radius: 50% 50% 0% 50%; }
+.wx-metrics {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.wx-metrics span {
+  font-weight: 700;
+  font-size: 11px;
+  color: rgba(87,77,51,0.75);
+  background: rgba(255,255,255,0.65);
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+`
 
-  const durDia = Math.max(1, por - nascer)
-  const durNoite = Math.max(1, 24 - (por - nascer))
-  const progDia = Math.min(1, Math.max(0, (hora - nascer) / durDia))
-  const progNoite = Math.min(1, Math.max(0, (hora - por) / durNoite))
-
-  // Arco: y = horizonteY - sen(prog·π)·amplitude ; x da esquerda→direita no dia
-  const W = 400
-  const H = 130
-  const horizonteY = 104
-  const amp = 62
-  const solX = W * progDia
-  const solY = horizonteY - Math.sin(progDia * Math.PI) * amp
-  // Lua nasce do lado OPOSTO ao pôr do sol: no anoitecer (progNoite≈0) ela está à
-  // esquerda subindo, e vai para a direita ao longo da noite até o amanhecer.
-  const luaX = W * progNoite
-  const luaY = horizonteY - Math.sin(progNoite * Math.PI) * amp
-
-  // Opacidades para transição suave: o sol some gradualmente ao anoitecer enquanto
-  // a lua aparece; o inverso acontece ao amanhecer.
-  const solOpacidade = progDia <= 1 ? 1 : Math.max(0, 1 - (progNoite * 3))
-  const luaOpacidade = progNoite <= 1 ? Math.min(1, progNoite * 3) : 1
+// ── Cenário de fundo (céu conforme o clima) ─────────────────────────────────
+function CéuSVG({ clima }: { clima: Clima }) {
+  const hora = horaLocal(clima.utcOffset)
+  const dia = hora >= clima.nascerSol && hora <= clima.porSol
 
   const tempestade = clima.codigo >= 95
   const chuva = [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(clima.codigo)
-  const garoa = [51, 53, 55].includes(clima.codigo)
   const neve = [71, 73, 75, 77].includes(clima.codigo)
   const nevoeiro = [45, 48].includes(clima.codigo)
   const nublado = clima.codigo >= 1 && clima.codigo <= 3
-  const limpo = clima.codigo === 0
 
-  const topo = dia ? '#3f8ef7' : '#0b1a3a'
-  const meio = dia ? (nublado ? '#8fb9e8' : '#7ec8f5') : '#1b2a55'
-  const baixo = dia ? (nublado ? '#c9d8e8' : '#bfe0ff') : '#2a2a5a'
+  const topo = dia ? (nublado ? '#9fc3ea' : '#7ec8f5') : '#0f1f42'
+  const baixo = dia ? (nublado ? '#d7e4f0' : '#cfe9ff') : '#22305e'
 
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="xMidYMid slice"
-      className="h-full w-full"
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 400 235" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
-        <linearGradient id="ceu" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="wxceu" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={topo} />
-          <stop offset="55%" stopColor={meio} />
           <stop offset="100%" stopColor={baixo} />
         </linearGradient>
-        <radialGradient id="solBrilho" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#fff8d0" />
-          <stop offset="40%" stopColor="#ffe066" />
-          <stop offset="100%" stopColor="rgba(255,224,102,0)" />
-        </radialGradient>
-        <radialGradient id="luaBrilho" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="45%" stopColor="#e8ecff" />
-          <stop offset="100%" stopColor="rgba(232,236,255,0)" />
-        </radialGradient>
-        <filter id="suave"><feGaussianBlur stdDeviation="1.5" /></filter>
       </defs>
-
-      <rect width={W} height={H} fill="url(#ceu)" />
-
-      {/* Estrelas (surgem à noite) */}
-      <g opacity={Math.min(1, progNoite * 2.5)}>
-        {[
-          [40, 18], [90, 34], [150, 12], [210, 40], [260, 16],
-          [320, 30], [370, 12], [120, 52], [350, 48], [55, 44],
-        ].map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r="1.4" fill="#fff" opacity="0.8" />
-        ))}
-      </g>
-
-      {/* Sol e Lua no arco — transição contínua (lua nasce quando sol se põe) */}
-      <g opacity={solOpacidade}>
-        <circle cx={solX} cy={solY} r="26" fill="url(#solBrilho)" opacity="0.5" />
-        <circle cx={solX} cy={solY} r="13" fill="#ffd94a" stroke="#f5b800" strokeWidth="1.5" filter="url(#suave)" />
-      </g>
-      <g opacity={luaOpacidade}>
-        <circle cx={luaX} cy={luaY} r="24" fill="url(#luaBrilho)" opacity="0.4" />
-        <circle cx={luaX} cy={luaY} r="11" fill="#f0f2ff" />
-        <circle cx={luaX - 4} cy={luaY - 3} r="2.6" fill="#d8dcf5" />
-        <circle cx={luaX + 3} cy={luaY + 4} r="2" fill="#d8dcf5" />
-      </g>
-
-      {/* Nuvens */}
+      <rect width="400" height="235" fill="url(#wxceu)" />
       {nublado && (
-        <g fill="#eef2f6" opacity="0.9">
-          <ellipse cx="90" cy="34" rx="46" ry="15" />
-          <ellipse cx="130" cy="28" rx="32" ry="12" />
-          <ellipse cx="300" cy="48" rx="52" ry="16" />
-          <ellipse cx="345" cy="42" rx="30" ry="11" />
-        </g>
-      )}
-      {limpo && (
-        <g fill="#ffffff" opacity="0.85">
-          <ellipse cx="310" cy="26" rx="38" ry="11" />
-          <ellipse cx="340" cy="22" rx="24" ry="9" />
+        <g fill="#eef2f6" opacity="0.85">
+          <ellipse cx="90" cy="60" rx="50" ry="16" />
+          <ellipse cx="140" cy="52" rx="36" ry="13" />
+          <ellipse cx="300" cy="80" rx="58" ry="17" />
         </g>
       )}
       {tempestade && (
         <g>
           <g fill="#4a4f63">
-            <ellipse cx="120" cy="44" rx="54" ry="18" />
-            <ellipse cx="160" cy="38" rx="38" ry="14" />
-            <ellipse cx="270" cy="50" rx="60" ry="18" />
+            <ellipse cx="120" cy="70" rx="58" ry="19" />
+            <ellipse cx="165" cy="62" rx="40" ry="15" />
           </g>
-          <polygon points="205,58 192,84 202,84 194,104 216,76 205,76 213,58" fill="#ffd94a" filter="url(#suave)" />
+          <polygon points="205,80 190,110 202,110 193,132 218,100 206,100 214,80" fill="#ffd94a" />
         </g>
       )}
-
-      {/* Chuva / garoa / neve */}
       {(chuva || neve) &&
-        Array.from({ length: 14 }, (_, i) => {
-          const x = (i * 31 + 18) % W
-          const y = 60 + ((i * 37) % 40)
-          const len = garoa ? 6 : 9
+        Array.from({ length: 16 }, (_, i) => {
+          const x = (i * 27 + 12) % 400
+          const y = 90 + ((i * 41) % 70)
           return neve ? (
-            <circle key={i} cx={x} cy={y + 14} r="2.4" fill="#fff" opacity="0.9" />
+            <circle key={i} cx={x} cy={y} r="2.6" fill="#fff" opacity="0.9" />
           ) : (
-            <line key={i} x1={x} y1={y} x2={x - 2} y2={y + len} stroke="#bcd7ff" strokeWidth="2" strokeLinecap="round" opacity="0.85" />
+            <line key={i} x1={x} y1={y} x2={x - 2} y2={y + 9} stroke="#bcd7ff" strokeWidth="2" strokeLinecap="round" opacity="0.85" />
           )
         })}
-
-      {/* Nevoeiro */}
       {nevoeiro && (
-        <g fill="#e7eef7" opacity="0.75">
-          <rect x="0" y="52" width={W} height="6" rx="3" />
-          <rect x="10" y="66" width={W - 20} height="6" rx="3" />
-          <rect x="0" y="80" width={W} height="6" rx="3" />
+        <g fill="#e7eef7" opacity="0.7">
+          <rect x="0" y="80" width="400" height="7" rx="3" />
+          <rect x="10" y="98" width="380" height="7" rx="3" />
+          <rect x="0" y="116" width="400" height="7" rx="3" />
         </g>
       )}
-
-      {/* Horizonte / chão */}
-      <path
-        d={`M0,${horizonteY} Q100,${horizonteY - 12} 200,${horizonteY} T400,${horizonteY} L400,${H} L0,${H} Z`}
-        fill={dia ? '#3f8f4a' : '#12213a'}
-      />
-      <path
-        d={`M0,${horizonteY} Q100,${horizonteY - 12} 200,${horizonteY} T400,${horizonteY}`}
-        fill="none"
-        stroke={dia ? '#7fd486' : '#1f3f6b'}
-        strokeWidth="2"
-      />
     </svg>
   )
 }
@@ -275,7 +316,6 @@ export function WeatherCard() {
     retry: 1,
   })
 
-  // Re-renderiza a cada minuto para o sol/lua acompanharem o horário
   const [, setTick] = useState(0)
   useEffect(() => {
     const t = setInterval(() => setTick((v) => v + 1), 60_000)
@@ -300,44 +340,59 @@ export function WeatherCard() {
     )
   }
 
-  const eDia = horaLocal(clima.utcOffset) >= clima.nascerSol && horaLocal(clima.utcOffset) <= clima.porSol
+  const hora = horaLocal(clima.utcOffset)
+  const dia = hora >= clima.nascerSol && hora <= clima.porSol
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-3xl shadow-md">
-      {/* Cenário SVG ao fundo */}
-      <div className="absolute inset-0">
-        <Cenário clima={clima} offset={clima.utcOffset} />
-      </div>
+    <div className="h-full w-full">
+      <style>{WEATHER_CSS}</style>
+      <div className="wx-card">
+        {/* Céu conforme o clima */}
+        <div className="wx-sky">
+          <CéuSVG clima={clima} />
+        </div>
 
-      {/* Painel de dados (fundo escuro translúcido p/ legibilidade) */}
-      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/70 via-black/35 to-transparent px-4 pb-3 pt-10">
-        <div className="min-w-0">
-          <div className="truncate text-sm font-bold text-white drop-shadow sm:text-base">
-            {ip.cidade}
-            {ip.regiao ? `, ${ip.regiao}` : ''}
+        {/* Sol / Lua */}
+        {dia ? (
+          <div className="wx-sun">
+            <div className="wx-sunshine" style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'radial-gradient(circle, #fff8b0, transparent 70%)' }} />
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/90 sm:text-xs">
-            {eDia ? '☀️ Dia' : '🌙 Noite'} · {clima.descricao}
-          </div>
-        </div>
-        <div className="flex shrink-0 flex-col items-end gap-0.5">
-          <div className="text-5xl leading-none font-extrabold text-white drop-shadow sm:text-6xl">
-            {clima.temperatura}°
-          </div>
-          <div className="text-xs font-semibold text-white/90 sm:text-sm">{clima.descricao}</div>
-        </div>
-      </div>
+        ) : (
+          <div className="wx-moon" />
+        )}
 
-      {/* Métricas inferiores */}
-      <div className="absolute inset-x-3 bottom-12 flex items-center justify-center gap-4 rounded-xl bg-black/45 px-3 py-1.5 backdrop-blur-sm">
-        <div className="flex items-center gap-1 text-[11px] font-bold text-white sm:text-xs">
-          <span className="text-sky-300">💧</span> {clima.umidade}%
+        {/* Nuvens */}
+        <div className="wx-cloud wx-cloud-front">
+          <span className="c1" />
+          <span className="c2" style={{ marginLeft: '-14px' }} />
         </div>
-        <div className="flex items-center gap-1 text-[11px] font-bold text-white sm:text-xs">
-          <span className="text-emerald-300">🌫️</span> AQI {aqi ?? '—'}
+        <div className="wx-cloud wx-cloud-back">
+          <span className="c3" />
+          <span className="c4" />
         </div>
-        <div className="flex items-center gap-1 text-[11px] font-bold text-white sm:text-xs">
-          <span className="text-white/70">🌬️</span> {clima.vento} km/h
+
+        {/* Conteúdo */}
+        <div className="wx-body">
+          <div className="wx-header">
+            <span>
+              {ip.cidade}
+              {ip.regiao ? `, ${ip.regiao}` : ''}
+            </span>
+            <span>
+              {dia ? '☀️ Dia' : '🌙 Noite'} · {clima.descricao}
+            </span>
+          </div>
+
+          <div className="wx-bottom">
+            <div className="wx-temp-wrap">
+              <div className="wx-temp">{clima.temperatura}°</div>
+              <div className="wx-temp-scale">
+                <span>💧 {clima.umidade}%</span>
+                <span>🌫️ AQI {aqi ?? '—'}</span>
+                <span>🌬️ {clima.vento} km/h</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
