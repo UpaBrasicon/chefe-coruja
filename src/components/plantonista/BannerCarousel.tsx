@@ -6,6 +6,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { useBanners } from '@/hooks/useBanners'
 import { cn } from '@/lib/utils'
 import { Spinner } from '@/components/ui/spinner'
+import { WeatherCard } from '@/components/plantonista/WeatherCard'
 
 export function BannerCarousel() {
   const { unidadeAtiva, ehGestor, ehAdmin } = useUnidade()
@@ -50,12 +51,22 @@ export function BannerCarousel() {
       onMouseLeave={() => setPausado(false)}
     >
       <div className="aspect-[21/9] w-full sm:aspect-[3/1]">
+        {/* Slide 0: clima da localização do usuário */}
+        <div
+          className={cn(
+            'absolute inset-0 p-2 transition-opacity duration-700 sm:p-3',
+            indiceAtual === 0 ? 'opacity-100' : 'pointer-events-none opacity-0'
+          )}
+        >
+          <WeatherCard />
+        </div>
+        {/* Slides 1..n: banners */}
         {ativos.map((b, i) => (
           <div
             key={b.id}
             className={cn(
               'absolute inset-0 transition-opacity duration-700',
-              i === indiceAtual ? 'opacity-100' : 'pointer-events-none opacity-0'
+              indiceAtual === i + 1 ? 'opacity-100' : 'pointer-events-none opacity-0'
             )}
           >
             {b.link_url ? (
@@ -86,12 +97,12 @@ export function BannerCarousel() {
         ))}
       </div>
 
-      {ativos.length > 1 && (
+      {ativos.length >= 1 && (
         <>
           <button
             type="button"
             aria-label="Banner anterior"
-            onClick={() => setIndice((i) => (i - 1 + ativos.length) % ativos.length)}
+            onClick={() => setIndice((i) => (i - 1 + ativos.length + 1) % (ativos.length + 1))}
             className="absolute top-1/2 left-3 hidden -translate-y-1/2 rounded-full bg-black/30 p-1.5 text-white opacity-0 backdrop-blur transition-opacity hover:bg-black/50 group-hover:opacity-100 sm:block"
           >
             <ChevronLeft className="size-4" />
@@ -99,21 +110,30 @@ export function BannerCarousel() {
           <button
             type="button"
             aria-label="Próximo banner"
-            onClick={() => setIndice((i) => (i + 1) % ativos.length)}
+            onClick={() => setIndice((i) => (i + 1) % (ativos.length + 1))}
             className="absolute top-1/2 right-3 hidden -translate-y-1/2 rounded-full bg-black/30 p-1.5 text-white opacity-0 backdrop-blur transition-opacity hover:bg-black/50 group-hover:opacity-100 sm:block"
           >
             <ChevronRight className="size-4" />
           </button>
           <div className="absolute inset-x-0 bottom-2 flex items-center justify-center gap-1.5 sm:bottom-3">
+            <button
+              type="button"
+              aria-label="Clima"
+              onClick={() => setIndice(0)}
+              className={cn(
+                'h-1.5 rounded-full bg-white/50 transition-all',
+                indiceAtual === 0 ? 'w-6 bg-white' : 'w-1.5 hover:bg-white/80'
+              )}
+            />
             {ativos.map((b, i) => (
               <button
                 key={b.id}
                 type="button"
                 aria-label={`Ir para banner ${i + 1}`}
-                onClick={() => setIndice(i)}
+                onClick={() => setIndice(i + 1)}
                 className={cn(
                   'h-1.5 rounded-full bg-white/50 transition-all',
-                  i === indiceAtual ? 'w-6 bg-white' : 'w-1.5 hover:bg-white/80'
+                  indiceAtual === i + 1 ? 'w-6 bg-white' : 'w-1.5 hover:bg-white/80'
                 )}
               />
             ))}
