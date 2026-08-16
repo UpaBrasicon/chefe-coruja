@@ -116,9 +116,15 @@ function Cenário({
   const amp = 62
   const solX = W * progDia
   const solY = horizonteY - Math.sin(progDia * Math.PI) * amp
-  // Lua percorre o arco do lado direito para o esquerdo durante a noite
-  const luaX = W * (1 - progNoite)
+  // Lua nasce do lado OPOSTO ao pôr do sol: no anoitecer (progNoite≈0) ela está à
+  // esquerda subindo, e vai para a direita ao longo da noite até o amanhecer.
+  const luaX = W * progNoite
   const luaY = horizonteY - Math.sin(progNoite * Math.PI) * amp
+
+  // Opacidades para transição suave: o sol some gradualmente ao anoitecer enquanto
+  // a lua aparece; o inverso acontece ao amanhecer.
+  const solOpacidade = progDia <= 1 ? 1 : Math.max(0, 1 - (progNoite * 3))
+  const luaOpacidade = progNoite <= 1 ? Math.min(1, progNoite * 3) : 1
 
   const tempestade = clima.codigo >= 95
   const chuva = [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(clima.codigo)
@@ -160,29 +166,27 @@ function Cenário({
 
       <rect width={W} height={H} fill="url(#ceu)" />
 
-      {/* Estrelas (noite) */}
-      {!dia &&
-        [
+      {/* Estrelas (surgem à noite) */}
+      <g opacity={Math.min(1, progNoite * 2.5)}>
+        {[
           [40, 18], [90, 34], [150, 12], [210, 40], [260, 16],
           [320, 30], [370, 12], [120, 52], [350, 48], [55, 44],
         ].map(([x, y], i) => (
           <circle key={i} cx={x} cy={y} r="1.4" fill="#fff" opacity="0.8" />
         ))}
+      </g>
 
-      {/* Sol / Lua no arco */}
-      {dia ? (
-        <>
-          <circle cx={solX} cy={solY} r="26" fill="url(#solBrilho)" opacity="0.5" />
-          <circle cx={solX} cy={solY} r="13" fill="#ffd94a" stroke="#f5b800" strokeWidth="1.5" filter="url(#suave)" />
-        </>
-      ) : (
-        <>
-          <circle cx={luaX} cy={luaY} r="24" fill="url(#luaBrilho)" opacity="0.4" />
-          <circle cx={luaX} cy={luaY} r="11" fill="#f0f2ff" />
-          <circle cx={luaX - 4} cy={luaY - 3} r="2.6" fill="#d8dcf5" />
-          <circle cx={luaX + 3} cy={luaY + 4} r="2" fill="#d8dcf5" />
-        </>
-      )}
+      {/* Sol e Lua no arco — transição contínua (lua nasce quando sol se põe) */}
+      <g opacity={solOpacidade}>
+        <circle cx={solX} cy={solY} r="26" fill="url(#solBrilho)" opacity="0.5" />
+        <circle cx={solX} cy={solY} r="13" fill="#ffd94a" stroke="#f5b800" strokeWidth="1.5" filter="url(#suave)" />
+      </g>
+      <g opacity={luaOpacidade}>
+        <circle cx={luaX} cy={luaY} r="24" fill="url(#luaBrilho)" opacity="0.4" />
+        <circle cx={luaX} cy={luaY} r="11" fill="#f0f2ff" />
+        <circle cx={luaX - 4} cy={luaY - 3} r="2.6" fill="#d8dcf5" />
+        <circle cx={luaX + 3} cy={luaY + 4} r="2" fill="#d8dcf5" />
+      </g>
 
       {/* Nuvens */}
       {nublado && (
