@@ -13,7 +13,9 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
-import type { TransferenciaPaciente } from '@/types/database'
+import type { AltaPaciente, ChecklistAdmissao, OcupacaoSetor, TransferenciaPaciente } from '@/types/database'
+import type { Database } from '@/types/database'
+type ChecklistAdmissaoInsert = Database['public']['Tables']['checklist_admissao']['Insert']
 
 type PacienteInternado = {
   id: string
@@ -135,9 +137,96 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
     })
   }, [agora, pacientesObservacao])
 
+  // I2/I3: ocupação por setor (contagem viva + alerta de superlotação)
+  const { data: ocupacao } = useQuery({
+    queryKey: ['ocupacao-setores', unidadeId],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('ocupacao_setores', { p_unidade: unidadeId! })
+      if (error) throw error
+      return (data ?? []) as OcupacaoSetor[]
+    },
+  })
+
+  // I1: linha do tempo (transferências) do paciente selecionado
+  const [pacienteDetalhe, setPacienteDetalhe] = React.useState<PacienteComSetor | null>(null)
+  const { data: historico } = useQuery({
+    queryKey: ['historico-paciente', pacienteDetalhe?.id],
+    enabled: !!pacienteDetalhe,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transferencias_paciente')
+        .select('*, perfis!transferencias_paciente_transferido_por_fkey(nome_completo)')
+        .eq('paciente_id', pacienteDetalhe!.id)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return (data ?? []) as unknown as (TransferenciaPaciente & { perfis: { nome_completo: string } | null })[]
+    },
+  })
+
+  // I4: checklist de admissão do paciente selecionado
+  const { data: checklist } = useQuery({
+    queryKey: ['checklist-admissao', pacienteDetalhe?.id],
+    enabled: !!pacienteDetalhe,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('checklist_admissao')
+        .select('*')
+        .eq('paciente_id', pacienteDetalhe!.id)
+        .maybeSingle()
+      if (error) throw error
+      return data as ChecklistAdmissao | null
+    },
+  })
+
+  // I5: alta do paciente selecionado
+  const { data: alta } = useQuery({
+    queryKey: ['alta-paciente', pacienteDetalhe?.id],
+    enabled: !!pacienteDetalhe,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('alta_paciente')
+        .select('*')
+        .eq('paciente_id', pacienteDetalhe!.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return data as AltaPaciente | null
+    },
+  })
+
   const invalidar = () => {
     void queryClient.invalidateQueries({ queryKey: ['pacientes-internados'] })
     void queryClient.invalidateQueries({ queryKey: ['transferencias-paciente'] })
+    void queryClient.invalidateQueries({ queryKey: ['ocupacao-setores'] })
+  }
+
+  async function toggleChecklist(campo: 'prescricao' | 'dieta' | 'leito' | 'responsavel') {
+    if (!pacienteDetalhe || !unidadeId) return
+    const base: ChecklistAdmissaoInsert = { paciente_id: pacienteDetalhe.id, unidade_id: unidadeId }
+    const patch: ChecklistAdmissaoInsert =
+      campo === 'prescricao'
+        ? { ...base, prescricao: !(checklist?.prescricao ?? false) }
+        : campo === 'dieta'
+          ? { ...base, dieta: !(checklist?.dieta ?? false) }
+          : campo === 'leito'
+            ? { ...base, leito: !(checklist?.leito ?? false) }
+            : { ...base, responsavel: !(checklist?.responsavel ?? false) }
+    const { error } = await supabase.from('checklist_admissao').upsert(patch, { onConflict: 'paciente_id' })
+    if (!error) void queryClient.invalidateQueries({ queryKey: ['checklist-admissao'] })
+  }
+
+  async function solicitarAlta() {
+    if (!pacienteDetalhe || !unidadeId) return
+    const { error } = await supabase.from('alta_paciente').insert({
+      paciente_id: pacienteDetalhe.id,
+      unidade_id: unidadeId,
+      status: 'em_alta',
+      criterios: { clinico: true },
+      liberou_leito: false,
+    })
+    if (!error) void queryClient.invalidateQueries({ queryKey: ['alta-paciente'] })
   }
 
   const transferirMutation = useMutation({
@@ -215,6 +304,32 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
         </div>
       )}
 
+      {/* I2/I3: ocupação por setor + alerta de superlotação */}
+      <div className="flex flex-wrap gap-2">
+        {(ocupacao ?? []).map((o) => {
+          const lotado = o.limite > 0 && o.internados >= o.limite
+          const alerta = o.limite > 0 && o.internados >= Math.ceil(o.limite * 0.85)
+          return (
+            <div
+              key={o.setor_id}
+              className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
+                lotado
+                  ? 'border-red-300 bg-red-50'
+                  : alerta
+                    ? 'border-amber-300 bg-amber-50'
+                    : 'border-border bg-card'
+              }`}
+            >
+              <span className="text-sm font-medium">{o.setor_nome}</span>
+              <span className={`text-sm font-bold ${lotado ? 'text-red-600' : alerta ? 'text-amber-600' : 'text-foreground'}`}>
+                {o.internados}/{o.limite || '∞'}
+              </span>
+              {lotado && <span className="text-xs font-bold text-red-600">LOTADO</span>}
+            </div>
+          )
+        })}
+      </div>
+
       {carregando ? (
         <div className="flex h-40 items-center justify-center">
           <Spinner />
@@ -252,6 +367,9 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             <Button size="xs" variant="outline" onClick={() => setTransferir(p)}>
                               <ArrowRightLeft /> Transferir
+                            </Button>
+                            <Button size="xs" variant="ghost" onClick={() => setPacienteDetalhe(p)}>
+                              <Eye /> Detalhes
                             </Button>
                             <Button
                               size="xs"
@@ -361,6 +479,89 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
               {transferirMutation.isPending ? <Spinner /> : <ArrowRightLeft />} Transferir
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* I1/I4/I5: detalhes do paciente — linha do tempo, checklist, alta */}
+      <Dialog open={!!pacienteDetalhe} onOpenChange={(o) => !o && setPacienteDetalhe(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{pacienteDetalhe?.nome}</DialogTitle>
+            <DialogDescription>Linha do tempo, checklist de admissão e alta.</DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4">
+            {/* I1: linha do tempo */}
+            <div className="flex flex-col gap-1.5">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Linha do tempo (transferências)
+              </div>
+              {(historico ?? []).length === 0 ? (
+                <p className="text-sm text-muted-foreground">Sem transferências registradas.</p>
+              ) : (
+                (historico ?? []).map((h) => (
+                  <div key={h.id} className="rounded-lg border p-2 text-sm">
+                    <span className="text-xs text-muted-foreground">{fmtDia(h.created_at)}</span>
+                    <div>
+                      por <strong>{h.perfis?.nome_completo ?? '—'}</strong> · {h.motivo || 'sem motivo'}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* I4: checklist de admissão */}
+            <div className="flex flex-col gap-1.5">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Checklist de admissão
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    ['prescricao', 'Prescrição'],
+                    ['dieta', 'Dieta'],
+                    ['leito', 'Leito'],
+                    ['responsavel', 'Responsável'],
+                  ] as const
+                ).map(([campo, rotulo]) => {
+                  const marcado = checklist?.[campo] ?? false
+                  return (
+                    <button
+                      key={campo}
+                      type="button"
+                      onClick={() => toggleChecklist(campo)}
+                      className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                        marcado
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                          : 'border-border bg-background hover:bg-muted'
+                      }`}
+                    >
+                      {marcado ? '✓ ' : '○ '}
+                      {rotulo}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* I5: alta */}
+            <div className="flex flex-col gap-1.5">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Alta</div>
+              {alta?.status === 'concluida' ? (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+                  ✓ Alta concluída · {fmtDia(alta.created_at)}
+                </div>
+              ) : alta?.status === 'em_alta' ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+                  Alta em processo (aguardando liberação do leito).
+                </div>
+              ) : (
+                <Button size="sm" variant="outline" onClick={solicitarAlta}>
+                  Solicitar alta
+                </Button>
+              )}
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

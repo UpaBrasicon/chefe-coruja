@@ -62,6 +62,67 @@ export type Database = {
           },
         ]
       }
+      alta_paciente: {
+        Row: {
+          created_at: string
+          criado_por: string | null
+          criterios: Json
+          id: string
+          justificativa: string | null
+          liberou_leito: boolean
+          paciente_id: string
+          status: string
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criado_por?: string | null
+          criterios?: Json
+          id?: string
+          justificativa?: string | null
+          liberou_leito?: boolean
+          paciente_id: string
+          status?: string
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criado_por?: string | null
+          criterios?: Json
+          id?: string
+          justificativa?: string | null
+          liberou_leito?: boolean
+          paciente_id?: string
+          status?: string
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alta_paciente_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alta_paciente_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alta_paciente_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assinaturas: {
         Row: {
           algoritmo: string
@@ -237,6 +298,67 @@ export type Database = {
           },
           {
             foreignKeyName: "candidaturas_escala_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_admissao: {
+        Row: {
+          atualizado_por: string | null
+          created_at: string
+          dieta: boolean
+          id: string
+          leito: boolean
+          paciente_id: string
+          prescricao: boolean
+          responsavel: boolean
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          atualizado_por?: string | null
+          created_at?: string
+          dieta?: boolean
+          id?: string
+          leito?: boolean
+          paciente_id: string
+          prescricao?: boolean
+          responsavel?: boolean
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          atualizado_por?: string | null
+          created_at?: string
+          dieta?: boolean
+          id?: string
+          leito?: boolean
+          paciente_id?: string
+          prescricao?: boolean
+          responsavel?: boolean
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_admissao_atualizado_por_fkey"
+            columns: ["atualizado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_admissao_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: true
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_admissao_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -1508,6 +1630,15 @@ export type Database = {
       horario_servidor: { Args: never; Returns: string }
       marcar_notificacao_lida: { Args: { p_id: string }; Returns: undefined }
       na_escala_agora: { Args: { unidade: string }; Returns: boolean }
+      ocupacao_setores: {
+        Args: { p_unidade: string }
+        Returns: {
+          internados: number
+          limite: number
+          setor_id: string
+          setor_nome: string
+        }[]
+      }
       papel_na_unidade: { Args: { unidade: string }; Returns: string }
       passar_plantao: {
         Args: { p_destino: string; p_escala: string; p_justificativa?: string }
@@ -1743,6 +1874,8 @@ export type CandidaturaEscala = Database['public']['Tables']['candidaturas_escal
 export type CandidaturaEscalaInsert = Database['public']['Tables']['candidaturas_escala']['Insert']
 export type TransferenciaPaciente = Database['public']['Tables']['transferencias_paciente']['Row']
 export type NotificacaoPlantonista = Database['public']['Tables']['notificacoes_plantonista']['Row']
+export type ChecklistAdmissao = Database['public']['Tables']['checklist_admissao']['Row']
+export type AltaPaciente = Database['public']['Tables']['alta_paciente']['Row']
 export type Papel = Database['public']['Enums']['papel']
 export type StatusLeito = Database['public']['Enums']['status_leito']
 export type TipoLeito = Database['public']['Enums']['tipo_leito']
@@ -1752,3 +1885,4 @@ export type PlantonistaDaUnidade = Database['public']['Functions']['plantonistas
 export type SetorInternacao = Database['public']['Functions']['setores_internacao']['Returns'][number]
 export type SetorObservacao = Database['public']['Functions']['setores_observacao']['Returns'][number]
 export type ResumoCargaPlantonista = Database['public']['Functions']['resumo_carga_plantonistas']['Returns'][number]
+export type OcupacaoSetor = Database['public']['Functions']['ocupacao_setores']['Returns'][number]
