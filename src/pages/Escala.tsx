@@ -616,9 +616,16 @@ export default function Escala() {
                 </CardDescription>
               </div>
               {diaSelecionado && (
-                <Button size="xs" variant="ghost" onClick={fecharDia}>
-                  <X /> Voltar ao mês
-                </Button>
+                <button
+                  type="button"
+                  onClick={fecharDia}
+                  className="group relative h-14 w-48 rounded-2xl bg-white text-xl font-semibold text-black transition-shadow hover:shadow-md"
+                >
+                  <div className="absolute top-[4px] left-1 z-10 flex h-12 w-1/4 items-center justify-center rounded-xl bg-green-400 duration-500 group-hover:w-[184px]">
+                    <ChevronLeft className="size-6 text-black" />
+                  </div>
+                  <p className="translate-x-2">Voltar</p>
+                </button>
               )}
             </CardHeader>
             <CardContent>
