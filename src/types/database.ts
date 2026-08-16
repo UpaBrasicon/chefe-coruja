@@ -166,6 +166,84 @@ export type Database = {
           },
         ]
       }
+      candidaturas_escala: {
+        Row: {
+          created_at: string
+          criado_por: string | null
+          data: string
+          decidido_por: string | null
+          id: string
+          perfil_id: string
+          setor_id: string
+          status: string
+          turno: string
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criado_por?: string | null
+          data: string
+          decidido_por?: string | null
+          id?: string
+          perfil_id: string
+          setor_id: string
+          status?: string
+          turno: string
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criado_por?: string | null
+          data?: string
+          decidido_por?: string | null
+          id?: string
+          perfil_id?: string
+          setor_id?: string
+          status?: string
+          turno?: string
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidaturas_escala_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidaturas_escala_decidido_por_fkey"
+            columns: ["decidido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidaturas_escala_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidaturas_escala_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidaturas_escala_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       configuracoes_unidade: {
         Row: {
           chave: string
@@ -1282,6 +1360,7 @@ export type Database = {
       }
     }
     Functions: {
+      aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
       data_atual: { Args: never; Returns: string }
       eh_super_admin: { Args: never; Returns: boolean }
       gerar_escala_mensal: {
@@ -1484,6 +1563,8 @@ export type EscalaFixa = Database['public']['Tables']['escala_fixa']['Row']
 export type EscalaFixaInsert = Database['public']['Tables']['escala_fixa']['Insert']
 export type SolicitacaoEscala = Database['public']['Tables']['solicitacoes_escala']['Row']
 export type SolicitacaoEscalaInsert = Database['public']['Tables']['solicitacoes_escala']['Insert']
+export type CandidaturaEscala = Database['public']['Tables']['candidaturas_escala']['Row']
+export type CandidaturaEscalaInsert = Database['public']['Tables']['candidaturas_escala']['Insert']
 export type Papel = Database['public']['Enums']['papel']
 export type StatusLeito = Database['public']['Enums']['status_leito']
 export type TipoLeito = Database['public']['Enums']['tipo_leito']

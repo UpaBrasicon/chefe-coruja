@@ -56,7 +56,7 @@ export function AppShell() {
     )
   }
   if (ehPlantonista) {
-    itens.push({ to: '/escala', label: 'Minha Escala', icon: CalendarClock, end: true })
+    itens.push({ to: '/escala', label: 'Escala', icon: CalendarClock, end: true })
   }
   if (!ehPlantonista) {
     itens.push({ to: '/plantonista', label: 'Central Clínica', icon: Stethoscope })

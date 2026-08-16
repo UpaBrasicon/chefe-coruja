@@ -27,7 +27,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
-import type { EscalaFixa, EscalaPlantao, PlantonistaDaUnidade, SolicitacaoEscala } from '@/types/database'
+import type { CandidaturaEscala, EscalaFixa, EscalaPlantao, PlantonistaDaUnidade, SolicitacaoEscala } from '@/types/database'
 
 const TURNOS = [
   { id: 'manha', label: 'Manhã', horario: '07h–13h' },
@@ -141,6 +141,7 @@ export default function Escala() {
   const [mes, setMes] = React.useState(() => hojeISO().slice(0, 7))
   const [semana, setSemana] = React.useState(() => hojeISO())
   const [abaGestor, setAbaGestor] = React.useState<'fixa' | 'mensal'>('mensal')
+  const [abaPlantonista, setAbaPlantonista] = React.useState<'minha' | 'geral'>('minha')
   const [celula, setCelula] = React.useState<{ setor_id: string; data: string } | null>(null)
   const [celulaFixa, setCelulaFixa] = React.useState<{ setor_id: string; dia_semana: number } | null>(null)
   const [plantonistaId, setPlantonistaId] = React.useState('')
@@ -243,6 +244,61 @@ export default function Escala() {
     },
   })
 
+  // Candidaturas a plantões livres (plantonista) — visível também ao gestor
+  const { data: candidaturas, isLoading: carregandoCand } = useQuery({
+    queryKey: ['candidaturas-escala', unidadeId],
+    enabled: !!unidadeId && (ehGestor || ehAdmin || ehPlantonista),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('candidaturas_escala')
+        .select('*, setores(nome), perfis!candidaturas_escala_perfil_id_fkey(id, nome_completo, crm)')
+        .eq('unidade_id', unidadeId!)
+        .order('created_at', { ascending: false })
+        .limit(200)
+      if (error) throw error
+      return (data ?? []) as unknown as (CandidaturaEscala & { setores: { nome: string } | null; perfis: { id: string; nome_completo: string; crm: string | null } | null })[]
+    },
+  })
+
+  const candidatar = useMutation({
+    mutationFn: async (cel: { setor_id: string; data: string; turno: string }) => {
+      if (!unidadeId || !perfil) return
+      const { error } = await supabase.from('candidaturas_escala').insert({
+        unidade_id: unidadeId,
+        setor_id: cel.setor_id,
+        data: cel.data,
+        turno: cel.turno,
+        perfil_id: perfil.id,
+        criado_por: perfil.id,
+      })
+      if (error) throw error
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['candidaturas-escala'] }),
+  })
+
+  const aprovarCandidatura = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.rpc('aprovar_candidatura', { p_candidatura: id })
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      invalidar()
+      void queryClient.invalidateQueries({ queryKey: ['candidaturas-escala'] })
+    },
+  })
+
+  const recusarCandidatura = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('candidaturas_escala')
+        .update({ status: 'recusado', decidido_por: perfil!.id })
+        .eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['candidaturas-escala'] }),
+  })
+
   // Escala FIXA (template) — gestor mantém; a mensal é gerada a partir dela
   const { data: escalaFixa, isLoading: carregandoFixa } = useQuery({
     queryKey: ['escala-fixa', unidadeId],
@@ -311,6 +367,7 @@ export default function Escala() {
     void queryClient.invalidateQueries({ queryKey: ['escala-plantao-mes'] })
     void queryClient.invalidateQueries({ queryKey: ['solicitacoes-escala'] })
     void queryClient.invalidateQueries({ queryKey: ['escala-fixa'] })
+    void queryClient.invalidateQueries({ queryKey: ['candidaturas-escala'] })
   }
 
   const remover = useMutation({
@@ -566,9 +623,7 @@ export default function Escala() {
           <span className="font-medium text-foreground">Escala</span>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {ehPlantonista ? 'Minha Escala' : 'Escala de Plantões'}
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Escala</h1>
           {ehPlantonista ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Button size="xs" variant="outline" onClick={() => mudarMes(-1)}>
@@ -599,7 +654,36 @@ export default function Escala() {
         </p>
       </div>
 
+      {/* Abas do plantonista: Minha Escala / Escala Geral */}
+      {ehPlantonista && (
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setAbaPlantonista('minha')}
+            className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+              abaPlantonista === 'minha'
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-background hover:bg-muted'
+            }`}
+          >
+            Minha Escala
+          </button>
+          <button
+            type="button"
+            onClick={() => setAbaPlantonista('geral')}
+            className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+              abaPlantonista === 'geral'
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-background hover:bg-muted'
+            }`}
+          >
+            Escala Geral
+          </button>
+        </div>
+      )}
+
       {ehPlantonista ? (
+        abaPlantonista === 'minha' ? (
         <>
           {/* CALENDÁRIO MENSAL — contexto geral do mês */}
           <Card>
@@ -932,9 +1016,142 @@ export default function Escala() {
               )}
             </CardContent>
           </Card>
-
         </>
-      ) : (
+        ) : (
+        <>
+          {/* ESCALA GERAL — plantões livres para candidatura */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CalendarClock className="size-4 text-muted-foreground" />
+                Escala Geral · {fmtMesBR(mesInicio)}
+              </CardTitle>
+              <CardDescription>
+                Plantões livres (sem plantonista) por setor, dia e turno. Candidat-se para assumir.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {carregandoEscala || carregandoCand ? (
+                <div className="flex h-40 items-center justify-center">
+                  <Spinner />
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[860px] border-collapse text-sm">
+                    <thead>
+                      <tr>
+                        <th className="w-40 border-b border-r bg-muted/50 p-2 text-left text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                          Setor / Turno
+                        </th>
+                        {dias.map((d, i) => (
+                          <th
+                            key={d}
+                            className={`border-b p-2 text-center text-xs font-bold uppercase tracking-wide ${
+                              i >= 5 ? 'border-r border-r-amber-200 bg-amber-50 text-amber-700' : 'border-r'
+                            }`}
+                          >
+                            {DIAS_SEMANA_SEG[i]}
+                            <span className="block text-[10px] font-normal text-muted-foreground">{fmtDiaBR(d)}</span>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(setores ?? []).map((s) => (
+                        <React.Fragment key={s.id}>
+                          <tr>
+                            <td className="border-b border-r bg-muted/30 p-2 align-top font-semibold" colSpan={8}>
+                              {s.nome}
+                            </td>
+                          </tr>
+                          {TURNOS.map((t) => (
+                            <tr key={`${s.id}-${t.id}`}>
+                              <td className="border-b border-r p-1.5 align-top text-xs font-medium text-muted-foreground">
+                                {t.label}
+                              </td>
+                              {dias.map((d) => {
+                                const ocupados = (escalaMes ?? []).filter(
+                                  (e) => e.setor_id === s.id && e.data === d && e.turno === t.id
+                                )
+                                const jaCand = (candidaturas ?? []).some(
+                                  (c) =>
+                                    c.setor_id === s.id && c.data === d && c.turno === t.id && c.perfil_id === perfil?.id
+                                )
+                                const livre = ocupados.length === 0
+                                return (
+                                  <td key={d} className="border-b border-r p-1 align-top">
+                                    {livre ? (
+                                      <button
+                                        type="button"
+                                        disabled={jaCand || candidatar.isPending}
+                                        onClick={() => candidatar.mutate({ setor_id: s.id, data: d, turno: t.id })}
+                                        className={`flex min-h-[44px] w-full flex-col items-center justify-center gap-0.5 rounded-md border border-dashed p-1 text-center transition-colors ${
+                                          jaCand
+                                            ? 'border-sky-300 bg-sky-50 text-sky-700'
+                                            : 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                        }`}
+                                      >
+                                        {jaCand ? (
+                                          <span className="text-[10px] font-semibold">Candidatura enviada</span>
+                                        ) : (
+                                          <>
+                                            <span className="text-[11px] font-bold">LIVRE</span>
+                                            <span className="text-[10px]">Candidatar-se</span>
+                                          </>
+                                        )}
+                                      </button>
+                                    ) : (
+                                      <div className="flex min-h-[44px] items-center justify-center rounded-md bg-muted/60 p-1 text-center">
+                                        <span className="text-[10px] text-muted-foreground">
+                                          {ocupados[0]?.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Ocupado'}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </td>
+                                )
+                              })}
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Minhas candidaturas */}
+              <div className="mt-4 flex flex-col gap-2">
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Minhas candidaturas
+                </div>
+                {(candidaturas ?? []).filter((c) => c.perfil_id === perfil?.id).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhuma candidatura enviada.</p>
+                ) : (
+                  (candidaturas ?? [])
+                    .filter((c) => c.perfil_id === perfil?.id)
+                    .map((c) => (
+                      <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-2 text-sm">
+                        <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}
+                        </span>
+                        <Badge
+                          variant={
+                            c.status === 'aprovado' ? 'success' : c.status === 'recusado' ? 'destructive' : 'warning'
+                          }
+                        >
+                          {c.status === 'aprovado' ? 'Aprovado' : c.status === 'recusado' ? 'Recusado' : 'Pendente'}
+                        </Badge>
+                      </div>
+                    ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </>
+        )
+      )
+      : (
         <>
           {/* PAINEL DE ALERTAS (gestor/admin) */}
           <Card className="border-amber-200 bg-amber-50/40">
@@ -1000,6 +1217,38 @@ export default function Escala() {
                       ))}
                     </div>
                   )}
+
+                  {/* Candidaturas a plantões livres */}
+                  <div className="mt-2 border-t border-amber-200 pt-3">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-amber-800">
+                      <CalendarClock className="size-3.5" /> Candidaturas a plantões livres
+                    </div>
+                    {(candidaturas ?? []).filter((c) => c.status === 'pendente').length === 0 ? (
+                      <p className="text-sm text-muted-foreground">Nenhuma candidatura pendente.</p>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {(candidaturas ?? [])
+                          .filter((c) => c.status === 'pendente')
+                          .map((c) => (
+                            <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border bg-white p-2 text-sm">
+                              <span className="font-medium">{c.perfis?.nome_completo ?? 'Plantonista'}</span>
+                              <Badge variant="outline">{c.setores?.nome ?? 'Setor'}</Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}
+                              </span>
+                              <span className="ml-auto flex gap-1.5">
+                                <Button size="xs" onClick={() => aprovarCandidatura.mutate(c.id)} disabled={aprovarCandidatura.isPending}>
+                                  <Check /> Aprovar
+                                </Button>
+                                <Button size="xs" variant="outline" onClick={() => recusarCandidatura.mutate(c.id)}>
+                                  <X /> Recusar
+                                </Button>
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </CardContent>
