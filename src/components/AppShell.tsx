@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Activity,
   BedDouble,
+  Bell,
   CalendarClock,
   Eye,
   Hospital,
@@ -20,6 +21,7 @@ import { PAPEL_LABEL } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { usePlantao } from '@/hooks/usePlantao'
+import { useNotificacoesTurno } from '@/hooks/useNotificacoesTurno'
 import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
 import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
 import { Button } from '@/components/ui/button'
@@ -31,6 +33,7 @@ type NavItem = {
   label: string
   icon: React.ComponentType<{ className?: string }>
   end?: boolean
+  badge?: number
 }
 
 export function AppShell() {
@@ -40,12 +43,19 @@ export function AppShell() {
   const navigate = useNavigate()
   const [menuAberto, setMenuAberto] = React.useState(false)
 
+  // T3: badge de pendências (avisos) na lateral — só para plantonista
+  const { notificacoes: notifsTurno } = useNotificacoesTurno(
+    papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined,
+    papelAtivo === 'plantonista'
+  )
+
   const itens: NavItem[] = []
   if (ehPlantonista) {
     itens.push({ to: '/plantonista', label: 'Central do Plantonista', icon: Stethoscope, end: true })
     itens.push({ to: '/plantao', label: 'Plantão', icon: Activity, end: true })
     itens.push({ to: '/internacao', label: 'Internação', icon: Hospital, end: true })
     itens.push({ to: '/observacao', label: 'Observação', icon: Eye, end: true })
+    itens.push({ to: '/notificacoes', label: 'Avisos', icon: Bell, end: true, badge: notifsTurno.length })
   }
   if (ehGestor) {
     itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })
@@ -150,6 +160,11 @@ export function AppShell() {
                 )}
               />
               {item.label}
+              {item.badge ? (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                  {item.badge}
+                </span>
+              ) : null}
             </NavLink>
           ))}
         </nav>
@@ -194,6 +209,11 @@ export function AppShell() {
               >
                 <item.icon className="size-4" />
                 {item.label}
+                {item.badge ? (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                    {item.badge}
+                  </span>
+                ) : null}
               </NavLink>
             ))}
             {unidades.length > 1 && (

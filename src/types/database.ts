@@ -1629,6 +1629,16 @@ export type Database = {
       }
       horario_servidor: { Args: never; Returns: string }
       marcar_notificacao_lida: { Args: { p_id: string }; Returns: undefined }
+      minhas_notificacoes: {
+        Args: { p_unidade: string }
+        Returns: {
+          created_at: string
+          id: string
+          lida: boolean
+          mensagem: string
+          tipo: string
+        }[]
+      }
       na_escala_agora: { Args: { unidade: string }; Returns: boolean }
       ocupacao_setores: {
         Args: { p_unidade: string }
@@ -1886,3 +1896,4 @@ export type SetorInternacao = Database['public']['Functions']['setores_internaca
 export type SetorObservacao = Database['public']['Functions']['setores_observacao']['Returns'][number]
 export type ResumoCargaPlantonista = Database['public']['Functions']['resumo_carga_plantonistas']['Returns'][number]
 export type OcupacaoSetor = Database['public']['Functions']['ocupacao_setores']['Returns'][number]
+export type MinhaNotificacao = Database['public']['Functions']['minhas_notificacoes']['Returns'][number]

@@ -18,6 +18,7 @@ import { Setores } from '@/pages/Setores'
 import Escala from '@/pages/Escala'
 import InternacaoPainel from '@/pages/InternacaoPainel'
 import ObservacaoPainel from '@/pages/ObservacaoPainel'
+import Notificacoes from '@/pages/Notificacoes'
 import { Banners } from '@/pages/gestor/Banners'
 import PlantonistaHome from '@/pages/plantonista/PlantonistaHome'
 import SectionHome from '@/pages/plantonista/SectionHome'
@@ -78,6 +79,7 @@ export default function App() {
                     <Route path="/escala" element={<Escala />} />
                     <Route path="/internacao" element={<InternacaoPainel />} />
                     <Route path="/observacao" element={<ObservacaoPainel />} />
+                    <Route path="/notificacoes" element={<Notificacoes />} />
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista']} />}>
                     <Route path="/plantao" element={<PlantaoHome />} />
