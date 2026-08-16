@@ -142,6 +142,7 @@ export default function Escala() {
   const [semana, setSemana] = React.useState(() => hojeISO())
   const [abaGestor, setAbaGestor] = React.useState<'fixa' | 'mensal'>('mensal')
   const [abaPlantonista, setAbaPlantonista] = React.useState<'minha' | 'geral'>('minha')
+  const [diaGeral, setDiaGeral] = React.useState<string | null>(null)
   const [celula, setCelula] = React.useState<{ setor_id: string; data: string } | null>(null)
   const [celulaFixa, setCelulaFixa] = React.useState<{ setor_id: string; dia_semana: number } | null>(null)
   const [plantonistaId, setPlantonistaId] = React.useState('')
@@ -1021,131 +1022,212 @@ export default function Escala() {
         <>
           {/* ESCALA GERAL — plantões livres para candidatura */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <CalendarClock className="size-4 text-muted-foreground" />
-                Escala Geral · {fmtMesBR(mesInicio)}
-              </CardTitle>
-              <CardDescription>
-                Plantões livres (sem plantonista) por setor, dia e turno. Candidat-se para assumir.
-              </CardDescription>
+            <CardHeader className="flex-row items-start justify-between space-y-0">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CalendarClock className="size-4 text-muted-foreground" />
+                  {diaGeral ? `Plantões de ${fmtDiaBR(diaGeral)}` : `Escala Geral · ${fmtMesBR(mesInicio)}`}
+                </CardTitle>
+                <CardDescription>
+                  {diaGeral
+                    ? 'Plantões do dia por setor e turno — candidat-se aos livres.'
+                    : 'Clique em um dia para ver os plantões do mês inteiro.'}
+                </CardDescription>
+              </div>
+              {diaGeral && (
+                <Button size="xs" variant="ghost" onClick={() => setDiaGeral(null)}>
+                  <X /> Voltar ao mês
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               {carregandoEscala || carregandoCand ? (
                 <div className="flex h-40 items-center justify-center">
                   <Spinner />
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[860px] border-collapse text-sm">
-                    <thead>
-                      <tr>
-                        <th className="w-40 border-b border-r bg-muted/50 p-2 text-left text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                          Setor / Turno
-                        </th>
-                        {dias.map((d, i) => (
-                          <th
-                            key={d}
-                            className={`border-b p-2 text-center text-xs font-bold uppercase tracking-wide ${
-                              i >= 5 ? 'border-r border-r-amber-200 bg-amber-50 text-amber-700' : 'border-r'
-                            }`}
-                          >
-                            {DIAS_SEMANA_SEG[i]}
-                            <span className="block text-[10px] font-normal text-muted-foreground">{fmtDiaBR(d)}</span>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(setores ?? []).map((s) => (
-                        <React.Fragment key={s.id}>
-                          <tr>
-                            <td className="border-b border-r bg-muted/30 p-2 align-top font-semibold" colSpan={8}>
-                              {s.nome}
-                            </td>
-                          </tr>
-                          {TURNOS.map((t) => (
-                            <tr key={`${s.id}-${t.id}`}>
-                              <td className="border-b border-r p-1.5 align-top text-xs font-medium text-muted-foreground">
-                                {t.label}
-                              </td>
-                              {dias.map((d) => {
-                                const ocupados = (escalaMes ?? []).filter(
-                                  (e) => e.setor_id === s.id && e.data === d && e.turno === t.id
-                                )
-                                const jaCand = (candidaturas ?? []).some(
-                                  (c) =>
-                                    c.setor_id === s.id && c.data === d && c.turno === t.id && c.perfil_id === perfil?.id
-                                )
-                                const livre = ocupados.length === 0
-                                return (
-                                  <td key={d} className="border-b border-r p-1 align-top">
-                                    {livre ? (
-                                      <button
-                                        type="button"
-                                        disabled={jaCand || candidatar.isPending}
-                                        onClick={() => candidatar.mutate({ setor_id: s.id, data: d, turno: t.id })}
-                                        className={`flex min-h-[44px] w-full flex-col items-center justify-center gap-0.5 rounded-md border border-dashed p-1 text-center transition-colors ${
-                                          jaCand
-                                            ? 'border-sky-300 bg-sky-50 text-sky-700'
-                                            : 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                        }`}
+              ) : diaGeral ? (
+                /* DETALHE DO DIA */
+                <div className="animate-in fade-in-0 zoom-in-95 origin-center duration-300 ease-out">
+                  <div className="flex flex-col gap-3">
+                    {(setores ?? []).map((s) => (
+                      <div key={s.id} className="rounded-xl border">
+                        <div className="rounded-t-xl bg-muted/50 px-3 py-1.5 text-sm font-semibold">{s.nome}</div>
+                        <div className="grid gap-1 p-2 sm:grid-cols-3">
+                          {TURNOS.map((t) => {
+                            const ocupados = (escalaMes ?? []).filter(
+                              (e) => e.setor_id === s.id && e.data === diaGeral && e.turno === t.id
+                            )
+                            const jaCand = (candidaturas ?? []).some(
+                              (c) =>
+                                c.setor_id === s.id && c.data === diaGeral && c.turno === t.id && c.perfil_id === perfil?.id
+                            )
+                            const livre = ocupados.length === 0
+                            return (
+                              <div
+                                key={`${s.id}-${t.id}`}
+                                className={`rounded-lg border p-2 ${
+                                  livre ? 'border-dashed border-emerald-300 bg-emerald-50/60' : 'bg-muted/40'
+                                }`}
+                              >
+                                <div className="mb-1 flex items-center justify-between">
+                                  <span className="text-xs font-bold text-muted-foreground">{t.label}</span>
+                                  <Badge variant={livre ? 'success' : 'secondary'} className="text-[10px]">
+                                    {livre ? 'Livre' : 'Ocupado'}
+                                  </Badge>
+                                </div>
+                                {livre ? (
+                                  <button
+                                    type="button"
+                                    disabled={jaCand || candidatar.isPending}
+                                    onClick={() => candidatar.mutate({ setor_id: s.id, data: diaGeral, turno: t.id })}
+                                    className={`w-full rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${
+                                      jaCand
+                                        ? 'cursor-default bg-sky-100 text-sky-700'
+                                        : 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                    }`}
+                                  >
+                                    {jaCand ? 'Candidatura enviada' : 'Candidatar-se'}
+                                  </button>
+                                ) : (
+                                  <div className="flex flex-col gap-0.5">
+                                    {ocupados.map((e) => (
+                                      <span
+                                        key={e.id}
+                                        className="rounded bg-white px-1.5 py-0.5 text-[11px] text-muted-foreground"
                                       >
-                                        {jaCand ? (
-                                          <span className="text-[10px] font-semibold">Candidatura enviada</span>
-                                        ) : (
-                                          <>
-                                            <span className="text-[11px] font-bold">LIVRE</span>
-                                            <span className="text-[10px]">Candidatar-se</span>
-                                          </>
-                                        )}
-                                      </button>
-                                    ) : (
-                                      <div className="flex min-h-[44px] items-center justify-center rounded-md bg-muted/60 p-1 text-center">
-                                        <span className="text-[10px] text-muted-foreground">
-                                          {ocupados[0]?.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Ocupado'}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </td>
-                                )
-                              })}
-                            </tr>
-                          ))}
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
+                                        {e.perfis?.nome_completo ?? 'Ocupado'}
+                                        {e.quinzenal && <span className="ml-1 font-bold text-primary">15/15</span>}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Minhas candidaturas */}
+                  <div className="mt-4 flex flex-col gap-2">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Minhas candidaturas
+                    </div>
+                    {(candidaturas ?? []).filter((c) => c.perfil_id === perfil?.id).length === 0 ? (
+                      <p className="text-sm text-muted-foreground">Nenhuma candidatura enviada.</p>
+                    ) : (
+                      (candidaturas ?? [])
+                        .filter((c) => c.perfil_id === perfil?.id)
+                        .map((c) => (
+                          <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-2 text-sm">
+                            <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}
+                            </span>
+                            <Badge
+                              variant={
+                                c.status === 'aprovado' ? 'success' : c.status === 'recusado' ? 'destructive' : 'warning'
+                              }
+                            >
+                              {c.status === 'aprovado' ? 'Aprovado' : c.status === 'recusado' ? 'Recusado' : 'Pendente'}
+                            </Badge>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* CALENDÁRIO DO MÊS */
+                <div className="grid grid-cols-7 gap-1 text-center">
+                  {DIAS_SEMANA.map((d, idx) => (
+                    <div
+                      key={d}
+                      className={`py-1 text-[11px] font-bold uppercase tracking-wide ${
+                        idx === 0 || idx === 6 ? 'text-amber-700' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {d}
+                    </div>
+                  ))}
+                  {diasDoMes.map((c, i) => {
+                    if (c.fora) return <div key={`v-${i}`} />
+                    const plantoesDia = (escalaMes ?? []).filter((e) => e.data === c.iso)
+                    const livres = plantoesDia.length === 0
+                    const candidaturasDia = (candidaturas ?? []).filter(
+                      (cd) => cd.data === c.iso && cd.perfil_id === perfil?.id
+                    )
+                    const temMinhaCand = candidaturasDia.length > 0
+                    const eHoje = ehHoje(c.iso)
+                    return (
+                      <button
+                        key={c.iso}
+                        type="button"
+                        onClick={() => setDiaGeral(c.iso)}
+                        className={`flex min-h-[76px] flex-col gap-1 rounded-lg border p-1.5 text-left transition-all duration-200 ${
+                          livres
+                            ? 'border-dashed border-emerald-300 bg-emerald-50/60 hover:bg-emerald-100'
+                            : 'border-border bg-white hover:bg-muted'
+                        } ${eHoje ? 'ring-2 ring-primary/60' : ''}`}
+                      >
+                        <span
+                          className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold ${
+                            eHoje
+                              ? 'bg-primary text-primary-foreground'
+                              : livres
+                                ? 'bg-emerald-200 text-emerald-900'
+                                : 'bg-slate-100 text-slate-900'
+                          }`}
+                        >
+                          {c.dia}
+                        </span>
+                        {livres ? (
+                          <span className="text-[10px] font-bold text-emerald-700">Tudo livre</span>
+                        ) : (
+                          <span className="text-[10px] font-semibold text-muted-foreground">
+                            {plantoesDia.length} plantão(ões)
+                          </span>
+                        )}
+                        {temMinhaCand && (
+                          <span className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[9px] font-semibold text-sky-700">
+                            {candidaturasDia.length} candidatura(s)
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
 
-              {/* Minhas candidaturas */}
-              <div className="mt-4 flex flex-col gap-2">
-                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Minhas candidaturas
+              {/* Minhas candidaturas (resumo) */}
+              {!diaGeral && (
+                <div className="mt-4 flex flex-col gap-2">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Minhas candidaturas
+                  </div>
+                  {(candidaturas ?? []).filter((c) => c.perfil_id === perfil?.id).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nenhuma candidatura enviada.</p>
+                  ) : (
+                    (candidaturas ?? [])
+                      .filter((c) => c.perfil_id === perfil?.id)
+                      .map((c) => (
+                        <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-2 text-sm">
+                          <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}
+                          </span>
+                          <Badge
+                            variant={
+                              c.status === 'aprovado' ? 'success' : c.status === 'recusado' ? 'destructive' : 'warning'
+                            }
+                          >
+                            {c.status === 'aprovado' ? 'Aprovado' : c.status === 'recusado' ? 'Recusado' : 'Pendente'}
+                          </Badge>
+                        </div>
+                      ))
+                  )}
                 </div>
-                {(candidaturas ?? []).filter((c) => c.perfil_id === perfil?.id).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nenhuma candidatura enviada.</p>
-                ) : (
-                  (candidaturas ?? [])
-                    .filter((c) => c.perfil_id === perfil?.id)
-                    .map((c) => (
-                      <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-2 text-sm">
-                        <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}
-                        </span>
-                        <Badge
-                          variant={
-                            c.status === 'aprovado' ? 'success' : c.status === 'recusado' ? 'destructive' : 'warning'
-                          }
-                        >
-                          {c.status === 'aprovado' ? 'Aprovado' : c.status === 'recusado' ? 'Recusado' : 'Pendente'}
-                        </Badge>
-                      </div>
-                    ))
-                )}
-              </div>
+              )}
             </CardContent>
           </Card>
         </>
