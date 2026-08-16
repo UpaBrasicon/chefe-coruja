@@ -107,6 +107,8 @@ export function DadosPaciente({
       nascimento: nasc,
       dataAtual: dados.dataAtual || hojeLocal(),
       leito: dados.leito,
+      paciente_id: pacienteEncontrado.id,
+      setor_id: pacienteEncontrado.setor_id ?? dados.setor_id ?? null,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pacienteEncontrado])
@@ -118,18 +120,28 @@ export function DadosPaciente({
     }
     setCriando(true)
     setErro(null)
-    const { error } = await supabase.from('pacientes').insert({
-      unidade_id: unidadeId,
-      setor_id: setorEscolhido,
-      nome: formNovo.nome,
-      cpf: formNovo.cpf || null,
-      data_nascimento: formNovo.data_nascimento || null,
-      sexo: formNovo.sexo || null,
-    })
+    const { data: novo, error } = await supabase
+      .from('pacientes')
+      .insert({
+        unidade_id: unidadeId,
+        setor_id: setorEscolhido,
+        nome: formNovo.nome,
+        cpf: formNovo.cpf || null,
+        data_nascimento: formNovo.data_nascimento || null,
+        sexo: formNovo.sexo || null,
+      })
+      .select('id')
     setCriando(false)
     if (error) {
       setErro(error.message)
       return
+    }
+    if (novo?.[0]?.id) {
+      onChange({
+        nome: formNovo.nome,
+        paciente_id: novo[0].id,
+        setor_id: setorEscolhido,
+      })
     }
     setBuscaAtiva(formNovo.cpf || formNovo.nome)
     setNovoPaciente(false)

@@ -89,6 +89,7 @@ export default function Internacao() {
           <PrescricaoTab
             dados={dados.paciente}
             prescricao={dados.prescricao}
+            pacienteId={dados.paciente.paciente_id}
             onChange={(p) => atualizar({ prescricao: { ...dados.prescricao, ...p } })}
           />
         </TabsContent>

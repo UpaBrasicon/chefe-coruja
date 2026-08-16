@@ -1463,6 +1463,10 @@ export type Database = {
         }
         Returns: string
       }
+      registrar_prescricao_observacao: {
+        Args: { p_observacoes?: string; p_paciente: string }
+        Returns: string
+      }
       setores_internacao: {
         Args: { p_unidade: string }
         Returns: {

@@ -101,6 +101,40 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
     },
   })
 
+  // Horário do servidor (relógio de São Paulo) para o aviso das 18:30
+  const { data: horaServidor } = useQuery({
+    queryKey: ['hora-servidor'],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('horario_servidor')
+      if (error) throw error
+      return data as string
+    },
+    refetchInterval: 30_000,
+  })
+
+  const agora = React.useMemo(
+    () => (horaServidor ? new Date(horaServidor) : null),
+    [horaServidor]
+  )
+  const minutos = agora ? agora.getHours() * 60 + agora.getMinutes() : -1
+  const pertoDoFim = minutos >= 18 * 60 + 30 // 18:30
+
+  const pacientesObservacao = React.useMemo(() => {
+    if (modo !== 'observacao') return []
+    const setorObsIds = new Set((setores ?? []).map((s) => s.id))
+    return (pacientes ?? []).filter((p) => p.setor_id && setorObsIds.has(p.setor_id))
+  }, [modo, setores, pacientes])
+
+  const emObservacaoMuitoTempo = React.useMemo(() => {
+    if (!agora) return []
+    return pacientesObservacao.filter((p) => {
+      const entrada = new Date(p.created_at)
+      const horas = (agora.getTime() - entrada.getTime()) / 3600000
+      return horas >= 5.5
+    })
+  }, [agora, pacientesObservacao])
+
   const invalidar = () => {
     void queryClient.invalidateQueries({ queryKey: ['pacientes-internados'] })
     void queryClient.invalidateQueries({ queryKey: ['transferencias-paciente'] })
@@ -154,6 +188,32 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
       </div>
 
       {sucesso && <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{sucesso}</p>}
+
+      {/* Aviso de internação — observação (18:30 / >6h) */}
+      {modo === 'observacao' && pertoDoFim && emObservacaoMuitoTempo.length > 0 && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <div className="mb-1 text-sm font-bold text-red-700">
+            ⏰ Fim do turno se aproxima ({agora?.toLocaleTimeString('pt-BR')})
+          </div>
+          <p className="mb-2 text-sm text-red-700">
+            Pacientes em observação por <strong>5h30+</strong> precisam ser <strong>internados</strong>{' '}
+            (enfermaria/sala vermelha) ou liberados antes do fim do plantão.
+          </p>
+          <ul className="flex flex-col gap-1 text-sm">
+            {emObservacaoMuitoTempo.map((p) => {
+              const entrada = new Date(p.created_at)
+              const horas = Math.floor((agora!.getTime() - entrada.getTime()) / 3600000)
+              const mins = Math.floor(((agora!.getTime() - entrada.getTime()) % 3600000) / 60000)
+              return (
+                <li key={p.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
+                  <span className="font-medium">{p.nome}</span>
+                  <span className="text-xs text-red-600">observação há {horas}h{mins}m</span>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
 
       {carregando ? (
         <div className="flex h-40 items-center justify-center">

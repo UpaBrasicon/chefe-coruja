@@ -1,6 +1,8 @@
-import { Check, Clipboard, Printer } from 'lucide-react'
+import { Check, Clipboard, FileCheck2, Printer } from 'lucide-react'
 import * as React from 'react'
 
+import { supabase } from '@/lib/supabase'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -18,13 +20,40 @@ export function PrescricaoTab({
   dados,
   prescricao,
   onChange,
+  pacienteId,
 }: {
   dados: DadosPaciente
   prescricao: Prescricao
   onChange: (p: Partial<Prescricao>) => void
+  pacienteId?: string | null
 }) {
+  const { unidadeAtiva } = useUnidade()
+  const unidadeId = unidadeAtiva?.unidade_id
   const [copiado, setCopiado] = React.useState(false)
+  const [registrando, setRegistrando] = React.useState(false)
+  const [registrado, setRegistrado] = React.useState(false)
+  const [erroRegistro, setErroRegistro] = React.useState<string | null>(null)
   const marcados = new Set(prescricao.marcados)
+
+  async function registrarPrescricao() {
+    if (!unidadeId || !pacienteId) {
+      setErroRegistro('Identifique o paciente (Dados do Paciente) antes de registrar a prescrição.')
+      return
+    }
+    setRegistrando(true)
+    setErroRegistro(null)
+    const { error } = await supabase.rpc('registrar_prescricao_observacao', {
+      p_paciente: pacienteId,
+      p_observacoes: prescricao.obs || undefined,
+    })
+    setRegistrando(false)
+    if (error) {
+      setErroRegistro(error.message)
+      return
+    }
+    setRegistrado(true)
+    setTimeout(() => setRegistrado(false), 4000)
+  }
 
   function toggle(n: number) {
     const next = new Set(marcados)
@@ -207,7 +236,23 @@ export function PrescricaoTab({
             <Button variant="outline" onClick={copiar} disabled={!itensSelecionados.length}>
               {copiado ? <Check className="text-emerald-600" /> : <Clipboard />} {copiado ? 'Copiado!' : 'Copiar'}
             </Button>
+            <Button
+              variant="secondary"
+              onClick={registrarPrescricao}
+              disabled={registrando}
+              title="Necessário para encaminhar o paciente à observação"
+            >
+              {registrando ? <span className="size-4 animate-spin rounded-full border-2 border-sky-300 border-t-sky-600" /> : <FileCheck2 />}
+              {registrado ? 'Prescrição registrada!' : 'Registrar prescrição'}
+            </Button>
           </div>
+          {erroRegistro && <p className="text-sm text-destructive">{erroRegistro}</p>}
+          {!pacienteId && (
+            <p className="text-xs text-muted-foreground">
+              Registre a prescrição após identificar o paciente — obrigatório para encaminhá-lo à
+              observação.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
