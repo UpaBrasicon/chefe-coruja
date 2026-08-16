@@ -1473,6 +1473,15 @@ export type Database = {
         }[]
       }
       setores_na_escala_agora: { Args: never; Returns: string[] }
+      setores_observacao: {
+        Args: { p_unidade: string }
+        Returns: {
+          id: string
+          nome: string
+          ordem: number
+          tipo: string
+        }[]
+      }
       tem_acesso_atendimento: { Args: { unidade: string }; Returns: boolean }
       transferir_paciente: {
         Args: { p_destino: string; p_motivo?: string; p_paciente: string }
@@ -1655,3 +1664,4 @@ export type TipoSetor = Database['public']['Enums']['tipo_setor']
 export type TipoUnidade = Database['public']['Enums']['tipo_unidade']
 export type PlantonistaDaUnidade = Database['public']['Functions']['plantonistas_da_unidade']['Returns'][number]
 export type SetorInternacao = Database['public']['Functions']['setores_internacao']['Returns'][number]
+export type SetorObservacao = Database['public']['Functions']['setores_observacao']['Returns'][number]

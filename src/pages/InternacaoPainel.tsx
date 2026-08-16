@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { ArrowRightLeft, ChevronRight, Hospital, UserPlus } from 'lucide-react'
+import { ArrowRightLeft, ChevronRight, Eye, Hospital, UserPlus } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
-import type { SetorInternacao, TransferenciaPaciente } from '@/types/database'
+import type { TransferenciaPaciente } from '@/types/database'
 
 type PacienteInternado = {
   id: string
@@ -36,7 +36,9 @@ function fmtDia(iso: string | null | undefined) {
   return d.toLocaleDateString('pt-BR')
 }
 
-export default function InternacaoPainel() {
+type Setor = { id: string; nome: string; tipo: string; ordem: number }
+
+export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'internacao' | 'observacao' }) {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
@@ -49,15 +51,18 @@ export default function InternacaoPainel() {
 
   const ehGestor = papelAtivo === 'gestor'
   const ehAdmin = papelAtivo === 'admin'
+  const titulo = modo === 'internacao' ? 'Internação' : 'Observação'
+  const rpcSetores = modo === 'internacao' ? 'setores_internacao' : 'setores_observacao'
+  const IconePainel = modo === 'internacao' ? Hospital : Eye
 
-  // Setores de internação da unidade
+  // Setores da unidade (internação ou observação)
   const { data: setores, isLoading: carregandoSetores } = useQuery({
-    queryKey: ['setores-internacao', unidadeId],
+    queryKey: ['setores-' + modo, unidadeId],
     enabled: !!unidadeId,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('setores_internacao', { p_unidade: unidadeId! })
+      const { data, error } = await supabase.rpc(rpcSetores, { p_unidade: unidadeId! })
       if (error) throw error
-      return (data ?? []) as SetorInternacao[]
+      return (data ?? []) as Setor[]
     },
   })
 
@@ -136,13 +141,15 @@ export default function InternacaoPainel() {
             Início
           </Link>
           <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Internação</span>
+          <span className="font-medium text-foreground">{titulo}</span>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Internação</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{titulo}</h1>
         <p className="text-sm text-muted-foreground">
-          {unidadeAtiva?.unidade.nome ?? 'Unidade'} · Enfermaria Clínica, Enfermaria Pediátrica, Sala
-          Vermelha/Semi-Crítica (e outros setores do gestor). Você só vê os pacientes dos setores
-          onde está na escala agora.
+          {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
+          {modo === 'internacao'
+            ? 'Enfermaria Clínica, Enfermaria Pediátrica, Sala Vermelha/Semi-Crítica (e outros setores do gestor).'
+            : 'Setor de Observação, UTI e Isolamento (e outros criados pelo gestor).'}{' '}
+          Você só vê os pacientes dos setores onde está na escala agora.
         </p>
       </div>
 
@@ -161,7 +168,7 @@ export default function InternacaoPainel() {
                 <Card key={s.id}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <Hospital className="size-4 text-primary" />
+                      <IconePainel className="size-4 text-primary" />
                       {s.nome}
                     </CardTitle>
                     <CardDescription>
@@ -266,13 +273,19 @@ export default function InternacaoPainel() {
               </Select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="motivo">Motivo (opcional)</Label>
+              <Label htmlFor="motivo">
+                Justificativa do encaminhamento <span className="text-destructive">*</span>
+              </Label>
               <Textarea
                 id="motivo"
                 value={motivo}
                 onChange={(e) => setMotivo(e.target.value)}
-                placeholder="Ex: piora clínica, necessidade de UTI…"
+                placeholder="Ex: piora clínica, necessidade de UTI, descompensação…"
+                required
               />
+              {!motivo.trim() && (
+                <p className="text-xs text-amber-600">Informe o motivo para justificar a transferência.</p>
+              )}
             </div>
             {erro && <p className="text-sm text-destructive">{erro}</p>}
           </div>
@@ -283,7 +296,7 @@ export default function InternacaoPainel() {
             </Button>
             <Button
               onClick={() => transferirMutation.mutate()}
-              disabled={!destinoId || transferirMutation.isPending}
+              disabled={!destinoId || !motivo.trim() || transferirMutation.isPending}
             >
               {transferirMutation.isPending ? <Spinner /> : <ArrowRightLeft />} Transferir
             </Button>
