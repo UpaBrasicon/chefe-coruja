@@ -16,6 +16,7 @@ import { PainelAdmin } from '@/pages/PainelAdmin'
 import { Pessoas } from '@/pages/Pessoas'
 import { Setores } from '@/pages/Setores'
 import Escala from '@/pages/Escala'
+import InternacaoPainel from '@/pages/InternacaoPainel'
 import { Banners } from '@/pages/gestor/Banners'
 import PlantonistaHome from '@/pages/plantonista/PlantonistaHome'
 import SectionHome from '@/pages/plantonista/SectionHome'
@@ -74,6 +75,7 @@ export default function App() {
                     <Route path="/plantonista/:section" element={<SectionHome />} />
                     <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
                     <Route path="/escala" element={<Escala />} />
+                    <Route path="/internacao" element={<InternacaoPainel />} />
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista']} />}>
                     <Route path="/plantao" element={<PlantaoHome />} />

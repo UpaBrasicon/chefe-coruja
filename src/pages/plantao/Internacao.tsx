@@ -1,7 +1,9 @@
 import { CheckCircle2, ChevronRight, ClipboardPlus, Eraser } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Button } from '@/components/ui/button'
@@ -22,6 +24,17 @@ export default function Internacao() {
 
   const { dados, atualizar, salvoEm, limpar } = useRascunho(unidadeId, perfilId)
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
+
+  // Setores de internação da unidade (destino do paciente)
+  const { data: setoresInternacao } = useQuery({
+    queryKey: ['setores-internacao', unidadeId],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('setores_internacao', { p_unidade: unidadeId! })
+      if (error) throw error
+      return (data ?? []) as { id: string; nome: string }[]
+    },
+  })
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -58,6 +71,9 @@ export default function Internacao() {
         dados={dados.paciente}
         onChange={(p) => atualizar({ paciente: { ...dados.paciente, ...p } })}
         escalaSetores={escalaSetores}
+        setoresInternacao={setoresInternacao}
+        setorDestino={dados.paciente.setor_id ?? ''}
+        onSetorDestino={(id) => atualizar({ paciente: { ...dados.paciente, setor_id: id || null } })}
       />
 
       <Tabs defaultValue="prescricao">

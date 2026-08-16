@@ -1229,6 +1229,75 @@ export type Database = {
           },
         ]
       }
+      transferencias_paciente: {
+        Row: {
+          created_at: string
+          id: string
+          motivo: string | null
+          paciente_id: string
+          setor_destino_id: string
+          setor_origem_id: string | null
+          transferido_por: string
+          unidade_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          motivo?: string | null
+          paciente_id: string
+          setor_destino_id: string
+          setor_origem_id?: string | null
+          transferido_por: string
+          unidade_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          motivo?: string | null
+          paciente_id?: string
+          setor_destino_id?: string
+          setor_origem_id?: string | null
+          transferido_por?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transferencias_paciente_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transferencias_paciente_setor_destino_id_fkey"
+            columns: ["setor_destino_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transferencias_paciente_setor_origem_id_fkey"
+            columns: ["setor_origem_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transferencias_paciente_transferido_por_fkey"
+            columns: ["transferido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transferencias_paciente_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unidades: {
         Row: {
           ativo: boolean
@@ -1394,8 +1463,21 @@ export type Database = {
         }
         Returns: string
       }
+      setores_internacao: {
+        Args: { p_unidade: string }
+        Returns: {
+          id: string
+          nome: string
+          ordem: number
+          tipo: string
+        }[]
+      }
       setores_na_escala_agora: { Args: never; Returns: string[] }
       tem_acesso_atendimento: { Args: { unidade: string }; Returns: boolean }
+      transferir_paciente: {
+        Args: { p_destino: string; p_motivo?: string; p_paciente: string }
+        Returns: string
+      }
       turno_atual: { Args: never; Returns: string }
     }
     Enums: {
@@ -1565,9 +1647,11 @@ export type SolicitacaoEscala = Database['public']['Tables']['solicitacoes_escal
 export type SolicitacaoEscalaInsert = Database['public']['Tables']['solicitacoes_escala']['Insert']
 export type CandidaturaEscala = Database['public']['Tables']['candidaturas_escala']['Row']
 export type CandidaturaEscalaInsert = Database['public']['Tables']['candidaturas_escala']['Insert']
+export type TransferenciaPaciente = Database['public']['Tables']['transferencias_paciente']['Row']
 export type Papel = Database['public']['Enums']['papel']
 export type StatusLeito = Database['public']['Enums']['status_leito']
 export type TipoLeito = Database['public']['Enums']['tipo_leito']
 export type TipoSetor = Database['public']['Enums']['tipo_setor']
 export type TipoUnidade = Database['public']['Enums']['tipo_unidade']
 export type PlantonistaDaUnidade = Database['public']['Functions']['plantonistas_da_unidade']['Returns'][number]
+export type SetorInternacao = Database['public']['Functions']['setores_internacao']['Returns'][number]

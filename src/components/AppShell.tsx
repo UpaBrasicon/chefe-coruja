@@ -3,6 +3,7 @@ import {
   Activity,
   BedDouble,
   CalendarClock,
+  Hospital,
   Images,
   LayoutDashboard,
   LogOut,
@@ -41,6 +42,7 @@ export function AppShell() {
   if (ehPlantonista) {
     itens.push({ to: '/plantonista', label: 'Central do Plantonista', icon: Stethoscope, end: true })
     itens.push({ to: '/plantao', label: 'Plantão', icon: Activity, end: true })
+    itens.push({ to: '/internacao', label: 'Internação', icon: Hospital, end: true })
   }
   if (ehGestor) {
     itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })

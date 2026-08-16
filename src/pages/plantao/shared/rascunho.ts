@@ -10,6 +10,7 @@ export type DadosPaciente = {
   dieta: string
   leito: string
   diagnostico: string
+  setor_id?: string | null
 }
 
 export const DIETAS = ['Dieta livre', 'Dieta branda', 'Dieta líquida', 'Dieta zero (jejum)', 'Dieta para diabético', 'Dieta hipossódica', 'Outra']

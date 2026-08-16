@@ -54,12 +54,18 @@ export function DadosPaciente({
   dados,
   onChange,
   escalaSetores,
+  setoresInternacao,
+  setorDestino,
+  onSetorDestino,
 }: {
   unidadeId?: string
   perfilId?: string
   dados: DadosPaciente
   onChange: (p: Partial<DadosPaciente>) => void
   escalaSetores?: { id: string; nome: string }[]
+  setoresInternacao?: { id: string; nome: string }[]
+  setorDestino?: string
+  onSetorDestino?: (id: string) => void
 }) {
   const [cpfBusca, setCpfBusca] = React.useState('')
   const [buscaAtiva, setBuscaAtiva] = React.useState('')
@@ -385,6 +391,28 @@ export function DadosPaciente({
             <Input id="pac-diag" value={dados.diagnostico} onChange={(e) => onChange({ diagnostico: e.target.value })} placeholder="Ex: Dengue com sinais de alarme" />
           </div>
         </div>
+
+        {setoresInternacao && setorDestino !== undefined && onSetorDestino && (
+          <div className="flex flex-col gap-2 rounded-xl border border-dashed p-4">
+            <Label htmlFor="pac-setor-destino">Setor de destino (internação)</Label>
+            <Select value={setorDestino || null} onValueChange={(v) => onSetorDestino(v ?? '')}>
+              <SelectTrigger id="pac-setor-destino" className="w-full">
+                <SelectValue placeholder="Selecione para onde o paciente será direcionado" />
+              </SelectTrigger>
+              <SelectContent>
+                {setoresInternacao.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Ao salvar/continuar, o paciente será vinculado a este setor. Transferências entre
+              setores ficam registradas em auditoria.
+            </p>
+          </div>
+        )}
 
         {erro && <p className="text-sm text-destructive">{erro}</p>}
         {perfilId && (
