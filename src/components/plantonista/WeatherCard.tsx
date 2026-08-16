@@ -119,29 +119,31 @@ export function WeatherCard() {
   return (
     <div className="group relative h-full w-full">
       {/* Camada traseira (expande no hover) */}
-      <div className="absolute inset-0 flex flex-col items-center justify-end rounded-3xl bg-white shadow-sm transition-all duration-400 ease-in-out group-hover:-translate-y-2">
-        <div className="grid w-full grid-cols-3 gap-1 pb-3 pt-4 text-center">
-          <div className="flex flex-col items-center gap-0.5">
-            <Droplets className="size-4 text-sky-500" />
-            <span className="text-sm font-bold">{clima.umidade}%</span>
-            <span className="text-[10px] text-muted-foreground">Umidade</span>
-          </div>
-          <div className="flex flex-col items-center gap-0.5">
-            <Gauge className="size-4 text-emerald-600" />
-            <span className="text-sm font-bold">{aqi ?? '—'}</span>
-            <span className="text-[10px] text-muted-foreground">{aqi ? rotuloAQI(aqi) : 'AQI'}</span>
-          </div>
-          <div className="flex flex-col items-center gap-0.5">
-            <Thermometer className="size-4 text-orange-500" />
-            <span className="text-sm font-bold">{clima.temperatura}°</span>
-            <span className="text-[10px] text-muted-foreground">Sensação</span>
+      <div className="absolute inset-0 rounded-3xl bg-white shadow-sm transition-all duration-400 ease-in-out group-hover:-translate-y-1.5">
+        <div className="flex h-full items-end justify-center pb-4">
+          <div className="grid w-full grid-cols-3 gap-1 px-4 text-center">
+            <div className="flex flex-col items-center gap-0.5">
+              <Droplets className="size-4 text-sky-500" />
+              <span className="text-sm font-bold">{clima.umidade}%</span>
+              <span className="text-[10px] text-muted-foreground">Umidade</span>
+            </div>
+            <div className="flex flex-col items-center gap-0.5">
+              <Gauge className="size-4 text-emerald-600" />
+              <span className="text-sm font-bold">{aqi ?? '—'}</span>
+              <span className="text-[10px] text-muted-foreground">{aqi ? rotuloAQI(aqi) : 'AQI'}</span>
+            </div>
+            <div className="flex flex-col items-center gap-0.5">
+              <Thermometer className="size-4 text-orange-500" />
+              <span className="text-sm font-bold">{clima.temperatura}°</span>
+              <span className="text-[10px] text-muted-foreground">Sensação</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Card principal */}
-      <div className="absolute inset-x-3 bottom-3 top-3 flex flex-col justify-between rounded-2xl bg-white px-5 py-4 shadow-md transition-colors duration-300 group-hover:bg-[#FFE87C]">
-        <div className="flex items-start justify-between">
+      <div className="absolute inset-x-2 bottom-2 top-2 flex flex-col justify-between rounded-2xl bg-white px-5 py-4 shadow-md transition-colors duration-300 group-hover:bg-[#FFE87C]">
+        <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="truncate text-sm font-bold text-foreground">
               {ip.cidade}
@@ -153,9 +155,7 @@ export function WeatherCard() {
         </div>
 
         <div className="flex items-end justify-between gap-2">
-          <div className="text-4xl leading-none font-extrabold text-foreground">
-            {clima.temperatura}°C
-          </div>
+          <div className="text-4xl leading-none font-extrabold text-foreground">{clima.temperatura}°C</div>
           <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
             <Wind className="size-3.5" /> {clima.vento} km/h
           </div>
