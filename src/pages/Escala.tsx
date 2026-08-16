@@ -5,6 +5,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Download,
   FileText,
   LogOut,
   Plus,
@@ -27,7 +28,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
-import type { CandidaturaEscala, EscalaFixa, EscalaPlantao, PlantonistaDaUnidade, SolicitacaoEscala } from '@/types/database'
+import type { CandidaturaEscala, EscalaFixa, EscalaPlantao, PlantonistaDaUnidade, ResumoCargaPlantonista, SolicitacaoEscala } from '@/types/database'
 
 const TURNOS = [
   { id: 'manha', label: 'Manhã', horario: '07h–13h' },
@@ -317,6 +318,41 @@ export default function Escala() {
     },
   })
 
+  // E1: resumo de carga horária dos plantonistas (gestor/admin)
+  const { data: resumoCarga, isLoading: carregandoCarga } = useQuery({
+    queryKey: ['resumo-carga', unidadeId, mesInicio, mesFim],
+    enabled: !!unidadeId && (ehGestor || ehAdmin),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('resumo_carga_plantonistas', {
+        p_unidade: unidadeId!,
+        p_inicio: mesInicio,
+        p_fim: mesFim,
+      })
+      if (error) throw error
+      return (data ?? []) as ResumoCargaPlantonista[]
+    },
+  })
+
+  function exportarEscalaCSV() {
+    if (!setores || !escalaMes) return
+    const linhas = ['Setor;Data;Turno;Plantonista;Quinzenal']
+    for (const s of setores) {
+      const plantoes = (escalaMes ?? []).filter((e) => e.setor_id === s.id)
+      for (const e of plantoes) {
+        linhas.push(
+          `${s.nome};${e.data};${TURNO_LABEL[e.turno]};${e.perfis?.nome_completo ?? ''};${e.quinzenal ? 'sim' : 'nao'}`
+        )
+      }
+    }
+    const blob = new Blob(['\uFEFF' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `escala_${fmtMesBR(mesInicio).replace('/', '-')}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const adicionarFixa = useMutation({
     mutationFn: async () => {
       if (!unidadeId || !celulaFixa || !plantonistaId) return
@@ -383,14 +419,14 @@ export default function Escala() {
   const adicionar = useMutation({
     mutationFn: async () => {
       if (!unidadeId || !celula || !plantonistaId) return
-      const { error } = await supabase.from('escala_plantao').insert({
-        unidade_id: unidadeId,
-        setor_id: celula.setor_id,
-        perfil_id: plantonistaId,
-        data: celula.data,
-        turno,
-        rotulo: rotulo || null,
-        quinzenal,
+      const { error } = await supabase.rpc('adicionar_plantao_escala', {
+        p_unidade: unidadeId,
+        p_setor: celula.setor_id,
+        p_perfil: plantonistaId,
+        p_data: celula.data,
+        p_turno: turno,
+        p_rotulo: rotulo || undefined,
+        p_quinzenal: quinzenal,
       })
       if (error) throw error
     },
@@ -1385,6 +1421,56 @@ export default function Escala() {
               Escala Mensal
             </button>
           </div>
+
+          {/* E1: resumo de carga horária + E5: exportar */}
+          <Card>
+            <CardHeader className="flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CalendarClock className="size-4 text-muted-foreground" />
+                  Carga horária · {fmtMesBR(mesInicio)}
+                </CardTitle>
+                <CardDescription>Diurnos, noturnos e horas totais por plantonista no mês.</CardDescription>
+              </div>
+              <Button size="sm" variant="outline" onClick={exportarEscalaCSV} disabled={!setores || !escalaMes}>
+                <Download /> Exportar escala (CSV)
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {carregandoCarga ? (
+                <div className="flex h-24 items-center justify-center">
+                  <Spinner />
+                </div>
+              ) : (resumoCarga ?? []).length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhum plantão neste mês.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-sm">
+                    <thead>
+                      <tr>
+                        <th className="border-b border-r bg-muted/50 p-2 text-left text-xs font-bold uppercase text-muted-foreground">Plantonista</th>
+                        <th className="border-b border-r bg-sky-50 p-2 text-center text-xs font-bold uppercase text-sky-700">Diurnos</th>
+                        <th className="border-b border-r bg-indigo-50 p-2 text-center text-xs font-bold uppercase text-indigo-700">Noturnos</th>
+                        <th className="border-b border-r p-2 text-center text-xs font-bold uppercase text-muted-foreground">Horas</th>
+                        <th className="border-b p-2 text-center text-xs font-bold uppercase text-muted-foreground">Dias</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(resumoCarga ?? []).map((r) => (
+                        <tr key={r.perfil_id}>
+                          <td className="border-b border-r p-2 font-medium">{r.nome}</td>
+                          <td className="border-b border-r p-2 text-center font-bold text-sky-700">{r.diurnos}</td>
+                          <td className="border-b border-r p-2 text-center font-bold text-indigo-700">{r.noturnos}</td>
+                          <td className="border-b border-r p-2 text-center font-bold">{r.horas}h</td>
+                          <td className="border-b p-2 text-center">{r.dias}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Turnos (gestor/admin) */}
           <div className="flex flex-wrap gap-2">

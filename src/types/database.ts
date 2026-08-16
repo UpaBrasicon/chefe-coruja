@@ -1477,6 +1477,18 @@ export type Database = {
       }
     }
     Functions: {
+      adicionar_plantao_escala: {
+        Args: {
+          p_data: string
+          p_perfil: string
+          p_quinzenal?: boolean
+          p_rotulo?: string
+          p_setor: string
+          p_turno: string
+          p_unidade: string
+        }
+        Returns: string
+      }
       aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
       data_atual: { Args: never; Returns: string }
       eh_super_admin: { Args: never; Returns: boolean }
@@ -1524,6 +1536,17 @@ export type Database = {
       registrar_prescricao_observacao: {
         Args: { p_observacoes?: string; p_paciente: string }
         Returns: string
+      }
+      resumo_carga_plantonistas: {
+        Args: { p_fim: string; p_inicio: string; p_unidade: string }
+        Returns: {
+          dias: number
+          diurnos: number
+          horas: number
+          nome: string
+          noturnos: number
+          perfil_id: string
+        }[]
       }
       setores_internacao: {
         Args: { p_unidade: string }
@@ -1728,3 +1751,4 @@ export type TipoUnidade = Database['public']['Enums']['tipo_unidade']
 export type PlantonistaDaUnidade = Database['public']['Functions']['plantonistas_da_unidade']['Returns'][number]
 export type SetorInternacao = Database['public']['Functions']['setores_internacao']['Returns'][number]
 export type SetorObservacao = Database['public']['Functions']['setores_observacao']['Returns'][number]
+export type ResumoCargaPlantonista = Database['public']['Functions']['resumo_carga_plantonistas']['Returns'][number]
