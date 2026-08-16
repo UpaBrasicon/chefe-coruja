@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -243,6 +243,77 @@ export type Database = {
           },
           {
             foreignKeyName: "cuidados_plantonistas_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escala_fixa: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          criado_por: string | null
+          dia_semana: number
+          id: string
+          perfil_id: string
+          quinzenal: boolean
+          setor_id: string
+          turno: string
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          criado_por?: string | null
+          dia_semana: number
+          id?: string
+          perfil_id: string
+          quinzenal?: boolean
+          setor_id: string
+          turno: string
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          criado_por?: string | null
+          dia_semana?: number
+          id?: string
+          perfil_id?: string
+          quinzenal?: boolean
+          setor_id?: string
+          turno?: string
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escala_fixa_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_fixa_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_fixa_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_fixa_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -1213,6 +1284,10 @@ export type Database = {
     Functions: {
       data_atual: { Args: never; Returns: string }
       eh_super_admin: { Args: never; Returns: boolean }
+      gerar_escala_mensal: {
+        Args: { p_ano: number; p_mes: number; p_unidade: string }
+        Returns: number
+      }
       horario_servidor: { Args: never; Returns: string }
       na_escala_agora: { Args: { unidade: string }; Returns: boolean }
       papel_na_unidade: { Args: { unidade: string }; Returns: string }
@@ -1405,6 +1480,8 @@ export type Perfil = Perfis['Row']
 export type Banners = Database['public']['Tables']['banners']
 export type EscalaPlantao = Database['public']['Tables']['escala_plantao']['Row']
 export type EscalaPlantaoInsert = Database['public']['Tables']['escala_plantao']['Insert']
+export type EscalaFixa = Database['public']['Tables']['escala_fixa']['Row']
+export type EscalaFixaInsert = Database['public']['Tables']['escala_fixa']['Insert']
 export type SolicitacaoEscala = Database['public']['Tables']['solicitacoes_escala']['Row']
 export type SolicitacaoEscalaInsert = Database['public']['Tables']['solicitacoes_escala']['Insert']
 export type Papel = Database['public']['Enums']['papel']

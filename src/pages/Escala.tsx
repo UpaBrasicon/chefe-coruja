@@ -27,7 +27,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
-import type { EscalaPlantao, PlantonistaDaUnidade, SolicitacaoEscala } from '@/types/database'
+import type { EscalaFixa, EscalaPlantao, PlantonistaDaUnidade, SolicitacaoEscala } from '@/types/database'
 
 const TURNOS = [
   { id: 'manha', label: 'Manhã', horario: '07h–13h' },
@@ -120,6 +120,11 @@ type PlantaoComPerfil = EscalaPlantao & {
   perfis: { id: string; nome_completo: string; crm: string | null } | null
 }
 
+type EscalaFixaComPerfil = EscalaFixa & {
+  setores: { nome: string } | null
+  perfis: { id: string; nome_completo: string; crm: string | null } | null
+}
+
 type SolicitacaoComExtra = SolicitacaoEscala & {
   escala_plantao: { setor_id: string; data: string; turno: string } | null
   solicitante: { nome_completo: string } | null
@@ -135,7 +140,9 @@ export default function Escala() {
   const [turno, setTurno] = React.useState<'manha' | 'tarde' | 'noite'>('manha')
   const [mes, setMes] = React.useState(() => hojeISO().slice(0, 7))
   const [semana, setSemana] = React.useState(() => hojeISO())
+  const [abaGestor, setAbaGestor] = React.useState<'fixa' | 'mensal'>('mensal')
   const [celula, setCelula] = React.useState<{ setor_id: string; data: string } | null>(null)
+  const [celulaFixa, setCelulaFixa] = React.useState<{ setor_id: string; dia_semana: number } | null>(null)
   const [plantonistaId, setPlantonistaId] = React.useState('')
   const [rotulo, setRotulo] = React.useState('')
   const [quinzenal, setQuinzenal] = React.useState(false)
@@ -151,6 +158,7 @@ export default function Escala() {
   const [anexando, setAnexando] = React.useState(false)
   const [mensagem, setMensagem] = React.useState<string | null>(null)
   const [erroAcao, setErroAcao] = React.useState<string | null>(null)
+  const [mensagemGeracao, setMensagemGeracao] = React.useState<string | null>(null)
 
   const ehGestor = papelAtivo === 'gestor'
   const ehAdmin = papelAtivo === 'admin'
@@ -235,10 +243,74 @@ export default function Escala() {
     },
   })
 
+  // Escala FIXA (template) — gestor mantém; a mensal é gerada a partir dela
+  const { data: escalaFixa, isLoading: carregandoFixa } = useQuery({
+    queryKey: ['escala-fixa', unidadeId],
+    enabled: !!unidadeId && (ehGestor || ehAdmin),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('escala_fixa')
+        .select('id, setor_id, perfil_id, dia_semana, turno, quinzenal, setores(nome), perfis!escala_fixa_perfil_id_fkey(id, nome_completo, crm)')
+        .eq('unidade_id', unidadeId!)
+        .eq('ativo', true)
+        .order('dia_semana', { ascending: true })
+      if (error) throw error
+      return (data ?? []) as unknown as EscalaFixaComPerfil[]
+    },
+  })
+
+  const adicionarFixa = useMutation({
+    mutationFn: async () => {
+      if (!unidadeId || !celulaFixa || !plantonistaId) return
+      const { error } = await supabase.from('escala_fixa').insert({
+        unidade_id: unidadeId,
+        setor_id: celulaFixa.setor_id,
+        perfil_id: plantonistaId,
+        dia_semana: celulaFixa.dia_semana,
+        turno,
+        quinzenal,
+      })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['escala-fixa'] })
+      setDialogAberto(false)
+      setPlantonistaId('')
+      setQuinzenal(false)
+    },
+  })
+
+  const removerFixa = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('escala_fixa').delete().eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['escala-fixa'] }),
+  })
+
+  const gerarMes = useMutation({
+    mutationFn: async () => {
+      if (!unidadeId) return
+      const [ano, mesNum] = mes.split('-').map(Number)
+      const { data, error } = await supabase.rpc('gerar_escala_mensal', {
+        p_unidade: unidadeId,
+        p_ano: ano,
+        p_mes: mesNum,
+      })
+      if (error) throw error
+      return data
+    },
+    onSuccess: (dias) => {
+      invalidar()
+      setMensagemGeracao(dias ? `Mês gerado: ${dias} dias processados.` : 'Mês gerado a partir da escala fixa.')
+    },
+  })
+
   const invalidar = () => {
     void queryClient.invalidateQueries({ queryKey: ['escala-plantao'] })
     void queryClient.invalidateQueries({ queryKey: ['escala-plantao-mes'] })
     void queryClient.invalidateQueries({ queryKey: ['solicitacoes-escala'] })
+    void queryClient.invalidateQueries({ queryKey: ['escala-fixa'] })
   }
 
   const remover = useMutation({
@@ -366,6 +438,33 @@ export default function Escala() {
       setFechando(false)
     }, 300)
   }
+
+  function abrirCelulaFixa(setor_id: string, dia_semana: number) {
+    setCelulaFixa({ setor_id, dia_semana })
+    setPlantonistaId('')
+    setQuinzenal(false)
+    setDialogAberto(true)
+  }
+
+  const fixasDoCelula = (setorId: string, diaSemana: number) =>
+    (escalaFixa ?? []).filter((f) => f.setor_id === setorId && f.dia_semana === diaSemana && f.turno === turno)
+
+  const alertas = React.useMemo(() => {
+    if (!solicitacoes) return { pendentes: 0, sairam: 0, atestados: 0, faltas: 0, interesses: 0, lista: [] as SolicitacaoComExtra[] }
+    const pendentes = solicitacoes.filter((s) => s.status === 'pendente')
+    const sairam = solicitacoes.filter((s) => s.tipo === 'passar_plantao')
+    const atestados = solicitacoes.filter((s) => s.tipo === 'justificar_falta' && s.tipo_falta === 'atestado_medico')
+    const faltas = solicitacoes.filter((s) => s.tipo === 'falta')
+    const interesses = solicitacoes.filter((s) => s.tipo === 'sair_fixo')
+    return {
+      pendentes: pendentes.length,
+      sairam: sairam.length,
+      atestados: atestados.length,
+      faltas: faltas.length,
+      interesses: interesses.length,
+      lista: solicitacoes.filter((s) => s.status === 'pendente' || s.tipo === 'falta').slice(0, 20),
+    }
+  }, [solicitacoes])
 
   async function enviarSairFixo() {
     if (!diaSelecionado || !unidadeId || !perfil) return
@@ -811,6 +910,101 @@ export default function Escala() {
         </>
       ) : (
         <>
+          {/* PAINEL DE ALERTAS (gestor/admin) */}
+          <Card className="border-amber-200 bg-amber-50/40">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CalendarClock className="size-4 text-amber-700" />
+                Alertas da escala
+              </CardTitle>
+              <CardDescription>
+                Quem saiu do plantão, atestados, faltas e interesses em sair da escala.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              {carregandoSolic ? (
+                <div className="flex h-16 items-center justify-center">
+                  <Spinner />
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="warning" className="px-3 py-1 text-xs">
+                      {alertas.pendentes} pendente(s)
+                    </Badge>
+                    <Badge variant="info" className="px-3 py-1 text-xs">
+                      {alertas.sairam} saíram do plantão
+                    </Badge>
+                    <Badge variant="destructive" className="px-3 py-1 text-xs">
+                      {alertas.atestados} atestado(s)
+                    </Badge>
+                    <Badge variant="destructive" className="px-3 py-1 text-xs">
+                      {alertas.faltas} falta(s)
+                    </Badge>
+                    <Badge variant="secondary" className="px-3 py-1 text-xs">
+                      {alertas.interesses} interesse(s) em sair
+                    </Badge>
+                  </div>
+                  {alertas.lista.length > 0 && (
+                    <div className="flex flex-col gap-2">
+                      {alertas.lista.map((s) => (
+                        <div key={s.id} className="flex flex-wrap items-center gap-2 rounded-lg border bg-white p-2 text-sm">
+                          <span className="font-medium">{s.solicitante?.nome_completo ?? 'Plantonista'}</span>
+                          <Badge variant="outline">{TIPO_SOLICITACAO_LABEL[s.tipo]}</Badge>
+                          {s.status === 'pendente' && <Badge variant="warning">Pendente</Badge>}
+                          {s.escala_plantao && (
+                            <span className="text-xs text-muted-foreground">
+                              {fmtDiaBR(s.escala_plantao.data)} · {TURNO_LABEL[s.escala_plantao.turno]}
+                            </span>
+                          )}
+                          {s.tipo === 'falta' && s.tipo_falta && (
+                            <span className="text-xs text-muted-foreground">· {TIPO_FALTA_LABEL[s.tipo_falta]}</span>
+                          )}
+                          {s.status === 'pendente' && (
+                            <span className="ml-auto flex gap-1.5">
+                              <Button size="xs" onClick={() => decidir.mutate({ id: s.id, status: 'aprovado' })}>
+                                <Check /> Aprovar
+                              </Button>
+                              <Button size="xs" variant="outline" onClick={() => decidir.mutate({ id: s.id, status: 'recusado' })}>
+                                <X /> Recusar
+                              </Button>
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Abas: Escala Fixa / Mensal */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setAbaGestor('fixa')}
+              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                abaGestor === 'fixa'
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border bg-background hover:bg-muted'
+              }`}
+            >
+              Escala Fixa
+            </button>
+            <button
+              type="button"
+              onClick={() => setAbaGestor('mensal')}
+              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                abaGestor === 'mensal'
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border bg-background hover:bg-muted'
+              }`}
+            >
+              Escala Mensal
+            </button>
+          </div>
+
           {/* Turnos (gestor/admin) */}
           <div className="flex flex-wrap gap-2">
             {TURNOS.map((t) => (
@@ -829,6 +1023,90 @@ export default function Escala() {
             ))}
           </div>
 
+          {abaGestor === 'fixa' ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CalendarClock className="size-4 text-muted-foreground" />
+                  Escala Fixa · {TURNO_LABEL[turno]}
+                </CardTitle>
+                <CardDescription>
+                  Template que não muda (ex.: 15/15). Clique numa célula para adicionar. Gere o mês
+                  para criar a escala mensal a partir daqui.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                {carregandoFixa ? (
+                  <div className="flex h-24 items-center justify-center">
+                    <Spinner />
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[760px] border-collapse text-sm">
+                      <thead>
+                        <tr>
+                          <th className="w-40 border-b border-r bg-muted/50 p-2 text-left text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                            Setor
+                          </th>
+                          {DIAS_SEMANA.map((d) => (
+                            <th key={d} className="border-b border-r p-2 text-center text-xs font-bold uppercase tracking-wide">
+                              {d}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(setores ?? []).map((s) => (
+                          <tr key={s.id}>
+                            <td className="border-b border-r p-2 align-top font-medium">{s.nome}</td>
+                            {DIAS_SEMANA.map((_, i) => {
+                              const fixas = fixasDoCelula(s.id, i)
+                              return (
+                                <td key={i} className="border-b border-r p-1 align-top">
+                                  <button
+                                    type="button"
+                                    onClick={() => abrirCelulaFixa(s.id, i)}
+                                    className="flex min-h-[52px] w-full flex-col gap-1 rounded-md p-1 text-left transition-colors hover:bg-primary/5"
+                                  >
+                                    {fixas.length === 0 && <span className="text-[10px] text-muted-foreground/50">+ adicionar</span>}
+                                    {fixas.map((f) => (
+                                      <span key={f.id} className="group flex items-center gap-1">
+                                        <span className="block flex-1 rounded bg-muted px-1.5 py-0.5 text-[11px] leading-tight">
+                                          {f.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Sem nome'}
+                                          {f.quinzenal && <span className="ml-1 font-bold text-primary">15/15</span>}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            removerFixa.mutate(f.id)
+                                          }}
+                                          className="hidden text-[10px] text-destructive hover:underline group-hover:block"
+                                        >
+                                          remover
+                                        </button>
+                                      </span>
+                                    ))}
+                                  </button>
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                {mensagemGeracao && <p className="text-sm text-emerald-700">{mensagemGeracao}</p>}
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={() => gerarMes.mutate()} disabled={gerarMes.isPending || carregandoFixa}>
+                    {gerarMes.isPending ? <Spinner /> : <RefreshCcw />} Gerar mês {fmtMesBR(mesInicio)} a partir da fixa
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+          <>
           {carregandoSetores || carregandoEscala ? (
             <div className="flex h-40 items-center justify-center">
               <Spinner />
@@ -1001,6 +1279,8 @@ export default function Escala() {
               )}
             </CardContent>
           </Card>
+          </>
+          )}
         </>
       )}
 
@@ -1008,10 +1288,15 @@ export default function Escala() {
       <Dialog open={dialogAberto} onOpenChange={setDialogAberto}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Adicionar plantonista</DialogTitle>
+            <DialogTitle>{abaGestor === 'fixa' ? 'Adicionar à escala fixa' : 'Adicionar plantonista'}</DialogTitle>
             <DialogDescription>
-              {setores?.find((s) => s.id === celula?.setor_id)?.nome} · {celula ? fmtDiaBR(celula.data) : ''} ·{' '}
-              {TURNO_LABEL[turno]}
+              {setores?.find((s) => s.id === (abaGestor === 'fixa' ? celulaFixa?.setor_id : celula?.setor_id))?.nome}
+              {abaGestor === 'fixa'
+                ? ` · ${DIAS_SEMANA[celulaFixa?.dia_semana ?? 0]}`
+                : celula
+                  ? ` · ${fmtDiaBR(celula.data)}`
+                  : ''}{' '}
+              · {TURNO_LABEL[turno]}
             </DialogDescription>
           </DialogHeader>
 
@@ -1034,15 +1319,17 @@ export default function Escala() {
               {carregandoPlant && <Spinner />}
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="esc-rotulo">Rótulo (opcional)</Label>
-              <Input
-                id="esc-rotulo"
-                value={rotulo}
-                onChange={(e) => setRotulo(e.target.value)}
-                placeholder='Ex: "escala 15/15", "cobertura"'
-              />
-            </div>
+            {abaGestor === 'fixa' && (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="esc-rotulo">Rótulo (opcional)</Label>
+                <Input
+                  id="esc-rotulo"
+                  value={rotulo}
+                  onChange={(e) => setRotulo(e.target.value)}
+                  placeholder='Ex: "escala 15/15", "cobertura"'
+                />
+              </div>
+            )}
 
             <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
               <input
@@ -1059,9 +1346,15 @@ export default function Escala() {
             <Button variant="ghost" onClick={() => setDialogAberto(false)}>
               Cancelar
             </Button>
-            <Button onClick={() => adicionar.mutate()} disabled={!plantonistaId || adicionar.isPending}>
-              {adicionar.isPending ? <Spinner /> : <Plus />} Adicionar
-            </Button>
+            {abaGestor === 'fixa' ? (
+              <Button onClick={() => adicionarFixa.mutate()} disabled={!plantonistaId || adicionarFixa.isPending}>
+                {adicionarFixa.isPending ? <Spinner /> : <Plus />} Adicionar
+              </Button>
+            ) : (
+              <Button onClick={() => adicionar.mutate()} disabled={!plantonistaId || adicionar.isPending}>
+                {adicionar.isPending ? <Spinner /> : <Plus />} Adicionar
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
