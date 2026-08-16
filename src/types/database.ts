@@ -732,6 +732,54 @@ export type Database = {
         }
         Relationships: []
       }
+      notificacoes_plantonista: {
+        Row: {
+          created_at: string
+          data: string
+          id: string
+          lida_em: string | null
+          mensagem: string
+          perfil_id: string
+          tipo: string
+          unidade_id: string
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          id?: string
+          lida_em?: string | null
+          mensagem: string
+          perfil_id: string
+          tipo: string
+          unidade_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          id?: string
+          lida_em?: string | null
+          mensagem?: string
+          perfil_id?: string
+          tipo?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_plantonista_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notificacoes_plantonista_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notificacoes_whatsapp: {
         Row: {
           created_at: string
@@ -1436,7 +1484,17 @@ export type Database = {
         Args: { p_ano: number; p_mes: number; p_unidade: string }
         Returns: number
       }
+      gerar_notificacoes_turno: {
+        Args: { p_unidade: string }
+        Returns: {
+          created_at: string
+          id: string
+          mensagem: string
+          tipo: string
+        }[]
+      }
       horario_servidor: { Args: never; Returns: string }
+      marcar_notificacao_lida: { Args: { p_id: string }; Returns: undefined }
       na_escala_agora: { Args: { unidade: string }; Returns: boolean }
       papel_na_unidade: { Args: { unidade: string }; Returns: string }
       passar_plantao: {
@@ -1661,6 +1719,7 @@ export type SolicitacaoEscalaInsert = Database['public']['Tables']['solicitacoes
 export type CandidaturaEscala = Database['public']['Tables']['candidaturas_escala']['Row']
 export type CandidaturaEscalaInsert = Database['public']['Tables']['candidaturas_escala']['Insert']
 export type TransferenciaPaciente = Database['public']['Tables']['transferencias_paciente']['Row']
+export type NotificacaoPlantonista = Database['public']['Tables']['notificacoes_plantonista']['Row']
 export type Papel = Database['public']['Enums']['papel']
 export type StatusLeito = Database['public']['Enums']['status_leito']
 export type TipoLeito = Database['public']['Enums']['tipo_leito']

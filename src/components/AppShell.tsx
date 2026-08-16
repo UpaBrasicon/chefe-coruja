@@ -21,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { usePlantao } from '@/hooks/usePlantao'
 import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
+import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
@@ -212,6 +213,10 @@ export function AppShell() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {status === 'ok' && <div className="hidden md:block">{barraTopo}</div>}
+        <NotificacoesTurnoBanner
+          unidadeId={papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined}
+          habilitado={papelAtivo === 'plantonista'}
+        />
         <main className="flex-1 px-4 py-6 md:px-8">
           <div className="mx-auto w-full max-w-6xl">
             {status === 'carregando' ? (
