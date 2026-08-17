@@ -123,6 +123,22 @@ export function AppShell() {
             Trocar unidade
           </Button>
         )}
+        {ehPlantonista && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="relative"
+            onClick={() => navigate('/notificacoes')}
+            aria-label="Avisos"
+          >
+            <Bell />
+            {notifsTurno.length > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                {notifsTurno.length}
+              </span>
+            )}
+          </Button>
+        )}
         <Button variant="ghost" size="sm" onClick={handleSair}>
           <LogOut />
           Sair
@@ -190,9 +206,27 @@ export function AppShell() {
         <span className="text-sm font-medium">
           {unidadeAtiva?.unidade.nome ?? 'Chefe Coruja'}
         </span>
-        <Button variant="ghost" size="sm" onClick={handleSair}>
-          <LogOut />
-        </Button>
+        <div className="flex items-center gap-1">
+          {ehPlantonista && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="relative"
+              onClick={() => navigate('/notificacoes')}
+              aria-label="Avisos"
+            >
+              <Bell />
+              {notifsTurno.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                  {notifsTurno.length}
+                </span>
+              )}
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={handleSair}>
+            <LogOut />
+          </Button>
+        </div>
       </div>
 
       {menuAberto && (
