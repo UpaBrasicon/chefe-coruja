@@ -35,7 +35,6 @@ export function PrescricaoTab({
   const [registrado, setRegistrado] = React.useState(false)
   const [erroRegistro, setErroRegistro] = React.useState<string | null>(null)
   const marcados = new Set(prescricao.marcados)
-  const carregado = React.useRef<string | null>(null)
 
   // Prescrição ativa do paciente (do banco) — para pré-marcar ao abrir
   const { data: prescricaoBanco } = useQuery({
@@ -66,33 +65,22 @@ export function PrescricaoTab({
       .trim()
   }
 
-  React.useEffect(() => {
-    // Reseta o "já carregado" quando o paciente muda
-    if (carregado.current !== pacienteId) {
-      carregado.current = pacienteId ?? null
-      if (!pacienteId) return
-    } else {
-      return
-    }
-    if (!prescricaoBanco) return
-    const itens = prescricaoBanco.prescricao_itens ?? []
-    if (itens.length === 0) return
-    // Corresponde cada item do banco a um item do catálogo e pré-marca
-    const ids = new Set<string>()
+  // IDs do catálogo correspondentes aos itens do banco (pré-marcados)
+  const idsDoBanco = React.useMemo(() => {
+    const itens = prescricaoBanco?.prescricao_itens ?? []
+    const set = new Set<string>()
     for (const it of itens) {
       const d = it.descricao.toLowerCase()
       const match = ITENS.find((i) => d.includes(nomeMed(i.med)) && nomeMed(i.med).length > 2)
-      if (match) ids.add(String(match.n))
+      if (match) set.add(String(match.n))
     }
-    if (ids.size > 0) {
-      const uniao = new Set([...marcados, ...ids])
-      onChange({ marcados: [...uniao] })
-    }
-    if (prescricaoBanco.observacoes && !prescricao.obs) {
-      onChange({ obs: prescricaoBanco.observacoes })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prescricaoBanco, pacienteId])
+    return set
+  }, [prescricaoBanco])
+
+  // Marcados efetivos = rascunho + itens vindos do banco
+  const marcadosEfetivos = React.useMemo(() => {
+    return new Set([...marcados, ...idsDoBanco])
+  }, [prescricao.marcados, idsDoBanco, marcados])
 
   async function registrarPrescricao() {
     if (!unidadeId || !pacienteId) {
@@ -101,7 +89,7 @@ export function PrescricaoTab({
     }
     setRegistrando(true)
     setErroRegistro(null)
-    const itens = ITENS.filter((i) => marcados.has(String(i.n))).map((i) => ({
+    const itens = ITENS.filter((i) => marcadosEfetivos.has(String(i.n))).map((i) => ({
       medicamento: i.med,
       dose: i.via !== '---' ? i.via : undefined,
       posologia: i.pos,
@@ -122,13 +110,13 @@ export function PrescricaoTab({
   }
 
   function toggle(n: number) {
-    const next = new Set(marcados)
+    const next = new Set(marcadosEfetivos)
     if (next.has(String(n))) next.delete(String(n))
     else next.add(String(n))
     onChange({ marcados: [...next] })
   }
 
-  const itensSelecionados = ITENS.filter((i) => marcados.has(String(i.n)))
+  const itensSelecionados = ITENS.filter((i) => marcadosEfetivos.has(String(i.n)))
 
   async function copiar() {
     const linhas = itensSelecionados.map((i, idx) => `${String(idx + 1).padStart(2, '0')}\t${i.med}\t${i.via}\t${i.pos}`)
@@ -218,10 +206,10 @@ export function PrescricaoTab({
                     <label
                       key={i.n}
                       className={`flex cursor-pointer items-start gap-2 rounded-lg border p-2 text-sm transition-colors ${
-                        marcados.has(String(i.n)) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted'
+                        marcadosEfetivos.has(String(i.n)) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted'
                       }`}
                     >
-                      <input type="checkbox" className="mt-0.5 size-4" checked={marcados.has(String(i.n))} onChange={() => toggle(i.n)} />
+                      <input type="checkbox" className="mt-0.5 size-4" checked={marcadosEfetivos.has(String(i.n))} onChange={() => toggle(i.n)} />
                       <span>
                         <span className="font-medium">
                           {i.n}. {i.med}
@@ -252,6 +240,12 @@ export function PrescricaoTab({
             <div className="rounded-lg bg-red-600 px-4 py-3 text-center text-sm font-bold text-white">
               ⚠ ALERGIA: {dados.alergias.toUpperCase()}
             </div>
+          )}
+          {prescricaoBanco && (
+            <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+              ✓ Prescrição carregada do sistema: {(prescricaoBanco.prescricao_itens ?? []).length} item(ns) — itens
+              correspondentes marcados.
+            </p>
           )}
           <div className="rounded-lg border bg-white p-3 text-xs">
             <div className="mb-2 text-center font-bold uppercase">Prescrição Médica</div>
