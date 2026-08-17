@@ -1,5 +1,5 @@
 import { CheckCircle2, ChevronRight, ClipboardPlus, Eraser } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -21,9 +21,50 @@ export default function Internacao() {
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
   const perfilId = perfil?.id
+  const [searchParams, setSearchParams] = useSearchParams()
+  const pacienteParam = searchParams.get('paciente')
 
   const { dados, atualizar, salvoEm, limpar } = useRascunho(unidadeId, perfilId)
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
+
+  // Carrega o paciente da URL (ex.: vindo do painel de Internação) para o rascunho
+  useQuery({
+    queryKey: ['paciente-abrir', pacienteParam],
+    enabled: !!pacienteParam,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('pacientes')
+        .select('*')
+        .eq('id', pacienteParam!)
+        .maybeSingle()
+      if (error) throw error
+      if (data && data.id !== dados.paciente.paciente_id) {
+        const nasc = data.data_nascimento
+          ? (() => {
+              const [a, m, d] = data.data_nascimento.split('-')
+              return `${d}/${m}/${a}`
+            })()
+          : ''
+        atualizar({
+          paciente: {
+            ...dados.paciente,
+            nome: data.nome,
+            nascimento: nasc,
+            setor_id: data.setor_id,
+            paciente_id: data.id,
+            idade: dados.paciente.idade,
+            peso: dados.paciente.peso,
+            alergias: dados.paciente.alergias,
+            dieta: dados.paciente.dieta,
+            leito: dados.paciente.leito,
+            diagnostico: dados.paciente.diagnostico,
+          },
+        })
+      }
+      setSearchParams({}, { replace: true })
+      return data
+    },
+  })
 
   // Setores de internação da unidade (destino do paciente)
   const { data: setoresInternacao } = useQuery({

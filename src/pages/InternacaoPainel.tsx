@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRightLeft, ChevronRight, Eye, Hospital, UserPlus } from 'lucide-react'
 import * as React from 'react'
 
@@ -44,6 +44,7 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   const [transferir, setTransferir] = React.useState<PacienteComSetor | null>(null)
   const [destinoId, setDestinoId] = React.useState('')
@@ -389,7 +390,7 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
                             <Button
                               size="xs"
                               variant="ghost"
-                              onClick={() => window.open('/plantao/internacao', '_blank')}
+                              onClick={() => navigate(`/plantao/internacao?paciente=${p.id}`)}
                             >
                               Abrir
                             </Button>
