@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronRight, Loader2, Pill, Plus, Search, Trash2, User } from 'lucide-react'
+import { ChevronRight, Loader2, Pill, Plus, Search, ShieldAlert, Trash2, User } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -14,14 +14,26 @@ import { Textarea } from '@/components/ui/textarea'
 
 type Medicamento = {
   id: string
-  nome: string
   principio_ativo: string
   concentracao: string | null
-  forma_farmaceutica: string | null
   apresentacao: string | null
-  via: string | null
-  diluicao: string | null
-  controlado: boolean
+  rxcui: string | null
+  alta_vigilancia: boolean
+}
+
+type DiluicaoPublicada = {
+  id: string
+  via: string
+  reconstituicao_diluente: string | null
+  reconstituicao_volume_ml: number | null
+  diluicao_solucao: string[] | null
+  diluicao_volume_min_ml: number | null
+  concentracao_maxima: string | null
+  tempo_infusao_min: number | null
+  velocidade_max: string | null
+  observacoes: string | null
+  fonte: string
+  revisor_crf: string | null
 }
 
 type Paciente = {
@@ -37,17 +49,7 @@ type ItemPrescricao = {
   dose: string
   posologia: string
   diluicaoEditada: string
-}
-
-const VIA_LABEL: Record<string, string> = {
-  VO: 'Via oral',
-  EV: 'Endovenosa',
-  IM: 'Intramuscular',
-  SC: 'Subcutânea',
-  INAL: 'Inalatória',
-  SL: 'Sublingual',
-  VG: 'Vaginal',
-  TOP: 'Tópica',
+  diluicaoPublicada: boolean
 }
 
 export default function PrescricaoTeste() {
@@ -74,36 +76,58 @@ export default function PrescricaoTeste() {
   }, [busca])
 
   const { data: resultados, isFetching: buscando } = useQuery({
-    queryKey: ['buscar-medicamentos', buscaDeb],
+    queryKey: ['buscar-medicamentos-canonico', buscaDeb],
     enabled: buscaDeb.trim().length >= 2,
     queryFn: async () => {
       const termo = buscaDeb.trim()
       const { data, error } = await supabase
-        .from('medicamentos')
-        .select('id, nome, principio_ativo, concentracao, forma_farmaceutica, apresentacao, via, diluicao, controlado')
+        .from('medicamento')
+        .select('id, principio_ativo, concentracao, apresentacao, rxcui, alta_vigilancia')
         .eq('ativo', true)
-        .ilike('nome', `%${termo}%`)
-        .order('nome')
+        .ilike('principio_ativo', `%${termo}%`)
+        .order('principio_ativo')
         .limit(12)
       if (error) throw error
-      if ((data ?? []).length === 0) {
-        const { data: d2, error: e2 } = await supabase
-          .from('medicamentos')
-          .select('id, nome, principio_ativo, concentracao, forma_farmaceutica, apresentacao, via, diluicao, controlado')
-          .eq('ativo', true)
-          .ilike('principio_ativo', `%${termo}%`)
-          .order('nome')
-          .limit(12)
-        if (e2) throw e2
-        return (d2 ?? []) as Medicamento[]
-      }
       return (data ?? []) as Medicamento[]
     },
     staleTime: 60_000,
   })
 
-  function adicionar(m: Medicamento) {
+  // monta texto legível da diluição publicada (API que filtra status='publicado')
+  function formatarDiluicao(d: DiluicaoPublicada): string {
+    const partes: string[] = []
+    if (d.diluicao_solucao?.length) {
+      let sol = d.diluicao_solucao.join(' + ')
+      if (d.diluicao_volume_min_ml) sol += ` · ${d.diluicao_volume_min_ml} mL`
+      partes.push(`Diluir em ${sol}`)
+    }
+    if (d.reconstituicao_diluente) {
+      let rec = d.reconstituicao_diluente
+      if (d.reconstituicao_volume_ml) rec += ` · ${d.reconstituicao_volume_ml} mL`
+      partes.push(`Reconstituir com ${rec}`)
+    }
+    if (d.concentracao_maxima) partes.push(`Concentração máx.: ${d.concentracao_maxima}`)
+    if (d.tempo_infusao_min) partes.push(`Infundir em ${d.tempo_infusao_min} min`)
+    if (d.velocidade_max) partes.push(`Velocidade: ${d.velocidade_max}`)
+    if (d.observacoes) partes.push(d.observacoes)
+    return partes.join('. ')
+  }
+
+  // busca a diluição publicada ao adicionar o item
+  async function buscarDiluicao(m: Medicamento): Promise<string> {
+    try {
+      const { data, error } = await supabase.rpc('diluicao_publicada', { p_medicamento: m.id })
+      if (error || !data || data.length === 0) return ''
+      const d = (Array.isArray(data) ? data : [data]) as unknown as DiluicaoPublicada[]
+      return d.map(formatarDiluicao).filter(Boolean).join('\n')
+    } catch {
+      return ''
+    }
+  }
+
+  async function adicionar(m: Medicamento) {
     if (itens.some((i) => i.medicamento.id === m.id)) return
+    const dil = await buscarDiluicao(m)
     setItens((prev) => [
       ...prev,
       {
@@ -111,7 +135,8 @@ export default function PrescricaoTeste() {
         medicamento: m,
         dose: '',
         posologia: '',
-        diluicaoEditada: m.diluicao ?? '',
+        diluicaoEditada: dil,
+        diluicaoPublicada: dil !== '',
       },
     ])
     setBusca('')
@@ -186,7 +211,7 @@ export default function PrescricaoTeste() {
       itens.map((i, idx) => ({
         prescricao_id: prescricao.id,
         medicamento_id: i.medicamento.id,
-        descricao: i.medicamento.nome,
+        descricao: i.medicamento.principio_ativo,
         dose: i.dose || null,
         posologia: i.posologia || null,
         observacao: i.diluicaoEditada || null,
@@ -320,18 +345,14 @@ export default function PrescricaoTeste() {
                   >
                     <span className="flex items-center gap-2 text-sm font-medium">
                       <Pill className="size-3.5 text-muted-foreground" />
-                      {m.nome}
+                      {m.principio_ativo}
                       {m.concentracao && <span className="text-xs font-normal text-muted-foreground">{m.concentracao}</span>}
-                      {m.controlado && <Badge variant="destructive">Controlado</Badge>}
+                      {m.alta_vigilancia && <ShieldAlert className="size-3.5 text-amber-600" />}
                     </span>
                     <span className="text-[11px] text-muted-foreground">
-                      {m.principio_ativo}
-                      {m.via ? ` · ${VIA_LABEL[m.via] ?? m.via}` : ''}
-                      {m.apresentacao ? ` · ${m.apresentacao}` : ''}
+                      {m.apresentacao ?? '—'}
+                      {m.rxcui ? ` · rxcui ${m.rxcui}` : ''}
                     </span>
-                    {m.diluicao && (
-                      <span className="text-[11px] text-sky-700">Diluição: {m.diluicao}</span>
-                    )}
                   </button>
                 ))}
               </div>
@@ -362,15 +383,17 @@ export default function PrescricaoTeste() {
             <div key={item.id} className="rounded-lg border p-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold">
-                    {item.medicamento.nome}
+                  <span className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                    {item.medicamento.principio_ativo}
                     {item.medicamento.concentracao && (
-                      <span className="ml-1 font-normal text-muted-foreground">{item.medicamento.concentracao}</span>
+                      <span className="font-normal text-muted-foreground">{item.medicamento.concentracao}</span>
                     )}
+                    {item.medicamento.alta_vigilancia && <ShieldAlert className="size-3.5 text-amber-600" />}
+                    {item.diluicaoPublicada && <Badge variant="success">Diluição publicada</Badge>}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {item.medicamento.principio_ativo}
-                    {item.medicamento.via ? ` · ${VIA_LABEL[item.medicamento.via] ?? item.medicamento.via}` : ''}
+                    {item.medicamento.apresentacao ?? '—'}
+                    {item.medicamento.rxcui ? ` · rxcui ${item.medicamento.rxcui}` : ''}
                   </span>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => removerItem(item.id)}>
@@ -395,18 +418,20 @@ export default function PrescricaoTeste() {
                   />
                 </div>
               </div>
-              {item.medicamento.diluicao && (
-                <div className="mt-2 flex flex-col gap-1">
-                  <label className="text-xs font-medium text-sky-700">
-                    Diluição (sugerida) — {item.medicamento.nome}
-                  </label>
-                  <Input
-                    value={item.diluicaoEditada}
-                    onChange={(e) => atualizarItem(item.id, 'diluicaoEditada', e.target.value)}
-                    placeholder="Diluição recomendada…"
-                  />
-                </div>
-              )}
+              <div className="mt-2 flex flex-col gap-1">
+                <label className="text-xs font-medium text-sky-700">
+                  {item.diluicaoPublicada ? 'Diluição (publicada pelo farmacêutico)' : 'Diluição (editável)'}
+                </label>
+                <Input
+                  value={item.diluicaoEditada}
+                  onChange={(e) => atualizarItem(item.id, 'diluicaoEditada', e.target.value)}
+                  placeholder={
+                    item.diluicaoPublicada
+                      ? 'Diluição preenchida da referência publicada…'
+                      : 'Sem diluição publicada — preencha se necessário…'
+                  }
+                />
+              </div>
             </div>
           ))}
 
