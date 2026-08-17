@@ -84,10 +84,13 @@ documentar: `20260803`.
 
 | Fonte | URL | Modelo | Custo |
 |---|---|---|---|
-| Memed (parceiro software) | https://memed.com.br/parceiro-software/ | contrato de parceria | por prescrição / mensal |
-| Mevo / ex-Nexodata | https://medicos.nexodata.com.br/ | contrato de parceria | por prescrição / mensal |
+| Memed (parceiro software) | https://memed.com.br/parceiro-software/ | contrato de parceria | não público — cotar |
+| Mevo / ex-Nexodata | https://medicos.nexodata.com.br/ · https://mevo.com.br | contrato de parceria | não público — cotar |
 
-Entrega um **comparativo** — não uma implementação.
+Entrega: **documento de avaliação** `data/FASE5_AMBULATORIAL.md` (não é
+implementação). Recomendação: iniciar cotação pela Memed (base 60k itens, alertas
+em português, ISO 27001); manter prescrição hospitalar local como primária
+(offline).
 
 ---
 
