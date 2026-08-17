@@ -1,0 +1,13 @@
+RELATÓRIO DE COBERTURA — FASE 1
+Gerado em: 2026-08-17T03:08:24.216Z
+Total de itens da padronização: 200
+
+  ANVISA (DADOS_ABERTOS_MEDICAMENTOS): 173 casados / 27 pendentes
+  RxNorm (rxcui):                        200 casados / 0 pendentes
+  Ambos:                                 173
+  Só ANVISA:                             27
+  Nenhum (pendente):                     0
+
+PENDÊNCIAS:
+  - anvisa: 27 item(ns)
+      Nitroprussiato de sodio, Fosfato de potassio, Soro fisiologico 0,9%, Soro glicofisiologico, Ringer lactato, Heparina nao fracionada, Carvão ativado, Codeina, Ertapenem, Rocuronio, Atracurio, Cisatracurio, Succinilcolina, Vecuronio, Carboprost, Ipratropio, Laculose, Colistina, Tranexamico, Acido aminocaproico, Rimantadina, Morfina (dose pediátrica), Amiodarona (comprimido), Warfarina, AAS, Levotiroxina (comprimido), Oseltamivir (comprimido)

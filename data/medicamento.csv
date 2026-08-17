@@ -1,0 +1,201 @@
+principio_ativo;principio_ativo_norm;apresentacao;concentracao;setor_uso;rxcui;anvisa_registro;anvisa_produto;anvisa_situacao;anvisa_empresa;anvisa_ativos;status
+Adrenalina (epinefrina);adrenalina epinefrina;Ampola 1 mL;1 mg/mL;Emergencia, UTI;1249590;112080053;LQFEX- EPINEFRINA;Inativo;00394452000103 - LABORAT�RIO QU�MICO FARMAC�UTICO DO EX�RCITO;10;rxcui_ok anvisa_ok
+Noradrenalina (norepinefrina);noradrenalina norepinefrina;Ampola 4 mL;1 mg/mL;Emergencia, UTI;7508;112080053;LQFEX- EPINEFRINA;Inativo;00394452000103 - LABORAT�RIO QU�MICO FARMAC�UTICO DO EX�RCITO;10;rxcui_ok anvisa_ok
+Dobutamina;dobutamina;Ampola 20 mL;5 mg/mL;UTI;203121;123610013;DOBUTIL;Inativo;64711500000114 - UCB BIOPHARMA LTDA.;2;rxcui_ok anvisa_ok
+Dopamina;dopamina;Ampola 5 mL;5 mg/mL;UTI, Emergencia;3628;103870079;CLORIDRATO DE DOPAMINA;Ativo;17174657000178 - HYPOFARMA - INSTITUTO DE HYPODERMIA E FARM�CIA LTDA;23;rxcui_ok anvisa_ok
+Vasopressina;vasopressina;Ampola 1 mL;20 UI/mL;UTI;11149;109740190;ENCRISE;Ativo;49475833000106 - BIOLAB SANUS FARMAC�UTICA LTDA;1;rxcui_ok anvisa_ok
+Milrinona;milrinona;Ampola 10 mL;1 mg/mL;UTI;155120;183260321;PRIMACOR;Ativo;10588595001092 - SANOFI MEDLEY FARMAC�UTICA LTDA.;6;rxcui_ok anvisa_ok
+Nitroglicerina;nitroglicerina;Ampola 5 mL;5 mg/mL;UTI, Emergencia;4917;107120067;NITROLONG;Inativo;29961620000179 - DOVER FARMACEUTICA LTDA;6;rxcui_ok anvisa_ok
+Nitroprussiato de sodio;nitroprussiato de sodio;Frasco 50 mg po;50 mg;UTI;7476;;;;;0;rxcui_ok
+Amiodarona;amiodarona;Ampola 3 mL;50 mg/mL;Emergencia, UTI;203114;100470207;COR MIO;Inativo;61286647000116 - SANDOZ DO BRASIL IND�STRIA FARMAC�UTICA LTDA;39;rxcui_ok anvisa_ok
+Atropina;atropina;Ampola 1 mL;0,25 mg/mL;Emergencia;1223;106460137;HORMOTROP;Ativo;61282661000141 - LABORATORIO QUIMICO FARMACEUTICO BERGAMO LTDA;80;rxcui_ok anvisa_ok
+Adenosina;adenosina;Frasco 2 mL;6 mg/mL;Emergencia;296;100330038;ADENOCARD;Inativo;61230314000175 - LIBBS FARMAC�UTICA LTDA;6;rxcui_ok anvisa_ok
+Esmolol;esmolol;Ampola 10 mL;10 mg/mL;UTI;203222;102980470;BREVIBLOC DILU�DO;Ativo;44734671000151 - CRIST�LIA PRODUTOS QU�MICOS FARMAC�UTICOS LTDA.;3;rxcui_ok anvisa_ok
+Metoprolol;metoprolol;Ampola 5 mL;1 mg/mL;UTI, Emergencia;221124;151430039;SUCCINATO DE METOPROLOL;Ativo;03978166000175 - DR. REDDYS FARMAC�UTICA DO BRASIL LTDA;38;rxcui_ok anvisa_ok
+Lidocaina;lidocaina;Ampola 20 mL;20 mg/mL;Emergencia, UTI;6387;104970111;LIDOJET;Ativo;60665981000118 - UNI�O QU�MICA FARMAC�UTICA NACIONAL S/A;139;rxcui_ok anvisa_ok
+Procainamida;procainamida;Ampola 10 mL;100 mg/mL;UTI;8700;104150039;AXOL;Inativo;33790981000177 - LABORATORIO HANEMANIANA VERITAS LTDA;1;rxcui_ok anvisa_ok
+Verapamil;verapamil;Ampola 2 mL;2,5 mg/mL;Emergencia;11170;105740037;NEOPAMIL;Inativo;16921603000166 - NOVO NORDISK PRODU��O FARMAC�UTICA DO BRASIL LTDA;5;rxcui_ok anvisa_ok
+Diltiazem;diltiazem;Ampola 10 mL;5 mg/mL;UTI;203211;104300023;AKALURET;Inativo;42457796000156 - DIFFUCAP - CHEMOBR�S QU�MICA E FARMAC�UTICA LTDA;31;rxcui_ok anvisa_ok
+Digoxina;digoxina;Ampola 2 mL;0,25 mg/mL;UTI, Clinica;3407;101620135;DARROWCOR;Inativo;33051491000159 - LABORAT�RIOS PIERRE FABRE DO BRASIL LTDA;56;rxcui_ok anvisa_ok
+Furosemida;furosemida;Ampola 2 mL;10 mg/mL;Emergencia, UTI;4603;106240087;DIUREMIL;Inativo;29333218000140 - IND�STRIA FARMAC�UTICA MILIAN LTDA;79;rxcui_ok anvisa_ok
+Cloreto de potassio 10%;cloreto de potassio 10;Ampola 10 mL;10%;UTI, Emergencia;8591;101910298;LIPOSERON;Inativo;61517397000188 - THERASKIN FARMACEUTICA LTDA.;40;rxcui_ok anvisa_ok
+Cloreto de potassio 19,1%;cloreto de potassio 19 1;Ampola 10 mL;19,1%;UTI, Emergencia;8591;101910298;LIPOSERON;Inativo;61517397000188 - THERASKIN FARMACEUTICA LTDA.;40;rxcui_ok anvisa_ok
+Fosfato de potassio;fosfato de potassio;Ampola 10 mL;2 mEq/mL;UTI;34322;;;;;0;rxcui_ok
+Sulfato de magnesio 50%;sulfato de magnesio 50;Ampola 10 mL;500 mg/mL;Emergencia, UTI;6585;103900024;LIBIGASTRIN;Inativo;33349473000158 - FARMOQU�MICA S/A;10;rxcui_ok anvisa_ok
+Gluconato de calcio 10%;gluconato de calcio 10;Ampola 10 mL;100 mg/mL;Emergencia, UTI;1908;100850041;GLUCONATO DE CALCIO;Inativo;31673254000102 - LABORATORIOS B. BRAUN S/A;5;rxcui_ok anvisa_ok
+Cloreto de calcio 10%;cloreto de calcio 10;Ampola 10 mL;100 mg/mL;Emergencia, UTI;1901;137790003;AMINO CAL;Inativo;01454607000104 - NOSSA SENHORA APARECIDA IMP. E EXP. COM . LTDA;1;rxcui_ok anvisa_ok
+Bicarbonato de sodio 8,4%;bicarbonato de sodio 8 4;Ampola 10 mL;8,4%;Emergencia, UTI;36676;116880006;FARMACART;Ativo;58635830000175 - FARMARIN INDUSTRIA E COMERCIO LTDA;32;rxcui_ok anvisa_ok
+Cloreto de sodio 20%;cloreto de sodio 20;Ampola 10 mL;20%;Clinica, UTI;9863;105830604;NARIDRIN H;Inativo;45992062000165 - GERMED FARMACEUTICA LTDA;125;rxcui_ok anvisa_ok
+Glicose 5%;glicose 5;Frasco 500 mL;5%;Clinica, Emergencia;1299920;102270005;SOLU��O GLICOSADA MADREVITA;Inativo;05866579000193 - LABORAT�RIO MADREVITA LTDA;29;rxcui_ok anvisa_ok
+Glicose 10%;glicose 10;Frasco 500 mL;10%;Clinica, Emergencia, Pediatria;1299920;102270005;SOLU��O GLICOSADA MADREVITA;Inativo;05866579000193 - LABORAT�RIO MADREVITA LTDA;28;rxcui_ok anvisa_ok
+Glicose 25%;glicose 25;Ampola 10 mL;25%;Pediatria, Emergencia;1299920;102270005;SOLU��O GLICOSADA MADREVITA;Inativo;05866579000193 - LABORAT�RIO MADREVITA LTDA;28;rxcui_ok anvisa_ok
+Glicose 50%;glicose 50;Ampola 10 mL;50%;Emergencia, UTI;1299920;102270005;SOLU��O GLICOSADA MADREVITA;Inativo;05866579000193 - LABORAT�RIO MADREVITA LTDA;28;rxcui_ok anvisa_ok
+Soro fisiologico 0,9%;soro fisiologico 0 9;Frasco 500 mL;0,9%;Clinica, Emergencia, Pediatria;9863;;;;;0;rxcui_ok
+Soro glicofisiologico;soro glicofisiologico;Frasco 500 mL;5% + 0,9%;Clinica, Emergencia;20623;;;;;0;rxcui_ok
+Ringer lactato;ringer lactato;Frasco 500 mL;Eletrolitico;Emergencia, UTI, Clinica;2877;;;;;0;rxcui_ok
+Albumina humana 20%;albumina humana 20;Frasco 50 mL;20%;UTI, Emergencia;828529;127100001;ALBIOPLAS;Ativo;58909098000184 - LEADER PHARMA DISTRIBUIDORA E IMPORTADORA DE PRODUTOS FARMACEUT;37;rxcui_ok anvisa_ok
+Heparina nao fracionada;heparina nao fracionada;Frasco 5 mL;5000 UI/mL;UTI, Emergencia;235473;;;;;0;rxcui_ok
+Enoxaparina;enoxaparina;Seringa preenchida 0,6 mL;60 mg;UTI, Emergencia, Clinica;67108;188300021;CUTENOX;Ativo;11643096000122 - VIATRIS FARMACEUTICA DO BRASIL LTDA;18;rxcui_ok anvisa_ok
+Fondaparinux;fondaparinux;Seringa preenchida;2,5 mg;Clinica, UTI;321208;137640153;ARIXTRA;Ativo;02433631000120 - ASPEN PHARMA IND�STRIA FARMAC�UTICA LTDA;3;rxcui_ok anvisa_ok
+Protamina;protamina;Ampola 5 mL;10 mg/mL;UTI, Cirurgia;236471;105750040;PROTAMINA;Inativo;61186136000122 - VALEANT FARMAC�UTICA DO BRASIL LTDA;2;rxcui_ok anvisa_ok
+Fitomenadiona (Vit K);fitomenadiona vit k;Ampola 1 mL;10 mg/mL;Clinica, Emergencia;8308;102980115;KAVIT;Ativo;44734671000151 - CRIST�LIA PRODUTOS QU�MICOS FARMAC�UTICOS LTDA.;9;rxcui_ok anvisa_ok
+Acetilcisteina;acetilcisteina;Ampola 3 mL;100 mg/mL;Emergencia;197;167730211;ACETILCISTE�NA;Inativo;05044984000126 - LEGRAND PHARMA IND�STRIA FARMAC�UTICA LTDA;66;rxcui_ok anvisa_ok
+Naloxona;naloxona;Ampola 1 mL;0,4 mg/mL;Emergencia;203192;114020078;CLORIDRATO DE NALOXONA;Inativo;06629745000109 - NOVAFARMA IND�STRIA FARMAC�UTICA LTDA;5;rxcui_ok anvisa_ok
+Flumazenil;flumazenil;Ampola 5 mL;0,1 mg/mL;Emergencia, UTI;4457;120690027;FLUMILIB;Inativo;94869054000131 - LABORAT�RIOS LIBRA DO BRASIL LTDA;17;rxcui_ok anvisa_ok
+Carvão ativado;carvao ativado;Frasco 120 mL;Suspensao;Emergencia;272;;;;;0;rxcui_ok
+Dipirona;dipirona;Ampola 2 mL;500 mg/mL;Emergencia, Clinica, Pediatria;3523;118190007;MULTIRALGIM;Inativo;92265552000905 - MULTILAB INDUSTRIA E COMERCIO DE PRODUTOS FARMACEUTICOS LTDA;167;rxcui_ok anvisa_ok
+Paracetamol;paracetamol;Frasco 100 mL;10 mg/mL;Emergencia, Clinica, Pediatria;161;126750089;PARACETAMOL;Inativo;72593791000111 - NOVA QUIMICA FARMAC�UTICA S/A;261;rxcui_ok anvisa_ok
+Morfina;morfina;Ampola 1 mL;10 mg/mL;Emergencia, UTI;235751;102980605;DIMORF BOLSA;Ativo;44734671000151 - CRIST�LIA PRODUTOS QU�MICOS FARMAC�UTICOS LTDA.;24;rxcui_ok anvisa_ok
+Tramadol;tramadol;Ampola 2 mL;50 mg/mL;Clinica, Emergencia;10689;105730712;ANANGOR;Inativo;60659463002992 - ACH� LABORAT�RIOS FARMAC�UTICOS S.A;111;rxcui_ok anvisa_ok
+Fentanila;fentanila;Ampola 2 mL;50 mcg/mL;UTI, Emergencia, Anestesia;142436;155730048;FENTORA;Ativo;05333542000108 - TEVA FARMAC�UTICA LTDA.;45;rxcui_ok anvisa_ok
+Codeina;codeina;Ampola 2 mL;30 mg/mL;Clinica;1008493;;;;;0;rxcui_ok
+Cetoprofeno;cetoprofeno;Ampola 2 mL;100 mg;Emergencia, Clinica;6142;103700280;TEUTO-CETOPROFENO;Inativo;17159229000176 - LABORAT�RIO TEUTO BRASILEIRO S/A;87;rxcui_ok anvisa_ok
+Tenoxicam;tenoxicam;Frasco 20 mg po;20 mg;Emergencia, Clinica;37790;100470486;TENOXICAM;Inativo;61286647000116 - SANDOZ DO BRASIL IND�STRIA FARMAC�UTICA LTDA;37;rxcui_ok anvisa_ok
+Cetorolaco;cetorolaco;Ampola 1 mL;30 mg/mL;Emergencia;35827;135690172;CETOROLACO DE TROMETAMINA;Inativo;00923140000131 - EMS SIGMA PHARMA LTDA;1;rxcui_ok anvisa_ok
+Dexametasona;dexametasona;Ampola 1 mL;4 mg/mL;Emergencia, Clinica, Pediatria;22690;150820035;DEXAMERAL;Inativo;04216501000160 - ASTA M�DICA-ONCOLOGIA LTDA;54;rxcui_ok anvisa_ok
+Hidrocortisona;hidrocortisona;Frasco 100 mg po;100 mg;Emergencia, Clinica;1007334;135690378;HIDROCORTISONA;Inativo;00923140000131 - EMS SIGMA PHARMA LTDA;13;rxcui_ok anvisa_ok
+Metilprednisolona;metilprednisolona;Frasco 125 mg po;125 mg;Emergencia, Clinica;155323;109740118;ALERGOLON;Inativo;49475833000106 - BIOLAB SANUS FARMAC�UTICA LTDA;2;rxcui_ok anvisa_ok
+Ondansetrona;ondansetrona;Ampola 4 mL;2 mg/mL;Emergencia, Clinica, Pediatria;203148;151430093;KEMYZA;Ativo;03978166000175 - DR. REDDYS FARMAC�UTICA DO BRASIL LTDA;7;rxcui_ok anvisa_ok
+Metoclopramida;metoclopramida;Ampola 2 mL;5 mg/mL;Emergencia, Clinica, Pediatria;267035;104070026;IVB METOCLOPRAMIDA;Inativo;30064034000100 - INSTITUTO VITAL BRAZIL S/A;7;rxcui_ok anvisa_ok
+Bromoprida;bromoprida;Ampola 2 mL;5 mg/mL;Clinica, Pediatria;19768;105830681;BROMOPRIDA;Ativo;45992062000165 - GERMED FARMACEUTICA LTDA;81;rxcui_ok anvisa_ok
+Dimenidrinato;dimenidrinato;Ampola 1 mL;50 mg/mL;Emergencia, Clinica;3444;120190090;NAUSEDRINATO;Inativo;33408105000133 - GREENPHARMA QU�MICA E FARMAC�UTICA LTDA;15;rxcui_ok anvisa_ok
+Prometazina;prometazina;Ampola 2 mL;25 mg/mL;Emergencia, Clinica;142445;113000320;CREMEFENERGAN;Inativo;02685377000157 - SANOFI-AVENTIS FARMAC�UTICA LTDA;8;rxcui_ok anvisa_ok
+Haloperidol;haloperidol;Ampola 1 mL;5 mg/mL;Emergencia, Clinica;217483;101810193;PERLADOL;Inativo;50929710000179 - MEDLEY IND�STRIA FARMAC�UTICA LTDA;25;rxcui_ok anvisa_ok
+Escopolamina;escopolamina;Ampola 1 mL;20 mg/mL;Emergencia, Clinica;56092;110850043;BUTILBROMETO DE ESCOPOLAMINA;Ativo;06628333000146 - FARMACE IND�STRIA QU�MICO-FARMAC�UTICA CEARENSE LTDA;106;rxcui_ok anvisa_ok
+Omeprazol;omeprazol;Frasco 40 mg po;40 mg;Emergencia, Clinica, UTI;283742;104070073;IVB-OMEPRAZOL;Inativo;30064034000100 - INSTITUTO VITAL BRAZIL S/A;97;rxcui_ok anvisa_ok
+Pantoprazol;pantoprazol;Frasco 40 mg po;40 mg;Clinica, UTI;40790;155840457;PANTONEO;Inativo;05161069000110 - BRAINFARMA IND�STRIA QU�MICA E FARMAC�UTICA S.A;19;rxcui_ok anvisa_ok
+Ranitidina;ranitidina;Ampola 2 mL;25 mg/mL;Clinica;203136;100330081;HELICID;Inativo;61230314000175 - LIBBS FARMAC�UTICA LTDA;5;rxcui_ok anvisa_ok
+Octreotida;octreotida;Ampola 1 mL;0,1 mg/mL;UTI, Clinica;221130;113980029;OCTREOSCAN;Inativo;30153811000193 - GUERBET IMAGEM DO BRASIL LTDA;1;rxcui_ok anvisa_ok
+Ampicilina;ampicilina;Frasco 1 g po;1 g;Emergencia, Pediatria, Clinica;733;101810290;PARENZYME AMPICILINA;Inativo;50929710000179 - MEDLEY IND�STRIA FARMAC�UTICA LTDA;32;rxcui_ok anvisa_ok
+Ampicilina + sulbactam;ampicilina sulbactam;Frasco 1,5 g po;1 g + 0,5 g;Emergencia, Clinica;1009148;101810290;PARENZYME AMPICILINA;Inativo;50929710000179 - MEDLEY IND�STRIA FARMAC�UTICA LTDA;53;rxcui_ok anvisa_ok
+Amoxicilina + clavulanato;amoxicilina clavulanato;Frasco 1,2 g po;1 g + 200 mg;Emergencia, Clinica, Pediatria;19711;141070119;CLAXILINA;Inativo;02501297000102 - PHARLAB IND�STRIA FARMAC�UTICA S.A.;183;rxcui_ok anvisa_ok
+Oxacilina;oxacilina;Frasco 500 mg po;500 mg;Emergencia, Clinica, Pediatria;7773;108580070;OXACICLINA;Inativo;51603488000182 - PRODOTTI LABORAT�RIO FARMAC�UTICO LTDA.;1;rxcui_ok anvisa_ok
+Cefalotina;cefalotina;Frasco 1 g po;1 g;Emergencia, Clinica;2236;174200013;CEFALOTINA S�DICA;Ativo;44639493000180 - EUGIA PHARMA INDUSTRIA FARMACEUTICA LTDA;32;rxcui_ok anvisa_ok
+Cefazolina;cefazolina;Frasco 1 g po;1 g;Cirurgia, Clinica;2180;101800262;CEFAZOLINA;Inativo;56998982000107 - BRISTOL-MYERS SQUIBB FARMAC�UTICA LTDA;1;rxcui_ok anvisa_ok
+Cefuroxima;cefuroxima;Frasco 750 mg po;750 mg;Clinica, Emergencia;2194;126030046;CEFUNORTH;Inativo;74019670000196 - �TACA LABORAT�RIOS LTDA;1;rxcui_ok anvisa_ok
+Ceftriaxona;ceftriaxona;Frasco 1 g po;1 g;Emergencia, Clinica, Pediatria;2193;102700088;TRIAXTON;Inativo;61391769000172 - ARISTON INDS QUIMS FTCAS LTDA;5;rxcui_ok anvisa_ok
+Ceftazidima;ceftazidima;Frasco 1 g po;1 g;UTI, Clinica;2191;174200005;CEFTAZIDIMA;Ativo;44639493000180 - EUGIA PHARMA INDUSTRIA FARMACEUTICA LTDA;6;rxcui_ok anvisa_ok
+Cefepima;cefepima;Frasco 1 g po;1 g;UTI, Clinica;20481;112830049;CEFEPITAX;Inativo;52208733000110 - LABORATORIO ITAFARMA LTDA;1;rxcui_ok anvisa_ok
+Piperacilina + tazobactam;piperacilina tazobactam;Frasco 4,5 g po;4 g + 0,5 g;UTI, Clinica;74169;137640111;PIPERACILINA S�DICA + TAZOBACTAM S�DICO;Inativo;02433631000120 - ASPEN PHARMA IND�STRIA FARMAC�UTICA LTDA;25;rxcui_ok anvisa_ok
+Meropenem;meropenem;Frasco 1 g po;1 g;UTI;29561;102010055;MEROXIL;Inativo;33036815000180 - QUIMICA HALLER LTDA;3;rxcui_ok anvisa_ok
+Imipenem + cilastatina;imipenem cilastatina;Frasco 500 mg po;500 mg;UTI;34482;102010053;PENEXIL;Ativo;33036815000180 - QUIMICA HALLER LTDA;2;rxcui_ok anvisa_ok
+Ertapenem;ertapenem;Frasco 1 g po;1 g;Clinica, UTI;325642;;;;;0;rxcui_ok
+Gentamicina;gentamicina;Ampola 2 mL;40 mg/mL;Emergencia, Clinica, Pediatria;1596450;105830595;SULFATO DE GENTAMICINA;Inativo;45992062000165 - GERMED FARMACEUTICA LTDA;170;rxcui_ok anvisa_ok
+Amicacina;amicacina;Ampola 2 mL;250 mg/mL;UTI, Clinica;641;114020008;NOVAMICACIM;Inativo;06629745000109 - NOVAFARMA IND�STRIA FARMAC�UTICA LTDA;1;rxcui_ok anvisa_ok
+Ciprofloxacino;ciprofloxacino;Frasco 100 mL;2 mg/mL;Emergencia, Clinica;235851;137640015;FLOXEN;Inativo;02433631000120 - ASPEN PHARMA IND�STRIA FARMAC�UTICA LTDA;29;rxcui_ok anvisa_ok
+Levofloxacino;levofloxacino;Frasco 100 mL;5 mg/mL;Emergencia, Clinica;82122;112130455;LEVOFLOXACINO;Inativo;53162095000106 - BIOSINT�TICA FARMAC�UTICA LTDA;15;rxcui_ok anvisa_ok
+Metronidazol;metronidazol;Frasco 100 mL;5 mg/mL;Cirurgia, Clinica;103866;110850014;NIDAZOFARMA;Ativo;06628333000146 - FARMACE IND�STRIA QU�MICO-FARMAC�UTICA CEARENSE LTDA;81;rxcui_ok anvisa_ok
+Clindamicina;clindamicina;Ampola 4 mL;150 mg/mL;Clinica, Emergencia;2582;112080062;LQFE - CLINDAMICINA;Inativo;00394452000103 - LABORAT�RIO QU�MICO FARMAC�UTICO DO EX�RCITO;3;rxcui_ok anvisa_ok
+Vancomicina;vancomicina;Frasco 500 mg po;500 mg;UTI, Emergencia, Clinica;11124;111020002;EDICIN;Inativo;43295831000140 - INTERLAB FARMAC�UTICA LTDA;3;rxcui_ok anvisa_ok
+Teicoplanina;teicoplanina;Frasco 400 mg po;400 mg;UTI, Clinica;57021;189000032;TEICOSTON;Inativo;13382686000174 - ARISTON IND�STRIAS QU�MICAS E FARMAC�UTICAS LTDA;22;rxcui_ok anvisa_ok
+Linezolida;linezolida;Frasco 300 mL;2 mg/mL;UTI, Clinica;190376;100431168;LINEZOLIDA;Ativo;61190096000192 - EUROFARMA LABORATORIOS S.A.;27;rxcui_ok anvisa_ok
+Polimixina B;polimixina b;Frasco 500000 UI po;500000 UI;UTI;8536;116370171;SULFATO DE POLIMIXINA B;Ativo;58430828000160 - BLAU FARMAC�UTICA S.A.;53;rxcui_ok anvisa_ok
+Sulfametoxazol + trimetoprima;sulfametoxazol trimetoprima;Ampola 5 mL;400 + 80 mg;Clinica;10831;103850003;BACFAR;Ativo;83874628000143 - LABORAT�RIO FARMAC�UTICO ELOFAR LTDA;102;rxcui_ok anvisa_ok
+Fluconazol;fluconazol;Frasco 100 mL;2 mg/mL;UTI, Clinica;4450;100380057;FLUCOTIL;Inativo;46179008000168 - BRASTERAPICA PHARMACEUTICA LTDA.;98;rxcui_ok anvisa_ok
+Anfotericina B desoxicolato;anfotericina b desoxicolato;Frasco 50 mg po;50 mg;UTI;732;100630225;ANFOLIP B;Inativo;33258401000103 - INSTITUTO BIOCHIMICO IND�STRIA FARMAC�UTICA LTDA;18;rxcui_ok anvisa_ok
+Anfotericina B lipossomal;anfotericina b lipossomal;Frasco 50 mg po;50 mg;UTI;732;100630225;ANFOLIP B;Inativo;33258401000103 - INSTITUTO BIOCHIMICO IND�STRIA FARMAC�UTICA LTDA;18;rxcui_ok anvisa_ok
+Midazolam;midazolam;Ampola 3 mL;5 mg/mL;Emergencia, UTI, Anestesia;142441;103700750;TELOZAM;Ativo;17159229000176 - LABORAT�RIO TEUTO BRASILEIRO S/A;12;rxcui_ok anvisa_ok
+Diazepam;diazepam;Ampola 2 mL;5 mg/mL;Emergencia;3322;102350899;DISTONIL GI;Inativo;57507378000365 - EMS S/A;49;rxcui_ok anvisa_ok
+Lorazepam;lorazepam;Ampola 1 mL;4 mg/mL;UTI;6470;100890320;LORAZEPAM;Inativo;33069212000184 - MERCK S/A;24;rxcui_ok anvisa_ok
+Propofol;propofol;Ampola 20 mL;10 mg/mL;UTI, Anestesia;8782;105530227;PROPOABBOTT;Inativo;56998701000116 - ABBOTT LABORAT�RIOS DO BRASIL LTDA;22;rxcui_ok anvisa_ok
+Etomidato;etomidato;Ampola 10 mL;2 mg/mL;Emergencia;4177;112360023;HYPNOMIDATE;Inativo;51780468000187 - JANSSEN-CILAG FARMAC�UTICA LTDA;5;rxcui_ok anvisa_ok
+Cetamina;cetamina;Ampola 10 mL;50 mg/mL;Emergencia, UTI, Anestesia;203184;100630253;NEWCET;Inativo;33258401000103 - INSTITUTO BIOCHIMICO IND�STRIA FARMAC�UTICA LTDA;11;rxcui_ok anvisa_ok
+Rocuronio;rocuronio;Frasco 5 mL;10 mg/mL;UTI, Anestesia, Emergencia;32521;;;;;0;rxcui_ok
+Atracurio;atracurio;Ampola 5 mL;10 mg/mL;UTI, Anestesia;1218;;;;;0;rxcui_ok
+Cisatracurio;cisatracurio;Ampola 5 mL;2 mg/mL;UTI, Anestesia;136561;;;;;0;rxcui_ok
+Succinilcolina;succinilcolina;Frasco 5 mL;20 mg/mL;Emergencia, Anestesia;10154;;;;;0;rxcui_ok
+Vecuronio;vecuronio;Frasco 10 mg po;10 mg;Anestesia, UTI;71535;;;;;0;rxcui_ok
+Fenitoina;fenitoina;Ampola 5 mL;50 mg/mL;Emergencia, UTI;8183;112090023;FUNED - FENITO�NA;Ativo;17503475000101 - FUNDA��O EZEQUIEL DIAS - FUNED;13;rxcui_ok anvisa_ok
+Fenobarbital;fenobarbital;Ampola 2 mL;100 mg/mL;Emergencia, Clinica, Pediatria;8134;126250001;LFM-FENOBARBITAL;Inativo;00394502007157 - LABORAT�RIO FARMAC�UTICO DA MARINHA;24;rxcui_ok anvisa_ok
+Valproato de sodio;valproato de sodio;Ampola 3 mL;100 mg/mL;Emergencia, UTI;11118;120330033;VALPAKINE;Inativo;61099966000112 - SANOFI - SYNTHELABO FARMAC�UTICA LTDA;14;rxcui_ok anvisa_ok
+Levetiracetam;levetiracetam;Frasco 5 mL;100 mg/mL;Emergencia, UTI;114477;100431500;SPARK XR;Ativo;61190096000192 - EUROFARMA LABORATORIOS S.A.;53;rxcui_ok anvisa_ok
+Clonazepam;clonazepam;Ampola 1 mL;1 mg/mL;Emergencia, Pediatria;2598;100470466;CLONAZEPAM (PORT. 344/98 - LISTA B1);Inativo;61286647000116 - SANDOZ DO BRASIL IND�STRIA FARMAC�UTICA LTDA;58;rxcui_ok anvisa_ok
+Insulina regular;insulina regular;Frasco 10 mL;100 UI/mL;Emergencia, UTI, Clinica;253182;105740005;IOLIN R;Inativo;16921603000166 - NOVO NORDISK PRODU��O FARMAC�UTICA DO BRASIL LTDA;2;rxcui_ok anvisa_ok
+Insulina NPH;insulina nph;Frasco 10 mL;100 UI/mL;Clinica, Emergencia;1605101;105740009;IOLIN N;Inativo;16921603000166 - NOVO NORDISK PRODU��O FARMAC�UTICA DO BRASIL LTDA;3;rxcui_ok anvisa_ok
+Insulina glargina;insulina glargina;Frasco 3 mL;100 UI/mL;Clinica;274783;133480001;GLARGILIN;Ativo;04752991000110 - BIOMM SA;12;rxcui_ok anvisa_ok
+Glucagon;glucagon;Frasco 1 mg po;1 mg;Emergencia;253170;117660014;GLUCAGEN;Ativo;82277955000155 - NOVO NORDISK FARMAC�UTICA DO BRASIL LTDA;1;rxcui_ok anvisa_ok
+Desmopressina;desmopressina;Frasco 1 mL;4 mcg/mL;UTI, Pediatria;3251;128760001;DDAVP;Inativo;74232034000148 - LABORAT�RIOS FERRING LTDA;10;rxcui_ok anvisa_ok
+Ocitocina;ocitocina;Ampola 1 mL;5 UI/mL;Obstetricia, Emergencia;1733680;100430105;NAOX;Inativo;61190096000192 - EUROFARMA LABORATORIOS S.A.;7;rxcui_ok anvisa_ok
+Misoprostol;misoprostol;Comprimido 25 mcg;25 mcg;Obstetricia, Emergencia;42331;115570044;PROSTOKOS;Ativo;08939548000103 - INFAN INDUSTRIA QUIMICA FARMACEUTICA NACIONAL S/A;2;rxcui_ok anvisa_ok
+Carboprost;carboprost;Ampola 1 mL;250 mcg/mL;Obstetricia;2051;;;;;0;rxcui_ok
+Hidralazina;hidralazina;Ampola 1 mL;20 mg/mL;Emergencia, Obstetricia;5470;104971539;APRESOLINA;Ativo;60665981000118 - UNI�O QU�MICA FARMAC�UTICA NACIONAL S/A;3;rxcui_ok anvisa_ok
+Nifedipino;nifedipino;Comprimido 10 mg;10 mg;Emergencia, Obstetricia;7417;110390112;FURP -NIFEDIPINA;Inativo;43640754000119 - FUNDA��O PARA O REM�DIO POPULAR - FURP;12;rxcui_ok anvisa_ok
+Salbutamol;salbutamol;Frasco 20 mL;0,5 mg/mL;Emergencia, Pediatria, Clinica;142153;100580099;BUTOVENT PULVINAL;Inativo;61363032000146 - CHIESI FARMAC�UTICA LTDA;8;rxcui_ok anvisa_ok
+Fenoterol;fenoterol;Frasco 20 mL;0,5 mg/mL;Pediatria, Emergencia;4333;100430610;SUPRAFEN;Inativo;61190096000192 - EUROFARMA LABORATORIOS S.A.;1;rxcui_ok anvisa_ok
+Ipratropio;ipratropio;Frasco 20 mL;0,25 mg/mL;Pediatria, Emergencia;1309404;;;;;0;rxcui_ok
+Aminofilina;aminofilina;Ampola 10 mL;24 mg/mL;Clinica, Pediatria;689;101830020;LAFEPE - AMINOFILINA;Inativo;10877926000113 - LABORATORIO FARMACEUTICO DO ESTADO DE PERNAMBUCO GOVERNADOR MIG;55;rxcui_ok anvisa_ok
+Teofilina;teofilina;Ampola 10 mL;24 mg/mL;Clinica;10438;103110058;TEOFILIM;Inativo;01571702000198 - HALEX ISTAR IND�STRIA FARMAC�UTICA SA;17;rxcui_ok anvisa_ok
+Levotiroxina;levotiroxina;Comprimido 100 mcg;100 mcg;Clinica;10582;183260353;PURAN T4;Ativo;10588595001092 - SANOFI MEDLEY FARMAC�UTICA LTDA.;14;rxcui_ok anvisa_ok
+Esomeprazol;esomeprazol;Frasco 40 mg po;40 mg;UTI, Clinica;283742;109170113;ESOMEPRAZOL S�DICO;Inativo;17875154000120 - MEDQUIMICA INDUSTRIA FARMACEUTICA LTDA.;1;rxcui_ok anvisa_ok
+Ferro sacarato;ferro sacarato;Ampola 5 mL;20 mg/mL;Clinica;24909;104042000;PERFER;Inativo;61299111000135 - LUPER IND�STRIA FARMAC�UTICA LTDA;4;rxcui_ok anvisa_ok
+Cianocobalamina;cianocobalamina;Ampola 1 mL;1000 mcg/mL;Clinica;11248;104650459;CIANON B12;Inativo;29785870000103 - LABORAT�RIO NEO QU�MICA COM�RCIO E IND�STRIA LTDA;14;rxcui_ok anvisa_ok
+Acido folico;acido folico;Ampola 1 mL;5 mg/mL;Clinica, Obstetricia;4511;103700157;AFOPIC;Ativo;17159229000176 - LABORAT�RIO TEUTO BRASILEIRO S/A;41;rxcui_ok anvisa_ok
+Laculose;laculose;Frasco 100 mL;667 mg/mL;Clinica;6218;;;;;0;rxcui_ok
+Nistatina oral;nistatina oral;Frasco 50 mL;100000 UI/mL;Clinica, Pediatria;7597;109680075;NISTATINA;Inativo;43521129000158 - LABORAT�RIO KINDER LTDA;87;rxcui_ok anvisa_ok
+Colistina;colistina;Frasco 150 mg po;150 mg;UTI;2709;;;;;0;rxcui_ok
+Voriconazol;voriconazol;Frasco 200 mg po;200 mg;UTI;121243;151430065;VORICONAZOL;Inativo;03978166000175 - DR. REDDYS FARMAC�UTICA DO BRASIL LTDA;27;rxcui_ok anvisa_ok
+Caspofungina;caspofungina;Frasco 50 mg po;50 mg;UTI;140108;100431156;BERK;Ativo;61190096000192 - EUROFARMA LABORATORIOS S.A.;6;rxcui_ok anvisa_ok
+Micafungina;micafungina;Frasco 50 mg po;50 mg;UTI;325887;100470661;MYCAMINE;Ativo;61286647000116 - SANDOZ DO BRASIL IND�STRIA FARMAC�UTICA LTDA;6;rxcui_ok anvisa_ok
+Aciclovir;aciclovir;Frasco 250 mg po;250 mg;UTI, Clinica;281;126750287;ACICLOVIR;Inativo;72593791000111 - NOVA QUIMICA FARMAC�UTICA S/A;117;rxcui_ok anvisa_ok
+Ganciclovir;ganciclovir;Frasco 500 mg po;500 mg;UTI;4678;116370037;GANVIRAX;Ativo;58430828000160 - BLAU FARMAC�UTICA S.A.;2;rxcui_ok anvisa_ok
+Tranexamico;tranexamico;Ampola 5 mL;100 mg/mL;Emergencia, Cirurgia, Obstetricia;10691;;;;;0;rxcui_ok
+Acido aminocaproico;acido aminocaproico;Frasco 20 mL;250 mg/mL;Cirurgia, UTI;99;;;;;0;rxcui_ok
+Tenecteplase;tenecteplase;Frasco 50 mg po;50 mg;Emergencia;259280;103670133;METALYSE;Ativo;60831658000177 - BOEHRINGER INGELHEIM DO BRASIL QU�MICA E FARMAC�UTICA LTDA.;1;rxcui_ok anvisa_ok
+Alteplase;alteplase;Frasco 50 mg po;50 mg;Emergencia, UTI;8410;103670049;ACTILYSE;Ativo;60831658000177 - BOEHRINGER INGELHEIM DO BRASIL QU�MICA E FARMAC�UTICA LTDA.;1;rxcui_ok anvisa_ok
+Estreptoquinase;estreptoquinase;Frasco 1500000 UI po;1500000 UI;Emergencia;10106;102700105;STREPTONASE;Inativo;61391769000172 - ARISTON INDS QUIMS FTCAS LTDA;7;rxcui_ok anvisa_ok
+Oseltamivir;oseltamivir;Frasco 75 mg po;75 mg;Clinica;259275;102980611;GRIPXIA;Ativo;44734671000151 - CRIST�LIA PRODUTOS QU�MICOS FARMAC�UTICOS LTDA.;9;rxcui_ok anvisa_ok
+Hidroxicloroquina;hidroxicloroquina;Comprimido 400 mg;400 mg;Clinica;5521;100431401;REUMAKI;Ativo;61190096000192 - EUROFARMA LABORATORIOS S.A.;18;rxcui_ok anvisa_ok
+Amantadina;amantadina;Comprimido 100 mg;100 mg;Clinica;620;100430519;MANTIDAN;Inativo;61190096000192 - EUROFARMA LABORATORIOS S.A.;3;rxcui_ok anvisa_ok
+Rimantadina;rimantadina;Comprimido 100 mg;100 mg;Clinica;9386;;;;;0;rxcui_ok
+Zidovudina;zidovudina;Frasco 200 mg po;200 mg;Clinica;11413;108840308;IQUEGO-ZIDOVUDINA;Inativo;01541283000141 - IND�STRIA QU�MICA DO ESTADO DE GOI�S S/A - IQUEGO;21;rxcui_ok anvisa_ok
+Morfina (dose pediátrica);morfina dose pediatrica;Ampola 1 mL;1 mg/mL;Pediatria, Emergencia;235751;;;;;0;rxcui_ok
+Paracetamol (ampola);paracetamol ampola;Ampola 2 mL;10 mg/mL;Pediatria;161;126750089;PARACETAMOL;Inativo;72593791000111 - NOVA QUIMICA FARMAC�UTICA S/A;261;rxcui_ok anvisa_ok
+Dipirona (gotas);dipirona gotas;Frasco 10 mL;500 mg/mL;Pediatria, Clinica;3523;118190007;MULTIRALGIM;Inativo;92265552000905 - MULTILAB INDUSTRIA E COMERCIO DE PRODUTOS FARMACEUTICOS LTDA;167;rxcui_ok anvisa_ok
+Ondansetrona (comprimido);ondansetrona comprimido;Comprimido 8 mg;8 mg;Clinica;203148;151430093;KEMYZA;Ativo;03978166000175 - DR. REDDYS FARMAC�UTICA DO BRASIL LTDA;7;rxcui_ok anvisa_ok
+Prometazina (comprimido);prometazina comprimido;Comprimido 25 mg;25 mg;Clinica;142445;113000320;CREMEFENERGAN;Inativo;02685377000157 - SANOFI-AVENTIS FARMAC�UTICA LTDA;8;rxcui_ok anvisa_ok
+Haloperidol (comprimido);haloperidol comprimido;Comprimido 5 mg;5 mg;Clinica;217483;101810193;PERLADOL;Inativo;50929710000179 - MEDLEY IND�STRIA FARMAC�UTICA LTDA;25;rxcui_ok anvisa_ok
+Diazepam (comprimido);diazepam comprimido;Comprimido 10 mg;10 mg;Clinica;3322;102350899;DISTONIL GI;Inativo;57507378000365 - EMS S/A;49;rxcui_ok anvisa_ok
+Clonazepam (comprimido);clonazepam comprimido;Comprimido 2 mg;2 mg;Clinica;2598;100470466;CLONAZEPAM (PORT. 344/98 - LISTA B1);Inativo;61286647000116 - SANDOZ DO BRASIL IND�STRIA FARMAC�UTICA LTDA;58;rxcui_ok anvisa_ok
+Carbamazepina;carbamazepina;Comprimido 200 mg;200 mg;Clinica;2002;101810541;PROLEPTOL;Inativo;50929710000179 - MEDLEY IND�STRIA FARMAC�UTICA LTDA;67;rxcui_ok anvisa_ok
+Fenitoina (comprimido);fenitoina comprimido;Comprimido 100 mg;100 mg;Clinica;8183;112090023;FUNED - FENITO�NA;Ativo;17503475000101 - FUNDA��O EZEQUIEL DIAS - FUNED;13;rxcui_ok anvisa_ok
+Valproato de sodio (comprimido);valproato de sodio comprimido;Comprimido 250 mg;250 mg;Clinica;11118;120330033;VALPAKINE;Inativo;61099966000112 - SANOFI - SYNTHELABO FARMAC�UTICA LTDA;14;rxcui_ok anvisa_ok
+Levetiracetam (comprimido);levetiracetam comprimido;Comprimido 500 mg;500 mg;Clinica;114477;100431500;SPARK XR;Ativo;61190096000192 - EUROFARMA LABORATORIOS S.A.;53;rxcui_ok anvisa_ok
+Metformina;metformina;Comprimido 500 mg;500 mg;Clinica;235743;155370009;CLORIDRATO DE METFORMINA;Ativo;64171697000146 - ACCORD FARMAC�UTICA LTDA;155;rxcui_ok anvisa_ok
+Glibenclamida;glibenclamida;Comprimido 5 mg;5 mg;Clinica;4815;102350661;GLIBENCLAMIDA;Ativo;57507378000365 - EMS S/A;66;rxcui_ok anvisa_ok
+Captopril;captopril;Comprimido 25 mg;25 mg;Emergencia, Clinica;1998;118190205;CAPTOLAB;Ativo;92265552000905 - MULTILAB INDUSTRIA E COMERCIO DE PRODUTOS FARMACEUTICOS LTDA;120;rxcui_ok anvisa_ok
+Enalapril;enalapril;Comprimido 10 mg;10 mg;Clinica;203123;118360008;ENACOR;Inativo;33019548000132 - SILVESTRE LABS QU�MICA E FARMAC�UTICA LTDA;1;rxcui_ok anvisa_ok
+Losartana;losartana;Comprimido 50 mg;50 mg;Clinica;52175;112130321;LOSARTANA POT�SSICA;Inativo;53162095000106 - BIOSINT�TICA FARMAC�UTICA LTDA;126;rxcui_ok anvisa_ok
+Anlodipino;anlodipino;Comprimido 5 mg;5 mg;Clinica;104416;143810163;ALIVPRESS;Ativo;02814497000107 - CIMED INDUSTRIA S.A;170;rxcui_ok anvisa_ok
+Hidroclorotiazida;hidroclorotiazida;Comprimido 25 mg;25 mg;Clinica;5487;108580010;DI-HIDROCLOROTIAZIDA;Inativo;51603488000182 - PRODOTTI LABORAT�RIO FARMAC�UTICO LTDA.;71;rxcui_ok anvisa_ok
+Espironolactona;espironolactona;Comprimido 25 mg;25 mg;Clinica;9997;121100419;ALDACTONE;Ativo;61072393000133 - PFIZER BRASIL LTDA;20;rxcui_ok anvisa_ok
+Atenolol;atenolol;Comprimido 50 mg;50 mg;Clinica;1202;125680146;ATENOLOL;Ativo;73856593000166 - PRATI DONADUZZI & CIA LTDA;84;rxcui_ok anvisa_ok
+Carvedilol;carvedilol;Comprimido 6,25 mg;6,25 mg;Clinica;20352;101000643;COREG;Inativo;33009945000123 - PRODUTOS ROCHE QU�MICOS E FARMAC�UTICOS S.A.;46;rxcui_ok anvisa_ok
+Amiodarona (comprimido);amiodarona comprimido;Comprimido 200 mg;200 mg;Clinica;203114;;;;;0;rxcui_ok
+Digoxina (comprimido);digoxina comprimido;Comprimido 0,25 mg;0,25 mg;Clinica;3407;101620135;DARROWCOR;Inativo;33051491000159 - LABORAT�RIOS PIERRE FABRE DO BRASIL LTDA;56;rxcui_ok anvisa_ok
+Warfarina;warfarina;Comprimido 5 mg;5 mg;Clinica;11289;;;;;0;rxcui_ok
+Rivaroxabana;rivaroxabana;Comprimido 20 mg;20 mg;Clinica;1114195;183260469;ITEXTAR;Ativo;10588595001092 - SANOFI MEDLEY FARMAC�UTICA LTDA.;59;rxcui_ok anvisa_ok
+Apixabana;apixabana;Comprimido 5 mg;5 mg;Clinica;1364430;102351434;APIXABANA;Ativo;57507378000365 - EMS S/A;33;rxcui_ok anvisa_ok
+Clopidogrel;clopidogrel;Comprimido 75 mg;75 mg;Clinica, Emergencia;236991;167730534;BISSULFATO DE CLOPIDOGREL;Ativo;05044984000126 - LEGRAND PHARMA IND�STRIA FARMAC�UTICA LTDA;68;rxcui_ok anvisa_ok
+AAS;aas;Comprimido 100 mg;100 mg;Clinica, Emergencia;1191;;;;;0;rxcui_ok
+Atorvastatina;atorvastatina;Comprimido 20 mg;20 mg;Clinica;83367;100380070;ATORVAN;Inativo;46179008000168 - BRASTERAPICA PHARMACEUTICA LTDA.;3;rxcui_ok anvisa_ok
+Prednisona;prednisona;Comprimido 20 mg;20 mg;Clinica;8640;100380080;PREDITEC;Inativo;46179008000168 - BRASTERAPICA PHARMACEUTICA LTDA.;65;rxcui_ok anvisa_ok
+Levotiroxina (comprimido);levotiroxina comprimido;Comprimido 100 mcg;100 mcg;Clinica;10582;;;;;0;rxcui_ok
+Acido folico (comprimido);acido folico comprimido;Comprimido 5 mg;5 mg;Clinica, Obstetricia;4511;103700157;AFOPIC;Ativo;17159229000176 - LABORAT�RIO TEUTO BRASILEIRO S/A;41;rxcui_ok anvisa_ok
+Sulfato ferroso;sulfato ferroso;Comprimido 40 mg Fe;40 mg;Clinica;24947;143810103;CIMEFER;Inativo;02814497000107 - CIMED INDUSTRIA S.A;27;rxcui_ok anvisa_ok
+Metotrexato (comprimido);metotrexato comprimido;Comprimido 2,5 mg;2,5 mg;Oncologia, Clinica;6851;104970201;UNI-TREXATO;Inativo;60665981000118 - UNI�O QU�MICA FARMAC�UTICA NACIONAL S/A;25;rxcui_ok anvisa_ok
+Hidroxiureia (comprimido);hidroxiureia comprimido;Comprimido 500 mg;500 mg;Oncologia;5552;110130255;UREATIV 20;Inativo;44363661000157 - GLENMARK FARMAC�UTICA LTDA;26;rxcui_ok anvisa_ok
+Fluconazol (comprimido);fluconazol comprimido;Comprimido 150 mg;150 mg;Clinica;4450;100380057;FLUCOTIL;Inativo;46179008000168 - BRASTERAPICA PHARMACEUTICA LTDA.;98;rxcui_ok anvisa_ok
+Aciclovir (comprimido);aciclovir comprimido;Comprimido 200 mg;200 mg;Clinica;281;126750287;ACICLOVIR;Inativo;72593791000111 - NOVA QUIMICA FARMAC�UTICA S/A;117;rxcui_ok anvisa_ok
+Azitromicina;azitromicina;Comprimido 500 mg;500 mg;Clinica, Emergencia;18631;167730250;AZITROMICINA;Inativo;05044984000126 - LEGRAND PHARMA IND�STRIA FARMAC�UTICA LTDA;38;rxcui_ok anvisa_ok
+Claritromicina;claritromicina;Comprimido 500 mg;500 mg;Clinica;21212;101810311;CLAMICIN;Inativo;50929710000179 - MEDLEY IND�STRIA FARMAC�UTICA LTDA;47;rxcui_ok anvisa_ok
+Doxiciclina;doxiciclina;Comprimido 100 mg;100 mg;Clinica;3640;102350365;CLORIDRATO DE DOXICICLINA;Inativo;57507378000365 - EMS S/A;3;rxcui_ok anvisa_ok
+Ciprofloxacino (comprimido);ciprofloxacino comprimido;Comprimido 500 mg;500 mg;Clinica;235851;112080033;LQFEX - OFLOXACINO;Inativo;00394452000103 - LABORAT�RIO QU�MICO FARMAC�UTICO DO EX�RCITO;59;rxcui_ok anvisa_ok
+Levofloxacino (comprimido);levofloxacino comprimido;Comprimido 500 mg;500 mg;Clinica;82122;112080033;LQFEX - OFLOXACINO;Inativo;00394452000103 - LABORAT�RIO QU�MICO FARMAC�UTICO DO EX�RCITO;45;rxcui_ok anvisa_ok
+Nitrofurantoina;nitrofurantoina;Comprimido 100 mg;100 mg;Clinica;221129;121100291;NITROFURANTOINA;Inativo;61072393000133 - PFIZER BRASIL LTDA;9;rxcui_ok anvisa_ok
+Cefalexina;cefalexina;Comprimido 500 mg;500 mg;Clinica;2231;100430735;CEFALEXINA;Inativo;61190096000192 - EUROFARMA LABORATORIOS S.A.;37;rxcui_ok anvisa_ok
+Amoxicilina;amoxicilina;Comprimido 500 mg;500 mg;Clinica, Pediatria;723;102940152;AMOXICILINA;Inativo;61541132000115 - NEOLATINA COM�RCIO E IND�STRIA FARMACEUTICA S.A;63;rxcui_ok anvisa_ok
+Metronidazol (comprimido);metronidazol comprimido;Comprimido 250 mg;250 mg;Clinica, Cirurgia;103866;110850014;NIDAZOFARMA;Ativo;06628333000146 - FARMACE IND�STRIA QU�MICO-FARMAC�UTICA CEARENSE LTDA;81;rxcui_ok anvisa_ok
+Albendazol;albendazol;Comprimido 400 mg;400 mg;Clinica, Pediatria;430;101810486;ALBENDAZOL;Inativo;50929710000179 - MEDLEY IND�STRIA FARMAC�UTICA LTDA;96;rxcui_ok anvisa_ok
+Ivermectina;ivermectina;Comprimido 6 mg;6 mg;Clinica;6069;118190358;IVERMECTINA;Ativo;92265552000905 - MULTILAB INDUSTRIA E COMERCIO DE PRODUTOS FARMACEUTICOS LTDA;24;rxcui_ok anvisa_ok
+Oseltamivir (comprimido);oseltamivir comprimido;Comprimido 75 mg;75 mg;Clinica;259275;;;;;0;rxcui_ok
+Baloxavir;baloxavir;Comprimido 40 mg;40 mg;Clinica;2197842;101000673;XOFLUZA;Inativo;33009945000123 - PRODUTOS ROCHE QU�MICOS E FARMAC�UTICOS S.A.;1;rxcui_ok anvisa_ok
