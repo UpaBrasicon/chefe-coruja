@@ -527,9 +527,11 @@ export type Database = {
           created_at: string
           criado_por: string | null
           data: string
+          fracionado: boolean
           id: string
           observacao: string | null
           perfil_id: string
+          plantao_origem_id: string | null
           quinzenal: boolean
           rotulo: string | null
           setor_id: string
@@ -542,9 +544,11 @@ export type Database = {
           created_at?: string
           criado_por?: string | null
           data: string
+          fracionado?: boolean
           id?: string
           observacao?: string | null
           perfil_id: string
+          plantao_origem_id?: string | null
           quinzenal?: boolean
           rotulo?: string | null
           setor_id: string
@@ -557,9 +561,11 @@ export type Database = {
           created_at?: string
           criado_por?: string | null
           data?: string
+          fracionado?: boolean
           id?: string
           observacao?: string | null
           perfil_id?: string
+          plantao_origem_id?: string | null
           quinzenal?: boolean
           rotulo?: string | null
           setor_id?: string
@@ -580,6 +586,13 @@ export type Database = {
             columns: ["perfil_id"]
             isOneToOne: false
             referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_plantao_plantao_origem_id_fkey"
+            columns: ["plantao_origem_id"]
+            isOneToOne: false
+            referencedRelation: "escala_plantao"
             referencedColumns: ["id"]
           },
           {
@@ -659,6 +672,54 @@ export type Database = {
           },
           {
             foreignKeyName: "escala_plantoes_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      historico_escala: {
+        Row: {
+          acao: string
+          created_at: string
+          dados: Json | null
+          detalhe: string | null
+          id: string
+          perfil_id: string | null
+          plantao_id: string | null
+          unidade_id: string
+        }
+        Insert: {
+          acao: string
+          created_at?: string
+          dados?: Json | null
+          detalhe?: string | null
+          id?: string
+          perfil_id?: string | null
+          plantao_id?: string | null
+          unidade_id: string
+        }
+        Update: {
+          acao?: string
+          created_at?: string
+          dados?: Json | null
+          detalhe?: string | null
+          id?: string
+          perfil_id?: string | null
+          plantao_id?: string | null
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historico_escala_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historico_escala_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -853,6 +914,68 @@ export type Database = {
           via?: string | null
         }
         Relationships: []
+      }
+      mensagens_chat: {
+        Row: {
+          conteudo: string
+          created_at: string
+          criado_por: string | null
+          destinatario_id: string | null
+          id: string
+          lida_em: string | null
+          remetente_id: string
+          unidade_id: string
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          criado_por?: string | null
+          destinatario_id?: string | null
+          id?: string
+          lida_em?: string | null
+          remetente_id: string
+          unidade_id: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          criado_por?: string | null
+          destinatario_id?: string | null
+          id?: string
+          lida_em?: string | null
+          remetente_id?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_chat_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensagens_chat_destinatario_id_fkey"
+            columns: ["destinatario_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensagens_chat_remetente_id_fkey"
+            columns: ["remetente_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensagens_chat_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notificacoes_plantonista: {
         Row: {
@@ -1209,6 +1332,98 @@ export type Database = {
           },
         ]
       }
+      presenca_plantonista: {
+        Row: {
+          checkin_dentro: boolean | null
+          checkin_em: string | null
+          checkin_lat: number | null
+          checkin_lng: number | null
+          checkout_dentro: boolean | null
+          checkout_em: string | null
+          checkout_lat: number | null
+          checkout_lng: number | null
+          created_at: string
+          criado_por: string | null
+          data: string
+          escala_plantao_id: string | null
+          id: string
+          observacao: string | null
+          perfil_id: string
+          turno: string
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          checkin_dentro?: boolean | null
+          checkin_em?: string | null
+          checkin_lat?: number | null
+          checkin_lng?: number | null
+          checkout_dentro?: boolean | null
+          checkout_em?: string | null
+          checkout_lat?: number | null
+          checkout_lng?: number | null
+          created_at?: string
+          criado_por?: string | null
+          data: string
+          escala_plantao_id?: string | null
+          id?: string
+          observacao?: string | null
+          perfil_id: string
+          turno: string
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          checkin_dentro?: boolean | null
+          checkin_em?: string | null
+          checkin_lat?: number | null
+          checkin_lng?: number | null
+          checkout_dentro?: boolean | null
+          checkout_em?: string | null
+          checkout_lat?: number | null
+          checkout_lng?: number | null
+          created_at?: string
+          criado_por?: string | null
+          data?: string
+          escala_plantao_id?: string | null
+          id?: string
+          observacao?: string | null
+          perfil_id?: string
+          turno?: string
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presenca_plantonista_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presenca_plantonista_escala_plantao_id_fkey"
+            columns: ["escala_plantao_id"]
+            isOneToOne: false
+            referencedRelation: "escala_plantao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presenca_plantonista_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presenca_plantonista_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           criado_em: string
@@ -1282,10 +1497,69 @@ export type Database = {
           },
         ]
       }
+      remuneracoes_plantao: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          criado_por: string | null
+          id: string
+          setor_id: string | null
+          turno: string | null
+          unidade_id: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          criado_por?: string | null
+          id?: string
+          setor_id?: string | null
+          turno?: string | null
+          unidade_id: string
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          criado_por?: string | null
+          id?: string
+          setor_id?: string | null
+          turno?: string | null
+          unidade_id?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remuneracoes_plantao_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remuneracoes_plantao_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remuneracoes_plantao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       setores: {
         Row: {
           ativo: boolean
           created_at: string
+          especialidade: string | null
           id: string
           nome: string
           ordem: number
@@ -1296,6 +1570,7 @@ export type Database = {
         Insert: {
           ativo?: boolean
           created_at?: string
+          especialidade?: string | null
           id?: string
           nome: string
           ordem?: number
@@ -1306,6 +1581,7 @@ export type Database = {
         Update: {
           ativo?: boolean
           created_at?: string
+          especialidade?: string | null
           id?: string
           nome?: string
           ordem?: number
@@ -1509,42 +1785,155 @@ export type Database = {
           },
         ]
       }
-      unidades: {
+      trocas_plantao: {
         Row: {
-          ativo: boolean
-          cnes: string | null
           created_at: string
+          criado_por: string | null
+          decidido_por: string | null
+          erro: string | null
           id: string
-          municipio: string | null
-          nome: string
-          organizacao_id: string
-          tipo: Database["public"]["Enums"]["tipo_unidade"]
-          uf: string | null
+          mensagem: string | null
+          perfil_a_id: string
+          perfil_b_id: string
+          plantao_a_id: string
+          plantao_b_id: string
+          status: string
+          unidade_id: string
           updated_at: string
         }
         Insert: {
-          ativo?: boolean
-          cnes?: string | null
           created_at?: string
+          criado_por?: string | null
+          decidido_por?: string | null
+          erro?: string | null
           id?: string
-          municipio?: string | null
-          nome: string
-          organizacao_id: string
-          tipo: Database["public"]["Enums"]["tipo_unidade"]
-          uf?: string | null
+          mensagem?: string | null
+          perfil_a_id: string
+          perfil_b_id: string
+          plantao_a_id: string
+          plantao_b_id: string
+          status?: string
+          unidade_id: string
           updated_at?: string
         }
         Update: {
+          created_at?: string
+          criado_por?: string | null
+          decidido_por?: string | null
+          erro?: string | null
+          id?: string
+          mensagem?: string | null
+          perfil_a_id?: string
+          perfil_b_id?: string
+          plantao_a_id?: string
+          plantao_b_id?: string
+          status?: string
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trocas_plantao_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trocas_plantao_decidido_por_fkey"
+            columns: ["decidido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trocas_plantao_perfil_a_id_fkey"
+            columns: ["perfil_a_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trocas_plantao_perfil_b_id_fkey"
+            columns: ["perfil_b_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trocas_plantao_plantao_a_id_fkey"
+            columns: ["plantao_a_id"]
+            isOneToOne: false
+            referencedRelation: "escala_plantao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trocas_plantao_plantao_b_id_fkey"
+            columns: ["plantao_b_id"]
+            isOneToOne: false
+            referencedRelation: "escala_plantao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trocas_plantao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unidades: {
+        Row: {
+          ativo: boolean
+          canal_comunicacao: string
+          cnes: string | null
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          municipio: string | null
+          nome: string
+          organizacao_id: string
+          raio_metros: number
+          tipo: Database["public"]["Enums"]["tipo_unidade"]
+          uf: string | null
+          updated_at: string
+          whatsapp_numero: string | null
+        }
+        Insert: {
           ativo?: boolean
+          canal_comunicacao?: string
           cnes?: string | null
           created_at?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
+          municipio?: string | null
+          nome: string
+          organizacao_id: string
+          raio_metros?: number
+          tipo: Database["public"]["Enums"]["tipo_unidade"]
+          uf?: string | null
+          updated_at?: string
+          whatsapp_numero?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          canal_comunicacao?: string
+          cnes?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
           municipio?: string | null
           nome?: string
           organizacao_id?: string
+          raio_metros?: number
           tipo?: Database["public"]["Enums"]["tipo_unidade"]
           uf?: string | null
           updated_at?: string
+          whatsapp_numero?: string | null
         }
         Relationships: [
           {
@@ -1653,11 +2042,29 @@ export type Database = {
         Returns: string
       }
       aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
+      aprovar_troca: { Args: { p_troca: string }; Returns: undefined }
       data_atual: { Args: never; Returns: string }
       eh_super_admin: { Args: never; Returns: boolean }
+      fracionar_plantao: {
+        Args: { p_partes?: number; p_plantao: string }
+        Returns: number
+      }
       gerar_escala_mensal: {
         Args: { p_ano: number; p_mes: number; p_unidade: string }
         Returns: number
+      }
+      gerar_extrato_plantonista: {
+        Args: { p_fim: string; p_inicio: string; p_unidade: string }
+        Returns: {
+          data: string
+          nome_completo: string
+          perfil_id: string
+          plantao_id: string
+          setor_id: string
+          setor_nome: string
+          turno: string
+          valor: number
+        }[]
       }
       gerar_notificacoes_turno: {
         Args: { p_unidade: string }
@@ -1705,6 +2112,10 @@ export type Database = {
           uf_crm: string
         }[]
       }
+      recusar_troca: {
+        Args: { p_motivo?: string; p_troca: string }
+        Returns: undefined
+      }
       registrar_auditoria: {
         Args: {
           p_acao: string
@@ -1715,6 +2126,19 @@ export type Database = {
         }
         Returns: string
       }
+      registrar_checkin: {
+        Args: {
+          p_lat: number
+          p_lng: number
+          p_observacao?: string
+          p_unidade: string
+        }
+        Returns: string
+      }
+      registrar_checkout: {
+        Args: { p_lat: number; p_lng: number; p_registro: string }
+        Returns: undefined
+      }
       registrar_prescricao_itens: {
         Args: { p_itens?: Json; p_observacoes?: string; p_paciente: string }
         Returns: string
@@ -1723,6 +2147,7 @@ export type Database = {
         Args: { p_observacoes?: string; p_paciente: string }
         Returns: string
       }
+      remover_fracionamento: { Args: { p_plantao: string }; Returns: undefined }
       resumo_carga_plantonistas: {
         Args: { p_fim: string; p_inicio: string; p_unidade: string }
         Returns: {
@@ -1756,6 +2181,10 @@ export type Database = {
           ordem: number
           tipo: string
         }[]
+      }
+      solicitar_troca: {
+        Args: { p_mensagem?: string; p_plantao_a: string; p_plantao_b: string }
+        Returns: string
       }
       tem_acesso_atendimento: { Args: { unidade: string }; Returns: boolean }
       transferir_paciente: {

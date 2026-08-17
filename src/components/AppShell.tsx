@@ -4,15 +4,22 @@ import {
   BedDouble,
   Bell,
   CalendarClock,
+  CalendarRange,
+  ClipboardCheck,
   Eye,
+  History,
   Hospital,
   Images,
   LayoutDashboard,
   LogOut,
+  MapPin,
   Menu,
+  MessageSquare,
+  Settings2,
   Stethoscope,
   UserRound,
   Users,
+  Wallet,
   X,
 } from 'lucide-react'
 import * as React from 'react'
@@ -52,6 +59,12 @@ export function AppShell() {
   if (ehPlantonista) {
     itens.push({ to: '/plantonista', label: 'Central do Plantonista', icon: Stethoscope, end: true })
     itens.push({ to: '/plantao', label: 'Plantão', icon: Activity, end: true })
+    itens.push({ to: '/meu-plantao', label: 'Meu Plantão', icon: MapPin, end: true })
+    itens.push({ to: '/escala', label: 'Minha Escala', icon: CalendarRange, end: true })
+    itens.push({ to: '/minha-agenda', label: 'Minha Agenda', icon: CalendarClock, end: true })
+    itens.push({ to: '/vagas', label: 'Vagas', icon: ClipboardCheck, end: true })
+    itens.push({ to: '/extrato', label: 'Extrato', icon: Wallet, end: true })
+    itens.push({ to: '/mensagens', label: 'Mensagens', icon: MessageSquare, end: true })
     itens.push({ to: '/internacao', label: 'Painel de Internação', icon: Hospital, end: true })
     itens.push({ to: '/observacao', label: 'Observação', icon: Eye, end: true })
     itens.push({ to: '/notificacoes', label: 'Avisos', icon: Bell, end: true })
@@ -59,6 +72,8 @@ export function AppShell() {
   if (ehGestor) {
     itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })
     itens.push({ to: '/escala', label: 'Escala', icon: CalendarClock, end: true })
+    itens.push({ to: '/historico-escala', label: 'Histórico da Escala', icon: History })
+    itens.push({ to: '/configuracao', label: 'Configurações', icon: Settings2 })
     itens.push({ to: '/banners', label: 'Imagens da Unidade', icon: Images })
   }
   if (ehAdmin) {
@@ -69,10 +84,7 @@ export function AppShell() {
       { to: '/banners', label: 'Imagens da Unidade', icon: Images }
     )
   }
-  if (ehPlantonista) {
-    itens.push({ to: '/escala', label: 'Escala', icon: CalendarClock, end: true })
-  }
-  if (!ehPlantonista) {
+  if (!ehPlantonista && !ehGestor && !ehAdmin) {
     itens.push({ to: '/plantonista', label: 'Central Clínica', icon: Stethoscope })
   }
 

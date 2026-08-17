@@ -154,7 +154,7 @@ export default function Escala() {
   // Ações do plantonista no dia
   const [diaSelecionado, setDiaSelecionado] = React.useState<string | null>(null)
   const [fechando, setFechando] = React.useState(false)
-  const [acao, setAcao] = React.useState<'sair_fixo' | 'passar_plantao' | 'justificar_falta' | null>(null)
+  const [acao, setAcao] = React.useState<'sair_fixo' | 'passar_plantao' | 'justificar_falta' | 'trocar_plantao' | 'fracionar' | null>(null)
   const [justificativa, setJustificativa] = React.useState('')
   const [destinoId, setDestinoId] = React.useState('')
   const [tipoFalta, setTipoFalta] = React.useState<'atestado_medico' | 'licenca_maternidade'>('atestado_medico')
@@ -163,6 +163,11 @@ export default function Escala() {
   const [mensagem, setMensagem] = React.useState<string | null>(null)
   const [erroAcao, setErroAcao] = React.useState<string | null>(null)
   const [mensagemGeracao, setMensagemGeracao] = React.useState<string | null>(null)
+
+  // Troca bilateral
+  const [meuPlantaoTroca, setMeuPlantaoTroca] = React.useState<string>('')
+  const [outroPlantaoTroca, setOutroPlantaoTroca] = React.useState<string>('')
+  const [fracionarPartes, setFracionarPartes] = React.useState('2')
 
   const ehGestor = papelAtivo === 'gestor'
   const ehAdmin = papelAtivo === 'admin'
@@ -229,6 +234,42 @@ export default function Escala() {
       const { data, error } = await supabase.rpc('plantonistas_da_unidade', { p_unidade: unidadeId! })
       if (error) throw error
       return (data ?? []) as PlantonistaDaUnidade[]
+    },
+  })
+
+  // Plantões de outros plantonistas (para troca bilateral)
+  const { data: plantoesDeOutros, isLoading: carregandoOutros } = useQuery({
+    queryKey: ['escala-plantao-outros', unidadeId, mesInicio, mesFim],
+    enabled: !!unidadeId && !!diaSelecionado,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('escala_plantao')
+        .select('id, setor_id, perfil_id, data, turno, rotulo, perfis!escala_plantao_perfil_id_fkey(id, nome_completo, crm)')
+        .eq('unidade_id', unidadeId!)
+        .eq('ativo', true)
+        .not('perfil_id', 'is', null)
+        .neq('perfil_id', perfil?.id ?? '')
+        .gte('data', mesInicio)
+        .lte('data', mesFim)
+      if (error) throw error
+      return (data ?? []) as unknown as PlantaoComPerfil[]
+    },
+  })
+
+  // Minhas solicitações de troca (status)
+  const { data: minhasTrocas, refetch: refetchTrocas } = useQuery({
+    queryKey: ['minhas-trocas', unidadeId, perfil?.id],
+    enabled: !!unidadeId && !!perfil,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('trocas_plantao')
+        .select('id, status, mensagem, erro, created_at, plantao_a_id, plantao_b_id')
+        .or(`perfil_a_id.eq.${perfil!.id},perfil_b_id.eq.${perfil!.id}`)
+        .eq('unidade_id', unidadeId!)
+        .order('created_at', { ascending: false })
+        .limit(30)
+      if (error) throw error
+      return (data ?? []) as { id: string; status: string; mensagem: string | null; erro: string | null; created_at: string; plantao_a_id: string; plantao_b_id: string }[]
     },
   })
 
@@ -657,6 +698,48 @@ export default function Escala() {
     }
   }
 
+  async function enviarTrocaPlantao() {
+    if (!meuPlantaoTroca || !outroPlantaoTroca) return
+    setErroAcao(null)
+    setMensagem(null)
+    try {
+      const { error } = await supabase.rpc('solicitar_troca', {
+        p_plantao_a: meuPlantaoTroca,
+        p_plantao_b: outroPlantaoTroca,
+        p_mensagem: justificativa || undefined,
+      })
+      if (error) throw error
+      invalidar()
+      void refetchTrocas()
+      setMensagem('Troca solicitada. Se a aprovação automática estiver habilitada, foi aplicada na hora.')
+      setMeuPlantaoTroca('')
+      setOutroPlantaoTroca('')
+      setJustificativa('')
+    } catch (e) {
+      setErroAcao(e instanceof Error ? e.message : 'Erro ao solicitar a troca.')
+    }
+  }
+
+  async function enviarFracionar() {
+    if (!diaSelecionado) return
+    setErroAcao(null)
+    setMensagem(null)
+    const escalaId = plantoesDoDia(diaSelecionado)[0]?.id
+    if (!escalaId) return
+    try {
+      const { data, error } = await supabase.rpc('fracionar_plantao', {
+        p_plantao: escalaId,
+        p_partes: Number(fracionarPartes || 2),
+      })
+      if (error) throw error
+      invalidar()
+      setMensagem(data ? `Plantão fracionado em ${data} partes. As partes estão disponíveis como vagas.` : 'Plantão fracionado.')
+      setAcao(null)
+    } catch (e) {
+      setErroAcao(e instanceof Error ? e.message : 'Erro ao fracionar o plantão.')
+    }
+  }
+
   const diasDoMes = React.useMemo(() => gerarDiasDoMes(mes), [mes])
 
   return (
@@ -819,6 +902,28 @@ export default function Escala() {
                         <Button
                           variant="outline"
                           className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
+                          onClick={() => setAcao('trocar_plantao')}
+                        >
+                          <RefreshCcw className="size-4 text-violet-600" />
+                          <span className="font-medium">Trocar plantão</span>
+                          <span className="text-[11px] font-normal text-muted-foreground">
+                            Troca bilateral com outro plantonista
+                          </span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
+                          onClick={() => setAcao('fracionar')}
+                        >
+                          <FileText className="size-4 text-rose-600" />
+                          <span className="font-medium">Fracionar plantão</span>
+                          <span className="text-[11px] font-normal text-muted-foreground">
+                            Dividir em partes para negociação
+                          </span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
                           onClick={() => setAcao('justificar_falta')}
                         >
                           <FileText className="size-4 text-indigo-600" />
@@ -853,6 +958,94 @@ export default function Escala() {
                         </Button>
                         <Button onClick={enviarSairFixo}>
                           <LogOut /> Solicitar saída do fixo
+                        </Button>
+                      </div>
+                    </div>
+                  ) : acao === 'trocar_plantao' ? (
+                    <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
+                      <div className="flex flex-col gap-1.5">
+                        <Label>Meu plantão (que quero trocar)</Label>
+                        <Select value={meuPlantaoTroca || null} onValueChange={(v) => setMeuPlantaoTroca(v ?? '')}>
+                          <SelectTrigger className="w-full bg-white">
+                            <SelectValue placeholder="Selecione um dos meus plantões" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {meusPlantoes.map((p) => (
+                              <SelectItem key={p.id} value={p.id}>
+                                {fmtDiaBR(p.data)} · {TURNO_LABEL[p.turno] ?? p.turno}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="mt-3 flex flex-col gap-1.5">
+                        <Label>Plantão de outro plantonista (que quero assumir)</Label>
+                        <Select value={outroPlantaoTroca || null} onValueChange={(v) => setOutroPlantaoTroca(v ?? '')}>
+                          <SelectTrigger className="w-full bg-white">
+                            <SelectValue placeholder="Selecione o plantão do outro" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(plantoesDeOutros ?? []).map((p) => (
+                              <SelectItem key={p.id} value={p.id}>
+                                {fmtDiaBR(p.data)} · {TURNO_LABEL[p.turno] ?? p.turno} ·{' '}
+                                {p.perfis?.nome_completo ?? '?'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {carregandoOutros && <Spinner />}
+                      </div>
+                      <div className="mt-3 flex flex-col gap-1.5">
+                        <Label htmlFor="troca-just">Mensagem (opcional)</Label>
+                        <Textarea
+                          id="troca-just"
+                          value={justificativa}
+                          onChange={(e) => setJustificativa(e.target.value)}
+                          placeholder="Motivo da troca…"
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Na troca bilateral, você oferece um plantão e recebe outro em troca. Validações de
+                        conflito de horário são feitas automaticamente.
+                      </p>
+                      {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
+                      {mensagem && <p className="mt-2 text-sm text-emerald-700">{mensagem}</p>}
+                      <div className="mt-3 flex justify-end gap-2">
+                        <Button variant="ghost" onClick={() => setAcao(null)}>
+                          Voltar
+                        </Button>
+                        <Button onClick={enviarTrocaPlantao} disabled={!meuPlantaoTroca || !outroPlantaoTroca}>
+                          <RefreshCcw /> Solicitar troca
+                        </Button>
+                      </div>
+                    </div>
+                  ) : acao === 'fracionar' ? (
+                    <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
+                      <div className="flex flex-col gap-1.5">
+                        <Label>Em quantas partes deseja dividir?</Label>
+                        <Select value={fracionarPartes} onValueChange={(v) => setFracionarPartes(v ?? '2')}>
+                          <SelectTrigger className="w-full bg-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="2">2 partes</SelectItem>
+                            <SelectItem value="3">3 partes</SelectItem>
+                            <SelectItem value="4">4 partes</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        O plantão será transformado em partes independentes (vagas) para facilitar a
+                        negociação parcial. Cada parte pode ser candidatada por outros plantonistas.
+                      </p>
+                      {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
+                      {mensagem && <p className="mt-2 text-sm text-emerald-700">{mensagem}</p>}
+                      <div className="mt-3 flex justify-end gap-2">
+                        <Button variant="ghost" onClick={() => setAcao(null)}>
+                          Voltar
+                        </Button>
+                        <Button onClick={enviarFracionar}>
+                          <FileText /> Fracionar
                         </Button>
                       </div>
                     </div>
@@ -1015,6 +1208,71 @@ export default function Escala() {
               )}
             </CardContent>
           </Card>
+
+          {/* TROCAS BILATERAIS */}
+          {(minhasTrocas ?? []).length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <RefreshCcw className="size-4 text-muted-foreground" />
+                  Minhas trocas
+                </CardTitle>
+                <CardDescription>Solicitações de troca bilateral relacionadas a você.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2">
+                {(minhasTrocas ?? []).map((t) => (
+                  <div key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-2.5 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={
+                          t.status === 'aprovado'
+                            ? 'success'
+                            : t.status === 'recusado' || t.status === 'erro'
+                              ? 'destructive'
+                              : t.status === 'pendente'
+                                ? 'warning'
+                                : 'secondary'
+                        }
+                      >
+                        {t.status}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(t.created_at).toLocaleString('pt-BR')}
+                      </span>
+                    </div>
+                    {t.status === 'erro' && t.erro && (
+                      <span className="text-xs text-red-600">{t.erro}</span>
+                    )}
+                    {t.status === 'pendente' && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          onClick={async () => {
+                            await supabase.rpc('aprovar_troca', { p_troca: t.id })
+                            void refetchTrocas()
+                            invalidar()
+                          }}
+                        >
+                          <Check /> Aprovar
+                        </Button>
+                        <Button
+                          size="xs"
+                          variant="ghost"
+                          onClick={async () => {
+                            await supabase.rpc('recusar_troca', { p_troca: t.id })
+                            void refetchTrocas()
+                          }}
+                        >
+                          <X /> Recusar
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
           {/* CONTADOR MENSAL */}
           <Card>

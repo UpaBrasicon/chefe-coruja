@@ -20,6 +20,13 @@ import InternacaoPainel from '@/pages/InternacaoPainel'
 import ObservacaoPainel from '@/pages/ObservacaoPainel'
 import Notificacoes from '@/pages/Notificacoes'
 import Perfil from '@/pages/Perfil'
+import MeuPlantao from '@/pages/MeuPlantao'
+import Extrato from '@/pages/Extrato'
+import Vagas from '@/pages/Vagas'
+import HistoricoEscala from '@/pages/HistoricoEscala'
+import Configuracao from '@/pages/Configuracao'
+import Mensagens from '@/pages/Mensagens'
+import MinhaAgenda from '@/pages/MinhaAgenda'
 import { Banners } from '@/pages/gestor/Banners'
 import PlantonistaHome from '@/pages/plantonista/PlantonistaHome'
 import SectionHome from '@/pages/plantonista/SectionHome'
@@ -72,6 +79,8 @@ export default function App() {
                   </Route>
                   <Route element={<RequireRole papeis={['gestor', 'admin']} />}>
                     <Route path="/banners" element={<Banners />} />
+                    <Route path="/configuracao" element={<Configuracao />} />
+                    <Route path="/historico-escala" element={<HistoricoEscala />} />
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin']} />}>
                     <Route path="/plantonista" element={<PlantonistaHome />} />
@@ -82,6 +91,11 @@ export default function App() {
                     <Route path="/observacao" element={<ObservacaoPainel />} />
                     <Route path="/notificacoes" element={<Notificacoes />} />
                     <Route path="/perfil" element={<Perfil />} />
+                    <Route path="/meu-plantao" element={<MeuPlantao />} />
+                    <Route path="/extrato" element={<Extrato />} />
+                    <Route path="/vagas" element={<Vagas />} />
+                    <Route path="/mensagens" element={<Mensagens />} />
+                    <Route path="/minha-agenda" element={<MinhaAgenda />} />
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista']} />}>
                     <Route path="/plantao" element={<PlantaoHome />} />
