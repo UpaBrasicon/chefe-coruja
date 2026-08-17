@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   Stethoscope,
+  UserRound,
   Users,
   X,
 } from 'lucide-react'
@@ -54,6 +55,7 @@ export function AppShell() {
     itens.push({ to: '/internacao', label: 'Painel de Internação', icon: Hospital, end: true })
     itens.push({ to: '/observacao', label: 'Observação', icon: Eye, end: true })
     itens.push({ to: '/notificacoes', label: 'Avisos', icon: Bell, end: true })
+    itens.push({ to: '/perfil', label: 'Meu Perfil', icon: UserRound, end: true })
   }
   if (ehGestor) {
     itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })
@@ -117,6 +119,13 @@ export function AppShell() {
             Trocar unidade
           </Button>
         )}
+        {perfil?.foto_url && (
+          <NavLink to="/perfil" aria-label="Meu perfil">
+            <span className="flex size-8 items-center justify-center overflow-hidden rounded-full border bg-muted">
+              <img src={perfil.foto_url} alt={perfil.nome_completo ?? 'Avatar'} className="h-full w-full object-cover" />
+            </span>
+          </NavLink>
+        )}
         {ehPlantonista && <SinoAvisos unidadeId={unidadeAtiva?.unidade_id} habilitado />}
         <Button variant="ghost" size="sm" onClick={handleSair}>
           <LogOut />
@@ -168,8 +177,19 @@ export function AppShell() {
           ))}
         </nav>
         <div className="border-t p-3">
-          <div className="mb-1 truncate text-sm font-medium">{perfil?.nome_completo}</div>
-          <div className="truncate text-xs text-muted-foreground">{perfil?.email}</div>
+          <NavLink to="/perfil" className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted">
+            <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-muted">
+              {perfil?.foto_url ? (
+                <img src={perfil.foto_url} alt={perfil.nome_completo ?? 'Avatar'} className="h-full w-full object-cover" />
+              ) : (
+                <UserRound className="size-5 text-muted-foreground" />
+              )}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-medium">{perfil?.nome_completo}</span>
+              <span className="block truncate text-xs text-muted-foreground">{perfil?.email}</span>
+            </span>
+          </NavLink>
         </div>
       </aside>
 

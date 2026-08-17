@@ -1042,10 +1042,13 @@ export type Database = {
           cpf: string | null
           created_at: string
           crm: string | null
+          dados_pessoais: Json
           email: string | null
+          foto_url: string | null
           id: string
           nome_completo: string
           telefone: string | null
+          tipo_sanguineo: string | null
           uf_crm: string | null
           updated_at: string
         }
@@ -1054,10 +1057,13 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           crm?: string | null
+          dados_pessoais?: Json
           email?: string | null
+          foto_url?: string | null
           id: string
           nome_completo: string
           telefone?: string | null
+          tipo_sanguineo?: string | null
           uf_crm?: string | null
           updated_at?: string
         }
@@ -1066,10 +1072,13 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           crm?: string | null
+          dados_pessoais?: Json
           email?: string | null
+          foto_url?: string | null
           id?: string
           nome_completo?: string
           telefone?: string | null
+          tipo_sanguineo?: string | null
           uf_crm?: string | null
           updated_at?: string
         }
