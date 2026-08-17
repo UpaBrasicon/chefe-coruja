@@ -450,6 +450,110 @@ export type Database = {
           },
         ]
       }
+      diluicao: {
+        Row: {
+          acesso: string | null
+          ajuste_renal: boolean | null
+          ajuste_renal_regra: string | null
+          alta_vigilancia: boolean | null
+          apresentacao: string
+          bolus_permitido: boolean | null
+          concentracao_maxima: string | null
+          created_at: string
+          data_revisao: string | null
+          diluicao_solucao: string[] | null
+          diluicao_volume_min_ml: number | null
+          estabilidade_refrig_h: number | null
+          estabilidade_ta_h: number | null
+          fonte: string
+          fotossensivel: boolean | null
+          id: string
+          incompatibilidades: string[] | null
+          medicamento_id: string | null
+          observacoes: string | null
+          principio_ativo: string
+          reconstituicao_concentracao: string | null
+          reconstituicao_diluente: string | null
+          reconstituicao_volume_ml: number | null
+          revisor_crf: string | null
+          status: string
+          tempo_infusao_min: number | null
+          updated_at: string
+          velocidade_max: string | null
+          via: string
+        }
+        Insert: {
+          acesso?: string | null
+          ajuste_renal?: boolean | null
+          ajuste_renal_regra?: string | null
+          alta_vigilancia?: boolean | null
+          apresentacao: string
+          bolus_permitido?: boolean | null
+          concentracao_maxima?: string | null
+          created_at?: string
+          data_revisao?: string | null
+          diluicao_solucao?: string[] | null
+          diluicao_volume_min_ml?: number | null
+          estabilidade_refrig_h?: number | null
+          estabilidade_ta_h?: number | null
+          fonte: string
+          fotossensivel?: boolean | null
+          id?: string
+          incompatibilidades?: string[] | null
+          medicamento_id?: string | null
+          observacoes?: string | null
+          principio_ativo: string
+          reconstituicao_concentracao?: string | null
+          reconstituicao_diluente?: string | null
+          reconstituicao_volume_ml?: number | null
+          revisor_crf?: string | null
+          status?: string
+          tempo_infusao_min?: number | null
+          updated_at?: string
+          velocidade_max?: string | null
+          via: string
+        }
+        Update: {
+          acesso?: string | null
+          ajuste_renal?: boolean | null
+          ajuste_renal_regra?: string | null
+          alta_vigilancia?: boolean | null
+          apresentacao?: string
+          bolus_permitido?: boolean | null
+          concentracao_maxima?: string | null
+          created_at?: string
+          data_revisao?: string | null
+          diluicao_solucao?: string[] | null
+          diluicao_volume_min_ml?: number | null
+          estabilidade_refrig_h?: number | null
+          estabilidade_ta_h?: number | null
+          fonte?: string
+          fotossensivel?: boolean | null
+          id?: string
+          incompatibilidades?: string[] | null
+          medicamento_id?: string | null
+          observacoes?: string | null
+          principio_ativo?: string
+          reconstituicao_concentracao?: string | null
+          reconstituicao_diluente?: string | null
+          reconstituicao_volume_ml?: number | null
+          revisor_crf?: string | null
+          status?: string
+          tempo_infusao_min?: number | null
+          updated_at?: string
+          velocidade_max?: string | null
+          via?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diluicao_medicamento_id_fkey"
+            columns: ["medicamento_id"]
+            isOneToOne: false
+            referencedRelation: "medicamento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       escala_fixa: {
         Row: {
           ativo: boolean
@@ -860,6 +964,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      medicamento: {
+        Row: {
+          alta_vigilancia: boolean
+          anvisa_empresa: string | null
+          anvisa_produto: string | null
+          anvisa_registro: string | null
+          anvisa_situacao: string | null
+          apresentacao: string | null
+          ativo: boolean
+          concentracao: string | null
+          created_at: string
+          fonte: string
+          id: string
+          obm_ampp: string | null
+          obm_id: string | null
+          principio_ativo: string
+          principio_ativo_norm: string
+          rxcui: string | null
+          setor_uso: string | null
+          updated_at: string
+        }
+        Insert: {
+          alta_vigilancia?: boolean
+          anvisa_empresa?: string | null
+          anvisa_produto?: string | null
+          anvisa_registro?: string | null
+          anvisa_situacao?: string | null
+          apresentacao?: string | null
+          ativo?: boolean
+          concentracao?: string | null
+          created_at?: string
+          fonte?: string
+          id?: string
+          obm_ampp?: string | null
+          obm_id?: string | null
+          principio_ativo: string
+          principio_ativo_norm: string
+          rxcui?: string | null
+          setor_uso?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alta_vigilancia?: boolean
+          anvisa_empresa?: string | null
+          anvisa_produto?: string | null
+          anvisa_registro?: string | null
+          anvisa_situacao?: string | null
+          apresentacao?: string | null
+          ativo?: boolean
+          concentracao?: string | null
+          created_at?: string
+          fonte?: string
+          id?: string
+          obm_ampp?: string | null
+          obm_id?: string | null
+          principio_ativo?: string
+          principio_ativo_norm?: string
+          rxcui?: string | null
+          setor_uso?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       medicamentos: {
         Row: {
@@ -2047,6 +2214,46 @@ export type Database = {
       aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
       aprovar_troca: { Args: { p_troca: string }; Returns: undefined }
       data_atual: { Args: never; Returns: string }
+      diluicao_publicada: {
+        Args: { p_medicamento: string }
+        Returns: {
+          acesso: string | null
+          ajuste_renal: boolean | null
+          ajuste_renal_regra: string | null
+          alta_vigilancia: boolean | null
+          apresentacao: string
+          bolus_permitido: boolean | null
+          concentracao_maxima: string | null
+          created_at: string
+          data_revisao: string | null
+          diluicao_solucao: string[] | null
+          diluicao_volume_min_ml: number | null
+          estabilidade_refrig_h: number | null
+          estabilidade_ta_h: number | null
+          fonte: string
+          fotossensivel: boolean | null
+          id: string
+          incompatibilidades: string[] | null
+          medicamento_id: string | null
+          observacoes: string | null
+          principio_ativo: string
+          reconstituicao_concentracao: string | null
+          reconstituicao_diluente: string | null
+          reconstituicao_volume_ml: number | null
+          revisor_crf: string | null
+          status: string
+          tempo_infusao_min: number | null
+          updated_at: string
+          velocidade_max: string | null
+          via: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "diluicao"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       eh_super_admin: { Args: never; Returns: boolean }
       fracionar_plantao: {
         Args: { p_partes?: number; p_plantao: string }
