@@ -21,7 +21,6 @@ import { PAPEL_LABEL } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { usePlantao } from '@/hooks/usePlantao'
-import { useNotificacoesTurno } from '@/hooks/useNotificacoesTurno'
 import { useWebPush } from '@/hooks/useWebPush'
 import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
 import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
@@ -45,12 +44,6 @@ export function AppShell() {
   const navigate = useNavigate()
   const [menuAberto, setMenuAberto] = React.useState(false)
 
-  // T3: badge de pendências (avisos) na lateral — só para plantonista
-  const { notificacoes: notifsTurno } = useNotificacoesTurno(
-    papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined,
-    papelAtivo === 'plantonista'
-  )
-
   // T1: Web Push (base) — ativa notificações do navegador
   useWebPush(papelAtivo === 'plantonista')
 
@@ -58,9 +51,9 @@ export function AppShell() {
   if (ehPlantonista) {
     itens.push({ to: '/plantonista', label: 'Central do Plantonista', icon: Stethoscope, end: true })
     itens.push({ to: '/plantao', label: 'Plantão', icon: Activity, end: true })
-    itens.push({ to: '/internacao', label: 'Internação', icon: Hospital, end: true })
+    itens.push({ to: '/internacao', label: 'Painel de Internação', icon: Hospital, end: true })
     itens.push({ to: '/observacao', label: 'Observação', icon: Eye, end: true })
-    itens.push({ to: '/notificacoes', label: 'Avisos', icon: Bell, end: true, badge: notifsTurno.length })
+    itens.push({ to: '/notificacoes', label: 'Avisos', icon: Bell, end: true })
   }
   if (ehGestor) {
     itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })

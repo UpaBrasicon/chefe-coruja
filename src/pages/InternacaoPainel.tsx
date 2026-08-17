@@ -54,7 +54,7 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
 
   const ehGestor = papelAtivo === 'gestor'
   const ehAdmin = papelAtivo === 'admin'
-  const titulo = modo === 'internacao' ? 'Internação' : 'Observação'
+  const titulo = modo === 'internacao' ? 'Painel de Internação' : 'Observação'
   const rpcSetores = modo === 'internacao' ? 'setores_internacao' : 'setores_observacao'
   const IconePainel = modo === 'internacao' ? Hospital : Eye
 
@@ -590,6 +590,12 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
         <UserPlus className="size-3.5" /> Para internar um paciente, use a Internação em Plantão e
         direcione-o para o setor. Transferências entre setores são registradas em auditoria.
       </p>
+      <div className="rounded-lg border border-dashed border-muted-foreground/30 px-4 py-3 text-xs text-muted-foreground">
+        <strong>Distinção:</strong> esta aba é o <strong>Painel de Internação</strong> (gerencia
+        pacientes por setor, transferências e auditoria). O <strong>documento de internação</strong>{' '}
+        (Dados do Paciente, prescrição, evolução, pedido de exames, AIH e exportação em PDF) fica em{' '}
+        <strong>Plantão → Internação</strong>.
+      </div>
     </div>
   )
 }
