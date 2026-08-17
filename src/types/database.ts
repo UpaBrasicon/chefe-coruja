@@ -305,6 +305,78 @@ export type Database = {
           },
         ]
       }
+      censo_ocupacao: {
+        Row: {
+          criado_em: string
+          data: string
+          giro_leito: number | null
+          internados: number
+          leitos_bloqueados: number
+          leitos_higienizacao: number
+          leitos_livres: number
+          leitos_ocupados: number
+          leitos_total: number
+          organizacao_id: string
+          permanencia_media_h: number | null
+          setor_id: string
+          snapshot: Json | null
+          taxa_ocupacao: number | null
+          turno: string
+          unidade_id: string
+        }
+        Insert: {
+          criado_em?: string
+          data: string
+          giro_leito?: number | null
+          internados?: number
+          leitos_bloqueados?: number
+          leitos_higienizacao?: number
+          leitos_livres?: number
+          leitos_ocupados?: number
+          leitos_total?: number
+          organizacao_id: string
+          permanencia_media_h?: number | null
+          setor_id: string
+          snapshot?: Json | null
+          taxa_ocupacao?: number | null
+          turno?: string
+          unidade_id: string
+        }
+        Update: {
+          criado_em?: string
+          data?: string
+          giro_leito?: number | null
+          internados?: number
+          leitos_bloqueados?: number
+          leitos_higienizacao?: number
+          leitos_livres?: number
+          leitos_ocupados?: number
+          leitos_total?: number
+          organizacao_id?: string
+          permanencia_media_h?: number | null
+          setor_id?: string
+          snapshot?: Json | null
+          taxa_ocupacao?: number | null
+          turno?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "censo_ocupacao_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "censo_ocupacao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checklist_admissao: {
         Row: {
           atualizado_por: string | null
@@ -554,6 +626,108 @@ export type Database = {
           },
         ]
       }
+      documentos_clinicos: {
+        Row: {
+          assinado_em: string | null
+          assinatura_id: string | null
+          autor_id: string
+          carimbo_tempo: string | null
+          conteudo: string
+          conteudo_hash: string
+          created_at: string
+          documento_raiz_id: string
+          estado: string
+          id: string
+          internacao_id: string | null
+          motivo_retificacao: string | null
+          organizacao_id: string
+          paciente_id: string
+          retificacao_de: string | null
+          tipo_documento: string
+          unidade_id: string
+          updated_at: string
+          versao: number
+        }
+        Insert: {
+          assinado_em?: string | null
+          assinatura_id?: string | null
+          autor_id: string
+          carimbo_tempo?: string | null
+          conteudo: string
+          conteudo_hash: string
+          created_at?: string
+          documento_raiz_id: string
+          estado?: string
+          id?: string
+          internacao_id?: string | null
+          motivo_retificacao?: string | null
+          organizacao_id: string
+          paciente_id: string
+          retificacao_de?: string | null
+          tipo_documento: string
+          unidade_id: string
+          updated_at?: string
+          versao?: number
+        }
+        Update: {
+          assinado_em?: string | null
+          assinatura_id?: string | null
+          autor_id?: string
+          carimbo_tempo?: string | null
+          conteudo?: string
+          conteudo_hash?: string
+          created_at?: string
+          documento_raiz_id?: string
+          estado?: string
+          id?: string
+          internacao_id?: string | null
+          motivo_retificacao?: string | null
+          organizacao_id?: string
+          paciente_id?: string
+          retificacao_de?: string | null
+          tipo_documento?: string
+          unidade_id?: string
+          updated_at?: string
+          versao?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_clinicos_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_clinicos_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_clinicos_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_clinicos_retificacao_de_fkey"
+            columns: ["retificacao_de"]
+            isOneToOne: false
+            referencedRelation: "documentos_clinicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_clinicos_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       escala_fixa: {
         Row: {
           ativo: boolean
@@ -783,6 +957,162 @@ export type Database = {
           },
         ]
       }
+      eventos_adt: {
+        Row: {
+          autor_id: string
+          created_at: string
+          estado_antes: Json | null
+          estado_depois: Json | null
+          hash_conteudo: string
+          hash_previo: string | null
+          id: string
+          internacao_id: string
+          leito_destino_id: string | null
+          leito_origem_id: string | null
+          motivo: string | null
+          organizacao_id: string
+          paciente_id: string
+          payload: Json | null
+          seq: number
+          setor_destino_id: string | null
+          setor_origem_id: string | null
+          tipo_evento: string
+          unidade_id: string
+        }
+        Insert: {
+          autor_id: string
+          created_at?: string
+          estado_antes?: Json | null
+          estado_depois?: Json | null
+          hash_conteudo: string
+          hash_previo?: string | null
+          id?: string
+          internacao_id: string
+          leito_destino_id?: string | null
+          leito_origem_id?: string | null
+          motivo?: string | null
+          organizacao_id: string
+          paciente_id: string
+          payload?: Json | null
+          seq: number
+          setor_destino_id?: string | null
+          setor_origem_id?: string | null
+          tipo_evento: string
+          unidade_id: string
+        }
+        Update: {
+          autor_id?: string
+          created_at?: string
+          estado_antes?: Json | null
+          estado_depois?: Json | null
+          hash_conteudo?: string
+          hash_previo?: string | null
+          id?: string
+          internacao_id?: string
+          leito_destino_id?: string | null
+          leito_origem_id?: string | null
+          motivo?: string | null
+          organizacao_id?: string
+          paciente_id?: string
+          payload?: Json | null
+          seq?: number
+          setor_destino_id?: string | null
+          setor_origem_id?: string | null
+          tipo_evento?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eventos_adt_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_adt_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_adt_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eventos_leito: {
+        Row: {
+          autor_id: string
+          created_at: string
+          id: string
+          internacao_id: string | null
+          leito_id: string
+          motivo: string | null
+          status_antes: Database["public"]["Enums"]["status_leito"] | null
+          status_depois: Database["public"]["Enums"]["status_leito"] | null
+          tipo_evento: string
+          unidade_id: string
+        }
+        Insert: {
+          autor_id: string
+          created_at?: string
+          id?: string
+          internacao_id?: string | null
+          leito_id: string
+          motivo?: string | null
+          status_antes?: Database["public"]["Enums"]["status_leito"] | null
+          status_depois?: Database["public"]["Enums"]["status_leito"] | null
+          tipo_evento: string
+          unidade_id: string
+        }
+        Update: {
+          autor_id?: string
+          created_at?: string
+          id?: string
+          internacao_id?: string | null
+          leito_id?: string
+          motivo?: string | null
+          status_antes?: Database["public"]["Enums"]["status_leito"] | null
+          status_depois?: Database["public"]["Enums"]["status_leito"] | null
+          tipo_evento?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eventos_leito_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_leito_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_leito_leito_id_fkey"
+            columns: ["leito_id"]
+            isOneToOne: false
+            referencedRelation: "leitos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_leito_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       historico_escala: {
         Row: {
           acao: string
@@ -824,6 +1154,99 @@ export type Database = {
           },
           {
             foreignKeyName: "historico_escala_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      internacoes: {
+        Row: {
+          cid_principal: string | null
+          created_at: string
+          data_admissao: string
+          data_alta: string | null
+          data_entrada_setor: string | null
+          id: string
+          leito_atual_id: string | null
+          motivo_alta: string | null
+          organizacao_id: string
+          origem_admissao: string
+          paciente_id: string
+          setor_atual_id: string | null
+          status: string
+          tipo_internacao: string
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          cid_principal?: string | null
+          created_at?: string
+          data_admissao?: string
+          data_alta?: string | null
+          data_entrada_setor?: string | null
+          id?: string
+          leito_atual_id?: string | null
+          motivo_alta?: string | null
+          organizacao_id: string
+          origem_admissao?: string
+          paciente_id: string
+          setor_atual_id?: string | null
+          status?: string
+          tipo_internacao?: string
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          cid_principal?: string | null
+          created_at?: string
+          data_admissao?: string
+          data_alta?: string | null
+          data_entrada_setor?: string | null
+          id?: string
+          leito_atual_id?: string | null
+          motivo_alta?: string | null
+          organizacao_id?: string
+          origem_admissao?: string
+          paciente_id?: string
+          setor_atual_id?: string | null
+          status?: string
+          tipo_internacao?: string
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internacoes_leito_atual_id_fkey"
+            columns: ["leito_atual_id"]
+            isOneToOne: false
+            referencedRelation: "leitos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internacoes_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internacoes_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internacoes_setor_atual_id_fkey"
+            columns: ["setor_atual_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internacoes_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -913,6 +1336,80 @@ export type Database = {
             columns: ["prescricao_id"]
             isOneToOne: false
             referencedRelation: "prescricoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      log_acesso_prontuario: {
+        Row: {
+          acessado_por: string
+          created_at: string
+          documento_id: string | null
+          id: string
+          internacao_id: string | null
+          ip: unknown
+          organizacao_id: string
+          paciente_id: string
+          papel: string | null
+          tipo_acesso: string
+          unidade_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          acessado_por: string
+          created_at?: string
+          documento_id?: string | null
+          id?: string
+          internacao_id?: string | null
+          ip?: unknown
+          organizacao_id: string
+          paciente_id: string
+          papel?: string | null
+          tipo_acesso?: string
+          unidade_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          acessado_por?: string
+          created_at?: string
+          documento_id?: string | null
+          id?: string
+          internacao_id?: string | null
+          ip?: unknown
+          organizacao_id?: string
+          paciente_id?: string
+          papel?: string | null
+          tipo_acesso?: string
+          unidade_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_acesso_prontuario_acessado_por_fkey"
+            columns: ["acessado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_acesso_prontuario_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_acesso_prontuario_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_acesso_prontuario_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
             referencedColumns: ["id"]
           },
         ]
@@ -1907,6 +2404,87 @@ export type Database = {
           },
         ]
       }
+      sugestoes_prescricao: {
+        Row: {
+          created_at: string
+          decidido_em: string | null
+          decidido_por: string | null
+          descricao: string
+          gestor_id: string
+          id: string
+          internacao_id: string | null
+          organizacao_id: string
+          paciente_id: string
+          status: string
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decidido_em?: string | null
+          decidido_por?: string | null
+          descricao: string
+          gestor_id: string
+          id?: string
+          internacao_id?: string | null
+          organizacao_id: string
+          paciente_id: string
+          status?: string
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decidido_em?: string | null
+          decidido_por?: string | null
+          descricao?: string
+          gestor_id?: string
+          id?: string
+          internacao_id?: string | null
+          organizacao_id?: string
+          paciente_id?: string
+          status?: string
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sugestoes_prescricao_decidido_por_fkey"
+            columns: ["decidido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sugestoes_prescricao_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sugestoes_prescricao_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sugestoes_prescricao_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sugestoes_prescricao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       super_admins: {
         Row: {
           created_at: string
@@ -2243,6 +2821,17 @@ export type Database = {
       }
     }
     Functions: {
+      abrir_internacao: {
+        Args: {
+          p_leito?: string
+          p_origem_admissao?: string
+          p_paciente: string
+          p_setor?: string
+          p_tipo_internacao?: string
+          p_unidade: string
+        }
+        Returns: string
+      }
       adicionar_plantao_escala: {
         Args: {
           p_data: string
@@ -2418,6 +3007,16 @@ export type Database = {
         Args: { p_motivo?: string; p_troca: string }
         Returns: undefined
       }
+      registrar_acesso_prontuario: {
+        Args: {
+          p_documento?: string
+          p_internacao?: string
+          p_paciente: string
+          p_tipo_acesso?: string
+          p_unidade: string
+        }
+        Returns: undefined
+      }
       registrar_auditoria: {
         Args: {
           p_acao: string
@@ -2439,6 +3038,17 @@ export type Database = {
       }
       registrar_checkout: {
         Args: { p_lat: number; p_lng: number; p_registro: string }
+        Returns: undefined
+      }
+      registrar_evento_adt: {
+        Args: {
+          p_internacao: string
+          p_leito_destino?: string
+          p_motivo?: string
+          p_payload?: Json
+          p_setor_destino?: string
+          p_tipo_evento: string
+        }
         Returns: undefined
       }
       registrar_prescricao_itens: {
