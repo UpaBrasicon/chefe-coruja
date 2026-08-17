@@ -84,13 +84,21 @@ export function DadosPaciente({
     queryKey: ['paciente-busca', buscaAtiva, unidadeId],
     enabled: !!buscaAtiva && !!unidadeId,
     queryFn: async () => {
+      const termo = `%${buscaAtiva}%`
+      // Busca por CPF ou nome
       const { data, error } = await supabase
         .from('pacientes')
         .select('*')
-        .ilike('cpf', `%${buscaAtiva}%`)
-        .maybeSingle()
+        .or(`cpf.ilike.${termo},nome.ilike.${termo}`)
+        .limit(20)
       if (error) throw error
-      return data
+      // Se mais de um resultado, usa o primeiro (exato ou mais recente)
+      const lista = data ?? []
+      if (lista.length === 0) return null
+      const exato = lista.find(
+        (p) => (p.cpf && p.cpf.replace(/\D/g, '') === buscaAtiva.replace(/\D/g, '')) || p.nome.toLowerCase() === buscaAtiva.toLowerCase()
+      )
+      return exato ?? lista[0]
     },
   })
 
