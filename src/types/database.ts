@@ -870,6 +870,7 @@ export type Database = {
           concentracao: string | null
           controlado: boolean
           created_at: string
+          diluicao: string | null
           forma_farmaceutica: string | null
           id: string
           nome: string
@@ -887,6 +888,7 @@ export type Database = {
           concentracao?: string | null
           controlado?: boolean
           created_at?: string
+          diluicao?: string | null
           forma_farmaceutica?: string | null
           id?: string
           nome: string
@@ -904,6 +906,7 @@ export type Database = {
           concentracao?: string | null
           controlado?: boolean
           created_at?: string
+          diluicao?: string | null
           forma_farmaceutica?: string | null
           id?: string
           nome?: string

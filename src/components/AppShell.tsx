@@ -15,6 +15,7 @@ import {
   MapPin,
   Menu,
   MessageSquare,
+  Pill,
   Settings2,
   Stethoscope,
   UserRound,
@@ -65,6 +66,7 @@ export function AppShell() {
     itens.push({ to: '/vagas', label: 'Vagas', icon: ClipboardCheck, end: true })
     itens.push({ to: '/extrato', label: 'Extrato', icon: Wallet, end: true })
     itens.push({ to: '/mensagens', label: 'Mensagens', icon: MessageSquare, end: true })
+    itens.push({ to: '/prescricao-teste', label: 'Prescrição Teste', icon: Pill, end: true })
     itens.push({ to: '/internacao', label: 'Painel de Internação', icon: Hospital, end: true })
     itens.push({ to: '/observacao', label: 'Observação', icon: Eye, end: true })
     itens.push({ to: '/notificacoes', label: 'Avisos', icon: Bell, end: true })
