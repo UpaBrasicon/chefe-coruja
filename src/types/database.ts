@@ -1706,6 +1706,10 @@ export type Database = {
         }
         Returns: string
       }
+      registrar_prescricao_itens: {
+        Args: { p_itens?: Json; p_observacoes?: string; p_paciente: string }
+        Returns: string
+      }
       registrar_prescricao_observacao: {
         Args: { p_observacoes?: string; p_paciente: string }
         Returns: string

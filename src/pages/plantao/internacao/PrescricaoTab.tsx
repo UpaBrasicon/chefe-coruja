@@ -1,5 +1,6 @@
 import { Check, Clipboard, FileCheck2, Printer } from 'lucide-react'
 import * as React from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -34,6 +35,47 @@ export function PrescricaoTab({
   const [registrado, setRegistrado] = React.useState(false)
   const [erroRegistro, setErroRegistro] = React.useState<string | null>(null)
   const marcados = new Set(prescricao.marcados)
+  const carregado = React.useRef(false)
+
+  // Prescrição ativa do paciente (do banco) — para pré-marcar ao abrir
+  const { data: prescricaoBanco } = useQuery({
+    queryKey: ['prescricao-paciente', pacienteId],
+    enabled: !!pacienteId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('prescricoes')
+        .select('id, status, observacoes, prescricao_itens(descricao, dose, posologia)')
+        .eq('paciente_id', pacienteId!)
+        .eq('status', 'ativa')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+  })
+
+  React.useEffect(() => {
+    if (!prescricaoBanco || carregado.current) return
+    const itens = prescricaoBanco.prescricao_itens ?? []
+    if (itens.length === 0) return
+    // Corresponde cada descrição do banco a um item do catálogo e pré-marca
+    const ids = new Set<string>()
+    for (const it of itens) {
+      const d = it.descricao.toLowerCase()
+      const match = ITENS.find((i) => d.includes(i.med.toLowerCase().slice(0, 10)))
+      if (match) ids.add(String(match.n))
+    }
+    if (ids.size > 0) {
+      const uniao = new Set([...marcados, ...ids])
+      onChange({ marcados: [...uniao] })
+    }
+    if (prescricaoBanco.observacoes && !prescricao.obs) {
+      onChange({ obs: prescricaoBanco.observacoes })
+    }
+    carregado.current = true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prescricaoBanco, pacienteId])
 
   async function registrarPrescricao() {
     if (!unidadeId || !pacienteId) {
@@ -42,9 +84,16 @@ export function PrescricaoTab({
     }
     setRegistrando(true)
     setErroRegistro(null)
-    const { error } = await supabase.rpc('registrar_prescricao_observacao', {
+    const itens = ITENS.filter((i) => marcados.has(String(i.n))).map((i) => ({
+      medicamento: i.med,
+      dose: i.via !== '---' ? i.via : undefined,
+      posologia: i.pos,
+      ordem: i.n,
+    }))
+    const { error } = await supabase.rpc('registrar_prescricao_itens', {
       p_paciente: pacienteId,
       p_observacoes: prescricao.obs || undefined,
+      p_itens: JSON.stringify(itens),
     })
     setRegistrando(false)
     if (error) {
