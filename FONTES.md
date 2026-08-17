@@ -70,9 +70,13 @@ Registros sem revisor permanecem `status = 'rascunho'` e **não são servidos pe
 
 | Fonte | URL | Acesso | Licença | Comercial? |
 |---|---|---|---|---|
-| RxNav-in-a-Box | https://lhncbc.nlm.nih.gov/RxNav/ | pendente (instalação local) | open source NLM | ✓ sim |
+| RxNav-in-a-Box | https://lhncbc.nlm.nih.gov/RxNav/ | **BLOQUEADO** — exige licença UMLS (download 0 bytes) + Docker Desktop + 12GB RAM + 100GB disco | open source NLM | ✓ sim |
+| RxNorm API pública — interação | https://rxnav.nlm.nih.gov/REST/interaction/... | **DESCONTINUADA** (404 em 2026-08-17) | — | — |
 
-Release documentada na instalação.
+**Descoberta:** a API pública de interação do RxNorm foi descontinuada; interações
+oficiais só via RxNav-in-a-Box local. Ver `data/FASE4_RXNAV.md`. Script pronto
+(`10_interacoes_rxnav.cjs`) com detecção de RxNav local + cache. Release a
+documentar: `20260803`.
 
 ---
 
