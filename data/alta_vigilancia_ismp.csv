@@ -1,0 +1,52 @@
+principio_ativo;justificativa_ismp;categoria
+Adrenalina (epinefrina);Vasopressor de alta vigilancia - erro de concentracao pode ser fatal;Vasopressores
+Noradrenalina (norepinefrina);Vasopressor de alta vigilancia;Vasopressores
+Dobutamina;Vasopressor/inotropico de alta vigilancia;Vasopressores
+Dopamina;Vasopressor/inotropico de alta vigilancia;Vasopressores
+Vasopressina;Vasopressor de alta vigilancia;Vasopressores
+Milrinona;Inotropico de alta vigilancia;Vasopressores
+Nitroprussiato de sodio;Hipotensor de alta vigilancia - metabolito cianeto;Hipotensores
+Nitroglicerina;Vasodilatador de alta vigilancia;Hipotensores
+Amiodarona;Antiarrítmico de alta vigilancia;Antiarrítmicos
+Insulina regular;Hipoglicemiante de alta vigilancia - erro de dose comum;Hipoglicemiantes
+Insulina NPH;Hipoglicemiante de alta vigilancia;Hipoglicemiantes
+Insulina glargina;Hipoglicemiante de alta vigilancia;Hipoglicemiantes
+Heparina nao fracionada;Anticoagulante de alta vigilancia;Anticoagulantes
+Enoxaparina;Anticoagulante de alta vigilancia;Anticoagulantes
+Fondaparinux;Anticoagulante de alta vigilancia;Anticoagulantes
+Warfarina;Anticoagulante de alta vigilancia - INR;Anticoagulantes
+Rivaroxabana;Anticoagulante de alta vigilancia;Anticoagulantes
+Apixabana;Anticoagulante de alta vigilancia;Anticoagulantes
+Morfina;Opiode de alta vigilancia;Opiode
+Fentanila;Opiode de alta vigilancia - doses pediatricas em mcg;Opiode
+Codeina;Opiode de alta vigilancia;Opiode
+Tramadol;Opiode de alta vigilancia;Opiode
+Cloreto de potassio 10%;Eletrolito concentrado de alta vigilancia - inibido em bolus;Eletrolitos concentrados
+Cloreto de potassio 19,1%;Eletrolito concentrado de alta vigilancia;Eletrolitos concentrados
+Fosfato de potassio;Eletrolito concentrado de alta vigilancia;Eletrolitos concentrados
+Sulfato de magnesio 50%;Eletrolito concentrado de alta vigilancia;Eletrolitos concentrados
+Gluconato de calcio 10%;Eletrolito concentrado de alta vigilancia;Eletrolitos concentrados
+Cloreto de calcio 10%;Eletrolito concentrado de alta vigilancia;Eletrolitos concentrados
+Bicarbonato de sodio 8,4%;Eletrolito concentrado de alta vigilancia;Eletrolitos concentrados
+Cloreto de sodio 20%;Eletrolito concentrado de alta vigilancia;Eletrolitos concentrados
+Glicose 50%;Hipoglicemiante de alta vigilancia - extravasamento;Hipoglicemiantes
+Propofol;Sedativo de alta vigilancia - risco de depressao respiratoria;Sedativos
+Etomidato;Sedativo de alta vigilancia;Sedativos
+Midazolam;Benzodiazepinico de alta vigilancia;Sedativos
+Rocuronio;Bloqueador neuromuscular de alta vigilancia;Bloqueadores neuromusculares
+Atracurio;Bloqueador neuromuscular de alta vigilancia;Bloqueadores neuromusculares
+Cisatracurio;Bloqueador neuromuscular de alta vigilancia;Bloqueadores neuromusculares
+Succinilcolina;Bloqueador neuromuscular de alta vigilancia;Bloqueadores neuromusculares
+Vecuronio;Bloqueador neuromuscular de alta vigilancia;Bloqueadores neuromusculares
+Amiodarona;Antiarrítmico de alta vigilancia;Antiarrítmicos
+Digoxina;Glicosideo de alta vigilancia - janela terapeutica estreita;Glicosídeos
+Fenitoina;Anticonvulsivante de alta vigilancia - pH alto, extravasamento;Anticonvulsivantes
+Vancomicina;Antibiotico de alta vigilancia - infusao lenta, monitorizacao;Antibióticos
+Anfotericina B desoxicolato;Antifungico de alta vigilancia - nefrotoxicidade;Antifúngicos
+Anfotericina B lipossomal;Antifungico de alta vigilancia;Antifúngicos
+Tenecteplase;Trombolitico de alta vigilancia - hemorragia;Trombolíticos
+Alteplase;Trombolitico de alta vigilancia;Trombolíticos
+Estreptoquinase;Trombolitico de alta vigilancia;Trombolíticos
+Metotrexato;Quimioterapico de alta vigilancia - dose semanal;Quimioterápicos
+Ciclofosfamida;Quimioterapico de alta vigilancia;Quimioterápicos
+Doxorrubicina;Quimioterapico de alta vigilancia - extravasamento;Quimioterápicos

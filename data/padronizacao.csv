@@ -1,0 +1,201 @@
+principio_ativo;apresentacao;concentracao;setor_uso
+Adrenalina (epinefrina);Ampola 1 mL;1 mg/mL;Emergencia, UTI
+Noradrenalina (norepinefrina);Ampola 4 mL;1 mg/mL;Emergencia, UTI
+Dobutamina;Ampola 20 mL;5 mg/mL;UTI
+Dopamina;Ampola 5 mL;5 mg/mL;UTI, Emergencia
+Vasopressina;Ampola 1 mL;20 UI/mL;UTI
+Milrinona;Ampola 10 mL;1 mg/mL;UTI
+Nitroglicerina;Ampola 5 mL;5 mg/mL;UTI, Emergencia
+Nitroprussiato de sodio;Frasco 50 mg po;50 mg;UTI
+Amiodarona;Ampola 3 mL;50 mg/mL;Emergencia, UTI
+Atropina;Ampola 1 mL;0,25 mg/mL;Emergencia
+Adenosina;Frasco 2 mL;6 mg/mL;Emergencia
+Esmolol;Ampola 10 mL;10 mg/mL;UTI
+Metoprolol;Ampola 5 mL;1 mg/mL;UTI, Emergencia
+Lidocaina;Ampola 20 mL;20 mg/mL;Emergencia, UTI
+Procainamida;Ampola 10 mL;100 mg/mL;UTI
+Verapamil;Ampola 2 mL;2,5 mg/mL;Emergencia
+Diltiazem;Ampola 10 mL;5 mg/mL;UTI
+Digoxina;Ampola 2 mL;0,25 mg/mL;UTI, Clinica
+Furosemida;Ampola 2 mL;10 mg/mL;Emergencia, UTI
+Cloreto de potassio 10%;Ampola 10 mL;10%;UTI, Emergencia
+Cloreto de potassio 19,1%;Ampola 10 mL;19,1%;UTI, Emergencia
+Fosfato de potassio;Ampola 10 mL;2 mEq/mL;UTI
+Sulfato de magnesio 50%;Ampola 10 mL;500 mg/mL;Emergencia, UTI
+Gluconato de calcio 10%;Ampola 10 mL;100 mg/mL;Emergencia, UTI
+Cloreto de calcio 10%;Ampola 10 mL;100 mg/mL;Emergencia, UTI
+Bicarbonato de sodio 8,4%;Ampola 10 mL;8,4%;Emergencia, UTI
+Cloreto de sodio 20%;Ampola 10 mL;20%;Clinica, UTI
+Glicose 5%;Frasco 500 mL;5%;Clinica, Emergencia
+Glicose 10%;Frasco 500 mL;10%;Clinica, Emergencia, Pediatria
+Glicose 25%;Ampola 10 mL;25%;Pediatria, Emergencia
+Glicose 50%;Ampola 10 mL;50%;Emergencia, UTI
+Soro fisiologico 0,9%;Frasco 500 mL;0,9%;Clinica, Emergencia, Pediatria
+Soro glicofisiologico;Frasco 500 mL;5% + 0,9%;Clinica, Emergencia
+Ringer lactato;Frasco 500 mL;Eletrolitico;Emergencia, UTI, Clinica
+Albumina humana 20%;Frasco 50 mL;20%;UTI, Emergencia
+Heparina nao fracionada;Frasco 5 mL;5000 UI/mL;UTI, Emergencia
+Enoxaparina;Seringa preenchida 0,6 mL;60 mg;UTI, Emergencia, Clinica
+Fondaparinux;Seringa preenchida;2,5 mg;Clinica, UTI
+Protamina;Ampola 5 mL;10 mg/mL;UTI, Cirurgia
+Fitomenadiona (Vit K);Ampola 1 mL;10 mg/mL;Clinica, Emergencia
+Acetilcisteina;Ampola 3 mL;100 mg/mL;Emergencia
+Naloxona;Ampola 1 mL;0,4 mg/mL;Emergencia
+Flumazenil;Ampola 5 mL;0,1 mg/mL;Emergencia, UTI
+Carvão ativado;Frasco 120 mL;Suspensao;Emergencia
+Dipirona;Ampola 2 mL;500 mg/mL;Emergencia, Clinica, Pediatria
+Paracetamol;Frasco 100 mL;10 mg/mL;Emergencia, Clinica, Pediatria
+Morfina;Ampola 1 mL;10 mg/mL;Emergencia, UTI
+Tramadol;Ampola 2 mL;50 mg/mL;Clinica, Emergencia
+Fentanila;Ampola 2 mL;50 mcg/mL;UTI, Emergencia, Anestesia
+Codeina;Ampola 2 mL;30 mg/mL;Clinica
+Cetoprofeno;Ampola 2 mL;100 mg;Emergencia, Clinica
+Tenoxicam;Frasco 20 mg po;20 mg;Emergencia, Clinica
+Cetorolaco;Ampola 1 mL;30 mg/mL;Emergencia
+Dexametasona;Ampola 1 mL;4 mg/mL;Emergencia, Clinica, Pediatria
+Hidrocortisona;Frasco 100 mg po;100 mg;Emergencia, Clinica
+Metilprednisolona;Frasco 125 mg po;125 mg;Emergencia, Clinica
+Ondansetrona;Ampola 4 mL;2 mg/mL;Emergencia, Clinica, Pediatria
+Metoclopramida;Ampola 2 mL;5 mg/mL;Emergencia, Clinica, Pediatria
+Bromoprida;Ampola 2 mL;5 mg/mL;Clinica, Pediatria
+Dimenidrinato;Ampola 1 mL;50 mg/mL;Emergencia, Clinica
+Prometazina;Ampola 2 mL;25 mg/mL;Emergencia, Clinica
+Haloperidol;Ampola 1 mL;5 mg/mL;Emergencia, Clinica
+Escopolamina;Ampola 1 mL;20 mg/mL;Emergencia, Clinica
+Omeprazol;Frasco 40 mg po;40 mg;Emergencia, Clinica, UTI
+Pantoprazol;Frasco 40 mg po;40 mg;Clinica, UTI
+Ranitidina;Ampola 2 mL;25 mg/mL;Clinica
+Octreotida;Ampola 1 mL;0,1 mg/mL;UTI, Clinica
+Ampicilina;Frasco 1 g po;1 g;Emergencia, Pediatria, Clinica
+Ampicilina + sulbactam;Frasco 1,5 g po;1 g + 0,5 g;Emergencia, Clinica
+Amoxicilina + clavulanato;Frasco 1,2 g po;1 g + 200 mg;Emergencia, Clinica, Pediatria
+Oxacilina;Frasco 500 mg po;500 mg;Emergencia, Clinica, Pediatria
+Cefalotina;Frasco 1 g po;1 g;Emergencia, Clinica
+Cefazolina;Frasco 1 g po;1 g;Cirurgia, Clinica
+Cefuroxima;Frasco 750 mg po;750 mg;Clinica, Emergencia
+Ceftriaxona;Frasco 1 g po;1 g;Emergencia, Clinica, Pediatria
+Ceftazidima;Frasco 1 g po;1 g;UTI, Clinica
+Cefepima;Frasco 1 g po;1 g;UTI, Clinica
+Piperacilina + tazobactam;Frasco 4,5 g po;4 g + 0,5 g;UTI, Clinica
+Meropenem;Frasco 1 g po;1 g;UTI
+Imipenem + cilastatina;Frasco 500 mg po;500 mg;UTI
+Ertapenem;Frasco 1 g po;1 g;Clinica, UTI
+Gentamicina;Ampola 2 mL;40 mg/mL;Emergencia, Clinica, Pediatria
+Amicacina;Ampola 2 mL;250 mg/mL;UTI, Clinica
+Ciprofloxacino;Frasco 100 mL;2 mg/mL;Emergencia, Clinica
+Levofloxacino;Frasco 100 mL;5 mg/mL;Emergencia, Clinica
+Metronidazol;Frasco 100 mL;5 mg/mL;Cirurgia, Clinica
+Clindamicina;Ampola 4 mL;150 mg/mL;Clinica, Emergencia
+Vancomicina;Frasco 500 mg po;500 mg;UTI, Emergencia, Clinica
+Teicoplanina;Frasco 400 mg po;400 mg;UTI, Clinica
+Linezolida;Frasco 300 mL;2 mg/mL;UTI, Clinica
+Polimixina B;Frasco 500000 UI po;500000 UI;UTI
+Sulfametoxazol + trimetoprima;Ampola 5 mL;400 + 80 mg;Clinica
+Fluconazol;Frasco 100 mL;2 mg/mL;UTI, Clinica
+Anfotericina B desoxicolato;Frasco 50 mg po;50 mg;UTI
+Anfotericina B lipossomal;Frasco 50 mg po;50 mg;UTI
+Midazolam;Ampola 3 mL;5 mg/mL;Emergencia, UTI, Anestesia
+Diazepam;Ampola 2 mL;5 mg/mL;Emergencia
+Lorazepam;Ampola 1 mL;4 mg/mL;UTI
+Propofol;Ampola 20 mL;10 mg/mL;UTI, Anestesia
+Etomidato;Ampola 10 mL;2 mg/mL;Emergencia
+Cetamina;Ampola 10 mL;50 mg/mL;Emergencia, UTI, Anestesia
+Rocuronio;Frasco 5 mL;10 mg/mL;UTI, Anestesia, Emergencia
+Atracurio;Ampola 5 mL;10 mg/mL;UTI, Anestesia
+Cisatracurio;Ampola 5 mL;2 mg/mL;UTI, Anestesia
+Succinilcolina;Frasco 5 mL;20 mg/mL;Emergencia, Anestesia
+Vecuronio;Frasco 10 mg po;10 mg;Anestesia, UTI
+Fenitoina;Ampola 5 mL;50 mg/mL;Emergencia, UTI
+Fenobarbital;Ampola 2 mL;100 mg/mL;Emergencia, Clinica, Pediatria
+Valproato de sodio;Ampola 3 mL;100 mg/mL;Emergencia, UTI
+Levetiracetam;Frasco 5 mL;100 mg/mL;Emergencia, UTI
+Clonazepam;Ampola 1 mL;1 mg/mL;Emergencia, Pediatria
+Insulina regular;Frasco 10 mL;100 UI/mL;Emergencia, UTI, Clinica
+Insulina NPH;Frasco 10 mL;100 UI/mL;Clinica, Emergencia
+Insulina glargina;Frasco 3 mL;100 UI/mL;Clinica
+Glucagon;Frasco 1 mg po;1 mg;Emergencia
+Desmopressina;Frasco 1 mL;4 mcg/mL;UTI, Pediatria
+Ocitocina;Ampola 1 mL;5 UI/mL;Obstetricia, Emergencia
+Misoprostol;Comprimido 25 mcg;25 mcg;Obstetricia, Emergencia
+Carboprost;Ampola 1 mL;250 mcg/mL;Obstetricia
+Hidralazina;Ampola 1 mL;20 mg/mL;Emergencia, Obstetricia
+Nifedipino;Comprimido 10 mg;10 mg;Emergencia, Obstetricia
+Salbutamol;Frasco 20 mL;0,5 mg/mL;Emergencia, Pediatria, Clinica
+Fenoterol;Frasco 20 mL;0,5 mg/mL;Pediatria, Emergencia
+Ipratropio;Frasco 20 mL;0,25 mg/mL;Pediatria, Emergencia
+Aminofilina;Ampola 10 mL;24 mg/mL;Clinica, Pediatria
+Teofilina;Ampola 10 mL;24 mg/mL;Clinica
+Levotiroxina;Comprimido 100 mcg;100 mcg;Clinica
+Esomeprazol;Frasco 40 mg po;40 mg;UTI, Clinica
+Ferro sacarato;Ampola 5 mL;20 mg/mL;Clinica
+Cianocobalamina;Ampola 1 mL;1000 mcg/mL;Clinica
+Acido folico;Ampola 1 mL;5 mg/mL;Clinica, Obstetricia
+Laculose;Frasco 100 mL;667 mg/mL;Clinica
+Nistatina oral;Frasco 50 mL;100000 UI/mL;Clinica, Pediatria
+Colistina;Frasco 150 mg po;150 mg;UTI
+Voriconazol;Frasco 200 mg po;200 mg;UTI
+Caspofungina;Frasco 50 mg po;50 mg;UTI
+Micafungina;Frasco 50 mg po;50 mg;UTI
+Aciclovir;Frasco 250 mg po;250 mg;UTI, Clinica
+Ganciclovir;Frasco 500 mg po;500 mg;UTI
+Tranexamico;Ampola 5 mL;100 mg/mL;Emergencia, Cirurgia, Obstetricia
+Acido aminocaproico;Frasco 20 mL;250 mg/mL;Cirurgia, UTI
+Tenecteplase;Frasco 50 mg po;50 mg;Emergencia
+Alteplase;Frasco 50 mg po;50 mg;Emergencia, UTI
+Estreptoquinase;Frasco 1500000 UI po;1500000 UI;Emergencia
+Oseltamivir;Frasco 75 mg po;75 mg;Clinica
+Hidroxicloroquina;Comprimido 400 mg;400 mg;Clinica
+Amantadina;Comprimido 100 mg;100 mg;Clinica
+Rimantadina;Comprimido 100 mg;100 mg;Clinica
+Zidovudina;Frasco 200 mg po;200 mg;Clinica
+Morfina (dose pediátrica);Ampola 1 mL;1 mg/mL;Pediatria, Emergencia
+Paracetamol (ampola);Ampola 2 mL;10 mg/mL;Pediatria
+Dipirona (gotas);Frasco 10 mL;500 mg/mL;Pediatria, Clinica
+Ondansetrona (comprimido);Comprimido 8 mg;8 mg;Clinica
+Prometazina (comprimido);Comprimido 25 mg;25 mg;Clinica
+Haloperidol (comprimido);Comprimido 5 mg;5 mg;Clinica
+Diazepam (comprimido);Comprimido 10 mg;10 mg;Clinica
+Clonazepam (comprimido);Comprimido 2 mg;2 mg;Clinica
+Carbamazepina;Comprimido 200 mg;200 mg;Clinica
+Fenitoina (comprimido);Comprimido 100 mg;100 mg;Clinica
+Valproato de sodio (comprimido);Comprimido 250 mg;250 mg;Clinica
+Levetiracetam (comprimido);Comprimido 500 mg;500 mg;Clinica
+Metformina;Comprimido 500 mg;500 mg;Clinica
+Glibenclamida;Comprimido 5 mg;5 mg;Clinica
+Captopril;Comprimido 25 mg;25 mg;Emergencia, Clinica
+Enalapril;Comprimido 10 mg;10 mg;Clinica
+Losartana;Comprimido 50 mg;50 mg;Clinica
+Anlodipino;Comprimido 5 mg;5 mg;Clinica
+Hidroclorotiazida;Comprimido 25 mg;25 mg;Clinica
+Espironolactona;Comprimido 25 mg;25 mg;Clinica
+Atenolol;Comprimido 50 mg;50 mg;Clinica
+Carvedilol;Comprimido 6,25 mg;6,25 mg;Clinica
+Amiodarona (comprimido);Comprimido 200 mg;200 mg;Clinica
+Digoxina (comprimido);Comprimido 0,25 mg;0,25 mg;Clinica
+Warfarina;Comprimido 5 mg;5 mg;Clinica
+Rivaroxabana;Comprimido 20 mg;20 mg;Clinica
+Apixabana;Comprimido 5 mg;5 mg;Clinica
+Clopidogrel;Comprimido 75 mg;75 mg;Clinica, Emergencia
+AAS;Comprimido 100 mg;100 mg;Clinica, Emergencia
+Atorvastatina;Comprimido 20 mg;20 mg;Clinica
+Prednisona;Comprimido 20 mg;20 mg;Clinica
+Levotiroxina (comprimido);Comprimido 100 mcg;100 mcg;Clinica
+Acido folico (comprimido);Comprimido 5 mg;5 mg;Clinica, Obstetricia
+Sulfato ferroso;Comprimido 40 mg Fe;40 mg;Clinica
+Metotrexato (comprimido);Comprimido 2,5 mg;2,5 mg;Oncologia, Clinica
+Hidroxiureia (comprimido);Comprimido 500 mg;500 mg;Oncologia
+Fluconazol (comprimido);Comprimido 150 mg;150 mg;Clinica
+Aciclovir (comprimido);Comprimido 200 mg;200 mg;Clinica
+Azitromicina;Comprimido 500 mg;500 mg;Clinica, Emergencia
+Claritromicina;Comprimido 500 mg;500 mg;Clinica
+Doxiciclina;Comprimido 100 mg;100 mg;Clinica
+Ciprofloxacino (comprimido);Comprimido 500 mg;500 mg;Clinica
+Levofloxacino (comprimido);Comprimido 500 mg;500 mg;Clinica
+Nitrofurantoina;Comprimido 100 mg;100 mg;Clinica
+Cefalexina;Comprimido 500 mg;500 mg;Clinica
+Amoxicilina;Comprimido 500 mg;500 mg;Clinica, Pediatria
+Metronidazol (comprimido);Comprimido 250 mg;250 mg;Clinica, Cirurgia
+Albendazol;Comprimido 400 mg;400 mg;Clinica, Pediatria
+Ivermectina;Comprimido 6 mg;6 mg;Clinica
+Oseltamivir (comprimido);Comprimido 75 mg;75 mg;Clinica
+Baloxavir;Comprimido 40 mg;40 mg;Clinica
