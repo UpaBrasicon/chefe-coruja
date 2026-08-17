@@ -25,6 +25,7 @@ import { useNotificacoesTurno } from '@/hooks/useNotificacoesTurno'
 import { useWebPush } from '@/hooks/useWebPush'
 import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
 import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
+import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
@@ -123,22 +124,7 @@ export function AppShell() {
             Trocar unidade
           </Button>
         )}
-        {ehPlantonista && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="relative"
-            onClick={() => navigate('/notificacoes')}
-            aria-label="Avisos"
-          >
-            <Bell />
-            {notifsTurno.length > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                {notifsTurno.length}
-              </span>
-            )}
-          </Button>
-        )}
+        {ehPlantonista && <SinoAvisos unidadeId={unidadeAtiva?.unidade_id} habilitado />}
         <Button variant="ghost" size="sm" onClick={handleSair}>
           <LogOut />
           Sair
@@ -207,22 +193,7 @@ export function AppShell() {
           {unidadeAtiva?.unidade.nome ?? 'Chefe Coruja'}
         </span>
         <div className="flex items-center gap-1">
-          {ehPlantonista && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="relative"
-              onClick={() => navigate('/notificacoes')}
-              aria-label="Avisos"
-            >
-              <Bell />
-              {notifsTurno.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                  {notifsTurno.length}
-                </span>
-              )}
-            </Button>
-          )}
+          {ehPlantonista && <SinoAvisos unidadeId={unidadeAtiva?.unidade_id} habilitado />}
           <Button variant="ghost" size="sm" onClick={handleSair}>
             <LogOut />
           </Button>
