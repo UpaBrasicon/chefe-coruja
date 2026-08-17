@@ -2298,6 +2298,46 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      diluicoes_rascunho: {
+        Args: never
+        Returns: {
+          acesso: string | null
+          ajuste_renal: boolean | null
+          ajuste_renal_regra: string | null
+          alta_vigilancia: boolean | null
+          apresentacao: string
+          bolus_permitido: boolean | null
+          concentracao_maxima: string | null
+          created_at: string
+          data_revisao: string | null
+          diluicao_solucao: string[] | null
+          diluicao_volume_min_ml: number | null
+          estabilidade_refrig_h: number | null
+          estabilidade_ta_h: number | null
+          fonte: string
+          fotossensivel: boolean | null
+          id: string
+          incompatibilidades: string[] | null
+          medicamento_id: string | null
+          observacoes: string | null
+          principio_ativo: string
+          reconstituicao_concentracao: string | null
+          reconstituicao_diluente: string | null
+          reconstituicao_volume_ml: number | null
+          revisor_crf: string | null
+          status: string
+          tempo_infusao_min: number | null
+          updated_at: string
+          velocidade_max: string | null
+          via: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "diluicao"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       eh_super_admin: { Args: never; Returns: boolean }
       fracionar_plantao: {
         Args: { p_partes?: number; p_plantao: string }
@@ -2365,6 +2405,14 @@ export type Database = {
           perfil_id: string
           uf_crm: string
         }[]
+      }
+      publicar_diluicao: {
+        Args: {
+          p_data_revisao?: string
+          p_diluicao: string
+          p_revisor_crf: string
+        }
+        Returns: undefined
       }
       recusar_troca: {
         Args: { p_motivo?: string; p_troca: string }

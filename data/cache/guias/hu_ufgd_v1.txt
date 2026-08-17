@@ -1,0 +1,3268 @@
+=== PAGINA 1 ===
+Guia para preparo
+de medicamentos
+injetáveis
+ 1ª edição - 2017
+UDF/SFH/HU-UFGD
+
+=== PAGINA 2 ===
+Guia para preparo de
+medicamentos injetáveis
+ UDF/SFH/HU-UFGD/Ebserh
+ 1ª edição – 2017
+Versão 1.0
+
+=== PAGINA 3 ===
+® 2017, Ebserh. Todos os direitos reservados
+Empresa Brasileira de Serviços Hospitalares – Ebserh.
+www.ebserh.gov.br
+Material produzido pela Unidade de Dispensação Farmacêutica do Hospital Universitário da Universidade
+Federal da Grande Dourados – UFGD/Ebserh. Permitida a reprodução parcial ou total, desde que indicada a fonte
+e sem fins comerciais.
+Empresa Brasileira de Serviços Hospitalares – Ministério da Educação
+Guia para preparo de medicamentos injetáveis – Unidade de Dispensação
+Farmacêutica - HU-UFGD/Ebserh, 2017. 43 p.
+Palavras-chaves: Medicamento injetável – diluição de medicamentos –
+reconstituição de medicamentos
+
+=== PAGINA 4 ===
+Hospital Universitário da Grande Dourados – Filial Ebserh
+Rua Ivo Alves da Rocha, 558 - Altos do Indaiá | CEP: 79823-501 | Dourados-MS |
+Telefone: (67) 3410-3000 | Site: www.ebserh.gov.br/web/hu-ufgd
+ JOSÉ MENDONÇA BEZERRA FILHO
+ Ministro de Estado da Educação
+ KLEBER DE MELO MORAIS
+ Presidente
+ MARIANA TRINIDAD RIBEIRO DA COSTA GARCIA CRODA
+ Superintendente
+ PAULO CESAR NUNES DA SILVA
+ Gerente Administrativo
+ JOSÉ FLÁVIO SETTE DE SOUZA
+ Gerente de Atenção à Saúde
+ RENATA MARONNA PRAÇA LONGHI
+ Gerente de Ensino e Pesquisa
+ ARMANDO JORGE JUNIOR
+ Chefe do Setor de Farmácia Hospitalar
+ CLEBER MASSATO TODA
+ Chefe da Unidade de Dispensação Farmacêutica
+
+=== PAGINA 5 ===
+HISTÓRICO DE REVISÕES
+Data   Versão   Descrição   Autor/responsável por alterações
+ Dez/2016 à
+Fev/2017  
+1.0
+Este guia tem a finalidade de orientar
+e estabelecer, aos medicamentos
+injetáveis padronizados no HU-
+UFGD/Ebserh, a técnica e
+compatibilidade de soluções para
+reconstituição, diluição e
+administração
+Farmacêuticos:
+1) Ariadne de Santana Tolosa Pedroso;
+2) Flavia Santos Araújo;
+3) Leonora Correa da Costa de Marchi;
+4) Leticia Dias Lourenço;
+5) Marcelo da Silva;
+6) Marcelo Konorat;
+7) Otavio e Silva Rodrigues Filho;
+
+=== PAGINA 6 ===
+“Promover o cuidado farmacêutico, desde a aquisição e
+dispensação do medicamento, de modo eficiente, econômico,
+seguro e de acordo com o esquema terapêutico prescrito, até
+a promoção da atenção clínica farmacêutica, com o fim de
+garantir a qualidade da assistência prestada ao paciente”
+ Missão do Setor de Farmácia Hospitalar do HU-UFGD/Ebserh
+
+=== PAGINA 7 ===
+I.   APRESENTAÇÃO
+ Esse manual foi produzido a partir da necessidade das equipes multiprofissionais obterem informações
+seguras e precisas sobre os medicamentos injetáveis padronizados no HU-UFGD/EBSERH, como também
+ melhorar a segurança na prescrição, no uso e na administração de medicamentos , Meta 03 do Programa
+Nacional de Segurança do Paciente. Houve a necessidade de difundir estas informações para padronizar as ações
+referentes ao uso dos medicamentos injetáveis.
+Nesse   manual   poderão   ser   obtidas   informações   sobre   apresentação   padronizada   na   instituição,
+reconstituição, vias de administração, compatibilidade, estabilidade e observações relevantes dos medicamentos
+injetáveis.
+Lembramos que o manual foi embasado em ampla consulta à literatura e bulas dos medicamentos e, por
+estar em constante processo de construção, está sujeito a contribuições e ajustes.
+ Caso o medicamento não conste na tabela ou a marca em questão seja diferente da relacionada,
+entrar em contato com a Unidade de Dispensação Farmacêutica (UDF) para orientações.
+ Esse é o início de um estudo que visa proporcionar segurança ao paciente e à equipe de saúde com a
+melhoria da qualidade da assistência.
+Melhorar a segurança do paciente é prioridade institucional e promover a cultura da segurança é nosso
+compromisso.
+Contamos com a adesão de todos!
+
+=== PAGINA 8 ===
+TA   REF   TA   REF
+ INAL   -   -   24 Horas   3 mL de SF 0,9%   A critério médico   -   -
+ Clearance   de
+creatinina
+ 25-50 mL/min
+ 10-25 mL/min
+ 0 (anúrico)- 10
+mL/min
+ Ácido Ascórbico 100mg/ml,
+Injetável (Farmace®)  
+EV   -   -   -
+ SF 0,9%
+SG 5%
+Ringer Lactato
+na concentração
+de 1G em 50 mL
+ Lento (na
+concentração de
+100mg/min ou 1
+mL/min).
+Tempo médio de 60
+min.
+ -   -   NÃO
+ Ajuste
+Renal
+ MEDICAMENTO
+(Apresentação padronizada)  
+Observações
+ Acetilcisteína 100mg/ml, Solução
+Injetável (União Química®)
+ Na intoxicação acidental ou voluntária por paracetamol, a terapia com
+acetilcisteína deve ser iniciada o quanto antes. O tratamento deve ser iniciado
+dentro de 0 a 8 horas da ingestão do paracetamol.
+ > 1 Hora
+ A partir de 50 mL
+de SF 0,9% ou SG
+5%
+ 24 Horas   -
+ Aciclovir 250mg, Injetável (União
+Química®)  
+EV
+ 10 mL de AD
+10 mL de SF 0,9%
+ NÃO
+ Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído
+ - -
+ 1 Hora   12h
+ Dose
+ A dose recomendada acima (5 ou 10 mg/Kg peso
+corporal ou 500 mg/m
+2  
+) deve ser administrada a cada
+12 horas.
+ A dose recomendada acima (5 ou 10 mg/Kg peso
+corporal ou 500 mg/m
+2  
+) deve ser administrada a cada
+24 horas.
+ -   SIM
+ Em pacientes sob diálise peritoneal ambulatorial
+contínua, a dose recomendada acima (5 ou 10 mg/Kg
+peso corporal ou 500 mg/m
+2  
+) deve ser dividida e
+administrada a cada 24 horas. Em pacientes sob
+hemodiálise, a dose recomendada acima (5 ou 10
+mg/Kg peso corporal ou 500 mg/m
+2  
+) deve ser dividida e
+administrada a cada 24 horas e após a diálise.
+ A solução injetável deve ser consumida imediatamente após a abertura da
+ampola. Deve-se evitar a administração rápida, pois pode provocar tontura e
+desmaio.
+A acidificação urinária produzida pelo ácido ascórbico pode facilitar a
+precipitação de cristais de sulfonamidas e seus metabólitos.
+Altas doses de vitamina C podem interferir nos resultados de exames
+laboratoriais para determinação de glicemia, glicosúria e níveis séricos de
+transaminases, desidrogenase láctica e bilirrubina.
+ - EV
+ 12h   -
+ Criança: 20 mL
+SF/AD para cada 4
+mL de solução.
+Adulto: 100 mL
+SF/AD por frasco.
+
+=== PAGINA 9 ===
+TA   REF   TA   REF
+ creatinina sérica   dose EV  
+frequência
+ 120 a 150
+micromol/L  
+10 mg/kg   2 vezes ao dia
+ 250 a 500
+micromol/L  
+10 mg/kg   1 vez ao dia
+ -   -   -   Sem diluição   -   -   > 500 micromol/L   5 mg/kg   1 vez ao dia
+ Adenosina 3 mg/ml, Solução
+injetável  
+EV   -   -   -   Sem diluição  
+Em bolus intravenoso
+em 1 a 2 segundos  
+-   -   NÃO
+ Albumina Humana 20%, Injetável
+(CSL Behring®)  
+EV   -   -   -  
+SF 0,9%
+SG 5%
+ Normalmente não
+deve exceder 1-2
+mL/min
+ -   -
+ Alprostadil 20mcg, injetável   EV   -   -   -  
+50 a 250 mL de SF
+0,9%  
+-   -   -
+ Alteplase 50mg, Injetável
+(Boehringer Ingelheim®)  
+EV
+ 50 mL do diluente
+que acompanha o
+medicamento
+ 8 h   24 h  
+250 mL
+SF 0,9%  
+De 45 a 90 min   -   -   NÃO
+ Amicacina Sulfato 250mg/ml -
+Solução Injetável (Novafarma®)
+ EV
+IM
+ -   -   -
+ 100 a 200 mL SF
+0,9%, SG 5% ou
+Ringer Lactato
+ 30 a 60 minutos em
+adultos e crianças.
+1 a 2 horas em
+pacientes lactentes.
+ 24 Horas   -   SIM
+ Ácido Tranexânico 50mg/ml,
+Solução Injetável (Zydus Nikkho®)  
+EV
+ Administrar
+lentamente
+(velocidade máxima
+de infusão de 50
+mg/min)
+ SIM
+ -   -   -
+ 100mL
+SF 0,9%
+ou SG 5%
+(Concentração
+máxima e
+50mg/mL)
+ -   -  
+AJUSTE RENAL
+ Não refrigerar, pois há ocorrência de precipitação.
+A solução contém aproximadamente 3,2 mg de sódio por mL de solução (140
+mmol/L)
+ A solução contém aproximadamente 3,2 mg de sódio por mL de solução (140
+mmol/L). Isto deve ser levado em consideração no caso de pacientes sob dieta
+de controle de sódio.
+ -
+ Dose de manutenção a cada 12 horas =
+(CC = clearance de creatinina)
+_______________________
+CC normal em mL/min
+ Deve ser aplicado isoladamente. Não deve ser misturado com nenhum outro
+medicamento, nem aplicado no mesmo equipo em que já está sendo aplicado
+outro medicamento, pois suas características podem ser modificadas.
+Se houver administração de dosagem excessiva, érecomendado o aumento da
+reposição hídrica, com infusão de soluções isotônicas, para aumento da
+diurese
+ O medicamento não deve ser administrado concomitantemente com outras
+drogas, através do mesmo frasco de infusão, ou através do mesmo acesso
+venoso (nem mesmo com a heparina). Evitar injeções intramusculares durante
+o tratamento.
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 10 ===
+TA   REF   TA   REF
+ Amicacina Sulfato 50mg/ml -
+Solução Injetável (Novafarma®)
+ EV
+IM  
+-   -   -
+ 100 a 200 mL SF
+0,9%, SG 5% ou
+Ringer Lactato
+ 30 a 60 minutos em
+adultos e crianças.
+1 a 2 horas em
+pacientes lactentes.
+ 24 Horas   -   SIM
+ Amiodarona 50 mg/ml, Injetável
+(Libbs®)  
+EV   -   -   -   250 mL de SG 5%   20 a 120 minutos   24 Horas   -   NÃO
+ Insuficiência leve
+(clearance de
+creatinina > 30
+mL/min)
+ Insuficiência
+moderada (clearance
+de creatinina 10 a 30
+mL/min)
+ Insuficiência grave
+(clearance de
+creatinina < 10
+mL/min)
+ IM   5 mL de AD   -   -   -   -   -   -
+ EV   5 mL de AD   -   -  
+SF 0,9%
+SG 5%
+ Direta: 3 a 5 minutos
+Contínua: 4 a 8 Horas
+ IM  
+3,2 mL de lidocaína
+0,5 %  
+1 Hora   -   -   -   -   -
+ EV
+ 3,2 mL de AD
+3,2 mL de SF 0,9%
+3,2 mL de SG 5%
+ 8h
+8h
+2h
+ 48h
+48h
+4h
+ 100 mL
+de SF 0,9%
+ De 3 a 30 minutos
+ -   -
+ 1,2 g (1 g + 200 mg) IV seguido de 600 mg (500 mg + 100
+mg) IV de 12 em 12 horas
+ 1,2 g (1 g + 200 mg) IV seguido de 600 mg (500 mg + 100
+mg) IV a cada 24 horas (a diálise reduz as concentrações
+séricas de Doclaxin® , e uma dose adicional de 600 mg
+(500 mg + 100 mg) IV pode ser necessária durante e no
+final da diálise)
+ Amoxicilina, associada com
+Clavulanato de Potássio 500mg +
+100mg, Pó liófilo para Injetável
+(Blau®)
+ EV
+ *Crianças
+Reduções similares de dose podem ser feitas para crianças.
+ Dose de manutenção a cada 12 horas =
+(CC = clearance de creatinina)
+_______________________
+CC normal em mL/min
+ SIM
+ Ampicilina 500mg
+(Blau®)
+ O tratamento deve prolongar-se por 48 a 72 horas após cessarem os sintomas
+ou tornarem-se negativas as culturas.
+ Sim
+ Em pacientes com insuficiência renal grave ( clearance   de creatinina ≤
+30mL/min), a cinética de eliminação da sulbactam e ampicilina é afetada de
+maneira similar e, desta maneira, a razão plasmática entre um e outro
+fármaco deverá permanecer constante. A dose de sulbactam sódico e
+ampicilina sódica injetável em tais pacientes deve ser administrada com
+menos frequência, de acordo com a prática usual para ampicilina.
+ Sem mudanças de posologia
+ Ampicilina, associada com
+Sulbactam 1g + 500mg, Injetável
+(Agila®)
+ Diluir sempre em soro glicosado a 5%. Utilizar recipientes de vidro ou de
+poliolefina. Reduzir a dose em pacientes com disfunção hepática. Uso
+preferencial em acesso venoso central, pelo risco de flebite em acesso
+periférico.
+ 10 mL de AD   -   -  
+50 mL AD
+50 mL SF 0,9%  
+30 a 40 minutos   -   -   SIM
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ *Adultos
+
+=== PAGINA 11 ===
+TA   REF   TA   REF
+ Anfotericina B 50mg, Injetável
+(Cristália®)  
+EV   10 mL de AD   24 Horas   7 Dias   500 mL SG 5%   2 a 6 Horas   -   -   SIM
+ Anfotericina B, Liposomal 50mg,
+Injetável
+(AmBisome®)
+ EV   12 mL de AD   -   24 Horas  
+100 a 1000 mL de
+SG 5%  
+30 a 60 minutos   -   7 Horas   SIM
+ EV
+ IM
+ SC
+ Concentração Final
+da Solução para
+Infusão (mg/mL)
+ 1 mg/mL
+ 2 mg/mL
+ Azul de Metileno 2%, solução
+injetável estéril  
+EV   -   -   -
+ Pode ser feito
+puro ou diluído
+em 50mL de
+SF0,9% ou SG5%
+ -   -   -   NÃO
+ SF 0,9%
+ Benzilpenicilia, Benzatina
+1.200.000 UI, injetável
+(REYOUNG)
+ IM   4,0 ml AD   -   -   -   -   -   -   Sim
+ IO
+ID
+SC
+EV
+IA
+ A solução deve ser usada imediatamente após a reconstituição. A excreção em
+pacientes com comprometimento renal torna-se consideravelmente
+retardada.
+ SF 0,9%
+SG 5%  
+De forma rápida
+in bolus  
+-
+ Desde aplicação   in
+bolus   até aplicação
+contínua
+ EV   - 30 mL de AD   1 Hora
+ Anidulafungina 100mg, injetável
+(Wyeth®)
+ 100mL de SF 0,9%
+100mL de SG5%
+ Mínimo de 90
+minutos  
+-
+ Atracúrio Besilato 50mg/5,0ml,
+Solução Injetável (Cristália ®)
+ -   NÃO
+ Esse medicamento é contraindicado na insuficiência renal.
+ Pacientes em diálise renal, a administração deverá ser iniciada somente
+quando a diálise for completada.
+ 24 Horas
+ 24 Horas   7 Dias   NÃO
+ EV   -   -   -
+ Desde aplicação   in
+bolus   até aplicação
+contínua
+ Atropina Sulfato 0,50mg/ml,
+Solução injetável  
+-   -   -
+ NÃO
+ Atracúrio Besilato 25mg/2,5ml,
+Solução Injetável (Cristália ®)  
+EV   -   -   -   SF 0,9% SG5%
+ 24 Horas
+protegido
+da luz
+ 24 Horas   NÃO
+ -   -   -   NÃO
+ Azul Patente V 2,5%, injetável
+(Oftalmopharma®)  
+-   -   -
+ A taxa de infusão não deve exceder 1,1 mg/minuto (equivalente a 1,4 mL/
+minuto).
+ Assim como ocorre com todos os agentes bloqueadores neuromusculares,
+recomenda-se a monitoração da função neuromuscular durante o uso de
+besilato de atracúrio para individualizar as dosagens requeridas.
+ Assim como ocorre com todos os agentes bloqueadores neuromusculares,
+recomenda-se a monitoração da função neuromuscular durante o uso de
+besilato de atracúrio para individualizar as dosagens requeridas.
+ Aplicar de forma rápida, pois lentamente pode causar desaceleração
+paradoxal do coração.
+ Quantidade do Diluente (mL)
+ 500 mL
+ 250 mL
+ -
+ Para uso injetável USAR NO MÁXIMO 2mL de Azul Patente para adultos e 1 mL
+de Azul Patente para crianças.
+Diluir 1:10
+EX.: (2 mL de Azul Patente + 18 mL de Solução Salina Balanceada).
+A bula não traz informações a respeito do tempo de infusão do medicamento.
+ Solução Salina
+Balanceada (BSS)
+ SF 0,9% SG5%
+ 24 Horas
+protegido
+da luz
+ 24 Horas   NÃO
+ Azitromicina 500mg, pó liofilizado
+para solução injetável (ABL®)  
+EV   5 mL de AD   24 Horas   -
+ 250 a 500 mL de
+SF 0,9%, SG 5%,
+Ringer Lactato
+ Mínimo de 1 hora
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 12 ===
+TA   REF   TA   REF
+ Benzilpenicilia, Benzatina
+600.000UI, Injetável
+(TEUTO®)
+ IM   4,0 ml AD   -   -   -   -   -   -   Não
+ EV   10 ml AD   24 horas   24 horas  
+100 ml SF 0,9*%
+SG 0,5%  
+30 – 60 Minutos   24 horas   24 horas   Sim
+ Benzilpenicilina, potássica,
+associada a penicilina procainada
+100.000UI + 300.000UI, Injetável
+(BLAU®)
+ IM   2,0 ml AD   24 horas   24 horas   -   -   -   -   Não
+ A solução deve ser usada imediatamente após a reconstituição.
+ A solução deve ser usada imediatamente após a reconstituição.
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal
+ A via intramuscular está praticamente reservada para uso em crianças
+menores, devido ao menor volume do produto a ser administrado,
+considerando-se o menor peso corporal nessa faixa etária e a posologia
+recomendada. Indivíduos com função renal comprometida, a excreção
+encontra-se consideravelmente retardada
+ O início da ação ocorre 30 minutos após sua administração, podendo seu
+efeito manter-se por até 4 semanas.
+ Este medicamento não deverá ser usado por via endovenosa ou subcutânea.
+Não se deve injetar em articulações instáveis, regiões infectadas e espaços
+intervertebrais. Durante a corticoterapia, os pacientes não deverão ser
+vacinados contra varicela. Outras formas de imunização também não deverão
+ser realizadas, especialmente quando em uso de altas doses de
+corticosteroides, devido ao risco de complicações neurológicas e deficiência
+na resposta imunológica
+ Medicamento contraindicado para menores de 15 anos. Conservar em
+temperatura entre 2º e 25ºC (não congelar); proteger da luz. Pode ser
+misturado (na seringa e não no frasco) com lidocaína a 1% ou 2%, cloridrato
+de procaína ou anestésicos locais similares
+ -   -   Não
+ Betametasona (Acetato, associada
+com Betametasona Fosfato)
+3mg+3mg/Ml
+ IM / INTRA E
+PERIARTICULAR
+ -   -   -   -   -   -
+ Observações
+ -   -   -   -   -
+ Benzilpenicilia, Potássica
+5.000.000UI, Injetável
+ IM   3,5 ml AD   -
+
+=== PAGINA 13 ===
+TA   REF   TA   REF
+ Betametasona (Dipropionato,
+associada com Betametasona
+Fosfato) 5mg+2mg/mL (Cristália)
+ IM / INTRA E
+PERI
+ARTICULAR
+ -   -   -   -   -   -   -   Não
+ Biperideno Lactato 5mg/mL,
+solução injetável   Cristália)  
+IM / EV   -   -   -   -   -   -   -   Não
+ Bromoprida 5mg/ml, Injetável
+(Wasser Farma)
+ IM
+EV  
+-   -   -
+ S.F.0,9%
+S.G.5%   -   -   -   Não
+ Bupivacaína Cloridrato 0,5%, sem
+vasoconstritor, solução injetável
+(Hypofarma)
+ Infiltração local
+Perineural
+Epidural
+ -   -   -   -   -   -   -   Não
+ Bupivacaína Cloridrato 0,5%,
+solução injetável
+ Infiltração local
+Perineural
+Epidural
+ -   -   -   -   -   -   -   Não
+ NÃO deverá ser usado por via intravenosa ou subcutânea. A administração
+intramuscular de corticoides deverá ser feita profundamente em grandes
+massas musculares para evitar atrofia tissular local. As injeções em tecidos
+moles, intralesionais e intra-articulares podem produzir efeitos sistêmicos
+locais. Não deverão ser injetados em articulações não estáveis, áreas
+infectadas ou espaços intervertebrais.
+O produto após aberto não deve ser reutilizado.
+ Transtornos extrapiramidais medicamentosos:
+Adultos: via IM ou EV lenta 2,5 a 5 mg. A dose máxima é de 10 mg a 20 mg.
+Crianças: em menores de 1 ano não se pode injetar mais de 1 mg; em crianças
+até 6 anos, injetar no máximo 2 mg; e em crianças até 10 anos injetar no
+máximo 3 mg.
+Deve ser guardado dentro da embalagem original e conservado em
+temperatura ambiente, entre 15 e 30oC, protegido da luz e da umidade.
+ IM - O conteúdo deve ser injetado profundamente na região deltoide ou na
+região glútea.
+EV - A administração intravenosa deve ser feita de forma lenta (superior a 3
+minutos) para evitar o aparecimento de ansiedade e agitação transitórias,
+porém intensas, seguido de sonolência, que pode ocorrer com a
+administração rápida
+ A solução não deve ser armazenada em contato com metais, pois os íons
+metálicos dissolvidos podem causar edema no local da injeção. Depois de
+aberto, deve ser consumido em até 03 dias. A dose máxima recomendada em
+um período de 4 horas é de 2 mg/kg de peso até 150 mg em adultos. A
+experiência clínica em crianças é limitada, não é recomendado o uso pela
+possibilidade de produzir toxicidade sistêmica, sendo usado sob critério
+médico. Em idosos, deve-se fazer ajuste de dose. Utilizada em anestesia
+obstétrica.
+ Anestésico local.
+Não está indicado para raquianestesia.
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 14 ===
+TA   REF   TA   REF
+ Bupivacaína Cloridrato 0,75%,
+solução injetável
+ Infiltração local
+Perineural
+Epidural
+ -   -   -   -   -   -   -   Não
+ Bupivacaína Cloridrato, associada
+à epinefrina 0,5% + 1/200.000UI,
+solução injetável (Cristália)
+ Infiltração local
+Perineural
+Epidural
+ -   -   -   -   -   -   -   Não
+ Bupivacaína Cloridrato, associada
+à glicose 0,5% + 8%, solução
+injetável   (Hipolabor)
+ Uso intratecal
+Raqui-anestesia
+ -   -   -   -   -   -   -   Não
+ IM   5,0 ml AD   -   -   100 ml   “InBolus” 3 a 5 min   12 horas   7 dias   Sim
+ EV   10,0 ml AD   12 horas   96 horas  
+S.F.0,9%
+S.G. 5 %  
+EV 30 min
+ IM  
+2,5 ml AD /
+lidocaína 0,5%  
+12 horas  
+24 horas
+Protegido
+ 50 a 100 ml
+S.F.0,9%  
+“InBolus” 3 a 5 min   12 horas  
+24 horas
+Protegido
+ EV   10,0 ml AD  
+Protegido
+da luz  
+da luz   S.G. 5 %  
+EV
+30 a 60 min
+ Protegido
+da luz  
+da luz
+ IM   3 ml AD/   -   -   50 a 100 ml   “InBolus” 3 a 5 min
+ EV
+ 10 ml AD/
+S.F 0,9%/
+S.G 0,5%
+ 24 horas   7 dias  
+S.F.0,9%
+S.G. 5 %  
+EV 30 min
+ IM   3 ml AD   -   -   -   “InBolus” 3 a 5 min   -   -   -
+ EV  
+10 ml AD/ S.F 0,9%/
+S.G 0,5%  
+24 horas   7 dias
+ 50 a 100 ml
+S.F.0,9%
+S.G. 5 %
+ EV 20 - 30 min  
+24 horas   7 dias   Sim
+ A mistura de antibacterianos betalactâmicos (penicilinas e cefalosporinas) e
+aminoglicosídeos pode causar a inativação de ambas substâncias.
+ Produto reconstituído com Lidocaína 0,5% não pode ser administrado por via
+intravenosa. O produto preparado em capela de fluxo unidirecional (laminar)
+validado pode ser armazenado pelos tempos descritos. Para produtos
+preparados fora desta condição, recomenda-se o uso imediato
+ Cefazolina Sódica 1g, pó liófilo
+para injetável
+(BIOCHIMICO)
+ 24 horas   7 dias   Sim
+ Cefepima Cloridrato 1g, pó liófilo
+para injetável
+(BIOCHIMICO)
+ O cloridrato de cefepima pode ser reconstituído com cloridrato de lidocaína
+0,5 ou 1,0%, caso necessário. Administração intramuscular deve ser feita até 1
+g em injeção local única; doses de 2 g deve ser administrada em locais
+diferentes. A concentração máxima final deve ser de 40 mg/ml
+ Cefepima Cloridrato 2g, pó liófilo
+para injetável
+(TEUTO)
+ Administração intramuscular deve ser feita até 1 g em injeção local única;
+doses de 2 g deve ser administrada em locais diferentes. A concentração
+máxima final deve ser de 40 mg/ml
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ Sim
+ Cefalotina Sódica 1g, injetável
+(BLAU)
+ Anestésico local.
+Não está indicado para raquianestesia.
+ Conservar em temperatura ambiente (15 a 30ºC) protegido da luz Anestésico
+local. Não está indicado para raquianestesia. As dosagens deverão ser
+reduzidas para pacientes jovens, idosos e debilitados e para pacientes com
+doenças cardíacas e/ou hepáticas
+ Conservar em temperatura ambiente (15 a 30ºC). Proteger da luz. A solução
+não deve ser armazenada em contato com metais (por ex.: agulhas ou partes
+metálicas de seringas), pois os íons metálicos dissolvidos podem causar edema
+no local da injeção. A solução de cloridrato de bupivacaína + glicose não
+contém conservantes, portanto, deve ser usada imediatamente após a
+abertura da ampola. Qualquer solução que sobrar deve ser descartada. As
+injeções devem ser sempre administradas lentamente e com frequente
+aspiração para evitar injeção intravascular acidental rápida que possa causar
+efeitos tóxicos. A dose que deve ser considerada como guia para uso em
+adultos é de 2 - 4mL, não foram estudados efeitos de dose superiores a 4 ml.
+
+=== PAGINA 15 ===
+TA   REF   TA   REF
+ IM   3,0 ml AD   “InBolus” 3 a 5 min   -   -   Sim
+ EV   10 ml AD   EV 20 a 30 min   -   -   -
+ Sem diluição   3-5 minutos   -   -
+ 100 mL
+SF 0,9% ou
+SG 5%
+ 20-30 minutos   18 horas   48 horas
+ -  
+“Bolus”
+2 a 4 minutos;  
+-   -
+ 20 mL S.F. 0,9%
+SG5%  
+30 minutos   -   -
+ Ceftriaxona Sódica 500mg, (Pó
+liófilo para injetável) (Novafarma)
+ EV
+IM
+ IM: 500 mg em 2 ml
+de solução de
+lidocaína 1% EV:
+500mg em 5 ml de
+AD
+ 6 horas
+protegido
+da luz
+ 24 horas
+protegido
+da luz
+ S.F.0,9%
+S.G. 5%
+ “InBolus” 2 a 4
+minutos; EV 30 min  
+-   -   Não
+ 12 horas
+Protegido
+da luz
+ 24 horas
+Protegido
+da luz
+ Cefoxitina Sódica 1g, injetável
+(ABL)  
+EV   10 ml AD   6 horas   48 horas
+ 100 ml
+S.F.0,9%
+S.G. 5 %
+ Apresenta-se sensível à luz, portanto, deve-se manter o frasco-ampola dentro
+da embalagem original (caixa de papelão) até o momento do uso. Após a
+reconstituição e/ou diluição do medicamento, envolver a embalagem
+contendo a solução em papel alumínio, evitando a exposição da mesma à luz.
+Solução de lidocaína nunca deve ser administrada por via intravenosa.
+Recomenda-se não injetar mais do que 1g em um sítio de administração. Não
+deve ser diluída no mesmo frasco que outros antimicrobianos ou com outras
+soluções que contenha cálcio. Infusao de 2 g deve ser diluída em 40 ml de
+solução. Soluções não utilizadas devem ser descartadas. Não é necessário
+diminuir a dose nos pacientes com insuficiência renal, desde que a função
+hepática não esteja prejudicada.
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via
+ Deve ser mantido em sua embalagem original, protegida da luz e do calor
+excessivo. Depois de preparado, este medicamento deve ser usado
+imediatamente. Não deve ser misturada com outros antibióticos na mesma
+seringa ou no mesmo líquido de infusão, principalmente os aminoglicosídeos e
+também, não podem ser misturados com solução de bicarbonato de sódio.
+Nas administrações por via intramuscular pode-se dissolver em quantidade
+similar de solução de lidocaína 1% a fim de diminuir dor pela aplicação.
+ Cefotaxima Sódica 1g, injetável
+(AUROBINDO)
+ Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ Sim
+ Ceftriaxona Sódica 1g, Injetável
+uso   (BLAU)  
+EV   10 ml AD   24 horas   24 horas   Não
+ Pode ser feita por infusão continua durante, no mínimo, 30 minutos. Infusao
+de 2 g deve ser diluída em 40 ml de solução. Não deve ser diluída no mesmo
+frasco que outros antimicrobianos ou com outras soluções que contenha
+cálcio. A precipitação de ceftriaxona cálcica também pode ocorrer misturado
+com soluções que contêm cálcio no mesmo equipo de administração EV,
+inclusEVe infusões contínuas que contêm cálcio tais como as de nutrição
+parenteral, através de equipo em Y. Soluções não utilizadas devem ser
+descartadas.
+ Deve-se administrar uma dose adicional de 1 a 2 g após cada sessão de
+hemodiálise.
+O produto reconstituído tem coloração de incolor a amarela-clara. A
+solução reconstituída pode sofrer uma ligeira alteração de cor (escurecer),
+especialmente quando conservada em temperatura ambiente. Esta ligeira
+mudança de cor da solução não altera a potência do medicamento.
+Limite de dose para idosos com mais de 75 anos de idade: 2 g a cada 8 horas.
+
+=== PAGINA 16 ===
+TA   REF   TA   REF
+ Cetamina Cloridrato 50mg/ml,
+Solução Injetável - 10ml
+(BIOCHIMICO)
+ EV
+IM  
+-   -   -
+ 500 ml
+S.F.0,9%
+S.G 5%
+ 60 segundos   24 horas   -   Não
+ Cetoprofeno 100mg (Pó liófilo para
+injetável) (CRISTALIA)  
+EV
+ 5 ml
+SF 0,9% ou
+SG 5%
+ -   -
+ 100- 150 ml
+SF 0,9%
+SG 5%
+ Infusão intravenosa
+lenta – 20 minutos  
+-   -   Sim
+ Cianocobalamina 1mg/ml,
+Injetável (TOPHARMA INDUSTRIAL)  
+IM   -   -   -   -   -   -   -   -
+ Sim  
+Uso contraindicado na gravidez e lactação. Não deve ser usado em casos de
+varicela e herpes zoster
+ Ciclofosfamida 1g, pó liófilo para
+injetável
+(GENUXAL)
+ EV
+IM
+INTRAPLEURAL
+INTRAPERITON
+EAL
+ 50mL AD   -   -
+ SF 0,9%
+AD
+SG5%
+ Entre 1 e 2 hs   -   24 horas
+ Ciprofloxacino Cloridrato 2mg/ml,
+Solução Injetável
+(CIPROBACTER – ISOFARMA)
+ EV   -   -   -   -  
+No mínimo 60 min
+(lenta)  
+-   -   Sim
+ A infusão deve ser lenta, em veia de grande calibre, para minimizar o
+desconforto do paciente e reduzir os riscos de irritação venosa. A solução para
+infusão é sensível à luz; portanto, só deve ser retirada da embalagem externa
+no momento do uso. Evite armazenar a solução sob refrigeração, pois pode
+ocorrer precipitação, embora esta se redissolva à temperatura ambiente. Têm-
+se documentado reações no local da aplicação com o uso endovenoso de
+ciprofloxacino, mais frequentes se o tempo de infusão for menor ou igual a 30
+minutos, que desaparecem rapidamente ao término da infusão. A
+administração subsequente não é contraindicada, a não ser que as reações
+reapareçam ou se agravem. Ciprofloxacino solução para infusão em bolsa
+flexível contém glicose, o que deve ser considerado nos pacientes com
+diabetes mellitus. O conteúdo de glicose na bolsa de 100 ml é 5 g e na bolsa
+de 200 ml é 10 g. Uma vez retirada da embalagem, a solução para infusão
+permanece estável por 3 dias, à luz natural. Não é recomendado uso durante
+lactação. Medicamentos contendo tizanidina não devem ser administrados
+com Ciprobacter-ciprofloxacino. Incompatibilidade com penicilinas e heparina.
+ Ciprofloxacino Cloridrato 2mg/ml,
+Solução Injetável (FRESOFLOX –
+FRESENIUS KABI)
+ EV   -   -   -  
+SF 0,9%
+SG 5%
+ No mínimo 60 min
+(lenta)  
+-   -   Sim
+ Função Cardíaca deve ser continuamente monitorada em pacientes
+hipertensos ou com descompensação cardíaca. Pode ocorrer confusão mental
+durante período de recuperação pós-operatória. A dose intravenosa deve ser
+administrada em 60 segundos, administração mais rápida pode resultar em
+depressão respiratória, apneia. Não pode ser administrado juntamente
+(mesma seringa ou frasco de infusão) com barbitúricos pela ocorrência de
+precipitados. Havendo a necessidade de restrição de líquidos, pode-se diluir
+em 250 ml de solução e obter uma concentração de 2 mg/ml.
+ Deve ser administrado somente por via intravenosa. Depois de aberto e
+reconstituído deve ser utilizado imediatamente. Se houver solução
+remanescente após o uso, descartar
+ Este medicamento é contraindicado para uso em crianças de qualquer idade;
+deve ser aplicada somente por via intramuscular. Após aberto, este
+medicamento deve ser utilizado imediatamente. As soluções remanescentes
+devem ser descartadas
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 17 ===
+TA   REF   TA   REF
+ SG 5%
+ SG5%
+SF 0,9%
+Solução de Ringer
+Lactato
+ A taxa de infusão não
+deve exceder 30
+mg/min:
+300 MG – 50ML – 10
+MIN
+600 MG – 50 ML – 20
+MIN
+900 MG – 50 A 100 ML
+- 30 MIN
+1200 MG – 100 ML –
+40 MIN
+ 16 dias   32 dias
+ Sim
+ Cada dose de 20 mg de citrato de cafeína equivale a 10 mg de cafeína base.
+Dose inicial – 20mg/kg (2ml/kg) – dose única
+Dose de manutenção – 0,5ml/kg (5mg/kg) – a cada 24 hs
+A dose de manutenção pode ser realizada via oral.
+ Claritromicina 500mg, Injetável
+(Klaricid -ABBOTT)  
+EV  
+10 ML Água estéril
+para injeção  
+24 h   48 h
+ 250 ML de:
+SG 5%
+SF 0,9%  
+No mínimo 60 min   6h   48h   Sim
+ Não deve ser administrado em bolus ou IM.
+Deve ser administrada com precaução em pacientes com comprometimento
+moderado a grave da função renal e em paciente com função hepática
+alterada.
+ Citrato de Cafeína 10mg/ml
+(cafeína 5mg/ml)  
+EV   -   -   -   24 h   _
+ No mínimo 30 min EV
+(dose inicial)
+No mínimo 10 min
+(dose de manutenção)
+ Não
+ A concentração de clindamicina com diluente não deve exceder 18 mg/ml.
+Não é recomendada a administração de mais de 1200mg em uma infusão
+única de 1 hora.
+O fosfato de clindamicina em infusão é incompatível com: ampicilina sódica,
+fenitoína sódica, barbitúricos, aminofilina, gluconato de cálcio, sulfato de
+magnésio, ceftriaxona sódica e ciprofloxacino.
+ Clindamicina 150mg/ml, Solução
+Injetável (NOVAFARMA)  
+IM   -   -   -   -   -   -   -   Não   Doses únicas IM maiores que 600mg não são recomendadas.
+ Clindamicina 150mg/ml, Solução
+Injetável (NOVAFARMA)  
+EV   -   -   -
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 18 ===
+TA   REF   TA   REF
+ Cloreto de Sódio 0,9%, Solução
+Injetável
+(FARMACE)
+ EV   -   -   -   -   -   -   -   Sim
+ -
+ Este medicamento é incompatível com anfotericina B, ocorrendo precipitação
+dessa substância, e/ou com o glucagon.
+ Sim
+ Aplicação IM deve ser profunda.
+Durante o tratamento a frequência cardíaca não deve estar abaixo de 56
+batimentos por minuto.
+As indicações para o produto não prevêem tratamento prolongado.
+O uso prolongado (6 ou mais dias) requer cuidados especiais. O tratamento
+não deve ser interrompido abruptamente; pode haver efeito rebote, com
+desestabilização do quadro hemodinâmico. A interrupção repentina do
+tratamento com clonidina, independente da via de administração, tem
+resultado, em alguns casos, em sintomas como nervosismo, agitação, cefaleia
+e tremor, acompanhado ou seguido por uma rápida elevação na pressão
+sanguínea. A probabilidade de tais reações parece ser maior após a
+administração de doses mais altas ou com o tratamento concomitante com
+beta-bloqueadores. Um excessivo aumento na pressão arterial, após a
+descontinuação da clonidina epidural, pode ser tratado com clonidina ou
+fentolamina intravenosa. Se a terapia tiver que ser descontinuada em
+pacientes sob tratamento concomitante com clonidina e beta-bloqueadores, o
+beta-bloqueador deve ser interrompido vários dias antes da descontinuação
+gradual da clonidina epidural. A clonidina epidural causa frequentemente
+diminuição na frequência cardíaca. A bradicardia sintomática pode ser tratada
+com atropina. Pode ocorrer grave hipotensão após a administração deste
+medicamentoe portanto cuidados devem ser tomados com todos os
+pacientes. O produto não é recomendado na maioria dos pacientes com
+doença cardiovascular grave ou para aqueles que são hemodinamicamente
+instáveis. O benefício de sua administração nesses pacientes deve ser
+cuidadosamente calculado contra os potenciais riscos resultantes da
+hipotensão.
+ Cloreto de Potássio 19,1%, Solução
+Injetável
+(FARMACE)
+ EV   -   -   -   SF 0,9%  
+Não exceder 20mEq/
+hora  
+-   -   Sim
+ MEDICAMENTO DE ALTA VIGILÂNCIA:
+Deve ser diluido
+antes da administração.Não diluir Cloreto de Potássio em solução de manitol.
+A diluição usual é de 40mEq/L de liquido intravenoso. A concentração
+máxima desejável é de 80mEq/L de líquido intravenoso (normalmente não
+mais de 3 mEq por Kg de peso corporal).
+Soluções concentradas de potássio precisam ser diluídas. Se injetadas
+diretamente podem causar morte instantânea. Não infundir rapidamente,
+pois pode ocorrer parada cardíaca, arritmia e morte. Descontinuar infusões de
+potássio se surgirem sinais de insuficiência renal.
+ Clonidina 0,150mg/mL (EV)
+(Clonidin -CRISTÁLIA)
+ IM
+EV
+INTRATECAL
+PERIDURAL
+ -   -   -   SF 0,9%
+ Lenta (7 a 10 min) ou
+diluída por
+gotejamento
+intravenoso.
+ -
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 19 ===
+TA   REF   TA   REF
+ Cloreto de Sódio 20%, Solução
+Injetável (FARMACE)  
+EV   -   -   -  
+SF 0,9%
+SG 5%
+ LENTA
+1 mEq / kg / hora.
+Conforme Prescrição
+Médica *
+ -   -   Sim
+ MEDICAMENTO DE ALTA
+VIGILÂNCIA: deve ser diluido antes da administração. Não deve ser
+administrado em pacientes com insuficiência renal grave e em pacientes com
+acidose metabólica.
+A bula do medicamento não traz informação de diluição.
+Informação retirada de Trissel L.A Handbook on Injetable Drugs. 10º ed.
+Bethesda: American Society of Health-System Pharmacists; 1998
+ Clorpromazina 5mg/ml, Solução
+Injetável
+(LONGACTIL – CRISTÁLIA)
+ IM   -   -   -   -   -   -   -   Sim
+ Não se recomenda o uso de Longactil em crianças com menos de 2 anos de
+idade.
+Medicamento fotossensível
+ EV
+IM  
+-   -   -
+ Não é
+recomendada o
+diluição
+ -   -   -
+ NÃO
+ Soluções injetáveis de glicose 5%, cloreto de sódio 0,9% e outras soluções
+ácidas não são compatíveis com o DANTROLEN Intravenoso e não devem ser
+usadas.
+O conteúdo do frasco-ampola deve ser protegido da luz direta. Não se
+recomenda o uso do produto por pacientes que estejam amamentando.
+ Desferroxamina Mesilato 500mg,
+Injetável (CRISTALIA)
+ EV
+SC
+IM
+ AD 5 ML (EV) e SC
+2 ML (IM)
+ 24 h   -
+ SF 0,9%
+SG 5%
+RINGER
+RINGER LACTATO
+SOLUÇÃO DE
+DIÁLISE
+PERITONEAL
+ Subcutânea lenta (De
+8 a 12 hs até 24 hs)  
+-   -   Sim
+ A infusão intravenosa rápida pode provocar hipotensão e choque.
+O medicamento não deve ser utilizado em concentrações maiores que
+95mg/mL quando administrado por via subcutânea, pois aumenta o risco de
+reação local. Quando a via IM for a única opção, pode ser necessário o uso de
+concentrações maiores para facilitar a injeção.
+Incompatibilidades: HEPARINA EV, SF 0,9% COMO DILUENTE, APENAS APÓS
+RECONSTITUIÇÃO.
+A excreção do complexo de ferro pode causar coloração marrom-avermelhada
+na urina.
+É recomendável a descontinuação de Mesilato de desferroxamina com 48
+horas de antecedência à cintilografia.
+ Dantroleno sódico 20mg EV
+(DANTROLEN – CRISTÁLIA)  
+EV
+ ÁGUA PARA
+INJETÁVEIS 60 ML
+(DILUENTE)
+ 6 h   -   -   1 HORA   -   -
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ Sim
+ Não se deve administrar cálcio por via parenteral a pacientes que utilizem
+esse tipo de medicamento.
+Dosagem máxima: a dose de 2 mg/dia não deve ser excedida.
+As injeções por via endovenosa devem ser administradas vagarosamente
+ Desmopressina Acetato 4mcg/mL,
+solução injetável (DDAVP –
+FERRING)
+ EV
+IM
+SC
+ -   -   -   SF 0,9%   15 a 30 min   -   -   Sim
+ Esse medicamento deve ser mantido sob refrigeração.
+Este medicamento é contraindicado em pacientes com insuficiência renal
+moderada a severa.
+ Deslanosídeo 0,2mg/ml, Solução
+Injetável (DESLANOL – UNIÃO
+QUIMICA)
+
+=== PAGINA 20 ===
+TA   REF   TA   REF
+ Complexo B [Dexpantenol (Pró B5)
++ Nicotinamida (B3) + Piridoxina
+(B6) + Riboflavina (B2) + Tiamina
+(B1)]
+ EV
+IM  
+-   -   -
+ SF 0,9%
+SG 5%
+VOLUME MAIOR
+OU IGUAL 500 ML,
+SENDO
+PREFERENCIAL EM
+1000 ML
+ EV lenta (gota a gota)   -   -   Sim
+ EV infusão
+intermitente  
+-   -   -
+ SF 0,9% (mínimo
+de 250 ML)
+SG 5% (mínimo de
+250 ML)
+Obs: Diluir no
+máximo 4 ml
+nesse volume
+ 0,5 a 1 mL/minuto
+ EV   -   -   -   -
+ 2 a 5 MG/MIN EM
+ADULTOS E DE 1
+MG/KG/MIN EM
+CRIANÇAS
+ IM   -   -   -   -   -
+ SIM  
+No choque deve ser usada apenas a via EV.
+Deve-se evitar injeção local do esteroide em área infectada.
+ ESSE MEDICAMENTO NÃO DEVE SER UTILIZADO EM PACIENTES QUE
+APRESENTEM PROBLEMAS RENAIS.
+DEVE-SE EVITAR A VIA PARENTERAL EM PACIENTES QUE TENHAM REVELADO
+SINAIS DE INTOLERANCIA A VITAMINA B1 (TIAMINA) POR VIA ORAL.
+ Diazepam 5mg/ml, Solução
+Injetável (UNI-DIAZEPAX – UNIÃO
+QUIMICA)
+ -   -   SIM
+ Pode ocorrer elevação das transaminases e da fosfatase alcalina
+Administrar a solução separadamente pois é incompatível com soluções
+aquosas de outros medicamentos (ocorre precipitação do princípio ativo)
+O aspecto da solução diluída é: límpida, isenta de partículas visíveis e incolor.
+ Dexametasona 10mg/2,5 mL
+(FARMACE)
+ EV
+IM profunda
+Intralesional
+tecidos moles;
+Intra-arterial
+ -   -   -  
+SF 0,9%
+SG 5%  
+EV lenta (gota a gota)   24 horas   -
+ SIM  
+Contraindicado para pacientes menores de 2 anos.
+Pode ser administrado como infusão
+ Dipirona Sódica 500mg/Ml
+(DIPIFARMA – FARMACE)
+ EV
+IM  
+-   -   -
+ SF 0,9%
+SG 5%
+RINGER LACTATO
+ MUITO LENTAMENTE
+(SEM EXCEDER
+1ML/MIN)
+ -   -   SIM
+ Em crianças com idade entre 3 e 11 meses ou pesando menos de 9 kg, não
+deve ser administrada via ev
+Não deve ser utilizado via im em crianças menores de 3 meses ou pesando
+menos de 5 kg
+A solução não deve ser administrada com outros medicamentos injetáveis
+ Dimenidrinato, associado com
+Piridoxina + Glicose + Frutose 3mg
++ 5mg + 100mg + 100mg/ml,
+Injetável
+(DRAMIN B6 DL – TAKEDA FARMA)
+ EV   -   -   -   SF 0,9% - 10 ML  
+2 MINUTOS, NO
+MÍNIMO  
+-   -
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 21 ===
+TA   REF   TA   REF
+ Dobutamina Cloridrato 12,5mg/ml,
+Injetável
+(TEUTO)
+ EV   -   -   -  
+SF 0,9%
+SG 5%  
+2,5 a 10mcg/kg/min   24 horas   -   SIM
+ A solução deve ser diluída antes da administração.
+A ampola deste medicamento contém uma solução com 250mg de
+dobutamina em 20 ml.
+Diluído para 1000mL obtém-se a concentração 250mcg/mL.
+Diluído para 500mL obtém-se a concentração 500mcg/mL.
+Diluído para 250mL obtém-se a concentração 1000mcg/mL.
+ATENÇÃO: a concentração de dobutamina não deve ultrapassar 5000mcg/mL
+(250mg de dobutamina diluídos para 50mL).
+A dobutamina deve ser administrada por infusão intravenosa através de
+bomba de infusão ou outro aparelho capaz de controlar a velocidade de
+infusão, para evitar a administração de doses maciças.
+INCOMPATIBILIDADE: soluções alcalinas, portanto, não misturar com
+bicarbonato de sódio a 5% ou outras soluções alcalinas. Não usar a
+dobutamina em conjunto com outros medicamentos ou diluentes contendo
+bissulfito de sódio e etanol. A dobutamina é também incompatível com:
+succinato sódico de hidrocortisona; cefazolina; cefamandol; cefalotina neutra;
+penicilina; ácido etacrínico e heparina sódica.
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 22 ===
+TA   REF   TA   REF
+ -   -
+ BULA NÃO
+FORNECE ESSA
+INFORMAÇÃO
+ LENTA EV   -
+ SIM
+ A via intravenosa é utilizada para efeito imediato.
+A absorção, ou início da ação, pela via intramuscular é mais rápida, entre 10 a
+20 minutos, que pela via subcutânea.
+Recomenda-se que a administração por via intravenosa direta deva ser feita
+lentamente. A dose diária por via parenteral não deve exceder 150 mg.
+ Efedrina Sulfato 50mg/mL, solução
+injetável (EFEDRIN – CRISTÁLIA)
+ IM
+EV
+SC
+ -   -   -
+ BULA NÃO
+FORNECE ESSA
+INFORMAÇÃO
+ LENTA   -   -
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ Dopamina 5mg/ml, Solução
+Injetável (UNIÃO QUIMICA)  
+-   -   SIM
+ Deve ser diluída antes do uso. Não injetar diretamente por via intravenosa.
+Cloridrato de dopamina deve ser administrado exclusivamente através de
+infusão intravenosa com a solução diluída antes da administração. Deve ser
+utilizada uma veia de grande calibre, preferencialmente o braço, evitando-se
+extravasamento para que não ocorra uma necrose tissular.
+É recomendável fazer a diluição imediatamente antes da administração. Uma
+coloração amarelo-castanha na solução é um indicativo de sua decomposição,
+não devendo ser utilizada.
+O cloridrato de dopamina deve ser administrado através de bomba de infusão
+para garantir o volume preciso. O produto é fotossensível; utilizar uma capa
+escura para o frasco de soro a fim de evitar exposição excessiva da luz solar ou
+de lâmpadas artificiais.
+Não se deve adicionar cloridrato de dopamina a soluções alcalinas, como o
+bicarbonato de sódio, pois a substância ativa será inativada.
+As propriedades vasoconstritoras da dopamina impedem sua administração
+pela via subcutânea ou intramuscular. O produto é inativado quando
+administrado pela via oral.
+O cloridrato de dopamina apresenta incompatibilidade com furosemida,
+tiopental sódico, insulina, ampicilina e anfotericina B; misturas com sulfato de
+gentamicina, cefalotina sódica ou oxacilina sódica devem ser evitadas.
+O cloridrato de dopamina pode determinar níveis falsamente elevados de
+glicose com o uso de aparelhos manuais que usam métodos eletroquímicos de
+análise.
+
+=== PAGINA 23 ===
+TA   REF   TA   REF
+ Enoxaparina 20mg/0,2ml -
+Injetável, Seringa pré-enchida
+graduada
+(SANOFI)
+ EV
+SC  
+-   -   -  
+SF 0.9%
+SG 5%  
+-   -   -   SIM
+ Enoxaparina 40mg/0,4ml -
+Injetável, Seringa pré-enchida
+graduada
+(SANOFI)
+ EV
+SC  
+-   -   -  
+SF 0.9%
+SG 5%  
+-   -   -   SIM
+ Enoxaparina 60mg/0,6ml -
+Injetável, Seringa pré-enchida
+graduada
+(SANOFI)
+ EV
+SC  
+-   -   -  
+SF 0.9%
+SG 5%  
+-   -   -   SIM
+ Enoxaparina 80mg/0,8ml -
+Injetável, Seringa pré-enchida
+graduada
+(SANOFI)
+ EV
+SC  
+-   -   -  
+SF 0.9%
+SG 5%  
+-   -   -   SIM
+ 24h   -
+ Epinefrina 1mg/ml, Solução
+Injetável
+(ADREN - Hipolabor)
+ EV
+IM
+SC
+ -   -   -  
+SF 0.9%
+SG 5%  
+-
+ Atenção: a epinefrina é fotossensível. Este produto só deve ser retirado da
+embalagem no momento do uso.
+Quando administrada por via intravenosa, deve ser aplicada de forma lenta e
+diluída
+(1 para 10.000 ou 1 para 100.000).
+Superdose: tratamento apenas de suporte, em virtude da curta meia-vida da
+epinefrina.
+ Não administrar Enoxaparina por via intramuscular.
+Qualquer excesso do medicamento deve ser expelido antes da injeção.
+Uma gota pode aparecer na ponta da agulha. Caso isto ocorra, remova-a antes
+de injetar o medicamento através de batidas suaves no corpo da seringa com
+a agulha apontada para baixo.
+Não expelir qualquer bolha de ar da seringa antes de administrar a injeção.
+Após abertas, as seringas de Enoxaparina devem ser utilizadas imediatamente.
+Se houver solução remanescente após o uso, esta deverá ser descartada.
+O local recomendado para injeção é na gordura da parte inferior do abdômen,
+pelo menos 5 centímetros de distância do umbigo para fora e em ambos os
+lados.
+Insuficiência renal severa: é necessário realizar ajuste posológico em pacientes
+com clearance de creatinina < 30 mL/min.
+Insuficiência renal leve e moderada: embora não seja recomendado realizar
+ajuste posológico em pacientes com clearance de creatinina entre 30-50
+mL/min e 50-80
+mL/min, é aconselhável que se faça um monitoramento clínico cuidadoso.
+Insuficiência hepática: em decorrência da ausência de estudos clínicos,
+recomenda-se cautela em pacientes com insuficiência hepática.
+Anestesia espinhal/peridural: Foram relatados casos de hematoma neuroaxial
+com o uso concomitante de Enoxaparina e anestesia espinhal/peridural,
+resultando em paralisia prolongada ou permanente. Estes eventos são raros
+com a administração de doses ≤ 40 mg/dia de Enoxaparina. O risco destes
+eventos pode ser aumentado com administração de doses maiores de
+Enoxaparina, uso de cateter epidural no pós-operatório ou em caso de
+administração concomitante de medicamentos que alteram a hemostasia, tais
+como anti-inflamatórios não esteroidais.
+ Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão
+ -
+
+=== PAGINA 24 ===
+TA   REF   TA   REF
+ -   -   -
+ -   -   Sem diuição   -   -   -   -
+ Proteger da luz
+Modo de usar: deve ser administrado lentamente por via EV, IM ou SC.
+Dose máxima:
+– Acima de 12 anos: 100mg/dia
+– Lactentes e crianças menores de 12 anos:
+1,5 mg/kg/dia.
+Insuficiência renal e hepática: utilizar com cuidado devido ao aumento do
+risco de reação adversa.
+ 24h
+ SF 0.9%
+SG 5%
+Ringer Lactato
+ -   -   24h   -
+ O tratamento simultâneo ou prévio com anticoagulantes e substâncias que
+inibem a formação ou a função plaquetária pode aumentar o risco de
+hemorragia.
+Não são conhecidas incompatibilidades.
+ Escopolamina Butilbrometo,
+associada com Dipirona Sódica
+4mg + 500mg/ml, Solução injetável
+(Genérico - Farmace)
+ EV
+IM  
+-   -   -
+ SF 0.9%
+SG 5%
+Ringer Lactato
+ -   -   -
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ Estreptoquinase 1.500.000UI,
+Injetável
+(Streptase®)
+ EV
+IA
+ Proteger da luz.
+A solução só deve ser administrada por médico absolutamente familiarizado
+com sua técnica.
+É aconselhável a diluição do produto em água destilada ou soluto glicosado a
+50%, a fim de obter-se soluções de 25% e 5%, ou seja, diluindo a solução
+original de ETHAMOLIN em um volume 4 a 20 vezes maior.
+Insuficiência hepática: Considerar diminuição da dose em caso de disfunção
+hepática severa.
+ -   -   -   -
+ Proteger da luz.
+Modo de usar: deve ser administrado lentamente por via EV
+Insuficiência hepática: Há relatos de prolongamento da meia-vida de
+eliminação. Uma redução na velocidade de infusão deve ser considerada
+nestes pacientes.
+A anestesia com Etomidato pode ser administrada a pacientes portadores de
+epilepsia, glaucoma ou porfiria, ou com história de hipertermia maligna sem
+riscos adicionais
+Superdose: Além das medidas de suporte, administração de 50 a 100 mg de
+hidrocortisona
+ Etanolamina Oleato 5%, solução
+injetável (Ethamolin)  
+EV   -   -
+ -
+ Escopolamina Butilbrometo
+20mg/ml, Solução Injetável
+(Genérico - Hipolabor)
+ EV
+IM
+SC
+ -
+ SIM
+ Etomidato 2mg/ml, Solução
+Injetável (Genérico – Cristália)  
+EV   Sem diluição
+ -  
+Água destilada
+Glicose 50%  
+-   -   -
+ -
+ Só deve ser administrada por injeção intravenosa lenta, cujo tempo da
+aplicação deve ser de, no mínimo, 5 minutos.
+Insuficiência renal e hepática: utilizar com cuidado devido ao aumento do
+risco de reação adversa.
+ 5,0mL SF 0.9%
+
+=== PAGINA 25 ===
+TA   REF   TA   REF
+ -
+ Filgrastim 300mcg/ml, solução
+injetável
+(Blau)
+ EV
+SC  
+-   -   -  
+SG5%
+(20-50mL)  
+30min   -
+ SF 0.9%
+SG 5%  
+< 60 mg/min   -
+ -
+ -
+ SF 0.9% (50mL)
+SG 5%
+(50mL)
+ -  
+SF - 48h
+SG - 6h
+ -
+ -
+ -   SF 0.9%
+ -
+ Administração EV: utilizar apenas em casos essenciais ou quando outras vias
+não estejam disponíveis pois soluções parenterais são extremamente
+alcalinas, (extremo cuidado: evitar uma injeção extra vascular ou IA).
+A administração muito rápida pode causar vasodilatação, queda da pressão
+arterial, depressão respiratória, apneia e/ou laringoespasmo.
+ Fenitoína Sódica, 50mg/ml,
+Solução injetável
+(Cristália)
+ EV
+IM  
+-   -
+ -
+ Conservar sob refrigeração entre 2° C e 8° C e ao abrigo da luz.
+Não é recomendado no período de 24 horas antes até 24 horas subsequentes
+à quimioterapia.
+Para aqueles pacientes tratados com filgrastim diluído a uma concentração
+inferior 15 μg/mL, deve-se adicionar albumina humana até uma concentração
+de 2 mg/mL. Por exemplo, para um volume de injeção final de 20 mL, doses
+totais do filgrastim inferiores a 300 μg devem ser administradas com 0,2 mL de
+uma solução de albumina humana a 20%.
+Não diluir com soluções fisiológicas.
+ Fentanila, Sal Citrato 0,05mg/ml,
+Solução Injetável
+(Cristália)
+ EV
+IM  
+-   -   -   SIM
+ Pacientes idosos e debilitados: assim como com o uso de outros opióides, a
+dose inicial deve ser reduzida.
+Pacientes obesos: há um risco de superdose se a dose for calculada com base
+no peso corporal. A dose em pacientes obesos deve ser calculada com base na
+massa magra estimada ao invés de somente no peso corporal.
+Insuficiência renal: deve-se considerar uma redução na dose e estes pacientes
+devem ser monitorados cuidadosamente para sinais e sintomas de toxicidade
+de fentanila.
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído
+ -
+ Efeito imediato: recomenda-se a forma injetável, preferencialmente pela via
+EV que deve ser precedida e seguida de uma injeção de solução salina estéril
+para evitar irritação venosa local devido à alcalinidade da solução.
+Não é recomendada a adição da solução injetável de fentanil a soluções para
+infusão intravenosa devido à sua baixa solubilidade e à consequente
+possibilidade de precipitação. Entretanto, sugere-se a infusão intravenosa em
+diluição compatível, como forma de se evitar alguns efeitos adversos
+relacionados à aplicação EV direta.
+As diluições com soluções glicosadas normalmente precipitam o produto e
+não estão indicadas. A infusão deve ser realizada por curtos períodos
+utilizando filtro de 0,22 micras (para retirar os cristais que possivelmente
+tenham se formado em consequência de precipitação).
+ Fenobarbital Sódico 100mg/ml,
+Solução Injetável
+(Cristália)
+ EV
+IM  
+-   -
+ -   -
+ Ajuste
+Renal  
+Observações
+
+=== PAGINA 26 ===
+TA   REF   TA   REF
+ Peso corporal   Dose vit K (EV ou IM)   Volume de injeção
+ 1kg   0,4mg   0,04mL
+ 1,5Kg   0,6mg   0,06mL
+ 2Kg   0,8mg   0,08mL
+ 2,5Kg ou mais   1mg   0,1mL
+ -
+ Flumazenil 0,1mg/ml, Solução
+Injetável
+(Cristalia)
+ EV   -   -   -  
+SF 0.9%
+SG 5%  
+-   24h   -
+ -   -  
+Não deve ser
+diluído  
+-   -
+ Fitomenadiona 10mg/ml, Solução
+Injetável, via intravenosa, oral e
+intramuscular (Kanakion®)
+ A fitomenadiona é altamente fotossensível, manter as ampolas dentro do
+cartucho para proteger da luz.
+A injeção EV deve ser aplicada lentamente (em pelo menos 30 segundos).
+Após aberto,   deverá   ser   utilizado   imediatamente.   Não   se   recomenda o
+fracionamento do conteúdo de cada ampola.
+Via parenteral: não deve ser diluído ou misturado com outros medicamentos
+de administração parenteral, contudo pode ser injetado na parte inferior do
+circuito de infusão, durante a infusão contínua de cloreto de sódio 0,9% ou
+dextrose 5%.
+Tabela: Cálculo da dose baseado no peso do recém-nascido saudável e
+prematuro. É importante checar o cálculo e a medida da dose em relação ao
+peso do bebê (erros de dose de 10 vezes são frequentes).
+ Há evidências que a profilaxia oral é insuficiente em pacientes com doença
+hepática colestática subjacente e má absorção. Portanto a administração oral
+de vitamina K não é recomendada para esses pacientes.
+ -
+ Para garantir a esterilidade ideal do produto, flumazenil deve ser mantido na
+respectiva ampola até o momento de ser utilizado.
+Uma vez que o flumazenil é essencialmente metabolizado pelo fígado,
+recomenda-se cuidado no ajuste da dose em pacientes com insuficiência
+hepática.
+ -
+ Deve ser administrado com cautela a pacientes com disfunção hepática.
+A bolsa deve ser descartada caso não seja utilizada em sua totalidade.
+Uma vez que fluconazol é disponível como solução salina diluída, a velocidade
+de administração da infusão deve ser considerada em pacientes que
+requeiram restrição de sódio ou líquidos.
+Fluconazol é compatível com a administração dos seguintes fluidos:
+Dextrose20%, Solução de Ringer, Solução de Hartmann, Cloreto de potássio
+em glicose, Bicarbonato de sódio 4,2%, Aminofusina e Solução salina.
+ EV
+IM
+VO
+ -
+ Fluconazol 2mg/ml, Injetável
+(Genérico - Sanobiol)  
+EV   -   -   -   Pronto para uso   ≤ 10mg/mL   -   -
+ -
+ Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ MEDICAMENTO
+(Apresentação padronizada)
+
+=== PAGINA 27 ===
+TA   REF   TA   REF
+ Clearence de
+creatinina  
+Dose de indução   Dose de manutenção
+ Via
+ Ganciclovir sódico 500mg - Solução
+Injetável
+(Genérico -Eurofarma)
+ EV  
+10mL de água estéril
+para injeção  
+-   -
+ SF 0.9%
+SG 5%
+Ringer
+Ringer Lactato
+ Furosemida 10mg/mL
+(Farmace)
+ EV
+IM  
+-   -   -  
+SF 0.9%
+Ringer Lactato  
+≤ 4mg/min   24h   24h   Sim
+ Atenção: não deve ser administrado em bolus.
+Em pacientes com insuficiência renal severa (creatinina sérica > 5 mg/dL),
+recomenda-se não exceder a velocidade de infusão de 2,5 mg/min.
+A administração IM deve ser restrita a casos excepcionais nos quais a EV não é
+possível.
+A solução injetável de tem pH aproximado a 9 sem capacidade de
+tamponamento. Por isto, o ingrediente ativo pode precipitar em valores de pH
+inferiores a 7. Deve-se ter cautela para que o pH da solução esteja dentro de
+uma variação de levemente alcalino para neutro.
+Não deve ser misturado com outros medicamentos na mesma seringa de
+injeção ou durante infusão.
+ Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ <10mL/min
+ 1,25mg/kg
+3x/semana depois da
+hemodiálise
+ 0,625mg/kg
+3x/semana depois da
+hemodiálise
+ Sim
+ Para reconstituição do ganciclovir, não usar água bacteriostática para injeção
+que contenha parabenos, uma vez que é incompatível com o pó estéril de
+ganciclovir e pode causar precipitação.
+Administração: infusão EV durante 1 hora e não deve ser misturado com
+outros produtos intravenosos. Infusão com concentrações maiores que 10
+mg/mL não é recomendada.
+Manuseio: precauções devem ser tomadas. pois o ganciclovir é considerado
+um potencial teratogênico e carcinogênico em humanos:
+Evitar contato direto da solução reconstituída nas ampolas com a pele e com
+as mucosas. A solução injetável de ganciclovir é alcalina (pH̴   11). Em caso de
+contato com a pele, ou membranas mucosas, lavar minuciosamente com
+água e sabão. Em casos de contato com os olhos, limpar com água corrente.
+Atenção: não aplicar a injeção EV rapidamente ou em bolus. A toxicidade de
+ganciclovir pode aumentar por causa da concentração plasmática aumentada.
+Se for aplicado IM ou SC, pode resultar em grave irritação do tecido por causa
+do pH elevado.
+Pacientes com disfunção renal: dose deve ser modificada como mostrado na
+tabela a seguir:
+ ≥ 70mL/min
+ 2,5mg/kg a cada 12h   2,5 mg/kg/dia
+ 24–49 mL/min   2,5mg/kg/dia   1,25 mg/kg/dia
+ -   -   12h
+ 5mg/kg a cada 12 h   5mg/kg/dia
+ 50–69 mL/min
+ 10–24 mL/min   1,25mg/kg/dia   0,625 mg/kg/dia
+ MEDICAMENTO
+(Apresentação padronizada)
+
+=== PAGINA 28 ===
+TA   REF   TA   REF
+ -
+ Insuficiência renal: administrar com cautela devido ao comprometimento da
+eliminação. Seu uso pode causar reações de hipersensibilidade de severidade
+variável (observar o paciente atentamente durante a administração dos
+primeiros 30 mL da solução).
+Este produto não deve ser utilizado como veículo de medicamentos, pois
+pode gerar incompatibilidades e comprometer a estabilidade da solução.
+Qualquer solução remanescente deverá ser descartada.
+Pode ocorrer efeito sinérgico com o uso concomitante deste medicamento
+com fármacos glicosídeos digitálicos (digoxina) devido ao cálcio presente na
+formulação de Hisocel. A vancomicina, quando administrada juntamente com
+Hisocel, provoca imediata precipitação branca na solução.
+ Gentamicina 40mg/ml - Solução
+Injetável (Gentamisan®)
+ EV
+IM  
+-   -   -  
+SF 0.9%
+SG 5%  
+30 min - 2h (EV)   -   -   SIM
+ Gentamicina não deve ser misturada com outros medicamentos.
+Posologia: adultos - 3 mg/kg/dia, em doenças com risco de vida, podem-se
+utilizar doses de até 5 mg/kg/dia. Crianças: dose recomendada é de 6 a 7,5
+mg/kg/dia (2,0 a 2,5 mg/kg, administrados a cada 8 horas).
+Uma administração simplificada para pacientes adultos com mais de 60 kg é a
+de 80 mg, 3 vezes por dia, ou 120 mg, a cada 12 horas. Para adultos pesando
+60 kg ou menos, 60 mg, 3 vezes por dia. Para adultos muito pequenos ou
+muito grandes, a dose deve ser calculada em mg/kg de massa corpórea magra.
+A dosagem deve ser ajustada em pacientes com insuficiência renal. Um
+método utilizado para o ajuste da dose consiste em aumentar o intervalo
+entre a administração das doses habituais. Uma vez que a concentração
+sérica de creatinina apresenta uma alta correlação com a meia-vida sérica da
+gentamicina, esse teste laboratorial poderá servir de parâmetro para o ajuste
+do intervalo entre as doses. O intervalo entre as doses (em horas) pode ser
+calculado multiplicando o nível da creatinina sérica (mg/100mL) por 8
+(Tabela). Por exemplo, um paciente pesando 60 kg com um nível de
+creatinina sérica de 2 mg/100 mL deverá receber 60 mg (1 mg/kg) a cada 16
+horas (2 mg/100 mL x 8).
+ Gelatina Fluida Modificada 3,5%,
+Solução Injetável (Fresenius Kabi)  
+EV   -   -   -   -   -   -   -
+ Glicerofosfato de Sódio
+216mg/ml, Solução Injetável
+(Fresenius Kabi)
+ EV   -   -   -  
+SF 0.9%
+SG 5%  
+Superior à 8 horas   24h   -   SIM
+ Não deve ser administrado sem diluir.
+ Deve ser diluído em pelo menos 6 vezes com diluente (ex. 20 mL de
+glicerofosfato + 100 mL de SF 0,9% ou SG 5%) para infusão periférica .
+Não deve administrado em bolus, porque a carga súbita de fosfato será
+secretada pelos rins.
+ Tempo de infusão: não deve ser menor que 8 horas.
+ Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*
+
+=== PAGINA 29 ===
+TA   REF   TA   REF
+ Haloperidol 5mg/ml, Solução
+Injetável (genérico Teuto®)  
+IM   -   -   -   -   -   -   -   Não
+ S.G. 5%
+ Ringer
+ IM   -   -   -   -   -   -   -
+ EV   -   -   -  
+50 – 250mL S.F.
+0,9%  
+30 – 60 min.   -   -
+ -
+ Glicina 1,5%, solução para
+irrigação urológica, estéril e
+apirogênica, frasco transparente
+ou bolsa transparente em sistema
+fechado (Baxter Hospitalar)
+ INTRA
+VESICAL  
+-   -   -   -   -   -   -   -
+ Conservar a temperatura ambiente (15°C - 30°C), evitar calor excessivo
+(temperatura superior a 40°C). Proteger de congelamentos.
+A variação de cor neste produto é normal e não altera a eficácia ou
+visualização durante os procedimentos urológicos transuretrais.
+Manter a bolsa em seu invólucro protetor (sobrebolsa) até o momento do
+uso. Após a abertura da sobrebolsa, a solução deve ser utilizada em 30 dias.
+Se desejado, o aquecimento deverá ser feito dentro da embalagem protetora
+à uma temperatura aproximada do corpo, em banho-maria ou estufa (não
+exceder 45°C).
+O conteúdo de uma bolsa aberta deve ser utilizado rapidamente para
+minimizar a possibilidade de crescimento bacteriano ou formação de
+pirogênio. Descartar as porções não utilizadas da solução de irrigação,
+considerando que nenhum agente antimicrobiano foi adicionado.
+ Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações Reconstituição  
+Estabilidade  
+Diluente*
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via
+ Não
+ Não  
+Não administrar por via endovenosa. Dose comum: adultos e crianças ≥ 6
+anos ou 25 Kg: injetar 1mL. Crianças ≤6 anos ou 25 kg: injetar 0,5mL.
+ Fabricante contraindica o uso endovenoso. O uso EV (0,1mg/mL SG 5%
+1mg/min) deve estar associado à monitoração constante com ECG para
+prolongamento do intervalo QT e arritmias cardíacas graves.
+ Heparina Sódica 5.000UI/0,25ml –
+Injetável
+(Hemofol)
+ SC   -   -   -   -   -   -   -   Não   -
+ Glucagon 1mg, pó liófilo para
+injetável (Novo Nordisk®)
+ SC
+IM
+ 1mL do diluente que
+acompanha o
+medicamento
+ -   -   -   -   -   -
+ Inverter a bolsa a cada 4 horas a fim de evitar aglomeração de heparina na
+solução.
+Em caso de infusão contínua realizar TTPa a cada 6 horas.
+ Heparina Sódica 5.000UI/ml –
+Injetável
+(Hemofol)
+ EV   -   -   -   EV direta ou contínua   24 h
+ Sim  
+A dose usual em crianças é de 1,7 a 3,5 mg/kg 6/6 a 4/4 horas. A bula não
+informa estabilidade após diluição.
+ Hidrocortisona 100mg (Sal
+acetato, pó liófilo)
+(Glicort)
+ IM
+EV  
+2 mL água destilada   24 h   72 h
+ 100-1000mL S.F.
+0,9%
+S.G. 5%
+Ringer Lactato
+ Bolus: 30s
+Infusão: 20-30 min  
+-   -   Não
+ A bula não informa estabilidade após diluição.
+ Hidrocortisona 500mg (Sal
+acetato, pó liófilo)
+(Glicort®)
+ IM
+EV  
+4 mL água destilada   24 h   72 h
+ Máx: 5mg/mL
+S.F. 0,9%
+S.G. 5%
+Ringer Lactato
+ Bolus: 30s
+Infusão: 20-30 min  
+-   -
+ Hidralazina 20mg/ml (EV)
+(Nepresol)
+ Não
+
+=== PAGINA 30 ===
+TA   REF   TA   REF
+ Antes da primeira administração deve-se fazer uma dose teste de 1mL em 15
+min.
+ Imipenem + Cilastatina sódica
+500mg
+(genérico Novafarma)
+ EV
+ 10mL S.F. 0,9%
+S.G. 5%
+S.G.F.
+ 4 h   24 h   100 mL S.F.0,9%   20-30 min por frasco   4 h   24 h   Sim   Não administrar por via IM.
+ Hidróxio de Ferro III Solução
+Injetável, equivalente a 20mg/ml
+de Ferro III, uso endovenoso, na
+forma de complexo coloidal
+sacarato (Noripurum®)
+ EV   -   -   -
+ Somente S.F.
+0,9%;
+100mL/amp.
+ 1 amp=15min
+2 amp=30min
+3 amp=1,5h
+4 amp=2,5h
+5 amp=3,5h
+ 12 h   -   Não
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ Não   Mulheres com IMC ≥ 30 é recomendada a administração EV.
+ Imunoglobulina Humana
+Endovenosa, 50 mg/ml, Solução
+Injetável, c/ kit p/ infusão
+(Tegeline®)
+ EV
+ Com diluente
+próprio (água para
+injeção)
+ -   -   -
+ 1mL/kg/h em 30 min.
+Após pode-se
+aumentar
+gradualmente até
+4mL/kg/h
+ -   -   Não
+ Infusão inicial lenta (1 ml/kg/h).
+Reconstituição:
+• Se necessário, deixar os dois frascos (pó e solvente) antigirem temperatura
+ambiente.
+• Retirar a cápsula protetora do frasco de solvente (água para preparações
+injetáveis) e do frasco de pó.
+• Desinfetar a superfície de cada tampa.
+• Retirar a tampa protetora translúcida do sistema de transferência e inserir
+completamente a ponta exposta no centro da tampa do frasco do solvente
+enquanto realiza, simultaneamente, um movimento de rotação.
+• Retirar a segunda tampa protetora da outra extremidade do sistema de
+transferência.
+• Manter os dois frascos na posição horizontal (grade de proteção de
+abertura voltada para o alto) e afundar rapidamente a extremidade livre da
+ponta exposta no centro da tampa do frasco de pó. Assegurar-
+se que a mesma esteja sempre imersa no solvente para evitar uma liberação
+precoce do vácuo.
+• Colocar imediatamente o conjunto na posição vertical, frasco de solvente
+exatamente sobre o frasco de pó, de maneira a permitir a transferência do
+solvente para o pó.
+• Durante a transferência, direcionar o jato de solvente sobre toda a
+superficie do pó. Assegurar-se de que a totalidade de solvente seja
+transferida.
+• No final da transferência, o vácuo é automaticamente liberado (ar estéril).
+• Remover o frasco vazio (solvente) juntamente com o sistema de
+transferência.
+• Agitar vagarosamente por um movimento leve de rotação para evitar a
+formação de bolhas, até a dissolução completa do pó.
+A bula não informa estabilidade após reconstituição ou diluição.
+ Imunoglobulina Humana Anti RHO
+(D), 300mcg, Solução Injetável,
+uso intramuscular ou intravenoso
+(Rhophylac®)
+ IM
+EV  
+-   -   -   -   Bolus   -   -
+
+=== PAGINA 31 ===
+TA   REF   TA   REF
+ Lidocaína Cloridrato, 2% Injetável
+(Xylestesin®)  
+per-cutânea   -   -   -   -   Push   -   -   Sim
+ 26-50
+ out/25
+ <10
+ 26-50
+ out/25
+ <10
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ EV
+per-cutânea
+ -   -
+ Sim  
+Não esterilizar pelo calor.
+A bula não informa estabilidade após diluição.
+ A bula não informa estabilidade após diluição.
+ Linezolida 2mg/ml, Solução
+Injetável (Zyvox®)  
+EV   -   -   -   -   30-120 min   -   -   Não
+ -   -   -   Push   -   -
+ EV   -   -   -
+ Pacientes ≤ 11 anos : administrar de 8/8h.
+Pacientes ≥ 12 anos: administrar de 12/12h.
+Administrar após a hemodiálise.
+Retirar a embalagem de alumínio antes do uso.
+ Lidocaína Cloridrato associada
+com epinefrina (Xylestesin®)  
+per-cutânea   -   -   -   -   Push   -   -
+ Sim   A bula não informa estabilidade após diluição.
+ Levofloxacino 5 mg/ml - Solução
+Injetável (Levotac®)  
+-
+ 250-500mg: mín:60
+min.
+750mg: min 90 min.
+ -
+ Não  
+Se a solução cristalizar, aquecer em banho-maria e, periodicamente, agitar
+vigorosamente.
+ Sim   Consultar a bula que acompanha o medicamento para o ajuste renal.
+ Lidocaína Cloridrato 2%, sem
+vasoconstritor, solução injetável
+(genérico Hipolabor)
+ Meropenem 1g, diluente cloreto
+de sódio 0,9%, Sistema Fechado,
+Injetável (genérico Biochimico)
+ EV   20 mL A.D.   1 hora   2 horas
+ 100 mL de:
+S.F. 0,9%
+S.G 5%
+ 5-30 min.   1 hora   2 horas   Sim
+ Dose para insuficiência renal
+ DEP. CREAT(mL/min)  
+DOSE (baseada na faixa de unidade de dose de 500 mg
+a 2,0 g a cada8 horas)
+ 1 un. 12/12 horas
+ ½ un. dose 12/12h
+ ½ un. dose 24/24h
+ Manitol 20% Solução injetável,
+sistema fechado
+ EV
+VO  
+-   -   -
+ EV: não se aplica
+VO: água filtrada
+ 30-500 mL/h, de
+acordo com a
+patologia
+ -   -
+ Sim
+ Dose para insuficiência renal
+ DEP. CREAT(mL/min)  
+DOSE (baseada na faixa de unidade de dose de 500 mg
+a 2,0 g a cada8 horas)
+ 1 un. 12/12 horas
+ ½ un. dose 12/12h
+ ½ un. dose 24/24h
+ Metaraminol Sal Bitartarato,
+10mg/ml, Solução Injetável
+(Aramin®)
+ IM
+EV  
+-   -   -
+ 500mL de :
+S.F. 0,9%
+S.G. 5%
+ De acordo com a
+resposta pressórica  
+-   -   Não  
+Aumentar a velocidade após 10 minutos da infusão inicial.
+A bula não informa estabilidade após diluição.
+ Meropenem 500mg, diluente
+cloreto de sódio 0,9%, Sistema
+Fechado, Injetável (Zylpen)
+ EV   10 mL A.D.   8 horas   48 h
+ 100 mL de:
+1) S.F. 0,9%
+2) S.G 5%
+ 5-30 min.  
+1) 10 h
+2) 03 h
+ 1) 48 h
+2) 18 h
+
+=== PAGINA 32 ===
+TA   REF   TA   REF
+ Bolus   : 1-2 min.
+ Infusão: 15 min.
+ Metoprolol Tartarato 1mg/ml (EV)
+(Seloken®)  
+EV   -   -   -   -
+ Adm. 3 injeções em
+bolus de 5mg em
+intervalos de 2
+minutos. Seguir com
+manutenção por via
+oral.
+ 12 h   12 h   Não
+ Metronidazol 5mg/ml, Solução
+Injetável (Endonidazol®)  
+EV   -   Não   Não   -  
+Infusão endovenosa :
+5mL/min.  
+Não   Não   Sim
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ Não  
+Usar com cautela em caso de insuficiência renal.
+A bula não informa solução para diluição nem estabilidade após diluição.
+ Metilprednisolona 125mg (Sal
+succinato, pó liofilizado + diluente)
+(genérico Novafarma)
+ EV
+IM
+ 2 mL do diluente
+próprio  
+48 h   -  
+S.F. 0,9%
+S.G. 5%
+ <250mg: > 5min.
+≥250mg: > 30 min.
+ -   -   Não  
+Usar com cautela em caso de insuficiência renal.
+A bula não informa estabilidade após diluição.
+ Metilergometrina Maleato
+0,2mg/ml, Solução Injetável
+(Ergometrin)
+ EV
+IM
+SC
+ -   -   -   -   EV: ≥ 1 min.   -   -
+ Não  
+Usar com cautela em caso de insuficiência renal.
+A bula não informa estabilidade após diluição.
+ Metoclopramida Cloridrato
+5mg/ml, Solução injetável
+(Noprosil)
+ EV
+IM  
+-   -   -
+ 50ml S.F. 0,9%
+50ml S.G. 5%
+50ml S.G.F.
+50ml Ringer
+50ml Ringer
+lactato
+ -   -   Sim
+ Clearance de creatinina ≤ 15 ml/min deve-se reduzir a dose em 75%. Entre 15
+e 60ml/min a dose deve ser 50% menor.
+A bula não informa estabilidade após diluição
+ Metilprednisolona 500mg (Sal
+succinato, pó liofilizado + diluente)
+(genérico Novafarma)
+ EV
+IM
+ 8 mL do diluente
+próprio  
+48hs   -
+ S.F. 0,9%
+S.G. 5%
+S.G.F.
+ <250mg: > 5min.
+≥250mg: > 30 min.  
+-   -
+ Deve-se manter a ampola protegida da luz. Categoria de risco na gravidez: C.
+ Categoria de risco na gravidez: B.
+
+=== PAGINA 33 ===
+TA   REF   TA   REF
+ 24 h
+2 a 4ºC
+ Não
+ Sedação no pré-
+operatório: doses
+fracionadas de 0,02 a
+0,04 mg/kg, injetadas
+em   bolus   lento de 2-
+3 minutos e repetida,
+se necessário, a cada
+3 a 5 minutos até
+uma dose máxima
+total de 0,1 a 0,2
+mg/kg.
+ NaCl 0,9%
+Dextrose 5%
+Dextrose 10%
+SRL
+Sol. Hartmann
+ - - - EV
+ Midazolam 5mg/ml, Injetável –
+amp 10 ml
+(Dormium®)
+ Sim
+ Midazolam 1mg/ml, Injetável –
+amp 5ml
+(Dormium®)
+ EV   -   -   -
+ NaCl 0,9%
+Dextrose 5%
+Dextrose 10%
+SRL
+Sol. Hartmann
+ Crianças – Sedação
+em UTI e adaptação à
+ventilação – ATAQUE:
+bolus de 0,1 a 0,2
+mg/kg/dose, lento,
+em 2-3 minutos
+(máximo de 5
+mg/dose). Os bolus
+podem ser repetidos
+a intervalos de até 2
+horas.
+INFUSÃO CONTíNUA:
+inicia-se com 1 a 2
+μg/kg/min e aumenta-
+se de 1 em 1
+μg/kg/min até obter
+o nível de sedação
+desejada (até 6
+μg/kg/min).
+ Não
+ 24 h
+2 a 4ºC
+ Sim
+ Categoria de risco na gravidez: C.
+Antagonista: Fumazenil. Usado para reverter a depressão do SNC (usado com
+muita cautela).
+ Midazolam 5mg/ml, Injetável –
+amp 3 ml
+(Dormium®)
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 34 ===
+TA   REF   TA   REF
+ SC   -   Não   Não
+ IT   -   Não   Não
+ PD   -   Não   Não
+ Morfina, Sulfato 10mg/ml,
+Solução Injetável
+(Dimorf ®)
+ EV   -   6 h   -   -
+ Bolus: 2,5 - 5 mg 4/4h
+SC: 5 mg 4/4h Infusão
+contínua: 1 mg/h
+(máx. 10 mg/h)
+Adaptação a VM:
+Bolus: 1 - 10 mg a
+cada 1 – 2h Infusão
+contínua: 5 - 35 mg/h
+ 24 h   7 dias   SIM
+ Sim
+ Deve-se manter a ampola protegida da luz.
+A depuração de eliminação pode ser calculada pela fórmula a seguir:
+Depuração (ml/min) = 2,5 x peso (em kg) x (1 + 0,058 x idade (em meses).
+PRIMACOR EV não pode ser diluído em infusão intravenosa de bicarbonato de
+sódio.
+Não misturar com furosemida na mesma linha (precipita).
+ Diluição Sugerida: 20
+mg (1 ampola) em
+100 ml de NaCl 0,9%
+ou Dextrose 5%.
+Nesta diluição 0,5
+μg/kg/min
+corresponde a 0,15
+ml/kg/h.
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*
+ Morfina, Sulfato 0,2mg/ml,
+Solução Injetável
+(Dimorf ®)
+ EV   -   Não   Não
+ -
+ Via Peridural – dose
+inicial de 5 mg.
+Via Intratecal – dose
+recomendada de 1:10
+da utilizada na via
+peridural.
+Recomenda-se iniciar
+com 0,2 mg
+Procediment.
+Obstétricos e
+Ginecológicos:
+injeção de 0,03 a 0,1
+mg via tecal,
+proporciona alívio
+satisfatório por até
+24 h.
+ Não   Não   Sim
+ A via preferencial de administração da Morfina sem conservantes é intratecal
+ou peridural. Com o uso de neuroléptico aumenta o risco de depressão
+respiratória. Pode causar: cefaleia, tontura, náusea, vômito, boca seca,
+apnéia, sonolência, retenção urinária e constipação, síncope, taquicardia,
+hipertensão, entre outros. Não sofre perda na hemodiálise. Ajuste da dose
+em pacientes com IR, hepática e idosos. A validade da solução dependerá das
+técnicas assépticas de manipulação do mesmo.
+Antagonista – naloxona.
+Categoria de risco na gravidez: C.
+ Milrinona 1mg/ml, Solução
+Injetável
+(Primacor®)
+ EV   -   -   -
+ NaCl 0,9%
+Dextrose 5%
+ Bolus Inicial: 50 μg/kg
+e manutenção entre
+0,375 a 0,75
+μg/kg/min.
+Manutenção
+ 24 h   -
+ Antagonista – naloxona.
+Categoria de risco na gravidez: C.
+ Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 35 ===
+TA   REF   TA   REF
+ Morfina, Sulfato 1mg/ml, Solução
+Injetável
+(Dimorf ®)
+ EV   -   7 h   -   -
+ Bolus: 2,5 - 5 mg 4/4h
+SC: 5 mg 4/4h Infusão
+contínua: 1 mg/h
+(máx. 10 mg/h)
+Adaptação a VM:
+Bolus: 1 - 10 mg a
+cada 1 – 2h Infusão
+contínua: 5 - 35 mg/h
+ 25 h   8 dias   SIM
+ EV   -   -   -
+ Deve ser diluído,
+para aplicação
+endovenosa, em
+solução NaCl
+0,9% ou solução
+de dextrose a 5%
+ Injeção direta ou
+infusão contínua
+(2mg de naloxona em
+500mL de solução
+salina ou dextrose a
+5% - Conc. final de
+0,004 mg/mL)
+ 24 h   -
+ IM   -   -   -   -   -   -   -
+ SC   -   -   -   -   -   -   -
+ EV   -   Não   Não   Não diluir  
+Injeção direta
+EV muito lentamente  
+Não   Não
+ IM   -   Não   Não   -   -   -   -
+ SC   -   Não   Não   -   -   -   -
+ Antagonista – naloxona.
+Categoria de risco na gravidez: C.
+ Naloxona Cloridrato 0,4 mg/ml,
+Solução Injetável  
+-
+ Não deve ser administrado sem diluição.
+Recomenda-se uso até reversão completa da depressão causada pelo opióide,
+entretanto, se nenhuma resposta for observada após a administração de
+10mg de naloxona, o diagnóstico de superdosagem por opióide deve ser
+questionado.
+ Neostigmina metilsulfato
+0,5mg/ml, Solução injetável
+(Normastig®)
+ Sim   Antagonista dos curarizantes.
+ Nitroglicerina 5mg/ml (EV)
+(Tridil®)  
+EV
+ Obrigatório diluir
+antes da
+administração.
+ Não   Não
+ Inicial: transferir
+assepticamente o
+conteúdo de uma
+ampola para uma
+bolsa de 500 mL
+SG 5% ou SF 0,9%
+isentos de PVC
+ Administrar
+inicialmente
+5mcg/min. A
+velocidade pode ser
+aumentada em
+5mcg/min. a cada 3-5
+minutos até
+ 48 h em
+frasco de
+vidro
+ 7 dias em
+frasco de
+vidro
+ Não
+ Retirar da embalagem original apenas no momento do uso.
+Deve ser armazenado protegido da luz.
+ -
+ Conservar protegido da luz.
+A cor da solução após reconstituição é castanha ou levemente alaranjada. Se
+a cor da solução se apresentar vermelha, azul, verde ou descolorida, deverá
+ser desprezada.
+ Nitroprussiato de Sódio 25mg/ml
+(Nitroprus®)  
+EV
+ Reconstituir cada
+frasco em 2mL do
+diluente próprio
+ 4 h   -
+ Diluente próprio
+para reconstituir.
+Depois de
+reconstituído
+deve ser diluído
+em SG 5% de
+250 a 1000mL
+ Velocidade de
+infusão de 3 ug por
+Kg de peso corporal
+por minuto
+(corresponde a 1 gota
+da solução de 1000
+mL de solução de
+glicose 5% - 50g de
+nitroprus)
+ 24 h   -
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 36 ===
+TA   REF   TA   REF
+ Ocitocina 5UI/ml, Solução Injetável
+(Oxiton®)  
+EV   -   -   -
+ Diluir em
+Dextrose 5%,
+NaCl 0,9% ou
+Ringer Lactato
+para uma conc.
+final de 0,01
+UI/mL
+ Indução do parto:
+bomba de infusão 2 a
+8 gotas/min,
+aumentando de
+forma gradativa
+ -   24 h   Não
+ EV   -   -   -
+ Diluir cada 500
+mcg (0,5 mg/mL)
+em 60 mL de
+SF 0,9%.
+ SC   -   -   -
+ Aplicar sem
+diluição,
+lentamente em 3
+min
+ Norepinefrina, Sal Hemitartarato
+(Hipolabor®)  
+EV   -   -   -
+ Dose média:
+diluir uma
+ampola de 4 mL a
+1000 mL de sol.
+Glicosada a 5%
+(cada mL da
+solução conterá 8
+ug de
+hemitartarato de
+norepinefrina,
+equivalente a 4
+ug de
+norepinefrina
+ Após a obs. da
+resposta a uma dose
+inicial d 2 a 3 mL por
+minuto, ajustar a
+velocidade do fluxo
+até obter uma
+pressão sg. Em torno
+de 80 a 100 mmHg de
+pressão sistólica.
+ 24 h
+diluída
+em
+glicose 5%
+ -   -   Recomendável utilizar equipo âmbar ou envolver em papel alumínio.
+ Categoria de risco na gravidez: C.
+Não deve ser administrado dentro de 6h após a administração de
+prostaglandinas vaginais.
+ Octreotida 0,1 mg/ml, solução
+injetável
+(Octride®)
+ Hemorragia de
+varizes de esôfago:
+bolus de 20 a 50 μg
+seguido de infusão
+contínua de 20-50
+μg/hora por cerca de
+48h.
+Dose máxima em
+adultos: 1500 μg/dia.
+ -   24 h   Não
+ Via   Reconstituição
+ MEDICAMENTO
+(Apresentação padronizada)
+ Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ Não é estável com soluções de nutrição parenteral. Deve ser conservado sob
+refrigeração em temperaturas de 2 a 8ºC.
+
+=== PAGINA 37 ===
+TA   REF   TA   REF
+ Octreotida Sal acetato 10mg, pó
+liófilo para injetável, com sistema
+de aplicação (Sandostatin LAR)
+ IM   Diluente próprio   Não   Não
+ A solução deverá
+ser preparada
+imediatamente
+antes do uso
+ A dose inicial é
+geralmente de 20mg,
+que é dada em
+intervalos de 4
+semanas. Após os 3
+primeiros meses de
+tratamento o médico
+deverá reavaliar o
+tratamento.
+ Não   Não   Não
+ Omeprazol 40mg, injetável
+(Cristália – genérico)  
+EV   Diluente próprio   -   -   -
+ A   solução
+reconstituída   deve
+ser utilizada apenas
+para   aplicação
+endovenosa,   não
+devendo   ser
+adicionada a solução
+para   infusão.   A
+injeção   deve   ser
+aplicada lentamente,
+com   velocidade
+média de no mínimo
+2,5 ml/min e máximo
+de até 4 ml/min.
+ -   4h   Não
+ Deve-se aplicar no músculo da nádegas. Deve ser conservado sob refrigeração
+em temperatura de 2 a 8º C.
+ A estabilidade do omeprazol sódico é pH dependente e, para assegurar a
+estabilidade da solução reconstituída, nenhum
+outro tipo de diluente deve ser utilizado.
+Após reconstituição, o produto
+é límpido, praticamente isento de partículas, incolor a levemente amarelado.
+ Infusão lenta: em 15
+min. Infusão
+contínua: de 1mg/h
+por até 24 h.
+EV Direto: até 8mg de
+2-5 min sem diluição
+ Não   Não   Não
+ Ondansetrona Cloridrato 2 mg/ml,
+Injetável – ampola de 2 ml
+(Nausedron®)
+ EV   -   -   -
+ Pode ser
+administrado
+sem diluição.
+Dose superior a
+8mg até 32mg
+devem ser
+diluídas em SF
+0,9% 50-100mL
+ Infusão lenta: em 15
+min. Infusão
+contínua: de 1mg/h
+por até 24 h.
+EV Direto: até 8mg de
+2-5 min sem diluição
+ Não   Não   Não
+ Pode ser
+administrado
+sem diluição.
+Dose superior a
+8mg até 32mg
+devem ser
+diluídas em SF
+0,9% 50-100mL
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ -
+ Ondansetrona Cloridrato 2 mg/ml,
+Injetável - ampola de 4 ml
+(Nausedron®)
+ EV   -   -   -
+
+=== PAGINA 38 ===
+TA   REF   TA   REF
+ EV direto   -
+ Administrar lento, em
+período próximo à 10
+minutos
+ -   -
+ EV
+Intermitente
+ 250 a 1000mL
+SF 0,9% ou
+SG 5%
+ No mínimo 10
+minutos, até em 6
+(seis) horas
+ 6 horas   -
+ IM   2,7 mL de AD   6 horas   6 horas   -   -   -   -
+ 50mL
+A.D.
+SF 0,9%
+SG 5%
+ Sem diluição
+ 50mL
+A.D.
+SF 0,9%
+SG 5%
+ Sem diluição
+ Piperacilina sódica 2,0g +
+tazobactam sódico 0,25g (2,25g)
+(Aurobindo)
+ EV  
+10 mL A.D.
+(SF 0,9% ou SG 5%)  
+24 horas   48 horas   Sim
+ Piperacilina sódica 4,0g +
+tazobactam sódico 0,5g (4,5g)
+(Aurobindo)
+ EV  
+20 mL A.D.
+(SF 0,9% ou SG 5%)
+ Não
+ 6 horas   6 horas
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal
+ Sim
+ Armazenar sob refrigeração. Exige ajuste na insuficiência renal. Pode ser
+administrado sem diluir por EV rápida. Pode causar: rash, prurido, eritema,
+sensação de queimação na veia, salEVação excessiva, elevação da frequência
+cardíaca, edema, rubor de pele, bronco espasmo.
+ Pancurônio Brometo 2mg/ml,
+Solução Injetável
+(Pancuron®)
+ EV   -   -   -
+ EV Direto – sem
+diluição
+Não existem
+dados para
+recomendar
+infusão contínua
+ Adulto: 0,15
+mg/kg/dose repetido
+a cada 20-40 minutos
+como necessário.
+Infusão contínua: 0,4
+a 0,6 μg/kg/min.
+Crianças: bolus de
+0,05 a 0,15
+mg/kg/dose, repetido
+a cada 20-40 minutos
+c/ necessário.
+ Não   Não
+ Após a reconstituição, espera-se um volume final aproximado de 11,5 mL de
+solução dentro do frasco.
+A solução de Ringer Lactato é incompatível com piperacilina sódica +
+tazobactam sódico
+ 24 horas   48 horas
+ Após a reconstituição, espera-se um volume final aproximado de 23 mL de
+solução dentro do frasco.
+A solução de Ringer Lactato é incompatível com piperacilina sódica +
+tazobactam sódico
+ Sim -
+ Oxacilina sódica 500mg
+(Blau®)
+ Categoria de risco na gravidez: B;
+A oxacilina não é dialisável;
+Cada 500mg de oxacilina sódica contém aproximadamente 2,5 mEq de sódio;
+Aminoglicosídeos e penicilinas são fisicamente e/ou quimicamente
+incompatíveis;
+Utilizar no preparo agulha de injeção de no máximo 0,8 mm de calibre;
+ 5mL AD ou SF 0,9%
+ Observações
+ 20-30 minutos
+ 20-30 minutos
+ -   -
+ -
+
+=== PAGINA 39 ===
+TA   REF   TA   REF
+ IM   2 ml AD   -   -   -   -   -   -
+ IM   -   -   -   IM profunda;   24 h   -
+ *EV   -   -   -
+ AD
+SG 5%
+SF 0,9%
+(preferencialment
+e em 10-20mL se
+SF 0,9%)
+ Infusão rápida, lenta
+ou contínua,
+tomando o cuidado
+de não exceder
+25mg/min
+ -   -
+ Propofol 10mg/ml - Emulsão
+injetável
+(Provive® 1%)
+ EV   -   12 h   -
+ Agitar a ampola
+antes do uso
+(pode ser
+administrado
+sem diluição);
+SF 0,9%
+SG 5% por meio
+do equipo “Y”
+próximo ao local
+da injeção.
+ EV: a 2% não é
+recomendado adm
+em bolus.
+A 1% adm em bolus
+lento e infusão
+contínua
+ 6 h   -   Não
+ Polimixina B 500.000UI, Injetável
+(Bedfordpoly -B®)
+ EV   2 ml AD   -   72 h
+ EV – 300 a 500
+mL de SG 5%
+para cada
+500.000UI
+ EV: 60 – 90 min; IM:
+não é recomendada
+devido à dor intensa
+no local de aplicação
+ -   -  
+Sim
+ A função renal deve ser cuidadosamente determinada. Pacientes com
+nefrotoxicidade devido ao Sulfato de Polimixina B frequentemente
+apresentam albuminúria, perda celular e azotemia.
+Diminuição do fluxo urinário (oliguria) e uma elevação dos níveis séricos de
+ureia BUN test são indicativos para uma interrupção do tratamento com a
+droga.
+1 mg de polimixina B base equivale a 10.000 UI de polimixina B base (1 frasco
+de Bedfordpoly-B contém cerca de 50 mg de polimixina B base).
+ Prometazina Cloridrato 25mg/ml,
+Solução Injetável
+(Pamergan®)
+ Não
+ Deve ser protegida da luz.
+EV:   não recomendado , pois pode causar dor, ardência e dano tecidual grave.
+Não administrar em veias da mão ou pulso. Descontinuar imediatamente a
+infusão se queimação ou dor no local.
+SC: risco de necrose tecidual.
+Observar sinais de tontura, sonolência, alterações cardiovasculares, sintomas
+extrapiramidais e depressão respiratória. Pode causar: náuseas, vômito,
+xerostomia e fotofobia.
+ Está na forma de emulsão homogênea branca.
+Se o medicamento estiver a 2%, não pode ser diluído.
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 40 ===
+TA   REF   TA   REF
+ Protamina Cloridrato 1%, Solução
+Injetável
+(VALEANT)
+ EV   -   -   -  
+AD OU SF 0,9%
+(5ML)  
+LENTO (1 A 3 MIN)   -   -   -
+ EV   -   -   -
+ SF 0,9% 10ml
+GLIC. 5% 10ml
+Bic. Na a 4,2%
+10ml
+Solução de
+Hartman 10ml
+ BÔLUS LENTO (1 A 5
+MIN) ou infusão
+contínua de 0,125 a
+0,250 mg/kg/hr
+ 24hs   -   Sim
+ IM   -   -   -   -   -   -   -   Sim
+ Remifentanila Cloridrato 2mg,
+Injetável
+(CRISTALIA)
+ EV   AD 3ml   24 hs   -
+ SF 0,9%
+SG. 5%
+AD
+ -   -   -   Não
+ Rocurônio Brometo 10mg/ml,
+Solução Injetável
+(CRISTÁLIA)
+ EV   -   -   -
+ SF 0,9%
+SG. 5%
+AD
+ -   24hs   -   Não
+ EV   -   -   -  
+SF 0,9%
+SG. 5%  
+-   24 hs   -   Não
+ EPIDURAL   -   -   -  
+BUPIVACAÍNA
+PESADA  
+-   -   -   Não
+ Sulfametoxazol, + Trimetropina
+(80mg + 16mg/ml) - Solução
+Injetável
+(NEOQUIMICA)
+ -   -   -   -
+ SF 0,9%
+SG. 5%
+(25-30 ml de
+diluente para
+cada ml do
+medicamento)
+ 30 a 60min (não
+exceder 1:30h;
+pacientes com
+restrição hídrica, até
+2h)
+ 6hs   -   Sim
+ EV   -   -   -
+ SF 0,9%
+SG. 5%
+SRL
+ LENTO OU INFUSÃO
+CONTÍNUA  
+-   -   Não
+ IM   -   -   -   -   -   -   -   Não
+ IM   -   -   -   -   -   -   -
+ Surfactante porcino
+(Alfaporactanto 120mg)
+(CHIESI)
+ IT   -   -   -   -   -   -   -   Não
+ EV   AD 10ML   -   -  
+SF 0,9% 40ml
+AD 40ml
+ Infusão lenta por 20 a
+30s  
+-   24 h   Não
+ IM   AD 10ML   -   -   -   -   -   24 h   Não
+ Incompatível com Anfotericina B, bicarbonato de sódio, ciclosporina,
+cefepime, emulsão lipídica 10%, procaína, polimixina B.
+ Sulfato de Magnésio 50%, Solução
+Injetável SANTEC
+ EV   -   -   -
+ SF 0,9%
+SG. 5%
+SRL
+ LENTO OU INFUSÃO
+CONTÍNUA  
+-   -  
+Não  
+Incompatível com Anfotericina B, bicarbonato de sódio, ciclosporina,
+cefepime, emulsão lipídica 10%, procaína, polimixina B.
+ Uso imediato após diluído. Antagonista da heparina. Cada 1ml (10mg)
+neutraliza 1000ui de heparina não fracionada.
+ Ranitidina Cloridrato 25mg/ml,
+Solução Injetável
+(TEUTO)
+ -
+ Uso pediatrico acima de 1 ano. Uso exclusivamente EV. Compatível com
+propofol concomitante, porém não pode ser misturado na mesma solução.
+ Pode ser mantido entre 8°C a 30°C por até 12 semanas. Após este período
+não pode ser novamente refrigerado, devendo ser descartado.
+ Administração intratraqueal ou intrabronquial. Resíduos devem ser
+descartados. A solução deve ser passada a temperatura ambiente antes do
+uso. Caso não utilizada após ambientalizar, mesmo que ainda não aspirada,
+deve ser descartada.
+ Cautela em caso de IR.
+Via de escolha em caso de AVP complicado. Cautela em caso de IR.
+ Suxametônio Cloreto 100mg,
+injetável
+(BLAUSIEGEL)
+ Sufentanila Citrato 50mcg/ml,
+Injetável
+(CRISTALIA)
+ Proteger da luz após diluição.
+ Uso epidural.
+ Não administrar junto com substâncias acidificantes. Não administrar com
+outros medicamentos.
+ Sulfato de Magnésio 10%, Solução
+Injetável
+(SANTEC)
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 41 ===
+TA   REF   TA   REF
+ EV   AD 3ML   -   24hs
+ SG5%
+SF 0,9%
+Glic. Dialise
+Peritoneal 1,36%
+ou 3,86%
+ Bôlus lento: diluir
+para 5ml (3 a 5 min)
+Infusão: diluir para
+100ml (30min)
+ 48h
+ SF0,9: 48h
+SG 5%: 5
+dias
+ Sim
+ IM   AD 3ML   -   24hs   -   -   -   -
+ EV   AD 2ML   -   -   -   Bôlus lento direto   -   -   Não
+ IM   AD 2ML   -   -   -   -   -   -   Não
+ EV   -   -   -  
+SG 5% 1000ML
+(para 10 ampolas)
+ 20 a 30 gts/min
+ 12 hs   -
+ SC   -   -   -   -  
+0,5 A 1 ML SC até no
+máximo 4x dia  
+-   -
+ EV   -   -   -  
+AD 10ml
+SF 0,9% 10ml
+ Bôlus lento (mínimo
+10min)  
+-   -
+ IM   -   -   -   -   -   -   -
+ Tigeciclina 50mg, pó liófilo para
+injetável
+(WYETH – PFIZER)
+ EV  
+SG5% 5ml
+SF 0,9% 5ml  
+-   -
+ SG5% 100ml
+SF 0,9% 100ml
+SRL 100ml
+ 30 a 60 min   -   -   Não
+ Tiopental Sódico 500mg, Injetável
+(Cristália)  
+EV  
+AD 20ml
+SF 0,9% 20ml  
+-   24 h   -   -   -   -   Não
+ EV   -   -   -
+ SF 0,9%
+AD
+1 ml para cada
+mg do
+medicamento
+ Bôlus lento: 1ml/min
+ou por gotejamento  
+-   -
+ IM   -   -   -   -   -   -   -
+ MEDICAMENTO
+(Apresentação padronizada)  
+Observações Via   Reconstituição
+ -
+ Acesso venoso exclusivo. Se acesso em Y, suspender outras medicações e
+lavar o equipo antes e depois da administração. Incompatível com
+anfotericina B, complexo lipídico de anfotericina B, diazepam, esomeprazol e
+omeprazol
+ Administração EV intermitente direta.
+Incompatível com Hidroxocobalamina, Ácido Ascórbico, Atenolol, Atracúrio,
+Atropina, Carboplana, Codeína, Daptomicina, Diltiazem, Dobutamina,
+Dopamina, Doxorrubicina, Efedrina, Epinefrina, Epirrubicina, Ertapenem,
+Etoposideo, Fenoldopam, Gafloxacina, Gemcitabina, Gemtuzumabe,
+Idarrubicina, Irinotecano, Labetalol, Levofloxacina, Lidocaína, Linezolida,
+Meperidina, Midazolam, Norepinefrina, Ondansetrona, Pancurônio,
+Fenilefrina, Piperacilina + Tazobactam, Rocurônio, Succinilcolina, Tacrolimus,
+Vecurônio, Vinorelbina, Voriconazol.
+ Incompatível com heparina, diclofenaco, indometacina, fenilbutazona,
+diazepam, flunitrazepam, midazolam e trinitrato de glicerol.
+ Incompatível com aminoglicosídeos. Em caso de formação de espuma
+durante manuseio, manter o frasco em repouso por 15 min até nova
+aspiração. A solução reconstituída pode ser administrada diretamente,
+entretanto recomenda-se proceder a diluição. Em RN’s utilizar somente a via
+EV.
+ Não administrar por infusão.
+ Evitar diluir em soluções salinas pelo aumento do risco de edema pulmonar.
+Não diluir em soluções com pH>7.
+ Tiamina 50mg/ml, Solução
+Injetável
+(CYTOPHARMA)
+ Não
+ Tramadol Cloridrato 50mg/ml,
+Solução Injetável
+(UNIÃO
+QUIMICA/TEUTO/NOVAFARMA/HI
+POLABOR)
+ Sim
+ Teicoplanina 200 e 400mg,
+Injetável
+(União Quimica / EUROFARMA /
+CRISTALIA)
+ Tenoxicam 20mg
+(CRISTALIA)
+ Terbutalina Sulfato 0,5mg/ml,
+Injetável
+(HIPOLABOR)
+ Não
+ Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal
+
+=== PAGINA 42 ===
+TA   REF   TA   REF
+ Vancomicina Cloridrato 500mg,
+Injetável
+(TEUTO)
+ EV   AD 10ML   24 h   14 dias
+ SF 0,9% 100ML
+SG 5% 100ML
+SRL 100ML
+ 1 HORA
+(NÃO ULTRAPASSAR
+10MG/MIN)
+ 24 h   14 dias   Sim
+ EV   -   -   -  
+AD 100ml
+SF 0,9% 100ml
+ Hemorragia TGI: 0,2
+U/min
+Choque séptico: 0,01
+– 0,04 U/min em BIC
+PCR: 40U dose única
++ Flush 20ml de AD
+ou SF 0,9%
+Diabetes Insipidus:
+0,001-0,003 U/KG/HR
+em BIC
+ -   -   Não
+ IM SC   -   -   -   -  
+5 a 10 U (0,25 a
+0,5ml) IM ou SC  
+-   -   Não
+ Verapamil 2,5mg/ml
+(ARISTON)  
+EV   -   -   -
+ Dose inicial:
+AD 20ml
+SF 0,9% 20ml
+SG 5% 20ml
+Dose
+manutenção:
+AD 100ml
+SF 0,9% 100ml
+SG 5% 100ml
+ DOSE INICIAL: (Bôlus)
+ADULTOS: 2m
+PED: 2m
+IDOSOS: 3 m
+Dose de manutenção:
+TODOS: 30m
+ ATÉ 24
+HS COM
+FOTOPRO
+TEÇÃO
+ -   Não
+ Evitar administração com albumina, anfotericina b, hidralazina e
+sulfametoxazol+trimetropim.
+Precipita em soluções com ph>6.
+ Pacientes com restrição hídrica o volume da diluição pode ser reduzido para
+50ml. Incompatível com Albumina, Aminofilina, Anfotericina B, Azatioprina,
+Cloranfenicol, Daptomicina, Diazepam, Fluorouracil, Furosemida, Ganciclovir,
+Gemtuzumabe, Heparina, Idarrubicina, Indometacina, Trometamina,
+Lansoprazol, Mecilina, Omeprazol, Pantoprazol, Fenitoína, Rituximabe,
+SMT+TMP e soluções alcalinas em geral.
+Caso administração com acesso em Y, suspender a outra medicação durante
+administração.
+ Vasopressina 20U/Ml
+(BIOLAB)
+ Pode ser administrado simultâneamente com nitroglicerina para minimizar
+efeitos colaterais.
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+
+=== PAGINA 43 ===
+RESPONSÁVEIS PELAS INFORMAÇÕES:
+ Farm. Ariadne de Santana Tolosa Pedroso – do item “ Acetilcisteína 100mg/ml, Solução Injetável ” ao item
+“ Azul Patente V 2,5%, injetável ”;
+Farm.   Flavia   Santos   Araújo   –   do   item   “ Benzilpenicilia,   Benzatina   1.200.000UI,   Injetável ”   ao   item
+“ Cianocobalamina 1mg/ml, Injetável ”;
+Farm. Leonora Correa da Costa de Marchi – do item “ Ciclofosfamida 1g, pó liófilo para injetável ” ao item
+“ Efedrina Sulfato 50mg/mL, solução injetável ”;
+Farm. Leticia Dias Lourenço – do item “ Enoxaparina 20mg/0,2ml - Injetável, Seringa pré-enchida graduada ”
+ao item “ Glicina 1,5%, solução para irrigação urológica, estéril e apirogênica, frasco transparente ou bolsa
+transparente em sistema fechado ”;
+Farm. Marcelo Konorat – do item “ Glucagon 1mg, pó liófilo para injetável ” ao item “ Metoclopramida
+Cloridrato 5mg/ml, Solução injetável ”;
+Farm. Marcelo da Silva – do item “ Metoprolol Tartarato 1mg/ml (EV) ” ao item “ Propofol 10mg/ml –
+Emulsão injetável ”;
+Farm. Otavio e Silva Rodrigues Filho – do item “ Protamina Cloridrato 1%, Solução Injetável ” ao item
+“ Verapamil 2,5mg/ml ”;
+

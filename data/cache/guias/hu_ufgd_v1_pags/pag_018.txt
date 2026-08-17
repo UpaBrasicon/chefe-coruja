@@ -1,0 +1,72 @@
+TA   REF   TA   REF
+ Cloreto de Sódio 0,9%, Solução
+Injetável
+(FARMACE)
+ EV   -   -   -   -   -   -   -   Sim
+ -
+ Este medicamento é incompatível com anfotericina B, ocorrendo precipitação
+dessa substância, e/ou com o glucagon.
+ Sim
+ Aplicação IM deve ser profunda.
+Durante o tratamento a frequência cardíaca não deve estar abaixo de 56
+batimentos por minuto.
+As indicações para o produto não prevêem tratamento prolongado.
+O uso prolongado (6 ou mais dias) requer cuidados especiais. O tratamento
+não deve ser interrompido abruptamente; pode haver efeito rebote, com
+desestabilização do quadro hemodinâmico. A interrupção repentina do
+tratamento com clonidina, independente da via de administração, tem
+resultado, em alguns casos, em sintomas como nervosismo, agitação, cefaleia
+e tremor, acompanhado ou seguido por uma rápida elevação na pressão
+sanguínea. A probabilidade de tais reações parece ser maior após a
+administração de doses mais altas ou com o tratamento concomitante com
+beta-bloqueadores. Um excessivo aumento na pressão arterial, após a
+descontinuação da clonidina epidural, pode ser tratado com clonidina ou
+fentolamina intravenosa. Se a terapia tiver que ser descontinuada em
+pacientes sob tratamento concomitante com clonidina e beta-bloqueadores, o
+beta-bloqueador deve ser interrompido vários dias antes da descontinuação
+gradual da clonidina epidural. A clonidina epidural causa frequentemente
+diminuição na frequência cardíaca. A bradicardia sintomática pode ser tratada
+com atropina. Pode ocorrer grave hipotensão após a administração deste
+medicamentoe portanto cuidados devem ser tomados com todos os
+pacientes. O produto não é recomendado na maioria dos pacientes com
+doença cardiovascular grave ou para aqueles que são hemodinamicamente
+instáveis. O benefício de sua administração nesses pacientes deve ser
+cuidadosamente calculado contra os potenciais riscos resultantes da
+hipotensão.
+ Cloreto de Potássio 19,1%, Solução
+Injetável
+(FARMACE)
+ EV   -   -   -   SF 0,9%  
+Não exceder 20mEq/
+hora  
+-   -   Sim
+ MEDICAMENTO DE ALTA VIGILÂNCIA:
+Deve ser diluido
+antes da administração.Não diluir Cloreto de Potássio em solução de manitol.
+A diluição usual é de 40mEq/L de liquido intravenoso. A concentração
+máxima desejável é de 80mEq/L de líquido intravenoso (normalmente não
+mais de 3 mEq por Kg de peso corporal).
+Soluções concentradas de potássio precisam ser diluídas. Se injetadas
+diretamente podem causar morte instantânea. Não infundir rapidamente,
+pois pode ocorrer parada cardíaca, arritmia e morte. Descontinuar infusões de
+potássio se surgirem sinais de insuficiência renal.
+ Clonidina 0,150mg/mL (EV)
+(Clonidin -CRISTÁLIA)
+ IM
+EV
+INTRATECAL
+PERIDURAL
+ -   -   -   SF 0,9%
+ Lenta (7 a 10 min) ou
+diluída por
+gotejamento
+intravenoso.
+ -
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações

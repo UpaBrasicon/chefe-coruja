@@ -1,0 +1,10380 @@
+=== PAGINA 1 ===
+Tipo do
+Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 1/90
+ Título do
+Documento
+ PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE
+MEDICAMENTOS INJETÁVEIS PADRONIZADOS
+PARA ADULTOS NO HU-UFGD
+ Emissão: 11/12/2025   Próxima revisão:
+11/12/2027
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ 1.   APRESENTAÇÃO
+ O   guia   de   preparo,   diluição   e   administração   de   medicamentos   injetáveis
+padronizados para linha adulto, no HU-UFGD/Ebserh foi elaborado a partir da necessidade de as
+ equipes   multiprofissionais   obterem   informações   seguras   e   precisas   de   como   preparar   os
+medicamentos injetáveis padronizados na instituição, além de garantir a segurança na prescrição
+medicamentosa, no uso e na administração dos medicamentos.
+ Quais informações poderão ser encontradas nesse guia?
+ •   Código AGHU:   código de cadastro do medicamento padronizado no AGHUx do HU-
+UFGD/Ebserh;
+ •   Apresentação padronizada:   nome do medicamento, apresentação farmacêutica e
+nome do laboratório do medicamento padronizado e disponível;
+ •   Via de administração:   vias de administração registradas pela Anvisa. Em caso de vias
+off-label, essa informação pode ser encontrada com informações adicionais;
+ •   Dose usual:   dose usualmente recomendada, com o intervalo terapêutico para
+adultos. Para alguns medicamentos, há a dose máxima usual recomendada;
+ •   Reconstituição:   informações necessárias para a reconstituição dos medicamentos
+que necessitam dessa etapa durante o preparo. Como volume, tipo de reconstituinte,
+se o fármaco possui expansão e qual o volume ou a concentração encontrada após a
+reconstituição. Nessa coluna também foi inserida a informação da estabilidade físico-
+química após a reconstituição;
+ •   Diluição:   informações necessárias para a diluição dos medicamentos. Como o tipo da
+solução   recomendada,   o   volume   ou   a   concentração   encontrada   ideal   de
+administração. Também foi descrita a estabilidade físico-química após a diluição e o
+tempo recomendado para administração ou infusão dos medicamentos.
+ •   Ajuste renal:   se o medicamento deve ser ajustado em caso de pacientes com
+disfunção renal ou em hemodiálise.
+ •   Informações   importantes:   informações   pertinentes   ao   preparo,   diluição,
+administração e monitorização após a administração para garantir o uso adequado e
+seguro dos medicamentos.
+ O guia foi embasado em uma ampla pesquisa à literatura e bulas dos medicamentos
+disponíveis na instituição e, por estar em constante processo de construção, está sujeito a
+contribuições e ajustes. Caso o medicamento não conste nesse guia ou a marca em questão seja
+diferente da relacionada, entrar em contato com a Unidade de Farmácia Clínica (UFCLI) ou a
+Unidade de Dispensação Farmacêutica (UDIS) para mais orientações.
+
+=== PAGINA 2 ===
+Tipo do
+Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 2/90
+ Título do
+Documento
+ PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE
+MEDICAMENTOS INJETÁVEIS PADRONIZADOS
+PARA ADULTOS NO HU-UFGD
+ Emissão: 11/12/2025   Próxima revisão:
+11/12/2027
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ 2.   OBJETIVOS
+ •   Padronizar os procedimentos de preparo, diluição e administração de medicamentos
+injetáveis na linha adulto a fim de reduzir a ocorrência de eventos adversos que
+possam comprometer a saúde e a vida dos pacientes atendidos;
+ •   Padronizar as reconstituições e diluições dos medicamentos utilizados no HU-
+UFGD/Ebserh;
+ •   Orientar de forma rápida e prática a prescrição segura de medicamentos injetáveis;
+ 3.   SIGLAS
+ •   Amp   –   ampola
+ •   dL   –   decilitro
+ •   AD   -   Água   destilada   para
+injetáveis (Água para injetáveis)
+ •   AVC - acesso venoso central
+ •   AVP - acesso venoso periférico
+ •   ClCr   –   Clearance de Creatinina
+ •   EV - via endovenosa
+ •   g - gramas
+ •   h - horas
+ •   IM - via intramuscular
+ •   INAL - via inalatória
+ •   INO   –   Inalatória oral
+ •   IT   –   via intratecal
+ •   ITRA   –   via intratraqueal
+ •   Kg - Quilogramas
+ •   mcg - microgramas
+ •   mg - miligramas
+ •   min - minutos
+ •   mL   –   mililitros
+ •   mm - milimetros
+ •   NA - informação não se aplica
+ •   PD - Epidural
+ •   SC - via subcutânea
+ •   SF 0,9% - Solução fisiológica 0,9%
+ •   SG 5% - Solução Glicosada 5%
+ •   TA - Temperatura ambiente
+ •   TR - Temperatura refrigerada
+ •   Vol - Volume
+
+=== PAGINA 3 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 3/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ 4.   DESCRIÇÃO
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 18457
+ Acetilcisteína
+100mg/mL
+(ampola 3mL)
+UNIÃO QUÍMICA
+ EV
+IN
+ 300mg a
+cada 12h  
+NA   NA
+ EV: SF 0,9%
+ ou SG 5%
+ IN: SF 0,9%
+ EV
+A partir de 50mL
+INAL - 3mL
+ 24h TA (EV)   Infusão lenta   NÃO
+ Na intoxicação
+acidental ou
+voluntária por
+Paracetamol, o
+tratamento deve
+começar assim que a
+necessidade se tornar
+evidente, de
+preferência iniciando
+no máximo 8 a 10
+horas após a ingestão
+do Paracetamol.
+ 6934
+ Aciclovir 250 mg
+ (frasco-ampola)
+UNIÃO QUÍMICA
+ EV
+(lento
+)
+ 5 a 10mg/kg
+a cada 8h
+ 10mL
+AD
+SF0,9%
+ 12h TA
+Não
+refrigerar
+ SF 0,9%
+SG 5%  
+≤   7 mg/mL
+ 12h TA
+Não
+refrigerar
+ Infusão lenta
+ ≥ 1h
+ 25-50 mL/min - a cada
+12h
+10-25 mL/min - a cada
+24h
+0-10 mL/min - dividida
+e administrada a cada
+24h e após a diálise
+ Evitar infusão rápida;
+administrar por mais
+de 1 hora para evitar
+danos renais; manter
+hidratação adequada
+do paciente; verificar
+flebite e alternar os
+locais de infusão
+Administração acima
+de 10mg/mL, risco
+aumentado de
+flebite.
+
+=== PAGINA 4 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 4/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 18368
+ Ácido Ascórbico
+100mg/mL
+(ampola 5mL)
+ (Vitamina C)
+HYPOFARMA
+ EV
+ IM
+ 50mg a
+1.000mg a
+cada 24h,
+14h ou 8h
+ NA   NA  
+SF 0,9%
+SG 5%
+ 1.000mg em
+1.000mL
+ 24h TA
+ com
+pequena
+perda de
+atividade
+ 60 min
+ ou 2mL/min
+ Usar equipo
+fotossensível
+ NÃO
+ *Vitamina C
+ Deve-se evitar a
+administração rápida,
+pois pode provocar
+tontura e desmaio.
+ 145050
+ Ácido
+Tranexâmico
+50mg/mL
+(ampola 5mL)
+HIPOLABOR
+ EV
+ 500 a
+1.000mg a
+cada 8h
+ ou
+ 10 a
+15mg/kg/dia
+a cada 24h
+ou 8h
+ DOSE MÁX:
+3.000mg/dia
+ NA   NA  
+SF 0,9%
+SG 5%
+ Concentração Máx
+50mg/mL  
+Uso imediato   30 min
+ Creatinina sérica
+ 1,40-2,80mg/dL:
+10mg/kg a cada 12h
+Creatinina sérica
+ 2,80-5,70mg/dL:
+10mg/kg a cada 24h
+Creatinina sérica
+maior que 5,70mg/dL:
+ 5mg/kg a cada 24 h
+ Deve ser aplicado
+isoladamente.
+ Não deve ser
+misturado com
+nenhum outro
+medicamento, nem
+aplicado no mesmo
+equipo.
+Se houver
+administração de
+dosagem excessiva, é
+recomendado o
+aumento da
+reposição hídrica,
+com infusão de
+soluções isotônicas,
+para aumento da
+diurese.
+ 209244
+ Adenosina
+3mg/mL
+ (ampola 2mL)
+HIPOLABOR
+ EV
+ 6mg/bolus
+podendo
+repetir mais
+12mg/bolus
+ NA   NA   NA
+ Pode ser
+administrada sem
+diluição
+ NA
+ EV direto: em
+bolus de 1 a 2
+segundos
+ NÃO
+ Possui ação rápida e
+meia vida
+extremamente curta.
+
+=== PAGINA 5 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 5/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 13676
+ Albumina Humana
+200mg/mL
+(frasco-ampola
+50mL)
+OCTAPHARMA
+ CSL BEHRING
+ EV
+ Dose varia de
+acordo com
+o diagnóstico
+ (25g a
+100g/dia)
+ NA   NA  
+SF 0,9%
+SG 5%
+ Pode ser
+administrada pura
+ou diluída.
+ Estudos
+demonstram
+estabilidade
+até 4h após a
+abertura do
+frasco
+ 1 a 3mL/min
+ Administrar no
+máximo em 4h
+ NÃO
+ Não deve ser
+administrado junto
+com outros
+medicamentos. 407404
+ 226486
+ Alfaepoetina
+(frasco-ampola
+1mL)
+ 10.000UI/mL
+ACHÉ
+ EV
+SC
+ Dose varia de
+acordo com
+diagnóstico
+ Diluente Próprio   Uso Imediato   NA   NA   NA  
+EV direto:
+ 1 a 5 min  
+SIM
+ Não Agitar.
+ Em pacientes em
+hemodiálise, a
+injeção deve ser
+aplicada após a
+sessão de diálise.
+ 403336
+ Alprostadil
+250mcg/mL
+(ampola 1mL)
+MANI
+ EV
+ Utilizado na
+linha
+neonatal
+ NA   NA  
+SF 0,9%
+SG 5%  
+100 mL   12h TA e TR   0,03 mL/kg/h   NÃO
+ Administrar em veia
+de grande calibre
+lentamente, a infusão
+rápida pode levar a
+hipotensão e febre.
+ 407170
+ Alprostadil
+500mcg/mL
+(ampola 1mL)
+FLUKKA
+(manipulado)
+ EV
+ Utilizado na
+linha
+neonatal
+ NA   NA  
+SF 0,9%
+SG 5%  
+100 mL   12h TA e TR   0,03 mL/kg/h   NÃO
+ Administrar em veia
+de grande calibre
+lentamente, a infusão
+rápida pode levar a
+hipotensão e febre.
+
+=== PAGINA 6 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 6/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 181439
+ Alteplase 50mg
+ (frasco-ampola)
+BOEHRINGER
+ EV
+ 15mg (bolus)
+seguido de
+0,50 a 0,75
+mg/kg
+de 30 a 60
+min.
+Dose máx:
+100mg/dia
+ 50 mL do
+diluente próprio
+ 24h TR
+ 8h TA  
+SF 0,9%
+ 0,2 mg/mL
+ A ocorrência de
+turbidez da solução
+reconstituída
+ não pode ser evitada
+ 24h TR
+ 8h TA
+ Bolus: 1 a 2 min
+Infusão: 75mg/kg
+em 30 min ou
+0,5mg/kg em 60
+min
+ NÃO
+ A duração do efeito
+hiperfibrinolítico
+termina após poucas
+horas da suspensão
+da administração do
+medicamento. O
+tempo de trombina
+volta ao normal em
+até 4 horas
+ 15954
+ Amicacina
+50mg/mL
+(ampola-2mL)
+TEUTO
+ EV
+(lento
+)
+IM
+ 15 a
+20 mg/kg/dia
+dose única
+diária (para
+pacientes
+com função
+renal normal)
+ ou
+ 5-
+7,5mg/kg/do
+se a cada 8h.
+ Dose máx:
+1.500mg/dia
+ NA   NA
+ SF 0,9%
+SG 5%
+IM: sem
+diluição
+ ≤ 5mg/mL
+ 24h TA
+(protegido
+da luz)
+ Infusão:
+ 30 a 60 min
+ EV direto: 3 a 5
+min (não
+recomendado)
+ ClCr 10-50mL/min:
+ 24 - 72h
+ ClCr menor que
+10mL/min: 48 - 72h.
+ Diálise intermitente:
+5-7,5mg/kg a cada
+ 48-72h.
+Contínua:10mg/kg,
+seguido de 7,5mg/kg a
+cada 24-48h
+ Medicamento dose-
+dependente,
+recomendado
+administrar 1xdia.
+ Administração de
+outros antibióticos
+deverá ser feita com
+1h de intervalo.
+Pode apresentar
+ototoxicidade e/ou
+nefrotoxicidade.
+ 13692
+ Amicacina
+250mg/mL
+(ampola 2mL)
+TEUTO
+ EV
+(lento
+)
+IM
+ 15 a
+20 mg/kg/dia
+dose única
+diária (para
+ NA   NA
+ SF 0,9%
+SG 5%
+IM: sem
+diluição
+ ≤ 5mg/mL
+ 24h TA
+(protegido
+da luz)
+ Infusão:
+ 30 a 60 min
+ ClCr 10-50mL/min:
+ 24 - 72h
+ ClCr menor que
+10mL/min: 48 - 72h.
+ Medicamento dose-
+dependente,
+recomendado
+administrar 1xdia.
+
+=== PAGINA 7 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 7/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ pacientes
+com função
+renal normal)
+ ou
+ 5-
+7,5mg/kg/do
+se a cada 8h.
+ Dose máx:
+1.500mg/dia
+ EV direto: 3 a 5
+min (não
+recomendado)
+ Diálise intermitente:
+5-7,5mg/kg a cada
+ 48-72h.
+Contínua:10mg/kg,
+seguido de 7,5mg/kg a
+cada 24-48h
+ Administração de
+outros antibióticos
+deverá ser feita com
+1h de intervalo.
+Pode apresentar
+ototoxicidade e/ou
+nefrotoxicidade.
+ 13765
+ AmioDARONA
+50mg/mL
+ (ampola 3mL)
+HIPOLABOR
+ EV
+ Dose de
+ataque:
+5mg/kg, 2 a 3
+vezes ao dia.
+Dose de
+Manutenção:
+ 10 a
+20/kg/dia
+800 a
+1.200mg/24h
+ NA   NA   SG 5%  
+150mg em 100mL
+900mg em 250mL  
+24h TA
+ EV direto:
+ > 3 min
+ Infusão:
+ 20 min a 2h
+ Infusão contínua
+ NÃO
+ Este medicamento é
+contraindicado em
+casos de gravidez em
+virtude de seus
+efeitos na glândula
+tireoide do feto.
+
+=== PAGINA 8 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 8/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 402002
+ AMOXicilina
+500mg +
+CLAVULANATO
+100mg
+ (frasco-ampola)
+BLAU
+ EV
+ 1.200mg a
+cada
+ 6 a 8h
+ AD: 10mL
+ Vol final 10,5mL
+ Uso imediato   SF 0,9%
+ 50mL
+10mg/mL
+(Amoxicilina)
+ Uso imediato
+ Infusão:
+ 30 a 40 min
+ EV direto:
+ 3 a 4 min
+ (não
+recomendado)
+ ClCr
+maior que 30mL/min:
+Sem ajuste
+10 -30mL/min: 600mg
+de 12/12 h
+menor que 10mL/min:
+NÃO recomendado
+ Tende a precipitar na
+presença de soluções
+que contenham
+glicose ou
+bicarbonato.
+Incompatibilidade em
+Y: Aminoglicosídeos.
+ 235326
+ AMPicilina
+1.000mg +
+SULBACTAM
+500mg
+ (frasco-ampola)
+FRESENIUS
+ EV
+IM
+ 1.500mg a
+3.000mg/dia
+a
+cada 6-8h
+ *9.000mg a
+cada 8h
+ EV: 3mL de AD
+para 1,5g Vol
+final 4mL
+ IM
+3,2mL Lidocaína
+0,5%
+ IM: 1h
+EV: Uso
+imediato
+ SF 0,9%
+SG5%
+ EV: 45mg/mL
+(30mg/mL
+Ampicilina)
+ IM: 250mg/mL
+(Ampicilina)
+ 8h TA
+ (SF 0,9%)
+48h TR
+ (SF 0,9%)
+2h TA
+ (SG 5%)
+4h TR
+ (SG 5%)
+ Infusão:
+ 15 a 30min
+ *Infusão
+prolongada 4
+horas
+ EV direto:
+ 3 a 5min
+ ClCr:15 - 29 mL/min:
+de 12/12h
+menor que 15mL/min:
+a cada 24h
+Hemodiálise:
+ após diálise:
+ a cada 12-24 h
+ *Cuidados Específicos
+e Monitoramento
+ Ativo contra
+ Acinetobacter spp .
+multirresistente.
+ Seu uso
+indiscriminado
+poderá levar à
+resistência a este
+antimicrobiano.
+ 235334
+ AMPicilina
+2.000mg +
+SULBACTAM
+1.000mg
+ (frasco-ampola)
+FRESENIUS
+ EUGIA
+ 1.500mg a
+3.000mg/dia
+a
+cada 6-8h
+ *9.000mg a
+cada 8h
+ EV:
+ 6mL AD
+ Vol final 8mL
+ IM
+3,2mL Lidocaína
+0,5%
+ IM: 1h
+EV: Uso
+imediato
+ SF 0,9%
+SG5%
+ EV: 45mg/mL
+(30mg/mL
+Ampicilina)
+ IM: 250mg/mL
+(Ampicilina)
+ 8h TA
+ (SF 0,9%)
+48h TR
+ (SF 0,9%)
+2h TA
+ (SG 5%)
+4h TR
+ (SG 5%)
+ Infusão:
+ 15 a 30min
+ *Infusão
+prolongada:
+ 4 horas
+ EV direto:
+ 3 a 5min
+ ClCr:15 - 29 mL/min:
+de 12/12h
+menor que 15mL/min:
+a cada 24h
+Hemodiálise:
+ após diálise:
+ a cada 12-24 h
+ *Cuidados Específicos
+e Monitoramento
+ Ativo contra
+ Acinetobacter spp .
+multirresistente.
+ Seu uso
+indiscriminado
+poderá levar à
+
+=== PAGINA 9 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 9/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ resistência a este
+antimicrobiano.
+ 13803
+ Ampicilina 500mg
+(frasco-ampola)
+TEUTO
+ EV
+IM
+ 1.000mg a
+2.000mg
+ a cada 4 ou
+6h
+ Dose máx:
+14.000mg/di
+a
+ AD:   2 mL
+ Vol final   2,3 mL
+ ( 217,39
+ mg/mL)
+ Uso imediato  
+SF 0,9%
+SG 5%  
+2 a 30mg/mL   Imediato
+ Infusão: 15 a
+30min
+ EV direto:
+mínimo 3 a 5min
+ ClCr: > 50 mL/min:
+NÃO é necessário
+ajuste
+ClCr 10 - 50 mL/min:
+ a cada 6 - 12h
+ClCr < 10 mL/min:
+ a cada 12 - 24 h
+Hemodiálise:
+Dialisável (20% a
+50%), administrar
+após hemodiálise
+ Administrar 1h antes
+ou 1h após a
+administração de
+aminoglicosídeos.
+ 271678
+ Anfotericina B
+COMPLEXO
+LIPÍDICO 5mg/mL
+(frasco-ampola
+20mL)
+ABELCET
+ EV  
+1 a
+5mg/kg/dia  
+NA   Uso imediato   SG 5%   1mg/mL  
+6h TA
+48h TR
+ 4 a 6h
+(2,5 mg/kg/h)  
+NÃO
+ Lavar o acesso antes
+e após a infusão com
+SG 5%.
+ Incompatível com
+ SF 0,9%.
+ 13838
+ Anfotericina B
+DESOXICOLATO
+50mg/mL(frasco-
+ EV
+ 0,5mg a 1
+mg/kg/dia
+1,5
+ AD: 10mL  
+24h TA
+7 dias TR  
+SG 5%  
+0,1 mg/mL  
+Uso imediato  
+2 a 6h
+(fotossensível)  
+NÃO
+ Lavar o acesso antes
+e após a infusão com
+SG 5%.
+
+=== PAGINA 10 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 10/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ ampola)
+CRISTÁLIA
+ mg/kg/dia
+em dias
+alternados
+ Protegido da
+luz
+ (0,25mg/mL para
+pacientes com
+restrição de volume)
+ Incompatível com
+ SF 0,9%.
+ O risco de
+nefrotoxicidade
+aumenta com doses
+maior que
+1mg/kg/dia.
+ 404680
+ Anfotericina B
+LIPOSSOMAL
+50mg (frasco-
+ampola)
+AMBISOME
+ EV  
+3 a
+6mg/kg/dia  
+AD: 12mL   24h TR   SG 5%   0,2 a 2mg/mL   6h TR   2h   NÃO
+ Lavar o acesso antes
+e após a infusão com
+SG 5%.
+ Incompatível com
+ SF 0,9%.
+ MEDICAMENTO NÃO
+PADRONIZADO.
+FORNECIDO PELO
+MINISTÉRIO DA
+SAÚDE
+ 408710
+ 408596
+ Anidulafungina
+100mg
+ (frasco-ampola)
+PFIZER
+ EV
+ A depender
+do
+diagnóstico.
+ AD
+ 30mL
+ (3,33mg/mL)
+ Até 1h TR  
+SF 0,9%
+SG 5%
+ Vol. total de infusão:
+130 mL (100+30mL)
+ 0,77 mg/mL
+ Até 24h TR
+ 1,4 mL/min ou
+84 mL/h
+Duração mínima
+de 90 min
+ NÃO
+ Os eventos adversos
+relacionados à
+infusão não são
+frequentes com a
+taxa de infusão
+menor que
+
+=== PAGINA 11 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 11/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 1,1 mg/minuto.
+ MEDICAMENTO NÃO
+PADRONIZADO.
+FORNECIDO PELO
+MINISTÉRIO DA
+SAÚDE
+ 17205
+ Atracúrio
+10mg/mL
+ (ampola 2,5mL)
+CRISTÁLIA
+ EV
+ Bolus Inicial
+de 0,3 a
+0,6mg/kg
+Manutenção:
+ 0,3 a
+0,6mg/kg/h
+ NA   NA  
+SF 0,9%
+SG 5%  
+0,2 ou 0,5 mg/ mL   24h TA  
+Bolus
+Infusão contínua  
+NÃO
+ Paralisia muscular
+prolongada e suas
+consequências são os
+principais sinais de
+superdose.
+ Antagonista:
+Neostigmina
+ 289127
+ Atracúrio
+10mg/mL
+ (ampola 5mL)
+CRISTÁLIA
+ EV
+ Bolus Inicial
+de 0,3 a
+0,6mg/kg
+Manutenção:
+ 0,3 a
+0,6mg/kg/h
+ NA   NA  
+SF 0,9%
+SG 5%  
+0,2 ou 0,5 mg/ mL   24h TA  
+Bolus
+Infusão contínua  
+NÃO
+ Paralisia muscular
+prolongada e suas
+consequências são os
+principais sinais de
+superdose.
+ Antagonista:
+Neostigmina
+
+=== PAGINA 12 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 12/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 13862
+ Atropina
+25mg/mL
+ (ampola 1mL)
+FARMACE
+ EV
+ IM
+ SC
+INTRA
+ÓSSE
+A
+ENDO
+TRAQ
+UEAL
+ 0,5mg a 1mg
+ ENVENENAME
+NTO:   1 a 6mg
+ NA   NA  
+SF 0,9%
+AD  
+Até 10mL   Uso imediato   EV lentamente   NÃO
+ A administração via
+EV lento pode
+resultar em
+bradicardia
+paroxística.
+Pode ocorrer
+aumento da
+temperatura corporal
+após a administração.
+Excretado pelo leite
+materno
+ 273311
+ Azitromicina
+500mg
+ (frasco-ampola)
+CRISTÁLIA
+ EV
+ 10mg/kg/dia
+até
+500mg/dia
+ AD: 4,8mL   24h TA  
+SF 0,9%
+SG 0,5%RL
+ 250mL (2mg/mL)
+ 500mL (1mg/mL)  
+24h TA
+ 1mg/mL
+em 3 h
+ 2mg/mL
+em 1 h
+ NÃO  
+Não administrar em
+ “bolus” ou IM.
+ 402652
+ Azul de Metileno
+20mg/mL
+(ampola 2mL)
+CITOPHARMA
+ EV
+ TÓPIC
+O
+ 1 a 2mg/kg
+ A dose por
+ser repetida
+de 1 a 3x
+ NA   NA  
+SF 0,9% ou
+SG 5%
+ Puro ou diluído em
+50mL
+(0,04 mg/mL)  
+Uso imediato
+ EV lento
+Mínimo de 5 min
+ Se infusão
+contínua:
+ 0,25 a 2
+mg/kg/hora
+ (7mg/kg)
+ Deve-se considerar o
+ajuste posológico para
+pacientes com
+insuficiência renal
+grave
+ Medicamento
+vesicante.
+ Usado como corante
+em cirurgias para
+avaliação de fístulas
+(Uso Tópico ou
+Intraluminal).
+ 288942
+ Azul de TRYPAN
+0,1%
+(ampola 1mL)
+ OFTALMOPHARMA
+ INTRA
+OCULA
+R
+ ACM   NA   NA   NA   NA   NA   NA   NÃO
+ Medicamento de
+dose única.
+ Proteger da luz e da
+umidade.
+
+=== PAGINA 13 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 13/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 402129
+ Azul PATENTE
+2,5%
+ (ampola 2mL)
+ 25mg/mL
+ OFTALMOPHARMA
+ SC
+EV
+INTRA
+-
+ARTE
+RIAL
+ 0,5-1 mL SC
+ Até 10mL
+ Intra-arterial
+ NA   NA   NA   NA   NA   NA   NÃO
+ Corante utilizado
+para diagnóstico
+cirúrgico.
+ Contraindicado na
+gestação.
+Pode induzir reações
+de hipersensibilidade
+imediata leves ou
+severas
+ 277780
+ BETAmetasona,
+Acetato 3mg/mL +
+BETAmetasona,
+Fosfato
+3,945mg/mL
+(ampola 1mL)
+MANTECORP;
+UNIÃO QUÍMICA
+ IM
+ Intra-
+articul
+ar
+Periart
+icular
+Intrab
+úrsico
+Intrad
+érmico
+Intrale
+sional
+Tecido
+s
+moles
+ Indução de
+maturidade
+pulmonar
+fetal
+ 12mg IM a
+cada 24h (2
+doses)
+ (Off-label)
+ Doenças de
+intensidade
+moderada a
+grave
+ 1 mL
+semanalmen
+te
+ NA   NA   NA   NA   NA   NA   NÃO
+ Agitar a ampola antes
+de usar.
+ Após aberto, o uso
+deve ser imediato.
+
+=== PAGINA 14 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 14/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 13889
+ Bicarbonato de
+Sódio 8,4%
+(ampola 10mL)
+ 84 mg/mL=
+1mEq/mL
+ SAMTEC
+ EV
+IM
+ 0,5 a 2,5
+mEq/kg/dose
+Dose máx:
+ 8.000mg/dia
+ (> 60 anos) e
+ 16.000mg/di
+a
+ (< 60 anos)
+ NA   NA  
+SF 0,9%
+SG 5%
+ Puro ou Diluído
+Concentração
+Mínima:
+ 15mg/mL
+ 24h TA
+ Administrar a
+solução pura ou
+diluída
+1mEq/kg/min a
+10mEq/kg/min
+ NÃO
+ Medicamento
+vesicante.
+Realizar flush na via
+de administração
+antes e depois da
+infusão.
+Não administrar no
+mesmo acesso
+venoso, drogas
+vasoativas e
+Gluconato de Cálcio.
+Adultos em acidose
+metabólica: 2 a 5
+mEq/mL/kg de 4 a 8h.
+ 277275
+ Bicarbonato de
+Sódio 8,4% (frasco
+250mL)
+ 84mg/mL=
+ 1mEq/mL
+ FRESENIUS;
+HYPOFARMA
+ EV
+ 0,5 a 2,5
+mEq/kg/dose
+Dose máx:
+ 8.000mg/dia
+ (> 60 anos) e
+ 16.000mg/di
+a
+ (< 60 anos)
+ NA   NA  
+SF 0,9%
+SG 5%
+ Puro ou Diluído
+Concentração
+Mínima:
+ 15mg/mL
+ 24h TA
+ Administrar a
+solução pura ou
+diluída
+1mEq/kg/min a
+10mEq/kg/min
+ NÃO
+ Medicamento
+vesicante.
+Realizar flush na via
+de administração
+antes e depois da
+infusão.
+Não administrar no
+mesmo acesso
+venoso, drogas
+vasoativas e
+Gluconato de Cálcio.
+Adultos em acidose
+
+=== PAGINA 15 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 15/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ metabólica: 2 a 5
+mEq/mL/kg de 4 a 8h.
+ 13897
+ Biperideno,
+Lactato
+5mg/mL
+ (ampola 1mL)
+CRISTÁLIA
+ EV
+IM
+ 2,5 a 5
+mg/dia
+ Dose
+Máxima:
+ 10 a 20 mg,
+deve ser
+distribuída
+ao longo do
+dia de modo
+uniforme
+(Síndromes
+Parkinsonian
+as).
+ NA   NA   NA   NA   NA   EV mínimo 5 min   NÃO
+ Medicamento deve
+ser administrado
+lentamente.
+ Após aberto uso
+imediato.
+
+=== PAGINA 16 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 16/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 288949
+ BromoPRIDA
+5mg/mL
+ (ampola 2mL)
+FRESENIUS
+UNIÃO QUÍMICA
+ EV
+IM
+ 10 a
+20mg/dia  
+NA   NA  
+SF 0,9%
+SG 5%
+ Recomenda-se
+ 18 a 48mL
+(Vol. total da solução
+20 a 50mL)
+ 24h TA
+ IM: profundo
+EV: lento
+(superior a 3
+min)
+ Em pacientes com
+depuração de
+creatinina < que 40
+mL/min, realizar
+metade da dose
+recomendada
+ Reações
+extrapiramidais
+podem ocorrer com
+apenas uma dose em
+crianças e adultos
+jovens.
+ A administração IM
+deve ser feita na
+região glútea ou na
+região deltoide.
+ 16535
+ BUPIvacaína 0,5%
++ GLICOSE 8%
+(HIPERBÁRICA)
+ (ampola 4mL)
+CRISTÁLIA;
+HIPOLABOR;
+HYPOFARMA
+ Intrat
+ecal
+ 7,5 a 10,5mg
+(Cristália)
+10 a 20 mg
+(Hipolabor e
+Hipofarma)
+ NA   NA   NA   NA   NA   NA   NÃO  
+Não é recomendado
+diluir.
+ 407306
+ Cafeína CITRATO
+20mg/mL
+(ampola 1mL)
+CHIESI
+ EV
+VO
+ VS
+ Dose de
+Ataque:
+20mg/kg
+ Dose
+manutenção:
+ 5 a 10mg/kg
+a cada 24h.
+Doses
+baseadas no
+ NA   NA  
+SF 0,9%
+SG 5%
+ Puro ou diluído
+ 10 mg/mL
+ Uso
+imediato.
+ Infusão em 10 a
+30 min.
+ Ataque (30min).
+ NÃO
+ A dose de cafeína
+base é a metade da
+dose expressa como
+citrato de cafeína.
+Pode haver
+necessidade de ajuste
+de dose em lactentes.
+Alternativamente as
+doses de manutenção
+podem ser
+
+=== PAGINA 17 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 17/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ Citrato de
+Cafeína
+ administradas VO e
+VS.
+ 14079
+ Cefalotina
+ 1.000mg
+ (frasco-ampola)
+BLAU
+ EV
+IM
+ 500mg a
+2.000mg a
+cada
+ 4 a 6h, não
+excedendo
+12.000mg/di
+a em adultos.
+ AD
+ 5 mL
+ Vol final
+ 5,7mL
+ (175mg/mL)
+ 12h TA
+96h TR
+ SF 0,9%
+SG 5%
+ EV
+ 50 a 100 mL
+ (5 a 10mg/mL)
+ IM: 2,5mL de AD, SF
+ ou Lidocaína 0,5%
+ 12h TA
+7 dias TR  
+30 minutos
+ ClCr de 50 – 80
+mL/min: 2 g a cada 6h
+ ClCr: 25 – 50 mL/min:
+até 1,5 g a cada 6h
+ ClCr 10 – 25 mL/min:
+até 1 g a cada 6h
+ ClCr 2 – 10 mL/min:
+ até 500 mg a cada 6h
+ ClCr < 2 mL/min:
+ até 500 mg a cada 8h.
+ IM: Administrar em
+áreas de grande
+massa muscular
+ 248681
+ Cefazolina
+ 1.000mg
+ (frasco-ampola)
+ABL
+EUGIA
+ EV
+IM
+ Limite de
+dose
+ 6g/dia
+ (raras
+ocasiões,
+12g/dia)
+ IM: 2,5mL de
+Lidocaína 0,5%
+ou 2,5mL AD
+Vol final: 3,2 mL
+ (312,5mg/mL)
+ EV: 10mL AD
+Vol final: 10,6mL
+ (94mg/mL)
+ 12h TA
+24h TR
+Protegido da
+luz
+ SF 0,9%
+SG 5%
+ 50 a 100mL
+ (5 s 10mg/mL)
+ 12h TA
+24h TR
+Protegido da
+luz
+ EV direto: 3 a 5
+min
+Infusão: 30 a 60
+min
+ ClCr   ≥   55 mL/min,
+administra-se a dose
+usual;
+ ClCr de 35 e 54
+mL/min: 8 a 12 h
+ ClCr 11 e 34 mL/min,
+recomenda-se metade
+da dose usual a cada
+12h
+ ClCr   ≤ 10   mL/min,
+utiliza-se metade da
+dose usual a cada 18 a
+24h
+ A cor da solução
+pode escurecer
+durante
+armazenamento,
+porém a eficácia do
+medicamento
+permanece
+inalterada.
+
+=== PAGINA 18 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 18/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 222380
+ Cefepima
+ 1.000mg
+ (frasco-ampola)
+AUROBINDO
+ EV
+IM
+ 1.000 a
+2.000mg a
+cada 12h
+Casos graves
+até 8/8h
+ EV: 10mL AD
+ Vol final: 11,4mL
+ IM: 3mL
+ AD ou Lidocaína
+1%
+Vol final: 4,4mL
+ 12h TA
+3 dias TR
+ SF 0,9%
+SG 5%   100mL
+ 12h TA
+3 dias TR
+ EV direto:
+3 a 5 min
+ Infusão: 30min
+ 1.000mg a cada 24h
+após a Hemodiálise
+Diálise Peritoneal:
+dose usual a cada 48h
+ Do ponto de vista
+microbiológico, caso
+a abertura,
+reconstituição ou
+diluição não elimine o
+risco de
+contaminação, o
+produto deve ser
+administrado
+imediatamente.
+ 16845
+ Cefotaxima
+1.000mg
+ (frasco-ampola)
+EUGIA
+ EV
+IM
+ 1.000 a
+2.000mg
+12/12h
+Casos graves:
+ 6.000 a
+12.000mg/di
+a
+ AD 4mL
+ Vol. final: 4,63mL
+ (216mg/mL)
+ IM
+ 4 mL   AD
+ Lidocaína 1%
+ Uso Imediato
+Protegido da
+luz
+ SF 0,9%
+SG 5%   40 a 100mL
+ Uso imediato
+Protegido da
+luz
+ EV direto: 3 a 5
+minutos
+ Infusão curta:
+ 20 min
+Infusão contínua:
+50 a 60 min
+ Se Depuração de
+creatinina Menor que
+10mL/min:
+ 50% da dose
+Hemodiálise: 1.000 a
+2.000mg/dia após a
+diálise
+ Se na reconstituição
+formar espuma,
+deixar em repouso
+por 15 min.
+ 16640
+ Cefoxitina
+ 1.000mg
+ (frasco-ampola)
+BLAU
+ EV
+ 1.000 a
+2.000mg de
+6 a 8h, até
+12.000mg/di
+a
+Idosos com
+mais de 75
+anos:
+ 10mL AD
+SF 0,9%
+SG 5%.
+ 12h TA
+AD
+(SF 0,9%, SG
+5%). 6h TA
+7D TR.
+ SF 0,9%
+SG 5%  
+50 a 100mL   4h TA
+ EV direto: 3 a 5
+min
+ 10 a 60 minutos
+ ClCr 30 - 50 mL/min:
+1-2g a cada 8 a 12h
+10 - 29 mL/min: 1-2g a
+cada 12 a 24h
+5 - 9 mL/min: 0,5 a 1g
+a cada 12 a 24h
+menor que 5mL/min:
+0,5 a 1g a cada 24 a
+48h
+ Pó e soluções tendem
+a escurecer, porém a
+potência do produto
+mante-se inalterada.
+ Hemodiálise: dose de
+ataque: 1 a 2g após
+cada hemodiálise.
+
+=== PAGINA 19 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 19/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 2.000mg de
+8/8h
+ 406398
+ Ceftazidima
+2.000mg +
+Avibactam 500mg
+(frasco-ampola)
+ PZIFER
+ EV  
+2.500mg a
+cada 8h
+ 10mL AD
+ Vol final   12mL
+ (167,3 mg/mL)
+ Uso Imediato  
+SF 0,9%
+SG 5%
+ 50 mL a 250 mL  
+4h TA
+12h TR
+8 mg/mL
+ 4h TA
+> 8 mg/mL a
+40 mg/mL
+ 2 h
+ ClCr 31 – 50 mL/min:
+ 1 g/0,25 g 8/8h
+ ClCr 16 – 30:
+ 0,75 g/0,1875 12/12h
+ ClCr 6 – 15
+ 0,75 g/0,1875g 24h
+ ClCr   ≤5 ou HD:
+ 0,75 g/0,1875g 48h
+ Hemodiálise*
+ Para reconstituição,
+insira uma agulha de
+liberação de gás
+através da tampa do
+frasco-ampola após a
+dissolução do
+produto para liberar
+a pressão interna
+ Este produto é
+sensível à luz antes
+da reconstituição e só
+deve ser retirado da
+caixa imediatamente
+antes do uso.
+ 288953
+ Ceftriaxona
+500mg
+ (frasco-ampola)
+FRESENIUS
+ EV
+ IM
+ 1.000 a
+2.000mg,
+24h ou 12h
+ Dose
+máxima :
+4.000mg/dia
+ 24h ou 12h
+ EV:   5 mL AD
+ Vol final: 5,2mL
+ (96mg/mL)
+ IM:   2mL de
+ Lidocaína 1%
+ Vol final:2,4mL
+ (208mg/mL)
+ (ou 1 mL de AD +
+ 6h TA
+24h TR
+ SF 0,9%
+SG 5%  
+Infusão: 50 mg/mL  
+6h TA
+24h TR
+ EV direto:
+ 2 a 4 min
+Infusão
+EV: 30 min
+(mínimo)
+ NÃO
+ Sensível à luz. Porém,
+para sua
+administração, após
+reconstituição e/ou
+diluição, o produto é
+estável na presença
+de luz, não
+necessitando de
+
+=== PAGINA 20 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 20/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 1 mL Lidocaína
+2%)
+ equipos e bolsas
+fotoprotetoras.
+ 16969
+ Ceftriaxona
+ 1.000mg
+ (frasco-ampola)
+ABL/FRESENIUS/E
+UROFARMA/
+BIOCHIMICO
+ EV
+IM
+ 1.000 a
+2.000mg,
+24h ou 12h
+ Dose
+máxima :
+4.000mg/dia
+ 24h ou 12h
+ EV:   10mL AD
+ Vol final:   10,5 a
+ 11mL *
+ IM:   3,5mL
+Lidocaína 1%
+Vol final: 4,2 mL
+ (ou 1,75mL de
+AD + 1,75mL
+Lidocaína 2%)
+ 6h TA
+24h TR
+ SF 0,9%
+SG 5%  
+50 a 100mL  
+6h TA
+24h TR
+ IM: 1.000mg em
+cada músculo
+(máximo)
+ EV direto: 2 a 4
+min
+ Infusão
+30 min (mínimo)
+ ClCr menor que 10
+mL/min: a dose NÃO
+deve ser superior a
+2g/dia
+NÃO dialisável
+ Sensível à luz. Porém,
+para sua
+administração, após
+reconstituição e/ou
+diluição, o produto é
+estável na presença
+de luz, não
+necessitando de
+equipos e bolsas.
+ *Variação conforme
+fabricante.
+ 271616
+ Ceftriaxona
+ 1.000mg
+ (frasco-ampola)
+ + Diluente próprio
+3,5mL
+ (Lidocaína 1%)
+EUROFARMA
+ IM
+ 1.000 a
+2.000mg,
+24h ou 12h
+ Dose
+máxima :
+4.000mg/dia
+ 24h ou 12h
+ IM: 3,5mL
+Lidocaína 1%
+ Vol final 4,2mL
+ 6h TA
+24h TR  
+NA   NA   NA   IM
+ ClCr menor que 10
+mL/min: a dose NÃO
+deve ser superior a
+2g/dia
+NÃO dialisável
+ Recomenda-se não
+aplicar mais de 1g em
+cada glúteo.
+ 167401
+ Cefuroxima
+ 750mg
+ (frasco-ampola)
+ BIOCHIMICO
+ EV
+ IM
+ 750 mg a
+1.500MG
+ a cada 8
+horas,
+totalizando
+3.000 a
+ EV
+ 6mL AD
+ IM
+ 3mL AD IM
+ 5h TA
+ 48 h   TR
+ SF 0,9%
+SG 5%  
+50 ou 100 mL  
+3h TA
+48h TR  
+30 min
+ ClCr 10 – 20 mL/min, a
+dose máxima é 750
+mg a cada 12 horas; já
+na insuficiência grave
+ClCr <10 mL/min, 750
+mg uma vez ao dia.
+ O uso concomitante
+com anticoagulantes
+orais pode causar
+aumento do INR
+
+=== PAGINA 21 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 21/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 6.000mg por
+dia
+ 14117
+ CicloFOSFAMida
+1.000mg
+ (frasco-ampola)
+BAXTER
+ EV
+ A dose inicial
+é 40 – 50
+mg/kg,
+seguida por
+manutenção
+de 10 – 15
+mg/kg a ou
+3 – 5 mg/kg
+ 50mL
+ AD
+ Uso Imediato
+TA
+24h TR
+ SF 0,9%
+SG 5%
+ 20mg/mL
+ 24h TR   15 a 60 minutos
+ ClCr   ≥30 mL/min não
+ há ajuste.
+ Entre 10 e 29 mL/min,
+administra-se 75% a
+100% da dose.
+ Com ClCr <10 mL/min,
+usa-se 50% a 100% da
+dose normal.
+ A dose pode ser
+ajustada em 5% no
+preparo sem
+alteração da dose no
+rótulo. Sendo assim,
+doses até 1684mg
+são ajustadas para
+1600mg e devem ser
+diluídas em
+SF0,9% 250mL e
+infundidos em 1h.
+ Medicamento
+preparado em Cabine
+de Segurança
+Biológica
+ 174653
+ Ciprofloxacino
+200mg
+ (bolsa-100mL)
+HALEX ISTAR
+ EV
+ 400mg-
+800mg
+12/12h
+Dose máx:
+1.200mg/dia,
+3x/dia
+ NA   NA   NA   NA   NA   60 min(mínimo)
+ ClCr
+30 - 50mL/min: dose
+máxima 800mg/dia
+menor que 30mL/min:
+dose máxima
+400mg/dia
+Dialisável
+ Medicamento
+sensível a luz.
+
+=== PAGINA 22 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 22/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 980223
+ Cetoprofeno
+100mg
+ (frasco-ampola)
+ UNIAO QUIMICA
+CRISTÁLIA
+CITOPHARMA
+ EV
+ 100 a
+300mg/dia
+Dose máx:
+ 300 mg/dia
+ Solubilizar com o
+mesmo líquido
+que for diluir (SF
+0,9% ou SG 5%)
+ Uso imediato  
+SF 0,9%
+SG 5%  
+100 a 150 mL   Uso imediato  
+Infusão lenta,
+por 20 min
+ SIM
+Reduzir a dose inicial e
+manter com a menor
+dose eficaz
+ 18317
+ Cianocobalamina
+500mcg/mL
+(Vitamina B12)
+(ampola 2mL)
+CITOPHARMA
+ IM  
+1.000
+mcg/dia  
+NA   NA   NA   NA   NA   NA   NÃO
+ Contraindicado o uso
+em crianças.
+O ácido ascórbico
+pode degradar a
+vitamina B12.
+ 402267
+ Cisatracúrio
+2mg/mL
+ (frasco 5mL)
+ACHE
+CRISTALIA
+ EV
+ Dose inicial
+0,15mg/Kg
+ Dose de
+manutenção:
+0,03mg/Kg
+ NA   NA  
+SF 0,9%
+SG 5%  
+100 mL   24h TA   Infusão contínua   NÃO
+ Como cisatracúrio só
+é estável em soluções
+ácidas, ele não deve
+ser misturado na
+mesma seringa ou
+administrado
+simultaneamente
+através da mesma
+agulha de soluções
+alcalinas como, por
+exemplo, tiopental
+sódico. O cisatracúrio
+não é compatível
+com propofol.
+
+=== PAGINA 23 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 23/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 224669
+ Claritromicina
+500mg
+ (frasco-ampola)
+ABBOTT
+BLAU
+ EV
+ 1.000mg/dia,
+a cada 12h
+Dose máx:
+1g/dia e
+ 10mL AD
+ exclusivo
+ (50mg/mL)
+ 24h TA
+48h TR
+ SF 0,9%
+SG 5%
+ 250mL
+2mg/mL
+ 6h TA
+48h TR
+ No mínimo
+60 min
+ Creatinina inferior a
+30 mL/min, a dose
+deve ser reduzida à
+metade da dose
+normal recomendada
+ Não deve ser
+administrado em
+bolus ou por via IM.
+Administrar somente
+pela via EV
+ 402161
+ Clindamicina
+300mg
+ (ampola 2mL)
+HIPOLABOR
+ EV
+IM
+ 600 mg a
+2.700mg/dia
+em 2 a 4
+doses
+fracionadas
+ NA   NA  
+SF 0,9%
+SG 5%
+ 50 a 100 mL
+(Máx: 18 mg/mL)
+ 24h TA
+48h TR
+ EV: 10 a 60
+minutos.
+Não exceder
+30mg/min
+ NÃO
+ Risco de Flebite.
+ IM: áreas de grande
+massa muscular
+Não exceder 600mg
+por aplicação
+ 14168
+ Clindamicina
+600mg
+ (ampola 4mL)
+HIPOLABOR
+ EV
+IM
+ 600 mg a
+2.700mg/dia
+em 2 a 4
+doses
+fracionadas
+ NA   NA  
+SF 0,9%
+SG 5%
+ 50 a 100 mL
+(Máx: 18 mg/mL)
+ 24h TA
+48h TR
+ EV: 10 a 60
+minutos.
+Não exceder
+30mg/min
+ NÃO
+ Risco de Flebite.
+ IM: áreas de grande
+massa muscular
+Não exceder 600mg
+por aplicação
+
+=== PAGINA 24 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 24/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 271412
+ CloNIDina
+150mcg/mL
+(ampola 1mL)
+CRISTÁLIA; HALEX
+ISTAR
+ EV
+IM
+ Intrate
+cal
+Epidur
+al
+ 2 a 4mcg/kg
+por via
+epidural
+ 0,5-1mcg/kg
+por via
+intratecal
+ 150mcg/dos
+e
+ NA   NA   SF 0,9%   10 a 500 mL   24h TA
+ IM profunda
+ EV lento
+7 a 10 min
+ Infusão
+ TFGe < 30
+mL/minuto/1,73 m
+2
+.
+Comece com uma
+dose baixa e titule
+para cima com cautela
+de acordo com a
+resposta do paciente,
+não mais
+frequentemente do
+que para pacientes
+com função renal
+normal
+ Dose
+Máxima:40mcg/h
+para infusão
+peridural.
+ Não interrompa o
+ tratamento
+abruptamente.
+Reduza gradualmente
+para evitar sintomas
+de abstinência (por
+exemplo, hipertensão
+de rebote).
+ 288961
+ Cloreto de
+POTÁSSIO 19,1%
+(ampola 10mL)
+ 191mg/mL =
+2,56mEq/mL
+ SAMTEC; HALEX
+ISTAR
+ EV
+IM
+ 10 a 40
+mEq/h
+Dose máx:
+400mEq/dia
+ NA   NA  
+SF 0,9%
+SG 5%
+ AVP: 1 amp 500 mL
+AVC: 1 ou 2 amp em
+100mL
+ 2 amp em 250mL
+ 24h TA
+ Infusão
+periférica:
+10mEq/h
+ Infusão central:
+40mEq/h
+ Insuficiência renal
+leve a moderada: usar
+com cautela
+Insuficiência renal
+grave: contraindicado
+ NÃO ADMINISTRAR
+PURO.
+Medicamento
+vesicante.
+Não é aconselhável
+que a diluição seja
+realizada com SG 5%
+em caso de
+hipocalemia grave
+ 15350
+ Cloreto de SÓDIO
+20%
+(ampola 10mL)
+ 200mg/mL
+ EV
+ 3 a
+4mEq/kg/dia
+Dose máx:
+100 a
+150mEq/dia
+ NA   NA
+ SF 0,9%
+SG 5%
+Ringer
+ AVP: 1 ampola em
+100mL.
+concentrações
+maiores usar em
+AVC.
+ 24h TA   Lento   NÃO
+ Não administrar
+puro.
+Medicamento
+vesicante.
+A dose deve ser
+
+=== PAGINA 25 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 25/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ (3,422mEq/mL)
+ SAMTEC
+ Não ultrapassar
+1mEq/kg/h
+ ajustada segundo a
+Concentração sérica
+de sódio, condição
+clínica, idade e peso
+do paciente.
+ 14397
+ ClorproMAZINA
+5mg/mL (ampola
+5mL)
+CRISTÁLIA
+ IM
+EV
+ (off
+label)
+ 25 a 100mg   NA   NA   NA   NA   NA   IM lentamente  
+Insuficiência renal
+usar com cautela.
+ Em uso EV este
+medicamento pode
+potencializar o
+prolongamento do
+intervalo QT, o que
+aumenta o risco de
+ataque de arritmias
+ventriculares graves
+ do tipo “torsades de
+pointes”, que é
+ potencialmente fatal
+(morte súbita).
+ 18333
+ Complexo B
+Polivitamínico
+(ampola 2mL)
+HYPOFARMA
+ EV
+IM
+ 1 a 2
+ampolas/dia
+ou em dias
+alternados
+ NA   NA  
+SF 0,9%
+SG 5%
+ Volume maior ou
+igual a 500mL, sendo
+preferencialmente
+1.000mL
+ 24h TA
+Protegido da
+Luz
+ EV Lento
+gota a gota
+ NÃO deve ser
+utilizado em pacientes
+que apresentem
+problemas renais.
+ Medicamento
+Fotossensível.
+Deve-se evitar a via
+parenteral em
+pacientes com sinais
+de intolerância a
+Vitamina B1
+(Tiamina) VO.
+Contraindicado em
+pacientes
+
+=== PAGINA 26 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 26/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ parkinsonianos em
+uso de Levodopa.
+ 223964
+ Contraste
+Radiológico - Óleo
+de Papoula Iodado
+(10mL)
+DELPHARM
+ Intralin
+ fática
+Intra
+ arteria
+l
+seletiv
+a
+hepáti
+ca
+Intra
+ uterin
+a
+ 5   –   14mL
+(Variável
+conforme o
+tipo de
+procediment
+o)
+ NA   NA   NA   NA   NA
+ EV lento ou
+cateterismo
+Utilizar seringa
+de vidro ou
+materiais
+compatíveis com
+o produto
+ NÃO
+ Seu uso está
+relacionado com o
+agravamento de
+insuficiência renal
+ Não deve ser
+administrado EV,
+intra-arterial, (exceto
+cateterismo da
+artéria hepática) ou
+intratecal.
+Contraindicação:
+Hipertireoidismo,
+pacientes > 70 anos,
+lesões traumáticas,
+hemorragias ou
+sangramentos
+recentes,
+broncografia.
+É excretado no leite
+materno. Sugestão é
+suspender a
+amamentação.
+ 285506  
+Complexo
+Protrombínico
+ 20mL Diluente
+Próprio (água
+para injetáveis)
+ Uso Imediato   NA   NA   NA   2mL/min
+ Contém 81,7 mg de
+sódio por frasco.
+
+=== PAGINA 27 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 27/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ Humano
+600 UI
+ (frasco-ampola)
+ TA KEDA
+PHARMA
+ Ler orientações de
+preparo na bula.
+ 405472
+ Daptomicina
+ 500 mg
+ (frasco-ampola)
+ INTAS
+ EV
+ Intrate
+cal
+ Infecções de
+pele e partes
+moles: 4
+mg/kg 1x/dia
+por 7 – 14
+dias.
+Bacteremia
+por   S.
+aureus :
+ 6mg/kg
+1x/dia por 2 –
+ 6 semanas
+ 10mL
+ SF 0,9%
+ 12h TA
+48h TR  
+SF 0,9%  
+10mg/mL   12h TA
+48h TR  
+30 min
+ ClCr 30 a <130 mL /
+minuto: Não é
+necessário ajuste de
+dose
+ ClCr <30 mL / minuto:
+Administre a dose
+usual recomendada a
+cada 48 horas
+ Não é compatível
+com diluentes que
+contenham glicose
+ 198803
+ Dantroleno 20mg
+(frasco-ampola)
+CRISTÁLIA
+ EV
+ 2,5 mg/kg
+ Dose máx: 10
+mg/kg
+ AD: 60mL
+Diluente próprio
+exclusivamente
+ 6h TA
+ Protegido da
+luz direta
+ NA   NA   NA
+ EV bolus
+Infusão em 1
+hora
+ NÃO
+ Não deve ser
+administrado em
+pacientes que estão
+amamentando.
+SG 5%, SF 0,9% e
+outras soluções
+ácidas não são
+compatíveis.
+
+=== PAGINA 28 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 28/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 402666
+ Desferroxamina,
+Mesilato 500mg
+(frasco-ampola)
+CRISTÁLIA
+ EV
+IM
+SC
+some
+nte
+em BI.
+ 20 a
+60mg/kg/dia
+Sobrecarga
+crônica de
+ferro:
+60mg/kg/dia
+Intoxicação
+aguda por
+ferro:
+80mg/kg/dia
+ AD
+ EV e SC = 5 mL
+ Vol final: 5,3mL
+ 95mg/mL
+ IM = 2 mL
+Vol final: 2,35mL
+ 213mg/mL
+ 24h TA  
+SF 0,9%
+SG 5%  
+150mL   24h TA   EV Lento
+ Em insuficiência renal
+grave recomenda-se
+cautela
+ A infusão EV rápida
+pode provocar
+hipotensão e choque.
+O medicamento não
+deve ser utilizado em
+concentração
+maiores que
+95mg/mL, quando
+administrado SC, pois
+aumenta o risco de
+reação local. Quando
+a via IM for a única
+opção, pode ser
+necessário o uso de
+concentrações
+maiores para facilitar
+a injeção.
+ 12769
+ Deslanosídeo
+0,2mg/mL
+(ampola 2mL)
+UNIÃO QUÍMICA
+ EV
+IM
+ 0,2   –
+ 1,6mg/dia  
+NA   NA
+ SF 0,9%
+SG 5%
+AD
+ 50mL   24h TA   Lenta  
+Insuficiência renal
+reduzir a dose.
+ Não deve ser
+ultrapassada a dose
+máxima de 2mg/dia.
+Não deve usar Cálcio
+parenteral em
+pacientes em uso de
+Deslanosídeo.
+ 257869  
+Desmopressina
+4mcg/mL
+ EV
+IM
+SC
+ 1 a
+4mcg/dia ou
+0,3mcg/kg,
+ NA   NA   SF 0,9%
+ EV:
+ < 3mcg: 10mL
+ SF   0,9%
+ Uso Imediato   15 a 30 min
+ ClCr menor que
+ 50 mL/min:
+Contraindicado
+ Medicamento deve
+ser mantido em
+geladeira.
+
+=== PAGINA 29 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 29/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ (ampola 1mL)
+FERRING
+ repetindo 1-
+2 vezes a
+intervalos de
+6-12h.
+ > 3mcg: 50mL
+ SF 0,9%
+ IM e SC: não é
+necessária diluição
+ Contraindicado em
+insuficiência renal
+moderada a severa e
+em hiponatremia.
+ 14575
+ Dexametasona
+4mg/mL
+(ampola 2,5mL)
+HYPOFARMA
+ EV
+IM
+IA
+ 4 a 20mg/dia
+Em alguns
+casos
+específicos a
+dose pode
+ser maior
+(Máx 40mg
+dia).
+ 1, 2 ou 4X)
+ NA   NA  
+SF 0,9%
+SG 5%  
+50 a 100mL   24h TA
+ EV direto lento
+Infusão gota a
+gota
+ NÃO
+ O tratamento não
+deve ser
+interrompido
+bruscamente, deve-
+se diminuir a dose
+aos poucos.
+ 276496
+ DexMEDEtomidina
+100mcg/mL
+(frasco 2mL)
+CRISTÁLIA
+ EV
+ Dose máx:
+ 17,8
+mcg/kg/dia
+ NA   NA   SF 0,9%   50mL  
+4h TA
+24h TR
+ EV bomba
+de infusão  
+NÃO
+ Incompatibilidade
+com a Anfotericina B
+e Diazepam.
+ 14664
+ DIAzepam
+5mg/mL
+ (ampola 2mL)
+SANTISA
+ EV
+IM
+ Dose máx:
+3mg/kg/dia  
+NA   NA
+ Não é
+recomendado
+diluir.
+ Se precisar
+diluir,
+é compatível
+com
+SG 5%
+SF 0,9%
+ Utilizar 4mL
+ (no máximo) +
+246 mL de SG 5% ou
+SF 0,9%
+Não ultrapassar
+ 250 mL
+ 4h
+ EV: 0,5 a 1
+ mL/min
+ Bolus:
+ 2 a 5mg/min
+ NÃO
+
+=== PAGINA 30 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 30/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 273733
+ Difenidramina
+ 50 mg/mL;
+ (ampola 1mL)
+ CRISTÁLIA
+ IM
+ EV
+ 10 a 50 mg a
+cada 6h
+ Dose máxima
+400mg/dia
+ NA   NA  
+SF 0,9%
+ SG 5%  
+1 a 50mg/mL   24h TA
+ 3 a 5 min
+ Infusão:
+ 15-30min
+ NÃO
+ 269618
+ Dimenidrinato +
+Piridoxina
+(Vitamina B6)
+(ampola 10mL)
+BRAINFARMA
+ EV
+ 30mg a cada
+4 a 6 horas
+ Cada ampola
+contém
+30mg
+de dimenidri
+nato 50mg
+de
+Piridoxina,
+1000mg de
+glicose e
+1000mg
+de frutose.
+ NA   NA  
+SF 0,9%
+SG 5%  
+100mL   Uso imediato
+ EV direto
+maior que 2 min
+ Infusão: 30 min
+ NÃO
+ Pode aumentar a
+concentração sérica
+de ácido úrico e não
+deve ser
+administrado para
+pacientes com gota.
+O Dimenidrinato
+pode mascarar os
+sintomas de
+ototoxicidade
+secundária ao uso de
+drogas ototóxicas.
+Pode ainda exacerbar
+desordens
+convulsivas.
+ 14826
+ DipiRONA
+500mg/mL
+(ampola 2mL)
+FARMACE
+ EV
+IM
+ 1.000mg a
+cada 4h ou
+6h
+ Dose máx:
+5.000mg a
+7.500mg
+ NA   NA  
+SF 0,9%
+SG 5%
+ 20mL (até 1.000mg)
+50mL (até 2.500mg)  
+Uso imediato  
+EV direto lento
+1 mL/min  
+NÃO
+
+=== PAGINA 31 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 31/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 16861
+ DOBUTamina
+12,5mg/mL
+(ampola 20mL)
+HYPOFARMA
+ EV
+ 2,5 - 20
+ mcg/kg/min
+ Dose máx:
+ 40mcg/kg/mi
+ n
+ NA   NA  
+SF 0,9%
+SG 5%
+ 0,25 a 1 mg/mL
+Concentração máx
+5mg/mL
+(1 ampola em 50mL
+ 24h TA
+ Infusão contínua
+(0,25 a 1
+mcg/kg/min)
+ NÃO
+ 14834
+ DOPamina
+5mg/mL
+ (ampola 10mL)
+CRISTÁLIA
+ EV
+ 5 -
+ 10mcg/kg/mi
+ n
+ Dose máx:
+ 20 - 50
+ mcg/kg/min
+ NA   NA  
+SF 0,9%
+SG 5%
+ 250mL
+(volume máximo)
+2mg/mL
+Concentração Máx:
+3,2mg/mL
+ Uso imediato
+ Infusão contínua
+ utilizar uma capa
+escura para o
+frasco de soro
+ O uso deve ser
+limitado em pacientes
+que NÃO tenham o
+débito urinário
+adequado após terem
+recebidos diuréticos.
+Caso a oligúria
+persista, deve ser
+descontinuada nas
+ 24 h seguintes.
+ Deve ser diluída
+antes do uso.
+ Não usar EV direto.
+Atenção: coloração
+amarelo-castanho
+indicativo de
+contaminação.
+ 13250
+ EFEDrina
+50mg/mL
+ (ampola 1mL)
+HYPLABOR
+ EV
+IM
+SC
+ 25-50mg
+Dose máx:
+150mg/dia
+ NA   NA
+ EV
+SF 0,9%
+SG 5%
+ 9mL   Uso imediato  
+Lento
+ protegido da luz  
+NÃO
+ Monitorar
+hipertensão,
+excitabilidade do
+SNC, retenção
+urinária, disritmias e
+depressão
+respiratória.
+
+=== PAGINA 32 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 32/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 242845
+ Enoxaparina 20mg
+(seringa 0,2mL)
+BLAU
+FARMACEUTICA
+S.A.
+ SC
+profun
+do
+EV (em
+situaçõ
+es
+específ
+icas)
+ 20 a 40mg
+ 1 a 2x ao dia
+Dose máx:
+160mg/dia
+ NA   NA
+ EV
+SF 0,9%
+SG 5%  
+3mg/mL  
+Uso imediato
+ SC
+ EV Bolus
+EV Lento
+ Insuficiência grave
+(ClCr menor que
+30mL/min): 1mg/kg, 1
+vez/dia e 20mg,
+ 1x/dia.
+Insuficiência
+moderada (ClCr 30-
+50mL/min) e leve (50-
+80mL/min)
+ Observar se a
+apresentação
+farmacêutica
+disponível,
+possibilita o
+fracionamento da
+dose.   Retirar a dose
+em excesso antes da
+administração.
+ EV em bolus: apenas
+para tratamento de
+infarto agudo do
+miocárdio.
+ Lavar o acesso antes
+e depois da
+administração com SF
+0,9% ou SG 5%.
+A administração SC
+profunda deve ser
+realizada na parede
+abdominal, 5 cm do
+umbigo, com o
+paciente deitado ou
+sentado, alternando
+os lados.
+
+=== PAGINA 33 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 33/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 242853
+ Enoxaparina 40mg
+(seringa 0,4mL)
+CRISTÁLIA
+ SC
+profun
+do
+EV (em
+situaçõ
+es
+específ
+icas)
+ 20 a 40mg
+ 1 a 2x ao dia
+Dose máx:
+160mg/dia
+ NA   NA
+ EV
+SF 0,9%
+SG 5%  
+3mg/mL  
+Uso imediato
+ SC
+ EV Bolus
+EV Lento
+ Insuficiência grave
+(ClCr menor que
+30mL/min): 1mg/kg, 1
+vez/dia e 20mg,
+ 1x/dia.
+Insuficiência
+moderada (ClCr 30-
+50mL/min) e leve (50-
+80mL/min)
+ Observar se a
+apresentação
+farmacêutica
+disponível,
+possibilita o
+fracionamento da
+dose.   Retirar a dose
+em excesso antes da
+administração.
+ EV em bolus: apenas
+para tratamento de
+infarto agudo do
+miocárdio.
+ Lavar o acesso antes
+e depois da
+administração com SF
+0,9% ou SG 5%.
+A administração SC
+profunda deve ser
+realizada na parede
+abdominal, 5 cm do
+umbigo, com o
+paciente deitado ou
+sentado, alternando
+os lados.
+
+=== PAGINA 34 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 34/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 269466
+ Enoxaparina 60mg
+(seringa 0,6mL)
+CRISTÁLIA
+ SC
+profun
+do
+EV (em
+situaçõ
+es
+específ
+icas)
+ 20 a 40mg
+ 1 a 2x ao dia
+Dose máx:
+160mg/dia
+ NA   NA
+ EV
+SF 0,9%
+SG 5%  
+3mg/mL  
+Uso imediato
+ SC
+ EV Bolus
+EV Lento
+ Insuficiência grave
+(ClCr menor que
+30mL/min): 1mg/kg, 1
+vez/dia e 20mg,
+ 1x/dia.
+Insuficiência
+moderada (ClCr 30-
+50mL/min) e leve (50-
+80mL/min)
+ Observar se a
+apresentação
+farmacêutica
+disponível,
+possibilita o
+fracionamento da
+dose.   Retirar a dose
+em excesso antes da
+administração.
+ EV em bolus: apenas
+para tratamento de
+infarto agudo do
+miocárdio.
+ Lavar o acesso antes
+e depois da
+administração com SF
+0,9% ou SG 5%.
+A administração SC
+profunda deve ser
+realizada na parede
+abdominal, 5 cm do
+umbigo, com o
+paciente deitado ou
+sentado, alternando
+os lados.
+
+=== PAGINA 35 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 35/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 402251
+ Enoxaparina 80mg
+(seringa 0,8mL)
+ BLAU
+FARMACEUTICA
+S.A.
+ SC
+profun
+do
+EV (em
+situaçõ
+es
+específ
+icas)
+ 20 a 40mg
+ 1 a 2x ao dia
+Dose máx:
+160mg/dia
+ NA   NA
+ EV
+SF 0,9%
+SG 5%  
+3mg/mL  
+Uso imediato
+ SC
+ EV Bolus
+EV Lento
+ Insuficiência grave
+(ClCr menor que
+30mL/min): 1mg/kg, 1
+vez/dia e 20mg,
+ 1x/dia.
+Insuficiência
+moderada (ClCr 30-
+50mL/min) e leve (50-
+80mL/min)
+ Observar se a
+apresentação
+farmacêutica
+disponível,
+possibilita o
+fracionamento da
+dose.   Retirar a dose
+em excesso antes da
+administração.
+ EV em bolus: apenas
+para tratamento de
+infarto agudo do
+miocárdio.
+ Lavar o acesso antes
+e depois da
+administração com SF
+0,9% ou SG 5%.
+A administração SC
+profunda deve ser
+realizada na parede
+abdominal, 5 cm do
+umbigo, com o
+paciente deitado ou
+sentado, alternando
+os lados.
+
+=== PAGINA 36 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 36/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 14885
+ EPINEFrina
+1mg/mL
+ (ampola 1mL)
+ (1:1.000)
+HYPOFARMA
+ EV
+IM
+SC
+ 0,3   –   0,5mg   NA   NA
+ EV
+SF 0,9%
+SG 5%
+ Diluições de 1 para
+10.000 ou 1 para
+100.000
+Concentração
+máxima: 16mcg/mL;
+ 24h TA
+Proteger da
+luz
+ EV bolus
+EV infusão  
+NÃO
+ Cuidado com
+pacientes que estão
+em uso de
+betabloqueadores.
+Nesses casos, poderá
+ocasionar um
+aumento da pressão
+severa e até mesmo
+hemorragia cerebral.
+ 282012
+ Escetamina
+50mg/mL
+ (ampola 2mL)
+CRISTÁLIA
+ EV
+IM
+ EV: 1 a 4,5
+ mg/kg
+ IM: 6,5 a 13
+ mg/kg
+ NA   NA  
+SF 0,9%
+SG 5%
+ 250 ou
+500 mL
+Concentração Max:
+2mg/mL
+ Uso imediato
+ Se puro
+administrar
+lentamente
+(60 segundos)
+Infusão Contínua
+ NÃO
+ Existe
+incompatibilidade
+com os barbitúricos
+ocorrendo
+precipitado.
+A ação é
+potencializada pelo
+Diazepam, os dois
+medicamentos
+devem ser
+administrados
+separados.
+Deve ser usado com
+precaução em
+pacientes que fazem
+uso crônico de álcool.
+
+=== PAGINA 37 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 37/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 14087
+ Escetamina
+50mg/mL
+(frasco-ampola
+10mL)
+CRISTÁLIA
+ EV
+IM
+ EV: 1 a 4,5
+ mg/kg
+ IM: 6,5 a 13
+ mg/kg
+ NA   NA  
+SF 0,9%
+SG 5%
+ 250 ou
+500 mL
+Concentração Max:
+2mg/mL
+ Uso imediato
+ Se puro
+administrar
+lentamente
+(60 segundos)
+Infusão Contínua
+ NÃO
+ Existe
+incompatibilidade
+com os barbitúricos
+ocorrendo
+precipitado.
+A ação é
+potencializada pelo
+Diazepam, os dois
+medicamentos
+devem ser
+administrados
+separados.
+Deve ser usado com
+precaução em
+pacientes que fazem
+uso crônico de álcool.
+ 15555
+ Escopolamina
+20mg/mL
+ (ampola 1mL)
+HYPOLABOR
+ EV
+IM
+SC
+ 20 a 40mg a
+cada 6h ou
+8h
+Dose máx:
+100mg
+ NA   NA
+ Se necessário
+diluição
+SF 0,9%
+ 20mL   Uso imediato
+ EV direto
+lentamente
+2 a 3 min
+IM ou SC
+ Utilizar com cuidado
+em pacientes com
+insuficiência renal,
+devido ao aumento do
+risco de reação
+adversa neurológica
+ Esse medicamento é
+contraindicado para
+uso por idosos
+especialmente
+sensíveis aos efeitos
+secundários dos
+antimuscarínicos,
+como secura da boca
+e retenção urinária.
+
+=== PAGINA 38 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 38/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 288985
+ Escopolamina
+4mg/mL +
+DIPIRONA
+500mg/mL
+(ampola 5mL)
+FARMACE
+ EV
+IM
+ 1 ampola de
+2 a 3 x ao dia  
+NA   NA  
+SF 0,9%
+SG 5%  
+50mL   Uso imediato
+ EV direto
+5 min
+Mín. 1mL/min
+ Evitar a administração
+repetida de doses
+elevadas.
+ 16152
+ Etanolamina
+ Oleato
+ 50mg/mL
+ (ampola 2mL)
+FARMOQUÍMICA
+ EV
+ 2 a 5mL
+Dose máx.:
+20mL por
+sessão
+ NA   NA
+ AD ou SG
+50%
+para obter
+soluções de
+25% e 5%
+ A solução original
+deve ser diluída em
+um volume 4 a 20
+vezes maior
+ Uso imediato   Lento   NÃO
+ A dosagem individual
+total em cada veia
+não deve ultrapassar
+6 mL.
+ 288989
+ Etilefrina
+ 10 mg/mL
+ (frasco-ampola)
+ UNIÃO QUIMICA
+ EV
+ IM
+ SC
+ 0,7 a 1 mL
+(7-10 mg)
+ 10
+ NA   NA
+ Se necessário
+diluição
+ SF 0,9%
+ SG 5%
+ ACM   Uso imediato
+ EV:   lento
+ 0,4 mg/min
+ (0,2 - 0,6 mg/min)  
+-
+ Se for indicado o uso
+endovenoso, deve-se
+preferir a aplicação
+por meio de infusão
+gota a gota.
+ 285156
+ Etomidato
+2mg/mL
+ (ampola 10mL)
+CRISTÁLIA
+ EV
+ (veias
+de
+grande
+calibre
+)
+ 0,2-0,3
+mg/kg e
+ 5 - 20
+mcg/kg/min
+Dose máx.:
+60mg
+ NA   NA   NA   NA   Uso imediato  
+EV lento
+30 a 60 segundos  
+NÃO
+ Não é recomendado
+a administração por
+infusão.
+Altamente irritante.
+ Evitar veias de
+pequeno calibre.
+Pode causar
+hipotensão, náuseas
+e vômitos.
+
+=== PAGINA 39 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 39/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 15040
+ Fenitoína
+50mg/mL
+ (ampola 5mL)
+HYPOLABOR
+ EV
+IM
+ 300 - 400mg,
+ 2-3 x dia
+Dose máx:
+1.000 mg/dia
+ NA   NA   SF 0,9%
+ Se necessário diluir,
+utilizar de 25 a 50mL
+de SF0,9% para
+100mg de Fenitoína.
+Concentração
+máxima 5mg/mL.
+ Imediato.
+Terminar a
+infusão em
+no máximo 4
+horas.
+ EV direto
+50mg/min
+As aplicações EV
+devem ter
+intervalo de,
+pelo menos
+15min
+ Podem ser necessárias
+redução da dose, pela
+biodisponibilidade do
+medicamento ser
+aumentada neste
+grupo de pacientes.
+ INCOMPATÍVEL COM
+SG 5%.
+Não recomendada a
+diluição para infusão,
+devido baixa
+solubilidade e a
+consequente
+precipitação.
+Utilizar filtro de 0,22
+micras.
+A infusão deve ser
+realizada por curtos
+períodos.
+Evitar a via IM devido
+ao alto risco de dano
+tecidual e necrose.
+ (medicamento
+vesicante)
+ 233412
+ FenOBARBital
+100mg/mL
+(ampola 2mL)
+CRISTÁLIA
+ EV
+IM
+ 100-
+320mg/dia
+Dose máx:
+600mg/dia
+ NA   NA
+ SF 0,9%
+SG 5%
+SG 10%
+ 30 a 130 mg/mL.   24h TA   60mg/min
+ Em pacientes com
+ClCr menor do que
+10mL/min aumentar o
+intervalo entre as
+doses para 12-16h
+ Não exceder
+60mg/min
+IM: deve ser aplicada
+em local de massa
+muscular grande e
+injetar menos de 5mL
+em cada lado.
+ 15091  
+FentaNILA, Citrato
+(Fentanila Base
+ EV
+IM
+ Doses
+variadas de  
+NA   NA  
+Se
+necessário,
+ 50 mL
+0,01 a 0,02 mg/mL  
+24h TA  
+EV direto: 1 a 2
+min
+ ClCr entre 10 e
+50mL/min: 75% da  
+Pode causar flebite.
+
+=== PAGINA 40 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 40/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 0,05mg/mL)
+(frasco-ampola
+10mL)
+HIPOLABOR
+ EPIDU
+RAL
+ acordo com a
+condição
+clínica do
+paciente.
+ SF 0,9%
+SG 5%
+ SF 0,9%
+0,01 a 0,04 mg/mL
+SG 5%
+ EV contínuo
+Concentração
+máxima
+50mcg/mL
+ dose normal
+ClCr menor que
+10mL/min: 50% da
+dose normal
+ 115240
+ FentaNILA,
+CITRATO
+(Fentanila base
+0,05mg/mL)
+(frasco-ampola
+2mL)
+UNIÃO QUIMICA
+ EV
+IM
+INTRA
+TECAL
+EPIDU
+RAL
+ Doses
+variadas de
+acordo com a
+condição
+clínica do
+paciente.
+ NA   NA
+ Se
+necessário,
+SF 0,9%
+SG 5%
+ 50 mL
+0,01 a 0,02 mg/mL
+SF 0,9%
+0,01 a 0,04 mg/mL
+SG 5%
+ 24h TA
+ EV direto: 1 a 2
+min
+EV contínuo
+Concentração
+máxima
+50mcg/mL
+ ClCr entre 10 e
+50mL/min: 75% da
+dose normal
+ClCr menor que
+10mL/min: 50% da
+dose normal
+ Pode causar flebite.
+ 140767
+ FentaNILA,
+CITRATO
+(Fentanila base
+0,5mg/mL)
+(frasco-ampola
+5mL)
+CRISTÁLIA
+ EV
+IM
+INTRA
+TECAL
+EPIDU
+RAL
+ Doses
+variadas de
+acordo com a
+condição
+clínica do
+paciente.
+ NA   NA
+ Se
+necessário,
+SF 0,9%
+SG 5%
+ 50 mL
+0,01 a 0,02 mg/mL
+SF 0,9%
+0,01 a 0,04 mg/mL
+SG 5%
+ 24h TA
+ EV direto: 1 a 2
+min
+EV contínuo
+Concentração
+máxima
+50mcg/mL
+ ClCr entre 10 e
+50mL/min: 75% da
+dose normal
+ClCr menor que
+10mL/min: 50% da
+dose normal
+ Pode causar flebite.
+ 289039
+ Férrico, Sacarato
+de Hidróxido
+20mg/mL (ampola
+ EV
+ 100mg
+Dose máx:
+200mg
+ NA   NA  
+SF 0,9%
+ Exclusivo
+ Cada 1mL da ampola
+EV, deve ser
+rediluído em 20mL
+ Uso imediato
+ EV não diluído:
+velocidade máx
+de 1mL/min
+ Deve ser administrado
+com cuidado em
+pacientes com
+ O tempo de
+administração EV
+diluído depende da
+
+=== PAGINA 41 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 41/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 5mL)
+(NORIPURUM)
+ BLAU
+FARMACEUTICA
+ EV diluído:
+depende da
+dose: de 15min a
+3,5h
+ disfunção hepática ou
+renal (alteração das
+funções do fígado e
+dos rins).
+ dose de Ferro, se
+Ferro 100mg
+administrar em
+15min, 200mg em
+30min, 300mg em
+1,5h, 400mg em 2,5h
+e 500mg em 3,5h. A
+administração IM é
+na região glútea,
+profundamente, com
+ uso da técnica em “Z”
+ 141631
+ Filgrastim
+300mcg/mL
+(frasco-ampola
+1mL)
+BLAU
+FARMACEUTICA
+ IM
+ EV
+SC
+ Doses
+variadas de
+acordo com a
+condição
+clínica do
+paciente
+ NA   NA
+ SG 5%
+ Não diluir
+para
+concentraçõ
+es inferiores
+à 5mcg/mL.
+ EV: 50 mL
+SC - administrar puro  
+Uso imediato
+ EV: 30 min
+SC: alternando
+sítios de
+aplicação
+ NÃO
+ Incompatível com
+ SF 0,9%.
+Para concentrações
+entre 5 e 15 mcg/mL,
+deverá ser
+adicionado
+ Albumina Humana
+para infusão de uma
+solução final de
+2mg/mL
+ 18384
+ Fitomenadiona
+10mg/mL
+(ampola 1mL)
+HYPOFARMA
+ IM
+SC
+EV*
+ 0,4 mg/kg a
+1mg ao
+nascer
+ NA   NA  
+SF 0,9%
+SG 5%  
+50 a 200mL   Uso imediato
+ EV 1mg/min
+Infusão
+1mg/min
+ Na infusão EV
+proteger a bolsa
+ NÃO
+ PROTEGER DA LUZ O
+TEMPO TODO
+ A via EV deve ser
+restrita a situações
+em que outra via não
+é possível e o alto
+
+=== PAGINA 42 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 42/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ de infusão com
+papel alumínio
+ou outro
+material opaco
+(não há
+necessidade de
+utilizar equipo
+especial).
+ risco envolvido é
+justificável.
+O álcool benzílico
+como conservante
+têm sido associados à
+toxicidade em recém-
+nascidos.
+ 151041
+ Fluconazol 200mg
+(bolsa-100mL)
+CRISTÁLIA
+ EV
+ 200 a 400mg
+Dose máx:
+800mg/dia
+ NA   NA  
+Pronto para
+uso
+ Concentração
+Máxima:
+2mg/mL
+ Manter na
+embalagem
+original até o
+momento do
+uso
+ EV: Não exceder
+10mL/min
+ ClCr:
+ ≤ 50mL/min: 50% da
+ dose recomendada
+Hemodiálise: 100%
+após cada diálise
+ Deve ser usado com
+cautela em pacientes
+com disfunção renal
+e hepática ou
+hepatotoxicidade.
+ 138363
+ Flumazenil
+0,1mg/mL
+(ampola 5mL)
+UNIÃO QUIMICA
+ EV   0,1 a 2mg   NA   NA  
+SF 0,9%
+SG 5%  
+Puro ou diluído   24h TA  
+EV direto
+ 15 a 30 segundos  
+NÃO
+ Antagonista
+Benzodiazepínico.
+ Administrar em veias
+de grosso calibre.
+
+=== PAGINA 43 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 43/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 15156
+ FOSFATO Ácido de
+Potássio
+2mEq/mL.
+ 1mL da solução =
+2mEq de K + 2mEq
+(2mmol) de
+fosfato (1,1mmol
+de fósforo)
+ 1ampola = 20mEq
+de K + 20mEq
+(20mmol) de
+fosfato (11mmol
+de fósforo)
+ (ampola 10mL)
+ VMG
+ EV
+ Em mMol:
+0,15mMol de
+fósforo/kg/di
+a
+ Em mEq: 5 a
+20mEq de
+fósforo/kg/di
+a
+ NA   NA  
+SF 0,9%
+SG 5%  
+Mínimo de 250mL   Uso imediato
+ Infusão 2h ou
+mais;
+ Se administrar
+por acesso
+venoso central,
+taxa de infusão
+máxima é de 1
+ampola (10mL)
+em 1h20min.
+ NÃO
+ Administrar somente
+após a diluição.
+Fosfatos são
+incompatíveis em
+soluções contendo
+Magnésio ou Cálcio.
+ Soluções contendo
+outros cátions como
+ferro e alumínio
+podem igualmente
+precipitar.
+A solução deve ser
+infundida lentamente
+para evitar
+intoxicação por
+fosfato.
+ 15180
+ Furosemida
+10mg/mL
+ (ampola 2mL)
+ SANTISA
+ EV
+ IM
+ 20 a 40mg,
+podendo ser
+repetida em
+intervalos de
+2h, de
+20mg/dose
+até obter o
+efeito
+desejado
+(intervalo
+ NA   NA   SF 0,9%
+ 24h TA
+ 24h TR
+Protegida da
+luz
+ EV lento
+ Não exceder
+4mg/min.
+ Em pacientes com
+insuficiência renal
+grave (creatinina
+sérica
+ maior que 5mg/dL),
+recomenda-se não
+exceder a velocidade
+de infusão de
+2,5mg/min.
+ A administração IM
+deve ser restrita a
+casos excepcionais no
+quais a administração
+VO ou EV não são
+possíveis, não sendo
+adequada ao
+tratamento de
+condições agudas
+como edema
+pulmonar.
+
+=== PAGINA 44 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 44/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ usual é de 6-
+12h).
+ 406164
+ Ganciclovir
+1mg/mL
+ (bolsa 250mL)
+HALEX ISTAR
+ EV  
+5mg/kg, a
+cada 12h  
+NA   NA  
+Pronto para
+uso
+ Concentração
+Máxima:
+1mg/mL
+ Manter na
+embalagem
+original até o
+momento do
+uso
+ EV: 60 min
+ ClCr:   ≥70mL/min
+ 5mg/kg, 12/12h
+50-69mL/min
+2,5mg/kg, 12/12h
+24-49mL/min
+2,5mg/kg, 1 vez/dia
+10-24mL/min
+1,25mg/kg, 1 vez/dia
+ ≤10mL/min
+ 1,25mg/kg, 3
+vezes/semana após
+hemodiálise
+ Medicamento pronto
+para uso e seguro
+para administração.
+ Utilizar
+procedimentos
+adequados para
+manuseio e descarte
+de quimioterapia.
+ 407408
+ Ganciclovir
+ 1 mg/mL
+ (bolsa 100mL)
+ HALEX ISTAR
+ EV  
+5mg/kg, a
+cada 12h  
+NA   NA  
+Pronto para
+uso
+ Concentração
+Máxima:
+1mg/mL
+ Manter na
+embalagem
+original até o
+momento do
+uso
+ EV: 60 min
+ ClCr:   ≥70mL/min
+ 5mg/kg, 12/12h
+50-69mL/min
+2,5mg/kg, 12/12h
+24-49mL/min
+2,5mg/kg, 1 vez/dia
+10-24mL/min
+1,25mg/kg, 1 vez/dia
+ ≤10mL/min
+ 1,25mg/kg, 3
+vezes/semana após
+hemodiálise
+ Medicamento pronto
+para uso e seguro
+para administração.
+ Utilizar
+procedimentos
+adequados para
+manuseio e descarte
+de quimioterapia.
+
+=== PAGINA 45 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 45/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 15202
+ Gentamicina
+40mg/mL
+ (ampola 2mL)
+ SANTISA
+ EV
+IM
+ 5mg/kg/dia
+1 vez ao dia  
+NA   NA  
+SF 0,9%
+SG 5%
+ 50 - 200mL
+Concentração máx:
+1mg/mL
+ 24h TA
+24h TR
+ Infusão:
+ 30 min a 2h
+EV direto:
+ 2 a 3min
+ ClCr > 70: de 8/8h;
+ClCr 35-70: 12/12h;
+ClCr 24-34: 18/18h;
+ClCr 16-23: 24/24h;
+ClCr 10-15: 36/36h;
+ClCr 5-9: 48/48h;
+ Administrar com
+intervalo de 1h entre
+Penicilinas ou
+Cefalosporinas.
+Não deve ser
+misturado a outros
+medicamentos.
+ 289144
+ Glicerofosfato de
+Sódio
+ 216mg/mL
+(frasco-ampola -
+20mL)
+1mmol de fosfato
+= 31mg de fósforo
+FRESENIUS
+ EV  
+10 a 20
+mmol 1x/dia  
+NA   NA  
+SF 0,9%
+SG 5%
+ 20mL em 100mL
+SF 0,9% OU SG 5%.  
+24h TA  
+Infusão não deve
+ser inferior a 8h
+ Insuficiência renal:
+pode ser necessário
+ajuste de dose,
+monitorar
+ 1mg de fósforo =
+0,032mmol de
+fosfato
+ 289000
+ Glicose 25%
+(ampola 10mL)
+250mg/mL
+ EQUIPLEX
+ EV   ACM   NA   NA  
+Puro ou
+diluído
+ Concentração máx.
+em 12,5%  
+NA
+ EV lenta
+Taxa de infusão
+máxima 0,5 g/kg
+de peso
+corporal/hora
+ NÃO usar em casos de
+insuficiência renal
+ O ideal é que a
+solução de infusão
+seja de 7mg/kg/min
+Em emergências,
+doses EV em bolus de
+25% têm sido usadas
+perifericamente em
+bebês e crianças.
+ 15334
+ Glicose 50%
+(ampola 10mL)
+500mg/mL
+ EV   ACM   NA   NA  
+Puro ou
+diluído
+ Concentração máx.
+em 12,5%  
+NA
+ EV lenta
+Taxa de infusão
+máxima 0,5 g/kg
+ NÃO usar em casos de
+insuficiência renal
+ O ideal é que a
+solução de infusão
+seja de 7mg/kg/min
+Em emergências,
+
+=== PAGINA 46 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 46/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ de peso
+corporal/hora
+ doses EV em bolus de
+50% têm sido usadas
+perifericamente em
+adolescentes e
+adultos.
+ 15342
+ Gluconato de
+Calcio 10%
+100mg/mL =
+0,46mEq/mL
+(ampola 10mL)
+ HALEX ISTAR
+ EV  
+970mg a
+2.000mg  
+NA   NA  
+SF 0,9%
+SG 5%  
+100 mL   24h TA
+ Infusão lenta
+ 1,5 mL/min
+Infusão
+intermitente 200
+mg/min
+60 min
+ NÃO
+ 15423
+ HaloPERidol
+5mg/mL (USO IM)
+(ampola 1mL)
+ UNIÃO QUIMICA
+ IM
+EV*
+ 2 a 5mg,
+repetindo a
+cada hora ou
+de 4 a 8h
+ NA   NA  
+SG 5%
+SF 0,9%
+ 1 - 3 mg/mL
+ (SG5%)
+ 0,5 - 0,75mg/mL
+ (SF 0,9%)
+ NA
+ EV lento Infusão
+contínua 2-
+25mg/h (máx:
+40mg/h)
+ NÃO
+ *A administração EV
+e Infusão contínua é
+off-label.
+ Não é recomendado.
+Monitorar com
+eletrocardiograma.
+ 15431
+ Heparina
+5.000UI/mL
+(frasco-ampola
+5mL)
+ BLAU
+FARMACEUTICA
+S.A.
+ EV
+SC*
+ 5.000UI,
+após
+25.000UI em
+24h, de
+acordo com
+TTPa.
+Dose de
+manutenção:
+18UI/kg/h.
+ NA   NA  
+SF 0,9%
+SG 5%
+ Concentração Máx:
+100 UI/mL
+ 24 h TA
+Inverter a
+bolsa a cada
+4 h a fim de
+evitar
+aglomeração
+de heparina
+na solução
+ Bolus: infusão
+acima de 10 min
+ Infusão
+intermitente ou
+contínua se
+diluída.
+ NÃO
+ Antídoto: Protamina.
+ *Não se recomenda o
+uso da Heparina 5 mL
+por via SC, devido a
+presença de álcool
+benzílico na
+composição, que
+pode gerar efeito
+adverso por via de
+
+=== PAGINA 47 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 47/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ administração
+diferente da
+recomendada.
+ 16349
+ Heparina
+5.000UI/0,25mL
+ CRITALIA
+ SC
+ 5.000 UI a
+cada 12 ou a
+cada 8h
+ NA   NA   NA   NA   NA   NA   NÃO
+ 15458
+ HidraLAZINA
+20mg/mL
+(ampola 1mL)
+ CRISTALIA
+ EV
+IM
+ Doses iniciais
+de 1 a 10mg.
+Pode ser
+repetida,
+após um
+intervalo de
+20 a 30 min
+Dose máx.:
+40 mg/dose
+ NA   NA   SF 0,9 %
+ 1 ampola em
+ 9 mL
+Concentração de
+2mg/mL
+ Uso imediato
+ EV lento
+Infusão contínua
+ 50 a
+300mcg/min.
+ ClCr < 30 mL/min ou
+Concentração sérica
+de creatinina maior
+que 2,5 mg/100 mL ou
+221 micromol/L ou
+disfunção hepática.
+ Na insuficiência
+renal: a dose ou o
+intervalo de dose
+devem ser adaptados
+de acordo com a
+resposta clínica para
+evitar acúmulo da
+substância ativa
+ 15474
+ Hidrocortisona
+100mg
+(frasco-ampola)
+ UNIÃO QUIMICA
+ EV
+IM
+ 100 a 500mg
+a cada
+2h, 4h ou 6h
+ 2mL AD  
+24h TA
+72h TR
+ SF 0,9%
+SG 5%
+ Concentração Máx:
+50mg/mL
+ 24h TA
+72h TR
+ Puro: EV direto
+ (30 segs.)
+Diluído: 10 min
+ NÃO
+ 15482
+ Hidrocortisona
+500mg
+ (frasco-ampola)
+ BLAU
+FARMACEUTICA
+ EV
+IM
+ ADULTOS:
+100 a 500mg
+a cada
+2h, 4h ou 6h
+ 4mL AD  
+24h TA
+72h TR
+ SF 0,9%
+SG 5%
+500 a
+1.000mL
+ Concentração. Máx:
+50mg/mL
+ 24h TA
+72h TR
+ EV direto puro
+30 segs.   (≤
+ 100mg) e 10 min
+ (≥ 500mg)
+ Infusão 0,1 a
+1mg/mL
+ NÃO
+
+=== PAGINA 48 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 48/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 18708
+ Imipenem 500mg
++ Cilastatina
+ 500 mg
+(frasco-ampola)
+ACS / ABL
+ EV
+ 500 a
+1.000mg
+(Imipenem) a
+cada 6h
+Dose máx:
+4.000mg/dia
+ou
+50mg/kg/dia
+ 10mL
+SF 0,9%
+SG 5%
+ 4h TA
+24h TR
+ SF 0,9%
+SG 5%
+ Completar para
+100mL
+2,5 a 5mg/mL
+ 4h TA
+24h TR
+ Pode ocorrer
+precipitação
+após diluição
+em SF 0,9% e
+armazenado
+sob
+refrigeração,
+condição
+normal e
+reversível ao
+atingir a TA.
+ Infusão
+20 a 30 min
+ (≤ 500mg)
+ 40 a 60 min
+ (> 500mg)
+Infusão
+prolongada 3h
+ Tanto a Cilastatina
+quanto o Imipenem
+são removidos da
+circulação durante a
+hemodiálise.
+ O paciente deve
+receber após a
+hemodiálise e a cada
+12h a partir do final
+da sessão de
+hemodiálise.
+ A velocidade de
+infusão deve ser
+diminuída se o
+paciente apresentar
+náuseas. Infusão
+prolongada tem
+maior probabilidade
+de ser eficaz e pode
+oferecer benefício
+clínico em pacientes
+com infecções graves
+ou patógenos menos
+suscetíveis.
+ 19208
+ Imunoglobulina
+ANTIHEPATITE B
+ 1.000UI/5mL
+(frasco-ampola)
+ SUS
+ GRIFOLS
+ IM
+ Abuso
+Sexual:
+0,06mL/kg
+ Dose
+máxima:
+ 5 mL
+ Mãe com
+EXAME HBSG
+POSITIVO:
+ 0,5mL (100
+UI)
+ NA   NA   NA   NA   NA   NA   NA  
+Após abertura do
+frasco, uso imediato
+ 274025  
+Imunoglobulina
+ANTIHEPATITE B  
+IM
+ Abuso
+Sexual:
+0,06mL/kg
+ NA   NA   NA   NA   NA   NA   NA  
+Após abertura do
+frasco, uso imediato
+
+=== PAGINA 49 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 49/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ (Recém-nascido)
+100UI/0,5mL
+ (frasco-ampola)
+ SUS
+ GRIFOLS
+ Dose
+máxima:
+ 5 mL
+ Mãe com
+EXAME HBSG
+POSITIVO:
+ 0,5mL (100
+UI)
+ 15636
+ Imunoglobulina
+ANTITETANICA
+250UI/mL
+ (frasco-ampola)
+ SUS
+ CSL BEHRING
+ IM   250 UI/mL   NA   NA   NA   NA   NA   USO IMEDIATO   NA
+ A administração de
+imunoglobulina pode
+prejudicar a eficácia
+de vacinas de vírus
+vivos atenuados
+como as vacinas
+contra o sarampo, a
+rubéola, a caxumba e
+a varicela/catapora
+por um período de
+até três meses.
+ 142905
+ Imunoglobulina
+ANTITIMÓCITOS
+ humanos (coelho);
+25 mg
+ (frasco-ampola)
+ GENZYME
+ EV
+ Dosagem
+depende da
+indicação
+proposta
+ 5mL AD   24H TA  
+SF 0,9%
+ SG 5%  
+Até 4 mg/mL
+ 24h TA
+ (incluindo o
+tempo de
+infusão)
+ 4 a 24h
+ Em AVC  
+NA
+ MEDICAMENTO
+TERMOLÁBEL
+ Uso em veia de
+grande calibre e alto
+fluxo: monitore
+atentamente durante
+a infusão e por pelo
+menos 24 horas após
+
+=== PAGINA 50 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 50/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ a infusão para
+detectar anafilaxia.
+ 15652
+ Imunoglobulina
+Humana
+ANTI RhO (D)
+150mcg/mL
+(seringa 2mL)
+CSL BOEHRINGER
+ EV
+IM  
+300mcg   NA   NA   NA   NA   NA
+ Administrar
+dentro das 72h
+após o parto,
+aborto ou
+transfusão de
+sangue
+incompatível.
+ Manter a
+paciente em
+observação por
+20 min após
+administração.
+ NÃO
+ Manter a seringa
+preenchida embalada
+SOB REFRIGERAÇÃO e
+protegida da luz.
+Aguardar o
+medicamento atingir
+a temperatura
+ambiente ou do
+corpo antes de ser
+administrado.
+ 102849
+ Imunoglobulina G
+HUMANA
+50mg/mL
+ (frasco-ampola
+100mL)
+OCTAPHARMA
+ EV
+ 1.000 a
+2.000mg/kg,
+1x/dia.
+ NA   NA   NA   NA   Uso imediato
+ EV
+1 mL/kg/h
+ por 30 min
+até no máximo
+ 5 mL/kg/h
+ ClCr menor que 10
+usar com cautela.
+ Armazenar sob
+refrigeração.
+ O produto deve se
+encontrar em
+temperatura
+ambiente ou corporal
+antes da infusão.
+ 404682
+
+=== PAGINA 51 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 51/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 83305
+ Insulina NPH
+100UI/mL
+(frasco-ampola
+10mL)
+NOVO NORDISK
+ SC
+Parte
+superi
+or dos
+braço
+s,
+coxas,
+nádeg
+as ou
+no
+abdo
+me
+(alter
+nados
+)
+ A dose deve
+ser
+individualiza
+da de acordo
+com as
+necessidades
+de cada
+paciente
+ NA   NA   NA   NA   NA   NA
+ As necessidades de
+insulina podem ser
+reduzidas devido a
+alterações na
+depuração ou no
+metabolismo da
+insulina; monitore a
+glicemia de perto
+ Agitar o frasco com
+movimentos rotativos
+antes de cada
+aplicação. Após suave
+agitação, o conteúdo
+deve ser turvo ou
+leitoso. Não
+administrar caso
+apresente grumos
+suspensos ou no
+fundo do frasco.
+Frascos fechados,
+deverá ser
+armazenado sob TR.
+Frascos após aberto,
+poderá ser mantido
+em TA longe do calor
+e luz solar por 6
+semanas
+Não deve ser EV e IM
+ 13307
+ Insulina REGULAR
+100UI/mL
+(frasco-ampola
+10mL)
+ NOVO NORDISK
+ EV
+IM
+SC
+ A dose deve
+ser
+individualiza
+da de acordo
+com as
+necessidades
+ NA   NA   SF 0,9%
+ 0,05 a 1,0 UI/mL
+ Saturar o equipo
+com insulina por 30
+min antes da infusão
+para evitar a
+adsorção
+ 24h TA
+ EV contínuo
+ Trocar a solução
+e todo o
+conjunto pelo
+menos a cada 6h
+ ClCr 10-50 ml/min
+75% da dose
+ClCr menor que
+10ml/min 50% da
+dose
+ Agitar o frasco com
+movimentos rotativos
+antes de cada
+aplicação. Após suave
+agitação, o conteúdo
+deve ser turvo ou
+leitoso. Não
+
+=== PAGINA 52 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 52/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ de cada
+paciente
+ administrar caso
+apresente grumos
+suspensos ou no
+fundo do frasco.
+Frascos fechados,
+deverá ser
+armazenado sob TR.
+Frascos após aberto,
+poderá ser mantido
+em TA longe do calor
+e luz solar por 6
+semanas.
+ Trocar a solução e
+todo o conjunto pelo
+menos a cada 6h, em
+razão da precipitação
+e perda de
+efetividade.
+ 11649
+ Ioexol
+ (Contraste não
+iônico) 350mg/mL
+(frasco 100mL)
+ GE HEALTHCARE
+ VO
+EV
+INTRA
+CAVIT
+ÁRIO
+ Posologia de
+acordo com
+exames.
+ NA   NA   NA   NA   NA   NA  
+Insuficiência renal:
+Utilizar com cautela
+ Deve ser conservado
+em temperatura
+ambiente, protegido
+da luz e não deve ser
+congelado.
+Medicamento
+vesicante:
+ Os pacientes devem
+ser bem hidratados
+
+=== PAGINA 53 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 53/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ antes e durante a
+administração devido
+à nefrotoxicidade.
+ 405716
+ Levobupivacaína
+0,5% SEM
+VASOCONSTRITOR
+(frasco-ampola
+20mL)
+CRISTÁLIA
+ Infiltr
+ação;
+Bloqu
+eio
+nervo
+so;
+Anest
+esia
+Cauda
+l E
+perid
+ural
+ 50 a 150mg
+ Dose máx:
+doses
+peridurais de
+até 375mg.
+ NA   NA   SF 0,9%
+ Concentração de
+0,625 a 2,5mg/mL
+Concentração
+máxima: 2,5mg/mL
+ 24h TA   NA
+ NÃO foram
+conduzidos estudos
+especiais em
+pacientes com
+insuficiência renal.
+ Não indicado para
+raquianestesia.
+É incompatível com
+soluções alcalinas
+com pH superior a
+8,5.
+ 248622
+ Levofloxacino
+ 5 mg/mL
+ (bolsa-100mL)
+ISTAR
+ CRISTÁLIA
+ HALEX
+ EV
+ 250mg,
+500mg ou
+750mg a
+cada 24 h
+Dose máx:
+750mg/dia
+ NA   NA   NA   Uso imediato  
+Infusão lenta
+60 a 90 min  
+SIM
+ A solução contém
+ SG 5%.
+Atenção para
+diabéticos.
+ Manter paciente bem
+hidratado para evitar
+cristalúria. Deve ser
+armazenado em sua
+
+=== PAGINA 54 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 54/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ embalagem original
+até o momento do
+uso, e conservado em
+TA protegido da luz.
+ 198668
+ Lidocaína 2% +
+Epinefrina
+1:200.000
+(carpule 1,8mL)
+CRISTÁLIA
+ EV
+ ANES
+TESIA
+LOCO
+RREGI
+ONAL
+ Anestesia
+terminal:
+1mL.
+Bloqueio:
+ 1,5 a 1,8mL.
+Cirurgia: 3 a
+5mL.
+ NA   NA   NA   NA   NA  
+Monitorar e usar com
+cautela.
+ 16330
+ Lidocaína 2% +
+Epinefrina
+1:200.000
+(frasco-ampola
+20mL)
+CRISTÁLIA
+ EV
+ANES
+TESIA
+LOCO
+RREGI
+ONAL
+PERC
+UTÂN
+EA
+ Peridural:
+ 2 a 3mL.
+Dose máx:
+adultos:
+7mg/kg, a
+dose máxima
+não deve
+exceder
+500mg
+Analgesia
+peridural: até
+20mL
+ NA   NA   NA   NA   NA   EV lento  
+Monitorar e usar com
+cautela
+ Não deve ser
+autoclavado por calor
+úmido e/ou seco.
+ Devem ser
+administradas
+lentamente com
+aspiração frequente
+para evitar injeção
+intravascular
+acidental rápida que
+pode produzir efeitos
+tóxicos
+
+=== PAGINA 55 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 55/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 289134
+ Lidocaína 2% +
+NOREpinefrina 5
+mcg/mL (tubete
+1,8mL)
+ CRISTÁLIA
+ EV
+ ANES
+TESIA
+LOCO
+RREGI
+ONAL
+ Anestesia
+terminal
+ Bloqueio: 1,5
+a 1,8mL
+ Cirurgia: 3 a
+5mL
+ Dose máx.:
+7mg/kg.
+ NA   NA   NA   NA   NA   EV lento  
+Monitorar e usar com
+cautela
+ 218456
+ Lidocaína 2% SEM
+VASOCONSTRITOR
+(ampola 5mL)
+Isobárica
+HYPOFARMA
+ EV
+ ANES
+TESIA
+LOCO
+RREGI
+ONAL
+ 1 a 1,5 mg/kg
+Dose máx:
+ 4,5 mg/kg
+ IM: 4 mg/kg
+ NA   NA
+ SG 5%
+ Diluentes
+que contêm
+sódio podem
+afetar a
+efetividade
+da Lidocaína.
+ 1 - 2 g de Lidocaína
+para 1.000mL de
+ SG 5%
+ 24h TA
+ EV contínuo: 1 a
+4 mg/min
+EV direta: 200 a
+300mg em 1h
+ Monitorar e usar com
+cautela
+ NÃO ESTÁ INDICADO
+PARA
+RAQUIANESTESIA.
+Quando grandes
+volumes são
+necessários, somente
+soluções com
+vasoconstritor devem
+ser usadas, exceto
+naqueles casos em
+que os fármacos
+vasopressores são
+contraindicados.
+ 16489
+ Lidocaína 2%
+ (20mg/mL)
+ SEM
+VASOCONSTRITOR
+(frasco-ampola
+ EV
+PERC
+UTÂN
+EA
+ 5 - 300mg
+antiarrítmico
+: 1mg/kg e 1
+a 4mg/min
+Dose máx:
+ NA   NA
+ SG 5%
+ Diluentes
+que contêm
+sódio podem
+afetar a
+ Infusão contínua
+Concentração
+máxima: 2mg/mL
+ 24h TA
+ 25 a 50mg/min
+Infusão contínua:
+1 a 4mg/min
+adultos
+ 50mcg/kg/min
+crianças
+ Monitorar e usar com
+cautela
+ NÃO ESTÁ INDICADO
+PARA
+RAQUIANESTESIA.
+Quando grandes
+volumes são
+necessários, somente
+
+=== PAGINA 56 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 56/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 20mL)
+UNIÃO QUIMICA
+ 4,5mg/kg ou
+300mg
+ efetividade
+da Lidocaína.
+ soluções com
+vasoconstritor devem
+ser usadas, exceto
+naqueles casos em
+que os fármacos
+vasopressores são
+contraindicados.
+ 402093
+ Lidocaína 2%
+ 20 mg/mL
+ (tubete)
+ 1,8 mL
+ CRISTÁLIA
+ EV
+ PERC
+UTÂN
+EA
+ IO
+ Anestesia
+terminal
+ Bloqueio: 1,5
+a 1,8mL
+ Cirurgia: 3 a
+5mL
+ Dose máx.:
+4mg/kg
+ NA   NA
+ SG 5%
+ Diluentes
+que contêm
+sódio podem
+afetar a
+efetividade
+da Lidocaína.
+ NA   NA  
+Em bolus:
+ 25 a 50mg/min
+ Monitorar e usar com
+cautela
+ 270058
+ Linezolida
+2mg/mL
+ (bolsa 300mL)
+EUROFARMA
+ EV
+ 400-600mg a
+cada 12
+horas.
+ NA   NA   NA   NA
+ Uso imediato
+ Manter a
+bolsa
+protegida da
+luz dentro da
+sobrebolsa
+aluminizada
+até o
+momento do
+uso.
+ 30 a 120 min
+ ClCr 40 a
+<130mL/minuto: Não
+é necessário ajuste
+ ClCr < 40 mL/minuto:
+Não é necessário
+ajuste de dose.
+ Como
+aproximadamente
+30% da dose é
+removida durante 3h
+de hemodiálise, a
+Linezolida deve ser
+ Com base em
+simulações de Monte
+Carlo, em pacientes
+clinicamente estáveis
+com ClCr < 30
+mL/minuto e um
+curso de tratamento
+previsto > 10 dias,
+alguns especialistas
+sugerem reduzir a
+dose para 300 mg
+duas vezes ao
+
+=== PAGINA 57 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 57/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ administrada após a
+sessão de diálise.
+ Em pacientes com
+insuficiência renal,
+monitorar eventos
+adversos
+hematopoiéticos e
+neuropáticos ao
+administrar por
+períodos prolongados.
+ dia após 72
+horas com
+monitoramento
+terapêutico do
+medicamento para
+reduzir o risco de
+trombocitopenia
+ 15938
+ Manitol 20%,
+200mg/mL
+ (frasco 250mL)
+SANOBIOL
+ EV
+ VO
+ Redução da
+pressão
+intraocular e
+intracraniana
+:
+ 1,5 a 2,0 g/kg
+(7,5 a
+10mL/Kg)
+ Diurético:
+200mg/kg
+ Colonoscopia
+: 500mL (VO)
+ NA   NA  
+EV: puro
+VO: suco  
+NA   NA
+ Pressão
+intraocular e
+intracraniana:
+ 30 a 60 minutos
+ Inspecionar
+presença de
+cristais antes da
+administração.
+Utilizar equipo
+com filtro.
+ Contraindicado na
+insuficiência renal
+grave.
+Utilizar com cautela
+em pacientes com
+injúria renal
+ Medicamento
+vesicante.
+Em soluções
+cristalizadas,
+recomenda-se o
+aquecer em banho-
+maria a 60   –   80°C e
+agitar. Não usar
+micro-ondas, devido
+risco de explosão.
+Administrar em TA.
+ 218480  
+Meropenem
+1.000mg  
+EV
+ 500mg a
+2.000mg a
+cada 8h
+ 20mL
+AD
+50mg/mL
+ 3h TA
+16h TR
+Eurofarma/
+ SF 0,9%
+SG 5%
+ 100mL
+1 a 20mg/mL
+ 3h TA
+ 15h TR
+ Bolus: 5 min
+Infusão: 15 a 30
+min
+ SIM
+eliminado através da
+ Medicamento tempo-
+dependente.
+Apresenta melhoras
+
+=== PAGINA 58 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 58/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ (frasco-ampola)
+ABL
+ EUROFARMA
+ BIOCHIMICO
+ Dose máx:
+2.000mg a
+cada 8h
+(6.000mg/dia
+)
+ Eugia
+ ABL   –
+ Imediato
+ 1h TA
+ 2h TR
+ Biochimico
+ (SF 0,9%)
+Imediato
+ (SG 5%)
+ Eurofarma/
+ Eugia
+ Imediato
+ ABL
+ 1h TA
+ 2h TR
+ Biochimico
+ Infusão
+prolongada:
+ 3 horas
+ hemodiálise e
+hemofiltração.
+ ClCr 26 – 50 mL/min:
+ 1 dose a cada 12h;
+10 – 25 mL/min:
+ ½ dose a cada 12h;
+<10 mL/min: ½ dose a
+cada 24h.
+ resultados em
+pacientes críticos
+com a infusão em
+ 3 horas.
+ 213780
+ Meropenem
+ 500 mg
+ (frasco-ampola)
+EUROFARMA
+EUGIA
+ EV
+ 500mg a
+2.000mg a
+cada 8h
+Dose máx:
+2.000mg a
+cada 8h
+(6.000mg/dia
+)
+ 10mL
+AD
+50mg/mL
+ 3h TA
+16h TR
+Eurofarma/
+ Eugia
+ ABL   –
+ Imediato
+ 1h TA
+ 2h TR
+ Biochimico
+ SF 0,9%
+SG 5%
+ 100mL
+1 a 20mg/mL
+ 3h TA
+ 15h TR
+ (SF 0,9%)
+Imediato
+ (SG 5%)
+ Eurofarma/
+ Eugia
+ Imediato
+ ABL
+ 1h TA
+ 2h TR
+ Biochimico
+ Bolus: 5 min
+Infusão: 15 a 30
+min
+ Infusão
+prolongada:
+ 3 horas
+ ClCr 26 – 50 mL/min: 1
+dose a cada 12h; 10 –
+ 25 mL/min: ½ dose a
+cada 12h; <10
+mL/min: ½ dose a
+cada 24h.
+ Medicamento tempo-
+dependente.
+Apresenta melhoras
+resultados em
+pacientes críticos
+com a infusão em 3
+horas.
+ 138932
+ Metaraminol,
+Hemitartarato
+10mg/mL
+ EV
+IM
+ IM: 2 a 10mg
+EV: 15 a
+100mg
+ NA   NA  
+SF 0,9%
+SG 5%  
+500mL   24h TA
+ A velocidade de
+infusão deve ser
+ajustada para
+ NÃO
+ A via SC não é
+recomendada, devido
+a aumento do risco
+
+=== PAGINA 59 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 59/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ (ampola 1mL)
+CRISTÁLIA
+ manter a pressão
+no nível
+desejado.
+ de necrose tecidual
+local e descamação.
+ 16055
+ Metilergometrina,
+Maleato
+0,2mg/mL
+(ampola 1mL)
+UNIÃO QUIMICA
+ EV
+IM
+SC
+ 0,1 - 0,2 mg a
+cada 2 - 4h
+Dose máx:
+ 5 doses
+ NA   NA   NA   NA   NA
+ IM
+recomendada.
+EV lento maior
+que 1 minuto
+ NÃO
+ A administração EV
+não é recomendada
+devido ao potencial
+de desenvolvimento
+de hipertensão súbita
+e acidente vascular
+cerebral. No entanto,
+se a administração EV
+for considerada como
+uma medida
+essencial para salvar
+a vida, uma dose
+usual de 0,2mg deve
+ser administrada
+lentamente ao longo
+de pelo menos
+ 1 minuto, com
+monitorização
+cuidadosa da pressão
+arterial
+
+=== PAGINA 60 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 60/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 106496
+ Metilprednisolona
+Succinato
+ 125mg
+ (frasco-ampola) +
+diluente
+ BLAU
+ EV
+IM
+ 30mg/kg, a
+cada 4 ou 6h
+ Pulsoterapia:
+1.000mg/dia
+ 2 mL do diluente
+próprio  
+Imediato  
+SF 0,9%
+ SG 5%
+ 20mL ou 50mL
+Concentração
+máxima
+ 125mg/mL
+ 48h em TA
+ 125mg
+ 3 a 25min
+ 250mg
+ 15 a 30 min
+ 500
+ 30 a 60 min
+ 1.000mg: 60min
+ NÃO
+ Os corticosteroides
+devem ser usados
+com cautela em
+pacientes com
+insuficiência renal.
+ Não administrar
+doses moderadas ou
+altas em push devido
+ao risco de eventos
+adversos, tais como
+hipotensão e arritmia
+cardíaca.
+ Para pulsoterapia
+recomenda-se
+infusão em 4h.
+ 16420
+ Metilprednisolona
+Succinato
+ 500mg
+(frasco-ampola) +
+diluente
+BLAU
+ EV
+IM
+ 30mg/kg, a
+cada 4 ou 6h
+ Pulsoterapia:
+1.000mg/dia
+ 8 mL do diluente
+próprio  
+Imediato  
+SF 0,9%
+SG 5%
+ 20mL ou 50mL
+Concentração
+máxima
+ 125mg/mL
+ 48h em TA
+ 125mg
+ 3 a 25min
+ 250mg
+ 15 a 30 min
+ 500
+ 30 a 60 min
+ 1.000mg: 60min
+ NÃO
+ Os corticosteroides
+devem ser usados
+com cautela em
+pacientes com
+insuficiência renal.
+ Não administrar
+doses moderadas ou
+altas em push devido
+ao risco de eventos
+adversos, tais como
+hipotensão e arritmia
+cardíaca.
+ Para pulsoterapia
+recomenda-se
+infusão em 4h.
+ 16101
+ MetoCLOPRAmida
+5mg/mL
+(ampola 2mL)
+ FARMACE
+ EV
+IM
+ 10mg a cada
+8h  
+NA   NA
+ SF 0,9%
+(preferência)
+SG 5%
+ 50mL   24h em TA  
+Infusão 15 a 30
+min
+ ClCr menor que
+40mL/min, reduzir a
+dose em 50%
+ A administração EV
+rápida pode estar
+associada a uma
+sensação transitória
+(mas intensa) de
+ansiedade e
+
+=== PAGINA 61 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 61/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ inquietação, seguida
+de sonolência.
+ 142964
+ MetoPROLOL,
+Tartarato 1mg/mL
+(ampola 5mL)
+ CRISTALIA
+ EV
+ 1,25 a 5mg
+a cada 6 ou
+12h
+Dose
+máxima:
+15mg/dia
+ NA   NA  
+SF 0,9%
+SG 5%
+ Puro (1mg/mL)
+ ou
+ Diluído
+ (0,04mg/mL)
+ 24h TA
+Protegido da
+Luz
+ EV
+ 1 min
+Infusão lenta 30
+a 60 min
+ NÃO
+ Deve-se manter a
+ampola protegida da
+luz.
+ 16560
+ Metotrexato
+25mg/mL
+(frasco-ampola
+2mL)
+ BLAU
+ EV
+IM
+IT
+ Doses
+variadas para
+uso
+oncológico e
+não
+oncológico
+ NA   NA  
+SF 0,9%
+SG 5%  
+Máximo 25 mg/mL   Uso imediato
+ EV lento
+10 mg/min
+Infusão contínua
+de 24 h
+ Utilizar equipo
+fotossensível
+ ClCr de 10-50 a
+60mL/min reduzir a
+dose 50%.
+ClCr menor que que
+10mL/min
+ NÃO administrar.
+ Medicamento
+citotóxico
+ Doses elevadas
+devem sempre ser
+administradas com
+Ácido Folínico a fim
+de proteger contra a
+toxicidade excessiva,
+além de alcalinização
+da urina antes e após
+a administração.
+ 12777  
+METROnidazol
+5mg/mL  
+EV  
+500mg a
+cada 8h  
+NA   NA  
+Pronto para
+uso  
+NA   Uso imediato
+ Infusão:
+ 20 min
+(5mL/min)
+ ClCr:
+< 10mL/min (não em
+diálise), considerar
+
+=== PAGINA 62 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 62/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ (bolsa 100mL)
+B. BRAUN
+ redução de 50% da
+dose a cada 12 horas
+ 287970
+ Micafungina 50mg
+(frasco-ampola)
+ ASTELLAS
+ INTAS
+PHARMACEUTICALS
+ EV  
+50mg a
+200mg/dia
+ 5mL
+ SF 0,9%
+ NÃO AGITAR O
+FRASCO PARA
+RECONSTI
+ TUIR O PÓ.
+ 48h abaixo
+de 25ºC
+ (Intas)
+ 24h abaixo
+de 25 ºC
+ (Astellas)
+ SF 0,9%
+SG 5%
+ 100mL
+(Concentração máx
+20mg/mL)
+ 96h abaixo
+de 25 ºC
+Protegida da
+luz
+ (Intas)
+ 24h abaixo
+de 25 ºC
+ Protegida da
+luz
+ (Astellas)
+ 1h
+ Infusões mais
+rápidas podem
+resultar em
+reações
+mediadas por
+histamina mais
+frequentes.
+ Não é dialisável
+ A solução diluída
+deve ser protegida da
+luz.
+ Não é necessário
+cobrir o equipo.
+Lavar o acesso com
+SF 0,9% antes da
+infusão.
+ A bolsa para infusão
+deve ser suavemente
+invertida para
+dispersar a solução,
+mas NÃO agitada.
+Contém 200 mg de
+lactose.
+ 402005
+ MIDAzolam
+1mg/mL
+ (ampola 5mL)
+ UNIAO QUIMICA
+ EV
+ IM
+ RETAL
+ 0,01   –   0,1
+mg/kg/h  
+NA   NA  
+SF 0,9%
+SG 5%
+ Puro ou diluído
+0,5mg/mL  
+24h TR   A critério médico
+ ClCr menor que
+10mL/min, reduzir a
+dose em 50%.
+ Antagonista:
+Flumazenil   (usado
+para reverter a
+depressão do SNC.
+Usar com muita
+cautela).
+ 168815
+ MIDAzolam
+5mg/mL
+ (ampola 10mL)
+ EV  
+0,01   –   0,1
+mg/kg/h  
+NA   NA  
+SF 0,9%
+SG 5%
+ Puro ou diluído
+0,5mg/mL  
+24h TR   A critério médico
+ ClCr menor que
+10mL/min, reduzir a
+dose em 50%.
+ Antagonista:
+Flumazenil   (usado
+para reverter a
+
+=== PAGINA 63 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 63/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ UNIAO QUIMICA   depressão do SNC.
+Usar com muita
+cautela).
+ 289028
+ MIDAzolam
+5mg/mL
+ (ampola 3 mL)
+ UNIAO QUIMICA
+ EV  
+0,01   –   0,1
+mg/kg/h  
+NA   NA  
+SF 0,9%
+SG 5%
+ Puro ou diluído
+0,5mg/mL  
+24h TR   A critério médico
+ ClCr menor que
+10mL/min, reduzir a
+dose em 50%.
+ Antagonista:
+Flumazenil   (usado
+para reverter a
+depressão do SNC.
+Usar com muita
+cautela).
+ 288494
+ Milrinona 1mg/mL
+(ampola 10mL)
+ FLUKKA
+ EV
+(lento
+)
+ Dose de
+ataque:
+50mcg/kg,
+durante 10
+min. (injeção
+direta, gota a
+gota ou
+bomba de
+infusão);
+ Dose de
+manutenção:
+0,375 a
+0,750mcg/kg
+/
+ min, em
+infusão
+contínua
+ NA   NA  
+SF 0,9%
+SG 5%
+ 100 - 200 mL
+Concentração final
+de 100 a 200
+mcg/mL
+ 24 h a TA
+ Proteger da
+luz
+ Infusão contínua
+20 mg para
+100mL
+ ClCr 10 mL/min = taxa
+de infusão de
+0,23mcg/kg/min
+ClCr 30 mL/min = taxa
+de infusão de 0,33
+mcg/kg/min
+ Monitorar
+hipotensão durante a
+dose de ataque.
+Deve-se manter a
+ampola protegida da
+luz. Não misturar
+com furosemida na
+mesma linha, pois
+precipita.
+
+=== PAGINA 64 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 64/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 403339
+ Mitomicina
+(frasco-ampola)
+ CITOPHARMA
+ MANIPULADO
+ EV
+ INTRA
+VESICA
+L
+ EV: 20
+mg/m
+2
+, em
+dose única,
+em
+intervalos de
+6-8 semanas.
+INTRAVESICA
+L: 20 - 40mg
+na
+Concentraçã
+o de
+1mg/mL, 1 x
+por semana,
+durante 8
+semanas.
+ 10mL AD   48h TA  
+SF 0,9%
+SG 5%
+ 20 - 40 mcg/mL
+(SF 0,9%)
+ 3h TA
+ (SG 5%)
+12h TA
+ (SF 0,9%)
+ NÃO
+ Seu uso resulta em
+uma alta incidência
+de depressão
+medular,
+particularmente
+trombocitopenia e
+leucopenia.
+ 262463
+ Morfina 0,2mg/mL
+(ampola 1mL)
+ CRISTÁLIA
+ EV
+Intrat
+ecal
+Perid
+ural
+ Via Peridural:
+5mg
+Via
+Intratecal:
+1:10 da
+utilizada na
+via peridural.
+Recomenda-
+se iniciar
+com 0,2 mg
+Procediment
+os
+ NA   NA   NA   NA   NA
+ bolus
+lentamente
+Infusão
+ NÃO
+NÃO sofre perda na
+hemodiálise.
+ A via preferencial da
+Morfina sem
+conservantes é
+intratecal ou
+peridural.
+ Com o uso de
+neuroléptico
+aumenta o risco de
+depressão
+respiratória. Pode
+causar: cefaleia,
+tontura, náusea,
+
+=== PAGINA 65 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 65/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ Obstétricos e
+Ginecológico
+s: 0,03 a 0,1
+mg via tecal,
+proporciona
+alívio
+satisfatório
+por até 24h.
+ vômito, boca seca,
+apneia, sonolência,
+retenção urinária e
+constipação, síncope,
+taquicardia,
+hipertensão, entre
+outros.
+ 16179
+ Morfina 10mg/mL
+(ampola 1mL)
+ CRISTÁLIA
+ EV
+IM
+ Bolus: 2,5 -
+5mg 4/4h
+SC: 5mg 4/4h
+Infusão
+contínua: 1
+mg/h (máx.
+10mg/h)
+Adaptação a
+ventilação
+mecânica: 1 -
+10mg a cada
+1   –   2h.
+ NA   NA   SF 0,9%
+ 9mL (1mg/mL)
+Solução analgésica
+venosa padronizada:
+Morfina 10mg/mL
+(1ampola) em 100mL
+ 24h TA
+ bolus
+lentamente
+Infusão contínua:
+5 - 35mg/h
+ Na insuficiência renal
+leve (ClCr maior que
+50mL/min); NÃO é
+necessário ajuste; na
+moderada (ClCr 10-
+50mL/min): 75% da
+dose; na severa (ClCr
+menor que
+10mL/min): 50% da
+dose
+ Deve ser
+administrada com
+extremo cuidado em
+pacientes idosos ou
+debilitados, na
+presença de aumento
+da pressão
+intraocular/intracrani
+ana e em pacientes
+com lesões cerebrais.
+
+=== PAGINA 66 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 66/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 189910
+ Morfina 1mg/mL
+(ampola 2mL)
+ CRISTÁLIA
+ EV
+IM
+Intrat
+ecal
+Perid
+ural
+ Bolus: 2,5 -
+5mg 4/4h
+SC: 5mg 4/4h
+Infusão
+contínua: 1
+mg/h (máx.
+10mg/h)
+Adaptação a
+ventilação
+mecânica: 1 -
+10mg a cada
+1   –   2h,
+Infusão
+contínua: 5 -
+35mg/h
+ NA   NA   SF 0,9%   1 mg/mL   24h TA
+ bolus
+lentamente
+Infusão
+ Na insuficiência renal
+leve (ClCr maior que
+50mL/min); NÃO é
+necessário ajuste; na
+moderada (ClCr 10-
+50mL/min): 75% da
+dose; na severa (ClCr
+menor que
+10mL/min): 50% da
+dose
+ Deve ser
+administrada com
+extremo cuidado em
+pacientes idosos ou
+debilitados, na
+presença de aumento
+da pressão
+intraocular/intracrani
+ana e em pacientes
+com lesões cerebrais.
+ 116246
+ Naloxona
+0,4mg/mL
+(ampola 1mL)
+ HIPOLABOR
+ CRISTALIA
+ EV
+IM
+SC
+ 0,4 a 2mg
+Depressão
+pós-
+operatória
+por opioide:
+ 0,1 a 0,2 mg,
+a cada 2 -3
+min, até
+obter
+ventilação e
+estado de
+ NA   NA  
+SF 0,9%
+SG 5%
+ 1 ampola de 1 mL
+(0,4 mg/mL) em 9 mL
+de SF 0,9%
+ (0,04 mg/mL)
+Infusão Contínua:
+ 1 ampola em 100 mL
+(0,004 mg/mL)
+ 24 h TA
+Protegido da
+Luz
+ EV lento
+ Infusão Contínua
+ACM
+ NÃO
+
+=== PAGINA 67 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 67/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ consciência
+adequados.
+ 17345
+ Neostigmina
+0,5mg/mL
+(ampola 1mL)
+ BLAU
+ EV
+IM
+SC
+ Atonia
+intestinal:
+0,25 a 0,5mg
+a cada 4 - 6h
+Reversão dos
+efeitos dos
+curarizantes
+1 a 5 mg (IM)
+ NA   NA  
+SF 0,9%
+SG 5%  
+NA   Uso imediato  
+EV muito
+lentamente  
+NÃO
+ Eventualmente pode-
+se utilizar Sulfato de
+Atropina após, para
+reduzir os efeitos
+adversos colinérgicos
+(bradicardia).
+ 224162
+ NitroGLICERINA
+5mg/mL
+ (ampola 5mL)
+ CRISTALIA
+ EV
+ 5mcg/min
+início
+A velocidade
+pode ser
+aumentada
+em
+5mcg/min a
+cada 3-5 min
+até
+ NA   NA
+ SG 5%
+SF 0,9%
+Isento de
+PVC
+ 500 mL
+100 mcg/mL  
+24h TA   A critério médico   NÃO
+ Retirar da
+embalagem original
+apenas no momento
+do uso e armazenar
+protegido da luz.
+
+=== PAGINA 68 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 68/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 20mcg/min
+Dose máx:
+ 400 mcg/min
+ 17426
+ NitroPRUSSIATO
+de Sódio
+ 25mg/mL
+ (ampola 2mL)
+ CRISTALIA
+ EV
+ Dose máx:
+8
+mcg/kg/min
+ 2 mL do diluente
+próprio
+ 4h TA
+Protegido da
+luz
+ 248 mL
+ SG 5%
+(volume final
+250mL)
+ 200mcg/mL
+ 24h TA
+Protegido da
+luz
+ Velocidade de
+infusão de
+3mcg/kg/min
+ NÃO
+ Conservar protegido
+da luz.
+A cor da solução após
+reconstituição é
+castanha ou
+levemente
+alaranjada. Se a cor
+da solução se
+apresentar vermelha,
+azul, verde ou
+descolorida, deverá
+ser desprezada.
+ 155284
+ NOREPinefrina
+2mg/mL
+ (ampola 4mL)
+ UNIAO QUIMICA
+ EV
+ Adulto:
+3,3 mcg/kg/
+min
+ NA   NA
+ SG 5%
+(preferência)
+SF 0,9%
+ 4 mcg/mL a 1160
+mcg/mL
+ 24h TA
+ (SG 5%)
+Protegido da
+luz
+ Infusão contínua
+em CVC  
+NÃO
+ De preferência,
+proteger da luz e
+calor.
+ De preferência,
+utilizar equipo
+âmbar.
+
+=== PAGINA 69 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 69/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 17434
+ Ocitocina 5UI/mL
+(ampola 1mL)
+UNIAO QUIMICA
+ EV
+IM
+ 20 a
+40mU/min  
+NA   NA  
+SF 0,9%
+SG 5%
+ 5 a 10UI em 500mL
+(máx: 40UI em
+1.000mL)
+ 24h TA
+ Infusão contínua
+2 a 8 gotas/min e
+aumentar
+gradativamente
+a cada 20
+minutos.
+Velocidade máx.
+40 gotas/min
+ Usar com cautela
+ Não deve administrar
+EV em bolus, pode
+causar hipotensão
+aguda de curta
+duração
+acompanhada de
+rubor e taquicardia
+reflexa.
+ 213659
+ Octreotida
+0,1mg/mL
+(ampola 1mL)
+ SUN
+PHARMACEUTICAL
+ EV
+SC
+ Adultos: 0,05
+a 0,1mg, a
+cada 8h ou
+12h
+ NA   NA
+ SF 0,9%
+(preferível)
+ SG 5% *
+ * Octreotida
+pode afetar a
+homeostase
+da glicose.
+ 12mL SF 0,9%
+ a cada ampola
+(0,1mg)
+ Subcutânea: sem
+diluição
+ 24h TA
+24h TR
+ EV direto: 3 min.
+Infusão: 15 - 30
+minutos
+ NÃO
+ Deve ser conservado
+sob refrigeração.
+Estável por 2
+semanas em TA.
+ Antes da
+administração a
+solução deve estar a
+TA.
+ 136026
+ Oligoelementos
+Adulto
+ (ampola 5mL)
+ VMG
+FARMACEUTICA
+ EV  
+1 a 2 mL ao
+dia  
+NA   NA   SG 5%   250mL   Uso imediato  
+Infusão Contínua
+12h
+ NÃO INFUNDIR COM
+NPT. DILUIR
+EXCLUSIVAMENTE
+EM SG 5%.
+
+=== PAGINA 70 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 70/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 201790
+ Omeprazol 40mg
+(frasco-ampola)
+UNIÃO QUÍMICA
+ EV
+ 40mg a
+cada 12h a
+24h
+Dose máx:
+270mg/dia
+ Diluente próprio
+10mL  
+4h TA  
+SF 0,9%
+SG 5%  
+100mL
+ 12h
+ (SF 0,9%)
+ TA
+6h
+ (SG 5%)
+ TA
+ EV DIRETO
+lentamente
+2,5mL a 4mL/min
+EV INFUSÃO
+deve ser
+administrada por
+um período >
+ 20-30 minutos,
+podendo ser
+prolongada por
+até 12h se
+diluída em
+ SF 0,9% e 6h em
+SG 5%
+ Usar com cautela
+ A estabilidade é pH
+dependente e, para
+assegurar a
+estabilidade da
+solução
+reconstituída,
+nenhum outro tipo
+de diluente deve ser
+utilizado.
+ 141097
+ Ondansetrona
+2mg/mL
+ (ampola 4mL)
+CRISTALIA
+ EV
+ IM
+ 4 a 8 mg a
+cada 8 a 12h
+Dose máx:
+24mg/dia
+ IM:
+16mg/dose
+ NA   NA
+ Doses
+superiores a
+8mg até
+32mg devem
+ser diluídas
+em SF 0,9%
+ou SG 5%
+ 50 a 100mL   48h TA
+ Infusão lenta em
+15min.
+ Infusão contínua
+de 1 mg/h por
+até 24 horas
+ NÃO
+ Pacientes com idade
+a partir de 65 anos,
+todas as doses devem
+ser diluídas e
+infundidas durante
+15 min. Pacientes
+com insuficiência
+hepática moderada
+ou grave a dose total
+diária, não deve
+exceder 8mg.
+
+=== PAGINA 71 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 71/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 149454
+ Ondansetrona
+2mg/mL
+ (ampola 2mL)
+CRISTALIA
+ EV
+ IM
+ 4 a 8 mg a
+cada 8 a 12h
+Dose máx:
+24mg/dia
+ IM:
+16mg/dose
+ NA   NA
+ Doses
+superiores a
+8mg até
+32mg devem
+ser diluídas
+em SF 0,9%
+ou SG 5%
+ 50 a 100mL   48h TA
+ Infusão lenta em
+15min.
+ Infusão contínua
+de 1 mg/h por
+até 24 horas
+ NÃO
+ Pacientes com idade
+a partir de 65 anos,
+todas as doses devem
+ser diluídas e
+infundidas durante
+15 min. Pacientes
+com insuficiência
+hepática moderada
+ou grave a dose total
+diária, não deve
+exceder 8mg.
+ 17469
+ Oxacilina 500mg
+ (frasco-ampola)
+BLAU
+ EV
+IM
+ 250 a
+2.000mg a
+cada 4-6
+horas
+Dose
+máxima:
+12.000mg/di
+a.
+ IM: 2,7mL AD
+ EV: 5mL AD ou
+ SF 0,9 %
+ 6h TR e TA
+ao abrigo da
+luz
+ SF 0,9%
+SG 5%  
+100 ml - 250ml   24h TA
+ Infusão > 30min
+ EV direto: 10min
+ A administração
+muito rápida
+pode causar
+crises
+convulsivas.
+ NÃO
+ Na administração EV,
+particularmente em
+pacientes idosos,
+deve-se ter cautela
+durante a aplicação
+devido à
+possibilidade de
+ocorrer
+tromboflebite.
+ 270899
+ Pamidronato
+90mg
+ (frasco-ampola)
+EUROFARMA
+ EV
+ 90mg a
+210mg cada
+4 ou 3
+semanas
+ 10 mL AD   24h TR  
+SF 0,9%
+SG 5%
+ 100 a 500 mL
+A concentração não
+deve exceder a
+90mg/250mL
+ 24h TA
+ Não administrar
+em bolus, a taxa
+de infusão não
+deve exceder
+1mg/min.
+Normalmente
+90mg deve ser
+ Não
+ A velocidade máxima
+de infusão seja de
+20mg/h.
+ Em pacientes com
+mieloma múltiplo e
+neoplasias malignas
+admite-se até 90 mg
+em 500mL em 4h.
+
+=== PAGINA 72 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 72/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ administrada em
+2 horas
+ 407132
+ Paracetamol
+10mg/mL
+ (bolsa 100mL)
+HALEX ISTAR
+ EV
+ 1.000mg a
+cada 6h
+ Dose diária
+máx: 4.000
+mg/dia
+ NA   NA  
+Pronto para
+uso  
+NA   Uso imediato  
+Infusão em
+ 15 min
+ O intervalo mínimo
+entre cada
+administração em
+doentes com
+insuficiência renal
+grave (ClCr   ≤ 30
+ mL/min) deve ser de
+pelo menos 6h.
+ Não devem ser
+administradas mais
+do que 4 doses em
+ 24 horas.
+ A dose diária máxima
+não deve exceder
+3.000mg em
+pacientes com
+fatores de risco
+adicionais para
+hepatotoxicidade.
+ 17531
+ Penicilina G
+BENZATINA
+1.200.000UI
+300.000 UI/mL
+(frasco-ampola
+4mL)
+EUROFARMA
+ IM
+(profu
+nda)
+ 1.200.000 a
+2.400.000UI
+1x/dia
+ Pronto
+ para uso  
+NA   NA   NA   NA   NA
+ ClCr:
+10-50mL/min:
+ 75% da dose
+menor que 10mL/min:
+20-50% da dose
+Realizar dose após
+hemodiálise.
+ Substituir a agulha ao
+preparar e
+administrar o
+medicamento.
+IM profunda no
+quadrante superior
+da nádega.
+Lactentes e crianças
+pequenas preferível
+administrar na face
+lateral da coxa.
+
+=== PAGINA 73 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 73/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 17540
+ Penicilina G
+POTÁSSICA
+5.000.000UI
+ (frasco-ampola)
+BLAU
+ EV
+IM
+(profu
+ndo)
+ 1.000.000 a
+30.000.000UI
+/dia dividido
+a cada 4 a 6h
+ 10 mL AD
+ Vol final: 12mL
+ (500.000UI/mL)
+ 24h TA e TR  
+SF 0,9%
+SG 0,5%
+ 100mL
+50.000UI/mL  
+24h TA e TR  
+Infusão
+ 30 a 60 min
+ ClCr:
+10-50mL/min:
+ 0,5 a 4 milhões de UI
+de 8/8h
+menor que 10mL/min:
+0,5 a 4 milhões de UI
+de 12/12h
+Realizar dose após
+hemodiálise.
+ Altas doses devem
+ser feitas lentamente
+devido a
+desequilíbrio
+eletrolítico de
+Potássio.
+Administração IM
+deve ser realizada
+profundamente no
+quadrante superior
+da nádega ou na face
+lateral da coxa.
+Variar o local da
+injeção IM.
+ 17566
+ Penicilina
+PROCAÍNA
+300.000UI +
+POTÁSSICA
+100.000UI
+ (frasco-ampola)
+ BLAU
+ IM
+ 600.000 a
+1.200.000
+UI/dia
+ 2mL AD  
+24h TA
+48h TR  
+NA   NA   NA   NA   NÃO
+ 402780
+ Piperacilina
+2.000mg +
+Tazobactam
+250mg
+ (frasco-ampola)
+EUGIA
+ EV
+ 12.000mg
+Piperacilina +
+1.500mg de
+Tazobactam
+divididos em
+doses a cada
+ 10mL
+ AD
+ SF0,9%
+ SG 5%
+ Vol final 11,5mL
+ 24h TA
+48h TR
+ SF 0,9%
+SG 5%
+ 50 a 150mL
+20 - 50mg/mL
+ 24h TA
+48h TR  
+Infusão LENTA:
+30min
+ ClCr:
+maior que 40
+mL/min: Sem ajuste
+20-40 mL/min 12
+g/1,5 g/dia em doses
+divididas 4 g/500 mg a
+ Caso haja prescrição
+de aminoglicosídeos,
+administrar com
+intervalo de 30 a
+60min.
+
+=== PAGINA 74 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 74/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 6 ou 8 horas.
+Infecções
+graves
+podem ser
+usadas
+18.000mg de
+Piperacilina +
+2.250mg
+Tazobactam
+ 174mg/mL de
+Piperacilina
+ cada 8 horas menor
+que 20 mL/min: 8 g/1
+g/dia em doses
+divididas
+ 4 g/500 mg a cada 12
+horas
+ Dose suplementar de
+0,75g, após
+hemodiálise
+ 248665
+ Piperacilina
+4.000mg +
+Tazobactam
+500mg
+ (frasco-ampola)
+EUGIA
+ EV
+ 12.000mg
+Piperacilina +
+1.500mg de
+Tazobactam
+divididos em
+doses a cada
+6 ou 8 horas.
+Infecções
+graves
+podem ser
+usadas
+18.000mg de
+Piperacilina +
+2.250mg
+Tazobactam
+ 20mL
+ AD
+ SF0,9%
+ SG 5%
+ Vol final 23mL
+ 174mg/mL de
+Piperacilina
+ 24h TA
+48h TR
+ SF 0,9%
+SG 5%
+ 50 a 150mL
+20 - 50mg/mL
+ 24h TA
+48h TR  
+Infusão LENTA:
+30min
+ ClCr:
+maior que 40
+mL/min: Sem ajuste
+20-40 mL/min:   12
+g/1,5 g/dia em doses
+divididas 4 g/500 mg a
+cada 8 horas menor
+que 20 mL/min: 8 g/1
+g/dia em doses
+divididas 4 g/500 mg a
+cada 12 horas
+ Caso haja prescrição
+de aminoglicosídeos,
+administrar com
+intervalo de 30 a
+60min.Dose
+suplementar de
+0,75g, após
+hemodiálise
+
+=== PAGINA 75 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 75/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 272925
+ Polimixina B
+500.000
+ (frasco-ampola)
+EUROFARMA
+ EV
+IM
+Intrat
+ecal
+ 15.000 a
+25.000UI/kg/
+dia, divididos
+a cada 12h
+ Dose máx:
+2.000.000UI/
+kg/
+ dia
+ EV:
+ 2mL
+ AD
+ 10mL
+ SF0,9%
+ INTRATECAL:
+ 10mL
+ SF   0,9%
+ IM:
+ 2mL
+ AD
+ SF0,9%
+ 72h TR
+ (AD e
+SF0,9%)
+ 24h TA
+ (SF 0,9 % )
+ SG 5%
+(preferencial
+mente)
+SF 0,9%
+ 300mL a 500mL
+1.000 a 1663UI/mL
+IM: 250.000UI/mL
+(glúteo)
+IT: 50.000UI/mL
+ 24h TA
+48h TR
+ Infusão: 60-
+120min  
+NÃO
+ Para a via IM,
+reconstituir 1 frasco
+com 2mL de AD, SF
+0,9% ou Lidocaína
+1%, permanecendo
+estável por 72h (TR).
+A via IM, não é
+recomendada
+rotineiramente
+devido à dor severa
+no local da injeção.
+ 289135
+ Polivitaminas
+ para nutrição
+PARENTERAL
+(ampola 5mL)
+Baxter
+ EV
+IM
+ 1 a 3 frascos
+por dia
+ 5mL
+ (EV)
+ 2,5mL (IM)
+ AD
+ Uso imediato
+ AD
+SF 0,9%
+SG 5%
+ 100mL (AD)
+ 250mL (SF 0,9% ou
+ SG 5%)
+ 24h TR  
+Infusão 2 a 3
+horas
+ 17760
+ Prometazina
+25mg/mL
+ (ampola 2mL)
+HIPOLABOR
+ IM
+ não deve
+exceder
+100mg/dia
+ NA   NA   NA   NA   NA   IM profunda
+ NÃO
+ Em pacientes com
+insuficiência renal ou
+hepática ocorre risco
+de acúmulo do
+fármaco.
+ Pode causar
+Síndrome
+Neuroléptica
+Maligna.
+Não é recomendado
+a administração EV,
+pois pode causar
+necrose e gangrena
+
+=== PAGINA 76 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 76/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ periférica. Não é
+recomendado a
+administração SC,
+pode causar necrose
+local.
+ 289059
+ Propofol
+ 10mg/mL
+ (ampola 10mL)
+CRISTALIA
+ EV
+ A dose é
+individualiza
+da com base
+em fatores
+do paciente e
+agentes
+anestésicos
+concomitant
+es
+ NA   NA  
+SG 5%
+ Puro ou diluído
+ A diluição não pode
+exceder proporção
+de 1:5 (2mg/mL)
+ Deve ser
+usado em até
+6 horas após
+diluição.
+ Não diluído,
+usar em até
+12 horas
+ Infusão contínua
+e
+ EV direto
+ Usar com cautela
+ Agitar a ampola antes
+do uso. Não deve ser
+administrado através
+de filtro
+microbiológico. Não
+fazer bolus em
+pacientes idosos.
+ 138983
+ Propofol
+ 10mg/mL
+ (ampola 20mL)
+ CRISTALIA
+ EV
+ A dose é
+individualiza
+da com base
+em fatores
+do paciente e
+agentes
+anestésicos
+concomitant
+es
+ NA   NA  
+SG 5%
+ Puro ou diluído
+ A diluição não pode
+exceder proporção
+de 1:5 (2mg/mL)
+ Deve ser
+usado em até
+6 horas após
+diluição.
+ Não diluído,
+usar em até
+12 horas
+ Infusão contínua
+e
+ EV direto
+ Usar com cautela
+ Agitar a ampola antes
+do uso. Não deve ser
+administrado através
+de filtro
+microbiológico. Não
+fazer bolus em
+pacientes idosos.
+ 218499
+ Propofol
+ 10mg/mL
+ (frasco-ampola
+50mL)
+ EV
+ A dose é
+individualiza
+da com base
+em fatores
+ NA   NA  
+SG 5%
+ Puro ou diluído
+ A diluição não pode
+exceder proporção
+de 1:5 (2mg/mL)
+ Deve ser
+usado em até
+6 horas após
+diluição.
+ Infusão contínua
+e
+ EV direto
+ Usar com cautela
+ Agitar a ampola antes
+do uso. Não deve ser
+administrado através
+de filtro
+
+=== PAGINA 77 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 77/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ CRISTALIA   do paciente e
+agentes
+anestésicos
+concomitant
+es
+ Não diluído,
+usar em até
+12 horas
+ microbiológico. Não
+fazer bolus em
+pacientes idosos.
+ 181277
+ Protamina
+10mg/mL
+ (ampola 5 mL)
+UNIAO QUIMICA
+ EV
+ O uso desse
+medicament
+o deve ser
+somente
+administrado
+após
+aplicação de
+heparina.
+ 50mg
+ Antagonista
+da Heparina:
+Cada 1mL
+(10mg)
+neutraliza
+1.000UI de
+Heparina não
+fracionada
+ NA   NA   NA  
+NA  
+Uso imediato
+ EV direto: lento
+1 mL em
+ 1 a 3 min
+ Interromper a
+administração da
+protamina
+quando o tempo
+de protrombina
+for normalizado,
+para evitar
+excesso de
+protamina
+ Acidentes com
+história de alergia à
+peixe podem
+desenvolver reações
+de hipersensibilidade
+à protamina.
+Pacientes diabéticos
+que estejam
+recebendo Insulina
+NPH têm um risco
+aumentado de
+desenvolvimento de
+reações adversas à
+Protamina incluindo
+hipotensão e
+anafilaxia.
+ 268798
+ RemiIfentanila
+2mg
+ (frasco-ampola)
+ EV   2 mcg/kg   2 mL AD   24h TA
+ SF 0,9%
+SG 5%
+SGF 5%
+ NA   24h TA
+ EV bolus
+ (Na indução da
+anestesia não
+ NÃO  
+Não deve ser
+misturado com o
+
+=== PAGINA 78 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 78/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ CRISTALIA   deve ser < 30
+segundos
+ Infusão contínua
+0,025 a 0,1
+mcg/kg/min
+ Propofol na mesma
+solução.
+ 242888
+ Rocurônio
+10mg/mL
+ (ampola 5mL)
+ CRISTALIA
+ EV
+ 0,6 a 0,12
+mg/kg e
+manutenção
+0,15
+mcg/kg/min
+ NA   NA   NA   NA   24H TR   NA   NÃO
+ Insuficiência
+hepática: Pode ser
+necessário ajuste de
+dose, monitorar.
+ 248576
+ Ropivacaína
+2mg/mL (0,2%)
+ (ampola 20mL)
+ CRISTALIA
+ Peri-
+dural
+ Lom-
+bar e
+toráci
+ca
+ Blo-
+queio
+de
+cam-
+po e
+nervo
+so
+perifé
+rico
+ Bolo
+peridural:
+(20 – 40 mg)
+ Infusão
+contínua
+peridural:
+(12 – 28mg/h)
+ Bloqueio de
+campo:
+ (2 – 200mg)
+ Bloqueio
+periférico:
+(10 – 20mg/h)
+ Máx.:
+3mg/kg
+ NA   NA   SF 0,9%   NA   24H TA
+ Bolo peridural:
+10-20mL
+(mínimo de
+30min.)
+ Infusão contínua
+peridural:
+ 6-14mL/h
+ Bloqueio de
+campo:
+ 1-100mL/h
+ Bloqueio
+periférico:
+ 5-10mL/h
+ NÃO
+ Não usar por via
+Intravenosa, podem
+ocorrer sintomas de
+toxicidade do SNC.
+
+=== PAGINA 79 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 79/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 18520
+ Salbutamol
+0,5mg/mL
+(ampola 1mL)
+ HIPOLABOR
+ Adult
+o:
+EV/IM
+/SC
+Pediat
+ria:
+EV
+ 250 mcg
+ (4 mcg/kg),
+se
+necessário,
+repetir a
+dose.
+500 mcg
+ (8 mcg/kg)
+SC ou IM,
+repetidos a
+cada 4 h, se
+necessário
+ NA   NA
+ Se
+necessário,
+pode ser
+diluído em
+AD
+SF 0,9%
+SG 5%
+ 10 a 100mL
+50 a 500mcg/mL  
+TA 24h
+ Bolus 50mcg/mL
+em 1 min;
+Infusão
+10mcg/mL
+2 -5mcg/kg/min
+ NÃO há ajuste de dose
+recomendado para
+pacientes com
+insuficiência renal.
+Usar com cautela e
+observar resposta
+clínica do paciente
+ Não deve ser
+utilizado com
+medicamentos
+betabloqueadores
+não seletivos, como o
+Propranolol. A
+administração com
+corticosteroides pode
+aumentar esse efeito.
+O aumento dos níveis
+de lactato pode
+causar dispneia e
+hiperventilação
+compensatória, o que
+levaria a
+interpretações
+erradas de sinais de
+falha terapêutica e
+conduziria o médico a
+intensificar
+indevidamente o
+tratamento com
+agonistas beta2-
+adrenérgicos de curta
+duração.
+
+=== PAGINA 80 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 80/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 405650
+ Soro
+ AntiESCORPIÔNICO
+1mg/mL
+ (frasco-ampola
+5mL)   –   SUS
+ INSTITUTO
+BUTANTAN
+ EV
+ A dose varia
+de acordo
+com a
+gravidade do
+quadro.
+ Moderado: 2
+a 3 ampolas
+ Grave: 4 a 6
+ampolas.
+ NA   NA
+ Pode ser
+diluído
+somente em
+ SF 0,9% e SG
+5%.
+ À razão de 1:2 a 1:5.   Uso imediato  
+Infusão: 8 a
+12mL/min.  
+NÃO
+ O soro
+antiescorpiônico é
+indicado para o
+tratamento de
+envenenamentos
+moderados e graves
+por escorpiões do
+gênero Tityus.
+ Não administrar com
+outros medicamentos
+na mesma via.
+ Risco de anafilaxia.
+ 405649
+ Soro
+AntiTETÂNICO
+(frascos-ampola
+5mL)   –   SUS
+ INSTITUTO
+BUTANTAN
+ EV
+ IM
+ 4 frascos-
+ampola
+(20.000 UI),
+podendo-se
+aplicar
+metade da
+dose IM e
+metade EV
+ NA   NA  
+SF 0,9%
+ SG 5%  
+À razão de 1:2 a 1:5.   Uso imediato
+ Infusão:
+gotejamento
+lento
+ NÃO
+ 406262
+ Soro
+AntiBOTRÓPICO
+(pentavalente)
+(frasco-ampola
+10mL)   –   SUS
+ INSTITUTO
+BUTANTAN
+ EV
+ A dose varia
+de acordo
+com a
+gravidade do
+quadro.
+ Leve: 2 a 4
+ampolas
+ NA   NA  
+SF 0,9%
+ SG 5%
+ Puro ou diluído
+ À razão de 1:2 a 1:5.  
+Uso imediato  
+Infusão:
+ 8 a 12mL/min  
+NÃO
+ O soro Antibotrópico
+(pentavalente) e
+antilaquético é um
+antiveneno que pode
+ser utilizado para o
+tratamento de
+picadas por serpentes
+
+=== PAGINA 81 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 81/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ Moderados:
+4 a 8
+ampolas
+ Grave:
+ 12 ampolas
+ do gênero Bothrops e
+da espécie Lachesis
+muta
+ (jararaca, jararacuçu,
+cotiara, urutú,
+caiçaca e outras) e
+Lachesis muta
+(surucucu pico-de-
+jaca)
+ 405646
+ Soro
+AntiCROTÁLICO
+(frasco-ampola
+10mL)   –   SUS
+ INSTITUTO
+BUTANTAN
+ EV
+ Caso leve: 5
+ampolas
+ Caso
+moderado:
+10 ampolas
+ Caso grave:
+20 ampolas
+ NA   NA
+ SF 0,9%
+ SG 5%   Puro ou diluído   Uso imediato
+ EV direto: 20 a
+60min.
+ Infusão: 8 a 12
+ml/min
+ NÃO
+ Este produto é
+indicado para o
+tratamento de
+pacientes picados por
+serpentes da espécie
+Crotalus durissus
+(cascavéis).
+ 405644
+ Soro
+AntiRRÁBICO
+200UI/mL
+(frasco-ampola
+5mL)   –   SUS
+ BUTANTAN
+ IM
+ A dose
+indicada é de
+40 UI/kg,
+devendo o
+total
+administrado
+ser de, no
+máximo
+3.000 UI
+ NA   NA   SF 0,9%   NA   NA   IM   NÃO
+
+=== PAGINA 82 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 82/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 401998
+ Sufentanila,
+Citrato
+(Sufentanila
+5mcg/mL)
+(ampola 2mL)
+ CRISTALIA
+ EV
+ Epidur
+al
+ Analgesia: 1
+a 8mcg/kg
+ Anestesia: 8
+a 30mcg/kg
+ NA   NA  
+SF 0,9%
+SG 5%  
+Puro ou diluído
+ 24h TA
+Protegido da
+luz
+ EV bolus por
+pelo menos 2
+minutos ou
+infusão contínua
+ Utilizar com cautela
+ 406008
+ Sugamadex
+100mg
+(frasco-ampola
+2mL)
+ EV   2 a 16 mg/kg   NA   NA   NA
+ Puro ou diluído em
+SF 0,9%
+ (10mg/mL)
+ 48h TA e TR  
+EV bolus
+ 10 segundos
+ Insuficiência renal
+grave é
+contraindicado.
+ O Sugamadex sódico
+pode ser utilizado
+para reverter
+diferentes níveis de
+bloqueio
+neuromuscular
+induzido por
+Rocurônio ou
+Vecurônio.
+ 12858
+ Sulfametoxazol
+80mg/mL +
+Trimetoprima
+16mg/mL (amp
+5mL)
+ NEO QUIMICA
+ EV
+ 5mg -
+20mg/kg/Dia
+a cada 6h ou
+12h.
+ NA   NA  
+SF 0,9%
+SG 5%
+ Cada ampola (5mL)
+em um volume de 75
+a 125mL.
+ Concentração
+máxima: 5mL para
+75mL do diluente
+ 6h TA   Infusão: 30-
+60min.
+ ClCr maior que
+30mL/min: NÃO é
+necessário ajuste 15-
+30mL/min: 50% da
+dose recomendada
+menor que 15mL/min:
+NÃO é recomendado
+ Hemodiálise
+Intermitente:
+Administrar após a
+diálise
+ Devem ser sempre
+utilizadas após a
+diluição, não
+devendo ser
+injetadas
+diretamente na veia
+ou pela borracha do
+soro. Pacientes com
+restrições hídricas,
+usar soluções
+75mL/ampola SG 5%,
+estável por 2h.
+
+=== PAGINA 83 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 83/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 289023
+ Sulfato de
+Magnésio 10%
+100mg/mL -
+0,8mEq/mL
+(ampola 10mL)
+Cada ampola
+contém 1.000mg
+de Magnésio
+ ISOFARMA
+ EV
+IM
+ Anticonvulsiva
+nte na
+eclâmpsia/pré-
+eclâmpsia:
+ 4.000 e
+2.000mg/h.
+ Restaurador
+de eletrólitos:
+1.000mg a
+cada 6h ou
+250mg/kg/dia
+ou 5.000mg
+por 3h
+ NA   NA  
+SF 0,9%
+SG 5%
+ Concentração de até
+20%
+Até 1.000mg em
+100mL
+Até 2.500mg em
+500mL
+Até 5.000mg em
+500mL
+ 24h TA   20 a 120 min
+ Insuficiência renal:
+Administrar com
+extrema cautela.
+Em caso de ClCr
+menor que 25
+mL/min, NÃO deve ser
+administrado
+ E os níveis de
+Magnésio devem ser
+monitorados
+rigorosamente.
+
+=== PAGINA 84 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 84/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 18015
+ Sulfato de
+Magnésio 50%
+500mg/mL - 4,06
+mEq/mL
+(ampola 10mL)
+Cada ampola
+contém 5.000mg
+de Magnésio
+ ISOFARMA
+ EV
+IM
+ Anticonvulsiva
+nte na
+eclâmpsia/pré-
+eclâmpsia:
+ 4.000 e
+2.000mg/h.
+ Restaurador
+de eletrólitos:
+1.000mg a
+cada 6h ou
+250mg/kg/dia
+ou 5.000mg
+por 3h
+ NA   NA  
+SF 0,9%
+SG 5%
+ Até 200mg em
+100mL de
+ Até 500mg em
+250mL
+Até 1.000mg em
+500mL de Infusão
+contínua: até
+1.000mg em 500mL
+ Acima de 1.000mg
+em 1.000mL
+ 24h TA
+ EV não deve
+exceder a 150
+mg/min, exceto
+em eclâmpsia
+severa com
+convulsão
+ É contraindicado em
+casos de insuficiência
+renal severa.
+ Diluir antes da
+administração.
+É contraindicado em
+casos de insuficiência
+renal, bloqueio
+cardíaco ou danos no
+miocárdio e
+depressão
+respiratória.
+A intoxicação é
+manifestada por
+ausência do reflexo
+patelar, queda da PA
+e paralisia
+respiratória.
+ Antagonista:
+Gluconato de Cálcio
+10% (10 a 20mL em
+bolus)
+ 289072
+ Suxametônio
+100mg
+ (frasco-ampola)
+ UNIÃO QUIMICA
+ EV
+IM
+ 0,3 a 1,1
+mg/kg  
+10mL AD   24h TR  
+SF 0,9%
+SG 5%
+ 250 a 1.000mL
+(1 a 2mg/mL)  
+24h TR
+ Infusão contínua
+0,5 mg a
+10mg/min
+IM: músculo
+deltoide
+ NÃO
+ A Via IM só deve ser
+usada em caso de
+impossibilidade da
+via EV
+ Reversor: Atropina
+ 143847  
+Teicoplanina
+ 200 mg
+ EV
+IM
+ *VO
+ Dose de
+ataque de 6
+a 12mg/kg a
+ 3 mL diluente
+próprio ou AD  
+24h TR  
+SF 0,9%
+SG 5%  
+20 - 200mL   24h TR
+ EV direto
+3-5min
+Infusão 30 min
+ ClCr 40-60 mL/min:
+50% da dose inicial a
+cada 24h ou 100% a
+ As soluções de
+Teicoplanina e
+Aminoglicosídeos são
+
+=== PAGINA 85 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 85/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ (frasco-ampola)
+UNIÃO QUÍMICA
+ cada 12h por
+3 a 5 doses
+ Dose
+manutenção:
+6 a 12mg/kg
+uma vez dia
+ cada dois dias;
+ClCr menor que 40
+mL/min: 1/3 da dose
+inicial ou 100% a cada
+três dias.
+ incompatíveis
+quando misturadas
+diretamente e não
+devem ser
+misturadas antes da
+injeção.
+Na Hemodiálise:
+20mL em bolus com a
+máquina em UF
+(banho desligado).
+ *Uso off label:
+Diarreia por
+ Clostridium difficile :
+200mg VO 2x/dia por
+7-14 dias
+ 143855
+ Teicoplanina
+ 400 mg
+ (frasco-ampola)
+EUROFARMA
+ EV
+IM
+ *VO
+ Dose de
+ataque de 6
+a 12mg/kg a
+cada 12h por
+3 a 5 doses
+ Dose
+manutenção:
+6 a 12mg/kg
+uma vez dia
+ 3 mL diluente
+próprio ou AD
+ 48h TA
+ 11 dias TR
+ SF 0,9%
+SG 5%  
+20 - 200mL
+ 48h TR
+ (SF 0,9%)
+ 48h TA e
+ 7 dias TR
+ (SG 5%)
+ EV direto
+3-5min
+Infusão 30 min
+ ClCr 40-60 mL/min:
+50% da dose inicial a
+cada 24h ou 100% a
+cada dois dias;
+ClCr menor que 40
+mL/min: 1/3 da dose
+inicial ou 100% a cada
+três dias.
+ As soluções de
+Teicoplanina e
+Aminoglicosídeos são
+incompatíveis
+quando misturadas
+diretamente e não
+devem ser
+misturadas antes da
+injeção.
+Na Hemodiálise:
+20mL em bolus com a
+
+=== PAGINA 86 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 86/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ máquina em UF
+(banho desligado).
+ *Uso off label:
+Diarreia por
+ Clostridium difficile :
+200mg VO 2
+vezes/dia por 7-14
+dias
+ 222216
+ Tenoxicam 20mg
+(frasco-ampola)
+ EUROFARMA
+ EV
+IM
+ Adulto: 20mg
+a 40mg a
+cada 24h
+ 2 mL de diluente
+próprio ou AD  
+Uso imediato   NA   NA   NA   NA   NÃO
+ Não recomendada a
+administração por
+infusão
+ 13412
+ Terbutalina
+0,5mg/mL
+(ampola 1mL)
+ HIPOLABOR
+ UNIÃO QUÍMICA
+ EV
+SC
+ (SC)
+ 0,25 a 0,5
+mg 4x/dia.
+ Dose máx:
+0,5 mg/dia
+ EV:
+ 5mg
+ NA   NA  
+SG 5%
+ SF 0,9%*  
+5mcg/mL   12h TA  
+20 - 30
+gotas/min
+ Correção pelo ClCr
+(ml/min) de 80-50 =
+100% da dose.
+ De 50-10: 50% da
+dose
+ Menor que 10 =
+administração NÃO
+recomendada.
+ *SF 0,9% deve ser
+evitada, pois pode
+aumentar o risco de
+edema pulmonar.
+
+=== PAGINA 87 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 87/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 18589
+ Tiamina
+ (Vitamina B1)
+100mg/mL
+(ampola 1mL)
+ VGM
+ EV
+IM
+ PROFILAXIA:
+ 100 a 200 mg
+ 3 vezes ao
+dia
+ TRATAMENT
+O:
+ 200 a 500 mg
+3 vezes ao
+dia
+ NA   NA  
+SF 0,9%
+SG 5%  
+100 mL   Uso imediato
+ EV Lento
+por mais de 30
+minutos  
+NÃO
+ O produto é
+fotossensível, porém,
+não é necessário
+equipo especial.
+Não deixar o produto
+sob luz direta.
+Permitido luz indireta
+ou fluorescente,
+porém não
+ultrapassar período
+de 8 h.
+ 980231
+ Tigeciclina 50mg
+(frasco-ampola)
+UNIAO QUIMICA
+ EV
+ ADULTOS:
+100mg EV,
+seguida de
+50mg a cada
+12h.
+Dose
+máxima:
+100mg/dia
+ 5,3mL
+SF 0,9%
+SG 5%
+10mg/mL
+ Aspirar
+ 5 mL
+ O frasco-ampola
+contém um
+excedente de
+6%.
+ Uso imediato  
+SF 0,9%
+SG 5%
+ 100mL
+( menor que
+1mg/mL)
+ 24h TA
+48h TR  
+30 - 60 min   NÃO
+ Agitar o frasco
+delicadamente com
+movimentos
+circulares até o
+medicamento se
+dissolver. A solução
+reconstituída deve
+ter a coloração
+amarela a alaranjada;
+caso contrário, a
+solução deve ser
+desprezada.
+ 138355
+ Tiopental 500mg
+(frasco-ampola)
+ CRISTALIA
+ EV
+ Indução
+lenta da
+anestesia 50
+ 500 mg em 20mL
+SF 0,9%  
+24h TR  
+SF 0,9%
+SG 5%  
+100mL   NA   NA   75% da dose
+ Convulsões após
+administração da
+anestesia local: 125 a
+
+=== PAGINA 88 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 88/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ a 75mg, em
+intervalos de
+20 a 40
+segundos. Se
+necessário,
+utilizar doses
+adicionais de
+25 a 50mg.
+ 150mg, ao longo de
+10 min. Estado
+epilético tônico-
+clônico generalizado:
+3 a 5 mg/kg seguida
+em 30 min por
+infusão contínua de 1
+a 3 mg/kg/hora.
+ 280046
+ Tramadol
+50mg/mL
+ (ampola 1mL)
+ HIPOLABOR
+ EV
+IM
+ 50 a 100 mg
+a cada 6 ou
+8h.
+ Dose Máx:
+400mg dia
+ NA   NA  
+SF 0,9%
+SG 5%  
+100 mL   Uso imediato
+ EV direto:
+1mL/min
+Infusão:
+ 50-100 mg 12/12h
+Máx 200 mg 24/24h
+ Insuficiência
+hepática: Cirrose:
+50mg, a cada 12h.
+A dose diária total de
+8 mg/kg ou 400 mg, o
+que for menor, não
+deve ser excedida.
+ 18465
+ Vancomicina
+ 500 mg
+ (frasco-ampola)
+ABL
+ EV
+ VO*
+ Dose de
+ataque: 25-
+30mg/kg,
+seguida de
+15 a
+20mg/kg/dos
+e a cada 8 ou
+12 h;
+Dose
+máxima:
+2.000mg/dos
+e.
+ 10 mL AD
+ Vol final 10,2mL
+ 49mg/mL
+ 24h TA
+ 14 dias TR
+ SF 0,9%
+SG 5%
+ 100mL
+ (4,5mg/mL)
+ 24h TA
+ 14 dias TR
+ 60 min.
+Não ultrapassar
+10 mg/min
+ Recomendado
+ 2 horas
+ ClCr 20-49mL/min:
+Inicia com 15 a
+20mg/kg/dose (usual:
+750-1500mg) a cada
+24 h;
+ClCr menor que
+20mL/min: Intervalos
+mais longos
+ Aparência da solução
+reconstituída: incolor
+ou marrom claro.
+*A administração VO
+é off-label.
+Reconstituir o
+medicamento
+conforme orientação
+do fabricante e diluir
+em 50mL de água
+potável.
+
+=== PAGINA 89 ===
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 89/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 136239
+ VASOpressina
+20UI/mL
+ (ampola 1mL)
+ BIOLAB
+ EV
+IM
+ SC
+ 5 a 10UI, a
+cada 12h ou
+8h
+0,01 a
+0,04U/min
+ NA   NA  
+SF 0,9%
+SG 5%  
+0,1 a 1UI/mL   Uso imediato
+ 20UI em
+20 a 30min
+Infusão contínua
+0,2 a 1UI/min
+ ClCr 20 a 9mL/min:
+ 15 a 20mg/kg/dose
+ClCr menor que
+20mL/min intervalo
+mais longo
+ Pode ser usada em
+AVP, porém devido
+ao risco de necrose
+decorrente de
+extravasamento, é
+preferível a utilização
+de AVC.
+ 408525
+ VORIconazol
+200mg (frasco-
+ampola) SUS
+ DR. REDDY´S
+ EV
+ Dose de
+ataque:
+6mg/kg a
+cada 12h
+(primeiras
+24h)
+ Dose
+Manutenção:
+ 3 a 4mg/kg a
+cada 12h
+ 19mL AD
+ Vol final 20mL
+ 10mg/mL
+ 24h TR   SF 0,9%
+SG 5%  
+0,5 a 5mg/mL   24h TR
+ Infusão máxima
+3 mg/kg/h
+durante
+ 1 a 2 horas
+ É hemodialisável com
+um clearance de 121
+mL/min
+ Medicamento não
+padronizado.
+Fornecido pelo
+Ministério da Saúde
+ 232890
+ Zidovudina
+ 20mL
+ (frasco-ampola)
+ SUS
+ CRISTALIA
+ EV
+ 1mg /kg a
+cada
+ 4 horas até
+que a terapia
+VO possa ser
+iniciada
+ NA   NA   SG 5%   < 4 mg/mL  
+8H TA
+ 24H TR
+ Infusão
+constante
+durante 1 hora
+ A dose recomendada
+para pacientes em
+hemodiálise ou diálise
+peritoneal (clearance
+de creatinina < 15
+mL/min) é de 1mg/kg
+a cada 6 a 8 horas
+ Pacientes com
+anemia ou
+granulocitopenia
+significativa podem
+necessitar de redução
+da dose até que haja
+recuperação da
+medula óssea ou
+suspensão da terapia.
+
+=== PAGINA 90 ===
+Tipo do
+Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 90/90
+ Título do
+Documento
+ PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE
+MEDICAMENTOS INJETÁVEIS PADRONIZADOS
+PARA ADULTOS NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2027
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ 5.   HISTÓRICO DE REVISÃO
+ VERSÃO   DATA   DESCRIÇÃO DA ALTERAÇÃO
+ 01   04/05/2017   Elaboração do Manual
+ 02   30/06/2023  
+Revisão do documento. Alteração de unidade funcional, da UDF para
+UFCLI.
+ 03   10/08/2025   Revisão do documento. Inclusão de novos medicamentos
+ Elaboração
+ Ariadne de Santana Tolosa Pedroso
+ Flávia Santos Araújo
+ Leonora Correa da Costa de Marchi
+ Magda Laíse Oliveira
+ Marcelo da Silva
+ Marcelo Konorat
+ Pedro Henrique Érnica
+ Data: 04/05/2017
+ Revisão
+ 2ª Versão: Adriely Cordeiro Pastori; Ana Paula dos Santos Mira
+ André Ronchoni Salmazo; Cleide Adriane Signor Tirloni
+ Gabriella Gomes Barasuol; Magda Laíse Oliveira Tanaka
+ Marcelo da Silva; Larry Jimenez Alves; Marciane Maximo
+ Pedro Henrique Érnica; Tatiane Nantes Ferreira Siena
+ 3ª Versão: Matheus Carvalho Reis; Rubenilson Almeida Souza
+ Sara Maria Santos Portela; Magda Laíse Oliveira Tanaka
+ Tatiane Nantes Ferreira Siena
+ Data: 30/06/2023
+ Data:10/08/2025
+ Validação
+ Fuad Fayez Mahmoud   –   STGQ  
+Data: 10/12/2025
+ Aprovação
+ Rafaele Carla Pivetta de Araujo   –   Chefe do SFH
+ Colegiado Executivo
+ Data: 10/12/2025
+ Data: 11/12/2025
+ Assinado eletronicamente no processo SEI 23529.014487/2023-59
+

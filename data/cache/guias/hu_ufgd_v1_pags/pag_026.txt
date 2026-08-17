@@ -1,0 +1,67 @@
+TA   REF   TA   REF
+ Peso corporal   Dose vit K (EV ou IM)   Volume de injeção
+ 1kg   0,4mg   0,04mL
+ 1,5Kg   0,6mg   0,06mL
+ 2Kg   0,8mg   0,08mL
+ 2,5Kg ou mais   1mg   0,1mL
+ -
+ Flumazenil 0,1mg/ml, Solução
+Injetável
+(Cristalia)
+ EV   -   -   -  
+SF 0.9%
+SG 5%  
+-   24h   -
+ -   -  
+Não deve ser
+diluído  
+-   -
+ Fitomenadiona 10mg/ml, Solução
+Injetável, via intravenosa, oral e
+intramuscular (Kanakion®)
+ A fitomenadiona é altamente fotossensível, manter as ampolas dentro do
+cartucho para proteger da luz.
+A injeção EV deve ser aplicada lentamente (em pelo menos 30 segundos).
+Após aberto,   deverá   ser   utilizado   imediatamente.   Não   se   recomenda o
+fracionamento do conteúdo de cada ampola.
+Via parenteral: não deve ser diluído ou misturado com outros medicamentos
+de administração parenteral, contudo pode ser injetado na parte inferior do
+circuito de infusão, durante a infusão contínua de cloreto de sódio 0,9% ou
+dextrose 5%.
+Tabela: Cálculo da dose baseado no peso do recém-nascido saudável e
+prematuro. É importante checar o cálculo e a medida da dose em relação ao
+peso do bebê (erros de dose de 10 vezes são frequentes).
+ Há evidências que a profilaxia oral é insuficiente em pacientes com doença
+hepática colestática subjacente e má absorção. Portanto a administração oral
+de vitamina K não é recomendada para esses pacientes.
+ -
+ Para garantir a esterilidade ideal do produto, flumazenil deve ser mantido na
+respectiva ampola até o momento de ser utilizado.
+Uma vez que o flumazenil é essencialmente metabolizado pelo fígado,
+recomenda-se cuidado no ajuste da dose em pacientes com insuficiência
+hepática.
+ -
+ Deve ser administrado com cautela a pacientes com disfunção hepática.
+A bolsa deve ser descartada caso não seja utilizada em sua totalidade.
+Uma vez que fluconazol é disponível como solução salina diluída, a velocidade
+de administração da infusão deve ser considerada em pacientes que
+requeiram restrição de sódio ou líquidos.
+Fluconazol é compatível com a administração dos seguintes fluidos:
+Dextrose20%, Solução de Ringer, Solução de Hartmann, Cloreto de potássio
+em glicose, Bicarbonato de sódio 4,2%, Aminofusina e Solução salina.
+ EV
+IM
+VO
+ -
+ Fluconazol 2mg/ml, Injetável
+(Genérico - Sanobiol)  
+EV   -   -   -   Pronto para uso   ≤ 10mg/mL   -   -
+ -
+ Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ MEDICAMENTO
+(Apresentação padronizada)

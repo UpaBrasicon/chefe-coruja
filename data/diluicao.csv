@@ -1,0 +1,126 @@
+medicamento_id;principio_ativo;apresentacao;via;reconstituicao_diluente;reconstituicao_volume_ml;reconstituicao_concentracao;diluicao_solucao;diluicao_volume_min_ml;concentracao_maxima;tempo_infusao_min;velocidade_max;bolus_permitido;estabilidade_ta_h;estabilidade_refrig_h;fotossensivel;acesso;ajuste_renal;ajuste_renal_regra;incompatibilidades;alta_vigilancia;observacoes;fonte;data_revisao;revisor_crf;status;rxcui
+;acido tranexamico 50mg/ml (ampola 5ml);Ácido Tranexâmico 50mg/mL (ampola 5mL);EV;;;;SF0.9,SG5;;;30min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Adenosina;adenosina 3mg/ml (ampola 2ml);Adenosina 3mg/mL (ampola 2mL);EV;;;;SF0.9,SG5;50;;bolus;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;296
+;alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;Alfaepoetina (frasco-ampola 1mL) 10.000UI/mL;EV,SC;;;;;;;1min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;alprostadil 250mcg/ml (ampola 1ml);Alprostadil 250mcg/mL (ampola 1mL);EV;;;;SF0.9,SG5;100;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);Alprostadil 500mcg/mL (ampola 1mL) FLUKKA (manipulado);EV;;;;SF0.9,SG5;100;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Alteplase;alteplase 50mg (frasco-ampola);Alteplase 50mg (frasco-ampola);EV,IM;;;;SF0.9,SG5;50;;30min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;8410
+@Amoxicilina;amoxicilina 500mg + clavulanato 100mg (frasco-ampola);AMOXicilina 500mg + CLAVULANATO 100mg (frasco-ampola);EV;;;;SF0.9,AD;10;;30min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;723
+@Ampicilina;ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);AMPicilina 1.000mg + SULBACTAM 500mg (frasco-ampola);EV,IM;;;;SF0.9,SG5,AD;29;;15min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;733
+@Ampicilina;ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;AMPicilina 2.000mg + SULBACTAM 1.000mg (frasco-ampola) FRESENIUS EUGIA 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6mL AD Vol final 8mL;EV,IM;;;;SF0.9,SG5,AD;29;;15min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;733
+;anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);Anfotericina B COMPLEXO LIPÍDICO 5mg/mL (frasco-ampola 20mL);EV;;;;SF0.9,SG5,AD;20;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Anfotericina B lipossomal;anfotericina b lipossomal 50mg (frasco- ampola);Anfotericina B LIPOSSOMAL 50mg (frasco- ampola);EV;;;;SF0.9,SG5,AD;12;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;732
+;anidulafungina 100mg (frasco-ampola);Anidulafungina 100mg (frasco-ampola);EV;;;;SF0.9,SG5,AD;30;;90min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Atracurio;atracurio 10mg/ml (ampola 5ml);Atracúrio 10mg/mL (ampola 5mL);EV,IM,SC;;;;SF0.9,SG5,AD;10;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;1218
+@Azitromicina;azitromicina 500mg (frasco-ampola);Azitromicina 500mg (frasco-ampola);EV,IM;;;;SF0.9,AD;250;;bolus;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;18631
+;azul de metileno 20mg/ml (ampola 2ml);Azul de Metileno 20mg/mL (ampola 2mL);EV;;;;SF0.9,SG5;50;;5min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;Azul de TRYPAN (ampola 1mL) OFTALMOPHARMA INTRA OCULA ACM   NA   NA   NA   NA   NA   NA   NÃO Medicamento de dose única. Proteger da luz e da umidade. Tipo do Documento MANUAL INJETÁVEIS PADRONIZADOS PARA ADULTOS NO HU-UFGD 12/2025;;;;;;;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;azul patente (ampola 2ml) 25mg/ml;Azul PATENTE (ampola 2mL) 25mg/mL;SC,EV;;;;;10;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;acetato 3mg/ml + fosfato (ampola 1ml);Acetato 3mg/mL + Fosfato (ampola 1mL);IM,EV;;;;SF0.9,SG5;10;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;bicarbonato de 250ml) 1meq/ml;Bicarbonato de 250mL) 1mEq/mL;EV,IM;;;;SF0.9,SG5;250;;5min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Bromoprida;bromoprida 5mg/ml (ampola 2ml);BromoPRIDA 5mg/mL (ampola 2mL);EV,IM;;;;SF0.9,SG5;48;;3min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;19768
+;cafeina citrato 20mg/ml (ampola 1ml);Cafeína CITRATO 20mg/mL (ampola 1mL);EV,VO,IM;;;;SF0.9,SG5,AD;100;;10min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Cefazolina;cefazolina 1.000mg (frasco-ampola);Cefazolina 1.000mg (frasco-ampola);EV,IM;;;;SF0.9,SG5,AD;10;;3min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;2180
+@Cefepima;cefepima 1.000mg (frasco-ampola);Cefepima 1.000mg (frasco-ampola);EV,IM;;;;SF0.9,SG5,AD;10;;3min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;20481
+@Ceftazidima;ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);Ceftazidima 2.000mg + Avibactam 500mg (frasco-ampola);EV;;;;SF0.9,SG5,AD;10;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;2191
+@Ceftriaxona;ceftriaxona 500mg (frasco-ampola);Ceftriaxona 500mg (frasco-ampola);EV,IM;;;;SF0.9,SG5,AD;10;;2min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;2193
+@Ceftriaxona;ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;Ceftriaxona 1.000mg (frasco-ampola) + Diluente próprio;IM;;;;;10;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;2193
+@Cefuroxima;cefuroxima 750mg (frasco-ampola);Cefuroxima 750mg (frasco-ampola);EV,IM;;;;SF0.9,SG5,AD;50-100;;8h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;2194
+@Ciprofloxacino;ciprofloxacino 200mg (bolsa-100ml);Ciprofloxacino 200mg (bolsa-100mL);EV;;;;;100;;60min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;235851
+@Cetoprofeno;cetoprofeno 100mg (frasco-ampola);Cetoprofeno 100mg (frasco-ampola);EV,IM;;;;SF0.9,SG5;150;;20min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;6142
+@Cisatracurio;cisatracurio 2mg/ml (frasco 5ml);Cisatracúrio 2mg/mL (frasco 5mL);EV;;;;SF0.9,SG5;100;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;136561
+@Claritromicina;claritromicina 500mg (frasco-ampola);Claritromicina 500mg (frasco-ampola);EV,IM;;;;SF0.9,SG5,AD;10;;60min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;21212
+@Clindamicina;clindamicina 300mg (ampola 2ml);Clindamicina 300mg (ampola 2mL);EV,IM;;;;SF0.9,SG5;100;;10min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;2582
+;clonidina 150mcg/ml (ampola 1ml);CloNIDina 150mcg/mL (ampola 1mL);EV,IM;;;;SF0.9;500;;7min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;cloreto de (ampola 10ml);Cloreto de (ampola 10mL);EV,IM,VO;;;;SF0.9,SG5;10;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);Contraste Radiológico - Óleo de Papoula Iodado (10mL) DELPHARM Intralin fática Intra arteria seletiv hepáti ca Intra uterin (Variável conforme o tipo de procediment o);EV;;;;;10;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;Complexo Protrombínico 20mL Diluente Próprio (água para injetáveis) Uso Imediato   NA   NA   NA   2mL/min sódio por frasco. Tipo do Documento MANUAL INJETÁVEIS PADRONIZADOS PARA ADULTOS NO HU-UFGD 12/2025 Humano 600 UI (frasco-ampola) TA KEDA PHARMA Ler orientações de preparo na bula.;;;;;;20;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;daptomicina 500 mg (frasco-ampola);Daptomicina 500 mg (frasco-ampola);EV;;;;SF0.9;10;;30min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;dantroleno 20mg (frasco-ampola);Dantroleno 20mg (frasco-ampola);EV;;;;SF0.9,SG5,AD;60;;1h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;mesilato 500mg (frasco-ampola);Mesilato 500mg (frasco-ampola);EV,IM,SC;;;;SF0.9,SG5,AD;35;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Desmopressina;desmopressina 4mcg/ml;Desmopressina 4mcg/mL;EV,IM,SC;;;;SF0.9,SG5;10;;15min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;3251
+;dexmedetomidina 100mcg/ml (frasco 2ml);DexMEDEtomidina 100mcg/mL (frasco 2mL);EV,IM;;;;SF0.9,SG5;50;;bolus;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;difenidramina (ampola 1ml);Difenidramina (ampola 1mL);IM,EV;;;;SF0.9,SG5;;;3min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Dimenidrinato;dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);Dimenidrinato + Piridoxina (Vitamina B6) (ampola 10mL);EV,IM,SC;;;;SF0.9,SG5;10;;4h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;3444
+@Enoxaparina;enoxaparina 20mg;Enoxaparina 20mg;SC,EV;;;;SF0.9,SG5;30;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;67108
+@Enoxaparina;enoxaparina 40mg;Enoxaparina 40mg;SC,EV;;;;SF0.9,SG5;30;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;67108
+@Enoxaparina;enoxaparina 60mg;Enoxaparina 60mg;SC,EV;;;;SF0.9,SG5;30;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;67108
+@Enoxaparina;enoxaparina 80mg;Enoxaparina 80mg;SC,EV,IM;;;;SF0.9,SG5;30;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;67108
+;escetamina 50mg/ml (ampola 2ml);Escetamina 50mg/mL (ampola 2mL);EV,IM,SC;;;;SF0.9,SG5;250-500;;2min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Escopolamina;escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);Escopolamina 4mg/mL + DIPIRONA 500mg/mL (ampola 5mL);EV,IM;;;;SF0.9,SG5,AD;50;;5min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;56092
+;etilefrina 10 mg/ml (frasco-ampola);Etilefrina 10 mg/mL (frasco-ampola);EV,IM,SC;;;;SF0.9,SG5;;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Etomidato;etomidato 2mg/ml (ampola 10ml);Etomidato 2mg/mL (ampola 10mL);EV,IM;;;;SF0.9,SG5;10;;4h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;4177
+@Fenobarbital;fenobarbital 100mg/ml (ampola 2ml);FenOBARBital 100mg/mL (ampola 2mL);EV,IM;;;;SF0.9,SG5,SG10;10;;1min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;8134
+;citrato (fentanila base (frasco-ampola 2ml);CITRATO (Fentanila base (frasco-ampola 2mL);EV,IM;;;;SF0.9,SG5;50;;1min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;citrato (fentanila base (frasco-ampola 5ml);CITRATO (Fentanila base (frasco-ampola 5mL);EV,IM;;;;SF0.9,SG5;50;;1min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;de hidroxido 20mg/ml (ampola;de Hidróxido 20mg/mL (ampola;EV,IM;;;;SF0.9;20;;15min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;filgrastim 300mcg/ml (frasco-ampola 1ml);Filgrastim 300mcg/mL (frasco-ampola 1mL);IM,EV,SC;;;;SF0.9,SG5;50;;30min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Fluconazol;fluconazol 200mg (bolsa-100ml);Fluconazol 200mg (bolsa-100mL);EV;;;;;100;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;4450
+@Flumazenil;flumazenil (ampola 5ml);Flumazenil (ampola 5mL);EV,IM,VO;;;;SF0.9,SG5;10;;20min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;4457
+@Ganciclovir;ganciclovir 1mg/ml (bolsa 250ml);Ganciclovir 1mg/mL (bolsa 250mL);EV;;;;;250;;60min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;4678
+@Ganciclovir;ganciclovir 1 mg/ml (bolsa 100ml);Ganciclovir 1 mg/mL (bolsa 100mL);EV,IM;;;;SF0.9,SG5;100;;60min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;4678
+;glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;Glicerofosfato de Sódio 216mg/mL (frasco-ampola - 20mL) 1mmol de fosfato;EV;;;;SF0.9,SG5;20;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;(ampola 10ml) 250mg/ml;(ampola 10mL) 250mg/mL;EV,IM,SC;;;;SF0.9,SG5,AD;10;;60min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;imunoglobulina;Imunoglobulina;IM;;;;;06;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;imunoglobulina antitimocitos 25 mg (frasco-ampola);Imunoglobulina ANTITIMÓCITOS 25 mg (frasco-ampola);EV,IM;;;;SF0.9,SG5,AD;;;24h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);Imunoglobulina G HUMANA 50mg/mL (frasco-ampola 100mL);EV;;;;;100;;30min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);Tipo do Documento MANUAL INJETÁVEIS PADRONIZADOS PARA ADULTOS NO HU-UFGD 12/2025 Insulina NPH 100UI/mL (frasco-ampola 10mL);SC,EV,IM;;;;SF0.9;10;;30min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;Levobupivacaína VASOCONSTRITOR (frasco-ampola 20mL) CRISTÁLIA Infiltr Bloqu eio nervo Anest esia Cauda l E perid ural 50 a 150mg doses peridurais de até 375mg. Concentração de Concentração 24h TA   NA NÃO foram conduzidos estudos especiais em pacientes com insuficiência renal. Não indicado para raquianestesia. É incompatível com soluções alcalinas com pH superior a;;;;;SF0.9;20;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Levofloxacino;levofloxacino 5 mg/ml (bolsa-100ml);Levofloxacino 5 mg/mL (bolsa-100mL);EV;;;;SG5;100;;60min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;82122
+;epinefrina;Epinefrina;EV;;;;;20;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;norepinefrina 5 mcg/ml (tubete;NOREpinefrina 5 mcg/mL (tubete;EV;;;;;;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;vasoconstritor (ampola 5ml) isobarica;VASOCONSTRITOR (ampola 5mL) Isobárica;EV,IM;;;;SG5;000;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;20 mg/ml (tubete);20 mg/mL (tubete);EV;;;;SG5;;;bolus;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Linezolida;linezolida 2mg/ml (bolsa 300ml);Linezolida 2mg/mL (bolsa 300mL);EV,VO;;;;;300;;12h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;190376
+@Meropenem;meropenem 1.000mg;Meropenem 1.000mg;EV;;;;SF0.9,SG5,AD;20;;5min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;29561
+@Meropenem;meropenem 500 mg (frasco-ampola);Meropenem 500 mg (frasco-ampola);EV;;;;SF0.9,SG5,AD;10;;5min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;29561
+;hemitartarato 10mg/ml;Hemitartarato 10mg/mL;EV,IM,SC;;;;SF0.9,SG5;500;;1min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Metilprednisolona;metilprednisolona succinato 125mg (frasco-ampola) + diluente;Metilprednisolona Succinato 125mg (frasco-ampola) + diluente;EV,IM;;;;SF0.9,SG5;20;;3min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;155323
+;tartarato 1mg/ml (ampola 5ml);Tartarato 1mg/mL (ampola 5mL);EV,IM;;;;SF0.9,SG5;60;;1min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Micafungina;micafungina 50mg (frasco-ampola);Micafungina 50mg (frasco-ampola);EV;;;;SF0.9,SG5;100;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;325887
+@Midazolam;midazolam 1mg/ml (ampola 5ml);MIDAzolam 1mg/mL (ampola 5mL);EV,IM;;;;SF0.9,SG5;10;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;142441
+@Midazolam;midazolam 5mg/ml (ampola 10ml);MIDAzolam 5mg/mL (ampola 10mL);EV;;;;SF0.9,SG5;10;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;142441
+@Midazolam;midazolam 5mg/ml (ampola 3 ml);MIDAzolam 5mg/mL (ampola 3 mL);EV;;;;SF0.9,SG5;10;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;142441
+@Milrinona;milrinona 1mg/ml (ampola 10ml);Milrinona 1mg/mL (ampola 10mL);EV;;;;SF0.9,SG5;10;;10min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;155120
+;mitomicina (frasco-ampola);Mitomicina (frasco-ampola);EV;;;;SF0.9,SG5,AD;10;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;(ampola 1ml);(ampola 1mL);EV,IM,SC;;;;SF0.9;100;;bolus;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Morfina;morfina 1mg/ml (ampola 2ml);Morfina 1mg/mL (ampola 2mL);EV,IM,SC;;;;SF0.9;50;;bolus;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;235751
+@Naloxona;naloxona (ampola 1ml);Naloxona (ampola 1mL);EV,IM,SC;;;;SF0.9,SG5;100;;3min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;203192
+@Nitroglicerina;nitroglicerina 5mg/ml (ampola 5ml);NitroGLICERINA 5mg/mL (ampola 5mL);EV;;;;SF0.9,SG5;500;;5min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;4917
+;norepinefrina 2mg/ml (ampola 4ml);NOREPinefrina 2mg/mL (ampola 4mL);EV,IM;;;;SF0.9,SG5;500;;20min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Octreotida;octreotida (ampola 1ml);Octreotida (ampola 1mL);EV,SC;;;;SF0.9,SG5;12;;3min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;221130
+;oligoelementos adulto (ampola 5ml);Oligoelementos Adulto (ampola 5mL);EV;;;;SG5;250;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Omeprazol;omeprazol 40mg (frasco-ampola);Omeprazol 40mg (frasco-ampola);EV;;;;SF0.9,SG5;10;;30min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;283742
+@Ondansetrona;ondansetrona 2mg/ml (ampola 4ml);Ondansetrona 2mg/mL (ampola 4mL);EV,IM;;;;SF0.9,SG5;100;;15min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;203148
+@Ondansetrona;ondansetrona 2mg/ml (ampola 2ml);Ondansetrona 2mg/mL (ampola 2mL);EV,IM;;;;SF0.9,SG5,AD;100;;15min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;203148
+;pamidronato 90mg (frasco-ampola);Pamidronato 90mg (frasco-ampola);EV;;;;SF0.9,SG5,AD;10;;2h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Paracetamol;paracetamol 10mg/ml (bolsa 100ml);Paracetamol 10mg/mL (bolsa 100mL);EV,IM;;;;SF0.9,AD;100;;15min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;161
+;piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);Piperacilina 2.000mg + Tazobactam 250mg (frasco-ampola);EV;;;;SF0.9,SG5,AD;10;;30min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);Piperacilina 4.000mg + Tazobactam 500mg (frasco-ampola);EV;;;;SF0.9,SG5,AD;20;;8h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Polimixina B;polimixina b 500.000 (frasco-ampola);Polimixina B 500.000 (frasco-ampola);EV,IM;;;;SF0.9,SG5,AD;10;;120min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;8536
+;polivitaminas para nutricao parenteral (ampola 5ml) baxter;Polivitaminas para nutrição PARENTERAL (ampola 5mL) Baxter;EV,IM,SC;;;;SF0.9,SG5,AD;100;;2h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Propofol;propofol 10mg/ml (ampola 10ml);Propofol 10mg/mL (ampola 10mL);EV;;;;SG5;10;;6h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;8782
+@Propofol;propofol 10mg/ml (ampola 20ml);Propofol 10mg/mL (ampola 20mL);EV;;;;SG5;20;;6h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;8782
+@Propofol;propofol 10mg/ml (frasco-ampola 50ml);Propofol 10mg/mL (frasco-ampola 50mL);EV;;;;SG5;50;;6h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;8782
+@Protamina;protamina 10mg/ml (ampola 5 ml);Protamina 10mg/mL (ampola 5 mL);EV;;;;;;;1min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;236471
+;remiifentanila 2mg (frasco-ampola);RemiIfentanila 2mg (frasco-ampola);EV;;;;SF0.9,SG5,AD;;;bolus;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Rocuronio;rocuronio 10mg/ml (ampola 5ml);Rocurônio 10mg/mL (ampola 5mL);EV;;;;;;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;32521
+;ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;Ropivacaína (ampola 20mL) CRISTALIA Peri- dural Lom- bar e toráci ca Blo- queio de cam- po e nervo so perifé rico Bolo Infusão contínua Bloqueio de Bloqueio 3mg/kg 10-20mL (mínimo de 30min.) Infusão contínua 6-14mL/h Bloqueio de 1-100mL/h Bloqueio 5-10mL/h NÃO Não usar por via ocorrer sintomas de toxicidade do SNC. Tipo do Documento MANUAL INJETÁVEIS PADRONIZADOS PARA ADULTOS NO HU-UFGD 12/2025 Salbutamol (ampola 1mL) HIPOLABOR Adult EV/IM /SC Pediat;EV,IM,SC;;;;SF0.9,SG5,AD;20;;30min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;soro antiescorpionico 1mg/ml (frasco-ampola;Soro AntiESCORPIÔNICO 1mg/mL (frasco-ampola;EV;;;;SF0.9,SG5;12;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;soro antitetanico (frascos-ampola;Soro AntiTETÂNICO (frascos-ampola;EV,IM;;;;SF0.9,SG5;;;lento;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;soro antibotropico (pentavalente) (frasco-ampola;Soro AntiBOTRÓPICO (pentavalente) (frasco-ampola;EV;;;;SF0.9,SG5;10;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;soro anticrotalico (frasco-ampola;Soro AntiCROTÁLICO (frasco-ampola;EV;;;;SF0.9,SG5;10;;20min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;soro antirrabico 200ui/ml (frasco-ampola;Soro AntiRRÁBICO 200UI/mL (frasco-ampola;IM;;;;SF0.9;;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;citrato (sufentanila 5mcg/ml) (ampola 2ml);Citrato (Sufentanila 5mcg/mL) (ampola 2mL);EV;;;;SF0.9,SG5;;;2min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;sugamadex 100mg (frasco-ampola 2ml);Sugamadex 100mg (frasco-ampola 2mL);EV;;;;SF0.9,SG5;125;;60min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;Sulfato de 100mg/mL - (ampola 10mL) Cada ampola contém 1.000mg de Magnésio;EV,IM;;;;SF0.9,SG5;10;;20min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;suxametonio 100mg (frasco-ampola);Suxametônio 100mg (frasco-ampola);EV,IM;;;;SF0.9,SG5,AD;10;;;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Teicoplanina;teicoplanina 200 mg;Teicoplanina 200 mg;EV,IM,VO;;;;SF0.9,SG5,AD;200;;5min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;57021
+@Teicoplanina;teicoplanina 400 mg (frasco-ampola);Teicoplanina 400 mg (frasco-ampola);EV,IM,VO;;;;SF0.9,SG5,AD;200;;5min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;57021
+@Tenoxicam;tenoxicam 20mg (frasco-ampola);Tenoxicam 20mg (frasco-ampola);EV,IM,SC;;;;SF0.9,SG5,AD;100;;30min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;37790
+;tigeciclina 50mg (frasco-ampola);Tigeciclina 50mg (frasco-ampola);EV;;;;SF0.9,SG5;100;;60min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+;tiopental 500mg (frasco-ampola);Tiopental 500mg (frasco-ampola);EV;;;;SF0.9,SG5;20;;10min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;
+@Tramadol;tramadol 50mg/ml (ampola 1ml);Tramadol 50mg/mL (ampola 1mL);EV,IM,VO;;;;SF0.9,SG5,AD;100;;60min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;10689
+@Vasopressina;vasopressina 20ui/ml (ampola 1ml);VASOpressina 20UI/mL (ampola 1mL);EV,IM,SC;;;;SF0.9,SG5;20;;20min;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;11149
+@Voriconazol;voriconazol 200mg (frasco- ampola) sus;VORIconazol 200mg (frasco- ampola) SUS;EV;;;;SF0.9,SG5,AD;19;;1h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;121243
+@Zidovudina;zidovudina 20ml (frasco-ampola);Zidovudina 20mL (frasco-ampola);EV,VO;;;;SG5;20;;4h;;;;;;;;;;;;HU-UFGD_v3;;;rascunho;11413

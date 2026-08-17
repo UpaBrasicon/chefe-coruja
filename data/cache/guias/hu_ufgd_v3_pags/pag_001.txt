@@ -1,0 +1,47 @@
+Tipo do
+Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 1/90
+ Título do
+Documento
+ PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE
+MEDICAMENTOS INJETÁVEIS PADRONIZADOS
+PARA ADULTOS NO HU-UFGD
+ Emissão: 11/12/2025   Próxima revisão:
+11/12/2027
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ 1.   APRESENTAÇÃO
+ O   guia   de   preparo,   diluição   e   administração   de   medicamentos   injetáveis
+padronizados para linha adulto, no HU-UFGD/Ebserh foi elaborado a partir da necessidade de as
+ equipes   multiprofissionais   obterem   informações   seguras   e   precisas   de   como   preparar   os
+medicamentos injetáveis padronizados na instituição, além de garantir a segurança na prescrição
+medicamentosa, no uso e na administração dos medicamentos.
+ Quais informações poderão ser encontradas nesse guia?
+ •   Código AGHU:   código de cadastro do medicamento padronizado no AGHUx do HU-
+UFGD/Ebserh;
+ •   Apresentação padronizada:   nome do medicamento, apresentação farmacêutica e
+nome do laboratório do medicamento padronizado e disponível;
+ •   Via de administração:   vias de administração registradas pela Anvisa. Em caso de vias
+off-label, essa informação pode ser encontrada com informações adicionais;
+ •   Dose usual:   dose usualmente recomendada, com o intervalo terapêutico para
+adultos. Para alguns medicamentos, há a dose máxima usual recomendada;
+ •   Reconstituição:   informações necessárias para a reconstituição dos medicamentos
+que necessitam dessa etapa durante o preparo. Como volume, tipo de reconstituinte,
+se o fármaco possui expansão e qual o volume ou a concentração encontrada após a
+reconstituição. Nessa coluna também foi inserida a informação da estabilidade físico-
+química após a reconstituição;
+ •   Diluição:   informações necessárias para a diluição dos medicamentos. Como o tipo da
+solução   recomendada,   o   volume   ou   a   concentração   encontrada   ideal   de
+administração. Também foi descrita a estabilidade físico-química após a diluição e o
+tempo recomendado para administração ou infusão dos medicamentos.
+ •   Ajuste renal:   se o medicamento deve ser ajustado em caso de pacientes com
+disfunção renal ou em hemodiálise.
+ •   Informações   importantes:   informações   pertinentes   ao   preparo,   diluição,
+administração e monitorização após a administração para garantir o uso adequado e
+seguro dos medicamentos.
+ O guia foi embasado em uma ampla pesquisa à literatura e bulas dos medicamentos
+disponíveis na instituição e, por estar em constante processo de construção, está sujeito a
+contribuições e ajustes. Caso o medicamento não conste nesse guia ou a marca em questão seja
+diferente da relacionada, entrar em contato com a Unidade de Farmácia Clínica (UFCLI) ou a
+Unidade de Dispensação Farmacêutica (UDIS) para mais orientações.

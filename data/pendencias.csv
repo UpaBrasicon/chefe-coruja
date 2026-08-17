@@ -1,0 +1,1433 @@
+principio_ativo;campo;motivo;fonte
+acido tranexamico 50mg/ml (ampola 5ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+acido tranexamico 50mg/ml (ampola 5ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+acido tranexamico 50mg/ml (ampola 5ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+acido tranexamico 50mg/ml (ampola 5ml);diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+acido tranexamico 50mg/ml (ampola 5ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+acido tranexamico 50mg/ml (ampola 5ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+acido tranexamico 50mg/ml (ampola 5ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+acido tranexamico 50mg/ml (ampola 5ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+acido tranexamico 50mg/ml (ampola 5ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+acido tranexamico 50mg/ml (ampola 5ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+acido tranexamico 50mg/ml (ampola 5ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+acido tranexamico 50mg/ml (ampola 5ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+adenosina 3mg/ml (ampola 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+adenosina 3mg/ml (ampola 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+adenosina 3mg/ml (ampola 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+adenosina 3mg/ml (ampola 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+adenosina 3mg/ml (ampola 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+adenosina 3mg/ml (ampola 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+adenosina 3mg/ml (ampola 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+adenosina 3mg/ml (ampola 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+adenosina 3mg/ml (ampola 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+adenosina 3mg/ml (ampola 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+adenosina 3mg/ml (ampola 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+alfaepoetina (frasco-ampola 1ml) 10.000ui/ml;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+alprostadil 250mcg/ml (ampola 1ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+alprostadil 500mcg/ml (ampola 1ml) flukka (manipulado);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+alteplase 50mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+alteplase 50mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+alteplase 50mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+alteplase 50mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+alteplase 50mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+alteplase 50mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+alteplase 50mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+alteplase 50mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+alteplase 50mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+alteplase 50mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+alteplase 50mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+amoxicilina 500mg + clavulanato 100mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+amoxicilina 500mg + clavulanato 100mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+amoxicilina 500mg + clavulanato 100mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+amoxicilina 500mg + clavulanato 100mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+amoxicilina 500mg + clavulanato 100mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+amoxicilina 500mg + clavulanato 100mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+amoxicilina 500mg + clavulanato 100mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+amoxicilina 500mg + clavulanato 100mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+amoxicilina 500mg + clavulanato 100mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+amoxicilina 500mg + clavulanato 100mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+amoxicilina 500mg + clavulanato 100mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+ampicilina 1.000mg + sulbactam 500mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+ampicilina 2.000mg + sulbactam 1.000mg (frasco-ampola) fresenius eugia 1.500mg a 3.000mg/dia cada 6-8h cada 8h 6ml ad vol final 8ml;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+anfotericina b complexo lipidico 5mg/ml (frasco-ampola 20ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+anfotericina b lipossomal 50mg (frasco- ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+anidulafungina 100mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+anidulafungina 100mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+anidulafungina 100mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+anidulafungina 100mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+anidulafungina 100mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+anidulafungina 100mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+anidulafungina 100mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+anidulafungina 100mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+anidulafungina 100mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+anidulafungina 100mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+anidulafungina 100mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+atracurio 10mg/ml (ampola 5ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+atracurio 10mg/ml (ampola 5ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+atracurio 10mg/ml (ampola 5ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+atracurio 10mg/ml (ampola 5ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+atracurio 10mg/ml (ampola 5ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+atracurio 10mg/ml (ampola 5ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+atracurio 10mg/ml (ampola 5ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+atracurio 10mg/ml (ampola 5ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+atracurio 10mg/ml (ampola 5ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+atracurio 10mg/ml (ampola 5ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+atracurio 10mg/ml (ampola 5ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+azitromicina 500mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+azitromicina 500mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+azitromicina 500mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+azitromicina 500mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+azitromicina 500mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+azitromicina 500mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+azitromicina 500mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+azitromicina 500mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+azitromicina 500mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+azitromicina 500mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+azitromicina 500mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+azul de metileno 20mg/ml (ampola 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+azul de metileno 20mg/ml (ampola 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+azul de metileno 20mg/ml (ampola 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+azul de metileno 20mg/ml (ampola 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+azul de metileno 20mg/ml (ampola 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+azul de metileno 20mg/ml (ampola 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+azul de metileno 20mg/ml (ampola 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+azul de metileno 20mg/ml (ampola 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+azul de metileno 20mg/ml (ampola 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+azul de metileno 20mg/ml (ampola 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+azul de metileno 20mg/ml (ampola 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+azul de trypan (ampola 1ml) oftalmopharma intra ocula acm na na na na na na nao medicamento de dose unica. proteger da luz e da umidade. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+azul patente (ampola 2ml) 25mg/ml;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+acetato 3mg/ml + fosfato (ampola 1ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+bicarbonato de 250ml) 1meq/ml;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+bicarbonato de 250ml) 1meq/ml;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+bicarbonato de 250ml) 1meq/ml;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+bicarbonato de 250ml) 1meq/ml;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+bicarbonato de 250ml) 1meq/ml;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+bicarbonato de 250ml) 1meq/ml;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+bicarbonato de 250ml) 1meq/ml;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+bicarbonato de 250ml) 1meq/ml;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+bicarbonato de 250ml) 1meq/ml;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+bicarbonato de 250ml) 1meq/ml;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+bicarbonato de 250ml) 1meq/ml;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+bromoprida 5mg/ml (ampola 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+bromoprida 5mg/ml (ampola 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+bromoprida 5mg/ml (ampola 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+bromoprida 5mg/ml (ampola 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+bromoprida 5mg/ml (ampola 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+bromoprida 5mg/ml (ampola 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+bromoprida 5mg/ml (ampola 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+bromoprida 5mg/ml (ampola 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+bromoprida 5mg/ml (ampola 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+bromoprida 5mg/ml (ampola 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+bromoprida 5mg/ml (ampola 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+cafeina citrato 20mg/ml (ampola 1ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+cafeina citrato 20mg/ml (ampola 1ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+cafeina citrato 20mg/ml (ampola 1ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+cafeina citrato 20mg/ml (ampola 1ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+cafeina citrato 20mg/ml (ampola 1ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+cafeina citrato 20mg/ml (ampola 1ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+cafeina citrato 20mg/ml (ampola 1ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+cafeina citrato 20mg/ml (ampola 1ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+cafeina citrato 20mg/ml (ampola 1ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+cafeina citrato 20mg/ml (ampola 1ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+cafeina citrato 20mg/ml (ampola 1ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+cefazolina 1.000mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+cefazolina 1.000mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+cefazolina 1.000mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+cefazolina 1.000mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+cefazolina 1.000mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+cefazolina 1.000mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+cefazolina 1.000mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+cefazolina 1.000mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+cefazolina 1.000mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+cefazolina 1.000mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+cefazolina 1.000mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+cefepima 1.000mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+cefepima 1.000mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+cefepima 1.000mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+cefepima 1.000mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+cefepima 1.000mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+cefepima 1.000mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+cefepima 1.000mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+cefepima 1.000mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+cefepima 1.000mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+cefepima 1.000mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+cefepima 1.000mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+ceftazidima 2.000mg + avibactam 500mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+ceftriaxona 500mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+ceftriaxona 500mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+ceftriaxona 500mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+ceftriaxona 500mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+ceftriaxona 500mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+ceftriaxona 500mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+ceftriaxona 500mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+ceftriaxona 500mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+ceftriaxona 500mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+ceftriaxona 500mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+ceftriaxona 500mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+ceftriaxona 1.000mg (frasco-ampola) + diluente proprio;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+cefuroxima 750mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+cefuroxima 750mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+cefuroxima 750mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+cefuroxima 750mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+cefuroxima 750mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+cefuroxima 750mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+cefuroxima 750mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+cefuroxima 750mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+cefuroxima 750mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+cefuroxima 750mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+cefuroxima 750mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+ciprofloxacino 200mg (bolsa-100ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+cetoprofeno 100mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+cetoprofeno 100mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+cetoprofeno 100mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+cetoprofeno 100mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+cetoprofeno 100mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+cetoprofeno 100mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+cetoprofeno 100mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+cetoprofeno 100mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+cetoprofeno 100mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+cetoprofeno 100mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+cetoprofeno 100mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+cisatracurio 2mg/ml (frasco 5ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+claritromicina 500mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+claritromicina 500mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+claritromicina 500mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+claritromicina 500mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+claritromicina 500mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+claritromicina 500mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+claritromicina 500mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+claritromicina 500mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+claritromicina 500mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+claritromicina 500mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+claritromicina 500mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+clindamicina 300mg (ampola 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+clindamicina 300mg (ampola 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+clindamicina 300mg (ampola 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+clindamicina 300mg (ampola 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+clindamicina 300mg (ampola 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+clindamicina 300mg (ampola 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+clindamicina 300mg (ampola 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+clindamicina 300mg (ampola 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+clindamicina 300mg (ampola 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+clindamicina 300mg (ampola 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+clindamicina 300mg (ampola 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+clonidina 150mcg/ml (ampola 1ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+clonidina 150mcg/ml (ampola 1ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+clonidina 150mcg/ml (ampola 1ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+clonidina 150mcg/ml (ampola 1ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+clonidina 150mcg/ml (ampola 1ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+clonidina 150mcg/ml (ampola 1ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+clonidina 150mcg/ml (ampola 1ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+clonidina 150mcg/ml (ampola 1ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+clonidina 150mcg/ml (ampola 1ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+clonidina 150mcg/ml (ampola 1ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+clonidina 150mcg/ml (ampola 1ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+cloreto de (ampola 10ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+cloreto de (ampola 10ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+cloreto de (ampola 10ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+cloreto de (ampola 10ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+cloreto de (ampola 10ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+cloreto de (ampola 10ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+cloreto de (ampola 10ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+cloreto de (ampola 10ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+cloreto de (ampola 10ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+cloreto de (ampola 10ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+cloreto de (ampola 10ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+contraste radiologico - oleo de papoula iodado (10ml) delpharm intralin fatica intra arteria seletiv hepati ca intra uterin (variavel conforme o tipo de procediment o);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+complexo protrombinico 20ml diluente proprio (agua para injetaveis) uso imediato na na na 2ml/min sodio por frasco. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 humano 600 ui (frasco-ampola) ta keda pharma ler orientacoes de preparo na bula.;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+daptomicina 500 mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+daptomicina 500 mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+daptomicina 500 mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+daptomicina 500 mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+daptomicina 500 mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+daptomicina 500 mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+daptomicina 500 mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+daptomicina 500 mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+daptomicina 500 mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+daptomicina 500 mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+daptomicina 500 mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+dantroleno 20mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+dantroleno 20mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+dantroleno 20mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+dantroleno 20mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+dantroleno 20mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+dantroleno 20mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+dantroleno 20mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+dantroleno 20mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+dantroleno 20mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+dantroleno 20mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+dantroleno 20mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+mesilato 500mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+mesilato 500mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+mesilato 500mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+mesilato 500mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+mesilato 500mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+mesilato 500mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+mesilato 500mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+mesilato 500mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+mesilato 500mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+mesilato 500mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+mesilato 500mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+desmopressina 4mcg/ml;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+desmopressina 4mcg/ml;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+desmopressina 4mcg/ml;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+desmopressina 4mcg/ml;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+desmopressina 4mcg/ml;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+desmopressina 4mcg/ml;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+desmopressina 4mcg/ml;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+desmopressina 4mcg/ml;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+desmopressina 4mcg/ml;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+desmopressina 4mcg/ml;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+desmopressina 4mcg/ml;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+dexmedetomidina 100mcg/ml (frasco 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+dexmedetomidina 100mcg/ml (frasco 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+dexmedetomidina 100mcg/ml (frasco 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+dexmedetomidina 100mcg/ml (frasco 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+dexmedetomidina 100mcg/ml (frasco 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+dexmedetomidina 100mcg/ml (frasco 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+dexmedetomidina 100mcg/ml (frasco 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+dexmedetomidina 100mcg/ml (frasco 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+dexmedetomidina 100mcg/ml (frasco 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+dexmedetomidina 100mcg/ml (frasco 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+dexmedetomidina 100mcg/ml (frasco 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+difenidramina (ampola 1ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+difenidramina (ampola 1ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+difenidramina (ampola 1ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+difenidramina (ampola 1ml);diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+difenidramina (ampola 1ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+difenidramina (ampola 1ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+difenidramina (ampola 1ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+difenidramina (ampola 1ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+difenidramina (ampola 1ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+difenidramina (ampola 1ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+difenidramina (ampola 1ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+difenidramina (ampola 1ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+dimenidrinato + piridoxina (vitamina b6) (ampola 10ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+enoxaparina 20mg;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+enoxaparina 20mg;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+enoxaparina 20mg;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+enoxaparina 20mg;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+enoxaparina 20mg;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+enoxaparina 20mg;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+enoxaparina 20mg;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+enoxaparina 20mg;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+enoxaparina 20mg;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+enoxaparina 20mg;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+enoxaparina 20mg;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+enoxaparina 40mg;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+enoxaparina 40mg;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+enoxaparina 40mg;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+enoxaparina 40mg;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+enoxaparina 40mg;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+enoxaparina 40mg;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+enoxaparina 40mg;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+enoxaparina 40mg;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+enoxaparina 40mg;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+enoxaparina 40mg;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+enoxaparina 40mg;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+enoxaparina 60mg;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+enoxaparina 60mg;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+enoxaparina 60mg;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+enoxaparina 60mg;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+enoxaparina 60mg;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+enoxaparina 60mg;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+enoxaparina 60mg;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+enoxaparina 60mg;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+enoxaparina 60mg;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+enoxaparina 60mg;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+enoxaparina 60mg;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+enoxaparina 80mg;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+enoxaparina 80mg;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+enoxaparina 80mg;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+enoxaparina 80mg;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+enoxaparina 80mg;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+enoxaparina 80mg;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+enoxaparina 80mg;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+enoxaparina 80mg;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+enoxaparina 80mg;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+enoxaparina 80mg;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+enoxaparina 80mg;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+escetamina 50mg/ml (ampola 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+escetamina 50mg/ml (ampola 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+escetamina 50mg/ml (ampola 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+escetamina 50mg/ml (ampola 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+escetamina 50mg/ml (ampola 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+escetamina 50mg/ml (ampola 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+escetamina 50mg/ml (ampola 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+escetamina 50mg/ml (ampola 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+escetamina 50mg/ml (ampola 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+escetamina 50mg/ml (ampola 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+escetamina 50mg/ml (ampola 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+escopolamina 4mg/ml + dipirona 500mg/ml (ampola 5ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+etilefrina 10 mg/ml (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+etomidato 2mg/ml (ampola 10ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+etomidato 2mg/ml (ampola 10ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+etomidato 2mg/ml (ampola 10ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+etomidato 2mg/ml (ampola 10ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+etomidato 2mg/ml (ampola 10ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+etomidato 2mg/ml (ampola 10ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+etomidato 2mg/ml (ampola 10ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+etomidato 2mg/ml (ampola 10ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+etomidato 2mg/ml (ampola 10ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+etomidato 2mg/ml (ampola 10ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+etomidato 2mg/ml (ampola 10ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+fenobarbital 100mg/ml (ampola 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+fenobarbital 100mg/ml (ampola 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+fenobarbital 100mg/ml (ampola 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+fenobarbital 100mg/ml (ampola 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+fenobarbital 100mg/ml (ampola 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+fenobarbital 100mg/ml (ampola 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+fenobarbital 100mg/ml (ampola 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+fenobarbital 100mg/ml (ampola 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+fenobarbital 100mg/ml (ampola 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+fenobarbital 100mg/ml (ampola 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+fenobarbital 100mg/ml (ampola 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 5ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 5ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 5ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 5ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 5ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 5ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 5ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 5ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 5ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 5ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+citrato (fentanila base (frasco-ampola 5ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+de hidroxido 20mg/ml (ampola;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+de hidroxido 20mg/ml (ampola;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+de hidroxido 20mg/ml (ampola;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+de hidroxido 20mg/ml (ampola;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+de hidroxido 20mg/ml (ampola;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+de hidroxido 20mg/ml (ampola;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+de hidroxido 20mg/ml (ampola;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+de hidroxido 20mg/ml (ampola;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+de hidroxido 20mg/ml (ampola;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+de hidroxido 20mg/ml (ampola;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+de hidroxido 20mg/ml (ampola;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+filgrastim 300mcg/ml (frasco-ampola 1ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+filgrastim 300mcg/ml (frasco-ampola 1ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+filgrastim 300mcg/ml (frasco-ampola 1ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+filgrastim 300mcg/ml (frasco-ampola 1ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+filgrastim 300mcg/ml (frasco-ampola 1ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+filgrastim 300mcg/ml (frasco-ampola 1ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+filgrastim 300mcg/ml (frasco-ampola 1ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+filgrastim 300mcg/ml (frasco-ampola 1ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+filgrastim 300mcg/ml (frasco-ampola 1ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+filgrastim 300mcg/ml (frasco-ampola 1ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+filgrastim 300mcg/ml (frasco-ampola 1ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+fluconazol 200mg (bolsa-100ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+flumazenil (ampola 5ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+flumazenil (ampola 5ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+flumazenil (ampola 5ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+flumazenil (ampola 5ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+flumazenil (ampola 5ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+flumazenil (ampola 5ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+flumazenil (ampola 5ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+flumazenil (ampola 5ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+flumazenil (ampola 5ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+flumazenil (ampola 5ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+flumazenil (ampola 5ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+ganciclovir 1mg/ml (bolsa 250ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+ganciclovir 1 mg/ml (bolsa 100ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+ganciclovir 1 mg/ml (bolsa 100ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+ganciclovir 1 mg/ml (bolsa 100ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+ganciclovir 1 mg/ml (bolsa 100ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+ganciclovir 1 mg/ml (bolsa 100ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+ganciclovir 1 mg/ml (bolsa 100ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+ganciclovir 1 mg/ml (bolsa 100ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+ganciclovir 1 mg/ml (bolsa 100ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+ganciclovir 1 mg/ml (bolsa 100ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+ganciclovir 1 mg/ml (bolsa 100ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+ganciclovir 1 mg/ml (bolsa 100ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+glicerofosfato de sodio 216mg/ml (frasco-ampola - 20ml) 1mmol de fosfato;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+(ampola 10ml) 250mg/ml;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+(ampola 10ml) 250mg/ml;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+(ampola 10ml) 250mg/ml;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+(ampola 10ml) 250mg/ml;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+(ampola 10ml) 250mg/ml;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+(ampola 10ml) 250mg/ml;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+(ampola 10ml) 250mg/ml;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+(ampola 10ml) 250mg/ml;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+(ampola 10ml) 250mg/ml;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+(ampola 10ml) 250mg/ml;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+(ampola 10ml) 250mg/ml;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+imunoglobulina;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+imunoglobulina;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+imunoglobulina;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+imunoglobulina;diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+imunoglobulina;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+imunoglobulina;tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+imunoglobulina;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+imunoglobulina;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+imunoglobulina;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+imunoglobulina;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+imunoglobulina;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+imunoglobulina;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+imunoglobulina;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+imunoglobulina antitimocitos 25 mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+imunoglobulina g humana 50mg/ml (frasco-ampola 100ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 insulina nph 100ui/ml (frasco-ampola 10ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+levobupivacaina vasoconstritor (frasco-ampola 20ml) cristalia infiltr bloqu eio nervo anest esia cauda l e perid ural 50 a 150mg doses peridurais de ate 375mg. concentracao de concentracao 24h ta na nao foram conduzidos estudos especiais em pacientes com insuficiencia renal. nao indicado para raquianestesia. e incompativel com solucoes alcalinas com ph superior a;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+levofloxacino 5 mg/ml (bolsa-100ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+levofloxacino 5 mg/ml (bolsa-100ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+levofloxacino 5 mg/ml (bolsa-100ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+levofloxacino 5 mg/ml (bolsa-100ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+levofloxacino 5 mg/ml (bolsa-100ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+levofloxacino 5 mg/ml (bolsa-100ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+levofloxacino 5 mg/ml (bolsa-100ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+levofloxacino 5 mg/ml (bolsa-100ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+levofloxacino 5 mg/ml (bolsa-100ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+levofloxacino 5 mg/ml (bolsa-100ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+levofloxacino 5 mg/ml (bolsa-100ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+epinefrina;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+epinefrina;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+epinefrina;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+epinefrina;diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+epinefrina;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+epinefrina;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+epinefrina;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+epinefrina;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+epinefrina;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+epinefrina;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+epinefrina;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+epinefrina;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+norepinefrina 5 mcg/ml (tubete;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+vasoconstritor (ampola 5ml) isobarica;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+20 mg/ml (tubete);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+20 mg/ml (tubete);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+20 mg/ml (tubete);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+20 mg/ml (tubete);diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+20 mg/ml (tubete);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+20 mg/ml (tubete);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+20 mg/ml (tubete);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+20 mg/ml (tubete);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+20 mg/ml (tubete);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+20 mg/ml (tubete);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+20 mg/ml (tubete);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+20 mg/ml (tubete);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+linezolida 2mg/ml (bolsa 300ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+meropenem 1.000mg;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+meropenem 1.000mg;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+meropenem 1.000mg;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+meropenem 1.000mg;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+meropenem 1.000mg;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+meropenem 1.000mg;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+meropenem 1.000mg;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+meropenem 1.000mg;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+meropenem 1.000mg;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+meropenem 1.000mg;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+meropenem 1.000mg;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+meropenem 500 mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+meropenem 500 mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+meropenem 500 mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+meropenem 500 mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+meropenem 500 mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+meropenem 500 mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+meropenem 500 mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+meropenem 500 mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+meropenem 500 mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+meropenem 500 mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+meropenem 500 mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+hemitartarato 10mg/ml;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+hemitartarato 10mg/ml;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+hemitartarato 10mg/ml;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+hemitartarato 10mg/ml;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+hemitartarato 10mg/ml;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+hemitartarato 10mg/ml;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+hemitartarato 10mg/ml;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+hemitartarato 10mg/ml;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+hemitartarato 10mg/ml;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+hemitartarato 10mg/ml;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+hemitartarato 10mg/ml;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+metilprednisolona succinato 125mg (frasco-ampola) + diluente;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+metilprednisolona succinato 125mg (frasco-ampola) + diluente;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+metilprednisolona succinato 125mg (frasco-ampola) + diluente;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+metilprednisolona succinato 125mg (frasco-ampola) + diluente;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+metilprednisolona succinato 125mg (frasco-ampola) + diluente;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+metilprednisolona succinato 125mg (frasco-ampola) + diluente;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+metilprednisolona succinato 125mg (frasco-ampola) + diluente;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+metilprednisolona succinato 125mg (frasco-ampola) + diluente;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+metilprednisolona succinato 125mg (frasco-ampola) + diluente;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+metilprednisolona succinato 125mg (frasco-ampola) + diluente;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+metilprednisolona succinato 125mg (frasco-ampola) + diluente;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+tartarato 1mg/ml (ampola 5ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+tartarato 1mg/ml (ampola 5ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+tartarato 1mg/ml (ampola 5ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+tartarato 1mg/ml (ampola 5ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+tartarato 1mg/ml (ampola 5ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+tartarato 1mg/ml (ampola 5ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+tartarato 1mg/ml (ampola 5ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+tartarato 1mg/ml (ampola 5ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+tartarato 1mg/ml (ampola 5ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+tartarato 1mg/ml (ampola 5ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+tartarato 1mg/ml (ampola 5ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+micafungina 50mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+micafungina 50mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+micafungina 50mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+micafungina 50mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+micafungina 50mg (frasco-ampola);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+micafungina 50mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+micafungina 50mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+micafungina 50mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+micafungina 50mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+micafungina 50mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+micafungina 50mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+micafungina 50mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+midazolam 1mg/ml (ampola 5ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+midazolam 5mg/ml (ampola 10ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+midazolam 5mg/ml (ampola 3 ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+milrinona 1mg/ml (ampola 10ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+milrinona 1mg/ml (ampola 10ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+milrinona 1mg/ml (ampola 10ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+milrinona 1mg/ml (ampola 10ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+milrinona 1mg/ml (ampola 10ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+milrinona 1mg/ml (ampola 10ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+milrinona 1mg/ml (ampola 10ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+milrinona 1mg/ml (ampola 10ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+milrinona 1mg/ml (ampola 10ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+milrinona 1mg/ml (ampola 10ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+milrinona 1mg/ml (ampola 10ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+mitomicina (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+mitomicina (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+mitomicina (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+mitomicina (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+mitomicina (frasco-ampola);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+mitomicina (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+mitomicina (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+mitomicina (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+mitomicina (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+mitomicina (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+mitomicina (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+mitomicina (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+(ampola 1ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+(ampola 1ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+(ampola 1ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+(ampola 1ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+(ampola 1ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+(ampola 1ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+(ampola 1ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+(ampola 1ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+(ampola 1ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+(ampola 1ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+(ampola 1ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+morfina 1mg/ml (ampola 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+morfina 1mg/ml (ampola 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+morfina 1mg/ml (ampola 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+morfina 1mg/ml (ampola 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+morfina 1mg/ml (ampola 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+morfina 1mg/ml (ampola 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+morfina 1mg/ml (ampola 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+morfina 1mg/ml (ampola 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+morfina 1mg/ml (ampola 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+morfina 1mg/ml (ampola 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+morfina 1mg/ml (ampola 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+naloxona (ampola 1ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+naloxona (ampola 1ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+naloxona (ampola 1ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+naloxona (ampola 1ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+naloxona (ampola 1ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+naloxona (ampola 1ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+naloxona (ampola 1ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+naloxona (ampola 1ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+naloxona (ampola 1ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+naloxona (ampola 1ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+naloxona (ampola 1ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+nitroglicerina 5mg/ml (ampola 5ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+nitroglicerina 5mg/ml (ampola 5ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+nitroglicerina 5mg/ml (ampola 5ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+nitroglicerina 5mg/ml (ampola 5ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+nitroglicerina 5mg/ml (ampola 5ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+nitroglicerina 5mg/ml (ampola 5ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+nitroglicerina 5mg/ml (ampola 5ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+nitroglicerina 5mg/ml (ampola 5ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+nitroglicerina 5mg/ml (ampola 5ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+nitroglicerina 5mg/ml (ampola 5ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+nitroglicerina 5mg/ml (ampola 5ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+norepinefrina 2mg/ml (ampola 4ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+norepinefrina 2mg/ml (ampola 4ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+norepinefrina 2mg/ml (ampola 4ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+norepinefrina 2mg/ml (ampola 4ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+norepinefrina 2mg/ml (ampola 4ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+norepinefrina 2mg/ml (ampola 4ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+norepinefrina 2mg/ml (ampola 4ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+norepinefrina 2mg/ml (ampola 4ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+norepinefrina 2mg/ml (ampola 4ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+norepinefrina 2mg/ml (ampola 4ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+norepinefrina 2mg/ml (ampola 4ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+octreotida (ampola 1ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+octreotida (ampola 1ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+octreotida (ampola 1ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+octreotida (ampola 1ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+octreotida (ampola 1ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+octreotida (ampola 1ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+octreotida (ampola 1ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+octreotida (ampola 1ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+octreotida (ampola 1ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+octreotida (ampola 1ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+octreotida (ampola 1ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+oligoelementos adulto (ampola 5ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+omeprazol 40mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+omeprazol 40mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+omeprazol 40mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+omeprazol 40mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+omeprazol 40mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+omeprazol 40mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+omeprazol 40mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+omeprazol 40mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+omeprazol 40mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+omeprazol 40mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+omeprazol 40mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 4ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 4ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 4ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 4ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 4ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 4ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 4ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 4ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 4ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 4ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 4ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+ondansetrona 2mg/ml (ampola 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+pamidronato 90mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+pamidronato 90mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+pamidronato 90mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+pamidronato 90mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+pamidronato 90mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+pamidronato 90mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+pamidronato 90mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+pamidronato 90mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+pamidronato 90mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+pamidronato 90mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+pamidronato 90mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+paracetamol 10mg/ml (bolsa 100ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+paracetamol 10mg/ml (bolsa 100ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+paracetamol 10mg/ml (bolsa 100ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+paracetamol 10mg/ml (bolsa 100ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+paracetamol 10mg/ml (bolsa 100ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+paracetamol 10mg/ml (bolsa 100ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+paracetamol 10mg/ml (bolsa 100ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+paracetamol 10mg/ml (bolsa 100ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+paracetamol 10mg/ml (bolsa 100ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+paracetamol 10mg/ml (bolsa 100ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+paracetamol 10mg/ml (bolsa 100ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+piperacilina 2.000mg + tazobactam 250mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+piperacilina 4.000mg + tazobactam 500mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+polimixina b 500.000 (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+polimixina b 500.000 (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+polimixina b 500.000 (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+polimixina b 500.000 (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+polimixina b 500.000 (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+polimixina b 500.000 (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+polimixina b 500.000 (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+polimixina b 500.000 (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+polimixina b 500.000 (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+polimixina b 500.000 (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+polimixina b 500.000 (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+polivitaminas para nutricao parenteral (ampola 5ml) baxter;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+polivitaminas para nutricao parenteral (ampola 5ml) baxter;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+polivitaminas para nutricao parenteral (ampola 5ml) baxter;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+polivitaminas para nutricao parenteral (ampola 5ml) baxter;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+polivitaminas para nutricao parenteral (ampola 5ml) baxter;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+polivitaminas para nutricao parenteral (ampola 5ml) baxter;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+polivitaminas para nutricao parenteral (ampola 5ml) baxter;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+polivitaminas para nutricao parenteral (ampola 5ml) baxter;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+polivitaminas para nutricao parenteral (ampola 5ml) baxter;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+polivitaminas para nutricao parenteral (ampola 5ml) baxter;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+polivitaminas para nutricao parenteral (ampola 5ml) baxter;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+propofol 10mg/ml (ampola 10ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+propofol 10mg/ml (ampola 10ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+propofol 10mg/ml (ampola 10ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+propofol 10mg/ml (ampola 10ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+propofol 10mg/ml (ampola 10ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+propofol 10mg/ml (ampola 10ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+propofol 10mg/ml (ampola 10ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+propofol 10mg/ml (ampola 10ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+propofol 10mg/ml (ampola 10ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+propofol 10mg/ml (ampola 10ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+propofol 10mg/ml (ampola 10ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+propofol 10mg/ml (ampola 20ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+propofol 10mg/ml (ampola 20ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+propofol 10mg/ml (ampola 20ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+propofol 10mg/ml (ampola 20ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+propofol 10mg/ml (ampola 20ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+propofol 10mg/ml (ampola 20ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+propofol 10mg/ml (ampola 20ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+propofol 10mg/ml (ampola 20ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+propofol 10mg/ml (ampola 20ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+propofol 10mg/ml (ampola 20ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+propofol 10mg/ml (ampola 20ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+propofol 10mg/ml (frasco-ampola 50ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+propofol 10mg/ml (frasco-ampola 50ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+propofol 10mg/ml (frasco-ampola 50ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+propofol 10mg/ml (frasco-ampola 50ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+propofol 10mg/ml (frasco-ampola 50ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+propofol 10mg/ml (frasco-ampola 50ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+propofol 10mg/ml (frasco-ampola 50ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+propofol 10mg/ml (frasco-ampola 50ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+propofol 10mg/ml (frasco-ampola 50ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+propofol 10mg/ml (frasco-ampola 50ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+propofol 10mg/ml (frasco-ampola 50ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+protamina 10mg/ml (ampola 5 ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+remiifentanila 2mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);diluicao_solucao;solução de diluição não informada no guia (via não é EV ou sem diluição);HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+rocuronio 10mg/ml (ampola 5ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+ropivacaina (ampola 20ml) cristalia peri- dural lom- bar e toraci ca blo- queio de cam- po e nervo so perife rico bolo infusao continua bloqueio de bloqueio 3mg/kg 10-20ml (minimo de 30min.) infusao continua 6-14ml/h bloqueio de 1-100ml/h bloqueio 5-10ml/h nao nao usar por via ocorrer sintomas de toxicidade do snc. tipo do documento manual injetaveis padronizados para adultos no hu-ufgd 12/2025 salbutamol (ampola 1ml) hipolabor adult ev/im /sc pediat;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+soro antiescorpionico 1mg/ml (frasco-ampola;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+soro antitetanico (frascos-ampola;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+soro antitetanico (frascos-ampola;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+soro antitetanico (frascos-ampola;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+soro antitetanico (frascos-ampola;diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+soro antitetanico (frascos-ampola;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+soro antitetanico (frascos-ampola;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+soro antitetanico (frascos-ampola;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+soro antitetanico (frascos-ampola;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+soro antitetanico (frascos-ampola;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+soro antitetanico (frascos-ampola;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+soro antitetanico (frascos-ampola;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+soro antitetanico (frascos-ampola;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+soro antibotropico (pentavalente) (frasco-ampola;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+soro anticrotalico (frasco-ampola;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+soro anticrotalico (frasco-ampola;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+soro anticrotalico (frasco-ampola;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+soro anticrotalico (frasco-ampola;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+soro anticrotalico (frasco-ampola;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+soro anticrotalico (frasco-ampola;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+soro anticrotalico (frasco-ampola;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+soro anticrotalico (frasco-ampola;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+soro anticrotalico (frasco-ampola;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+soro anticrotalico (frasco-ampola;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+soro anticrotalico (frasco-ampola;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+soro antirrabico 200ui/ml (frasco-ampola;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);diluicao_volume_min_ml;volume de diluição não capturado pelo parser;HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+citrato (sufentanila 5mcg/ml) (ampola 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+sugamadex 100mg (frasco-ampola 2ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+sugamadex 100mg (frasco-ampola 2ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+sugamadex 100mg (frasco-ampola 2ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+sugamadex 100mg (frasco-ampola 2ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+sugamadex 100mg (frasco-ampola 2ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+sugamadex 100mg (frasco-ampola 2ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+sugamadex 100mg (frasco-ampola 2ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+sugamadex 100mg (frasco-ampola 2ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+sugamadex 100mg (frasco-ampola 2ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+sugamadex 100mg (frasco-ampola 2ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+sugamadex 100mg (frasco-ampola 2ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+sulfato de 100mg/ml - (ampola 10ml) cada ampola contem 1.000mg de magnesio;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);tempo_infusao_min;tempo de infusão não informado ou administração em bolus;HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+suxametonio 100mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+teicoplanina 200 mg;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+teicoplanina 200 mg;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+teicoplanina 200 mg;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+teicoplanina 200 mg;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+teicoplanina 200 mg;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+teicoplanina 200 mg;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+teicoplanina 200 mg;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+teicoplanina 200 mg;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+teicoplanina 200 mg;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+teicoplanina 200 mg;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+teicoplanina 200 mg;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+teicoplanina 400 mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+teicoplanina 400 mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+teicoplanina 400 mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+teicoplanina 400 mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+teicoplanina 400 mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+teicoplanina 400 mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+teicoplanina 400 mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+teicoplanina 400 mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+teicoplanina 400 mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+teicoplanina 400 mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+teicoplanina 400 mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+tenoxicam 20mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+tenoxicam 20mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+tenoxicam 20mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+tenoxicam 20mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+tenoxicam 20mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+tenoxicam 20mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+tenoxicam 20mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+tenoxicam 20mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+tenoxicam 20mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+tenoxicam 20mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+tenoxicam 20mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+tigeciclina 50mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+tigeciclina 50mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+tigeciclina 50mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+tigeciclina 50mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+tigeciclina 50mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+tigeciclina 50mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+tigeciclina 50mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+tigeciclina 50mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+tigeciclina 50mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+tigeciclina 50mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+tigeciclina 50mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+tiopental 500mg (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+tiopental 500mg (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+tiopental 500mg (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+tiopental 500mg (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+tiopental 500mg (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+tiopental 500mg (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+tiopental 500mg (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+tiopental 500mg (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+tiopental 500mg (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+tiopental 500mg (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+tiopental 500mg (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+tramadol 50mg/ml (ampola 1ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+tramadol 50mg/ml (ampola 1ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+tramadol 50mg/ml (ampola 1ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+tramadol 50mg/ml (ampola 1ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+tramadol 50mg/ml (ampola 1ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+tramadol 50mg/ml (ampola 1ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+tramadol 50mg/ml (ampola 1ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+tramadol 50mg/ml (ampola 1ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+tramadol 50mg/ml (ampola 1ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+tramadol 50mg/ml (ampola 1ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+tramadol 50mg/ml (ampola 1ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+vasopressina 20ui/ml (ampola 1ml);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+vasopressina 20ui/ml (ampola 1ml);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+vasopressina 20ui/ml (ampola 1ml);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+vasopressina 20ui/ml (ampola 1ml);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+vasopressina 20ui/ml (ampola 1ml);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+vasopressina 20ui/ml (ampola 1ml);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+vasopressina 20ui/ml (ampola 1ml);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+vasopressina 20ui/ml (ampola 1ml);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+vasopressina 20ui/ml (ampola 1ml);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+vasopressina 20ui/ml (ampola 1ml);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+vasopressina 20ui/ml (ampola 1ml);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+voriconazol 200mg (frasco- ampola) sus;reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+voriconazol 200mg (frasco- ampola) sus;reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+voriconazol 200mg (frasco- ampola) sus;reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+voriconazol 200mg (frasco- ampola) sus;concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+voriconazol 200mg (frasco- ampola) sus;velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+voriconazol 200mg (frasco- ampola) sus;estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+voriconazol 200mg (frasco- ampola) sus;estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+voriconazol 200mg (frasco- ampola) sus;fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+voriconazol 200mg (frasco- ampola) sus;acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+voriconazol 200mg (frasco- ampola) sus;ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+voriconazol 200mg (frasco- ampola) sus;incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3
+zidovudina 20ml (frasco-ampola);reconstituicao_diluente;reconstituição não informada no guia para esta apresentação;HU-UFGD_v3
+zidovudina 20ml (frasco-ampola);reconstituicao_volume_ml;volume de reconstituição não informado no guia;HU-UFGD_v3
+zidovudina 20ml (frasco-ampola);reconstituicao_concentracao;concentração de reconstituição não informada;HU-UFGD_v3
+zidovudina 20ml (frasco-ampola);concentracao_maxima;concentração máxima não informada no guia;HU-UFGD_v3
+zidovudina 20ml (frasco-ampola);velocidade_max;velocidade máxima não capturada pelo parser;HU-UFGD_v3
+zidovudina 20ml (frasco-ampola);estabilidade_ta_h;estabilidade à temperatura ambiente não informada;HU-UFGD_v3
+zidovudina 20ml (frasco-ampola);estabilidade_refrig_h;estabilidade refrigerada não informada;HU-UFGD_v3
+zidovudina 20ml (frasco-ampola);fotossensivel;fotossensibilidade não informada;HU-UFGD_v3
+zidovudina 20ml (frasco-ampola);acesso;tipo de acesso (periférico/central) não informado;HU-UFGD_v3
+zidovudina 20ml (frasco-ampola);ajuste_renal_regra;regra de ajuste renal não capturada (campo ajuste_renal vazio);HU-UFGD_v3
+zidovudina 20ml (frasco-ampola);incompatibilidades;incompatibilidades não informadas;HU-UFGD_v3

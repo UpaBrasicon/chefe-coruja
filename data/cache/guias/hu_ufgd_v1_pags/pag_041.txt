@@ -1,0 +1,113 @@
+TA   REF   TA   REF
+ EV   AD 3ML   -   24hs
+ SG5%
+SF 0,9%
+Glic. Dialise
+Peritoneal 1,36%
+ou 3,86%
+ Bôlus lento: diluir
+para 5ml (3 a 5 min)
+Infusão: diluir para
+100ml (30min)
+ 48h
+ SF0,9: 48h
+SG 5%: 5
+dias
+ Sim
+ IM   AD 3ML   -   24hs   -   -   -   -
+ EV   AD 2ML   -   -   -   Bôlus lento direto   -   -   Não
+ IM   AD 2ML   -   -   -   -   -   -   Não
+ EV   -   -   -  
+SG 5% 1000ML
+(para 10 ampolas)
+ 20 a 30 gts/min
+ 12 hs   -
+ SC   -   -   -   -  
+0,5 A 1 ML SC até no
+máximo 4x dia  
+-   -
+ EV   -   -   -  
+AD 10ml
+SF 0,9% 10ml
+ Bôlus lento (mínimo
+10min)  
+-   -
+ IM   -   -   -   -   -   -   -
+ Tigeciclina 50mg, pó liófilo para
+injetável
+(WYETH – PFIZER)
+ EV  
+SG5% 5ml
+SF 0,9% 5ml  
+-   -
+ SG5% 100ml
+SF 0,9% 100ml
+SRL 100ml
+ 30 a 60 min   -   -   Não
+ Tiopental Sódico 500mg, Injetável
+(Cristália)  
+EV  
+AD 20ml
+SF 0,9% 20ml  
+-   24 h   -   -   -   -   Não
+ EV   -   -   -
+ SF 0,9%
+AD
+1 ml para cada
+mg do
+medicamento
+ Bôlus lento: 1ml/min
+ou por gotejamento  
+-   -
+ IM   -   -   -   -   -   -   -
+ MEDICAMENTO
+(Apresentação padronizada)  
+Observações Via   Reconstituição
+ -
+ Acesso venoso exclusivo. Se acesso em Y, suspender outras medicações e
+lavar o equipo antes e depois da administração. Incompatível com
+anfotericina B, complexo lipídico de anfotericina B, diazepam, esomeprazol e
+omeprazol
+ Administração EV intermitente direta.
+Incompatível com Hidroxocobalamina, Ácido Ascórbico, Atenolol, Atracúrio,
+Atropina, Carboplana, Codeína, Daptomicina, Diltiazem, Dobutamina,
+Dopamina, Doxorrubicina, Efedrina, Epinefrina, Epirrubicina, Ertapenem,
+Etoposideo, Fenoldopam, Gafloxacina, Gemcitabina, Gemtuzumabe,
+Idarrubicina, Irinotecano, Labetalol, Levofloxacina, Lidocaína, Linezolida,
+Meperidina, Midazolam, Norepinefrina, Ondansetrona, Pancurônio,
+Fenilefrina, Piperacilina + Tazobactam, Rocurônio, Succinilcolina, Tacrolimus,
+Vecurônio, Vinorelbina, Voriconazol.
+ Incompatível com heparina, diclofenaco, indometacina, fenilbutazona,
+diazepam, flunitrazepam, midazolam e trinitrato de glicerol.
+ Incompatível com aminoglicosídeos. Em caso de formação de espuma
+durante manuseio, manter o frasco em repouso por 15 min até nova
+aspiração. A solução reconstituída pode ser administrada diretamente,
+entretanto recomenda-se proceder a diluição. Em RN’s utilizar somente a via
+EV.
+ Não administrar por infusão.
+ Evitar diluir em soluções salinas pelo aumento do risco de edema pulmonar.
+Não diluir em soluções com pH>7.
+ Tiamina 50mg/ml, Solução
+Injetável
+(CYTOPHARMA)
+ Não
+ Tramadol Cloridrato 50mg/ml,
+Solução Injetável
+(UNIÃO
+QUIMICA/TEUTO/NOVAFARMA/HI
+POLABOR)
+ Sim
+ Teicoplanina 200 e 400mg,
+Injetável
+(União Quimica / EUROFARMA /
+CRISTALIA)
+ Tenoxicam 20mg
+(CRISTALIA)
+ Terbutalina Sulfato 0,5mg/ml,
+Injetável
+(HIPOLABOR)
+ Não
+ Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal

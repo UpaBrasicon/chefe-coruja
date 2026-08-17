@@ -1,0 +1,130 @@
+Tipo do Documento  
+MANUAL  
+MA.UFCLI.001   –   Página 89/90
+ Título do Documento   PREPARO, DILUIÇÃO E ADMINISTRAÇÃO DE MEDICAMENTOS
+INJETÁVEIS PADRONIZADOS PARA ADULTOS
+NO HU-UFGD
+ Emissão: 12/2025   Próxima revisão:
+12/2025
+ Versão: 03
+ Publicação: Resolução nº 179, de 11 de dezembro de 2025   –   Boletim de Serviço nº 657 de 11 de dezembro de 2025
+ MEDICAMENTO
+ Via de
+Adm  
+Dose Usual
+ RECONSTITUIÇÃO   DILUIÇÃO
+ Ajuste Renal  
+INFORMAÇÕES
+IMPORTANTES
+AGHU  
+Apresentação
+Padronizada  
+Tipo e Volume   Estabilidade  
+Tipo da
+solução
+ Volume e/ou
+Concentração  
+Estabilidade  
+Tempo de
+Administração
+ 136239
+ VASOpressina
+20UI/mL
+ (ampola 1mL)
+ BIOLAB
+ EV
+IM
+ SC
+ 5 a 10UI, a
+cada 12h ou
+8h
+0,01 a
+0,04U/min
+ NA   NA  
+SF 0,9%
+SG 5%  
+0,1 a 1UI/mL   Uso imediato
+ 20UI em
+20 a 30min
+Infusão contínua
+0,2 a 1UI/min
+ ClCr 20 a 9mL/min:
+ 15 a 20mg/kg/dose
+ClCr menor que
+20mL/min intervalo
+mais longo
+ Pode ser usada em
+AVP, porém devido
+ao risco de necrose
+decorrente de
+extravasamento, é
+preferível a utilização
+de AVC.
+ 408525
+ VORIconazol
+200mg (frasco-
+ampola) SUS
+ DR. REDDY´S
+ EV
+ Dose de
+ataque:
+6mg/kg a
+cada 12h
+(primeiras
+24h)
+ Dose
+Manutenção:
+ 3 a 4mg/kg a
+cada 12h
+ 19mL AD
+ Vol final 20mL
+ 10mg/mL
+ 24h TR   SF 0,9%
+SG 5%  
+0,5 a 5mg/mL   24h TR
+ Infusão máxima
+3 mg/kg/h
+durante
+ 1 a 2 horas
+ É hemodialisável com
+um clearance de 121
+mL/min
+ Medicamento não
+padronizado.
+Fornecido pelo
+Ministério da Saúde
+ 232890
+ Zidovudina
+ 20mL
+ (frasco-ampola)
+ SUS
+ CRISTALIA
+ EV
+ 1mg /kg a
+cada
+ 4 horas até
+que a terapia
+VO possa ser
+iniciada
+ NA   NA   SG 5%   < 4 mg/mL  
+8H TA
+ 24H TR
+ Infusão
+constante
+durante 1 hora
+ A dose recomendada
+para pacientes em
+hemodiálise ou diálise
+peritoneal (clearance
+de creatinina < 15
+mL/min) é de 1mg/kg
+a cada 6 a 8 horas
+ Pacientes com
+anemia ou
+granulocitopenia
+significativa podem
+necessitar de redução
+da dose até que haja
+recuperação da
+medula óssea ou
+suspensão da terapia.

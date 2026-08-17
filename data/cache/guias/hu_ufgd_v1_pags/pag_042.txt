@@ -1,0 +1,76 @@
+TA   REF   TA   REF
+ Vancomicina Cloridrato 500mg,
+Injetável
+(TEUTO)
+ EV   AD 10ML   24 h   14 dias
+ SF 0,9% 100ML
+SG 5% 100ML
+SRL 100ML
+ 1 HORA
+(NÃO ULTRAPASSAR
+10MG/MIN)
+ 24 h   14 dias   Sim
+ EV   -   -   -  
+AD 100ml
+SF 0,9% 100ml
+ Hemorragia TGI: 0,2
+U/min
+Choque séptico: 0,01
+– 0,04 U/min em BIC
+PCR: 40U dose única
++ Flush 20ml de AD
+ou SF 0,9%
+Diabetes Insipidus:
+0,001-0,003 U/KG/HR
+em BIC
+ -   -   Não
+ IM SC   -   -   -   -  
+5 a 10 U (0,25 a
+0,5ml) IM ou SC  
+-   -   Não
+ Verapamil 2,5mg/ml
+(ARISTON)  
+EV   -   -   -
+ Dose inicial:
+AD 20ml
+SF 0,9% 20ml
+SG 5% 20ml
+Dose
+manutenção:
+AD 100ml
+SF 0,9% 100ml
+SG 5% 100ml
+ DOSE INICIAL: (Bôlus)
+ADULTOS: 2m
+PED: 2m
+IDOSOS: 3 m
+Dose de manutenção:
+TODOS: 30m
+ ATÉ 24
+HS COM
+FOTOPRO
+TEÇÃO
+ -   Não
+ Evitar administração com albumina, anfotericina b, hidralazina e
+sulfametoxazol+trimetropim.
+Precipita em soluções com ph>6.
+ Pacientes com restrição hídrica o volume da diluição pode ser reduzido para
+50ml. Incompatível com Albumina, Aminofilina, Anfotericina B, Azatioprina,
+Cloranfenicol, Daptomicina, Diazepam, Fluorouracil, Furosemida, Ganciclovir,
+Gemtuzumabe, Heparina, Idarrubicina, Indometacina, Trometamina,
+Lansoprazol, Mecilina, Omeprazol, Pantoprazol, Fenitoína, Rituximabe,
+SMT+TMP e soluções alcalinas em geral.
+Caso administração com acesso em Y, suspender a outra medicação durante
+administração.
+ Vasopressina 20U/Ml
+(BIOLAB)
+ Pode ser administrado simultâneamente com nitroglicerina para minimizar
+efeitos colaterais.
+ MEDICAMENTO
+(Apresentação padronizada)  
+Via   Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações

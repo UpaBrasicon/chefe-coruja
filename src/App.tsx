@@ -28,6 +28,7 @@ import Configuracao from '@/pages/Configuracao'
 import Mensagens from '@/pages/Mensagens'
 import MinhaAgenda from '@/pages/MinhaAgenda'
 import PrescricaoTeste from '@/pages/PrescricaoTeste'
+import ReferenciaDiluicao from '@/pages/ReferenciaDiluicao'
 import { Banners } from '@/pages/gestor/Banners'
 import PlantonistaHome from '@/pages/plantonista/PlantonistaHome'
 import SectionHome from '@/pages/plantonista/SectionHome'
@@ -98,6 +99,7 @@ export default function App() {
                     <Route path="/mensagens" element={<Mensagens />} />
                     <Route path="/minha-agenda" element={<MinhaAgenda />} />
                     <Route path="/prescricao-teste" element={<PrescricaoTeste />} />
+                    <Route path="/referencia-diluicao" element={<ReferenciaDiluicao />} />
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista']} />}>
                     <Route path="/plantao" element={<PlantaoHome />} />

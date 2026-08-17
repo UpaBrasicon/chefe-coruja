@@ -1,0 +1,76 @@
+TA   REF   TA   REF
+ Clearence de
+creatinina  
+Dose de indução   Dose de manutenção
+ Via
+ Ganciclovir sódico 500mg - Solução
+Injetável
+(Genérico -Eurofarma)
+ EV  
+10mL de água estéril
+para injeção  
+-   -
+ SF 0.9%
+SG 5%
+Ringer
+Ringer Lactato
+ Furosemida 10mg/mL
+(Farmace)
+ EV
+IM  
+-   -   -  
+SF 0.9%
+Ringer Lactato  
+≤ 4mg/min   24h   24h   Sim
+ Atenção: não deve ser administrado em bolus.
+Em pacientes com insuficiência renal severa (creatinina sérica > 5 mg/dL),
+recomenda-se não exceder a velocidade de infusão de 2,5 mg/min.
+A administração IM deve ser restrita a casos excepcionais nos quais a EV não é
+possível.
+A solução injetável de tem pH aproximado a 9 sem capacidade de
+tamponamento. Por isto, o ingrediente ativo pode precipitar em valores de pH
+inferiores a 7. Deve-se ter cautela para que o pH da solução esteja dentro de
+uma variação de levemente alcalino para neutro.
+Não deve ser misturado com outros medicamentos na mesma seringa de
+injeção ou durante infusão.
+ Reconstituição  
+Estabilidade  
+Diluente*   Tempo de Infusão  
+Estabilidade do diluído   Ajuste
+Renal  
+Observações
+ <10mL/min
+ 1,25mg/kg
+3x/semana depois da
+hemodiálise
+ 0,625mg/kg
+3x/semana depois da
+hemodiálise
+ Sim
+ Para reconstituição do ganciclovir, não usar água bacteriostática para injeção
+que contenha parabenos, uma vez que é incompatível com o pó estéril de
+ganciclovir e pode causar precipitação.
+Administração: infusão EV durante 1 hora e não deve ser misturado com
+outros produtos intravenosos. Infusão com concentrações maiores que 10
+mg/mL não é recomendada.
+Manuseio: precauções devem ser tomadas. pois o ganciclovir é considerado
+um potencial teratogênico e carcinogênico em humanos:
+Evitar contato direto da solução reconstituída nas ampolas com a pele e com
+as mucosas. A solução injetável de ganciclovir é alcalina (pH̴   11). Em caso de
+contato com a pele, ou membranas mucosas, lavar minuciosamente com
+água e sabão. Em casos de contato com os olhos, limpar com água corrente.
+Atenção: não aplicar a injeção EV rapidamente ou em bolus. A toxicidade de
+ganciclovir pode aumentar por causa da concentração plasmática aumentada.
+Se for aplicado IM ou SC, pode resultar em grave irritação do tecido por causa
+do pH elevado.
+Pacientes com disfunção renal: dose deve ser modificada como mostrado na
+tabela a seguir:
+ ≥ 70mL/min
+ 2,5mg/kg a cada 12h   2,5 mg/kg/dia
+ 24–49 mL/min   2,5mg/kg/dia   1,25 mg/kg/dia
+ -   -   12h
+ 5mg/kg a cada 12 h   5mg/kg/dia
+ 50–69 mL/min
+ 10–24 mL/min   1,25mg/kg/dia   0,625 mg/kg/dia
+ MEDICAMENTO
+(Apresentação padronizada)
