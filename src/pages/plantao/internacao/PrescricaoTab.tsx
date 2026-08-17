@@ -35,7 +35,7 @@ export function PrescricaoTab({
   const [registrado, setRegistrado] = React.useState(false)
   const [erroRegistro, setErroRegistro] = React.useState<string | null>(null)
   const marcados = new Set(prescricao.marcados)
-  const carregado = React.useRef(false)
+  const carregado = React.useRef<string | null>(null)
 
   // Prescrição ativa do paciente (do banco) — para pré-marcar ao abrir
   const { data: prescricaoBanco } = useQuery({
@@ -55,15 +55,33 @@ export function PrescricaoTab({
     },
   })
 
+  // Extrai o "nome do medicamento" de um texto do catálogo (ex.: "DIPIRONA 01AMP"
+  // → "dipirona"; "SORO FISIOLÓGICO 0,9%" → "soro fisiológico").
+  function nomeMed(texto: string) {
+    return texto
+      .toLowerCase()
+      .split(',')[0]
+      .replace(/[0-9]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+
   React.useEffect(() => {
-    if (!prescricaoBanco || carregado.current) return
+    // Reseta o "já carregado" quando o paciente muda
+    if (carregado.current !== pacienteId) {
+      carregado.current = pacienteId ?? null
+      if (!pacienteId) return
+    } else {
+      return
+    }
+    if (!prescricaoBanco) return
     const itens = prescricaoBanco.prescricao_itens ?? []
     if (itens.length === 0) return
-    // Corresponde cada descrição do banco a um item do catálogo e pré-marca
+    // Corresponde cada item do banco a um item do catálogo e pré-marca
     const ids = new Set<string>()
     for (const it of itens) {
       const d = it.descricao.toLowerCase()
-      const match = ITENS.find((i) => d.includes(i.med.toLowerCase().slice(0, 10)))
+      const match = ITENS.find((i) => d.includes(nomeMed(i.med)) && nomeMed(i.med).length > 2)
       if (match) ids.add(String(match.n))
     }
     if (ids.size > 0) {
@@ -73,7 +91,6 @@ export function PrescricaoTab({
     if (prescricaoBanco.observacoes && !prescricao.obs) {
       onChange({ obs: prescricaoBanco.observacoes })
     }
-    carregado.current = true
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prescricaoBanco, pacienteId])
 
