@@ -1,5 +1,6 @@
-const fs = require('fs')
+﻿const fs = require('fs')
 const path = require('path')
+const { normalizar, nomeBase, nomeInternacional, RXCUI_MANUAL } = require('./sinonimos.cjs')
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FASE 1 — Mapeamento de identificação canônica
@@ -21,175 +22,6 @@ const PADRONIZACAO = path.join(DATA, 'padronizacao.csv')
 const SAIDA = path.join(DATA, 'medicamento.csv')
 const RELATORIO = path.join(DATA, 'relatorio_cobertura.txt')
 const CACHE_RXCUI = path.join(CACHE, 'rxcui_cache.json')
-
-// Sinonímia BR -> nome internacional (RxNorm). Só para BUSCA no RxNorm; a
-// apresentação/diluição continua dependente da fonte clínica (bula ANVISA).
-const SINONIMIA = {
-  adrenalina: 'epinephrine',
-  noradrenalina: 'norepinephrine',
-  dipirona: 'metamizole',
-  'dipirona (gotas)': 'metamizole',
-  'dipirona (ampola)': 'metamizole',
-  acetilcisteina: 'acetylcysteine',
-  'acido folico': 'folic acid',
-  'acido aminocaproico': 'aminocaproic acid',
-  amicacina: 'amikacin',
-  amiodarona: 'amiodarone',
-  anlodipino: 'amlodipine',
-  atracurio: 'atracurium',
-  bicarbonato: 'sodium bicarbonate',
-  carbamazepina: 'carbamazepine',
-  ceftazidima: 'ceftazidime',
-  cefuroxima: 'cefuroxime',
-  cetamina: 'ketamine',
-  cetorolaco: 'ketorolac',
-  cetoprofeno: 'ketoprofen',
-  cianocobalamina: 'cyanocobalamin',
-  ciprofloxacino: 'ciprofloxacin',
-  cisatracurio: 'cisatracurium',
-  clopidogrel: 'clopidogrel',
-  codeina: 'codeine',
-  desmopressina: 'desmopressin',
-  dexametasona: 'dexamethasone',
-  digoxina: 'digoxin',
-  diltiazem: 'diltiazem',
-  dobutamina: 'dobutamine',
-  doxorrubicina: 'doxorubicin',
-  enalapril: 'enalapril',
-  enoxaparina: 'enoxaparin',
-  ertapenem: 'ertapenem',
-  escopolamina: 'scopolamine',
-  esmolol: 'esmolol',
-  esomeprazol: 'esomeprazole',
-  espironolactona: 'spironolactone',
-  fentanila: 'fentanyl',
-  fenitoina: 'phenytoin',
-  fenobarbital: 'phenobarbital',
-  fenoterol: 'fenoterol',
-  fitomenadiona: 'phytonadione',
-  fluconazol: 'fluconazole',
-  furosemida: 'furosemide',
-  ganciclovir: 'ganciclovir',
-  gentamicina: 'gentamicin',
-  glicose: 'glucose',
-  glucagon: 'glucagon',
-  haloperidol: 'haloperidol',
-  hidralazina: 'hydralazine',
-  'hidroclorotiazida': 'hydrochlorothiazide',
-  hidrocortisona: 'hydrocortisone',
-  ipratropio: 'ipratropium',
-  levetiracetam: 'levetiracetam',
-  levofloxacino: 'levofloxacin',
-  linezolida: 'linezolid',
-  lorazepam: 'lorazepam',
-  losartana: 'losartan',
-  meropenem: 'meropenem',
-  metformina: 'metformin',
-  metilprednisolona: 'methylprednisolone',
-  metoclopramida: 'metoclopramide',
-  metoprolol: 'metoprolol',
-  metronidazol: 'metronidazole',
-  midazolam: 'midazolam',
-  milrinona: 'milrinone',
-  misoprostol: 'misoprostol',
-  morfina: 'morphine',
-  naloxona: 'naloxone',
-  nitrofurantoina: 'nitrofurantoin',
-  nitroglicerina: 'nitroglycerin',
-  nifedipino: 'nifedipine',
-  noradrenalina: 'norepinephrine',
-  octreotida: 'octreotide',
-  ocitocina: 'oxytocin',
-  omeprazol: 'omeprazole',
-  ondansetrona: 'ondansetron',
-  oseltamivir: 'oseltamivir',
-  oxacilina: 'oxacillin',
-  pantoprazol: 'pantoprazole',
-  paracetamol: 'acetaminophen',
-  piperacilina: 'piperacillin',
-  prometazina: 'promethazine',
-  propofol: 'propofol',
-  protamina: 'protamine',
-  ranitidina: 'ranitidine',
-  rocuronio: 'rocuronium',
-  salbutamol: 'albuterol',
-  sulfametoxazol: 'sulfamethoxazole',
-  teofilina: 'theophylline',
-  tramadol: 'tramadol',
-  tranexamico: 'tranexamic acid',
-  valproato: 'valproic acid',
-  vancomicina: 'vancomycin',
-  vasopressina: 'vasopressin',
-  verapamil: 'verapamil',
-  nitroprussiato: 'nitroprusside',
-  'soro fisiologico': 'sodium chloride',
-  'soro glicofisiologico': 'sodium chloride / dextrose',
-  'ringer lactato': 'lactated ringer',
-  'albumina humana': 'albumin human',
-  'heparina nao fracionada': 'heparin',
-  'cloreto de potassio': 'potassium chloride',
-  'fosfato de potassio': 'potassium phosphate',
-  'sulfato de magnesio': 'magnesium sulfate',
-  'gluconato de calcio': 'calcium gluconate',
-  'cloreto de calcio': 'calcium chloride',
-  'bicarbonato de sodio': 'sodium bicarbonate',
-  'cloreto de sodio': 'sodium chloride',
-  glicose: 'glucose',
-  'carvao ativado': 'charcoal activated',
-  dimenidrinato: 'dimenhydrinate',
-  sulbactam: 'sulbactam',
-  amoxicilina: 'amoxicillin',
-  'amoxicilina clavulanato': 'amoxicillin / clavulanate',
-  'amoxicilina sulbactam': 'amoxicillin / clavulanate',
-  'ampicilina sulbactam': 'ampicillin / sulbactam',
-  'ampicilina': 'ampicillin',
-  'piperacilina tazobactam': 'piperacillin / tazobactam',
-  'imipenem cilastatina': 'imipenem / cilastatin',
-  'sulfametoxazol trimetoprima': 'sulfamethoxazole / trimethoprim',
-  'anfotericina b desoxicolato': 'amphotericin b',
-  'anfotericina b lipossomal': 'amphotericin b',
-  'insulina nph': 'insulin isophane',
-  'acido acetilsalicilico': 'aspirin',
-  aas: 'aspirin',
-  'sulfato ferroso': 'ferrous sulfate',
-  hidroxiureia: 'hydroxyurea',
-  colistina: 'colistin',
-  'acido aminocaproico': 'aminocaproic acid',
-  rimantadina: 'rimantadine',
-  warfarina: 'warfarin',
-  levotiroxina: 'levothyroxine',
-  oseltamivir: 'oseltamivir',
-}
-
-// rxcui canônicos verificados via RxNorm (nome -> rxcui), para casos onde o
-// princípio não é um fármaco (soros/soluções) e o RxNav não resolve por nome.
-const RXCUI_MANUAL = {
-  'soro fisiologico': '9863', // sodium chloride
-  'soro glicofisiologico': '20623', // sodium chloride 0.9% / dextrose 5%
-  'ringer lactato': '2877', // lactated ringers
-  'nitroprussiato de sodio': '7476', // nitroprusside
-}
-
-function normalizar(s) {
-  return (s || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9 ]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-// Extrai o nome base antes de parênteses/colchetes e remove tokens numéricos de
-// concentração (ex.: "Cloreto de potassio 10%" -> "cloreto de potassio")
-function nomeBase(s) {
-  const semParenteses = (s || '').replace(/[\(\[].*?[\)\]]/g, '').replace(/\s+/g, ' ').trim()
-  const semNumeros = semParenteses
-    .split(' ')
-    .filter((tok) => !/^[0-9.,/%]+$/.test(tok))
-    .join(' ')
-  return normalizar(semNumeros)
-}
 
 // Lê CSV separado por ';' respeitando aspas simples
 function lerCsv(caminho) {
@@ -250,7 +82,7 @@ async function buscarRxcui(nomeBR, cache) {
     cache[base] = RXCUI_MANUAL[base]
     return RXCUI_MANUAL[base]
   }
-  const internacional = SINONIMIA[base] ?? base
+  const internacional = nomeInternacional(nomeBR)
   const url = `https://rxnav.nlm.nih.gov/REST/rxcui.json?name=${encodeURIComponent(internacional)}&search=1`
   let rxcui = null
   try {
@@ -375,3 +207,4 @@ main().catch((e) => {
   console.error('ERRO:', e.message)
   process.exit(1)
 })
+

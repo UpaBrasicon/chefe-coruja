@@ -1028,6 +1028,50 @@ export type Database = {
         }
         Relationships: []
       }
+      medicamento_bula: {
+        Row: {
+          created_at: string
+          fonte: string
+          generic_name: string | null
+          id: string
+          medicamento_id: string | null
+          principio_ativo: string
+          rxcui: string | null
+          set_id: string | null
+          texto_referencia_en: string | null
+        }
+        Insert: {
+          created_at?: string
+          fonte?: string
+          generic_name?: string | null
+          id?: string
+          medicamento_id?: string | null
+          principio_ativo: string
+          rxcui?: string | null
+          set_id?: string | null
+          texto_referencia_en?: string | null
+        }
+        Update: {
+          created_at?: string
+          fonte?: string
+          generic_name?: string | null
+          id?: string
+          medicamento_id?: string | null
+          principio_ativo?: string
+          rxcui?: string | null
+          set_id?: string | null
+          texto_referencia_en?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicamento_bula_medicamento_id_fkey"
+            columns: ["medicamento_id"]
+            isOneToOne: true
+            referencedRelation: "medicamento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medicamentos: {
         Row: {
           apresentacao: string | null
