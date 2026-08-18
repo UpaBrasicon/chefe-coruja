@@ -120,7 +120,15 @@ export function useMensagens(conversaId: string | null) {
             ['chat-mensagens', conversaId],
             (old) => {
               if (!old) return old
-              const pages = old.pages.map((p) => [completa, ...p])
+              // Insere APENAS na primeira página (a mais recente) e remove a
+              // mensagem temporária do optimistic update com o mesmo corpo/remetente.
+              const pages = old.pages.map((p, i) => {
+                if (i !== 0) return p
+                const semTemp = p.filter(
+                  (m) => !(m.id.startsWith('temp-') && m.autor_id === completa.autor_id && m.corpo === completa.corpo)
+                )
+                return [completa, ...semTemp]
+              })
               return { ...old, pages }
             }
           )

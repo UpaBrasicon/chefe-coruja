@@ -60,13 +60,23 @@ export function ChatDrawer({ aberto, onFechar }: { aberto: boolean; onFechar: ()
   }
 
   return (
-    <div
-      aria-hidden={!aberto}
-      className={cn(
-        'fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l bg-background shadow-2xl transition-transform duration-300 sm:w-[400px]',
-        aberto ? 'translate-x-0' : 'translate-x-full'
-      )}
-    >
+    <>
+      {/* Backdrop: clicar fora fecha o chat */}
+      <div
+        aria-hidden="true"
+        onClick={fechar}
+        className={cn(
+          'fixed inset-0 z-40 bg-black/40 transition-opacity duration-300',
+          aberto ? 'opacity-100' : 'pointer-events-none opacity-0'
+        )}
+      />
+      <div
+        aria-hidden={!aberto}
+        className={cn(
+          'fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l bg-background shadow-2xl transition-transform duration-300 sm:w-[400px]',
+          aberto ? 'translate-x-0' : 'translate-x-full'
+        )}
+      >
       {/* Cabeçalho */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         {conversaAtiva ? (
@@ -120,6 +130,7 @@ export function ChatDrawer({ aberto, onFechar }: { aberto: boolean; onFechar: ()
           onIniciarSuporte={() => void iniciarSuporte()}
         />
       )}
-    </div>
+      </div>
+    </>
   )
 }

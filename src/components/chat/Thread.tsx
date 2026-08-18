@@ -5,7 +5,7 @@ import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { useEnviarMensagem, useMarcarLida, useMensagens } from '@/hooks/useChat'
+import { useEnviarMensagem, useMarcarLida, useMensagens, type MensagemChat } from '@/hooks/useChat'
 import { cn } from '@/lib/utils'
 
 function fmtDia(iso: string) {
@@ -45,7 +45,22 @@ export function Thread({
   const mensagens = React.useMemo(() => {
     const paginas = data?.pages ?? []
     const todas = [...paginas].reverse().flat() // mais antigas primeiro
-    return todas.sort((a, b) => a.criado_em.localeCompare(b.criado_em))
+    const ordenadas = todas.sort((a, b) => a.criado_em.localeCompare(b.criado_em))
+    // deduplica por id (realtime + optimistic podem sobrepor) e remove temporárias
+    // que já têm a mensagem real equivalente (mesmo corpo/remetente).
+    const porId = new Map<string, MensagemChat>()
+    const reaisPorChave = new Set<string>()
+    for (const m of ordenadas) {
+      if (!m.id.startsWith('temp-')) {
+        porId.set(m.id, m)
+        reaisPorChave.add(`${m.autor_id}:${m.corpo}`)
+      }
+    }
+    for (const m of ordenadas) {
+      if (m.id.startsWith('temp-') && reaisPorChave.has(`${m.autor_id}:${m.corpo}`)) continue
+      if (!porId.has(m.id)) porId.set(m.id, m)
+    }
+    return [...porId.values()].sort((a, b) => a.criado_em.localeCompare(b.criado_em))
   }, [data])
 
   // marca como lida ao abrir a thread
