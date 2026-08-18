@@ -11,6 +11,7 @@ import {
   Hospital,
   Images,
   LayoutDashboard,
+  LineChart,
   LogOut,
   MapPin,
   Menu,
@@ -77,6 +78,7 @@ export function AppShell() {
     itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })
     itens.push({ to: '/escala', label: 'Escala', icon: CalendarClock, end: true })
     itens.push({ to: '/historico-escala', label: 'Histórico da Escala', icon: History })
+    itens.push({ to: '/indicadores', label: 'Indicadores', icon: LineChart })
     itens.push({ to: '/configuracao', label: 'Configurações', icon: Settings2 })
     itens.push({ to: '/banners', label: 'Imagens da Unidade', icon: Images })
   }

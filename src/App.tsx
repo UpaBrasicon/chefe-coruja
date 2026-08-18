@@ -29,6 +29,7 @@ import Mensagens from '@/pages/Mensagens'
 import MinhaAgenda from '@/pages/MinhaAgenda'
 import PrescricaoTeste from '@/pages/PrescricaoTeste'
 import ReferenciaDiluicao from '@/pages/ReferenciaDiluicao'
+import Indicadores from '@/pages/Indicadores'
 import { Banners } from '@/pages/gestor/Banners'
 import PlantonistaHome from '@/pages/plantonista/PlantonistaHome'
 import SectionHome from '@/pages/plantonista/SectionHome'
@@ -83,6 +84,7 @@ export default function App() {
                     <Route path="/banners" element={<Banners />} />
                     <Route path="/configuracao" element={<Configuracao />} />
                     <Route path="/historico-escala" element={<HistoricoEscala />} />
+                    <Route path="/indicadores" element={<Indicadores />} />
                   </Route>
                   <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin']} />}>
                     <Route path="/plantonista" element={<PlantonistaHome />} />

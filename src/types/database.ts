@@ -2846,6 +2846,19 @@ export type Database = {
       }
       aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
       aprovar_troca: { Args: { p_troca: string }; Returns: undefined }
+      censo_recente: {
+        Args: { p_dias?: number; p_unidade: string }
+        Returns: {
+          data: string
+          giro_leito: number
+          internados: number
+          leitos_total: number
+          permanencia_media_h: number
+          setor_id: string
+          setor_nome: string
+          taxa_ocupacao: number
+        }[]
+      }
       dar_alta_internado: {
         Args: { p_motivo?: string; p_paciente: string; p_tipo_alta: string }
         Returns: undefined
@@ -2934,6 +2947,10 @@ export type Database = {
       eh_super_admin: { Args: never; Returns: boolean }
       fracionar_plantao: {
         Args: { p_partes?: number; p_plantao: string }
+        Returns: number
+      }
+      gerar_censo_diario: {
+        Args: { p_data: string; p_unidade: string }
         Returns: number
       }
       gerar_escala_mensal: {
