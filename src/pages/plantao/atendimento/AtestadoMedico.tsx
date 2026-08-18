@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DadosPaciente } from '../shared/DadosPaciente'
 import { useEscalaSetores } from '../shared/useEscalaSetores'
-import { fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
+import { carregarEnvelope, fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
 
 export type Atestado = {
   tipo: 'comparecimento' | 'afastamento' | 'repouso'
@@ -42,10 +42,10 @@ const ATESTADO_INICIAL: RascunhoAtestado = {
 }
 
 function carregarAtestado(chave: string): RascunhoAtestado {
+  const carregado = carregarEnvelope<RascunhoAtestado>(chave)
+  if (!carregado) return ATESTADO_INICIAL
   try {
-    const raw = localStorage.getItem(chave)
-    if (!raw) return ATESTADO_INICIAL
-    const p = JSON.parse(raw) as Partial<RascunhoAtestado>
+    const p = carregado.dados as Partial<RascunhoAtestado>
     return {
       paciente: { ...ATESTADO_INICIAL.paciente, ...(p.paciente ?? {}), dataAtual: hojeLocal() },
       atestado: { ...ATESTADO_INICIAL.atestado, ...(p.atestado ?? {}) },
@@ -107,7 +107,10 @@ export function AtestadoMedico({
     `)
     printWindow.document.close()
     printWindow.focus()
-    setTimeout(() => printWindow.print(), 300)
+    setTimeout(() => {
+      printWindow.print()
+      limpar() // LGPD: remove dados de paciente do navegador após emissão
+    }, 300)
   }
 
   return (

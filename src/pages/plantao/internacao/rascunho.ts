@@ -1,5 +1,5 @@
 import type { DadosPaciente } from '../shared/rascunho'
-import { hojeLocal, useRascunho as useRascunhoBase } from '../shared/rascunho'
+import { carregarEnvelope, hojeLocal, useRascunho as useRascunhoBase } from '../shared/rascunho'
 
 export type { DadosPaciente } from '../shared/rascunho'
 
@@ -138,10 +138,10 @@ export const RASCUNHO_INICIAL: Rascunho = {
 }
 
 export function carregarRascunho(chave: string): Rascunho {
+  const carregado = carregarEnvelope<Rascunho>(chave)
+  if (!carregado) return RASCUNHO_INICIAL
   try {
-    const raw = localStorage.getItem(chave)
-    if (!raw) return RASCUNHO_INICIAL
-    const parsed = JSON.parse(raw) as Partial<Rascunho>
+    const parsed = carregado.dados as Partial<Rascunho>
     const r: Rascunho = {
       paciente: { ...RASCUNHO_INICIAL.paciente, ...(parsed.paciente ?? {}) },
       prescricao: { ...RASCUNHO_INICIAL.prescricao, ...(parsed.prescricao ?? {}) },

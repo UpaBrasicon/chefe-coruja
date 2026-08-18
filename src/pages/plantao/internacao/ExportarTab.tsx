@@ -3,6 +3,7 @@ import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { escapeHtml } from '@/lib/utils'
 import type { Aih, DadosPaciente, Evolucao, Exames, Prescricao } from './rascunho'
 import { ITENS } from './prescricaoItens'
 
@@ -10,10 +11,6 @@ function fmtData(iso: string) {
   if (!iso) return ''
   const [y, m, d] = iso.split('-')
   return `${d}/${m}/${y}`
-}
-
-function esc(s: string) {
-  return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 export function ExportarTab({
@@ -104,23 +101,23 @@ export function ExportarTab({
           .map((n, idx) => {
             const item = ITENS.find((i) => i.n === n)
             if (!item) return ''
-            return `<tr><td>${String(idx + 1).padStart(2, '0')}</td><td><strong>${item.med}</strong></td><td>${item.via}</td><td>${item.pos}</td><td>${item.apr ?? ''}</td></tr>`
+            return `<tr><td>${String(idx + 1).padStart(2, '0')}</td><td><strong>${escapeHtml(item.med)}</strong></td><td>${escapeHtml(item.via)}</td><td>${escapeHtml(item.pos)}</td><td>${escapeHtml(item.apr ?? '')}</td></tr>`
           })
           .join('')
         const alergia =
           dados.alergias && dados.alergias.toUpperCase() !== 'NEGA'
-            ? `<div style="background:#dc2626;color:#fff;padding:8px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${esc(dados.alergias.toUpperCase())} ⚠️</div>`
+            ? `<div style="background:#dc2626;color:#fff;padding:8px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${escapeHtml(dados.alergias.toUpperCase())} ⚠️</div>`
             : ''
         const obs = prescricao.obs
-          ? `<div style="margin-top:10px;border:1px dashed #000;padding:8px;font-size:11px;background:#fff;">Observações: ${esc(prescricao.obs)}</div>`
+          ? `<div style="margin-top:10px;border:1px dashed #000;padding:8px;font-size:11px;background:#fff;">Observações: ${escapeHtml(prescricao.obs)}</div>`
           : ''
         await capturar(`
           <div style="position:relative;width:210mm;min-height:297mm;overflow:hidden;">
             <img src="/plantao/background.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;">
             <div style="position:relative;z-index:10;margin:120px auto 0;width:90%;background:#fff;">
               <div style="border:1px solid #000;padding:6px 10px;margin-bottom:12px;font-size:13px;line-height:1.6;text-transform:uppercase;">
-                <div style="display:flex;justify-content:space-between"><strong>Nome:</strong> ${esc(dados.nome || '____________________')} <strong>Data de Nascimento:</strong> ${esc(dados.nascimento || '____/___/____')}</div>
-                <div style="display:flex;justify-content:space-between;margin-top:4px"><strong>Leito:</strong> ${esc(dados.leito || '___')} <strong>Data:</strong> ${fmtData(dados.dataAtual)} <strong>Diagnóstico:</strong> ${esc(dados.diagnostico || '____')}</div>
+                <div style="display:flex;justify-content:space-between"><strong>Nome:</strong> ${escapeHtml(dados.nome || '____________________')} <strong>Data de Nascimento:</strong> ${escapeHtml(dados.nascimento || '____/___/____')}</div>
+                <div style="display:flex;justify-content:space-between;margin-top:4px"><strong>Leito:</strong> ${escapeHtml(dados.leito || '___')} <strong>Data:</strong> ${fmtData(dados.dataAtual)} <strong>Diagnóstico:</strong> ${escapeHtml(dados.diagnostico || '____')}</div>
               </div>
               ${alergia}
               <table style="border-collapse:collapse;width:100%;color:#000;font-size:12px;">
@@ -136,17 +133,17 @@ export function ExportarTab({
       if (escolhidas.includes('aba3') && evolucao.texto.trim()) {
         const alergiaHtml =
           dados.alergias && dados.alergias.toUpperCase() !== 'NEGA'
-            ? `<div style="background:#dc2626;color:#fff;padding:4px;text-align:center;font-weight:800;font-size:11px;margin-bottom:8px;">⚠️ ALERGIA: ${esc(dados.alergias.toUpperCase())} ⚠️</div>`
+            ? `<div style="background:#dc2626;color:#fff;padding:4px;text-align:center;font-weight:800;font-size:11px;margin-bottom:8px;">⚠️ ALERGIA: ${escapeHtml(dados.alergias.toUpperCase())} ⚠️</div>`
             : ''
         const cabecalho = evolucao.tipo === 'admissao' ? 'TERMO DE ADMISSÃO' : 'EVOLUÇÃO MÉDICA'
-        const textoHtml = esc(evolucao.texto).replace(/\n/g, '<br>')
+        const textoHtml = escapeHtml(evolucao.texto).replace(/\n/g, '<br>')
         await capturar(`
           <div style="position:relative;width:210mm;height:297mm;overflow:hidden;">
             <img src="/plantao/background.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;">
             <div style="position:relative;z-index:10;margin:120px auto 0;width:90%;display:flex;flex-direction:column;height:calc(297mm - 150px);">
               <div style="border:1px solid #000;padding:6px 10px;margin-bottom:6px;font-size:13px;line-height:1.6;text-transform:uppercase;background:#fff;">
-                <div style="display:flex;justify-content:space-between"><strong>Nome:</strong> ${esc(dados.nome || '____________________')} <strong>Data de Nascimento:</strong> ${esc(dados.nascimento || '____/___/____')}</div>
-                <div style="display:flex;justify-content:space-between;margin-top:4px"><strong>Leito:</strong> ${esc(dados.leito || '___')} <strong>Data:</strong> ${fmtData(dados.dataAtual)} <strong>Diagnóstico:</strong> ${esc(dados.diagnostico || '____')}</div>
+                <div style="display:flex;justify-content:space-between"><strong>Nome:</strong> ${escapeHtml(dados.nome || '____________________')} <strong>Data de Nascimento:</strong> ${escapeHtml(dados.nascimento || '____/___/____')}</div>
+                <div style="display:flex;justify-content:space-between;margin-top:4px"><strong>Leito:</strong> ${escapeHtml(dados.leito || '___')} <strong>Data:</strong> ${fmtData(dados.dataAtual)} <strong>Diagnóstico:</strong> ${escapeHtml(dados.diagnostico || '____')}</div>
               </div>
               <div style="text-align:center;font-weight:bold;font-size:14px;margin-bottom:6px;text-decoration:underline;background:#fff;">${cabecalho}</div>
               ${alergiaHtml}
@@ -157,13 +154,13 @@ export function ExportarTab({
       }
 
       if (escolhidas.includes('aba4') && exames.texto.trim()) {
-        const paciente = esc(dados.nome.trim().toUpperCase()) || 'PACIENTE NÃO IDENTIFICADO'
+        const paciente = escapeHtml(dados.nome.trim().toUpperCase()) || 'PACIENTE NÃO IDENTIFICADO'
         const data = fmtData(dados.dataAtual)
         const linhas = exames.texto
           .split(/\n+/)
           .map((l) => l.replace(/^[-*•]\s*/, ''))
           .filter(Boolean)
-        const listaHtml = linhas.map((l) => `<div style="margin-bottom:6px;">• ${esc(l)}</div>`).join('')
+        const listaHtml = linhas.map((l) => `<div style="margin-bottom:6px;">• ${escapeHtml(l)}</div>`).join('')
         await capturar(
           `<div style="position:relative;width:297mm;height:209mm;overflow:hidden;">
             <img src="/plantao/MODELO_EXAMES.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;display:block;">
@@ -179,7 +176,7 @@ export function ExportarTab({
         const rows = camposAIH(aih)
           .map(
             (c) =>
-              `<div style="display:grid;grid-template-columns:34% 1fr;border-bottom:1px solid #000;min-height:24px;"><div style="font-size:7px;font-weight:700;text-transform:uppercase;padding:2px 4px;border-right:1px solid #000;display:flex;align-items:center;">${esc(c.rotulo)}</div><div style="font-size:10px;padding:2px 4px;word-wrap:break-word;white-space:${c.ta ? 'pre-wrap' : 'normal'};${c.ta ? 'font-size:9px;' : ''}">${(c.valor || '&nbsp;').replace(/\n/g, '<br>')}</div></div>`
+              `<div style="display:grid;grid-template-columns:34% 1fr;border-bottom:1px solid #000;min-height:24px;"><div style="font-size:7px;font-weight:700;text-transform:uppercase;padding:2px 4px;border-right:1px solid #000;display:flex;align-items:center;">${escapeHtml(c.rotulo)}</div><div style="font-size:10px;padding:2px 4px;word-wrap:break-word;white-space:${c.ta ? 'pre-wrap' : 'normal'};${c.ta ? 'font-size:9px;' : ''}">${(escapeHtml(c.valor) || '&nbsp;').replace(/\n/g, '<br>')}</div></div>`
           )
           .join('')
         await capturar(`

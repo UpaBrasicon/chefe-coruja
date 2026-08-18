@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DadosPaciente } from '../shared/DadosPaciente'
 import { useEscalaSetores } from '../shared/useEscalaSetores'
-import { fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
+import { carregarEnvelope, fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
 
 export type Encaminhamento = {
   especialidade: string
@@ -40,10 +40,10 @@ const ENC_INICIAL: RascunhoEnc = {
 }
 
 function carregarEnc(chave: string): RascunhoEnc {
+  const carregado = carregarEnvelope<RascunhoEnc>(chave)
+  if (!carregado) return ENC_INICIAL
   try {
-    const raw = localStorage.getItem(chave)
-    if (!raw) return ENC_INICIAL
-    const p = JSON.parse(raw) as Partial<RascunhoEnc>
+    const p = carregado.dados as Partial<RascunhoEnc>
     return {
       paciente: { ...ENC_INICIAL.paciente, ...(p.paciente ?? {}), dataAtual: hojeLocal() },
       encaminhamento: { ...ENC_INICIAL.encaminhamento, ...(p.encaminhamento ?? {}) },
@@ -119,7 +119,10 @@ export function Encaminhamento({
     `)
     printWindow.document.close()
     printWindow.focus()
-    setTimeout(() => printWindow.print(), 300)
+    setTimeout(() => {
+      printWindow.print()
+      limpar() // LGPD: remove dados de paciente do navegador após emissão
+    }, 300)
   }
 
   return (

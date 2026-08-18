@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { supabase } from '@/lib/supabase'
+import { limparTodosRascunhos } from '@/pages/plantao/shared/rascunho'
 import type { Perfis } from '@/types/database'
 
 interface AuthContextValue {
@@ -63,6 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: error?.message ?? null }
       },
       signOut: async () => {
+        // LGPD: remove rascunhos clínicos do navegador ANTES de encerrar a sessão
+        // (computador compartilhado de UPA — dados de paciente não podem ficar).
+        limparTodosRascunhos()
         await supabase.auth.signOut()
       },
     }),

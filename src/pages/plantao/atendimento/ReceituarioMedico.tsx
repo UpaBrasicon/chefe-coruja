@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DadosPaciente } from '../shared/DadosPaciente'
 import { useEscalaSetores } from '../shared/useEscalaSetores'
-import { fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
+import { carregarEnvelope, fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
 
 export type Receita = {
   tipo: 'branca' | 'azul' | 'amarela' | 'verde'
@@ -41,10 +41,10 @@ const RECEITA_INICIAL: RascunhoReceita = {
 }
 
 function carregarReceita(chave: string): RascunhoReceita {
+  const carregado = carregarEnvelope<RascunhoReceita>(chave)
+  if (!carregado) return RECEITA_INICIAL
   try {
-    const raw = localStorage.getItem(chave)
-    if (!raw) return RECEITA_INICIAL
-    const p = JSON.parse(raw) as Partial<RascunhoReceita>
+    const p = carregado.dados as Partial<RascunhoReceita>
     return {
       paciente: { ...RECEITA_INICIAL.paciente, ...(p.paciente ?? {}), dataAtual: hojeLocal() },
       receita: {
@@ -172,7 +172,10 @@ export function ReceituarioMedico({
     `)
     printWindow.document.close()
     printWindow.focus()
-    setTimeout(() => printWindow.print(), 300)
+    setTimeout(() => {
+      printWindow.print()
+      limpar() // LGPD: remove dados de paciente do navegador após emissão
+    }, 300)
   }
 
   return (
