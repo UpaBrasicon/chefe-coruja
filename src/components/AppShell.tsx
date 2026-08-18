@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity,
   BedDouble,
@@ -33,6 +33,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { usePlantao } from '@/hooks/usePlantao'
 import { useWebPush } from '@/hooks/useWebPush'
+import { useChatRealtimeGlobal, useTotalNaoLidas } from '@/hooks/useChat'
+import { ChatDrawer } from '@/components/chat/ChatDrawer'
 import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
 import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
 import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
@@ -53,10 +55,30 @@ export function AppShell() {
   const { ehAdmin, ehGestor, ehPlantonista, unidades, unidadeAtiva, papelAtivo, status } =
     useUnidade()
   const navigate = useNavigate()
+  const location = useLocation()
   const [menuAberto, setMenuAberto] = React.useState(false)
+  const [chatAberto, setChatAberto] = React.useState(false)
 
   // T1: Web Push (base) — ativa notificações do navegador
   useWebPush(papelAtivo === 'plantonista')
+
+  // Chat: disponível para plantonista e gestor (NÃO para admin)
+  const chatHabilitado = papelAtivo === 'plantonista' || papelAtivo === 'gestor'
+  useChatRealtimeGlobal()
+  const totalNaoLidas = useTotalNaoLidas()
+
+  // Rota antiga /mensagens agora abre o drawer (Mensagens.tsx foi substituído).
+  // O estado é derivado do pathname na renderização; o redirect usa um timer
+  // (assíncrono) para não chamar setState síncrono dentro de effect.
+  const mensagensSolicitadas = location.pathname === '/mensagens' && chatHabilitado
+  const chatAbertoEfetivo = chatAberto || mensagensSolicitadas
+
+  React.useEffect(() => {
+    if (mensagensSolicitadas) {
+      const t = setTimeout(() => navigate('/', { replace: true }), 0)
+      return () => clearTimeout(t)
+    }
+  }, [mensagensSolicitadas, navigate])
 
   const itens: NavItem[] = []
   if (ehPlantonista) {
@@ -137,6 +159,16 @@ export function AppShell() {
           </Button>
         )}
         {ehPlantonista && <SinoAvisos unidadeId={unidadeAtiva?.unidade_id} habilitado />}
+        {chatHabilitado && (
+          <Button variant="ghost" size="sm" onClick={() => setChatAberto(true)} aria-label="Abrir chat">
+            <MessageSquare />
+            {totalNaoLidas > 0 && (
+              <Badge variant="destructive" className="ml-0.5">
+                {totalNaoLidas}
+              </Badge>
+            )}
+          </Button>
+        )}
         <NavLink to="/perfil" aria-label="Meu perfil">
           <span className="flex size-8 items-center justify-center overflow-hidden rounded-full border bg-muted transition-transform hover:scale-105">
             {perfil?.foto_url ? (
@@ -215,6 +247,16 @@ export function AppShell() {
         </span>
         <div className="flex items-center gap-1">
           {ehPlantonista && <SinoAvisos unidadeId={unidadeAtiva?.unidade_id} habilitado />}
+          {chatHabilitado && (
+            <Button variant="ghost" size="sm" onClick={() => setChatAberto(true)} aria-label="Abrir chat">
+              <MessageSquare />
+              {totalNaoLidas > 0 && (
+                <Badge variant="destructive" className="ml-0.5">
+                  {totalNaoLidas}
+                </Badge>
+              )}
+            </Button>
+          )}
           <Button variant="ghost" size="sm" onClick={handleSair}>
             <LogOut />
           </Button>
@@ -279,6 +321,10 @@ export function AppShell() {
           </div>
         </main>
       </div>
+
+      {chatHabilitado && (
+        <ChatDrawer aberto={chatAbertoEfetivo} onFechar={() => setChatAberto(false)} />
+      )}
     </div>
   )
 }

@@ -377,6 +377,51 @@ export type Database = {
           },
         ]
       }
+      chat_mensagens: {
+        Row: {
+          autor_id: string
+          conversa_id: string
+          corpo: string
+          criado_em: string
+          editado_em: string | null
+          excluida: boolean
+          id: string
+        }
+        Insert: {
+          autor_id: string
+          conversa_id: string
+          corpo: string
+          criado_em?: string
+          editado_em?: string | null
+          excluida?: boolean
+          id?: string
+        }
+        Update: {
+          autor_id?: string
+          conversa_id?: string
+          corpo?: string
+          criado_em?: string
+          editado_em?: string | null
+          excluida?: boolean
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_mensagens_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_mensagens_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checklist_admissao: {
         Row: {
           atualizado_por: string | null
@@ -466,6 +511,71 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "configuracoes_unidade_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversa_participantes: {
+        Row: {
+          conversa_id: string
+          entrou_em: string
+          perfil_id: string
+          ultima_leitura_em: string | null
+        }
+        Insert: {
+          conversa_id: string
+          entrou_em?: string
+          perfil_id: string
+          ultima_leitura_em?: string | null
+        }
+        Update: {
+          conversa_id?: string
+          entrou_em?: string
+          perfil_id?: string
+          ultima_leitura_em?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversa_participantes_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversa_participantes_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversas: {
+        Row: {
+          criado_em: string
+          id: string
+          tipo: string
+          unidade_id: string | null
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          tipo?: string
+          unidade_id?: string | null
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          tipo?: string
+          unidade_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversas_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -2821,6 +2931,11 @@ export type Database = {
       }
     }
     Functions: {
+      abrir_conversa_direta: {
+        Args: { p_destinatario_id: string }
+        Returns: string
+      }
+      abrir_conversa_suporte: { Args: never; Returns: string }
       abrir_internacao: {
         Args: {
           p_leito?: string
@@ -2857,6 +2972,17 @@ export type Database = {
           setor_id: string
           setor_nome: string
           taxa_ocupacao: number
+        }[]
+      }
+      contatos_chat: {
+        Args: never
+        Returns: {
+          em_plantao: boolean
+          foto: string
+          nome: string
+          papel: string
+          perfil_id: string
+          setor_nome: string
         }[]
       }
       dar_alta_internado: {
@@ -2944,7 +3070,16 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      editar_mensagem: {
+        Args: { p_corpo: string; p_mensagem_id: string }
+        Returns: undefined
+      }
       eh_super_admin: { Args: never; Returns: boolean }
+      enviar_mensagem: {
+        Args: { p_conversa_id: string; p_corpo: string }
+        Returns: string
+      }
+      excluir_mensagem: { Args: { p_mensagem_id: string }; Returns: undefined }
       fracionar_plantao: {
         Args: { p_partes?: number; p_plantao: string }
         Returns: number
@@ -2981,6 +3116,23 @@ export type Database = {
         }[]
       }
       horario_servidor: { Args: never; Returns: string }
+      listar_conversas: {
+        Args: never
+        Returns: {
+          conversa_id: string
+          interlocutor_foto: string
+          interlocutor_id: string
+          interlocutor_nome: string
+          interlocutor_papel: string
+          nao_lidas: number
+          tipo: string
+          ultima_data: string
+          ultima_mensagem: string
+          unidade_id: string
+          unidade_nome: string
+        }[]
+      }
+      marcar_lida: { Args: { p_conversa_id: string }; Returns: undefined }
       marcar_notificacao_lida: { Args: { p_id: string }; Returns: undefined }
       minhas_notificacoes: {
         Args: { p_unidade: string }
