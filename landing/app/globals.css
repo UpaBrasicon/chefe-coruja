@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-white text-slate-800 antialiased;
+  }
+  /* Acessibilidade: foco visível */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+}
+
+@layer components {
+  .container-site {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition-colors;
+  }
+  .btn-primary {
+    @apply btn bg-primary text-white hover:bg-primary-dark;
+  }
+  .btn-outline {
+    @apply btn border-2 border-primary text-primary hover:bg-primary/5;
+  }
+  .btn-whatsapp {
+    @apply btn bg-emerald-500 text-white hover:bg-emerald-600;
+  }
+  .section-title {
+    @apply text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl;
+  }
+  .section-subtitle {
+    @apply mt-3 text-lg text-slate-600;
+  }
+}
