@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+
+import { ImageSlider } from "@/components/ui/image-slider";
 
 // Imagens do painel de apresentação (SVG locais — sem dependência de rede).
 const images = [
@@ -69,37 +72,26 @@ export default function AuthSectionTwo({
               Chefe Coruja
             </div>
 
-            <div className="relative mt-8 grid w-full grid-cols-[1.55fr_1fr] gap-2 rounded-md">
+            <div className="relative mt-8 w-full overflow-hidden rounded-md">
               <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-20 bg-gradient-to-b from-[#0d9488] to-transparent" />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-gradient-to-t from-[#0d9488] to-transparent" />
-              <ImageTile
-                src={images[0]}
-                active={activeIndex === 0}
-                className="row-span-2 h-[250px]"
-              />
-              <ImageTile
-                src={images[1]}
-                active={activeIndex === 1}
-                className="h-[121px]"
-              />
-              <ImageTile
-                src={images[3]}
-                active={activeIndex === 3}
-                className="h-[121px]"
-              />
-              <ImageTile
-                src={images[2]}
-                active={activeIndex === 2}
-                className="col-span-2 h-[120px]"
-              />
+              <div className="h-[500px] w-full">
+                <ImageSlider images={images} interval={2600} />
+              </div>
             </div>
 
             <div className="mt-6 w-full rounded-[10px] border border-dashed border-white/25 px-5 py-4">
               <div className="flex items-end gap-4">
-                <p className="line-clamp-4 flex-1 text-xs leading-4 text-white/70">
+                <motion.p
+                  key={activeIndex}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="line-clamp-4 flex-1 text-xs leading-4 text-white/70"
+                >
                   <span className="font-semibold text-white">/chefe</span>{" "}
                   {prompts[activeIndex]}
-                </p>
+                </motion.p>
                 <button
                   type="button"
                   className="grid size-8 shrink-0 place-items-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
@@ -141,50 +133,6 @@ export default function AuthSectionTwo({
   );
 }
 
-function ImageTile({
-  src,
-  active,
-  className,
-}: {
-  src: string;
-  active: boolean;
-  className: string;
-}) {
-  return (
-    <div
-      className={`${className} relative overflow-visible rounded-md ${active ? "z-10" : "z-0"}`}
-    >
-      <img
-        src={src}
-        alt="Exemplo da plataforma Chefe Coruja"
-        className={`h-full w-full rounded-md object-cover transition-opacity duration-700 ${active ? "opacity-100" : "opacity-40"}`}
-      />
-      <FocusCorners active={active} />
-    </div>
-  );
-}
-
-function FocusCorners({ active }: { active: boolean }) {
-  const baseClass = `pointer-events-none absolute h-4 w-4 border-white/60 transition-all duration-500 ease-out ${active ? "translate-x-0 translate-y-0 opacity-100" : "opacity-0"}`;
-
-  return (
-    <>
-      <div
-        className={`${baseClass} -left-2 -top-2 border-l border-t ${active ? "" : "-translate-x-2 -translate-y-2"}`}
-      />
-      <div
-        className={`${baseClass} -right-2 -top-2 border-r border-t ${active ? "" : "translate-x-2 -translate-y-2"}`}
-      />
-      <div
-        className={`${baseClass} -bottom-2 -left-2 border-b border-l ${active ? "" : "-translate-x-2 translate-y-2"}`}
-      />
-      <div
-        className={`${baseClass} -bottom-2 -right-2 border-b border-r ${active ? "" : "translate-x-2 translate-y-2"}`}
-      />
-    </>
-  );
-}
-
 function AuthForm({
   onSubmit,
   erro,
@@ -203,7 +151,12 @@ function AuthForm({
   }
 
   return (
-    <div className="mx-auto w-full max-w-[500px] text-center">
+    <motion.div
+      className="w-full max-w-[500px] text-center"
+      initial={{ opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       <h1 className="whitespace-nowrap text-3xl font-medium tracking-[-0.04em] sm:text-4xl lg:text-[42px] lg:leading-[1.05]">
         Entrar na plataforma
       </h1>
@@ -258,7 +211,7 @@ function AuthForm({
           Cadastre-se
         </Link>
       </p>
-    </div>
+    </motion.div>
   );
 }
 
