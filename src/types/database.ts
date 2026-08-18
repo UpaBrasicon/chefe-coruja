@@ -2846,6 +2846,10 @@ export type Database = {
       }
       aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
       aprovar_troca: { Args: { p_troca: string }; Returns: undefined }
+      dar_alta_internado: {
+        Args: { p_motivo?: string; p_paciente: string; p_tipo_alta: string }
+        Returns: undefined
+      }
       data_atual: { Args: never; Returns: string }
       diluicao_publicada: {
         Args: { p_medicamento: string }
@@ -3110,6 +3114,15 @@ export type Database = {
         Returns: string
       }
       tem_acesso_atendimento: { Args: { unidade: string }; Returns: boolean }
+      transferir_internado: {
+        Args: {
+          p_destino: string
+          p_motivo?: string
+          p_paciente: string
+          p_tipo_evento?: string
+        }
+        Returns: string
+      }
       transferir_paciente: {
         Args: { p_destino: string; p_motivo?: string; p_paciente: string }
         Returns: string

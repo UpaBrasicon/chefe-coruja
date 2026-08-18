@@ -197,6 +197,44 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
     },
   })
 
+  // Eventos ADT do paciente (trilha imutável de admissão→transferências→alta)
+  const { data: eventosAdt } = useQuery({
+    queryKey: ['eventos-adt-paciente', pacienteDetalhe?.id],
+    enabled: !!pacienteDetalhe,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('eventos_adt')
+        .select('*, perfis!eventos_adt_autor_id_fkey(nome_completo)')
+        .eq('paciente_id', pacienteDetalhe!.id)
+        .order('seq', { ascending: true })
+      if (error) throw error
+      return (data ?? []) as unknown as {
+        id: string
+        seq: number
+        tipo_evento: string
+        motivo: string | null
+        created_at: string
+        perfis: { nome_completo: string } | null
+      }[]
+    },
+  })
+
+  const TIPO_EVENTO_LABEL: Record<string, string> = {
+    admissao: 'Admissão',
+    entrada_observacao: 'Entrada em observação',
+    internacao: 'Internação',
+    transferencia_leito: 'Transferência de leito',
+    transferencia_setor: 'Transferência de setor',
+    solicitacao_alta: 'Solicitação de alta',
+    alta_melhorada: 'Alta melhorada',
+    alta_pedido: 'Alta a pedido',
+    alta_evasao: 'Evasão',
+    transferencia_externa: 'Transferência externa',
+    obito: 'Óbito',
+    cancelamento_alta: 'Cancelamento de alta',
+    retificacao: 'Retificação',
+  }
+
   const invalidar = () => {
     void queryClient.invalidateQueries({ queryKey: ['pacientes-internados'] })
     void queryClient.invalidateQueries({ queryKey: ['transferencias-paciente'] })
@@ -218,17 +256,29 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
     if (!error) void queryClient.invalidateQueries({ queryKey: ['checklist-admissao'] })
   }
 
-  async function solicitarAlta() {
-    if (!pacienteDetalhe || !unidadeId) return
-    const { error } = await supabase.from('alta_paciente').insert({
-      paciente_id: pacienteDetalhe.id,
-      unidade_id: unidadeId,
-      status: 'em_alta',
-      criterios: { clinico: true },
-      liberou_leito: false,
-    })
-    if (!error) void queryClient.invalidateQueries({ queryKey: ['alta-paciente'] })
-  }
+  const [altaTipo, setAltaTipo] = React.useState('alta_melhorada')
+  const altaMutation = useMutation({
+    mutationFn: async () => {
+      if (!pacienteDetalhe) return
+      const { error } = await supabase.rpc('dar_alta_internado', {
+        p_paciente: pacienteDetalhe.id,
+        p_tipo_alta: altaTipo,
+        p_motivo: 'Alta registrada no painel de internação',
+      })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      invalidar()
+      void queryClient.invalidateQueries({ queryKey: ['alta-paciente'] })
+      void queryClient.invalidateQueries({ queryKey: ['pacientes-internados'] })
+      setSucesso('Alta registrada: evento ADT emitido e leito liberado.')
+      setPacienteDetalhe(null)
+      setTimeout(() => setSucesso(null), 4000)
+    },
+    onError: (e) => {
+      setSucesso(e instanceof Error ? 'Erro: ' + e.message : 'Erro ao registrar alta.')
+    },
+  })
 
   function exportarAuditoriaCSV() {
     if (!transferencias || transferencias.length === 0) return
@@ -248,7 +298,7 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
   const transferirMutation = useMutation({
     mutationFn: async () => {
       if (!transferir || !destinoId) return
-      const { data, error } = await supabase.rpc('transferir_paciente', {
+      const { data, error } = await supabase.rpc('transferir_internado', {
         p_paciente: transferir.id,
         p_destino: destinoId,
         p_motivo: motivo || undefined,
@@ -258,7 +308,7 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
     },
     onSuccess: () => {
       invalidar()
-      setSucesso('Paciente transferido com sucesso.')
+      setSucesso('Paciente transferido com sucesso (evento ADT registrado).')
       setTransferir(null)
       setDestinoId('')
       setMotivo('')
@@ -512,6 +562,33 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
           </DialogHeader>
 
           <div className="flex flex-col gap-4">
+            {/* Eventos ADT: trilha imutável do episódio */}
+            <div className="flex flex-col gap-1.5">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Trilha do episódio (ADT)
+              </div>
+              {(eventosAdt ?? []).length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhum evento ADT registrado.</p>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  {(eventosAdt ?? []).map((e) => (
+                    <div key={e.id} className="flex items-center gap-2 rounded-lg border p-2 text-sm">
+                      <Badge variant="secondary">#{e.seq}</Badge>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium">
+                          {TIPO_EVENTO_LABEL[e.tipo_evento] ?? e.tipo_evento}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {fmtDia(e.created_at)} · {e.perfis?.nome_completo ?? '—'}
+                          {e.motivo ? ` · ${e.motivo}` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* I1: linha do tempo */}
             <div className="flex flex-col gap-1.5">
               <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -572,14 +649,32 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
                 <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
                   ✓ Alta concluída · {fmtDia(alta.created_at)}
                 </div>
-              ) : alta?.status === 'em_alta' ? (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
-                  Alta em processo (aguardando liberação do leito).
-                </div>
               ) : (
-                <Button size="sm" variant="outline" onClick={solicitarAlta}>
-                  Solicitar alta
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="alta-tipo">Tipo de alta</Label>
+                    <Select value={altaTipo} onValueChange={(v) => setAltaTipo(v ?? 'alta_melhorada')}>
+                      <SelectTrigger id="alta-tipo" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="alta_melhorada">Alta melhorada</SelectItem>
+                        <SelectItem value="alta_pedido">Alta a pedido</SelectItem>
+                        <SelectItem value="alta_evasao">Evasão</SelectItem>
+                        <SelectItem value="transferencia_externa">Transferência externa</SelectItem>
+                        <SelectItem value="obito">Óbito</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => altaMutation.mutate()}
+                    disabled={altaMutation.isPending}
+                  >
+                    {altaMutation.isPending ? <Spinner /> : null} Registrar alta
+                  </Button>
+                </div>
               )}
             </div>
           </div>
