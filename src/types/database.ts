@@ -2953,6 +2953,7 @@ export type Database = {
         Args: { p_data: string; p_unidade: string }
         Returns: number
       }
+      gerar_censo_todas_unidades: { Args: { p_data?: string }; Returns: number }
       gerar_escala_mensal: {
         Args: { p_ano: number; p_mes: number; p_unidade: string }
         Returns: number
