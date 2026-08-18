@@ -3071,6 +3071,17 @@ export type Database = {
           perfil_id: string
         }[]
       }
+      salvar_documento: {
+        Args: {
+          p_conteudo: string
+          p_internacao?: string
+          p_motivo_retificacao?: string
+          p_paciente: string
+          p_tipo: string
+          p_unidade: string
+        }
+        Returns: string
+      }
       salvar_push_subscription: {
         Args: { p_subscription: string }
         Returns: undefined

@@ -1,8 +1,14 @@
-import { Printer, Sparkles } from 'lucide-react'
+import { CheckCircle2, History, Loader2, Printer, Save, Sparkles } from 'lucide-react'
+import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  useDocumentos,
+  useSalvarDocumento,
+} from '@/hooks/useDocumentos'
 import type { DadosPaciente, Evolucao } from './rascunho'
 
 function fmtData(iso: string) {
@@ -15,11 +21,30 @@ export function EvolucaoTab({
   dados,
   evolucao,
   onChange,
+  pacienteId,
+  unidadeId,
+  internacaoId,
 }: {
   dados: DadosPaciente
   evolucao: Evolucao
   onChange: (p: Partial<Evolucao>) => void
+  pacienteId?: string | null
+  unidadeId?: string | null
+  internacaoId?: string | null
 }) {
+  const { data: documentos, isLoading: carregandoDocs } = useDocumentos(pacienteId ?? undefined)
+  const salvarDoc = useSalvarDocumento()
+  const [msg, setMsg] = React.useState<string | null>(null)
+
+  const evolucoesSalvas = React.useMemo(
+    () => (documentos ?? []).filter((d) => d.tipo_documento === 'evolucao'),
+    [documentos]
+  )
+  const admissaoSalva = React.useMemo(
+    () => (documentos ?? []).find((d) => d.tipo_documento === 'admissao_anamnese'),
+    [documentos]
+  )
+
   function gerarTexto() {
     const idade = dados.idade || 'N/I'
     const dieta = dados.dieta || 'Dieta livre'
@@ -77,6 +102,24 @@ export function EvolucaoTab({
     setTimeout(() => printWindow.print(), 300)
   }
 
+  async function salvarNoProntuario() {
+    if (!pacienteId || !unidadeId || !evolucao.texto.trim()) return
+    setMsg(null)
+    try {
+      const tipo = evolucao.tipo === 'admissao' ? 'admissao_anamnese' : 'evolucao'
+      await salvarDoc.mutateAsync({
+        paciente_id: pacienteId,
+        unidade_id: unidadeId,
+        internacao_id: internacaoId ?? null,
+        tipo_documento: tipo,
+        conteudo: evolucao.texto,
+      })
+      setMsg('Documento salvo no prontuário (nova versão, retificação rastreável).')
+    } catch (e) {
+      setMsg('Erro ao salvar: ' + (e as Error).message)
+    }
+  }
+
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Card className="h-fit">
@@ -109,27 +152,72 @@ export function EvolucaoTab({
             <Sparkles /> Gerar Texto
           </Button>
           <p className="text-xs text-muted-foreground">
-            O texto gerado pode ser editado à vontade. Ele é salvo automaticamente.
+            O texto gerado pode ser editado à vontade. Ele é salvo automaticamente no navegador.
           </p>
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
+            <div className="mb-1 font-semibold">Documentos no prontuário</div>
+            {carregandoDocs ? (
+              <span className="inline-flex items-center gap-1">
+                <Loader2 className="animate-spin" /> carregando…
+              </span>
+            ) : (
+              <div className="flex flex-col gap-1">
+                {admissaoSalva && (
+                  <span className="inline-flex items-center gap-1">
+                    <CheckCircle2 className="size-3" /> Admissão v{admissaoSalva.versao}{' '}
+                    <Badge variant="success">{admissaoSalva.estado}</Badge>
+                  </span>
+                )}
+                {evolucoesSalvas.length === 0 && !admissaoSalva && (
+                  <span className="text-muted-foreground">Nenhum documento persistido ainda.</span>
+                )}
+                {evolucoesSalvas.length > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <History className="size-3" /> {evolucoesSalvas.length} versão(ões) de evolução
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Área de Edição</CardTitle>
-          <CardDescription>Revise o texto antes de imprimir.</CardDescription>
+          <CardDescription>Revise o texto antes de salvar/ imprimir.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <Textarea
             value={evolucao.texto}
             onChange={(e) => onChange({ texto: e.target.value })}
             placeholder="Clique em Gerar Texto para preencher a partir dos dados do paciente…"
-            className="min-h-[420px] font-mono text-xs leading-relaxed"
+            className="min-h-[360px] font-mono text-xs leading-relaxed"
           />
-          <div className="flex items-center justify-between">
-            <Button onClick={imprimir} disabled={!evolucao.texto}>
-              <Printer /> Imprimir
-            </Button>
+          {msg && (
+            <div
+              className={`rounded-lg border p-2.5 text-xs ${
+                msg.startsWith('Erro')
+                  ? 'border-red-200 bg-red-50 text-red-700'
+                  : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+              }`}
+            >
+              {msg}
+            </div>
+          )}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={salvarNoProntuario}
+                disabled={!pacienteId || !evolucao.texto.trim() || salvarDoc.isPending}
+              >
+                {salvarDoc.isPending ? <Loader2 className="animate-spin" /> : <Save />} Salvar no prontuário
+              </Button>
+              <Button onClick={imprimir} disabled={!evolucao.texto}>
+                <Printer /> Imprimir
+              </Button>
+            </div>
             <span className="text-xs text-muted-foreground">
               {evolucao.texto.length} caracteres · salvo automaticamente
             </span>

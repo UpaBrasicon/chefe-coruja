@@ -15,6 +15,7 @@ import { ExamesTab } from './internacao/ExamesTab'
 import { InternacaoTab } from './internacao/InternacaoTab'
 import { ExportarTab } from './internacao/ExportarTab'
 import { useRascunho } from './internacao/rascunho'
+import { useInternacaoAtiva, useRegistrarAcessoProntuario } from '@/hooks/useDocumentos'
 
 export default function Internacao() {
   const { unidadeAtiva } = useUnidade()
@@ -23,9 +24,15 @@ export default function Internacao() {
   const perfilId = perfil?.id
   const [searchParams, setSearchParams] = useSearchParams()
   const pacienteParam = searchParams.get('paciente')
+  const registrarAcesso = useRegistrarAcessoProntuario()
 
   const { dados, atualizar, salvoEm, limpar } = useRascunho(unidadeId, perfilId)
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
+
+  const pacienteAtual = dados.paciente.paciente_id ?? pacienteParam
+
+  // internação ativa do paciente (para vincular eventos/documentos)
+  const { data: internacaoAtiva } = useInternacaoAtiva(pacienteAtual ?? undefined)
 
   // Carrega o paciente da URL (ex.: vindo do painel de Internação) para o rascunho
   useQuery({
@@ -60,6 +67,10 @@ export default function Internacao() {
             diagnostico: dados.paciente.diagnostico,
           },
         })
+      }
+      // NGS1: registra quem abriu o prontuário
+      if (data?.id && unidadeId) {
+        registrarAcesso.mutate({ paciente_id: data.id, unidade_id: unidadeId })
       }
       setSearchParams({}, { replace: true })
       return data
@@ -140,6 +151,9 @@ export default function Internacao() {
             dados={dados.paciente}
             evolucao={dados.evolucao}
             onChange={(p) => atualizar({ evolucao: { ...dados.evolucao, ...p } })}
+            pacienteId={dados.paciente.paciente_id}
+            unidadeId={unidadeId}
+            internacaoId={internacaoAtiva?.id ?? null}
           />
         </TabsContent>
 
