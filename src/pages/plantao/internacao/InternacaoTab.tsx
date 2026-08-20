@@ -3,6 +3,7 @@ import { Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { escapeHtml } from '@/lib/utils'
 import type { Aih, DadosPaciente, Evolucao, Exames } from './rascunho'
 
 function hojeBR() {
@@ -97,10 +98,11 @@ export function InternacaoTab({
     const rows = campos
       .map((c) => {
         const val = aih[c.nome]
+        const rotulo = escapeHtml(c.rotulo)
         if (c.textarea) {
-          return `<div class="row"><div class="label">${c.rotulo}</div><div class="valor ta">${(val || '&nbsp;').replace(/\n/g, '<br>')}</div></div>`
+          return `<div class="row"><div class="label">${rotulo}</div><div class="valor ta">${(escapeHtml(val) || '&nbsp;').replace(/\n/g, '<br>')}</div></div>`
         }
-        return `<div class="row"><div class="label">${c.rotulo}</div><div class="valor">${val || '&nbsp;'}</div></div>`
+        return `<div class="row"><div class="label">${rotulo}</div><div class="valor">${escapeHtml(val) || '&nbsp;'}</div></div>`
       })
       .join('')
     printWindow.document.write(`

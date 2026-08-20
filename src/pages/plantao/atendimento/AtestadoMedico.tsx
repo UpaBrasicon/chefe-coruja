@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 import { DadosPaciente } from '../shared/DadosPaciente'
 import { useEscalaSetores } from '../shared/useEscalaSetores'
+import { escapeHtml } from '@/lib/utils'
 import { carregarEnvelope, fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
 
 export type Atestado = {
@@ -73,14 +75,14 @@ export function AtestadoMedico({
   const titulo = dados.atestado.tipo === 'comparecimento' ? 'ATESTADO DE COMPARECIMENTO' : dados.atestado.tipo === 'afastamento' ? 'ATESTADO DE AFASTAMENTO' : 'ATESTADO DE REPOUSO'
 
   function imprimir() {
-    const nome = dados.paciente.nome.toUpperCase() || '_________________________________'
+    const nome = escapeHtml(dados.paciente.nome).toUpperCase() || '_________________________________'
     const data = fmtData(dados.paciente.dataAtual)
     const corpo =
       dados.atestado.tipo === 'comparecimento'
-        ? `Atesto, para os devidos fins, que ${nome} compareceu a esta unidade em ${data}, necessitando de ${dados.atestado.dias || '…'} dia(s) de afastamento de suas atividades.`
+        ? `Atesto, para os devidos fins, que ${nome} compareceu a esta unidade em ${data}, necessitando de ${escapeHtml(dados.atestado.dias) || '…'} dia(s) de afastamento de suas atividades.`
         : dados.atestado.tipo === 'afastamento'
-          ? `Atesto, para os devidos fins, que ${nome} esteve sob cuidados médicos, necessitando de ${dados.atestado.dias || '…'} dia(s) de afastamento de suas atividades laborais${dados.atestado.cid ? ` (CID: ${dados.atestado.cid})` : ''}.`
-          : `Atesto, para os devidos fins, que ${nome} necessita de ${dados.atestado.dias || '…'} dia(s) de repouso, devendo manter-se em observação clínica.`
+          ? `Atesto, para os devidos fins, que ${nome} esteve sob cuidados médicos, necessitando de ${escapeHtml(dados.atestado.dias) || '…'} dia(s) de afastamento de suas atividades laborais${dados.atestado.cid ? ` (CID: ${escapeHtml(dados.atestado.cid)})` : ''}.`
+          : `Atesto, para os devidos fins, que ${nome} necessita de ${escapeHtml(dados.atestado.dias) || '…'} dia(s) de repouso, devendo manter-se em observação clínica.`
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
     printWindow.document.write(`
@@ -99,7 +101,7 @@ export function AtestadoMedico({
         <div class="folha"><div class="doc">
           <div class="titulo">${titulo}</div>
           <div class="corpo">${corpo}</div>
-          ${dados.atestado.texto ? `<div class="corpo" style="margin-top:6mm;">Observações: ${dados.atestado.texto}</div>` : ''}
+          ${dados.atestado.texto ? `<div class="corpo" style="margin-top:6mm;">Observações: ${escapeHtml(dados.atestado.texto)}</div>` : ''}
           <div class="ass">${data || '____/___/____'}<br>_________________________________________<br>Assinatura / Carimbo do Médico</div>
           <div class="rodape">Documento válido somente com assinatura e carimbo do profissional responsável.</div>
         </div></div>
@@ -150,7 +152,18 @@ export function AtestadoMedico({
             {dados.atestado.tipo === 'afastamento' && (
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="at-cid">CID (opcional)</Label>
-                <Input id="at-cid" value={dados.atestado.cid} onChange={(e) => atualizar({ atestado: { ...dados.atestado, cid: e.target.value } })} placeholder="Ex: J06" />
+                <BuscaTerminologia
+                  tipo="cid10"
+                  onSelecionar={(r) => atualizar({ atestado: { ...dados.atestado, cid: r.codigo } })}
+                  placeholder="Buscar CID…"
+                  className="w-full"
+                />
+                <Input
+                  id="at-cid"
+                  value={dados.atestado.cid}
+                  onChange={(e) => atualizar({ atestado: { ...dados.atestado, cid: e.target.value } })}
+                  placeholder="Ex: J06"
+                />
               </div>
             )}
             <div className="flex flex-col gap-1.5">

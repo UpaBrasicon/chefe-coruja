@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
+import { escapeHtml } from '@/lib/utils'
 import {
   useDocumentos,
   useSalvarDocumento,
@@ -62,10 +63,10 @@ export function EvolucaoTab({
   function imprimir() {
     const alergiaHtml =
       dados.alergias && dados.alergias.toUpperCase() !== 'NEGA'
-        ? `<div style="background:#dc2626;color:#fff;padding:4px;text-align:center;font-weight:800;font-size:11px;margin-bottom:8px;">⚠️ ALERGIA: ${dados.alergias.toUpperCase()} ⚠️</div>`
+        ? `<div style="background:#dc2626;color:#fff;padding:4px;text-align:center;font-weight:800;font-size:11px;margin-bottom:8px;">⚠️ ALERGIA: ${escapeHtml(dados.alergias).toUpperCase()} ⚠️</div>`
         : ''
     const cabecalho = evolucao.tipo === 'admissao' ? 'TERMO DE ADMISSÃO' : 'EVOLUÇÃO MÉDICA'
-    const textoHtml = evolucao.texto.replace(/\n/g, '<br>')
+    const textoHtml = escapeHtml(evolucao.texto).replace(/\n/g, '<br>')
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
     printWindow.document.write(`
@@ -86,8 +87,8 @@ export function EvolucaoTab({
           <img src="/plantao/background.png">
           <div class="conteudo">
             <div class="cabec">
-              <div style="display:flex;justify-content:space-between"><strong>Nome:</strong> ${dados.nome || '____________________'} <strong>Data de Nascimento:</strong> ${dados.nascimento || '____/___/____'}</div>
-              <div style="display:flex;justify-content:space-between;margin-top:4px"><strong>Leito:</strong> ${dados.leito || '___'} <strong>Data:</strong> ${fmtData(dados.dataAtual)} <strong>Diagnóstico:</strong> ${dados.diagnostico || '____'}</div>
+              <div style="display:flex;justify-content:space-between"><strong>Nome:</strong> ${escapeHtml(dados.nome) || '____________________'} <strong>Data de Nascimento:</strong> ${escapeHtml(dados.nascimento) || '____/___/____'}</div>
+              <div style="display:flex;justify-content:space-between;margin-top:4px"><strong>Leito:</strong> ${escapeHtml(dados.leito) || '___'} <strong>Data:</strong> ${fmtData(dados.dataAtual)} <strong>Diagnóstico:</strong> ${escapeHtml(dados.diagnostico) || '____'}</div>
             </div>
             <div class="titulo">${cabecalho}</div>
             ${alergiaHtml}

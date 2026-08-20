@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DadosPaciente } from '../shared/DadosPaciente'
 import { useEscalaSetores } from '../shared/useEscalaSetores'
+import { escapeHtml } from '@/lib/utils'
 import { carregarEnvelope, fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
 
 export type Receita = {
@@ -136,12 +137,12 @@ export function ReceituarioMedico({
     const linhas = itens
       .map(
         (i, idx) =>
-          `<tr><td style="border:1px solid #000;padding:6px;width:6%;text-align:center;">${idx + 1}</td><td style="border:1px solid #000;padding:6px;"><strong>${i.medicamento.toUpperCase()}</strong>${i.dose ? ` <span style="font-weight:normal;">· ${i.dose}</span>` : ''}</td><td style="border:1px solid #000;padding:6px;width:9%;">${i.quantidade}</td></tr><tr><td style="border:1px solid #000;padding:2px 6px;font-style:italic;" colspan="3">Uso: ${i.posologia || '…'}</td></tr>`
+          `<tr><td style="border:1px solid #000;padding:6px;width:6%;text-align:center;">${idx + 1}</td><td style="border:1px solid #000;padding:6px;"><strong>${escapeHtml(i.medicamento).toUpperCase()}</strong>${i.dose ? ` <span style="font-weight:normal;">· ${escapeHtml(i.dose)}</span>` : ''}</td><td style="border:1px solid #000;padding:6px;width:9%;">${escapeHtml(i.quantidade)}</td></tr><tr><td style="border:1px solid #000;padding:2px 6px;font-style:italic;" colspan="3">Uso: ${escapeHtml(i.posologia) || '…'}</td></tr>`
       )
       .join('')
     const alergia =
       dados.paciente.alergias && dados.paciente.alergias.toUpperCase() !== 'NEGA'
-        ? `<div style="background:#dc2626;color:#fff;padding:6px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${dados.paciente.alergias.toUpperCase()} ⚠️</div>`
+        ? `<div style="background:#dc2626;color:#fff;padding:6px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${escapeHtml(dados.paciente.alergias).toUpperCase()} ⚠️</div>`
         : ''
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
@@ -162,11 +163,11 @@ export function ReceituarioMedico({
       <body>
         <div class="folha"><div class="rec" style="background:${corTipo(dados.receita.tipo)};">
           <div class="rec-titulo">Receituário ${TIPO_RECEITUARIO.find((t) => t.value === dados.receita.tipo)?.label.toUpperCase()}</div>
-          <div class="rec-cabec"><span><strong>Paciente:</strong> ${dados.paciente.nome || '____________________'}</span><span><strong>Data:</strong> ${fmtData(dados.paciente.dataAtual) || '____/___/____'}</span></div>
+          <div class="rec-cabec"><span><strong>Paciente:</strong> ${escapeHtml(dados.paciente.nome) || '____________________'}</span><span><strong>Data:</strong> ${fmtData(dados.paciente.dataAtual) || '____/___/____'}</span></div>
           ${alergia}
           ${itens.length ? `<table><thead><tr><th style="width:6%;text-align:center;">Nº</th><th>Medicamento</th><th style="width:9%;">Qtd</th></tr></thead><tbody>${linhas}</tbody></table>` : '<p style="text-align:center;color:#999;">Nenhum item preenchido.</p>'}
           <div class="ass">_________________________________________<br>Assinatura / Carimbo do Médico</div>
-          ${dados.receita.obs ? `<div class="obs">Observações: ${dados.receita.obs}</div>` : ''}
+          ${dados.receita.obs ? `<div class="obs">Observações: ${escapeHtml(dados.receita.obs)}</div>` : ''}
         </div></div>
       </body></html>
     `)

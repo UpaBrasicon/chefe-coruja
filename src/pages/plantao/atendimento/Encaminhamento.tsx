@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DadosPaciente } from '../shared/DadosPaciente'
 import { useEscalaSetores } from '../shared/useEscalaSetores'
+import { escapeHtml } from '@/lib/utils'
 import { carregarEnvelope, fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
 
 export type Encaminhamento = {
@@ -87,9 +88,9 @@ export function Encaminhamento({
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
 
   function imprimir() {
-    const nome = dados.paciente.nome.toUpperCase() || '_________________________________'
+    const nome = escapeHtml(dados.paciente.nome).toUpperCase() || '_________________________________'
     const data = fmtData(dados.paciente.dataAtual)
-    const hipotese = dados.paciente.diagnostico || '____________________'
+    const hipotese = escapeHtml(dados.paciente.diagnostico) || '____________________'
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
     printWindow.document.write(`
@@ -110,9 +111,9 @@ export function Encaminhamento({
         <div class="folha"><div class="doc">
           <div class="titulo">Encaminhamento Médico</div>
           <div class="linha"><div class="campo"><strong>Paciente</strong>${nome}</div><div class="campo"><strong>Data</strong>${data || '____/___/____'}</div></div>
-          <div class="linha"><div class="campo"><strong>Especialidade de destino</strong>${dados.encaminhamento.especialidade || '______________________'}</div><div class="campo"><strong>Prioridade</strong>${dados.encaminhamento.prioridade || 'Rotina'}</div></div>
+          <div class="linha"><div class="campo"><strong>Especialidade de destino</strong>${escapeHtml(dados.encaminhamento.especialidade) || '______________________'}</div><div class="campo"><strong>Prioridade</strong>${escapeHtml(dados.encaminhamento.prioridade) || 'Rotina'}</div></div>
           <div class="campo" style="margin-top:4mm;"><strong>Hipótese diagnóstica</strong>${hipotese}</div>
-          <div class="corpo"><strong style="font-size:9px;text-transform:uppercase;color:#444;">Resumo clínico</strong><br><br>${(dados.encaminhamento.resumo || 'Resumo clínico do atendimento. ').replace(/\n/g, '<br>')}</div>
+          <div class="corpo"><strong style="font-size:9px;text-transform:uppercase;color:#444;">Resumo clínico</strong><br><br>${escapeHtml(dados.encaminhamento.resumo || 'Resumo clínico do atendimento. ').replace(/\n/g, '<br>')}</div>
           <div class="ass">${data || ''}<br>_________________________________________<br>Assinatura / Carimbo do Médico</div>
         </div></div>
       </body></html>

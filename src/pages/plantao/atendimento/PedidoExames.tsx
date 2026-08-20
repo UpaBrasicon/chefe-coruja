@@ -4,8 +4,10 @@ import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 import { DadosPaciente } from '../shared/DadosPaciente'
 import { useEscalaSetores } from '../shared/useEscalaSetores'
+import { escapeHtml } from '@/lib/utils'
 import { carregarEnvelope, fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
 
 export type PedidoExames = {
@@ -86,6 +88,12 @@ export function PedidoExames({
     atualizar({ pedido: { texto: atual ? `${atual}\n- ${exame}` : `- ${exame}` } })
   }
 
+  function adicionarLoinc(descricao: string, codigo: string) {
+    const exame = `${descricao} (${codigo})`
+    const atual = dados.pedido.texto.trim()
+    atualizar({ pedido: { texto: atual ? `${atual}\n- ${exame}` : `- ${exame}` } })
+  }
+
   function adicionarCustom() {
     const v = novo.trim()
     if (!v) return
@@ -97,10 +105,10 @@ export function PedidoExames({
   function imprimir() {
     const texto = dados.pedido.texto.trim()
     if (!texto) return
-    const paciente = dados.paciente.nome.trim().toUpperCase() || 'PACIENTE NÃO IDENTIFICADO'
+    const paciente = escapeHtml(dados.paciente.nome).trim().toUpperCase() || 'PACIENTE NÃO IDENTIFICADO'
     const data = fmtData(dados.paciente.dataAtual)
     const linhas = texto.split(/\n+/).map((l) => l.replace(/^[-*•]\s*/, '')).filter(Boolean)
-    const listaHtml = linhas.map((l) => `<div style="margin-bottom:6px;">• ${l}</div>`).join('')
+    const listaHtml = linhas.map((l) => `<div style="margin-bottom:6px;">• ${escapeHtml(l)}</div>`).join('')
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
     printWindow.document.write(`
@@ -159,6 +167,14 @@ export function PedidoExames({
                 + {ex}
               </button>
             ))}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground">Buscar exame padronizado (LOINC)</span>
+            <BuscaTerminologia
+              tipo="loinc"
+              onSelecionar={(r) => adicionarLoinc(r.descricao, r.codigo)}
+              placeholder="Ex.: glicose, hemograma, potássio…"
+            />
           </div>
           <div className="flex gap-2">
             <Textarea

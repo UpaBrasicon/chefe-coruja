@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { escapeHtml } from '@/lib/utils'
 import type { DadosPaciente, Exames } from './rascunho'
 
 const EXAMES_SUGERIDOS = [
@@ -57,10 +58,10 @@ export function ExamesTab({
   function imprimir() {
     const texto = exames.texto.trim()
     if (!texto) return
-    const paciente = dados.nome.trim().toUpperCase() || 'PACIENTE NÃO IDENTIFICADO'
+    const paciente = escapeHtml(dados.nome).trim().toUpperCase() || 'PACIENTE NÃO IDENTIFICADO'
     const data = fmtData(dados.dataAtual)
     const linhas = texto.split(/\n+/).map((l) => l.replace(/^[-*•]\s*/, '')).filter(Boolean)
-    const listaHtml = linhas.map((l) => `<div style="margin-bottom:6px;">• ${l}</div>`).join('')
+    const listaHtml = linhas.map((l) => `<div style="margin-bottom:6px;">• ${escapeHtml(l)}</div>`).join('')
 
     const printWindow = window.open('', '_blank')
     if (!printWindow) return

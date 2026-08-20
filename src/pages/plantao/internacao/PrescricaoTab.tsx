@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { escapeHtml } from '@/lib/utils'
 import type { DadosPaciente, Prescricao } from './rascunho'
 import { CATEGORIAS, ITENS } from './prescricaoItens'
 
@@ -133,11 +134,11 @@ export function PrescricaoTab({
   function imprimir() {
     const tbody = itensSelecionados
       .map(
-        (i, idx) => `<tr><td>${String(idx + 1).padStart(2, '0')}</td><td><strong>${i.med}</strong></td><td>${i.via}</td><td>${i.pos}</td><td>${i.apr ?? ''}</td></tr>`
+        (i, idx) => `<tr><td>${String(idx + 1).padStart(2, '0')}</td><td><strong>${escapeHtml(i.med)}</strong></td><td>${escapeHtml(i.via)}</td><td>${escapeHtml(i.pos)}</td><td>${escapeHtml(i.apr ?? '')}</td></tr>`
       )
       .join('')
     const alergia = dados.alergias && dados.alergias.toUpperCase() !== 'NEGA'
-      ? `<div style="background:#dc2626;color:#fff;padding:8px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${dados.alergias.toUpperCase()} ⚠️</div>`
+      ? `<div style="background:#dc2626;color:#fff;padding:8px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${escapeHtml(dados.alergias).toUpperCase()} ⚠️</div>`
       : ''
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
@@ -165,8 +166,8 @@ export function PrescricaoTab({
           <img src="/plantao/background.png">
           <div class="conteudo">
             <div class="cabec">
-              <div style="display:flex;justify-content:space-between"><strong>Nome:</strong> ${dados.nome || '____________________'}</div>
-              <div style="display:flex;justify-content:space-between;margin-top:4px"><strong>Leito:</strong> ${dados.leito || '___'} <strong>Data:</strong> ${fmtData(dados.dataAtual)} <strong>Diagnóstico:</strong> ${dados.diagnostico || '____'}</div>
+              <div style="display:flex;justify-content:space-between"><strong>Nome:</strong> ${escapeHtml(dados.nome) || '____________________'}</div>
+              <div style="display:flex;justify-content:space-between;margin-top:4px"><strong>Leito:</strong> ${escapeHtml(dados.leito) || '___'} <strong>Data:</strong> ${fmtData(dados.dataAtual)} <strong>Diagnóstico:</strong> ${escapeHtml(dados.diagnostico) || '____'}</div>
             </div>
             ${alergia}
             <table>
@@ -174,7 +175,7 @@ export function PrescricaoTab({
               <tbody>${tbody}</tbody>
             </table>
             <div class="ass">_________________________________________<br>Assinatura / Carimbo do Médico</div>
-            ${prescricao.obs ? `<div class="obs">Observações: ${prescricao.obs}</div>` : ''}
+            ${prescricao.obs ? `<div class="obs">Observações: ${escapeHtml(prescricao.obs)}</div>` : ''}
           </div>
         </div>
       </body></html>
