@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRightLeft, ChevronRight, Eye, Hospital, UserPlus } from 'lucide-react'
+import { ArrowRightLeft, Activity, ChevronRight, Eye, Hospital, UserPlus } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -443,6 +443,13 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
                               onClick={() => navigate(`/plantao/internacao?paciente=${p.id}`)}
                             >
                               Abrir
+                            </Button>
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              onClick={() => navigate(`/plantao/evolucao?paciente=${p.id}`)}
+                            >
+                              <Activity /> Evolução
                             </Button>
                           </div>
                         </div>

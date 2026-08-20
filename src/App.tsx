@@ -38,6 +38,7 @@ import PlantaoHome from '@/pages/plantao/PlantaoHome'
 import AtendimentoPorta from '@/pages/plantao/AtendimentoPorta'
 import AtendimentoTool from '@/pages/plantao/AtendimentoTool'
 import Internacao from '@/pages/plantao/Internacao'
+import EvolucaoClinica from '@/pages/plantao/EvolucaoClinica'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -108,6 +109,7 @@ export default function App() {
                     <Route path="/plantao/atendimento-porta" element={<AtendimentoPorta />} />
                     <Route path="/plantao/atendimento-porta/:tool" element={<AtendimentoTool />} />
                     <Route path="/plantao/internacao" element={<Internacao />} />
+                    <Route path="/plantao/evolucao" element={<EvolucaoClinica />} />
                   </Route>
                 </Route>
 

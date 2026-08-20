@@ -483,6 +483,101 @@ export type Database = {
           },
         ]
       }
+      conceito: {
+        Row: {
+          ativo: boolean
+          categoria: string
+          created_at: string
+          id: string
+          loinc_codigo: string | null
+          nome: string
+          ordem_exibicao: number
+          ref_max: number | null
+          ref_min: number | null
+          tipo: string
+          unidade_id: string | null
+          unidade_padrao: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          id?: string
+          loinc_codigo?: string | null
+          nome: string
+          ordem_exibicao?: number
+          ref_max?: number | null
+          ref_min?: number | null
+          tipo?: string
+          unidade_id?: string | null
+          unidade_padrao?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          id?: string
+          loinc_codigo?: string | null
+          nome?: string
+          ordem_exibicao?: number
+          ref_max?: number | null
+          ref_min?: number | null
+          tipo?: string
+          unidade_id?: string | null
+          unidade_padrao?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conceito_loinc_codigo_fkey"
+            columns: ["loinc_codigo"]
+            isOneToOne: false
+            referencedRelation: "loinc"
+            referencedColumns: ["codigo"]
+          },
+          {
+            foreignKeyName: "conceito_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conceito_opcao: {
+        Row: {
+          conceito_id: string
+          id: string
+          ordem: number
+          rotulo: string
+          valor: string | null
+        }
+        Insert: {
+          conceito_id: string
+          id?: string
+          ordem?: number
+          rotulo: string
+          valor?: string | null
+        }
+        Update: {
+          conceito_id?: string
+          id?: string
+          ordem?: number
+          rotulo?: string
+          valor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conceito_opcao_conceito_id_fkey"
+            columns: ["conceito_id"]
+            isOneToOne: false
+            referencedRelation: "conceito"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       configuracoes_unidade: {
         Row: {
           chave: string
@@ -1893,6 +1988,102 @@ export type Database = {
           },
         ]
       }
+      observacao: {
+        Row: {
+          aferido_em: string
+          conceito_id: string
+          created_at: string
+          flag: string
+          id: string
+          internacao_id: string | null
+          observacao_pai_id: string | null
+          origem: string
+          paciente_id: string
+          ref_max: number | null
+          ref_min: number | null
+          registrado_por: string | null
+          unidade: string | null
+          unidade_id: string
+          valor_conceito_id: string | null
+          valor_num: number | null
+          valor_texto: string | null
+        }
+        Insert: {
+          aferido_em?: string
+          conceito_id: string
+          created_at?: string
+          flag?: string
+          id?: string
+          internacao_id?: string | null
+          observacao_pai_id?: string | null
+          origem?: string
+          paciente_id: string
+          ref_max?: number | null
+          ref_min?: number | null
+          registrado_por?: string | null
+          unidade?: string | null
+          unidade_id: string
+          valor_conceito_id?: string | null
+          valor_num?: number | null
+          valor_texto?: string | null
+        }
+        Update: {
+          aferido_em?: string
+          conceito_id?: string
+          created_at?: string
+          flag?: string
+          id?: string
+          internacao_id?: string | null
+          observacao_pai_id?: string | null
+          origem?: string
+          paciente_id?: string
+          ref_max?: number | null
+          ref_min?: number | null
+          registrado_por?: string | null
+          unidade?: string | null
+          unidade_id?: string
+          valor_conceito_id?: string | null
+          valor_num?: number | null
+          valor_texto?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "observacao_conceito_id_fkey"
+            columns: ["conceito_id"]
+            isOneToOne: false
+            referencedRelation: "conceito"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "observacao_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "observacao_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "observacao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "observacao_valor_conceito_id_fkey"
+            columns: ["valor_conceito_id"]
+            isOneToOne: false
+            referencedRelation: "conceito_opcao"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizacoes: {
         Row: {
           ativo: boolean
@@ -3298,6 +3489,16 @@ export type Database = {
         Returns: string
       }
       turno_atual: { Args: never; Returns: string }
+      terminologia_buscar: {
+        Args: { p_limite?: number; p_tabela: string; p_termo: string }
+        Returns: {
+          codigo: string
+          descricao: string
+          extra: Json | null
+          rank: number
+          tabela: string
+        }[]
+      }
     }
     Enums: {
       papel: "admin" | "gestor" | "plantonista"
