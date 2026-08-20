@@ -15,6 +15,18 @@ dist-ssr
 # Credenciais — NUNCA versionar
 .env.local
 
+# VIDaaS spike — tokens e saídas NUNCA versionar
+spikes/vidaas/saida/
+spikes/vidaas/*.token
+spikes/vidaas/.vidaas-env
+
+# Strix — artefatos de varredura local (nunca versionar; resumos em docs/seguranca/)
+strix_runs/
+
+# Dados brutos de terminologia — fontes públicas regeneráveis (~118MB), ver LEIA-ME.txt
+data/terminologia/*
+!data/terminologia/LEIA-ME.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

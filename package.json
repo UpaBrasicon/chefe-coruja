@@ -8,12 +8,24 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:terminologia": "node --test \"scripts/terminologia/tests/*.test.ts\"",
+    "test:observacao": "node --test \"scripts/observacao/tests/*.test.ts\"",
+    "test:interop": "node --test \"scripts/interop/tests/*.test.ts\"",
+    "fhir:validar": "node scripts/interop/validar-fhir.ts",
+    "outbox:processar": "node scripts/interop/processar-outbox.ts",
+    "import:cid10": "node scripts/terminologia/importar-cid10.ts",
+    "baixar:sigtap": "node scripts/terminologia/baixar-sigtap.ts",
+    "import:sigtap": "node scripts/terminologia/importar-sigtap.ts",
+    "import:cbo": "node scripts/terminologia/importar-cbo.ts",
+    "import:cmed": "node scripts/terminologia/importar-cmed.ts",
+    "import:loinc": "node scripts/terminologia/importar-loinc.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
     "@fontsource-variable/geist": "^5.2.9",
     "@hookform/resolvers": "^5.2.2",
+    "@medplum/fhirtypes": "^5.1.30",
     "@supabase/supabase-js": "^2.106.2",
     "@tanstack/react-query": "^5.90.2",
     "class-variance-authority": "^0.7.1",
@@ -29,6 +41,7 @@
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.64.0",
     "react-router-dom": "^7.15.1",
+    "recharts": "^3.10.1",
     "shadcn": "^4.8.2",
     "tailwind-merge": "^3.6.0",
     "tesseract.js": "^7.0.0",
@@ -39,6 +52,7 @@
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.0",
     "@types/node": "^24.10.1",
+    "@types/qrcode-terminal": "^0.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
@@ -46,10 +60,12 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "qrcode-terminal": "^0.12.0",
     "supabase": "^2.102.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.48.0",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "xlsx": "^0.18.5"
   }
 }
