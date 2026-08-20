@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
+import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 
 type Medicamento = {
   id: string
@@ -141,6 +142,23 @@ export default function PrescricaoTeste() {
     ])
     setBusca('')
     setFocada(false)
+  }
+
+  // adiciona um medicamento da CMED (terminologia) como item livre
+  function adicionarDaCmed(descricao: string, codigo: string) {
+    const m: Medicamento = {
+      id: `cmed-${codigo}`,
+      principio_ativo: descricao,
+      concentracao: null,
+      apresentacao: null,
+      rxcui: null,
+      alta_vigilancia: false,
+    }
+    if (itens.some((i) => i.medicamento.id === m.id)) return
+    setItens((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), medicamento: m, dose: '', posologia: '', diluicaoEditada: '', diluicaoPublicada: false },
+    ])
   }
 
   function atualizarItem(id: string, campo: 'dose' | 'posologia' | 'diluicaoEditada', valor: string) {
@@ -323,45 +341,57 @@ export default function PrescricaoTeste() {
           </CardTitle>
           <CardDescription>Digite ao menos 2 letras para ver sugestões.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          <div className="relative">
-            <Input
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              onFocus={() => setFocada(true)}
-              placeholder="Ex.: dipirona, soro, ceftriaxona, omeprazol…"
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground">Base canônica (com diluição publicada)</span>
+            <div className="relative">
+              <Input
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                onFocus={() => setFocada(true)}
+                placeholder="Ex.: dipirona, soro, ceftriaxona, omeprazol…"
+              />
+              {buscando && (
+                <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+              )}
+              {focada && busca.trim().length >= 2 && (resultados ?? []).length > 0 && (
+                <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-lg">
+                  {(resultados ?? []).map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      className="flex w-full flex-col gap-0.5 border-b px-3 py-2 text-left transition-colors last:border-0 hover:bg-muted"
+                      onClick={() => adicionar(m)}
+                    >
+                      <span className="flex items-center gap-2 text-sm font-medium">
+                        <Pill className="size-3.5 text-muted-foreground" />
+                        {m.principio_ativo}
+                        {m.concentracao && <span className="text-xs font-normal text-muted-foreground">{m.concentracao}</span>}
+                        {m.alta_vigilancia && <ShieldAlert className="size-3.5 text-amber-600" />}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {m.apresentacao ?? '—'}
+                        {m.rxcui ? ` · rxcui ${m.rxcui}` : ''}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {focada && busca.trim().length >= 2 && (resultados ?? []).length === 0 && !buscando && (
+                <div className="absolute z-20 mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm text-muted-foreground shadow-lg">
+                  Nenhum medicamento encontrado.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground">Tabela CMED (ANVISA — referência de preços/registro)</span>
+            <BuscaTerminologia
+              tipo="medicamento_cmed"
+              onSelecionar={(r) => adicionarDaCmed(r.descricao, r.codigo)}
+              placeholder="Ex.: dipirona, soro, omeprazol…"
             />
-            {buscando && (
-              <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
-            )}
-            {focada && busca.trim().length >= 2 && (resultados ?? []).length > 0 && (
-              <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-lg">
-                {(resultados ?? []).map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    className="flex w-full flex-col gap-0.5 border-b px-3 py-2 text-left transition-colors last:border-0 hover:bg-muted"
-                    onClick={() => adicionar(m)}
-                  >
-                    <span className="flex items-center gap-2 text-sm font-medium">
-                      <Pill className="size-3.5 text-muted-foreground" />
-                      {m.principio_ativo}
-                      {m.concentracao && <span className="text-xs font-normal text-muted-foreground">{m.concentracao}</span>}
-                      {m.alta_vigilancia && <ShieldAlert className="size-3.5 text-amber-600" />}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">
-                      {m.apresentacao ?? '—'}
-                      {m.rxcui ? ` · rxcui ${m.rxcui}` : ''}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-            {focada && busca.trim().length >= 2 && (resultados ?? []).length === 0 && !buscando && (
-              <div className="absolute z-20 mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm text-muted-foreground shadow-lg">
-                Nenhum medicamento encontrado.
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>

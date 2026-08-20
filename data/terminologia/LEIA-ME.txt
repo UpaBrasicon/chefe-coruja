@@ -1,0 +1,17 @@
+# data/terminologia — como baixar (ver docs/TERMINOLOGIAS.md)
+
+JÁ BAIXADO / AUTOMÁTICO:
+  cid10/            ← CID-10 (zip DATASUS extraído; 4 arquivos usados + 2 CID-O ignorados)
+  sigtap/           ← SIGTAP automático via npm run baixar:sigtap (mirror RenatoKR/SIGTAP)
+                      já contém tb_procedimento.txt + tb_procedimento_layout.txt
+  cbo/              ← CBO 2002 (zip "ESTRUTURA CBO" extraído; importa "CBO2002 - Ocupacao.csv")
+  cmed.xlsx         ← CMED (ANVISA, arquivo "PMC - xls" xls_conformidade_site_*.xlsx) · mensal
+  loinc/Loinc.csv   ← LOINC 2.82 (loinc.org; extraído de LoincTable/Loinc.csv) · semestral
+
+TODAS AS 5 FONTES PRONTAS — rode as importações (com SUPABASE_URL +
+SUPABASE_SERVICE_ROLE_KEY no ambiente):
+  npm run import:cid10
+  npm run baixar:sigtap  &&  npm run import:sigtap
+  npm run import:cbo
+  npm run import:cmed
+  npm run import:loinc
