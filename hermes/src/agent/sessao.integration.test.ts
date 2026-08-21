@@ -66,3 +66,25 @@ test('expiração — sessão com updated_at antigo (2h+) volta vazia', { skip: 
   const carregadas = await carregarSessao(USER_TESTE, waId)
   assert.deepEqual(carregadas, [], 'sessão expirada deve retornar lista vazia')
 })
+
+test('upsert idempotente — salvar 2x não cria sessões duplicadas', { skip: pular }, async () => {
+  const waId = `teste-sessao-${Date.now()}`
+  await salvarSessao(USER_TESTE, waId, [
+    { role: 'user', content: 'primeira', ts: new Date().toISOString() },
+  ])
+  await salvarSessao(USER_TESTE, waId, [
+    { role: 'user', content: 'primeira', ts: new Date().toISOString() },
+    { role: 'assistant', content: 'segunda', ts: new Date().toISOString() },
+  ])
+
+  const { data: linhas, error } = await supabase
+    .from('hermes_sessions')
+    .select('id')
+    .eq('user_id', USER_TESTE)
+    .eq('phone', waId)
+  assert.equal(error, null, `falha ao contar sessões: ${error?.message}`)
+  assert.equal(linhas?.length, 1, 'deve existir apenas 1 sessão por (user_id, phone)')
+
+  const carregadas = await carregarSessao(USER_TESTE, waId)
+  assert.equal(carregadas.length, 2, 'a janela deve ter as 2 mensagens (upsert atualizou)')
+})

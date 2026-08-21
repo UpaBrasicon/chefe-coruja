@@ -45,8 +45,9 @@ export async function carregarSessao(userId: string, waId: string): Promise<Mens
 }
 
 /**
- * Salva o histórico da conversa (janela 20 msgs / 2h). Reutiliza a sessão
- * existente do usuário/telefone ou cria uma nova.
+ * Salva o histórico da conversa (janela 20 msgs / 2h).
+ * Upsert atômico por (user_id, phone) — usa a UNIQUE INDEX
+ * hermes_sessions_user_phone_uniq (migration 20260821000002).
  */
 export async function salvarSessao(
   userId: string,
@@ -55,29 +56,16 @@ export async function salvarSessao(
 ): Promise<void> {
   const janela = mensagens.slice(-MAX_MENSAGENS)
 
-  // Busca a sessão existente (sem depender do maybeSingle da leitura anterior).
-  const { data: existente } = await supabase
+  const { error } = await supabase
     .from('hermes_sessions')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('phone', waId)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  if (existente) {
-    const { error } = await supabase
-      .from('hermes_sessions')
-      .update({ messages: janela, updated_at: new Date().toISOString() })
-      .eq('id', existente.id)
-    if (error) logger.warn({ err: error.message }, '[sessao] falha ao atualizar')
-    return
-  }
-
-  const { error } = await supabase.from('hermes_sessions').insert({
-    user_id: userId,
-    phone: waId,
-    messages: janela,
-  })
-  if (error) logger.warn({ err: error.message }, '[sessao] falha ao criar')
+    .upsert(
+      {
+        user_id: userId,
+        phone: waId,
+        messages: janela,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,phone' }
+    )
+  if (error) logger.warn({ err: error.message }, '[sessao] falha no upsert')
 }
