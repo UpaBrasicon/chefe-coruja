@@ -13,6 +13,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
+    "test": "node --env-file=.env --import tsx --test \"src/**/*.test.ts\"",
     "test:llm": "tsx src/lib/llm.ts"
   },
   "dependencies": {
