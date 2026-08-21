@@ -48,6 +48,7 @@ type NavItem = {
   icon: React.ComponentType<{ className?: string }>
   end?: boolean
   badge?: number
+  acao?: () => void
 }
 
 export function AppShell() {
@@ -75,7 +76,10 @@ export function AppShell() {
 
   React.useEffect(() => {
     if (mensagensSolicitadas) {
-      const t = setTimeout(() => navigate('/', { replace: true }), 0)
+      const t = setTimeout(() => {
+        setChatAberto(true)
+        navigate('/', { replace: true })
+      }, 0)
       return () => clearTimeout(t)
     }
   }, [mensagensSolicitadas, navigate])
@@ -89,7 +93,7 @@ export function AppShell() {
     itens.push({ to: '/minha-agenda', label: 'Minha Agenda', icon: CalendarClock, end: true })
     itens.push({ to: '/vagas', label: 'Vagas', icon: ClipboardCheck, end: true })
     itens.push({ to: '/extrato', label: 'Extrato', icon: Wallet, end: true })
-    itens.push({ to: '/mensagens', label: 'Mensagens', icon: MessageSquare, end: true })
+    itens.push({ to: '/mensagens', label: 'Mensagens', icon: MessageSquare, end: true, acao: () => setChatAberto(true) })
     itens.push({ to: '/prescricao-teste', label: 'Prescrição Teste', icon: Pill, end: true })
     itens.push({ to: '/referencia-diluicao', label: 'Referência Diluição', icon: Droplets, end: true })
     itens.push({ to: '/internacao', label: 'Painel de Internação', icon: Hospital, end: true })
@@ -198,34 +202,51 @@ export function AppShell() {
           {ehAdmin && <Badge variant="secondary">Admin</Badge>}
         </div>
         <nav className="flex flex-1 flex-col gap-1 p-3">
-          {itens.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                cn(
-                  'group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                )
-              }
-            >
-              <item.icon
-                className={cn(
-                  'size-4 transition-colors',
-                  'group-hover:text-foreground'
-                )}
-              />
-              {item.label}
-              {item.badge ? (
-                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                  {item.badge}
-                </span>
-              ) : null}
-            </NavLink>
-          ))}
+          {itens.map((item) =>
+            item.acao ? (
+              <button
+                key={item.to}
+                type="button"
+                onClick={item.acao}
+                className="group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <item.icon className="size-4 transition-colors group-hover:text-foreground" />
+                {item.label}
+                {item.badge ? (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                    {item.badge}
+                  </span>
+                ) : null}
+              </button>
+            ) : (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  cn(
+                    'group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  )
+                }
+              >
+                <item.icon
+                  className={cn(
+                    'size-4 transition-colors',
+                    'group-hover:text-foreground'
+                  )}
+                />
+                {item.label}
+                {item.badge ? (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                    {item.badge}
+                  </span>
+                ) : null}
+              </NavLink>
+            )
+          )}
         </nav>
         <div className="border-t p-3">
           <div className="mb-1 truncate text-sm font-medium">{perfil?.nome_completo}</div>
@@ -266,28 +287,48 @@ export function AppShell() {
       {menuAberto && (
         <div className="fixed inset-0 top-14 z-30 bg-background md:hidden">
           <nav className="flex flex-col gap-1 p-3">
-            {itens.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                onClick={() => setMenuAberto(false)}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium',
-                    isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
-                  )
-                }
-              >
-                <item.icon className="size-4" />
-                {item.label}
-                {item.badge ? (
-                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                    {item.badge}
-                  </span>
-                ) : null}
-              </NavLink>
-            ))}
+            {itens.map((item) =>
+              item.acao ? (
+                <button
+                  key={item.to}
+                  type="button"
+                  onClick={() => {
+                    setMenuAberto(false)
+                    item.acao?.()
+                  }}
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground"
+                >
+                  <item.icon className="size-4" />
+                  {item.label}
+                  {item.badge ? (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                      {item.badge}
+                    </span>
+                  ) : null}
+                </button>
+              ) : (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  onClick={() => setMenuAberto(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium',
+                      isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
+                    )
+                  }
+                >
+                  <item.icon className="size-4" />
+                  {item.label}
+                  {item.badge ? (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                      {item.badge}
+                    </span>
+                  ) : null}
+                </NavLink>
+              )
+            )}
             {unidades.length > 1 && (
               <button
                 className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground"
