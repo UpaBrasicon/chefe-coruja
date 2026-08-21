@@ -25,31 +25,58 @@ export type IdentidadeHermes = {
 /**
  * Busca o perfil cujo telefone corresponde ao wa_id (E.164 normalizado).
  * Retorna null quando o número não está cadastrado.
+ *
+ * Estratégia: tenta primeiro uma consulta DIRETA por E.164 completo (caso
+ * comum e barato). Se não achar, faz um scan limitado tolerante a formatos
+ * (fallback para telefones armazenados em formato não-normalizado).
  */
 export async function resolverIdentidadePorWaId(waId: string): Promise<IdentidadeHermes | null> {
   // 1) Normaliza o wa_id e busca direta por E.164 completo (caso comum).
   const e164 = normalizarE164BR(waId)
-  const alvos = e164 ? [e164, e164.replace(/^55/, '')] : [waId, waId.replace(/^55/, '')]
 
-  const { data: perfis, error } = await supabase
-    .from('perfis')
-    .select('id, nome_completo, email, telefone, ativo')
-    .eq('ativo', true)
-    .limit(1000)
+  let perfil: { id: string; nome_completo: string; email: string | null; telefone: string | null } | null =
+    null
 
-  if (error) {
-    logger.error({ err: error.message }, '[identidade] falha ao consultar perfis')
-    throw new Error('falha interna ao resolver identidade')
+  if (e164) {
+    const { data: direto, error: errDireto } = await supabase
+      .from('perfis')
+      .select('id, nome_completo, email, telefone')
+      .eq('telefone', e164)
+      .eq('ativo', true)
+      .limit(1)
+      .maybeSingle()
+    if (errDireto) {
+      logger.error({ err: errDireto.message }, '[identidade] falha ao consultar perfil direto')
+      throw new Error('falha interna ao resolver identidade')
+    }
+    perfil = direto as typeof perfil
   }
 
-  const perfil = (perfis ?? []).find((p) => {
-    if (!p.telefone) return false
-    // Compara com tolerância a formatos (normaliza os dois lados).
-    if (telefoneCorrespondeWaId(p.telefone, waId)) return true
-    // Fallback: comparação por dígitos do número nacional.
-    const digitos = p.telefone.replace(/\D/g, '')
-    return alvos.some((a) => a.endsWith(digitos.slice(-10)) || a.endsWith(digitos.slice(-11)))
-  })
+  // 2) Fallback: telefone armazenado em formato não-normalizado (ex. com
+  //    parênteses/hífen). Varre apenas perfis com telefone preenchido.
+  if (!perfil) {
+    const { data: perfis, error } = await supabase
+      .from('perfis')
+      .select('id, nome_completo, email, telefone')
+      .not('telefone', 'is', null)
+      .eq('ativo', true)
+      .limit(1000)
+
+    if (error) {
+      logger.error({ err: error.message }, '[identidade] falha ao consultar perfis')
+      throw new Error('falha interna ao resolver identidade')
+    }
+
+    perfil =
+      (perfis ?? []).find((p) => {
+        if (!p.telefone) return false
+        if (telefoneCorrespondeWaId(p.telefone, waId)) return true
+        // Fallback: comparação por dígitos do número nacional.
+        const digitos = p.telefone.replace(/\D/g, '')
+        const alvos = e164 ? [e164, e164.replace(/^55/, '')] : [waId, waId.replace(/^55/, '')]
+        return alvos.some((a) => a.endsWith(digitos.slice(-10)) || a.endsWith(digitos.slice(-11)))
+      }) ?? null
+  }
 
   if (!perfil) return null
 
