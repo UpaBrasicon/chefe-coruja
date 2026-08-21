@@ -8,7 +8,13 @@
 ## 1. Contratar a VPS (Hostinger)
 
 1. Acesse **https://www.hostinger.com.br/servidor-vps** → **VPS KVM 2** (ou superior);
-2. Sistema operacional: **Ubuntu 24.04 LTS** (suporte até 2029 — ideal para produção em 2027);
+2. Sistema operacional: **Ubuntu 24.04 LTS** — ✅ **DECISÃO (21/08/2026)**
+   - 2+ anos de maturidade (Docker estável);
+   - Suporte até 2029 (cobre produção a partir de 2027);
+   - **Não usar 26.04** (lançado abr/2026, ~4 meses): kernel panic com Docker
+     ([Launchpad #2159646](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/2159646)),
+     remoção do cgroup v1 ([análise](https://blog.ncse.tw/ubuntu-26-04-cgroup-v1-removal-systemd-259-docker-oom/)),
+     Python 3.14/systemd 259. Revisitar em 2027+ se houver necessidade.
 3. Região: **São Paulo (BR)** — menor latência com o Supabase (também em SP);
 4. Anote o **IP da VPS** e a senha temporária do root (enviada por e-mail).
 
