@@ -77,6 +77,9 @@ Disparado `POST /webhook` com assinatura HMAC válida, mensagem de número não 
 ### Qualidade
 - `npm run typecheck`: 0 erros · `npm run lint`: 0 erros · `npm run build`: OK.
 - `docker compose up`: app + redis healthy, `/health` = ok.
+- **Regressão pós-refatoração (buildApp + guard de entrypoint)**: revalidado em
+  container real — handshake 200, POST válido 200, pipeline "não cadastrado",
+  dedup "duplicada ignorada"; o guard NÃO impediu o boot (entrypoint roda `main()`).
 
 ---
 
