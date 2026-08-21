@@ -1,0 +1,62 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# HERMES — docker-compose.prod.yml (produção / VPS Hostinger)
+# Uso: docker compose -f docker-compose.prod.yml up -d --build
+#
+# Serviços: app (Fastify) + redis (fila/dedup) + caddy (HTTPS automático)
+# Pré-requisito: .env.prod preenchido (nunca versionado) e DNS apontando
+# para a VPS (ex.: hermes.chefecoruja.com.br → IP da VPS).
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: hermes-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    container_name: hermes-app
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    environment:
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: production
+    expose:
+      - "3000" # não publica no host — só via Caddy
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: hermes-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+
+volumes:
+  redis-data:
+  caddy-data:
+  caddy-config:

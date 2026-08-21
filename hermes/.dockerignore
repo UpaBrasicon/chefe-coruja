@@ -20,6 +20,14 @@ dist/
 .gitignore
 .github/
 
+# Deploy e docs — não necessários na imagem
+deploy/
+DEPLOY-VPS.md
+README.md
+RELATORIO-*.md
+PREFLIGHT-HERMES.md
+scripts/
+
 # Logs e editor
 logs/
 *.log

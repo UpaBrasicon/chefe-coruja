@@ -1,0 +1,17 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# HERMES — Caddyfile (proxy reverso + HTTPS automático Let's Encrypt)
+# Troque o domínio pelo seu (ex.: hermes.chefecoruja.com.br) e aponte o DNS
+# para o IP da VPS ANTES de subir (o Caddy emite o certificado no primeiro
+# acesso). Para teste sem domínio, use http://IP-da-VPS (sem HTTPS).
+# ─────────────────────────────────────────────────────────────────────────────
+
+hermes.chefecoruja.com.br {
+	# /webhook precisa do corpo BRUTO para validação HMAC — o Caddy repassa
+	# o body sem alterações (não usamos compressão aqui).
+	reverse_proxy app:3000
+
+	# Logs de acesso (opcional — descomente para debug):
+	# log {
+	#   output file /data/caddy-access.log
+	# }
+}
