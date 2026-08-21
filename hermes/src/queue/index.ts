@@ -21,8 +21,17 @@ export const FILA_MENSAGENS = 'hermes-mensagens'
 
 // Conexão compartilhada (BullMQ exige connection separada por Queue/Worker
 // quando usa a mesma instância IORedis — aqui criamos duas de propósito).
+// Listener de 'error' evita "Unhandled error event" que derruba o processo
+// quando o Redis cai (o ioredis emite error sem listener → crash).
 export function criarConexaoRedis(): Redis {
-  return new Redis(env.REDIS_URL, { maxRetriesPerRequest: null })
+  const conexao = new Redis(env.REDIS_URL, {
+    maxRetriesPerRequest: null,
+    connectTimeout: 5_000,
+  })
+  conexao.on('error', (err) => {
+    logger.warn({ err: err.message }, '[redis] erro de conexão')
+  })
+  return conexao
 }
 
 export function criarFila() {

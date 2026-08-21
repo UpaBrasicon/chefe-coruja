@@ -73,12 +73,16 @@ type WebhookPayload = {
   }[]
 }
 
-async function main() {
+/**
+ * Monta a aplicação Fastify (rotas, fila, worker) sem abrir porta.
+ * Separado do listen para permitir testes com fastify.inject.
+ */
+export async function buildApp() {
   const app = Fastify({ logger: false })
 
   registrarParserCorpoBruto(app)
 
-  // Fila + worker (Fase 0: worker só loga)
+  // Fila + worker (Fase 1: pipeline completo)
   const fila = criarFila()
   const worker = criarWorker()
   const redisHealth = criarConexaoRedis()
@@ -176,12 +180,25 @@ async function main() {
     return reply.code(200).send({ status: 'ok' })
   })
 
+  return app
+}
+
+async function main() {
+  const app = await buildApp()
   const porta = env.PORT
   await app.listen({ port: porta, host: '0.0.0.0' })
   logger.info(`[server] Hermes ouvindo em http://0.0.0.0:${porta}`)
 }
 
-main().catch((err) => {
-  logger.fatal({ err: (err as Error).message }, '[server] falha fatal ao iniciar')
-  process.exit(1)
-})
+// Só inicia o servidor quando este arquivo é o entrypoint (não quando
+// importado por testes — buildApp() fica disponível para fastify.inject).
+const ehEntrypoint =
+  process.argv[1] !== undefined &&
+  import.meta.url === new URL(`file://${process.argv[1].replace(/\\/g, '/')}`).href
+
+if (ehEntrypoint) {
+  main().catch((err) => {
+    logger.fatal({ err: (err as Error).message }, '[server] falha fatal ao iniciar')
+    process.exit(1)
+  })
+}
