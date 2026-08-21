@@ -14,7 +14,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "node --env-file=.env --import tsx --test --test-force-exit \"src/**/*.test.ts\"",
-    "test:llm": "tsx src/lib/llm.ts"
+    "test:llm": "tsx src/lib/llm.ts",
+    "seed:telefones": "tsx scripts/seed-telefones.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",
