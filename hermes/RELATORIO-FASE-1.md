@@ -89,6 +89,26 @@ Disparado `POST /webhook` com assinatura HMAC válida, mensagem de número não 
 | 3 | **Telefones E.164** nos perfis de teste (`perfis.telefone` está NULL) — seed proposto no PREFLIGHT | Usuário (números reais) |
 | 4 | Testar no WhatsApp real: "quais meus plantões da semana?" → resposta com escala REAL | 1+2+3 |
 
+## Como testar ponta-a-ponta no WhatsApp (assim que tiver as credenciais)
+
+1. **Seed dos telefones** (uma vez): rodar o SQL do PREFLIGHT-HERMES.md com os números
+   reais de WhatsApp do Gestor Teste e do Plantonista Teste (E.164).
+2. **Chave DeepSeek**: preencher `LLM_API_KEY` no `.env` e rodar `npm run test:llm`
+   (esperado: `[llm] primario/deepseek-v4-flash (Xms): hermes online`).
+3. **Credenciais Meta**: preencher `META_APP_SECRET`, `META_ACCESS_TOKEN`,
+   `META_PHONE_NUMBER_ID` no `.env`.
+4. **Subir**: `docker compose up --build -d` → `GET /health` deve dar `ok`.
+5. **Túnel**: `cloudflared tunnel --url http://localhost:3000` → colar a URL
+   `https://XXXX.trycloudflare.com/webhook` + verify token no painel Meta (campo
+   `messages` assinado).
+6. **Enviar do celular** para o número de teste da Meta:
+   - "quais meus plantões da semana?" → resposta com a escala REAL (tool
+     `get_meus_plantoes`, filtrada pelo telefone).
+   - "quem está de plantão hoje?" (gestor) → escala da unidade.
+   - Pergunta clínica sobre paciente → recusa e orienta usar a plataforma.
+7. **Verificar logs**: `docker compose logs -f app` (pipeline, tools executadas,
+   auditoria) e no Supabase: `hermes_audit_log` (in/out/tool).
+
 ## Critérios de aceite da Fase 1 — status
 
 | Critério | Status |
