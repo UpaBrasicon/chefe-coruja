@@ -1,14 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // HERMES — lib/llm.ts
-// Camada LLM (stub da Fase 0 — o loop completo do agente vem na Fase 1).
+// Camada LLM — cliente OpenAI-compatible para o DeepSeek V4 Flash.
 //
-// Nesta fase entrega: cliente OpenAI-compatible parametrizado por
-// LLM_BASE_URL + LLM_MODEL (default DeepSeek V4 Flash), timeout 60s, 1 retry
-// com backoff, fallback opcional (Kimi), e um teste de fumaça executável
-// (`npm run test:llm`) que responde "hermes online".
+// Suporta: tool/function calling (formato OpenAI), timeout 60s, 1 retry com
+// backoff, fallback opcional (Kimi), e teste de fumaça (`npm run test:llm`).
 //
-// ⚠️ Modo thinking: NÃO fixado ainda — a Fase 1 consulta a doc oficial do
-// DeepSeek para o nome exato do parâmetro da build atual antes de ativar.
+// ⚠️ Modo thinking: reservado para jobs semanais (Fase 4). A doc oficial do
+// DeepSeek indica que o modo é ativado por parâmetro na request (mesmo model
+// ID) — não fixamos o nome do parâmetro aqui; a Fase 4 consulta a build atual.
 // ─────────────────────────────────────────────────────────────────────────────
 import { env } from '../config/env.js'
 import { logger } from '../logger.js'
@@ -16,10 +15,32 @@ import { logger } from '../logger.js'
 export type MensagemLLM = {
   role: 'system' | 'user' | 'assistant' | 'tool'
   content: string
+  tool_call_id?: string
+  tool_calls?: ToolCallLLM[]
+}
+
+export type ToolCallLLM = {
+  id: string
+  type: 'function'
+  function: {
+    name: string
+    arguments: string // JSON string
+  }
+}
+
+export type ToolDefLLM = {
+  type: 'function'
+  function: {
+    name: string
+    description: string
+    parameters: Record<string, unknown>
+  }
 }
 
 export type ChamadaLLM = {
   mensagens: MensagemLLM[]
+  tools?: ToolDefLLM[]
+  toolChoice?: 'auto' | 'none' | 'required'
   /** Reservado: ativar apenas em jobs semanais (Fase 4), nunca no chat de rotina. */
   thinking?: boolean
   maxTokens?: number
@@ -27,6 +48,7 @@ export type ChamadaLLM = {
 
 export type RespostaLLM = {
   conteudo: string
+  toolCalls: ToolCallLLM[]
   provedor: 'primario' | 'fallback'
   modelo: string
   latenciaMs: number
@@ -39,21 +61,28 @@ async function chamarProvedor(
   modelo: string,
   apiKey: string,
   body: ChamadaLLM
-): Promise<{ conteudo: string; latenciaMs: number }> {
+): Promise<{ conteudo: string; toolCalls: ToolCallLLM[]; latenciaMs: number }> {
   const url = `${baseUrl.replace(/\/$/, '')}/chat/completions`
   const inicio = Date.now()
+
+  const payload: Record<string, unknown> = {
+    model: modelo,
+    messages: body.mensagens,
+    max_tokens: body.maxTokens ?? 512,
+    stream: false,
+  }
+  if (body.tools && body.tools.length > 0) {
+    payload.tools = body.tools
+    payload.tool_choice = body.toolChoice ?? 'auto'
+  }
+
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model: modelo,
-      messages: body.mensagens,
-      max_tokens: body.maxTokens ?? 512,
-      stream: false,
-    }),
+    body: JSON.stringify(payload),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   })
 
@@ -63,15 +92,22 @@ async function chamarProvedor(
   }
 
   const dados = (await res.json()) as {
-    choices?: { message?: { content?: string } }[]
+    choices?: {
+      message?: {
+        content?: string | null
+        tool_calls?: ToolCallLLM[]
+      }
+    }[]
   }
-  const conteudo = dados.choices?.[0]?.message?.content
-  if (!conteudo) throw new Error('LLM retornou resposta sem conteúdo')
-  return { conteudo, latenciaMs: Date.now() - inicio }
+  const msg = dados.choices?.[0]?.message
+  return {
+    conteudo: msg?.content ?? '',
+    toolCalls: msg?.tool_calls ?? [],
+    latenciaMs: Date.now() - inicio,
+  }
 }
 
 export async function completar(body: ChamadaLLM): Promise<RespostaLLM> {
-  // Tenta o provedor primário (DeepSeek) com 1 retry/backoff.
   try {
     try {
       const r = await chamarProvedor(env.LLM_BASE_URL, env.LLM_MODEL, env.LLM_API_KEY, body)
@@ -82,7 +118,6 @@ export async function completar(body: ChamadaLLM): Promise<RespostaLLM> {
       return { ...r, provedor: 'primario', modelo: env.LLM_MODEL }
     }
   } catch (errPrimario) {
-    // Fallback opcional (Kimi) — apenas 1 tentativa.
     if (env.LLM_FALLBACK_BASE_URL && env.LLM_FALLBACK_API_KEY && env.LLM_FALLBACK_MODEL) {
       try {
         const r = await chamarProvedor(

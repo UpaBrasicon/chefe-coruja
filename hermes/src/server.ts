@@ -148,17 +148,18 @@ async function main() {
       '[webhook] payload recebido com assinatura válida'
     )
 
-    // Extrai mensagens de texto e enfileira (Fase 1 processa de verdade).
+    // Extrai mensagens e enfileira (Fase 1 processa de verdade).
     const jobs: JobMensagemWhatsApp[] = []
     for (const entry of payload.entry ?? []) {
       for (const change of entry.changes ?? []) {
         if (change.field !== 'messages') continue
         for (const msg of change.value?.messages ?? []) {
-          if (msg.type === 'text' && msg.id && msg.from) {
+          if (msg.id && msg.from) {
             jobs.push({
               message_id: msg.id,
               wa_id: msg.from,
-              texto: msg.text?.body ?? '',
+              texto: msg.type === 'text' ? (msg.text?.body ?? '') : '',
+              tipo: msg.type === 'text' ? 'text' : 'outro',
               received_at: new Date().toISOString(),
             })
           }
