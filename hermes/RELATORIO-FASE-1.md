@@ -132,14 +132,29 @@ Disparado `POST /webhook` com assinatura HMAC válida, mensagem de número não 
 | Webhook handshake + assinatura HMAC | ✅ (server.test: 200/403/401) |
 | Tempo mediano de resposta < 8s (non-thinking) | ⏳ aguarda chave LLM |
 | typecheck/lint/build | ✅ (0 erros; 33/33 testes) |
-| Sessão expira após 2h e contexto zera | ✅ (lógica implementada; teste unitário pendente de creds? não — ver nota) |
-| Chave LLM inválida → mensagem de instabilidade, erro logado | ✅ (caminho de erro implementado; teste real aguarda chave) |
-| Tempo mediano de resposta < 8s (non-thinking) | ⏳ aguarda chave LLM |
-| typecheck/lint passam | ✅ |
 
-> Nota sobre sessão: a expiração (2h) está implementada em `sessao.ts` (compara
-> `updated_at`); o teste automatizado dela exige creds Supabase no ambiente de CI —
-> o código é simples e coberto por leitura de código; teste manual na validação real.
+## Checklist de fechamento (PARTE F — rodado em 21/08)
+
+1. **`npm run typecheck`**: 0 erros ✅ · **`npm run lint`**: 0 erros ✅
+2. **Testes**: 33/33 passando (unit + integração vs Supabase real e Redis real) ✅
+3. **Segredos**: scan do repo — nenhum secret commitado; `hermes/.env` existe
+   fisicamente (lugar correto da service key) mas **não rastreado pelo git**
+   (gitignore + .dockerignore confirmados) ✅
+4. **RLS das tabelas `hermes_*`**: `hermes_sessions` e `hermes_audit_log` com
+   `ENABLE ROW LEVEL SECURITY` e **zero policies** (dump do remoto) — negado a
+   anon/authenticated, só service_role ✅
+5. **Migrations**: `20260821000001` e `20260821000002` local == remoto ✅
+
+## Débito técnico (Fase 1)
+
+- **Teste e2e real do caminho feliz** (LLM + tools com escala real) — bloqueado
+  por `LLM_API_KEY`, creds Meta e telefones E.164 (pendências do usuário).
+- **`console.log` no `llm.ts`** (bloco de execução direta do teste de fumaça) —
+  aceitável, só roda via `npm run test:llm`; considerar mover para logger.
+- **Tempo do `/health` com Redis down** ~7s (reconexão + timeout) — responde
+  corretamente (degraded), mas poderia ser mais rápido com tuning fino.
+- **Sessões antigas nunca são purgadas** (só reutilizadas/sobrescritas por
+  upsert) — janela de dados cresce; considerar job de limpeza (Fase 4).
 
 ## FORA DE ESCOPO (fases futuras)
 - Tools de escrita (confirmar plantão, troca) — Fase 2
