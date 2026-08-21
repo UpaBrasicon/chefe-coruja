@@ -112,17 +112,26 @@ Disparado `POST /webhook` com assinatura HMAC válida, mensagem de número não 
 7. **Verificar logs**: `docker compose logs -f app` (pipeline, tools executadas,
    auditoria) e no Supabase: `hermes_audit_log` (in/out/tool).
 
-## Critérios de aceite da Fase 1 — status
+## Critérios de aceite da Fase 1 — status (atualizado 21/08)
 
 | Critério | Status |
 |---|---|
-| Número não cadastrado recebe mensagem fixa e nada vai ao LLM | ✅ (verificado local) |
+| Número não cadastrado recebe mensagem fixa e nada vai ao LLM | ✅ (teste de integração: auditoria in/out no Supabase) |
 | Plantonista pergunta "quais meus plantões da semana?" → plantões REAIS | ⏳ aguarda LLM_API_KEY + telefones |
 | Plantonista pergunta escala de outro médico → Hermes nega | ✅ (filtro no código, testado) |
 | Gestor pergunta "quem está de plantão hoje?" → escala da unidade | ⏳ aguarda credenciais (tool pronta) |
 | Pergunta clínica sobre paciente → recusa e orienta usar a plataforma | ✅ (regra no system prompt) |
-| Mensagem duplicada (mesmo message_id) processada 1x | ✅ (verificado no fluxo real) |
-| `hermes_audit_log` registra toda mensagem e tool | ✅ (confirmado no Supabase) |
+| Mensagem duplicada (mesmo message_id) processada 1x | ✅ (dedup: teste Redis + fluxo real e2e) |
+| `hermes_audit_log` registra toda mensagem e tool | ✅ (in/out/tool confirmados no Supabase) |
+| Sessão expira após 2h e contexto zera | ✅ (teste integração: updated_at envelhecido → vazia) |
+| Sessão não duplica em mensagens paralelas | ✅ (UNIQUE + upsert idempotente, testado) |
+| Chave LLM inválida → mensagem de instabilidade, erro logado | ✅ (loop.integration: 401 real do DeepSeek → instabilidade) |
+| Mensagem não-texto → resposta fixa sem LLM | ✅ (teste integração: auditoria in/out) |
+| Rate limit 20/10min | ✅ (teste Redis: 20 ok, 21ª bloqueada) |
+| Envio WhatsApp falha sem crash | ✅ (whatsapp.integration: 401 → {ok:false} sem lançar) |
+| Webhook handshake + assinatura HMAC | ✅ (server.test: 200/403/401) |
+| Tempo mediano de resposta < 8s (non-thinking) | ⏳ aguarda chave LLM |
+| typecheck/lint/build | ✅ (0 erros; 33/33 testes) |
 | Sessão expira após 2h e contexto zera | ✅ (lógica implementada; teste unitário pendente de creds? não — ver nota) |
 | Chave LLM inválida → mensagem de instabilidade, erro logado | ✅ (caminho de erro implementado; teste real aguarda chave) |
 | Tempo mediano de resposta < 8s (non-thinking) | ⏳ aguarda chave LLM |
