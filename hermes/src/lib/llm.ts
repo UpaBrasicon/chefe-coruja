@@ -75,6 +75,10 @@ async function chamarProvedor(
     payload.tools = body.tools
     payload.tool_choice = body.toolChoice ?? 'auto'
   }
+  // Modo thinking (DeepSeek): habilitado por padrão no modelo — o chat de
+  // rotina DEVE rodar NON-THINKING (latência baixa, content preenchido).
+  // Doc oficial: {"thinking": {"type": "enabled"|"disabled"}} (api-docs.deepseek.com/guides/thinking_mode)
+  payload.thinking = { type: body.thinking ? 'enabled' : 'disabled' }
 
   const res = await fetch(url, {
     method: 'POST',
@@ -140,13 +144,22 @@ export async function completar(body: ChamadaLLM): Promise<RespostaLLM> {
 /** Teste de fumaça — `npm run test:llm`. Espera "hermes online". */
 export async function testarConexao(): Promise<RespostaLLM> {
   return completar({
-    mensagens: [{ role: 'user', content: 'responda apenas: hermes online' }],
-    maxTokens: 16,
+    mensagens: [{ role: 'user', content: 'Responda exatamente com as palavras: hermes online' }],
+    maxTokens: 32,
   })
 }
 
 // Execução direta: node/tsx src/lib/llm.ts
-if (import.meta.url === `file://${process.argv[1]?.replace(/\\/g, '/')}`) {
+// (resolve argv[1] para caminho absoluto — funciona com `node --env-file` etc.)
+const ehEntrypoint =
+  process.argv[1] !== undefined &&
+  import.meta.url === new URL(`file://${process.argv[1].replace(/\\/g, '/')}`).href
+// Fallback: compara pelo nome do arquivo (portátil entre caminhos absolutos/relativos)
+const nomeArquivo = process.argv[1]?.split(/[\\/]/).pop()
+const ehEntrypointPorNome =
+  nomeArquivo !== undefined && import.meta.url.endsWith(`/${nomeArquivo}`)
+
+if (ehEntrypoint || ehEntrypointPorNome) {
   testarConexao()
     .then((r) => {
       console.log(`[llm] ${r.provedor}/${r.modelo} (${r.latenciaMs}ms): ${r.conteudo}`)
