@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# HERMES — docker-compose.yml (Fase 0: app + redis)
+# HERMES — docker-compose.yml (Fase 1: app + redis)
 # Uso: docker compose up --build
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -11,6 +11,9 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
+    volumes:
+      # Persistência do AOF (dedup/rate limit sobrevivem a restart).
+      - redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -31,3 +34,13 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    healthcheck:
+      # O app só é considerado saudável quando o /health responde ok.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  redis-data:

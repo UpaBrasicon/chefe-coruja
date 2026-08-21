@@ -1,0 +1,28 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# HERMES — .dockerignore
+# CRÍTICO: impede que SEGREDOS (.env) e artefatos locais entrem na imagem
+# Docker (o Dockerfile usa `COPY . .` no estágio de build — sem este arquivo,
+# o .env com SUPABASE_SERVICE_ROLE_KEY / META_ACCESS_TOKEN iria para a imagem).
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Segredos — NUNCA entrar na imagem
+.env
+.env.*
+!.env.example
+
+# Dependências / build
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Git e CI
+.git/
+.gitignore
+.github/
+
+# Logs e editor
+logs/
+*.log
+.DS_Store
+.idea/
+.vscode/
