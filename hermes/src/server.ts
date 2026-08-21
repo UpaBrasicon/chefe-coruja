@@ -15,7 +15,7 @@ import Fastify, { type FastifyRequest } from 'fastify'
 import { env } from './config/env.js'
 import { logger } from './logger.js'
 import { supabase } from './lib/supabase.js'
-import { criarConexaoRedis, criarFila, criarWorker, type JobMensagemWhatsApp } from './queue/index.js'
+import { criarConexaoRedisHealth, criarFila, criarWorker, type JobMensagemWhatsApp } from './queue/index.js'
 
 // ── Raw body: preserva o corpo bruto para validação do HMAC ──────────────────
 declare module 'fastify' {
@@ -85,7 +85,7 @@ export async function buildApp() {
   // Fila + worker (Fase 1: pipeline completo)
   const fila = criarFila()
   const worker = criarWorker()
-  const redisHealth = criarConexaoRedis()
+  const redisHealth = criarConexaoRedisHealth()
 
   app.addHook('onClose', async () => {
     await fila.close()
@@ -99,7 +99,10 @@ export async function buildApp() {
     let supabaseOk = false
 
     try {
-      const pong = await redisHealth.ping()
+      const pong = await Promise.race([
+        redisHealth.ping(),
+        new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), 2_000)),
+      ])
       redisOk = pong === 'PONG'
     } catch {
       redisOk = false

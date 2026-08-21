@@ -34,6 +34,23 @@ export function criarConexaoRedis(): Redis {
   return conexao
 }
 
+/**
+ * Conexão para o /health: com Redis fora do ar, o ping deve FALHAR RÁPIDO em
+ * vez de ficar enfileirado (enableOfflineQueue=false) — senão o handler do
+ * health fica pendurado até timeout do cliente. Ainda assim RECONECTA com
+ * retry (delay 1s) para o status voltar a "ok" quando o Redis retorna.
+ */
+export function criarConexaoRedisHealth(): Redis {
+  const conexao = new Redis(env.REDIS_URL, {
+    maxRetriesPerRequest: 1,
+    connectTimeout: 2_000,
+    enableOfflineQueue: false,
+    retryStrategy: () => 1_000, // reconecta a cada 1s quando cair
+  })
+  conexao.on('error', () => undefined)
+  return conexao
+}
+
 export function criarFila() {
   return new Queue<JobMensagemWhatsApp>(FILA_MENSAGENS, {
     connection: criarConexaoRedis(),
