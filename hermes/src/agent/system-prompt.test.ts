@@ -15,7 +15,7 @@ const identidade = {
 
 test('system prompt — contém identidade, regras e contexto do usuário', () => {
   const p = montarSystemPrompt(identidade, '21/08/2026 09:30')
-  assert.match(p, /HERMES/)
+  assert.match(p, /GAVIÃO/)
   assert.match(p, /Chefe Coruja/)
   assert.match(p, /NUNCA responda pergunta clínica/)
   assert.match(p, /Gestor Teste/)
@@ -27,7 +27,7 @@ test('system prompt — contém identidade, regras e contexto do usuário', () =
 
 test('system prompt — estrutura cache-friendly: estável primeiro, variável por último', () => {
   const p = montarSystemPrompt(identidade, '21/08/2026 09:30')
-  const idxIdentidade = p.indexOf('Você é o HERMES')
+  const idxIdentidade = p.indexOf('Você é o GAVIÃO')
   const idxContexto = p.indexOf('CONTEXTO DA SESSÃO')
   const idxUsuario = p.indexOf('Gestor Teste')
   const idxData = p.indexOf('21/08/2026 09:30')

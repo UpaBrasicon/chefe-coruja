@@ -30,6 +30,11 @@ services:
     environment:
       REDIS_URL: redis://redis:6379
       NODE_ENV: production
+      # Gavião (fiscal): path do state.db do agente conversacional (Nous)
+      NOUS_DB_PATH: /opt/nous-data/state.db
+    volumes:
+      # READ-ONLY: o Gavião lê as sessões do Nous para fiscalizar (nunca escreve)
+      - /home/hermes/.hermes:/opt/nous-data:ro
     expose:
       - "3000" # não publica no host — só via Caddy
     depends_on:

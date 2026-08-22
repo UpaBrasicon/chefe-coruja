@@ -10,6 +10,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { Queue } from 'bullmq'
 import { criarConexaoRedis } from './index.js'
+import { rodarPatrulhaGaviao } from '../jobs/gaviao.js'
 import { logger } from '../logger.js'
 import { rodarSentinela } from '../jobs/sentinela.js'
 import { rodarPatrulhaDados, rodarPatrulhaHermes } from '../jobs/cerbero.js'
@@ -44,7 +45,16 @@ export function registrarCrons(): Queue {
     { name: 'cerbero_hermes', data: {} }
   )
 
-  logger.info('[cron] jobs agendados: sentinela_escala (seg 06h30 BR), cerbero_dados (1h), cerbero_hermes (diário 05h BR)')
+  // Gavião (fiscal): a cada 15 min — supervisiona o agente conversacional
+  void fila.upsertJobScheduler(
+    'gaviao_patrulha',
+    { every: 15 * 60 * 1000 },
+    { name: 'gaviao_patrulha', data: {} }
+  )
+
+  logger.info(
+    '[cron] jobs: sentinela (seg 06h30 BR), cerbero_dados (1h), cerbero_hermes (05h BR), gaviao_patrulha (15min)'
+  )
   return fila
 }
 
@@ -61,6 +71,9 @@ export async function executarJobCron(nome: string): Promise<void> {
       break
     case 'cerbero_hermes':
       await rodarPatrulhaHermes()
+      break
+    case 'gaviao_patrulha':
+      await rodarPatrulhaGaviao()
       break
     default:
       logger.warn({ nome }, '[cron] job desconhecido')

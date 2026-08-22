@@ -1,8 +1,8 @@
 {
-  "name": "hermes",
-  "version": "0.1.0",
+  "name": "gaviao",
+  "version": "1.2.0",
   "private": true,
-  "description": "Hermes — agente de WhatsApp do Chefe Coruja (DeepSeek V4 Flash)",
+  "description": "Gavião — fiscal de segurança e assistente operacional do Chefe Coruja (DeepSeek V4 Flash)",
   "type": "module",
   "engines": {
     "node": ">=22"
