@@ -706,11 +706,22 @@ ANTES (13 · plantonista)            DEPOIS (4)
 src/components/TabsPagina.tsx                        abas com estado na URL
 src/components/ErroBoundary.tsx                      barreira de erro
 src/routes/Redirecionar.tsx                          redirect de rota legada
-src/pages/grupos/PlantaoGrupo.tsx                    Plantão (5 abas)
+src/content/plantaoRegistry.tsx                      5 seções · 9 ferramentas de plantão
+
 src/pages/grupos/AgendaGrupo.tsx                     Minha Agenda (5 abas)
 src/pages/grupos/EscalaGrupo.tsx                     Escala gestor/admin (3 abas)
 src/pages/grupos/UnidadeGrupo.tsx                    Unidade (3 abas)
 src/pages/grupos/OrganizacaoGrupo.tsx                Organização admin (2 abas)
+
+src/pages/plantao/PlantaoHome.tsx                    hub de seções
+src/pages/plantao/PlantaoSectionHome.tsx             seção (grid ou ferramenta direta)
+src/pages/plantao/PlantaoToolRouter.tsx              ferramenta + injeção de props
+src/pages/plantao/secoes/CheckIn.tsx
+src/pages/plantao/secoes/PacientesInternados.tsx
+src/pages/plantao/secoes/PacientesObservacao.tsx
+src/pages/plantao/secoes/FormularioInternacao.tsx
+src/pages/plantao/secoes/EvolucaoTool.tsx
+
 src/pages/plantonista/farmacia/ConsultaMedicamentos.tsx
 src/pages/plantonista/farmacia/ReferenciaDiluicaoTool.tsx
 ```
@@ -720,9 +731,9 @@ src/pages/plantonista/farmacia/ReferenciaDiluicaoTool.tsx
 | Arquivo | Motivo |
 |---|---|
 | `pages/Mensagens.tsx` | Tela morta — chat vive no drawer |
-| `pages/ObservacaoPainel.tsx` | Wrapper de 14 linhas — virou aba |
-| `pages/plantao/AtendimentoPorta.tsx` | Virou aba de `/plantao` |
-| `pages/plantao/PlantaoHome.tsx` | Substituído por `PlantaoGrupo` |
+| `pages/ObservacaoPainel.tsx` | Wrapper de 14 linhas — virou seção `/plantao/observacao` |
+| `pages/plantao/AtendimentoPorta.tsx` | Virou a seção `/plantao/atendimento-porta` (gerada pelo registry) |
+| `pages/plantao/AtendimentoTool.tsx` | Substituído pelo `PlantaoToolRouter`, genérico para todas as seções |
 
 ### 11.6 Verificação
 
@@ -730,13 +741,14 @@ src/pages/plantonista/farmacia/ReferenciaDiluicaoTool.tsx
 |---|---|
 | `tsc -b --noEmit` | ✅ 0 erros |
 | `eslint src` | ✅ 0 erros, 0 warnings |
-| `vite build` | ✅ 118 chunks, principal 648 KB |
-| Smoke test no navegador (`vite preview`) | ✅ `/login` renderiza, 0 erros de console; `/vagas` sem sessão → `/login` |
+| `vite build` | ✅ 129 chunks, principal 647 KB |
+| Smoke test no navegador (`vite preview`) | ✅ app inicializa e renderiza, 0 erros de console; `/vagas` e `/plantao/atendimento-porta` sem sessão → `/login` |
 
-> ⚠️ **Não testado em runtime:** os fluxos autenticados (troca de abas, redirects
-> legados com sessão, permissões por papel) exigem credenciais Supabase. A validação
-> foi estática (typecheck + lint) e o boot da aplicação. Recomenda-se um passe manual
-> por papel antes do deploy.
+> ⚠️ **Não testado em runtime:** os fluxos autenticados (navegação entre seções e abas,
+> redirects legados com sessão, permissões por papel) exigem credenciais Supabase. A
+> validação foi estática (typecheck + lint) mais o boot da aplicação. Recomenda-se um
+> passe manual por papel antes do deploy — em especial `/plantao/internacao/formulario`
+> com `?paciente=`, vindo do painel de internados.
 
 ---
 
@@ -748,13 +760,13 @@ src/pages/plantonista/farmacia/ReferenciaDiluicaoTool.tsx
 |---|---|
 | **Type safety** | `tsc -b --noEmit` sem erros. |
 | **Lint** | `eslint src` limpo. Os ~1.176 erros de `npm run lint` vêm de `deepseek-harness/`, `hermes/` e `scripts/`, fora do frontend. |
-| **Code-splitting** | 118 chunks; nenhuma tela pesada entra no carregamento inicial. |
-| **Registry declarativo** | 39 ferramentas em um arquivo tipado; adicionar uma = 1 linha + 1 componente, com lazy incluso. |
-| **Navegação previsível** | 4/3/3 itens por papel, abas com estado na URL, breadcrumb consistente. |
-| **Compatibilidade** | 17 rotas legadas preservadas como redirect com query string. |
+| **Code-splitting** | 129 chunks; nenhuma tela pesada entra no carregamento inicial. |
+| **Registry declarativo** | Dois registries (39 ferramentas clínicas + 9 de plantão) no mesmo formato tipado; adicionar uma = 1 linha + 1 componente, com lazy incluso. |
+| **Navegação previsível** | 4/3/3 itens por papel; as duas centrais seguem o mesmo modelo hub → seção → ferramenta, e os agrupadores de gestão usam abas com estado na URL. Breadcrumb consistente em todos. |
+| **Compatibilidade** | 16 rotas legadas preservadas como redirect com query string. |
 | **Resiliência** | `ErroBoundary` global e por rota — erro de tela não derruba o shell. |
 | **Guardas coerentes** | Navegação, `RequireRole`, portão de plantão e chat usam a mesma fonte (`papeisDaUnidade`). |
-| **Reuso real** | `ToolLayout` em 37 telas, `NumberField` em 13, `TabsPagina` em 5 agrupadores. |
+| **Reuso real** | `ToolLayout` em 37 telas, `NumberField` em 13, `TabsPagina` em 4 agrupadores, `SectionCard`/`ToolCard` nas duas centrais. |
 
 ### ⚠️ Pendências
 
@@ -770,15 +782,16 @@ src/pages/plantonista/farmacia/ReferenciaDiluicaoTool.tsx
 ### Métricas
 
 ```
-src/ ................... 156 arquivos .ts/.tsx
-pages + components ..... 18.775 linhas
-Rotas .................. 33 (3 públicas, 30 autenticadas, incl. 17 redirects legados)
+src/ ................... 163 arquivos .ts/.tsx
+pages + components ..... 18.859 linhas
+Rotas .................. 31 (3 públicas, 28 autenticadas, incl. 16 redirects legados)
 Itens de sidebar ....... 4 plantonista / 3 gestor / 3 admin
-Ferramentas clínicas ... 39 (registry) + 4 (atendimento porta) = 43
-Agrupadores com abas ... 5 (Plantão, Agenda, Escala, Unidade, Organização)
-Abas totais ............ 18 nos agrupadores + 5 no formulário de internação
-Bundle principal ....... 648 KB JS (era 1.805 KB) + 98 KB CSS
-Chunks JS .............. 118 (eram 8)
+Registries ............. 2 — clínico (7 seções · 39 ferramentas)
+                             plantão (5 seções · 9 ferramentas)
+Agrupadores com abas ... 4 (Agenda, Escala, Unidade, Organização)
+Abas totais ............ 13 nos agrupadores + 5 no formulário de internação
+Bundle principal ....... 647 KB JS (era 1.805 KB) + 98 KB CSS
+Chunks JS .............. 129 (eram 8)
 typecheck .............. OK — 0 erros
 eslint src ............. OK — 0 erros, 0 warnings
 ```
@@ -811,11 +824,13 @@ chefe-coruja/
     │   ├── AppShell.tsx
     │   ├── TabsPagina.tsx      # abas com estado na URL
     │   └── ErroBoundary.tsx
-    ├── content/registry.tsx    # catálogo das 39 ferramentas (lazy)
+    ├── content/
+    │   ├── registry.tsx        # 7 seções · 39 ferramentas clínicas (lazy)
+    │   └── plantaoRegistry.tsx # 5 seções · 9 ferramentas de plantão (lazy)
     ├── pages/
-    │   ├── grupos/             # 5 agrupadores com abas
-    │   ├── plantonista/        # hubs + 39 ferramentas (incl. farmacia/)
-    │   ├── plantao/            # atendimento porta, internação, evolução
+    │   ├── grupos/             # 4 agrupadores com abas
+    │   ├── plantonista/        # hub + seções + 39 ferramentas (incl. farmacia/)
+    │   ├── plantao/            # hub + seções + secoes/ + atendimento/ + internacao/
     │   ├── gestor/, admin/, public/
     │   └── (telas avulsas)
     ├── hooks/                  # 9 hooks
@@ -834,5 +849,5 @@ consumidas pelo frontend via `import.meta.env`.
 
 ---
 
-*Documento atualizado após a implementação do reagrupamento. Revalidar após qualquer
-nova refatoração de rotas.*
+*Documento atualizado após o reagrupamento e a conversão da Central de Plantão para
+seções. Revalidar após qualquer nova refatoração de rotas.*
