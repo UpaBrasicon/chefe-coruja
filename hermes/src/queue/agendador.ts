@@ -45,15 +45,17 @@ export function registrarCrons(): Queue {
     { name: 'cerbero_hermes', data: {} }
   )
 
-  // Gavião (fiscal): a cada 15 min — supervisiona o agente conversacional
+  // Gavião (fiscal do Nous): a cada 12h, nos horários de MENOR custo do
+  // DeepSeek. Picos (tarifa dobrada): 01–04h e 06–10h UTC (= 22–01h e 03–07h
+  // BR). 11h UTC = 08h BR e 23h UTC = 20h BR ficam FORA dos picos.
   void fila.upsertJobScheduler(
     'gaviao_patrulha',
-    { every: 15 * 60 * 1000 },
+    { pattern: cronBrasilia('0 11,23 * * *'), tz: 'UTC' },
     { name: 'gaviao_patrulha', data: {} }
   )
 
   logger.info(
-    '[cron] jobs: sentinela (seg 06h30 BR), cerbero_dados (1h), cerbero_hermes (05h BR), gaviao_patrulha (15min)'
+    '[cron] jobs: sentinela (seg 06h30 BR), cerbero_dados (1h), cerbero_hermes (05h BR), gaviao_patrulha (08h/20h BR = 11h/23h UTC, fora do pico DeepSeek)'
   )
   return fila
 }
