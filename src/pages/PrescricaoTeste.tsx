@@ -53,7 +53,7 @@ type ItemPrescricao = {
   diluicaoPublicada: boolean
 }
 
-export default function PrescricaoTeste() {
+export default function PrescricaoTeste({ embutido = false }: { embutido?: boolean } = {}) {
   const { unidadeAtiva } = useUnidade()
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
@@ -249,20 +249,22 @@ export default function PrescricaoTeste() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">
-            Início
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Prescrição Teste</span>
+      {!embutido && (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Início
+            </Link>
+            <ChevronRight className="size-3.5" />
+            <span className="font-medium text-foreground">Prescrição Teste</span>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">Prescrição Teste</h1>
+          <p className="text-sm text-muted-foreground">
+            Comece a digitar o nome (ou parte) do medicamento para ver as sugestões, incluindo a diluição
+            quando necessária.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Prescrição Teste</h1>
-        <p className="text-sm text-muted-foreground">
-          Comece a digitar o nome (ou parte) do medicamento para ver as sugestões, incluindo a diluição
-          quando necessária.
-        </p>
-      </div>
+      )}
 
       {erro && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{erro}</div>}
       {msg && <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</div>}

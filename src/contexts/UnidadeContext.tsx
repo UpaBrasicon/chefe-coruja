@@ -20,6 +20,8 @@ export type VinculoComUnidade = {
 interface UnidadeContextValue {
   status: 'carregando' | 'pendente' | 'ok'
   vinculos: VinculoComUnidade[]
+  /** Papéis do usuário **na unidade ativa** — é o que a navegação deve usar. */
+  papeisDaUnidade: Papel[]
   unidades: VinculoComUnidade[]
   unidadeAtiva: VinculoComUnidade | null
   setUnidadeAtivaId: (id: string) => void
@@ -96,15 +98,21 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, unidadeAtiva.unidade_id)
   }, [unidadeAtiva])
 
-  const papelAtivo = React.useMemo(() => {
-    const papeisDaUnidade = (vinculos ?? []).filter((v) => v.unidade_id === unidadeAtiva?.unidade_id)
-    if (papeisDaUnidade.length === 0) return null
-    return [...papeisDaUnidade].sort((a, b) => ORDEM_PAPEL[a.papel] - ORDEM_PAPEL[b.papel])[0].papel
+  // Papéis restritos à unidade ativa. Antes as flags eram globais (qualquer
+  // vínculo), o que fazia um usuário plantonista na unidade A e gestor na B ver
+  // o menu dos dois papéis nas duas unidades.
+  const papeisDaUnidade = React.useMemo<Papel[]>(() => {
+    const doVinculo = (vinculos ?? []).filter((v) => v.unidade_id === unidadeAtiva?.unidade_id)
+    return [...new Set(doVinculo.map((v) => v.papel))].sort(
+      (a, b) => ORDEM_PAPEL[a] - ORDEM_PAPEL[b]
+    )
   }, [vinculos, unidadeAtiva?.unidade_id])
 
-  const ehAdmin = (vinculos ?? []).some((v) => v.papel === 'admin')
-  const ehGestor = (vinculos ?? []).some((v) => v.papel === 'gestor')
-  const ehPlantonista = (vinculos ?? []).some((v) => v.papel === 'plantonista')
+  const papelAtivo = papeisDaUnidade[0] ?? null
+
+  const ehAdmin = papeisDaUnidade.includes('admin')
+  const ehGestor = papeisDaUnidade.includes('gestor')
+  const ehPlantonista = papeisDaUnidade.includes('plantonista')
 
   const status: UnidadeContextValue['status'] = !perfil
     ? 'carregando'
@@ -118,6 +126,7 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
     () => ({
       status,
       vinculos: vinculos ?? [],
+      papeisDaUnidade,
       unidades,
       unidadeAtiva,
       setUnidadeAtivaId: (id) => setUnidadeAtivaIdState(id),
@@ -131,6 +140,7 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
     [
       status,
       vinculos,
+      papeisDaUnidade,
       unidades,
       unidadeAtiva,
       papelAtivo,

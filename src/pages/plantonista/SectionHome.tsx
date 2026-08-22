@@ -1,14 +1,14 @@
 import { Link, useParams } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 
-import { acharSecao } from '@/content/registry'
-import { useFavoritos } from '@/lib/useFavoritos'
+import { acharSecao, CHAVES_FERRAMENTAS } from '@/content/registry'
+import { chaveFerramenta, useFavoritos } from '@/lib/useFavoritos'
 import { ToolCard } from '@/components/plantonista/cards'
 
 export default function SectionHome() {
   const { section } = useParams()
   const secao = acharSecao(section ?? '')
-  const { favoritos, alternarFavorito } = useFavoritos()
+  const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
 
   if (!secao) {
     return <p className="text-sm text-destructive">Seção não encontrada.</p>
@@ -40,8 +40,8 @@ export default function SectionHome() {
               to={`/plantonista/${secao.slug}/${tool.slug}`}
               label={tool.label}
               description={tool.description}
-              favorito={favoritos.includes(tool.slug)}
-              onFavoritar={() => alternarFavorito(tool.slug)}
+              favorito={favoritos.includes(chaveFerramenta(secao.slug, tool.slug))}
+              onFavoritar={() => alternarFavorito(chaveFerramenta(secao.slug, tool.slug))}
             />
           ))}
         </div>

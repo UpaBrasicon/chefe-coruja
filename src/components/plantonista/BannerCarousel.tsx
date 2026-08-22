@@ -100,7 +100,7 @@ export function BannerCarousel() {
                   <ImageOff className="size-6 text-muted-foreground/30" />
                   <p className="text-sm font-medium text-muted-foreground/70">Espaço para imagem da unidade</p>
                   {podeGerenciar && (
-                    <Link to="/banners" className="text-sm font-medium text-primary hover:underline">
+                    <Link to="/unidade?aba=imagens" className="text-sm font-medium text-primary hover:underline">
                       Gerenciar imagens →
                     </Link>
                   )}

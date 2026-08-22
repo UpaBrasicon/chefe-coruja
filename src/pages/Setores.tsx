@@ -66,7 +66,7 @@ const leitosSchema = z.object({
 
 type LeitosForm = z.infer<typeof leitosSchema>
 
-export function Setores() {
+export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
   const { unidadeAtiva } = useUnidade()
   const queryClient = useQueryClient()
   const unidadeId = unidadeAtiva?.unidade_id
@@ -179,12 +179,16 @@ export function Setores() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Setores e Leitos</h1>
-          <p className="text-sm text-muted-foreground">
-            {unidadeAtiva?.unidade.nome} — gerencie setores e crie leitos em lote.
-          </p>
-        </div>
+        {embutido ? (
+          <div />
+        ) : (
+          <div>
+            <h1 className="text-xl font-semibold">Setores e Leitos</h1>
+            <p className="text-sm text-muted-foreground">
+              {unidadeAtiva?.unidade.nome} — gerencie setores e crie leitos em lote.
+            </p>
+          </div>
+        )}
         <Button onClick={() => setDialogSetorAberto(true)}>
           <Plus />
           Novo setor

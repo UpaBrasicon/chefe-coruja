@@ -53,6 +53,13 @@ export const UFS = [
   'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
 ]
 
+/** Tela inicial de cada papel após o reagrupamento das abas. */
+export const ROTA_INICIAL: Record<Papel, string> = {
+  admin: '/painel',
+  gestor: '/unidade',
+  plantonista: '/plantonista',
+}
+
 export const ORDEM_PAPEL: Record<Papel, number> = {
   admin: 0,
   gestor: 1,

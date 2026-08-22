@@ -40,7 +40,13 @@ function fmtDia(iso: string | null | undefined) {
 
 type Setor = { id: string; nome: string; tipo: string; ordem: number }
 
-export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'internacao' | 'observacao' }) {
+export default function InternacaoPainel({
+  modo = 'internacao',
+  embutido = false,
+}: {
+  modo?: 'internacao' | 'observacao'
+  embutido?: boolean
+}) {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
@@ -54,6 +60,7 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
 
   const ehGestor = papelAtivo === 'gestor'
   const ehAdmin = papelAtivo === 'admin'
+  const ehPlantonista = papelAtivo === 'plantonista'
   const titulo = modo === 'internacao' ? 'Painel de Internação' : 'Observação'
   const rpcSetores = modo === 'internacao' ? 'setores_internacao' : 'setores_observacao'
   const IconePainel = modo === 'internacao' ? Hospital : Eye
@@ -324,23 +331,25 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">
-            Início
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">{titulo}</span>
+      {!embutido && (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Início
+            </Link>
+            <ChevronRight className="size-3.5" />
+            <span className="font-medium text-foreground">{titulo}</span>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">{titulo}</h1>
+          <p className="text-sm text-muted-foreground">
+            {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
+            {modo === 'internacao'
+              ? 'Enfermaria Clínica, Enfermaria Pediátrica, Sala Vermelha/Semi-Crítica (e outros setores do gestor).'
+              : 'Setor de Observação — pacientes permanecem em observação por no máximo 6 horas.'}{' '}
+            Você só vê os pacientes dos setores onde está na escala agora.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">{titulo}</h1>
-        <p className="text-sm text-muted-foreground">
-          {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
-          {modo === 'internacao'
-            ? 'Enfermaria Clínica, Enfermaria Pediátrica, Sala Vermelha/Semi-Crítica (e outros setores do gestor).'
-            : 'Setor de Observação — pacientes permanecem em observação por no máximo 6 horas.'}{' '}
-          Você só vê os pacientes dos setores onde está na escala agora.
-        </p>
-      </div>
+      )}
 
       {sucesso && <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{sucesso}</p>}
 
@@ -437,20 +446,25 @@ export default function InternacaoPainel({ modo = 'internacao' }: { modo?: 'inte
                             <Button size="xs" variant="ghost" onClick={() => setPacienteDetalhe(p)}>
                               <Eye /> Detalhes
                             </Button>
-                            <Button
-                              size="xs"
-                              variant="ghost"
-                              onClick={() => navigate(`/plantao/internacao?paciente=${p.id}`)}
-                            >
-                              Abrir
-                            </Button>
-                            <Button
-                              size="xs"
-                              variant="ghost"
-                              onClick={() => navigate(`/plantao/evolucao?paciente=${p.id}`)}
-                            >
-                              <Activity /> Evolução
-                            </Button>
+                            {/* Formulário e evolução são rotas do plantonista. */}
+                            {ehPlantonista && (
+                              <>
+                                <Button
+                                  size="xs"
+                                  variant="ghost"
+                                  onClick={() => navigate(`/plantao/internacao/formulario?paciente=${p.id}`)}
+                                >
+                                  Abrir
+                                </Button>
+                                <Button
+                                  size="xs"
+                                  variant="ghost"
+                                  onClick={() => navigate(`/plantao/evolucao?paciente=${p.id}`)}
+                                >
+                                  <Activity /> Evolução
+                                </Button>
+                              </>
+                            )}
                           </div>
                         </div>
                       ))

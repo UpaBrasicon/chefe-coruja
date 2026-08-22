@@ -28,7 +28,7 @@ function brl(v: number) {
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-export default function Extrato() {
+export default function Extrato({ embutido = false }: { embutido?: boolean } = {}) {
   const { unidadeAtiva } = useUnidade()
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
@@ -96,19 +96,21 @@ export default function Extrato() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">
-            Início
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Extrato Financeiro</span>
+      {!embutido && (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Início
+            </Link>
+            <ChevronRight className="size-3.5" />
+            <span className="font-medium text-foreground">Extrato Financeiro</span>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">Extrato Financeiro</h1>
+          <p className="text-sm text-muted-foreground">
+            Valores por plantão calculados a partir da escala e das remunerações configuradas pela unidade.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Extrato Financeiro</h1>
-        <p className="text-sm text-muted-foreground">
-          Valores por plantão calculados a partir da escala e das remunerações configuradas pela unidade.
-        </p>
-      </div>
+      )}
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1.5">

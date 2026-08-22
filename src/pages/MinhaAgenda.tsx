@@ -31,7 +31,7 @@ const CORES_UNIDADE = [
   'bg-rose-500/15 text-rose-700',
 ]
 
-export default function MinhaAgenda() {
+export default function MinhaAgenda({ embutido = false }: { embutido?: boolean } = {}) {
   const { perfil } = useAuth()
   const hoje = new Date()
   const [mes, setMes] = React.useState(`${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`)
@@ -80,19 +80,21 @@ export default function MinhaAgenda() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">
-            Início
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Minha Agenda</span>
+      {!embutido && (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Início
+            </Link>
+            <ChevronRight className="size-3.5" />
+            <span className="font-medium text-foreground">Minha Agenda</span>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">Minha Agenda</h1>
+          <p className="text-sm text-muted-foreground">
+            Todos os seus plantões de todas as unidades em um único calendário.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Minha Agenda</h1>
-        <p className="text-sm text-muted-foreground">
-          Todos os seus plantões de todas as unidades em um único calendário.
-        </p>
-      </div>
+      )}
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

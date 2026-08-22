@@ -2,8 +2,8 @@ import { Link, useParams } from 'react-router-dom'
 import { Suspense, useEffect } from 'react'
 import { Star } from 'lucide-react'
 
-import { acharSecao } from '@/content/registry'
-import { registrarRecente, useFavoritos } from '@/lib/useFavoritos'
+import { acharSecao, CHAVES_FERRAMENTAS } from '@/content/registry'
+import { chaveFerramenta, registrarRecente, useFavoritos } from '@/lib/useFavoritos'
 import { ChevronRight } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
@@ -12,18 +12,19 @@ export function ToolRouter() {
   const { section, tool } = useParams()
   const secao = acharSecao(section ?? '')
   const def = secao?.tools.find((t) => t.slug === tool)
-  const { favoritos, alternarFavorito } = useFavoritos()
+  const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
 
   useEffect(() => {
-    if (tool) registrarRecente(tool)
-  }, [tool])
+    if (section && tool) registrarRecente(chaveFerramenta(section, tool))
+  }, [section, tool])
 
   if (!secao || !def) {
     return <p className="text-sm text-destructive">Ferramenta não encontrada.</p>
   }
 
   const Component = def.component
-  const ehFavorito = favoritos.includes(def.slug)
+  const chave = chaveFerramenta(secao.slug, def.slug)
+  const ehFavorito = favoritos.includes(chave)
 
   return (
     <div className="flex flex-col gap-4">
@@ -42,7 +43,7 @@ export function ToolRouter() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => alternarFavorito(def.slug)}
+          onClick={() => alternarFavorito(chave)}
         >
           <Star className={ehFavorito ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'} />
           {ehFavorito ? 'Favorito' : 'Favoritar'}

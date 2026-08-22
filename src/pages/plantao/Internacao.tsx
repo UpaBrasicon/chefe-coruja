@@ -17,7 +17,7 @@ import { ExportarTab } from './internacao/ExportarTab'
 import { useRascunho } from './internacao/rascunho'
 import { useInternacaoAtiva, useRegistrarAcessoProntuario } from '@/hooks/useDocumentos'
 
-export default function Internacao() {
+export default function Internacao({ embutido = false }: { embutido?: boolean } = {}) {
   const { unidadeAtiva } = useUnidade()
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
@@ -89,17 +89,23 @@ export default function Internacao() {
   })
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className={embutido ? 'flex w-full flex-col gap-6' : 'mx-auto flex w-full max-w-6xl flex-col gap-6'}>
       <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/plantao" className="transition-colors hover:text-foreground">
-            Central de Plantão
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Internação</span>
-        </div>
+        {!embutido && (
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link to="/plantao/internacao" className="transition-colors hover:text-foreground">
+              Internação
+            </Link>
+            <ChevronRight className="size-3.5" />
+            <span className="font-medium text-foreground">Formulário</span>
+          </div>
+        )}
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Internação</h1>
+          {embutido ? (
+            <div />
+          ) : (
+            <h1 className="text-2xl font-semibold tracking-tight">Internação</h1>
+          )}
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             {salvoEm && (
               <span className="inline-flex items-center gap-1 text-emerald-700">
@@ -111,10 +117,12 @@ export default function Internacao() {
             </Button>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Preencha os dados do paciente acima e navegue pelas abas. Cada aba salva automaticamente e
-          tudo fica pronto para exportar em PDF na última aba.
-        </p>
+        {!embutido && (
+          <p className="text-sm text-muted-foreground">
+            Preencha os dados do paciente acima e navegue pelas abas. Cada aba salva automaticamente
+            e tudo fica pronto para exportar em PDF na última aba.
+          </p>
+        )}
       </div>
 
       <DadosPaciente

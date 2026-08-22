@@ -56,7 +56,7 @@ const VIA_LABEL: Record<string, string> = {
   SL: 'Sublingual',
 }
 
-export default function ReferenciaDiluicao() {
+export default function ReferenciaDiluicao({ embutido = false }: { embutido?: boolean } = {}) {
   const [busca, setBusca] = React.useState('')
 
   const { data: medicamentos, isLoading } = useQuery({
@@ -92,21 +92,23 @@ export default function ReferenciaDiluicao() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">
-            Início
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Referência de Diluição</span>
+      {!embutido && (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Início
+            </Link>
+            <ChevronRight className="size-3.5" />
+            <span className="font-medium text-foreground">Referência de Diluição</span>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">Referência de Diluição</h1>
+          <p className="text-sm text-muted-foreground">
+            API interna <code className="rounded bg-muted px-1">diluicao_publicada</code> — retorna apenas
+            registros <strong>publicados</strong> (revisados por farmacêutico). Registros em rascunho não são
+            exibidos.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Referência de Diluição</h1>
-        <p className="text-sm text-muted-foreground">
-          API interna <code className="rounded bg-muted px-1">diluicao_publicada</code> — retorna apenas
-          registros <strong>publicados</strong> (revisados por farmacêutico). Registros em rascunho não são
-          exibidos.
-        </p>
-      </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

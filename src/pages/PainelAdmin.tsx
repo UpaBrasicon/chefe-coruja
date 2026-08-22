@@ -18,7 +18,7 @@ function CardCenso({ label, valor, icon: Icon }: { label: string; valor: number 
   )
 }
 
-export function PainelAdmin() {
+export function PainelAdmin({ embutido = false }: { embutido?: boolean } = {}) {
   const { data: censo, isLoading, error } = useCenso()
 
   if (error) {
@@ -27,12 +27,14 @@ export function PainelAdmin() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold">Painel da organização</h1>
-        <p className="text-sm text-muted-foreground">
-          Censo agregado por unidade — sem dados identificáveis de paciente.
-        </p>
-      </div>
+      {!embutido && (
+        <div>
+          <h1 className="text-xl font-semibold">Painel da organização</h1>
+          <p className="text-sm text-muted-foreground">
+            Censo agregado por unidade — sem dados identificáveis de paciente.
+          </p>
+        </div>
+      )}
 
       {isLoading && (
         <div className="grid gap-4 md:grid-cols-2">

@@ -45,7 +45,7 @@ function distanciaKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   return 2 * r * Math.asin(Math.sqrt(s))
 }
 
-export default function Vagas() {
+export default function Vagas({ embutido = false }: { embutido?: boolean } = {}) {
   const { unidades } = useUnidade()
   const { perfil } = useAuth()
   const queryClient = useQueryClient()
@@ -145,19 +145,21 @@ export default function Vagas() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">
-            Início
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Vagas de Plantão</span>
+      {!embutido && (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Início
+            </Link>
+            <ChevronRight className="size-3.5" />
+            <span className="font-medium text-foreground">Vagas de Plantão</span>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">Vagas de Plantão</h1>
+          <p className="text-sm text-muted-foreground">
+            Planteões livres com filtros por unidade, turno, especialidade, distância e valor.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Vagas de Plantão</h1>
-        <p className="text-sm text-muted-foreground">
-          Planteões livres com filtros por unidade, turno, especialidade, distância e valor.
-        </p>
-      </div>
+      )}
 
       <Card>
         <CardHeader>

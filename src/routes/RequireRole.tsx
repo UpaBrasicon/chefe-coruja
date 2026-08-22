@@ -1,10 +1,11 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Spinner } from '@/components/ui/spinner'
+import { ROTA_INICIAL } from '@/lib/constants'
 import type { Papel } from '@/types/database'
 
 export function RequireRole({ papeis }: { papeis: Papel[] }) {
-  const { status, vinculos } = useUnidade()
+  const { status, papeisDaUnidade } = useUnidade()
 
   if (status === 'carregando') {
     return (
@@ -18,15 +19,10 @@ export function RequireRole({ papeis }: { papeis: Papel[] }) {
     return <Navigate to="/aguardando" replace />
   }
 
-  const temPapel = vinculos.some((v) => papeis.includes(v.papel))
+  // Avalia o papel **na unidade ativa**, igual ao portão de plantão e ao chat.
+  const temPapel = papeisDaUnidade.some((p) => papeis.includes(p))
   if (!temPapel) {
-    // Usuário sem o papel exigido: manda para a rota mais permissiva que tem.
-    const rotasPorPapel: Record<Papel, string> = {
-      admin: '/painel',
-      gestor: '/setores',
-      plantonista: '/plantonista',
-    }
-    const alvo = vinculos.map((v) => rotasPorPapel[v.papel])[0] ?? '/aguardando'
+    const alvo = papeisDaUnidade.map((p) => ROTA_INICIAL[p])[0] ?? '/aguardando'
     return <Navigate to={alvo} replace />
   }
 

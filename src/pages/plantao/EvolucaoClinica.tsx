@@ -3,7 +3,7 @@
 //
 // Gráfico de evolução (múltiplos conceitos + faixa de referência + críticos),
 // flowsheet (PainelObservacoes) e registro rápido de sinais vitais.
-// Acessível de /plantao/evolucao ou ?paciente=ID (vindo do painel).
+// Acessível de /plantao/evolucao (seção direta) ou ?paciente=ID (vindo do painel).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Activity, ChevronRight, Plus, Trash2 } from 'lucide-react'
@@ -35,7 +35,7 @@ const CONCEITOS_VITAIS = [
   'glicemia-capilar',
 ]
 
-export default function EvolucaoClinica() {
+export default function EvolucaoClinica({ embutido = false }: { embutido?: boolean } = {}) {
   const { unidadeAtiva } = useUnidade()
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
@@ -144,20 +144,22 @@ export default function EvolucaoClinica() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">Início</Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Evolução Clínica</span>
+      {!embutido && (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link to="/" className="transition-colors hover:text-foreground">Início</Link>
+            <ChevronRight className="size-3.5" />
+            <span className="font-medium text-foreground">Evolução Clínica</span>
+          </div>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+            <Activity className="size-5 text-muted-foreground" />
+            Evolução Clínica
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Gráficos de sinais vitais e laboratório por internação — sem migration por exame.
+          </p>
         </div>
-        <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-          <Activity className="size-5 text-muted-foreground" />
-          Evolução Clínica
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Gráficos de sinais vitais e laboratório por internação — sem migration por exame.
-        </p>
-      </div>
+      )}
 
       {/* Seleção de paciente */}
       <Card>
@@ -170,7 +172,12 @@ export default function EvolucaoClinica() {
             value={pacienteId ?? null}
             onValueChange={(v) => {
               setPacienteId(v)
-              setSearchParams(v ? { paciente: v } : {}, { replace: true })
+              // Preserva os demais parâmetros — embutido em abas, a URL carrega
+              // também o `?aba=`, e sobrescrever tudo voltaria para a 1ª aba.
+              const proximo = new URLSearchParams(searchParams)
+              if (v) proximo.set('paciente', v)
+              else proximo.delete('paciente')
+              setSearchParams(proximo, { replace: true })
             }}
           >
             <SelectTrigger className="w-full">

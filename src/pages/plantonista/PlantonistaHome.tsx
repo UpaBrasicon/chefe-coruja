@@ -1,24 +1,32 @@
 import { useMemo, useState } from 'react'
 import { Clock, Search, Star } from 'lucide-react'
 
-import { SECOES } from '@/content/registry'
+import { CHAVES_FERRAMENTAS, SECOES } from '@/content/registry'
 import { fuzzyMatch } from '@/lib/search'
-import { useFavoritos, useRecentes } from '@/lib/useFavoritos'
+import { chaveFerramenta, useFavoritos, useRecentes } from '@/lib/useFavoritos'
 import { BannerCarousel } from '@/components/plantonista/BannerCarousel'
 import { SectionCard, ToolCard } from '@/components/plantonista/cards'
 import { Input } from '@/components/ui/input'
 
-type Resultado = { secao: string; secaoLabel: string; slug: string; label: string; description: string }
+type Resultado = {
+  chave: string
+  secao: string
+  secaoLabel: string
+  slug: string
+  label: string
+  description: string
+}
 
 export default function PlantonistaHome() {
   const [consulta, setConsulta] = useState('')
-  const { favoritos, alternarFavorito } = useFavoritos()
-  const { recentes } = useRecentes()
+  const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
+  const { recentes } = useRecentes(CHAVES_FERRAMENTAS)
 
   const todas = useMemo<Resultado[]>(
     () =>
       SECOES.flatMap((s) =>
         s.tools.map((t) => ({
+          chave: chaveFerramenta(s.slug, t.slug),
           secao: s.slug,
           secaoLabel: s.label,
           slug: t.slug,
@@ -40,14 +48,16 @@ export default function PlantonistaHome() {
     })
   }, [consulta, todas])
 
+  // A busca é por `chave` (secao/slug): há slugs repetidos entre seções, e antes
+  // o favorito de um marcava o outro.
   const favoritosCards = favoritos
-    .map((slug) => todas.find((r) => r.slug === slug))
+    .map((chave) => todas.find((r) => r.chave === chave))
     .filter((r): r is Resultado => !!r)
 
   const recentesCards = recentes
-    .map((slug) => todas.find((r) => r.slug === slug))
+    .map((chave) => todas.find((r) => r.chave === chave))
     .filter((r): r is Resultado => !!r)
-    .filter((r) => !favoritosCards.some((f) => f.slug === r.slug))
+    .filter((r) => !favoritosCards.some((f) => f.chave === r.chave))
     .slice(0, 3)
 
   const secoesComTools = SECOES.filter((s) => s.tools.length > 0)
@@ -77,13 +87,13 @@ export default function PlantonistaHome() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {resultados.map((r) => (
               <ToolCard
-                key={r.slug}
+                key={r.chave}
                 to={`/plantonista/${r.secao}/${r.slug}`}
                 label={r.label}
                 description={r.description}
                 badge={r.secaoLabel}
-                favorito={favoritos.includes(r.slug)}
-                onFavoritar={() => alternarFavorito(r.slug)}
+                favorito={favoritos.includes(r.chave)}
+                onFavoritar={() => alternarFavorito(r.chave)}
               />
             ))}
           </div>
@@ -104,13 +114,13 @@ export default function PlantonistaHome() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {favoritosCards.map((r) => (
               <ToolCard
-                key={r.slug}
+                key={r.chave}
                 to={`/plantonista/${r.secao}/${r.slug}`}
                 label={r.label}
                 description={r.description}
                 badge={r.secaoLabel}
                 favorito
-                onFavoritar={() => alternarFavorito(r.slug)}
+                onFavoritar={() => alternarFavorito(r.chave)}
               />
             ))}
           </div>
@@ -125,13 +135,13 @@ export default function PlantonistaHome() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {recentesCards.map((r) => (
               <ToolCard
-                key={r.slug}
+                key={r.chave}
                 to={`/plantonista/${r.secao}/${r.slug}`}
                 label={r.label}
                 description={r.description}
                 badge={r.secaoLabel}
-                favorito={favoritos.includes(r.slug)}
-                onFavoritar={() => alternarFavorito(r.slug)}
+                favorito={favoritos.includes(r.chave)}
+                onFavoritar={() => alternarFavorito(r.chave)}
               />
             ))}
           </div>

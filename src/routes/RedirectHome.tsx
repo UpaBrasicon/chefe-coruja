@@ -1,10 +1,11 @@
 import { Navigate } from 'react-router-dom'
 
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { ROTA_INICIAL } from '@/lib/constants'
 import { Spinner } from '@/components/ui/spinner'
 
 export function RedirectHome() {
-  const { status, unidades, ehAdmin, ehGestor, ehPlantonista } = useUnidade()
+  const { status, unidades, papeisDaUnidade } = useUnidade()
 
   if (status === 'carregando') {
     return (
@@ -22,9 +23,7 @@ export function RedirectHome() {
     return <Navigate to="/seletor" replace />
   }
 
-  if (ehAdmin) return <Navigate to="/painel" replace />
-  if (ehGestor) return <Navigate to="/setores" replace />
-  if (ehPlantonista) return <Navigate to="/plantonista" replace />
-
-  return <Navigate to="/aguardando" replace />
+  // papeisDaUnidade já vem ordenado por precedência (admin > gestor > plantonista).
+  const alvo = papeisDaUnidade.map((p) => ROTA_INICIAL[p])[0]
+  return <Navigate to={alvo ?? '/aguardando'} replace />
 }

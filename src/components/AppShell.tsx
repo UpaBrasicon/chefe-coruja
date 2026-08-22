@@ -1,29 +1,17 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity,
-  BedDouble,
   Bell,
+  Building2,
   CalendarClock,
-  CalendarRange,
-  ClipboardCheck,
-  Eye,
-  History,
-  Hospital,
-  Images,
   LayoutDashboard,
   LineChart,
   LogOut,
-  MapPin,
   Menu,
   MessageSquare,
-  Pill,
-  Droplets,
-  Settings2,
   ShieldCheck,
   Stethoscope,
   UserRound,
-  Users,
-  Wallet,
   X,
 } from 'lucide-react'
 import * as React from 'react'
@@ -42,6 +30,7 @@ import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
+import { ErroBoundary } from '@/components/ErroBoundary'
 
 type NavItem = {
   to: string
@@ -85,42 +74,32 @@ export function AppShell() {
     }
   }, [mensagensSolicitadas, navigate])
 
+  // Navegação agrupada: cada item é um destino, e o detalhe vive nas abas
+  // internas (com o estado na URL). Ver src/components/TabsPagina.tsx.
   const itens: NavItem[] = []
   if (ehPlantonista) {
-    itens.push({ to: '/plantonista', label: 'Central do Plantonista', icon: Stethoscope, end: true })
-    itens.push({ to: '/plantao', label: 'Plantão', icon: Activity, end: true })
-    itens.push({ to: '/meu-plantao', label: 'Meu Plantão', icon: MapPin, end: true })
-    itens.push({ to: '/escala', label: 'Minha Escala', icon: CalendarRange, end: true })
-    itens.push({ to: '/minha-agenda', label: 'Minha Agenda', icon: CalendarClock, end: true })
-    itens.push({ to: '/vagas', label: 'Vagas', icon: ClipboardCheck, end: true })
-    itens.push({ to: '/extrato', label: 'Extrato', icon: Wallet, end: true })
-    itens.push({ to: '/mensagens', label: 'Mensagens', icon: MessageSquare, end: true, acao: () => setChatAberto(true) })
-    itens.push({ to: '/prescricao-teste', label: 'Prescrição Teste', icon: Pill, end: true })
-    itens.push({ to: '/referencia-diluicao', label: 'Referência Diluição', icon: Droplets, end: true })
-    itens.push({ to: '/internacao', label: 'Painel de Internação', icon: Hospital, end: true })
-    itens.push({ to: '/observacao', label: 'Observação', icon: Eye, end: true })
+    itens.push({ to: '/plantonista', label: 'Central do Plantonista', icon: Stethoscope })
+    itens.push({ to: '/plantao', label: 'Plantão', icon: Activity })
+    itens.push({ to: '/agenda', label: 'Minha Agenda', icon: CalendarClock, end: true })
     itens.push({ to: '/notificacoes', label: 'Avisos', icon: Bell, end: true })
   }
   if (ehGestor) {
-    itens.push({ to: '/setores', label: 'Setores e Leitos', icon: BedDouble })
     itens.push({ to: '/escala', label: 'Escala', icon: CalendarClock, end: true })
-    itens.push({ to: '/historico-escala', label: 'Histórico da Escala', icon: History })
-    itens.push({ to: '/indicadores', label: 'Indicadores', icon: LineChart })
-    itens.push({ to: '/configuracao', label: 'Configurações', icon: Settings2 })
-    itens.push({ to: '/banners', label: 'Imagens da Unidade', icon: Images })
+    itens.push({ to: '/unidade', label: 'Unidade', icon: Building2, end: true })
+    itens.push({ to: '/indicadores', label: 'Indicadores', icon: LineChart, end: true })
   }
   if (ehAdmin) {
     itens.push(
-      { to: '/painel', label: 'Painel', icon: LayoutDashboard, end: true },
-      { to: '/pessoas', label: 'Pessoas', icon: Users },
+      { to: '/painel', label: 'Organização', icon: LayoutDashboard, end: true },
       { to: '/escala', label: 'Escala', icon: CalendarClock, end: true },
-      { to: '/gaviao', label: 'Gavião', icon: ShieldCheck, end: true },
-      { to: '/banners', label: 'Imagens da Unidade', icon: Images }
+      { to: '/gaviao', label: 'Gavião', icon: ShieldCheck, end: true }
     )
   }
-  if (!ehPlantonista && !ehGestor && !ehAdmin) {
+  if (itens.length === 0) {
     itens.push({ to: '/plantonista', label: 'Central Clínica', icon: Stethoscope })
   }
+  // Gestor e admin na mesma unidade duplicariam "Escala".
+  const itensUnicos = itens.filter((item, i) => itens.findIndex((x) => x.to === item.to) === i)
 
   async function handleSair() {
     await signOut()
@@ -204,7 +183,7 @@ export function AppShell() {
           {ehAdmin && <Badge variant="secondary">Admin</Badge>}
         </div>
         <nav className="flex flex-1 flex-col gap-1 p-3">
-          {itens.map((item) =>
+          {itensUnicos.map((item) =>
             item.acao ? (
               <button
                 key={item.to}
@@ -289,7 +268,7 @@ export function AppShell() {
       {menuAberto && (
         <div className="fixed inset-0 top-14 z-30 bg-background md:hidden">
           <nav className="flex flex-col gap-1 p-3">
-            {itens.map((item) =>
+            {itensUnicos.map((item) =>
               item.acao ? (
                 <button
                   key={item.to}
@@ -359,7 +338,19 @@ export function AppShell() {
                 <Spinner />
               </div>
             ) : (
-              <Outlet />
+              // key = rota: um erro em uma tela não contamina a próxima, e o
+              // shell (menu, chat, avisos) continua de pé.
+              <ErroBoundary key={location.pathname}>
+                <React.Suspense
+                  fallback={
+                    <div className="flex h-40 items-center justify-center">
+                      <Spinner />
+                    </div>
+                  }
+                >
+                  <Outlet />
+                </React.Suspense>
+              </ErroBoundary>
             )}
           </div>
         </main>

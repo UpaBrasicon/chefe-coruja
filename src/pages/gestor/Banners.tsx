@@ -37,7 +37,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-export function Banners() {
+export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
   const { unidadeAtiva } = useUnidade()
   const queryClient = useQueryClient()
   const unidadeId = unidadeAtiva?.unidade_id
@@ -149,13 +149,17 @@ export function Banners() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Imagens da unidade</h1>
-          <p className="text-sm text-muted-foreground">
-            {unidadeAtiva?.unidade.nome} — o quadro exibido na Central do Plantonista. As imagens
-            trocam sozinhas e podem ter links.
-          </p>
-        </div>
+        {embutido ? (
+          <div />
+        ) : (
+          <div>
+            <h1 className="text-xl font-semibold">Imagens da unidade</h1>
+            <p className="text-sm text-muted-foreground">
+              {unidadeAtiva?.unidade.nome} — o quadro exibido na Central do Plantonista. As imagens
+              trocam sozinhas e podem ter links.
+            </p>
+          </div>
+        )}
         <Button onClick={abrirCriar}>
           <ImagePlus />
           Nova imagem

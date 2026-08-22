@@ -32,7 +32,7 @@ type Remuneracao = {
   setores: { nome: string } | null
 }
 
-export default function Configuracao() {
+export default function Configuracao({ embutido = false }: { embutido?: boolean } = {}) {
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
@@ -122,17 +122,19 @@ export default function Configuracao() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">
-            Início
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Configurações da Unidade</span>
+      {!embutido && (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Início
+            </Link>
+            <ChevronRight className="size-3.5" />
+            <span className="font-medium text-foreground">Configurações da Unidade</span>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">Configurações da Unidade</h1>
+          <p className="text-sm text-muted-foreground">Comunicação, geolocalização do check-in e valores de plantão.</p>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Configurações da Unidade</h1>
-        <p className="text-sm text-muted-foreground">Comunicação, geolocalização do check-in e valores de plantão.</p>
-      </div>
+      )}
 
       {erro && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{erro}</div>}
 

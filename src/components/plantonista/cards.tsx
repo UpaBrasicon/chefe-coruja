@@ -10,12 +10,15 @@ export function SectionCard({
   label,
   description,
   count,
+  rodape,
 }: {
   to: string
   icon: LucideIcon
   label: string
   description: string
   count: number
+  /** Substitui a contagem de ferramentas no rodapé do card. */
+  rodape?: string
 }) {
   return (
     <Link to={to} className="group block">
@@ -35,7 +38,7 @@ export function SectionCard({
           </div>
         </div>
         <div className="mt-auto text-xs font-medium text-primary/80">
-          {count > 0 ? `${count} ferramenta(s)` : 'Em breve'}
+          {rodape ?? (count > 0 ? `${count} ferramenta${count > 1 ? 's' : ''}` : 'Em breve')}
         </div>
       </div>
     </Link>

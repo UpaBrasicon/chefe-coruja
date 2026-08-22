@@ -132,7 +132,18 @@ type SolicitacaoComExtra = SolicitacaoEscala & {
   destino: { nome_completo: string } | null
 }
 
-export default function Escala() {
+export default function Escala({
+  embutido = false,
+  aba,
+  abaGestorFixa,
+}: {
+  /** Dentro de um agrupador de abas: esconde breadcrumb, título e barra de abas própria. */
+  embutido?: boolean
+  /** Aba do plantonista controlada por fora (`minha` | `geral`). */
+  aba?: 'minha' | 'geral'
+  /** Aba do gestor controlada por fora (`fixa` | `mensal`). */
+  abaGestorFixa?: 'fixa' | 'mensal'
+} = {}) {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
@@ -141,8 +152,10 @@ export default function Escala() {
   const [turno, setTurno] = React.useState<'manha' | 'tarde' | 'noite'>('manha')
   const [mes, setMes] = React.useState(() => hojeISO().slice(0, 7))
   const [semana, setSemana] = React.useState(() => hojeISO())
-  const [abaGestor, setAbaGestor] = React.useState<'fixa' | 'mensal'>('mensal')
-  const [abaPlantonista, setAbaPlantonista] = React.useState<'minha' | 'geral'>('minha')
+  const [abaGestorLocal, setAbaGestor] = React.useState<'fixa' | 'mensal'>('mensal')
+  const [abaPlantonistaLocal, setAbaPlantonista] = React.useState<'minha' | 'geral'>('minha')
+  const abaGestor = abaGestorFixa ?? abaGestorLocal
+  const abaPlantonista = aba ?? abaPlantonistaLocal
   const [diaGeral, setDiaGeral] = React.useState<string | null>(null)
   const [fechandoGeral, setFechandoGeral] = React.useState(false)
   const [celula, setCelula] = React.useState<{ setor_id: string; data: string } | null>(null)
@@ -743,17 +756,19 @@ export default function Escala() {
   const diasDoMes = React.useMemo(() => gerarDiasDoMes(mes), [mes])
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className={embutido ? 'flex w-full flex-col gap-6' : 'mx-auto flex w-full max-w-6xl flex-col gap-6'}>
       <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">
-            Início
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Escala</span>
-        </div>
+        {!embutido && (
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Início
+            </Link>
+            <ChevronRight className="size-3.5" />
+            <span className="font-medium text-foreground">Escala</span>
+          </div>
+        )}
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Escala</h1>
+          {embutido ? <div /> : <h1 className="text-2xl font-semibold tracking-tight">Escala</h1>}
           {ehPlantonista ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Button size="xs" variant="outline" onClick={() => mudarMes(-1)}>
@@ -778,14 +793,16 @@ export default function Escala() {
             </div>
           )}
         </div>
-        <p className="text-sm text-muted-foreground">
-          {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
-          {ehGestor ? 'Gestor — monte a escala' : ehAdmin ? 'Admin — todas as unidades' : 'Sua escala'}
-        </p>
+        {!embutido && (
+          <p className="text-sm text-muted-foreground">
+            {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
+            {ehGestor ? 'Gestor — monte a escala' : ehAdmin ? 'Admin — todas as unidades' : 'Sua escala'}
+          </p>
+        )}
       </div>
 
       {/* Abas do plantonista: Minha Escala / Escala Geral */}
-      {ehPlantonista && (
+      {ehPlantonista && !aba && (
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -1655,7 +1672,7 @@ export default function Escala() {
           </Card>
 
           {/* Abas: Escala Fixa / Mensal */}
-          <div className="flex flex-wrap gap-2">
+          <div className={abaGestorFixa ? 'hidden' : 'flex flex-wrap gap-2'}>
             <button
               type="button"
               onClick={() => setAbaGestor('fixa')}

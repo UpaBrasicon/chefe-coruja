@@ -32,7 +32,7 @@ type UnidadeComGeo = {
   nome: string
 }
 
-export default function MeuPlantao() {
+export default function MeuPlantao({ embutido = false }: { embutido?: boolean } = {}) {
   const { unidadeAtiva } = useUnidade()
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
@@ -176,19 +176,21 @@ export default function MeuPlantao() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">
-            Início
-          </Link>
-          <span className="text-muted-foreground">/</span>
-          <span className="font-medium text-foreground">Meu Plantão</span>
+      {!embutido && (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Início
+            </Link>
+            <span className="text-muted-foreground">/</span>
+            <span className="font-medium text-foreground">Meu Plantão</span>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">Meu Plantão</h1>
+          <p className="text-sm text-muted-foreground">
+            Registre sua entrada (check-in) e saída (check-out) com geolocalização.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Meu Plantão</h1>
-        <p className="text-sm text-muted-foreground">
-          Registre sua entrada (check-in) e saída (check-out) com geolocalização.
-        </p>
-      </div>
+      )}
 
       {erro && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{erro}</div>}
       {sucesso && <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{sucesso}</div>}

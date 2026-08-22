@@ -35,7 +35,7 @@ export function PrescricaoTab({
   const [registrando, setRegistrando] = React.useState(false)
   const [registrado, setRegistrado] = React.useState(false)
   const [erroRegistro, setErroRegistro] = React.useState<string | null>(null)
-  const marcados = new Set(prescricao.marcados)
+  const marcados = React.useMemo(() => new Set(prescricao.marcados), [prescricao.marcados])
 
   // Prescrição ativa do paciente (do banco) — para pré-marcar ao abrir
   const { data: prescricaoBanco } = useQuery({
@@ -81,7 +81,7 @@ export function PrescricaoTab({
   // Marcados efetivos = rascunho + itens vindos do banco
   const marcadosEfetivos = React.useMemo(() => {
     return new Set([...marcados, ...idsDoBanco])
-  }, [prescricao.marcados, idsDoBanco, marcados])
+  }, [idsDoBanco, marcados])
 
   async function registrarPrescricao() {
     if (!unidadeId || !pacienteId) {
