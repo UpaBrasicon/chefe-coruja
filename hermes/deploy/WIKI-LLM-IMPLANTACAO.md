@@ -88,6 +88,16 @@ O lint semanal já identificou o primeiro achado real: a fonte piloto
 deveria ser `low` na página do protocolo (ação sugerida, não executada,
 aguardando decisão).
 
+## Progresso de 23/08 (adaptações e pendências)
+
+| Item | Estado |
+|---|---|
+| Fix do lint (confidence `medium`→`low` na página EBSERH) | ✅ commit `2b973b5` |
+| OCR dos 13 fluxogramas (tesseract-por + pdftoppm instalados no container) | ✅ commit `6eedf10` — 1 completo, 12 parciais (marcados `[OCR parcial]`); `revisao-pendente` removida |
+| `HERMES_WRITE_SAFE_ROOT` incluir `/opt/hermes-wiki` | ⏸️ **avaliado, NÃO feito**: é env do docker run (mudar = recriar container com downtime). O código suporta múltiplos dirs (`os.pathsep`), mas a gravação já funciona via python/terminal — custo não vale o benefício cosmético do verifier |
+| Remote git privado para `git push` do backup | ⏸️ **aguarda você**: sem token/repo GitHub |
+| Fontes reais da unidade (SAMU/MS, classificação de risco da UPA, CFM/CREMEGO) | ⏸️ **aguarda você**: URLs públicas diretas do MS/CFM instáveis (404); o ideal é você fornecer os PDFs da unidade |
+
 ## Pendências do prompt
 
 - **Remote git privado** para `git push origin main` no backup (hoje o push é
