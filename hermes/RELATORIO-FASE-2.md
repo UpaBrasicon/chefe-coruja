@@ -84,3 +84,62 @@ Requer revisão jurídica antes de publicar.
 
 - Código: `git checkout main && docker compose -f docker-compose.prod.yml up -d --build`
 - Não há migrations novas nesta fase (só código + docs).
+
+---
+
+# ATUALIZAÇÃO 22/08 — Corujinha multi-agente + Gavião Sentinela
+
+## O que foi feito hoje
+
+### 1. Reestruturação: Nous = cérebro · Gavião = Sentinela
+- **Corujinha (Nous)** virou o cérebro conversacional com **6 skills**:
+  `chefe-coruja` (operacional + escala), `chefe-coruja-seguranca`,
+  `chefe-coruja-sentinela`, `chefe-coruja-athena` (Águia),
+  `chefe-coruja-asclepio` (Garça), `chefe-coruja-hefesto` (Pica-pau).
+- **Gavião (backend)** passou a ser **apenas Sentinela/fiscal**: tools de
+  escala DESATIVADAS (executarTool só com Cérbero); mantém patrulhas
+  (dados/URL/anexos/injection), fiscal do Nous (12h), relatório semanal, aba
+  no admin, e os novos módulos Argos/Íris.
+
+### 2. Agentes com nomes de aves (novos)
+| Agente | Ave | Local | Função |
+|---|---|---|---|
+| Athena | Águia | skill Nous | visão geral da operação |
+| Asclépio | Garça | skill Nous | indicadores clínicos AGREGADOS (nunca identificável — LGPD) |
+| Hefesto | Pica-pau | skill Nous (super_admin) | health do backend |
+| Argos | Falcão | backend job | auditoria clínica estrutural (só IDs) |
+| Íris | Andorinha | backend | central de notificações (`dispatchIris`) |
+
+### 3. Relatório semanal in-app
+- Tabela `gaviao_relatorios_semanais` + job (seg 08h15 BR) + RPC
+  `gaviao_painel_admin` v2 + card na aba Gavião. Validado: 3 incidentes gravados.
+
+### 4. Otimização da Corujinha
+- Cache de respostas das skills (TTL 60–300s em `/tmp/gaviao-cache`):
+  79ms → 13ms na 2ª chamada.
+
+### 5. Fiscal do Nous
+- `gaviao_patrulha` agora 2x/dia (08h/20h BR = 11h/23h UTC) — fora do pico
+  DeepSeek (12h).
+
+## Verificação
+- 68/69 testes (1 skip correto); typecheck/lint/build limpos; build frontend ok.
+- Deploy VPS: 6 skills no Nous, crons confirmados (`argos 06h/18h BR`,
+  `gaviao_patrulha 08h/20h BR`, `relatorio seg 08h15 BR`), health ok.
+- LGPD respeitada: dado clínico identificável só na plataforma; chat externo
+  recebe apenas agregados (regra do usuário).
+
+## Pendências / próximos (PLANO DE AMANHÃ — otimizações por agente)
+- **Safe Browsing v4** (chave Google) — camada 2 do Cérbero
+- **WhatsApp** (número descartável) para a Corujinha
+- **E-mail** (SendGrid/Resend) quando a plataforma tiver
+- **Otimização individual de cada agente** (Águia/Garça/Pica-pau/Falcão/
+  Andorinha): afinar prompts, cache, alcance das skills, métricas do Argos,
+  canais da Íris.
+- **Reconhecer Ricardo como super_admin** no SOUL.md (para a Corujinha mostrar
+  incidentes reais na conversa).
+
+## Rollback
+- Código: `git checkout <commit-anterior> && docker compose -f docker-compose.prod.yml up -d --build`
+- Migrations desta fase (00003–00005) são aditivas — tabelas novas ficam inertes
+  sem o código.
