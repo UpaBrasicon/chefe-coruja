@@ -191,14 +191,13 @@ export async function analisarPadraoEscala(
  * v1.1 — Cérbero (exclusivo super_admin).
  * Guarda de papel: quem NÃO é super_admin recebe resposta genérica
  * (sem revelar a existência do agente — requisito do prompt).
+ *
+ * A flag vem da resolução de identidade (tabela `super_admins`), não do que o
+ * usuário diz na conversa. `=== true` é proposital: identidade construída sem
+ * o campo (undefined) falha FECHADA.
  */
-async function ehSuperAdmin(perfilId: string): Promise<boolean> {
-  const { data } = await supabase
-    .from('super_admins')
-    .select('perfil_id')
-    .eq('perfil_id', perfilId)
-    .maybeSingle()
-  return Boolean(data)
+function ehSuperAdmin(identidade: IdentidadeHermes): boolean {
+  return identidade.superAdmin === true
 }
 
 const RESPOSTA_GENERICA_CERBERO = {
@@ -213,7 +212,7 @@ export async function listarQuarentena(
   identidade: IdentidadeHermes,
   _args: { status?: string }
 ): Promise<ResultadoTool> {
-  if (!(await ehSuperAdmin(identidade.perfilId))) return RESPOSTA_GENERICA_CERBERO
+  if (!ehSuperAdmin(identidade)) return RESPOSTA_GENERICA_CERBERO
 
   const { data, error } = await supabase
     .from('cerbero_quarentena')
@@ -229,7 +228,7 @@ export async function getIncidentes(
   identidade: IdentidadeHermes,
   args: { patrulha?: string; severidade?: string }
 ): Promise<ResultadoTool> {
-  if (!(await ehSuperAdmin(identidade.perfilId))) return RESPOSTA_GENERICA_CERBERO
+  if (!ehSuperAdmin(identidade)) return RESPOSTA_GENERICA_CERBERO
 
   let q = supabase
     .from('cerbero_incidentes')
@@ -254,7 +253,7 @@ export async function liberarQuarentena(
   identidade: IdentidadeHermes,
   args: { id?: string }
 ): Promise<ResultadoTool> {
-  if (!(await ehSuperAdmin(identidade.perfilId))) return RESPOSTA_GENERICA_CERBERO
+  if (!ehSuperAdmin(identidade)) return RESPOSTA_GENERICA_CERBERO
   if (!args.id) return { ok: false, erro: 'informe o id do item em quarentena' }
 
   const { error } = await supabase

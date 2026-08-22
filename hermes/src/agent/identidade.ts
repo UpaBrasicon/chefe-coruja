@@ -11,15 +11,58 @@ import { supabase } from '../lib/supabase.js'
 import { normalizarE164BR, telefoneCorrespondeWaId } from '../lib/telefone.js'
 import { logger } from '../logger.js'
 
+export type PapelHermes = 'gestor' | 'plantonista' | 'admin'
+
+/** Precedência para escolher o vínculo principal quando há mais de um. */
+const PRECEDENCIA_PAPEL: Record<PapelHermes, number> = {
+  admin: 3,
+  gestor: 2,
+  plantonista: 1,
+}
+
+export type VinculoHermes = {
+  papel: PapelHermes
+  unidadeId: string
+  unidadeNome: string
+  organizacaoId: string
+}
+
 export type IdentidadeHermes = {
   perfilId: string
   nome: string
   email: string | null
-  papel: 'gestor' | 'plantonista' | 'admin' | null
+  papel: PapelHermes | null
   unidadeId: string | null
   unidadeNome: string | null
   /** user_id da organização (usado para conferir org de teste etc.) */
   organizacaoId: string | null
+  /** TODOS os vínculos ativos — usado para validar a unidade pedida (anti cross-tenant). */
+  vinculos: VinculoHermes[]
+  /**
+   * Suporte técnico global (tabela `super_admins`). É a ÚNICA fonte de verdade
+   * para as guardas "exclusivo super_admin" (Cérbero/segurança, infraestrutura).
+   * Nunca inferir de `papel` nem do que o usuário afirma ser na conversa.
+   */
+  superAdmin: boolean
+}
+
+/**
+ * Verifica se o perfil está na tabela `super_admins`. Fonte única — as guardas
+ * de papel do backend e das skills dependem disto, nunca do texto da conversa.
+ */
+export async function ehSuperAdmin(perfilId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('super_admins')
+    .select('perfil_id')
+    .eq('perfil_id', perfilId)
+    .maybeSingle()
+
+  if (error) {
+    // Falha fechada: erro ao consultar NUNCA concede privilégio.
+    logger.error({ err: error.message, perfil: perfilId }, '[identidade] falha ao checar super_admin')
+    return false
+  }
+  return Boolean(data)
 }
 
 /**
@@ -92,21 +135,42 @@ export async function resolverIdentidadePorWaId(waId: string): Promise<Identidad
     throw new Error('falha interna ao resolver vínculos')
   }
 
-  const vinculo = (vinculos ?? [])[0] as
-    | {
-        papel: 'gestor' | 'plantonista' | 'admin'
-        ativo: boolean
-        unidades: { id: string; nome: string; organizacao_id: string } | null
-      }
-    | undefined
+  type Unidade = { id: string; nome: string; organizacao_id: string }
+  const linhas = (vinculos ?? []) as unknown as {
+    papel: PapelHermes
+    ativo: boolean
+    // O embed do PostgREST vem como objeto (relação para-um), mas os tipos
+    // gerados dizem array — normalizamos para aguentar os dois.
+    unidades: Unidade | Unidade[] | null
+  }[]
+
+  const listaVinculos: VinculoHermes[] = linhas.flatMap((v) => {
+    const u = Array.isArray(v.unidades) ? v.unidades[0] : v.unidades
+    if (!u) return []
+    return [{ papel: v.papel, unidadeId: u.id, unidadeNome: u.nome, organizacaoId: u.organizacao_id }]
+  })
+
+  // Vínculo PRINCIPAL: maior precedência de papel, desempate determinístico
+  // pelo unidade_id. Sem isso, um usuário com vínculos em unidades diferentes
+  // receberia papel/unidade em ordem arbitrária do banco — e é esse papel que
+  // as guardas de acesso usam.
+  const principal = [...listaVinculos].sort(
+    (a, b) =>
+      PRECEDENCIA_PAPEL[b.papel] - PRECEDENCIA_PAPEL[a.papel] ||
+      a.unidadeId.localeCompare(b.unidadeId)
+  )[0]
+
+  const superAdmin = await ehSuperAdmin(perfil.id)
 
   return {
     perfilId: perfil.id,
     nome: perfil.nome_completo,
     email: perfil.email,
-    papel: (vinculo?.papel as IdentidadeHermes['papel']) ?? null,
-    unidadeId: vinculo?.unidades?.id ?? null,
-    unidadeNome: vinculo?.unidades?.nome ?? null,
-    organizacaoId: vinculo?.unidades?.organizacao_id ?? null,
+    papel: principal?.papel ?? null,
+    unidadeId: principal?.unidadeId ?? null,
+    unidadeNome: principal?.unidadeNome ?? null,
+    organizacaoId: principal?.organizacaoId ?? null,
+    vinculos: listaVinculos,
+    superAdmin,
   }
 }

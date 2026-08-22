@@ -36,6 +36,15 @@ const schema = z.object({
 
   // Identidade de teste (do PREFLIGHT-HERMES.md)
   HERMES_ORG_TESTE_ID: z.string().uuid('HERMES_ORG_TESTE_ID deve ser uuid'),
+
+  // Token das skills da Corujinha/Nous (POST /skill/consulta).
+  // Substitui a SERVICE_ROLE_KEY no ambiente dos scripts: com ele a skill só
+  // alcança o que o servidor autoriza para AQUELE usuário. Sem ele a rota
+  // responde 503 (falha fechada).
+  SKILL_API_TOKEN: z
+    .string()
+    .min(32, 'SKILL_API_TOKEN deve ter ao menos 32 caracteres')
+    .optional(),
 })
 
 function carregarEnv() {

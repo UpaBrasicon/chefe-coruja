@@ -17,6 +17,7 @@ import { logger } from './logger.js'
 import { supabase } from './lib/supabase.js'
 import { criarConexaoRedis, criarConexaoRedisHealth, criarFila, criarWorker, type JobMensagemWhatsApp } from './queue/index.js'
 import { registrarCrons, executarJobCron, FILA_CRON } from './queue/agendador.js'
+import { registrarSkillApi } from './server/skill-api.js'
 import { Worker } from 'bullmq'
 
 // Worker da fila de crons (Sentinela + Cérbero)
@@ -147,6 +148,9 @@ export async function buildApp(opts: { crons?: boolean } = {}) {
       ts: new Date().toISOString(),
     }
   })
+
+  // ── POST /skill/consulta — API das skills (guarda de papel server-side) ────
+  registrarSkillApi(app)
 
   // ── GET /webhook — handshake da Meta ───────────────────────────────────────
   app.get('/webhook', async (req, reply) => {
