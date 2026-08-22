@@ -51,9 +51,24 @@ node auditoria/verificar-final.cjs <SUPABASE_ACCESS_TOKEN> [ref]
 - **B5**: `supabase_realtime` publica só `chat_mensagens` +
   `conversa_participantes` (o que o frontend assina) — correto, nada a fazer.
 
-## Pendências que exigem decisão do usuário
+## Pendências resolvidas em 23/08
 
-1. **DROP de `medicamentos` (71 linhas, 0 usos no código)** e **`escala_plantoes`
-   (15 linhas, 1 uso em useEscalaSetores)** — verificar o uso de
-   `useEscalaSetores.ts` antes de dropar.
-2. **`pg_timezone_names`** (119 chamadas / 640ms média) — investigar quem chama.
+1. **DROP das tabelas resíduo** (migration `20260823000004_drop_tabelas_residuo.sql`):
+   - `escala_plantoes` (15 linhas, legado Fase 2) — **DROP**. O hook
+     `useEscalaSetores` (5 telas clínicas) lia a tabela legada — **bug
+     latente** corrigido para usar o RPC `setores_na_escala_agora`
+     (lê da canônica `escala_plantao`). 0 referências vivas verificadas.
+   - `medicamentos` (71 linhas, legado Fase 2) — **DROP**. A FK
+     `prescricao_itens.medicamento_id` apontava para a LEGADA (errada —
+     a tela grava IDs da canônica `medicamento`); reatada para a canônica
+     antes do DROP (3 linhas com NULL, sem dados a migrar).
+2. **`pg_timezone_names`** (123 chamadas / 640ms média) — **não é bug do
+   app**: é o PostgREST traduzindo timezones em filtros de timestamp
+   (comportamento padrão). ~15 chamadas/dia, impacto mínimo. Mitigação
+   futura opcional: evitar timestamps com fuso em filtros.
+
+## Pendências que exigem decisão do usuário (restantes)
+
+Nenhuma em aberto da auditoria. Próximas melhorias sugeridas: revisar
+`pg_timezone_names` se o volume de chamadas crescer; considerar grants
+explícitos mínimos no `public` (defense in depth já aplicado para anon).

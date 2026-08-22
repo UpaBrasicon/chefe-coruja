@@ -5,27 +5,30 @@ import { supabase } from '@/lib/supabase'
 /**
  * Setores da escala ATUAL do plantonista (relógio do servidor).
  * Usado pelos documentos de Atendimento Porta e pela Internação.
+ *
+ * Lê da escala DEDICADA (public.escala_plantao) via RPC
+ * setores_na_escala_agora — a Fase 3 tornou escala_plantoes (plural)
+ * legado para acesso. Antes este hook consultava a tabela legada e
+ * podia retornar vazio (dados não alimentados na tabela antiga).
  */
 export function useEscalaSetores(unidadeId?: string, perfilId?: string) {
   return useQuery({
     queryKey: ['escala-setores-atual', unidadeId, perfilId],
     enabled: !!unidadeId && !!perfilId,
     queryFn: async () => {
-      const [turno, hoje] = await Promise.all([
-        supabase.rpc('turno_atual'),
-        supabase.rpc('data_atual'),
-      ])
-      if (!hoje.data) return []
+      const { data: bruto, error } = await supabase.rpc('setores_na_escala_agora')
+      if (error) throw error
+      // O RPC retorna uuid[] — valida o formato vindo do banco.
+      const setorIds = Array.isArray(bruto)
+        ? (bruto as unknown[]).filter((x): x is string => typeof x === 'string')
+        : []
+      if (setorIds.length === 0) return []
       const { data } = await supabase
-        .from('escala_plantoes')
-        .select('setor_id, setores(id, nome)')
-        .eq('perfil_id', perfilId!)
-        .eq('ativo', true)
-        .eq('data', hoje.data as string)
-        .eq('turno', turno.data as string)
-      return (data ?? [])
-        .map((e) => e.setores as { id: string; nome: string } | null)
-        .filter((s): s is { id: string; nome: string } => !!s)
+        .from('setores')
+        .select('id, nome')
+        .in('id', setorIds)
+        .order('ordem', { ascending: true })
+      return (data ?? []) as { id: string; nome: string }[]
     },
   })
 }
