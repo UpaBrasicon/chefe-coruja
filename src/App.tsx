@@ -13,6 +13,7 @@ import { LinkReceita } from '@/pages/public/LinkReceita'
 import { AguardandoLiberacao } from '@/pages/AguardandoLiberacao'
 import { SeletorUnidade } from '@/pages/SeletorUnidade'
 import { PainelAdmin } from '@/pages/PainelAdmin'
+import { GaviaoPainel } from '@/pages/admin/GaviaoPainel'
 import { Pessoas } from '@/pages/Pessoas'
 import { Setores } from '@/pages/Setores'
 import Escala from '@/pages/Escala'
@@ -77,6 +78,7 @@ export default function App() {
                   <Route element={<RequireRole papeis={['admin']} />}>
                     <Route path="/painel" element={<PainelAdmin />} />
                     <Route path="/pessoas" element={<Pessoas />} />
+                    <Route path="/gaviao" element={<GaviaoPainel />} />
                   </Route>
                   <Route element={<RequireRole papeis={['gestor']} />}>
                     <Route path="/setores" element={<Setores />} />

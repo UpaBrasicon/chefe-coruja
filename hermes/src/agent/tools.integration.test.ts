@@ -1,6 +1,7 @@
-// Teste de integração das tools de leitura contra o Supabase real.
-// Uso: $env:SVC_KEY=... node --test src/agent/tools.integration.test.ts
+// Teste de integração das tools do Gavião (fiscal) contra o Supabase real.
 // ⚠️ Requer rede + Supabase. Pula se SVC_KEY não estiver setada.
+// As tools de ESCALA foram movidas para a skill do Nous (chefe-coruja) —
+// aqui ficam as tools do Cérbero (fiscal) + identidade.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
@@ -13,25 +14,24 @@ test('resolverIdentidadePorWaId — número não cadastrado → null', { skip: p
   assert.equal(ident, null)
 })
 
-test('get_plantao_do_dia — plantonista sem permissão (filtro no código)', { skip: pular }, async () => {
+test('tools do Cérbero — não-super_admin recebe resposta genérica (não revela)', { skip: pular }, async () => {
   const { executarTool } = await import('./tools.ts')
   const identidade = {
-    perfilId: 'df02d652-070f-4e2d-be82-18e432f128f7',
-    nome: 'Plantonista Teste',
-    email: 'plantonista@teste.com',
-    papel: 'plantonista' as const,
+    perfilId: 'da6c5d33-a123-4960-a494-a00c883906a1', // gestor (NÃO super)
+    nome: 'Gestor Teste',
+    email: 'gestor@teste.com',
+    papel: 'gestor' as const,
     unidadeId: '00000000-0000-0000-0000-000000000101',
     unidadeNome: 'UPA Centro',
     organizacaoId: '00000000-0000-0000-0000-000000000001',
   }
-  const r = await executarTool(identidade, '5511999990002', 'get_plantao_do_dia', { data: '2026-08-21' })
-  assert.equal(r.resultado.ok, false)
-  assert.match(r.resultado.erro ?? '', /sem permissão/)
+  const r = await executarTool(identidade, '5511999990001', 'listar_quarentena', {})
+  assert.equal(r.resultado.ok, true)
+  const dados = r.resultado.dados as { mensagem?: string }
+  assert.ok(dados.mensagem, 'não-admin recebe mensagem genérica')
 })
 
-test('get_meus_plantoes — gestor consulta plantões do plantonista? NÃO: filtra por perfil resolvido', { skip: pular }, async () => {
-  // A tool get_meus_plantoes sempre filtra por identidade.perfilId — mesmo um
-  // gestor só vê os PRÓPRIOS plantões. Verificar que retorna ok (vazio p/ gestor).
+test('tool desconhecida → erro', { skip: pular }, async () => {
   const { executarTool } = await import('./tools.ts')
   const identidade = {
     perfilId: 'da6c5d33-a123-4960-a494-a00c883906a1',
@@ -42,7 +42,7 @@ test('get_meus_plantoes — gestor consulta plantões do plantonista? NÃO: filt
     unidadeNome: 'UPA Centro',
     organizacaoId: '00000000-0000-0000-0000-000000000001',
   }
-  const r = await executarTool(identidade, '5511999990001', 'get_meus_plantoes', { periodo: 'semana' })
-  assert.equal(r.resultado.ok, true)
-  assert.ok(Array.isArray(r.resultado.dados))
+  const r = await executarTool(identidade, '5511999990001', 'get_meus_plantoes', {}) // desativada
+  assert.equal(r.resultado.ok, false)
+  assert.match(r.resultado.erro ?? '', /desconhecida|não encontrada/i)
 })

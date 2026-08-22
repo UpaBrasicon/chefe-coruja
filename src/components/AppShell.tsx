@@ -19,6 +19,7 @@ import {
   Pill,
   Droplets,
   Settings2,
+  ShieldCheck,
   Stethoscope,
   UserRound,
   Users,
@@ -113,6 +114,7 @@ export function AppShell() {
       { to: '/painel', label: 'Painel', icon: LayoutDashboard, end: true },
       { to: '/pessoas', label: 'Pessoas', icon: Users },
       { to: '/escala', label: 'Escala', icon: CalendarClock, end: true },
+      { to: '/gaviao', label: 'Gavião', icon: ShieldCheck, end: true },
       { to: '/banners', label: 'Imagens da Unidade', icon: Images }
     )
   }

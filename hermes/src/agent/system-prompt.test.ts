@@ -21,8 +21,8 @@ test('system prompt — contém identidade, regras e contexto do usuário', () =
   assert.match(p, /Gestor Teste/)
   assert.match(p, /UPA Centro/)
   assert.match(p, /21\/08\/2026 09:30/)
-  assert.match(p, /get_meus_plantoes/)
-  assert.match(p, /get_plantao_do_dia/)
+  assert.match(p, /listar_quarentena/)
+  assert.match(p, /Corujinha/)
 })
 
 test('system prompt — estrutura cache-friendly: estável primeiro, variável por último', () => {

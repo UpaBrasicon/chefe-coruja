@@ -13,63 +13,8 @@ import type { IdentidadeHermes } from './identidade.js'
 const MAX_ITERACOES = 5
 
 export const TOOLS_DISPONIVEIS: ToolDefLLM[] = [
-  {
-    type: 'function',
-    function: {
-      name: 'get_meus_plantoes',
-      description:
-        'Lista os plantões do usuário autenticado. Use quando perguntarem sobre a própria escala/plantões do usuário.',
-      parameters: {
-        type: 'object',
-        properties: {
-          periodo: {
-            type: 'string',
-            enum: ['hoje', 'semana', 'mes'],
-            description: 'Período a consultar (default: semana).',
-          },
-        },
-      },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'get_plantao_do_dia',
-      description:
-        'Escala completa da unidade em uma data (apenas gestor/admin). Use quando perguntarem quem está de plantão ou a escala da unidade.',
-      parameters: {
-        type: 'object',
-        properties: {
-          data: {
-            type: 'string',
-            description: 'Data no formato AAAA-MM-DD (default: hoje).',
-          },
-        },
-      },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'analisar_padrao_escala',
-      description:
-        'Métricas de escala de um médico vs. mediana da unidade (repasses, faltas, trocas, cancelamentos tardios, concentração de destino). Gestor/admin podem pedir de qualquer médico; plantonista recebe apenas os próprios dados.',
-      parameters: {
-        type: 'object',
-        properties: {
-          medico_id: {
-            type: 'string',
-            description: 'ID do médico (apenas gestor/admin; plantonista é ignorado).',
-          },
-          janela: {
-            type: 'string',
-            enum: ['30d', '90d'],
-            description: 'Janela de análise (default: 30d).',
-          },
-        },
-      },
-    },
-  },
+  // Gavião é apenas SENTINELA (fiscal) — as tools de escala foram movidas para
+  // a skill do Nous (chefe-coruja-operacional). Aqui ficam só as do Cérbero.
   {
     type: 'function',
     function: {

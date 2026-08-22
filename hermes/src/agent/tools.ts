@@ -276,16 +276,7 @@ export async function executarTool(
   args: Record<string, unknown>
 ): Promise<FerramentaExecutada> {
   let resultado: ResultadoTool
-  if (nome === 'get_meus_plantoes') {
-    resultado = await getMeusPlantoes(identidade, { periodo: args.periodo as string | undefined })
-  } else if (nome === 'get_plantao_do_dia') {
-    resultado = await getPlantaoDoDia(identidade, { data: args.data as string | undefined })
-  } else if (nome === 'analisar_padrao_escala') {
-    resultado = await analisarPadraoEscala(identidade, {
-      medico_id: args.medico_id as string | undefined,
-      janela: args.janela as string | undefined,
-    })
-  } else if (nome === 'listar_quarentena') {
+  if (nome === 'listar_quarentena') {
     resultado = await listarQuarentena(identidade, { status: args.status as string | undefined })
   } else if (nome === 'get_incidentes') {
     resultado = await getIncidentes(identidade, {

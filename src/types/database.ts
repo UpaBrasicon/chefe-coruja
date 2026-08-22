@@ -3499,6 +3499,10 @@ export type Database = {
           tabela: string
         }[]
       }
+      gaviao_painel_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
     }
     Enums: {
       papel: "admin" | "gestor" | "plantonista"
