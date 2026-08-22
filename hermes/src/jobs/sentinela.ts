@@ -108,16 +108,9 @@ async function notificarGestores(u: { unidadeId: string; unidadeNome: string; al
   const resumo = await gerarResumoFactual(u)
   const texto = `📊 Sentinela de Escala — Unidade ${u.unidadeNome} — semana ${new Date().toISOString().slice(0, 10)}\n\n${resumo}`
 
-  // 1) In-app: notificacoes_plantonista para cada gestor
-  for (const gestorId of gestores) {
-    await supabase.from('notificacoes_plantonista').insert({
-      perfil_id: gestorId,
-      unidade_id: u.unidadeId,
-      data: new Date().toISOString().slice(0, 10),
-      tipo: 'sentinela_escala',
-      mensagem: texto.slice(0, 500),
-    })
-  }
+  // 1) In-app via ANDORINHA (Íris) — central de notificações (padrão do projeto)
+  const { dispatchIrisParaGestores } = await import('./iris.js')
+  await dispatchIrisParaGestores(u.unidadeId, 'sentinela_escala', texto)
 
   // 2) Telegram via gateway do Hermes Agent (API OpenAI-compatible p/ 8642 é chat;
   //    o envio de mensagem ao gestor usa o gateway de messaging — via script)

@@ -12,6 +12,7 @@ import { Queue } from 'bullmq'
 import { criarConexaoRedis } from './index.js'
 import { rodarPatrulhaGaviao } from '../jobs/gaviao.js'
 import { gerarRelatorioSemanal } from '../jobs/relatorio.js'
+import { rodarAuditoriaArgos } from '../jobs/argos.js'
 import { logger } from '../logger.js'
 import { rodarSentinela } from '../jobs/sentinela.js'
 import { rodarPatrulhaDados, rodarPatrulhaHermes } from '../jobs/cerbero.js'
@@ -63,8 +64,15 @@ export function registrarCrons(): Queue {
     { name: 'gaviao_patrulha', data: {} }
   )
 
+  // Falcão (Argos) — auditoria clínica: 2x/dia (06h e 18h BR = 09h e 21h UTC)
+  void fila.upsertJobScheduler(
+    'argos_auditoria',
+    { pattern: cronBrasilia('0 9,21 * * *'), tz: 'UTC' },
+    { name: 'argos_auditoria', data: {} }
+  )
+
   logger.info(
-    '[cron] jobs: sentinela (seg 06h30 BR), relatorio (seg 08h15 BR), cerbero_dados (1h), cerbero_hermes (05h BR), gaviao_patrulha (08h/20h BR)'
+    '[cron] jobs: sentinela (seg 06h30 BR), relatorio (seg 08h15 BR), cerbero_dados (1h), cerbero_hermes (05h BR), gaviao_patrulha (08h/20h BR), argos (06h/18h BR)'
   )
   return fila
 }
@@ -88,6 +96,9 @@ export async function executarJobCron(nome: string): Promise<void> {
       break
     case 'gaviao_patrulha':
       await rodarPatrulhaGaviao()
+      break
+    case 'argos_auditoria':
+      await rodarAuditoriaArgos()
       break
     default:
       logger.warn({ nome }, '[cron] job desconhecido')
