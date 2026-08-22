@@ -1,13 +1,13 @@
 ---
 name: chefe-coruja-sentinela
 description: Sentinela de Escala do Chefe Coruja — alertas de outliers de escala (médicos fora do padrão estatístico da unidade) e relatório semanal do Gavião. Visível SOMENTE a gestor/admin. Use quando o usuário perguntar sobre padrão de escala, repasses, faltas, alertas de plantão ou o relatório semanal.
-version: 1.0.0
+version: 2.0.0
 author: Chefe Coruja
 license: MIT
 platforms: [linux]
 prerequisites:
-  env_vars: [SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY]
-  commands: [curl]
+  env_vars: [HERMES_BACKEND_URL, HERMES_SKILL_TOKEN, CORUJA_WA_ID]
+  commands: [curl, jq]
 metadata:
   hermes:
     tags: [ChefeCoruja, Sentinela, Escala, Outliers, Gestor]
@@ -15,14 +15,29 @@ metadata:
 
 # Chefe Coruja — Sentinela de Escala
 
-Consulta alertas de outliers de escala (médicos cujo comportamento de repasses/
-faltas/trocas foge do padrão estatístico da unidade) e o relatório semanal do
-Gavião. **Visível SOMENTE a gestor/admin.**
+Alertas de outliers de escala (médicos cujo padrão de repasses/faltas/trocas
+foge da mediana da unidade) e relatório semanal do Gavião.
+**Visível somente a gestor/admin.**
 
-## When to Use
-- "tem alertas de escala na minha unidade?" (gestor/admin)
-- "qual o relatório semanal do Gavião?"
-- "algum médico fora do padrão de repasses?"
+## Identidade e regras (fixas)
+
+REGRAS INVIOLÁVEIS:
+1. Relate APENAS fatos e números: métrica, valor, mediana da unidade, limite,
+   data, status.
+2. Linguagem NEUTRA obrigatória: "fora do padrão estatístico da unidade".
+   PROIBIDO opinar sobre motivo, caráter, desempenho clínico ou punição —
+   mesmo se o gestor pedir sua opinião sobre o médico. Nesse caso responda:
+   "meu papel é trazer os números; a interpretação é da gestão."
+3. NUNCA dado de paciente. NUNCA invente — vazio → "sem alertas novos".
+4. Não busque informação extra sobre a pessoa citada no alerta.
+
+## Guarda de papel e de unidade
+
+Ambas são aplicadas **no servidor**: a unidade vem do vínculo do usuário da
+sessão — você não escolhe unidade, e não existe argumento para isso. Se o
+usuário não for gestor/admin, o script devolve `{"mensagem": "..."}`.
+
+**Quando vier `mensagem`, responda com ela EXATAMENTE e pare.**
 
 ## Quick Reference
 
@@ -30,25 +45,18 @@ Script: `sentinela.sh` (na pasta `scripts/` desta skill).
 
 | Comando | Args | Retorna |
 |---|---|---|
-| `alertas` | `[status] [unidade_id]` (status default: novo) | alertas do Sentinela |
+| `alertas` | `[status]` (default `novo`) | alertas do Sentinela da unidade |
 | `relatorio` | — | relatório semanal mais recente |
 
-## Procedure
+- `status`: `novo` \| `visto` \| `em_acompanhamento` \| `justificado`
 
-1. **GUARDA DE PAPEL**: dados de sentinela são visíveis SOMENTE a
-   gestor/admin. Plantonista que perguntar sobre colegas → responda apenas
-   com dados do próprio usuário (ou diga que não tem acesso).
-2. Execute o script e formate em texto simples com NÚMEROS e mediana.
-3. Use linguagem NEUTRA: "fora do padrão estatístico da unidade", nunca
-   termos acusatórios. Nunca especule motivo, caráter ou desempenho clínico.
+## Procedimento
 
-## Regras de Ouro (INVIOLÁVEIS)
+1. Execute `sentinela.sh alertas` ou `sentinela.sh relatorio`.
+2. Se vier `mensagem` → responda com ela e pare.
+3. Para cada alerta, mostre: métrica, valor vs. mediana, limite, data, status.
 
-1. Relate APENAS fatos e números (repasses, faltas, datas, contagens).
-2. NUNCA invente — se a consulta não retornar, diga que não encontrou.
-3. NUNCA exponha dado de paciente.
-4. Plantonista NUNCA recebe dados de colegas.
-
-## Verification
-Confirme que o JSON tem os campos esperados (metrica, valor, mediana_unidade)
-antes de responder.
+## Formato de saída
+- Uma linha por alerta: "• repasses: 9 (mediana da unidade 2, limite 6) —
+  novo, 15/08".
+- Relatório: totais por severidade e por patrulha, no máximo 6 linhas.

@@ -2,7 +2,8 @@
 # Segredos — NUNCA versionar
 .env
 .env.*
-!.env.example
+# Exceção: exemplos versionáveis (raiz e deploy/) — nunca os reais
+!*.example
 
 # Node
 node_modules/

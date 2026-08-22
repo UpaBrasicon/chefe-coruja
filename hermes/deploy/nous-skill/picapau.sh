@@ -1,41 +1,33 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
 # PICA-PAU (Hefesto) — status de infraestrutura (usada pelo Nous via terminal)
-# Consulta o /health do backend e o RLS das tabelas. EXCLUSIVO super_admin.
+# EXCLUSIVO super_admin — guarda aplicada no backend (tabela `super_admins`).
 # NUNCA dado de paciente.
 #
 # Uso:
 #   picapau.sh health
-#   picapau.sh rls
+#   picapau.sh integridade
 # ─────────────────────────────────────────────────────────────────────────────
-set -euo pipefail
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
 
-SUPABASE_URL="${SUPABASE_URL:?SUPABASE_URL não definida}"
-SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:?chave não definida}"
-AUTH="apikey: $SUPABASE_SERVICE_ROLE_KEY"
-AUTH2="Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"
-
-comando="${1:?uso: picapau.sh <health|rls>}"
-
-# Health do backend (Gavião) — via Caddy na porta 80 (exposto publicamente)
-BACKEND_URL="${HERMES_BACKEND_URL:-http://localhost/health}"
+comando="$(validar_enum "${1:?uso: picapau.sh <health|integridade>}" comando health integridade)"
+BACKEND="${HERMES_BACKEND_URL:-http://localhost:3000}"
 
 case "$comando" in
   health)
-    # Tenta o backend local; se não alcançável, reporta apenas Supabase
-    health=$(curl -s -m 5 "$BACKEND_URL" 2>/dev/null || echo '{"status":"indisponivel"}')
-    printf '%s' "$health"
+    # /health é público e não expõe dado — resposta resumida via jq (nunca
+    # truncar bytes: JSON cortado ao meio faz o agente alucinar o resto).
+    resposta="$(curl -s -m 5 "$BACKEND/health" 2>/dev/null || printf '')"
+    if [ -z "$resposta" ]; then
+      printf '{"status":"indisponivel"}'
+      exit 0
+    fi
+    printf '%s' "$resposta" \
+      | jq -c '{status, redis, supabase, uptime: (.uptime | floor)}' 2>/dev/null \
+      || printf '{"status":"resposta_invalida"}'
     ;;
 
-  rls)
-    # Tabelas do schema public com RLS habilitado (via RPC do backend)
-    curl -s "$SUPABASE_URL/rest/v1/rpc/gaviao_painel_admin" \
-      -H "$AUTH" -H "$AUTH2" -H 'Content-Type: application/json' -d '{}' \
-      2>/dev/null | head -c 500 || echo '{}'
-    ;;
-
-  *)
-    echo "comando desconhecido: $comando (health|rls)" >&2
-    exit 1
+  integridade)
+    api_hermes infra integridade '{}'
     ;;
 esac

@@ -1,101 +1,38 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
 # Skill Chefe Coruja — dados OPERACIONAIS (usada pelo Nous via terminal)
-# Consulta o Supabase REST com a service_role key (do .env do Nous).
 #
-# ⚠️ REGRA DE OURO ABSOLUTA: consulta APENAS dados operacionais/agregados.
-#    NUNCA toca tabelas de paciente (pacientes, prescricoes, observacao,
-#    internacoes com detalhe clínico, documentos_clinicos...).
-# ⚠️ service_role bypassa RLS — o filtro de papel/unidade é responsabilidade
-#    do agente (nunca misturar unidades).
+# ⚠️ REGRA DE OURO: apenas dados operacionais/agregados. NUNCA tabelas de
+#    paciente (pacientes, prescricoes, observacao, documentos_clinicos...).
+#
+# MUDANÇA DE SEGURANÇA (C1): as consultas passam pelo backend, que resolve a
+# unidade a partir do vínculo do usuário da sessão. `alertas_escala` saiu
+# daqui — é dado do Sentinela, restrito a gestor/admin (use sentinela.sh).
 #
 # Uso:
-#   operacional.sh <comando> [args...]
-#   setores <unidade_id>
-#   unidades [organizacao_id]
-#   profissionais <unidade_id>        (nome + papel — sem dado clínico)
-#   indicadores <unidade_id>
-#   censo <unidade_id>
-#   alertas_escala <unidade_id> [status]
-#   notificacoes <unidade_id> [dias]
+#   operacional.sh setores|profissionais|indicadores|censo [unidade_id]
+#   operacional.sh notificacoes [dias]
 # ─────────────────────────────────────────────────────────────────────────────
-set -euo pipefail
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
 
-SUPABASE_URL="${SUPABASE_URL:?SUPABASE_URL não definida}"
-SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:?chave não definida}"
-AUTH="apikey: $SUPABASE_SERVICE_ROLE_KEY"
-AUTH2="Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"
-
-comando="${1:?uso: operacional.sh <comando> [args...]}"
-api() { curl -s "$SUPABASE_URL/rest/v1/$1" -H "$AUTH" -H "$AUTH2"; }
-
-# Cache com TTL (60s): evita re-consultar o Supabase em perguntas repetidas —
-# a Corujinha responde mais rápido.
-CACHE_DIR="${TMPDIR:-/tmp}/gaviao-cache"
-CACHE_TTL=60
-mkdir -p "$CACHE_DIR"
-
-api_cacheada() {
-  local chave="$1" url="$2"
-  local hash
-  hash="$(printf '%s' "$url" | sha256sum | cut -d' ' -f1)"
-  local arquivo="$CACHE_DIR/$hash"
-  if [ -f "$arquivo" ] && [ $(( $(date +%s) - $(stat -c %Y "$arquivo" 2>/dev/null || echo 0) )) -lt $CACHE_TTL ]; then
-    cat "$arquivo"
-    return
-  fi
-  local resposta
-  resposta="$(api "$url")"
-  printf '%s' "$resposta" > "$arquivo"
-  printf '%s' "$resposta"
-}
+comando="$(validar_enum "${1:?uso: operacional.sh <comando> [args...]}" \
+  comando setores profissionais indicadores censo notificacoes)"
 
 case "$comando" in
-  setores)
-    unidade="${2:?unidade_id obrigatório}"
-    api_cacheada "setores-$unidade" "setores?select=id,nome,tipo,ordem,ativo&unidade_id=eq.$unidade&ativo=eq.true&order=ordem.asc"
-    ;;
-
-  unidades)
-    org="${2:-}"
-    if [ -n "$org" ]; then
-      api_cacheada "unidades-$org" "unidades?select=id,nome,tipo,cnes,municipio,uf,ativo&organizacao_id=eq.$org&ativo=eq.true&order=nome.asc"
-    else
-      api_cacheada "unidades-todas" "unidades?select=id,nome,tipo,cnes,municipio,uf,ativo&ativo=eq.true&order=nome.asc"
-    fi
-    ;;
-
-  profissionais)
-    unidade="${2:?unidade_id obrigatório}"
-    # Vínculos ativos com nome e papel (NUNCA dado clínico)
-    api_cacheada "profissionais-$unidade" "vinculos?select=perfil_id,perfis!vinculos_perfil_id_fkey(nome_completo,crm,uf_crm),papel,ativo&unidade_id=eq.$unidade&ativo=eq.true"
-    ;;
-
-  indicadores)
-    unidade="${2:?unidade_id obrigatório}"
-    api_cacheada "indicadores-$unidade" "vw_indicadores_unidade?select=unidade_id,unidade_nome,total_pacientes,prescricoes_assinadas,prescricoes_rascunho,receitas_retidas&unidade_id=eq.$unidade"
-    ;;
-
-  censo)
-    unidade="${2:?unidade_id obrigatório}"
-    api_cacheada "censo-$unidade" "censo_ocupacao?select=data,turno,internados,leitos_total,leitos_ocupados,leitos_livres,taxa_ocupacao&unidade_id=eq.$unidade&order=data.desc,turno.asc&limit=6"
-    ;;
-
-  alertas_escala)
-    unidade="${2:?unidade_id obrigatório}"
-    status="${3:-novo}"
-    api_cacheada "alertas-$unidade-$status" "chronos_alertas_escala?select=medico_id,metrica,valor,mediana_unidade,limite_outlier,status,criado_em&unidade_id=eq.$unidade&status=eq.$status&order=criado_em.desc&limit=20"
-    ;;
-
   notificacoes)
-    unidade="${2:?unidade_id obrigatório}"
-    dias="${3:-7}"
-    desde="$(date -d "-$dias days" +%F 2>/dev/null || date -v-${dias}d +%F)"
-    api_cacheada "notif-$unidade-$dias" "notificacoes_plantonista?select=data,tipo,mensagem,created_at&unidade_id=eq.$unidade&data=gte.$desde&order=created_at.desc&limit=20"
+    dias="$(validar_inteiro "${2:-7}" dias 90)"
+    args="$(jq -nc --argjson d "$dias" '{dias:$d}')"
+    cache_ou_executa 60 "notif-$dias-${CORUJA_WA_ID:-}" \
+      api_hermes operacional notificacoes "$args"
     ;;
 
   *)
-    echo "comando desconhecido: $comando (setores|unidades|profissionais|indicadores|censo|alertas_escala|notificacoes)" >&2
-    exit 1
+    args='{}'
+    if [ -n "${2:-}" ]; then
+      unidade="$(validar_uuid "$2" unidade_id)"
+      args="$(jq -nc --arg u "$unidade" '{unidade_id:$u}')"
+    fi
+    cache_ou_executa 60 "op-$comando-${2:-}-${CORUJA_WA_ID:-}" \
+      api_hermes operacional "$comando" "$args"
     ;;
 esac
