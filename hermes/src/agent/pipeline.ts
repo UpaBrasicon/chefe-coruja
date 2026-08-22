@@ -188,6 +188,13 @@ async function quarentenar(
     incidente_id: incidente?.id ?? null,
   })
   logger.warn({ waId, urls }, '[cerbero] conteúdo em quarentena (URL maliciosa)')
+
+  // Notifica o AUTOR que o conteúdo está em análise (transparência — item 5)
+  await enviarTexto(
+    waId,
+    'Seu conteúdo foi enviado para análise por conter um link não verificado. Ele não foi entregue ao destinatário. Em caso de dúvida, procure o suporte.'
+  )
+  await gravarAuditoria(identidade?.perfilId ?? null, waId, 'out', 'aviso ao autor: conteúdo em análise (quarentena)')
 }
 
 async function registrarIncidenteConteudo(

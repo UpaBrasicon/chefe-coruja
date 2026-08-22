@@ -110,6 +110,101 @@ export async function patrulhaDados(): Promise<IncidenciaC[]> {
     }
   }
 
+  // A4. Leito ocupado cujo setor NÃO tem médico na escala vigente (hoje)
+  const { data: leitosOcupados } = await supabase
+    .from('leitos')
+    .select('id, setor_id')
+    .eq('status', 'ocupado')
+    .eq('ativo', true)
+    .limit(1000)
+  const { data: plantoesSetoresHoje } = await supabase
+    .from('escala_plantao')
+    .select('setor_id')
+    .eq('data', hoje)
+    .eq('ativo', true)
+    .limit(2000)
+  const setoresComEscalaHoje = new Set((plantoesSetoresHoje ?? []).map((p) => p.setor_id))
+  const leitosVistos = new Set<string>()
+  for (const l of leitosOcupados ?? []) {
+    if (!l.setor_id || leitosVistos.has(l.id)) continue
+    leitosVistos.add(l.id)
+    if (!setoresComEscalaHoje.has(l.setor_id)) {
+      achados.push({
+        patrulha: 'dados',
+        severidade: 'atencao',
+        titulo: 'Leito ocupado em setor sem médico na escala de hoje',
+        evidencia: { leito_id: l.id, setor_id: l.setor_id },
+      })
+    }
+  }
+
+  // A5. Censo com contagens negativas (incoerência de dado agregado)
+  const { data: censos } = await supabase
+    .from('censo_ocupacao')
+    .select('unidade_id, setor_id, data, turno, internados, leitos_total, leitos_ocupados, leitos_livres')
+    .limit(2000)
+  for (const c of censos ?? []) {
+    const negativos = Object.entries({
+      internados: c.internados, leitos_total: c.leitos_total,
+      leitos_ocupados: c.leitos_ocupados, leitos_livres: c.leitos_livres,
+    }).filter(([, v]) => (v as number) < 0)
+    if (negativos.length > 0) {
+      achados.push({
+        patrulha: 'dados',
+        severidade: 'atencao',
+        titulo: 'Censo com contagem negativa',
+        evidencia: {
+          unidade_id: c.unidade_id, setor_id: c.setor_id, data: c.data, turno: c.turno,
+          campos_negativos: negativos.map(([k, v]) => `${k}=${v}`),
+        },
+      })
+    }
+  }
+
+  // A6. Timestamps incoerentes: observação/prescrição com aferido/created no FUTURO
+  const agoraIso = new Date().toISOString()
+  const { data: obsFuturas } = await supabase
+    .from('observacao')
+    .select('id, unidade_id, aferido_em, created_at')
+    .gt('aferido_em', agoraIso)
+    .limit(500)
+  for (const o of obsFuturas ?? []) {
+    achados.push({
+      patrulha: 'dados',
+      severidade: 'atencao',
+      titulo: 'Observação com aferição no futuro',
+      evidencia: { observacao_id: o.id, unidade_id: o.unidade_id, aferido_em: o.aferido_em },
+    })
+  }
+  const { data: prescFuturas } = await supabase
+    .from('prescricoes')
+    .select('id, unidade_id, created_at')
+    .gt('created_at', agoraIso)
+    .limit(500)
+  for (const p of prescFuturas ?? []) {
+    achados.push({
+      patrulha: 'dados',
+      severidade: 'atencao',
+      titulo: 'Prescrição com criação no futuro',
+      evidencia: { prescricao_id: p.id, unidade_id: p.unidade_id, created_at: p.created_at },
+    })
+  }
+
+  // A7. Prescrição órfã (sem paciente) — dado clínico NUNCA exposto por nome
+  const { data: prescOrfas } = await supabase
+    .from('prescricoes')
+    .select('id, unidade_id')
+    .is('paciente_id', null)
+    .limit(500)
+  for (const p of prescOrfas ?? []) {
+    achados.push({
+      patrulha: 'dados',
+      severidade: 'informativo',
+      titulo: 'Prescrição sem paciente vinculado',
+      evidencia: { prescricao_id: p.id, unidade_id: p.unidade_id },
+    })
+  }
+
   return achados
 }
 

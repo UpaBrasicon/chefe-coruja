@@ -188,6 +188,84 @@ export async function analisarPadraoEscala(
 }
 
 /**
+ * v1.1 — Cérbero (exclusivo super_admin).
+ * Guarda de papel: quem NÃO é super_admin recebe resposta genérica
+ * (sem revelar a existência do agente — requisito do prompt).
+ */
+async function ehSuperAdmin(perfilId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('super_admins')
+    .select('perfil_id')
+    .eq('perfil_id', perfilId)
+    .maybeSingle()
+  return Boolean(data)
+}
+
+const RESPOSTA_GENERICA_CERBERO = {
+  ok: true,
+  dados: {
+    mensagem:
+      'Não encontrei informações sobre esse assunto. Se precisar de ajuda com escala ou plantões, é só perguntar.',
+  },
+}
+
+export async function listarQuarentena(
+  identidade: IdentidadeHermes,
+  _args: { status?: string }
+): Promise<ResultadoTool> {
+  if (!(await ehSuperAdmin(identidade.perfilId))) return RESPOSTA_GENERICA_CERBERO
+
+  const { data, error } = await supabase
+    .from('cerbero_quarentena')
+    .select('id, tipo, origem, motivo, liberado, criado_em')
+    .order('criado_em', { ascending: false })
+    .limit(50)
+  if (error) return { ok: false, erro: 'falha interna' }
+  void _args
+  return { ok: true, dados: data ?? [] }
+}
+
+export async function getIncidentes(
+  identidade: IdentidadeHermes,
+  args: { patrulha?: string; severidade?: string }
+): Promise<ResultadoTool> {
+  if (!(await ehSuperAdmin(identidade.perfilId))) return RESPOSTA_GENERICA_CERBERO
+
+  let q = supabase
+    .from('cerbero_incidentes')
+    .select('id, patrulha, severidade, titulo, status, detectado_em')
+    .order('detectado_em', { ascending: false })
+    .limit(50)
+  if (args.patrulha) q = q.eq('patrulha', args.patrulha)
+  if (args.severidade) q = q.eq('severidade', args.severidade)
+
+  const { data, error } = await q
+  if (error) return { ok: false, erro: 'falha interna' }
+  return { ok: true, dados: data ?? [] }
+}
+
+/**
+ * liberar_quarentena(id) — ÚNICA escrita do Cérbero.
+ * Exige que o admin confirme explicitamente NA CONVERSA antes (o loop pede
+ * confirmação; aqui só executamos — a confirmação é responsabilidade do
+ * agente no fluxo, ver system-prompt).
+ */
+export async function liberarQuarentena(
+  identidade: IdentidadeHermes,
+  args: { id?: string }
+): Promise<ResultadoTool> {
+  if (!(await ehSuperAdmin(identidade.perfilId))) return RESPOSTA_GENERICA_CERBERO
+  if (!args.id) return { ok: false, erro: 'informe o id do item em quarentena' }
+
+  const { error } = await supabase
+    .from('cerbero_quarentena')
+    .update({ liberado: true })
+    .eq('id', args.id)
+  if (error) return { ok: false, erro: 'falha ao liberar' }
+  return { ok: true, dados: { liberado: true, id: args.id } }
+}
+
+/**
  * Executa uma tool pelo nome (usada pelo loop do agente).
  * Toda execução grava em hermes_audit_log (direction='tool').
  */
@@ -207,6 +285,15 @@ export async function executarTool(
       medico_id: args.medico_id as string | undefined,
       janela: args.janela as string | undefined,
     })
+  } else if (nome === 'listar_quarentena') {
+    resultado = await listarQuarentena(identidade, { status: args.status as string | undefined })
+  } else if (nome === 'get_incidentes') {
+    resultado = await getIncidentes(identidade, {
+      patrulha: args.patrulha as string | undefined,
+      severidade: args.severidade as string | undefined,
+    })
+  } else if (nome === 'liberar_quarentena') {
+    resultado = await liberarQuarentena(identidade, { id: args.id as string | undefined })
   } else {
     resultado = { ok: false, erro: `ferramenta desconhecida: ${nome}` }
   }

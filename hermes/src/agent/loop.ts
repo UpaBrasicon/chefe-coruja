@@ -70,6 +70,43 @@ export const TOOLS_DISPONIVEIS: ToolDefLLM[] = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'listar_quarentena',
+      description:
+        'Lista itens em quarentena (URLs/anexos reprovados). Exclusivo super_admin — outros papéis recebem resposta genérica.',
+      parameters: { type: 'object', properties: { status: { type: 'string' } } },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_incidentes',
+      description:
+        'Lista incidentes de segurança/integridade registrados pelo Cérbero. Exclusivo super_admin.',
+      parameters: {
+        type: 'object',
+        properties: {
+          patrulha: { type: 'string', enum: ['dados', 'conteudo', 'hermes'] },
+          severidade: { type: 'string', enum: ['critico', 'atencao', 'informativo'] },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'liberar_quarentena',
+      description:
+        'Libera um item em quarentena (única escrita do Cérbero). Exclusivo super_admin e SEMPRE exige confirmação explícita do admin na conversa antes de executar.',
+      parameters: {
+        type: 'object',
+        properties: { id: { type: 'string', description: 'ID do item em quarentena' } },
+        required: ['id'],
+      },
+    },
+  },
 ]
 
 function mensagemDoTool(tc: ToolCallLLM): MensagemLLM {
