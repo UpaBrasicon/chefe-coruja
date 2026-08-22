@@ -23,6 +23,9 @@ spikes/vidaas/.vidaas-env
 # Strix — artefatos de varredura local (nunca versionar; resumos em docs/seguranca/)
 strix_runs/
 
+# deepseek-harness — clone externo do harness (tem .git próprio; nunca versionar)
+deepseek-harness/
+
 # Dados brutos de terminologia — fontes públicas regeneráveis (~118MB), ver LEIA-ME.txt
 data/terminologia/*
 !data/terminologia/LEIA-ME.txt
