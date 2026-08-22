@@ -3,6 +3,7 @@ import { Loader2, LogIn, LogOut, MapPin, Navigation } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { obterPosicao } from '@/lib/geolocalizacao'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -11,15 +12,14 @@ import { Badge } from '@/components/ui/badge'
 /**
  * GATE DE CHECK-IN OBRIGATÓRIO (regra de ouro).
  *
- * Renderizado pelo AppShell para plantonista que ESTÁ de plantão (relógio do
- * servidor — na_escala_agora ou tem_acesso_atendimento) mas ainda NÃO fez
- * check-in hoje. Bloqueia a progressão com um overlay escuro full-screen
- * (mesma linguagem do drawer de chat, mas modal e intransponível), mostra o
- * mapa da unidade + posição do plantonista, e só libera o sistema após o
- * check-in. Quem NÃO está de plantão cai no ForaDoExpediente (não chega aqui).
+ * ⚠️ TRAVA ADIADA (decisão 23/08): este componente NÃO está ativo no momento —
+ * o AppShell mostra apenas o banner de lembrete não-bloqueante. Para religar a
+ * trava, trocar o banner por `return <GateCheckIn />` no AppShell.
  *
- * O check-in em si é feito pelo RPC registrar_checkin (server-side), que
- * revalida a escala e calcula se está dentro do raio configurado pelo gestor.
+ * Quando ativo: overlay escuro full-screen que bloqueia a progressão do sistema
+ * para plantonista em escala (relógio do servidor) sem check-in ativo. Mostra
+ * o mapa da unidade + posição do plantonista e o check-in via RPC
+ * registrar_checkin (revalida a escala server-side e calcula o raio).
  */
 type PresencaRow = {
   id: string
@@ -97,19 +97,6 @@ export function GateCheckIn() {
 
   const ativo: PresencaRow | null =
     presencaHoje && presencaHoje.checkin_em && !presencaHoje.checkout_em ? presencaHoje : null
-
-  function obterPosicao(): Promise<{ lat: number; lng: number }> {
-    return new Promise((resolve, reject) => {
-      if (!('geolocation' in navigator)) {
-        reject(new Error('Geolocalização não suportada neste navegador.'))
-        return
-      }
-      navigator.geolocation.getCurrentPosition(
-        (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
-        (e) => reject(new Error(e.message ?? 'Não foi possível obter sua localização.'))
-      )
-    })
-  }
 
   async function localizar() {
     setGeoMsg(null)

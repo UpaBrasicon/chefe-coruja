@@ -99,7 +99,8 @@ QueryClientProvider
 | `RedirectHome` | `src/routes/RedirectHome.tsx` | `>1 unidade` → `/seletor`; senão a `ROTA_INICIAL` do papel de maior precedência. |
 | `Redirecionar` | `src/routes/Redirecionar.tsx` | Rotas legadas → destino agrupado, **preservando a query string** e resolvendo `:params`. |
 | **Portão de plantão** | `AppShell.tsx` | Se `papelAtivo === 'plantonista'` e `usePlantao().status === 'fora'` → renderiza `ForaDoExpediente` no lugar de **toda** a aplicação. |
-| **Gate de check-in** | `components/GateCheckIn.tsx` | **Regra de ouro**: plantonista com status `escala`/`acesso` (está de plantão, relógio do servidor) e **sem check-in ativo hoje** → overlay escuro full-screen (`z-[90]`, `bg-black/75` + `backdrop-blur`) bloqueia a progressão até o check-in. Mostra mapa OpenStreetMap da unidade + posição do plantonista, relógio em tempo real, e botão de check-in (RPC `registrar_checkin` revalida a escala server-side e calcula `checkin_dentro` pelo raio da unidade). O sistema inteiro fica atrás do overlay (mesma linguagem do drawer de chat, mas modal e intransponível). |
+| **Gate de check-in** | `components/GateCheckIn.tsx` | **Regra de ouro** (trava ADIADA em 23/08): componente pronto, mas NÃO bloqueia mais o sistema — o AppShell mostra apenas um **banner de lembrete** âmbar não-bloqueante apontando para `/plantao/check-in`. Quando a trava voltar, trocar o banner por `return <GateCheckIn />` (overlay escuro full-screen `z-[90]` + `backdrop-blur`, mapa OSM, relógio, check-in com raio). O RPC `registrar_checkin` segue registrando horário e `checkin_dentro` (raio da unidade) para o gestor. |
+| **Geolocalização** | `lib/geolocalizacao.ts` | `obterPosicao()` com `enableHighAccuracy: true` (GPS), timeout 12s e fallback para precisão padrão — captura o local CORRETO (usado por `MeuPlantao`, `GateCheckIn` e o check-in). |
 | **Presenças do gestor** | `pages/gestor/PresencasDoDia.tsx` | Aba "Presenças" em `/escala` (gestor/admin): quem fez check-in hoje, a que horas, dentro/fora do raio, e quem está em escala mas ainda não fez check-in. RPC `presencas_do_dia_gestor` (SECURITY DEFINER, restrito a gestor/admin/super). Refresca a cada 30s. |
 | `ErroBoundary` | `src/components/ErroBoundary.tsx` | Global (em volta das rotas) e por rota (dentro do AppShell, com `key={pathname}`). |
 
@@ -633,14 +634,15 @@ compartilha código nem design tokens com `src/`. Não foi tocado nesta refatora
 
 35 arquivos alterados, 7 criados, 4 removidos.
 
-### 11.0 Check-in obrigatório do plantonista (23/08)
+### 11.0 Check-in do plantonista (23/08 — trava adiada)
 
 | Item | Detalhe |
 |---|---|
-| **Gate de check-in** | `components/GateCheckIn.tsx` — overlay escuro full-screen que bloqueia a progressão do sistema inteiro para plantonista em escala sem check-in ativo. Animação de entrada (fade + scale), relógio em tempo real, mapa OpenStreetMap da unidade, captura de geolocalização e check-in via RPC `registrar_checkin` (revalida a escala no servidor e calcula o raio). |
-| **Regra de ouro** | O gate **só** aparece para quem está de plantão: `usePlantao().status ∈ {escala, acesso}` (relógio do servidor). Quem está fora → `ForaDoExpediente`. O RPC `registrar_checkin` revalida a escala server-side (não confia no frontend). |
+| **Gate de check-in** | `components/GateCheckIn.tsx` — overlay escuro full-screen pronto (animação de entrada, relógio em tempo real, mapa OSM, geolocalização e check-in via RPC `registrar_checkin`). **Trava ADIADA**: o AppShell mostra um banner de lembrete não-bloqueante em vez de bloquear — o plantonista acessa o sistema normalmente; para religar a trava, trocar o banner por `return <GateCheckIn />`. |
+| **Regra de ouro** | Quem está fora do plantão continua barrado pelo `ForaDoExpediente` (`usePlantao().status === 'fora'`). O RPC `registrar_checkin` revalida a escala server-side (não confia no frontend). |
 | **Dados para o gestor** | RPC `presencas_do_dia_gestor` + aba **Presenças** em `/escala` (`pages/gestor/PresencasDoDia.tsx`): quem fez check-in, a que horas, dentro/fora do raio, e quem está em escala mas ainda não fez check-in. Refresca a cada 30s. |
-| **Robustez de fuso** | O gate e o shell consultam a presença **ativa** (último check-in sem check-out), sem filtro de data do navegador — o servidor controla dia/turno via `ON CONFLICT`. |
+| **Geolocalização correta** | `lib/geolocalizacao.ts` — `enableHighAccuracy: true` (GPS), timeout 12s, fallback para precisão padrão. Usado por `MeuPlantao`, `GateCheckIn` e o check-in. |
+| **Robustez de fuso** | O shell e o gate consultam a presença **ativa** (último check-in sem check-out), sem filtro de data do navegador — o servidor controla dia/turno via `ON CONFLICT`. |
 
 ### 11.1 Correções
 

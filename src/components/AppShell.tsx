@@ -26,7 +26,6 @@ import { usePlantao } from '@/hooks/usePlantao'
 import { useWebPush } from '@/hooks/useWebPush'
 import { useChatRealtimeGlobal, useTotalNaoLidas } from '@/hooks/useChat'
 import { ChatDrawer } from '@/components/chat/ChatDrawer'
-import { GateCheckIn } from '@/components/GateCheckIn'
 import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
 import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
 import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
@@ -115,10 +114,9 @@ export function AppShell() {
     papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined
   )
 
-  // Regra de ouro do check-in: plantonista em escala precisa fazer check-in
-  // hoje antes de acessar qualquer coisa. O gate verifica a presença ativa;
-  // sem ela, bloqueia com o overlay (GateCheckIn). O RPC registrar_checkin
-  // revalida a escala no servidor (não confia só no frontend).
+  // Regra de ouro do check-in: plantonista em escala deve fazer check-in; por
+  // ora apenas o banner de lembrete aparece (trava adiada). O RPC
+  // registrar_checkin revalida a escala no servidor (não confia só no frontend).
   // Sem filtro de data: robusto a fuso — o "ativo" é o último check-in sem
   // check-out (o servidor controla dia/turno via ON CONFLICT).
   const { data: presencaHoje } = useQuery({
@@ -156,10 +154,12 @@ export function AppShell() {
     }
   }
 
-  // Gate obrigatório: bloqueia TODO o sistema até o check-in de hoje.
-  if (checkinPendente) {
-    return <GateCheckIn />
-  }
+  // TRAVA DE CHECK-IN ADIADA (decisão 23/08): o plantonista NÃO é mais
+  // bloqueado antes de acessar o sistema — por ora, apenas um banner de
+  // lembrete não-bloqueante aponta para o check-in. Quando a trava voltar,
+  // trocar este banner por `return <GateCheckIn />` (componente pronto).
+  // O RPC registrar_checkin continua registrando o horário e o local
+  // (dentro/fora do raio) para o gestor ver na aba Presenças.
 
   const barraTopo = (
     <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
@@ -367,6 +367,21 @@ export function AppShell() {
           unidadeId={papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined}
           habilitado={papelAtivo === 'plantonista'}
         />
+        {/* Lembrete de check-in (trava adiada — não bloqueia) */}
+        {checkinPendente && (
+          <div className="flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+            <span className="flex items-center gap-2">
+              <Activity className="size-4 shrink-0" />
+              Você ainda não fez check-in no plantão de hoje.
+            </span>
+            <NavLink
+              to="/plantao/check-in"
+              className="shrink-0 rounded-md bg-amber-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-amber-700"
+            >
+              Fazer check-in
+            </NavLink>
+          </div>
+        )}
         <main className="flex-1 px-4 py-6 md:px-8">
           <div className="mx-auto w-full max-w-6xl">
             {status === 'carregando' ? (

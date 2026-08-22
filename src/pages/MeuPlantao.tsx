@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { obterPosicao } from '@/lib/geolocalizacao'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -79,19 +80,6 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
     const hoje = new Date().toISOString().slice(0, 10)
     return (presencas ?? []).find((p) => p.data === hoje && p.checkin_em && !p.checkout_em)
   }, [presencas])
-
-  function obterPosicao(): Promise<{ lat: number; lng: number }> {
-    return new Promise((resolve, reject) => {
-      if (!('geolocation' in navigator)) {
-        reject(new Error('Geolocalização não suportada neste navegador.'))
-        return
-      }
-      navigator.geolocation.getCurrentPosition(
-        (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
-        (e) => reject(new Error(e.message ?? 'Não foi possível obter sua localização.'))
-      )
-    })
-  }
 
   async function localizar() {
     setGeoMsg(null)
