@@ -15,7 +15,21 @@ import Fastify, { type FastifyRequest } from 'fastify'
 import { env } from './config/env.js'
 import { logger } from './logger.js'
 import { supabase } from './lib/supabase.js'
-import { criarConexaoRedisHealth, criarFila, criarWorker, type JobMensagemWhatsApp } from './queue/index.js'
+import { criarConexaoRedis, criarConexaoRedisHealth, criarFila, criarWorker, type JobMensagemWhatsApp } from './queue/index.js'
+import { registrarCrons, executarJobCron, FILA_CRON } from './queue/agendador.js'
+import { Worker } from 'bullmq'
+
+// Worker da fila de crons (Sentinela + Cérbero)
+function criarWorkerCron(): Worker {
+  const w = new Worker(FILA_CRON, async (job) => {
+    logger.info({ job: job.name }, '[cron] executando')
+    await executarJobCron(job.name)
+  }, { connection: criarConexaoRedis() })
+  w.on('failed', (job, err) => {
+    logger.error({ job: job?.name, err: err.message }, '[cron] job falhou')
+  })
+  return w
+}
 
 // ── Raw body: preserva o corpo bruto para validação do HMAC ──────────────────
 declare module 'fastify' {
@@ -76,9 +90,12 @@ type WebhookPayload = {
 /**
  * Monta a aplicação Fastify (rotas, fila, worker) sem abrir porta.
  * Separado do listen para permitir testes com fastify.inject.
+ * crons: habilita o agendador Sentinela/Cérbero (default true — desative nos
+ * testes para não segurar o event loop com os workers de cron).
  */
-export async function buildApp() {
+export async function buildApp(opts: { crons?: boolean } = {}) {
   const app = Fastify({ logger: false })
+  const { crons = true } = opts
 
   registrarParserCorpoBruto(app)
 
@@ -87,9 +104,15 @@ export async function buildApp() {
   const worker = criarWorker()
   const redisHealth = criarConexaoRedisHealth()
 
+  // v1.1: agendador de crons (Sentinela + Cérbero) + worker do cron
+  const filaCron = crons ? registrarCrons() : null
+  const workerCron = crons ? criarWorkerCron() : null
+
   app.addHook('onClose', async () => {
     await fila.close()
     await worker.close()
+    if (filaCron) await filaCron.close()
+    if (workerCron) await workerCron.close()
     redisHealth.disconnect()
   })
 

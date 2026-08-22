@@ -12,12 +12,14 @@
 //   e. Envia resposta via WhatsApp + grava auditoria (direction in/out).
 // ─────────────────────────────────────────────────────────────────────────────
 import type { Redis } from 'ioredis'
+import { createHash } from 'node:crypto'
 import { logger } from '../logger.js'
 import { supabase } from '../lib/supabase.js'
 import { enviarTexto } from '../lib/whatsapp.js'
 import { resolverIdentidadePorWaId } from './identidade.js'
 import { carregarSessao, salvarSessao, type MensagemSessao } from './sessao.js'
 import { executarLoopAgente } from './loop.js'
+import { extrairUrls, verificarUrl, hashUrl } from '../tools/urlcheck.js'
 import { montarSystemPrompt } from './system-prompt.js'
 
 const TTL_DEDUP_S = 24 * 60 * 60 // 24h
@@ -93,6 +95,23 @@ export async function processarMensagem(
     return
   }
 
+  // v1.1 — Cérbero Patrulha B (on-write): URLs maliciosas vão para quarentena
+  // e NÃO são processadas; suspeitas seguem com aviso.
+  const urls = extrairUrls(texto)
+  if (urls.length > 0) {
+    const resultados = await Promise.all(urls.map((u) => verificarUrl(u)))
+    const maliciosas = resultados.filter((r) => r.veredicto === 'malicioso')
+    if (maliciosas.length > 0) {
+      await quarentenar(waId, texto, urls, resultados)
+      await gravarAuditoria(null, waId, 'in', `mensagem com URL maliciosa em quarentena (${urls.length} url(s))`)
+      return
+    }
+    const suspeitas = resultados.filter((r) => r.veredicto === 'suspeito')
+    if (suspeitas.length > 0) {
+      await registrarIncidenteConteudo(waId, urls, resultados)
+    }
+  }
+
   await gravarAuditoria(null, waId, 'in', `msg recebida: ${texto.slice(0, 100)}`)
 
   // b. Resolução de identidade
@@ -130,4 +149,63 @@ export async function processarMensagem(
   await gravarAuditoria(identidade.perfilId, waId, 'out', `envio ${envio.ok ? 'ok' : 'falhou'}: ${resposta.slice(0, 100)}`)
 
   logger.info({ waId, messageId, envioOk: envio.ok }, '[pipeline] mensagem processada')
+}
+
+// ── Cérbero Patrulha B — quarentena e incidentes de conteúdo ────────────────
+
+async function quarentenar(
+  waId: string,
+  texto: string,
+  urls: string[],
+  resultados: { veredicto: string; motivos: string[] }[]
+): Promise<void> {
+  // Resolve perfil do autor (se cadastrado) — sem dado clínico, só ID
+  const identidade = await resolverIdentidadePorWaId(waId).catch(() => null)
+
+  // Registra incidente (severidade critico: URL maliciosa interceptada)
+  const { data: incidente, error: errInc } = await supabase
+    .from('cerbero_incidentes')
+    .insert({
+      patrulha: 'conteudo',
+      severidade: 'critico',
+      titulo: 'URL maliciosa interceptada no canal',
+      evidencia: { urls, motivos: resultados.map((r) => r.motivos) },
+      status: 'aberto',
+    })
+    .select('id')
+    .single()
+
+  if (errInc) logger.warn({ err: errInc.message }, '[cerbero] falha ao criar incidente')
+
+  // Quarentena do conteúdo
+  await supabase.from('cerbero_quarentena').insert({
+    tenant_id: identidade?.organizacaoId ?? null,
+    tipo: 'url',
+    origem: 'chat_whatsapp',
+    autor_id: identidade?.perfilId ?? '00000000-0000-0000-0000-000000000000',
+    conteudo_hash: createHash('sha256').update(texto).digest('hex'),
+    motivo: `URL maliciosa: ${resultados.map((r) => r.motivos.join(',')).join('; ')}`,
+    incidente_id: incidente?.id ?? null,
+  })
+  logger.warn({ waId, urls }, '[cerbero] conteúdo em quarentena (URL maliciosa)')
+}
+
+async function registrarIncidenteConteudo(
+  waId: string,
+  urls: string[],
+  resultados: { veredicto: string; motivos: string[] }[]
+): Promise<void> {
+  const hash = hashUrl(urls[0] ?? '')
+  // Cache 24h do veredicto (evita re-verificação)
+  await supabase.from('cerbero_url_cache').upsert(
+    { url_hash: hash, veredicto: 'suspeito', fonte: 'heuristica', detalhe: { urls, motivos: resultados.map((r) => r.motivos) } },
+    { onConflict: 'url_hash' }
+  )
+  await supabase.from('cerbero_incidentes').insert({
+    patrulha: 'conteudo',
+    severidade: 'informativo',
+    titulo: 'URL suspeita no canal',
+    evidencia: { waId, urls, motivos: resultados.map((r) => r.motivos) },
+  })
+  logger.info({ waId, urls }, '[cerbero] URL suspeita registrada (segue com aviso)')
 }

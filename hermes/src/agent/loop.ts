@@ -48,6 +48,28 @@ export const TOOLS_DISPONIVEIS: ToolDefLLM[] = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'analisar_padrao_escala',
+      description:
+        'Métricas de escala de um médico vs. mediana da unidade (repasses, faltas, trocas, cancelamentos tardios, concentração de destino). Gestor/admin podem pedir de qualquer médico; plantonista recebe apenas os próprios dados.',
+      parameters: {
+        type: 'object',
+        properties: {
+          medico_id: {
+            type: 'string',
+            description: 'ID do médico (apenas gestor/admin; plantonista é ignorado).',
+          },
+          janela: {
+            type: 'string',
+            enum: ['30d', '90d'],
+            description: 'Janela de análise (default: 30d).',
+          },
+        },
+      },
+    },
+  },
 ]
 
 function mensagemDoTool(tc: ToolCallLLM): MensagemLLM {

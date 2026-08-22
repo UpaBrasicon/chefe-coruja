@@ -10,7 +10,7 @@ import { env } from './config/env.js'
 let app: Awaited<ReturnType<typeof buildApp>>
 
 before(async () => {
-  app = await buildApp()
+  app = await buildApp({ crons: false }) // sem workers de cron nos testes
   await app.ready()
 })
 

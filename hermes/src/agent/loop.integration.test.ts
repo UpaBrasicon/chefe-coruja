@@ -1,7 +1,7 @@
-// Teste de integração do caminho de ERRO do loop do agente (LLM indisponível).
-// Com LLM_API_KEY vazia/inválida (sem creds reais), a chamada ao DeepSeek
-// falha (401) → retry → fallback → erro → o loop DEVE retornar a mensagem de
-// instabilidade (nunca silêncio). Teste real, sem mocks.
+// Testes de integração do loop do agente.
+// - Com LLM_API_KEY real: verifica o CAMINHO FELIZ (resposta com conteúdo).
+// - Sem chave: verifica o caminho de erro (mensagem de instabilidade).
+// Testes reais, sem mocks.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { executarLoopAgente } from './loop.js'
@@ -17,27 +17,21 @@ const identidade = {
   organizacaoId: '00000000-0000-0000-0000-000000000001',
 }
 
-test('loop — LLM sem chave válida retorna mensagem de instabilidade (nunca silêncio)', async () => {
-  // Garante que o teste usa uma chave inválida (o .env de dev não tem chave real).
-  assert.ok(
-    !env.LLM_API_KEY || env.LLM_API_KEY.length < 20,
-    'teste assume LLM_API_KEY ausente/inválida no .env de dev'
-  )
+const temChave = Boolean(env.LLM_API_KEY && env.LLM_API_KEY.length >= 20)
 
+test('loop — com LLM real responde com conteúdo (caminho feliz)', { skip: !temChave }, async () => {
   const resultado = await executarLoopAgente(
     identidade,
     '5511999990001',
-    'Você é o Hermes. Responda curto.',
+    'Você é o Hermes. Responda em uma frase curta.',
     [],
-    'quais meus plantões da semana?'
+    'Diga apenas: oi'
   )
-
-  assert.equal(resultado.ok, false, 'deve falhar sem LLM válido')
-  assert.match(resultado.texto, /instabilidade/, `esperava mensagem de instabilidade, veio: ${resultado.texto}`)
+  assert.equal(resultado.ok, true, `deve responder com chave real: ${resultado.texto}`)
+  assert.ok(resultado.texto.length > 0, 'resposta não pode ser vazia')
 })
 
-test('loop — com fallback também sem chave, ainda retorna instabilidade', async () => {
-  // O .env de dev define LLM_FALLBACK_BASE_URL sem chave → fallback falha → erro final.
+test('loop — sem chave válida retorna mensagem de instabilidade (nunca silêncio)', { skip: temChave }, async () => {
   const resultado = await executarLoopAgente(
     identidade,
     '5511999990001',
@@ -46,5 +40,5 @@ test('loop — com fallback também sem chave, ainda retorna instabilidade', asy
     'oi'
   )
   assert.equal(resultado.ok, false)
-  assert.match(resultado.texto, /instabilidade/)
+  assert.match(resultado.texto, /instabilidade/, `esperava instabilidade, veio: ${resultado.texto}`)
 })

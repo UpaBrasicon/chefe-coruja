@@ -132,6 +132,62 @@ export async function getPlantaoDoDia(
 }
 
 /**
+ * v1.1 — analisar_padrao_escala(medico_id?, janela)
+ * Métricas do médico vs. mediana da unidade (Sentinela).
+ * Guarda de papel: gestor/admin vê qualquer médico da unidade; plantonista
+ * só recebe os PRÓPRIOS dados (filtro NO CÓDIGO, regra 3).
+ */
+export async function analisarPadraoEscala(
+  identidade: IdentidadeHermes,
+  args: { medico_id?: string; janela?: string }
+): Promise<ResultadoTool> {
+  const janela = (args.janela === '90d' ? '90d' : '30d') as '30d' | '90d'
+
+  // Filtro de papel NO CÓDIGO: plantonista só vê os próprios dados
+  const medicoAlvo =
+    identidade.papel === 'gestor' || identidade.papel === 'admin'
+      ? (args.medico_id ?? identidade.perfilId)
+      : identidade.perfilId
+
+  if (!identidade.unidadeId) {
+    return { ok: false, erro: 'usuário sem unidade vinculada' }
+  }
+
+  const { calcularMetricasUnidade } = await import('./sentinela.js')
+  const metricas = await calcularMetricasUnidade(identidade.unidadeId, janela)
+  const doMedico = metricas.find((m) => m.medicoId === medicoAlvo)
+
+  if (!doMedico) {
+    return { ok: true, dados: { mensagem: 'Médico sem plantões na janela selecionada.' } }
+  }
+
+  // Mediana da unidade para comparação (médicos elegíveis, mínimo 8)
+  const { detectarOutliers } = await import('./sentinela.js')
+  const alertas = detectarOutliers(metricas, janela).filter((a) => a.medicoId === medicoAlvo)
+
+  const { data: perfil } = await supabase
+    .from('perfis')
+    .select('nome_completo')
+    .eq('id', medicoAlvo)
+    .maybeSingle()
+
+  return {
+    ok: true,
+    dados: {
+      medico: (perfil as { nome_completo: string } | null)?.nome_completo ?? 'médico',
+      janela,
+      plantoesAtribuidos: doMedico.plantoesAtribuidos,
+      repasses: doMedico.repasses,
+      faltas: doMedico.faltas,
+      cancelamentoTardio: doMedico.cancelamentoTardio,
+      trocasIniciadas: doMedico.trocasIniciadas,
+      concentracaoDestino: doMedico.concentracaoDestino,
+      foraDoPadrao: alertas.map((a) => ({ metrica: a.metrica, valor: a.valor, mediana: a.medianaUnidade })),
+    },
+  }
+}
+
+/**
  * Executa uma tool pelo nome (usada pelo loop do agente).
  * Toda execução grava em hermes_audit_log (direction='tool').
  */
@@ -146,6 +202,11 @@ export async function executarTool(
     resultado = await getMeusPlantoes(identidade, { periodo: args.periodo as string | undefined })
   } else if (nome === 'get_plantao_do_dia') {
     resultado = await getPlantaoDoDia(identidade, { data: args.data as string | undefined })
+  } else if (nome === 'analisar_padrao_escala') {
+    resultado = await analisarPadraoEscala(identidade, {
+      medico_id: args.medico_id as string | undefined,
+      janela: args.janela as string | undefined,
+    })
   } else {
     resultado = { ok: false, erro: `ferramenta desconhecida: ${nome}` }
   }

@@ -1,0 +1,28 @@
+feat(hermes-v1.1): Sentinela de Escala + Cérbero (integridade) — deployado na VPS
+
+Sentinela (Chronos):
+- Migration chronos_alertas_escala (RLS gestor/admin via vinculos)
+- agent/sentinela.ts: metricas reais (repasses/faltas/trocas/tardio/concentracao),
+  deteccao por IQR com minimo de 8 plantoes (sem LLM); 5 testes
+- jobs/sentinela.ts: job semanal (seg 06h30 BR) > relatorio FACTUAL > notificacao
+  in-app + via chat; tool analisar_padrao_escala com guarda de papel no codigo
+- Guardrails no system prompt (fatos, so gestor/admin, linguagem neutra)
+
+Cerbero:
+- Migration cerbero_incidentes/url_cache/quarentena (RLS exclusivo super_admin)
+- tools/urlcheck.ts: heuristicas (IP literal, encurtadores, punycode, .exe,
+  TLD risco, credenciais na URL, sem HTTPS); Safe Browsing preparado (opcional);
+  12 testes
+- jobs/cerbero.ts: Patrulha A (1h, SQL puro: sobrepostos, sem papel, CRM dup) +
+  Patrulha C (diaria: prompt injection + volume anomalo)
+- Integracao on-write no pipeline: URL maliciosa > quarentena + incidente critico;
+  suspeita > incidente informativo + cache 24h
+- queue/agendador.ts: crons BullMQ (sentinela seg 06h30, cerbero 1h/diario 05h)
+
+Verificado: 52/53 testes (1 skip correto), typecheck/lint/build limpos,
+deploy VPS ok (/health ok, crons no log), Cerbero detectou 2 incidentes reais
+(plantao sobreposto critico + usuario sem papel).
+
+Nota: adaptado a arquitetura REAL (Docker/BullMQ/service_role+filtro manual) -
+o prompt original assumia pm2/Node20/usuarios_organizacoes inexistentes
+(verificado no banco). RELATORIO-FASE-1.1.md documenta decisoes e rollback.
