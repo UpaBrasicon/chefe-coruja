@@ -19,11 +19,11 @@ case "$comando" in
     args='{}'
     if [ -n "${2:-}" ]; then
       patrulha="$(validar_enum "$2" patrulha dados conteudo hermes)"
-      args="$(jq -nc --arg p "$patrulha" '{patrulha:$p}')"
+      args="$(json_args "patrulha=$patrulha")"
     fi
     if [ -n "${3:-}" ]; then
       severidade="$(validar_enum "$3" severidade critico atencao informativo)"
-      args="$(printf '%s' "$args" | jq -c --arg s "$severidade" '. + {severidade:$s}')"
+      args="$(json_adiciona "$args" "severidade=$severidade")"
     fi
     cache_ou_executa 60 "incidentes-${2:-}-${3:-}-${CORUJA_WA_ID:-}" \
       api_hermes seguranca incidentes "$args"
@@ -33,7 +33,7 @@ case "$comando" in
     args='{}'
     if [ -n "${2:-}" ]; then
       status="$(validar_enum "$2" status pendente analisado liberado)"
-      args="$(jq -nc --arg s "$status" '{status:$s}')"
+      args="$(json_args "status=$status")"
     fi
     cache_ou_executa 60 "quarentena-${2:-}-${CORUJA_WA_ID:-}" \
       api_hermes seguranca quarentena "$args"

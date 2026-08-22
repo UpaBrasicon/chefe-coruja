@@ -14,6 +14,9 @@
 # identidade do usuário e aplica a guarda de papel no código. As skills que a
 # usam NÃO precisam da SERVICE_ROLE_KEY.
 #
+# DEPENDÊNCIAS: python3 (montar/parsear JSON — jq NÃO é assumido: não existe
+# no container do Nous nem no host da VPS), curl, sha256sum, stat.
+#
 # Uso: `source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"`
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
@@ -94,6 +97,102 @@ cache_ou_executa() {
   printf '%s' "$resposta"
 }
 
+# ── JSON via python3 (sem jq) ────────────────────────────────────────────────
+# Monta o corpo da requisição com escaping correto (nada de concat de string).
+json_corpo() {
+  # json_corpo <wa_id> <escopo> <comando> <args_json>
+  python3 -c '
+import json, sys
+wa, esc, com = sys.argv[1], sys.argv[2], sys.argv[3]
+try:
+    args = json.loads(sys.argv[4]) if sys.argv[4] else {}
+except Exception:
+    args = {}
+print(json.dumps({"wa_id": wa, "escopo": esc, "comando": com, "args": args}, ensure_ascii=False))
+' "$1" "$2" "$3" "$4"
+}
+
+# json_args <chave>=<valor> [...] — monta objeto JSON (valores string).
+# Substitui `jq -nc --arg k "$v" '{k:$v}'`.
+json_args() {
+  python3 -c '
+import json, sys
+obj = {}
+for item in sys.argv[1:]:
+    chave, _, valor = item.partition("=")
+    obj[chave] = valor
+print(json.dumps(obj, ensure_ascii=False))
+' "$@"
+}
+
+# json_args_num <chave>=<valor> [...] — monta objeto JSON (valores numéricos).
+# Substitui `jq -nc --argjson k "$v" '{k:$v}'`.
+json_args_num() {
+  python3 -c '
+import json, sys
+obj = {}
+for item in sys.argv[1:]:
+    chave, _, valor = item.partition("=")
+    try:
+        obj[chave] = int(valor)
+    except ValueError:
+        obj[chave] = float(valor)
+print(json.dumps(obj, ensure_ascii=False))
+' "$@"
+}
+
+# json_adiciona <json> <chave>=<valor> [...] — devolve o objeto original com
+# os campos adicionados/sobrescritos. Substitui `jq -c ". + {k:\$v}"`.
+json_adiciona() {
+  local json="$1"
+  shift
+  python3 -c '
+import json, sys
+obj = json.loads(sys.argv[1])
+for item in sys.argv[2:]:
+    chave, _, valor = item.partition("=")
+    obj[chave] = valor
+print(json.dumps(obj, ensure_ascii=False))
+' "$json" "$@"
+}
+
+# json_resumo_health — resume /health em {status, redis, supabase, uptime}.
+# Substitui `jq -c "{status, redis, supabase, uptime: (.uptime | floor)}"`.
+json_resumo_health() {
+  python3 -c '
+import json, sys
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    d = {}
+out = {
+    "status": d.get("status"),
+    "redis": d.get("redis"),
+    "supabase": d.get("supabase"),
+    "uptime": int(d.get("uptime") or 0),
+}
+print(json.dumps(out, ensure_ascii=False))
+'
+}
+
+# Extrai um campo simples (.dados ou .resposta) de um JSON lido do stdin.
+# JSON inválido/vazio → imprime "null" (nunca quebra o pipeline).
+json_pega() {
+  # json_pega <campo>
+  python3 -c '
+import json, sys
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    d = None
+campo = sys.argv[1].lstrip(".")
+v = d
+for parte in campo.split("."):
+    v = v.get(parte) if isinstance(v, dict) else None
+print("null" if v is None else json.dumps(v, ensure_ascii=False))
+' "$1"
+}
+
 # ── Chamada ao backend Hermes (C1) ───────────────────────────────────────────
 # A guarda de papel é aplicada no servidor. O script não decide nada.
 #
@@ -110,8 +209,7 @@ api_hermes() {
   local wa_id="${CORUJA_WA_ID:?CORUJA_WA_ID não definido (sessão sem usuário identificado)}"
 
   local corpo resposta http
-  corpo="$(jq -nc --arg w "$wa_id" --arg e "$escopo" --arg c "$comando" --argjson a "$args_json" \
-    '{wa_id:$w, escopo:$e, comando:$c, args:$a}')"
+  corpo="$(json_corpo "$wa_id" "$escopo" "$comando" "$args_json")"
 
   resposta="$(curl -s -m 15 -w '\n%{http_code}' \
     -X POST "$base/skill/consulta" \
@@ -124,11 +222,17 @@ api_hermes() {
   json="$(printf '%s' "$resposta" | sed '$d')"
 
   case "$http" in
-    200) printf '%s' "$json" | jq -c '.dados' ;;
+    200) printf '%s' "$json" | json_pega 'dados' ;;
     403)
       # Não autorizado: devolve a MENSAGEM GENÉRICA para o agente repetir,
       # sem revelar que existe uma ferramenta restrita por trás.
-      printf '%s' "$json" | jq -c '{mensagem: .resposta}'
+      local msg
+      msg="$(printf '%s' "$json" | json_pega 'resposta')"
+      python3 -c '
+import json, sys
+msg = sys.argv[1]
+print(json.dumps({"mensagem": msg} if msg != "null" else {"mensagem": "Não encontrei informações."}, ensure_ascii=False))
+' "$msg"
       ;;
     401) morrer "token da skill rejeitado pelo backend" ;;
     503) morrer "skill api não configurada no backend" ;;

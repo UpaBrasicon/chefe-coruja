@@ -21,7 +21,7 @@ comando="$(validar_enum "${1:?uso: operacional.sh <comando> [args...]}" \
 case "$comando" in
   notificacoes)
     dias="$(validar_inteiro "${2:-7}" dias 90)"
-    args="$(jq -nc --argjson d "$dias" '{dias:$d}')"
+    args="$(json_args_num "dias=$dias")"
     cache_ou_executa 60 "notif-$dias-${CORUJA_WA_ID:-}" \
       api_hermes operacional notificacoes "$args"
     ;;
@@ -30,7 +30,7 @@ case "$comando" in
     args='{}'
     if [ -n "${2:-}" ]; then
       unidade="$(validar_uuid "$2" unidade_id)"
-      args="$(jq -nc --arg u "$unidade" '{unidade_id:$u}')"
+      args="$(json_args "unidade_id=$unidade")"
     fi
     cache_ou_executa 60 "op-$comando-${2:-}-${CORUJA_WA_ID:-}" \
       api_hermes operacional "$comando" "$args"

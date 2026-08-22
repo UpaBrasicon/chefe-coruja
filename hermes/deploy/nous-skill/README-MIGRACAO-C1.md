@@ -79,6 +79,22 @@ Enquanto isso não estiver ligado, as skills abortam com
 de propósito: melhor a skill não responder do que responder para o usuário
 errado.
 
+## Lições do deploy real (23/08)
+
+1. **`jq` NÃO existe** no container do Nous nem no host da VPS. O `_lib.sh` e
+   os scripts usam `python3` para montar/parsear JSON (`json_args`,
+   `json_adiciona`, `json_pega`, `json_resumo_health`). Não reintroduzir `jq`.
+2. **Rede Docker**: `hermes-agent` (bridge) e `hermes-app` (deploy_default)
+   não se enxergavam. O `hermes-agent` foi conectado à rede `deploy_default`
+   (`docker network connect deploy_default hermes-agent`), e o
+   `HERMES_BACKEND_URL` aponta para **`http://hermes-app:3000`** (hostname do
+   compose), não `localhost`.
+3. **CRLF quebra bash**: arquivos `.sh` precisam de LF no Linux. O
+   `.gitattributes` do hermes força `eol=lf` para `.sh`/`.md`. Após editar no
+   Windows, conferir com `grep -rlP '\r$'` antes de subir.
+4. **Perfis de teste precisam de telefone** (E.164) para o fluxo 200 —
+   `scripts/seed-telefones.ts` ou PATCH manual na tabela `perfis`.
+
 ## Resíduo conhecido (fecha o C1 por completo)
 
 O `wa_id` chega do processo do Nous. Enquanto o Nous rodar com shell livre, um

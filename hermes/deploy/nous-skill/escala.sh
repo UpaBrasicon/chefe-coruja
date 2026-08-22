@@ -19,7 +19,7 @@ comando="$(validar_enum "${1:?uso: escala.sh <meus_plantoes|plantao_do_dia> [arg
 case "$comando" in
   meus_plantoes)
     periodo="$(validar_enum "${2:-semana}" periodo hoje semana mes)"
-    args="$(jq -nc --arg p "$periodo" '{periodo:$p}')"
+    args="$(json_args "periodo=$periodo")"
     cache_ou_executa 60 "meus-$periodo-${CORUJA_WA_ID:-}" \
       api_hermes escala meus_plantoes "$args"
     ;;
@@ -28,7 +28,7 @@ case "$comando" in
     args='{}'
     if [ -n "${2:-}" ]; then
       [[ "$2" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || morrer "data inválida (use AAAA-MM-DD)"
-      args="$(jq -nc --arg d "$2" '{data:$d}')"
+      args="$(json_args "data=$2")"
     fi
     cache_ou_executa 60 "dia-${2:-hoje}-${CORUJA_WA_ID:-}" \
       api_hermes escala plantao_do_dia "$args"

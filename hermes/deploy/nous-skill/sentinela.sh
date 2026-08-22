@@ -17,7 +17,7 @@ comando="${1:?uso: sentinela.sh <alertas|relatorio> [args...]}"
 case "$comando" in
   alertas)
     status="$(validar_enum "${2:-novo}" status novo visto em_acompanhamento justificado)"
-    args="$(jq -nc --arg s "$status" '{status:$s}')"
+    args="$(json_args "status=$status")"
     cache_ou_executa 300 "alertas-$status-${CORUJA_WA_ID:-}" \
       api_hermes sentinela alertas "$args"
     ;;

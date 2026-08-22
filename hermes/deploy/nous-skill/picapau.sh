@@ -15,15 +15,14 @@ BACKEND="${HERMES_BACKEND_URL:-http://localhost:3000}"
 
 case "$comando" in
   health)
-    # /health é público e não expõe dado — resposta resumida via jq (nunca
-    # truncar bytes: JSON cortado ao meio faz o agente alucinar o resto).
+    # /health é público e não expõe dado — resposta resumida (nunca truncar
+    # bytes: JSON cortado ao meio faz o agente alucinar o resto).
     resposta="$(curl -s -m 5 "$BACKEND/health" 2>/dev/null || printf '')"
     if [ -z "$resposta" ]; then
       printf '{"status":"indisponivel"}'
       exit 0
     fi
-    printf '%s' "$resposta" \
-      | jq -c '{status, redis, supabase, uptime: (.uptime | floor)}' 2>/dev/null \
+    printf '%s' "$resposta" | json_resumo_health 2>/dev/null \
       || printf '{"status":"resposta_invalida"}'
     ;;
 

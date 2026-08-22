@@ -1,0 +1,9 @@
+# Força LF em scripts shell e markdown — o autocrlf=true do Windows converte
+# para CRLF no checkout, o que quebra bash na VPS (Linux). Estes tipos ficam
+# SEMPRE com LF no index e no working tree.
+*.sh text eol=lf
+*.md text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.sql text eol=lf
+*.json text eol=lf

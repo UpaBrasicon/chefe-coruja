@@ -7,7 +7,7 @@ license: MIT
 platforms: [linux]
 prerequisites:
   env_vars: [HERMES_BACKEND_URL, HERMES_SKILL_TOKEN, CORUJA_WA_ID]
-  commands: [curl, jq]
+  commands: [curl, python3]
 metadata:
   hermes:
     tags: [ChefeCoruja, Segurança, Incidentes, Quarentena, SuperAdmin]

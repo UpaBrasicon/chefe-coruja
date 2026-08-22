@@ -22,7 +22,7 @@ comando="$(validar_enum "${1:?uso: aguia.sh <resumo|profissionais|censo|indicado
 args='{}'
 if [ -n "${2:-}" ]; then
   unidade="$(validar_uuid "$2" unidade_id)"
-  args="$(jq -nc --arg u "$unidade" '{unidade_id:$u}')"
+  args="$(json_args "unidade_id=$unidade")"
 fi
 
 cache_ou_executa 120 "aguia-$comando-${2:-}-${CORUJA_WA_ID:-}" \
