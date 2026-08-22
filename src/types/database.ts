@@ -3345,6 +3345,20 @@ export type Database = {
           setor_nome: string
         }[]
       }
+      presencas_do_dia_gestor: {
+        Args: { p_unidade: string }
+        Returns: {
+          perfil_id: string
+          nome: string
+          papel: string
+          em_escala: boolean
+          checkin_em: string | null
+          checkout_em: string | null
+          checkin_dentro: boolean | null
+          checkout_dentro: boolean | null
+          observacao: string | null
+        }[]
+      }
       papel_na_unidade: { Args: { unidade: string }; Returns: string }
       passar_plantao: {
         Args: { p_destino: string; p_escala: string; p_justificativa?: string }

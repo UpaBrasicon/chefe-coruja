@@ -15,8 +15,10 @@ import {
   X,
 } from 'lucide-react'
 import * as React from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 import { cn } from '@/lib/utils'
+import { supabase } from '@/lib/supabase'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -24,6 +26,7 @@ import { usePlantao } from '@/hooks/usePlantao'
 import { useWebPush } from '@/hooks/useWebPush'
 import { useChatRealtimeGlobal, useTotalNaoLidas } from '@/hooks/useChat'
 import { ChatDrawer } from '@/components/chat/ChatDrawer'
+import { GateCheckIn } from '@/components/GateCheckIn'
 import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
 import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
 import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
@@ -112,6 +115,34 @@ export function AppShell() {
     papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined
   )
 
+  // Regra de ouro do check-in: plantonista em escala precisa fazer check-in
+  // hoje antes de acessar qualquer coisa. O gate verifica a presença ativa;
+  // sem ela, bloqueia com o overlay (GateCheckIn). O RPC registrar_checkin
+  // revalida a escala no servidor (não confia só no frontend).
+  // Sem filtro de data: robusto a fuso — o "ativo" é o último check-in sem
+  // check-out (o servidor controla dia/turno via ON CONFLICT).
+  const { data: presencaHoje } = useQuery({
+    queryKey: ['shell-checkin-ativo', unidadeAtiva?.unidade_id, perfil?.id],
+    enabled: papelAtivo === 'plantonista' && !!unidadeAtiva?.unidade_id && !!perfil,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('presenca_plantonista')
+        .select('id, checkin_em, checkout_em')
+        .eq('unidade_id', unidadeAtiva!.unidade_id)
+        .eq('perfil_id', perfil!.id)
+        .order('checkin_em', { ascending: false })
+        .maybeSingle()
+      if (error) throw error
+      return data as { id: string; checkin_em: string | null; checkout_em: string | null } | null
+    },
+    refetchInterval: 30_000,
+  })
+
+  const checkinPendente =
+    papelAtivo === 'plantonista' &&
+    (plantaoStatus === 'escala' || plantaoStatus === 'acesso') &&
+    !(presencaHoje && presencaHoje.checkin_em && !presencaHoje.checkout_em)
+
   if (papelAtivo === 'plantonista') {
     if (plantaoStatus === 'carregando') {
       return (
@@ -123,6 +154,11 @@ export function AppShell() {
     if (plantaoStatus === 'fora') {
       return <ForaDoExpediente />
     }
+  }
+
+  // Gate obrigatório: bloqueia TODO o sistema até o check-in de hoje.
+  if (checkinPendente) {
+    return <GateCheckIn />
   }
 
   const barraTopo = (

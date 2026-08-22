@@ -99,6 +99,8 @@ QueryClientProvider
 | `RedirectHome` | `src/routes/RedirectHome.tsx` | `>1 unidade` → `/seletor`; senão a `ROTA_INICIAL` do papel de maior precedência. |
 | `Redirecionar` | `src/routes/Redirecionar.tsx` | Rotas legadas → destino agrupado, **preservando a query string** e resolvendo `:params`. |
 | **Portão de plantão** | `AppShell.tsx` | Se `papelAtivo === 'plantonista'` e `usePlantao().status === 'fora'` → renderiza `ForaDoExpediente` no lugar de **toda** a aplicação. |
+| **Gate de check-in** | `components/GateCheckIn.tsx` | **Regra de ouro**: plantonista com status `escala`/`acesso` (está de plantão, relógio do servidor) e **sem check-in ativo hoje** → overlay escuro full-screen (`z-[90]`, `bg-black/75` + `backdrop-blur`) bloqueia a progressão até o check-in. Mostra mapa OpenStreetMap da unidade + posição do plantonista, relógio em tempo real, e botão de check-in (RPC `registrar_checkin` revalida a escala server-side e calcula `checkin_dentro` pelo raio da unidade). O sistema inteiro fica atrás do overlay (mesma linguagem do drawer de chat, mas modal e intransponível). |
+| **Presenças do gestor** | `pages/gestor/PresencasDoDia.tsx` | Aba "Presenças" em `/escala` (gestor/admin): quem fez check-in hoje, a que horas, dentro/fora do raio, e quem está em escala mas ainda não fez check-in. RPC `presencas_do_dia_gestor` (SECURITY DEFINER, restrito a gestor/admin/super). Refresca a cada 30s. |
 | `ErroBoundary` | `src/components/ErroBoundary.tsx` | Global (em volta das rotas) e por rota (dentro do AppShell, com `key={pathname}`). |
 
 `ROTA_INICIAL` vive em `src/lib/constants.ts`:
@@ -106,6 +108,8 @@ QueryClientProvider
 
 > ⚠️ O portão de plantão é o controle de acesso mais forte do app: o plantonista só
 > entra na plataforma se estiver **na escala agora** (relógio do servidor) ou com acesso pago.
+> E mesmo em escala, o **gate de check-in** exige confirmar presença (com geolocalização)
+> antes de qualquer outra tela — os dados de horário/local viram a aba "Presenças" do gestor.
 
 ---
 
@@ -332,6 +336,7 @@ não há abas dentro de abas.
 |---|---|---|
 | Mensal | `mensal` (default) | `Escala embutido abaGestorFixa="mensal"` |
 | Fixa | `fixa` | `Escala embutido abaGestorFixa="fixa"` |
+| Presenças | `presencas` | `PresencasDoDia` — check-ins de hoje (quem, hora, raio, pendências) |
 | Histórico | `historico` | `HistoricoEscala embutido` |
 
 ### 6.3 `/unidade` — Unidade (gestor/admin)
@@ -628,6 +633,15 @@ compartilha código nem design tokens com `src/`. Não foi tocado nesta refatora
 
 35 arquivos alterados, 7 criados, 4 removidos.
 
+### 11.0 Check-in obrigatório do plantonista (23/08)
+
+| Item | Detalhe |
+|---|---|
+| **Gate de check-in** | `components/GateCheckIn.tsx` — overlay escuro full-screen que bloqueia a progressão do sistema inteiro para plantonista em escala sem check-in ativo. Animação de entrada (fade + scale), relógio em tempo real, mapa OpenStreetMap da unidade, captura de geolocalização e check-in via RPC `registrar_checkin` (revalida a escala no servidor e calcula o raio). |
+| **Regra de ouro** | O gate **só** aparece para quem está de plantão: `usePlantao().status ∈ {escala, acesso}` (relógio do servidor). Quem está fora → `ForaDoExpediente`. O RPC `registrar_checkin` revalida a escala server-side (não confia no frontend). |
+| **Dados para o gestor** | RPC `presencas_do_dia_gestor` + aba **Presenças** em `/escala` (`pages/gestor/PresencasDoDia.tsx`): quem fez check-in, a que horas, dentro/fora do raio, e quem está em escala mas ainda não fez check-in. Refresca a cada 30s. |
+| **Robustez de fuso** | O gate e o shell consultam a presença **ativa** (último check-in sem check-out), sem filtro de data do navegador — o servidor controla dia/turno via `ON CONFLICT`. |
+
 ### 11.1 Correções
 
 | # | Correção | Onde |
@@ -705,6 +719,8 @@ ANTES (13 · plantonista)            DEPOIS (4)
 ```
 src/components/TabsPagina.tsx                        abas com estado na URL
 src/components/ErroBoundary.tsx                      barreira de erro
+src/components/GateCheckIn.tsx                       gate de check-in obrigatório (overlay)
+src/pages/gestor/PresencasDoDia.tsx                   presenças do dia (visão do gestor)
 src/routes/Redirecionar.tsx                          redirect de rota legada
 src/content/plantaoRegistry.tsx                      5 seções · 9 ferramentas de plantão
 
@@ -826,6 +842,7 @@ chefe-coruja/
     │   ├── terminologia/       # 1 componente
     │   ├── AppShell.tsx
     │   ├── TabsPagina.tsx      # abas com estado na URL
+    │   ├── GateCheckIn.tsx     # check-in obrigatório (overlay bloqueante)
     │   └── ErroBoundary.tsx
     ├── content/
     │   ├── registry.tsx        # 7 seções · 39 ferramentas clínicas (lazy)
