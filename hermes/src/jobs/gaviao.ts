@@ -18,6 +18,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { existsSync } from 'node:fs'
 import { supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
+import { chavesJaAbertas, filtrarNovos } from './dedup.js'
 
 // Caminho do state.db do Nous (montado read-only via compose)
 const NOUS_DB = process.env.NOUS_DB_PATH ?? '/opt/nous-data/state.db'
@@ -49,6 +50,18 @@ export type AchadoGaviao = {
   severidade: 'critico' | 'atencao' | 'informativo'
   titulo: string
   evidencia: Record<string, unknown>
+}
+
+/**
+ * Chave estável de dedup (A1): patrulha + título + session_id (+ trecho).
+ * O trecho entra só quando existe (R1/R4) — a mesma MENSAGEM na mesma
+ * sessão gera a mesma chave. R5 (volume) usa só a session_id: enquanto a
+ * sessão continuar anômala e o incidente aberto, não duplica.
+ */
+export function chaveDedupGaviao(a: AchadoGaviao): string {
+  const sessao = String(a.evidencia.session_id ?? 'sem-sessao')
+  const trecho = a.evidencia.trecho ? String(a.evidencia.trecho) : ''
+  return `hermes:[Gaviao] ${a.titulo}:${sessao}:${trecho}`
 }
 
 function lerMensagensRecentes(horas: number): { role: string; content: string; session_id: string; timestamp: number }[] {
@@ -151,15 +164,30 @@ export async function patrulhaGaviao(horas = 24): Promise<AchadoGaviao[]> {
 
 export async function rodarPatrulhaGaviao(): Promise<number> {
   const achados = await patrulhaGaviao()
-  for (const a of achados) {
-    const { error } = await supabase.from('cerbero_incidentes').insert({
-      patrulha: 'hermes',
-      severidade: a.severidade,
-      titulo: `[Gaviao] ${a.titulo}`,
-      evidencia: a.evidencia,
-    })
+  if (achados.length === 0) {
+    logger.info({ achados: 0, mensagens: lerMensagensRecentes(24).length }, '[gaviao] patrulha concluída')
+    return 0
+  }
+
+  // A1 — dedup: só insere o que NÃO tem chave aberta equivalente.
+  const abertas = await chavesJaAbertas(achados.map(chaveDedupGaviao))
+  const novos = filtrarNovos(achados, chaveDedupGaviao, abertas)
+
+  if (novos.length > 0) {
+    const { error } = await supabase.from('cerbero_incidentes').insert(
+      novos.map((a) => ({
+        patrulha: 'hermes',
+        severidade: a.severidade,
+        titulo: `[Gaviao] ${a.titulo}`,
+        evidencia: a.evidencia,
+        chave_dedup: chaveDedupGaviao(a),
+      }))
+    )
     if (error) logger.warn({ err: error.message }, '[gaviao] falha ao registrar incidente')
   }
-  logger.info({ achados: achados.length, mensagens: lerMensagensRecentes(24).length }, '[gaviao] patrulha concluída')
+  logger.info(
+    { achados: achados.length, novos: novos.length, mensagens: lerMensagensRecentes(24).length },
+    '[gaviao] patrulha concluída'
+  )
   return achados.length
 }

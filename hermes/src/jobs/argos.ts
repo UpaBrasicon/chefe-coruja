@@ -13,11 +13,24 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
+import { chavesJaAbertas, filtrarNovos } from './dedup.js'
 
 export type AchadoArgos = {
   severidade: 'critico' | 'atencao' | 'informativo'
   titulo: string
   evidencia: Record<string, unknown>
+}
+
+/**
+ * Chave estável de dedup (A1): patrulha + título + id da evidência.
+ * O id varia por check: observacao_id (A), prescricao_id (B/C), leito_id (D).
+ * Enquanto o incidente estiver aberto, a mesma chave não duplica; quando o
+ * admin resolve e o problema persiste, a reincidência gera um novo incidente.
+ */
+export function chaveDedupArgos(a: AchadoArgos): string {
+  const id =
+    a.evidencia.observacao_id ?? a.evidencia.prescricao_id ?? a.evidencia.leito_id
+  return `dados:[Falcao] ${a.titulo}:${String(id ?? 'sem-id')}`
 }
 
 export async function auditoriaArgos(): Promise<AchadoArgos[]> {
@@ -96,15 +109,30 @@ export async function auditoriaArgos(): Promise<AchadoArgos[]> {
 
 export async function rodarAuditoriaArgos(): Promise<number> {
   const achados = await auditoriaArgos()
-  for (const a of achados) {
-    const { error } = await supabase.from('cerbero_incidentes').insert({
-      patrulha: 'dados',
-      severidade: a.severidade,
-      titulo: `[Falcao] ${a.titulo}`,
-      evidencia: a.evidencia,
-    })
+  if (achados.length === 0) {
+    logger.info({ achados: 0 }, '[argos] auditoria concluída')
+    return 0
+  }
+
+  // A1 — dedup: só insere o que NÃO tem chave aberta equivalente.
+  const abertas = await chavesJaAbertas(achados.map(chaveDedupArgos))
+  const novos = filtrarNovos(achados, chaveDedupArgos, abertas)
+
+  if (novos.length > 0) {
+    const { error } = await supabase.from('cerbero_incidentes').insert(
+      novos.map((a) => ({
+        patrulha: 'dados',
+        severidade: a.severidade,
+        titulo: `[Falcao] ${a.titulo}`,
+        evidencia: a.evidencia,
+        chave_dedup: chaveDedupArgos(a),
+      }))
+    )
     if (error) logger.warn({ err: error.message }, '[argos] falha ao registrar')
   }
-  logger.info({ achados: achados.length }, '[argos] auditoria concluída')
+  logger.info(
+    { achados: achados.length, novos: novos.length },
+    '[argos] auditoria concluída'
+  )
   return achados.length
 }
