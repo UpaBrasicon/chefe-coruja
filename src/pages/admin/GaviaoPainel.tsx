@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { ShieldCheck, Activity, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { ShieldCheck, Activity, AlertTriangle, CheckCircle2, CalendarDays } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,9 +25,25 @@ type Alerta = {
   criado_em: string
 }
 
+type Relatorio = {
+  id: string
+  periodo_inicio: string
+  periodo_fim: string
+  resumo: {
+    total_incidentes: number
+    total_alertas: number
+    incidentes_por_severidade: { critico: number; atencao: number; informativo: number }
+    incidentes_por_patrulha: { dados: number; conteudo: number; hermes: number }
+    alertas_por_status: { novo: number; visto: number; em_acompanhamento: number; justificado: number }
+    periodo: { inicio: string; fim: string }
+  }
+  gerado_em: string
+}
+
 type Painel = {
   incidentes: Incidente[]
   alertas: Alerta[]
+  relatorio: Relatorio | null
   resumo: { incidentes_abertos: number; alertas_ativos: number; gerado_em: string }
 }
 
@@ -121,6 +137,56 @@ export function GaviaoPainel() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Relatório semanal */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CalendarDays className="size-4" /> Relatório semanal do Gavião
+          </CardTitle>
+          <CardDescription>
+            {data?.relatorio
+              ? `Semana de ${new Date(data.relatorio.periodo_inicio).toLocaleDateString('pt-BR')} a ${new Date(data.relatorio.periodo_fim).toLocaleDateString('pt-BR')}`
+              : 'Ainda não há relatório gerado (o job roda às segundas 08h15).'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {data?.relatorio ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-lg border p-3">
+                <div className="text-xs text-muted-foreground">Incidentes</div>
+                <div className="text-2xl font-bold">{data.relatorio.resumo.total_incidentes}</div>
+                <div className="mt-1 flex gap-1 text-[11px]">
+                  <Badge className={SEVERIDADE_COR.critico}>C {data.relatorio.resumo.incidentes_por_severidade.critico}</Badge>
+                  <Badge className={SEVERIDADE_COR.atencao}>A {data.relatorio.resumo.incidentes_por_severidade.atencao}</Badge>
+                  <Badge className={SEVERIDADE_COR.informativo}>I {data.relatorio.resumo.incidentes_por_severidade.informativo}</Badge>
+                </div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-xs text-muted-foreground">Por patrulha</div>
+                <div className="text-sm font-medium">
+                  dados {data.relatorio.resumo.incidentes_por_patrulha.dados} · conteúdo {data.relatorio.resumo.incidentes_por_patrulha.conteudo} · hermes {data.relatorio.resumo.incidentes_por_patrulha.hermes}
+                </div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-xs text-muted-foreground">Alertas de escala</div>
+                <div className="text-2xl font-bold">{data.relatorio.resumo.total_alertas}</div>
+                <div className="text-[11px] text-muted-foreground">
+                  {data.relatorio.resumo.alertas_por_status.novo} novos · {data.relatorio.resumo.alertas_por_status.visto} vistos
+                </div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-xs text-muted-foreground">Gerado em</div>
+                <div className="text-sm font-medium">
+                  {new Date(data.relatorio.gerado_em).toLocaleString('pt-BR')}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Nenhum relatório semanal disponível ainda.</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Incidentes (super_admin) */}
       {incidentes.length > 0 && (

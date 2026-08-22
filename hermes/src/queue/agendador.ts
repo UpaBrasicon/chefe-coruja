@@ -11,6 +11,7 @@
 import { Queue } from 'bullmq'
 import { criarConexaoRedis } from './index.js'
 import { rodarPatrulhaGaviao } from '../jobs/gaviao.js'
+import { gerarRelatorioSemanal } from '../jobs/relatorio.js'
 import { logger } from '../logger.js'
 import { rodarSentinela } from '../jobs/sentinela.js'
 import { rodarPatrulhaDados, rodarPatrulhaHermes } from '../jobs/cerbero.js'
@@ -29,6 +30,14 @@ export function registrarCrons(): Queue {
     'sentinela_escala',
     { pattern: cronBrasilia('30 9 * * 1'), tz: 'UTC' },
     { name: 'sentinela_escala', data: {} }
+  )
+
+  // Relatório semanal (segunda 08h15 BR = 11h15 UTC — FORA do pico DeepSeek,
+  // que vai até 10h UTC)
+  void fila.upsertJobScheduler(
+    'gaviao_relatorio_semanal',
+    { pattern: cronBrasilia('15 11 * * 1'), tz: 'UTC' },
+    { name: 'gaviao_relatorio_semanal', data: {} }
   )
 
   // A cada hora (minuto 5)
@@ -55,7 +64,7 @@ export function registrarCrons(): Queue {
   )
 
   logger.info(
-    '[cron] jobs: sentinela (seg 06h30 BR), cerbero_dados (1h), cerbero_hermes (05h BR), gaviao_patrulha (08h/20h BR = 11h/23h UTC, fora do pico DeepSeek)'
+    '[cron] jobs: sentinela (seg 06h30 BR), relatorio (seg 08h15 BR), cerbero_dados (1h), cerbero_hermes (05h BR), gaviao_patrulha (08h/20h BR)'
   )
   return fila
 }
@@ -67,6 +76,9 @@ export async function executarJobCron(nome: string): Promise<void> {
   switch (nome) {
     case 'sentinela_escala':
       await rodarSentinela()
+      break
+    case 'gaviao_relatorio_semanal':
+      await gerarRelatorioSemanal()
       break
     case 'cerbero_dados':
       await rodarPatrulhaDados()
