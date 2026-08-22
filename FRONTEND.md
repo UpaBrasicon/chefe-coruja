@@ -16,8 +16,8 @@
 3. [Modelo de acesso (papéis e portões)](#3-modelo-de-acesso-papéis-e-portões)
 4. [Mapa completo de rotas](#4-mapa-completo-de-rotas)
 5. [Abas da sidebar por papel](#5-abas-da-sidebar-por-papel)
-6. [Abas internas](#6-abas-internas)
-7. [Catálogo de ferramentas clínicas (registry)](#7-catálogo-de-ferramentas-clínicas-registry)
+6. [Abas internas (agrupadores de gestão)](#6-abas-internas-agrupadores-de-gestão)
+7. [Catálogos de ferramentas (registries)](#7-catálogos-de-ferramentas-registries)
 8. [Componentes, hooks e libs](#8-componentes-hooks-e-libs)
 9. [Design system](#9-design-system)
 10. [Landing page (projeto separado)](#10-landing-page-projeto-separado)
@@ -303,7 +303,7 @@ No mobile vira barra fixa com hambúrguer e menu em overlay full-screen.
 
 ---
 
-## 6. Abas internas
+## 6. Abas internas (agrupadores de gestão)
 
 Todas as abas agrupadas usam **`components/TabsPagina.tsx`**, com o estado na URL
 (`?aba=`). Isso dá deep-link, botão voltar do navegador e link compartilhável para a
@@ -377,7 +377,7 @@ controle externo).
 
 ---
 
-## 7. Catálogo de ferramentas clínicas (registry)
+## 7. Catálogos de ferramentas (registries)
 
 Fonte: `src/content/registry.tsx` — **7 seções, 39 ferramentas**.
 Cada ferramenta tem `slug`, `label`, `description`, `component` e `tags[]`.
@@ -760,11 +760,12 @@ src/pages/plantonista/farmacia/ReferenciaDiluicaoTool.tsx
 |---|---|
 | **Type safety** | `tsc -b --noEmit` sem erros. |
 | **Lint** | `eslint src` limpo. Os ~1.176 erros de `npm run lint` vêm de `deepseek-harness/`, `hermes/` e `scripts/`, fora do frontend. |
-| **Code-splitting** | 129 chunks; nenhuma tela pesada entra no carregamento inicial. |
+| **Code-splitting** | 119 chunks + vendor separado; nenhuma tela pesada entra no carregamento inicial. |
 | **Registry declarativo** | Dois registries (39 ferramentas clínicas + 9 de plantão) no mesmo formato tipado; adicionar uma = 1 linha + 1 componente, com lazy incluso. |
 | **Navegação previsível** | 4/3/3 itens por papel; as duas centrais seguem o mesmo modelo hub → seção → ferramenta, e os agrupadores de gestão usam abas com estado na URL. Breadcrumb consistente em todos. |
 | **Compatibilidade** | 16 rotas legadas preservadas como redirect com query string. |
 | **Resiliência** | `ErroBoundary` global e por rota — erro de tela não derruba o shell. |
+| **Cache entre deploys** | Vendor separado via `manualChunks` (react, supabase, base-ui, router, query, motion, zod, cmdk, forms, lucide) — libs de terceiros mantêm hash estável e não são rebaixadas a cada deploy. |
 | **Guardas coerentes** | Navegação, `RequireRole`, portão de plantão e chat usam a mesma fonte (`papeisDaUnidade`). |
 | **Reuso real** | `ToolLayout` em 37 telas, `NumberField` em 13, `TabsPagina` em 4 agrupadores, `SectionCard`/`ToolCard` nas duas centrais. |
 
@@ -776,7 +777,7 @@ src/pages/plantonista/farmacia/ReferenciaDiluicaoTool.tsx
 | 2 | 🟡 Baixa | **Dark mode meio implementado** — tokens definidos, sem toggle nem classe `.dark`. | Fora do escopo desta refatoração. |
 | 3 | 🟡 Baixa | **`WeatherCard` (408 L)** serve só ao carrossel decorativo e continua no chunk do `BannerCarousel`. | Candidato a lazy próprio ou simplificação. |
 | 4 | 🟡 Baixa | **`ehSuperAdmin` calculado e nunca consumido.** | Remover ou usar. |
-| 5 | 🟡 Baixa | **Chunk principal de 648 KB** — é runtime essencial, mas cabe separar vendor para melhorar cache entre deploys. | `build.rollupOptions.output.manualChunks`. |
+| ~~5~~ | ✅ Feito | ~~Chunk principal de 648 KB~~ — vendor separado via `manualChunks`: chunk principal agora é só o nosso código (**46 KB**); react/supabase/base-ui/router/query/motion/zod/cmdk/forms/lucide em chunks próprios com hash estável. | `vite.config.ts` → `build.rollupOptions.output.manualChunks`. |
 | 6 | 🟡 Baixa | **Fluxos autenticados sem teste automatizado.** Não há testes de frontend no projeto. | Um smoke E2E por papel cobriria o essencial. |
 
 ### Métricas
@@ -790,8 +791,10 @@ Registries ............. 2 — clínico (7 seções · 39 ferramentas)
                              plantão (5 seções · 9 ferramentas)
 Agrupadores com abas ... 4 (Agenda, Escala, Unidade, Organização)
 Abas totais ............ 13 nos agrupadores + 5 no formulário de internação
-Bundle principal ....... 647 KB JS (era 1.805 KB) + 98 KB CSS
-Chunks JS .............. 129 (eram 8)
+Bundle principal ....... 46 KB JS (nosso código, era 647 KB incl. vendor)
+Vendor chunks .......... 11 (react, supabase, base-ui, router, query, motion,
+                             zod, cmdk, forms, lucide, other) — hash estável
+Chunks JS .............. 119 (eram 8)
 typecheck .............. OK — 0 erros
 eslint src ............. OK — 0 erros, 0 warnings
 ```
