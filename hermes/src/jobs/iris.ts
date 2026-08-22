@@ -6,6 +6,7 @@
 // Por ora entrega in-app (notificacoes_plantonista) + log; e-mail fica para
 // quando a plataforma tiver provedor (decisão anterior).
 // ─────────────────────────────────────────────────────────────────────────────
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 
@@ -17,8 +18,11 @@ export type NotificacaoIris = {
   data?: string
 }
 
-export async function dispatchIris(n: NotificacaoIris): Promise<{ ok: boolean; id?: string; erro?: string }> {
-  const { data, error } = await supabase
+export async function dispatchIris(
+  n: NotificacaoIris,
+  cliente: Pick<SupabaseClient, 'from'> = supabase
+): Promise<{ ok: boolean; id?: string; erro?: string }> {
+  const { data, error } = await cliente
     .from('notificacoes_plantonista')
     .insert({
       perfil_id: n.perfilId,
@@ -41,9 +45,10 @@ export async function dispatchIris(n: NotificacaoIris): Promise<{ ok: boolean; i
 export async function dispatchIrisParaGestores(
   unidadeId: string,
   tipo: string,
-  mensagem: string
+  mensagem: string,
+  cliente: Pick<SupabaseClient, 'from'> = supabase
 ): Promise<number> {
-  const { data: vinculos } = await supabase
+  const { data: vinculos } = await cliente
     .from('vinculos')
     .select('perfil_id')
     .eq('unidade_id', unidadeId)
@@ -52,7 +57,7 @@ export async function dispatchIrisParaGestores(
 
   let enviadas = 0
   for (const v of vinculos ?? []) {
-    const r = await dispatchIris({ perfilId: v.perfil_id, unidadeId, tipo, mensagem })
+    const r = await dispatchIris({ perfilId: v.perfil_id, unidadeId, tipo, mensagem }, cliente)
     if (r.ok) enviadas++
   }
   return enviadas

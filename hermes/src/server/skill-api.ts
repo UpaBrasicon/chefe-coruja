@@ -154,12 +154,12 @@ async function consultaAguia(comando: string, unidadeId: string | null): Promise
       return data ?? []
     }
     case 'profissionais': {
-      // TODO (item A2 da auditoria): decidir se CRM deve sair para chat externo.
-      // Mantido igual ao script anterior para não mudar comportamento junto
-      // com a correção de segurança.
+      // A2 da auditoria: chat externo recebe só nome + papel. CRM/UF do CRM
+      // é dado pessoal do profissional — fica na plataforma (LGPD). A
+      // plataforma web não passa por aqui (consulta o Supabase com RLS).
       const { data } = await supabase
         .from('vinculos')
-        .select('papel, perfis!vinculos_perfil_id_fkey(nome_completo, crm, uf_crm)')
+        .select('papel, perfis!vinculos_perfil_id_fkey(nome_completo)')
         .eq('unidade_id', unidadeId)
         .eq('ativo', true)
       return data ?? []

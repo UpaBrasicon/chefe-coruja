@@ -166,14 +166,29 @@ O ponto de extensão já está pronto: `resolverSujeito()` em
 
 ---
 
-## 5. Estado do repositório em 22/08 (fim do dia)
+## 5. Estado do repositório em 23/08 (fim do dia)
 
-- Typecheck limpo, lint limpo, suíte em **63 passando / 0 falhando** (16 skip
-  são testes de integração que precisam de rede).
-- `sessao.integration.test.ts` crasha no teardown do libuv no Windows quando o
-  Supabase está inacessível — **falha pré-existente**, confirmada rodando com as
-  mudanças revertidas. Não é regressão.
-- Nada commitado ainda. Arquivos novos: `hermes/src/server/skill-api.ts`,
-  `hermes/src/server/skill-api.test.ts`, `hermes/deploy/nous-skill/_lib.sh`,
-  `hermes/deploy/nous-skill/README-MIGRACAO-C1.md`,
-  `hermes/AUDITORIA-AGENTES-2026-08-22.md`.
+- Itens 1–5 do plano concluídos nesta sessão (ver git log 23/08):
+  - Commit do trabalho de 22/08 em 3 commits temáticos (skill-api+guardas,
+    scripts+skills, docs) — migração C1/C2/C3/A3 agora versionada.
+  - `.gitignore` corrigido (raiz: `deepseek-harness/`; hermes: `!*.example`
+    libera `deploy/.env.prod.example`).
+  - **A1 dedup**: migration `20260823000001_hermes_dedup.sql` aplicada no
+    remoto (coluna `chave_dedup` + índice único parcial em aberto/em_analise);
+    `jobs/dedup.ts` (pre-check em lotes + `filtrarNovos`); Argos e Gavião
+    inserem só o que não tem chave aberta. Janela do Gavião mantida em 24h
+    (cobertura de cron falho; análise local sem custo LLM).
+  - **A2**: `profissionais` da Águia/operacional devolve só nome + papel
+    (sem CRM/UF) — chat externo alinhado ao prompt e à regra LGPD.
+  - **M6**: +21 testes (`dedup.test.ts`, `iris.test.ts`, `relatorio.test.ts`).
+- Suíte: **84 passando / 0 falhando** (16 skip = integrações com rede).
+  `sessao.integration.test.ts` é intermitente no Windows (libuv teardown) —
+  passou na rodada final; falha pré-existente, não regressão.
+- Typecheck limpo, lint limpo.
+- **Pendente**: deploy na VPS (README-MIGRACAO-C1.md) — é o passo que fecha
+  a vulnerabilidade em produção: SKILL_API_TOKEN no .env.prod, subir backend,
+  `HERMES_BACKEND_URL`/`HERMES_SKILL_TOKEN` no ambiente do Nous, remover a
+  SERVICE_ROLE_KEY do Nous, e ligar `CORUJA_WA_ID` por sessão.
+- Arquivos novos: `hermes/src/jobs/dedup.ts`, `dedup.test.ts`,
+  `iris.test.ts`, `relatorio.test.ts`,
+  `supabase/migrations/20260823000001_hermes_dedup.sql`.

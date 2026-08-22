@@ -9,6 +9,57 @@
 import { supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 
+export type LinhaIncidente = {
+  id: string
+  patrulha: string
+  severidade: string
+  titulo: string
+  status: string
+  quando: string
+}
+
+export type LinhaAlerta = {
+  id: string
+  unidade_id: string | null
+  metrica: string
+  valor: number | null
+  status: string
+  quando: string
+}
+
+/**
+ * Agregação PURA do relatório — separada do I/O para ser testável (M6).
+ * Contagens por severidade/patrulha/status e período. Nunca dado de paciente.
+ */
+export function montarResumo(
+  incidentes: LinhaIncidente[],
+  alertas: LinhaAlerta[],
+  inicioIso: string,
+  fimIso: string
+): Record<string, unknown> {
+  return {
+    incidentes_por_severidade: {
+      critico: incidentes.filter((i) => i.severidade === 'critico').length,
+      atencao: incidentes.filter((i) => i.severidade === 'atencao').length,
+      informativo: incidentes.filter((i) => i.severidade === 'informativo').length,
+    },
+    incidentes_por_patrulha: {
+      dados: incidentes.filter((i) => i.patrulha === 'dados').length,
+      conteudo: incidentes.filter((i) => i.patrulha === 'conteudo').length,
+      hermes: incidentes.filter((i) => i.patrulha === 'hermes').length,
+    },
+    alertas_por_status: {
+      novo: alertas.filter((a) => a.status === 'novo').length,
+      visto: alertas.filter((a) => a.status === 'visto').length,
+      em_acompanhamento: alertas.filter((a) => a.status === 'em_acompanhamento').length,
+      justificado: alertas.filter((a) => a.status === 'justificado').length,
+    },
+    total_incidentes: incidentes.length,
+    total_alertas: alertas.length,
+    periodo: { inicio: inicioIso.slice(0, 10), fim: fimIso.slice(0, 10) },
+  }
+}
+
 export async function gerarRelatorioSemanal(): Promise<{ id?: string; incidentes: number; alertas: number }> {
   const fim = new Date()
   const inicio = new Date(fim.getTime() - 7 * 86_400_000)
@@ -48,27 +99,7 @@ export async function gerarRelatorioSemanal(): Promise<{ id?: string; incidentes
     valor: a.valor, status: a.status, quando: a.criado_em,
   }))
 
-  const resumo = {
-    incidentes_por_severidade: {
-      critico: (incidentes ?? []).filter((i) => i.severidade === 'critico').length,
-      atencao: (incidentes ?? []).filter((i) => i.severidade === 'atencao').length,
-      informativo: (incidentes ?? []).filter((i) => i.severidade === 'informativo').length,
-    },
-    incidentes_por_patrulha: {
-      dados: (incidentes ?? []).filter((i) => i.patrulha === 'dados').length,
-      conteudo: (incidentes ?? []).filter((i) => i.patrulha === 'conteudo').length,
-      hermes: (incidentes ?? []).filter((i) => i.patrulha === 'hermes').length,
-    },
-    alertas_por_status: {
-      novo: (alertas ?? []).filter((a) => a.status === 'novo').length,
-      visto: (alertas ?? []).filter((a) => a.status === 'visto').length,
-      em_acompanhamento: (alertas ?? []).filter((a) => a.status === 'em_acompanhamento').length,
-      justificado: (alertas ?? []).filter((a) => a.status === 'justificado').length,
-    },
-    total_incidentes: (incidentes ?? []).length,
-    total_alertas: (alertas ?? []).length,
-    periodo: { inicio: inicioIso.slice(0, 10), fim: fimIso.slice(0, 10) },
-  }
+  const resumo = montarResumo(listaIncidentes, listaAlertas, inicioIso, fimIso)
 
   const { data: inserido, error } = await supabase
     .from('gaviao_relatorios_semanais')
