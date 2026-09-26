@@ -17,6 +17,7 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { SecaoSegundoFator } from '@/components/seguranca/SegundoFator'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -212,6 +213,8 @@ export default function Perfil() {
       {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
 
       {/* Foto + identificação */}
+      <SecaoSegundoFator />
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">

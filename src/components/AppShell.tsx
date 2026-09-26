@@ -21,6 +21,8 @@ import { ErroBoundary } from '@/components/ErroBoundary'
 import { itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
 import { Paleta } from '@/components/casca/Paleta'
 import { usePaleta } from '@/components/casca/usePaleta'
+import { PortaoSegundoFator } from '@/components/seguranca/SegundoFator'
+import { useSegundoFator } from '@/hooks/useSegundoFator'
 
 // A casca do Monitor de Cabeceira (design_handoff/telas/09-comum-casca.md):
 // sidebar branca de 248px, topbar de 60px imóvel, coluna de conteúdo de 896px;
@@ -151,6 +153,7 @@ export function AppShell() {
   const { compacto, alternar: alternarDensidade } = useDensidade()
   const online = useConectado()
   const paleta = usePaleta()
+  const segundoFator = useSegundoFator()
 
   // Web Push — só o plantonista recebe avisos de turno no aparelho.
   useWebPush(papelAtivo === 'plantonista')
@@ -214,6 +217,12 @@ export function AppShell() {
     papelAtivo === 'plantonista' &&
     (plantaoStatus === 'escala' || plantaoStatus === 'acesso') &&
     !(presencaAtiva && presencaAtiva.checkin_em && !presencaAtiva.checkout_em)
+
+  // Segundo fator (ADR 0010): com a exigência ligada, nada da casca aparece
+  // antes do código — dado de paciente só com aal2 confirmado nas últimas 24 h.
+  if (segundoFator.data?.exigido && !segundoFator.data.valido) {
+    return <PortaoSegundoFator fatorId={segundoFator.data.fatorId} onSair={handleSair} />
+  }
 
   if (entraPorEscala) {
     if (plantaoStatus === 'carregando') {

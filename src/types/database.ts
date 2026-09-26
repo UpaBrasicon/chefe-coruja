@@ -743,6 +743,24 @@ export type Database = {
           },
         ]
       }
+      configuracao_plataforma: {
+        Row: {
+          atualizado_em: string
+          chave: string
+          valor: boolean
+        }
+        Insert: {
+          atualizado_em?: string
+          chave: string
+          valor: boolean
+        }
+        Update: {
+          atualizado_em?: string
+          chave?: string
+          valor?: boolean
+        }
+        Relationships: []
+      }
       configuracoes_unidade: {
         Row: {
           chave: string
@@ -3757,6 +3775,14 @@ export type Database = {
       salvar_push_subscription: {
         Args: { p_subscription: string }
         Returns: undefined
+      }
+      segundo_fator_status: {
+        Args: never
+        Returns: {
+          exigido: boolean
+          valido: boolean
+          verificado_em: string
+        }[]
       }
       setores_internacao: {
         Args: { p_unidade: string }
