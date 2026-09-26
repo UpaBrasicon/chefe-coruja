@@ -5,7 +5,9 @@
 //
 // Formato de tools: OpenAI-compatible (confirmado na doc do DeepSeek).
 // ─────────────────────────────────────────────────────────────────────────────
-import { completar, type MensagemLLM, type ToolDefLLM, type ToolCallLLM } from '../lib/llm.js'
+import type { MensagemLLM, ToolDefLLM, ToolCallLLM } from '../lib/llm.js'
+import { chamarIA, ChamadaBloqueada, nomesEmResultado, type ContextoGateway } from '../gateway/gateway.js'
+import { criarCofre } from '../gateway/desidentificacao.js'
 import { logger } from '../logger.js'
 import { executarTool } from './tools.js'
 import type { IdentidadeHermes } from './identidade.js'
@@ -87,15 +89,25 @@ export async function executarLoopAgente(
   const mensagens: MensagemLLM[] = [...historico, { role: 'user', content: mensagemUsuario }]
   let iteracoes = 0
 
+  // ADR 0006: a conversa inteira passa pelo gateway. O cofre vive só nesta
+  // chamada, no servidor; o modelo nunca vê o nome do usuário nem os nomes
+  // que as ferramentas devolvem.
+  const ctx: ContextoGateway = {
+    cofre: criarCofre(),
+    conhecidos: identidade.nome ? [{ valor: identidade.nome, categoria: 'PESSOA' }] : [],
+    origem: 'hermes:whatsapp',
+    perfilId: identidade.perfilId,
+  }
+
   try {
     while (iteracoes < MAX_ITERACOES) {
       iteracoes++
-      const resposta = await completar({
+      const resposta = await chamarIA({
         mensagens: [{ role: 'system', content: systemPrompt }, ...mensagens],
         tools: TOOLS_DISPONIVEIS,
         toolChoice: 'auto',
         maxTokens: 512,
-      })
+      }, ctx)
 
       // Sem tool calls → resposta final.
       if (resposta.toolCalls.length === 0) {
@@ -114,6 +126,7 @@ export async function executarLoopAgente(
 
         logger.info({ tool: tc.function.name, args }, '[loop] executando tool')
         const exec = await executarTool(identidade, waId, tc.function.name, args)
+        if (exec.resultado.ok) ctx.conhecidos.push(...nomesEmResultado(exec.resultado.dados))
         const resumo = exec.resultado.ok
           ? JSON.stringify(exec.resultado.dados)
           : `ERRO: ${exec.resultado.erro}`
@@ -124,6 +137,14 @@ export async function executarLoopAgente(
 
     return { texto: 'Limite de etapas atingido. Refine sua pergunta, por favor.', ok: true }
   } catch (err) {
+    if (err instanceof ChamadaBloqueada) {
+      logger.warn({ residuos: err.residuos.length }, '[loop] gateway bloqueou a chamada')
+      return {
+        texto:
+          'Não enviei sua mensagem ao assistente: ela parece ter um dado que identifica alguém (número de documento, data completa ou e-mail). Reescreva sem esse dado, por favor.',
+        ok: true,
+      }
+    }
     logger.error({ err: (err as Error).message }, '[loop] falha no LLM')
     return {
       texto: 'Estou com instabilidade agora. Tente de novo em alguns minutos.',
