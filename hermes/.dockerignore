@@ -34,3 +34,9 @@ logs/
 .DS_Store
 .idea/
 .vscode/
+
+# Servidor: pastas que ficam ao lado do código e não entram na imagem
+# (nous-skill é do root; sem esta linha o build falha ao ler o contexto).
+nous-skill/
+src.bak*
+*.tgz
