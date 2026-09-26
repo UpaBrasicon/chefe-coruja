@@ -15,7 +15,8 @@ import { ExamesTab } from './internacao/ExamesTab'
 import { InternacaoTab } from './internacao/InternacaoTab'
 import { ExportarTab } from './internacao/ExportarTab'
 import { useRascunho } from './internacao/rascunho'
-import { useInternacaoAtiva, useRegistrarAcessoProntuario } from '@/hooks/useDocumentos'
+import { useInternacaoAtiva } from '@/hooks/useDocumentos'
+import { abrirProntuario } from '@/lib/prontuario'
 
 export default function Internacao({ embutido = false }: { embutido?: boolean } = {}) {
   const { unidadeAtiva } = useUnidade()
@@ -24,7 +25,6 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
   const perfilId = perfil?.id
   const [searchParams, setSearchParams] = useSearchParams()
   const pacienteParam = searchParams.get('paciente')
-  const registrarAcesso = useRegistrarAcessoProntuario()
 
   const { dados, atualizar, salvoEm, limpar } = useRascunho(unidadeId, perfilId)
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
@@ -68,10 +68,8 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
           },
         })
       }
-      // NGS1: registra quem abriu o prontuário
-      if (data?.id && unidadeId) {
-        registrarAcesso.mutate({ paciente_id: data.id, unidade_id: unidadeId })
-      }
+      // NGS1: abrir o prontuário grava a consulta no servidor (migration 0012)
+      if (data?.id) await abrirProntuario(data.id)
       setSearchParams({}, { replace: true })
       return data
     },

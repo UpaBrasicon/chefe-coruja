@@ -1,4 +1,5 @@
 import { Plus, Printer, Trash2 } from 'lucide-react'
+import { abrirImpressao } from '@/lib/prontuario'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -55,7 +56,7 @@ export function ExamesTab({
     setNovo('')
   }
 
-  function imprimir() {
+  async function imprimir() {
     const texto = exames.texto.trim()
     if (!texto) return
     const paciente = escapeHtml(dados.nome).trim().toUpperCase() || 'PACIENTE NÃO IDENTIFICADO'
@@ -63,8 +64,9 @@ export function ExamesTab({
     const linhas = texto.split(/\n+/).map((l) => l.replace(/^[-*•]\s*/, '')).filter(Boolean)
     const listaHtml = linhas.map((l) => `<div style="margin-bottom:6px;">• ${escapeHtml(l)}</div>`).join('')
 
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) return
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente_id, internacaoId: null, tipo: 'Pedido de exames (internação)' })
+    if (!impressao) return
+    const printWindow = impressao.janela
     printWindow.document.write(`
       <html><head><title>Pedido de Exames</title>
       <style>
@@ -84,7 +86,7 @@ export function ExamesTab({
           <div class="overlay data">DATA: ${data}</div>
           <div class="overlay exames">${listaHtml}</div>
         </div>
-      </body></html>
+      ${impressao.rodape}</body></html>
     `)
     printWindow.document.close()
     printWindow.focus()

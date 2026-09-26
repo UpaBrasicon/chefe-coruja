@@ -1,4 +1,5 @@
 import { Printer, Trash2 } from 'lucide-react'
+import { abrirImpressao } from '@/lib/prontuario'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -74,7 +75,7 @@ export function AtestadoMedico({
 
   const titulo = dados.atestado.tipo === 'comparecimento' ? 'ATESTADO DE COMPARECIMENTO' : dados.atestado.tipo === 'afastamento' ? 'ATESTADO DE AFASTAMENTO' : 'ATESTADO DE REPOUSO'
 
-  function imprimir() {
+  async function imprimir() {
     const nome = escapeHtml(dados.paciente.nome).toUpperCase() || '_________________________________'
     const data = fmtData(dados.paciente.dataAtual)
     const corpo =
@@ -83,8 +84,9 @@ export function AtestadoMedico({
         : dados.atestado.tipo === 'afastamento'
           ? `Atesto, para os devidos fins, que ${nome} esteve sob cuidados médicos, necessitando de ${escapeHtml(dados.atestado.dias) || '…'} dia(s) de afastamento de suas atividades laborais${dados.atestado.cid ? ` (CID: ${escapeHtml(dados.atestado.cid)})` : ''}.`
           : `Atesto, para os devidos fins, que ${nome} necessita de ${escapeHtml(dados.atestado.dias) || '…'} dia(s) de repouso, devendo manter-se em observação clínica.`
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) return
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Atestado' })
+    if (!impressao) return
+    const printWindow = impressao.janela
     printWindow.document.write(`
       <html><head><title>${titulo}</title>
       <style>
@@ -105,7 +107,7 @@ export function AtestadoMedico({
           <div class="ass">${data || '____/___/____'}<br>_________________________________________<br>Assinatura / Carimbo do Médico</div>
           <div class="rodape">Documento válido somente com assinatura e carimbo do profissional responsável.</div>
         </div></div>
-      </body></html>
+      ${impressao.rodape}</body></html>
     `)
     printWindow.document.close()
     printWindow.focus()

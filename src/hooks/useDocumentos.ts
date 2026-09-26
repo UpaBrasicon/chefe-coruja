@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
+import { abrirProntuario } from '@/lib/prontuario'
 
 /**
  * Persistência de documentos clínicos (documentos_clinicos) com versionamento.
@@ -53,6 +54,7 @@ export function useDocumentos(pacienteId?: string) {
     queryKey: ['documentos-clinicos', pacienteId],
     enabled: !!pacienteId,
     queryFn: async () => {
+      await abrirProntuario(pacienteId!)
       const { data, error } = await supabase
         .from('documentos_clinicos')
         .select('*')
@@ -97,28 +99,6 @@ export function useCarimbarTempo() {
         .update({ assinado_em, carimbo_tempo: new Date().toISOString() })
         .eq('id', id)
       if (error) throw error
-    },
-  })
-}
-
-export function useRegistrarAcessoProntuario() {
-  return useMutation({
-    mutationFn: async (input: {
-      paciente_id: string
-      unidade_id: string
-      tipo_acesso?: string
-      internacao_id?: string | null
-    }) => {
-      const { error } = await supabase.rpc('registrar_acesso_prontuario', {
-        p_paciente: input.paciente_id,
-        p_unidade: input.unidade_id,
-        p_tipo_acesso: input.tipo_acesso ?? 'leitura_prontuario',
-        p_internacao: input.internacao_id ?? undefined,
-      })
-      if (error) {
-        // log de acesso nunca deve quebrar o fluxo assistencial
-        console.error('Falha ao registrar acesso a prontuário:', error.message)
-      }
     },
   })
 }

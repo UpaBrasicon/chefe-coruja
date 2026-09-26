@@ -1869,6 +1869,7 @@ export type Database = {
           acessado_por: string
           created_at: string
           documento_id: string | null
+          documento_tipo: string | null
           id: string
           internacao_id: string | null
           ip: unknown
@@ -1883,6 +1884,7 @@ export type Database = {
           acessado_por: string
           created_at?: string
           documento_id?: string | null
+          documento_tipo?: string | null
           id?: string
           internacao_id?: string | null
           ip?: unknown
@@ -1897,6 +1899,7 @@ export type Database = {
           acessado_por?: string
           created_at?: string
           documento_id?: string | null
+          documento_tipo?: string | null
           id?: string
           internacao_id?: string | null
           ip?: unknown
@@ -3432,6 +3435,10 @@ export type Database = {
         }
         Returns: string
       }
+      abrir_prontuario: {
+        Args: { p_internacao?: string; p_paciente: string }
+        Returns: undefined
+      }
       adicionar_plantao_escala: {
         Args: {
           p_data: string
@@ -3740,6 +3747,18 @@ export type Database = {
           p_tipo_evento: string
         }
         Returns: undefined
+      }
+      registrar_impressao: {
+        Args: {
+          p_documento?: string
+          p_documento_tipo: string
+          p_internacao?: string
+          p_paciente: string
+        }
+        Returns: {
+          emitido_em: string
+          protocolo: string
+        }[]
       }
       registrar_prescricao_itens: {
         Args: { p_itens?: Json; p_observacoes?: string; p_paciente: string }

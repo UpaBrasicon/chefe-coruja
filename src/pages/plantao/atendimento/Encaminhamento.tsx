@@ -1,4 +1,5 @@
 import { Printer, Trash2 } from 'lucide-react'
+import { abrirImpressao } from '@/lib/prontuario'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -87,12 +88,13 @@ export function Encaminhamento({
   )
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
 
-  function imprimir() {
+  async function imprimir() {
     const nome = escapeHtml(dados.paciente.nome).toUpperCase() || '_________________________________'
     const data = fmtData(dados.paciente.dataAtual)
     const hipotese = escapeHtml(dados.paciente.diagnostico) || '____________________'
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) return
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Encaminhamento' })
+    if (!impressao) return
+    const printWindow = impressao.janela
     printWindow.document.write(`
       <html><head><title>Encaminhamento</title>
       <style>
@@ -116,7 +118,7 @@ export function Encaminhamento({
           <div class="corpo"><strong style="font-size:9px;text-transform:uppercase;color:#444;">Resumo clínico</strong><br><br>${escapeHtml(dados.encaminhamento.resumo || 'Resumo clínico do atendimento. ').replace(/\n/g, '<br>')}</div>
           <div class="ass">${data || ''}<br>_________________________________________<br>Assinatura / Carimbo do Médico</div>
         </div></div>
-      </body></html>
+      ${impressao.rodape}</body></html>
     `)
     printWindow.document.close()
     printWindow.focus()

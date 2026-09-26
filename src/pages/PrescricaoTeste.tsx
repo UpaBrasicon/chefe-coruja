@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { abrirProntuario } from '@/lib/prontuario'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -207,6 +208,13 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
     setErro(null)
     setMsg(null)
 
+    try {
+      await abrirProntuario(pacienteSel.id)
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível abrir o prontuário.')
+      setSalvando(false)
+      return
+    }
     const { data: prescricao, error: err1 } = await supabase
       .from('prescricoes')
       .insert({

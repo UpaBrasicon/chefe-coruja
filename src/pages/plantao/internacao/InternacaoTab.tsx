@@ -1,4 +1,5 @@
 import { Printer } from 'lucide-react'
+import { abrirImpressao } from '@/lib/prontuario'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -92,9 +93,10 @@ export function InternacaoTab({
     { nome: 'campo51', rotulo: '51 - Assinatura e Carimbo (Nº do Registro do Conselho)', className: 'col-span-2' },
   ]
 
-  function imprimir() {
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) return
+  async function imprimir() {
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente_id, internacaoId: null, tipo: 'Laudo de internação (AIH)' })
+    if (!impressao) return
+    const printWindow = impressao.janela
     const rows = campos
       .map((c) => {
         const val = aih[c.nome]
@@ -129,7 +131,7 @@ export function InternacaoTab({
           <div class="sec">Identificação do Estabelecimento de Saúde</div>
           ${rows}
         </div>
-      </body></html>
+      ${impressao.rodape}</body></html>
     `)
     printWindow.document.close()
     printWindow.focus()

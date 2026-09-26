@@ -4,6 +4,7 @@ import { ArrowRightLeft, Activity, ChevronRight, Eye, Hospital, UserPlus } from 
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { abrirProntuario } from '@/lib/prontuario'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -177,6 +178,7 @@ export default function InternacaoPainel({
     queryKey: ['checklist-admissao', pacienteDetalhe?.id],
     enabled: !!pacienteDetalhe,
     queryFn: async () => {
+      await abrirProntuario(pacienteDetalhe!.id)
       const { data, error } = await supabase
         .from('checklist_admissao')
         .select('*')
@@ -192,6 +194,7 @@ export default function InternacaoPainel({
     queryKey: ['alta-paciente', pacienteDetalhe?.id],
     enabled: !!pacienteDetalhe,
     queryFn: async () => {
+      await abrirProntuario(pacienteDetalhe!.id)
       const { data, error } = await supabase
         .from('alta_paciente')
         .select('*')

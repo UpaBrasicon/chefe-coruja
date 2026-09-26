@@ -40,3 +40,6 @@ data/terminologia/*
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
+.env*

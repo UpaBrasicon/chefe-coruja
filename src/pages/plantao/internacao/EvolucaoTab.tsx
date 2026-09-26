@@ -1,4 +1,5 @@
 import { CheckCircle2, History, Loader2, Printer, Save, Sparkles } from 'lucide-react'
+import { abrirImpressao } from '@/lib/prontuario'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -60,15 +61,16 @@ export function EvolucaoTab({
     onChange({ texto })
   }
 
-  function imprimir() {
+  async function imprimir() {
     const alergiaHtml =
       dados.alergias && dados.alergias.toUpperCase() !== 'NEGA'
         ? `<div style="background:#dc2626;color:#fff;padding:4px;text-align:center;font-weight:800;font-size:11px;margin-bottom:8px;">⚠️ ALERGIA: ${escapeHtml(dados.alergias).toUpperCase()} ⚠️</div>`
         : ''
     const cabecalho = evolucao.tipo === 'admissao' ? 'TERMO DE ADMISSÃO' : 'EVOLUÇÃO MÉDICA'
     const textoHtml = escapeHtml(evolucao.texto).replace(/\n/g, '<br>')
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) return
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente_id, internacaoId: internacaoId, tipo: 'Evolução' })
+    if (!impressao) return
+    const printWindow = impressao.janela
     printWindow.document.write(`
       <html><head><title>${cabecalho}</title>
       <style>
@@ -96,7 +98,7 @@ export function EvolucaoTab({
             <div class="ass">_________________________________________<br>Assinatura / Carimbo do Médico</div>
           </div>
         </div>
-      </body></html>
+      ${impressao.rodape}</body></html>
     `)
     printWindow.document.close()
     printWindow.focus()

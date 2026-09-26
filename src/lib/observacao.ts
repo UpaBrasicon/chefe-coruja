@@ -5,6 +5,7 @@
 // getPainelInternacao → últimos valores por conceito + delta vs. anterior
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from '@/lib/supabase'
+import { abrirProntuarioDaInternacao } from '@/lib/prontuario'
 import type { Database } from '@/types/database'
 
 export type Observacao = Database['public']['Tables']['observacao']['Row']
@@ -53,6 +54,7 @@ export async function getSerieObservacao(
   conceitoId: string,
   periodo: '24h' | '48h' | '7d' | 'tudo' = 'tudo'
 ): Promise<SerieObservacao | null> {
+  await abrirProntuarioDaInternacao(internacaoId)
   const desde = periodo === 'tudo' ? null : new Date(Date.now() - parseInt(periodo) * 3600_000).toISOString()
 
   let query = supabase
@@ -101,6 +103,7 @@ export async function getSerieObservacao(
  * anterior. Busca as observações mais recentes por conceito (via janela).
  */
 export async function getPainelInternacao(internacaoId: string): Promise<PainelInternacao> {
+  await abrirProntuarioDaInternacao(internacaoId)
   // 1. conceitos com observações nesta internação
   const { data: conceitosIds, error: err1 } = await supabase
     .from('observacao')

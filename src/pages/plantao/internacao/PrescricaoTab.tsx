@@ -1,4 +1,5 @@
 import { Check, Clipboard, FileCheck2, Printer } from 'lucide-react'
+import { abrirImpressao, abrirProntuario } from '@/lib/prontuario'
 import * as React from 'react'
 import { useQuery } from '@tanstack/react-query'
 
@@ -42,6 +43,7 @@ export function PrescricaoTab({
     queryKey: ['prescricao-paciente', pacienteId],
     enabled: !!pacienteId,
     queryFn: async () => {
+      await abrirProntuario(pacienteId!)
       const { data, error } = await supabase
         .from('prescricoes')
         .select('id, status, observacoes, prescricao_itens(descricao, dose, posologia)')
@@ -131,7 +133,7 @@ export function PrescricaoTab({
     }
   }
 
-  function imprimir() {
+  async function imprimir() {
     const tbody = itensSelecionados
       .map(
         (i, idx) => `<tr><td>${String(idx + 1).padStart(2, '0')}</td><td><strong>${escapeHtml(i.med)}</strong></td><td>${escapeHtml(i.via)}</td><td>${escapeHtml(i.pos)}</td><td>${escapeHtml(i.apr ?? '')}</td></tr>`
@@ -140,8 +142,9 @@ export function PrescricaoTab({
     const alergia = dados.alergias && dados.alergias.toUpperCase() !== 'NEGA'
       ? `<div style="background:#dc2626;color:#fff;padding:8px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${escapeHtml(dados.alergias).toUpperCase()} ⚠️</div>`
       : ''
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) return
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente_id, internacaoId: null, tipo: 'Prescrição' })
+    if (!impressao) return
+    const printWindow = impressao.janela
     printWindow.document.write(`
       <html><head><title>Prescrição</title>
       <style>
@@ -178,7 +181,7 @@ export function PrescricaoTab({
             ${prescricao.obs ? `<div class="obs">Observações: ${escapeHtml(prescricao.obs)}</div>` : ''}
           </div>
         </div>
-      </body></html>
+      ${impressao.rodape}</body></html>
     `)
     printWindow.document.close()
     printWindow.focus()

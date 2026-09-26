@@ -1,4 +1,5 @@
 import { Check, Clipboard, Printer, Plus, Trash2 } from 'lucide-react'
+import { abrirImpressao } from '@/lib/prontuario'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -132,7 +133,7 @@ export function ReceituarioMedico({
     }
   }
 
-  function imprimir() {
+  async function imprimir() {
     const itens = dados.receita.itens.filter((i) => i.medicamento.trim())
     const linhas = itens
       .map(
@@ -144,8 +145,9 @@ export function ReceituarioMedico({
       dados.paciente.alergias && dados.paciente.alergias.toUpperCase() !== 'NEGA'
         ? `<div style="background:#dc2626;color:#fff;padding:6px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${escapeHtml(dados.paciente.alergias).toUpperCase()} ⚠️</div>`
         : ''
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) return
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Receituário' })
+    if (!impressao) return
+    const printWindow = impressao.janela
     printWindow.document.write(`
       <html><head><title>Receituário</title>
       <style>
@@ -169,7 +171,7 @@ export function ReceituarioMedico({
           <div class="ass">_________________________________________<br>Assinatura / Carimbo do Médico</div>
           ${dados.receita.obs ? `<div class="obs">Observações: ${escapeHtml(dados.receita.obs)}</div>` : ''}
         </div></div>
-      </body></html>
+      ${impressao.rodape}</body></html>
     `)
     printWindow.document.close()
     printWindow.focus()
