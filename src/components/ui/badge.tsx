@@ -5,18 +5,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  // Selo de estado (02-gramatica-visual.md): cápsula, 12px/600 caixa alta, a
+  // própria cor do texto como fundo a ~8% (A Regra da Lavagem Própria).
+  "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-capsula border border-transparent px-2 py-[3px] text-rotulo font-semibold tracking-[0.04em] uppercase whitespace-nowrap [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground",
-        secondary: "bg-secondary text-secondary-foreground",
-        destructive: "bg-destructive/10 text-destructive",
-        outline: "border-border text-foreground",
-        ghost: "hover:bg-muted hover:text-muted-foreground",
-        success: "bg-emerald-500/10 text-emerald-700",
-        warning: "bg-amber-500/10 text-amber-700",
-        info: "bg-sky-500/10 text-sky-700",
+        default: "bg-acao/10 text-acao",
+        secondary: "bg-trilha text-tinta-apoio",
+        destructive: "bg-critico/10 text-critico",
+        outline: "border-fio text-tinta-apoio",
+        ghost: "text-tinta-sussurro",
+        success: "bg-conforme/10 text-conforme",
+        warning: "bg-atencao/10 text-atencao",
+        info: "bg-suprimento/10 text-suprimento",
       },
     },
     defaultVariants: {

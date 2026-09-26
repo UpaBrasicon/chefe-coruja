@@ -1,27 +1,91 @@
-﻿
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * "O Monitor de Cabeceira" — sistema visual do Chefe Coruja.
+ * Fonte: design_handoff_chefe_coruja/01-tokens.md e 02-gramatica-visual.md.
+ *
+ * Duas regras carregam tudo:
+ *   A identidade pertence à grandeza (rótulo e barra): leitos, observação,
+ *   turno, suprimento — cor fixa, nunca varia por situação.
+ *   O estado pertence ao numeral: cor do estado e corpo 30/36/42px.
+ * O teal é o sinal de que algo é clicável; não nomeia grandeza nem estado.
+ *
+ * Modo diurno por decisão de produto: não há dark mode.
+ */
 
 @theme inline {
     --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
+    --font-sans: 'Geist Variable', system-ui, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+    /* ── Ação e marca ─────────────────────────────────────────── */
+    --color-acao: #0F766E;
+    --color-acao-pressionada: #134E4A;
+    --color-marca: #0D9488;
+
+    /* ── As quatro grandezas (rótulo e barra) ─────────────────── */
+    --color-leitos: #15803D;
+    --color-observacao: #B45309;
+    --color-turno: #475569;
+    --color-suprimento: #1D4ED8;
+
+    /* ── Os estados (numeral, selo, texto de estado) ──────────── */
+    --color-ok: #1E293B;
+    --color-atencao: #92400E;
+    --color-critico: #B91C1C;
+    --color-conforme: #15803D;
+
+    /* ── Neutros ──────────────────────────────────────────────── */
+    --color-tinta: #1E293B;
+    --color-tinta-apoio: #475569;
+    --color-tinta-sussurro: #64748B;
+    --color-grafite: #334155;
+    --color-superficie: #FFFFFF;
+    --color-campo: #F8FAFC;
+    --color-trilha: #F1F5F9;
+    --color-fio: #E2E8F0;
+    --color-fio-forte: #CBD5E1;
+
+    /* ── Classificação de risco (Manchester) ─────────────────── */
+    --color-mts-vermelho: #B91C1C;
+    --color-mts-laranja: #C2410C;
+    --color-mts-amarelo: #FACC15;
+    --color-mts-amarelo-texto: #422006;
+    --color-mts-verde: #15803D;
+    --color-mts-azul: #1D4ED8;
+
+    /* ── Modo pediátrico ─────────────────────────────────────── */
+    --color-pediatria: #6D28D9;
+
+    /* ── Escala tipográfica fechada: 12·13·15·17·24 e 30·36·42 ── */
+    --text-rotulo: 12px;
+    --text-apoio: 13px;
+    --text-corpo: 15px;
+    --text-secao: 17px;
+    --text-titulo: 24px;
+    --text-numeral-ok: 30px;
+    --text-numeral-atencao: 36px;
+    --text-numeral-critico: 42px;
+
+    /* ── Cinco raios ──────────────────────────────────────────── */
+    --radius-controle-sm: 9px;
+    --radius-controle: 10px;
+    --radius-container: 12px;
+    --radius-cartao: 16px;
+    --radius-capsula: 999px;
+
+    /* ── Sombra: espessador de borda e halos tingidos de teal ─── */
+    --shadow-repouso: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-halo: 0 6px 16px rgba(13, 148, 136, 0.12);
+    --shadow-halo-ferramenta: 0 8px 22px rgba(13, 148, 136, 0.13);
+    --shadow-dialogo: 0 24px 60px rgba(15, 23, 42, 0.24);
+    --shadow-desfazer: 0 16px 40px rgba(15, 23, 42, 0.3);
+    --shadow-lateral: -12px 0 40px rgba(15, 23, 42, 0.18);
+
+    /* ── Mapeamento shadcn → tokens ───────────────────────────── */
     --color-ring: var(--ring);
     --color-input: var(--input);
     --color-border: var(--border);
@@ -40,108 +104,163 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --radius-sm: 9px;
+    --radius-md: 9px;
+    --radius-lg: 10px;
+    --radius-xl: 12px;
+    --radius-2xl: 16px;
+    --radius-3xl: 16px;
+    --radius-4xl: 999px;
 }
 
 :root {
-    /* Paleta Chefe Coruja */
+    /*
+     * Nomes antigos do app, mantidos enquanto as telas são portadas.
+     * Os três conflitos de 01-tokens.md §4 estão resolvidos aqui:
+     * um verde só (#15803D), um vermelho só (#B91C1C), e o âmbar
+     * #F59E0B (2,1:1) saiu — o âmbar do sistema é o da observação.
+     */
     --cor-primaria: #0D9488;
     --cor-primaria-hover: #0F766E;
-    --cor-secundaria: #F59E0B;
+    --cor-secundaria: #B45309;
     --cor-fundo: #F8FAFC;
     --cor-superficie: #FFFFFF;
     --cor-borda: #E2E8F0;
     --cor-texto: #1E293B;
     --cor-texto-suave: #64748B;
-    --cor-sucesso: #16A34A;
-    --cor-vago: #DC2626;
+    --cor-sucesso: #15803D;
+    --cor-vago: #B91C1C;
 
-    /* shadcn defaults */
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.6 0.13 175);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.6 0.13 175);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --background: #F8FAFC;
+    --foreground: #1E293B;
+    --card: #FFFFFF;
+    --card-foreground: #1E293B;
+    --popover: #FFFFFF;
+    --popover-foreground: #1E293B;
+    --primary: #0F766E;
+    --primary-foreground: #FFFFFF;
+    --secondary: #F1F5F9;
+    --secondary-foreground: #1E293B;
+    --muted: #F1F5F9;
+    --muted-foreground: #64748B;
+    --accent: #F8FAFC;
+    --accent-foreground: #1E293B;
+    --destructive: #B91C1C;
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: #0F766E;
+    --chart-1: #15803D;
+    --chart-2: #B45309;
+    --chart-3: #475569;
+    --chart-4: #1D4ED8;
+    --chart-5: #0F766E;
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
-}
+    --sidebar: #FFFFFF;
+    --sidebar-foreground: #1E293B;
+    --sidebar-primary: #0F766E;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: rgba(13, 148, 136, 0.1);
+    --sidebar-accent-foreground: #0F766E;
+    --sidebar-border: #E2E8F0;
+    --sidebar-ring: #0F766E;
 
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.68 0.12 175);
-    --primary-foreground: oklch(0.16 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.68 0.12 175);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    /* Geometria da casca */
+    --cc-lateral: 248px;
+    --cc-lateral-recolhida: 68px;
+    --cc-topo: 60px;
+    --cc-coluna: 896px;
+
+    color-scheme: light;
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
-    background-color: var(--cor-fundo);
-    color: var(--cor-texto);
-  }
-  html {
-    @apply font-sans;
-  }
+    * {
+        @apply border-border;
+    }
+    html {
+        @apply font-sans;
+        -webkit-text-size-adjust: 100%;
+    }
+    body {
+        background-color: var(--color-campo);
+        color: var(--color-tinta);
+        font-size: var(--text-corpo);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+    }
+    a {
+        color: var(--color-acao);
+    }
+    a:hover {
+        color: var(--color-acao-pressionada);
+    }
+
+    /* Anel de foco global — só teclado. */
+    :focus-visible {
+        outline: 2px solid var(--color-acao);
+        outline-offset: 2px;
+    }
+    /* Campos: anel suave em vez de outline. */
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible,
+    [contenteditable]:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px #0D948859;
+    }
+
+    ::selection {
+        background: #0D948826;
+    }
+}
+
+@layer utilities {
+    /* A Regra da Coluna Alinhada: todo número comparável verticalmente. */
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
+    /* A Regra do Rótulo Sussurrado. */
+    .rotulo {
+        font-size: var(--text-rotulo);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        line-height: 1.25;
+    }
+    /* Alvo de toque ampliado sem mudar o desenho. */
+    @media (pointer: coarse) {
+        .alvo-toque {
+            position: relative;
+        }
+        .alvo-toque::after {
+            content: "";
+            position: absolute;
+            inset: -8px;
+        }
+    }
+}
+
+/* Movimento curto — e nenhum sob prefers-reduced-motion. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
