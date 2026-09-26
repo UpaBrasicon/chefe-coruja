@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, BarChart3, ChevronRight, RefreshCw } from 'lucide-react'
+import { BarChart3, BedDouble, CalendarDays, LineChart, RefreshCw } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
+import { TituloPagina } from '@/components/monitor/Pagina'
+import { Parametro, type Nivel } from '@/components/monitor/Parametros'
 
 type CensoLinha = {
   data: string
@@ -69,8 +70,10 @@ export default function Indicadores() {
 
   const gerarCenso = useMutation({
     mutationFn: async () => {
-      const hoje = new Date().toISOString().slice(0, 10)
-      const { data, error } = await supabase.rpc('gerar_censo_diario', { p_unidade: unidadeId!, p_data: hoje })
+      // A data é a do servidor (America/Sao_Paulo), nunca a do aparelho.
+      const { data: hoje, error: e1 } = await supabase.rpc('data_atual')
+      if (e1) throw e1
+      const { data, error } = await supabase.rpc('gerar_censo_diario', { p_unidade: unidadeId!, p_data: hoje as string })
       if (error) throw error
       return data as number
     },
@@ -99,79 +102,58 @@ export default function Indicadores() {
     }
   }, [censo, ultimaData])
 
+  const aoVivo = {
+    internados: (ocupacao ?? []).reduce((a, o) => a + o.internados, 0),
+    leitos: (ocupacao ?? []).reduce((a, o) => a + o.limite, 0),
+  }
+  const taxaAoVivo = aoVivo.leitos > 0 ? aoVivo.internados / aoVivo.leitos : null
+  const nivelOcupacao: Nivel = taxaAoVivo === null ? 'ok' : taxaAoVivo >= 0.95 ? 'critico' : taxaAoVivo >= 0.85 ? 'atencao' : 'ok'
+
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">
-            Início
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Indicadores</span>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Indicadores Hospitalares</h1>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => gerarCenso.mutate()}
-            disabled={gerarCenso.isPending}
-          >
-            {gerarCenso.isPending ? <RefreshCw className="animate-spin" /> : <RefreshCw />} Gerar censo de hoje
+    <div className="flex w-full flex-col gap-6">
+      <TituloPagina
+        icone={LineChart}
+        titulo="Indicadores"
+        descricao="Ocupação, permanência média e giro de leito, alimentados pelos eventos de internação. O censo é gravado por dia e pode ser regenerado."
+        acoes={
+          <Button variant="outline" size="sm" onClick={() => gerarCenso.mutate()} disabled={gerarCenso.isPending}>
+            <RefreshCw className={gerarCenso.isPending ? 'animate-spin' : undefined} /> Gerar censo de hoje
           </Button>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Ocupação, taxa, permanência média e giro de leito — alimentados pelos eventos ADT (Fase 3).
-          O censo é materializado por dia e pode ser regenerado a qualquer momento.
-        </p>
-      </div>
+        }
+      />
 
-      {/* Totais da unidade */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="size-4 text-primary" />
-              Internados hoje
-            </CardTitle>
-            <CardDescription>{ultimaData ? fmtDia(ultimaData) : 'sem censo ainda'}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{totalUnidade.internados}</div>
-            <div className="text-xs text-muted-foreground">pacientes presentes na unidade</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BarChart3 className="size-4 text-primary" />
-              Taxa de ocupação
-            </CardTitle>
-            <CardDescription>leitos totais: {totalUnidade.leitos}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular ${corTaxa(totalUnidade.leitos > 0 ? (totalUnidade.internados / totalUnidade.leitos) * 100 : null)}`}>
-              {totalUnidade.leitos > 0 ? Math.round((totalUnidade.internados / totalUnidade.leitos) * 100) : '—'}%
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="size-4 text-primary" />
-              Ocupação ao vivo
-            </CardTitle>
-            <CardDescription>contagem atual por setor (RLS por escala)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">
-              {(ocupacao ?? []).reduce((a, o) => a + o.internados, 0)}
-            </div>
-            <div className="text-xs text-muted-foreground">pacientes (fonte: ocupacao_setores)</div>
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* O painel "Agora": a mesma gramática da faixa de parâmetros. */}
+      <section aria-label="Agora" className="grid overflow-hidden rounded-container border border-fio bg-superficie sm:grid-cols-3 [&>*+*]:border-t [&>*+*]:border-trilha sm:[&>*+*]:border-t-0 sm:[&>*+*]:border-l">
+        <Parametro
+          grandeza="leitos"
+          icone={BedDouble}
+          rotulo="Internados agora"
+          valor={aoVivo.internados}
+          unidade={aoVivo.leitos ? `de ${aoVivo.leitos} leitos` : undefined}
+          estado={nivelOcupacao === 'critico' ? 'Acima do limite' : nivelOcupacao === 'atencao' ? 'Perto do limite' : 'Dentro da capacidade'}
+          nivel={nivelOcupacao}
+          pct={taxaAoVivo ?? undefined}
+          limite={taxaAoVivo === null ? undefined : 0.85}
+          limiteTexto={taxaAoVivo === null ? undefined : 'limite 85%'}
+        />
+        <Parametro
+          grandeza="leitos"
+          icone={BarChart3}
+          rotulo="Taxa de ocupação agora"
+          valor={taxaAoVivo === null ? '—' : Math.round(taxaAoVivo * 100)}
+          unidade={taxaAoVivo === null ? undefined : '%'}
+          estado={taxaAoVivo === null ? 'Nenhum leito ativo' : 'contagem atual por setor'}
+          nivel={nivelOcupacao}
+        />
+        <Parametro
+          grandeza="turno"
+          icone={CalendarDays}
+          rotulo="Último censo gravado"
+          valor={ultimaData ? fmtDia(ultimaData) : '—'}
+          estado={ultimaData ? `${totalUnidade.internados} internados de ${totalUnidade.leitos} leitos` : 'Nenhum censo gerado ainda'}
+          nivel="ok"
+        />
+      </section>
       {/* Censo por setor (série de 7 dias) */}
       <Card>
         <CardHeader>
