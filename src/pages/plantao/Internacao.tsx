@@ -108,7 +108,7 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
           )}
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             {salvoEm && (
-              <span className="inline-flex items-center gap-1 text-emerald-700">
+              <span className="inline-flex items-center gap-1 text-conforme">
                 <CheckCircle2 className="size-3.5" /> Salvo às {salvoEm}
               </span>
             )}

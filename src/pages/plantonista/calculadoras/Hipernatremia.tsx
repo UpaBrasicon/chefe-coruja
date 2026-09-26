@@ -85,8 +85,8 @@ export function Hipernatremia() {
           </Card>
           <Card>
             <CardContent className="flex flex-col gap-2 pt-6">
-              <p className="text-sm text-amber-700">☞ Solicitar Na⁺ sérico a cada 2 horas.</p>
-              <p className="text-sm text-amber-700">☞ Preferir a via enteral, se disponível.</p>
+              <p className="text-sm text-atencao">☞ Solicitar Na⁺ sérico a cada 2 horas.</p>
+              <p className="text-sm text-atencao">☞ Preferir a via enteral, se disponível.</p>
             </CardContent>
           </Card>
         </div>

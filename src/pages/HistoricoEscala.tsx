@@ -117,7 +117,7 @@ export default function HistoricoEscala({ embutido = false }: { embutido?: boole
               return (
                 <div
                   key={h.id}
-                  className={`rounded-lg border p-2.5 text-sm ${h.acao === 'erro_passagem' ? 'border-red-200 bg-red-50' : ''}`}
+                  className={`rounded-lg border p-2.5 text-sm ${h.acao === 'erro_passagem' ? 'border-critico/30 bg-critico/[0.08]' : ''}`}
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={meta.variant}>{meta.label}</Badge>

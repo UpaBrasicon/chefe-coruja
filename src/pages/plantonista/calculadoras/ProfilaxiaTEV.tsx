@@ -192,7 +192,7 @@ export function ProfilaxiaTEV() {
               </Select>
             </div>
             {cirurgiaOrtop && cirurgiaOrtop !== 'sem' && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+              <div className="rounded-lg border border-atencao/30 bg-atencao/[0.08] p-3 text-sm">
                 <Badge variant="warning" className="mb-1">Alto risco</Badge>
                 <p>Profilaxia obrigatória (farmacológica + mecânica), conforme diretrizes.</p>
               </div>

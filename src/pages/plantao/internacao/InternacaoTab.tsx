@@ -175,17 +175,17 @@ export function InternacaoTab({
               </div>
             </div>
 
-            <div className="mb-2 border-y border-black bg-gray-200 px-2 py-1 text-[11px] font-extrabold uppercase">
+            <div className="mb-2 border-y border-black bg-trilha px-2 py-1 text-[11px] font-extrabold uppercase">
               Identificação do Estabelecimento de Saúde
             </div>
-            <div className="mb-2 border-y border-black bg-gray-200 px-2 py-1 text-[11px] font-extrabold uppercase">
+            <div className="mb-2 border-y border-black bg-trilha px-2 py-1 text-[11px] font-extrabold uppercase">
               Identificação do Paciente
             </div>
 
             <div className="grid grid-cols-3 gap-px border border-black bg-black">
               {campos.map((c) => (
                 <div key={c.nome} className={`flex flex-col bg-white p-1 ${c.className ?? ''}`}>
-                  <Label className="mb-0.5 text-[9px] font-bold uppercase tracking-wide text-gray-800">
+                  <Label className="mb-0.5 text-[9px] font-bold uppercase tracking-wide text-tinta">
                     {c.rotulo}
                   </Label>
                   {c.textarea ? (

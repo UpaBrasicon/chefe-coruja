@@ -17,8 +17,8 @@ const ABAS: AbaDef[] = [
 export default function OrganizacaoGrupo() {
   return (
     <TabsPagina
-      titulo="Organização"
-      descricao="Censo agregado por unidade e gestão de vínculos — sem dados identificáveis de paciente."
+      titulo="Rede"
+      descricao="Censo agregado por unidade e gestão de vínculos. Nenhuma tela do administrador mostra identidade de paciente."
       icone={LayoutDashboard}
       abas={ABAS}
     />

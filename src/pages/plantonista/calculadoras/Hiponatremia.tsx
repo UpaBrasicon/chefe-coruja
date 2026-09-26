@@ -81,7 +81,7 @@ export function Hiponatremia() {
               <Badge className="text-base">{volumeUsado.toFixed(0)} mL</Badge>
               <Badge variant="outline">{(volumeUsado / 24).toFixed(0)} mL/h</Badge>
             </div>
-            <p className="text-xs text-amber-700">
+            <p className="text-xs text-atencao">
               Solicitar Na⁺ sérico a cada 2 horas. Reavaliar constantemente.
             </p>
           </CardContent>

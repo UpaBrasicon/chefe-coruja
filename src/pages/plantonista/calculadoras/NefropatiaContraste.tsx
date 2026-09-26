@@ -90,7 +90,7 @@ export function NefropatiaContraste() {
                   <Badge variant="secondary" className="mb-1">N-Acetilcisteína</Badge>
                   <p>600 mg VO/EV 8/8h — iniciar 24 h antes e manter no dia do exame.</p>
                 </div>
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                <div className="rounded-lg border border-atencao/30 bg-atencao/[0.08] p-3">
                   <Badge variant="warning" className="mb-1">Suspender por 24–48 h</Badge>
                   <p>IECA, BRA, Diuréticos e Metformina — antes e após o exame.</p>
                   <p className="mt-1">Avaliar função renal a cada 48 h.</p>

@@ -303,9 +303,9 @@ export function DadosPaciente({
           )}
 
           {!buscando && pacienteEncontrado && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-              <div className="font-semibold text-emerald-900">{pacienteEncontrado.nome}</div>
-              <div className="text-xs text-emerald-700">
+            <div className="rounded-xl border border-conforme/30 bg-conforme/[0.08] p-3">
+              <div className="font-semibold text-conforme">{pacienteEncontrado.nome}</div>
+              <div className="text-xs text-conforme">
                 CPF {pacienteEncontrado.cpf ?? '—'} · {pacienteEncontrado.sexo ?? ''} ·{' '}
                 {pacienteEncontrado.data_nascimento ?? ''}
               </div>
@@ -338,9 +338,9 @@ export function DadosPaciente({
               </div>
             )}
             {lendoArquivo && (
-              <p className="text-xs text-sky-700">Lendo o arquivo, isso pode levar alguns segundos…</p>
+              <p className="text-xs text-suprimento">Lendo o arquivo, isso pode levar alguns segundos…</p>
             )}
-            {statusArquivo && <p className="text-xs text-emerald-700">{statusArquivo}</p>}
+            {statusArquivo && <p className="text-xs text-conforme">{statusArquivo}</p>}
           </div>
         </div>
 

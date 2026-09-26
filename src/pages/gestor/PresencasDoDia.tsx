@@ -48,7 +48,7 @@ export function PresencasDoDia() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-4 text-sm text-critico">
         Falha ao carregar presenças: {(error as Error).message}
       </div>
     )
@@ -71,9 +71,9 @@ export function PresencasDoDia() {
             Presenças de hoje
           </CardTitle>
           <CardDescription>
-            <span className="font-medium text-emerald-700">{feitos.length} em expediente</span>
+            <span className="font-medium text-conforme">{feitos.length} em expediente</span>
             {' · '}
-            <span className="font-medium text-amber-700">{pendentes.length} sem check-in</span>
+            <span className="font-medium text-atencao">{pendentes.length} sem check-in</span>
             {' · '}
             <span className="font-medium text-muted-foreground">{concluidos.length} concluídos</span>
           </CardDescription>
@@ -100,7 +100,7 @@ export function PresencasDoDia() {
                       {new Date(p.checkin_em).toLocaleTimeString('pt-BR')}
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 font-medium text-amber-700">
+                    <span className="flex items-center gap-1 font-medium text-atencao">
                       <Clock className="size-3.5" /> aguardando
                     </span>
                   )}

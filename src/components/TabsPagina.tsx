@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ChevronRight, type LucideIcon } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { type LucideIcon } from 'lucide-react'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Spinner } from '@/components/ui/spinner'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 
 export type AbaDef = {
   /** Valor na URL (`?aba=`). Mantê-lo estável — vira link compartilhável. */
@@ -52,40 +52,21 @@ export function TabsPagina({
   }
 
   return (
-    <div className={`mx-auto flex w-full ${largura} flex-col gap-6`}>
-      <div className="flex flex-col gap-1">
-        {breadcrumb && breadcrumb.length > 0 && (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            {breadcrumb.map((b, i) => (
-              <React.Fragment key={`${b.rotulo}-${i}`}>
-                {i > 0 && <ChevronRight className="size-3.5" />}
-                {b.para ? (
-                  <Link to={b.para} className="transition-colors hover:text-foreground">
-                    {b.rotulo}
-                  </Link>
-                ) : (
-                  <span className="font-medium text-foreground">{b.rotulo}</span>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        )}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            {Icone && (
-              <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Icone className="size-5" />
-              </span>
-            )}
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">{titulo}</h1>
-              {descricao && <p className="text-sm text-muted-foreground">{descricao}</p>}
-            </div>
+    <div className={`flex w-full ${largura === 'max-w-6xl' ? '' : largura} flex-col`}>
+      {breadcrumb && breadcrumb.length > 0 && (
+        <Trilha niveis={breadcrumb.map((b) => ({ rotulo: b.rotulo, to: b.para }))} />
+      )}
+      {Icone ? (
+        <TituloPagina icone={Icone} titulo={titulo} descricao={descricao} acoes={acoes} />
+      ) : (
+        <header className="mb-[22px] flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">{titulo}</h1>
+            {descricao && <p className="mt-1 text-apoio text-tinta-sussurro">{descricao}</p>}
           </div>
           {acoes}
-        </div>
-      </div>
-
+        </header>
+      )}
       <Tabs value={ativa} onValueChange={(v) => trocar(String(v))}>
         <TabsList variant="line" className="w-full overflow-x-auto">
           {abas.map((a) => (

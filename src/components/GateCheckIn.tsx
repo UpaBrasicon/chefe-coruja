@@ -250,17 +250,17 @@ export function GateCheckIn() {
           {/* Corpo */}
           <div className="flex flex-col gap-4 p-6">
             {erro && (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{erro}</div>
+              <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>
             )}
 
             {ativo ? (
-              <div className="flex flex-col gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <div className="flex flex-col gap-3 rounded-xl border border-conforme/30 bg-conforme/[0.08] p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="success">Em expediente</Badge>
                   {ativo.checkin_dentro === true && <Badge variant="success">Dentro do raio</Badge>}
                   {ativo.checkin_dentro === false && <Badge variant="destructive">Fora do raio</Badge>}
                 </div>
-                <p className="text-sm text-emerald-900">
+                <p className="text-sm text-conforme">
                   Check-in às{' '}
                   <span className="font-mono font-semibold">
                     {ativo.checkin_em ? new Date(ativo.checkin_em).toLocaleTimeString('pt-BR') : '-'}

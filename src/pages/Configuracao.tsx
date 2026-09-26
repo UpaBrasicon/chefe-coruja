@@ -136,7 +136,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
         </div>
       )}
 
-      {erro && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{erro}</div>}
+      {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
 
       <FormUnidade key={unidade.id} unidade={unidade} unidadeId={unidadeId} />
 
@@ -316,7 +316,7 @@ function FormUnidade({ unidade, unidadeId }: { unidade: UnidadeConfig; unidadeId
             </div>
           </div>
           {erro && <p className="text-sm text-destructive">{erro}</p>}
-          {msg && <p className="text-sm text-emerald-700">{msg}</p>}
+          {msg && <p className="text-sm text-conforme">{msg}</p>}
           <div>
             <Button onClick={salvarUnidade} disabled={salvando}>
               {salvando ? <Loader2 className="animate-spin" /> : <Check />} Salvar unidade

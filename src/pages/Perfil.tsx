@@ -205,11 +205,11 @@ export default function Perfil() {
       </div>
 
       {salvo && (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+        <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">
           ✓ Perfil salvo com sucesso.
         </div>
       )}
-      {erro && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{erro}</div>}
+      {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
 
       {/* Foto + identificação */}
       <Card>
@@ -448,7 +448,7 @@ export default function Perfil() {
           </div>
 
           {dados.alergias_medicamentosas || dados.restricoes_trabalho ? (
-            <p className="flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-800">
+            <p className="flex items-center gap-1.5 rounded-lg border border-atencao/30 bg-atencao/[0.08] p-2.5 text-xs text-atencao">
               <AlertTriangle className="size-3.5" /> Estas informações ficam visíveis à gestão para sua segurança no plantão.
             </p>
           ) : null}

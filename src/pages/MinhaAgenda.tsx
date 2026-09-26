@@ -24,11 +24,11 @@ type MeuPlantao = {
 }
 
 const CORES_UNIDADE = [
-  'bg-emerald-500/15 text-emerald-700',
-  'bg-sky-500/15 text-sky-700',
-  'bg-violet-500/15 text-violet-700',
-  'bg-amber-500/15 text-amber-700',
-  'bg-rose-500/15 text-rose-700',
+  'bg-leitos/15 text-conforme',
+  'bg-suprimento/15 text-suprimento',
+  'bg-pediatria/15 text-pediatria',
+  'bg-observacao/15 text-atencao',
+  'bg-critico/15 text-critico',
 ]
 
 export default function MinhaAgenda({ embutido = false }: { embutido?: boolean } = {}) {

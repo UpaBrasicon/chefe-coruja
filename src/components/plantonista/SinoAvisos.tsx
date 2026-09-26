@@ -37,7 +37,7 @@ export function SinoAvisos({ unidadeId, habilitado }: { unidadeId?: string; habi
           <Button variant="ghost" size="sm" className="relative" aria-label="Avisos">
             <Bell />
             {pendentes > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+              <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-critico px-1.5 text-[10px] font-bold text-white">
                 {pendentes}
               </span>
             )}
@@ -61,7 +61,7 @@ export function SinoAvisos({ unidadeId, habilitado }: { unidadeId?: string; habi
               ) : (
                 <div className="flex flex-col gap-2">
                   {lista.map((n) => (
-                    <div key={n.id} className={`rounded-lg border p-2 text-sm ${n.lida ? 'bg-muted/30' : 'bg-amber-50'}`}>
+                    <div key={n.id} className={`rounded-lg border p-2 text-sm ${n.lida ? 'bg-muted/30' : 'bg-atencao/[0.08]'}`}>
                       <div className="text-xs font-semibold text-muted-foreground">{fmtHora(n.created_at)}</div>
                       <div className="mt-0.5 leading-snug">{n.mensagem}</div>
                     </div>

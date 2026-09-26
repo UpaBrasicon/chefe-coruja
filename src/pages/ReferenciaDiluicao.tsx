@@ -144,7 +144,7 @@ export default function ReferenciaDiluicao({ embutido = false }: { embutido?: bo
                   >
                     <span className="flex items-center gap-2 text-sm font-medium">
                       {m.principio_ativo}
-                      {m.alta_vigilancia && <ShieldAlert className="size-3.5 text-amber-600" />}
+                      {m.alta_vigilancia && <ShieldAlert className="size-3.5 text-atencao" />}
                     </span>
                     <span className="text-[11px] text-muted-foreground">
                       {m.concentracao ?? '—'}

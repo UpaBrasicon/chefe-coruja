@@ -155,7 +155,7 @@ export function EvolucaoTab({
           <p className="text-xs text-muted-foreground">
             O texto gerado pode ser editado à vontade. Ele é salvo automaticamente no navegador.
           </p>
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
+          <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-xs text-conforme">
             <div className="mb-1 font-semibold">Documentos no prontuário</div>
             {carregandoDocs ? (
               <span className="inline-flex items-center gap-1">
@@ -199,8 +199,8 @@ export function EvolucaoTab({
             <div
               className={`rounded-lg border p-2.5 text-xs ${
                 msg.startsWith('Erro')
-                  ? 'border-red-200 bg-red-50 text-red-700'
-                  : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                  ? 'border-critico/30 bg-critico/[0.08] text-critico'
+                  : 'border-conforme/30 bg-conforme/[0.08] text-conforme'
               }`}
             >
               {msg}

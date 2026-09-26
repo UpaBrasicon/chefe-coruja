@@ -64,7 +64,7 @@ export function QuizGame({
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {questoes.map((quest, i) => (
-              <div key={i} className={cn('rounded-lg border px-3 py-2 text-sm', respostas[i] === quest.correta ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50')}>
+              <div key={i} className={cn('rounded-lg border px-3 py-2 text-sm', respostas[i] === quest.correta ? 'border-conforme/30 bg-conforme/[0.08]' : 'border-critico/30 bg-critico/[0.08]')}>
                 <p className="font-medium">{quest.pergunta}</p>
                 <p className="text-xs text-muted-foreground">
                   {respostas[i] === quest.correta ? '✓ Correto' : `✗ Sua resposta: ${quest.opcoes[respostas[i]]}`} · Resposta: {quest.opcoes[quest.correta]}
@@ -99,8 +99,8 @@ export function QuizGame({
                 className={cn(
                   'rounded-lg border px-3 py-2 text-left text-sm transition-colors',
                   resposta === undefined && 'hover:bg-muted/50',
-                  resposta !== undefined && i === q.correta && 'border-emerald-300 bg-emerald-50',
-                  resposta === i && i !== q.correta && 'border-red-300 bg-red-50',
+                  resposta !== undefined && i === q.correta && 'border-conforme/30 bg-conforme/[0.08]',
+                  resposta === i && i !== q.correta && 'border-critico/30 bg-critico/[0.08]',
                   resposta !== undefined && i !== q.correta && i !== resposta && 'opacity-60'
                 )}
               >

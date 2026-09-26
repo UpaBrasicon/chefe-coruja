@@ -194,7 +194,7 @@ export function AtestadoMedico({
                 <Trash2 /> Limpar
               </Button>
             </div>
-            {salvoEm && <span className="text-xs text-emerald-700">Salvo às {salvoEm}</span>}
+            {salvoEm && <span className="text-xs text-conforme">Salvo às {salvoEm}</span>}
           </div>
         </CardContent>
       </Card>

@@ -76,7 +76,7 @@ export function Hidantalizacao() {
             <Badge variant="secondary">Tempo de infusão: {tempoMin.toFixed(0)} min</Badge>
             <Badge variant="secondary">Vazão: {vazaoMlH.toFixed(0)} mL/h</Badge>
           </div>
-          <p className="text-xs text-amber-700">
+          <p className="text-xs text-atencao">
             ☞ Durante a infusão, monitoramento contínuo de FC e PA. Reduzir a taxa em caso de efeitos
             colaterais.
           </p>

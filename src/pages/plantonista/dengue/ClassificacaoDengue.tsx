@@ -128,7 +128,7 @@ export function ClassificacaoDengue() {
         </CardContent>
       </Card>
 
-      <Card className={grupo === 'D' ? 'border-red-400' : grupo === 'C' ? 'border-amber-400' : 'border-primary'}>
+      <Card className={grupo === 'D' ? 'border-critico/30' : grupo === 'C' ? 'border-atencao/30' : 'border-primary'}>
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-base">
             Grupo
@@ -159,13 +159,13 @@ export function ClassificacaoDengue() {
               <p><strong>1ª hora:</strong> {hidratacao.C.expansao1}</p>
               <p><strong>2ª hora:</strong> {hidratacao.C.expansao2}</p>
               <p><strong>Manutenção:</strong> {hidratacao.C.manutencao}</p>
-              <p className="text-amber-700">☞ Hemograma, albumina e transaminases obrigatórios. Internação até estabilização (mín. 48 h). Reavaliar após 1 h e Ht a cada 2 h.</p>
+              <p className="text-atencao">☞ Hemograma, albumina e transaminases obrigatórios. Internação até estabilização (mín. 48 h). Reavaliar após 1 h e Ht a cada 2 h.</p>
             </>
           )}
           {grupo === 'D' && (
             <>
               <p><strong>Expansão rápida:</strong> {hidratacao.D.expansao}</p>
-              <p className="text-red-700">☞ Reavaliação a cada 15–30 min, Ht a cada 2 h. Acompanhamento preferencial em UTI.</p>
+              <p className="text-critico">☞ Reavaliação a cada 15–30 min, Ht a cada 2 h. Acompanhamento preferencial em UTI.</p>
             </>
           )}
         </CardContent>

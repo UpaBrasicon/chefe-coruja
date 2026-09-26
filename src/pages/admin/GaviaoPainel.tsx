@@ -56,9 +56,9 @@ const METRICA_LABEL: Record<string, string> = {
 }
 
 const SEVERIDADE_COR: Record<string, string> = {
-  critico: 'bg-red-100 text-red-700',
-  atencao: 'bg-amber-100 text-amber-700',
-  informativo: 'bg-sky-100 text-sky-700',
+  critico: 'bg-critico/[0.12] text-critico',
+  atencao: 'bg-atencao/[0.12] text-atencao',
+  informativo: 'bg-suprimento/[0.12] text-suprimento',
 }
 
 export function GaviaoPainel() {
@@ -82,7 +82,7 @@ export function GaviaoPainel() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-4 text-sm text-critico">
         Falha ao carregar o painel do Gavião: {(error as Error).message}
       </div>
     )
@@ -107,7 +107,7 @@ export function GaviaoPainel() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <AlertTriangle className="size-4 text-red-600" /> Incidentes abertos
+              <AlertTriangle className="size-4 text-critico" /> Incidentes abertos
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -117,7 +117,7 @@ export function GaviaoPainel() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Activity className="size-4 text-amber-600" /> Alertas de escala ativos
+              <Activity className="size-4 text-atencao" /> Alertas de escala ativos
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -127,7 +127,7 @@ export function GaviaoPainel() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="size-4 text-emerald-600" /> Última verificação
+              <CheckCircle2 className="size-4 text-conforme" /> Última verificação
             </CardTitle>
           </CardHeader>
           <CardContent>

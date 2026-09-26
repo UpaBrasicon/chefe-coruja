@@ -202,7 +202,7 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
       </Card>
 
       {!internacao && pacienteId && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-lg border border-atencao/30 bg-atencao/[0.08] px-4 py-3 text-sm text-atencao">
           Nenhuma internação ativa para este paciente.
         </div>
       )}
@@ -287,10 +287,10 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
                 ))}
               </div>
               {registrar.isError && (
-                <p className="text-sm text-red-600">{(registrar.error as Error).message}</p>
+                <p className="text-sm text-critico">{(registrar.error as Error).message}</p>
               )}
               {registrar.isSuccess && (
-                <p className="text-sm text-emerald-700">Sinais vitais registrados.</p>
+                <p className="text-sm text-conforme">Sinais vitais registrados.</p>
               )}
               <div className="flex justify-end gap-2">
                 <Button variant="ghost" onClick={() => setForm({})}>

@@ -93,7 +93,7 @@ export function ControleGlicemico() {
 
             <div className="flex flex-col gap-2">
               {boloSugerido(faixaInicio) && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+                <div className="rounded-lg border border-atencao/30 bg-atencao/[0.08] p-3 text-sm">
                   <Badge variant="warning" className="mb-1">Bólus de Insulina</Badge>
                   <p>Insulina Regular (100 UI/mL): 1 mL + 99 mL SF 0,9% → <strong>3 mL EV</strong> em bólus.</p>
                 </div>
@@ -144,19 +144,19 @@ export function ControleGlicemico() {
             {ajustado && (
               <div className="flex flex-col gap-2">
                 {orientacao.severidade === 'hipo' && (
-                  <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
+                  <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm">
                     <Badge variant="destructive" className="mb-1">Suspender infusão</Badge>
                     <p>Administrar imediatamente <strong>40 mL de Glicose 50%</strong> EV. Comunicar médico/enfermagem. Checar dieta ou SG 10%.</p>
                   </div>
                 )}
                 {orientacao.severidade === 'baixo' && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+                  <div className="rounded-lg border border-atencao/30 bg-atencao/[0.08] p-3 text-sm">
                     <Badge variant="warning" className="mb-1">Suspender infusão</Badge>
                     <p>Checar de <strong>1/1h por até 6 horas</strong>. Se mantiver entre 70–99 após 6h, checar de 2/2h por 24h. Se &gt; 140 mg/dL, reiniciar infusão a <strong>1 mL/h</strong>.</p>
                   </div>
                 )}
                 {orientacao.severidade === 'meta' && (
-                  <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm">
+                  <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm">
                     <Badge variant="success" className="mb-1">Meta atingida!</Badge>
                     <p>Manter a infusão em <strong>{vazao} mL/h</strong>.</p>
                   </div>
@@ -168,13 +168,13 @@ export function ControleGlicemico() {
                   </div>
                 )}
                 {orientacao.severidade === 'muitoAlto' && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+                  <div className="rounded-lg border border-atencao/30 bg-atencao/[0.08] p-3 text-sm">
                     <Badge variant="warning" className="mb-1">Aumentar vazão</Badge>
                     <p>Bólus de insulina <strong>3 mL EV</strong> e aumentar a vazão em <strong>3 mL/h</strong> (para {vazao + 3} mL/h).</p>
                   </div>
                 )}
                 {orientacao.severidade === 'critico' && (
-                  <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
+                  <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm">
                     <Badge variant="destructive" className="mb-1">Glicemia crítica</Badge>
                     <p>Bólus de insulina <strong>3 mL EV</strong>, aumentar vazão em <strong>4 mL/h</strong> (para {vazao + 4} mL/h) e comunicar médico imediatamente.</p>
                   </div>

@@ -253,7 +253,7 @@ export function ExportarTab({
             {gerando ? <Loader2 className="animate-spin" /> : <Download />} Baixar Documentos Selecionados (PDF)
           </Button>
 
-          <p className="text-xs text-amber-800">
+          <p className="text-xs text-atencao">
             💡 O nome do arquivo será gerado a partir do nome do paciente preenchido em Dados do
             Paciente. As abas salvas automaticamente já estão prontas para exportação.
           </p>

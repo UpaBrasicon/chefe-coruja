@@ -238,12 +238,12 @@ export function PrescricaoTab({
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {dados.alergias && dados.alergias.toUpperCase() !== 'NEGA' && (
-            <div className="rounded-lg bg-red-600 px-4 py-3 text-center text-sm font-bold text-white">
+            <div className="rounded-lg bg-critico px-4 py-3 text-center text-sm font-bold text-white">
               ⚠ ALERGIA: {dados.alergias.toUpperCase()}
             </div>
           )}
           {prescricaoBanco && (
-            <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+            <p className="rounded-lg border border-conforme/30 bg-conforme/[0.08] px-3 py-2 text-xs text-conforme">
               ✓ Prescrição carregada do sistema: {(prescricaoBanco.prescricao_itens ?? []).length} item(ns) — itens
               correspondentes marcados.
             </p>
@@ -295,7 +295,7 @@ export function PrescricaoTab({
               <Printer /> Imprimir
             </Button>
             <Button variant="outline" onClick={copiar} disabled={!itensSelecionados.length}>
-              {copiado ? <Check className="text-emerald-600" /> : <Clipboard />} {copiado ? 'Copiado!' : 'Copiar'}
+              {copiado ? <Check className="text-conforme" /> : <Clipboard />} {copiado ? 'Copiado!' : 'Copiar'}
             </Button>
             <Button
               variant="secondary"
@@ -303,7 +303,7 @@ export function PrescricaoTab({
               disabled={registrando}
               title="Necessário para encaminhar o paciente à observação"
             >
-              {registrando ? <span className="size-4 animate-spin rounded-full border-2 border-sky-300 border-t-sky-600" /> : <FileCheck2 />}
+              {registrando ? <span className="size-4 animate-spin rounded-full border-2 border-suprimento/30 border-t-sky-600" /> : <FileCheck2 />}
               {registrado ? 'Prescrição registrada!' : 'Registrar prescrição'}
             </Button>
           </div>

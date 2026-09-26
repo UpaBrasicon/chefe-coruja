@@ -17,7 +17,7 @@ export function FluxogramaDengue() {
     >
       <div className="flex flex-col gap-3">
         {grupos.map((g, i) => (
-          <Card key={g.grupo} className={g.cor === 'destructive' ? 'border-red-400' : g.cor === 'warning' ? 'border-amber-400' : undefined}>
+          <Card key={g.grupo} className={g.cor === 'destructive' ? 'border-critico/30' : g.cor === 'warning' ? 'border-atencao/30' : undefined}>
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <CardTitle className="flex items-center gap-2 text-base">
                 {i + 1}. Grupo <Badge className="text-base">{g.grupo}</Badge>

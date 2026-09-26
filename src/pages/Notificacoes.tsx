@@ -57,7 +57,7 @@ export default function Notificacoes() {
             <p className="text-sm text-muted-foreground">Nenhuma notificação ainda.</p>
           ) : (
             (notificacoes ?? []).map((n) => (
-              <div key={n.id} className={`rounded-lg border p-2 text-sm ${n.lida ? 'bg-muted/30' : 'bg-amber-50'}`}>
+              <div key={n.id} className={`rounded-lg border p-2 text-sm ${n.lida ? 'bg-muted/30' : 'bg-atencao/[0.08]'}`}>
                 <div className="flex items-center gap-2">
                   <span className="flex-1">{n.mensagem}</span>
                   <Badge variant={n.lida ? 'secondary' : 'warning'}>{n.lida ? 'Lida' : 'Nova'}</Badge>

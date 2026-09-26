@@ -32,7 +32,7 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
     queryFn: () => getPainelInternacao(internacaoId),
   })
 
-  if (isError) return <p className="text-sm text-red-600">Erro ao carregar observações.</p>
+  if (isError) return <p className="text-sm text-critico">Erro ao carregar observações.</p>
   if (isFetching && !painel) return <Skeleton className="h-40 w-full" />
 
   const itens = painel?.itens ?? []
@@ -78,7 +78,7 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
               </td>
               <td className="px-3 py-1.5 text-right font-mono text-xs">
                 {item.delta != null ? (
-                  <span className={cn(item.delta > 0 ? 'text-red-600' : item.delta < 0 ? 'text-sky-600' : 'text-muted-foreground')}>
+                  <span className={cn(item.delta > 0 ? 'text-critico' : item.delta < 0 ? 'text-suprimento' : 'text-muted-foreground')}>
                     {item.delta > 0 ? '+' : ''}
                     {item.delta}
                   </span>

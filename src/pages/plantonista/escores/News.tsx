@@ -119,7 +119,7 @@ export function News() {
                 : 'Monitorar no mínimo de 6/6 horas.'}
           </p>
           {picoUnico === 3 && (
-            <p className="text-amber-700">☞ Alto risco: variação extrema em um único parâmetro (3 pontos).</p>
+            <p className="text-atencao">☞ Alto risco: variação extrema em um único parâmetro (3 pontos).</p>
           )}
         </CardContent>
       </Card>

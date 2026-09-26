@@ -180,8 +180,8 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
         </div>
       )}
 
-      {erro && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{erro}</div>}
-      {sucesso && <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{sucesso}</div>}
+      {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
+      {sucesso && <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">{sucesso}</div>}
 
       <Card>
         <CardHeader>
@@ -209,7 +209,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
           {geoMsg && <p className="text-xs text-muted-foreground">{geoMsg}</p>}
 
           {ativoHoje ? (
-            <div className="flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <div className="flex flex-col gap-3 rounded-lg border border-atencao/30 bg-atencao/[0.08] p-4">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Badge variant="warning">Em expediente</Badge>
                 <span>

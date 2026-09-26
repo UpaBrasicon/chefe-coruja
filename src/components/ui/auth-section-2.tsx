@@ -184,7 +184,7 @@ function AuthForm({
         />
 
         {erro && (
-          <p className="rounded-[8px] border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+          <p className="rounded-[8px] border border-critico/30 bg-critico/[0.08] px-3 py-2 text-xs text-critico dark:border-critico/30 dark:bg-critico/40 dark:text-critico">
             {erro}
           </p>
         )}

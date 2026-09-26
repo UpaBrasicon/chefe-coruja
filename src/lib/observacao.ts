@@ -170,9 +170,9 @@ export async function getPainelInternacao(internacaoId: string): Promise<PainelI
 /** Cor do flag para UI (flowsheet/gráfico). */
 export function corDoFlag(flag: FlagObs | string | null): string {
   switch (flag) {
-    case 'CRIT': return 'bg-red-600 text-white'
-    case 'H': return 'bg-amber-400 text-amber-950'
-    case 'L': return 'bg-sky-300 text-sky-950'
+    case 'CRIT': return 'bg-critico text-white'
+    case 'H': return 'bg-atencao/[0.12] text-atencao'
+    case 'L': return 'bg-suprimento/[0.12] text-suprimento'
     default: return 'bg-muted text-foreground'
   }
 }

@@ -271,13 +271,13 @@ export function ReceituarioMedico({
                 <Printer /> Imprimir
               </Button>
               <Button variant="outline" onClick={copiar}>
-                {copiado ? <Check className="text-emerald-600" /> : <Clipboard />} {copiado ? 'Copiado!' : 'Copiar'}
+                {copiado ? <Check className="text-conforme" /> : <Clipboard />} {copiado ? 'Copiado!' : 'Copiar'}
               </Button>
               <Button variant="ghost" onClick={limpar}>
                 <Trash2 /> Limpar
               </Button>
             </div>
-            {salvoEm && <span className="text-xs text-emerald-700">Salvo às {salvoEm}</span>}
+            {salvoEm && <span className="text-xs text-conforme">Salvo às {salvoEm}</span>}
           </div>
         </CardContent>
       </Card>

@@ -266,8 +266,8 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
         </div>
       )}
 
-      {erro && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{erro}</div>}
-      {msg && <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</div>}
+      {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
+      {msg && <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">{msg}</div>}
 
       <Card>
         <CardHeader>
@@ -369,7 +369,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                         <Pill className="size-3.5 text-muted-foreground" />
                         {m.principio_ativo}
                         {m.concentracao && <span className="text-xs font-normal text-muted-foreground">{m.concentracao}</span>}
-                        {m.alta_vigilancia && <ShieldAlert className="size-3.5 text-amber-600" />}
+                        {m.alta_vigilancia && <ShieldAlert className="size-3.5 text-atencao" />}
                       </span>
                       <span className="text-[11px] text-muted-foreground">
                         {m.apresentacao ?? '—'}
@@ -420,7 +420,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                     {item.medicamento.concentracao && (
                       <span className="font-normal text-muted-foreground">{item.medicamento.concentracao}</span>
                     )}
-                    {item.medicamento.alta_vigilancia && <ShieldAlert className="size-3.5 text-amber-600" />}
+                    {item.medicamento.alta_vigilancia && <ShieldAlert className="size-3.5 text-atencao" />}
                     {item.diluicaoPublicada && <Badge variant="success">Diluição publicada</Badge>}
                   </span>
                   <span className="text-xs text-muted-foreground">
@@ -451,7 +451,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                 </div>
               </div>
               <div className="mt-2 flex flex-col gap-1">
-                <label className="text-xs font-medium text-sky-700">
+                <label className="text-xs font-medium text-suprimento">
                   {item.diluicaoPublicada ? 'Diluição (publicada pelo farmacêutico)' : 'Diluição (editável)'}
                 </label>
                 <Input

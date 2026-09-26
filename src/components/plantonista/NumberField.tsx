@@ -57,7 +57,7 @@ export function NumberField({
         }}
       />
       {normalMin !== undefined && normalMax !== undefined && (
-        <p className={`text-xs ${fora ? 'text-amber-600' : 'text-muted-foreground'}`}>
+        <p className={`text-xs ${fora ? 'text-atencao' : 'text-muted-foreground'}`}>
           {normalLabel ?? 'Faixa normal'}: {normalMin} – {normalMax}
           {fora && ' ⚠ fora do intervalo'}
         </p>

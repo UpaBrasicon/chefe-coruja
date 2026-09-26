@@ -113,7 +113,7 @@ export function Thread({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Aviso fixo */}
-      <div className="border-b bg-amber-50 px-3 py-1.5 text-center text-[11px] font-medium text-amber-800">
+      <div className="border-b bg-atencao/[0.08] px-3 py-1.5 text-center text-[11px] font-medium text-atencao">
         ⚠ Evite dados identificáveis de paciente. Use leito/iniciais.
       </div>
 

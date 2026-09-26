@@ -35,9 +35,9 @@ function fmtDia(iso: string) {
 
 function corTaxa(taxa: number | null) {
   if (taxa == null) return 'text-muted-foreground'
-  if (taxa >= 90) return 'text-red-600'
-  if (taxa >= 85) return 'text-amber-600'
-  return 'text-emerald-600'
+  if (taxa >= 90) return 'text-critico'
+  if (taxa >= 85) return 'text-atencao'
+  return 'text-conforme'
 }
 
 export default function Indicadores() {
@@ -239,7 +239,7 @@ export default function Indicadores() {
               return (
                 <div key={o.setor_id} className="flex items-center justify-between rounded-lg border p-2.5 text-sm">
                   <span className="font-medium">{o.setor_nome}</span>
-                  <span className={`font-bold ${lotado ? 'text-red-600' : alerta ? 'text-amber-600' : 'text-foreground'}`}>
+                  <span className={`font-bold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-foreground'}`}>
                     {o.internados}/{o.limite || '∞'}
                     {lotado && ' · LOTADO'}
                   </span>

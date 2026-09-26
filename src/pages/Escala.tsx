@@ -852,7 +852,7 @@ export default function Escala({
                   onClick={fecharDia}
                   className="group relative h-14 w-48 rounded-2xl bg-white text-xl font-semibold text-black transition-shadow hover:shadow-md"
                 >
-                  <div className="absolute top-[4px] left-1 z-10 flex h-12 w-1/4 items-center justify-center rounded-xl bg-green-400 duration-500 group-hover:w-[184px]">
+                  <div className="absolute top-[4px] left-1 z-10 flex h-12 w-1/4 items-center justify-center rounded-xl bg-leitos duration-500 group-hover:w-[184px]">
                     <ChevronLeft className="size-6 text-black" />
                   </div>
                   <p className="translate-x-2">Voltar</p>
@@ -877,10 +877,10 @@ export default function Escala({
                     {plantoesDoDia(diaSelecionado).map((p) => (
                       <span
                         key={p.id}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-600 bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow-sm"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-conforme/30 bg-leitos px-3 py-2 text-sm font-semibold text-white shadow-sm"
                       >
                         {TURNO_LABEL[p.turno]}
-                        <span className="font-normal text-emerald-50">
+                        <span className="font-normal text-white">
                           {TURNOS.find((t) => t.id === p.turno)?.horario}
                         </span>
                         {p.quinzenal && <span className="text-[10px] font-bold text-white">15/15</span>}
@@ -899,7 +899,7 @@ export default function Escala({
                           className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
                           onClick={() => setAcao('sair_fixo')}
                         >
-                          <LogOut className="size-4 text-amber-600" />
+                          <LogOut className="size-4 text-atencao" />
                           <span className="font-medium">Sair do fixo</span>
                           <span className="text-[11px] font-normal text-muted-foreground">
                             Aviso prévio de 15 dias
@@ -910,7 +910,7 @@ export default function Escala({
                           className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
                           onClick={() => setAcao('passar_plantao')}
                         >
-                          <RefreshCcw className="size-4 text-sky-600" />
+                          <RefreshCcw className="size-4 text-suprimento" />
                           <span className="font-medium">Passar plantão</span>
                           <span className="text-[11px] font-normal text-muted-foreground">
                             Transferir para outro plantonista
@@ -921,7 +921,7 @@ export default function Escala({
                           className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
                           onClick={() => setAcao('trocar_plantao')}
                         >
-                          <RefreshCcw className="size-4 text-violet-600" />
+                          <RefreshCcw className="size-4 text-pediatria" />
                           <span className="font-medium">Trocar plantão</span>
                           <span className="text-[11px] font-normal text-muted-foreground">
                             Troca bilateral com outro plantonista
@@ -932,7 +932,7 @@ export default function Escala({
                           className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
                           onClick={() => setAcao('fracionar')}
                         >
-                          <FileText className="size-4 text-rose-600" />
+                          <FileText className="size-4 text-critico" />
                           <span className="font-medium">Fracionar plantão</span>
                           <span className="text-[11px] font-normal text-muted-foreground">
                             Dividir em partes para negociação
@@ -943,7 +943,7 @@ export default function Escala({
                           className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
                           onClick={() => setAcao('justificar_falta')}
                         >
-                          <FileText className="size-4 text-indigo-600" />
+                          <FileText className="size-4 text-suprimento" />
                           <span className="font-medium">Justificar falta</span>
                           <span className="text-[11px] font-normal text-muted-foreground">
                             Atestado ou licença
@@ -953,7 +953,7 @@ export default function Escala({
                     </div>
                   ) : acao === 'sair_fixo' ? (
                     <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
-                      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                      <div className="rounded-lg border border-atencao/30 bg-atencao/[0.08] p-3 text-sm text-atencao">
                         <strong>Aviso prévio:</strong> a saída do plantão fixo deve ser comunicada com{' '}
                         <strong>pelo menos 15 dias de antecedência</strong>. Faltam{' '}
                         <strong>{Math.max(0, diasPara(diaSelecionado))} dia(s)</strong> para este plantão.
@@ -968,7 +968,7 @@ export default function Escala({
                         />
                       </div>
                       {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
-                      {mensagem && <p className="mt-2 text-sm text-emerald-700">{mensagem}</p>}
+                      {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
                           Voltar
@@ -1026,7 +1026,7 @@ export default function Escala({
                         conflito de horário são feitas automaticamente.
                       </p>
                       {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
-                      {mensagem && <p className="mt-2 text-sm text-emerald-700">{mensagem}</p>}
+                      {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
                           Voltar
@@ -1056,7 +1056,7 @@ export default function Escala({
                         negociação parcial. Cada parte pode ser candidatada por outros plantonistas.
                       </p>
                       {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
-                      {mensagem && <p className="mt-2 text-sm text-emerald-700">{mensagem}</p>}
+                      {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
                           Voltar
@@ -1101,7 +1101,7 @@ export default function Escala({
                         configuração da unidade). A pessoa que recebe o plantão será notificada.
                       </p>
                       {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
-                      {mensagem && <p className="mt-2 text-sm text-emerald-700">{mensagem}</p>}
+                      {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
                           Voltar
@@ -1150,7 +1150,7 @@ export default function Escala({
                         />
                       </div>
                       {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
-                      {mensagem && <p className="mt-2 text-sm text-emerald-700">{mensagem}</p>}
+                      {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
                           Voltar
@@ -1168,7 +1168,7 @@ export default function Escala({
                     <div
                       key={d}
                       className={`py-1 text-[11px] font-bold uppercase tracking-wide ${
-                        idx === 0 || idx === 6 ? 'text-amber-700' : 'text-muted-foreground'
+                        idx === 0 || idx === 6 ? 'text-atencao' : 'text-muted-foreground'
                       }`}
                     >
                       {d}
@@ -1189,9 +1189,9 @@ export default function Escala({
                         onClick={() => (plantoes.length ? abrirDia(c.iso) : undefined)}
                         className={`flex min-h-[76px] flex-col gap-1 rounded-lg border p-1.5 text-left transition-all duration-200 ${
                           plantoes.length
-                            ? 'border-emerald-700 bg-emerald-500 text-white shadow-md hover:bg-emerald-600 hover:shadow-lg'
+                            ? 'border-conforme/30 bg-leitos text-white shadow-md hover:bg-leitos hover:shadow-lg'
                             : fimSemana
-                              ? 'border-amber-200 bg-amber-50 hover:bg-amber-100'
+                              ? 'border-atencao/30 bg-atencao/[0.08] hover:bg-atencao/[0.12]'
                               : 'border-border bg-white hover:bg-muted'
                         } ${selecionado ? 'ring-2 ring-primary ring-offset-2' : ''} ${eHoje ? 'ring-2 ring-primary/60' : ''}`}
                       >
@@ -1202,8 +1202,8 @@ export default function Escala({
                               : eHoje
                                 ? 'bg-primary text-primary-foreground'
                                 : fimSemana
-                                  ? 'bg-amber-200 text-amber-900'
-                                  : 'bg-slate-100 text-slate-900'
+                                  ? 'bg-atencao/20 text-atencao'
+                                  : 'bg-trilha text-tinta'
                           }`}
                         >
                           {c.dia}
@@ -1212,7 +1212,7 @@ export default function Escala({
                           <span
                             key={t}
                             className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
-                              plantoes.length ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'
+                              plantoes.length ? 'bg-white/25 text-white' : 'bg-trilha text-tinta-apoio'
                             }`}
                           >
                             {TURNO_LABEL[t]}
@@ -1258,7 +1258,7 @@ export default function Escala({
                       </span>
                     </div>
                     {t.status === 'erro' && t.erro && (
-                      <span className="text-xs text-red-600">{t.erro}</span>
+                      <span className="text-xs text-critico">{t.erro}</span>
                     )}
                     {t.status === 'pendente' && (
                       <div className="flex items-center gap-2">
@@ -1318,21 +1318,21 @@ export default function Escala({
                       {resumo.dias} dia(s) escalado(s) em {fmtMesBR(mesInicio)}
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col rounded-xl border bg-sky-50 p-4">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-sky-700">
+                  <div className="flex flex-1 flex-col rounded-xl border bg-suprimento/[0.08] p-4">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-suprimento">
                       Diurnos (manhã + tarde = 12h)
                     </span>
-                    <span className="mt-1 text-3xl font-bold text-sky-800">{resumo.diurnos}</span>
-                    <span className="text-xs text-sky-700">
+                    <span className="mt-1 text-3xl font-bold text-suprimento">{resumo.diurnos}</span>
+                    <span className="text-xs text-suprimento">
                       {resumo.diurnos * 12}h · manhã e tarde juntas contam como diurno
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col rounded-xl border bg-indigo-50 p-4">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                  <div className="flex flex-1 flex-col rounded-xl border bg-suprimento/[0.08] p-4">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-suprimento">
                       Noturnos (noite = 12h)
                     </span>
-                    <span className="mt-1 text-3xl font-bold text-indigo-800">{resumo.noturnos}</span>
-                    <span className="text-xs text-indigo-700">{resumo.noturnos * 12}h</span>
+                    <span className="mt-1 text-3xl font-bold text-suprimento">{resumo.noturnos}</span>
+                    <span className="text-xs text-suprimento">{resumo.noturnos * 12}h</span>
                   </div>
                 </>
               )}
@@ -1361,7 +1361,7 @@ export default function Escala({
                   onClick={fecharDiaGeral}
                   className="group relative h-14 w-48 shrink-0 rounded-2xl bg-white text-xl font-semibold text-black transition-shadow hover:shadow-md"
                 >
-                  <div className="absolute top-[4px] left-1 z-10 flex h-12 w-1/4 items-center justify-center rounded-xl bg-green-400 duration-500 group-hover:w-[184px]">
+                  <div className="absolute top-[4px] left-1 z-10 flex h-12 w-1/4 items-center justify-center rounded-xl bg-leitos duration-500 group-hover:w-[184px]">
                     <ChevronLeft className="size-6 text-black" />
                   </div>
                   <p className="translate-x-2">Voltar</p>
@@ -1401,7 +1401,7 @@ export default function Escala({
                               <div
                                 key={`${s.id}-${t.id}`}
                                 className={`rounded-lg border p-2 ${
-                                  livre ? 'border-dashed border-emerald-300 bg-emerald-50/60' : 'bg-muted/40'
+                                  livre ? 'border-dashed border-conforme/30 bg-conforme/60' : 'bg-muted/40'
                                 }`}
                               >
                                 <div className="mb-1 flex items-center justify-between">
@@ -1417,8 +1417,8 @@ export default function Escala({
                                     onClick={() => candidatar.mutate({ setor_id: s.id, data: diaGeral, turno: t.id })}
                                     className={`w-full rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${
                                       jaCand
-                                        ? 'cursor-default bg-sky-100 text-sky-700'
-                                        : 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                        ? 'cursor-default bg-suprimento/[0.12] text-suprimento'
+                                        : 'bg-leitos text-white hover:bg-leitos'
                                     }`}
                                   >
                                     {jaCand ? 'Candidatura enviada' : 'Candidatar-se'}
@@ -1479,7 +1479,7 @@ export default function Escala({
                     <div
                       key={d}
                       className={`py-1 text-[11px] font-bold uppercase tracking-wide ${
-                        idx === 0 || idx === 6 ? 'text-amber-700' : 'text-muted-foreground'
+                        idx === 0 || idx === 6 ? 'text-atencao' : 'text-muted-foreground'
                       }`}
                     >
                       {d}
@@ -1501,7 +1501,7 @@ export default function Escala({
                         onClick={() => setDiaGeral(c.iso)}
                         className={`flex min-h-[76px] flex-col gap-1 rounded-lg border p-1.5 text-left transition-all duration-200 ${
                           livres
-                            ? 'border-dashed border-emerald-300 bg-emerald-50/60 hover:bg-emerald-100'
+                            ? 'border-dashed border-conforme/30 bg-conforme/60 hover:bg-conforme/[0.12]'
                             : 'border-border bg-white hover:bg-muted'
                         } ${eHoje ? 'ring-2 ring-primary/60' : ''}`}
                       >
@@ -1510,21 +1510,21 @@ export default function Escala({
                             eHoje
                               ? 'bg-primary text-primary-foreground'
                               : livres
-                                ? 'bg-emerald-200 text-emerald-900'
-                                : 'bg-slate-100 text-slate-900'
+                                ? 'bg-conforme/20 text-conforme'
+                                : 'bg-trilha text-tinta'
                           }`}
                         >
                           {c.dia}
                         </span>
                         {livres ? (
-                          <span className="text-[10px] font-bold text-emerald-700">Tudo livre</span>
+                          <span className="text-[10px] font-bold text-conforme">Tudo livre</span>
                         ) : (
                           <span className="text-[10px] font-semibold text-muted-foreground">
                             {plantoesDia.length} plantão(ões)
                           </span>
                         )}
                         {temMinhaCand && (
-                          <span className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[9px] font-semibold text-sky-700">
+                          <span className="rounded-full bg-suprimento/[0.12] px-1.5 py-0.5 text-[9px] font-semibold text-suprimento">
                             {candidaturasDia.length} candidatura(s)
                           </span>
                         )}
@@ -1571,10 +1571,10 @@ export default function Escala({
       : (
         <>
           {/* PAINEL DE ALERTAS (gestor/admin) */}
-          <Card className="border-amber-200 bg-amber-50/40">
+          <Card className="border-atencao/30 bg-atencao/40">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <CalendarClock className="size-4 text-amber-700" />
+                <CalendarClock className="size-4 text-atencao" />
                 Alertas da escala
               </CardTitle>
               <CardDescription>
@@ -1636,8 +1636,8 @@ export default function Escala({
                   )}
 
                   {/* Candidaturas a plantões livres */}
-                  <div className="mt-2 border-t border-amber-200 pt-3">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-amber-800">
+                  <div className="mt-2 border-t border-atencao/30 pt-3">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-atencao">
                       <CalendarClock className="size-3.5" /> Candidaturas a plantões livres
                     </div>
                     {(candidaturas ?? []).filter((c) => c.status === 'pendente').length === 0 ? (
@@ -1724,8 +1724,8 @@ export default function Escala({
                     <thead>
                       <tr>
                         <th className="border-b border-r bg-muted/50 p-2 text-left text-xs font-bold uppercase text-muted-foreground">Plantonista</th>
-                        <th className="border-b border-r bg-sky-50 p-2 text-center text-xs font-bold uppercase text-sky-700">Diurnos</th>
-                        <th className="border-b border-r bg-indigo-50 p-2 text-center text-xs font-bold uppercase text-indigo-700">Noturnos</th>
+                        <th className="border-b border-r bg-suprimento/[0.08] p-2 text-center text-xs font-bold uppercase text-suprimento">Diurnos</th>
+                        <th className="border-b border-r bg-suprimento/[0.08] p-2 text-center text-xs font-bold uppercase text-suprimento">Noturnos</th>
                         <th className="border-b border-r p-2 text-center text-xs font-bold uppercase text-muted-foreground">Horas</th>
                         <th className="border-b p-2 text-center text-xs font-bold uppercase text-muted-foreground">Dias</th>
                       </tr>
@@ -1734,8 +1734,8 @@ export default function Escala({
                       {(resumoCarga ?? []).map((r) => (
                         <tr key={r.perfil_id}>
                           <td className="border-b border-r p-2 font-medium">{r.nome}</td>
-                          <td className="border-b border-r p-2 text-center font-bold text-sky-700">{r.diurnos}</td>
-                          <td className="border-b border-r p-2 text-center font-bold text-indigo-700">{r.noturnos}</td>
+                          <td className="border-b border-r p-2 text-center font-bold text-suprimento">{r.diurnos}</td>
+                          <td className="border-b border-r p-2 text-center font-bold text-suprimento">{r.noturnos}</td>
                           <td className="border-b border-r p-2 text-center font-bold">{r.horas}h</td>
                           <td className="border-b p-2 text-center">{r.dias}</td>
                         </tr>
@@ -1839,7 +1839,7 @@ export default function Escala({
                     </table>
                   </div>
                 )}
-                {mensagemGeracao && <p className="text-sm text-emerald-700">{mensagemGeracao}</p>}
+                {mensagemGeracao && <p className="text-sm text-conforme">{mensagemGeracao}</p>}
                 <div className="flex flex-wrap gap-2">
                   <Button onClick={() => gerarMes.mutate()} disabled={gerarMes.isPending || carregandoFixa}>
                     {gerarMes.isPending ? <Spinner /> : <RefreshCcw />} Gerar mês {fmtMesBR(mesInicio)} a partir da fixa
@@ -1874,7 +1874,7 @@ export default function Escala({
                           <th
                             key={d}
                             className={`border-b p-2 text-center text-xs font-bold uppercase tracking-wide ${
-                              i >= 5 ? 'border-r border-r-amber-200 bg-amber-50 text-amber-700' : 'border-r'
+                              i >= 5 ? 'border-r border-r-amber-200 bg-atencao/[0.08] text-atencao' : 'border-r'
                             }`}
                           >
                             {DIAS_SEMANA_SEG[i]}

@@ -351,15 +351,15 @@ export default function InternacaoPainel({
         </div>
       )}
 
-      {sucesso && <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{sucesso}</p>}
+      {sucesso && <p className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">{sucesso}</p>}
 
       {/* Aviso de internação — observação (18:30 / >6h) */}
       {modo === 'observacao' && pertoDoFim && emObservacaoMuitoTempo.length > 0 && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <div className="mb-1 text-sm font-bold text-red-700">
+        <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-4">
+          <div className="mb-1 text-sm font-bold text-critico">
             ⏰ Fim do turno se aproxima ({agora?.toLocaleTimeString('pt-BR')})
           </div>
-          <p className="mb-2 text-sm text-red-700">
+          <p className="mb-2 text-sm text-critico">
             Pacientes em observação por <strong>5h30+</strong> precisam ser <strong>internados</strong>{' '}
             (enfermaria/sala vermelha) ou liberados antes do fim do plantão.
           </p>
@@ -371,7 +371,7 @@ export default function InternacaoPainel({
               return (
                 <li key={p.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
                   <span className="font-medium">{p.nome}</span>
-                  <span className="text-xs text-red-600">observação há {horas}h{mins}m</span>
+                  <span className="text-xs text-critico">observação há {horas}h{mins}m</span>
                 </li>
               )
             })}
@@ -389,17 +389,17 @@ export default function InternacaoPainel({
               key={o.setor_id}
               className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
                 lotado
-                  ? 'border-red-300 bg-red-50'
+                  ? 'border-critico/30 bg-critico/[0.08]'
                   : alerta
-                    ? 'border-amber-300 bg-amber-50'
+                    ? 'border-atencao/30 bg-atencao/[0.08]'
                     : 'border-border bg-card'
               }`}
             >
               <span className="text-sm font-medium">{o.setor_nome}</span>
-              <span className={`text-sm font-bold ${lotado ? 'text-red-600' : alerta ? 'text-amber-600' : 'text-foreground'}`}>
+              <span className={`text-sm font-bold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-foreground'}`}>
                 {o.internados}/{o.limite || '∞'}
               </span>
-              {lotado && <span className="text-xs font-bold text-red-600">LOTADO</span>}
+              {lotado && <span className="text-xs font-bold text-critico">LOTADO</span>}
             </div>
           )
         })}
@@ -554,7 +554,7 @@ export default function InternacaoPainel({
                 required
               />
               {!motivo.trim() && (
-                <p className="text-xs text-amber-600">Informe o motivo para justificar a transferência.</p>
+                <p className="text-xs text-atencao">Informe o motivo para justificar a transferência.</p>
               )}
             </div>
             {erro && <p className="text-sm text-destructive">{erro}</p>}
@@ -651,7 +651,7 @@ export default function InternacaoPainel({
                       onClick={() => toggleChecklist(campo)}
                       className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                         marcado
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                          ? 'border-conforme/30 bg-conforme/[0.08] text-conforme'
                           : 'border-border bg-background hover:bg-muted'
                       }`}
                     >
@@ -667,7 +667,7 @@ export default function InternacaoPainel({
             <div className="flex flex-col gap-1.5">
               <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Alta</div>
               {alta?.status === 'concluida' ? (
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+                <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">
                   ✓ Alta concluída · {fmtDia(alta.created_at)}
                 </div>
               ) : (
