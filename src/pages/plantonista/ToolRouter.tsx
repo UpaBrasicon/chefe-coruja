@@ -1,10 +1,11 @@
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { Suspense, useEffect } from 'react'
-import { Star } from 'lucide-react'
+import { FolderSearch, Star } from 'lucide-react'
 
 import { acharSecao, CHAVES_FERRAMENTAS } from '@/content/registry'
 import { chaveFerramenta, registrarRecente, useFavoritos } from '@/lib/useFavoritos'
-import { ChevronRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Trilha, Vazio } from '@/components/monitor/Pagina'
 import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 
@@ -19,7 +20,7 @@ export function ToolRouter() {
   }, [section, tool])
 
   if (!secao || !def) {
-    return <p className="text-sm text-destructive">Ferramenta não encontrada.</p>
+    return <Vazio icone={FolderSearch} titulo="Ferramenta não encontrada" texto="O endereço não corresponde a nenhuma ferramenta da Central." />
   }
 
   const Component = def.component
@@ -27,37 +28,19 @@ export function ToolRouter() {
   const ehFavorito = favoritos.includes(chave)
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/plantonista" className="hover:underline">
-            Central do Plantonista
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <Link to={`/plantonista/${secao.slug}`} className="hover:underline">
-            {secao.label}
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span>{def.label}</span>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => alternarFavorito(chave)}
-        >
-          <Star className={ehFavorito ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'} />
-          {ehFavorito ? 'Favorito' : 'Favoritar'}
+    <>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <Trilha niveis={[{ rotulo: 'Central do Plantonista', to: '/plantonista' }, { rotulo: secao.label, to: `/plantonista/${secao.slug}` }, { rotulo: def.label }]} />
+        <Button variant="ghost" size="sm" aria-pressed={ehFavorito} onClick={() => alternarFavorito(chave)}>
+          <Star className={cn(ehFavorito && 'fill-marca text-marca')} />
+          {ehFavorito ? 'Favorita' : 'Favoritar'}
         </Button>
       </div>
-      <Suspense
-        fallback={
-          <div className="flex h-40 items-center justify-center">
-            <Spinner />
-          </div>
-        }
-      >
-        <Component />
+      <Suspense fallback={<div className="flex h-40 items-center justify-center"><Spinner /></div>}>
+        {/* Estado de resposta por ferramenta: a chave remonta o formulário, e
+            as respostas de um escore não vazam para o próximo (telas/20). */}
+        <Component key={chave} />
       </Suspense>
-    </div>
+    </>
   )
 }

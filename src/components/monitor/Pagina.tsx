@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
 
@@ -18,6 +19,24 @@ export function TituloPagina({
       </div>
       {acoes && <div className="flex flex-wrap items-center gap-2">{acoes}</div>}
     </header>
+  )
+}
+
+/** Trilha (migalha): cada nível é um link, o último é o lugar atual. */
+export function Trilha({ niveis }: { niveis: { rotulo: string; to?: string }[] }) {
+  return (
+    <nav aria-label="Você está em" className="mb-3 flex flex-wrap items-center gap-1 text-apoio text-tinta-sussurro">
+      {niveis.map((n, i) => (
+        <span key={n.rotulo} className="flex items-center gap-1">
+          {i > 0 && <span aria-hidden>›</span>}
+          {n.to ? (
+            <Link to={n.to} className="text-tinta-sussurro hover:text-acao">{n.rotulo}</Link>
+          ) : (
+            <span aria-current="page" className="font-medium text-tinta">{n.rotulo}</span>
+          )}
+        </span>
+      ))}
+    </nav>
   )
 }
 

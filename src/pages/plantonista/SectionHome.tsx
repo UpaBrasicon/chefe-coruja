@@ -1,9 +1,10 @@
-import { Link, useParams } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
+import { useParams } from 'react-router-dom'
+import { FolderSearch } from 'lucide-react'
 
 import { acharSecao, CHAVES_FERRAMENTAS } from '@/content/registry'
 import { chaveFerramenta, useFavoritos } from '@/lib/useFavoritos'
 import { ToolCard } from '@/components/plantonista/cards'
+import { TituloPagina, Trilha, Vazio } from '@/components/monitor/Pagina'
 
 export default function SectionHome() {
   const { section } = useParams()
@@ -11,29 +12,17 @@ export default function SectionHome() {
   const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
 
   if (!secao) {
-    return <p className="text-sm text-destructive">Seção não encontrada.</p>
+    return <Vazio icone={FolderSearch} titulo="Seção não encontrada" texto="O endereço não corresponde a nenhuma seção clínica." />
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/plantonista" className="transition-colors hover:text-foreground">
-            Central do Plantonista
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">{secao.label}</span>
-        </div>
-        <h1 className="text-2xl font-semibold tracking-tight">{secao.label}</h1>
-        <p className="text-sm text-muted-foreground">{secao.description}</p>
-      </div>
-
+    <>
+      <Trilha niveis={[{ rotulo: 'Central do Plantonista', to: '/plantonista' }, { rotulo: secao.label }]} />
+      <TituloPagina icone={secao.icon} titulo={secao.label} descricao={secao.description} />
       {secao.tools.length === 0 ? (
-        <p className="py-10 text-center text-sm text-muted-foreground">
-          Esta seção ainda não tem ferramentas. Em breve.
-        </p>
+        <Vazio icone={FolderSearch} titulo="Seção em preparo" texto="Nenhuma ferramenta desta seção tem fonte declarada ainda." />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {secao.tools.map((tool) => (
             <ToolCard
               key={tool.slug}
@@ -46,6 +35,6 @@ export default function SectionHome() {
           ))}
         </div>
       )}
-    </div>
+    </>
   )
 }
