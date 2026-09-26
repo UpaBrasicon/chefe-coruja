@@ -1,19 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import {
-  Activity,
-  Bell,
-  Building2,
-  CalendarClock,
-  LayoutDashboard,
-  LineChart,
-  LogOut,
-  Menu,
-  MessageSquare,
-  ShieldCheck,
-  Stethoscope,
-  UserRound,
-  X,
-} from 'lucide-react'
+import { Activity, LogOut, MessageSquare, Rows3, Search, UserRound } from 'lucide-react'
 import * as React from 'react'
 import { useQuery } from '@tanstack/react-query'
 
@@ -22,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { DesfazerProvider } from '@/contexts/DesfazerContext'
 import { usePlantao } from '@/hooks/usePlantao'
 import { useWebPush } from '@/hooks/useWebPush'
 import { useChatRealtimeGlobal, useTotalNaoLidas } from '@/hooks/useChat'
@@ -29,43 +16,153 @@ import { ChatDrawer } from '@/components/chat/ChatDrawer'
 import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
 import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
 import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
 import { ErroBoundary } from '@/components/ErroBoundary'
+import { itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
+import { Paleta } from '@/components/casca/Paleta'
+import { usePaleta } from '@/components/casca/usePaleta'
 
-type NavItem = {
-  to: string
-  label: string
-  icon: React.ComponentType<{ className?: string }>
-  end?: boolean
-  badge?: number
-  acao?: () => void
+// A casca do Monitor de Cabeceira (design_handoff/telas/09-comum-casca.md):
+// sidebar branca de 248px, topbar de 60px imóvel, coluna de conteúdo de 896px;
+// abaixo de 768px a navegação vira barra fixa inferior. Densidade compacta,
+// paleta Ctrl+K, fita "sem sinal" e régua de desfazer são globais.
+
+const CHAVE_DENSIDADE = 'chefe-coruja:densidade'
+
+function useDensidade() {
+  const [compacto, setCompacto] = React.useState(() => {
+    try {
+      return window.localStorage.getItem(CHAVE_DENSIDADE) === 'compacta'
+    } catch {
+      return false
+    }
+  })
+  const alternar = React.useCallback(() => {
+    setCompacto((v) => {
+      try {
+        window.localStorage.setItem(CHAVE_DENSIDADE, v ? 'normal' : 'compacta')
+      } catch {
+        /* storage indisponível: a densidade vale só nesta sessão */
+      }
+      return !v
+    })
+  }, [])
+  return { compacto, alternar }
+}
+
+/** Sem conexão: a fita vale para todos os papéis, inclusive o gestor. */
+function useConectado() {
+  const [online, setOnline] = React.useState(() => navigator.onLine)
+  React.useEffect(() => {
+    const on = () => setOnline(true)
+    const off = () => setOnline(false)
+    window.addEventListener('online', on)
+    window.addEventListener('offline', off)
+    return () => {
+      window.removeEventListener('online', on)
+      window.removeEventListener('offline', off)
+    }
+  }, [])
+  return online
+}
+
+function Marca({ papel }: { papel?: string }) {
+  return (
+    <span className="flex min-w-0 items-center gap-2.5">
+      <span className="grid size-7 shrink-0 place-items-center rounded-controle-sm bg-marca text-[11px] font-semibold text-white" aria-hidden>
+        CC
+      </span>
+      <span className="flex min-w-0 flex-col leading-tight">
+        <span className="text-corpo font-semibold tracking-[-0.01em] text-tinta">Chefe Coruja</span>
+        {papel && <span className="truncate text-rotulo text-tinta-sussurro">{papel}</span>}
+      </span>
+    </span>
+  )
+}
+
+function ItemLateral({ item }: { item: ItemNav }) {
+  const Icone = item.icone
+  return (
+    <NavLink
+      to={item.to}
+      end={item.exato}
+      className={({ isActive }) =>
+        cn(
+          'flex items-center gap-2.5 rounded-controle px-3 py-[9px] text-corpo transition-colors',
+          isActive ? 'bg-marca/10 font-semibold text-acao' : 'text-tinta-apoio hover:bg-campo hover:text-tinta',
+        )
+      }
+    >
+      <Icone className="size-[17px] shrink-0" aria-hidden />
+      <span className="truncate">{item.rotulo}</span>
+    </NavLink>
+  )
+}
+
+function ItemInferior({ item }: { item: ItemNav }) {
+  const Icone = item.icone
+  return (
+    <NavLink
+      to={item.to}
+      end={item.exato}
+      className={({ isActive }) =>
+        cn(
+          'flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 rounded-container px-1 text-rotulo transition-colors',
+          isActive ? 'bg-marca/10 font-semibold text-acao' : 'text-tinta-apoio',
+        )
+      }
+    >
+      <Icone className="size-5" aria-hidden />
+      <span className="truncate">{item.curto ?? item.rotulo}</span>
+    </NavLink>
+  )
+}
+
+function BotaoTopo({ rotulo, icone: Icone, onClick, children, ativo }: {
+  rotulo: string
+  icone: React.ComponentType<{ className?: string }>
+  onClick: () => void
+  children?: React.ReactNode
+  ativo?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={rotulo}
+      aria-pressed={ativo}
+      className={cn(
+        'relative inline-flex min-h-8 items-center gap-1.5 rounded-controle border border-transparent px-2.5 text-apoio transition-colors hover:text-acao',
+        ativo ? 'text-acao' : 'text-tinta-apoio',
+      )}
+    >
+      <Icone className="size-4" />
+      {children}
+    </button>
+  )
 }
 
 export function AppShell() {
   const { signOut, perfil } = useAuth()
-  const { ehAdmin, ehGestor, ehPlantonista, unidades, unidadeAtiva, papelAtivo, status } =
-    useUnidade()
+  const { unidades, unidadeAtiva, papelAtivo, papeisDaUnidade, status } = useUnidade()
   const navigate = useNavigate()
   const location = useLocation()
-  const [menuAberto, setMenuAberto] = React.useState(false)
   const [chatAberto, setChatAberto] = React.useState(false)
+  const { compacto, alternar: alternarDensidade } = useDensidade()
+  const online = useConectado()
+  const paleta = usePaleta()
 
-  // T1: Web Push (base) — ativa notificações do navegador
+  // Web Push — só o plantonista recebe avisos de turno no aparelho.
   useWebPush(papelAtivo === 'plantonista')
 
-  // Chat: disponível para plantonista e gestor (NÃO para admin)
+  // Chat: plantonista e gestor. Administrador não tem chat.
   const chatHabilitado = papelAtivo === 'plantonista' || papelAtivo === 'gestor'
   useChatRealtimeGlobal()
   const totalNaoLidas = useTotalNaoLidas()
 
-  // Rota antiga /mensagens agora abre o drawer (Mensagens.tsx foi substituído).
-  // O estado é derivado do pathname na renderização; o redirect usa um timer
-  // (assíncrono) para não chamar setState síncrono dentro de effect.
+  // Rota antiga /mensagens abre o drawer do chat.
   const mensagensSolicitadas = location.pathname === '/mensagens' && chatHabilitado
   const chatAbertoEfetivo = chatAberto || mensagensSolicitadas
-
   React.useEffect(() => {
     if (mensagensSolicitadas) {
       const t = setTimeout(() => {
@@ -76,50 +173,25 @@ export function AppShell() {
     }
   }, [mensagensSolicitadas, navigate])
 
-  // Navegação agrupada: cada item é um destino, e o detalhe vive nas abas
-  // internas (com o estado na URL). Ver src/components/TabsPagina.tsx.
-  const itens: NavItem[] = []
-  if (ehPlantonista) {
-    itens.push({ to: '/plantonista', label: 'Central do Plantonista', icon: Stethoscope })
-    itens.push({ to: '/plantao', label: 'Plantão', icon: Activity })
-    itens.push({ to: '/agenda', label: 'Minha Agenda', icon: CalendarClock, end: true })
-    itens.push({ to: '/notificacoes', label: 'Avisos', icon: Bell, end: true })
-  }
-  if (ehGestor) {
-    itens.push({ to: '/escala', label: 'Escala', icon: CalendarClock, end: true })
-    itens.push({ to: '/unidade', label: 'Unidade', icon: Building2, end: true })
-    itens.push({ to: '/indicadores', label: 'Indicadores', icon: LineChart, end: true })
-  }
-  if (ehAdmin) {
-    itens.push(
-      { to: '/painel', label: 'Organização', icon: LayoutDashboard, end: true },
-      { to: '/escala', label: 'Escala', icon: CalendarClock, end: true },
-      { to: '/gaviao', label: 'Gavião', icon: ShieldCheck, end: true }
-    )
-  }
-  if (itens.length === 0) {
-    itens.push({ to: '/plantonista', label: 'Central Clínica', icon: Stethoscope })
-  }
-  // Gestor e admin na mesma unidade duplicariam "Escala".
-  const itensUnicos = itens.filter((item, i) => itens.findIndex((x) => x.to === item.to) === i)
+  const itens = React.useMemo(() => itensDeNavegacao(papeisDaUnidade), [papeisDaUnidade])
+  const ehPlantonista = papeisDaUnidade.includes('plantonista')
+  const ehAdmin = papeisDaUnidade.includes('admin')
 
   async function handleSair() {
     await signOut()
     navigate('/login', { replace: true })
   }
 
-  // Portão de plantão: plantonista só acessa a plataforma se estiver na escala
-  // agora (relógio do servidor) ou com acesso pago.
+  // A escala é a porta (ADR 0003): o plantonista só entra se estiver na escala
+  // agora, pelo relógio do servidor, ou com acesso de atendimento.
   const { status: plantaoStatus } = usePlantao(
     papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined
   )
 
-  // Regra de ouro do check-in: plantonista em escala deve fazer check-in; por
-  // ora apenas o banner de lembrete aparece (trava adiada). O RPC
-  // registrar_checkin revalida a escala no servidor (não confia só no frontend).
-  // Sem filtro de data: robusto a fuso — o "ativo" é o último check-in sem
-  // check-out (o servidor controla dia/turno via ON CONFLICT).
-  const { data: presencaHoje } = useQuery({
+  // Lembrete de check-in (a trava foi adiada em 23/08). O último check-in sem
+  // check-out é o ativo; `limit(1)` evita o erro do maybeSingle com dois ou
+  // mais registros, que deixava o lembrete aceso para sempre.
+  const { data: presencaAtiva } = useQuery({
     queryKey: ['shell-checkin-ativo', unidadeAtiva?.unidade_id, perfil?.id],
     enabled: papelAtivo === 'plantonista' && !!unidadeAtiva?.unidade_id && !!perfil,
     queryFn: async () => {
@@ -129,6 +201,7 @@ export function AppShell() {
         .eq('unidade_id', unidadeAtiva!.unidade_id)
         .eq('perfil_id', perfil!.id)
         .order('checkin_em', { ascending: false })
+        .limit(1)
         .maybeSingle()
       if (error) throw error
       return data as { id: string; checkin_em: string | null; checkout_em: string | null } | null
@@ -139,7 +212,7 @@ export function AppShell() {
   const checkinPendente =
     papelAtivo === 'plantonista' &&
     (plantaoStatus === 'escala' || plantaoStatus === 'acesso') &&
-    !(presencaHoje && presencaHoje.checkin_em && !presencaHoje.checkout_em)
+    !(presencaAtiva && presencaAtiva.checkin_em && !presencaAtiva.checkout_em)
 
   if (papelAtivo === 'plantonista') {
     if (plantaoStatus === 'carregando') {
@@ -149,267 +222,150 @@ export function AppShell() {
         </div>
       )
     }
-    if (plantaoStatus === 'fora') {
-      return <ForaDoExpediente />
-    }
+    if (plantaoStatus === 'fora') return <ForaDoExpediente />
   }
 
-  // TRAVA DE CHECK-IN ADIADA (decisão 23/08): o plantonista NÃO é mais
-  // bloqueado antes de acessar o sistema — por ora, apenas um banner de
-  // lembrete não-bloqueante aponta para o check-in. Quando a trava voltar,
-  // trocar este banner por `return <GateCheckIn />` (componente pronto).
-  // O RPC registrar_checkin continua registrando o horário e o local
-  // (dentro/fora do raio) para o gestor ver na aba Presenças.
-
-  const barraTopo = (
-    <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
-      {unidadeAtiva && status === 'ok' ? (
-        <div className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-medium">{unidadeAtiva.unidade.nome}</span>
-          <span className="text-xs text-muted-foreground">
-            {papelAtivo ? PAPEL_LABEL[papelAtivo] : ''}
-          </span>
-        </div>
-      ) : (
-        <span className="text-sm text-muted-foreground">Chefe Coruja</span>
-      )}
-      <div className="flex items-center gap-1">
-        {unidades.length > 1 && (
-          <Button variant="outline" size="sm" onClick={() => navigate('/seletor')}>
-            Trocar unidade
-          </Button>
+  const papelTexto = papeisDaUnidade.map((p) => PAPEL_LABEL[p]).join(' · ')
+  const avatar = (
+    <NavLink to="/perfil" aria-label="Meu perfil" className="shrink-0 rounded-capsula">
+      <span className="flex size-8 items-center justify-center overflow-hidden rounded-capsula border border-fio bg-campo">
+        {perfil?.foto_url ? (
+          <img src={perfil.foto_url} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <UserRound className="size-4 text-tinta-sussurro" />
         )}
-        {ehPlantonista && <SinoAvisos unidadeId={unidadeAtiva?.unidade_id} habilitado />}
-        {chatHabilitado && (
-          <Button variant="ghost" size="sm" onClick={() => setChatAberto(true)} aria-label="Abrir chat">
-            <MessageSquare />
-            {totalNaoLidas > 0 && (
-              <Badge variant="destructive" className="ml-0.5">
-                {totalNaoLidas}
-              </Badge>
-            )}
-          </Button>
-        )}
-        <NavLink to="/perfil" aria-label="Meu perfil">
-          <span className="flex size-8 items-center justify-center overflow-hidden rounded-full border bg-muted transition-transform hover:scale-105">
-            {perfil?.foto_url ? (
-              <img src={perfil.foto_url} alt={perfil.nome_completo ?? 'Avatar'} className="h-full w-full object-cover" />
-            ) : (
-              <UserRound className="size-4 text-muted-foreground" />
-            )}
-          </span>
-        </NavLink>
-        <Button variant="ghost" size="sm" onClick={handleSair}>
-          <LogOut />
-          Sair
-        </Button>
-      </div>
-    </div>
+      </span>
+    </NavLink>
   )
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Sidebar desktop */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r bg-card md:flex">
-        <div className="flex h-14 items-center gap-2.5 border-b px-4">
-          <span className="flex size-6 items-center justify-center rounded-lg bg-primary text-[11px] font-bold text-primary-foreground">
-            CC
-          </span>
-          <span className="text-[15px] font-semibold tracking-tight">Chefe Coruja</span>
-          {ehAdmin && <Badge variant="secondary">Admin</Badge>}
-        </div>
-        <nav className="flex flex-1 flex-col gap-1 p-3">
-          {itensUnicos.map((item) =>
-            item.acao ? (
-              <button
-                key={item.to}
-                type="button"
-                onClick={item.acao}
-                className="group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <item.icon className="size-4 transition-colors group-hover:text-foreground" />
-                {item.label}
-                {item.badge ? (
-                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                    {item.badge}
-                  </span>
-                ) : null}
-              </button>
-            ) : (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  cn(
-                    'group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  )
-                }
-              >
-                <item.icon
-                  className={cn(
-                    'size-4 transition-colors',
-                    'group-hover:text-foreground'
-                  )}
-                />
-                {item.label}
-                {item.badge ? (
-                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                    {item.badge}
-                  </span>
-                ) : null}
-              </NavLink>
-            )
-          )}
-        </nav>
-        <div className="border-t p-3">
-          <div className="mb-1 truncate text-sm font-medium">{perfil?.nome_completo}</div>
-          <div className="truncate text-xs text-muted-foreground">{perfil?.email}</div>
-        </div>
-      </aside>
-
-      {/* Mobile */}
-      <div className="fixed inset-x-0 top-0 z-40 flex items-center justify-between border-b bg-background px-4 py-3 md:hidden">
-        <button
-          aria-label="Abrir menu"
-          className="rounded-md p-1"
-          onClick={() => setMenuAberto((v) => !v)}
-        >
-          {menuAberto ? <X /> : <Menu />}
-        </button>
-        <span className="text-sm font-medium">
-          {unidadeAtiva?.unidade.nome ?? 'Chefe Coruja'}
-        </span>
-        <div className="flex items-center gap-1">
-          {ehPlantonista && <SinoAvisos unidadeId={unidadeAtiva?.unidade_id} habilitado />}
-          {chatHabilitado && (
-            <Button variant="ghost" size="sm" onClick={() => setChatAberto(true)} aria-label="Abrir chat">
-              <MessageSquare />
-              {totalNaoLidas > 0 && (
-                <Badge variant="destructive" className="ml-0.5">
-                  {totalNaoLidas}
-                </Badge>
-              )}
-            </Button>
-          )}
-          <Button variant="ghost" size="sm" onClick={handleSair}>
-            <LogOut />
-          </Button>
-        </div>
-      </div>
-
-      {menuAberto && (
-        <div className="fixed inset-0 top-14 z-30 bg-background md:hidden">
-          <nav className="flex flex-col gap-1 p-3">
-            {itensUnicos.map((item) =>
-              item.acao ? (
-                <button
-                  key={item.to}
-                  type="button"
-                  onClick={() => {
-                    setMenuAberto(false)
-                    item.acao?.()
-                  }}
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground"
-                >
-                  <item.icon className="size-4" />
-                  {item.label}
-                  {item.badge ? (
-                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                      {item.badge}
-                    </span>
-                  ) : null}
-                </button>
-              ) : (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  onClick={() => setMenuAberto(false)}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium',
-                      isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
-                    )
-                  }
-                >
-                  <item.icon className="size-4" />
-                  {item.label}
-                  {item.badge ? (
-                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
-                      {item.badge}
-                    </span>
-                  ) : null}
-                </NavLink>
-              )
-            )}
-            {unidades.length > 1 && (
-              <button
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground"
-                onClick={() => {
-                  setMenuAberto(false)
-                  navigate('/seletor')
-                }}
-              >
-                Trocar unidade
-              </button>
-            )}
+    <DesfazerProvider>
+      <div className={cn('min-h-dvh bg-campo md:flex', compacto && 'cc-den')} data-densidade={compacto ? 'compacta' : 'normal'}>
+        {/* Sidebar ≥768px */}
+        <aside className="sticky top-0 hidden h-dvh w-[var(--cc-lateral)] shrink-0 flex-col border-r border-fio bg-superficie md:flex">
+          <button type="button" onClick={() => navigate(itens[0]?.to ?? '/')} className="flex h-[var(--cc-topo)] items-center border-b border-fio px-4 text-left">
+            <Marca papel={papelTexto} />
+          </button>
+          <nav aria-label="Navegação principal" className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
+            {itens.map((item) => <ItemLateral key={item.to} item={item} />)}
           </nav>
-        </div>
-      )}
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        {status === 'ok' && <div className="hidden md:block">{barraTopo}</div>}
-        <NotificacoesTurnoBanner
-          unidadeId={papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined}
-          habilitado={papelAtivo === 'plantonista'}
-        />
-        {/* Lembrete de check-in (trava adiada — não bloqueia) */}
-        {checkinPendente && (
-          <div className="flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">
-            <span className="flex items-center gap-2">
-              <Activity className="size-4 shrink-0" />
-              Você ainda não fez check-in no plantão de hoje.
-            </span>
-            <NavLink
-              to="/plantao/check-in"
-              className="shrink-0 rounded-md bg-amber-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-amber-700"
-            >
-              Fazer check-in
-            </NavLink>
+          <div className="border-t border-fio p-3">
+            <div className="truncate px-1 text-apoio font-medium text-tinta">{perfil?.nome_completo}</div>
+            <div className="truncate px-1 text-rotulo text-tinta-sussurro">{perfil?.email}</div>
+            <button type="button" onClick={handleSair} className="mt-2 flex w-full items-center gap-2 rounded-controle px-1 py-1.5 text-apoio text-tinta-sussurro hover:text-critico">
+              <LogOut className="size-4" aria-hidden />
+              Sair
+            </button>
           </div>
-        )}
-        <main className="flex-1 px-4 py-6 md:px-8">
-          <div className="mx-auto w-full max-w-6xl">
-            {status === 'carregando' ? (
-              <div className="flex h-40 items-center justify-center">
-                <Spinner />
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col md:h-dvh">
+          {/* Topbar: imóvel a partir de 1024px; abaixo, rola com a página. */}
+          <header className="z-10 border-b border-fio bg-superficie lg:sticky lg:top-0">
+            <div className="flex min-h-[var(--cc-topo)] flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-2 md:px-6">
+              <div className="md:hidden">
+                <Marca />
               </div>
-            ) : (
-              // key = rota: um erro em uma tela não contamina a próxima, e o
-              // shell (menu, chat, avisos) continua de pé.
-              <ErroBoundary key={location.pathname}>
-                <React.Suspense
-                  fallback={
-                    <div className="flex h-40 items-center justify-center">
-                      <Spinner />
-                    </div>
-                  }
-                >
-                  <Outlet />
-                </React.Suspense>
-              </ErroBoundary>
+              {unidadeAtiva && status === 'ok' && (
+                <div className="hidden min-w-0 flex-col leading-tight md:flex">
+                  <span className="truncate text-apoio font-semibold text-tinta">{unidadeAtiva.unidade.nome}</span>
+                  <span className="truncate text-rotulo text-tinta-sussurro">{papelTexto}</span>
+                </div>
+              )}
+              {unidades.length > 1 && !ehAdmin && (
+                <button type="button" onClick={() => navigate('/seletor')} className="hidden rounded-controle border border-fio px-2.5 py-1 text-rotulo text-tinta-apoio hover:border-acao hover:text-acao md:inline-flex">
+                  Trocar unidade
+                </button>
+              )}
+              <div className="ml-auto flex items-center gap-0.5">
+                <BotaoTopo rotulo="Buscar (Ctrl+K)" icone={Search} onClick={() => paleta.setAberta(true)}>
+                  <span className="hidden min-[900px]:inline">Buscar</span>
+                  <kbd className="hidden rounded-[5px] border border-fio px-1 font-mono text-[11px] text-tinta-sussurro min-[900px]:inline">Ctrl K</kbd>
+                </BotaoTopo>
+                <BotaoTopo rotulo="Modo compacto" icone={Rows3} onClick={alternarDensidade} ativo={compacto}>
+                  <span className="hidden min-[1100px]:inline">Compacto</span>
+                </BotaoTopo>
+                {ehPlantonista && <SinoAvisos unidadeId={unidadeAtiva?.unidade_id} habilitado />}
+                {chatHabilitado && (
+                  <BotaoTopo rotulo={totalNaoLidas ? `Abrir chat, ${totalNaoLidas} não lidas` : 'Abrir chat'} icone={MessageSquare} onClick={() => setChatAberto(true)}>
+                    {totalNaoLidas > 0 && (
+                      <span className="absolute top-0.5 right-0.5 grid min-w-4 place-items-center rounded-capsula bg-critico px-1 text-[10px] font-semibold text-white tabular">
+                        {totalNaoLidas}
+                      </span>
+                    )}
+                  </BotaoTopo>
+                )}
+                <span className="ml-1">{avatar}</span>
+                <BotaoTopo rotulo="Sair" icone={LogOut} onClick={handleSair}>
+                  <span className="hidden min-[1100px]:inline">Sair</span>
+                </BotaoTopo>
+              </div>
+            </div>
+            {!online && (
+              <div role="status" className="flex flex-wrap items-center gap-2.5 border-t border-fio px-4 py-2 text-rotulo text-tinta-apoio md:px-6">
+                Sem conexão. O que aparece na tela é a última leitura recebida; nada novo chega até a rede voltar.
+              </div>
             )}
-          </div>
-        </main>
-      </div>
+          </header>
 
-      {chatHabilitado && (
-        <ChatDrawer aberto={chatAbertoEfetivo} onFechar={() => setChatAberto(false)} />
-      )}
-    </div>
+          <NotificacoesTurnoBanner
+            unidadeId={papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined}
+            habilitado={papelAtivo === 'plantonista'}
+          />
+          {checkinPendente && (
+            <div className="flex items-center justify-between gap-3 border-b border-fio bg-atencao/[0.08] px-4 py-2 text-apoio text-atencao md:px-6">
+              <span className="flex items-center gap-2">
+                <Activity className="size-4 shrink-0" aria-hidden />
+                Você ainda não fez check-in no plantão de hoje.
+              </span>
+              <NavLink to="/plantao/check-in" className="shrink-0 rounded-controle bg-acao px-3 py-1 text-rotulo font-medium text-white hover:bg-acao-pressionada hover:text-white">
+                Fazer check-in
+              </NavLink>
+            </div>
+          )}
+
+          {/* De 768px para cima só a topbar fica fora da área que rola. */}
+          <main className="flex-1 pb-[calc(96px+env(safe-area-inset-bottom))] md:overflow-y-auto md:pb-[72px]">
+            <div className="mx-auto w-full max-w-[var(--cc-coluna)] px-4 pt-5 md:px-7 md:pt-7 min-[1280px]:max-w-[1200px] [.cc-den_&]:pt-4">
+              {status === 'carregando' ? (
+                <div className="flex h-40 items-center justify-center">
+                  <Spinner />
+                </div>
+              ) : (
+                <ErroBoundary key={location.pathname}>
+                  <React.Suspense
+                    fallback={
+                      <div className="flex h-40 items-center justify-center">
+                        <Spinner />
+                      </div>
+                    }
+                  >
+                    <Outlet />
+                  </React.Suspense>
+                </ErroBoundary>
+              )}
+            </div>
+          </main>
+        </div>
+
+        {/* Barra inferior ≤767px */}
+        <nav
+          aria-label="Navegação principal"
+          className="fixed inset-x-0 bottom-0 z-40 flex gap-1 border-t border-fio bg-superficie px-2 pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom))] md:hidden"
+        >
+          {itens.slice(0, 5).map((item) => <ItemInferior key={item.to} item={item} />)}
+        </nav>
+
+        <Paleta
+          aberta={paleta.aberta}
+          onAbertaChange={paleta.setAberta}
+          telas={itens}
+          comFerramentas={ehPlantonista || papeisDaUnidade.includes('gestor')}
+          comPlantao={ehPlantonista}
+        />
+
+        {chatHabilitado && <ChatDrawer aberto={chatAbertoEfetivo} onFechar={() => setChatAberto(false)} />}
+      </div>
+    </DesfazerProvider>
   )
 }
