@@ -71,3 +71,11 @@ test('duração formatada', () => {
   assert.equal(formatarDuracao(45), '45 min')
   assert.equal(formatarDuracao(185), '3h05')
 })
+
+test('janela do plantão: noite de 12 h que começou ontem às 19h, às 02h faltam 5h', async () => {
+  const { tempoDaJanela } = await import('./plantao.ts')
+  const inicio = new Date('2026-09-25T22:00:00Z') // 19:00 em Brasília
+  const fim = new Date('2026-09-26T10:00:00Z')    // 07:00
+  const agora = new Date('2026-09-26T05:00:00Z')  // 02:00
+  assert.deepEqual(tempoDaJanela(inicio, fim, agora), { restante: 300, duracao: 720 })
+})

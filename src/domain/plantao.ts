@@ -62,3 +62,13 @@ export function formatarDuracao(minutos: number): string {
   const h = Math.floor(m / 60)
   return `${h}h${String(m % 60).padStart(2, '0')}`
 }
+
+/**
+ * Tempo restante de um plantão com janela conhecida (início e fim vindos da
+ * escala, ADR 0003). Preferir a `tempoDeTurno`, que só conhece o rótulo.
+ */
+export function tempoDaJanela(inicio: Date, fim: Date, agoraServidor: Date): { restante: number; duracao: number } {
+  const duracao = Math.max(0, Math.round((fim.getTime() - inicio.getTime()) / 60_000))
+  const restante = Math.max(0, Math.min(duracao, Math.round((fim.getTime() - agoraServidor.getTime()) / 60_000)))
+  return { restante, duracao }
+}

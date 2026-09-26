@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
     "preview": "vite preview",
+    "gen:tipos": "node scripts/gerar-tipos.mjs",
     "test:dominio": "node --experimental-strip-types --test src/domain/dominio.test.ts",
     "test:terminologia": "node --test \"scripts/terminologia/tests/*.test.ts\"",
     "test:observacao": "node --test \"scripts/observacao/tests/*.test.ts\"",

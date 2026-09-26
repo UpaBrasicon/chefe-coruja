@@ -5,7 +5,7 @@ import { BedDouble, Clock, Hourglass, Pill, Search, Star, Stethoscope } from 'lu
 import { CHAVES_FERRAMENTAS, SECOES } from '@/content/registry'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useFaixaPlantonista } from '@/hooks/useFaixaPlantonista'
-import { formatarDuracao, nivelDaObservacao, nivelDoTurno, tempoDeTurno, JANELA_OBSERVACAO_MIN } from '@/domain/plantao'
+import { formatarDuracao, nivelDaObservacao, nivelDoTurno, tempoDaJanela, tempoDeTurno, JANELA_OBSERVACAO_MIN } from '@/domain/plantao'
 import { fuzzyMatch, normalizar } from '@/lib/search'
 import { chaveFerramenta, useFavoritos, useRecentes } from '@/lib/useFavoritos'
 import { cn } from '@/lib/utils'
@@ -83,7 +83,8 @@ export default function PlantonistaHome() {
   const d = faixa.data
   const ocupacao = d && d.leitos > 0 ? d.pacientes / d.leitos : undefined
   const nivelLeitos: Nivel = ocupacao === undefined ? 'ok' : ocupacao >= 0.95 ? 'critico' : ocupacao >= 0.85 ? 'atencao' : 'ok'
-  const turno = d?.turno ? tempoDeTurno(d.turno, d.agoraServidor) : null
+  // A janela da escala manda; o rótulo do relógio é só o recurso sem plantão.
+  const turno = d?.janela ? tempoDaJanela(d.janela.inicio, d.janela.fim, d.agoraServidor) : d?.turno ? tempoDeTurno(d.turno, d.agoraServidor) : null
   const obsMin = d?.maiorObservacaoMin ?? null
 
   return (
@@ -119,7 +120,7 @@ export default function PlantonistaHome() {
           icone={Clock}
           rotulo="Tempo restante do turno"
           valor={turno ? formatarDuracao(turno.restante) : '—'}
-          estado={turno ? `Relógio do servidor · turno de ${formatarDuracao(turno.duracao)}` : 'Turno não identificado'}
+          estado={turno ? `Relógio do servidor · plantão de ${formatarDuracao(turno.duracao)}` : 'Turno não identificado'}
           nivel={turno ? nivelDoTurno(turno.restante) : 'ok'}
           pct={turno ? 1 - turno.restante / turno.duracao : undefined}
         />

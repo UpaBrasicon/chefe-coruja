@@ -10,6 +10,8 @@ import type { Turno } from '@/domain/plantao'
 export type DadosFaixa = {
   agoraServidor: Date
   turno: Turno | null
+  /** Janela do plantão em curso, lida da escala (null = sem plantão agora). */
+  janela: { inicio: Date; fim: Date } | null
   setores: string[]
   pacientes: number
   leitos: number
@@ -23,10 +25,11 @@ export function useFaixaPlantonista(unidadeId?: string) {
     enabled: !!unidadeId,
     refetchInterval: 60_000,
     queryFn: async (): Promise<DadosFaixa> => {
-      const [hora, turno, setoresRpc] = await Promise.all([
+      const [hora, turno, setoresRpc, plantao] = await Promise.all([
         supabase.rpc('horario_servidor'),
         supabase.rpc('turno_atual'),
         supabase.rpc('setores_na_escala_agora'),
+        supabase.rpc('meu_plantao_agora'),
       ])
       if (hora.error) throw hora.error
       const agoraServidor = new Date(hora.data as string)
@@ -58,8 +61,10 @@ export function useFaixaPlantonista(unidadeId?: string) {
       }
 
       const t = turno.data as string | null
+      const p = plantao.data?.[0]
       return {
         agoraServidor,
+        janela: p ? { inicio: new Date(p.inicio), fim: new Date(p.fim) } : null,
         turno: t === 'manha' || t === 'tarde' || t === 'noite' ? t : null,
         setores,
         pacientes,

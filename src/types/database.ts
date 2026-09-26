@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.15"
-  }
   public: {
     Tables: {
       acessos_plantonista: {
@@ -377,6 +372,126 @@ export type Database = {
           },
         ]
       }
+      cerbero_incidentes: {
+        Row: {
+          chave_dedup: string | null
+          detectado_em: string
+          diagnostico: string | null
+          evidencia: Json
+          id: string
+          patrulha: string
+          resolvido_em: string | null
+          severidade: string
+          status: string
+          tenant_id: string | null
+          titulo: string
+        }
+        Insert: {
+          chave_dedup?: string | null
+          detectado_em?: string
+          diagnostico?: string | null
+          evidencia?: Json
+          id?: string
+          patrulha: string
+          resolvido_em?: string | null
+          severidade: string
+          status?: string
+          tenant_id?: string | null
+          titulo: string
+        }
+        Update: {
+          chave_dedup?: string | null
+          detectado_em?: string
+          diagnostico?: string | null
+          evidencia?: Json
+          id?: string
+          patrulha?: string
+          resolvido_em?: string | null
+          severidade?: string
+          status?: string
+          tenant_id?: string | null
+          titulo?: string
+        }
+        Relationships: []
+      }
+      cerbero_quarentena: {
+        Row: {
+          autor_id: string
+          conteudo_hash: string
+          criado_em: string
+          id: string
+          incidente_id: string | null
+          liberado: boolean
+          motivo: string
+          origem: string
+          tenant_id: string
+          tipo: string
+        }
+        Insert: {
+          autor_id: string
+          conteudo_hash: string
+          criado_em?: string
+          id?: string
+          incidente_id?: string | null
+          liberado?: boolean
+          motivo: string
+          origem: string
+          tenant_id: string
+          tipo: string
+        }
+        Update: {
+          autor_id?: string
+          conteudo_hash?: string
+          criado_em?: string
+          id?: string
+          incidente_id?: string | null
+          liberado?: boolean
+          motivo?: string
+          origem?: string
+          tenant_id?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cerbero_quarentena_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cerbero_quarentena_incidente_id_fkey"
+            columns: ["incidente_id"]
+            isOneToOne: false
+            referencedRelation: "cerbero_incidentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cerbero_url_cache: {
+        Row: {
+          detalhe: Json
+          fonte: string
+          url_hash: string
+          veredicto: string
+          verificado_em: string
+        }
+        Insert: {
+          detalhe?: Json
+          fonte: string
+          url_hash: string
+          veredicto: string
+          verificado_em?: string
+        }
+        Update: {
+          detalhe?: Json
+          fonte?: string
+          url_hash?: string
+          veredicto?: string
+          verificado_em?: string
+        }
+        Relationships: []
+      }
       chat_mensagens: {
         Row: {
           autor_id: string
@@ -483,6 +598,63 @@ export type Database = {
           },
         ]
       }
+      chronos_alertas_escala: {
+        Row: {
+          criado_em: string
+          detalhe: Json
+          id: string
+          janela: string
+          limite_outlier: number
+          mediana_unidade: number
+          medico_id: string
+          metrica: string
+          status: string
+          unidade_id: string
+          valor: number
+        }
+        Insert: {
+          criado_em?: string
+          detalhe?: Json
+          id?: string
+          janela: string
+          limite_outlier: number
+          mediana_unidade: number
+          medico_id: string
+          metrica: string
+          status?: string
+          unidade_id: string
+          valor: number
+        }
+        Update: {
+          criado_em?: string
+          detalhe?: Json
+          id?: string
+          janela?: string
+          limite_outlier?: number
+          mediana_unidade?: number
+          medico_id?: string
+          metrica?: string
+          status?: string
+          unidade_id?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chronos_alertas_escala_medico_id_fkey"
+            columns: ["medico_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chronos_alertas_escala_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conceito: {
         Row: {
           ativo: boolean
@@ -530,13 +702,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "conceito_loinc_codigo_fkey"
-            columns: ["loinc_codigo"]
-            isOneToOne: false
-            referencedRelation: "loinc"
-            referencedColumns: ["codigo"]
-          },
           {
             foreignKeyName: "conceito_unidade_id_fkey"
             columns: ["unidade_id"]
@@ -1010,8 +1175,10 @@ export type Database = {
           created_at: string
           criado_por: string | null
           data: string
+          duracao_min: number
           fracionado: boolean
           id: string
+          inicio: string
           observacao: string | null
           perfil_id: string
           plantao_origem_id: string | null
@@ -1027,8 +1194,10 @@ export type Database = {
           created_at?: string
           criado_por?: string | null
           data: string
+          duracao_min: number
           fracionado?: boolean
           id?: string
+          inicio: string
           observacao?: string | null
           perfil_id: string
           plantao_origem_id?: string | null
@@ -1044,8 +1213,10 @@ export type Database = {
           created_at?: string
           criado_por?: string | null
           data?: string
+          duracao_min?: number
           fracionado?: boolean
           id?: string
+          inicio?: string
           observacao?: string | null
           perfil_id?: string
           plantao_origem_id?: string | null
@@ -1087,74 +1258,6 @@ export type Database = {
           },
           {
             foreignKeyName: "escala_plantao_unidade_id_fkey"
-            columns: ["unidade_id"]
-            isOneToOne: false
-            referencedRelation: "unidades"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      escala_plantoes: {
-        Row: {
-          ativo: boolean
-          created_at: string
-          criado_por: string | null
-          data: string
-          id: string
-          perfil_id: string
-          setor_id: string
-          turno: string
-          unidade_id: string
-          updated_at: string
-        }
-        Insert: {
-          ativo?: boolean
-          created_at?: string
-          criado_por?: string | null
-          data: string
-          id?: string
-          perfil_id: string
-          setor_id: string
-          turno: string
-          unidade_id: string
-          updated_at?: string
-        }
-        Update: {
-          ativo?: boolean
-          created_at?: string
-          criado_por?: string | null
-          data?: string
-          id?: string
-          perfil_id?: string
-          setor_id?: string
-          turno?: string
-          unidade_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "escala_plantoes_criado_por_fkey"
-            columns: ["criado_por"]
-            isOneToOne: false
-            referencedRelation: "perfis"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "escala_plantoes_perfil_id_fkey"
-            columns: ["perfil_id"]
-            isOneToOne: false
-            referencedRelation: "perfis"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "escala_plantoes_setor_id_fkey"
-            columns: ["setor_id"]
-            isOneToOne: false
-            referencedRelation: "setores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "escala_plantoes_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -1318,6 +1421,101 @@ export type Database = {
           },
         ]
       }
+      gaviao_relatorios_semanais: {
+        Row: {
+          detalhes: Json
+          gerado_em: string
+          id: string
+          periodo_fim: string
+          periodo_inicio: string
+          resumo: Json
+        }
+        Insert: {
+          detalhes?: Json
+          gerado_em?: string
+          id?: string
+          periodo_fim: string
+          periodo_inicio: string
+          resumo?: Json
+        }
+        Update: {
+          detalhes?: Json
+          gerado_em?: string
+          id?: string
+          periodo_fim?: string
+          periodo_inicio?: string
+          resumo?: Json
+        }
+        Relationships: []
+      }
+      hermes_audit_log: {
+        Row: {
+          created_at: string
+          direction: string
+          id: string
+          phone: string
+          tool_args: Json | null
+          tool_name: string | null
+          tool_result_summary: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          direction: string
+          id?: string
+          phone: string
+          tool_args?: Json | null
+          tool_name?: string | null
+          tool_result_summary?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          id?: string
+          phone?: string
+          tool_args?: Json | null
+          tool_name?: string | null
+          tool_result_summary?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      hermes_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          messages: Json
+          phone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          messages?: Json
+          phone: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          messages?: Json
+          phone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hermes_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       historico_escala: {
         Row: {
           acao: string
@@ -1362,6 +1560,59 @@ export type Database = {
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_gateway_log: {
+        Row: {
+          bloqueado: boolean
+          criado_em: string
+          erro: string | null
+          hash_entrada: string
+          id: string
+          latencia_ms: number | null
+          modelo: string | null
+          origem: string
+          perfil_id: string | null
+          provedor: string | null
+          residuos: number
+          substituicoes: Json
+        }
+        Insert: {
+          bloqueado: boolean
+          criado_em?: string
+          erro?: string | null
+          hash_entrada: string
+          id?: string
+          latencia_ms?: number | null
+          modelo?: string | null
+          origem: string
+          perfil_id?: string | null
+          provedor?: string | null
+          residuos?: number
+          substituicoes?: Json
+        }
+        Update: {
+          bloqueado?: boolean
+          criado_em?: string
+          erro?: string | null
+          hash_entrada?: string
+          id?: string
+          latencia_ms?: number | null
+          modelo?: string | null
+          origem?: string
+          perfil_id?: string | null
+          provedor?: string | null
+          residuos?: number
+          substituicoes?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_gateway_log_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
             referencedColumns: ["id"]
           },
         ]
@@ -1452,6 +1703,56 @@ export type Database = {
           },
           {
             foreignKeyName: "internacoes_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interop_outbox: {
+        Row: {
+          created_at: string
+          enviado_em: string | null
+          id: string
+          id_rnds: string | null
+          payload: Json
+          referencia_id: string
+          status: string
+          tentativas: number
+          tipo_documento: string
+          ultimo_erro: string | null
+          unidade_id: string
+        }
+        Insert: {
+          created_at?: string
+          enviado_em?: string | null
+          id?: string
+          id_rnds?: string | null
+          payload: Json
+          referencia_id: string
+          status?: string
+          tentativas?: number
+          tipo_documento: string
+          ultimo_erro?: string | null
+          unidade_id: string
+        }
+        Update: {
+          created_at?: string
+          enviado_em?: string | null
+          id?: string
+          id_rnds?: string | null
+          payload?: Json
+          referencia_id?: string
+          status?: string
+          tentativas?: number
+          tipo_documento?: string
+          ultimo_erro?: string | null
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interop_outbox_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -1774,63 +2075,6 @@ export type Database = {
           },
         ]
       }
-      medicamentos: {
-        Row: {
-          apresentacao: string | null
-          ativo: boolean
-          codigo_anvisa: string | null
-          codigo_barras: string | null
-          concentracao: string | null
-          controlado: boolean
-          created_at: string
-          diluicao: string | null
-          forma_farmaceutica: string | null
-          id: string
-          nome: string
-          principio_ativo: string
-          tipo_receituario: string
-          unidade: string | null
-          updated_at: string
-          via: string | null
-        }
-        Insert: {
-          apresentacao?: string | null
-          ativo?: boolean
-          codigo_anvisa?: string | null
-          codigo_barras?: string | null
-          concentracao?: string | null
-          controlado?: boolean
-          created_at?: string
-          diluicao?: string | null
-          forma_farmaceutica?: string | null
-          id?: string
-          nome: string
-          principio_ativo: string
-          tipo_receituario?: string
-          unidade?: string | null
-          updated_at?: string
-          via?: string | null
-        }
-        Update: {
-          apresentacao?: string | null
-          ativo?: boolean
-          codigo_anvisa?: string | null
-          codigo_barras?: string | null
-          concentracao?: string | null
-          controlado?: boolean
-          created_at?: string
-          diluicao?: string | null
-          forma_farmaceutica?: string | null
-          id?: string
-          nome?: string
-          principio_ativo?: string
-          tipo_receituario?: string
-          unidade?: string | null
-          updated_at?: string
-          via?: string | null
-        }
-        Relationships: []
-      }
       mensagens_chat: {
         Row: {
           conteudo: string
@@ -2062,10 +2306,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "observacao_observacao_pai_id_fkey"
+            columns: ["observacao_pai_id"]
+            isOneToOne: false
+            referencedRelation: "observacao"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "observacao_paciente_id_fkey"
             columns: ["paciente_id"]
             isOneToOne: false
             referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "observacao_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
             referencedColumns: ["id"]
           },
           {
@@ -2261,7 +2519,7 @@ export type Database = {
             foreignKeyName: "prescricao_itens_medicamento_id_fkey"
             columns: ["medicamento_id"]
             isOneToOne: false
-            referencedRelation: "medicamentos"
+            referencedRelation: "medicamento"
             referencedColumns: ["id"]
           },
           {
@@ -3275,6 +3533,7 @@ export type Database = {
         Args: { p_partes?: number; p_plantao: string }
         Returns: number
       }
+      gaviao_painel_admin: { Args: never; Returns: Json }
       gerar_censo_diario: {
         Args: { p_data: string; p_unidade: string }
         Returns: number
@@ -3325,6 +3584,18 @@ export type Database = {
       }
       marcar_lida: { Args: { p_conversa_id: string }; Returns: undefined }
       marcar_notificacao_lida: { Args: { p_id: string }; Returns: undefined }
+      meu_plantao_agora: {
+        Args: never
+        Returns: {
+          escala_id: string
+          fim: string
+          inicio: string
+          setor_id: string
+          setor_nome: string
+          turno: string
+          unidade_id: string
+        }[]
+      }
       minhas_notificacoes: {
         Args: { p_unidade: string }
         Returns: {
@@ -3345,20 +3616,6 @@ export type Database = {
           setor_nome: string
         }[]
       }
-      presencas_do_dia_gestor: {
-        Args: { p_unidade: string }
-        Returns: {
-          perfil_id: string
-          nome: string
-          papel: string
-          em_escala: boolean
-          checkin_em: string | null
-          checkout_em: string | null
-          checkin_dentro: boolean | null
-          checkout_dentro: boolean | null
-          observacao: string | null
-        }[]
-      }
       papel_na_unidade: { Args: { unidade: string }; Returns: string }
       passar_plantao: {
         Args: { p_destino: string; p_escala: string; p_justificativa?: string }
@@ -3372,6 +3629,20 @@ export type Database = {
           nome_completo: string
           perfil_id: string
           uf_crm: string
+        }[]
+      }
+      presencas_do_dia_gestor: {
+        Args: { p_unidade: string }
+        Returns: {
+          checkin_dentro: boolean
+          checkin_em: string
+          checkout_dentro: boolean
+          checkout_em: string
+          em_escala: boolean
+          nome: string
+          observacao: string
+          papel: string
+          perfil_id: string
         }[]
       }
       publicar_diluicao: {
@@ -3489,6 +3760,16 @@ export type Database = {
         Returns: string
       }
       tem_acesso_atendimento: { Args: { unidade: string }; Returns: boolean }
+      terminologia_buscar: {
+        Args: { p_limite?: number; p_tabela: string; p_termo: string }
+        Returns: {
+          codigo: string
+          descricao: string
+          extra: Json
+          rank: number
+          tabela: string
+        }[]
+      }
       transferir_internado: {
         Args: {
           p_destino: string
@@ -3503,20 +3784,6 @@ export type Database = {
         Returns: string
       }
       turno_atual: { Args: never; Returns: string }
-      terminologia_buscar: {
-        Args: { p_limite?: number; p_tabela: string; p_termo: string }
-        Returns: {
-          codigo: string
-          descricao: string
-          extra: Json | null
-          rank: number
-          tabela: string
-        }[]
-      }
-      gaviao_painel_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
     }
     Enums: {
       papel: "admin" | "gestor" | "plantonista"
@@ -3530,6 +3797,197 @@ export type Database = {
         | "uti"
         | "outro"
       tipo_unidade: "hospital" | "upa" | "clinica"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  terminologia: {
+    Tables: {
+      cbo: {
+        Row: {
+          busca: unknown
+          codigo: string
+          titulo: string
+        }
+        Insert: {
+          busca?: unknown
+          codigo: string
+          titulo: string
+        }
+        Update: {
+          busca?: unknown
+          codigo?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
+      cid10: {
+        Row: {
+          busca: unknown
+          capitulo: string | null
+          codigo: string
+          descricao: string
+          grupo: string | null
+        }
+        Insert: {
+          busca?: unknown
+          capitulo?: string | null
+          codigo: string
+          descricao: string
+          grupo?: string | null
+        }
+        Update: {
+          busca?: unknown
+          capitulo?: string | null
+          codigo?: string
+          descricao?: string
+          grupo?: string | null
+        }
+        Relationships: []
+      }
+      loinc: {
+        Row: {
+          busca: unknown
+          classe: string | null
+          codigo: string
+          componente: string | null
+          componente_pt: string | null
+          nome_curto: string | null
+          nome_curto_pt: string | null
+          nome_longo: string | null
+          propriedade: string | null
+          unidade_exemplo: string | null
+        }
+        Insert: {
+          busca?: unknown
+          classe?: string | null
+          codigo: string
+          componente?: string | null
+          componente_pt?: string | null
+          nome_curto?: string | null
+          nome_curto_pt?: string | null
+          nome_longo?: string | null
+          propriedade?: string | null
+          unidade_exemplo?: string | null
+        }
+        Update: {
+          busca?: unknown
+          classe?: string | null
+          codigo?: string
+          componente?: string | null
+          componente_pt?: string | null
+          nome_curto?: string | null
+          nome_curto_pt?: string | null
+          nome_longo?: string | null
+          propriedade?: string | null
+          unidade_exemplo?: string | null
+        }
+        Relationships: []
+      }
+      medicamento_cmed: {
+        Row: {
+          apresentacao: string | null
+          busca: unknown
+          classe_terapeutica: string | null
+          competencia: string | null
+          id: string
+          laboratorio: string | null
+          pf_sem_impostos: number | null
+          principio_ativo: string
+          produto: string
+          registro_anvisa: string | null
+          tarja: string | null
+        }
+        Insert: {
+          apresentacao?: string | null
+          busca?: unknown
+          classe_terapeutica?: string | null
+          competencia?: string | null
+          id: string
+          laboratorio?: string | null
+          pf_sem_impostos?: number | null
+          principio_ativo: string
+          produto: string
+          registro_anvisa?: string | null
+          tarja?: string | null
+        }
+        Update: {
+          apresentacao?: string | null
+          busca?: unknown
+          classe_terapeutica?: string | null
+          competencia?: string | null
+          id?: string
+          laboratorio?: string | null
+          pf_sem_impostos?: number | null
+          principio_ativo?: string
+          produto?: string
+          registro_anvisa?: string | null
+          tarja?: string | null
+        }
+        Relationships: []
+      }
+      sigtap_procedimento: {
+        Row: {
+          busca: unknown
+          codigo: string
+          competencia: string | null
+          complexidade: string | null
+          idade_max: number | null
+          idade_min: number | null
+          nome: string
+          sexo: string | null
+          valor_sa: number | null
+          valor_sh: number | null
+          valor_sp: number | null
+        }
+        Insert: {
+          busca?: unknown
+          codigo: string
+          competencia?: string | null
+          complexidade?: string | null
+          idade_max?: number | null
+          idade_min?: number | null
+          nome: string
+          sexo?: string | null
+          valor_sa?: number | null
+          valor_sh?: number | null
+          valor_sp?: number | null
+        }
+        Update: {
+          busca?: unknown
+          codigo?: string
+          competencia?: string | null
+          complexidade?: string | null
+          idade_max?: number | null
+          idade_min?: number | null
+          nome?: string
+          sexo?: string | null
+          valor_sa?: number | null
+          valor_sh?: number | null
+          valor_sp?: number | null
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      buscar: {
+        Args: { p_limite?: number; p_tabela: string; p_termo: string }
+        Returns: {
+          codigo: string
+          descricao: string
+          extra: Json
+          rank: number
+          tabela: string
+        }[]
+      }
+      unaccent_text: { Args: { p: string }; Returns: string }
+    }
+    Enums: {
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3671,8 +4129,13 @@ export const Constants = {
       tipo_unidade: ["hospital", "upa", "clinica"],
     },
   },
+  terminologia: {
+    Enums: {},
+  },
 } as const
 
+// Aliases escritos à mão. NÃO editar database.ts: rode `npm run gen:tipos`,
+// que regenera os tipos do banco e anexa este bloco de novo.
 // ── Aliases (tipos utilitários de negócio) ─────────────────────────────────
 export type Perfis = Database['public']['Tables']['perfis']
 export type Perfil = Perfis['Row']
@@ -3700,3 +4163,4 @@ export type SetorObservacao = Database['public']['Functions']['setores_observaca
 export type ResumoCargaPlantonista = Database['public']['Functions']['resumo_carga_plantonistas']['Returns'][number]
 export type OcupacaoSetor = Database['public']['Functions']['ocupacao_setores']['Returns'][number]
 export type MinhaNotificacao = Database['public']['Functions']['minhas_notificacoes']['Returns'][number]
+export type MeuPlantaoAgora = Database['public']['Functions']['meu_plantao_agora']['Returns'][number]
