@@ -136,7 +136,7 @@ export function Parametro({
  */
 export function FaixaParametros({ children, rotulo = 'Parâmetros do plantão', fita }: { children: ReactNode; rotulo?: string; fita?: ReactNode }) {
   return (
-    <section aria-label={rotulo} className="sticky top-0 z-[9] -mx-4 mb-6 border-b border-fio bg-superficie md:-mx-7 lg:top-[var(--cc-topo)]">
+    <section aria-label={rotulo} className="sticky top-0 z-[9] -mx-4 -mt-5 mb-6 border-b border-fio bg-superficie md:-mx-7 md:-mt-7">
       {fita}
       <div className="mx-auto grid max-w-[var(--cc-coluna)] snap-x snap-mandatory auto-cols-[78%] grid-flow-col overflow-x-auto [&>*+*]:border-l [&>*+*]:border-trilha min-[900px]:grid-flow-row min-[900px]:grid-cols-2 min-[900px]:overflow-visible min-[1024px]:grid-cols-4 [&>*]:snap-start">
         {children}
