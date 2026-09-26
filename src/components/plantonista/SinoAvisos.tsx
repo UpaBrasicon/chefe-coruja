@@ -37,7 +37,7 @@ export function SinoAvisos({ unidadeId, habilitado }: { unidadeId?: string; habi
           <Button variant="ghost" size="sm" className="relative" aria-label="Avisos">
             <Bell />
             {pendentes > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-critico px-1.5 text-[10px] font-bold text-white">
+              <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-critico px-1.5 text-[10px] font-semibold text-white">
                 {pendentes}
               </span>
             )}
@@ -48,7 +48,7 @@ export function SinoAvisos({ unidadeId, habilitado }: { unidadeId?: string; habi
         <PopoverPrimitive.Positioner side="bottom" align="end" sideOffset={6} className="z-50">
           <PopoverPrimitive.Popup className="w-80 rounded-xl border bg-popover p-3 text-popover-foreground shadow-lg">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-bold">Últimos avisos</span>
+              <span className="text-sm font-semibold">Últimos avisos</span>
               <span className="text-xs text-muted-foreground">{lista.length} de {(notificacoes ?? []).length}</span>
             </div>
             <div className="max-h-72 overflow-y-auto pr-1">

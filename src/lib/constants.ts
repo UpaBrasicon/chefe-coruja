@@ -41,9 +41,11 @@ export const STATUS_LEITO_LABEL: Record<StatusLeito, string> = {
   higienizacao: 'Higienização',
 }
 
-export const STATUS_LEITO_VARIANT: Record<StatusLeito, 'success' | 'destructive' | 'warning' | 'info'> = {
+// Leito ocupado é o normal de uma enfermaria, não alarme: vermelho é estado
+// crítico na gramática do Monitor de Cabeceira.
+export const STATUS_LEITO_VARIANT: Record<StatusLeito, 'success' | 'secondary' | 'warning' | 'info'> = {
   livre: 'success',
-  ocupado: 'destructive',
+  ocupado: 'secondary',
   bloqueado: 'warning',
   higienizacao: 'info',
 }

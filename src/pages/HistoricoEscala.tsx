@@ -69,7 +69,7 @@ export default function HistoricoEscala({ embutido = false }: { embutido?: boole
             <ChevronRight className="size-3.5" />
             <span className="font-medium text-foreground">Histórico da Escala</span>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Histórico da Escala</h1>
+          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Histórico da Escala</h1>
           <p className="text-sm text-muted-foreground">
             Auditoria completa das alterações e, em destaque, os <strong>erros de passagem</strong> — para
             entender o que ocorreu em cada movimentação de plantão.

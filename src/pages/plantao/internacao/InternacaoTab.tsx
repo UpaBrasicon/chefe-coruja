@@ -185,7 +185,7 @@ export function InternacaoTab({
             <div className="grid grid-cols-3 gap-px border border-black bg-black">
               {campos.map((c) => (
                 <div key={c.nome} className={`flex flex-col bg-white p-1 ${c.className ?? ''}`}>
-                  <Label className="mb-0.5 text-[9px] font-bold uppercase tracking-wide text-tinta">
+                  <Label className="mb-0.5 text-[9px] font-semibold uppercase tracking-wide text-tinta">
                     {c.rotulo}
                   </Label>
                   {c.textarea ? (

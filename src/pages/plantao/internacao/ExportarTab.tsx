@@ -214,7 +214,7 @@ export function ExportarTab({
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div className="rounded-lg bg-muted p-4">
-            <label className="mb-3 flex cursor-pointer items-center gap-2.5 font-bold text-primary">
+            <label className="mb-3 flex cursor-pointer items-center gap-2.5 font-semibold text-primary">
               <input
                 type="checkbox"
                 className="size-[18px] accent-primary"

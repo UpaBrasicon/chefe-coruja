@@ -13,7 +13,7 @@ function CardCenso({ label, valor, icon: Icon }: { label: string; valor: number 
         <Icon className="size-3.5" />
         {label}
       </div>
-      <div className="text-2xl font-semibold">{valor ?? '—'}</div>
+      <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{valor ?? '—'}</div>
     </div>
   )
 }

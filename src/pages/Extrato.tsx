@@ -105,7 +105,7 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
             <ChevronRight className="size-3.5" />
             <span className="font-medium text-foreground">Extrato Financeiro</span>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Extrato Financeiro</h1>
+          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Extrato Financeiro</h1>
           <p className="text-sm text-muted-foreground">
             Valores por plantão calculados a partir da escala e das remunerações configuradas pela unidade.
           </p>

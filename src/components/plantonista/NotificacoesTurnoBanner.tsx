@@ -15,7 +15,7 @@ export function NotificacoesTurnoBanner({
   if (!habilitado || notificacoes.length === 0) return null
 
   return (
-    <div className="sticky top-0 z-40 flex flex-col gap-2 border-b border-atencao/30 bg-atencao/95 px-4 py-3 backdrop-blur">
+    <div className="sticky top-0 z-40 flex flex-col gap-2 border-b border-atencao/30 bg-atencao/[0.08] px-4 py-3 backdrop-blur">
       {notificacoes.map((n) => (
         <div key={n.id} className="mx-auto flex w-full max-w-6xl items-start gap-3">
           <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-observacao text-white">

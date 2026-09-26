@@ -219,7 +219,7 @@ export function ReceituarioMedico({
             {dados.receita.itens.map((item, idx) => (
               <div key={item.id} className="rounded-xl border p-3">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Medicamento {idx + 1}
                   </span>
                   {dados.receita.itens.length > 1 && (

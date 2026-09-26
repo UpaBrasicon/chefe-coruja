@@ -154,7 +154,7 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
             <ChevronRight className="size-3.5" />
             <span className="font-medium text-foreground">Vagas de Plantão</span>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Vagas de Plantão</h1>
+          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Vagas de Plantão</h1>
           <p className="text-sm text-muted-foreground">
             Planteões livres com filtros por unidade, turno, especialidade, distância e valor.
           </p>

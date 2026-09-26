@@ -151,7 +151,7 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
             <ChevronRight className="size-3.5" />
             <span className="font-medium text-foreground">Evolução Clínica</span>
           </div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+          <h1 className="flex items-center gap-2 text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">
             <Activity className="size-5 text-muted-foreground" />
             Evolução Clínica
           </h1>

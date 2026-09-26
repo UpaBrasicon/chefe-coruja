@@ -340,7 +340,7 @@ export default function InternacaoPainel({
             <ChevronRight className="size-3.5" />
             <span className="font-medium text-foreground">{titulo}</span>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">{titulo}</h1>
+          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">{titulo}</h1>
           <p className="text-sm text-muted-foreground">
             {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
             {modo === 'internacao'
@@ -356,7 +356,7 @@ export default function InternacaoPainel({
       {/* Aviso de internação — observação (18:30 / >6h) */}
       {modo === 'observacao' && pertoDoFim && emObservacaoMuitoTempo.length > 0 && (
         <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-4">
-          <div className="mb-1 text-sm font-bold text-critico">
+          <div className="mb-1 text-sm font-semibold text-critico">
             ⏰ Fim do turno se aproxima ({agora?.toLocaleTimeString('pt-BR')})
           </div>
           <p className="mb-2 text-sm text-critico">
@@ -396,10 +396,10 @@ export default function InternacaoPainel({
               }`}
             >
               <span className="text-sm font-medium">{o.setor_nome}</span>
-              <span className={`text-sm font-bold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-foreground'}`}>
+              <span className={`text-sm font-semibold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-foreground'}`}>
                 {o.internados}/{o.limite || '∞'}
               </span>
-              {lotado && <span className="text-xs font-bold text-critico">LOTADO</span>}
+              {lotado && <span className="text-xs font-semibold text-critico">LOTADO</span>}
             </div>
           )
         })}

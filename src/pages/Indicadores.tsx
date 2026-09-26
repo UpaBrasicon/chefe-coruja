@@ -110,7 +110,7 @@ export default function Indicadores() {
           <span className="font-medium text-foreground">Indicadores</span>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Indicadores Hospitalares</h1>
+          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Indicadores Hospitalares</h1>
           <Button
             variant="outline"
             size="sm"
@@ -137,7 +137,7 @@ export default function Indicadores() {
             <CardDescription>{ultimaData ? fmtDia(ultimaData) : 'sem censo ainda'}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{totalUnidade.internados}</div>
+            <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{totalUnidade.internados}</div>
             <div className="text-xs text-muted-foreground">pacientes presentes na unidade</div>
           </CardContent>
         </Card>
@@ -150,7 +150,7 @@ export default function Indicadores() {
             <CardDescription>leitos totais: {totalUnidade.leitos}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${corTaxa(totalUnidade.leitos > 0 ? (totalUnidade.internados / totalUnidade.leitos) * 100 : null)}`}>
+            <div className={`text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular ${corTaxa(totalUnidade.leitos > 0 ? (totalUnidade.internados / totalUnidade.leitos) * 100 : null)}`}>
               {totalUnidade.leitos > 0 ? Math.round((totalUnidade.internados / totalUnidade.leitos) * 100) : '—'}%
             </div>
           </CardContent>
@@ -164,7 +164,7 @@ export default function Indicadores() {
             <CardDescription>contagem atual por setor (RLS por escala)</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
+            <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">
               {(ocupacao ?? []).reduce((a, o) => a + o.internados, 0)}
             </div>
             <div className="text-xs text-muted-foreground">pacientes (fonte: ocupacao_setores)</div>
@@ -201,7 +201,7 @@ export default function Indicadores() {
                 <div key={setorId} className="rounded-lg border p-3">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-sm font-semibold">{nome}</span>
-                    <span className={`text-sm font-bold ${corTaxa(ultimo.taxa_ocupacao)}`}>
+                    <span className={`text-sm font-semibold ${corTaxa(ultimo.taxa_ocupacao)}`}>
                       {ultimo.taxa_ocupacao != null ? `${ultimo.taxa_ocupacao}%` : '—'} ocupação
                     </span>
                   </div>
@@ -209,7 +209,7 @@ export default function Indicadores() {
                     {series.map((c) => (
                       <div key={c.data} className="rounded-lg bg-muted/50 p-2 text-center">
                         <div className="text-[10px] font-medium text-muted-foreground">{fmtDia(c.data)}</div>
-                        <div className="text-sm font-bold">{c.internados}</div>
+                        <div className="text-sm font-semibold">{c.internados}</div>
                         <div className="text-[10px] text-muted-foreground">
                           {c.permanencia_media_h != null ? `${c.permanencia_media_h}h` : '—'}
                         </div>
@@ -239,7 +239,7 @@ export default function Indicadores() {
               return (
                 <div key={o.setor_id} className="flex items-center justify-between rounded-lg border p-2.5 text-sm">
                   <span className="font-medium">{o.setor_nome}</span>
-                  <span className={`font-bold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-foreground'}`}>
+                  <span className={`font-semibold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-foreground'}`}>
                     {o.internados}/{o.limite || '∞'}
                     {lotado && ' · LOTADO'}
                   </span>

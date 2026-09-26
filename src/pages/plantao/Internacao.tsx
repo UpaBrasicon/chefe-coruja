@@ -104,7 +104,7 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
           {embutido ? (
             <div />
           ) : (
-            <h1 className="text-2xl font-semibold tracking-tight">Internação</h1>
+            <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Internação</h1>
           )}
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             {salvoEm && (

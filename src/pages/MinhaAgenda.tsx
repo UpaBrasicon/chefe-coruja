@@ -89,7 +89,7 @@ export default function MinhaAgenda({ embutido = false }: { embutido?: boolean }
             <ChevronRight className="size-3.5" />
             <span className="font-medium text-foreground">Minha Agenda</span>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Minha Agenda</h1>
+          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Minha Agenda</h1>
           <p className="text-sm text-muted-foreground">
             Todos os seus plantões de todas as unidades em um único calendário.
           </p>

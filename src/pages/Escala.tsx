@@ -768,7 +768,7 @@ export default function Escala({
           </div>
         )}
         <div className="flex flex-wrap items-center justify-between gap-2">
-          {embutido ? <div /> : <h1 className="text-2xl font-semibold tracking-tight">Escala</h1>}
+          {embutido ? <div /> : <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Escala</h1>}
           {ehPlantonista ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Button size="xs" variant="outline" onClick={() => mudarMes(-1)}>
@@ -883,7 +883,7 @@ export default function Escala({
                         <span className="font-normal text-white">
                           {TURNOS.find((t) => t.id === p.turno)?.horario}
                         </span>
-                        {p.quinzenal && <span className="text-[10px] font-bold text-white">15/15</span>}
+                        {p.quinzenal && <span className="text-[10px] font-semibold text-white">15/15</span>}
                       </span>
                     ))}
                   </div>
@@ -1167,7 +1167,7 @@ export default function Escala({
                   {DIAS_SEMANA.map((d, idx) => (
                     <div
                       key={d}
-                      className={`py-1 text-[11px] font-bold uppercase tracking-wide ${
+                      className={`py-1 text-[11px] font-semibold uppercase tracking-wide ${
                         idx === 0 || idx === 6 ? 'text-atencao' : 'text-muted-foreground'
                       }`}
                     >
@@ -1196,7 +1196,7 @@ export default function Escala({
                         } ${selecionado ? 'ring-2 ring-primary ring-offset-2' : ''} ${eHoje ? 'ring-2 ring-primary/60' : ''}`}
                       >
                         <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold ${
+                          className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-semibold ${
                             plantoes.length
                               ? 'bg-white/25 text-white'
                               : eHoje
@@ -1313,7 +1313,7 @@ export default function Escala({
                     <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       Horas no mês
                     </span>
-                    <span className="mt-1 text-3xl font-bold">{resumo.horas}h</span>
+                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{resumo.horas}h</span>
                     <span className="text-xs text-muted-foreground">
                       {resumo.dias} dia(s) escalado(s) em {fmtMesBR(mesInicio)}
                     </span>
@@ -1322,7 +1322,7 @@ export default function Escala({
                     <span className="text-xs font-semibold uppercase tracking-wide text-suprimento">
                       Diurnos (manhã + tarde = 12h)
                     </span>
-                    <span className="mt-1 text-3xl font-bold text-suprimento">{resumo.diurnos}</span>
+                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular text-suprimento">{resumo.diurnos}</span>
                     <span className="text-xs text-suprimento">
                       {resumo.diurnos * 12}h · manhã e tarde juntas contam como diurno
                     </span>
@@ -1331,7 +1331,7 @@ export default function Escala({
                     <span className="text-xs font-semibold uppercase tracking-wide text-suprimento">
                       Noturnos (noite = 12h)
                     </span>
-                    <span className="mt-1 text-3xl font-bold text-suprimento">{resumo.noturnos}</span>
+                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular text-suprimento">{resumo.noturnos}</span>
                     <span className="text-xs text-suprimento">{resumo.noturnos * 12}h</span>
                   </div>
                 </>
@@ -1401,11 +1401,11 @@ export default function Escala({
                               <div
                                 key={`${s.id}-${t.id}`}
                                 className={`rounded-lg border p-2 ${
-                                  livre ? 'border-dashed border-conforme/30 bg-conforme/60' : 'bg-muted/40'
+                                  livre ? 'border-dashed border-conforme/30 bg-conforme/[0.06]' : 'bg-muted/40'
                                 }`}
                               >
                                 <div className="mb-1 flex items-center justify-between">
-                                  <span className="text-xs font-bold text-muted-foreground">{t.label}</span>
+                                  <span className="text-xs font-semibold text-muted-foreground">{t.label}</span>
                                   <Badge variant={livre ? 'success' : 'secondary'} className="text-[10px]">
                                     {livre ? 'Livre' : 'Ocupado'}
                                   </Badge>
@@ -1431,7 +1431,7 @@ export default function Escala({
                                         className="rounded bg-white px-1.5 py-0.5 text-[11px] text-muted-foreground"
                                       >
                                         {e.perfis?.nome_completo ?? 'Ocupado'}
-                                        {e.quinzenal && <span className="ml-1 font-bold text-primary">15/15</span>}
+                                        {e.quinzenal && <span className="ml-1 font-semibold text-primary">15/15</span>}
                                       </span>
                                     ))}
                                   </div>
@@ -1478,7 +1478,7 @@ export default function Escala({
                   {DIAS_SEMANA.map((d, idx) => (
                     <div
                       key={d}
-                      className={`py-1 text-[11px] font-bold uppercase tracking-wide ${
+                      className={`py-1 text-[11px] font-semibold uppercase tracking-wide ${
                         idx === 0 || idx === 6 ? 'text-atencao' : 'text-muted-foreground'
                       }`}
                     >
@@ -1501,12 +1501,12 @@ export default function Escala({
                         onClick={() => setDiaGeral(c.iso)}
                         className={`flex min-h-[76px] flex-col gap-1 rounded-lg border p-1.5 text-left transition-all duration-200 ${
                           livres
-                            ? 'border-dashed border-conforme/30 bg-conforme/60 hover:bg-conforme/[0.12]'
+                            ? 'border-dashed border-conforme/30 bg-conforme/[0.06] hover:bg-conforme/[0.12]'
                             : 'border-border bg-white hover:bg-muted'
                         } ${eHoje ? 'ring-2 ring-primary/60' : ''}`}
                       >
                         <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold ${
+                          className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-semibold ${
                             eHoje
                               ? 'bg-primary text-primary-foreground'
                               : livres
@@ -1517,7 +1517,7 @@ export default function Escala({
                           {c.dia}
                         </span>
                         {livres ? (
-                          <span className="text-[10px] font-bold text-conforme">Tudo livre</span>
+                          <span className="text-[10px] font-semibold text-conforme">Tudo livre</span>
                         ) : (
                           <span className="text-[10px] font-semibold text-muted-foreground">
                             {plantoesDia.length} plantão(ões)
@@ -1571,7 +1571,7 @@ export default function Escala({
       : (
         <>
           {/* PAINEL DE ALERTAS (gestor/admin) */}
-          <Card className="border-atencao/30 bg-atencao/40">
+          <Card className="border-atencao/30 bg-atencao/[0.06]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <CalendarClock className="size-4 text-atencao" />
@@ -1723,20 +1723,20 @@ export default function Escala({
                   <table className="w-full border-collapse text-sm">
                     <thead>
                       <tr>
-                        <th className="border-b border-r bg-muted/50 p-2 text-left text-xs font-bold uppercase text-muted-foreground">Plantonista</th>
-                        <th className="border-b border-r bg-suprimento/[0.08] p-2 text-center text-xs font-bold uppercase text-suprimento">Diurnos</th>
-                        <th className="border-b border-r bg-suprimento/[0.08] p-2 text-center text-xs font-bold uppercase text-suprimento">Noturnos</th>
-                        <th className="border-b border-r p-2 text-center text-xs font-bold uppercase text-muted-foreground">Horas</th>
-                        <th className="border-b p-2 text-center text-xs font-bold uppercase text-muted-foreground">Dias</th>
+                        <th className="border-b border-r bg-muted/50 p-2 text-left text-xs font-semibold uppercase text-muted-foreground">Plantonista</th>
+                        <th className="border-b border-r bg-suprimento/[0.08] p-2 text-center text-xs font-semibold uppercase text-suprimento">Diurnos</th>
+                        <th className="border-b border-r bg-suprimento/[0.08] p-2 text-center text-xs font-semibold uppercase text-suprimento">Noturnos</th>
+                        <th className="border-b border-r p-2 text-center text-xs font-semibold uppercase text-muted-foreground">Horas</th>
+                        <th className="border-b p-2 text-center text-xs font-semibold uppercase text-muted-foreground">Dias</th>
                       </tr>
                     </thead>
                     <tbody>
                       {(resumoCarga ?? []).map((r) => (
                         <tr key={r.perfil_id}>
                           <td className="border-b border-r p-2 font-medium">{r.nome}</td>
-                          <td className="border-b border-r p-2 text-center font-bold text-suprimento">{r.diurnos}</td>
-                          <td className="border-b border-r p-2 text-center font-bold text-suprimento">{r.noturnos}</td>
-                          <td className="border-b border-r p-2 text-center font-bold">{r.horas}h</td>
+                          <td className="border-b border-r p-2 text-center font-semibold text-suprimento">{r.diurnos}</td>
+                          <td className="border-b border-r p-2 text-center font-semibold text-suprimento">{r.noturnos}</td>
+                          <td className="border-b border-r p-2 text-center font-semibold">{r.horas}h</td>
                           <td className="border-b p-2 text-center">{r.dias}</td>
                         </tr>
                       ))}
@@ -1787,11 +1787,11 @@ export default function Escala({
                     <table className="w-full min-w-[760px] border-collapse text-sm">
                       <thead>
                         <tr>
-                          <th className="w-40 border-b border-r bg-muted/50 p-2 text-left text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                          <th className="w-40 border-b border-r bg-muted/50 p-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                             Setor
                           </th>
                           {DIAS_SEMANA.map((d) => (
-                            <th key={d} className="border-b border-r p-2 text-center text-xs font-bold uppercase tracking-wide">
+                            <th key={d} className="border-b border-r p-2 text-center text-xs font-semibold uppercase tracking-wide">
                               {d}
                             </th>
                           ))}
@@ -1815,7 +1815,7 @@ export default function Escala({
                                       <span key={f.id} className="group flex items-center gap-1">
                                         <span className="block flex-1 rounded bg-muted px-1.5 py-0.5 text-[11px] leading-tight">
                                           {f.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Sem nome'}
-                                          {f.quinzenal && <span className="ml-1 font-bold text-primary">15/15</span>}
+                                          {f.quinzenal && <span className="ml-1 font-semibold text-primary">15/15</span>}
                                         </span>
                                         <button
                                           type="button"
@@ -1867,13 +1867,13 @@ export default function Escala({
                   <table className="w-full min-w-[760px] border-collapse text-sm">
                     <thead>
                       <tr>
-                        <th className="w-40 border-b border-r bg-muted/50 p-2 text-left text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                        <th className="w-40 border-b border-r bg-muted/50 p-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                           Setor
                         </th>
                         {dias.map((d, i) => (
                           <th
                             key={d}
-                            className={`border-b p-2 text-center text-xs font-bold uppercase tracking-wide ${
+                            className={`border-b p-2 text-center text-xs font-semibold uppercase tracking-wide ${
                               i >= 5 ? 'border-r border-r-amber-200 bg-atencao/[0.08] text-atencao' : 'border-r'
                             }`}
                           >
@@ -1903,7 +1903,7 @@ export default function Escala({
                                     <span key={p.id} className="block">
                                       <span className="block rounded bg-muted px-1.5 py-0.5 text-[11px] leading-tight">
                                         {p.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Sem nome'}
-                                        {p.quinzenal && <span className="ml-1 font-bold text-primary">15/15</span>}
+                                        {p.quinzenal && <span className="ml-1 font-semibold text-primary">15/15</span>}
                                       </span>
                                       {p.rotulo && (
                                         <span className="block px-1.5 text-[10px] text-muted-foreground">{p.rotulo}</span>

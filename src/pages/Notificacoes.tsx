@@ -34,7 +34,7 @@ export default function Notificacoes() {
           <ChevronRight className="size-3.5" />
           <span className="font-medium text-foreground">Avisos</span>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Avisos</h1>
+        <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Avisos</h1>
         <p className="text-sm text-muted-foreground">
           Central de notificações — turno, observação vencendo, decisões do gestor e candidaturas.
         </p>

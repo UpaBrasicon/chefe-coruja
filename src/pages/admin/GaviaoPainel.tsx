@@ -111,7 +111,7 @@ export function GaviaoPainel() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.resumo.incidentes_abertos ?? 0}</div>
+            <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{data?.resumo.incidentes_abertos ?? 0}</div>
           </CardContent>
         </Card>
         <Card>
@@ -121,7 +121,7 @@ export function GaviaoPainel() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.resumo.alertas_ativos ?? 0}</div>
+            <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{data?.resumo.alertas_ativos ?? 0}</div>
           </CardContent>
         </Card>
         <Card>
@@ -155,7 +155,7 @@ export function GaviaoPainel() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-lg border p-3">
                 <div className="text-xs text-muted-foreground">Incidentes</div>
-                <div className="text-2xl font-bold">{data.relatorio.resumo.total_incidentes}</div>
+                <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{data.relatorio.resumo.total_incidentes}</div>
                 <div className="mt-1 flex gap-1 text-[11px]">
                   <Badge className={SEVERIDADE_COR.critico}>C {data.relatorio.resumo.incidentes_por_severidade.critico}</Badge>
                   <Badge className={SEVERIDADE_COR.atencao}>A {data.relatorio.resumo.incidentes_por_severidade.atencao}</Badge>
@@ -170,7 +170,7 @@ export function GaviaoPainel() {
               </div>
               <div className="rounded-lg border p-3">
                 <div className="text-xs text-muted-foreground">Alertas de escala</div>
-                <div className="text-2xl font-bold">{data.relatorio.resumo.total_alertas}</div>
+                <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{data.relatorio.resumo.total_alertas}</div>
                 <div className="text-[11px] text-muted-foreground">
                   {data.relatorio.resumo.alertas_por_status.novo} novos · {data.relatorio.resumo.alertas_por_status.visto} vistos
                 </div>

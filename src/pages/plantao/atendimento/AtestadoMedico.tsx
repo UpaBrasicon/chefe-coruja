@@ -173,7 +173,7 @@ export function AtestadoMedico({
           </div>
 
           <div className="rounded-lg border bg-white p-4 text-sm leading-relaxed">
-            <div className="mb-2 text-center font-bold uppercase">{titulo}</div>
+            <div className="mb-2 text-center font-semibold uppercase">{titulo}</div>
             <p>
               {dados.atestado.tipo === 'comparecimento' &&
                 `Atesto, para os devidos fins, que ${dados.paciente.nome || '________'} compareceu a esta unidade em ${fmtData(dados.paciente.dataAtual) || '____/___/____'}, necessitando de ${dados.atestado.dias || '…'} dia(s) de afastamento de suas atividades.`}

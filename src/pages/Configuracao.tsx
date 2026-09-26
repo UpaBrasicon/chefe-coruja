@@ -131,7 +131,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
             <ChevronRight className="size-3.5" />
             <span className="font-medium text-foreground">Configurações da Unidade</span>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Configurações da Unidade</h1>
+          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Configurações da Unidade</h1>
           <p className="text-sm text-muted-foreground">Comunicação, geolocalização do check-in e valores de plantão.</p>
         </div>
       )}

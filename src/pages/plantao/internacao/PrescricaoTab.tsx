@@ -198,7 +198,7 @@ export function PrescricaoTab({
             if (!itens.length) return null
             return (
               <div key={cat.id}>
-                <div className="mb-2 border-b-2 border-primary pb-1 text-sm font-bold text-primary">
+                <div className="mb-2 border-b-2 border-primary pb-1 text-sm font-semibold text-primary">
                   {cat.label}{' '}
                   {cat.desc && <span className="font-normal text-muted-foreground">({cat.desc})</span>}
                 </div>
@@ -238,7 +238,7 @@ export function PrescricaoTab({
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {dados.alergias && dados.alergias.toUpperCase() !== 'NEGA' && (
-            <div className="rounded-lg bg-critico px-4 py-3 text-center text-sm font-bold text-white">
+            <div className="rounded-lg bg-critico px-4 py-3 text-center text-sm font-semibold text-white">
               ⚠ ALERGIA: {dados.alergias.toUpperCase()}
             </div>
           )}
@@ -249,7 +249,7 @@ export function PrescricaoTab({
             </p>
           )}
           <div className="rounded-lg border bg-white p-3 text-xs">
-            <div className="mb-2 text-center font-bold uppercase">Prescrição Médica</div>
+            <div className="mb-2 text-center font-semibold uppercase">Prescrição Médica</div>
             <div className="mb-3 space-y-1 text-[11px]">
               <div className="flex justify-between gap-2">
                 <span><strong>Nome:</strong> {dados.nome || '…'}</span>
@@ -276,7 +276,7 @@ export function PrescricaoTab({
                 <tbody>
                   {itensSelecionados.map((i, idx) => (
                     <tr key={i.n} className="border-b border-black/20">
-                      <td className="p-1.5 text-center font-bold text-muted-foreground">{String(idx + 1).padStart(2, '0')}</td>
+                      <td className="p-1.5 text-center font-semibold text-muted-foreground">{String(idx + 1).padStart(2, '0')}</td>
                       <td className="p-1.5 font-medium">{i.med}</td>
                       <td className="p-1.5 text-center font-semibold text-primary">{i.via}</td>
                       <td className="p-1.5">{i.pos}</td>

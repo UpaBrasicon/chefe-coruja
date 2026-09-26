@@ -101,7 +101,7 @@ export default function ReferenciaDiluicao({ embutido = false }: { embutido?: bo
             <ChevronRight className="size-3.5" />
             <span className="font-medium text-foreground">Referência de Diluição</span>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Referência de Diluição</h1>
+          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Referência de Diluição</h1>
           <p className="text-sm text-muted-foreground">
             API interna <code className="rounded bg-muted px-1">diluicao_publicada</code> — retorna apenas
             registros <strong>publicados</strong> (revisados por farmacêutico). Registros em rascunho não são

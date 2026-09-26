@@ -258,7 +258,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
             <ChevronRight className="size-3.5" />
             <span className="font-medium text-foreground">Prescrição Teste</span>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Prescrição Teste</h1>
+          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Consulta de Medicamentos</h1>
           <p className="text-sm text-muted-foreground">
             Comece a digitar o nome (ou parte) do medicamento para ver as sugestões, incluindo a diluição
             quando necessária.
