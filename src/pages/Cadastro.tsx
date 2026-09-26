@@ -51,7 +51,7 @@ export function Cadastro() {
 
   if (confirmacaoEnviada) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-campo p-4">
         <Card className="w-full max-w-sm">
           <CardHeader>
             <CardTitle>Verifique seu e-mail</CardTitle>
@@ -66,7 +66,7 @@ export function Cadastro() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-campo p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-lg">Criar conta</CardTitle>

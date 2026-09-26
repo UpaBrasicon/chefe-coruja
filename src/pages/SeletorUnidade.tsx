@@ -1,17 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 
 import { useUnidade, type VinculoComUnidade } from '@/contexts/UnidadeContext'
-import { PAPEL_LABEL } from '@/lib/constants'
-import type { Papel } from '@/types/database'
+import { PAPEL_LABEL, ROTA_INICIAL } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-
-const ROTA_POR_PAPEL: Record<Papel, string> = {
-  admin: '/painel',
-  gestor: '/setores',
-  plantonista: '/plantonista',
-}
 
 export function SeletorUnidade() {
   const { unidades, setUnidadeAtivaId } = useUnidade()
@@ -19,11 +12,11 @@ export function SeletorUnidade() {
 
   function escolher(unidade: VinculoComUnidade) {
     setUnidadeAtivaId(unidade.unidade_id)
-    navigate(ROTA_POR_PAPEL[unidade.papel], { replace: true })
+    navigate(ROTA_INICIAL[unidade.papel], { replace: true })
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-campo p-4">
       <div className="w-full max-w-md">
         <Card>
           <CardHeader>
