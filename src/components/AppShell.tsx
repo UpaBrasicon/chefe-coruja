@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
-import { PAPEL_LABEL } from '@/lib/constants'
+import { PAPEIS_POR_ESCALA, PAPEL_LABEL } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { DesfazerProvider } from '@/contexts/DesfazerContext'
@@ -184,9 +184,10 @@ export function AppShell() {
 
   // A escala é a porta (ADR 0003): o plantonista só entra se estiver na escala
   // agora, pelo relógio do servidor, ou com acesso de atendimento.
-  const { status: plantaoStatus } = usePlantao(
-    papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined
-  )
+  // Vale para todo papel assistencial: recepção, técnico, enfermeiro,
+  // plantonista e telemedicina. Farmacêutico, gestor e admin não entram por escala.
+  const entraPorEscala = !!papelAtivo && PAPEIS_POR_ESCALA.includes(papelAtivo)
+  const { status: plantaoStatus } = usePlantao(entraPorEscala ? unidadeAtiva?.unidade_id : undefined)
 
   // Lembrete de check-in (a trava foi adiada em 23/08). O último check-in sem
   // check-out é o ativo; `limit(1)` evita o erro do maybeSingle com dois ou
@@ -214,7 +215,7 @@ export function AppShell() {
     (plantaoStatus === 'escala' || plantaoStatus === 'acesso') &&
     !(presencaAtiva && presencaAtiva.checkin_em && !presencaAtiva.checkout_em)
 
-  if (papelAtivo === 'plantonista') {
+  if (entraPorEscala) {
     if (plantaoStatus === 'carregando') {
       return (
         <div className="flex min-h-screen items-center justify-center">

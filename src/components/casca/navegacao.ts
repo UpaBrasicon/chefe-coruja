@@ -5,6 +5,7 @@ import {
   CalendarClock,
   Eye,
   Hospital,
+  Hourglass,
   LayoutDashboard,
   LineChart,
   ShieldCheck,
@@ -42,6 +43,12 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
     { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true },
   ],
+  // Papéis novos (ADR 0008): as telas deles chegam com as fases do plano.
+  enfermeiro: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
+  tecnico_enfermagem: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
+  recepcao: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
+  farmaceutico: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
+  telemedicina: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
   admin: [
     { to: '/painel', rotulo: 'Rede', icone: LayoutDashboard, exato: true },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
@@ -54,7 +61,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
  * (ex.: gestor e plantonista); os itens se somam, sem repetir destino.
  */
 export function itensDeNavegacao(papeis: Papel[]): ItemNav[] {
-  const ordem: Papel[] = ['plantonista', 'gestor', 'admin']
+  const ordem: Papel[] = ['plantonista', 'gestor', 'admin', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem', 'farmaceutico', 'recepcao']
   const itens = ordem.filter((p) => papeis.includes(p)).flatMap((p) => POR_PAPEL[p])
   const unicos = itens.filter((item, i) => itens.findIndex((x) => x.to === item.to) === i)
   return unicos.length ? unicos : POR_PAPEL.plantonista.slice(0, 1)

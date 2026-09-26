@@ -15,6 +15,7 @@ import { Spinner } from '@/components/ui/spinner'
 // ── Telas fora do shell: carregadas sob demanda ───────────────────────────────
 const Login = lazy(() => import('@/pages/Login').then((m) => ({ default: m.Login })))
 const Cadastro = lazy(() => import('@/pages/Cadastro').then((m) => ({ default: m.Cadastro })))
+const PapelEmPreparo = lazy(() => import('@/pages/PapelEmPreparo'))
 const LinkReceita = lazy(() =>
   import('@/pages/public/LinkReceita').then((m) => ({ default: m.LinkReceita }))
 )
@@ -111,6 +112,10 @@ export default function App() {
                     <Route path="/seletor" element={<SeletorUnidade />} />
 
                     <Route element={<AppShell />}>
+                      {/* Papéis novos cujas telas chegam nas próximas fases —
+                          fora de RequireRole para não virar laço de redirecionamento. */}
+                      <Route path="/em-preparo" element={<PapelEmPreparo />} />
+
                       {/* ── Admin ──────────────────────────────────────── */}
                       <Route element={<RequireRole papeis={['admin']} />}>
                         <Route path="/painel" element={<OrganizacaoGrupo />} />

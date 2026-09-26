@@ -4,12 +4,22 @@ export const PAPEL_LABEL: Record<Papel, string> = {
   admin: 'Administrador',
   gestor: 'Gestor',
   plantonista: 'Plantonista',
+  enfermeiro: 'Enfermeiro',
+  tecnico_enfermagem: 'Técnico de Enfermagem',
+  recepcao: 'Recepção',
+  farmaceutico: 'Farmacêutico',
+  telemedicina: 'Telemedicina',
 }
 
 export const PAPEL_DESCRIPTION: Record<Papel, string> = {
   admin: 'Todas as unidades da organização (sem identidade de paciente)',
   gestor: 'Gestão da unidade — setores, leitos e equipe',
   plantonista: 'Acesso aos pacientes sob seu cuidado',
+  enfermeiro: 'Triagem, classificação de risco e cuidados de enfermagem',
+  tecnico_enfermagem: 'Cuidados de enfermagem e sinais vitais',
+  recepcao: 'Ficha de chegada e fila de atendimento',
+  farmaceutico: 'Diluição padrão, validação de prescrição e faltas',
+  telemedicina: 'Teleinterconsulta de apoio ao plantonista',
 }
 
 export const TIPO_UNIDADE_LABEL: Record<TipoUnidade, string> = {
@@ -60,10 +70,25 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   admin: '/painel',
   gestor: '/unidade',
   plantonista: '/plantonista',
+  // As telas dos papéis novos chegam com as fases do plano; até lá, uma
+  // página honesta em vez de um laço de redirecionamento.
+  enfermeiro: '/em-preparo',
+  tecnico_enfermagem: '/em-preparo',
+  recepcao: '/em-preparo',
+  farmaceutico: '/em-preparo',
+  telemedicina: '/em-preparo',
 }
 
 export const ORDEM_PAPEL: Record<Papel, number> = {
   admin: 0,
   gestor: 1,
   plantonista: 2,
+  telemedicina: 3,
+  enfermeiro: 4,
+  tecnico_enfermagem: 5,
+  farmaceutico: 6,
+  recepcao: 7,
 }
+
+/** Papéis que só entram com plantão na escala agora (ADR 0003). */
+export const PAPEIS_POR_ESCALA: readonly Papel[] = ['plantonista', 'enfermeiro', 'tecnico_enfermagem', 'recepcao', 'telemedicina']

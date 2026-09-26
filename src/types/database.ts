@@ -3786,7 +3786,15 @@ export type Database = {
       turno_atual: { Args: never; Returns: string }
     }
     Enums: {
-      papel: "admin" | "gestor" | "plantonista"
+      papel:
+        | "admin"
+        | "gestor"
+        | "plantonista"
+        | "enfermeiro"
+        | "tecnico_enfermagem"
+        | "recepcao"
+        | "farmaceutico"
+        | "telemedicina"
       status_leito: "livre" | "ocupado" | "bloqueado" | "higienizacao"
       tipo_leito: "clinico" | "isolamento" | "estabilizacao" | "observacao"
       tipo_setor:
@@ -4115,7 +4123,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      papel: ["admin", "gestor", "plantonista"],
+      papel: [
+        "admin",
+        "gestor",
+        "plantonista",
+        "enfermeiro",
+        "tecnico_enfermagem",
+        "recepcao",
+        "farmaceutico",
+        "telemedicina",
+      ],
       status_leito: ["livre", "ocupado", "bloqueado", "higienizacao"],
       tipo_leito: ["clinico", "isolamento", "estabilizacao", "observacao"],
       tipo_setor: [
