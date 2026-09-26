@@ -1927,8 +1927,11 @@ export type Database = {
           created_at: string
           entidade: string
           entidade_id: string | null
+          hash: string | null
+          hash_anterior: string | null
           id: string
           payload: Json | null
+          seq: number
           unidade_id: string | null
         }
         Insert: {
@@ -1937,8 +1940,11 @@ export type Database = {
           created_at?: string
           entidade: string
           entidade_id?: string | null
+          hash?: string | null
+          hash_anterior?: string | null
           id?: string
           payload?: Json | null
+          seq?: never
           unidade_id?: string | null
         }
         Update: {
@@ -1947,8 +1953,11 @@ export type Database = {
           created_at?: string
           entidade?: string
           entidade_id?: string | null
+          hash?: string | null
+          hash_anterior?: string | null
           id?: string
           payload?: Json | null
+          seq?: never
           unidade_id?: string | null
         }
         Relationships: [
@@ -2605,9 +2614,12 @@ export type Database = {
       presenca_plantonista: {
         Row: {
           checkin_dentro: boolean | null
+          checkin_distancia_m: number | null
           checkin_em: string | null
+          checkin_justificativa: string | null
           checkin_lat: number | null
           checkin_lng: number | null
+          checkout_automatico: boolean
           checkout_dentro: boolean | null
           checkout_em: string | null
           checkout_lat: number | null
@@ -2625,9 +2637,12 @@ export type Database = {
         }
         Insert: {
           checkin_dentro?: boolean | null
+          checkin_distancia_m?: number | null
           checkin_em?: string | null
+          checkin_justificativa?: string | null
           checkin_lat?: number | null
           checkin_lng?: number | null
+          checkout_automatico?: boolean
           checkout_dentro?: boolean | null
           checkout_em?: string | null
           checkout_lat?: number | null
@@ -2645,9 +2660,12 @@ export type Database = {
         }
         Update: {
           checkin_dentro?: boolean | null
+          checkin_distancia_m?: number | null
           checkin_em?: string | null
+          checkin_justificativa?: string | null
           checkin_lat?: number | null
           checkin_lng?: number | null
+          checkout_automatico?: boolean
           checkout_dentro?: boolean | null
           checkout_em?: string | null
           checkout_lat?: number | null
@@ -3635,7 +3653,10 @@ export type Database = {
         Args: { p_unidade: string }
         Returns: {
           checkin_dentro: boolean
+          checkin_distancia_m: number
           checkin_em: string
+          checkin_justificativa: string
+          checkout_automatico: boolean
           checkout_dentro: boolean
           checkout_em: string
           em_escala: boolean
@@ -3679,15 +3700,16 @@ export type Database = {
       }
       registrar_checkin: {
         Args: {
-          p_lat: number
-          p_lng: number
+          p_justificativa?: string
+          p_lat?: number
+          p_lng?: number
           p_observacao?: string
           p_unidade: string
         }
         Returns: string
       }
       registrar_checkout: {
-        Args: { p_lat: number; p_lng: number; p_registro: string }
+        Args: { p_lat?: number; p_lng?: number; p_registro: string }
         Returns: undefined
       }
       registrar_evento_adt: {

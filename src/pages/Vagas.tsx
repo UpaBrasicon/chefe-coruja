@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { hojeLocal } from '@/pages/plantao/shared/rascunho'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -64,7 +65,7 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
         .select('id, data, turno, setor_id, unidade_id, setores(id, nome, especialidade), unidades(id, nome, latitude, longitude)')
         .is('perfil_id', null)
         .eq('ativo', true)
-        .gte('data', new Date().toISOString().slice(0, 10))
+        .gte('data', hojeLocal())
         .order('data', { ascending: true })
       if (error) throw error
       return (data ?? []) as unknown as Vaga[]

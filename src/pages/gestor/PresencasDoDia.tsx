@@ -17,6 +17,9 @@ type PresencaDia = {
   checkin_dentro: boolean | null
   checkout_dentro: boolean | null
   observacao: string | null
+  checkin_justificativa: string | null
+  checkin_distancia_m: number | null
+  checkout_automatico: boolean
 }
 
 /**
@@ -91,7 +94,7 @@ export function PresencasDoDia() {
                   <span className="truncate font-medium">{p.nome}</span>
                   {!p.em_escala && <Badge variant="outline">fora da escala hoje</Badge>}
                   {p.checkin_dentro === true && <Badge variant="success">dentro do raio</Badge>}
-                  {p.checkin_dentro === false && <Badge variant="destructive">fora do raio</Badge>}
+                  {p.checkin_dentro === false && (<Badge variant="destructive">fora do raio{p.checkin_distancia_m != null ? ` · ${p.checkin_distancia_m} m` : ""}</Badge>)}
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   {p.checkin_em ? (
@@ -106,10 +109,15 @@ export function PresencasDoDia() {
                   )}
                   {p.checkout_em && (
                     <span className="flex items-center gap-1 text-muted-foreground">
-                      → {new Date(p.checkout_em).toLocaleTimeString('pt-BR')}
+                      → {new Date(p.checkout_em).toLocaleTimeString('pt-BR')}{p.checkout_automatico && ' (automático)'}
                     </span>
                   )}
                 </div>
+                {p.checkin_justificativa && (
+                  <p className="w-full text-rotulo text-tinta-apoio">
+                    Justificativa do check-in: “{p.checkin_justificativa}”
+                  </p>
+                )}
               </div>
             ))
           )}

@@ -13,7 +13,11 @@ import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 
-const TURNO_LABEL: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }
+const TURNO_LABEL: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
+
+// 'AAAA-MM-DD' é data civil, não instante: new Date() a lê como meia-noite UTC
+// e, em Brasília, ela vira o dia anterior.
+const dataCivil = (iso: string) => iso.slice(0, 10).split('-').reverse().join('/')
 
 type PresencaRow = {
   id: string
@@ -76,10 +80,19 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
     refetchInterval: 30_000,
   })
 
-  const ativoHoje = React.useMemo(() => {
-    const hoje = new Date().toISOString().slice(0, 10)
-    return (presencas ?? []).find((p) => p.data === hoje && p.checkin_em && !p.checkout_em)
-  }, [presencas])
+  // O ativo é o último check-in sem check-out — não "o de hoje pelo relógio
+  // do aparelho": a noite que atravessa a meia-noite é registrada na data em
+  // que o plantão começou (ADR 0003).
+  const ativoHoje = React.useMemo(
+    () => (presencas ?? []).find((p) => p.checkin_em && !p.checkout_em),
+    [presencas],
+  )
+
+  // Fora do raio: 1ª recusa pede nova tentativa; da 2ª em diante pergunta se
+  // o GPS está com problema e aceita justificativa (decisão de 26/09/2026).
+  const [recusas, setRecusas] = React.useState(0)
+  const [recusa, setRecusa] = React.useState<string | null>(null)
+  const [justificativa, setJustificativa] = React.useState('')
 
   async function localizar() {
     setGeoMsg(null)
@@ -93,35 +106,46 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
     }
   }
 
-  async function checkin() {
+  async function checkin(comJustificativa = false) {
     if (!unidadeId) return
     setProcessando('in')
     setErro(null)
     setSucesso(null)
     try {
-      let lat: number | null = pos?.lat ?? null
-      let lng: number | null = pos?.lng ?? null
-      if (lat == null || lng == null) {
-        try {
-          const p = await obterPosicao()
-          lat = p.lat
-          lng = p.lng
-        } catch {
-          lat = null
-          lng = null
-        }
+      // Sempre uma leitura nova de GPS: a tentativa seguinte precisa medir de novo.
+      let lat: number | null = null
+      let lng: number | null = null
+      try {
+        const p = await obterPosicao()
+        lat = p.lat
+        lng = p.lng
+        setPos(p)
+      } catch {
+        // Sem localização vai vazio — nunca (0, 0), que o servidor leria como
+        // uma posição real no meio do oceano.
       }
-      const { data, error } = await supabase.rpc('registrar_checkin', {
+      const { error } = await supabase.rpc('registrar_checkin', {
         p_unidade: unidadeId,
-        p_lat: lat ?? 0,
-        p_lng: lng ?? 0,
+        p_lat: lat ?? undefined,
+        p_lng: lng ?? undefined,
         p_observacao: obs || undefined,
+        p_justificativa: comJustificativa ? justificativa.trim() : undefined,
       })
-      if (error) throw error
-      setSucesso('Check-in realizado com sucesso.')
+      if (error) {
+        const m = error.message
+        if (m.startsWith('CHECKIN_FORA_DO_RAIO') || m.startsWith('CHECKIN_SEM_LOCALIZACAO')) {
+          setRecusas((n) => n + 1)
+          setRecusa(m.replace(/^CHECKIN_[A-Z_]+:\s*/, ''))
+          return
+        }
+        throw new Error(m.replace(/^CHECKIN_[A-Z_]+:\s*/, ''))
+      }
+      setSucesso(comJustificativa ? 'Check-in registrado com a justificativa. O gestor verá o motivo.' : 'Check-in realizado com sucesso.')
       setObs('')
+      setRecusa(null)
+      setRecusas(0)
+      setJustificativa('')
       void refetch()
-      if (typeof data === 'string') void data
     } catch (e) {
       setErro((e as Error).message)
     } finally {
@@ -149,8 +173,8 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
       }
       const { error } = await supabase.rpc('registrar_checkout', {
         p_registro: ativoHoje.id,
-        p_lat: lat ?? 0,
-        p_lng: lng ?? 0,
+        p_lat: lat ?? undefined,
+        p_lng: lng ?? undefined,
       })
       if (error) throw error
       setSucesso('Check-out realizado com sucesso.')
@@ -213,7 +237,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Badge variant="warning">Em expediente</Badge>
                 <span>
-                  {new Date(ativoHoje.data).toLocaleDateString('pt-BR')} · {TURNO_LABEL[ativoHoje.turno] ?? ativoHoje.turno}
+                  {dataCivil(ativoHoje.data)} · {TURNO_LABEL[ativoHoje.turno] ?? ativoHoje.turno}
                 </span>
                 {ativoHoje.checkin_dentro === true && <Badge variant="success">Dentro do raio</Badge>}
                 {ativoHoje.checkin_dentro === false && <Badge variant="destructive">Fora do raio</Badge>}
@@ -235,11 +259,44 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
                 onChange={(e) => setObs(e.target.value)}
                 className="min-h-[70px]"
               />
-              <div>
-                <Button onClick={checkin} disabled={processando !== null}>
-                  {processando === 'in' ? <Loader2 className="animate-spin" /> : <LogIn />} Check-in agora
-                </Button>
-              </div>
+              {recusa && recusas < 2 && (
+                <div role="alert" className="rounded-controle bg-atencao/[0.08] p-3 text-apoio text-atencao">
+                  <p className="font-medium">Check-in não registrado: {recusa}</p>
+                  <p className="mt-0.5 text-tinta-apoio">Confira se você já está na unidade e tente de novo, de preferência perto de uma janela ou em área aberta.</p>
+                </div>
+              )}
+              {recusa && recusas >= 2 ? (
+                <div className="flex flex-col gap-2 rounded-controle border border-fio bg-campo p-3">
+                  <p className="text-apoio font-medium text-tinta">O GPS está com problema?</p>
+                  <p className="text-apoio text-tinta-sussurro">
+                    Duas tentativas deram “{recusa}”. Se você está na unidade e o GPS está errado, registre o check-in com uma justificativa. Ela fica visível para o gestor.
+                  </p>
+                  <Textarea
+                    placeholder="Ex.: o GPS do celular está marcando outro bairro"
+                    value={justificativa}
+                    onChange={(e) => setJustificativa(e.target.value)}
+                    className="min-h-[70px]"
+                    aria-label="Justificativa do check-in"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={() => checkin(true)} disabled={processando !== null || justificativa.trim().length < 10}>
+                      {processando === 'in' ? <Loader2 className="animate-spin" /> : <LogIn />} Registrar com justificativa
+                    </Button>
+                    <Button variant="outline" onClick={() => checkin(false)} disabled={processando !== null}>
+                      Tentar de novo
+                    </Button>
+                  </div>
+                  {justificativa.trim().length > 0 && justificativa.trim().length < 10 && (
+                    <p className="text-rotulo text-tinta-sussurro">Escreva pelo menos 10 caracteres.</p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <Button onClick={() => checkin(false)} disabled={processando !== null}>
+                    {processando === 'in' ? <Loader2 className="animate-spin" /> : <LogIn />} {recusa ? 'Tentar de novo' : 'Check-in agora'}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
@@ -262,7 +319,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
                 <div key={p.id} className="flex items-center justify-between rounded-lg border p-2.5 text-sm">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">
-                      {new Date(p.data).toLocaleDateString('pt-BR')} · {TURNO_LABEL[p.turno] ?? p.turno}
+                      {dataCivil(p.data)} · {TURNO_LABEL[p.turno] ?? p.turno}
                     </span>
                     {p.checkin_dentro === false && <Badge variant="destructive">Fora do raio</Badge>}
                   </div>
