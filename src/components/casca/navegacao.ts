@@ -4,6 +4,7 @@ import {
   Building2,
   CalendarClock,
   ClipboardList,
+  DoorOpen,
   Eye,
   Hospital,
   Hourglass,
@@ -34,6 +35,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
     { to: '/plantonista', rotulo: 'Central do Plantonista', curto: 'Central', icone: Stethoscope },
     { to: '/plantao', rotulo: 'Plantão', icone: Activity },
+    { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },
     { to: '/agenda', rotulo: 'Minha Agenda', curto: 'Agenda', icone: CalendarClock, exato: true },
     { to: '/notificacoes', rotulo: 'Avisos', icone: Bell, exato: true },
   ],

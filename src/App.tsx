@@ -18,6 +18,7 @@ const Cadastro = lazy(() => import('@/pages/Cadastro').then((m) => ({ default: m
 const PapelEmPreparo = lazy(() => import('@/pages/PapelEmPreparo'))
 const Recepcao = lazy(() => import('@/pages/recepcao/Recepcao'))
 const Triagem = lazy(() => import('@/pages/enfermagem/Triagem'))
+const AtendimentoPorta = lazy(() => import('@/pages/plantao/AtendimentoPorta'))
 const PainelChamada = lazy(() => import('@/pages/public/PainelChamada'))
 const LinkReceita = lazy(() =>
   import('@/pages/public/LinkReceita').then((m) => ({ default: m.LinkReceita }))
@@ -124,6 +125,11 @@ export default function App() {
                       {/* Ficha: Recepção, ou quem está de plantão na porta quando não há Recepção */}
                       <Route element={<RequireRole papeis={['recepcao', 'plantonista', 'gestor']} />}>
                         <Route path="/recepcao" element={<Recepcao />} />
+                      </Route>
+
+                      {/* Atendimento médico da porta: SOAP, reclassificação e desfecho */}
+                      <Route element={<RequireRole papeis={['plantonista']} />}>
+                        <Route path="/atendimento" element={<AtendimentoPorta />} />
                       </Route>
 
                       {/* Classificação de risco é do enfermeiro (CONTEXT.md) */}

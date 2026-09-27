@@ -175,6 +175,77 @@ export type Database = {
           },
         ]
       }
+      atendimento_registros: {
+        Row: {
+          autor_id: string
+          avaliacao: string | null
+          cid: string | null
+          criado_em: string
+          episodio_id: string
+          id: string
+          objetivo: string | null
+          paciente_id: string
+          plano: string | null
+          subjetivo: string | null
+          unidade_id: string
+        }
+        Insert: {
+          autor_id: string
+          avaliacao?: string | null
+          cid?: string | null
+          criado_em?: string
+          episodio_id: string
+          id?: string
+          objetivo?: string | null
+          paciente_id: string
+          plano?: string | null
+          subjetivo?: string | null
+          unidade_id: string
+        }
+        Update: {
+          autor_id?: string
+          avaliacao?: string | null
+          cid?: string | null
+          criado_em?: string
+          episodio_id?: string
+          id?: string
+          objetivo?: string | null
+          paciente_id?: string
+          plano?: string | null
+          subjetivo?: string | null
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atendimento_registros_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atendimento_registros_episodio_id_fkey"
+            columns: ["episodio_id"]
+            isOneToOne: false
+            referencedRelation: "episodios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atendimento_registros_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atendimento_registros_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       banners: {
         Row: {
           ativo: boolean
@@ -1287,12 +1358,17 @@ export type Database = {
       episodios: {
         Row: {
           aberto_por: string
+          atendimento_iniciado_em: string | null
+          atendimento_medico_id: string | null
           chegada_em: string
           classificado_em: string | null
           cor_atual: string | null
           created_at: string
           desfecho: string | null
+          desfecho_detalhes: Json | null
+          desfecho_em: string | null
           desfecho_motivo: string | null
+          desfecho_por: string | null
           encerrado_em: string | null
           encerrado_por: string | null
           etapa: string
@@ -1307,12 +1383,17 @@ export type Database = {
         }
         Insert: {
           aberto_por: string
+          atendimento_iniciado_em?: string | null
+          atendimento_medico_id?: string | null
           chegada_em?: string
           classificado_em?: string | null
           cor_atual?: string | null
           created_at?: string
           desfecho?: string | null
+          desfecho_detalhes?: Json | null
+          desfecho_em?: string | null
           desfecho_motivo?: string | null
+          desfecho_por?: string | null
           encerrado_em?: string | null
           encerrado_por?: string | null
           etapa?: string
@@ -1327,12 +1408,17 @@ export type Database = {
         }
         Update: {
           aberto_por?: string
+          atendimento_iniciado_em?: string | null
+          atendimento_medico_id?: string | null
           chegada_em?: string
           classificado_em?: string | null
           cor_atual?: string | null
           created_at?: string
           desfecho?: string | null
+          desfecho_detalhes?: Json | null
+          desfecho_em?: string | null
           desfecho_motivo?: string | null
+          desfecho_por?: string | null
           encerrado_em?: string | null
           encerrado_por?: string | null
           etapa?: string
@@ -1349,6 +1435,20 @@ export type Database = {
           {
             foreignKeyName: "episodios_aberto_por_fkey"
             columns: ["aberto_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episodios_atendimento_medico_id_fkey"
+            columns: ["atendimento_medico_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episodios_desfecho_por_fkey"
+            columns: ["desfecho_por"]
             isOneToOne: false
             referencedRelation: "perfis"
             referencedColumns: ["id"]
@@ -4147,6 +4247,7 @@ export type Database = {
         }[]
       }
       horario_servidor: { Args: never; Returns: string }
+      iniciar_atendimento: { Args: { p_episodio: string }; Returns: undefined }
       listar_conversas: {
         Args: never
         Returns: {
@@ -4276,6 +4377,15 @@ export type Database = {
         Args: { p_lat?: number; p_lng?: number; p_registro: string }
         Returns: undefined
       }
+      registrar_desfecho: {
+        Args: {
+          p_desfecho: string
+          p_detalhes?: Json
+          p_episodio: string
+          p_relato?: string
+        }
+        Returns: undefined
+      }
       registrar_evento_adt: {
         Args: {
           p_internacao: string
@@ -4316,6 +4426,17 @@ export type Database = {
       }
       registrar_prescricao_observacao: {
         Args: { p_observacoes?: string; p_paciente: string }
+        Returns: string
+      }
+      registrar_soap: {
+        Args: {
+          p_avaliacao: string
+          p_cid?: string
+          p_episodio: string
+          p_objetivo: string
+          p_plano: string
+          p_subjetivo: string
+        }
         Returns: string
       }
       remover_fracionamento: { Args: { p_plantao: string }; Returns: undefined }

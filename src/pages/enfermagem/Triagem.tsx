@@ -16,6 +16,8 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
+import { CamposVitais } from '@/components/clinico/CamposVitais'
+import { faltandoVitais, paraNumeros } from '@/domain/vitais'
 import { BotaoChamar, RetirarDaFila } from '@/components/porta/Chamada'
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 
@@ -37,19 +39,6 @@ type Fluxograma = { id: string; nome: string; publico: 'adulto' | 'pediatrico'; 
 const hoje = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
 const hora = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
 const semAcento = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
-
-// id do campo, rótulo, conceito no banco, unidade, obrigatório no adulto / na pediatria
-const VITAIS = [
-  { k: 'pressao-arterial-sistolica', rotulo: 'PA sistólica', un: 'mmHg', adulto: true, ped: false },
-  { k: 'pressao-arterial-diastolica', rotulo: 'PA diastólica', un: 'mmHg', adulto: true, ped: false },
-  { k: 'frequencia-cardiaca', rotulo: 'FC', un: 'bpm', adulto: true, ped: true },
-  { k: 'frequencia-respiratoria', rotulo: 'FR', un: 'irpm', adulto: true, ped: true },
-  { k: 'temperatura', rotulo: 'Temperatura', un: '°C', adulto: true, ped: true },
-  { k: 'saturacao-o2', rotulo: 'SpO₂', un: '%', adulto: true, ped: true },
-  { k: 'escala-dor', rotulo: 'Dor (0–10)', un: '', adulto: true, ped: true },
-  { k: 'glicemia-capilar', rotulo: 'Glicemia capilar', un: 'mg/dL', adulto: false, ped: false },
-  { k: 'peso', rotulo: 'Peso', un: 'kg', adulto: false, ped: false },
-] as const
 
 const COR_BOTAO: Record<CorRisco, string> = {
   vermelho: 'border-mts-vermelho text-mts-vermelho data-[on=true]:bg-mts-vermelho data-[on=true]:text-white',
@@ -95,19 +84,11 @@ function Classificar({ ep, onFim }: { ep: NaFila; onFim: () => void }) {
     : doPublico
   const fluxo = doPublico.find((f) => f.id === fluxoId)
 
-  const faltando = VITAIS.filter((v) => (publico === 'pediatrico' ? v.ped : v.adulto) && !(vitais[v.k] ?? '').trim())
+  const faltando = faltandoVitais(vitais, publico)
 
   const salvar = useMutation({
     mutationFn: async () => {
-      const sinais = Object.fromEntries(
-        Object.entries(vitais)
-          .filter(([, v]) => v.trim() !== '')
-          .map(([k, v]) => {
-            const n = Number(v.replace(',', '.'))
-            if (Number.isNaN(n)) throw new Error(`Valor inválido em ${VITAIS.find((x) => x.k === k)?.rotulo}`)
-            return [k, n]
-          })
-      )
+      const sinais = paraNumeros(vitais)
       const { error } = await supabase.rpc('classificar_risco', {
         p_episodio: ep.id,
         p_cor: cor!,
@@ -157,17 +138,7 @@ function Classificar({ ep, onFim }: { ep: NaFila; onFim: () => void }) {
           {/* sinais vitais */}
           <section className="flex flex-col gap-2">
             <h3 className="text-sm font-semibold text-tinta">Sinais vitais {publico === 'pediatrico' && <span className="font-normal text-muted-foreground">· na pediatria a PA é opcional</span>}</h3>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {VITAIS.map((v) => {
-                const obrig = publico === 'pediatrico' ? v.ped : v.adulto
-                return (
-                  <div key={v.k} className="flex flex-col gap-1">
-                    <Label htmlFor={`v-${v.k}`}>{v.rotulo}{obrig ? ' *' : ''}</Label>
-                    <Input id={`v-${v.k}`} inputMode="decimal" placeholder={v.un} value={vitais[v.k] ?? ''} onChange={(e) => setVitais((s) => ({ ...s, [v.k]: e.target.value }))} />
-                  </div>
-                )
-              })}
-            </div>
+            <CamposVitais publico={publico} valores={vitais} onChange={(k, v) => setVitais((s) => ({ ...s, [k]: v }))} />
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="a-spo2">SpO₂ medida em</Label>
