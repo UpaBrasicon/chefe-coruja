@@ -52,3 +52,15 @@ test('telefoneCorrespondeWaId — não corresponde', () => {
   assert.equal(telefoneCorrespondeWaId('(11) 99999-0001', '5511888880001'), false)
   assert.equal(telefoneCorrespondeWaId('', '5511999990001'), false)
 })
+
+test('telefoneCorrespondeWaId — telefone sem dígitos ou curto não casa com nada (auditoria 27/09)', () => {
+  assert.equal(telefoneCorrespondeWaId('-', '5511999990001'), false)
+  assert.equal(telefoneCorrespondeWaId('n/a', '5511999990001'), false)
+  assert.equal(telefoneCorrespondeWaId('90001', '5511999990001'), false)
+  assert.equal(telefoneCorrespondeWaId('(11) 99999-0001', '999990001'), false)
+})
+
+test('telefoneCorrespondeWaId — celular que a Meta entrega sem o 9º dígito', () => {
+  assert.equal(telefoneCorrespondeWaId('(62) 98888-7777', '556288887777'), true)
+  assert.equal(telefoneCorrespondeWaId('(62) 98888-7777', '556288887778'), false)
+})

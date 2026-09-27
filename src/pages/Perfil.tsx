@@ -18,6 +18,7 @@ import * as React from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { SecaoSegundoFator } from '@/components/seguranca/SegundoFator'
+import { ConectarTelegram } from '@/components/seguranca/ConectarTelegram'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -214,6 +215,7 @@ export default function Perfil() {
 
       {/* Foto + identificação */}
       <SecaoSegundoFator />
+      <ConectarTelegram />
 
       <Card>
         <CardHeader>

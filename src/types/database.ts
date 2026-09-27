@@ -1866,6 +1866,35 @@ export type Database = {
         }
         Relationships: []
       }
+      hermes_identidades: {
+        Row: {
+          canal: string
+          criado_em: string
+          identificador: string
+          perfil_id: string
+        }
+        Insert: {
+          canal: string
+          criado_em?: string
+          identificador: string
+          perfil_id: string
+        }
+        Update: {
+          canal?: string
+          criado_em?: string
+          identificador?: string
+          perfil_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hermes_identidades_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hermes_sessions: {
         Row: {
           created_at: string
@@ -4098,6 +4127,10 @@ export type Database = {
         }
         Returns: string
       }
+      confirmar_vinculo_hermes: {
+        Args: { p_canal: string; p_codigo: string; p_identificador: string }
+        Returns: string
+      }
       contatos_chat: {
         Args: never
         Returns: {
@@ -4219,6 +4252,10 @@ export type Database = {
         Returns: number
       }
       gerar_censo_todas_unidades: { Args: { p_data?: string }; Returns: number }
+      gerar_codigo_vinculo_hermes: {
+        Args: { p_canal?: string }
+        Returns: string
+      }
       gerar_escala_mensal: {
         Args: { p_ano: number; p_mes: number; p_unidade: string }
         Returns: number

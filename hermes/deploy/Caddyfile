@@ -3,20 +3,31 @@
 # MODO ATUAL: acesso por IP (HTTP) — para validar antes do domínio.
 # Quando o DNS apontar (hermes.chefecoruja.com.br → IP), troque para o bloco
 # com domínio (abaixo, comentado) que o Caddy emite HTTPS automático.
+#
+# Só /webhook (Meta) e /health ficam públicos. A API das skills (/skill/*) é
+# usada pelo bot pela rede interna do Docker (hermes-app:3000) e NÃO passa por
+# aqui — antes ela respondia na internet, em HTTP (auditoria 27/09).
 # ─────────────────────────────────────────────────────────────────────────────
 
 :80 {
-	# /webhook precisa do corpo BRUTO para validação HMAC — o Caddy repassa
-	# o body sem alterações (não usamos compressão aqui).
-	reverse_proxy app:3000
-
-	# Sem log de acesso por padrão (descomente para debug):
-	# log {
-	#   output file /data/caddy-access.log
-	# }
+	@publico path /webhook /health
+	handle @publico {
+		# /webhook precisa do corpo BRUTO para validação HMAC — o Caddy repassa
+		# o body sem alterações (não usamos compressão aqui).
+		reverse_proxy app:3000
+	}
+	handle {
+		respond 404
+	}
 }
 
 # ── Produção final (após apontar o DNS) ───────────────────────────────────────
 # hermes.chefecoruja.com.br {
-# 	reverse_proxy app:3000
+# 	@publico path /webhook /health
+# 	handle @publico {
+# 		reverse_proxy app:3000
+# 	}
+# 	handle {
+# 		respond 404
+# 	}
 # }

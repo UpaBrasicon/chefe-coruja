@@ -32,7 +32,13 @@ import type { FastifyInstance } from 'fastify'
 import { env } from '../config/env.js'
 import { logger } from '../logger.js'
 import { supabase } from '../lib/supabase.js'
-import { resolverIdentidadePorWaId, type IdentidadeHermes } from '../agent/identidade.js'
+import {
+  resolverIdentidadePorCanal,
+  resolverIdentidadePorWaId,
+  type CanalHermes,
+  type IdentidadeHermes,
+} from '../agent/identidade.js'
+import { criarCofre, desidentificar, type Conhecido } from '../gateway/desidentificacao.js'
 
 /**
  * Resposta única para "não pode ver isto" — deliberadamente idêntica para
@@ -110,6 +116,18 @@ export function resolverUnidade(
   return { ok: true, unidadeId: pedida }
 }
 
+/** Nomes das pessoas com vínculo na unidade — o que o gateway deve trocar por pseudônimo. */
+async function nomesDaUnidade(unidadeId: string): Promise<Conhecido[]> {
+  const { data, error } = await supabase
+    .from('vinculos')
+    .select('perfis!vinculos_perfil_id_fkey(nome_completo)')
+    .eq('unidade_id', unidadeId)
+  if (error) throw new Error(error.message)
+  return ((data ?? []) as unknown as { perfis: { nome_completo: string } | { nome_completo: string }[] | null }[])
+    .flatMap((v) => (Array.isArray(v.perfis) ? v.perfis : v.perfis ? [v.perfis] : []))
+    .map((p) => ({ valor: p.nome_completo, categoria: 'PESSOA' as const }))
+}
+
 // ── Consultas por escopo ─────────────────────────────────────────────────────
 // Cada handler recebe a unidade JÁ validada. Nenhum handler aceita filtro cru
 // vindo do cliente: enums são conferidos aqui antes de virar query.
@@ -154,15 +172,18 @@ async function consultaAguia(comando: string, unidadeId: string | null): Promise
       return data ?? []
     }
     case 'profissionais': {
-      // A2 da auditoria: chat externo recebe só nome + papel. CRM/UF do CRM
-      // é dado pessoal do profissional — fica na plataforma (LGPD). A
-      // plataforma web não passa por aqui (consulta o Supabase com RLS).
-      const { data } = await supabase
+      // Só a CONTAGEM por papel. Nome de colega é dado pessoal e iria ao
+      // modelo de IA sem passar pelo gateway (ADR 0006, auditoria 27/09):
+      // quem precisa da lista nominal usa a plataforma.
+      const { data, error } = await supabase
         .from('vinculos')
-        .select('papel, perfis!vinculos_perfil_id_fkey(nome_completo)')
+        .select('papel')
         .eq('unidade_id', unidadeId)
         .eq('ativo', true)
-      return data ?? []
+      if (error) throw new Error(error.message)
+      const porPapel: Record<string, number> = {}
+      for (const v of (data ?? []) as { papel: string }[]) porPapel[v.papel] = (porPapel[v.papel] ?? 0) + 1
+      return { profissionais_por_papel: porPapel }
     }
     case 'resumo': {
       const [setores, censo, profissionais] = await Promise.all([
@@ -170,11 +191,7 @@ async function consultaAguia(comando: string, unidadeId: string | null): Promise
         consultaAguia('censo', unidadeId),
         consultaAguia('profissionais', unidadeId),
       ])
-      const porPapel: Record<string, number> = {}
-      for (const v of profissionais as { papel: string }[]) {
-        porPapel[v.papel] = (porPapel[v.papel] ?? 0) + 1
-      }
-      return { setores, censo_recente: censo, profissionais_por_papel: porPapel }
+      return { setores, censo_recente: censo, ...(profissionais as object) }
     }
     default:
       return { erro: 'comando desconhecido' }
@@ -209,7 +226,8 @@ async function consultaGarca(comando: string, unidadeId: string | null): Promise
 async function consultaSentinela(
   comando: string,
   unidadeId: string | null,
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
+  superAdmin: boolean
 ): Promise<unknown> {
   switch (comando) {
     case 'alertas': {
@@ -226,6 +244,8 @@ async function consultaSentinela(
       return data ?? []
     }
     case 'relatorio': {
+      // O relatório é GLOBAL (todas as organizações): só suporte técnico.
+      if (!superAdmin) return { mensagem: 'O relatório semanal é consultado na plataforma.' }
       const { data } = await supabase
         .from('gaviao_relatorios_semanais')
         .select('periodo_inicio, periodo_fim, resumo, gerado_em')
@@ -274,7 +294,8 @@ async function consultaSeguranca(comando: string, args: Record<string, unknown>)
 async function consultaOperacional(
   comando: string,
   unidadeId: string | null,
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
+  id: IdentidadeHermes
 ): Promise<unknown> {
   if (!unidadeId) return { erro: 'usuário sem unidade vinculada' }
 
@@ -288,14 +309,25 @@ async function consultaOperacional(
       const dias = Number(args.dias)
       const janela = Number.isFinite(dias) && dias > 0 && dias <= 90 ? dias : 7
       const desde = new Date(Date.now() - janela * 86_400_000).toISOString().slice(0, 10)
-      const { data } = await supabase
+      // Só os avisos DA PESSOA (a RLS da tabela é perfil_id = eu; o service
+      // role não aplica RLS, então o filtro mora aqui).
+      const { data, error } = await supabase
         .from('notificacoes_plantonista')
         .select('tipo, mensagem, data')
         .eq('unidade_id', unidadeId)
+        .eq('perfil_id', id.perfilId)
         .gte('data', desde)
         .order('data', { ascending: false })
         .limit(50)
-      return data ?? []
+      if (error) throw new Error(error.message)
+      // Avisos como o do Sentinela citam colegas pelo nome: o texto passa
+      // pelo gateway de desidentificação antes de ir ao modelo (ADR 0006).
+      const conhecidos = await nomesDaUnidade(unidadeId)
+      const cofre = criarCofre()
+      return ((data ?? []) as { tipo: string; mensagem: string; data: string }[]).map((n) => ({
+        ...n,
+        mensagem: desidentificar(n.mensagem ?? '', cofre, conhecidos).texto,
+      }))
     }
     default:
       return { erro: 'comando desconhecido' }
@@ -342,14 +374,22 @@ async function consultaEscala(
       const data = typeof args.data === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(args.data)
         ? args.data
         : new Date().toISOString().slice(0, 10)
-      const { data: plantoes } = await supabase
+      // Contagem por setor e turno — sem nomes (ADR 0006; a escala nominal
+      // fica na plataforma).
+      const { data: plantoes, error } = await supabase
         .from('escala_plantao')
-        .select('data, turno, rotulo, perfis!escala_plantao_perfil_id_fkey(nome_completo), setores!escala_plantao_setor_id_fkey(nome)')
+        .select('turno, setores!escala_plantao_setor_id_fkey(nome)')
         .eq('unidade_id', unidadeId)
         .eq('data', data)
         .eq('ativo', true)
-        .order('turno', { ascending: true })
-      return plantoes ?? []
+      if (error) throw new Error(error.message)
+      const cont: Record<string, number> = {}
+      for (const p of (plantoes ?? []) as unknown as { turno: string; setores: { nome: string } | { nome: string }[] | null }[]) {
+        const setor = Array.isArray(p.setores) ? p.setores[0]?.nome : p.setores?.nome
+        const chave = `${setor ?? 'setor'} · ${p.turno}`
+        cont[chave] = (cont[chave] ?? 0) + 1
+      }
+      return { data, profissionais_por_setor_e_turno: cont }
     }
     default:
       return { erro: 'comando desconhecido' }
@@ -384,12 +424,18 @@ async function consultaInfra(comando: string): Promise<unknown> {
  * O formato de token opaco de sessão entra aqui quando o Nous suportar — a
  * assinatura já prevê o ponto de extensão.
  */
-async function resolverSujeito(waId: string): Promise<IdentidadeHermes | null> {
-  return resolverIdentidadePorWaId(waId)
+async function resolverSujeito(corpo: CorpoSkill): Promise<IdentidadeHermes | null> {
+  if (corpo.canal) return resolverIdentidadePorCanal(corpo.canal, String(corpo.identificador ?? ''))
+  return resolverIdentidadePorWaId(String(corpo.wa_id ?? ''))
 }
+
+const CANAIS: CanalHermes[] = ['telegram', 'whatsapp']
 
 type CorpoSkill = {
   wa_id?: string
+  /** Canal com vínculo por código (Telegram): identificador vem da sessão do canal. */
+  canal?: CanalHermes
+  identificador?: string
   escopo?: string
   comando?: string
   args?: Record<string, unknown>
@@ -417,13 +463,15 @@ export function registrarSkillApi(app: FastifyInstance): void {
     if (!ESCOPOS.includes(escopo) || !/^[a-z_]{1,32}$/.test(comando)) {
       return reply.code(400).send({ ok: false, erro: 'escopo ou comando inválido' })
     }
-    if (typeof corpo.wa_id !== 'string' || corpo.wa_id.length === 0) {
-      return reply.code(400).send({ ok: false, erro: 'wa_id obrigatório' })
+    const temCanal = typeof corpo.canal === 'string'
+    if (temCanal ? !CANAIS.includes(corpo.canal!) || typeof corpo.identificador !== 'string' || !corpo.identificador
+                 : typeof corpo.wa_id !== 'string' || corpo.wa_id.length === 0) {
+      return reply.code(400).send({ ok: false, erro: 'sujeito obrigatório (wa_id ou canal+identificador)' })
     }
 
     let identidade: IdentidadeHermes | null
     try {
-      identidade = await resolverSujeito(corpo.wa_id)
+      identidade = await resolverSujeito(corpo)
     } catch (err) {
       logger.error({ err: (err as Error).message }, '[skill-api] falha ao resolver identidade')
       return reply.code(500).send({ ok: false, erro: 'falha interna' })
@@ -465,13 +513,13 @@ export function registrarSkillApi(app: FastifyInstance): void {
           dados = await consultaGarca(comando, unidade.unidadeId)
           break
         case 'operacional':
-          dados = await consultaOperacional(comando, unidade.unidadeId, args)
+          dados = await consultaOperacional(comando, unidade.unidadeId, args, identidade)
           break
         case 'escala':
           dados = await consultaEscala(comando, identidade, unidade.unidadeId, args)
           break
         case 'sentinela':
-          dados = await consultaSentinela(comando, unidade.unidadeId, args)
+          dados = await consultaSentinela(comando, unidade.unidadeId, args, identidade.superAdmin === true)
           break
         case 'seguranca':
           dados = await consultaSeguranca(comando, args)
@@ -486,4 +534,53 @@ export function registrarSkillApi(app: FastifyInstance): void {
       return reply.code(500).send({ ok: false, erro: 'falha interna' })
     }
   })
+
+  // ── POST /skill/vincular — liga o usuário do canal (Telegram) ao perfil ───
+  // O código de 6 dígitos foi gerado pela própria pessoa, logada na
+  // plataforma (gerar_codigo_vinculo_hermes). O identificador do canal vem da
+  // SESSÃO do Nous, não do modelo. Até 5 tentativas erradas por
+  // identificador a cada 15 minutos.
+  app.post('/skill/vincular', async (req, reply) => {
+    const token = env.SKILL_API_TOKEN
+    if (!token) return reply.code(503).send({ ok: false, erro: 'skill api não configurada' })
+    if (!tokenValido(req.headers['x-skill-token'] as string | undefined, token)) {
+      logger.warn({ ip: req.ip }, '[skill-api] token inválido (vincular)')
+      return reply.code(401).send({ ok: false, erro: 'não autorizado' })
+    }
+    const corpo = (req.body ?? {}) as { canal?: string; identificador?: string; codigo?: string }
+    const canal = corpo.canal as CanalHermes
+    const identificador = typeof corpo.identificador === 'string' ? corpo.identificador : ''
+    const codigo = typeof corpo.codigo === 'string' ? corpo.codigo.replace(/\D/g, '') : ''
+    if (!CANAIS.includes(canal) || !/^[A-Za-z0-9_.:-]{1,64}$/.test(identificador) || codigo.length !== 6) {
+      return reply.code(400).send({ ok: false, erro: 'código inválido' })
+    }
+
+    const chave = `${canal}:${identificador}`
+    const agora = Date.now()
+    const tentativas = (TENTATIVAS_VINCULO.get(chave) ?? []).filter((t) => agora - t < 15 * 60_000)
+    if (tentativas.length >= 5) {
+      return reply.code(429).send({ ok: false, erro: 'Muitas tentativas. Gere um código novo e tente em 15 minutos.' })
+    }
+
+    const { data: perfilId, error } = await supabase.rpc('confirmar_vinculo_hermes', {
+      p_canal: canal,
+      p_identificador: identificador,
+      p_codigo: codigo,
+    })
+    if (error) {
+      logger.error({ err: error.message }, '[skill-api] falha ao confirmar vínculo')
+      return reply.code(500).send({ ok: false, erro: 'falha interna' })
+    }
+    if (!perfilId) {
+      TENTATIVAS_VINCULO.set(chave, [...tentativas, agora])
+      return reply.code(200).send({ ok: false, erro: 'Código errado, vencido ou já usado. Gere um novo no seu Perfil.' })
+    }
+    TENTATIVAS_VINCULO.delete(chave)
+    const identidade = await resolverIdentidadePorCanal(canal, identificador)
+    logger.info({ canal, perfil: perfilId }, '[skill-api] canal vinculado')
+    return reply.code(200).send({ ok: true, nome: identidade?.nome ?? null, papel: identidade?.papel ?? null })
+  })
 }
+
+/** Tentativas de código erradas por canal:identificador (memória do processo). */
+const TENTATIVAS_VINCULO = new Map<string, number[]>()

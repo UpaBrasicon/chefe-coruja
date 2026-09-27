@@ -58,16 +58,18 @@ export function normalizarE164BR(valor: string): string | null {
 }
 
 /**
- * Compara um telefone armazenado (qualquer formato) com um wa_id da Meta,
- * ambos normalizados. Retorna true se corresponderem.
+ * Compara um telefone armazenado (qualquer formato) com um wa_id da Meta.
+ * Os DOIS lados precisam ser telefones brasileiros completos (DDD + número):
+ * nada de "termina com" — um telefone curto ou sem dígitos não casa com nada.
+ *
+ * Única tolerância: a Meta às vezes entrega o celular SEM o 9º dígito
+ * (55 DD 8XXX-XXXX) quando o cadastro tem (55 DD 9 8XXX-XXXX).
  */
 export function telefoneCorrespondeWaId(armazenado: string, waId: string): boolean {
   const a = normalizarE164BR(armazenado)
-  const b = soDigitos(waId)
-  if (!a) return false
-  // wa_id pode vir sem '+' e sem DDI em alguns casos — compara pelo
-  // número nacional (últimos 10-11 dígitos) como fallback.
+  const b = normalizarE164BR(waId)
+  if (!a || !b) return false
   if (a === b) return true
-  if (b.length >= 10) return a.endsWith(b.slice(-10)) || a.endsWith(b.slice(-11))
-  return false
+  const semNono = (t: string) => (t.length === 13 && t[4] === '9' ? t.slice(0, 4) + t.slice(5) : t)
+  return semNono(a) === semNono(b)
 }

@@ -15,5 +15,7 @@ docker run -d --name hermes-agent --restart unless-stopped --env-file ~/.agent.e
   -v /home/hermes/.hermes:/opt/data -v /opt/hermes-wiki:/opt/hermes-wiki -w /opt/hermes \
   --entrypoint /opt/hermes/docker/entrypoint-dispatch.sh "$IMG" gateway run >/dev/null
 rm -f ~/.agent.env
+# o bot fala com o backend pelo nome hermes-app: precisa da rede do compose
+docker network connect deploy_default hermes-agent
 echo "novo hermes-agent no ar; confira e depois: docker rm hermes-agent-antigo"
 docker exec hermes-agent date
