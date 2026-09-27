@@ -196,12 +196,14 @@ async function consultaAguia(comando: string, unidadeId: string | null): Promise
       return { profissionais_por_papel: porPapel }
     }
     case 'resumo': {
-      const [setores, censo, profissionais] = await Promise.all([
-        consultaAguia('setores', unidadeId),
-        consultaAguia('censo', unidadeId),
-        consultaAguia('profissionais', unidadeId),
-      ])
-      return { setores, censo_recente: censo, ...(profissionais as object) }
+      // Uma linha pronta por unidade, refeita a cada 15 min pelo banco
+      // (private.hermes_atualizar_resumos) — uma leitura em vez de várias.
+      const linha = dados(await supabase
+        .from('hermes_resumo_unidade')
+        .select('dados, atualizado_em')
+        .eq('unidade_id', unidadeId)
+        .maybeSingle()) as { dados: unknown } | null
+      return linha?.dados ?? { mensagem: 'Resumo ainda não gerado para esta unidade.' }
     }
     default:
       return { erro: 'comando desconhecido' }
@@ -444,9 +446,25 @@ export function registrarSkillApi(app: FastifyInstance): void {
     const comando = typeof corpo.comando === 'string' ? corpo.comando : ''
     const args = (corpo.args ?? {}) as Record<string, unknown>
 
-    if (!ESCOPOS.includes(escopo) || !/^[a-z_]{1,32}$/.test(comando)) {
+    if ((!ESCOPOS.includes(escopo) && corpo.escopo !== 'almanaque') || !/^[a-z_]{1,32}$/.test(comando)) {
       return reply.code(400).send({ ok: false, erro: 'escopo ou comando inválido' })
     }
+    // Almanaque: como usar a plataforma. Não depende de quem pergunta (serve
+    // até antes do vínculo — "como conecto o Telegram?").
+    if (corpo.escopo === 'almanaque') {
+      const texto = typeof args.texto === 'string' ? args.texto.slice(0, 300) : ''
+      if (comando !== 'buscar' || texto.trim().length < 3) {
+        return reply.code(400).send({ ok: false, erro: 'informe a pergunta' })
+      }
+      try {
+        const achados = dados(await supabase.rpc('hermes_almanaque_buscar', { p_texto: texto, p_limite: 2 }))
+        return reply.code(200).send({ ok: true, dados: achados })
+      } catch (err) {
+        logger.error({ err: (err as Error).message }, '[skill-api] falha no almanaque')
+        return reply.code(500).send({ ok: false, erro: 'falha interna' })
+      }
+    }
+
     const temCanal = typeof corpo.canal === 'string'
     if (temCanal ? !CANAIS.includes(corpo.canal!) || typeof corpo.identificador !== 'string' || !corpo.identificador
                  : typeof corpo.wa_id !== 'string' || corpo.wa_id.length === 0) {

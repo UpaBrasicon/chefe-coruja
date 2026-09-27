@@ -79,6 +79,31 @@ VINCULAR_SCHEMA = {
 }
 
 
+ALMANAQUE_SCHEMA = {
+    "name": "coruja_almanaque",
+    "description": (
+        "USE PRIMEIRO para dúvidas de COMO USAR o Chefe Coruja (check-in, turnos, sem internet, triagem, "
+        "prioridade legal, chamada, painel da TV, cadastro, impressão, Telegram, segundo fator, desfechos). "
+        "Devolve respostas prontas e aprovadas: se vier uma, responda com ela, sem reescrever."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {"pergunta": {"type": "string", "description": "a dúvida, nas palavras da pessoa"}},
+        "required": ["pergunta"],
+    },
+}
+
+
+def _almanaque(args: dict, **_kw) -> str:
+    pergunta = str(args.get("pergunta") or "").strip()[:300]
+    if len(pergunta) < 3:
+        return json.dumps({"ok": False, "erro": "informe a pergunta"}, ensure_ascii=False)
+    r = _post("/skill/consulta", {"escopo": "almanaque", "comando": "buscar", "args": {"texto": pergunta}})
+    if r.get("ok") and not r.get("dados"):
+        r["dica"] = "Nada no almanaque: se for sobre dados, use coruja_consultar; se estiver fora do escopo, recuse."
+    return json.dumps(r, ensure_ascii=False)
+
+
 def _sujeito() -> dict | None:
     """Identidade da SESSÃO (preenchida pelo gateway), nunca de argumento."""
     plataforma = get_session_env("HERMES_SESSION_PLATFORM", "")
@@ -140,5 +165,7 @@ def _disponivel() -> bool:
 def register(ctx) -> None:
     ctx.register_tool(name="coruja_consultar", toolset=TOOLSET, schema=CONSULTAR_SCHEMA,
                       handler=_consultar, check_fn=_disponivel, emoji="🦉")
+    ctx.register_tool(name="coruja_almanaque", toolset=TOOLSET, schema=ALMANAQUE_SCHEMA,
+                      handler=_almanaque, check_fn=_disponivel, emoji="📖")
     ctx.register_tool(name="coruja_vincular", toolset=TOOLSET, schema=VINCULAR_SCHEMA,
                       handler=_vincular, check_fn=_disponivel, emoji="🔗")

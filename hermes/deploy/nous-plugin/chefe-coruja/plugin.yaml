@@ -1,7 +1,8 @@
 name: chefe-coruja
-version: 1.0.0
+version: 1.1.0
 description: "Ferramentas do Chefe Coruja para a Corujinha: consulta à operação da unidade e vínculo do Telegram ao perfil. A identidade vem da sessão do canal (gateway), nunca do modelo."
 author: "Chefe Coruja"
 provides_tools:
+  - coruja_almanaque
   - coruja_consultar
   - coruja_vincular
