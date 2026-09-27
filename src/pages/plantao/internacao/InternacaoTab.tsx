@@ -5,7 +5,6 @@ import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { escapeHtml } from '@/lib/utils'
 import type { Aih, DadosPaciente, Evolucao, Exames } from './rascunho'
 
 function hojeBR() {
@@ -26,8 +25,6 @@ export function InternacaoTab({
   exames: Exames
   onChange: (p: Partial<Aih>) => void
 }) {
-  const conteudoDoc = JSON.stringify({ paciente: dados, aih })
-  const servidor = useRascunhoServidor(dados.paciente_id, 'laudo_aih', conteudoDoc)
   function set(nome: keyof Aih, valor: string) {
     onChange({ [nome]: valor } as Partial<Aih>)
   }
@@ -95,6 +92,11 @@ export function InternacaoTab({
     { nome: 'campo50', rotulo: '50 - Data da Autorização' },
     { nome: 'campo51', rotulo: '51 - Assinatura e Carimbo (Nº do Registro do Conselho)', className: 'col-span-2' },
   ]
+  const conteudoDoc = JSON.stringify({
+    paciente: dados,
+    campos: campos.map((c) => ({ rotulo: c.rotulo, valor: aih[c.nome], textarea: !!c.textarea })),
+  })
+  const servidor = useRascunhoServidor(dados.paciente_id, 'laudo_aih', conteudoDoc)
 
   async function imprimir() {
     const impressao = await abrirImpressao({
@@ -104,43 +106,7 @@ export function InternacaoTab({
     if (impressao) servidor.emitido(conteudoDoc)
     if (!impressao) return
     const printWindow = impressao.janela
-    const rows = campos
-      .map((c) => {
-        const val = aih[c.nome]
-        const rotulo = escapeHtml(c.rotulo)
-        if (c.textarea) {
-          return `<div class="row"><div class="label">${rotulo}</div><div class="valor ta">${(escapeHtml(val) || '&nbsp;').replace(/\n/g, '<br>')}</div></div>`
-        }
-        return `<div class="row"><div class="label">${rotulo}</div><div class="valor">${escapeHtml(val) || '&nbsp;'}</div></div>`
-      })
-      .join('')
-    printWindow.document.write(`
-      <html><head><title>Laudo AIH</title>
-      <style>
-        @page{size:A4 portrait;margin:6mm 8mm}
-        html,body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-        .form{border:2px solid #000;background:#fff;width:100%;box-sizing:border-box}
-        .header{display:grid;grid-template-columns:60px 1fr 1fr;align-items:center;border-bottom:2px solid #000;padding:4px 8px;min-height:38px}
-        .titulo{font-size:12px;font-weight:800;text-align:center;text-transform:uppercase}
-        .row{display:grid;grid-template-columns:34% 1fr;border-bottom:1px solid #000;min-height:24px}
-        .label{font-size:7px;font-weight:700;text-transform:uppercase;padding:2px 4px;border-right:1px solid #000;display:flex;align-items:center}
-        .valor{font-size:10px;padding:2px 4px;word-wrap:break-word;overflow-wrap:break-word}
-        .valor.ta{white-space:pre-wrap;font-size:9px}
-        .sec{background:#e8e8e8;font-weight:800;font-size:10px;padding:3px 6px;border-top:1px solid #000;border-bottom:1px solid #000;text-transform:uppercase}
-      </style></head>
-      <body>
-        <div class="form">
-          <div class="header">
-            <div style="font-size:14px;font-weight:900;color:#003d7a;">SUS<div style="font-size:6px;">Sistema Único de Saúde</div></div>
-            <div>Ministério da Saúde</div>
-            <div class="titulo">Laudo para Solicitação de<br>Autorização de Internação Hospitalar</div>
-          </div>
-          <div class="sec">Identificação do Estabelecimento de Saúde</div>
-          ${rows}
-        </div>
-      ${impressao.rodape}</body></html>
-    `)
-    printWindow.document.close()
+    // a folha já veio pronta do servidor (Fase 4.2), ou é a provisória
     printWindow.focus()
     setTimeout(() => printWindow.print(), 300)
   }

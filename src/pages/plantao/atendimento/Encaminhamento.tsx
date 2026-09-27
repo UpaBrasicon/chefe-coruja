@@ -10,8 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DadosPaciente } from '../shared/DadosPaciente'
 import { useEscalaSetores } from '../shared/useEscalaSetores'
-import { escapeHtml } from '@/lib/utils'
-import { carregarEnvelope, fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
+import { carregarEnvelope, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
 
 export type Encaminhamento = {
   especialidade: string
@@ -94,38 +93,10 @@ export function Encaminhamento({
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
 
   async function imprimir() {
-    const nome = escapeHtml(dados.paciente.nome).toUpperCase() || '_________________________________'
-    const data = fmtData(dados.paciente.dataAtual)
-    const hipotese = escapeHtml(dados.paciente.diagnostico) || '____________________'
     const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Encaminhamento', documento: { tipo: 'encaminhamento', conteudo: conteudoDoc }, rascunhoId: servidor.rascunhoId() })
     if (!impressao) return
     const printWindow = impressao.janela
-    printWindow.document.write(`
-      <html><head><title>Encaminhamento</title>
-      <style>
-        @page{size:A4 portrait;margin:0}
-        html,body{margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-        .folha{width:210mm;min-height:297mm;padding:20mm;box-sizing:border-box;background:#fff}
-        .doc{border:2px solid #000;padding:12mm;min-height:250mm;box-sizing:border-box;display:flex;flex-direction:column}
-        .titulo{text-align:center;font-size:16px;font-weight:800;letter-spacing:1px;border-bottom:2px solid #000;padding-bottom:5mm;margin-bottom:10mm;text-transform:uppercase}
-        .linha{display:flex;gap:8mm;font-size:12px;margin-bottom:4mm}
-        .campo{flex:1;border:1px solid #000;padding:3mm}
-        .campo strong{display:block;font-size:9px;text-transform:uppercase;margin-bottom:2mm;color:#444}
-        .corpo{flex-grow:1;border:1px solid #000;padding:4mm;font-size:12px;line-height:1.7;margin-top:4mm;text-align:justify}
-        .ass{margin-top:14mm;text-align:center;font-size:12px}
-      </style></head>
-      <body>
-        <div class="folha"><div class="doc">
-          <div class="titulo">Encaminhamento Médico</div>
-          <div class="linha"><div class="campo"><strong>Paciente</strong>${nome}</div><div class="campo"><strong>Data</strong>${data || '____/___/____'}</div></div>
-          <div class="linha"><div class="campo"><strong>Especialidade de destino</strong>${escapeHtml(dados.encaminhamento.especialidade) || '______________________'}</div><div class="campo"><strong>Prioridade</strong>${escapeHtml(dados.encaminhamento.prioridade) || 'Rotina'}</div></div>
-          <div class="campo" style="margin-top:4mm;"><strong>Hipótese diagnóstica</strong>${hipotese}</div>
-          <div class="corpo"><strong style="font-size:9px;text-transform:uppercase;color:#444;">Resumo clínico</strong><br><br>${escapeHtml(dados.encaminhamento.resumo || 'Resumo clínico do atendimento. ').replace(/\n/g, '<br>')}</div>
-          <div class="ass">${data || ''}<br>_________________________________________<br>Assinatura / Carimbo do Médico</div>
-        </div></div>
-      ${impressao.rodape}</body></html>
-    `)
-    printWindow.document.close()
+    // a folha já veio pronta do servidor (Fase 4.2), ou é a provisória
     printWindow.focus()
     setTimeout(() => {
       printWindow.print()

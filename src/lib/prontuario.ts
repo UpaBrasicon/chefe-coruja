@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { montarFolha, rodapeEmitido, type TipoFolha } from '@/lib/folhas'
 
 // Consulta e impressão são registradas pelo SERVIDOR (migration 0012). O banco
 // só devolve conteúdo clínico de prontuário aberto; abrir é a RPC que grava o
@@ -40,17 +41,30 @@ export function esquecerAberturas() {
   aberturas.clear()
 }
 
-type Impressao = { janela: Window; rodape: string; provisoria: boolean }
+/**
+ * `pronta`: a folha já está escrita na janela (documento emitido, montado no
+ * servidor, ou folha provisória) — quem chamou só imprime. Sem `pronta`, quem
+ * chamou escreve a folha e põe o `rodape` (impressões que não são documento,
+ * como a evolução).
+ */
+type Impressao = { janela: Window; rodape: string; provisoria: boolean; pronta: boolean }
 
-export type TipoDocumentoPorta = 'atestado' | 'receita' | 'encaminhamento' | 'pedido_exames' | 'prescricao' | 'laudo_aih'
+export type TipoDocumentoPorta = TipoFolha
 
 const falhaDeRede = (e: { message?: string } | null) =>
-  !navigator.onLine || (!!e && /fetch|network|timeout/i.test(e.message ?? ''))
+  !navigator.onLine || (!!e && /fetch|network|timeout|Failed to send/i.test(e.message ?? ''))
+
+function escrever(janela: Window, html: string) {
+  janela.document.open()
+  janela.document.write(html)
+  janela.document.close()
+}
 
 /**
  * Sem conexão: a folha sai PROVISÓRIA (sem número, assinar à mão) e o
  * documento vai para a fila; ao voltar a conexão recebe número e a impressão
- * provisória é registrada (ADR 0009, fase 2.5).
+ * provisória é registrada (ADR 0009, fase 2.5). É a única folha montada no
+ * aparelho — com o mesmo modelo do servidor (`lib/folhas`).
  */
 async function folhaProvisoria(
   janela: Window,
@@ -73,18 +87,45 @@ async function folhaProvisoria(
     `FOLHA PROVISÓRIA — emitida sem conexão em ${quando}. Sem número definitivo: assinar à mão. O número sai quando a conexão voltar.</div>` +
     `<div style="position:fixed;left:0;right:0;bottom:6mm;text-align:center;font:9px system-ui,sans-serif;color:#64748B">` +
     `Chefe Coruja · folha provisória · registro guardado no aparelho para envio</div>`
-  janela.document.open()
-  return { janela, rodape, provisoria: true }
+  escrever(janela, montarFolha(opcoes.documento.tipo, JSON.parse(opcoes.documento.conteudo), rodape, window.location.origin))
+  return { janela, rodape, provisoria: true, pronta: true }
+}
+
+/**
+ * Folha do documento EMITIDO, montada no servidor (edge function `folha`,
+ * Fase 4.2): ela registra a impressão e usa o conteúdo gravado no banco. Se a
+ * função não responder, a mesma folha é montada aqui a partir do mesmo
+ * registro do banco (RPC folha_documento), com o mesmo rodapé.
+ */
+async function folhaEmitida(janela: Window, recusar: (m: string) => null, documentoId: string, tipoImpressao: string) {
+  const r = await supabase.functions.invoke('folha', {
+    body: { documento_id: documentoId, tipo_impressao: tipoImpressao, origem: window.location.origin },
+  })
+  if (!r.error && typeof r.data === 'string' && r.data.startsWith('<!doctype html>')) {
+    escrever(janela, r.data)
+    return true
+  }
+  const { data, error } = await supabase.rpc('folha_documento', { p_documento: documentoId, p_tipo_impressao: tipoImpressao })
+  if (error || !data) {
+    recusar(`O documento foi emitido, mas a folha não pôde ser montada${error ? `: ${error.message}` : ''}. Reimprima pelo documento.`)
+    return false
+  }
+  const d = data as { tipo: TipoFolha; conteudo: string; numero: string; versao: number; autor: string | null; codigo: string; protocolo: string; impresso_em: string }
+  const emitido = new Date(d.impresso_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+  escrever(janela, montarFolha(d.tipo, JSON.parse(d.conteudo), rodapeEmitido({
+    numero: d.numero, versao: d.versao, protocolo: d.protocolo, emitido, autor: d.autor ?? '—', codigo: d.codigo,
+  }), window.location.origin))
+  return true
 }
 
 /**
  * Prepara uma impressão registrada. A janela abre JÁ (ainda dentro do clique,
  * senão o navegador bloqueia o pop-up); depois o servidor registra e devolve o
- * protocolo, que vai no rodapé do papel. Sem paciente identificado ou sem
- * registro, não imprime — a janela mostra o motivo.
+ * protocolo. Sem paciente identificado ou sem registro, não imprime — a
+ * janela mostra o motivo.
  *
  * Com `documento`, o documento é EMITIDO no episódio antes (número da unidade)
- * e a impressão fica ligada a ele. Sem conexão, sai a folha provisória.
+ * e a folha vem pronta do servidor. Sem conexão, sai a folha provisória.
  */
 export async function abrirImpressao(opcoes: {
   pacienteId?: string | null
@@ -101,19 +142,13 @@ export async function abrirImpressao(opcoes: {
   )
 
   const recusar = (motivo: string) => {
-    janela.document.open()
-    janela.document.write(
-      `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${motivo}</p>`
-    )
-    janela.document.close()
+    escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${motivo}</p>`)
     return null
   }
 
   if (!opcoes.pacienteId) {
     return recusar('Selecione ou cadastre o paciente antes de imprimir: toda impressão fica registrada no prontuário dele.')
   }
-  // 1) o documento nasce no episódio (com número), antes do papel
-  let documento: { id: string; numero: string } | null = null
   if (opcoes.documento) {
     const doc = opcoes.documento
     const pacienteId = opcoes.pacienteId
@@ -132,30 +167,28 @@ export async function abrirImpressao(opcoes: {
       p_conteudo: doc.conteudo,
     }))
     if (error) {
-      if (falhaDeRede(error)) {
-        return folhaProvisoria(janela, recusar, { pacienteId: opcoes.pacienteId, documento: opcoes.documento })
-      }
+      if (falhaDeRede(error)) return folhaProvisoria(janela, recusar, { pacienteId, documento: doc })
       return recusar(`Não foi possível emitir o documento: ${error.message}. Nada foi impresso.`)
     }
-    documento = data as { id: string; numero: string }
+    const documento = data as { id: string; numero: string }
+    if (!(await folhaEmitida(janela, recusar, documento.id, opcoes.tipo))) return null
+    return { janela, rodape: '', provisoria: false, pronta: true }
   }
 
-  // 2) a impressão é registrada (ligada ao documento, quando houver)
+  // impressão que não é documento assistencial (ex.: evolução): só o registro
   const { data, error } = await supabase.rpc('registrar_impressao', {
     p_paciente: opcoes.pacienteId,
     p_documento_tipo: opcoes.tipo,
     p_internacao: opcoes.internacaoId ?? undefined,
-    p_documento: documento?.id,
   })
   const registro = Array.isArray(data) ? data[0] : null
   if (error || !registro) {
     return recusar(`Não foi possível registrar a impressão${error ? `: ${error.message}` : ''}. Nada foi impresso.`)
   }
-
   const emitido = new Date(registro.emitido_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
   const rodape =
     `<div style="position:fixed;left:0;right:0;bottom:6mm;text-align:center;font:9px system-ui,sans-serif;color:#64748B">` +
-    `${documento ? `Documento nº ${documento.numero} · ` : ''}Impressão ${registro.protocolo} registrada no Chefe Coruja em ${emitido}</div>`
+    `Impressão ${registro.protocolo} registrada no Chefe Coruja em ${emitido}</div>`
   janela.document.open()
-  return { janela, rodape, provisoria: false }
+  return { janela, rodape, provisoria: false, pronta: false }
 }

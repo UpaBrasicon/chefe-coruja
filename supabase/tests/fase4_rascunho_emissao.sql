@@ -118,4 +118,25 @@ DO $$ BEGIN
   END IF;
   RAISE NOTICE 'OK  o autor retifica: versão 2 com motivo, a anterior fica retificada';
 END $$;
+
+-- ── 4.2: folha do servidor (RPC folha_documento) ────────────────────────────
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
+INSERT INTO t SELECT 'r3', public.salvar_rascunho(pg_temp.u('pac'), 'atestado', '{"atestado":{"dias":"2"}}');
+SELECT pg_temp.falha(format('SELECT public.folha_documento(%L)', pg_temp.u('r3')), 'Só se imprime documento emitido',
+  'rascunho não tem folha: só documento emitido vai ao papel');
+INSERT INTO t SELECT 'fo', public.folha_documento((pg_temp.v('ret') ->> 'id')::uuid, 'Receituário')::text;
+RESET ROLE;
+DO $$
+DECLARE f jsonb := pg_temp.v('fo');
+BEGIN
+  IF f ->> 'numero' IS NULL OR (f ->> 'versao')::int <> 2 OR f ->> 'codigo' !~ '^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$'
+     OR f ->> 'protocolo' !~ '^IMP-' OR f ->> 'autor' <> 'Plantonista de Teste' OR f ->> 'conteudo' <> '{"itens":["a","b","d"]}' THEN
+    RAISE EXCEPTION 'FALHOU: folha_documento (%)', f;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.log_acesso_prontuario WHERE documento_id = (pg_temp.v('ret') ->> 'id')::uuid AND tipo_acesso = 'impressao') THEN
+    RAISE EXCEPTION 'FALHOU: impressão não registrada';
+  END IF;
+  RAISE NOTICE 'OK  a folha vem do conteúdo gravado, com número, versão, autor, protocolo e código de conferência; a impressão fica registrada';
+END $$;
 ROLLBACK;

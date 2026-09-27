@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 import { DadosPaciente } from '../shared/DadosPaciente'
 import { useEscalaSetores } from '../shared/useEscalaSetores'
-import { escapeHtml } from '@/lib/utils'
 import { carregarEnvelope, fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
 
 export type Atestado = {
@@ -81,40 +80,10 @@ export function AtestadoMedico({
   const titulo = dados.atestado.tipo === 'comparecimento' ? 'ATESTADO DE COMPARECIMENTO' : dados.atestado.tipo === 'afastamento' ? 'ATESTADO DE AFASTAMENTO' : 'ATESTADO DE REPOUSO'
 
   async function imprimir() {
-    const nome = escapeHtml(dados.paciente.nome).toUpperCase() || '_________________________________'
-    const data = fmtData(dados.paciente.dataAtual)
-    const corpo =
-      dados.atestado.tipo === 'comparecimento'
-        ? `Atesto, para os devidos fins, que ${nome} compareceu a esta unidade em ${data}, necessitando de ${escapeHtml(dados.atestado.dias) || '…'} dia(s) de afastamento de suas atividades.`
-        : dados.atestado.tipo === 'afastamento'
-          ? `Atesto, para os devidos fins, que ${nome} esteve sob cuidados médicos, necessitando de ${escapeHtml(dados.atestado.dias) || '…'} dia(s) de afastamento de suas atividades laborais${dados.atestado.cid ? ` (CID: ${escapeHtml(dados.atestado.cid)})` : ''}.`
-          : `Atesto, para os devidos fins, que ${nome} necessita de ${escapeHtml(dados.atestado.dias) || '…'} dia(s) de repouso, devendo manter-se em observação clínica.`
     const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Atestado', documento: { tipo: 'atestado', conteudo: conteudoDoc }, rascunhoId: servidor.rascunhoId() })
     if (!impressao) return
     const printWindow = impressao.janela
-    printWindow.document.write(`
-      <html><head><title>${titulo}</title>
-      <style>
-        @page{size:A4 portrait;margin:0}
-        html,body{margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-        .folha{width:210mm;min-height:297mm;padding:20mm;box-sizing:border-box;background:#fff}
-        .doc{border:2px solid #000;padding:12mm;min-height:250mm;box-sizing:border-box;display:flex;flex-direction:column}
-        .titulo{text-align:center;font-size:16px;font-weight:800;letter-spacing:1px;border-bottom:2px solid #000;padding-bottom:5mm;margin-bottom:12mm;text-transform:uppercase}
-        .corpo{flex-grow:1;font-size:13px;line-height:1.8;text-align:justify}
-        .ass{margin-top:20mm;text-align:center;font-size:12px}
-        .rodape{margin-top:8mm;text-align:center;font-size:10px;color:#666}
-      </style></head>
-      <body>
-        <div class="folha"><div class="doc">
-          <div class="titulo">${titulo}</div>
-          <div class="corpo">${corpo}</div>
-          ${dados.atestado.texto ? `<div class="corpo" style="margin-top:6mm;">Observações: ${escapeHtml(dados.atestado.texto)}</div>` : ''}
-          <div class="ass">${data || '____/___/____'}<br>_________________________________________<br>Assinatura / Carimbo do Médico</div>
-          <div class="rodape">Documento válido somente com assinatura e carimbo do profissional responsável.</div>
-        </div></div>
-      ${impressao.rodape}</body></html>
-    `)
-    printWindow.document.close()
+    // a folha já veio pronta do servidor (Fase 4.2), ou é a provisória
     printWindow.focus()
     setTimeout(() => {
       printWindow.print()

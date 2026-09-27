@@ -4746,6 +4746,10 @@ export type Database = {
         Returns: string
       }
       excluir_mensagem: { Args: { p_mensagem_id: string }; Returns: undefined }
+      folha_documento: {
+        Args: { p_documento: string; p_tipo_impressao?: string }
+        Returns: Json
+      }
       fracionar_plantao: {
         Args: { p_partes?: number; p_plantao: string }
         Returns: number

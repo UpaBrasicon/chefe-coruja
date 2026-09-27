@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { escapeHtml } from '@/lib/utils'
 import type { DadosPaciente, Exames } from './rascunho'
 
 const EXAMES_SUGERIDOS = [
@@ -27,11 +26,6 @@ const EXAMES_SUGERIDOS = [
   'Glicemia de jejum',
 ]
 
-function fmtData(iso: string) {
-  if (!iso) return ''
-  const [y, m, d] = iso.split('-')
-  return `${d}/${m}/${y}`
-}
 
 export function ExamesTab({
   dados,
@@ -62,10 +56,6 @@ export function ExamesTab({
   async function imprimir() {
     const texto = exames.texto.trim()
     if (!texto) return
-    const paciente = escapeHtml(dados.nome).trim().toUpperCase() || 'PACIENTE NÃO IDENTIFICADO'
-    const data = fmtData(dados.dataAtual)
-    const linhas = texto.split(/\n+/).map((l) => l.replace(/^[-*•]\s*/, '')).filter(Boolean)
-    const listaHtml = linhas.map((l) => `<div style="margin-bottom:6px;">• ${escapeHtml(l)}</div>`).join('')
 
     const impressao = await abrirImpressao({
       pacienteId: dados.paciente_id, internacaoId: null, tipo: 'Pedido de exames (internação)',
@@ -74,28 +64,7 @@ export function ExamesTab({
     if (impressao) servidor.emitido(conteudoDoc)
     if (!impressao) return
     const printWindow = impressao.janela
-    printWindow.document.write(`
-      <html><head><title>Pedido de Exames</title>
-      <style>
-        @page{size:A4 landscape;margin:0}
-        html,body{width:297mm;height:210mm;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;background:transparent}
-        .folha{position:relative;width:297mm;height:209mm;overflow:hidden}
-        .folha>img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;display:block}
-        .overlay{position:absolute;z-index:10;background:transparent}
-        .nome{top:40mm;left:33mm;font-family:Arial;font-weight:bold;font-size:14px;color:black;white-space:nowrap}
-        .data{top:193mm;left:20mm;font-family:Arial;font-weight:bold;font-size:14px;color:black;white-space:nowrap}
-        .exames{top:80mm;left:20mm;width:250mm;height:110mm;font-family:Arial;font-weight:bold;font-size:14px;color:black}
-      </style></head>
-      <body>
-        <div class="folha">
-          <img src="/plantao/MODELO_EXAMES.png">
-          <div class="overlay nome">${paciente}</div>
-          <div class="overlay data">DATA: ${data}</div>
-          <div class="overlay exames">${listaHtml}</div>
-        </div>
-      ${impressao.rodape}</body></html>
-    `)
-    printWindow.document.close()
+    // a folha já veio pronta do servidor (Fase 4.2), ou é a provisória
     printWindow.focus()
     setTimeout(() => printWindow.print(), 300)
   }

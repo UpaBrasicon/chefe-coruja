@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DadosPaciente } from '../shared/DadosPaciente'
 import { useEscalaSetores } from '../shared/useEscalaSetores'
-import { escapeHtml } from '@/lib/utils'
 import { carregarEnvelope, fmtData, hojeLocal, useRascunho, type DadosPaciente as DadosPacienteType } from '../shared/rascunho'
 
 export type Receita = {
@@ -113,9 +112,6 @@ export function ReceituarioMedico({
     })
   }
 
-  function corTipo(tipo: Receita['tipo']) {
-    return TIPO_RECEITUARIO.find((t) => t.value === tipo)?.cor ?? '#ffffff'
-  }
 
   async function copiar() {
     const linhas = dados.receita.itens
@@ -139,46 +135,10 @@ export function ReceituarioMedico({
   }
 
   async function imprimir() {
-    const itens = dados.receita.itens.filter((i) => i.medicamento.trim())
-    const linhas = itens
-      .map(
-        (i, idx) =>
-          `<tr><td style="border:1px solid #000;padding:6px;width:6%;text-align:center;">${idx + 1}</td><td style="border:1px solid #000;padding:6px;"><strong>${escapeHtml(i.medicamento).toUpperCase()}</strong>${i.dose ? ` <span style="font-weight:normal;">· ${escapeHtml(i.dose)}</span>` : ''}</td><td style="border:1px solid #000;padding:6px;width:9%;">${escapeHtml(i.quantidade)}</td></tr><tr><td style="border:1px solid #000;padding:2px 6px;font-style:italic;" colspan="3">Uso: ${escapeHtml(i.posologia) || '…'}</td></tr>`
-      )
-      .join('')
-    const alergia =
-      dados.paciente.alergias && dados.paciente.alergias.toUpperCase() !== 'NEGA'
-        ? `<div style="background:#dc2626;color:#fff;padding:6px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${escapeHtml(dados.paciente.alergias).toUpperCase()} ⚠️</div>`
-        : ''
     const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Receituário', documento: { tipo: 'receita', conteudo: conteudoDoc }, rascunhoId: servidor.rascunhoId() })
     if (!impressao) return
     const printWindow = impressao.janela
-    printWindow.document.write(`
-      <html><head><title>Receituário</title>
-      <style>
-        @page{size:A4 portrait;margin:0}
-        html,body{margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-        .folha{position:relative;width:210mm;min-height:297mm;padding:18mm;box-sizing:border-box;background:#fff}
-        .rec{border:2px solid #000;background:#fff;padding:8mm;border-radius:6px;min-height:245mm;box-sizing:border-box}
-        .rec-titulo{text-align:center;font-size:15px;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid #000;padding-bottom:4mm;margin-bottom:8mm}
-        .rec-cabec{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6mm;border:1px solid #000;padding:4mm 5mm}
-        table{border-collapse:collapse;width:100%;font-size:12px;color:#000}
-        th{background:#f1f5f9;border:1px solid #000;padding:5px;font-size:10px;text-transform:uppercase}
-        .ass{margin-top:18mm;text-align:center;font-size:12px}
-        .obs{margin-top:8mm;border:1px dashed #000;padding:4mm;font-size:11px}
-      </style></head>
-      <body>
-        <div class="folha"><div class="rec" style="background:${corTipo(dados.receita.tipo)};">
-          <div class="rec-titulo">Receituário ${TIPO_RECEITUARIO.find((t) => t.value === dados.receita.tipo)?.label.toUpperCase()}</div>
-          <div class="rec-cabec"><span><strong>Paciente:</strong> ${escapeHtml(dados.paciente.nome) || '____________________'}</span><span><strong>Data:</strong> ${fmtData(dados.paciente.dataAtual) || '____/___/____'}</span></div>
-          ${alergia}
-          ${itens.length ? `<table><thead><tr><th style="width:6%;text-align:center;">Nº</th><th>Medicamento</th><th style="width:9%;">Qtd</th></tr></thead><tbody>${linhas}</tbody></table>` : '<p style="text-align:center;color:#999;">Nenhum item preenchido.</p>'}
-          <div class="ass">_________________________________________<br>Assinatura / Carimbo do Médico</div>
-          ${dados.receita.obs ? `<div class="obs">Observações: ${escapeHtml(dados.receita.obs)}</div>` : ''}
-        </div></div>
-      ${impressao.rodape}</body></html>
-    `)
-    printWindow.document.close()
+    // a folha já veio pronta do servidor (Fase 4.2), ou é a provisória
     printWindow.focus()
     setTimeout(() => {
       printWindow.print()

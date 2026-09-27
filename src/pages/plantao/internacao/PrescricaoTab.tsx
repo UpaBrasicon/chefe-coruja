@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { escapeHtml } from '@/lib/utils'
 import type { DadosPaciente, Prescricao } from './rascunho'
 import { CATEGORIAS, ITENS } from './prescricaoItens'
 
@@ -38,8 +37,6 @@ export function PrescricaoTab({
   const [registrado, setRegistrado] = React.useState(false)
   const [erroRegistro, setErroRegistro] = React.useState<string | null>(null)
   const marcados = React.useMemo(() => new Set(prescricao.marcados), [prescricao.marcados])
-  const conteudoDoc = JSON.stringify({ paciente: dados, prescricao })
-  const servidor = useRascunhoServidor(dados.paciente_id, 'prescricao', conteudoDoc)
 
   // Prescrição ativa do paciente (do banco) — para pré-marcar ao abrir
   const { data: prescricaoBanco } = useQuery({
@@ -123,6 +120,12 @@ export function PrescricaoTab({
   }
 
   const itensSelecionados = ITENS.filter((i) => marcadosEfetivos.has(String(i.n)))
+  const conteudoDoc = JSON.stringify({
+    paciente: dados,
+    itens: itensSelecionados.map((i) => ({ med: i.med, via: i.via, pos: i.pos, apr: i.apr ?? '' })),
+    obs: prescricao.obs,
+  })
+  const servidor = useRascunhoServidor(dados.paciente_id, 'prescricao', conteudoDoc)
 
   async function copiar() {
     const linhas = itensSelecionados.map((i, idx) => `${String(idx + 1).padStart(2, '0')}\t${i.med}\t${i.via}\t${i.pos}`)
@@ -137,14 +140,6 @@ export function PrescricaoTab({
   }
 
   async function imprimir() {
-    const tbody = itensSelecionados
-      .map(
-        (i, idx) => `<tr><td>${String(idx + 1).padStart(2, '0')}</td><td><strong>${escapeHtml(i.med)}</strong></td><td>${escapeHtml(i.via)}</td><td>${escapeHtml(i.pos)}</td><td>${escapeHtml(i.apr ?? '')}</td></tr>`
-      )
-      .join('')
-    const alergia = dados.alergias && dados.alergias.toUpperCase() !== 'NEGA'
-      ? `<div style="background:#dc2626;color:#fff;padding:8px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${escapeHtml(dados.alergias).toUpperCase()} ⚠️</div>`
-      : ''
     const impressao = await abrirImpressao({
       pacienteId: dados.paciente_id, internacaoId: null, tipo: 'Prescrição',
       documento: { tipo: 'prescricao', conteudo: conteudoDoc }, rascunhoId: servidor.rascunhoId(),
@@ -152,45 +147,7 @@ export function PrescricaoTab({
     if (!impressao) return
     servidor.emitido(conteudoDoc)
     const printWindow = impressao.janela
-    printWindow.document.write(`
-      <html><head><title>Prescrição</title>
-      <style>
-        @page{size:A4 portrait;margin:0}
-        html,body{margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-        .folha{position:relative;width:210mm;min-height:297mm;overflow:hidden}
-        .folha>img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1}
-        .conteudo{position:relative;z-index:10;margin:120px auto 0;width:90%}
-        .cabec{border:1px solid #000;padding:6px 10px;margin-bottom:12px;font-size:13px;line-height:1.6;text-transform:uppercase;background:#fff}
-        table{border-collapse:collapse;width:100%;background:#fff;color:#000;font-size:12px}
-        th,td{border:1px solid #000;padding:6px;text-align:left;vertical-align:top}
-        th{background:#fff;font-size:11px}
-        td:first-child,th:first-child{width:6%;text-align:center}
-        td:nth-child(2){width:44%}
-        td:nth-child(3){width:8%;text-align:center}
-        td:nth-child(4){width:9.5%}
-        .ass{margin-top:2cm;text-align:center;font-size:13px;background:#fff}
-        .obs{margin-top:10px;border:1px dashed #000;padding:8px;font-size:11px;background:#fff}
-      </style></head>
-      <body>
-        <div class="folha">
-          <img src="/plantao/background.png">
-          <div class="conteudo">
-            <div class="cabec">
-              <div style="display:flex;justify-content:space-between"><strong>Nome:</strong> ${escapeHtml(dados.nome) || '____________________'}</div>
-              <div style="display:flex;justify-content:space-between;margin-top:4px"><strong>Leito:</strong> ${escapeHtml(dados.leito) || '___'} <strong>Data:</strong> ${fmtData(dados.dataAtual)} <strong>Diagnóstico:</strong> ${escapeHtml(dados.diagnostico) || '____'}</div>
-            </div>
-            ${alergia}
-            <table>
-              <thead><tr><th>ITEM</th><th>NOME</th><th>VIA</th><th>POSOLOGIA</th><th>APRAZAMENTO</th></tr></thead>
-              <tbody>${tbody}</tbody>
-            </table>
-            <div class="ass">_________________________________________<br>Assinatura / Carimbo do Médico</div>
-            ${prescricao.obs ? `<div class="obs">Observações: ${escapeHtml(prescricao.obs)}</div>` : ''}
-          </div>
-        </div>
-      ${impressao.rodape}</body></html>
-    `)
-    printWindow.document.close()
+    // a folha já veio pronta do servidor (Fase 4.2), ou é a provisória
     printWindow.focus()
     setTimeout(() => printWindow.print(), 300)
   }

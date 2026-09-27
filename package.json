@@ -21,7 +21,8 @@
     "import:sigtap": "node scripts/terminologia/importar-sigtap.ts",
     "import:cbo": "node scripts/terminologia/importar-cbo.ts",
     "import:cmed": "node scripts/terminologia/importar-cmed.ts",
-    "import:loinc": "node scripts/terminologia/importar-loinc.ts"
+    "import:loinc": "node scripts/terminologia/importar-loinc.ts",
+    "folhas:copiar": "node scripts/copiar-folhas.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
