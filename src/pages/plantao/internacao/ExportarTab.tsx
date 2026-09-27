@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { escapeHtml } from '@/lib/utils'
 import type { Aih, DadosPaciente, Evolucao, Exames, Prescricao } from './rascunho'
-import { ITENS } from './prescricaoItens'
+import { supabase } from '@/lib/supabase'
 
 function fmtData(iso: string) {
   if (!iso) return ''
@@ -93,16 +93,12 @@ export function ExportarTab({
         primeira = false
       }
 
-      if (escolhidas.includes('aba2') && prescricao.marcados.length) {
-        const itens = prescricao.marcados
-          .map((n) => Number(n))
-          .filter((n) => !isNaN(n))
-        const tbody = itens
-          .map((n, idx) => {
-            const item = ITENS.find((i) => i.n === n)
-            if (!item) return ''
-            return `<tr><td>${String(idx + 1).padStart(2, '0')}</td><td><strong>${escapeHtml(item.med)}</strong></td><td>${escapeHtml(item.via)}</td><td>${escapeHtml(item.pos)}</td><td>${escapeHtml(item.apr ?? '')}</td></tr>`
-          })
+      const vigente = escolhidas.includes('aba2') && dados.paciente_id
+        ? ((await supabase.rpc('prescricao_vigente', { p_paciente: dados.paciente_id })).data ?? [])
+        : []
+      if (vigente.length) {
+        const tbody = vigente
+          .map((i, idx) => `<tr><td>${String(idx + 1).padStart(2, '0')}</td><td><strong>${escapeHtml(i.descricao)}</strong>${i.dose ? ` — ${escapeHtml(i.dose)}` : ''}${i.diluicao_texto ? `<br><small>${escapeHtml(i.diluicao_texto)}</small>` : ''}</td><td>${escapeHtml(i.via ?? '---')}</td><td>${escapeHtml(i.posologia ?? '---')}${i.se_necessario ? ' (se necessário)' : ''}</td><td></td></tr>`)
           .join('')
         const alergia =
           dados.alergias && dados.alergias.toUpperCase() !== 'NEGA'

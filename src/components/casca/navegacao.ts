@@ -6,6 +6,7 @@ import {
   ClipboardList,
   DoorOpen,
   Eye,
+  FlaskConical,
   Hospital,
   Hourglass,
   LayoutDashboard,
@@ -50,7 +51,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   enfermeiro: [{ to: '/triagem', rotulo: 'Triagem', icone: Stethoscope, exato: true }],
   tecnico_enfermagem: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
   recepcao: [{ to: '/recepcao', rotulo: 'Recepção', icone: ClipboardList, exato: true }],
-  farmaceutico: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
+  farmaceutico: [{ to: '/farmacia', rotulo: 'Diluição padrão', curto: 'Diluição', icone: FlaskConical, exato: true }],
   telemedicina: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
   admin: [
     { to: '/painel', rotulo: 'Rede', icone: LayoutDashboard, exato: true },

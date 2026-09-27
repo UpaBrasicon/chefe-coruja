@@ -57,6 +57,77 @@ export type Database = {
           },
         ]
       }
+      alergias_paciente: {
+        Row: {
+          id: string
+          inativada_em: string | null
+          inativada_por: string | null
+          motivo_inativacao: string | null
+          paciente_id: string
+          reacao: string | null
+          registrado_em: string
+          registrado_por: string
+          substancia: string
+          substancia_norm: string
+          unidade_id: string
+        }
+        Insert: {
+          id?: string
+          inativada_em?: string | null
+          inativada_por?: string | null
+          motivo_inativacao?: string | null
+          paciente_id: string
+          reacao?: string | null
+          registrado_em?: string
+          registrado_por: string
+          substancia: string
+          substancia_norm: string
+          unidade_id: string
+        }
+        Update: {
+          id?: string
+          inativada_em?: string | null
+          inativada_por?: string | null
+          motivo_inativacao?: string | null
+          paciente_id?: string
+          reacao?: string | null
+          registrado_em?: string
+          registrado_por?: string
+          substancia?: string
+          substancia_norm?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alergias_paciente_inativada_por_fkey"
+            columns: ["inativada_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alergias_paciente_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alergias_paciente_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alergias_paciente_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alta_paciente: {
         Row: {
           created_at: string
@@ -1187,17 +1258,25 @@ export type Database = {
           id: string
           incompatibilidades: string[] | null
           medicamento_id: string | null
+          motivo_alteracao: string | null
           observacoes: string | null
+          origem_id: string | null
           principio_ativo: string
+          publicado_em: string | null
+          publicado_por: string | null
           reconstituicao_concentracao: string | null
           reconstituicao_diluente: string | null
           reconstituicao_volume_ml: number | null
           revisor_crf: string | null
           status: string
           tempo_infusao_min: number | null
+          unidade_id: string | null
           updated_at: string
           velocidade_max: string | null
+          versao: number
           via: string
+          vigente_ate: string | null
+          vigente_desde: string | null
         }
         Insert: {
           acesso?: string | null
@@ -1218,17 +1297,25 @@ export type Database = {
           id?: string
           incompatibilidades?: string[] | null
           medicamento_id?: string | null
+          motivo_alteracao?: string | null
           observacoes?: string | null
+          origem_id?: string | null
           principio_ativo: string
+          publicado_em?: string | null
+          publicado_por?: string | null
           reconstituicao_concentracao?: string | null
           reconstituicao_diluente?: string | null
           reconstituicao_volume_ml?: number | null
           revisor_crf?: string | null
           status?: string
           tempo_infusao_min?: number | null
+          unidade_id?: string | null
           updated_at?: string
           velocidade_max?: string | null
+          versao?: number
           via: string
+          vigente_ate?: string | null
+          vigente_desde?: string | null
         }
         Update: {
           acesso?: string | null
@@ -1249,17 +1336,25 @@ export type Database = {
           id?: string
           incompatibilidades?: string[] | null
           medicamento_id?: string | null
+          motivo_alteracao?: string | null
           observacoes?: string | null
+          origem_id?: string | null
           principio_ativo?: string
+          publicado_em?: string | null
+          publicado_por?: string | null
           reconstituicao_concentracao?: string | null
           reconstituicao_diluente?: string | null
           reconstituicao_volume_ml?: number | null
           revisor_crf?: string | null
           status?: string
           tempo_infusao_min?: number | null
+          unidade_id?: string | null
           updated_at?: string
           velocidade_max?: string | null
+          versao?: number
           via?: string
+          vigente_ate?: string | null
+          vigente_desde?: string | null
         }
         Relationships: [
           {
@@ -1267,6 +1362,27 @@ export type Database = {
             columns: ["medicamento_id"]
             isOneToOne: false
             referencedRelation: "medicamento"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diluicao_origem_id_fkey"
+            columns: ["origem_id"]
+            isOneToOne: false
+            referencedRelation: "diluicao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diluicao_publicado_por_fkey"
+            columns: ["publicado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diluicao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
             referencedColumns: ["id"]
           },
         ]
@@ -2555,6 +2671,7 @@ export type Database = {
           rxcui: string | null
           setor_uso: string | null
           updated_at: string
+          vasoativo: boolean | null
         }
         Insert: {
           alta_vigilancia?: boolean
@@ -2575,6 +2692,7 @@ export type Database = {
           rxcui?: string | null
           setor_uso?: string | null
           updated_at?: string
+          vasoativo?: boolean | null
         }
         Update: {
           alta_vigilancia?: boolean
@@ -2595,6 +2713,7 @@ export type Database = {
           rxcui?: string | null
           setor_uso?: string | null
           updated_at?: string
+          vasoativo?: boolean | null
         }
         Relationships: []
       }
@@ -3395,42 +3514,95 @@ export type Database = {
       }
       prescricao_itens: {
         Row: {
+          autor_id: string | null
           created_at: string
           descricao: string
+          diluicao_divergente: boolean
+          diluicao_id: string | null
+          diluicao_texto: string | null
+          diluicao_versao: number | null
           dose: string | null
           duracao: string | null
           id: string
+          justificativa_divergencia: string | null
           medicamento_id: string | null
+          motivo_suspensao: string | null
           observacao: string | null
           ordem: number
+          peso_kg: number | null
           posologia: string | null
           prescricao_id: string
+          se_necessario: boolean
+          suspenso_em: string | null
+          suspenso_por: string | null
+          tipo: string
+          via: string | null
         }
         Insert: {
+          autor_id?: string | null
           created_at?: string
           descricao: string
+          diluicao_divergente?: boolean
+          diluicao_id?: string | null
+          diluicao_texto?: string | null
+          diluicao_versao?: number | null
           dose?: string | null
           duracao?: string | null
           id?: string
+          justificativa_divergencia?: string | null
           medicamento_id?: string | null
+          motivo_suspensao?: string | null
           observacao?: string | null
           ordem?: number
+          peso_kg?: number | null
           posologia?: string | null
           prescricao_id: string
+          se_necessario?: boolean
+          suspenso_em?: string | null
+          suspenso_por?: string | null
+          tipo?: string
+          via?: string | null
         }
         Update: {
+          autor_id?: string | null
           created_at?: string
           descricao?: string
+          diluicao_divergente?: boolean
+          diluicao_id?: string | null
+          diluicao_texto?: string | null
+          diluicao_versao?: number | null
           dose?: string | null
           duracao?: string | null
           id?: string
+          justificativa_divergencia?: string | null
           medicamento_id?: string | null
+          motivo_suspensao?: string | null
           observacao?: string | null
           ordem?: number
+          peso_kg?: number | null
           posologia?: string | null
           prescricao_id?: string
+          se_necessario?: boolean
+          suspenso_em?: string | null
+          suspenso_por?: string | null
+          tipo?: string
+          via?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "prescricao_itens_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescricao_itens_diluicao_id_fkey"
+            columns: ["diluicao_id"]
+            isOneToOne: false
+            referencedRelation: "diluicao"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "prescricao_itens_medicamento_id_fkey"
             columns: ["medicamento_id"]
@@ -3445,6 +3617,13 @@ export type Database = {
             referencedRelation: "prescricoes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "prescricao_itens_suspenso_por_fkey"
+            columns: ["suspenso_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
         ]
       }
       prescricoes: {
@@ -3452,7 +3631,9 @@ export type Database = {
           assinada_em: string | null
           created_at: string
           criada_por: string | null
+          episodio_id: string | null
           id: string
+          internacao_id: string | null
           medico_id: string
           observacoes: string | null
           paciente_id: string
@@ -3465,7 +3646,9 @@ export type Database = {
           assinada_em?: string | null
           created_at?: string
           criada_por?: string | null
+          episodio_id?: string | null
           id?: string
+          internacao_id?: string | null
           medico_id: string
           observacoes?: string | null
           paciente_id: string
@@ -3478,7 +3661,9 @@ export type Database = {
           assinada_em?: string | null
           created_at?: string
           criada_por?: string | null
+          episodio_id?: string | null
           id?: string
+          internacao_id?: string | null
           medico_id?: string
           observacoes?: string | null
           paciente_id?: string
@@ -3493,6 +3678,20 @@ export type Database = {
             columns: ["criada_por"]
             isOneToOne: false
             referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescricoes_episodio_id_fkey"
+            columns: ["episodio_id"]
+            isOneToOne: false
+            referencedRelation: "episodios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescricoes_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
             referencedColumns: ["id"]
           },
           {
@@ -4671,17 +4870,25 @@ export type Database = {
           id: string
           incompatibilidades: string[] | null
           medicamento_id: string | null
+          motivo_alteracao: string | null
           observacoes: string | null
+          origem_id: string | null
           principio_ativo: string
+          publicado_em: string | null
+          publicado_por: string | null
           reconstituicao_concentracao: string | null
           reconstituicao_diluente: string | null
           reconstituicao_volume_ml: number | null
           revisor_crf: string | null
           status: string
           tempo_infusao_min: number | null
+          unidade_id: string | null
           updated_at: string
           velocidade_max: string | null
+          versao: number
           via: string
+          vigente_ate: string | null
+          vigente_desde: string | null
         }[]
         SetofOptions: {
           from: "*"
@@ -4689,6 +4896,24 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      diluicao_vigente: {
+        Args: {
+          p_em?: string
+          p_medicamento: string
+          p_unidade?: string
+          p_via: string
+        }
+        Returns: {
+          fonte: string
+          id: string
+          revisor_crf: string
+          texto: string
+          unidade_id: string
+          versao: number
+          vigente_ate: string
+          vigente_desde: string
+        }[]
       }
       diluicoes_rascunho: {
         Args: never
@@ -4711,17 +4936,25 @@ export type Database = {
           id: string
           incompatibilidades: string[] | null
           medicamento_id: string | null
+          motivo_alteracao: string | null
           observacoes: string | null
+          origem_id: string | null
           principio_ativo: string
+          publicado_em: string | null
+          publicado_por: string | null
           reconstituicao_concentracao: string | null
           reconstituicao_diluente: string | null
           reconstituicao_volume_ml: number | null
           revisor_crf: string | null
           status: string
           tempo_infusao_min: number | null
+          unidade_id: string | null
           updated_at: string
           velocidade_max: string | null
+          versao: number
           via: string
+          vigente_ate: string | null
+          vigente_desde: string | null
         }[]
         SetofOptions: {
           from: "*"
@@ -4909,6 +5142,10 @@ export type Database = {
       }
       horario_servidor: { Args: never; Returns: string }
       impeditivos_alta: { Args: { p_internacao: string }; Returns: Json }
+      inativar_alergia: {
+        Args: { p_alergia: string; p_motivo: string }
+        Returns: undefined
+      }
       iniciar_atendimento: { Args: { p_episodio: string }; Returns: undefined }
       listar_conversas: {
         Args: never
@@ -4980,6 +5217,33 @@ export type Database = {
           uf_crm: string
         }[]
       }
+      prescrever: {
+        Args: { p_item: Json; p_paciente: string }
+        Returns: string
+      }
+      prescricao_vigente: {
+        Args: { p_em?: string; p_paciente: string }
+        Returns: {
+          autor: string
+          criado_em: string
+          descricao: string
+          diluicao_divergente: boolean
+          diluicao_texto: string
+          diluicao_versao: number
+          dose: string
+          id: string
+          justificativa_divergencia: string
+          medicamento_id: string
+          observacao: string
+          peso_kg: number
+          posologia: string
+          se_necessario: boolean
+          suspenso_em: string
+          tipo: string
+          vasoativo: boolean
+          via: string
+        }[]
+      }
       presencas_do_dia_gestor: {
         Args: { p_unidade: string }
         Returns: {
@@ -5018,6 +5282,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      publicar_diluicao_versao: { Args: { p_id: string }; Returns: undefined }
       recusar_troca: {
         Args: { p_motivo?: string; p_troca: string }
         Returns: undefined
@@ -5031,6 +5296,10 @@ export type Database = {
           p_unidade: string
         }
         Returns: undefined
+      }
+      registrar_alergia: {
+        Args: { p_paciente: string; p_reacao?: string; p_substancia: string }
+        Returns: string
       }
       registrar_auditoria: {
         Args: {
@@ -5170,6 +5439,10 @@ export type Database = {
         }[]
       }
       revogar_pacote_alta: { Args: { p_pacote: string }; Returns: undefined }
+      salvar_diluicao: {
+        Args: { p_dados: Json; p_id: string }
+        Returns: string
+      }
       salvar_documento: {
         Args: {
           p_conteudo: string
@@ -5226,6 +5499,10 @@ export type Database = {
       solicitar_troca: {
         Args: { p_mensagem?: string; p_plantao_a: string; p_plantao_b: string }
         Returns: string
+      }
+      suspender_item: {
+        Args: { p_item: string; p_motivo: string }
+        Returns: undefined
       }
       tem_acesso_atendimento: { Args: { unidade: string }; Returns: boolean }
       terminologia_buscar: {

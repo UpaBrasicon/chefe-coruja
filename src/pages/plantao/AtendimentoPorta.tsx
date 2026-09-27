@@ -22,6 +22,7 @@ import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { CamposVitais } from '@/components/clinico/CamposVitais'
 import { BotaoChamar } from '@/components/porta/Chamada'
 import { SepsePorta } from '@/components/internacao/LeitoAberto'
+import { PrescricaoEstruturada } from '@/components/prescricao/PrescricaoEstruturada'
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 
 // Atendimento médico no Pronto Socorro (Fase 2.4): fila médica (cor → 80+ →
@@ -303,6 +304,11 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
               </CardContent>
             </Card>
           )}
+
+          {/* Prescrição da porta (Fase 4.4): a mesma da internação; a checagem da
+              enfermagem alimenta a "alta após medicação" (Fase 4.6) */}
+          <PrescricaoEstruturada pacienteId={ep.paciente_id}
+            paciente={{ nome: nomeDe(ep), dataAtual: hoje(), diagnostico: ep.queixa }} />
 
           <Card>
             <CardHeader>

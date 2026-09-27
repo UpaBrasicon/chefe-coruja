@@ -144,12 +144,7 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
         </TabsList>
 
         <TabsContent value="prescricao">
-          <PrescricaoTab
-            dados={dados.paciente}
-            prescricao={dados.prescricao}
-            pacienteId={dados.paciente.paciente_id}
-            onChange={(p) => atualizar({ prescricao: { ...dados.prescricao, ...p } })}
-          />
+          <PrescricaoTab dados={dados.paciente} pacienteId={dados.paciente.paciente_id} />
         </TabsContent>
 
         <TabsContent value="evolucao">
