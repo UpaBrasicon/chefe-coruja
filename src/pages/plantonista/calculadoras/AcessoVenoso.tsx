@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { fichaAcessoVenoso, recomendarAcesso, type EntradaAcesso } from '@/clinico/acessoVenoso'
+import { SemReferenciaPediatrica } from '@/components/plantonista/SemReferenciaPediatrica'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -38,46 +40,27 @@ export function AcessoVenoso() {
   const [rede, setRede] = useState('')
   const [urgencia, setUrgencia] = useState('')
 
-  const completo = perfil && terapia && caracteristica && rede && urgencia
-
-  function recomendar() {
-    if (!completo) return null
-    const t = terapia
-    const c = caracteristica
-    const r = rede
-    const u = urgencia
-    const urg = u === 'urgente'
-
-    if (perfil === 'neonatal' || perfil === 'pediatrico') {
-      if (t === 'longa' || c !== 'nao' || r === 'ruim') {
-        return { dispositivo: 'Cateter central (PICC ou CVC)', motivo: 'Terapia prolongada, infusão irritante/vesicante ou rede venosa comprometida.' }
-      }
-      return { dispositivo: 'Cateter periférico curto', motivo: 'Terapia curta e infusão compatível com acesso periférico.' }
-    }
-
-    if (urg) {
-      return { dispositivo: 'Acesso periférico rápido (2 cateteres) / intraósseo se choque', motivo: 'Situação emergencial — acesso imediato.' }
-    }
-    if (c !== 'nao') {
-      return { dispositivo: 'Cateter central (CVC ou PICC)', motivo: 'Infusão vesicante/irritante, osmolaridade alta ou pH extremo.' }
-    }
-    if (t === 'longa' || r === 'ruim') {
-      return { dispositivo: 'PICC (ou CVC se alta osmolaridade)', motivo: 'Terapia prolongada (> 6 dias) ou rede venosa ruim.' }
-    }
-    return { dispositivo: 'Cateter periférico curto (acesso único)', motivo: 'Terapia curta, infusão compatível e rede venosa adequada.' }
-  }
-
-  const resultado = recomendar()
+  const crianca = perfil === 'crianca'
+  const completo = perfil === 'adulto' && terapia && caracteristica && rede && urgencia
+  const resultado = completo
+    ? recomendarAcesso({
+        terapia: terapia as EntradaAcesso['terapia'],
+        infusao: (caracteristica === 'nao' ? 'periferica' : caracteristica) as EntradaAcesso['infusao'],
+        rede: rede as EntradaAcesso['rede'],
+        urgencia: urgencia as EntradaAcesso['urgencia'],
+      })
+    : null
 
   return (
     <ToolLayout
       title="Escolha do Acesso Venoso"
-      description="Avalie terapia, duração e perfil do paciente para receber uma recomendação estruturada."
+      description="Avalie terapia, duração e rede venosa do adulto para receber uma recomendação estruturada."
+      ficha={fichaAcessoVenoso}
     >
       <div className="flex flex-col gap-5">
         <Grupo
           titulo="1. Perfil do paciente"
-          opcoes={[{ valor: 'adulto', label: 'Adulto (≥ 12 anos)' }, { valor: 'pediatrico', label: 'Pediátrico (29 dias – 11 anos)' }, { valor: 'neonatal', label: 'Neonatal (0 – 28 dias)' }]}
+          opcoes={[{ valor: 'adulto', label: 'Adulto (14 anos ou mais)' }, { valor: 'crianca', label: 'Criança (menos de 14 anos)' }]}
           valor={perfil}
           set={setPerfil}
         />
@@ -106,7 +89,9 @@ export function AcessoVenoso() {
           set={setUrgencia}
         />
 
-        {!completo && (
+        {crianca && <SemReferenciaPediatrica detalhe="A escolha de dispositivo nesta tela segue padrão de adulto; o ramo pediátrico e neonatal que existia não tinha fonte e foi retirado." />}
+
+        {!completo && !crianca && (
           <Card>
             <CardContent className="pt-6 text-sm text-muted-foreground">
               Responda todas as etapas para gerar a recomendação.

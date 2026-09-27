@@ -1,17 +1,13 @@
 import { useState } from 'react'
 
+import { fichaDengue, grupoDengue, hidratacaoAdulto } from '@/clinico/dengue'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { SemReferenciaPediatrica } from '@/components/plantonista/SemReferenciaPediatrica'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 
 const sinaisAlarme = [
   'Dor abdominal intensa (referida ou à palpação) e contínua',
@@ -44,53 +40,38 @@ export function ClassificacaoDengue() {
     setSet(novo)
   }
 
-  const grupo: 'A' | 'B' | 'C' | 'D' = choque.size > 0
-    ? 'D'
-    : alarme.size > 0 || sangramentoMucosa
-      ? 'C'
-      : sangramentoPele
-        ? 'B'
-        : 'A'
-
-  // Hidratação conforme MS 2024
-  const fator = paciente === 'crianca' ? peso : peso
-  const hidratacao = {
-    A: {
-      orientacao: `Ingesta de ${(60 * fator).toFixed(0)} mL de líquidos em 24 horas (${((60 * fator) / 3).toFixed(0)} mL nas primeiras 4–6 h com SRO + ${(((60 * fator) / 3) * 2).toFixed(0)} mL de líquidos caseiros no restante).`,
-    },
-    B: {
-      orientacao: 'Solicitar obrigatoriamente hemograma. Se hematócrito normal, tratar ambulatorialmente. Em hemoconcentração ou sinais de alarme, conduzir como Grupo C.',
-    },
-    C: {
-      expansao1: `Expansão volêmica imediata: ${(10 * fator).toFixed(0)} mL de SF 0,9% na 1ª hora.`,
-      expansao2: `Manter ${(10 * fator).toFixed(0)} mL na 2ª hora (máx. de cada fase: ${(30 * fator).toFixed(0)} mL em 2 h, até 3 fases).`,
-      manutencao: `Fase de manutenção: ${(25 * fator).toFixed(0)} mL de SF 0,9% em 6 h, depois ${(25 * fator).toFixed(0)} mL em 8 h.`,
-    },
-    D: {
-      expansao: `Expansão rápida: ${(20 * fator).toFixed(0)} mL de SF 0,9% em até 20 minutos (repetir até 3 vezes).`,
-    },
-  } as const
+  const grupo = grupoDengue({
+    sangramentoPele,
+    sangramentoMucosa,
+    sinaisAlarme: alarme.size,
+    sinaisChoque: choque.size,
+  })
+  const fases = hidratacaoAdulto(grupo, peso)
+  const crianca = paciente === 'crianca'
 
   return (
     <ToolLayout
       title="Dengue — Classificação, Conduta e Hidratação (MS)"
-      description="Classificação em grupos A–D e orientação de hidratação conforme Ministério da Saúde."
-      referencia="Ministério da Saúde — Manual de Dengue (atualização)."
-      revisadoEm="Revisado em 08/2026"
+      description="Classificação em grupos A–D para qualquer idade; volumes de hidratação do adulto."
+      ficha={fichaDengue}
     >
       <Card>
         <CardContent className="grid gap-4 pt-6 md:grid-cols-3">
           <div className="flex flex-col gap-2">
             <Label>Paciente</Label>
-            <Select value={paciente} onValueChange={(v) => setPaciente((v as 'adulto') ?? 'adulto')}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="adulto">Adulto</SelectItem>
-                <SelectItem value="crianca">Criança (&lt; 13 anos)</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              {([['adulto', 'Adulto (14 anos ou mais)'], ['crianca', 'Criança (menos de 14 anos)']] as const).map(([v, rotulo]) => (
+                <button
+                  key={v}
+                  type="button"
+                  aria-pressed={paciente === v}
+                  onClick={() => setPaciente(v)}
+                  className={cn('rounded-lg border px-3 py-2 text-left text-sm', paciente === v ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50')}
+                >
+                  {rotulo}
+                </button>
+              ))}
+            </div>
           </div>
           <NumberField id="dg-peso" label="Peso" unit="kg" value={peso} onChange={setPeso} min={1} />
         </CardContent>
@@ -142,32 +123,25 @@ export function ClassificacaoDengue() {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-sm">
-          {grupo === 'A' && (
-            <>
-              <p className="text-muted-foreground">{hidratacao.A.orientacao}</p>
-              <p className="text-muted-foreground">☞ Exames complementares a critério médico.</p>
-            </>
+          {crianca ? (
+            <SemReferenciaPediatrica detalhe="A classificação acima vale para a criança. O volume de hidratação da criança segue faixa de peso no manual do Ministério e não está nesta tela." />
+          ) : (
+            <table className="w-full text-sm">
+              <tbody>
+                {fases.map((f) => (
+                  <tr key={f.etapa} className="border-b last:border-0">
+                    <td className="py-1.5 pr-3 font-medium">{f.etapa}</td>
+                    <td className="py-1.5 pr-3 text-muted-foreground">{f.regra}</td>
+                    <td className="py-1.5 text-right tabular-nums">{f.volumeMl === null ? '—' : `${f.volumeMl.toLocaleString('pt-BR')} mL`}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
-          {grupo === 'B' && (
-            <>
-              <p className="text-muted-foreground">{hidratacao.B.orientacao}</p>
-              <p className="text-muted-foreground">☞ Reposição oral com SRO e líquidos caseiros (grupo A).</p>
-            </>
-          )}
-          {grupo === 'C' && (
-            <>
-              <p><strong>1ª hora:</strong> {hidratacao.C.expansao1}</p>
-              <p><strong>2ª hora:</strong> {hidratacao.C.expansao2}</p>
-              <p><strong>Manutenção:</strong> {hidratacao.C.manutencao}</p>
-              <p className="text-atencao">☞ Hemograma, albumina e transaminases obrigatórios. Internação até estabilização (mín. 48 h). Reavaliar após 1 h e Ht a cada 2 h.</p>
-            </>
-          )}
-          {grupo === 'D' && (
-            <>
-              <p><strong>Expansão rápida:</strong> {hidratacao.D.expansao}</p>
-              <p className="text-critico">☞ Reavaliação a cada 15–30 min, Ht a cada 2 h. Acompanhamento preferencial em UTI.</p>
-            </>
-          )}
+          {grupo === 'B' && <p className="text-muted-foreground">☞ Grupo B não se decide sem hemograma: com hemoconcentração, a conduta é a do grupo C.</p>}
+          {grupo === 'C' && <p className="text-atencao">☞ Hemograma, albumina e transaminases na admissão. Internação até estabilizar, no mínimo 48 h. Reavaliar após 1 h e Ht a cada 2 h.</p>}
+          {grupo === 'D' && <p className="text-critico">☞ Reavaliação a cada 15–30 min, Ht a cada 2 h. Leito de terapia intensiva de preferência.</p>}
+          <p className="text-muted-foreground">O grupo muda no curso da doença: vale para a reavaliação de agora.</p>
         </CardContent>
       </Card>
     </ToolLayout>

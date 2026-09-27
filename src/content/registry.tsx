@@ -89,7 +89,7 @@ export const SECOES: SectionDef[] = [
     icon: ClipboardList,
     tools: [
       t('hda-lamg', 'Profilaxia HDA/LAMG', 'Prevenção de sangramento digestivo por estresse.', sobDemanda(() => import('@/pages/plantonista/protocolos/ProfilaxiaHdaLamg'), 'ProfilaxiaHdaLamg'), ['LAMG', 'úlcera de estresse', 'pantoprazol', 'sangramento digestivo']),
-      t('hiperpotassemia', 'Hiperpotassemia', 'Manejo da hipercalemia aguda.', sobDemanda(() => import('@/pages/plantonista/protocolos/Hiperpotassemia'), 'Hiperpotassemia'), ['potássio', 'hipercalemia', 'glicoinsulinoterapia', 'gluconato']),
+      t('hiperpotassemia', 'Hiperpotassemia', 'Gravidade, cálcio pelo ECG e conduta em três tempos.', sobDemanda(() => import('@/pages/plantonista/protocolos/Hiperpotassemia'), 'Hiperpotassemia'), ['potássio', 'hipercalemia', 'glicoinsulinoterapia', 'gluconato', 'ECG']),
       t('controle-glicemico', 'Controle Glicêmico Intensivo', 'Protocolo de insulina em infusão contínua.', sobDemanda(() => import('@/pages/plantonista/protocolos/ControleGlicemicoProtocolo'), 'ControleGlicemicoProtocolo'), ['insulina', 'glicemia', 'protocolo']),
       t('abstinencia', 'Abstinência', 'Manejo da abstinência de sedativos/opioides.', sobDemanda(() => import('@/pages/plantonista/protocolos/Abstinencia'), 'Abstinencia'), ['abstinência', 'sedativo', 'opioide', 'metadona', 'desmame']),
       t('preparo-colonoscopia', 'Preparo para Colonoscopia', 'Dieta e preparo intestinal por horário.', sobDemanda(() => import('@/pages/plantonista/protocolos/PreparoColonoscopia'), 'PreparoColonoscopia'), ['colonoscopia', 'manitol', 'preparo', 'bisacodil']),
