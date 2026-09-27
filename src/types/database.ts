@@ -4638,6 +4638,7 @@ export type Database = {
         Args: { p_aceitar: boolean; p_id: string; p_motivo: string }
         Returns: undefined
       }
+      descartar_rascunho: { Args: { p_rascunho: string }; Returns: undefined }
       desfazer_pendencia: { Args: { p_pendencia: string }; Returns: undefined }
       diluicao_publicada: {
         Args: { p_medicamento: string }
@@ -4735,6 +4736,7 @@ export type Database = {
         }
         Returns: Json
       }
+      emitir_rascunho: { Args: { p_rascunho: string }; Returns: Json }
       enviar_mensagem: {
         Args: { p_conversa_id: string; p_corpo: string }
         Returns: string
@@ -5155,6 +5157,15 @@ export type Database = {
       salvar_push_subscription: {
         Args: { p_subscription: string }
         Returns: undefined
+      }
+      salvar_rascunho: {
+        Args: {
+          p_conteudo: string
+          p_paciente: string
+          p_rascunho?: string
+          p_tipo: string
+        }
+        Returns: string
       }
       segundo_fator_status: {
         Args: never

@@ -1,5 +1,6 @@
 import { Check, Clipboard, FileCheck2, Printer } from 'lucide-react'
 import { abrirImpressao, abrirProntuario } from '@/lib/prontuario'
+import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
 import * as React from 'react'
 import { useQuery } from '@tanstack/react-query'
 
@@ -37,6 +38,8 @@ export function PrescricaoTab({
   const [registrado, setRegistrado] = React.useState(false)
   const [erroRegistro, setErroRegistro] = React.useState<string | null>(null)
   const marcados = React.useMemo(() => new Set(prescricao.marcados), [prescricao.marcados])
+  const conteudoDoc = JSON.stringify({ paciente: dados, prescricao })
+  const servidor = useRascunhoServidor(dados.paciente_id, 'prescricao', conteudoDoc)
 
   // Prescrição ativa do paciente (do banco) — para pré-marcar ao abrir
   const { data: prescricaoBanco } = useQuery({
@@ -142,8 +145,12 @@ export function PrescricaoTab({
     const alergia = dados.alergias && dados.alergias.toUpperCase() !== 'NEGA'
       ? `<div style="background:#dc2626;color:#fff;padding:8px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${escapeHtml(dados.alergias).toUpperCase()} ⚠️</div>`
       : ''
-    const impressao = await abrirImpressao({ pacienteId: dados.paciente_id, internacaoId: null, tipo: 'Prescrição' })
+    const impressao = await abrirImpressao({
+      pacienteId: dados.paciente_id, internacaoId: null, tipo: 'Prescrição',
+      documento: { tipo: 'prescricao', conteudo: conteudoDoc }, rascunhoId: servidor.rascunhoId(),
+    })
     if (!impressao) return
+    servidor.emitido(conteudoDoc)
     const printWindow = impressao.janela
     printWindow.document.write(`
       <html><head><title>Prescrição</title>

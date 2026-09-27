@@ -1,5 +1,6 @@
 import { Printer } from 'lucide-react'
 import { abrirImpressao } from '@/lib/prontuario'
+import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,6 +26,8 @@ export function InternacaoTab({
   exames: Exames
   onChange: (p: Partial<Aih>) => void
 }) {
+  const conteudoDoc = JSON.stringify({ paciente: dados, aih })
+  const servidor = useRascunhoServidor(dados.paciente_id, 'laudo_aih', conteudoDoc)
   function set(nome: keyof Aih, valor: string) {
     onChange({ [nome]: valor } as Partial<Aih>)
   }
@@ -94,7 +97,11 @@ export function InternacaoTab({
   ]
 
   async function imprimir() {
-    const impressao = await abrirImpressao({ pacienteId: dados.paciente_id, internacaoId: null, tipo: 'Laudo de internação (AIH)' })
+    const impressao = await abrirImpressao({
+      pacienteId: dados.paciente_id, internacaoId: null, tipo: 'Laudo de internação (AIH)',
+      documento: { tipo: 'laudo_aih', conteudo: conteudoDoc }, rascunhoId: servidor.rascunhoId(),
+    })
+    if (impressao) servidor.emitido(conteudoDoc)
     if (!impressao) return
     const printWindow = impressao.janela
     const rows = campos

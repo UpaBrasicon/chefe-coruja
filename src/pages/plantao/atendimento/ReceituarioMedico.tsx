@@ -1,5 +1,6 @@
 import { Check, Clipboard, Printer, Plus, Trash2 } from 'lucide-react'
 import { abrirImpressao } from '@/lib/prontuario'
+import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
 import { usePacienteDaUrl } from '../shared/usePacienteDaUrl'
 import * as React from 'react'
 
@@ -82,6 +83,8 @@ export function ReceituarioMedico({
     perfilId,
     carregarReceita
   )
+  const conteudoDoc = JSON.stringify(dados)
+  const servidor = useRascunhoServidor(dados.paciente.paciente_id, 'receita', conteudoDoc)
   usePacienteDaUrl(dados.paciente, (p) => atualizar({ paciente: { ...dados.paciente, ...p } }))
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
   const [copiado, setCopiado] = React.useState(false)
@@ -147,7 +150,7 @@ export function ReceituarioMedico({
       dados.paciente.alergias && dados.paciente.alergias.toUpperCase() !== 'NEGA'
         ? `<div style="background:#dc2626;color:#fff;padding:6px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${escapeHtml(dados.paciente.alergias).toUpperCase()} ⚠️</div>`
         : ''
-    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Receituário', documento: { tipo: 'receita', conteudo: JSON.stringify(dados) } })
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Receituário', documento: { tipo: 'receita', conteudo: conteudoDoc }, rascunhoId: servidor.rascunhoId() })
     if (!impressao) return
     const printWindow = impressao.janela
     printWindow.document.write(`
@@ -179,6 +182,7 @@ export function ReceituarioMedico({
     printWindow.focus()
     setTimeout(() => {
       printWindow.print()
+      servidor.emitido(conteudoDoc)
       limpar() // LGPD: remove dados de paciente do navegador após emissão
     }, 300)
   }
@@ -277,7 +281,7 @@ export function ReceituarioMedico({
               <Button variant="outline" onClick={copiar}>
                 {copiado ? <Check className="text-conforme" /> : <Clipboard />} {copiado ? 'Copiado!' : 'Copiar'}
               </Button>
-              <Button variant="ghost" onClick={limpar}>
+              <Button variant="ghost" onClick={() => { void servidor.descartar(); limpar() }}>
                 <Trash2 /> Limpar
               </Button>
             </div>

@@ -42,7 +42,7 @@ export function esquecerAberturas() {
 
 type Impressao = { janela: Window; rodape: string; provisoria: boolean }
 
-export type TipoDocumentoPorta = 'atestado' | 'receita' | 'encaminhamento' | 'pedido_exames'
+export type TipoDocumentoPorta = 'atestado' | 'receita' | 'encaminhamento' | 'pedido_exames' | 'prescricao' | 'laudo_aih'
 
 const falhaDeRede = (e: { message?: string } | null) =>
   !navigator.onLine || (!!e && /fetch|network|timeout/i.test(e.message ?? ''))
@@ -91,6 +91,8 @@ export async function abrirImpressao(opcoes: {
   internacaoId?: string | null
   tipo: string
   documento?: { tipo: TipoDocumentoPorta; conteudo: string }
+  /** rascunho do banco (Fase 4.1): se houver, é ele que vira o documento emitido */
+  rascunhoId?: string | null
 }): Promise<Impressao | null> {
   const janela = window.open('', '_blank')
   if (!janela) return null
@@ -113,11 +115,22 @@ export async function abrirImpressao(opcoes: {
   // 1) o documento nasce no episódio (com número), antes do papel
   let documento: { id: string; numero: string } | null = null
   if (opcoes.documento) {
-    const { data, error } = await supabase.rpc('emitir_documento', {
-      p_paciente: opcoes.pacienteId,
-      p_tipo: opcoes.documento.tipo,
-      p_conteudo: opcoes.documento.conteudo,
-    })
+    const doc = opcoes.documento
+    const pacienteId = opcoes.pacienteId
+    // com rascunho no banco: grava o texto final nele e emite o próprio rascunho
+    const viaRascunho = async () => {
+      if (!opcoes.rascunhoId) return null
+      const s = await supabase.rpc('salvar_rascunho', {
+        p_paciente: pacienteId, p_tipo: doc.tipo, p_conteudo: doc.conteudo, p_rascunho: opcoes.rascunhoId,
+      })
+      if (s.error) return /Rascunho não encontrado/.test(s.error.message) ? null : s
+      return supabase.rpc('emitir_rascunho', { p_rascunho: opcoes.rascunhoId })
+    }
+    const { data, error } = (await viaRascunho()) ?? (await supabase.rpc('emitir_documento', {
+      p_paciente: pacienteId,
+      p_tipo: doc.tipo,
+      p_conteudo: doc.conteudo,
+    }))
     if (error) {
       if (falhaDeRede(error)) {
         return folhaProvisoria(janela, recusar, { pacienteId: opcoes.pacienteId, documento: opcoes.documento })

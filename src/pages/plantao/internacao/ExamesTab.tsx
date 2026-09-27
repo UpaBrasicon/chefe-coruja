@@ -1,5 +1,6 @@
 import { Plus, Printer, Trash2 } from 'lucide-react'
 import { abrirImpressao } from '@/lib/prontuario'
+import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -42,6 +43,8 @@ export function ExamesTab({
   onChange: (p: Partial<Exames>) => void
 }) {
   const [novo, setNovo] = React.useState('')
+  const conteudoDoc = JSON.stringify({ paciente: dados, exames })
+  const servidor = useRascunhoServidor(dados.paciente_id, 'pedido_exames', conteudoDoc)
 
   function adicionarSugerido(exame: string) {
     const atual = exames.texto.trim()
@@ -64,7 +67,11 @@ export function ExamesTab({
     const linhas = texto.split(/\n+/).map((l) => l.replace(/^[-*•]\s*/, '')).filter(Boolean)
     const listaHtml = linhas.map((l) => `<div style="margin-bottom:6px;">• ${escapeHtml(l)}</div>`).join('')
 
-    const impressao = await abrirImpressao({ pacienteId: dados.paciente_id, internacaoId: null, tipo: 'Pedido de exames (internação)' })
+    const impressao = await abrirImpressao({
+      pacienteId: dados.paciente_id, internacaoId: null, tipo: 'Pedido de exames (internação)',
+      documento: { tipo: 'pedido_exames', conteudo: conteudoDoc }, rascunhoId: servidor.rascunhoId(),
+    })
+    if (impressao) servidor.emitido(conteudoDoc)
     if (!impressao) return
     const printWindow = impressao.janela
     printWindow.document.write(`

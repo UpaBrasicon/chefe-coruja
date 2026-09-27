@@ -1,5 +1,6 @@
 import { Printer, Trash2 } from 'lucide-react'
 import { abrirImpressao } from '@/lib/prontuario'
+import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
 import { usePacienteDaUrl } from '../shared/usePacienteDaUrl'
 
 import { Button } from '@/components/ui/button'
@@ -87,6 +88,8 @@ export function Encaminhamento({
     perfilId,
     carregarEnc
   )
+  const conteudoDoc = JSON.stringify(dados)
+  const servidor = useRascunhoServidor(dados.paciente.paciente_id, 'encaminhamento', conteudoDoc)
   usePacienteDaUrl(dados.paciente, (p) => atualizar({ paciente: { ...dados.paciente, ...p } }))
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
 
@@ -94,7 +97,7 @@ export function Encaminhamento({
     const nome = escapeHtml(dados.paciente.nome).toUpperCase() || '_________________________________'
     const data = fmtData(dados.paciente.dataAtual)
     const hipotese = escapeHtml(dados.paciente.diagnostico) || '____________________'
-    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Encaminhamento', documento: { tipo: 'encaminhamento', conteudo: JSON.stringify(dados) } })
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Encaminhamento', documento: { tipo: 'encaminhamento', conteudo: conteudoDoc }, rascunhoId: servidor.rascunhoId() })
     if (!impressao) return
     const printWindow = impressao.janela
     printWindow.document.write(`
@@ -126,6 +129,7 @@ export function Encaminhamento({
     printWindow.focus()
     setTimeout(() => {
       printWindow.print()
+      servidor.emitido(conteudoDoc)
       limpar() // LGPD: remove dados de paciente do navegador após emissão
     }, 300)
   }
@@ -198,7 +202,7 @@ export function Encaminhamento({
               <Button onClick={imprimir}>
                 <Printer /> Imprimir
               </Button>
-              <Button variant="ghost" onClick={limpar}>
+              <Button variant="ghost" onClick={() => { void servidor.descartar(); limpar() }}>
                 <Trash2 /> Limpar
               </Button>
             </div>

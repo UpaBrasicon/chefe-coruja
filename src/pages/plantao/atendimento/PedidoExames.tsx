@@ -1,5 +1,6 @@
 import { Plus, Printer, Trash2 } from 'lucide-react'
 import { abrirImpressao } from '@/lib/prontuario'
+import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
 import { usePacienteDaUrl } from '../shared/usePacienteDaUrl'
 import * as React from 'react'
 
@@ -82,6 +83,8 @@ export function PedidoExames({
     perfilId,
     carregarPedido
   )
+  const conteudoDoc = JSON.stringify(dados)
+  const servidor = useRascunhoServidor(dados.paciente.paciente_id, 'pedido_exames', conteudoDoc)
   usePacienteDaUrl(dados.paciente, (p) => atualizar({ paciente: { ...dados.paciente, ...p } }))
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
   const [novo, setNovo] = React.useState('')
@@ -112,7 +115,7 @@ export function PedidoExames({
     const data = fmtData(dados.paciente.dataAtual)
     const linhas = texto.split(/\n+/).map((l) => l.replace(/^[-*•]\s*/, '')).filter(Boolean)
     const listaHtml = linhas.map((l) => `<div style="margin-bottom:6px;">• ${escapeHtml(l)}</div>`).join('')
-    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Pedido de exames', documento: { tipo: 'pedido_exames', conteudo: JSON.stringify(dados) } })
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Pedido de exames', documento: { tipo: 'pedido_exames', conteudo: conteudoDoc }, rascunhoId: servidor.rascunhoId() })
     if (!impressao) return
     const printWindow = impressao.janela
     printWindow.document.write(`
@@ -140,6 +143,7 @@ export function PedidoExames({
     printWindow.focus()
     setTimeout(() => {
       printWindow.print()
+      servidor.emitido(conteudoDoc)
       limpar() // LGPD: remove dados de paciente do navegador após emissão
     }, 300)
   }
@@ -204,7 +208,7 @@ export function PedidoExames({
               <Button onClick={imprimir} disabled={!dados.pedido.texto.trim()}>
                 <Printer /> Imprimir Pedido
               </Button>
-              <Button variant="ghost" onClick={limpar}>
+              <Button variant="ghost" onClick={() => { void servidor.descartar(); limpar() }}>
                 <Trash2 /> Limpar
               </Button>
             </div>

@@ -1,5 +1,6 @@
 import { Printer, Trash2 } from 'lucide-react'
 import { abrirImpressao } from '@/lib/prontuario'
+import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
 import { usePacienteDaUrl } from '../shared/usePacienteDaUrl'
 
 import { Button } from '@/components/ui/button'
@@ -72,6 +73,8 @@ export function AtestadoMedico({
     perfilId,
     carregarAtestado
   )
+  const conteudoDoc = JSON.stringify(dados)
+  const servidor = useRascunhoServidor(dados.paciente.paciente_id, 'atestado', conteudoDoc)
   usePacienteDaUrl(dados.paciente, (p) => atualizar({ paciente: { ...dados.paciente, ...p } }))
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
 
@@ -86,7 +89,7 @@ export function AtestadoMedico({
         : dados.atestado.tipo === 'afastamento'
           ? `Atesto, para os devidos fins, que ${nome} esteve sob cuidados médicos, necessitando de ${escapeHtml(dados.atestado.dias) || '…'} dia(s) de afastamento de suas atividades laborais${dados.atestado.cid ? ` (CID: ${escapeHtml(dados.atestado.cid)})` : ''}.`
           : `Atesto, para os devidos fins, que ${nome} necessita de ${escapeHtml(dados.atestado.dias) || '…'} dia(s) de repouso, devendo manter-se em observação clínica.`
-    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Atestado', documento: { tipo: 'atestado', conteudo: JSON.stringify(dados) } })
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Atestado', documento: { tipo: 'atestado', conteudo: conteudoDoc }, rascunhoId: servidor.rascunhoId() })
     if (!impressao) return
     const printWindow = impressao.janela
     printWindow.document.write(`
@@ -115,6 +118,7 @@ export function AtestadoMedico({
     printWindow.focus()
     setTimeout(() => {
       printWindow.print()
+      servidor.emitido(conteudoDoc)
       limpar() // LGPD: remove dados de paciente do navegador após emissão
     }, 300)
   }
@@ -194,7 +198,7 @@ export function AtestadoMedico({
               <Button onClick={imprimir}>
                 <Printer /> Imprimir
               </Button>
-              <Button variant="ghost" onClick={limpar}>
+              <Button variant="ghost" onClick={() => { void servidor.descartar(); limpar() }}>
                 <Trash2 /> Limpar
               </Button>
             </div>
