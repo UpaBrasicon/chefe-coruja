@@ -4597,6 +4597,16 @@ export type Database = {
         Args: { p_motivo?: string; p_pendencia: string }
         Returns: undefined
       }
+      conferir_aih: {
+        Args: {
+          p_cid_causa?: string
+          p_cid_principal: string
+          p_cid_secundario?: string
+          p_paciente: string
+          p_procedimento?: string
+        }
+        Returns: Json
+      }
       confirmar_vinculo_hermes: {
         Args: { p_canal: string; p_codigo: string; p_identificador: string }
         Returns: string
@@ -4985,6 +4995,19 @@ export type Database = {
           observacao: string
           papel: string
           perfil_id: string
+        }[]
+      }
+      procedimentos_do_cid: {
+        Args: { p_cid: string; p_limite?: number; p_termo?: string }
+        Returns: {
+          codigo: string
+          como_principal: boolean
+          compativel: boolean
+          competencia: string
+          idade_max: number
+          idade_min: number
+          nome: string
+          sexo: string
         }[]
       }
       publicar_diluicao: {
@@ -5419,6 +5442,27 @@ export type Database = {
           valor_sa?: number | null
           valor_sh?: number | null
           valor_sp?: number | null
+        }
+        Relationships: []
+      }
+      sigtap_procedimento_cid: {
+        Row: {
+          cid: string
+          competencia: string
+          principal: boolean
+          procedimento: string
+        }
+        Insert: {
+          cid: string
+          competencia: string
+          principal: boolean
+          procedimento: string
+        }
+        Update: {
+          cid?: string
+          competencia?: string
+          principal?: boolean
+          procedimento?: string
         }
         Relationships: []
       }

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import type { Aih, DadosPaciente, Evolucao, Exames } from './rascunho'
+import { AihTerminologia } from './AihTerminologia'
 
 function hojeBR() {
   const d = new Date()
@@ -113,6 +114,7 @@ export function InternacaoTab({
 
   return (
     <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
+      <div className="flex flex-col gap-4">
       <Card className="h-fit">
         <CardHeader>
           <CardTitle className="text-base">Dados para Internação</CardTitle>
@@ -131,6 +133,8 @@ export function InternacaoTab({
           </div>
         </CardContent>
       </Card>
+      <AihTerminologia pacienteId={dados.paciente_id} aih={aih} set={set} />
+      </div>
 
       <Card>
         <CardHeader>
