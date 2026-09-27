@@ -1,6 +1,8 @@
 -- Testes das migrations 20260930000001/2 (fase 5: camadas das ferramentas). ROLLBACK no fim.
 BEGIN;
 INSERT INTO public.super_admins (perfil_id) VALUES ('10000000-0000-4000-8000-000000000003') ON CONFLICT DO NOTHING;
+-- parte de um estado sem responsável técnico ativo (independe de nomeações anteriores)
+UPDATE public.responsaveis_tecnicos SET ativo = false, encerrado_em = now() WHERE ativo;
 
 CREATE TEMP TABLE t (nome text PRIMARY KEY, valor text) ON COMMIT DROP;
 GRANT ALL ON t TO authenticated;

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica, type Ficha } from './ficha.ts'
 import { ROTA_DA_FICHA } from './indice.ts'
+import { ESCORES } from './escores/index.ts'
 import { fichaDengue, grupoDengue, hidratacaoAdulto } from './dengue.ts'
 import { fichaAcessoVenoso, recomendarAcesso } from './acessoVenoso.ts'
 import { avaliarHiperpotassemia, faixaPotassio, fichaHiperpotassemia } from './hiperpotassemia.ts'
@@ -21,11 +22,16 @@ test('casco: ficha mista com fonte pediátrica declarada calcula', () => {
   assert.equal(temReferenciaPediatrica({ ...base, fontes: [{ citacao: 'p', pediatrica: true }] }), true)
 })
 test('casco: toda ficha do pacote tem fonte e versão', () => {
-  for (const f of [fichaDengue, fichaAcessoVenoso, fichaHiperpotassemia]) {
+  for (const f of [fichaDengue, fichaAcessoVenoso, fichaHiperpotassemia, ...ESCORES.map((e) => e.ficha)]) {
     assert.ok(f.fontes.length > 0, f.id)
     assert.ok(f.versao, f.id)
     assert.ok(ROTA_DA_FICHA[f.id], `ficha sem rota no índice: ${f.id}`)
   }
+})
+
+test('escores: ids únicos', () => {
+  const ids = ESCORES.map((e) => e.ficha.id)
+  assert.equal(new Set(ids).size, ids.length)
 })
 
 // ---- dengue ----

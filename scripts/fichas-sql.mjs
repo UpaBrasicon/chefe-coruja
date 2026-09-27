@@ -3,7 +3,7 @@
 //   (npm run fichas:sql -- 20261001000001_fase5_fichas)
 // Versão já registrada não muda (ON CONFLICT DO NOTHING): regra alterada tem
 // de ganhar versão nova, e a versão nova entra aguardando aprovação.
-import { readdirSync, writeFileSync } from 'node:fs'
+import { readdirSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -16,10 +16,19 @@ if (!nome) {
 const dir = join(import.meta.dirname, '..', 'src', 'clinico')
 const q = (s) => "'" + String(s).replace(/'/g, "''") + "'"
 const fichas = []
-for (const arq of readdirSync(dir).filter((a) => a.endsWith('.ts') && !a.endsWith('.test.ts'))) {
-  const mod = await import(pathToFileURL(join(dir, arq)).href)
+// arquivos .ts do pacote, com subpastas (escores/…), menos os testes
+const arquivos = (d) => readdirSync(d).flatMap((a) => {
+  const c = join(d, a)
+  if (statSync(c).isDirectory()) return arquivos(c)
+  return a.endsWith('.ts') && !a.endsWith('.test.ts') ? [c] : []
+})
+for (const arq of arquivos(dir)) {
+  const mod = await import(pathToFileURL(arq).href)
   for (const [nomeExport, valor] of Object.entries(mod)) {
-    if (nomeExport.startsWith('ficha') && valor && typeof valor === 'object' && valor.id && valor.versao) fichas.push(valor)
+    if (!valor || typeof valor !== 'object') continue
+    // export const fichaX: Ficha  ou  export const x: Escore (com .ficha)
+    const f = nomeExport.startsWith('ficha') && valor.id && valor.versao ? valor : valor.ficha?.id && valor.ficha?.versao ? valor.ficha : null
+    if (f) fichas.push(f)
   }
 }
 fichas.sort((a, b) => a.id.localeCompare(b.id))
