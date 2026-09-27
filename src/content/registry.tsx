@@ -1,5 +1,5 @@
 import { lazy, type ComponentType } from 'react'
-import {
+import { Baby,
   Calculator,
   ClipboardList,
   FlaskConical,
@@ -66,6 +66,16 @@ export const SECOES: SectionDef[] = [
       t('profilaxia-tev', 'Profilaxia TEV', 'Pádua, Caprini, ortopédico e obstétrico.', sobDemanda(() => import('@/pages/plantonista/calculadoras/ProfilaxiaTEV'), 'ProfilaxiaTEV'), ['trombose', 'TEV', 'enoxaparina', 'Caprini', 'Pádua', 'TVP']),
       t('acesso-venoso', 'Escolha de Acesso Venoso', 'Recomendação de dispositivo por perfil e terapia.', sobDemanda(() => import('@/pages/plantonista/calculadoras/AcessoVenoso'), 'AcessoVenoso'), ['PICC', 'CVC', 'cateter', 'acesso venoso', 'periférico', 'central']),
       t('heparinizacao-ajuste', 'Heparinização Venosa (Ajuste)', 'Ajuste da infusão pelo TTPa.', sobDemanda(() => import('@/pages/plantonista/calculadoras/HeparinizacaoAjuste'), 'HeparinizacaoAjuste'), ['heparina', 'TTPa', 'ajuste', 'anticoagulação']),
+    ],
+  },
+  {
+    slug: 'pediatria',
+    label: 'Pediatria',
+    description: 'Doses por peso e via aérea da criança (até antes dos 14 anos).',
+    icon: Baby,
+    tools: [
+      t('bolus', 'Doses em bolus por peso', 'PCR, intubação, emergência, anticonvulsivantes, sedação, asma e antídotos.', sobDemanda(() => import('@/pages/plantonista/pediatria/BolusPediatrico'), 'BolusPediatrico'), ['pediatria', 'criança', 'dose', 'peso', 'bolus', 'PCR', 'intubação', 'antídoto']),
+      t('via-aerea', 'Via aérea e desfibrilação', 'Equipamento pela cor da fita de Broselow e cargas por peso.', sobDemanda(() => import('@/pages/plantonista/pediatria/ViaAereaPediatrica'), 'ViaAereaPediatrica'), ['pediatria', 'Broselow', 'tubo', 'lâmina', 'máscara laríngea', 'desfibrilação', 'cardioversão']),
     ],
   },
   {
