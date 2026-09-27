@@ -1,68 +1,39 @@
 import { useState } from 'react'
 
-import { cargasPorPeso, equipamentoPorPeso, fichaViaAereaPediatrica } from '@/clinico/pediatria/viaAerea'
+import { fichaViaAereaPediatrica, tuboPorIdade } from '@/clinico/pediatria/viaAerea'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const n = (x: number) => x.toLocaleString('pt-BR')
 
-/** Via aérea (pela cor da fita de Broselow) e cargas de desfibrilação por peso. */
+/** Tubo endotraqueal pediátrico pela idade (Anexo 2 do manual do HCFMUSP). */
 export function ViaAereaPediatrica() {
-  const [peso, setPeso] = useState(0)
-  const eq = equipamentoPorPeso(peso)
-  const c = cargasPorPeso(peso)
-
+  const [anos, setAnos] = useState(0)
+  const t = tuboPorIdade(anos)
   return (
     <ToolLayout
-      title="Via aérea e desfibrilação pediátrica"
-      description="Equipamento pela cor da fita de Broselow e cargas elétricas por peso. Pediatria: até antes dos 14 anos."
+      title="Tubo endotraqueal pediátrico"
+      description="Diâmetro interno pela idade, com a fórmula do manual do HCFMUSP: (idade/4) + 4."
       ficha={fichaViaAereaPediatrica}
     >
       <Card>
         <CardContent className="pt-6">
-          <NumberField id="va-peso" label="Peso aferido ou estimado" unit="kg" value={peso} onChange={setPeso} min={0} step={0.1} />
+          <NumberField id="va-idade" label="Idade em anos completos" unit="anos" value={anos} onChange={setAnos} min={0} step={1} />
         </CardContent>
       </Card>
-
-      {peso > 0 && (
+      {anos > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex flex-wrap items-center gap-2 text-base">
-              Via aérea {eq && <Badge>{eq.cor} · {eq.kg[0]}–{eq.kg[1]} kg</Badge>}
-            </CardTitle>
+            <CardTitle className="text-base">Tubo endotraqueal</CardTitle>
           </CardHeader>
           <CardContent className="text-sm">
-            {eq ? (
-              <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
-                <dt className="text-muted-foreground">Tubo traqueal com cuff</dt><dd>{n(eq.tuboCuffMm)} mm (separar também 0,5 mm menor)</dd>
-                <dt className="text-muted-foreground">Fixação na gengiva</dt><dd>{eq.fixacaoCm} cm</dd>
-                <dt className="text-muted-foreground">Lâmina</dt><dd>{eq.lamina}</dd>
-                <dt className="text-muted-foreground">Máscara laríngea</dt><dd>{eq.mascaraLaringea}</dd>
-                <dt className="text-muted-foreground">Sonda de aspiração</dt><dd>{eq.sondaAspiracaoFr} Fr</dd>
-                <dt className="text-muted-foreground">Bougie</dt><dd>{eq.bougieFr} Fr</dd>
-              </dl>
+            {t ? (
+              <p><strong>{n(t.tuboMm)} mm</strong> <span className="text-muted-foreground">(fórmula: {n(t.calculadoMm)} mm, arredondado ao meio milímetro)</span></p>
             ) : (
-              <p className="text-muted-foreground">Fora da fita de Broselow (3 a 36 kg): a tabela de equipamento não se aplica a este peso.</p>
+              <p className="text-muted-foreground">A fórmula vale de 1 a 13 anos. Fora disso, o livro não traz referência nesta tela.</p>
             )}
-            <p className="mt-2 text-muted-foreground">A fita estima pelo comprimento; aqui a cor sai do peso. Peso de balança, quando existe, manda.</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {c && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Cargas elétricas</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm">
-            <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
-              <dt className="text-muted-foreground">1ª desfibrilação (2 J/kg)</dt><dd>{c.desfib1J} J</dd>
-              <dt className="text-muted-foreground">2ª desfibrilação (4 J/kg)</dt><dd>{c.desfib2J} J</dd>
-              <dt className="text-muted-foreground">Cardioversão (0,5–1 J/kg)</dt><dd>{c.cardioversao[0]}–{c.cardioversao[1]} J</dd>
-              <dt className="text-muted-foreground">Cardioversão refratária (2 J/kg)</dt><dd>{c.cardioversaoRefrataria} J</dd>
-            </dl>
+            <p className="mt-2 text-muted-foreground">Equipamento por peso e carga de desfibrilação pediátrica não estão no livro e não aparecem aqui.</p>
           </CardContent>
         </Card>
       )}

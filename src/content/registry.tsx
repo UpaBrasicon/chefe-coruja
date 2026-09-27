@@ -74,8 +74,8 @@ export const SECOES: SectionDef[] = [
     description: 'Doses por peso e via aérea da criança (até antes dos 14 anos).',
     icon: Baby,
     tools: [
-      t('bolus', 'Doses em bolus por peso', 'PCR, intubação, emergência, anticonvulsivantes, sedação, asma e antídotos.', sobDemanda(() => import('@/pages/plantonista/pediatria/BolusPediatrico'), 'BolusPediatrico'), ['pediatria', 'criança', 'dose', 'peso', 'bolus', 'PCR', 'intubação', 'antídoto']),
-      t('via-aerea', 'Via aérea e desfibrilação', 'Equipamento pela cor da fita de Broselow e cargas por peso.', sobDemanda(() => import('@/pages/plantonista/pediatria/ViaAereaPediatrica'), 'ViaAereaPediatrica'), ['pediatria', 'Broselow', 'tubo', 'lâmina', 'máscara laríngea', 'desfibrilação', 'cardioversão']),
+      t('bolus', 'Doses por peso', 'Intubação, bloqueio, anafilaxia e antídotos (manual HCFMUSP).', sobDemanda(() => import('@/pages/plantonista/pediatria/BolusPediatrico'), 'BolusPediatrico'), ['pediatria', 'criança', 'dose', 'peso', 'intubação', 'anafilaxia', 'antídoto']),
+      t('via-aerea', 'Tubo endotraqueal', 'Diâmetro pela idade: (idade/4) + 4.', sobDemanda(() => import('@/pages/plantonista/pediatria/ViaAereaPediatrica'), 'ViaAereaPediatrica'), ['pediatria', 'tubo', 'intubação', 'via aérea']),
     ],
   },
   {
