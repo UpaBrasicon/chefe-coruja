@@ -3035,6 +3035,7 @@ export type Database = {
           anvisa_produto: string | null
           anvisa_registro: string | null
           anvisa_situacao: string | null
+          anvisa_vinculo_pendente: boolean
           apresentacao: string | null
           ativo: boolean
           concentracao: string | null
@@ -3056,6 +3057,7 @@ export type Database = {
           anvisa_produto?: string | null
           anvisa_registro?: string | null
           anvisa_situacao?: string | null
+          anvisa_vinculo_pendente?: boolean
           apresentacao?: string | null
           ativo?: boolean
           concentracao?: string | null
@@ -3077,6 +3079,7 @@ export type Database = {
           anvisa_produto?: string | null
           anvisa_registro?: string | null
           anvisa_situacao?: string | null
+          anvisa_vinculo_pendente?: boolean
           apresentacao?: string | null
           ativo?: boolean
           concentracao?: string | null
@@ -4387,6 +4390,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      revisoes_cadastro: {
+        Row: {
+          anterior: string | null
+          aprovacao: string
+          campo: string
+          em: string
+          fonte: string
+          id: number
+          lote: string
+          novo: string | null
+          referencia: string | null
+          registro_id: string
+          tabela: string
+        }
+        Insert: {
+          anterior?: string | null
+          aprovacao: string
+          campo: string
+          em?: string
+          fonte: string
+          id?: never
+          lote: string
+          novo?: string | null
+          referencia?: string | null
+          registro_id: string
+          tabela: string
+        }
+        Update: {
+          anterior?: string | null
+          aprovacao?: string
+          campo?: string
+          em?: string
+          fonte?: string
+          id?: never
+          lote?: string
+          novo?: string | null
+          referencia?: string | null
+          registro_id?: string
+          tabela?: string
+        }
+        Relationships: []
       }
       salas: {
         Row: {
