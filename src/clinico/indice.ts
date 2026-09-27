@@ -34,4 +34,6 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'news2': '/plantonista/escores/news2',
   'ped-bolus': '/plantonista/pediatria/bolus',
   'ped-via-aerea': '/plantonista/pediatria/via-aerea',
+  'adulto-infusoes': '/plantonista/calculadoras/drogas-vasoativas',
+  'adulto-isr': '/plantonista/calculadoras/iot',
 }
