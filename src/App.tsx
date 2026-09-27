@@ -48,6 +48,7 @@ const Indicadores = lazy(() => import('@/pages/Indicadores'))
 const InternacaoPainel = lazy(() => import('@/pages/InternacaoPainel'))
 const Notificacoes = lazy(() => import('@/pages/Notificacoes'))
 const Perfil = lazy(() => import('@/pages/Perfil'))
+const RevisaoClinica = lazy(() => import('@/pages/RevisaoClinica'))
 const MeuPlantao = lazy(() => import('@/pages/MeuPlantao'))
 const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome'))
 const SectionHome = lazy(() => import('@/pages/plantonista/SectionHome'))
@@ -183,6 +184,8 @@ export default function App() {
                         <Route path="/agenda" element={<AgendaGrupo />} />
                         <Route path="/notificacoes" element={<Notificacoes />} />
                         <Route path="/perfil" element={<Perfil />} />
+                        {/* Responsável técnico (nomeação da rede, não papel da unidade): o banco confere */}
+                        <Route path="/revisao-clinica" element={<RevisaoClinica />} />
 
                         <Route
                           path="/escala"

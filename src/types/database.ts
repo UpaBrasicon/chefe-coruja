@@ -2352,6 +2352,139 @@ export type Database = {
           },
         ]
       }
+      ferramenta_unidade: {
+        Row: {
+          definida_por: string
+          ferramenta_id: string
+          id: string
+          motivo: string
+          nota_local: string | null
+          oculta: boolean
+          unidade_id: string
+          vigente_ate: string | null
+          vigente_desde: string
+        }
+        Insert: {
+          definida_por: string
+          ferramenta_id: string
+          id?: string
+          motivo: string
+          nota_local?: string | null
+          oculta?: boolean
+          unidade_id: string
+          vigente_ate?: string | null
+          vigente_desde?: string
+        }
+        Update: {
+          definida_por?: string
+          ferramenta_id?: string
+          id?: string
+          motivo?: string
+          nota_local?: string | null
+          oculta?: boolean
+          unidade_id?: string
+          vigente_ate?: string | null
+          vigente_desde?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ferramenta_unidade_definida_por_fkey"
+            columns: ["definida_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ferramenta_unidade_ferramenta_id_fkey"
+            columns: ["ferramenta_id"]
+            isOneToOne: false
+            referencedRelation: "ferramentas_clinicas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ferramenta_unidade_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ferramenta_versoes: {
+        Row: {
+          decidida_em: string | null
+          decidida_por: string | null
+          decisao_nota: string | null
+          decisao_registro: string | null
+          ferramenta_id: string
+          fontes: Json
+          id: string
+          publico: string
+          registrada_em: string
+          status: string
+          versao: string
+        }
+        Insert: {
+          decidida_em?: string | null
+          decidida_por?: string | null
+          decisao_nota?: string | null
+          decisao_registro?: string | null
+          ferramenta_id: string
+          fontes: Json
+          id?: string
+          publico: string
+          registrada_em?: string
+          status?: string
+          versao: string
+        }
+        Update: {
+          decidida_em?: string | null
+          decidida_por?: string | null
+          decisao_nota?: string | null
+          decisao_registro?: string | null
+          ferramenta_id?: string
+          fontes?: Json
+          id?: string
+          publico?: string
+          registrada_em?: string
+          status?: string
+          versao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ferramenta_versoes_decidida_por_fkey"
+            columns: ["decidida_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ferramenta_versoes_ferramenta_id_fkey"
+            columns: ["ferramenta_id"]
+            isOneToOne: false
+            referencedRelation: "ferramentas_clinicas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ferramentas_clinicas: {
+        Row: {
+          criado_em: string
+          id: string
+          titulo: string
+        }
+        Insert: {
+          criado_em?: string
+          id: string
+          titulo: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
       gaviao_relatorios_semanais: {
         Row: {
           detalhes: Json
@@ -4391,6 +4524,60 @@ export type Database = {
           },
         ]
       }
+      responsaveis_tecnicos: {
+        Row: {
+          ativo: boolean
+          conselho: string
+          encerrado_em: string | null
+          id: string
+          nomeado_em: string
+          nomeado_por: string | null
+          perfil_id: string
+          registro: string
+          tipo: string
+          uf: string
+        }
+        Insert: {
+          ativo?: boolean
+          conselho: string
+          encerrado_em?: string | null
+          id?: string
+          nomeado_em?: string
+          nomeado_por?: string | null
+          perfil_id: string
+          registro: string
+          tipo: string
+          uf: string
+        }
+        Update: {
+          ativo?: boolean
+          conselho?: string
+          encerrado_em?: string | null
+          id?: string
+          nomeado_em?: string
+          nomeado_por?: string | null
+          perfil_id?: string
+          registro?: string
+          tipo?: string
+          uf?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "responsaveis_tecnicos_nomeado_por_fkey"
+            columns: ["nomeado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "responsaveis_tecnicos_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       revisoes_cadastro: {
         Row: {
           anterior: string | null
@@ -5351,6 +5538,25 @@ export type Database = {
         Args: { p_aceitar: boolean; p_id: string; p_motivo: string }
         Returns: undefined
       }
+      decidir_versao_ferramenta: {
+        Args: {
+          p_aprovar: boolean
+          p_ferramenta: string
+          p_nota?: string
+          p_versao: string
+        }
+        Returns: undefined
+      }
+      definir_ferramenta_unidade: {
+        Args: {
+          p_ferramenta: string
+          p_motivo: string
+          p_nota: string
+          p_oculta: boolean
+          p_unidade: string
+        }
+        Returns: string
+      }
       descartar_rascunho: { Args: { p_rascunho: string }; Returns: undefined }
       desfazer_pendencia: { Args: { p_pendencia: string }; Returns: undefined }
       diluicao_publicada: {
@@ -5497,6 +5703,10 @@ export type Database = {
         Returns: Json
       }
       emitir_rascunho: { Args: { p_rascunho: string }; Returns: Json }
+      encerrar_responsavel_tecnico: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
       enviar_mensagem: {
         Args: { p_conversa_id: string; p_corpo: string }
         Returns: string
@@ -5506,6 +5716,31 @@ export type Database = {
         Returns: string
       }
       excluir_mensagem: { Args: { p_mensagem_id: string }; Returns: undefined }
+      ferramentas_da_unidade: {
+        Args: { p_unidade: string }
+        Returns: {
+          definida_em: string
+          definida_por: string
+          ferramenta_id: string
+          nota_local: string
+          oculta: boolean
+          pendentes: number
+          titulo: string
+          versao_aprovada: string
+        }[]
+      }
+      fila_aprovacao_ferramentas: {
+        Args: never
+        Returns: {
+          ferramenta_id: string
+          fontes: Json
+          publico: string
+          registrada_em: string
+          titulo: string
+          versao: string
+          vigente_versao: string
+        }[]
+      }
       fila_checagem: {
         Args: never
         Returns: {
@@ -5737,6 +5972,7 @@ export type Database = {
         Args: { p_ativa: boolean; p_paciente: string }
         Returns: undefined
       }
+      meu_papel_tecnico: { Args: never; Returns: Json }
       meu_plantao_agora: {
         Args: never
         Returns: {
@@ -5760,6 +5996,15 @@ export type Database = {
         }[]
       }
       na_escala_agora: { Args: { unidade: string }; Returns: boolean }
+      nomear_responsavel_tecnico: {
+        Args: {
+          p_perfil: string
+          p_registro: string
+          p_tipo: string
+          p_uf: string
+        }
+        Returns: string
+      }
       ocupacao_setores: {
         Args: { p_unidade: string }
         Returns: {
@@ -6090,6 +6335,10 @@ export type Database = {
         Returns: string
       }
       sincronizar_registros: { Args: { p_itens: Json }; Returns: Json }
+      situacao_ferramenta: {
+        Args: { p_ferramenta: string; p_unidade?: string; p_versao: string }
+        Returns: Json
+      }
       situacao_pacote_alta: { Args: { p_token: string }; Returns: Json }
       solicitar_troca: {
         Args: { p_mensagem?: string; p_plantao_a: string; p_plantao_b: string }

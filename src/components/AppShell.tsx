@@ -20,6 +20,7 @@ import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
 import { Spinner } from '@/components/ui/spinner'
 import { ErroBoundary } from '@/components/ErroBoundary'
 import { itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
+import { useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
 import { Paleta } from '@/components/casca/Paleta'
 import { usePaleta } from '@/components/casca/usePaleta'
 import { PortaoSegundoFator } from '@/components/seguranca/SegundoFator'
@@ -177,7 +178,9 @@ export function AppShell() {
     }
   }, [mensagensSolicitadas, navigate])
 
-  const itens = React.useMemo(() => itensDeNavegacao(papeisDaUnidade), [papeisDaUnidade])
+  const { data: papelTecnico } = useMeuPapelTecnico()
+  const ehRt = !!papelTecnico?.some((p) => p.tipo === 'medico')
+  const itens = React.useMemo(() => itensDeNavegacao(papeisDaUnidade, ehRt), [papeisDaUnidade, ehRt])
   const ehPlantonista = papeisDaUnidade.includes('plantonista')
   const ehAdmin = papeisDaUnidade.includes('admin')
 

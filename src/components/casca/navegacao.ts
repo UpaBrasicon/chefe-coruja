@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   LineChart,
   ShieldCheck,
+  SquareCheckBig,
   Stethoscope,
   type LucideIcon,
 } from 'lucide-react'
@@ -64,13 +65,17 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   ],
 }
 
+const ITEM_REVISAO_CLINICA: ItemNav = { to: '/revisao-clinica', rotulo: 'Revisão Clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true }
+
 /**
  * Itens do papel ativo. Um usuário pode ter mais de um papel na unidade
  * (ex.: gestor e plantonista); os itens se somam, sem repetir destino.
  */
-export function itensDeNavegacao(papeis: Papel[]): ItemNav[] {
+export function itensDeNavegacao(papeis: Papel[], responsavelTecnico = false): ItemNav[] {
   const ordem: Papel[] = ['plantonista', 'gestor', 'admin', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem', 'farmaceutico', 'recepcao']
   const itens = ordem.filter((p) => papeis.includes(p)).flatMap((p) => POR_PAPEL[p])
+  // responsável técnico não é papel da unidade: é nomeação da rede (fase 5)
+  if (responsavelTecnico) itens.push(ITEM_REVISAO_CLINICA)
   const unicos = itens.filter((item, i) => itens.findIndex((x) => x.to === item.to) === i)
   return unicos.length ? unicos : POR_PAPEL.plantonista.slice(0, 1)
 }

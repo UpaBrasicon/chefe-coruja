@@ -8,6 +8,7 @@ const Setores = lazy(() => import('@/pages/Setores').then((m) => ({ default: m.S
 const Configuracao = lazy(() => import('@/pages/Configuracao'))
 const Banners = lazy(() => import('@/pages/gestor/Banners').then((m) => ({ default: m.Banners })))
 const RevisaoSemConexao = lazy(() => import('@/pages/gestor/RevisaoSemConexao'))
+const FerramentasUnidade = lazy(() => import('@/pages/gestor/FerramentasUnidade'))
 
 /**
  * Unidade — as três telas de configuração da mesma unidade.
@@ -28,7 +29,10 @@ export default function UnidadeGrupo() {
     { valor: 'configuracoes', rotulo: 'Configurações', conteudo: () => <Configuracao embutido /> },
     { valor: 'imagens', rotulo: 'Imagens', conteudo: () => <Banners embutido /> },
     ...(papeisDaUnidade.includes('gestor')
-      ? [{ valor: 'registros-tardios', rotulo: 'Registros tardios', conteudo: () => <RevisaoSemConexao /> }]
+      ? [
+          { valor: 'registros-tardios', rotulo: 'Registros tardios', conteudo: () => <RevisaoSemConexao /> },
+          { valor: 'ferramentas', rotulo: 'Ferramentas clínicas', conteudo: () => <FerramentasUnidade /> },
+        ]
       : []),
   ]
 
