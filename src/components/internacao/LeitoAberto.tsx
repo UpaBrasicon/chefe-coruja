@@ -44,6 +44,20 @@ type Acuidade = {
   grupo?: string
   fonte?: string
   aferido_em?: string | null
+  phoenix?: Phoenix
+  pelod2?: { indicado: boolean; referencia_carregada: boolean; mensagem: string }
+}
+type Phoenix = {
+  total: number
+  cardiovascular: number
+  sepse: boolean
+  choque: boolean
+  itens: { sistema: string; pontos: number; maximo: number; detalhe: string }[]
+  faltando: string[]
+  parcial: boolean
+  gatilho: { motivo: 'cid' | 'suspeita'; cid?: string; descricao: string }
+  fonte: string
+  notas: string
 }
 type Pendencia = {
   id: string
@@ -53,7 +67,7 @@ type Pendencia = {
   impeditiva: boolean
   situacao: string
   criada_em: string
-  autor_id: string
+  autor_id: string | null
   resolvida_por: string | null
   resolvida_em: string | null
 }
@@ -200,7 +214,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor }: { pacienteId
   })
 
   const recarregar = () => {
-    for (const k of ['leito-aberto', 'acuidade', 'pendencias', 'passagens', 'impeditivos', 'pacotes-alta', 'pacientes-internados', 'ocupacao-setores', 'pendencias-observacao'])
+    for (const k of ['leito-aberto', 'acuidade', 'pendencias', 'passagens', 'impeditivos', 'pacotes-alta', 'pacientes-internados', 'ocupacao-setores', 'pendencias-observacao', 'alertas-sepse'])
       void qc.invalidateQueries({ queryKey: [k] })
   }
   const acao = <T,>(fn: () => Promise<T>, ok?: string) =>
@@ -234,9 +248,12 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor }: { pacienteId
       {aviso && <p className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-2 text-conforme">{aviso}</p>}
 
       {ativa && <BlocoAcuidade a={acuidade.data} carregando={acuidade.isLoading} />}
+      {ativa && acuidade.data?.escala === 'PEWS' && (
+        <BlocoSepse a={acuidade.data} pacienteId={pacienteId} podeMarcar={!ehGestor} acao={acao} />
+      )}
       {ativa && !ehGestor && (
         <LancarVitais pacienteId={pacienteId} internacaoId={i.id} pediatrico={acuidade.data?.escala === 'PEWS'} perfilId={eu}
-          aoGravar={() => { void qc.invalidateQueries({ queryKey: ['acuidade'] }) }} aoErro={setErro} />
+          aoGravar={() => { for (const k of ['acuidade', 'pendencias', 'alertas-sepse']) void qc.invalidateQueries({ queryKey: [k] }) }} aoErro={setErro} />
       )}
 
       <BlocoPendencias i={i} ativa={ativa} lista={pendencias.data ?? []} eu={eu} acao={acao} />
@@ -288,6 +305,78 @@ function BlocoAcuidade({ a, carregando }: { a?: Acuidade; carregando: boolean })
   )
 }
 
+// ── pediatria: Phoenix (rastreio de sepse) e PELOD-2 ────────────────────────
+/** Na porta: o mesmo rastreio do leito, para a criança ainda em atendimento. */
+export function SepsePorta({ pacienteId }: { pacienteId: string }) {
+  const qc = useQueryClient()
+  const [erro, setErro] = React.useState<string | null>(null)
+  const acuidade = useQuery({
+    queryKey: ['acuidade', pacienteId],
+    queryFn: async () => (await rpc('acuidade', { p_paciente: pacienteId })) as Acuidade,
+  })
+  if (acuidade.data?.escala !== 'PEWS') return null
+  const acao: Acao = (fn) =>
+    fn()
+      .then((r) => { setErro(null); void qc.invalidateQueries({ queryKey: ['acuidade'] }); return r })
+      .catch((e) => { setErro(msg(e)); return null })
+  return (
+    <div className="flex flex-col gap-2 text-sm">
+      {erro && <p className="text-critico">{erro}</p>}
+      <BlocoSepse a={acuidade.data} pacienteId={pacienteId} podeMarcar acao={acao} />
+    </div>
+  )
+}
+
+function BlocoSepse({ a, pacienteId, podeMarcar, acao }: { a: Acuidade; pacienteId: string; podeMarcar: boolean; acao: Acao }) {
+  const ph = a.phoenix
+  const marcar = (ativa: boolean) =>
+    acao(() => rpc('marcar_suspeita_infeccao', { p_paciente: pacienteId, p_ativa: ativa }),
+      ativa ? 'Suspeita de infecção marcada: o Phoenix passa a ser calculado.' : 'Suspeita de infecção retirada.')
+  return (
+    <>
+      <Secao titulo="Rastreio de sepse · Phoenix"
+        acao={podeMarcar && (!ph || ph.gatilho.motivo === 'suspeita') ? (
+          <Button size="xs" variant="ghost" onClick={() => void marcar(!ph)}>
+            {ph ? 'Retirar suspeita de infecção' : 'Marcar suspeita de infecção'}
+          </Button>
+        ) : undefined}>
+        {!ph ? (
+          <p className="text-muted-foreground">
+            Não calculado: sem CID de infecção no episódio e sem suspeita de infecção marcada.
+          </p>
+        ) : (
+          <>
+            <div className={`flex flex-wrap items-baseline gap-2 rounded-lg border px-3 py-2 ${
+              ph.choque ? BANDA[2].classe : ph.sepse ? BANDA[2].classe : BANDA[0].classe}`}>
+              <span className="text-2xl font-semibold tabular-nums">{ph.total}{ph.parcial ? '*' : ''}</span>
+              <span className="font-medium">
+                {ph.choque ? 'critérios de choque séptico' : ph.sepse ? 'critérios de sepse' : 'abaixo do critério de sepse (< 2)'}
+              </span>
+              <span className="ml-auto text-xs">{ph.gatilho.descricao}</span>
+            </div>
+            <ul className="grid gap-x-4 gap-y-0.5 sm:grid-cols-2">
+              {ph.itens.map((x) => (
+                <li key={x.sistema} className="flex justify-between gap-2 border-b border-fio py-0.5 last:border-0">
+                  <span className="text-tinta-apoio">{x.sistema}</span>
+                  <span className="text-right tabular-nums">{x.detalhe ? `${x.detalhe} · ` : ''}{x.pontos}/{x.maximo}</span>
+                </li>
+              ))}
+            </ul>
+            {ph.parcial && <p className="text-xs text-atencao">* Faltou medir: {ph.faltando.join(', ')}. Variável não medida não soma ponto.</p>}
+            <p className="text-xs text-muted-foreground">{ph.fonte} {ph.notas}</p>
+          </>
+        )}
+      </Secao>
+      {a.pelod2?.indicado && (
+        <Secao titulo="PELOD-2">
+          <p className="text-atencao">PEWS em banda alta: a pendência “PELOD-2 do dia” fica aberta no leito.</p>
+          <p className="text-xs text-muted-foreground">{a.pelod2.mensagem}</p>
+        </Secao>
+      )}
+    </>
+  )
+}
+
 // ── lançar vitais ───────────────────────────────────────────────────────────
 type Conceito = { id: string; nome: string; opcoes: { id: string; rotulo: string }[] }
 const NUMERICOS = [
@@ -297,6 +386,22 @@ const NUMERICOS = [
   ['pressao-arterial-sistolica', 'PAS (mmHg)'],
   ['temperatura', 'Temp. (°C)'],
 ] as const
+// pediatria: o que o Phoenix pede além do PEWS
+const NUMERICOS_PED = [
+  ['pressao-arterial-diastolica', 'PAD (mmHg)'],
+  ['pressao-arterial-media', 'PAM medida (mmHg)'],
+  ['fio2', 'FiO₂ (%)'],
+  ['glasgow', 'Glasgow (3–15)'],
+  ['drogas-vasoativas', 'Vasoativas (nº de drogas)'],
+] as const
+const EXAMES = [
+  ['po2', 'PaO₂ (mmHg)'],
+  ['lactato', 'Lactato (mmol/L)'],
+  ['plaquetas', 'Plaquetas (/mm³, ex.: 95000)'],
+  ['inr', 'INR'],
+  ['d-dimero', 'D-dímero (mg/L FEU)'],
+  ['fibrinogenio', 'Fibrinogênio (mg/dL)'],
+] as const
 
 function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, aoGravar, aoErro }: {
   pacienteId: string; internacaoId: string; pediatrico: boolean; perfilId?: string; aoGravar: () => void; aoErro: (m: string) => void
@@ -304,7 +409,8 @@ function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, aoGravar
   const [aberto, setAberto] = React.useState(false)
   const [v, setV] = React.useState<Record<string, string>>({})
   const categoricos = pediatrico
-    ? [['oxigenio-suplementar', 'Oxigênio'], ['esforco-respiratorio', 'Esforço respiratório'], ['enchimento-capilar', 'Enchimento capilar central']]
+    ? [['oxigenio-suplementar', 'Oxigênio'], ['esforco-respiratorio', 'Esforço respiratório'], ['enchimento-capilar', 'Enchimento capilar central'],
+       ['suporte-respiratorio', 'Suporte respiratório'], ['pupilas', 'Pupilas']]
     : [['oxigenio-suplementar', 'Oxigênio'], ['nivel-consciencia', 'Nível de consciência']]
   const conceitos = useQuery({
     queryKey: ['conceitos-vitais'],
@@ -314,7 +420,7 @@ function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, aoGravar
         .from('conceito')
         .select('id, nome, conceito_opcao(id, rotulo, ordem)')
         .is('unidade_id', null)
-        .eq('categoria', 'sinal_vital')
+        .in('categoria', ['sinal_vital', 'laboratorio'])
       if (error) throw error
       return (data ?? []).map((c) => ({
         id: c.id,
@@ -335,8 +441,9 @@ function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, aoGravar
           if (c.opcoes.length > 0) {
             return novoItem('observacao', { internacao_id: internacaoId, paciente_id: pacienteId, conceito_id: c.id, valor_conceito_id: x, origem: 'manual' })
           }
-          const n = Number(x.replace(',', '.'))
+          const n = Number(x.replace(/\./g, nome === 'plaquetas' ? '' : '.').replace(',', '.'))
           if (Number.isNaN(n)) throw new Error(`Valor inválido em ${nome}.`)
+          if (nome === 'plaquetas' && n < 1000) throw new Error('Plaquetas em /mm³ (ex.: 95000), não em milhares.')
           return novoItem('observacao', { internacao_id: internacaoId, paciente_id: pacienteId, conceito_id: c.id, valor_num: n, origem: 'manual' })
         })
       if (itens.length === 0) throw new Error('Preencha ao menos um sinal vital.')
@@ -363,6 +470,12 @@ function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, aoGravar
             <Input id={`v-${nome}`} inputMode="decimal" value={v[nome] ?? ''} onChange={(e) => setV({ ...v, [nome]: e.target.value })} />
           </div>
         ))}
+        {pediatrico && NUMERICOS_PED.map(([nome, rotulo]) => (
+          <div key={nome} className="flex flex-col gap-1">
+            <Label htmlFor={`v-${nome}`}>{rotulo}</Label>
+            <Input id={`v-${nome}`} inputMode="decimal" value={v[nome] ?? ''} onChange={(e) => setV({ ...v, [nome]: e.target.value })} />
+          </div>
+        ))}
         {categoricos.map(([nome, rotulo]) => {
           const c = conceitos.data?.find((x) => x.nome === nome)
           return (
@@ -378,6 +491,23 @@ function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, aoGravar
           )
         })}
       </div>
+      {pediatrico && (
+        <>
+          <p className="text-xs text-muted-foreground">
+            Vasoativas: adrenalina, noradrenalina, dopamina, dobutamina, milrinona ou vasopressina, em qualquer dose (Phoenix).
+            Até a prescrição da fase 4, o número é marcado aqui.
+          </p>
+          <div className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Exames (Phoenix)</div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {EXAMES.map(([nome, rotulo]) => (
+              <div key={nome} className="flex flex-col gap-1">
+                <Label htmlFor={`v-${nome}`}>{rotulo}</Label>
+                <Input id={`v-${nome}`} inputMode="decimal" value={v[nome] ?? ''} onChange={(e) => setV({ ...v, [nome]: e.target.value })} />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
       <div className="flex gap-2">
         <Button size="sm" onClick={() => gravar.mutate()} disabled={gravar.isPending || conceitos.isLoading}>
           {gravar.isPending && <Spinner />} Registrar
@@ -430,7 +560,7 @@ function BlocoPendencias({ i, ativa, lista, eu, acao }: { i: Internacao; ativa: 
             {p.impeditiva && <Badge variant="outline">impede a alta</Badge>}
             <span className={`text-xs tabular-nums ${vencida ? 'font-semibold text-critico' : 'text-muted-foreground'}`}>
               {p.prazo ? `${vencida ? 'vencida desde' : 'até'} ${hora(p.prazo)}` : 'sem prazo'}
-              {p.autor_id === eu ? ' · sua' : ''}
+              {p.autor_id === eu ? ' · sua' : p.autor_id === null ? ' · sistema' : ''}
             </span>
             {ativa && p.tipo !== 'observacao' && (
               <Button size="xs" variant="outline" onClick={() => acao(() => rpc('concluir_pendencia', { p_pendencia: p.id })).then(() => setDesfazer(p.id))}>

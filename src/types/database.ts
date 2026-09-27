@@ -798,6 +798,24 @@ export type Database = {
           },
         ]
       }
+      cid_infeccao_regras: {
+        Row: {
+          ate: string
+          de: string
+          grupo: string
+        }
+        Insert: {
+          ate: string
+          de: string
+          grupo: string
+        }
+        Update: {
+          ate?: string
+          de?: string
+          grupo?: string
+        }
+        Relationships: []
+      }
       classificacoes_risco: {
         Row: {
           autor_id: string
@@ -1400,6 +1418,8 @@ export type Database = {
           publico: string | null
           queixa: string
           setor_id: string
+          suspeita_infeccao_em: string | null
+          suspeita_infeccao_por: string | null
           unidade_id: string
           updated_at: string
         }
@@ -1425,6 +1445,8 @@ export type Database = {
           publico?: string | null
           queixa: string
           setor_id: string
+          suspeita_infeccao_em?: string | null
+          suspeita_infeccao_por?: string | null
           unidade_id: string
           updated_at?: string
         }
@@ -1450,6 +1472,8 @@ export type Database = {
           publico?: string | null
           queixa?: string
           setor_id?: string
+          suspeita_infeccao_em?: string | null
+          suspeita_infeccao_por?: string | null
           unidade_id?: string
           updated_at?: string
         }
@@ -1494,6 +1518,13 @@ export type Database = {
             columns: ["setor_id"]
             isOneToOne: false
             referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episodios_suspeita_infeccao_por_fkey"
+            columns: ["suspeita_infeccao_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
             referencedColumns: ["id"]
           },
           {
@@ -3223,13 +3254,15 @@ export type Database = {
       }
       pendencias: {
         Row: {
-          autor_id: string
+          autor_id: string | null
+          chave: string | null
           criada_em: string
           descricao: string
           id: string
           impeditiva: boolean
           internacao_id: string
           motivo_resolucao: string | null
+          origem: string
           paciente_id: string
           prazo: string | null
           resolvida_em: string | null
@@ -3239,13 +3272,15 @@ export type Database = {
           unidade_id: string
         }
         Insert: {
-          autor_id: string
+          autor_id?: string | null
+          chave?: string | null
           criada_em?: string
           descricao: string
           id?: string
           impeditiva?: boolean
           internacao_id: string
           motivo_resolucao?: string | null
+          origem?: string
           paciente_id: string
           prazo?: string | null
           resolvida_em?: string | null
@@ -3255,13 +3290,15 @@ export type Database = {
           unidade_id: string
         }
         Update: {
-          autor_id?: string
+          autor_id?: string | null
+          chave?: string | null
           criada_em?: string
           descricao?: string
           id?: string
           impeditiva?: boolean
           internacao_id?: string
           motivo_resolucao?: string | null
+          origem?: string
           paciente_id?: string
           prazo?: string | null
           resolvida_em?: string | null
@@ -4489,6 +4526,14 @@ export type Database = {
         }
         Returns: string
       }
+      alertas_sepse: {
+        Args: { p_unidade: string }
+        Returns: {
+          nivel: string
+          paciente_id: string
+          total: number
+        }[]
+      }
       aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
       aprovar_troca: { Args: { p_troca: string }; Returns: undefined }
       buscar_pacientes: {
@@ -4867,6 +4912,10 @@ export type Database = {
       }
       marcar_lida: { Args: { p_conversa_id: string }; Returns: undefined }
       marcar_notificacao_lida: { Args: { p_id: string }; Returns: undefined }
+      marcar_suspeita_infeccao: {
+        Args: { p_ativa: boolean; p_paciente: string }
+        Returns: undefined
+      }
       meu_plantao_agora: {
         Args: never
         Returns: {

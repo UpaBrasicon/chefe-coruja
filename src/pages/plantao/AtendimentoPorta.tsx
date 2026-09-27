@@ -21,6 +21,7 @@ import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { CamposVitais } from '@/components/clinico/CamposVitais'
 import { BotaoChamar } from '@/components/porta/Chamada'
+import { SepsePorta } from '@/components/internacao/LeitoAberto'
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 
 // Atendimento médico no Pronto Socorro (Fase 2.4): fila médica (cor → 80+ →
@@ -294,6 +295,14 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
               </Button>
             </CardContent>
           </Card>
+
+          {ep.publico === 'pediatrico' && (
+            <Card>
+              <CardContent className="pt-4">
+                <SepsePorta pacienteId={ep.paciente_id} />
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>

@@ -145,6 +145,18 @@ export default function InternacaoPainel({
       return new Map((data ?? []).map((p) => [p.paciente_id, p.prazo as string]))
     },
   })
+  // Pediatria com infecção: Phoenix calculado no servidor (Fase 3.7)
+  const { data: alertasSepse } = useQuery({
+    queryKey: ['alertas-sepse', unidadeId],
+    enabled: !!unidadeId,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('alertas_sepse', { p_unidade: unidadeId! })
+      if (error) throw error
+      return new Map((data ?? []).map((a) => [a.paciente_id, a]))
+    },
+  })
+
   const observacaoVencendo = React.useMemo(() => {
     if (!agora || !prazosObservacao) return []
     return (pacientes ?? [])
@@ -395,7 +407,12 @@ export default function InternacaoPainel({
                     ) : (
                       internados.map((p) => (
                         <div key={p.id} className="rounded-lg border p-2">
-                          <div className="font-medium">{p.nome}</div>
+                          <div className="flex flex-wrap items-center gap-1.5 font-medium">
+                            {p.nome}
+                            {alertasSepse?.get(p.id)?.nivel === 'choque' && <Badge variant="destructive">Phoenix {alertasSepse.get(p.id)!.total} · choque séptico?</Badge>}
+                            {alertasSepse?.get(p.id)?.nivel === 'sepse' && <Badge variant="destructive">Phoenix {alertasSepse.get(p.id)!.total} · sepse?</Badge>}
+                            {alertasSepse?.get(p.id)?.nivel === 'rastreio' && <Badge variant="outline">Phoenix {alertasSepse.get(p.id)!.total}</Badge>}
+                          </div>
                           <div className="text-xs text-muted-foreground">
                             {p.sexo ? `${p.sexo} · ` : ''}
                             {p.data_nascimento ? p.data_nascimento.slice(0, 10).split('-').reverse().join('/') : '—'}
