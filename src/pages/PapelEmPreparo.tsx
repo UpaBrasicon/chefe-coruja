@@ -12,7 +12,6 @@ import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 const QUANDO: Partial<Record<Papel, string>> = {
   enfermeiro: 'Fase 2 — triagem e classificação de risco; Fase 3 — cuidados, sinais vitais e passagem de plantão.',
   tecnico_enfermagem: 'Fase 3 — cuidados, sinais vitais e checagem.',
-  recepcao: 'Fase 2 — ficha de chegada, fila e painel de chamada.',
   farmaceutico: 'Fase 4 — diluição padrão versionada, validação de prescrição e faltas.',
   telemedicina: 'Fase 7 — teleinterconsulta de apoio ao plantonista.',
 }

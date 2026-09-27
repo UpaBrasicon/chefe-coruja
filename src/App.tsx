@@ -16,6 +16,7 @@ import { Spinner } from '@/components/ui/spinner'
 const Login = lazy(() => import('@/pages/Login').then((m) => ({ default: m.Login })))
 const Cadastro = lazy(() => import('@/pages/Cadastro').then((m) => ({ default: m.Cadastro })))
 const PapelEmPreparo = lazy(() => import('@/pages/PapelEmPreparo'))
+const Recepcao = lazy(() => import('@/pages/recepcao/Recepcao'))
 const LinkReceita = lazy(() =>
   import('@/pages/public/LinkReceita').then((m) => ({ default: m.LinkReceita }))
 )
@@ -117,6 +118,11 @@ export default function App() {
                       <Route path="/em-preparo" element={<PapelEmPreparo />} />
 
                       {/* ── Admin ──────────────────────────────────────── */}
+                      {/* Ficha: Recepção, ou quem está de plantão na porta quando não há Recepção */}
+                      <Route element={<RequireRole papeis={['recepcao', 'plantonista', 'gestor']} />}>
+                        <Route path="/recepcao" element={<Recepcao />} />
+                      </Route>
+
                       <Route element={<RequireRole papeis={['admin']} />}>
                         <Route path="/painel" element={<OrganizacaoGrupo />} />
                         <Route path="/gaviao" element={<GaviaoPainel />} />

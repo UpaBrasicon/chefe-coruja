@@ -3,6 +3,7 @@ import {
   Bell,
   Building2,
   CalendarClock,
+  ClipboardList,
   Eye,
   Hospital,
   Hourglass,
@@ -46,7 +47,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   // Papéis novos (ADR 0008): as telas deles chegam com as fases do plano.
   enfermeiro: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
   tecnico_enfermagem: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
-  recepcao: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
+  recepcao: [{ to: '/recepcao', rotulo: 'Recepção', icone: ClipboardList, exato: true }],
   farmaceutico: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
   telemedicina: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
   admin: [

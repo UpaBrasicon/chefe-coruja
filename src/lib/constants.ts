@@ -74,7 +74,7 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   // página honesta em vez de um laço de redirecionamento.
   enfermeiro: '/em-preparo',
   tecnico_enfermagem: '/em-preparo',
-  recepcao: '/em-preparo',
+  recepcao: '/recepcao',
   farmaceutico: '/em-preparo',
   telemedicina: '/em-preparo',
 }

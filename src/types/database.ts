@@ -1116,6 +1116,93 @@ export type Database = {
           },
         ]
       }
+      episodios: {
+        Row: {
+          aberto_por: string
+          chegada_em: string
+          created_at: string
+          desfecho: string | null
+          encerrado_em: string | null
+          encerrado_por: string | null
+          etapa: string
+          id: string
+          paciente_id: string
+          prioridades_legais: string[]
+          queixa: string
+          setor_id: string
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          aberto_por: string
+          chegada_em?: string
+          created_at?: string
+          desfecho?: string | null
+          encerrado_em?: string | null
+          encerrado_por?: string | null
+          etapa?: string
+          id?: string
+          paciente_id: string
+          prioridades_legais?: string[]
+          queixa: string
+          setor_id: string
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          aberto_por?: string
+          chegada_em?: string
+          created_at?: string
+          desfecho?: string | null
+          encerrado_em?: string | null
+          encerrado_por?: string | null
+          etapa?: string
+          id?: string
+          paciente_id?: string
+          prioridades_legais?: string[]
+          queixa?: string
+          setor_id?: string
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episodios_aberto_por_fkey"
+            columns: ["aberto_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episodios_encerrado_por_fkey"
+            columns: ["encerrado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episodios_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episodios_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episodios_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       escala_fixa: {
         Row: {
           ativo: boolean
@@ -2408,43 +2495,76 @@ export type Database = {
       pacientes: {
         Row: {
           ativo: boolean
+          cns: string | null
           cpf: string | null
           created_at: string
           data_nascimento: string | null
+          endereco: string | null
+          estado_civil: string | null
           id: string
+          municipio: string | null
           nome: string
+          nome_mae: string | null
+          nome_social: string | null
           prontuario: string | null
+          responsavel_documento: string | null
+          responsavel_nome: string | null
+          responsavel_parentesco: string | null
+          responsavel_telefone: string | null
           setor_id: string | null
           sexo: string | null
           telefone: string | null
+          uf: string | null
           unidade_id: string
           updated_at: string
         }
         Insert: {
           ativo?: boolean
+          cns?: string | null
           cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
+          endereco?: string | null
+          estado_civil?: string | null
           id?: string
+          municipio?: string | null
           nome: string
+          nome_mae?: string | null
+          nome_social?: string | null
           prontuario?: string | null
+          responsavel_documento?: string | null
+          responsavel_nome?: string | null
+          responsavel_parentesco?: string | null
+          responsavel_telefone?: string | null
           setor_id?: string | null
           sexo?: string | null
           telefone?: string | null
+          uf?: string | null
           unidade_id: string
           updated_at?: string
         }
         Update: {
           ativo?: boolean
+          cns?: string | null
           cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
+          endereco?: string | null
+          estado_civil?: string | null
           id?: string
+          municipio?: string | null
           nome?: string
+          nome_mae?: string | null
+          nome_social?: string | null
           prontuario?: string | null
+          responsavel_documento?: string | null
+          responsavel_nome?: string | null
+          responsavel_parentesco?: string | null
+          responsavel_telefone?: string | null
           setor_id?: string | null
           sexo?: string | null
           telefone?: string | null
+          uf?: string | null
           unidade_id?: string
           updated_at?: string
         }
@@ -2878,6 +2998,7 @@ export type Database = {
           id: string
           nome: string
           ordem: number
+          publico: string
           tipo: Database["public"]["Enums"]["tipo_setor"]
           unidade_id: string
           updated_at: string
@@ -2889,6 +3010,7 @@ export type Database = {
           id?: string
           nome: string
           ordem?: number
+          publico?: string
           tipo: Database["public"]["Enums"]["tipo_setor"]
           unidade_id: string
           updated_at?: string
@@ -2900,6 +3022,7 @@ export type Database = {
           id?: string
           nome?: string
           ordem?: number
+          publico?: string
           tipo?: Database["public"]["Enums"]["tipo_setor"]
           unidade_id?: string
           updated_at?: string
@@ -3536,6 +3659,20 @@ export type Database = {
       }
       aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
       aprovar_troca: { Args: { p_troca: string }; Returns: undefined }
+      buscar_pacientes: {
+        Args: { p_termo: string; p_unidade: string }
+        Returns: {
+          cns_final: string
+          cpf_final: string
+          data_nascimento: string
+          episodio_etapa: string
+          id: string
+          nome: string
+          nome_mae: string
+          nome_social: string
+          prontuario: string
+        }[]
+      }
       censo_recente: {
         Args: { p_dias?: number; p_unidade: string }
         Returns: {
@@ -3835,6 +3972,17 @@ export type Database = {
           p_tipo_evento: string
         }
         Returns: undefined
+      }
+      registrar_ficha: {
+        Args: {
+          p_dados?: Json
+          p_outra_pessoa?: boolean
+          p_paciente?: string
+          p_prioridades?: string[]
+          p_queixa: string
+          p_setor: string
+        }
+        Returns: Json
       }
       registrar_impressao: {
         Args: {

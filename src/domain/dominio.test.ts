@@ -79,3 +79,20 @@ test('janela do plantão: noite de 12 h que começou ontem às 19h, às 02h falt
   const agora = new Date('2026-09-26T05:00:00Z')  // 02:00
   assert.deepEqual(tempoDaJanela(inicio, fim, agora), { restante: 300, duracao: 720 })
 })
+
+// ── prioridade legal na fila da triagem ──────────────────────────────────────
+import { ordemTriagem, rotulosPrioridade } from './prioridade.ts'
+
+test('fila da triagem: 80+ antes das demais prioridades, que vêm antes da chegada', () => {
+  const fila = [
+    { id: 'sem', prioridades_legais: [], chegada_em: '2026-09-27T10:00:00Z' },
+    { id: 'gestante', prioridades_legais: ['gestante'], chegada_em: '2026-09-27T10:20:00Z' },
+    { id: '80', prioridades_legais: ['idoso_60', 'idoso_80'], chegada_em: '2026-09-27T10:30:00Z' },
+    { id: '60', prioridades_legais: ['idoso_60'], chegada_em: '2026-09-27T10:10:00Z' },
+  ].sort(ordemTriagem)
+  assert.deepEqual(fila.map((f) => f.id), ['80', '60', 'gestante', 'sem'])
+})
+
+test('rótulo: 80+ aparece uma vez, sem repetir 60+', () => {
+  assert.deepEqual(rotulosPrioridade(['idoso_60', 'idoso_80', 'pcd']), ['80 anos ou mais', 'Pessoa com deficiência'])
+})
