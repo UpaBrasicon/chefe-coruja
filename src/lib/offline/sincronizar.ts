@@ -7,7 +7,7 @@ import { agoraServidor, situacaoSemConexao, sincronizarRelogio, ultimoContato } 
 // com o mesmo id — vai para a fila e é reenviado depois. O servidor é
 // idempotente, então um envio que "talvez tenha chegado" pode ser repetido.
 
-type Resposta = { id: string; status: 'gravado' | 'ja_recebido' | 'recusado'; motivo?: string }
+type Resposta = { id: string; status: 'gravado' | 'ja_recebido' | 'em_revisao' | 'recusado'; motivo?: string }
 
 export type ResultadoGravacao = { gravados: number; naFila: number; recusados: string[] }
 

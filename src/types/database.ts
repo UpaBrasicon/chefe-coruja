@@ -2914,6 +2914,83 @@ export type Database = {
           },
         ]
       }
+      sincronizacao_revisao: {
+        Row: {
+          aparelho_id: string | null
+          autor_id: string
+          dados: Json
+          decidido_em: string | null
+          decidido_por: string | null
+          decisao: string | null
+          hora_fato: string
+          id: string
+          motivo: string | null
+          paciente_id: string
+          recebido_em: string
+          tipo: string
+          unidade_id: string
+        }
+        Insert: {
+          aparelho_id?: string | null
+          autor_id: string
+          dados: Json
+          decidido_em?: string | null
+          decidido_por?: string | null
+          decisao?: string | null
+          hora_fato: string
+          id: string
+          motivo?: string | null
+          paciente_id: string
+          recebido_em?: string
+          tipo: string
+          unidade_id: string
+        }
+        Update: {
+          aparelho_id?: string | null
+          autor_id?: string
+          dados?: Json
+          decidido_em?: string | null
+          decidido_por?: string | null
+          decisao?: string | null
+          hora_fato?: string
+          id?: string
+          motivo?: string | null
+          paciente_id?: string
+          recebido_em?: string
+          tipo?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sincronizacao_revisao_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sincronizacao_revisao_decidido_por_fkey"
+            columns: ["decidido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sincronizacao_revisao_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sincronizacao_revisao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solicitacoes_escala: {
         Row: {
           anexo_url: string | null
@@ -3489,6 +3566,10 @@ export type Database = {
         Returns: undefined
       }
       data_atual: { Args: never; Returns: string }
+      decidir_revisao_sincronizacao: {
+        Args: { p_aceitar: boolean; p_id: string; p_motivo: string }
+        Returns: undefined
+      }
       diluicao_publicada: {
         Args: { p_medicamento: string }
         Returns: {
@@ -3785,6 +3866,22 @@ export type Database = {
           nome: string
           noturnos: number
           perfil_id: string
+        }[]
+      }
+      revisoes_sem_conexao: {
+        Args: { p_unidade: string }
+        Returns: {
+          autor_nome: string
+          dados: Json
+          decidido_em: string
+          decidido_por_nome: string
+          decisao: string
+          hora_fato: string
+          id: string
+          motivo: string
+          paciente_nome: string
+          recebido_em: string
+          tipo: string
         }[]
       }
       salvar_documento: {
