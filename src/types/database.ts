@@ -655,6 +655,102 @@ export type Database = {
           },
         ]
       }
+      classificacoes_risco: {
+        Row: {
+          autor_id: string
+          autor_papel: string
+          avaliacao: Json
+          cor: string
+          criado_em: string
+          discriminador: string | null
+          discriminador_cor: string | null
+          episodio_id: string
+          fluxograma_id: string | null
+          fluxograma_nome: string | null
+          id: string
+          justificativa: string | null
+          motivo: string | null
+          paciente_id: string
+          publico: string
+          reclassificacao: boolean
+          unidade_id: string
+        }
+        Insert: {
+          autor_id: string
+          autor_papel: string
+          avaliacao?: Json
+          cor: string
+          criado_em?: string
+          discriminador?: string | null
+          discriminador_cor?: string | null
+          episodio_id: string
+          fluxograma_id?: string | null
+          fluxograma_nome?: string | null
+          id?: string
+          justificativa?: string | null
+          motivo?: string | null
+          paciente_id: string
+          publico: string
+          reclassificacao?: boolean
+          unidade_id: string
+        }
+        Update: {
+          autor_id?: string
+          autor_papel?: string
+          avaliacao?: Json
+          cor?: string
+          criado_em?: string
+          discriminador?: string | null
+          discriminador_cor?: string | null
+          episodio_id?: string
+          fluxograma_id?: string | null
+          fluxograma_nome?: string | null
+          id?: string
+          justificativa?: string | null
+          motivo?: string | null
+          paciente_id?: string
+          publico?: string
+          reclassificacao?: boolean
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classificacoes_risco_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classificacoes_risco_episodio_id_fkey"
+            columns: ["episodio_id"]
+            isOneToOne: false
+            referencedRelation: "episodios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classificacoes_risco_fluxograma_id_fkey"
+            columns: ["fluxograma_id"]
+            isOneToOne: false
+            referencedRelation: "protocolo_fluxogramas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classificacoes_risco_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classificacoes_risco_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conceito: {
         Row: {
           ativo: boolean
@@ -1120,6 +1216,8 @@ export type Database = {
         Row: {
           aberto_por: string
           chegada_em: string
+          classificado_em: string | null
+          cor_atual: string | null
           created_at: string
           desfecho: string | null
           encerrado_em: string | null
@@ -1128,6 +1226,7 @@ export type Database = {
           id: string
           paciente_id: string
           prioridades_legais: string[]
+          publico: string | null
           queixa: string
           setor_id: string
           unidade_id: string
@@ -1136,6 +1235,8 @@ export type Database = {
         Insert: {
           aberto_por: string
           chegada_em?: string
+          classificado_em?: string | null
+          cor_atual?: string | null
           created_at?: string
           desfecho?: string | null
           encerrado_em?: string | null
@@ -1144,6 +1245,7 @@ export type Database = {
           id?: string
           paciente_id: string
           prioridades_legais?: string[]
+          publico?: string | null
           queixa: string
           setor_id: string
           unidade_id: string
@@ -1152,6 +1254,8 @@ export type Database = {
         Update: {
           aberto_por?: string
           chegada_em?: string
+          classificado_em?: string | null
+          cor_atual?: string | null
           created_at?: string
           desfecho?: string | null
           encerrado_em?: string | null
@@ -1160,6 +1264,7 @@ export type Database = {
           id?: string
           paciente_id?: string
           prioridades_legais?: string[]
+          publico?: string | null
           queixa?: string
           setor_id?: string
           unidade_id?: string
@@ -2355,6 +2460,7 @@ export type Database = {
           aparelho_id: string | null
           conceito_id: string
           created_at: string
+          episodio_id: string | null
           flag: string
           id: string
           internacao_id: string | null
@@ -2376,6 +2482,7 @@ export type Database = {
           aparelho_id?: string | null
           conceito_id: string
           created_at?: string
+          episodio_id?: string | null
           flag?: string
           id?: string
           internacao_id?: string | null
@@ -2397,6 +2504,7 @@ export type Database = {
           aparelho_id?: string | null
           conceito_id?: string
           created_at?: string
+          episodio_id?: string | null
           flag?: string
           id?: string
           internacao_id?: string | null
@@ -2419,6 +2527,13 @@ export type Database = {
             columns: ["conceito_id"]
             isOneToOne: false
             referencedRelation: "conceito"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "observacao_episodio_id_fkey"
+            columns: ["episodio_id"]
+            isOneToOne: false
+            referencedRelation: "episodios"
             referencedColumns: ["id"]
           },
           {
@@ -2858,6 +2973,65 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      protocolo_fluxogramas: {
+        Row: {
+          discriminadores: Json
+          id: string
+          inclui: string | null
+          nome: string
+          ordem: number
+          protocolo_id: string
+          publico: string
+        }
+        Insert: {
+          discriminadores: Json
+          id?: string
+          inclui?: string | null
+          nome: string
+          ordem: number
+          protocolo_id: string
+          publico: string
+        }
+        Update: {
+          discriminadores?: Json
+          id?: string
+          inclui?: string | null
+          nome?: string
+          ordem?: number
+          protocolo_id?: string
+          publico?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocolo_fluxogramas_protocolo_id_fkey"
+            columns: ["protocolo_id"]
+            isOneToOne: false
+            referencedRelation: "protocolos_classificacao"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocolos_classificacao: {
+        Row: {
+          codigo: string
+          fonte: string
+          id: string
+          tempos: Json
+        }
+        Insert: {
+          codigo: string
+          fonte: string
+          id?: string
+          tempos?: Json
+        }
+        Update: {
+          codigo?: string
+          fonte?: string
+          id?: string
+          tempos?: Json
+        }
+        Relationships: []
       }
       push_subscriptions: {
         Row: {
@@ -3491,6 +3665,7 @@ export type Database = {
           municipio: string | null
           nome: string
           organizacao_id: string
+          protocolo_classificacao_id: string | null
           raio_metros: number
           tipo: Database["public"]["Enums"]["tipo_unidade"]
           uf: string | null
@@ -3508,6 +3683,7 @@ export type Database = {
           municipio?: string | null
           nome: string
           organizacao_id: string
+          protocolo_classificacao_id?: string | null
           raio_metros?: number
           tipo: Database["public"]["Enums"]["tipo_unidade"]
           uf?: string | null
@@ -3525,6 +3701,7 @@ export type Database = {
           municipio?: string | null
           nome?: string
           organizacao_id?: string
+          protocolo_classificacao_id?: string | null
           raio_metros?: number
           tipo?: Database["public"]["Enums"]["tipo_unidade"]
           uf?: string | null
@@ -3537,6 +3714,13 @@ export type Database = {
             columns: ["organizacao_id"]
             isOneToOne: false
             referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unidades_protocolo_classificacao_id_fkey"
+            columns: ["protocolo_classificacao_id"]
+            isOneToOne: false
+            referencedRelation: "protocolos_classificacao"
             referencedColumns: ["id"]
           },
         ]
@@ -3685,6 +3869,20 @@ export type Database = {
           setor_nome: string
           taxa_ocupacao: number
         }[]
+      }
+      classificar_risco: {
+        Args: {
+          p_avaliacao?: Json
+          p_cor: string
+          p_discriminador?: string
+          p_episodio: string
+          p_fluxograma?: string
+          p_justificativa?: string
+          p_motivo?: string
+          p_publico?: string
+          p_sinais: Json
+        }
+        Returns: string
       }
       contatos_chat: {
         Args: never

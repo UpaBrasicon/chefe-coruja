@@ -96,3 +96,17 @@ test('fila da triagem: 80+ antes das demais prioridades, que vêm antes da chega
 test('rótulo: 80+ aparece uma vez, sem repetir 60+', () => {
   assert.deepEqual(rotulosPrioridade(['idoso_60', 'idoso_80', 'pcd']), ['80 anos ou mais', 'Pessoa com deficiência'])
 })
+
+// ── fila médica ──────────────────────────────────────────────────────────────
+import { ordemMedica } from './risco.ts'
+
+test('fila médica: cor primeiro; prioridade legal só desempata dentro da cor', () => {
+  const fila = [
+    { id: 'verde-80', cor_atual: 'verde' as const, prioridades_legais: ['idoso_60', 'idoso_80'], classificado_em: '2026-09-27T10:00:00Z' },
+    { id: 'amarelo-tarde', cor_atual: 'amarelo' as const, prioridades_legais: [], classificado_em: '2026-09-27T10:40:00Z' },
+    { id: 'amarelo-gestante', cor_atual: 'amarelo' as const, prioridades_legais: ['gestante'], classificado_em: '2026-09-27T10:50:00Z' },
+    { id: 'amarelo-cedo', cor_atual: 'amarelo' as const, prioridades_legais: [], classificado_em: '2026-09-27T10:05:00Z' },
+    { id: 'laranja', cor_atual: 'laranja' as const, prioridades_legais: [], classificado_em: '2026-09-27T10:55:00Z' },
+  ].sort(ordemMedica)
+  assert.deepEqual(fila.map((f) => f.id), ['laranja', 'amarelo-gestante', 'amarelo-cedo', 'amarelo-tarde', 'verde-80'])
+})

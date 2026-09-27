@@ -45,7 +45,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true },
   ],
   // Papéis novos (ADR 0008): as telas deles chegam com as fases do plano.
-  enfermeiro: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
+  enfermeiro: [{ to: '/triagem', rotulo: 'Triagem', icone: Stethoscope, exato: true }],
   tecnico_enfermagem: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
   recepcao: [{ to: '/recepcao', rotulo: 'Recepção', icone: ClipboardList, exato: true }],
   farmaceutico: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],

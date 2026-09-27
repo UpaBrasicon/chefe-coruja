@@ -72,7 +72,7 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   plantonista: '/plantonista',
   // As telas dos papéis novos chegam com as fases do plano; até lá, uma
   // página honesta em vez de um laço de redirecionamento.
-  enfermeiro: '/em-preparo',
+  enfermeiro: '/triagem',
   tecnico_enfermagem: '/em-preparo',
   recepcao: '/recepcao',
   farmaceutico: '/em-preparo',
