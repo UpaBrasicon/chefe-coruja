@@ -73,7 +73,7 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   // As telas dos papéis novos chegam com as fases do plano; até lá, uma
   // página honesta em vez de um laço de redirecionamento.
   enfermeiro: '/triagem',
-  tecnico_enfermagem: '/em-preparo',
+  tecnico_enfermagem: '/checagem',
   recepcao: '/recepcao',
   farmaceutico: '/farmacia',
   telemedicina: '/em-preparo',

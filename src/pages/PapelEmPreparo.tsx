@@ -10,7 +10,6 @@ import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 // entra, vê o que está por vir e não recebe tela com dado de demonstração.
 
 const QUANDO: Partial<Record<Papel, string>> = {
-  tecnico_enfermagem: 'Fase 3 — cuidados, sinais vitais e checagem.',
   telemedicina: 'Fase 7 — teleinterconsulta de apoio ao plantonista.',
 }
 

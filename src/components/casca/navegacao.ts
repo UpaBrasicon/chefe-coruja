@@ -3,6 +3,7 @@ import {
   Bell,
   Building2,
   CalendarClock,
+  ClipboardCheck,
   ClipboardList,
   DoorOpen,
   Eye,
@@ -48,8 +49,11 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true },
   ],
   // Papéis novos (ADR 0008): as telas deles chegam com as fases do plano.
-  enfermeiro: [{ to: '/triagem', rotulo: 'Triagem', icone: Stethoscope, exato: true }],
-  tecnico_enfermagem: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
+  enfermeiro: [
+    { to: '/triagem', rotulo: 'Triagem', icone: Stethoscope, exato: true },
+    { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
+  ],
+  tecnico_enfermagem: [{ to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true }],
   recepcao: [{ to: '/recepcao', rotulo: 'Recepção', icone: ClipboardList, exato: true }],
   farmaceutico: [{ to: '/farmacia', rotulo: 'Diluição padrão', curto: 'Diluição', icone: FlaskConical, exato: true }],
   telemedicina: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],

@@ -14,6 +14,7 @@ import { abrirImpressao } from '@/lib/prontuario'
 import { escapeHtml } from '@/lib/utils'
 import { gravarRegistros, novoItem } from '@/lib/offline/sincronizar'
 import { useAuth } from '@/contexts/AuthContext'
+import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -267,6 +268,12 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor }: { pacienteId
       )}
 
       <BlocoPendencias i={i} ativa={ativa} lista={pendencias.data ?? []} eu={eu} acao={acao} />
+
+      {ativa && (
+        <Secao titulo="Exames e agravos">
+          <ExamesEAgravos pacienteId={pacienteId} medico={!ehGestor} />
+        </Secao>
+      )}
 
       {ativa && !ehGestor && <BlocoPassagem i={i} lista={passagens.data ?? []} eu={eu} acao={acao} />}
 

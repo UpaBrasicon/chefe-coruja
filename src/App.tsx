@@ -17,6 +17,7 @@ const Login = lazy(() => import('@/pages/Login').then((m) => ({ default: m.Login
 const Cadastro = lazy(() => import('@/pages/Cadastro').then((m) => ({ default: m.Cadastro })))
 const PapelEmPreparo = lazy(() => import('@/pages/PapelEmPreparo'))
 const Diluicoes = lazy(() => import('@/pages/farmacia/Diluicoes'))
+const Checagem = lazy(() => import('@/pages/enfermagem/Checagem'))
 const Recepcao = lazy(() => import('@/pages/recepcao/Recepcao'))
 const Triagem = lazy(() => import('@/pages/enfermagem/Triagem'))
 const AtendimentoPorta = lazy(() => import('@/pages/plantao/AtendimentoPorta'))
@@ -128,6 +129,11 @@ export default function App() {
                       {/* Ficha: Recepção, ou quem está de plantão na porta quando não há Recepção */}
                       <Route element={<RequireRole papeis={['recepcao', 'plantonista', 'gestor']} />}>
                         <Route path="/recepcao" element={<Recepcao />} />
+                      </Route>
+
+                      {/* Enfermagem: checagem da prescrição (Fase 4.6) */}
+                      <Route element={<RequireRole papeis={['enfermeiro', 'tecnico_enfermagem']} />}>
+                        <Route path="/checagem" element={<Checagem />} />
                       </Route>
 
                       {/* Farmacêutico: diluição padrão versionada (Fase 4.5) */}

@@ -57,6 +57,165 @@ export type Database = {
           },
         ]
       }
+      administracoes: {
+        Row: {
+          horario_previsto: string | null
+          id: string
+          item_id: string
+          motivo: string | null
+          paciente_id: string
+          registrado_em: string
+          registrado_por: string
+          situacao: string
+          unidade_id: string
+        }
+        Insert: {
+          horario_previsto?: string | null
+          id?: string
+          item_id: string
+          motivo?: string | null
+          paciente_id: string
+          registrado_em?: string
+          registrado_por: string
+          situacao: string
+          unidade_id: string
+        }
+        Update: {
+          horario_previsto?: string | null
+          id?: string
+          item_id?: string
+          motivo?: string | null
+          paciente_id?: string
+          registrado_em?: string
+          registrado_por?: string
+          situacao?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "administracoes_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "prescricao_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "administracoes_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "administracoes_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "administracoes_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agravos_notificacao: {
+        Row: {
+          agravo: string
+          cid: string | null
+          episodio_id: string | null
+          id: string
+          internacao_id: string | null
+          motivo_descarte: string | null
+          numero_sinan: string | null
+          paciente_id: string
+          resolvido_em: string | null
+          resolvido_por: string | null
+          situacao: string
+          suspeito_em: string
+          suspeito_por: string
+          unidade_id: string
+        }
+        Insert: {
+          agravo: string
+          cid?: string | null
+          episodio_id?: string | null
+          id?: string
+          internacao_id?: string | null
+          motivo_descarte?: string | null
+          numero_sinan?: string | null
+          paciente_id: string
+          resolvido_em?: string | null
+          resolvido_por?: string | null
+          situacao?: string
+          suspeito_em?: string
+          suspeito_por: string
+          unidade_id: string
+        }
+        Update: {
+          agravo?: string
+          cid?: string | null
+          episodio_id?: string | null
+          id?: string
+          internacao_id?: string | null
+          motivo_descarte?: string | null
+          numero_sinan?: string | null
+          paciente_id?: string
+          resolvido_em?: string | null
+          resolvido_por?: string | null
+          situacao?: string
+          suspeito_em?: string
+          suspeito_por?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agravos_notificacao_episodio_id_fkey"
+            columns: ["episodio_id"]
+            isOneToOne: false
+            referencedRelation: "episodios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agravos_notificacao_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agravos_notificacao_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agravos_notificacao_resolvido_por_fkey"
+            columns: ["resolvido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agravos_notificacao_suspeito_por_fkey"
+            columns: ["suspeito_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agravos_notificacao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alergias_paciente: {
         Row: {
           id: string
@@ -1975,6 +2134,107 @@ export type Database = {
           },
         ]
       }
+      exames_pedidos: {
+        Row: {
+          documento_id: string | null
+          episodio_id: string | null
+          exame: string
+          id: string
+          internacao_id: string | null
+          motivo_cancelamento: string | null
+          paciente_id: string
+          pedido_em: string
+          pedido_por: string
+          resolvido_em: string | null
+          resolvido_por: string | null
+          resultado: string | null
+          situacao: string
+          unidade_id: string
+        }
+        Insert: {
+          documento_id?: string | null
+          episodio_id?: string | null
+          exame: string
+          id?: string
+          internacao_id?: string | null
+          motivo_cancelamento?: string | null
+          paciente_id: string
+          pedido_em?: string
+          pedido_por: string
+          resolvido_em?: string | null
+          resolvido_por?: string | null
+          resultado?: string | null
+          situacao?: string
+          unidade_id: string
+        }
+        Update: {
+          documento_id?: string | null
+          episodio_id?: string | null
+          exame?: string
+          id?: string
+          internacao_id?: string | null
+          motivo_cancelamento?: string | null
+          paciente_id?: string
+          pedido_em?: string
+          pedido_por?: string
+          resolvido_em?: string | null
+          resolvido_por?: string | null
+          resultado?: string | null
+          situacao?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exames_pedidos_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documentos_clinicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exames_pedidos_episodio_id_fkey"
+            columns: ["episodio_id"]
+            isOneToOne: false
+            referencedRelation: "episodios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exames_pedidos_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exames_pedidos_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exames_pedidos_pedido_por_fkey"
+            columns: ["pedido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exames_pedidos_resolvido_por_fkey"
+            columns: ["resolvido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exames_pedidos_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gaviao_relatorios_semanais: {
         Row: {
           detalhes: Json
@@ -3523,6 +3783,7 @@ export type Database = {
           diluicao_versao: number | null
           dose: string | null
           duracao: string | null
+          horarios: string[] | null
           id: string
           justificativa_divergencia: string | null
           medicamento_id: string | null
@@ -3548,6 +3809,7 @@ export type Database = {
           diluicao_versao?: number | null
           dose?: string | null
           duracao?: string | null
+          horarios?: string[] | null
           id?: string
           justificativa_divergencia?: string | null
           medicamento_id?: string | null
@@ -3573,6 +3835,7 @@ export type Database = {
           diluicao_versao?: number | null
           dose?: string | null
           duracao?: string | null
+          horarios?: string[] | null
           id?: string
           justificativa_divergencia?: string | null
           medicamento_id?: string | null
@@ -4733,6 +4996,10 @@ export type Database = {
           total: number
         }[]
       }
+      aprazar: {
+        Args: { p_horarios: string[]; p_item: string }
+        Returns: undefined
+      }
       aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
       aprovar_troca: { Args: { p_troca: string }; Returns: undefined }
       buscar_pacientes: {
@@ -4769,6 +5036,15 @@ export type Database = {
       chamar_paciente: {
         Args: { p_episodio: string; p_sala: string }
         Returns: Json
+      }
+      checar: {
+        Args: {
+          p_horario?: string
+          p_item: string
+          p_motivo?: string
+          p_situacao: string
+        }
+        Returns: string
       }
       classificar_risco: {
         Args: {
@@ -4989,6 +5265,29 @@ export type Database = {
         Returns: string
       }
       excluir_mensagem: { Args: { p_mensagem_id: string }; Returns: undefined }
+      fila_checagem: {
+        Args: never
+        Returns: {
+          descricao: string
+          diluicao_texto: string
+          dose: string
+          horarios: string[]
+          item_id: string
+          local: string
+          paciente_id: string
+          paciente_nome: string
+          posologia: string
+          prescrito_em: string
+          se_necessario: boolean
+          tipo: string
+          ultima_em: string
+          ultima_horario: string
+          ultima_por: string
+          ultima_situacao: string
+          vasoativo: boolean
+          via: string
+        }[]
+      }
       folha_documento: {
         Args: { p_documento: string; p_tipo_impressao?: string }
         Returns: Json
@@ -5162,6 +5461,10 @@ export type Database = {
           unidade_id: string
           unidade_nome: string
         }[]
+      }
+      marcar_agravo: {
+        Args: { p_agravo: string; p_cid?: string; p_paciente: string }
+        Returns: string
       }
       marcar_lida: { Args: { p_conversa_id: string }; Returns: undefined }
       marcar_notificacao_lida: { Args: { p_id: string }; Returns: undefined }
@@ -5402,6 +5705,23 @@ export type Database = {
         Returns: string
       }
       remover_fracionamento: { Args: { p_plantao: string }; Returns: undefined }
+      resolver_agravo: {
+        Args: {
+          p_agravo: string
+          p_motivo_descarte?: string
+          p_notificado: boolean
+          p_numero_sinan?: string
+        }
+        Returns: undefined
+      }
+      resolver_exame: {
+        Args: {
+          p_exame: string
+          p_motivo_cancelamento?: string
+          p_resultado?: string
+        }
+        Returns: undefined
+      }
       responder_passagem: {
         Args: { p_aceitar: boolean; p_motivo?: string; p_passagem: string }
         Returns: undefined
