@@ -164,10 +164,11 @@ BEGIN
     RAISE EXCEPTION 'FALHOU: pendência do PELOD-2 (n=%, %)', n, pe;
   END IF;
   RAISE NOTICE 'OK  PEWS alto gera UMA pendência "PELOD-2 do dia", do sistema, mesmo com várias aferições e a rotina';
-  IF NOT (a -> 'pelod2' ->> 'indicado')::boolean OR (a -> 'pelod2' ->> 'referencia_carregada')::boolean THEN
+  IF NOT (a -> 'pelod2' ->> 'indicado')::boolean OR NOT (a -> 'pelod2' ->> 'referencia_carregada')::boolean
+     OR (a -> 'pelod2' ->> 'completo')::boolean THEN
     RAISE EXCEPTION 'FALHOU: situação do PELOD-2 (%)', a -> 'pelod2';
   END IF;
-  RAISE NOTICE 'OK  PELOD-2 indicado, mas sem cálculo até a tabela original ser conferida';
+  RAISE NOTICE 'OK  PELOD-2 indicado e calculado (Tabela 6), ainda incompleto';
 END $$;
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
@@ -183,5 +184,64 @@ DO $$ BEGIN
     RAISE EXCEPTION 'FALHOU: concluída no dia não pode renascer no mesmo dia';
   END IF;
   RAISE NOTICE 'OK  o médico conclui com o motivo; no mesmo dia não volta';
+END $$;
+
+-- ── PELOD-2 calculado (Leteurtre 2013, Tabela 6) ────────────────────────────
+-- Caso montado pela tabela: 3 anos e 2 meses (faixa 24-59 meses).
+-- Glasgow pior 8 (1) · pupilas reativas (0) · lactato 6 (1) · PAM 40 (3) ·
+-- creatinina 0,7 mg/dL = 61,9 µmol/L ≥ 51 (2) · P/F 60/1,00 = 60 (2) ·
+-- PaCO2 70 (1) · VMI (3) · leucócitos 1.500 = 1,5 ×10⁹/L (2) ·
+-- plaquetas 100.000 = 100 ×10⁹/L (1) → 16 pontos; logit = 0,91 → 0,7130.
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
+INSERT INTO t SELECT 'epel', public.registrar_ficha('22000000-0000-4000-8000-000000000003', 'Febre', NULL,
+  json_build_object('nome', 'Pelod Tres Anos', 'data_nascimento', (current_date - interval '3 years 2 months')::date)::jsonb) ->> 'episodio_id';
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
+SELECT public.classificar_risco(pg_temp.u('epel'), 'amarelo',
+  '{"frequencia-cardiaca":120,"frequencia-respiratoria":30,"temperatura":39.0,"saturacao-o2":97,"escala-dor":2}',
+  (SELECT id FROM public.protocolo_fluxogramas WHERE publico = 'pediatrico' AND nome = 'Alterações cardíacas'), 'História de lipotimia');
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
+SELECT public.iniciar_atendimento(pg_temp.u('epel'));
+SELECT public.registrar_soap(pg_temp.u('epel'), 'febre', 'grave', 'choque?', 'UTI', 'A41.9');
+SELECT public.registrar_desfecho(pg_temp.u('epel'), 'observacao');
+RESET ROLE;
+INSERT INTO t SELECT 'ppel', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('epel');
+SELECT pg_temp.aferir(pg_temp.u('ppel'), '{"frequencia-respiratoria":3}');         -- zona azul → PEWS alto → pendência
+SELECT pg_temp.aferir(pg_temp.u('ppel'), '{"glasgow":14}');
+SELECT pg_temp.aferir(pg_temp.u('ppel'), '{"fio2":100}');
+SELECT pg_temp.aferir(pg_temp.u('ppel'), '{"glasgow":8,"pupilas":"reativas","lactato":6,"pressao-arterial-media":40,"creatinina":0.7}');
+DO $$ BEGIN
+  IF (SELECT situacao FROM public.pendencias WHERE paciente_id = pg_temp.u('ppel') AND chave LIKE 'pelod2:%') <> 'aberta' THEN
+    RAISE EXCEPTION 'FALHOU: pendência fechou com o PELOD-2 incompleto';
+  END IF;
+  RAISE NOTICE 'OK  com variáveis faltando, a pendência do PELOD-2 segue aberta';
+END $$;
+SELECT pg_temp.aferir(pg_temp.u('ppel'), '{"po2":60,"pco2":70,"suporte-respiratorio":"vmi","leucocitos":1500,"plaquetas":100000}');
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
+INSERT INTO t SELECT 'apel', public.acuidade(pg_temp.u('ppel'))::text;
+RESET ROLE;
+DO $$
+DECLARE p jsonb := pg_temp.v('apel') -> 'pelod2'; pe public.pendencias;
+BEGIN
+  IF NOT (p ->> 'referencia_carregada')::boolean OR (p ->> 'total')::int <> 16 OR (p ->> 'mortalidade_prevista')::numeric <> 0.7130
+     OR NOT (p ->> 'completo')::boolean THEN
+    RAISE EXCEPTION 'FALHOU: PELOD-2 do caso da tabela (%)', p;
+  END IF;
+  RAISE NOTICE 'OK  PELOD-2 = 16 pelo caso da Tabela 6, com o pior valor de 24 h (Glasgow 8, não 14); mortalidade prevista 0,7130';
+  IF NOT EXISTS (SELECT 1 FROM jsonb_array_elements(p -> 'itens') x WHERE x ->> 'grupo' = 'Renal' AND (x ->> 'pontos')::int = 2
+                   AND x ->> 'valor' LIKE '0.7 mg/dL = 62 µmol/L%') THEN
+    RAISE EXCEPTION 'FALHOU: creatinina convertida só para comparar (%)', p -> 'itens';
+  END IF;
+  RAISE NOTICE 'OK  creatinina em mg/dL comparada em µmol/L (×88,4), com os dois valores na tela';
+  SELECT * INTO pe FROM public.pendencias WHERE paciente_id = pg_temp.u('ppel') AND chave LIKE 'pelod2:%';
+  IF pe.situacao <> 'concluida' OR pe.motivo_resolucao <> 'PELOD-2 do dia completo: 16 pontos' OR pe.resolvida_por IS NOT NULL THEN
+    RAISE EXCEPTION 'FALHOU: pendência não se resolveu com o PELOD-2 completo (%)', pe;
+  END IF;
+  RAISE NOTICE 'OK  a pendência do dia se resolve sozinha quando as 10 variáveis estão registradas';
+  IF (private.calcular_pelod2(pg_temp.u('ppel'), 200) -> 'itens' -> 4 ->> 'pontos')::int <> 0 THEN
+    RAISE EXCEPTION 'FALHOU: faixa ≥ 144 meses da creatinina (≥ 93 µmol/L)';
+  END IF;
+  RAISE NOTICE 'OK  a mesma creatinina (62 µmol/L) não pontua na faixa de 144 meses ou mais';
 END $$;
 ROLLBACK;

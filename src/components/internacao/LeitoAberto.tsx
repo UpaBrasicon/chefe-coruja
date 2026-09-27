@@ -45,7 +45,17 @@ type Acuidade = {
   fonte?: string
   aferido_em?: string | null
   phoenix?: Phoenix
-  pelod2?: { indicado: boolean; referencia_carregada: boolean; mensagem: string }
+  pelod2?: {
+    indicado: boolean
+    referencia_carregada: boolean
+    total: number
+    completo: boolean
+    mortalidade_prevista: number
+    itens: { grupo: string; rotulo: string; valor: string | number | null; pontos: number }[]
+    faltando: string[]
+    fonte: string
+    notas: string
+  }
 }
 type Phoenix = {
   total: number
@@ -368,9 +378,26 @@ function BlocoSepse({ a, pacienteId, podeMarcar, acao }: { a: Acuidade; paciente
         )}
       </Secao>
       {a.pelod2?.indicado && (
-        <Secao titulo="PELOD-2">
-          <p className="text-atencao">PEWS em banda alta: a pendência “PELOD-2 do dia” fica aberta no leito.</p>
-          <p className="text-xs text-muted-foreground">{a.pelod2.mensagem}</p>
+        <Secao titulo="PELOD-2 · disfunção orgânica">
+          <div className="flex flex-wrap items-baseline gap-2 rounded-lg border border-fio px-3 py-2">
+            <span className="text-2xl font-semibold tabular-nums">{a.pelod2.total}{a.pelod2.completo ? '' : '*'}</span>
+            <span className="font-medium">pontos</span>
+            <span className="text-tinta-apoio">· mortalidade prevista na coorte de origem {(a.pelod2.mortalidade_prevista * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</span>
+          </div>
+          <ul className="grid gap-x-4 gap-y-0.5 sm:grid-cols-2">
+            {a.pelod2.itens.map((x) => (
+              <li key={x.rotulo} className="flex justify-between gap-2 border-b border-fio py-0.5 last:border-0">
+                <span className="text-tinta-apoio">{x.rotulo}</span>
+                <span className="text-right tabular-nums">{x.valor ?? '—'} · {x.pontos} pt</span>
+              </li>
+            ))}
+          </ul>
+          {!a.pelod2.completo && (
+            <p className="text-xs text-atencao">
+              * Não medidos (contam como normais): {a.pelod2.faltando.join(', ')}. A pendência “PELOD-2 do dia” fecha sozinha quando as 10 variáveis estiverem registradas.
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground">{a.pelod2.fonte} {a.pelod2.notas}</p>
         </Secao>
       )}
     </>
@@ -395,7 +422,10 @@ const NUMERICOS_PED = [
   ['drogas-vasoativas', 'Vasoativas (nº de drogas)'],
 ] as const
 const EXAMES = [
-  ['po2', 'PaO₂ (mmHg)'],
+  ['po2', 'PaO₂ arterial (mmHg)'],
+  ['pco2', 'PaCO₂ (mmHg)'],
+  ['creatinina', 'Creatinina (mg/dL)'],
+  ['leucocitos', 'Leucócitos (/mm³, ex.: 1500)'],
   ['lactato', 'Lactato (mmol/L)'],
   ['plaquetas', 'Plaquetas (/mm³, ex.: 95000)'],
   ['inr', 'INR'],
@@ -441,7 +471,8 @@ function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, aoGravar
           if (c.opcoes.length > 0) {
             return novoItem('observacao', { internacao_id: internacaoId, paciente_id: pacienteId, conceito_id: c.id, valor_conceito_id: x, origem: 'manual' })
           }
-          const n = Number(x.replace(/\./g, nome === 'plaquetas' ? '' : '.').replace(',', '.'))
+          const milhar = nome === 'plaquetas' || nome === 'leucocitos'
+          const n = Number(x.replace(/\./g, milhar ? '' : '.').replace(',', '.'))
           if (Number.isNaN(n)) throw new Error(`Valor inválido em ${nome}.`)
           if (nome === 'plaquetas' && n < 1000) throw new Error('Plaquetas em /mm³ (ex.: 95000), não em milhares.')
           return novoItem('observacao', { internacao_id: internacaoId, paciente_id: pacienteId, conceito_id: c.id, valor_num: n, origem: 'manual' })
@@ -497,7 +528,7 @@ function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, aoGravar
             Vasoativas: adrenalina, noradrenalina, dopamina, dobutamina, milrinona ou vasopressina, em qualquer dose (Phoenix).
             Até a prescrição da fase 4, o número é marcado aqui.
           </p>
-          <div className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Exames (Phoenix)</div>
+          <div className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Exames (Phoenix e PELOD-2)</div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {EXAMES.map(([nome, rotulo]) => (
               <div key={nome} className="flex flex-col gap-1">
