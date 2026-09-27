@@ -2265,6 +2265,7 @@ export type Database = {
       observacao: {
         Row: {
           aferido_em: string
+          aparelho_id: string | null
           conceito_id: string
           created_at: string
           flag: string
@@ -2276,6 +2277,7 @@ export type Database = {
           ref_max: number | null
           ref_min: number | null
           registrado_por: string | null
+          sem_conexao: boolean
           unidade: string | null
           unidade_id: string
           valor_conceito_id: string | null
@@ -2284,6 +2286,7 @@ export type Database = {
         }
         Insert: {
           aferido_em?: string
+          aparelho_id?: string | null
           conceito_id: string
           created_at?: string
           flag?: string
@@ -2295,6 +2298,7 @@ export type Database = {
           ref_max?: number | null
           ref_min?: number | null
           registrado_por?: string | null
+          sem_conexao?: boolean
           unidade?: string | null
           unidade_id: string
           valor_conceito_id?: string | null
@@ -2303,6 +2307,7 @@ export type Database = {
         }
         Update: {
           aferido_em?: string
+          aparelho_id?: string | null
           conceito_id?: string
           created_at?: string
           flag?: string
@@ -2314,6 +2319,7 @@ export type Database = {
           ref_max?: number | null
           ref_min?: number | null
           registrado_por?: string | null
+          sem_conexao?: boolean
           unidade?: string | null
           unidade_id?: string
           valor_conceito_id?: string | null
@@ -3477,6 +3483,7 @@ export type Database = {
           setor_nome: string
         }[]
       }
+      contexto_sem_conexao: { Args: never; Returns: Json }
       dar_alta_internado: {
         Args: { p_motivo?: string; p_paciente: string; p_tipo_alta: string }
         Returns: undefined
@@ -3822,6 +3829,7 @@ export type Database = {
           tipo: string
         }[]
       }
+      sincronizar_registros: { Args: { p_itens: Json }; Returns: Json }
       solicitar_troca: {
         Args: { p_mensagem?: string; p_plantao_a: string; p_plantao_b: string }
         Returns: string

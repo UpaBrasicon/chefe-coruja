@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { getSerieObservacao, type SerieObservacao } from '@/lib/observacao'
+import { gravarRegistros, novoItem } from '@/lib/offline/sincronizar'
 import { useInternacaoAtiva } from '@/hooks/useDocumentos'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -111,20 +112,19 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
           if (!c) throw new Error(`Conceito ${nome} não encontrado`)
           const num = Number(v.replace(',', '.'))
           if (Number.isNaN(num)) throw new Error(`Valor inválido para ${nome}`)
-          return {
-            unidade_id: unidadeId,
+          // autor e hora vêm do servidor/relógio do servidor, não daqui
+          return novoItem('observacao', {
             internacao_id: internacao.id,
             paciente_id: pacienteId,
             conceito_id: c.id,
-            aferido_em: new Date().toISOString(),
-            registrado_por: perfilId,
             valor_num: num,
             origem: 'manual',
-          }
+          })
         })
-      if (linhas.length === 0) return
-      const { error } = await supabase.from('observacao').insert(linhas)
-      if (error) throw error
+      if (linhas.length === 0) return null
+      const r = await gravarRegistros(perfilId, linhas)
+      if (r.recusados.length > 0) throw new Error(r.recusados[0].replace(/^SYNC_[A-Z_]+: /, ''))
+      return r
     },
     onSuccess: () => {
       setForm({})
@@ -290,7 +290,11 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
                 <p className="text-sm text-critico">{(registrar.error as Error).message}</p>
               )}
               {registrar.isSuccess && (
-                <p className="text-sm text-conforme">Sinais vitais registrados.</p>
+                <p className="text-sm text-conforme">
+                  {registrar.data?.naFila
+                    ? 'Sem conexão: sinais vitais guardados neste aparelho. Serão enviados quando a conexão voltar.'
+                    : 'Sinais vitais registrados.'}
+                </p>
               )}
               <div className="flex justify-end gap-2">
                 <Button variant="ghost" onClick={() => setForm({})}>

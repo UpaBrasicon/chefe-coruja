@@ -11,6 +11,11 @@ VALUES ('21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-0000000
         '10000000-0000-4000-8000-000000000002', private.data_atual(), 'manha', now() - interval '1 hour', 360);
 ALTER TABLE public.escala_plantao ENABLE TRIGGER trg_escala_janela;
 
+-- aberturas reais feitas no banco local não podem contaminar o teste
+ALTER TABLE public.log_acesso_prontuario DISABLE TRIGGER trg_acesso_so_insercao;
+DELETE FROM public.log_acesso_prontuario WHERE acessado_por = '10000000-0000-4000-8000-000000000002';
+ALTER TABLE public.log_acesso_prontuario ENABLE TRIGGER trg_acesso_so_insercao;
+
 -- uma prescrição do plantonista para o paciente Um (Clínica Médica)
 INSERT INTO public.prescricoes (unidade_id, paciente_id, medico_id, status)
 VALUES ('21000000-0000-4000-8000-000000000001', '23000000-0000-4000-8000-000000000001',

@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { DesfazerProvider } from '@/contexts/DesfazerContext'
 import { usePlantao } from '@/hooks/usePlantao'
+import { useFilaOffline } from '@/hooks/useFilaOffline'
 import { useWebPush } from '@/hooks/useWebPush'
 import { useChatRealtimeGlobal, useTotalNaoLidas } from '@/hooks/useChat'
 import { ChatDrawer } from '@/components/chat/ChatDrawer'
@@ -186,11 +187,13 @@ export function AppShell() {
   }
 
   // A escala é a porta (ADR 0003): o plantonista só entra se estiver na escala
-  // agora, pelo relógio do servidor, ou com acesso de atendimento.
+  // agora, pelo relógio do servidor. Sem conexão, segue quem já estava em
+  // plantão neste aparelho, nos limites do ADR 0009.
   // Vale para todo papel assistencial: recepção, técnico, enfermeiro,
   // plantonista e telemedicina. Farmacêutico, gestor e admin não entram por escala.
   const entraPorEscala = !!papelAtivo && PAPEIS_POR_ESCALA.includes(papelAtivo)
   const { status: plantaoStatus } = usePlantao(entraPorEscala ? unidadeAtiva?.unidade_id : undefined)
+  const fila = useFilaOffline()
 
   // Lembrete de check-in (a trava foi adiada em 23/08). O último check-in sem
   // check-out é o ativo; `limit(1)` evita o erro do maybeSingle com dois ou
@@ -288,6 +291,20 @@ export function AppShell() {
                 </button>
               )}
               <div className="ml-auto flex items-center gap-0.5">
+                {(!fila.online || fila.pendentes > 0 || fila.recusados > 0) && (
+                  <span
+                    role="status"
+                    className={cn(
+                      'mr-2 inline-flex items-center gap-1.5 rounded-capsula border px-2.5 py-1 text-rotulo font-medium',
+                      fila.recusados > 0 ? 'border-critico/30 text-critico' : 'border-atencao/30 text-atencao'
+                    )}
+                  >
+                    <span className={cn('size-2 rounded-capsula', fila.online ? 'bg-atencao' : 'bg-critico')} aria-hidden />
+                    {!fila.online ? 'Sem conexão' : 'Enviando'}
+                    {fila.pendentes > 0 && ` · ${fila.pendentes} no aparelho`}
+                    {fila.recusados > 0 && ` · ${fila.recusados} recusado${fila.recusados > 1 ? 's' : ''}`}
+                  </span>
+                )}
                 <BotaoTopo rotulo="Buscar (Ctrl+K)" icone={Search} onClick={() => paleta.setAberta(true)}>
                   <span className="hidden min-[900px]:inline">Buscar</span>
                   <kbd className="hidden rounded-[5px] border border-fio px-1 font-mono text-[11px] text-tinta-sussurro min-[900px]:inline">Ctrl K</kbd>
