@@ -1,5 +1,6 @@
 import { Check, Clipboard, Printer, Plus, Trash2 } from 'lucide-react'
 import { abrirImpressao } from '@/lib/prontuario'
+import { usePacienteDaUrl } from '../shared/usePacienteDaUrl'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -81,6 +82,7 @@ export function ReceituarioMedico({
     perfilId,
     carregarReceita
   )
+  usePacienteDaUrl(dados.paciente, (p) => atualizar({ paciente: { ...dados.paciente, ...p } }))
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
   const [copiado, setCopiado] = React.useState(false)
 
@@ -145,7 +147,7 @@ export function ReceituarioMedico({
       dados.paciente.alergias && dados.paciente.alergias.toUpperCase() !== 'NEGA'
         ? `<div style="background:#dc2626;color:#fff;padding:6px;text-align:center;font-weight:800;margin-bottom:10px;">⚠️ ALERGIA: ${escapeHtml(dados.paciente.alergias).toUpperCase()} ⚠️</div>`
         : ''
-    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Receituário' })
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Receituário', documento: { tipo: 'receita', conteudo: JSON.stringify(dados) } })
     if (!impressao) return
     const printWindow = impressao.janela
     printWindow.document.write(`

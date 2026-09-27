@@ -6,7 +6,7 @@
 
 export type ItemSync = {
   id: string
-  tipo: 'observacao'
+  tipo: 'observacao' | 'documento'
   hora: string // ISO, relógio do servidor
   sem_conexao: boolean
   ultimo_contato: string | null

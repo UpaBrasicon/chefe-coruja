@@ -1,5 +1,6 @@
 import { Plus, Printer, Trash2 } from 'lucide-react'
 import { abrirImpressao } from '@/lib/prontuario'
+import { usePacienteDaUrl } from '../shared/usePacienteDaUrl'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -81,6 +82,7 @@ export function PedidoExames({
     perfilId,
     carregarPedido
   )
+  usePacienteDaUrl(dados.paciente, (p) => atualizar({ paciente: { ...dados.paciente, ...p } }))
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
   const [novo, setNovo] = React.useState('')
 
@@ -110,7 +112,7 @@ export function PedidoExames({
     const data = fmtData(dados.paciente.dataAtual)
     const linhas = texto.split(/\n+/).map((l) => l.replace(/^[-*•]\s*/, '')).filter(Boolean)
     const listaHtml = linhas.map((l) => `<div style="margin-bottom:6px;">• ${escapeHtml(l)}</div>`).join('')
-    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Pedido de exames' })
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Pedido de exames', documento: { tipo: 'pedido_exames', conteudo: JSON.stringify(dados) } })
     if (!impressao) return
     const printWindow = impressao.janela
     printWindow.document.write(`

@@ -1,5 +1,6 @@
 import { Printer, Trash2 } from 'lucide-react'
 import { abrirImpressao } from '@/lib/prontuario'
+import { usePacienteDaUrl } from '../shared/usePacienteDaUrl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -86,13 +87,14 @@ export function Encaminhamento({
     perfilId,
     carregarEnc
   )
+  usePacienteDaUrl(dados.paciente, (p) => atualizar({ paciente: { ...dados.paciente, ...p } }))
   const { data: escalaSetores } = useEscalaSetores(unidadeId, perfilId)
 
   async function imprimir() {
     const nome = escapeHtml(dados.paciente.nome).toUpperCase() || '_________________________________'
     const data = fmtData(dados.paciente.dataAtual)
     const hipotese = escapeHtml(dados.paciente.diagnostico) || '____________________'
-    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Encaminhamento' })
+    const impressao = await abrirImpressao({ pacienteId: dados.paciente.paciente_id, internacaoId: null, tipo: 'Encaminhamento', documento: { tipo: 'encaminhamento', conteudo: JSON.stringify(dados) } })
     if (!impressao) return
     const printWindow = impressao.janela
     printWindow.document.write(`

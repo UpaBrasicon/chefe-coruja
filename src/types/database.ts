@@ -1255,6 +1255,7 @@ export type Database = {
       }
       documentos_clinicos: {
         Row: {
+          aparelho_id: string | null
           assinado_em: string | null
           assinatura_id: string | null
           autor_id: string
@@ -1263,19 +1264,24 @@ export type Database = {
           conteudo_hash: string
           created_at: string
           documento_raiz_id: string
+          emitido_em: string | null
+          episodio_id: string | null
           estado: string
           id: string
           internacao_id: string | null
           motivo_retificacao: string | null
+          numero: string | null
           organizacao_id: string
           paciente_id: string
           retificacao_de: string | null
+          sem_conexao: boolean
           tipo_documento: string
           unidade_id: string
           updated_at: string
           versao: number
         }
         Insert: {
+          aparelho_id?: string | null
           assinado_em?: string | null
           assinatura_id?: string | null
           autor_id: string
@@ -1284,19 +1290,24 @@ export type Database = {
           conteudo_hash: string
           created_at?: string
           documento_raiz_id: string
+          emitido_em?: string | null
+          episodio_id?: string | null
           estado?: string
           id?: string
           internacao_id?: string | null
           motivo_retificacao?: string | null
+          numero?: string | null
           organizacao_id: string
           paciente_id: string
           retificacao_de?: string | null
+          sem_conexao?: boolean
           tipo_documento: string
           unidade_id: string
           updated_at?: string
           versao?: number
         }
         Update: {
+          aparelho_id?: string | null
           assinado_em?: string | null
           assinatura_id?: string | null
           autor_id?: string
@@ -1305,13 +1316,17 @@ export type Database = {
           conteudo_hash?: string
           created_at?: string
           documento_raiz_id?: string
+          emitido_em?: string | null
+          episodio_id?: string | null
           estado?: string
           id?: string
           internacao_id?: string | null
           motivo_retificacao?: string | null
+          numero?: string | null
           organizacao_id?: string
           paciente_id?: string
           retificacao_de?: string | null
+          sem_conexao?: boolean
           tipo_documento?: string
           unidade_id?: string
           updated_at?: string
@@ -1323,6 +1338,13 @@ export type Database = {
             columns: ["autor_id"]
             isOneToOne: false
             referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_clinicos_episodio_id_fkey"
+            columns: ["episodio_id"]
+            isOneToOne: false
+            referencedRelation: "episodios"
             referencedColumns: ["id"]
           },
           {
@@ -1833,6 +1855,33 @@ export type Database = {
         }
         Relationships: []
       }
+      hermes_almanaque: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          id: string
+          palavras: string
+          pergunta: string
+          resposta: string
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          id?: string
+          palavras?: string
+          pergunta: string
+          resposta: string
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          id?: string
+          palavras?: string
+          pergunta?: string
+          resposta?: string
+        }
+        Relationships: []
+      }
       hermes_audit_log: {
         Row: {
           created_at: string
@@ -1891,6 +1940,32 @@ export type Database = {
             columns: ["perfil_id"]
             isOneToOne: false
             referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hermes_resumo_unidade: {
+        Row: {
+          atualizado_em: string
+          dados: Json
+          unidade_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          dados: Json
+          unidade_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          dados?: Json
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hermes_resumo_unidade_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: true
+            referencedRelation: "unidades"
             referencedColumns: ["id"]
           },
         ]
@@ -4237,6 +4312,17 @@ export type Database = {
         Returns: undefined
       }
       eh_super_admin: { Args: never; Returns: boolean }
+      emitir_documento: {
+        Args: {
+          p_conteudo: string
+          p_episodio?: string
+          p_motivo?: string
+          p_paciente: string
+          p_retifica?: string
+          p_tipo: string
+        }
+        Returns: Json
+      }
       enviar_mensagem: {
         Args: { p_conversa_id: string; p_corpo: string }
         Returns: string
@@ -4281,6 +4367,108 @@ export type Database = {
           id: string
           mensagem: string
           tipo: string
+        }[]
+      }
+      hermes_acessos_anomalos: {
+        Args: { p_aberturas?: number; p_horas?: number; p_impressoes?: number }
+        Returns: {
+          aberturas: number
+          impressoes: number
+          pacientes_distintos: number
+          perfil_id: string
+          unidade_id: string
+        }[]
+      }
+      hermes_almanaque_buscar: {
+        Args: { p_limite?: number; p_texto: string }
+        Returns: {
+          pergunta: string
+          relevancia: number
+          resposta: string
+        }[]
+      }
+      hermes_buracos_escala: {
+        Args: { p_horas?: number }
+        Returns: {
+          horas_sem_ninguem: number
+          primeira_hora_brasilia: string
+          setor: string
+          unidade_id: string
+        }[]
+      }
+      hermes_cadeia_auditoria: { Args: never; Returns: number }
+      hermes_checkin_pendente: {
+        Args: never
+        Returns: {
+          escala_id: string
+          inicio_brasilia: string
+          perfil_id: string
+          setor: string
+          unidade_id: string
+        }[]
+      }
+      hermes_crm_duplicado: {
+        Args: never
+        Returns: {
+          crm: string
+          perfis: string[]
+          uf_crm: string
+        }[]
+      }
+      hermes_perfis_sem_vinculo: {
+        Args: never
+        Returns: {
+          perfil_id: string
+        }[]
+      }
+      hermes_plantao_do_dia: {
+        Args: { p_dia: string; p_unidade: string }
+        Returns: {
+          duracao_horas: number
+          inicio_brasilia: string
+          profissionais: number
+          setor: string
+        }[]
+      }
+      hermes_plantoes_do_perfil: {
+        Args: { p_dias?: number; p_perfil: string }
+        Returns: {
+          duracao_horas: number
+          em_curso: boolean
+          fim_brasilia: string
+          inicio_brasilia: string
+          setor: string
+          unidade: string
+        }[]
+      }
+      hermes_plantoes_sobrepostos: {
+        Args: { p_horas?: number }
+        Returns: {
+          inicio_a: string
+          inicio_b: string
+          perfil_id: string
+          unidade_a: string
+          unidade_b: string
+        }[]
+      }
+      hermes_porta_resumo: {
+        Args: { p_horas?: number; p_unidade: string }
+        Returns: Json
+      }
+      hermes_revisoes_paradas: {
+        Args: never
+        Returns: {
+          mais_antiga_brasilia: string
+          pendentes: number
+          unidade_id: string
+        }[]
+      }
+      hermes_setores_ocupados_sem_plantao: {
+        Args: never
+        Returns: {
+          leitos_ocupados: number
+          setor_id: string
+          unidade_id: string
         }[]
       }
       horario_servidor: { Args: never; Returns: string }

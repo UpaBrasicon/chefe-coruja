@@ -17,9 +17,10 @@ type Linha = {
   id: string
   paciente_nome: string
   autor_nome: string
+  tipo: string
   hora_fato: string
   recebido_em: string
-  dados: { valor_num?: number; valor_texto?: string; conceito_id?: string }
+  dados: { valor_num?: number; valor_texto?: string; conceito_id?: string; tipo?: string }
   decisao: 'aceito' | 'descartado' | null
   decidido_por_nome: string | null
   motivo: string | null
@@ -97,8 +98,14 @@ export default function RevisaoSemConexao() {
                 </span>
               </div>
               <div className="text-sm text-tinta-apoio">
-                {conceitos?.get(l.dados.conceito_id ?? '') ?? 'Observação'}:{' '}
-                <span className="font-medium tabular-nums">{l.dados.valor_num ?? l.dados.valor_texto ?? '—'}</span>
+                {l.tipo === 'documento' ? (
+                  <>Documento (folha provisória): <span className="font-medium">{(l.dados.tipo ?? '').replace('_', ' ')}</span></>
+                ) : (
+                  <>
+                    {conceitos?.get(l.dados.conceito_id ?? '') ?? 'Observação'}:{' '}
+                    <span className="font-medium tabular-nums">{l.dados.valor_num ?? l.dados.valor_texto ?? '—'}</span>
+                  </>
+                )}
                 {' · '}por {l.autor_nome}
               </div>
               <div className="flex flex-wrap items-center gap-2">

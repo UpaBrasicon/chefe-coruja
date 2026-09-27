@@ -40,18 +40,57 @@ export function esquecerAberturas() {
   aberturas.clear()
 }
 
-type Impressao = { janela: Window; rodape: string }
+type Impressao = { janela: Window; rodape: string; provisoria: boolean }
+
+export type TipoDocumentoPorta = 'atestado' | 'receita' | 'encaminhamento' | 'pedido_exames'
+
+const falhaDeRede = (e: { message?: string } | null) =>
+  !navigator.onLine || (!!e && /fetch|network|timeout/i.test(e.message ?? ''))
+
+/**
+ * Sem conexão: a folha sai PROVISÓRIA (sem número, assinar à mão) e o
+ * documento vai para a fila; ao voltar a conexão recebe número e a impressão
+ * provisória é registrada (ADR 0009, fase 2.5).
+ */
+async function folhaProvisoria(
+  janela: Window,
+  recusar: (m: string) => null,
+  opcoes: { pacienteId: string; documento: { tipo: TipoDocumentoPorta; conteudo: string } }
+): Promise<Impressao | null> {
+  const { situacaoSemConexao, agoraServidor } = await import('@/lib/offline/relogio')
+  const { gravarRegistros, novoItem } = await import('@/lib/offline/sincronizar')
+  const situacao = situacaoSemConexao()
+  if (!situacao.pode) return recusar(`Sem conexão: ${situacao.motivo}`)
+  const { data } = await supabase.auth.getSession()
+  const perfil = data.session?.user.id
+  if (!perfil) return recusar('Sem conexão e sem sessão ativa neste aparelho.')
+  await gravarRegistros(perfil, [
+    novoItem('documento', { paciente_id: opcoes.pacienteId, tipo: opcoes.documento.tipo, conteudo: opcoes.documento.conteudo }),
+  ])
+  const quando = new Date(agoraServidor() ?? Date.now()).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+  const rodape =
+    `<div style="position:fixed;left:0;right:0;top:4mm;text-align:center;font:600 12px system-ui,sans-serif;color:#B91C1C;border:1.5px solid #B91C1C;margin:0 12mm;padding:4px">` +
+    `FOLHA PROVISÓRIA — emitida sem conexão em ${quando}. Sem número definitivo: assinar à mão. O número sai quando a conexão voltar.</div>` +
+    `<div style="position:fixed;left:0;right:0;bottom:6mm;text-align:center;font:9px system-ui,sans-serif;color:#64748B">` +
+    `Chefe Coruja · folha provisória · registro guardado no aparelho para envio</div>`
+  janela.document.open()
+  return { janela, rodape, provisoria: true }
+}
 
 /**
  * Prepara uma impressão registrada. A janela abre JÁ (ainda dentro do clique,
  * senão o navegador bloqueia o pop-up); depois o servidor registra e devolve o
  * protocolo, que vai no rodapé do papel. Sem paciente identificado ou sem
  * registro, não imprime — a janela mostra o motivo.
+ *
+ * Com `documento`, o documento é EMITIDO no episódio antes (número da unidade)
+ * e a impressão fica ligada a ele. Sem conexão, sai a folha provisória.
  */
 export async function abrirImpressao(opcoes: {
   pacienteId?: string | null
   internacaoId?: string | null
   tipo: string
+  documento?: { tipo: TipoDocumentoPorta; conteudo: string }
 }): Promise<Impressao | null> {
   const janela = window.open('', '_blank')
   if (!janela) return null
@@ -71,10 +110,29 @@ export async function abrirImpressao(opcoes: {
   if (!opcoes.pacienteId) {
     return recusar('Selecione ou cadastre o paciente antes de imprimir: toda impressão fica registrada no prontuário dele.')
   }
+  // 1) o documento nasce no episódio (com número), antes do papel
+  let documento: { id: string; numero: string } | null = null
+  if (opcoes.documento) {
+    const { data, error } = await supabase.rpc('emitir_documento', {
+      p_paciente: opcoes.pacienteId,
+      p_tipo: opcoes.documento.tipo,
+      p_conteudo: opcoes.documento.conteudo,
+    })
+    if (error) {
+      if (falhaDeRede(error)) {
+        return folhaProvisoria(janela, recusar, { pacienteId: opcoes.pacienteId, documento: opcoes.documento })
+      }
+      return recusar(`Não foi possível emitir o documento: ${error.message}. Nada foi impresso.`)
+    }
+    documento = data as { id: string; numero: string }
+  }
+
+  // 2) a impressão é registrada (ligada ao documento, quando houver)
   const { data, error } = await supabase.rpc('registrar_impressao', {
     p_paciente: opcoes.pacienteId,
     p_documento_tipo: opcoes.tipo,
     p_internacao: opcoes.internacaoId ?? undefined,
+    p_documento: documento?.id,
   })
   const registro = Array.isArray(data) ? data[0] : null
   if (error || !registro) {
@@ -84,7 +142,7 @@ export async function abrirImpressao(opcoes: {
   const emitido = new Date(registro.emitido_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
   const rodape =
     `<div style="position:fixed;left:0;right:0;bottom:6mm;text-align:center;font:9px system-ui,sans-serif;color:#64748B">` +
-    `Impressão ${registro.protocolo} registrada no Chefe Coruja em ${emitido}</div>`
+    `${documento ? `Documento nº ${documento.numero} · ` : ''}Impressão ${registro.protocolo} registrada no Chefe Coruja em ${emitido}</div>`
   janela.document.open()
-  return { janela, rodape }
+  return { janela, rodape, provisoria: false }
 }

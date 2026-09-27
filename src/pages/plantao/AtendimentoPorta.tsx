@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, ClipboardCheck, DoorOpen, FileText, Stethoscope } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -28,6 +29,7 @@ import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 
 type EpFila = {
   id: string
+  paciente_id: string
   setor_id: string
   cor_atual: CorRisco
   classificado_em: string
@@ -68,6 +70,17 @@ const PEDE_RELATO: Desfecho[] = ['evasao', 'alta_a_pedido', 'obito']
 
 type Classificacao = { id: string; cor: CorRisco; fluxograma_nome: string | null; discriminador: string | null; discriminador_cor: string | null; reclassificacao: boolean; motivo: string | null; justificativa: string | null; criado_em: string; autor_papel: string }
 type Soap = { id: string; subjetivo: string | null; objetivo: string | null; avaliacao: string | null; cid: string | null; plano: string | null; criado_em: string }
+type Documento = { id: string; numero: string | null; tipo_documento: string; created_at: string; emitido_em: string | null; estado: string; sem_conexao: boolean; versao: number }
+const NOME_DOC: Record<string, string> = {
+  atestado: 'Atestado', receita: 'Receita', encaminhamento: 'Encaminhamento', pedido_exames: 'Pedido de exames',
+  boletim_emergencia: 'Boletim de emergência', laudo_aih: 'Laudo de AIH', sumario_alta: 'Sumário de alta',
+}
+const EMITIR = [
+  { slug: 'receituario-medico', rotulo: 'Receita' },
+  { slug: 'atestado-medico', rotulo: 'Atestado' },
+  { slug: 'encaminhamento', rotulo: 'Encaminhamento' },
+  { slug: 'pedido-exames', rotulo: 'Pedido de exames' },
+]
 type Vital = { aferido_em: string; valor_num: number | null; conceito: { nome: string; unidade_padrao: string | null } | null }
 
 function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
@@ -89,16 +102,18 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
     queryKey: ['atendimento', ep.id],
     enabled: aberto,
     queryFn: async () => {
-      const [c, s, v] = await Promise.all([
+      const [c, s, v, d] = await Promise.all([
         supabase.from('classificacoes_risco').select('id, cor, fluxograma_nome, discriminador, discriminador_cor, reclassificacao, motivo, justificativa, criado_em, autor_papel').eq('episodio_id', ep.id).order('criado_em'),
         supabase.from('atendimento_registros').select('id, subjetivo, objetivo, avaliacao, cid, plano, criado_em').eq('episodio_id', ep.id).order('criado_em'),
         supabase.from('observacao').select('aferido_em, valor_num, conceito:conceito(nome, unidade_padrao)').eq('episodio_id', ep.id).order('aferido_em', { ascending: false }),
+        supabase.from('documentos_clinicos').select('id, numero, tipo_documento, created_at, emitido_em, estado, sem_conexao, versao').eq('episodio_id', ep.id).order('created_at'),
       ])
-      for (const r of [c, s, v]) if (r.error) throw r.error
+      for (const r of [c, s, v, d]) if (r.error) throw r.error
       return {
         classificacoes: (c.data ?? []) as unknown as Classificacao[],
         soaps: (s.data ?? []) as unknown as Soap[],
         vitais: (v.data ?? []) as unknown as Vital[],
+        documentos: (d.data ?? []) as unknown as Documento[],
       }
     },
   })
@@ -258,6 +273,34 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
 
           <Card>
             <CardHeader>
+              <CardTitle className="text-base"><FileText className="mr-1 inline size-4" />Documentos do episódio</CardTitle>
+              <CardDescription>Cada emissão é gravada no episódio com número próprio antes de ir para o papel. Sem conexão, sai a folha provisória.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 text-sm">
+              {(dados.data?.documentos ?? []).length === 0 && <p className="text-muted-foreground">Nenhum documento emitido neste episódio.</p>}
+              {(dados.data?.documentos ?? []).map((d) => (
+                <div key={d.id} className="flex flex-wrap items-baseline justify-between gap-2 border-b border-fio pb-1 last:border-0">
+                  <span className="text-tinta">
+                    {NOME_DOC[d.tipo_documento] ?? d.tipo_documento}
+                    {d.versao > 1 && ` (versão ${d.versao})`}
+                    {d.estado === 'retificado' && <span className="text-muted-foreground"> · retificado</span>}
+                    {d.sem_conexao && <Badge variant="outline" className="ml-2">sem conexão</Badge>}
+                  </span>
+                  <span className="text-xs tabular-nums text-muted-foreground">nº {d.numero ?? '—'} · {hora(d.emitido_em ?? d.created_at)}</span>
+                </div>
+              ))}
+              <div className="flex flex-wrap gap-2">
+                {EMITIR.map((x) => (
+                  <Button key={x.slug} size="sm" variant="outline" render={<Link to={`/plantao/atendimento-porta/${x.slug}?paciente=${ep.paciente_id}`} />}>
+                    {x.rotulo}
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle className="text-base">Reclassificar</CardTitle>
               <CardDescription>Só o médico reclassifica: motivo, sinais vitais novos e, para baixar a prioridade, justificativa.</CardDescription>
             </CardHeader>
@@ -342,7 +385,7 @@ export default function AtendimentoPorta() {
       if (setores.length === 0) return []
       const { data, error } = await supabase
         .from('episodios')
-        .select('id, setor_id, cor_atual, classificado_em, chegada_em, queixa, publico, prioridades_legais, atendimento_iniciado_em, paciente:pacientes(nome, nome_social, data_nascimento)')
+        .select('id, paciente_id, setor_id, cor_atual, classificado_em, chegada_em, queixa, publico, prioridades_legais, atendimento_iniciado_em, paciente:pacientes(nome, nome_social, data_nascimento)')
         .in('setor_id', setores)
         .eq('etapa', 'atendimento')
       if (error) throw error
