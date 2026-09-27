@@ -10,6 +10,7 @@
 //   - concentracao_destino: % dos repasses por destino_perfil_id
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from '../lib/supabase.js'
+import { hojeBrasilia } from '../lib/tempo.js'
 import { logger } from '../logger.js'
 
 export type MetricasMedico = {
@@ -62,14 +63,14 @@ async function plantoesDaUnidade(
   unidadeId: string,
   dias: number
 ): Promise<Map<string, { id: string; data: string; turno: string }[]>> {
-  const desde = new Date(Date.now() - dias * 86_400_000).toISOString().slice(0, 10)
+  const desde = hojeBrasilia(-dias)
   const { data, error } = await supabase
     .from('escala_plantao')
     .select('id, perfil_id, data, turno')
     .eq('unidade_id', unidadeId)
     .eq('ativo', true)
     .gte('data', desde)
-    .lte('data', new Date().toISOString().slice(0, 10))
+    .lte('data', hojeBrasilia())
 
   if (error) {
     logger.error({ err: error.message, unidadeId }, '[sentinela] falha ao buscar escala')

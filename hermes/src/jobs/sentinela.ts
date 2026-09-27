@@ -11,6 +11,7 @@
 //      (Telegram via gateway + notificacoes_plantonista in-app)
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from '../lib/supabase.js'
+import { hojeBrasilia } from '../lib/tempo.js'
 import { logger } from '../logger.js'
 import { calcularMetricasUnidade, detectarOutliers, type AlertaSentinela } from '../agent/sentinela.js'
 
@@ -106,7 +107,7 @@ async function notificarGestores(u: { unidadeId: string; unidadeNome: string; al
 
   // Resumo FACTUAL via LLM (DeepSeek) — sem adjetivos
   const resumo = await gerarResumoFactual(u)
-  const texto = `📊 Sentinela de Escala — Unidade ${u.unidadeNome} — semana ${new Date().toISOString().slice(0, 10)}\n\n${resumo}`
+  const texto = `📊 Sentinela de Escala — Unidade ${u.unidadeNome} — semana ${hojeBrasilia()}\n\n${resumo}`
 
   // 1) In-app via ANDORINHA (Íris) — central de notificações (padrão do projeto)
   const { dispatchIrisParaGestores } = await import('./iris.js')

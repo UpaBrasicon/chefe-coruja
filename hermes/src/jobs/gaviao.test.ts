@@ -44,3 +44,20 @@ test('recusa — "não forneço orientação de tratamento" NÃO é clínico (é
   //  palavra genérica "tratamento")
   assert.ok(recusa.includes('tratamento'))
 })
+
+// ── R1 mais preciso (auditoria 27/09) ────────────────────────────────────────
+import { pareceDadoDePaciente, PADROES_RECUSA } from './gaviao.js'
+
+test('R1 — explicar a regra ("nenhum dado de prontuário por aqui") não é dado de paciente', () => {
+  assert.equal(pareceDadoDePaciente('Nenhum dado clínico trafega por aqui: prontuário, diagnóstico e sintomas ficam na plataforma.'), false)
+})
+
+test('R1 — valor de exame, paciente nomeado ou termo + identificador é dado de paciente', () => {
+  assert.equal(pareceDadoDePaciente('A glicemia: 180 às 10h'), true)
+  assert.equal(pareceDadoDePaciente('O paciente João apresenta febre há 3 dias'), true)
+  assert.equal(pareceDadoDePaciente('Diagnóstico do leito 12A: pneumonia'), true)
+})
+
+test('recusa — "não é possível saber de paciente por aqui" é recusa', () => {
+  assert.ok(PADROES_RECUSA.some((re) => re.test('Não, Ricardo — não é possível saber de paciente por aqui.')))
+})

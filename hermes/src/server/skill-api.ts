@@ -31,6 +31,7 @@ import { createHash, timingSafeEqual } from 'node:crypto'
 import type { FastifyInstance } from 'fastify'
 import { env } from '../config/env.js'
 import { logger } from '../logger.js'
+import { hojeBrasilia } from '../lib/tempo.js'
 import { supabase } from '../lib/supabase.js'
 import {
   resolverIdentidadePorCanal,
@@ -105,6 +106,13 @@ function tokenValido(recebido: string | undefined, esperado: string): boolean {
  * unidades às quais o usuário já está vinculado. super_admin pode consultar
  * qualquer unidade (é suporte técnico global).
  */
+/** Papel mais forte que a pessoa tem NAQUELA unidade. */
+export function papelNaUnidade(id: IdentidadeHermes, unidadeId: string): IdentidadeHermes['papel'] {
+  const ordem = ['admin', 'gestor', 'plantonista', 'enfermeiro', 'telemedicina', 'farmaceutico', 'tecnico_enfermagem', 'recepcao']
+  const papeis = id.vinculos.filter((v) => v.unidadeId === unidadeId).map((v) => v.papel)
+  return (ordem.find((p) => papeis.includes(p as never)) as IdentidadeHermes['papel']) ?? null
+}
+
 export function resolverUnidade(
   id: IdentidadeHermes,
   pedida: string | undefined
@@ -135,7 +143,12 @@ async function nomesDaUnidade(unidadeId: string): Promise<Conhecido[]> {
 const STATUS_ALERTA = ['novo', 'visto', 'em_acompanhamento', 'justificado']
 const PATRULHAS = ['dados', 'conteudo', 'hermes']
 const SEVERIDADES = ['critico', 'atencao', 'informativo']
-const STATUS_QUARENTENA = ['pendente', 'analisado', 'liberado']
+
+/** Erro de consulta vira falha (500 no log), nunca "não encontrei nada". */
+function dados<T>(r: { data: T | null; error: { message: string } | null }): T {
+  if (r.error) throw new Error(r.error.message)
+  return (r.data ?? ([] as unknown)) as T
+}
 
 function enumOuNulo(valor: unknown, permitidos: string[]): string | null {
   return typeof valor === 'string' && permitidos.includes(valor) ? valor : null
@@ -146,30 +159,27 @@ async function consultaAguia(comando: string, unidadeId: string | null): Promise
 
   switch (comando) {
     case 'setores': {
-      const { data } = await supabase
+      return dados(await supabase
         .from('setores')
         .select('nome')
         .eq('unidade_id', unidadeId)
         .eq('ativo', true)
-        .order('ordem', { ascending: true })
-      return data ?? []
+        .order('ordem', { ascending: true }))
     }
     case 'censo': {
-      const { data } = await supabase
+      return dados(await supabase
         .from('censo_ocupacao')
         .select('data, turno, internados, leitos_total, leitos_ocupados, leitos_livres, taxa_ocupacao')
         .eq('unidade_id', unidadeId)
         .order('data', { ascending: false })
         .order('turno', { ascending: true })
-        .limit(6)
-      return data ?? []
+        .limit(6))
     }
     case 'indicadores': {
-      const { data } = await supabase
+      return dados(await supabase
         .from('vw_indicadores_unidade')
         .select('unidade_id, unidade_nome, total_pacientes, prescricoes_assinadas, prescricoes_rascunho, receitas_retidas')
-        .eq('unidade_id', unidadeId)
-      return data ?? []
+        .eq('unidade_id', unidadeId))
     }
     case 'profissionais': {
       // Só a CONTAGEM por papel. Nome de colega é dado pessoal e iria ao
@@ -207,16 +217,17 @@ async function consultaGarca(comando: string, unidadeId: string | null): Promise
       return consultaAguia(comando, unidadeId)
     case 'internacoes': {
       // Só a CONTAGEM por status — nunca a lista de pacientes (LGPD).
-      const { data } = await supabase
-        .from('internacoes')
-        .select('status')
-        .eq('unidade_id', unidadeId)
-        .limit(2000)
       const porStatus: Record<string, number> = {}
-      for (const i of (data ?? []) as { status: string }[]) {
-        porStatus[i.status] = (porStatus[i.status] ?? 0) + 1
+      let total = 0
+      for (let de = 0; ; de += 1000) {
+        const pagina = dados<{ status: string }[]>(
+          await supabase.from('internacoes').select('status').eq('unidade_id', unidadeId).order('id').range(de, de + 999)
+        )
+        for (const i of pagina) porStatus[i.status] = (porStatus[i.status] ?? 0) + 1
+        total += pagina.length
+        if (pagina.length < 1000) break
       }
-      return { por_status: porStatus, total: (data ?? []).length }
+      return { por_status: porStatus, total }
     }
     default:
       return { erro: 'comando desconhecido' }
@@ -240,18 +251,16 @@ async function consultaSentinela(
         .limit(25)
       // Gestor/admin veem só a própria unidade. super_admin sem unidade vê tudo.
       if (unidadeId) q = q.eq('unidade_id', unidadeId)
-      const { data } = await q
-      return data ?? []
+      return dados(await q)
     }
     case 'relatorio': {
       // O relatório é GLOBAL (todas as organizações): só suporte técnico.
       if (!superAdmin) return { mensagem: 'O relatório semanal é consultado na plataforma.' }
-      const { data } = await supabase
+      return dados(await supabase
         .from('gaviao_relatorios_semanais')
         .select('periodo_inicio, periodo_fim, resumo, gerado_em')
         .order('periodo_inicio', { ascending: false })
-        .limit(1)
-      return data ?? []
+        .limit(1))
     }
     default:
       return { erro: 'comando desconhecido' }
@@ -271,20 +280,16 @@ async function consultaSeguranca(comando: string, args: Record<string, unknown>)
       const severidade = enumOuNulo(args.severidade, SEVERIDADES)
       if (patrulha) q = q.eq('patrulha', patrulha)
       if (severidade) q = q.eq('severidade', severidade)
-      const { data } = await q
-      return data ?? []
+      return dados(await q)
     }
     case 'quarentena': {
-      let q = supabase
+      const q = supabase
         .from('cerbero_quarentena')
         .select('id, tipo, origem, motivo, liberado, criado_em')
         .eq('liberado', false)
         .order('criado_em', { ascending: false })
         .limit(25)
-      const status = enumOuNulo(args.status, STATUS_QUARENTENA)
-      if (status) q = q.eq('status', status)
-      const { data } = await q
-      return data ?? []
+      return dados(await q)
     }
     default:
       return { erro: 'comando desconhecido' }
@@ -308,7 +313,7 @@ async function consultaOperacional(
     case 'notificacoes': {
       const dias = Number(args.dias)
       const janela = Number.isFinite(dias) && dias > 0 && dias <= 90 ? dias : 7
-      const desde = new Date(Date.now() - janela * 86_400_000).toISOString().slice(0, 10)
+      const desde = hojeBrasilia(-janela)
       // Só os avisos DA PESSOA (a RLS da tabela é perfil_id = eu; o service
       // role não aplica RLS, então o filtro mora aqui).
       const { data, error } = await supabase
@@ -349,21 +354,12 @@ async function consultaEscala(
   switch (comando) {
     case 'meus_plantoes': {
       const periodo = enumOuNulo(args.periodo, ['hoje', 'semana', 'mes']) ?? 'semana'
-      const hoje = new Date()
-      const fim = new Date(hoje)
-      if (periodo === 'mes') fim.setMonth(hoje.getMonth() + 1)
-      else if (periodo === 'semana') fim.setDate(hoje.getDate() + 7)
-
-      const { data } = await supabase
-        .from('escala_plantao')
-        .select('data, turno, rotulo, setores!escala_plantao_setor_id_fkey(nome)')
-        .eq('perfil_id', id.perfilId) // ← nunca o que veio no argumento
-        .eq('ativo', true)
-        .gte('data', hoje.toISOString().slice(0, 10))
-        .lte('data', fim.toISOString().slice(0, 10))
-        .order('data', { ascending: true })
-        .order('turno', { ascending: true })
-      return data ?? []
+      // Janela real do plantão (início + duração), em horário de Brasília,
+      // incluindo o plantão em curso que começou ontem.
+      return dados(await supabase.rpc('hermes_plantoes_do_perfil', {
+        p_perfil: id.perfilId, // ← nunca o que veio no argumento
+        p_dias: periodo === 'hoje' ? 1 : periodo === 'semana' ? 7 : 31,
+      }))
     }
     case 'plantao_do_dia': {
       // Escala de toda a unidade: só gestor/admin (ou suporte global).
@@ -371,25 +367,11 @@ async function consultaEscala(
         return { mensagem: 'Posso mostrar apenas os seus próprios plantões.' }
       }
       if (!unidadeId) return { erro: 'usuário sem unidade vinculada' }
-      const data = typeof args.data === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(args.data)
-        ? args.data
-        : new Date().toISOString().slice(0, 10)
-      // Contagem por setor e turno — sem nomes (ADR 0006; a escala nominal
-      // fica na plataforma).
-      const { data: plantoes, error } = await supabase
-        .from('escala_plantao')
-        .select('turno, setores!escala_plantao_setor_id_fkey(nome)')
-        .eq('unidade_id', unidadeId)
-        .eq('data', data)
-        .eq('ativo', true)
-      if (error) throw new Error(error.message)
-      const cont: Record<string, number> = {}
-      for (const p of (plantoes ?? []) as unknown as { turno: string; setores: { nome: string } | { nome: string }[] | null }[]) {
-        const setor = Array.isArray(p.setores) ? p.setores[0]?.nome : p.setores?.nome
-        const chave = `${setor ?? 'setor'} · ${p.turno}`
-        cont[chave] = (cont[chave] ?? 0) + 1
-      }
-      return { data, profissionais_por_setor_e_turno: cont }
+      const dia = typeof args.data === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(args.data) ? args.data : hojeBrasilia()
+      // Contagem por setor e horário de início — sem nomes (ADR 0006; a
+      // escala nominal fica na plataforma).
+      const linhas = dados(await supabase.rpc('hermes_plantao_do_dia', { p_unidade: unidadeId, p_dia: dia }))
+      return { dia, plantoes: linhas }
     }
     default:
       return { erro: 'comando desconhecido' }
@@ -405,17 +387,19 @@ async function consultaInfra(comando: string): Promise<unknown> {
 
   const [incidentes, quarentena] = await Promise.all([
     supabase.from('cerbero_incidentes').select('severidade').in('status', ['aberto', 'em_analise']).limit(500),
-    supabase.from('cerbero_quarentena').select('id').eq('liberado', false).limit(500),
+    supabase.from('cerbero_quarentena').select('id', { count: 'exact', head: true }).eq('liberado', false),
   ])
+  const lista = dados(incidentes) as { severidade: string }[]
+  if (quarentena.error) throw new Error(quarentena.error.message)
 
   const porSeveridade: Record<string, number> = { critico: 0, atencao: 0, informativo: 0 }
-  for (const i of (incidentes.data ?? []) as { severidade: string }[]) {
+  for (const i of lista) {
     porSeveridade[i.severidade] = (porSeveridade[i.severidade] ?? 0) + 1
   }
   return {
-    incidentes_abertos: (incidentes.data ?? []).length,
+    incidentes_abertos: lista.length,
     por_severidade: porSeveridade,
-    quarentena_pendente: (quarentena.data ?? []).length,
+    quarentena_pendente: quarentena.count ?? 0,
   }
 }
 
@@ -487,6 +471,11 @@ export function registrarSkillApi(app: FastifyInstance): void {
     }
 
     const unidade = resolverUnidade(identidade, typeof args.unidade_id === 'string' ? args.unidade_id : undefined)
+    // O papel que vale é o da unidade consultada: gestor em A e plantonista em
+    // B não consulta B com poder de gestor (auditoria 27/09).
+    if (unidade.ok && unidade.unidadeId && unidade.unidadeId !== identidade.unidadeId) {
+      identidade = { ...identidade, papel: papelNaUnidade(identidade, unidade.unidadeId), unidadeId: unidade.unidadeId }
+    }
     if (!unidade.ok) {
       // Pediu unidade à qual não está vinculado — cross-tenant. Registra como
       // incidente: é exatamente o que o Gavião deve enxergar.

@@ -9,7 +9,7 @@
 //   A. Observação com aferição no futuro
 //   B. Prescrição com criação no futuro
 //   C. Prescrição sem paciente vinculado (órfã)
-//   D. Leito ocupado em setor sem médico na escala de hoje
+//   D. Leito ocupado em setor sem ninguém de plantão agora (janela real)
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
@@ -29,7 +29,7 @@ export type AchadoArgos = {
  */
 export function chaveDedupArgos(a: AchadoArgos): string {
   const id =
-    a.evidencia.observacao_id ?? a.evidencia.prescricao_id ?? a.evidencia.leito_id
+    a.evidencia.observacao_id ?? a.evidencia.prescricao_id ?? a.evidencia.setor_id
   return `dados:[Falcao] ${a.titulo}:${String(id ?? 'sem-id')}`
 }
 
@@ -38,11 +38,12 @@ export async function auditoriaArgos(): Promise<AchadoArgos[]> {
   const agoraIso = new Date().toISOString()
 
   // A. Observação com aferição no futuro
-  const { data: obsFuturas } = await supabase
+  const { data: obsFuturas, error: e1 } = await supabase
     .from('observacao')
     .select('id, unidade_id, aferido_em')
     .gt('aferido_em', agoraIso)
     .limit(500)
+  if (e1) throw new Error(`[argos] observação: ${e1.message}`)
   for (const o of obsFuturas ?? []) {
     achados.push({
       severidade: 'atencao',
@@ -52,11 +53,12 @@ export async function auditoriaArgos(): Promise<AchadoArgos[]> {
   }
 
   // B. Prescrição com criação no futuro
-  const { data: prescFuturas } = await supabase
+  const { data: prescFuturas, error: e2 } = await supabase
     .from('prescricoes')
     .select('id, unidade_id, created_at')
     .gt('created_at', agoraIso)
     .limit(500)
+  if (e2) throw new Error(`[argos] prescrição futura: ${e2.message}`)
   for (const p of prescFuturas ?? []) {
     achados.push({
       severidade: 'atencao',
@@ -66,11 +68,12 @@ export async function auditoriaArgos(): Promise<AchadoArgos[]> {
   }
 
   // C. Prescrição sem paciente (órfã) — só ID, nunca nome
-  const { data: prescOrfas } = await supabase
+  const { data: prescOrfas, error: e3 } = await supabase
     .from('prescricoes')
     .select('id, unidade_id')
     .is('paciente_id', null)
     .limit(500)
+  if (e3) throw new Error(`[argos] prescrição órfã: ${e3.message}`)
   for (const p of prescOrfas ?? []) {
     achados.push({
       severidade: 'informativo',
@@ -79,29 +82,16 @@ export async function auditoriaArgos(): Promise<AchadoArgos[]> {
     })
   }
 
-  // D. Leito ocupado em setor sem médico na escala de hoje
-  const hoje = new Date().toISOString().slice(0, 10)
-  const { data: leitosOcupados } = await supabase
-    .from('leitos')
-    .select('id, setor_id')
-    .eq('status', 'ocupado')
-    .eq('ativo', true)
-    .limit(1000)
-  const { data: plantoesHoje } = await supabase
-    .from('escala_plantao')
-    .select('setor_id')
-    .eq('data', hoje)
-    .eq('ativo', true)
-    .limit(2000)
-  const setoresComEscala = new Set((plantoesHoje ?? []).map((p) => p.setor_id))
-  for (const l of leitosOcupados ?? []) {
-    if (l.setor_id && !setoresComEscala.has(l.setor_id)) {
-      achados.push({
-        severidade: 'atencao',
-        titulo: 'Leito ocupado em setor sem médico na escala de hoje',
-        evidencia: { leito_id: l.id, setor_id: l.setor_id },
-      })
-    }
+  // D. Setor com leito ocupado e ninguém de plantão AGORA — pela janela real
+  //    do plantão (a noite que começou ontem conta), no banco.
+  const { data: semPlantao, error: e4 } = await supabase.rpc('hermes_setores_ocupados_sem_plantao')
+  if (e4) throw new Error(`[argos] setor sem plantão: ${e4.message}`)
+  for (const x of (semPlantao ?? []) as { unidade_id: string; setor_id: string; leitos_ocupados: number }[]) {
+    achados.push({
+      severidade: 'atencao',
+      titulo: 'Leito ocupado em setor sem ninguém de plantão agora',
+      evidencia: { setor_id: x.setor_id, unidade_id: x.unidade_id, leitos_ocupados: x.leitos_ocupados },
+    })
   }
 
   return achados
@@ -128,7 +118,7 @@ export async function rodarAuditoriaArgos(): Promise<number> {
         chave_dedup: chaveDedupArgos(a),
       }))
     )
-    if (error) logger.warn({ err: error.message }, '[argos] falha ao registrar')
+    if (error) throw new Error(`[argos] falha ao registrar: ${error.message}`)
   }
   logger.info(
     { achados: achados.length, novos: novos.length },

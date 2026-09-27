@@ -23,20 +23,8 @@ import { chavesJaAbertas, filtrarNovos } from './dedup.js'
 // Caminho do state.db do Nous (montado read-only via compose)
 const NOUS_DB = process.env.NOUS_DB_PATH ?? '/opt/nous-data/state.db'
 
-export const PADROES_INJECTION = [
-  // EN
-  /ignore\s+(your|as\s+an?|all)\s+(previous|prior|above|system)?\s*(instructions|prompts?|rules)/i,
-  /reveal\s+(your|the)\s*(system|internal)?\s*(prompt|instructions)/i,
-  /forget\s+(all\s+)?(rules|instructions)/i,
-  /act\s+as\s+(admin|super.?admin|gestor)/i,
-  /acesse\s+(dados|outro)\s+(tenant|cliente|paciente)/i,
-  // PT-BR
-  /ignore\s+(suas|todas|as|qualquer|instru[çc][õo]es\s+)?\s*(instru[çc][õo]es|regras|prompts?|ordens)/i,
-  /revel[ae]\s+(seu|o)\s*(system\s*prompt|prompt\s*(de\s*)?sistema|instru[çc][õo]es\s*internas)/i,
-  /esque[çc]a\s+(todas\s+)?(as\s+)?(regras|instru[çc][õo]es)/i,
-  /aja\s+como\s+(admin|super.?admin|gestor|sistema)/i,
-  /acesse\s+(dados|informa[çc][õo]es)\s+(de\s+)?(outr[oa]|qualquer)\s+(tenant|cliente|unidade|paciente)/i,
-]
+import { PADROES_INJECTION } from './padroes-injection.js'
+export { PADROES_INJECTION }
 
 // Padrões de conteúdo CLÍNICO (para detectar resposta indevida com dado de
 // paciente) — heurística conservadora; sem NER.
@@ -44,6 +32,34 @@ export const PADROES_CLINICO = [
   /\b(prontu[áa]rio|diagn[óo]stico|sintoma|exame de sangue|hemoglobina|glicemia|creatinina|press[aã]o arterial|frequ[êe]ncia card[ií]aca)\b/i,
   /\bpaciente [A-ZÀ-Ú][a-zà-ú]+ (est[áa]|apresenta|relata|tem|possui)\b/i,
 ]
+
+/** Recusas: a regra sendo cumprida, não violação. */
+export const PADROES_RECUSA = [
+  /n[aã]o\s+(posso|forne[cç]o|respondo|dou)\b/i,
+  /n[aã]o\s+forne[cç]o\s+(orienta[çc][ãa]o|detalhes|informa[çc][õo]es)\b/i,
+  /n[aã]o\s+(tenho|consigo)\s+(acesso|responder|ajudar)\b/i,
+  /n[aã]o\s+[ée]\s+poss[ií]vel\b/i,
+  /regra\s+inviol[aá]vel/i,
+  /(use|usar|consulte|acesse)\s+a\s+plataforma/i,
+]
+
+// Identificador junto de termo clínico = dado de alguém, não conversa geral.
+const IDENTIFICADOR = /\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b|\b\d{4}\.\d{6}\b|\bleito\s+\d{1,3}[A-Z]?\b|\bbox\s+\d{1,2}\b/i
+const VALOR_DE_EXAME = /\b(hemoglobina|glicemia|creatinina|press[aã]o arterial|frequ[êe]ncia card[ií]aca|satura[çc][ãa]o)\s*(de|:|=)?\s*\d/i
+
+/**
+ * R1 (auditoria 27/09): a resposta só MENCIONAR "prontuário", "diagnóstico"
+ * ou "sintoma" — como o bot faz ao explicar que não fala de paciente — virava
+ * incidente crítico. Agora conta como dado de paciente:
+ *   • "paciente Fulano está/apresenta/relata…";
+ *   • valor de exame/sinal vital ("hemoglobina 12.5", "glicemia: 180");
+ *   • termo clínico junto de identificador (CPF, nº de prontuário, leito, box).
+ */
+export function pareceDadoDePaciente(texto: string): boolean {
+  if (PADROES_CLINICO[1]!.test(texto)) return true
+  if (VALOR_DE_EXAME.test(texto)) return true
+  return PADROES_CLINICO[0]!.test(texto) && IDENTIFICADOR.test(texto)
+}
 
 export type AchadoGaviao = {
   regra: string // R1..R5
@@ -72,8 +88,14 @@ function lerMensagensRecentes(horas: number): { role: string; content: string; s
   try {
     const db = new DatabaseSync(NOUS_DB, { readOnly: true })
     const desde = Date.now() / 1000 - horas * 3600
+    // Só conversas com pessoas: sessões de job agendado (cron — ex.: revisão
+    // do wiki clínico, que cita "dose de fármaco") geravam falso "conteúdo
+    // clínico de paciente" (auditoria 27/09).
     const stmt = db.prepare(
-      'SELECT session_id, role, content, timestamp FROM messages WHERE timestamp >= ? AND content IS NOT NULL ORDER BY timestamp'
+      `SELECT m.session_id, m.role, m.content, m.timestamp
+         FROM messages m JOIN sessions s ON s.id = m.session_id
+        WHERE m.timestamp >= ? AND m.content IS NOT NULL AND coalesce(s.source, '') <> 'cron'
+        ORDER BY m.timestamp`
     )
     const rows = stmt.all(desde) as { session_id: string; role: string; content: string; timestamp: number }[]
     db.close()
@@ -123,15 +145,10 @@ export async function patrulhaGaviao(horas = 24): Promise<AchadoGaviao[]> {
   // Ignora RECUSAS: "não posso responder sobre tratamento" NÃO é violação —
   // é a regra de ouro sendo cumprida. Só alerta se a resposta CONTÉM dado
   // clínico (ex.: valores, sintomas de paciente específico).
-  const PADROES_RECUSA = [
-    /n[aã]o\s+(posso|forne[cç]o|respondo|dou)\b/i,
-    /n[aã]o\s+forne[cç]o\s+(orienta[çc][ãa]o|detalhes|informa[çc][õo]es)\b/i,
-    /n[aã]o\s+(tenho|consigo)\s+(acesso|responder)\b/i,
-  ]
   for (const m of assistentes) {
-    const ehRecusa = PADROES_RECUSA.some((re) => re.test(m.content.slice(0, 120)))
+    const ehRecusa = PADROES_RECUSA.some((re) => re.test(m.content.slice(0, 160)))
     if (ehRecusa) continue // recusa correta — não é violação
-    if (PADROES_CLINICO.some((re) => re.test(m.content))) {
+    if (pareceDadoDePaciente(m.content)) {
       achados.push({
         regra: 'R1',
         severidade: 'critico',

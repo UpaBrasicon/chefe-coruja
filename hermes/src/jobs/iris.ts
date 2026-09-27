@@ -7,6 +7,7 @@
 // quando a plataforma tiver provedor (decisão anterior).
 // ─────────────────────────────────────────────────────────────────────────────
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { hojeBrasilia } from '../lib/tempo.js'
 import { supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 
@@ -29,7 +30,7 @@ export async function dispatchIris(
       unidade_id: n.unidadeId,
       tipo: n.tipo,
       mensagem: n.mensagem.slice(0, 500),
-      data: n.data ?? new Date().toISOString().slice(0, 10),
+      data: n.data ?? hojeBrasilia(),
     })
     .select('id')
     .single()
