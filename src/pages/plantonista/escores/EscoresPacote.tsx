@@ -18,6 +18,7 @@ import { heart } from '@/clinico/escores/heart'
 import { killip } from '@/clinico/escores/killip'
 import { light } from '@/clinico/escores/light'
 import { meld3 } from '@/clinico/escores/meld3'
+import { news2 } from '@/clinico/escores/news2'
 import { psi } from '@/clinico/escores/psi'
 import { quatroT } from '@/clinico/escores/quatroT'
 import { ranson } from '@/clinico/escores/ranson'
@@ -58,3 +59,4 @@ export const Ranson = () => <EscoreTela escore={ranson} />
 export const Rockall = () => <EscoreTela escore={rockall} />
 export const SepseAdulto = () => <EscoreTela escore={sepseAdulto} />
 export const WellsTep = () => <EscoreTela escore={wellsTep} />
+export const News2 = () => <EscoreTela escore={news2} />

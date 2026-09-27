@@ -31,4 +31,5 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'rockall': '/plantonista/escores/rockall',
   'sepse-adulto': '/plantonista/escores/sepse-adulto',
   'wells-tep': '/plantonista/escores/wells-tep',
+  'news2': '/plantonista/escores/news2',
 }

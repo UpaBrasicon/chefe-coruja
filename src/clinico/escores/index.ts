@@ -19,6 +19,7 @@ import { heart } from './heart.ts'
 import { killip } from './killip.ts'
 import { light } from './light.ts'
 import { meld3 } from './meld3.ts'
+import { news2 } from './news2.ts'
 import { psi } from './psi.ts'
 import { quatroT } from './quatroT.ts'
 import { ranson } from './ranson.ts'
@@ -30,6 +31,7 @@ import { wellsTvp } from './wellsTvp.ts'
 
 /** Todos os escores do pacote, para a Central e para os testes de conjunto. */
 export const ESCORES: Escore[] = [
+  news2,
   glasgow,
   curb65,
   cha2ds2va,

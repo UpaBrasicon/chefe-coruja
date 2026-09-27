@@ -106,7 +106,7 @@ export const SECOES: SectionDef[] = [
       t('pesi', 'Severidade do TEP (PESI)', 'PESI original e simplificado.', sobDemanda(() => import('@/pages/plantonista/escores/Pesi'), 'Pesi'), ['TEP', 'embolia', 'pulmonar', 'prognóstico']),
       t('nih-avc', 'NIH — Classificação AVC', 'Escala de déficit neurológico (NIHSS).', sobDemanda(() => import('@/pages/plantonista/escores/NihAvc'), 'NihAvc'), ['AVC', 'NIHSS', 'déficit', 'neurologia', 'stroke']),
       t('news', 'NEWS', 'Identificador precoce de deterioração (NEWS).', sobDemanda(() => import('@/pages/plantonista/escores/News'), 'News'), ['deterioração', 'escore', 'alerta', 'NEWS']),
-      t('news2', 'NEWS 2', 'Identificador precoce de deterioração (NEWS 2).', sobDemanda(() => import('@/pages/plantonista/escores/News2'), 'News2'), ['deterioração', 'escore', 'alerta', 'NEWS 2']),
+      t('news2', 'NEWS2', 'Alerta precoce de deterioração; rastreio de sepse pela SSC 2026.', sobDemanda(() => import('@/pages/plantonista/escores/EscoresPacote'), 'News2'), ['deterioração', 'escore', 'alerta', 'NEWS 2', 'NEWS2', 'sepse', 'rastreio']),
       t('timi', 'TIMI — Risco', 'Risco em angina instável / IAM sem supra de ST.', sobDemanda(() => import('@/pages/plantonista/escores/Timi'), 'Timi'), ['TIMI', 'angina', 'IAM', 'coronariana', 'risco']),
     ],
   },
