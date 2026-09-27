@@ -16,6 +16,7 @@ import { rodarAuditoriaArgos } from '../jobs/argos.js'
 import { logger } from '../logger.js'
 import { rodarSentinela } from '../jobs/sentinela.js'
 import { rodarPatrulhaDados, rodarPatrulhaHermes } from '../jobs/cerbero.js'
+import { cadeiaAuditoria, guardiaoProntuario, vigiaEscala, vigiaPorta, vigiaPresenca, vigiaTardios } from '../jobs/vigias.js'
 
 export const FILA_CRON = 'hermes-cron'
 
@@ -71,8 +72,21 @@ export function registrarCrons(): Queue {
     { name: 'argos_auditoria', data: {} }
   )
 
+  // ── Rodada D (27/09): agentes novos, sem LLM (horários em UTC; BR = UTC−3) ──
+  // Porta: virada de plantão, 07h05 e 19h05 BR
+  void fila.upsertJobScheduler('vigia_porta', { pattern: '5 10,22 * * *', tz: 'UTC' }, { name: 'vigia_porta', data: {} })
+  // Presença: a cada 15 min
+  void fila.upsertJobScheduler('vigia_presenca', { pattern: '*/15 * * * *', tz: 'UTC' }, { name: 'vigia_presenca', data: {} })
+  // Buraco na escala e registros tardios: 08h BR
+  void fila.upsertJobScheduler('vigia_escala', { pattern: '0 11 * * *', tz: 'UTC' }, { name: 'vigia_escala', data: {} })
+  void fila.upsertJobScheduler('vigia_tardios', { pattern: '2 11 * * *', tz: 'UTC' }, { name: 'vigia_tardios', data: {} })
+  // Guardião do prontuário: de hora em hora (minuto 20)
+  void fila.upsertJobScheduler('guardiao_prontuario', { pattern: '20 * * * *', tz: 'UTC' }, { name: 'guardiao_prontuario', data: {} })
+  // Cadeia de auditoria: 04h BR
+  void fila.upsertJobScheduler('cadeia_auditoria', { pattern: '0 7 * * *', tz: 'UTC' }, { name: 'cadeia_auditoria', data: {} })
+
   logger.info(
-    '[cron] jobs: sentinela (seg 06h30 BR), relatorio (seg 08h15 BR), cerbero_dados (1h), cerbero_hermes (05h BR), gaviao_patrulha (08h/20h BR), argos (06h/18h BR)'
+    '[cron] jobs: sentinela (seg 06h30 BR), relatorio (seg 08h15 BR), cerbero_dados (1h), cerbero_hermes (05h BR), gaviao_patrulha (08h/20h BR), argos (06h/18h BR), vigias: porta (07h05/19h05), presença (15 min), escala e tardios (08h), guardião (1 h), cadeia (04h)'
   )
   return fila
 }
@@ -99,6 +113,24 @@ export async function executarJobCron(nome: string): Promise<void> {
       break
     case 'argos_auditoria':
       await rodarAuditoriaArgos()
+      break
+    case 'vigia_porta':
+      await vigiaPorta()
+      break
+    case 'vigia_presenca':
+      await vigiaPresenca()
+      break
+    case 'vigia_escala':
+      await vigiaEscala()
+      break
+    case 'vigia_tardios':
+      await vigiaTardios()
+      break
+    case 'guardiao_prontuario':
+      await guardiaoProntuario()
+      break
+    case 'cadeia_auditoria':
+      await cadeiaAuditoria()
       break
     default:
       logger.warn({ nome }, '[cron] job desconhecido')
