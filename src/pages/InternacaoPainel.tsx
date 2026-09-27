@@ -14,7 +14,8 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
-import type { AltaPaciente, ChecklistAdmissao, OcupacaoSetor, TransferenciaPaciente } from '@/types/database'
+import { LeitoAberto } from '@/components/internacao/LeitoAberto'
+import type { ChecklistAdmissao, OcupacaoSetor, TransferenciaPaciente } from '@/types/database'
 import type { Database } from '@/types/database'
 type ChecklistAdmissaoInsert = Database['public']['Tables']['checklist_admissao']['Insert']
 
@@ -128,23 +129,30 @@ export default function InternacaoPainel({
     () => (horaServidor ? new Date(horaServidor) : null),
     [horaServidor]
   )
-  const minutos = agora ? agora.getHours() * 60 + agora.getMinutes() : -1
-  const pertoDoFim = minutos >= 18 * 60 + 30 // 18:30
-
-  const pacientesObservacao = React.useMemo(() => {
-    if (modo !== 'observacao') return []
-    const setorObsIds = new Set((setores ?? []).map((s) => s.id))
-    return (pacientes ?? []).filter((p) => p.setor_id && setorObsIds.has(p.setor_id))
-  }, [modo, setores, pacientes])
-
-  const emObservacaoMuitoTempo = React.useMemo(() => {
-    if (!agora) return []
-    return pacientesObservacao.filter((p) => {
-      const entrada = new Date(p.created_at)
-      const horas = (agora.getTime() - entrada.getTime()) / 3600000
-      return horas >= 5.5
-    })
-  }, [agora, pacientesObservacao])
+  // Observação: o prazo de 6h é a pendência aberta no servidor na entrada do box.
+  const { data: prazosObservacao } = useQuery({
+    queryKey: ['pendencias-observacao', unidadeId],
+    enabled: !!unidadeId && modo === 'observacao',
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('pendencias')
+        .select('paciente_id, prazo')
+        .eq('unidade_id', unidadeId!)
+        .eq('tipo', 'observacao')
+        .eq('situacao', 'aberta')
+      if (error) throw error
+      return new Map((data ?? []).map((p) => [p.paciente_id, p.prazo as string]))
+    },
+  })
+  const observacaoVencendo = React.useMemo(() => {
+    if (!agora || !prazosObservacao) return []
+    return (pacientes ?? [])
+      .filter((p) => prazosObservacao.has(p.id))
+      .map((p) => ({ p, prazo: new Date(prazosObservacao.get(p.id)!) }))
+      .filter((x) => x.prazo.getTime() - agora.getTime() <= 30 * 60_000)
+      .sort((a, b) => a.prazo.getTime() - b.prazo.getTime())
+  }, [agora, pacientes, prazosObservacao])
 
   // I2/I3: ocupação por setor (contagem viva + alerta de superlotação)
   const { data: ocupacao } = useQuery({
@@ -186,24 +194,6 @@ export default function InternacaoPainel({
         .maybeSingle()
       if (error) throw error
       return data as ChecklistAdmissao | null
-    },
-  })
-
-  // I5: alta do paciente selecionado
-  const { data: alta } = useQuery({
-    queryKey: ['alta-paciente', pacienteDetalhe?.id],
-    enabled: !!pacienteDetalhe,
-    queryFn: async () => {
-      await abrirProntuario(pacienteDetalhe!.id)
-      const { data, error } = await supabase
-        .from('alta_paciente')
-        .select('*')
-        .eq('paciente_id', pacienteDetalhe!.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (error) throw error
-      return data as AltaPaciente | null
     },
   })
 
@@ -265,30 +255,6 @@ export default function InternacaoPainel({
     const { error } = await supabase.from('checklist_admissao').upsert(patch, { onConflict: 'paciente_id' })
     if (!error) void queryClient.invalidateQueries({ queryKey: ['checklist-admissao'] })
   }
-
-  const [altaTipo, setAltaTipo] = React.useState('alta_melhorada')
-  const altaMutation = useMutation({
-    mutationFn: async () => {
-      if (!pacienteDetalhe) return
-      const { error } = await supabase.rpc('dar_alta_internado', {
-        p_paciente: pacienteDetalhe.id,
-        p_tipo_alta: altaTipo,
-        p_motivo: 'Alta registrada no painel de internação',
-      })
-      if (error) throw error
-    },
-    onSuccess: () => {
-      invalidar()
-      void queryClient.invalidateQueries({ queryKey: ['alta-paciente'] })
-      void queryClient.invalidateQueries({ queryKey: ['pacientes-internados'] })
-      setSucesso('Alta registrada: evento ADT emitido e leito liberado.')
-      setPacienteDetalhe(null)
-      setTimeout(() => setSucesso(null), 4000)
-    },
-    onError: (e) => {
-      setSucesso(e instanceof Error ? 'Erro: ' + e.message : 'Erro ao registrar alta.')
-    },
-  })
 
   function exportarAuditoriaCSV() {
     if (!transferencias || transferencias.length === 0) return
@@ -356,28 +322,21 @@ export default function InternacaoPainel({
 
       {sucesso && <p className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">{sucesso}</p>}
 
-      {/* Aviso de internação — observação (18:30 / >6h) */}
-      {modo === 'observacao' && pertoDoFim && emObservacaoMuitoTempo.length > 0 && (
+      {/* Observação: vencida ou vencendo em 30 min (prazo de 6h do servidor) */}
+      {modo === 'observacao' && observacaoVencendo.length > 0 && (
         <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-4">
-          <div className="mb-1 text-sm font-semibold text-critico">
-            ⏰ Fim do turno se aproxima ({agora?.toLocaleTimeString('pt-BR')})
-          </div>
-          <p className="mb-2 text-sm text-critico">
-            Pacientes em observação por <strong>5h30+</strong> precisam ser <strong>internados</strong>{' '}
-            (enfermaria/sala vermelha) ou liberados antes do fim do plantão.
-          </p>
+          <div className="mb-1 text-sm font-semibold text-critico">Observação no limite de 6 horas</div>
+          <p className="mb-2 text-sm text-critico">Defina a conduta: alta ou internação.</p>
           <ul className="flex flex-col gap-1 text-sm">
-            {emObservacaoMuitoTempo.map((p) => {
-              const entrada = new Date(p.created_at)
-              const horas = Math.floor((agora!.getTime() - entrada.getTime()) / 3600000)
-              const mins = Math.floor(((agora!.getTime() - entrada.getTime()) % 3600000) / 60000)
-              return (
-                <li key={p.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
-                  <span className="font-medium">{p.nome}</span>
-                  <span className="text-xs text-critico">observação há {horas}h{mins}m</span>
-                </li>
-              )
-            })}
+            {observacaoVencendo.map(({ p, prazo }) => (
+              <li key={p.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
+                <span className="font-medium">{p.nome}</span>
+                <span className="text-xs text-critico">
+                  {prazo.getTime() < agora!.getTime() ? 'vencida às ' : 'vence às '}
+                  {prazo.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </li>
+            ))}
           </ul>
         </div>
       )}
@@ -439,15 +398,18 @@ export default function InternacaoPainel({
                           <div className="font-medium">{p.nome}</div>
                           <div className="text-xs text-muted-foreground">
                             {p.sexo ? `${p.sexo} · ` : ''}
-                            {fmtDia(p.data_nascimento)}
+                            {p.data_nascimento ? p.data_nascimento.slice(0, 10).split('-').reverse().join('/') : '—'}
                             {p.cpf ? ` · CPF ${p.cpf}` : ''}
+                            {prazosObservacao?.has(p.id) && (
+                              <> · observação até {new Date(prazosObservacao.get(p.id)!).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</>
+                            )}
                           </div>
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             <Button size="xs" variant="outline" onClick={() => setTransferir(p)}>
                               <ArrowRightLeft /> Transferir
                             </Button>
                             <Button size="xs" variant="ghost" onClick={() => setPacienteDetalhe(p)}>
-                              <Eye /> Detalhes
+                              <Eye /> Abrir leito
                             </Button>
                             {/* Formulário e evolução são rotas do plantonista. */}
                             {ehPlantonista && (
@@ -579,10 +541,10 @@ export default function InternacaoPainel({
 
       {/* I1/I4/I5: detalhes do paciente — linha do tempo, checklist, alta */}
       <Dialog open={!!pacienteDetalhe} onOpenChange={(o) => !o && setPacienteDetalhe(null)}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{pacienteDetalhe?.nome}</DialogTitle>
-            <DialogDescription>Linha do tempo, checklist de admissão e alta.</DialogDescription>
+            <DialogDescription>Acuidade, pendências, passagem, alta e pacote; trilha do episódio e checklist.</DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-4">
@@ -666,41 +628,9 @@ export default function InternacaoPainel({
               </div>
             </div>
 
-            {/* I5: alta */}
-            <div className="flex flex-col gap-1.5">
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Alta</div>
-              {alta?.status === 'concluida' ? (
-                <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">
-                  ✓ Alta concluída · {fmtDia(alta.created_at)}
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="alta-tipo">Tipo de alta</Label>
-                    <Select value={altaTipo} onValueChange={(v) => setAltaTipo(v ?? 'alta_melhorada')}>
-                      <SelectTrigger id="alta-tipo" className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="alta_melhorada">Alta melhorada</SelectItem>
-                        <SelectItem value="alta_pedido">Alta a pedido</SelectItem>
-                        <SelectItem value="alta_evasao">Evasão</SelectItem>
-                        <SelectItem value="transferencia_externa">Transferência externa</SelectItem>
-                        <SelectItem value="obito">Óbito</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => altaMutation.mutate()}
-                    disabled={altaMutation.isPending}
-                  >
-                    {altaMutation.isPending ? <Spinner /> : null} Registrar alta
-                  </Button>
-                </div>
-              )}
-            </div>
+            {pacienteDetalhe && (
+              <LeitoAberto pacienteId={pacienteDetalhe.id} pacienteNome={pacienteDetalhe.nome} ehGestor={ehGestor || ehAdmin} />
+            )}
           </div>
         </DialogContent>
       </Dialog>

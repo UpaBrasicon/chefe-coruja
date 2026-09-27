@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { escapeHtml } from '@/lib/utils'
-import {
-  useDocumentos,
-  useSalvarDocumento,
-} from '@/hooks/useDocumentos'
+import { useQueryClient } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
+import { Input } from '@/components/ui/input'
+import { useDocumentos, type DocumentoClinico } from '@/hooks/useDocumentos'
 import type { DadosPaciente, Evolucao } from './rascunho'
 
 function fmtData(iso: string) {
@@ -35,17 +36,26 @@ export function EvolucaoTab({
   internacaoId?: string | null
 }) {
   const { data: documentos, isLoading: carregandoDocs } = useDocumentos(pacienteId ?? undefined)
-  const salvarDoc = useSalvarDocumento()
+  const { perfil } = useAuth()
+  const qc = useQueryClient()
+  const [salvando, setSalvando] = React.useState(false)
   const [msg, setMsg] = React.useState<string | null>(null)
+  const [corrigindo, setCorrigindo] = React.useState<DocumentoClinico | null>(null)
+  const [textoCorrecao, setTextoCorrecao] = React.useState('')
+  const [justificativa, setJustificativa] = React.useState('')
 
-  const evolucoesSalvas = React.useMemo(
-    () => (documentos ?? []).filter((d) => d.tipo_documento === 'evolucao'),
-    [documentos]
-  )
-  const admissaoSalva = React.useMemo(
-    () => (documentos ?? []).find((d) => d.tipo_documento === 'admissao_anamnese'),
-    [documentos]
-  )
+  // registros desta internação: a versão vigente de cada um, e quem escreveu a 1ª
+  const registros = React.useMemo(() => {
+    const daInternacao = (documentos ?? []).filter(
+      (d) => d.internacao_id === internacaoId && (d.tipo_documento === 'evolucao' || d.tipo_documento === 'admissao_anamnese')
+    )
+    const autorOriginal = new Map(daInternacao.filter((d) => d.versao === 1).map((d) => [d.documento_raiz_id, d.autor_id]))
+    return daInternacao
+      .filter((d) => d.estado === 'ativo')
+      .map((d) => ({ d, autor: autorOriginal.get(d.documento_raiz_id) }))
+      .sort((a, b) => a.d.created_at.localeCompare(b.d.created_at))
+  }, [documentos, internacaoId])
+  const admissaoSalva = registros.find((r) => r.d.tipo_documento === 'admissao_anamnese')
 
   function gerarTexto() {
     const idade = dados.idade || 'N/I'
@@ -107,20 +117,30 @@ export function EvolucaoTab({
 
   async function salvarNoProntuario() {
     if (!pacienteId || !unidadeId || !evolucao.texto.trim()) return
-    setMsg(null)
-    try {
-      const tipo = evolucao.tipo === 'admissao' ? 'admissao_anamnese' : 'evolucao'
-      await salvarDoc.mutateAsync({
-        paciente_id: pacienteId,
-        unidade_id: unidadeId,
-        internacao_id: internacaoId ?? null,
-        tipo_documento: tipo,
-        conteudo: evolucao.texto,
-      })
-      setMsg('Documento salvo no prontuário (nova versão, retificação rastreável).')
-    } catch (e) {
-      setMsg('Erro ao salvar: ' + (e as Error).message)
+    if (!internacaoId) {
+      setMsg('Erro ao salvar: abra o paciente pela internação (box ou leito) para registrar admissão e evolução.')
+      return
     }
+    setMsg(null)
+    setSalvando(true)
+    const tipo = evolucao.tipo === 'admissao' ? 'admissao_anamnese' : 'evolucao'
+    const { error } = await supabase.rpc('registrar_evolucao', { p_internacao: internacaoId, p_tipo: tipo, p_conteudo: evolucao.texto })
+    setSalvando(false)
+    if (error) return setMsg('Erro ao salvar: ' + error.message)
+    setMsg(tipo === 'admissao_anamnese' ? 'Admissão registrada no prontuário.' : 'Evolução registrada no prontuário.')
+    void qc.invalidateQueries({ queryKey: ['documentos-clinicos', pacienteId] })
+  }
+
+  async function salvarCorrecao() {
+    if (!corrigindo) return
+    const { error } = await supabase.rpc('corrigir_evolucao', {
+      p_documento: corrigindo.id, p_conteudo: textoCorrecao, p_justificativa: justificativa,
+    })
+    if (error) return setMsg('Erro ao corrigir: ' + error.message)
+    setMsg('Correção registrada: nova versão, com a justificativa; a anterior fica guardada.')
+    setCorrigindo(null)
+    setJustificativa('')
+    void qc.invalidateQueries({ queryKey: ['documentos-clinicos', pacienteId] })
   }
 
   return (
@@ -164,26 +184,44 @@ export function EvolucaoTab({
                 <Loader2 className="animate-spin" /> carregando…
               </span>
             ) : (
-              <div className="flex flex-col gap-1">
-                {admissaoSalva && (
-                  <span className="inline-flex items-center gap-1">
-                    <CheckCircle2 className="size-3" /> Admissão v{admissaoSalva.versao}{' '}
-                    <Badge variant="success">{admissaoSalva.estado}</Badge>
-                  </span>
-                )}
-                {evolucoesSalvas.length === 0 && !admissaoSalva && (
-                  <span className="text-muted-foreground">Nenhum documento persistido ainda.</span>
-                )}
-                {evolucoesSalvas.length > 0 && (
-                  <span className="inline-flex items-center gap-1">
-                    <History className="size-3" /> {evolucoesSalvas.length} versão(ões) de evolução
-                  </span>
-                )}
+              <div className="flex flex-col gap-1.5">
+                {registros.length === 0 && <span className="text-muted-foreground">Nenhum registro nesta internação ainda.</span>}
+                {registros.map(({ d, autor }) => (
+                  <div key={d.id} className="flex flex-wrap items-center gap-1.5">
+                    {d.tipo_documento === 'admissao_anamnese' ? <CheckCircle2 className="size-3" /> : <History className="size-3" />}
+                    {d.tipo_documento === 'admissao_anamnese' ? 'Admissão' : 'Evolução'} ·{' '}
+                    {new Date(d.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                    {d.versao > 1 && <Badge variant="success">corrigida (v{d.versao})</Badge>}
+                    {autor === perfil?.id && (
+                      <Button size="xs" variant="ghost" onClick={() => { setCorrigindo(d); setTextoCorrecao(d.conteudo); setJustificativa('') }}>
+                        Corrigir
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <span className="text-muted-foreground">Só o autor corrige o próprio registro; a correção vira nova versão, com justificativa.</span>
               </div>
             )}
           </div>
         </CardContent>
       </Card>
+
+      {corrigindo && (
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base">Corrigir {corrigindo.tipo_documento === 'admissao_anamnese' ? 'admissão' : 'evolução'}</CardTitle>
+            <CardDescription>A versão atual fica guardada como retificada; a nova leva sua justificativa.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <Textarea value={textoCorrecao} onChange={(e) => setTextoCorrecao(e.target.value)} className="min-h-[200px] font-mono text-xs" />
+            <Input placeholder="Justificativa da correção (mínimo de 10 letras)" value={justificativa} onChange={(e) => setJustificativa(e.target.value)} />
+            <div className="flex gap-2">
+              <Button onClick={() => void salvarCorrecao()} disabled={justificativa.trim().length < 10}>Salvar correção</Button>
+              <Button variant="ghost" onClick={() => setCorrigindo(null)}>Cancelar</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
@@ -213,9 +251,9 @@ export function EvolucaoTab({
               <Button
                 variant="outline"
                 onClick={salvarNoProntuario}
-                disabled={!pacienteId || !evolucao.texto.trim() || salvarDoc.isPending}
+                disabled={!pacienteId || !evolucao.texto.trim() || salvando || (evolucao.tipo === 'admissao' && !!admissaoSalva)}
               >
-                {salvarDoc.isPending ? <Loader2 className="animate-spin" /> : <Save />} Salvar no prontuário
+                {salvando ? <Loader2 className="animate-spin" /> : <Save />} Salvar no prontuário
               </Button>
               <Button onClick={imprimir} disabled={!evolucao.texto}>
                 <Printer /> Imprimir

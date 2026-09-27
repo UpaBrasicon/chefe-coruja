@@ -66,7 +66,7 @@ UPDATE public.configuracao_plataforma SET valor = true WHERE chave = 'exigir_seg
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}', true);
 DO $$ BEGIN
-  PERFORM public.dar_alta_internado('23000000-0000-4000-8000-000000000001', 'alta_melhorada');
+  PERFORM public.dar_alta('23000000-0000-4000-8000-000000000001', 'alta_melhorada', 'J18');
   RAISE EXCEPTION 'FALHOU: alta sem segundo fator foi aceita';
 EXCEPTION WHEN insufficient_privilege THEN
   IF SQLERRM NOT LIKE 'SEGUNDO_FATOR:%' THEN RAISE; END IF;

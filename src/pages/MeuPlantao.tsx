@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
+import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 
 const TURNO_LABEL: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
 
@@ -206,6 +207,8 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
 
       {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
       {sucesso && <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">{sucesso}</div>}
+
+      <PassagensDoPlantao />
 
       <Card>
         <CardHeader>

@@ -117,22 +117,27 @@ BEGIN
     (private.uuid_conceito('escore-ri-ratio'),  NULL,'escore-ri-ratio',  'escore',NULL,NULL,NULL,1070,'escore')
   ON CONFLICT (unidade_id, nome) DO NOTHING;
 
-  -- vínculos LOINC (fk opcional p/ terminologia.loinc)
-  UPDATE public.conceito SET loinc_codigo = '2339-0'  WHERE nome='glicemia-capilar'      AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '718-7'   WHERE nome='hemoglobina'           AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '6690-2'  WHERE nome='leucocitos'            AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '777-3'   WHERE nome='plaquetas'             AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '2160-0'  WHERE nome='creatinina'            AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '3094-0'  WHERE nome='ureia'                 AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '2951-2'  WHERE nome='sodio'                 AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '2823-3'  WHERE nome='potassio'              AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '2744-1'  WHERE nome='pco2'                  AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '2703-7'  WHERE nome='po2'                   AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '1963-8'  WHERE nome='bicarbonato'           AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '2524-7'  WHERE nome='lactato'               AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '10839-9' WHERE nome='troponina-i'           AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '34714-6' WHERE nome='inr'                   AND unidade_id IS NULL;
-  UPDATE public.conceito SET loinc_codigo = '11039-5' WHERE nome='pcr'                   AND unidade_id IS NULL;
+  -- vínculos LOINC (fk opcional p/ terminologia.loinc). Só liga o código que
+  -- a tabela LOINC já tem: num banco novo ela ainda está vazia aqui, e o
+  -- UPDATE direto quebrava o `db reset` (FK).
+  UPDATE public.conceito c SET loinc_codigo = v.codigo
+  FROM (VALUES ('glicemia-capilar', '2339-0'),
+               ('hemoglobina', '718-7'),
+               ('leucocitos', '6690-2'),
+               ('plaquetas', '777-3'),
+               ('creatinina', '2160-0'),
+               ('ureia', '3094-0'),
+               ('sodio', '2951-2'),
+               ('potassio', '2823-3'),
+               ('pco2', '2744-1'),
+               ('po2', '2703-7'),
+               ('bicarbonato', '1963-8'),
+               ('lactato', '2524-7'),
+               ('troponina-i', '10839-9'),
+               ('inr', '34714-6'),
+               ('pcr', '11039-5')) AS v(nome, codigo)
+  WHERE c.nome = v.nome AND c.unidade_id IS NULL
+    AND EXISTS (SELECT 1 FROM terminologia.loinc l WHERE l.codigo = v.codigo);
 
 END $$;
 

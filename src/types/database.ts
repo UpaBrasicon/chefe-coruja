@@ -2108,11 +2108,18 @@ export type Database = {
       }
       internacoes: {
         Row: {
+          alta_detalhes: Json | null
+          alta_justificativa_retroativa: string | null
+          alta_observacoes: string | null
+          alta_por: string | null
+          alta_registrada_em: string | null
+          cid_alta: string | null
           cid_principal: string | null
           created_at: string
           data_admissao: string
           data_alta: string | null
           data_entrada_setor: string | null
+          episodio_id: string | null
           id: string
           leito_atual_id: string | null
           motivo_alta: string | null
@@ -2126,11 +2133,18 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          alta_detalhes?: Json | null
+          alta_justificativa_retroativa?: string | null
+          alta_observacoes?: string | null
+          alta_por?: string | null
+          alta_registrada_em?: string | null
+          cid_alta?: string | null
           cid_principal?: string | null
           created_at?: string
           data_admissao?: string
           data_alta?: string | null
           data_entrada_setor?: string | null
+          episodio_id?: string | null
           id?: string
           leito_atual_id?: string | null
           motivo_alta?: string | null
@@ -2144,11 +2158,18 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          alta_detalhes?: Json | null
+          alta_justificativa_retroativa?: string | null
+          alta_observacoes?: string | null
+          alta_por?: string | null
+          alta_registrada_em?: string | null
+          cid_alta?: string | null
           cid_principal?: string | null
           created_at?: string
           data_admissao?: string
           data_alta?: string | null
           data_entrada_setor?: string | null
+          episodio_id?: string | null
           id?: string
           leito_atual_id?: string | null
           motivo_alta?: string | null
@@ -2162,6 +2183,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "internacoes_alta_por_fkey"
+            columns: ["alta_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internacoes_episodio_id_fkey"
+            columns: ["episodio_id"]
+            isOneToOne: false
+            referencedRelation: "episodios"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "internacoes_leito_atual_id_fkey"
             columns: ["leito_atual_id"]
@@ -2972,6 +3007,300 @@ export type Database = {
           },
           {
             foreignKeyName: "pacientes_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pacotes_alta: {
+        Row: {
+          codigo_hash: string
+          criado_em: string
+          criado_por: string
+          expira_em: string
+          id: string
+          internacao_id: string
+          orientacoes: Json
+          paciente_id: string
+          retorno: string | null
+          revogado_em: string | null
+          revogado_por: string | null
+          situacao: string
+          tentativas: number
+          token: string
+          unidade_id: string
+        }
+        Insert: {
+          codigo_hash: string
+          criado_em?: string
+          criado_por: string
+          expira_em?: string
+          id?: string
+          internacao_id: string
+          orientacoes?: Json
+          paciente_id: string
+          retorno?: string | null
+          revogado_em?: string | null
+          revogado_por?: string | null
+          situacao?: string
+          tentativas?: number
+          token: string
+          unidade_id: string
+        }
+        Update: {
+          codigo_hash?: string
+          criado_em?: string
+          criado_por?: string
+          expira_em?: string
+          id?: string
+          internacao_id?: string
+          orientacoes?: Json
+          paciente_id?: string
+          retorno?: string | null
+          revogado_em?: string | null
+          revogado_por?: string | null
+          situacao?: string
+          tentativas?: number
+          token?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pacotes_alta_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pacotes_alta_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pacotes_alta_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pacotes_alta_revogado_por_fkey"
+            columns: ["revogado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pacotes_alta_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pacotes_alta_acessos: {
+        Row: {
+          aceito: boolean
+          em: string
+          id: number
+          pacote_id: string
+        }
+        Insert: {
+          aceito: boolean
+          em?: string
+          id?: never
+          pacote_id: string
+        }
+        Update: {
+          aceito?: boolean
+          em?: string
+          id?: never
+          pacote_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pacotes_alta_acessos_pacote_id_fkey"
+            columns: ["pacote_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes_alta"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passagens_plantao: {
+        Row: {
+          de_perfil: string
+          enviada_em: string
+          id: string
+          internacao_id: string
+          motivo_recusa: string | null
+          paciente_id: string
+          para_perfil: string
+          respondida_em: string | null
+          resumo: string
+          setor_id: string
+          situacao: string
+          unidade_id: string
+        }
+        Insert: {
+          de_perfil: string
+          enviada_em?: string
+          id?: string
+          internacao_id: string
+          motivo_recusa?: string | null
+          paciente_id: string
+          para_perfil: string
+          respondida_em?: string | null
+          resumo: string
+          setor_id: string
+          situacao?: string
+          unidade_id: string
+        }
+        Update: {
+          de_perfil?: string
+          enviada_em?: string
+          id?: string
+          internacao_id?: string
+          motivo_recusa?: string | null
+          paciente_id?: string
+          para_perfil?: string
+          respondida_em?: string | null
+          resumo?: string
+          setor_id?: string
+          situacao?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passagens_plantao_de_perfil_fkey"
+            columns: ["de_perfil"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passagens_plantao_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passagens_plantao_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passagens_plantao_para_perfil_fkey"
+            columns: ["para_perfil"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passagens_plantao_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passagens_plantao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pendencias: {
+        Row: {
+          autor_id: string
+          criada_em: string
+          descricao: string
+          id: string
+          impeditiva: boolean
+          internacao_id: string
+          motivo_resolucao: string | null
+          paciente_id: string
+          prazo: string | null
+          resolvida_em: string | null
+          resolvida_por: string | null
+          situacao: string
+          tipo: string
+          unidade_id: string
+        }
+        Insert: {
+          autor_id: string
+          criada_em?: string
+          descricao: string
+          id?: string
+          impeditiva?: boolean
+          internacao_id: string
+          motivo_resolucao?: string | null
+          paciente_id: string
+          prazo?: string | null
+          resolvida_em?: string | null
+          resolvida_por?: string | null
+          situacao?: string
+          tipo: string
+          unidade_id: string
+        }
+        Update: {
+          autor_id?: string
+          criada_em?: string
+          descricao?: string
+          id?: string
+          impeditiva?: boolean
+          internacao_id?: string
+          motivo_resolucao?: string | null
+          paciente_id?: string
+          prazo?: string | null
+          resolvida_em?: string | null
+          resolvida_por?: string | null
+          situacao?: string
+          tipo?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pendencias_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pendencias_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pendencias_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pendencias_resolvida_por_fkey"
+            columns: ["resolvida_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pendencias_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -4139,10 +4468,15 @@ export type Database = {
         }
         Returns: string
       }
+      abrir_pacote_alta: {
+        Args: { p_codigo: string; p_token: string }
+        Returns: Json
+      }
       abrir_prontuario: {
         Args: { p_internacao?: string; p_paciente: string }
         Returns: undefined
       }
+      acuidade: { Args: { p_paciente: string }; Returns: Json }
       adicionar_plantao_escala: {
         Args: {
           p_data: string
@@ -4170,6 +4504,10 @@ export type Database = {
           nome_social: string
           prontuario: string
         }[]
+      }
+      cancelar_alta: {
+        Args: { p_internacao: string; p_justificativa: string }
+        Returns: undefined
       }
       censo_recente: {
         Args: { p_dias?: number; p_unidade: string }
@@ -4202,6 +4540,18 @@ export type Database = {
         }
         Returns: string
       }
+      colegas_para_passagem: {
+        Args: { p_internacao: string }
+        Returns: {
+          inicio: string
+          nome: string
+          perfil_id: string
+        }[]
+      }
+      concluir_pendencia: {
+        Args: { p_motivo?: string; p_pendencia: string }
+        Returns: undefined
+      }
       confirmar_vinculo_hermes: {
         Args: { p_canal: string; p_codigo: string; p_identificador: string }
         Returns: string
@@ -4218,8 +4568,24 @@ export type Database = {
         }[]
       }
       contexto_sem_conexao: { Args: never; Returns: Json }
-      dar_alta_internado: {
-        Args: { p_motivo?: string; p_paciente: string; p_tipo_alta: string }
+      corrigir_evolucao: {
+        Args: {
+          p_conteudo: string
+          p_documento: string
+          p_justificativa: string
+        }
+        Returns: string
+      }
+      dar_alta: {
+        Args: {
+          p_cid: string
+          p_detalhes?: Json
+          p_internacao: string
+          p_justificativa?: string
+          p_observacoes?: string
+          p_quando?: string
+          p_tipo: string
+        }
         Returns: undefined
       }
       data_atual: { Args: never; Returns: string }
@@ -4227,6 +4593,7 @@ export type Database = {
         Args: { p_aceitar: boolean; p_id: string; p_motivo: string }
         Returns: undefined
       }
+      desfazer_pendencia: { Args: { p_pendencia: string }; Returns: undefined }
       diluicao_publicada: {
         Args: { p_medicamento: string }
         Returns: {
@@ -4327,6 +4694,10 @@ export type Database = {
         Args: { p_conversa_id: string; p_corpo: string }
         Returns: string
       }
+      enviar_passagem: {
+        Args: { p_internacao: string; p_para: string; p_resumo: string }
+        Returns: string
+      }
       excluir_mensagem: { Args: { p_mensagem_id: string }; Returns: undefined }
       fracionar_plantao: {
         Args: { p_partes?: number; p_plantao: string }
@@ -4368,6 +4739,10 @@ export type Database = {
           mensagem: string
           tipo: string
         }[]
+      }
+      gerar_pacote_alta: {
+        Args: { p_internacao: string; p_orientacoes?: Json; p_retorno?: string }
+        Returns: Json
       }
       hermes_acessos_anomalos: {
         Args: { p_aberturas?: number; p_horas?: number; p_impressoes?: number }
@@ -4472,6 +4847,7 @@ export type Database = {
         }[]
       }
       horario_servidor: { Args: never; Returns: string }
+      impeditivos_alta: { Args: { p_internacao: string }; Returns: Json }
       iniciar_atendimento: { Args: { p_episodio: string }; Returns: undefined }
       listar_conversas: {
         Args: never
@@ -4622,6 +4998,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      registrar_evolucao: {
+        Args: { p_conteudo: string; p_internacao: string; p_tipo: string }
+        Returns: string
+      }
       registrar_ficha: {
         Args: {
           p_dados?: Json
@@ -4645,6 +5025,16 @@ export type Database = {
           protocolo: string
         }[]
       }
+      registrar_pendencia: {
+        Args: {
+          p_descricao: string
+          p_impeditiva?: boolean
+          p_internacao: string
+          p_prazo?: string
+          p_tipo: string
+        }
+        Returns: string
+      }
       registrar_prescricao_itens: {
         Args: { p_itens?: Json; p_observacoes?: string; p_paciente: string }
         Returns: string
@@ -4665,6 +5055,10 @@ export type Database = {
         Returns: string
       }
       remover_fracionamento: { Args: { p_plantao: string }; Returns: undefined }
+      responder_passagem: {
+        Args: { p_aceitar: boolean; p_motivo?: string; p_passagem: string }
+        Returns: undefined
+      }
       resumo_carga_plantonistas: {
         Args: { p_fim: string; p_inicio: string; p_unidade: string }
         Returns: {
@@ -4680,6 +5074,7 @@ export type Database = {
         Args: { p_episodio: string; p_justificativa: string; p_motivo: string }
         Returns: undefined
       }
+      retirar_passagem: { Args: { p_passagem: string }; Returns: undefined }
       revisoes_sem_conexao: {
         Args: { p_unidade: string }
         Returns: {
@@ -4696,6 +5091,7 @@ export type Database = {
           tipo: string
         }[]
       }
+      revogar_pacote_alta: { Args: { p_pacote: string }; Returns: undefined }
       salvar_documento: {
         Args: {
           p_conteudo: string
@@ -4739,6 +5135,7 @@ export type Database = {
         }[]
       }
       sincronizar_registros: { Args: { p_itens: Json }; Returns: Json }
+      situacao_pacote_alta: { Args: { p_token: string }; Returns: Json }
       solicitar_troca: {
         Args: { p_mensagem?: string; p_plantao_a: string; p_plantao_b: string }
         Returns: string

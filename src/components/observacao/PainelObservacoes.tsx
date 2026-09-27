@@ -1,7 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // PainelObservacoes — flowsheet de UTI
 // Conceitos nas linhas, tempo nas colunas, célula colorida por flag
-// (L/N/H/CRIT), com delta entre aferições.
+// (L/N/H/CRIT), com delta entre aferições. Sinal vital chega sempre cru (flag
+// N, sem faixa — Fase 3): quem colore é o laboratório, com a faixa dele.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
 
@@ -78,7 +79,8 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
               </td>
               <td className="px-3 py-1.5 text-right font-mono text-xs">
                 {item.delta != null ? (
-                  <span className={cn(item.delta > 0 ? 'text-critico' : item.delta < 0 ? 'text-suprimento' : 'text-muted-foreground')}>
+                  // Subir ou descer não é, por si, alteração: o Δ sai neutro.
+                  <span className="text-tinta-apoio">
                     {item.delta > 0 ? '+' : ''}
                     {item.delta}
                   </span>

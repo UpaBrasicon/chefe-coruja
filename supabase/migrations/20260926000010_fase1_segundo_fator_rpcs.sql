@@ -28,10 +28,10 @@ BEGIN
     END IF;
     def := pg_get_functiondef(f);
     CONTINUE WHEN def LIKE '%private.exigir_segundo_fator()%';
-    IF def !~ E'\nBEGIN\n' THEN
+    IF def !~ E'\r?\nBEGIN\r?\n' THEN  -- corpo vindo de arquivo CRLF traz \r
       RAISE EXCEPTION 'segundo fator: bloco principal de % não encontrado', f;
     END IF;
-    def := regexp_replace(def, E'\nBEGIN\n', E'\nBEGIN\n  PERFORM private.exigir_segundo_fator();  -- ADR 0010\n');
+    def := regexp_replace(def, E'\r?\nBEGIN\r?\n', E'\nBEGIN\n  PERFORM private.exigir_segundo_fator();  -- ADR 0010\n');
     EXECUTE def;
   END LOOP;
 END $$;

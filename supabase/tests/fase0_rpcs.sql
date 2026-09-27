@@ -110,8 +110,8 @@ GRANT EXECUTE ON FUNCTION pg_temp.deve_falhar(text, text), pg_temp.deve_passar(t
 -- ════════════════════════════════════════════════════════════════════════════
 SET LOCAL ROLE anon;
 SELECT pg_temp.como(NULL);
-SELECT pg_temp.deve_falhar('anon: dar_alta_internado',
-  format('SELECT public.dar_alta_internado(%L, %L)', pg_temp.id('pac_a'), 'obito'));
+SELECT pg_temp.deve_falhar('anon: dar_alta',
+  format('SELECT public.dar_alta((SELECT id FROM public.internacoes WHERE paciente_id = %L AND status IN (''admitido'',''em_observacao'',''internado'')), %L, %L)', pg_temp.id('pac_a'), 'obito', 'R99'));
 SELECT pg_temp.deve_falhar('anon: plantonistas_da_unidade',
   format('SELECT * FROM public.plantonistas_da_unidade(%L)', pg_temp.id('uni_a')));
 SELECT pg_temp.deve_falhar('anon: censo_recente',
@@ -124,7 +124,7 @@ RESET ROLE;
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('estranho');
 SELECT pg_temp.deve_falhar('estranho dá alta/óbito a paciente de A',
-  format('SELECT public.dar_alta_internado(%L, %L)', pg_temp.id('pac_a'), 'obito'));
+  format('SELECT public.dar_alta((SELECT id FROM public.internacoes WHERE paciente_id = %L AND status IN (''admitido'',''em_observacao'',''internado'')), %L, %L)', pg_temp.id('pac_a'), 'obito', 'R99'));
 SELECT pg_temp.deve_falhar('estranho aprova candidatura de A',
   format('SELECT public.aprovar_candidatura(%L)', pg_temp.id('cand')));
 SELECT pg_temp.deve_falhar('estranho monta escala de A (guarda furada por NULL)',
@@ -176,7 +176,7 @@ SELECT pg_temp.deve_passar('plantonista em escala abre internação na porta',
 SELECT pg_temp.deve_passar('plantonista registra evento no episódio da porta (ainda sem setor)',
   format('SELECT public.registrar_evento_adt(%L, %L)', pg_temp.id('int_porta'), 'entrada_observacao'));
 SELECT pg_temp.deve_passar('plantonista escalado no setor dá alta ao seu paciente',
-  format('SELECT public.dar_alta_internado(%L, %L)', pg_temp.id('pac_a'), 'alta_melhorada'));
+  format('SELECT public.dar_alta((SELECT id FROM public.internacoes WHERE paciente_id = %L AND status IN (''admitido'',''em_observacao'',''internado'')), %L, %L)', pg_temp.id('pac_a'), 'alta_melhorada', 'J18'));
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- 4. Gestor de A
@@ -210,6 +210,7 @@ SELECT pg_temp.deve_passar('job: gerar_censo_todas_unidades como postgres',
 -- 6. Nenhuma função de public executável por anon — exceto as da lista, que
 --    são públicas de propósito e só leem o que o token delas permite.
 --    painel_chamadas: TV da porta, por token (Fase 2.3).
+--    situacao_pacote_alta / abrir_pacote_alta: pacote de alta, por token e código (Fase 3.6).
 -- ════════════════════════════════════════════════════════════════════════════
 DO $$
 DECLARE n int; nomes text;
@@ -217,7 +218,7 @@ BEGIN
   SELECT count(*), string_agg(p.proname, ', ') INTO n, nomes
   FROM pg_proc p JOIN pg_namespace ns ON ns.oid = p.pronamespace
   WHERE ns.nspname = 'public' AND has_function_privilege('anon', p.oid, 'EXECUTE')
-    AND p.proname NOT IN ('painel_chamadas');
+    AND p.proname NOT IN ('painel_chamadas', 'situacao_pacote_alta', 'abrir_pacote_alta');
   IF n > 0 THEN RAISE EXCEPTION 'FALHOU: % funções de public ainda executáveis por anon (%)', n, nomes; END IF;
   RAISE NOTICE 'OK  nenhuma função de public executável por anon (fora as públicas de propósito)';
 END $$;

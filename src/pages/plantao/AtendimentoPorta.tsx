@@ -163,6 +163,26 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
   const [destino, setDestino] = React.useState('')
   const [horaObito, setHoraObito] = React.useState('')
   const [numeroDo, setNumeroDo] = React.useState('')
+  const [setorInternacao, setSetorInternacao] = React.useState('')
+  const [leitoInternacao, setLeitoInternacao] = React.useState('')
+  const { unidadeAtiva: unidadeDoDesfecho } = useUnidade()
+  const destinosInternacao = useQuery({
+    queryKey: ['destinos-internacao', unidadeDoDesfecho?.unidade_id],
+    enabled: desfecho === 'internacao' && !!unidadeDoDesfecho,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('setores')
+        .select('id, nome, leitos(id, identificador, status, ativo)')
+        .eq('unidade_id', unidadeDoDesfecho!.unidade_id)
+        .eq('ativo', true)
+        .in('tipo', ['internacao', 'uti', 'isolamento'])
+        .order('ordem')
+      if (error) throw error
+      return data ?? []
+    },
+  })
+  const leitosLivres = (destinosInternacao.data ?? [])
+    .find((x) => x.id === setorInternacao)?.leitos.filter((l) => l.ativo && l.status === 'livre') ?? []
   const salvarDesfecho = useMutation({
     mutationFn: async () => {
       const detalhes: Record<string, string> = {}
@@ -170,6 +190,10 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
       if (desfecho === 'obito') {
         detalhes.hora_obito = horaObito ? new Date(horaObito).toISOString() : ''
         detalhes.numero_do = numeroDo
+      }
+      if (desfecho === 'internacao') {
+        detalhes.setor_id = setorInternacao
+        if (leitoInternacao) detalhes.leito_id = leitoInternacao
       }
       const { error } = await supabase.rpc('registrar_desfecho', {
         p_episodio: ep.id, p_desfecho: desfecho!, p_relato: relato || undefined, p_detalhes: detalhes,
@@ -352,11 +376,31 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
               {desfecho && PEDE_RELATO.includes(desfecho) && (
                 <Textarea aria-label="Relato" rows={2} placeholder="Descreva o ocorrido (mínimo de 15 letras)" value={relato} onChange={(e) => setRelato(e.target.value)} />
               )}
-              {(desfecho === 'observacao' || desfecho === 'internacao') && (
-                <p className="text-xs text-muted-foreground">O episódio segue aberto: {desfecho === 'observacao' ? 'box e prazo de 6 horas' : 'laudo de AIH e leito'} entram na Fase 3.</p>
+              {desfecho === 'observacao' && (
+                <p className="text-xs text-muted-foreground">O paciente vai para o primeiro box livre da Observação, com prazo de 6 horas para a conduta (alta ou internação). Sem box livre, fica na Observação aguardando box.</p>
+              )}
+              {desfecho === 'internacao' && (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="int-setor">Setor de internação</Label>
+                    <select id="int-setor" className="h-8 rounded-controle border border-fio bg-background px-2 text-sm" value={setorInternacao}
+                      onChange={(e) => { setSetorInternacao(e.target.value); setLeitoInternacao('') }}>
+                      <option value="">Escolha…</option>
+                      {(destinosInternacao.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="int-leito">Leito (opcional)</Label>
+                    <select id="int-leito" className="h-8 rounded-controle border border-fio bg-background px-2 text-sm" value={leitoInternacao}
+                      onChange={(e) => setLeitoInternacao(e.target.value)} disabled={!setorInternacao}>
+                      <option value="">Definir depois</option>
+                      {leitosLivres.map((l) => <option key={l.id} value={l.id}>{l.identificador}</option>)}
+                    </select>
+                  </div>
+                </div>
               )}
               {salvarDesfecho.error && <p className="text-sm text-destructive">{(salvarDesfecho.error as Error).message}</p>}
-              <Button className="self-end" disabled={!desfecho || salvarDesfecho.isPending} onClick={() => salvarDesfecho.mutate()}>Registrar desfecho</Button>
+              <Button className="self-end" disabled={!desfecho || (desfecho === 'internacao' && !setorInternacao) || salvarDesfecho.isPending} onClick={() => salvarDesfecho.mutate()}>Registrar desfecho</Button>
             </CardContent>
           </Card>
         </>
