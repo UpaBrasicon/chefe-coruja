@@ -1978,6 +1978,58 @@ export type Database = {
           },
         ]
       }
+      estoque_medicamento: {
+        Row: {
+          atualizado_em: string
+          atualizado_por: string
+          limite_critico: number | null
+          limite_falta: number | null
+          medicamento_id: string
+          quantidade: number
+          unidade_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          atualizado_por: string
+          limite_critico?: number | null
+          limite_falta?: number | null
+          medicamento_id: string
+          quantidade: number
+          unidade_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          atualizado_por?: string
+          limite_critico?: number | null
+          limite_falta?: number | null
+          medicamento_id?: string
+          quantidade?: number
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estoque_medicamento_atualizado_por_fkey"
+            columns: ["atualizado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estoque_medicamento_medicamento_id_fkey"
+            columns: ["medicamento_id"]
+            isOneToOne: false
+            referencedRelation: "medicamento"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estoque_medicamento_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       eventos_adt: {
         Row: {
           autor_id: string
@@ -2228,6 +2280,71 @@ export type Database = {
           },
           {
             foreignKeyName: "exames_pedidos_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      faltas_medicamento: {
+        Row: {
+          atualizada_em: string | null
+          atualizada_por: string | null
+          id: string
+          medicamento_id: string
+          observacao: string | null
+          sinalizada_em: string
+          sinalizada_por: string
+          situacao: string
+          unidade_id: string
+        }
+        Insert: {
+          atualizada_em?: string | null
+          atualizada_por?: string | null
+          id?: string
+          medicamento_id: string
+          observacao?: string | null
+          sinalizada_em?: string
+          sinalizada_por: string
+          situacao?: string
+          unidade_id: string
+        }
+        Update: {
+          atualizada_em?: string | null
+          atualizada_por?: string | null
+          id?: string
+          medicamento_id?: string
+          observacao?: string | null
+          sinalizada_em?: string
+          sinalizada_por?: string
+          situacao?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faltas_medicamento_atualizada_por_fkey"
+            columns: ["atualizada_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faltas_medicamento_medicamento_id_fkey"
+            columns: ["medicamento_id"]
+            isOneToOne: false
+            referencedRelation: "medicamento"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faltas_medicamento_sinalizada_por_fkey"
+            columns: ["sinalizada_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faltas_medicamento_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -4867,6 +4984,58 @@ export type Database = {
           },
         ]
       }
+      validacoes_prescricao: {
+        Row: {
+          em: string
+          farmaceutico_id: string
+          id: string
+          item_id: string
+          motivo: string | null
+          situacao: string
+          unidade_id: string
+        }
+        Insert: {
+          em?: string
+          farmaceutico_id: string
+          id?: string
+          item_id: string
+          motivo?: string | null
+          situacao: string
+          unidade_id: string
+        }
+        Update: {
+          em?: string
+          farmaceutico_id?: string
+          id?: string
+          item_id?: string
+          motivo?: string | null
+          situacao?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "validacoes_prescricao_farmaceutico_id_fkey"
+            columns: ["farmaceutico_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "validacoes_prescricao_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "prescricao_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "validacoes_prescricao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vinculos: {
         Row: {
           ativo: boolean
@@ -5002,6 +5171,20 @@ export type Database = {
       }
       aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
       aprovar_troca: { Args: { p_troca: string }; Returns: undefined }
+      atualizar_estoque: {
+        Args: {
+          p_limite_critico?: number
+          p_limite_falta?: number
+          p_medicamento: string
+          p_quantidade: number
+          p_unidade: string
+        }
+        Returns: undefined
+      }
+      avancar_falta: {
+        Args: { p_falta: string; p_situacao: string }
+        Returns: undefined
+      }
       buscar_pacientes: {
         Args: { p_termo: string; p_unidade: string }
         Returns: {
@@ -5239,6 +5422,19 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      disponibilidade: {
+        Args: { p_unidade: string }
+        Returns: {
+          apresentacao: string
+          atualizado_em: string
+          limite_critico: number
+          limite_falta: number
+          medicamento_id: string
+          principio_ativo: string
+          quantidade: number
+          situacao: string
+        }[]
+      }
       editar_mensagem: {
         Args: { p_corpo: string; p_mensagem_id: string }
         Returns: undefined
@@ -5285,6 +5481,30 @@ export type Database = {
           ultima_por: string
           ultima_situacao: string
           vasoativo: boolean
+          via: string
+        }[]
+      }
+      fila_validacao: {
+        Args: { p_unidade: string }
+        Returns: {
+          alta_vigilancia: boolean
+          descricao: string
+          diluicao_divergente: boolean
+          diluicao_texto: string
+          diluicao_versao: number
+          dose: string
+          incompatibilidades: string[]
+          item_id: string
+          justificativa_divergencia: string
+          local: string
+          paciente_nome: string
+          peso_kg: number
+          posologia: string
+          prescrito_em: string
+          prescrito_por: string
+          se_necessario: boolean
+          ultima_situacao: string
+          ultimo_motivo: string
           via: string
         }[]
       }
@@ -5543,6 +5763,8 @@ export type Database = {
           se_necessario: boolean
           suspenso_em: string
           tipo: string
+          validacao: string
+          validacao_motivo: string
           vasoativo: boolean
           via: string
         }[]
@@ -5814,6 +6036,14 @@ export type Database = {
           tipo: string
         }[]
       }
+      sinalizar_falta: {
+        Args: {
+          p_medicamento: string
+          p_observacao?: string
+          p_unidade: string
+        }
+        Returns: string
+      }
       sincronizar_registros: { Args: { p_itens: Json }; Returns: Json }
       situacao_pacote_alta: { Args: { p_token: string }; Returns: Json }
       solicitar_troca: {
@@ -5849,6 +6079,10 @@ export type Database = {
         Returns: string
       }
       turno_atual: { Args: never; Returns: string }
+      validar_item: {
+        Args: { p_confere: boolean; p_item: string; p_motivo?: string }
+        Returns: undefined
+      }
     }
     Enums: {
       papel:

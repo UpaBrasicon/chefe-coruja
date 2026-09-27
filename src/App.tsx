@@ -16,7 +16,7 @@ import { Spinner } from '@/components/ui/spinner'
 const Login = lazy(() => import('@/pages/Login').then((m) => ({ default: m.Login })))
 const Cadastro = lazy(() => import('@/pages/Cadastro').then((m) => ({ default: m.Cadastro })))
 const PapelEmPreparo = lazy(() => import('@/pages/PapelEmPreparo'))
-const Diluicoes = lazy(() => import('@/pages/farmacia/Diluicoes'))
+const Farmacia = lazy(() => import('@/pages/farmacia/Farmacia'))
 const Checagem = lazy(() => import('@/pages/enfermagem/Checagem'))
 const Recepcao = lazy(() => import('@/pages/recepcao/Recepcao'))
 const Triagem = lazy(() => import('@/pages/enfermagem/Triagem'))
@@ -136,9 +136,9 @@ export default function App() {
                         <Route path="/checagem" element={<Checagem />} />
                       </Route>
 
-                      {/* Farmacêutico: diluição padrão versionada (Fase 4.5) */}
+                      {/* Farmacêutico: validação, disponibilidade, faltas e diluição padrão (Fase 4.5/4.9) */}
                       <Route element={<RequireRole papeis={['farmaceutico']} />}>
-                        <Route path="/farmacia" element={<Diluicoes />} />
+                        <Route path="/farmacia" element={<Farmacia />} />
                       </Route>
 
                       {/* Atendimento médico da porta: SOAP, reclassificação e desfecho */}

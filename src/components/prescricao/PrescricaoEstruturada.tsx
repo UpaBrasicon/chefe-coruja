@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase'
 import { abrirImpressao } from '@/lib/prontuario'
 import { gravarRegistros, novoItem } from '@/lib/offline/sincronizar'
 import { useAuth } from '@/contexts/AuthContext'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,7 +28,7 @@ type ItemVigente = {
   id: string; tipo: 'medicamento' | 'cuidado'; descricao: string; medicamento_id: string | null; dose: string | null; via: string | null
   posologia: string | null; se_necessario: boolean; observacao: string | null; peso_kg: number | null; diluicao_versao: number | null
   diluicao_texto: string | null; diluicao_divergente: boolean; justificativa_divergencia: string | null; vasoativo: boolean
-  autor: string | null; criado_em: string
+  autor: string | null; criado_em: string; validacao: string | null; validacao_motivo: string | null
 }
 type Medicamento = { id: string; principio_ativo: string; apresentacao: string | null; concentracao: string | null; alta_vigilancia: boolean }
 type Diluicao = { id: string; versao: number; texto: string; fonte: string; revisor_crf: string | null }
@@ -173,6 +174,8 @@ function LinhaItem({ i, aoMudar, aoErro }: { i: ItemVigente; aoMudar: () => void
         </p>
       )}
       {i.observacao && <p className="text-xs text-muted-foreground">{i.observacao}</p>}
+      {i.validacao === 'devolvido' && <p className="text-xs text-critico">Farmácia devolveu para correção: {i.validacao_motivo}</p>}
+      {i.validacao === 'confere' && <p className="text-xs text-conforme">Conferido pela farmácia.</p>}
       {suspendendo ? (
         <div className="flex gap-2">
           <Input className="h-8" placeholder="Por que suspende" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
@@ -203,6 +206,8 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
   const [justificativa, setJustificativa] = React.useState('')
   const [novoPeso, setNovoPeso] = React.useState('')
   const [pedePeso, setPedePeso] = React.useState(false)
+  const [faltaAvisada, setFaltaAvisada] = React.useState(false)
+  const { unidadeAtiva } = useUnidade()
 
   const resultados = useQuery({
     queryKey: ['busca-medicamento', busca],
@@ -292,7 +297,13 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
                 <span className="font-medium">{med.principio_ativo}</span>
                 <span className="text-tinta-apoio">{[med.apresentacao, med.concentracao].filter(Boolean).join(' · ')}</span>
                 {med.alta_vigilancia && <Badge variant="warning">alta vigilância</Badge>}
-                <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setMed(null)}>Trocar</Button>
+                <Button size="xs" variant="ghost" className="ml-auto" onClick={async () => {
+                  if (!unidadeAtiva) return
+                  const { error } = await supabase.rpc('sinalizar_falta', { p_unidade: unidadeAtiva.unidade_id, p_medicamento: med.id })
+                  aoErro(error ? error.message : null)
+                  if (!error) setFaltaAvisada(true)
+                }}>{faltaAvisada ? 'Falta sinalizada' : 'Sinalizar falta'}</Button>
+                <Button size="xs" variant="ghost" onClick={() => { setMed(null); setFaltaAvisada(false) }}>Trocar</Button>
               </div>
             ) : (
               <div className="flex flex-col gap-1">

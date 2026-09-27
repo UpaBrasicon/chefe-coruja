@@ -55,7 +55,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   ],
   tecnico_enfermagem: [{ to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true }],
   recepcao: [{ to: '/recepcao', rotulo: 'Recepção', icone: ClipboardList, exato: true }],
-  farmaceutico: [{ to: '/farmacia', rotulo: 'Diluição padrão', curto: 'Diluição', icone: FlaskConical, exato: true }],
+  farmaceutico: [{ to: '/farmacia', rotulo: 'Farmácia', icone: FlaskConical, exato: true }],
   telemedicina: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
   admin: [
     { to: '/painel', rotulo: 'Rede', icone: LayoutDashboard, exato: true },
