@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
 import { temReferenciaPediatrica } from '@/clinico/ficha'
-import type { Escore, Respostas } from '@/clinico/escore'
+import { numero, type Escore, type Respostas } from '@/clinico/escore'
 import { SemReferenciaPediatrica } from '@/components/plantonista/SemReferenciaPediatrica'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
@@ -36,7 +37,33 @@ export function EscoreTela({ escore }: { escore: Escore }) {
           </div>
 
           {escore.itens.map((item) =>
-            item.tipo === 'escolha' ? (
+            item.tipo === 'numero' ? (
+              <div key={item.id} className="flex flex-col gap-1.5">
+                <Label htmlFor={`esc-${item.id}`} className="text-sm font-semibold">
+                  {item.rotulo}
+                  {item.unidade && <span className="ml-1 font-normal text-tinta-sussurro">({item.unidade})</span>}
+                  {item.opcional && <span className="ml-1 font-normal text-tinta-sussurro">— opcional</span>}
+                </Label>
+                {item.ajuda && <p className="text-apoio text-tinta-sussurro">{item.ajuda}</p>}
+                <Input
+                  id={`esc-${item.id}`}
+                  type="number"
+                  inputMode="decimal"
+                  className="max-w-48"
+                  min={item.min}
+                  max={item.max}
+                  step={item.passo ?? 'any'}
+                  value={typeof r[item.id] === 'number' ? String(r[item.id]) : ''}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(',', '.')
+                    setR((x) => ({ ...x, [item.id]: v === '' ? undefined : Number(v) }))
+                  }}
+                />
+                {typeof r[item.id] === 'number' && numero(escore, r, item.id) === undefined && (
+                  <p className="text-apoio text-critico">Valor fora da faixa aceita ({item.min ?? '—'} a {item.max ?? '—'}).</p>
+                )}
+              </div>
+            ) : item.tipo === 'escolha' ? (
               <div key={item.id} className="flex flex-col gap-2">
                 <Label className="text-sm font-semibold">{item.rotulo}</Label>
                 {item.ajuda && <p className="text-apoio text-tinta-sussurro">{item.ajuda}</p>}
@@ -75,7 +102,7 @@ export function EscoreTela({ escore }: { escore: Escore }) {
 
       {!semRefPedi && !semRefAdulto && !res && (
         <Card>
-          <CardContent className="pt-6 text-sm text-muted-foreground">Responda todos os itens de escolha para ver o resultado.</CardContent>
+          <CardContent className="pt-6 text-sm text-muted-foreground">Responda todos os itens obrigatórios para ver o resultado.</CardContent>
         </Card>
       )}
 

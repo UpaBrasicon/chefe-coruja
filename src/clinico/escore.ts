@@ -9,8 +9,10 @@ export type OpcaoEscolha = { rotulo: string; valor: number; naoTestavel?: boolea
 export type Item =
   | { tipo: 'escolha'; id: string; rotulo: string; opcoes: OpcaoEscolha[]; ajuda?: string }
   | { tipo: 'marca'; id: string; rotulo: string; pontos: number; grupo?: string }
+  /** valor contínuo (laboratório, idade, sinal vital); obrigatório salvo `opcional` */
+  | { tipo: 'numero'; id: string; rotulo: string; unidade?: string; min?: number; max?: number; passo?: number; opcional?: boolean; ajuda?: string }
 
-/** escolha: índice da opção marcada; marca: true/false */
+/** escolha: índice da opção marcada; marca: true/false; numero: o valor */
 export type Respostas = Record<string, number | boolean | undefined>
 
 export type Resultado = {
@@ -41,9 +43,21 @@ export function escolha(escore: Escore, r: Respostas, id: string): OpcaoEscolha 
   return item.opcoes[idx]
 }
 
-/** Todas as escolhas respondidas? (marcas não são obrigatórias) */
+/** Valor numérico informado e dentro da faixa do item, ou undefined. */
+export function numero(escore: Escore, r: Respostas, id: string): number | undefined {
+  const item = escore.itens.find((i) => i.id === id)
+  const v = r[id]
+  if (!item || item.tipo !== 'numero' || typeof v !== 'number' || !Number.isFinite(v)) return undefined
+  if ((item.min !== undefined && v < item.min) || (item.max !== undefined && v > item.max)) return undefined
+  return v
+}
+
+/** Escolhas e números obrigatórios respondidos? (marcas não são obrigatórias) */
 export function completo(escore: Escore, r: Respostas): boolean {
-  return escore.itens.every((i) => i.tipo !== 'escolha' || typeof r[i.id] === 'number')
+  return escore.itens.every((i) =>
+    i.tipo === 'escolha' ? typeof r[i.id] === 'number'
+      : i.tipo === 'numero' ? i.opcional || numero(escore, r, i.id) !== undefined
+        : true)
 }
 
 /** Soma dos pontos: valor das escolhas + pontos das marcas ligadas. */
@@ -52,6 +66,7 @@ export function somar(escore: Escore, r: Respostas, ids?: string[]): number {
     .filter((i) => !ids || ids.includes(i.id))
     .reduce((s, i) => {
       if (i.tipo === 'marca') return s + (r[i.id] === true ? i.pontos : 0)
+      if (i.tipo === 'numero') return s
       return s + (escolha(escore, r, i.id)?.valor ?? 0)
     }, 0)
 }

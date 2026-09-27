@@ -34,6 +34,15 @@ test('escores: ids únicos', () => {
   assert.equal(new Set(ids).size, ids.length)
 })
 
+test('escore: item numérico fora da faixa não conta como respondido', async () => {
+  const { completo, numero } = await import('./escore.ts')
+  const e = { ficha: base, descricao: '', itens: [{ tipo: 'numero' as const, id: 'x', rotulo: 'x', min: 0, max: 10 }], calcular: () => null }
+  assert.equal(numero(e, { x: 11 }, 'x'), undefined)
+  assert.equal(completo(e, { x: 11 }), false)
+  assert.equal(completo(e, { x: 5 }), true)
+  assert.equal(completo(e, {}), false)
+})
+
 // ---- dengue ----
 const semSinais = { sangramentoPele: false, sangramentoMucosa: false, sinaisAlarme: 0, sinaisChoque: 0 }
 test('dengue: o sinal mais grave define o grupo', () => {
