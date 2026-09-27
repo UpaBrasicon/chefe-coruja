@@ -207,16 +207,19 @@ SELECT pg_temp.deve_passar('job: gerar_censo_todas_unidades como postgres',
   'SELECT public.gerar_censo_todas_unidades()');
 
 -- ════════════════════════════════════════════════════════════════════════════
--- 6. Nenhuma função de public executável por anon
+-- 6. Nenhuma função de public executável por anon — exceto as da lista, que
+--    são públicas de propósito e só leem o que o token delas permite.
+--    painel_chamadas: TV da porta, por token (Fase 2.3).
 -- ════════════════════════════════════════════════════════════════════════════
 DO $$
-DECLARE n int;
+DECLARE n int; nomes text;
 BEGIN
-  SELECT count(*) INTO n
+  SELECT count(*), string_agg(p.proname, ', ') INTO n, nomes
   FROM pg_proc p JOIN pg_namespace ns ON ns.oid = p.pronamespace
-  WHERE ns.nspname = 'public' AND has_function_privilege('anon', p.oid, 'EXECUTE');
-  IF n > 0 THEN RAISE EXCEPTION 'FALHOU: % funções de public ainda executáveis por anon', n; END IF;
-  RAISE NOTICE 'OK  nenhuma função de public executável por anon';
+  WHERE ns.nspname = 'public' AND has_function_privilege('anon', p.oid, 'EXECUTE')
+    AND p.proname NOT IN ('painel_chamadas');
+  IF n > 0 THEN RAISE EXCEPTION 'FALHOU: % funções de public ainda executáveis por anon (%)', n, nomes; END IF;
+  RAISE NOTICE 'OK  nenhuma função de public executável por anon (fora as públicas de propósito)';
 END $$;
 
 ROLLBACK;

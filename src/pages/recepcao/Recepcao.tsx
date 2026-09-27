@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ClipboardList, Search, UserPlus, UserRoundCheck } from 'lucide-react'
+import { ClipboardList, Search, Tv, UserPlus, UserRoundCheck } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { RetirarDaFila } from '@/components/porta/Chamada'
 
 // Recepção (Fase 2.1): procurar antes de cadastrar, abrir a ficha — que abre o
 // episódio — e ver a fila da triagem da porta. A Recepção não lê prontuário:
@@ -200,6 +201,29 @@ export default function Recepcao() {
         </Chips>
       )}
 
+      {porta && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              // a janela abre já (dentro do clique) e recebe o endereço depois
+              const janela = window.open('', '_blank')
+              const { data, error } = await supabase.rpc('gerar_link_painel', { p_setor: porta.id })
+              if (error || !data) {
+                janela?.close()
+                setAberta(null)
+                alert(error?.message ?? 'Não foi possível abrir o painel.')
+                return
+              }
+              if (janela) janela.location.href = `/painel/${data as string}`
+            }}
+          >
+            <Tv /> Abrir painel da TV
+          </Button>
+          <span className="text-xs text-muted-foreground">Gerar de novo desliga o link anterior.</span>
+        </div>
+      )}
+
       {aberta && <p role="status" className="text-sm text-conforme">{aberta}</p>}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
@@ -368,6 +392,7 @@ export default function Recepcao() {
                       {rotulosPrioridade(e.prioridades_legais).map((r) => <Badge key={r} variant="outline">{r}</Badge>)}
                     </div>
                   )}
+                  <RetirarDaFila episodioId={e.id} aviso={false} />
                 </div>
               </div>
             ))}

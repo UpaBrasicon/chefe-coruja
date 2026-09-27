@@ -492,6 +492,78 @@ export type Database = {
         }
         Relationships: []
       }
+      chamadas: {
+        Row: {
+          chamado_por: string
+          criado_em: string
+          episodio_id: string
+          etapa: string
+          id: string
+          numero: number
+          sala_id: string
+          setor_id: string
+          unidade_id: string
+        }
+        Insert: {
+          chamado_por: string
+          criado_em?: string
+          episodio_id: string
+          etapa: string
+          id?: string
+          numero: number
+          sala_id: string
+          setor_id: string
+          unidade_id: string
+        }
+        Update: {
+          chamado_por?: string
+          criado_em?: string
+          episodio_id?: string
+          etapa?: string
+          id?: string
+          numero?: number
+          sala_id?: string
+          setor_id?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chamadas_chamado_por_fkey"
+            columns: ["chamado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chamadas_episodio_id_fkey"
+            columns: ["episodio_id"]
+            isOneToOne: false
+            referencedRelation: "episodios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chamadas_sala_id_fkey"
+            columns: ["sala_id"]
+            isOneToOne: false
+            referencedRelation: "salas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chamadas_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chamadas_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_mensagens: {
         Row: {
           autor_id: string
@@ -1220,6 +1292,7 @@ export type Database = {
           cor_atual: string | null
           created_at: string
           desfecho: string | null
+          desfecho_motivo: string | null
           encerrado_em: string | null
           encerrado_por: string | null
           etapa: string
@@ -1239,6 +1312,7 @@ export type Database = {
           cor_atual?: string | null
           created_at?: string
           desfecho?: string | null
+          desfecho_motivo?: string | null
           encerrado_em?: string | null
           encerrado_por?: string | null
           etapa?: string
@@ -1258,6 +1332,7 @@ export type Database = {
           cor_atual?: string | null
           created_at?: string
           desfecho?: string | null
+          desfecho_motivo?: string | null
           encerrado_em?: string | null
           encerrado_por?: string | null
           etapa?: string
@@ -3164,6 +3239,41 @@ export type Database = {
           },
         ]
       }
+      salas: {
+        Row: {
+          ativo: boolean
+          id: string
+          nome: string
+          ordem: number
+          setor_id: string
+          tipo: string
+        }
+        Insert: {
+          ativo?: boolean
+          id?: string
+          nome: string
+          ordem?: number
+          setor_id: string
+          tipo: string
+        }
+        Update: {
+          ativo?: boolean
+          id?: string
+          nome?: string
+          ordem?: number
+          setor_id?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salas_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       setores: {
         Row: {
           ativo: boolean
@@ -3870,6 +3980,10 @@ export type Database = {
           taxa_ocupacao: number
         }[]
       }
+      chamar_paciente: {
+        Args: { p_episodio: string; p_sala: string }
+        Returns: Json
+      }
       classificar_risco: {
         Args: {
           p_avaliacao?: Json
@@ -4022,6 +4136,7 @@ export type Database = {
           valor: number
         }[]
       }
+      gerar_link_painel: { Args: { p_setor: string }; Returns: string }
       gerar_notificacoes_turno: {
         Args: { p_unidade: string }
         Returns: {
@@ -4082,6 +4197,7 @@ export type Database = {
           setor_nome: string
         }[]
       }
+      painel_chamadas: { Args: { p_token: string }; Returns: Json }
       papel_na_unidade: { Args: { unidade: string }; Returns: string }
       passar_plantao: {
         Args: { p_destino: string; p_escala: string; p_justificativa?: string }
@@ -4213,6 +4329,10 @@ export type Database = {
           noturnos: number
           perfil_id: string
         }[]
+      }
+      retirar_da_fila: {
+        Args: { p_episodio: string; p_justificativa: string; p_motivo: string }
+        Returns: undefined
       }
       revisoes_sem_conexao: {
         Args: { p_unidade: string }

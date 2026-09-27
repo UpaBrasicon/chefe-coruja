@@ -16,6 +16,8 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
+import { BotaoChamar, RetirarDaFila } from '@/components/porta/Chamada'
+import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 
 // Triagem (Fase 2.2): o enfermeiro afere os sinais vitais e faz a
 // classificação de risco. O protocolo da unidade aparece como REFERÊNCIA — o
@@ -308,6 +310,9 @@ export default function Triagem() {
     },
   })
 
+  const setoresDaFila = [...new Set((fila.data ?? []).map((e) => e.setor_id))]
+  const chamadas = useChamadasPorEpisodio(setoresDaFila, 'triagem')
+
   if (atual) return <Classificar ep={atual} onFim={() => setAtual(null)} />
 
   return (
@@ -323,7 +328,8 @@ export default function Triagem() {
           {fila.error && <p className="text-sm text-destructive">{(fila.error as Error).message}</p>}
           {fila.data?.length === 0 && <Vazio icone={Stethoscope} titulo="Ninguém aguardando triagem" />}
           {fila.data?.map((e, i) => (
-            <button key={e.id} type="button" onClick={() => setAtual(e)} className="flex items-start gap-3 rounded-controle border border-fio p-3 text-left hover:border-acao">
+            <div key={e.id} className="flex flex-col gap-2 rounded-controle border border-fio p-3">
+            <button type="button" onClick={() => setAtual(e)} className="flex items-start gap-3 text-left hover:text-acao">
               <span className="w-5 shrink-0 text-right text-sm tabular-nums text-muted-foreground">{i + 1}</span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-tinta">{e.paciente?.nome_social || e.paciente?.nome}</span>
@@ -335,6 +341,11 @@ export default function Triagem() {
                 )}
               </span>
             </button>
+            <div className="flex flex-wrap items-start justify-between gap-2 pl-8">
+              <BotaoChamar episodioId={e.id} setorId={e.setor_id} etapa="triagem" chamadas={chamadas.data?.get(e.id) ?? 0} />
+              <RetirarDaFila episodioId={e.id} aviso={(chamadas.data?.get(e.id) ?? 0) >= 3} />
+            </div>
+            </div>
           ))}
         </CardContent>
       </Card>

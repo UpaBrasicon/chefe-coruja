@@ -18,6 +18,7 @@ const Cadastro = lazy(() => import('@/pages/Cadastro').then((m) => ({ default: m
 const PapelEmPreparo = lazy(() => import('@/pages/PapelEmPreparo'))
 const Recepcao = lazy(() => import('@/pages/recepcao/Recepcao'))
 const Triagem = lazy(() => import('@/pages/enfermagem/Triagem'))
+const PainelChamada = lazy(() => import('@/pages/public/PainelChamada'))
 const LinkReceita = lazy(() =>
   import('@/pages/public/LinkReceita').then((m) => ({ default: m.LinkReceita }))
 )
@@ -106,6 +107,7 @@ export default function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/cadastro" element={<Cadastro />} />
                 <Route path="/r/:tipo/:token" element={<LinkReceita />} />
+                <Route path="/painel/:token" element={<PainelChamada />} />
 
                 <Route element={<RequireAuth />}>
                   <Route path="/aguardando" element={<AguardandoLiberacao />} />
