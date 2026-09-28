@@ -1,5 +1,6 @@
 import { completo, escolha, marcadas, numero, somar, type Escore, type Item } from '../escore.ts'
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Tromboembolismo pulmonar (cap. 32, p. 429–449) e pneumonia adquirida na
 // comunidade (cap. 33, p. 450–467) do Manual de Medicina de Emergência do
@@ -180,7 +181,36 @@ export const atsIdsaPac: Escore = {
 // ---------------------------------------------------------------------------
 // Antibióticos por grupo (Tabela 10, p. 463–464) e texto (p. 460–462)
 
-export const fichaPacAntibioticoAdulto = fichaAdulto('adulto-pac-antibiotico', 'PAC — antibiótico por grupo de risco (adulto)', `${PAC}, p. 452–465 (Tabelas 5, 8 e 10)`)
+// Versão .1 de 28/09/2026: diretriz ATS 2026 da PAC (publicada on-line em
+// 11/11/2025) ao lado do manual — lida pela página do periódico e pelo
+// comunicado da ATS (texto integral bloqueado). Os esquemas antimicrobianos
+// não foram revisados por ela (segue a ATS/IDSA 2019); o manual fica como base.
+
+export const ATS_PAC_2026: Fonte = {
+  citacao: 'Metlay JP, et al. Diagnosis and Management of Community-acquired Pneumonia: An Official American Thoracic Society Clinical Practice Guideline. Am J Respir Crit Care Med. 2026;212(1):24–44 (on-line 11/11/2025). Recomendações lidas na página do periódico e no comunicado da ATS; texto integral não aberto.',
+  url: 'https://doi.org/10.1164/rccm.202505-1077ST',
+}
+
+const PAG_PAC_ATB = `${PAC}, p. 452–465 (Tabelas 5, 8 e 10)`
+
+export const fichaPacAntibioticoAdulto: Ficha = {
+  ...fichaAdulto('adulto-pac-antibiotico', 'PAC — antibiótico por grupo de risco (adulto)', PAG_PAC_ATB),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_PAC_ATB), ATS_PAC_2026],
+  revisadoEm: '28/09/2026 (ATS 2026 conferida pela página do periódico; manual mantido como base)',
+}
+
+export type ItemPac2026 = { tema: string; ats: string; forca: string; livro: string }
+
+export const DIRETRIZ_PAC_2026: ItemPac2026[] = [
+  { tema: 'Corticoide na PAC grave (internado)', ats: 'Sugere corticoide sistêmico; exclui pneumonia grave por influenza. A diretriz não fixa esquema (a base é o ensaio CAPE COD, que usou hidrocortisona 200 mg/dia — dado de fonte secundária, não conferido no texto integral)', forca: 'condicional, evidência de baixa qualidade', livro: 'sem indicação na maioria; metilprednisolona 0,5 mg/kg 12/12 h por 5 dias pode ser considerada no choque séptico com altas doses de vasopressor (p. 461)' },
+  { tema: 'Corticoide na PAC não grave (internado)', ats: 'Recomenda NÃO administrar corticoide sistêmico', forca: 'forte, evidência de baixa qualidade', livro: 'sem indicação (p. 461)' },
+  { tema: 'Duração — não grave (ambulatorial e internado) com estabilidade clínica', ats: 'Menos de 5 dias de antibiótico, mínimo de 3 dias', forca: 'condicional, evidência de baixa qualidade', livro: 'baixo risco 5 dias; intermediário e alto 7 a 10 dias (p. 460)' },
+  { tema: 'Duração — grave com estabilidade clínica', ats: '5 dias ou mais', forca: 'a página do periódico rotula "forte, baixa qualidade"; o enunciado usa "sugerimos"', livro: '7 a 10 dias (p. 460)' },
+  { tema: 'Ambulatorial sem comorbidade com vírus respiratório positivo', ats: 'Sugere não prescrever antibiótico empírico (com comorbidade: prescrever)', forca: 'condicional, evidência de muito baixa qualidade', livro: '—' },
+  { tema: 'Ultrassom pulmonar', ats: 'Alternativa aceitável à radiografia no diagnóstico, onde há experiência', forca: 'condicional, evidência de baixa qualidade', livro: '—' },
+  { tema: 'Esquemas antimicrobianos e procalcitonina', ats: 'Não revisados nesta diretriz (mantém ATS/IDSA 2019)', forca: '—', livro: 'Tabela 10 (p. 463–464); procalcitonina p. 452 e 464' },
+]
 
 export type GrupoPac = 'baixo' | 'baixoComorbidade' | 'intermediario' | 'alto' | 'pseudomonas'
 

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
-import { ERRATA_VT_SDRA,
+import { DIRETRIZ_SDRA_2024, ERRATA_VT_SDRA,
   NOME_BERLIM, RESGATE_HIPOXEMIA, SDRA, TABELAS_PEEP, berlim, conferirSdra, drivingPressure, fichaSdraAdulto, marcosPf, peepParaFio2,
-  relacaoPF, tabelaPeepDaClasse, vtSdra, type ColunaPeep, type TabelaPeepId,
+  relacaoPF, relacaoSF, sdraGlobal2024, tabelaPeepDaClasse, vtSdra, type ColunaPeep, type SuporteSdra2024, type TabelaPeepId,
 } from '@/clinico/adulto/ventilacaoMecanica'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -40,8 +40,14 @@ export function SdraVentilacaoAdulto() {
   const [fluxo, setFluxo] = useState(0)
   const [ph, setPh] = useState(0)
 
+  const [spo2, setSpo2] = useState(0)
+  const [suporte, setSuporte] = useState<SuporteSdra2024>('vmi')
+  const [limitado, setLimitado] = useState(false)
+
   const pf = relacaoPF(pao2, fio2)
   const b = pf !== null ? berlim(pf, peep) : null
+  const sf = relacaoSF(spo2, fio2)
+  const g24 = pf !== null || sf !== null ? sdraGlobal2024({ pf: pf ?? undefined, sf: sf ?? undefined, spo2: informado(spo2), suporte, peep: informado(peep), recursosLimitados: limitado }) : null
   const vt = b?.classe ? vtSdra(b.classe, peso) : null
   const leitura = peepParaFio2(tabela, fio2 / 100)
   const destaque = leitura ? (leitura.exatas.length ? leitura.exatas : [leitura.anterior, leitura.seguinte].filter((c): c is ColunaPeep => !!c)) : []
@@ -67,6 +73,23 @@ export function SdraVentilacaoAdulto() {
             <Alertas itens={marcosPf(pf)} />
           </>
         )}
+      </Bloco>
+
+      <Bloco titulo="Definição global de SDRA 2024" descricao="Só o critério de oxigenação (Tabela 1): P/F ≤ 300 ou S/F ≤ 315 com SpO2 ≤ 97%. Início em 1 semana, opacidades bilaterais (RX, TC ou ultrassom) e exclusão de derrame/atelectasia/nódulos ficam com quem avalia.">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <NumberField id="sd-spo2" label="SpO2 (para a S/F)" unit="%" value={spo2} onChange={setSpo2} step={1} max={100} />
+          <Escolha label="Suporte respiratório" value={suporte} onChange={setSuporte} opcoes={[
+            { value: 'vmi', label: 'Ventilação invasiva' }, { value: 'vni', label: 'VNI/CPAP ≥ 5 cmH2O' }, { value: 'cnaf30', label: 'CNAF ≥ 30 L/min' }, { value: 'o2', label: 'O2 convencional' }, { value: 'nenhum', label: 'Nenhum' },
+          ]} />
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-4" checked={limitado} onChange={(e) => setLimitado(e.target.checked)} /> Recursos limitados (sem PEEP/fluxo exigidos)</label>
+        </div>
+        {sf !== null && <Resultado rotulo="S/F" valor={`${br(sf, 0)}`} />}
+        {g24 ? (
+          <>
+            <Resultado rotulo="Leitura 2024" valor={g24.categoria ? `SDRA ${g24.categoria}${g24.gravidade ? ` — ${g24.gravidade}` : ''}${g24.criterioOxigenacao ? '' : ' — oxigenação acima dos cortes'}` : 'sem categoria com o suporte informado'} />
+            {g24.notas.map((n) => <p key={n} className="text-muted-foreground">{n}</p>)}
+          </>
+        ) : <p className="text-muted-foreground">Informe PaO2 e FiO2 ou SpO2 e FiO2.</p>}
       </Bloco>
 
       <Bloco titulo="Tabela 5 — ajuste na SDRA (p. 506)" descricao="O livro não diz qual peso usar no mL/kg nem traz fórmula de peso predito: informe o peso que você quer usar.">
@@ -109,6 +132,24 @@ export function SdraVentilacaoAdulto() {
 
       <Bloco titulo="Hipoxemia grave — recursos citados (p. 507–508)">
         <ul className="list-disc pl-5">{RESGATE_HIPOXEMIA.map((r) => <li key={r.nome}><strong>{r.nome}:</strong> {r.texto} <span className="text-muted-foreground">({r.pagina})</span></li>)}</ul>
+      </Bloco>
+
+      <Bloco titulo="ATS 2024, ESICM 2023 e definição global 2024 × manual do HC" descricao="Textos integrais lidos. Onde a ATS e a ESICM divergem (bloqueio neuromuscular), as duas aparecem.">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">Diretriz</th><th className="pr-3 pb-2">Força · fonte</th><th className="pb-2">Manual do HC</th></tr></thead>
+            <tbody>
+              {DIRETRIZ_SDRA_2024.map((d) => (
+                <tr key={d.tema} className="border-t">
+                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
+                  <td className="pr-3 py-2">{d.diretriz}</td>
+                  <td className="pr-3 py-2 text-muted-foreground">{d.forca} · {d.fonte}</td>
+                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Bloco>
     </ToolLayout>
   )

@@ -1,5 +1,6 @@
 import { completo, somar, type Escore } from '../escore.ts'
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Transfusão de hemocomponentes no adulto — cap. 82 do Manual de Medicina de
 // Emergência do HCFMUSP (3ª ed., 2022), p. 1075–1085, com o trecho de
@@ -10,8 +11,82 @@ import { fichaAdulto } from './fonte.ts'
 //
 // Onde o texto do capítulo e a Tabela 4 (p. 1082) divergem, as duas versões
 // aparecem, cada uma com a página.
+//
+// Versão .1 de 28/09/2026: diretrizes AABB 2023 (hemácias; texto integral
+// lido), AABB 2025 (IAM; resumo lido) e AABB/ICTMG 2025 (plaquetas; resumo
+// lido) ao lado do manual. O manual continua sendo a base da conta.
 
-export const fichaTransfusaoAdulto = fichaAdulto('adulto-transfusao-hemocomponentes', 'Transfusão de hemocomponentes — adulto', 'cap. 82 Transfusão de hemocomponentes, p. 1075–1082; cap. 47, p. 647')
+export const AABB_2023: Fonte = {
+  citacao: 'Carson JL, Stanworth SJ, Guyatt G, et al. Red Blood Cell Transfusion: 2023 AABB International Guidelines. JAMA. 2023;330(19):1892–1902. Recomendações 1 e 2 e boa prática (p. 1894).',
+  url: 'https://doi.org/10.1001/jama.2023.12914',
+}
+
+export const AABB_IAM_2025: Fonte = {
+  citacao: 'Carson JL, et al. Red Cell Transfusion in Acute Myocardial Infarction: AABB International Clinical Practice Guidelines. Ann Intern Med. 2025;178:1469–1477 (resumo lido).',
+  url: 'https://doi.org/10.7326/ANNALS-25-00706',
+}
+
+export const AABB_PLAQUETAS_2025: Fonte = {
+  citacao: 'Metcalf RA, et al. Platelet Transfusion: 2025 AABB and ICTMG International Clinical Practice Guidelines. JAMA. 2025;334(7):606–617 (resumo lido).',
+  url: 'https://doi.org/10.1001/jama.2025.7529',
+}
+
+const PAG_TRANSFUSAO = 'cap. 82 Transfusão de hemocomponentes, p. 1075–1082; cap. 47, p. 647'
+
+export const fichaTransfusaoAdulto: Ficha = {
+  ...fichaAdulto('adulto-transfusao-hemocomponentes', 'Transfusão de hemocomponentes — adulto', PAG_TRANSFUSAO),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_TRANSFUSAO), AABB_2023, AABB_IAM_2025, AABB_PLAQUETAS_2025],
+  revisadoEm: '28/09/2026 (AABB 2023 lida no texto; AABB 2025 e AABB/ICTMG 2025 pelos resumos; manual mantido como base)',
+}
+
+/** AABB 2023 (adultos hospitalizados) e AABB 2025 (IAM): limiar de Hb por situação. */
+export type GatilhoHb2023 = { id: string; situacao: string; hb: number; forca: string; fonte: string }
+
+export const GATILHOS_HB_AABB: GatilhoHb2023[] = [
+  { id: 'estavel', situacao: 'Adulto hospitalizado, hemodinamicamente estável (inclusive crítico)', hb: 7, forca: 'forte, evidência moderada (rec. 1)', fonte: 'AABB 2023, p. 1894' },
+  { id: 'cardiaca', situacao: 'Cirurgia cardíaca', hb: 7.5, forca: 'observação da rec. 1: limiar usado na maioria dos ensaios', fonte: 'AABB 2023, p. 1894' },
+  { id: 'ortopedica-cv', situacao: 'Cirurgia ortopédica ou doença cardiovascular preexistente', hb: 8, forca: 'observação da rec. 1', fonte: 'AABB 2023, p. 1894' },
+  { id: 'hemato-onco', situacao: 'Doença hematológica ou oncológica, hospitalizado', hb: 7, forca: 'condicional, evidência baixa (rec. 2)', fonte: 'AABB 2023, p. 1894' },
+  { id: 'iam', situacao: 'Infarto agudo do miocárdio, hospitalizado: estratégia LIBERAL', hb: 10, forca: 'condicional, evidência baixa; 7–8 g/dL pode aumentar a mortalidade', fonte: 'AABB 2025 (resumo)' },
+]
+
+export const BOA_PRATICA_AABB_2023 = 'Boa prática: decidir pela Hb e também por sintomas, sinais, outros exames, alternativas à transfusão e preferências do paciente; o limiar de 7 g/dL não se aplica a sangramento maciço, hipoxemia grave ou instabilidade (AABB 2023, p. 1894).'
+
+/** Linhas da AABB em que a Hb informada está abaixo do limiar (só informação). */
+export function gatilhosAbaixoAabb(hb: number): string[] {
+  if (!Number.isFinite(hb) || hb <= 0) return []
+  return GATILHOS_HB_AABB.filter((g) => hb < g.hb).map((g) => g.id)
+}
+
+/** AABB/ICTMG 2025 — plaquetas por situação (resumo da diretriz). `limiar` null = não transfundir. */
+export type GatilhoPlaquetas2025 = { situacao: string; limiar: number | null; forca: 'forte' | 'condicional' }
+
+export const PLAQUETAS_AABB_2025: GatilhoPlaquetas2025[] = [
+  { situacao: 'Plaquetopenia hipoproliferativa sem sangramento, em quimioterapia ou transplante alogênico', limiar: 10_000, forca: 'forte' },
+  { situacao: 'Plaquetopenia de consumo em neonato sem sangramento maior', limiar: 25_000, forca: 'forte' },
+  { situacao: 'Punção lombar', limiar: 20_000, forca: 'forte' },
+  { situacao: 'Dengue com plaquetopenia de consumo, sem sangramento maior: NÃO transfundir', limiar: null, forca: 'forte' },
+  { situacao: 'Transplante autólogo ou anemia aplásica sem sangramento: sem transfusão profilática', limiar: null, forca: 'condicional' },
+  { situacao: 'Plaquetopenia de consumo no adulto sem sangramento maior', limiar: 10_000, forca: 'condicional' },
+  { situacao: 'Cateter venoso central em sítio compressível', limiar: 10_000, forca: 'condicional' },
+  { situacao: 'Radiologia intervencionista: baixo risco', limiar: 20_000, forca: 'condicional' },
+  { situacao: 'Radiologia intervencionista: alto risco', limiar: 50_000, forca: 'condicional' },
+  { situacao: 'Cirurgia maior não neuroaxial', limiar: 50_000, forca: 'condicional' },
+  { situacao: 'Cirurgia cardiovascular sem plaquetopenia e sem hemorragia maior (inclusive com circulação extracorpórea): NÃO transfundir', limiar: null, forca: 'condicional' },
+  { situacao: 'Hemorragia intracraniana não operatória com plaquetas > 100.000/µL, inclusive em uso de antiagregante: NÃO transfundir', limiar: null, forca: 'condicional' },
+]
+
+/** Onde as diretrizes e o manual não coincidem. */
+export const DIFERENCAS_TRANSFUSAO_2023: string[] = [
+  'Síndrome coronariana aguda: o manual usa Hb < 8 g/dL (Tabela 1, p. 1076); a AABB 2025 sugere estratégia liberal (< 10 g/dL) no IAM hospitalizado, condicional, porque 7–8 g/dL pode aumentar a mortalidade.',
+  'Anemia sintomática: o manual manda considerar Hb < 10 g/dL (Tabela 1); a AABB 2023 não traz esse limiar — trata sintomas e sinais como parte da boa prática, com 7 g/dL para o estável.',
+  'Cirurgia cardíaca 7,5 g/dL e ortopédica/doença cardiovascular 8 g/dL (AABB 2023) coincidem com o "considerar ≤ 8" do manual (p. 1076).',
+  'Plaquetas com febre/infecção: o manual usa < 20.000/µL (Tabela 3, p. 1078); a AABB/ICTMG 2025 usa < 10.000 na hipoproliferativa sem sangramento, sem linha própria para febre.',
+  'Cateter venoso central: manual < 20.000 (Tabela 3) × AABB/ICTMG 2025 < 10.000 em sítio compressível (condicional).',
+  'Dengue sem sangramento maior: a AABB/ICTMG 2025 recomenda NÃO transfundir plaquetas (forte); o manual não trata do tema neste capítulo.',
+  'Hemorragia intracraniana sob antiagregante sem cirurgia e plaquetas > 100.000: a AABB/ICTMG 2025 recomenda não transfundir; o manual traz "sangramento de SNC < 100.000" (Tabela 3).',
+]
 
 export type Faixa = [number, number]
 

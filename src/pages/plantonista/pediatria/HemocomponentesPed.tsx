@@ -1,14 +1,15 @@
 import { useState } from 'react'
 
 import {
-  ANTI_D_MCG_POR_UNIDADE, ERRATAS_HEMOTERAPIA, LIMIARES, LIMITE_INFUSAO_MIN, PESO_UNIDADE_FRACIONADA_KG, REACOES, UNIDADE_CH_ML, albumina, chAnemiaAgudaMl, chPadraoMl,
-  chPorIncrementoMl, crioUnidades, fatorIXUI, fatorVIIIUI, fichaHemoterapiaPed, gluconatoMacicaMl, minutosA25, pfcMl, plaquetasVolumeMl, sfDiluicaoMaxMl,
+  ANTI_D_MCG_POR_UNIDADE, DIRETRIZES_HEMO_PED, ERRATAS_HEMOTERAPIA, LIMIARES, LIMITE_INFUSAO_MIN, PESO_UNIDADE_FRACIONADA_KG, REACOES, UNIDADE_CH_ML, albumina, chAnemiaAgudaMl,
+  chPadraoMl, chPorIncrementoMl, crioUnidades, fatorIXUI, fatorVIIIUI, fichaHemoterapiaPed, gluconatoMacicaMl, minutosA25, pfcMl, plaquetasVolumeMl, sfDiluicaoMaxMl,
 } from '@/clinico/pediatria/hemoterapiaPed'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { PACIENTE_VAZIO, br, faixaBr, idadePediatrica } from './formatoIcr'
 import { Bloco, CampoPaciente, Errata, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
+import { LinhaReferencia } from './PecasP2'
 import { TabelaLivro } from './PecasP4'
 
 /** Hemocomponentes — volumes por peso (cap. 67 e cap. 62 do livro do ICr). */
@@ -110,6 +111,9 @@ export function HemocomponentesPed() {
             {l.texto} ({l.pagina})
           </p>
         ))}
+      </Bloco>
+      <Bloco titulo="AABB 2023 e AABB/ICTMG 2025 — limiares pediátricos, ao lado do livro" descricao="Diretrizes internacionais com recomendação pediátrica declarada (AABB 2023 lida no texto; 2025 pelo resumo). Dengue sem sangramento maior: não transfundir plaquetas.">
+        {DIRETRIZES_HEMO_PED.map((r) => <LinhaReferencia key={r.rotulo} rotulo={r.rotulo} texto={r.texto} pagina={r.pagina} />)}
       </Bloco>
       <Bloco titulo="Reações transfusionais (Tabela 2, p. 731)">
         <TabelaLivro cabecalho={['Reação', 'Clínica', 'Manejo']} linhas={REACOES.map((r) => [...r])} largura={600} />

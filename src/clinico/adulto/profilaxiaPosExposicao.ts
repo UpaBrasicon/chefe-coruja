@@ -1,4 +1,5 @@
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Tétano e profilaxias pós-exposição — Manual de Medicina de Emergência do
 // HCFMUSP (3ª ed., 2022): cap. 93 Tétano acidental (p. 1249–1256), Anexo 4
@@ -6,17 +7,86 @@ import { fichaAdulto } from './fonte.ts'
 // de hepatite B (p. 1504–1510) e Anexo 7 Profilaxia do tétano (p. 1511).
 // A ferramenta devolve a célula da tabela/fluxograma que corresponde ao que
 // quem atende informou; a conduta é do profissional (ADR 0007).
+//
+// Tétano, versão .1 de 28/09/2026: Guia de Vigilância em Saúde do MS (6ª ed.
+// rev., 2024, vol. 1, cap. Tétano acidental, p. 325–336; PDF lido) ao lado do
+// manual — Quadro 2 (IGHAT/SAT), Quadro 3 (antibiótico), Quadro 4 (profilaxia
+// por ferimento e vacinação) e Quadro 1 (sedativos, mostrado como impresso).
 
 export type Faixa = [number, number]
 const valido = (x: number) => Number.isFinite(x) && x > 0
 
 // ── Tétano ───────────────────────────────────────────────────────────────────
 
-export const fichaTetanoAdulto = fichaAdulto(
-  'adulto-tetano-profilaxia',
-  'Tétano — profilaxia e tratamento (adulto)',
-  'cap. 93 Tétano acidental, p. 1249–1256 (Tabelas 2 e 5); Anexo 7 Profilaxia do tétano, p. 1511',
-)
+export const GVS_2024_TETANO: Fonte = {
+  citacao: 'Ministério da Saúde. Guia de Vigilância em Saúde, 6ª ed. revisada, volume 1. Brasília: MS/SVSA; 2024. Tétano acidental, p. 325–336 (Quadros 1–4, p. 328, 331 e 335).',
+  url: 'https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/svsa/vigilancia/guia-de-vigilancia-em-saude-volume-1-6a-edicao',
+}
+
+const PAG_TETANO = 'cap. 93 Tétano acidental, p. 1249–1256 (Tabelas 2 e 5); Anexo 7 Profilaxia do tétano, p. 1511'
+
+export const fichaTetanoAdulto: Ficha = {
+  ...fichaAdulto('adulto-tetano-profilaxia', 'Tétano — profilaxia e tratamento (adulto)', PAG_TETANO),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_TETANO), GVS_2024_TETANO],
+  revisadoEm: '28/09/2026 (Guia de Vigilância em Saúde 2024 lido no PDF; manual mantido como base)',
+}
+
+/** GVS 2024 — Quadro 2 (p. 331), Quadro 3 (p. 331), Quadro 1 (p. 328) e texto (p. 329–332). */
+export const TRATAMENTO_GVS_2024 = {
+  ighat: { profilaticaUi: 250, terapeuticaUi: 500, terapeuticaMaxUi: 6000, texto: 'IGHAT IM: profilática 250 UI; terapêutica 500 UI (estudos recentes; a critério médico pode chegar a 6.000 UI), em grupo muscular diferente do da vacina', pagina: 'Quadro 2, p. 331' },
+  sat: { profilaticaUi: 5000, terapeuticaUi: 20000, texto: 'SAT: profilático 5.000 UI; terapêutico 20.000 UI, IM em duas massas musculares ou EV diluído em SF ou SG 5%; teste de sensibilidade cutânea excluído da rotina; observação hospitalar ≥ 24 h após soro heterólogo; doses subsequentes contraindicadas', pagina: 'Quadro 2, p. 331; p. 329–330' },
+  antibiotico: { penicilinaUiDose: 2_000_000, penicilinaIntervaloH: 4, metronidazolMg: 500, metronidazolIntervaloH: 8, dias: [7, 10] as Faixa, texto: 'Penicilina G cristalina 2.000.000 UI/dose EV 4/4 h (crianças 50.000–100.000 UI/kg/dia) ou metronidazol 500 mg EV 8/8 h, por 7 a 10 dias; sem evidência de superioridade, alguns dados favorecem o metronidazol', pagina: 'Quadro 3, p. 331' },
+  sedativos: { texto: 'Quadro 1, como impresso — diazepam adultos "1 mg a 10 mg/kg/dia" EV, crianças 0,1–2 mg/kg/dose; midazolam adultos "0,07 a 0,1 mg/kg/dia" IM; clorpromazina "25 mg a 50 mg/kg/dia (até 1 g/dia)" EV', pagina: 'Quadro 1, p. 328', errata: 'Unidades implausíveis como impressas (diazepam e clorpromazina em mg/kg/dia com teto de 1 g/dia; midazolam por dia e IM): nada do Quadro 1 é calculado por peso.' },
+  medidasGerais: { texto: 'Ambiente com pouca luz e ruído; manipular o mínimo; sedar antes de procedimentos; via aérea (intubar se preciso); hidratação; analgesia; anti-histamínico antes do SAT; "heparina de baixo peso molecular 5.000 UI 12/12 h SC" em risco de TVP e idosos; mudança de decúbito', pagina: 'p. 332', errata: '"5.000 UI 12/12 h" é a posologia da heparina não fracionada; a de baixo peso molecular é em mg. Não é calculado.' },
+  desbridamento: { texto: 'Limpar com SF ou água e sabão; desbridar tecido desvitalizado e corpos estranhos; água oxigenada ou antisséptico; ferimentos puntiformes e profundos abertos em cruz. Penicilina benzatina não tem eficácia comprovada na profilaxia', pagina: 'p. 331' },
+}
+
+export type FerimentoGvs = 'minimo' | 'alto'
+export type HistoricoGvs = HistoricoVacinalTetano | 'mais10Especial'
+
+export const FERIMENTO_GVS: { value: FerimentoGvs; label: string }[] = [
+  { value: 'minimo', label: 'Risco mínimo: superficial, limpo, sem corpo estranho ou tecido desvitalizado' },
+  { value: 'alto', label: 'Alto risco: profundo ou superficial sujo; corpo estranho ou tecido desvitalizado; queimadura; puntiforme, arma branca ou de fogo; mordedura; politrauma; fratura exposta' },
+]
+
+/** Quadro 4 (p. 335): [vacina, SAT/IGHAT] por história vacinal × risco do ferimento. */
+const QUADRO4: Record<HistoricoGvs, Record<FerimentoGvs, [boolean, boolean]>> = {
+  incerta: { minimo: [true, false], alto: [true, true] },
+  menos5: { minimo: [false, false], alto: [false, false] },
+  entre5e10: { minimo: [false, false], alto: [true, false] },
+  mais10: { minimo: [true, false], alto: [true, false] },
+  mais10Especial: { minimo: [true, false], alto: [true, true] },
+}
+
+/**
+ * Profilaxia pelo Quadro 4 do GVS 2024. Nota d: no alto risco com ≥ 3 doses e
+ * última há mais de 5 anos, imunodeprimido, desnutrido grave ou idoso recebe
+ * também IGHAT ou SAT. Notas c/e: se os cuidados posteriores com o ferimento
+ * não forem adequados, considerar imunização passiva.
+ */
+export function profilaxiaTetanoGvs(historico: HistoricoGvs, ferimento: FerimentoGvs, vulneravel: boolean): { vacina: boolean; imunoglobulina: boolean; reforco: boolean; notas: string[]; pagina: string } {
+  const [vacina, imunoglobulinaBase] = QUADRO4[historico][ferimento]
+  const notas: string[] = []
+  let imunoglobulina = imunoglobulinaBase
+  const reforco = vacina && historico !== 'incerta'
+  if (ferimento === 'alto' && (historico === 'entre5e10' || historico === 'mais10') && vulneravel) {
+    imunoglobulina = true
+    notas.push('Nota d: imunodeprimido, desnutrido grave ou idoso — além do reforço, IGHAT ou SAT.')
+  }
+  if (historico === 'incerta') notas.push('Nota c: vacinar e aprazar as próximas doses; se os cuidados posteriores com o ferimento não forem adequados, considerar SAT ou IGHAT.')
+  if (historico === 'mais10Especial' && ferimento === 'alto') notas.push('Nota e: "situações especiais" — se os cuidados posteriores não forem adequados, considerar SAT ou IGHAT.')
+  if (vacina && imunoglobulina) notas.push('Vacina e SAT/IGHAT em locais diferentes.')
+  return { vacina, imunoglobulina, reforco, notas, pagina: 'Quadro 4, p. 335' }
+}
+
+export const DIFERENCAS_TETANO_GVS: string[] = [
+  'Tratamento: o manual traz IGHAT 500 a 5.000 UI e SAT 20.000–30.000 UI (p. 1253); o GVS 2024 fixa IGHAT 500 UI (até 6.000 a critério médico) e SAT 20.000 UI (Quadro 2, p. 331).',
+  'Antibiótico: o manual dá metronidazol 500 mg 6/6 ou 8/8 h e penicilina 2–4 milhões U 4/4 ou 6/6 h (p. 1253–1254); o GVS 2024 dá metronidazol 500 mg 8/8 h e penicilina 2.000.000 UI 4/4 h, 7–10 dias (Quadro 3, p. 331).',
+  'Profilaxia: o Anexo 7 do manual e o Quadro 4 do GVS coincidem nas quatro linhas; o GVS acrescenta a nota d (imunodeprimido, desnutrido grave ou idoso recebe IGHAT/SAT no ferimento de alto risco) e a linha "situações especiais".',
+  'Teste de sensibilidade ao SAT: o Anexo 7 do manual (Funasa 2001) manda fazê-lo; o GVS 2024 o excluiu da rotina (p. 330).',
+  'Sulfato de magnésio, baclofeno intratecal e bloqueio neuromuscular estão só no manual (p. 1254); o Quadro 1 do GVS traz diazepam, midazolam e clorpromazina com unidades implausíveis (não calculadas).',
+]
 
 export type HistoricoVacinalTetano = 'incerta' | 'menos5' | 'entre5e10' | 'mais10'
 export type FerimentoTetano = 'limpo' | 'outros'

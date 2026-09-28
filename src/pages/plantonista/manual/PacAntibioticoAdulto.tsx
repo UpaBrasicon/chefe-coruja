@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  CRITERIOS_ALTA_PAC, DESTINO_POR_PORT, DURACAO_PAC, FATORES_PSEUDOMONAS, METILPREDNISOLONA_PAC, NOTA_CLARITROMICINA, PAC_ANTIBIOTICOS,
+  CRITERIOS_ALTA_PAC, DESTINO_POR_PORT, DIRETRIZ_PAC_2026, DURACAO_PAC, FATORES_PSEUDOMONAS, METILPREDNISOLONA_PAC, NOTA_CLARITROMICINA, PAC_ANTIBIOTICOS,
   PROCALCITONINA_PAC, fichaPacAntibioticoAdulto, metilprednisolonaPac, type GrupoPac,
 } from '@/clinico/adulto/tepPac'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -46,6 +46,24 @@ export function PacAntibioticoAdulto() {
           conta={mp ? <><strong>{br(mp.mgDose)} mg por dose</strong> · {br(mp.mgDia)} mg/dia</> : 'informe o peso'}
           pagina={METILPREDNISOLONA_PAC.pagina}
         />
+      </Bloco>
+
+      <Bloco titulo="ATS 2026 × manual do HC" descricao="Diretriz da PAC (Am J Respir Crit Care Med 2026;212:24–44; on-line em nov/2025), lida pela página do periódico e pelo comunicado da ATS. Esquemas antimicrobianos não foram revisados por ela.">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">ATS 2026</th><th className="pr-3 pb-2">Força</th><th className="pb-2">Manual do HC</th></tr></thead>
+            <tbody>
+              {DIRETRIZ_PAC_2026.map((d) => (
+                <tr key={d.tema} className="border-t">
+                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
+                  <td className="pr-3 py-2">{d.ats}</td>
+                  <td className="pr-3 py-2 text-muted-foreground">{d.forca}</td>
+                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Bloco>
 
       <Bloco titulo="Procalcitonina e alta (p. 452, 464–465)">

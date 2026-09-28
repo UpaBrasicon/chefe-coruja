@@ -1,4 +1,5 @@
-import { fichaP4 } from './fonteP4.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaP4, type Referencia } from './fonteP4.ts'
 
 // Recursos hemoterápicos — livro do ICr, cap. 67 (p. 723–732) — e anemia
 // aguda, cap. 62 (p. 655–663). Volumes por peso de concentrado de hemácias,
@@ -7,8 +8,40 @@ import { fichaP4 } from './fonteP4.ts'
 // "calcular volemia em função do peso" (p. 727) sem dar mL/kg, então o médico a
 // informa. RN: o capítulo dá limiares de plaquetas neonatais, mas nenhum
 // volume neonatal — os volumes não são calculados para o RN.
+//
+// Versão .1 de 28/09/2026: limiares pediátricos da AABB 2023 (hemácias; texto
+// lido) e da AABB/ICTMG 2025 (plaquetas; resumo lido), com dengue declarada.
 
-export const fichaHemoterapiaPed = fichaP4('ped-hemoterapia', 'Hemocomponentes — volumes por peso', 'cap. 67, p. 723–732; cap. 62, p. 659')
+export const AABB_2023_PED: Fonte = {
+  citacao: 'Carson JL, Stanworth SJ, Guyatt G, et al. Red Blood Cell Transfusion: 2023 AABB International Guidelines. JAMA. 2023;330(19):1892–1902. Recomendações 3 e 4 (crianças), p. 1897.',
+  url: 'https://doi.org/10.1001/jama.2023.12914',
+  pediatrica: true,
+}
+
+export const AABB_PLAQUETAS_2025_PED: Fonte = {
+  citacao: 'Metcalf RA, et al. Platelet Transfusion: 2025 AABB and ICTMG International Clinical Practice Guidelines. JAMA. 2025;334(7):606–617 (resumo lido: neonato, punção lombar e dengue).',
+  url: 'https://doi.org/10.1001/jama.2025.7529',
+  pediatrica: true,
+}
+
+const baseHemoterapia = fichaP4('ped-hemoterapia', 'Hemocomponentes — volumes por peso', 'cap. 67, p. 723–732; cap. 62, p. 659')
+
+export const fichaHemoterapiaPed: Ficha = {
+  ...baseHemoterapia,
+  versao: '2026-09-28.1',
+  fontes: [...baseHemoterapia.fontes, AABB_2023_PED, AABB_PLAQUETAS_2025_PED],
+  revisadoEm: '28/09/2026 (AABB 2023 e AABB/ICTMG 2025 conferidas; livro do ICr mantido como base)',
+}
+
+/** AABB 2023 (crianças) e AABB/ICTMG 2025 — limiares, ao lado do capítulo. */
+export const DIRETRIZES_HEMO_PED: Referencia[] = [
+  { rotulo: 'CH — criança crítica ou em risco, estável', texto: 'Hb < 7 g/dL (contra < 9,5), sem hemoglobinopatia transfusão-dependente, cardiopatia cianótica ou hipoxemia grave — forte, evidência moderada (rec. 3). O livro: Hb 6–7 tolerada na anemia aguda; consenso de não evitar CH com Hb < 7 (p. 724, 726).', pagina: 'AABB 2023, p. 1897' },
+  { rotulo: 'CH — cardiopatia congênita estável', texto: '7 g/dL após correção biventricular; 9 g/dL na paliação univentricular; 7–9 g/dL na não corrigida — condicional, evidência baixa (rec. 4).', pagina: 'AABB 2023, p. 1897' },
+  { rotulo: 'Plaquetas — neonato', texto: 'Plaquetopenia de consumo sem sangramento maior: transfundir com < 25.000/µL — forte. O livro: profilaxia no RN estável com 25.000–50.000 e 100.000 no prematuro extremo (p. 726).', pagina: 'AABB/ICTMG 2025 (resumo)' },
+  { rotulo: 'Plaquetas — punção lombar', texto: 'Transfundir com < 20.000/µL — forte. O livro: procedimento invasivo < 50.000 (p. 726).', pagina: 'AABB/ICTMG 2025 (resumo)' },
+  { rotulo: 'Plaquetas — dengue', texto: 'Plaquetopenia de consumo por dengue sem sangramento maior: NÃO transfundir — forte. O capítulo não trata de dengue.', pagina: 'AABB/ICTMG 2025 (resumo)' },
+  { rotulo: 'Plaquetas — hipoproliferativa', texto: 'Sem sangramento, em quimioterapia ou transplante alogênico: < 10.000/µL — forte. O livro: 10.000–20.000 com produção comprometida (p. 726).', pagina: 'AABB/ICTMG 2025 (resumo)' },
+]
 
 const ok = (...xs: number[]) => xs.every((x) => Number.isFinite(x) && x > 0)
 

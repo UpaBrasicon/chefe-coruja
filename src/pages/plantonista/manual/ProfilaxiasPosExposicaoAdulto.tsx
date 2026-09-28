@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
 import {
-  ACIDENTE_RAIVA, ANIMAL_RAIVA, FERIMENTO_TETANO, FONTE_HBV, HBV, HISTORICO_TETANO, IMUNOGLOBULINA_PROFILAXIA, RAIVA, RISCO_FONTE_HBV,
-  SITUACAO_HBV, TABELA5_TETANO, TRATAMENTO_TETANO, fichaHepatiteBAdulto, fichaRaivaAdulto, fichaTetanoAdulto, hbigMl,
-  profilaxiaHepatiteB, profilaxiaRaiva, profilaxiaTetano, tratamentoTetanoPorPeso,
-  type AcidenteRaiva, type AnimalRaiva, type ContatoRaiva, type FerimentoTetano, type FonteHbv, type HistoricoVacinalTetano,
+  ACIDENTE_RAIVA, ANIMAL_RAIVA, DIFERENCAS_TETANO_GVS, FERIMENTO_GVS, FERIMENTO_TETANO, FONTE_HBV, HBV, HISTORICO_TETANO, IMUNOGLOBULINA_PROFILAXIA, RAIVA, RISCO_FONTE_HBV,
+  SITUACAO_HBV, TABELA5_TETANO, TRATAMENTO_GVS_2024, TRATAMENTO_TETANO, fichaHepatiteBAdulto, fichaRaivaAdulto, fichaTetanoAdulto, hbigMl,
+  profilaxiaHepatiteB, profilaxiaRaiva, profilaxiaTetano, profilaxiaTetanoGvs, tratamentoTetanoPorPeso,
+  type AcidenteRaiva, type AnimalRaiva, type ContatoRaiva, type FerimentoGvs, type FerimentoTetano, type FonteHbv, type HistoricoGvs, type HistoricoVacinalTetano,
   type SituacaoProfissional,
 } from '@/clinico/adulto/profilaxiaPosExposicao'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -23,6 +23,11 @@ export function TetanoProfilaxiaAdulto() {
   const p = profilaxiaTetano(historico, ferimento)
   const t = tratamentoTetanoPorPeso(peso)
   const tt = TRATAMENTO_TETANO
+  const [historicoGvs, setHistoricoGvs] = useState<HistoricoGvs>('incerta')
+  const [ferimentoGvs, setFerimentoGvs] = useState<FerimentoGvs>('minimo')
+  const [vulneravel, setVulneravel] = useState(false)
+  const g = profilaxiaTetanoGvs(historicoGvs, ferimentoGvs, vulneravel)
+  const gvs = TRATAMENTO_GVS_2024
 
   return (
     <ToolLayout
@@ -70,6 +75,28 @@ export function TetanoProfilaxiaAdulto() {
           conta={t ? <>ataque <strong>{br(t.magnesioAtaqueG, 2)} g</strong> em 30 min · <strong>{br(t.magnesioManutencaoGH)} g/h</strong></> : 'informe o peso'} />
         <LinhaManual nome="Disautonomia" texto={tt.disautonomia.texto} pagina={tt.disautonomia.pagina} errata={tt.disautonomia.errata} />
         <LinhaManual nome="Evolução desfavorável" texto={tt.fatoresRisco.texto} pagina={tt.fatoresRisco.pagina} />
+      </Bloco>
+
+      <Bloco titulo="Guia de Vigilância em Saúde 2024 — profilaxia (Quadro 4, p. 335)" descricao="Fonte do Ministério da Saúde ao lado do Anexo 7 do manual; as quatro linhas coincidem, e o GVS acrescenta a nota d e as situações especiais.">
+        <Escolha label="História de vacinação contra tétano" value={historicoGvs} onChange={setHistoricoGvs} opcoes={[...HISTORICO_TETANO, { value: 'mais10Especial' as const, label: '3 doses ou mais; última há 10 anos ou mais, em situações especiais' }]} />
+        <Escolha label="Ferimento" value={ferimentoGvs} onChange={setFerimentoGvs} opcoes={FERIMENTO_GVS} />
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-4" checked={vulneravel} onChange={(e) => setVulneravel(e.target.checked)} /> Imunodeprimido, desnutrido grave ou idoso (nota d)</label>
+        <LinhaManual
+          nome="O que o Quadro 4 traz para essa combinação"
+          texto={`vacina: ${simNao(g.vacina)}${g.reforco ? ' (um reforço)' : ''}; SAT ou IGHAT: ${simNao(g.imunoglobulina)}. ${g.notas.join(' ')}`}
+          pagina={g.pagina}
+          conta={<><strong>Vacina: {simNao(g.vacina)}</strong> · <strong>SAT/IGHAT: {simNao(g.imunoglobulina)}</strong></>}
+        />
+        <p className="text-sm text-muted-foreground">{gvs.desbridamento.texto} ({gvs.desbridamento.pagina}).</p>
+      </Bloco>
+
+      <Bloco titulo="Guia de Vigilância em Saúde 2024 — tratamento (Quadros 1–3, p. 328 e 331)">
+        <LinhaManual nome="IGHAT" texto={gvs.ighat.texto} pagina={gvs.ighat.pagina} conta={<><strong>{gvs.ighat.terapeuticaUi} UI</strong> (terapêutica; até {gvs.ighat.terapeuticaMaxUi.toLocaleString('pt-BR')}) · profilática {gvs.ighat.profilaticaUi} UI</>} />
+        <LinhaManual nome="SAT" texto={gvs.sat.texto} pagina={gvs.sat.pagina} conta={<><strong>{gvs.sat.terapeuticaUi.toLocaleString('pt-BR')} UI</strong> (terapêutico) · profilático {gvs.sat.profilaticaUi.toLocaleString('pt-BR')} UI</>} />
+        <LinhaManual nome="Antibiótico" texto={gvs.antibiotico.texto} pagina={gvs.antibiotico.pagina} conta={<>penicilina <strong>2.000.000 UI</strong> 4/4 h · ou metronidazol <strong>{gvs.antibiotico.metronidazolMg} mg</strong> 8/8 h · 7–10 dias</>} />
+        <LinhaManual nome="Sedativos (Quadro 1, como impresso)" texto={gvs.sedativos.texto} pagina={gvs.sedativos.pagina} errata={gvs.sedativos.errata} />
+        <LinhaManual nome="Medidas gerais" texto={gvs.medidasGerais.texto} pagina={gvs.medidasGerais.pagina} errata={gvs.medidasGerais.errata} />
+        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_TETANO_GVS.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

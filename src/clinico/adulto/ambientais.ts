@@ -1,5 +1,6 @@
 import { completo, escolha, marcadas, type Escore } from '../escore.ts'
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Emergências ambientais do Manual de Medicina de Emergência do HCFMUSP (3ª
 // ed., 2022): afogamento (cap. 100, p. 1338–1348) e hipotermia acidental
@@ -63,7 +64,56 @@ export const szpilman: Escore = {
 // ---------------------------------------------------------------------------
 // Hipotermia (Tabelas 1, 5 e 6; p. 1360–1370)
 
-export const fichaHipotermiaAdulto = fichaAdulto('adulto-hipotermia', 'Hipotermia acidental — estágio, RCP e reaquecimento (adulto)', `${HIPO}, p. 1360–1370 (Tabelas 1, 5 e 6)`)
+// Versão .1 de 28/09/2026: diretriz ERC 2025 de circunstâncias especiais
+// (hipotermia acidental), lida no texto aberto do Resuscitation Council UK,
+// ao lado do manual — estágios I–IV, adrenalina só a partir de 30 °C,
+// desfibrilação até 3 choques, critérios de ECPR e escore HOPE.
+
+export const ERC_2025_HIPOTERMIA: Fonte = {
+  citacao: 'European Resuscitation Council Guidelines 2025: Special Circumstances in Resuscitation. Resuscitation. 2025 (PMID 41117569); texto lido na versão aberta do Resuscitation Council UK, "2025 Resuscitation Guidelines — Special circumstances: accidental hypothermia, drowning" (Thies K, Truhlář A, Deakin CD).',
+  url: 'https://www.resus.org.uk/library/2025-resuscitation-guidelines/special-circumstances-guidelines',
+}
+
+const PAG_HIPO = `${HIPO}, p. 1360–1370 (Tabelas 1, 5 e 6)`
+
+export const fichaHipotermiaAdulto: Ficha = {
+  ...fichaAdulto('adulto-hipotermia', 'Hipotermia acidental — estágio, RCP e reaquecimento (adulto)', PAG_HIPO),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_HIPO), ERC_2025_HIPOTERMIA],
+  revisadoEm: '28/09/2026 (ERC/RCUK 2025 lida no texto aberto; manual mantido como base)',
+}
+
+/** Estadiamento suíço como a ERC/RCUK 2025 escreve (temperatura estimada quando não medida). */
+export const ESTAGIOS_ERC_2025 = [
+  { estagio: 'I (leve)', clinica: 'consciente, com tremor', tempC: '35–32 °C' },
+  { estagio: 'II (moderada)', clinica: 'consciência alterada (confusão, letargia); tremor pode diminuir ou faltar', tempC: '32–28 °C' },
+  { estagio: 'III (grave)', clinica: 'inconsciente, com sinais vitais (pulso, respiração)', tempC: '28–24 °C' },
+  { estagio: 'IV (profunda)', clinica: 'sem sinais vitais', tempC: '< 24 °C' },
+]
+
+/** Critérios da ERC/RCUK 2025 para levar direto a um centro de ECPR (risco iminente de PCR ou em PCR). */
+export function criteriosEcpr2025(e: { fc?: number; pas?: number; arritmiaVentricular?: boolean; tempC?: number }): string[] {
+  const r: string[] = []
+  if (Number.isFinite(e.fc) && e.fc! > 0 && e.fc! < 45) r.push('FC < 45/min')
+  if (Number.isFinite(e.pas) && e.pas! > 0 && e.pas! < 90) r.push('PAS < 90 mmHg')
+  if (e.arritmiaVentricular) r.push('arritmia ventricular')
+  if (Number.isFinite(e.tempC) && e.tempC! > 0 && e.tempC! < 30) r.push('temperatura central < 30 °C')
+  return r
+}
+
+export type ItemHipo2025 = { tema: string; erc: string; livro: string }
+
+export const DIRETRIZ_HIPOTERMIA_2025: ItemHipo2025[] = [
+  { tema: 'Sinais vitais', erc: 'Procurar sinais vitais por até 1 min no hipotérmico inconsciente; medir a temperatura central com termômetro de baixa leitura; sem medida, usar o estadiamento suíço', livro: 'procurar sinais de vida por pelo menos 1 min (p. 1366); termômetros usuais só vão até 34 °C (p. 1363)' },
+  { tema: 'Estágios', erc: 'I 35–32 (consciente, tremor); II 32–28 (consciência alterada); III 28–24 (inconsciente com sinais vitais); IV < 24 °C (sem sinais vitais)', livro: 'HT I–III iguais; HT IV = sem sinais vitais, "geralmente < 24 °C" (Tabela 1, p. 1360)' },
+  { tema: 'Para onde levar', erc: 'Com FC < 45, PAS < 90, arritmia ventricular ou T < 30 °C, ou em PCR: direto a um centro de ECPR para reaquecer com ECMO venoarterial; se o centro não for alcançável em tempo razoável (≈ 6 h), iniciar reaquecimento não extracorpóreo', livro: 'extracorpóreo nos instáveis, em PCR ou na falha dos demais (Tabela 5, p. 1369)' },
+  { tema: 'RCP abaixo de 28 °C', erc: 'Adiar ou fazer RCP intermitente quando a contínua não for possível; considerar compressor mecânico em transporte longo ou terreno difícil', livro: '5 min de RCP / até 5 min sem (20–28 °C); / até 10 min sem (< 20 °C) (p. 1366)' },
+  { tema: 'Desfibrilação', erc: 'Se a FV persistir após 3 choques, adiar novas tentativas até a temperatura central passar de 30 °C', livro: 'igual (p. 1367)' },
+  { tema: 'Adrenalina', erc: 'Abaixo de 30 °C acumula e pode fazer mais mal que bem: 1 mg IV só ao atingir 30 °C (salvo ECPR iminente); entre 30 e 35 °C, intervalos de 6–10 min', livro: 'igual: nada até 30 °C; 30–35 °C intervalo dobrado 6–10 min (p. 1366)' },
+  { tema: 'Amiodarona', erc: 'Dose de ataque de 300 mg se ritmo chocável; doses seguintes só acima de 30 °C', livro: '—' },
+  { tema: 'Prognóstico', erc: 'Prognosticar o sucesso do reaquecimento intra-hospitalar pelo escore HOPE (Hypothermia Outcome Prediction after Extracorporeal Life Support)', livro: '—' },
+  { tema: 'Afogamento', erc: 'Começar com 5 ventilações (O2 a 100% se disponível) e seguir a RCP padrão; considerar ECPR se a ressuscitação inicial falhar; imobilização cervical na água não deve atrasar a retirada', livro: 'cap. 100 (ferramenta de Szpilman)' },
+]
 
 export type EstagioHipotermia = { estagio: 'sem hipotermia' | 'HT I' | 'HT II' | 'HT III' | 'HT IV'; nome: string; reaquecimento: string; nota?: string }
 

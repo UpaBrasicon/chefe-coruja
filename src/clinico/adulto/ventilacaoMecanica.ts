@@ -1,4 +1,5 @@
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Ventilação mecânica no departamento de emergência — cap. 37 (p. 498–511) do
 // Manual de Medicina de Emergência do HCFMUSP (3ª ed., 2022). A regra faz as
@@ -18,7 +19,32 @@ export const fichaVmAjusteAdulto = fichaAdulto('adulto-vm-ajuste-inicial', 'Vent
 export const fichaVmObstruidoAdulto = fichaAdulto('adulto-vm-obstruido-grave', 'Ventilação mecânica no obstruído grave (adulto)', 'cap. 37, Tabela 4, p. 504–505')
 export const fichaMecanicaAdulto = fichaAdulto('adulto-vm-mecanica', 'Mecânica ventilatória — resistência, complacência e constante de tempo (adulto)', 'cap. 37, p. 499–500 e 506')
 // .2: VT moderada/grave 4–6 mL/kg (errata da p. 506, que imprime 3–6)
-export const fichaSdraAdulto = { ...fichaAdulto('adulto-vm-sdra', 'SDRA — Berlim, ventilação protetora e tabelas PEEP × FiO2 (adulto)', 'cap. 37, p. 505–508; VT: p. 127 e 403'), versao: '2026-09-27.2' }
+// Versão 2026-09-28.1: definição global de SDRA 2024, diretriz ATS 2024 e
+// diretriz ESICM 2023 (textos integrais lidos) ao lado do cap. 37.
+
+export const DEFINICAO_GLOBAL_SDRA_2024: Fonte = {
+  citacao: 'Matthay MA, Arabi Y, Arroliga AC, et al. A New Global Definition of Acute Respiratory Distress Syndrome. Am J Respir Crit Care Med. 2024;209(1):37–47. Tabela 1.',
+  url: 'https://doi.org/10.1164/rccm.202303-0558WS',
+}
+
+export const ATS_SDRA_2024: Fonte = {
+  citacao: 'Qadir N, Sahetya S, Munshi L, et al. An Update on Management of Adult Patients with Acute Respiratory Distress Syndrome: An Official American Thoracic Society Clinical Practice Guideline. Am J Respir Crit Care Med. 2024;209(1):24–36. Resumo executivo e Figura 1.',
+  url: 'https://doi.org/10.1164/rccm.202311-2011ST',
+}
+
+export const ESICM_SDRA_2023: Fonte = {
+  citacao: 'Grasselli G, Calfee CS, Camporota L, et al. ESICM guidelines on acute respiratory distress syndrome: definition, phenotyping and respiratory support strategies. Intensive Care Med. 2023;49:727–759. Recomendações 3.1, 5.1, 6.3, 6.4, 7.1, 7.2, 8.1, 9.1 e 9.2.',
+  url: 'https://doi.org/10.1007/s00134-023-07050-7',
+}
+
+const PAG_SDRA = 'cap. 37, p. 505–508; VT: p. 127 e 403'
+
+export const fichaSdraAdulto: Ficha = {
+  ...fichaAdulto('adulto-vm-sdra', 'SDRA — Berlim, definição global 2024, ventilação protetora e tabelas PEEP × FiO2 (adulto)', PAG_SDRA),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_SDRA), DEFINICAO_GLOBAL_SDRA_2024, ATS_SDRA_2024, ESICM_SDRA_2023],
+  revisadoEm: '28/09/2026 (definição global 2024, ATS 2024 e ESICM 2023 lidas no texto; manual mantido como base)',
+}
 export const fichaDesmameAdulto = fichaAdulto('adulto-vm-desmame', 'Desmame e teste de respiração espontânea (adulto)', 'cap. 37, Figura 5, p. 510')
 
 export type Faixa = [number, number]
@@ -350,6 +376,70 @@ export function marcosPf(pf: number): string[] {
   if (pf <= SDRA.pronaPfAte) r.push('P/F ≤ 150: critério do livro para prona quando persiste após 12–24 horas de ventilação protetora adequada; manter ≥ 16 horas se melhora (p. 507)')
   return r
 }
+
+// ---------------------------------------------------------------- definição global 2024 e diretrizes
+
+export type SuporteSdra2024 = 'nenhum' | 'o2' | 'cnaf30' | 'vni' | 'vmi'
+export type CategoriaSdra2024 = 'não intubada' | 'intubada' | 'recursos limitados'
+export type GravidadeSdra2024 = 'leve' | 'moderada' | 'grave'
+
+export type LeituraSdra2024 = { categoria: CategoriaSdra2024 | null; gravidade: GravidadeSdra2024 | null; criterioOxigenacao: boolean; notas: string[] }
+
+/**
+ * Definição global de SDRA 2024 (Tabela 1): oxigenação por P/F ≤ 300 ou S/F
+ * ≤ 315 (SpO2 ≤ 97%). Não intubada: em CNAF ≥ 30 L/min ou VNI/CPAP ≥ 5.
+ * Intubada (PEEP ≥ 5): leve 200 < P/F ≤ 300 ou 235 < S/F ≤ 315; moderada
+ * 100 < P/F ≤ 200 ou 148 < S/F ≤ 235; grave P/F ≤ 100 ou S/F ≤ 148. Recursos
+ * limitados: S/F ≤ 315 sem exigir PEEP nem fluxo. Só a oxigenação: início em
+ * 1 semana, opacidades bilaterais (RX, TC ou ultrassom) e não explicado por
+ * derrame/atelectasia/nódulos ficam com quem avalia.
+ */
+export function sdraGlobal2024(e: { pf?: number; sf?: number; spo2?: number; suporte: SuporteSdra2024; peep?: number; recursosLimitados?: boolean }): LeituraSdra2024 | null {
+  const temPf = valido(e.pf)
+  const sfValido = valido(e.sf) && (e.spo2 === undefined || (valido(e.spo2) && e.spo2 <= 97))
+  const notas: string[] = []
+  if (valido(e.sf) && valido(e.spo2) && e.spo2 > 97) notas.push('S/F só vale com SpO2 ≤ 97%: com SpO2 acima disso a relação não é usada.')
+  if (!temPf && !sfValido) return null
+  const porPf = temPf ? e.pf! <= 300 : false
+  const porSf = sfValido ? e.sf! <= 315 : false
+  const criterioOxigenacao = porPf || porSf
+  const gravidadePf = (pf: number): GravidadeSdra2024 | null => (pf <= 100 ? 'grave' : pf <= 200 ? 'moderada' : pf <= 300 ? 'leve' : null)
+  const gravidadeSf = (sf: number): GravidadeSdra2024 | null => (sf <= 148 ? 'grave' : sf <= 235 ? 'moderada' : sf <= 315 ? 'leve' : null)
+  if (e.recursosLimitados) {
+    if (!sfValido) { notas.push('Em recursos limitados a definição usa a S/F (SpO2 ≤ 97%).'); return { categoria: 'recursos limitados', gravidade: null, criterioOxigenacao: porSf, notas } }
+    return { categoria: 'recursos limitados', gravidade: null, criterioOxigenacao: porSf, notas: [...notas, 'Sem exigência de PEEP, fluxo ou dispositivo; gravidade não é graduada nessa categoria.'] }
+  }
+  if (e.suporte === 'vmi') {
+    if (!valido(e.peep) || e.peep! < 5) { notas.push('Intubada: exige PEEP ≥ 5 cmH2O em todas as gravidades.'); return { categoria: 'intubada', gravidade: null, criterioOxigenacao, notas } }
+    const g = temPf ? gravidadePf(e.pf!) : gravidadeSf(e.sf!)
+    if (temPf && sfValido && gravidadeSf(e.sf!) !== g) notas.push('P/F e S/F apontam gravidades diferentes; a leitura usa a P/F.')
+    return { categoria: 'intubada', gravidade: g, criterioOxigenacao, notas }
+  }
+  if (e.suporte === 'cnaf30' || e.suporte === 'vni') return { categoria: 'não intubada', gravidade: null, criterioOxigenacao, notas: [...notas, 'Não intubada: gravidade não é graduada; CNAF com fluxo ≥ 30 L/min ou VNI/CPAP com PEEP ≥ 5.'] }
+  notas.push(e.suporte === 'nenhum' ? 'Sem suporte: a definição global exige CNAF ≥ 30 L/min, VNI/CPAP ≥ 5 ou ventilação invasiva (salvo recursos limitados).' : 'O2 convencional (cateter/máscara) não cumpre o critério de suporte da definição global (salvo recursos limitados).')
+  return { categoria: null, gravidade: null, criterioOxigenacao, notas }
+}
+
+/** Relação SpO2/FiO2 com FiO2 em % (21–100). */
+export function relacaoSF(spo2: number, fio2Pct: number): number | null {
+  if (!valido(spo2) || spo2 > 100 || !valido(fio2Pct) || fio2Pct > 100) return null
+  return spo2 / (fio2Pct / 100)
+}
+
+export type ItemSdra2024 = { tema: string; diretriz: string; forca: string; fonte: string; livro: string }
+
+export const DIRETRIZ_SDRA_2024: ItemSdra2024[] = [
+  { tema: 'Volume corrente e platô', diretriz: 'Vt 4–8 mL/kg de peso predito e Pplatô < 30 cmH2O em toda SDRA', forca: 'forte, evidência moderada', fonte: 'ATS 2024 (mantida de 2017); ESICM 2023 rec. 5.1', livro: 'leve 6; moderada/grave 4–6 mL/kg; Pplatô ≤ 30 (Tabela 5, p. 506)' },
+  { tema: 'Posição prona', diretriz: 'ATS: > 12 h/dia na SDRA grave. ESICM: P/F < 150 com PEEP ≥ 5 após otimização, iniciada cedo, sessões de 16 h consecutivas ou mais', forca: 'forte, evidência moderada (ATS) · forte, evidência alta (ESICM 7.1–7.2)', fonte: 'ATS 2024; ESICM 2023', livro: 'P/F ≤ 150 após 12–24 h de ventilação protetora; ≥ 16 h se melhora (p. 507)' },
+  { tema: 'Manobra de recrutamento prolongada', diretriz: 'Contra (pressão ≥ 35 cmH2O por ≥ 1 min); manobras breves: sugere contra o uso rotineiro', forca: 'forte, evidência moderada (ATS e ESICM 6.3) · fraca (ESICM 6.4)', fonte: 'ATS 2024; ESICM 2023', livro: 'condicional, baixa a moderada confiança; sem protocolo (p. 507–508)' },
+  { tema: 'PEEP', diretriz: 'PEEP mais alta sem manobra de recrutamento, em vez de PEEP baixa, na moderada/grave', forca: 'condicional, evidência baixa a moderada', fonte: 'ATS 2024', livro: 'tabela de PEEP alto na grave (Tabela 5)' },
+  { tema: 'Corticoide', diretriz: 'Sugere corticoide na SDRA', forca: 'condicional, evidência moderada', fonte: 'ATS 2024', livro: '—' },
+  { tema: 'Bloqueio neuromuscular', diretriz: 'ATS: sugere na SDRA grave precoce. ESICM: contra infusão contínua rotineira na moderada/grave não COVID — divergência declarada', forca: 'condicional, evidência baixa (ATS) · forte, evidência moderada contra (ESICM 8.1)', fonte: 'ATS 2024; ESICM 2023', livro: 'considerar por 48 h se P/F inicial < 150 (p. 506)' },
+  { tema: 'ECMO venovenosa', diretriz: 'Selecionados com SDRA grave (ATS); critérios do EOLIA, em centro com padrão organizacional (ESICM 9.1); ECCO2R só em ensaio (ESICM 9.2)', forca: 'condicional, evidência baixa (ATS) · forte, evidência moderada (ESICM)', fonte: 'ATS 2024; ESICM 2023', livro: 'considerar na refratariedade; sobrevida 56% (ELSO) (p. 508)' },
+  { tema: 'Ventilação oscilatória de alta frequência', diretriz: 'Contra o uso rotineiro na moderada/grave', forca: 'forte, evidência alta', fonte: 'ATS 2024 (mantida)', livro: '—' },
+  { tema: 'Cânula nasal de alto fluxo na IRpA hipoxêmica não intubada', diretriz: 'Recomenda CNAF em vez de O2 convencional para reduzir intubação (não cardiogênica, não DPOC); sem recomendação sobre mortalidade', forca: 'forte, evidência moderada (ESICM 3.1)', fonte: 'ESICM 2023', livro: '—' },
+  { tema: 'Definição', diretriz: 'Definição global 2024: entra a SDRA não intubada (CNAF ≥ 30 L/min ou VNI/CPAP), S/F ≤ 315 com SpO2 ≤ 97% substitui a gasometria, ultrassom vale como imagem, categoria para recursos limitados sem PEEP/fluxo', forca: 'consenso', fonte: 'Definição global 2024, Tabela 1', livro: 'Berlim só pela P/F com PEEP ≥ 5 (p. 505)' },
+]
 
 export const RESGATE_HIPOXEMIA = [
   { nome: 'Posição prona', texto: 'Recomendação forte (ATS/ESICM/SCCM 2017) na SDRA grave; P/F ≤ 150 após 12–24 h de ventilação protetora adequada; se melhora, pelo menos 16 horas', pagina: 'p. 507' },

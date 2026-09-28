@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 import {
-  AFERESE_TABELA4, CCP, CH, CH_TABELA4, CRIO, CRIO_TABELA4, ERRATA_TRANSFUSAO, GATILHOS_HB, GATILHOS_PLAQUETAS, INCREMENTO_CH, PAGINA_GATILHOS_HB, PFC, PFC_TABELA4, PLAQUETAS,
-  REGRA_HB_TEXTO, TRANSFUSAO_MACICA, TRAUMA_TRANSFUSAO, criterioMacica, doseCcp, doseCrio, dosePfc, dosePlaquetas, expectativaCh, fichaTransfusaoAdulto, gatilhosAbaixo,
-  respostaPlaquetas, velocidadeCh,
+  AFERESE_TABELA4, BOA_PRATICA_AABB_2023, CCP, CH, CH_TABELA4, CRIO, CRIO_TABELA4, DIFERENCAS_TRANSFUSAO_2023, ERRATA_TRANSFUSAO, GATILHOS_HB, GATILHOS_HB_AABB, GATILHOS_PLAQUETAS,
+  INCREMENTO_CH, PAGINA_GATILHOS_HB, PFC, PFC_TABELA4, PLAQUETAS, PLAQUETAS_AABB_2025, REGRA_HB_TEXTO, TRANSFUSAO_MACICA, TRAUMA_TRANSFUSAO, criterioMacica, doseCcp, doseCrio, dosePfc,
+  dosePlaquetas, expectativaCh, fichaTransfusaoAdulto, gatilhosAbaixo, gatilhosAbaixoAabb, respostaPlaquetas, velocidadeCh,
 } from '@/clinico/adulto/transfusao'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -29,6 +29,7 @@ export function TransfusaoAdulto() {
   const [inr, setInr] = useState(0)
 
   const abaixo = gatilhosAbaixo(hb)
+  const abaixoAabb = gatilhosAbaixoAabb(hb)
   const exp = expectativaCh(hb, unidades, informado(ht))
   const vel = velocidadeCh(informado(peso))
   const mac = criterioMacica(informado(ch24), informado(ch1))
@@ -57,6 +58,18 @@ export function TransfusaoAdulto() {
           ))}
         </div>
         {REGRA_HB_TEXTO.map((t) => <Trecho key={t.texto} texto={t.texto} pagina={t.pagina} />)}
+      </Bloco>
+
+      <Bloco titulo="AABB 2023 e AABB 2025 (IAM) — limiares de Hb, ao lado do manual" descricao={BOA_PRATICA_AABB_2023}>
+        <div className="flex flex-col gap-1">
+          {GATILHOS_HB_AABB.map((g) => (
+            <div key={g.id} className={`rounded-md border px-3 py-1.5 ${abaixoAabb.includes(g.id) ? 'border-atencao' : ''}`}>
+              <span className="font-medium">{g.situacao}</span>: Hb &lt; {br(g.hb, 1)} g/dL <span className="text-muted-foreground">({g.forca}; {g.fonte})</span>
+              {abaixoAabb.includes(g.id) && <span className="ml-1 text-atencao">— Hb informada abaixo do limiar</span>}
+            </div>
+          ))}
+        </div>
+        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_TRANSFUSAO_2023.slice(0, 3).map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Concentrado de hemácias — incremento, volume e velocidade" descricao={`Sem sangramento, cada unidade: Hb +${INCREMENTO_CH.hbGdl} g/dL e Ht +${INCREMENTO_CH.htPct}% (${INCREMENTO_CH.pagina}).`}>
@@ -124,6 +137,17 @@ export function TransfusaoAdulto() {
           <Resultado rotulo="Incremento" valor={resp ? `${mil(resp.incremento)}/µL${resp.acimaDe10mil ? ' (> 10.000)' : ' (≤ 10.000)'}` : '—'} />
         </div>
         <Trecho texto={PLAQUETAS.respostaNormal} pagina="p. 1079" />
+      </Bloco>
+
+      <Bloco titulo="AABB/ICTMG 2025 — plaquetas por situação (resumo da diretriz)" descricao="Estratégia restritiva; a decisão considera o contexto clínico e as alternativas. Forte = evidência alta/moderada; condicional = baixa/muito baixa.">
+        <div className="flex flex-col gap-1">
+          {PLAQUETAS_AABB_2025.map((g) => (
+            <div key={g.situacao} className="rounded-md border px-3 py-1.5">
+              <span className="font-medium">{g.limiar ? `< ${mil(g.limiar)}/µL` : 'não transfundir'}</span>: {g.situacao} <span className="text-muted-foreground">({g.forca})</span>
+            </div>
+          ))}
+        </div>
+        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_TRANSFUSAO_2023.slice(3).map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Plasma fresco congelado" descricao={`Alvo: ${PFC.alvo} (${PFC.pagina}).`}>

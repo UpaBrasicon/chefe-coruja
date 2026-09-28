@@ -1,13 +1,49 @@
 import { completo, escolha, numero, type Escore, type Item } from '../escore.ts'
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Hemorragia subaracnóidea não traumática — cap. 40 do Manual de Medicina de
 // Emergência do HCFMUSP (3ª ed., 2022), p. 550–562. Escalas da Tabela 2 a 5,
 // nimodipino e metas numéricas. Escalas não emitem conduta (ADR 0007).
+//
+// Versão .1 de 28/09/2026: diretriz AHA/ASA 2023 da HSA aneurismática (texto
+// integral lido) ao lado do manual — antifibrinolítico sem benefício, PA sem
+// alvo numérico, aneurisma em 24 h, fenitoína danosa, estatina/magnésio sem
+// benefício, hipervolemia danosa.
 
 const CAP = 'cap. 40 Hemorragia subaracnóidea não traumática'
 
-export const fichaHsaAdulto = fichaAdulto('adulto-hsa', 'Hemorragia subaracnóidea — nimodipino e metas (adulto)', `${CAP}, p. 558–561`)
+export const AHA_ASA_HSA_2023: Fonte = {
+  citacao: 'Hoh BL, Ko NU, Amin-Hanjani S, et al. 2023 Guideline for the Management of Patients With Aneurysmal Subarachnoid Hemorrhage: A Guideline From the American Heart Association/American Stroke Association. Stroke. 2023;54:e314–e370. Recomendações das p. e326–e327, e333, e338–e339 e e345.',
+  url: 'https://doi.org/10.1161/STR.0000000000000436',
+}
+
+const PAG_HSA = `${CAP}, p. 558–561`
+
+export const fichaHsaAdulto: Ficha = {
+  ...fichaAdulto('adulto-hsa', 'Hemorragia subaracnóidea — nimodipino e metas (adulto)', PAG_HSA),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_HSA), AHA_ASA_HSA_2023],
+  revisadoEm: '28/09/2026 (AHA/ASA 2023 lida no texto; manual mantido como base)',
+}
+
+export type ItemHsa2023 = { tema: string; aha: string; classe: string; pagina: string; livro: string }
+
+/** AHA/ASA 2023 × manual do HC, tema a tema (COR/LOE como impressos). */
+export const DIRETRIZ_HSA_2023: ItemHsa2023[] = [
+  { tema: 'Antifibrinolítico (ácido tranexâmico)', aha: 'Uso rotineiro não é útil para melhorar o desfecho funcional (ULTRA: mRS 0–3 em 60% × 64%; ressangramento 10% × 14%)', classe: '3: sem benefício, A', pagina: 'e326', livro: 'opção nas primeiras 72 h sem correção do aneurisma, sem dose (p. 561)' },
+  { tema: 'Pressão arterial com aneurisma não tratado', aha: 'Monitorar com frequência e controlar com droga de ação curta, evitando hipotensão grave, hipertensão e variabilidade; não há evidência para um alvo numérico; evitar queda súbita e profunda', classe: '1, C-EO', pagina: 'e326', livro: 'PAS < 160 mmHg, nitroprussiato se necessário (p. 560)' },
+  { tema: 'Reversão de anticoagulante', aha: 'Reversão de emergência com o agente apropriado para prevenir ressangramento', classe: '1, C-EO', pagina: 'e326', livro: '—' },
+  { tema: 'Tratamento do aneurisma', aha: 'Cirúrgico ou endovascular o mais cedo possível, de preferência em 24 h do início; obliteração completa quando factível', classe: '1, B-NR', pagina: 'e327', livro: '—' },
+  { tema: 'Nimodipino', aha: 'Início precoce de nimodipino enteral previne isquemia cerebral tardia e melhora o desfecho; texto de apoio: 60 mg 6 vezes ao dia, manter mesmo com hipotensão induzida (ajustando)', classe: '1, A', pagina: 'e339–e340', livro: '60 mg VO/sonda 4/4 h por 21 dias (p. 560) — concordante' },
+  { tema: 'Volemia', aha: 'Manter euvolemia com tratamento guiado por metas; induzir hipervolemia é potencialmente danoso', classe: '2a, B-R · 3: dano, B-R', pagina: 'e333', livro: '—' },
+  { tema: 'Vasoespasmo sintomático', aha: 'Elevar a PAS pode ser razoável para reduzir progressão e gravidade da isquemia tardia; augmentação hemodinâmica PROFILÁTICA não deve ser feita', classe: '2b, B-NR · 3: dano, B-R', pagina: 'e339', livro: 'hipertensão induzida com PAM em torno de 100 mmHg (fenilefrina), evidência pequena (p. 561)' },
+  { tema: 'Estatina e magnésio IV', aha: 'Uso rotineiro para melhorar desfecho não é recomendado', classe: '3: sem benefício, A (ambos)', pagina: 'e339', livro: '—' },
+  { tema: 'Fenitoína', aha: 'Para prevenção ou profilaxia de crises: associada a excesso de morbidade e mortalidade', classe: '3: dano, B-NR', pagina: 'e345', livro: '—' },
+  { tema: 'Crise epiléptica na apresentação', aha: 'Anticrise por ≤ 7 dias é razoável; além de 7 dias não reduz o risco futuro', classe: '2a, B-NR · 3: sem benefício, B-NR', pagina: 'e345', livro: '—' },
+  { tema: 'Detecção de vasoespasmo', aha: 'Doppler transcraniano é razoável; angio-TC/TC de perfusão podem ser úteis; EEG contínuo na HSA de alto grau', classe: '2a, B-NR', pagina: 'e338', livro: 'Doppler diário por 7 dias, depois alternado por 14; aumento > 50% da velocidade (p. 559)' },
+  { tema: 'Hemoglobina', aha: 'Limiar ótimo de transfusão desconhecido (lacuna de conhecimento; ensaios em andamento)', classe: '—', pagina: 'e350', livro: 'Hb acima de 8 g/dL (p. 560)' },
+]
 
 const simNao = (id: string, rotulo: string): Item => ({ tipo: 'escolha', id, rotulo, opcoes: [{ rotulo: 'Não', valor: 0 }, { rotulo: 'Sim', valor: 1 }] })
 

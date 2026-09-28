@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
 import {
-  METODOS_REAQUECIMENTO, OUTROS_HIPOTERMIA, estagioHipotermia, fichaHipotermiaAdulto, rcpNaHipotermia, taxaReaquecimento,
+  DIRETRIZ_HIPOTERMIA_2025, ESTAGIOS_ERC_2025, METODOS_REAQUECIMENTO, OUTROS_HIPOTERMIA, criteriosEcpr2025, estagioHipotermia, fichaHipotermiaAdulto, rcpNaHipotermia,
+  taxaReaquecimento,
 } from '@/clinico/adulto/ambientais'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent } from '@/components/ui/card'
@@ -29,10 +30,15 @@ export function HipotermiaAdulto() {
   const [t2, setT2] = useState('')
   const [horas, setHoras] = useState('')
 
+  const [fc, setFc] = useState('')
+  const [pas, setPas] = useState('')
+  const [arritmia, setArritmia] = useState<'sim' | 'nao'>('nao')
+
   const t = lerNumero(temp)
   const est = Number.isFinite(t) ? estagioHipotermia(t, sinais === 'nao') : null
   const rcp = rcpNaHipotermia(Number.isFinite(t) ? t : null)
   const taxa = taxaReaquecimento(lerNumero(t1), lerNumero(t2), lerNumero(horas))
+  const ecpr = criteriosEcpr2025({ fc: lerNumero(fc), pas: lerNumero(pas), arritmiaVentricular: arritmia === 'sim', tempC: Number.isFinite(t) ? t : undefined })
 
   return (
     <ToolLayout
@@ -76,6 +82,38 @@ export function HipotermiaAdulto() {
           {taxa ? <><strong>{br(taxa.cPorHora, 2)} °C/h</strong>{taxa.falhaPassivo ? ' — abaixo de 0,5 °C/h (critério do livro de falha do passivo)' : ''}</> : 'informe as duas temperaturas e o intervalo'}
         </p>
         {METODOS_REAQUECIMENTO.map((m) => <LinhaManual key={m.metodo} nome={m.metodo} texto={`${m.tecnica}; indicação: ${m.indicacao}; ganho: ${m.taxa}`} pagina="p. 1368–1369" />)}
+      </Bloco>
+
+      <Bloco titulo="ERC/RCUK 2025 — para onde levar" descricao="Critérios da diretriz para transferir direto a um centro de ECPR (risco iminente de PCR ou em PCR); sem centro alcançável em tempo razoável (≈ 6 h), reaquecimento não extracorpóreo.">
+        <div className="grid gap-3 md:grid-cols-3">
+          <CampoTemp id="hip-fc" rotulo="FC (/min)" valor={fc} onChange={setFc} />
+          <CampoTemp id="hip-pas" rotulo="PAS (mmHg)" valor={pas} onChange={setPas} />
+          <div className="flex flex-col gap-1.5">
+            <Label>Arritmia ventricular?</Label>
+            <Escolhas valor={arritmia} opcoes={[['nao', 'Não'], ['sim', 'Sim']] as const} onChange={setArritmia} />
+          </div>
+        </div>
+        <p className="text-sm">{ecpr.length ? <>Critério(s) presente(s): <strong>{ecpr.join('; ')}</strong>.</> : 'Nenhum dos quatro critérios (FC < 45, PAS < 90, arritmia ventricular, T < 30 °C) com os dados informados.'}</p>
+        <ul className="grid gap-1 text-sm md:grid-cols-2">
+          {ESTAGIOS_ERC_2025.map((e) => <li key={e.estagio} className="rounded-lg border px-3 py-2"><span className="font-medium">Estágio {e.estagio}</span> — {e.clinica}; {e.tempC}</li>)}
+        </ul>
+      </Bloco>
+
+      <Bloco titulo="ERC/RCUK 2025 × manual do HC">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">ERC/RCUK 2025</th><th className="pb-2">Manual do HC</th></tr></thead>
+            <tbody>
+              {DIRETRIZ_HIPOTERMIA_2025.map((d) => (
+                <tr key={d.tema} className="border-t">
+                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
+                  <td className="pr-3 py-2">{d.erc}</td>
+                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Bloco>
 
       <Bloco titulo="Outros números do capítulo">
