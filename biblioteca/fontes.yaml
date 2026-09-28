@@ -1,13 +1,13 @@
-# Registro de fontes da biblioteca (regra R4): sem `licenca` válida a ingestão
-# para. Valores aceitos: acesso-aberto-governo, creative-commons-<tipo>,
-# licenciado-<contrato>, institucional. `tenant_id: global` = todas as
+# Registro de fontes da biblioteca. Campos obrigatórios: titulo, editor, ano,
+# licenca. Valores conhecidos de `licenca`: acesso-aberto-governo,
+# creative-commons-<tipo>, licenciado-<contrato>, institucional, sem-licenca.
+# A antiga regra R4 (licença válida obrigatória) foi retirada pelo responsável
+# técnico em 28/09/2026: o script só avisa. `tenant_id: global` = todas as
 # unidades; um uuid de unidade restringe a ela.
 #
-# NÃO estão aqui, por falta de licença de uso (obras comerciais da Manole):
-# - Manual de Medicina de Emergência HCFMUSP, 3ª ed. (2022)
-# - Pronto-Socorro — Pediatria ICr-HCFMUSP, 4ª ed. (2023)
-# Se a licença for obtida, acrescentar a linha com `licenca: licenciado-<contrato>`
-# e rodar `python ingest.py <arquivo>`.
+# Os dois livros-fonte das ferramentas (Manual HCFMUSP 2022 e PS Pediatria ICr
+# 2023) já estão em raw/ no VPS; a entrada deles aqui fica a cargo do usuário
+# (modelo em README.md, seção "Entrada dos livros").
 
 - arquivo: ms_dengue_2024.pdf
   titulo: "Dengue: diagnóstico e manejo clínico — adulto e criança, 6ª ed."

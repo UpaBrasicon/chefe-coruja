@@ -19,7 +19,9 @@ services:
     environment:
       OLLAMA_KEEP_ALIVE: "30m"
       OLLAMA_NUM_PARALLEL: "2"
-    deploy: { resources: { limits: { memory: 2500m } } }
+    # bge-m3 mapeado em memória + buffers: com 2500m o Ollama ficava no limite
+    # e a ingestão caía para ~24 chunks/min.
+    deploy: { resources: { limits: { memory: 3500m } } }
 
   api:
     build: ./app

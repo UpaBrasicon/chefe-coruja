@@ -1,8 +1,10 @@
 """Fontes -> chunks por seção -> embeddings (Ollama bge-m3) -> Qdrant.
 
 Aceita PDF (pymupdf4llm, página a página) e Markdown (corpus da Central, um
-arquivo por ferramenta). Toda fonte precisa de `licenca` válida em
-fontes.yaml (regra R4); sem isso o script para antes de ler o arquivo.
+arquivo por ferramenta). Toda fonte precisa de título, editor, ano e do campo
+`licenca` em fontes.yaml. A antiga regra R4 (licença válida obrigatória) foi
+retirada pelo responsável técnico em 28/09/2026: uma licença fora da lista
+conhecida (ex.: `sem-licenca`) só gera aviso e fica gravada no payload.
 
 Uso (dentro do container da API, que já tem as dependências):
   docker compose run --rm api python ingest.py            # todas as fontes
@@ -21,7 +23,7 @@ from qdrant_client import QdrantClient, models
 
 BASE = Path(os.environ.get("BIBLIOTECA_DIR", "/srv/biblioteca"))
 RAW = BASE / "raw"
-LICENCAS_OK = ("acesso-aberto-governo", "creative-commons-", "licenciado-", "institucional")
+LICENCAS_CONHECIDAS = ("acesso-aberto-governo", "creative-commons-", "licenciado-", "institucional", "sem-licenca")
 COL, DIM = "biblioteca", 1024
 MAX_PALAVRAS, OVERLAP = 380, 60
 MIN_PALAVRAS = 25
@@ -122,11 +124,13 @@ def gravar(fonte: dict, fonte_id: str, lote: list[dict]) -> int:
 def validar(fonte: dict):
     lic = str(fonte.get("licenca", ""))
     alvo = fonte.get("arquivo") or fonte.get("pasta")
-    if not lic.startswith(LICENCAS_OK):
-        sys.exit(f"BLOQUEADO (R4): {alvo} sem licença válida em fontes.yaml (tem: {lic!r})")
-    for k in ("titulo", "editor", "ano"):
+    for k in ("titulo", "editor", "ano", "licenca"):
         if k not in fonte:
-            sys.exit(f"BLOQUEADO: fonte {alvo} sem campo '{k}'")
+            sys.exit(f"BLOQUEADO: fonte {alvo} sem campo '{k}' em fontes.yaml")
+    if not lic.startswith(LICENCAS_CONHECIDAS):
+        print(f"AVISO: {alvo} com licenca {lic!r} (fora da lista conhecida); ingerindo mesmo assim", file=sys.stderr)
+    if lic == "sem-licenca":
+        print(f"AVISO: {alvo} registrado como sem-licenca ({fonte.get('nota', 'sem nota')})", file=sys.stderr)
 
 
 def ingerir_pdf(fonte: dict):
@@ -172,10 +176,13 @@ if __name__ == "__main__":
     garantir_colecao()
     fontes = yaml.safe_load(open(BASE / "fontes.yaml", encoding="utf-8")) or []
     so = [s.rstrip("/") for s in sys.argv[1:]]
-    for f in fontes:
-        alvo = f.get("arquivo") or f.get("pasta")
-        if so and alvo not in so:
-            continue
+    # com argumentos, a ordem é a da linha de comando (ex.: corpus antes dos PDFs grandes)
+    alvo_de = lambda f: f.get("arquivo") or f.get("pasta")
+    ordem = [f for s in so for f in fontes if alvo_de(f) == s] if so else fontes
+    for s in so:
+        if not any(alvo_de(f) == s for f in fontes):
+            print(f"AVISO: {s} não está em fontes.yaml; ignorado", file=sys.stderr)
+    for f in ordem:
         if f.get("pasta"):
             ingerir_pasta_md(f)
         else:

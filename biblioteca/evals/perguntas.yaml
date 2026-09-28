@@ -57,6 +57,20 @@
 - q: "influenza quando iniciar oseltamivir"
   espera_fonte_contendo: "Vigilância"
 
+# --- Livros (Manual HCFMUSP 2022 e PS Pediatria ICr 2023) ---
+- q: "diagnóstico e tratamento da síndrome coronariana aguda sem supra de ST"
+  espera_fonte_contendo: "Manual de Medicina de Emergência"
+- q: "abordagem da sepse no pronto-socorro pacotes de 1 hora"
+  espera_fonte_contendo: "Manual de Medicina de Emergência"
+- q: "como conduzir a pancreatite aguda no departamento de emergência"
+  espera_fonte_contendo: "Manual de Medicina de Emergência"
+- q: "tratamento da crise convulsiva febril na criança"
+  espera_fonte_contendo: "Pronto-Socorro"
+- q: "manejo da laringite viral aguda na criança dexametasona e adrenalina nebulizada"
+  espera_fonte_contendo: "Pronto-Socorro"
+- q: "criança com desidratação grave por gastroenterite fase rápida de expansão"
+  espera_fonte_contendo: "Pronto-Socorro"
+
 # --- Corpus da Central (ferramentas com fonte) ---
 - q: "hipocalemia grave com alteração no ECG quanto de potássio repor"
   espera_fonte_contendo: "Central do Plantonista"

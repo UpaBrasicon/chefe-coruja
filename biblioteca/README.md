@@ -14,19 +14,25 @@ Guia completo: `produto/docs/pesquisa/busca-ia-guia-implementacao.md`.
   rede `deploy_default` compartilhada).
 - R2 serviços novos só em 127.0.0.1.
 - R3 o modelo não calcula dose nem escore: aponta a ferramenta da Central.
-- R4 toda fonte em `fontes.yaml` com `licenca` válida; sem isso a ingestão
-  para. Os dois livros (Manual HCFMUSP e PS Pediatria ICr) **não** estão na
-  biblioteca: são obras comerciais sem licença de uso. Se a licença vier,
-  basta uma linha em `fontes.yaml` e `python ingest.py`.
+- ~~R4~~ retirada pelo responsável técnico em 28/09/2026: toda fonte continua
+  registrada em `fontes.yaml` (título, editor, ano, `licenca`), mas a licença
+  não bloqueia mais a ingestão. Os dois livros (Manual HCFMUSP 2022 e PS
+  Pediatria ICr 2023) já estão em `raw/` no VPS, mas **a linha deles em
+  `fontes.yaml` e a ingestão ficaram para o usuário** (a IA foi impedida de
+  registrá-los): obras comerciais da Manole sem licença de uso; a
+  responsabilidade é do RT. Modelo da entrada no fim deste arquivo.
 - R5 pseudonimização (CPF, CNS, telefone, data, prontuário) na Edge Function e
   na API; o log guarda só a pergunta mascarada.
 - R6 a busca local (Fuse.js) funciona com o VPS desligado.
 
 ## Conteúdo indexado
 
-1. Fontes abertas do Ministério da Saúde (`raw/*.pdf`, `licenca:
+1. (Pendente do usuário) Os dois livros-fonte das ferramentas
+   (`raw/manual_hcfmusp_3ed_2022.pdf`, `raw/ps_pediatria_icr_4ed_2023.pdf`,
+   `licenca: sem-licenca`; a página citada é a do PDF).
+2. Fontes abertas do Ministério da Saúde (`raw/ms_*.pdf`, `licenca:
    acesso-aberto-governo`).
-2. Corpus da própria Central (`corpus/*.md`, gerado por
+3. Corpus da própria Central (`corpus/*.md`, gerado por
    `npm run corpus:central` a partir de `src/clinico`): cada ferramenta com a
    sua ficha, fontes com página e os dados que a tela usa. `licenca:
    institucional`, tenant `global`.
@@ -48,3 +54,33 @@ docker compose run --rm api python /srv/biblioteca/evals/run.py
 
 Do repositório: `npm run biblioteca:sync` gera `ferramentas.json` e o corpus e
 copia tudo para o VPS (precisa da chave SSH do usuário).
+
+## Entrada dos livros em `fontes.yaml` (para o usuário acrescentar)
+
+```yaml
+- arquivo: manual_hcfmusp_3ed_2022.pdf
+  titulo: "Manual de Medicina de Emergência — HCFMUSP, 3ª ed."
+  editor: "Manole (Brandão Neto RA et al., eds.)"
+  ano: 2022
+  licenca: "sem-licenca"
+  nota: "Obra comercial (ISBN 9786555767827), sem licença de uso; decisão do RT em 28/09/2026. Anexo 1 tem erros de digitação (CLAUDE.md)."
+  tenant_id: global
+
+- arquivo: ps_pediatria_icr_4ed_2023.pdf
+  titulo: "Pronto-Socorro — Pediatria ICr-HCFMUSP, 4ª ed."
+  editor: "Manole (Schvartsman C et al., coords.)"
+  ano: 2023
+  licenca: "sem-licenca"
+  nota: "Obra comercial (ISBN 978-65-5576-759-9), sem licença de uso; decisão do RT em 28/09/2026. Não cobre o período neonatal."
+  tenant_id: global
+```
+
+Depois, no VPS (como hermes, em `/srv/biblioteca`), com a mesma entrada
+copiada para `/srv/biblioteca/fontes.yaml`:
+
+```bash
+docker compose run --rm api python ingest.py manual_hcfmusp_3ed_2022.pdf ps_pediatria_icr_4ed_2023.pdf
+```
+
+São ~2.400 páginas: a 24 chunks/min no VPS, conte várias horas. As evals já
+têm perguntas que esperam os dois livros.
