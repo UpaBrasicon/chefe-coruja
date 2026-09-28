@@ -14,7 +14,7 @@ export function ManualDengue() {
         <CardContent className="flex flex-col gap-1.5 text-sm text-muted-foreground">
           <p>• Triagem: febre + 2 ou mais sintomas (náusea, exantema, cefaleia, dor retro-orbital, mialgia, artralgia, petéquias).</p>
           <p>• Pesquisar sinais de alarme e sinais de choque.</p>
-          <p>• Prova do laço (positiva se ≥ 10 petéquias em adultos / ≥ 8 em crianças).</p>
+          <p>• Prova do laço: positiva com 20 ou mais petéquias no adulto e 10 ou mais na criança, no quadrado de 2,5 cm (manual HCFMUSP, p. 1232; PS Pediatria ICr, p. 447 — na criança o manguito fica 3 min).</p>
         </CardContent>
       </Card>
 

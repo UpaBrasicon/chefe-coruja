@@ -38,10 +38,10 @@ const questoes: Questao[] = [
     explicacao: 'Vasopressor precoce (noradrenalina) + reposição guiada. Evitar hiperidratação agressiva.',
   },
   {
-    pergunta: 'Antibioticoterapia empírica em pneumonia grave (UTI) de início precoce, sem fatores de risco para resistência:',
-    opcoes: ['Betalactâmico (cefepima/piperacilina-tazobactam) + macrolídeo', 'Vancomicina isolada', 'Metronidazol isolado', 'Azitromicina isolada'],
+    pergunta: 'Pneumonia comunitária de alto risco, sem risco de Pseudomonas — esquema da Tabela 10 do manual HCFMUSP:',
+    opcoes: ['Ceftriaxona + azitromicina', 'Cefepima + levofloxacino', 'Vancomicina isolada', 'Metronidazol isolado'],
     correta: 0,
-    explicacao: 'Cobertura de Gram−/Gram+ + atípicos. Evitar antibiótico de amplo espectro desnecessário (stewardship).',
+    explicacao: 'Manual de Medicina de Emergência HCFMUSP, 3ª ed., Tabela 10, p. 463: alto risco — ceftriaxona 1 g 12/12 h + azitromicina 500 mg 1x/dia (ou levofloxacino). Cefepima ou piperacilina-tazobactam ficam para o risco de Pseudomonas.',
   },
 ]
 
