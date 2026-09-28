@@ -158,6 +158,59 @@ def _vincular(args: dict, **_kw) -> str:
     return json.dumps(_post("/skill/vincular", {**sujeito, "codigo": codigo}), ensure_ascii=False)
 
 
+# ── Biblioteca clínica (busca inteligente da Central, 28/09/2026) ─────────────
+# Mesma API "biblioteca" que a barra da Central usa (VPS, rede interna
+# deploy_default: http://biblioteca-api:8710). Devolve só referências
+# (título/seção/página) e prévias curtas — o conteúdo dos trechos não vai para
+# a memória persistente do Hermes. Uso pelos agentes de gestor e auditoria;
+# o chat do plantonista não passa por aqui.
+
+BIBLIOTECA_SCHEMA = {
+    "name": "biblioteca_clinica_buscar",
+    "description": (
+        "Busca trechos citáveis nas fontes clínicas licenciadas/abertas (Ministério da Saúde) e nas "
+        "ferramentas da Central do Plantonista. Devolve ferramentas sugeridas (nome, rota) e trechos com "
+        "título, seção e página. Não calcula dose nem escore: aponte a ferramenta da Central."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {"pergunta": {"type": "string", "description": "dúvida clínica, sem dados de paciente"}},
+        "required": ["pergunta"],
+    },
+}
+
+
+def _biblioteca_buscar(args: dict, **_kw) -> str:
+    import uuid
+
+    pergunta = str(args.get("pergunta") or "").strip()[:800]
+    if len(pergunta) < 3:
+        return json.dumps({"ok": False, "erro": "informe a pergunta"}, ensure_ascii=False)
+    url = os.environ.get("BIBLIOTECA_URL", "http://biblioteca-api:8710").rstrip("/") + "/v1/search"
+    req = urllib.request.Request(
+        url,
+        data=json.dumps({"q": pergunta, "tenant_id": "global", "request_id": f"hermes-{uuid.uuid4()}"}).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Authorization": "Bearer " + os.environ["BIBLIOTECA_API_KEY"]},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            dados = json.load(r)
+    except Exception as e:  # noqa: BLE001 — rede/timeout/http
+        return json.dumps({"ok": False, "erro": f"biblioteca indisponível ({type(e).__name__})"}, ensure_ascii=False)
+    trechos = [
+        {"n": t["n"], "titulo": t["titulo"], "editor": t["editor"], "ano": t["ano"], "secao": t.get("secao"),
+         "pagina": t.get("pagina"), "ref": t.get("ref"), "preview": (t.get("preview") or "")[:200]}
+        for t in dados.get("trechos", [])
+    ]
+    return json.dumps({"ok": True, "ferramentas": dados.get("ferramentas", []), "trechos": trechos,
+                       "aviso": "Suporte à decisão baseado nas fontes citadas. A conduta é do médico assistente."},
+                      ensure_ascii=False)
+
+
+def _biblioteca_disponivel() -> bool:
+    return bool(os.environ.get("BIBLIOTECA_API_KEY"))
+
+
 def _disponivel() -> bool:
     return bool(os.environ.get("HERMES_BACKEND_URL") and os.environ.get("HERMES_SKILL_TOKEN"))
 
@@ -169,3 +222,5 @@ def register(ctx) -> None:
                       handler=_almanaque, check_fn=_disponivel, emoji="📖")
     ctx.register_tool(name="coruja_vincular", toolset=TOOLSET, schema=VINCULAR_SCHEMA,
                       handler=_vincular, check_fn=_disponivel, emoji="🔗")
+    ctx.register_tool(name="biblioteca_clinica_buscar", toolset=TOOLSET, schema=BIBLIOTECA_SCHEMA,
+                      handler=_biblioteca_buscar, check_fn=_biblioteca_disponivel, emoji="📚")

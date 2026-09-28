@@ -1,0 +1,52 @@
+# Registro de fontes da biblioteca (regra R4): sem `licenca` válida a ingestão
+# para. Valores aceitos: acesso-aberto-governo, creative-commons-<tipo>,
+# licenciado-<contrato>, institucional. `tenant_id: global` = todas as
+# unidades; um uuid de unidade restringe a ela.
+#
+# NÃO estão aqui, por falta de licença de uso (obras comerciais da Manole):
+# - Manual de Medicina de Emergência HCFMUSP, 3ª ed. (2022)
+# - Pronto-Socorro — Pediatria ICr-HCFMUSP, 4ª ed. (2023)
+# Se a licença for obtida, acrescentar a linha com `licenca: licenciado-<contrato>`
+# e rodar `python ingest.py <arquivo>`.
+
+- arquivo: ms_dengue_2024.pdf
+  titulo: "Dengue: diagnóstico e manejo clínico — adulto e criança, 6ª ed."
+  editor: "Ministério da Saúde"
+  ano: 2024
+  licenca: "acesso-aberto-governo"
+  url: "https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/svsa/dengue/dengue-diagnostico-e-manejo-clinico-adulto-e-crianca"
+  tenant_id: global
+
+- arquivo: ms_gvs_vol1_2024.pdf
+  titulo: "Guia de Vigilância em Saúde, 6ª ed. revisada — volume 1"
+  editor: "Ministério da Saúde"
+  ano: 2024
+  licenca: "acesso-aberto-governo"
+  url: "https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/svsa/vigilancia/guia-de-vigilancia-em-saude-volume-1-6a-edicao"
+  tenant_id: global
+
+- arquivo: ms_gvs_vol2_2024.pdf
+  titulo: "Guia de Vigilância em Saúde, 6ª ed. revisada — volume 2"
+  editor: "Ministério da Saúde"
+  ano: 2024
+  licenca: "acesso-aberto-governo"
+  url: "https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/svsa/vigilancia/guia-de-vigilancia-em-saude-volume-2-6a-edicao"
+  tenant_id: global
+
+- arquivo: ms_gvs_vol3_2024.pdf
+  titulo: "Guia de Vigilância em Saúde, 6ª ed. revisada — volume 3"
+  editor: "Ministério da Saúde"
+  ano: 2024
+  licenca: "acesso-aberto-governo"
+  url: "https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/svsa/vigilancia/guia-de-vigilancia-em-saude-volume-3-6a-edicao"
+  tenant_id: global
+
+# Conteúdo da própria Central (gerado por `npm run corpus:central` a partir de
+# src/clinico): cada ferramenta com a sua ficha, a fonte com página e os dados
+# que a tela usa. Não é texto de livro.
+- pasta: corpus
+  titulo: "Central do Plantonista"
+  editor: "Chefe Coruja"
+  ano: 2026
+  licenca: "institucional"
+  tenant_id: global

@@ -1142,6 +1142,85 @@ export type Database = {
           },
         ]
       }
+      clinical_search_feedback: {
+        Row: {
+          comentario: string | null
+          created_at: string
+          id: string
+          request_id: string
+          user_id: string
+          util: boolean
+        }
+        Insert: {
+          comentario?: string | null
+          created_at?: string
+          id?: string
+          request_id: string
+          user_id: string
+          util: boolean
+        }
+        Update: {
+          comentario?: string | null
+          created_at?: string
+          id?: string
+          request_id?: string
+          user_id?: string
+          util?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_search_feedback_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_search_logs"
+            referencedColumns: ["request_id"]
+          },
+        ]
+      }
+      clinical_search_logs: {
+        Row: {
+          created_at: string
+          id: string
+          latency_ms: number | null
+          mode: string
+          query_redacted: string
+          request_id: string
+          status: number | null
+          unidade_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          latency_ms?: number | null
+          mode: string
+          query_redacted: string
+          request_id: string
+          status?: number | null
+          unidade_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          latency_ms?: number | null
+          mode?: string
+          query_redacted?: string
+          request_id?: string
+          status?: number | null
+          unidade_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_search_logs_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conceito: {
         Row: {
           ativo: boolean
@@ -6164,6 +6243,10 @@ export type Database = {
         Args: { p_conteudo: string; p_internacao: string; p_tipo: string }
         Returns: string
       }
+      registrar_feedback_busca: {
+        Args: { p_comentario?: string; p_request_id: string; p_util: boolean }
+        Returns: string
+      }
       registrar_ficha: {
         Args: {
           p_dados?: Json
@@ -6237,6 +6320,16 @@ export type Database = {
       responder_passagem: {
         Args: { p_aceitar: boolean; p_motivo?: string; p_passagem: string }
         Returns: undefined
+      }
+      resumo_busca_ia: {
+        Args: { p_dias?: number; p_unidade: string }
+        Returns: {
+          consultas: number
+          dia: string
+          nao_uteis: number
+          perguntas_ia: number
+          uteis: number
+        }[]
       }
       resumo_carga_plantonistas: {
         Args: { p_fim: string; p_inicio: string; p_unidade: string }

@@ -1,24 +1,36 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BedDouble, Clock, Hourglass, Pill, Search, Star, Stethoscope } from 'lucide-react'
+import Fuse from 'fuse.js'
+import { BedDouble, Clock, Hourglass, Pill, Search, Sparkles, Star, Stethoscope } from 'lucide-react'
 
 import { CHAVES_FERRAMENTAS, SECOES } from '@/content/registry'
+import { GRUPOS_SECAO } from '@/content/gruposSecoes'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useFaixaPlantonista } from '@/hooks/useFaixaPlantonista'
 import { formatarDuracao, nivelDaObservacao, nivelDoTurno, tempoDaJanela, tempoDeTurno, JANELA_OBSERVACAO_MIN } from '@/domain/plantao'
-import { fuzzyMatch, normalizar } from '@/lib/search'
+import { normalizar } from '@/lib/search'
+import { buscarSemantico, useClinicalAsk, type ToolHit } from '@/lib/useClinicalAsk'
 import { chaveFerramenta, useFavoritos, useRecentes } from '@/lib/useFavoritos'
 import { cn } from '@/lib/utils'
 import { Canal, Canais } from '@/components/monitor/Canais'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { FaixaParametros, Parametro, type Nivel } from '@/components/monitor/Parametros'
 import { DaUnidade } from '@/components/plantonista/DaUnidade'
+import { RespostaIa } from '@/components/plantonista/RespostaIa'
 
 // Central do Plantonista (design_handoff/telas/01): a página inicial do papel
 // e a única tela do plantonista com a faixa de parâmetros. As seções clínicas
 // são canais — linhas rotuladas —, não uma grade de cards.
+//
+// Busca (guia produto/docs/pesquisa/busca-ia-guia-implementacao.md, §9): a
+// busca local (Fuse.js sobre nome, sinônimos e categoria) não usa rede e
+// funciona com a biblioteca fora do ar; "Perguntar à IA" e as sugestões por
+// significado passam pela Edge Function clinical-search.
 
-type Ferramenta = { chave: string; secao: string; secaoLabel: string; slug: string; label: string; description: string; termos: string }
+type Ferramenta = { chave: string; secao: string; secaoLabel: string; slug: string; label: string; description: string; tags: string[]; categoria: string }
+
+const CATEGORIA: Record<string, string> = {}
+for (const [secao, grupos] of Object.entries(GRUPOS_SECAO)) for (const g of grupos) for (const s of g.slugs) CATEGORIA[`${secao}/${s}`] = g.rotulo
 
 const TODAS: Ferramenta[] = SECOES.flatMap((s) =>
   s.tools.map((t) => ({
@@ -28,14 +40,37 @@ const TODAS: Ferramenta[] = SECOES.flatMap((s) =>
     slug: t.slug,
     label: t.label,
     description: t.description,
-    termos: [t.label, t.description, s.label, ...(t.tags ?? [])].join(' '),
+    tags: t.tags ?? [],
+    categoria: CATEGORIA[`${s.slug}/${t.slug}`] ?? s.label,
   })),
 )
 
-function CartaoFerramenta({ f, favorito, onFavoritar }: { f: Ferramenta; favorito: boolean; onFavoritar: () => void }) {
+// Índice local: acentos ignorados nos campos e na consulta.
+const semAcento = (v: unknown): string | string[] =>
+  Array.isArray(v) ? v.map((x) => normalizar(String(x))) : v == null ? '' : normalizar(String(v))
+const FUSE = new Fuse(TODAS, {
+  keys: [
+    { name: 'label', weight: 0.5 },
+    { name: 'tags', weight: 0.3 },
+    { name: 'categoria', weight: 0.2 },
+    { name: 'description', weight: 0.15 },
+  ],
+  threshold: 0.35,
+  ignoreLocation: true,
+  minMatchCharLength: 2,
+  getFn: (obj, path) => semAcento(Fuse.config.getFn(obj, path)),
+})
+
+function buscarLocal(consulta: string): Ferramenta[] {
+  const q = normalizar(consulta.trim())
+  if (!q) return []
+  return FUSE.search(q).map((r) => r.item)
+}
+
+function CartaoFerramenta({ f, favorito, onFavoritar, destacado }: { f: Ferramenta; favorito: boolean; onFavoritar: () => void; destacado?: boolean }) {
   const navigate = useNavigate()
   return (
-    <div className="group relative rounded-container border border-fio bg-superficie shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-halo">
+    <div className={cn('group relative rounded-container border border-fio bg-superficie shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-halo', destacado && 'border-marca ring-2 ring-marca/30')}>
       <button type="button" onClick={() => navigate(`/plantonista/${f.secao}/${f.slug}`)} className="block w-full px-4 py-3 pr-10 text-left">
         <span className="rotulo block text-tinta-sussurro">{f.secaoLabel}</span>
         <span className="mt-1 block text-corpo font-semibold tracking-[-0.01em] text-tinta">{f.label}</span>
@@ -61,17 +96,63 @@ export default function PlantonistaHome() {
   const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   const { recentes } = useRecentes(CHAVES_FERRAMENTAS)
   const faixa = useFaixaPlantonista(unidadeAtiva?.unidade_id)
+  const unidadeId = unidadeAtiva?.unidade_id
+  const ia = useClinicalAsk(unidadeId)
+  const campoBusca = useRef<HTMLInputElement>(null)
+  const [destacado, setDestacado] = useState(-1)
+  const [sugestoes, setSugestoes] = useState<ToolHit[] | null>(null)
 
-  const resultados = useMemo(() => {
-    const q = consulta.trim()
-    if (!q) return []
-    const n = normalizar(q)
-    return TODAS
-      .map((f) => ({ f, p: normalizar(f.label).includes(n) ? 3 : normalizar(f.termos).includes(n) ? 2 : fuzzyMatch(f.label, q) ? 1 : 0 }))
-      .filter((r) => r.p > 0)
-      .sort((a, b) => b.p - a.p)
-      .map((r) => r.f)
-  }, [consulta])
+  const resultados = useMemo(() => buscarLocal(consulta), [consulta])
+  const perguntavel = consulta.trim().length >= 3
+
+  // Atalho "/" foca a busca (fora de campos de texto).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const alvo = e.target as HTMLElement | null
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey && !alvo?.closest('input, textarea, select, [contenteditable="true"]')) {
+        e.preventDefault()
+        campoBusca.current?.focus()
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
+
+  // Sem resultado local: sugere ferramentas por significado (busca semântica,
+  // sem gerar texto). Falha em silêncio se a biblioteca estiver fora do ar.
+  useEffect(() => {
+    if (!perguntavel || resultados.length > 0 || !unidadeId) return
+    const ac = new AbortController()
+    const t = window.setTimeout(async () => {
+      const r = await buscarSemantico(consulta.trim(), unidadeId, ac.signal)
+      if (!ac.signal.aborted) setSugestoes(r?.ferramentas ?? null)
+    }, 450)
+    return () => { window.clearTimeout(t); ac.abort() }
+  }, [consulta, perguntavel, resultados.length, unidadeId])
+
+  const aoDigitar = (valor: string) => {
+    setConsulta(valor)
+    setDestacado(-1)
+    setSugestoes(null)
+  }
+
+  const perguntar = () => {
+    if (!perguntavel) return
+    void ia.ask(consulta.trim())
+  }
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setDestacado((d) => Math.min(d + 1, resultados.length - 1)) }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setDestacado((d) => Math.max(d - 1, -1)) }
+    else if (e.key === 'Enter') {
+      e.preventDefault()
+      const f = resultados[destacado]
+      if (f) navigate(`/plantonista/${f.secao}/${f.slug}`)
+      else perguntar()
+    } else if (e.key === 'Escape') {
+      if (consulta) { aoDigitar(''); ia.limpar() } else campoBusca.current?.blur()
+    }
+  }
 
   const favoritosCards = favoritos.map((c) => TODAS.find((f) => f.chave === c)).filter((f): f is Ferramenta => !!f)
   const recentesCards = recentes
@@ -143,17 +224,49 @@ export default function PlantonistaHome() {
             descricao={unidadeAtiva ? `${unidadeAtiva.unidade.nome} · ${TODAS.length} ferramentas clínicas` : undefined}
           />
 
-          <div className="relative mb-[22px]">
-            <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
-            <input
-              type="search"
-              value={consulta}
-              onChange={(e) => setConsulta(e.target.value)}
-              placeholder="Buscar por droga, escore ou conduta…"
-              aria-label="Buscar ferramenta"
-              className="h-11 w-full rounded-container border border-fio bg-superficie pr-3 pl-10 text-corpo text-tinta shadow-repouso outline-none placeholder:text-tinta-sussurro focus-visible:border-marca"
-            />
+          <div className="mb-[22px]">
+            <div className="relative">
+              <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
+              <input
+                ref={campoBusca}
+                type="search"
+                value={consulta}
+                onChange={(e) => aoDigitar(e.target.value)}
+                onKeyDown={onKeyDown}
+                placeholder="Buscar por droga, escore ou conduta… ou pergunte à IA"
+                aria-label="Buscar ferramenta ou perguntar à IA"
+                aria-keyshortcuts="/"
+                autoComplete="off"
+                maxLength={800}
+                className="h-11 w-full rounded-container border border-fio bg-superficie pr-3 pl-10 text-corpo text-tinta shadow-repouso outline-none placeholder:text-tinta-sussurro focus-visible:border-marca"
+              />
+            </div>
+            {consulta.trim() && (
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={perguntar}
+                  disabled={!perguntavel || !unidadeId || ia.status === 'loading' || ia.status === 'streaming'}
+                  className="inline-flex items-center gap-1.5 rounded-container border border-fio bg-superficie px-3 py-1.5 text-apoio font-medium text-tinta shadow-repouso hover:border-marca disabled:opacity-50"
+                >
+                  <Sparkles className="size-4 text-marca" aria-hidden />
+                  Perguntar à IA: “{consulta.trim()}”
+                </button>
+                <span className="text-apoio text-tinta-sussurro">Não digite nome, CPF ou dados identificáveis do paciente. Enter pergunta; ↑↓ escolhem uma ferramenta.</span>
+              </div>
+            )}
           </div>
+
+          <RespostaIa
+            pergunta={ia.pergunta}
+            texto={ia.texto}
+            fontes={ia.fontes}
+            ferramentas={ia.ferramentas}
+            status={ia.status}
+            alerta={ia.alerta}
+            requestId={ia.requestId}
+            onFechar={ia.limpar}
+          />
 
           {consulta.trim() ? (
             <section aria-live="polite">
@@ -162,12 +275,25 @@ export default function PlantonistaHome() {
               </TituloSecao>
               {resultados.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {resultados.map((f) => (
-                    <CartaoFerramenta key={f.chave} f={f} favorito={favoritos.includes(f.chave)} onFavoritar={() => alternarFavorito(f.chave)} />
+                  {resultados.map((f, i) => (
+                    <CartaoFerramenta key={f.chave} f={f} favorito={favoritos.includes(f.chave)} onFavoritar={() => alternarFavorito(f.chave)} destacado={i === destacado} />
                   ))}
                 </div>
               ) : (
-                <p className="py-8 text-center text-apoio text-tinta-sussurro">Nenhuma ferramenta encontrada para “{consulta.trim()}”.</p>
+                <div className="py-6 text-center text-apoio text-tinta-sussurro">
+                  <p>Nenhuma ferramenta com esse nome para “{consulta.trim()}”.</p>
+                  {sugestoes && sugestoes.length > 0 && (
+                    <div className="mt-4 text-left">
+                      <TituloSecao>Sugestões por significado</TituloSecao>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {sugestoes.map((s) => {
+                          const f = TODAS.find((x) => `/plantonista/${x.secao}/${x.slug}` === s.rota)
+                          return f ? <CartaoFerramenta key={f.chave} f={f} favorito={favoritos.includes(f.chave)} onFavoritar={() => alternarFavorito(f.chave)} /> : null
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </section>
           ) : (

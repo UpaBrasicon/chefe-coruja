@@ -31,3 +31,14 @@
 # 		respond 404
 # 	}
 # }
+
+# Biblioteca clínica do Chefe Coruja (28/09/2026): API em outro compose
+# (/srv/biblioteca), container biblioteca-api na rede deploy_default.
+# 179-199-128-141.sslip.io é o nome provisório até o DNS de
+# biblioteca.chefecoruja.com.br apontar para este VPS.
+biblioteca.chefecoruja.com.br, 179-199-128-141.sslip.io {
+    reverse_proxy biblioteca-api:8710 {
+        flush_interval -1
+    }
+    header -Server
+}

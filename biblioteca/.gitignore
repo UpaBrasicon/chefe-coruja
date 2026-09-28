@@ -1,0 +1,6 @@
+app/.env
+raw/
+processed/
+qdrant_data/
+evals/resultado-*.json
+corpus/

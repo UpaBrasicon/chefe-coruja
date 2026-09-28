@@ -1,0 +1,3440 @@
+[
+ {
+  "id": "iot",
+  "nome": "Intubação Orotraqueal (sequência rápida)",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "intubação",
+   "sequência rápida",
+   "sedação",
+   "anestesia",
+   "succinilcolina",
+   "propofol",
+   "IOT"
+  ],
+  "descricao": "Indução, analgesia e bloqueio por peso (padrão HC).",
+  "rota": "/plantonista/calculadoras/iot"
+ },
+ {
+  "id": "drogas-vasoativas",
+  "nome": "Drogas Vasoativas",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "noradrenalina",
+   "vasopressor",
+   "infusão",
+   "diluição",
+   "dopamina",
+   "adrenalina",
+   "DVA"
+  ],
+  "descricao": "Preparo padrão HC, mL/h pela dose e dose pela bomba.",
+  "rota": "/plantonista/calculadoras/drogas-vasoativas"
+ },
+ {
+  "id": "sedacao-continua",
+  "nome": "Sedação Contínua",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "fentanil",
+   "midazolam",
+   "propofol",
+   "dexmedetomidina",
+   "cetamina",
+   "analgesia"
+  ],
+  "descricao": "Propofol, midazolam, dexmedetomidina, quetamina e fentanil.",
+  "rota": "/plantonista/calculadoras/sedacao-continua"
+ },
+ {
+  "id": "bloqueio-neuromuscular",
+  "nome": "Bloqueio Neuromuscular Contínuo",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "atracúrio",
+   "rocurônio",
+   "curarizante",
+   "paralisia"
+  ],
+  "descricao": "Rocurônio e cisatracúrio (padrão HC).",
+  "rota": "/plantonista/calculadoras/bloqueio-neuromuscular"
+ },
+ {
+  "id": "heparinizacao-venosa",
+  "nome": "Heparina não fracionada EV",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "heparina",
+   "TTPa",
+   "anticoagulação",
+   "TVP",
+   "TEP"
+  ],
+  "descricao": "80 UI/kg + 18 UI/kg/h e ajuste pelo TTPa (manual HC).",
+  "rota": "/plantonista/calculadoras/heparinizacao-venosa"
+ },
+ {
+  "id": "hiponatremia",
+  "nome": "Hiponatremia",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "sódio",
+   "NaCl 3%",
+   "hiponatremia",
+   "eletrólitos"
+  ],
+  "descricao": "NaCl 3%: preparo, bolus e limites de correção (manual HC).",
+  "rota": "/plantonista/calculadoras/hiponatremia"
+ },
+ {
+  "id": "hipernatremia",
+  "nome": "Hipernatremia",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "sódio",
+   "água livre",
+   "hipernatremia",
+   "eletrólitos"
+  ],
+  "descricao": "Água livre e Adrogué-Madias (manual HC).",
+  "rota": "/plantonista/calculadoras/hipernatremia"
+ },
+ {
+  "id": "hidantalizacao",
+  "nome": "Estado de mal epiléptico",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "fenitoína",
+   "hidantal",
+   "crise convulsiva",
+   "epilepsia"
+  ],
+  "descricao": "1ª, 2ª e 3ª linha por peso (manual HC).",
+  "rota": "/plantonista/calculadoras/hidantalizacao"
+ },
+ {
+  "id": "profilaxia-tev",
+  "nome": "Profilaxia de TEV",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "trombose",
+   "TEV",
+   "enoxaparina",
+   "Caprini",
+   "Pádua",
+   "TVP"
+  ],
+  "descricao": "Doses de profilaxia pelo manual HC (sem escore de risco).",
+  "rota": "/plantonista/calculadoras/profilaxia-tev"
+ },
+ {
+  "id": "acesso-venoso",
+  "nome": "Escolha de Acesso Venoso",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "PICC",
+   "CVC",
+   "cateter",
+   "acesso venoso",
+   "periférico",
+   "central"
+  ],
+  "descricao": "Recomendação de dispositivo por perfil e terapia.",
+  "rota": "/plantonista/calculadoras/acesso-venoso"
+ },
+ {
+  "id": "heparinizacao-ajuste",
+  "nome": "Heparina — ajuste pelo TTPa",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "heparina",
+   "TTPa",
+   "ajuste",
+   "anticoagulação"
+  ],
+  "descricao": "Nomograma da Tabela 7 do manual HC.",
+  "rota": "/plantonista/calculadoras/heparinizacao-ajuste"
+ },
+ {
+  "id": "bolus",
+  "nome": "Doses por peso",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Doses e infusões",
+  "sinonimos": [
+   "pediatria",
+   "criança",
+   "dose",
+   "peso",
+   "emergência",
+   "antídoto"
+  ],
+  "descricao": "Apêndice do PS Pediatria ICr: emergência, RCP, sedação e antídotos.",
+  "rota": "/plantonista/pediatria/bolus"
+ },
+ {
+  "id": "infusoes",
+  "nome": "Infusões contínuas",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Doses e infusões",
+  "sinonimos": [
+   "pediatria",
+   "infusão",
+   "vasoativo",
+   "sedação",
+   "mL/h"
+  ],
+  "descricao": "Faixa de dose do livro e mL/h pela concentração do seu preparo.",
+  "rota": "/plantonista/pediatria/infusoes"
+ },
+ {
+  "id": "rcp-pediatrica",
+  "nome": "RCP pediátrica",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Reanimação, via aérea e choque",
+  "sinonimos": [
+   "pediatria",
+   "RCP",
+   "PCR",
+   "parada",
+   "desfibrilação",
+   "cardioversão",
+   "joules",
+   "epinefrina"
+  ],
+  "descricao": "Compressão/ventilação por faixa, cargas de desfibrilação e cardioversão por peso, drogas da PCR, bradicardia e TSV.",
+  "rota": "/plantonista/pediatria/rcp-pediatrica"
+ },
+ {
+  "id": "via-aerea",
+  "nome": "Via aérea pediátrica",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Reanimação, via aérea e choque",
+  "sinonimos": [
+   "pediatria",
+   "tubo",
+   "cuff",
+   "intubação",
+   "via aérea",
+   "SRI",
+   "laringoscópio",
+   "lâmina"
+  ],
+  "descricao": "Tubo com e sem cuff, profundidade, equipamento por idade e doses da SRI.",
+  "rota": "/plantonista/pediatria/via-aerea"
+ },
+ {
+  "id": "anafilaxia-pediatrica",
+  "nome": "Anafilaxia — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Reanimação, via aérea e choque",
+  "sinonimos": [
+   "pediatria",
+   "anafilaxia",
+   "alergia",
+   "epinefrina",
+   "adrenalina",
+   "difenidramina",
+   "glucagon",
+   "fenoterol"
+  ],
+  "descricao": "Epinefrina IM por peso ou dose fixa por idade, 2ª/3ª linha e refratária.",
+  "rota": "/plantonista/pediatria/anafilaxia-pediatrica"
+ },
+ {
+  "id": "asma-pediatrica",
+  "nome": "Crise asmática — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Respiratório",
+  "sinonimos": [
+   "pediatria",
+   "asma",
+   "crise asmática",
+   "broncoespasmo",
+   "salbutamol",
+   "ipratrópio",
+   "sulfato de magnésio",
+   "prednisolona"
+  ],
+  "descricao": "Corticoide, ipratrópio, magnésio e salbutamol contínuo por peso; classificação da crise como referência.",
+  "rota": "/plantonista/pediatria/asma-pediatrica"
+ },
+ {
+  "id": "crise-epileptica-pediatrica",
+  "nome": "Crise epiléptica — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "pediatria",
+   "convulsão",
+   "crise epiléptica",
+   "estado de mal",
+   "diazepam",
+   "midazolam",
+   "fenitoína",
+   "fenobarbital"
+  ],
+  "descricao": "Benzodiazepínicos, ataque, fenobarbital e EME refratário por peso, com tempo de infusão.",
+  "rota": "/plantonista/pediatria/crise-epileptica-pediatrica"
+ },
+ {
+  "id": "sinais-vitais-pediatricos",
+  "nome": "Sinais vitais por idade",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Reanimação, via aérea e choque",
+  "sinonimos": [
+   "pediatria",
+   "sinais vitais",
+   "frequência cardíaca",
+   "frequência respiratória",
+   "pressão arterial",
+   "hipotensão"
+  ],
+  "descricao": "FC normal, valores anormais no choque, PA sistólica baixa e FR normal para a idade (só referência).",
+  "rota": "/plantonista/pediatria/sinais-vitais-pediatricos"
+ },
+ {
+  "id": "choque-pediatrico",
+  "nome": "Choque séptico — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Reanimação, via aérea e choque",
+  "sinonimos": [
+   "pediatria",
+   "choque",
+   "sepse",
+   "choque séptico",
+   "expansão volêmica",
+   "bolus",
+   "epinefrina",
+   "dopamina"
+  ],
+  "descricao": "Expansão volêmica em mL/kg, vasoativas em µg/min e metas da primeira hora.",
+  "rota": "/plantonista/pediatria/choque-pediatrico"
+ },
+ {
+  "id": "tce-grave-pediatrico",
+  "nome": "TCE grave — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "pediatria",
+   "TCE",
+   "trauma craniano",
+   "hipertensão intracraniana",
+   "salina hipertônica",
+   "NaCl 3%",
+   "manitol"
+  ],
+  "descricao": "NaCl 3% e manitol por peso; metas de PaCO₂, PIC, PPC e osmolaridade.",
+  "rota": "/plantonista/pediatria/tce-grave-pediatrico"
+ },
+ {
+  "id": "pecarn-menor-2-anos",
+  "nome": "TCE leve — menores de 2 anos (PECARN)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Triagem e escores",
+  "sinonimos": [
+   "pediatria",
+   "TCE",
+   "PECARN",
+   "tomografia",
+   "lactente"
+  ],
+  "descricao": "Figura 2 do cap. 16.",
+  "rota": "/plantonista/pediatria/pecarn-menor-2-anos"
+ },
+ {
+  "id": "pecarn-2-anos-ou-mais",
+  "nome": "TCE leve — 2 anos ou mais (PECARN)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Triagem e escores",
+  "sinonimos": [
+   "pediatria",
+   "TCE",
+   "PECARN",
+   "tomografia"
+  ],
+  "descricao": "Figura 3 do cap. 16.",
+  "rota": "/plantonista/pediatria/pecarn-2-anos-ou-mais"
+ },
+ {
+  "id": "glasgow-pediatrico",
+  "nome": "Escala de Coma de Glasgow — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Triagem e escores",
+  "sinonimos": [
+   "pediatria",
+   "Glasgow",
+   "coma",
+   "consciência",
+   "TCE"
+  ],
+  "descricao": "Com a escala modificada (James) para menores de 5 anos.",
+  "rota": "/plantonista/pediatria/glasgow-pediatrico"
+ },
+ {
+  "id": "pops",
+  "nome": "POPS",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Triagem e escores",
+  "sinonimos": [
+   "pediatria",
+   "triagem",
+   "POPS",
+   "escore de alerta"
+  ],
+  "descricao": "Escore de Observação de Prioridade Pediátrica (Tabela 4 do cap. 82).",
+  "rota": "/plantonista/pediatria/pops"
+ },
+ {
+  "id": "pews",
+  "nome": "PEWS",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Triagem e escores",
+  "sinonimos": [
+   "pediatria",
+   "triagem",
+   "PEWS",
+   "escore de alerta",
+   "deterioração"
+  ],
+  "descricao": "Escore de Alerta Precoce Pediátrico (Figura 2 do cap. 82).",
+  "rota": "/plantonista/pediatria/pews"
+ },
+ {
+  "id": "fluidoterapia-manutencao-ped",
+  "nome": "Fluidoterapia de manutenção — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hidratação, eletrólitos e metabólico",
+  "sinonimos": [
+   "soro de manutenção",
+   "Holliday-Segar",
+   "4-2-1",
+   "hidratação venosa",
+   "soro isotônico",
+   "SIHAD"
+  ],
+  "descricao": "Holliday-Segar, regra prática (teto 100 mL/h), soluções-padrão e categorias da Figura 1.",
+  "rota": "/plantonista/pediatria/fluidoterapia-manutencao-ped"
+ },
+ {
+  "id": "desidratacao-diarreia-ped",
+  "nome": "Diarreia aguda — desidratação e planos",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hidratação, eletrólitos e metabólico",
+  "sinonimos": [
+   "diarreia",
+   "gastroenterite",
+   "desidratação",
+   "SRO",
+   "plano A",
+   "plano B",
+   "plano C",
+   "reidratação"
+  ],
+  "descricao": "Escala clínica, grau pelo peso perdido, planos A/B/C por peso e idade.",
+  "rota": "/plantonista/pediatria/desidratacao-diarreia-ped"
+ },
+ {
+  "id": "sodio-ped",
+  "nome": "Hipo e hipernatremia — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hidratação, eletrólitos e metabólico",
+  "sinonimos": [
+   "sódio",
+   "hiponatremia",
+   "hipernatremia",
+   "NaCl 3%",
+   "salina hipertônica",
+   "água livre",
+   "Adrogué-Madias"
+  ],
+  "descricao": "Na corrigido, osmolalidade efetiva, NaCl 3% por peso, Tabela 3 por litro, déficit de água livre.",
+  "rota": "/plantonista/pediatria/sodio-ped"
+ },
+ {
+  "id": "eletrolitos-ped",
+  "nome": "Potássio, cálcio, magnésio e fósforo — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hidratação, eletrólitos e metabólico",
+  "sinonimos": [
+   "potássio",
+   "hipocalemia",
+   "hipercalemia",
+   "cálcio",
+   "gluconato",
+   "magnésio",
+   "sulfato de magnésio",
+   "fósforo"
+  ],
+  "descricao": "Reposições e hipercalemia por peso, máximos, FEMg.",
+  "rota": "/plantonista/pediatria/eletrolitos-ped"
+ },
+ {
+  "id": "cad-ehh-ped",
+  "nome": "Cetoacidose diabética e EHH — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hidratação, eletrólitos e metabólico",
+  "sinonimos": [
+   "cetoacidose",
+   "CAD",
+   "EHH",
+   "diabetes",
+   "insulina",
+   "potássio",
+   "edema cerebral",
+   "manitol"
+  ],
+  "descricao": "Critérios, gravidade, Quadro 6, fluidos, K, insulina EV/SC, bicarbonato, edema cerebral.",
+  "rota": "/plantonista/pediatria/cad-ehh-ped"
+ },
+ {
+  "id": "hipoglicemia-ped",
+  "nome": "Hipoglicemia — glicose e glucagon por peso",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hidratação, eletrólitos e metabólico",
+  "sinonimos": [
+   "hipoglicemia",
+   "glicose",
+   "soro glicosado",
+   "glucagon",
+   "VIG",
+   "TIG"
+  ],
+  "descricao": "Glicose VO/EV por idade (texto e Tabela 2), glucagon, VIG → mL/h.",
+  "rota": "/plantonista/pediatria/hipoglicemia-ped"
+ },
+ {
+  "id": "acidobase-ped",
+  "nome": "Distúrbios acidobásicos — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hidratação, eletrólitos e metabólico",
+  "sinonimos": [
+   "gasometria",
+   "acidose",
+   "alcalose",
+   "ânion-gap",
+   "compensação",
+   "bicarbonato",
+   "delta-delta"
+  ],
+  "descricao": "Leitura em 3 etapas, compensação (Tabela 3), ânion-gap, ΔAG/ΔHCO3, bicarbonato 1,4%, HCl.",
+  "rota": "/plantonista/pediatria/acidobase-ped"
+ },
+ {
+  "id": "queimadura-ped",
+  "nome": "Queimadura — superfície queimada e Parkland (criança)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Trauma, toxicologia e acidentes",
+  "sinonimos": [
+   "queimadura",
+   "SCQ",
+   "Lund-Browder",
+   "Parkland",
+   "grande queimado",
+   "reposição volêmica"
+  ],
+  "descricao": "Lund e Browder por região e idade, Parkland (3 mL/kg/%SCQ) com manutenção e diurese-alvo.",
+  "rota": "/plantonista/pediatria/queimadura-ped"
+ },
+ {
+  "id": "intoxicacoes-ped",
+  "nome": "Intoxicações exógenas — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Trauma, toxicologia e acidentes",
+  "sinonimos": [
+   "intoxicação",
+   "envenenamento",
+   "antídoto",
+   "carvão ativado",
+   "toxíndrome",
+   "acetilcisteína",
+   "atropina",
+   "pralidoxima"
+  ],
+  "descricao": "Descontaminação, eliminação e antídotos por peso, toxíndromes e tabela de antídotos.",
+  "rota": "/plantonista/pediatria/intoxicacoes-ped"
+ },
+ {
+  "id": "escorpiao-aranhas-ped",
+  "nome": "Escorpião e aranhas — soro por gravidade",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Trauma, toxicologia e acidentes",
+  "sinonimos": [
+   "escorpião",
+   "aranha",
+   "armadeira",
+   "aranha-marrom",
+   "viúva-negra",
+   "soro antiescorpiônico",
+   "SAAr",
+   "peçonhento"
+  ],
+  "descricao": "Classe escolhida pelo médico → ampolas das Tabelas 1–4, volume do SAAr, prednisona e expansão.",
+  "rota": "/plantonista/pediatria/escorpiao-aranhas-ped"
+ },
+ {
+  "id": "sedacao-procedimento-ped",
+  "nome": "Sedação para procedimento — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Doses e infusões",
+  "sinonimos": [
+   "sedação",
+   "analgesia",
+   "procedimento",
+   "jejum",
+   "cetamina",
+   "midazolam",
+   "fentanil",
+   "dexmedetomidina"
+  ],
+  "descricao": "Jejum, ASA, sugestões por procedimento, sedativos e reversores por peso.",
+  "rota": "/plantonista/pediatria/sedacao-procedimento-ped"
+ },
+ {
+  "id": "vias-aereas-superiores-ped",
+  "nome": "OMA, faringite, sinusite e crupe — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Respiratório",
+  "sinonimos": [
+   "otite",
+   "OMA",
+   "faringite",
+   "amigdalite",
+   "sinusite",
+   "crupe",
+   "laringite",
+   "dexametasona"
+  ],
+  "descricao": "Antibióticos e corticoide por peso e gravidade do crupe (Tabela 6).",
+  "rota": "/plantonista/pediatria/vias-aereas-superiores-ped"
+ },
+ {
+  "id": "bronquiolite-ped",
+  "nome": "Bronquiolite — internação, CNAF e palivizumabe",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Respiratório",
+  "sinonimos": [
+   "bronquiolite",
+   "VSR",
+   "sibilância",
+   "lactente",
+   "CNAF",
+   "alto fluxo",
+   "palivizumabe"
+  ],
+  "descricao": "Indicações de internação, CNAF 1–2 L/kg/min, critérios de palivizumabe.",
+  "rota": "/plantonista/pediatria/bronquiolite-ped"
+ },
+ {
+  "id": "insuficiencia-cardiaca-ped",
+  "nome": "Insuficiência cardíaca — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Cardiovascular e renal",
+  "sinonimos": [
+   "insuficiência cardíaca",
+   "furosemida",
+   "espironolactona",
+   "captopril",
+   "enalapril",
+   "carvedilol",
+   "digoxina",
+   "levosimendana"
+  ],
+  "descricao": "Diuréticos, iECA, betabloqueadores, digoxina, levosimendana, ICT, Ross e ISHLT.",
+  "rota": "/plantonista/pediatria/insuficiencia-cardiaca-ped"
+ },
+ {
+  "id": "crise-hipertensiva-ped",
+  "nome": "Crise hipertensiva — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Cardiovascular e renal",
+  "sinonimos": [
+   "hipertensão",
+   "crise hipertensiva",
+   "emergência hipertensiva",
+   "pressão arterial",
+   "percentil",
+   "hidralazina",
+   "isradipina",
+   "minoxidil"
+  ],
+  "descricao": "Classificação da PA (Tabela 1) com p90/p95 informados, meta da PAM e drogas por peso.",
+  "rota": "/plantonista/pediatria/crise-hipertensiva-ped"
+ },
+ {
+  "id": "meningite-ped",
+  "nome": "Meningite — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "meningite",
+   "liquor",
+   "LCR",
+   "BMS",
+   "ceftriaxona",
+   "cefotaxima",
+   "vancomicina",
+   "aciclovir"
+  ],
+  "descricao": "Acidente de punção, BMS, antibióticos neonatal/pós-neonatal, aciclovir, dexametasona e profilaxia.",
+  "rota": "/plantonista/pediatria/meningite-ped"
+ },
+ {
+  "id": "infeccao-urinaria-ped",
+  "nome": "Infecção urinária — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Cardiovascular e renal",
+  "sinonimos": [
+   "infecção urinária",
+   "ITU",
+   "pielonefrite",
+   "cistite",
+   "urocultura",
+   "UFC",
+   "cefalexina",
+   "ceftriaxona"
+  ],
+  "descricao": "Fatores da AAP, urocultura por método de coleta, antibióticos orais e parenterais por peso.",
+  "rota": "/plantonista/pediatria/infeccao-urinaria-ped"
+ },
+ {
+  "id": "pneumonia-ped",
+  "nome": "Pneumonia adquirida na comunidade — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Respiratório",
+  "sinonimos": [
+   "pneumonia",
+   "PAC",
+   "amoxicilina",
+   "penicilina cristalina",
+   "ampicilina",
+   "derrame pleural",
+   "empiema",
+   "coqueluche"
+  ],
+  "descricao": "Antibiótico domiciliar/hospitalar por faixa e peso, situações especiais e líquido pleural.",
+  "rota": "/plantonista/pediatria/pneumonia-ped"
+ },
+ {
+  "id": "hemocomponentes-ped",
+  "nome": "Hemocomponentes — volumes por peso",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hemato-oncologia e digestivo",
+  "sinonimos": [
+   "transfusão",
+   "concentrado de hemácias",
+   "plaquetas",
+   "plasma",
+   "crioprecipitado",
+   "fator VIII",
+   "hemofilia",
+   "albumina"
+  ],
+  "descricao": "CH, PFC, plaquetas (fórmula da p. 727), fatores VIII/IX, crio, albumina e cálcio na maciça.",
+  "rota": "/plantonista/pediatria/hemocomponentes-ped"
+ },
+ {
+  "id": "falciforme-ped",
+  "nome": "Doença falciforme — crise álgica e complicações agudas",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hemato-oncologia e digestivo",
+  "sinonimos": [
+   "falciforme",
+   "anemia falciforme",
+   "crise álgica",
+   "vaso-oclusiva",
+   "morfina",
+   "sequestro esplênico",
+   "síndrome torácica aguda"
+  ],
+  "descricao": "Dor pela Figura 1, morfina e analgésicos por peso, febre, sequestro, AVC e STA.",
+  "rota": "/plantonista/pediatria/falciforme-ped"
+ },
+ {
+  "id": "kawasaki-ped",
+  "nome": "Doença de Kawasaki — critérios e doses",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Cardiovascular e renal",
+  "sinonimos": [
+   "Kawasaki",
+   "vasculite",
+   "imunoglobulina",
+   "AAS",
+   "aneurisma coronariano",
+   "Z-score"
+  ],
+  "descricao": "Critérios clássicos, forma incompleta (AHA), Z-score e doses por peso.",
+  "rota": "/plantonista/pediatria/kawasaki-ped"
+ },
+ {
+  "id": "dengue-ped",
+  "nome": "Dengue — criança (grupos e hidratação)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Infecções",
+  "sinonimos": [
+   "dengue",
+   "arbovirose",
+   "hidratação",
+   "sinais de alarme",
+   "choque",
+   "prova do laço",
+   "grupo C",
+   "grupo D"
+  ],
+  "descricao": "Grupos A–D, hidratação por faixa de peso (Quadro 8), expansões C/D, albumina 5% e prova do laço.",
+  "rota": "/plantonista/pediatria/dengue-ped"
+ },
+ {
+  "id": "febre-sem-sinais-ped",
+  "nome": "Febre sem sinais localizatórios — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Infecções",
+  "sinonimos": [
+   "febre sem sinais localizatórios",
+   "FSSL",
+   "bacteriemia oculta",
+   "DBG",
+   "lactente febril",
+   "amoxicilina",
+   "cefuroxima",
+   "ceftriaxona"
+  ],
+  "descricao": "Faixa dos fluxogramas, leucograma/PCR de risco, coleta de urina e antibióticos por peso.",
+  "rota": "/plantonista/pediatria/febre-sem-sinais-ped"
+ },
+ {
+  "id": "insuficiencia-adrenal-ped",
+  "nome": "Crise adrenal — hidrocortisona por m²",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hidratação, eletrólitos e metabólico",
+  "sinonimos": [
+   "insuficiência adrenal",
+   "crise adrenal",
+   "hidrocortisona",
+   "fludrocortisona",
+   "hiperplasia adrenal congênita",
+   "choque"
+  ],
+  "descricao": "Hidrocortisona em bolo/manutenção por SC informada, SF, fludrocortisona e alternativa do Apêndice.",
+  "rota": "/plantonista/pediatria/insuficiencia-adrenal-ped"
+ },
+ {
+  "id": "injuria-renal-ped",
+  "nome": "Injúria renal aguda — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Cardiovascular e renal",
+  "sinonimos": [
+   "injúria renal aguda",
+   "IRA",
+   "KDIGO",
+   "Schwartz",
+   "TFG",
+   "FeNa",
+   "sobrecarga hídrica",
+   "hipercalemia"
+  ],
+  "descricao": "KDIGO pediátrico, Schwartz, FeNa, sobrecarga hídrica, furosemida, contraste e Tabela 8.",
+  "rota": "/plantonista/pediatria/injuria-renal-ped"
+ },
+ {
+  "id": "glomerulopatias-shu-ped",
+  "nome": "Síndromes nefrítica e nefrótica e SHU — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Cardiovascular e renal",
+  "sinonimos": [
+   "síndrome nefrótica",
+   "síndrome nefrítica",
+   "GNPE",
+   "GNRP",
+   "albumina",
+   "furosemida",
+   "SHU",
+   "hemolítico-urêmica"
+  ],
+  "descricao": "Pr/Cr, albumina 20% e diuréticos, GNPE, pulso de metilprednisolona e limiares da SHU.",
+  "rota": "/plantonista/pediatria/glomerulopatias-shu-ped"
+ },
+ {
+  "id": "hemorragia-digestiva-hepatica-ped",
+  "nome": "Hemorragia digestiva e insuficiência hepática aguda — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hemato-oncologia e digestivo",
+  "sinonimos": [
+   "hemorragia digestiva",
+   "HDA",
+   "varizes",
+   "octreotida",
+   "somatostatina",
+   "omeprazol",
+   "insuficiência hepática aguda",
+   "PALF"
+  ],
+  "descricao": "Octreotida, somatostatina e omeprazol por peso; PALF, paracetamol, amônia e suporte da IHA.",
+  "rota": "/plantonista/pediatria/hemorragia-digestiva-hepatica-ped"
+ },
+ {
+  "id": "coma-hic-ped",
+  "nome": "Coma e hipertensão intracraniana — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "coma",
+   "rebaixamento de consciência",
+   "hipertensão intracraniana",
+   "PIC",
+   "PPC",
+   "bainha do nervo óptico",
+   "dexametasona"
+  ],
+  "descricao": "GCS-Pupilas, PPC e metas por idade, bainha do nervo óptico, glicose, midazolam e dexametasona.",
+  "rota": "/plantonista/pediatria/coma-hic-ped"
+ },
+ {
+  "id": "hemostasia-trombose-ped",
+  "nome": "Hemofilia, von Willebrand, PTI e anticoagulação — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hemato-oncologia e digestivo",
+  "sinonimos": [
+   "hemofilia",
+   "fator VIII",
+   "fator IX",
+   "von Willebrand",
+   "PTI",
+   "heparina",
+   "enoxaparina",
+   "varfarina"
+  ],
+  "descricao": "Fator por tipo de sangramento, DDAVP, tranexâmico, PTI, heparina com nomograma, enoxaparina, varfarina.",
+  "rota": "/plantonista/pediatria/hemostasia-trombose-ped"
+ },
+ {
+  "id": "emergencias-oncologicas-ped",
+  "nome": "Emergências oncológicas — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Hemato-oncologia e digestivo",
+  "sinonimos": [
+   "lise tumoral",
+   "rasburicase",
+   "alopurinol",
+   "hiperleucocitose",
+   "neutropenia febril",
+   "MASCC",
+   "cefepima",
+   "compressão medular"
+  ],
+  "descricao": "Lise tumoral, hemocomponentes, hiperviscosidade, neutropenia febril (Tabela 11) e compressivas.",
+  "rota": "/plantonista/pediatria/emergencias-oncologicas-ped"
+ },
+ {
+  "id": "choque-toxico-partes-moles-ped",
+  "nome": "Choque tóxico e infecções de pele e partes moles — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Infecções",
+  "sinonimos": [
+   "choque tóxico",
+   "SCT",
+   "estreptococo",
+   "estafilococo",
+   "celulite",
+   "erisipela",
+   "impetigo",
+   "fasceíte necrotizante"
+  ],
+  "descricao": "Critérios do CDC, penicilina + clindamicina + IGIV, antibióticos de pele (doses do Apêndice).",
+  "rota": "/plantonista/pediatria/choque-toxico-partes-moles-ped"
+ },
+ {
+  "id": "febre-imunodeprimido-ped",
+  "nome": "Febre no imunodeprimido não oncológico — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Infecções",
+  "sinonimos": [
+   "imunodeprimido",
+   "erro inato da imunidade",
+   "transplante",
+   "febre",
+   "cefepima",
+   "TMP-SMX",
+   "aciclovir",
+   "fluconazol"
+  ],
+  "descricao": "Tabela 7 por peso com máximos do Apêndice, corticoide imunossupressor, profilaxias.",
+  "rota": "/plantonista/pediatria/febre-imunodeprimido-ped"
+ },
+ {
+  "id": "artrite-osteomielite-ped",
+  "nome": "Artrite séptica e osteomielite — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Infecções",
+  "sinonimos": [
+   "artrite séptica",
+   "osteomielite",
+   "MRSA",
+   "MSSA",
+   "Kingella",
+   "oxacilina",
+   "clindamicina",
+   "vancomicina"
+  ],
+  "descricao": "Antibiótico por resistência local (doses mínimas), cobertura por idade, sinovial e duração.",
+  "rota": "/plantonista/pediatria/artrite-osteomielite-ped"
+ },
+ {
+  "id": "hipocalemia-reposicao-potassio",
+  "nome": "Hipocalemia — potássio",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "potássio",
+   "hipocalemia",
+   "KCl",
+   "reposição"
+  ],
+  "descricao": "Classificação, KCl EV e VO, mEq/h e mL/h.",
+  "rota": "/plantonista/emergencias/hipocalemia-reposicao-potassio"
+ },
+ {
+  "id": "hipomagnesemia-reposicao-magnesio",
+  "nome": "Hipomagnesemia — magnésio",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "magnésio",
+   "hipomagnesemia",
+   "sulfato de magnésio"
+  ],
+  "descricao": "Esquemas de MgSO4 e preparo.",
+  "rota": "/plantonista/emergencias/hipomagnesemia-reposicao-magnesio"
+ },
+ {
+  "id": "hipocalcemia-reposicao-calcio",
+  "nome": "Hipocalcemia — cálcio",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "cálcio",
+   "hipocalcemia",
+   "gluconato"
+  ],
+  "descricao": "Cálcio corrigido, bolus e infusão.",
+  "rota": "/plantonista/emergencias/hipocalcemia-reposicao-calcio"
+ },
+ {
+  "id": "hipercalcemia",
+  "nome": "Hipercalcemia",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "cálcio",
+   "hipercalcemia",
+   "calcitonina",
+   "bifosfonato"
+  ],
+  "descricao": "Gravidade, FECa e tratamento agudo.",
+  "rota": "/plantonista/emergencias/hipercalcemia"
+ },
+ {
+  "id": "hipofosfatemia-reposicao-fosforo",
+  "nome": "Hipofosfatemia — fósforo",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "fósforo",
+   "fosfato",
+   "hipofosfatemia"
+  ],
+  "descricao": "Reposição IV e VO com limites.",
+  "rota": "/plantonista/emergencias/hipofosfatemia-reposicao-fosforo"
+ },
+ {
+  "id": "gasometria-acidobase",
+  "nome": "Gasometria e distúrbios acidobásicos",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "gasometria",
+   "acidose",
+   "alcalose",
+   "ânion-gap",
+   "Winter"
+  ],
+  "descricao": "Compensação, ânion-gap, delta-delta, gap osmolar.",
+  "rota": "/plantonista/emergencias/gasometria-acidobase"
+ },
+ {
+  "id": "bicarbonato-de-sodio",
+  "nome": "Bicarbonato de sódio",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "bicarbonato",
+   "acidose metabólica",
+   "NaHCO3"
+  ],
+  "descricao": "Déficit e esquemas de preparo.",
+  "rota": "/plantonista/emergencias/bicarbonato-de-sodio"
+ },
+ {
+  "id": "cad-ehh-criterios",
+  "nome": "CAD e EHH — critérios e fórmulas",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "cetoacidose",
+   "CAD",
+   "EHH",
+   "osmolaridade"
+  ],
+  "descricao": "Na corrigido, osmolaridade, ânion-gap e gravidade.",
+  "rota": "/plantonista/emergencias/cad-ehh-criterios"
+ },
+ {
+  "id": "cad-ehh-tratamento",
+  "nome": "CAD e EHH — tratamento",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "cetoacidose",
+   "CAD",
+   "EHH",
+   "insulina",
+   "potássio"
+  ],
+  "descricao": "Hidratação, insulina EV, potássio e transição.",
+  "rota": "/plantonista/emergencias/cad-ehh-tratamento"
+ },
+ {
+  "id": "hipoglicemia-adulto",
+  "nome": "Hipoglicemia",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "hipoglicemia",
+   "glicose",
+   "glucagon"
+  ],
+  "descricao": "Limiar e doses de glicose, glucagon e tiamina.",
+  "rota": "/plantonista/emergencias/hipoglicemia-adulto"
+ },
+ {
+  "id": "pcr-adulto",
+  "nome": "PCR — drogas e desfibrilação",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Parada, ritmo e choque",
+  "sinonimos": [
+   "PCR",
+   "parada",
+   "adrenalina",
+   "amiodarona",
+   "desfibrilação"
+  ],
+  "descricao": "Doses da Tabela 2 do HC e carga do choque.",
+  "rota": "/plantonista/emergencias/pcr-adulto"
+ },
+ {
+  "id": "bradicardia-adulto",
+  "nome": "Bradicardia sintomática",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Parada, ritmo e choque",
+  "sinonimos": [
+   "bradicardia",
+   "atropina",
+   "dopamina",
+   "marca-passo"
+  ],
+  "descricao": "Atropina, dopamina e adrenalina.",
+  "rota": "/plantonista/emergencias/bradicardia-adulto"
+ },
+ {
+  "id": "taquiarritmias-adulto",
+  "nome": "Taquiarritmias — drogas EV",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Parada, ritmo e choque",
+  "sinonimos": [
+   "taquicardia",
+   "TSV",
+   "adenosina",
+   "amiodarona"
+  ],
+  "descricao": "Adenosina, amiodarona, lidocaína, verapamil, diltiazem, magnésio.",
+  "rota": "/plantonista/emergencias/taquiarritmias-adulto"
+ },
+ {
+  "id": "anafilaxia-adulto",
+  "nome": "Anafilaxia",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Parada, ritmo e choque",
+  "sinonimos": [
+   "anafilaxia",
+   "adrenalina",
+   "choque anafilático"
+  ],
+  "descricao": "Adrenalina IM/EV/infusão, volume e segunda linha.",
+  "rota": "/plantonista/emergencias/anafilaxia-adulto"
+ },
+ {
+  "id": "anticoagulacao-plena-adulto",
+  "nome": "Anticoagulação plena por peso",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Anticoagulação e hemoterapia",
+  "sinonimos": [
+   "enoxaparina",
+   "HBPM",
+   "fondaparinux",
+   "TVP",
+   "TEP",
+   "IAM",
+   "heparina",
+   "HNF"
+  ],
+  "descricao": "Enoxaparina com ajuste renal/idade, fondaparinux e outros.",
+  "rota": "/plantonista/emergencias/anticoagulacao-plena-adulto"
+ },
+ {
+  "id": "fibrinoliticos-adulto",
+  "nome": "Fibrinolíticos",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Anticoagulação e hemoterapia",
+  "sinonimos": [
+   "trombólise",
+   "alteplase",
+   "tenecteplase",
+   "IAM com supra",
+   "TEP"
+  ],
+  "descricao": "Estreptoquinase, alteplase e tenecteplase.",
+  "rota": "/plantonista/emergencias/fibrinoliticos-adulto"
+ },
+ {
+  "id": "intoxicacoes-antidotos-adulto",
+  "nome": "Intoxicações e antídotos — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Toxicologia e profilaxias",
+  "sinonimos": [
+   "intoxicação",
+   "envenenamento",
+   "antídoto",
+   "carvão ativado",
+   "paracetamol",
+   "acetaminofeno",
+   "N-acetilcisteína",
+   "NAC"
+  ],
+  "descricao": "Carvão, NAC, antídotos, cardiotóxicos, digoxina, bicarbonato, álcoois, organofosforados e cianeto (manual HC).",
+  "rota": "/plantonista/emergencias/intoxicacoes-antidotos-adulto"
+ },
+ {
+  "id": "animais-peconhentos-adulto",
+  "nome": "Acidentes por animais peçonhentos — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Toxicologia e profilaxias",
+  "sinonimos": [
+   "peçonhento",
+   "ofídico",
+   "cobra",
+   "serpente",
+   "jararaca",
+   "botrópico",
+   "cascavel",
+   "crotálico"
+  ],
+  "descricao": "Ampolas de soro por gravidade, pré-medicação por peso e neostigmina (manual HC).",
+  "rota": "/plantonista/emergencias/animais-peconhentos-adulto"
+ },
+ {
+  "id": "tetano-profilaxia-adulto",
+  "nome": "Tétano — profilaxia e tratamento (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Toxicologia e profilaxias",
+  "sinonimos": [
+   "tétano",
+   "antitetânica",
+   "dT",
+   "SAT",
+   "IGHAT",
+   "soro antitetânico",
+   "ferimento",
+   "vacina"
+  ],
+  "descricao": "Vacina e SAT/IGHAT por ferimento × histórico; doses do tratamento (manual HC).",
+  "rota": "/plantonista/emergencias/tetano-profilaxia-adulto"
+ },
+ {
+  "id": "raiva-pos-exposicao-adulto",
+  "nome": "Raiva — profilaxia pós-exposição (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Toxicologia e profilaxias",
+  "sinonimos": [
+   "raiva",
+   "antirrábica",
+   "mordedura",
+   "cão",
+   "gato",
+   "morcego",
+   "sorovacinação",
+   "vacina"
+  ],
+  "descricao": "Fluxograma do Anexo 4: vacina, sorovacinação ou observação do animal.",
+  "rota": "/plantonista/emergencias/raiva-pos-exposicao-adulto"
+ },
+ {
+  "id": "hepatite-b-pos-exposicao-adulto",
+  "nome": "Hepatite B — profilaxia pós-exposição ocupacional (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Toxicologia e profilaxias",
+  "sinonimos": [
+   "hepatite B",
+   "HBV",
+   "acidente biológico",
+   "perfurocortante",
+   "exposição ocupacional",
+   "HBIG",
+   "imunoglobulina",
+   "anti-HBs"
+  ],
+  "descricao": "Fonte × situação vacinal → vacina, HBIG (mL por peso) e anti-HBs.",
+  "rota": "/plantonista/emergencias/hepatite-b-pos-exposicao-adulto"
+ },
+ {
+  "id": "sedacao-procedimento-adulto",
+  "nome": "Sedação e analgesia para procedimentos — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Dor, sedação e procedimentos",
+  "sinonimos": [
+   "sedação",
+   "SAP",
+   "sedação procedural",
+   "analgesia",
+   "etomidato",
+   "midazolam",
+   "propofol",
+   "quetamina"
+  ],
+  "descricao": "Etomidato, midazolam, propofol, quetamina EV/IM, fentanil e morfina por peso, reversores, níveis de sedação, ASA, jejum e alta.",
+  "rota": "/plantonista/emergencias/sedacao-procedimento-adulto"
+ },
+ {
+  "id": "dor-analgesia-adulto",
+  "nome": "Dor e analgesia — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Dor, sedação e procedimentos",
+  "sinonimos": [
+   "dor",
+   "analgesia",
+   "escada analgésica",
+   "OMS",
+   "opioide",
+   "codeína",
+   "tramadol",
+   "morfina"
+  ],
+  "descricao": "Escala numérica, escada analgésica, opioides da Tabela 3 com conta por peso e por dia, quetamina analgésica.",
+  "rota": "/plantonista/emergencias/dor-analgesia-adulto"
+ },
+ {
+  "id": "sintomas-paliativos-adulto",
+  "nome": "Dor, dispneia e sedação em cuidados paliativos — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Dor, sedação e procedimentos",
+  "sinonimos": [
+   "cuidados paliativos",
+   "paliativo",
+   "resgate",
+   "morfina",
+   "dispneia",
+   "sedação paliativa",
+   "midazolam",
+   "quetamina"
+  ],
+  "descricao": "Resgate de 1/6 da dose diária, morfina e midazolam na dispneia, quetamina e sedação paliativa com midazolam.",
+  "rota": "/plantonista/emergencias/sintomas-paliativos-adulto"
+ },
+ {
+  "id": "trombolise-avc-adulto",
+  "nome": "Trombólise no AVC isquêmico — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "AVC",
+   "AVCi",
+   "stroke",
+   "trombólise",
+   "alteplase",
+   "rtPA",
+   "tenecteplase",
+   "TEV"
+  ],
+  "descricao": "Alteplase e tenecteplase por peso, critérios numéricos da Tabela 4, alvos de PA (com errata), nitroprussiato, sangramento e angioedema.",
+  "rota": "/plantonista/emergencias/trombolise-avc-adulto"
+ },
+ {
+  "id": "reversao-anticoagulacao-adulto",
+  "nome": "Reversão de anticoagulação e sangramento — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Anticoagulação e hemoterapia",
+  "sinonimos": [
+   "reversão",
+   "anticoagulação",
+   "varfarina",
+   "INR",
+   "vitamina K",
+   "CCP",
+   "complexo protrombínico",
+   "plasma",
+   "heparina",
+   "protamina"
+  ],
+  "descricao": "Varfarina por INR × sangramento, CCP, plasma, vitamina K, crioprecipitado, protamina, DOAC e metas da HIP.",
+  "rota": "/plantonista/emergencias/reversao-anticoagulacao-adulto"
+ },
+ {
+  "id": "escala-numerica-dor",
+  "nome": "Escala numérica de dor (0–10) — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Dor, sedação e procedimentos",
+  "sinonimos": [
+   "dor",
+   "escala numérica",
+   "EVA",
+   "escala visual analógica",
+   "intensidade"
+  ],
+  "descricao": "Nota de 0 a 10 com a faixa e o degrau da escada analgésica.",
+  "rota": "/plantonista/emergencias/escala-numerica-dor"
+ },
+ {
+  "id": "painad",
+  "nome": "PAINAD — dor na demência avançada (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Dor, sedação e procedimentos",
+  "sinonimos": [
+   "PAINAD",
+   "dor",
+   "demência",
+   "não verbal",
+   "paliativo"
+  ],
+  "descricao": "Cinco itens de 0 a 2; faixas 1–3/4–6/7–10 do livro.",
+  "rota": "/plantonista/emergencias/painad"
+ },
+ {
+  "id": "bps-dor",
+  "nome": "BPS — Escala Comportamental de Dor (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Dor, sedação e procedimentos",
+  "sinonimos": [
+   "BPS",
+   "Behavioural Pain Scale",
+   "dor",
+   "sedação",
+   "ventilação mecânica",
+   "UTI"
+  ],
+  "descricao": "Três itens de 1 a 4 para sedado ou em VM; o livro não traz corte.",
+  "rota": "/plantonista/emergencias/bps-dor"
+ },
+ {
+  "id": "rankin-modificada",
+  "nome": "Escala de Rankin modificada (manual do HC)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "Rankin",
+   "ERm",
+   "mRS",
+   "AVC",
+   "funcionalidade"
+  ],
+  "descricao": "Grau 0 a 6 com os cortes do capítulo (trombólise, trombectomia, hemicraniectomia).",
+  "rota": "/plantonista/emergencias/rankin-modificada"
+ },
+ {
+  "id": "escore-ich",
+  "nome": "Escore ICH — hemorragia intraparenquimatosa (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "ICH",
+   "escore ICH",
+   "hemorragia intraparenquimatosa",
+   "HIP",
+   "AVC hemorrágico",
+   "prognóstico"
+  ],
+  "descricao": "Glasgow, volume, extensão ventricular, infratentorial e idade, com a mortalidade em 30 dias da Tabela 2.",
+  "rota": "/plantonista/emergencias/escore-ich"
+ },
+ {
+  "id": "transfusao-hemocomponentes-adulto",
+  "nome": "Transfusão de hemocomponentes — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Anticoagulação e hemoterapia",
+  "sinonimos": [
+   "transfusão",
+   "hemotransfusão",
+   "hemocomponente",
+   "concentrado de hemácias",
+   "CH",
+   "plaquetas",
+   "aférese",
+   "plasma"
+  ],
+  "descricao": "Gatilhos, incremento esperado, volume e velocidade de CH, plaquetas, PFC, crioprecipitado e CCP.",
+  "rota": "/plantonista/emergencias/transfusao-hemocomponentes-adulto"
+ },
+ {
+  "id": "abc-score-transfusao-macica",
+  "nome": "ABC score — previsão de transfusão maciça (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Anticoagulação e hemoterapia",
+  "sinonimos": [
+   "ABC score",
+   "transfusão maciça",
+   "protocolo de transfusão maciça",
+   "PTM",
+   "trauma",
+   "FAST",
+   "choque hemorrágico"
+  ],
+  "descricao": "Quatro critérios de 1 ponto com os dois cortes do manual (≥ 2 e > 2).",
+  "rota": "/plantonista/emergencias/abc-score-transfusao-macica"
+ },
+ {
+  "id": "ressuscitacao-volemica-adulto",
+  "nome": "Ressuscitação volêmica no choque e na sepse — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Parada, ritmo e choque",
+  "sinonimos": [
+   "choque",
+   "choque séptico",
+   "sepse",
+   "ressuscitação volêmica",
+   "expansão volêmica",
+   "cristaloide",
+   "Ringer lactato",
+   "soro fisiológico"
+  ],
+  "descricao": "30 mL/kg e alíquotas, metas de PAM/diurese/lactato, gatilho de vasopressina, corticoide, soluções.",
+  "rota": "/plantonista/emergencias/ressuscitacao-volemica-adulto"
+ },
+ {
+  "id": "asma-exacerbacao-adulto",
+  "nome": "Exacerbação de asma — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "asma",
+   "crise asmática",
+   "broncoespasmo",
+   "exacerbação",
+   "fenoterol",
+   "salbutamol",
+   "ipratrópio",
+   "sulfato de magnésio"
+  ],
+  "descricao": "Parâmetros na Tabela 1, β2, ipratrópio, corticoide e sulfato de magnésio com preparo.",
+  "rota": "/plantonista/emergencias/asma-exacerbacao-adulto"
+ },
+ {
+  "id": "dpoc-exacerbacao-adulto",
+  "nome": "Exacerbação de DPOC — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "DPOC",
+   "exacerbação",
+   "enfisema",
+   "bronquite crônica",
+   "VNI",
+   "BiPAP",
+   "IPAP",
+   "EPAP"
+  ],
+  "descricao": "Sintomas cardinais, cortes gasométricos, broncodilatador, corticoide, VNI e VM inicial.",
+  "rota": "/plantonista/emergencias/dpoc-exacerbacao-adulto"
+ },
+ {
+  "id": "vm-ajuste-inicial-adulto",
+  "nome": "Ventilação mecânica — ajuste inicial (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "ventilação mecânica",
+   "VM",
+   "ventilador",
+   "intubação",
+   "IOT",
+   "PCV",
+   "VCV",
+   "PSV"
+  ],
+  "descricao": "Indicações (PO2 < 60, PCO2 > 55), Tabela 2 por modo, Vt 6–8 mL/kg pelo peso informado, I:E, pós-intubação, DOPE e assincronias.",
+  "rota": "/plantonista/emergencias/vm-ajuste-inicial-adulto"
+ },
+ {
+  "id": "vm-obstruido-grave-adulto",
+  "nome": "Ventilação mecânica no obstruído grave (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "ventilação mecânica",
+   "obstruído",
+   "asma",
+   "DPOC",
+   "broncoespasmo",
+   "auto-PEEP",
+   "hiperinsuflação dinâmica",
+   "relação I:E"
+  ],
+  "descricao": "Tabela 4: Vt 6 mL/kg, PEEP a 85% da auto-PEEP, FR 8–12, I:E ≥ 1:3 e ≤ 1:5, limites de platô e pico, conferência do ventilador.",
+  "rota": "/plantonista/emergencias/vm-obstruido-grave-adulto"
+ },
+ {
+  "id": "mecanica-ventilatoria-adulto",
+  "nome": "Mecânica ventilatória (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "mecânica ventilatória",
+   "resistência",
+   "complacência",
+   "complacência estática",
+   "constante de tempo",
+   "driving pressure",
+   "pressão de platô",
+   "pausa inspiratória"
+  ],
+  "descricao": "Resistência, complacência estática, constante de tempo e driving pressure com as faixas do livro; exemplo da Figura 2.",
+  "rota": "/plantonista/emergencias/mecanica-ventilatoria-adulto"
+ },
+ {
+  "id": "sdra-ventilacao-adulto",
+  "nome": "SDRA — ventilação protetora (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "SDRA",
+   "SARA",
+   "ARDS",
+   "Berlim",
+   "P/F",
+   "relação PaO2/FiO2",
+   "ventilação protetora",
+   "PEEP"
+  ],
+  "descricao": "Berlim pela P/F, Vt por gravidade, tabelas PEEP × FiO2 (ARDSnet, ALVEOLI, LOVS), driving pressure, marcos de prona e bloqueio.",
+  "rota": "/plantonista/emergencias/sdra-ventilacao-adulto"
+ },
+ {
+  "id": "desmame-vm-adulto",
+  "nome": "Desmame da ventilação mecânica (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "desmame",
+   "extubação",
+   "teste de respiração espontânea",
+   "TRE",
+   "PSV",
+   "ventilação mecânica",
+   "weaning"
+  ],
+  "descricao": "Parâmetros para o TRE (PO2 ≥ 60 com FiO2 ≤ 0,4, P/F ≥ 150, PEEP ≤ 5 a 8, FC < 140) e critérios de falência durante o teste.",
+  "rota": "/plantonista/emergencias/desmame-vm-adulto"
+ },
+ {
+  "id": "oxigenacao-irpa-adulto",
+  "nome": "Oxigenação e insuficiência respiratória — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "insuficiência respiratória",
+   "IRpA",
+   "hipoxemia",
+   "hipercapnia",
+   "gradiente alvéolo-arterial",
+   "gradiente A-a",
+   "P/F",
+   "oxigenoterapia"
+  ],
+  "descricao": "Gradiente A-a e esperado por idade, P/F, tipo de IRpA, hipercapnia aguda × crônica, FiO2 dos dispositivos, alvos de SatO2, cortes de VNI e IOT.",
+  "rota": "/plantonista/emergencias/oxigenacao-irpa-adulto"
+ },
+ {
+  "id": "dispneia-abordagem-adulto",
+  "nome": "Dispneia — abordagem inicial (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "dispneia",
+   "falta de ar",
+   "desconforto respiratório",
+   "taquipneia",
+   "hipoxemia",
+   "índice cardiotorácico",
+   "BNP",
+   "insuficiência cardíaca"
+  ],
+  "descricao": "Cortes de gravidade, ABCDE, oxigênio, índice cardiotorácico, BNP e história, com o que o livro diz de cada um.",
+  "rota": "/plantonista/emergencias/dispneia-abordagem-adulto"
+ },
+ {
+  "id": "fibrilacao-atrial-adulto",
+  "nome": "Fibrilação atrial — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Parada, ritmo e choque",
+  "sinonimos": [
+   "fibrilação atrial",
+   "FA",
+   "controle de frequência",
+   "controle de ritmo",
+   "esmolol",
+   "verapamil",
+   "diltiazem",
+   "digoxina"
+  ],
+  "descricao": "Esmolol, verapamil, diltiazem, digoxina e amiodarona por peso com mL/h da Tabela 3; propafenona; janela de 48 h e anticoagulação.",
+  "rota": "/plantonista/emergencias/fibrilacao-atrial-adulto"
+ },
+ {
+  "id": "emergencia-hipertensiva-adulto",
+  "nome": "Emergência hipertensiva — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Cardiovascular",
+  "sinonimos": [
+   "emergência hipertensiva",
+   "crise hipertensiva",
+   "urgência hipertensiva",
+   "DOMH",
+   "pressão arterial",
+   "esmolol",
+   "nitroprussiato",
+   "nitroglicerina"
+  ],
+  "descricao": "Alvo de PA/FC com tempo por condição (Tabela 4), regra geral 20–25% e 160/100, esmolol, nitroprussiato, nitroglicerina e hidralazina com mL/h.",
+  "rota": "/plantonista/emergencias/emergencia-hipertensiva-adulto"
+ },
+ {
+  "id": "sindrome-aortica-adulto",
+  "nome": "Síndrome aórtica aguda — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Cardiovascular",
+  "sinonimos": [
+   "síndrome aórtica",
+   "dissecção de aorta",
+   "hematoma intramural",
+   "úlcera penetrante",
+   "aneurisma de aorta",
+   "Stanford",
+   "diâmetro aórtico"
+  ],
+  "descricao": "Alvo PAS < 120 e FC < 60 na dissecção, cortes de diâmetro e complicações anuais por tamanho da aorta.",
+  "rota": "/plantonista/emergencias/sindrome-aortica-adulto"
+ },
+ {
+  "id": "add-rs-disseccao-aorta",
+  "nome": "ADD-RS — risco de dissecção de aorta (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Cardiovascular",
+  "sinonimos": [
+   "ADD-RS",
+   "dissecção de aorta",
+   "D-dímero",
+   "síndrome aórtica",
+   "angiotomografia",
+   "escore"
+  ],
+  "descricao": "Um ponto por coluna (0–3) e leitura do D-dímero < / ≥ 500 ng/mL FEU para 0–1 ponto.",
+  "rota": "/plantonista/emergencias/add-rs-disseccao-aorta"
+ },
+ {
+  "id": "insuficiencia-cardiaca-aguda-adulto",
+  "nome": "Insuficiência cardíaca aguda — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Cardiovascular",
+  "sinonimos": [
+   "insuficiência cardíaca",
+   "ICA",
+   "IC descompensada",
+   "edema agudo de pulmão",
+   "perfil hemodinâmico",
+   "furosemida",
+   "levosimendana",
+   "dobutamina"
+  ],
+  "descricao": "Perfil A/B/C/L, coluna de PAS da Figura 1, furosemida por peso, resposta ao diurético, inotrópicos com mL/h, peptídeos, prognóstico e critérios de UTI.",
+  "rota": "/plantonista/emergencias/insuficiencia-cardiaca-aguda-adulto"
+ },
+ {
+  "id": "pos-pcr-adulto",
+  "nome": "Cuidados pós-PCR — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Parada, ritmo e choque",
+  "sinonimos": [
+   "pós-PCR",
+   "pós-parada",
+   "RCE",
+   "controle de temperatura",
+   "hipotermia terapêutica",
+   "reaquecimento",
+   "soro gelado",
+   "tempestade elétrica"
+  ],
+  "descricao": "Metas numéricas, SF 0,9% a 4 °C por peso, tempos de resfriamento e reaquecimento, milrinona, amiodarona na tempestade elétrica e janelas do neuroprognóstico.",
+  "rota": "/plantonista/emergencias/pos-pcr-adulto"
+ },
+ {
+  "id": "trauma-inicial-adulto",
+  "nome": "Politraumatizado — tempos e volumes (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Trauma e ambientais",
+  "sinonimos": [
+   "trauma",
+   "politrauma",
+   "ATLS",
+   "ácido tranexâmico",
+   "CRASH-2",
+   "hemotórax",
+   "toracotomia",
+   "torniquete"
+  ],
+  "descricao": "Janela e velocidade do ácido tranexâmico, débito do dreno no hemotórax, torniquete, cristaloide antes da transfusão e critérios de coluna.",
+  "rota": "/plantonista/emergencias/trauma-inicial-adulto"
+ },
+ {
+  "id": "nexus-coluna-cervical",
+  "nome": "NEXUS — retirada do colar cervical (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Trauma e ambientais",
+  "sinonimos": [
+   "NEXUS",
+   "coluna cervical",
+   "colar cervical",
+   "trauma",
+   "imagem cervical"
+  ],
+  "descricao": "Cinco critérios; não se aplica acima de 60 anos nem em criança.",
+  "rota": "/plantonista/emergencias/nexus-coluna-cervical"
+ },
+ {
+  "id": "regra-canadense-coluna-cervical",
+  "nome": "Regra canadense da coluna cervical (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Trauma e ambientais",
+  "sinonimos": [
+   "regra canadense",
+   "Canadian C-Spine",
+   "coluna cervical",
+   "colar cervical",
+   "trauma",
+   "tomografia"
+  ],
+  "descricao": "Alto risco, baixo risco e rotação a 45°, como a Tabela 1 do livro imprime, com a errata.",
+  "rota": "/plantonista/emergencias/regra-canadense-coluna-cervical"
+ },
+ {
+  "id": "mgap-trauma",
+  "nome": "MGAP — gravidade do trauma no pré-hospitalar (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Trauma e ambientais",
+  "sinonimos": [
+   "MGAP",
+   "trauma",
+   "pré-hospitalar",
+   "APH",
+   "SAMU",
+   "gravidade",
+   "regulação"
+  ],
+  "descricao": "Mecanismo, Glasgow, idade e PAS (3–29), com a errata dos rótulos de gravidade.",
+  "rota": "/plantonista/emergencias/mgap-trauma"
+ },
+ {
+  "id": "triage-rts-trauma",
+  "nome": "Triage-RTS — escore de trauma revisado de triagem (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Trauma e ambientais",
+  "sinonimos": [
+   "RTS",
+   "Triage-RTS",
+   "trauma",
+   "pré-hospitalar",
+   "APH",
+   "triagem",
+   "centro de trauma"
+  ],
+  "descricao": "Glasgow, PAS e frequência ventilatória (0–12); < 11 indica centro de trauma.",
+  "rota": "/plantonista/emergencias/triage-rts-trauma"
+ },
+ {
+  "id": "hemorragia-digestiva-adulto",
+  "nome": "Hemorragia digestiva alta e baixa — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Digestivo, fígado e rim",
+  "sinonimos": [
+   "HDA",
+   "HDB",
+   "hemorragia digestiva",
+   "hematêmese",
+   "melena",
+   "hematoquezia",
+   "varizes esofágicas",
+   "omeprazol"
+  ],
+  "descricao": "Metas, omeprazol em dose alta, vasoativos nas varizes, antibiótico no cirrótico, Forrest, índice de choque.",
+  "rota": "/plantonista/emergencias/hemorragia-digestiva-adulto"
+ },
+ {
+  "id": "oakland-hdb",
+  "nome": "Escore de Oakland — hemorragia digestiva baixa",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Digestivo, fígado e rim",
+  "sinonimos": [
+   "Oakland",
+   "HDB",
+   "hemorragia digestiva baixa",
+   "hematoquezia",
+   "alta ambulatorial",
+   "colonoscopia"
+  ],
+  "descricao": "Idade, sexo, HDB prévia, FC, PAS e Hb, com o corte do sangramento menor e a errata do 8.",
+  "rota": "/plantonista/emergencias/oakland-hdb"
+ },
+ {
+  "id": "ascite-pbe-hepatorrenal-adulto",
+  "nome": "Ascite, PBE e síndrome hepatorrenal — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Digestivo, fígado e rim",
+  "sinonimos": [
+   "ascite",
+   "cirrose",
+   "GASA",
+   "paracentese",
+   "albumina",
+   "PBE",
+   "peritonite bacteriana espontânea",
+   "ceftriaxona"
+  ],
+  "descricao": "GASA, albumina pós-paracentese, na PBE e na SHR, terlipressina escalonada e estádio ICA-AKI.",
+  "rota": "/plantonista/emergencias/ascite-pbe-hepatorrenal-adulto"
+ },
+ {
+  "id": "encefalopatia-hepatites-graves-adulto",
+  "nome": "Encefalopatia hepática e hepatites graves — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Digestivo, fígado e rim",
+  "sinonimos": [
+   "encefalopatia hepática",
+   "West Haven",
+   "lactulose",
+   "neomicina",
+   "rifaximina",
+   "hepatite fulminante",
+   "insuficiência hepática aguda",
+   "King’s College"
+  ],
+  "descricao": "West Haven, lactulose, meta nutricional, King's College, N-acetilcisteína e plasma.",
+  "rota": "/plantonista/emergencias/encefalopatia-hepatites-graves-adulto"
+ },
+ {
+  "id": "maddrey",
+  "nome": "Função discriminante de Maddrey — hepatite alcoólica",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Digestivo, fígado e rim",
+  "sinonimos": [
+   "Maddrey",
+   "função discriminante",
+   "hepatite alcoólica",
+   "prednisona",
+   "TP"
+  ],
+  "descricao": "4,6 × (TP − controle) + bilirrubina, corte de 32.",
+  "rota": "/plantonista/emergencias/maddrey"
+ },
+ {
+  "id": "lesao-renal-aguda-adulto",
+  "nome": "Lesão renal aguda — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Digestivo, fígado e rim",
+  "sinonimos": [
+   "LRA",
+   "lesão renal aguda",
+   "insuficiência renal aguda",
+   "KDIGO",
+   "creatinina",
+   "diurese",
+   "oligúria",
+   "FENa"
+  ],
+  "descricao": "Estágio KDIGO por creatinina e diurese, FENa, FEUr, índices urinários, teste de furosemida e indicações de diálise.",
+  "rota": "/plantonista/emergencias/lesao-renal-aguda-adulto"
+ },
+ {
+  "id": "rabdomiolise-adulto",
+  "nome": "Rabdomiólise — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Digestivo, fígado e rim",
+  "sinonimos": [
+   "rabdomiólise",
+   "CPK",
+   "CK",
+   "mioglobinúria",
+   "esmagamento",
+   "hidratação",
+   "bicarbonato",
+   "manitol"
+  ],
+  "descricao": "CPK × LSN, hidratação, solução de bicarbonato e manitol da Tabela 3.",
+  "rota": "/plantonista/emergencias/rabdomiolise-adulto"
+ },
+ {
+  "id": "mcmahon-rabdomiolise",
+  "nome": "Escore de McMahon — rabdomiólise",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Digestivo, fígado e rim",
+  "sinonimos": [
+   "McMahon",
+   "rabdomiólise",
+   "diálise",
+   "CPK",
+   "prognóstico"
+  ],
+  "descricao": "Risco de óbito ou diálise pela Tabela 2 (< 5 e > 10 pontos).",
+  "rota": "/plantonista/emergencias/mcmahon-rabdomiolise"
+ },
+ {
+  "id": "crise-tireotoxica-adulto",
+  "nome": "Crise tireotóxica — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "crise tireotóxica",
+   "tempestade tireoidiana",
+   "tireotoxicose",
+   "hipertireoidismo",
+   "propiltiouracil",
+   "PTU",
+   "metimazol",
+   "iodo"
+  ],
+  "descricao": "Propiltiouracil, metimazol, iodo, lítio, betabloqueadores e corticoide com totais diários.",
+  "rota": "/plantonista/emergencias/crise-tireotoxica-adulto"
+ },
+ {
+  "id": "burch-wartofsky",
+  "nome": "Burch-Wartofsky — crise tireotóxica",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "Burch-Wartofsky",
+   "crise tireotóxica",
+   "tempestade tireoidiana",
+   "tireotoxicose"
+  ],
+  "descricao": "Soma da Tabela 4 com as faixas improvável, iminente e crise.",
+  "rota": "/plantonista/emergencias/burch-wartofsky"
+ },
+ {
+  "id": "estado-mixedematoso-adulto",
+  "nome": "Estado mixedematoso — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "mixedema",
+   "coma mixedematoso",
+   "estado mixedematoso",
+   "hipotireoidismo",
+   "levotiroxina",
+   "T4",
+   "T3",
+   "hidrocortisona"
+  ],
+  "descricao": "T4, T3 e hidrocortisona e suporte da Tabela 5.",
+  "rota": "/plantonista/emergencias/estado-mixedematoso-adulto"
+ },
+ {
+  "id": "escore-mixedema",
+  "nome": "Escore diagnóstico do estado mixedematoso",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "mixedema",
+   "coma mixedematoso",
+   "hipotireoidismo",
+   "escore diagnóstico"
+  ],
+  "descricao": "Soma da Tabela 3 com os cortes 25 e 60.",
+  "rota": "/plantonista/emergencias/escore-mixedema"
+ },
+ {
+  "id": "insuficiencia-adrenal-adulto",
+  "nome": "Insuficiência adrenal e crise adrenal — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Eletrólitos, ácido-base e endócrino",
+  "sinonimos": [
+   "insuficiência adrenal",
+   "crise adrenal",
+   "Addison",
+   "cortisol",
+   "ACTH",
+   "hidrocortisona",
+   "fludrocortisona",
+   "choque séptico"
+  ],
+  "descricao": "Cortes do cortisol, hidrocortisona, fludrocortisona e volume; corticoide no choque séptico refratário.",
+  "rota": "/plantonista/emergencias/insuficiencia-adrenal-adulto"
+ },
+ {
+  "id": "agitacao-delirium-adulto",
+  "nome": "Paciente agitado e delirium — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "agitação",
+   "paciente agitado",
+   "contenção química",
+   "contenção mecânica",
+   "haloperidol",
+   "midazolam",
+   "lorazepam",
+   "prometazina"
+  ],
+  "descricao": "Contenção química por nível (Tabela 4), quetamina por peso, contenção mecânica, shock index, antipsicóticos da Tabela 7 no delirium e síndrome neuroléptica maligna (dantroleno por peso).",
+  "rota": "/plantonista/emergencias/agitacao-delirium-adulto"
+ },
+ {
+  "id": "bars-agitacao",
+  "nome": "BARS — escala de atividade comportamental (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "BARS",
+   "agitação",
+   "Behavioral Activity Rating Scale",
+   "pré-hospitalar",
+   "sedação"
+  ],
+  "descricao": "Níveis 1 a 7 com a triagem pré-hospitalar da Tabela 1.",
+  "rota": "/plantonista/emergencias/bars-agitacao"
+ },
+ {
+  "id": "hsa-adulto",
+  "nome": "Hemorragia subaracnóidea — nimodipino e metas (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "HSA",
+   "hemorragia subaracnóidea",
+   "aneurisma",
+   "nimodipino",
+   "vasoespasmo",
+   "PIC",
+   "PPC",
+   "Doppler transcraniano"
+  ],
+  "descricao": "Nimodipino 60 mg 4/4 h por 21 dias com a conta de doses e as metas numéricas do capítulo.",
+  "rota": "/plantonista/emergencias/hsa-adulto"
+ },
+ {
+  "id": "ottawa-hsa",
+  "nome": "Regra de Ottawa para HSA (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "Ottawa",
+   "HSA",
+   "cefaleia súbita",
+   "thunderclap",
+   "hemorragia subaracnóidea"
+  ],
+  "descricao": "Seis itens; qualquer positivo indica investigação de HSA.",
+  "rota": "/plantonista/emergencias/ottawa-hsa"
+ },
+ {
+  "id": "hunt-hess",
+  "nome": "Classificação de Hunt-Hess — HSA (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "Hunt-Hess",
+   "HSA",
+   "hemorragia subaracnóidea",
+   "grau clínico"
+  ],
+  "descricao": "Grau clínico I a V na admissão (Tabela 3).",
+  "rota": "/plantonista/emergencias/hunt-hess"
+ },
+ {
+  "id": "wfns-hsa",
+  "nome": "Escala WFNS (\"CFIN\" no livro) — HSA (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "WFNS",
+   "CFIN",
+   "HSA",
+   "Glasgow",
+   "hemorragia subaracnóidea"
+  ],
+  "descricao": "Grau 1 a 5 por Glasgow e déficit motor (Tabela 4).",
+  "rota": "/plantonista/emergencias/wfns-hsa"
+ },
+ {
+  "id": "fisher-hsa",
+  "nome": "Classificação de Fisher — HSA na TC (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "Fisher",
+   "HSA",
+   "tomografia",
+   "vasoespasmo"
+  ],
+  "descricao": "Padrão do sangramento na TC, 1 a 4 (Tabela 5), para risco de vasoespasmo.",
+  "rota": "/plantonista/emergencias/fisher-hsa"
+ },
+ {
+  "id": "hints-plus",
+  "nome": "HINTS e HINTS plus — síndrome vestibular aguda (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "HINTS",
+   "HINTS plus",
+   "vertigem",
+   "tontura",
+   "síndrome vestibular aguda",
+   "AVC de fossa posterior",
+   "nistagmo",
+   "skew"
+  ],
+  "descricao": "Impulso cefálico, nistagmo, skew e audição: padrão periférico × central.",
+  "rota": "/plantonista/emergencias/hints-plus"
+ },
+ {
+  "id": "guillain-barre-adulto",
+  "nome": "Síndrome de Guillain-Barré — imunoterapia e LCR (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "Guillain-Barré",
+   "SGB",
+   "paralisia flácida",
+   "imunoglobulina",
+   "IgIV",
+   "plasmaférese",
+   "liquor",
+   "dissociação proteinocitológica"
+  ],
+  "descricao": "Imunoglobulina e plasmaférese por peso, leitura do liquor, red flags e recomendações da AAN.",
+  "rota": "/plantonista/emergencias/guillain-barre-adulto"
+ },
+ {
+  "id": "criterios-vm-sgb",
+  "nome": "Critérios de ventilação mecânica na SGB (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "Guillain-Barré",
+   "SGB",
+   "intubação",
+   "ventilação mecânica",
+   "CVF",
+   "PImáx",
+   "capacidade vital"
+  ],
+  "descricao": "pCO2, pO2, CVF em mL/kg e PImáx (maiores) e três menores; 1 maior ou 2 menores.",
+  "rota": "/plantonista/emergencias/criterios-vm-sgb"
+ },
+ {
+  "id": "gbs-incapacidade",
+  "nome": "Escore GBS de incapacidade (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "Guillain-Barré",
+   "GBS disability score",
+   "incapacidade",
+   "SGB"
+  ],
+  "descricao": "Grau funcional 0 a 6 (Tabela 5), com o corte ≥ 3 do capítulo.",
+  "rota": "/plantonista/emergencias/gbs-incapacidade"
+ },
+ {
+  "id": "egos",
+  "nome": "Erasmus GBS Outcome Score — EGOS (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "EGOS",
+   "Erasmus",
+   "Guillain-Barré",
+   "prognóstico",
+   "marcha"
+  ],
+  "descricao": "Idade, diarreia prévia e incapacidade em 2 semanas: 1 a 7.",
+  "rota": "/plantonista/emergencias/egos"
+ },
+ {
+  "id": "perc",
+  "nome": "PERC — critérios para descartar TEP (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "PERC",
+   "TEP",
+   "embolia pulmonar",
+   "rule-out",
+   "D-dímero"
+  ],
+  "descricao": "Oito critérios; todos negativos descartam com probabilidade pré-teste improvável (com a errata do Wells simplificado).",
+  "rota": "/plantonista/emergencias/perc"
+ },
+ {
+  "id": "hestia",
+  "nome": "Critérios HESTIA — tratamento ambulatorial do TEP (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "HESTIA",
+   "TEP",
+   "embolia pulmonar",
+   "tratamento ambulatorial",
+   "alta precoce"
+  ],
+  "descricao": "Onze critérios de exclusão; combinados com PESI I ou II.",
+  "rota": "/plantonista/emergencias/hestia"
+ },
+ {
+  "id": "smart-cop",
+  "nome": "SMART-COP — necessidade de suporte intensivo na PAC (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "SMART-COP",
+   "pneumonia",
+   "PAC",
+   "UTI",
+   "vasopressor",
+   "ventilação"
+  ],
+  "descricao": "Oito variáveis; ≥ 3 pontos no protocolo do HC (cap. 90 usa > 3).",
+  "rota": "/plantonista/emergencias/smart-cop"
+ },
+ {
+  "id": "ats-idsa-pac",
+  "nome": "Critérios ATS/IDSA de PAC grave (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "ATS",
+   "IDSA",
+   "pneumonia grave",
+   "PAC",
+   "UTI"
+  ],
+  "descricao": "2 maiores e 9 menores; mostra a regra do livro (2 menores) e a da diretriz (3 menores).",
+  "rota": "/plantonista/emergencias/ats-idsa-pac"
+ },
+ {
+  "id": "pac-antibiotico-adulto",
+  "nome": "PAC — antibiótico por grupo de risco (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Respiratório e ventilação",
+  "sinonimos": [
+   "pneumonia",
+   "PAC",
+   "antibiótico",
+   "amoxicilina",
+   "azitromicina",
+   "claritromicina",
+   "levofloxacino",
+   "ceftriaxona"
+  ],
+  "descricao": "Esquemas da Tabela 10 por grupo, destino por PORT, fatores de Pseudomonas, metilprednisolona por peso, procalcitonina e alta.",
+  "rota": "/plantonista/emergencias/pac-antibiotico-adulto"
+ },
+ {
+  "id": "mascc",
+  "nome": "MASCC — risco na neutropenia febril (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Hemato-oncologia e pele",
+  "sinonimos": [
+   "MASCC",
+   "neutropenia febril",
+   "oncologia",
+   "quimioterapia",
+   "risco"
+  ],
+  "descricao": "Soma 0 a 26; < 21 é critério de alto risco (com a errata de sintomas graves).",
+  "rota": "/plantonista/emergencias/mascc"
+ },
+ {
+  "id": "neutropenia-febril-adulto",
+  "nome": "Neutropenia febril — definições e doses (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Hemato-oncologia e pele",
+  "sinonimos": [
+   "neutropenia febril",
+   "febre",
+   "quimioterapia",
+   "cefepime",
+   "piperacilina-tazobactam",
+   "meropenem",
+   "voriconazol",
+   "anfotericina"
+  ],
+  "descricao": "Definições, β-lactâmicos antipseudomonas, indicações de Gram-positivo, antifúngicos por peso e duração.",
+  "rota": "/plantonista/emergencias/neutropenia-febril-adulto"
+ },
+ {
+  "id": "cairo-bishop",
+  "nome": "Critérios de Cairo-Bishop — síndrome de lise tumoral (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Hemato-oncologia e pele",
+  "sinonimos": [
+   "Cairo-Bishop",
+   "lise tumoral",
+   "SLT",
+   "ácido úrico",
+   "hipercalemia",
+   "hiperfosfatemia",
+   "oncologia"
+  ],
+  "descricao": "SLT laboratorial (2 critérios) e clínica (+1 critério clínico).",
+  "rota": "/plantonista/emergencias/cairo-bishop"
+ },
+ {
+  "id": "lise-tumoral-adulto",
+  "nome": "Síndrome de lise tumoral — adulto",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Hemato-oncologia e pele",
+  "sinonimos": [
+   "lise tumoral",
+   "SLT",
+   "alopurinol",
+   "rasburicase",
+   "febuxostate",
+   "hidratação",
+   "hemodiálise",
+   "oncologia"
+  ],
+  "descricao": "Risco da Tabela 2, hidratação por m², diurese-alvo, alopurinol com ajuste renal, rasburicase por peso e produto Ca × P.",
+  "rota": "/plantonista/emergencias/lise-tumoral-adulto"
+ },
+ {
+  "id": "falciforme-adulto",
+  "nome": "Anemia falciforme — crise álgica e STA (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Hemato-oncologia e pele",
+  "sinonimos": [
+   "falciforme",
+   "anemia falciforme",
+   "crise álgica",
+   "vaso-oclusiva",
+   "morfina",
+   "quetamina",
+   "síndrome torácica aguda",
+   "hidratação"
+  ],
+  "descricao": "50 mL/kg/24 h, analgesia da Tabela 5 com morfina e quetamina por peso, antibiótico da STA, metas e alta.",
+  "rota": "/plantonista/emergencias/falciforme-adulto"
+ },
+ {
+  "id": "sindrome-toracica-aguda-adulto",
+  "nome": "Síndrome torácica aguda — critérios diagnósticos (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Hemato-oncologia e pele",
+  "sinonimos": [
+   "síndrome torácica aguda",
+   "STA",
+   "falciforme"
+  ],
+  "descricao": "Infiltrado novo + ≥ 1 dos 7 critérios da Tabela 3.",
+  "rota": "/plantonista/emergencias/sindrome-toracica-aguda-adulto"
+ },
+ {
+  "id": "szpilman-afogamento",
+  "nome": "Afogamento — graus de Szpilman e prognóstico (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Trauma e ambientais",
+  "sinonimos": [
+   "afogamento",
+   "Szpilman",
+   "submersão",
+   "edema pulmonar",
+   "prognóstico"
+  ],
+  "descricao": "Grau 0 a VI com a sobrevida da Tabela 1 e os indicadores de pior prognóstico.",
+  "rota": "/plantonista/emergencias/szpilman-afogamento"
+ },
+ {
+  "id": "hipotermia-adulto",
+  "nome": "Hipotermia acidental — estágio, RCP e reaquecimento (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Trauma e ambientais",
+  "sinonimos": [
+   "hipotermia",
+   "hipotermia acidental",
+   "reaquecimento",
+   "RCP",
+   "temperatura central",
+   "ECMO",
+   "Osborn"
+  ],
+  "descricao": "Estágio HT I-IV, regras de RCP/adrenalina/choque pela temperatura, método e taxa de reaquecimento.",
+  "rota": "/plantonista/emergencias/hipotermia-adulto"
+ },
+ {
+  "id": "regiscar",
+  "nome": "RegiSCAR — escore para DRESS (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Hemato-oncologia e pele",
+  "sinonimos": [
+   "RegiSCAR",
+   "DRESS",
+   "farmacodermia",
+   "eosinofilia",
+   "reação a droga"
+  ],
+  "descricao": "Soma −4 a 9; < 2 exclui, 2-3 possível, 4-5 provável, > 5 definitivo.",
+  "rota": "/plantonista/emergencias/regiscar"
+ },
+ {
+  "id": "scorten-uti",
+  "nome": "SSJ/NET — itens do SCORTEN para vaga de UTI (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Hemato-oncologia e pele",
+  "sinonimos": [
+   "SCORTEN",
+   "Stevens-Johnson",
+   "necrólise epidérmica tóxica",
+   "NET",
+   "SSJ",
+   "UTI"
+  ],
+  "descricao": "Sete itens; dois ou mais é o critério do livro para UTI (sem mortalidade).",
+  "rota": "/plantonista/emergencias/scorten-uti"
+ },
+ {
+  "id": "dermatoses-graves-adulto",
+  "nome": "Dermatoses graves — doses (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Hemato-oncologia e pele",
+  "sinonimos": [
+   "dermatose",
+   "farmacodermia",
+   "SSJ",
+   "NET",
+   "DRESS",
+   "urticária",
+   "angioedema",
+   "herpes-zóster"
+  ],
+  "descricao": "Prednisona e ciclosporina por peso na SSJ/NET e DRESS; anti-histamínicos, zóster, erisipela e celulite.",
+  "rota": "/plantonista/emergencias/dermatoses-graves-adulto"
+ },
+ {
+  "id": "acessos-calibres-adulto",
+  "nome": "Acessos: calibres, French e intraósseo (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Dor, sedação e procedimentos",
+  "sinonimos": [
+   "French",
+   "gauge",
+   "calibre",
+   "jelco",
+   "abocath",
+   "cateter",
+   "intraósseo",
+   "IO"
+  ],
+  "descricao": "French ↔ mm, tabelas de gauge, agulha IO pelo peso, sítios e lidocaína IO.",
+  "rota": "/plantonista/emergencias/acessos-calibres-adulto"
+ },
+ {
+  "id": "marca-passo-provisorio-adulto",
+  "nome": "Marca-passo provisório — parâmetros (adulto)",
+  "tipo": "conduta",
+  "secao": "Emergências — manual HC",
+  "categoria": "Parada, ritmo e choque",
+  "sinonimos": [
+   "marca-passo",
+   "transcutâneo",
+   "transvenoso",
+   "MPTC",
+   "MPTV",
+   "bradicardia",
+   "limiar",
+   "captura"
+  ],
+  "descricao": "MPTC (FC, corrente = limiar + 5-10 mA, < 120 min), MPTV às cegas, sensibilidade 50% e saída 2 × limiar + 1, ímã.",
+  "rota": "/plantonista/emergencias/marca-passo-provisorio-adulto"
+ },
+ {
+  "id": "glasgow",
+  "nome": "Escala de Coma de Glasgow (GCS-P)",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Escala",
+   "Coma",
+   "Glasgow",
+   "GCS-P"
+  ],
+  "descricao": "Abertura ocular, resposta verbal e resposta motora, com o GCS-P pelas pupilas.",
+  "rota": "/plantonista/escores/glasgow"
+ },
+ {
+  "id": "curb-65",
+  "nome": "CURB-65",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "CURB-65",
+   "gravidade",
+   "pneumonia",
+   "comunitária"
+  ],
+  "descricao": "Gravidade da pneumonia comunitária e mortalidade em 30 dias da coorte original.",
+  "rota": "/plantonista/escores/curb-65"
+ },
+ {
+  "id": "cha2ds2-va",
+  "nome": "CHA₂DS₂-VA",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "CHA₂DS₂-VA",
+   "risco",
+   "fibrilação",
+   "atrial"
+  ],
+  "descricao": "Risco de AVC na fibrilação atrial, sem a categoria de sexo (ESC 2024).",
+  "rota": "/plantonista/escores/cha2ds2-va"
+ },
+ {
+  "id": "has-bled",
+  "nome": "HAS-BLED",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "HAS-BLED",
+   "risco",
+   "sangramento",
+   "maior"
+  ],
+  "descricao": "No paciente em anticoagulação oral por fibrilação atrial.",
+  "rota": "/plantonista/escores/has-bled"
+ },
+ {
+  "id": "child-pugh",
+  "nome": "Child-Pugh",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Child-Pugh",
+   "gravidade",
+   "cirrose"
+  ],
+  "descricao": "Classe A, B ou C, e a sobrevida estimada.",
+  "rota": "/plantonista/escores/child-pugh"
+ },
+ {
+  "id": "heart",
+  "nome": "HEART",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "HEART",
+   "torácica",
+   "pronto-socorro"
+  ],
+  "descricao": "Risco de evento cardíaco maior em 6 semanas.",
+  "rota": "/plantonista/escores/heart"
+ },
+ {
+  "id": "wells-tvp",
+  "nome": "Wells para TVP",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Wells",
+   "para",
+   "probabilidade",
+   "trombose",
+   "venosa",
+   "profunda"
+  ],
+  "descricao": "Probabilidade clínica de TVP: nove itens e um subtrator.",
+  "rota": "/plantonista/escores/wells-tvp"
+ },
+ {
+  "id": "alvarado",
+  "nome": "Alvarado",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Alvarado",
+   "probabilidade",
+   "apendicite",
+   "aguda"
+  ],
+  "descricao": "Oito itens de história, exame e hemograma, de 0 a 10.",
+  "rota": "/plantonista/escores/alvarado"
+ },
+ {
+  "id": "abcd2",
+  "nome": "ABCD2",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "ABCD2",
+   "risco",
+   "depois"
+  ],
+  "descricao": "Risco de AVC em 2 e 7 dias após ataque isquêmico transitório.",
+  "rota": "/plantonista/escores/abcd2"
+ },
+ {
+  "id": "4t-hit",
+  "nome": "4T",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "probabilidade",
+   "trombocitopenia",
+   "induzida",
+   "heparina"
+  ],
+  "descricao": "Probabilidade pré-teste de trombocitopenia induzida por heparina, de 0 a 8 pontos.",
+  "rota": "/plantonista/escores/4t-hit"
+ },
+ {
+  "id": "aims65",
+  "nome": "AIMS65",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "AIMS65",
+   "mortalidade",
+   "hemorragia",
+   "digestiva",
+   "alta"
+  ],
+  "descricao": "Mortalidade hospitalar na hemorragia digestiva alta com cinco itens da chegada.",
+  "rota": "/plantonista/escores/aims65"
+ },
+ {
+  "id": "bisap",
+  "nome": "BISAP",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "BISAP",
+   "gravidade",
+   "pancreatite",
+   "aguda"
+  ],
+  "descricao": "Gravidade da pancreatite aguda nas primeiras 24 horas e mortalidade da coorte original.",
+  "rota": "/plantonista/escores/bisap"
+ },
+ {
+  "id": "cam-icu",
+  "nome": "CAM-ICU",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "CAM-ICU",
+   "delirium",
+   "paciente",
+   "crítico"
+  ],
+  "descricao": "Delirium no paciente crítico por quatro características, incluindo o intubado.",
+  "rota": "/plantonista/escores/cam-icu"
+ },
+ {
+  "id": "civd-isth",
+  "nome": "CIVD manifesta",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "CIVD",
+   "manifesta",
+   "escore",
+   "ISTH"
+  ],
+  "descricao": "Quatro parâmetros laboratoriais, 0 a 8 pontos, com a doença de base como pré-requisito.",
+  "rota": "/plantonista/escores/civd-isth"
+ },
+ {
+  "id": "canadian-ct-head",
+  "nome": "Canadian CT Head Rule",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Canadian",
+   "Head",
+   "Rule",
+   "leve",
+   "adulto"
+  ],
+  "descricao": "TCE leve no adulto: cinco critérios de alto risco e dois de risco médio.",
+  "rota": "/plantonista/escores/canadian-ct-head"
+ },
+ {
+  "id": "light",
+  "nome": "Critérios de Light",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Critérios",
+   "Light",
+   "exsudato",
+   "transudato"
+  ],
+  "descricao": "Exsudato ou transudato no derrame pleural, com o gradiente de albumina.",
+  "rota": "/plantonista/escores/light"
+ },
+ {
+  "id": "four",
+  "nome": "FOUR Score",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "FOUR",
+   "Score",
+   "consciência",
+   "paciente",
+   "crítico"
+  ],
+  "descricao": "Quatro domínios de 0 a 4, sem depender de resposta verbal.",
+  "rota": "/plantonista/escores/four"
+ },
+ {
+  "id": "grace",
+  "nome": "GRACE",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "GRACE",
+   "risco",
+   "síndrome",
+   "coronariana",
+   "aguda"
+  ],
+  "descricao": "Mortalidade hospitalar na síndrome coronariana aguda por oito variáveis da admissão.",
+  "rota": "/plantonista/escores/grace"
+ },
+ {
+  "id": "genebra-revisado",
+  "nome": "Genebra revisado",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Genebra",
+   "revisado",
+   "probabilidade",
+   "embolia",
+   "pulmonar"
+  ],
+  "descricao": "Probabilidade pré-teste de embolia pulmonar só com itens objetivos.",
+  "rota": "/plantonista/escores/genebra-revisado"
+ },
+ {
+  "id": "glasgow-blatchford",
+  "nome": "Glasgow-Blatchford",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Glasgow-Blatchford",
+   "hemorragia",
+   "digestiva",
+   "alta"
+  ],
+  "descricao": "Risco de necessidade de intervenção na hemorragia digestiva alta, com dados anteriores à endoscopia.",
+  "rota": "/plantonista/escores/glasgow-blatchford"
+ },
+ {
+  "id": "killip",
+  "nome": "Killip",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Killip",
+   "classe",
+   "congestão",
+   "infarto"
+  ],
+  "descricao": "Classe de congestão no infarto, de I a IV, pelo exame físico da admissão.",
+  "rota": "/plantonista/escores/killip"
+ },
+ {
+  "id": "meld-3",
+  "nome": "MELD 3.0",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "MELD",
+   "mortalidade",
+   "doença",
+   "hepática"
+  ],
+  "descricao": "Mortalidade em 3 meses na doença hepática avançada, com MELD-Na e MELD original para comparação.",
+  "rota": "/plantonista/escores/meld-3"
+ },
+ {
+  "id": "psi-port",
+  "nome": "PSI / PORT",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "PORT",
+   "gravidade",
+   "pneumonia",
+   "adquirida",
+   "comunidade"
+  ],
+  "descricao": "Classe de gravidade da pneumonia adquirida na comunidade e mortalidade em 30 dias da coorte original.",
+  "rota": "/plantonista/escores/psi-port"
+ },
+ {
+  "id": "rass",
+  "nome": "RASS",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "RASS",
+   "escala",
+   "agitação",
+   "sedação",
+   "Richmond"
+  ],
+  "descricao": "Nível de agitação ou sedação, de +4 combativo a −5 sem despertar.",
+  "rota": "/plantonista/escores/rass"
+ },
+ {
+  "id": "ranson",
+  "nome": "Ranson",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Ranson",
+   "gravidade",
+   "pancreatite",
+   "biliar"
+  ],
+  "descricao": "Gravidade da pancreatite aguda não biliar: cinco critérios na admissão e seis nas primeiras 48 horas.",
+  "rota": "/plantonista/escores/ranson"
+ },
+ {
+  "id": "rockall",
+  "nome": "Rockall",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Rockall",
+   "ressangramento",
+   "mortalidade"
+  ],
+  "descricao": "Mortalidade e ressangramento na hemorragia digestiva alta, na forma clínica ou completa.",
+  "rota": "/plantonista/escores/rockall"
+ },
+ {
+  "id": "sepse-adulto",
+  "nome": "Sepse no adulto",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Sepse",
+   "adulto",
+   "qSOFA",
+   "SOFA",
+   "lactato"
+  ],
+  "descricao": "Sinal de alerta qSOFA, disfunção orgânica pelo SOFA e clareamento de lactato.",
+  "rota": "/plantonista/escores/sepse-adulto"
+ },
+ {
+  "id": "wells-tep",
+  "nome": "Wells para TEP",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Wells",
+   "para",
+   "probabilidade",
+   "embolia",
+   "pulmonar"
+  ],
+  "descricao": "Probabilidade pré-teste de embolia pulmonar, nas leituras de três níveis e dicotomizada, com o limiar de D-dímero ajustado pela idade.",
+  "rota": "/plantonista/escores/wells-tep"
+ },
+ {
+  "id": "pesi",
+  "nome": "Severidade do TEP (PESI)",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "TEP",
+   "embolia",
+   "pulmonar",
+   "prognóstico"
+  ],
+  "descricao": "Classes I–V pela Tabela 10 do manual HC.",
+  "rota": "/plantonista/escores/pesi"
+ },
+ {
+  "id": "nih-avc",
+  "nome": "NIHSS — AVC",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "AVC",
+   "NIHSS",
+   "déficit",
+   "neurologia",
+   "stroke"
+  ],
+  "descricao": "Escala do manual HC (15 itens, máximo 42).",
+  "rota": "/plantonista/escores/nih-avc"
+ },
+ {
+  "id": "news2",
+  "nome": "NEWS2",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "deterioração",
+   "escore",
+   "alerta",
+   "NEWS 2",
+   "NEWS2",
+   "sepse",
+   "rastreio"
+  ],
+  "descricao": "Alerta precoce de deterioração; rastreio de sepse pela SSC 2026.",
+  "rota": "/plantonista/escores/news2"
+ },
+ {
+  "id": "timi",
+  "nome": "TIMI — Risco",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "TIMI",
+   "angina",
+   "IAM",
+   "coronariana",
+   "risco"
+  ],
+  "descricao": "Risco em angina instável / IAM sem supra de ST.",
+  "rota": "/plantonista/escores/timi"
+ },
+ {
+  "id": "hda-lamg",
+  "nome": "Profilaxia de úlcera de estresse",
+  "tipo": "protocolo",
+  "secao": "Protocolos",
+  "categoria": "Protocolos",
+  "sinonimos": [
+   "LAMG",
+   "úlcera de estresse",
+   "pantoprazol",
+   "sangramento digestivo"
+  ],
+  "descricao": "Omeprazol e gastroproteção na dupla antiagregação (manual HC).",
+  "rota": "/plantonista/protocolos/hda-lamg"
+ },
+ {
+  "id": "hiperpotassemia",
+  "nome": "Hiperpotassemia",
+  "tipo": "protocolo",
+  "secao": "Protocolos",
+  "categoria": "Protocolos",
+  "sinonimos": [
+   "potássio",
+   "hipercalemia",
+   "glicoinsulinoterapia",
+   "gluconato",
+   "ECG"
+  ],
+  "descricao": "Gravidade, cálcio pelo ECG e conduta em três tempos.",
+  "rota": "/plantonista/protocolos/hiperpotassemia"
+ },
+ {
+  "id": "abstinencia",
+  "nome": "Abstinência alcoólica",
+  "tipo": "protocolo",
+  "secao": "Protocolos",
+  "categoria": "Protocolos",
+  "sinonimos": [
+   "abstinência",
+   "álcool",
+   "CIWA-Ar",
+   "delirium tremens",
+   "benzodiazepínico",
+   "tiamina"
+  ],
+  "descricao": "CIWA-Ar, critérios de Caine e doses (manual HC, cap. 78).",
+  "rota": "/plantonista/protocolos/abstinencia"
+ },
+ {
+  "id": "decanulacao",
+  "nome": "Decanulação",
+  "tipo": "protocolo",
+  "secao": "Protocolos",
+  "categoria": "Protocolos",
+  "sinonimos": [
+   "traqueostomia",
+   "decanulação",
+   "desmame",
+   "cânula"
+  ],
+  "descricao": "Roteiro para retirada da traqueostomia.",
+  "rota": "/plantonista/protocolos/decanulacao"
+ },
+ {
+  "id": "consulta-medicamentos",
+  "nome": "Consulta de Medicamentos",
+  "tipo": "farmacia",
+  "secao": "Farmácia",
+  "categoria": "Farmácia",
+  "sinonimos": [
+   "medicamento",
+   "prescrição",
+   "droga",
+   "diluição",
+   "apresentação",
+   "CMED",
+   "farmácia"
+  ],
+  "descricao": "Busca por nome com apresentação, dose e diluição.",
+  "rota": "/plantonista/farmacia/consulta-medicamentos"
+ },
+ {
+  "id": "referencia-diluicao",
+  "nome": "Referência de Diluição",
+  "tipo": "farmacia",
+  "secao": "Farmácia",
+  "categoria": "Farmácia",
+  "sinonimos": [
+   "diluição",
+   "reconstituição",
+   "estabilidade",
+   "infusão",
+   "farmácia",
+   "compatibilidade"
+  ],
+  "descricao": "Diluições publicadas e revisadas por farmacêutico.",
+  "rota": "/plantonista/farmacia/referencia-diluicao"
+ },
+ {
+  "id": "classificacao-conduta-hidratacao",
+  "nome": "Classificação, Conduta e Hidratação",
+  "tipo": "protocolo",
+  "secao": "Dengue",
+  "categoria": "Dengue",
+  "sinonimos": [
+   "dengue",
+   "arbovirose",
+   "hidratação",
+   "sinais de alarme",
+   "choque"
+  ],
+  "descricao": "Grupos A–D e hidratação conforme o MS.",
+  "rota": "/plantonista/dengue/classificacao-conduta-hidratacao"
+ },
+ {
+  "id": "manual-dengue",
+  "nome": "Dengue — criança",
+  "tipo": "protocolo",
+  "secao": "Dengue",
+  "categoria": "Dengue",
+  "sinonimos": [
+   "dengue",
+   "manual",
+   "ministério da saúde"
+  ],
+  "descricao": "Grupos e hidratação por peso (PS Pediatria ICr).",
+  "rota": "/plantonista/dengue/manual-dengue"
+ },
+ {
+  "id": "infection-pneumonia",
+  "nome": "Infection — Pneumonia",
+  "tipo": "jogo",
+  "secao": "Games",
+  "categoria": "Games",
+  "sinonimos": [
+   "game",
+   "quiz",
+   "antibiótico",
+   "pneumonia",
+   "stewardship"
+  ],
+  "descricao": "Quiz de antibioticoterapia em pneumonia na UTI.",
+  "rota": "/plantonista/games/infection-pneumonia"
+ },
+ {
+  "id": "minigame-emergencia",
+  "nome": "Minigame de Emergência",
+  "tipo": "jogo",
+  "secao": "Games",
+  "categoria": "Games",
+  "sinonimos": [
+   "game",
+   "quiz",
+   "emergência",
+   "PCR",
+   "AVC",
+   "IAM",
+   "anafilaxia"
+  ],
+  "descricao": "Cenários rápidos de emergência.",
+  "rota": "/plantonista/games/minigame-emergencia"
+ },
+ {
+  "id": "manobra-recrutamento",
+  "nome": "SDRA — ventilação protetora",
+  "tipo": "calculadora",
+  "secao": "Ventilação Mecânica",
+  "categoria": "Ventilação Mecânica",
+  "sinonimos": [
+   "recrutamento",
+   "PEEP",
+   "SARA",
+   "manobra"
+  ],
+  "descricao": "Berlim, PEEP × FiO₂ e prona (manual HC, cap. 37).",
+  "rota": "/plantonista/ventilacao-mecanica/manobra-recrutamento"
+ },
+ {
+  "id": "suporte-ventilatorio",
+  "nome": "Ventilação mecânica — ajuste inicial",
+  "tipo": "calculadora",
+  "secao": "Ventilação Mecânica",
+  "categoria": "Ventilação Mecânica",
+  "sinonimos": [
+   "ventilação mecânica",
+   "VM",
+   "volume corrente",
+   "P/F",
+   "proteção pulmonar"
+  ],
+  "descricao": "Parâmetros iniciais por modo e relação I:E (manual HC, cap. 37).",
+  "rota": "/plantonista/ventilacao-mecanica/suporte-ventilatorio"
+ },
+ {
+  "id": "mobilidade-funcional",
+  "nome": "Mobilidade Funcional",
+  "tipo": "calculadora",
+  "secao": "Ventilação Mecânica",
+  "categoria": "Ventilação Mecânica",
+  "sinonimos": [
+   "mobilização",
+   "fisioterapia",
+   "ambulação",
+   "UTI"
+  ],
+  "descricao": "Níveis e critérios de mobilização.",
+  "rota": "/plantonista/ventilacao-mecanica/mobilidade-funcional"
+ }
+]

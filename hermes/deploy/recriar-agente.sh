@@ -9,6 +9,13 @@ umask 077
 IMG="${1:-$(docker inspect -f '{{.Image}}' hermes-agent)}"
 docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' hermes-agent | grep -v '^TZ=' | grep -v '^$' > ~/.agent.env
 echo 'TZ=America/Sao_Paulo' >> ~/.agent.env
+# variáveis novas (ex.: BIBLIOTECA_URL/BIBLIOTECA_API_KEY da biblioteca clínica):
+# uma por linha em ~/.agent.extra.env (chmod 600, fora da pasta montada no
+# container); sobrepõem as atuais.
+if [ -f ~/.agent.extra.env ]; then
+  for k in $(cut -d= -f1 ~/.agent.extra.env); do grep -v "^$k=" ~/.agent.env > ~/.agent.env.tmp && mv ~/.agent.env.tmp ~/.agent.env; done
+  cat ~/.agent.extra.env >> ~/.agent.env
+fi
 docker stop hermes-agent >/dev/null
 docker rename hermes-agent hermes-agent-antigo
 docker run -d --name hermes-agent --restart unless-stopped --env-file ~/.agent.env -p 8642:8642 \

@@ -1,0 +1,41 @@
+# Biblioteca clínica do Chefe Coruja — só escuta em 127.0.0.1 (regra R2).
+# A API entra também na rede do Hermes (deploy_default) para o Caddy publicar
+# biblioteca.chefecoruja.com.br via reverse_proxy biblioteca-api:8710.
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: biblioteca-qdrant
+    restart: unless-stopped
+    ports: ["127.0.0.1:6333:6333"]
+    volumes: ["/srv/biblioteca/qdrant_data:/qdrant/storage"]
+    deploy: { resources: { limits: { memory: 700m } } }
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: biblioteca-ollama
+    restart: unless-stopped
+    ports: ["127.0.0.1:11434:11434"]
+    volumes: ["ollama_models:/root/.ollama"]
+    environment:
+      OLLAMA_KEEP_ALIVE: "30m"
+      OLLAMA_NUM_PARALLEL: "2"
+    deploy: { resources: { limits: { memory: 2500m } } }
+
+  api:
+    build: ./app
+    container_name: biblioteca-api
+    restart: unless-stopped
+    env_file: ./app/.env
+    ports: ["127.0.0.1:8710:8710"]
+    depends_on: [qdrant, ollama]
+    volumes: ["/srv/biblioteca:/srv/biblioteca:ro"]
+    networks: [default, hermes]
+    deploy: { resources: { limits: { memory: 600m } } }
+
+networks:
+  hermes:
+    external: true
+    name: deploy_default
+
+volumes:
+  ollama_models:
