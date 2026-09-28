@@ -26,6 +26,9 @@ log = logging.getLogger("biblioteca")
 GATE_MIN = float(E.get("GATE_MIN_SCORE", 0.55))
 TOP_K = int(E.get("TOP_K", 6))
 MODELO = E.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
+MAX_TOKENS = int(E.get("LLM_MAX_TOKENS", 3000))
+# parâmetros extras do provedor (JSON), ex.: {"thinking": {"type": "disabled"}}
+EXTRA_LLM = json.loads(E.get("LLM_EXTRA_BODY", "{}") or "{}")
 
 STOP = set("""a o os as um uma uns umas de do da dos das em no na nos nas por para com sem sob sobre e ou que qual quais
 como quando onde quanto quantos qual é são ser está estão foi ao aos à às se não sim mais menos muito pouco já ainda
@@ -183,10 +186,12 @@ def ask(r: Req, authorization: str | None = Header(None)):
         lista_tools = "\n".join(f"- {t['nome']} ({t['rota']})" for t in ferramentas) or "- nenhuma"
         texto = ""
         try:
+            # max_tokens alto: em modelo com "raciocínio" os tokens de pensamento
+            # contam no limite e um limite curto devolvia resposta vazia (evals 28/09).
             stream = llm.chat.completions.create(
-                model=MODELO, temperature=0.1, stream=True, max_tokens=900,
+                model=MODELO, temperature=0.1, stream=True, max_tokens=MAX_TOKENS, extra_body=EXTRA_LLM,
                 messages=[{"role": "system", "content": SYSTEM},
-                          {"role": "user", "content": f"TRECHOS:\n{contexto}\n\nFERRAMENTAS DA CENTRAL:\n{lista_tools}\n\nPERGUNTA: {q}"}])
+                          {"role": "user", "content": f"TRECHOS:\n{contexto}\n\nFERRAMENTAS DA CENTRAL:\n{lista_tools}\n\nPERGUNTA: {q}\n\nLembrete: cada afirmação clínica termina com a citação [n] do trecho."}])
             for ch in stream:
                 d = (ch.choices[0].delta.content or "") if ch.choices else ""
                 if d:
@@ -195,6 +200,10 @@ def ask(r: Req, authorization: str | None = Header(None)):
         except Exception as e:  # modelo fora do ar: o cliente mostra "IA indisponível"
             log.error(json.dumps({"rid": r.request_id, "erro": type(e).__name__}))
             yield json.dumps({"type": "error", "text": "IA indisponível no momento."}, ensure_ascii=False) + "\n"
+            return
+        if not texto.strip():
+            log.error(json.dumps({"rid": r.request_id, "erro": "resposta_vazia"}))
+            yield json.dumps({"type": "error", "text": "O modelo não devolveu texto. Tente reformular a pergunta."}, ensure_ascii=False) + "\n"
             return
         citadas = {int(n) for n in re.findall(r"\[(\d+)\]", texto)}
         invalidas = sorted(n for n in citadas if n < 1 or n > len(trechos))

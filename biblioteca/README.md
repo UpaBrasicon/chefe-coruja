@@ -37,6 +37,19 @@ Guia completo: `produto/docs/pesquisa/busca-ia-guia-implementacao.md`.
    sua ficha, fontes com página e os dados que a tela usa. `licenca:
    institucional`, tenant `global`.
 
+## Variáveis da API (`app/.env`, só no VPS)
+
+Além das do guia (`BIBLIOTECA_API_KEY`, `QDRANT_URL`, `OLLAMA_URL`,
+`EMBED_MODEL`, `DEEPSEEK_*`, `TOP_K`):
+
+- `GATE_MIN_SCORE=0.52` — abaixo disso a pergunta é bloqueada ("Não encontrei
+  isso no material de referência"). Nas evals de 28/09 as perguntas fora do
+  escopo ficaram entre 0,34 e 0,47 e as clínicas do corpus entre 0,53 e 0,73.
+- `LLM_MAX_TOKENS=2000` e `LLM_EXTRA_BODY={"thinking":{"type":"disabled"}}` —
+  o `deepseek-v4-flash` é modelo com raciocínio: com 900 tokens ele gastava
+  tudo pensando e devolvia resposta vazia (13 das 56 evals). Com o raciocínio
+  desligado a resposta vem direta e mais rápida.
+
 ## Operação
 
 ```bash
