@@ -18,5 +18,6 @@ run('scp', ['-q', 'biblioteca/app/main.py', 'biblioteca/app/pii.py', 'biblioteca
   'biblioteca/app/Dockerfile', 'biblioteca/app/requirements.txt', `${VPS}:/srv/biblioteca/app/`])
 run('scp', ['-q', 'biblioteca/evals/perguntas.yaml', 'biblioteca/evals/run.py', `${VPS}:/srv/biblioteca/evals/`])
 const ingerir = process.argv.includes('--ingerir') ? ' && docker compose run --rm -T api python ingest.py corpus' : ''
-run('ssh', [VPS, `chown -R hermes:hermes /srv/biblioteca && cd /srv/biblioteca && docker compose run --rm -T api python index_tools.py${ingerir}`])
+// os .py entram na imagem (Dockerfile COPY): rebuild antes de rodar
+run('ssh', [VPS, `chown -R hermes:hermes /srv/biblioteca && cd /srv/biblioteca && docker compose build -q api && docker compose run --rm -T api python index_tools.py${ingerir}`])
 console.log('biblioteca sincronizada')

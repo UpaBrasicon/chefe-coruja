@@ -53,7 +53,9 @@ docker compose run --rm api python /srv/biblioteca/evals/run.py
 ```
 
 Do repositório: `npm run biblioteca:sync` gera `ferramentas.json` e o corpus e
-copia tudo para o VPS (precisa da chave SSH do usuário).
+copia tudo para o VPS (precisa da chave SSH do usuário). Os `.py` entram na
+imagem da API (`COPY` no Dockerfile): depois de mudar `app/*.py`, rode
+`docker compose build api` antes de `docker compose run`/`up`.
 
 ## Entrada dos livros em `fontes.yaml` (para o usuário acrescentar)
 
