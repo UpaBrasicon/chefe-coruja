@@ -85,7 +85,7 @@ test('Berlim (p. 505): faixas inteiras e PEEP ≥ 5', () => {
   assert.equal(tabelaPeepDaClasse('grave'), 'alto')
   assert.equal(tabelaPeepDaClasse('moderada'), 'baixo')
   assert.deepEqual(vtSdra('leve', 60), [360, 360])
-  assert.deepEqual(vtSdra('grave', 60), [180, 360])
+  assert.deepEqual(vtSdra('grave', 60), [240, 360]) // 4–6 mL/kg (errata da p. 506: 3–6)
 })
 
 test('tabelas PEEP × FiO2 (Tabelas 6 e 7, p. 506–507) como impressas', () => {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import {
+import { ERRATA_VT_SDRA,
   NOME_BERLIM, RESGATE_HIPOXEMIA, SDRA, TABELAS_PEEP, berlim, conferirSdra, drivingPressure, fichaSdraAdulto, marcosPf, peepParaFio2,
   relacaoPF, tabelaPeepDaClasse, vtSdra, type ColunaPeep, type TabelaPeepId,
 } from '@/clinico/adulto/ventilacaoMecanica'
@@ -72,6 +72,7 @@ export function SdraVentilacaoAdulto() {
       <Bloco titulo="Tabela 5 — ajuste na SDRA (p. 506)" descricao="O livro não diz qual peso usar no mL/kg nem traz fórmula de peso predito: informe o peso que você quer usar.">
         <div className="grid gap-3 sm:grid-cols-3">
           <Resultado rotulo="Vt" valor={`leve ${SDRA.vtLeve} mL/kg; moderada/grave ${faixaBr(SDRA.vtModeradaGrave, 0)} mL/kg`} />
+          <p className="text-apoio text-muted-foreground">Errata: {ERRATA_VT_SDRA}</p>
           <Resultado rotulo="PEEP" valor="leve/moderada: tabela PEEP baixo; grave: PEEP alto" />
           <Resultado rotulo="FiO2" valor="100% inicial → SatO2 > 92%" />
           <Resultado rotulo="FR" valor={`${SDRA.frInicial} rpm inicial; graves podem precisar de ${faixaBr(SDRA.frGrave, 0)}`} />

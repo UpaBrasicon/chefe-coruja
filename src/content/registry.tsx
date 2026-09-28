@@ -261,8 +261,7 @@ export const SECOES: SectionDef[] = [
       t('rockall', 'Rockall', 'Mortalidade e ressangramento na hemorragia digestiva alta, na forma clínica ou completa.', sobDemanda(() => import('@/pages/plantonista/escores/EscoresPacote'), 'Rockall'), ['Rockall', 'ressangramento', 'mortalidade']),
       t('sepse-adulto', 'Sepse no adulto', 'Sinal de alerta qSOFA, disfunção orgânica pelo SOFA e clareamento de lactato.', sobDemanda(() => import('@/pages/plantonista/escores/EscoresPacote'), 'SepseAdulto'), ['Sepse', 'adulto', 'qSOFA', 'SOFA', 'lactato']),
       t('wells-tep', 'Wells para TEP', 'Probabilidade pré-teste de embolia pulmonar, nas leituras de três níveis e dicotomizada, com o limiar de D-dímero ajustado pela idade.', sobDemanda(() => import('@/pages/plantonista/escores/EscoresPacote'), 'WellsTep'), ['Wells', 'para', 'probabilidade', 'embolia', 'pulmonar']),
-      t('saps3', 'SAPS 3', 'Estimativa de mortalidade na admissão em UTI.', sobDemanda(() => import('@/pages/plantonista/escores/Saps3'), 'Saps3'), ['mortalidade', 'UTI', 'gravidade', 'prognóstico']),
-      t('pesi', 'Severidade do TEP (PESI)', 'PESI original e simplificado.', sobDemanda(() => import('@/pages/plantonista/escores/Pesi'), 'Pesi'), ['TEP', 'embolia', 'pulmonar', 'prognóstico']),
+      t('pesi', 'Severidade do TEP (PESI)', 'Classes I–V pela Tabela 10 do manual HC.', sobDemanda(() => import('@/pages/plantonista/escores/Pesi'), 'Pesi'), ['TEP', 'embolia', 'pulmonar', 'prognóstico']),
       t('nih-avc', 'NIHSS — AVC', 'Escala do manual HC (15 itens, máximo 42).', sobDemanda(() => import('@/pages/plantonista/manual/EscoresLoteE2'), 'NihssHc'), ['AVC', 'NIHSS', 'déficit', 'neurologia', 'stroke']),
       t('news2', 'NEWS2', 'Alerta precoce de deterioração; rastreio de sepse pela SSC 2026.', sobDemanda(() => import('@/pages/plantonista/escores/EscoresPacote'), 'News2'), ['deterioração', 'escore', 'alerta', 'NEWS 2', 'NEWS2', 'sepse', 'rastreio']),
       t('timi', 'TIMI — Risco', 'Risco em angina instável / IAM sem supra de ST.', sobDemanda(() => import('@/pages/plantonista/escores/Timi'), 'Timi'), ['TIMI', 'angina', 'IAM', 'coronariana', 'risco']),
@@ -277,7 +276,6 @@ export const SECOES: SectionDef[] = [
       t('hda-lamg', 'Profilaxia de úlcera de estresse', 'Omeprazol e gastroproteção na dupla antiagregação (manual HC).', sobDemanda(() => import('@/pages/plantonista/manual/ProfilaxiaHdaLamg'), 'ProfilaxiaHdaLamg'), ['LAMG', 'úlcera de estresse', 'pantoprazol', 'sangramento digestivo']),
       t('hiperpotassemia', 'Hiperpotassemia', 'Gravidade, cálcio pelo ECG e conduta em três tempos.', sobDemanda(() => import('@/pages/plantonista/protocolos/Hiperpotassemia'), 'Hiperpotassemia'), ['potássio', 'hipercalemia', 'glicoinsulinoterapia', 'gluconato', 'ECG']),
       t('abstinencia', 'Abstinência alcoólica', 'CIWA-Ar, critérios de Caine e doses (manual HC, cap. 78).', sobDemanda(() => import('@/pages/plantonista/manual/Abstinencia'), 'Abstinencia'), ['abstinência', 'álcool', 'CIWA-Ar', 'delirium tremens', 'benzodiazepínico', 'tiamina']),
-      t('preparo-colonoscopia', 'Preparo para Colonoscopia', 'Dieta e preparo intestinal por horário.', sobDemanda(() => import('@/pages/plantonista/protocolos/PreparoColonoscopia'), 'PreparoColonoscopia'), ['colonoscopia', 'manitol', 'preparo', 'bisacodil']),
       t('decanulacao', 'Decanulação', 'Roteiro para retirada da traqueostomia.', sobDemanda(() => import('@/pages/plantonista/protocolos/Decanulacao'), 'Decanulacao'), ['traqueostomia', 'decanulação', 'desmame', 'cânula']),
     ],
   },
@@ -298,8 +296,7 @@ export const SECOES: SectionDef[] = [
     icon: Wind,
     tools: [
       t('classificacao-conduta-hidratacao', 'Classificação, Conduta e Hidratação', 'Grupos A–D e hidratação conforme o MS.', sobDemanda(() => import('@/pages/plantonista/dengue/ClassificacaoDengue'), 'ClassificacaoDengue'), ['dengue', 'arbovirose', 'hidratação', 'sinais de alarme', 'choque']),
-      t('manual-dengue', 'Manual de Dengue', 'Síntese do manejo da dengue (MS).', sobDemanda(() => import('@/pages/plantonista/dengue/ManualDengue'), 'ManualDengue'), ['dengue', 'manual', 'ministério da saúde']),
-      t('video-dengue', 'Vídeo Dr. Daniel Wagner', 'Conteúdo do vídeo do infectologista.', sobDemanda(() => import('@/pages/plantonista/dengue/VideoDengue'), 'VideoDengue'), ['dengue', 'vídeo', 'infectologia']),
+      t('manual-dengue', 'Dengue — criança', 'Grupos e hidratação por peso (PS Pediatria ICr).', sobDemanda(() => import('@/pages/plantonista/pediatria/DenguePed'), 'DenguePed'), ['dengue', 'manual', 'ministério da saúde']),
     ],
   },
   {
@@ -318,9 +315,7 @@ export const SECOES: SectionDef[] = [
     description: 'Suporte ventilatório, VNI e recrutamento pulmonar.',
     icon: Wind,
     tools: [
-      t('predicao-falencia-vni', 'Predição de Falência da VNI', 'Escala HACOR após 1 hora de VNI.', sobDemanda(() => import('@/pages/plantonista/ventilacao/PredicaoFalenciaVni'), 'PredicaoFalenciaVni'), ['VNI', 'HACOR', 'ventilação não invasiva', 'intubação', 'insuficiência respiratória']),
-      t('recrutabilidade-pulmonar', 'Recrutabilidade Pulmonar', 'R/I ratio — potencial de recrutamento.', sobDemanda(() => import('@/pages/plantonista/ventilacao/RecrutabilidadePulmonar'), 'RecrutabilidadePulmonar'), ['recrutamento', 'PEEP', 'R/I ratio', 'SARA', 'complacência']),
-      t('manobra-recrutamento', 'Manobra de Recrutamento', 'Passo a passo com PEEP progressiva.', sobDemanda(() => import('@/pages/plantonista/ventilacao/ManobraRecrutamento'), 'ManobraRecrutamento'), ['recrutamento', 'PEEP', 'SARA', 'manobra']),
+      t('manobra-recrutamento', 'SDRA — ventilação protetora', 'Berlim, PEEP × FiO₂ e prona (manual HC, cap. 37).', sobDemanda(() => import('@/pages/plantonista/manual/SdraVentilacaoAdulto'), 'SdraVentilacaoAdulto'), ['recrutamento', 'PEEP', 'SARA', 'manobra']),
       t('suporte-ventilatorio', 'Ventilação mecânica — ajuste inicial', 'Parâmetros iniciais por modo e relação I:E (manual HC, cap. 37).', sobDemanda(() => import('@/pages/plantonista/manual/VmAjusteInicialAdulto'), 'VmAjusteInicialAdulto'), ['ventilação mecânica', 'VM', 'volume corrente', 'P/F', 'proteção pulmonar']),
       t('mobilidade-funcional', 'Mobilidade Funcional', 'Níveis e critérios de mobilização.', sobDemanda(() => import('@/pages/plantonista/ventilacao/MobilidadeFuncional'), 'MobilidadeFuncional'), ['mobilização', 'fisioterapia', 'ambulação', 'UTI']),
     ],

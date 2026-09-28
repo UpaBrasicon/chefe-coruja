@@ -5,7 +5,8 @@ import { fichaAdulto } from './fonte.ts'
 // concentração da apresentação; o volume é calculado (as tabelas do livro vão
 // de 40 a 100 kg e batem com a conta).
 
-export const fichaIsrAdulto = fichaAdulto('adulto-isr', 'Intubação em sequência rápida — adulto', 'Anexo 1 — Padrão de diluição de medicações HC – adultos, p. 1480–1482')
+// .2: nota da divergência do midazolam (cap. 3 × Anexo 1)
+export const fichaIsrAdulto = { ...fichaAdulto('adulto-isr', 'Intubação em sequência rápida — adulto', 'Anexo 1 — Padrão de diluição de medicações HC – adultos, p. 1480–1482; cap. 3, p. 60 e 64'), versao: '2026-09-27.2' }
 
 export type DrogaIsr = {
   id: string
@@ -19,11 +20,14 @@ export type DrogaIsr = {
   /** conteúdo de uma ampola, na mesma unidade da dose */
   porAmpola: number
   apresentacao: string
+  /** divergência dentro do próprio livro */
+  nota?: string
 }
 
 export const DROGAS_ISR: DrogaIsr[] = [
   { id: 'propofol', nome: 'Propofol', papel: 'inducao', mgKg: 1.5, porMl: 10, porAmpola: 200, apresentacao: '10 mg/mL, ampola de 20 mL' },
-  { id: 'midazolam', nome: 'Midazolam', papel: 'inducao', mgKg: 0.2, porMl: 5, porAmpola: 15, apresentacao: '5 mg/mL, ampola de 3 mL' },
+  { id: 'midazolam', nome: 'Midazolam', papel: 'inducao', mgKg: 0.2, porMl: 5, porAmpola: 15, apresentacao: '5 mg/mL, ampola de 3 mL',
+    nota: 'O cap. 3 (Tabelas 6 e 16, p. 60 e 64) traz 0,3 mg/kg; o Anexo 1 (p. 1480), usado aqui, traz 0,2 mg/kg.' },
   { id: 'etomidato', nome: 'Etomidato', papel: 'inducao', mgKg: 0.3, porMl: 2, porAmpola: 20, apresentacao: '2 mg/mL, ampola de 10 mL' },
   { id: 'quetamina', nome: 'Quetamina (cetamina)', papel: 'inducao', mgKg: 1.5, porMl: 50, porAmpola: 100, apresentacao: '50 mg/mL, ampola de 2 mL' },
   { id: 'fentanil', nome: 'Fentanil', papel: 'analgesia', fixa: { minUg: 50, maxUg: 150 }, porMl: 50, porAmpola: 500, apresentacao: '50 µg/mL, ampola de 10 mL' },

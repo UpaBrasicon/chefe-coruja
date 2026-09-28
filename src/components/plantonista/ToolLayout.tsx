@@ -18,6 +18,7 @@ export function ToolLayout({
   referencia,
   revisadoEm,
   ficha,
+  semFonte,
 }: {
   title: string
   description?: string
@@ -27,6 +28,8 @@ export function ToolLayout({
   revisadoEm?: string
   /** ferramenta do pacote src/clinico: fonte, revisão e versão saem da ficha */
   ficha?: Ficha
+  /** material de consulta sem dose e sem fonte declarada: fora da camada base aprovada */
+  semFonte?: boolean
 }) {
   const { unidadeAtiva } = useUnidade()
   const { data: situacao } = useSituacaoFerramenta(ficha, unidadeAtiva?.unidade_id)
@@ -40,6 +43,12 @@ export function ToolLayout({
         {description && <p className="mt-1.5 max-w-2xl text-corpo text-tinta-sussurro">{description}</p>}
       </header>
       {ficha && situacao && <FaixaSituacao situacao={situacao} versao={ficha.versao} />}
+      {semFonte && (
+        <div role="note" className="flex gap-2.5 rounded-container border border-fio bg-superficie px-4 py-3 text-apoio text-tinta-apoio">
+          <Clock className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <p>Sem fonte declarada: material de consulta, sem dose, fora da camada base aprovada pelo responsável técnico.</p>
+        </div>
+      )}
       {suspensa ? (
         <div role="status" className="flex gap-2.5 rounded-container border border-fio bg-superficie px-4 py-3 text-corpo text-tinta">
           <CircleSlash className="mt-0.5 size-4 shrink-0 text-tinta-apoio" aria-hidden />

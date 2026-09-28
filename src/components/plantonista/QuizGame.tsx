@@ -17,10 +17,13 @@ export function QuizGame({
   title,
   description,
   questoes,
+  fonte,
 }: {
   title: string
   description: string
   questoes: Questao[]
+  /** linha de fonte visível abaixo do jogo */
+  fonte?: string
 }) {
   const [indice, setIndice] = useState(0)
   const [respostas, setRespostas] = useState<number[]>([])
@@ -76,6 +79,7 @@ export function QuizGame({
             </div>
           </CardContent>
         </Card>
+        {fonte && <p className="text-apoio text-tinta-sussurro">{fonte}</p>}
       </ToolLayout>
     )
   }
@@ -120,6 +124,7 @@ export function QuizGame({
           )}
         </CardContent>
       </Card>
+      {fonte && <p className="text-apoio text-tinta-sussurro">{fonte}</p>}
     </ToolLayout>
   )
 }

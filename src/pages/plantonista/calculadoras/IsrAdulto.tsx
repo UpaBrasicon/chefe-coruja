@@ -40,6 +40,7 @@ export function IsrAdulto() {
                   <p className="text-muted-foreground">
                     {d.fixa ? `dose fixa ${d.fixa.minUg}–${d.fixa.maxUg} µg` : `${d.mgKg!.toLocaleString('pt-BR')} mg/kg`} · {d.apresentacao}
                   </p>
+                  {d.nota && <p className="text-muted-foreground">Divergência no livro: {d.nota}</p>}
                 </div>
               )
             })}

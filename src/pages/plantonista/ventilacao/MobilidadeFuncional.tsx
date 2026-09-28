@@ -5,12 +5,13 @@ import { Badge } from '@/components/ui/badge'
 export function MobilidadeFuncional() {
   return (
     <ToolLayout
+      semFonte
       title="Mobilidade Funcional"
       description="Níveis de mobilidade e critérios de progressão no paciente crítico."
     >
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Níveis de mobilidade (PMC — Perme ICU Mobility Scale)</CardTitle>
+          <CardTitle className="text-base">Níveis de mobilidade (0 a 7)</CardTitle>
           <CardDescription>Progredir conforme estabilidade clínica.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">

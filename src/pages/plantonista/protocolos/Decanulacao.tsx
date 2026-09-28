@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 export function Decanulacao() {
   return (
     <ToolLayout
+      semFonte
       title="Decanulação"
       description="Roteiro para retirada da traqueostomia."
     >

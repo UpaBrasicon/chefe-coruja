@@ -17,7 +17,8 @@ import { fichaAdulto } from './fonte.ts'
 export const fichaVmAjusteAdulto = fichaAdulto('adulto-vm-ajuste-inicial', 'Ventilação mecânica — ajuste inicial (adulto)', 'cap. 37, p. 498–504 e 509')
 export const fichaVmObstruidoAdulto = fichaAdulto('adulto-vm-obstruido-grave', 'Ventilação mecânica no obstruído grave (adulto)', 'cap. 37, Tabela 4, p. 504–505')
 export const fichaMecanicaAdulto = fichaAdulto('adulto-vm-mecanica', 'Mecânica ventilatória — resistência, complacência e constante de tempo (adulto)', 'cap. 37, p. 499–500 e 506')
-export const fichaSdraAdulto = fichaAdulto('adulto-vm-sdra', 'SDRA — Berlim, ventilação protetora e tabelas PEEP × FiO2 (adulto)', 'cap. 37, p. 505–508')
+// .2: VT moderada/grave 4–6 mL/kg (errata da p. 506, que imprime 3–6)
+export const fichaSdraAdulto = { ...fichaAdulto('adulto-vm-sdra', 'SDRA — Berlim, ventilação protetora e tabelas PEEP × FiO2 (adulto)', 'cap. 37, p. 505–508; VT: p. 127 e 403'), versao: '2026-09-27.2' }
 export const fichaDesmameAdulto = fichaAdulto('adulto-vm-desmame', 'Desmame e teste de respiração espontânea (adulto)', 'cap. 37, Figura 5, p. 510')
 
 export type Faixa = [number, number]
@@ -249,7 +250,9 @@ export function relacaoPF(pao2: number, fio2Pct: number): number | null {
 /** Tabela 5 (p. 506). */
 export const SDRA = {
   vtLeve: 6,
-  vtModeradaGrave: [3, 6] as Faixa,
+  // Errata: a Tabela 5 (p. 506) imprime 3–6 mL/kg; o próprio livro traz 4–6 mL/kg
+  // na Tabela 12 do choque séptico (p. 127) e na p. 403 ("de forma similar à SDRA").
+  vtModeradaGrave: [4, 6] as Faixa,
   sato2Acima: 92,
   frInicial: 20,
   frGrave: [35, 45] as Faixa,
@@ -267,6 +270,9 @@ export const SDRA = {
   phToleravel: 7.2,
   pagina: 'Tabela 5, p. 506; p. 505–507',
 }
+
+export const ERRATA_VT_SDRA =
+  'A Tabela 5 (p. 506) imprime "Moderada/grave: Vt 3-6 mL/kg". O mesmo livro traz 4–6 mL/kg na Tabela 12 do choque séptico (p. 127) e na p. 403 ("volume corrente baixo (4-6 mL/kg) … de forma similar à SDRA"); a conta usa 4–6.'
 
 /** VT da Tabela 5 conforme a classe (p. 506), pelo peso informado. */
 export function vtSdra(classe: ClasseBerlim, pesoKg: number): Faixa | null {
