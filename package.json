@@ -10,6 +10,7 @@
     "typecheck": "tsc -b --noEmit",
     "preview": "vite preview",
     "gen:tipos": "node scripts/gerar-tipos.mjs",
+    "rotas:fichas": "node --experimental-strip-types scripts/rotas-fichas.mjs",
     "fichas:sql": "node --experimental-strip-types scripts/fichas-sql.mjs",
     "test:clinico": "node --experimental-strip-types --test \"src/clinico/**/*.test.ts\"",
     "test:dominio": "node --experimental-strip-types --test src/domain/dominio.test.ts",
