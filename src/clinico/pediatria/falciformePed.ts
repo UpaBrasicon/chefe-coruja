@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaP4, type DoseLivro } from './fonteP4.ts'
 
 // Doença falciforme — livro do ICr, cap. 63 (p. 664–674). Crise álgica pela
@@ -6,8 +7,134 @@ import { fichaP4, type DoseLivro } from './fonteP4.ts'
 // aguda. O capítulo cita dipirona, paracetamol e ibuprofeno sem dose: as doses
 // vêm do Apêndice (Tabela 2) e estão marcadas assim. Hidratação: o capítulo diz
 // que NÃO há recomendação a favor ou contra fluidos na crise álgica (p. 669).
+//
+// Versão .1 de 28/09/2026: PCDT da Doença Falciforme do MS (Portaria Conjunta
+// SAES/SECTICS nº 16, de 1/11/2024), lido no texto — hidroxiureia (critérios e
+// dose), profilaxia com penicilina por peso/idade, antibiótico na febre,
+// indicações de transfusão simples, sequestro esplênico e síndrome torácica
+// aguda (PCDT_FALCIFORME). O livro fica como base; as diferenças aparecem.
 
-export const fichaFalciformePed = fichaP4('ped-falciforme', 'Doença falciforme — crise álgica e complicações agudas', 'cap. 63, p. 664–674; Apêndice, p. 901–906')
+export const PCDT_FALCIFORME_2024: Fonte = {
+  citacao: 'Ministério da Saúde. Protocolo Clínico e Diretrizes Terapêuticas da Doença Falciforme (Portaria Conjunta SAES/SECTICS nº 16, de 1º de novembro de 2024). Brasília: MS; 2024.',
+  url: 'https://www.gov.br/saude/pt-br/assuntos/pcdt/d/doenca-falciforme/view',
+  pediatrica: true,
+}
+
+const baseFalciforme = fichaP4('ped-falciforme', 'Doença falciforme — crise álgica e complicações agudas', 'cap. 63, p. 664–674; Apêndice, p. 901–906')
+
+export const fichaFalciformePed: Ficha = {
+  ...baseFalciforme,
+  versao: '2026-09-28.1',
+  fontes: [...baseFalciforme.fontes, { ...PCDT_FALCIFORME_2024, citacao: `${PCDT_FALCIFORME_2024.citacao} Critérios (p. 6–8), transfusão (p. 9–10), febre (p. 16 e 19), esquemas (p. 18–19), sequestro e STA (p. 22).` }],
+  revisadoEm: '28/09/2026 (PCDT 2024 conferido no texto; livro do ICr mantido como base)',
+}
+
+const pos = (x: number) => Number.isFinite(x) && x > 0
+
+/** PCDT 2024 — o que a ferramenta mostra, com página do PDF. */
+export const PCDT_FALCIFORME = {
+  hidroxiureia: {
+    criterios: 'HbSS, HbSβ⁰, HbSβ⁺ grave e HbSD-Punjab a partir de 9 meses; HbSC, HbSD e HbSβ-tal a partir de 2 anos (antes de 2 anos e a partir de 9 meses só com dactilite no 1º ano, Hb < 7 g/dL ou leucócitos > 20.000/mm³, médias fora de evento agudo)',
+    inicialMgKgDia: 15,
+    incrementoMgKgDia: 5,
+    aCadaSemanas: 4,
+    maximoMgKgDia: 35,
+    apresentacao: 'cápsula de 500 mg; comprimido revestido de 100 mg (fracionável) recomendado até 25 kg',
+    exclusao: 'Neutrófilos < 1.500/mm³ (> 1 ano) ou < 1.000 (< 1 ano); Hb < 4,5 g/dL; reticulócitos < 80.000 (se Hb < 8); plaquetas < 80.000; gestação ou sem contracepção',
+    pagina: 'p. 6–8 e 18',
+  },
+  profilaxia: {
+    idade: 'crianças de 3 meses a 5 anos',
+    penicilinaV: [
+      { criterio: '< 3 anos ou até 15 kg', dose: '125 mg (200.000 UI; 2,5 mL da solução de 80.000 UI/mL) a cada 12 h', mg: 125 },
+      { criterio: '> 3 anos ou 15–25 kg', dose: '250 mg (400.000 UI; 5 mL) a cada 12 h', mg: 250 },
+    ],
+    benzatina: [
+      { ate: 10, ui: 300_000, criterio: 'até 10 kg' },
+      { ate: 20, ui: 600_000, criterio: '10 a 20 kg' },
+      { ate: Infinity, ui: 1_200_000, criterio: 'acima de 20 kg' },
+    ],
+    benzatinaIntervalo: 'a cada 4 semanas',
+    alergia: 'estolato de eritromicina VO',
+    pagina: 'p. 7, 9 e 18–19',
+  },
+  febre: {
+    alerta: 'Febre é urgência; > 38,2 °C abaixo de 3 anos pode sugerir bacteriemia/sepse; cobrir encapsulados (S. pneumoniae, H. influenzae)',
+    penicilinaCristalinaUKgDia: [100_000, 250_000] as [number, number],
+    ceftriaxonaMgKgDia: [50, 75] as [number, number],
+    ceftriaxonaMaxGDia: 4,
+    texto: 'Crianças: penicilina G cristalina 100.000–250.000 U/kg/dia IV 6/6 h; alternativa ceftriaxona 50–75 mg/kg/dia IV 12/12 h (máx. 4 g/dia); STA: associar macrolídeo; meningite: ceftriaxona; suspeita de Mycoplasma: macrolídeo; osteomielite: IV por 4–6 semanas cobrindo S. aureus e Salmonella',
+    pagina: 'p. 16 e 19',
+  },
+  transfusaoSimples: {
+    indicacoes: [
+      'Crise de aplasia de medula e pancitopenia',
+      'Infecção aguda progressiva com queda ≥ 1,5 g/dL da Hb basal ou Hb < 7 g/dL',
+      'Sequestro hepático ou esplênico agudo',
+      'Gestação',
+      'AVC agudo quando a transfusão de troca não estiver disponível',
+      'STA com necessidade crescente de O₂ para manter saturação > 95%',
+    ],
+    formula: 'Volume (mL) = (Ht desejado − Ht inicial) × volemia (peso × 60) / Ht do concentrado (70%)',
+    pagina: 'p. 9–10',
+  },
+  sequestro: {
+    expansorMlKg: [10, 15] as [number, number],
+    sfMlKg: [40, 100] as [number, number],
+    chMlKg: 10,
+    hbAlvo: [6, 7] as [number, number],
+    texto: 'Acesso venoso; expansor plasmático 10–15 mL/kg (na falta, SF 40–100 mL/kg em 2 h em etapa rápida); repouso, O₂ por máscara, membros elevados; CH 10 mL/kg para Hb 6–7 g/dL, atento à volemia',
+    pagina: 'p. 22',
+  },
+  sta: {
+    spo2Uti: 93,
+    texto: 'Dor torácica intensa, tosse, febre, sintomas respiratórios, hipoxemia e/ou infiltrado novo: internação de urgência; SpO₂ < 93% indica UTI; hemograma com reticulócitos, hemocultura, saturação e RX (repetir a cada 24 h se normal); antibiótico com macrolídeo',
+    pagina: 'p. 16 e 22',
+  },
+}
+
+/** Hidroxiureia pelo PCDT: dose inicial, incremento e máximo em mg/dia. */
+export function hidroxiureiaMgDia(pesoKg: number): { inicial: number; incremento: number; maximo: number; comprimido100: boolean } | null {
+  if (!pos(pesoKg)) return null
+  const h = PCDT_FALCIFORME.hidroxiureia
+  return { inicial: h.inicialMgKgDia * pesoKg, incremento: h.incrementoMgKgDia * pesoKg, maximo: h.maximoMgKgDia * pesoKg, comprimido100: pesoKg <= 25 }
+}
+
+/** Benzilpenicilina benzatina profilática por peso (p. 19). */
+export function benzatinaProfilaxia(pesoKg: number): { ui: number; criterio: string } | null {
+  if (!pos(pesoKg)) return null
+  const f = PCDT_FALCIFORME.profilaxia.benzatina.find((b) => pesoKg <= b.ate)!
+  return { ui: f.ui, criterio: f.criterio }
+}
+
+/** Penicilina V profilática por idade/peso (p. 18–19): < 3 anos ou ≤ 15 kg → 125 mg 12/12 h; senão 250 mg 12/12 h. */
+export function penicilinaVProfilaxia(idadeMeses: number, pesoKg: number): { mg: number; criterio: string } | null {
+  if (!Number.isFinite(idadeMeses) || idadeMeses < 0 || !pos(pesoKg)) return null
+  const [a, b] = PCDT_FALCIFORME.profilaxia.penicilinaV
+  return idadeMeses < 36 || pesoKg <= 15 ? { mg: a.mg, criterio: a.criterio } : { mg: b.mg, criterio: b.criterio }
+}
+
+/** Antibiótico na febre pelo PCDT (p. 19): penicilina cristalina U/dia e ceftriaxona mg/dia (teto 4 g). */
+export function antibioticoFebre(pesoKg: number) {
+  if (!pos(pesoKg)) return null
+  const f = PCDT_FALCIFORME.febre
+  const ceft: [number, number] = [Math.min(f.ceftriaxonaMgKgDia[0] * pesoKg, f.ceftriaxonaMaxGDia * 1000), Math.min(f.ceftriaxonaMgKgDia[1] * pesoKg, f.ceftriaxonaMaxGDia * 1000)]
+  return { penicilinaUDia: [f.penicilinaCristalinaUKgDia[0] * pesoKg, f.penicilinaCristalinaUKgDia[1] * pesoKg] as [number, number], ceftriaxonaMgDia: ceft, ceftriaxonaNoTeto: f.ceftriaxonaMgKgDia[1] * pesoKg > f.ceftriaxonaMaxGDia * 1000 }
+}
+
+/** Sequestro esplênico pelo PCDT (p. 22): expansor, SF alternativo e CH em mL. */
+export function sequestroPcdt(pesoKg: number) {
+  if (!pos(pesoKg)) return null
+  const s = PCDT_FALCIFORME.sequestro
+  return { expansorMl: [s.expansorMlKg[0] * pesoKg, s.expansorMlKg[1] * pesoKg] as [number, number], sfMl: [s.sfMlKg[0] * pesoKg, s.sfMlKg[1] * pesoKg] as [number, number], chMl: s.chMlKg * pesoKg }
+}
+
+export const DIFERENCAS_PCDT_FALCIFORME: string[] = [
+  'Sequestro esplênico: o livro define pela queda de Hb ≥ 2 g/dL com baço aumentado e manda cristaloide e CH evitando Hb > 8; o PCDT fixa expansor 10–15 mL/kg (ou SF 40–100 mL/kg em 2 h) e CH 10 mL/kg para Hb 6–7 g/dL.',
+  'STA: o livro põe O₂ para SpO₂ > 94% e exsanguineotransfusão na grave; o PCDT põe UTI com SpO₂ < 93% e transfusão simples quando a necessidade de O₂ cresce para manter saturação > 95%.',
+  'Febre: o livro cita ceftriaxona, cefotaxima ou cefuroxima sem dose; o PCDT traz penicilina cristalina 100–250 mil U/kg/dia ou ceftriaxona 50–75 mg/kg/dia (máx. 4 g).',
+  'Hidroxiureia e profilaxia com penicilina não estão no capítulo do livro (são de ambulatório); entram aqui pelo PCDT para conferência na urgência.',
+]
 
 export type Intensidade = 'leve' | 'moderada' | 'intensa'
 

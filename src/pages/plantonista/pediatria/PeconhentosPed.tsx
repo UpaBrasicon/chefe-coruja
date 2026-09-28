@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
 import {
-  ANIMAIS, NOTAS_PECONHENTOS, TABELA_SORO, expansaoEscorpiaoMl, fichaPeconhentosPed, prednisonaLoxoscelesMgDia, volumeSaarMl, type Animal, type Gravidade,
+  ANIMAIS, DIFERENCAS_MS_2026, MS_ARANHAS_TABELA, NOTAS_PECONHENTOS, PCDT_ESCORPIAO, TABELA_SORO, expansaoEscorpiaoMl, fichaPeconhentosPed, prednisonaLoxoscelesMgDia, volumeSaarMl,
+  type Animal, type Gravidade,
 } from '@/clinico/pediatria/peconhentosPed'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
@@ -60,6 +61,33 @@ export function PeconhentosPed() {
           <LinhaLivro nome="Expansão com cristaloide" conta={<strong>{br(expansaoEscorpiaoMl(p.peso), 0)} mL</strong>} texto="expansão de 5 mL/kg e observar a volemia; balanço hídrico rigoroso" pagina="p. 211" />
         </Bloco>
       )}
+
+      {animal === 'escorpiao' && (
+        <Bloco titulo="PCDT dos Acidentes Escorpiônicos — MS 2026" descricao={`Fonte do MS decidida pelo RT em 28/09/2026 (${PCDT_ESCORPIAO.pagina}).`}>
+          <LinhaLivro
+            nome={`Escorpião ${grav} — PCDT 2026`}
+            conta={PCDT_ESCORPIAO.ampolas[grav] ? <strong>{faixaBr(PCDT_ESCORPIAO.ampolas[grav]!, 0)} frasco(s)-ampola</strong> : <strong>sem soro</strong>}
+            texto={`${PCDT_ESCORPIAO.soro}; máximo ${PCDT_ESCORPIAO.maximo}, independentemente da idade. Via: ${PCDT_ESCORPIAO.via}.`}
+            pagina="Quadro 4, p. 17"
+          />
+          <p className="text-muted-foreground">Observação: sem clínica {PCDT_ESCORPIAO.observacao.semClinica}; leve {PCDT_ESCORPIAO.observacao.leve}; com soro {PCDT_ESCORPIAO.observacao.comSoro} (Quadro 3, p. 9; p. 15). {PCDT_ESCORPIAO.risco} (p. 10).</p>
+        </Bloco>
+      )}
+      {animal !== 'escorpiao' && (
+        <Bloco titulo="Portal do Ministério da Saúde — aranhas" descricao="Tabela adaptada do Manual 2001 e do Ofício Circular 2/2014, consultada em 28/09/2026.">
+          {animal === 'loxosceles' && MS_ARANHAS_TABELA.loxosceles.map((l) => (
+            <p key={l.forma}><strong>{l.forma}</strong> ({l.clinica}): {l.ampolas ? `${faixaBr(l.ampolas, 0)} ampola(s) de ${MS_ARANHAS_TABELA.loxoscelesSoro}` : 'sem soro'}.</p>
+          ))}
+          {animal === 'phoneutria' && MS_ARANHAS_TABELA.phoneutria.map((l) => (
+            <p key={l.forma}><strong>{l.forma}</strong> ({l.clinica}): {l.ampolas ? `${faixaBr(l.ampolas, 0)} ampola(s) de ${MS_ARANHAS_TABELA.phoneutriaSoro}` : 'sem soro'}.</p>
+          ))}
+          {animal === 'latrodectus' && <p className="text-atencao">{MS_ARANHAS_TABELA.latrodectus}.</p>}
+        </Bloco>
+      )}
+
+      <Bloco titulo="Livro do ICr × MS (PCDT 2026 e portal)">
+        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_MS_2026.map((d) => <li key={d}>{d}</li>)}</ul>
+      </Bloco>
 
       <Bloco titulo="Notas do capítulo">
         {NOTAS_PECONHENTOS.map((n) => (

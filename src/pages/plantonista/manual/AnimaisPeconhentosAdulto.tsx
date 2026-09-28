@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ACIDENTES, NEOSTIGMINA, PEDIATRICO_CITADO, PRE_MEDICACAO, SORO_ADMINISTRACAO, fichaPeconhentosAdulto, neostigmina, preMedicacao,
+  ACIDENTES, MS_2026_PECONHENTOS, NEOSTIGMINA, PEDIATRICO_CITADO, PRE_MEDICACAO, SORO_ADMINISTRACAO, fichaPeconhentosAdulto, neostigmina, preMedicacao,
   soroPorGravidade, type Faixa, type Gravidade,
 } from '@/clinico/adulto/peconhentos'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -55,6 +55,23 @@ export function AnimaisPeconhentosAdulto() {
           ))}
         </ul>
         <p className="text-sm text-muted-foreground">{SORO_ADMINISTRACAO.texto} ({SORO_ADMINISTRACAO.pagina})</p>
+      </Bloco>
+
+      <Bloco titulo="Ministério da Saúde — PCDT dos acidentes escorpiônicos (2026) e portal das aranhas" descricao="Decisão do responsável técnico (28/09/2026): os PCDTs do MS são a fonte dos peçonhentos. As serpentes seguem o manual até o PCDT completo dos acidentes ofídicos ser lido (o resumo não traz ampolas).">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">MS</th><th className="pb-2">Manual do HC</th></tr></thead>
+            <tbody>
+              {MS_2026_PECONHENTOS.map((d) => (
+                <tr key={d.tema} className="border-t">
+                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
+                  <td className="pr-3 py-2">{d.ms} <span className="text-muted-foreground">({d.pagina})</span></td>
+                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Bloco>
 
       <Bloco titulo="Pré-medicação antes do soro (p. 1350)" descricao={`${PRE_MEDICACAO.adrenalinaTexto}. Demais: ${PRE_MEDICACAO.momento}.`}>

@@ -1,4 +1,5 @@
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Acidentes por animais peçonhentos — cap. 101 do Manual de Medicina de
 // Emergência do HCFMUSP (3ª ed., 2022), p. 1349–1359. A gravidade é escolhida
@@ -7,12 +8,50 @@ import { fichaAdulto } from './fonte.ts'
 // pré-medicação e a neostigmina por peso (ADR 0007). Os valores pediátricos do
 // capítulo (neostigmina mg/kg e soro no escorpião moderado < 7 anos) não são
 // implementados.
+//
+// Versão .1 de 28/09/2026 (decisão do RT: PCDTs do MS de 2026 como fonte dos
+// peçonhentos): PCDT dos Acidentes Escorpiônicos (lido) — 3 ampolas no
+// moderado e 6 no grave, máximo 6, em qualquer idade; aranhas pelo portal do MS
+// (Latrodectus sem soro). O PCDT dos Acidentes Ofídicos (Portaria SECTICS/MS
+// nº 83, de 7/10/2025) existe e é citado, mas só o resumo pôde ser lido e ele
+// não traz o número de ampolas: as serpentes ficam com o livro até o RT abrir
+// o PCDT completo.
 
-export const fichaPeconhentosAdulto = fichaAdulto(
-  'adulto-animais-peconhentos',
-  'Acidentes por animais peçonhentos — adulto',
-  'cap. 101 Acidentes por animais peçonhentos, p. 1349–1359 (Tabelas 1–3)',
-)
+export const PCDT_ESCORPIAO_2026_ADULTO: Fonte = {
+  citacao: 'Ministério da Saúde. Protocolo Clínico e Diretrizes Terapêuticas dos Acidentes Escorpiônicos. Brasília: MS/CONITEC; 2026. Quadro 3 (p. 9), p. 15–17 (Quadro 4).',
+  url: 'https://www.gov.br/conitec/pt-br/midias/protocolos/2026/publicacao-ms/pcdt-acidentes-escorpionicos',
+}
+
+export const PCDT_OFIDICOS_2025: Fonte = {
+  citacao: 'Ministério da Saúde. Protocolo Clínico e Diretrizes Terapêuticas dos Acidentes Ofídicos (Portaria SECTICS/MS nº 83, de 7 de outubro de 2025; publicado em julho de 2026). Versão resumida lida (5 p.): tipos de soro, velocidade de infusão 8–12 mL/min, não fracionar; número de ampolas por gravidade não consta do resumo.',
+  url: 'https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/a/animais-peconhentos/publicacoes/protocolo-clinico-e-diretrizes-terapeuticas-dos-acidentes-ofidicos',
+}
+
+export const MS_ARANHAS_ADULTO: Fonte = {
+  citacao: 'Ministério da Saúde. Acidentes por aranhas — tratamento (portal Saúde de A a Z; tabela adaptada do Manual 2001 e do Ofício Circular nº 2/2014-CGDT/DEVIT/SVS/MS). Consultado em 28/09/2026.',
+  url: 'https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/a/animais-peconhentos/acidentes-por-aranhas/tratamento',
+}
+
+const PAG_PECONHENTOS = 'cap. 101 Acidentes por animais peçonhentos, p. 1349–1359 (Tabelas 1–3)'
+
+export const fichaPeconhentosAdulto: Ficha = {
+  ...fichaAdulto('adulto-animais-peconhentos', 'Acidentes por animais peçonhentos — adulto', PAG_PECONHENTOS),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_PECONHENTOS), PCDT_ESCORPIAO_2026_ADULTO, MS_ARANHAS_ADULTO, PCDT_OFIDICOS_2025],
+  revisadoEm: '28/09/2026 (PCDT escorpiônicos 2026 e portal do MS conferidos; serpentes seguem o livro até o PCDT completo ser lido)',
+}
+
+/** O que o MS (PCDT 2026 e portal) escreve, ao lado do manual. */
+export const MS_2026_PECONHENTOS: { tema: string; ms: string; livro: string; pagina: string }[] = [
+  { tema: 'Escorpião moderado', ms: '3 frascos-ampolas de SAEsc (ou SAA), imediatamente, independentemente da idade', livro: 'sem soro no adulto; 2–3 ampolas só em < 7 anos (p. 1356)', pagina: 'PCDT 2026, Quadro 4, p. 17' },
+  { tema: 'Escorpião grave', ms: '6 frascos-ampolas; não administrar mais de 6', livro: '4–6 ampolas (p. 1356)', pagina: 'PCDT 2026, Quadro 4, p. 17' },
+  { tema: 'Escorpião: via e diluição', ms: 'IV diluído em SF 0,9% ou SG 5% (1:2 a 1:5, ou 1:1) em 10–15 min, ou bolus a 8–12 mL/min; intraóssea sem acesso venoso', livro: 'EV em 10–30 min sob monitorização (p. 1353)', pagina: 'PCDT 2026, p. 17' },
+  { tema: 'Escorpião: observação', ms: 'sem clínica 4 h; leve 6–12 h; com soro no mínimo 24 h (grave em CTI); persistindo, reclassificar e complementar', livro: 'leve 4–6 h; moderado 24–48 h (p. 1355–1356)', pagina: 'PCDT 2026, Quadro 3, p. 9; p. 15' },
+  { tema: 'Loxosceles', ms: 'cutânea leve: sem soro; cutânea moderada (< 3 cm): 5; cutânea grave (> 3 cm): 10; cutâneo-hemolítica: 10 (SALox ou SAAr)', livro: 'moderado 5; grave 5 (cutaneovisceral 10) (Tabela 3)', pagina: 'portal MS, tabela' },
+  { tema: 'Phoneutria', ms: 'leve: sem soro; moderado 2–4; grave 5–10 (SAAr)', livro: 'igual (Tabela 3)', pagina: 'portal MS, tabela' },
+  { tema: 'Latrodectus', ms: 'não há soro disponível: analgésicos, benzodiazepínicos, gluconato de cálcio e clorpromazina; internação ≥ 24 h', livro: 'soro antiaracnídico 1–2 ampolas IM (Tabela 3)', pagina: 'portal MS, tabela' },
+  { tema: 'Serpentes', ms: 'PCDT de acidentes ofídicos (Portaria 83/2025): cinco soros (SABR, SABL, SABC, SAC, SAELA), infusão a 8–12 mL/min sem fracionar a dose; ampolas por gravidade só no PCDT completo, não lido', livro: 'Tabelas 1–2 (botrópico 2–4/4–8/8–12; crotálico 5/10/20; laquético 12–20; elapídico 5–10)', pagina: 'PCDT resumido, p. 2–3' },
+]
 
 export type Faixa = [number, number]
 export type Gravidade = 'leve' | 'moderado' | 'grave'

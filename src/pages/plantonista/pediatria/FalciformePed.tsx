@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
 import {
-  CONDUTA_FIGURA1, DOSES_CRISE_ALGICA, INTERNACAO_FEBRE, REFERENCIAS_FALCIFORME, cetaminaMgH, fichaFalciformePed, intensidadeDor, paracetamolTetoDiaMg, quedaHb,
+  CONDUTA_FIGURA1, DIFERENCAS_PCDT_FALCIFORME, DOSES_CRISE_ALGICA, INTERNACAO_FEBRE, PCDT_FALCIFORME, REFERENCIAS_FALCIFORME, antibioticoFebre, benzatinaProfilaxia, cetaminaMgH,
+  fichaFalciformePed, hidroxiureiaMgDia, intensidadeDor, paracetamolTetoDiaMg, penicilinaVProfilaxia, quedaHb, sequestroPcdt,
 } from '@/clinico/pediatria/falciformePed'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -21,6 +22,11 @@ export function FalciformePed() {
   const cet = calc ? cetaminaMgH(p.peso) : null
   const teto = calc ? paracetamolTetoDiaMg(p.peso) : null
   const q = quedaHb(hb.basal, hb.atual)
+  const hu = calc ? hidroxiureiaMgDia(p.peso) : null
+  const benz = calc ? benzatinaProfilaxia(p.peso) : null
+  const penV = calc ? penicilinaVProfilaxia(p.anos * 12 + p.meses, p.peso) : null
+  const atb = calc ? antibioticoFebre(p.peso) : null
+  const seq = calc ? sequestroPcdt(p.peso) : null
 
   return (
     <ToolLayout
@@ -73,6 +79,24 @@ export function FalciformePed() {
       <Bloco titulo="Complicações agudas">
         {REFERENCIAS_FALCIFORME.map((r) => <LinhaReferencia key={r.rotulo} rotulo={r.rotulo} texto={r.texto} pagina={`cap. 63, ${r.pagina}`} />)}
         <Nota>Volumes de concentrado de hemácias: ferramenta de hemocomponentes (cap. 67).</Nota>
+      </Bloco>
+
+      <Bloco titulo="PCDT da Doença Falciforme — Ministério da Saúde, 2024" descricao="Portaria Conjunta SAES/SECTICS nº 16, de 1/11/2024 (substitui a de 2018). Páginas do PDF. Decisão do RT em 28/09/2026: fonte ao lado do livro.">
+        {calc && seq && (
+          <LinhaLivro nome="Sequestro esplênico" conta={<>expansor <strong>{faixaBr(seq.expansorMl, 0)} mL</strong> · SF {faixaBr(seq.sfMl, 0)} mL em 2 h · CH <strong>{br(seq.chMl, 0)} mL</strong></>} texto={PCDT_FALCIFORME.sequestro.texto} pagina={PCDT_FALCIFORME.sequestro.pagina} />
+        )}
+        <LinhaReferencia rotulo="Síndrome torácica aguda" texto={PCDT_FALCIFORME.sta.texto} pagina={PCDT_FALCIFORME.sta.pagina} />
+        {calc && atb && (
+          <LinhaLivro nome="Antibiótico na febre" conta={<>penicilina cristalina <strong>{faixaBr(atb.penicilinaUDia, 0)} U/dia</strong> (6/6 h) · ceftriaxona <strong>{faixaBr(atb.ceftriaxonaMgDia, 0)} mg/dia</strong> (12/12 h){atb.ceftriaxonaNoTeto && ', no teto de 4 g'}</>} texto={PCDT_FALCIFORME.febre.texto} pagina={PCDT_FALCIFORME.febre.pagina} nota={PCDT_FALCIFORME.febre.alerta} />
+        )}
+        <LinhaReferencia rotulo="Transfusão simples — indicações" texto={`${PCDT_FALCIFORME.transfusaoSimples.indicacoes.join('; ')}. ${PCDT_FALCIFORME.transfusaoSimples.formula}.`} pagina={PCDT_FALCIFORME.transfusaoSimples.pagina} />
+        {calc && hu && (
+          <LinhaLivro nome="Hidroxiureia (ambulatório, para conferência)" conta={<>inicial <strong>{br(hu.inicial, 0)} mg/dia</strong> · +{br(hu.incremento, 0)} mg/dia a cada {PCDT_FALCIFORME.hidroxiureia.aCadaSemanas} semanas · máximo {br(hu.maximo, 0)} mg/dia{hu.comprimido100 && ' · comprimido de 100 mg (≤ 25 kg)'}</>} texto={`${PCDT_FALCIFORME.hidroxiureia.criterios}. Exclusão: ${PCDT_FALCIFORME.hidroxiureia.exclusao}.`} pagina={PCDT_FALCIFORME.hidroxiureia.pagina} />
+        )}
+        {calc && penV && benz && (
+          <LinhaLivro nome="Profilaxia com penicilina (3 meses a 5 anos)" conta={<>penicilina V <strong>{br(penV.mg, 0)} mg 12/12 h</strong> ({penV.criterio}) · ou benzatina <strong>{benz.ui.toLocaleString('pt-BR')} UI</strong> {PCDT_FALCIFORME.profilaxia.benzatinaIntervalo} ({benz.criterio})</>} texto={`Alergia à penicilina: ${PCDT_FALCIFORME.profilaxia.alergia}.`} pagina={PCDT_FALCIFORME.profilaxia.pagina} />
+        )}
+        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_PCDT_FALCIFORME.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
