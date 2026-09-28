@@ -7,7 +7,7 @@ import { ROTA_DA_FICHA } from './indice.ts'
 import { ESCORES } from './escores/index.ts'
 import { fichaDengue, grupoDengue, hidratacaoAdulto } from './dengue.ts'
 import { fichaAcessoVenoso, recomendarAcesso } from './acessoVenoso.ts'
-import { avaliarHiperpotassemia, faixaPotassio, fichaHiperpotassemia } from './hiperpotassemia.ts'
+import { DIVERGENCIA_MANUAL_HC, avaliarHiperpotassemia, faixaPotassio, fichaHiperpotassemia } from './hiperpotassemia.ts'
 
 // ---- casco ----
 const base: Ficha = { id: 'x', titulo: 'x', versao: '1', publico: 'ambos', fontes: [{ citacao: 'adulto' }], revisadoEm: '' }
@@ -120,4 +120,11 @@ test('hiperpotassemia: criança recebe dose por peso da fonte e emergência acim
 })
 test('hiperpotassemia: sem potássio não calcula', () => {
   assert.equal(avaliarHiperpotassemia({ ...hk, potassio: NaN }), null)
+})
+
+test('hiperpotassemia: mantém a referência de 2026 e mostra o manual HC como divergência com página', () => {
+  assert.equal(faixaPotassio(5.2), 'Leve')
+  assert.match(DIVERGENCIA_MANUAL_HC.classificacao, /5,5/)
+  assert.ok(DIVERGENCIA_MANUAL_HC.itens.every((i) => /^p\. \d/.test(i.pagina)))
+  assert.ok(fichaHiperpotassemia.fontes.some((f) => /HCFMUSP/.test(f.citacao)))
 })

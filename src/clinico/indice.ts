@@ -77,4 +77,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'ped-hipoglicemia': '/plantonista/pediatria/hipoglicemia-ped',
   'ped-acidobase': '/plantonista/pediatria/acidobase-ped',
   'ped-queimadura': '/plantonista/pediatria/queimadura-ped',
+  'adulto-abstinencia-alcoolica': '/plantonista/protocolos/abstinencia',
+  'adulto-profilaxia-tev': '/plantonista/calculadoras/profilaxia-tev',
+  'adulto-profilaxia-ulcera-estresse': '/plantonista/protocolos/hda-lamg',
 }

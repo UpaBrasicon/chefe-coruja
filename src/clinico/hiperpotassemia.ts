@@ -9,13 +9,14 @@ import type { Ficha } from './ficha.ts'
 export const fichaHiperpotassemia: Ficha = {
   id: 'hiperpotassemia',
   titulo: 'Hiperpotassemia — conduta por nível e por ECG',
-  versao: '2026-09-27.1',
+  versao: '2026-09-27.2',
   publico: 'ambos',
   fontes: [
     { citacao: 'Geldermann N, et al. Acute hyperkalaemia in emergency care: evidence-based approaches. Emerg Med J. 2026.', pediatrica: true },
     { citacao: 'Arzayus-Patiño L, et al. Inhaled beta-2 agonists in hyperkalaemia. PLoS One. 2025.' },
+    { citacao: 'Divergência mostrada na tela: Brandão Neto RA, et al. (eds.). Manual de Medicina de Emergência — HCFMUSP. 3ª ed. Manole; 2022. cap. 67, p. 907–917.' },
   ],
-  revisadoEm: '27/09/2026 (porte da versão revisada de 30/08/2026; pendente de revisão clínica)',
+  revisadoEm: '27/09/2026 — decisão do RT: mantida a referência mais recente (2026); o manual do HCFMUSP (2022) aparece como divergência',
 }
 
 export type Ecg = 'sem_alteracao' | 'alterado' | 'nao_feito'
@@ -130,3 +131,25 @@ export function avaliarHiperpotassemia(e: EntradaHiperK): ResultadoHiperK | null
 
   return { faixa, calcio, gravidade, emergenciaPediatrica, blocos, alertas }
 }
+
+// Decisão do RT (27/09/2026): a tela segue a referência mais recente (Geldermann
+// 2026); o manual do HCFMUSP (2022, cap. 67) aparece como divergência, com
+// página. Valores conferidos no PDF do livro.
+export const DIVERGENCIA_MANUAL_HC = {
+  fonte: 'Manual de Medicina de Emergência — HCFMUSP, 3ª ed., 2022, cap. 67',
+  classificacao: 'Hipercalemia a partir de 5,5 mEq/L (p. 907); leve 5,5–5,9, moderada 6–6,4, grave ≥ 6,5 (p. 908, pelo European Resuscitation Council).',
+  itens: [
+    { item: 'Cálcio', texto: 'Gluconato ou cloreto de cálcio 10%: 10 mL em 100 mL de SG 5%, IV em 3–5 min (o cloreto tem 3× mais cálcio: 13,6 × 4,6 mEq em 10 mL)', pagina: 'p. 915–916' },
+    { item: 'Insulina + glicose', texto: 'Insulina regular 10 UI IV + glicose 10% 500 mL IV em 30–60 min', pagina: 'p. 915' },
+    { item: 'β2-agonista', texto: 'Salbutamol 5 mg/mL: 10–20 mg inalatório + SF 0,9% 5 mL em 10 min', pagina: 'p. 915' },
+    { item: 'Bicarbonato', texto: 'NaHCO3 8,4% 150 mL + SG 5% 1.000 mL IV em 2–4 h (eficácia limitada)', pagina: 'p. 916' },
+    { item: 'Diurético', texto: 'Furosemida 40 mg IV; efeito caliurético questionável no curto prazo, não como medida isolada', pagina: 'p. 916' },
+    { item: 'Resina', texto: 'Poliestirenossulfonato de CÁLCIO (Sorcal®) 30–60 g + manitol 100 mL VO (ou retal); risco de necrose intestinal', pagina: 'p. 916' },
+  ],
+  diferencas: [
+    'Início da hipercalemia: 5,5 no manual × 5,0 nesta tela.',
+    'O manual quantifica as doses do adulto; a referência desta tela não quantifica.',
+    'O manual usa a resina de cálcio (Sorcal); esta tela, pela referência de 2026, trata a resina de sódio como fora de linha.',
+    'O manual não restringe o bicarbonato à acidose metabólica.',
+  ],
+} as const

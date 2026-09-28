@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { avaliarHiperpotassemia, fichaHiperpotassemia, type Ecg } from '@/clinico/hiperpotassemia'
+import { DIVERGENCIA_MANUAL_HC, avaliarHiperpotassemia, fichaHiperpotassemia, type Ecg } from '@/clinico/hiperpotassemia'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
@@ -114,6 +114,27 @@ export function Hiperpotassemia() {
           ))}
         </>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Divergência: {DIVERGENCIA_MANUAL_HC.fonte}</CardTitle>
+          <CardDescription>
+            Esta tela segue a referência mais recente (decisão do responsável técnico). O manual do HCFMUSP traz outra classificação e quantifica as doses.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2 text-sm">
+          <p>{DIVERGENCIA_MANUAL_HC.classificacao}</p>
+          {DIVERGENCIA_MANUAL_HC.itens.map((l) => (
+            <div key={l.item} className="rounded-lg border px-3 py-2">
+              <span className="font-medium">{l.item}: </span>
+              <span className="text-muted-foreground">{l.texto} ({l.pagina})</span>
+            </div>
+          ))}
+          <ul className="list-disc pl-5 text-muted-foreground">
+            {DIVERGENCIA_MANUAL_HC.diferencas.map((d) => <li key={d}>{d}</li>)}
+          </ul>
+        </CardContent>
+      </Card>
     </ToolLayout>
   )
 }
