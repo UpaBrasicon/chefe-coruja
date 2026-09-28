@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaP4, type DoseLivro } from './fonteP4.ts'
 import type { Faixa } from './fonteP2.ts'
 import { porPeso, positivoP5, type ItemLivro } from './fonteP5.ts'
@@ -11,7 +12,42 @@ import { porPeso, positivoP5, type ItemLivro } from './fonteP5.ts'
 // "< 2 meses" (enoxaparina) e "< 1 ano" (HNF) são tratados como valores que
 // incluem o RN (convenção do lote P4 para faixas "< 2 meses").
 
-export const fichaHemostasiaTromboPed = fichaP4('ped-hemostasia-trombose', 'Hemofilia, von Willebrand, PTI e anticoagulação — criança', 'cap. 64, p. 675–686; cap. 65, p. 687–692; cap. 66, p. 720')
+// Versão .1 de 28/09/2026: tratamento do TEV pediátrico pela ASH/ISTH 2025
+// (resumo oficial das mudanças e resumo do artigo lidos) ao lado do cap. 65.
+// A diretriz não traz dose pediátrica de DOAC no resumo: não é calculada.
+
+export const ASH_ISTH_2025_TEV: Fonte = {
+  citacao: 'Monagle P, Azzam M, Bercovitz R, et al. American Society of Hematology/International Society on Thrombosis and Haemostasis 2025 updated guidelines for treatment of venous thromboembolism in pediatric patients. Blood Adv. 2025;9(10):2587–2636 (resumo do artigo e "Summary of changes" oficial da ASH lidos; texto integral não aberto).',
+  url: 'https://doi.org/10.1182/bloodadvances.2024015328',
+  pediatrica: true,
+}
+
+const baseHemostasia = fichaP4('ped-hemostasia-trombose', 'Hemofilia, von Willebrand, PTI e anticoagulação — criança', 'cap. 64, p. 675–686; cap. 65, p. 687–692; cap. 66, p. 720')
+
+export const fichaHemostasiaTromboPed: Ficha = {
+  ...baseHemostasia,
+  versao: '2026-09-28.1',
+  fontes: [...baseHemostasia.fontes, ASH_ISTH_2025_TEV],
+  revisadoEm: '28/09/2026 (ASH/ISTH 2025 conferida pelos resumos; livro do ICr mantido como base)',
+}
+
+export const ASH_ISTH_ITENS: { numero: string; populacao: string; texto: string; mudanca: string }[] = [
+  { numero: '17–20 (novas)', populacao: 'TEV pediátrico', texto: 'Sugere DOAC (rivaroxabana ou dabigatrana) em vez do padrão (HBPM, HNF, antagonista da vitamina K, fondaparinux); qualquer um dos dois, conforme população e disponibilidade', mudanca: 'novo em 2025' },
+  { numero: '1', populacao: 'TVP ou TEP sintomáticos', texto: 'Sugere anticoagular', mudanca: 'força rebaixada de forte para condicional' },
+  { numero: '3', populacao: 'TEV provocado selecionado (sem TEP, recorrência, trombo oclusivo persistente em 6 semanas, câncer, anticorpo antifosfolípide ou trombofilia maior, ou fator de risco persistente)', texto: 'Sugere 6 semanas em vez de 3 meses', mudanca: 'era "≤ 3 meses" em 2018' },
+  { numero: '4', populacao: 'TEV não provocado', texto: 'Sugere 6 a 12 meses em vez de anticoagulação indefinida', mudanca: 'comparador mudou' },
+  { numero: '5–6', populacao: 'Trombose de seio venoso cerebral, com ou sem hemorragia por congestão', texto: 'Sugere anticoagular; anticoagulação isolada em vez de trombólise', mudanca: 'força rebaixada sem hemorragia' },
+  { numero: '13–14', populacao: 'TVP proximal e TEP com disfunção de VD sem instabilidade', texto: 'Anticoagulação isolada em vez de trombólise seguida de anticoagulação', mudanca: 'direção reescrita, mesma conduta' },
+  { numero: '14', populacao: 'TEP com instabilidade hemodinâmica', texto: 'Sugere trombólise seguida de anticoagulação', mudanca: 'sem mudança' },
+  { numero: '7–10', populacao: 'Trombo atrial direito e trombose de veia renal no neonato', texto: 'Anticoagular no trombo atrial de alto risco com baixo risco de sangramento; sem alto risco, não anticoagular; veia renal: anticoagular, trombólise só se ameaça à vida', mudanca: 'recomendações desdobradas' },
+  { numero: '16', populacao: 'Trombose sintomática de cateter central', texto: 'Retirada imediata ou tardia do cateter (sem acesso necessário ou cateter não funcionante)', mudanca: 'era "tardia" em 2018' },
+]
+
+export const DIFERENCAS_TEV_2025: string[] = [
+  'O cap. 65 do livro (p. 690–691) traz HNF, enoxaparina, varfarina e rt-PA; a ASH/ISTH 2025 sugere rivaroxabana ou dabigatrana em vez desses no TEV pediátrico — as doses pediátricas de DOAC não constam do resumo lido e não são calculadas aqui.',
+  'Duração: o livro põe no mínimo 3 meses na trombose de seio venoso e no TEP (p. 690–691); a ASH/ISTH 2025 sugere 6 semanas no TEV provocado selecionado e 6–12 meses no não provocado.',
+  'Trombólise: o livro traz rt-PA sistêmico 0,1–0,6 mg/kg/h por 6 h (CHEST); a ASH/ISTH reserva a trombólise ao TEP com instabilidade hemodinâmica e à trombose de veia renal que ameaça a vida.',
+]
 
 // ------------------------------------------------------------ hemofilia (Quadro 2, p. 679–680)
 

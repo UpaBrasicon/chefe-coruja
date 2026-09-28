@@ -1,17 +1,54 @@
 import { completo, escolha, type Escore } from '../escore.ts'
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Paciente agitado (cap. 76, p. 1005–1016) e agitação no delirium (cap. 8,
 // p. 130–138) do Manual de Medicina de Emergência do HCFMUSP (3ª ed., 2022).
 // Só adulto: o trecho de crianças (p. 1014–1015) é qualitativo e sem dose, e
 // não entra. A ferramenta mostra o que o livro traz e faz as contas por peso;
 // a escolha da droga é do médico (ADR 0007).
+//
+// Versão .1 de 28/09/2026: política clínica da ACEP 2024 sobre agitação grave
+// (texto integral lido) ao lado do manual — droperidol ou antipsicótico atípico
+// + midazolam (nível B); haloperidol ± lorazepam; cetamina só por segurança
+// (consenso); as doses são as dos ensaios que a política resume.
 
-export const fichaAgitacaoAdulto = fichaAdulto(
-  'adulto-agitacao',
-  'Paciente agitado, delirium e síndrome neuroléptica maligna — adulto',
-  'cap. 76 O paciente agitado, p. 1005–1016 (Tabelas 3–5); cap. 8 Delirium, p. 136–138 (Tabela 7)',
-)
+export const ACEP_AGITACAO_2024: Fonte = {
+  citacao: 'American College of Emergency Physicians. Clinical Policy: Critical Issues in the Evaluation and Management of Adult Out-of-Hospital or Emergency Department Patients Presenting With Severe Agitation. Ann Emerg Med. 2024;83(1):e1–e30. Recomendações p. e4; doses dos ensaios p. e5–e7 e Tabela 2 (p. e9–e10); cetamina p. e7.',
+  url: 'https://doi.org/10.1016/j.annemergmed.2023.09.010',
+}
+
+const PAG_AGITACAO = 'cap. 76 O paciente agitado, p. 1005–1016 (Tabelas 3–5); cap. 8 Delirium, p. 136–138 (Tabela 7)'
+
+export const fichaAgitacaoAdulto: Ficha = {
+  ...fichaAdulto('adulto-agitacao', 'Paciente agitado, delirium e síndrome neuroléptica maligna — adulto', PAG_AGITACAO),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_AGITACAO), ACEP_AGITACAO_2024],
+  revisadoEm: '28/09/2026 (ACEP 2024 lida no texto; manual mantido como base)',
+}
+
+export const ACEP_2024_RECOMENDACOES: { nivel: string; texto: string }[] = [
+  { nivel: 'A', texto: 'Nenhuma.' },
+  { nivel: 'B', texto: 'Para tratamento mais rápido e eficaz da agitação grave no PS, usar droperidol + midazolam ou um antipsicótico atípico + midazolam. Se for um agente só, droperidol ou antipsicótico atípico, pelo perfil de efeitos adversos do midazolam isolado. Para tratamento eficaz, os agentes acima ou haloperidol isolado ou com lorazepam.' },
+  { nivel: 'C (consenso)', texto: 'Quando a segurança do paciente, de terceiros ou da equipe está em risco, considerar cetamina IV ou IM para tratar rapidamente a agitação grave no PS. Sem recomendação para agentes específicos fora do hospital nem acima de 65 anos.' },
+]
+
+/** Doses dos ensaios que a política resume (p. e5–e7, Tabela 2) — não são doses recomendadas pela ACEP. */
+export const DOSES_ENSAIOS_ACEP: { droga: string; dose: string; fonte: string }[] = [
+  { droga: 'Droperidol', dose: '5 mg IV ou IM (2,5 mg IV se < 50 kg em Richards); repetir 5 mg em 5 min se preciso (Taylor)', fonte: 'Chan 2013/2021, Taylor, Martel 2021, Richards' },
+  { droga: 'Olanzapina', dose: '5 mg IV (Chan 2013) ou 5–10 mg IM (Chan 2021, Klein) ou 10 mg IV (Taylor)', fonte: 'Chan, Taylor, Klein' },
+  { droga: 'Midazolam', dose: '2,5 mg IV se < 50 kg ou 5 mg se ≥ 50 kg, incrementos até 20 mg (Chan); 5 mg IM (Nobay, Klein)', fonte: 'Chan 2013/2021, Nobay, Klein' },
+  { droga: 'Haloperidol', dose: '5 mg IM (Nobay, Chan 2021) ou 5–10 mg IM (Klein)', fonte: 'Nobay, Klein' },
+  { droga: 'Lorazepam', dose: '2 mg IM (Nobay, Martel); 2 mg IV se < 50 kg ou 4 mg se > 50 kg (Richards)', fonte: 'Nobay, Martel, Richards' },
+  { droga: 'Cetamina', dose: 'Registro pré-hospitalar com dose mediana de 3,7 mg/kg IM/IV; laringoespasmo 1–4%, hipersalivação até 20%, depressão respiratória < 2% a > 20%, intubação 0–62% conforme o serviço', fonte: 'p. e7' },
+]
+
+export const DIFERENCAS_AGITACAO_2024: string[] = [
+  'Grave: a Tabela 4 do manual põe quetamina 5 mg/kg IM como 1ª escolha (p. 1011); a ACEP 2024 só a considera por consenso quando há risco à segurança, e prefere droperidol ou antipsicótico atípico + midazolam (nível B).',
+  'O manual traz haloperidol + prometazina e midazolam + haloperidol (p. 1011); a ACEP cita haloperidol isolado ou com lorazepam como alternativa eficaz (nível B), sem prometazina.',
+  'Midazolam isolado: a ACEP aponta sedação mais rápida, porém mais depressão respiratória e reagitação (p. e6–e7); o manual o usa isolado na moderada (2–5 mg IM).',
+  'Droperidol não consta do manual; a disponibilidade no Brasil não é tratada por nenhuma das duas fontes.',
+]
 
 export type Faixa = [number, number]
 

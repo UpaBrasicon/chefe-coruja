@@ -160,11 +160,33 @@ export function tratamentoTetanoPorPeso(pesoKg: number) {
 
 // ── Raiva (Anexo 4, p. 1497) ────────────────────────────────────────────────
 
-export const fichaRaivaAdulto = fichaAdulto(
-  'adulto-raiva-pos-exposicao',
-  'Raiva — profilaxia pós-exposição (adulto)',
-  'Anexo 4 Profilaxia da raiva humana, p. 1497 (fluxograma)',
-)
+// Raiva, versão .1 de 28/09/2026: Notas Técnicas do MS nº 8/2022 (protocolo,
+// PDF lido), nº 134/2022 (soro na escassez, PDF lido) e Nota Técnica Conjunta
+// nº 35/2026 (soro VINRAB 1000 UI, PDF lido) ao lado do Anexo 4 do manual.
+
+export const NT_8_2022_RAIVA: Fonte = {
+  citacao: 'Ministério da Saúde. Nota Técnica nº 8/2022-CGZV/DEIDT/SVS/MS: atualizações no Protocolo de Profilaxia pré, pós e reexposição da raiva humana no Brasil. 10/03/2022. Itens 2.2 a 2.9 (p. 1–4).',
+  url: 'https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/notas-tecnicas/2022/copy_of_nota-tecnica-n-8_2022-cgzv_deidt_svs_ms.pdf/view',
+}
+
+export const NT_134_2022_RAIVA: Fonte = {
+  citacao: 'Ministério da Saúde. Nota Técnica nº 134/2022-CGZV/DEIDT/SVS/MS: uso do soro antirrábico e da imunoglobulina antirrábica em período de escassez. 06/12/2022. Itens 2.3 a 2.11.',
+  url: 'https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/notas-tecnicas/2022/nota-tecnica-no-134-2022-cgzv-deidt-svs-ms/view',
+}
+
+export const NT_35_2026_VINRAB: Fonte = {
+  citacao: 'Ministério da Saúde. Nota Técnica Conjunta nº 35/2026-CGGI/CGICI/DPNI/CGZHA/DEDT/SVSA/MS: soro antirrábico equino VINRAB 1000 UI (Vins Bioproducts) e reforço das orientações de uso. 2026. Itens 3.2, 4.2 a 4.7 (p. 2–6).',
+  url: 'https://www.gov.br/saude/pt-br/composicao/svsa/pni/notas-tecnicas/2026/nota-tecnica-conjunta-no-35-2026-cggi-cgici-dpni-cgzha-dedt-svsa-ms-e-cgzha-dedt-svsa-ms',
+}
+
+const PAG_RAIVA = 'Anexo 4 Profilaxia da raiva humana, p. 1497 (fluxograma)'
+
+export const fichaRaivaAdulto: Ficha = {
+  ...fichaAdulto('adulto-raiva-pos-exposicao', 'Raiva — profilaxia pós-exposição (adulto)', PAG_RAIVA),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_RAIVA), NT_8_2022_RAIVA, NT_134_2022_RAIVA, NT_35_2026_VINRAB],
+  revisadoEm: '28/09/2026 (Notas Técnicas 8/2022, 134/2022 e 35/2026 do MS lidas; Anexo 4 mantido como base)',
+}
 
 export type ContatoRaiva = 'indireto-morcego' | 'direto'
 export type AcidenteRaiva = 'leve' | 'grave'
@@ -186,6 +208,43 @@ export type CondutaRaiva = {
   texto: string
   observar10Dias: boolean
 }
+
+/** NT 8/2022 (item 2.2) e NT 35/2026 (itens 3.2 e 4.4): doses do soro e da imunoglobulina; VINRAB 1000 UI em 5 mL. */
+export const SORO_RAIVA = {
+  sarUiKg: 40,
+  igharUiKg: 20,
+  vinrabUiPorFrasco: 1000,
+  vinrabMlPorFrasco: 5,
+  prazoDias: 7,
+  texto: 'SAR 40 UI/kg (não exceder: excesso de anticorpos interfere na resposta vacinal) ou IGHAR 20 UI/kg, o mais cedo possível, no máximo até 7 dias após a 1ª dose da vacina; depois disso, contraindicados. Infiltrar o volume total, ou o máximo possível, dentro e ao redor da(s) lesão(ões); o restante IM em músculo diferente do da vacina. Na escassez, infiltrar só na lesão e abrir nova ampola apenas se a primeira não bastar para a região (NT 134/2022, item 2.10). Soro só uma vez na vida, exceto imunocomprometido (NT 35/2026).',
+  pagina: 'NT 8/2022, item 2.2; NT 134/2022, itens 2.3, 2.6, 2.10; NT 35/2026, itens 3.2, 4.2–4.6',
+}
+
+/** Dose do soro e da imunoglobulina pelo peso, com os frascos de VINRAB 1000 UI/5 mL (200 UI/mL). */
+export function doseSoroRaiva(pesoKg: number): { sarUi: number; sarMlVinrab: number; frascosVinrab: number; igharUi: number } | null {
+  if (!valido(pesoKg)) return null
+  const sarUi = SORO_RAIVA.sarUiKg * pesoKg
+  const uiPorMl = SORO_RAIVA.vinrabUiPorFrasco / SORO_RAIVA.vinrabMlPorFrasco
+  return { sarUi, sarMlVinrab: sarUi / uiPorMl, frascosVinrab: Math.ceil(sarUi / SORO_RAIVA.vinrabUiPorFrasco), igharUi: SORO_RAIVA.igharUiKg * pesoKg }
+}
+
+export const PROTOCOLO_RAIVA_2022: { tema: string; ms: string; pagina: string }[] = [
+  { tema: 'Vacina pós-exposição', ms: '4 doses nos dias 0, 3, 7 e 14, IM (deltoide; vasto lateral em < 2 anos; nunca glúteo; frasco inteiro de 0,5 ou 1,0 mL) ou ID (0,2 mL em duas aplicações de 0,1 mL)', pagina: 'NT 8/2022, item 2.6' },
+  { tema: 'Animais silvestres (morcego, mico, macaco, raposa, quati, capivara etc., mesmo domiciliados)', ms: 'Acidente sempre grave: lavar com água e sabão, soro ou imunoglobulina e 4 doses de vacina', pagina: 'NT 8/2022, item 2.3' },
+  { tema: 'Cão ou gato', ms: 'Com sinais de raiva: profilaxia. Sem sinais: observar 10 dias sem iniciar profilaxia; se não for possível observar, esquema do Quadro 3. Cão domiciliado ou comunitário saudável e observável: sem soro nem vacina, mesmo no acidente grave', pagina: 'NT 8/2022, item 2.5; NT 35/2026, item 4.5' },
+  { tema: 'Roedores e lagomorfos urbanos', ms: 'Ratazana, rato de telhado, camundongo, cobaia, hamster e coelho: baixo risco, sem profilaxia (GVS 2021, p. 1009)', pagina: 'NT 134/2022, item 1.5' },
+  { tema: 'Indicação do soro', ms: 'Só nas exposições graves (mordedura, arranhadura ou lambedura em pele não íntegra; ferimentos profundos, múltiplos ou extensos; cabeça, face, pescoço, mãos, pés ou genitais; morcego, qualquer lesão; animal suspeito, raivoso, morto ou desaparecido); nas leves só vacina', pagina: 'NT 35/2026, item 4.2' },
+  { tema: 'Reexposição', ms: 'Sem soro em quem já fez PrEP ou PEP completa. PrEP completa: vacina D0 e D3. PEP completa há ≤ 90 dias: nada; incompleta: completar; > 90 dias com ≥ 2 doses prévias: D0 e D3', pagina: 'NT 8/2022, item 2.7' },
+  { tema: 'Faltosos', ms: 'Não reiniciar: aplicar no dia do retorno e manter os intervalos seguintes', pagina: 'NT 8/2022, item 2.8' },
+  { tema: 'Ferida', ms: 'Lavar com água e sabão por cerca de 15 min; suturar só depois de infiltrar o soro; ferida infectada ou em cicatrização não contraindica o soro; pode diluir em SF 0,9% para infiltrar sem passar da dose', pagina: 'NT 134/2022, itens 2.7–2.9; NT 35/2026, item 4.6' },
+]
+
+export const DIFERENCAS_RAIVA_2022: string[] = [
+  'O Anexo 4 do manual (p. 1497) não traz a dose do soro nem da imunoglobulina; as NTs do MS fixam 40 UI/kg e 20 UI/kg, com infiltração na lesão.',
+  'O fluxograma do manual põe o morcego só no ramo "contato indireto"; a NT 8/2022 classifica qualquer agressão por morcego ou outro silvestre como grave, com soro e 4 doses.',
+  'Esquema de 4 doses (D0, D3, D7, D14) e observação do cão/gato por 10 dias coincidem entre o manual (nota informativa 26/2017) e a NT 8/2022.',
+  'A NT 35/2026 acrescenta: cão domiciliado ou comunitário saudável e observável dispensa soro e vacina mesmo no acidente grave; soro só uma vez na vida (exceto imunocomprometido).',
+]
 
 export const RAIVA = {
   vacina4: 'D0, D3, D7 e D14 (nota informativa n. 26-SEI/2017-CGPNI/DEVIT/SVS/MS: de 5 para 4 doses)',

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import {
-  CRITERIOS_ISOLADOS, CRITERIOS_PAREADOS, ERRATA_ALCOOL, FORA_DO_LIVRO_ULCERA, IBP_DUPLA_ANTIAGREGACAO, NOTA_AVC_ULCERA, NOTA_IAM_SUPRA,
-  ULCERA_ESTRESSE, avaliarIbpDupla, fichaProfilaxiaUlceraEstresse,
+  CRITERIOS_ISOLADOS, CRITERIOS_PAREADOS, DIFERENCAS_ULCERA_2024, ERRATA_ALCOOL, FORA_DO_LIVRO_ULCERA, IBP_DUPLA_ANTIAGREGACAO, NOTA_AVC_ULCERA, NOTA_IAM_SUPRA, REVISE,
+  SCCM_ASHP_ITENS, ULCERA_ESTRESSE, avaliarIbpDupla, fichaProfilaxiaUlceraEstresse,
 } from '@/clinico/adulto/profilaxiaUlceraEstresse'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
@@ -62,6 +62,12 @@ export function ProfilaxiaHdaLamg() {
         </div>
         <p className="text-sm text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_ALCOOL}</p>
         <p className="text-sm text-muted-foreground">{NOTA_IAM_SUPRA}</p>
+      </Bloco>
+
+      <Bloco titulo="REVISE (NEJM 2024) e SCCM/ASHP 2024 — ao lado do manual" descricao="Ensaio e diretriz conferidos pelos resumos. O manual continua sendo a base do critério mostrado acima.">
+        <LinhaManual nome="REVISE" texto={`${REVISE.droga}. ${REVISE.texto}`} pagina="NEJM 2024;391:9–20" conta={<>sangramento importante <strong>{REVISE.sangramentoPct[0].toLocaleString('pt-BR')}% × {REVISE.sangramentoPct[1].toLocaleString('pt-BR')}%</strong> · morte em 90 d {REVISE.mortalidade90Pct[0].toLocaleString('pt-BR')}% × {REVISE.mortalidade90Pct[1].toLocaleString('pt-BR')}%</>} />
+        <ul className="list-disc pl-5 text-sm">{SCCM_ASHP_ITENS.map((i) => <li key={i}>{i} <span className="text-muted-foreground">(SCCM/ASHP 2024)</span></li>)}</ul>
+        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_ULCERA_2024.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="O que o manual não traz">

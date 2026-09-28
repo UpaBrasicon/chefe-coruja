@@ -1,15 +1,51 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaP2, type DosePeso, type Faixa } from './fonteP2.ts'
 
 // RCP pediátrica e arritmias — livro do ICr (caps. 1 e 2). Parâmetros de
 // compressão/ventilação, cargas de desfibrilação e cardioversão por peso e as
 // drogas da Tabela 2 do cap. 1, com página. O livro segue a AHA 2020; o
 // adolescente (sinais de puberdade) usa as diretrizes de adulto (p. 25).
+//
+// Versão .1 de 28/09/2026: diretrizes AHA/AAP 2025 (PBLS e PALS), lidas no
+// documento oficial "Destaques das Diretrizes 2025" (edição Heart & Stroke,
+// p. 11–15); o texto integral do Part 8 não pôde ser aberto. Doses e cargas
+// continuam as do livro (os destaques não as alteram).
 
-export const fichaRcpPediatrica = fichaP2(
-  'ped-rcp-icr',
-  'RCP pediátrica — parâmetros, choque e drogas',
-  'cap. 1, p. 24–38; cap. 2, p. 39–58',
-)
+export const AHA_AAP_2025: Fonte = {
+  citacao: 'Lasa JJ, Dhillon GS, Duff JP, et al. Part 8: Pediatric Advanced Life Support: 2025 American Heart Association and American Academy of Pediatrics Guidelines for CPR and ECC. Circulation. 2025;152(16 Suppl 2):S479–S537; e Part 6 (PBLS). Lidos em: American Heart Association. Highlights of the 2025 AHA Guidelines for CPR and ECC, Heart & Stroke edition, p. 11–15.',
+  url: 'https://doi.org/10.1161/CIR.0000000000001368',
+  pediatrica: true,
+}
+
+const baseRcp = fichaP2('ped-rcp-icr', 'RCP pediátrica — parâmetros, choque e drogas', 'cap. 1, p. 24–38; cap. 2, p. 39–58')
+
+export const fichaRcpPediatrica: Ficha = {
+  ...baseRcp,
+  versao: '2026-09-28.1',
+  fontes: [...baseRcp.fontes, AHA_AAP_2025],
+  revisadoEm: '28/09/2026 (AHA/AAP 2025 conferida pelos Destaques oficiais; livro do ICr mantido como base)',
+}
+
+/** Alvo de pressão diastólica durante a RCP com linha arterial (AHA 2025, novo): ≥ 25 mmHg no lactente; ≥ 30 mmHg a partir de 1 ano. */
+export function metaPadRcp2025(faixa: FaixaRcp): number {
+  return faixa === 'lactente' ? 25 : 30
+}
+
+export type ItemPals2025 = { tema: string; aha: string; estado: 'novo' | 'atualizado'; pagina: string; livro: string }
+
+export const DIRETRIZ_PALS_2025: ItemPals2025[] = [
+  { tema: 'Compressão no lactente', aha: 'Comprimir o esterno com a base de 1 mão ou com os 2 polegares e mãos envolvendo o tórax; se não conseguir envolver o tórax, base de 1 mão. A técnica de 2 dedos não é mais recomendada', estado: 'atualizado', pagina: 'p. 11 (PBLS)', livro: '1 socorrista: 2 dedos (ou 2 polegares); 2 ou mais: 2 polegares (p. 26)' },
+  { tema: 'Pausas', aha: 'Minimizar interrupções; pausas nas compressões < 10 s', estado: 'novo', pagina: 'p. 11', livro: 'interrupção < 10 s (Tabela 1, p. 31)' },
+  { tema: 'Obstrução de via aérea por corpo estranho', aha: 'Lactente: ciclos de 5 golpes nas costas e 5 compressões torácicas (base de 1 mão); criança: 5 golpes nas costas e 5 compressões abdominais, até expelir ou ficar irresponsivo', estado: 'atualizado', pagina: 'p. 11', livro: '—' },
+  { tema: 'Adrenalina', aha: 'Ritmo inicial não chocável: primeira dose o mais cedo possível (< 3 min associado aos melhores desfechos)', estado: 'atualizado', pagina: 'p. 14', livro: 'o mais cedo possível, idealmente até 5 min; repetir a cada 3–5 min (p. 31, 35)' },
+  { tema: 'EtCO₂', aha: 'Com via aérea invasiva, pode ser considerado para monitorar a qualidade da RCP; um valor isolado de EtCO₂ não deve ser usado para encerrar a reanimação (houve sobrevida com média < 20 mmHg)', estado: 'novo', pagina: 'p. 14', livro: '—' },
+  { tema: 'Pressão arterial invasiva na RCP', aha: 'Com linha arterial, pode ser razoável mirar PAD ≥ 25 mmHg no lactente e ≥ 30 mmHg a partir de 1 ano', estado: 'novo', pagina: 'p. 14', livro: '—' },
+  { tema: 'TSV com comprometimento refratária', aha: 'Sem resposta a manobra vagal, adenosina e cardioversão sincronizada e sem especialista disponível: procainamida, amiodarona ou sotalol IV podem ser razoáveis', estado: 'atualizado', pagina: 'p. 14', livro: 'adenosina 0,1 → 0,2 mg/kg; cardioversão 0,5–1 → 1–2 J/kg (cap. 2, p. 50–52)' },
+  { tema: 'Pós-PCR — pressão', aha: 'Manter PAS e PAM acima do percentil 10 para a idade; hipotensão (< p5) é comum (25–50%) e associada a pior sobrevida', estado: 'atualizado', pagina: 'p. 14', livro: 'PA sistólica acima do percentil 5 (p. 35, 37)' },
+  { tema: 'Prognóstico neurológico', aha: 'Usar múltiplas modalidades; reflexo de tosse/vômito ou resposta à dor isolados não são bem estabelecidos; EEG até 72 h pode apoiar o prognóstico junto com outros critérios', estado: 'atualizado', pagina: 'p. 15', livro: '—' },
+  { tema: 'Sobrevivência', aha: 'Avaliar necessidades físicas, cognitivas e emocionais no 1º ano após a PCR', estado: 'atualizado', pagina: 'p. 15', livro: '—' },
+  { tema: 'Doses e cargas', aha: 'Os Destaques 2025 não alteram as doses da Tabela 2 nem as cargas de desfibrilação do livro; o texto integral do Part 8 não foi aberto', estado: 'atualizado', pagina: '—', livro: 'Tabela 2 (p. 31–32); 2 → 4 → 4–10 J/kg (p. 35)' },
+]
 
 // ── Parâmetros do suporte básico (p. 25–31, Tabela 1) ──
 

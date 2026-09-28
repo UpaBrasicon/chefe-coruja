@@ -1,4 +1,5 @@
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 import { MG } from './eletrolitos.ts'
 
 // Exacerbação de asma e de DPOC no adulto — caps. 30 (Asma, p. 406–416) e 31
@@ -12,8 +13,66 @@ import { MG } from './eletrolitos.ts'
 // As metas de SatO2 de criança e gestante que o cap. 30 cita não são
 // implementadas (pediatria usa outra fonte).
 
-export const fichaAsmaAdulto = fichaAdulto('adulto-asma-exacerbacao', 'Exacerbação de asma — adulto', 'cap. 30 Asma, p. 407–416')
+// Asma, versão .1 de 28/09/2026: GINA 2026 (Summary Guide, PDF lido; Figura 9
+// e p. 34–36, 43) ao lado do cap. 30 — gravidade por fala, FR, SpO2 e PEF;
+// salbutamol por jatos; O2 só se preciso, alvo 92–95%; prednisolona 40–50 mg
+// por 5–7 dias; fenoterol não recomendado; alta com SpO2 ≥ 92% e PEF > 70%.
+
+export const GINA_2026: Fonte = {
+  citacao: 'Global Initiative for Asthma. Summary Guide for Asthma Management and Prevention, 2026 update. Figura 9 (p. 36) e p. 34–35, 43.',
+  url: 'https://ginasthma.org/2026-gina-summary-guide/',
+}
+
+const PAG_ASMA = 'cap. 30 Asma, p. 407–416'
+
+export const fichaAsmaAdulto: Ficha = {
+  ...fichaAdulto('adulto-asma-exacerbacao', 'Exacerbação de asma — adulto', PAG_ASMA),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_ASMA), GINA_2026],
+  revisadoEm: '28/09/2026 (GINA 2026 lida no Summary Guide; manual mantido como base)',
+}
 export const fichaDpocAdulto = fichaAdulto('adulto-dpoc-exacerbacao', 'Exacerbação de DPOC — adulto', 'cap. 31 DPOC, p. 417–427')
+
+export type GravidadeGina = 'leve' | 'moderada' | 'grave' | 'risco de vida'
+
+/** Figura 9 da GINA 2026 (p. 36): gravidade da exacerbação em adultos, adolescentes e crianças ≥ 6 anos. */
+const vOpt = (x?: number) => x !== undefined && valido(x)
+
+export function gravidadeGina(e: { fr?: number; spo2?: number; pefPct?: number; incapazFalarBeberDeitar?: boolean; toraxSilente?: boolean; sonolentoConfusoCianotico?: boolean; falaEmFrases?: boolean }): { gravidade: GravidadeGina | null; motivos: string[] } {
+  const motivos: string[] = []
+  if (e.sonolentoConfusoCianotico) motivos.push('sonolento, confuso ou cianótico')
+  if (e.incapazFalarBeberDeitar) motivos.push('incapaz de falar, beber ou deitar')
+  if (e.toraxSilente) motivos.push('tórax silente')
+  if (vOpt(e.spo2) && e.spo2! < 92) motivos.push('SpO2 < 92% em ar ambiente')
+  if (vOpt(e.fr) && e.fr! > 30) motivos.push('FR > 30/min')
+  if (vOpt(e.pefPct) && e.pefPct! < 50) motivos.push('PEF < 50% do melhor ou predito')
+  if (e.sonolentoConfusoCianotico) return { gravidade: 'risco de vida', motivos }
+  if (motivos.length) return { gravidade: 'grave', motivos }
+  const moderada = (vOpt(e.spo2) && e.spo2! < 94) || (vOpt(e.pefPct) && e.pefPct! <= 70) || e.falaEmFrases === true
+  const temDado = vOpt(e.spo2) || vOpt(e.pefPct) || e.falaEmFrases !== undefined
+  if (!temDado) return { gravidade: null, motivos }
+  return { gravidade: moderada ? 'moderada' : 'leve', motivos }
+}
+
+export const GINA_TRATAMENTO: Record<GravidadeGina, string> = {
+  leve: 'Salbutamol 4 jatos por pMDI + espaçador ou budesonida-formoterol 160/4,5 µg 2 jatos; avaliar e, se preciso, repetir uma vez após 30–60 min. Sem corticoide oral na leve.',
+  moderada: 'Salbutamol 4–6 jatos por pMDI + espaçador (ou 2,5 mg nebulizado), até 3 vezes com 20–30 min de intervalo; ipratrópio 4 jatos junto com o salbutamol, até 3 vezes, se preciso e disponível; iniciar corticoide oral.',
+  grave: 'Transferir para unidade de cuidado agudo; salbutamol 6–10 jatos por pMDI + espaçador (ou 5 mg nebulizado), repetido a cada 20–30 min se preciso; ipratrópio 4 jatos a cada dose de salbutamol, até 3 vezes; O2 com alvo 92–95%; corticoide sistêmico; monitorar continuamente. Anafilaxia + asma: adrenalina primeiro.',
+  'risco de vida': 'Transferir imediatamente para cuidado agudo/UTI (sonolento, confuso ou tórax silente); mesmas medidas da grave.',
+}
+
+export const GINA_ITENS: { tema: string; gina: string; pagina: string; livro: string }[] = [
+  { tema: 'Gravidade', gina: 'Leve: fala em frases, FR normal ou pouco aumentada, SpO2 ≥ 94%, PEF > 70%. Moderada: FR ≤ 30, musculatura acessória, SpO2 ≥ 92%, PEF 50–70%. Grave: incapaz de falar/beber/deitar, SpO2 < 92%, FR > 30, tórax silente ou PEF < 50%. Risco de vida: sonolento, confuso ou cianótico', pagina: 'Figura 9, p. 36', livro: 'Tabela 1 (p. 407–408): FR > 30, FC > 120, SaO2 < 90%, VEF1/PFE < 60% na grave' },
+  { tema: 'Salbutamol', gina: '100 µg por jato, 1 jato de cada vez pelo espaçador, agitar antes de cada jato; leve 4 jatos; moderada 4–6 (2,5 mg nebulizado); grave 6–10 (5 mg nebulizado) a cada 20–30 min', pagina: 'p. 35–36', livro: 'β2 4–8 jatos a cada 15–20 min na 1ª hora; fenoterol 10–20 gotas (p. 411–412)' },
+  { tema: 'Fenoterol', gina: 'Não recomendado: associado a mais efeitos adversos cardiovasculares e a maior mortalidade por asma', pagina: 'p. 43', livro: 'fenoterol em nebulizador é a opção do capítulo (p. 411–412)' },
+  { tema: 'Budesonida-formoterol na crise leve', gina: '160/4,5 µg, 2 jatos, alternativa ao salbutamol; em alta dose foi tão eficaz e segura quanto salbutamol em alta dose no PS (VEF1 > 30%)', pagina: 'p. 35–36', livro: '—' },
+  { tema: 'Ipratrópio', gina: '20 µg por jato, 4 jatos com o salbutamol, até 3 vezes, na moderada/grave ou sem resposta ao SABA', pagina: 'p. 35–36', livro: '30–50 gotas com o β2; aerossol 2–3 jatos 6/6–8/8 h (p. 412)' },
+  { tema: 'Oxigênio', gina: 'Só se preciso, titulado para SpO2 92–95%; oximetria pode superestimar em pele escura; ajustar à altitude', pagina: 'p. 35–36', livro: 'SatO2 > 92% (p. 413); Figura 1: 93–95%' },
+  { tema: 'Corticoide sistêmico', gina: 'Adultos: prednisolona 40–50 mg pela manhã por 5–7 dias, exceto na leve; sem desmame se < 2 semanas', pagina: 'p. 34–35', livro: 'prednisona 20–60 mg/dia por 5–14 dias; metilprednisolona 20–60 mg 6/6 h EV (p. 413)' },
+  { tema: 'Sulfato de magnésio', gina: 'Não consta do Summary Guide 2026 (ver o relatório completo)', pagina: '—', livro: '1,2–2 g EV em 20 min na grave (p. 413)' },
+  { tema: 'Exames', gina: 'Não fazer radiografia, gasometria nem antibiótico de rotina; não usar sedativos; medir função pulmonar após 1 h', pagina: 'p. 35', livro: 'gasometria se VEF1/PFE < 50%; radiografia se suspeita de complicação (p. 410)' },
+  { tema: 'Alta', gina: 'Sintomas melhores e critérios de leve por 1–2 h após o último salbutamol; SpO2 ≥ 92% em ar ambiente; PEF melhorando e > 70%; iniciar ou aumentar ICS (MART com ICS-formoterol se ≥ 12 anos); retorno em 2–7 dias', pagina: 'p. 36', livro: 'VEF1/PFE > 60%: preparar alta; < 60%: internação (Figura 1, p. 415)' },
+]
 
 export type Faixa = [number, number]
 

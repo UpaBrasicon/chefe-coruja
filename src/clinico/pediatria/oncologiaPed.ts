@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaP4, type DoseLivro } from './fonteP4.ts'
 import type { Faixa } from './fonteP2.ts'
 import { comTeto, porPeso, porSC, positivoP5, type ItemLivro } from './fonteP5.ts'
@@ -9,7 +10,45 @@ import { comTeto, porPeso, porSC, positivoP5, type ItemLivro } from './fonteP5.t
 // Tabela 11 do ICr com os máximos da própria tabela) e síndromes compressivas
 // (Tabela 12). Superfície corpórea informada pelo médico. Sem valor neonatal.
 
-export const fichaOncologiaPed = fichaP4('ped-emergencias-oncologicas', 'Emergências oncológicas — criança', 'cap. 66, p. 693–722; Apêndice, p. 898, 907, 909')
+// Versão .1 de 28/09/2026: neutropenia febril pela diretriz internacional
+// pediátrica IPFNG 2023 (JCO; texto integral lido) ao lado do cap. 66.
+
+export const IPFNG_2023: Fonte = {
+  citacao: 'Lehrnbecher T, Robinson PD, Ammann RA, et al. Guideline for the Management of Fever and Neutropenia in Pediatric Patients With Cancer and Hematopoietic Cell Transplantation Recipients: 2023 Update. J Clin Oncol. 2023;41(9):1774–1785. Recomendações A1–A5, B1–B5 e C1–C6.',
+  url: 'https://doi.org/10.1200/JCO.22.02224',
+  pediatrica: true,
+}
+
+const baseOncologia = fichaP4('ped-emergencias-oncologicas', 'Emergências oncológicas — criança', 'cap. 66, p. 693–722; Apêndice, p. 898, 907, 909')
+
+export const fichaOncologiaPed: Ficha = {
+  ...baseOncologia,
+  versao: '2026-09-28.1',
+  fontes: [...baseOncologia.fontes, IPFNG_2023],
+  revisadoEm: '28/09/2026 (IPFNG 2023 lida no texto; livro do ICr mantido como base)',
+}
+
+export const IPFNG_ITENS: { codigo: string; texto: string; forca: string }[] = [
+  { codigo: 'Boa prática', texto: 'No paciente febril clinicamente instável, iniciar o antibacteriano empírico o mais cedo possível', forca: 'declaração de boa prática' },
+  { codigo: 'A1', texto: 'Adotar estratégia validada de estratificação de risco na rotina', forca: 'forte, evidência baixa' },
+  { codigo: 'A2–A3', texto: 'Hemoculturas de todos os lumens do cateter central; considerar hemocultura periférica simultânea (detecta 12% das bacteremias com central negativa)', forca: 'forte, baixa · condicional, moderada' },
+  { codigo: 'A5', texto: 'Radiografia de tórax só com sinais ou sintomas respiratórios', forca: 'forte, evidência moderada' },
+  { codigo: 'B1', texto: 'Respondendo ao esquema inicial: suspender a dupla cobertura para Gram-negativo ou o glicopeptídeo empírico após 24–72 h sem indicação microbiológica', forca: 'forte, evidência moderada' },
+  { codigo: 'B2–B3', texto: 'Não ampliar o esquema só por febre persistente no estável; escalonar (Gram-negativo resistente, Gram-positivo e anaeróbios) se ficar instável', forca: 'forte, baixa · forte, muito baixa' },
+  { codigo: 'B4', texto: 'Alto ou baixo risco, bem e afebril por ≥ 24 h, hemoculturas negativas em 48 h e recuperação medular: suspender o antibacteriano', forca: 'forte, evidência baixa' },
+  { codigo: 'B5', texto: 'Baixo risco, bem e afebril por ≥ 24 h, hemoculturas negativas em 48 h, MESMO sem recuperação medular: considerar suspender (em 2017 eram 72 h)', forca: 'condicional, evidência moderada' },
+  { codigo: 'C1', texto: 'Alto risco de doença fúngica invasiva: LMA, LLA de alto risco ou recaída, neutropenia prolongada, corticoide em dose alta, TCTH alogênico no 1º ano sem reconstituição T ou com corticoide/imunossupressores', forca: 'forte, evidência baixa' },
+  { codigo: 'C2–C3', texto: 'Febre prolongada (≥ 96 h) no alto risco: considerar não usar galactomanana; não usar β-D-glucana nem PCR fúngica no sangue; fazer TC de pulmões; considerar ultrassom de abdome; sem TC de seios da face de rotina', forca: 'condicional/forte' },
+  { codigo: 'C4', texto: 'Alto risco com febre ≥ 96 h sem resposta ao antibacteriano de amplo espectro: caspofungina ou anfotericina B lipossomal empírica, salvo se escolhida a abordagem preemptiva', forca: 'forte, evidência alta' },
+  { codigo: 'C5–C6', texto: 'Preemptiva (só tratar se a avaliação sugerir doença fúngica) é opção no alto risco sem profilaxia antimofo e fora do TCTH; no baixo risco de doença fúngica, considerar não iniciar antifúngico empírico', forca: 'condicional, moderada · condicional, baixa' },
+]
+
+export const DIFERENCAS_NF_2023: string[] = [
+  'Suspensão do antibiótico: o livro não fixa; a IPFNG 2023 permite suspender com 48 h de hemocultura negativa no paciente bem e afebril ≥ 24 h — com recuperação medular (forte) ou, no baixo risco, mesmo sem ela (condicional; era 72 h em 2017).',
+  'Antifúngico empírico: o livro define neutropenia persistente como febre ≥ 96 h (p. 708–709) e traz caspofungina e anfotericina lipossomal na Tabela 11; a IPFNG 2023 confirma a indicação a partir de 96 h no alto risco (forte, alta) e acrescenta a via preemptiva.',
+  'Estratificação: o livro usa MASCC (escore de adulto, Tabela 9) e critérios de alto risco (p. 709); a IPFNG pede regra validada em pediatria (A1) sem escolher uma.',
+  'Radiografia de tórax e TC de seios da face: só com sinais/sintomas (A5, C3c) — o livro não trata.',
+]
 
 // ------------------------------------------------------------ lise tumoral
 

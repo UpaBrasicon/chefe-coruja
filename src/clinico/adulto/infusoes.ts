@@ -1,11 +1,37 @@
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Infusões contínuas do adulto — Anexo 1 do Manual de Medicina de Emergência
 // do HCFMUSP (3ª ed., 2022), p. 1482–1489. A concentração é CALCULADA do
 // preparo e a velocidade sai da dose; as tabelas de mL/h do livro não foram
 // copiadas (algumas têm linhas trocadas — ver errata de cada item).
+//
+// Versão .1 de 28/09/2026: atualização focada PADIS 2025 da SCCM (sedação
+// contínua), lida pelo resumo executivo e pela página da SCCM — notas ao lado
+// do grupo "sedação"; as diluições continuam sendo as do Anexo 1.
 
-export const fichaInfusoesAdulto = fichaAdulto('adulto-infusoes', 'Infusões contínuas do adulto', 'Anexo 1 — Padrão de diluição de medicações HC – adultos, p. 1482–1489')
+export const PADIS_2025: Fonte = {
+  citacao: 'Lewis K, Balas MC, Stollings JL, et al. A Focused Update to the Clinical Practice Guidelines for the Prevention and Management of Pain, Anxiety, Agitation/Sedation, Delirium, Immobility, and Sleep Disruption in Adult Patients in the ICU. Crit Care Med. 2025;53(3):e711–e727 (resumo executivo e711–e710 e página da SCCM lidos; texto integral não aberto).',
+  url: 'https://doi.org/10.1097/CCM.0000000000006574',
+}
+
+const PAG_INFUSOES = 'Anexo 1 — Padrão de diluição de medicações HC – adultos, p. 1482–1489'
+
+export const fichaInfusoesAdulto: Ficha = {
+  ...fichaAdulto('adulto-infusoes', 'Infusões contínuas do adulto', PAG_INFUSOES),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_INFUSOES), PADIS_2025],
+  revisadoEm: '28/09/2026 (PADIS 2025 conferida pelo resumo; Anexo 1 mantido como base)',
+}
+
+/** PADIS 2025 — o que a atualização focada diz sobre sedação contínua e delirium. */
+export const NOTAS_PADIS_2025: { tema: string; texto: string; forca: string }[] = [
+  { tema: 'Dexmedetomidina × propofol', texto: 'Sugere dexmedetomidina em vez de propofol para sedação do adulto em ventilação mecânica quando sedação leve e/ou redução de delirium são as prioridades (29 ensaios, 3.087 pacientes, quase todos titulados para sedação leve)', forca: 'condicional, evidência moderada' },
+  { tema: 'Antipsicótico no delirium', texto: 'Evidência insuficiente para recomendar a favor ou contra antipsicóticos em vez do cuidado usual para tratar o delirium', forca: 'sem recomendação' },
+  { tema: 'Benzodiazepínico para ansiedade', texto: 'Evidência insuficiente para recomendar', forca: 'sem recomendação' },
+  { tema: 'Melatonina', texto: 'Sugere melatonina em vez de nenhuma melatonina no adulto na UTI (30 ensaios)', forca: 'condicional, evidência baixa' },
+  { tema: 'Mobilização', texto: 'Sugere mobilização/reabilitação intensificada em vez da usual', forca: 'condicional, evidência moderada' },
+]
 
 export type InfusaoAdulto = {
   id: string

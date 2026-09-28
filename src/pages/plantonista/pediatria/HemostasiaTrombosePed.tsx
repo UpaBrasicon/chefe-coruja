@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import {
-  DOSES_HEMOSTASIA, DOSES_PTI, ERRATA_HNF, HNF_PROFILATICA_UI_KG_H, NOTA_HEPARINA_ONCO, NOTA_VARFARINA, QUADRO2, QUADRO5_DVW, REFERENCIAS_HEMOSTASIA, ajusteHnf, ajusteVarfarina,
-  enoxaparinaPorIdade, fichaHemostasiaTromboPed, hnfAtaqueUI, hnfManutencaoUIkgH, reposicaoQuadro2, rtpaMgH, varfarinaDia1Mg,
+  ASH_ISTH_ITENS, DIFERENCAS_TEV_2025, DOSES_HEMOSTASIA, DOSES_PTI, ERRATA_HNF, HNF_PROFILATICA_UI_KG_H, NOTA_HEPARINA_ONCO, NOTA_VARFARINA, QUADRO2, QUADRO5_DVW,
+  REFERENCIAS_HEMOSTASIA, ajusteHnf, ajusteVarfarina, enoxaparinaPorIdade, fichaHemostasiaTromboPed, hnfAtaqueUI, hnfManutencaoUIkgH, reposicaoQuadro2, rtpaMgH, varfarinaDia1Mg,
 } from '@/clinico/pediatria/hemostasiaTromboPed'
 import { fatorIXUI, fatorVIIIUI } from '@/clinico/pediatria/hemoterapiaPed'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -131,6 +131,20 @@ export function HemostasiaTrombosePed() {
         {av && <p>Quadro 5: <strong>{av}</strong></p>}
         <Nota>{NOTA_VARFARINA}</Nota>
         {calc && <LinhaFaixa nome="rt-PA — trombólise sistêmica (CHEST)" faixa={rtpaMgH(p.peso)} unidade="mg/h" casas={2} texto="0,1 a 0,6 mg/kg/h por 6 horas; discutir com quem tem experiência em trombólise pediátrica" pagina="p. 691" />}
+      </Bloco>
+
+      <Bloco titulo="TEV pediátrico — ASH/ISTH 2025, ao lado do cap. 65" descricao="Blood Adv 2025;9:2587–2636, conferida pelo resumo oficial das mudanças. As doses pediátricas de DOAC não constam do resumo e não são calculadas.">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Rec.</th><th className="pr-3 pb-2">População</th><th className="pr-3 pb-2">ASH/ISTH 2025</th><th className="pb-2">Mudança</th></tr></thead>
+            <tbody>
+              {ASH_ISTH_ITENS.map((i) => (
+                <tr key={i.numero} className="border-t"><td className="pr-3 py-2 font-medium whitespace-nowrap">{i.numero}</td><td className="pr-3 py-2">{i.populacao}</td><td className="pr-3 py-2">{i.texto}</td><td className="py-2 text-muted-foreground">{i.mudanca}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_TEV_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Dos capítulos">

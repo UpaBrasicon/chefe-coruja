@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import {
-  COMBINACOES_AGITACAO, CONTENCAO_MECANICA, CONTENCAO_QUIMICA, CORTES_CAUSAS_ORGANICAS, DELIRIUM_TABELA7, ERRATA_AGITACAO, QUETAMINA_AGITACAO, SNM,
-  TEMPOS_AGITACAO, TITULACAO_DELIRIUM, contaSnm, fichaAgitacaoAdulto, metadeDaDose, quetaminaAgitacao, restanteAteMaxima, shockIndex,
+  ACEP_2024_RECOMENDACOES, COMBINACOES_AGITACAO, CONTENCAO_MECANICA, CONTENCAO_QUIMICA, CORTES_CAUSAS_ORGANICAS, DELIRIUM_TABELA7, DIFERENCAS_AGITACAO_2024, DOSES_ENSAIOS_ACEP,
+  ERRATA_AGITACAO, QUETAMINA_AGITACAO, SNM, TEMPOS_AGITACAO, TITULACAO_DELIRIUM, contaSnm, fichaAgitacaoAdulto, metadeDaDose, quetaminaAgitacao, restanteAteMaxima, shockIndex,
 } from '@/clinico/adulto/agitacao'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -105,6 +105,21 @@ export function AgitacaoDeliriumAdulto() {
           pagina={SNM.pagina}
         />
         <LinhaManual nome="Bromocriptina" texto="2,5 a 10 mg 3 vezes ao dia; máximo de 40 mg ao dia (10 mg 6/6 h); por 10 dias, com redução gradual" pagina={SNM.pagina} />
+      </Bloco>
+
+      <Bloco titulo="ACEP 2024 — agitação grave no PS" descricao="Política clínica da ACEP (Ann Emerg Med 2024;83:e1–e30), lida no texto. As doses listadas são as dos ensaios que a política resume, não uma prescrição da ACEP.">
+        {ACEP_2024_RECOMENDACOES.map((r) => <LinhaManual key={r.nivel} nome={`Nível ${r.nivel}`} texto={r.texto} pagina="p. e4" />)}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Droga</th><th className="pr-3 pb-2">Dose nos ensaios</th><th className="pb-2">Ensaios</th></tr></thead>
+            <tbody>
+              {DOSES_ENSAIOS_ACEP.map((d) => (
+                <tr key={d.droga} className="border-t"><td className="pr-3 py-2 font-medium">{d.droga}</td><td className="pr-3 py-2">{d.dose}</td><td className="py-2 text-muted-foreground">{d.fonte}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_AGITACAO_2024.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Errata e notas">

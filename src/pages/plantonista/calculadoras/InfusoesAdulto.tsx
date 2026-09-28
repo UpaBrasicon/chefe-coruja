@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { INFUSOES_ADULTO, concentracao, doseAdulto, fichaInfusoesAdulto, unidadeDose, velocidadeAdulto, type InfusaoAdulto } from '@/clinico/adulto/infusoes'
+import { INFUSOES_ADULTO, NOTAS_PADIS_2025, concentracao, doseAdulto, fichaInfusoesAdulto, unidadeDose, velocidadeAdulto, type InfusaoAdulto } from '@/clinico/adulto/infusoes'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
@@ -73,6 +73,19 @@ export function InfusoesAdulto({ grupo }: { grupo: InfusaoAdulto['grupo'] }) {
         </CardContent>
       </Card>
       {INFUSOES_ADULTO.filter((i) => i.grupo === grupo).map((i) => <Linha key={i.id} i={i} peso={peso} />)}
+      {grupo === 'sedacao' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>PADIS 2025 — sedação contínua e delirium (SCCM)</CardTitle>
+            <CardDescription>Atualização focada (Crit Care Med 2025;53:e711–e727), conferida pelo resumo executivo e pela página da SCCM. As diluições acima seguem o Anexo 1 do manual.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="flex flex-col gap-2 text-sm">
+              {NOTAS_PADIS_2025.map((n) => <li key={n.tema}><span className="font-medium">{n.tema}:</span> {n.texto} <span className="text-muted-foreground">({n.forca})</span></li>)}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
     </ToolLayout>
   )
 }

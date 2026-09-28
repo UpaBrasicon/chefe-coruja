@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaP4, type DoseLivro } from './fonteP4.ts'
 import type { Faixa } from './fonteP2.ts'
 import { porPeso, porSC, positivoP5, type ItemLivro } from './fonteP5.ts'
@@ -9,7 +10,67 @@ import { porPeso, porSC, positivoP5, type ItemLivro } from './fonteP5.ts'
 // (transfusão, furosemida, plasmaférese, diálise). Superfície corpórea, quando
 // usada, é informada pelo médico. Sem valor neonatal explícito.
 
-export const fichaGlomerulopatiasPed = fichaP4('ped-glomerulopatias-shu', 'Síndromes nefrítica e nefrótica e SHU — criança', 'caps. 58–60, p. 602–640; Apêndice, p. 907')
+// Versão .1 de 28/09/2026: síndrome nefrótica pela KDIGO 2025 (PDF lido:
+// rec. 1.3.1.1 e Practice Points 1.3.1.1 e 1.3.3.1–2, p. S256–S257; rec.
+// 1.4.1.1, p. S259) e pela IPNA 2023 (texto lido: definições, albumina e
+// furosemida) ao lado do cap. 59.
+
+export const KDIGO_2025_NEFROTICA: Fonte = {
+  citacao: 'Kidney Disease: Improving Global Outcomes (KDIGO) Nephrotic Syndrome in Children Work Group. KDIGO 2025 Clinical Practice Guideline for the Management of Nephrotic Syndrome in Children. Kidney Int. 2025;107(5S):S241–S289. Rec. 1.3.1.1, 1.3.2.1, 1.3.3.1 e 1.4.1.1; Practice Points 1.1.1, 1.3.1.1, 1.3.3.1–1.3.3.2 (p. S255–S259).',
+  url: 'https://kdigo.org/guidelines/nephrotic-syndrome-in-children/',
+  pediatrica: true,
+}
+
+export const IPNA_2023_SSNS: Fonte = {
+  citacao: 'Trautmann A, Boyer O, Hodson E, et al. IPNA clinical practice recommendations for the diagnosis and management of children with steroid-sensitive nephrotic syndrome. Pediatr Nephrol. 2023;38:877–919 (texto lido: Tabela 1 de definições; manejo do edema grave e da hipovolemia).',
+  url: 'https://doi.org/10.1007/s00467-022-05739-3',
+  pediatrica: true,
+}
+
+const baseGlomerulo = fichaP4('ped-glomerulopatias-shu', 'Síndromes nefrítica e nefrótica e SHU — criança', 'caps. 58–60, p. 602–640; Apêndice, p. 907')
+
+export const fichaGlomerulopatiasPed: Ficha = {
+  ...baseGlomerulo,
+  versao: '2026-09-28.1',
+  fontes: [...baseGlomerulo.fontes, KDIGO_2025_NEFROTICA, IPNA_2023_SSNS],
+  revisadoEm: '28/09/2026 (KDIGO 2025 e IPNA 2023 lidas no texto; livro do ICr mantido como base)',
+}
+
+/**
+ * Prednisona/prednisolona pela KDIGO 2025 (Practice Point 1.3.1.1 e 1.3.3.1–2):
+ * diária 60 mg/m²/dia ou 2 mg/kg/dia (máx. 60 mg) por 4 ou 6 semanas; depois
+ * em dias alternados 40 mg/m² ou 1,5 mg/kg (máx. 40 mg) por mais 4 ou 6
+ * semanas. Recaída: 60 mg/m² ou 2 mg/kg/dia até 3 dias de remissão, depois
+ * 40 mg/m² ou 1,5 mg/kg em dias alternados por 4 semanas.
+ */
+export function prednisolonaKdigo(pesoKg: number, scM2: number): { diariaPorPeso: number | null; diariaPorSc: number | null; alternadaPorPeso: number | null; alternadaPorSc: number | null; noTetoDiaria: boolean; noTetoAlternada: boolean } | null {
+  const temPeso = positivoP5(pesoKg)
+  const temSc = positivoP5(scM2)
+  if (!temPeso && !temSc) return null
+  const diariaPorPeso = temPeso ? Math.min(2 * pesoKg, 60) : null
+  const diariaPorSc = temSc ? Math.min(60 * scM2, 60) : null
+  const alternadaPorPeso = temPeso ? Math.min(1.5 * pesoKg, 40) : null
+  const alternadaPorSc = temSc ? Math.min(40 * scM2, 40) : null
+  return { diariaPorPeso, diariaPorSc, alternadaPorPeso, alternadaPorSc, noTetoDiaria: (temPeso && 2 * pesoKg > 60) || (temSc && 60 * scM2 > 60), noTetoAlternada: (temPeso && 1.5 * pesoKg > 40) || (temSc && 40 * scM2 > 40) }
+}
+
+export const KDIGO_ITENS: { tema: string; texto: string; forca: string; pagina: string }[] = [
+  { tema: 'Definição', texto: 'Proteinúria nefrótica: relação proteína/creatinina ≥ 200 mg/mmol (2 g/g) em amostra isolada ou ≥ 1.000 mg/m²/dia; síndrome nefrótica = proteinúria nefrótica + hipoalbuminemia ou edema', forca: 'Practice Point 1.1.1', pagina: 'KDIGO p. S255; IPNA Tabela 1' },
+  { tema: 'Biópsia', texto: 'Não é necessária na apresentação; reservada à resistência ou ao curso atípico (sem características sindrômicas ou história familiar em < 12 anos)', forca: 'Practice Point 1.2.1', pagina: 'p. S256' },
+  { tema: 'Tratamento inicial', texto: 'Glicocorticoide oral por 8 semanas (4 diárias + 4 em dias alternados) ou 12 semanas (6 + 6)', forca: '1B', pagina: 'Rec. 1.3.1.1, p. S256' },
+  { tema: 'Dose', texto: 'Diária 60 mg/m²/dia ou 2 mg/kg/dia (máx. 60 mg); alternada 40 mg/m² ou 1,5 mg/kg (máx. 40 mg)', forca: 'Practice Point 1.3.1.1', pagina: 'p. S257' },
+  { tema: 'Recaída', texto: '60 mg/m² ou 2 mg/kg/dia até 3 dias de remissão completa; depois 40 mg/m² ou 1,5 mg/kg em dias alternados por 4 semanas', forca: 'Practice Points 1.3.3.1–1.3.3.2', pagina: 'p. S257' },
+  { tema: 'Infecções nas recaídas frequentes/dependência', texto: 'Não dar corticoide diário de rotina nas infecções de vias aéreas; curso curto de 0,5 mg/kg/dia (3 doses extras) pode ser considerado em quem já usa dose baixa alternada com recaídas associadas a infecção', forca: '1C · Practice Point 1.3.2.1', pagina: 'p. S257' },
+  { tema: 'Poupadores de corticoide', texto: 'Recaídas frequentes com toxicidade grave e todos os dependentes: agente poupador (levamisol 2,5 mg/kg em dias alternados máx. 150 mg; ciclofosfamida oral 2 mg/kg/dia por 12 semanas; MMF; inibidor de calcineurina; rituximabe)', forca: '1B', pagina: 'Rec. 1.3.3.1, p. S257–S258' },
+  { tema: 'Resistência a corticoide', texto: 'Ciclosporina ou tacrolimo como 2ª linha inicial', forca: '1C', pagina: 'Rec. 1.4.1.1, p. S259' },
+  { tema: 'Edema grave e hipovolemia (IPNA)', texto: 'Albumina 20–25% 0,5–1 g/kg em 4–6 h com furosemida 1–2 mg/kg IV no meio e/ou no fim (sem contração volêmica marcada ou hiponatremia); no choque hipovolêmico, albumina 4–5% sem furosemida; sinais de hipovolemia: oligúria, LRA, enchimento capilar lento, taquicardia, dor abdominal', forca: 'grau C, moderada · grau C, fraca', pagina: 'IPNA 2023' },
+]
+
+export const DIFERENCAS_NEFROTICA_2025: string[] = [
+  'Dose de corticoide: o livro (Apêndice, p. 907) traz prednisona 2 mg/kg máx. 60 mg/dia; a KDIGO 2025 põe 60 mg/m² ou 2 mg/kg (máx. 60) na fase diária e 40 mg/m² ou 1,5 mg/kg (máx. 40) em dias alternados, com esquema total de 8 ou 12 semanas.',
+  'Albumina: o livro dá 0,5–1 g/kg em 4 h com furosemida 1 mg/kg dividida (Figura 1, p. 626); a IPNA 2023 dá 0,5–1 g/kg em 4–6 h com furosemida 1–2 mg/kg IV e, no choque hipovolêmico, albumina 4–5% sem furosemida.',
+  'Definição: Pr/Cr ≥ 2 mg/mg do livro (Tabela 1, p. 620) é a mesma relação ≥ 200 mg/mmol (2 g/g) da KDIGO/IPNA.',
+]
 
 // ------------------------------------------------------------ nefrótica (cap. 59)
 

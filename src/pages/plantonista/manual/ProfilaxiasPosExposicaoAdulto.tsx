@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 import {
-  ACIDENTE_RAIVA, ANIMAL_RAIVA, DIFERENCAS_TETANO_GVS, FERIMENTO_GVS, FERIMENTO_TETANO, FONTE_HBV, HBV, HISTORICO_TETANO, IMUNOGLOBULINA_PROFILAXIA, RAIVA, RISCO_FONTE_HBV,
-  SITUACAO_HBV, TABELA5_TETANO, TRATAMENTO_GVS_2024, TRATAMENTO_TETANO, fichaHepatiteBAdulto, fichaRaivaAdulto, fichaTetanoAdulto, hbigMl,
-  profilaxiaHepatiteB, profilaxiaRaiva, profilaxiaTetano, profilaxiaTetanoGvs, tratamentoTetanoPorPeso,
+  ACIDENTE_RAIVA, ANIMAL_RAIVA, DIFERENCAS_RAIVA_2022, DIFERENCAS_TETANO_GVS, FERIMENTO_GVS, FERIMENTO_TETANO, FONTE_HBV, HBV, HISTORICO_TETANO, IMUNOGLOBULINA_PROFILAXIA,
+  PROTOCOLO_RAIVA_2022, RAIVA, RISCO_FONTE_HBV, SITUACAO_HBV, SORO_RAIVA, TABELA5_TETANO, TRATAMENTO_GVS_2024, TRATAMENTO_TETANO, doseSoroRaiva, fichaHepatiteBAdulto,
+  fichaRaivaAdulto, fichaTetanoAdulto, hbigMl, profilaxiaHepatiteB, profilaxiaRaiva, profilaxiaTetano, profilaxiaTetanoGvs, tratamentoTetanoPorPeso,
   type AcidenteRaiva, type AnimalRaiva, type ContatoRaiva, type FerimentoGvs, type FerimentoTetano, type FonteHbv, type HistoricoGvs, type HistoricoVacinalTetano,
   type SituacaoProfissional,
 } from '@/clinico/adulto/profilaxiaPosExposicao'
@@ -110,13 +110,28 @@ export function RaivaPosExposicaoAdulto() {
   const [area, setArea] = useState<'sim' | 'nao' | ''>('')
   const precisaArea = contato === 'direto' && acidente === 'grave' && animal === 'sem-suspeita'
   const r = profilaxiaRaiva(contato, acidente, animal, area === '' ? null : area === 'sim')
+  const [pesoRaiva, setPesoRaiva] = useState(0)
+  const soro = doseSoroRaiva(pesoRaiva)
 
   return (
     <ToolLayout
       title="Raiva — profilaxia pós-exposição (adulto)"
-      description="Fluxograma do Anexo 4 do manual do HC: tipo de contato, gravidade do acidente e animal → vacina, sorovacinação ou observação. Adulto (14 anos ou mais)."
+      description="Fluxograma do Anexo 4 do manual do HC: tipo de contato, gravidade do acidente e animal → vacina, sorovacinação ou observação; doses do soro e da imunoglobulina pelas Notas Técnicas do MS (2022 e 2026). Adulto (14 anos ou mais)."
       ficha={fichaRaivaAdulto}
     >
+      <CampoPeso id="raiva-peso" peso={pesoRaiva} onChange={setPesoRaiva} />
+      <Bloco titulo="Soro e imunoglobulina — Notas Técnicas do MS (8/2022, 134/2022 e 35/2026)" descricao={SORO_RAIVA.texto}>
+        <LinhaManual
+          nome="Soro antirrábico (SAR) 40 UI/kg"
+          texto={`Frasco VINRAB 1000 UI em 5 mL (200 UI/mL); IM em duas massas se o restante não couber na lesão; nunca no mesmo grupo muscular da vacina (${SORO_RAIVA.pagina})`}
+          pagina="NT 8/2022, item 2.2; NT 35/2026, itens 3.2 e 4.4"
+          conta={soro ? <><strong>{soro.sarUi.toLocaleString('pt-BR')} UI</strong> = {soro.sarMlVinrab.toLocaleString('pt-BR')} mL de VINRAB ({soro.frascosVinrab} frasco{soro.frascosVinrab > 1 ? 's' : ''})</> : 'informe o peso'}
+        />
+        <LinhaManual nome="Imunoglobulina humana (IGHAR) 20 UI/kg" texto="Preferida em quem já reagiu a soro heterólogo; mesma regra de infiltração" pagina="NT 8/2022, item 2.2" conta={soro ? <strong>{soro.igharUi.toLocaleString('pt-BR')} UI</strong> : 'informe o peso'} />
+        {PROTOCOLO_RAIVA_2022.map((i) => <LinhaManual key={i.tema} nome={i.tema} texto={i.ms} pagina={i.pagina} />)}
+        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_RAIVA_2022.map((d) => <li key={d}>{d}</li>)}</ul>
+      </Bloco>
+
       <Bloco titulo="Exposição (Anexo 4, p. 1497)">
         <Escolha label="Contato" value={contato} onChange={setContato}
           opcoes={[{ value: 'direto', label: 'Direto' }, { value: 'indireto-morcego', label: 'Indireto com morcego' }]} />

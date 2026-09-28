@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
 import {
-  BIOPSIA_GNPE, DIALISE_SHU, DOSES_NEFRITICA, DOSES_NEFROTICA, DOSES_SHU, INDICACOES_ALBUMINA, NOTA_SAL, REFERENCIAS_GLOMERULOPATIAS, TRIADE_SHU, albumina20, chShu,
-  fichaGlomerulopatiasPed, hipotensaoPostural, lerPrCr, plasmafereseShuMl, proteinuriaNefrotica, restricaoHidricaGnpe, salNefroticaMeqDia, shuIndicaCH,
+  BIOPSIA_GNPE, DIALISE_SHU, DIFERENCAS_NEFROTICA_2025, DOSES_NEFRITICA, DOSES_NEFROTICA, DOSES_SHU, INDICACOES_ALBUMINA, KDIGO_ITENS, NOTA_SAL, REFERENCIAS_GLOMERULOPATIAS,
+  TRIADE_SHU, albumina20, chShu, fichaGlomerulopatiasPed, hipotensaoPostural, lerPrCr, plasmafereseShuMl, prednisolonaKdigo, proteinuriaNefrotica, restricaoHidricaGnpe,
+  salNefroticaMeqDia, shuIndicaCH,
 } from '@/clinico/pediatria/glomerulopatiasPed'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -108,6 +109,18 @@ export function GlomerulopatiasShuPed() {
         {calc && <LinhaFaixa nome="Plasmaférese — volume de troca" faixa={plasmafereseShuMl(p.peso)} unidade="mL" casas={0} texto="40 a 60 mL/kg, com plasma fresco congelado como reposição (SHUa ou SNC grave até o eculizumabe)" pagina="p. 636" />}
         <p className="font-medium">Diálise na SHU</p>
         <ListaQuadro itens={DIALISE_SHU} pagina="p. 636" />
+      </Bloco>
+
+      <Bloco titulo="Síndrome nefrótica — KDIGO 2025 e IPNA 2023, ao lado do livro" descricao="Prednisona/prednisolona pela KDIGO 2025 (Practice Point 1.3.1.1, p. S257) com o peso e a superfície corpórea informados; textos lidos no PDF/artigo.">
+        {(() => { const k = pediatrico ? prednisolonaKdigo(p.peso, sc) : null; return k ? (
+          <div className="rounded-lg border px-3 py-2 text-sm">
+            <p>Fase diária (4 ou 6 semanas): <strong className="tabular-nums">{k.diariaPorPeso !== null ? `${br(k.diariaPorPeso, 0)} mg/dia (2 mg/kg)` : ''}{k.diariaPorPeso !== null && k.diariaPorSc !== null ? ' · ' : ''}{k.diariaPorSc !== null ? `${br(k.diariaPorSc, 0)} mg/dia (60 mg/m²)` : ''}</strong>{k.noTetoDiaria && ' — no teto de 60 mg'}</p>
+            <p>Dias alternados (mais 4 ou 6 semanas): <strong className="tabular-nums">{k.alternadaPorPeso !== null ? `${br(k.alternadaPorPeso, 0)} mg (1,5 mg/kg)` : ''}{k.alternadaPorPeso !== null && k.alternadaPorSc !== null ? ' · ' : ''}{k.alternadaPorSc !== null ? `${br(k.alternadaPorSc, 0)} mg (40 mg/m²)` : ''}</strong>{k.noTetoAlternada && ' — no teto de 40 mg'}</p>
+            <p className="text-muted-foreground">Recaída: mesma dose diária até 3 dias de remissão, depois alternada por 4 semanas (Practice Points 1.3.3.1–1.3.3.2).</p>
+          </div>
+        ) : <Nota>Informe idade pediátrica e peso ou superfície corpórea.</Nota> })()}
+        {KDIGO_ITENS.map((i) => <p key={i.tema} className="text-muted-foreground"><span className="font-medium text-foreground">{i.tema}:</span> {i.texto} ({i.forca}; {i.pagina})</p>)}
+        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_NEFROTICA_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Dos capítulos">

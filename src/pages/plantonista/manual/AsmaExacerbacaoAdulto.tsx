@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import {
-  DROGAS_ASMA, ERRATA_ASMA, EXAMES_ASMA, FIGURA1_ASMA, MGSO4_ASMA, NOME_COLUNA, PREDITORES_ASMA_GRAVE, TABELA1_CLINICA, TABELA1_NUMERICA, VM_ASMA,
-  fichaAsmaAdulto, infusaoMgAsma, percentualPredito, posicionarAsma, type Coluna, type ParametroAsma,
+  DROGAS_ASMA, ERRATA_ASMA, EXAMES_ASMA, FIGURA1_ASMA, GINA_ITENS, GINA_TRATAMENTO, MGSO4_ASMA, NOME_COLUNA, PREDITORES_ASMA_GRAVE, TABELA1_CLINICA, TABELA1_NUMERICA, VM_ASMA,
+  fichaAsmaAdulto, gravidadeGina, infusaoMgAsma, percentualPredito, posicionarAsma, type Coluna, type ParametroAsma,
 } from '@/clinico/adulto/asmaDpoc'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -26,6 +26,8 @@ export function AsmaExacerbacaoAdulto() {
   const pos = posicionarAsma(informados)
   const pct = percentualPredito(medido, predito)
   const mg = infusaoMgAsma(gramas, diluente)
+  const [gina, setGina] = useState({ incapaz: false, silente: false, sonolento: false, frases: false })
+  const g = gravidadeGina({ fr: valores.fr || undefined, spo2: valores.sao2 || undefined, pefPct: pct ?? (valores.vef1 || undefined), incapazFalarBeberDeitar: gina.incapaz, toraxSilente: gina.silente, sonolentoConfusoCianotico: gina.sonolento, falaEmFrases: gina.frases || undefined })
 
   return (
     <ToolLayout
@@ -104,6 +106,36 @@ export function AsmaExacerbacaoAdulto() {
       <Bloco titulo="Ventilação mecânica na asma">
         <Trecho texto={VM_ASMA.texto} pagina={VM_ASMA.pagina} />
         <p className="text-muted-foreground">O capítulo não traz números de VC, PEEP nem de relação I:E para a asma; os parâmetros iniciais de VM do obstrutivo com número estão na ferramenta de DPOC (p. 425).</p>
+      </Bloco>
+
+      <Bloco titulo="GINA 2026 — gravidade e tratamento (Figura 9, p. 36)" descricao="Usa a FR, a SaO2 e o VEF1/PFE informados acima. Marque os achados clínicos. A classificação segue a Figura 9; a decisão é do médico.">
+        <div className="flex flex-wrap gap-4 text-sm">
+          <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={gina.frases} onChange={(e) => setGina({ ...gina, frases: e.target.checked })} /> Fala em frases (não em sentenças)</label>
+          <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={gina.incapaz} onChange={(e) => setGina({ ...gina, incapaz: e.target.checked })} /> Incapaz de falar, beber ou deitar</label>
+          <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={gina.silente} onChange={(e) => setGina({ ...gina, silente: e.target.checked })} /> Tórax silente</label>
+          <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={gina.sonolento} onChange={(e) => setGina({ ...gina, sonolento: e.target.checked })} /> Sonolento, confuso ou cianótico</label>
+        </div>
+        {g.gravidade ? (
+          <>
+            <Resultado rotulo="Gravidade pela GINA 2026" valor={<>{g.gravidade}{g.motivos.length ? ` — ${g.motivos.join('; ')}` : ''}</>} />
+            <p className="text-sm">{GINA_TRATAMENTO[g.gravidade]}</p>
+          </>
+        ) : <p className="text-muted-foreground">Informe SaO2, VEF1/PFE ou marque os achados.</p>}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">GINA 2026</th><th className="pr-3 pb-2">p.</th><th className="pb-2">Manual do HC</th></tr></thead>
+            <tbody>
+              {GINA_ITENS.map((d) => (
+                <tr key={d.tema} className="border-t">
+                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
+                  <td className="pr-3 py-2">{d.gina}</td>
+                  <td className="pr-3 py-2 whitespace-nowrap text-muted-foreground">{d.pagina}</td>
+                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Bloco>
 
       <Bloco titulo="Errata e divergências do livro" descricao="As metas de SatO2 de crianças e gestantes do capítulo não entram nesta ferramenta.">

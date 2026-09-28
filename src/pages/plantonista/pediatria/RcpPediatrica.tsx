@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import {
-  CARGA_ADULTO, DROGAS_RCP, FAIXAS_RCP, GRUPOS_RCP, NOTAS_CHOQUE, OUTROS_PARAMETROS,
-  cargasPorPeso, fichaRcpPediatrica, parametrosRcp, type FaixaRcp, type GrupoRcp,
+  CARGA_ADULTO, DIRETRIZ_PALS_2025, DROGAS_RCP, FAIXAS_RCP, GRUPOS_RCP, NOTAS_CHOQUE, OUTROS_PARAMETROS,
+  cargasPorPeso, fichaRcpPediatrica, metaPadRcp2025, parametrosRcp, type FaixaRcp, type GrupoRcp,
 } from '@/clinico/pediatria/rcp'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent } from '@/components/ui/card'
@@ -70,6 +70,24 @@ export function RcpPediatrica() {
           ))}
         </>
       )}
+      <Bloco titulo="AHA/AAP 2025 × livro do ICr">
+        <p className="text-sm text-muted-foreground">Destaques oficiais das diretrizes 2025 (p. 11–15); o texto integral do Part 8 não foi aberto. Com linha arterial na RCP, a diretriz mira PAD ≥ {metaPadRcp2025(faixa)} mmHg para a faixa escolhida.</p>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">AHA/AAP 2025</th><th className="pr-3 pb-2">Estado · p.</th><th className="pb-2">Livro do ICr</th></tr></thead>
+            <tbody>
+              {DIRETRIZ_PALS_2025.map((d) => (
+                <tr key={d.tema} className="border-t">
+                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
+                  <td className="pr-3 py-2">{d.aha}</td>
+                  <td className="pr-3 py-2 whitespace-nowrap text-muted-foreground">{d.estado} · {d.pagina}</td>
+                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Bloco>
     </ToolLayout>
   )
 }
