@@ -32,12 +32,16 @@ for (const arq of arquivos(dir)) {
   }
 }
 fichas.sort((a, b) => a.id.localeCompare(b.id))
-const ids = new Set()
+// a mesma ficha pode ser exportada duas vezes (solta e dentro de um escore):
+// conta uma vez; a mesma ferramenta com versões diferentes é erro.
+const porId = new Map()
 for (const f of fichas) {
-  if (ids.has(f.id)) throw new Error('id de ficha repetido: ' + f.id)
-  ids.add(f.id)
+  const ja = porId.get(f.id)
+  if (ja && ja.versao !== f.versao) throw new Error(`ficha ${f.id} com versões diferentes: ${ja.versao} × ${f.versao}`)
   if (!f.fontes?.length) throw new Error('ficha sem fonte: ' + f.id)
+  porId.set(f.id, f)
 }
+fichas.splice(0, fichas.length, ...porId.values())
 
 const linhas = [
   '-- Gerado por scripts/fichas-sql.mjs a partir de src/clinico. Não editar à mão.',
