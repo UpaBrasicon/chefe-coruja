@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react'
 
 import {
-  DIVERGENCIAS_CAD, INSULINA_BOMBA, POTASSIO_MANUAL, ajusteInsulina, bicarbonato, duasBolsas, faixaPotassio, fichaCadEhhTratamento, hidratacao,
-  insulinaInicial, insulinaReduzida, mlHDeInsulina, solucaoSegundaFase, transicaoSc, type EsquemaInsulina,
+  DIFERENCAS_2024, DIVERGENCIAS_CAD, INSULINA_BOMBA, POTASSIO_MANUAL, TRATAMENTO_2024, ajusteInsulina, bicarbonato, bicarbonato2024, duasBolsas, faixaPotassio,
+  fichaCadEhhTratamento, fluido2024, hidratacao, insulina2024, insulinaInicial, insulinaReduzida, mlHDeInsulina, potassio2024, solucaoSegundaFase, transicaoSc, type EsquemaInsulina,
 } from '@/clinico/adulto/glicemia'
 import { sodioCorrigido } from '@/clinico/adulto/sodio'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -52,11 +52,16 @@ export function CadEhhTratamento() {
   const bic = bicarbonato(ph)
   const bolsas = duasBolsas(total, dextrose)
   const sc = transicaoSc(ins24, peso)
+  const i24 = insulina2024(peso)
+  const k24 = potassio2024(k)
+  const bic24 = bicarbonato2024(ph)
+  const f24 = fluido2024()
+  const T = TRATAMENTO_2024
 
   return (
     <ToolLayout
       title="Cetoacidose e estado hiperosmolar — tratamento"
-      description="Hidratação, insulina regular EV (bomba de 50 U/250 mL), ajuste pela queda horária, potássio, bicarbonato, sistema de 2 bolsas e transição para SC, como o manual do HCFMUSP traz. Adulto (14 anos ou mais)."
+      description="Hidratação, insulina regular EV (bomba de 50 U/250 mL), ajuste pela queda horária, potássio, bicarbonato, sistema de 2 bolsas e transição para SC: manual do HCFMUSP e consenso ADA/EASD 2024, lado a lado. Adulto (14 anos ou mais)."
       ficha={fichaCadEhhTratamento}
     >
       <Card>
@@ -132,6 +137,32 @@ export function CadEhhTratamento() {
       <Secao titulo="Transição para insulina SC (p. 874)" descricao="O manual traz 2/3 da insulina das últimas 24 h, ou 0,6 U/kg de NPH; desligar a bomba ao menos 1 h após a primeira insulina regular SC.">
         <NumberField id="cadt-24h" label="Insulina EV nas últimas 24 h" unit="U" value={ins24} onChange={setIns24} step={0.1} />
         <p className="tabular-nums">2/3 da dose de 24 h: <strong>{br(sc.doisTercos)} U</strong> · NPH 0,6 U/kg: <strong>{br(sc.nphPorPeso)} U</strong></p>
+      </Secao>
+
+      <Secao titulo="Consenso ADA/EASD 2024 — o que muda em relação ao manual" descricao="Umpierrez et al., Diabetes Care 2024;47:1257–1275. As contas abaixo usam o peso e a bomba do manual (0,2 U/mL). A conduta é do médico.">
+        <p><strong>Fluido</strong> ({T.fluido.pagina}): {T.fluido.texto} → <span className="tabular-nums">{faixa(f24.mlH)} mL/h; {faixa(f24.totalEm2a4h)} mL em 2–4 h</span>. {T.fluido.fragil}.</p>
+        <p><strong>Glicose</strong> ({T.glicose.pagina}): {T.glicose.texto}.</p>
+        <p>
+          <strong>Insulina</strong> ({T.insulina.pagina}): {T.insulina.texto}.
+          {i24 && <> Para o peso informado: <span className="tabular-nums">0,1 U/kg/h = <strong>{br(i24.uH)} U/h = {br(i24.mlH)} mL/h</strong>; bolus só se atraso: {br(i24.bolusSeAtrasoU)} U; 0,05 U/kg/h (glicose &lt; 250 ou EHH) = {br(i24.reduzidaUH)} U/h = {br(i24.reduzidaMlH)} mL/h</span>.</>}
+        </p>
+        <p>
+          <strong>Potássio</strong> ({T.potassio.pagina}): {k24 ? <>{T.potassio.texto[k24]}.</> : <span className="text-muted-foreground">informe o potássio — faixas &lt; 3,5 / 3,5–5,0 / &gt; 5,0 mmol/L.</span>}
+          {k24 === 'baixo' && <span className="text-atencao"> Insulina só depois de K &gt; 3,5 (o manual usa 3,3).</span>}
+        </p>
+        <p>
+          <strong>Bicarbonato</strong> ({T.bicarbonato.pagina}): {T.bicarbonato.texto}.
+          {bic24 !== null && <> pH {br(ph, 2)}: <strong>{bic24 ? 'dentro da indicação do consenso (< 7,0)' : 'fora da indicação do consenso (≥ 7,0)'}</strong>{bic24 && !bic?.indicado && <span className="text-atencao"> — pelo manual (&lt; 6,9) não estaria.</span>}</>}
+        </p>
+        <p><strong>Fosfato</strong> ({T.fosfato.pagina}): {T.fosfato.texto}. <strong>Monitorização</strong> ({T.monitorizacao.pagina}): {T.monitorizacao.texto}.</p>
+        <p><strong>EHH</strong> ({T.ehh.pagina}): {T.ehh.texto}.</p>
+        <p><strong>Transição</strong> ({T.transicao.pagina}): {T.transicao.texto}{peso > 0 && <> → basal <span className="tabular-nums">{faixa([T.transicao.basalUKg[0] * peso, T.transicao.basalUKg[1] * peso], 1)} U</span></>}.</p>
+        <details className="text-muted-foreground">
+          <summary className="cursor-pointer text-foreground">Manual do HC × consenso 2024 — todas as diferenças</summary>
+          <ul className="mt-2 flex flex-col gap-1">
+            {DIFERENCAS_2024.map((d) => <li key={d.tema}><strong>{d.tema}:</strong> manual — {d.manual}; consenso — {d.consenso}.</li>)}
+          </ul>
+        </details>
       </Secao>
 
       <Secao titulo="Texto × fluxogramas do capítulo" descricao="A ferramenta segue o texto; estas são as divergências encontradas no próprio livro (errata).">

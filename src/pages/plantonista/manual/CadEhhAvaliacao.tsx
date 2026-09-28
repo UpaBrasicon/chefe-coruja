@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import {
-  ERRATA_OSMOLARIDADE, TABELA_GRAVIDADE, anionGap, criteriosCad, criteriosEhh, criteriosResolucao, fichaCadEhhAvaliacao, gravidadePorBicarbonato,
-  gravidadePorPh, osmolaridadeEfetiva,
+  DIFERENCAS_2024, ERRATA_OSMOLARIDADE, TABELA_GRAVIDADE, anionGap, criteriosCad, criteriosCad2024, criteriosEhh, criteriosEhh2024, criteriosResolucao, fichaCadEhhAvaliacao,
+  gravidadeCad2024, gravidadePorBicarbonato, gravidadePorPh, osmolalidadeEfetiva2024, osmolaridadeEfetiva, resolucaoCad2024, resolucaoEhh2024,
 } from '@/clinico/adulto/glicemia'
 import { ERRATA_SODIO_CORRIGIDO, sodioCorrigido } from '@/clinico/adulto/sodio'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -42,6 +42,10 @@ export function CadEhhAvaliacao() {
   const [hco3, setHco3] = useState(0)
   const [ph, setPh] = useState(0)
   const [cetose, setCetose] = useState<boolean | null>(null)
+  const [dmPrevio, setDmPrevio] = useState(false)
+  const [bhb, setBhb] = useState(0)
+  const [cetonaRes, setCetonaRes] = useState(0)
+  const [diurese, setDiurese] = useState(0)
 
   const naCorr = sodioCorrigido(na, glic)
   const osm = naCorr === null ? null : osmolaridadeEfetiva(naCorr, glic)
@@ -52,10 +56,19 @@ export function CadEhhAvaliacao() {
   const gBic = hco3 > 0 ? gravidadePorBicarbonato(hco3) : null
   const res = ag === null ? null : criteriosResolucao(ph, ag, hco3)
 
+  // consenso ADA/EASD 2024 (Na medido na osmolalidade efetiva; BHB opcional)
+  const osm2024 = osmolalidadeEfetiva2024(na, glic)
+  const bhbOpc = bhb > 0 ? bhb : undefined
+  const cad2024 = criteriosCad2024({ glicemia: glic, dmPrevio, bhb: bhbOpc, cetonuria2mais: cetose, ph, hco3 })
+  const ehh2024 = osm2024 === null ? null : criteriosEhh2024({ glicemia: glic, osmEfetiva: osm2024, bhb: bhbOpc, cetonuria2mais: cetose, ph, hco3 })
+  const g2024 = gravidadeCad2024({ bhb: bhbOpc, ph: ph > 0 ? ph : undefined, hco3: hco3 > 0 ? hco3 : undefined })
+  const resCad2024 = cetonaRes > 0 || (ph > 0 && hco3 > 0) ? resolucaoCad2024(ph, hco3, cetonaRes) : null
+  const resEhh2024 = osm2024 !== null && diurese > 0 ? resolucaoEhh2024(osm2024, diurese, glic) : null
+
   return (
     <ToolLayout
       title="Cetoacidose e estado hiperosmolar — critérios e fórmulas"
-      description="Sódio corrigido, osmolaridade efetiva, ânion-gap, critérios de CAD/EHH, gravidade (Tabela 1) e critérios para desligar a bomba, como o manual do HCFMUSP traz. Adulto (14 anos ou mais)."
+      description="Sódio corrigido, osmolaridade efetiva, ânion-gap, critérios de CAD/EHH, gravidade e critérios de resolução: manual do HCFMUSP e consenso ADA/EASD 2024, lado a lado. Adulto (14 anos ou mais)."
       ficha={fichaCadEhhAvaliacao}
     >
       <Card>
@@ -73,6 +86,66 @@ export function CadEhhAvaliacao() {
               ))}
             </div>
           </div>
+          <NumberField id="cad-bhb" label="β-hidroxibutirato (consenso 2024)" unit="mmol/L" value={bhb} onChange={setBhb} step={0.1} />
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-4" checked={dmPrevio} onChange={(e) => setDmPrevio(e.target.checked)} /> Diabetes prévio (consenso 2024)</label>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Consenso ADA/EASD 2024 — critérios, gravidade e resolução</CardTitle>
+          <CardDescription>Umpierrez et al., Diabetes Care 2024;47:1257–1275 (Fig. 2, p. 1262; Tabela 2, p. 1263; Fig. 4, p. 1264). Mudanças em relação ao manual: glicose ≥ 200 OU diabetes prévio; BHB ≥ 3,0; pH &lt; 7,3 e/ou HCO₃ &lt; 18; o ânion-gap sai; EHH com osmolalidade efetiva &gt; 300 pelo sódio MEDIDO e sem exigir alteração do sensório.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3 text-sm">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="rounded-lg border p-3">
+              <div className="font-medium">CAD (Fig. 2A)</div>
+              {cad2024 ? (
+                <ul className="mt-1 text-muted-foreground">
+                  <li>Glicose ≥ 200 mg/dL ou diabetes prévio: {sn(cad2024.hiperglicemiaOuDm)}</li>
+                  <li>BHB ≥ 3,0 mmol/L ou cetonúria 2+: {sn(cad2024.cetose)}</li>
+                  <li>pH &lt; 7,3 e/ou HCO₃ &lt; 18: {sn(cad2024.acidose)}</li>
+                  <li className="mt-1 font-medium text-foreground">Critérios do consenso preenchidos: {sn(cad2024.preenche)}{cad2024.euglicemica && ' — CAD euglicêmica (glicose < 200): dextrose desde o início'}</li>
+                </ul>
+              ) : <p className="text-muted-foreground">Informe glicemia, pH e bicarbonato.</p>}
+            </div>
+            <div className="rounded-lg border p-3">
+              <div className="font-medium">EHH (Fig. 2B) — os quatro juntos</div>
+              {ehh2024 ? (
+                <ul className="mt-1 text-muted-foreground">
+                  <li>Glicose ≥ 600 mg/dL: {sn(ehh2024.glicemia)}</li>
+                  <li>Osmolalidade efetiva &gt; 300 (2 × Na medido + glicose/18 = {br(osm2024)}) ou total &gt; 320: {sn(ehh2024.hiperosmolar)}</li>
+                  <li>BHB &lt; 3,0 ou cetonúria &lt; 2+: {sn(ehh2024.semCetoseSignificativa)}</li>
+                  <li>pH ≥ 7,3 e HCO₃ ≥ 15: {sn(ehh2024.semAcidose)}</li>
+                  <li className="mt-1 font-medium text-foreground">Critérios do consenso preenchidos: {sn(ehh2024.preenche)}</li>
+                </ul>
+              ) : <p className="text-muted-foreground">Informe glicemia, sódio, pH e bicarbonato.</p>}
+            </div>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-4">
+            <Item rotulo="Gravidade pelo BHB (Tabela 2)" valor={g2024.porBhb ?? '—'} detalhe="3,0–6,0 leve/moderada; > 6,0 grave" />
+            <Item rotulo="Pelo pH" valor={g2024.porPh ?? '—'} detalhe="> 7,25 a < 7,30 leve; 7,0–7,25 moderada; < 7,0 grave" />
+            <Item rotulo="Pelo HCO₃" valor={g2024.porHco3 ?? '—'} detalhe="15–18 leve; 10 a < 15 moderada; < 10 grave" />
+            <Item rotulo="Pior parâmetro" valor={g2024.pior ?? '—'} detalhe="o consenso não exige todas as variáveis" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <NumberField id="cad-cetona-res" label="Cetona atual (para a resolução)" unit="mmol/L" value={cetonaRes} onChange={setCetonaRes} step={0.1} />
+            <NumberField id="cad-diurese" label="Diurese (para o EHH)" unit="mL/kg/h" value={diurese} onChange={setDiurese} step={0.1} />
+          </div>
+          <p>
+            Resolução da CAD (Fig. 4): pH venoso &gt; 7,3 ou HCO₃ &gt; 18 <strong>e</strong> cetona &lt; 0,6 mmol/L —{' '}
+            {resCad2024 ? <strong>{resCad2024.resolvida ? 'atinge' : 'não atinge'}</strong> : <span className="text-muted-foreground">informe pH, bicarbonato e cetona</span>}
+          </p>
+          <p>
+            Resolução do EHH (Fig. 4): osmolalidade &lt; 300, diurese &gt; 0,5 mL/kg/h e glicose &lt; 250 —{' '}
+            {resEhh2024 ? <strong>{resEhh2024.resolvido ? 'atinge' : 'não atinge'}</strong> : <span className="text-muted-foreground">informe sódio, glicemia e diurese</span>}
+          </p>
+          <details className="text-muted-foreground">
+            <summary className="cursor-pointer text-foreground">Manual do HC × consenso 2024 — todas as diferenças</summary>
+            <ul className="mt-2 flex flex-col gap-1">
+              {DIFERENCAS_2024.map((d) => <li key={d.tema}><strong>{d.tema}:</strong> manual — {d.manual}; consenso — {d.consenso}.</li>)}
+            </ul>
+          </details>
         </CardContent>
       </Card>
 

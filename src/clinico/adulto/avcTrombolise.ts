@@ -1,5 +1,6 @@
 import { completo, escolha, somar, type Escore, type Item } from '../escore.ts'
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Trombólise endovenosa no AVC isquêmico do adulto — cap. 38 do Manual de
 // Medicina de Emergência do HCFMUSP (3ª ed., 2022), p. 513–541 (Tabelas 2–7 e
@@ -8,16 +9,33 @@ import { fichaAdulto } from './fonte.ts'
 // as escalas NIHSS e Rankin modificada como o livro traz. A indicação é do
 // médico (ADR 0007): a ferramenta mostra o que o livro lista.
 // O alteplase e a tenecteplase do IAM/TEP ficam em anticoagulacao.ts.
+//
+// Versão .1 de 28/09/2026: ao lado do livro entra a diretriz AHA/ASA 2026
+// (Stroke 2026;57:e316–e436), lida no PDF: tenecteplase 0,25 mg/kg (máx. 25 mg)
+// como Classe 1 ao lado da alteplase (decisão do RT em 28/09/2026: mostrar as
+// duas), 0,4 mg/kg não recomendada, PA, janelas, trombectomia, glicemia e
+// sangramento pós-trombólise (DIRETRIZ_AVC_2026). Páginas são as do PDF.
 
 export type Faixa = [number, number]
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
 
-export const fichaTromboliseAvcAdulto = fichaAdulto(
-  'adulto-trombolise-avc',
-  'Trombólise no AVC isquêmico — adulto',
-  'cap. 38 Acidente vascular cerebral isquêmico, p. 518–529 e 537 (Tabelas 3–7)',
-)
+export const AHA_ASA_2026: Fonte = {
+  citacao: 'Prabhakaran S, et al. 2026 Guideline for the Early Management of Patients With Acute Ischemic Stroke: A Guideline From the American Heart Association/American Stroke Association. Stroke. 2026;57:e316–e436.',
+  url: 'https://doi.org/10.1161/STR.0000000000000513',
+}
+
+const PAG_AVC_LIVRO = 'cap. 38 Acidente vascular cerebral isquêmico, p. 518–529 e 537 (Tabelas 3–7)'
+
+export const fichaTromboliseAvcAdulto: Ficha = {
+  ...fichaAdulto('adulto-trombolise-avc', 'Trombólise no AVC isquêmico — adulto', PAG_AVC_LIVRO),
+  versao: '2026-09-28.1',
+  fontes: [
+    pagina(PAG_AVC_LIVRO),
+    { ...AHA_ASA_2026, citacao: `${AHA_ASA_2026.citacao} Seções 4.3 (PA, p. 35 do PDF), 4.5 (glicemia, p. 37), 4.6 (trombólise, p. 38–44; Tabela 5, p. 40; Tabela 7, p. 43) e 4.7 (trombectomia, p. 5 e 53).` },
+  ],
+  revisadoEm: '28/09/2026 (AHA/ASA 2026 conferida no PDF; manual do HC mantido como base)',
+}
 
 // ── Alteplase e tenecteplase ─────────────────────────────────────────────────
 
@@ -45,6 +63,57 @@ export const TENECTEPLASE_AVC = {
 export function tenecteplaseAvc(pesoKg: number): number | null {
   return valido(pesoKg) ? TENECTEPLASE_AVC.mgKg * pesoKg : null
 }
+
+// ── AHA/ASA 2026 ─────────────────────────────────────────────────────────────
+
+/** Tenecteplase pela AHA/ASA 2026: 0,25 mg/kg em bolus, máximo 25 mg (Classe 1, LOE A); Tabela 7 (p. 43) traz faixas de peso. */
+export const TENECTEPLASE_2026 = {
+  mgKg: 0.25,
+  maxMg: 25,
+  classe: 'COR 1, LOE A',
+  texto: 'AHA/ASA 2026: até 4,5 h do início ou da última vez bem, tenecteplase 0,25 mg/kg (máx. 25 mg) em bolus OU alteplase 0,9 mg/kg (máx. 90 mg) — Classe 1. Tenecteplase 0,4 mg/kg NÃO recomendada (Classe 3: sem benefício, LOE A)',
+  pagina: 'p. 5 e 42 (4.6.2); Tabela 7, p. 43',
+  /** Tabela 7 (p. 43): faixas de peso, mg e mL (solução de 5 mg/mL) */
+  tabela7: [
+    { ate: 60, mg: 15, ml: 3 },
+    { ate: 70, mg: 17.5, ml: 3.5 },
+    { ate: 80, mg: 20, ml: 4 },
+    { ate: 90, mg: 22.5, ml: 4.5 },
+    { ate: Infinity, mg: 25, ml: 5 },
+  ],
+}
+
+export type Tenecteplase2026 = { mg: number; limitadoAoTeto: boolean; faixaTabela7: { mg: number; ml: number; faixa: string } }
+
+/** 0,25 mg/kg, máximo 25 mg, e a faixa de peso da Tabela 7 (p. 43): < 60, 60–< 70, 70–< 80, 80–< 90, ≥ 90 kg. */
+export function tenecteplase2026(pesoKg: number): Tenecteplase2026 | null {
+  if (!valido(pesoKg)) return null
+  const bruto = TENECTEPLASE_2026.mgKg * pesoKg
+  const t = TENECTEPLASE_2026.tabela7.find((f) => pesoKg < f.ate)!
+  const i = TENECTEPLASE_2026.tabela7.indexOf(t)
+  const faixa = i === 0 ? '< 60 kg' : t.ate === Infinity ? '≥ 90 kg' : `${TENECTEPLASE_2026.tabela7[i - 1].ate}–< ${t.ate} kg`
+  return { mg: Math.min(bruto, TENECTEPLASE_2026.maxMg), limitadoAoTeto: bruto > TENECTEPLASE_2026.maxMg, faixaTabela7: { mg: t.mg, ml: t.ml, faixa } }
+}
+
+export type ItemDiretriz = { tema: string; texto: string; classe: string; pagina: string; livro?: string }
+
+/** O que a AHA/ASA 2026 escreve nos pontos que a ferramenta cobre, com classe de recomendação e página do PDF. */
+export const DIRETRIZ_AVC_2026: ItemDiretriz[] = [
+  { tema: 'Trombolítico até 4,5 h', texto: 'Tenecteplase 0,25 mg/kg (máx. 25 mg) ou alteplase 0,9 mg/kg (máx. 90 mg) para melhorar o desfecho funcional', classe: 'COR 1', pagina: 'p. 5 e 42', livro: 'alteplase 0,9 mg/kg; tenecteplase 0,4 mg/kg só em déficit leve sem oclusão de grande artéria (p. 521)' },
+  { tema: 'Tenecteplase 0,4 mg/kg', texto: 'Não recomendada: mais sangramento intracraniano sintomático sem melhora funcional (NOR-TEST 2)', classe: 'COR 3: sem benefício, LOE A', pagina: 'p. 42–43', livro: '0,4 mg/kg (p. 521) — superado' },
+  { tema: 'Déficit leve não incapacitante (até 4,5 h)', texto: 'Trombólise não recomendada: não foi superior à dupla antiagregação (p. ex., síndrome sensitiva isolada)', classe: 'COR 3: sem benefício, LOE B-R', pagina: 'p. 38', livro: 'NIHSS ≤ 5 não incapacitante: considerar risco-benefício (p. 523)' },
+  { tema: 'Janela estendida com imagem', texto: 'Penumbra salvável em perfusão automatizada e (a) despertar com sintomas até 9 h do meio do sono ou (b) 4,5–9 h da última vez bem: trombólise pode ser razoável', classe: 'COR 2b, LOE B-R', pagina: 'p. 5 e 44', livro: 'janela < 4,5 h (p. 521)' },
+  { tema: 'PA antes da trombólise', texto: 'PA elevada em candidato a trombólise: baixar a PAS para < 185 e a PAD para < 110 mmHg antes de iniciar, para reduzir complicações hemorrágicas', classe: 'rec. 5 da seção 4.3', pagina: 'p. 35', livro: '≥ 185 × 110 é contraindicação redutível (Tabela 4, p. 522)' },
+  { tema: 'PA após a trombólise', texto: 'Manter PA < 180/105 mmHg por pelo menos 24 h', classe: 'COR 1, LOE B-R', pagina: 'p. 35', livro: '< 180 × 105 por 24 h (Tabela 5, p. 526)' },
+  { tema: 'Redução intensiva da PAS após trombólise', texto: 'Alvo de PAS < 140 mmHg (em vez de < 180) não recomendado em AVC leve a moderado: não melhora o desfecho', classe: 'COR 3: sem benefício, LOE B-R', pagina: 'p. 35' },
+  { tema: 'PA na trombectomia', texto: 'Sem trombólise prévia: razoável manter ≤ 185/110 antes do procedimento; durante e nas 24 h após, ≤ 180/105. Após recanalização bem-sucedida (mTICI 2b–3) sem outra indicação, PAS < 140 nas primeiras 72 h é danosa', classe: 'COR 2a (B-NR) · COR 2a (B-NR) · COR 3: dano (A)', pagina: 'p. 5 e 35', livro: '≤ 180 × 105 por 24 h após trombectomia (p. 529)' },
+  { tema: 'Glicemia', texto: 'Hipoglicemia (< 60 mg/dL) deve ser tratada; hiperglicemia persistente: razoável buscar 140–180 mg/dL; controle intensivo 80–130 com insulina IV não recomendado (mais hipoglicemia grave)', classe: 'COR 1 (C-LD) · COR 2a (C-LD) · COR 3', pagina: 'p. 3 e 37', livro: 'corrigir < 60; alvo 140–180 (p. 519 e 540)' },
+  { tema: 'Trombectomia 0–6 h', texto: 'Oclusão proximal de circulação anterior (ACI ou M1), NIHSS ≥ 6, Rankin prévio 0–1, ASPECTS 3–10: trombectomia recomendada; ASPECTS 0–2 em selecionados: razoável', classe: 'COR 1 · COR 2a (B-R)', pagina: 'p. 5 e 53', livro: 'NIHSS ≥ 6, Rankin 0–1 (p. 529–530)' },
+  { tema: 'Trombectomia 6–24 h', texto: 'ASPECTS 6–10 com Rankin prévio 0–1: recomendada (LOE A). ASPECTS 3–5, idade < 80 anos, NIHSS ≥ 6, Rankin 0–1, sem efeito de massa significativo: recomendada (LOE A)', classe: 'COR 1, LOE A', pagina: 'p. 5 e 53', livro: 'DAWN/DEFUSE 3 (p. 529–532)' },
+  { tema: 'Oclusão de basilar', texto: 'Rankin prévio 0–1, NIHSS ≥ 10 e PC-ASPECTS ≥ 6: trombectomia até 24 h do início', classe: 'COR 1', pagina: 'p. 5' },
+  { tema: 'Sangramento intracraniano sintomático após trombólise (Tabela 5)', texto: 'Suspender a infusão; hemograma, TP/INR, TTPa, fibrinogênio, tipagem; TC sem contraste; crioprecipitado 10 U em 10–30 min para fibrinogênio ≥ 150 mg/dL (10 U sobem ~50 mg/dL); ácido tranexâmico 1.000 mg IV em 10 min OU ácido ε-aminocaproico 4–5 g em 1 h e depois 1 g/h até controlar; hematologia e neurocirurgia', classe: 'Tabela 5', pagina: 'p. 40', livro: 'crio 10 U, fibrinogênio 200 mg/dL, TXA 10–15 mg/kg em 20 min (Tabela 6, p. 528)' },
+  { tema: 'Monitorização após trombólise (Tabela 7)', texto: 'PA e exame neurológico a cada 15 min por 2 h, a cada 30 min por 6 h e a cada hora até 24 h; aumentar a frequência se PAS > 180 ou PAD > 105 e tratar para manter abaixo; adiar sondas nasogástrica e vesical e cateter arterial', classe: 'Tabela 7', pagina: 'p. 43', livro: 'igual (Tabela 5, p. 526–527)' },
+]
 
 // ── Critérios numéricos da Tabela 4 (p. 521–526) ─────────────────────────────
 

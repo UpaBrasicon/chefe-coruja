@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 import {
-  ALTEPLASE_AVC, ALVOS_PA_AVC, ANGIOEDEMA_POS_ALTEPLASE, ASPECTS_LIVRO, CONTRAINDICACOES_ABSOLUTAS, CUIDADOS_AVC, ERRATA_PA_AVC,
-  NITROPRUSSIATO_AVC, SANGRAMENTO_POS_ALTEPLASE, TABELA4_PAGINA, TENECTEPLASE_AVC, alteplaseAvc, avaliarTrombolise, conferirPa,
-  fichaTromboliseAvcAdulto, nitroprussiatoMlH, reducao15, tenecteplaseAvc, tranexamicoPosAlteplase, type Faixa, type SituacaoPa,
+  ALTEPLASE_AVC, ALVOS_PA_AVC, ANGIOEDEMA_POS_ALTEPLASE, ASPECTS_LIVRO, CONTRAINDICACOES_ABSOLUTAS, CUIDADOS_AVC, DIRETRIZ_AVC_2026, ERRATA_PA_AVC,
+  NITROPRUSSIATO_AVC, SANGRAMENTO_POS_ALTEPLASE, TABELA4_PAGINA, TENECTEPLASE_2026, TENECTEPLASE_AVC, alteplaseAvc, avaliarTrombolise, conferirPa,
+  fichaTromboliseAvcAdulto, nitroprussiatoMlH, reducao15, tenecteplase2026, tenecteplaseAvc, tranexamicoPosAlteplase, type Faixa, type SituacaoPa,
 } from '@/clinico/adulto/avcTrombolise'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -50,6 +50,7 @@ export function TromboliseAvcAdulto() {
 
   const alt = alteplaseAvc(peso)
   const tnk = tenecteplaseAvc(peso)
+  const tnk26 = tenecteplase2026(peso)
   const nitro = nitroprussiatoMlH(peso)
   const txa = tranexamicoPosAlteplase(peso)
   const av = avaliarTrombolise({
@@ -62,7 +63,7 @@ export function TromboliseAvcAdulto() {
   return (
     <ToolLayout
       title="Trombólise no AVC isquêmico — adulto"
-      description="Alteplase e tenecteplase por peso, critérios numéricos da Tabela 4, alvos de PA (com a errata do livro), nitroprussiato, sangramento e angioedema pós-alteplase. Adulto (14 anos ou mais); o critério do livro para trombólise é ≥ 18 anos."
+      description="Alteplase e tenecteplase por peso (manual do HC e AHA/ASA 2026), critérios numéricos da Tabela 4, alvos de PA, nitroprussiato, sangramento e angioedema pós-trombólise. Adulto (14 anos ou mais); o critério do livro para trombólise é ≥ 18 anos."
       ficha={fichaTromboliseAvcAdulto}
     >
       <CampoPeso id="avc-peso" peso={peso} onChange={setPeso}>
@@ -77,7 +78,33 @@ export function TromboliseAvcAdulto() {
           conta={alt ? <>total <strong>{br(alt.totalMg)} mg</strong>{alt.limitadoAoTeto && ' (no teto)'} · bolus <strong>{br(alt.bolusMg)} mg</strong> · {br(alt.infusaoMg)} mg em 60 min ({br(alt.infusaoMgH)} mg/h)</> : 'informe o peso'}
           pagina={ALTEPLASE_AVC.pagina}
         />
-        <LinhaManual nome="Tenecteplase" texto={TENECTEPLASE_AVC.texto} conta={tnk !== null ? <strong>{br(tnk)} mg</strong> : 'informe o peso'} pagina={TENECTEPLASE_AVC.pagina} errata={TENECTEPLASE_AVC.errata} />
+        <LinhaManual
+          nome="Tenecteplase — AHA/ASA 2026"
+          texto={TENECTEPLASE_2026.texto}
+          conta={tnk26 ? <>0,25 mg/kg = <strong>{br(tnk26.mg)} mg</strong>{tnk26.limitadoAoTeto && ' (no teto de 25 mg)'} · Tabela 7 ({tnk26.faixaTabela7.faixa}): <strong>{br(tnk26.faixaTabela7.mg)} mg = {br(tnk26.faixaTabela7.ml)} mL</strong> a 5 mg/mL</> : 'informe o peso'}
+          pagina={TENECTEPLASE_2026.pagina}
+        />
+        <LinhaManual nome="Tenecteplase — manual do HC (superada pela AHA/ASA 2026)" texto={TENECTEPLASE_AVC.texto} conta={tnk !== null ? <strong>{br(tnk)} mg</strong> : 'informe o peso'} pagina={TENECTEPLASE_AVC.pagina} errata={`${TENECTEPLASE_AVC.errata} A AHA/ASA 2026 não recomenda 0,4 mg/kg (Classe 3: sem benefício, LOE A; p. 42).`} />
+      </Bloco>
+
+      <Bloco titulo="AHA/ASA 2026 — o que a diretriz escreve, com classe e página" descricao="Prabhakaran et al., Stroke 2026;57:e316–e436 (páginas do PDF). Decisão do responsável técnico (28/09/2026): alteplase e tenecteplase lado a lado. A ferramenta mostra; a indicação é do médico.">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-left align-top text-sm">
+            <thead className="text-muted-foreground">
+              <tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">AHA/ASA 2026</th><th className="pr-3 pb-2">Classe · página</th><th className="pb-2">Manual do HC</th></tr>
+            </thead>
+            <tbody>
+              {DIRETRIZ_AVC_2026.map((d) => (
+                <tr key={d.tema} className="border-t">
+                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
+                  <td className="pr-3 py-2">{d.texto}</td>
+                  <td className="pr-3 py-2 text-muted-foreground">{d.classe} · {d.pagina}</td>
+                  <td className="py-2 text-muted-foreground">{d.livro ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Bloco>
 
       <Bloco titulo={`Critérios numéricos da Tabela 4 (${TABELA4_PAGINA})`} descricao="A ferramenta confere os cortes contra os dados informados e mostra em que grupo do livro cada um cai. A indicação é do médico.">

@@ -1,3 +1,4 @@
+import { ILAS_2026 } from '../adulto/ressuscitacaoVolemica.ts'
 import { completo, escolha, numero, somar, type Escore, type Respostas } from '../escore.ts'
 
 // Sepse no adulto: qSOFA, SOFA e lactato numa ferramenta só, como no protótipo
@@ -9,6 +10,11 @@ import { completo, escolha, numero, somar, type Escore, type Respostas } from '.
 // Versão .2 (27/09/2026): alinhada à Surviving Sepsis Campaign 2026 — o rastreio
 // é o NEWS2 (ferramenta própria); o qSOFA deixou de ser obrigatório e fica só
 // como sinal de alerta opcional.
+// Versão .3 (28/09/2026): protocolo do ILAS (jul/2026) ao lado da SSC — o ILAS
+// define choque séptico pela hipotensão não corrigida com a reposição inicial
+// (PAM ≤ 65), independentemente do lactato; o Sepsis-3 exige lactato ≥ 2. Os
+// dois critérios aparecem. Volume, vasopressor e corticoide estão na ferramenta
+// de ressuscitação volêmica, fonte a fonte.
 
 const NAO_SIM = [{ rotulo: 'Não', valor: 0 }, { rotulo: 'Sim', valor: 1 }]
 const SOFA = ['resp', 'coag', 'hep', 'cv', 'snc', 'renal']
@@ -21,18 +27,19 @@ const opcionalInvalido = (r: Respostas, id: string) => r[id] !== undefined && nu
 export const sepseAdulto: Escore = {
   ficha: {
     id: 'sepse-adulto',
-    titulo: 'Sepse no adulto — SOFA, choque e lactato (Sepsis-3 · SSC 2026)',
-    versao: '2026-09-27.2',
+    titulo: 'Sepse no adulto — SOFA, choque e lactato (Sepsis-3 · SSC 2026 · ILAS 2026)',
+    versao: '2026-09-28.3',
     publico: 'adulto',
     fontes: [
       { citacao: 'Singer M, Deutschman CS, Seymour CW, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801–810.', url: 'https://doi.org/10.1001/jama.2016.0287' },
-      { citacao: 'Prescott HC, Antonelli M, Alhazzani W, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2026. Crit Care Med. 2026.', url: 'https://doi.org/10.1097/CCM.0000000000007075' },
+      { citacao: 'Prescott HC, Antonelli M, Alhazzani W, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2026. Crit Care Med. 2026;54(4):725–812. Rec. 4 (p. 15), 51 e 52 (p. 39–40).', url: 'https://doi.org/10.1097/CCM.0000000000007075' },
+      { ...ILAS_2026, citacao: `${ILAS_2026.citacao} Definições (p. 3 e 5), triagem (p. 5 e 7), lactato (p. 8 e 14).` },
       { citacao: 'Meyer NJ, Prescott HC. Sepsis and septic shock. N Engl J Med. 2024;391(22):2133–2146.', url: 'https://doi.org/10.1056/NEJMra2403213' },
       { citacao: 'ANDROMEDA-SHOCK-2 Investigators. Peripheral perfusion-targeted resuscitation in septic shock. JAMA. 2025.', url: 'https://doi.org/10.1001/jama.2025.0084' },
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '28/09/2026 (SSC 2026 e ILAS jul/2026 conferidos no texto)',
   },
-  descricao: 'Disfunção orgânica pelo SOFA, critério de choque séptico e clareamento de lactato; o rastreio é pelo NEWS2',
+  descricao: 'Disfunção orgânica pelo SOFA, choque séptico pelo Sepsis-3 e pelo ILAS, clareamento de lactato; o rastreio é pelo NEWS2',
   itens: [
     { tipo: 'escolha', id: 'resp', rotulo: 'SOFA · Respiratório · PaO₂/FiO₂', opcoes: [
       { rotulo: '400 ou mais', valor: 0 }, { rotulo: 'Abaixo de 400', valor: 1 }, { rotulo: 'Abaixo de 300', valor: 2 },
@@ -81,26 +88,31 @@ export const sepseAdulto: Escore = {
     const lacAnt = numero(sepseAdulto, r, 'lacAnt')
     const lacAlto = lac !== undefined && lac >= 2
     const choque = sepse && vaso && lacAlto && vol
+    // ILAS jul/2026 (p. 5): hipotensão não corrigida com a reposição inicial (PAM ≤ 65), independentemente do lactato
+    const choqueIlas = sepse && vaso && vol
     // Clareamento: referência de queda de 10% a cada 2 h (protótipo, SSC 2026).
     const temPar = lac !== undefined && lacAnt !== undefined && lacAnt > 0
     const clar = temPar ? ((lacAnt - lac) / lacAnt) * 100 : NaN
     const h = numero(sepseAdulto, r, 'horas')
     const hrs = h !== undefined && h > 0 ? h : 2
     const metaOk = Number.isFinite(clar) && clar >= 10 * (hrs / 2)
-    const banda = choque ? 2 : sepse ? 1 : 0
+    const banda = choque || choqueIlas ? 2 : sepse ? 1 : 0
     return {
-      rotulo: choque ? 'Choque séptico' : sepse ? 'Sepse' : 'SOFA',
+      rotulo: choque ? 'Choque séptico' : choqueIlas ? 'Choque séptico (ILAS)' : sepse ? 'Sepse' : 'SOFA',
       valor: String(sofa),
       unidade: 'de 24',
       nota: choque
         ? 'vasopressor e lactato de ' + fmt(lac!) + ' após ressuscitação'
-        : sepse ? 'disfunção orgânica de 2 pontos ou mais — sepse, se houver infecção' : 'sem disfunção suficiente para sepse pelo SOFA',
+        : choqueIlas
+          ? 'vasopressor após a reposição inicial — choque pelo ILAS; o Sepsis-3 ainda exige lactato de 2 ou mais'
+          : sepse ? 'disfunção orgânica de 2 pontos ou mais — sepse, se houver infecção' : 'sem disfunção suficiente para sepse pelo SOFA',
       estado: banda as 0 | 1 | 2,
       derivados: [
         ['Rastreio', 'NEWS2 (ferramenta própria na Central) — SSC 2026: NEWS, NEWS2, MEWS ou SIRS em vez do qSOFA'],
-        ['qSOFA', nQ + ' de 3 · ' + (nQ >= 2 ? 'positivo — sinal de alerta' : 'negativo ou não marcado, o que NÃO afasta sepse')],
+        ['qSOFA', nQ + ' de 3 · ' + (nQ >= 2 ? 'positivo — sinal de alerta (ILAS: atenção especial)' : 'negativo ou não marcado, o que NÃO afasta sepse')],
         ['Critério de sepse', 'infecção suspeita ou confirmada mais SOFA de 2 ou mais · Sepsis-3'],
-        ['Critério de choque séptico', 'sepse mais vasopressor para PAM de 65 mais lactato de 2 ou mais, após ressuscitação'],
+        ['Critério de choque séptico · Sepsis-3', 'sepse mais vasopressor para PAM de 65 mais lactato de 2 ou mais, após ressuscitação'],
+        ['Critério de choque séptico · ILAS jul/2026', 'hipotensão não corrigida com a reposição volêmica inicial (PAM de 65 ou menos), independentemente do lactato (p. 5) · ' + (choqueIlas ? 'preenchido' : 'não preenchido')],
         ['Lactato atual', lac === undefined ? 'não informado — o critério de choque séptico depende dele' : fmt(lac) + ' mmol/L' + (lacAlto ? ' · acima do limiar de choque' : ' · abaixo do limiar')],
         ['Clareamento', temPar ? fmt(clar) + '% em ' + fmt(hrs) + ' h · referência de 10% a cada 2 h · ' + (metaOk ? 'referência atingida' : 'ABAIXO da referência') : 'sem medida anterior'],
         ['Sistemas com disfunção', SOFA.filter((k) => (escolha(sepseAdulto, r, k)?.valor ?? 0) > 0).length + ' de 6'],
@@ -115,6 +127,7 @@ export const sepseAdulto: Escore = {
       cuidados: [
         'Surviving Sepsis Campaign 2026: para rastrear sepse no paciente agudo, NEWS, NEWS2, MEWS ou SIRS em vez do qSOFA como ferramenta única (recomendação forte, certeza moderada). O qSOFA aqui é opcional e só sinal de alerta.',
         'SSC 2026 sugere medir o lactato na sepse possível, provável ou confirmada, e usar medidas seriadas e o tempo de enchimento capilar como apoio à ressuscitação (sugestões condicionais, certeza baixa).',
+        'ILAS jul/2026: lactato na 1ª hora; 2ª medida em 4 horas da abertura do protocolo quando acima de 2 vezes o normal; TEC acima de 3 segundos manda ressuscitar mesmo com lactato normal (p. 8 e 14). Volume, vasopressor e corticoide, fonte a fonte, estão na ferramenta de ressuscitação volêmica.',
         'O SOFA mede DELTA: em paciente com disfunção crônica prévia, o que conta é o aumento em relação ao basal, e esta tela assume basal zero.',
         'Na criança este escore NÃO se aplica: a referência é o Phoenix. O limiar de lactato pediátrico permanece incerto na literatura.',
       ],
