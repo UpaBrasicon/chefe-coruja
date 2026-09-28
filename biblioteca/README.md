@@ -42,9 +42,15 @@ Guia completo: `produto/docs/pesquisa/busca-ia-guia-implementacao.md`.
 Além das do guia (`BIBLIOTECA_API_KEY`, `QDRANT_URL`, `OLLAMA_URL`,
 `EMBED_MODEL`, `DEEPSEEK_*`, `TOP_K`):
 
-- `GATE_MIN_SCORE=0.52` — abaixo disso a pergunta é bloqueada ("Não encontrei
-  isso no material de referência"). Nas evals de 28/09 as perguntas fora do
-  escopo ficaram entre 0,34 e 0,47 e as clínicas do corpus entre 0,53 e 0,73.
+- `GATE_MIN_SCORE=0.50` e `GATE_MIN_SEM_LEXICO=0.58` — gate em dois níveis:
+  se algum dos 3 trechos mais próximos contém uma palavra-chave da pergunta,
+  basta 0,50; se nenhum contém (pergunta sem nada em comum com o texto, como
+  "configurar o wifi" caindo em trecho clínico com 0,52), exige-se 0,58.
+  Nas evals de 28/09 as perguntas fora do escopo ficaram entre 0,34 e 0,52 e
+  as clínicas entre 0,51 e 0,77.
+- Guarda contra cálculo (R3): pergunta com peso/idade recebe lembrete
+  explícito de não calcular; quantidade na resposta que não existe em nenhum
+  trecho vira `calculo_suspeito` no evento `done` e alerta no painel.
 - `LLM_MAX_TOKENS=2000` e `LLM_EXTRA_BODY={"thinking":{"type":"disabled"}}` —
   o `deepseek-v4-flash` é modelo com raciocínio: com 900 tokens ele gastava
   tudo pensando e devolvia resposta vazia (13 das 56 evals). Com o raciocínio
