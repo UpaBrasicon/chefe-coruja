@@ -41,6 +41,14 @@
   url: "https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/svsa/vigilancia/guia-de-vigilancia-em-saude-volume-3-6a-edicao"
   tenant_id: global
 
+- arquivo: ms_chikungunya_2024.pdf
+  titulo: "Chikungunya: manejo clínico, 2ª ed. revisada"
+  editor: "Ministério da Saúde"
+  ano: 2025
+  licenca: "acesso-aberto-governo"
+  url: "https://bvsms.saude.gov.br/bvs/publicacoes/chikungunya_manejo_clinico_2ed.pdf"
+  tenant_id: global
+
 # Conteúdo da própria Central (gerado por `npm run corpus:central` a partir de
 # src/clinico): cada ferramenta com a sua ficha, a fonte com página e os dados
 # que a tela usa. Não é texto de livro.
@@ -49,4 +57,20 @@
   editor: "Chefe Coruja"
   ano: 2026
   licenca: "institucional"
+  tenant_id: global
+
+- arquivo: manual_hcfmusp_3ed_2022.pdf
+  titulo: "Manual de Medicina de Emergência — HCFMUSP, 3ª ed."
+  editor: "Manole (Brandão Neto RA et al., eds.)"
+  ano: 2022
+  licenca: "sem-licenca"
+  nota: "Obra comercial (ISBN 9786555767827), sem licença de uso; decisão do RT em 28/09/2026. Anexo 1 tem erros de digitação (CLAUDE.md)."
+  tenant_id: global
+
+- arquivo: ps_pediatria_icr_4ed_2023.pdf
+  titulo: "Pronto-Socorro — Pediatria ICr-HCFMUSP, 4ª ed."
+  editor: "Manole (Schvartsman C et al., coords.)"
+  ano: 2023
+  licenca: "sem-licenca"
+  nota: "Obra comercial (ISBN 978-65-5576-759-9), sem licença de uso; decisão do RT em 28/09/2026. Não cobre o período neonatal."
   tenant_id: global
