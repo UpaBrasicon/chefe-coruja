@@ -9,6 +9,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { useFaixaPlantonista } from '@/hooks/useFaixaPlantonista'
 import { formatarDuracao, nivelDaObservacao, nivelDoTurno, tempoDaJanela, tempoDeTurno, JANELA_OBSERVACAO_MIN } from '@/domain/plantao'
 import { normalizar } from '@/lib/search'
+import { expandirSiglas } from '@/lib/siglas'
 import { buscarSemantico, useClinicalAsk, type ToolHit } from '@/lib/useClinicalAsk'
 import { chaveFerramenta, useFavoritos, useRecentes } from '@/lib/useFavoritos'
 import { cn } from '@/lib/utils'
@@ -64,7 +65,16 @@ const FUSE = new Fuse(TODAS, {
 function buscarLocal(consulta: string): Ferramenta[] {
   const q = normalizar(consulta.trim())
   if (!q) return []
-  return FUSE.search(q).map((r) => r.item)
+  // siglas ("icc", "tep", "cad"…) também procuram pela expansão
+  const consultas = [q, ...expandirSiglas(consulta).map(normalizar)]
+  const vistos = new Set<string>()
+  const saida: Ferramenta[] = []
+  for (const c of consultas) {
+    for (const r of FUSE.search(c)) {
+      if (!vistos.has(r.item.chave)) { vistos.add(r.item.chave); saida.push(r.item) }
+    }
+  }
+  return saida
 }
 
 function CartaoFerramenta({ f, favorito, onFavoritar, destacado }: { f: Ferramenta; favorito: boolean; onFavoritar: () => void; destacado?: boolean }) {

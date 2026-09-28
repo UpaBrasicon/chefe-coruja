@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 from qdrant_client import QdrantClient, models
 
 from pii import pseudonimizar
+from siglas import expandir_siglas
 
 E = os.environ
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -143,7 +144,7 @@ def health():
 @app.post("/v1/search")
 def search(r: Req, authorization: str | None = Header(None)):
     auth(authorization)
-    q = pseudonimizar(r.q)
+    q = expandir_siglas(pseudonimizar(r.q))
     tools, trechos, melhor = buscar(q, r.tenant_id)
     return {"request_id": r.request_id, "melhor_score": round(melhor, 3),
             "ferramentas": [fmt_tool(t) for t in tools if t.score > 0.45],
@@ -165,7 +166,9 @@ Regras obrigatórias:
 def ask(r: Req, authorization: str | None = Header(None)):
     auth(authorization)
     t0 = time.time()
-    q = pseudonimizar(r.q)
+    # siglas expandidas ("icc" → "icc (insuficiência cardíaca congestiva)"):
+    # sem isso a similaridade da pergunta curta com os trechos fica abaixo do gate
+    q = expandir_siglas(pseudonimizar(r.q))
     tools, trechos, melhor = buscar(q, r.tenant_id)
     fontes = [fmt_src(i, p) for i, p in enumerate(trechos)]
     gate_ok = melhor >= GATE_MIN and len(trechos) > 0
