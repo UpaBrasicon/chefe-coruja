@@ -124,7 +124,7 @@ export function ClassificacaoDengue() {
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-sm">
           {crianca ? (
-            <SemReferenciaPediatrica detalhe="A classificação acima vale para a criança. O volume de hidratação da criança segue faixa de peso no manual do Ministério e não está nesta tela." />
+            <SemReferenciaPediatrica detalhe="A classificação acima vale para a criança. O volume de hidratação da criança está na ferramenta Dengue — criança (seção Pediatria), pelo livro do ICr-HCFMUSP." />
           ) : (
             <table className="w-full text-sm">
               <tbody>
