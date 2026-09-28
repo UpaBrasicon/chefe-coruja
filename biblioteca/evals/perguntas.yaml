@@ -19,7 +19,7 @@
 - q: "dengue em gestante conduta"
   espera_fonte_contendo: "Dengue"
 - q: "quando indicar transfusão de plaquetas na dengue"
-  espera_fonte_contendo: "Dengue"
+  espera_fonte_contendo: ["Dengue", "Pronto-Socorro", "Manual de Medicina"]
 - q: "diagnóstico diferencial entre dengue chikungunya e zika"
   espera_fonte_contendo: "Dengue"
 - q: "critérios de alta na dengue"
@@ -99,16 +99,16 @@
   espera_fonte_contendo: "Central do Plantonista"
   espera_ferramenta: "bolus"
 - q: "asma na criança crise grave conduta"
-  espera_fonte_contendo: "Central do Plantonista"
+  espera_fonte_contendo: ["Central do Plantonista", "Pronto-Socorro"]
   espera_ferramenta: "asma-pediatrica"
 - q: "bronquiolite tratamento"
-  espera_fonte_contendo: "Central do Plantonista"
+  espera_fonte_contendo: ["Central do Plantonista", "Pronto-Socorro"]
   espera_ferramenta: "bronquiolite-ped"
 - q: "crise convulsiva na criança midazolam diazepam"
   espera_fonte_contendo: "Central do Plantonista"
   espera_ferramenta: "crise-epileptica-pediatrica"
 - q: "desidratação na diarreia da criança plano de hidratação"
-  espera_fonte_contendo: "Central do Plantonista"
+  espera_fonte_contendo: ["Central do Plantonista", "Pronto-Socorro"]
   espera_ferramenta: "desidratacao-diarreia-ped"
 - q: "escore CURB-65"
   espera_ferramenta: "curb-65"

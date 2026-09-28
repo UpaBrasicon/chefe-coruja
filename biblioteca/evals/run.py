@@ -46,7 +46,7 @@ resultados = []
 for i, it in enumerate(itens):
     t0 = time.time()
     r = {"q": it["q"], "gate": None, "fontes": [], "ferramentas": [], "sem_citacao": None, "invalidas": [], "t1": None,
-         "texto": "", "erro": None, "melhor": None}
+         "texto": "", "erro": None, "melhor": None, "calculo_suspeito": False}
     try:
         with httpx.stream("POST", f"{URL}/v1/ask", headers={"Authorization": f"Bearer {KEY}"},
                           json={"q": it["q"], "tenant_id": it.get("tenant", "global"), "request_id": f"eval-{i}"}, timeout=180) as resp:
@@ -68,6 +68,7 @@ for i, it in enumerate(itens):
                 elif ev["type"] == "done":
                     r["sem_citacao"] = ev.get("sem_citacao")
                     r["invalidas"] = ev.get("citacoes_invalidas", [])
+                    r["calculo_suspeito"] = ev.get("calculo_suspeito", False)
                 elif ev["type"] == "error":
                     r["erro"] = ev["text"]
     except Exception as e:
@@ -75,8 +76,11 @@ for i, it in enumerate(itens):
     r["ms"] = int((time.time() - t0) * 1000)
     txt = norm(r["texto"])
     # avaliação
-    r["ok_fonte"] = (any(norm(it["espera_fonte_contendo"]) in norm(f) for f in r["fontes"])
-                     if "espera_fonte_contendo" in it else None)
+    # espera_fonte_contendo aceita um texto ou uma lista (qualquer um serve)
+    esperadas = it.get("espera_fonte_contendo")
+    if isinstance(esperadas, str):
+        esperadas = [esperadas]
+    r["ok_fonte"] = (any(norm(e) in norm(f) for e in esperadas for f in r["fontes"]) if esperadas else None)
     r["ok_ferramenta"] = (it["espera_ferramenta"] in r["ferramentas"]) if "espera_ferramenta" in it else None
     r["ok_gate"] = (r["gate"] == it["espera_gate"]) if "espera_gate" in it else None
     r["ok_contem"] = (all(norm(x) in txt for x in it["deve_conter"])) if it.get("deve_conter") else None
@@ -88,7 +92,7 @@ for i, it in enumerate(itens):
     print(f"{marca} {it['q'][:58]:58} gate={r['gate']} top={r['melhor']} fontes={[f[:28] for f in r['fontes'][:2]]} "
           f"tools={r['ferramentas'][:3]} t1={r['t1'] and round(r['t1'], 2)}"
           f"{' ERRO=' + str(r['erro']) if r['erro'] else ''}{' VAZIA' if r['vazia'] else ''}"
-          f"{' SEM_CITACAO' if r['gate'] and r['sem_citacao'] else ''}", flush=True)
+          f"{' SEM_CITACAO' if r['gate'] and r['sem_citacao'] else ''}{' CALCULO_SUSPEITO' if r['calculo_suspeito'] else ''}", flush=True)
 
 
 def taxa(chave):
@@ -115,6 +119,7 @@ resumo = {
     "deve_conter_ok": c, "n_deve_conter": nc,
     "nao_deve_conter_ok": nc_ok, "n_nao_deve_conter": nnc,
     "sem_citacao": len(sem), "citacoes_invalidas": len(inval), "respostas_vazias": len(vazias), "erros": len(erros),
+    "calculos_suspeitos": sum(1 for r in resultados if r["calculo_suspeito"]),
     "p50_primeiro_token_s": p50, "p90_primeiro_token_s": (sorted(t1)[int(len(t1) * 0.9)] if t1 else None), "meta_p50_s": 3.0,
 }
 print("\nRESUMO:", json.dumps(resumo, ensure_ascii=False, indent=1))

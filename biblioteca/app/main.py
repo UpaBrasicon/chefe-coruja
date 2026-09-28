@@ -24,7 +24,11 @@ qd = QdrantClient(url=E["QDRANT_URL"], timeout=30)
 llm = OpenAI(api_key=E["DEEPSEEK_API_KEY"], base_url=E["DEEPSEEK_BASE_URL"])
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 log = logging.getLogger("biblioteca")
-GATE_MIN = float(E.get("GATE_MIN_SCORE", 0.55))
+# Gate em dois níveis (evals de 28/09): quando algum trecho do topo contém uma
+# palavra-chave da pergunta, basta GATE_MIN_SCORE; sem nenhuma palavra em comum
+# (ex.: "configurar o wifi" caindo em trecho clínico com 0,52) exige-se mais.
+GATE_MIN = float(E.get("GATE_MIN_SCORE", 0.50))
+GATE_SEM_LEXICO = float(E.get("GATE_MIN_SEM_LEXICO", 0.58))
 TOP_K = int(E.get("TOP_K", 6))
 MODELO = E.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
 MAX_TOKENS = int(E.get("LLM_MAX_TOKENS", 3000))
@@ -112,7 +116,16 @@ def buscar(q: str, tid: str):
         if len(trechos) >= TOP_K:
             break
     melhor = densos[0].score if densos else 0.0
-    return tools, trechos, melhor
+    # cobertura lexical do topo denso: alguma palavra-chave da pergunta aparece?
+    topo = " ".join(sem_acento(p.payload["texto"]) for p in densos[:3])
+    com_lexico = any(sem_acento(c) in topo for c in chaves) if chaves else False
+    return tools, trechos, melhor, com_lexico
+
+
+def passa_gate(melhor: float, com_lexico: bool, trechos: list) -> bool:
+    if not trechos:
+        return False
+    return melhor >= (GATE_MIN if com_lexico else GATE_SEM_LEXICO)
 
 
 def fmt_tool(p):
@@ -145,7 +158,7 @@ def health():
 def search(r: Req, authorization: str | None = Header(None)):
     auth(authorization)
     q = expandir_siglas(pseudonimizar(r.q))
-    tools, trechos, melhor = buscar(q, r.tenant_id)
+    tools, trechos, melhor, _ = buscar(q, r.tenant_id)
     return {"request_id": r.request_id, "melhor_score": round(melhor, 3),
             "ferramentas": [fmt_tool(t) for t in tools if t.score > 0.45],
             "trechos": [fmt_src(i, p) | {"preview": p.payload["texto"][:240]} for i, p in enumerate(trechos)]}
@@ -156,7 +169,7 @@ Regras obrigatórias:
 1. Responda SOMENTE com base nos TRECHOS fornecidos. Não use conhecimento externo. Não complete lacunas com o que você "sabe".
 2. Cite cada afirmação com [n], onde n é o número do trecho. Toda frase com dado clínico precisa de citação.
 3. Se os trechos não cobrem a pergunta, diga exatamente: "Não encontrei isso no material de referência." e pare.
-4. Nunca calcule doses, volumes, velocidades de infusão ou escores para um paciente específico: indique a ferramenta da Central para o cálculo, se houver na lista FERRAMENTAS, e cite a dose de referência do trecho.
+4. Nunca calcule doses, volumes, velocidades de infusão ou escores para um paciente específico. Se a pergunta trouxer peso, idade ou valores do paciente, NÃO multiplique nem some: responda só com a dose de referência do trecho (por kg, por dose) e a apresentação, e indique a ferramenta da Central para o cálculo, se houver na lista FERRAMENTAS.
 5. Pediatria: só afirme algo para criança se o trecho for explicitamente pediátrico. Nunca converta dado de adulto para criança.
 6. Formato: resposta direta primeiro; depois tópicos curtos (avaliação, conduta, sinais de alarme) quando aplicável. Português do Brasil, linguagem técnica médica, sem floreios.
 7. Você dá suporte; a decisão é do médico assistente. Não escreva avisos de responsabilidade: o sistema já mostra."""
@@ -169,10 +182,11 @@ def ask(r: Req, authorization: str | None = Header(None)):
     # siglas expandidas ("icc" → "icc (insuficiência cardíaca congestiva)"):
     # sem isso a similaridade da pergunta curta com os trechos fica abaixo do gate
     q = expandir_siglas(pseudonimizar(r.q))
-    tools, trechos, melhor = buscar(q, r.tenant_id)
+    tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id)
     fontes = [fmt_src(i, p) for i, p in enumerate(trechos)]
-    gate_ok = melhor >= GATE_MIN and len(trechos) > 0
+    gate_ok = passa_gate(melhor, com_lexico, trechos)
     ferramentas = [fmt_tool(t) for t in tools if t.score > 0.5]
+    tem_peso = bool(re.search(r"\d+[,.]?\d*\s*(kg|quilos?|anos?|meses)\b", q, re.I))
 
     def gerar():
         yield json.dumps({"type": "meta", "request_id": r.request_id, "gate": gate_ok, "melhor_score": round(melhor, 3),
@@ -187,6 +201,9 @@ def ask(r: Req, authorization: str | None = Header(None)):
             f"[{i + 1}] ({p.payload['titulo']}, {p.payload.get('secao') or 'sem seção'}, {local(p)})\n{p.payload['texto']}"
             for i, p in enumerate(trechos))
         lista_tools = "\n".join(f"- {t['nome']} ({t['rota']})" for t in ferramentas) or "- nenhuma"
+        lembrete = "\n\nLembrete: cada afirmação clínica termina com a citação [n] do trecho."
+        if tem_peso:
+            lembrete += " A pergunta traz dados do paciente: NÃO calcule a dose para ele; dê só a dose de referência por kg e aponte a ferramenta."
         texto = ""
         try:
             # max_tokens alto: em modelo com "raciocínio" os tokens de pensamento
@@ -194,7 +211,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
             stream = llm.chat.completions.create(
                 model=MODELO, temperature=0.1, stream=True, max_tokens=MAX_TOKENS, extra_body=EXTRA_LLM,
                 messages=[{"role": "system", "content": SYSTEM},
-                          {"role": "user", "content": f"TRECHOS:\n{contexto}\n\nFERRAMENTAS DA CENTRAL:\n{lista_tools}\n\nPERGUNTA: {q}\n\nLembrete: cada afirmação clínica termina com a citação [n] do trecho."}])
+                          {"role": "user", "content": f"TRECHOS:\n{contexto}\n\nFERRAMENTAS DA CENTRAL:\n{lista_tools}\n\nPERGUNTA: {q}{lembrete}"}])
             for ch in stream:
                 d = (ch.choices[0].delta.content or "") if ch.choices else ""
                 if d:
@@ -211,8 +228,18 @@ def ask(r: Req, authorization: str | None = Header(None)):
         citadas = {int(n) for n in re.findall(r"\[(\d+)\]", texto)}
         invalidas = sorted(n for n in citadas if n < 1 or n > len(trechos))
         nao_encontrou = "Não encontrei isso no material de referência" in texto
+        # pós-checagem R3: com dados do paciente na pergunta, uma quantidade na
+        # resposta que não existe em nenhum trecho sugere cálculo feito pelo modelo
+        calculo_suspeito = False
+        if tem_peso:
+            base = re.sub(r"\s+", "", " ".join(p.payload["texto"] for p in trechos)).lower()
+            for qtd in re.findall(r"\d+(?:[,.]\d+)?\s*(?:mg|ml|mcg|µg|ui|meq|mmol|g)\b", texto, re.I):
+                if re.sub(r"\s+", "", qtd).lower() not in base:
+                    calculo_suspeito = True
+                    break
         yield json.dumps({"type": "done", "citacoes_invalidas": invalidas,
-                          "sem_citacao": (not citadas) and (not nao_encontrou)}) + "\n"
+                          "sem_citacao": (not citadas) and (not nao_encontrou),
+                          "calculo_suspeito": calculo_suspeito}) + "\n"
         log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "gate": True, "top": round(melhor, 3),
                              "fontes": [f["titulo"] for f in fontes], "ms": int((time.time() - t0) * 1000)}, ensure_ascii=False))
 

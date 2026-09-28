@@ -25,7 +25,7 @@ export type StatusIa = 'idle' | 'loading' | 'streaming' | 'done' | 'blocked' | '
 type Evento =
   | { type: 'meta'; request_id: string; gate: boolean; ferramentas: ToolHit[]; fontes: Fonte[] }
   | { type: 'delta'; text: string }
-  | { type: 'done'; citacoes_invalidas?: number[]; sem_citacao?: boolean }
+  | { type: 'done'; citacoes_invalidas?: number[]; sem_citacao?: boolean; calculo_suspeito?: boolean }
   | { type: 'error'; text: string }
 
 const URL_FUNCAO = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/clinical-search`
@@ -124,7 +124,8 @@ export function useClinicalAsk(unidadeId?: string) {
           } else if (ev.type === 'error') {
             setStatus('indisponivel')
           } else if (ev.type === 'done') {
-            if (ev.sem_citacao || ev.citacoes_invalidas?.length) setAlerta('Resposta com citação incompleta — confira as fontes.')
+            if (ev.calculo_suspeito) setAlerta('A resposta pode trazer um número calculado para o paciente. A IA não deve calcular: use a ferramenta indicada e confira a dose de referência na fonte.')
+            else if (ev.sem_citacao || ev.citacoes_invalidas?.length) setAlerta('Resposta com citação incompleta — confira as fontes.')
             if (!bloqueado) setStatus('done')
           }
         }
