@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaP4 } from './fonteP4.ts'
 import type { Faixa } from './fonteP2.ts'
 import { porPeso, positivoP5, type ItemLivro } from './fonteP5.ts'
@@ -10,7 +11,74 @@ import { porPeso, positivoP5, type ItemLivro } from './fonteP5.ts'
 // `dengue.ts` (que só tem volumes do adulto). O grupo sai dos achados que o
 // médico marca; a conduta é dele (ADR 0007). Sem valor neonatal no capítulo.
 
-export const fichaDenguePed = fichaP4('ped-dengue', 'Dengue — criança (grupos e hidratação)', 'cap. 44, p. 443–451')
+// Versão .1 de 28/09/2026: manual do MS "Dengue: diagnóstico e manejo clínico
+// — adulto e criança" (6ª ed., 2024; PDF lido) ao lado do livro do ICr — a
+// hidratação dos grupos C e D do MS vale para "adulto e criança", e os
+// Apêndices B–H trazem peso aproximado, sinais vitais por idade e analgésicos.
+
+export const MS_DENGUE_2024_PED: Fonte = {
+  citacao: 'Ministério da Saúde. Dengue: diagnóstico e manejo clínico — adulto e criança. 6ª ed. Brasília: MS/SVSA; 2024. Criança: p. 16, 18, 27, 30, 33–38, 55; Apêndices B–H (p. 71–77).',
+  url: 'https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/svsa/dengue/dengue-diagnostico-e-manejo-clinico-adulto-e-crianca',
+  pediatrica: true,
+}
+
+const baseDenguePed = fichaP4('ped-dengue', 'Dengue — criança (grupos e hidratação)', 'cap. 44, p. 443–451')
+
+export const fichaDenguePed: Ficha = {
+  ...baseDenguePed,
+  versao: '2026-09-28.1',
+  fontes: [...baseDenguePed.fontes, MS_DENGUE_2024_PED],
+  revisadoEm: '28/09/2026 (manual do MS 6ª ed. 2024 lido; livro do ICr mantido como base)',
+}
+
+/** MS 2024, grupo C (p. 33; "adulto e criança"): 10 mL/kg na 1ª hora e 10 mL/kg/h na 2ª até o Ht; máximo 20 mL/kg por fase; até 3 fases. Manutenção com SF: 25 mL/kg em 6 h e 25 mL/kg em 8 h. */
+export function grupoCMs2024(pesoKg: number): { hora1Ml: number; hora2Ml: number; maxFaseMl: number; manut6hMl: number; manut6hMlH: number; manut8hMl: number; manut8hMlH: number } | null {
+  if (!positivoP5(pesoKg)) return null
+  const m = 25 * pesoKg
+  return { hora1Ml: 10 * pesoKg, hora2Ml: 10 * pesoKg, maxFaseMl: 20 * pesoKg, manut6hMl: m, manut6hMlH: m / 6, manut8hMl: m, manut8hMlH: m / 8 }
+}
+
+/** MS 2024, Apêndice H (p. 77): dipirona e paracetamol 10 mg/kg/dose até de 6/6 h na criança ("respeitar a dose máxima por peso e idade"). */
+export function analgesicosMs2024(pesoKg: number): { dipironaMg: number; paracetamolMg: number } | null {
+  return positivoP5(pesoKg) ? { dipironaMg: 10 * pesoKg, paracetamolMg: 10 * pesoKg } : null
+}
+
+/** MS 2024, Apêndice B (p. 71): peso aproximado — 3 a 12 meses: idade (meses) × 0,5 + 4,5; 1 a 8 anos: idade (anos) × 2 + 8,5. Fora dessas faixas, null. */
+export function pesoAproximadoMs(idadeMeses: number): number | null {
+  if (!Number.isFinite(idadeMeses) || idadeMeses < 3) return null
+  if (idadeMeses <= 12) return idadeMeses * 0.5 + 4.5
+  const anos = idadeMeses / 12
+  return anos <= 8 ? anos * 2 + 8.5 : null
+}
+
+/** MS 2024 (p. 16): até 10 anos, 5º percentil da PAS = 70 + 2 × idade (anos). */
+export function pasP5Ms(idadeAnos: number): number | null {
+  return Number.isFinite(idadeAnos) && idadeAnos >= 1 && idadeAnos <= 10 ? 70 + 2 * idadeAnos : null
+}
+
+/** Apêndices C, D e E (p. 72–74). */
+export const SINAIS_VITAIS_MS: { tabela: string; linhas: string[] }[] = [
+  { tabela: 'FC acordado / média / dormindo (Apêndice C)', linhas: ['0–2 meses: 85–205 / 140 / 80–160', '3–23 meses: 100–190 / 130 / 75–160', '2–10 anos: 60–140 / 80 / 60–90', '> 10 anos: 60–100 / 75 / 50–90'] },
+  { tabela: 'FR máxima (Apêndice D)', linhas: ['< 2 meses: até 60 irpm', '2 meses a 1 ano: até 50', '1 a 5 anos: até 40', '5 a 8 anos: até 30'] },
+  { tabela: 'PAS / PAD (Apêndice E)', linhas: ['Recém-nascido: 60–70 / 20–60', 'Lactente: 87–105 / 53–66', 'Pré-escolar: 95–105 / 53–66', 'Escolar: 97–112 / 57–71'] },
+  { tabela: 'Bolsa do manguito (Apêndice F)', linhas: ['0–1 mês: 3 cm', '2–23 meses: 5 cm', '2–4 anos: 7 cm', '5–10 anos: 12 cm', '> 10 anos: 18 cm'] },
+]
+
+export const MS_CRIANCA_TEXTO: string[] = [
+  'Caso suspeito na criança: quadro febril agudo de 2 a 7 dias, sem foco aparente, em quem vive ou veio de área com transmissão (p. 55).',
+  'Na criança o agravamento costuma ser súbito e o quadro grave pode ser a primeira manifestação; < 2 anos: dor como choro persistente, adinamia e irritabilidade (p. 18).',
+  'Hidratação oral dos grupos A e B (< 13 anos): até 10 kg 130 mL/kg/dia; > 10 a 20 kg 100; > 20 kg 80 (Holliday-Segar + 3% de perdas); 1/3 em SRO nas primeiras 4–6 h; manter a amamentação (Quadro 3, p. 30) — igual ao livro.',
+  'Grupo D (p. 36–38): SF 20 mL/kg em até 20 min, até 3 vezes; persistindo o choque com Ht em ascensão, albumina 0,5–1 g/kg a 5%; com hemorragia, CH 10–15 mL/kg/dia; coagulopatia, plasma 10 mL/kg e crioprecipitado 1 U para 5–10 kg.',
+  'Via intraóssea na criança se o acesso vascular não for obtido rapidamente (p. 40).',
+  'Na criança, amostra de 5 mL de sangue total para os exames de confirmação (p. 34).',
+]
+
+export const DIFERENCAS_MS_2024_PED: string[] = [
+  'Expansão do grupo C: o livro dá 10 a 20 mL/kg/h até 3 vezes (Quadro 8, p. 450); o MS 2024 dá 10 mL/kg na 1ª hora e 10 mL/kg/h na 2ª, no máximo 20 mL/kg por fase em 2 h (p. 33).',
+  'Manutenção do grupo C na criança: o livro usa Holliday-Segar com solução balanceada (p. 450); o MS usa SF 25 mL/kg em 6 h e 25 mL/kg em 8 h para "adulto e criança" (Figura 2, p. 27; p. 34).',
+  'Grupo B → C: o livro reclassifica com Ht > 38% e/ou plaquetas < 100.000 (p. 449); o MS fala em "hemoconcentração", sem número na criança (p. 31).',
+  'Analgésicos: o MS dá 10 mg/kg/dose de dipirona e de paracetamol até de 6/6 h (Apêndice H); as doses do livro estão no Apêndice do ICr.',
+]
 
 /** Quadro 2 (p. 445–446): sinais de alarme. */
 export const SINAIS_ALARME: { id: string; texto: string }[] = [
