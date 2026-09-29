@@ -7,13 +7,17 @@
 //
 // REGRAS:
 //   - Codificações vêm de src/interop/fhir/codificacao.ts (terminologia).
-//   - Onde o IG oficial da RNDS ainda não foi lido (docs/rnds/ vazio),
-//     marcamos `// TODO: confirmar no IG oficial` em vez de inventar.
+//   - Perfis e sistemas da RNDS lidos em 29/09/2026 no Simplifier (RAC 2.1 e
+//     SA 1.0, ambos draft): produto/docs/pesquisa/rnds-rac-sumario-alta.md.
+//     O manual atual fica no portfólio do DATASUS e ainda não foi lido: o
+//     que depende dele segue marcado com TODO.
 //   - Nenhum log com PII: os mappers só constroem recursos.
 // ─────────────────────────────────────────────────────────────────────────────
 import type {
   Bundle,
   BundleEntry,
+  Composition,
+  CompositionSection,
   Condition,
   Encounter,
   MedicationRequest,
@@ -46,6 +50,11 @@ import type {
 
 // ══ utilitários internos (não exportados) ════════════════════════════════════
 
+const RNDS = 'http://www.saude.gov.br/fhir/r4'
+/** Perfis dos documentos (RAC 2.1 e SA 1.0, draft no Simplifier). */
+export const PERFIL_RAC = `${RNDS}/StructureDefinition/BRRegistroAtendimentoClinico`
+export const PERFIL_SA = `${RNDS}/StructureDefinition/BRSumarioAlta`
+
 /** Nome do paciente em HumanName (evita PII em log — só no recurso). */
 function humanName(nome: string): { use: 'official'; text: string } {
   return { use: 'official', text: nome }
@@ -77,7 +86,7 @@ export function mapPaciente(p: EntidadePaciente): Patient {
     gender: mapearSexo(p.sexo),
   }
   if (p.data_nascimento) resource.birthDate = p.data_nascimento.slice(0, 10)
-  if (p.cpf) resource.identifier = [{ system: 'http://rnds.saude.gov.br/fhir/r4/StructureDefinition/CPF', value: p.cpf }] // TODO: confirmar system no IG oficial
+  if (p.cpf) resource.identifier = [{ system: `${RNDS}/StructureDefinition/BRIndividuo-1.0`, value: p.cpf }] // RNDS: sistema = perfil do ator
   if (p.telefone) resource.telecom = [{ system: 'phone', value: p.telefone }]
   return resource
 }
@@ -103,7 +112,7 @@ export function mapProfissional(p: EntidadeProfissional): Practitioner {
     id: p.id,
     name: [humanName(p.nome_completo)],
   }
-  if (p.cpf) resource.identifier = [{ system: 'http://rnds.saude.gov.br/fhir/r4/StructureDefinition/CPF', value: p.cpf }] // TODO: confirmar system
+  if (p.cpf) resource.identifier = [{ system: `${RNDS}/StructureDefinition/BRProfissional-1.0`, value: p.cpf }] // RNDS: sistema = perfil do ator
   if (p.crm && p.uf_crm) {
     resource.qualification = [
       {
@@ -133,7 +142,7 @@ export function mapEstabelecimento(e: EntidadeEstabelecimento): Organization {
     name: e.nome,
   }
   if (e.cnes) {
-    resource.identifier = [{ system: 'http://www.saude.gov.br/fhir/r4/CodeSystem/cnes', value: e.cnes }] // TODO: confirmar no IG
+    resource.identifier = [{ system: `${RNDS}/StructureDefinition/BREstabelecimentoSaude-1.0`, value: e.cnes }] // RNDS: sistema = perfil do ator
     resource.type = [{ coding: [codificarCnes(e.cnes, e.nome)] }]
   }
   if (e.municipio || e.uf) {
@@ -383,53 +392,99 @@ export function mapProcedimento(input: {
 }
 
 // ══ 9. Bundles ═══════════════════════════════════════════════════════════════
+// RNDS: Bundle do tipo "document", com a Composition na primeira entrada
+// (padrão dos exemplos oficiais de REL/RIA/RIRA; para RAC e SA é inferência
+// forte, sem exemplo oficial público). As seções se distinguem pelo perfil do
+// recurso referenciado. `identificadorSolicitante` é o do credenciamento no
+// DATASUS; sem ele, o Bundle fica sem identifier (ainda não se envia).
 
-/**
- * Bundle de Registro de Atendimento Clínico (RAC).
- * Resources: Patient, Organization, Practitioner, Encounter, Condition*,
- * Observation*, MedicationRequest*, Procedure*.
- */
-export function montarBundleRAC(dados: EntidadeAtendimentoRAC): Bundle {
+function secao(titulo: string, refs: Reference[], texto?: string): CompositionSection {
+  const s: CompositionSection = { title: titulo }
+  if (refs.length) s.entry = refs
+  if (texto) s.text = { status: 'generated', div: `<div xmlns="http://www.w3.org/1999/xhtml">${escaparXhtml(texto)}</div>` }
+  if (!refs.length && !texto) {
+    s.emptyReason = { coding: [{ system: 'http://terminology.hl7.org/CodeSystem/list-empty-reason', code: 'unavailable' }] }
+  }
+  return s
+}
+
+function escaparXhtml(t: string) {
+  return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+function montarDocumento(
+  tipo: 'RAC' | 'SA',
+  dados: EntidadeAtendimentoRAC,
+  extras: { secoes: CompositionSection[]; identificadorSolicitante?: string },
+): Bundle {
   const { paciente, estabelecimento, encontro, profissional, condicoes, observacoes, medicacoes } = dados
-
+  const condicoesR = condicoes.map((c) => mapCondicao(c, paciente, encontro.id))
+  const observacoesR = observacoes.map((o) => mapObservacao(o, paciente, encontro.id))
+  const medicacoesR = medicacoes.map((m) => mapMedicacao(m, paciente, profissional))
+  const composicao: Composition = {
+    resourceType: 'Composition',
+    id: `${tipo.toLowerCase()}-${encontro.id}`,
+    meta: { profile: [tipo === 'RAC' ? PERFIL_RAC : PERFIL_SA] },
+    status: 'final',
+    type: { coding: [{ system: `${RNDS}/CodeSystem/BRTipoDocumento`, code: tipo }] },
+    subject: refPaciente(paciente),
+    encounter: refEncontro(encontro),
+    date: encontro.data_alta ?? encontro.data_admissao,
+    author: [refProfissional(profissional), refEstabelecimento(estabelecimento)],
+    title: tipo === 'RAC' ? 'Registro de Atendimento Clínico' : 'Sumário de Alta',
+    section: [
+      secao('Contato assistencial', [refEncontro(encontro)]),
+      ...(tipo === 'RAC'
+        ? [secao('Problemas e diagnósticos', condicoesR.map((c) => ({ reference: `Condition/${c.id}` })))]
+        : []),
+      ...extras.secoes,
+      ...(observacoesR.length ? [secao('Observações', observacoesR.map((o) => ({ reference: `Observation/${o.id}` })))] : []),
+      ...(medicacoesR.length ? [secao('Prescrição', medicacoesR.map((m) => ({ reference: `MedicationRequest/${m.id}` })))] : []),
+    ],
+  }
   const entradas: BundleEntry[] = [
+    { resource: composicao },
     { resource: mapPaciente(paciente) },
     { resource: mapEstabelecimento(estabelecimento) },
     { resource: mapProfissional(profissional) },
     { resource: mapEncontro(encontro, paciente, estabelecimento, profissional) },
-    ...condicoes.map((c) => ({ resource: mapCondicao(c, paciente, encontro.id) })),
-    ...observacoes.map((o) => ({ resource: mapObservacao(o, paciente, encontro.id) })),
-    ...medicacoes.map((m) => ({ resource: mapMedicacao(m, paciente, profissional) })),
+    ...condicoesR.map((resource) => ({ resource })),
+    ...observacoesR.map((resource) => ({ resource })),
+    ...medicacoesR.map((resource) => ({ resource })),
   ]
-
-  return {
+  const bundle: Bundle = {
     resourceType: 'Bundle',
-    type: 'collection',
+    type: 'document',
+    timestamp: encontro.data_alta ?? encontro.data_admissao,
     entry: entradas,
   }
+  if (extras.identificadorSolicitante) {
+    bundle.identifier = { system: `${RNDS}/NamingSystem/BRRNDS-${extras.identificadorSolicitante}`, value: composicao.id }
+  }
+  return bundle
 }
 
 /**
- * Bundle de Sumário de Alta.
- * Inclui todos os recursos do RAC + Procedure(s) SIGTAP e orientações de alta
- * (ex.: Composition com o texto do sumário — TODO: confirmar perfil no IG).
+ * Registro de Atendimento Clínico (RAC 2.1). Seções obrigatórias: contato
+ * assistencial, problemas/diagnósticos e procedimentos. Procedimento ainda não
+ * vem do atendimento da porta: a seção sai vazia com emptyReason (TODO: SIGTAP
+ * do atendimento, quando o faturamento da porta existir).
  */
-export function montarBundleSumarioAlta(dados: EntidadeSumarioAlta): Bundle {
-  const { paciente, estabelecimento, encontro, profissional, condicoes, observacoes, medicacoes } = dados
+export function montarBundleRAC(dados: EntidadeAtendimentoRAC, identificadorSolicitante?: string): Bundle {
+  return montarDocumento('RAC', dados, { secoes: [secao('Procedimentos', [])], identificadorSolicitante })
+}
 
-  const entradas: BundleEntry[] = [
-    { resource: mapPaciente(paciente) },
-    { resource: mapEstabelecimento(estabelecimento) },
-    { resource: mapProfissional(profissional) },
-    { resource: mapEncontro(encontro, paciente, estabelecimento, profissional) },
-    ...condicoes.map((c) => ({ resource: mapCondicao(c, paciente, encontro.id) })),
-    ...observacoes.map((o) => ({ resource: mapObservacao(o, paciente, encontro.id) })),
-    ...medicacoes.map((m) => ({ resource: mapMedicacao(m, paciente, profissional) })),
-  ]
-
-  return {
-    resourceType: 'Bundle',
-    type: 'collection',
-    entry: entradas,
-  }
+/**
+ * Sumário de Alta (SA 1.0). Seções obrigatórias: contato assistencial,
+ * procedimentos e resumo da evolução clínica (texto do sumário/orientações).
+ */
+export function montarBundleSumarioAlta(dados: EntidadeSumarioAlta, identificadorSolicitante?: string): Bundle {
+  const resumo = [dados.motivo_alta ? `Motivo da alta: ${dados.motivo_alta}` : null, dados.orientacoes].filter(Boolean).join('\n\n')
+  return montarDocumento('SA', dados, {
+    secoes: [
+      secao('Procedimentos', []),
+      secao('Resumo da evolução clínica', [], resumo || undefined),
+    ],
+    identificadorSolicitante,
+  })
 }

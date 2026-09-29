@@ -16,7 +16,7 @@ import type { Coding } from '@medplum/fhirtypes'
 /** CID-10 — código da terminologia.cid10. System: TODO confirmar no IG (RNDS usa OID CID-10). */
 export function codificarCid10(codigo: string, descricao: string | null): Coding {
   return {
-    system: 'urn:oid:2.16.840.1.113883.6.3', // TODO: confirmar no IG oficial da RNDS
+    system: 'http://www.saude.gov.br/fhir/r4/CodeSystem/BRCID10', // RNDS (perfis RNDS em rascunho (2023, Simplifier); conferir no manual do portfólio DATASUS — produto/docs/pesquisa/rnds-rac-sumario-alta.md)
     code: codigo,
     display: descricao ?? codigo,
   }
@@ -25,7 +25,7 @@ export function codificarCid10(codigo: string, descricao: string | null): Coding
 /** SIGTAP — procedimento da terminologia.sigtap_procedimento. */
 export function codificarSigtap(codigo: string, nome: string | null): Coding {
   return {
-    system: 'http://www.saude.gov.br/fhir/r4/CodeSystem/sigtap', // TODO: confirmar no IG oficial
+    system: 'http://www.saude.gov.br/fhir/r4/CodeSystem/BRTabelaSUS', // RNDS (perfis RNDS em rascunho (2023, Simplifier); conferir no manual do portfólio DATASUS — produto/docs/pesquisa/rnds-rac-sumario-alta.md)
     code: codigo,
     display: nome ?? codigo,
   }
@@ -34,7 +34,7 @@ export function codificarSigtap(codigo: string, nome: string | null): Coding {
 /** CBO — ocupação do profissional (terminologia.cbo). */
 export function codificarCbo(codigo: string, titulo: string | null): Coding {
   return {
-    system: 'http://www.saude.gov.br/fhir/r4/CodeSystem/cbo', // TODO: confirmar no IG oficial
+    system: 'http://www.saude.gov.br/fhir/r4/CodeSystem/BRCBO', // RNDS (perfis RNDS em rascunho (2023, Simplifier); conferir no manual do portfólio DATASUS — produto/docs/pesquisa/rnds-rac-sumario-alta.md)
     code: codigo,
     display: titulo ?? codigo,
   }

@@ -156,6 +156,13 @@ async function main() {
 
   for (const item of itens) {
     const rotulo = `${item.tipo_documento} ${item.referencia_id.slice(0, 8)}`
+    // Fase 8: o RAC referencia o EPISÓDIO da porta (não a internação), e a
+    // carga das entidades a partir do episódio ainda não existe. Não monta
+    // errado: pula e avisa. TODO: carregarEntidadesDoEpisodio + montarBundleRAC.
+    if (item.tipo_documento === 'rac') {
+      console.log(`  ${rotulo}: RAC ainda sem carga a partir do episódio — pulado`)
+      continue
+    }
     try {
       const entidades = await carregarEntidades(item)
       const bundle = montarBundleSumarioAlta({
