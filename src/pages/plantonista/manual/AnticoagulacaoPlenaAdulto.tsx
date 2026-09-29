@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  BIVALIRUDINA, CONTEXTOS_ENOXAPARINA, ORAIS, OUTRAS_HBPM, bivalirudinaMgH, edoxabanaMg, enoxaparina, fichaAnticoagulacaoPlenaAdulto, fondaparinuxMg, hnfSc,
+  DIFERENCAS_ANTICOAG_2025, HNF_LITICO_2025, enoxaparinaLitico2025, hnfLitico2025, BIVALIRUDINA, CONTEXTOS_ENOXAPARINA, ORAIS, OUTRAS_HBPM, bivalirudinaMgH, edoxabanaMg, enoxaparina, fichaAnticoagulacaoPlenaAdulto, fondaparinuxMg, hnfSc,
   type ContextoEnoxaparina, type Faixa,
 } from '@/clinico/adulto/anticoagulacao'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -9,6 +9,8 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Label } from '@/components/ui/label'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+
+const fmtE = (x: number, c = 1) => (Math.round(x * 10 ** c) / 10 ** c).toLocaleString('pt-BR')
 
 const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
@@ -20,6 +22,8 @@ export function AnticoagulacaoPlenaAdulto() {
   const [clcr, setClcr] = useState(0)
   const [ctx, setCtx] = useState<ContextoEnoxaparina>('tep-12h')
   const [sk, setSk] = useState(false)
+  const enox25 = enoxaparinaLitico2025(peso, idade > 0 ? idade : undefined, clcr > 0 ? clcr : undefined)
+  const hnf25 = hnfLitico2025(peso)
   const clcrInformado = clcr > 0 ? clcr : undefined
   const enox = enoxaparina(ctx, { pesoKg: peso, idadeAnos: idade > 0 ? idade : undefined, clcr: clcrInformado, estreptoquinase: sk })
   const fonda = fondaparinuxMg(peso, clcrInformado)
@@ -106,6 +110,13 @@ export function AnticoagulacaoPlenaAdulto() {
             conta={o.id === 'edoxabana' && peso > 0 ? (edo === null ? '60 kg exatos: sem dose no livro' : <strong>{edo} mg VO 1 x/dia</strong>) : undefined}
             errata={o.id === 'edoxabana' ? 'O livro escreve "< 60 kg" e "> 60 kg": com exatamente 60 kg não há dose. A conta não escolhe.' : undefined} />
         ))}
+      </Bloco>
+      <Bloco titulo="AHA/ACC 2025 — anticoagulação com fibrinolítico no IAM (e795)" descricao="Usa peso, idade e clearance informados acima, ao lado da dose do manual (contexto IAM com supra após trombólise).">
+        <LinhaManual nome="Enoxaparina com fibrinolítico" texto={enox25 ? enox25.regra : '< 75 anos: 30 mg IV + 1 mg/kg 12/12 h (máx. 100 mg nas 2 primeiras); ≥ 75: 0,75 mg/kg sem bolus (máx. 75 mg); ClCr < 30 em qualquer idade: 1 mg/kg 24/24 h'} pagina="AHA 2025 e795"
+          conta={enox25 ? <>{enox25.bolusMg ? `${enox25.bolusMg} mg IV + ` : ''}<strong>{fmtE(enox25.doseMg)} mg {enox25.intervalo}</strong>{enox25.noTeto ? ' (no teto das 2 primeiras doses)' : ''}</> : 'informe o peso'} />
+        <LinhaManual nome="HNF com fibrinolítico" texto={`${HNF_LITICO_2025.bolusUiKg} UI/kg (máx. ${HNF_LITICO_2025.bolusMaxUi.toLocaleString('pt-BR')}) + ${HNF_LITICO_2025.infusaoUiKgH} UI/kg/h (máx. ${HNF_LITICO_2025.infusaoMaxUiH.toLocaleString('pt-BR')} UI/h), TTPa 60–80 s`} pagina={HNF_LITICO_2025.pagina}
+          conta={hnf25 ? <>bolus <strong>{fmtE(hnf25.bolusUi, 0)} UI</strong>{hnf25.bolusNoTeto ? ' (teto)' : ''} · <strong>{fmtE(hnf25.infusaoUiH, 0)} UI/h</strong>{hnf25.infusaoNoTeto ? ' (teto)' : ''}</> : 'informe o peso'} />
+        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_ANTICOAG_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

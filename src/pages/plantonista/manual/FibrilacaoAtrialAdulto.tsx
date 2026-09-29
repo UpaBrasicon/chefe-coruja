@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  AMIODARONA_FA, ANTICOAGULACAO_FA, DDIMERO_FA, DIGOXINA_FA, DILTIAZEM_FA, DILUICOES_FA, ERRATA_FA, ESMOLOL_FA, MAGNESIO_FA, PROPAFENONA_FA, TEXTO_JANELA, VERAPAMIL_FA,
+  ANTICOAGULACAO_FA_2025, DIFERENCAS_FA_2024, DOSES_FA_2024, TEXTO_JANELA_2024, janelaFa2024, AMIODARONA_FA, ANTICOAGULACAO_FA, DDIMERO_FA, DIGOXINA_FA, DILTIAZEM_FA, DILUICOES_FA, ERRATA_FA, ESMOLOL_FA, MAGNESIO_FA, PROPAFENONA_FA, TEXTO_JANELA, VERAPAMIL_FA,
   amiodaronaFa, digoxinaFa, diltiazemFa, edoxabanaClcrAlto, esmololFa, fichaFibrilacaoAtrialAdulto, janelaFa, propafenonaFa, varfarinaInicialMg, verapamilFa,
 } from '@/clinico/adulto/fibrilacaoAtrial'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -10,6 +10,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Trecho } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+
 
 const pede = 'informe o peso'
 
@@ -20,6 +21,7 @@ export function FibrilacaoAtrialAdulto() {
   const [horasSabidas, setHorasSabidas] = useState(true)
   const [idoso, setIdoso] = useState(false)
   const [clcr, setClcr] = useState(0)
+  const j24 = janelaFa2024(horasSabidas ? horas : null)
 
   const es = esmololFa(peso)
   const ve = verapamilFa(peso)
@@ -121,6 +123,17 @@ export function FibrilacaoAtrialAdulto() {
         <ul className="list-disc pl-5 text-sm text-muted-foreground">
           {ERRATA_FA.map((e) => <li key={e}>{e}</li>)}
         </ul>
+      </Bloco>
+      <Bloco titulo="ESC 2024 e SBC 2025 — janela de 24 h, anticoagulação e doses IV" descricao="Diretrizes lidas no texto integral, ao lado do capítulo. A fronteira das duas diretrizes é 24 h (o manual usa 48 h).">
+        <LinhaManual nome={j24 === 'ate-24h' ? 'Até 24 h' : 'Mais de 24 h ou indeterminada'} texto={TEXTO_JANELA_2024[j24]} pagina="ESC 2024 p. 3355–3356; SBC 2025 p. 37" />
+        {ANTICOAGULACAO_FA_2025.map((a) => <LinhaManual key={a.tema} nome={a.tema} texto={a.texto} pagina={a.fonte} />)}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Droga</th><th className="pr-3 pb-2">ESC 2024</th><th className="pr-3 pb-2">SBC 2025</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
+            <tbody>{DOSES_FA_2024.map((d) => <tr key={d.droga} className="border-t"><td className="pr-3 py-2 font-medium">{d.droga}</td><td className="pr-3 py-2">{d.esc}</td><td className="pr-3 py-2">{d.sbc}</td><td className="pr-3 py-2 text-muted-foreground">{d.livro}</td></tr>)}</tbody>
+          </table>
+        </div>
+        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_FA_2024.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

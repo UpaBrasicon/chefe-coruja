@@ -1,4 +1,5 @@
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 import type { Faixa, ItemManual } from './pcr.ts'
 
 // Fibrilação atrial do adulto — Manual de Medicina de Emergência do HCFMUSP
@@ -6,12 +7,74 @@ import type { Faixa, ItemManual } from './pcr.ts'
 // por tempo e converte para mL/h só com a diluição que o próprio livro traz
 // (Tabela 3, p. 252–254). A escolha da estratégia é do médico (ADR 0007).
 // CHA2DS2-VA e HAS-BLED já existem em src/clinico/escores (não duplicados).
+//
+// Versão .1 de 28/09/2026: ESC 2024 (PDF lido; páginas do periódico = página
+// do PDF + 3313) e Diretriz Brasileira de FA 2025 (PDF lido) ao lado do
+// manual — janela de 24 h, CHA₂DS₂-VA, 4 semanas de anticoagulação após
+// toda cardioversão, 200 J bifásico e as doses IV das duas diretrizes.
 
-export const fichaFibrilacaoAtrialAdulto = fichaAdulto(
-  'adulto-fibrilacao-atrial',
-  'Fibrilação atrial — controle de frequência e de ritmo (adulto)',
-  'cap. 17 Fibrilação atrial, p. 243–256 (texto p. 248–251; Tabela 3, p. 252–254)',
-)
+export const ESC_FA_2024: Fonte = {
+  citacao: 'Van Gelder IC, Rienstra M, Bunting KV, et al. 2024 ESC Guidelines for the management of atrial fibrillation. Eur Heart J. 2024;45(36):3314–3414. CHA₂DS₂-VA (p. 3323, 3342), cardioversão e 24 h (p. 3324, 3355–3356), Tabela 12 (p. 3353–3354), Tabela 13 (p. 3358).',
+  url: 'https://doi.org/10.1093/eurheartj/ehae176',
+}
+
+export const SBC_FA_2025: Fonte = {
+  citacao: 'Cintra FD, et al. Diretriz Brasileira de Fibrilação Atrial – 2025 (SBC/SOBRAC). Arq Bras Cardiol. 2025;122(9):e20250618. CHA₂DS₂-VA (p. 28), anticoagulação na cardioversão (p. 37–38), controle de frequência e Tabela 19 (p. 55), propafenona (p. 56).',
+  url: 'https://doi.org/10.36660/abc.20250618',
+}
+
+const PAG_FA = 'cap. 17 Fibrilação atrial, p. 243–256 (texto p. 248–251; Tabela 3, p. 252–254)'
+
+export const fichaFibrilacaoAtrialAdulto: Ficha = {
+  ...fichaAdulto('adulto-fibrilacao-atrial', 'Fibrilação atrial — controle de frequência e de ritmo (adulto)', PAG_FA),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_FA), ESC_FA_2024, SBC_FA_2025],
+  revisadoEm: '28/09/2026 (ESC 2024 e SBC 2025 lidas no texto; manual mantido como base)',
+}
+
+export type JanelaFa2024 = 'ate-24h' | 'mais-de-24h-ou-indeterminada'
+
+/** ESC 2024 e SBC 2025: a fronteira para cardioverter sem 3 semanas de anticoagulação ou ETE é 24 h (o livro usa 48 h). */
+export function janelaFa2024(horas: number | null): JanelaFa2024 {
+  if (horas === null || !Number.isFinite(horas) || horas < 0) return 'mais-de-24h-ou-indeterminada'
+  return horas <= 24 ? 'ate-24h' : 'mais-de-24h-ou-indeterminada'
+}
+
+export const TEXTO_JANELA_2024: Record<JanelaFa2024, string> = {
+  'ate-24h': 'Até 24 h: a cardioversão pode ser precedida de ACOD, enoxaparina 1 mg/kg SC ou HNF 60–70 U/kg em bolus (SBC 2025, p. 37); a ESC 2024 admite "esperar e ver" a reversão espontânea por até 48 h no paciente estável (IIa) e diz que a anticoagulação de 4 semanas após a cardioversão é opcional só se o início foi certamente < 24 h e o risco tromboembólico é baixo (Figura 12, p. 3355).',
+  'mais-de-24h-ou-indeterminada': 'Mais de 24 h ou tempo desconhecido: cardioversão não recomendada sem ≥ 3 semanas de anticoagulação terapêutica ou ETE sem trombo (ESC 2024, p. 3356; SBC 2025, p. 37); depois, anticoagular por ≥ 4 semanas em todos.',
+}
+
+export const ANTICOAGULACAO_FA_2025: { tema: string; texto: string; fonte: string }[] = [
+  { tema: 'Escore', texto: 'CHA₂DS₂-VA em todos (I A); ≥ 2: anticoagular (I A); 0: sem antitrombótico (I A); 1: pode, individualizando (IIa B). ESC 2024: ≥ 2 recomendado, 1 deve ser considerado', fonte: 'SBC 2025 p. 28; ESC 2024 p. 3323, 3342' },
+  { tema: 'Após a cardioversão', texto: 'Anticoagulação por pelo menos 4 semanas em todos, independentemente da duração e do perfil de risco (SBC I C); depois, indefinida se CHA₂DS₂-VA ≥ 2, suspende se 0, individualiza se 1. ESC 2024: 4 semanas para todos, mesmo com CHA₂DS₂-VA = 0 (opcional se início certamente < 24 h e baixo risco)', fonte: 'SBC 2025 p. 37–38; ESC 2024 p. 3355–3356' },
+  { tema: 'Cardioversão elétrica na instabilidade', texto: 'Imediata, sincronizada, 200 J bifásico, com anticoagulante o mais cedo possível; carga máxima é alternativa nos refratários', fonte: 'SBC 2025 p. 55' },
+  { tema: 'Esperar e ver', texto: 'No estável, aguardar reversão espontânea por até 48 h do início é alternativa à cardioversão imediata (IIa)', fonte: 'ESC 2024 p. 3324' },
+  { tema: 'ACOD × varfarina', texto: 'ACOD preferido, exceto prótese mecânica ou estenose mitral moderada/grave; AAS não substitui o anticoagulante', fonte: 'SBC 2025; ESC 2024' },
+]
+
+export type DoseFa2024 = { droga: string; esc: string; sbc: string; livro: string }
+
+/** Tabela 12 e 13 da ESC 2024 (p. 3353–3354, 3358) e Tabela 19 da SBC 2025 (p. 55), ao lado da Tabela 3 do manual. */
+export const DOSES_FA_2024: DoseFa2024[] = [
+  { droga: 'Esmolol', esc: '500 µg/kg em 1 min; 50–300 µg/kg/min', sbc: '500 µg/kg em 1 min; 10–40 µg/kg/min (1–10 na disfunção ventricular); preferido pela meia-vida curta', livro: '0,5 mg/kg em 1 min; 50–200 µg/kg/min (p. 248)' },
+  { droga: 'Metoprolol tartarato', esc: '2,5–5 mg em bolus em 2 min; até 15 mg cumulativos', sbc: '2,5–5 mg IV em bolus; no máximo 4 doses', livro: 'não listado' },
+  { droga: 'Verapamil', esc: '2,5–10 mg IV em 5 min; contraindicado com FEVE ≤ 40%', sbc: 'antagonistas do cálcio IV com disponibilidade reduzida no Brasil', livro: '0,075–0,15 mg/kg em 2 min (p. 248)' },
+  { droga: 'Diltiazem', esc: '0,25 mg/kg IV em 5 min, depois 5–15 mg/h', sbc: 'idem (disponibilidade reduzida)', livro: '0,25 mg/kg em 2 min; 5–15 mg/h (p. 248)' },
+  { droga: 'Digoxina', esc: '0,5 mg IV em bolus (0,75–1,5 mg em 24 h, fracionados)', sbc: 'digitálico IV como 2ª opção; deslanosídeo', livro: '0,25–0,5 mg até 1 mg (p. 248)' },
+  { droga: 'Amiodarona', esc: '300 mg em 250 mL SG 5% em 30–60 min (via central de preferência), depois 900–1.200 mg/24 h', sbc: '300 mg em SG 5% em 30–60 min; 900–1.200 mg/24 h; última opção farmacológica', livro: '150 mg em 10 min; 0,5–1 mg/min (p. 248)' },
+  { droga: 'Propafenona', esc: 'IV 1,5–2 mg/kg em 10 min; oral 450–600 mg', sbc: 'pill-in-the-pocket 600 mg (450 mg se < 70 kg), 1ª vez no hospital, coração estruturalmente normal', livro: '450 mg (< 70 kg) ou 600 mg (p. 249)' },
+  { droga: 'Sulfato de magnésio', esc: '—', sbc: 'adjuvante: 4,5 g em 100 mL em 30 min (dose baixa)', livro: '1–2 g (p. 249)' },
+]
+
+export const DIFERENCAS_FA_2024: string[] = [
+  'Janela: o manual separa 48 h (p. 248–249); ESC 2024 e SBC 2025 usam 24 h — acima disso, 3 semanas de anticoagulação ou ETE antes de cardioverter.',
+  'Escore: o manual usa CHA₂DS₂-VASc com limiares por sexo (p. 249–250); ESC 2024 e SBC 2025 usam CHA₂DS₂-VA (0 não; 1 individualiza; ≥ 2 sim) — a ferramenta CHA₂DS₂-VA do pacote é a de referência.',
+  'Após a cardioversão: o manual anticoagula 4 semanas só quando houve CV com escore baixo; SBC 2025 e ESC 2024 anticoagulam 4 semanas em todos.',
+  'Esmolol: três faixas de manutenção (livro 50–200; ESC 50–300; SBC 10–40 µg/kg/min) — as três aparecem; nenhuma é escolhida pela ferramenta.',
+  'Amiodarona: o manual dá 150 mg em 10 min; ESC e SBC dão 300 mg em 30–60 min com 900–1.200 mg/24 h.',
+  'Cardioversão elétrica: o manual não traz carga; a SBC 2025 dá 200 J bifásico.',
+]
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
 const vezes = (f: Faixa, k: number): Faixa => [f[0] * k, f[1] * k]

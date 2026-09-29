@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  CAPTOPRIL_SEM_DOMH, DOMH, ERRATA_EH, ESMOLOL_EH, HIDRALAZINA_EH, METAS_EH, NITROGLICERINA_EH, NITROPRUSSIATO_EH,
+  DBHA_2025_ALVOS, DIFERENCAS_EH_2025, INDISPONIVEIS_BRASIL_DBHA, METOPROLOL_EH_2025, QUADRO_11_4, esmololDbha2025, CAPTOPRIL_SEM_DOMH, DOMH, ERRATA_EH, ESMOLOL_EH, HIDRALAZINA_EH, METAS_EH, NITROGLICERINA_EH, NITROPRUSSIATO_EH,
   esmololEH, fichaEmergenciaHipertensivaAdulto, hidralazinaSaldo, nitroglicerinaMlH, nitroprussiatoMlH, pamAlvo, regraGeralEH,
 } from '@/clinico/adulto/emergenciaHipertensiva'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -10,6 +10,8 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Escolha, Resultado } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+
+const fmtE = (x: number, c = 1) => (Math.round(x * 10 ** c) / 10 ** c).toLocaleString('pt-BR')
 
 const pede = 'informe o peso'
 
@@ -22,6 +24,7 @@ export function EmergenciaHipertensivaAdulto() {
   const [npDose, setNpDose] = useState(0.25)
   const [ntgDose, setNtgDose] = useState(5)
   const [hidraFeito, setHidraFeito] = useState(0)
+  const esm25 = esmololDbha2025(peso)
 
   const meta = METAS_EH.find((m) => m.id === metaId)!
   const geral = regraGeralEH(pas)
@@ -107,6 +110,19 @@ export function EmergenciaHipertensivaAdulto() {
 
       <Bloco titulo="Errata">
         <ul className="list-disc pl-5 text-sm text-muted-foreground">{ERRATA_EH.map((e) => <li key={e}>{e}</li>)}</ul>
+      </Bloco>
+      <Bloco titulo="Diretriz Brasileira de Hipertensão 2025 (cap. 11) — ao lado do manual" descricao={`PDF lido. Não disponíveis no Brasil segundo a própria diretriz: ${INDISPONIVEIS_BRASIL_DBHA.join(', ')} — nenhum entra na ferramenta.`}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Situação</th><th className="pr-3 pb-2">DBHA 2025</th><th className="pr-3 pb-2">Força</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
+            <tbody>{DBHA_2025_ALVOS.map((d) => <tr key={d.tema} className="border-t"><td className="pr-3 py-2 font-medium">{d.tema}</td><td className="pr-3 py-2">{d.dbha}</td><td className="pr-3 py-2">{d.forca}</td><td className="pr-3 py-2 text-muted-foreground">{d.livro}</td></tr>)}</tbody>
+          </table>
+        </div>
+        {QUADRO_11_4.map((q) => <LinhaManual key={q.droga} nome={`${q.droga} (Quadro 11.4)`} texto={`${q.dose} — ${q.indicacao}`} pagina="DBHA 2025, p. 101–102" errata={q.errata} />)}
+        <LinhaManual nome="Esmolol pela DBHA 2025" texto="ataque 500 µg/kg; 25–50 µg/kg/min, +25 a cada 10–20 min, máx. 300 µg/kg/min" pagina="DBHA 2025, Quadro 11.4"
+          conta={esm25 ? <>ataque <strong>{fmtE(esm25.ataqueMg)} mg</strong> · início {fmtE(esm25.manutInicialUgMin[0], 0)}–{fmtE(esm25.manutInicialUgMin[1], 0)} µg/min · máx. {fmtE(esm25.maximoUgMin, 0)} µg/min</> : 'informe o peso'} />
+        <LinhaManual nome="Metoprolol IV" texto={`${METOPROLOL_EH_2025.doseMg} mg a cada ${METOPROLOL_EH_2025.intervaloMin} min até ${METOPROLOL_EH_2025.maximoMg} mg (${METOPROLOL_EH_2025.doses} doses)`} pagina={METOPROLOL_EH_2025.pagina} />
+        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_EH_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

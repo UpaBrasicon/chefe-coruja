@@ -13,13 +13,15 @@ export const hasBled: Escore = {
   ficha: {
     id: 'has-bled',
     titulo: 'HAS-BLED — risco de sangramento maior',
-    versao: '2026-09-27.1',
+    versao: '2026-09-28.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Pisters R, Lane DA, Nieuwlaat R, et al. A novel user-friendly score (HAS-BLED) to assess 1-year risk of major bleeding in patients with atrial fibrillation. Chest. 2010;138(5):1093–1100.', url: 'https://doi.org/10.1378/chest.10-0134' },
-      { citacao: 'Hindricks G, Potpara T, Dagres N, et al. 2020 ESC Guidelines for the diagnosis and management of atrial fibrillation. Eur Heart J. 2021;42(5):373–498.', url: 'https://doi.org/10.1093/eurheartj/ehaa612' },
+      { citacao: 'Van Gelder IC, Rienstra M, Bunting KV, et al. 2024 ESC Guidelines for the management of atrial fibrillation. Eur Heart J. 2024;45(36):3314–3414 (o HAS-BLED identifica fatores modificáveis e não serve para negar anticoagulação).', url: 'https://doi.org/10.1093/eurheartj/ehae176' },
+      { citacao: 'Cintra FD, et al. Diretriz Brasileira de Fibrilação Atrial – 2025 (SBC/SOBRAC). Arq Bras Cardiol. 2025;122(9):e20250618 (HAS-BLED para identificar fatores modificáveis, IIa B).', url: 'https://doi.org/10.36660/abc.20250618' },
+      { citacao: 'Hindricks G, Potpara T, Dagres N, et al. 2020 ESC Guidelines for the diagnosis and management of atrial fibrillation. Eur Heart J. 2021;42(5):373–498 (citação anterior, substituída pela ESC 2024).', url: 'https://doi.org/10.1093/eurheartj/ehaa612' },
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '28/09/2026 (citação atualizada para ESC 2024 e SBC 2025; itens inalterados)',
   },
   descricao: 'No paciente em anticoagulação oral por fibrilação atrial',
   itens: [

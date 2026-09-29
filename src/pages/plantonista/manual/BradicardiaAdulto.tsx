@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
 import {
-  ADRENALINA_BRADI, ATROPINA, DOPAMINA_BRADI, OUTRAS_BRADI, adrenalinaBradiMlH, dopaminaUgMin, esquemaAtropina, fichaBradicardiaAdulto, type Faixa,
+  BRADI_2025, DIFERENCAS_BRADI_2025, ADRENALINA_BRADI, ATROPINA, DOPAMINA_BRADI, OUTRAS_BRADI, adrenalinaBradiMlH, dopaminaUgMin, esquemaAtropina, fichaBradicardiaAdulto, type Faixa,
 } from '@/clinico/adulto/pcr'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+
 
 const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
@@ -45,6 +46,12 @@ export function BradicardiaAdulto() {
           errata={ADRENALINA_BRADI.errata}
         />
         {OUTRAS_BRADI.map((d) => <LinhaManual key={d.id} nome={d.nome} texto={`${d.dose} — ${d.quando}`} pagina={d.pagina} />)}
+      </Bloco>
+      <Bloco titulo="ERC/RCUK 2025 — bradicardia, ao lado do manual" descricao={BRADI_2025.ahaNaoConfirmada}>
+        <LinhaManual nome="Atropina (ERC/RCUK 2025)" texto={`${BRADI_2025.atropina.ug} µg IV, repetir a cada ${BRADI_2025.atropina.intervaloMin[0]}–${BRADI_2025.atropina.intervaloMin[1]} min até ${BRADI_2025.atropina.maximoMg} mg`} pagina="RCUK 2025 ALS" conta={<strong>até 6 doses de 0,5 mg</strong>} />
+        {BRADI_2025.segundaLinha.map((d) => <LinhaManual key={d.droga} nome={d.droga} texto={d.dose} pagina="RCUK 2025 ALS" />)}
+        <LinhaManual nome="Marca-passo" texto={BRADI_2025.marcaPasso} pagina="RCUK 2025 ALS" />
+        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_BRADI_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

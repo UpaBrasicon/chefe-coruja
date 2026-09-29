@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ERRATA_PROCEDIMENTOS, IMA_MARCA_PASSO, MPTC, MPTV_AS_CEGAS, correnteMptc, fichaMarcaPassoAdulto, saidaMptv, sensibilidadeMptv,
+  ESC_2021_MP, ERRATA_PROCEDIMENTOS, IMA_MARCA_PASSO, MPTC, MPTV_AS_CEGAS, correnteMptc, fichaMarcaPassoAdulto, saidaMptv, sensibilidadeMptv,
 } from '@/clinico/adulto/procedimentos'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -9,6 +9,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Bloco, LinhaManual } from './PecasLoteC'
 import { Erratas } from './PecasLoteE7'
 import { br, faixa } from './loteE7Formato'
+
 
 /** Marca-passo provisório transcutâneo e transvenoso (cap. 107 do manual do HCFMUSP). */
 export function MarcaPassoProvisorioAdulto() {
@@ -66,6 +67,9 @@ export function MarcaPassoProvisorioAdulto() {
 
       <Bloco titulo="Errata e notas">
         <Erratas itens={ERRATA_PROCEDIMENTOS.filter((e) => e.startsWith('p. 145'))} />
+      </Bloco>
+      <Bloco titulo="ESC 2021 — estimulação temporária" descricao="Diretriz de estimulação cardíaca lida no texto. Os parâmetros numéricos do manual acima não são contrariados.">
+        {ESC_2021_MP.map((m) => <LinhaManual key={m.texto} nome={`Classe ${m.classe}`} texto={m.texto} pagina="ESC 2021, p. 3438; 3486–3487" />)}
       </Bloco>
     </ToolLayout>
   )

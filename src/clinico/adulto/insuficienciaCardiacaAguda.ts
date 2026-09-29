@@ -1,4 +1,5 @@
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 import { INFUSOES_ADULTO, concentracao, velocidadeAdulto } from './infusoes.ts'
 import type { Faixa } from './pcr.ts'
 
@@ -8,11 +9,63 @@ import type { Faixa } from './pcr.ts'
 // diurético. Diluição e mL/h das infusões vêm do Anexo 1 (infusoes.ts); a
 // faixa de dose do capítulo é mostrada à parte. A conduta é do médico (ADR 0007).
 
-export const fichaIcAgudaAdulto = fichaAdulto(
-  'adulto-ic-aguda',
-  'Insuficiência cardíaca aguda — adulto',
-  'cap. 21 Insuficiência cardíaca aguda, p. 286–303 (Figura 1, p. 302); preparo das infusões: Anexo 1, p. 1486–1489',
-)
+// Versão .1 de 28/09/2026: ESC 2021 (seção 11, lida pela página do periódico;
+// classes e níveis não conferidos nessa leitura) e os ensaios ADVOR 2022,
+// CLOROTIC 2023 e DAPA ACT HF-TIMI 68 2025 (resumos lidos) ao lado do cap. 21.
+
+export const ESC_IC_2021: Fonte = {
+  citacao: 'McDonagh TA, Metra M, Adamo M, et al. 2021 ESC Guidelines for the diagnosis and treatment of acute and chronic heart failure. Eur Heart J. 2021;42(36):3599–3726. Seção 11 (tratamento inicial da IC aguda e alta), lida pela página do periódico; classes e níveis não conferidos.',
+  url: 'https://doi.org/10.1093/eurheartj/ehab368',
+}
+
+export const ADVOR_2022: Fonte = {
+  citacao: 'Mullens W, Dauw J, Martens P, et al. Acetazolamide in Acute Decompensated Heart Failure with Volume Overload (ADVOR). N Engl J Med. 2022;387(13):1185–1195 (resumo lido).',
+  url: 'https://doi.org/10.1056/NEJMoa2203094',
+}
+
+export const CLOROTIC_2023: Fonte = {
+  citacao: 'Trullàs JC, Morales-Rull JL, Casado J, et al. Combining loop with thiazide diuretics for decompensated heart failure: the CLOROTIC trial. Eur Heart J. 2023;44(5):411–421 (resumo lido).',
+  url: 'https://doi.org/10.1093/eurheartj/ehac689',
+}
+
+export const DAPA_ACT_2025: Fonte = {
+  citacao: 'Berg DD, et al. Dapagliflozin in Patients Hospitalized for Heart Failure (DAPA ACT HF-TIMI 68). Circulation. 2025;152(20):1411–1422 (resumo lido).',
+  url: 'https://doi.org/10.1161/CIRCULATIONAHA.125.076575',
+}
+
+const PAG_ICA = 'cap. 21 Insuficiência cardíaca aguda, p. 286–303 (Figura 1, p. 302); preparo das infusões: Anexo 1, p. 1486–1489'
+
+export const fichaIcAgudaAdulto: Ficha = {
+  ...fichaAdulto('adulto-ic-aguda', 'Insuficiência cardíaca aguda — adulto', PAG_ICA),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_ICA), ESC_IC_2021, ADVOR_2022, CLOROTIC_2023, DAPA_ACT_2025],
+  revisadoEm: '28/09/2026 (ESC 2021 pela página do periódico; ensaios pelos resumos; manual mantido como base)',
+}
+
+export const DIRETRIZ_ICA_2021: { tema: string; esc: string; livro: string }[] = [
+  { tema: 'Oxigênio', esc: 'Só com SpO2 < 90% ou PaO2 < 60 mmHg', livro: 'alvo de SpO2 > 95% (p. 296)' },
+  { tema: 'Ventilação não invasiva', esc: 'No desconforto respiratório (FR > 25 ou SpO2 < 90%); intubação se insuficiência respiratória', livro: 'VNI (CPAP ou EPAP/IPAP) nos perfis congestos (p. 296)' },
+  { tema: 'Diurético de alça', esc: 'Furosemida IV 20–40 mg (ou 1–2× a dose oral de casa); resposta pelo Na urinário > 50–70 mmol/L em 2 h e diurese > 100–150 mL/h em 6 h; se não, dobrar a dose', livro: '0,5–1 mg/kg/dose e dobrar sem resposta; mesmos critérios de resposta (p. 296, 298)' },
+  { tema: 'Tiazídico', esc: 'Associar se resposta inadequada ao diurético de alça', livro: '—' },
+  { tema: 'Vasodilatador IV', esc: 'Com PAS > 110 mmHg', livro: 'NTG/nitroprussiato conforme a PA (Figura 1, p. 302)' },
+  { tema: 'Inotrópico e vasopressor', esc: 'Inotrópico só com sinais de hipoperfusão; vasopressor para suporte hemodinâmico; inotrópico de rotina não', livro: 'dobutamina/levosimendana na má perfusão; noradrenalina se PAS < 75 (Figura 1)' },
+  { tema: 'Opioide', esc: 'Uso rotineiro de opiáceo não recomendado', livro: '"morfina se dispneia" na coluna PAS ≥ 140 da Figura 1 (p. 302)' },
+  { tema: 'Profilaxia de TEV', esc: 'Indicada', livro: '—' },
+  { tema: 'Antes da alta', esc: 'Otimizar a terapia orientada por diretriz antes da alta; retorno em 1–2 semanas', livro: '—' },
+]
+
+export const ENSAIOS_ICA: { ensaio: string; texto: string }[] = [
+  { ensaio: 'ADVOR (NEJM 2022; n = 519)', texto: 'Acetazolamida 500 mg IV 1×/dia somada ao diurético de alça IV (2× a dose oral de manutenção): descongestão em 3 dias 42,2% × 30,5% (RR 1,46; IC 95% 1,17–1,82); morte ou reinternação em 3 meses 29,7% × 27,8% (HR 1,07); piora renal, hipocalemia e hipotensão semelhantes.' },
+  { ensaio: 'CLOROTIC (Eur Heart J 2023; n = 230, mediana 83 anos)', texto: 'Hidroclorotiazida + furosemida IV: perda de peso em 72 h 2,3 × 1,5 kg (p = 0,002); dispneia igual; piora de função renal 46,5% × 17,2% (p < 0,001); mortalidade e reinternação iguais.' },
+  { ensaio: 'DAPA ACT HF-TIMI 68 (Circulation 2025; n = 2.401)', texto: 'Dapagliflozina 10 mg iniciada na internação: morte CV ou piora de IC em 2 meses 10,9% × 12,7% (HR 0,86; IC 95% 0,68–1,08; p = 0,20); morte por qualquer causa 3,0% × 4,5% (HR 0,66); hipotensão sintomática 3,6% × 2,2%. Metanálise dos ensaios intra-hospitalares: HR 0,71 para o composto e 0,57 para mortalidade.' },
+]
+
+export const DIFERENCAS_ICA_2021: string[] = [
+  'Oxigênio: o manual põe alvo de SpO2 > 95% (p. 296); a ESC 2021 só indica O2 com SpO2 < 90% ou PaO2 < 60 mmHg.',
+  'Morfina: a Figura 1 do manual traz "morfina se dispneia" com PAS ≥ 140 (p. 302); a ESC 2021 não recomenda opioide de rotina.',
+  'Furosemida: 0,5–1 mg/kg (manual) × 20–40 mg ou 1–2× a dose oral (ESC); os critérios de resposta em 2 h e 6 h coincidem.',
+  'Acetazolamida e tiazídico como adjuvantes vêm dos ensaios ADVOR e CLOROTIC, sem classe de diretriz conferida; a ESC 2021 cita o tiazídico na resposta inadequada.',
+]
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
 const vezes = (f: Faixa, k: number): Faixa => [f[0] * k, f[1] * k]

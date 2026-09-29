@@ -1,5 +1,6 @@
 import { completo, somar, numero, type Escore } from '../escore.ts'
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 import { INFUSOES_ADULTO, concentracao } from './infusoes.ts'
 import type { Faixa } from './pcr.ts'
 
@@ -10,11 +11,68 @@ import type { Faixa } from './pcr.ts'
 // Nitroprussiato e nitroglicerina usam a MESMA concentração do Anexo 1
 // (infusoes.ts, 200 µg/mL); a faixa de dose do capítulo é mostrada à parte.
 
-export const fichaEmergenciaHipertensivaAdulto = fichaAdulto(
-  'adulto-emergencia-hipertensiva',
-  'Emergência hipertensiva — alvos e drogas EV (adulto)',
-  'cap. 19 Emergências hipertensivas, p. 270–276 (Tabelas 3 e 4, p. 273–275)',
-)
+// Versão .1 de 28/09/2026: Diretriz Brasileira de Hipertensão Arterial 2025
+// (capítulo 11, PDF lido) ao lado do cap. 19 — alvos por situação, Quadro 11.4
+// das drogas IV (com a errata de unidade do nitroprussiato) e a lista de
+// drogas que a própria diretriz marca como indisponíveis no Brasil.
+
+export const DBHA_2025: Fonte = {
+  citacao: 'Brandão AA, et al. Diretriz Brasileira de Hipertensão Arterial – 2025 (SBC/SBH/SBN). Arq Bras Cardiol. 2025;122(9):e20250624. Capítulo 11, Crise hipertensiva: Figura 11.1 e Quadro 11.4 (p. 101–102), recomendações (p. 104); gestação (hidralazina).',
+  url: 'https://doi.org/10.36660/abc.20250624',
+}
+
+const PAG_EH = 'cap. 19 Emergências hipertensivas, p. 270–276 (Tabelas 3 e 4, p. 273–275)'
+
+export const fichaEmergenciaHipertensivaAdulto: Ficha = {
+  ...fichaAdulto('adulto-emergencia-hipertensiva', 'Emergência hipertensiva — alvos e drogas EV (adulto)', PAG_EH),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_EH), DBHA_2025],
+  revisadoEm: '28/09/2026 (DBHA 2025 lida no texto; manual mantido como base)',
+}
+
+export const DBHA_2025_ALVOS: { tema: string; dbha: string; forca: string; livro: string }[] = [
+  { tema: 'Elevação importante da PA sem lesão de órgão-alvo (antiga "urgência")', dbha: 'Reavaliação ambulatorial em 1 a 7 dias com alvo PAS < 160 e PAD < 100; nifedipina sublingual nunca', forca: 'fraca, evidência baixa', livro: 'captopril 6,25–12,5 mg VO se dificuldade de aderência; nifedipina contraindicada (p. 276)' },
+  { tema: 'Emergência: onde e como', dbha: 'UTI, anti-hipertensivo IV com monitorização e observação da lesão de órgão-alvo', forca: 'forte, evidência moderada', livro: '—' },
+  { tema: 'Regra geral (Figura 11.1)', dbha: 'Reduzir a PA em 25% na 1ª hora; 160/100–110 mmHg em 2–6 h; valores normais em 24–48 h. Errata interna: o texto 11.5 escreve "10 a 15% na 1ª hora e 25% nas 2 horas seguintes"', forca: 'fluxograma', livro: '−20 a 25% em até 1 h; 160/100 em 2–6 h; normal em 24–48 h (rodapé da Tabela 4, p. 275) — coincide' },
+  { tema: 'Crises catecolaminérgicas e EAP', dbha: 'PAS < 140 mmHg na 1ª hora; no EAP, NTG IV nas primeiras 48 h se sem hipotensão, IAM de VD ou inibidor de PDE-5 nas 48 h', forca: 'fluxograma · fraca, moderada', livro: 'EAP: PAS < 140 (Tabela 4)' },
+  { tema: 'Dissecção aguda de aorta', dbha: 'PAS < 120 mmHg na 1ª hora; esmolol ou metoprolol (em combinação com nitroprussiato)', forca: 'fluxograma; Quadro 11.4', livro: 'PAS < 120 e FC < 60, FC antes da PA (Tabela 4)' },
+  { tema: 'Síndrome coronariana aguda', dbha: 'PAS < 140 (evitar < 120) e PAD 70–80 mmHg com esmolol, metoprolol ou NTG em 24–72 h; hidralazina, nifedipina e nitroprussiato não indicados', forca: 'forte, evidência alta (p. 104)', livro: 'PAS 140 e PAD 90 (Tabela 4)' },
+  { tema: 'AVC isquêmico com trombólise', dbha: 'PA < 185/110 antes e < 180/105 nas 24 h; sem trombólise/trombectomia se PA permanecer ≥ 185/110', forca: 'forte, evidência moderada', livro: 'igual (Tabela 4)' },
+  { tema: 'AVC isquêmico sem trombólise', dbha: 'PA ≥ 220/120 sem comorbidade: reduzir 15% nas primeiras 24 h; com comorbidade (dissecção, SCA, eclâmpsia, EAP): redução inicial de 15%', forca: 'fraca, evidência baixa', livro: '< 220/120: redução de PAM de 15% em 1 h (Tabela 4)' },
+  { tema: 'AVC hemorrágico', dbha: 'PAS > 220: infusão IV contínua com meta PAS < 180 (forte, moderada); PAS 150–220 leve/moderado: reduzir para < 140 com esmolol, nicardipina ou clevidipina (fraca, moderada) — os dois últimos marcados como indisponíveis no Brasil; HSA com PAS > 180: redução gradual em 24–72 h', forca: 'ver cada linha', livro: 'PAS < 140 se 150–220; < 140–160 se > 220 (Tabela 4)' },
+  { tema: 'Encefalopatia hipertensiva', dbha: 'Sem droga de escolha definida; orais para meta 160/100 em até 48 h', forca: 'texto 11.6', livro: 'redução de 20–25% (Tabela 4)' },
+  { tema: 'Gestação (pré-eclâmpsia grave/eclâmpsia)', dbha: 'Hidralazina IV 5 mg a cada 20–30 min até 15 mg; sem hidralazina, nifedipina 10 mg VO repetida 10–20 mg a cada 20–30 min; NTG ou nitroprussiato (máx. 4 h, cianeto fetal) só no EAP ou refratária; sulfato de magnésio para prevenção da eclâmpsia', forca: 'capítulo de gestação', livro: 'hidralazina 5 mg, depois 5–10 mg a cada 20 min, máx. 30 mg/24 h (Tabela 3, p. 273)' },
+]
+
+/** Quadro 11.4 da DBHA 2025 (p. 101–102): drogas IV, como impresso. */
+export const QUADRO_11_4: { droga: string; dose: string; indicacao: string; errata?: string }[] = [
+  { droga: 'Nitroprussiato de sódio', dose: 'infusão contínua 0,25–10 "mg/kg/min"', indicacao: 'maioria das emergências', errata: 'Unidade impressa "mg/kg/min"; a faixa coerente, e a do manual (Tabela 3, p. 273), é µg/kg/min.' },
+  { droga: 'Nitroglicerina', dose: 'infusão contínua 5–15 mg/h', indicacao: 'insuficiência coronariana, EAP' },
+  { droga: 'Metoprolol', dose: '5 mg IV, repetir a cada 10 min se necessário até 20 mg', indicacao: 'insuficiência coronariana, dissecção aguda de aorta' },
+  { droga: 'Esmolol', dose: 'ataque 500 µg/kg; 25–50 µg/kg/min, subindo 25 µg/kg/min a cada 10–20 min; máximo 300 µg/kg/min', indicacao: 'dissecção (com nitroprussiato), hipertensão pós-operatória grave' },
+  { droga: 'Hidralazina', dose: '10–20 mg IV ou 10–40 mg IM a cada 6 h', indicacao: 'eclâmpsia' },
+  { droga: 'Furosemida', dose: '20–60 mg (repetir após 30 min)', indicacao: 'EAP, hipervolemia' },
+]
+
+export const INDISPONIVEIS_BRASIL_DBHA = ['fentolamina', 'trimetafano', 'diazóxido', 'fenoldopam', 'nicardipina', 'labetalol', 'enalaprilato']
+
+/** Metoprolol IV pelo Quadro 11.4: 5 mg a cada 10 min até 20 mg (4 doses). */
+export const METOPROLOL_EH_2025 = { doseMg: 5, intervaloMin: 10, maximoMg: 20, doses: 4, pagina: 'DBHA 2025, Quadro 11.4' }
+
+/** Esmolol pelo Quadro 11.4: ataque 500 µg/kg; manutenção 25–50 µg/kg/min até 300 µg/kg/min. */
+export function esmololDbha2025(pesoKg: number): { ataqueMg: number; manutInicialUgMin: Faixa; maximoUgMin: number } | null {
+  if (!valido(pesoKg)) return null
+  return { ataqueMg: 0.5 * pesoKg, manutInicialUgMin: [25 * pesoKg, 50 * pesoKg], maximoUgMin: 300 * pesoKg }
+}
+
+export const DIFERENCAS_EH_2025: string[] = [
+  'SCA: o manual põe PAS 140/PAD 90 (Tabela 4); a DBHA 2025 põe PAS < 140 evitando < 120 e PAD 70–80, e contraindica hidralazina, nifedipina e nitroprussiato na SCA.',
+  'AVCI sem trombólise: o manual reduz a PAM em 15% em 1 h com PA < 220/120; a DBHA reduz 15% nas primeiras 24 h só com PA ≥ 220/120.',
+  'Eclâmpsia: hidralazina 5 mg a cada 20–30 min até 15 mg (DBHA) × 5 mg e depois 5–10 mg a cada 20 min até 30 mg/24 h (manual, Tabela 3).',
+  'Esmolol: manual 0,5–1 mg/kg + 50–200 µg/kg/min (Tabela 3, com errata) × DBHA 500 µg/kg + 25–50 subindo até 300 µg/kg/min — as duas aparecem.',
+  'Metoprolol IV 5 mg a cada 10 min até 20 mg está só na DBHA; o manual não o lista na Tabela 3.',
+  'Labetalol, nicardipina, clevidipina e enalaprilato: a DBHA 2025 os marca como não disponíveis no Brasil; nenhum entra na ferramenta.',
+]
 
 export const fichaSindromeAorticaAdulto = fichaAdulto(
   'adulto-sindrome-aortica',

@@ -12,10 +12,11 @@ export const cha2ds2va: Escore = {
   ficha: {
     id: 'cha2ds2-va',
     titulo: 'CHA₂DS₂-VA — risco de AVC na fibrilação atrial',
-    versao: '2026-09-27.1',
+    versao: '2026-09-28.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Van Gelder IC, Rienstra M, Bunting KV, et al. 2024 ESC Guidelines for the management of atrial fibrillation. Eur Heart J. 2024;45(36):3314–3414.', url: 'https://doi.org/10.1093/eurheartj/ehae176' },
+      { citacao: 'Cintra FD, et al. Diretriz Brasileira de Fibrilação Atrial – 2025 (SBC/SOBRAC). Arq Bras Cardiol. 2025;122(9):e20250618 (CHA₂DS₂-VA em todos, I A; ≥ 2 anticoagular, I A; 0 não, I A; 1 individualizar, IIa B — p. 28).', url: 'https://doi.org/10.36660/abc.20250618' },
       { citacao: 'Yoshimura H, et al. Validation of the CHA₂DS₂-VA score without the sex category. Europace. 2024.', url: 'https://doi.org/10.1093/europace/euae189' },
       { citacao: 'Joglar JA, Chung MK, Armbruster AL, et al. 2023 ACC/AHA/ACCP/HRS Guideline for the diagnosis and management of atrial fibrillation. Circulation. 2024;149(1):e1–e156.', url: 'https://doi.org/10.1161/CIR.0000000000001193' },
       { citacao: 'Lip GYH, Nieuwlaat R, Pisters R, et al. Refining clinical risk stratification for predicting stroke and thromboembolism in atrial fibrillation using a novel risk factor-based approach. Chest. 2010;137(2):263–272.', url: 'https://doi.org/10.1378/chest.09-1584' },

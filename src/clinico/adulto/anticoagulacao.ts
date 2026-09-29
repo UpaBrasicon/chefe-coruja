@@ -1,4 +1,5 @@
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Anticoagulação e fibrinólise do adulto — Manual de Medicina de Emergência do
 // HCFMUSP (3ª ed., 2022): cap. 13 IAM sem supra (p. 207), cap. 14 IAM com
@@ -7,6 +8,26 @@ import { fichaAdulto } from './fonte.ts'
 // TTPA da Tabela 7 (p. 442). O livro não traz diluição da heparina EV: a
 // conversão para mL/h só acontece com a concentração do preparo informada por
 // quem usa. A indicação é do médico (ADR 0007).
+//
+// Versão .1 de 28/09/2026 (fibrinolíticos e anticoagulação plena): AHA/ACC
+// 2025 e ESC 2023 da SCA (PDFs lidos) e Diretriz Brasileira de Dor Torácica
+// 2025 (PDF lido) ao lado do manual. Páginas de periódico calculadas a partir
+// da página do PDF (AHA: e771 = p. 1; ESC: 3720 = p. 1).
+
+export const AHA_SCA_2025: Fonte = {
+  citacao: 'Rao SV, O\'Donoghue ML, Ruel M, et al. 2025 ACC/AHA/ACEP/NAEMSP/SCAI Guideline for the Management of Patients With Acute Coronary Syndromes. Circulation. 2025;151:e771–e862. Tabela de anticoagulantes (e795), Tabela 13 dos fibrinolíticos (e806), transfusão (e822), tempo ao dispositivo (e782).',
+  url: 'https://doi.org/10.1161/CIR.0000000000001309',
+}
+
+export const ESC_SCA_2023: Fonte = {
+  citacao: 'Byrne RA, Rossello X, Coughlan JJ, et al. 2023 ESC Guidelines for the management of acute coronary syndromes. Eur Heart J. 2023;44(38):3720–3826. O2 (p. 3744–3745), ICP de resgate (p. 3746), fibrinólise em 10 min (p. 3749), anticoagulantes (p. 3751), meia dose de tenecteplase (p. 3762).',
+  url: 'https://doi.org/10.1093/eurheartj/ehad191',
+}
+
+export const SBC_DOR_TORACICA_2025: Fonte = {
+  citacao: 'de Barros e Silva PGM, Soeiro AM, Ornelas CE, et al. Diretriz Brasileira de Atendimento à Dor Torácica na Unidade de Emergência – 2025. Arq Bras Cardiol. 2025;122(9):e20250620. ECG em 10 min (p. 15), HEART preferencial (p. 29–30), troponina e CK-MB (p. 37).',
+  url: 'https://doi.org/10.36660/abc.20250620',
+}
 
 export type Faixa = [number, number]
 
@@ -77,11 +98,43 @@ export function mlHDeUIH(uiH: number, uiPorMl: number): number | null {
 
 // ── Anticoagulação plena por peso (caps. 13, 14, 25 e 32) ────────────────────
 
-export const fichaAnticoagulacaoPlenaAdulto = fichaAdulto(
-  'adulto-anticoagulacao-plena',
-  'Anticoagulação plena por peso — adulto',
-  'cap. 13 IAM sem supra, p. 207; cap. 14 IAM com supra, p. 219; cap. 25 TVP, p. 352–353; cap. 32 TEP, p. 441–443',
-)
+const PAG_ANTICOAG = 'cap. 13 IAM sem supra, p. 207; cap. 14 IAM com supra, p. 219; cap. 25 TVP, p. 352–353; cap. 32 TEP, p. 441–443'
+
+export const fichaAnticoagulacaoPlenaAdulto: Ficha = {
+  ...fichaAdulto('adulto-anticoagulacao-plena', 'Anticoagulação plena por peso — adulto', PAG_ANTICOAG),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_ANTICOAG), AHA_SCA_2025, ESC_SCA_2023],
+  revisadoEm: '28/09/2026 (AHA/ACC 2025 e ESC 2023 lidas no texto; manual mantido como base)',
+}
+
+/** AHA/ACC 2025 (tabela de anticoagulantes, e795): enoxaparina com fibrinolítico — tetos e regra renal única. */
+export const ENOXAPARINA_LITICO_2025 = { bolusMg: 30, mgKg12h: 1, tetoMg: 100, idosoMgKg12h: 0.75, idosoTetoMg: 75, idadeCorte: 75, clcrCorte: 30, pagina: 'AHA/ACC 2025, e795' }
+
+export function enoxaparinaLitico2025(pesoKg: number, idadeAnos?: number, clcr?: number): { bolusMg: number | null; doseMg: number; intervalo: string; noTeto: boolean; regra: string } | null {
+  if (!valido(pesoKg)) return null
+  const e = ENOXAPARINA_LITICO_2025
+  if (clcr !== undefined && Number.isFinite(clcr) && clcr >= 0 && clcr < e.clcrCorte) return { bolusMg: null, doseMg: e.mgKg12h * pesoKg, intervalo: '1 vez ao dia SC', noTeto: false, regra: 'ClCr < 30 mL/min, em qualquer idade: 1 mg/kg SC a cada 24 h' }
+  const idoso = idadeAnos !== undefined && Number.isFinite(idadeAnos) && idadeAnos >= e.idadeCorte
+  if (idoso) { const d = e.idosoMgKg12h * pesoKg; return { bolusMg: null, doseMg: Math.min(d, e.idosoTetoMg), intervalo: '12/12 h SC', noTeto: d > e.idosoTetoMg, regra: '≥ 75 anos: sem bolus, 0,75 mg/kg 12/12 h (máx. 75 mg nas 2 primeiras doses)' } }
+  const d = e.mgKg12h * pesoKg
+  return { bolusMg: e.bolusMg, doseMg: Math.min(d, e.tetoMg), intervalo: '12/12 h SC', noTeto: d > e.tetoMg, regra: '< 75 anos: 30 mg IV e, 15 min depois, 1 mg/kg SC 12/12 h (máx. 100 mg nas 2 primeiras doses)' }
+}
+
+/** AHA/ACC 2025 (e795): HNF com fibrinolítico — 60 UI/kg (máx. 4.000) e 12 UI/kg/h (máx. 1.000 UI/h) para TTPa 60–80 s. ESC 2023 (p. 3751): 70–100 U/kg no tratamento inicial. */
+export const HNF_LITICO_2025 = { bolusUiKg: 60, bolusMaxUi: 4000, infusaoUiKgH: 12, infusaoMaxUiH: 1000, ttpaS: [60, 80] as Faixa, pagina: 'AHA/ACC 2025, e795' }
+
+export function hnfLitico2025(pesoKg: number): { bolusUi: number; bolusNoTeto: boolean; infusaoUiH: number; infusaoNoTeto: boolean } | null {
+  if (!valido(pesoKg)) return null
+  const b = HNF_LITICO_2025.bolusUiKg * pesoKg
+  const i = HNF_LITICO_2025.infusaoUiKgH * pesoKg
+  return { bolusUi: Math.min(b, HNF_LITICO_2025.bolusMaxUi), bolusNoTeto: b > HNF_LITICO_2025.bolusMaxUi, infusaoUiH: Math.min(i, HNF_LITICO_2025.infusaoMaxUiH), infusaoNoTeto: i > HNF_LITICO_2025.infusaoMaxUiH }
+}
+
+export const DIFERENCAS_ANTICOAG_2025: string[] = [
+  'Enoxaparina com lítico: o manual (p. 219) dá bolus 30 mg e 1 mg/kg 12/12 h (0,75 mg/kg sem bolus > 75 anos; 1 mg/kg 1×/dia com ClCr 15–30) sem teto; a AHA/ACC 2025 acrescenta os tetos de 100 mg e 75 mg nas duas primeiras doses e fixa "ClCr < 30 em qualquer idade → 1 mg/kg 1×/dia", o que resolve a dúvida sobre combinar idade e função renal.',
+  'IAM sem supra: o manual não traz ajuste renal (p. 207); a ESC 2023 reduz para 1 mg/kg 1×/dia com ClCr < 30 (p. 3751) e a AHA 2025 idem (e795).',
+  'HNF: o manual usa 80 U/kg + 18 U/kg/h no TEP (p. 442); com fibrinolítico a AHA 2025 usa 60 UI/kg (máx. 4.000) + 12 UI/kg/h (máx. 1.000); a ESC 2023 dá 70–100 U/kg no tratamento inicial da SCA.',
+]
 
 export type ContextoEnoxaparina = 'iamsst' | 'iamcsst-trombolise' | 'tep-12h' | 'tep-1x' | 'tvp'
 
@@ -201,11 +254,44 @@ export const ORAIS = [
 
 // ── Fibrinolíticos (cap. 14 e cap. 32) ───────────────────────────────────────
 
-export const fichaFibrinoliticosAdulto = fichaAdulto(
-  'adulto-fibrinoliticos',
-  'Fibrinolíticos — adulto (IAM com supra e TEP)',
-  'cap. 14 IAM com supra, p. 218–219; cap. 32 TEP, p. 443 (Tabela 8)',
-)
+const PAG_FIBRINO = 'cap. 14 IAM com supra, p. 218–219; cap. 32 TEP, p. 443 (Tabela 8)'
+
+export const fichaFibrinoliticosAdulto: Ficha = {
+  ...fichaAdulto('adulto-fibrinoliticos', 'Fibrinolíticos — adulto (IAM com supra e TEP)', PAG_FIBRINO),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_FIBRINO), AHA_SCA_2025, ESC_SCA_2023, SBC_DOR_TORACICA_2025],
+  revisadoEm: '28/09/2026 (AHA/ACC 2025, ESC 2023 e SBC 2025 lidas no texto; manual mantido como base)',
+}
+
+/** Tenecteplase pela AHA/ACC 2025 (Tabela 13, e806): faixas fechadas — < 60 kg 30; 60–69 35; 70–79 40; 80–89 45; ≥ 90 kg 50 mg. Meia dose > 75 anos: ESC 2023, IIa B (p. 3762). */
+export function tenecteplase2025(pesoKg: number, idadeAnos?: number): { mg: number; faixa: string; metadePorIdade: boolean; mgFinal: number } | null {
+  if (!valido(pesoKg)) return null
+  const [mg, faixa] = pesoKg < 60 ? [30, '< 60 kg'] : pesoKg < 70 ? [35, '60–69 kg'] : pesoKg < 80 ? [40, '70–79 kg'] : pesoKg < 90 ? [45, '80–89 kg'] : [50, '≥ 90 kg']
+  const idoso = idadeAnos !== undefined && Number.isFinite(idadeAnos) && idadeAnos > 75
+  return { mg, faixa, metadePorIdade: idoso, mgFinal: idoso ? mg / 2 : mg }
+}
+
+/** Alteplase acelerada pela AHA/ACC 2025 (Tabela 13, e806): corte em 67 kg (o manual corta em 65 kg, p. 218). */
+export function alteplaseIam2025(pesoKg: number): { fases: FaseInfusao[]; totalMg: number; corteKg: number } | null {
+  if (!valido(pesoKg)) return null
+  const fases: FaseInfusao[] = pesoKg >= 67
+    ? [{ fase: 'bolus', mg: 15, minutos: 0 }, { fase: 'em 30 min', mg: 50, minutos: 30 }, { fase: 'em 60 min', mg: 35, minutos: 60 }]
+    : [{ fase: 'bolus', mg: 15, minutos: 0 }, { fase: 'em 30 min (0,75 mg/kg, máx. 50)', mg: Math.min(0.75 * pesoKg, 50), minutos: 30 }, { fase: 'em 60 min (0,5 mg/kg, máx. 35)', mg: Math.min(0.5 * pesoKg, 35), minutos: 60 }]
+  return { fases, totalMg: fases.reduce((s, f) => s + f.mg, 0), corteKg: 67 }
+}
+
+export type ItemSca2025 = { tema: string; diretriz: string; fonte: string; livro: string }
+
+export const DIRETRIZ_SCA_2025: ItemSca2025[] = [
+  { tema: 'Tempo para reperfusão', diretriz: 'ICP primária com meta de 90 min do primeiro contato ao dispositivo (120 min com transferência); fibrinolítico quando o atraso previsto passa de 120 min, iniciado em até 10 min do diagnóstico de IAMCSST e sem esperar biomarcador; após lítico com sucesso, angiografia de rotina em 2–24 h', fonte: 'AHA 2025 e782, e806; ESC 2023 p. 3749', livro: 'cap. 14, p. 218–219' },
+  { tema: 'ICP de resgate', diretriz: 'Se a fibrinólise falha (resolução do ST < 50% em 60–90 min) ou há instabilidade hemodinâmica/elétrica, isquemia em piora ou dor persistente', fonte: 'ESC 2023 p. 3746', livro: '—' },
+  { tema: 'Tenecteplase', diretriz: 'Bolus único por faixa fechada de peso (30/35/40/45/50 mg); meia dose deve ser considerada acima de 75 anos', fonte: 'AHA 2025 e806; ESC 2023 IIa B, p. 3762', livro: '< 60: 30; 60–70: 35; 70–80: 40; 80–90: 45; > 90 kg: 50 mg; metade > 75 anos (p. 218–219) — bordas de 70 e 80 kg ambíguas' },
+  { tema: 'Alteplase acelerada', diretriz: '≥ 67 kg: 15 mg + 50 mg/30 min + 35 mg/60 min; < 67 kg: 15 mg + 0,75 mg/kg (máx. 50) + 0,5 mg/kg (máx. 35)', fonte: 'AHA 2025 e806', livro: 'mesmo esquema com corte em 65 kg (p. 218)' },
+  { tema: 'Estreptoquinase', diretriz: 'Não está mais disponível nos EUA (nota da Tabela 13)', fonte: 'AHA 2025 e806', livro: '1.500.000 UI em 60 min (p. 218)' },
+  { tema: 'Oxigênio', diretriz: 'Só com SaO2 < 90%; rotina sem hipoxemia não traz benefício', fonte: 'ESC 2023 p. 3744–3745', livro: '—' },
+  { tema: 'Transfusão no IAM com anemia', diretriz: 'Estratégia liberal com alvo de Hb em torno de 10 g/dL pode ser razoável (ensaio MINT)', fonte: 'AHA 2025 2b B-R, e822', livro: '—' },
+  { tema: 'Diagnóstico na dor torácica (Brasil)', diretriz: 'ECG interpretado em até 10 min (I A); troponina de alta sensibilidade com algoritmos 0/1 h ou 0/2 h; HEART é o escore clínico preferencial (I B); com troponina quantitativa disponível, não pedir CK-MB (III B)', fonte: 'SBC 2025 p. 15, 29–30, 37', livro: 'TIMI e GRACE nas ferramentas próprias' },
+]
 
 export type FaseInfusao = { fase: string; mg: number; minutos: number }
 

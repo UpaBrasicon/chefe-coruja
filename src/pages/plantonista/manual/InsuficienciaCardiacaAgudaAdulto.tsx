@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  BETABLOQUEADOR_ICA, CORTES_IC, DIGOXINA_ICA, FIGURA1_COLUNAS, FUROSEMIDA_ICA, INFUSOES_IC, MR_PROANP_CORTE, PERFIS,
+  DIFERENCAS_ICA_2021, DIRETRIZ_ICA_2021, ENSAIOS_ICA, BETABLOQUEADOR_ICA, CORTES_IC, DIGOXINA_ICA, FIGURA1_COLUNAS, FUROSEMIDA_ICA, INFUSOES_IC, MR_PROANP_CORTE, PERFIS,
   classificarFe, criteriosUti, faixaPasFigura, fichaIcAgudaAdulto, furosemidaIca, leituraBnp, leituraNtProBnp, levosimendana, mlHFaixaCap, perfilHemodinamico,
   prognosticoIc, respostaDiuretico,
 } from '@/clinico/adulto/insuficienciaCardiacaAguda'
@@ -11,6 +11,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+
 
 const pede = 'informe o peso'
 const LEITURA = { atinge: 'atinge o corte maior', 'entre-cortes': 'entre os dois números do corte', 'nao-atinge': 'abaixo do corte' }
@@ -132,6 +133,17 @@ export function InsuficienciaCardiacaAgudaAdulto() {
         </div>
         {uti.length > 0 ? <ul className="list-disc pl-5 text-atencao">{uti.map((u) => <li key={u}>{u}</li>)}</ul> : <p className="text-muted-foreground">Nenhum critério numérico atingido com os valores informados.</p>}
         <p className="text-sm text-muted-foreground">O livro também lista necessidade de intubação, uso de musculatura acessória, hipoperfusão/baixo débito e arritmias graves.</p>
+      </Bloco>
+      <Bloco titulo="ESC 2021 e ensaios recentes — ao lado do manual" descricao="ESC 2021 lida pela página do periódico (classes não conferidas); ADVOR, CLOROTIC e DAPA ACT pelos resumos.">
+        {sao2 > 0 && <p className="text-sm">{sao2 < 90 ? 'SpO2 informada abaixo de 90%: a ESC 2021 indica oxigênio.' : 'SpO2 informada ≥ 90%: a ESC 2021 não indica oxigênio de rotina (o manual mira > 95%).'}</p>}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">ESC 2021</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
+            <tbody>{DIRETRIZ_ICA_2021.map((d) => <tr key={d.tema} className="border-t"><td className="pr-3 py-2 font-medium">{d.tema}</td><td className="pr-3 py-2">{d.esc}</td><td className="pr-3 py-2 text-muted-foreground">{d.livro}</td></tr>)}</tbody>
+          </table>
+        </div>
+        {ENSAIOS_ICA.map((e) => <LinhaManual key={e.ensaio} nome={e.ensaio} texto={e.texto} pagina="resumo" />)}
+        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_ICA_2021.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

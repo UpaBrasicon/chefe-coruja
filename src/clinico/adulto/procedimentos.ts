@@ -1,13 +1,37 @@
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Procedimentos do Manual de Medicina de Emergência do HCFMUSP (3ª ed., 2022):
 // acessos (cap. 105, p. 1395–1414) — calibres, French e intraósseo — e
 // marca-passo provisório (cap. 107, p. 1445–1459). Só adulto: as profundidades
 // da agulha pediátrica por idade (p. 1413) e o sítio tibial da criança não
 // entram.
+//
+// Marca-passo, versão .1 de 28/09/2026: ESC 2021 de estimulação cardíaca
+// (PDF lido; seção 11.3, p. 3438 e 3486–3487) ao lado do cap. 107. Os
+// parâmetros numéricos do livro não são contrariados pela diretriz.
+
+export const ESC_PACING_2021: Fonte = {
+  citacao: 'Glikson M, Nielsen JC, Kronborg MB, et al. 2021 ESC Guidelines on cardiac pacing and cardiac resynchronization therapy. Eur Heart J. 2021;42(35):3427–3520. Recomendações de estimulação temporária (p. 3438; seção 11.3, p. 3486–3487).',
+  url: 'https://doi.org/10.1093/eurheartj/ehab364',
+}
 
 export const fichaAcessosAdulto = fichaAdulto('adulto-acessos-calibres', 'Acessos: calibres, French e intraósseo (adulto)', 'cap. 105 Acessos na emergência, p. 1396–1414 (Tabelas 1 e 2)')
-export const fichaMarcaPassoAdulto = fichaAdulto('adulto-marca-passo-provisorio', 'Marca-passo provisório — transcutâneo e transvenoso (adulto)', 'cap. 107 Marca-passo e dispositivos, p. 1447–1459')
+
+const PAG_MP = 'cap. 107 Marca-passo e dispositivos, p. 1447–1459'
+
+export const fichaMarcaPassoAdulto: Ficha = {
+  ...fichaAdulto('adulto-marca-passo-provisorio', 'Marca-passo provisório — transcutâneo e transvenoso (adulto)', PAG_MP),
+  versao: '2026-09-28.1',
+  fontes: [pagina(PAG_MP), ESC_PACING_2021],
+  revisadoEm: '28/09/2026 (ESC 2021 lida no texto; parâmetros do manual mantidos)',
+}
+
+export const ESC_2021_MP: { texto: string; classe: string }[] = [
+  { texto: 'Estimulação transvenosa temporária é recomendada na bradiarritmia com comprometimento hemodinâmico refratária a cronotrópico IV', classe: 'I C' },
+  { texto: 'Estimulação transcutânea deve ser considerada na bradiarritmia com comprometimento hemodinâmico quando a transvenosa temporária não é possível ou disponível', classe: 'IIa C' },
+  { texto: 'A estimulação temporária por cabo femoral com imobilização deve durar o menor tempo possível, até a bradicardia se resolver ou uma solução mais definitiva ser estabelecida', classe: 'texto 11.3' },
+]
 
 export type Faixa = [number, number]
 const valido = (x: number) => Number.isFinite(x) && x > 0

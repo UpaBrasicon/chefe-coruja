@@ -1,12 +1,14 @@
 import { useState } from 'react'
 
 import {
-  ALTEPLASE_TEP, ESTREPTOQUINASE, alteplaseIam, alteplaseTepAlternativo, fichaFibrinoliticosAdulto, mgHDaFase, tenecteplase, uiPorHora,
+  DIRETRIZ_SCA_2025, alteplaseIam2025, tenecteplase2025, ALTEPLASE_TEP, ESTREPTOQUINASE, alteplaseIam, alteplaseTepAlternativo, fichaFibrinoliticosAdulto, mgHDaFase, tenecteplase, uiPorHora,
 } from '@/clinico/adulto/anticoagulacao'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+
+const fmtE = (x: number, c = 1) => (Math.round(x * 10 ** c) / 10 ** c).toLocaleString('pt-BR')
 
 const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
 
@@ -17,6 +19,8 @@ export function FibrinoliticosAdulto() {
   const alt = alteplaseIam(peso)
   const tnk = tenecteplase(peso, idade > 0 ? idade : undefined)
   const altTep = alteplaseTepAlternativo(peso)
+  const tnk25 = tenecteplase2025(peso, idade > 0 ? idade : undefined)
+  const alt25 = alteplaseIam2025(peso)
   const skAlt = ESTREPTOQUINASE.tepAlternativo
 
   return (
@@ -92,6 +96,18 @@ export function FibrinoliticosAdulto() {
         <p className="text-sm text-muted-foreground">
           O manual traz que a HNF não deve ser infundida durante estreptoquinase e uroquinase, mas pode ser mantida com alteplase (p. 443).
         </p>
+      </Bloco>
+      <Bloco titulo="AHA/ACC 2025, ESC 2023 e SBC 2025 — IAM com supra, ao lado do manual" descricao="Diretrizes lidas no texto integral. As doses do manual acima continuam valendo; aqui ficam as da AHA 2025 para comparação.">
+        <LinhaManual nome="Tenecteplase — faixas fechadas (AHA 2025, Tabela 13)" texto="< 60 kg 30 mg; 60–69 kg 35; 70–79 kg 40; 80–89 kg 45; ≥ 90 kg 50 mg; meia dose > 75 anos (ESC 2023, IIa B)" pagina="AHA 2025 e806; ESC 2023 p. 3762"
+          conta={tnk25 ? <><strong>{fmtE(tnk25.mgFinal)} mg</strong> ({tnk25.faixa}{tnk25.metadePorIdade ? `; metade de ${tnk25.mg} mg por idade > 75` : ''})</> : 'informe o peso'} />
+        <LinhaManual nome="Alteplase acelerada — corte em 67 kg (AHA 2025)" texto="≥ 67 kg: 15 + 50/30 min + 35/60 min; < 67 kg: 15 mg + 0,75 mg/kg (máx. 50) + 0,5 mg/kg (máx. 35)" pagina="AHA 2025 e806"
+          conta={alt25 ? <>{alt25.fases.map((f) => `${fmtE(f.mg)} mg ${f.fase}`).join(' · ')} · <strong>total {fmtE(alt25.totalMg)} mg</strong></> : 'informe o peso'} />
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left align-top text-sm">
+            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">Diretriz</th><th className="pr-3 pb-2">Fonte</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
+            <tbody>{DIRETRIZ_SCA_2025.map((d) => <tr key={d.tema} className="border-t"><td className="pr-3 py-2 font-medium">{d.tema}</td><td className="pr-3 py-2">{d.diretriz}</td><td className="pr-3 py-2">{d.fonte}</td><td className="pr-3 py-2 text-muted-foreground">{d.livro}</td></tr>)}</tbody>
+          </table>
+        </div>
       </Bloco>
     </ToolLayout>
   )
