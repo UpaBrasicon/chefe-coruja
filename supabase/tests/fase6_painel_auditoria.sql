@@ -32,14 +32,15 @@ SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
 DO $$
 DECLARE p jsonb;
 BEGIN
-  IF (SELECT count(*) FROM public.acessos_prontuario_da_unidade('21000000-0000-4000-8000-000000000001')) <> 1 THEN
+  IF NOT EXISTS (SELECT 1 FROM public.acessos_prontuario_da_unidade('21000000-0000-4000-8000-000000000001')
+                 WHERE tipo_acesso = 'impressao' AND profissional_id = '10000000-0000-4000-8000-000000000002') THEN
     RAISE EXCEPTION 'FALHOU: gestor não vê o acesso';
   END IF;
   IF (SELECT paciente_nome FROM public.acessos_prontuario_da_unidade('21000000-0000-4000-8000-000000000001') LIMIT 1) IS NULL THEN
     RAISE EXCEPTION 'FALHOU: auditoria do gestor sem o nome do paciente';
   END IF;
   p := public.painel_gestor('21000000-0000-4000-8000-000000000001');
-  IF (p ->> 'impressoes_24h')::int <> 1 OR jsonb_array_length(p -> 'ocupacao') = 0 THEN
+  IF (p ->> 'impressoes_24h')::int < 1 OR jsonb_array_length(p -> 'ocupacao') = 0 THEN
     RAISE EXCEPTION 'FALHOU: painel do gestor incompleto (%)', p;
   END IF;
   IF (public.integridade_trilha('21000000-0000-4000-8000-000000000001') ->> 'integra')::boolean IS NOT TRUE THEN
@@ -47,6 +48,21 @@ BEGIN
   END IF;
   PERFORM * FROM public.trilha_da_unidade('21000000-0000-4000-8000-000000000001');
   RAISE NOTICE 'OK  gestor lê acessos, trilha, integridade e painel';
+END $$;
+
+-- ── decisão do usuário (29/09): o gestor lê qualquer prontuário sem pedido,
+--    mas só depois de abrir, e a abertura fica registrada com dia e hora ─────
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM public.observacao WHERE paciente_id = '23000000-0000-4000-8000-000000000001') THEN
+    RAISE EXCEPTION 'FALHOU: gestor leu observação sem abrir (e sem registro)';
+  END IF;
+  PERFORM public.abrir_prontuario('23000000-0000-4000-8000-000000000001');
+  IF NOT EXISTS (SELECT 1 FROM public.acessos_prontuario_da_unidade('21000000-0000-4000-8000-000000000001')
+                 WHERE profissional_id = '10000000-0000-4000-8000-000000000001' AND papel = 'gestor'
+                   AND tipo_acesso = 'leitura_prontuario' AND criado_em > now() - interval '1 minute') THEN
+    RAISE EXCEPTION 'FALHOU: leitura do gestor sem registro';
+  END IF;
+  RAISE NOTICE 'OK  gestor lê sem pedido, e a leitura fica registrada';
 END $$;
 
 -- ── plantonista ─────────────────────────────────────────────────────────────

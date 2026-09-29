@@ -3,15 +3,20 @@
 --   docker exec -i supabase_db_chefe-coruja psql -U postgres -d postgres \
 --     -v ON_ERROR_STOP=1 < supabase/tests/fase6_pedido_acesso.sql
 --
--- O plantonista do seed (…0002) fica SEM plantão agora. O paciente Um
--- (…0001) fica fora do alcance dele. O gestor (…0001) decide; a recepção
+-- O plantonista do seed (…0002) fica SEM plantão agora. O paciente criado no
+-- teste (…0099) fica fora do alcance dele. O gestor (…0001) decide; a recepção
 -- (…0005) e o administrador (…0003) não pedem.
 BEGIN;
 
 DELETE FROM public.escala_plantao WHERE perfil_id = '10000000-0000-4000-8000-000000000002';
--- um documento do paciente Um, para provar a leitura
+-- paciente criado aqui: nenhum acesso antigo dele no log (o log é só inserção
+-- e guarda as aberturas feitas à mão no banco local)
+INSERT INTO public.pacientes (id, unidade_id, nome, data_nascimento, prontuario, setor_id)
+VALUES ('23000000-0000-4000-8000-000000000099', '21000000-0000-4000-8000-000000000001', 'Paciente do Teste de Pedido',
+        '1970-01-01', 'T-099', '22000000-0000-4000-8000-000000000001');
+-- um documento do paciente do teste, para provar a leitura
 INSERT INTO public.documentos_clinicos (organizacao_id, unidade_id, paciente_id, tipo_documento, conteudo, conteudo_hash, autor_id, estado, documento_raiz_id, versao)
-SELECT u.organizacao_id, u.id, '23000000-0000-4000-8000-000000000001', 'evolucao', 'evolução de teste', 'h', '10000000-0000-4000-8000-000000000001', 'ativo', gen_random_uuid(), 1
+SELECT u.organizacao_id, u.id, '23000000-0000-4000-8000-000000000099', 'evolucao', 'evolução de teste', 'h', '10000000-0000-4000-8000-000000000001', 'ativo', gen_random_uuid(), 1
 FROM public.unidades u WHERE u.id = '21000000-0000-4000-8000-000000000001';
 
 CREATE FUNCTION pg_temp.como(perfil text) RETURNS void LANGUAGE plpgsql AS $$
@@ -24,11 +29,11 @@ SET LOCAL ROLE authenticated;
 -- ── 1. fora da escala, o plantonista não lê e não abre ──────────────────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 DO $$ BEGIN
-  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000001') THEN
+  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000099') THEN
     RAISE EXCEPTION 'FALHOU: paciente visível sem escala e sem pedido';
   END IF;
   BEGIN
-    PERFORM public.abrir_prontuario('23000000-0000-4000-8000-000000000001');
+    PERFORM public.abrir_prontuario('23000000-0000-4000-8000-000000000099');
     RAISE EXCEPTION 'FALHOU: abriu o prontuário sem pedido';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
@@ -46,7 +51,7 @@ BEGIN
     IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
   END;
   BEGIN
-    PERFORM public.pedir_acesso_prontuario('23000000-0000-4000-8000-000000000001', 'curto');
+    PERFORM public.pedir_acesso_prontuario('23000000-0000-4000-8000-000000000099', 'curto');
     RAISE EXCEPTION 'FALHOU: pedido com motivo curto';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
@@ -58,15 +63,15 @@ END $$;
 DO $$
 DECLARE v uuid;
 BEGIN
-  v := public.pedir_acesso_prontuario('23000000-0000-4000-8000-000000000001', 'Revisar a evolução do atendimento de ontem');
+  v := public.pedir_acesso_prontuario('23000000-0000-4000-8000-000000000099', 'Revisar a evolução do atendimento de ontem');
   PERFORM set_config('teste.pedido', v::text, true);
   BEGIN
-    PERFORM public.pedir_acesso_prontuario('23000000-0000-4000-8000-000000000001', 'Outro pedido igual para o mesmo paciente');
+    PERFORM public.pedir_acesso_prontuario('23000000-0000-4000-8000-000000000099', 'Outro pedido igual para o mesmo paciente');
     RAISE EXCEPTION 'FALHOU: dois pedidos pendentes';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
   END;
-  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000001') THEN
+  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000099') THEN
     RAISE EXCEPTION 'FALHOU: pedido pendente já dá leitura';
   END IF;
   IF (SELECT count(*) FROM public.meus_pedidos_acesso('21000000-0000-4000-8000-000000000001')) <> 1 THEN
@@ -88,7 +93,7 @@ END $$;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 DO $$ BEGIN
   BEGIN
-    PERFORM public.pedir_acesso_prontuario('23000000-0000-4000-8000-000000000001', 'Recepção pedindo acesso ao prontuário');
+    PERFORM public.pedir_acesso_prontuario('23000000-0000-4000-8000-000000000099', 'Recepção pedindo acesso ao prontuário');
     RAISE EXCEPTION 'FALHOU: recepção pediu acesso';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
@@ -101,7 +106,7 @@ END $$;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000003');
 DO $$ BEGIN
   BEGIN
-    PERFORM public.pedir_acesso_prontuario('23000000-0000-4000-8000-000000000001', 'Administrador pedindo acesso ao prontuário');
+    PERFORM public.pedir_acesso_prontuario('23000000-0000-4000-8000-000000000099', 'Administrador pedindo acesso ao prontuário');
     RAISE EXCEPTION 'FALHOU: administrador pediu acesso';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
@@ -139,27 +144,27 @@ END $$;
 -- ── 6. aprovado: lê depois de abrir; não escreve; não imprime ───────────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000001') THEN
+  IF NOT EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000099') THEN
     RAISE EXCEPTION 'FALHOU: pedido aprovado não dá leitura do paciente';
   END IF;
-  IF EXISTS (SELECT 1 FROM public.documentos_clinicos WHERE paciente_id = '23000000-0000-4000-8000-000000000001') THEN
+  IF EXISTS (SELECT 1 FROM public.documentos_clinicos WHERE paciente_id = '23000000-0000-4000-8000-000000000099') THEN
     RAISE EXCEPTION 'FALHOU: documento visível antes de abrir o prontuário';
   END IF;
-  PERFORM public.abrir_prontuario('23000000-0000-4000-8000-000000000001');
-  IF NOT EXISTS (SELECT 1 FROM public.documentos_clinicos WHERE paciente_id = '23000000-0000-4000-8000-000000000001') THEN
+  PERFORM public.abrir_prontuario('23000000-0000-4000-8000-000000000099');
+  IF NOT EXISTS (SELECT 1 FROM public.documentos_clinicos WHERE paciente_id = '23000000-0000-4000-8000-000000000099') THEN
     RAISE EXCEPTION 'FALHOU: documento invisível com pedido aprovado e prontuário aberto';
   END IF;
-  IF private.pode_atuar_no_paciente('23000000-0000-4000-8000-000000000001') THEN
+  IF private.pode_atuar_no_paciente('23000000-0000-4000-8000-000000000099') THEN
     RAISE EXCEPTION 'FALHOU: pedido aprovado deu escrita';
   END IF;
   BEGIN
-    PERFORM public.registrar_impressao('23000000-0000-4000-8000-000000000001', 'evolucao', NULL, NULL);
+    PERFORM public.registrar_impressao('23000000-0000-4000-8000-000000000099', 'evolucao', NULL, NULL);
     RAISE EXCEPTION 'FALHOU: pedido aprovado deu impressão';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
   END;
-  UPDATE public.pacientes SET nome = nome || ' x' WHERE id = '23000000-0000-4000-8000-000000000001';
-  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000001' AND nome LIKE '% x') THEN
+  UPDATE public.pacientes SET nome = nome || ' x' WHERE id = '23000000-0000-4000-8000-000000000099';
+  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000099' AND nome LIKE '% x') THEN
     RAISE EXCEPTION 'FALHOU: pedido aprovado permitiu alterar o paciente';
   END IF;
   RAISE NOTICE 'OK  aprovado: lê após abrir, sem escrita e sem impressão';
@@ -172,7 +177,7 @@ UPDATE public.pedidos_acesso_prontuario SET valido_ate = now() - interval '1 min
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 DO $$ BEGIN
-  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000001') THEN
+  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000099') THEN
     RAISE EXCEPTION 'FALHOU: pedido vencido ainda dá leitura';
   END IF;
   RAISE NOTICE 'OK  pedido vencido não dá leitura';

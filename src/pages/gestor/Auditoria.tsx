@@ -209,7 +209,7 @@ function AcessosProntuario() {
                     <td className="pr-2">{a.profissional_nome}<span className="text-xs text-tinta-sussurro"> · {PAPEL[a.papel ?? ''] ?? a.papel ?? '—'}</span></td>
                     <td className="pr-2">{a.paciente_nome}</td>
                     <td className="pr-2">{TIPO_ACESSO[a.tipo_acesso] ?? a.tipo_acesso}{a.documento_tipo ? ` · ${a.documento_tipo.replace(/_/g, ' ')}` : ''}</td>
-                    <td>{a.via_pedido ? <Badge variant="info">pedido aprovado</Badge> : <span className="text-xs text-tinta-sussurro">escala ou gestão</span>}</td>
+                    <td>{a.via_pedido ? <Badge variant="info">pedido aprovado</Badge> : <span className="text-xs text-tinta-sussurro">{a.papel === 'gestor' ? 'gestor (sem pedido)' : 'escala'}</span>}</td>
                   </tr>
                 ))}
               </tbody>
