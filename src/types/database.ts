@@ -5140,6 +5140,126 @@ export type Database = {
           },
         ]
       }
+      teleinterconsultas: {
+        Row: {
+          aceita_em: string | null
+          cancelada_em: string | null
+          consentimento: string
+          consultor_id: string | null
+          criada_em: string
+          documento_resposta_id: string | null
+          documento_solicitacao_id: string | null
+          episodio_id: string | null
+          id: string
+          organizacao_id: string
+          paciente_id: string
+          pergunta: string
+          respondida_em: string | null
+          resposta: string | null
+          solicitante_id: string
+          status: string
+          unidade_id: string
+          urgencia: string
+        }
+        Insert: {
+          aceita_em?: string | null
+          cancelada_em?: string | null
+          consentimento: string
+          consultor_id?: string | null
+          criada_em?: string
+          documento_resposta_id?: string | null
+          documento_solicitacao_id?: string | null
+          episodio_id?: string | null
+          id?: string
+          organizacao_id: string
+          paciente_id: string
+          pergunta: string
+          respondida_em?: string | null
+          resposta?: string | null
+          solicitante_id: string
+          status?: string
+          unidade_id: string
+          urgencia?: string
+        }
+        Update: {
+          aceita_em?: string | null
+          cancelada_em?: string | null
+          consentimento?: string
+          consultor_id?: string | null
+          criada_em?: string
+          documento_resposta_id?: string | null
+          documento_solicitacao_id?: string | null
+          episodio_id?: string | null
+          id?: string
+          organizacao_id?: string
+          paciente_id?: string
+          pergunta?: string
+          respondida_em?: string | null
+          resposta?: string | null
+          solicitante_id?: string
+          status?: string
+          unidade_id?: string
+          urgencia?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teleinterconsultas_consultor_id_fkey"
+            columns: ["consultor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teleinterconsultas_documento_resposta_id_fkey"
+            columns: ["documento_resposta_id"]
+            isOneToOne: false
+            referencedRelation: "documentos_clinicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teleinterconsultas_documento_solicitacao_id_fkey"
+            columns: ["documento_solicitacao_id"]
+            isOneToOne: false
+            referencedRelation: "documentos_clinicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teleinterconsultas_episodio_id_fkey"
+            columns: ["episodio_id"]
+            isOneToOne: false
+            referencedRelation: "episodios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teleinterconsultas_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teleinterconsultas_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teleinterconsultas_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teleinterconsultas_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transferencias_paciente: {
         Row: {
           created_at: string
@@ -5539,6 +5659,7 @@ export type Database = {
         Args: { p_internacao?: string; p_paciente: string }
         Returns: undefined
       }
+      aceitar_teleinterconsulta: { Args: { p_id: string }; Returns: undefined }
       acessos_prontuario_da_unidade: {
         Args: {
           p_ate?: string
@@ -5637,6 +5758,7 @@ export type Database = {
         Returns: undefined
       }
       cancelar_pedido_acesso: { Args: { p_pedido: string }; Returns: undefined }
+      cancelar_teleinterconsulta: { Args: { p_id: string }; Returns: undefined }
       censo_recente: {
         Args: { p_dias?: number; p_unidade: string }
         Returns: {
@@ -6526,6 +6648,10 @@ export type Database = {
         Args: { p_aceitar: boolean; p_motivo?: string; p_passagem: string }
         Returns: undefined
       }
+      responder_teleinterconsulta: {
+        Args: { p_id: string; p_resposta: string }
+        Returns: string
+      }
       resumo_busca_ia: {
         Args: { p_dias?: number; p_unidade: string }
         Returns: {
@@ -6638,6 +6764,16 @@ export type Database = {
         Returns: Json
       }
       situacao_pacote_alta: { Args: { p_token: string }; Returns: Json }
+      solicitar_teleinterconsulta: {
+        Args: {
+          p_consentimento: string
+          p_episodio?: string
+          p_paciente: string
+          p_pergunta: string
+          p_urgencia?: string
+        }
+        Returns: string
+      }
       solicitar_troca: {
         Args: { p_mensagem?: string; p_plantao_a: string; p_plantao_b: string }
         Returns: string
@@ -6645,6 +6781,29 @@ export type Database = {
       suspender_item: {
         Args: { p_item: string; p_motivo: string }
         Returns: undefined
+      }
+      teleinterconsultas_da_unidade: {
+        Args: { p_dias?: number; p_unidade: string }
+        Returns: {
+          aceita_em: string
+          consentimento: string
+          consultor_nome: string
+          criada_em: string
+          documento_resposta_numero: string
+          documento_solicitacao_numero: string
+          id: string
+          minha: boolean
+          paciente_id: string
+          paciente_nascimento: string
+          paciente_nome: string
+          pergunta: string
+          respondida_em: string
+          resposta: string
+          setor_nome: string
+          solicitante_nome: string
+          status: string
+          urgencia: string
+        }[]
       }
       tem_acesso_atendimento: { Args: { unidade: string }; Returns: boolean }
       terminologia_buscar: {

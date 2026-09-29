@@ -20,7 +20,8 @@ import { supabase } from '@/lib/supabase'
 const ROTULO_DOC: Record<string, string> = {
   admissao_anamnese: 'Admissão e anamnese', evolucao: 'Evolução', prescricao: 'Prescrição', sumario_alta: 'Sumário de alta',
   sumario_obito: 'Sumário de óbito', atestado: 'Atestado', termo_consentimento: 'Termo de consentimento',
-  boletim_emergencia: 'Boletim de emergência', partograma: 'Partograma',
+  boletim_emergencia: 'Boletim de emergência', partograma: 'Partograma', teleinterconsulta: 'Teleinterconsulta',
+  receita: 'Receita', encaminhamento: 'Encaminhamento', pedido_exames: 'Pedido de exames', laudo_aih: 'Laudo de AIH',
 }
 const ETAPA: Record<string, string> = { triagem: 'Triagem', atendimento: 'Atendimento', observacao: 'Observação', internacao: 'Internação', encerrado: 'Encerrado' }
 

@@ -76,7 +76,7 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   tecnico_enfermagem: '/checagem',
   recepcao: '/recepcao',
   farmaceutico: '/farmacia',
-  telemedicina: '/em-preparo',
+  telemedicina: '/teleinterconsulta',
 }
 
 export const ORDEM_PAPEL: Record<Papel, number> = {

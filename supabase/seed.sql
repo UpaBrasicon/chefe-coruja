@@ -9,6 +9,7 @@
 --   admin@teste.local         admin da organização
 --   enfermeiro@teste.local    enfermeiro escalado AGORA no Pronto Socorro (triagem)
 --   recepcao@teste.local      recepção escalada AGORA no Pronto Socorro (ficha)
+--   telemedicina@teste.local  médico de telemedicina escalado AGORA (fase 7)
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- ── Usuários (auth) ─────────────────────────────────────────────────────────
@@ -24,7 +25,8 @@ FROM (VALUES
   ('10000000-0000-4000-8000-000000000002'::uuid, 'plantonista@teste.local', 'Plantonista de Teste'),
   ('10000000-0000-4000-8000-000000000003'::uuid, 'admin@teste.local',       'Admin de Teste'),
   ('10000000-0000-4000-8000-000000000004'::uuid, 'enfermeiro@teste.local',  'Enfermeira de Teste'),
-  ('10000000-0000-4000-8000-000000000005'::uuid, 'recepcao@teste.local',    'Recepção de Teste')
+  ('10000000-0000-4000-8000-000000000005'::uuid, 'recepcao@teste.local',    'Recepção de Teste'),
+  ('10000000-0000-4000-8000-000000000006'::uuid, 'telemedicina@teste.local', 'Teleconsultor de Teste')
 ) AS u(id, email, nome)
 ON CONFLICT (id) DO NOTHING;
 
@@ -43,6 +45,10 @@ VALUES
   ('10000000-0000-4000-8000-000000000003', 'Admin de Teste'),
   ('10000000-0000-4000-8000-000000000004', 'Enfermeira de Teste'),
   ('10000000-0000-4000-8000-000000000005', 'Recepção de Teste')
+ON CONFLICT (id) DO NOTHING;
+-- CRM fictício: o parecer da teleinterconsulta identifica o médico pelo CRM
+INSERT INTO public.perfis (id, nome_completo, crm, uf_crm)
+VALUES ('10000000-0000-4000-8000-000000000006', 'Teleconsultor de Teste', '99999', 'SP')
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Organização, unidade, setores e leitos ─────────────────────────────────
@@ -70,13 +76,23 @@ INSERT INTO public.vinculos (perfil_id, unidade_id, papel) VALUES
   ('10000000-0000-4000-8000-000000000002', '21000000-0000-4000-8000-000000000001', 'plantonista'),
   ('10000000-0000-4000-8000-000000000003', '21000000-0000-4000-8000-000000000001', 'admin'),
   ('10000000-0000-4000-8000-000000000004', '21000000-0000-4000-8000-000000000001', 'enfermeiro'),
-  ('10000000-0000-4000-8000-000000000005', '21000000-0000-4000-8000-000000000001', 'recepcao')
+  ('10000000-0000-4000-8000-000000000005', '21000000-0000-4000-8000-000000000001', 'recepcao'),
+  ('10000000-0000-4000-8000-000000000006', '21000000-0000-4000-8000-000000000001', 'telemedicina')
 ON CONFLICT DO NOTHING;
 
 -- ── Escala: o plantonista está de plantão agora, na Clínica Médica ─────────
 INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno)
 SELECT '21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000001',
        '10000000-0000-4000-8000-000000000002', d, t
+FROM generate_series(private.data_atual() - 1, private.data_atual() + 1, interval '1 day') d,
+     unnest(ARRAY['manha', 'tarde', 'noite']) t
+ON CONFLICT DO NOTHING;
+
+-- telemedicina de plantão agora (escalado na Clínica Médica; a escala dele
+-- não abre o setor, só a teleinterconsulta aceita)
+INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno)
+SELECT '21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000001',
+       '10000000-0000-4000-8000-000000000006', d, t
 FROM generate_series(private.data_atual() - 1, private.data_atual() + 1, interval '1 day') d,
      unnest(ARRAY['manha', 'tarde', 'noite']) t
 ON CONFLICT DO NOTHING;
