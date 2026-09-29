@@ -16,14 +16,15 @@ export const wellsTep: Escore = {
   ficha: {
     id: 'wells-tep',
     titulo: 'Wells para TEP — probabilidade de embolia pulmonar',
-    versao: '2026-09-27.1',
+    versao: '2026-09-28.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Wells PS, Anderson DR, Rodger M, et al. Derivation of a simple clinical model to categorize patients probability of pulmonary embolism. Thromb Haemost. 2000;83(3):416–420.', url: 'https://doi.org/10.1055/s-0037-1613830' },
       { citacao: 'Creager MA, Barnes GD, Giri J, et al. 2026 AHA/ACC/ACCP/ACEP/CHEST/SCAI/SHM/SIR/SVM/SVN Guideline for the evaluation and management of acute pulmonary embolism in adults. 2026.', url: 'https://doi.org/10.1161/CIR.0000000000001300' },
+      { citacao: 'Kearon C, de Wit K, Parpia S, et al. Diagnosis of pulmonary embolism with d-dimer adjusted to clinical probability. N Engl J Med. 2019;381(22):2125–2134. Citado só para distinguir a variante de três níveis.', url: 'https://doi.org/10.1056/NEJMoa1909159' },
       { citacao: 'Righini M, Van Es J, Den Exter PL, et al. Age-adjusted D-dimer cutoff levels to rule out pulmonary embolism: the ADJUST-PE study. JAMA. 2014;311(11):1117–1124.', url: 'https://doi.org/10.1001/jama.2014.2135' },
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '28/09/2026 (variante de três níveis explicitada)',
   },
   descricao: 'Probabilidade pré-teste de embolia pulmonar, nas leituras de três níveis e dicotomizada, com o limiar de D-dímero ajustado pela idade',
   itens: [
@@ -63,6 +64,7 @@ export const wellsTep: Escore = {
       cuidados: [
         'A diretriz de 2026 trata Wells, Genebra revisado e PERC como ferramentas de decisão clínica recomendadas, sem preferência única entre elas.',
         'O item “diagnóstico alternativo menos provável que TEP” é subjetivo e é a maior fonte de variação entre examinadores. A pontuação tem casas decimais, e arredondar muda a faixa.',
+        'A leitura de três níveis desta tela é a de Wells 2000 (abaixo de 2, 2 a 6, acima de 6). O estudo PEGeD (Kearon, NEJM 2019) usou outra divisão em três níveis, com o D-dímero de 1000 na baixa probabilidade: não misturar as duas.',
         'O limiar ajustado pela idade só vale acima de 50 anos; abaixo disso o limiar segue 500.',
         'Na gestante o algoritmo é outro, e esta tela não o faz.',
         'Nem o Wells nem o D-dímero ajustado têm validação pediátrica declarada.',
