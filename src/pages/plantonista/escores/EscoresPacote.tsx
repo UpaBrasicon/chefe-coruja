@@ -26,6 +26,7 @@ import { rass } from '@/clinico/escores/rass'
 import { rockall } from '@/clinico/escores/rockall'
 import { sepseAdulto } from '@/clinico/escores/sepseAdulto'
 import { wellsTep } from '@/clinico/escores/wellsTep'
+import { years } from '@/clinico/escores/years'
 import { wellsTvp } from '@/clinico/escores/wellsTvp'
 import { EscoreTela } from '@/components/plantonista/EscoreTela'
 
@@ -59,4 +60,5 @@ export const Ranson = () => <EscoreTela escore={ranson} />
 export const Rockall = () => <EscoreTela escore={rockall} />
 export const SepseAdulto = () => <EscoreTela escore={sepseAdulto} />
 export const WellsTep = () => <EscoreTela escore={wellsTep} />
+export const Years = () => <EscoreTela escore={years} />
 export const News2 = () => <EscoreTela escore={news2} />

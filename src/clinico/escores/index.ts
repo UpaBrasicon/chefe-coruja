@@ -28,6 +28,7 @@ import { rockall } from './rockall.ts'
 import { sepseAdulto } from './sepseAdulto.ts'
 import { wellsTep } from './wellsTep.ts'
 import { wellsTvp } from './wellsTvp.ts'
+import { years } from './years.ts'
 
 /** Todos os escores do pacote, para a Central e para os testes de conjunto. */
 export const ESCORES: Escore[] = [
@@ -60,4 +61,5 @@ export const ESCORES: Escore[] = [
   rockall,
   sepseAdulto,
   wellsTep,
+  years,
 ]

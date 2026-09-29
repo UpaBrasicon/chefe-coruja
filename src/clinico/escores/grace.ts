@@ -26,13 +26,13 @@ export const grace: Escore = {
   ficha: {
     id: 'grace',
     titulo: 'GRACE — risco na síndrome coronariana aguda',
-    versao: '2026-09-27.1',
+    versao: '2026-09-28.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Granger CB, Goldberg RJ, Dabbous O, et al. Predictors of hospital mortality in the Global Registry of Acute Coronary Events. Arch Intern Med. 2003;163(19):2345–2353.', url: 'https://doi.org/10.1001/archinte.163.19.2345' },
       { citacao: 'Byrne RA, Rossello X, Coughlan JJ, et al. 2023 ESC Guidelines for the management of acute coronary syndromes. Eur Heart J. 2023;44(38):3720–3826.', url: 'https://doi.org/10.1093/eurheartj/ehad191' },
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '28/09/2026 (aviso das faixas da SCA sem supra)',
   },
   descricao: 'Mortalidade hospitalar na síndrome coronariana aguda por oito variáveis da admissão',
   itens: [
@@ -72,7 +72,8 @@ export const grace: Escore = {
         ['Faixa', ['até 108 pontos', '109 a 140 pontos', 'acima de 140 pontos'][banda]],
       ],
       cuidados: [
-        'As faixas de 108 e 140 pontos são do modelo de mortalidade hospitalar. O modelo de 6 meses tem outras faixas.',
+        'As faixas de 108 e 140 pontos são do modelo de mortalidade hospitalar na SCA SEM supra de ST. No IAM com supra de ST as faixas são outras, e esta tela não as mostra.',
+        'O modelo de 6 meses tem outras faixas.',
         'Creatinina em mg/dL. O registro original usa a mesma unidade; conferir a do laboratório antes de digitar.',
         'O escore foi derivado dos valores de chegada: recalcular após a estabilização não é GRACE.',
         'É um modelo de mortalidade, não uma contagem de gravidade clínica: pressão sistólica baixa e parada na admissão pesam mais que o marcador elevado.',

@@ -11,13 +11,15 @@ export const light: Escore = {
   ficha: {
     id: 'light',
     titulo: 'Critérios de Light — exsudato ou transudato',
-    versao: '2026-09-27.1',
+    versao: '2026-09-28.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Light RW, Macgregor MI, Luchsinger PC, Ball WC. Pleural effusions: the diagnostic separation of transudates and exudates. Ann Intern Med. 1972;77(4):507–513.', url: 'https://doi.org/10.7326/0003-4819-77-4-507' },
       { citacao: 'Sundaralingam A, Grabczak EM, Burra P, et al. ERS statement on benign pleural effusions in adults. Eur Respir J. 2024.', url: 'https://doi.org/10.1183/13993003.02307-2023' },
+      { citacao: 'Porcel JM. Biomarkers in the diagnosis of pleural diseases: a 2018 update. Ther Adv Respir Dis. 2018;12:1753466618808660. NT-proBNP no líquido pleural acima de 1500 pg/mL.', url: 'https://doi.org/10.1177/1753466618808660' },
+      { citacao: 'Porcel JM, Trujillano J, Porcel L, et al. Development and validation of a diagnostic prediction model for heart failure-related pleural effusions: the BANCA score. ERJ Open Res. 2025;11:01030-2024. Corte ótimo de NT-proBNP 2500 pg/mL.', url: 'https://doi.org/10.1183/23120541.01030-2024' },
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '28/09/2026 (unidade do NT-proBNP)',
   },
   descricao: 'Exsudato ou transudato no derrame pleural, com o gradiente de albumina',
   itens: [
@@ -71,7 +73,8 @@ export const light: Escore = {
         'Qualquer UM dos três critérios positivo classifica como exsudato. Não é preciso ter os três.',
         'O terceiro critério usa o limite superior da normalidade do LDH do seu laboratório. O antigo corte fixo de 200 U/L era o LSN de um laboratório específico, não uma constante.',
         'Sem amostra sérica, a regra alternativa é LDH pleural acima de 67% do LSN sérico OU colesterol pleural acima de 55 mg/dL, com capacidade discriminativa equivalente.',
-        'NT-proBNP acima de 1500 no líquido pleural ou no soro identifica com alta acurácia derrame de origem cardíaca.',
+        'NT-proBNP no líquido pleural acima de 1500 pg/mL (o mesmo que ng/L) é marca de insuficiência cardíaca descompensada (Porcel 2018).',
+        'O escore BANCA (Porcel 2025) achou 2500 pg/mL como corte ótimo, e o NT-proBNP pleural tendeu a ser mais acurado que o sérico. É outro corte, de outro estudo.',
         'A ERS 2024 mantém os critérios de Light: nenhuma alternativa testada em cinco décadas os superou.',
         'Líquido pleural e soro coletados no mesmo dia.',
       ],
