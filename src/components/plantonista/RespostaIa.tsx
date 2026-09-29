@@ -134,6 +134,7 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
     limite: 'Limite de 30 perguntas por hora atingido. A busca local continua disponível.',
     indisponivel: 'IA indisponível no momento. A busca local continua disponível.',
     error: 'Não foi possível consultar a IA agora.',
+    identificacao: 'A pergunta parece ter identificação de paciente (nome, CPF, CNS, data ou prontuário) e não foi enviada. Pergunte sem o dado: a IA não recebe identificação.',
   }
   const aviso = mensagem[status] ?? null
   return (

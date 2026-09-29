@@ -20,7 +20,7 @@ export type Fonte = {
 
 export type ToolHit = { id: string; nome: string; tipo: string; categoria: string; rota: string; score: number }
 
-export type StatusIa = 'idle' | 'loading' | 'streaming' | 'done' | 'blocked' | 'error' | 'limite' | 'indisponivel'
+export type StatusIa = 'idle' | 'loading' | 'streaming' | 'done' | 'blocked' | 'error' | 'limite' | 'indisponivel' | 'identificacao'
 
 type Evento =
   | { type: 'meta'; request_id: string; gate: boolean; ferramentas: ToolHit[]; fontes: Fonte[] }
@@ -95,6 +95,8 @@ export function useClinicalAsk(unidadeId?: string) {
       return
     }
     if (res.status === 429) { setStatus('limite'); return }
+    // gateway (ADR 0006): a pergunta tinha identificação e não saiu
+    if (res.status === 422) { setStatus('identificacao'); return }
     if (res.status === 503) { setStatus('indisponivel'); return }
     if (!res.ok || !res.body) { setStatus('error'); return }
     setRequestId(res.headers.get('X-Request-Id'))

@@ -1,11 +1,17 @@
 // Busca inteligente da Central: intermedia o app e a API "biblioteca" no VPS.
 // - Autentica pelo JWT do usuário e confere o vínculo ativo com a unidade
 //   (ou super admin). tenant_id enviado à biblioteca = unidade_id.
-// - Pseudonimiza a pergunta antes de sair (CPF, CNS, telefone, data) e grava
-//   o log só com a versão mascarada.
+// - Fase 8 (ADR 0006): a pergunta passa pelo desidentificador do gateway de IA
+//   (cópia em ../_shared/desidentificacao.ts) antes de sair: nomes de
+//   pacientes e profissionais da unidade, CPF/CNS com dígito válido, telefone,
+//   e-mail, CEP, data e prontuário viram pseudônimos. Sobrou resíduo com cara
+//   de identificador: a pergunta não sai (falha fechada). O log guarda só a
+//   versão limpa.
 // - Limite: 30 perguntas "ask" por usuário por hora.
 // - Repassa o stream NDJSON da biblioteca sem armazenar a resposta.
 import { createClient } from 'npm:@supabase/supabase-js@2'
+
+import { criarCofre, desidentificar, residuos, type Conhecido } from '../_shared/desidentificacao.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
@@ -13,6 +19,7 @@ const cors = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+// A mesma máscara de antes, como segunda camada depois do gateway.
 const PII: [RegExp, string][] = [
   [/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g, '[CPF]'],
   [/\b\d{15}\b/g, '[CNS]'],
@@ -22,6 +29,34 @@ const PII: [RegExp, string][] = [
   [/\b[\w.+-]+@[\w-]+\.[\w.]+\b/g, '[EMAIL]'],
 ]
 const redact = (s: string) => PII.reduce((t, [r, x]) => t.replace(r, x), s)
+
+/** Nomes que o servidor sabe serem de pessoas desta unidade: saem sempre. */
+async function nomesConhecidos(admin: ReturnType<typeof createClient>, unidadeId: string, userId: string): Promise<Conhecido[]> {
+  const [pac, vin, eu] = await Promise.all([
+    admin.from('pacientes').select('nome, nome_social, nome_mae, responsavel_nome').eq('unidade_id', unidadeId).eq('ativo', true).limit(20000),
+    admin.from('vinculos').select('perfis(nome_completo)').eq('unidade_id', unidadeId).eq('ativo', true).limit(5000),
+    admin.from('perfis').select('nome_completo').eq('id', userId).maybeSingle(),
+  ])
+  const nomes: Conhecido[] = []
+  for (const p of (pac.data ?? []) as Record<string, string | null>[]) {
+    if (p.nome) nomes.push({ valor: p.nome, categoria: 'PACIENTE' })
+    if (p.nome_social) nomes.push({ valor: p.nome_social, categoria: 'PACIENTE' })
+    if (p.nome_mae) nomes.push({ valor: p.nome_mae, categoria: 'PESSOA' })
+    if (p.responsavel_nome) nomes.push({ valor: p.responsavel_nome, categoria: 'PESSOA' })
+  }
+  for (const v of (vin.data ?? []) as { perfis: { nome_completo?: string } | null }[]) {
+    if (v.perfis?.nome_completo) nomes.push({ valor: v.perfis.nome_completo, categoria: 'PESSOA' })
+  }
+  const meu = (eu.data as { nome_completo?: string } | null)?.nome_completo
+  if (meu) nomes.push({ valor: meu, categoria: 'PESSOA' })
+  // nome completo e também o primeiro + último nome ("Maria Silva" de "Maria da Silva Souza")
+  const extra: Conhecido[] = []
+  for (const n of nomes) {
+    const partes = n.valor.trim().split(/\s+/).filter((x) => x.length >= 3 && !/^(da|de|do|das|dos)$/i.test(x))
+    if (partes.length >= 3) extra.push({ valor: `${partes[0]} ${partes[partes.length - 1]}`, categoria: n.categoria })
+  }
+  return [...nomes, ...extra]
+}
 
 const erro = (status: number, msg: string) =>
   new Response(JSON.stringify({ erro: msg }), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
@@ -66,7 +101,17 @@ Deno.serve(async (req) => {
   }
 
   const request_id = crypto.randomUUID()
-  const qRed = redact(q)
+  // Gateway (ADR 0006): desidentifica, confere resíduo, e só então envia.
+  const limpo = desidentificar(q, criarCofre(), await nomesConhecidos(admin, unidadeId, user.id))
+  const sobras = residuos(limpo.texto)
+  const qRed = redact(limpo.texto)
+  if (sobras.length) {
+    await admin.from('clinical_search_logs').insert({
+      request_id, user_id: user.id, unidade_id: unidadeId, mode, query_redacted: qRed, status: 422, latency_ms: Date.now() - t0,
+    })
+    return erro(422, 'A pergunta parece ter identificação de paciente (' + sobras.map((r) => r.tipo).join(', ') +
+      '). Tire o dado e pergunte de novo: a busca não envia identificação para a IA.')
+  }
   const base = Deno.env.get('BIBLIOTECA_URL')
   const chave = Deno.env.get('BIBLIOTECA_API_KEY')
   let upstream: Response | null = null
