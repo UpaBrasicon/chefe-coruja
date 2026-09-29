@@ -191,15 +191,15 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       {!embutido && (
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/" className="transition-colors hover:text-foreground">
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/" className="transition-colors hover:text-tinta">
               Início
             </Link>
-            <span className="text-muted-foreground">/</span>
-            <span className="font-medium text-foreground">Meu Plantão</span>
+            <span className="text-tinta-sussurro">/</span>
+            <span className="font-medium text-tinta">Meu Plantão</span>
           </div>
           <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Meu Plantão</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             Registre sua entrada (check-in) e saída (check-out) com geolocalização.
           </p>
         </div>
@@ -213,7 +213,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <MapPin className="size-4 text-muted-foreground" />
+            <MapPin className="size-4 text-tinta-sussurro" />
             {unidade?.nome ?? 'Unidade'}
           </CardTitle>
           <CardDescription>
@@ -233,7 +233,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
               </Badge>
             )}
           </div>
-          {geoMsg && <p className="text-xs text-muted-foreground">{geoMsg}</p>}
+          {geoMsg && <p className="text-xs text-tinta-sussurro">{geoMsg}</p>}
 
           {ativoHoje ? (
             <div className="flex flex-col gap-3 rounded-lg border border-atencao/30 bg-atencao/[0.08] p-4">
@@ -245,7 +245,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
                 {ativoHoje.checkin_dentro === true && <Badge variant="success">Dentro do raio</Badge>}
                 {ativoHoje.checkin_dentro === false && <Badge variant="destructive">Fora do raio</Badge>}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-tinta-sussurro">
                 Check-in: {ativoHoje.checkin_em ? new Date(ativoHoje.checkin_em).toLocaleString('pt-BR') : '-'}
               </div>
               <div>
@@ -315,7 +315,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
               <Spinner />
             </div>
           ) : (presencas ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum registro de presença ainda.</p>
+            <p className="text-sm text-tinta-sussurro">Nenhum registro de presença ainda.</p>
           ) : (
             <div className="flex flex-col gap-2">
               {(presencas ?? []).map((p) => (
@@ -326,7 +326,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
                     </span>
                     {p.checkin_dentro === false && <Badge variant="destructive">Fora do raio</Badge>}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-tinta-sussurro">
                     {p.checkin_em ? new Date(p.checkin_em).toLocaleTimeString('pt-BR') : '-'} →{' '}
                     {p.checkout_em ? new Date(p.checkout_em).toLocaleTimeString('pt-BR') : 'em andamento'}
                   </div>

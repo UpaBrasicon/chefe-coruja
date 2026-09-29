@@ -66,7 +66,7 @@ export function PassagensDoPlantao() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <ArrowRightLeft className="size-4 text-muted-foreground" /> Passagem de plantão
+          <ArrowRightLeft className="size-4 text-tinta-sussurro" /> Passagem de plantão
         </CardTitle>
         <CardDescription>
           Paciente a paciente, com aceite. Enquanto uma passagem sua aguarda aceite, o check-out fica bloqueado.
@@ -78,7 +78,7 @@ export function PassagensDoPlantao() {
           <div key={p.id} className="flex flex-col gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-3">
             <div className="font-medium text-tinta">{paciente(p)} · {p.setores?.nome}</div>
             <p className="whitespace-pre-wrap">{p.resumo}</p>
-            <div className="text-xs text-muted-foreground">enviada em {hora(p.enviada_em)}</div>
+            <div className="text-xs text-tinta-sussurro">enviada em {hora(p.enviada_em)}</div>
             {recusando === p.id ? (
               <div className="flex flex-col gap-2">
                 <Textarea placeholder="Por que recusa (mínimo de 15 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />

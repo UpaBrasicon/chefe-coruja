@@ -227,7 +227,7 @@ export function DadosPaciente({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Stethoscope className="size-4 text-muted-foreground" /> Dados do Paciente
+          <Stethoscope className="size-4 text-tinta-sussurro" /> Dados do Paciente
         </CardTitle>
         <CardDescription>
           Identifique o paciente (busca por CPF/nome, cadastro ou anexo do arquivo de atendimento). Os
@@ -258,10 +258,10 @@ export function DadosPaciente({
           )}
 
           {!buscando && buscaAtiva && !pacienteEncontrado && (
-            <div className="rounded-xl border border-dashed p-3 text-sm text-muted-foreground">
+            <div className="rounded-xl border border-dashed p-3 text-sm text-tinta-sussurro">
               Paciente não encontrado.{' '}
               <button
-                className="font-medium text-primary hover:underline"
+                className="font-medium text-acao hover:underline"
                 onClick={() => setNovoPaciente((v) => !v)}
               >
                 Cadastrar novo paciente
@@ -290,7 +290,7 @@ export function DadosPaciente({
                 </div>
               </div>
               {escalaSetores && escalaSetores.length > 0 && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-tinta-sussurro">
                   Setor (da escala atual): <Badge variant="outline">{escalaSetores[0].nome}</Badge>
                 </p>
               )}
@@ -315,7 +315,7 @@ export function DadosPaciente({
           {/* Anexar / ler arquivo do atendimento */}
           <div className="flex flex-col gap-2 rounded-xl border border-dashed p-4">
             <Label htmlFor="int-arquivo" className="flex items-center gap-2">
-              <FileText className="size-4 text-muted-foreground" />
+              <FileText className="size-4 text-tinta-sussurro" />
               Anexar arquivo do atendimento (PDF ou imagem)
             </Label>
             <Input
@@ -326,7 +326,7 @@ export function DadosPaciente({
             />
             {arquivo && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-sm text-muted-foreground">{arquivo.name}</span>
+                <span className="text-sm text-tinta-sussurro">{arquivo.name}</span>
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={anexarArquivo} disabled={anexando || !unidadeId}>
                     {anexando ? <Spinner /> : <FolderUp />} Anexar
@@ -376,7 +376,7 @@ export function DadosPaciente({
               value={idadeTexto(dados.nascimento, dados.dataAtual) || dados.idade}
               readOnly
               placeholder="Auto"
-              className="bg-muted"
+              className="bg-trilha"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -427,16 +427,16 @@ export function DadosPaciente({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-tinta-sussurro">
               Ao salvar/continuar, o paciente será vinculado a este setor. Transferências entre
               setores ficam registradas em auditoria.
             </p>
           </div>
         )}
 
-        {erro && <p className="text-sm text-destructive">{erro}</p>}
+        {erro && <p className="text-sm text-critico">{erro}</p>}
         {perfilId && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-tinta-sussurro">
             Salvo automaticamente para a unidade atual · ID do plantonista: {perfilId.slice(0, 8)}…
           </p>
         )}

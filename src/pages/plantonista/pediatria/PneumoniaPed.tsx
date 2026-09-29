@@ -31,7 +31,7 @@ export function PneumoniaPed() {
       <CampoPaciente id="pac" p={p} onChange={setP} />
       <Bloco titulo="Regime">
         <Opcoes label="Tratamento" valor={regime} opcoes={[['domiciliar', 'Domiciliar (Tabela 3)'], ['hospitalar', 'Hospitalar (Tabela 4)']]} onChange={setRegime} />
-        {faixa && <p className="text-muted-foreground">Faixa etária da tabela: {ROTULO_FAIXA[faixa]}{p.rn ? ' (RN)' : ''}.</p>}
+        {faixa && <p className="text-tinta-sussurro">Faixa etária da tabela: {ROTULO_FAIXA[faixa]}{p.rn ? ' (RN)' : ''}.</p>}
         <Nota>{INTERNACAO_PAC}</Nota>
       </Bloco>
 
@@ -77,12 +77,12 @@ export function PneumoniaPed() {
       </Bloco>
       <Bloco titulo="PAC complicada — SBP 2024 (Quadro 2, p. 9–10) e derrame — IDSA/PIDS 2026" descricao="Documento científico da SBP lido no PDF; recomendações IDSA/PIDS 2026 pelo resumo (texto integral bloqueado). Doses IV da PAC complicada pelo peso informado.">
         {calc ? DOSES_SBP_2024.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} />) : <Nota>Informe peso e idade pediátrica para as doses por peso.</Nota>}
-        {ESQUEMAS_SBP_2024.map((e) => <p key={e.situacao} className="text-muted-foreground"><span className="font-medium text-foreground">{e.situacao}:</span> {e.texto} (SBP 2024, {e.pagina})</p>)}
+        {ESQUEMAS_SBP_2024.map((e) => <p key={e.situacao} className="text-tinta-sussurro"><span className="font-medium text-tinta">{e.situacao}:</span> {e.texto} (SBP 2024, {e.pagina})</p>)}
         <p><span className="font-medium">Drenagem pleural simples (SBP 2024, p. 13):</span> {DRENAGEM_SBP_2024.indicacoes.join('; ')}. Falha: {DRENAGEM_SBP_2024.falha.join('; ')}. Retirada do dreno: {DRENAGEM_SBP_2024.retirada}.</p>
-        <p className="text-muted-foreground">Empiema (p. 7): {DRENAGEM_SBP_2024.empiema}. Fibrinolítico (p. 12–13): {DRENAGEM_SBP_2024.fibrinolitico}.</p>
+        <p className="text-tinta-sussurro">Empiema (p. 7): {DRENAGEM_SBP_2024.empiema}. Fibrinolítico (p. 12–13): {DRENAGEM_SBP_2024.fibrinolitico}.</p>
         {(() => { const u = p.rn ? uroquinasePleural(0) : uroquinasePleural(p.anos * 12 + p.meses); return u ? <p>Uroquinase intrapleural pela idade: <strong>{u.ui.toLocaleString('pt-BR')} UI em {u.mlSf} mL de SF 0,9%</strong> (SBP 2024, p. 12–13).</p> : null })()}
-        {DERRAME_IDSA_2026.map((d) => <p key={d.tema} className="text-muted-foreground"><span className="font-medium text-foreground">{d.tema}:</span> {d.texto} (IDSA/PIDS 2026)</p>)}
-        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_PAC_2024.map((d) => <li key={d}>{d}</li>)}</ul>
+        {DERRAME_IDSA_2026.map((d) => <p key={d.tema} className="text-tinta-sussurro"><span className="font-medium text-tinta">{d.tema}:</span> {d.texto} (IDSA/PIDS 2026)</p>)}
+        <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_PAC_2024.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Errata">

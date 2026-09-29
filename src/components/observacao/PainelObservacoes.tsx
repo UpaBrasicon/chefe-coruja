@@ -38,14 +38,14 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
 
   const itens = painel?.itens ?? []
   if (itens.length === 0) {
-    return <p className="text-sm text-muted-foreground">Sem observações registradas nesta internação.</p>
+    return <p className="text-sm text-tinta-sussurro">Sem observações registradas nesta internação.</p>
   }
 
   return (
     <div className={cn('overflow-x-auto rounded-lg border', className)}>
       <table className="w-full min-w-[560px] text-sm">
         <thead>
-          <tr className="border-b bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
+          <tr className="border-b bg-trilha/50 text-left text-xs uppercase tracking-wide text-tinta-sussurro">
             <th className="px-3 py-2 font-medium">Conceito</th>
             <th className="px-3 py-2 text-right font-medium">Último</th>
             <th className="px-3 py-2 text-right font-medium">Hora</th>
@@ -58,7 +58,7 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
             <tr key={item.conceito_id} className="border-b last:border-0">
               <td className="px-3 py-1.5">
                 <span className="font-medium capitalize">{item.nome.replace(/-/g, ' ')}</span>
-                {item.unidade && <span className="ml-1 text-xs text-muted-foreground">{item.unidade}</span>}
+                {item.unidade && <span className="ml-1 text-xs text-tinta-sussurro">{item.unidade}</span>}
               </td>
               <td className="px-3 py-1.5 text-right">
                 {item.ultimo ? (
@@ -71,10 +71,10 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
                     {formatarValor(item.ultimo)}
                   </span>
                 ) : (
-                  <span className="text-muted-foreground">—</span>
+                  <span className="text-tinta-sussurro">—</span>
                 )}
               </td>
-              <td className="px-3 py-1.5 text-right font-mono text-xs text-muted-foreground">
+              <td className="px-3 py-1.5 text-right font-mono text-xs text-tinta-sussurro">
                 {item.ultimo ? formatarHora(item.ultimo.aferido_em) : '—'}
               </td>
               <td className="px-3 py-1.5 text-right font-mono text-xs">
@@ -85,10 +85,10 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
                     {item.delta}
                   </span>
                 ) : (
-                  <span className="text-muted-foreground">—</span>
+                  <span className="text-tinta-sussurro">—</span>
                 )}
               </td>
-              <td className="px-3 py-1.5 text-right font-mono text-xs text-muted-foreground">
+              <td className="px-3 py-1.5 text-right font-mono text-xs text-tinta-sussurro">
                 {item.ref_min != null || item.ref_max != null
                   ? `${item.ref_min ?? '…'} – ${item.ref_max ?? '…'}`
                   : '—'}

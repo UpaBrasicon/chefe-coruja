@@ -43,7 +43,7 @@ export function MeningitePed() {
           {campo('hemSangue', 'Hemácias no sangue', '/mm³')}
         </div>
         {ajust !== null && <p>Leucócitos ajustados (fórmula): <strong className="tabular-nums">{br(ajust, 1)}/mm³</strong></p>}
-        {estim && <p className="text-muted-foreground">Estimativa rápida (1 leucócito a cada 500 a 1.500 hemácias): {br(estim[0], 0)} a {br(estim[1], 0)}/mm³.</p>}
+        {estim && <p className="text-tinta-sussurro">Estimativa rápida (1 leucócito a cada 500 a 1.500 hemácias): {br(estim[0], 0)} a {br(estim[1], 0)}/mm³.</p>}
         {prot !== null && <p>Proteína ajustada (−1 mg/dL a cada 1.000 hemácias): <strong className="tabular-nums">{br(prot, 1)} mg/dL</strong></p>}
       </Bloco>
 

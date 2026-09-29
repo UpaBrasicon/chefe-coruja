@@ -163,9 +163,9 @@ export function Encaminhamento({
             />
           </div>
 
-          <div className="rounded-lg border bg-muted p-3 text-sm text-muted-foreground">
+          <div className="rounded-lg border bg-trilha p-3 text-sm text-tinta-sussurro">
             Hipótese diagnóstica (de Dados do Paciente):{' '}
-            <strong className="text-foreground">{dados.paciente.diagnostico || '—'}</strong>
+            <strong className="text-tinta">{dados.paciente.diagnostico || '—'}</strong>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3">

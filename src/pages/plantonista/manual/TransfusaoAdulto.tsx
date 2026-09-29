@@ -64,12 +64,12 @@ export function TransfusaoAdulto() {
         <div className="flex flex-col gap-1">
           {GATILHOS_HB_AABB.map((g) => (
             <div key={g.id} className={`rounded-md border px-3 py-1.5 ${abaixoAabb.includes(g.id) ? 'border-atencao' : ''}`}>
-              <span className="font-medium">{g.situacao}</span>: Hb &lt; {br(g.hb, 1)} g/dL <span className="text-muted-foreground">({g.forca}; {g.fonte})</span>
+              <span className="font-medium">{g.situacao}</span>: Hb &lt; {br(g.hb, 1)} g/dL <span className="text-tinta-sussurro">({g.forca}; {g.fonte})</span>
               {abaixoAabb.includes(g.id) && <span className="ml-1 text-atencao">— Hb informada abaixo do limiar</span>}
             </div>
           ))}
         </div>
-        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_TRANSFUSAO_2023.slice(0, 3).map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_TRANSFUSAO_2023.slice(0, 3).map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Concentrado de hemácias — incremento, volume e velocidade" descricao={`Sem sangramento, cada unidade: Hb +${INCREMENTO_CH.hbGdl} g/dL e Ht +${INCREMENTO_CH.htPct}% (${INCREMENTO_CH.pagina}).`}>
@@ -108,7 +108,7 @@ export function TransfusaoAdulto() {
         )}
         <Trecho texto={`Proporção: ${TRANSFUSAO_MACICA.proporcao}`} pagina={TRANSFUSAO_MACICA.pagina} />
         <Trecho texto={TRANSFUSAO_MACICA.citrato} pagina={TRANSFUSAO_MACICA.pagina} />
-        <p className="text-muted-foreground">O capítulo não traz dose de cálcio para a hipocalcemia por citrato.</p>
+        <p className="text-tinta-sussurro">O capítulo não traz dose de cálcio para a hipocalcemia por citrato.</p>
         {TRAUMA_TRANSFUSAO.map((t) => <Trecho key={t.texto} texto={t.texto} pagina={t.pagina} />)}
       </Bloco>
 
@@ -143,11 +143,11 @@ export function TransfusaoAdulto() {
         <div className="flex flex-col gap-1">
           {PLAQUETAS_AABB_2025.map((g) => (
             <div key={g.situacao} className="rounded-md border px-3 py-1.5">
-              <span className="font-medium">{g.limiar ? `< ${mil(g.limiar)}/µL` : 'não transfundir'}</span>: {g.situacao} <span className="text-muted-foreground">({g.forca})</span>
+              <span className="font-medium">{g.limiar ? `< ${mil(g.limiar)}/µL` : 'não transfundir'}</span>: {g.situacao} <span className="text-tinta-sussurro">({g.forca})</span>
             </div>
           ))}
         </div>
-        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_TRANSFUSAO_2023.slice(3).map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_TRANSFUSAO_2023.slice(3).map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Plasma fresco congelado" descricao={`Alvo: ${PFC.alvo} (${PFC.pagina}).`}>
@@ -187,7 +187,7 @@ export function TransfusaoAdulto() {
         {CCP.fixas.map((f) => <Trecho key={f.id} texto={`${f.texto} — ${br(f.ui / CCP.uiMin, 0)} min a ${CCP.uiMin} UI/min`} pagina={CCP.pagina} />)}
         <NumberField id="tr-inr" label="INR" value={inr} onChange={setInr} step={0.1} />
         {ccp === null ? (
-          <p className="text-muted-foreground">{peso > 0 ? 'Informe o INR.' : 'Informe o peso e o INR.'}</p>
+          <p className="text-tinta-sussurro">{peso > 0 ? 'Informe o INR.' : 'Informe o peso e o INR.'}</p>
         ) : ccp.length === 0 ? (
           <p>O livro não traz dose por peso para INR abaixo de 2.</p>
         ) : (
@@ -204,7 +204,7 @@ export function TransfusaoAdulto() {
       </Bloco>
 
       <Bloco titulo="Errata e divergências do livro">
-        <ul className="list-disc pl-5 text-muted-foreground">
+        <ul className="list-disc pl-5 text-tinta-sussurro">
           {ERRATA_TRANSFUSAO.map((e) => <li key={e}>{e}</li>)}
         </ul>
       </Bloco>

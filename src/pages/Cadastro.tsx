@@ -85,7 +85,7 @@ export function Cadastro() {
                 {...register('nomeCompleto')}
               />
               {errors.nomeCompleto && (
-                <p className="text-xs text-destructive">{errors.nomeCompleto.message}</p>
+                <p className="text-xs text-critico">{errors.nomeCompleto.message}</p>
               )}
             </div>
 
@@ -98,7 +98,7 @@ export function Cadastro() {
                 autoComplete="email"
                 {...register('email')}
               />
-              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+              {errors.email && <p className="text-xs text-critico">{errors.email.message}</p>}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -109,7 +109,7 @@ export function Cadastro() {
                 autoComplete="new-password"
                 {...register('senha')}
               />
-              {errors.senha && <p className="text-xs text-destructive">{errors.senha.message}</p>}
+              {errors.senha && <p className="text-xs text-critico">{errors.senha.message}</p>}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -121,20 +121,20 @@ export function Cadastro() {
                 {...register('confirmarSenha')}
               />
               {errors.confirmarSenha && (
-                <p className="text-xs text-destructive">{errors.confirmarSenha.message}</p>
+                <p className="text-xs text-critico">{errors.confirmarSenha.message}</p>
               )}
             </div>
 
-            {erro && <p className="text-sm text-destructive">{erro}</p>}
+            {erro && <p className="text-sm text-critico">{erro}</p>}
 
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? <Spinner /> : 'Criar conta'}
             </Button>
           </form>
 
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="mt-4 text-center text-sm text-tinta-sussurro">
             Já tem conta?{' '}
-            <Link to="/login" className="text-primary hover:underline">
+            <Link to="/login" className="text-acao hover:underline">
               Entrar
             </Link>
           </p>

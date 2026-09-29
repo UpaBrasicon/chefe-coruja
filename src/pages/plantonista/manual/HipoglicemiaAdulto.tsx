@@ -42,7 +42,7 @@ export function HipoglicemiaAdulto() {
           </CardDescription>
         </CardHeader>
         <CardContent className="text-sm">
-          {abaixo === null ? <p className="text-muted-foreground">Informe a glicemia.</p> : (
+          {abaixo === null ? <p className="text-tinta-sussurro">Informe a glicemia.</p> : (
             <p>
               Glicemia {glic} mg/dL {abaixo ? <strong>abaixo</strong> : 'não está abaixo'} do limiar do manual para paciente {dm ? 'com' : 'sem'} DM
               {!dm && glic >= LIMIAR_HIPOGLICEMIA.semDmTexto && glic < LIMIAR_HIPOGLICEMIA.semDmFigura && ' (mas abaixo do corte de 50 da Figura 1)'}.
@@ -61,7 +61,7 @@ export function HipoglicemiaAdulto() {
           <p>Sem acesso venoso: glucagon <strong>{HIPOGLICEMIA_DOSES.glucagonMg[0]}–{HIPOGLICEMIA_DOSES.glucagonMg[1]} mg IM</strong> — efeito fugaz, esgota o glicogênio hepático; o manual diz que não é possível repetir.</p>
           <p>Desnutridos, hepatopatas ou etilistas: tiamina <strong>{HIPOGLICEMIA_DOSES.tiaminaMg} mg IV ou IM</strong> junto com a glicose (Wernicke-Korsakoff).</p>
           <p>DM com alto risco de recorrência (p. ex. insuficiência renal crônica): observação por {HIPOGLICEMIA_DOSES.observacaoHoras[0]}–{HIPOGLICEMIA_DOSES.observacaoHoras[1]} h com glicemia capilar 1/1 h.</p>
-          <p className="text-xs text-muted-foreground"><Badge variant="outline" className="mr-1">errata</Badge>Limiar sem DM: 45 mg/dL no texto (p. 877) e 50 mg/dL na Figura 1 (p. 881). A ferramenta usa o texto e mostra o corte da figura.</p>
+          <p className="text-xs text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>Limiar sem DM: 45 mg/dL no texto (p. 877) e 50 mg/dL na Figura 1 (p. 881). A ferramenta usa o texto e mostra o corte da figura.</p>
         </CardContent>
       </Card>
     </ToolLayout>

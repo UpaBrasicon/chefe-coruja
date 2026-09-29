@@ -80,7 +80,7 @@ export function GlomerulopatiasShuPed() {
       ) : (
         <Bloco titulo="Síndrome nefrótica — volume e diuréticos (p. 624–626)">
           {alb && (
-            <LinhaFaixa nome="Albumina 20%" faixa={alb.gramas} unidade="g" casas={1} texto="0,5 a 1 g/kg em 4 horas (Figura 1: 1 g/kg), com sinais vitais e PA" pagina="p. 624; Figura 1, p. 626" extra={<span className="text-muted-foreground"> · {faixaBr(alb.mL, 0)} mL de albumina 20%</span>} />
+            <LinhaFaixa nome="Albumina 20%" faixa={alb.gramas} unidade="g" casas={1} texto="0,5 a 1 g/kg em 4 horas (Figura 1: 1 g/kg), com sinais vitais e PA" pagina="p. 624; Figura 1, p. 626" extra={<span className="text-tinta-sussurro"> · {faixaBr(alb.mL, 0)} mL de albumina 20%</span>} />
           )}
           <ListaQuadro itens={INDICACOES_ALBUMINA} pagina="p. 624" />
           {DOSES_NEFROTICA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
@@ -103,7 +103,7 @@ export function GlomerulopatiasShuPed() {
         </div>
         {ch !== null && <p>{ch ? <strong>Hb &lt; 6 g/dL ou Ht &lt; 18%: limiar de transfusão de CH do livro (p. 634).</strong> : 'Acima do limiar de transfusão do livro (Hb < 6 ou Ht < 18%).'}</p>}
         {chv && (
-          <LinhaFaixa nome="Concentrado de hemácias" faixa={[chv.mL, chv.mL]} unidade="mL" casas={0} texto="10 mL/kg em 3 a 4 horas (costuma elevar a Hb em 1 g/dL); meta pós-transfusional 8 a 9 g/dL; lento, com sinais vitais e potássio" pagina="p. 635" extra={<span className="text-muted-foreground"> · {faixaBr(chv.mlH, 0)} mL/h</span>} />
+          <LinhaFaixa nome="Concentrado de hemácias" faixa={[chv.mL, chv.mL]} unidade="mL" casas={0} texto="10 mL/kg em 3 a 4 horas (costuma elevar a Hb em 1 g/dL); meta pós-transfusional 8 a 9 g/dL; lento, com sinais vitais e potássio" pagina="p. 635" extra={<span className="text-tinta-sussurro"> · {faixaBr(chv.mlH, 0)} mL/h</span>} />
         )}
         {calc && DOSES_SHU.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
         {calc && <LinhaFaixa nome="Plasmaférese — volume de troca" faixa={plasmafereseShuMl(p.peso)} unidade="mL" casas={0} texto="40 a 60 mL/kg, com plasma fresco congelado como reposição (SHUa ou SNC grave até o eculizumabe)" pagina="p. 636" />}
@@ -116,11 +116,11 @@ export function GlomerulopatiasShuPed() {
           <div className="rounded-lg border px-3 py-2 text-sm">
             <p>Fase diária (4 ou 6 semanas): <strong className="tabular-nums">{k.diariaPorPeso !== null ? `${br(k.diariaPorPeso, 0)} mg/dia (2 mg/kg)` : ''}{k.diariaPorPeso !== null && k.diariaPorSc !== null ? ' · ' : ''}{k.diariaPorSc !== null ? `${br(k.diariaPorSc, 0)} mg/dia (60 mg/m²)` : ''}</strong>{k.noTetoDiaria && ' — no teto de 60 mg'}</p>
             <p>Dias alternados (mais 4 ou 6 semanas): <strong className="tabular-nums">{k.alternadaPorPeso !== null ? `${br(k.alternadaPorPeso, 0)} mg (1,5 mg/kg)` : ''}{k.alternadaPorPeso !== null && k.alternadaPorSc !== null ? ' · ' : ''}{k.alternadaPorSc !== null ? `${br(k.alternadaPorSc, 0)} mg (40 mg/m²)` : ''}</strong>{k.noTetoAlternada && ' — no teto de 40 mg'}</p>
-            <p className="text-muted-foreground">Recaída: mesma dose diária até 3 dias de remissão, depois alternada por 4 semanas (Practice Points 1.3.3.1–1.3.3.2).</p>
+            <p className="text-tinta-sussurro">Recaída: mesma dose diária até 3 dias de remissão, depois alternada por 4 semanas (Practice Points 1.3.3.1–1.3.3.2).</p>
           </div>
         ) : <Nota>Informe idade pediátrica e peso ou superfície corpórea.</Nota> })()}
-        {KDIGO_ITENS.map((i) => <p key={i.tema} className="text-muted-foreground"><span className="font-medium text-foreground">{i.tema}:</span> {i.texto} ({i.forca}; {i.pagina})</p>)}
-        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_NEFROTICA_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+        {KDIGO_ITENS.map((i) => <p key={i.tema} className="text-tinta-sussurro"><span className="font-medium text-tinta">{i.tema}:</span> {i.texto} ({i.forca}; {i.pagina})</p>)}
+        <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_NEFROTICA_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Dos capítulos">

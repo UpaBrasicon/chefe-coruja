@@ -1,21 +1,30 @@
 import { Command as CommandPrimitive } from 'cmdk'
-import { CornerDownLeft, Search } from 'lucide-react'
+import { FolderSearch, Search, ShieldAlert } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { SECOES } from '@/content/registry'
-import { SECOES_PLANTAO } from '@/content/plantaoRegistry'
-import { fuzzyMatch, normalizar } from '@/lib/search'
+import { useUnidade } from '@/contexts/UnidadeContext'
 
+import { GRUPO_TELAS, buscarNaPaleta, fontesEstaticas, pareceNome, type EntradaPaleta } from './fontesPaleta'
 import type { ItemNav } from './navegacao'
+import { useFontesDoBanco } from './useFontesDoBanco'
 
-// Paleta de busca (09-comum-casca §4): Ctrl+K, "/" fora de campo, ou a lupa da
-// topbar. Indexa telas e ferramentas; fuzzy com normalização de acento.
-// A busca de pacientes (e a recusa com motivo para quem está fora do censo)
-// entra com o censo da Fase 3 — hoje o índice não traz nome de paciente.
+// Paleta de busca (09-comum-casca §4; protótipo .cc-paleta): Ctrl+K, "/" fora
+// de campo, ou a lupa da topbar. Indexa telas, ferramentas e o que o papel
+// alcança no banco (pacientes do acesso, setores, farmácia, unidades), com
+// ranking tolerante a acento. Setas e Enter vêm do cmdk.
+//
+// "Fora do seu acesso": quando o termo parece nome de pessoa e nenhum paciente
+// do acesso casa, a paleta explica por que não mostra e oferece o pedido de
+// acesso ao prontuário. Ela NÃO consulta paciente fora do acesso — a linha é
+// genérica e não confirma nem nega que o nome exista na unidade.
 
-type Entrada = { id: string; grupo: string; rotulo: string; detalhe?: string; to: string; termos: string }
+const GRUPO_FORA = 'Fora do seu acesso'
+const CLASSE_GRUPO =
+  '[&_[cmdk-group-heading]]:block [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-[9px] [&_[cmdk-group-heading]]:pb-[5px] [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-[0.07em] [&_[cmdk-group-heading]]:text-tinta-sussurro [&_[cmdk-group-heading]]:uppercase'
+const CLASSE_ITEM =
+  'group flex cursor-pointer items-center gap-2.5 rounded-controle px-3 py-[9px] text-tinta data-[selected=true]:bg-marca/10 data-[selected=true]:text-acao'
 
 export function Paleta({
   aberta, onAbertaChange, telas, comFerramentas, comPlantao,
@@ -27,110 +36,124 @@ export function Paleta({
   comPlantao: boolean
 }) {
   const navigate = useNavigate()
+  const { papeisDaUnidade } = useUnidade()
   const [termo, setTermo] = useState('')
+  const banco = useFontesDoBanco(aberta)
 
-  const indice = useMemo<Entrada[]>(() => {
-    const e: Entrada[] = telas.map((t) => ({ id: `tela:${t.to}`, grupo: 'Telas', rotulo: t.rotulo, to: t.to, termos: t.rotulo }))
-    if (comPlantao) {
-      for (const s of SECOES_PLANTAO) {
-        for (const f of s.tools) {
-          e.push({
-            id: `plantao:${s.slug}/${f.slug}`, grupo: 'Plantão', rotulo: f.label, detalhe: s.label,
-            to: `/plantao/${s.slug}/${f.slug}`, termos: `${f.label} ${s.label} ${f.description}`,
-          })
-        }
-      }
-    }
-    if (comFerramentas) {
-      for (const s of SECOES) {
-        for (const f of s.tools) {
-          e.push({
-            id: `tool:${s.slug}/${f.slug}`, grupo: 'Ferramentas', rotulo: f.label, detalhe: s.label,
-            to: `/plantonista/${s.slug}/${f.slug}`, termos: `${f.label} ${s.label} ${f.description} ${(f.tags ?? []).join(' ')}`,
-          })
-        }
-      }
-    }
-    return e
-  }, [telas, comFerramentas, comPlantao])
+  // Ordem da amostra sem termo: telas, depois o que vem do banco, depois ferramentas.
+  const indice = useMemo<EntradaPaleta[]>(() => {
+    const est = fontesEstaticas({ telas, comFerramentas, comPlantao })
+    return [...est.filter((x) => x.grupo === GRUPO_TELAS), ...banco.entradas, ...est.filter((x) => x.grupo !== GRUPO_TELAS)]
+  }, [telas, comFerramentas, comPlantao, banco.entradas])
 
-  // Sem termo: amostra curta por grupo. Com termo: até 9 resultados.
-  const resultados = useMemo(() => {
-    const q = termo.trim()
-    if (!q) {
-      const porGrupo = new Map<string, number>()
-      return indice.filter((x) => {
-        const n = porGrupo.get(x.grupo) ?? 0
-        porGrupo.set(x.grupo, n + 1)
-        return x.grupo === 'Telas' || n < 2
-      })
-    }
-    // Ranking: trecho no nome > trecho em qualquer termo > letras em ordem no
-    // nome. Letras em ordem sobre a descrição inteira casavam quase tudo.
-    const n = normalizar(q)
-    const pontuar = (x: Entrada) =>
-      normalizar(x.rotulo).includes(n) ? 3 : normalizar(x.termos).includes(n) ? 2 : fuzzyMatch(x.rotulo, q) ? 1 : 0
-    return indice
-      .map((x) => ({ x, p: pontuar(x) }))
-      .filter((r) => r.p > 0)
-      .sort((a, b) => b.p - a.p)
-      .slice(0, 9)
-      .map((r) => r.x)
-  }, [indice, termo])
+  const busca = useMemo(() => buscarNaPaleta(indice, termo), [indice, termo])
 
   const grupos = useMemo(() => {
-    const m = new Map<string, Entrada[]>()
-    for (const r of resultados) m.set(r.grupo, [...(m.get(r.grupo) ?? []), r])
+    const m = new Map<string, EntradaPaleta[]>()
+    for (const r of busca.itens) m.set(r.grupo, [...(m.get(r.grupo) ?? []), r])
     return [...m.entries()]
-  }, [resultados])
+  }, [busca.itens])
 
-  function abrir(to: string) {
+  // Só quando a fonte de pacientes respondeu (sem ela não dá para dizer "fora"),
+  // o termo parece nome e nada casou pelo nome — "dopa" acha a Dopamina e não
+  // precisa de aviso.
+  const mostrarFora = banco.pacientesProntos && pareceNome(termo) && !busca.algumPaciente && !busca.algumPeloNome
+
+  const dica = papeisDaUnidade.includes('plantonista')
+    ? 'Buscar ferramenta, paciente, leito, tela…'
+    : papeisDaUnidade.includes('farmaceutico')
+      ? 'Buscar diluição, falta, tela…'
+      : papeisDaUnidade.includes('gestor')
+        ? 'Buscar tela, setor, ferramenta…'
+        : papeisDaUnidade.includes('admin')
+          ? 'Buscar tela ou unidade…'
+          : 'Buscar tela…'
+
+  function fechar() {
     onAbertaChange(false)
     setTermo('')
+  }
+
+  function abrir(to: string) {
+    fechar()
     navigate(to)
   }
 
   return (
     <Dialog open={aberta} onOpenChange={(v) => { onAbertaChange(v); if (!v) setTermo('') }}>
-      <DialogContent showCloseButton={false} className="top-[12vh] translate-y-0 gap-0 p-0 sm:max-w-[560px]">
+      <DialogContent
+        showCloseButton={false}
+        className="top-[84px] flex max-h-[calc(100dvh-96px)] w-full max-w-[calc(100%-24px)] translate-y-0 flex-col gap-0 overflow-hidden rounded-cartao border-0 p-0 shadow-paleta sm:max-w-[640px]"
+      >
         <DialogTitle className="sr-only">Buscar no Chefe Coruja</DialogTitle>
-        <CommandPrimitive shouldFilter={false} label="Buscar" className="flex flex-col">
-          <div className="flex items-center gap-2.5 border-b border-fio px-4">
-            <Search className="size-4 shrink-0 text-tinta-sussurro" aria-hidden />
+        <CommandPrimitive shouldFilter={false} loop label="Buscar" className="flex min-h-0 flex-col">
+          <div className="flex items-center gap-[11px] border-b border-trilha px-[18px] py-[15px]">
+            <Search className="size-[18px] shrink-0 text-tinta-sussurro" aria-hidden />
             <CommandPrimitive.Input
               autoFocus
               value={termo}
               onValueChange={setTermo}
-              placeholder="Buscar tela, ferramenta, droga, escore…"
-              className="h-12 w-full bg-transparent text-corpo text-tinta outline-none placeholder:text-tinta-sussurro focus-visible:shadow-none"
+              placeholder={dica}
+              aria-label="Buscar"
+              className="min-w-0 flex-1 border-0 bg-transparent text-[16px] text-tinta outline-none placeholder:text-tinta-sussurro focus-visible:shadow-none"
             />
-            <kbd className="rounded-[5px] border border-fio px-1.5 font-mono text-[11px] text-tinta-sussurro">Esc</kbd>
+            <kbd className="cc-tecla">esc</kbd>
           </div>
-          <CommandPrimitive.List className="max-h-[min(60vh,420px)] overflow-y-auto p-2">
-            <CommandPrimitive.Empty className="px-3 py-8 text-center text-apoio text-tinta-sussurro">
-              Nada encontrado para “{termo}”.
+
+          <CommandPrimitive.List aria-label="Resultados" className="max-h-[384px] min-h-0 overflow-y-auto p-1.5">
+            <CommandPrimitive.Empty className="px-3.5 py-[26px] text-center text-apoio text-tinta-sussurro">
+              Nada com esse nome no seu acesso.
             </CommandPrimitive.Empty>
+
             {grupos.map(([grupo, itens]) => (
-              <CommandPrimitive.Group
-                key={grupo}
-                heading={grupo}
-                className="[&_[cmdk-group-heading]]:px-2.5 [&_[cmdk-group-heading]]:pt-2.5 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-[0.06em] [&_[cmdk-group-heading]]:text-tinta-sussurro [&_[cmdk-group-heading]]:uppercase"
-              >
-                {itens.map((x) => (
-                  <CommandPrimitive.Item
-                    key={x.id}
-                    value={x.id}
-                    onSelect={() => abrir(x.to)}
-                    className="group flex cursor-pointer items-center gap-3 rounded-controle px-2.5 py-2 text-apoio text-tinta data-[selected=true]:bg-marca/10 data-[selected=true]:text-acao"
-                  >
-                    <span className="min-w-0 flex-1 truncate">{x.rotulo}</span>
-                    {x.detalhe && <span className="shrink-0 text-rotulo text-tinta-sussurro">{x.detalhe}</span>}
-                    <CornerDownLeft className="size-3.5 shrink-0 opacity-0 group-data-[selected=true]:opacity-100" aria-hidden />
-                  </CommandPrimitive.Item>
-                ))}
+              <CommandPrimitive.Group key={grupo} heading={grupo} className={CLASSE_GRUPO}>
+                {itens.map((x) => {
+                  const Icone = x.icone
+                  return (
+                    <CommandPrimitive.Item key={x.id} value={x.id} onSelect={() => abrir(x.to)} className={CLASSE_ITEM}>
+                      {Icone && <Icone className="size-4 shrink-0" aria-hidden />}
+                      <span className="max-w-[60%] shrink-0 truncate text-controle font-medium">{x.rotulo}</span>
+                      <span className="min-w-0 flex-1 truncate text-apoio text-tinta-sussurro">{x.detalhe}</span>
+                      <kbd className="cc-tecla invisible shrink-0 group-data-[selected=true]:visible">↵</kbd>
+                    </CommandPrimitive.Item>
+                  )
+                })}
               </CommandPrimitive.Group>
             ))}
+
+            {mostrarFora && (
+              <CommandPrimitive.Group heading={GRUPO_FORA} className={CLASSE_GRUPO}>
+                {/* Linha bloqueada: não é destino (disabled — setas pulam, Enter não fecha). */}
+                <CommandPrimitive.Item
+                  value="fora:motivo"
+                  disabled
+                  className="flex cursor-default items-start gap-2.5 rounded-controle px-3 py-[9px] text-tinta-sussurro"
+                >
+                  <ShieldAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="text-controle font-medium">Nenhum paciente com esse nome no seu acesso</span>
+                    <span className="text-apoio leading-[1.45] text-pretty">
+                      A busca só mostra pacientes dos setores em que você está na escala agora. Se o paciente existir em
+                      outro setor, a leitura do prontuário é por pedido ao gestor: vale 24 h, só leitura.
+                    </span>
+                  </span>
+                </CommandPrimitive.Item>
+                <CommandPrimitive.Item value="fora:pedir" onSelect={() => abrir('/prontuarios')} className={CLASSE_ITEM}>
+                  <FolderSearch className="size-4 shrink-0" aria-hidden />
+                  <span className="min-w-0 flex-1 truncate text-controle font-medium">Pedir acesso ao prontuário</span>
+                  <kbd className="cc-tecla invisible shrink-0 group-data-[selected=true]:visible">↵</kbd>
+                </CommandPrimitive.Item>
+              </CommandPrimitive.Group>
+            )}
           </CommandPrimitive.List>
+
+          <div className="flex flex-wrap items-center gap-3.5 border-t border-trilha bg-campo px-4 py-2.5 text-rotulo text-tinta-sussurro">
+            <span className="flex items-center gap-[5px]"><kbd className="cc-tecla">↑</kbd><kbd className="cc-tecla">↓</kbd>navegar</span>
+            <span className="flex items-center gap-[5px]"><kbd className="cc-tecla">↵</kbd>abrir</span>
+            <span className="ml-auto flex items-center gap-[5px]">
+              <kbd className="cc-tecla">ctrl</kbd><kbd className="cc-tecla">K</kbd>ou<kbd className="cc-tecla">/</kbd>de qualquer tela
+            </span>
+          </div>
         </CommandPrimitive>
       </DialogContent>
     </Dialog>

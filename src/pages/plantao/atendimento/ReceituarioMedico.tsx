@@ -173,8 +173,8 @@ export function ReceituarioMedico({
                   onClick={() => atualizar({ receita: { ...dados.receita, tipo: t.value } })}
                   className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                     dados.receita.tipo === t.value
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border bg-background hover:bg-muted'
+                      ? 'border-acao bg-acao text-white'
+                      : 'border-fio bg-campo hover:bg-trilha'
                   }`}
                 >
                   {t.label}
@@ -187,7 +187,7 @@ export function ReceituarioMedico({
             {dados.receita.itens.map((item, idx) => (
               <div key={item.id} className="rounded-xl border p-3">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
                     Medicamento {idx + 1}
                   </span>
                   {dados.receita.itens.length > 1 && (

@@ -35,7 +35,7 @@ function fmtDia(iso: string) {
 }
 
 function corTaxa(taxa: number | null) {
-  if (taxa == null) return 'text-muted-foreground'
+  if (taxa == null) return 'text-tinta-sussurro'
   if (taxa >= 90) return 'text-critico'
   if (taxa >= 85) return 'text-atencao'
   return 'text-conforme'
@@ -158,7 +158,7 @@ export default function Indicadores() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <BarChart3 className="size-4 text-muted-foreground" />
+            <BarChart3 className="size-4 text-tinta-sussurro" />
             Censo por setor (últimos 7 dias)
           </CardTitle>
           <CardDescription>
@@ -171,7 +171,7 @@ export default function Indicadores() {
               <Spinner />
             </div>
           ) : agrupado.size === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-tinta-sussurro">
               Nenhum censo gerado ainda. Clique em &quot;Gerar censo de hoje&quot;.
             </p>
           ) : (
@@ -189,13 +189,13 @@ export default function Indicadores() {
                   </div>
                   <div className="grid grid-cols-7 gap-1.5">
                     {series.map((c) => (
-                      <div key={c.data} className="rounded-lg bg-muted/50 p-2 text-center">
-                        <div className="text-[10px] font-medium text-muted-foreground">{fmtDia(c.data)}</div>
+                      <div key={c.data} className="rounded-lg bg-trilha/50 p-2 text-center">
+                        <div className="text-[10px] font-medium text-tinta-sussurro">{fmtDia(c.data)}</div>
                         <div className="text-sm font-semibold">{c.internados}</div>
-                        <div className="text-[10px] text-muted-foreground">
+                        <div className="text-[10px] text-tinta-sussurro">
                           {c.permanencia_media_h != null ? `${c.permanencia_media_h}h` : '—'}
                         </div>
-                        <div className="text-[10px] text-muted-foreground">giro {c.giro_leito ?? '—'}</div>
+                        <div className="text-[10px] text-tinta-sussurro">giro {c.giro_leito ?? '—'}</div>
                       </div>
                     ))}
                   </div>
@@ -213,7 +213,7 @@ export default function Indicadores() {
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {(ocupacao ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum setor com ocupação.</p>
+            <p className="text-sm text-tinta-sussurro">Nenhum setor com ocupação.</p>
           ) : (
             (ocupacao ?? []).map((o) => {
               const lotado = o.limite > 0 && o.internados >= o.limite
@@ -221,7 +221,7 @@ export default function Indicadores() {
               return (
                 <div key={o.setor_id} className="flex items-center justify-between rounded-lg border p-2.5 text-sm">
                   <span className="font-medium">{o.setor_nome}</span>
-                  <span className={`font-semibold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-foreground'}`}>
+                  <span className={`font-semibold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-tinta'}`}>
                     {o.internados}/{o.limite || '∞'}
                     {lotado && ' · LOTADO'}
                   </span>

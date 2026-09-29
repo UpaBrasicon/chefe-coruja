@@ -34,29 +34,29 @@ export function SinaisVitaisPediatricos() {
       </Card>
 
       {informada && !r && (
-        <Card><CardContent className="pt-6 text-sm text-muted-foreground">Pediatria vai até antes dos 14 anos.</CardContent></Card>
+        <Card><CardContent className="pt-6 text-sm text-tinta-sussurro">Pediatria vai até antes dos 14 anos.</CardContent></Card>
       )}
 
       {r && (
         <>
           <Bloco titulo="FC normal (cap. 2, Quadro 1, p. 40)">
-            {r.fc && <p><span className="text-muted-foreground">{r.fc.rotulo}:</span> acordado <strong>{f(r.fc.valor.acordado)} bpm</strong> · sono <strong>{f(r.fc.valor.sono)} bpm</strong></p>}
-            <p className="text-muted-foreground">{DICA_CAP2}</p>
+            {r.fc && <p><span className="text-tinta-sussurro">{r.fc.rotulo}:</span> acordado <strong>{f(r.fc.valor.acordado)} bpm</strong> · sono <strong>{f(r.fc.valor.sono)} bpm</strong></p>}
+            <p className="text-tinta-sussurro">{DICA_CAP2}</p>
           </Bloco>
           <Bloco titulo="Valores considerados anormais no choque séptico (cap. 5, Tabela 1, p. 87)">
             {r.anormal && (
               <p>
-                <span className="text-muted-foreground">{r.anormal.rotulo}:</span> FC &gt; <strong>{r.anormal.valor.fcAcima}</strong> · FR &gt; <strong>{r.anormal.valor.frAcima}</strong> · PA sistólica &lt; <strong>{r.anormal.pas} mmHg</strong>
-                {r.anormal.valor.pasAbaixo === 'formula' && <span className="text-muted-foreground"> (70 + 2 × idade em anos)</span>}
+                <span className="text-tinta-sussurro">{r.anormal.rotulo}:</span> FC &gt; <strong>{r.anormal.valor.fcAcima}</strong> · FR &gt; <strong>{r.anormal.valor.frAcima}</strong> · PA sistólica &lt; <strong>{r.anormal.pas} mmHg</strong>
+                {r.anormal.valor.pasAbaixo === 'formula' && <span className="text-tinta-sussurro"> (70 + 2 × idade em anos)</span>}
                 {' '}· temperatura central {r.anormal.valor.temperatura} °C
               </p>
             )}
           </Bloco>
           <Bloco titulo="PA sistólica baixa na anafilaxia (cap. 6, Quadro 3, p. 98)">
-            {r.pasAnafilaxia ? <p><span className="text-muted-foreground">{r.pasAnafilaxia.rotulo}:</span> &lt; <strong>{r.pasAnafilaxia.pas} mmHg</strong></p> : <p className="text-muted-foreground">O quadro começa em 1 mês de vida.</p>}
+            {r.pasAnafilaxia ? <p><span className="text-tinta-sussurro">{r.pasAnafilaxia.rotulo}:</span> &lt; <strong>{r.pasAnafilaxia.pas} mmHg</strong></p> : <p className="text-tinta-sussurro">O quadro começa em 1 mês de vida.</p>}
           </Bloco>
           <Bloco titulo="FR normal (cap. 8, Tabela 1, rodapé, p. 114)">
-            {r.frAsma && <p><span className="text-muted-foreground">{r.frAsma.rotulo}:</span> <strong>{r.frAsma.valor}</strong></p>}
+            {r.frAsma && <p><span className="text-tinta-sussurro">{r.frAsma.rotulo}:</span> <strong>{r.frAsma.valor}</strong></p>}
           </Bloco>
         </>
       )}

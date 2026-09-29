@@ -85,11 +85,11 @@ export default function Diluicoes() {
               <button key={d.id} type="button" onClick={() => { setSelecionada(d.id); setErro(null) }}
                 className={`flex items-center gap-2 border-b border-fio px-2 py-1.5 text-left last:border-0 hover:bg-trilha ${selecionada === d.id ? 'bg-trilha' : ''}`}>
                 <span className="flex-1"><span className="font-medium">{d.principio_ativo}</span> <span className="text-tinta-apoio">· {d.via} · {d.apresentacao}</span></span>
-                <span className="text-xs text-muted-foreground">v{d.versao}</span>
+                <span className="text-xs text-tinta-sussurro">v{d.versao}</span>
                 {!d.medicamento_id && <Badge variant="outline">sem cadastro</Badge>}
               </button>
             ))}
-            {visiveis.length === 0 && <p className="text-muted-foreground">Nada nesta lista.</p>}
+            {visiveis.length === 0 && <p className="text-tinta-sussurro">Nada nesta lista.</p>}
           </CardContent>
         </Card>
         {sel ? <Editor key={`${sel.id}:${sel.status}`} d={sel} aoMudar={(novoId) => { recarregar(); if (novoId) setSelecionada(novoId) }} aoErro={setErro} />
@@ -126,7 +126,7 @@ function NovaDiluicao({ aoCriar, aoErro }: { aoCriar: (id: string) => void; aoEr
         )}
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col gap-1"><Label htmlFor="nd-via">Via</Label>
-            <select id="nd-via" className="h-8 rounded-controle border border-fio bg-background px-2" value={via} onChange={(e) => setVia(e.target.value)}>
+            <select id="nd-via" className="h-8 rounded-controle border border-fio bg-campo px-2" value={via} onChange={(e) => setVia(e.target.value)}>
               {['EV', 'IM', 'SC'].map((v) => <option key={v}>{v}</option>)}
             </select>
           </div>
@@ -182,7 +182,7 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
     <Card>
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center gap-2 text-base">
-          {d.principio_ativo} · {d.via} <Badge variant={st.variante}>{st.rotulo}</Badge> <span className="text-xs text-muted-foreground">versão {d.versao}</span>
+          {d.principio_ativo} · {d.via} <Badge variant={st.variante}>{st.rotulo}</Badge> <span className="text-xs text-tinta-sussurro">versão {d.versao}</span>
         </CardTitle>
         <CardDescription>
           {d.apresentacao}
@@ -197,7 +197,7 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
             <div key={k} className="flex flex-col gap-1">
               <Label htmlFor={`dil-${k}`}>{r}</Label>
               {t === 'bool' ? (
-                <select id={`dil-${k}`} disabled={!editavel} className="h-8 rounded-controle border border-fio bg-background px-2" value={f[k] ?? ''}
+                <select id={`dil-${k}`} disabled={!editavel} className="h-8 rounded-controle border border-fio bg-campo px-2" value={f[k] ?? ''}
                   onChange={(e) => setF({ ...f, [k]: e.target.value })}>
                   <option value="">—</option><option>sim</option><option>não</option>
                 </select>
@@ -233,7 +233,7 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
             }}>Criar nova versão</Button>
           ) : null}
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-tinta-sussurro">
           Publicar exige CRF do revisor e fonte; via EV exige também volume mínimo e tempo de infusão. Nova versão pede o que mudou.
         </p>
       </CardContent>

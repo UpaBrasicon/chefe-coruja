@@ -82,15 +82,15 @@ export default function MinhaAgenda({ embutido = false }: { embutido?: boolean }
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       {!embutido && (
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/" className="transition-colors hover:text-foreground">
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/" className="transition-colors hover:text-tinta">
               Início
             </Link>
             <ChevronRight className="size-3.5" />
-            <span className="font-medium text-foreground">Minha Agenda</span>
+            <span className="font-medium text-tinta">Minha Agenda</span>
           </div>
           <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Minha Agenda</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             Todos os seus plantões de todas as unidades em um único calendário.
           </p>
         </div>
@@ -120,7 +120,7 @@ export default function MinhaAgenda({ embutido = false }: { embutido?: boolean }
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <CalendarRange className="size-4 text-muted-foreground" />
+            <CalendarRange className="size-4 text-tinta-sussurro" />
             Calendário consolidado
           </CardTitle>
           <CardDescription>Plantões de todas as unidades que você participa.</CardDescription>
@@ -133,7 +133,7 @@ export default function MinhaAgenda({ embutido = false }: { embutido?: boolean }
           ) : (
             <div className="grid grid-cols-7 gap-1.5">
               {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((d) => (
-                <div key={d} className="pb-1 text-center text-xs font-medium text-muted-foreground">
+                <div key={d} className="pb-1 text-center text-xs font-medium text-tinta-sussurro">
                   {d}
                 </div>
               ))}
@@ -149,10 +149,10 @@ export default function MinhaAgenda({ embutido = false }: { embutido?: boolean }
                     key={dataStr}
                     className={cn(
                       'flex min-h-16 flex-col gap-1 rounded-lg border p-1.5 text-xs',
-                      doDia.length === 0 ? 'bg-muted/40' : 'bg-card'
+                      doDia.length === 0 ? 'bg-trilha/40' : 'bg-superficie'
                     )}
                   >
-                    <span className="font-medium text-muted-foreground">{dia}</span>
+                    <span className="font-medium text-tinta-sussurro">{dia}</span>
                     {doDia.map((p) => {
                       const info = porUnidade.get(p.unidade_id)
                       return (

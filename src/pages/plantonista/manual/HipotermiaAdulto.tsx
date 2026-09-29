@@ -63,7 +63,7 @@ export function HipotermiaAdulto() {
             {est.reaquecimento !== '—' && <LinhaManual nome="Reaquecimento (Tabela 6)" texto={est.reaquecimento} pagina="p. 1370" />}
             {est.nota && <p className="text-sm text-atencao">{est.nota}</p>}
           </>
-        ) : <p className="text-sm text-muted-foreground">Informe a temperatura central.</p>}
+        ) : <p className="text-sm text-tinta-sussurro">Informe a temperatura central.</p>}
       </Bloco>
 
       <Bloco titulo="RCP na hipotermia (p. 1366–1367)" descricao={Number.isFinite(t) ? `Para ${br(t)} °C.` : 'Temperatura desconhecida.'}>
@@ -102,13 +102,13 @@ export function HipotermiaAdulto() {
       <Bloco titulo="ERC/RCUK 2025 × manual do HC">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">ERC/RCUK 2025</th><th className="pb-2">Manual do HC</th></tr></thead>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">ERC/RCUK 2025</th><th className="pb-2">Manual do HC</th></tr></thead>
             <tbody>
               {DIRETRIZ_HIPOTERMIA_2025.map((d) => (
                 <tr key={d.tema} className="border-t">
                   <td className="pr-3 py-2 font-medium">{d.tema}</td>
                   <td className="pr-3 py-2">{d.erc}</td>
-                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
                 </tr>
               ))}
             </tbody>

@@ -60,20 +60,53 @@
     /* ── Modo pediátrico ─────────────────────────────────────── */
     --color-pediatria: #6D28D9;
 
-    /* ── Escala tipográfica fechada: 12·13·15·17·24 e 30·36·42 ── */
+    /* ── Cor por seção da Central (P/index.html COR_SECAO) ──────
+       Os passos profundos da rampa: o nome da seção é 15px/600, piso 4,5:1. */
+    --color-secao-calculadoras: #0F766E;
+    --color-secao-cardiologia: #BE123C;
+    --color-secao-trauma: #B91C1C;
+    --color-secao-gastro: #B45309;
+    --color-secao-neurologia: #4338CA;
+    --color-secao-terapia-intensiva: #4F46E5;
+    --color-secao-endocrinologia: #86198F;
+    --color-secao-toxicologia: #9A3412;
+    --color-secao-protocolos: #15803D;
+    --color-secao-ventilacao: #0E7490;
+    --color-secao-farmacia: #7C3AED;
+    --color-secao-games: #B91C1C;
+
+    /* ── Lavagens de alerta (cor + 14 hex, como no protótipo) ── */
+    --color-alerta-atencao: #92400E14;
+    --color-alerta-critico: #B91C1C14;
+    --color-alerta-observacao: #B4530914;
+    --color-alerta-marca: #0D948814;
+    --color-alerta-conforme: #15803D14;
+    --color-nota: #F59E0B1F;
+    --color-desfazer-regua: #99D6CE;
+    --color-veu: #0B3B34;
+
+    /* ── Escala tipográfica: 12·13·14·15·17·20·24 e 25·30·36·42 ──
+       14 é o tamanho de controle (campo, item de menu) e 20 o do título de
+       diálogo: o render do protótipo usa os dois centenas de vezes. */
     --text-rotulo: 12px;
     --text-apoio: 13px;
+    --text-controle: 14px;
     --text-corpo: 15px;
     --text-secao: 17px;
+    --text-dialogo: 20px;
     --text-titulo: 24px;
+    --text-numeral-compacto: 25px;
     --text-numeral-ok: 30px;
     --text-numeral-atencao: 36px;
     --text-numeral-critico: 42px;
 
-    /* ── Cinco raios ──────────────────────────────────────────── */
+    /* ── Raios ────────────────────────────────────────────────── */
+    --radius-micro: 5px;
     --radius-controle-sm: 9px;
     --radius-controle: 10px;
+    --radius-bloco: 11px;
     --radius-container: 12px;
+    --radius-menu: 14px;
     --radius-cartao: 16px;
     --radius-capsula: 999px;
 
@@ -81,9 +114,37 @@
     --shadow-repouso: 0 1px 2px rgba(15, 23, 42, 0.04);
     --shadow-halo: 0 6px 16px rgba(13, 148, 136, 0.12);
     --shadow-halo-ferramenta: 0 8px 22px rgba(13, 148, 136, 0.13);
+    --shadow-popover: 0 12px 32px rgba(15, 23, 42, 0.14);
+    --shadow-toast: 0 10px 28px rgba(15, 23, 42, 0.16);
     --shadow-dialogo: 0 24px 60px rgba(15, 23, 42, 0.24);
+    --shadow-paleta: 0 24px 60px rgba(15, 23, 42, 0.26);
     --shadow-desfazer: 0 16px 40px rgba(15, 23, 42, 0.3);
     --shadow-lateral: -12px 0 40px rgba(15, 23, 42, 0.18);
+    --shadow-lateral-aberta: 8px 0 24px rgba(15, 23, 42, 0.1);
+    --shadow-fab: 0 6px 20px rgba(15, 118, 110, 0.28), 0 1px 2px rgba(15, 23, 42, 0.12);
+
+    /* ── Movimento (P/index.html, keyframes cc-*) ─────────────── */
+    --animate-cc-sobe: cc-sobe 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
+    --animate-cc-dlg: cc-dlg-entra 0.24s cubic-bezier(0.2, 1, 0.3, 1) both;
+    --animate-cc-scrim: cc-scrim-entra 0.18s ease both;
+    --animate-cc-lateral: cc-lateral-entra 0.26s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+    --animate-cc-toast: cc-toast-entra 0.34s cubic-bezier(0.2, 1.25, 0.4, 1) both;
+    --animate-cc-toast-sai: cc-toast-sai 0.22s ease both;
+    --animate-cc-abre-leito: cc-abre-leito 0.22s ease both;
+    --animate-cc-zoom-dia: zoom-dia 0.22s ease both;
+    --animate-cc-zoom-mes: zoom-mes 0.22s ease both;
+    --animate-cc-veu-saida: cc-veu-saida 0.42s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+
+    @keyframes cc-sobe { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    @keyframes cc-dlg-entra { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
+    @keyframes cc-scrim-entra { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes cc-lateral-entra { from { transform: translateX(28px); opacity: 0.3; } to { transform: none; opacity: 1; } }
+    @keyframes cc-toast-entra { from { opacity: 0; transform: scale(0.72) translateY(-10px); } to { opacity: 1; transform: none; } }
+    @keyframes cc-toast-sai { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.86) translateY(-6px); } }
+    @keyframes cc-abre-leito { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+    @keyframes zoom-dia { from { opacity: 0; transform: scale(0.93); } to { opacity: 1; transform: scale(1); } }
+    @keyframes zoom-mes { from { opacity: 0; transform: scale(1.07); } to { opacity: 1; transform: scale(1); } }
+    @keyframes cc-veu-saida { from { clip-path: inset(0 0 0 100%); } to { clip-path: inset(0); } }
 
     /* ── Mapeamento shadcn → tokens ───────────────────────────── */
     --color-ring: var(--ring);
@@ -240,6 +301,32 @@
         letter-spacing: 0.06em;
         line-height: 1.25;
     }
+    /* Tecla desenhada (paleta, desfazer). */
+    .cc-tecla {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: var(--radius-micro);
+        border: 1px solid var(--color-fio);
+        background: var(--color-campo);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--color-tinta-sussurro);
+        font-family: var(--font-mono);
+    }
+    /* Cascata de abertura (19/09): os filhos sobem em sequência. */
+    .cc-casc > * {
+        animation: var(--animate-cc-sobe);
+    }
+    .cc-casc > *:nth-child(2) { animation-delay: 0.11s; }
+    .cc-casc > *:nth-child(3) { animation-delay: 0.17s; }
+    .cc-casc > *:nth-child(4) { animation-delay: 0.23s; }
+    .cc-casc > *:nth-child(5) { animation-delay: 0.29s; }
+    .cc-casc > *:nth-child(6) { animation-delay: 0.35s; }
+    .cc-casc > *:nth-child(n + 7) { animation-delay: 0.4s; }
     /* Alvo de toque ampliado sem mudar o desenho. */
     @media (pointer: coarse) {
         .alvo-toque {
@@ -251,6 +338,167 @@
             inset: -8px;
         }
     }
+}
+
+/*
+ * LATERAL RECOLHIDA (23/09): 68px de ícones; abre por cima do conteúdo ao
+ * passar o mouse ou com foco de teclado. O miolo tem largura fixa de 248px,
+ * então nada reflui durante a animação; os rótulos entram com desfoque.
+ */
+@media (min-width: 768px) {
+    .cc-recolhe {
+        width: var(--cc-lateral-recolhida) !important;
+        flex: 0 0 var(--cc-lateral-recolhida) !important;
+        z-index: 40;
+        overflow: hidden !important;
+        scrollbar-width: none;
+        transition: width 0.22s ease, flex-basis 0.22s ease, margin-right 0.22s ease, box-shadow 0.22s ease;
+    }
+    .cc-recolhe::-webkit-scrollbar { display: none; }
+    .cc-recolhe > .cc-side-miolo { width: var(--cc-lateral); min-width: var(--cc-lateral); }
+    .cc-recolhe:hover,
+    .cc-recolhe:has(:focus-visible) {
+        width: var(--cc-lateral) !important;
+        flex: 0 0 var(--cc-lateral) !important;
+        margin-right: calc(var(--cc-lateral-recolhida) - var(--cc-lateral));
+        box-shadow: var(--shadow-lateral-aberta);
+        overflow-y: auto !important;
+    }
+    .cc-recolhe .cc-some,
+    .cc-recolhe .cc-side-bloco {
+        opacity: 0;
+        filter: blur(6px);
+        transition: opacity 0.2s ease, filter 0.24s ease;
+    }
+    .cc-recolhe .cc-side-bloco {
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.2s ease, filter 0.24s ease, visibility 0s linear 0.24s;
+    }
+    .cc-recolhe:hover .cc-some,
+    .cc-recolhe:has(:focus-visible) .cc-some,
+    .cc-recolhe:hover .cc-side-bloco,
+    .cc-recolhe:has(:focus-visible) .cc-side-bloco {
+        opacity: 1;
+        filter: blur(0);
+        transition-delay: 0.06s;
+    }
+    .cc-recolhe:hover .cc-side-bloco,
+    .cc-recolhe:has(:focus-visible) .cc-side-bloco {
+        visibility: visible;
+        pointer-events: auto;
+        transition: opacity 0.2s ease 0.06s, filter 0.24s ease 0.06s, visibility 0s;
+    }
+    /* A nota numérica de um item vira ponto no canto do ícone quando recolhida. */
+    .cc-recolhe .cc-nota { position: absolute; left: 32px; top: 3px; }
+    .cc-recolhe:hover .cc-nota,
+    .cc-recolhe:has(:focus-visible) .cc-nota { position: static; }
+}
+@media (min-width: 768px) and (prefers-reduced-motion: reduce) {
+    .cc-recolhe,
+    .cc-recolhe * { transition: none !important; filter: none !important; }
+}
+
+/*
+ * FAIXA DE PARÂMETROS (P/index.html 113–178, 455–511). Quatro células; entre
+ * 900 e 1023 viram 2×2; abaixo de 900 viram carrossel com a primeira ocupando
+ * 78% e a próxima espiando. Abaixo de 1024 a célula DEITA: numeral numa
+ * coluna, rótulo e estado empilhados ao lado — a banda cai de ~100 para ~72px
+ * e continua imóvel.
+ */
+.cc-faixa {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+}
+.cc-faixa > .cc-param {
+    display: grid;
+    align-content: start;
+    gap: 5px 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'rot tend' 'val val' 'est est' 'campo campo';
+}
+.cc-faixa > .cc-param + .cc-param { border-left: 1px solid var(--color-trilha); }
+.cc-param-rot { grid-area: rot; }
+.cc-param-val { grid-area: val; }
+.cc-param-est { grid-area: est; }
+.cc-param-tend { grid-area: tend; }
+.cc-param-campo { grid-area: campo; }
+@media (max-width: 1023px) {
+    .cc-faixa > .cc-param {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas: 'val rot tend' 'val est tend' 'campo campo campo';
+        column-gap: 11px;
+        row-gap: 0;
+        align-content: center;
+        padding: 8px 16px 9px;
+    }
+    .cc-faixa .cc-param-rot { min-height: 0; align-self: end; padding-right: 8px; }
+    .cc-faixa .cc-param-val { align-self: center; }
+    .cc-faixa .cc-param-est { align-self: start; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cc-faixa .cc-param-campo { margin-top: 6px; }
+    .cc-faixa .cc-param-tend { align-self: center; }
+    .cc-faixa .cc-tend-txt { display: none; }
+    .cc-faixa .cc-tend-idade .cc-tend-txt { display: inline; }
+}
+@media (min-width: 900px) and (max-width: 1023px) {
+    .cc-faixa { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cc-faixa > .cc-param:nth-child(2n + 1) { border-left: 0; }
+    .cc-faixa > .cc-param:nth-child(n + 3) { border-top: 1px solid var(--color-trilha); }
+}
+@media (max-width: 899px) {
+    .cc-faixa {
+        display: flex;
+        overflow-x: auto;
+        scrollbar-width: none;
+        scroll-snap-type: x mandatory;
+    }
+    .cc-faixa::-webkit-scrollbar { display: none; }
+    .cc-faixa > .cc-param { flex: 0 0 78%; scroll-snap-align: start; }
+}
+
+/*
+ * LARGURA DA COLUNA (19/09 e 23/09): 896px é o mínimo confortável; a partir
+ * de 1280 cresce com a janela até 1200, 1320 em 1680. Com a lateral
+ * recolhida o conteúdo ganha a largura que a barra devolveu. `cc-larga` é
+ * das telas de duas colunas (simulador de VM).
+ */
+.cc-coluna { max-width: var(--cc-coluna); }
+@media (min-width: 1280px) {
+    .cc-coluna { max-width: min(1200px, calc(100vw - var(--cc-lateral) - 96px)); }
+}
+@media (min-width: 1680px) {
+    .cc-coluna { max-width: 1320px; }
+}
+@media (min-width: 1024px) {
+    .cc-shell:has(.cc-recolhe) .cc-coluna { max-width: min(1440px, calc(100vw - var(--cc-lateral-recolhida) - 64px)); }
+}
+@media (min-width: 1800px) {
+    .cc-shell:has(.cc-recolhe) .cc-coluna { max-width: 1560px; }
+}
+.cc-shell.cc-larga .cc-coluna { max-width: 1400px; }
+
+/*
+ * MODO COMPACTO. Não é "tudo menor": é menos ar e menos texto de apoio,
+ * mantendo os tamanhos de leitura clínica. Sai o que o olho já sabe depois
+ * da primeira hora de plantão: a linha de contexto de cada parâmetro, o
+ * carrossel de avisos da lateral, o respiro das bordas. Nada abaixo de 13px,
+ * nenhum alvo abaixo de 32px.
+ */
+.cc-den .cc-pagina { padding-top: 15px !important; padding-bottom: 40px !important; }
+.cc-den .cc-pagina h1 { font-size: var(--text-dialogo) !important; }
+.cc-den .cc-pagina-cabeca { margin-bottom: 13px !important; }
+.cc-den .cc-top { min-height: 52px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
+.cc-den .cc-side-bloco { display: none !important; }
+.cc-den .cc-param { padding: 9px 15px 11px !important; }
+.cc-den .cc-param-est { display: none !important; }
+.cc-den .cc-tend-txt { display: none !important; }
+.cc-den .cc-param-val { font-size: var(--text-numeral-compacto) !important; }
+.cc-den .cc-lista-linha { padding-top: 9px !important; padding-bottom: 9px !important; }
+.cc-den .cc-canal { padding-top: 9px !important; padding-bottom: 9px !important; }
+.cc-den .cc-den-apoio { display: none !important; }
+@media (max-width: 900px) {
+    .cc-den .cc-den-rot { display: none; }
 }
 
 /* Movimento curto — e nenhum sob prefers-reduced-motion. */

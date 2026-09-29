@@ -103,11 +103,11 @@ export function DisturbiosSodioPed() {
             const litros = porL !== null && variacao !== 0 ? litrosParaVariacao(variacao, porL) : null
             return (
               <div key={s.id} className="rounded-lg border px-3 py-2 tabular-nums">
-                <span className="font-medium">{s.nome}</span> <span className="text-xs text-muted-foreground">(Na {s.naMeqL} mEq/L — {s.pagina})</span>
+                <span className="font-medium">{s.nome}</span> <span className="text-xs text-tinta-sussurro">(Na {s.naMeqL} mEq/L — {s.pagina})</span>
                 <div>
                   1 L muda o Na em <strong>{porL === null ? '—' : `${porL > 0 ? '+' : ''}${br(porL)} mEq/L`}</strong>
                   {litros !== null && <> · para {variacao > 0 ? '+' : ''}{br(variacao)} mEq/L: <strong>{br(litros * 1000, 0)} mL</strong></>}
-                  {variacao !== 0 && porL !== null && litros === null && <span className="text-muted-foreground"> · esta solução muda o Na no sentido oposto</span>}
+                  {variacao !== 0 && porL !== null && litros === null && <span className="text-tinta-sussurro"> · esta solução muda o Na no sentido oposto</span>}
                 </div>
               </div>
             )
@@ -132,7 +132,7 @@ export function DisturbiosSodioPed() {
                   Déficit de água livre = peso × 0,6 × [(Na/Na desejado) − 1]: <strong>{br(deficit, 2)} L</strong> (Tabela 6, p. 543)
                 </p>
               ) : (
-                <p className="text-muted-foreground">Sem déficit de água livre para esse alvo.</p>
+                <p className="text-tinta-sussurro">Sem déficit de água livre para esse alvo.</p>
               )}
               {horas !== null && (
                 <p>

@@ -76,7 +76,7 @@ export function ReposicaoPotassio() {
             </div>
             <Alertas itens={ev.alertas} />
           </>
-        ) : <p className="text-muted-foreground">Informe dose e tempo.</p>}
+        ) : <p className="text-tinta-sussurro">Informe dose e tempo.</p>}
       </Bloco>
 
       <Bloco titulo="Reposição VO" descricao="Xarope 6%: 15 mL = 12 mEq; cápsula 600 mg = 8 mEq (Tab. 4, p. 907; p. 1498).">
@@ -91,7 +91,7 @@ export function ReposicaoPotassio() {
 
       <Bloco titulo="Déficit corporal estimado" descricao="Cada 1 mEq/L de queda no K corresponde a ~200–400 mEq de perda corporal, se o déficit é verdadeiro (p. 905). Na hipocalemia por influxo celular há risco de hipercalemia rebote.">
         <NumberField id="k-alvo" label="K de referência para a conta" unit="mEq/L" value={kAlvo} onChange={setKAlvo} step={0.1} />
-        {def ? <Resultado rotulo={`Queda de ${br(kAlvo - k)} mEq/L`} valor={`${faixaBr(def, 0)} mEq`} /> : <p className="text-muted-foreground">Informe o K sérico (acima) e um K de referência maior que ele.</p>}
+        {def ? <Resultado rotulo={`Queda de ${br(kAlvo - k)} mEq/L`} valor={`${faixaBr(def, 0)} mEq`} /> : <p className="text-tinta-sussurro">Informe o K sérico (acima) e um K de referência maior que ele.</p>}
       </Bloco>
 
       <Bloco titulo="Excreção urinária de K" descricao="Tab. 2 (p. 903) e Fig. 1 (p. 906). O K urinário em amostra isolada é pouco acurado e não é interpretado aqui.">

@@ -127,7 +127,7 @@ export function InternacaoTab({
           <Button variant="outline" onClick={importarResumo} className="w-full">
             Importar resumo (Aba 3) + exames
           </Button>
-          <div className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+          <div className="rounded-lg border border-dashed p-3 text-xs text-tinta-sussurro">
             O formulário abaixo é o Laudo para Solicitação de AIH. Todos os campos são editáveis e
             salvos automaticamente.
           </div>
@@ -189,7 +189,7 @@ export function InternacaoTab({
             <Button onClick={imprimir}>
               <Printer /> Imprimir Laudo AIH
             </Button>
-            <span className="text-xs text-muted-foreground">salvo automaticamente</span>
+            <span className="text-xs text-tinta-sussurro">salvo automaticamente</span>
           </div>
         </CardContent>
       </Card>

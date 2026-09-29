@@ -17,7 +17,7 @@ const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(
 const opc = (x: number) => (x > 0 ? x : undefined)
 
 const botao = (ativo: boolean) =>
-  cn('rounded-md border px-2.5 py-1.5 text-left text-sm transition-colors', ativo ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50')
+  cn('rounded-md border px-2.5 py-1.5 text-left text-sm transition-colors', ativo ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')
 
 function Lista({ titulo, itens, tom }: { titulo: string; itens: string[]; tom?: 'critico' | 'atencao' }) {
   if (!itens.length) return null
@@ -90,7 +90,7 @@ export function TromboliseAvcAdulto() {
       <Bloco titulo="AHA/ASA 2026 — o que a diretriz escreve, com classe e página" descricao="Prabhakaran et al., Stroke 2026;57:e316–e436 (páginas do PDF). Decisão do responsável técnico (28/09/2026): alteplase e tenecteplase lado a lado. A ferramenta mostra; a indicação é do médico.">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left align-top text-sm">
-            <thead className="text-muted-foreground">
+            <thead className="text-tinta-sussurro">
               <tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">AHA/ASA 2026</th><th className="pr-3 pb-2">Classe · página</th><th className="pb-2">Manual do HC</th></tr>
             </thead>
             <tbody>
@@ -98,8 +98,8 @@ export function TromboliseAvcAdulto() {
                 <tr key={d.tema} className="border-t">
                   <td className="pr-3 py-2 font-medium">{d.tema}</td>
                   <td className="pr-3 py-2">{d.texto}</td>
-                  <td className="pr-3 py-2 text-muted-foreground">{d.classe} · {d.pagina}</td>
-                  <td className="py-2 text-muted-foreground">{d.livro ?? '—'}</td>
+                  <td className="pr-3 py-2 text-tinta-sussurro">{d.classe} · {d.pagina}</td>
+                  <td className="py-2 text-tinta-sussurro">{d.livro ?? '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -126,29 +126,29 @@ export function TromboliseAvcAdulto() {
           <label className="ml-2 flex items-center gap-2"><input type="checkbox" className="size-4" checked={varfarina} onChange={(e) => setVarfarina(e.target.checked)} /> Uso de varfarina</label>
           <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={avcDm} onChange={(e) => setAvcDm(e.target.checked)} /> AVC prévio + diabetes</label>
         </div>
-        <p className="text-sm text-muted-foreground">Campo vazio ou 0 conta como não informado (vale para NIHSS, laboratório e PA). Para somar o NIHSS, use a escala do manual.</p>
+        <p className="text-sm text-tinta-sussurro">Campo vazio ou 0 conta como não informado (vale para NIHSS, laboratório e PA). Para somar o NIHSS, use a escala do manual.</p>
         <Lista titulo="Critérios de indicação preenchidos" itens={av.indicacao} />
         <Lista titulo="Fora dos critérios de indicação" itens={av.foraDaIndicacao} tom="atencao" />
         <Lista titulo="Contraindicações absolutas (numéricas)" itens={av.absolutas} tom="critico" />
         <Lista titulo="Situações que merecem consideração de risco e benefício" itens={av.ponderar} tom="atencao" />
-        {av.faltando.length > 0 && <p className="text-sm text-muted-foreground">Falta informar: {av.faltando.join(', ')}.</p>}
+        {av.faltando.length > 0 && <p className="text-sm text-tinta-sussurro">Falta informar: {av.faltando.join(', ')}.</p>}
         <p className="text-sm font-medium">Contraindicações absolutas não numéricas (marque as presentes)</p>
         <div className="grid gap-1.5 sm:grid-cols-2">
           {CONTRAINDICACOES_ABSOLUTAS.map((c) => (
-            <label key={c} className="flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm hover:bg-muted/50">
+            <label key={c} className="flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm hover:bg-trilha/50">
               <input type="checkbox" className="size-4" checked={marcadas.includes(c)} onChange={(e) => setMarcadas((x) => (e.target.checked ? [...x, c] : x.filter((y) => y !== c)))} />
               {c}
             </label>
           ))}
         </div>
         {marcadas.length > 0 && <p className="text-sm text-critico">{marcadas.length} contraindicação(ões) absoluta(s) marcada(s) na lista do livro.</p>}
-        <p className="text-sm text-muted-foreground">{ASPECTS_LIVRO}</p>
+        <p className="text-sm text-tinta-sussurro">{ASPECTS_LIVRO}</p>
       </Bloco>
 
       <Bloco titulo="Pressão arterial">
         <p className="text-sm text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_PA_AVC}</p>
         <ul className="flex flex-col gap-1 text-sm">
-          {ALVOS_PA_AVC.map((a) => <li key={a.situacao}><span className="font-medium">{a.situacao}:</span> {a.texto} <span className="text-muted-foreground">({a.pagina})</span></li>)}
+          {ALVOS_PA_AVC.map((a) => <li key={a.situacao}><span className="font-medium">{a.situacao}:</span> {a.texto} <span className="text-tinta-sussurro">({a.pagina})</span></li>)}
         </ul>
         <div className="flex flex-wrap gap-2">
           {([['pre-trombolise', 'Antes da trombólise'], ['pos-trombolise', 'Após trombólise'], ['sem-trombolise', 'Sem trombólise']] as const).map(([v, r]) => (
@@ -160,7 +160,7 @@ export function TromboliseAvcAdulto() {
             PA {pas} × {pad} mmHg: <strong className={pa.acimaDoCorte ? 'text-atencao' : undefined}>{pa.acimaDoCorte ? 'no corte ou acima' : 'abaixo do corte'}</strong> — {pa.corte} ({pa.pagina})
             {sitPa === 'sem-trombolise' && pa.acimaDoCorte && r15 && <> · 15% abaixo: {br(r15.pas, 0)} × {br(r15.pad, 0)} mmHg</>}
           </p>
-        ) : <p className="text-sm text-muted-foreground">Informe PAS e PAD acima.</p>}
+        ) : <p className="text-sm text-tinta-sussurro">Informe PAS e PAD acima.</p>}
         <LinhaManual nome="Nitroprussiato" texto={NITROPRUSSIATO_AVC.texto} conta={nitro !== null ? <>0,25 µg/kg/min = <strong>{br(nitro, 2)} mL/h</strong> (200 µg/mL)</> : 'informe o peso'} pagina={NITROPRUSSIATO_AVC.pagina} errata={NITROPRUSSIATO_AVC.errata} />
       </Bloco>
 
@@ -171,12 +171,12 @@ export function TromboliseAvcAdulto() {
 
       <Bloco titulo={`Angioedema orolingual (${ANGIOEDEMA_POS_ALTEPLASE.pagina})`}>
         <ul className="list-disc pl-5 text-sm">{ANGIOEDEMA_POS_ALTEPLASE.itens.map((i) => <li key={i}>{i}</li>)}</ul>
-        <p className="text-sm text-muted-foreground">{ANGIOEDEMA_POS_ALTEPLASE.errata}</p>
+        <p className="text-sm text-tinta-sussurro">{ANGIOEDEMA_POS_ALTEPLASE.errata}</p>
       </Bloco>
 
       <Bloco titulo="Outros cuidados do capítulo">
         <ul className="flex flex-col gap-1 text-sm">
-          {CUIDADOS_AVC.map((c) => <li key={c.texto}>{c.texto} <span className="text-muted-foreground">({c.pagina})</span></li>)}
+          {CUIDADOS_AVC.map((c) => <li key={c.texto}>{c.texto} <span className="text-tinta-sussurro">({c.pagina})</span></li>)}
         </ul>
       </Bloco>
     </ToolLayout>

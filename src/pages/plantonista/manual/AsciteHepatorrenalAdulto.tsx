@@ -78,7 +78,7 @@ export function AsciteHepatorrenalAdulto() {
             <Resultado rotulo="8 g × litros acima de 5" valor={`${br(para.gSoExcedente)} g — ${frascos(para.frascosExcedente)}`} />
           </div>
         )}
-        <p className="text-muted-foreground">{NOTA_PARACENTESE}</p>
+        <p className="text-tinta-sussurro">{NOTA_PARACENTESE}</p>
       </Bloco>
 
       <Bloco titulo="Peritonite bacteriana espontânea" descricao={NOTA_PMN_250}>
@@ -123,7 +123,7 @@ export function AsciteHepatorrenalAdulto() {
         <Marca rotulo="Início de diálise" marcado={dialise} onChange={setDialise} />
         <Resultado rotulo="Estádio ICA-AKI (Tabela 2, p. 791)" valor={est ? `${est.estadio === 0 ? 'sem estádio' : `estádio ${est.estadio}`} — ${est.motivos.join('; ')}` : 'informe as creatininas'} />
         <ul className="list-disc pl-5">{CRITERIOS_SHR.map((c) => <li key={c}>{c}</li>)}</ul>
-        <p className="text-muted-foreground">Critérios diagnósticos da SHR (Tabela 2, p. 790–791).</p>
+        <p className="text-tinta-sussurro">Critérios diagnósticos da SHR (Tabela 2, p. 790–791).</p>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead><tr className="border-b"><th className="py-1 pr-2">Tabela 4 (p. 792–793)</th><th className="pr-2">Pré-renal</th><th className="pr-2">SHR</th><th>NTA</th></tr></thead>
@@ -132,7 +132,7 @@ export function AsciteHepatorrenalAdulto() {
             </tbody>
           </table>
         </div>
-        <p className="text-muted-foreground">{NOTA_PROTEINURIA_INDICE}</p>
+        <p className="text-tinta-sussurro">{NOTA_PROTEINURIA_INDICE}</p>
       </Bloco>
 
       <Bloco titulo="Síndrome hepatorrenal — albumina e terlipressina" descricao={`${TERLIPRESSINA_SHR.pagina}.`}>
@@ -147,19 +147,19 @@ export function AsciteHepatorrenalAdulto() {
           {TERLIPRESSINA_SHR.degraus.map((d) => <li key={d.rotulo}>{d.rotulo} = {d.mgDia} mg/dia</li>)}
         </ol>
         <p className="font-medium">Terlipressina em infusão contínua — 3 mg/dia, +1 mg/dia a cada 2 dias, em SG 5% 50 mL (p. 797)</p>
-        <p className="text-muted-foreground">{degrausContinua().map((d) => `dia ${d.diaInicio}: ${d.mgDia} mg`).join(' · ')}</p>
+        <p className="text-tinta-sussurro">{degrausContinua().map((d) => `dia ${d.diaInicio}: ${d.mgDia} mg`).join(' · ')}</p>
         <div className="grid gap-4 sm:grid-cols-3">
           <NumberField id="as-mgdia" label="Dose do dia" unit="mg/dia" value={mgDia} onChange={setMgDia} step={1} />
           <Resultado rotulo="Concentração em 50 mL" valor={cont ? `${br(cont.concentracaoMgMl, 2)} mg/mL` : '—'} />
           <Resultado rotulo="Dose do dia" valor={cont ? `${br(cont.mgDia, 1)} mg/dia${cont.acimaDoTetoBolus ? ' (acima dos 12 mg/dia da sequência em bolus)' : ''}` : '—'} />
         </div>
-        <p className="text-muted-foreground">{NOTA_TERLIPRESSINA_CONTINUA}</p>
+        <p className="text-tinta-sussurro">{NOTA_TERLIPRESSINA_CONTINUA}</p>
         <div className="grid gap-4 sm:grid-cols-3">
           <NumberField id="as-cri" label="Creatinina no início da terlipressina" unit="mg/dL" value={crInicial} onChange={setCrInicial} step={0.1} />
           <Resultado rotulo="Queda em relação à inicial (usa a creatinina atual)" valor={resp ? `${br(resp.quedaPct, 0)}%${resp.atingiu25 ? ' (≥ 25%: resposta pela p. 795)' : ' (< 25%)'}` : '—'} />
           <Resultado rotulo="Até basal + 0,3 mg/dL" valor={resp?.completa == null ? 'informe a basal' : resp.completa ? 'sim' : 'não'} />
         </div>
-        <p className="text-muted-foreground">{NOTA_RESPOSTA_25} Tempo máximo de {TERLIPRESSINA_SHR.maxDias} dias (p. 795). Efeitos colaterais na Tabela 5 (p. 797).</p>
+        <p className="text-tinta-sussurro">{NOTA_RESPOSTA_25} Tempo máximo de {TERLIPRESSINA_SHR.maxDias} dias (p. 795). Efeitos colaterais na Tabela 5 (p. 797).</p>
         <Errata texto={ERRATA_NEJM_TERLIPRESSINA} />
       </Bloco>
 

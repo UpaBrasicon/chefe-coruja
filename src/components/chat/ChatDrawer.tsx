@@ -1,136 +1,117 @@
-'use client'
-
-import { ArrowLeft, MessageCircle, X } from 'lucide-react'
+import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
+import { ChevronLeft, XIcon } from 'lucide-react'
 import * as React from 'react'
 
-import { useAuth } from '@/contexts/AuthContext'
-import { useUnidade } from '@/contexts/UnidadeContext'
-import { useAbrirConversa, useAbrirSuporte, useContatosChat, useConversas } from '@/hooks/useChat'
+import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
 import { ListaConversas } from '@/components/chat/ListaConversas'
 import { Thread } from '@/components/chat/Thread'
-import { cn } from '@/lib/utils'
+import { useAuth } from '@/contexts/AuthContext'
+import {
+  definirConversaAberta,
+  useAbrirConversa,
+  useAbrirSuporte,
+  useContatosChat,
+  useConversas,
+} from '@/hooks/useChat'
 
-/**
- * Painel lateral de chat (drawer à direita).
- * Telas grandes: painel de 380px com overlay. Mobile: tela cheia.
- */
+// Gaveta de Mensagens (P/index.html .cc-lateral + chat.*): entra pela direita
+// sobre o véu. Na lista, "Mensagens" e as conversas; dentro de uma conversa,
+// voltar, nome e de quem se trata, e o campo de escrever ao pé.
+
+type ConversaNaTela = { id: string; nome: string; sub: string; tipo: string }
+
 export function ChatDrawer({ aberto, onFechar }: { aberto: boolean; onFechar: () => void }) {
-  const { unidadeAtiva } = useUnidade()
   const { perfil } = useAuth()
-  const unidadeId = unidadeAtiva?.unidade_id
-
-  const [conversaAtiva, setConversaAtiva] = React.useState<string | null>(null)
-  const [tituloThread, setTituloThread] = React.useState<string>('')
-  const [tipoThread, setTipoThread] = React.useState<string>('direta')
+  const [conversa, setConversa] = React.useState<ConversaNaTela | null>(null)
+  const [erro, setErro] = React.useState<string | null>(null)
 
   const { data: conversas } = useConversas()
   const { data: contatos } = useContatosChat()
   const abrirConversa = useAbrirConversa()
   const abrirSuporte = useAbrirSuporte()
+  const ocupado = abrirConversa.isPending || abrirSuporte.isPending
+
+  // registra a conversa que está na tela (o aviso flutuante não avisa dela)
+  React.useEffect(() => {
+    definirConversaAberta(aberto && conversa ? conversa.id : null)
+    return () => definirConversaAberta(null)
+  }, [aberto, conversa])
 
   function fechar() {
-    setConversaAtiva(null)
-    setTituloThread('')
+    setConversa(null)
+    setErro(null)
     onFechar()
   }
 
   function voltarLista() {
-    setConversaAtiva(null)
-    setTituloThread('')
+    setConversa(null)
+    setErro(null)
   }
 
-  function abrirConversaExistente(id: string, nome: string, tipo: string) {
-    setConversaAtiva(id)
-    setTituloThread(nome)
-    setTipoThread(tipo)
-  }
-
-  async function iniciarComContato(perfilId: string, nome: string) {
-    const res = await abrirConversa.mutateAsync(perfilId)
-    setConversaAtiva(res)
-    setTituloThread(nome)
-    setTipoThread('direta')
+  async function iniciarComContato(perfilId: string, nome: string, sub: string) {
+    setErro(null)
+    try {
+      const id = await abrirConversa.mutateAsync(perfilId)
+      setConversa({ id, nome, sub, tipo: 'direta' })
+    } catch {
+      setErro('Não foi possível abrir a conversa. Tente de novo.')
+    }
   }
 
   async function iniciarSuporte() {
-    const res = await abrirSuporte.mutateAsync()
-    setConversaAtiva(res)
-    setTituloThread('Suporte')
-    setTipoThread('suporte')
+    setErro(null)
+    try {
+      const id = await abrirSuporte.mutateAsync()
+      setConversa({ id, nome: 'Suporte Chefe Coruja', sub: 'Equipe de suporte', tipo: 'suporte' })
+    } catch {
+      setErro('Não foi possível falar com o suporte agora. Tente de novo.')
+    }
   }
 
   return (
-    <>
-      {/* Backdrop: clicar fora fecha o chat */}
-      <div
-        aria-hidden="true"
-        onClick={fechar}
-        className={cn(
-          'fixed inset-0 z-40 bg-black/40 transition-opacity duration-300',
-          aberto ? 'opacity-100' : 'pointer-events-none opacity-0'
-        )}
-      />
-      <div
-        aria-hidden={!aberto}
-        className={cn(
-          'fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l bg-background shadow-2xl transition-transform duration-300 sm:w-[400px]',
-          aberto ? 'translate-x-0' : 'translate-x-full'
-        )}
-      >
-      {/* Cabeçalho */}
-      <div className="flex items-center justify-between border-b px-4 py-3">
-        {conversaAtiva ? (
-          <div className="flex items-center gap-2">
+    <Gaveta aberta={aberto} onAbertaChange={(v) => !v && fechar()} rotulo="Mensagens" className="overflow-y-hidden">
+      {conversa ? (
+        <>
+          <div className="flex shrink-0 items-center gap-2.5 border-b border-trilha px-[22px] py-4">
             <button
               type="button"
-              aria-label="Voltar à lista"
               onClick={voltarLista}
-              className="rounded-md p-1 hover:bg-muted"
+              aria-label="Voltar"
+              className="flex shrink-0 p-0.5 text-tinta-sussurro hover:text-acao"
             >
-              <ArrowLeft className="size-4" />
+              <ChevronLeft className="size-4" aria-hidden />
             </button>
-            <div>
-              <div className="text-sm font-semibold">{tituloThread}</div>
-              <div className="text-[11px] text-muted-foreground">
-                {tipoThread === 'suporte' ? 'Suporte Chefe Coruja' : unidadeAtiva?.unidade.nome}
-              </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-px">
+              <DialogPrimitive.Title className="truncate text-corpo font-semibold text-tinta">{conversa.nome}</DialogPrimitive.Title>
+              <span className="truncate text-apoio text-tinta-sussurro">{conversa.sub}</span>
             </div>
+            <DialogPrimitive.Close aria-label="Fechar" className="flex shrink-0 p-1 text-tinta-sussurro hover:text-acao">
+              <XIcon className="size-[17px]" aria-hidden />
+            </DialogPrimitive.Close>
           </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <MessageCircle className="size-4 text-muted-foreground" />
-            <span className="text-sm font-semibold">Mensagens</span>
-          </div>
-        )}
-        <button
-          type="button"
-          aria-label="Fechar chat"
-          onClick={fechar}
-          className="rounded-md p-1 hover:bg-muted"
-        >
-          <X className="size-4" />
-        </button>
-      </div>
-
-      {/* Corpo */}
-      {conversaAtiva ? (
-        <Thread
-          key={conversaAtiva}
-          conversaId={conversaAtiva}
-          perfilId={perfil?.id}
-          onMensagemLida={() => undefined}
-        />
+          <Thread key={conversa.id} conversaId={conversa.id} perfilId={perfil?.id} />
+        </>
       ) : (
-        <ListaConversas
-          conversas={conversas ?? []}
-          contatos={contatos ?? []}
-          unidadeId={unidadeId}
-          onAbrirConversa={abrirConversaExistente}
-          onIniciarContato={iniciarComContato}
-          onIniciarSuporte={() => void iniciarSuporte()}
-        />
+        <>
+          <GavetaCabeca titulo="Mensagens" />
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {erro && (
+              <p role="alert" className="border-b border-trilha bg-alerta-critico px-[22px] py-2.5 text-apoio text-critico">
+                {erro}
+              </p>
+            )}
+            <ListaConversas
+              conversas={conversas ?? []}
+              contatos={contatos ?? []}
+              meuId={perfil?.id}
+              ocupado={ocupado}
+              onAbrirConversa={(id, nome, tipo, sub) => setConversa({ id, nome, sub, tipo })}
+              onIniciarContato={(id, nome, sub) => void iniciarComContato(id, nome, sub)}
+              onIniciarSuporte={() => void iniciarSuporte()}
+            />
+          </div>
+        </>
       )}
-      </div>
-    </>
+    </Gaveta>
   )
 }

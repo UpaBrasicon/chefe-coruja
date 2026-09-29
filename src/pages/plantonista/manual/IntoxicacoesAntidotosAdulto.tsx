@@ -75,7 +75,7 @@ function Paracetamol({ peso }: { peso: number }) {
       <p className="text-sm">
         Indicações de NAC presentes (p. 1311): {ind.length === 0 ? <strong>nenhuma das listadas</strong> : <strong>{ind.join('; ')}</strong>}
       </p>
-      <p className="text-sm text-muted-foreground">O nomograma de Rumack-Matthew é só citado no manual (a linha não está no livro); a posição do nível em relação à linha é informada por quem usa.</p>
+      <p className="text-sm text-tinta-sussurro">O nomograma de Rumack-Matthew é só citado no manual (a linha não está no livro); a posição do nível em relação à linha é informada por quem usa.</p>
       <LinhaManual nome="NAC VO" texto={NAC.vo.texto} pagina={NAC.vo.pagina}
         conta={vo ? <>ataque <strong>{br(vo.ataqueMg, 0)} mg</strong> · manutenção <strong>{br(vo.manutencaoMg, 0)} mg</strong> 4/4 h (≈ {vo.doses} doses)</> : PESO} />
       <LinhaManual nome="NAC EV (3 fases)" texto={`${NAC.ev.quando}: 150 mg/kg em 60 min em 200–300 mL de SF ou SG 5%; 50 mg/kg em 4 h; 100 mg/kg em 16 h`}
@@ -87,7 +87,7 @@ function Paracetamol({ peso }: { peso: number }) {
             <li key={f.rotulo} className="rounded-lg border px-3 py-2">
               <span className="font-medium">{f.rotulo}</span><br />
               {br(f.mg, 0)} mg em {f.horas} h = {br(f.mgH, 0)} mg/h ({br(f.mgKgH, 2)} mg/kg/h)<br />
-              <span className="text-muted-foreground">{f.preparo}</span>
+              <span className="text-tinta-sussurro">{f.preparo}</span>
             </li>
           ))}
         </ul>
@@ -104,7 +104,7 @@ function AntidotosFixos() {
       {NALOXONA.cenarios.map((c) => (
         <LinhaManual key={c.id} nome={`Naloxona — ${c.rotulo}`} texto={`${faixa(c.mg, 2)} mg IV; ${NALOXONA.alvo}`} pagina={NALOXONA.pagina} />
       ))}
-      <p className="text-sm text-muted-foreground">Naloxona: {NALOXONA.reconsiderar}; {NALOXONA.alta} ({NALOXONA.pagina}).</p>
+      <p className="text-sm text-tinta-sussurro">Naloxona: {NALOXONA.reconsiderar}; {NALOXONA.alta} ({NALOXONA.pagina}).</p>
       <LinhaManual nome={FISOSTIGMINA.nome} texto={FISOSTIGMINA.texto} pagina={FISOSTIGMINA.pagina} nota={FISOSTIGMINA.nota} />
     </Bloco>
   )
@@ -138,7 +138,7 @@ function Cardiotoxicos({ peso }: { peso: number }) {
           conta={fig ? <>bolus <strong>{faixa(fig.insulinaBolusUi, 0)} UI</strong> · <strong>{faixa(fig.insulinaInfusaoUiH, 0)} UI/h</strong></> : PESO} />
         <LinhaManual nome="Emulsão lipídica 20% (figura)" texto="1,5 mL/kg em bolus de 2–3 min, seguido de 0,5 mL/kg/min" pagina={BCC.figura.pagina}
           conta={fig ? <>bolus <strong>{br(fig.emulsaoBolusMl, 0)} mL</strong> · <strong>{br(fig.emulsaoMlMin)} mL/min</strong> ({br(fig.emulsaoMlH, 0)} mL/h)</> : PESO} />
-        <p className="text-sm text-muted-foreground">{BCC.figura.depois} ({BCC.figura.pagina}).</p>
+        <p className="text-sm text-tinta-sussurro">{BCC.figura.depois} ({BCC.figura.pagina}).</p>
         <ul className="list-disc pl-5 text-sm text-atencao">
           {BCC.divergencias.map((d) => <li key={d}>{d}</li>)}
         </ul>
@@ -230,9 +230,9 @@ function Cianeto() {
         conta={<><strong>12,5 g</strong> = {br(tiossulfatoAdultoMl(), 0)} mL a 25%</>} />
       <LinhaManual nome="Nitritos (sem hidroxocobalamina)" texto={`${CIANETO.nitritoAmila}; ${CIANETO.nitritoSodio.texto}; depois tiossulfato 12,5 g EV`} pagina={CIANETO.pagina}
         conta={<>nitrito de sódio <strong>{br(nitritoSodioMg(), 0)} mg</strong> (10 mL a 3%)</>} />
-      <p className="text-sm text-muted-foreground">{CIANETO.sequencia}</p>
+      <p className="text-sm text-tinta-sussurro">{CIANETO.sequencia}</p>
       <LinhaManual nome={MONOXIDO.nome} texto={MONOXIDO.texto} pagina={MONOXIDO.pagina} />
-      <p className="text-sm text-muted-foreground">Valores pediátricos que o capítulo cita e esta ferramenta de adulto não usa: {PEDIATRICO_CITADO.join('; ')}.</p>
+      <p className="text-sm text-tinta-sussurro">Valores pediátricos que o capítulo cita e esta ferramenta de adulto não usa: {PEDIATRICO_CITADO.join('; ')}.</p>
     </Bloco>
   )
 }

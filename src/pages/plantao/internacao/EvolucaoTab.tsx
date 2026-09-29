@@ -174,7 +174,7 @@ export function EvolucaoTab({
           <Button onClick={gerarTexto}>
             <Sparkles /> Gerar Texto
           </Button>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-tinta-sussurro">
             O texto gerado pode ser editado à vontade. Ele é salvo automaticamente no navegador.
           </p>
           <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-xs text-conforme">
@@ -185,7 +185,7 @@ export function EvolucaoTab({
               </span>
             ) : (
               <div className="flex flex-col gap-1.5">
-                {registros.length === 0 && <span className="text-muted-foreground">Nenhum registro nesta internação ainda.</span>}
+                {registros.length === 0 && <span className="text-tinta-sussurro">Nenhum registro nesta internação ainda.</span>}
                 {registros.map(({ d, autor }) => (
                   <div key={d.id} className="flex flex-wrap items-center gap-1.5">
                     {d.tipo_documento === 'admissao_anamnese' ? <CheckCircle2 className="size-3" /> : <History className="size-3" />}
@@ -199,7 +199,7 @@ export function EvolucaoTab({
                     )}
                   </div>
                 ))}
-                <span className="text-muted-foreground">Só o autor corrige o próprio registro; a correção vira nova versão, com justificativa.</span>
+                <span className="text-tinta-sussurro">Só o autor corrige o próprio registro; a correção vira nova versão, com justificativa.</span>
               </div>
             )}
           </div>
@@ -259,7 +259,7 @@ export function EvolucaoTab({
                 <Printer /> Imprimir
               </Button>
             </div>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-tinta-sussurro">
               {evolucao.texto.length} caracteres · salvo automaticamente
             </span>
           </div>

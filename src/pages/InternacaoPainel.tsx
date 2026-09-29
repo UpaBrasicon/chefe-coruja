@@ -314,15 +314,15 @@ export default function InternacaoPainel({
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       {!embutido && (
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/" className="transition-colors hover:text-foreground">
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/" className="transition-colors hover:text-tinta">
               Início
             </Link>
             <ChevronRight className="size-3.5" />
-            <span className="font-medium text-foreground">{titulo}</span>
+            <span className="font-medium text-tinta">{titulo}</span>
           </div>
           <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">{titulo}</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
             {modo === 'internacao'
               ? 'Enfermaria Clínica, Enfermaria Pediátrica, Sala Vermelha/Semi-Crítica (e outros setores do gestor).'
@@ -366,11 +366,11 @@ export default function InternacaoPainel({
                   ? 'border-critico/30 bg-critico/[0.08]'
                   : alerta
                     ? 'border-atencao/30 bg-atencao/[0.08]'
-                    : 'border-border bg-card'
+                    : 'border-fio bg-superficie'
               }`}
             >
               <span className="text-sm font-medium">{o.setor_nome}</span>
-              <span className={`text-sm font-semibold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-foreground'}`}>
+              <span className={`text-sm font-semibold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-tinta'}`}>
                 {o.internados}/{o.limite || '∞'}
               </span>
               {lotado && <span className="text-xs font-semibold text-critico">LOTADO</span>}
@@ -392,7 +392,7 @@ export default function InternacaoPainel({
                 <Card key={s.id}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <IconePainel className="size-4 text-primary" />
+                      <IconePainel className="size-4 text-acao" />
                       {s.nome}
                     </CardTitle>
                     <CardDescription>
@@ -403,7 +403,7 @@ export default function InternacaoPainel({
                   </CardHeader>
                   <CardContent className="flex flex-col gap-2">
                     {internados.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Nenhum paciente neste setor.</p>
+                      <p className="text-sm text-tinta-sussurro">Nenhum paciente neste setor.</p>
                     ) : (
                       internados.map((p) => (
                         <div key={p.id} className="rounded-lg border p-2">
@@ -413,7 +413,7 @@ export default function InternacaoPainel({
                             {alertasSepse?.get(p.id)?.nivel === 'sepse' && <Badge variant="destructive">Phoenix {alertasSepse.get(p.id)!.total} · sepse?</Badge>}
                             {alertasSepse?.get(p.id)?.nivel === 'rastreio' && <Badge variant="outline">Phoenix {alertasSepse.get(p.id)!.total}</Badge>}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-tinta-sussurro">
                             {p.sexo ? `${p.sexo} · ` : ''}
                             {p.data_nascimento ? p.data_nascimento.slice(0, 10).split('-').reverse().join('/') : '—'}
                             {p.cpf ? ` · CPF ${p.cpf}` : ''}
@@ -463,7 +463,7 @@ export default function InternacaoPainel({
               <CardHeader className="flex-row items-center justify-between space-y-0">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <ArrowRightLeft className="size-4 text-muted-foreground" />
+                    <ArrowRightLeft className="size-4 text-tinta-sussurro" />
                     Transferências recentes
                   </CardTitle>
                   <CardDescription>Registro de auditoria das transferências entre setores.</CardDescription>
@@ -478,12 +478,12 @@ export default function InternacaoPainel({
                     <Spinner />
                   </div>
                 ) : (transferencias ?? []).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nenhuma transferência registrada.</p>
+                  <p className="text-sm text-tinta-sussurro">Nenhuma transferência registrada.</p>
                 ) : (
                   (transferencias ?? []).map((t) => (
                     <div key={t.id} className="rounded-lg border p-2 text-sm">
                       <div className="font-medium">{t.pacientes?.nome ?? 'Paciente'}</div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-tinta-sussurro">
                         {fmtDia(t.created_at)} · {t.motivo || 'sem motivo'}
                       </div>
                     </div>
@@ -526,7 +526,7 @@ export default function InternacaoPainel({
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="motivo">
-                Justificativa do encaminhamento <span className="text-destructive">*</span>
+                Justificativa do encaminhamento <span className="text-critico">*</span>
               </Label>
               <Textarea
                 id="motivo"
@@ -539,7 +539,7 @@ export default function InternacaoPainel({
                 <p className="text-xs text-atencao">Informe o motivo para justificar a transferência.</p>
               )}
             </div>
-            {erro && <p className="text-sm text-destructive">{erro}</p>}
+            {erro && <p className="text-sm text-critico">{erro}</p>}
           </div>
 
           <DialogFooter>
@@ -567,11 +567,11 @@ export default function InternacaoPainel({
           <div className="flex flex-col gap-4">
             {/* Eventos ADT: trilha imutável do episódio */}
             <div className="flex flex-col gap-1.5">
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <div className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
                 Trilha do episódio (ADT)
               </div>
               {(eventosAdt ?? []).length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum evento ADT registrado.</p>
+                <p className="text-sm text-tinta-sussurro">Nenhum evento ADT registrado.</p>
               ) : (
                 <div className="flex flex-col gap-1.5">
                   {(eventosAdt ?? []).map((e) => (
@@ -581,7 +581,7 @@ export default function InternacaoPainel({
                         <div className="font-medium">
                           {TIPO_EVENTO_LABEL[e.tipo_evento] ?? e.tipo_evento}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-tinta-sussurro">
                           {fmtDia(e.created_at)} · {e.perfis?.nome_completo ?? '—'}
                           {e.motivo ? ` · ${e.motivo}` : ''}
                         </div>
@@ -594,15 +594,15 @@ export default function InternacaoPainel({
 
             {/* I1: linha do tempo */}
             <div className="flex flex-col gap-1.5">
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <div className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
                 Linha do tempo (transferências)
               </div>
               {(historico ?? []).length === 0 ? (
-                <p className="text-sm text-muted-foreground">Sem transferências registradas.</p>
+                <p className="text-sm text-tinta-sussurro">Sem transferências registradas.</p>
               ) : (
                 (historico ?? []).map((h) => (
                   <div key={h.id} className="rounded-lg border p-2 text-sm">
-                    <span className="text-xs text-muted-foreground">{fmtDia(h.created_at)}</span>
+                    <span className="text-xs text-tinta-sussurro">{fmtDia(h.created_at)}</span>
                     <div>
                       por <strong>{h.perfis?.nome_completo ?? '—'}</strong> · {h.motivo || 'sem motivo'}
                     </div>
@@ -613,7 +613,7 @@ export default function InternacaoPainel({
 
             {/* I4: checklist de admissão */}
             <div className="flex flex-col gap-1.5">
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <div className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
                 Checklist de admissão
               </div>
               <div className="flex flex-wrap gap-2">
@@ -634,7 +634,7 @@ export default function InternacaoPainel({
                       className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                         marcado
                           ? 'border-conforme/30 bg-conforme/[0.08] text-conforme'
-                          : 'border-border bg-background hover:bg-muted'
+                          : 'border-fio bg-campo hover:bg-trilha'
                       }`}
                     >
                       {marcado ? '✓ ' : '○ '}
@@ -652,11 +652,11 @@ export default function InternacaoPainel({
         </DialogContent>
       </Dialog>
 
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <p className="flex items-center gap-1.5 text-xs text-tinta-sussurro">
         <UserPlus className="size-3.5" /> Para internar um paciente, use a Internação em Plantão e
         direcione-o para o setor. Transferências entre setores são registradas em auditoria.
       </p>
-      <div className="rounded-lg border border-dashed border-muted-foreground/30 px-4 py-3 text-xs text-muted-foreground">
+      <div className="rounded-lg border border-dashed border-muted-foreground/30 px-4 py-3 text-xs text-tinta-sussurro">
         <strong>Distinção:</strong> esta aba é o <strong>Painel de Internação</strong> (gerencia
         pacientes por setor, transferências e auditoria). O <strong>documento de internação</strong>{' '}
         (Dados do Paciente, prescrição, evolução, pedido de exames, AIH e exportação em PDF) fica em{' '}

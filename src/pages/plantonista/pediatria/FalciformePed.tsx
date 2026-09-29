@@ -50,7 +50,7 @@ export function FalciformePed() {
       {calc && (
         <Bloco titulo="Analgesia pelo peso">
           {DOSES_CRISE_ALGICA.map((d) => (
-            <LinhaDoseLivro key={d.id} d={d} peso={p.peso} extra={d.id === 'paracetamol' && teto ? <p className="text-muted-foreground">Teto do dia (menor entre 75 mg/kg e 4 g): {br(teto, 0)} mg.</p> : undefined} />
+            <LinhaDoseLivro key={d.id} d={d} peso={p.peso} extra={d.id === 'paracetamol' && teto ? <p className="text-tinta-sussurro">Teto do dia (menor entre 75 mg/kg e 4 g): {br(teto, 0)} mg.</p> : undefined} />
           ))}
           {cet && (
             <LinhaLivro nome="Cetamina subanestésica (refratários, internados)" conta={<strong>{faixaBr(cet, 1)} mg/h</strong>} texto="iniciar 0,1 a 0,3 mg/kg/hora, em centros com experiência" pagina="p. 668" />
@@ -59,7 +59,7 @@ export function FalciformePed() {
       )}
 
       <Bloco titulo="Febre ≥ 38,5 °C — internação (p. 667)">
-        <ul className="list-disc pl-5 text-muted-foreground">
+        <ul className="list-disc pl-5 text-tinta-sussurro">
           {INTERNACAO_FEBRE.map((i) => <li key={i}>{i}</li>)}
         </ul>
       </Bloco>
@@ -96,7 +96,7 @@ export function FalciformePed() {
         {calc && penV && benz && (
           <LinhaLivro nome="Profilaxia com penicilina (3 meses a 5 anos)" conta={<>penicilina V <strong>{br(penV.mg, 0)} mg 12/12 h</strong> ({penV.criterio}) · ou benzatina <strong>{benz.ui.toLocaleString('pt-BR')} UI</strong> {PCDT_FALCIFORME.profilaxia.benzatinaIntervalo} ({benz.criterio})</>} texto={`Alergia à penicilina: ${PCDT_FALCIFORME.profilaxia.alergia}.`} pagina={PCDT_FALCIFORME.profilaxia.pagina} />
         )}
-        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_PCDT_FALCIFORME.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_PCDT_FALCIFORME.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

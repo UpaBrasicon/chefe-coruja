@@ -96,7 +96,7 @@ export function DenguePed() {
               casas={0}
               texto={perfil === 'crianca' ? '< 10 kg: 130 mL/kg/dia; 10 a 20 kg: 100 mL/kg/dia; > 20 kg: 80 mL/kg/dia; 1/3 em SRO em 4–6 h e 2/3 em líquidos caseiros; manter até 48 h após o último pico febril' : 'adolescente: 60 mL/kg/dia; 1/3 em SRO em 4–6 h e 2/3 em líquidos caseiros'}
               pagina="p. 450"
-              extra={<span className="text-muted-foreground"> · SRO {br(oral.sro, 0)} mL ({faixaBr(oral.sroMlH, 0)} mL/h) · caseiros {br(oral.caseiros, 0)} mL</span>}
+              extra={<span className="text-tinta-sussurro"> · SRO {br(oral.sro, 0)} mL ({faixaBr(oral.sroMlH, 0)} mL/h) · caseiros {br(oral.caseiros, 0)} mL</span>}
             />
           )}
           <LinhaFaixa nome="Grupo C — expansão com cristaloide" faixa={expansaoGrupoC(p.peso)} unidade="mL/h" casas={0} texto="10 a 20 mL/kg/h, repetindo até 3 vezes (criança e adolescente)" pagina="p. 450" />
@@ -109,11 +109,11 @@ export function DenguePed() {
               texto="necessidade hídrica basal (Holliday-Segar) com solução balanceada; internação por 48 h"
               pagina="p. 450; Holliday-Segar: cap. 77, p. 840"
               nota={NOTA_MANUTENCAO_CRIANCA}
-              extra={hs && <span className="text-muted-foreground"> · {br(hs.mlH, 0)} mL/h{hs.noTeto ? ' (teto do cap. 77)' : ''}</span>}
+              extra={hs && <span className="text-tinta-sussurro"> · {br(hs.mlH, 0)} mL/h{hs.noTeto ? ' (teto do cap. 77)' : ''}</span>}
             />
           ) : (
             manutencaoAdolescente(p.peso)?.map((e) => (
-              <LinhaFaixa key={e.etapa} nome={`Grupo C — manutenção (adolescente), ${e.etapa}`} faixa={e.volumeMl} unidade="mL" casas={0} texto={e.regra} pagina="p. 450" extra={e.mlH && <span className="text-muted-foreground"> · {faixaBr(e.mlH, 0)} mL/h</span>} />
+              <LinhaFaixa key={e.etapa} nome={`Grupo C — manutenção (adolescente), ${e.etapa}`} faixa={e.volumeMl} unidade="mL" casas={0} texto={e.regra} pagina="p. 450" extra={e.mlH && <span className="text-tinta-sussurro"> · {faixaBr(e.mlH, 0)} mL/h</span>} />
             ))
           )}
           <LinhaFaixa nome="Grupo D — expansão" faixa={expansaoGrupoD(p.peso)} unidade="mL" casas={0} texto="solução salina isotônica 20 mL/kg em até 20 minutos, até 3 vezes" pagina="p. 450" />
@@ -126,7 +126,7 @@ export function DenguePed() {
               texto="cada 100 mL: 25 mL de albumina 20% + 75 mL de SF 0,9%"
               pagina="p. 450–451"
               nota={NOTA_ALBUMINA}
-              extra={<span className="text-muted-foreground"> · albumina 20% {faixaBr(alb.albumina20, 0)} mL + SF {faixaBr(alb.sf, 0)} mL ({faixaBr(alb.gramas, 1)} g)</span>}
+              extra={<span className="text-tinta-sussurro"> · albumina 20% {faixaBr(alb.albumina20, 0)} mL + SF {faixaBr(alb.sf, 0)} mL ({faixaBr(alb.gramas, 1)} g)</span>}
             />
           )}
         </Bloco>
@@ -139,9 +139,9 @@ export function DenguePed() {
         {analg && <p>Analgesia (MS, Apêndice H): dipirona <strong>{br(analg.dipironaMg, 0)} mg</strong> e paracetamol <strong>{br(analg.paracetamolMg, 0)} mg</strong> por dose (10 mg/kg), até de 6/6 h, respeitando a dose máxima por peso e idade.</p>}
         {pesoEst !== null && <p>Peso aproximado pela idade (MS, Apêndice B): <strong>{br(pesoEst, 1)} kg</strong> — só quando não for possível pesar.</p>}
         {pasP5 !== null && <p>5º percentil da PAS para a idade (MS, p. 16): <strong>{pasP5} mmHg</strong> — abaixo disso é hipotensão.</p>}
-        {MS_CRIANCA_TEXTO.map((t) => <p key={t} className="text-muted-foreground">{t}</p>)}
-        {SINAIS_VITAIS_MS.map((t) => <p key={t.tabela} className="text-muted-foreground"><span className="font-medium text-foreground">{t.tabela}:</span> {t.linhas.join('; ')}.</p>)}
-        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_MS_2024_PED.map((d) => <li key={d}>{d}</li>)}</ul>
+        {MS_CRIANCA_TEXTO.map((t) => <p key={t} className="text-tinta-sussurro">{t}</p>)}
+        {SINAIS_VITAIS_MS.map((t) => <p key={t.tabela} className="text-tinta-sussurro"><span className="font-medium text-tinta">{t.tabela}:</span> {t.linhas.join('; ')}.</p>)}
+        <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_MS_2024_PED.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Critérios de internação (Quadro 7)">

@@ -62,7 +62,7 @@ export function InjuriaRenalPed() {
           onChange={setMetodo}
         />
         {tfg !== null && <p>eTFG: <strong className="tabular-nums">{br(tfg, 1)} mL/min/1,73 m²</strong></p>}
-        {cr.basal <= 0 && basalEst !== null && <p className="text-muted-foreground">Sem basal: creatinina correspondente a TFG 120 pela Schwartz = {br(basalEst, 2)} mg/dL (p. 575).</p>}
+        {cr.basal <= 0 && basalEst !== null && <p className="text-tinta-sussurro">Sem basal: creatinina correspondente a TFG 120 pela Schwartz = {br(basalEst, 2)} mg/dL (p. 575).</p>}
       </Bloco>
 
       <Bloco titulo="Estadiamento KDIGO pediátrico (Tabela 1, p. 576)" descricao="Vale de 1 mês a 18 anos (p. 575). O estágio é o pior entre creatinina e diurese.">

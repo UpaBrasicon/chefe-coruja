@@ -57,7 +57,7 @@ export function HiponatremiaManual() {
         <CardContent className="flex flex-col gap-2 text-sm">
           <p>Sódio {glic > 0 ? 'corrigido pela glicemia' : 'medido'}: <strong>{br(naCorr)} mEq/L</strong> — {naCorr === null ? '—' : grav ? <strong>{grav}</strong> : 'não é hiponatremia pelo corte do manual'}</p>
           {ton && <p>Pela osmolaridade: <strong>{TONICIDADE_TEXTO[ton]}</strong></p>}
-          <p className="text-xs text-muted-foreground"><Badge variant="outline" className="mr-1">errata</Badge>{ERRATA_SODIO_CORRIGIDO}</p>
+          <p className="text-xs text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{ERRATA_SODIO_CORRIGIDO}</p>
         </CardContent>
       </Card>
 
@@ -67,7 +67,7 @@ export function HiponatremiaManual() {
           <CardDescription>Preparo do manual: {SALINA_3.sfMl} mL de SF + {SALINA_3.nacl20Ml} mL de NaCl 20% = {SALINA_3.totalMl} mL de NaCl 3%. Dica do livro: cada 1 mL/kg eleva o sódio em cerca de 1 mEq/L (estimativa).</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-sm">
-          {!(peso > 0) ? <p className="text-muted-foreground">Informe o peso.</p> : (
+          {!(peso > 0) ? <p className="text-tinta-sussurro">Informe o peso.</p> : (
             <>
               <p className="tabular-nums">Bolus de {LIMITES_HIPONATREMIA.bolusMl} mL ≈ <strong>+{br(sobeBolus)} mEq/L</strong> · máximo de {LIMITES_HIPONATREMIA.bolusMaxMl} mL ≈ +{br(sobeMax)} mEq/L</p>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -85,7 +85,7 @@ export function HiponatremiaManual() {
               </div>
             </>
           )}
-          <p className="text-xs text-muted-foreground"><Badge variant="outline" className="mr-1">errata</Badge>{ERRATA_HIPONATREMIA}</p>
+          <p className="text-xs text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{ERRATA_HIPONATREMIA}</p>
         </CardContent>
       </Card>
 
@@ -101,7 +101,7 @@ export function HiponatremiaManual() {
             ))}
           </div>
           <ul className="list-disc pl-5">{linha.manual.map((t) => <li key={t}>{t}</li>)}</ul>
-          <p className="text-muted-foreground">{linha.pagina}</p>
+          <p className="text-tinta-sussurro">{linha.pagina}</p>
         </CardContent>
       </Card>
     </ToolLayout>

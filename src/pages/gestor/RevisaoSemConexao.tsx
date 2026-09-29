@@ -85,15 +85,15 @@ export default function RevisaoSemConexao() {
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {isLoading && <Spinner />}
-          {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
+          {error && <p className="text-sm text-critico">{(error as Error).message}</p>}
           {!isLoading && pendentes.length === 0 && (
-            <p className="text-sm text-muted-foreground">Nenhum registro aguardando revisão.</p>
+            <p className="text-sm text-tinta-sussurro">Nenhum registro aguardando revisão.</p>
           )}
           {pendentes.map((l) => (
             <div key={l.id} className="flex flex-col gap-2 rounded-controle border border-fio p-3">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="font-medium text-tinta">{l.paciente_nome}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-tinta-sussurro">
                   fato {fmt(l.hora_fato)} · chegou {atraso(l.hora_fato, l.recebido_em)}
                 </span>
               </div>
@@ -133,7 +133,7 @@ export default function RevisaoSemConexao() {
               </div>
             </div>
           ))}
-          {decidir.isError && <p className="text-sm text-destructive">{(decidir.error as Error).message}</p>}
+          {decidir.isError && <p className="text-sm text-critico">{(decidir.error as Error).message}</p>}
         </CardContent>
       </Card>
 

@@ -16,7 +16,6 @@ import { cn } from '@/lib/utils'
 import { Canal, Canais } from '@/components/monitor/Canais'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { FaixaParametros, Parametro, type Nivel } from '@/components/monitor/Parametros'
-import { DaUnidade } from '@/components/plantonista/DaUnidade'
 import { RespostaIa } from '@/components/plantonista/RespostaIa'
 
 // Central do Plantonista (design_handoff/telas/01): a página inicial do papel
@@ -226,7 +225,8 @@ export default function PlantonistaHome() {
         />
       </FaixaParametros>
 
-      <div className="grid gap-6 min-[1024px]:grid-cols-[minmax(0,1fr)_320px]">
+      {/* "Da unidade" mora na lateral da casca (P/index.html 915), não aqui. */}
+      <div className="grid gap-6">
         <div className="min-w-0">
           <TituloPagina
             icone={Stethoscope}
@@ -349,9 +349,6 @@ export default function PlantonistaHome() {
           )}
         </div>
 
-        <aside className="hidden min-[1024px]:block">
-          <DaUnidade unidadeId={unidadeAtiva?.unidade_id} />
-        </aside>
       </div>
     </>
   )

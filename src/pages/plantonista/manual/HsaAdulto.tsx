@@ -26,14 +26,14 @@ export function HsaAdulto() {
       <Bloco titulo="AHA/ASA 2023 × manual do HC" descricao="Diretriz da HSA aneurismática (Stroke 2023;54:e314–e370), lida no texto; classe e nível como impressos. O que muda: antifibrinolítico sem benefício, PA sem alvo numérico, fenitoína danosa, hipervolemia danosa.">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">AHA/ASA 2023</th><th className="pr-3 pb-2">COR/LOE · p.</th><th className="pb-2">Manual do HC</th></tr></thead>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">AHA/ASA 2023</th><th className="pr-3 pb-2">COR/LOE · p.</th><th className="pb-2">Manual do HC</th></tr></thead>
             <tbody>
               {DIRETRIZ_HSA_2023.map((d) => (
                 <tr key={d.tema} className="border-t">
                   <td className="pr-3 py-2 font-medium">{d.tema}</td>
                   <td className="pr-3 py-2">{d.aha}</td>
-                  <td className="pr-3 py-2 whitespace-nowrap text-muted-foreground">{d.classe} · {d.pagina}</td>
-                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                  <td className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.classe} · {d.pagina}</td>
+                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
                 </tr>
               ))}
             </tbody>

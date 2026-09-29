@@ -54,19 +54,19 @@ export function AnimaisPeconhentosAdulto() {
             </li>
           ))}
         </ul>
-        <p className="text-sm text-muted-foreground">{SORO_ADMINISTRACAO.texto} ({SORO_ADMINISTRACAO.pagina})</p>
+        <p className="text-sm text-tinta-sussurro">{SORO_ADMINISTRACAO.texto} ({SORO_ADMINISTRACAO.pagina})</p>
       </Bloco>
 
       <Bloco titulo="Ministério da Saúde — PCDT dos acidentes escorpiônicos (2026) e portal das aranhas" descricao="Decisão do responsável técnico (28/09/2026): os PCDTs do MS são a fonte dos peçonhentos. As serpentes seguem o manual até o PCDT completo dos acidentes ofídicos ser lido (o resumo não traz ampolas).">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">MS</th><th className="pb-2">Manual do HC</th></tr></thead>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">MS</th><th className="pb-2">Manual do HC</th></tr></thead>
             <tbody>
               {MS_2026_PECONHENTOS.map((d) => (
                 <tr key={d.tema} className="border-t">
                   <td className="pr-3 py-2 font-medium">{d.tema}</td>
-                  <td className="pr-3 py-2">{d.ms} <span className="text-muted-foreground">({d.pagina})</span></td>
-                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                  <td className="pr-3 py-2">{d.ms} <span className="text-tinta-sussurro">({d.pagina})</span></td>
+                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
                 </tr>
               ))}
             </tbody>
@@ -88,7 +88,7 @@ export function AnimaisPeconhentosAdulto() {
       <Bloco titulo="Neostigmina no acidente elapídico (p. 1352–1353)">
         <LinhaManual nome="Neostigmina (1 mL = 0,5 mg)" texto={NEOSTIGMINA.texto} pagina={NEOSTIGMINA.pagina} nota={NEOSTIGMINA.nota}
           conta={<>bolus <strong>{faixa(neo.bolusMg, 0)} mg</strong> = {faixa(neo.bolusMl, 0)} mL{neo.infusaoUgH !== null && <> · infusão inicial <strong>{br(neo.infusaoUgH, 0)} µg/h</strong></>}</>} />
-        <p className="text-sm text-muted-foreground">Valores pediátricos que o capítulo cita e esta ferramenta de adulto não usa: {PEDIATRICO_CITADO.join('; ')}.</p>
+        <p className="text-sm text-tinta-sussurro">Valores pediátricos que o capítulo cita e esta ferramenta de adulto não usa: {PEDIATRICO_CITADO.join('; ')}.</p>
       </Bloco>
     </ToolLayout>
   )

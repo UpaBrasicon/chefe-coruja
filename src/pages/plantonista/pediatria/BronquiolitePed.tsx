@@ -45,7 +45,7 @@ export function BronquiolitePed() {
             <strong>{presentes.length}</strong> achado(s) que o livro lista como indicação de internação: {presentes.join('; ')}.
           </p>
         ) : (
-          <p className="text-muted-foreground">Nenhum achado da lista do livro marcado.</p>
+          <p className="text-tinta-sussurro">Nenhum achado da lista do livro marcado.</p>
         )}
         {fr > FR_HIDRATACAO && <Nota>FR acima de {FR_HIDRATACAO}: o livro cita diminuição da ingesta e possível necessidade de hidratação EV (isotônicos) ou por sonda (p. 303).</Nota>}
         <p className="font-medium">Pesam na decisão (p. 303):</p>
@@ -63,15 +63,15 @@ export function BronquiolitePed() {
         <NumberField id="bq-ig" label="Idade gestacional ao nascer" unit="semanas" value={ig} onChange={setIg} min={0} max={42} />
         <Marcadores itens={COMORBIDADES_NIRSEVIMABE} marcados={comorb} onChange={setComorb} />
         <Opcoes label="Estamos no período sazonal (fevereiro a agosto)?" valor={sazonal} opcoes={[['?', 'Não sei'], ['sim', 'Sim'], ['nao', 'Não']]} onChange={setSazonal} />
-        {nirse.elegivel ? <p>Elegível pelo MS: <strong>{nirse.motivos.join('; ')}</strong>.</p> : <p className="text-muted-foreground">Nenhum critério do MS preenchido com os dados informados.</p>}
+        {nirse.elegivel ? <p>Elegível pelo MS: <strong>{nirse.motivos.join('; ')}</strong>.</p> : <p className="text-tinta-sussurro">Nenhum critério do MS preenchido com os dados informados.</p>}
         {nirse.avisos.map((a) => <Nota key={a}>{a}</Nota>)}
-        <p className="text-muted-foreground">{NIRSEVIMABE.apresentacao}. {NIRSEVIMABE.onde}. {NIRSEVIMABE.transicao}.</p>
+        <p className="text-tinta-sussurro">{NIRSEVIMABE.apresentacao}. {NIRSEVIMABE.onde}. {NIRSEVIMABE.transicao}.</p>
       </Bloco>
 
       <Bloco titulo="Palivizumabe — critério do livro (p. 304), válido na transição de 2026" descricao="Portaria SAS-SCTIE/MS n. 23/2018 citada no livro. &quot;Até 2 anos&quot; lido como até 24 meses completos. Em 2026 vale para quem já iniciou o esquema ou enquanto houver estoque.">
         <Opcoes label="Doença pulmonar crônica da prematuridade" valor={dpc} opcoes={[[false, 'Não'], [true, 'Sim']]} onChange={setDpc} />
         <Opcoes label="Cardiopatia congênita com repercussão hemodinâmica" valor={cardio} opcoes={[[false, 'Não'], [true, 'Sim']]} onChange={setCardio} />
-        {pali.length > 0 ? <p>Critério(s) do livro presentes: <strong>{pali.join('; ')}</strong>.</p> : <p className="text-muted-foreground">Nenhum critério do livro preenchido com os dados informados.</p>}
+        {pali.length > 0 ? <p>Critério(s) do livro presentes: <strong>{pali.join('; ')}</strong>.</p> : <p className="text-tinta-sussurro">Nenhum critério do livro preenchido com os dados informados.</p>}
       </Bloco>
 
       <Bloco titulo="Diretriz australasiana de bronquiolite — atualização 2025">

@@ -13,16 +13,16 @@ export function LinkReceita() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            {eEmissao ? <FileSignature className="size-5 text-primary" /> : <ScanLine className="size-5 text-primary" />}
+            {eEmissao ? <FileSignature className="size-5 text-acao" /> : <ScanLine className="size-5 text-acao" />}
             {eEmissao ? 'Assinatura de receita' : 'Consulta de receita'}
           </CardTitle>
           <CardDescription>
             Deep link público {eEmissao ? 'de emissão/assinatura' : 'de consulta'} da receita.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
+        <CardContent className="flex flex-col gap-3 text-sm text-tinta-sussurro">
           <p>
-            Token: <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{token ?? '—'}</code>
+            Token: <code className="rounded bg-trilha px-1.5 py-0.5 text-xs">{token ?? '—'}</code>
           </p>
           <p>
             Este link será resolvido por uma <strong>Edge Function</strong> que valida o token e

@@ -137,7 +137,7 @@ function Classificar({ ep, onFim }: { ep: NaFila; onFim: () => void }) {
 
           {/* sinais vitais */}
           <section className="flex flex-col gap-2">
-            <h3 className="text-sm font-semibold text-tinta">Sinais vitais {publico === 'pediatrico' && <span className="font-normal text-muted-foreground">· na pediatria a PA é opcional</span>}</h3>
+            <h3 className="text-sm font-semibold text-tinta">Sinais vitais {publico === 'pediatrico' && <span className="font-normal text-tinta-sussurro">· na pediatria a PA é opcional</span>}</h3>
             <CamposVitais publico={publico} valores={vitais} onChange={(k, v) => setVitais((s) => ({ ...s, [k]: v }))} />
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="flex flex-col gap-1">
@@ -182,14 +182,14 @@ function Classificar({ ep, onFim }: { ep: NaFila; onFim: () => void }) {
               {!fluxo ? (
                 <>
                   <div className="relative">
-                    <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                    <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-tinta-sussurro" />
                     <Input aria-label="Buscar fluxograma" className="pl-8" placeholder="Buscar fluxograma (ex.: dor torácica, febre)" value={busca} onChange={(e) => setBusca(e.target.value)} />
                   </div>
                   <div className="grid gap-1.5 sm:grid-cols-2">
                     {filtrados.map((f) => (
                       <button key={f.id} type="button" onClick={() => { setFluxoId(f.id); setDisc(null) }} className="rounded-controle border border-fio px-3 py-2 text-left text-sm hover:border-acao">
                         <span className="font-medium text-tinta">{f.nome}</span>
-                        {f.inclui && <span className="block text-xs text-muted-foreground">{f.inclui}</span>}
+                        {f.inclui && <span className="block text-xs text-tinta-sussurro">{f.inclui}</span>}
                       </button>
                     ))}
                   </div>
@@ -211,7 +211,7 @@ function Classificar({ ep, onFim }: { ep: NaFila; onFim: () => void }) {
                           className={cn('rounded-controle border px-3 py-1.5 text-left text-sm', disc?.texto === texto ? 'border-acao bg-acao/5' : 'border-fio hover:border-acao')}
                         >
                           <span className="text-tinta">{texto}</span>
-                          {desc && <span className="block text-xs text-muted-foreground">{desc}</span>}
+                          {desc && <span className="block text-xs text-tinta-sussurro">{desc}</span>}
                         </button>
                       ))}
                     </div>
@@ -245,8 +245,8 @@ function Classificar({ ep, onFim }: { ep: NaFila; onFim: () => void }) {
             </div>
           </section>
 
-          {faltando.length > 0 && <p className="text-xs text-muted-foreground">Faltam: {faltando.map((v) => v.rotulo).join(', ')}.</p>}
-          {salvar.error && <p className="text-sm text-destructive">{(salvar.error as Error).message}</p>}
+          {faltando.length > 0 && <p className="text-xs text-tinta-sussurro">Faltam: {faltando.map((v) => v.rotulo).join(', ')}.</p>}
+          {salvar.error && <p className="text-sm text-critico">{(salvar.error as Error).message}</p>}
           <div className="flex justify-end">
             <Button disabled={!pronto || salvar.isPending} onClick={() => salvar.mutate()}>
               {salvar.isPending ? <Spinner className="size-4" /> : <Stethoscope />} Registrar classificação
@@ -296,15 +296,15 @@ export default function Triagem() {
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {fila.isLoading && <Spinner />}
-          {fila.error && <p className="text-sm text-destructive">{(fila.error as Error).message}</p>}
+          {fila.error && <p className="text-sm text-critico">{(fila.error as Error).message}</p>}
           {fila.data?.length === 0 && <Vazio icone={Stethoscope} titulo="Ninguém aguardando triagem" />}
           {fila.data?.map((e, i) => (
             <div key={e.id} className="flex flex-col gap-2 rounded-controle border border-fio p-3">
             <button type="button" onClick={() => setAtual(e)} className="flex items-start gap-3 text-left hover:text-acao">
-              <span className="w-5 shrink-0 text-right text-sm tabular-nums text-muted-foreground">{i + 1}</span>
+              <span className="w-5 shrink-0 text-right text-sm tabular-nums text-tinta-sussurro">{i + 1}</span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-tinta">{e.paciente?.nome_social || e.paciente?.nome}</span>
-                <span className="block text-xs text-muted-foreground">
+                <span className="block text-xs text-tinta-sussurro">
                   {e.paciente?.data_nascimento ? rotuloIdade(e.paciente.data_nascimento, hoje()) : 'idade não informada'} · chegou {hora(e.chegada_em)} · {e.queixa}
                 </span>
                 {e.prioridades_legais.length > 0 && (

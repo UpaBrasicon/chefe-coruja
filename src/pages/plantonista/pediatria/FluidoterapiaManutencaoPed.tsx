@@ -65,13 +65,13 @@ export function FluidoterapiaManutencaoPed() {
           return (
             <div key={s.id} className="rounded-lg border px-3 py-2 tabular-nums">
               <div className="font-medium">{s.nome}</div>
-              <div className="text-muted-foreground">
+              <div className="text-tinta-sussurro">
                 SG 5% {s.sg5Ml} mL + NaCl 20% {s.nacl20Ml} mL + KCl 19,1% {s.kcl191Ml} mL ({br(c.volumeMl, 0)} mL)
               </div>
               <div>
                 Livro: Na {s.livro.na} · K {s.livro.k} · Cl {s.livro.cl} mEq · osm {s.livro.osm} mOsm/L · glicose {s.livro.glicoseG} g
               </div>
-              <div className="text-muted-foreground">
+              <div className="text-tinta-sussurro">
                 Pelo preparo: Na {br(c.naMeq, 0)} · K {br(c.kMeq, 0)} · Cl {br(c.clMeq, 0)} mEq no frasco (Na {br(c.naMeqL, 0)} mEq/L) · osm ≈ {br(c.osmMOsmL, 0)} mOsm/L
               </div>
             </div>
@@ -84,7 +84,7 @@ export function FluidoterapiaManutencaoPed() {
         <div className="overflow-x-auto">
           <table className="w-full text-left tabular-nums">
             <thead>
-              <tr className="text-muted-foreground">
+              <tr className="text-tinta-sussurro">
                 <th className="py-1 pr-3 font-medium">Solução</th>
                 <th className="py-1 pr-3 font-medium">Na</th>
                 <th className="py-1 pr-3 font-medium">K</th>

@@ -16,7 +16,7 @@ function TabelaCalibres({ itens, comFrench }: { itens: Calibre[]; comFrench?: bo
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm tabular-nums">
-        <thead><tr className="text-left text-muted-foreground"><th className="pr-3">Calibre</th><th className="pr-3">Cor</th><th className="pr-3">Diâmetro</th>{comFrench && <th>≈ French</th>}</tr></thead>
+        <thead><tr className="text-left text-tinta-sussurro"><th className="pr-3">Calibre</th><th className="pr-3">Cor</th><th className="pr-3">Diâmetro</th>{comFrench && <th>≈ French</th>}</tr></thead>
         <tbody>
           {itens.map((c) => (
             <tr key={c.gauge} className="border-t">

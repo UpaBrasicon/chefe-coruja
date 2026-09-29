@@ -30,7 +30,7 @@ export function HeparinaNaoFracionadaAdulto() {
       <CampoPeso id="hnf-peso" peso={peso} onChange={setPeso}>
         <NumberField id="hnf-conc" label="Concentração do seu preparo (opcional)" unit="UI/mL" value={conc} onChange={setConc} min={0} />
       </CampoPeso>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-tinta-sussurro">
         O manual não traz diluição da heparina EV. O mL/h só aparece com a concentração do preparo informada acima.
       </p>
 
@@ -59,9 +59,9 @@ export function HeparinaNaoFracionadaAdulto() {
               {' → '}<strong>{br(aj.novaInfusaoUIKgH)} UI/kg/h = {br(aj.novaInfusaoUIH, 0)} UI/h</strong>{comMl(aj.novaInfusaoUIH, conc)}
             </p>
           </div>
-        ) : <p className="text-sm text-muted-foreground">Informe peso e TTPA.</p>}
+        ) : <p className="text-sm text-tinta-sussurro">Informe peso e TTPA.</p>}
         <table className="w-full text-sm">
-          <thead><tr className="text-left text-muted-foreground"><th>TTPA</th><th>Novo bolus</th><th>Ajustar infusão</th></tr></thead>
+          <thead><tr className="text-left text-tinta-sussurro"><th>TTPA</th><th>Novo bolus</th><th>Ajustar infusão</th></tr></thead>
           <tbody>
             {NOMOGRAMA_TTPA.map((l) => (
               <tr key={l.faixa} className={aj?.linha === l ? 'font-semibold' : undefined}>
@@ -72,7 +72,7 @@ export function HeparinaNaoFracionadaAdulto() {
             ))}
           </tbody>
         </table>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-tinta-sussurro">
           TTPA fracionado entre duas faixas (p. ex. 45,5 s) é lido pela faixa seguinte (46–70 s). O manual não traz o intervalo de coleta do TTPA nem dose máxima de bolus.
         </p>
       </Bloco>

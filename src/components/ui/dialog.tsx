@@ -26,7 +26,7 @@ function DialogOverlay({ className, ...props }: React.ComponentProps<typeof Dial
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-[rgba(15,23,42,0.42)] duration-150 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 isolate z-50 bg-[rgba(15,23,42,0.42)] duration-150 data-open:animate-cc-scrim data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -48,7 +48,7 @@ function DialogContent({
         className={cn(
           // max-height + rolagem: sem isso os botões de diálogos altos caem
           // abaixo da dobra (bug real registrado no handoff, 09-comum-casca §8).
-          "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-cartao border border-fio bg-superficie p-5 text-apoio text-tinta shadow-dialogo duration-200 outline-none sm:max-w-[420px] data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-cartao border border-fio bg-superficie p-5 text-apoio text-tinta shadow-dialogo duration-200 outline-none sm:max-w-[420px] data-open:animate-cc-dlg data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
         {...props}
@@ -84,7 +84,7 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
+        "-mx-5 -mb-5 mt-1 flex flex-col-reverse gap-2 rounded-b-cartao border-t border-trilha bg-campo px-5 py-3.5 sm:flex-row sm:justify-end",
         className
       )}
       {...props}
@@ -101,7 +101,7 @@ function DialogTitle({ className, ...props }: React.ComponentProps<typeof Dialog
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("font-heading text-base leading-none font-medium", className)}
+      className={cn("text-secao leading-[1.3] font-semibold tracking-[-0.01em] text-tinta", className)}
       {...props}
     />
   )
@@ -115,7 +115,7 @@ function DialogDescription({
     <DialogPrimitive.Description
       data-slot="dialog-description"
       className={cn(
-        "text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
+        "text-apoio leading-[1.5] text-tinta-apoio *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-tinta",
         className
       )}
       {...props}

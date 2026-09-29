@@ -58,6 +58,7 @@ const MeuPlantao = lazy(() => import('@/pages/MeuPlantao'))
 const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome'))
 const SectionHome = lazy(() => import('@/pages/plantonista/SectionHome'))
 const ToolRouter = lazy(() => import('@/pages/plantonista/ToolRouter').then((m) => ({ default: m.ToolRouter })))
+const PreferenciasPrescricao = lazy(() => import('@/pages/PreferenciasPrescricao'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -271,6 +272,8 @@ export default function App() {
                         <Route path="/plantao" element={<PlantaoHome />} />
                         <Route path="/plantao/:secao" element={<PlantaoSectionHome />} />
                         <Route path="/plantao/:secao/:tool" element={<PlantaoToolRouter />} />
+                        {/* Favoritos de prescrição pessoais (D6); o link fica no menu do usuário */}
+                        <Route path="/preferencias-prescricao" element={<PreferenciasPrescricao />} />
                       </Route>
                     </Route>
 

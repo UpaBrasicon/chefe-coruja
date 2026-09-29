@@ -43,7 +43,7 @@ export function DesmameVmAdulto() {
         <ul className="flex flex-col gap-1">{objetivos.map((o) => <li key={o.texto}>{o.texto}: <strong>{marca(o.atende)}</strong></li>)}</ul>
         <p className="font-medium">Outros objetivos (Figura 5)</p>
         <ul className="list-disc pl-5">{DESMAME_OUTROS.map((i) => <li key={i}>{i}</li>)}</ul>
-        <p className="text-muted-foreground">"PEEP ≤ 5 a 8 cmH2O" é impresso assim; a tela mostra a posição em relação aos dois números.</p>
+        <p className="text-tinta-sussurro">"PEEP ≤ 5 a 8 cmH2O" é impresso assim; a tela mostra a posição em relação aos dois números.</p>
       </Bloco>
 
       <Bloco titulo="Teste de respiração espontânea" descricao={`PSV ${faixaBr(DESMAME.tre.psv, 0)} cmH2O por ${faixaBr(DESMAME.tre.minutos, 0)} min (Figura 5).`}>
@@ -58,7 +58,7 @@ export function DesmameVmAdulto() {
           : <p>Nenhum critério numérico de falência da Figura 5 nos valores informados (FC &gt; 140, FR &gt; 35, SatO2 &lt; 90%, PAS &gt; 180 ou &lt; 90).</p>)}
         <p className="font-medium">Critérios clínicos de falência (Figura 5)</p>
         <ul className="list-disc pl-5">{FALHA_TRE_CLINICA.map((i) => <li key={i}>{i}</li>)}</ul>
-        <p className="text-muted-foreground">No fluxograma do livro, qualquer critério presente leva ao ramo de não extubar (reiniciar sedação se necessário e reajustar a VM); nenhum, ao ramo de extubação. A decisão é da equipe.</p>
+        <p className="text-tinta-sussurro">No fluxograma do livro, qualquer critério presente leva ao ramo de não extubar (reiniciar sedação se necessário e reajustar a VM); nenhum, ao ramo de extubação. A decisão é da equipe.</p>
       </Bloco>
     </ToolLayout>
   )

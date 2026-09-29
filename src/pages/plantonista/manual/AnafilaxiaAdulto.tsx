@@ -70,7 +70,7 @@ export function AnafilaxiaAdulto() {
 
       <Bloco titulo="Volume no choque">
         <LinhaManual nome="Cristaloide" texto="10 a 20 mL por kg de peso nos primeiros minutos, por acesso calibroso" conta={vol ? <strong>{faixa(vol, 0)} mL</strong> : 'informe o peso'} pagina="p. 177" />
-        {CUIDADOS_ANAFILAXIA.map((c) => <p key={c.texto} className="text-sm text-muted-foreground">{c.texto} ({c.pagina}).</p>)}
+        {CUIDADOS_ANAFILAXIA.map((c) => <p key={c.texto} className="text-sm text-tinta-sussurro">{c.texto} ({c.pagina}).</p>)}
       </Bloco>
 
       <Bloco titulo="Segunda linha" descricao="Doses de adulto do capítulo. As doses por kg que o capítulo dá para criança não entram nesta tela.">

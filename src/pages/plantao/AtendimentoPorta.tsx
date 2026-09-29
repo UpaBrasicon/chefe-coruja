@@ -24,6 +24,7 @@ import { BotaoChamar } from '@/components/porta/Chamada'
 import { SepsePorta } from '@/components/internacao/LeitoAberto'
 import { PrescricaoEstruturada } from '@/components/prescricao/PrescricaoEstruturada'
 import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
+import { BotaoEpisodiosAnteriores } from '@/components/prontuario/GavetaEpisodios'
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 
 // Atendimento médico no Pronto Socorro (Fase 2.4): fila médica (cor → 80+ →
@@ -52,7 +53,7 @@ function Espera({ desde, cor, agora }: { desde: string; cor: CorRisco; agora: nu
   const min = Math.max(0, Math.round((agora - Date.parse(desde)) / 60_000))
   const acima = min > ALVO_MIN[cor]
   return (
-    <span className={cn('text-xs tabular-nums', acima ? 'font-semibold text-critico' : 'text-muted-foreground')}>
+    <span className={cn('text-xs tabular-nums', acima ? 'font-semibold text-critico' : 'text-tinta-sussurro')}>
       espera {min >= 60 ? `${Math.floor(min / 60)}h${String(min % 60).padStart(2, '0')}` : `${min} min`} · alvo {ALVO_MIN[cor]} min
     </span>
   )
@@ -222,6 +223,8 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
           <div className="flex flex-wrap items-center gap-2">
             <PilulaRisco cor={ultimaCls?.cor ?? ep.cor_atual} detalhe />
             <CardTitle className="text-base">{nomeDe(ep)}</CardTitle>
+            {/* D5: passagens anteriores; só depois de abrir o atendimento (prontuário aberto no servidor) */}
+            {aberto && <BotaoEpisodiosAnteriores pacienteId={ep.paciente_id} nome={nomeDe(ep)} className="ml-auto" />}
           </div>
           <CardDescription>
             {ep.paciente?.data_nascimento ? rotuloIdade(ep.paciente.data_nascimento, hoje()) : 'idade não informada'}
@@ -233,7 +236,7 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {abrir.isPending && <Spinner />}
-          {abrir.error && <p className="text-sm text-destructive">{(abrir.error as Error).message}</p>}
+          {abrir.error && <p className="text-sm text-critico">{(abrir.error as Error).message}</p>}
           {dados.data && (
             <>
               <section className="flex flex-col gap-1 text-sm">
@@ -243,7 +246,7 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
                     <PilulaRisco cor={c.cor} className="mr-2" />
                     {c.reclassificacao ? `Reclassificado pelo médico: ${c.motivo}` : `${c.fluxograma_nome} · ${c.discriminador}`}
                     {c.justificativa && ` · justificativa: ${c.justificativa}`}
-                    <span className="text-xs text-muted-foreground"> · {hora(c.criado_em)}</span>
+                    <span className="text-xs text-tinta-sussurro"> · {hora(c.criado_em)}</span>
                   </div>
                 ))}
                 {vitaisRecentes.size > 0 && (
@@ -262,7 +265,7 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
                   <h3 className="font-semibold text-tinta">Registros do atendimento</h3>
                   {dados.data.soaps.map((s) => (
                     <div key={s.id} className="rounded-controle border border-fio p-2 text-tinta-apoio">
-                      <div className="text-xs text-muted-foreground">{hora(s.criado_em)}{s.cid && ` · CID ${s.cid}`}</div>
+                      <div className="text-xs text-tinta-sussurro">{hora(s.criado_em)}{s.cid && ` · CID ${s.cid}`}</div>
                       {s.subjetivo && <p><strong>S</strong> {s.subjetivo}</p>}
                       {s.objetivo && <p><strong>O</strong> {s.objetivo}</p>}
                       {s.avaliacao && <p><strong>A</strong> {s.avaliacao}</p>}
@@ -291,7 +294,7 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
                 <Label htmlFor="soap-cid">CID-10</Label>
                 <Input id="soap-cid" placeholder="Ex.: J45.9" value={soap.cid} onChange={(e) => setSoap((x) => ({ ...x, cid: e.target.value.toUpperCase() }))} />
               </div>
-              {salvarSoap.error && <p className="text-sm text-destructive">{(salvarSoap.error as Error).message}</p>}
+              {salvarSoap.error && <p className="text-sm text-critico">{(salvarSoap.error as Error).message}</p>}
               <Button className="justify-self-end" disabled={salvarSoap.isPending || !Object.entries(soap).some(([k, v]) => k !== 'cid' && v.trim())} onClick={() => salvarSoap.mutate()}>
                 <ClipboardCheck /> Registrar
               </Button>
@@ -322,16 +325,16 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
               <CardDescription>Cada emissão é gravada no episódio com número próprio antes de ir para o papel. Sem conexão, sai a folha provisória.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-sm">
-              {(dados.data?.documentos ?? []).length === 0 && <p className="text-muted-foreground">Nenhum documento emitido neste episódio.</p>}
+              {(dados.data?.documentos ?? []).length === 0 && <p className="text-tinta-sussurro">Nenhum documento emitido neste episódio.</p>}
               {(dados.data?.documentos ?? []).map((d) => (
                 <div key={d.id} className="flex flex-wrap items-baseline justify-between gap-2 border-b border-fio pb-1 last:border-0">
                   <span className="text-tinta">
                     {NOME_DOC[d.tipo_documento] ?? d.tipo_documento}
                     {d.versao > 1 && ` (versão ${d.versao})`}
-                    {d.estado === 'retificado' && <span className="text-muted-foreground"> · retificado</span>}
+                    {d.estado === 'retificado' && <span className="text-tinta-sussurro"> · retificado</span>}
                     {d.sem_conexao && <Badge variant="outline" className="ml-2">sem conexão</Badge>}
                   </span>
-                  <span className="text-xs tabular-nums text-muted-foreground">nº {d.numero ?? '—'} · {hora(d.emitido_em ?? d.created_at)}</span>
+                  <span className="text-xs tabular-nums text-tinta-sussurro">nº {d.numero ?? '—'} · {hora(d.emitido_em ?? d.created_at)}</span>
                 </div>
               ))}
               <div className="flex flex-wrap gap-2">
@@ -364,7 +367,7 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
                   </div>
                   <Input aria-label="Motivo" placeholder="Motivo (mínimo de 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
                   {baixando && <Input aria-label="Justificativa" placeholder="Justificativa para baixar a prioridade (mínimo de 20 letras)" value={justif} onChange={(e) => setJustif(e.target.value)} />}
-                  {salvarReclass.error && <p className="text-sm text-destructive">{(salvarReclass.error as Error).message}</p>}
+                  {salvarReclass.error && <p className="text-sm text-critico">{(salvarReclass.error as Error).message}</p>}
                   <div className="flex gap-2">
                     <Button variant="ghost" onClick={() => setReclass(false)}>Cancelar</Button>
                     <Button
@@ -398,13 +401,13 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
                 <Textarea aria-label="Relato" rows={2} placeholder="Descreva o ocorrido (mínimo de 15 letras)" value={relato} onChange={(e) => setRelato(e.target.value)} />
               )}
               {desfecho === 'observacao' && (
-                <p className="text-xs text-muted-foreground">O paciente vai para o primeiro box livre da Observação, com prazo de 6 horas para a conduta (alta ou internação). Sem box livre, fica na Observação aguardando box.</p>
+                <p className="text-xs text-tinta-sussurro">O paciente vai para o primeiro box livre da Observação, com prazo de 6 horas para a conduta (alta ou internação). Sem box livre, fica na Observação aguardando box.</p>
               )}
               {desfecho === 'internacao' && (
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div className="flex flex-col gap-1">
                     <Label htmlFor="int-setor">Setor de internação</Label>
-                    <select id="int-setor" className="h-8 rounded-controle border border-fio bg-background px-2 text-sm" value={setorInternacao}
+                    <select id="int-setor" className="h-8 rounded-controle border border-fio bg-campo px-2 text-sm" value={setorInternacao}
                       onChange={(e) => { setSetorInternacao(e.target.value); setLeitoInternacao('') }}>
                       <option value="">Escolha…</option>
                       {(destinosInternacao.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}
@@ -412,7 +415,7 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
                   </div>
                   <div className="flex flex-col gap-1">
                     <Label htmlFor="int-leito">Leito (opcional)</Label>
-                    <select id="int-leito" className="h-8 rounded-controle border border-fio bg-background px-2 text-sm" value={leitoInternacao}
+                    <select id="int-leito" className="h-8 rounded-controle border border-fio bg-campo px-2 text-sm" value={leitoInternacao}
                       onChange={(e) => setLeitoInternacao(e.target.value)} disabled={!setorInternacao}>
                       <option value="">Definir depois</option>
                       {leitosLivres.map((l) => <option key={l.id} value={l.id}>{l.identificador}</option>)}
@@ -420,7 +423,7 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
                   </div>
                 </div>
               )}
-              {salvarDesfecho.error && <p className="text-sm text-destructive">{(salvarDesfecho.error as Error).message}</p>}
+              {salvarDesfecho.error && <p className="text-sm text-critico">{(salvarDesfecho.error as Error).message}</p>}
               <Button className="self-end" disabled={!desfecho || (desfecho === 'internacao' && !setorInternacao) || salvarDesfecho.isPending} onClick={() => salvarDesfecho.mutate()}>Registrar desfecho</Button>
             </CardContent>
           </Card>
@@ -468,16 +471,16 @@ export default function AtendimentoPorta() {
       <Card>
         <CardContent className="flex flex-col gap-2 pt-4">
           {fila.isLoading && <Spinner />}
-          {fila.error && <p className="text-sm text-destructive">{(fila.error as Error).message}</p>}
+          {fila.error && <p className="text-sm text-critico">{(fila.error as Error).message}</p>}
           {fila.data?.length === 0 && <Vazio icone={Stethoscope} titulo="Ninguém aguardando atendimento" />}
           {fila.data?.map((e, i) => (
             <div key={e.id} className="flex flex-col gap-2 rounded-controle border border-fio p-3">
               <div className="flex items-start gap-3">
-                <span className="w-5 shrink-0 text-right text-sm tabular-nums text-muted-foreground">{i + 1}</span>
+                <span className="w-5 shrink-0 text-right text-sm tabular-nums text-tinta-sussurro">{i + 1}</span>
                 <PilulaRisco cor={e.cor_atual} />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium text-tinta">{nomeDe(e)}{e.atendimento_iniciado_em && <Badge variant="outline" className="ml-2">em atendimento</Badge>}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-tinta-sussurro">
                     {e.paciente?.data_nascimento ? rotuloIdade(e.paciente.data_nascimento, hoje()) : 'idade não informada'} · {e.queixa}
                   </div>
                   {!e.atendimento_iniciado_em && <Espera desde={e.classificado_em} cor={e.cor_atual} agora={agora} />}

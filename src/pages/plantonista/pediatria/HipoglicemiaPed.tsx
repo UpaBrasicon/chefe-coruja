@@ -45,7 +45,7 @@ export function HipoglicemiaPed() {
           <p className="tabular-nums">
             0,3 g/kg: <strong>{br(oral)} g</strong>
           </p>
-          <ul className="text-muted-foreground">
+          <ul className="text-tinta-sussurro">
             {OPCOES_ORAIS.map((o) => (
               <li key={o.nome}>
                 {o.nome}: {br(o.g)} g por {o.porcao} → ≈ {br(oral / o.g)} × ({o.porcao})
@@ -66,7 +66,7 @@ export function HipoglicemiaPed() {
                 texto={`${faixaBr(l.mlKg, 0)} mL/kg${l.maxMl ? ` (máx. ${l.maxMl} mL)` : ''}${l.preparo ? `; preparo: ${l.preparo}` : ''}`}
                 conta={
                   <>
-                    <strong>{faixaBr(r.ml, 0)} mL</strong> <span className="text-muted-foreground">= {faixaBr(r.g, 1)} g</span>
+                    <strong>{faixaBr(r.ml, 0)} mL</strong> <span className="text-tinta-sussurro">= {faixaBr(r.g, 1)} g</span>
                     {r.limitada && <span className="text-atencao"> (máximo)</span>}
                   </>
                 }

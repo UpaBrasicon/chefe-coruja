@@ -16,7 +16,7 @@ const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
 
 const botao = (ativo: boolean) =>
-  cn('rounded-md border px-2.5 py-1.5 text-left text-sm transition-colors', ativo ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50')
+  cn('rounded-md border px-2.5 py-1.5 text-left text-sm transition-colors', ativo ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')
 
 /** Reversão de anticoagulação e HIP do adulto (caps. 39 e 79 do manual do HCFMUSP). */
 export function ReversaoAnticoagulacaoAdulto() {
@@ -50,7 +50,7 @@ export function ReversaoAnticoagulacaoAdulto() {
             <button key={v} type="button" aria-pressed={sang === v} onClick={() => setSang(v)} className={botao(sang === v)}>{r}</button>
           ))}
         </div>
-        {!varf ? <p className="text-sm text-muted-foreground">Informe o INR.</p> : (
+        {!varf ? <p className="text-sm text-tinta-sussurro">Informe o INR.</p> : (
           <>
             {varf.linhas.map((l) => (
               <div key={l.inr + l.sangramento} className="rounded-lg border px-3 py-2 text-sm">
@@ -73,7 +73,7 @@ export function ReversaoAnticoagulacaoAdulto() {
         <LinhaManual nome="Crioprecipitado" texto={CRIOPRECIPITADO.texto} conta={crio !== null ? <><strong>{br(crio)} unidades</strong> (~ +50 mg/dL)</> : 'informe o peso'} pagina={CRIOPRECIPITADO.pagina} />
         <div className="text-sm">
           <p className="font-medium">Vitamina K1</p>
-          <ul className="list-disc pl-5">{VITAMINA_K.map((v) => <li key={v.contexto}>{v.contexto}: {v.texto} <span className="text-muted-foreground">({v.pagina})</span></li>)}</ul>
+          <ul className="list-disc pl-5">{VITAMINA_K.map((v) => <li key={v.contexto}>{v.contexto}: {v.texto} <span className="text-tinta-sussurro">({v.pagina})</span></li>)}</ul>
           <p className="text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_VITAMINA_K}</p>
         </div>
       </Bloco>
@@ -91,7 +91,7 @@ export function ReversaoAnticoagulacaoAdulto() {
         </div>
         {prot ? (
           <p className="text-sm"><strong>{faixa(prot.mg, 1)} mg</strong>{prot.limitadoAoTeto && ' (no teto de 50 mg)'} = {faixa(prot.ampolas, 2)} ampola(s) de 50 mg</p>
-        ) : <p className="text-sm text-muted-foreground">Informe as unidades de heparina.</p>}
+        ) : <p className="text-sm text-tinta-sussurro">Informe as unidades de heparina.</p>}
         <p className="text-sm text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{PROTAMINA_REVERSAO.errata}</p>
       </Bloco>
 
@@ -99,8 +99,8 @@ export function ReversaoAnticoagulacaoAdulto() {
         {REVERSAO_DOAC.map((d) => (
           <div key={d.droga} className="rounded-lg border px-3 py-2 text-sm">
             <p className="font-medium">{d.droga}</p>
-            <p><span className="text-muted-foreground">Sangramento maior:</span> {d.maior.join('; ')}</p>
-            <p><span className="text-muted-foreground">Sangramento menor:</span> {d.menor.join('; ')}</p>
+            <p><span className="text-tinta-sussurro">Sangramento maior:</span> {d.maior.join('; ')}</p>
+            <p><span className="text-tinta-sussurro">Sangramento menor:</span> {d.menor.join('; ')}</p>
           </div>
         ))}
         <p className="text-sm text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_DOAC}</p>
@@ -112,7 +112,7 @@ export function ReversaoAnticoagulacaoAdulto() {
         </div>
         {pasHip && <p className="text-sm">{pasHip}</p>}
         <ul className="flex flex-col gap-1 text-sm">
-          {HIP_METAS.map((m) => <li key={m.texto}>{m.texto} <span className="text-muted-foreground">({m.pagina})</span></li>)}
+          {HIP_METAS.map((m) => <li key={m.texto}>{m.texto} <span className="text-tinta-sussurro">({m.pagina})</span></li>)}
         </ul>
         <p className="text-sm text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_HIP_CIRURGIA}</p>
       </Bloco>

@@ -21,7 +21,7 @@ export function SindromeAorticaAdulto() {
     >
       <Bloco titulo="Alvo na dissecção de aorta (cap. 19, Tabela 4, p. 274)">
         <LinhaManual nome="Dissecção de aorta" texto={<>alvo: {disseccao.alvo}. Tempo: {disseccao.tempo}</>} pagina="Tabela 4, p. 274" errata={disseccao.errata} />
-        <p className="text-sm text-muted-foreground">Esmolol e nitroprussiato com mL/h: tela de emergência hipertensiva. Risco pelo ADD-RS: tela própria.</p>
+        <p className="text-sm text-tinta-sussurro">Esmolol e nitroprussiato com mL/h: tela de emergência hipertensiva. Risco pelo ADD-RS: tela própria.</p>
       </Bloco>
 
       <Bloco titulo="Cortes e prognóstico">
@@ -34,9 +34,9 @@ export function SindromeAorticaAdulto() {
         </div>
         {cm > 0 && (linha
           ? <p className="tabular-nums">Faixa &gt; {linha.acimaDeCm.toLocaleString('pt-BR')} cm: ruptura {linha.ruptura}, dissecção {linha.disseccao}, morte {linha.morte}, total {linha.total} ao ano.</p>
-          : <p className="text-muted-foreground">Até 3,5 cm a Tabela 3 não tem linha.</p>)}
+          : <p className="text-tinta-sussurro">Até 3,5 cm a Tabela 3 não tem linha.</p>)}
         <table className="w-full text-sm tabular-nums">
-          <thead><tr className="text-left text-muted-foreground"><th>Tamanho</th><th>Ruptura</th><th>Dissecção</th><th>Morte</th><th>Total</th></tr></thead>
+          <thead><tr className="text-left text-tinta-sussurro"><th>Tamanho</th><th>Ruptura</th><th>Dissecção</th><th>Morte</th><th>Total</th></tr></thead>
           <tbody>
             {COMPLICACOES_DIAMETRO.map((l) => (
               <tr key={l.acimaDeCm} className={linha?.acimaDeCm === l.acimaDeCm ? 'font-semibold' : ''}>

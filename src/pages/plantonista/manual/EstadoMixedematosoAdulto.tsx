@@ -23,7 +23,7 @@ export function EstadoMixedematosoAdulto() {
         {REPOSICAO_MIXEDEMA.map((d) => (
           <LinhaManual key={d.droga} nome={d.droga} texto={d.texto} pagina={d.pagina} errata={d.errata} conta={conta[d.droga] && <strong>{conta[d.droga]}</strong>} />
         ))}
-        <p className="text-muted-foreground">Via EV idealmente; com disponibilidade limitada, VO ou por sonda (p. 961).</p>
+        <p className="text-tinta-sussurro">Via EV idealmente; com disponibilidade limitada, VO ou por sonda (p. 961).</p>
       </Bloco>
 
       <Bloco titulo="Suporte (Tabela 5)">

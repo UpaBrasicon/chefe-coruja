@@ -4188,6 +4188,60 @@ export type Database = {
         }
         Relationships: []
       }
+      preferencias_prescricao: {
+        Row: {
+          classe_alergenica: string | null
+          created_at: string
+          dose: string | null
+          id: string
+          medicamento_id: string
+          perfil_id: string
+          posologia: string
+          quantidade: string | null
+          updated_at: string
+          via: string | null
+        }
+        Insert: {
+          classe_alergenica?: string | null
+          created_at?: string
+          dose?: string | null
+          id?: string
+          medicamento_id: string
+          perfil_id?: string
+          posologia: string
+          quantidade?: string | null
+          updated_at?: string
+          via?: string | null
+        }
+        Update: {
+          classe_alergenica?: string | null
+          created_at?: string
+          dose?: string | null
+          id?: string
+          medicamento_id?: string
+          perfil_id?: string
+          posologia?: string
+          quantidade?: string | null
+          updated_at?: string
+          via?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preferencias_prescricao_medicamento_id_fkey"
+            columns: ["medicamento_id"]
+            isOneToOne: false
+            referencedRelation: "medicamento"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "preferencias_prescricao_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prescricao_itens: {
         Row: {
           autor_id: string | null

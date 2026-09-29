@@ -98,15 +98,15 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       {!embutido && (
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/" className="transition-colors hover:text-foreground">
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/" className="transition-colors hover:text-tinta">
               Início
             </Link>
             <ChevronRight className="size-3.5" />
-            <span className="font-medium text-foreground">Extrato Financeiro</span>
+            <span className="font-medium text-tinta">Extrato Financeiro</span>
           </div>
           <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Extrato Financeiro</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             Valores por plantão calculados a partir da escala e das remunerações configuradas pela unidade.
           </p>
         </div>
@@ -114,11 +114,11 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted-foreground">De</label>
+          <label className="text-xs font-medium text-tinta-sussurro">De</label>
           <Input type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} className="w-40" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Até</label>
+          <label className="text-xs font-medium text-tinta-sussurro">Até</label>
           <Input type="date" value={fim} onChange={(e) => setFim(e.target.value)} className="w-40" />
         </div>
         <Button variant="outline" onClick={baixarRecibo} disabled={(linhas ?? []).length === 0}>
@@ -129,7 +129,7 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Wallet className="size-4 text-muted-foreground" />
+            <Wallet className="size-4 text-tinta-sussurro" />
             Plantões no período
           </CardTitle>
           <CardDescription>{perfil?.nome_completo}</CardDescription>
@@ -140,7 +140,7 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
               <Spinner />
             </div>
           ) : (linhas ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-tinta-sussurro">
               Nenhum plantão no período ou valores ainda não configurados.
             </p>
           ) : (
@@ -151,7 +151,7 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
                     <span className="font-medium">
                       {new Date(l.data + 'T12:00:00').toLocaleDateString('pt-BR')} · {TURNO_LABEL[l.turno] ?? l.turno}
                     </span>
-                    <span className="text-muted-foreground">{l.setor_nome}</span>
+                    <span className="text-tinta-sussurro">{l.setor_nome}</span>
                   </div>
                   <span className="font-semibold">{brl(l.valor || 0)}</span>
                 </div>

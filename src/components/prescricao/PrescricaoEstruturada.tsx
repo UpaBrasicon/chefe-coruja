@@ -119,11 +119,11 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-sm">
           <Alergias pacienteId={pacienteId} lista={alergias.data ?? []} aoMudar={recarregar} aoErro={setErro} />
-          {lista.length === 0 && <p className="text-muted-foreground">Nenhum item prescrito.</p>}
+          {lista.length === 0 && <p className="text-tinta-sussurro">Nenhum item prescrito.</p>}
           {lista.map((i) => <LinhaItem key={i.id} i={i} aoMudar={recarregar} aoErro={setErro} />)}
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <Button size="sm" onClick={() => void imprimir()} disabled={lista.length === 0}><Printer /> Imprimir prescrição</Button>
-            {perfil && <span className="text-xs text-muted-foreground">Autor de cada item: quem prescreveu (login).</span>}
+            {perfil && <span className="text-xs text-tinta-sussurro">Autor de cada item: quem prescreveu (login).</span>}
           </div>
         </CardContent>
       </Card>
@@ -137,8 +137,8 @@ function Alergias({ pacienteId, lista, aoMudar, aoErro }: { pacienteId: string; 
   return (
     <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-2">
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Alergias</span>
-        {lista.length === 0 && <span className="text-muted-foreground">nenhuma registrada</span>}
+        <span className="text-xs font-semibold tracking-wide text-tinta-sussurro uppercase">Alergias</span>
+        {lista.length === 0 && <span className="text-tinta-sussurro">nenhuma registrada</span>}
         {lista.map((a) => <Badge key={a.id} variant="destructive">{a.substancia}{a.reacao ? ` (${a.reacao})` : ''}</Badge>)}
       </div>
       <div className="flex gap-2">
@@ -149,7 +149,7 @@ function Alergias({ pacienteId, lista, aoMudar, aoErro }: { pacienteId: string; 
           aoErro(null); setNova(''); aoMudar()
         }}>Registrar</Button>
       </div>
-      <p className="text-xs text-muted-foreground">Alergia registrada trava o item do medicamento correspondente. Nada a contorna.</p>
+      <p className="text-xs text-tinta-sussurro">Alergia registrada trava o item do medicamento correspondente. Nada a contorna.</p>
     </div>
   )
 }
@@ -163,8 +163,8 @@ function LinhaItem({ i, aoMudar, aoErro }: { i: ItemVigente; aoMudar: () => void
         <span className="font-medium text-tinta">{i.descricao}</span>
         {i.tipo === 'medicamento' && <span>{i.dose} · {i.via} · {i.posologia}{i.se_necessario ? ' · se necessário' : ''}</span>}
         {i.vasoativo && <Badge variant="warning">vasoativo</Badge>}
-        {i.peso_kg && <span className="text-xs text-muted-foreground">peso ref. {i.peso_kg} kg</span>}
-        <span className="ml-auto text-xs text-muted-foreground">{i.autor} · {hora(i.criado_em)}</span>
+        {i.peso_kg && <span className="text-xs text-tinta-sussurro">peso ref. {i.peso_kg} kg</span>}
+        <span className="ml-auto text-xs text-tinta-sussurro">{i.autor} · {hora(i.criado_em)}</span>
       </div>
       {i.tipo === 'medicamento' && VIAS_COM_DILUICAO.includes(i.via ?? '') && (
         <p className={`text-xs ${i.diluicao_divergente ? 'text-atencao' : 'text-tinta-apoio'}`}>
@@ -173,7 +173,7 @@ function LinhaItem({ i, aoMudar, aoErro }: { i: ItemVigente; aoMudar: () => void
             : i.diluicao_texto ? <>Diluição padrão v{i.diluicao_versao}: {i.diluicao_texto}</> : 'Sem diluição padrão publicada para esta via.'}
         </p>
       )}
-      {i.observacao && <p className="text-xs text-muted-foreground">{i.observacao}</p>}
+      {i.observacao && <p className="text-xs text-tinta-sussurro">{i.observacao}</p>}
       {i.validacao === 'devolvido' && <p className="text-xs text-critico">Farmácia devolveu para correção: {i.validacao_motivo}</p>}
       {i.validacao === 'confere' && <p className="text-xs text-conforme">Conferido pela farmácia.</p>}
       {suspendendo ? (
@@ -265,7 +265,7 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
               {t === 'medicamento' ? 'Medicamento' : 'Cuidado'}
             </Button>
           ))}
-          {peso && <span className="ml-auto self-center text-xs text-muted-foreground">Último peso: {peso.valor_num} kg ({hora(peso.aferido_em)})</span>}
+          {peso && <span className="ml-auto self-center text-xs text-tinta-sussurro">Último peso: {peso.valor_num} kg ({hora(peso.aferido_em)})</span>}
         </div>
 
         {pedePeso && (
@@ -316,7 +316,7 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
                       <span className="text-tinta-apoio">{[m.apresentacao, m.concentracao].filter(Boolean).join(' · ')}</span>
                     </button>
                   ))}
-                  {resultados.data?.length === 0 && <p className="px-2 py-1 text-xs text-muted-foreground">Nada no cadastro com esse nome.</p>}
+                  {resultados.data?.length === 0 && <p className="px-2 py-1 text-xs text-tinta-sussurro">Nada no cadastro com esse nome.</p>}
                 </div>
               </div>
             )}
@@ -327,7 +327,7 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
               </div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-via">Via *</Label>
-                <select id="item-via" className="h-8 rounded-controle border border-fio bg-background px-2 text-sm" value={f.via}
+                <select id="item-via" className="h-8 rounded-controle border border-fio bg-campo px-2 text-sm" value={f.via}
                   onChange={(e) => setF({ ...f, via: e.target.value })}>
                   <option value="">Escolha…</option>
                   {VIAS.map((v) => <option key={v} value={v}>{v}</option>)}
@@ -346,7 +346,7 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
                 {diluicao.data ? (
                   <p className="text-tinta-apoio">
                     Diluição padrão v{diluicao.data.versao}: {diluicao.data.texto}
-                    <span className="block text-xs text-muted-foreground">Fonte: {diluicao.data.fonte} · revisão {diluicao.data.revisor_crf}</span>
+                    <span className="block text-xs text-tinta-sussurro">Fonte: {diluicao.data.fonte} · revisão {diluicao.data.revisor_crf}</span>
                   </p>
                 ) : (
                   <p className="flex items-center gap-1.5 text-atencao"><AlertTriangle className="size-3.5" /> Sem diluição padrão publicada para {med.principio_ativo} {f.via}.</p>

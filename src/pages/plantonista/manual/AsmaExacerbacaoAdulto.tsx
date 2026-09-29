@@ -52,7 +52,7 @@ export function AsmaExacerbacaoAdulto() {
               <div key={i.parametro} className="rounded-md border px-3 py-1.5">
                 <span className="font-medium">{TABELA1_NUMERICA[i.parametro].rotulo} {br(i.valor)} {TABELA1_NUMERICA[i.parametro].unidade}</span>:{' '}
                 {i.posicao.colunas.length ? i.posicao.colunas.map((c) => `${NOME_COLUNA[c]} (${TABELA1_NUMERICA[i.parametro].texto[c]})`).join(' ou ') : 'sem coluna na tabela'}
-                {i.posicao.nota && <span className="block text-muted-foreground">{i.posicao.nota}</span>}
+                {i.posicao.nota && <span className="block text-tinta-sussurro">{i.posicao.nota}</span>}
               </div>
             ))}
             {pos.maisGrave && <p>Coluna mais à direita atingida por um parâmetro: <strong>{NOME_COLUNA[pos.maisGrave]}</strong>.</p>}
@@ -63,7 +63,7 @@ export function AsmaExacerbacaoAdulto() {
       <Bloco titulo="Tabela 1 — achados clínicos" descricao="p. 407–408">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="text-muted-foreground">
+            <thead className="text-tinta-sussurro">
               <tr><th className="pr-3">Sintoma</th>{COLUNAS.map((c) => <th key={c} className="pr-3">{NOME_COLUNA[c]}</th>)}</tr>
             </thead>
             <tbody>
@@ -105,7 +105,7 @@ export function AsmaExacerbacaoAdulto() {
 
       <Bloco titulo="Ventilação mecânica na asma">
         <Trecho texto={VM_ASMA.texto} pagina={VM_ASMA.pagina} />
-        <p className="text-muted-foreground">O capítulo não traz números de VC, PEEP nem de relação I:E para a asma; os parâmetros iniciais de VM do obstrutivo com número estão na ferramenta de DPOC (p. 425).</p>
+        <p className="text-tinta-sussurro">O capítulo não traz números de VC, PEEP nem de relação I:E para a asma; os parâmetros iniciais de VM do obstrutivo com número estão na ferramenta de DPOC (p. 425).</p>
       </Bloco>
 
       <Bloco titulo="GINA 2026 — gravidade e tratamento (Figura 9, p. 36)" descricao="Usa a FR, a SaO2 e o VEF1/PFE informados acima. Marque os achados clínicos. A classificação segue a Figura 9; a decisão é do médico.">
@@ -120,17 +120,17 @@ export function AsmaExacerbacaoAdulto() {
             <Resultado rotulo="Gravidade pela GINA 2026" valor={<>{g.gravidade}{g.motivos.length ? ` — ${g.motivos.join('; ')}` : ''}</>} />
             <p className="text-sm">{GINA_TRATAMENTO[g.gravidade]}</p>
           </>
-        ) : <p className="text-muted-foreground">Informe SaO2, VEF1/PFE ou marque os achados.</p>}
+        ) : <p className="text-tinta-sussurro">Informe SaO2, VEF1/PFE ou marque os achados.</p>}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">GINA 2026</th><th className="pr-3 pb-2">p.</th><th className="pb-2">Manual do HC</th></tr></thead>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">GINA 2026</th><th className="pr-3 pb-2">p.</th><th className="pb-2">Manual do HC</th></tr></thead>
             <tbody>
               {GINA_ITENS.map((d) => (
                 <tr key={d.tema} className="border-t">
                   <td className="pr-3 py-2 font-medium">{d.tema}</td>
                   <td className="pr-3 py-2">{d.gina}</td>
-                  <td className="pr-3 py-2 whitespace-nowrap text-muted-foreground">{d.pagina}</td>
-                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                  <td className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.pagina}</td>
+                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
                 </tr>
               ))}
             </tbody>
@@ -139,7 +139,7 @@ export function AsmaExacerbacaoAdulto() {
       </Bloco>
 
       <Bloco titulo="Errata e divergências do livro" descricao="As metas de SatO2 de crianças e gestantes do capítulo não entram nesta ferramenta.">
-        <ul className="list-disc pl-5 text-muted-foreground">{ERRATA_ASMA.map((e) => <li key={e}>{e}</li>)}</ul>
+        <ul className="list-disc pl-5 text-tinta-sussurro">{ERRATA_ASMA.map((e) => <li key={e}>{e}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

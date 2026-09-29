@@ -46,10 +46,10 @@ export function SinoAvisos({ unidadeId, habilitado }: { unidadeId?: string; habi
       />
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Positioner side="bottom" align="end" sideOffset={6} className="z-50">
-          <PopoverPrimitive.Popup className="w-80 rounded-xl border bg-popover p-3 text-popover-foreground shadow-lg">
+          <PopoverPrimitive.Popup className="w-80 rounded-xl border bg-superficie p-3 text-tinta shadow-lg">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-sm font-semibold">Últimos avisos</span>
-              <span className="text-xs text-muted-foreground">{lista.length} de {(notificacoes ?? []).length}</span>
+              <span className="text-xs text-tinta-sussurro">{lista.length} de {(notificacoes ?? []).length}</span>
             </div>
             <div className="max-h-72 overflow-y-auto pr-1">
               {isLoading ? (
@@ -57,12 +57,12 @@ export function SinoAvisos({ unidadeId, habilitado }: { unidadeId?: string; habi
                   <Spinner />
                 </div>
               ) : lista.length === 0 ? (
-                <p className="py-6 text-center text-sm text-muted-foreground">Nenhum aviso no momento.</p>
+                <p className="py-6 text-center text-sm text-tinta-sussurro">Nenhum aviso no momento.</p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {lista.map((n) => (
                     <div key={n.id} className={`rounded-lg border p-2 text-sm ${n.lida ? 'bg-campo' : 'bg-atencao/[0.08]'}`}>
-                      <div className="text-xs font-semibold text-muted-foreground">{fmtHora(n.created_at)}</div>
+                      <div className="text-xs font-semibold text-tinta-sussurro">{fmtHora(n.created_at)}</div>
                       <div className="mt-0.5 leading-snug">{n.mensagem}</div>
                     </div>
                   ))}

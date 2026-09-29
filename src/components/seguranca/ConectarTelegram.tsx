@@ -67,14 +67,14 @@ export function ConectarTelegram() {
           <>
             <p className="text-tinta-apoio">Mande este código à Corujinha no Telegram. Vale por 10 minutos e uma vez só:</p>
             <p className="font-mono text-[30px] font-semibold tracking-[0.2em] text-tinta tabular-nums">{codigo.valor}</p>
-            <p className="text-xs text-muted-foreground">Esta página confirma sozinha quando a conexão acontecer.</p>
+            <p className="text-xs text-tinta-sussurro">Esta página confirma sozinha quando a conexão acontecer.</p>
           </>
         ) : (
           <Button className="self-start" disabled={gerar.isPending} onClick={() => gerar.mutate()}>
             Conectar ao Telegram
           </Button>
         )}
-        {(gerar.error || desfazer.error) && <p className="text-destructive">{((gerar.error ?? desfazer.error) as Error).message}</p>}
+        {(gerar.error || desfazer.error) && <p className="text-critico">{((gerar.error ?? desfazer.error) as Error).message}</p>}
       </CardContent>
     </Card>
   )

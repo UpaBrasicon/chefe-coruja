@@ -43,7 +43,7 @@ export function EstadoDeMalAdulto() {
       <Bloco titulo="Tempos do manual" descricao={`Estabilização: ${ESTABILIZACAO_ESTADO_DE_MAL.texto} (${ESTABILIZACAO_ESTADO_DE_MAL.pagina}).`}>
         <ul className="grid gap-1 text-sm md:grid-cols-4">
           {TEMPOS_ESTADO_DE_MAL.map((t) => (
-            <li key={t.etapa} className="rounded-lg border px-3 py-2"><span className="font-medium">{t.etapa}</span><br />{t.janela} <span className="text-muted-foreground">({t.pagina})</span></li>
+            <li key={t.etapa} className="rounded-lg border px-3 py-2"><span className="font-medium">{t.etapa}</span><br />{t.janela} <span className="text-tinta-sussurro">({t.pagina})</span></li>
           ))}
         </ul>
       </Bloco>
@@ -77,7 +77,7 @@ export function EstadoDeMalAdulto() {
             />
           )
         })}
-        <p className="text-sm text-muted-foreground">{DESMAME_ESTADO_DE_MAL.texto} ({DESMAME_ESTADO_DE_MAL.pagina})</p>
+        <p className="text-sm text-tinta-sussurro">{DESMAME_ESTADO_DE_MAL.texto} ({DESMAME_ESTADO_DE_MAL.pagina})</p>
       </Bloco>
     </ToolLayout>
   )

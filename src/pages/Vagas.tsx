@@ -148,15 +148,15 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       {!embutido && (
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/" className="transition-colors hover:text-foreground">
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/" className="transition-colors hover:text-tinta">
               Início
             </Link>
             <ChevronRight className="size-3.5" />
-            <span className="font-medium text-foreground">Vagas de Plantão</span>
+            <span className="font-medium text-tinta">Vagas de Plantão</span>
           </div>
           <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Vagas de Plantão</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             Planteões livres com filtros por unidade, turno, especialidade, distância e valor.
           </p>
         </div>
@@ -168,7 +168,7 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
         </CardHeader>
         <CardContent className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Unidade</label>
+            <label className="text-xs font-medium text-tinta-sussurro">Unidade</label>
             <Select value={unidadeFiltro || null} onValueChange={(v) => setUnidadeFiltro(v ?? '')}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Todas" />
@@ -183,7 +183,7 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
             </Select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Turno</label>
+            <label className="text-xs font-medium text-tinta-sussurro">Turno</label>
             <Select value={turnoFiltro || null} onValueChange={(v) => setTurnoFiltro(v ?? '')}>
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="Todos" />
@@ -196,11 +196,11 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
             </Select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Especialidade</label>
+            <label className="text-xs font-medium text-tinta-sussurro">Especialidade</label>
             <Input value={especialidadeFiltro} onChange={(e) => setEspecialidadeFiltro(e.target.value)} placeholder="Ex.: clínica" className="w-40" />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Distância (km)</label>
+            <label className="text-xs font-medium text-tinta-sussurro">Distância (km)</label>
             <Input type="number" min={0} value={raioKm || ''} onChange={(e) => setRaioKm(Number(e.target.value))} placeholder="Sem limite" className="w-28" />
           </div>
           <Button variant="outline" size="sm" onClick={capturarPosicao}>
@@ -212,7 +212,7 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <BriefcaseBusiness className="size-4 text-muted-foreground" />
+            <BriefcaseBusiness className="size-4 text-tinta-sussurro" />
             {vagasFiltradas.length} vaga(s) disponível(is)
           </CardTitle>
           <CardDescription>Candide-se às vagas de sua preferência.</CardDescription>
@@ -223,7 +223,7 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
               <Spinner />
             </div>
           ) : vagasFiltradas.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhuma vaga encontrada com os filtros atuais.</p>
+            <p className="text-sm text-tinta-sussurro">Nenhuma vaga encontrada com os filtros atuais.</p>
           ) : (
             vagasFiltradas.map((v) => (
               <div key={v.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 text-sm">
@@ -232,7 +232,7 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
                     {new Date(v.data + 'T12:00:00').toLocaleDateString('pt-BR')} · {TURNO_LABEL[v.turno] ?? v.turno}
                     <Badge variant="success">{brl(valorDaVaga(v))}</Badge>
                   </div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">
+                  <div className="mt-0.5 text-xs text-tinta-sussurro">
                     {v.unidades?.nome ?? ''} — {v.setores?.nome ?? ''}
                     {v.setores?.especialidade ? ` · ${v.setores.especialidade}` : ''}
                     {pos && v.unidades?.latitude != null && v.unidades.longitude != null && (

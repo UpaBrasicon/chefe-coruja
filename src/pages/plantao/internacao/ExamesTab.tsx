@@ -83,7 +83,7 @@ export function ExamesTab({
                 key={ex}
                 type="button"
                 onClick={() => adicionarSugerido(ex)}
-                className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:border-primary hover:bg-primary/5"
+                className="rounded-lg border border-fio bg-campo px-2.5 py-1 text-xs font-medium text-tinta transition-colors hover:border-acao hover:bg-acao/5"
               >
                 + {ex}
               </button>
@@ -104,7 +104,7 @@ export function ExamesTab({
               <Plus /> Adicionar
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-tinta-sussurro">
             Dica: use Enter ou o botão Imprimir abaixo para gerar o pedido em folha de exames (paisagem).
           </p>
         </CardContent>
@@ -131,7 +131,7 @@ export function ExamesTab({
             <Button onClick={imprimir} disabled={!exames.texto.trim()}>
               <Printer /> Imprimir Pedido
             </Button>
-            <span className="text-xs text-muted-foreground">salvo automaticamente</span>
+            <span className="text-xs text-tinta-sussurro">salvo automaticamente</span>
           </div>
         </CardContent>
       </Card>

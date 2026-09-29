@@ -38,7 +38,7 @@ export function VmObstruidoGraveAdulto() {
           <Resultado rotulo="PCV · VCV" valor="Tins ≤ 1 s · fluxo ≥ 60 L/min" />
           <Resultado rotulo="Alarmes" valor="evitar Pplatô > 30 e Ppico > 45 cmH2O" />
         </div>
-        <p className="text-muted-foreground">p. 505: tolera-se hipercapnia se pH &gt; 7,2; evita-se I:E &gt; 1:5 (retenção de CO2); deterioração rápida → pensar em pneumotórax hipertensivo por barotrauma.</p>
+        <p className="text-tinta-sussurro">p. 505: tolera-se hipercapnia se pH &gt; 7,2; evita-se I:E &gt; 1:5 (retenção de CO2); deterioração rápida → pensar em pneumotórax hipertensivo por barotrauma.</p>
       </Bloco>
 
       <Bloco titulo="Contas" descricao="O livro não diz qual peso usar no mL/kg nem traz fórmula de peso predito: informe o peso que você quer usar.">

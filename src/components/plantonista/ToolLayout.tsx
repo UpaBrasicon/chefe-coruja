@@ -84,7 +84,7 @@ function FaixaSituacao({ situacao, versao }: { situacao: SituacaoFerramenta; ver
     <div className="flex flex-col gap-2">
       {s === 'aprovada' ? (
         <p className="flex items-center gap-2 text-apoio text-tinta-apoio">
-          <BadgeCheck className="size-4 shrink-0 text-primary" aria-hidden />
+          <BadgeCheck className="size-4 shrink-0 text-acao" aria-hidden />
           Versão {versao} aprovada por {situacao.decidida_por ?? 'responsável técnico'}
           {situacao.decisao_registro ? ` (${situacao.decisao_registro})` : ''} em {dataBr(situacao.decidida_em)}.
         </p>

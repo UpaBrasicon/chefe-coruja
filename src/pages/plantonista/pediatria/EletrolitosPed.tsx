@@ -25,7 +25,7 @@ function LinhaDose({ d, peso, extra }: { d: Dose; peso: number; extra?: (f: [num
             <strong>
               {faixaBr(r.faixa, 2)} {d.unidade}
             </strong>
-            {x && <span className="text-muted-foreground"> · {x}</span>}
+            {x && <span className="text-tinta-sussurro"> · {x}</span>}
             {r.noMaximo && <span className="text-atencao"> (máximo)</span>}
           </>
         )
@@ -137,7 +137,7 @@ export function EletrolitosPed() {
               <NumberField id="ele-mg" label="Magnésio sérico" unit="mg/dL" value={mg} onChange={setMg} step={0.1} />
               <Opcoes label="Insuficiência renal?" valor={ir} opcoes={[[false, 'Não'], [true, 'Sim (doses −50%)']]} onChange={setIr} />
             </div>
-            {mg > 0 && !grauMg && <p className="text-muted-foreground">Sem hipomagnesemia pelo corte do livro.</p>}
+            {mg > 0 && !grauMg && <p className="text-tinta-sussurro">Sem hipomagnesemia pelo corte do livro.</p>}
             {calc &&
               (grauMg ? [grauMg] : (['grave', 'moderada', 'leve'] as const)).map((g) => {
                 const d = HIPOMAGNESEMIA[g]
@@ -154,7 +154,7 @@ export function EletrolitosPed() {
                           <strong>
                             {faixaBr(f, 2)} {d.unidade}
                           </strong>
-                          {g === 'grave' && <span className="text-muted-foreground"> · {faixaBr([mlSulfMg10(f[0])!, mlSulfMg10(f[1])!], 1)} mL de sulfato de Mg 10%</span>}
+                          {g === 'grave' && <span className="text-tinta-sussurro"> · {faixaBr([mlSulfMg10(f[0])!, mlSulfMg10(f[1])!], 1)} mL de sulfato de Mg 10%</span>}
                           {r?.noMaximo && <span className="text-atencao"> (máximo)</span>}
                         </>
                       )

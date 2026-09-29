@@ -65,7 +65,7 @@ export function BotaoChamar({
       <Button size="sm" variant="outline" disabled={chamar.isPending || !sala} onClick={() => chamar.mutate()}>
         <Megaphone /> {chamadas > 0 ? `Chamar de novo · ${chamadas} ${chamadas === 1 ? 'chamada' : 'chamadas'}` : 'Chamar'}
       </Button>
-      {chamar.error && <span className="text-xs text-destructive">{(chamar.error as Error).message}</span>}
+      {chamar.error && <span className="text-xs text-critico">{(chamar.error as Error).message}</span>}
     </div>
   )
 }
@@ -113,7 +113,7 @@ export function RetirarDaFila({ episodioId, aviso }: { episodioId: string; aviso
             ))}
           </div>
           <Input aria-label="Justificativa" placeholder="Justificativa (mínimo de 15 letras)" value={just} onChange={(e) => setJust(e.target.value)} />
-          {retirar.error && <span className="text-xs text-destructive">{(retirar.error as Error).message}</span>}
+          {retirar.error && <span className="text-xs text-critico">{(retirar.error as Error).message}</span>}
           <div className="flex gap-2">
             <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Manter na fila</Button>
             <Button size="sm" variant="destructive" disabled={just.trim().length < 15 || retirar.isPending} onClick={() => retirar.mutate()}>

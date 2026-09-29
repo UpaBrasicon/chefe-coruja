@@ -144,14 +144,14 @@ export function PedidoExames({
                 key={ex}
                 type="button"
                 onClick={() => adicionarSugerido(ex)}
-                className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:border-primary hover:bg-primary/5"
+                className="rounded-lg border border-fio bg-campo px-2.5 py-1 text-xs font-medium text-tinta transition-colors hover:border-acao hover:bg-acao/5"
               >
                 + {ex}
               </button>
             ))}
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Buscar exame padronizado (LOINC)</span>
+            <span className="text-xs font-medium text-tinta-sussurro">Buscar exame padronizado (LOINC)</span>
             <BuscaTerminologia
               tipo="loinc"
               onSelecionar={(r) => adicionarLoinc(r.descricao, r.codigo)}

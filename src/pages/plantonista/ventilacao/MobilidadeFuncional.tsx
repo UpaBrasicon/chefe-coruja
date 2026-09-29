@@ -27,7 +27,7 @@ export function MobilidadeFuncional() {
           ].map(([nivel, texto]) => (
             <div key={nivel} className="rounded-lg border px-3 py-2">
               <Badge variant="secondary" className="mb-1">{nivel}</Badge>
-              <p className="text-sm text-muted-foreground">{texto}</p>
+              <p className="text-sm text-tinta-sussurro">{texto}</p>
             </div>
           ))}
         </CardContent>
@@ -37,7 +37,7 @@ export function MobilidadeFuncional() {
         <CardHeader>
           <CardTitle className="text-base">Critérios de segurança para mobilização</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-1 text-sm text-muted-foreground">
+        <CardContent className="flex flex-col gap-1 text-sm text-tinta-sussurro">
           <p>• Sem sedação profunda (RASS ≥ -2).</p>
           <p>• PAS ≥ 90 mmHg sem vasopressores em dose crescente.</p>
           <p>• Sem arritmias instáveis · Sem disritmia nova.</p>

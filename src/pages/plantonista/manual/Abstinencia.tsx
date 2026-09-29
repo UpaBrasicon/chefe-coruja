@@ -15,7 +15,7 @@ const br = (x: number) => (Math.round(x * 10) / 10).toLocaleString('pt-BR')
 const faixa = (f: Faixa) => (f[0] === f[1] ? br(f[0]) : `${br(f[0])}–${br(f[1])}`)
 
 const botao = (ativo: boolean) =>
-  cn('rounded-md border px-2.5 py-1.5 text-left text-sm transition-colors', ativo ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50')
+  cn('rounded-md border px-2.5 py-1.5 text-left text-sm transition-colors', ativo ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')
 
 function contaDose(d: DoseAbstinencia) {
   if (d.id === 'midazolam') {
@@ -67,16 +67,16 @@ export function Abstinencia() {
 
       <Bloco titulo="Resultado">
         {!res ? (
-          <p className="text-sm text-muted-foreground">Responda os 10 itens ({respondidos} de 10).</p>
+          <p className="text-sm text-tinta-sussurro">Responda os 10 itens ({respondidos} de 10).</p>
         ) : (
           <div className="flex flex-col gap-2 text-sm">
             <p className="flex flex-wrap items-center gap-2">
-              CIWA-Ar <Badge className="text-lg">{res.valor}</Badge> <span className="text-muted-foreground">{res.unidade}</span>
+              CIWA-Ar <Badge className="text-lg">{res.valor}</Badge> <span className="text-tinta-sussurro">{res.unidade}</span>
               <Badge variant={res.estado === 2 ? 'destructive' : res.estado === 1 ? 'warning' : 'success'}>{res.nota}</Badge>
             </p>
             <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
               {res.derivados.map(([k, v]) => (
-                <div key={k} className="contents"><dt className="text-muted-foreground">{k}</dt><dd>{v}</dd></div>
+                <div key={k} className="contents"><dt className="text-tinta-sussurro">{k}</dt><dd>{v}</dd></div>
               ))}
             </dl>
             {res.alerta && <p className="text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{res.alerta}</p>}
@@ -88,7 +88,7 @@ export function Abstinencia() {
       <Bloco titulo="Critérios de Caine — encefalopatia de Wernicke (Tabela 4, p. 1032)" descricao="O livro exige dois critérios para o diagnóstico.">
         <div className="grid gap-1.5 sm:grid-cols-2">
           {CRITERIOS_CAINE.map((c) => (
-            <label key={c} className="flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm hover:bg-muted/50">
+            <label key={c} className="flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm hover:bg-trilha/50">
               <input type="checkbox" className="size-4" checked={caineMarcados.includes(c)}
                 onChange={(e) => setCaine((x) => (e.target.checked ? [...x, c] : x.filter((y) => y !== c)))} />
               {c}
@@ -106,20 +106,20 @@ export function Abstinencia() {
 
       <Bloco titulo="Citados sem dose no capítulo">
         <ul className="flex flex-col gap-1 text-sm">
-          {SEM_DOSE_NO_CAPITULO.map((x) => <li key={x.nome}><span className="font-medium">{x.nome}:</span> {x.texto} <span className="text-muted-foreground">({x.pagina})</span></li>)}
+          {SEM_DOSE_NO_CAPITULO.map((x) => <li key={x.nome}><span className="font-medium">{x.nome}:</span> {x.texto} <span className="text-tinta-sussurro">({x.pagina})</span></li>)}
         </ul>
       </Bloco>
 
       <Bloco titulo="Tempo de aparecimento (Tabela 2, p. 1026–1027)" descricao={NOTAS_TEMPO_SAA}>
         <ul className="grid gap-1 text-sm md:grid-cols-2">
           {TEMPOS_SAA.map((t) => (
-            <li key={t.sindrome} className="rounded-lg border px-3 py-2"><span className="font-medium">{t.sindrome}</span> · {t.tempo}<br /><span className="text-muted-foreground">{t.achados}</span></li>
+            <li key={t.sindrome} className="rounded-lg border px-3 py-2"><span className="font-medium">{t.sindrome}</span> · {t.tempo}<br /><span className="text-tinta-sussurro">{t.achados}</span></li>
           ))}
         </ul>
       </Bloco>
 
       <Bloco titulo={`Fatores de risco (${FATORES_RISCO_SAA.pagina})`}>
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">
           {FATORES_RISCO_SAA.itens.map((f) => <li key={f}>{f}</li>)}
         </ul>
       </Bloco>

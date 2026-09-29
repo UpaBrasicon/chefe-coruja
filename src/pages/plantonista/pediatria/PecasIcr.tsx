@@ -72,10 +72,10 @@ export function LinhaLivro({ nome, texto, conta, pagina, errata, nota }: { nome:
         <span className="font-medium">{nome}</span>
         {conta && <span className="tabular-nums">{conta}</span>}
       </div>
-      <p className="text-muted-foreground">
+      <p className="text-tinta-sussurro">
         O livro traz: {texto} ({pagina})
       </p>
-      {nota && <p className="text-muted-foreground">{nota}</p>}
+      {nota && <p className="text-tinta-sussurro">{nota}</p>}
       {errata && <Errata texto={errata} />}
     </div>
   )
@@ -93,7 +93,7 @@ export function Errata({ texto }: { texto: string }) {
 }
 
 export function Nota({ children }: { children: ReactNode }) {
-  return <p className="text-xs text-muted-foreground">{children}</p>
+  return <p className="text-xs text-tinta-sussurro">{children}</p>
 }
 
 /** Recém-nascido sem valor neonatal explícito no capítulo, ou peso não informado. */
@@ -107,7 +107,7 @@ export function Pendencia({ p, precisaPeso = true }: { p: Paciente; precisaPeso?
   if (precisaPeso && !(p.peso > 0))
     return (
       <Card>
-        <CardContent className="pt-6 text-sm text-muted-foreground">Informe o peso para calcular.</CardContent>
+        <CardContent className="pt-6 text-sm text-tinta-sussurro">Informe o peso para calcular.</CardContent>
       </Card>
     )
   return null

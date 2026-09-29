@@ -68,7 +68,7 @@ export function HipernatremiaManual() {
           {glic > 0 && <p>Sódio corrigido pela glicemia (p. 896): <strong>{br(naRef)} mEq/L</strong></p>}
           <p>ACT: <strong>{br(act)} L</strong> (fator {fatorAguaCorporal(sexo, idoso).toLocaleString('pt-BR')})</p>
           <p>Déficit de água livre: <strong>{deficit === null ? '—' : deficit <= 0 ? 'sem déficit (Na ≤ 140)' : `${br(deficit)} L`}</strong></p>
-          {naRef !== null && naRef <= LIMITES_HIPERNATREMIA.definicao && <p className="text-muted-foreground">Hipernatremia é Na &gt; 145 mEq/L (p. 892).</p>}
+          {naRef !== null && naRef <= LIMITES_HIPERNATREMIA.definicao && <p className="text-tinta-sussurro">Hipernatremia é Na &gt; 145 mEq/L (p. 892).</p>}
         </CardContent>
       </Card>
 
@@ -82,7 +82,7 @@ export function HipernatremiaManual() {
         <CardContent className="flex flex-col gap-3 text-sm">
           <NumberField id="hiperm-red" label={`Redução desejada em ${horas} h`} unit="mEq/L" value={reducao} onChange={setReducao} step={0.5} />
           {reducao > limite && <p className="text-atencao">Acima do limite do manual ({aguda ? '1 mEq/L/h por 6–8 h' : '8–10 mEq/L em 24 h'}).</p>}
-          {act === null || naRef === null ? <p className="text-muted-foreground">Informe peso e sódio.</p> : (
+          {act === null || naRef === null ? <p className="text-tinta-sussurro">Informe peso e sódio.</p> : (
             <div className="flex flex-col gap-2">
               {SOLUCOES_HIPERNATREMIA.map((s) => {
                 const porL = variacaoPorLitro(naRef, s.naMeqL, act)
@@ -90,18 +90,18 @@ export function HipernatremiaManual() {
                 const litrosDef = deficit === null ? null : litrosParaDeficit(deficit, s)
                 return (
                   <div key={s.id} className="rounded-lg border px-3 py-2 tabular-nums">
-                    <div className="font-medium">{s.nome} <span className="text-xs font-normal text-muted-foreground">(Na {s.naMeqL} mEq/L{s.aguaLivreLporL !== null && `; ${s.aguaLivreLporL.toLocaleString('pt-BR')} L de água livre por litro`} — {s.pagina})</span></div>
+                    <div className="font-medium">{s.nome} <span className="text-xs font-normal text-tinta-sussurro">(Na {s.naMeqL} mEq/L{s.aguaLivreLporL !== null && `; ${s.aguaLivreLporL.toLocaleString('pt-BR')} L de água livre por litro`} — {s.pagina})</span></div>
                     <div>1 L muda o Na em <strong>{porL === null ? '—' : `${porL > 0 ? '−' : '+'}${br(Math.abs(porL))} mEq/L`}</strong>
                       {litros !== null && <> · redução de {br(reducao)} → <strong>{br(litros, 2)} L</strong> ≈ {br((litros * 1000) / horas, 0)} mL/h em {horas} h</>}
                     </div>
-                    {litrosDef !== null && <div className="text-muted-foreground">Volume que contém o déficit de água livre: {br(litrosDef, 2)} L</div>}
+                    {litrosDef !== null && <div className="text-tinta-sussurro">Volume que contém o déficit de água livre: {br(litrosDef, 2)} L</div>}
                   </div>
                 )
               })}
             </div>
           )}
-          <p className="text-xs text-muted-foreground">O cálculo de litros é a variação por litro do manual estendida linearmente; perdas contínuas não entram na conta.</p>
-          <p className="text-xs text-muted-foreground"><Badge variant="outline" className="mr-1">errata</Badge>{ERRATA_ADROGUE}</p>
+          <p className="text-xs text-tinta-sussurro">O cálculo de litros é a variação por litro do manual estendida linearmente; perdas contínuas não entram na conta.</p>
+          <p className="text-xs text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{ERRATA_ADROGUE}</p>
         </CardContent>
       </Card>
     </ToolLayout>

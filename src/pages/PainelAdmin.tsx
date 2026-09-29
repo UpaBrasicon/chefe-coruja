@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 function CardCenso({ label, valor, icon: Icon }: { label: string; valor: number | null; icon: typeof Bed }) {
   return (
     <div className="flex flex-col gap-1 rounded-lg border p-3">
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-xs text-tinta-sussurro">
         <Icon className="size-3.5" />
         {label}
       </div>
@@ -23,7 +23,7 @@ export function PainelAdmin({ embutido = false }: { embutido?: boolean } = {}) {
   const { data: censo, isLoading, error } = useCenso()
 
   if (error) {
-    return <p className="text-sm text-destructive">Falha ao carregar o censo: {error.message}</p>
+    return <p className="text-sm text-critico">Falha ao carregar o censo: {error.message}</p>
   }
 
   return (
@@ -31,7 +31,7 @@ export function PainelAdmin({ embutido = false }: { embutido?: boolean } = {}) {
       {!embutido && (
         <div>
           <h1 className="text-xl font-semibold">Painel da organização</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             Censo agregado por unidade — sem dados identificáveis de paciente.
           </p>
         </div>
@@ -49,7 +49,7 @@ export function PainelAdmin({ embutido = false }: { embutido?: boolean } = {}) {
           <Card key={unidade.unidade_id}>
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <div className="flex items-center gap-2">
-                <Building2 className="size-4 text-muted-foreground" />
+                <Building2 className="size-4 text-tinta-sussurro" />
                 <CardTitle className="text-base">{unidade.unidade_nome}</CardTitle>
               </div>
               <Badge variant="secondary">
@@ -66,7 +66,7 @@ export function PainelAdmin({ embutido = false }: { embutido?: boolean } = {}) {
             </CardContent>
             {/* supressão: a view devolve NULL no lugar de 1 a 4 */}
             {[unidade.total_setores, unidade.total_leitos, unidade.leitos_livres, unidade.leitos_ocupados, unidade.leitos_bloqueados, unidade.leitos_higienizacao].some((v) => v === null) && (
-              <p className="px-6 pb-2 text-xs text-muted-foreground">
+              <p className="px-6 pb-2 text-xs text-tinta-sussurro">
                 Contagens pequenas foram suprimidas para proteger a privacidade (LGPD).
               </p>
             )}
@@ -77,7 +77,7 @@ export function PainelAdmin({ embutido = false }: { embutido?: boolean } = {}) {
       <NumerosOrganizacao />
 
       {!isLoading && (censo ?? []).length === 0 && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-tinta-sussurro">
           Nenhuma unidade visível. Fale com um administrador da plataforma.
         </p>
       )}

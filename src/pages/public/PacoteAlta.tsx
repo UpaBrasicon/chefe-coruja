@@ -96,7 +96,7 @@ export default function PacoteAlta() {
         {recusa && !aberto && <p className="rounded-lg border border-critico/30 bg-critico/[0.08] p-4 text-critico">{recusa}</p>}
 
         {!aberto && !recusa && (
-          <section className="flex flex-col gap-3 rounded-xl border border-fio bg-card p-5">
+          <section className="flex flex-col gap-3 rounded-xl border border-fio bg-superficie p-5">
             <label htmlFor="codigo" className="font-medium">Digite o código de 6 dígitos da folha da alta</label>
             <input
               id="codigo"
@@ -110,7 +110,7 @@ export default function PacoteAlta() {
                 setCodigo(c)
                 if (c.length === 6) void conferir(c)
               }}
-              className="h-12 rounded-lg border border-fio bg-background px-3 text-center font-mono text-2xl tracking-[0.4em]"
+              className="h-12 rounded-lg border border-fio bg-campo px-3 text-center font-mono text-2xl tracking-[0.4em]"
             />
             {r?.situacao === 'codigo_errado' && (
               <p className="text-sm text-critico">Código errado. Restam {(r as { restantes?: number }).restantes} tentativa(s).</p>
@@ -125,7 +125,7 @@ export default function PacoteAlta() {
             <p>
               Olá, {aberto.primeiro_nome}. {aberto.alta_em ? `Alta em ${dia(aberto.alta_em)}. ` : ''}Este link vale até {dia(aberto.expira_em)}.
             </p>
-            <details open className="rounded-xl border border-fio bg-card p-4">
+            <details open className="rounded-xl border border-fio bg-superficie p-4">
               <summary className="cursor-pointer font-semibold">Orientações</summary>
               <ol className="mt-2 flex list-decimal flex-col gap-1.5 pl-5">
                 {aberto.orientacoes.map((o, k) => <li key={k}>{o}</li>)}
@@ -133,7 +133,7 @@ export default function PacoteAlta() {
               {aberto.retorno && <p className="mt-3"><strong>Retorno:</strong> {aberto.retorno}</p>}
             </details>
             {aberto.documentos.map((d, k) => (
-              <details key={k} className="rounded-xl border border-fio bg-card p-4">
+              <details key={k} className="rounded-xl border border-fio bg-superficie p-4">
                 <summary className="cursor-pointer font-semibold">
                   {NOME_DOC[d.tipo] ?? d.tipo}
                   <span className="ml-2 text-xs font-normal text-tinta-apoio">nº {d.numero ?? '—'} · {dia(d.emitido_em)}</span>

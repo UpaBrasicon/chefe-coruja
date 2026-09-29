@@ -37,7 +37,7 @@ export function CriseTireotoxicaAdulto() {
           <LinhaManual key={d.droga} nome={d.droga} texto={d.texto} pagina={d.pagina} errata={d.errata} conta={conta[d.droga] && <strong>{conta[d.droga]}</strong>} />
         ))}
         <Errata texto={ERRATA_ORDEM_IODO} />
-        <p className="text-muted-foreground">Suporte: antitérmico (paracetamol; a Figura 1, p. 956, diz evitar AAS), hidratação, nutrição, oxigênio, tratamento de ICC e do fator desencadeante (Tabela 6, p. 955). O peso só entra na conta do esmolol.</p>
+        <p className="text-tinta-sussurro">Suporte: antitérmico (paracetamol; a Figura 1, p. 956, diz evitar AAS), hidratação, nutrição, oxigênio, tratamento de ICC e do fator desencadeante (Tabela 6, p. 955). O peso só entra na conta do esmolol.</p>
       </Bloco>
 
       <Bloco titulo="O que o manual não traz">

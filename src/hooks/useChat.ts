@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -145,6 +145,39 @@ export function useMensagens(conversaId: string | null) {
   return query
 }
 
+// ── Mensagem nova (realtime global) ─────────────────────────────────────────
+// O canal global é o único que escuta TODAS as conversas do usuário. Quem mais
+// precisar saber de mensagem nova (ex.: o aviso flutuante da casca) se inscreve
+// aqui, sem abrir um segundo canal no Supabase. A RLS do realtime já entrega só
+// as mensagens das conversas de que o usuário participa.
+
+/** Linha crua de `chat_mensagens` como chega pelo realtime (sem o autor). */
+export type MensagemNovaRealtime = Omit<MensagemChat, 'autor'>
+
+type OuvinteMensagemNova = (m: MensagemNovaRealtime) => void
+const ouvintesMensagemNova = new Set<OuvinteMensagemNova>()
+
+/** Escuta mensagens novas vindas do canal global. Devolve a função de desinscrever. */
+export function ouvirMensagensNovas(fn: OuvinteMensagemNova) {
+  ouvintesMensagemNova.add(fn)
+  return () => {
+    ouvintesMensagemNova.delete(fn)
+  }
+}
+
+// ── Conversa aberta na gaveta ───────────────────────────────────────────────
+// A gaveta registra aqui a conversa que está na tela, para o aviso flutuante
+// não avisar de uma mensagem que a pessoa já está lendo.
+let conversaAbertaAtual: string | null = null
+
+export function definirConversaAberta(id: string | null) {
+  conversaAbertaAtual = id
+}
+
+export function conversaAbertaAgora() {
+  return conversaAbertaAtual
+}
+
 /** Canal global leve: nova mensagem em QUALQUER conversa atualiza contadores. */
 export function useChatRealtimeGlobal() {
   const queryClient = useQueryClient()
@@ -154,8 +187,16 @@ export function useChatRealtimeGlobal() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'chat_mensagens' },
-        () => {
+        (payload) => {
           void queryClient.invalidateQueries({ queryKey: ['chat-conversas'] })
+          const nova = payload.new as MensagemNovaRealtime
+          for (const fn of ouvintesMensagemNova) {
+            try {
+              fn(nova)
+            } catch {
+              // um ouvinte com defeito não derruba os outros nem o contador
+            }
+          }
         }
       )
       .subscribe()
@@ -163,6 +204,49 @@ export function useChatRealtimeGlobal() {
       void supabase.removeChannel(channel)
     }
   }, [queryClient])
+}
+
+// ── Corte do plantão ────────────────────────────────────────────────────────
+// Cada plantão começa com a conversa limpa: o que veio antes do início do
+// plantão atual do usuário fica recolhido. O início vem da escala, pelo
+// relógio do servidor (RPC meu_plantao_agora). Sem plantão agora (gestor,
+// suporte, fora da escala), o corte é o início do dia em Brasília.
+
+export const FUSO_BRASILIA = 'America/Sao_Paulo'
+
+/** 00:00 de hoje no fuso de Brasília (UTC−3, sem horário de verão desde 2019). */
+export function inicioDoDiaBrasilia(agora = new Date()) {
+  const ymd = new Intl.DateTimeFormat('en-CA', {
+    timeZone: FUSO_BRASILIA,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(agora)
+  return new Date(`${ymd}T00:00:00-03:00`)
+}
+
+export type CortePlantao = {
+  /** A partir daqui é o plantão de agora. */
+  inicio: Date
+  /** true = veio da escala; false = sem plantão, corte no início do dia. */
+  daEscala: boolean
+}
+
+export function useCortePlantao() {
+  const query = useQuery({
+    queryKey: ['chat-corte-plantao'],
+    refetchInterval: 60_000,
+    queryFn: async (): Promise<CortePlantao> => {
+      const { data, error } = await supabase.rpc('meu_plantao_agora')
+      // falha de leitura não esconde mensagens: cai no início do dia
+      const primeiro = !error ? data?.[0] : undefined
+      if (primeiro?.inicio) return { inicio: new Date(primeiro.inicio), daEscala: true }
+      return { inicio: inicioDoDiaBrasilia(), daEscala: false }
+    },
+  })
+  // enquanto a escala não responde, o início do dia (estável entre renders)
+  const provisorio = useMemo<CortePlantao>(() => ({ inicio: inicioDoDiaBrasilia(), daEscala: false }), [])
+  return query.data ?? provisorio
 }
 
 /** Envia mensagem com optimistic update + rollback. */

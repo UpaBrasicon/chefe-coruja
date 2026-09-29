@@ -17,7 +17,7 @@ function LinhaTubo({ rotulo, t }: { rotulo: string; t: Tubo }) {
   return (
     <div className="rounded-lg border px-3 py-2">
       <p className="font-medium">{rotulo}: <span className="tabular-nums">{num(t.calculadoMm, 2)} mm</span> pela fórmula</p>
-      <p className="text-muted-foreground">
+      <p className="text-tinta-sussurro">
         Tubos vizinhos: {t.vizinhosMm.map((d) => `${num(d, 1)} mm (profundidade ${num(profundidadeCm(d)!, 1)} cm no lábio superior)`).join(' · ')}
       </p>
     </div>
@@ -55,10 +55,10 @@ export function ViaAereaPediatrica() {
             <>
               <LinhaTubo rotulo="Sem cuff — (idade/4) + 4" t={t.semCuff} />
               <LinhaTubo rotulo="Com cuff — (idade/4) + 3,5" t={t.comCuff} />
-              <p className="text-muted-foreground">Profundidade = 3 × diâmetro interno, se o tubo for o adequado ao tamanho da criança. O livro não diz como arredondar; a tela mostra o calculado e os tamanhos vizinhos.</p>
+              <p className="text-tinta-sussurro">Profundidade = 3 × diâmetro interno, se o tubo for o adequado ao tamanho da criança. O livro não diz como arredondar; a tela mostra o calculado e os tamanhos vizinhos.</p>
             </>
           ) : (
-            <p className="text-muted-foreground">As fórmulas usam a idade em anos (aqui, de 1 a 13 anos completos). Abaixo de 1 ano, veja a tabela de equipamento.</p>
+            <p className="text-tinta-sussurro">As fórmulas usam a idade em anos (aqui, de 1 a 13 anos completos). Abaixo de 1 ano, veja a tabela de equipamento.</p>
           )}
           <p className="text-rotulo text-tinta-sussurro">Livro ICr, cap. 4, p. 75. A fórmula sem cuff é a mesma do Anexo 2 do manual HCFMUSP (p. 1494).</p>
         </Bloco>
@@ -72,12 +72,12 @@ export function ViaAereaPediatrica() {
         {temIdade && !eq && <p className="text-atencao">A tabela do livro vai até 8–10 anos; acima disso não há linha.</p>}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-xs">
-            <thead className="text-muted-foreground">
+            <thead className="text-tinta-sussurro">
               <tr>{['Idade e peso', 'Máscara O₂', 'Guedel', 'Laringoscópio', 'Tubo', 'Manguito', 'Jelco', 'Sonda gástrica', 'Dreno de tórax', 'Foley', 'Colar'].map((h) => <th key={h} className="px-1.5 py-1 font-medium">{h}</th>)}</tr>
             </thead>
             <tbody>
               {EQUIPAMENTO.map((l) => (
-                <tr key={l.rotulo} className={cn('border-t', eq === l && 'bg-primary/5 font-medium')}>
+                <tr key={l.rotulo} className={cn('border-t', eq === l && 'bg-acao/5 font-medium')}>
                   {[l.rotulo, l.mascaraO2, l.guedel, l.laringoscopio, l.tubo, l.manguito, l.jelco, l.sondaGastrica, l.drenoTorax, l.foley, l.colarCervical].map((v, i) => <td key={i} className="px-1.5 py-1">{v}</td>)}
                 </tr>
               ))}
@@ -90,9 +90,9 @@ export function ViaAereaPediatrica() {
       <CampoPesoRn id="va-peso" peso={peso} setPeso={setPeso} rn={rn} setRn={setRn} />
       <Bloco titulo="Sequência rápida — doses (cap. 4, Tabelas 1 e 2)">
         {rn ? (
-          <p className="text-muted-foreground">{SEM_VALOR_NEONATAL_P2}</p>
+          <p className="text-tinta-sussurro">{SEM_VALOR_NEONATAL_P2}</p>
         ) : !pesoValido(peso) ? (
-          <p className="text-muted-foreground">Informe o peso para calcular (acima de 0 e até 80 kg).</p>
+          <p className="text-tinta-sussurro">Informe o peso para calcular (acima de 0 e até 80 kg).</p>
         ) : (
           DOSES_SRI.filter((d) => succinilcolinaAplica(d.id, peso)).map((d) => <LinhaDose key={d.id} d={d} peso={peso} />)
         )}

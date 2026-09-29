@@ -47,7 +47,7 @@ export function TetanoProfilaxiaAdulto() {
         />
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <caption className="pb-1 text-left text-muted-foreground">Tabela 5 do cap. 93 ({TABELA5_TETANO.pagina}), para comparação</caption>
+            <caption className="pb-1 text-left text-tinta-sussurro">Tabela 5 do cap. 93 ({TABELA5_TETANO.pagina}), para comparação</caption>
             <thead>
               <tr><th className="pr-2">Ferimento</th>{TABELA5_TETANO.colunas.map((c) => <th key={c} className="pr-2">{c}</th>)}</tr>
             </thead>
@@ -87,7 +87,7 @@ export function TetanoProfilaxiaAdulto() {
           pagina={g.pagina}
           conta={<><strong>Vacina: {simNao(g.vacina)}</strong> · <strong>SAT/IGHAT: {simNao(g.imunoglobulina)}</strong></>}
         />
-        <p className="text-sm text-muted-foreground">{gvs.desbridamento.texto} ({gvs.desbridamento.pagina}).</p>
+        <p className="text-sm text-tinta-sussurro">{gvs.desbridamento.texto} ({gvs.desbridamento.pagina}).</p>
       </Bloco>
 
       <Bloco titulo="Guia de Vigilância em Saúde 2024 — tratamento (Quadros 1–3, p. 328 e 331)">
@@ -96,7 +96,7 @@ export function TetanoProfilaxiaAdulto() {
         <LinhaManual nome="Antibiótico" texto={gvs.antibiotico.texto} pagina={gvs.antibiotico.pagina} conta={<>penicilina <strong>2.000.000 UI</strong> 4/4 h · ou metronidazol <strong>{gvs.antibiotico.metronidazolMg} mg</strong> 8/8 h · 7–10 dias</>} />
         <LinhaManual nome="Sedativos (Quadro 1, como impresso)" texto={gvs.sedativos.texto} pagina={gvs.sedativos.pagina} errata={gvs.sedativos.errata} />
         <LinhaManual nome="Medidas gerais" texto={gvs.medidasGerais.texto} pagina={gvs.medidasGerais.pagina} errata={gvs.medidasGerais.errata} />
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_TETANO_GVS.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_TETANO_GVS.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
@@ -129,7 +129,7 @@ export function RaivaPosExposicaoAdulto() {
         />
         <LinhaManual nome="Imunoglobulina humana (IGHAR) 20 UI/kg" texto="Preferida em quem já reagiu a soro heterólogo; mesma regra de infiltração" pagina="NT 8/2022, item 2.2" conta={soro ? <strong>{soro.igharUi.toLocaleString('pt-BR')} UI</strong> : 'informe o peso'} />
         {PROTOCOLO_RAIVA_2022.map((i) => <LinhaManual key={i.tema} nome={i.tema} texto={i.ms} pagina={i.pagina} />)}
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_RAIVA_2022.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_RAIVA_2022.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Exposição (Anexo 4, p. 1497)">
@@ -138,7 +138,7 @@ export function RaivaPosExposicaoAdulto() {
         {contato === 'direto' && (
           <>
             <Escolha label="Acidente" value={acidente} onChange={setAcidente} opcoes={[{ value: 'leve', label: 'Leve' }, { value: 'grave', label: 'Grave' }]} />
-            <p className="text-sm text-muted-foreground">Leve: {ACIDENTE_RAIVA.leve}. Grave: {ACIDENTE_RAIVA.grave}.</p>
+            <p className="text-sm text-tinta-sussurro">Leve: {ACIDENTE_RAIVA.leve}. Grave: {ACIDENTE_RAIVA.grave}.</p>
             <Escolha label="Animal" value={animal} onChange={setAnimal} opcoes={ANIMAL_RAIVA} />
             {precisaArea && (
               <Escolha label="Área de raiva controlada, animal só doméstico ou que só sai acompanhado, sem contato com outros animais?" value={area} onChange={setArea}
@@ -153,7 +153,7 @@ export function RaivaPosExposicaoAdulto() {
           conta={r ? <strong>{r.texto}</strong> : undefined}
           nota={RAIVA.nota}
         />
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">
           <li>Vacina (4 doses): {RAIVA.vacina4}.</li>
           <li>Vacina (2 doses): {RAIVA.vacina2}.</li>
           {r?.observar10Dias && <li>Observação: {RAIVA.observacao}.</li>}

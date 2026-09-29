@@ -45,12 +45,12 @@ export function ChoquePediatrico() {
         <>
           <Bloco titulo="Volume (p. 85)">
             <dl className="grid gap-x-4 gap-y-1 tabular-nums sm:grid-cols-[auto_1fr]">
-              <dt className="text-muted-foreground">Bolus de solução isotônica (10 a 20 mL/kg)</dt><dd><strong>{faixaTxt(v.bolus, 0)} mL</strong></dd>
-              <dt className="text-muted-foreground">Primeira hora, classicamente (40 a 60 mL/kg)</dt><dd><strong>{faixaTxt(v.primeiraHora, 0)} mL</strong></dd>
-              <dt className="text-muted-foreground">Sem suporte ventilatório/vasoativo: só no hipotenso, até 40 mL/kg</dt><dd><strong>{num(v.semSuporte, 0)} mL</strong></dd>
-              <dt className="text-muted-foreground">Diurese-alvo (&gt; 1 mL/kg/h)</dt><dd><strong>&gt; {num(diureseAlvo(peso)!, 1)} mL/h</strong></dd>
+              <dt className="text-tinta-sussurro">Bolus de solução isotônica (10 a 20 mL/kg)</dt><dd><strong>{faixaTxt(v.bolus, 0)} mL</strong></dd>
+              <dt className="text-tinta-sussurro">Primeira hora, classicamente (40 a 60 mL/kg)</dt><dd><strong>{faixaTxt(v.primeiraHora, 0)} mL</strong></dd>
+              <dt className="text-tinta-sussurro">Sem suporte ventilatório/vasoativo: só no hipotenso, até 40 mL/kg</dt><dd><strong>{num(v.semSuporte, 0)} mL</strong></dd>
+              <dt className="text-tinta-sussurro">Diurese-alvo (&gt; 1 mL/kg/h)</dt><dd><strong>&gt; {num(diureseAlvo(peso)!, 1)} mL/h</strong></dd>
             </dl>
-            <p className="text-muted-foreground">Reavaliar sinais de congestão (crepitações, hepatomegalia) a cada bolus; normotensos sem esses recursos recebem só manutenção.</p>
+            <p className="text-tinta-sussurro">Reavaliar sinais de congestão (crepitações, hepatomegalia) a cada bolus; normotensos sem esses recursos recebem só manutenção.</p>
             <p className="text-rotulo text-tinta-sussurro">Livro ICr, cap. 5, p. 82–85.</p>
           </Bloco>
           <Bloco titulo="Drogas vasoativas (Tabela 2, p. 87)">
@@ -64,7 +64,7 @@ export function ChoquePediatrico() {
       </Bloco>
 
       <Bloco titulo="Critérios de Phoenix 2024 — sepse e choque séptico (JAMA 2024)">
-        <p className="text-muted-foreground">{PHOENIX_TEXTO.criterios} {PHOENIX_TEXTO.naoVale} ({PHOENIX_TEXTO.pagina})</p>
+        <p className="text-tinta-sussurro">{PHOENIX_TEXTO.criterios} {PHOENIX_TEXTO.naoVale} ({PHOENIX_TEXTO.pagina})</p>
         <div className="grid gap-3 sm:grid-cols-3">
           <NumberField id="phx-idade" label="Idade" unit="meses" value={idadeMeses} onChange={setIdadeMeses} min={0} max={215} />
           <NumberField id="phx-pf" label="PaO₂/FiO₂" value={pf} onChange={setPf} min={0} />
@@ -89,22 +89,22 @@ export function ChoquePediatrico() {
               Phoenix <strong className="tabular-nums">{ph.total}</strong> (respiratório {ph.respiratorio} · cardiovascular {ph.cardiovascular} · coagulação {ph.coagulacao} · neurológico {ph.neurologico}) —{' '}
               <strong>{ph.choqueSeptico ? 'choque séptico' : ph.sepse ? 'sepse' : 'abaixo de 2 pontos'}</strong>, se houver infecção suspeita.
             </p>
-            <p className="text-muted-foreground">PAM da faixa {PAM_PHOENIX[ph.faixa].rotulo}: 1 ponto entre {PAM_PHOENIX[ph.faixa].umPonto[0]} e {PAM_PHOENIX[ph.faixa].umPonto[1]} mmHg, 2 pontos abaixo de {PAM_PHOENIX[ph.faixa].doisPontos}. {PHOENIX_TEXTO.mortalidade}</p>
+            <p className="text-tinta-sussurro">PAM da faixa {PAM_PHOENIX[ph.faixa].rotulo}: 1 ponto entre {PAM_PHOENIX[ph.faixa].umPonto[0]} e {PAM_PHOENIX[ph.faixa].umPonto[1]} mmHg, 2 pontos abaixo de {PAM_PHOENIX[ph.faixa].doisPontos}. {PHOENIX_TEXTO.mortalidade}</p>
             {ph.avisos.map((a) => <p key={a} className="text-atencao">{a}</p>)}
           </div>
-        ) : <p className="text-muted-foreground">Informe a idade em meses (o Phoenix vale de 37 semanas pós-concepcionais até 17 anos).</p>}
+        ) : <p className="text-tinta-sussurro">Informe a idade em meses (o Phoenix vale de 37 semanas pós-concepcionais até 17 anos).</p>}
       </Bloco>
 
       <Bloco titulo="SSC pediátrica 2026 × livro do ICr">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">SSC pediátrica 2026</th><th className="pb-2">Livro do ICr</th></tr></thead>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">SSC pediátrica 2026</th><th className="pb-2">Livro do ICr</th></tr></thead>
             <tbody>
               {DIRETRIZ_SSC_PED_2026.map((d) => (
                 <tr key={d.tema} className="border-t">
                   <td className="pr-3 py-2 font-medium">{d.tema}</td>
-                  <td className="pr-3 py-2">{d.ssc.texto} <span className="text-muted-foreground">({d.ssc.pagina})</span></td>
-                  <td className="py-2 text-muted-foreground">{d.livro ? `${d.livro.texto} (${d.livro.pagina})` : '—'}</td>
+                  <td className="pr-3 py-2">{d.ssc.texto} <span className="text-tinta-sussurro">({d.ssc.pagina})</span></td>
+                  <td className="py-2 text-tinta-sussurro">{d.livro ? `${d.livro.texto} (${d.livro.pagina})` : '—'}</td>
                 </tr>
               ))}
             </tbody>

@@ -81,14 +81,14 @@ export function AihTerminologia({ pacienteId, aih, set }: { pacienteId?: string 
               </button>
             ))}
             {procedimentos.data?.length === 0 && (
-              <p className="px-2 py-2 text-xs text-muted-foreground">Nenhum procedimento {cid ? `compatível com ${cid}` : 'encontrado'}.</p>
+              <p className="px-2 py-2 text-xs text-tinta-sussurro">Nenhum procedimento {cid ? `compatível com ${cid}` : 'encontrado'}.</p>
             )}
           </div>
         </div>
 
         {conferencia.data && (
           <div className="flex flex-col gap-1">
-            <div className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Conferência (não impede a impressão)</div>
+            <div className="text-xs font-semibold tracking-wide text-tinta-sussurro uppercase">Conferência (não impede a impressão)</div>
             {conferencia.data.avisos.length === 0 ? (
               <p className="flex items-center gap-1.5 text-conforme"><CheckCircle2 className="size-3.5" /> Sem aviso de glosa.</p>
             ) : (
@@ -96,7 +96,7 @@ export function AihTerminologia({ pacienteId, aih, set }: { pacienteId?: string 
                 <p key={k} className="flex gap-1.5 text-atencao"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" />Campo {a.campo}: {a.texto}</p>
               ))
             )}
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-tinta-sussurro">
               SIGTAP competência {conferencia.data.competencia ? `${conferencia.data.competencia.slice(4)}/${conferencia.data.competencia.slice(0, 4)}` : '—'}.
             </p>
           </div>

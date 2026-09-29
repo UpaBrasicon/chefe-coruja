@@ -209,8 +209,8 @@ export function ExportarTab({
           <CardDescription>Selecione as abas desejadas e baixe tudo em um único arquivo.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
-          <div className="rounded-lg bg-muted p-4">
-            <label className="mb-3 flex cursor-pointer items-center gap-2.5 font-semibold text-primary">
+          <div className="rounded-lg bg-trilha p-4">
+            <label className="mb-3 flex cursor-pointer items-center gap-2.5 font-semibold text-acao">
               <input
                 type="checkbox"
                 className="size-[18px] accent-primary"
@@ -243,7 +243,7 @@ export function ExportarTab({
             </div>
           </div>
 
-          {erro && <p className="text-sm font-semibold text-destructive">{erro}</p>}
+          {erro && <p className="text-sm font-semibold text-critico">{erro}</p>}
 
           <Button onClick={gerar} disabled={gerando} size="lg" className="w-full text-base">
             {gerando ? <Loader2 className="animate-spin" /> : <Download />} Baixar Documentos Selecionados (PDF)

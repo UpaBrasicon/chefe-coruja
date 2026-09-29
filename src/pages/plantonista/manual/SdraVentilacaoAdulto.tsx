@@ -16,11 +16,11 @@ function TabelaPeep({ id, destaque }: { id: TabelaPeepId; destaque: ColunaPeep[]
   const t = TABELAS_PEEP[id]
   return (
     <div className="overflow-x-auto">
-      <p className="font-medium">{t.nome} <span className="text-muted-foreground">({t.pagina})</span></p>
+      <p className="font-medium">{t.nome} <span className="text-tinta-sussurro">({t.pagina})</span></p>
       <table className="text-xs tabular-nums">
         <tbody>
-          <tr><th className="pr-2 text-left">FiO2</th>{t.colunas.map((c, i) => <td key={i} className={`border px-1.5 py-1 ${destaque.includes(c) ? 'bg-primary/15 font-semibold' : ''}`}>{faixaBr(c.fio2, 1).replace('–', '↔')}</td>)}</tr>
-          <tr><th className="pr-2 text-left">PEEP</th>{t.colunas.map((c, i) => <td key={i} className={`border px-1.5 py-1 ${destaque.includes(c) ? 'bg-primary/15 font-semibold' : ''}`}>{faixaBr(c.peep, 0).replace('–', '↔')}</td>)}</tr>
+          <tr><th className="pr-2 text-left">FiO2</th>{t.colunas.map((c, i) => <td key={i} className={`border px-1.5 py-1 ${destaque.includes(c) ? 'bg-acao/15 font-semibold' : ''}`}>{faixaBr(c.fio2, 1).replace('–', '↔')}</td>)}</tr>
+          <tr><th className="pr-2 text-left">PEEP</th>{t.colunas.map((c, i) => <td key={i} className={`border px-1.5 py-1 ${destaque.includes(c) ? 'bg-acao/15 font-semibold' : ''}`}>{faixaBr(c.peep, 0).replace('–', '↔')}</td>)}</tr>
         </tbody>
       </table>
     </div>
@@ -69,7 +69,7 @@ export function SdraVentilacaoAdulto() {
         {pf !== null && (
           <>
             <Resultado rotulo="P/F" valor={`${br(pf, 0)} mmHg — ${b?.classe ? NOME_BERLIM[b.classe] : 'sem classe'}`} />
-            {b?.nota && <p className="text-muted-foreground">{b.nota}</p>}
+            {b?.nota && <p className="text-tinta-sussurro">{b.nota}</p>}
             <Alertas itens={marcosPf(pf)} />
           </>
         )}
@@ -87,15 +87,15 @@ export function SdraVentilacaoAdulto() {
         {g24 ? (
           <>
             <Resultado rotulo="Leitura 2024" valor={g24.categoria ? `SDRA ${g24.categoria}${g24.gravidade ? ` — ${g24.gravidade}` : ''}${g24.criterioOxigenacao ? '' : ' — oxigenação acima dos cortes'}` : 'sem categoria com o suporte informado'} />
-            {g24.notas.map((n) => <p key={n} className="text-muted-foreground">{n}</p>)}
+            {g24.notas.map((n) => <p key={n} className="text-tinta-sussurro">{n}</p>)}
           </>
-        ) : <p className="text-muted-foreground">Informe PaO2 e FiO2 ou SpO2 e FiO2.</p>}
+        ) : <p className="text-tinta-sussurro">Informe PaO2 e FiO2 ou SpO2 e FiO2.</p>}
       </Bloco>
 
       <Bloco titulo="Tabela 5 — ajuste na SDRA (p. 506)" descricao="O livro não diz qual peso usar no mL/kg nem traz fórmula de peso predito: informe o peso que você quer usar.">
         <div className="grid gap-3 sm:grid-cols-3">
           <Resultado rotulo="Vt" valor={`leve ${SDRA.vtLeve} mL/kg; moderada/grave ${faixaBr(SDRA.vtModeradaGrave, 0)} mL/kg`} />
-          <p className="text-apoio text-muted-foreground">Errata: {ERRATA_VT_SDRA}</p>
+          <p className="text-apoio text-tinta-sussurro">Errata: {ERRATA_VT_SDRA}</p>
           <Resultado rotulo="PEEP" valor="leve/moderada: tabela PEEP baixo; grave: PEEP alto" />
           <Resultado rotulo="FiO2" valor="100% inicial → SatO2 > 92%" />
           <Resultado rotulo="FR" valor={`${SDRA.frInicial} rpm inicial; graves podem precisar de ${faixaBr(SDRA.frGrave, 0)}`} />
@@ -106,7 +106,7 @@ export function SdraVentilacaoAdulto() {
           <NumberField id="sd-peso" label="Peso usado na conta" unit="kg" value={peso} onChange={setPeso} step={0.1} />
           <Resultado rotulo="Vt pela classe de Berlim" valor={vt ? `${faixaBr(vt, 0)} mL` : b?.classe ? 'informe o peso' : 'informe PaO2, FiO2 e PEEP'} />
         </div>
-        <p className="text-muted-foreground">p. 506: modos controlados nas primeiras 48–72 horas; diminuir espaço morto não fisiológico. p. 507: tolera-se hipercapnia se pH &gt; 7,2.</p>
+        <p className="text-tinta-sussurro">p. 506: modos controlados nas primeiras 48–72 horas; diminuir espaço morto não fisiológico. p. 507: tolera-se hipercapnia se pH &gt; 7,2.</p>
       </Bloco>
 
       <Bloco titulo="Tabelas PEEP × FiO2 (p. 506–507)" descricao="A tela marca a coluna da FiO2 informada; sem coluna exata, marca as vizinhas — o livro não interpola. As duas tabelas de PEEP alto têm resultados práticos muito semelhantes (p. 507).">
@@ -131,20 +131,20 @@ export function SdraVentilacaoAdulto() {
       </Bloco>
 
       <Bloco titulo="Hipoxemia grave — recursos citados (p. 507–508)">
-        <ul className="list-disc pl-5">{RESGATE_HIPOXEMIA.map((r) => <li key={r.nome}><strong>{r.nome}:</strong> {r.texto} <span className="text-muted-foreground">({r.pagina})</span></li>)}</ul>
+        <ul className="list-disc pl-5">{RESGATE_HIPOXEMIA.map((r) => <li key={r.nome}><strong>{r.nome}:</strong> {r.texto} <span className="text-tinta-sussurro">({r.pagina})</span></li>)}</ul>
       </Bloco>
 
       <Bloco titulo="ATS 2024, ESICM 2023 e definição global 2024 × manual do HC" descricao="Textos integrais lidos. Onde a ATS e a ESICM divergem (bloqueio neuromuscular), as duas aparecem.">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">Diretriz</th><th className="pr-3 pb-2">Força · fonte</th><th className="pb-2">Manual do HC</th></tr></thead>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">Diretriz</th><th className="pr-3 pb-2">Força · fonte</th><th className="pb-2">Manual do HC</th></tr></thead>
             <tbody>
               {DIRETRIZ_SDRA_2024.map((d) => (
                 <tr key={d.tema} className="border-t">
                   <td className="pr-3 py-2 font-medium">{d.tema}</td>
                   <td className="pr-3 py-2">{d.diretriz}</td>
-                  <td className="pr-3 py-2 text-muted-foreground">{d.forca} · {d.fonte}</td>
-                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                  <td className="pr-3 py-2 text-tinta-sussurro">{d.forca} · {d.fonte}</td>
+                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
                 </tr>
               ))}
             </tbody>

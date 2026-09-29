@@ -52,7 +52,7 @@ export function DorAnalgesiaAdulto() {
       {intensidade && (
         <p className="flex flex-wrap items-center gap-2 text-sm">
           Nota {nota}: <Badge variant={intensidade === 'intensa' ? 'destructive' : intensidade === 'moderada' ? 'warning' : 'success'}>{intensidade}</Badge>
-          <span className="text-muted-foreground">faixas da Figura 2 (p. 147). Para quem não se comunica: PAINAD e BPS (Tabelas 1 e 2).</span>
+          <span className="text-tinta-sussurro">faixas da Figura 2 (p. 147). Para quem não se comunica: PAINAD e BPS (Tabelas 1 e 2).</span>
         </p>
       )}
 
@@ -62,8 +62,8 @@ export function DorAnalgesiaAdulto() {
             <li key={e.degrau} className="rounded-lg border px-3 py-2"><span className="font-medium">{e.degrau}º — {e.dor}</span><br />{e.classe}</li>
           ))}
         </ul>
-        <p className="text-sm text-muted-foreground">Dor neuropática, sequência do livro ({DOR_NEUROPATICA.pagina}): {DOR_NEUROPATICA.sequencia.map((s, i) => `${i + 1}. ${s}`).join('; ')}.</p>
-        <p className="text-sm text-muted-foreground">Octreotide: {OCTREOTIDE.texto} ({OCTREOTIDE.pagina}).</p>
+        <p className="text-sm text-tinta-sussurro">Dor neuropática, sequência do livro ({DOR_NEUROPATICA.pagina}): {DOR_NEUROPATICA.sequencia.map((s, i) => `${i + 1}. ${s}`).join('; ')}.</p>
+        <p className="text-sm text-tinta-sussurro">Octreotide: {OCTREOTIDE.texto} ({OCTREOTIDE.pagina}).</p>
       </Bloco>
 
       <Bloco titulo="Opioides (Tabela 3, p. 147–149)" descricao="O livro não traz tabela de equianalgesia: não há conversão entre opioides nesta tela.">

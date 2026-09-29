@@ -52,7 +52,7 @@ export function MecanicaVentilatoriaAdulto() {
         </div>
         {m.notas.length > 0 && <ul className="list-disc pl-5">{m.notas.map((n) => <li key={n}>{n}</li>)}</ul>}
         <Trecho texto="Resistência (Ppico – Pplatô/fluxo); complacência (volume corrente/Pplatô – PEEP)" pagina="p. 499" errata="Impresso sem parênteses; a Figura 2 confirma (Ppico − Pplatô)/fluxo e VC/(Pplatô − PEEP)." />
-        <p className="text-muted-foreground">Complacência dinâmica: o capítulo não traz fórmula — não calculada.</p>
+        <p className="text-tinta-sussurro">Complacência dinâmica: o capítulo não traz fórmula — não calculada.</p>
       </Bloco>
 
       <Bloco titulo="Tabela 1 — causas (p. 500)">

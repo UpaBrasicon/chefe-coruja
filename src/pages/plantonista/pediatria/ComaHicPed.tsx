@@ -55,7 +55,7 @@ export function ComaHicPed() {
           <NumberField id="coma-onsd" label="Diâmetro medido" unit="mm" value={pr.bainha} onChange={(bainha) => setPr({ ...pr, bainha })} min={0} step={0.1} />
           <Opcoes label="Fontanela aberta?" valor={fontanela} opcoes={[[false, 'Não'], [true, 'Sim']]} onChange={setFontanela} />
         </div>
-        {onsd === 'indefinido' && <p className="text-muted-foreground">Aos 12 meses exatos a tabela não define ("&lt; 1 ano" x "&gt; 1 ano").</p>}
+        {onsd === 'indefinido' && <p className="text-tinta-sussurro">Aos 12 meses exatos a tabela não define ("&lt; 1 ano" x "&gt; 1 ano").</p>}
         {onsd && onsd !== 'indefinido' && (
           <p>
             Corte para a idade: {br(onsd.corteMm, 1)} mm (sensibilidade/especificidade {onsd.sensEsp}).

@@ -1,51 +1,66 @@
-'use client'
-
-import { Loader2, Send } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import * as React from 'react'
 
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { useEnviarMensagem, useMarcarLida, useMensagens, type MensagemChat } from '@/hooks/useChat'
+import { GavetaPe } from '@/components/ui/gaveta'
+import { horaBr, quandoBr } from '@/components/chat/formato'
+import { useCortePlantao, useEnviarMensagem, useMarcarLida, useMensagens, type MensagemChat } from '@/hooks/useChat'
 import { cn } from '@/lib/utils'
 
-function fmtDia(iso: string) {
-  const d = new Date(iso)
-  const hoje = new Date()
-  const ontem = new Date()
-  ontem.setDate(hoje.getDate() - 1)
-  const mesmaData = (a: Date, b: Date) => a.toDateString() === b.toDateString()
-  if (mesmaData(d, hoje)) return 'Hoje'
-  if (mesmaData(d, ontem)) return 'Ontem'
-  return d.toLocaleDateString('pt-BR')
+// Conversa aberta na gaveta (P/index.html, chat.naConversa). Cada plantão
+// começa limpo: o que veio antes do início do plantão atual fica recolhido
+// atrás de uma cápsula e, aberto, entre as divisórias "Plantão anterior" e
+// "Plantão de hoje". Ao pé, o campo de escrever e a regra de que assunto de
+// paciente vai para a pendência do leito, não para cá.
+
+function Balao({ m, minha }: { m: MensagemChat; minha: boolean }) {
+  const quem = minha ? 'Você' : (m.autor?.nome_completo ?? 'Colega')
+  return (
+    <div
+      className={cn(
+        'flex max-w-[84%] flex-col gap-[3px] rounded-[14px] border px-[13px] py-2.5',
+        minha ? 'self-end border-[#0D948833] bg-[#0D94881A]' : 'self-start border-fio bg-campo',
+        m.id.startsWith('temp-') && 'opacity-70',
+      )}
+    >
+      <div className="flex items-baseline gap-2">
+        <span className="text-apoio font-semibold text-tinta">{quem}</span>
+        <span className="text-rotulo text-tinta-sussurro">
+          {quandoBr(m.criado_em)}
+          {m.editado_em && !m.excluida ? ' · editada' : ''}
+        </span>
+      </div>
+      <span
+        className={cn(
+          'text-controle leading-[1.5] break-words whitespace-pre-wrap text-pretty text-grafite',
+          m.excluida && 'text-tinta-sussurro italic',
+        )}
+      >
+        {m.excluida ? 'Mensagem excluída' : m.corpo}
+      </span>
+    </div>
+  )
 }
 
-function fmtHora(iso: string) {
-  return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+function Divisoria({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="self-center text-center text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">{children}</span>
+  )
 }
 
-export function Thread({
-  conversaId,
-  perfilId,
-  onMensagemLida,
-}: {
-  conversaId: string
-  perfilId?: string | null
-  onMensagemLida: () => void
-}) {
+export function Thread({ conversaId, perfilId }: { conversaId: string; perfilId?: string | null }) {
   const [texto, setTexto] = React.useState('')
-  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const [verAntes, setVerAntes] = React.useState(false)
   const fimRef = React.useRef<HTMLDivElement>(null)
   const [usuarioRolou, setUsuarioRolou] = React.useState(false)
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useMensagens(conversaId)
   const enviar = useEnviarMensagem(conversaId)
-  const marcarLida = useMarcarLida()
+  const { mutate: marcarLida } = useMarcarLida()
+  const corte = useCortePlantao()
 
-  // mescla páginas (da mais antiga para a mais nova): invertemos a ordem das páginas
+  // mescla páginas, da mais antiga para a mais nova
   const mensagens = React.useMemo(() => {
-    const paginas = data?.pages ?? []
-    const todas = [...paginas].reverse().flat() // mais antigas primeiro
-    const ordenadas = todas.sort((a, b) => a.criado_em.localeCompare(b.criado_em))
+    const ordenadas = (data?.pages ?? []).flat().sort((a, b) => a.criado_em.localeCompare(b.criado_em))
     // deduplica por id (realtime + optimistic podem sobrepor) e remove temporárias
     // que já têm a mensagem real equivalente (mesmo corpo/remetente).
     const porId = new Map<string, MensagemChat>()
@@ -63,34 +78,49 @@ export function Thread({
     return [...porId.values()].sort((a, b) => a.criado_em.localeCompare(b.criado_em))
   }, [data])
 
-  // marca como lida ao abrir a thread
+  // divide no início do plantão atual
+  const corteMs = corte.inicio.getTime()
+  const { antes, deAgora } = React.useMemo(() => {
+    const a: MensagemChat[] = []
+    const d: MensagemChat[] = []
+    for (const m of mensagens) (new Date(m.criado_em).getTime() < corteMs ? a : d).push(m)
+    return { antes: a, deAgora: d }
+  }, [mensagens, corteMs])
+  // ainda pode haver plantão anterior nas páginas não carregadas
+  const temAntes = antes.length > 0 || (!isLoading && !!hasNextPage)
+
+  // marca como lida ao abrir e a cada mensagem nova de outra pessoa enquanto aberta
+  const ultimaDeOutro = React.useMemo(() => {
+    for (let i = mensagens.length - 1; i >= 0; i--) if (mensagens[i].autor_id !== perfilId) return mensagens[i].id
+    return null
+  }, [mensagens, perfilId])
   React.useEffect(() => {
-    void marcarLida.mutateAsync(conversaId)
-    onMensagemLida()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversaId])
+    marcarLida(conversaId)
+  }, [conversaId, ultimaDeOutro, marcarLida])
 
   // autoscroll para o fim ao receber mensagem (se não rolou para cima)
   React.useEffect(() => {
-    if (!usuarioRolou) {
-      fimRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [mensagens.length, usuarioRolou])
+    if (!usuarioRolou) fimRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [deAgora.length, usuarioRolou])
 
   function onScroll(e: React.UIEvent<HTMLDivElement>) {
     const el = e.currentTarget
-    const pertoDoTopo = el.scrollTop < 40
     const pertoDoFim = el.scrollHeight - el.scrollTop - el.clientHeight < 60
     setUsuarioRolou(!pertoDoFim)
-    if (pertoDoTopo && hasNextPage && !isFetchingNextPage) {
-      void fetchNextPage()
-    }
+    if (verAntes && el.scrollTop < 40 && hasNextPage && !isFetchingNextPage) void fetchNextPage()
+  }
+
+  function alternarAntes() {
+    const abrir = !verAntes
+    setVerAntes(abrir)
+    if (abrir && antes.length === 0 && hasNextPage && !isFetchingNextPage) void fetchNextPage()
   }
 
   async function onSubmit() {
     const corpo = texto.trim()
-    if (!corpo) return
+    if (!corpo || enviar.isPending) return
     setTexto('')
+    setUsuarioRolou(false)
     try {
       await enviar.mutateAsync(corpo)
     } catch {
@@ -98,102 +128,98 @@ export function Thread({
     }
   }
 
-  // agrupa por dia
-  const grupos = React.useMemo(() => {
-    const g: { dia: string; itens: typeof mensagens }[] = []
-    for (const m of mensagens) {
-      const dia = fmtDia(m.criado_em)
-      const ult = g[g.length - 1]
-      if (ult && ult.dia === dia) ult.itens.push(m)
-      else g.push({ dia, itens: [m] })
-    }
-    return g
-  }, [mensagens])
+  const hora = horaBr(corte.inicio)
+  const podeEnviar = texto.trim().length > 0 && !enviar.isPending
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {/* Aviso fixo */}
-      <div className="border-b bg-atencao/[0.08] px-3 py-1.5 text-center text-[11px] font-medium text-atencao">
-        ⚠ Evite dados identificáveis de paciente. Use leito/iniciais.
-      </div>
-
-      {/* Lista */}
-      <div ref={scrollRef} onScroll={onScroll} className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-3">
+      <div onScroll={onScroll} className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-[22px] py-[18px]">
         {isLoading ? (
-          <div className="flex h-full items-center justify-center">
-            <Loader2 className="animate-spin" />
+          <div className="flex flex-1 items-center justify-center text-tinta-sussurro">
+            <Loader2 className="size-5 animate-spin" aria-label="Carregando mensagens" />
           </div>
-        ) : isFetchingNextPage ? (
-          <div className="flex justify-center py-1">
-            <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
-          </div>
-        ) : null}
+        ) : (
+          <>
+            {temAntes && (
+              <button
+                type="button"
+                onClick={alternarAntes}
+                aria-expanded={verAntes}
+                className="cursor-pointer self-center rounded-capsula border border-fio bg-superficie px-[13px] py-[5px] text-apoio text-tinta-apoio hover:border-marca hover:text-acao focus-visible:border-marca focus-visible:outline-none"
+              >
+                {verAntes ? 'Ocultar plantão anterior' : 'Ver plantão anterior'}
+              </button>
+            )}
 
-        {grupos.map((g) => (
-          <React.Fragment key={g.dia}>
-            <div className="my-1 text-center text-[10px] font-semibold uppercase text-muted-foreground">
-              {g.dia}
-            </div>
-            {g.itens.map((m) => {
-              const minha = m.autor_id === perfilId
-              const corpo = m.excluida ? 'Mensagem excluída' : m.corpo
-              return (
-                <div key={m.id} className={cn('flex w-full', minha ? 'justify-end' : 'justify-start')}>
-                  <div
-                    className={cn(
-                      'max-w-[80%] rounded-2xl px-3 py-2 text-sm',
-                      minha ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                    )}
-                  >
-                    {!minha && m.autor?.nome_completo && (
-                      <div className="mb-0.5 text-[10px] font-semibold text-muted-foreground">
-                        {m.autor.nome_completo}
-                      </div>
-                    )}
-                    <div className={cn('whitespace-pre-wrap break-words', m.excluida && 'italic opacity-60')}>
-                      {corpo}
-                    </div>
-                    <div
-                      className={cn(
-                        'mt-0.5 text-[10px]',
-                        minha ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                      )}
-                    >
-                      {fmtHora(m.criado_em)}
-                      {m.editado_em ? ' · editada' : ''}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </React.Fragment>
-        ))}
+            {verAntes && (
+              <div className="flex flex-col gap-2.5">
+                {isFetchingNextPage && (
+                  <Loader2 className="size-3.5 animate-spin self-center text-tinta-sussurro" aria-label="Carregando mensagens anteriores" />
+                )}
+                <Divisoria>
+                  {corte.daEscala ? `Plantão anterior · encerrado às ${hora}` : 'Antes de hoje'}
+                </Divisoria>
+                {antes.length === 0 && !isFetchingNextPage && (
+                  <span className="self-center text-apoio text-tinta-sussurro">Nada no plantão anterior.</span>
+                )}
+                {antes.map((m) => (
+                  <Balao key={m.id} m={m} minha={m.autor_id === perfilId} />
+                ))}
+                <Divisoria>{corte.daEscala ? `Plantão de hoje · desde ${hora}` : `Hoje · desde ${hora}`}</Divisoria>
+              </div>
+            )}
+
+            {deAgora.length === 0 && !verAntes && (
+              <p className="self-center py-6 text-center text-apoio text-pretty text-tinta-sussurro">
+                {temAntes ? 'Nenhuma mensagem neste plantão ainda.' : 'Nenhuma mensagem ainda.'}
+              </p>
+            )}
+
+            {deAgora.map((m) => (
+              <Balao key={m.id} m={m} minha={m.autor_id === perfilId} />
+            ))}
+          </>
+        )}
         <div ref={fimRef} />
       </div>
 
-      {/* Input */}
-      <div className="border-t p-3">
-        <div className="flex items-end gap-2">
-          <Textarea
+      <GavetaPe className="flex flex-col gap-2 bg-superficie pt-3.5 pb-[18px]">
+        <form
+          className="flex items-end gap-[9px]"
+          onSubmit={(e) => {
+            e.preventDefault()
+            void onSubmit()
+          }}
+        >
+          <textarea
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              // Enter envia; Shift+Enter quebra a linha
+              if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
                 e.preventDefault()
                 void onSubmit()
               }
             }}
-            placeholder="Escreva uma mensagem…"
-            rows={2}
-            className="min-h-[44px] flex-1 resize-none text-sm"
+            rows={1}
             maxLength={4000}
+            placeholder="Escrever mensagem"
+            aria-label="Escrever mensagem"
+            className="field-sizing-content max-h-32 min-w-0 flex-1 resize-none rounded-controle border border-fio bg-campo px-3 py-2.5 text-corpo leading-[1.35] text-tinta outline-none placeholder:text-tinta-sussurro focus:border-marca"
           />
-          <Button onClick={() => void onSubmit()} disabled={!texto.trim() || enviar.isPending} className="h-[44px]">
-            {enviar.isPending ? <Loader2 className="animate-spin" /> : <Send />}
-          </Button>
-        </div>
-        <p className="mt-1 text-right text-[10px] text-muted-foreground">Enter envia · Shift+Enter quebra linha</p>
-      </div>
+          <button
+            type="submit"
+            disabled={!podeEnviar}
+            className="flex shrink-0 items-center gap-1.5 rounded-controle border-0 bg-acao px-3.5 py-[9px] text-apoio font-semibold text-white hover:bg-acao-pressionada disabled:cursor-not-allowed disabled:bg-[#94A3B8] disabled:hover:bg-[#94A3B8]"
+          >
+            {enviar.isPending && <Loader2 className="size-3.5 animate-spin" aria-hidden />}
+            Enviar
+          </button>
+        </form>
+        <span className="leading-[1.45] text-pretty">
+          Assunto de paciente não vai aqui: registre como pendência no leito, onde fica com prazo e com quem assume.
+        </span>
+      </GavetaPe>
     </div>
   )
 }

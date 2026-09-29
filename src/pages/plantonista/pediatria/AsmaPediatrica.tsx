@@ -37,7 +37,7 @@ export function AsmaPediatrica() {
                 <span className="font-medium">Ipratrópio em nebulização (250 µg/mL)</span>
                 <strong className="tabular-nums">{ipra.mcg} µg · {ipra.gotas} gotas</strong>
               </div>
-              <p className="text-muted-foreground">Menos de 20 kg: 250 µg (20 gotas); 20 kg ou mais: 500 µg (40 gotas). A cada 20 min, geralmente na primeira hora, intercalado ao salbutamol.</p>
+              <p className="text-tinta-sussurro">Menos de 20 kg: 250 µg (20 gotas); 20 kg ou mais: 500 µg (40 gotas). A cada 20 min, geralmente na primeira hora, intercalado ao salbutamol.</p>
               <p className="text-rotulo text-tinta-sussurro">Livro ICr, p. 119 (Tabela 3).</p>
             </div>
           )}
@@ -49,10 +49,10 @@ export function AsmaPediatrica() {
       </Bloco>
 
       <Bloco titulo="Classificação da crise (Tabela 1, p. 114) — referência">
-        <p className="text-muted-foreground">A presença de vários parâmetros, mas não necessariamente todos, indica a classificação geral. A tela não classifica.</p>
+        <p className="text-tinta-sussurro">A presença de vários parâmetros, mas não necessariamente todos, indica a classificação geral. A tela não classifica.</p>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-left text-xs">
-            <thead className="text-muted-foreground">
+            <thead className="text-tinta-sussurro">
               <tr>{['Parâmetro', 'Leve a moderada', 'Grave', 'Muito grave (insuficiência respiratória)'].map((h) => <th key={h} className="px-1.5 py-1 font-medium">{h}</th>)}</tr>
             </thead>
             <tbody>
@@ -67,7 +67,7 @@ export function AsmaPediatrica() {
             </tbody>
           </table>
         </div>
-        <p className="text-muted-foreground">FR normal: &lt; 2 meses, &lt; 60; 2 a 11 meses, &lt; 50; 1 a 5 anos, &lt; 40; 6 a 8 anos, &lt; 30; acima de 8 anos, igual ao adulto.</p>
+        <p className="text-tinta-sussurro">FR normal: &lt; 2 meses, &lt; 60; 2 a 11 meses, &lt; 50; 1 a 5 anos, &lt; 40; 6 a 8 anos, &lt; 30; acima de 8 anos, igual ao adulto.</p>
         <p className="text-rotulo text-tinta-sussurro">Livro ICr, cap. 8, p. 114.</p>
       </Bloco>
     </ToolLayout>

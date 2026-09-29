@@ -176,6 +176,6 @@ export function corDoFlag(flag: FlagObs | string | null): string {
     case 'CRIT': return 'bg-critico text-white'
     case 'H': return 'bg-atencao/[0.12] text-atencao'
     case 'L': return 'bg-suprimento/[0.12] text-suprimento'
-    default: return 'bg-muted text-foreground'
+    default: return 'bg-trilha text-tinta'
   }
 }

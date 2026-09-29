@@ -101,7 +101,7 @@ export function DpocExacerbacaoAdulto() {
       </Bloco>
 
       <Bloco titulo="Errata e divergências do livro">
-        <ul className="list-disc pl-5 text-muted-foreground">{ERRATA_DPOC.map((e) => <li key={e}>{e}</li>)}</ul>
+        <ul className="list-disc pl-5 text-tinta-sussurro">{ERRATA_DPOC.map((e) => <li key={e}>{e}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

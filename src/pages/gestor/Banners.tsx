@@ -154,7 +154,7 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
         ) : (
           <div>
             <h1 className="text-xl font-semibold">Imagens da unidade</h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-tinta-sussurro">
               {unidadeAtiva?.unidade.nome} — o quadro exibido na Central do Plantonista. As imagens
               trocam sozinhas e podem ter links.
             </p>
@@ -166,15 +166,15 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
         </Button>
       </div>
 
-      {erro && <p className="text-sm text-destructive">{erro}</p>}
+      {erro && <p className="text-sm text-critico">{erro}</p>}
 
       {isLoading ? (
         <div className="flex h-40 items-center justify-center"><Spinner /></div>
       ) : (
         <div className="flex flex-col gap-3">
           {(banners ?? []).map((b, index) => (
-            <div key={b.id} className="flex items-center gap-3 rounded-2xl border bg-card p-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-              <div className="relative h-16 w-28 shrink-0 overflow-hidden rounded-lg border bg-muted">
+            <div key={b.id} className="flex items-center gap-3 rounded-2xl border bg-superficie p-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+              <div className="relative h-16 w-28 shrink-0 overflow-hidden rounded-lg border bg-trilha">
                 <img src={b.imagem_url} alt={b.titulo ?? ''} className="h-full w-full object-cover" />
                 {!b.ativo && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-[10px] font-semibold text-white">
@@ -186,11 +186,11 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="truncate text-sm font-medium">{b.titulo || 'Sem título'}</span>
-                  {b.link_url && <Link2 className="size-3.5 shrink-0 text-primary" />}
+                  {b.link_url && <Link2 className="size-3.5 shrink-0 text-acao" />}
                   {b.ativo && <Badge variant="success">Ativo</Badge>}
                 </div>
                 {b.descricao && (
-                  <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{b.descricao}</p>
+                  <p className="mt-0.5 line-clamp-1 text-xs text-tinta-sussurro">{b.descricao}</p>
                 )}
               </div>
 
@@ -220,7 +220,7 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
           ))}
 
           {(banners ?? []).length === 0 && (
-            <p className="py-8 text-center text-sm text-muted-foreground">
+            <p className="py-8 text-center text-sm text-tinta-sussurro">
               Nenhuma imagem no quadro. Clique em "Nova imagem" para começar.
             </p>
           )}
@@ -263,9 +263,9 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
             <div className="flex flex-col gap-2">
               <Label htmlFor="banner-link">Link de redirecionamento</Label>
               <Input id="banner-link" placeholder="https://… (opcional)" {...form.register('link_url')} />
-              <p className="text-xs text-muted-foreground">Ao clicar na imagem, abre o link em nova aba.</p>
+              <p className="text-xs text-tinta-sussurro">Ao clicar na imagem, abre o link em nova aba.</p>
               {form.formState.errors.link_url && (
-                <p className="text-xs text-destructive">{form.formState.errors.link_url.message}</p>
+                <p className="text-xs text-critico">{form.formState.errors.link_url.message}</p>
               )}
             </div>
 

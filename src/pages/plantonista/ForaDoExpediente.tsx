@@ -21,7 +21,7 @@ export function ForaDoExpediente() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <CalendarClock className="size-5 text-primary" />
+            <CalendarClock className="size-5 text-acao" />
             Fora do expediente
           </CardTitle>
           <CardDescription>
@@ -29,11 +29,11 @@ export function ForaDoExpediente() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             O acesso é liberado automaticamente pelo relógio do servidor quando o seu plantão
             começar. Nenhuma configuração manual é necessária.
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             Se você tem acesso pago a atendimento (prescrição, admissão, atestado e documento de
             internação), ele será liberado nesta mesma tela.
           </p>

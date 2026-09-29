@@ -72,7 +72,7 @@ export function PosPcrAdulto() {
           <Resultado rotulo={`No alvo de ${br(REAQUECIMENTO.alvoCh, 2)} °C/h`} valor={reaq ? `${br(reaq.horasNoAlvo)} h` : '—'} />
           <Resultado rotulo={`Mínimo sem passar de ${br(REAQUECIMENTO.maximoCh)} °C/h`} valor={reaq ? `${br(reaq.horasMinimas)} h` : '—'} />
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-tinta-sussurro">
           Reaquecimento após {REAQUECIMENTO.aposHorasHT} h de HT ({REAQUECIMENTO.pagina}). O livro não fixa a temperatura final no texto; 36 °C aparece na Tabela 3 (sangramento maior, p. 111).
           CT por pelo menos 24 h, idealmente 48 h após o RCE (p. 109).
         </p>
@@ -104,7 +104,7 @@ export function PosPcrAdulto() {
           <NumberField id="ppcr-h" label="Horas desde o RCE (ou do reaquecimento, para o PESS)" unit="h" value={horas} onChange={setHoras} step={1} />
         </div>
         {janelas?.map((j) => (
-          <p key={j.janela.id} className={j.atingida ? '' : 'text-muted-foreground'}>
+          <p key={j.janela.id} className={j.atingida ? '' : 'text-tinta-sussurro'}>
             {j.atingida ? 'Na janela' : 'Fora da janela'}: {j.janela.texto} ({j.janela.pagina})
           </p>
         ))}

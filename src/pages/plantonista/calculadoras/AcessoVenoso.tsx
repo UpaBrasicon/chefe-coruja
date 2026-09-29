@@ -22,7 +22,7 @@ function Grupo({ titulo, opcoes, valor, set }: { titulo: string; opcoes: Opcao[]
             onClick={() => set(o.valor)}
             className={cn(
               'rounded-lg border px-3 py-2 text-left text-sm transition-colors',
-              valor === o.valor ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50'
+              valor === o.valor ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50'
             )}
           >
             {o.label}
@@ -93,14 +93,14 @@ export function AcessoVenoso() {
 
         {!completo && !crianca && (
           <Card>
-            <CardContent className="pt-6 text-sm text-muted-foreground">
+            <CardContent className="pt-6 text-sm text-tinta-sussurro">
               Responda todas as etapas para gerar a recomendação.
             </CardContent>
           </Card>
         )}
 
         {resultado && (
-          <Card className="border-primary">
+          <Card className="border-acao">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 Dispositivo recomendado
@@ -108,7 +108,7 @@ export function AcessoVenoso() {
               </CardTitle>
               <CardDescription>{resultado.motivo}</CardDescription>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
+            <CardContent className="text-sm text-tinta-sussurro">
               Considerar ultrassom para guiar punção quando a rede venosa estiver comprometida.
             </CardContent>
           </Card>

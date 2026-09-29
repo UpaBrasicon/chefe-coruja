@@ -78,7 +78,7 @@ export function TraumaInicialAdulto() {
           <Resultado rotulo="Em relação aos 1–3 L (p. 647)" valor={cris ? CRISTALOIDE[cris] : '—'} />
           <Resultado rotulo="Alíquotas restritas (p. 646)" valor={`${faixaBr(ALIQUOTA_TRAUMA_ML, 0)} mL`} />
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-tinta-sussurro">
           O livro: transfusão bem indicada em quem mantém instabilidade após 1–3 L de cristaloide ou com hemorragia moderada/grave persistente (p. 647). ABC score e
           metas de hipotensão permissiva têm telas próprias (transfusão maciça e ressuscitação volêmica).
         </p>
@@ -91,16 +91,16 @@ export function TraumaInicialAdulto() {
       <Bloco titulo="Coluna">
         <p className="text-sm font-medium">Restrição de movimento da coluna — trauma contuso no adulto (cap. 48, Tabela 3, p. 664)</p>
         <ul className="list-disc pl-5 text-sm">{RMC_ADULTO.map((x) => <li key={x}>{x}</li>)}</ul>
-        <p className="text-sm text-muted-foreground">Em trauma penetrante o livro diz que a restrição da coluna não é indicada (p. 670).</p>
+        <p className="text-sm text-tinta-sussurro">Em trauma penetrante o livro diz que a restrição da coluna não é indicada (p. 670).</p>
         <p className="text-sm font-medium">Coluna toracolombar ({TORACOLOMBAR.pagina})</p>
         <p className="text-sm">Mecanismo de força importante: {TORACOLOMBAR.mecanismo.join('; ')}.</p>
         <p className="text-sm">Exame da coluna: {TORACOLOMBAR.exame.join('; ')}.</p>
-        <p className="text-sm text-muted-foreground">{TORACOLOMBAR.texto}</p>
-        <p className="text-sm text-muted-foreground">NEXUS, regra canadense, MGAP e Triage-RTS têm telas próprias.</p>
+        <p className="text-sm text-tinta-sussurro">{TORACOLOMBAR.texto}</p>
+        <p className="text-sm text-tinta-sussurro">NEXUS, regra canadense, MGAP e Triage-RTS têm telas próprias.</p>
       </Bloco>
 
       <Bloco titulo="Errata">
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">{ERRATA_TRAUMA.map((e) => <li key={e}>{e}</li>)}</ul>
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{ERRATA_TRAUMA.map((e) => <li key={e}>{e}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

@@ -40,7 +40,7 @@ export function VmAjusteInicialAdulto() {
       ficha={fichaVmAjusteAdulto}
     >
       <Bloco titulo="Indicações (p. 498)" descricao="Os cortes numéricos vêm junto do contexto clínico que o livro exige.">
-        <ul className="list-disc pl-5">{INDICACOES_VM.map((i) => <li key={i.texto}>{i.texto} <span className="text-muted-foreground">({i.pagina})</span></li>)}</ul>
+        <ul className="list-disc pl-5">{INDICACOES_VM.map((i) => <li key={i.texto}>{i.texto} <span className="text-tinta-sussurro">({i.pagina})</span></li>)}</ul>
         <div className="grid gap-4 sm:grid-cols-2">
           <NumberField id="vm-po2" label="PO2" unit="mmHg" value={po2} onChange={setPo2} step={1} />
           <NumberField id="vm-pco2" label="PCO2" unit="mmHg" value={pco2} onChange={setPco2} step={1} />
@@ -53,7 +53,7 @@ export function VmAjusteInicialAdulto() {
         <dl className="grid gap-2 sm:grid-cols-2">
           {TABELA2.map((l) => (
             <div key={l.parametro} className="rounded-lg border px-3 py-2">
-              <dt className="text-muted-foreground">{l.parametro}</dt>
+              <dt className="text-tinta-sussurro">{l.parametro}</dt>
               <dd>{l.modos[modo]}</dd>
             </div>
           ))}
@@ -79,9 +79,9 @@ export function VmAjusteInicialAdulto() {
             <Resultado rotulo="Ciclo · Tins · Te · I:E" valor={ie && tinsCalc ? `${br(ie.cicloS, 2)} s · ${br(tinsCalc, 2)} s · ${br(ie.teS, 2)} s · 1:${br(ie.n, 1)}` : '—'} />
           </div>
         ) : (
-          <p className="text-muted-foreground">Na PSV a FR é do paciente (ajustar ventilação de apneia); ciclagem inicial a 25% do pico de fluxo.</p>
+          <p className="text-tinta-sussurro">Na PSV a FR é do paciente (ajustar ventilação de apneia); ciclagem inicial a 25% do pico de fluxo.</p>
         )}
-        {modo === 'vcv' && <p className="text-muted-foreground">Tins do VCV = VC ÷ fluxo em onda quadrada (conta aritmética; 60 L/min = 1 L/s, como na Figura 2).</p>}
+        {modo === 'vcv' && <p className="text-tinta-sussurro">Tins do VCV = VC ÷ fluxo em onda quadrada (conta aritmética; 60 L/min = 1 L/s, como na Figura 2).</p>}
         <Alertas itens={avisos} />
       </Bloco>
 
@@ -98,7 +98,7 @@ export function VmAjusteInicialAdulto() {
       </Bloco>
 
       <Bloco titulo="Errata e divergências do livro">
-        <ul className="list-disc pl-5 text-muted-foreground">{ERRATA_VM.map((e) => <li key={e}>{e}</li>)}</ul>
+        <ul className="list-disc pl-5 text-tinta-sussurro">{ERRATA_VM.map((e) => <li key={e}>{e}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

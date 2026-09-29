@@ -62,7 +62,7 @@ export function LesaoRenalAgudaAdulto() {
           <Resultado rotulo="Pela creatinina / pela diurese" valor={`${est(k.estadioCreatinina)} / ${est(k.estadioDiurese)}`} />
           <Resultado rotulo="Estágio KDIGO" valor={est(k.estadio)} />
         </div>
-        {k.motivos.length > 0 && <p className="text-muted-foreground">{k.motivos.join('; ')}.</p>}
+        {k.motivos.length > 0 && <p className="text-tinta-sussurro">{k.motivos.join('; ')}.</p>}
         <Alertas itens={k.avisos} />
       </Bloco>
 

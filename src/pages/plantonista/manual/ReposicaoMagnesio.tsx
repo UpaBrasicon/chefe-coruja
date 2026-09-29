@@ -39,7 +39,7 @@ export function ReposicaoMagnesio() {
           </div>
         )}
         {faixa && <Trecho {...faixa.referencia} />}
-        {mg > 0 && !faixa && g !== 'sem hipomagnesemia' && <p className="text-muted-foreground">Valor entre as faixas de reposição EV do paciente estável que o livro traz (&lt; 1; 1–1,5; 1,6–1,9 mg/dL).</p>}
+        {mg > 0 && !faixa && g !== 'sem hipomagnesemia' && <p className="text-tinta-sussurro">Valor entre as faixas de reposição EV do paciente estável que o livro traz (&lt; 1; 1–1,5; 1,6–1,9 mg/dL).</p>}
       </Bloco>
 
       <Bloco titulo="Esquemas que o manual traz" descricao="Conversões: MgSO4 10% 1 g = 10 mL = 8 mEq = 4 mmol; 1 mmol = 2 mEq = 24 mg de Mg elementar = 240 mg de MgSO4 (p. 1501).">
@@ -61,7 +61,7 @@ export function ReposicaoMagnesio() {
             <Resultado rotulo="Bomba" valor={`${br(inf.mlH)} mL/h`} />
             <Resultado rotulo="Velocidade" valor={`${br(inf.gH, 2)} g/h`} />
           </div>
-        ) : <p className="text-muted-foreground">Informe dose e tempo.</p>}
+        ) : <p className="text-tinta-sussurro">Informe dose e tempo.</p>}
       </Bloco>
 
       <Bloco titulo="Reposição VO" descricao="Assintomático ou sintomas leves: 240–1.000 mg (20–80 mEq [10–40 mmol]) de Mg elementar em 2–3 tomadas; cloreto de Mg de liberação prolongada (64–71,5 mg de Mg elementar/cápsula) 4–8 cápsulas/dia; óxido de magnésio 800–1.600 mg (20–40 mmol [40–80 mEq])/dia (p. 1502).">

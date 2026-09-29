@@ -146,16 +146,16 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
       {!embutido && (
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/" className="transition-colors hover:text-foreground">Início</Link>
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/" className="transition-colors hover:text-tinta">Início</Link>
             <ChevronRight className="size-3.5" />
-            <span className="font-medium text-foreground">Evolução Clínica</span>
+            <span className="font-medium text-tinta">Evolução Clínica</span>
           </div>
           <h1 className="flex items-center gap-2 text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">
-            <Activity className="size-5 text-muted-foreground" />
+            <Activity className="size-5 text-tinta-sussurro" />
             Evolução Clínica
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             Gráficos de sinais vitais e laboratório por internação — sem migration por exame.
           </p>
         </div>
@@ -193,7 +193,7 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
             </SelectContent>
           </Select>
           {internacao && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-tinta-sussurro">
               Internação ativa · admissão{' '}
               {new Date(internacao.data_admissao).toLocaleDateString('pt-BR')}
             </p>
@@ -226,8 +226,8 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
                     onClick={() => alternarConceito(c.nome)}
                     className={
                       conceitosSel.includes(c.nome)
-                        ? 'rounded-lg border border-primary bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary'
-                        : 'rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40'
+                        ? 'rounded-lg border border-acao bg-acao/10 px-2.5 py-1 text-xs font-medium text-acao'
+                        : 'rounded-lg border border-fio bg-campo px-2.5 py-1 text-xs font-medium text-tinta-sussurro transition-colors hover:border-acao/40'
                     }
                   >
                     {c.nome.replace(/-/g, ' ')}

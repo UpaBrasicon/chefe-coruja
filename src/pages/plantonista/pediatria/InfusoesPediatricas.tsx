@@ -72,7 +72,7 @@ export function InfusoesPediatricas() {
               id="inf-ped-droga"
               value={i.id}
               onChange={(e) => trocar(e.target.value)}
-              className="h-9 rounded-md border border-input bg-transparent px-2 text-sm"
+              className="h-9 rounded-md border border-fio bg-transparent px-2 text-sm"
             >
               {(Object.keys(GRUPOS_INFUSAO) as GrupoInfusao[]).map((g) => (
                 <optgroup key={g} label={GRUPOS_INFUSAO[g]}>
@@ -81,7 +81,7 @@ export function InfusoesPediatricas() {
               ))}
             </select>
           </div>
-          <p className="text-sm text-muted-foreground md:col-span-3">{NEONATO_FORA} Pediatria: de 1 dia de vida até antes dos 14 anos.</p>
+          <p className="text-sm text-tinta-sussurro md:col-span-3">{NEONATO_FORA} Pediatria: de 1 dia de vida até antes dos 14 anos.</p>
         </CardContent>
       </Card>
 
@@ -98,7 +98,7 @@ export function InfusoesPediatricas() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 text-sm">
-            <p className="text-muted-foreground">Texto do livro: “{i.textoLivro}” ({i.paginaTexto ?? i.pagina}).</p>
+            <p className="text-tinta-sussurro">Texto do livro: “{i.textoLivro}” ({i.paginaTexto ?? i.pagina}).</p>
             {i.semCalculo ? (
               <p className="text-atencao">{i.semCalculo}</p>
             ) : (
@@ -107,10 +107,10 @@ export function InfusoesPediatricas() {
                   <div className="flex flex-col gap-1.5 md:max-w-xs">
                     <Label htmlFor="inf-ped-conc">Concentração final da solução ({uc})</Label>
                     <Input id="inf-ped-conc" inputMode="decimal" value={conc} onChange={(e) => setConc(e.target.value)} />
-                    {i.apresentacao && <p className="text-muted-foreground">Apresentação citada no livro: {i.apresentacao}. Não é o preparo.</p>}
+                    {i.apresentacao && <p className="text-tinta-sussurro">Apresentação citada no livro: {i.apresentacao}. Não é o preparo.</p>}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">A dose já é volume ({u}); não depende de concentração.</p>
+                  <p className="text-tinta-sussurro">A dose já é volume ({u}); não depende de concentração.</p>
                 )}
                 <p className="tabular-nums">
                   Faixa do livro em mL/h: {falta ?? (faixaMl ? <strong>{br(faixaMl[0])}–{br(faixaMl[1])} mL/h</strong> : '—')}
@@ -130,8 +130,8 @@ export function InfusoesPediatricas() {
                 {alertas.map((a) => <p key={a.tipo + a.texto} className="text-atencao">{a.texto}</p>)}
               </>
             )}
-            {i.errata && <p className="text-muted-foreground"><Badge variant="outline" className="mr-1">errata</Badge>{i.errata}</p>}
-            {i.nota && <p className="text-muted-foreground">No livro: {i.nota}</p>}
+            {i.errata && <p className="text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{i.errata}</p>}
+            {i.nota && <p className="text-tinta-sussurro">No livro: {i.nota}</p>}
             <p className="text-rotulo text-tinta-sussurro">PS Pediatria ICr-HCFMUSP, {i.pagina}.</p>
           </CardContent>
         </Card>

@@ -37,10 +37,10 @@ export function IsrAdulto() {
                       {r ? <><strong>{r.dose}</strong> · {r.volumeMl} mL{r.ampolas > 1 ? ` · ${r.ampolas} ampolas` : ''}</> : 'informe o peso'}
                     </span>
                   </div>
-                  <p className="text-muted-foreground">
+                  <p className="text-tinta-sussurro">
                     {d.fixa ? `dose fixa ${d.fixa.minUg}–${d.fixa.maxUg} µg` : `${d.mgKg!.toLocaleString('pt-BR')} mg/kg`} · {d.apresentacao}
                   </p>
-                  {d.nota && <p className="text-muted-foreground">Divergência no livro: {d.nota}</p>}
+                  {d.nota && <p className="text-tinta-sussurro">Divergência no livro: {d.nota}</p>}
                 </div>
               )
             })}

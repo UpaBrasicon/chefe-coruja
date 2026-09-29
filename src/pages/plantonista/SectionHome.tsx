@@ -67,7 +67,7 @@ export default function SectionHome() {
               {!filtro && (
                 <nav aria-label="Grupos da seção" className="flex flex-wrap gap-2">
                   {grupos.map((g) => (
-                    <a key={g.rotulo} href={`#${idGrupo(g.rotulo)}`} className="rounded-full border px-3 py-1 text-apoio text-tinta-apoio hover:bg-muted/50">
+                    <a key={g.rotulo} href={`#${idGrupo(g.rotulo)}`} className="rounded-full border px-3 py-1 text-apoio text-tinta-apoio hover:bg-trilha/50">
                       {g.rotulo} <span className="tabular-nums text-tinta-sussurro">{g.tools.length}</span>
                     </a>
                   ))}

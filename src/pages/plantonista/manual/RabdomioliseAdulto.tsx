@@ -56,7 +56,7 @@ export function RabdomioliseAdulto() {
           <Resultado rotulo="Alvo de diurese (fixo)" valor={`${faixaBr(F.alvoDuMlH, 0)} mL/h`} />
           <Resultado rotulo="Alvo de diurese (1–3 mL/kg/h)" valor={alvo ? `${faixaBr(alvo.porPesoMlH, 0)} mL/h${alvo.discordante ? ' — não cruza com 200–300' : ''}` : 'informe o peso'} />
         </div>
-        <p className="text-muted-foreground">{NOTA_ALVO_DU}</p>
+        <p className="text-tinta-sussurro">{NOTA_ALVO_DU}</p>
       </Bloco>
 
       <Bloco titulo="Solução de bicarbonato" descricao={`Para ${BICARBONATO_RABDO.indicacao}. Alvo: ${BICARBONATO_RABDO.alvo}. Cuidado: ${BICARBONATO_RABDO.cuidado}.`}>

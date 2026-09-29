@@ -220,7 +220,7 @@ export default function Recepcao() {
           >
             <Tv /> Abrir painel da TV
           </Button>
-          <span className="text-xs text-muted-foreground">Gerar de novo desliga o link anterior.</span>
+          <span className="text-xs text-tinta-sussurro">Gerar de novo desliga o link anterior.</span>
         </div>
       )}
 
@@ -249,17 +249,17 @@ export default function Recepcao() {
                   </Button>
                 </form>
                 {busca.isFetching && <Spinner />}
-                {busca.error && <p className="text-sm text-destructive">{(busca.error as Error).message}</p>}
+                {busca.error && <p className="text-sm text-critico">{(busca.error as Error).message}</p>}
                 {busca.data && buscado && (
                   <div className="flex flex-col gap-2">
-                    {busca.data.length === 0 && <p className="text-sm text-muted-foreground">Nenhum cadastro encontrado.</p>}
+                    {busca.data.length === 0 && <p className="text-sm text-tinta-sussurro">Nenhum cadastro encontrado.</p>}
                     {busca.data.map((a) => (
                       <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-controle border border-fio p-3">
                         <div className="min-w-0">
                           <div className="font-medium text-tinta">
                             {a.nome_social ? `${a.nome_social} (${a.nome})` : a.nome}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-tinta-sussurro">
                             {a.data_nascimento ? `${dataBr(a.data_nascimento)} · ${rotuloIdade(a.data_nascimento, hoje())}` : 'Nascimento não informado'}
                             {a.nome_mae && ` · mãe ${a.nome_mae}`}
                             {a.cpf_final && ` · CPF ${a.cpf_final}`}
@@ -326,7 +326,7 @@ export default function Recepcao() {
 
                 <details className="rounded-controle border border-fio p-3">
                   <summary className="cursor-pointer text-sm font-medium text-tinta">Responsável legal (opcional)</summary>
-                  <p className="mt-1 text-xs text-muted-foreground">Menor sem responsável pode ser cadastrado (abrigo, escola, outro local).</p>
+                  <p className="mt-1 text-xs text-tinta-sussurro">Menor sem responsável pode ser cadastrado (abrigo, escola, outro local).</p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
                     <Campo id="f-rnome" rotulo="Nome"><Input id="f-rnome" value={dados.responsavel_nome} onChange={mudar('responsavel_nome')} /></Campo>
                     <Campo id="f-rpar" rotulo="Parentesco ou vínculo"><Input id="f-rpar" value={dados.responsavel_parentesco} onChange={mudar('responsavel_parentesco')} /></Campo>
@@ -358,7 +358,7 @@ export default function Recepcao() {
                     </div>
                   </div>
                 )}
-                {erro && <p className="text-sm text-destructive">{erro}</p>}
+                {erro && <p className="text-sm text-critico">{erro}</p>}
 
                 <div className="flex justify-end gap-2">
                   <Button variant="ghost" onClick={limpar}>Cancelar</Button>
@@ -378,13 +378,13 @@ export default function Recepcao() {
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {fila.isLoading && <Spinner />}
-            {fila.data?.length === 0 && <p className="text-sm text-muted-foreground">Ninguém aguardando triagem.</p>}
+            {fila.data?.length === 0 && <p className="text-sm text-tinta-sussurro">Ninguém aguardando triagem.</p>}
             {fila.data?.map((e, i) => (
               <div key={e.id} className="flex items-start gap-3 border-b border-fio pb-2 last:border-0">
-                <span className="w-5 shrink-0 text-right text-sm tabular-nums text-muted-foreground">{i + 1}</span>
+                <span className="w-5 shrink-0 text-right text-sm tabular-nums text-tinta-sussurro">{i + 1}</span>
                 <div className="min-w-0">
                   <div className="text-sm font-medium text-tinta">{e.paciente?.nome}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-tinta-sussurro">
                     chegou {hora(e.chegada_em)} · {e.queixa}
                   </div>
                   {e.prioridades_legais.length > 0 && (

@@ -54,9 +54,9 @@ export function OxigenacaoIrpaAdulto() {
         <Bloco titulo="Leitura (cap. 27)">
           <p>{irpa.criterios.length ? <>Critérios de IRpA em ar ambiente (p. 370): <strong>{irpa.criterios.join('; ')}</strong></> : 'Nenhum critério de IRpA da p. 370 nos valores informados.'}</p>
           {irpa.tipo && <p><strong>{irpa.tipo}</strong> (p. 373–374)</p>}
-          {irpa.notas.map((n) => <p key={n} className="text-muted-foreground">{n}</p>)}
+          {irpa.notas.map((n) => <p key={n} className="text-tinta-sussurro">{n}</p>)}
           {instal.length > 0 && <p>Tempo de instalação (Tabela 5, p. 377–378): <strong>{instal.join(' · ')}</strong>{instal.length > 1 && ' — as duas linhas da tabela se sobrepõem entre 7,33 e 7,35.'}</p>}
-          {paco2 > 0 && <p className="text-muted-foreground">RNC por PaCO2 (p. 377): indivíduos normais não desenvolvem abaixo de {faixaBr(RNC_PACO2.normais, 0)} mmHg; hipercápnicos crônicos, usualmente até {faixaBr(RNC_PACO2.cronicos, 0)} mmHg.</p>}
+          {paco2 > 0 && <p className="text-tinta-sussurro">RNC por PaCO2 (p. 377): indivíduos normais não desenvolvem abaixo de {faixaBr(RNC_PACO2.normais, 0)} mmHg; hipercápnicos crônicos, usualmente até {faixaBr(RNC_PACO2.cronicos, 0)} mmHg.</p>}
         </Bloco>
       )}
 
@@ -68,13 +68,13 @@ export function OxigenacaoIrpaAdulto() {
         </div>
         {aa && <ul className="list-disc pl-5">{aa.notas.map((n) => <li key={n}>{n}</li>)}</ul>}
         {pf !== null && <p>{lerPF(pf)}</p>}
-        {!arAmbiente && <p className="text-muted-foreground">O livro não traz fórmula do gradiente com O2 suplementar.</p>}
+        {!arAmbiente && <p className="text-tinta-sussurro">O livro não traz fórmula do gradiente com O2 suplementar.</p>}
       </Bloco>
 
       <Bloco titulo="Alvo de SatO2">
         <Escolha label="DPOC conhecida ou risco de insuficiência hipercápnica?" value={risco} onChange={setRisco} opcoes={[{ value: 'nao', label: 'Não' }, { value: 'sim', label: 'Sim' }]} />
         {sat.length > 0 && <ul className="list-disc pl-5">{sat.map((s) => <li key={s}>{s}</li>)}</ul>}
-        <ul className="flex flex-col gap-1 text-muted-foreground">{ALVOS_SAT.map((a) => <li key={a.contexto}>{a.contexto}: {a.alvo} ({a.pagina})</li>)}</ul>
+        <ul className="flex flex-col gap-1 text-tinta-sussurro">{ALVOS_SAT.map((a) => <li key={a.contexto}>{a.contexto}: {a.alvo} ({a.pagina})</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Dispositivos de O2 (cap. 1, Tabela 1; cap. 27, Tabela 7)">
@@ -83,20 +83,20 @@ export function OxigenacaoIrpaAdulto() {
           <Resultado rotulo="Incremento de FiO2 — cap. 1 (1–4%/L)" valor={cat ? `+${faixaBr(cat.cap1, 0)} pontos` : '—'} />
           <Resultado rotulo="Incremento de FiO2 — cap. 27 (3–4%/L)" valor={cat ? `+${faixaBr(cat.cap27, 0)} pontos` : '—'} />
         </div>
-        <p className="text-muted-foreground">O livro não imprime a FiO2 de partida; exemplos impressos: {CATETER.cap27.exemplo.lmin} L/min → {faixaBr(CATETER.cap27.exemplo.fio2, 0)}% (cap. 27) e {CATETER.cap1.exemplo.lmin} L/min → {faixaBr(CATETER.cap1.exemplo.fio2, 0)}% (cap. 1).</p>
+        <p className="text-tinta-sussurro">O livro não imprime a FiO2 de partida; exemplos impressos: {CATETER.cap27.exemplo.lmin} L/min → {faixaBr(CATETER.cap27.exemplo.fio2, 0)}% (cap. 27) e {CATETER.cap1.exemplo.lmin} L/min → {faixaBr(CATETER.cap1.exemplo.fio2, 0)}% (cap. 1).</p>
         {cat && <Alertas itens={cat.avisos} />}
         <div className="flex flex-col gap-2">
           {DISPOSITIVOS.map((d) => (
             <div key={d.id} className="rounded-lg border px-3 py-2">
               <p className="font-medium">{d.nome}</p>
-              {d.cap1 && <p className="text-muted-foreground">Cap. 1: {d.cap1}</p>}
-              {d.cap27 && <p className="text-muted-foreground">Cap. 27: {d.cap27}</p>}
-              {d.indicacoes27 && <p className="text-muted-foreground">Indicações (Tabela 7): {d.indicacoes27}</p>}
+              {d.cap1 && <p className="text-tinta-sussurro">Cap. 1: {d.cap1}</p>}
+              {d.cap27 && <p className="text-tinta-sussurro">Cap. 27: {d.cap27}</p>}
+              {d.indicacoes27 && <p className="text-tinta-sussurro">Indicações (Tabela 7): {d.indicacoes27}</p>}
             </div>
           ))}
         </div>
         <p className="font-medium">O que o livro associa a cada situação de entrada</p>
-        <ul className="list-disc pl-5">{ENTRADA_O2.map((e) => <li key={e.situacao}>{e.situacao}: {e.livro} <span className="text-muted-foreground">({e.pagina})</span></li>)}</ul>
+        <ul className="list-disc pl-5">{ENTRADA_O2.map((e) => <li key={e.situacao}>{e.situacao}: {e.livro} <span className="text-tinta-sussurro">({e.pagina})</span></li>)}</ul>
       </Bloco>
 
       <Bloco titulo="VNI (p. 378, 382–386)" descricao="p. 378: não há critérios gasométricos específicos para indicar VNI. A tela lista os cortes do livro atingidos; não decide.">
@@ -116,13 +116,13 @@ export function OxigenacaoIrpaAdulto() {
       </Bloco>
 
       <Bloco titulo="Intubação e VM invasiva">
-        <ul className="list-disc pl-5">{INDICACOES_IOT.map((i) => <li key={i.texto}>{i.texto} <span className="text-muted-foreground">({i.pagina})</span></li>)}</ul>
+        <ul className="list-disc pl-5">{INDICACOES_IOT.map((i) => <li key={i.texto}>{i.texto} <span className="text-tinta-sussurro">({i.pagina})</span></li>)}</ul>
         {pao2 > 0 && pao2 < 60 && <p>PaO2 &lt; 60 mmHg: corte numérico da p. 498 (junto com esforço respiratório sem melhora após O2 adequado).</p>}
         {paco2 > 55 && <p>PaCO2 &gt; 55 mmHg: corte numérico da p. 498 (em não retentor crônico).</p>}
       </Bloco>
 
       <Bloco titulo="Errata e divergências do livro">
-        <ul className="list-disc pl-5 text-muted-foreground">{ERRATA_OXIGENACAO.map((e) => <li key={e}>{e}</li>)}</ul>
+        <ul className="list-disc pl-5 text-tinta-sussurro">{ERRATA_OXIGENACAO.map((e) => <li key={e}>{e}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

@@ -90,7 +90,7 @@ export default function RevisaoClinica() {
                 ))}
               </ul>
               {ROTA_DA_FICHA[v.ferramenta_id] && (
-                <Link to={ROTA_DA_FICHA[v.ferramenta_id]} className="text-apoio text-primary underline">
+                <Link to={ROTA_DA_FICHA[v.ferramenta_id]} className="text-apoio text-acao underline">
                   Abrir a ferramenta para conferir
                 </Link>
               )}

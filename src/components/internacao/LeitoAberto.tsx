@@ -15,6 +15,7 @@ import { escapeHtml } from '@/lib/utils'
 import { gravarRegistros, novoItem } from '@/lib/offline/sincronizar'
 import { useAuth } from '@/contexts/AuthContext'
 import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
+import { BotaoEpisodiosAnteriores } from '@/components/prontuario/GavetaEpisodios'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -145,7 +146,7 @@ function Secao({ titulo, children, acao }: { titulo: string; children: React.Rea
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <div className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{titulo}</div>
+        <div className="text-xs font-semibold tracking-wide text-tinta-sussurro uppercase">{titulo}</div>
         {acao}
       </div>
       {children}
@@ -242,7 +243,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor }: { pacienteId
       })
 
   if (internacao.isLoading) return <Spinner />
-  if (!i) return <p className="text-sm text-muted-foreground">Sem internação ou observação registrada para este paciente.</p>
+  if (!i) return <p className="text-sm text-tinta-sussurro">Sem internação ou observação registrada para este paciente.</p>
 
   const altaRecente = !ativa && !!i.alta_registrada_em && Date.parse(i.alta_registrada_em) > agora - 24 * 3600_000
 
@@ -253,7 +254,9 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor }: { pacienteId
           {i.status === 'em_observacao' ? 'Em observação' : ativa ? 'Internado' : 'Alta ' + diaHora(i.data_alta)}
         </Badge>
         <span className="text-tinta">{i.leito ? i.leito.identificador : ativa ? 'Aguardando box/leito' : ''}</span>
-        <span className="text-muted-foreground">desde {diaHora(i.data_admissao)}</span>
+        <span className="text-tinta-sussurro">desde {diaHora(i.data_admissao)}</span>
+        {/* D5: passagens anteriores por esta unidade, na gaveta lateral */}
+        <BotaoEpisodiosAnteriores pacienteId={pacienteId} nome={pacienteNome} className="ml-auto" />
       </div>
       {erro && <p className="rounded-lg border border-critico/30 bg-critico/[0.08] p-2 text-critico">{erro}</p>}
       {aviso && <p className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-2 text-conforme">{aviso}</p>}
@@ -291,13 +294,13 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor }: { pacienteId
 function BlocoAcuidade({ a, carregando }: { a?: Acuidade; carregando: boolean }) {
   if (carregando) return <Spinner />
   if (!a) return null
-  if (!a.escala) return <Secao titulo="Acuidade"><p className="text-muted-foreground">{a.motivo}</p></Secao>
+  if (!a.escala) return <Secao titulo="Acuidade"><p className="text-tinta-sussurro">{a.motivo}</p></Secao>
   const semAfericao = !a.aferido_em
   const b = BANDA[a.banda ?? 0]
   return (
     <Secao titulo={`Acuidade · ${a.escala}${a.grupo ? ` · ${a.grupo}` : ''}`}>
       {semAfericao ? (
-        <p className="text-muted-foreground">Sem aferição nas últimas 24 horas: lance os sinais vitais para o escore.</p>
+        <p className="text-tinta-sussurro">Sem aferição nas últimas 24 horas: lance os sinais vitais para o escore.</p>
       ) : (
         <>
           <div className={`flex flex-wrap items-baseline gap-2 rounded-lg border px-3 py-2 ${b.classe}`}>
@@ -317,7 +320,7 @@ function BlocoAcuidade({ a, carregando }: { a?: Acuidade; carregando: boolean })
           {a.parcial && <p className="text-xs text-atencao">* Escore parcial. Faltou: {(a.faltando ?? []).join(', ')}.</p>}
         </>
       )}
-      <p className="text-xs text-muted-foreground">{a.fonte} O escore apoia; a conduta é da equipe.</p>
+      <p className="text-xs text-tinta-sussurro">{a.fonte} O escore apoia; a conduta é da equipe.</p>
     </Secao>
   )
 }
@@ -358,7 +361,7 @@ function BlocoSepse({ a, pacienteId, podeMarcar, acao }: { a: Acuidade; paciente
           </Button>
         ) : undefined}>
         {!ph ? (
-          <p className="text-muted-foreground">
+          <p className="text-tinta-sussurro">
             Não calculado: sem CID de infecção no episódio e sem suspeita de infecção marcada.
           </p>
         ) : (
@@ -380,7 +383,7 @@ function BlocoSepse({ a, pacienteId, podeMarcar, acao }: { a: Acuidade; paciente
               ))}
             </ul>
             {ph.parcial && <p className="text-xs text-atencao">* Faltou medir: {ph.faltando.join(', ')}. Variável não medida não soma ponto.</p>}
-            <p className="text-xs text-muted-foreground">{ph.fonte} {ph.notas}</p>
+            <p className="text-xs text-tinta-sussurro">{ph.fonte} {ph.notas}</p>
           </>
         )}
       </Secao>
@@ -404,7 +407,7 @@ function BlocoSepse({ a, pacienteId, podeMarcar, acao }: { a: Acuidade; paciente
               * Não medidos (contam como normais): {a.pelod2.faltando.join(', ')}. A pendência “PELOD-2 do dia” fecha sozinha quando as 10 variáveis estiverem registradas.
             </p>
           )}
-          <p className="text-xs text-muted-foreground">{a.pelod2.fonte} {a.pelod2.notas}</p>
+          <p className="text-xs text-tinta-sussurro">{a.pelod2.fonte} {a.pelod2.notas}</p>
         </Secao>
       )}
     </>
@@ -500,7 +503,7 @@ function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, aoGravar
   }
   return (
     <Secao titulo="Lançar vitais">
-      <p className="text-xs text-muted-foreground">Nenhum campo é obrigatório sozinho. O valor fica cru, sem marca de alterado.</p>
+      <p className="text-xs text-tinta-sussurro">Nenhum campo é obrigatório sozinho. O valor fica cru, sem marca de alterado.</p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {NUMERICOS.map(([nome, rotulo]) => (
           <div key={nome} className="flex flex-col gap-1">
@@ -531,11 +534,11 @@ function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, aoGravar
       </div>
       {pediatrico && (
         <>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-tinta-sussurro">
             Vasoativas: adrenalina, noradrenalina, dopamina, dobutamina, milrinona ou vasopressina, em qualquer dose (Phoenix).
             Até a prescrição da fase 4, o número é marcado aqui.
           </p>
-          <div className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Exames (Phoenix e PELOD-2)</div>
+          <div className="text-xs font-semibold tracking-wide text-tinta-sussurro uppercase">Exames (Phoenix e PELOD-2)</div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {EXAMES.map(([nome, rotulo]) => (
               <div key={nome} className="flex flex-col gap-1">
@@ -588,7 +591,7 @@ function BlocoPendencias({ i, ativa, lista, eu, acao }: { i: Internacao; ativa: 
 
   return (
     <Secao titulo="Pendências">
-      {abertas.length === 0 && <p className="text-muted-foreground">Nenhuma pendência aberta.</p>}
+      {abertas.length === 0 && <p className="text-tinta-sussurro">Nenhuma pendência aberta.</p>}
       {abertas.map((p) => {
         const vencida = !!p.prazo && Date.parse(p.prazo) < agora
         return (
@@ -596,7 +599,7 @@ function BlocoPendencias({ i, ativa, lista, eu, acao }: { i: Internacao; ativa: 
             <Badge variant={vencida ? 'destructive' : p.tipo === 'observacao' ? 'warning' : 'secondary'}>{TIPO_PENDENCIA[p.tipo] ?? p.tipo}</Badge>
             <span className="min-w-0 flex-1 text-tinta">{p.descricao}</span>
             {p.impeditiva && <Badge variant="outline">impede a alta</Badge>}
-            <span className={`text-xs tabular-nums ${vencida ? 'font-semibold text-critico' : 'text-muted-foreground'}`}>
+            <span className={`text-xs tabular-nums ${vencida ? 'font-semibold text-critico' : 'text-tinta-sussurro'}`}>
               {p.prazo ? `${vencida ? 'vencida desde' : 'até'} ${hora(p.prazo)}` : 'sem prazo'}
               {p.autor_id === eu ? ' · sua' : p.autor_id === null ? ' · sistema' : ''}
             </span>
@@ -609,7 +612,7 @@ function BlocoPendencias({ i, ativa, lista, eu, acao }: { i: Internacao; ativa: 
         )
       })}
       {desfazer && (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-tinta-sussurro">
           Pendência concluída.
           <Button size="xs" variant="ghost" onClick={() => acao(() => rpc('desfazer_pendencia', { p_pendencia: desfazer })).then(() => setDesfazer(null))}>
             <Undo2 /> Desfazer
@@ -617,7 +620,7 @@ function BlocoPendencias({ i, ativa, lista, eu, acao }: { i: Internacao; ativa: 
         </div>
       )}
       {resolvidas.length > 0 && (
-        <details className="text-xs text-muted-foreground">
+        <details className="text-xs text-tinta-sussurro">
           <summary className="cursor-pointer">Resolvidas ({resolvidas.length})</summary>
           {resolvidas.map((p) => (
             <div key={p.id}>
@@ -645,7 +648,7 @@ function BlocoPendencias({ i, ativa, lista, eu, acao }: { i: Internacao; ativa: 
           </Button>
         </div>
       )}
-      {ativa && <p className="text-xs text-muted-foreground">Parecer sem resposta impede a alta. A observação se resolve com a conduta: alta ou internação.</p>}
+      {ativa && <p className="text-xs text-tinta-sussurro">Parecer sem resposta impede a alta. A observação se resolve com a conduta: alta ou internação.</p>}
     </Secao>
   )
 }
@@ -813,7 +816,7 @@ function CancelarAlta({ i, acao }: { i: Internacao; acao: Acao }) {
   const [texto, setTexto] = React.useState('')
   return (
     <Secao titulo="Cancelar alta">
-      <p className="text-muted-foreground">Alta de {diaHora(i.data_alta)} · CID {i.cid_alta}. Cancelar devolve o paciente ao censo e revoga o link do pacote.</p>
+      <p className="text-tinta-sussurro">Alta de {diaHora(i.data_alta)} · CID {i.cid_alta}. Cancelar devolve o paciente ao censo e revoga o link do pacote.</p>
       <Textarea placeholder="Justificativa (mínimo de 10 letras)" value={texto} onChange={(e) => setTexto(e.target.value)} />
       <Button size="sm" variant="outline" className="self-start" disabled={texto.trim().length < 10}
         onClick={() => acao(() => rpc('cancelar_alta', { p_internacao: i.id, p_justificativa: texto }), 'Alta cancelada: o paciente voltou ao censo.')}>
@@ -874,11 +877,11 @@ function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, acao }: {
       {ativo ? (
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="success"><Link2 className="mr-1 inline size-3" />link ativo</Badge>
-          <span className="text-muted-foreground">gerado {diaHora(ativo.criado_em)} · vale até {diaHora(ativo.expira_em)}</span>
+          <span className="text-tinta-sussurro">gerado {diaHora(ativo.criado_em)} · vale até {diaHora(ativo.expira_em)}</span>
           <Button size="xs" variant="ghost" onClick={() => acao(() => rpc('revogar_pacote_alta', { p_pacote: ativo.id }), 'Link revogado.')}>Revogar</Button>
         </div>
       ) : (
-        <p className="text-muted-foreground">
+        <p className="text-tinta-sussurro">
           {lista[0] ? `Último link: ${lista[0].situacao}.` : 'Sem link.'} O código sai impresso na orientação de alta (SMS e WhatsApp ainda não configurados).
         </p>
       )}
@@ -898,7 +901,7 @@ function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, acao }: {
           ))}
           <Textarea placeholder="Outras orientações (uma por linha)" value={extra} onChange={(e) => setExtra(e.target.value)} />
           <Input placeholder="Retorno: onde e quando" value={retorno} onChange={(e) => setRetorno(e.target.value)} />
-          <p className="text-xs text-muted-foreground">Receita, atestado, encaminhamento e pedido de exames emitidos no episódio entram no pacote automaticamente.</p>
+          <p className="text-xs text-tinta-sussurro">Receita, atestado, encaminhamento e pedido de exames emitidos no episódio entram no pacote automaticamente.</p>
           <div className="flex gap-2">
             <Button size="sm" onClick={() => void gerarEImprimir()}><Printer /> Gerar e imprimir</Button>
             <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>

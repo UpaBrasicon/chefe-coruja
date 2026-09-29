@@ -27,15 +27,15 @@ export default function Notificacoes() {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link className="transition-colors hover:text-foreground" to="/">
+        <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+          <Link className="transition-colors hover:text-tinta" to="/">
             Início
           </Link>
           <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Avisos</span>
+          <span className="font-medium text-tinta">Avisos</span>
         </div>
         <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Avisos</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-tinta-sussurro">
           Central de notificações — turno, observação vencendo, decisões do gestor e candidaturas.
         </p>
       </div>
@@ -43,7 +43,7 @@ export default function Notificacoes() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Bell className="size-4 text-muted-foreground" />
+            <Bell className="size-4 text-tinta-sussurro" />
             Notificações
           </CardTitle>
           <CardDescription>Últimas 100 notificações do seu perfil.</CardDescription>
@@ -54,7 +54,7 @@ export default function Notificacoes() {
               <Spinner />
             </div>
           ) : (notificacoes ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhuma notificação ainda.</p>
+            <p className="text-sm text-tinta-sussurro">Nenhuma notificação ainda.</p>
           ) : (
             (notificacoes ?? []).map((n) => (
               <div key={n.id} className={`rounded-lg border p-2 text-sm ${n.lida ? 'bg-campo' : 'bg-atencao/[0.08]'}`}>
@@ -62,7 +62,7 @@ export default function Notificacoes() {
                   <span className="flex-1">{n.mensagem}</span>
                   <Badge variant={n.lida ? 'secondary' : 'warning'}>{n.lida ? 'Lida' : 'Nova'}</Badge>
                 </div>
-                <div className="mt-0.5 text-xs text-muted-foreground">{new Date(n.created_at).toLocaleString('pt-BR')}</div>
+                <div className="mt-0.5 text-xs text-tinta-sussurro">{new Date(n.created_at).toLocaleString('pt-BR')}</div>
               </div>
             ))
           )}

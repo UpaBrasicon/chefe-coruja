@@ -66,7 +66,7 @@ export function ReposicaoFosforo() {
             </div>
             <Alertas itens={r.alertas} />
           </>
-        ) : <p className="text-muted-foreground">Informe peso, dose e tempo.</p>}
+        ) : <p className="text-tinta-sussurro">Informe peso, dose e tempo.</p>}
       </Bloco>
 
       <Bloco titulo="Reposição VO" descricao="Moderada em ventilação espontânea: 30–80 mmol/dia em 2–3 doses. Fosfato de sódio comprimido = 250 mg de PO4 elementar (8 mmol) (p. 1501).">

@@ -43,7 +43,7 @@ export function FebreSemSinaisPed() {
       </CampoPaciente>
 
       <Bloco titulo="Fluxograma pela idade (p. 464–468)">
-        {faixa ? <p>{TEXTO_FAIXA[faixa]}</p> : <p className="text-muted-foreground">Informe a idade em dias (até 90) ou em meses.</p>}
+        {faixa ? <p>{TEXTO_FAIXA[faixa]}</p> : <p className="text-tinta-sussurro">Informe a idade em dias (até 90) ou em meses.</p>}
       </Bloco>
 
       <Bloco titulo="Não aplicar o protocolo se (p. 463)">

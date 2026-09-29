@@ -32,7 +32,7 @@ export function LinhaDoseLivro({ d, peso, rn = false, extra }: { d: DoseLivro; p
           <span className="tabular-nums">
             {r.porDose && <strong>{fmt(r.porDose)} {d.unidade}/dose</strong>}
             {r.dia && (
-              <span className={r.porDose ? 'text-muted-foreground' : 'font-semibold'}>
+              <span className={r.porDose ? 'text-tinta-sussurro' : 'font-semibold'}>
                 {r.porDose ? ' · ' : ''}
                 {fmt(r.dia)} {d.unidade}/dia
               </span>
@@ -40,14 +40,14 @@ export function LinhaDoseLivro({ d, peso, rn = false, extra }: { d: DoseLivro; p
           </span>
         )}
       </div>
-      <p className="mt-1 text-muted-foreground">
+      <p className="mt-1 text-tinta-sussurro">
         O livro traz: {textoDoseLivro(d)} · {d.via}
       </p>
       {bloqueadaRn && <p className="text-atencao">{SEM_VALOR_NEONATAL_P4}</p>}
       {r?.noMaximo && <p className="text-atencao">Limitado ao máximo{d.fonteMaximo ? ` (${d.fonteMaximo})` : ' do livro'}.</p>}
-      {!r?.noMaximo && d.fonteMaximo && <p className="text-muted-foreground">Máximo usado: {d.fonteMaximo}.</p>}
+      {!r?.noMaximo && d.fonteMaximo && <p className="text-tinta-sussurro">Máximo usado: {d.fonteMaximo}.</p>}
       {extra}
-      {d.nota && <p className="text-muted-foreground">{d.nota}</p>}
+      {d.nota && <p className="text-tinta-sussurro">{d.nota}</p>}
       {d.errata && <Errata texto={d.errata} />}
       <p className="text-rotulo text-tinta-sussurro">Livro ICr, {d.pagina}.</p>
     </div>
@@ -68,18 +68,18 @@ export function LinhaBolusApendice({ b, peso, idadeMeses }: { b: Bolus; peso: nu
         {r && (
           <span className="tabular-nums">
             <strong>{faixaBr(r.faixa, r.faixa[1] >= 10 ? 1 : 2)} {b.unidade}</strong>
-            {r.volumeMl && <span className="text-muted-foreground"> · {faixaBr(r.volumeMl, 2)} mL</span>}
+            {r.volumeMl && <span className="text-tinta-sussurro"> · {faixaBr(r.volumeMl, 2)} mL</span>}
           </span>
         )}
       </div>
-      <p className="mt-1 text-muted-foreground">
+      <p className="mt-1 text-tinta-sussurro">
         {b.porKg ? `${faixaBr(b.faixa, 3)} ${b.unidade}/kg` : `${faixaBr(b.faixa, 3)} ${b.unidade}`}
         {b.maximo !== undefined && ` · máximo ${b.maximo.toLocaleString('pt-BR')} ${b.unidade}`}
         {b.apresentacao && ` · ${b.apresentacao}`} · {b.via}
       </p>
-      {r?.aplica === 'indefinido' && <p className="text-muted-foreground">Depende da idade: informe a idade para conferir a condição do livro.</p>}
+      {r?.aplica === 'indefinido' && <p className="text-tinta-sussurro">Depende da idade: informe a idade para conferir a condição do livro.</p>}
       {r?.noMaximo && <p className="text-atencao">Limitado ao máximo do livro.</p>}
-      {b.nota && <p className="text-muted-foreground">{b.nota}</p>}
+      {b.nota && <p className="text-tinta-sussurro">{b.nota}</p>}
       {b.errata && <Errata texto={b.errata} />}
       <p className="text-rotulo text-tinta-sussurro">Livro ICr, Apêndice, {b.pagina}.</p>
     </div>
@@ -91,7 +91,7 @@ export function TabelaLivro({ cabecalho, linhas, largura = 520 }: { cabecalho: s
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-xs" style={{ minWidth: largura }}>
-        <thead className="text-muted-foreground">
+        <thead className="text-tinta-sussurro">
           <tr>
             {cabecalho.map((h) => (
               <th key={h} className="px-1.5 py-1 font-medium">
@@ -121,7 +121,7 @@ export function Marcadores({ itens, marcados, onChange }: { itens: { id: string;
   return (
     <div className="flex flex-col gap-1.5">
       {itens.map((c) => (
-        <label key={c.id} className="flex cursor-pointer items-start gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted/50">
+        <label key={c.id} className="flex cursor-pointer items-start gap-2 rounded-md border px-3 py-2 text-sm hover:bg-trilha/50">
           <input
             type="checkbox"
             className="mt-0.5 size-4"
@@ -144,7 +144,7 @@ export function Marcadores({ itens, marcados, onChange }: { itens: { id: string;
 export function Aviso({ children }: { children: ReactNode }) {
   return (
     <Card>
-      <CardContent className="pt-6 text-sm text-muted-foreground">{children}</CardContent>
+      <CardContent className="pt-6 text-sm text-tinta-sussurro">{children}</CardContent>
     </Card>
   )
 }

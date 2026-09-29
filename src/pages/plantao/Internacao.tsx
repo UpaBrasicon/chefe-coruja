@@ -90,12 +90,12 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
     <div className={embutido ? 'flex w-full flex-col gap-6' : 'mx-auto flex w-full max-w-6xl flex-col gap-6'}>
       <div className="flex flex-col gap-1">
         {!embutido && (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/plantao/internacao" className="transition-colors hover:text-foreground">
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/plantao/internacao" className="transition-colors hover:text-tinta">
               Internação
             </Link>
             <ChevronRight className="size-3.5" />
-            <span className="font-medium text-foreground">Formulário</span>
+            <span className="font-medium text-tinta">Formulário</span>
           </div>
         )}
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -104,7 +104,7 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
           ) : (
             <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Internação</h1>
           )}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 text-xs text-tinta-sussurro">
             {salvoEm && (
               <span className="inline-flex items-center gap-1 text-conforme">
                 <CheckCircle2 className="size-3.5" /> Salvo às {salvoEm}
@@ -116,7 +116,7 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
           </div>
         </div>
         {!embutido && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             Preencha os dados do paciente acima e navegue pelas abas. Cada aba salva automaticamente
             e tudo fica pronto para exportar em PDF na última aba.
           </p>
@@ -187,7 +187,7 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
         </TabsContent>
       </Tabs>
 
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <p className="flex items-center gap-1.5 text-xs text-tinta-sussurro">
         <ClipboardPlus className="size-3.5" /> Rascunho salvo automaticamente no navegador (somente
         neste dispositivo). Persistência no Supabase será adicionada em etapa futura.
       </p>

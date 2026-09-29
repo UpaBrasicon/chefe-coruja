@@ -42,10 +42,10 @@ export function InsuficienciaHepaticaAdulto() {
       <Bloco titulo="Classificação de West Haven" descricao={PAGINA_WEST_HAVEN}>
         <Escolha label="Estádio" value={estadio} onChange={setEstadio} opcoes={WEST_HAVEN.map((w) => ({ value: w.estadio, label: w.estadio }))} />
         <dl className="grid gap-2 sm:grid-cols-2">
-          <div><dt className="text-muted-foreground">Consciência</dt><dd>{wh.consciencia}</dd></div>
-          <div><dt className="text-muted-foreground">Função intelectual</dt><dd>{wh.intelecto}</dd></div>
-          <div><dt className="text-muted-foreground">Comportamento</dt><dd>{wh.comportamento}</dd></div>
-          <div><dt className="text-muted-foreground">Alterações neuromusculares</dt><dd>{wh.neuromuscular}</dd></div>
+          <div><dt className="text-tinta-sussurro">Consciência</dt><dd>{wh.consciencia}</dd></div>
+          <div><dt className="text-tinta-sussurro">Função intelectual</dt><dd>{wh.intelecto}</dd></div>
+          <div><dt className="text-tinta-sussurro">Comportamento</dt><dd>{wh.comportamento}</dd></div>
+          <div><dt className="text-tinta-sussurro">Alterações neuromusculares</dt><dd>{wh.neuromuscular}</dd></div>
         </dl>
       </Bloco>
 

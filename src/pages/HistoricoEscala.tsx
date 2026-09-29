@@ -62,15 +62,15 @@ export default function HistoricoEscala({ embutido = false }: { embutido?: boole
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       {!embutido && (
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/" className="transition-colors hover:text-foreground">
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/" className="transition-colors hover:text-tinta">
               Início
             </Link>
             <ChevronRight className="size-3.5" />
-            <span className="font-medium text-foreground">Histórico da Escala</span>
+            <span className="font-medium text-tinta">Histórico da Escala</span>
           </div>
           <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Histórico da Escala</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             Auditoria completa das alterações e, em destaque, os <strong>erros de passagem</strong> — para
             entender o que ocorreu em cada movimentação de plantão.
           </p>
@@ -99,7 +99,7 @@ export default function HistoricoEscala({ embutido = false }: { embutido?: boole
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <History className="size-4 text-muted-foreground" />
+            <History className="size-4 text-tinta-sussurro" />
             {linhas.length} registro(s)
           </CardTitle>
           <CardDescription>Últimas 200 movimentações registradas.</CardDescription>
@@ -110,7 +110,7 @@ export default function HistoricoEscala({ embutido = false }: { embutido?: boole
               <Spinner />
             </div>
           ) : linhas.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum registro encontrado.</p>
+            <p className="text-sm text-tinta-sussurro">Nenhum registro encontrado.</p>
           ) : (
             linhas.map((h) => {
               const meta = ACAO_LABEL[h.acao] ?? { label: h.acao, variant: 'secondary' as const }
@@ -121,10 +121,10 @@ export default function HistoricoEscala({ embutido = false }: { embutido?: boole
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={meta.variant}>{meta.label}</Badge>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-tinta-sussurro">
                       {new Date(h.created_at).toLocaleString('pt-BR')}
                     </span>
-                    <span className="ml-auto text-xs text-muted-foreground">
+                    <span className="ml-auto text-xs text-tinta-sussurro">
                       por {h.perfis?.nome_completo ?? 'sistema'}
                     </span>
                   </div>
