@@ -80,11 +80,12 @@ DO $$
 DECLARE l public.log_acesso_prontuario; v text := (SELECT p FROM protocolo);
 BEGIN
   IF (SELECT count(*) FROM public.log_acesso_prontuario
-      WHERE paciente_id = '23000000-0000-4000-8000-000000000001' AND tipo_acesso = 'leitura_prontuario') <> 1 THEN
+      WHERE paciente_id = '23000000-0000-4000-8000-000000000001' AND tipo_acesso = 'leitura_prontuario'
+        AND created_at >= now()) <> 1 THEN  -- só o que esta transação gravou
     RAISE EXCEPTION 'FALHOU: abertura repetida em 5 minutos duplicou o registro';
   END IF;
   RAISE NOTICE 'OK  abrir de novo em 5 minutos não duplica';
-  SELECT * INTO l FROM public.log_acesso_prontuario WHERE tipo_acesso = 'impressao';
+  SELECT * INTO l FROM public.log_acesso_prontuario WHERE tipo_acesso = 'impressao' AND created_at >= now();
   IF v !~ '^IMP-[0-9A-F]{10}$' OR l.documento_tipo <> 'Receituário'
      OR 'IMP-' || upper(left(replace(l.id::text, '-', ''), 10)) <> v THEN
     RAISE EXCEPTION 'FALHOU: impressão sem protocolo ou sem tipo (%, %)', v, l.documento_tipo;

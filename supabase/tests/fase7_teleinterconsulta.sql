@@ -3,7 +3,7 @@
 --     -v ON_ERROR_STOP=1 < supabase/tests/fase7_teleinterconsulta.sql
 --
 -- Cria um médico de telemedicina (…0006) escalado AGORA na Clínica Médica,
--- onde está o paciente Um. A escala dele não abre o setor: ele só lê o
+-- onde está o paciente criado no teste (…0098). A escala dele não abre o setor: ele só lê o
 -- paciente da teleinterconsulta que aceitou, e só escreve o parecer.
 -- O plantonista (…0002) está escalado agora na Clínica Médica e solicita.
 BEGIN;
@@ -18,6 +18,15 @@ ON CONFLICT (id) DO UPDATE SET crm = '99999', uf_crm = 'SP';
 INSERT INTO public.vinculos (perfil_id, unidade_id, papel, ativo)
 SELECT '10000000-0000-4000-8000-000000000006', '21000000-0000-4000-8000-000000000001', 'telemedicina', true
 WHERE NOT EXISTS (SELECT 1 FROM public.vinculos WHERE perfil_id = '10000000-0000-4000-8000-000000000006');
+
+-- paciente criado aqui, na Clínica Médica, com um sinal vital: nenhuma
+-- teleinterconsulta ou abertura antiga dele no banco local
+INSERT INTO public.pacientes (id, unidade_id, nome, data_nascimento, prontuario, setor_id)
+VALUES ('23000000-0000-4000-8000-000000000098', '21000000-0000-4000-8000-000000000001', 'Paciente do Teste de Tele',
+        '1960-02-02', 'T-098', '22000000-0000-4000-8000-000000000001');
+INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+SELECT '21000000-0000-4000-8000-000000000001', '23000000-0000-4000-8000-000000000098', c.id, now(), 38.2, 'manual'
+FROM public.conceito c WHERE c.nome = 'temperatura' AND c.unidade_id IS NULL LIMIT 1;
 
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000006');
 ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_janela;
@@ -47,29 +56,29 @@ SET LOCAL ROLE authenticated;
 -- ── 1. telemedicina: escala não abre o setor; check-in sem cerca ────────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000006');
 DO $$ BEGIN
-  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000001') THEN
+  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000098') THEN
     RAISE EXCEPTION 'FALHOU: escala da telemedicina abriu o paciente do setor';
   END IF;
-  IF private.pode_atuar_no_paciente('23000000-0000-4000-8000-000000000001') THEN
+  IF private.pode_atuar_no_paciente('23000000-0000-4000-8000-000000000098') THEN
     RAISE EXCEPTION 'FALHOU: telemedicina pode atuar no paciente pela escala';
   END IF;
   -- sem coordenadas e sem justificativa: passa (é remoto)
   PERFORM public.registrar_checkin('21000000-0000-4000-8000-000000000001');
   RAISE NOTICE 'OK  telemedicina: escala sem acesso ao setor; check-in remoto sem cerca';
 END $$;
-SELECT pg_temp.negado($$SELECT public.solicitar_teleinterconsulta('23000000-0000-4000-8000-000000000001', 'Pergunta de quem não está com o paciente', 'obtido')$$,
+SELECT pg_temp.negado($$SELECT public.solicitar_teleinterconsulta('23000000-0000-4000-8000-000000000098', 'Pergunta de quem não está com o paciente', 'obtido')$$,
   'telemedicina solicitou teleinterconsulta');
-SELECT pg_temp.negado($$SELECT public.emitir_documento('23000000-0000-4000-8000-000000000001', 'evolucao', 'evolução escrita pela telemedicina')$$,
+SELECT pg_temp.negado($$SELECT public.emitir_documento('23000000-0000-4000-8000-000000000098', 'evolucao', 'evolução escrita pela telemedicina')$$,
   'telemedicina emitiu evolução');
 
 -- ── 2. plantonista solicita; consentimento obrigatório ──────────────────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-SELECT pg_temp.negado($$SELECT public.solicitar_teleinterconsulta('23000000-0000-4000-8000-000000000001', 'Dúvida sobre o antibiótico', 'nao_sei')$$,
+SELECT pg_temp.negado($$SELECT public.solicitar_teleinterconsulta('23000000-0000-4000-8000-000000000098', 'Dúvida sobre o antibiótico', 'nao_sei')$$,
   'solicitação sem consentimento válido');
 DO $$
 DECLARE v uuid;
 BEGIN
-  v := public.solicitar_teleinterconsulta('23000000-0000-4000-8000-000000000001',
+  v := public.solicitar_teleinterconsulta('23000000-0000-4000-8000-000000000098',
          'Febre persistente no 3º dia de ceftriaxona: escalono o antibiótico?', 'obtido', 'urgente');
   PERFORM set_config('teste.tele', v::text, true);
   RAISE NOTICE 'OK  plantonista solicita com consentimento';
@@ -91,14 +100,14 @@ BEGIN
   EXCEPTION WHEN raise_exception THEN IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
   END;
   PERFORM public.aceitar_teleinterconsulta(current_setting('teste.tele')::uuid);
-  IF NOT EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000001') THEN
+  IF NOT EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000098') THEN
     RAISE EXCEPTION 'FALHOU: teleconsultor não lê o paciente depois de aceitar';
   END IF;
-  PERFORM public.abrir_prontuario('23000000-0000-4000-8000-000000000001');
-  IF NOT EXISTS (SELECT 1 FROM public.observacao WHERE paciente_id = '23000000-0000-4000-8000-000000000001') THEN
+  PERFORM public.abrir_prontuario('23000000-0000-4000-8000-000000000098');
+  IF NOT EXISTS (SELECT 1 FROM public.observacao WHERE paciente_id = '23000000-0000-4000-8000-000000000098') THEN
     RAISE EXCEPTION 'FALHOU: teleconsultor não lê os sinais vitais depois de abrir';
   END IF;
-  IF private.pode_atuar_no_paciente('23000000-0000-4000-8000-000000000001') THEN
+  IF private.pode_atuar_no_paciente('23000000-0000-4000-8000-000000000098') THEN
     RAISE EXCEPTION 'FALHOU: aceitar deu escrita geral ao teleconsultor';
   END IF;
   doc := public.responder_teleinterconsulta(current_setting('teste.tele')::uuid,
@@ -130,7 +139,7 @@ BEGIN
     RAISE EXCEPTION 'FALHOU: parecer sem documento numerado do teleconsultor com CRM e referência à solicitação';
   END IF;
   IF (SELECT count(DISTINCT autor_id) FROM public.documentos_clinicos
-       WHERE paciente_id = '23000000-0000-4000-8000-000000000001' AND tipo_documento = 'teleinterconsulta') <> 2 THEN
+       WHERE paciente_id = '23000000-0000-4000-8000-000000000098' AND tipo_documento = 'teleinterconsulta') <> 2 THEN
     RAISE EXCEPTION 'FALHOU: sem os dois registros (solicitante e teleconsultor)';
   END IF;
   IF (SELECT count(*) FROM public.log_auditoria WHERE entidade = 'teleinterconsultas'
@@ -145,7 +154,7 @@ UPDATE public.teleinterconsultas SET respondida_em = now() - interval '25 hours'
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000006');
 DO $$ BEGIN
-  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000001') THEN
+  IF EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000098') THEN
     RAISE EXCEPTION 'FALHOU: leitura do teleconsultor não fechou 24 h depois da resposta';
   END IF;
   RAISE NOTICE 'OK  leitura do teleconsultor fecha 24 h depois da resposta';
@@ -154,7 +163,7 @@ END $$;
 -- ── 6. plantonista continua vendo o setor (a mudança não o afetou) ──────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000001') THEN
+  IF NOT EXISTS (SELECT 1 FROM public.pacientes WHERE id = '23000000-0000-4000-8000-000000000098') THEN
     RAISE EXCEPTION 'FALHOU: plantonista perdeu o paciente do setor';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.teleinterconsultas_da_unidade('21000000-0000-4000-8000-000000000001')
