@@ -1,6 +1,7 @@
 import { Building2, BedDouble, Bed, Lock, SprayCan } from 'lucide-react'
 
 import { useCenso } from '@/hooks/useDadosUnidade'
+import { NumerosOrganizacao } from '@/pages/admin/NumerosOrganizacao'
 import { TIPO_UNIDADE_LABEL } from '@/lib/constants'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -63,7 +64,8 @@ export function PainelAdmin({ embutido = false }: { embutido?: boolean } = {}) {
               <CardCenso label="Bloqueados" valor={unidade.leitos_bloqueados} icon={Lock} />
               <CardCenso label="Higienização" valor={unidade.leitos_higienizacao} icon={SprayCan} />
             </CardContent>
-            {(unidade.total_leitos ?? 0) > 0 && unidade.total_leitos === null && (
+            {/* supressão: a view devolve NULL no lugar de 1 a 4 */}
+            {[unidade.total_setores, unidade.total_leitos, unidade.leitos_livres, unidade.leitos_ocupados, unidade.leitos_bloqueados, unidade.leitos_higienizacao].some((v) => v === null) && (
               <p className="px-6 pb-2 text-xs text-muted-foreground">
                 Contagens pequenas foram suprimidas para proteger a privacidade (LGPD).
               </p>
@@ -71,6 +73,8 @@ export function PainelAdmin({ embutido = false }: { embutido?: boolean } = {}) {
           </Card>
         ))}
       </div>
+
+      <NumerosOrganizacao />
 
       {!isLoading && (censo ?? []).length === 0 && (
         <p className="text-sm text-muted-foreground">

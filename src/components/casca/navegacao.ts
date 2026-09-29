@@ -8,10 +8,13 @@ import {
   DoorOpen,
   Eye,
   FlaskConical,
+  FolderSearch,
+  Gauge,
   Hospital,
   Hourglass,
   LayoutDashboard,
   LineChart,
+  ScrollText,
   ShieldCheck,
   SquareCheckBig,
   Stethoscope,
@@ -31,9 +34,12 @@ export type ItemNav = {
 }
 
 // Navegação por papel (09-comum-casca §3). Só entram destinos que existem no
-// app hoje; os demais itens do protótipo (Farmácia, Auditoria, Histórico,
+// app hoje; os demais itens do protótipo (Histórico,
 // Protocolos do gestor; Pendências, Servidores, Plataformas do admin) chegam
 // com as fases que criam as tabelas deles.
+// Fase 6: prontuário fora da escala, por pedido ao gestor
+const ITEM_PRONTUARIOS: ItemNav = { to: '/prontuarios', rotulo: 'Prontuários', icone: FolderSearch }
+
 const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
     { to: '/plantonista', rotulo: 'Central do Plantonista', curto: 'Central', icone: Stethoscope },
@@ -41,23 +47,27 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },
     { to: '/agenda', rotulo: 'Minha Agenda', curto: 'Agenda', icone: CalendarClock, exato: true },
     { to: '/notificacoes', rotulo: 'Avisos', icone: Bell, exato: true },
+    ITEM_PRONTUARIOS,
   ],
   gestor: [
+    { to: '/gestao', rotulo: 'Painel', icone: Gauge, exato: true },
     { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true },
     { to: '/internacao', rotulo: 'Internação', icone: Hospital, exato: true },
     { to: '/observacao', rotulo: 'Observação', icone: Eye, exato: true },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
     { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true },
+    { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true },
   ],
   // Papéis novos (ADR 0008): as telas deles chegam com as fases do plano.
   enfermeiro: [
     { to: '/triagem', rotulo: 'Triagem', icone: Stethoscope, exato: true },
     { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
+    ITEM_PRONTUARIOS,
   ],
-  tecnico_enfermagem: [{ to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true }],
+  tecnico_enfermagem: [{ to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true }, ITEM_PRONTUARIOS],
   recepcao: [{ to: '/recepcao', rotulo: 'Recepção', icone: ClipboardList, exato: true }],
-  farmaceutico: [{ to: '/farmacia', rotulo: 'Farmácia', icone: FlaskConical, exato: true }],
-  telemedicina: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }],
+  farmaceutico: [{ to: '/farmacia', rotulo: 'Farmácia', icone: FlaskConical, exato: true }, ITEM_PRONTUARIOS],
+  telemedicina: [{ to: '/em-preparo', rotulo: 'Início', icone: Hourglass }, ITEM_PRONTUARIOS],
   admin: [
     { to: '/painel', rotulo: 'Rede', icone: LayoutDashboard, exato: true },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },

@@ -3963,6 +3963,90 @@ export type Database = {
           },
         ]
       }
+      pedidos_acesso_prontuario: {
+        Row: {
+          criado_em: string
+          decidido_em: string | null
+          decidido_por: string | null
+          id: string
+          motivo: string
+          motivo_decisao: string | null
+          organizacao_id: string
+          paciente_id: string
+          papel: string
+          solicitante_id: string
+          status: string
+          unidade_id: string
+          valido_ate: string | null
+        }
+        Insert: {
+          criado_em?: string
+          decidido_em?: string | null
+          decidido_por?: string | null
+          id?: string
+          motivo: string
+          motivo_decisao?: string | null
+          organizacao_id: string
+          paciente_id: string
+          papel: string
+          solicitante_id: string
+          status?: string
+          unidade_id: string
+          valido_ate?: string | null
+        }
+        Update: {
+          criado_em?: string
+          decidido_em?: string | null
+          decidido_por?: string | null
+          id?: string
+          motivo?: string
+          motivo_decisao?: string | null
+          organizacao_id?: string
+          paciente_id?: string
+          papel?: string
+          solicitante_id?: string
+          status?: string
+          unidade_id?: string
+          valido_ate?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedidos_acesso_prontuario_decidido_por_fkey"
+            columns: ["decidido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_acesso_prontuario_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_acesso_prontuario_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_acesso_prontuario_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pedidos_acesso_prontuario_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pendencias: {
         Row: {
           autor_id: string | null
@@ -5455,6 +5539,28 @@ export type Database = {
         Args: { p_internacao?: string; p_paciente: string }
         Returns: undefined
       }
+      acessos_prontuario_da_unidade: {
+        Args: {
+          p_ate?: string
+          p_desde?: string
+          p_paciente?: string
+          p_perfil?: string
+          p_unidade: string
+        }
+        Returns: {
+          criado_em: string
+          documento_tipo: string
+          id: string
+          ip: string
+          paciente_id: string
+          paciente_nome: string
+          papel: string
+          profissional_id: string
+          profissional_nome: string
+          tipo_acesso: string
+          via_pedido: boolean
+        }[]
+      }
       acuidade: { Args: { p_paciente: string }; Returns: Json }
       adicionar_plantao_escala: {
         Args: {
@@ -5496,6 +5602,22 @@ export type Database = {
         Args: { p_falta: string; p_situacao: string }
         Returns: undefined
       }
+      buscar_paciente_para_pedido: {
+        Args: {
+          p_documento?: string
+          p_nascimento?: string
+          p_nome?: string
+          p_unidade: string
+        }
+        Returns: {
+          data_nascimento: string
+          nome: string
+          paciente_id: string
+          prontuario: string
+          tem_acesso: boolean
+          ultimo_encerramento: string
+        }[]
+      }
       buscar_pacientes: {
         Args: { p_termo: string; p_unidade: string }
         Returns: {
@@ -5514,6 +5636,7 @@ export type Database = {
         Args: { p_internacao: string; p_justificativa: string }
         Returns: undefined
       }
+      cancelar_pedido_acesso: { Args: { p_pedido: string }; Returns: undefined }
       censo_recente: {
         Args: { p_dias?: number; p_unidade: string }
         Returns: {
@@ -5613,6 +5736,30 @@ export type Database = {
         Returns: undefined
       }
       data_atual: { Args: never; Returns: string }
+      decidir_pedido_acesso: {
+        Args: { p_aprovar: boolean; p_motivo?: string; p_pedido: string }
+        Returns: {
+          criado_em: string
+          decidido_em: string | null
+          decidido_por: string | null
+          id: string
+          motivo: string
+          motivo_decisao: string | null
+          organizacao_id: string
+          paciente_id: string
+          papel: string
+          solicitante_id: string
+          status: string
+          unidade_id: string
+          valido_ate: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pedidos_acesso_prontuario"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       decidir_revisao_sincronizacao: {
         Args: { p_aceitar: boolean; p_id: string; p_motivo: string }
         Returns: undefined
@@ -6025,6 +6172,7 @@ export type Database = {
         Returns: undefined
       }
       iniciar_atendimento: { Args: { p_episodio: string }; Returns: undefined }
+      integridade_trilha: { Args: { p_unidade: string }; Returns: Json }
       listar_conversas: {
         Args: never
         Returns: {
@@ -6064,6 +6212,21 @@ export type Database = {
           unidade_id: string
         }[]
       }
+      meus_pedidos_acesso: {
+        Args: { p_unidade: string }
+        Returns: {
+          criado_em: string
+          decidido_em: string
+          id: string
+          motivo: string
+          motivo_decisao: string
+          paciente_id: string
+          paciente_nome: string
+          status: string
+          valido_ate: string
+          vigente: boolean
+        }[]
+      }
       minhas_notificacoes: {
         Args: { p_unidade: string }
         Returns: {
@@ -6094,9 +6257,51 @@ export type Database = {
         }[]
       }
       painel_chamadas: { Args: { p_token: string }; Returns: Json }
+      painel_gestor: { Args: { p_unidade: string }; Returns: Json }
+      painel_organizacao: {
+        Args: { p_dias?: number }
+        Returns: {
+          chegadas_periodo: number
+          encerrados_periodo: number
+          evasoes_periodo: number
+          internados_agora: number
+          leitos: number
+          leitos_ocupados: number
+          obitos_periodo: number
+          porta_agora: number
+          profissionais_em_expediente: number
+          taxa_ocupacao: number
+          taxa_ocupacao_media_censo: number
+          unidade_id: string
+          unidade_nome: string
+        }[]
+      }
       papel_na_unidade: { Args: { unidade: string }; Returns: string }
       passar_plantao: {
         Args: { p_destino: string; p_escala: string; p_justificativa?: string }
+        Returns: string
+      }
+      pedidos_acesso_da_unidade: {
+        Args: { p_dias?: number; p_unidade: string }
+        Returns: {
+          criado_em: string
+          decidido_em: string
+          decidido_por_nome: string
+          id: string
+          motivo: string
+          motivo_decisao: string
+          paciente_id: string
+          paciente_nascimento: string
+          paciente_nome: string
+          papel: string
+          solicitante_id: string
+          solicitante_nome: string
+          status: string
+          valido_ate: string
+        }[]
+      }
+      pedir_acesso_prontuario: {
+        Args: { p_motivo: string; p_paciente: string }
         Returns: string
       }
       plantonistas_da_unidade: {
@@ -6464,6 +6669,18 @@ export type Database = {
       transferir_paciente: {
         Args: { p_destino: string; p_motivo?: string; p_paciente: string }
         Returns: string
+      }
+      trilha_da_unidade: {
+        Args: { p_ate?: string; p_desde?: string; p_unidade: string }
+        Returns: {
+          acao: string
+          ator_nome: string
+          criado_em: string
+          entidade: string
+          entidade_id: string
+          payload: Json
+          seq: number
+        }[]
       }
       turno_atual: { Args: never; Returns: string }
       validar_item: {

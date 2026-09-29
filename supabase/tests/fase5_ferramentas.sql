@@ -83,6 +83,6 @@ SELECT pg_temp.confere(public.situacao_ferramenta('teste-escore', 'v2', '2100000
 RESET ROLE;
 SELECT pg_temp.confere((SELECT count(*) FROM public.ferramenta_unidade WHERE ferramenta_id = 'teste-escore') = 2,
   'camada anterior sai de vigência sem ser apagada');
-SELECT pg_temp.confere((SELECT count(*) FROM public.ferramenta_versoes WHERE ferramenta_id IN ('dengue-classificacao', 'acesso-venoso', 'hiperpotassemia')) = 3,
+SELECT pg_temp.confere((SELECT count(DISTINCT ferramenta_id) FROM public.ferramenta_versoes WHERE ferramenta_id IN ('dengue-classificacao', 'acesso-venoso', 'hiperpotassemia')) = 3,
   'fichas do pacote estão registradas');
 ROLLBACK;

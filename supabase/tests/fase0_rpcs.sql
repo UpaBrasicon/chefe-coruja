@@ -70,9 +70,13 @@ INSERT INTO public.vinculos (perfil_id, unidade_id, papel) VALUES
   (pg_temp.id('estranho'), pg_temp.id('uni_b'), 'plantonista');
 
 -- o estranho também está de plantão agora — mas na unidade B
-INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno) VALUES
-  (pg_temp.id('uni_a'), pg_temp.id('setor_a1'), pg_temp.id('plant_a'),  private.data_atual(), private.turno_atual()),
-  (pg_temp.id('uni_b'), pg_temp.id('setor_b1'), pg_temp.id('estranho'), private.data_atual(), private.turno_atual());
+-- início fixo em "agora − 1 h": perto da meia-noite o turno da noite em curso
+-- começou ONTEM, e data_atual() + turno_atual() apontaria para o de hoje.
+ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_janela;
+INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno, inicio, duracao_min) VALUES
+  (pg_temp.id('uni_a'), pg_temp.id('setor_a1'), pg_temp.id('plant_a'),  private.data_atual(), private.turno_atual(), now() - interval '1 hour', 360),
+  (pg_temp.id('uni_b'), pg_temp.id('setor_b1'), pg_temp.id('estranho'), private.data_atual(), private.turno_atual(), now() - interval '1 hour', 360);
+ALTER TABLE public.escala_plantao ENABLE TRIGGER trg_escala_janela;
 
 INSERT INTO public.pacientes (id, unidade_id, nome, setor_id) VALUES
   (pg_temp.id('pac_a'),     pg_temp.id('uni_a'), 'Paciente A1', pg_temp.id('setor_a1')),

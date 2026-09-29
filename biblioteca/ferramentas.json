@@ -3165,6 +3165,22 @@
   "rota": "/plantonista/escores/wells-tep"
  },
  {
+  "id": "years",
+  "nome": "YEARS",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "YEARS",
+   "embolia",
+   "pulmonar",
+   "TEP",
+   "D-dímero"
+  ],
+  "descricao": "Três itens clínicos e o limiar de D-dímero de 1000 ou 500 ng/mL na suspeita de embolia pulmonar.",
+  "rota": "/plantonista/escores/years"
+ },
+ {
   "id": "pesi",
   "nome": "Severidade do TEP (PESI)",
   "tipo": "escore",

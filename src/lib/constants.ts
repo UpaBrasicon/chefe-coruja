@@ -68,7 +68,7 @@ export const UFS = [
 /** Tela inicial de cada papel após o reagrupamento das abas. */
 export const ROTA_INICIAL: Record<Papel, string> = {
   admin: '/painel',
-  gestor: '/unidade',
+  gestor: '/gestao',
   plantonista: '/plantonista',
   // As telas dos papéis novos chegam com as fases do plano; até lá, uma
   // página honesta em vez de um laço de redirecionamento.

@@ -49,6 +49,10 @@ const InternacaoPainel = lazy(() => import('@/pages/InternacaoPainel'))
 const Notificacoes = lazy(() => import('@/pages/Notificacoes'))
 const Perfil = lazy(() => import('@/pages/Perfil'))
 const RevisaoClinica = lazy(() => import('@/pages/RevisaoClinica'))
+const PedidosProntuario = lazy(() => import('@/pages/prontuario/PedidosProntuario'))
+const ProntuarioLeitura = lazy(() => import('@/pages/prontuario/ProntuarioLeitura'))
+const PainelGestor = lazy(() => import('@/pages/gestor/PainelGestor'))
+const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
 const MeuPlantao = lazy(() => import('@/pages/MeuPlantao'))
 const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome'))
 const SectionHome = lazy(() => import('@/pages/plantonista/SectionHome'))
@@ -157,6 +161,20 @@ export default function App() {
                         <Route path="/gaviao" element={<GaviaoPainel />} />
                         {/* legado */}
                         <Route path="/pessoas" element={<Redirecionar para="/painel?aba=pessoas" />} />
+                      </Route>
+
+                      {/* Fase 6: prontuário fora da escala — pedido ao gestor, 24 h, só leitura */}
+                      <Route element={<RequireRole papeis={['plantonista', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem', 'farmaceutico']} />}>
+                        <Route path="/prontuarios" element={<PedidosProntuario />} />
+                      </Route>
+                      <Route element={<RequireRole papeis={['plantonista', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem', 'farmaceutico', 'gestor']} />}>
+                        <Route path="/prontuarios/:pacienteId" element={<ProntuarioLeitura />} />
+                      </Route>
+
+                      {/* Fase 6: painel e auditoria são do GESTOR; o administrador vê só agregado */}
+                      <Route element={<RequireRole papeis={['gestor']} />}>
+                        <Route path="/gestao" element={<PainelGestor />} />
+                        <Route path="/auditoria" element={<Auditoria />} />
                       </Route>
 
                       {/* ── Gestor (e admin, com abas filtradas) ───────── */}

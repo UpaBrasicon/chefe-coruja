@@ -16,6 +16,7 @@
     "rotas:fichas":"node --experimental-strip-types scripts/rotas-fichas.mjs",
     "fichas:sql": "node --experimental-strip-types scripts/fichas-sql.mjs",
     "test:clinico": "node --experimental-strip-types --test \"src/clinico/**/*.test.ts\" \"src/content/*.test.ts\"",
+    "test:banco": "node scripts/testes-banco.mjs",
     "test:dominio": "node --experimental-strip-types --test src/domain/dominio.test.ts",
     "test:terminologia": "node --test \"scripts/terminologia/tests/*.test.ts\"",
     "test:observacao": "node --test \"scripts/observacao/tests/*.test.ts\"",
