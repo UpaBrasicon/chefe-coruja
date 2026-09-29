@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -14,6 +14,7 @@ import { Spinner } from '@/components/ui/spinner'
 
 // ── Telas fora do shell: carregadas sob demanda ───────────────────────────────
 const Login = lazy(() => import('@/pages/Login').then((m) => ({ default: m.Login })))
+const RecuperarSenha = lazy(() => import('@/pages/RecuperarSenha'))
 const Cadastro = lazy(() => import('@/pages/Cadastro').then((m) => ({ default: m.Cadastro })))
 const PapelEmPreparo = lazy(() => import('@/pages/PapelEmPreparo'))
 const Farmacia = lazy(() => import('@/pages/farmacia/Farmacia'))
@@ -99,6 +100,22 @@ function RotaMensagens() {
   return temChat ? null : <Redirecionar para="/" />
 }
 
+/**
+ * Link de recuperação de senha que caiu na raiz (retorno não autorizado no
+ * Auth cai no site_url): o index.html já marcou a chegada; leva à troca de
+ * senha em vez de abrir o app com a sessão de recuperação.
+ */
+function DesvioRecuperacao({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation()
+  let marca = false
+  try {
+    marca = sessionStorage.getItem('supabase_recovery') === '1'
+  } catch {
+    /* sem sessionStorage, sem desvio */
+  }
+  return marca && pathname === '/' ? <Navigate to="/recuperar-senha" replace /> : <>{children}</>
+}
+
 function Carregando() {
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -114,8 +131,10 @@ export default function App() {
         <BrowserRouter>
           <ErroBoundary>
             <Suspense fallback={<Carregando />}>
+              <DesvioRecuperacao>
               <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/recuperar-senha" element={<RecuperarSenha />} />
                 <Route path="/cadastro" element={<Cadastro />} />
                 <Route path="/r/:tipo/:token" element={<LinkReceita />} />
                 <Route path="/painel/:token" element={<PainelChamada />} />
@@ -282,6 +301,7 @@ export default function App() {
                   </Route>
                 </Route>
               </Routes>
+              </DesvioRecuperacao>
             </Suspense>
           </ErroBoundary>
         </BrowserRouter>

@@ -15,7 +15,8 @@ import { escapeHtml } from '@/lib/utils'
 import { gravarRegistros, novoItem } from '@/lib/offline/sincronizar'
 import { useAuth } from '@/contexts/AuthContext'
 import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
-import { BotaoEpisodiosAnteriores } from '@/components/prontuario/GavetaEpisodios'
+import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
+import type { CorRisco } from '@/domain/risco'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,6 +34,9 @@ type Internacao = {
   alta_por: string | null
   cid_alta: string | null
   leito: { identificador: string } | null
+  setor_atual_id: string | null
+  /** episódio da porta que originou a internação: a cor da classificação */
+  episodio: { cor_atual: string | null } | null
 }
 type Acuidade = {
   escala: 'NEWS2' | 'PEWS' | null
@@ -167,7 +171,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor }: { pacienteId
     queryFn: async () => {
       const { data, error } = await supabase
         .from('internacoes')
-        .select('id, status, data_admissao, data_alta, alta_registrada_em, alta_por, cid_alta, leito:leitos!internacoes_leito_atual_id_fkey(identificador)')
+        .select('id, status, data_admissao, data_alta, alta_registrada_em, alta_por, cid_alta, leito:leitos!internacoes_leito_atual_id_fkey(identificador), setor_atual_id, episodio:episodios!internacoes_episodio_id_fkey(cor_atual)')
         .eq('paciente_id', pacienteId)
         .order('data_admissao', { ascending: false })
         .limit(1)
@@ -249,15 +253,26 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor }: { pacienteId
 
   return (
     <div className="flex flex-col gap-5 text-sm">
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge variant={ativa ? 'info' : 'secondary'}>
-          {i.status === 'em_observacao' ? 'Em observação' : ativa ? 'Internado' : 'Alta ' + diaHora(i.data_alta)}
-        </Badge>
-        <span className="text-tinta">{i.leito ? i.leito.identificador : ativa ? 'Aguardando box/leito' : ''}</span>
-        <span className="text-tinta-sussurro">desde {diaHora(i.data_admissao)}</span>
-        {/* D5: passagens anteriores por esta unidade, na gaveta lateral */}
-        <BotaoEpisodiosAnteriores pacienteId={pacienteId} nome={pacienteNome} className="ml-auto" />
-      </div>
+      {/* D4: cabeçalho único — leito/setor, nome, idade, sexo, permanência, alergia em
+          três estados, cor da classificação da porta e acuidade. D5: atendimento
+          anterior sem desfecho, na gaveta lateral. */}
+      <CabecalhoPaciente
+        pacienteId={pacienteId}
+        nome={pacienteNome}
+        local={i.leito ? i.leito.identificador : ativa ? 'Aguardando box/leito' : null}
+        setorId={i.setor_atual_id}
+        desde={ativa ? i.data_admissao : null}
+        rotuloDesde={i.status === 'em_observacao' ? 'em observação há' : 'internado há'}
+        contexto={`desde ${diaHora(i.data_admissao)}`}
+        extra={
+          <Badge variant={ativa ? 'info' : 'secondary'}>
+            {i.status === 'em_observacao' ? 'Em observação' : ativa ? 'Internado' : 'Alta ' + diaHora(i.data_alta)}
+          </Badge>
+        }
+        corClassificacao={(i.episodio?.cor_atual as CorRisco | null | undefined) ?? null}
+        acuidade={ativa}
+        episodios
+      />
       {erro && <p className="rounded-lg border border-critico/30 bg-critico/[0.08] p-2 text-critico">{erro}</p>}
       {aviso && <p className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-2 text-conforme">{aviso}</p>}
 
@@ -827,20 +842,39 @@ function CancelarAlta({ i, acao }: { i: Internacao; acao: Acao }) {
 }
 
 // ── pacote de alta ──────────────────────────────────────────────────────────
+// "Volte ao pronto-socorro se…" vai num quadro próprio na página do paciente;
+// os sinais são os da frase-modelo das orientações, um por linha. Nenhum vem
+// marcado.
+const MODELOS_SINAIS = [
+  'a febre passar de 38 °C',
+  'faltar ar em repouso',
+  'a dor no peito piorar',
+  'aparecer sangue na tosse',
+]
+const linhas = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean)
+
 function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, acao }: {
   i: Internacao; pacienteId: string; pacienteNome: string; lista: Pacote[]; podeGerar: boolean; acao: Acao
 }) {
   const [aberto, setAberto] = React.useState(false)
   const [marcadas, setMarcadas] = React.useState<number[]>([4])
   const [extra, setExtra] = React.useState('')
-  const [retorno, setRetorno] = React.useState('')
+  const [sinais, setSinais] = React.useState<number[]>([])
+  const [sinaisExtra, setSinaisExtra] = React.useState('')
+  const [ret, setRet] = React.useState({ onde: '', quando: '', exame_controle: '', levar: '' })
   const ativo = lista.find((p) => p.situacao === 'ativo')
+  const ultimo = ativo ?? lista[0]
 
   async function gerarEImprimir() {
     // a janela abre dentro do clique; o servidor gera e registra depois
     const pImp = abrirImpressao({ pacienteId, internacaoId: i.id, tipo: 'Orientação de alta (pacote)' })
-    const orientacoes = [...marcadas.sort((a, b) => a - b).map((k) => MODELOS_ORIENTACAO[k]), ...extra.split('\n').map((s) => s.trim()).filter(Boolean)]
-    const r = (await acao(() => rpc('gerar_pacote_alta', { p_internacao: i.id, p_orientacoes: orientacoes, p_retorno: retorno || null }), 'Pacote gerado. Entregue a folha impressa: o código não aparece de novo.')) as
+    const orientacoes = [...marcadas.sort((a, b) => a - b).map((k) => MODELOS_ORIENTACAO[k]), ...linhas(extra)]
+    const listaSinais = [...sinais.sort((a, b) => a - b).map((k) => MODELOS_SINAIS[k]), ...linhas(sinaisExtra)]
+    const retorno = [ret.onde.trim(), ret.quando.trim()].filter(Boolean).join(', ')
+    const r = (await acao(() => rpc('gerar_pacote_alta', {
+      p_internacao: i.id, p_orientacoes: orientacoes, p_retorno: null,
+      p_sinais_retorno: listaSinais, p_retorno_detalhes: ret,
+    }), 'Pacote gerado. Entregue a folha impressa: o código não aparece de novo.')) as
       | { token: string; codigo: string; expira_em: string }
       | null
     const imp = await pImp
@@ -858,7 +892,10 @@ function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, acao }: {
       <h1>Orientações de alta</h1>
       <p><strong>Paciente:</strong> ${escapeHtml(pacienteNome)}</p>
       <ol>${orientacoes.map((o) => `<li>${escapeHtml(o)}</li>`).join('')}</ol>
+      ${listaSinais.length ? `<p><strong>Volte ao pronto-socorro se:</strong></p><ul>${listaSinais.map((s) => `<li>${escapeHtml(s)}</li>`).join('')}</ul>` : ''}
       ${retorno ? `<p><strong>Retorno:</strong> ${escapeHtml(retorno)}</p>` : ''}
+      ${ret.exame_controle.trim() ? `<p><strong>Exame de controle:</strong> ${escapeHtml(ret.exame_controle.trim())}</p>` : ''}
+      ${ret.levar.trim() ? `<p><strong>Levar no retorno:</strong> ${escapeHtml(ret.levar.trim())}</p>` : ''}
       <div class="cx">
         <p>Seus documentos da alta (receita, atestado, encaminhamento e estas orientações) também ficam no celular, por 30 dias:</p>
         <p><strong>${escapeHtml(link)}</strong></p>
@@ -885,6 +922,13 @@ function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, acao }: {
           {lista[0] ? `Último link: ${lista[0].situacao}.` : 'Sem link.'} O código sai impresso na orientação de alta (SMS e WhatsApp ainda não configurados).
         </p>
       )}
+      {ultimo && (
+        // mesma aba: a sessão de quem não marcou "manter conectado" mora no
+        // sessionStorage, que uma aba nova não herda
+        <Button size="xs" variant="outline" className="self-start" onClick={() => window.location.assign(`/alta/equipe?pacote=${ultimo.id}`)}>
+          <Printer /> Ver como o paciente vê e imprimir o pacote
+        </Button>
+      )}
       {podeGerar && !aberto && (
         <Button size="xs" variant="outline" className="self-start" onClick={() => setAberto(true)}>
           <Printer /> {ativo ? 'Gerar novo e imprimir (revoga o atual)' : 'Montar e imprimir'}
@@ -892,7 +936,7 @@ function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, acao }: {
       )}
       {podeGerar && aberto && (
         <div className="flex flex-col gap-2">
-          {MODELOS_ORIENTACAO.map((o, k) => (
+          {MODELOS_ORIENTACAO.map((o, k) => /^Volte ao pronto-socorro/i.test(o) ? null : (
             <label key={k} className="flex items-start gap-2">
               <input type="checkbox" className="mt-1" checked={marcadas.includes(k)}
                 onChange={(e) => setMarcadas(e.target.checked ? [...marcadas, k] : marcadas.filter((x) => x !== k))} />
@@ -900,8 +944,21 @@ function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, acao }: {
             </label>
           ))}
           <Textarea placeholder="Outras orientações (uma por linha)" value={extra} onChange={(e) => setExtra(e.target.value)} />
-          <Input placeholder="Retorno: onde e quando" value={retorno} onChange={(e) => setRetorno(e.target.value)} />
-          <p className="text-xs text-tinta-sussurro">Receita, atestado, encaminhamento e pedido de exames emitidos no episódio entram no pacote automaticamente.</p>
+          <p className="font-medium text-critico">Volte ao pronto-socorro se…</p>
+          {MODELOS_SINAIS.map((s, k) => (
+            <label key={k} className="flex items-start gap-2">
+              <input type="checkbox" className="mt-1" checked={sinais.includes(k)}
+                onChange={(e) => setSinais(e.target.checked ? [...sinais, k] : sinais.filter((x) => x !== k))} />
+              <span>{s}</span>
+            </label>
+          ))}
+          <Textarea placeholder="Outros sinais para voltar (um por linha)" value={sinaisExtra} onChange={(e) => setSinaisExtra(e.target.value)} />
+          <p className="font-medium">Retorno</p>
+          <Input placeholder="Onde (ex.: UBS Vila Nova)" value={ret.onde} onChange={(e) => setRet({ ...ret, onde: e.target.value })} />
+          <Input placeholder="Quando (ex.: 31/08 às 9h)" value={ret.quando} onChange={(e) => setRet({ ...ret, quando: e.target.value })} />
+          <Input placeholder="Exame de controle (opcional)" value={ret.exame_controle} onChange={(e) => setRet({ ...ret, exame_controle: e.target.value })} />
+          <Input placeholder="O que levar (ex.: esta alta e as caixas dos remédios)" value={ret.levar} onChange={(e) => setRet({ ...ret, levar: e.target.value })} />
+          <p className="text-xs text-tinta-sussurro">Receita, atestado, encaminhamento, pedido de exames, sumário de alta e exames com resultado do episódio entram no pacote automaticamente.</p>
           <div className="flex gap-2">
             <Button size="sm" onClick={() => void gerarEImprimir()}><Printer /> Gerar e imprimir</Button>
             <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>

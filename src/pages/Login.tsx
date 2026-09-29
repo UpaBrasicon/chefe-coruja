@@ -1,58 +1,113 @@
-import { useNavigate, Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate, type Location } from 'react-router-dom'
 import * as React from 'react'
-import { ArrowRight, Building2, CalendarClock, KeyRound, MapPin, ShieldCheck, Stethoscope } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Building2, CheckCircle2, Users } from 'lucide-react'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { definirManterConectado, manterConectadoMarcado, supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ConfirmarSegundoFator } from '@/components/seguranca/SegundoFator'
+import { LadoMarca, MarcaCompacta } from '@/pages/entrada/LadoMarca'
+import '@/pages/entrada/entrada.css'
 
-// Login (design_handoff/telas/17): duas abas — Entrar e Primeira vez — e o
-// passo do código, que aparece quando a conta exige segundo fator.
-// "Criar conta" saiu: o acesso nasce de convite da unidade ou contrato da rede.
+// Login (login.html do protótipo): abas Entrar e Primeira vez, e o passo do
+// código quando a conta tem segundo fator. "Criar conta" não existe: o
+// acesso nasce de convite da unidade ou contrato da rede.
 //
 // Segundo fator: TOTP da própria Supabase (ADR 0010). Se a conta tem um fator
-// verificado, a sessão fica em aal1 e o código é pedido aqui. A janela diária
-// e o aparelho confiável dependem da base da Fase 1 no banco.
+// verificado, a sessão nasce aal1 e o código é pedido aqui. Os erros são
+// contados no servidor (ver ConfirmarSegundoFator).
+//
+// Movimento: vindo da landing, o verde que cresceu lá recolhe para a coluna
+// da marca; ao entrar, avança e engole o formulário; "Voltar ao site" cobre a
+// tela de novo. Sob prefers-reduced-motion, vai direto.
 
 type Passo = 'entrar' | 'primeira-vez' | 'codigo'
+type Estado = { daLanding?: boolean; aviso?: string; email?: string; from?: Location } | null
 
 const MARCA_ENTRADA = 'cc-entrou'
+/** Mesmo id que a landing dá à onda verde (landing/Landing.tsx). */
+const ID_ONDA = 'cc-onda-landing'
+const ENTRADA_MS = 460
+const VOLTA_MS = 720
 
-function Argumento({ icone: Icone, titulo, texto, cor }: { icone: typeof MapPin; titulo: string; texto: string; cor: string }) {
+const movimentoReduzido = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+const CAMPO = 'min-h-11 bg-superficie px-[13px] py-[11px] text-corpo md:text-corpo'
+
+function Separador() {
   return (
-    <li className="flex gap-3">
-      <span className={cn('grid size-9 shrink-0 place-items-center rounded-controle text-white', cor)} aria-hidden>
-        <Icone className="size-[18px]" />
-      </span>
-      <span>
-        <span className="block text-corpo font-semibold text-white">{titulo}</span>
-        <span className="block text-apoio text-white/75">{texto}</span>
-      </span>
-    </li>
+    <div className="my-5 flex items-center gap-3 text-rotulo text-tinta-sussurro before:h-px before:flex-1 before:bg-fio after:h-px after:flex-1 after:bg-fio">
+      ou
+    </div>
   )
 }
 
 export function Login() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const estado = location.state as Estado
+
   const [passo, setPasso] = React.useState<Passo>('entrar')
-  const [email, setEmail] = React.useState('')
+  const [email, setEmail] = React.useState(estado?.email ?? '')
   const [senha, setSenha] = React.useState('')
-  const [codigo, setCodigo] = React.useState('')
+  const [manter, setManter] = React.useState(manterConectadoMarcado)
   const [fatorId, setFatorId] = React.useState<string | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
   const [carregando, setCarregando] = React.useState(false)
+  const [veuChegada, setVeuChegada] = React.useState(() => !!estado?.daLanding && !movimentoReduzido())
+  const [saida, setSaida] = React.useState<null | 'entrar' | 'voltar'>(null)
+  const emailRef = React.useRef<HTMLInputElement>(null)
+
+  // A onda da landing sai quando o véu daqui já cobre a tela (antes da pintura).
+  React.useLayoutEffect(() => {
+    document.getElementById(ID_ONDA)?.remove()
+  }, [])
+
+  // Se a animação não rodar (aba em segundo plano), o véu some mesmo assim.
+  React.useEffect(() => {
+    if (!veuChegada) return
+    const id = window.setTimeout(() => setVeuChegada(false), 1200)
+    return () => window.clearTimeout(id)
+  }, [veuChegada])
+
+  function mostrar(p: Passo) {
+    setPasso(p)
+    setErro(null)
+    if (p === 'entrar') window.setTimeout(() => emailRef.current?.focus({ preventScroll: true }), 0)
+  }
 
   function entrarNoSistema() {
-    // Marca de ENTRADA: a pilha de avisos dispara uma vez, não a cada recarga.
+    // Marca de ENTRADA: a pilha de avisos da casca dispara uma vez, não a cada recarga.
     try {
       sessionStorage.setItem(MARCA_ENTRADA, '1')
     } catch {
       /* sem sessionStorage a pilha só não dispara */
     }
-    navigate('/', { replace: true })
+    const de = estado?.from
+    const destino = de && de.pathname !== '/login' ? `${de.pathname}${de.search ?? ''}` : '/'
+    if (movimentoReduzido()) {
+      navigate(destino, { replace: true })
+      return
+    }
+    setSaida('entrar')
+    window.setTimeout(() => navigate(destino, { replace: true }), ENTRADA_MS)
+  }
+
+  async function voltarAoSite(ev: React.MouseEvent<HTMLAnchorElement>) {
+    if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || ev.button !== 0) return
+    ev.preventDefault()
+    if (saida) return
+    // No passo do código a sessão ainda é só de senha: não a deixa para trás.
+    if (passo === 'codigo') await supabase.auth.signOut()
+    if (movimentoReduzido()) {
+      navigate('/')
+      return
+    }
+    setSaida('voltar')
+    window.setTimeout(() => navigate('/'), VOLTA_MS)
   }
 
   async function onEntrar(e: React.FormEvent) {
@@ -63,6 +118,8 @@ export function Login() {
     }
     setErro(null)
     setCarregando(true)
+    // Onde a sessão vai morar: decidido ANTES de ela existir.
+    definirManterConectado(manter)
     const r = await signIn(email.trim(), senha)
     if (r.error) {
       setCarregando(false)
@@ -85,74 +142,52 @@ export function Login() {
     entrarNoSistema()
   }
 
-  async function onCodigo(e: React.FormEvent) {
-    e.preventDefault()
-    if (!fatorId) return
-    if (!/^\d{6}$/.test(codigo)) {
-      setErro('O código tem 6 dígitos.')
-      return
-    }
-    setErro(null)
-    setCarregando(true)
-    const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId: fatorId, code: codigo })
-    setCarregando(false)
-    if (error) {
-      setErro('Código não confere. Confira o aplicativo autenticador e tente de novo.')
-      return
-    }
-    entrarNoSistema()
-  }
-
   async function usarOutroEmail() {
     await supabase.auth.signOut()
-    setCodigo('')
     setFatorId(null)
-    setErro(null)
-    setPasso('entrar')
+    setSenha('')
+    mostrar('entrar')
   }
 
   return (
-    <div className="grid min-h-dvh bg-campo lg:grid-cols-[minmax(0,460px)_1fr]">
-      {/* Painel da marca: a escala é a porta. */}
-      <aside className="relative hidden overflow-hidden bg-[#0B3B34] px-12 py-10 lg:flex lg:flex-col">
-        <div aria-hidden className="pointer-events-none absolute -top-24 -left-40 h-[520px] w-[180px] rotate-[35deg] rounded-capsula bg-marca/35" />
-        <div aria-hidden className="pointer-events-none absolute top-40 -right-10 h-[520px] w-[140px] rotate-[35deg] rounded-capsula bg-marca/20" />
-        <div className="relative flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-controle bg-white/10 text-apoio font-semibold text-white">CC</span>
-          <span className="text-corpo font-semibold text-white">Chefe Coruja</span>
-        </div>
-        <div className="relative mt-auto mb-auto pt-16">
-          <h1 className="text-[40px] leading-[1.08] font-semibold tracking-[-0.02em] text-white">
-            O turno começa <span className="text-[#5EEAD4]">quando a escala diz</span>
-          </h1>
-          <p className="mt-4 max-w-sm text-corpo text-white/80">
-            A entrada é conferida contra a escala e o relógio do servidor. Fora do seu horário, a plataforma não abre.
-          </p>
-          <ul className="mt-8 flex max-w-sm flex-col gap-5">
-            <Argumento icone={CalendarClock} cor="bg-leitos" titulo="Escala antes da senha" texto="O acesso vale para a janela do plantão, não para o dia inteiro." />
-            <Argumento icone={MapPin} cor="bg-suprimento" titulo="Check-in dentro do raio" texto="A presença é confirmada na unidade; o horário fica registrado." />
-            <Argumento icone={ShieldCheck} cor="bg-acao" titulo="Cada registro tem autor" texto="Quem escreve é quem está no login. Nada sai em nome de outro." />
-          </ul>
-        </div>
-      </aside>
+    <div className="grid min-h-dvh bg-campo lg:grid-cols-[46%_minmax(0,1fr)]">
+      {veuChegada && <div aria-hidden className="cc-veu-recolhe" onAnimationEnd={() => setVeuChegada(false)} />}
+      {saida === 'entrar' && <div aria-hidden className="cc-veu-engole" />}
+      {saida === 'voltar' && <div aria-hidden className="cc-veu-cobre" />}
 
-      <main className="flex flex-col px-5 py-8 sm:px-10">
-        <div className="mx-auto w-full max-w-[400px] lg:mt-10">
-          <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <span className="grid size-8 place-items-center rounded-controle-sm bg-marca text-rotulo font-semibold text-white">CC</span>
-            <span className="text-corpo font-semibold text-tinta">Chefe Coruja</span>
-          </div>
+      <LadoMarca />
+
+      <main className="flex flex-col px-5 pt-6 pb-10 sm:px-12 sm:pt-7">
+        <Link to="/" onClick={voltarAoSite} className="cc-voltar inline-flex items-center gap-[7px] self-start text-controle text-tinta-sussurro hover:text-acao">
+          <ArrowLeft className="size-[15px]" aria-hidden />
+          Voltar ao site
+        </Link>
+
+        <div className={cn('m-auto w-full max-w-[420px] py-7', saida === 'entrar' ? 'cc-recua' : 'cc-entra')}>
+          <MarcaCompacta />
+
+          {estado?.aviso && passo === 'entrar' && (
+            <p role="status" className="mb-5 flex items-start gap-2 rounded-container bg-alerta-conforme px-3.5 py-3 text-controle text-[#14532D]">
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden />
+              {estado.aviso}
+            </p>
+          )}
 
           {passo !== 'codigo' && (
-            <div role="tablist" aria-label="Acesso" className="mb-7 grid grid-cols-2 rounded-container bg-trilha p-1">
+            <div role="tablist" aria-label="Entrar ou ativar convite" className="mb-[26px] grid grid-cols-2 gap-1 rounded-container bg-trilha p-1">
               {(['entrar', 'primeira-vez'] as const).map((p) => (
                 <button
                   key={p}
                   type="button"
                   role="tab"
+                  id={`aba-${p}`}
                   aria-selected={passo === p}
-                  onClick={() => { setPasso(p); setErro(null) }}
-                  className={cn('rounded-controle py-2 text-apoio transition-colors', passo === p ? 'bg-superficie font-semibold text-acao shadow-repouso' : 'text-tinta-apoio hover:text-acao')}
+                  aria-controls={`painel-${p}`}
+                  onClick={() => mostrar(p)}
+                  className={cn(
+                    'rounded-controle-sm px-3 py-[9px] text-corpo font-medium transition-[background,color,box-shadow] duration-150',
+                    passo === p ? 'bg-superficie text-acao-pressionada shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-tinta-apoio hover:text-acao',
+                  )}
                 >
                   {p === 'entrar' ? 'Entrar' : 'Primeira vez'}
                 </button>
@@ -161,85 +196,115 @@ export function Login() {
           )}
 
           {passo === 'entrar' && (
-            <form onSubmit={onEntrar} noValidate className="flex flex-col gap-4">
-              <div>
-                <h2 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Entrar no plantão</h2>
-                <p className="mt-1.5 text-apoio text-tinta-sussurro">Use o e-mail da sua unidade. A senha é pessoal e não é compartilhada entre papéis.</p>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="email" className="text-apoio font-medium text-grafite">E-mail</Label>
-                <Input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!erro} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="senha" className="text-apoio font-medium text-grafite">Senha</Label>
-                <Input id="senha" type="password" autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} aria-invalid={!!erro} />
-              </div>
-              {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
-              <button type="submit" disabled={carregando} className="mt-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-controle bg-acao-pressionada text-corpo font-medium text-white hover:bg-acao disabled:opacity-60">
-                {carregando ? 'Entrando…' : 'Entrar'}
-                <ArrowRight className="size-4" aria-hidden />
+            <section id="painel-entrar" role="tabpanel" aria-labelledby="aba-entrar">
+              <h2 className="mb-1.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.026em] text-acao-pressionada">Entrar no plantão</h2>
+              <p className="mb-[22px] text-corpo text-pretty text-tinta-apoio">Use o e-mail da sua unidade. A senha é pessoal e não é compartilhada entre papéis.</p>
+
+              <form onSubmit={onEntrar} noValidate className="flex flex-col gap-3.5">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="email" className="text-apoio font-medium text-tinta-apoio">E-mail corporativo</Label>
+                  <Input ref={emailRef} id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!erro} className={CAMPO} />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="senha" className="text-apoio font-medium text-tinta-apoio">Senha</Label>
+                  <Input id="senha" type="password" autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} aria-invalid={!!erro} className={CAMPO} />
+                </div>
+                <div className="mt-0.5 flex flex-wrap items-center justify-between gap-3">
+                  <label className="flex cursor-pointer items-center gap-2 text-controle text-tinta-apoio">
+                    <input type="checkbox" checked={manter} onChange={(e) => setManter(e.target.checked)} className="size-4 accent-marca" />
+                    <span className="flex flex-col leading-tight">
+                      Manter conectado neste aparelho
+                      <span className="text-rotulo text-tinta-sussurro">Só no seu aparelho, por até 12 horas</span>
+                    </span>
+                  </label>
+                  <Link to="/recuperar-senha" state={{ email: email.trim() }} className="text-controle">
+                    Esqueci a senha
+                  </Link>
+                </div>
+                {erro && <p role="alert" className="text-controle text-critico">{erro}</p>}
+                <button
+                  type="submit"
+                  disabled={carregando}
+                  className="mt-1.5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-controle bg-acao-pressionada px-[18px] text-corpo font-medium text-white hover:bg-[#0B3D3A] disabled:opacity-60"
+                >
+                  {carregando ? 'Entrando…' : 'Entrar'}
+                  <ArrowRight className="size-4" aria-hidden />
+                </button>
+              </form>
+
+              <Separador />
+              <button
+                type="button"
+                onClick={() => mostrar('primeira-vez')}
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-controle border border-fio bg-superficie px-[18px] text-corpo font-medium text-acao-pressionada hover:border-marca hover:text-acao"
+              >
+                Ativar um convite
               </button>
-            </form>
+
+              <p className="mt-[22px] text-apoio text-pretty text-tinta-sussurro">
+                Se o seu nome não estiver na escala de agora, a plataforma avisa o horário do seu próximo plantão em vez de abrir.
+                <br />
+                Quem configurou o aplicativo autenticador confirma a entrada com o código dele.
+              </p>
+            </section>
           )}
 
           {passo === 'primeira-vez' && (
-            <div className="flex flex-col gap-4">
-              <div>
-                <h2 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Não existe cadastro próprio</h2>
-                <p className="mt-1.5 text-apoio text-tinta-sussurro">
-                  O acesso nasce de um convite da unidade ou do contrato da rede. Ninguém se cadastra sozinho: só a coordenação sabe quem está na escala.
-                </p>
-              </div>
-              <div className="flex gap-3 rounded-container border border-fio bg-superficie p-4">
-                <span className="grid size-9 shrink-0 place-items-center rounded-controle bg-leitos text-white" aria-hidden><Stethoscope className="size-[18px]" /></span>
-                <div>
-                  <p className="text-corpo font-semibold text-tinta">Plantonista</p>
-                  <p className="text-apoio text-tinta-sussurro">A coordenação da unidade avisa quando o acesso estiver pronto. Você cria a sua senha com o e-mail corporativo, e a coordenação libera o vínculo.</p>
+            <section id="painel-primeira-vez" role="tabpanel" aria-labelledby="aba-primeira-vez">
+              <h2 className="mb-1.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.026em] text-acao-pressionada">Não existe cadastro próprio</h2>
+              <p className="mb-[22px] text-corpo text-pretty text-tinta-apoio">
+                A conta nasce de um convite da unidade ou do contrato da rede. Ninguém se cadastra sozinho: a plataforma lê escala e leito, e só a coordenação sabe quem está nelas.
+              </p>
+              <div className="mb-5 flex flex-col gap-2.5">
+                <div className="grid grid-cols-[34px_minmax(0,1fr)] items-start gap-[13px] rounded-container border border-fio bg-superficie px-[15px] py-[13px]">
+                  <span className="grid size-[34px] place-items-center rounded-[11px] bg-leitos text-white" aria-hidden><Users className="size-[17px]" /></span>
+                  <span>
+                    <b className="block text-controle font-semibold text-tinta">Equipe da unidade</b>
+                    <span className="text-apoio leading-[1.5] text-pretty text-tinta-apoio">A coordenação avisa quando o acesso estiver pronto. Você ativa com o e-mail corporativo, cria a sua senha, e a coordenação libera o vínculo.</span>
+                  </span>
+                </div>
+                <div className="grid grid-cols-[34px_minmax(0,1fr)] items-start gap-[13px] rounded-container border border-fio bg-superficie px-[15px] py-[13px]">
+                  <span className="grid size-[34px] place-items-center rounded-[11px] bg-suprimento text-white" aria-hidden><Building2 className="size-[17px]" /></span>
+                  <span>
+                    <b className="block text-controle font-semibold text-tinta">Coordenação e administração</b>
+                    <span className="text-apoio leading-[1.5] text-pretty text-tinta-apoio">Entram pelo contrato da rede. É a coordenação que depois libera as equipes.</span>
+                  </span>
                 </div>
               </div>
-              <div className="flex gap-3 rounded-container border border-fio bg-superficie p-4">
-                <span className="grid size-9 shrink-0 place-items-center rounded-controle bg-suprimento text-white" aria-hidden><Building2 className="size-[18px]" /></span>
-                <div>
-                  <p className="text-corpo font-semibold text-tinta">Coordenação e administração</p>
-                  <p className="text-apoio text-tinta-sussurro">Entram pelo contrato da rede. É a coordenação que depois libera as equipes.</p>
-                </div>
-              </div>
-              <Link to="/cadastro" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-controle border border-fio bg-superficie text-corpo font-medium text-tinta-apoio hover:border-acao hover:text-acao">
-                <KeyRound className="size-4" aria-hidden />
-                Ativar meu acesso
+              <Link
+                to="/cadastro"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-controle bg-acao-pressionada px-[18px] text-corpo font-medium text-white hover:bg-[#0B3D3A] hover:text-white"
+              >
+                Ir para o primeiro acesso
+                <ArrowRight className="size-4" aria-hidden />
               </Link>
-            </div>
+              <p className="mt-[22px] text-apoio text-pretty text-tinta-sussurro">
+                Sem convite e sem contrato? Fale com a coordenação da sua unidade.
+                <br />
+                Já tem conta?{' '}
+                <button type="button" onClick={() => mostrar('entrar')} className="font-medium text-acao hover:text-acao-pressionada">
+                  Entrar no plantão
+                </button>
+                .
+              </p>
+            </section>
           )}
 
-          {passo === 'codigo' && (
-            <form onSubmit={onCodigo} noValidate className="flex flex-col gap-4">
-              <div>
-                <h2 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Confirme que é você</h2>
-                <p className="mt-1.5 text-apoio text-tinta-sussurro">Digite o código de 6 dígitos do seu aplicativo autenticador.</p>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="codigo" className="text-apoio font-medium text-grafite">Código de 6 dígitos</Label>
-                {/* Sem placeholder: "000000" legível se confunde com valor digitado. */}
-                <input
-                  id="codigo"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  autoFocus
-                  value={codigo}
-                  onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  aria-invalid={!!erro}
-                  className="min-h-[54px] rounded-controle border border-fio bg-campo text-center text-[24px] font-semibold tracking-[0.3em] text-tinta tabular outline-none focus-visible:border-marca"
-                />
-              </div>
-              {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
-              <button type="submit" disabled={carregando} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-controle bg-acao-pressionada text-corpo font-medium text-white hover:bg-acao disabled:opacity-60">
-                {carregando ? 'Conferindo…' : 'Confirmar'}
-              </button>
-              <button type="button" onClick={usarOutroEmail} className="text-apoio text-tinta-sussurro hover:text-acao">
+          {passo === 'codigo' && fatorId && (
+            <section aria-labelledby="titulo-codigo">
+              <button type="button" onClick={usarOutroEmail} className="mb-[18px] inline-flex min-h-6 items-center gap-[7px] text-controle text-tinta-sussurro hover:text-acao">
+                <ArrowLeft className="size-[15px]" aria-hidden />
                 Usar outro e-mail
               </button>
-            </form>
+              <h2 id="titulo-codigo" className="mb-1.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.026em] text-acao-pressionada">Confirme que é você</h2>
+              <p className="mb-[22px] text-corpo text-pretty text-tinta-apoio">
+                Digite o código de 6 dígitos do seu aplicativo autenticador. Ele é pedido em todo login novo e, depois, a cada 24 horas.
+              </p>
+              <ConfirmarSegundoFator fatorId={fatorId} onPronto={entrarNoSistema} rotulo="Entrar no plantão" />
+              <p className="mt-[22px] text-apoio text-pretty text-tinta-sussurro">
+                O código vem do aplicativo que você configurou no Perfil (Google Authenticator, Microsoft Authenticator, Authy ou outro). Três códigos errados seguidos bloqueiam a confirmação por 15 minutos.
+              </p>
+            </section>
           )}
         </div>
       </main>

@@ -1,5 +1,5 @@
-import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect, useRef, type CSSProperties, type MouseEvent, type ReactNode } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowRight,
   Bird,
@@ -152,7 +152,81 @@ function VideoProntuario() {
   )
 }
 
+// Verificação: só números contados no próprio código do app, reproduzíveis
+// com os comandos da nota. Não há medição de render (contraste, foco,
+// transbordo) no projeto — por isso a seção não traz esses números.
+// Contagem de 29/09/2026; recontar ao mexer no registro ou nos testes.
+const MEDIDAS = [
+  { n: '200', rot: 'Ferramentas clínicas', nota: 'em 8 seções do registro, todas na busca' },
+  { n: '34', rot: 'Arquivos de teste do banco', nota: 'cada um roda numa transação desfeita' },
+  { n: '240', rot: 'Verificações de banco', nota: 'regras de acesso, escala e registro clínico' },
+  { n: '24h', rot: 'Janela do segundo fator', nota: 'conferida no servidor, não no aparelho' },
+]
+
+/** Id da onda: a tela de login (Login.tsx) a retira quando o próprio véu já cobre a tela. */
+const ID_ONDA = 'cc-onda-landing'
+
+// Ir para o login: o verde do botão cresce a partir do ponto clicado até
+// cobrir a tela, e o login recolhe esse mesmo verde para a coluna da marca.
+// Quem pediu menos movimento vai direto. Clique com modificador abre normal.
+function useOndaAteLogin() {
+  const navigate = useNavigate()
+  const saindo = useRef(false)
+  return useCallback(
+    (ev: MouseEvent<HTMLAnchorElement>) => {
+      if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || ev.button !== 0) return
+      ev.preventDefault()
+      if (saindo.current) return
+      saindo.current = true
+      void import('@/pages/Login') // a tela chega carregada no fim da onda
+      const vai = () => navigate('/login', { state: { daLanding: true } })
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        vai()
+        return
+      }
+      const r = ev.currentTarget.getBoundingClientRect()
+      const x = r.left + r.width / 2
+      const y = r.top + r.height / 2
+      const raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
+      const onda = document.createElement('span')
+      onda.id = ID_ONDA
+      onda.setAttribute('aria-hidden', 'true')
+      Object.assign(onda.style, {
+        position: 'fixed', zIndex: '90', pointerEvents: 'none', borderRadius: '50%', background: '#0B3B34',
+        left: `${x}px`, top: `${y}px`, width: `${raio * 2}px`, height: `${raio * 2}px`,
+        margin: `${-raio}px 0 0 ${-raio}px`, transform: 'scale(0.02)', opacity: '0.001',
+      })
+      document.body.appendChild(onda)
+      // Garantia: a onda nunca fica presa na tela se o login não a retirar.
+      window.setTimeout(() => onda.remove(), 2500)
+      let foi = false
+      const uma = () => {
+        if (foi) return
+        foi = true
+        vai()
+      }
+      if (typeof onda.animate === 'function') {
+        onda
+          .animate(
+            [
+              { transform: 'scale(0.02)', opacity: 0.55 },
+              { transform: 'scale(0.45)', opacity: 0.9, offset: 0.35 },
+              { transform: 'scale(1)', opacity: 1 },
+            ],
+            { duration: 700, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' },
+          )
+          .finished.then(uma, uma)
+      }
+      // O link nunca fica sem efeito: vale o fim da animação ou o prazo.
+      window.setTimeout(uma, 740)
+    },
+    [navigate],
+  )
+}
+
 export default function Landing() {
+  const onda = useOndaAteLogin()
+
   useEffect(() => {
     const anterior = document.title
     document.title = 'Chefe Coruja — a escala é a porta'
@@ -193,8 +267,9 @@ export default function Landing() {
               <a href="#prontuario">Prontuário</a>
               <a href="#seguranca">Segurança</a>
               <a href="#lgpd">LGPD</a>
+              <a href="#prova">Verificação</a>
             </nav>
-            <Link className="btn btn-primario" to="/login">
+            <Link className="btn btn-primario" to="/login" onClick={onda}>
               Entrar
               <ArrowRight size={16} />
             </Link>
@@ -210,7 +285,7 @@ export default function Landing() {
               check-in confirma presença dentro do raio da unidade — e o horário e o local chegam ao gestor.
             </p>
             <div className="acoes">
-              <Link className="btn btn-primario" to="/login">
+              <Link className="btn btn-primario" to="/login" onClick={onda}>
                 Entrar no Chefe Coruja
                 <ArrowRight size={16} />
               </Link>
@@ -343,7 +418,7 @@ export default function Landing() {
           </p>
           <div className="papeis">
             {PAPEIS.map(({ nome, cor, Icone, texto, telas }) => (
-              <Link key={nome} className="papel" to="/login">
+              <Link key={nome} className="papel" to="/login" onClick={onda}>
                 <span className="papel-barra" style={{ background: cor }} />
                 <span className="papel-topo">
                   <span className="papel-icone" style={{ background: cor }}><Icone size={20} /></span>
@@ -449,6 +524,30 @@ export default function Landing() {
           </div>
         </section>
 
+        <section className="prova" id="prova">
+          <span className="formas" aria-hidden="true">
+            <Barra width={520} height={64} right={-140} top={-30} background="#FFFFFF12" />
+            <Barra width={340} height={64} right={-60} bottom={-20} background="#5EEAD41A" />
+          </span>
+          <div className="env">
+            <span className="rotulo-secao">Verificação</span>
+            <h2>Contado no código, não estimado</h2>
+            <p className="sub">
+              Os números saem do próprio app e são reprodutíveis: as ferramentas, do registro clínico; as verificações,
+              dos testes do banco, que rodam com <code>npm run test:banco</code>.
+            </p>
+            <div className="medidas">
+              {MEDIDAS.map((m) => (
+                <div key={m.rot} className="medida">
+                  <span className="medida-n">{m.n}</span>
+                  <span className="medida-rot">{m.rot}</span>
+                  <span className="medida-nota">{m.nota}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="fecho">
           <span className="formas" aria-hidden="true">
             <Barra width={420} height={70} right={-80} top={-26} background="#0D948826" />
@@ -456,14 +555,15 @@ export default function Landing() {
           </span>
           <div className="env fecho-cartao">
             <div>
-              <h2>Sua unidade já usa o Chefe Coruja?</h2>
+              <h2>Comece pelo papel que você exerce</h2>
               <p className="sub" style={{ marginTop: 10 }}>
-                Entre com o seu e-mail. Primeiro acesso? Ative a conta e aguarde a liberação do gestor da unidade.
+                O acesso abre no papel que a sua unidade liberou para você; quem tem mais de um troca pelo menu do
+                usuário, no topo da tela. Primeiro acesso? Ative a conta e aguarde a liberação do gestor da unidade.
               </p>
             </div>
             <div className="acoes" style={{ marginTop: 0 }}>
-              <Link className="btn btn-primario" to="/login">
-                Entrar
+              <Link className="btn btn-primario" to="/login" onClick={onda}>
+                Entrar no plantão
                 <ArrowRight size={16} />
               </Link>
               <Link className="btn btn-claro" to="/cadastro">Primeiro acesso</Link>

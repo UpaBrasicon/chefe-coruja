@@ -7,14 +7,17 @@ import { extendTailwindMerge } from 'tailwind-merge'
 const twMerge = extendTailwindMerge({
   extend: {
     theme: {
-      text: ['rotulo', 'apoio', 'corpo', 'secao', 'titulo', 'numeral-ok', 'numeral-atencao', 'numeral-critico'],
-      radius: ['controle-sm', 'controle', 'container', 'cartao', 'capsula'],
-      shadow: ['repouso', 'halo', 'halo-ferramenta', 'dialogo', 'desfazer', 'lateral'],
+      text: ['rotulo', 'apoio', 'controle', 'corpo', 'secao', 'dialogo', 'titulo', 'numeral-compacto', 'numeral-ok', 'numeral-atencao', 'numeral-critico'],
+      radius: ['micro', 'controle-sm', 'controle', 'bloco', 'container', 'menu', 'cartao', 'capsula'],
+      shadow: ['repouso', 'halo', 'halo-ferramenta', 'popover', 'toast', 'dialogo', 'paleta', 'desfazer', 'lateral', 'lateral-aberta', 'fab'],
       color: [
         'acao', 'acao-pressionada', 'marca', 'leitos', 'observacao', 'turno', 'suprimento',
         'ok', 'atencao', 'critico', 'conforme', 'tinta', 'tinta-apoio', 'tinta-sussurro',
         'grafite', 'superficie', 'campo', 'trilha', 'fio', 'fio-forte', 'pediatria',
         'mts-vermelho', 'mts-laranja', 'mts-amarelo', 'mts-amarelo-texto', 'mts-verde', 'mts-azul',
+        'alerta-atencao', 'alerta-critico', 'alerta-observacao', 'alerta-marca', 'alerta-conforme', 'nota', 'desfazer-regua', 'veu',
+        'secao-calculadoras', 'secao-cardiologia', 'secao-trauma', 'secao-gastro', 'secao-neurologia', 'secao-terapia-intensiva',
+        'secao-endocrinologia', 'secao-toxicologia', 'secao-protocolos', 'secao-ventilacao', 'secao-farmacia', 'secao-games',
       ],
     },
   },

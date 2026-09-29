@@ -1,5 +1,5 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
-import { Building2, LogOut, Repeat, SlidersHorizontal, UserRound } from 'lucide-react'
+import { Building2, Lock, LogOut, Repeat, SlidersHorizontal, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -30,6 +30,7 @@ export function MenuUsuario({
   papelAtivo,
   onTrocarPapel,
   onSair,
+  onBloquear,
   tamanho = 32,
 }: {
   nome?: string
@@ -41,6 +42,8 @@ export function MenuUsuario({
   papelAtivo: Papel | null
   onTrocarPapel: (p: Papel) => void
   onSair: () => void
+  /** Bloqueia a tela agora (quem sai da frente do computador). */
+  onBloquear: () => void
   tamanho?: 32 | 38
 }) {
   const navigate = useNavigate()
@@ -126,6 +129,17 @@ export function MenuUsuario({
                   Minhas preferências de prescrição
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  setAberto(false)
+                  onBloquear()
+                }}
+                className="flex min-h-11 items-center gap-2.5 rounded-controle-sm px-2.5 py-2.5 text-left text-controle text-tinta hover:bg-trilha"
+              >
+                <Lock className="size-4 text-tinta-sussurro" aria-hidden />
+                Bloquear tela
+              </button>
               <button
                 type="button"
                 onClick={() => {

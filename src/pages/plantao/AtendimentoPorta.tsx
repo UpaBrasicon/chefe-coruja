@@ -24,7 +24,7 @@ import { BotaoChamar } from '@/components/porta/Chamada'
 import { SepsePorta } from '@/components/internacao/LeitoAberto'
 import { PrescricaoEstruturada } from '@/components/prescricao/PrescricaoEstruturada'
 import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
-import { BotaoEpisodiosAnteriores } from '@/components/prontuario/GavetaEpisodios'
+import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 
 // Atendimento médico no Pronto Socorro (Fase 2.4): fila médica (cor → 80+ →
@@ -218,28 +218,33 @@ function Atendimento({ ep, onFim }: { ep: EpFila; onFim: () => void }) {
     <div className="flex flex-col gap-4">
       <Button variant="ghost" className="self-start" onClick={onFim}><ArrowLeft /> Voltar à fila</Button>
 
+      {/* D4: cabeçalho único (nome, idade, sexo, setor, permanência, alergia em três
+          estados, cor da classificação, acuidade). D5: atendimento anterior só depois
+          de abrir o atendimento (prontuário aberto no servidor); o da tela não conta. */}
+      <CabecalhoPaciente
+        pacienteId={ep.paciente_id}
+        nome={nomeDe(ep)}
+        setorId={ep.setor_id}
+        desde={ep.chegada_em}
+        rotuloDesde="na porta há"
+        contexto={<>{ep.publico === 'pediatrico' && 'pediatria · '}chegou {hora(ep.chegada_em)} · queixa: {ep.queixa}</>}
+        corClassificacao={ultimaCls?.cor ?? ep.cor_atual}
+        onClassificacao={() => document.getElementById(`triagem-${ep.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        acuidade={aberto}
+        episodios={aberto}
+        episodioAtualId={ep.id}
+      />
+
       <Card>
-        <CardHeader>
-          <div className="flex flex-wrap items-center gap-2">
-            <PilulaRisco cor={ultimaCls?.cor ?? ep.cor_atual} detalhe />
-            <CardTitle className="text-base">{nomeDe(ep)}</CardTitle>
-            {/* D5: passagens anteriores; só depois de abrir o atendimento (prontuário aberto no servidor) */}
-            {aberto && <BotaoEpisodiosAnteriores pacienteId={ep.paciente_id} nome={nomeDe(ep)} className="ml-auto" />}
-          </div>
-          <CardDescription>
-            {ep.paciente?.data_nascimento ? rotuloIdade(ep.paciente.data_nascimento, hoje()) : 'idade não informada'}
-            {ep.publico === 'pediatrico' && ' · pediatria'} · chegou {hora(ep.chegada_em)} · queixa: {ep.queixa}
-          </CardDescription>
+        <CardContent className="flex flex-col gap-3 pt-4">
           {ep.prioridades_legais.length > 0 && (
             <div className="flex flex-wrap gap-1">{rotulosPrioridade(ep.prioridades_legais).map((r) => <Badge key={r} variant="outline">{r}</Badge>)}</div>
           )}
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
           {abrir.isPending && <Spinner />}
           {abrir.error && <p className="text-sm text-critico">{(abrir.error as Error).message}</p>}
           {dados.data && (
             <>
-              <section className="flex flex-col gap-1 text-sm">
+              <section id={`triagem-${ep.id}`} className="flex scroll-mt-4 flex-col gap-1 text-sm">
                 <h3 className="font-semibold text-tinta">Triagem</h3>
                 {dados.data.classificacoes.map((c) => (
                   <div key={c.id} className="text-tinta-apoio">

@@ -30,6 +30,8 @@ import { usePaleta } from '@/components/casca/usePaleta'
 import { Lateral } from '@/components/casca/Lateral'
 import { MenuUsuario } from '@/components/casca/MenuUsuario'
 import { DialogoSaida, SessaoEncerrada, VeuSaida } from '@/components/casca/Saida'
+import { TelaBloqueada } from '@/components/casca/Bloqueio'
+import { useBloqueioOcioso } from '@/components/casca/useBloqueioOcioso'
 import { ContextoTopo, FitaDoSinal, Topo, TopoEstreito } from '@/components/casca/Topo'
 import { useNotasNav } from '@/components/casca/useNotasNav'
 import { usePendenciasSaida } from '@/components/casca/usePendenciasSaida'
@@ -273,6 +275,8 @@ function Casca() {
     await signOut()
     navigate('/login', { replace: true })
   }, [signOut, navigate])
+  const encerrarPorInatividade = React.useCallback(() => void sair(), [sair])
+  const bloqueio = useBloqueioOcioso(!!perfil, encerrarPorInatividade)
 
   function confirmarSaida() {
     if (saindo) return
@@ -305,6 +309,7 @@ function Casca() {
       papelAtivo={papelAtivo}
       onTrocarPapel={trocarPapel}
       onSair={() => setSaidaAberta(true)}
+      onBloquear={bloqueio.bloquear}
       tamanho={tamanho}
     />
   )
@@ -321,6 +326,15 @@ function Casca() {
         onConfirmar={confirmarSaida}
       />
       {saindo && <VeuSaida />}
+      {bloqueio.bloqueada && !sessao.encerrada && (
+        <TelaBloqueada
+          nome={perfil?.nome_completo}
+          email={perfil?.email}
+          contexto={unidadeAtiva?.unidade.nome}
+          onDesbloquear={bloqueio.desbloquear}
+          onSair={() => void sair()}
+        />
+      )}
       {sessao.encerrada && (
         <SessaoEncerrada texto="O plantão terminou e a plataforma ficou 5 minutos sem uso. Por segurança, a sessão foi encerrada." onReentrar={() => void sair()} />
       )}

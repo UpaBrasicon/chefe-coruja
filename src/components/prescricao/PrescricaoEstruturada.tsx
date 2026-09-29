@@ -23,6 +23,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
+import { ativas, useAlergias } from '@/components/paciente/useAlergias'
 
 type ItemVigente = {
   id: string; tipo: 'medicamento' | 'cuidado'; descricao: string; medicamento_id: string | null; dose: string | null; via: string | null
@@ -32,7 +34,6 @@ type ItemVigente = {
 }
 type Medicamento = { id: string; principio_ativo: string; apresentacao: string | null; concentracao: string | null; alta_vigilancia: boolean }
 type Diluicao = { id: string; versao: number; texto: string; fonte: string; revisor_crf: string | null }
-type Alergia = { id: string; substancia: string; reacao: string | null }
 
 export type PacientePrescricao = { nome: string; dataAtual?: string; leito?: string; diagnostico?: string }
 
@@ -60,14 +61,9 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
       return (data ?? []) as unknown as ItemVigente[]
     },
   })
-  const alergias = useQuery({
-    queryKey: ['alergias', pacienteId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('alergias_paciente').select('id, substancia, reacao').eq('paciente_id', pacienteId).is('inativada_em', null)
-      if (error) throw error
-      return (data ?? []) as Alergia[]
-    },
-  })
+  // alergia em três estados (tem / nega / não registrada): o painel mora em
+  // components/paciente; aqui só o resumo e a folha
+  const alergias = useAlergias(pacienteId)
   const peso = useQuery({
     queryKey: ['peso-atual', pacienteId],
     queryFn: async () => {
@@ -88,7 +84,10 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
         conteudo: JSON.stringify({
           paciente: {
             ...paciente,
-            alergias: (alergias.data ?? []).map((a) => a.substancia).join(', ') || 'NEGA',
+            // lista vazia não é "nega": só imprime NEGA quando há o registro explícito
+            alergias: !alergias.data ? 'NÃO VERIFICADA'
+              : alergias.data.estado === 'tem' ? ativas(alergias.data).map((a) => a.substancia).join(', ')
+              : alergias.data.estado === 'nega' ? 'NEGA' : 'NÃO REGISTRADA',
             peso: peso.data?.valor_num ?? '',
           },
           itens: lista.map((i) => ({
@@ -118,7 +117,7 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-sm">
-          <Alergias pacienteId={pacienteId} lista={alergias.data ?? []} aoMudar={recarregar} aoErro={setErro} />
+          <ResumoAlergias pacienteId={pacienteId} nome={paciente.nome} />
           {lista.length === 0 && <p className="text-tinta-sussurro">Nenhum item prescrito.</p>}
           {lista.map((i) => <LinhaItem key={i.id} i={i} aoMudar={recarregar} aoErro={setErro} />)}
           <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -128,28 +127,6 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
         </CardContent>
       </Card>
       <NovoItem pacienteId={pacienteId} peso={peso.data} aoMudar={recarregar} aoErro={setErro} />
-    </div>
-  )
-}
-
-function Alergias({ pacienteId, lista, aoMudar, aoErro }: { pacienteId: string; lista: Alergia[]; aoMudar: () => void; aoErro: (m: string | null) => void }) {
-  const [nova, setNova] = React.useState('')
-  return (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-2">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-xs font-semibold tracking-wide text-tinta-sussurro uppercase">Alergias</span>
-        {lista.length === 0 && <span className="text-tinta-sussurro">nenhuma registrada</span>}
-        {lista.map((a) => <Badge key={a.id} variant="destructive">{a.substancia}{a.reacao ? ` (${a.reacao})` : ''}</Badge>)}
-      </div>
-      <div className="flex gap-2">
-        <Input className="h-8" placeholder="Registrar alergia (substância)" value={nova} onChange={(e) => setNova(e.target.value)} />
-        <Button size="sm" variant="outline" disabled={nova.trim().length < 3} onClick={async () => {
-          const { error } = await supabase.rpc('registrar_alergia', { p_paciente: pacienteId, p_substancia: nova })
-          if (error) return aoErro(error.message)
-          aoErro(null); setNova(''); aoMudar()
-        }}>Registrar</Button>
-      </div>
-      <p className="text-xs text-tinta-sussurro">Alergia registrada trava o item do medicamento correspondente. Nada a contorna.</p>
     </div>
   )
 }

@@ -1,58 +1,59 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Gaveta de episódios anteriores (protótipo, D5 — `valsEpisodios`).
-//
-// Um só painel para quem está com o paciente agora (leito ou porta): lista as
-// passagens ANTERIORES desta pessoa por esta unidade — atendimentos da porta
-// encerrados e internações encerradas —, com data, desfecho, queixa/motivo,
-// onde foi e o resumo (sumário de alta, sumário de óbito ou a última evolução;
-// na falta deles, o relato do desfecho).
-//
-// Nada aqui passa por cima do banco: lê só o que a RLS deixa ler, depois de
-// abrir o prontuário no servidor (abrir_prontuario grava o acesso, e as
-// políticas restritivas de "prontuário aberto" exigem isso para ler documento).
+// Gaveta do atendimento SEM DESFECHO (protótipo D5, com a regra do usuário de
+// 29/09/2026): mostra ao médico que está com o paciente o atendimento anterior
+// que ficou em aberto — sem alta, sem encaminhamento para outro setor e sem
+// internação —, para ninguém esquecer uma pessoa triada e nunca atendida.
+// O histórico já encerrado não aparece aqui; ele segue pelo pedido de acesso
+// ao prontuário.
 // ─────────────────────────────────────────────────────────────────────────────
-import { BookOpen, History } from 'lucide-react'
+import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
+import { CORES_RISCO, type CorRisco } from '@/domain/risco'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
 import { Spinner } from '@/components/ui/spinner'
 
 import { useEpisodiosAnteriores } from './useEpisodiosAnteriores'
 
+const quando = (iso: string | null | undefined) =>
+  iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : ''
+
+const ETAPA: Record<string, string> = {
+  triagem: 'Aguardando triagem',
+  atendimento: 'Aguardando ou em atendimento médico',
+}
+
+function tempoDesde(iso: string) {
+  const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000))
+  if (min < 60) return `há ${min} min`
+  const h = Math.round(min / 60)
+  if (h < 48) return `há ${h} h`
+  return `há ${Math.round(h / 24)} dias`
+}
+
 export function GavetaEpisodios({
   pacienteId,
   nome,
+  episodioAtualId,
   aberta,
   onAbertaChange,
 }: {
   pacienteId: string
   nome: string
+  /** O atendimento que está na tela: não conta como "anterior". */
+  episodioAtualId?: string | null
   aberta: boolean
   onAbertaChange: (v: boolean) => void
 }) {
-  const q = useEpisodiosAnteriores(pacienteId)
-  const [expandido, setExpandido] = React.useState<string | null>(null)
+  const q = useEpisodiosAnteriores(pacienteId, episodioAtualId)
   const lista = q.data ?? []
 
-  const total = q.data
-    ? lista.length === 1
-      ? '1 passagem anterior nesta unidade'
-      : `${lista.length} passagens anteriores nesta unidade`
-    : undefined
-
   return (
-    <Gaveta
-      aberta={aberta}
-      onAbertaChange={(v) => {
-        if (!v) setExpandido(null)
-        onAbertaChange(v)
-      }}
-      rotulo="Episódios anteriores"
-    >
-      <GavetaCabeca sobre="Episódios anteriores" titulo={nome} detalhe={total} />
+    <Gaveta aberta={aberta} onAbertaChange={onAbertaChange} rotulo="Atendimento sem desfecho">
+      <GavetaCabeca sobre="Atendimento sem desfecho" titulo={nome} detalhe={q.data ? (lista.length ? 'Ficou sem alta, sem encaminhamento e sem internação' : 'Nenhum atendimento em aberto') : undefined} />
 
       {q.isLoading && (
         <div className="flex justify-center py-12">
@@ -60,81 +61,83 @@ export function GavetaEpisodios({
         </div>
       )}
       {q.error && (
-        <p className="mx-[22px] my-4 rounded-controle border border-critico/30 bg-critico/[0.08] p-3 text-apoio text-critico">
-          {(q.error as Error).message}
-        </p>
+        <p className="mx-[22px] my-4 rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{(q.error as Error).message}</p>
       )}
 
-      {q.data && lista.length > 0 && (
-        <ul>
-          {lista.map((ep) => {
-            const aberto = expandido === ep.chave
-            return (
-              <li key={ep.chave} className="flex flex-col gap-1.5 border-b border-trilha px-[22px] py-4">
-                <div className="flex flex-wrap items-baseline gap-2.5">
-                  <span className="text-corpo font-semibold tracking-[-0.01em] text-tinta tabular-nums">{ep.quando}</span>
-                  <Badge variant={ep.tom}>{ep.desfecho}</Badge>
-                </div>
-                <span className="text-corpo text-tinta">{ep.queixa}</span>
-                {ep.onde && <span className="text-apoio text-tinta-sussurro">{ep.onde}</span>}
-                {ep.resumo ? (
-                  <>
-                    <button
-                      type="button"
-                      aria-expanded={aberto}
-                      onClick={() => setExpandido(aberto ? null : ep.chave)}
-                      className="self-start text-apoio font-medium text-acao hover:text-acao-pressionada"
-                    >
-                      {aberto ? 'Ocultar resumo' : 'Ver resumo'}
-                    </button>
-                    {aberto && (
-                      <p className="rounded-controle bg-campo px-3.5 py-3 text-[14px] leading-[1.6] whitespace-pre-line text-tinta-apoio [text-wrap:pretty]">
-                        {ep.resumo}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-apoio text-tinta-sussurro">Sem resumo registrado.</span>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      )}
+      {lista.map((a) => {
+        const cor = CORES_RISCO.includes(a.cor_atual as CorRisco) ? (a.cor_atual as CorRisco) : null
+        return (
+          <div key={a.episodio_id} className="flex flex-col gap-2 border-b border-trilha px-[22px] py-4">
+            <div className="flex flex-wrap items-baseline gap-2.5">
+              <span className="text-corpo font-semibold tracking-[-0.01em] text-tinta tabular">{quando(a.chegada_em)}</span>
+              <span className="text-apoio text-tinta-sussurro">{tempoDesde(a.chegada_em)}</span>
+              <span className="rounded-capsula bg-alerta-atencao px-2 py-[3px] text-rotulo font-semibold tracking-[0.04em] text-atencao uppercase">Sem desfecho</span>
+            </div>
+            <span className="text-corpo text-tinta">{a.queixa}</span>
+            <span className="text-apoio text-tinta-sussurro">
+              {[a.setor_nome, ETAPA[a.etapa] ?? a.etapa, cor ? `classificação ${cor}` : 'sem classificação', a.medico_nome && `com ${a.medico_nome}`]
+                .filter(Boolean)
+                .join(' · ')}
+            </span>
+            {a.ultimo_registro && (
+              <div className="flex flex-col gap-1 rounded-controle bg-campo px-3.5 py-3">
+                <span className="rotulo text-tinta-sussurro">Último registro · {quando(a.ultimo_registro_em)}</span>
+                <p className="text-controle leading-[1.6] whitespace-pre-line text-pretty text-tinta-apoio">{a.ultimo_registro}</p>
+              </div>
+            )}
+            {a.noMeuPlantao ? (
+              <Link to="/atendimento" className="self-start text-apoio font-medium text-acao hover:text-acao-pressionada">
+                Está na sua fila: abrir o Atendimento para dar o desfecho
+              </Link>
+            ) : (
+              <span className="text-apoio text-pretty text-tinta-sussurro">
+                O desfecho é dado por quem está de plantão {a.setor_nome ? `no ${a.setor_nome}` : 'no setor do atendimento'}. Avise a equipe de lá ou o gestor.
+              </span>
+            )}
+          </div>
+        )
+      })}
 
       {q.data && lista.length === 0 && (
         <div className="flex flex-col items-center gap-1.5 px-6 py-12 text-center">
-          <BookOpen className="size-[22px] text-tinta-sussurro" aria-hidden />
-          <span className="text-corpo font-semibold text-tinta">Primeira internação</span>
-          <span className="max-w-[34ch] text-apoio text-tinta-sussurro [text-wrap:pretty]">
-            Não há passagem anterior desta pessoa por esta unidade.
-          </span>
+          <CheckCircle2 className="size-[22px] text-conforme" aria-hidden />
+          <span className="text-corpo font-semibold text-tinta">Nenhum atendimento em aberto</span>
+          <span className="max-w-[34ch] text-apoio text-pretty text-tinta-sussurro">Todos os atendimentos anteriores desta pessoa têm desfecho registrado.</span>
         </div>
       )}
 
-      <GavetaPe className="[text-wrap:pretty]">
-        Você alcança estes episódios porque {nome} está sob o seu cuidado agora. Encerrada a internação, o histórico passa a ser do gestor.
+      <GavetaPe className="text-pretty">
+        Você vê este atendimento porque {nome} está sob o seu cuidado agora. O histórico já encerrado segue pelo pedido de acesso ao prontuário.
       </GavetaPe>
     </Gaveta>
   )
 }
 
 /**
- * Botão que abre a gaveta: "Atendimentos anteriores", ou "Primeira internação"
- * quando não há passagem anterior. Para plugar no cabeçalho do leito e da porta.
+ * Aviso no cabeçalho do leito e da porta: só aparece quando há atendimento
+ * sem desfecho, em âmbar, e abre a gaveta. Sem pendência, não ocupa lugar.
  */
-export function BotaoEpisodiosAnteriores({ pacienteId, nome, className }: { pacienteId: string; nome: string; className?: string }) {
+export function BotaoEpisodiosAnteriores({
+  pacienteId,
+  nome,
+  episodioAtualId,
+  className,
+}: {
+  pacienteId: string
+  nome: string
+  episodioAtualId?: string | null
+  className?: string
+}) {
   const [aberta, setAberta] = React.useState(false)
-  const q = useEpisodiosAnteriores(pacienteId)
-  const primeira = q.data?.length === 0
+  const q = useEpisodiosAnteriores(pacienteId, episodioAtualId)
+  if (!q.data?.length) return null
   return (
     <>
-      <Button size="sm" variant="outline" className={cn(className)} onClick={() => setAberta(true)}>
-        {primeira ? <BookOpen /> : <History />}
-        {primeira ? 'Primeira internação' : 'Atendimentos anteriores'}
-        {!!q.data?.length && <span className="tabular-nums text-tinta-sussurro">{q.data.length}</span>}
+      <Button size="sm" variant="outline" className={cn('border-atencao/40 bg-alerta-atencao text-atencao hover:border-atencao hover:text-atencao', className)} onClick={() => setAberta(true)}>
+        <AlertTriangle />
+        Atendimento sem desfecho
       </Button>
-      <GavetaEpisodios pacienteId={pacienteId} nome={nome} aberta={aberta} onAbertaChange={setAberta} />
+      <GavetaEpisodios pacienteId={pacienteId} nome={nome} episodioAtualId={episodioAtualId} aberta={aberta} onAbertaChange={setAberta} />
     </>
   )
 }

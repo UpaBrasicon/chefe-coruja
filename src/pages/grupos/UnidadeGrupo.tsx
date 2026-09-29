@@ -9,6 +9,7 @@ const Configuracao = lazy(() => import('@/pages/Configuracao'))
 const Banners = lazy(() => import('@/pages/gestor/Banners').then((m) => ({ default: m.Banners })))
 const RevisaoSemConexao = lazy(() => import('@/pages/gestor/RevisaoSemConexao'))
 const FerramentasUnidade = lazy(() => import('@/pages/gestor/FerramentasUnidade'))
+const Convites = lazy(() => import('@/pages/gestor/Convites'))
 
 /**
  * Unidade — as três telas de configuração da mesma unidade.
@@ -26,6 +27,10 @@ export default function UnidadeGrupo() {
     ...(papeisDaUnidade.includes('gestor')
       ? [{ valor: 'setores', rotulo: 'Setores e Leitos', conteudo: () => <Setores embutido /> }]
       : []),
+    // Convites do primeiro acesso: gestor da unidade e admin da rede (o banco confere).
+    ...(papeisDaUnidade.includes('gestor') || papeisDaUnidade.includes('admin')
+      ? [{ valor: 'convites', rotulo: 'Convites', conteudo: () => <Convites /> }]
+      : []),
     { valor: 'configuracoes', rotulo: 'Configurações', conteudo: () => <Configuracao embutido /> },
     { valor: 'imagens', rotulo: 'Imagens', conteudo: () => <Banners embutido /> },
     ...(papeisDaUnidade.includes('gestor')
@@ -39,7 +44,7 @@ export default function UnidadeGrupo() {
   return (
     <TabsPagina
       titulo="Unidade"
-      descricao="Setores e leitos, configurações de comunicação e check-in, e o quadro de imagens."
+      descricao="Setores e leitos, convites de primeiro acesso, configurações de comunicação e check-in, e o quadro de imagens."
       icone={Building2}
       abas={abas}
     />
