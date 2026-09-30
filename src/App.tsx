@@ -55,6 +55,7 @@ const ProntuarioLeitura = lazy(() => import('@/pages/prontuario/ProntuarioLeitur
 const PainelGestor = lazy(() => import('@/pages/gestor/PainelGestor'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
 const Teleinterconsulta = lazy(() => import('@/pages/telemedicina/Teleinterconsulta'))
+const Pareceres = lazy(() => import('@/pages/parecer/Pareceres'))
 const MeuPlantao = lazy(() => import('@/pages/MeuPlantao'))
 const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome'))
 const SectionHome = lazy(() => import('@/pages/plantonista/SectionHome'))
@@ -195,6 +196,11 @@ export default function App() {
                       {/* Fase 7: teleinterconsulta — presencial solicita, telemedicina responde */}
                       <Route element={<RequireRole papeis={['plantonista', 'gestor', 'telemedicina']} />}>
                         <Route path="/teleinterconsulta" element={<Teleinterconsulta />} />
+                      </Route>
+
+                      {/* Porte, onda 4: parecer médico — fila do especialista (o banco confere a especialidade) */}
+                      <Route element={<RequireRole papeis={['plantonista', 'gestor', 'telemedicina']} />}>
+                        <Route path="/pareceres" element={<Pareceres />} />
                       </Route>
 
                       {/* Fase 6: painel e auditoria são do GESTOR; o administrador vê só agregado */}

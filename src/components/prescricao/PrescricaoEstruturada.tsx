@@ -170,8 +170,30 @@ function LinhaItem({ i, aoMudar, aoErro }: { i: ItemVigente; aoMudar: () => void
   )
 }
 
-function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
+// Porta (protótipo, "Prescrição do Pronto Socorro"): via e "quando" em chips —
+// Agora ou Se necessário — no lugar da frequência; na criança, o campo do
+// peso aferido aparece antes do primeiro medicamento.
+const VIAS_PORTA: { v: string; rotulo: string }[] = [
+  { v: 'EV', rotulo: 'EV' }, { v: 'IM', rotulo: 'IM' }, { v: 'VO', rotulo: 'VO' }, { v: 'SC', rotulo: 'SC' },
+  { v: 'INAL', rotulo: 'Inalatória' }, { v: 'SL', rotulo: 'Sublingual' },
+]
+const QUANDO_PORTA = ['Agora', 'Se necessário'] as const
+
+function ChipPorta({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" aria-pressed={ativo} onClick={onClick}
+      className={`rounded-capsula border px-3 py-1 text-apoio transition-colors ${ativo ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao'}`}>
+      {children}
+    </button>
+  )
+}
+
+export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, pediatrico = false }: {
   pacienteId: string; peso?: { valor_num: number; aferido_em: string } | null; aoMudar: () => void; aoErro: (m: string | null) => void
+  /** Modo do Pronto-Socorro: chips de via e de "quando" (Agora / Se necessário). */
+  porta?: boolean
+  /** Criança: mostra o peso aferido desde o início. */
+  pediatrico?: boolean
 }) {
   const { perfil } = useAuth()
   const [tipo, setTipo] = React.useState<'medicamento' | 'cuidado'>('medicamento')
@@ -245,10 +267,10 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
           {peso && <span className="ml-auto self-center text-xs text-tinta-sussurro">Último peso: {peso.valor_num} kg ({hora(peso.aferido_em)})</span>}
         </div>
 
-        {pedePeso && (
+        {(pedePeso || (pediatrico && tipo === 'medicamento')) && (
           <div className="flex flex-wrap items-end gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-2">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="peso-novo">Peso aferido agora (kg)</Label>
+              <Label htmlFor="peso-novo">{pediatrico ? 'Peso aferido (kg)' : 'Peso aferido agora (kg)'}</Label>
               <Input id="peso-novo" className="h-8 w-28" inputMode="decimal" value={novoPeso} onChange={(e) => setNovoPeso(e.target.value)} />
             </div>
             <Button size="sm" onClick={() => void registrarPeso()}>Registrar peso</Button>
@@ -297,6 +319,25 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
                 </div>
               </div>
             )}
+            {porta ? (
+              <>
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="item-dose">Dose e diluição *</Label>
+                  <Input id="item-dose" value={f.dose} onChange={(e) => setF({ ...f, dose: e.target.value })} placeholder="escrita pelo médico" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-apoio font-medium text-tinta-apoio">Via e quando *</span>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {VIAS_PORTA.map((v) => <ChipPorta key={v.v} ativo={f.via === v.v} onClick={() => setF({ ...f, via: v.v })}>{v.rotulo}</ChipPorta>)}
+                    <span className="mx-1 h-5 w-px bg-fio" aria-hidden />
+                    {QUANDO_PORTA.map((q) => (
+                      <ChipPorta key={q} ativo={(f.posologia || 'Agora') === q}
+                        onClick={() => setF({ ...f, posologia: q, se_necessario: q === 'Se necessário' })}>{q}</ChipPorta>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
             <div className="grid gap-2 sm:grid-cols-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-dose">Dose *</Label>
@@ -315,9 +356,12 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
                 <Input id="item-freq" value={f.posologia} onChange={(e) => setF({ ...f, posologia: e.target.value })} placeholder="ex.: 8/8h" />
               </div>
             </div>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={f.se_necessario} onChange={(e) => setF({ ...f, se_necessario: e.target.checked })} /> Se necessário
-            </label>
+            )}
+            {!porta && (
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={f.se_necessario} onChange={(e) => setF({ ...f, se_necessario: e.target.checked })} /> Se necessário
+              </label>
+            )}
             {med && VIAS_COM_DILUICAO.includes(f.via) && (
               <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-2">
                 {diluicao.data ? (
@@ -340,9 +384,9 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
               </div>
             )}
             <Input placeholder="Observação (opcional)" value={f.observacao} onChange={(e) => setF({ ...f, observacao: e.target.value })} />
-            <Button size="sm" className="self-start" disabled={!med || !f.dose.trim() || !f.via || !f.posologia.trim()}
+            <Button size="sm" className="self-start" disabled={!med || !f.dose.trim() || !f.via || (!porta && !f.posologia.trim())}
               onClick={() => void prescrever({
-                tipo: 'medicamento', medicamento_id: med!.id, dose: f.dose, via: f.via, posologia: f.posologia,
+                tipo: 'medicamento', medicamento_id: med!.id, dose: f.dose, via: f.via, posologia: f.posologia.trim() || (porta ? 'Agora' : ''),
                 se_necessario: f.se_necessario, observacao: f.observacao,
                 ...(divergir ? { diluicao_divergente: dilTexto, justificativa_divergencia: justificativa } : {}),
               })}>

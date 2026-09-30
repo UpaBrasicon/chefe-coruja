@@ -10,6 +10,7 @@ const Banners = lazy(() => import('@/pages/gestor/Banners').then((m) => ({ defau
 const RevisaoSemConexao = lazy(() => import('@/pages/gestor/RevisaoSemConexao'))
 const FerramentasUnidade = lazy(() => import('@/pages/gestor/FerramentasUnidade'))
 const Convites = lazy(() => import('@/pages/gestor/Convites'))
+const ModelosTermoUnidade = lazy(() => import('@/components/termo/ModelosTermoUnidade'))
 
 /**
  * Unidade — as três telas de configuração da mesma unidade.
@@ -37,6 +38,8 @@ export default function UnidadeGrupo() {
       ? [
           { valor: 'registros-tardios', rotulo: 'Registros tardios', conteudo: () => <RevisaoSemConexao /> },
           { valor: 'ferramentas', rotulo: 'Ferramentas clínicas', conteudo: () => <FerramentasUnidade /> },
+          // Modelos de termo de consentimento (onda 4): só o gestor escreve (o banco confere).
+          { valor: 'termos', rotulo: 'Termos de consentimento', conteudo: () => <ModelosTermoUnidade /> },
         ]
       : []),
   ]

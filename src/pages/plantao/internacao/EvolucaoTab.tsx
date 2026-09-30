@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { Input } from '@/components/ui/input'
 import { useDocumentos, type DocumentoClinico } from '@/hooks/useDocumentos'
+import { AbaEvolucao } from '@/components/evolucao/AbaEvolucao'
 import type { DadosPaciente, Evolucao } from './rascunho'
 
 function fmtData(iso: string) {
@@ -27,6 +28,7 @@ export function EvolucaoTab({
   pacienteId,
   unidadeId,
   internacaoId,
+  apenasAdmissao = false,
 }: {
   dados: DadosPaciente
   evolucao: Evolucao
@@ -34,6 +36,8 @@ export function EvolucaoTab({
   pacienteId?: string | null
   unidadeId?: string | null
   internacaoId?: string | null
+  /** Caderno do leito, aba Admissão: a evolução estruturada tem aba própria. */
+  apenasAdmissao?: boolean
 }) {
   const { data: documentos, isLoading: carregandoDocs } = useDocumentos(pacienteId ?? undefined)
   const { perfil } = useAuth()
@@ -43,18 +47,25 @@ export function EvolucaoTab({
   const [corrigindo, setCorrigindo] = React.useState<DocumentoClinico | null>(null)
   const [textoCorrecao, setTextoCorrecao] = React.useState('')
   const [justificativa, setJustificativa] = React.useState('')
+  // Com a internação aberta, a evolução é a estruturada (AbaEvolucao: resumo,
+  // evolução médica por blocos e histórico multiprofissional); o gerador de
+  // texto abaixo fica só para a admissão.
+  const soAdmissao = !!internacaoId && !!pacienteId
+  React.useEffect(() => {
+    if (soAdmissao && evolucao.tipo !== 'admissao') onChange({ tipo: 'admissao' })
+  }, [soAdmissao, evolucao.tipo, onChange])
 
   // registros desta internação: a versão vigente de cada um, e quem escreveu a 1ª
   const registros = React.useMemo(() => {
     const daInternacao = (documentos ?? []).filter(
-      (d) => d.internacao_id === internacaoId && (d.tipo_documento === 'evolucao' || d.tipo_documento === 'admissao_anamnese')
+      (d) => d.internacao_id === internacaoId && (d.tipo_documento === 'admissao_anamnese' || (!soAdmissao && d.tipo_documento === 'evolucao'))
     )
     const autorOriginal = new Map(daInternacao.filter((d) => d.versao === 1).map((d) => [d.documento_raiz_id, d.autor_id]))
     return daInternacao
       .filter((d) => d.estado === 'ativo')
       .map((d) => ({ d, autor: autorOriginal.get(d.documento_raiz_id) }))
       .sort((a, b) => a.d.created_at.localeCompare(b.d.created_at))
-  }, [documentos, internacaoId])
+  }, [documentos, internacaoId, soAdmissao])
   const admissaoSalva = registros.find((r) => r.d.tipo_documento === 'admissao_anamnese')
 
   function gerarTexto() {
@@ -144,6 +155,8 @@ export function EvolucaoTab({
   }
 
   return (
+    <div className="flex flex-col gap-4">
+    {soAdmissao && !apenasAdmissao && <AbaEvolucao pacienteId={pacienteId!} internacaoId={internacaoId!} />}
     <div className="grid gap-4 lg:grid-cols-2">
       <Card className="h-fit">
         <CardHeader>
@@ -151,7 +164,7 @@ export function EvolucaoTab({
           <CardDescription>Escolha o modelo e clique em Gerar Texto para aplicar os dados do paciente.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <div className="flex gap-4">
+          {!soAdmissao && <div className="flex gap-4">
             <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
               <input
                 type="radio"
@@ -170,7 +183,7 @@ export function EvolucaoTab({
               />
               Evolução (SOAP)
             </label>
-          </div>
+          </div>}
           <Button onClick={gerarTexto}>
             <Sparkles /> Gerar Texto
           </Button>
@@ -265,6 +278,7 @@ export function EvolucaoTab({
           </div>
         </CardContent>
       </Card>
+    </div>
     </div>
   )
 }

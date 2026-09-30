@@ -87,7 +87,8 @@ DO $$ BEGIN
     RAISE NOTICE 'OK  óbito exige hora e número da Declaração de Óbito';
   END;
   PERFORM public.registrar_desfecho(pg_temp.v('b'), 'obito', 'PCR refratária após 40 minutos de RCP',
-    jsonb_build_object('hora_obito', now() - interval '5 minutes', 'numero_do', '123456789'));
+    jsonb_build_object('hora_obito', now() - interval '5 minutes', 'numero_do', '123456789',
+                       'cid_alta', 'I46.9', 'cid_obito', 'I46.9'));  -- CIDs exigidos desde 20261004000001
 END $$;
 
 -- depois de o médico abrir, a recepção não "retira da fila"

@@ -1,12 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRightLeft, Activity, ChevronRight, Eye, Hospital, UserPlus } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowRightLeft, ChevronRight, UserPlus } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
-import { abrirProntuario } from '@/lib/prontuario'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -14,24 +12,11 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
-import { LeitoAberto } from '@/components/internacao/LeitoAberto'
-import type { ChecklistAdmissao, OcupacaoSetor, TransferenciaPaciente } from '@/types/database'
-import type { Database } from '@/types/database'
-type ChecklistAdmissaoInsert = Database['public']['Tables']['checklist_admissao']['Insert']
+import { ListaInternados, type PacienteDaLista } from '@/components/internacao/ListaInternados'
+import { PainelObservacao } from '@/components/observacao/PainelObservacao'
+import type { OcupacaoSetor, TransferenciaPaciente } from '@/types/database'
 
-type PacienteInternado = {
-  id: string
-  nome: string
-  cpf: string | null
-  data_nascimento: string | null
-  sexo: string | null
-  setor_id: string | null
-  created_at: string
-}
-
-type PacienteComSetor = PacienteInternado & {
-  setores: { id: string; nome: string } | null
-}
+type PacienteComSetor = PacienteDaLista & { cpf: string | null; created_at: string }
 
 function fmtDia(iso: string | null | undefined) {
   if (!iso) return '—'
@@ -42,19 +27,22 @@ function fmtDia(iso: string | null | undefined) {
 
 type Setor = { id: string; nome: string; tipo: string; ordem: number }
 
-export default function InternacaoPainel({
-  modo = 'internacao',
-  embutido = false,
-}: {
-  modo?: 'internacao' | 'observacao'
-  embutido?: boolean
-}) {
+// Porte da observação (Bloco 3): o modo observação é o painel próprio, em
+// components/observacao; este arquivo segue sendo o da internação.
+export default function InternacaoPainel(props: { modo?: 'internacao' | 'observacao'; embutido?: boolean }) {
+  if (props.modo === 'observacao') return <PainelObservacao embutido={props.embutido} />
+  return <PainelInternacao {...props} />
+}
+
+// Painel de internação: a lista de internados do protótipo (com o caderno do
+// leito na própria linha), a ocupação por setor, a transferência entre setores
+// e, para o gestor, a auditoria das transferências.
+function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observacao'; embutido?: boolean }) {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
 
-  const [transferir, setTransferir] = React.useState<PacienteComSetor | null>(null)
+  const [transferir, setTransferir] = React.useState<PacienteDaLista | null>(null)
   const [destinoId, setDestinoId] = React.useState('')
   const [motivo, setMotivo] = React.useState('')
   const [erro, setErro] = React.useState<string | null>(null)
@@ -63,16 +51,14 @@ export default function InternacaoPainel({
   const ehGestor = papelAtivo === 'gestor'
   const ehAdmin = papelAtivo === 'admin'
   const ehPlantonista = papelAtivo === 'plantonista'
-  const titulo = modo === 'internacao' ? 'Painel de Internação' : 'Observação'
-  const rpcSetores = modo === 'internacao' ? 'setores_internacao' : 'setores_observacao'
-  const IconePainel = modo === 'internacao' ? Hospital : Eye
+  const titulo = 'Pacientes internados'
 
-  // Setores da unidade (internação ou observação)
+  // Setores de internação da unidade
   const { data: setores, isLoading: carregandoSetores } = useQuery({
-    queryKey: ['setores-' + modo, unidadeId],
+    queryKey: ['setores-internacao', unidadeId],
     enabled: !!unidadeId,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc(rpcSetores, { p_unidade: unidadeId! })
+      const { data, error } = await supabase.rpc('setores_internacao', { p_unidade: unidadeId! })
       if (error) throw error
       return (data ?? []) as Setor[]
     },
@@ -113,38 +99,6 @@ export default function InternacaoPainel({
     },
   })
 
-  // Horário do servidor (relógio de São Paulo) para o aviso das 18:30
-  const { data: horaServidor } = useQuery({
-    queryKey: ['hora-servidor'],
-    enabled: !!unidadeId,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('horario_servidor')
-      if (error) throw error
-      return data as string
-    },
-    refetchInterval: 30_000,
-  })
-
-  const agora = React.useMemo(
-    () => (horaServidor ? new Date(horaServidor) : null),
-    [horaServidor]
-  )
-  // Observação: o prazo de 6h é a pendência aberta no servidor na entrada do box.
-  const { data: prazosObservacao } = useQuery({
-    queryKey: ['pendencias-observacao', unidadeId],
-    enabled: !!unidadeId && modo === 'observacao',
-    refetchInterval: 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('pendencias')
-        .select('paciente_id, prazo')
-        .eq('unidade_id', unidadeId!)
-        .eq('tipo', 'observacao')
-        .eq('situacao', 'aberta')
-      if (error) throw error
-      return new Map((data ?? []).map((p) => [p.paciente_id, p.prazo as string]))
-    },
-  })
   // Pediatria com infecção: Phoenix calculado no servidor (Fase 3.7)
   const { data: alertasSepse } = useQuery({
     queryKey: ['alertas-sepse', unidadeId],
@@ -157,15 +111,6 @@ export default function InternacaoPainel({
     },
   })
 
-  const observacaoVencendo = React.useMemo(() => {
-    if (!agora || !prazosObservacao) return []
-    return (pacientes ?? [])
-      .filter((p) => prazosObservacao.has(p.id))
-      .map((p) => ({ p, prazo: new Date(prazosObservacao.get(p.id)!) }))
-      .filter((x) => x.prazo.getTime() - agora.getTime() <= 30 * 60_000)
-      .sort((a, b) => a.prazo.getTime() - b.prazo.getTime())
-  }, [agora, pacientes, prazosObservacao])
-
   // I2/I3: ocupação por setor (contagem viva + alerta de superlotação)
   const { data: ocupacao } = useQuery({
     queryKey: ['ocupacao-setores', unidadeId],
@@ -177,95 +122,9 @@ export default function InternacaoPainel({
     },
   })
 
-  // I1: linha do tempo (transferências) do paciente selecionado
-  const [pacienteDetalhe, setPacienteDetalhe] = React.useState<PacienteComSetor | null>(null)
-  const { data: historico } = useQuery({
-    queryKey: ['historico-paciente', pacienteDetalhe?.id],
-    enabled: !!pacienteDetalhe,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('transferencias_paciente')
-        .select('*, perfis!transferencias_paciente_transferido_por_fkey(nome_completo)')
-        .eq('paciente_id', pacienteDetalhe!.id)
-        .order('created_at', { ascending: false })
-      if (error) throw error
-      return (data ?? []) as unknown as (TransferenciaPaciente & { perfis: { nome_completo: string } | null })[]
-    },
-  })
-
-  // I4: checklist de admissão do paciente selecionado
-  const { data: checklist } = useQuery({
-    queryKey: ['checklist-admissao', pacienteDetalhe?.id],
-    enabled: !!pacienteDetalhe,
-    queryFn: async () => {
-      await abrirProntuario(pacienteDetalhe!.id)
-      const { data, error } = await supabase
-        .from('checklist_admissao')
-        .select('*')
-        .eq('paciente_id', pacienteDetalhe!.id)
-        .maybeSingle()
-      if (error) throw error
-      return data as ChecklistAdmissao | null
-    },
-  })
-
-  // Eventos ADT do paciente (trilha imutável de admissão→transferências→alta)
-  const { data: eventosAdt } = useQuery({
-    queryKey: ['eventos-adt-paciente', pacienteDetalhe?.id],
-    enabled: !!pacienteDetalhe,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('eventos_adt')
-        .select('*, perfis!eventos_adt_autor_id_fkey(nome_completo)')
-        .eq('paciente_id', pacienteDetalhe!.id)
-        .order('seq', { ascending: true })
-      if (error) throw error
-      return (data ?? []) as unknown as {
-        id: string
-        seq: number
-        tipo_evento: string
-        motivo: string | null
-        created_at: string
-        perfis: { nome_completo: string } | null
-      }[]
-    },
-  })
-
-  const TIPO_EVENTO_LABEL: Record<string, string> = {
-    admissao: 'Admissão',
-    entrada_observacao: 'Entrada em observação',
-    internacao: 'Internação',
-    transferencia_leito: 'Transferência de leito',
-    transferencia_setor: 'Transferência de setor',
-    solicitacao_alta: 'Solicitação de alta',
-    alta_melhorada: 'Alta melhorada',
-    alta_pedido: 'Alta a pedido',
-    alta_evasao: 'Evasão',
-    transferencia_externa: 'Transferência externa',
-    obito: 'Óbito',
-    cancelamento_alta: 'Cancelamento de alta',
-    retificacao: 'Retificação',
-  }
-
   const invalidar = () => {
-    void queryClient.invalidateQueries({ queryKey: ['pacientes-internados'] })
-    void queryClient.invalidateQueries({ queryKey: ['transferencias-paciente'] })
-    void queryClient.invalidateQueries({ queryKey: ['ocupacao-setores'] })
-  }
-
-  async function toggleChecklist(campo: 'prescricao' | 'dieta' | 'leito' | 'responsavel') {
-    if (!pacienteDetalhe || !unidadeId) return
-    const base: ChecklistAdmissaoInsert = { paciente_id: pacienteDetalhe.id, unidade_id: unidadeId }
-    const patch: ChecklistAdmissaoInsert =
-      campo === 'prescricao'
-        ? { ...base, prescricao: !(checklist?.prescricao ?? false) }
-        : campo === 'dieta'
-          ? { ...base, dieta: !(checklist?.dieta ?? false) }
-          : campo === 'leito'
-            ? { ...base, leito: !(checklist?.leito ?? false) }
-            : { ...base, responsavel: !(checklist?.responsavel ?? false) }
-    const { error } = await supabase.from('checklist_admissao').upsert(patch, { onConflict: 'paciente_id' })
-    if (!error) void queryClient.invalidateQueries({ queryKey: ['checklist-admissao'] })
+    for (const k of ['pacientes-internados', 'transferencias-paciente', 'ocupacao-setores', 'internados-leitos', 'leito-aberto', 'historico-paciente'])
+      void queryClient.invalidateQueries({ queryKey: [k] })
   }
 
   function exportarAuditoriaCSV() {
@@ -274,7 +133,7 @@ export default function InternacaoPainel({
     for (const t of transferencias) {
       linhas.push(`${t.pacientes?.nome ?? ''};${fmtDia(t.created_at)};${t.motivo || ''}`)
     }
-    const blob = new Blob(['\uFEFF' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const blob = new Blob(['﻿' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -308,10 +167,8 @@ export default function InternacaoPainel({
     },
   })
 
-  const carregando = carregandoSetores || carregandoPacientes
-
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
       {!embutido && (
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
@@ -322,177 +179,81 @@ export default function InternacaoPainel({
             <span className="font-medium text-tinta">{titulo}</span>
           </div>
           <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">{titulo}</h1>
-          <p className="text-sm text-tinta-sussurro">
-            {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
-            {modo === 'internacao'
-              ? 'Enfermaria Clínica, Enfermaria Pediátrica, Sala Vermelha/Semi-Crítica (e outros setores do gestor).'
-              : 'Setor de Observação — pacientes permanecem em observação por no máximo 6 horas.'}{' '}
-            Você só vê os pacientes dos setores onde está na escala agora.
-          </p>
+          <p className="text-sm text-tinta-sussurro">{unidadeAtiva?.unidade.nome ?? 'Unidade'}</p>
         </div>
       )}
 
       {sucesso && <p className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">{sucesso}</p>}
 
-      {/* Observação: vencida ou vencendo em 30 min (prazo de 6h do servidor) */}
-      {modo === 'observacao' && observacaoVencendo.length > 0 && (
-        <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-4">
-          <div className="mb-1 text-sm font-semibold text-critico">Observação no limite de 6 horas</div>
-          <p className="mb-2 text-sm text-critico">Defina a conduta: alta ou internação.</p>
-          <ul className="flex flex-col gap-1 text-sm">
-            {observacaoVencendo.map(({ p, prazo }) => (
-              <li key={p.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
-                <span className="font-medium">{p.nome}</span>
-                <span className="text-xs text-critico">
-                  {prazo.getTime() < agora!.getTime() ? 'vencida às ' : 'vence às '}
-                  {prazo.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+      {/* I2/I3: ocupação por setor + alerta de superlotação */}
+      {(ocupacao ?? []).length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {(ocupacao ?? []).map((o) => {
+            const lotado = o.limite > 0 && o.internados >= o.limite
+            const alerta = o.limite > 0 && o.internados >= Math.ceil(o.limite * 0.85)
+            return (
+              <div
+                key={o.setor_id}
+                className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
+                  lotado ? 'border-critico/30 bg-critico/[0.08]' : alerta ? 'border-atencao/30 bg-atencao/[0.08]' : 'border-fio bg-superficie'
+                }`}
+              >
+                <span className="text-sm font-medium">{o.setor_nome}</span>
+                <span className={`text-sm font-semibold tabular-nums ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-tinta'}`}>
+                  {o.internados}/{o.limite || '∞'}
                 </span>
-              </li>
-            ))}
-          </ul>
+                {lotado && <span className="text-xs font-semibold text-critico">LOTADO</span>}
+              </div>
+            )
+          })}
         </div>
       )}
 
-      {/* I2/I3: ocupação por setor + alerta de superlotação */}
-      <div className="flex flex-wrap gap-2">
-        {(ocupacao ?? []).map((o) => {
-          const lotado = o.limite > 0 && o.internados >= o.limite
-          const alerta = o.limite > 0 && o.internados >= Math.ceil(o.limite * 0.85)
-          return (
-            <div
-              key={o.setor_id}
-              className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
-                lotado
-                  ? 'border-critico/30 bg-critico/[0.08]'
-                  : alerta
-                    ? 'border-atencao/30 bg-atencao/[0.08]'
-                    : 'border-fio bg-superficie'
-              }`}
-            >
-              <span className="text-sm font-medium">{o.setor_nome}</span>
-              <span className={`text-sm font-semibold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-tinta'}`}>
-                {o.internados}/{o.limite || '∞'}
-              </span>
-              {lotado && <span className="text-xs font-semibold text-critico">LOTADO</span>}
+      <ListaInternados
+        unidadeId={unidadeId}
+        setores={setores ?? []}
+        pacientes={pacientes ?? []}
+        carregando={carregandoSetores || carregandoPacientes}
+        ehGestor={ehGestor || ehAdmin}
+        podeDarAlta={ehPlantonista}
+        alertasSepse={alertasSepse}
+        onTransferir={(p) => { setErro(null); setTransferir(p) }}
+      />
+
+      {/* Auditoria (gestor/admin) */}
+      {(ehGestor || ehAdmin) && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ArrowRightLeft className="size-4 text-tinta-sussurro" />
+                Transferências recentes
+              </CardTitle>
+              <CardDescription>Registro de auditoria das transferências entre setores.</CardDescription>
             </div>
-          )
-        })}
-      </div>
-
-      {carregando ? (
-        <div className="flex h-40 items-center justify-center">
-          <Spinner />
-        </div>
-      ) : (
-        <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(setores ?? []).map((s) => {
-              const internados = (pacientes ?? []).filter((p) => p.setor_id === s.id)
-              return (
-                <Card key={s.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <IconePainel className="size-4 text-acao" />
-                      {s.nome}
-                    </CardTitle>
-                    <CardDescription>
-                      <Badge variant={internados.length > 0 ? 'success' : 'secondary'}>
-                        {internados.length} paciente(s) internado(s)
-                      </Badge>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-2">
-                    {internados.length === 0 ? (
-                      <p className="text-sm text-tinta-sussurro">Nenhum paciente neste setor.</p>
-                    ) : (
-                      internados.map((p) => (
-                        <div key={p.id} className="rounded-lg border p-2">
-                          <div className="flex flex-wrap items-center gap-1.5 font-medium">
-                            {p.nome}
-                            {alertasSepse?.get(p.id)?.nivel === 'choque' && <Badge variant="destructive">Phoenix {alertasSepse.get(p.id)!.total} · choque séptico?</Badge>}
-                            {alertasSepse?.get(p.id)?.nivel === 'sepse' && <Badge variant="destructive">Phoenix {alertasSepse.get(p.id)!.total} · sepse?</Badge>}
-                            {alertasSepse?.get(p.id)?.nivel === 'rastreio' && <Badge variant="outline">Phoenix {alertasSepse.get(p.id)!.total}</Badge>}
-                          </div>
-                          <div className="text-xs text-tinta-sussurro">
-                            {p.sexo ? `${p.sexo} · ` : ''}
-                            {p.data_nascimento ? p.data_nascimento.slice(0, 10).split('-').reverse().join('/') : '—'}
-                            {p.cpf ? ` · CPF ${p.cpf}` : ''}
-                            {prazosObservacao?.has(p.id) && (
-                              <> · observação até {new Date(prazosObservacao.get(p.id)!).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</>
-                            )}
-                          </div>
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            <Button size="xs" variant="outline" onClick={() => setTransferir(p)}>
-                              <ArrowRightLeft /> Transferir
-                            </Button>
-                            <Button size="xs" variant="ghost" onClick={() => setPacienteDetalhe(p)}>
-                              <Eye /> Abrir leito
-                            </Button>
-                            {/* Formulário e evolução são rotas do plantonista. */}
-                            {ehPlantonista && (
-                              <>
-                                <Button
-                                  size="xs"
-                                  variant="ghost"
-                                  onClick={() => navigate(`/plantao/internacao/formulario?paciente=${p.id}`)}
-                                >
-                                  Abrir
-                                </Button>
-                                <Button
-                                  size="xs"
-                                  variant="ghost"
-                                  onClick={() => navigate(`/plantao/evolucao?paciente=${p.id}`)}
-                                >
-                                  <Activity /> Evolução
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-
-          {/* Auditoria (gestor/admin) */}
-          {(ehGestor || ehAdmin) && (
-            <Card>
-              <CardHeader className="flex-row items-center justify-between space-y-0">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <ArrowRightLeft className="size-4 text-tinta-sussurro" />
-                    Transferências recentes
-                  </CardTitle>
-                  <CardDescription>Registro de auditoria das transferências entre setores.</CardDescription>
-                </div>
-                <Button size="xs" variant="outline" onClick={exportarAuditoriaCSV} disabled={(transferencias ?? []).length === 0}>
-                  Exportar CSV
-                </Button>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-2">
-                {carregandoTransf ? (
-                  <div className="flex h-16 items-center justify-center">
-                    <Spinner />
+            <Button size="xs" variant="outline" onClick={exportarAuditoriaCSV} disabled={(transferencias ?? []).length === 0}>
+              Exportar CSV
+            </Button>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            {carregandoTransf ? (
+              <div className="flex h-16 items-center justify-center">
+                <Spinner />
+              </div>
+            ) : (transferencias ?? []).length === 0 ? (
+              <p className="text-sm text-tinta-sussurro">Nenhuma transferência registrada.</p>
+            ) : (
+              (transferencias ?? []).map((t) => (
+                <div key={t.id} className="rounded-lg border p-2 text-sm">
+                  <div className="font-medium">{t.pacientes?.nome ?? 'Paciente'}</div>
+                  <div className="text-xs text-tinta-sussurro">
+                    {fmtDia(t.created_at)} · {t.motivo || 'sem motivo'}
                   </div>
-                ) : (transferencias ?? []).length === 0 ? (
-                  <p className="text-sm text-tinta-sussurro">Nenhuma transferência registrada.</p>
-                ) : (
-                  (transferencias ?? []).map((t) => (
-                    <div key={t.id} className="rounded-lg border p-2 text-sm">
-                      <div className="font-medium">{t.pacientes?.nome ?? 'Paciente'}</div>
-                      <div className="text-xs text-tinta-sussurro">
-                        {fmtDia(t.created_at)} · {t.motivo || 'sem motivo'}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Dialog de transferência */}
@@ -556,112 +317,10 @@ export default function InternacaoPainel({
         </DialogContent>
       </Dialog>
 
-      {/* I1/I4/I5: detalhes do paciente — linha do tempo, checklist, alta */}
-      <Dialog open={!!pacienteDetalhe} onOpenChange={(o) => !o && setPacienteDetalhe(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{pacienteDetalhe?.nome}</DialogTitle>
-            <DialogDescription>Acuidade, pendências, passagem, alta e pacote; trilha do episódio e checklist.</DialogDescription>
-          </DialogHeader>
-
-          <div className="flex flex-col gap-4">
-            {/* Eventos ADT: trilha imutável do episódio */}
-            <div className="flex flex-col gap-1.5">
-              <div className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
-                Trilha do episódio (ADT)
-              </div>
-              {(eventosAdt ?? []).length === 0 ? (
-                <p className="text-sm text-tinta-sussurro">Nenhum evento ADT registrado.</p>
-              ) : (
-                <div className="flex flex-col gap-1.5">
-                  {(eventosAdt ?? []).map((e) => (
-                    <div key={e.id} className="flex items-center gap-2 rounded-lg border p-2 text-sm">
-                      <Badge variant="secondary">#{e.seq}</Badge>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium">
-                          {TIPO_EVENTO_LABEL[e.tipo_evento] ?? e.tipo_evento}
-                        </div>
-                        <div className="text-xs text-tinta-sussurro">
-                          {fmtDia(e.created_at)} · {e.perfis?.nome_completo ?? '—'}
-                          {e.motivo ? ` · ${e.motivo}` : ''}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* I1: linha do tempo */}
-            <div className="flex flex-col gap-1.5">
-              <div className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
-                Linha do tempo (transferências)
-              </div>
-              {(historico ?? []).length === 0 ? (
-                <p className="text-sm text-tinta-sussurro">Sem transferências registradas.</p>
-              ) : (
-                (historico ?? []).map((h) => (
-                  <div key={h.id} className="rounded-lg border p-2 text-sm">
-                    <span className="text-xs text-tinta-sussurro">{fmtDia(h.created_at)}</span>
-                    <div>
-                      por <strong>{h.perfis?.nome_completo ?? '—'}</strong> · {h.motivo || 'sem motivo'}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* I4: checklist de admissão */}
-            <div className="flex flex-col gap-1.5">
-              <div className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
-                Checklist de admissão
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {(
-                  [
-                    ['prescricao', 'Prescrição'],
-                    ['dieta', 'Dieta'],
-                    ['leito', 'Leito'],
-                    ['responsavel', 'Responsável'],
-                  ] as const
-                ).map(([campo, rotulo]) => {
-                  const marcado = checklist?.[campo] ?? false
-                  return (
-                    <button
-                      key={campo}
-                      type="button"
-                      onClick={() => toggleChecklist(campo)}
-                      className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-                        marcado
-                          ? 'border-conforme/30 bg-conforme/[0.08] text-conforme'
-                          : 'border-fio bg-campo hover:bg-trilha'
-                      }`}
-                    >
-                      {marcado ? '✓ ' : '○ '}
-                      {rotulo}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            {pacienteDetalhe && (
-              <LeitoAberto pacienteId={pacienteDetalhe.id} pacienteNome={pacienteDetalhe.nome} ehGestor={ehGestor || ehAdmin} />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <p className="flex items-center gap-1.5 text-xs text-tinta-sussurro">
-        <UserPlus className="size-3.5" /> Para internar um paciente, use a Internação em Plantão e
+        <UserPlus className="size-3.5" /> Para internar um paciente, use o desfecho do atendimento na porta (internação) e
         direcione-o para o setor. Transferências entre setores são registradas em auditoria.
       </p>
-      <div className="rounded-lg border border-dashed border-muted-foreground/30 px-4 py-3 text-xs text-tinta-sussurro">
-        <strong>Distinção:</strong> esta aba é o <strong>Painel de Internação</strong> (gerencia
-        pacientes por setor, transferências e auditoria). O <strong>documento de internação</strong>{' '}
-        (Dados do Paciente, prescrição, evolução, pedido de exames, AIH e exportação em PDF) fica em{' '}
-        <strong>Plantão → Internação</strong>.
-      </div>
     </div>
   )
 }

@@ -60,7 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) void loadPerfil(data.session.user.id)
-      else setLoading(false)
+      else {
+        // Sem sessão (aba fechada sem "Sair", sessão vencida): rascunho clínico
+        // que ficou no navegador não tem mais dono — sai agora.
+        limparTodosRascunhos()
+        setLoading(false)
+      }
     })
 
     const {

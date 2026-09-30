@@ -1,5 +1,10 @@
 // Passagem de plantão: o que chegou para eu aceitar e o que eu enviei e ainda
 // aguarda aceite (o que bloqueia meu check-out). Fase 3.5.
+//
+// Com `pacienteId`, mostra só a passagem daquele paciente, sem o cartão em
+// volta: é assim que aparece no box da observação e no leito (porte do Bloco
+// 3 — quem recebe aceita ou recusa com motivo de 15 letras; quem passou
+// retira). Sem `pacienteId`, é a lista de "Meu Plantão".
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowRightLeft } from 'lucide-react'
 import * as React from 'react'
@@ -8,10 +13,12 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
 type Linha = {
   id: string
+  paciente_id: string
   de_perfil: string
   para_perfil: string
   resumo: string
@@ -23,7 +30,7 @@ type Linha = {
 const hora = (iso: string) =>
   new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })
 
-export function PassagensDoPlantao() {
+export function PassagensDoPlantao({ pacienteId }: { pacienteId?: string } = {}) {
   const { perfil } = useAuth()
   const eu = perfil?.id
   const qc = useQueryClient()
@@ -38,7 +45,7 @@ export function PassagensDoPlantao() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('passagens_plantao')
-        .select('id, de_perfil, para_perfil, resumo, enviada_em, setores(nome), pacientes(nome)')
+        .select('id, paciente_id, de_perfil, para_perfil, resumo, enviada_em, setores(nome), pacientes(nome)')
         .eq('situacao', 'aguardando')
         .or(`de_perfil.eq.${eu},para_perfil.eq.${eu}`)
         .order('enviada_em')
@@ -46,8 +53,9 @@ export function PassagensDoPlantao() {
       return (data ?? []) as unknown as Linha[]
     },
   })
-  const recebidas = (data ?? []).filter((p) => p.para_perfil === eu)
-  const enviadas = (data ?? []).filter((p) => p.de_perfil === eu)
+  const minhas = (data ?? []).filter((p) => !pacienteId || p.paciente_id === pacienteId)
+  const recebidas = minhas.filter((p) => p.para_perfil === eu)
+  const enviadas = minhas.filter((p) => p.de_perfil === eu)
   if (recebidas.length === 0 && enviadas.length === 0) return null
 
   async function chamar(nome: 'responder_passagem' | 'retirar_passagem', args: Record<string, unknown>) {
@@ -57,10 +65,38 @@ export function PassagensDoPlantao() {
     setErro(null)
     setRecusando(null)
     setMotivo('')
-    void qc.invalidateQueries({ queryKey: ['passagens-aguardando'] })
-    void qc.invalidateQueries({ queryKey: ['passagens'] })
+    for (const k of ['passagens-aguardando', 'passagens', 'painel-observacao', 'impeditivos']) void qc.invalidateQueries({ queryKey: [k] })
   }
   const paciente = (p: Linha) => p.pacientes?.nome ?? `Paciente de ${p.setores?.nome ?? 'setor'}`
+
+  // No box ou no leito: só a ação de quem recebe (aceitar/recusar) ou de quem passou (retirar).
+  if (pacienteId) {
+    return (
+      <div className="flex flex-col gap-2 text-apoio">
+        {erro && <p className="text-critico">{erro}</p>}
+        {recebidas.map((p) => (
+          <div key={p.id} className="flex flex-col gap-2">
+            <Input value={recusando === p.id ? motivo : ''} onFocus={() => setRecusando(p.id)} onChange={(e) => { setRecusando(p.id); setMotivo(e.target.value) }}
+              placeholder="Ao recusar: motivo, mínimo 15 caracteres" aria-label="Motivo da recusa" />
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <span className="min-w-[200px] flex-1 text-rotulo text-tinta-sussurro">Você recebe este paciente. Até o aceite, ele segue com quem passou.</span>
+              <Button size="sm" variant="destructive" disabled={recusando !== p.id || motivo.trim().length < 15}
+                onClick={() => void chamar('responder_passagem', { p_passagem: p.id, p_aceitar: false, p_motivo: motivo })}>
+                Recusar
+              </Button>
+              <Button size="sm" onClick={() => void chamar('responder_passagem', { p_passagem: p.id, p_aceitar: true })}>Aceitar passagem</Button>
+            </div>
+          </div>
+        ))}
+        {enviadas.map((p) => (
+          <button key={p.id} type="button" onClick={() => void chamar('retirar_passagem', { p_passagem: p.id })}
+            className="self-start text-apoio text-tinta-apoio underline hover:text-acao">
+            Retirar da passagem (quem passou)
+          </button>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <Card>
