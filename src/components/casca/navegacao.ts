@@ -16,6 +16,7 @@ import {
   MessageSquare,
   MonitorSmartphone,
   ScrollText,
+  Shield,
   ShieldCheck,
   SquareCheckBig,
   Stethoscope,
@@ -56,6 +57,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },
     { to: '/teleinterconsulta', rotulo: 'Telemedicina', curto: 'Tele', icone: MonitorSmartphone, exato: true, nota: 'tele' },
     { to: '/pareceres', rotulo: 'Pareceres', icone: MessageSquare, exato: true },
+    { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
     { to: '/plantonista/farmacia', rotulo: 'Farmácia', icone: FlaskConical },
     { to: '/agenda', rotulo: 'Minha Agenda', curto: 'Agenda', icone: CalendarClock, exato: true },
     ITEM_AVISOS,
@@ -70,12 +72,24 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos' },
     { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true },
   ],
+  // Enfermagem (P/index.html 32225–32230): o técnico não tem Triagem nem
+  // Notificações; a tela inicial dele segue a escala (InicioEnfermagem).
   enfermeiro: [
     { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem' },
+    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto Socorro', curto: 'PS', icone: Stethoscope, exato: true },
+    { to: '/notificacao-compulsoria', rotulo: 'Notificações', icone: Shield, exato: true },
+    { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
     { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
+    ITEM_AVISOS,
     ITEM_PRONTUARIOS,
   ],
-  tecnico_enfermagem: [{ to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true }, ITEM_PRONTUARIOS],
+  tecnico_enfermagem: [
+    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto Socorro', curto: 'PS', icone: Stethoscope, exato: true },
+    { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
+    { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
+    ITEM_AVISOS,
+    ITEM_PRONTUARIOS,
+  ],
   recepcao: [{ to: '/recepcao', rotulo: 'Nova ficha', icone: ClipboardList, exato: true, nota: 'triagem' }],
   farmaceutico: [
     { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia' },

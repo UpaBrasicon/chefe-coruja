@@ -123,13 +123,21 @@ END $$;
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 INSERT INTO t SELECT 'r3', public.salvar_rascunho(pg_temp.u('pac'), 'atestado', '{"atestado":{"dias":"2"}}');
-SELECT pg_temp.falha(format('SELECT public.folha_documento(%L)', pg_temp.u('r3')), 'Só se imprime documento emitido',
-  'rascunho não tem folha: só documento emitido vai ao papel');
+-- onda 6 (20261005000001): o rascunho sai só para o autor, marcado e sem número
+INSERT INTO t SELECT 'fr', public.folha_documento(pg_temp.u('r3'))::text;
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
+SELECT pg_temp.falha(format('SELECT public.folha_documento(%L)', pg_temp.u('r3')), 'Rascunho só é impresso por quem o escreve',
+  'rascunho de outra pessoa não vai ao papel');
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 INSERT INTO t SELECT 'fo', public.folha_documento((pg_temp.v('ret') ->> 'id')::uuid, 'Receituário')::text;
 RESET ROLE;
 DO $$
 DECLARE f jsonb := pg_temp.v('fo');
 BEGIN
+  IF pg_temp.v('fr') ->> 'estado' <> 'rascunho' OR pg_temp.v('fr') ->> 'numero' IS NOT NULL THEN
+    RAISE EXCEPTION 'FALHOU: folha do rascunho (%)', pg_temp.v('fr');
+  END IF;
+  RAISE NOTICE 'OK  o autor imprime o próprio rascunho, sem número (a folha sai marcada RASCUNHO)';
   IF f ->> 'numero' IS NULL OR (f ->> 'versao')::int <> 2 OR f ->> 'codigo' !~ '^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$'
      OR f ->> 'protocolo' !~ '^IMP-' OR f ->> 'autor' <> 'Plantonista de Teste' OR f ->> 'conteudo' <> '{"itens":["a","b","d"]}' THEN
     RAISE EXCEPTION 'FALHOU: folha_documento (%)', f;

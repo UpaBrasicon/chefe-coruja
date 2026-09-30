@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { montarFolha, rodapeEmitido, type TipoFolha } from '@/lib/folhas'
+import { folhaDoRegistro, lerConteudo, montarFolha, type TipoFolha } from '@/lib/folhas'
 
 // Consulta e impressão são registradas pelo SERVIDOR (migration 0012). O banco
 // só devolve conteúdo clínico de prontuário aberto; abrir é a RPC que grava o
@@ -81,14 +81,10 @@ async function folhaProvisoria(
   await gravarRegistros(perfil, [
     novoItem('documento', { paciente_id: opcoes.pacienteId, tipo: opcoes.documento.tipo, conteudo: opcoes.documento.conteudo }),
   ])
-  const quando = new Date(agoraServidor() ?? Date.now()).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-  const rodape =
-    `<div style="position:fixed;left:0;right:0;top:4mm;text-align:center;font:600 12px system-ui,sans-serif;color:#B91C1C;border:1.5px solid #B91C1C;margin:0 12mm;padding:4px">` +
-    `FOLHA PROVISÓRIA — emitida sem conexão em ${quando}. Sem número definitivo: assinar à mão. O número sai quando a conexão voltar.</div>` +
-    `<div style="position:fixed;left:0;right:0;bottom:6mm;text-align:center;font:9px system-ui,sans-serif;color:#64748B">` +
-    `Chefe Coruja · folha provisória · registro guardado no aparelho para envio</div>`
-  escrever(janela, montarFolha(opcoes.documento.tipo, JSON.parse(opcoes.documento.conteudo), rodape, window.location.origin))
-  return { janela, rodape, provisoria: true, pronta: true }
+  // o aviso de folha provisória e o rodapé sem número vêm do modelo (emissão 'provisoria')
+  const em = new Date(agoraServidor() ?? Date.now()).toISOString()
+  escrever(janela, montarFolha(opcoes.documento.tipo, lerConteudo(opcoes.documento.conteudo), { emissao: { modo: 'provisoria', em } }))
+  return { janela, rodape: '', provisoria: true, pronta: true }
 }
 
 /**
@@ -98,24 +94,33 @@ async function folhaProvisoria(
  * registro do banco (RPC folha_documento), com o mesmo rodapé.
  */
 async function folhaEmitida(janela: Window, recusar: (m: string) => null, documentoId: string, tipoImpressao: string) {
+  const r = await folhaDoDocumentoEmitido(documentoId, tipoImpressao)
+  if ('erro' in r) {
+    recusar(`O documento foi emitido, mas a folha não pôde ser montada${r.erro ? `: ${r.erro}` : ''}. Reimprima pelo documento.`)
+    return false
+  }
+  escrever(janela, r.html)
+  return true
+}
+
+/**
+ * HTML da folha A4 de um documento JÁ EMITIDO (edge function `folha`; se ela
+ * não responder, o mesmo registro do banco via RPC folha_documento). Cada
+ * chamada registra uma impressão do documento. Usada pela folha do documento
+ * e pela impressão de prontuário, que junta várias folhas numa janela só.
+ */
+export async function folhaDoDocumentoEmitido(documentoId: string, tipoImpressao: string): Promise<{ html: string } | { erro: string }> {
   const r = await supabase.functions.invoke('folha', {
     body: { documento_id: documentoId, tipo_impressao: tipoImpressao, origem: window.location.origin },
   })
-  if (!r.error && typeof r.data === 'string' && r.data.startsWith('<!doctype html>')) {
-    escrever(janela, r.data)
-    return true
-  }
+  if (!r.error && typeof r.data === 'string' && r.data.startsWith('<!doctype html>')) return { html: r.data }
   const { data, error } = await supabase.rpc('folha_documento', { p_documento: documentoId, p_tipo_impressao: tipoImpressao })
-  if (error || !data) {
-    recusar(`O documento foi emitido, mas a folha não pôde ser montada${error ? `: ${error.message}` : ''}. Reimprima pelo documento.`)
-    return false
+  if (error || !data) return { erro: error?.message ?? '' }
+  try {
+    return { html: folhaDoRegistro(data as unknown as Parameters<typeof folhaDoRegistro>[0]) }
+  } catch {
+    return { erro: 'conteúdo do documento ilegível' }
   }
-  const d = data as { tipo: TipoFolha; conteudo: string; numero: string; versao: number; autor: string | null; codigo: string; protocolo: string; impresso_em: string }
-  const emitido = new Date(d.impresso_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-  escrever(janela, montarFolha(d.tipo, JSON.parse(d.conteudo), rodapeEmitido({
-    numero: d.numero, versao: d.versao, protocolo: d.protocolo, emitido, autor: d.autor ?? '—', codigo: d.codigo,
-  }), window.location.origin))
-  return true
 }
 
 /**

@@ -98,9 +98,9 @@ END $$;
 -- ── pacientes: um adulto e uma criança de 8 anos sem responsável ───────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 INSERT INTO t SELECT 'ep_a', public.registrar_ficha('22000000-0000-4000-8000-000000000003', 'Cefaleia', NULL,
-  json_build_object('nome', 'Termo Adulto Silva', 'data_nascimento', (current_date - interval '40 years')::date)::jsonb) ->> 'episodio_id';
+  json_build_object('nome', 'Termo Adulto Silva', 'data_nascimento', (current_date - interval '40 years 6 months')::date)::jsonb) ->> 'episodio_id';
 INSERT INTO t SELECT 'ep_c', public.registrar_ficha('22000000-0000-4000-8000-000000000003', 'Febre', NULL,
-  json_build_object('nome', 'Termo Criança Souza', 'data_nascimento', (current_date - interval '8 years')::date)::jsonb) ->> 'episodio_id';
+  json_build_object('nome', 'Termo Criança Souza', 'data_nascimento', (current_date - interval '8 years 6 months')::date)::jsonb) ->> 'episodio_id';
 INSERT INTO t SELECT 'pa', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep_a');
 INSERT INTO t SELECT 'pc', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep_c');
 

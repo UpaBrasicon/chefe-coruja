@@ -25,7 +25,7 @@ import {
   CAMPOS_EF, CAMPOS_SV, FORM_VAZIO, avisosEvolucao, dataLonga, deEstruturado, diaHora, herdarDaUltima, mensagemErro, paraEstruturado,
   useContextoEvolucao, useRecarregarEvolucao, type ContextoEvolucao, type DadosEstruturados, type FormEvolucao,
 } from './dados'
-import { itemNotificavel, LNNC_FONTE } from './lnnc'
+import { FONTE_LNNC as LNNC_FONTE, useNotificacaoCompulsoria } from '@/components/internacao/caderno/notificacao'
 import { Bloco, CampoTexto, ChipEscolha, Mensagem, RotuloSecao, Selo, type Aviso } from './pecas'
 
 type Modo = 'nova' | 'corrigir' | 'complemento'
@@ -85,7 +85,10 @@ function Formulario({ ctx, pacienteId, internacaoId }: { ctx: ContextoEvolucao; 
   const tomAlergia = painel?.estado === 'tem' ? 'critico' : painel?.estado === 'nega' ? 'conforme' : 'atencao'
 
   const avisos = avisosEvolucao(f)
-  const notificavel = itemNotificavel(f.cid.codigo)
+  // LNNC do banco (notificacao_compulsoria_dos_cids): só sugere, o médico marca
+  const lnnc = useNotificacaoCompulsoria(f.cid.codigo.trim() ? [f.cid.codigo.trim()] : [])
+  const itemLnnc = lnnc.data?.itens[0]
+  const notificavel = itemLnnc ? { nome: itemLnnc.agravo, imediata: itemLnnc.imediata } : null
   const sv = ctx.sv_enfermagem
   const editavel = ctx.pode_registrar && (modo !== 'nova' || !jaTem)
   const temTexto = (f.s + f.a + f.p).trim().length >= 10
@@ -297,7 +300,7 @@ function Formulario({ ctx, pacienteId, internacaoId }: { ctx: ContextoEvolucao; 
               <ShieldAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />
               <span className="min-w-0 flex-1">
                 CID de notificação compulsória: {notificavel.nome}{notificavel.imediata ? ' (notificação imediata)' : ''}. Marque o agravo
-                suspeito: ele impede a alta até a notificação ser registrada. <span className="text-tinta-sussurro">LNNC, {LNNC_FONTE}; o mapeamento CID → agravo está em conferência pela vigilância.</span>
+                suspeito: ele impede a alta até a notificação ser registrada. <span className="text-tinta-sussurro">{LNNC_FONTE}; o mapeamento CID → agravo está em conferência pela vigilância.</span>
               </span>
               <Button variant="outline" size="sm" onClick={() => void marcarAgravo()}>Marcar agravo suspeito</Button>
             </div>

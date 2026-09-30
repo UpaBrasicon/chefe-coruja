@@ -19,6 +19,9 @@ const Cadastro = lazy(() => import('@/pages/Cadastro').then((m) => ({ default: m
 const PapelEmPreparo = lazy(() => import('@/pages/PapelEmPreparo'))
 const Farmacia = lazy(() => import('@/pages/farmacia/Farmacia'))
 const Checagem = lazy(() => import('@/pages/enfermagem/Checagem'))
+const ProntoSocorroEnfermagem = lazy(() => import('@/pages/enfermagem/ProntoSocorroEnfermagem'))
+const InternacaoEnfermagem = lazy(() => import('@/pages/enfermagem/InternacaoEnfermagem'))
+const InicioEnfermagem = lazy(() => import('@/pages/enfermagem/InicioEnfermagem'))
 const Recepcao = lazy(() => import('@/pages/recepcao/Recepcao'))
 const Triagem = lazy(() => import('@/pages/enfermagem/Triagem'))
 const AtendimentoPorta = lazy(() => import('@/pages/plantao/AtendimentoPorta'))
@@ -61,6 +64,7 @@ const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome')
 const SectionHome = lazy(() => import('@/pages/plantonista/SectionHome'))
 const ToolRouter = lazy(() => import('@/pages/plantonista/ToolRouter').then((m) => ({ default: m.ToolRouter })))
 const PreferenciasPrescricao = lazy(() => import('@/pages/PreferenciasPrescricao'))
+const NotificacaoCompulsoria = lazy(() => import('@/pages/notificacao/NotificacaoCompulsoria'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -161,6 +165,20 @@ export default function App() {
                       {/* Enfermagem: checagem da prescrição (Fase 4.6) */}
                       <Route element={<RequireRole papeis={['enfermeiro', 'tecnico_enfermagem']} />}>
                         <Route path="/checagem" element={<Checagem />} />
+                        {/* Porte: Pronto Socorro e Internação da enfermagem (com a passagem de plantão) */}
+                        <Route path="/enfermagem" element={<InicioEnfermagem />} />
+                        <Route path="/enfermagem/pronto-socorro" element={<ProntoSocorroEnfermagem />} />
+                        <Route path="/enfermagem/internacao" element={<InternacaoEnfermagem />} />
+                      </Route>
+
+                      {/* Notificação compulsória (LNNC): o banco confere plantão e papel */}
+                      <Route element={<RequireRole papeis={['plantonista', 'enfermeiro', 'gestor']} />}>
+                        <Route path="/notificacao-compulsoria" element={<NotificacaoCompulsoria />} />
+                      </Route>
+
+                      {/* Avisos: de quem trabalha no plantão (a lista é do próprio perfil) */}
+                      <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin', 'enfermeiro', 'tecnico_enfermagem']} />}>
+                        <Route path="/notificacoes" element={<Notificacoes />} />
                       </Route>
 
                       {/* Farmacêutico: validação, disponibilidade, faltas e diluição padrão (Fase 4.5/4.9) */}
@@ -232,7 +250,6 @@ export default function App() {
                         <Route path="/plantonista/:section" element={<SectionHome />} />
                         <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
                         <Route path="/agenda" element={<AgendaGrupo />} />
-                        <Route path="/notificacoes" element={<Notificacoes />} />
                         <Route path="/perfil" element={<Perfil />} />
                         {/* Responsável técnico (nomeação da rede, não papel da unidade): o banco confere */}
                         <Route path="/revisao-clinica" element={<RevisaoClinica />} />

@@ -5,6 +5,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { FlaskConical, Megaphone } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
@@ -108,6 +109,7 @@ function LinhaAgravo({ a, aoResolver }: { a: Agravo; aoResolver: (notificado: bo
       <Input className="h-8 min-w-48 flex-1" placeholder="Nº da notificação (opcional) ou motivo do descarte" value={texto} onChange={(ev) => setTexto(ev.target.value)} />
       <Button size="xs" onClick={() => void aoResolver(true, texto || undefined)}>Notificação registrada</Button>
       <Button size="xs" variant="outline" disabled={texto.trim().length < 10} onClick={() => void aoResolver(false, undefined, texto)}>Descartar</Button>
+      <Link to={`/notificacao-compulsoria?ficha=${a.id}`} className="text-xs text-acao hover:underline">Ficha SINAN</Link>
     </div>
   )
 }
