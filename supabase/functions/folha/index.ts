@@ -13,6 +13,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { contextoDoBanco, folhaDoRegistro, montarRelatorio, type TipoRelatorio } from '../_shared/folhas.ts'
+import { chavePublica } from '../_shared/chaves.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -43,7 +44,7 @@ Deno.serve(async (req) => {
   }
   if (!corpo.documento_id && !corpo.relatorio) return erro(400, 'Informe o documento ou o relatório.')
 
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, chavePublica(), {
     global: { headers: { Authorization: auth } },
   })
 
