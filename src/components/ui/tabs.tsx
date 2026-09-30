@@ -72,7 +72,7 @@ function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPr
   return (
     <TabsPrimitive.Panel
       data-slot="tabs-content"
-      className={cn("flex-1 text-apoio outline-none", className)}
+      className={cn("flex-1 text-apoio", className)}
       {...props}
     />
   )

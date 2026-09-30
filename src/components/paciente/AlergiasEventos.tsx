@@ -16,6 +16,7 @@ import * as React from 'react'
 
 import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
+import { normalizarMedicamento } from '@/lib/search'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
@@ -416,7 +417,7 @@ function NovaAlergia({ pacienteId, ocupado, executar, fechar }: { pacienteId: st
     staleTime: 60_000,
     queryFn: async () => {
       const { data, error } = await supabase.from('medicamento').select('id, principio_ativo')
-        .eq('ativo', true).ilike('principio_ativo', `%${f.sub.trim()}%`).order('principio_ativo').limit(8)
+        .eq('ativo', true).ilike('principio_ativo_norm', `%${normalizarMedicamento(f.sub.trim())}%`).order('principio_ativo').limit(8)
       if (error) throw error
       // um princípio ativo por nome (o cadastro repete por apresentação)
       const vistos = new Set<string>()

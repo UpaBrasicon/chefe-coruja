@@ -10,6 +10,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { normalizarMedicamento } from '@/lib/search'
 import { abrirImpressao } from '@/lib/prontuario'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -188,7 +189,7 @@ function ReceitaAlta({ estado, setEstado, onEmitir }: { estado: EstadoDocs; setE
     enabled: busca.trim().length >= 3 && !med,
     queryFn: async () => {
       const { data, error } = await supabase.from('medicamento').select('id, principio_ativo, apresentacao, concentracao')
-        .eq('ativo', true).ilike('principio_ativo', `%${busca.trim()}%`).order('principio_ativo').limit(8)
+        .eq('ativo', true).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).order('principio_ativo').limit(8)
       if (error) throw error
       return (data ?? []) as Med[]
     },

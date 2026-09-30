@@ -68,24 +68,24 @@ export function Classificar({ ep, onFim }: { ep: NaFila; onFim: (aviso: string |
   const publico: Publico | null = pubManual ?? pubIdade
   const grupoTrocado = pubIdade !== null && publico !== pubIdade
 
-  const { data: fluxos } = useQuery({
+  // os fluxogramas como valem NA UNIDADE: o gestor revisa cada um em
+  // Protocolos (mantido ou alterado com a fonte da unidade; migration
+  // 20261007000002), e classificar_risco confere contra a mesma lista
+  const { data: protocoloUnidade } = useQuery({
     queryKey: ['protocolo-fluxogramas', unidadeAtiva?.unidade_id],
-    staleTime: 60 * 60_000,
+    enabled: !!unidadeAtiva?.unidade_id,
+    staleTime: 10 * 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from('protocolo_fluxogramas').select('id, nome, publico, inclui, discriminadores, protocolo_id').order('ordem')
+      const { data, error } = await supabase.rpc('protocolo_classificacao_da_unidade', { p_unidade: unidadeAtiva!.unidade_id })
       if (error) throw error
-      return (data ?? []) as unknown as (Fluxograma & { protocolo_id: string })[]
+      return data as unknown as { protocolo: { id: string; fonte: string } | null; fluxogramas: (Fluxograma & { protocolo_id: string; ordem: number })[] }
     },
   })
-  const { data: protocolos } = useQuery({
-    queryKey: ['protocolos-classificacao'],
-    staleTime: 60 * 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase.from('protocolos_classificacao').select('id, fonte')
-      if (error) throw error
-      return data ?? []
-    },
-  })
+  const fluxos = React.useMemo(
+    () => [...(protocoloUnidade?.fluxogramas ?? [])].sort((a, b) => a.ordem - b.ordem),
+    [protocoloUnidade],
+  )
+  const protocolos = protocoloUnidade?.protocolo ? [protocoloUnidade.protocolo] : []
 
   const [queixa, setQueixa] = React.useState(ep.queixa)
   const [cor, setCor] = React.useState<CorRisco | null>(null)

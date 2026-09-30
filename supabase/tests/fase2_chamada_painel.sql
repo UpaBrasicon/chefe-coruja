@@ -11,6 +11,11 @@ INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno,
 SELECT '21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000003', p, private.data_atual(), 'manha', now() - interval '1 hour', 360
 FROM unnest(ARRAY['10000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000005']::uuid[]) p;
 ALTER TABLE public.escala_plantao ENABLE TRIGGER trg_escala_janela;
+-- check-in dos plantões em curso: sem ele, passada a tolerância, a escala não abre a porta (20261014000001)
+INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em)
+SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.escala_plantao e
+ WHERE e.ativo AND e.perfil_id IS NOT NULL AND e.inicio <= now() AND now() < e.inicio + make_interval(mins => e.duracao_min)
+ON CONFLICT DO NOTHING;
 
 -- chamadas reais feitas no banco local não entram na conta do painel
 ALTER TABLE public.chamadas DISABLE TRIGGER trg_chamadas_so_insercao;
@@ -81,8 +86,10 @@ BEGIN
      OR p -> 'chamadas' -> 0 ->> 'sala' <> 'Triagem 1' THEN
     RAISE EXCEPTION 'FALHOU: painel (%)', p;
   END IF;
-  IF (SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(p -> 'chamadas' -> 0) k) <> ARRAY['em', 'id', 'nome', 'sala'] THEN
-    RAISE EXCEPTION 'FALHOU: painel expõe mais do que nome, sala e hora';
+  -- onda 8 do porte (migration 20261008000001): a TV mostra também quem
+  -- chamou (profissional) e a vez da chamada — nada mais do paciente
+  IF (SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(p -> 'chamadas' -> 0) k) <> ARRAY['em', 'id', 'nome', 'quem', 'sala', 'vez'] THEN
+    RAISE EXCEPTION 'FALHOU: painel expõe mais do que nome, sala, hora, vez e quem chamou';
   END IF;
   RAISE NOTICE 'OK  TV sem login lê só nome (social) e sala';
   BEGIN

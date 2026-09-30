@@ -4,6 +4,7 @@ import { Building2 } from 'lucide-react'
 import { TabsPagina, type AbaDef } from '@/components/TabsPagina'
 import { useUnidade } from '@/contexts/UnidadeContext'
 
+const MapaLeitos = lazy(() => import('@/pages/gestor/MapaLeitos').then((m) => ({ default: m.MapaLeitos })))
 const Setores = lazy(() => import('@/pages/Setores').then((m) => ({ default: m.Setores })))
 const Configuracao = lazy(() => import('@/pages/Configuracao'))
 const Banners = lazy(() => import('@/pages/gestor/Banners').then((m) => ({ default: m.Banners })))
@@ -26,7 +27,12 @@ export default function UnidadeGrupo() {
 
   const abas: AbaDef[] = [
     ...(papeisDaUnidade.includes('gestor')
-      ? [{ valor: 'setores', rotulo: 'Setores e Leitos', conteudo: () => <Setores embutido /> }]
+      ? [{
+          valor: 'setores', rotulo: 'Setores e Leitos',
+          // ocupação, pacientes por plantonista, vencidas e o mapa de leitos
+          // (protótipo, aba Setores) antes do cadastro de setores e leitos
+          conteudo: () => <><MapaLeitos /><Setores embutido /></>,
+        }]
       : []),
     // Convites do primeiro acesso: gestor da unidade e admin da rede (o banco confere).
     ...(papeisDaUnidade.includes('gestor') || papeisDaUnidade.includes('admin')

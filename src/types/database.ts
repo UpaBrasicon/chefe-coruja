@@ -1340,6 +1340,7 @@ export type Database = {
           turno: string
           unidade_id: string
           updated_at: string
+          vaga_id: string | null
         }
         Insert: {
           created_at?: string
@@ -1353,6 +1354,7 @@ export type Database = {
           turno: string
           unidade_id: string
           updated_at?: string
+          vaga_id?: string | null
         }
         Update: {
           created_at?: string
@@ -1366,6 +1368,7 @@ export type Database = {
           turno?: string
           unidade_id?: string
           updated_at?: string
+          vaga_id?: string | null
         }
         Relationships: [
           {
@@ -4171,6 +4174,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ferramenta_uso: {
+        Row: {
+          chave: string
+          created_at: string
+          favorita: boolean
+          favoritada_em: string | null
+          perfil_id: string
+          ultimo_uso_em: string | null
+          updated_at: string
+          usos: number
+        }
+        Insert: {
+          chave: string
+          created_at?: string
+          favorita?: boolean
+          favoritada_em?: string | null
+          perfil_id: string
+          ultimo_uso_em?: string | null
+          updated_at?: string
+          usos?: number
+        }
+        Update: {
+          chave?: string
+          created_at?: string
+          favorita?: boolean
+          favoritada_em?: string | null
+          perfil_id?: string
+          ultimo_uso_em?: string | null
+          updated_at?: string
+          usos?: number
+        }
+        Relationships: []
       }
       faltas_medicamento: {
         Row: {
@@ -8588,6 +8624,33 @@ export type Database = {
       }
     }
     Functions: {
+      // ── onda 8, gestor parte 2 (migrations 20261007000001 a …003; à mão) ──
+      farmacia_do_gestor: { Args: { p_unidade: string }; Returns: Json }
+      mapa_leitos_gestor: { Args: { p_unidade: string }; Returns: Json }
+      revisao_clinica_panorama: {
+        Args: { p_unidade: string }
+        Returns: {
+          ferramenta_id: string; titulo: string; versao_vigente: string | null; versao_ultima: string | null
+          status_ultima: string | null; publico: string | null; fontes: Json | null; decidida_por: string | null
+          decisao_registro: string | null; decidida_em: string | null; decisao_nota: string | null
+          pendentes: number; oculta: boolean; nota_local: string | null
+        }[]
+      }
+      protocolo_classificacao_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      revisar_fluxograma: {
+        Args: { p_unidade: string; p_fluxograma: string; p_acao: string; p_discriminadores?: Json; p_fonte?: string }
+        Returns: string
+      }
+      escala_mes_gestor: { Args: { p_unidade: string; p_ano: number; p_mes: number }; Returns: Json }
+      marcar_vaga_escala: {
+        Args: { p_setor: string; p_data: string; p_turno: string; p_observacao?: string }
+        Returns: string
+      }
+      retirar_vaga_escala: { Args: { p_vaga: string }; Returns: undefined }
+      publicar_escala: {
+        Args: { p_unidade: string; p_ano: number; p_mes: number; p_observacao?: string }
+        Returns: number
+      }
       abrir_conversa_direta: {
         Args: { p_destinatario_id: string }
         Returns: string
@@ -9253,6 +9316,68 @@ export type Database = {
           situacao: string
         }[]
       }
+      // ── onda 8: farmácia e telemedicina (migrations 20261009000001 e …002), à mão ──
+      ajustar_diluicao_unidade: { Args: { p_diluicao: string; p_unidade: string }; Returns: string }
+      definir_limites_padrao_farmacia: {
+        Args: { p_unidade: string; p_limite_critico: number | null; p_limite_falta: number | null }
+        Returns: undefined
+      }
+      definir_minha_disponibilidade_tele: { Args: { p_estado: string }; Returns: undefined }
+      diluicao_voltar_ao_modelo: { Args: { p_diluicao: string; p_motivo: string }; Returns: undefined }
+      farmacia_estoque: {
+        Args: { p_unidade: string }
+        Returns: {
+          medicamento_id: string
+          principio_ativo: string
+          apresentacao: string | null
+          alta_vigilancia: boolean
+          quantidade: number | null
+          limite_critico: number | null
+          limite_falta: number | null
+          limite_proprio: boolean
+          situacao: string
+          atualizado_em: string | null
+          atualizado_por: string | null
+          falta_id: string | null
+          falta_situacao: string | null
+        }[]
+      }
+      limites_voltar_ao_padrao: { Args: { p_unidade: string; p_medicamento: string }; Returns: undefined }
+      minha_situacao_tele: { Args: { p_unidade: string }; Returns: Json }
+      padrao_diluicao_unidade: { Args: { p_unidade: string }; Returns: Json }
+      registrar_arquivo_farmacia: {
+        Args: { p_unidade: string; p_tipo: string; p_caminho: string; p_nome: string; p_tamanho: number; p_tipo_mime?: string }
+        Returns: string
+      }
+      tele_cobertura: {
+        Args: { p_unidade: string; p_dias?: number }
+        Returns: { setor: string; medico: string; inicio: string; fim: string; agora: boolean; minha: boolean; situacao: string | null }[]
+      }
+      tele_credenciais: { Args: never; Returns: Json }
+      tele_extrato: {
+        Args: { p_de: string; p_ate: string }
+        Returns: {
+          escala_id: string; unidade: string; setor: string; data: string; turno: string; inicio: string; fim: string
+          checkin_em: string | null; checkout_em: string | null; horas: number; valor: number; pareceres: number; situacao: string
+        }[]
+      }
+      tele_historico: { Args: { p_dias?: number }; Returns: Json }
+      tele_minha_escala: {
+        Args: { p_de: string; p_ate: string }
+        Returns: {
+          escala_id: string; unidade: string; setor: string; data: string; turno: string; inicio: string; fim: string
+          agora: boolean; checkin_em: string | null; checkout_em: string | null
+        }[]
+      }
+      tele_outras_em_atendimento: {
+        Args: { p_unidade: string }
+        Returns: { id: string; setor: string | null; consultor: string; urgencia: string; aceita_em: string }[]
+      }
+      tele_pendencias: { Args: never; Returns: Json }
+      telemedicina_na_unidade: {
+        Args: { p_unidade: string }
+        Returns: { nome: string; crm: string | null; setor: string; ate: string; situacao: string }[]
+      }
       documentos_do_paciente: {
         Args: {
           p_com_conteudo?: boolean
@@ -9495,6 +9620,44 @@ export type Database = {
         Returns: number
       }
       gaviao_painel_admin: { Args: never; Returns: Json }
+      gaviao_apontamentos: {
+        Args: { p_unidade: string }
+        Returns: {
+          chave: string
+          tipo: string
+          severidade: string
+          titulo: string
+          evidencia: string
+          recomendacao: string
+          icone: string
+          decisao_id: string | null
+          decisao: string | null
+          motivo: string | null
+          decidido_em: string | null
+          decidido_por: string | null
+          silenciado_ate: string | null
+        }[]
+      }
+      gaviao_registro: {
+        Args: { p_unidade: string }
+        Returns: {
+          id: string
+          criado_em: string
+          titulo: string
+          tipo: string
+          decisao: string
+          motivo: string | null
+          silenciado_ate: string | null
+          autor_nome: string
+          meu: boolean
+          desfeita_em: string | null
+        }[]
+      }
+      decidir_apontamento_gaviao: {
+        Args: { p_unidade: string; p_chave: string; p_decisao: string; p_motivo?: string }
+        Returns: string
+      }
+      desfazer_decisao_gaviao: { Args: { p_id: string }; Returns: undefined }
       gerar_censo_diario: {
         Args: { p_data: string; p_unidade: string }
         Returns: number
@@ -9710,6 +9873,8 @@ export type Database = {
       }
       marcar_lida: { Args: { p_conversa_id: string }; Returns: undefined }
       marcar_notificacao_lida: { Args: { p_id: string }; Returns: undefined }
+      marcar_avisos_lidos: { Args: { p_unidade: string; p_ids?: string[] }; Returns: string[] }
+      reabrir_avisos: { Args: { p_ids: string[] }; Returns: number }
       marcar_suspeita_infeccao: {
         Args: { p_ativa: boolean; p_paciente: string }
         Returns: undefined
@@ -9786,6 +9951,21 @@ export type Database = {
           status: string
         }[]
       }
+      minhas_ferramentas: {
+        Args: never
+        Returns: {
+          chave: string
+          favorita: boolean
+          favoritada_em: string | null
+          ultimo_uso_em: string | null
+          usos: number
+        }[]
+      }
+      marcar_favorito_ferramenta: {
+        Args: { p_chave: string; p_favorita: boolean }
+        Returns: undefined
+      }
+      registrar_uso_ferramenta: { Args: { p_chave: string }; Returns: number }
       minhas_notificacoes: {
         Args: { p_unidade: string }
         Returns: {
@@ -9885,8 +10065,145 @@ export type Database = {
         }[]
       }
       painel_atendimento_ps: { Args: { p_episodio: string }; Returns: Json }
+      // ── porte, onda 8: administrador e painel da TV (migration 20261008000001) ──
+      chamados_tecnicos_lista: {
+        Args: { p_incluir_resolvidos?: boolean }
+        Returns: {
+          aberto_em: string
+          aberto_por: string
+          atualizado_em: string
+          categoria: string
+          descricao: string
+          id: string
+          resolvido_em: string
+          responsavel: string
+          severidade: string
+          situacao: string
+          titulo: string
+          unidade_id: string
+          unidade_nome: string
+        }[]
+      }
+      abrir_chamado_tecnico: {
+        Args: { p_categoria: string; p_descricao?: string; p_responsavel?: string; p_severidade: string; p_titulo: string; p_unidade: string | null }
+        Returns: string
+      }
+      atualizar_chamado_tecnico: {
+        Args: { p_id: string; p_nota?: string; p_responsavel?: string; p_situacao: string }
+        Returns: undefined
+      }
+      andamento_chamado_tecnico: {
+        Args: { p_id: string }
+        Returns: { autor: string; em: string; id: string; nota: string; situacao: string }[]
+      }
+      // ── limites da unidade, chamado do gestor e fracionar (migration 20261012000001) ──
+      limites_unidade: { Args: { p_unidade: string }; Returns: Json }
+      salvar_limites_unidade: {
+        Args: { p_unidade: string; p_descanso_ativo: boolean; p_descanso_horas: number; p_sobrecarga_horas: number; p_ocupacao_pct: number; p_checkin_tolerancia_min: number }
+        Returns: Json
+      }
+      chamados_tecnicos_da_unidade: {
+        Args: { p_unidade: string; p_incluir_resolvidos?: boolean }
+        Returns: {
+          aberto_em: string
+          aberto_por: string
+          atualizado_em: string
+          categoria: string
+          descricao: string
+          id: string
+          meu: boolean
+          resolvido_em: string
+          responsavel: string
+          severidade: string
+          situacao: string
+          titulo: string
+          unidade_id: string
+          unidade_nome: string
+        }[]
+      }
+      comentar_chamado_tecnico: { Args: { p_id: string; p_nota: string }; Returns: undefined }
+      candidatar_vaga: { Args: { p_vaga: string }; Returns: string }
+      vagas_abertas: {
+        Args: never
+        Returns: {
+          data: string
+          especialidade: string | null
+          fim: string
+          id: string
+          inicio: string
+          latitude: number | null
+          longitude: number | null
+          minha_candidatura: string | null
+          observacao: string | null
+          parte: number | null
+          partes: number | null
+          setor_id: string
+          setor_nome: string
+          turno: string
+          unidade_id: string
+          unidade_nome: string
+        }[]
+      }
+      admin_unidades: {
+        Args: never
+        Returns: {
+          chamados_abertos: number
+          chamados_alta: number
+          em_plantao: number
+          leitos: number
+          leitos_ocupados: number
+          municipio: string
+          nome: string
+          rnds_erro: number
+          rnds_mais_antigo: string
+          rnds_pendentes: number
+          sessoes_ativas: number
+          taxa_ocupacao: number
+          tipo: string
+          uf: string
+          ultimo_uso: string
+          unidade_id: string
+        }[]
+      }
+      admin_servidores: { Args: never; Returns: Json }
+      painel_propaganda: { Args: { p_unidade: string }; Returns: Json }
+      salvar_painel_config: { Args: { p_rotulo: string; p_segundos: number; p_unidade: string }; Returns: undefined }
+      adicionar_propaganda: { Args: { p_caminho: string; p_titulo: string; p_unidade: string }; Returns: string }
+      atualizar_propaganda: { Args: { p_ativo: boolean; p_id: string; p_titulo: string }; Returns: undefined }
+      reordenar_propagandas: { Args: { p_ids: string[]; p_unidade: string }; Returns: undefined }
+      remover_propaganda: { Args: { p_id: string }; Returns: string }
       painel_chamadas: { Args: { p_token: string }; Returns: Json }
       painel_gestor: { Args: { p_unidade: string }; Returns: Json }
+      panorama_gestor: { Args: { p_unidade: string }; Returns: Json }
+      definir_panorama: { Args: { p_unidade: string; p_fora: string[] }; Returns: undefined }
+      perguntar_gestao: { Args: { p_unidade: string; p_pergunta: string }; Returns: Json }
+      pedir_medida: { Args: { p_unidade: string; p_texto: string; p_painel?: string }; Returns: string }
+      retirar_medida: { Args: { p_id: string; p_retirar?: boolean }; Returns: undefined }
+      medidas_pedidas_da_unidade: {
+        Args: { p_unidade: string }
+        Returns: { id: string; texto: string; painel: string | null; criado_em: string; autor_nome: string; minha: boolean }[]
+      }
+      auditoria_checkin: {
+        Args: { p_unidade: string; p_data?: string }
+        Returns: {
+          plantao_id: string | null
+          presenca_id: string | null
+          perfil_id: string
+          nome: string
+          papel: string | null
+          setor: string | null
+          turno: string
+          previsto: string | null
+          fim_previsto: string | null
+          realizado: string | null
+          diferenca_min: number | null
+          dentro: boolean | null
+          distancia_m: number | null
+          justificativa: string | null
+          situacao: string
+          divergente: boolean
+        }[]
+      }
       painel_observacao: {
         Args: { p_unidade: string }
         Returns: {
@@ -10567,6 +10884,7 @@ export type Database = {
           p_protocolo?: string
           p_unidade: string
           p_versao?: string
+          p_fonte?: string
         }
         Returns: string
       }
@@ -10595,6 +10913,7 @@ export type Database = {
         }[]
       }
       setores_na_escala_agora: { Args: never; Returns: string[] }
+      situacao_checkin: { Args: { p_unidade: string }; Returns: Json }
       setores_observacao: {
         Args: { p_unidade: string }
         Returns: {

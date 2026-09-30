@@ -28,6 +28,11 @@ INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno,
   ('21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002',
    private.data_atual(), private.turno_atual(), now() - interval '1 hour', 360);
 ALTER TABLE public.escala_plantao ENABLE TRIGGER trg_escala_janela;
+-- check-in dos plantões em curso: sem ele, passada a tolerância, a escala não abre a porta (20261014000001)
+INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em)
+SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.escala_plantao e
+ WHERE e.ativo AND e.perfil_id IS NOT NULL AND e.inicio <= now() AND now() < e.inicio + make_interval(mins => e.duracao_min)
+ON CONFLICT DO NOTHING;
 
 CREATE FUNCTION pg_temp.como(perfil text) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
@@ -127,9 +132,10 @@ END $$;
 
 -- ── 5. protocolos de receita: gestor escreve, médico lê ─────────────────────
 SELECT pg_temp.negado($$SELECT public.salvar_receita_protocolo('21000000-0000-4000-8000-000000000001', 'Sem posologia', 'Teste',
-  '[{"medicamento":"Dipirona 500 mg","posologia":""}]')$$, 'protocolo sem posologia');
+  '[{"medicamento":"Dipirona 500 mg","posologia":""}]', NULL, true, '1', 'Protocolo da unidade, teste')$$, 'protocolo sem posologia');
 SELECT public.salvar_receita_protocolo('21000000-0000-4000-8000-000000000001', 'Dor leve', 'Analgesia de alta',
-  '[{"medicamento":"Paracetamol 500 mg comprimido","posologia":"Texto escrito pela unidade","quantidade":"10 comprimidos"}]');
+  '[{"medicamento":"Paracetamol 500 mg comprimido","posologia":"Texto escrito pela unidade","quantidade":"10 comprimidos"}]',
+  NULL, true, '1', 'Protocolo da unidade, teste');  -- publicar exige versão e fonte (migration 20261007000002)
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.negado($$SELECT public.salvar_receita_protocolo('21000000-0000-4000-8000-000000000001', 'Do médico', 'x',
   '[{"medicamento":"Paracetamol","posologia":"Texto"}]')$$, 'plantonista escreveu protocolo da instituição');

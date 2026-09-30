@@ -30,6 +30,9 @@ const ACAO_LABEL: Record<string, { label: string; variant: 'success' | 'destruct
   troca_solicitada: { label: 'Troca solicitada', variant: 'info' },
   troca_aprovada: { label: 'Troca aprovada', variant: 'success' },
   troca_recusada: { label: 'Troca recusada', variant: 'warning' },
+  publicar: { label: 'Publicação', variant: 'success' },
+  marcar_vaga: { label: 'Vaga marcada', variant: 'warning' },
+  retirar_vaga: { label: 'Vaga retirada', variant: 'secondary' },
 }
 
 export default function HistoricoEscala({ embutido = false }: { embutido?: boolean } = {}) {
@@ -83,6 +86,8 @@ export default function HistoricoEscala({ embutido = false }: { embutido?: boole
             <SelectValue placeholder="Filtrar por ação" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="publicar">Publicações</SelectItem>
+            <SelectItem value="marcar_vaga">Vagas marcadas</SelectItem>
             <SelectItem value="erro_passagem">Erros de passagem</SelectItem>
             <SelectItem value="passagem_aplicada">Passagens aplicadas</SelectItem>
             <SelectItem value="passagem_solicitada">Passagens solicitadas</SelectItem>

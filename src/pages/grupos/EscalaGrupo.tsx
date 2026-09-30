@@ -5,10 +5,13 @@ import { TabsPagina, type AbaDef } from '@/components/TabsPagina'
 import { PresencasDoDia } from '@/pages/gestor/PresencasDoDia'
 
 const Escala = lazy(() => import('@/pages/Escala'))
+const EscalaMes = lazy(() => import('@/pages/gestor/EscalaMes').then((m) => ({ default: m.EscalaMes })))
 const HistoricoEscala = lazy(() => import('@/pages/HistoricoEscala'))
 
 const ABAS: AbaDef[] = [
-  { valor: 'mensal', rotulo: 'Mensal', conteudo: () => <Escala embutido abaGestorFixa="mensal" /> },
+  // calendário do mês (barras por setor, vagas, publicar) em cima; a grade da
+  // semana, onde se escala, continua embaixo
+  { valor: 'mensal', rotulo: 'Mensal', conteudo: () => <><EscalaMes /><Escala embutido abaGestorFixa="mensal" /></> },
   { valor: 'fixa', rotulo: 'Fixa', conteudo: () => <Escala embutido abaGestorFixa="fixa" /> },
   { valor: 'presencas', rotulo: 'Presenças', conteudo: () => <PresencasDoDia /> },
   { valor: 'historico', rotulo: 'Histórico', conteudo: () => <HistoricoEscala embutido /> },

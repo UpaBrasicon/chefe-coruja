@@ -12,6 +12,7 @@ import { FlaskConical } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { normalizarMedicamento } from '@/lib/search'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,7 @@ type Diluicao = {
   estabilidade_ta_h: number | null; estabilidade_refrig_h: number | null; fotossensivel: boolean | null; acesso: string | null
   observacoes: string | null; fonte: string; revisor_crf: string | null; vigente_desde: string | null; vigente_ate: string | null
   motivo_alteracao: string | null; origem_id: string | null
+  alta_vigilancia: boolean | null; risco_flebite: boolean | null; unidade_id: string | null
 }
 const ABAS = [
   ['publicado', 'Vigentes'],
@@ -42,11 +44,12 @@ const STATUS: Record<string, { rotulo: string; variante: 'success' | 'warning' |
 }
 const dia = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '—')
 
-export default function Diluicoes() {
+export default function Diluicoes({ embutido = false, selecionadaInicial = null }: { embutido?: boolean; selecionadaInicial?: string | null } = {}) {
   const qc = useQueryClient()
   const [aba, setAba] = React.useState<(typeof ABAS)[number][0]>('rascunho')
   const [filtro, setFiltro] = React.useState('')
-  const [selecionada, setSelecionada] = React.useState<string | null>(null)
+  const [selecionada, setSelecionada] = React.useState<string | null>(selecionadaInicial)
+  const [soAv, setSoAv] = React.useState(false)
   const [erro, setErro] = React.useState<string | null>(null)
 
   const lista = useQuery({
@@ -60,13 +63,20 @@ export default function Diluicoes() {
   const recarregar = () => void qc.invalidateQueries({ queryKey: ['diluicoes-farmacia'] })
   const visiveis = (lista.data ?? []).filter((d) =>
     (aba === 'rascunho' ? ['rascunho', 'revisado'].includes(d.status) : d.status === aba)
+    && (!soAv || !!d.alta_vigilancia)
     && d.principio_ativo.toLowerCase().includes(filtro.trim().toLowerCase()))
   const sel = (lista.data ?? []).find((d) => d.id === selecionada) ?? null
 
   return (
     <>
-      <TituloPagina icone={FlaskConical} titulo="Diluição padrão"
-        descricao="Você revisa e publica. Publicada não se edita: mudar é nova versão, e a anterior fica no histórico." />
+      {embutido ? (
+        <p className="mb-3 text-apoio text-pretty text-tinta-sussurro">
+          Você revisa e publica. Publicada não se edita: mudar é nova versão, e a anterior fica no histórico. O ajuste da unidade vale só para ela.
+        </p>
+      ) : (
+        <TituloPagina icone={FlaskConical} titulo="Diluição padrão"
+          descricao="Você revisa e publica. Publicada não se edita: mudar é nova versão, e a anterior fica no histórico." />
+      )}
       {erro && <p className="mb-3 rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</p>}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <Card>
@@ -78,7 +88,10 @@ export default function Diluicoes() {
                 </Button>
               ))}
             </div>
-            <Input className="mt-2" placeholder="Filtrar por princípio ativo" value={filtro} onChange={(e) => setFiltro(e.target.value)} />
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Input className="h-8 flex-1" placeholder="Filtrar por princípio ativo" value={filtro} onChange={(e) => setFiltro(e.target.value)} />
+              <Button size="xs" variant={soAv ? 'default' : 'outline'} aria-pressed={soAv} onClick={() => setSoAv(!soAv)}>Só alta vigilância</Button>
+            </div>
           </CardHeader>
           <CardContent className="flex max-h-[70vh] flex-col overflow-y-auto text-sm">
             {visiveis.map((d) => (
@@ -86,6 +99,8 @@ export default function Diluicoes() {
                 className={`flex items-center gap-2 border-b border-fio px-2 py-1.5 text-left last:border-0 hover:bg-trilha ${selecionada === d.id ? 'bg-trilha' : ''}`}>
                 <span className="flex-1"><span className="font-medium">{d.principio_ativo}</span> <span className="text-tinta-apoio">· {d.via} · {d.apresentacao}</span></span>
                 <span className="text-xs text-tinta-sussurro">v{d.versao}</span>
+                {d.alta_vigilancia && <Badge variant="warning">AV</Badge>}
+                {d.unidade_id && <Badge variant="info">unidade</Badge>}
                 {!d.medicamento_id && <Badge variant="outline">sem cadastro</Badge>}
               </button>
             ))}
@@ -107,7 +122,7 @@ function NovaDiluicao({ aoCriar, aoErro }: { aoCriar: (id: string) => void; aoEr
   const r = useQuery({
     queryKey: ['med-farmacia', busca],
     enabled: busca.trim().length >= 3 && !med,
-    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').ilike('principio_ativo', `%${busca.trim()}%`).limit(15)).data ?? [],
+    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).limit(15)).data ?? [],
   })
   return (
     <Card>
@@ -149,7 +164,8 @@ const CAMPOS: [keyof Diluicao, string, 'texto' | 'numero' | 'lista' | 'bool'][] 
   ['tempo_infusao_min', 'Tempo de infusão (min)', 'numero'], ['velocidade_max', 'Velocidade máxima', 'texto'],
   ['bolus_permitido', 'Bolus permitido', 'bool'], ['estabilidade_ta_h', 'Estabilidade em TA (h)', 'numero'],
   ['estabilidade_refrig_h', 'Estabilidade refrigerado (h)', 'numero'], ['fotossensivel', 'Fotossensível', 'bool'],
-  ['acesso', 'Acesso (periférico/central)', 'texto'], ['observacoes', 'Observações', 'texto'], ['fonte', 'Fonte', 'texto'],
+  ['acesso', 'Acesso (periférico/central)', 'texto'],
+  ['risco_flebite', 'Risco de flebite (conforme a fonte)', 'bool'], ['alta_vigilancia', 'Alta vigilância (conforme a fonte)', 'bool'], ['observacoes', 'Observações', 'texto'], ['fonte', 'Fonte', 'texto'],
   ['revisor_crf', 'Revisor (CRF)', 'texto'],
 ]
 
@@ -191,6 +207,7 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-2 text-sm">
+        {d.unidade_id && <p className="text-acao">Ajuste da unidade: publicado, vale só para esta unidade e substitui nela o modelo da rede.</p>}
         {!d.medicamento_id && <p className="text-atencao">Esta diluição não está ligada ao cadastro de medicamentos: não pode ser publicada até ser ligada.</p>}
         <div className="grid gap-2 sm:grid-cols-2">
           {CAMPOS.map(([k, r, t]) => (

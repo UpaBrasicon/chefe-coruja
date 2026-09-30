@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Loader2, LogIn, LogOut, MapPin, Navigation } from 'lucide-react'
+import { Loader2, LogOut, MapPin, Navigation } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
-import { Textarea } from '@/components/ui/textarea'
+import { FormularioCheckin } from '@/components/checkin/FormularioCheckin'
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 import { AvisoRascunhosCheckout } from '@/components/documento/AvisoRascunhosCheckout'
 
@@ -44,10 +44,9 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
 
-  const [obs, setObs] = React.useState('')
   const [pos, setPos] = React.useState<{ lat: number; lng: number } | null>(null)
   const [geoMsg, setGeoMsg] = React.useState<string | null>(null)
-  const [processando, setProcessando] = React.useState<'in' | 'out' | null>(null)
+  const [processando, setProcessando] = React.useState<'out' | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
   const [sucesso, setSucesso] = React.useState<string | null>(null)
 
@@ -90,12 +89,6 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
     [presencas],
   )
 
-  // Fora do raio: 1ª recusa pede nova tentativa; da 2ª em diante pergunta se
-  // o GPS está com problema e aceita justificativa (decisão de 26/09/2026).
-  const [recusas, setRecusas] = React.useState(0)
-  const [recusa, setRecusa] = React.useState<string | null>(null)
-  const [justificativa, setJustificativa] = React.useState('')
-
   async function localizar() {
     setGeoMsg(null)
     setErro(null)
@@ -105,53 +98,6 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
       setGeoMsg(`Localização capturada: ${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`)
     } catch (e) {
       setErro((e as Error).message)
-    }
-  }
-
-  async function checkin(comJustificativa = false) {
-    if (!unidadeId) return
-    setProcessando('in')
-    setErro(null)
-    setSucesso(null)
-    try {
-      // Sempre uma leitura nova de GPS: a tentativa seguinte precisa medir de novo.
-      let lat: number | null = null
-      let lng: number | null = null
-      try {
-        const p = await obterPosicao()
-        lat = p.lat
-        lng = p.lng
-        setPos(p)
-      } catch {
-        // Sem localização vai vazio — nunca (0, 0), que o servidor leria como
-        // uma posição real no meio do oceano.
-      }
-      const { error } = await supabase.rpc('registrar_checkin', {
-        p_unidade: unidadeId,
-        p_lat: lat ?? undefined,
-        p_lng: lng ?? undefined,
-        p_observacao: obs || undefined,
-        p_justificativa: comJustificativa ? justificativa.trim() : undefined,
-      })
-      if (error) {
-        const m = error.message
-        if (m.startsWith('CHECKIN_FORA_DO_RAIO') || m.startsWith('CHECKIN_SEM_LOCALIZACAO')) {
-          setRecusas((n) => n + 1)
-          setRecusa(m.replace(/^CHECKIN_[A-Z_]+:\s*/, ''))
-          return
-        }
-        throw new Error(m.replace(/^CHECKIN_[A-Z_]+:\s*/, ''))
-      }
-      setSucesso(comJustificativa ? 'Check-in registrado com a justificativa. O gestor verá o motivo.' : 'Check-in realizado com sucesso.')
-      setObs('')
-      setRecusa(null)
-      setRecusas(0)
-      setJustificativa('')
-      void refetch()
-    } catch (e) {
-      setErro((e as Error).message)
-    } finally {
-      setProcessando(null)
     }
   }
 
@@ -257,52 +203,14 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
-              <Textarea
-                placeholder="Observação (opcional)"
-                value={obs}
-                onChange={(e) => setObs(e.target.value)}
-                className="min-h-[70px]"
-              />
-              {recusa && recusas < 2 && (
-                <div role="alert" className="rounded-controle bg-atencao/[0.08] p-3 text-apoio text-atencao">
-                  <p className="font-medium">Check-in não registrado: {recusa}</p>
-                  <p className="mt-0.5 text-tinta-apoio">Confira se você já está na unidade e tente de novo, de preferência perto de uma janela ou em área aberta.</p>
-                </div>
-              )}
-              {recusa && recusas >= 2 ? (
-                <div className="flex flex-col gap-2 rounded-controle border border-fio bg-campo p-3">
-                  <p className="text-apoio font-medium text-tinta">O GPS está com problema?</p>
-                  <p className="text-apoio text-tinta-sussurro">
-                    Duas tentativas deram “{recusa}”. Se você está na unidade e o GPS está errado, registre o check-in com uma justificativa. Ela fica visível para o gestor.
-                  </p>
-                  <Textarea
-                    placeholder="Ex.: o GPS do celular está marcando outro bairro"
-                    value={justificativa}
-                    onChange={(e) => setJustificativa(e.target.value)}
-                    className="min-h-[70px]"
-                    aria-label="Justificativa do check-in"
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    <Button onClick={() => checkin(true)} disabled={processando !== null || justificativa.trim().length < 10}>
-                      {processando === 'in' ? <Loader2 className="animate-spin" /> : <LogIn />} Registrar com justificativa
-                    </Button>
-                    <Button variant="outline" onClick={() => checkin(false)} disabled={processando !== null}>
-                      Tentar de novo
-                    </Button>
-                  </div>
-                  {justificativa.trim().length > 0 && justificativa.trim().length < 10 && (
-                    <p className="text-rotulo text-tinta-sussurro">Escreva pelo menos 10 caracteres.</p>
-                  )}
-                </div>
-              ) : (
-                <div>
-                  <Button onClick={() => checkin(false)} disabled={processando !== null}>
-                    {processando === 'in' ? <Loader2 className="animate-spin" /> : <LogIn />} {recusa ? 'Tentar de novo' : 'Check-in agora'}
-                  </Button>
-                </div>
-              )}
-            </div>
+            <FormularioCheckin
+              unidadeId={unidadeId}
+              onFeito={(m) => {
+                setErro(null)
+                setSucesso(m)
+                void refetch()
+              }}
+            />
           )}
         </CardContent>
       </Card>

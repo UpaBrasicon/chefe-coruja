@@ -292,7 +292,7 @@ export default function Escala({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('solicitacoes_escala')
-        .select('*, escala_plantao(setor_id, data, turno), solicitante!solicitacoes_escala_perfil_id_fkey(nome_completo), destino!solicitacoes_escala_destino_perfil_id_fkey(nome_completo)')
+        .select('*, escala_plantao(setor_id, data, turno), solicitante:perfis!solicitacoes_escala_perfil_id_fkey(nome_completo), destino:perfis!solicitacoes_escala_destino_perfil_id_fkey(nome_completo)')
         .eq('unidade_id', unidadeId!)
         .order('created_at', { ascending: false })
         .limit(100)
@@ -316,6 +316,24 @@ export default function Escala({
       return (data ?? []) as unknown as (CandidaturaEscala & { setores: { nome: string } | null; perfis: { id: string; nome_completo: string; crm: string | null } | null })[]
     },
   })
+
+  // Partes de plantão fracionado (vagas com janela, migration 20261012000001):
+  // a candidatura aponta a vaga; aqui mostramos a parte e o horário dela.
+  const { data: vagasAbertas } = useQuery({
+    queryKey: ['vagas'],
+    enabled: !!unidadeId && (candidaturas ?? []).some((c) => c.vaga_id),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('vagas_abertas')
+      if (error) throw error
+      return data ?? []
+    },
+  })
+  const janelaDaVaga = (vagaId: string | null) => {
+    const v = vagaId ? (vagasAbertas ?? []).find((x) => x.id === vagaId) : undefined
+    if (!v?.parte) return ''
+    const h = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
+    return ` · parte ${v.parte} de ${v.partes}, ${h(v.inicio)}–${h(v.fim)}`
+  }
 
   const candidatar = useMutation({
     mutationFn: async (cel: { setor_id: string; data: string; turno: string }) => {
@@ -342,6 +360,7 @@ export default function Escala({
     onSuccess: () => {
       invalidar()
       void queryClient.invalidateQueries({ queryKey: ['candidaturas-escala'] })
+      void queryClient.invalidateQueries({ queryKey: ['vagas'] })
     },
   })
 
@@ -746,7 +765,8 @@ export default function Escala({
       })
       if (error) throw error
       invalidar()
-      setMensagem(data ? `Plantão fracionado em ${data} partes. As partes estão disponíveis como vagas.` : 'Plantão fracionado.')
+      setMensagem(data ? `Plantão fracionado em ${data} partes. A 1ª continua com você; as outras viraram vagas em Vagas.` : 'Plantão fracionado.')
+      void queryClient.invalidateQueries({ queryKey: ['vagas'] })
       setAcao(null)
     } catch (e) {
       setErroAcao(e instanceof Error ? e.message : 'Erro ao fracionar o plantão.')
@@ -1052,8 +1072,9 @@ export default function Escala({
                         </Select>
                       </div>
                       <p className="mt-2 text-xs text-tinta-sussurro">
-                        O plantão será transformado em partes independentes (vagas) para facilitar a
-                        negociação parcial. Cada parte pode ser candidatada por outros plantonistas.
+                        O horário do plantão é dividido em partes iguais (12 h em 2 = duas de 6 h). A 1ª
+                        parte continua com você; as outras viram vagas, e outros plantonistas se candidatam
+                        em Vagas. O gestor aprova quem assume cada parte.
                       </p>
                       {erroAcao && <p className="mt-2 text-sm text-critico">{erroAcao}</p>}
                       {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
@@ -1458,7 +1479,7 @@ export default function Escala({
                           <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-2 text-sm">
                             <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
                             <span className="text-xs text-tinta-sussurro">
-                              {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}
+                              {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}
                             </span>
                             <Badge
                               variant={
@@ -1549,7 +1570,7 @@ export default function Escala({
                         <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-2 text-sm">
                           <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
                           <span className="text-xs text-tinta-sussurro">
-                            {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}
+                            {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}
                           </span>
                           <Badge
                             variant={
@@ -1651,7 +1672,7 @@ export default function Escala({
                               <span className="font-medium">{c.perfis?.nome_completo ?? 'Plantonista'}</span>
                               <Badge variant="outline">{c.setores?.nome ?? 'Setor'}</Badge>
                               <span className="text-xs text-tinta-sussurro">
-                                {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}
+                                {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}
                               </span>
                               <span className="ml-auto flex gap-1.5">
                                 <Button size="xs" onClick={() => aprovarCandidatura.mutate(c.id)} disabled={aprovarCandidatura.isPending}>

@@ -77,6 +77,11 @@ INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno,
   (pg_temp.id('uni_a'), pg_temp.id('setor_a1'), pg_temp.id('plant_a'),  private.data_atual(), private.turno_atual(), now() - interval '1 hour', 360),
   (pg_temp.id('uni_b'), pg_temp.id('setor_b1'), pg_temp.id('estranho'), private.data_atual(), private.turno_atual(), now() - interval '1 hour', 360);
 ALTER TABLE public.escala_plantao ENABLE TRIGGER trg_escala_janela;
+-- check-in dos plantões em curso: sem ele, passada a tolerância, a escala não abre a porta (20261014000001)
+INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em)
+SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.escala_plantao e
+ WHERE e.ativo AND e.perfil_id IS NOT NULL AND e.inicio <= now() AND now() < e.inicio + make_interval(mins => e.duracao_min)
+ON CONFLICT DO NOTHING;
 
 INSERT INTO public.pacientes (id, unidade_id, nome, setor_id) VALUES
   (pg_temp.id('pac_a'),     pg_temp.id('uni_a'), 'Paciente A1', pg_temp.id('setor_a1')),

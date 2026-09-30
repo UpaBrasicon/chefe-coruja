@@ -15,7 +15,7 @@ export function ChatFab({ naoLidas, onAbrir }: { naoLidas: number; onAbrir: () =
       aria-label="Mensagens"
       aria-describedby={naoLidas > 0 ? 'cc-chat-fab-selo' : undefined}
       title="Mensagens"
-      className="fixed right-6 bottom-6 z-[38] grid size-[52px] cursor-pointer place-items-center rounded-capsula border-0 bg-acao text-white shadow-fab transition-[background-color,transform] duration-150 ease-out outline-none hover:bg-[#0B5F59] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-acao active:scale-[0.96] motion-reduce:transition-none max-[767px]:right-4 max-[767px]:bottom-[calc(74px+env(safe-area-inset-bottom,0px))]"
+      className="fixed right-6 bottom-6 z-[38] grid size-[52px] cursor-pointer place-items-center rounded-capsula border-0 bg-acao text-white shadow-fab transition-[background-color,transform] duration-150 ease-out hover:bg-[#0B5F59] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-acao active:scale-[0.96] motion-reduce:transition-none max-[767px]:right-4 max-[767px]:bottom-[calc(74px+env(safe-area-inset-bottom,0px))]"
     >
       <MessageSquare className="size-[22px]" aria-hidden />
       {naoLidas > 0 && (

@@ -5,6 +5,8 @@ import { FolderSearch } from 'lucide-react'
 import { acharSecao, CHAVES_FERRAMENTAS, type ToolDef } from '@/content/registry'
 import { GRUPOS_SECAO, idGrupo } from '@/content/gruposSecoes'
 import { chaveFerramenta, useFavoritos } from '@/lib/useFavoritos'
+import { publicoDaFerramenta, valeEmAdulto, valeEmCrianca } from '@/content/publicoFerramentas'
+import { usePacienteCentral } from '@/lib/pacienteCentral'
 import { ToolCard } from '@/components/plantonista/cards'
 import { TituloPagina, Trilha, Vazio } from '@/components/monitor/Pagina'
 import { Input } from '@/components/ui/input'
@@ -16,6 +18,7 @@ export default function SectionHome() {
   const secao = acharSecao(section ?? '')
   const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   const [filtro, setFiltro] = useState('')
+  const { modo } = usePacienteCentral()
 
   // Seções grandes vêm em grupos por especialidade; as demais, em lista única.
   const grupos = useMemo(() => {
@@ -36,9 +39,17 @@ export default function SectionHome() {
   }
 
   const agrupada = !!GRUPOS_SECAO[secao.slug]
+  // No modo do paciente, cada cartão diz se a ferramenta calcula para ele.
+  const aviso = (tool: ToolDef) => {
+    const p = publicoDaFerramenta(secao.slug, tool.slug, tool.publico)
+    if (modo === 'pediatrico' && !valeEmCrianca(p)) return 'Sem referência pediátrica'
+    if (modo === 'adulto' && !valeEmAdulto(p)) return 'Só pediátrica'
+    return undefined
+  }
   const cartao = (tool: ToolDef) => (
     <ToolCard
       key={tool.slug}
+      badge={aviso(tool)}
       to={`/plantonista/${secao.slug}/${tool.slug}`}
       label={tool.label}
       description={tool.description}
