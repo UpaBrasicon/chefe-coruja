@@ -6285,6 +6285,7 @@ export type Database = {
         Row: {
           entregue_em: string
           entregue_por: string
+          data: string | null
           id: string
           leitos: Json
           pendencias: Json
@@ -6293,9 +6294,11 @@ export type Database = {
           recebida_por: string | null
           setor_id: string
           texto: string
+          turno: string | null
           unidade_id: string
         }
         Insert: {
+          data?: string | null
           entregue_em?: string
           entregue_por: string
           id?: string
@@ -6306,9 +6309,11 @@ export type Database = {
           recebida_por?: string | null
           setor_id: string
           texto?: string
+          turno?: string | null
           unidade_id: string
         }
         Update: {
+          data?: string | null
           entregue_em?: string
           entregue_por?: string
           id?: string
@@ -6319,6 +6324,7 @@ export type Database = {
           recebida_por?: string | null
           setor_id?: string
           texto?: string
+          turno?: string | null
           unidade_id?: string
         }
         Relationships: [
@@ -9468,6 +9474,10 @@ export type Database = {
       }
       folha_documento: {
         Args: { p_documento: string; p_tipo_impressao?: string }
+        Returns: Json
+      }
+      folha_notificaveis: {
+        Args: { p_ate?: string; p_cids?: string[]; p_de?: string; p_unidade: string }
         Returns: Json
       }
       folha_relatorio: {

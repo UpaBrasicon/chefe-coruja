@@ -1,4 +1,4 @@
-// Rascunho dos documentos do leito (admissão, pedido de exames, AIH), por
+// Rascunho dos documentos do leito (pedido de exames, peso e dieta), por
 // paciente: as abas do formulário de internação (pages/plantao/internacao)
 // são reaproveitadas no caderno, e cada leito tem o seu rascunho — o do
 // formulário é um só por médico. Mesmo mecanismo (localStorage com prazo de
@@ -7,15 +7,14 @@ import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
-import { RASCUNHO_INICIAL, type Aih, type DadosPaciente, type Evolucao, type Exames } from '@/pages/plantao/internacao/rascunho'
+import { RASCUNHO_INICIAL, type DadosPaciente, type Evolucao, type Exames } from '@/pages/plantao/internacao/rascunho'
 import { carregarEnvelope, hojeLocal, idadeTexto, useRascunho } from '@/pages/plantao/shared/rascunho'
 
-export type RascunhoLeito = { evolucao: Evolucao; exames: Exames; aih: Aih; peso: string; dieta: string }
+export type RascunhoLeito = { evolucao: Evolucao; exames: Exames; peso: string; dieta: string }
 
 const INICIAL: RascunhoLeito = {
   evolucao: { tipo: 'admissao', texto: '' },
   exames: RASCUNHO_INICIAL.exames,
-  aih: RASCUNHO_INICIAL.aih,
   peso: '',
   dieta: 'Dieta livre',
 }
@@ -27,7 +26,6 @@ function carregar(chave: string): RascunhoLeito {
   return {
     evolucao: { ...INICIAL.evolucao, ...(d.evolucao ?? {}) },
     exames: { ...INICIAL.exames, ...(d.exames ?? {}) },
-    aih: { ...INICIAL.aih, ...(d.aih ?? {}) },
     peso: d.peso ?? '',
     dieta: d.dieta ?? INICIAL.dieta,
   }

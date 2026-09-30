@@ -11,13 +11,14 @@
 // e cancelar pede justificativa. Toda regra é do servidor
 // (20261004000004_termo_consentimento.sql).
 //
-// ONDA 6: imprimir a folha do TCLE (montada no servidor, como os outros
-// documentos — lib/prontuario › abrirImpressao) e assinatura digital do médico
-// e do paciente/responsável. Os pontos estão marcados abaixo.
+// A folha do TCLE sai montada no servidor (lib/prontuario › imprimirDocumento),
+// ao gerar e em cada termo da lista. A assinatura digital do médico e do
+// paciente/responsável espera a etapa 4.8 (ICP-Brasil).
 // ─────────────────────────────────────────────────────────────────────────────
-import { ChevronDown, ChevronUp, FilePen, FileX, ShieldCheck } from 'lucide-react'
+import { ChevronDown, ChevronUp, FilePen, FileX, Printer, ShieldCheck } from 'lucide-react'
 import * as React from 'react'
 
+import { imprimirDocumento } from '@/lib/prontuario'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -112,6 +113,8 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
   const [f, setF] = React.useState<Formulario>(VAZIO)
   const [erro, setErro] = React.useState<string | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
+  // o termo recém-gerado: o aviso oferece imprimir a folha para as assinaturas
+  const [gerado, setGerado] = React.useState<string | null>(null)
   const [aCancelar, setACancelar] = React.useState<TermoRegistrado | null>(null)
   const [motivoCancelar, setMotivoCancelar] = React.useState('')
   const [erroCancelar, setErroCancelar] = React.useState<string | null>(null)
@@ -190,6 +193,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
     })
     setErro(null)
     setAviso(null)
+    setGerado(null)
     topo.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
@@ -197,6 +201,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
     if (faltas.length > 0 || emitir.isPending) return
     setErro(null)
     setAviso(null)
+    setGerado(null)
     const dados: DadosTermo = {
       modelo_id: f.modeloId,
       procedimento: f.procedimento.trim(),
@@ -216,7 +221,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
         ? `Termo retificado: versão ${r.versao}, nº ${r.numero}. A versão anterior continua no prontuário.`
         : `Termo gerado no prontuário, nº ${r.numero}.`)
       setF(VAZIO)
-      // ONDA 6: oferecer "Imprimir" aqui (folha do TCLE para as assinaturas).
+      setGerado(r.id)
     } catch (e) {
       setErro(mensagemErro(e))
     }
@@ -229,6 +234,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
       await cancelar.mutateAsync({ documentoId: aCancelar.id, motivo: motivoCancelar })
       if (f.retifica?.raiz_id === aCancelar.raiz_id) setF(VAZIO)
       setAviso(`Termo nº ${aCancelar.numero ?? ''} cancelado. Ele continua no prontuário, marcado como cancelado.`)
+      setGerado(null)
       setACancelar(null)
       setMotivoCancelar('')
     } catch (e) {
@@ -351,7 +357,16 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
             </div>
           </>
         )}
-        {aviso && <p role="status" className="rounded-controle bg-alerta-conforme px-3 py-2 text-apoio text-conforme">{aviso}</p>}
+        {aviso && (
+          <div role="status" className="flex flex-wrap items-center gap-2 rounded-controle bg-alerta-conforme px-3 py-2 text-apoio text-conforme">
+            <span className="flex-[1_1_220px]">{aviso}</span>
+            {gerado && (
+              <Button variant="outline" size="xs" onClick={() => void imprimirDocumento(gerado, 'Termo de consentimento')}>
+                <Printer /> Imprimir para as assinaturas
+              </Button>
+            )}
+          </div>
+        )}
       </section>
 
       <section className="flex flex-col gap-2">
@@ -436,7 +451,11 @@ function ItemTermo({ t, painel, emEdicao, onRetificar, onCancelar }: {
           {aberto ? <ChevronUp /> : <ChevronDown />}
           {aberto ? 'Fechar' : 'Ver termo'}
         </Button>
-        {/* ONDA 6: botão "Imprimir" (folha do TCLE registrada, como os outros documentos) e assinatura digital. */}
+        {/* folha do TCLE, montada no servidor; cancelado sai marcado CANCELADO. Assinatura digital: etapa 4.8. */}
+        <Button variant="outline" size="xs" onClick={() => void imprimirDocumento(t.id, 'Termo de consentimento')}>
+          <Printer />
+          Imprimir
+        </Button>
         {podeRetificar && (
           <Button variant="outline" size="xs" onClick={onRetificar} disabled={emEdicao}>
             <FilePen />

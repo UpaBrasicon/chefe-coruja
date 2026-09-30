@@ -1,4 +1,5 @@
 import { lazy, type ComponentType } from 'react'
+import { Navigate } from 'react-router-dom'
 import { Activity, DoorOpen, Eye, Hospital, MapPin, type LucideIcon } from 'lucide-react'
 
 /**
@@ -38,6 +39,13 @@ function sobDemanda(
   return lazy(async () => ({
     default: (await importar())[nome] as ComponentType<PropsFerramentaPlantao>,
   }))
+}
+
+/** Ferramenta que é uma tela com rota própria: o cartão só leva até ela. */
+function irPara(to: string): ComponentType<PropsFerramentaPlantao> {
+  return function Ir() {
+    return <Navigate to={to} replace />
+  }
 }
 
 const f = (
@@ -111,6 +119,20 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
         'Formulário de Internação',
         'Prescrição, evolução/admissão, exames, internação e exportação em PDF.',
         sobDemanda(() => import('@/pages/plantao/secoes/FormularioInternacao'), 'FormularioInternacao')
+      ),
+      // protótipo PLANTAO_SECOES: as duas telas do PEP moram na Internação;
+      // aqui são rotas próprias, e o cartão leva a elas
+      f(
+        'pendencias',
+        'Pendências e alertas',
+        'Rascunhos a emitir, impeditivas de alta e combinados nos leitos.',
+        irPara('/pendencias-pep')
+      ),
+      f(
+        'impressao-prontuario',
+        'Impressão de prontuário',
+        'Selecionar documentos, anexos e declaração de recebimento.',
+        irPara('/impressao-prontuario')
       ),
     ],
   },

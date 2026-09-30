@@ -176,5 +176,13 @@ BEGIN
   EXCEPTION WHEN insufficient_privilege THEN NULL;
   END;
   RAISE NOTICE 'OK  a passagem não se apaga (guarda de 20 anos)';
+  -- o gestor tira o plantão da escala: a passagem fica, com turno e data
+  DELETE FROM public.escala_plantao WHERE perfil_id = '10000000-0000-4000-8000-000000000004'
+     AND setor_id = '22000000-0000-4000-8000-000000000001';
+  IF NOT EXISTS (SELECT 1 FROM public.passagens_enfermagem WHERE id = pg_temp.u('pass')
+                   AND plantao_id IS NULL AND turno = 'manha' AND data = private.data_atual() AND recebida_em IS NOT NULL) THEN
+    RAISE EXCEPTION 'FALHOU: plantão apagado da escala deixa a passagem com turno e data';
+  END IF;
+  RAISE NOTICE 'OK  apagar o plantão da escala não trava nem apaga a passagem (turno e data ficam nela)';
 END $$;
 ROLLBACK;

@@ -99,7 +99,7 @@ export default function PendenciasPep() {
 
   return (
     <div className="flex w-full max-w-4xl flex-col gap-4">
-      <Trilha niveis={[{ rotulo: 'Plantão', to: '/plantao' }, { rotulo: 'Pendências do PEP' }]} />
+      <Trilha niveis={[{ rotulo: 'Plantão', to: '/plantao' }, { rotulo: 'Internação', to: '/plantao/internacao' }, { rotulo: 'Pendências do PEP' }]} />
       <TituloPagina icone={ClipboardList} titulo="Pendências do PEP"
         descricao="Seus documentos ainda sem emissão, o que impede a alta nos seus leitos e o que ficou combinado." />
 

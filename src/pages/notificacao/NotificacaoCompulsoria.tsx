@@ -10,10 +10,11 @@
 // A mesma RPC (notificacao_compulsoria_periodo) alimenta a folha 08.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ClipboardList, FolderOpen, HardHat, Shield, ShieldAlert, X } from 'lucide-react'
+import { ClipboardList, FolderOpen, HardHat, Printer, Shield, ShieldAlert, X } from 'lucide-react'
 import * as React from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
+import { imprimirNotificaveis } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -139,6 +140,12 @@ export default function NotificacaoCompulsoria() {
         <span className="text-apoio text-tinta-sussurro">
           {todos.length} {todos.length === 1 ? 'caso' : 'casos'} · {nPend} sem notificação registrada{nImed ? ` · ${nImed} de notificação imediata` : ''}
         </span>
+        {/* folha 08: o período e os CIDs do filtro, todos os casos (paisagem) */}
+        {unidadeId && todos.length > 0 && (
+          <Button variant="outline" size="sm" onClick={() => void imprimirNotificaveis({ unidadeId, de, ate, cids })}>
+            <Printer /> Imprimir lista
+          </Button>
+        )}
       </div>
 
       {erro && <p role="alert" className="mb-3 rounded-controle border border-critico/30 bg-critico/[0.06] p-3 text-apoio text-critico">{erro}</p>}

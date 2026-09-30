@@ -12,7 +12,9 @@ import { useEscalaSetores } from './shared/useEscalaSetores'
 import { PrescricaoTab } from './internacao/PrescricaoTab'
 import { EvolucaoTab } from './internacao/EvolucaoTab'
 import { ExamesTab } from './internacao/ExamesTab'
-import { InternacaoTab } from './internacao/InternacaoTab'
+import { FichaAdmissao } from './internacao/FichaAdmissao'
+import { LaudoAih } from './internacao/LaudoAih'
+import { AbaEvolucao } from '@/components/evolucao/AbaEvolucao'
 import { ExportarTab } from './internacao/ExportarTab'
 import { useRascunho } from './internacao/rascunho'
 import { useInternacaoAtiva } from '@/hooks/useDocumentos'
@@ -137,7 +139,8 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
       <Tabs defaultValue="prescricao">
         <TabsList variant="line" className="w-full">
           <TabsTrigger value="prescricao">💊 Prescrição</TabsTrigger>
-          <TabsTrigger value="evolucao">📝 Evolução/Admissão</TabsTrigger>
+          <TabsTrigger value="admissao">📋 Admissão</TabsTrigger>
+          <TabsTrigger value="evolucao">📝 Evolução</TabsTrigger>
           <TabsTrigger value="exames">🩸 Pedidos de Exames</TabsTrigger>
           <TabsTrigger value="internacao">🏥 Internação</TabsTrigger>
           <TabsTrigger value="exportar">📥 Exportar PDF</TabsTrigger>
@@ -147,7 +150,20 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
           <PrescricaoTab dados={dados.paciente} pacienteId={dados.paciente.paciente_id} />
         </TabsContent>
 
+        <TabsContent value="admissao">
+          <FichaAdmissao
+            pacienteId={dados.paciente.paciente_id}
+            internacaoId={internacaoAtiva?.id ?? null}
+            leito={dados.paciente.leito}
+            onEscolherPaciente={(id) => atualizar({ paciente: { ...dados.paciente, paciente_id: id } })}
+          />
+        </TabsContent>
+
         <TabsContent value="evolucao">
+          {/* com a internação aberta, a evolução é a estruturada; a admissão tem aba própria */}
+          {internacaoAtiva && dados.paciente.paciente_id ? (
+            <AbaEvolucao pacienteId={dados.paciente.paciente_id} internacaoId={internacaoAtiva.id} />
+          ) : (
           <EvolucaoTab
             dados={dados.paciente}
             evolucao={dados.evolucao}
@@ -156,6 +172,7 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
             unidadeId={unidadeId}
             internacaoId={internacaoAtiva?.id ?? null}
           />
+          )}
         </TabsContent>
 
         <TabsContent value="exames">
@@ -167,12 +184,11 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
         </TabsContent>
 
         <TabsContent value="internacao">
-          <InternacaoTab
-            dados={dados.paciente}
-            aih={dados.aih}
-            evolucao={dados.evolucao}
-            exames={dados.exames}
-            onChange={(p) => atualizar({ aih: { ...dados.aih, ...p } })}
+          <LaudoAih
+            pacienteId={dados.paciente.paciente_id}
+            internacaoId={internacaoAtiva?.id ?? null}
+            leito={dados.paciente.leito}
+            onEscolherPaciente={(id) => atualizar({ paciente: { ...dados.paciente, paciente_id: id } })}
           />
         </TabsContent>
 
@@ -182,7 +198,6 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
             prescricao={dados.prescricao}
             evolucao={dados.evolucao}
             exames={dados.exames}
-            aih={dados.aih}
           />
         </TabsContent>
       </Tabs>

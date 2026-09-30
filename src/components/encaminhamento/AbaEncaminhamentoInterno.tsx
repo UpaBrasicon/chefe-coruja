@@ -8,9 +8,10 @@
 // histórico fica no paciente; o "excluir" do protótipo virou cancelar com
 // motivo (nada se apaga). Toda regra é do servidor; aqui só se mostra e pede.
 // ─────────────────────────────────────────────────────────────────────────────
-import { AlertTriangle, ArrowRightLeft } from 'lucide-react'
+import { AlertTriangle, ArrowRightLeft, Printer } from 'lucide-react'
 import * as React from 'react'
 
+import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Chip } from '@/components/monitor/Pagina'
@@ -172,7 +173,13 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
             {especialidades.map((e) => <Chip key={e} ativo={filtro === e} onClick={() => setFiltro(e)}>{e}</Chip>)}
           </>
         )}
-        {/* Onda 6 (folhas): "Imprimir" (folha "Encaminhamento interno", montarEncIntHtml do protótipo) entra aqui. */}
+        {/* folha "Encaminhamento interno" (montarEncIntHtml do protótipo): os que estão na lista */}
+        {visiveis.length > 0 && (
+          <Button size="sm" variant="outline" className="ml-auto"
+            onClick={() => void imprimirRelatorio({ tipo: 'encaminhamento_interno', pacienteId, internacaoId, ids: visiveis.map((e) => e.id) })}>
+            <Printer /> Imprimir
+          </Button>
+        )}
       </div>
       {lista.isLoading && <div className="flex justify-center py-4"><Spinner /></div>}
       {lista.error && <p className="text-apoio text-critico">{msg(lista.error)}</p>}

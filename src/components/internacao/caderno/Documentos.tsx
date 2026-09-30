@@ -1,5 +1,6 @@
 // Abas de documento do caderno (Admissão, Prescrição, Exames, AIH, Atestado):
-// as mesmas abas do formulário de internação, já com o paciente do leito.
+// os mesmos documentos do formulário de internação, já com o paciente do leito
+// (fixo). Admissão e AIH no desenho do protótipo, com a identificação do cadastro.
 import { ExternalLink, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -9,12 +10,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
-import { EvolucaoTab } from '@/pages/plantao/internacao/EvolucaoTab'
 import { ExamesTab } from '@/pages/plantao/internacao/ExamesTab'
-import { InternacaoTab } from '@/pages/plantao/internacao/InternacaoTab'
+import { FichaAdmissao } from '@/pages/plantao/internacao/FichaAdmissao'
+import { LaudoAih } from '@/pages/plantao/internacao/LaudoAih'
 import { PrescricaoTab } from '@/pages/plantao/internacao/PrescricaoTab'
 import { DIETAS } from '@/pages/plantao/shared/rascunho'
-import type { Evolucao } from '@/pages/plantao/internacao/rascunho'
 
 import { Secao } from './caixas'
 import { diaHora } from './comum'
@@ -44,25 +44,17 @@ function PesoDieta({ doc }: { doc: Doc }) {
   )
 }
 
-export function AbaAdmissao({ doc, internacaoId, unidadeId }: { doc: Doc; internacaoId: string; unidadeId?: string }) {
-  return (
-    <div className="flex flex-col gap-3">
-      <PesoDieta doc={doc} />
-      <EvolucaoTab
-        dados={doc.dadosPaciente}
-        evolucao={doc.dados.evolucao}
-        onChange={(p: Partial<Evolucao>) => doc.atualizar({ evolucao: { ...doc.dados.evolucao, ...p } })}
-        pacienteId={doc.dadosPaciente.paciente_id}
-        unidadeId={unidadeId}
-        internacaoId={internacaoId}
-        apenasAdmissao
-      />
-    </div>
-  )
+export function AbaAdmissao({ doc, internacaoId }: { doc: Doc; internacaoId: string; unidadeId?: string }) {
+  return <FichaAdmissao pacienteId={doc.dadosPaciente.paciente_id} internacaoId={internacaoId} leito={doc.dadosPaciente.leito} fixo />
 }
 
 export function AbaPrescricao({ doc }: { doc: Doc }) {
-  return <PrescricaoTab dados={doc.dadosPaciente} pacienteId={doc.dadosPaciente.paciente_id} />
+  return (
+    <div className="flex flex-col gap-3">
+      <PesoDieta doc={doc} />
+      <PrescricaoTab dados={doc.dadosPaciente} pacienteId={doc.dadosPaciente.paciente_id} />
+    </div>
+  )
 }
 
 export function AbaExames({ doc, pacienteId, medico }: { doc: Doc; pacienteId: string; medico: boolean }) {
@@ -78,19 +70,8 @@ export function AbaExames({ doc, pacienteId, medico }: { doc: Doc; pacienteId: s
   )
 }
 
-export function AbaAih({ doc }: { doc: Doc }) {
-  return (
-    <div className="flex flex-col gap-3">
-      <PesoDieta doc={doc} />
-      <InternacaoTab
-        dados={doc.dadosPaciente}
-        aih={doc.dados.aih}
-        evolucao={doc.dados.evolucao}
-        exames={doc.dados.exames}
-        onChange={(p) => doc.atualizar({ aih: { ...doc.dados.aih, ...p } })}
-      />
-    </div>
-  )
+export function AbaAih({ doc, internacaoId }: { doc: Doc; internacaoId?: string }) {
+  return <LaudoAih pacienteId={doc.dadosPaciente.paciente_id} internacaoId={internacaoId} leito={doc.dadosPaciente.leito} fixo />
 }
 
 /** Atestado: os emitidos para o paciente e o emissor da porta, já com ele. */

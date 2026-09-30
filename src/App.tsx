@@ -65,6 +65,8 @@ const SectionHome = lazy(() => import('@/pages/plantonista/SectionHome'))
 const ToolRouter = lazy(() => import('@/pages/plantonista/ToolRouter').then((m) => ({ default: m.ToolRouter })))
 const PreferenciasPrescricao = lazy(() => import('@/pages/PreferenciasPrescricao'))
 const NotificacaoCompulsoria = lazy(() => import('@/pages/notificacao/NotificacaoCompulsoria'))
+const PendenciasPep = lazy(() => import('@/pages/prontuario/PendenciasPep'))
+const ImpressaoProntuario = lazy(() => import('@/pages/prontuario/ImpressaoProntuario'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -189,6 +191,9 @@ export default function App() {
                       {/* Atendimento médico da porta: SOAP, reclassificação e desfecho */}
                       <Route element={<RequireRole papeis={['plantonista']} />}>
                         <Route path="/atendimento" element={<AtendimentoPorta />} />
+                        {/* PEP: rascunhos a emitir, impeditivos de alta e cópia do prontuário (onda 6) */}
+                        <Route path="/pendencias-pep" element={<PendenciasPep />} />
+                        <Route path="/impressao-prontuario" element={<ImpressaoProntuario />} />
                       </Route>
 
                       {/* Classificação de risco é do enfermeiro (CONTEXT.md) */}

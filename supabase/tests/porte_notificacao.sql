@@ -141,7 +141,27 @@ INSERT INTO t SELECT 'at', public.abrir_notificacao(pg_temp.u('pa'), '1b');
 SELECT public.resolver_agravo(pg_temp.u('at'), false, NULL, 'Acidente de trajeto, fora do escopo');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT public.registrar_desfecho(pg_temp.u('ep'), 'alta');
+-- folha 08 (20261005000007): a lista impressa, com a impressão registrada por paciente
+INSERT INTO t SELECT 'f08', public.folha_notificaveis('21000000-0000-4000-8000-000000000001', private.data_atual())::text;
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
+SELECT pg_temp.falha($$SELECT public.folha_notificaveis('21000000-0000-4000-8000-000000000001')$$,
+  'A lista de notificação compulsória é da equipe', 'recepção não imprime a folha 08');
 RESET ROLE;
+DO $$
+DECLARE f jsonb := (SELECT valor::jsonb FROM t WHERE nome = 'f08');
+BEGIN
+  IF f -> 'cabecalho' -> 'unidade' ->> 'nome' IS NULL OR f ->> 'protocolo' !~ '^IMP-'
+     OR NOT EXISTS (SELECT 1 FROM jsonb_array_elements(f -> 'dados' -> 'linhas') x
+                     WHERE x ->> 'paciente' = 'Notifica Dengue' AND x ->> 'status' LIKE 'Notificado · SINAN 1234567%')
+     OR f -> 'dados' -> 'filtro' ->> 'de' <> private.data_atual()::text THEN
+    RAISE EXCEPTION 'FALHOU: folha 08 com unidade, filtro e linhas (%)', f;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.log_acesso_prontuario WHERE paciente_id = pg_temp.u('pa') AND tipo_acesso = 'impressao'
+                   AND documento_tipo = 'Atendimentos notificáveis ' || (f ->> 'protocolo')) THEN
+    RAISE EXCEPTION 'FALHOU: impressão da folha 08 registrada no prontuário do paciente';
+  END IF;
+  RAISE NOTICE 'OK  folha 08: lista da unidade com a situação da notificação; a impressão fica no prontuário de cada paciente';
+END $$;
 DO $$ BEGIN
   IF pg_temp.u('ag') IS DISTINCT FROM pg_temp.u('ag2') THEN RAISE EXCEPTION 'FALHOU: abrir de novo devolve a mesma notificação'; END IF;
   IF (SELECT valor FROM t WHERE nome = 'n_areg') <> '1' OR (SELECT valor FROM t WHERE nome = 'n_sug2') <> '0' THEN

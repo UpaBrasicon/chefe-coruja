@@ -427,7 +427,11 @@ function atestado(d: Json, ctx: ContextoFolha): string {
   const ini = pri(dataBr(a.inicio), dataBr(ref))
   const nome = pri(pac.nome, '____________________')
   const b = (s: string) => `<b>${esc(s)}</b>`
-  const quem = `o(a) Sr.(a) ${b(nome)}${pac.cpf ? `, CPF ${b(pac.cpf)}` : ''}`
+  // artigo pelo sexo do cadastro, como o protótipo (atPartes): "a Sr.(a)" / "o Sr.(a)"
+  const fem = String(pac.sexo ?? '').trim().charAt(0).toUpperCase() === 'F'
+  const trat = fem ? 'a Sr.(a)' : 'o Sr.(a)'
+  const tratDo = fem ? 'da Sr.(a)' : 'do Sr.(a)'
+  const quem = `${trat} ${b(nome)}${pac.cpf ? `, CPF ${b(pac.cpf)}` : ''}`
   const de = pri(a.hentrada, '__:__'), ate = pri(a.hsaida, '__:__')
   const dias = Math.max(1, Number(a.dias) || 1)
   let frase: string
@@ -437,7 +441,7 @@ function atestado(d: Json, ctx: ContextoFolha): string {
       (Number(a.dias) > 0 ? ` Necessita de ${b(`${dias} (${extenso(dias)}) ${dias === 1 ? 'dia' : 'dias'}`)} de afastamento de suas atividades.` : '')
   } else if (tipo === 'acompanhante') {
     frase = `Atesto, para os devidos fins, que ${b(pri(a.acompanhante, '____________________'))} compareceu a esta unidade de saúde em ${b(ini)}, das ${b(de)} às ${b(ate)}, ` +
-      `na condição de acompanhante do(a) Sr.(a) ${b(nome)}${pac.cpf ? `, CPF ${b(pac.cpf)}` : ''}${vz(a.vinculo) ? '' : ` (${esc(a.vinculo)})`}.`
+      `na condição de acompanhante ${tratDo} ${b(nome)}${pac.cpf ? `, CPF ${b(pac.cpf)}` : ''}${vz(a.vinculo) ? '' : ` (${esc(a.vinculo)})`}.`
   } else if (tipo === 'repouso') {
     frase = `Atesto, para os devidos fins, que ${quem} necessita de ${b(`${dias} (${extenso(dias)}) ${dias === 1 ? 'dia' : 'dias'}`)} de repouso, a partir de ${b(ini)}.`
   } else {
@@ -519,7 +523,10 @@ function encaminhamento(d: Json, ctx: ContextoFolha): string {
       (vz(e.vitais) ? '' : cel(12, 'Sinais vitais', V(e.vitais), 't')) +
       cel(12, 'Tratamento realizado na origem', V(e.tratamento), 't') + cel(12, 'Exames realizados e resultados', V(e.exames), 't'))) +
     secao('4. Profissional solicitante', grade(
-      cel(5, 'Nome', V(ctx.autor?.nome)) + cel(3, 'Registro no conselho', V(ctx.autor?.registro)) + cel(4, 'Data', V(dataBr(dataRef(ctx, d)))) + branco(12, 'Assinatura e carimbo', 'ass'))) +
+      cel(4, 'Nome', V(ctx.autor?.nome)) + cel(3, 'Registro no conselho', V(ctx.autor?.registro)) +
+      // telefone do médico: do retrato gravado no documento (o banco não o manda no contexto)
+      cel(2, 'Telefone', V(pri(d?.usuario?.telefone, d?.retrato?.usuario?.telefone))) +
+      cel(3, 'Data', V(dataBr(dataRef(ctx, d)))) + branco(12, 'Assinatura e carimbo', 'ass'))) +
     `<div class="corte"><span>✂ Destaque e devolva ao paciente, orientando-o a apresentá-la na unidade de origem</span></div>` +
     secao('Contrarreferência (preenchimento pela unidade de destino)', grade(
       cel(6, 'Paciente', V(pac.nome)) + cel(3, 'Cartão SUS (CNS)', V(pac.cns)) + cel(3, 'Nascimento', V(dataBr(pac.nascimento))) +
@@ -534,20 +541,25 @@ function encaminhamento(d: Json, ctx: ContextoFolha): string {
 // ── pedido de exames ─────────────────────────────────────────────────────────
 // Porta hoje: {paciente, pedido:{texto}}; internação: {paciente, exames:{texto}}.
 // Do protótipo: pedido.{carater, cid, hipotese, indicacao, obs, itens[] |
-// grupos[{nome, itens[]}] | folhas[{titulo, grupos, nota}]} — uma folha por
-// grupo de exames (laboratório, imagem…). Só os itens marcados vão para o papel.
+// grupos[{nome, itens[]}] | folhas[{titulo, documento?, grupos, nota}]} — uma
+// folha por serviço (laboratório, imagem…). Com `cardapio` no grupo, a folha
+// imprime o cardápio inteiro do serviço com os marcados em destaque e duas
+// linhas "Outros" em branco (montarPedHtml); sem ele, só os marcados.
 
-type GrupoExames = { nome: string; itens: string[] }
+type GrupoExames = { nome: string; itens: string[]; cardapio?: string[] }
 function gruposDe(x: Json): GrupoExames[] {
-  return lista(x).map((g) => Array.isArray(g) ? { nome: String(g[0] ?? ''), itens: lista(g[1]).map(String) } : { nome: pri(g?.nome, g?.titulo), itens: lista(g?.itens).map(String) })
-    .filter((g) => g.itens.length)
+  return lista(x).map((g): GrupoExames => Array.isArray(g)
+    ? { nome: String(g[0] ?? ''), itens: lista(g[1]).map(String) }
+    : { nome: pri(g?.nome, g?.titulo), itens: lista(g?.itens).map(String), ...(Array.isArray(g?.cardapio) ? { cardapio: lista(g.cardapio).map(String) } : {}) })
+    .filter((g) => g.itens.length || g.cardapio?.length)
 }
 
 function pedidoExames(d: Json, ctx: ContextoFolha): string {
   const p = d.pedido ?? d.exames ?? {}
   const pac = pacienteDe(ctx, d)
   const linhasTexto = String(p.texto ?? '').split(/\n+/).map((l) => l.replace(/^[-*•]\s*/, '').trim()).filter(Boolean)
-  let folhas: { titulo: string; grupos: GrupoExames[]; nota?: string }[] = lista(p.folhas).map((f) => ({ titulo: pri(f.titulo), grupos: gruposDe(f.grupos), nota: pri(f.nota) }))
+  let folhas: { titulo: string; documento?: string; grupos: GrupoExames[]; nota?: string }[] =
+    lista(p.folhas).map((f) => ({ titulo: pri(f.titulo), documento: pri(f.documento), grupos: gruposDe(f.grupos), nota: pri(f.nota) }))
   if (!folhas.length) {
     const grupos = gruposDe(p.grupos)
     const soltos = lista(p.itens).map(String).concat(linhasTexto)
@@ -564,21 +576,33 @@ function pedidoExames(d: Json, ctx: ContextoFolha): string {
     cel(4, 'CID-10', `<b style="font-size:11pt">${V(String(p.cid ?? '').trim().split(/\s/)[0])}</b>`) +
     cel(12, 'Hipótese diagnóstica', V(pri(p.hipotese, pac.diagnostico))) +
     (vz(p.indicacao) ? '' : cel(12, 'Indicação clínica / justificativa', V(p.indicacao), 't')))
+  // CNS de quem pede, do retrato gravado no documento (o protótipo assina "registro · CNS")
+  const cnsMedico = pri(d?.retrato?.usuario?.cns, d?.usuario?.cns)
+  const ass: Assinante = { ...assMedico(ctx), linha: junta(' · ', registroOuBranco(ctx.autor), cnsMedico ? `CNS ${cnsMedico}` : '') }
+  const item = (x: string, on: boolean) => `<div class="it${on ? ' on' : ''}"><span class="cx">${on ? '✕' : ''}</span>${esc(x)}</div>`
   const fichas: Ficha[] = folhas.map((f) => {
     const n = f.grupos.reduce((s, g) => s + g.itens.length, 0)
-    const cardapio = n
-      ? `<div class="cardapio">${f.grupos.map((g) => `<div class="grupo">${g.nome ? `<div class="gt">${esc(g.nome)}</div>` : ''}${g.itens.map((x) => `<div class="it"><span class="cx">✕</span>${esc(x)}</div>`).join('')}</div>`).join('')}</div>`
-      : '<p class="meta">Nenhum exame marcado.</p>'
+    const comCardapio = f.grupos.some((g) => g.cardapio)
+    const outros = f.grupos.find((g) => !g.cardapio && /^outros$/i.test(g.nome))
+    const grupos = comCardapio ? f.grupos.filter((g) => g !== outros) : f.grupos
+    const blocos = grupos.map((g) => '<div class="grupo">' + (g.nome ? `<div class="gt">${esc(g.nome)}</div>` : '') +
+      (g.cardapio ? g.cardapio.map((x) => item(x, g.itens.includes(x))) : g.itens.map((x) => item(x, true))).join('') + '</div>').join('')
+    // o protótipo fecha cada folha com "Outros" e duas linhas em branco; os extras vão na última
+    const blocoOutros = comCardapio
+      ? '<div class="grupo"><div class="gt">Outros</div>' + (outros?.itens ?? []).map((x) => item(x, true)).join('') +
+        item('____________________', false).repeat(2) + '</div>'
+      : ''
+    const cardapio = n ? `<div class="cardapio">${blocos}${blocoOutros}</div>` : '<p class="meta">Nenhum exame marcado.</p>'
     return {
-      doc: 'Solicitação de exames' + (f.titulo ? ` — ${esc(f.titulo)}` : ''), sub: carater ? `Caráter: ${esc(carater)}` : '', semPaciente: true,
+      doc: f.documento ? esc(f.documento) : 'Solicitação de exames' + (f.titulo ? ` — ${esc(f.titulo)}` : ''), sub: carater ? `Caráter: ${esc(carater)}` : '', semPaciente: true,
       corpo: idPac + faixaAlergia(ctx, d) + clinico + `<div class="qtd">${n} ${n === 1 ? 'exame solicitado' : 'exames solicitados'}</div>` + cardapio +
-        blocoSe('Observações', p.obs) + (f.nota ? `<p class="meta">${esc(f.nota)}</p>` : '') + assinaturas([assMedico(ctx)]),
+        blocoSe('Observações', p.obs) + (f.nota ? `<p class="meta">${esc(f.nota)}</p>` : '') + assinaturas([ass]),
     }
   })
   const estilo = `.qtd{font-size:8.5pt;font-weight:800;text-align:right;margin:2px 0 4px}
 .cardapio{columns:3;column-gap:14px;border:1.5px solid #000;border-radius:3px;padding:7px 10px;margin-bottom:8px}
 .grupo{break-inside:avoid;margin-bottom:6px}.gt{font-size:7.5pt;font-weight:900;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid #bbb;margin-bottom:2px}
-.it{display:flex;align-items:center;gap:6px;font-size:9pt;padding:1px 0;font-weight:700}
+.it{display:flex;align-items:center;gap:6px;font-size:9pt;padding:1px 0;color:#444}.it.on{color:#000;font-weight:900}
 .it .cx{width:13px;height:13px;border:1.5px solid currentColor;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;line-height:1;flex-shrink:0}`
   return pagina({ titulo: 'Solicitação de exames', ctx, pac, estilo, fichas })
 }
@@ -639,7 +663,9 @@ function laudoAih(d: Json, ctx: ContextoFolha): string {
         F(2, '25', 'CID-10 secundário', V(af.cidSec)) + F(2, '26', 'CID-10 causas assoc.', V(af.cidAssoc)))) +
       secao('Procedimento solicitado', grade(F(9, '27', 'Descrição do procedimento solicitado', V(af.procDesc)) + F(3, '28', 'Código do procedimento', V(af.procCod)) +
         F(5, '29', 'Clínica', V(af.clinica)) + F(7, '30', 'Caráter da internação', opcoes(['Eletivo', 'Urgência'], carater)) +
-        F(6, '33', 'Nome do profissional solicitante/assistente', V(ctx.autor?.nome)) + F(3, '32', 'Registro no conselho', V(ctx.autor?.registro)) +
+        F(4, '33', 'Nome do profissional solicitante/assistente', V(ctx.autor?.nome)) + F(2, '32', 'Registro no conselho', V(ctx.autor?.registro)) +
+        // documento (CPF) do solicitante, como no protótipo: do retrato gravado no laudo
+        F(3, '31', 'Documento (CPF)', V(pri(d?.usuario?.cpf, d?.retrato?.usuario?.cpf))) +
         F(3, '34', 'Data da solicitação', V(dataBr(dataRef(ctx, d)))) + Z(12, '35', 'Assinatura e carimbo (nº do registro do conselho)', 'ass'))) +
       secao('Causas externas (acidentes ou violências)', grade(
         cel(12, 'Tipo', opcoes(['36 – Acidente de trânsito', '37 – Acidente trabalho típico', '38 – Acidente trabalho trajeto'],
@@ -758,8 +784,15 @@ function documentoTexto(tipo: string, d: Json, ctx: ContextoFolha): string {
  * {texto} quando o documento é texto livre); `ctx` traz unidade, paciente,
  * alergias e autor do banco e a emissão (número, protocolo, código).
  */
-export function montarFolha(tipo: TipoFolha | string, dados: Json, ctx: ContextoFolha): string {
+export function montarFolha(tipo: TipoFolha | string, dados: Json, contexto: ContextoFolha): string {
   const d = dados == null ? {} : typeof dados === 'string' ? { texto: dados } : dados
+  // sem o banco (folha provisória), a unidade e o autor vêm do retrato gravado no documento
+  const r = d.retrato ?? d
+  const ctx: ContextoFolha = {
+    ...contexto,
+    unidade: contexto.unidade ?? (r.unidade?.nome ? { nome: r.unidade.nome, cnes: r.unidade.cnes, municipio: r.unidade.municipio, uf: r.unidade.uf } : null),
+    autor: contexto.autor?.nome ? contexto.autor : r.usuario?.nome ? { nome: r.usuario.nome, registro: r.usuario.registro } : contexto.autor,
+  }
   switch (tipo) {
     case 'receita': return receita(d, ctx)
     case 'atestado': return atestado(d, ctx)

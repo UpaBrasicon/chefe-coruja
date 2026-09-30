@@ -11,9 +11,10 @@
 // nada aqui mexe nisso. Toda regra é do servidor; aqui só se mostra e se pede.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
-import { AlertTriangle, History, ShieldCheck, ShieldQuestion } from 'lucide-react'
+import { AlertTriangle, History, Printer, ShieldCheck, ShieldQuestion } from 'lucide-react'
 import * as React from 'react'
 
+import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -342,6 +343,13 @@ export function AlergiasEventos({ pacienteId }: { pacienteId: string }) {
         )}
       </div>
 
+      {/* folha de alergias e eventos adversos (montarAlgHtml do protótipo), montada no servidor */}
+      {regs.length > 0 && (
+        <Button size="sm" variant="outline" className="self-start" onClick={() => void imprimirRelatorio({ tipo: 'alergias', pacienteId })}>
+          <Printer /> Imprimir
+        </Button>
+      )}
+
       {/* inativar selecionados / tudo */}
       {chavesAtivas.length > 0 && (
         <div className="flex flex-col gap-2">
@@ -351,9 +359,7 @@ export function AlergiasEventos({ pacienteId }: { pacienteId: string }) {
               Inativar selecionados{selecionadas.length ? ` (${selecionadas.length})` : ''}
             </Button>
             <Button size="sm" variant="destructive" disabled={ocupado} onClick={() => { setInativando('tudo'); setMotivo('') }}>Inativar tudo</Button>
-            {/* Onda 6 (folhas e assinatura): "Imprimir" (folha de alergias e eventos
-                adversos, montarAlgHtml do protótipo) e "Assinar" (retrato assinado;
-                mudança depois deixa pendência de assinatura) entram aqui. */}
+            {/* "Assinar" (retrato assinado) espera a assinatura ICP-Brasil (etapa 4.8). */}
           </div>
           {inativando && alvo.length > 0 && (
             <div className="flex flex-col gap-2 rounded-controle border border-critico/30 bg-alerta-critico p-2.5">

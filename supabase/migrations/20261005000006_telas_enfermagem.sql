@@ -167,8 +167,11 @@ CREATE TABLE IF NOT EXISTS public.passagens_enfermagem (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   unidade_id   uuid NOT NULL REFERENCES public.unidades(id),
   setor_id     uuid NOT NULL REFERENCES public.setores(id),
-  -- o plantão de quem entregou (data e turno vêm dele)
-  plantao_id   uuid REFERENCES public.escala_plantao(id),
+  -- o plantão de quem entregou; turno e data ficam copiados na entrega, para
+  -- a passagem (guarda de 20 anos) não depender da escala, que o gestor edita
+  plantao_id   uuid REFERENCES public.escala_plantao(id) ON DELETE SET NULL,
+  turno        text,
+  data         date,
   -- observação geral do setor (opcional quando há leitos)
   texto        text NOT NULL DEFAULT '',
   -- leito a leito: [{paciente_id, nome, local, texto, pendencias: [...]}]
@@ -185,6 +188,12 @@ CREATE TABLE IF NOT EXISTS public.passagens_enfermagem (
 -- reaplicação sobre a versão de texto único
 ALTER TABLE public.passagens_enfermagem ADD COLUMN IF NOT EXISTS leitos jsonb NOT NULL DEFAULT '[]'::jsonb
   CHECK (jsonb_typeof(leitos) = 'array');
+ALTER TABLE public.passagens_enfermagem ADD COLUMN IF NOT EXISTS turno text;
+ALTER TABLE public.passagens_enfermagem ADD COLUMN IF NOT EXISTS data date;
+-- apagar o plantão da escala não apaga nem trava a passagem
+ALTER TABLE public.passagens_enfermagem DROP CONSTRAINT IF EXISTS passagens_enfermagem_plantao_id_fkey;
+ALTER TABLE public.passagens_enfermagem ADD CONSTRAINT passagens_enfermagem_plantao_id_fkey
+  FOREIGN KEY (plantao_id) REFERENCES public.escala_plantao(id) ON DELETE SET NULL;
 ALTER TABLE public.passagens_enfermagem DROP CONSTRAINT IF EXISTS passagens_enfermagem_texto_check;
 ALTER TABLE public.passagens_enfermagem ALTER COLUMN texto SET DEFAULT '';
 ALTER TABLE public.passagens_enfermagem DROP CONSTRAINT IF EXISTS passagens_enfermagem_conteudo;
@@ -194,10 +203,15 @@ COMMENT ON TABLE public.passagens_enfermagem IS
   'Passagem de plantão da enfermagem: registro do setor, leito a leito (texto de cada paciente e retrato das pendências), com observação geral opcional e ciência de quem assume. Diferente da médica, que é por paciente e para um colega nomeado.';
 CREATE INDEX IF NOT EXISTS passagens_enfermagem_setor ON public.passagens_enfermagem (setor_id, entregue_em DESC);
 
--- só o recebimento muda, e uma vez
+-- só o recebimento muda, e uma vez (e a referência ao plantão, quando ele sai
+-- da escala: ON DELETE SET NULL; turno e data já estão na passagem)
 CREATE OR REPLACE FUNCTION private.passagem_enfermagem_so_recebe() RETURNS trigger
 LANGUAGE plpgsql SET search_path = '' AS $$
 BEGIN
+  IF NEW.plantao_id IS NULL AND OLD.plantao_id IS NOT NULL
+     AND (to_jsonb(NEW) - 'plantao_id') = (to_jsonb(OLD) - 'plantao_id') THEN
+    RETURN NEW;
+  END IF;
   IF OLD.recebida_em IS NOT NULL THEN RAISE EXCEPTION 'Esta passagem já foi recebida.'; END IF;
   IF (to_jsonb(NEW) - 'recebida_por' - 'recebida_em') IS DISTINCT FROM (to_jsonb(OLD) - 'recebida_por' - 'recebida_em') THEN
     RAISE EXCEPTION 'A passagem entregue não se altera: só se registra o recebimento.';
@@ -244,7 +258,7 @@ CREATE OR REPLACE FUNCTION public.entregar_passagem_enfermagem(p_setor uuid, p_l
 RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE
   v_unidade uuid;
-  v_plantao uuid;
+  v_plantao public.escala_plantao;
   v_faltam text;
   v_leitos jsonb;
   v_pend jsonb;
@@ -259,7 +273,7 @@ BEGIN
   IF p_leitos IS NULL OR jsonb_typeof(p_leitos) <> 'array' THEN
     RAISE EXCEPTION 'A passagem vai leito a leito.';
   END IF;
-  SELECT p.id INTO v_plantao FROM private.plantoes_agora() p WHERE p.setor_id = p_setor ORDER BY p.inicio LIMIT 1;
+  SELECT p.* INTO v_plantao FROM private.plantoes_agora() p WHERE p.setor_id = p_setor ORDER BY p.inicio LIMIT 1;
 
   -- cada paciente do setor agora, com o seu texto e o retrato das suas
   -- pendências do turno; notas de quem já saiu do setor ficam fora
@@ -293,8 +307,9 @@ BEGIN
     FROM jsonb_array_elements(v_leitos) x
     CROSS JOIN LATERAL jsonb_array_elements(x -> 'pendencias') p;
 
-  INSERT INTO public.passagens_enfermagem (unidade_id, setor_id, plantao_id, texto, leitos, pendencias, entregue_por)
-  VALUES (v_unidade, p_setor, v_plantao, btrim(coalesce(p_texto, '')), v_leitos, v_pend, private.meu_perfil_id())
+  INSERT INTO public.passagens_enfermagem (unidade_id, setor_id, plantao_id, turno, data, texto, leitos, pendencias, entregue_por)
+  VALUES (v_unidade, p_setor, v_plantao.id, v_plantao.turno, coalesce(v_plantao.data, private.data_atual()),
+          btrim(coalesce(p_texto, '')), v_leitos, v_pend, private.meu_perfil_id())
   RETURNING id INTO v_id;
   RETURN v_id;
 END $$;
@@ -328,7 +343,7 @@ BEGIN
   RETURN QUERY
   SELECT pe.id, pe.setor_id, s.nome, pe.texto, pe.leitos, pe.pendencias,
          pe.entregue_por, (SELECT pf.nome_completo FROM public.perfis pf WHERE pf.id = pe.entregue_por), pe.entregue_em,
-         ep.turno, ep.data,
+         coalesce(pe.turno, ep.turno), coalesce(pe.data, ep.data),
          pe.recebida_por, (SELECT pf.nome_completo FROM public.perfis pf WHERE pf.id = pe.recebida_por), pe.recebida_em
     FROM public.passagens_enfermagem pe
     JOIN public.setores s ON s.id = pe.setor_id

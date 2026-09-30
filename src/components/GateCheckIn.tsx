@@ -8,6 +8,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { AvisoRascunhosCheckout } from '@/components/documento/AvisoRascunhosCheckout'
 
 /**
  * GATE DE CHECK-IN OBRIGATÓRIO (regra de ouro).
@@ -267,6 +268,7 @@ export function GateCheckIn() {
                   </span>
                   . Você já pode acessar o sistema.
                 </p>
+                <AvisoRascunhosCheckout unidadeId={unidadeId} />
                 <div>
                   <Button variant="outline" onClick={fazerCheckout} disabled={processando}>
                     {processando ? <Loader2 className="animate-spin" /> : <LogOut />} Check-out

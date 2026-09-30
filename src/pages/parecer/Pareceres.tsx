@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, ChevronLeft, MessageSquare } from 'lucide-react'
+import { Check, ChevronLeft, MessageSquare, Printer } from 'lucide-react'
 import * as React from 'react'
 
 import { Chip, Chips, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
+import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 
 // Tela Pareceres (protótipo: Plantão › Internação › Parecer médico, 2400–2464,
@@ -250,7 +251,9 @@ function ParecerAberto({ p, voltar }: { p: ItemFila; voltar: () => void }) {
             {p.rascunho_salvo_em && <span className="text-rotulo text-tinta-sussurro">Rascunho salvo em {fmtDataHora(p.rascunho_salvo_em)}</span>}
             <div className="flex flex-wrap justify-end gap-2">
               <Button variant="destructive" onClick={() => rpc.mutate('cancelar')} disabled={rpc.isPending}>Cancelar análise</Button>
-              {/* IMPRESSÃO (onda 6, folhas no servidor): "Imprimir" a folha do parecer. */}
+              <Button variant="outline" onClick={() => void imprimirRelatorio({ tipo: 'pareceres', pacienteId: p.paciente_id, ids: [p.id] })}>
+                <Printer className="size-3.5" />Imprimir
+              </Button>
               <Button variant="outline" onClick={() => rpc.mutate('salvar')} disabled={rpc.isPending}>Salvar</Button>
               <Button onClick={() => rpc.mutate('concluir')} disabled={rpc.isPending || texto.trim().length < RESPOSTA_MIN}>
                 <Check className="size-3.5" />Salvar e concluir
@@ -265,6 +268,10 @@ function ParecerAberto({ p, voltar }: { p: ItemFila; voltar: () => void }) {
               {p.documento_resposta_numero ? ` · documento nº ${p.documento_resposta_numero}` : ''}
             </p>
             <p className="mt-1 text-apoio whitespace-pre-wrap text-tinta">{p.resposta}</p>
+            <Button size="sm" variant="outline" className="mt-2"
+              onClick={() => void imprimirRelatorio({ tipo: 'pareceres', pacienteId: p.paciente_id, ids: [p.id] })}>
+              <Printer className="size-3.5" />Imprimir
+            </Button>
           </div>
         )}
         {rpc.error && <span className="text-apoio text-critico">{mensagem(rpc.error)}</span>}

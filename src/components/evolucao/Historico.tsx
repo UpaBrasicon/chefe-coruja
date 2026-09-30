@@ -9,10 +9,12 @@
 // têm papel no sistema: aparecem aqui quando houver registro. A enfermagem
 // registra pela frente dela (onda 7).
 // ─────────────────────────────────────────────────────────────────────────────
-import { ArrowRight, History } from 'lucide-react'
+import { ArrowRight, History, Printer } from 'lucide-react'
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
+import { imprimirRelatorio } from '@/lib/prontuario'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { TIPOS_REGISTRO, chaveDia, diaHora, ehMedico, mensagemErro, rotuloTipo, useHistoricoEvolucoes, type RegistroHistorico, type TipoRegistro } from './dados'
@@ -58,10 +60,21 @@ export function Historico({ internacaoId }: { internacaoId: string }) {
           {vis.length} {vis.length === 1 ? 'registro' : 'registros'}
           {selecionados.length > 0 && ` · ${selecionados.length} selecionado${selecionados.length > 1 ? 's' : ''}`}
         </span>
-        {/* ONDA 6 — impressão: "Imprimir relatório" (tudo o que está filtrado) ou
-            "Imprimir selecionados" gera o Relatório de evolução A4 (protótipo:
-            montarEvolHtml), pela folha do servidor (lib/prontuario, abrirImpressao)
-            com o registro da impressão. O botão entra aqui, à direita. */}
+        {/* Relatório de evolução A4 (protótipo montarEvolHtml), montado no
+            servidor com o registro da impressão: tudo o que está filtrado, ou
+            só os selecionados. */}
+        <div className="ml-auto flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" disabled={vis.length === 0}
+            onClick={() => void imprimirRelatorio({ tipo: 'evolucao', internacaoId, ids: vis.length === regs.length ? null : vis.map((r) => r.id) })}>
+            <Printer /> Imprimir relatório
+          </Button>
+          {selecionados.length > 0 && (
+            <Button size="sm" variant="outline"
+              onClick={() => void imprimirRelatorio({ tipo: 'evolucao', internacaoId, ids: selecionados.map((r) => r.id) })}>
+              <Printer /> Imprimir selecionados
+            </Button>
+          )}
+        </div>
       </div>
 
       <div role="group" aria-label="Tipos de registro" className="flex flex-wrap gap-1.5">

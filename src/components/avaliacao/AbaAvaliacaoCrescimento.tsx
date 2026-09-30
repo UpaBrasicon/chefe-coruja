@@ -12,7 +12,7 @@
 // observações (triagem, leito, ou "Lançar aferição" aqui). Só pediatria; fora
 // dela a tela diz o motivo. Impressão: onda 6.
 // ─────────────────────────────────────────────────────────────────────────────
-import { ClipboardCheck, LineChart as IconeCurva } from 'lucide-react'
+import { ClipboardCheck, LineChart as IconeCurva, Printer } from 'lucide-react'
 import * as React from 'react'
 
 import {
@@ -26,6 +26,7 @@ import {
 import { SISVAN_2011 } from '@/clinico/crescimento/fonte'
 import { textoFontes } from '@/clinico/ficha'
 import { ehPediatrico } from '@/domain/idade'
+import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Chip } from '@/components/monitor/Pagina'
@@ -175,7 +176,13 @@ function SecaoAvaliacao({ pacienteId, episodioId, internacaoId, publico }: AbaAv
             {noHist.map((e) => <Chip key={e} ativo={filtro === e} onClick={() => setFiltro(e)}>{ESCALAS_AVALIACAO[e]?.nome ?? e}</Chip>)}
           </>
         )}
-        {/* Onda 6 (folhas): "Imprimir" uma ou todas (montarAvalHtml do protótipo) entra aqui. */}
+        {/* folha de avaliações (montarAvalHtml do protótipo): as que estão na lista */}
+        {visiveis.length > 0 && (
+          <Button size="sm" variant="outline" className="ml-auto"
+            onClick={() => void imprimirRelatorio({ tipo: 'avaliacao', pacienteId, internacaoId, ids: filtro ? visiveis.map((a) => a.id) : null })}>
+            <Printer /> Imprimir
+          </Button>
+        )}
       </div>
       {q.isLoading && <div className="flex justify-center py-3"><Spinner /></div>}
       {q.error && <p className="text-apoio text-critico">{msg(q.error)}</p>}

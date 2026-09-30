@@ -403,7 +403,7 @@ function Caderno({ p, cabecalho, avisos, acoesTopo }: {
         )}
         {atual === 'receituario' && <AbaPrescricao doc={doc} />}
         {atual === 'exames' && <AbaExames doc={doc} pacienteId={pacienteId} medico={!ehGestor} />}
-        {atual === 'aih' && <AbaAih doc={doc} />}
+        {atual === 'aih' && <AbaAih doc={doc} internacaoId={i.id} />}
         {atual === 'encaminhamento' && <AbaEncaminhamentoInterno pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
         {atual === 'atestado' && <AbaAtestado pacienteId={pacienteId} podeEmitir={escreve} />}
         {atual === 'comp' && (

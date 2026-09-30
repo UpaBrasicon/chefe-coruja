@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { Check, Stethoscope } from 'lucide-react'
+import { Check, Printer, Stethoscope } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { imprimirRelatorio } from '@/lib/prontuario'
+import { Button } from '@/components/ui/button'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, rotulosPrioridade } from '@/domain/prioridade'
@@ -15,13 +17,14 @@ import { dataSP, nomeDe, type NaFila } from './triagem/comum'
 // Triagem (Fase 2.2 + porte do protótipo): a fila da porta e a classificação
 // de risco em janela sobre ela. O protocolo da unidade é REFERÊNCIA — a cor é
 // a que o enfermeiro marca; o sistema nunca pré-seleciona nem troca (ADR 0007).
-// "Imprimir resumo" (folha de classificação) fica para a onda 6, com as
-// folhas geradas no servidor.
+// Depois de classificar, "Imprimir resumo" sai a folha de classificação de
+// risco, montada no servidor (folha_relatorio 'classificacao').
 
 export default function Triagem() {
   const { unidadeAtiva } = useUnidade()
   const [atual, setAtual] = React.useState<NaFila | null>(null)
-  const [aviso, setAviso] = React.useState<string | null>(null)
+  // o aviso da última classificação leva o episódio, para o "Imprimir resumo"
+  const [aviso, setAviso] = React.useState<{ texto: string; episodioId: string } | null>(null)
 
   const fila = useQuery({
     queryKey: ['triagem-fila', unidadeAtiva?.unidade_id],
@@ -43,8 +46,8 @@ export default function Triagem() {
   })
 
   const fechar = (msg: string | null) => {
+    if (msg && atual) setAviso({ texto: msg, episodioId: atual.id })
     setAtual(null)
-    if (msg) setAviso(msg)
   }
   const prios = atual ? rotulosPrioridade(atual.prioridades_legais) : []
 
@@ -54,7 +57,11 @@ export default function Triagem() {
       {aviso && (
         <div role="status" className="mb-3 flex flex-wrap items-center gap-[9px] rounded-container border border-marca/20 bg-marca/5 px-[15px] py-[11px] text-controle text-acao">
           <Check className="size-[15px]" aria-hidden />
-          <span className="flex-[1_1_220px]">{aviso}</span>
+          <span className="flex-[1_1_220px]">{aviso.texto}</span>
+          <Button variant="outline" size="sm" className="border-marca/35 bg-superficie text-acao"
+            onClick={() => void imprimirRelatorio({ tipo: 'classificacao', episodioId: aviso.episodioId })}>
+            <Printer /> Imprimir resumo
+          </Button>
         </div>
       )}
       <FilaTriagem

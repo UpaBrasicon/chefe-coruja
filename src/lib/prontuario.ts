@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { folhaDoRegistro, lerConteudo, montarFolha, type TipoFolha } from '@/lib/folhas'
+import { contextoDoBanco, folhaDoRegistro, lerConteudo, montarFolha, montarRelatorio, type TipoFolha, type TipoRelatorio } from '@/lib/folhas'
 
 // Consulta e impressão são registradas pelo SERVIDOR (migration 0012). O banco
 // só devolve conteúdo clínico de prontuário aberto; abrir é a RPC que grava o
@@ -124,6 +124,91 @@ export async function folhaDoDocumentoEmitido(documentoId: string, tipoImpressao
 }
 
 /**
+ * Imprime (de novo) a folha de um documento JÁ EMITIDO, pelo id. Cada
+ * impressão fica registrada. Chamar dentro do clique.
+ */
+export async function imprimirDocumento(documentoId: string, tipoImpressao: string): Promise<boolean> {
+  const janela = window.open('', '_blank')
+  if (!janela) return false
+  janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>')
+  const r = await folhaDoDocumentoEmitido(documentoId, tipoImpressao)
+  if ('erro' in r) {
+    escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">A folha não pôde ser montada${r.erro ? `: ${r.erro}` : ''}. Nada foi impresso.</p>`)
+    return false
+  }
+  escrever(janela, r.html)
+  janela.focus()
+  setTimeout(() => janela.print(), 300)
+  return true
+}
+
+/**
+ * Folha de RELATÓRIO (várias linhas, sem número): classificação de risco,
+ * relatório de evolução, alergias, avaliações, pareceres, encaminhamento
+ * interno. A edge function `folha` monta no servidor a partir de
+ * folha_relatorio, que registra a impressão; se ela não responder, a mesma
+ * RPC entrega os dados e a folha é montada aqui com o mesmo modelo. Chamar
+ * dentro do clique (a janela abre na hora, senão o navegador bloqueia).
+ */
+export async function imprimirRelatorio(o: {
+  tipo: TipoRelatorio
+  pacienteId?: string | null
+  internacaoId?: string | null
+  episodioId?: string | null
+  /** só estes registros (evolução, avaliações, pareceres, encaminhamentos) */
+  ids?: string[] | null
+}): Promise<boolean> {
+  const args = {
+    p_tipo: o.tipo,
+    p_paciente: o.pacienteId ?? undefined,
+    p_internacao: o.internacaoId ?? undefined,
+    p_episodio: o.episodioId ?? undefined,
+    p_ids: o.ids?.length ? o.ids : undefined,
+  }
+  return imprimirFolhaRelatorio(
+    o.tipo,
+    { relatorio: o.tipo, paciente_id: args.p_paciente, internacao_id: args.p_internacao, episodio_id: args.p_episodio, ids: args.p_ids },
+    () => supabase.rpc('folha_relatorio', args),
+  )
+}
+
+/** Folha 08 — atendimentos notificáveis da unidade no período (folha_notificaveis). */
+export async function imprimirNotificaveis(o: { unidadeId: string; de?: string | null; ate?: string | null; cids?: string[] | null }) {
+  const args = { p_unidade: o.unidadeId, p_de: o.de || undefined, p_ate: o.ate || undefined, p_cids: o.cids?.length ? o.cids : undefined }
+  return imprimirFolhaRelatorio(
+    'notificaveis',
+    { relatorio: 'notificaveis', unidade_id: args.p_unidade, de: args.p_de, ate: args.p_ate, cids: args.p_cids },
+    () => supabase.rpc('folha_notificaveis', args),
+  )
+}
+
+/** A edge function monta; se não responder, a RPC entrega os dados e a folha sai daqui, com o mesmo modelo. */
+async function imprimirFolhaRelatorio(
+  tipo: TipoRelatorio,
+  corpo: Record<string, unknown>,
+  rpc: () => PromiseLike<{ data: unknown; error: { message: string } | null }>,
+): Promise<boolean> {
+  const janela = window.open('', '_blank')
+  if (!janela) return false
+  janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>')
+  const r = await supabase.functions.invoke('folha', { body: corpo })
+  let html: string | null = !r.error && typeof r.data === 'string' && r.data.startsWith('<!doctype html>') ? r.data : null
+  if (!html) {
+    const { data, error } = await rpc()
+    if (error || !data) {
+      escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">Não foi possível imprimir${error ? `: ${error.message}` : ''}. Nada foi impresso.</p>`)
+      return false
+    }
+    const d = data as Parameters<typeof contextoDoBanco>[0] & { dados: unknown }
+    html = montarRelatorio(tipo, d.dados, contextoDoBanco(d, true))
+  }
+  escrever(janela, html)
+  janela.focus()
+  setTimeout(() => janela.print(), 300)
+  return true
+}
+
+/**
  * Prepara uma impressão registrada. A janela abre JÁ (ainda dentro do clique,
  * senão o navegador bloqueia o pop-up); depois o servidor registra e devolve o
  * protocolo. Sem paciente identificado ou sem registro, não imprime — a
@@ -157,14 +242,19 @@ export async function abrirImpressao(opcoes: {
   if (opcoes.documento) {
     const doc = opcoes.documento
     const pacienteId = opcoes.pacienteId
-    // com rascunho no banco: grava o texto final nele e emite o próprio rascunho
+    // sempre pelo rascunho do banco: grava o texto final nele e emite o próprio
+    // rascunho. Sem id conhecido (aberto em outra sessão ou antes de recarregar),
+    // salvar_rascunho acha o rascunho aberto deste autor, paciente e tipo — assim
+    // ele vira o documento em vez de ficar aberto travando a alta.
     const viaRascunho = async () => {
-      if (!opcoes.rascunhoId) return null
-      const s = await supabase.rpc('salvar_rascunho', {
-        p_paciente: pacienteId, p_tipo: doc.tipo, p_conteudo: doc.conteudo, p_rascunho: opcoes.rascunhoId,
+      const salvar = (id: string | null | undefined) => supabase.rpc('salvar_rascunho', {
+        p_paciente: pacienteId, p_tipo: doc.tipo, p_conteudo: doc.conteudo, p_rascunho: id ?? undefined,
       })
-      if (s.error) return /Rascunho não encontrado/.test(s.error.message) ? null : s
-      return supabase.rpc('emitir_rascunho', { p_rascunho: opcoes.rascunhoId })
+      let s = await salvar(opcoes.rascunhoId)
+      if (s.error && opcoes.rascunhoId && /Rascunho não encontrado/.test(s.error.message)) s = await salvar(null)
+      // tipo sem rascunho no banco, ou falha: emite direto (falha de rede cai na provisória)
+      if (s.error || !s.data) return null
+      return supabase.rpc('emitir_rascunho', { p_rascunho: s.data as string })
     }
     const { data, error } = (await viaRascunho()) ?? (await supabase.rpc('emitir_documento', {
       p_paciente: pacienteId,

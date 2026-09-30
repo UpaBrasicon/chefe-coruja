@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowUpRight, MessageSquare } from 'lucide-react'
+import { ArrowUpRight, MessageSquare, Printer } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { fmtDataHora } from '@/lib/datas'
+import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 
 import {
@@ -193,17 +194,22 @@ export function AbaParecer({ pacienteId, episodioId, internacaoId }: AbaParecerP
             {aberto && (cancelando === p.id
               ? <Cancelar id={p.id} aoTerminar={() => setCancelando(null)} />
               : <Button size="sm" variant="outline" className="self-start" onClick={() => setCancelando(p.id)}>Cancelar pedido</Button>)}
-            {/* IMPRESSÃO (onda 6, folhas no servidor): "Imprimir" deste parecer —
-                folha do protótipo (montarParecerHtml) com pergunta, parecer e as
-                duas assinaturas. */}
+            {/* folha do parecer (montarParecerHtml do protótipo), montada no servidor */}
+            <Button size="sm" variant="outline" className="self-start"
+              onClick={() => void imprimirRelatorio({ tipo: 'pareceres', pacienteId, internacaoId, ids: [p.id] })}>
+              <Printer className="size-3.5" />Imprimir
+            </Button>
           </div>
         )
       })}
 
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant="outline" render={<Link to="/pareceres" />}>Responder pareceres (tela Pareceres)</Button>
-        {/* IMPRESSÃO (onda 6): "Imprimir histórico de pareceres" — todas as
-            folhas do paciente numa impressão (pareceres_do_paciente). */}
+        {pareceres.length > 0 && (
+          <Button size="sm" variant="outline" onClick={() => void imprimirRelatorio({ tipo: 'pareceres', pacienteId, internacaoId })}>
+            <Printer className="size-3.5" />Imprimir histórico de pareceres
+          </Button>
+        )}
       </div>
     </section>
   )

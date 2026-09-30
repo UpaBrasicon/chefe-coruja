@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
+import { AvisoRascunhosCheckout } from '@/components/documento/AvisoRascunhosCheckout'
 
 const TURNO_LABEL: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
 
@@ -248,6 +249,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
               <div className="text-xs text-tinta-sussurro">
                 Check-in: {ativoHoje.checkin_em ? new Date(ativoHoje.checkin_em).toLocaleString('pt-BR') : '-'}
               </div>
+              <AvisoRascunhosCheckout unidadeId={unidadeId} />
               <div>
                 <Button onClick={checkout} disabled={processando !== null}>
                   {processando === 'out' ? <Loader2 className="animate-spin" /> : <LogOut />} Check-out

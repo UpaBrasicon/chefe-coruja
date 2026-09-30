@@ -17,56 +17,13 @@ export type Exames = {
   texto: string
 }
 
-export type Aih = {
-  campo1: string
-  campo2: string
-  campo3: string
-  campo4: string
-  campo5: string
-  campo6: string
-  campo7: string
-  campo8: string
-  campo9: string
-  campo10: string
-  campo10_1: string
-  campo11: string
-  campo12: string
-  campo13: string
-  campo14: string
-  campo15: string
-  campo16: string
-  campo17: string
-  campo18: string
-  campo19: string
-  campo20: string
-  campo21: string
-  campo22: string
-  campo23: string
-  campo24: string
-  campo25: string
-  campo26: string
-  campo27: string
-  campo28: string
-  campo29: string
-  campo30: string
-  campo31: string
-  campo32: string
-  campo33: string
-  campo34: string
-  campo35: string
-  campo46: string
-  campo47: string
-  campo50: string
-  campo51: string
-  campo52: string
-}
-
+// O laudo de AIH e a ficha de admissão têm rascunho próprio, por paciente
+// (LaudoAih.tsx e FichaAdmissao.tsx), como no protótipo.
 export type Rascunho = {
   paciente: DadosPaciente
   prescricao: Prescricao
   evolucao: Evolucao
   exames: Exames
-  aih: Aih
 }
 
 export const RASCUNHO_INICIAL: Rascunho = {
@@ -92,49 +49,6 @@ export const RASCUNHO_INICIAL: Rascunho = {
   exames: {
     texto: '',
   },
-  aih: {
-    campo1: 'UPA BRASICON',
-    campo2: '',
-    campo3: '',
-    campo4: '',
-    campo5: '',
-    campo6: '',
-    campo7: '',
-    campo8: '',
-    campo9: '',
-    campo10: '',
-    campo10_1: '',
-    campo11: '',
-    campo12: '',
-    campo13: '',
-    campo14: '',
-    campo15: '',
-    campo16: '',
-    campo17: '',
-    campo18: '',
-    campo19: '',
-    campo20: '',
-    campo21: '',
-    campo22: '',
-    campo23: '',
-    campo24: '',
-    campo25: '',
-    campo26: '',
-    campo27: '',
-    campo28: '',
-    campo29: '',
-    campo30: 'URGÊNCIA',
-    campo31: '',
-    campo32: '',
-    campo33: '',
-    campo34: '',
-    campo35: '',
-    campo46: '',
-    campo47: '',
-    campo50: '',
-    campo51: '',
-    campo52: '',
-  },
 }
 
 export function carregarRascunho(chave: string): Rascunho {
@@ -147,7 +61,6 @@ export function carregarRascunho(chave: string): Rascunho {
       prescricao: { ...RASCUNHO_INICIAL.prescricao, ...(parsed.prescricao ?? {}) },
       evolucao: { ...RASCUNHO_INICIAL.evolucao, ...(parsed.evolucao ?? {}) },
       exames: { ...RASCUNHO_INICIAL.exames, ...(parsed.exames ?? {}) },
-      aih: { ...RASCUNHO_INICIAL.aih, ...(parsed.aih ?? {}) },
     }
     if (!r.paciente.dataAtual) r.paciente.dataAtual = hojeLocal()
     return r
