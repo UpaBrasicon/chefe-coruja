@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import { CalendarClock, LogOut, MapPin } from 'lucide-react'
+import { CalendarClock, LogOut, MapPin, UserCog } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
+import { PAPEIS_POR_ESCALA, PAPEL_LABEL, ROTA_INICIAL } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { supabase } from '@/lib/supabase'
@@ -57,8 +58,9 @@ function useProximoPlantao() {
 
 export function ForaDoExpediente() {
   const { signOut } = useAuth()
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papeisDaUnidade, setPapelAtivo } = useUnidade()
   const navigate = useNavigate()
+  const outrosPapeis = papeisDaUnidade.filter((p) => !PAPEIS_POR_ESCALA.includes(p))
   const { data: proximo, isLoading, isError } = useProximoPlantao()
 
   async function handleSair() {
@@ -125,6 +127,20 @@ export function ForaDoExpediente() {
         <p className="mt-4 text-apoio text-pretty text-tinta-sussurro">
           Não é preciso sair e entrar de novo: esta tela confere a escala a cada minuto. Troca ou plantão extra passam pela coordenação.
         </p>
+
+        {/* quem tem outro papel na unidade, que não depende de escala (gestão,
+            farmácia, administração), troca para ele em vez de ficar preso aqui */}
+        {outrosPapeis.length > 0 && (
+          <div className="mt-5 flex flex-col gap-2">
+            {outrosPapeis.map((p) => (
+              <button key={p} type="button" onClick={() => { setPapelAtivo(p); navigate(ROTA_INICIAL[p], { replace: true }) }}
+                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-controle bg-acao text-controle font-medium text-white hover:bg-acao/90">
+                <UserCog className="size-4" aria-hidden />
+                Entrar como {PAPEL_LABEL[p]}
+              </button>
+            ))}
+          </div>
+        )}
 
         <button
           type="button"
