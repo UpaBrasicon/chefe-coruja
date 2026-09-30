@@ -12,6 +12,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 import { criarCofre, desidentificar, residuos, type Conhecido } from '../_shared/desidentificacao.ts'
+import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
@@ -67,7 +68,7 @@ Deno.serve(async (req) => {
   const t0 = Date.now()
 
   const auth = req.headers.get('Authorization') ?? ''
-  const userClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+  const userClient = createClient(Deno.env.get('SUPABASE_URL')!, chavePublica(), {
     global: { headers: { Authorization: auth } },
   })
   const { data: { user } } = await userClient.auth.getUser()
@@ -84,7 +85,7 @@ Deno.serve(async (req) => {
   const unidadeId = typeof corpo.unidade_id === 'string' ? corpo.unidade_id : ''
   if (q.length < 2 || q.length > 800 || !mode || !/^[0-9a-f-]{36}$/i.test(unidadeId)) return erro(400, 'pedido inválido')
 
-  const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+  const admin = createClient(Deno.env.get('SUPABASE_URL')!, chaveSecreta())
 
   // Vínculo ativo com a unidade, ou super admin.
   const { data: vinculo } = await admin.from('vinculos').select('id')

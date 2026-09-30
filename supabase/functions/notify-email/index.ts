@@ -13,6 +13,7 @@
 // configurado — nunca processa payload sem autenticação.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { chaveSecreta } from '../_shared/chaves.ts'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET')
@@ -94,7 +95,7 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    chaveSecreta(),
   )
 
   try {
