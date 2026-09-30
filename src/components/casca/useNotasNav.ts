@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
 import type { MinhaNotificacao, Papel } from '@/types/database'
+import { avaliarUnidade, type ChamadoTecnico, type UnidadeRede } from '@/pages/admin/dadosAdmin'
 
 import type { ChaveNota } from './navegacao'
 
@@ -77,7 +78,50 @@ export function useNotasNav(unidadeId: string | undefined, papel: Papel | null):
     },
   })
 
+  // Recepção: quem espera o médico (triado, atendimento ainda não começou)
+  const filaMedica = useQuery({
+    queryKey: ['nota-fila-medica', unidadeId],
+    enabled: ativo && papel === 'recepcao',
+    refetchInterval: 20_000,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('episodios')
+        .select('id', { count: 'exact', head: true })
+        .eq('unidade_id', unidadeId!)
+        .eq('etapa', 'atendimento')
+        .is('atendimento_iniciado_em', null)
+      if (error) throw error
+      return count ?? 0
+    },
+  })
+
+  // Administrador: unidades que pedem atenção e chamados técnicos abertos
+  // (mesmas chaves de cache das telas Plataformas e Pendências)
+  const unidadesRede = useQuery({
+    queryKey: ['admin-unidades'],
+    enabled: papel === 'admin',
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('admin_unidades')
+      if (error) throw error
+      return (data ?? []) as UnidadeRede[]
+    },
+  })
+  const chamados = useQuery({
+    queryKey: ['chamados-tecnicos', false],
+    enabled: papel === 'admin',
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('chamados_tecnicos_lista', { p_incluir_resolvidos: false })
+      if (error) throw error
+      return (data ?? []) as ChamadoTecnico[]
+    },
+  })
+
   return {
+    fila_medica: filaMedica.data,
+    plataformas: unidadesRede.data?.filter((u) => avaliarUnidade(u, unidadesRede.dataUpdatedAt).estado > 0).length,
+    chamados: chamados.data?.length,
     avisos: (avisos.data ?? []).filter((n) => !n.lida).length,
     triagem: triagem.data,
     farmacia: farmacia.data,

@@ -81,8 +81,10 @@ BEGIN
      OR p -> 'chamadas' -> 0 ->> 'sala' <> 'Triagem 1' THEN
     RAISE EXCEPTION 'FALHOU: painel (%)', p;
   END IF;
-  IF (SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(p -> 'chamadas' -> 0) k) <> ARRAY['em', 'id', 'nome', 'sala'] THEN
-    RAISE EXCEPTION 'FALHOU: painel expõe mais do que nome, sala e hora';
+  -- onda 8 do porte (migration 20261008000001): a TV mostra também quem
+  -- chamou (profissional) e a vez da chamada — nada mais do paciente
+  IF (SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(p -> 'chamadas' -> 0) k) <> ARRAY['em', 'id', 'nome', 'quem', 'sala', 'vez'] THEN
+    RAISE EXCEPTION 'FALHOU: painel expõe mais do que nome, sala, hora, vez e quem chamou';
   END IF;
   RAISE NOTICE 'OK  TV sem login lê só nome (social) e sala';
   BEGIN

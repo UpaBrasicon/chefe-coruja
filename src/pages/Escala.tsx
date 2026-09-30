@@ -292,7 +292,7 @@ export default function Escala({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('solicitacoes_escala')
-        .select('*, escala_plantao(setor_id, data, turno), solicitante!solicitacoes_escala_perfil_id_fkey(nome_completo), destino!solicitacoes_escala_destino_perfil_id_fkey(nome_completo)')
+        .select('*, escala_plantao(setor_id, data, turno), solicitante:perfis!solicitacoes_escala_perfil_id_fkey(nome_completo), destino:perfis!solicitacoes_escala_destino_perfil_id_fkey(nome_completo)')
         .eq('unidade_id', unidadeId!)
         .order('created_at', { ascending: false })
         .limit(100)

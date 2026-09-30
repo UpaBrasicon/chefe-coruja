@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BarChart3, BedDouble, CalendarDays, LineChart, RefreshCw } from 'lucide-react'
+import { BarChart3, BedDouble, Hourglass, LineChart, RefreshCw, Repeat } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Spinner } from '@/components/ui/spinner'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Parametro, type Nivel } from '@/components/monitor/Parametros'
+import { PanoramaConfig } from '@/pages/gestor/PanoramaConfig'
 
 type CensoLinha = {
   data: string
@@ -42,7 +43,7 @@ function corTaxa(taxa: number | null) {
 }
 
 export default function Indicadores() {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
 
@@ -102,6 +103,17 @@ export default function Indicadores() {
     }
   }, [censo, ultimaData])
 
+  // permanência média e giro do último censo gravado (média dos setores com dado)
+  const ultimoCenso = React.useMemo(() => {
+    const doDia = (censo ?? []).filter((c) => c.data === ultimaData)
+    const perm = doDia.filter((c) => c.permanencia_media_h != null)
+    const giro = doDia.filter((c) => c.giro_leito != null)
+    return {
+      permanenciaD: perm.length ? perm.reduce((a, c) => a + Number(c.permanencia_media_h), 0) / perm.length / 24 : null,
+      giro: giro.length ? giro.reduce((a, c) => a + Number(c.giro_leito), 0) / giro.length : null,
+    }
+  }, [censo, ultimaData])
+
   const aoVivo = {
     internados: (ocupacao ?? []).reduce((a, o) => a + o.internados, 0),
     leitos: (ocupacao ?? []).reduce((a, o) => a + o.limite, 0),
@@ -123,7 +135,7 @@ export default function Indicadores() {
       />
 
       {/* O painel "Agora": a mesma gramática da faixa de parâmetros. */}
-      <section aria-label="Agora" className="grid overflow-hidden rounded-container border border-fio bg-superficie sm:grid-cols-3 [&>*+*]:border-t [&>*+*]:border-trilha sm:[&>*+*]:border-t-0 sm:[&>*+*]:border-l">
+      <section aria-label="Agora" className="grid overflow-hidden rounded-container border border-fio bg-superficie grid-cols-2 lg:grid-cols-4 [&>*]:border-trilha [&>*:nth-child(n+3)]:border-t lg:[&>*:nth-child(n+3)]:border-t-0 [&>*:nth-child(even)]:border-l lg:[&>*+*]:border-l">
         <Parametro
           grandeza="leitos"
           icone={BedDouble}
@@ -147,10 +159,19 @@ export default function Indicadores() {
         />
         <Parametro
           grandeza="turno"
-          icone={CalendarDays}
-          rotulo="Último censo gravado"
-          valor={ultimaData ? fmtDia(ultimaData) : '—'}
-          estado={ultimaData ? `${totalUnidade.internados} internados de ${totalUnidade.leitos} leitos` : 'Nenhum censo gerado ainda'}
+          icone={Hourglass}
+          rotulo="Média de permanência"
+          valor={ultimoCenso.permanenciaD == null ? '—' : ultimoCenso.permanenciaD.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}
+          unidade={ultimoCenso.permanenciaD == null ? undefined : 'dias'}
+          estado={ultimaData ? `censo de ${fmtDia(ultimaData)} · ${totalUnidade.internados} de ${totalUnidade.leitos} leitos` : 'Nenhum censo gerado ainda'}
+          nivel="ok"
+        />
+        <Parametro
+          grandeza="turno"
+          icone={Repeat}
+          rotulo="Giro de leito"
+          valor={ultimoCenso.giro == null ? '—' : ultimoCenso.giro.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}
+          estado={ultimaData ? 'saídas por leito, último censo' : 'Nenhum censo gerado ainda'}
           nivel="ok"
         />
       </section>
@@ -218,12 +239,16 @@ export default function Indicadores() {
             (ocupacao ?? []).map((o) => {
               const lotado = o.limite > 0 && o.internados >= o.limite
               const alerta = o.limite > 0 && o.internados >= Math.ceil(o.limite * 0.85)
+              const p = o.limite > 0 ? Math.min(1, o.internados / o.limite) : 0
               return (
-                <div key={o.setor_id} className="flex items-center justify-between rounded-lg border p-2.5 text-sm">
-                  <span className="font-medium">{o.setor_nome}</span>
-                  <span className={`font-semibold ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-tinta'}`}>
-                    {o.internados}/{o.limite || '∞'}
-                    {lotado && ' · LOTADO'}
+                <div key={o.setor_id} className="flex items-center gap-3 py-1.5 text-apoio">
+                  <span className="w-[40%] min-w-0 truncate font-medium text-tinta sm:w-[180px]">{o.setor_nome}</span>
+                  <div className="relative h-1.5 flex-1 rounded-capsula bg-trilha" aria-hidden>
+                    <div className={`absolute inset-y-0 left-0 rounded-capsula ${alerta ? 'bg-atencao' : 'bg-conforme'}`} style={{ width: `${p * 100}%` }} />
+                  </div>
+                  <span className={`w-[92px] text-right font-semibold tabular ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-tinta'}`}>
+                    {o.limite > 0 ? `${Math.round((o.internados / o.limite) * 100)}%` : '—'}
+                    <span className="font-normal text-tinta-sussurro"> · {o.internados}/{o.limite || '∞'}</span>
                   </span>
                 </div>
               )
@@ -231,6 +256,8 @@ export default function Indicadores() {
           )}
         </CardContent>
       </Card>
+
+      {papelAtivo === 'gestor' && unidadeId && <PanoramaConfig unidadeId={unidadeId} />}
     </div>
   )
 }

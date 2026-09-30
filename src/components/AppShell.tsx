@@ -33,6 +33,7 @@ import { DialogoSaida, SessaoEncerrada, VeuSaida } from '@/components/casca/Said
 import { TelaBloqueada } from '@/components/casca/Bloqueio'
 import { useBloqueioOcioso } from '@/components/casca/useBloqueioOcioso'
 import { ContextoTopo, FitaDoSinal, Topo, TopoEstreito } from '@/components/casca/Topo'
+import { FaixaDoPapel } from '@/components/casca/FaixaDoPapel'
 import { useNotasNav } from '@/components/casca/useNotasNav'
 import { usePendenciasSaida } from '@/components/casca/usePendenciasSaida'
 import { useSessaoPosPlantao } from '@/components/casca/useSessaoPosPlantao'
@@ -469,6 +470,10 @@ function Casca() {
               </div>
             ) : (
               <ErroBoundary key={location.pathname}>
+                {/* Faixa de parâmetros: só na página inicial do farmacêutico, do administrador e da telemedicina. */}
+                {(ehAdmin || ehTele || papelAtivo === 'farmaceutico') && location.pathname === inicio && (
+                  <FaixaDoPapel papel={papelAtivo} unidadeId={unidadeId} />
+                )}
                 <React.Suspense
                   fallback={
                     <div className="flex h-40 items-center justify-center">

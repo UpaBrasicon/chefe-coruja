@@ -110,3 +110,52 @@ test('fila médica: cor primeiro; prioridade legal só desempata dentro da cor',
   ].sort(ordemMedica)
   assert.deepEqual(fila.map((f) => f.id), ['laranja', 'amarelo-gestante', 'amarelo-cedo', 'amarelo-tarde', 'verde-80'])
 })
+
+// ── espera na porta por cor (cartão de turno) ────────────────────────────────
+import { esperaPorCor } from './esperaPorta.ts'
+
+test('espera por cor: conta, maior espera e alvo estourado pela cor', () => {
+  const agora = new Date('2026-09-30T12:00:00Z')
+  const r = esperaPorCor([
+    { cor_atual: 'amarelo', classificado_em: '2026-09-30T11:30:00Z' },
+    { cor_atual: 'amarelo', classificado_em: '2026-09-30T10:50:00Z' },
+    { cor_atual: 'laranja', classificado_em: '2026-09-30T11:55:00Z' },
+    { cor_atual: 'vermelho', classificado_em: '2026-09-30T11:59:00Z' },
+    { cor_atual: null, classificado_em: null },
+  ], agora)
+  const por = Object.fromEntries(r.map((x) => [x.cor, x]))
+  assert.deepEqual(por.amarelo, { cor: 'amarelo', aguardando: 2, maiorMin: 70, acimaDoAlvo: true })
+  assert.deepEqual(por.laranja, { cor: 'laranja', aguardando: 1, maiorMin: 5, acimaDoAlvo: false })
+  assert.equal(por.vermelho.acimaDoAlvo, true) // vermelho é imediato: 1 min já passou do alvo
+  assert.deepEqual(por.azul, { cor: 'azul', aguardando: 0, maiorMin: null, acimaDoAlvo: false })
+})
+
+// ── paciente da Central (modo adulto/pediátrico) ─────────────────────────────
+import { lerPaciente, lerPositivo, modoPelaIdade, PACIENTE_VAZIO } from './pacienteCentral.ts'
+
+test('Central: o corte de 14 anos é o da unidade, em qualquer unidade de idade', () => {
+  assert.equal(modoPelaIdade(13, 'anos'), 'pediatrico')
+  assert.equal(modoPelaIdade(14, 'anos'), 'adulto')
+  assert.equal(modoPelaIdade(167, 'meses'), 'pediatrico')
+  assert.equal(modoPelaIdade(168, 'meses'), 'adulto')
+  assert.equal(modoPelaIdade(20, 'dias'), 'pediatrico')
+})
+
+test('Central: peso só da balança, positivo; nada é estimado', () => {
+  assert.equal(lerPositivo('70,5'), 70.5)
+  assert.equal(lerPositivo('0'), null)
+  assert.equal(lerPositivo(''), null)
+  assert.equal(lerPositivo('-3'), null)
+  assert.equal(lerPositivo('7O'), null)
+})
+
+test('Central: adulto completo com o peso; pediátrico precisa de idade abaixo de 14 anos e peso', () => {
+  assert.equal(lerPaciente({ ...PACIENTE_VAZIO, modo: 'adulto' }).completo, false)
+  assert.equal(lerPaciente({ ...PACIENTE_VAZIO, modo: 'adulto', peso: '72' }).completo, true)
+  assert.equal(lerPaciente({ ...PACIENTE_VAZIO, modo: 'pediatrico', peso: '16' }).completo, false)
+  assert.equal(lerPaciente({ ...PACIENTE_VAZIO, modo: 'pediatrico', peso: '16', idade: '4' }).completo, true)
+  const fora = lerPaciente({ ...PACIENTE_VAZIO, modo: 'pediatrico', peso: '50', idade: '15' })
+  assert.equal(fora.idadeForaDaPediatria, true)
+  assert.equal(fora.completo, false)
+  assert.equal(lerPaciente(PACIENTE_VAZIO).completo, false)
+})

@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
+import { DetalhesAdmissao } from '@/pages/gestor/DetalhesAdmissao'
 
 type UnidadeConfig = {
   id: string
@@ -20,7 +21,13 @@ type UnidadeConfig = {
   canal_comunicacao: string
   whatsapp_numero: string | null
   nome: string
+  cnes: string | null
+  tipo: string
+  municipio: string | null
+  uf: string | null
 }
+
+const TIPO_UNIDADE: Record<string, string> = { hospital: 'Hospital', upa: 'UPA', pronto_socorro: 'Pronto-socorro', ubs: 'UBS', clinica: 'Clínica' }
 
 type Setor = { id: string; nome: string }
 
@@ -33,15 +40,16 @@ type Remuneracao = {
 }
 
 export default function Configuracao({ embutido = false }: { embutido?: boolean } = {}) {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papeisDaUnidade } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
+  const ehGestor = papeisDaUnidade.includes('gestor')
 
   const { data: unidade, isLoading } = useQuery({
     queryKey: ['unidade-config', unidadeId],
     enabled: !!unidadeId,
     queryFn: async () => {
-      const { data, error } = await supabase.from('unidades').select('id, latitude, longitude, raio_metros, canal_comunicacao, whatsapp_numero, nome').eq('id', unidadeId!).single()
+      const { data, error } = await supabase.from('unidades').select('id, latitude, longitude, raio_metros, canal_comunicacao, whatsapp_numero, nome, cnes, tipo, municipio, uf').eq('id', unidadeId!).single()
       if (error) throw error
       return data as UnidadeConfig
     },
@@ -138,7 +146,27 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
 
       {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
 
+      {/* Identificação (protótipo: nome, CNES e tipo); o cadastro é da rede, aqui só leitura */}
+      <div className="grid gap-4 rounded-cartao border border-fio bg-superficie px-5 py-4 shadow-repouso sm:grid-cols-3">
+        {[
+          ['Nome da unidade', unidade.nome],
+          ['CNES', unidade.cnes ?? 'não informado'],
+          ['Tipo', TIPO_UNIDADE[unidade.tipo] ?? unidade.tipo],
+        ].map(([r, v]) => (
+          <div key={r} className="flex min-w-0 flex-col gap-[3px]">
+            <span className="text-apoio font-medium text-grafite">{r}</span>
+            <span className="text-corpo text-tinta">{v}</span>
+          </div>
+        ))}
+        <span className="text-rotulo text-tinta-sussurro sm:col-span-3">
+          {[unidade.municipio, unidade.uf].filter(Boolean).join(' / ')}
+          {unidade.municipio ? ' · ' : ''}O cadastro da unidade é da administração da rede.
+        </span>
+      </div>
+
       <FormUnidade key={unidade.id} unidade={unidade} unidadeId={unidadeId} />
+
+      {ehGestor && <DetalhesAdmissao />}
 
       <Card>
         <CardHeader>

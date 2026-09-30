@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowRight, Check, ClipboardList, ClipboardPlus, Hourglass, Monitor, Search, Stethoscope, TriangleAlert, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import * as React from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { soDigitos } from '@/lib/documentos'
@@ -19,6 +19,7 @@ import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { ExcluirDaFila } from '@/components/porta/Chamada'
 
 import { Campo, CamposCadastro } from './CamposCadastro'
+import { PropagandaPainel } from './PropagandaPainel'
 import { CADASTRO_VAZIO, errosCadastro, hojeSP, IDENTIDADE, normalizarCadastro, type Cadastro, type CampoCadastro } from './cadastroForm'
 
 // Recepção (protótipo: rec-cadastro, rec-fila-enf, rec-fila-med, rec-painel).
@@ -56,7 +57,7 @@ type NaFila = {
   ultima_sala: string | null
   ultimo_chamador: string | null
 }
-type Chamada = { id: string; criado_em: string; nome: string; sala: string; quem: string | null }
+type Chamada = { id: string; criado_em: string; nome: string; sala: string; quem: string | null; numero: number }
 type Aberto = { episodio_id: string; chegada_em: string; setor: string; etapa: string; em_atendimento: boolean; na_minha_porta: boolean }
 
 type Aba = 'ficha' | 'triagem' | 'medica' | 'painel'
@@ -70,6 +71,30 @@ const ABAS: { aba: Aba; rotulo: string; icone: LucideIcon; titulo: string; descr
   { aba: 'painel', rotulo: 'Painel de chamada', icone: Monitor, titulo: 'Painel de chamada',
     descricao: 'Abre em outra janela para espelhar na televisão da sala de espera. Mostra o nome do paciente e a sala de quem chamou, com aviso sonoro e voz.' },
 ]
+
+const ROTA: Record<Aba, string> = { ficha: '', triagem: 'fila-triagem', medica: 'fila-medica', painel: 'painel' }
+
+/** Maior espera de quem ainda não foi atendido (desde a ficha ou a classificação). */
+function maiorEspera(itens: NaFila[], agora: number): string {
+  const esperando = itens.filter((e) => !e.atendimento_iniciado_em)
+  if (!esperando.length) return '—'
+  const desde = Math.min(...esperando.map((e) => new Date(e.etapa === 'atendimento' ? (e.classificado_em ?? e.chegada_em) : e.chegada_em).getTime()))
+  const min = Math.max(0, Math.round((agora - desde) / 60_000))
+  return min < 60 ? `${min} min` : `${Math.floor(min / 60)}h${String(min % 60).padStart(2, '0')}`
+}
+
+function Contadores({ itens }: { itens: { rotulo: string; valor: number | string }[] }) {
+  return (
+    <div className="mb-3.5 flex flex-wrap overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
+      {itens.map((c, i) => (
+        <div key={c.rotulo} className={cn('flex min-w-[140px] flex-1 flex-col gap-0.5 px-5 py-3', i > 0 && 'border-l border-trilha')}>
+          <span className="text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">{c.rotulo}</span>
+          <span className="text-[22px] leading-[1.2] font-semibold tracking-[-0.02em] tabular-nums text-tinta">{c.valor}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 const hora = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
 const diaHora = (iso: string) =>
@@ -107,13 +132,19 @@ const cartao = 'rounded-cartao border border-fio bg-superficie shadow-repouso'
 const pilula = 'inline-flex items-center rounded-capsula px-2.5 py-1 text-rotulo font-semibold whitespace-nowrap'
 
 export default function Recepcao() {
-  const { unidadeAtiva, papeisDaUnidade } = useUnidade()
+  const { unidadeAtiva, papeisDaUnidade, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const ehGestor = papeisDaUnidade.includes('gestor')
   const queryClient = useQueryClient()
-  const [params, setParams] = useSearchParams()
-  const aba: Aba = (['ficha', 'triagem', 'medica', 'painel'] as const).find((a) => a === params.get('aba')) ?? 'ficha'
-  const irPara = (a: Aba) => setParams((p) => { const n = new URLSearchParams(p); if (a === 'ficha') n.delete('aba'); else n.set('aba', a); return n }, { replace: true })
+  const navigate = useNavigate()
+  const { tela } = useParams()
+  const [params] = useSearchParams()
+  // /recepcao/fila-triagem, /fila-medica e /painel (itens da lateral); ?aba= continua valendo
+  const aba: Aba = (Object.entries(ROTA) as [Aba, string][]).find(([, r]) => r === tela)?.[0]
+    ?? (['ficha', 'triagem', 'medica', 'painel'] as const).find((a) => a === params.get('aba')) ?? 'ficha'
+  const irPara = (a: Aba) => navigate(a === 'ficha' ? '/recepcao' : `/recepcao/${ROTA[a]}`, { replace: true })
+  // a Recepção troca de tela pela lateral; quem abre ficha por outro papel usa as abas
+  const mostrarAbas = papelAtivo !== 'recepcao'
   const agora = useAgora(30_000)
 
   // ── portas (setores de emergência) em que a pessoa pode abrir ficha ──────
@@ -178,13 +209,26 @@ export default function Recepcao() {
     <div className="mx-auto flex w-full max-w-[896px] flex-col">
       <TituloPagina icone={atual.icone} titulo={atual.titulo} descricao={atual.descricao} />
 
-      <Chips rotulo="Telas da Recepção">
-        {ABAS.map((a) => (
-          <Chip key={a.aba} ativo={aba === a.aba} onClick={() => irPara(a.aba)} contagem={porta && contagem[a.aba] ? contagem[a.aba] : undefined}>
-            <a.icone className="size-3.5" aria-hidden /> {a.rotulo}
-          </Chip>
-        ))}
-      </Chips>
+      {mostrarAbas && (
+        <Chips rotulo="Telas da Recepção">
+          {ABAS.map((a) => (
+            <Chip key={a.aba} ativo={aba === a.aba} onClick={() => irPara(a.aba)} contagem={porta && contagem[a.aba] ? contagem[a.aba] : undefined}>
+              <a.icone className="size-3.5" aria-hidden /> {a.rotulo}
+            </Chip>
+          ))}
+        </Chips>
+      )}
+
+      {porta && aba !== 'ficha' && aba !== 'painel' && (
+        <Contadores
+          itens={[
+            { rotulo: 'Aguardando triagem', valor: filaTriagem.length },
+            { rotulo: 'Aguardando o médico', valor: filaMedica.filter((e) => !e.atendimento_iniciado_em).length },
+            { rotulo: 'Em atendimento', valor: filaMedica.filter((e) => e.atendimento_iniciado_em).length },
+            { rotulo: 'Maior espera', valor: maiorEspera(aba === 'triagem' ? filaTriagem : filaMedica, agora) },
+          ]}
+        />
+      )}
 
       {portas && portas.length === 0 && (
         <Vazio icone={ClipboardList} titulo="Você não está escalado numa porta agora" texto="A ficha abre numa porta (setor de emergência) em que você está de plantão." />
@@ -233,6 +277,7 @@ export default function Recepcao() {
       )}
 
       {porta && aba === 'painel' && <PainelChamada porta={porta} chamadas={chamadas.data} carregando={chamadas.isLoading} erro={chamadas.error as Error | null} />}
+      {aba === 'painel' && unidadeId && <PropagandaPainel unidadeId={unidadeId} />}
     </div>
   )
 }
@@ -670,6 +715,7 @@ function PainelChamada({ porta, chamadas, carregando, erro }: {
             <span className="min-w-12 text-apoio tabular-nums text-tinta-sussurro">{hora(c.criado_em)}</span>
             <span className="min-w-0 flex-[1_1_200px] text-corpo font-medium text-tinta">{c.nome}</span>
             <span className="text-controle font-semibold text-acao">{c.sala}</span>
+            {c.numero > 1 && <span className={cn(pilula, 'bg-[#FEF3C7] text-atencao')}>{c.numero}ª chamada</span>}
             <span className="text-apoio text-tinta-sussurro">{c.quem ?? '—'}</span>
           </div>
         ))}

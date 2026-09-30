@@ -127,9 +127,10 @@ END $$;
 
 -- ── 5. protocolos de receita: gestor escreve, médico lê ─────────────────────
 SELECT pg_temp.negado($$SELECT public.salvar_receita_protocolo('21000000-0000-4000-8000-000000000001', 'Sem posologia', 'Teste',
-  '[{"medicamento":"Dipirona 500 mg","posologia":""}]')$$, 'protocolo sem posologia');
+  '[{"medicamento":"Dipirona 500 mg","posologia":""}]', NULL, true, '1', 'Protocolo da unidade, teste')$$, 'protocolo sem posologia');
 SELECT public.salvar_receita_protocolo('21000000-0000-4000-8000-000000000001', 'Dor leve', 'Analgesia de alta',
-  '[{"medicamento":"Paracetamol 500 mg comprimido","posologia":"Texto escrito pela unidade","quantidade":"10 comprimidos"}]');
+  '[{"medicamento":"Paracetamol 500 mg comprimido","posologia":"Texto escrito pela unidade","quantidade":"10 comprimidos"}]',
+  NULL, true, '1', 'Protocolo da unidade, teste');  -- publicar exige versão e fonte (migration 20261007000002)
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.negado($$SELECT public.salvar_receita_protocolo('21000000-0000-4000-8000-000000000001', 'Do médico', 'x',
   '[{"medicamento":"Paracetamol","posologia":"Texto"}]')$$, 'plantonista escreveu protocolo da instituição');

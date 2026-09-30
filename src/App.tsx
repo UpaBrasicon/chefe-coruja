@@ -48,6 +48,9 @@ const PlantaoToolRouter = lazy(() => import('@/pages/plantao/PlantaoToolRouter')
 
 // ── Telas que continuam avulsas ───────────────────────────────────────────────
 const GaviaoPainel = lazy(() => import('@/pages/admin/GaviaoPainel').then((m) => ({ default: m.GaviaoPainel })))
+const Plataformas = lazy(() => import('@/pages/admin/Plataformas'))
+const PendenciasTecnicas = lazy(() => import('@/pages/admin/PendenciasTecnicas'))
+const Servidores = lazy(() => import('@/pages/admin/Servidores'))
 const Indicadores = lazy(() => import('@/pages/Indicadores'))
 const InternacaoPainel = lazy(() => import('@/pages/InternacaoPainel'))
 const Notificacoes = lazy(() => import('@/pages/Notificacoes'))
@@ -56,8 +59,12 @@ const RevisaoClinica = lazy(() => import('@/pages/RevisaoClinica'))
 const PedidosProntuario = lazy(() => import('@/pages/prontuario/PedidosProntuario'))
 const ProntuarioLeitura = lazy(() => import('@/pages/prontuario/ProntuarioLeitura'))
 const PainelGestor = lazy(() => import('@/pages/gestor/PainelGestor'))
+const FarmaciaGestor = lazy(() => import('@/pages/gestor/FarmaciaGestor'))
+const ProtocolosGestor = lazy(() => import('@/pages/gestor/Protocolos'))
+const OlhoDeGaviao = lazy(() => import('@/pages/gestor/OlhoDeGaviao'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
 const Teleinterconsulta = lazy(() => import('@/pages/telemedicina/Teleinterconsulta'))
+const Telemedicina = lazy(() => import('@/pages/telemedicina/Telemedicina'))
 const Pareceres = lazy(() => import('@/pages/parecer/Pareceres'))
 const MeuPlantao = lazy(() => import('@/pages/MeuPlantao'))
 const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome'))
@@ -162,6 +169,8 @@ export default function App() {
                       {/* Ficha: Recepção, ou quem está de plantão na porta quando não há Recepção */}
                       <Route element={<RequireRole papeis={['recepcao', 'plantonista', 'gestor']} />}>
                         <Route path="/recepcao" element={<Recepcao />} />
+                        {/* Porte, onda 8: as telas da Recepção na lateral */}
+                        <Route path="/recepcao/:tela" element={<Recepcao />} />
                       </Route>
 
                       {/* Enfermagem: checagem da prescrição (Fase 4.6) */}
@@ -204,6 +213,10 @@ export default function App() {
                       <Route element={<RequireRole papeis={['admin']} />}>
                         <Route path="/painel" element={<OrganizacaoGrupo />} />
                         <Route path="/gaviao" element={<GaviaoPainel />} />
+                        {/* Porte, onda 8: Plataformas, Pendências técnicas e Servidores */}
+                        <Route path="/plataformas" element={<Plataformas />} />
+                        <Route path="/pendencias-tecnicas" element={<PendenciasTecnicas />} />
+                        <Route path="/servidores" element={<Servidores />} />
                         {/* legado */}
                         <Route path="/pessoas" element={<Redirecionar para="/painel?aba=pessoas" />} />
                       </Route>
@@ -220,6 +233,10 @@ export default function App() {
                       <Route element={<RequireRole papeis={['plantonista', 'gestor', 'telemedicina']} />}>
                         <Route path="/teleinterconsulta" element={<Teleinterconsulta />} />
                       </Route>
+                      {/* Onda 8: as outras telas do médico de telemedicina */}
+                      <Route element={<RequireRole papeis={['telemedicina']} />}>
+                        <Route path="/telemedicina/:tela" element={<Telemedicina />} />
+                      </Route>
 
                       {/* Porte, onda 4: parecer médico — fila do especialista (o banco confere a especialidade) */}
                       <Route element={<RequireRole papeis={['plantonista', 'gestor', 'telemedicina']} />}>
@@ -229,6 +246,10 @@ export default function App() {
                       {/* Fase 6: painel e auditoria são do GESTOR; o administrador vê só agregado */}
                       <Route element={<RequireRole papeis={['gestor']} />}>
                         <Route path="/gestao" element={<PainelGestor />} />
+                        {/* Onda 8, gestor parte 2: farmácia (só leitura) e protocolos da unidade */}
+                        <Route path="/gestao/farmacia" element={<FarmaciaGestor />} />
+                        <Route path="/gestao/protocolos" element={<ProtocolosGestor />} />
+                        <Route path="/gestao/gaviao" element={<OlhoDeGaviao />} />
                         <Route path="/auditoria" element={<Auditoria />} />
                       </Route>
 

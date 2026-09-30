@@ -29,6 +29,11 @@ import { sepseAdulto } from './sepseAdulto.ts'
 import { wellsTep } from './wellsTep.ts'
 import { wellsTvp } from './wellsTvp.ts'
 import { years } from './years.ts'
+import { ckdEpi } from './ckdEpi.ts'
+import { iss } from './iss.ts'
+import { pram } from './pram.ts'
+import { sincopeCanadense } from './sincopeCanadense.ts'
+import { timiIamcsst } from './timiIamcsst.ts'
 
 /** Todos os escores do pacote, para a Central e para os testes de conjunto. */
 export const ESCORES: Escore[] = [
@@ -62,4 +67,9 @@ export const ESCORES: Escore[] = [
   sepseAdulto,
   wellsTep,
   years,
+  timiIamcsst,
+  sincopeCanadense,
+  iss,
+  ckdEpi,
+  pram,
 ]

@@ -1,10 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BookOpen, MonitorSmartphone, Send } from 'lucide-react'
+import { Hourglass, Lock, MonitorSmartphone, Send, Video } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { TituloPagina } from '@/components/monitor/Pagina'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -12,92 +11,51 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { fmtData, fmtDataHora } from '@/lib/datas'
+import { fmtData } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
+
+import { Cartao, COR_SITUACAO, hhmm, Nota, PontoSituacao, ROTULO_SITUACAO, Secao, TopoTele, useTeles, VazioLinha, type Situacao } from './comum'
 
 // Teleinterconsulta (fase 7, migration 20261001000003). O médico presencial
 // solicita com a pergunta e o consentimento; o médico de telemedicina de
 // plantão aceita, lê o prontuário e responde. Solicitação e parecer viram
 // documentos numerados no prontuário. A conduta é de quem está com o paciente
-// (Res. CFM 2.314/2022, art. 7º).
+// (Res. CFM 2.314/2022, art. 7º). Para a telemedicina esta é a "Minha fila"
+// (P/index.html 5919); as outras telas dela estão em Telemedicina.tsx.
 
-type Tele = {
-  id: string
-  paciente_id: string
-  paciente_nome: string
-  paciente_nascimento: string | null
-  setor_nome: string | null
-  solicitante_nome: string
-  consultor_nome: string | null
-  pergunta: string
-  urgencia: 'rotina' | 'urgente'
-  consentimento: string
-  status: 'aberta' | 'em_atendimento' | 'respondida' | 'cancelada'
-  criada_em: string
-  aceita_em: string | null
-  resposta: string | null
-  respondida_em: string | null
-  documento_solicitacao_numero: string | null
-  documento_resposta_numero: string | null
-  minha: boolean
-}
-
-const STATUS: Record<Tele['status'], { rotulo: string; variante: 'warning' | 'info' | 'success' | 'secondary' }> = {
-  aberta: { rotulo: 'Aguardando teleconsultor', variante: 'warning' },
-  em_atendimento: { rotulo: 'Em atendimento', variante: 'info' },
-  respondida: { rotulo: 'Respondida', variante: 'success' },
-  cancelada: { rotulo: 'Cancelada', variante: 'secondary' },
-}
 const CONSENTIMENTO = [
   { valor: 'obtido', rotulo: 'Paciente consentiu' },
   { valor: 'representante_legal', rotulo: 'Representante legal consentiu' },
   { valor: 'emergencia_sem_condicao', rotulo: 'Emergência médica (dispensa, art. 15)' },
 ]
 
-function useTeles(unidadeId?: string) {
-  return useQuery({
-    queryKey: ['teleinterconsultas', unidadeId],
-    enabled: !!unidadeId,
-    refetchInterval: 20_000,
+// ── lado do médico presencial ───────────────────────────────────────────────
+function TelemedicinaDePlantao({ unidadeId }: { unidadeId: string }) {
+  const q = useQuery({
+    queryKey: ['telemedicina-na-unidade', unidadeId],
+    refetchInterval: 30_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('teleinterconsultas_da_unidade', { p_unidade: unidadeId!, p_dias: 7 })
+      const { data, error } = await supabase.rpc('telemedicina_na_unidade', { p_unidade: unidadeId })
       if (error) throw error
-      return (data ?? []) as Tele[]
+      return data ?? []
     },
   })
-}
-
-function Cartao({ t, children }: { t: Tele; children?: React.ReactNode }) {
+  if (!q.data) return null
   return (
-    <li className="rounded-lg border p-3">
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="font-medium">{t.paciente_nome}</span>
-        {t.paciente_nascimento && <span className="text-tinta-sussurro">nasc. {fmtData(t.paciente_nascimento)}</span>}
-        {t.setor_nome && <span className="text-tinta-sussurro">· {t.setor_nome}</span>}
-        <Badge variant={STATUS[t.status].variante}>{STATUS[t.status].rotulo}</Badge>
-        {t.urgencia === 'urgente' && <Badge variant="destructive">urgente</Badge>}
-      </div>
-      <div className="mt-0.5 text-xs text-tinta-sussurro">
-        Solicitada por {t.solicitante_nome} em {fmtDataHora(t.criada_em)}
-        {t.documento_solicitacao_numero ? ` · documento nº ${t.documento_solicitacao_numero}` : ''}
-        {t.consultor_nome ? ` · teleconsultor ${t.consultor_nome}` : ''}
-      </div>
-      <p className="mt-2 rounded bg-trilha/60 p-2 text-sm"><span className="font-medium">Pergunta: </span>{t.pergunta}</p>
-      {t.resposta && (
-        <div className="mt-2 rounded border border-conforme/30 bg-conforme/[0.05] p-2 text-sm">
-          <div className="text-xs text-tinta-sussurro">
-            Parecer em {t.respondida_em ? fmtDataHora(t.respondida_em) : ''}{t.documento_resposta_numero ? ` · documento nº ${t.documento_resposta_numero}` : ''}
-          </div>
-          <p className="mt-1 whitespace-pre-wrap">{t.resposta}</p>
-          <p className="mt-1 text-xs text-tinta-sussurro">A conduta é do médico assistente presencial.</p>
-        </div>
-      )}
-      {children}
-    </li>
+    <div className="flex flex-wrap items-center gap-2 rounded-cartao border border-fio bg-superficie px-5 py-3 shadow-repouso">
+      <span className="text-apoio font-semibold text-tinta">Telemedicina de plantão agora</span>
+      {q.data.length === 0 && <span className="text-apoio text-tinta-sussurro">ninguém escalado neste momento: o pedido fica na fila até alguém entrar.</span>}
+      {q.data.map((t) => (
+        <span key={t.nome} className={cn('inline-flex items-center gap-[7px] rounded-capsula border py-1 pr-[11px] pl-[9px] text-apoio', COR_SITUACAO[t.situacao as Situacao['estado']] ?? '')}>
+          <PontoSituacao estado={t.situacao as Situacao['estado']} />
+          {t.nome}{t.crm ? ` · CRM ${t.crm}` : ''} · {ROTULO_SITUACAO[t.situacao as Situacao['estado']] ?? t.situacao} · até {hhmm(t.ate)}
+        </span>
+      ))}
+    </div>
   )
 }
 
-// ── lado do médico presencial ───────────────────────────────────────────────
 function Solicitante({ unidadeId }: { unidadeId: string }) {
   const qc = useQueryClient()
   const teles = useTeles(unidadeId)
@@ -142,6 +100,7 @@ function Solicitante({ unidadeId }: { unidadeId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
+      <TelemedicinaDePlantao unidadeId={unidadeId} />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Nova teleinterconsulta</CardTitle>
@@ -200,7 +159,7 @@ function Solicitante({ unidadeId }: { unidadeId: string }) {
   )
 }
 
-// ── lado do teleconsultor ───────────────────────────────────────────────────
+// ── lado do teleconsultor: Minha fila ───────────────────────────────────────
 function PlantaoRemoto({ unidadeId }: { unidadeId: string }) {
   const { perfil } = useAuth()
   const qc = useQueryClient()
@@ -215,120 +174,84 @@ function PlantaoRemoto({ unidadeId }: { unidadeId: string }) {
       return data?.[0] ?? null
     },
   })
+  const invalidar = () => {
+    void qc.invalidateQueries({ queryKey: ['presenca-remota'] })
+    void qc.invalidateQueries({ queryKey: ['situacao-tele'] })
+  }
   const entrar = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('registrar_checkin', { p_unidade: unidadeId })
       if (error) throw error
     },
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['presenca-remota'] }),
+    onSuccess: invalidar,
   })
   const sair = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.rpc('registrar_checkout', { p_registro: id })
       if (error) throw error
     },
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['presenca-remota'] }),
+    onSuccess: invalidar,
   })
   const p = presenca.data
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border p-3 text-sm">
+    <div className="flex flex-wrap items-center gap-3 rounded-cartao border border-fio bg-superficie px-5 py-3 text-apoio shadow-repouso">
       {p ? (
         <>
-          <span>Plantão remoto iniciado às {new Date(p.checkin_em!).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', timeStyle: 'short' })}.</span>
-          <Button size="sm" variant="outline" onClick={() => sair.mutate(p.id)} disabled={sair.isPending}>Encerrar plantão remoto</Button>
+          <span className="text-tinta">Plantão remoto iniciado às {hhmm(p.checkin_em)}.</span>
+          <Button size="sm" variant="outline" className="ml-auto" onClick={() => sair.mutate(p.id)} disabled={sair.isPending}>Encerrar plantão remoto</Button>
         </>
       ) : (
         <>
-          <span>Registre o início do plantão remoto (check-in sem localização: telemedicina).</span>
-          <Button size="sm" onClick={() => entrar.mutate()} disabled={entrar.isPending}>Iniciar plantão remoto</Button>
+          <span className="text-tinta-apoio">Registre o início do plantão remoto (check-in sem localização: telemedicina).</span>
+          <Button size="sm" className="ml-auto" onClick={() => entrar.mutate()} disabled={entrar.isPending}>Iniciar plantão remoto</Button>
         </>
       )}
-      {(entrar.error || sair.error) && <span className="text-critico">{((entrar.error ?? sair.error) as Error).message}</span>}
+      {(entrar.error || sair.error) && <span className="basis-full text-critico">{((entrar.error ?? sair.error) as Error).message}</span>}
     </div>
   )
 }
 
-function Consultor({ unidadeId }: { unidadeId: string }) {
+function MinhaFila({ unidadeId }: { unidadeId: string }) {
   const qc = useQueryClient()
   const teles = useTeles(unidadeId)
-  const [respostas, setRespostas] = React.useState<Record<string, string>>({})
-  const invalidar = () => void qc.invalidateQueries({ queryKey: ['teleinterconsultas'] })
-
   const aceitar = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.rpc('aceitar_teleinterconsulta', { p_id: id })
       if (error) throw error
     },
-    onSuccess: invalidar,
-  })
-  const responder = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc('responder_teleinterconsulta', { p_id: id, p_resposta: (respostas[id] ?? '').trim() })
-      if (error) throw error
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['teleinterconsultas'] })
+      void qc.invalidateQueries({ queryKey: ['situacao-tele'] })
     },
-    onSuccess: invalidar,
   })
-
   const lista = teles.data ?? []
   const abertas = lista.filter((t) => t.status === 'aberta')
-  const minhas = lista.filter((t) => t.minha && t.status === 'em_atendimento')
-  const feitas = lista.filter((t) => t.minha && t.status === 'respondida')
+  const emAtendimento = lista.filter((t) => t.minha && t.status === 'em_atendimento').length
 
   return (
     <div className="flex flex-col gap-4">
       <PlantaoRemoto unidadeId={unidadeId} />
-      {teles.error && <p className="text-sm text-critico">{(teles.error as Error).message}</p>}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Em atendimento por você ({minhas.length})</CardTitle>
-          <CardDescription>Você lê o prontuário deste paciente até 24 h depois de responder. O parecer entra no prontuário como documento numerado seu.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {minhas.length === 0 && <p className="text-sm text-tinta-sussurro">Nenhuma.</p>}
-          <ul className="flex flex-col gap-3">
-            {minhas.map((t) => (
-              <Cartao key={t.id} t={t}>
-                <div className="mt-2 grid gap-2">
-                  <Button size="sm" variant="outline" className="w-fit" render={<Link to={`/prontuarios/${t.paciente_id}`} />}><BookOpen className="size-4" />Ler prontuário</Button>
-                  <Textarea rows={4} placeholder="Parecer: hipóteses, o que sugere e em que condição reavaliar." value={respostas[t.id] ?? ''}
-                    onChange={(e) => setRespostas((r) => ({ ...r, [t.id]: e.target.value }))} />
-                  <Button size="sm" className="w-fit" onClick={() => responder.mutate(t.id)} disabled={responder.isPending || (respostas[t.id]?.trim().length ?? 0) < 20}>
-                    <Send className="size-4" />Enviar parecer
-                  </Button>
-                </div>
-              </Cartao>
-            ))}
-          </ul>
-          {responder.error && <p className="mt-2 text-sm text-critico">{(responder.error as Error).message}</p>}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Fila da unidade ({abertas.length})</CardTitle>
-          <CardDescription>Aparece enquanto você está de plantão nesta unidade. Aceitar abre a leitura do prontuário do paciente.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {teles.isLoading && <Spinner />}
-          {!teles.isLoading && abertas.length === 0 && <p className="text-sm text-tinta-sussurro">Nenhuma teleinterconsulta aguardando.</p>}
-          <ul className="flex flex-col gap-3">
-            {abertas.map((t) => (
-              <Cartao key={t.id} t={t}>
-                <Button className="mt-2" size="sm" onClick={() => aceitar.mutate(t.id)} disabled={aceitar.isPending}>Aceitar</Button>
-              </Cartao>
-            ))}
-          </ul>
-          {aceitar.error && <p className="mt-2 text-sm text-critico">{(aceitar.error as Error).message}</p>}
-        </CardContent>
-      </Card>
-
-      {feitas.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle className="text-base">Respondidas por você (7 dias)</CardTitle></CardHeader>
-          <CardContent><ul className="flex flex-col gap-3">{feitas.map((t) => <Cartao key={t.id} t={t} />)}</ul></CardContent>
-        </Card>
+      {teles.error && <p className="text-apoio text-critico">{(teles.error as Error).message}</p>}
+      {emAtendimento > 0 && (
+        <Link to="/telemedicina/salas" className="flex items-center gap-2 rounded-cartao border border-critico/30 bg-alerta-critico px-5 py-3 text-apoio font-medium text-critico hover:opacity-90">
+          <Video className="size-4" aria-hidden /> {emAtendimento === 1 ? 'Você tem 1 teleinterconsulta em atendimento' : `Você tem ${emAtendimento} teleinterconsultas em atendimento`} — responder em Salas em andamento
+        </Link>
       )}
+      <Secao titulo={`Fila da unidade (${abertas.length})`} extra="urgente primeiro, depois a mais antiga">
+        {teles.isLoading && <Spinner />}
+        {!teles.isLoading && abertas.length === 0 && <VazioLinha>Nenhum chamado esperando. Aparece aqui enquanto você está de plantão nesta unidade.</VazioLinha>}
+        <ul className="flex flex-col gap-3">
+          {abertas.map((t) => (
+            <Cartao key={t.id} t={t}>
+              <Button className="mt-2.5" size="sm" onClick={() => aceitar.mutate(t.id)} disabled={aceitar.isPending}><Video className="size-3.5" aria-hidden />Atender agora</Button>
+            </Cartao>
+          ))}
+        </ul>
+        {aceitar.error && <p className="text-apoio text-critico">{(aceitar.error as Error).message}</p>}
+      </Secao>
+      <Nota icone={<Lock />}>
+        Você vê a fila da unidade só enquanto está de plantão nela. O prontuário do paciente abre depois de aceitar e fica aberto para leitura até 24 h depois do parecer; cada abertura vai para a trilha de auditoria.
+      </Nota>
     </div>
   )
 }
@@ -339,15 +262,16 @@ export default function Teleinterconsulta() {
   const consultor = papeisDaUnidade.includes('telemedicina') && !papeisDaUnidade.includes('plantonista')
   if (!unidadeId) return <Spinner />
   return (
-    <div className="flex w-full max-w-4xl flex-col gap-4">
-      <TituloPagina
-        icone={MonitorSmartphone}
-        titulo="Teleinterconsulta"
-        descricao={consultor
-          ? 'Apoio ao médico presencial. A conduta é de quem está com o paciente (Res. CFM 2.314/2022, art. 7º).'
-          : 'Peça apoio ao médico de telemedicina de plantão. A conduta continua sendo sua.'}
-      />
-      {consultor ? <Consultor unidadeId={unidadeId} /> : <Solicitante unidadeId={unidadeId} />}
+    <div className="flex w-full max-w-4xl flex-col">
+      {consultor ? (
+        <TituloPagina icone={Hourglass} titulo="Minha fila"
+          descricao="Chamados abertos pela unidade que estou cobrindo, urgentes primeiro. A conduta é de quem está com o paciente (Res. CFM 2.314/2022, art. 7º)."
+          acoes={<TopoTele unidadeId={unidadeId} />} />
+      ) : (
+        <TituloPagina icone={MonitorSmartphone} titulo="Teleinterconsulta"
+          descricao="Peça apoio ao médico de telemedicina de plantão. A conduta continua sendo sua." />
+      )}
+      {consultor ? <MinhaFila unidadeId={unidadeId} /> : <Solicitante unidadeId={unidadeId} />}
     </div>
   )
 }

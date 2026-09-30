@@ -37,6 +37,16 @@ export const fichaChoquePediatrico: Ficha = {
   revisadoEm: '28/09/2026 (Phoenix 2024 e SSC pediátrica 2026 conferidas no texto; livro do ICr mantido como base)',
 }
 
+/** Phoenix como ferramenta própria da Central (onda 9): mesma regra de phoenix(), só a fonte do escore. */
+export const fichaPhoenixPed: Ficha = {
+  id: 'ped-phoenix',
+  titulo: 'Escore de Phoenix — sepse e choque séptico (criança)',
+  versao: '2026-09-30.1',
+  publico: 'pediatrico',
+  fontes: [{ ...PHOENIX_2024, citacao: `${PHOENIX_2024.citacao} Tabela do escore (p. E3 do PDF).` }],
+  revisadoEm: '30/09/2026 (mesma regra conferida no texto em 28/09; aguarda aprovação do RT como ferramenta própria)',
+}
+
 export type Volume = {
   bolus: Faixa
   primeiraHora: Faixa

@@ -1,25 +1,27 @@
 import { lazy } from 'react'
-import { LayoutDashboard } from 'lucide-react'
+import { Building2 } from 'lucide-react'
 
 import { TabsPagina, type AbaDef } from '@/components/TabsPagina'
 
-const PainelAdmin = lazy(() => import('@/pages/PainelAdmin').then((m) => ({ default: m.PainelAdmin })))
+const RedeCompleta = lazy(() => import('@/pages/admin/RedeCompleta').then((m) => ({ default: m.RedeCompleta })))
 const Pessoas = lazy(() => import('@/pages/Pessoas').then((m) => ({ default: m.Pessoas })))
 
+// "censo" continua como valor da aba para os links antigos (?aba=censo)
 const ABAS: AbaDef[] = [
-  { valor: 'censo', rotulo: 'Censo', conteudo: () => <PainelAdmin embutido /> },
+  { valor: 'censo', rotulo: 'Unidades', conteudo: () => <RedeCompleta /> },
   { valor: 'pessoas', rotulo: 'Pessoas', conteudo: () => <Pessoas embutido /> },
 ]
 
 /**
- * Organização (admin) — censo agregado e os vínculos que o alimentam.
+ * Rede (admin): todas as unidades da organização, em agregado, e os vínculos
+ * que a alimentam (P/index.html 9979).
  */
 export default function OrganizacaoGrupo() {
   return (
     <TabsPagina
       titulo="Rede"
-      descricao="Censo agregado por unidade e gestão de vínculos. Nenhuma tela do administrador mostra identidade de paciente."
-      icone={LayoutDashboard}
+      descricao="Todas as unidades da organização. Sem identidade de paciente."
+      icone={Building2}
       abas={ABAS}
     />
   )
