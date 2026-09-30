@@ -33,7 +33,8 @@
     "import:cmed": "node scripts/terminologia/importar-cmed.ts",
     "import:loinc": "node scripts/terminologia/importar-loinc.ts",
     "folhas:copiar": "node scripts/copiar-folhas.mjs",
-    "verificar:telas": "node scripts/verificacao-telas.mjs"
+    "verificar:telas": "node scripts/verificacao-telas.mjs",
+    "emails:gerar": "node scripts/gerar-emails.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
