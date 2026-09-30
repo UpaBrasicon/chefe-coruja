@@ -1,25 +1,31 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ClipboardList, Search, Tv, UserPlus, UserRoundCheck } from 'lucide-react'
+import { ArrowRight, Check, ClipboardList, ClipboardPlus, Hourglass, Monitor, Search, Stethoscope, TriangleAlert, X } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import * as React from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
-import { UFS } from '@/lib/constants'
+import { soDigitos } from '@/lib/documentos'
+import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { rotuloIdade } from '@/domain/idade'
+import { ehPediatrico, rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, PRIORIDADE_ROTULO, PRIORIDADES_INFORMADAS, rotulosPrioridade, type PrioridadeLegal } from '@/domain/prioridade'
-import { Badge } from '@/components/ui/badge'
+import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
-import { Textarea } from '@/components/ui/textarea'
+import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
-import { RetirarDaFila } from '@/components/porta/Chamada'
+import { ExcluirDaFila } from '@/components/porta/Chamada'
 
-// Recepção (Fase 2.1): procurar antes de cadastrar, abrir a ficha — que abre o
-// episódio — e ver a fila da triagem da porta. A Recepção não lê prontuário:
-// a busca devolve só identificação, com CPF e CNS mascarados.
+import { Campo, CamposCadastro } from './CamposCadastro'
+import { CADASTRO_VAZIO, errosCadastro, hojeSP, IDENTIDADE, normalizarCadastro, type Cadastro, type CampoCadastro } from './cadastroForm'
+
+// Recepção (protótipo: rec-cadastro, rec-fila-enf, rec-fila-med, rec-painel).
+// Procurar antes de cadastrar, abrir a ficha — que abre o episódio — e
+// acompanhar as filas da porta e as chamadas. A Recepção não lê prontuário:
+// a busca devolve só identificação, com CPF e CNS mascarados, e as filas
+// trazem só identificação, queixa referida, prioridade, cor e chamada.
 
 type Porta = { id: string; nome: string; publico: 'todos' | 'adulto' | 'pediatrico' }
 type Achado = {
@@ -34,38 +40,81 @@ type Achado = {
   episodio_etapa: string | null
 }
 type NaFila = {
-  id: string
+  episodio_id: string
+  etapa: 'triagem' | 'atendimento'
   chegada_em: string
+  classificado_em: string | null
+  cor_atual: CorRisco | null
   queixa: string
   prioridades_legais: string[]
-  paciente: { nome: string; data_nascimento: string | null } | null
+  nome: string
+  nome_social: string | null
+  data_nascimento: string | null
+  atendimento_iniciado_em: string | null
+  medico: string | null
+  chamadas: number
+  ultima_sala: string | null
+  ultimo_chamador: string | null
 }
+type Chamada = { id: string; criado_em: string; nome: string; sala: string; quem: string | null }
+type Aberto = { episodio_id: string; chegada_em: string; setor: string; etapa: string; em_atendimento: boolean; na_minha_porta: boolean }
 
-const VAZIO = {
-  nome: '', nome_social: '', data_nascimento: '', sexo: '', nome_mae: '', cpf: '', cns: '', telefone: '',
-  endereco: '', municipio: '', uf: '', responsavel_nome: '', responsavel_parentesco: '', responsavel_documento: '',
-  responsavel_telefone: '',
-}
-type Dados = typeof VAZIO
+type Aba = 'ficha' | 'triagem' | 'medica' | 'painel'
+const ABAS: { aba: Aba; rotulo: string; icone: LucideIcon; titulo: string; descricao: string }[] = [
+  { aba: 'ficha', rotulo: 'Nova ficha', icone: ClipboardPlus, titulo: 'Nova ficha',
+    descricao: 'Procure o paciente antes de cadastrar: quem já tem cadastro abre a ficha com um clique. A ficha vai para a fila da triagem.' },
+  { aba: 'triagem', rotulo: 'Fila da triagem', icone: Hourglass, titulo: 'Fila da triagem',
+    descricao: 'Fichas aguardando a enfermagem, com prioridade legal primeiro e depois por ordem de chegada. Você acompanha; quem chama é a triagem.' },
+  { aba: 'medica', rotulo: 'Fila médica', icone: Stethoscope, titulo: 'Fila médica',
+    descricao: 'Pacientes triados aguardando o Pronto Socorro, pela cor da classificação e pelo tempo de espera. Quem chama é o médico.' },
+  { aba: 'painel', rotulo: 'Painel de chamada', icone: Monitor, titulo: 'Painel de chamada',
+    descricao: 'Abre em outra janela para espelhar na televisão da sala de espera. Mostra o nome do paciente e a sala de quem chamou, com aviso sonoro e voz.' },
+]
 
-const hoje = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
 const hora = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
-const dataBr = (iso: string | null) => (iso ? iso.slice(0, 10).split('-').reverse().join('/') : '—')
-
-function Campo({ id, rotulo, children }: { id: string; rotulo: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={id}>{rotulo}</Label>
-      {children}
-    </div>
-  )
+const diaHora = (iso: string) =>
+  `${new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit' })} ${hora(iso)}`
+const ETAPA_ABERTA = (a: Aberto) =>
+  a.etapa === 'triagem' ? 'fila da triagem'
+  : a.etapa === 'atendimento' ? (a.em_atendimento ? 'em atendimento médico' : 'fila médica')
+  : a.etapa === 'observacao' ? 'observação'
+  : a.etapa === 'internacao' ? 'internação'
+  : a.etapa
+/** A RPC recusa a ficha porque o paciente já tem episódio aberto (checagem ou índice único). */
+const ehEpisodioAberto = (m: string) => /^FICHA_EPISODIO_ABERTO|episodios_um_aberto_por_paciente/.test(m)
+const nomeExibicao = (nome: string, social: string | null) => (social ? `${social} (${nome})` : nome)
+const SITUACAO: Record<string, string> = {
+  triagem: 'Já está na fila da triagem',
+  atendimento: 'Já está na fila médica',
+  observacao: 'Em observação na unidade',
+  internacao: 'Internado na unidade',
 }
+
+/** Relógio da tela: a espera anda sem precisar recarregar a fila. */
+function useAgora(ms: number) {
+  const [agora, setAgora] = React.useState(() => Date.now())
+  React.useEffect(() => {
+    const t = setInterval(() => setAgora(Date.now()), ms)
+    return () => clearInterval(t)
+  }, [ms])
+  return agora
+}
+
+/** Termo que o servidor aceita: 3 letras do nome ou 4 números de documento. */
+const termoValido = (t: string) => t.replace(/[^\p{L}]/gu, '').length >= 3 || soDigitos(t).length >= 4
+
+const cartao = 'rounded-cartao border border-fio bg-superficie shadow-repouso'
+const pilula = 'inline-flex items-center rounded-capsula px-2.5 py-1 text-rotulo font-semibold whitespace-nowrap'
 
 export default function Recepcao() {
   const { unidadeAtiva, papeisDaUnidade } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const ehGestor = papeisDaUnidade.includes('gestor')
   const queryClient = useQueryClient()
+  const [params, setParams] = useSearchParams()
+  const aba: Aba = (['ficha', 'triagem', 'medica', 'painel'] as const).find((a) => a === params.get('aba')) ?? 'ficha'
+  const irPara = (a: Aba) => setParams((p) => { const n = new URLSearchParams(p); if (a === 'ficha') n.delete('aba'); else n.set('aba', a); return n }, { replace: true })
+  const agora = useAgora(30_000)
 
   // ── portas (setores de emergência) em que a pessoa pode abrir ficha ──────
   const { data: portas } = useQuery({
@@ -88,104 +137,54 @@ export default function Recepcao() {
   const [portaId, setPortaId] = React.useState<string | null>(null)
   const porta = portas?.find((p) => p.id === portaId) ?? (portas?.length === 1 ? portas[0] : undefined)
 
-  // ── busca ────────────────────────────────────────────────────────────────
-  const [termo, setTermo] = React.useState('')
-  const [buscado, setBuscado] = React.useState('')
-  const busca = useQuery({
-    queryKey: ['recepcao-busca', unidadeId, buscado],
-    enabled: !!unidadeId && buscado.length >= 3,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('buscar_pacientes', { p_unidade: unidadeId!, p_termo: buscado })
-      if (error) throw error
-      return (data ?? []) as Achado[]
-    },
-  })
-
-  // ── ficha ────────────────────────────────────────────────────────────────
-  const [modo, setModo] = React.useState<'nenhum' | 'existente' | 'novo'>('nenhum')
-  const [existente, setExistente] = React.useState<Achado | null>(null)
-  const [dados, setDados] = React.useState<Dados>(VAZIO)
-  const [queixa, setQueixa] = React.useState('')
-  const [prioridades, setPrioridades] = React.useState<PrioridadeLegal[]>([])
-  const [duplicata, setDuplicata] = React.useState<{ tipo: 'documento' | 'provavel'; id: string; texto: string } | null>(null)
-  const [aberta, setAberta] = React.useState<string | null>(null)
-
-  const mudar = (k: keyof Dados) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setDados((d) => ({ ...d, [k]: e.target.value }))
-
-  function limpar() {
-    setModo('nenhum')
-    setExistente(null)
-    setDados(VAZIO)
-    setQueixa('')
-    setPrioridades([])
-    setDuplicata(null)
-  }
-
-  function usarExistente(a: Achado) {
-    setExistente(a)
-    setModo('existente')
-    setDados(VAZIO)
-    setDuplicata(null)
-  }
-
-  const registrar = useMutation({
-    mutationFn: async ({ outraPessoa, pacienteId }: { outraPessoa?: boolean; pacienteId?: string } = {}) => {
-      if (!porta) throw new Error('Escolha a porta de entrada.')
-      // p_dados: pessoa nova manda tudo; cadastro existente manda só contato e
-      // responsável preenchidos — a identificação dele não é trocada daqui
-      const identidade = ['nome', 'nome_social', 'data_nascimento', 'sexo', 'nome_mae']
-      const paraExistente = !!pacienteId || modo === 'existente'
-      const enviados = Object.fromEntries(
-        Object.entries(dados).filter(([k, v]) => (paraExistente ? v.trim() !== '' && !identidade.includes(k) : true))
-      )
-      const { data, error } = await supabase.rpc('registrar_ficha', {
-        p_setor: porta.id,
-        p_queixa: queixa,
-        p_paciente: pacienteId ?? existente?.id ?? undefined,
-        p_dados: enviados,
-        p_prioridades: prioridades,
-        p_outra_pessoa: outraPessoa ?? false,
-      })
-      if (error) throw error
-      return data as { prontuario: string }
-    },
-    onSuccess: (r) => {
-      setAberta(`Ficha aberta · prontuário ${r.prontuario}. O paciente está na fila da triagem.`)
-      limpar()
-      setTermo('')
-      setBuscado('')
-      void queryClient.invalidateQueries({ queryKey: ['recepcao-fila'] })
-    },
-    onError: (e: Error) => {
-      const m = e.message.match(/^FICHA_DUPLICATA_(DOCUMENTO|PROVAVEL):([0-9a-f-]{36}) (.*)$/)
-      if (m) setDuplicata({ tipo: m[1] === 'DOCUMENTO' ? 'documento' : 'provavel', id: m[2], texto: m[3] })
-    },
-  })
-
-  // ── fila da triagem ──────────────────────────────────────────────────────
+  // ── filas da porta (triagem e médica) ────────────────────────────────────
   const fila = useQuery({
     queryKey: ['recepcao-fila', porta?.id],
     enabled: !!porta,
     refetchInterval: 20_000,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('episodios')
-        .select('id, chegada_em, queixa, prioridades_legais, paciente:pacientes(nome, data_nascimento)')
-        .eq('setor_id', porta!.id)
-        .eq('etapa', 'triagem')
+      const { data, error } = await supabase.rpc('fila_da_porta', { p_setor: porta!.id })
       if (error) throw error
-      return ((data ?? []) as unknown as NaFila[]).sort(ordemTriagem)
+      return (data ?? []) as unknown as NaFila[]
+    },
+  })
+  const filaTriagem = React.useMemo(() => (fila.data ?? []).filter((e) => e.etapa === 'triagem').sort(ordemTriagem), [fila.data])
+  const filaMedica = React.useMemo(() => {
+    const lista = (fila.data ?? []).filter((e) => e.etapa === 'atendimento')
+    const esperando = lista.filter((e) => !e.atendimento_iniciado_em)
+    const emAtendimento = lista.filter((e) => e.atendimento_iniciado_em)
+    const ordenar = (l: NaFila[]) =>
+      l.map((e) => ({ ...e, cor_atual: (e.cor_atual ?? 'azul') as CorRisco, classificado_em: e.classificado_em ?? e.chegada_em, _cor: e.cor_atual }))
+        .sort(ordemMedica)
+        .map(({ _cor, ...e }) => ({ ...e, cor_atual: _cor }))
+    return [...ordenar(esperando), ...ordenar(emAtendimento)]
+  }, [fila.data])
+
+  const chamadas = useQuery({
+    queryKey: ['recepcao-chamadas', porta?.id],
+    enabled: !!porta && aba === 'painel',
+    refetchInterval: 15_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('ultimas_chamadas_porta', { p_setor: porta!.id, p_limite: 8 })
+      if (error) throw error
+      return (data ?? []) as Chamada[]
     },
   })
 
-  const podeRegistrar =
-    !!porta && queixa.trim().length >= 3 && (modo === 'existente' || (modo === 'novo' && dados.nome.trim().length >= 3))
-  const erro = registrar.error && !duplicata ? registrar.error.message.replace(/^FICHA_[A-Z_]+:\s*/, '') : null
+  const contagem: Partial<Record<Aba, number>> = { triagem: filaTriagem.length, medica: filaMedica.filter((e) => !e.atendimento_iniciado_em).length }
+  const atual = ABAS.find((a) => a.aba === aba)!
 
   return (
-    <>
-      <TituloPagina icone={ClipboardList} titulo="Recepção" descricao="Procure o paciente antes de cadastrar. A ficha abre o episódio e vai para a fila da triagem." />
+    <div className="mx-auto flex w-full max-w-[896px] flex-col">
+      <TituloPagina icone={atual.icone} titulo={atual.titulo} descricao={atual.descricao} />
+
+      <Chips rotulo="Telas da Recepção">
+        {ABAS.map((a) => (
+          <Chip key={a.aba} ativo={aba === a.aba} onClick={() => irPara(a.aba)} contagem={porta && contagem[a.aba] ? contagem[a.aba] : undefined}>
+            <a.icone className="size-3.5" aria-hidden /> {a.rotulo}
+          </Chip>
+        ))}
+      </Chips>
 
       {portas && portas.length === 0 && (
         <Vazio icone={ClipboardList} titulo="Você não está escalado numa porta agora" texto="A ficha abre numa porta (setor de emergência) em que você está de plantão." />
@@ -200,205 +199,482 @@ export default function Recepcao() {
           ))}
         </Chips>
       )}
+      {portas && portas.length > 1 && !porta && <p className="text-apoio text-tinta-sussurro">Escolha a porta de entrada.</p>}
 
-      {porta && (
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={async () => {
-              // a janela abre já (dentro do clique) e recebe o endereço depois
-              const janela = window.open('', '_blank')
-              const { data, error } = await supabase.rpc('gerar_link_painel', { p_setor: porta.id })
-              if (error || !data) {
-                janela?.close()
-                setAberta(null)
-                alert(error?.message ?? 'Não foi possível abrir o painel.')
-                return
-              }
-              if (janela) janela.location.href = `/painel/${data as string}`
-            }}
-          >
-            <Tv /> Abrir painel da TV
-          </Button>
-          <span className="text-xs text-muted-foreground">Gerar de novo desliga o link anterior.</span>
-        </div>
+      {porta && aba === 'ficha' && (
+        <NovaFicha
+          porta={porta}
+          unidadeId={unidadeId!}
+          aoAbrir={() => {
+            void queryClient.invalidateQueries({ queryKey: ['recepcao-fila'] })
+            void queryClient.invalidateQueries({ queryKey: ['nota-fila-triagem'] })
+          }}
+        />
       )}
 
-      {aberta && <p role="status" className="text-sm text-conforme">{aberta}</p>}
+      {porta && aba === 'triagem' && (
+        <ListaFila
+          carregando={fila.isLoading}
+          erro={fila.error as Error | null}
+          vazia="Ninguém aguardando triagem."
+          itens={filaTriagem}
+          agora={agora}
+        />
+      )}
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
-        <div className="flex flex-col gap-4">
-          {modo === 'nenhum' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Procurar paciente</CardTitle>
-                <CardDescription>Nome, nome da mãe, CPF, Cartão SUS ou número do prontuário.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                <form
-                  className="flex gap-2"
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    setAberta(null)
-                    setBuscado(termo.trim())
-                  }}
-                >
-                  <Input aria-label="Buscar paciente" value={termo} onChange={(e) => setTermo(e.target.value)} placeholder="Ex.: Maria de Souza" />
-                  <Button type="submit" disabled={termo.trim().length < 3}>
-                    <Search /> Buscar
-                  </Button>
-                </form>
-                {busca.isFetching && <Spinner />}
-                {busca.error && <p className="text-sm text-destructive">{(busca.error as Error).message}</p>}
-                {busca.data && buscado && (
-                  <div className="flex flex-col gap-2">
-                    {busca.data.length === 0 && <p className="text-sm text-muted-foreground">Nenhum cadastro encontrado.</p>}
-                    {busca.data.map((a) => (
-                      <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-controle border border-fio p-3">
-                        <div className="min-w-0">
-                          <div className="font-medium text-tinta">
-                            {a.nome_social ? `${a.nome_social} (${a.nome})` : a.nome}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {a.data_nascimento ? `${dataBr(a.data_nascimento)} · ${rotuloIdade(a.data_nascimento, hoje())}` : 'Nascimento não informado'}
-                            {a.nome_mae && ` · mãe ${a.nome_mae}`}
-                            {a.cpf_final && ` · CPF ${a.cpf_final}`}
-                            {a.prontuario && ` · pront. ${a.prontuario}`}
-                          </div>
-                        </div>
-                        {a.episodio_etapa ? (
-                          <Badge variant="outline">Já está na unidade ({a.episodio_etapa})</Badge>
-                        ) : (
-                          <Button size="sm" variant="outline" onClick={() => usarExistente(a)}>
-                            <UserRoundCheck /> Usar este cadastro
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                    <Button variant="ghost" className="self-start" onClick={() => { setModo('novo'); setDados({ ...VAZIO, nome: /\d/.test(buscado) ? '' : buscado }) }}>
-                      <UserPlus /> Não encontrei: cadastrar novo
-                    </Button>
-                  </div>
+      {porta && aba === 'medica' && (
+        <ListaFila
+          carregando={fila.isLoading}
+          erro={fila.error as Error | null}
+          vazia="Ninguém aguardando atendimento médico."
+          itens={filaMedica}
+          agora={agora}
+        />
+      )}
+
+      {porta && aba === 'painel' && <PainelChamada porta={porta} chamadas={chamadas.data} carregando={chamadas.isLoading} erro={chamadas.error as Error | null} />}
+    </div>
+  )
+}
+
+// ── Nova ficha ───────────────────────────────────────────────────────────────
+
+function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: string; aoAbrir: () => void }) {
+  const queryClient = useQueryClient()
+  const [termo, setTermo] = React.useState('')
+  const [buscado, setBuscado] = React.useState('')
+  const [modo, setModo] = React.useState<'nenhum' | 'existente' | 'novo'>('nenhum')
+  const [existente, setExistente] = React.useState<Achado | null>(null)
+  const [dados, setDados] = React.useState<Cadastro>(CADASTRO_VAZIO)
+  const [queixa, setQueixa] = React.useState('')
+  const [prioridades, setPrioridades] = React.useState<PrioridadeLegal[]>([])
+  const [duplicata, setDuplicata] = React.useState<{ tipo: 'documento' | 'provavel'; id: string; texto: string } | null>(null)
+  const [aviso, setAviso] = React.useState<string | null>(null)
+  const [erroLocal, setErroLocal] = React.useState<string | null>(null)
+  // paciente com episódio aberto: avisa na seleção (busca) ou quando a RPC recusa
+  const [alvoAberto, setAlvoAberto] = React.useState<string | null>(null)
+  const [recusouAberto, setRecusouAberto] = React.useState(false)
+  const hoje = hojeSP()
+
+  const aberto = useQuery({
+    queryKey: ['recepcao-aberto', alvoAberto],
+    enabled: !!alvoAberto,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('atendimento_aberto_do_paciente', { p_paciente: alvoAberto! })
+      if (error) throw error
+      return ((data ?? []) as Aberto[])[0] ?? null
+    },
+  })
+
+  // sugere ao digitar: 3 letras (ou 4 números), com uma pausa curta
+  React.useEffect(() => {
+    const t = termo.trim()
+    const id = setTimeout(() => setBuscado(termoValido(t) ? t : ''), 350)
+    return () => clearTimeout(id)
+  }, [termo])
+
+  const busca = useQuery({
+    queryKey: ['recepcao-busca', unidadeId, buscado],
+    enabled: !!buscado && modo === 'nenhum',
+    staleTime: 15_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('buscar_pacientes', { p_unidade: unidadeId, p_termo: buscado })
+      if (error) throw error
+      return (data ?? []) as Achado[]
+    },
+  })
+
+  const mudar = (k: CampoCadastro, v: string) => {
+    setErroLocal(null)
+    setDados((d) => ({ ...d, [k]: v }))
+  }
+
+  function limpar() {
+    setModo('nenhum')
+    setExistente(null)
+    setDados(CADASTRO_VAZIO)
+    setQueixa('')
+    setPrioridades([])
+    setDuplicata(null)
+    setErroLocal(null)
+    setAlvoAberto(null)
+    setRecusouAberto(false)
+    registrar.reset()
+  }
+
+  function usarExistente(a: Achado) {
+    limpar()
+    setExistente(a)
+    setModo('existente')
+    setAviso(null)
+    if (a.episodio_etapa) setAlvoAberto(a.id)
+  }
+
+  function novoCadastro() {
+    limpar()
+    const t = termo.trim()
+    const d = soDigitos(t)
+    setDados({
+      ...CADASTRO_VAZIO,
+      nome: /\d/.test(t) ? '' : t,
+      cpf: d.length === 11 ? d : '',
+      cns: d.length === 15 ? d : '',
+    })
+    setModo('novo')
+    setAviso(null)
+  }
+
+  const registrar = useMutation({
+    mutationFn: async ({ outraPessoa, pacienteId }: { outraPessoa?: boolean; pacienteId?: string } = {}) => {
+      // p_dados: pessoa nova manda tudo; cadastro existente manda só o que foi
+      // preenchido fora da identificação (contato, documentos, dados do SUS)
+      const paraExistente = !!pacienteId || modo === 'existente'
+      const enviados = Object.fromEntries(
+        Object.entries(normalizarCadastro(dados)).filter(([k, v]) =>
+          paraExistente ? v.trim() !== '' && !IDENTIDADE.includes(k as CampoCadastro) : true),
+      )
+      const { data, error } = await supabase.rpc('registrar_ficha', {
+        p_setor: porta.id,
+        p_queixa: queixa.trim(),
+        p_paciente: pacienteId ?? existente?.id ?? undefined,
+        p_dados: enviados,
+        p_prioridades: prioridades,
+        p_outra_pessoa: outraPessoa ?? false,
+      })
+      if (error) throw error
+      return data as { prontuario: string }
+    },
+    onSuccess: (r) => {
+      const nome = modo === 'existente' ? existente?.nome : dados.nome.trim()
+      setAviso(`${nome || 'Paciente'} entrou na fila da triagem · prontuário ${r.prontuario}.`)
+      limpar()
+      setTermo('')
+      setBuscado('')
+      aoAbrir()
+    },
+    onError: (e: Error, vars) => {
+      const m = e.message.match(/^FICHA_DUPLICATA_(DOCUMENTO|PROVAVEL):([0-9a-f-]{36}) (.*)$/)
+      if (m) setDuplicata({ tipo: m[1] === 'DOCUMENTO' ? 'documento' : 'provavel', id: m[2], texto: m[3] })
+      if (ehEpisodioAberto(e.message)) {
+        setDuplicata(null)
+        setRecusouAberto(true)
+        const id = vars?.pacienteId ?? existente?.id
+        if (id) {
+          setAlvoAberto(id)
+          void queryClient.invalidateQueries({ queryKey: ['recepcao-aberto', id] })
+        }
+      }
+    },
+  })
+
+  function enviar() {
+    setDuplicata(null)
+    if (modo === 'novo' && dados.nome.trim().length < 3) return setErroLocal('Nome é obrigatório.')
+    const erros = errosCadastro(dados, hoje)
+    const primeiro = Object.values(erros)[0]
+    if (primeiro) return setErroLocal(primeiro)
+    if (queixa.trim().length < 3) return setErroLocal('Escreva a queixa referida.')
+    setErroLocal(null)
+    registrar.mutate({})
+  }
+
+  const erroServidor = registrar.error && !duplicata && !ehEpisodioAberto(registrar.error.message) ? registrar.error.message.replace(/^FICHA_[A-Z_]+:\s*/, '') : null
+  const erro = erroLocal ?? erroServidor
+  // aviso vale enquanto a consulta confirma o episódio aberto (sumiu = retirado da fila)
+  // O aviso vale enquanto o episódio continua aberto (carregando conta como
+  // aberto) e some quando a consulta volta vazia: foi retirado da fila. Sem id
+  // (cadastro novo que colidiu), fica o aviso genérico da recusa.
+  const temAberto = alvoAberto ? aberto.data !== null : recusouAberto
+  const achados = modo === 'nenhum' && buscado ? busca.data : undefined
+  const nasc = modo === 'existente' ? existente?.data_nascimento : dados.data_nascimento
+  const pediatrico = nasc ? ehPediatrico(nasc, hoje) : null
+  const foraDaPorta =
+    pediatrico === true && porta.publico === 'adulto' ? 'Paciente pediátrico (até 13 anos, 11 meses e 29 dias) numa porta adulta: confira a porta.'
+    : pediatrico === false && porta.publico === 'pediatrico' ? 'Paciente com 14 anos ou mais numa porta pediátrica: confira a porta.'
+    : null
+
+  return (
+    <div className="flex flex-col">
+      <div className="mb-3.5 flex flex-wrap gap-2.5">
+        <label className={cn(cartao, 'flex min-w-0 flex-[1_1_320px] items-center gap-2.5 px-3.5 py-[11px] focus-within:border-marca')}>
+          <Search className="size-[17px] shrink-0 text-tinta-sussurro" aria-hidden />
+          <input
+            value={termo}
+            onChange={(e) => {
+              setTermo(e.target.value)
+              setAviso(null)
+            }}
+            onKeyDown={(e) => { if (e.key === 'Escape') setTermo('') }}
+            placeholder="Nome, CPF, Cartão SUS ou nome da mãe"
+            aria-label="Buscar paciente"
+            role="combobox"
+            aria-expanded={!!achados?.length}
+            aria-controls="rec-achados"
+            aria-autocomplete="list"
+            className="min-w-0 flex-1 border-0 bg-transparent text-corpo text-tinta outline-none placeholder:text-tinta-sussurro"
+          />
+          {busca.isFetching && <Spinner className="size-4" />}
+        </label>
+        <Button className="min-h-[42px] px-[15px]" onClick={novoCadastro}>
+          <ClipboardPlus /> Novo cadastro
+        </Button>
+      </div>
+
+      {busca.error && modo === 'nenhum' && <p className="mb-3 text-apoio text-critico">{(busca.error as Error).message}</p>}
+
+      {achados && achados.length > 0 && (
+        <div className="relative z-30 h-0">
+          <div id="rec-achados" role="listbox" aria-label="Cadastros encontrados"
+            className="absolute inset-x-0 -top-2.5 max-h-[420px] overflow-y-auto rounded-cartao border border-fio bg-superficie shadow-popover">
+            {achados.map((a) => (
+              <div key={a.id} role="option" aria-selected={false} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-3 last:border-0">
+                <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-0.5">
+                  <span className="text-corpo font-medium text-tinta">
+                    {nomeExibicao(a.nome, a.nome_social)}{' '}
+                    <span className="text-apoio font-normal text-tinta-sussurro">{a.data_nascimento ? rotuloIdade(a.data_nascimento, hoje) : ''}</span>
+                  </span>
+                  <span className="text-apoio text-pretty text-tinta-sussurro">
+                    {[
+                      `CPF ${a.cpf_final ?? '—'}`,
+                      `CNS ${a.cns_final ?? '—'}`,
+                      `Mãe: ${a.nome_mae ?? '—'}`,
+                      a.data_nascimento ? `nasc. ${a.data_nascimento.split('-').reverse().join('/')}` : null,
+                      a.prontuario ? `pront. ${a.prontuario}` : null,
+                    ].filter(Boolean).join(' · ')}
+                  </span>
+                </div>
+                {a.episodio_etapa ? (
+                  <>
+                    <span className="text-apoio text-observacao">{SITUACAO[a.episodio_etapa] ?? 'Já está na unidade'}</span>
+                    <Button variant="outline" onClick={() => usarExistente(a)}>Ver situação</Button>
+                  </>
+                ) : (
+                  <Button variant="outline" onClick={() => usarExistente(a)}>Abrir ficha</Button>
                 )}
-              </CardContent>
-            </Card>
-          )}
-
-          {modo !== 'nenhum' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{modo === 'existente' ? existente?.nome : 'Novo cadastro'}</CardTitle>
-                <CardDescription>
-                  {modo === 'existente'
-                    ? `Prontuário ${existente?.prontuario ?? '—'}. Preencha só o que mudou (telefone, endereço, responsável).`
-                    : 'Nome e queixa são obrigatórios. Paciente sem identificação pode ser cadastrado com o que se sabe.'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {modo === 'novo' && (
-                    <>
-                      <Campo id="f-nome" rotulo="Nome completo *"><Input id="f-nome" value={dados.nome} onChange={mudar('nome')} /></Campo>
-                      <Campo id="f-social" rotulo="Nome social"><Input id="f-social" value={dados.nome_social} onChange={mudar('nome_social')} /></Campo>
-                      <Campo id="f-nasc" rotulo="Nascimento"><Input id="f-nasc" type="date" max={hoje()} value={dados.data_nascimento} onChange={mudar('data_nascimento')} /></Campo>
-                      <Campo id="f-sexo" rotulo="Sexo">
-                        <select id="f-sexo" className="h-9 rounded-controle border border-fio bg-superficie px-2 text-sm" value={dados.sexo} onChange={mudar('sexo')}>
-                          <option value="">—</option>
-                          <option value="F">Feminino</option>
-                          <option value="M">Masculino</option>
-                        </select>
-                      </Campo>
-                      <Campo id="f-mae" rotulo="Nome da mãe"><Input id="f-mae" value={dados.nome_mae} onChange={mudar('nome_mae')} /></Campo>
-                    </>
-                  )}
-                  <Campo id="f-cpf" rotulo="CPF"><Input id="f-cpf" inputMode="numeric" value={dados.cpf} onChange={mudar('cpf')} /></Campo>
-                  <Campo id="f-cns" rotulo="Cartão SUS"><Input id="f-cns" inputMode="numeric" value={dados.cns} onChange={mudar('cns')} /></Campo>
-                  <Campo id="f-tel" rotulo="Telefone"><Input id="f-tel" inputMode="tel" value={dados.telefone} onChange={mudar('telefone')} /></Campo>
-                  <Campo id="f-end" rotulo="Endereço"><Input id="f-end" value={dados.endereco} onChange={mudar('endereco')} /></Campo>
-                  <Campo id="f-mun" rotulo="Município"><Input id="f-mun" value={dados.municipio} onChange={mudar('municipio')} /></Campo>
-                  <Campo id="f-uf" rotulo="UF">
-                    <select id="f-uf" className="h-9 rounded-controle border border-fio bg-superficie px-2 text-sm" value={dados.uf} onChange={mudar('uf')}>
-                      <option value="">—</option>
-                      {UFS.map((u) => <option key={u} value={u}>{u}</option>)}
-                    </select>
-                  </Campo>
-                </div>
-
-                <details className="rounded-controle border border-fio p-3">
-                  <summary className="cursor-pointer text-sm font-medium text-tinta">Responsável legal (opcional)</summary>
-                  <p className="mt-1 text-xs text-muted-foreground">Menor sem responsável pode ser cadastrado (abrigo, escola, outro local).</p>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <Campo id="f-rnome" rotulo="Nome"><Input id="f-rnome" value={dados.responsavel_nome} onChange={mudar('responsavel_nome')} /></Campo>
-                    <Campo id="f-rpar" rotulo="Parentesco ou vínculo"><Input id="f-rpar" value={dados.responsavel_parentesco} onChange={mudar('responsavel_parentesco')} /></Campo>
-                    <Campo id="f-rdoc" rotulo="Documento"><Input id="f-rdoc" value={dados.responsavel_documento} onChange={mudar('responsavel_documento')} /></Campo>
-                    <Campo id="f-rtel" rotulo="Telefone"><Input id="f-rtel" inputMode="tel" value={dados.responsavel_telefone} onChange={mudar('responsavel_telefone')} /></Campo>
-                  </div>
-                </details>
-
-                <Campo id="f-queixa" rotulo="Queixa referida *">
-                  <Textarea id="f-queixa" rows={2} value={queixa} onChange={(e) => setQueixa(e.target.value)} placeholder="Nas palavras do paciente ou do acompanhante" />
-                </Campo>
-
-                <Chips rotulo="Atendimento prioritário (Lei 10.048/2000) — 60+ e 80+ entram pela idade">
-                  {PRIORIDADES_INFORMADAS.map((p) => (
-                    <Chip key={p} ativo={prioridades.includes(p)} onClick={() => setPrioridades((l) => (l.includes(p) ? l.filter((x) => x !== p) : [...l, p]))}>
-                      {PRIORIDADE_ROTULO[p]}
-                    </Chip>
-                  ))}
-                </Chips>
-
-                {duplicata && (
-                  <div role="alert" className="flex flex-col gap-2 rounded-controle border border-atencao/40 p-3 text-sm">
-                    <span className="text-atencao">{duplicata.texto}</span>
-                    <div className="flex flex-wrap gap-2">
-                      <Button size="sm" onClick={() => registrar.mutate({ pacienteId: duplicata.id })}>Usar o cadastro existente</Button>
-                      {duplicata.tipo === 'provavel' && (
-                        <Button size="sm" variant="outline" onClick={() => registrar.mutate({ outraPessoa: true })}>É outra pessoa</Button>
-                      )}
-                    </div>
-                  </div>
-                )}
-                {erro && <p className="text-sm text-destructive">{erro}</p>}
-
-                <div className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={limpar}>Cancelar</Button>
-                  <Button disabled={!podeRegistrar || registrar.isPending} onClick={() => { setDuplicata(null); registrar.mutate({}) }}>
-                    {registrar.isPending ? <Spinner className="size-4" /> : <ClipboardList />} Abrir ficha
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Fila da triagem{porta ? ` · ${porta.nome}` : ''}</CardTitle>
-            <CardDescription>80+ primeiro, depois as demais prioridades legais, depois a chegada.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            {fila.isLoading && <Spinner />}
-            {fila.data?.length === 0 && <p className="text-sm text-muted-foreground">Ninguém aguardando triagem.</p>}
-            {fila.data?.map((e, i) => (
-              <div key={e.id} className="flex items-start gap-3 border-b border-fio pb-2 last:border-0">
-                <span className="w-5 shrink-0 text-right text-sm tabular-nums text-muted-foreground">{i + 1}</span>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-tinta">{e.paciente?.nome}</div>
-                  <div className="text-xs text-muted-foreground">
-                    chegou {hora(e.chegada_em)} · {e.queixa}
-                  </div>
-                  {e.prioridades_legais.length > 0 && (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {rotulosPrioridade(e.prioridades_legais).map((r) => <Badge key={r} variant="outline">{r}</Badge>)}
-                    </div>
-                  )}
-                  <RetirarDaFila episodioId={e.id} aviso={false} />
-                </div>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      )}
+      {achados && achados.length === 0 && !busca.isFetching && (
+        <p className="mb-4 text-apoio text-tinta-sussurro">Nenhum cadastro com esse dado. Use Novo cadastro.</p>
+      )}
+
+      {modo !== 'nenhum' && (
+        <section className={cn(cartao, 'flex flex-col gap-3.5 px-5 py-[18px]')} aria-label="Ficha">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-corpo font-semibold text-tinta">
+              {modo === 'existente' ? `Ficha de ${existente ? nomeExibicao(existente.nome, existente.nome_social) : ''}` : 'Novo cadastro'}
+            </h2>
+            <button type="button" onClick={limpar} aria-label="Fechar" className="text-tinta-sussurro hover:text-acao">
+              <X className="size-4" />
+            </button>
+          </div>
+          {modo === 'existente' && (
+            <p className="-mt-2 text-apoio text-tinta-sussurro">
+              Prontuário {existente?.prontuario ?? '—'}. Preencha só o que mudou ou faltava (telefone, endereço, responsável, raça/cor).
+            </p>
+          )}
+          {modo === 'novo' && (
+            <p className="-mt-2 text-apoio text-tinta-sussurro">
+              Nome e queixa são obrigatórios. Paciente sem identificação pode ser cadastrado com o que se sabe.
+            </p>
+          )}
+
+          {duplicata && (
+            <div role="alert" className="flex flex-wrap items-center gap-2.5 rounded-container border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-2.5">
+              <TriangleAlert className="size-[15px] text-atencao" aria-hidden />
+              <span className="min-w-0 flex-[1_1_240px] text-apoio text-pretty text-atencao">{duplicata.texto}</span>
+              <Button variant="outline" onClick={() => registrar.mutate({ pacienteId: duplicata.id })}>Usar o cadastro existente</Button>
+              {duplicata.tipo === 'provavel' && (
+                <Button variant="outline" onClick={() => registrar.mutate({ outraPessoa: true })}>É outra pessoa</Button>
+              )}
+            </div>
+          )}
+
+          {temAberto && (
+            <div role="alert" className="flex flex-wrap items-center gap-2.5 rounded-container border border-atencao/25 bg-alerta-atencao px-3.5 py-2.5">
+              <TriangleAlert className="size-[15px] shrink-0 text-atencao" aria-hidden />
+              <span className="min-w-0 flex-[1_1_280px] text-apoio text-pretty text-atencao">
+                {aberto.data
+                  ? `Este paciente tem um atendimento sem desfecho desde ${diaHora(aberto.data.chegada_em)} no ${aberto.data.setor} (${ETAPA_ABERTA(aberto.data)}).`
+                  : 'Este paciente tem um atendimento sem desfecho nesta unidade.'}{' '}
+                O desfecho é dado pelo médico ou pela equipe desse setor; se foi engano ou duplicidade, retire da fila.
+              </span>
+              {aberto.data?.na_minha_porta && ['triagem', 'atendimento'].includes(aberto.data.etapa) && !aberto.data.em_atendimento && (
+                <ExcluirDaFila episodioId={aberto.data.episodio_id} nome={existente?.nome_social || existente?.nome || 'O paciente'} />
+              )}
+            </div>
+          )}
+
+          <CamposCadastro prefixo="rec" valores={dados} onChange={mudar} identificacao={modo === 'novo'} hoje={hoje} />
+
+          {foraDaPorta && <p className="text-apoio text-atencao">{foraDaPorta}</p>}
+
+          <Campo id="rec-queixa" rotulo="Queixa referida pelo paciente">
+            <Input id="rec-queixa" value={queixa} onChange={(e) => { setQueixa(e.target.value); setErroLocal(null) }} placeholder="Nas palavras do paciente ou do acompanhante" />
+          </Campo>
+
+          <div className="flex flex-col gap-2">
+            <span className="text-apoio font-medium text-grafite">Atendimento prioritário (Lei 10.048/2000)</span>
+            <div role="group" aria-label="Atendimento prioritário" className="flex flex-wrap gap-[7px]">
+              {PRIORIDADES_INFORMADAS.map((p) => {
+                const on = prioridades.includes(p)
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setPrioridades((l) => (l.includes(p) ? l.filter((x) => x !== p) : [...l, p]))}
+                    className={cn(
+                      'rounded-capsula border px-[13px] py-1.5 text-apoio transition-colors',
+                      on ? 'border-marca bg-marca/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+                    )}
+                  >
+                    {PRIORIDADE_ROTULO[p]}
+                  </button>
+                )
+              })}
+            </div>
+            <span className="text-rotulo text-tinta-sussurro">60 anos ou mais e 80 anos ou mais entram sozinhos, pela data de nascimento.</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span role={erro ? 'alert' : undefined} className="min-w-0 flex-[1_1_240px] text-apoio text-critico">{erro}</span>
+            <Button variant="outline" onClick={limpar}>Cancelar</Button>
+            <Button disabled={registrar.isPending || temAberto} onClick={enviar}>
+              {registrar.isPending ? <Spinner className="size-4" /> : <ArrowRight />} Enviar para a triagem
+            </Button>
+          </div>
+        </section>
+      )}
+
+      {aviso && (
+        <div role="status" className="mt-3.5 flex items-center gap-2.5 rounded-container border border-marca/20 bg-marca/[0.06] px-[15px] py-3">
+          <Check className="size-4 text-acao" aria-hidden />
+          <span className="text-controle text-acao">{aviso}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Filas ────────────────────────────────────────────────────────────────────
+
+function ListaFila({ itens, carregando, erro, vazia, agora }: {
+  itens: NaFila[]; carregando: boolean; erro: Error | null; vazia: string; agora: number
+}) {
+  const hoje = hojeSP()
+  return (
+    <div className={cn(cartao, 'overflow-hidden')}>
+      {carregando && <div className="px-5 py-5"><Spinner /></div>}
+      {erro && <p className="px-5 py-4 text-apoio text-critico">{erro.message}</p>}
+      {!carregando && !erro && itens.length === 0 && <p className="px-5 py-[22px] text-controle text-tinta-sussurro">{vazia}</p>}
+      {itens.map((e) => <LinhaFila key={e.episodio_id} e={e} agora={agora} hoje={hoje} />)}
+    </div>
+  )
+}
+
+function LinhaFila({ e, agora, hoje }: { e: NaFila; agora: number; hoje: string }) {
+  const medica = e.etapa === 'atendimento'
+  const desde = medica ? (e.classificado_em ?? e.chegada_em) : e.chegada_em
+  const ate = e.atendimento_iniciado_em ? new Date(e.atendimento_iniciado_em).getTime() : agora
+  const espera = Math.max(0, Math.round((ate - new Date(desde).getTime()) / 60_000))
+  const alvo = medica && e.cor_atual ? ALVO_MIN[e.cor_atual] : null
+  const estourou = alvo !== null && !e.atendimento_iniciado_em && espera > alvo
+
+  let status = 'Aguardando'
+  let estiloStatus = 'bg-trilha text-tinta-apoio'
+  if (e.atendimento_iniciado_em) {
+    status = `Em atendimento${e.medico ? ` · ${e.medico}` : ''}`
+    estiloStatus = 'bg-marca/10 text-acao'
+  } else if (e.chamadas > 0) {
+    status = `Chamado${e.chamadas > 1 ? ` ${e.chamadas}ª vez` : ''}${e.ultima_sala ? ` · ${e.ultima_sala}` : ''}${e.ultimo_chamador ? ` · ${e.ultimo_chamador}` : ''}`
+    estiloStatus = 'bg-[#FEF3C7] text-atencao'
+    if (e.chamadas >= 3) {
+      status += ' · sem resposta após 3 chamadas'
+      estiloStatus = 'bg-[#FEF2F2] text-critico whitespace-normal'
+    }
+  }
+
+  const prioridades = rotulosPrioridade(e.prioridades_legais)
+  const linha = [
+    e.queixa ? `Queixa: ${e.queixa}` : '',
+    prioridades.length ? `Prioridade: ${prioridades.join(', ')}` : '',
+    `Ficha às ${hora(e.chegada_em)}`,
+  ].filter(Boolean).join(' · ')
+
+  return (
+    <div className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[13px] last:border-0">
+      {medica ? (
+        <PilulaRisco cor={e.cor_atual} />
+      ) : (
+        <span className={cn(pilula, 'min-w-[76px] justify-center bg-trilha text-tinta-sussurro')}>Sem triagem</span>
+      )}
+      <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
+        <span className="text-corpo font-medium text-tinta">
+          {nomeExibicao(e.nome, e.nome_social)}{' '}
+          <span className="text-apoio font-normal text-tinta-sussurro">{e.data_nascimento ? rotuloIdade(e.data_nascimento, hoje) : ''}</span>
+        </span>
+        <span className="text-apoio text-pretty text-tinta-sussurro">{linha}</span>
       </div>
-    </>
+      <span
+        className={cn('text-apoio whitespace-nowrap tabular-nums', estourou ? 'font-semibold text-critico' : 'text-tinta-apoio')}
+        title={medica ? 'Espera desde a classificação' : 'Espera desde a ficha'}
+      >
+        {espera} min{alvo !== null ? ` · alvo ${alvo ? `${alvo} min` : 'imediato'}` : ''}
+      </span>
+      <span className={cn(pilula, estiloStatus)}>{status}</span>
+      {!e.atendimento_iniciado_em && <ExcluirDaFila episodioId={e.episodio_id} nome={e.nome_social || e.nome} />}
+    </div>
+  )
+}
+
+// ── Painel de chamada ───────────────────────────────────────────────────────
+
+function PainelChamada({ porta, chamadas, carregando, erro }: {
+  porta: Porta; chamadas: Chamada[] | undefined; carregando: boolean; erro: Error | null
+}) {
+  const [erroPainel, setErroPainel] = React.useState<string | null>(null)
+
+  async function abrirPainel() {
+    setErroPainel(null)
+    // a janela abre já (dentro do clique) e recebe o endereço depois
+    const janela = window.open('', 'painel-chamada', 'width=1280,height=720')
+    const { data, error } = await supabase.rpc('gerar_link_painel', { p_setor: porta.id })
+    if (error || !data) {
+      janela?.close()
+      setErroPainel(error?.message ?? 'Não foi possível abrir o painel.')
+      return
+    }
+    if (janela) janela.location.href = `/painel/${data as string}`
+  }
+
+  return (
+    <div className="flex flex-col">
+      <div className="mb-[18px] flex flex-wrap gap-2.5">
+        <Button className="min-h-9 px-[15px]" onClick={() => void abrirPainel()}>
+          <Monitor /> Abrir painel em nova janela
+        </Button>
+        <span className="self-center text-apoio text-pretty text-tinta-sussurro">
+          Na janela nova, clique em Ativar som uma vez e deixe em tela cheia (F11). Abrir de novo gera outro link e desliga o anterior.
+        </span>
+      </div>
+      {erroPainel && <p role="alert" className="mb-3 text-apoio text-critico">{erroPainel}</p>}
+      <div className={cn(cartao, 'overflow-hidden')}>
+        <div className="border-b border-trilha px-5 py-[13px] text-apoio font-semibold text-tinta">Últimas chamadas</div>
+        {carregando && <div className="px-5 py-4"><Spinner /></div>}
+        {erro && <p className="px-5 py-4 text-apoio text-critico">{erro.message}</p>}
+        {chamadas?.map((c) => (
+          <div key={c.id} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[11px] last:border-0">
+            <span className="min-w-12 text-apoio tabular-nums text-tinta-sussurro">{hora(c.criado_em)}</span>
+            <span className="min-w-0 flex-[1_1_200px] text-corpo font-medium text-tinta">{c.nome}</span>
+            <span className="text-controle font-semibold text-acao">{c.sala}</span>
+            <span className="text-apoio text-tinta-sussurro">{c.quem ?? '—'}</span>
+          </div>
+        ))}
+        {chamadas && chamadas.length === 0 && <p className="px-5 py-[18px] text-apoio text-tinta-sussurro">Nenhuma chamada ainda.</p>}
+      </div>
+    </div>
   )
 }

@@ -18,6 +18,15 @@ export const NIVEL_RISCO: Record<CorRisco, string> = {
 /** Tempo-alvo até o atendimento médico, em minutos (protocolo da unidade). */
 export const ALVO_MIN: Record<CorRisco, number> = { vermelho: 0, laranja: 10, amarelo: 60, verde: 120, azul: 240 }
 
+/** "até 10 min" ou "imediato" (vermelho). */
+export const textoAlvo = (cor: CorRisco) => (ALVO_MIN[cor] ? `até ${ALVO_MIN[cor]} min` : 'imediato')
+
+/** Nome da cor com inicial maiúscula, para rótulos. */
+export const rotuloCor = (cor: CorRisco) => cor.charAt(0).toUpperCase() + cor.slice(1)
+
+/** Fonte das cores e dos tempos-alvo (a do fluxograma vem do banco). */
+export const FONTE_CORES = 'Cores e tempo-alvo: Manchester Triage Group (Emergency Triage, 3ª ed.)'
+
 /** Mais grave primeiro: 0 = vermelho … 4 = azul. */
 export const gravidade = (cor: CorRisco) => CORES_RISCO.indexOf(cor)
 

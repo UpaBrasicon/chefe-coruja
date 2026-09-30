@@ -40,7 +40,7 @@ export function FibrilacaoAtrialAdulto() {
     >
       <CampoPeso id="fa-peso" peso={peso} onChange={setPeso} />
 
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-tinta-sussurro">
         O livro traz cardioversão elétrica na instabilidade causada pela FA ou na FA com pré-excitação (Figura 3, p. 255; p. 248) e, de emergência, na isquemia
         coronariana aguda, no edema agudo de pulmão ou na hipoperfusão (p. 247). O capítulo não traz carga em joules. Na FA com pré-excitação o livro diz para
         nunca usar digoxina, betabloqueador nem bloqueador de canal de cálcio (p. 248).
@@ -109,18 +109,18 @@ export function FibrilacaoAtrialAdulto() {
             Idoso (o livro não define a idade)
           </label>
           <div className="flex flex-col text-sm">
-            <span className="text-muted-foreground">Varfarina inicial</span>
+            <span className="text-tinta-sussurro">Varfarina inicial</span>
             <strong className="tabular-nums">{wf ? `${br(wf)} mg/d` : pede}</strong>
           </div>
           <NumberField id="fa-clcr" label="Clearance de creatinina" unit="mL/min" value={clcr} onChange={setClcr} step={1} />
         </div>
         {clcr > 0 && edoxabanaClcrAlto(clcr) && <p className="text-atencao">ClCr ≥ 95 mL/min: o livro diz que a edoxabana não deve ser a preferência (p. 251).</p>}
-        <p className="text-muted-foreground">CHA2DS2-VA e HAS-BLED têm telas próprias no pacote; o livro usa o CHA2DS2-VASc (Tabela 1, p. 250).</p>
+        <p className="text-tinta-sussurro">CHA2DS2-VA e HAS-BLED têm telas próprias no pacote; o livro usa o CHA2DS2-VASc (Tabela 1, p. 250).</p>
         <Trecho texto={`D-dímero < ${DDIMERO_FA.corteNgMl} ng/mL com valor preditivo negativo de ${DDIMERO_FA.vpn} para trombo atrial. ${DDIMERO_FA.nota}`} pagina={DDIMERO_FA.pagina} />
       </Bloco>
 
       <Bloco titulo="Errata e lacunas do capítulo">
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">
           {ERRATA_FA.map((e) => <li key={e}>{e}</li>)}
         </ul>
       </Bloco>
@@ -129,11 +129,11 @@ export function FibrilacaoAtrialAdulto() {
         {ANTICOAGULACAO_FA_2025.map((a) => <LinhaManual key={a.tema} nome={a.tema} texto={a.texto} pagina={a.fonte} />)}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Droga</th><th className="pr-3 pb-2">ESC 2024</th><th className="pr-3 pb-2">SBC 2025</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
-            <tbody>{DOSES_FA_2024.map((d) => <tr key={d.droga} className="border-t"><td className="pr-3 py-2 font-medium">{d.droga}</td><td className="pr-3 py-2">{d.esc}</td><td className="pr-3 py-2">{d.sbc}</td><td className="pr-3 py-2 text-muted-foreground">{d.livro}</td></tr>)}</tbody>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Droga</th><th className="pr-3 pb-2">ESC 2024</th><th className="pr-3 pb-2">SBC 2025</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
+            <tbody>{DOSES_FA_2024.map((d) => <tr key={d.droga} className="border-t"><td className="pr-3 py-2 font-medium">{d.droga}</td><td className="pr-3 py-2">{d.esc}</td><td className="pr-3 py-2">{d.sbc}</td><td className="pr-3 py-2 text-tinta-sussurro">{d.livro}</td></tr>)}</tbody>
           </table>
         </div>
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_FA_2024.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_FA_2024.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

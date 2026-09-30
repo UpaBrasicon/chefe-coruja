@@ -12,7 +12,7 @@ import { faixaTxt, num, pesoValido } from './formatoP2'
 import { AvisoRn, Bloco, CampoPesoRn, LinhaDose, LinhaReferencia, PesoInvalido } from './PecasP2'
 
 const botao = (ativo: boolean) =>
-  cn('rounded-lg border px-3 py-2 text-left text-sm transition-colors', ativo ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50')
+  cn('rounded-lg border px-3 py-2 text-left text-sm transition-colors', ativo ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')
 
 /** RCP pediátrica: parâmetros, cargas de choque e drogas (livro do ICr, caps. 1 e 2). */
 export function RcpPediatrica() {
@@ -42,7 +42,7 @@ export function RcpPediatrica() {
       <Bloco titulo="Compressão e ventilação">
         <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
           {([['Frequência', p.frequencia], ['Profundidade', p.profundidade], ['Relação compressão:ventilação', p.relacao], ['Com via aérea avançada', p.viaAereaAvancada], ['Pulso', p.pulso], ['Técnica', p.tecnica]] as const).map(([k, v]) => (
-            <div key={k} className="contents"><dt className="text-muted-foreground">{k}</dt><dd>{v}</dd></div>
+            <div key={k} className="contents"><dt className="text-tinta-sussurro">{k}</dt><dd>{v}</dd></div>
           ))}
         </dl>
         <p className="text-rotulo text-tinta-sussurro">Livro ICr, {p.pagina}.</p>
@@ -54,11 +54,11 @@ export function RcpPediatrica() {
         <>
           <Bloco titulo="Cargas pelo peso">
             <dl className="grid gap-x-4 gap-y-1 tabular-nums sm:grid-cols-[auto_1fr]">
-              <dt className="text-muted-foreground">FV/TV sem pulso — 1º choque (2 J/kg)</dt><dd><strong>{num(c.primeiro, 1)} J</strong></dd>
-              <dt className="text-muted-foreground">2º choque (4 J/kg)</dt><dd><strong>{num(c.segundo, 1)} J</strong></dd>
-              <dt className="text-muted-foreground">Seguintes (4 a 10 J/kg)</dt><dd><strong>{faixaTxt(c.subsequentes, 1)} J</strong> ou a dose máxima de adulto ({faixaTxt(CARGA_ADULTO.bifasico, 0)} J bifásico; {CARGA_ADULTO.monofasico} J monofásico)</dd>
-              <dt className="text-muted-foreground">Cardioversão TSV — inicial (0,5 a 1 J/kg)</dt><dd><strong>{faixaTxt(c.cardioversaoInicial, 1)} J</strong></dd>
-              <dt className="text-muted-foreground">Cardioversão TSV — se persistir (1 a 2 J/kg)</dt><dd><strong>{faixaTxt(c.cardioversaoSeguinte, 1)} J</strong></dd>
+              <dt className="text-tinta-sussurro">FV/TV sem pulso — 1º choque (2 J/kg)</dt><dd><strong>{num(c.primeiro, 1)} J</strong></dd>
+              <dt className="text-tinta-sussurro">2º choque (4 J/kg)</dt><dd><strong>{num(c.segundo, 1)} J</strong></dd>
+              <dt className="text-tinta-sussurro">Seguintes (4 a 10 J/kg)</dt><dd><strong>{faixaTxt(c.subsequentes, 1)} J</strong> ou a dose máxima de adulto ({faixaTxt(CARGA_ADULTO.bifasico, 0)} J bifásico; {CARGA_ADULTO.monofasico} J monofásico)</dd>
+              <dt className="text-tinta-sussurro">Cardioversão TSV — inicial (0,5 a 1 J/kg)</dt><dd><strong>{faixaTxt(c.cardioversaoInicial, 1)} J</strong></dd>
+              <dt className="text-tinta-sussurro">Cardioversão TSV — se persistir (1 a 2 J/kg)</dt><dd><strong>{faixaTxt(c.cardioversaoSeguinte, 1)} J</strong></dd>
             </dl>
             {c.acimaDoAdulto && <p className="text-atencao">A ponta de cima dos choques seguintes passa de {CARGA_ADULTO.bifasico[1]} J, a carga máxima bifásica de adulto citada no livro.</p>}
             {NOTAS_CHOQUE.map((n) => <LinhaReferencia key={n.texto} texto={n.texto} pagina={n.pagina} />)}
@@ -71,17 +71,17 @@ export function RcpPediatrica() {
         </>
       )}
       <Bloco titulo="AHA/AAP 2025 × livro do ICr">
-        <p className="text-sm text-muted-foreground">Destaques oficiais das diretrizes 2025 (p. 11–15); o texto integral do Part 8 não foi aberto. Com linha arterial na RCP, a diretriz mira PAD ≥ {metaPadRcp2025(faixa)} mmHg para a faixa escolhida.</p>
+        <p className="text-sm text-tinta-sussurro">Destaques oficiais das diretrizes 2025 (p. 11–15); o texto integral do Part 8 não foi aberto. Com linha arterial na RCP, a diretriz mira PAD ≥ {metaPadRcp2025(faixa)} mmHg para a faixa escolhida.</p>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">AHA/AAP 2025</th><th className="pr-3 pb-2">Estado · p.</th><th className="pb-2">Livro do ICr</th></tr></thead>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">AHA/AAP 2025</th><th className="pr-3 pb-2">Estado · p.</th><th className="pb-2">Livro do ICr</th></tr></thead>
             <tbody>
               {DIRETRIZ_PALS_2025.map((d) => (
                 <tr key={d.tema} className="border-t">
                   <td className="pr-3 py-2 font-medium">{d.tema}</td>
                   <td className="pr-3 py-2">{d.aha}</td>
-                  <td className="pr-3 py-2 whitespace-nowrap text-muted-foreground">{d.estado} · {d.pagina}</td>
-                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                  <td className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.estado} · {d.pagina}</td>
+                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
                 </tr>
               ))}
             </tbody>

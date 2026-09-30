@@ -4,7 +4,7 @@ import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { escapeHtml } from '@/lib/utils'
-import type { Aih, DadosPaciente, Evolucao, Exames, Prescricao } from './rascunho'
+import type { DadosPaciente, Evolucao, Exames, Prescricao } from './rascunho'
 import { supabase } from '@/lib/supabase'
 
 function fmtData(iso: string) {
@@ -18,15 +18,13 @@ export function ExportarTab({
   prescricao,
   evolucao,
   exames,
-  aih,
 }: {
   dados: DadosPaciente
   prescricao: Prescricao
   evolucao: Evolucao
   exames: Exames
-  aih: Aih
 }) {
-  const [selecionados, setSelecionados] = React.useState({ aba2: true, aba3: true, aba4: true, aba5: true })
+  const [selecionados, setSelecionados] = React.useState({ aba2: true, aba3: true, aba4: true })
   const [gerando, setGerando] = React.useState(false)
   const [erro, setErro] = React.useState<string | null>(null)
 
@@ -168,27 +166,6 @@ export function ExportarTab({
         )
       }
 
-      if (escolhidas.includes('aba5')) {
-        const rows = camposAIH(aih)
-          .map(
-            (c) =>
-              `<div style="display:grid;grid-template-columns:34% 1fr;border-bottom:1px solid #000;min-height:24px;"><div style="font-size:7px;font-weight:700;text-transform:uppercase;padding:2px 4px;border-right:1px solid #000;display:flex;align-items:center;">${escapeHtml(c.rotulo)}</div><div style="font-size:10px;padding:2px 4px;word-wrap:break-word;white-space:${c.ta ? 'pre-wrap' : 'normal'};${c.ta ? 'font-size:9px;' : ''}">${(escapeHtml(c.valor) || '&nbsp;').replace(/\n/g, '<br>')}</div></div>`
-          )
-          .join('')
-        await capturar(`
-          <div style="width:210mm;min-height:297mm;background:#fff;padding:8mm;box-sizing:border-box;">
-            <div style="border:2px solid #000;">
-              <div style="display:grid;grid-template-columns:60px 1fr 1fr;align-items:center;border-bottom:2px solid #000;padding:4px 8px;min-height:38px;">
-                <div style="font-size:14px;font-weight:900;color:#003d7a;">SUS<div style="font-size:6px;">Sistema Único de Saúde</div></div>
-                <div style="font-size:11px;">Ministério da Saúde</div>
-                <div style="font-size:12px;font-weight:800;text-align:center;text-transform:uppercase;">Laudo para Solicitação de<br>Autorização de Internação Hospitalar</div>
-              </div>
-              <div style="background:#e8e8e8;font-weight:800;font-size:10px;padding:3px 6px;border-bottom:1px solid #000;text-transform:uppercase;">Identificação do Estabelecimento de Saúde</div>
-              ${rows}
-            </div>
-          </div>`)
-      }
-
       const nome = dados.nome.trim()
       const nomeArquivo = nome
         ? `Internacao_${nome.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9\u00C0-\u024F_-]/g, '')}.pdf`
@@ -209,15 +186,15 @@ export function ExportarTab({
           <CardDescription>Selecione as abas desejadas e baixe tudo em um único arquivo.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
-          <div className="rounded-lg bg-muted p-4">
-            <label className="mb-3 flex cursor-pointer items-center gap-2.5 font-semibold text-primary">
+          <div className="rounded-lg bg-trilha p-4">
+            <label className="mb-3 flex cursor-pointer items-center gap-2.5 font-semibold text-acao">
               <input
                 type="checkbox"
                 className="size-[18px] accent-primary"
-                checked={qtd === 4}
+                checked={qtd === 3}
                 onChange={() =>
                   setSelecionados(
-                    qtd === 4 ? { aba2: false, aba3: false, aba4: false, aba5: false } : { aba2: true, aba3: true, aba4: true, aba5: true }
+                    qtd === 3 ? { aba2: false, aba3: false, aba4: false } : { aba2: true, aba3: true, aba4: true }
                   )
                 }
               />
@@ -229,7 +206,6 @@ export function ExportarTab({
                   ['aba2', '💊', 'Prescrição Médica'],
                   ['aba3', '📝', 'Admissão / Evolução'],
                   ['aba4', '🩸', 'Pedidos de Exames'],
-                  ['aba5', '🏥', 'Laudo de Internação (AIH)'],
                 ] as const
               ).map(([aba, icone, rotulo]) => (
                 <label
@@ -243,7 +219,7 @@ export function ExportarTab({
             </div>
           </div>
 
-          {erro && <p className="text-sm font-semibold text-destructive">{erro}</p>}
+          {erro && <p className="text-sm font-semibold text-critico">{erro}</p>}
 
           <Button onClick={gerar} disabled={gerando} size="lg" className="w-full text-base">
             {gerando ? <Loader2 className="animate-spin" /> : <Download />} Baixar Documentos Selecionados (PDF)
@@ -257,50 +233,4 @@ export function ExportarTab({
       </Card>
     </div>
   )
-}
-
-function camposAIH(aih: Aih) {
-  return [
-    { rotulo: '1 - Nome do Estabelecimento Solicitante', valor: aih.campo1 },
-    { rotulo: '2 - CNES', valor: aih.campo2 },
-    { rotulo: '3 - Nome do Estabelecimento Executante', valor: aih.campo3 },
-    { rotulo: '4 - CNES', valor: aih.campo4 },
-    { rotulo: '5 - Nome do Paciente', valor: aih.campo5 },
-    { rotulo: '6 - Nº do Prontuário', valor: aih.campo6 },
-    { rotulo: '7 - Cartão Nacional de Saúde (CNS)', valor: aih.campo7 },
-    { rotulo: '8 - Data de Nascimento', valor: aih.campo8 },
-    { rotulo: '9 - Sexo', valor: aih.campo9 },
-    { rotulo: '10 - Raça/Cor', valor: aih.campo10 },
-    { rotulo: '10.1 - Etnia', valor: aih.campo10_1 },
-    { rotulo: '11 - Nome da Mãe', valor: aih.campo11 },
-    { rotulo: '12 - Telefone de Contato', valor: aih.campo12 },
-    { rotulo: '13 - Nome do Responsável', valor: aih.campo13 },
-    { rotulo: '14 - Telefone de Contato', valor: aih.campo14 },
-    { rotulo: '15 - Endereço (Rua, Nº, Bairro)', valor: aih.campo15 },
-    { rotulo: '16 - Município de Residência', valor: aih.campo16 },
-    { rotulo: '17 - Cód. IBGE', valor: aih.campo17 },
-    { rotulo: '18 - UF', valor: aih.campo18 },
-    { rotulo: '19 - CEP', valor: aih.campo19 },
-    { rotulo: '20 - Principais Sinais e Sintomas Clínicos', valor: aih.campo20, ta: true },
-    { rotulo: '21 - Condições que Justificam a Internação', valor: aih.campo21, ta: true },
-    { rotulo: '22 - Principais Resultados de Provas Diagnósticas', valor: aih.campo22, ta: true },
-    { rotulo: '23 - Diagnóstico Inicial', valor: aih.campo23 },
-    { rotulo: '24 - CID 10 Principal', valor: aih.campo24 },
-    { rotulo: '25 - CID 10 Secundário', valor: aih.campo25 },
-    { rotulo: '26 - CID 10 Causas Assoc.', valor: aih.campo26 },
-    { rotulo: '27 - Descrição do Procedimento Solicitado', valor: aih.campo27 },
-    { rotulo: '28 - Código do Procedimento', valor: aih.campo28 },
-    { rotulo: '29 - Clínica', valor: aih.campo29 },
-    { rotulo: '30 - Caráter da Internação', valor: aih.campo30 },
-    { rotulo: '31 - Documento', valor: aih.campo31 },
-    { rotulo: '32 - Nº Documento (CNS/CPF) do Profissional', valor: aih.campo32 },
-    { rotulo: '33 - Nome do Profissional Solicitante/Assistente', valor: aih.campo33 },
-    { rotulo: '34 - Data da Solicitação', valor: aih.campo34 },
-    { rotulo: '35 - Assinatura e Carimbo (Nº Reg. Conselho)', valor: aih.campo35 },
-    { rotulo: '46 - Nome do Profissional Autorizador', valor: aih.campo46 },
-    { rotulo: '47 - Cód. Órgão Emissor', valor: aih.campo47 },
-    { rotulo: '52 - Nº da AIH', valor: aih.campo52 },
-    { rotulo: '50 - Data da Autorização', valor: aih.campo50 },
-    { rotulo: '51 - Assinatura e Carimbo (Nº do Registro do Conselho)', valor: aih.campo51 },
-  ] as { rotulo: string; valor: string; ta?: boolean }[]
 }

@@ -70,7 +70,7 @@ export function PeconhentosPed() {
             texto={`${PCDT_ESCORPIAO.soro}; máximo ${PCDT_ESCORPIAO.maximo}, independentemente da idade. Via: ${PCDT_ESCORPIAO.via}.`}
             pagina="Quadro 4, p. 17"
           />
-          <p className="text-muted-foreground">Observação: sem clínica {PCDT_ESCORPIAO.observacao.semClinica}; leve {PCDT_ESCORPIAO.observacao.leve}; com soro {PCDT_ESCORPIAO.observacao.comSoro} (Quadro 3, p. 9; p. 15). {PCDT_ESCORPIAO.risco} (p. 10).</p>
+          <p className="text-tinta-sussurro">Observação: sem clínica {PCDT_ESCORPIAO.observacao.semClinica}; leve {PCDT_ESCORPIAO.observacao.leve}; com soro {PCDT_ESCORPIAO.observacao.comSoro} (Quadro 3, p. 9; p. 15). {PCDT_ESCORPIAO.risco} (p. 10).</p>
         </Bloco>
       )}
       {animal !== 'escorpiao' && (
@@ -86,12 +86,12 @@ export function PeconhentosPed() {
       )}
 
       <Bloco titulo="Livro do ICr × MS (PCDT 2026 e portal)">
-        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_MS_2026.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_MS_2026.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Notas do capítulo">
         {NOTAS_PECONHENTOS.map((n) => (
-          <p key={n.texto} className="text-muted-foreground">
+          <p key={n.texto} className="text-tinta-sussurro">
             {n.texto} ({n.pagina})
           </p>
         ))}

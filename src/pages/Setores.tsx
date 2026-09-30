@@ -184,7 +184,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
         ) : (
           <div>
             <h1 className="text-xl font-semibold">Setores e Leitos</h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-tinta-sussurro">
               {unidadeAtiva?.unidade.nome} — gerencie setores e crie leitos em lote.
             </p>
           </div>
@@ -195,7 +195,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
         </Button>
       </div>
 
-      {erro && <p className="text-sm text-destructive">{erro}</p>}
+      {erro && <p className="text-sm text-critico">{erro}</p>}
 
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         {/* Lista de setores */}
@@ -210,8 +210,8 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                 className={cn(
                   'group flex items-center justify-between gap-1 rounded-lg border px-3 py-2 transition-colors',
                   s.id === setorSelecionadoId
-                    ? 'border-primary bg-primary/5'
-                    : 'hover:bg-muted/50'
+                    ? 'border-acao bg-acao/5'
+                    : 'hover:bg-trilha/50'
                 )}
               >
                 <button
@@ -220,7 +220,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                   onClick={() => setSetorSelecionadoId(s.id)}
                 >
                   <span className="text-sm font-medium">{s.nome}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-tinta-sussurro">
                     {TIPO_SETOR_LABEL[s.tipo]} · {s.leitos[0]?.count ?? 0} leitos
                   </span>
                 </button>
@@ -259,7 +259,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
               </div>
             ))}
             {setores.length === 0 && (
-              <p className="py-6 text-center text-sm text-muted-foreground">
+              <p className="py-6 text-center text-sm text-tinta-sussurro">
                 Nenhum setor criado ainda.
               </p>
             )}
@@ -270,7 +270,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="flex items-center gap-2 text-base">
-              <BedDouble className="size-4 text-muted-foreground" />
+              <BedDouble className="size-4 text-tinta-sussurro" />
               {setorSelecionado ? setorSelecionado.nome : 'Selecione um setor'}
             </CardTitle>
             {setorSelecionado && (
@@ -282,7 +282,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
           </CardHeader>
           <CardContent>
             {!setorSelecionado && (
-              <p className="py-6 text-center text-sm text-muted-foreground">
+              <p className="py-6 text-center text-sm text-tinta-sussurro">
                 Selecione um setor para ver os leitos.
               </p>
             )}
@@ -307,7 +307,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-tinta-sussurro">
                         {TIPO_LEITO_LABEL[leito.tipo]}
                       </span>
                       <div className="flex items-center gap-0.5">
@@ -346,7 +346,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                 ))}
 
                 {leitosQuery.data?.length === 0 && (
-                  <p className="col-span-full py-6 text-center text-sm text-muted-foreground">
+                  <p className="col-span-full py-6 text-center text-sm text-tinta-sussurro">
                     Este setor ainda não tem leitos.
                   </p>
                 )}
@@ -375,7 +375,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                 {...setorForm.register('nome')}
               />
               {setorForm.formState.errors.nome && (
-                <p className="text-xs text-destructive">
+                <p className="text-xs text-critico">
                   {setorForm.formState.errors.nome.message}
                 </p>
               )}
@@ -433,7 +433,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                   {...leitosForm.register('prefixo')}
                 />
                 {leitosForm.formState.errors.prefixo && (
-                  <p className="text-xs text-destructive">
+                  <p className="text-xs text-critico">
                     {leitosForm.formState.errors.prefixo.message}
                   </p>
                 )}
@@ -448,7 +448,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                   {...leitosForm.register('quantidade')}
                 />
                 {leitosForm.formState.errors.quantidade && (
-                  <p className="text-xs text-destructive">
+                  <p className="text-xs text-critico">
                     {leitosForm.formState.errors.quantidade.message}
                   </p>
                 )}

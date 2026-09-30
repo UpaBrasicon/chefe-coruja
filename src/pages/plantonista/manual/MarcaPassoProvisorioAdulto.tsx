@@ -56,7 +56,7 @@ export function MarcaPassoProvisorioAdulto() {
             <p className="text-sm tabular-nums">{saida !== null ? <>Programar <strong>{br(saida, 1)}</strong> (2 × limiar + 1, na unidade do gerador)</> : '—'}</p>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-tinta-sussurro">
           Sensibilidade: frequência programada abaixo da intrínseca; começar no menor valor numérico (p. ex., 2 mV) e subir até o gerador assumir. Comando: frequência acima da do paciente; começar em 10 V ou 20 mA e descer até perder a captura. Transporte: saída máxima de 10 V ou 20 mA. Testar o limiar de comando 1 a 2 vezes ao dia (p. 1456–1457).
         </p>
       </Bloco>

@@ -13,7 +13,7 @@ export function Decanulacao() {
         <CardHeader>
           <CardTitle className="text-base">Critérios para iniciar o desmame</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+        <CardContent className="flex flex-col gap-1.5 text-sm text-tinta-sussurro">
           <p>• Doença de base resolvida e causa da traqueostomia tratada.</p>
           <p>• Estabilidade hemodinâmica, sem drogas vasoativas.</p>
           <p>• Ausência de febre ou infecção ativa.</p>
@@ -37,7 +37,7 @@ export function Decanulacao() {
           ].map(([titulo, texto]) => (
             <div key={titulo} className="rounded-lg border px-3 py-2 text-sm">
               <Badge variant="secondary" className="mb-1">{titulo}</Badge>
-              <p className="text-muted-foreground">{texto}</p>
+              <p className="text-tinta-sussurro">{texto}</p>
             </div>
           ))}
         </CardContent>

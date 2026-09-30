@@ -78,7 +78,7 @@ export function RessuscitacaoVolemicaAdulto() {
           <Resultado rotulo="Queda" valor={lac ? `${br(lac.reducaoPct, 0)}% ${lac.atingiuMeta20 ? '(≥ 20%)' : '(< 20%)'}` : '—'} />
         </div>
         {lac0 > 0 && <p className="tabular-nums">Queda de 20% a partir de {br(lac0)} mmol/L = até {br(lac0 * 0.8, 2)} mmol/L.</p>}
-        <p className="text-muted-foreground">Equivalência do livro: 18 mg/dL = 2 mmol/L (cap. 7, p. 120) — 36 mg/dL = {br(lactatoMmol(36), 0)} mmol/L.</p>
+        <p className="text-tinta-sussurro">Equivalência do livro: 18 mg/dL = 2 mmol/L (cap. 7, p. 120) — 36 mg/dL = {br(lactatoMmol(36), 0)} mmol/L.</p>
         {CORTES_LACTATO.map((c) => <Trecho key={c.texto} texto={`${c.texto} (${br(c.mmol)} mmol/L = ${br(c.mgDl)} mg/dL)`} pagina={c.pagina} />)}
       </Bloco>
 
@@ -98,7 +98,7 @@ export function RessuscitacaoVolemicaAdulto() {
             <li>SSC 2026 (prática do painel, p. 42) — {br(VASOPRESSINA_SSC_PRATICA.ugKgMin, 1)} µg/kg/min ou mais: {vaso.sscPratica === null ? 'informe o peso' : vaso.sscPratica ? 'atingido' : 'não atingido'}</li>
           </ul>
         )}
-        <p className="text-muted-foreground">Cap. 4: em choque séptico que mantém hipotensão arterial. Cap. 7: "pode-se considerar associação". ILAS (p. 13): vasopressina nos casos com doses ascendentes de noradrenalina.</p>
+        <p className="text-tinta-sussurro">Cap. 4: em choque séptico que mantém hipotensão arterial. Cap. 7: "pode-se considerar associação". ILAS (p. 13): vasopressina nos casos com doses ascendentes de noradrenalina.</p>
       </Bloco>
 
       <Bloco titulo="Corticoide e outros cuidados na sepse">
@@ -112,7 +112,7 @@ export function RessuscitacaoVolemicaAdulto() {
       <Bloco titulo="SSC 2026 × ILAS jul/2026 × manual do HC" descricao="O que cada fonte escreve, com página. Decisão do responsável técnico (28/09/2026): o ILAS entra como referência brasileira ao lado da SSC 2026; o livro fica como base. A ferramenta mostra; a conduta é do médico.">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left align-top text-sm">
-            <thead className="text-muted-foreground">
+            <thead className="text-tinta-sussurro">
               <tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">SSC 2026</th><th className="pr-3 pb-2">ILAS jul/2026</th><th className="pb-2">Manual do HC</th></tr>
             </thead>
             <tbody>
@@ -120,7 +120,7 @@ export function RessuscitacaoVolemicaAdulto() {
                 <tr key={d.tema} className="border-t">
                   <td className="pr-3 py-2 font-medium">{d.tema}{d.nota && <p className="mt-1 font-normal text-atencao">{d.nota}</p>}</td>
                   {[d.ssc, d.ilas, d.livro].map((c, i) => (
-                    <td key={i} className="pr-3 py-2">{c ? <>{c.texto} <span className="text-muted-foreground">({c.pagina})</span></> : <span className="text-muted-foreground">—</span>}</td>
+                    <td key={i} className="pr-3 py-2">{c ? <>{c.texto} <span className="text-tinta-sussurro">({c.pagina})</span></> : <span className="text-tinta-sussurro">—</span>}</td>
                   ))}
                 </tr>
               ))}
@@ -132,7 +132,7 @@ export function RessuscitacaoVolemicaAdulto() {
       <Bloco titulo="Soluções cristaloides" descricao="Tabela 5 do cap. 4 (p. 74), em mmol/L; osmolaridade em mOsm/L.">
         <div className="overflow-x-auto">
           <table className="w-full text-left tabular-nums">
-            <thead className="text-muted-foreground">
+            <thead className="text-tinta-sussurro">
               <tr><th className="pr-3">Solução</th><th className="pr-3">Osm</th><th className="pr-3">Na</th><th className="pr-3">Cl</th><th className="pr-3">K</th><th className="pr-3">Ca</th><th>Lactato</th></tr>
             </thead>
             <tbody>
@@ -146,11 +146,11 @@ export function RessuscitacaoVolemicaAdulto() {
           </table>
         </div>
         {SOLUCOES_TABELA5.filter((s) => s.nota).map((s) => <p key={s.id} className="text-atencao">{s.nome}: {s.nota}</p>)}
-        <p className="text-muted-foreground">Tabela 7 do cap. 7 (p. 122): {SOLUCOES_TABELA7.map((s) => `${s.nome} — ${s.texto}`).join('; ')}.</p>
+        <p className="text-tinta-sussurro">Tabela 7 do cap. 7 (p. 122): {SOLUCOES_TABELA7.map((s) => `${s.nome} — ${s.texto}`).join('; ')}.</p>
       </Bloco>
 
       <Bloco titulo="Errata e divergências do livro" descricao="Os valores pediátricos destes capítulos não entram nesta ferramenta.">
-        <ul className="list-disc pl-5 text-muted-foreground">
+        <ul className="list-disc pl-5 text-tinta-sussurro">
           {ERRATA_RESSUSCITACAO.map((e) => <li key={e}>{e}</li>)}
         </ul>
       </Bloco>

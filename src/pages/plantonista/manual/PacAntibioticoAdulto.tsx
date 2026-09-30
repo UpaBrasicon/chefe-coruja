@@ -26,7 +26,7 @@ export function PacAntibioticoAdulto() {
       <Bloco titulo="Grupo de risco — Tabela 10 (p. 463–464)" descricao="O livro liga baixo risco a PORT I-II, intermediário a PORT III e alto a PORT IV-V (Tabela 5, p. 457).">
         <Escolhas valor={grupo} opcoes={PAC_ANTIBIOTICOS.map((x) => [x.grupo, x.nome] as const)} onChange={setGrupo} />
         {g.opcoes.map((o, i) => <LinhaManual key={o} nome={`Opção ${i + 1}`} texto={o} pagina="p. 463" />)}
-        <p className="text-sm text-muted-foreground">{NOTA_CLARITROMICINA}</p>
+        <p className="text-sm text-tinta-sussurro">{NOTA_CLARITROMICINA}</p>
         <ListaLivro itens={DURACAO_PAC.map((d) => ({ texto: `${d.grupo}: ${d.texto}`, pagina: d.pagina }))} />
       </Bloco>
 
@@ -51,14 +51,14 @@ export function PacAntibioticoAdulto() {
       <Bloco titulo="ATS 2026 × manual do HC" descricao="Diretriz da PAC (Am J Respir Crit Care Med 2026;212:24–44; on-line em nov/2025), lida pela página do periódico e pelo comunicado da ATS. Esquemas antimicrobianos não foram revisados por ela.">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">ATS 2026</th><th className="pr-3 pb-2">Força</th><th className="pb-2">Manual do HC</th></tr></thead>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">ATS 2026</th><th className="pr-3 pb-2">Força</th><th className="pb-2">Manual do HC</th></tr></thead>
             <tbody>
               {DIRETRIZ_PAC_2026.map((d) => (
                 <tr key={d.tema} className="border-t">
                   <td className="pr-3 py-2 font-medium">{d.tema}</td>
                   <td className="pr-3 py-2">{d.ats}</td>
-                  <td className="pr-3 py-2 text-muted-foreground">{d.forca}</td>
-                  <td className="py-2 text-muted-foreground">{d.livro}</td>
+                  <td className="pr-3 py-2 text-tinta-sussurro">{d.forca}</td>
+                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
                 </tr>
               ))}
             </tbody>

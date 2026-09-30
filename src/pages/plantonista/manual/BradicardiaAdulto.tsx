@@ -51,7 +51,7 @@ export function BradicardiaAdulto() {
         <LinhaManual nome="Atropina (ERC/RCUK 2025)" texto={`${BRADI_2025.atropina.ug} µg IV, repetir a cada ${BRADI_2025.atropina.intervaloMin[0]}–${BRADI_2025.atropina.intervaloMin[1]} min até ${BRADI_2025.atropina.maximoMg} mg`} pagina="RCUK 2025 ALS" conta={<strong>até 6 doses de 0,5 mg</strong>} />
         {BRADI_2025.segundaLinha.map((d) => <LinhaManual key={d.droga} nome={d.droga} texto={d.dose} pagina="RCUK 2025 ALS" />)}
         <LinhaManual nome="Marca-passo" texto={BRADI_2025.marcaPasso} pagina="RCUK 2025 ALS" />
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_BRADI_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_BRADI_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

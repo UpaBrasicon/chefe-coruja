@@ -73,7 +73,9 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   // As telas dos papéis novos chegam com as fases do plano; até lá, uma
   // página honesta em vez de um laço de redirecionamento.
   enfermeiro: '/triagem',
-  tecnico_enfermagem: '/checagem',
+  // o técnico começa pela escala: Internação se só está em setor de
+  // internação, senão o Pronto Socorro da enfermagem (InicioEnfermagem)
+  tecnico_enfermagem: '/enfermagem',
   recepcao: '/recepcao',
   farmaceutico: '/farmacia',
   telemedicina: '/teleinterconsulta',

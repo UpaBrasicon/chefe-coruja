@@ -1,33 +1,26 @@
-// Pacote de alta — a página do paciente, sem login (Fase 3.6).
+// Pacote de alta — a página do paciente, sem login (Fase 3.6; visual do
+// protótipo alta.html no porte do frontend).
 // O link sozinho não mostra nada: o código de 6 dígitos impresso na orientação
 // de alta é pedido a CADA abertura (nada fica guardado no aparelho, de
-// propósito). Três códigos errados bloqueiam o link.
+// propósito). Três códigos errados bloqueiam o link. SMS e WhatsApp ainda não
+// estão configurados, então não há "enviar de novo": o código está no papel.
+//
+// Visão da equipe: /alta/equipe?pacote=<id>, aberta pelo leito com login. Pula
+// o código (quem está na plataforma já se autenticou) e mostra a faixa
+// "Imprimir o pacote inteiro".
 import { useQuery } from '@tanstack/react-query'
+import { Bird, ShieldCheck } from 'lucide-react'
 import * as React from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 
+import { DocumentosAlta } from '@/components/alta/DocumentosAlta'
+import type { ConteudoPacote } from '@/components/alta/lerPacote'
+import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 import { supabase } from '@/lib/supabase'
 
-type Documento = { tipo: string; numero: string | null; emitido_em: string; conteudo: string }
-type Aberto = {
-  situacao: 'ok'
-  primeiro_nome: string
-  unidade: string
-  alta_em: string | null
-  expira_em: string
-  orientacoes: string[]
-  retorno: string | null
-  documentos: Documento[]
-}
-type Resposta = Aberto | { situacao: string; restantes?: number }
+type Resposta = ConteudoPacote | { situacao: string; restantes?: number }
 
-const NOME_DOC: Record<string, string> = {
-  receita: 'Receita',
-  atestado: 'Atestado',
-  encaminhamento: 'Encaminhamento',
-  pedido_exames: 'Pedido de exames',
-  sumario_alta: 'Resumo da alta',
-}
 const RECUSA: Record<string, string> = {
   inexistente: 'Este link não existe. Confira o endereço na folha da alta.',
   revogado: 'Este link foi desativado pela unidade. Peça um novo na recepção.',
@@ -35,34 +28,78 @@ const RECUSA: Record<string, string> = {
   expirado: 'Este link venceu (vale 30 dias). Peça um novo na unidade.',
 }
 
-const dia = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '')
-
-// O conteúdo do documento é o que a ferramenta gravou; aqui vira texto simples.
-function legivel(conteudo: string): { rotulo: string; valor: string }[] {
-  let obj: unknown
-  try {
-    obj = JSON.parse(conteudo)
-  } catch {
-    return [{ rotulo: '', valor: conteudo }]
-  }
-  const linhas: { rotulo: string; valor: string }[] = []
-  const andar = (v: unknown, chave: string) => {
-    if (/(^id$|_id$|^paciente$|^setor|^unidade|cpf|cns|nascimento)/i.test(chave)) return
-    if (v === null || v === undefined || v === '' || v === false) return
-    if (Array.isArray(v)) return v.forEach((x) => andar(x, chave))
-    if (typeof v === 'object') return Object.entries(v as Record<string, unknown>).forEach(([k, x]) => andar(x, k))
-    const rotulo = chave.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
-    linhas.push({ rotulo: rotulo.charAt(0).toUpperCase() + rotulo.slice(1), valor: v === true ? 'sim' : String(v) })
-  }
-  andar(obj, '')
-  return linhas
+function Topo({ unidade }: { unidade: string }) {
+  return (
+    <header className="bg-acao-pressionada px-5 pb-[26px] pt-[22px] text-white print:hidden">
+      <div className="mx-auto max-w-[620px]">
+        <span className="flex items-center gap-[9px] text-sm font-medium opacity-90">
+          <Bird className="size-[18px]" />{unidade}
+        </span>
+        <h1 className="mb-1.5 mt-3.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.02em] max-[420px]:text-[23px]">Seus documentos de alta</h1>
+        <p className="text-[15px] text-[#CFE7E3]">Guarde este link. Cada abertura pede o código de 6 dígitos impresso na sua orientação de alta.</p>
+      </div>
+    </header>
+  )
 }
 
-export default function PacoteAlta() {
-  const { token = '' } = useParams()
+function Caixa({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+  return (
+    <section className="mx-auto max-w-[620px] px-5 pb-[60px] pt-5" aria-labelledby="portao-titulo">
+      <div className="rounded-2xl border border-fio bg-superficie px-5 py-[22px] max-[420px]:px-4">
+        <span className="grid size-11 place-items-center rounded-[13px] bg-alerta-marca text-acao" aria-hidden="true">
+          <ShieldCheck className="size-[22px]" />
+        </span>
+        <h2 id="portao-titulo" className="mb-1.5 mt-3.5 text-[21px] leading-[1.2] font-semibold tracking-[-0.02em]">{titulo}</h2>
+        {children}
+      </div>
+    </section>
+  )
+}
+
+function VisaoEquipe({ pacote }: { pacote: string }) {
+  const q = useQuery({
+    queryKey: ['pacote-alta-equipe', pacote],
+    enabled: !!pacote,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('ver_pacote_alta_equipe', { p_pacote: pacote })
+      if (error) throw error
+      return data as unknown as ConteudoPacote
+    },
+  })
+  if (q.data) {
+    return (
+      <>
+        <Topo unidade={q.data.unidade} />
+        <DocumentosAlta p={q.data} equipe />
+      </>
+    )
+  }
+  return (
+    <>
+      <Topo unidade="Chefe Coruja" />
+      <Caixa titulo="Visão da equipe">
+        {q.isLoading ? (
+          <Spinner />
+        ) : (
+          <p className="text-pretty text-tinta-apoio">
+            {!pacote
+              ? 'Falta o pacote no endereço. Abra pelo leito do paciente.'
+              : /jwt|auth|permission/i.test(q.error?.message ?? '')
+                ? 'Entre no Chefe Coruja com a sua conta e abra de novo pelo leito do paciente.'
+                : (q.error?.message ?? 'Não foi possível abrir o pacote.')}
+          </p>
+        )}
+      </Caixa>
+    </>
+  )
+}
+
+function VisaoPaciente({ token }: { token: string }) {
   const [codigo, setCodigo] = React.useState('')
   const [resposta, setResposta] = React.useState<Resposta | null>(null)
   const [enviando, setEnviando] = React.useState(false)
+  const campo = React.useRef<HTMLInputElement>(null)
 
   const situacao = useQuery({
     queryKey: ['pacote-alta-situacao', token],
@@ -74,92 +111,106 @@ export default function PacoteAlta() {
   })
 
   async function conferir(c: string) {
+    if (c.length < 6) {
+      setResposta({ situacao: 'curto' })
+      return
+    }
     setEnviando(true)
     const { data, error } = await supabase.rpc('abrir_pacote_alta', { p_token: token, p_codigo: c })
     setEnviando(false)
     setCodigo('')
     setResposta(error ? { situacao: 'falha' } : (data as unknown as Resposta))
+    requestAnimationFrame(() => campo.current?.focus({ preventScroll: true }))
   }
 
   const r = resposta
-  const aberto = r?.situacao === 'ok' ? (r as Aberto) : null
+  const aberto = r?.situacao === 'ok' ? (r as ConteudoPacote) : null
   const recusa = RECUSA[r?.situacao ?? ''] ?? (situacao.data && situacao.data.situacao !== 'ativo' ? RECUSA[situacao.data.situacao] : null)
+  const unidade = aberto?.unidade ?? situacao.data?.unidade ?? 'Chefe Coruja'
+
+  if (aberto) {
+    return (
+      <>
+        <Topo unidade={unidade} />
+        <DocumentosAlta p={aberto} />
+      </>
+    )
+  }
+
+  const restantes = (r as { restantes?: number } | null)?.restantes
+  const erro =
+    r?.situacao === 'curto' ? 'Digite os 6 dígitos do código.'
+      : r?.situacao === 'codigo_errado' ? (restantes === 1 ? 'Código errado. Resta 1 tentativa.' : `Código errado. Restam ${restantes} tentativas.`)
+        : r?.situacao === 'falha' ? 'Sem conexão. Tente de novo.'
+          : null
 
   return (
-    <div className="min-h-screen bg-campo px-4 py-8 text-tinta">
-      <main className="mx-auto flex w-full max-w-lg flex-col gap-5">
-        <header>
-          <p className="text-sm text-tinta-apoio">{aberto?.unidade ?? situacao.data?.unidade ?? 'Chefe Coruja'}</p>
-          <h1 className="text-2xl font-semibold">Sua alta</h1>
-        </header>
-
-        {recusa && !aberto && <p className="rounded-lg border border-critico/30 bg-critico/[0.08] p-4 text-critico">{recusa}</p>}
-
-        {!aberto && !recusa && (
-          <section className="flex flex-col gap-3 rounded-xl border border-fio bg-card p-5">
-            <label htmlFor="codigo" className="font-medium">Digite o código de 6 dígitos da folha da alta</label>
+    <>
+      <Topo unidade={unidade} />
+      {recusa ? (
+        <Caixa titulo="Este link não abre mais">
+          <p className="text-pretty text-critico" role="alert">{recusa}</p>
+          <div className="mt-[18px] border-t border-trilha pt-4 text-sm text-tinta-apoio">
+            <p className="text-pretty"><b className="font-semibold text-tinta">Os documentos impressos</b> entregues na alta continuam valendo.</p>
+          </div>
+        </Caixa>
+      ) : situacao.isLoading ? (
+        <Caixa titulo="Confirme que é você"><Spinner /></Caixa>
+      ) : (
+        <Caixa titulo="Confirme que é você">
+          <p className="mb-[18px] text-pretty text-tinta-apoio">
+            O código de 6 dígitos está impresso na <b className="font-semibold text-tinta">sua orientação de alta</b>, logo abaixo deste link.
+          </p>
+          <form className="flex flex-col gap-2" noValidate onSubmit={(e) => { e.preventDefault(); void conferir(codigo) }}>
+            <label htmlFor="codigo" className="text-sm font-medium text-tinta-apoio">Código de 6 dígitos</label>
             <input
               id="codigo"
+              ref={campo}
+              autoFocus
               inputMode="numeric"
               autoComplete="one-time-code"
               maxLength={6}
               value={codigo}
               disabled={enviando}
+              aria-describedby="portao-erro"
               onChange={(e) => {
                 const c = e.target.value.replace(/\D/g, '').slice(0, 6)
                 setCodigo(c)
+                if (r && r.situacao !== 'codigo_errado' && c.length < 6) setResposta(null)
                 if (c.length === 6) void conferir(c)
               }}
-              className="h-12 rounded-lg border border-fio bg-background px-3 text-center font-mono text-2xl tracking-[0.4em]"
+              className="min-h-14 w-full rounded-xl border border-fio bg-campo px-2.5 py-3 text-center indent-[0.28em] text-[27px] font-semibold tracking-[0.28em] tabular-nums text-tinta outline-none focus:border-marca focus:ring-[3px] focus:ring-marca/15 disabled:bg-trilha disabled:text-tinta-sussurro max-[420px]:text-2xl"
             />
-            {r?.situacao === 'codigo_errado' && (
-              <p className="text-sm text-critico">Código errado. Restam {(r as { restantes?: number }).restantes} tentativa(s).</p>
-            )}
-            {r?.situacao === 'falha' && <p className="text-sm text-critico">Sem conexão. Tente de novo.</p>}
-            <p className="text-xs text-tinta-apoio">O código é pedido toda vez que você abrir esta página. Nada fica guardado no aparelho.</p>
-          </section>
-        )}
+            {erro && <p id="portao-erro" className="mt-0.5 text-pretty text-sm text-critico" role="alert">{erro}</p>}
+            <Button type="submit" size="bloco" className="mt-1" disabled={enviando}>
+              {enviando ? <Spinner /> : null}Ver meus documentos
+            </Button>
+          </form>
+          <div className="mt-[18px] border-t border-trilha pt-4 text-sm text-tinta-apoio">
+            <p className="text-pretty"><b className="font-semibold text-tinta">Sem celular à mão?</b> Os documentos impressos foram entregues na alta.</p>
+            <p className="mt-3 text-pretty text-[13px] text-tinta-sussurro">
+              O código é pedido a cada abertura: quem tiver só o link não abre sem ele. Três códigos errados bloqueiam o link.
+            </p>
+          </div>
+        </Caixa>
+      )}
+    </>
+  )
+}
 
-        {aberto && (
-          <>
-            <p>
-              Olá, {aberto.primeiro_nome}. {aberto.alta_em ? `Alta em ${dia(aberto.alta_em)}. ` : ''}Este link vale até {dia(aberto.expira_em)}.
-            </p>
-            <details open className="rounded-xl border border-fio bg-card p-4">
-              <summary className="cursor-pointer font-semibold">Orientações</summary>
-              <ol className="mt-2 flex list-decimal flex-col gap-1.5 pl-5">
-                {aberto.orientacoes.map((o, k) => <li key={k}>{o}</li>)}
-              </ol>
-              {aberto.retorno && <p className="mt-3"><strong>Retorno:</strong> {aberto.retorno}</p>}
-            </details>
-            {aberto.documentos.map((d, k) => (
-              <details key={k} className="rounded-xl border border-fio bg-card p-4">
-                <summary className="cursor-pointer font-semibold">
-                  {NOME_DOC[d.tipo] ?? d.tipo}
-                  <span className="ml-2 text-xs font-normal text-tinta-apoio">nº {d.numero ?? '—'} · {dia(d.emitido_em)}</span>
-                </summary>
-                <dl className="mt-2 flex flex-col gap-1 text-sm">
-                  {legivel(d.conteudo).map((l, j) => (
-                    <div key={j}>
-                      {l.rotulo && <dt className="inline font-medium">{l.rotulo}: </dt>}
-                      <dd className="inline whitespace-pre-wrap">{l.valor}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </details>
-            ))}
-            {aberto.documentos.length === 0 && (
-              <p className="text-sm text-tinta-apoio">Nenhum documento emitido além das orientações.</p>
-            )}
-            <button type="button" onClick={() => window.print()} className="self-start rounded-lg border border-fio px-4 py-2 text-sm">
-              Imprimir
-            </button>
-            <p className="text-xs text-tinta-apoio">
-              Os documentos com valor legal são as vias assinadas entregues na alta. Esta página é uma cópia para consulta.
-            </p>
-          </>
-        )}
-      </main>
+export default function PacoteAlta() {
+  const { token = '' } = useParams()
+  const [busca] = useSearchParams()
+
+  React.useEffect(() => {
+    const antes = document.title
+    document.title = 'Seus documentos de alta · Chefe Coruja'
+    return () => { document.title = antes }
+  }, [])
+
+  return (
+    <div className="min-h-screen bg-campo text-base leading-[1.55] text-tinta print:bg-white">
+      {token === 'equipe' ? <VisaoEquipe pacote={busca.get('pacote') ?? ''} /> : <VisaoPaciente token={token} />}
     </div>
   )
 }

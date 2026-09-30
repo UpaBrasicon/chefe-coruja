@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
 const botao = (ativo: boolean) =>
-  cn('rounded-lg border px-3 py-2 text-left text-sm transition-colors', ativo ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50')
+  cn('rounded-lg border px-3 py-2 text-left text-sm transition-colors', ativo ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')
 
 /** Tela única dos escores do pacote src/clinico. */
 export function EscoreTela({ escore }: { escore: Escore }) {
@@ -82,7 +82,7 @@ export function EscoreTela({ escore }: { escore: Escore }) {
                 </div>
               </div>
             ) : (
-              <label key={item.id} className="flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm hover:bg-muted/50">
+              <label key={item.id} className="flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm hover:bg-trilha/50">
                 <input
                   type="checkbox"
                   className="size-4"
@@ -102,17 +102,17 @@ export function EscoreTela({ escore }: { escore: Escore }) {
 
       {!semRefPedi && !semRefAdulto && !res && (
         <Card>
-          <CardContent className="pt-6 text-sm text-muted-foreground">Responda todos os itens obrigatórios para ver o resultado.</CardContent>
+          <CardContent className="pt-6 text-sm text-tinta-sussurro">Responda todos os itens obrigatórios para ver o resultado.</CardContent>
         </Card>
       )}
 
       {res && (
-        <Card className={res.estado === 2 ? 'border-critico/30' : res.estado === 1 ? 'border-atencao/30' : 'border-primary'}>
+        <Card className={res.estado === 2 ? 'border-critico/30' : res.estado === 1 ? 'border-atencao/30' : 'border-acao'}>
           <CardHeader>
             <CardTitle className="flex flex-wrap items-center gap-3 text-base">
               {res.rotulo}
               <Badge className="text-lg">{res.valor}</Badge>
-              {res.unidade && <span className="text-sm font-normal text-muted-foreground">{res.unidade}</span>}
+              {res.unidade && <span className="text-sm font-normal text-tinta-sussurro">{res.unidade}</span>}
             </CardTitle>
             <CardDescription>{res.nota}</CardDescription>
           </CardHeader>
@@ -120,14 +120,14 @@ export function EscoreTela({ escore }: { escore: Escore }) {
             <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
               {res.derivados.map(([k, v]) => (
                 <div key={k} className="contents">
-                  <dt className="text-muted-foreground">{k}</dt>
+                  <dt className="text-tinta-sussurro">{k}</dt>
                   <dd>{v}</dd>
                 </div>
               ))}
             </dl>
             {res.alerta && <p className={res.estado === 2 ? 'text-critico' : 'text-atencao'}>{res.alerta}</p>}
             {res.cuidados.length > 0 && (
-              <ul className="list-disc pl-5 text-muted-foreground">
+              <ul className="list-disc pl-5 text-tinta-sussurro">
                 {res.cuidados.map((c) => <li key={c}>{c}</li>)}
               </ul>
             )}

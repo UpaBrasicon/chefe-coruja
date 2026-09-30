@@ -89,7 +89,7 @@ export function GasometriaAcidoBase() {
         {agu && <Trecho texto={`AG urinário ${br(agu.valor)} mEq/L. ${agu.texto}`} pagina="p. 937" />}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead><tr className="text-muted-foreground"><th className="pr-2">ATR (Tab. 4, p. 937)</th><th className="pr-2">Grau</th><th className="pr-2">K sérico</th><th className="pr-2">pH urinário</th><th>AG urinário</th></tr></thead>
+            <thead><tr className="text-tinta-sussurro"><th className="pr-2">ATR (Tab. 4, p. 937)</th><th className="pr-2">Grau</th><th className="pr-2">K sérico</th><th className="pr-2">pH urinário</th><th>AG urinário</th></tr></thead>
             <tbody>
               {TABELA_ATR.map((t) => <tr key={t.tipo}><td className="pr-2">{t.tipo}</td><td className="pr-2">{t.grau}</td><td className="pr-2">{t.potassio}</td><td className="pr-2">{t.phUrinario}</td><td>{t.agUrinario}</td></tr>)}
             </tbody>
@@ -139,7 +139,7 @@ export function BicarbonatoAdulto() {
         </div>
         {def !== null && <Resultado rotulo="Déficit total estimado" valor={`${br(def, 0)} mEq = ${br(def / NAHCO3_84_MEQ_POR_ML, 0)} mL de NaHCO3 8,4%`} />}
         {crit !== null && (
-          <p className={crit ? 'text-atencao' : 'text-muted-foreground'}>
+          <p className={crit ? 'text-atencao' : 'text-tinta-sussurro'}>
             {crit
               ? 'pH < 7,1 e HCO3 < 8 mEq/L: dentro do critério laboratorial que o livro descreve; o livro exige ainda quadro agudo e sintomático (p. 937).'
               : 'Fora do critério laboratorial que o livro descreve (pH < 7,1 com HCO3 < 8 mEq/L, em quadro agudo e sintomático) (p. 937).'}

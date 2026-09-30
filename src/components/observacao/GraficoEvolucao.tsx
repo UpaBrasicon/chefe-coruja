@@ -42,7 +42,7 @@ function diaInternacao(aferidoEm: string, dataAdmissao?: string): string {
 
 export function GraficoEvolucao({ series, dataAdmissao, className }: Props) {
   if (series.length === 0) {
-    return <p className="text-sm text-muted-foreground">Sem observações para exibir.</p>
+    return <p className="text-sm text-tinta-sussurro">Sem observações para exibir.</p>
   }
 
   // mescla pontos por rótulo de tempo (dia de internação ou data/hora)

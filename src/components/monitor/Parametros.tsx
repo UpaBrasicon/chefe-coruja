@@ -82,32 +82,34 @@ export function Parametro({
   const TendIcone = tend ? TEND_ICONE[tend.dir] : null
   const conteudo = (
     <>
-      <div className={cn('rotulo flex min-h-[2.5em] items-start gap-1.5 [grid-area:rot]', velho ? 'text-tinta-sussurro' : COR_GRANDEZA[grandeza])}>
+      <div className={cn('cc-param-rot rotulo flex min-h-[2.5em] items-start gap-1.5', velho ? 'text-tinta-sussurro' : COR_GRANDEZA[grandeza])}>
         <Icone className="mt-px size-3 shrink-0" aria-hidden />
         <span>{rotulo}</span>
       </div>
       {velho ? (
-        <span className="self-start text-rotulo font-medium text-tinta-sussurro tabular [grid-area:tend]">{velho}</span>
+        <span className="cc-param-tend cc-tend-idade self-start text-rotulo font-medium text-tinta-sussurro tabular">
+          <span className="cc-tend-txt">{velho}</span>
+        </span>
       ) : tend && TendIcone ? (
         <span
-          className={cn('flex items-center gap-1 self-start text-rotulo font-medium whitespace-nowrap tabular [grid-area:tend]', TEND_COR[tend.sentido])}
+          className={cn('cc-param-tend flex items-center gap-1 self-start text-rotulo font-medium whitespace-nowrap tabular', TEND_COR[tend.sentido])}
           title={TEND_LEITURA[tend.sentido]}
         >
           <TendIcone className="size-3" aria-hidden />
-          {tend.texto}
+          <span className="cc-tend-txt">{tend.texto}</span>
           <span className="sr-only">, {TEND_LEITURA[tend.sentido]}</span>
         </span>
       ) : null}
-      <div className="flex items-baseline gap-1.5 leading-none font-semibold tracking-[-0.03em] tabular [grid-area:val]">
+      <div className="cc-param-val flex items-baseline gap-1.5 leading-none font-semibold tracking-[-0.03em] tabular">
         <span className={velho ? 'text-numeral-ok text-tinta-sussurro' : NUMERAL[nivel]}>{valor}</span>
         {unidade && <span className="text-rotulo font-medium tracking-normal text-tinta-apoio">{unidade}</span>}
       </div>
-      <div className={cn('text-rotulo leading-[1.3] [grid-area:est]', velho ? 'text-tinta-sussurro' : ESTADO_TEXTO[nivel])}>
+      <div className={cn('cc-param-est text-rotulo leading-[1.3]', velho ? 'text-tinta-sussurro' : ESTADO_TEXTO[nivel])}>
         {estado}
         {limiteTexto && <span className="text-tinta-sussurro"> · {limiteTexto}</span>}
       </div>
       {pct !== undefined && (
-        <div className="relative mt-1 h-1.5 rounded-capsula bg-trilha [grid-area:campo]" aria-hidden>
+        <div className="cc-param-campo relative mt-1 h-1.5 rounded-capsula bg-trilha" aria-hidden>
           <div
             className={cn('absolute inset-y-0 left-0 max-w-full rounded-capsula', velho ? 'bg-[repeating-linear-gradient(45deg,#CBD5E1_0_3px,transparent_3px_6px)]' : BARRA_GRANDEZA[grandeza])}
             style={{ width: `${limitar(pct) * 100}%` }}
@@ -119,7 +121,10 @@ export function Parametro({
       )}
     </>
   )
-  const classe = 'grid min-w-0 grid-cols-[minmax(0,1fr)_auto] content-start gap-x-2.5 gap-y-[5px] px-5 pt-[13px] pb-[15px] text-left [grid-template-areas:"rot_tend"_"val_val"_"est_est"_"campo_campo"]'
+  // A grade da célula (e a célula deitada abaixo de 1024px) vive em index.css,
+  // .cc-faixa > .cc-param, como no protótipo: o modo compacto e o celular a
+  // reescrevem por classe.
+  const classe = 'cc-param min-w-0 px-5 pt-[13px] pb-[15px] text-left'
   // Nenhum número de risco sem caminho: se há destino, a célula inteira é o link.
   return onClick ? (
     <button type="button" onClick={onClick} className={cn(classe, 'cursor-pointer transition-colors hover:bg-campo')}>
@@ -138,7 +143,7 @@ export function FaixaParametros({ children, rotulo = 'Parâmetros do plantão', 
   return (
     <section aria-label={rotulo} className="sticky top-0 z-[9] -mx-4 -mt-5 mb-6 border-b border-fio bg-superficie md:-mx-7 md:-mt-7">
       {fita}
-      <div className="mx-auto grid max-w-[var(--cc-coluna)] snap-x snap-mandatory auto-cols-[78%] grid-flow-col overflow-x-auto [&>*+*]:border-l [&>*+*]:border-trilha min-[900px]:grid-flow-row min-[900px]:grid-cols-2 min-[900px]:overflow-visible min-[1024px]:grid-cols-4 [&>*]:snap-start">
+      <div className="cc-faixa cc-coluna mx-auto">
         {children}
       </div>
     </section>

@@ -1,8 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
-import { FolderUp, Plus, Search, Stethoscope, FileText, Loader2 } from 'lucide-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Check, FolderUp, History, PencilLine, Plus, Search, Stethoscope, FileText, Loader2, TriangleAlert } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { CATEGORIAS, faltasParaAih, RACAS_COR, SEXOS } from '@/lib/cadastro'
+import { formatarCns, formatarCpf } from '@/lib/documentos'
+import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,12 +13,16 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
+import { PilulaRisco } from '@/components/clinico/PilulaRisco'
+import type { CorRisco } from '@/domain/risco'
+import { Campo, CamposCadastro } from '@/pages/recepcao/CamposCadastro'
+import { CADASTRO_VAZIO, errosCadastro, hojeSP, idadeLegivel, normalizarCadastro, type Cadastro, type CampoCadastro } from '@/pages/recepcao/cadastroForm'
 import { DIETAS, hojeLocal, idadeTexto, type DadosPaciente } from './rascunho'
 
 function normalizarNome(texto: string) {
   return texto
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '')
 }
@@ -48,6 +55,110 @@ async function extrairTextoImagem(file: File) {
   }
 }
 
+// ── cadastro completo (protótipo: cadastro da porta e aba "Dados do paciente") ──
+
+type PacienteLinha = Record<CampoCadastro, string | null> & { id: string; prontuario: string | null; setor_id: string | null }
+type Atendimento = {
+  id: string
+  setor: string
+  etapa: string
+  chegada_em: string
+  encerrado_em: string | null
+  desfecho: string | null
+  cor_atual: CorRisco | null
+  prestador: string | null
+}
+
+const dataHora = (iso: string) =>
+  new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+const isoParaBr = (iso: string | null) => (iso ? iso.slice(0, 10).split('-').reverse().join('/') : '')
+const brParaIso = (br: string) => {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(br)
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : ''
+}
+const rotuloDe = (lista: readonly { valor: string; rotulo: string }[], v: string | null) => lista.find((o) => o.valor === v)?.rotulo ?? v ?? ''
+
+const SITUACAO: Record<string, string> = {
+  triagem: 'Aguardando triagem',
+  atendimento: 'No Pronto Socorro',
+  observacao: 'Em observação',
+  internacao: 'Internado',
+}
+const DESFECHO: Record<string, string> = {
+  alta: 'Alta',
+  alta_apos_medicacao: 'Alta após medicação',
+  alta_a_pedido: 'Alta a pedido',
+  transferencia: 'Transferência',
+  evasao: 'Evasão',
+  obito: 'Óbito',
+  observacao: 'Observação',
+  internacao: 'Internação',
+  cancelado: 'Cancelado',
+}
+
+function paraFormulario(p: PacienteLinha | null | undefined): Cadastro {
+  if (!p) return { ...CADASTRO_VAZIO }
+  const f = { ...CADASTRO_VAZIO }
+  for (const k of Object.keys(CADASTRO_VAZIO) as CampoCadastro[]) f[k] = p[k] ?? ''
+  return f
+}
+
+/** Blocos só de leitura, no desenho da aba "Dados do paciente" do protótipo. */
+function BlocosCadastro({ p }: { p: PacienteLinha }) {
+  const hoje = hojeSP()
+  const blocos: { titulo: string; campos: [string, string][] }[] = [
+    {
+      titulo: 'Identificação',
+      campos: [
+        ['Nome', p.nome_social ? `${p.nome_social} (${p.nome})` : (p.nome ?? '')],
+        ['Prontuário', p.prontuario ?? ''],
+        ['Nascimento', p.data_nascimento ? `${isoParaBr(p.data_nascimento)} · ${idadeLegivel(p.data_nascimento, hoje)}` : ''],
+        ['Sexo', rotuloDe(SEXOS, p.sexo)],
+        ['Raça/cor', rotuloDe(RACAS_COR, p.raca_cor)],
+        ['Nome da mãe', p.nome_mae ?? ''],
+        ['CPF', p.cpf ? formatarCpf(p.cpf) : ''],
+        ['Cartão SUS', p.cns ? formatarCns(p.cns) : ''],
+        ['Estado civil', p.estado_civil ?? ''],
+        ['Categoria', [rotuloDe(CATEGORIAS, p.categoria), p.categoria === 'convenio' ? p.convenio : ''].filter(Boolean).join(' · ')],
+      ],
+    },
+    {
+      titulo: 'Contato e endereço',
+      campos: [
+        ['Telefone', p.telefone ?? ''],
+        ['Endereço', p.endereco ?? ''],
+        ['Município', [p.municipio, p.uf].filter(Boolean).join(' / ')],
+      ],
+    },
+    {
+      titulo: 'Responsável',
+      campos: [
+        ['Nome', p.responsavel_nome ?? ''],
+        ['Parentesco ou vínculo', p.responsavel_parentesco ?? ''],
+        ['Documento', p.responsavel_documento ?? ''],
+        ['Telefone', p.responsavel_telefone ?? ''],
+      ],
+    },
+  ]
+  return (
+    <>
+      {blocos.map((b) => (
+        <div key={b.titulo} className="flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px] shadow-repouso">
+          <h3 className="text-corpo font-semibold text-tinta">{b.titulo}</h3>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-x-[18px] gap-y-3">
+            {b.campos.map(([rotulo, valor]) => (
+              <div key={rotulo} className="flex min-w-0 flex-col gap-[3px]">
+                <span className="text-rotulo font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">{rotulo}</span>
+                <span className={cn('text-controle break-words', valor ? 'text-tinta' : 'text-tinta-sussurro')}>{valor || '—'}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
+
 export function DadosPaciente({
   unidadeId,
   perfilId,
@@ -67,16 +178,25 @@ export function DadosPaciente({
   setorDestino?: string
   onSetorDestino?: (id: string) => void
 }) {
+  const queryClient = useQueryClient()
   const [cpfBusca, setCpfBusca] = React.useState('')
   const [buscaAtiva, setBuscaAtiva] = React.useState('')
-  const [novoPaciente, setNovoPaciente] = React.useState(false)
-  const [formNovo, setFormNovo] = React.useState({ nome: '', cpf: '', data_nascimento: '', sexo: '' })
   const [arquivo, setArquivo] = React.useState<File | null>(null)
   const [anexando, setAnexando] = React.useState(false)
   const [lendoArquivo, setLendoArquivo] = React.useState(false)
   const [statusArquivo, setStatusArquivo] = React.useState<string | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
-  const [criando, setCriando] = React.useState(false)
+
+  // cadastro: 'novo' (pessoa nova) ou 'editar' (completar ou corrigir)
+  const [cadastro, setCadastro] = React.useState<'fechado' | 'novo' | 'editar'>('fechado')
+  const [form, setForm] = React.useState<Cadastro>(CADASTRO_VAZIO)
+  const [formPeso, setFormPeso] = React.useState('')
+  const [formAlergias, setFormAlergias] = React.useState('')
+  const [salvando, setSalvando] = React.useState(false)
+  const [erroCadastro, setErroCadastro] = React.useState<string | null>(null)
+  const [duplicata, setDuplicata] = React.useState<{ tipo: 'documento' | 'provavel'; id: string; texto: string } | null>(null)
+  const [salvo, setSalvo] = React.useState<string | null>(null)
+  const [verDados, setVerDados] = React.useState(false)
 
   const setorEscolhido = escalaSetores?.[0]?.id
 
@@ -121,39 +241,110 @@ export function DadosPaciente({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pacienteEncontrado])
 
-  async function cadastrarPaciente() {
-    if (!unidadeId || !setorEscolhido) {
-      setErro('Nenhum setor da escala disponível para cadastrar o paciente.')
+  // o cadastro do paciente em uso (a RLS decide se dá para ler)
+  const pacienteId = dados.paciente_id ?? null
+  const cadastroAtual = useQuery({
+    queryKey: ['paciente-cadastro', pacienteId],
+    enabled: !!pacienteId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('pacientes').select('*').eq('id', pacienteId!).maybeSingle()
+      if (error) throw error
+      return (data ?? null) as unknown as PacienteLinha | null
+    },
+  })
+  const paciente = cadastroAtual.data ?? null
+
+  const atendimentos = useQuery({
+    queryKey: ['paciente-atendimentos', pacienteId],
+    enabled: !!pacienteId && verDados,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('atendimentos_do_paciente', { p_paciente: pacienteId! })
+      if (error) throw error
+      return (data ?? []) as Atendimento[]
+    },
+  })
+
+  const faltasAih = paciente ? faltasParaAih(paciente) : []
+
+  function abrirCadastro(tipo: 'novo' | 'editar') {
+    setErroCadastro(null)
+    setDuplicata(null)
+    setSalvo(null)
+    setFormPeso(dados.peso)
+    setFormAlergias(dados.alergias)
+    if (tipo === 'editar') {
+      setForm(paraFormulario(paciente))
+    } else {
+      // começa com o que já foi digitado no documento ou na busca
+      const t = buscaAtiva || cpfBusca
+      const digitos = t.replace(/\D/g, '')
+      setForm({
+        ...CADASTRO_VAZIO,
+        nome: dados.nome || (/\d/.test(t) ? '' : t.trim()),
+        data_nascimento: brParaIso(dados.nascimento),
+        cpf: digitos.length === 11 ? digitos : '',
+      })
+    }
+    setCadastro(tipo)
+  }
+
+  const mudarForm = (k: CampoCadastro, v: string) => {
+    setErroCadastro(null)
+    setForm((f) => ({ ...f, [k]: v }))
+  }
+
+  async function salvarCadastro({ outraPessoa = false, usarId }: { outraPessoa?: boolean; usarId?: string } = {}) {
+    setErroCadastro(null)
+    if (usarId) {
+      // duplicata: usar o cadastro que já existe
+      onChange({ paciente_id: usarId })
+      setCadastro('fechado')
+      setDuplicata(null)
       return
     }
-    setCriando(true)
-    setErro(null)
-    const { data: novo, error } = await supabase
-      .from('pacientes')
-      .insert({
-        unidade_id: unidadeId,
-        setor_id: setorEscolhido,
-        nome: formNovo.nome,
-        cpf: formNovo.cpf || null,
-        data_nascimento: formNovo.data_nascimento || null,
-        sexo: formNovo.sexo || null,
-      })
-      .select('id')
-    setCriando(false)
+    if (form.nome.trim().length < 3) return setErroCadastro('Nome é obrigatório.')
+    const primeiro = Object.values(errosCadastro(form))[0]
+    if (primeiro) return setErroCadastro(primeiro)
+    const novo = cadastro === 'novo'
+    if (novo && (!unidadeId || !setorEscolhido)) return setErroCadastro('Nenhum setor da escala disponível para cadastrar o paciente.')
+
+    // na edição, só o que mudou; no cadastro novo, tudo
+    const antes = paraFormulario(paciente)
+    const normal = normalizarCadastro(form)
+    const enviados = novo
+      ? normal
+      : Object.fromEntries(Object.entries(normal).filter(([k, v]) => v !== normalizarCadastro(antes)[k as CampoCadastro]))
+
+    setSalvando(true)
+    const { data, error } = await supabase.rpc('salvar_cadastro_paciente', {
+      p_paciente: novo ? undefined : pacienteId!,
+      p_dados: enviados,
+      p_setor: novo ? setorEscolhido : undefined,
+      p_outra_pessoa: outraPessoa,
+    })
+    setSalvando(false)
     if (error) {
-      setErro(error.message)
+      const m = error.message.match(/^CADASTRO_DUPLICATA_(DOCUMENTO|PROVAVEL):([0-9a-f-]{36}) (.*)$/)
+      if (m) setDuplicata({ tipo: m[1] === 'DOCUMENTO' ? 'documento' : 'provavel', id: m[2], texto: m[3] })
+      else setErroCadastro(error.message)
       return
     }
-    if (novo?.[0]?.id) {
-      onChange({
-        nome: formNovo.nome,
-        paciente_id: novo[0].id,
-        setor_id: setorEscolhido,
-      })
-    }
-    setBuscaAtiva(formNovo.cpf || formNovo.nome)
-    setNovoPaciente(false)
-    setFormNovo({ nome: '', cpf: '', data_nascimento: '', sexo: '' })
+    const r = data as { paciente_id: string; prontuario: string; setor_id: string | null }
+    // "Salvar e usar neste atendimento": o documento passa a usar este cadastro
+    onChange({
+      nome: form.nome.trim(),
+      nascimento: isoParaBr(form.data_nascimento) || dados.nascimento,
+      dataAtual: dados.dataAtual || hojeLocal(),
+      paciente_id: r.paciente_id,
+      setor_id: r.setor_id ?? dados.setor_id ?? null,
+      peso: formPeso,
+      alergias: formAlergias,
+    })
+    void queryClient.invalidateQueries({ queryKey: ['paciente-cadastro', r.paciente_id] })
+    void queryClient.invalidateQueries({ queryKey: ['paciente-busca'] })
+    setSalvo(novo ? `Cadastro criado · prontuário ${r.prontuario}.` : 'Cadastro atualizado.')
+    setCadastro('fechado')
+    setDuplicata(null)
   }
 
   async function anexarArquivo() {
@@ -169,8 +360,7 @@ export function DadosPaciente({
       })
       if (error) throw error
       setStatusArquivo('Arquivo anexado com sucesso.')
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (e) {
+    } catch {
       setErro('Falha ao anexar o arquivo.')
     } finally {
       setAnexando(false)
@@ -227,7 +417,7 @@ export function DadosPaciente({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Stethoscope className="size-4 text-muted-foreground" /> Dados do Paciente
+          <Stethoscope className="size-4 text-tinta-sussurro" /> Dados do Paciente
         </CardTitle>
         <CardDescription>
           Identifique o paciente (busca por CPF/nome, cadastro ou anexo do arquivo de atendimento). Os
@@ -257,65 +447,143 @@ export function DadosPaciente({
             </div>
           )}
 
-          {!buscando && buscaAtiva && !pacienteEncontrado && (
-            <div className="rounded-xl border border-dashed p-3 text-sm text-muted-foreground">
+          {!buscando && buscaAtiva && !pacienteEncontrado && cadastro === 'fechado' && (
+            <div className="rounded-xl border border-dashed p-3 text-sm text-tinta-sussurro">
               Paciente não encontrado.{' '}
-              <button
-                className="font-medium text-primary hover:underline"
-                onClick={() => setNovoPaciente((v) => !v)}
-              >
+              <button className="font-medium text-acao hover:underline" onClick={() => abrirCadastro('novo')}>
                 Cadastrar novo paciente
               </button>
             </div>
           )}
 
-          {novoPaciente && (
-            <div className="flex flex-col gap-3 rounded-xl border p-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="int-nome">Nome</Label>
-                  <Input id="int-nome" value={formNovo.nome} onChange={(e) => setFormNovo((f) => ({ ...f, nome: e.target.value }))} />
+          {pacienteId && paciente && cadastro === 'fechado' && (
+            <div className="flex flex-col gap-2 rounded-xl border border-conforme/30 bg-conforme/[0.08] p-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="font-semibold text-conforme">{paciente.nome_social ? `${paciente.nome_social} (${paciente.nome})` : paciente.nome}</div>
+                  <div className="text-xs text-conforme">
+                    {[
+                      paciente.prontuario ? `Pront. ${paciente.prontuario}` : null,
+                      paciente.cpf ? `CPF ${formatarCpf(paciente.cpf)}` : null,
+                      paciente.cns ? `CNS ${formatarCns(paciente.cns)}` : null,
+                      rotuloDe(SEXOS, paciente.sexo) || null,
+                      paciente.data_nascimento ? `${isoParaBr(paciente.data_nascimento)} · ${idadeLegivel(paciente.data_nascimento)}` : null,
+                    ].filter(Boolean).join(' · ')}
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="int-cpf">CPF</Label>
-                  <Input id="int-cpf" value={formNovo.cpf} onChange={(e) => setFormNovo((f) => ({ ...f, cpf: e.target.value }))} />
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setVerDados((v) => !v)} aria-expanded={verDados}>
+                    <History /> {verDados ? 'Esconder dados' : 'Dados e atendimentos'}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => abrirCadastro('editar')}>
+                    <PencilLine /> Completar ou corrigir cadastro
+                  </Button>
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="int-nasc">Nascimento</Label>
-                  <Input id="int-nasc" type="date" value={formNovo.data_nascimento} onChange={(e) => setFormNovo((f) => ({ ...f, data_nascimento: e.target.value }))} />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="int-sexo">Sexo</Label>
-                  <Input id="int-sexo" value={formNovo.sexo} onChange={(e) => setFormNovo((f) => ({ ...f, sexo: e.target.value }))} placeholder="M / F" />
-                </div>
-              </div>
-              {escalaSetores && escalaSetores.length > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Setor (da escala atual): <Badge variant="outline">{escalaSetores[0].nome}</Badge>
-                </p>
-              )}
-              <div>
-                <Button onClick={cadastrarPaciente} disabled={criando || !formNovo.nome}>
-                  {criando ? <Spinner /> : <Plus />} Cadastrar
-                </Button>
               </div>
             </div>
           )}
 
-          {!buscando && pacienteEncontrado && (
-            <div className="rounded-xl border border-conforme/30 bg-conforme/[0.08] p-3">
-              <div className="font-semibold text-conforme">{pacienteEncontrado.nome}</div>
-              <div className="text-xs text-conforme">
-                CPF {pacienteEncontrado.cpf ?? '—'} · {pacienteEncontrado.sexo ?? ''} ·{' '}
-                {pacienteEncontrado.data_nascimento ?? ''}
-              </div>
+          {!pacienteId && cadastro === 'fechado' && !buscaAtiva && (
+            <button type="button" className="self-start text-sm font-medium text-acao hover:underline" onClick={() => abrirCadastro('novo')}>
+              <Plus className="mr-1 inline size-3.5" />Novo paciente
+            </button>
+          )}
+
+          {pacienteId && paciente && faltasAih.length > 0 && cadastro === 'fechado' && (
+            <div role="status" className="flex items-start gap-2 rounded-container border border-atencao/25 bg-alerta-atencao px-3.5 py-2.5 text-apoio text-atencao">
+              <TriangleAlert className="mt-0.5 size-[15px] shrink-0" aria-hidden />
+              <span className="text-pretty">
+                Para o laudo de AIH sair completo, falta no cadastro: {faltasAih.join(', ')}.{' '}
+                <button type="button" className="font-medium underline underline-offset-2" onClick={() => abrirCadastro('editar')}>Completar agora</button>
+              </span>
             </div>
+          )}
+
+          {salvo && cadastro === 'fechado' && (
+            <p role="status" className="flex items-center gap-1.5 text-apoio text-acao"><Check className="size-4" /> {salvo}</p>
+          )}
+
+          {pacienteId && paciente && verDados && cadastro === 'fechado' && (
+            <div className="flex flex-col gap-3.5">
+              <BlocosCadastro p={paciente} />
+              <div className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
+                <div className="border-b border-trilha px-5 py-3.5"><h3 className="text-corpo font-semibold text-tinta">Atendimentos</h3></div>
+                {atendimentos.isLoading && <div className="px-5 py-4"><Spinner /></div>}
+                {atendimentos.error && <p className="px-5 py-3 text-apoio text-critico">{(atendimentos.error as Error).message}</p>}
+                {atendimentos.data?.length === 0 && (
+                  <p className="px-5 py-4 text-apoio text-tinta-sussurro">Nenhum atendimento que você possa ver agora.</p>
+                )}
+                {atendimentos.data?.map((a) => (
+                  <div key={a.id} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-3 last:border-0">
+                    <span className="flex-none text-apoio font-semibold tabular-nums text-acao">{a.id.slice(0, 8).toUpperCase()}</span>
+                    <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-0.5">
+                      <span className="text-controle text-tinta">{a.setor}</span>
+                      <span className="text-apoio text-pretty text-tinta-sussurro">
+                        {dataHora(a.chegada_em)}{a.encerrado_em ? ` a ${dataHora(a.encerrado_em)}` : ''} · {a.prestador ?? 'sem médico'}
+                      </span>
+                    </div>
+                    {a.cor_atual && <PilulaRisco cor={a.cor_atual} />}
+                    <span className="text-apoio text-tinta-apoio">
+                      {a.etapa === 'encerrado' ? (DESFECHO[a.desfecho ?? ''] ?? 'Encerrado') : (SITUACAO[a.etapa] ?? a.etapa)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-apoio text-tinta-sussurro">Os dados vêm do cadastro do paciente. Atendimentos de setores fora do seu plantão não aparecem.</p>
+            </div>
+          )}
+
+          {cadastro !== 'fechado' && (
+            <section aria-label="Cadastro do paciente" className="flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px] shadow-repouso">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-corpo font-semibold text-tinta">{cadastro === 'editar' ? 'Completar cadastro' : 'Novo paciente'}</h3>
+                {cadastro === 'novo' && escalaSetores && escalaSetores.length > 0 && (
+                  <span className="text-xs text-tinta-sussurro">Setor (da escala atual): <Badge variant="outline">{escalaSetores[0].nome}</Badge></span>
+                )}
+              </div>
+              {duplicata && (
+                <div role="alert" className="flex flex-wrap items-center gap-2.5 rounded-container border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-2.5">
+                  <TriangleAlert className="size-[15px] text-atencao" aria-hidden />
+                  <span className="min-w-0 flex-[1_1_240px] text-apoio text-atencao">{duplicata.texto}</span>
+                  <Button variant="outline" onClick={() => void salvarCadastro({ usarId: duplicata.id })}>Usar o cadastro existente</Button>
+                  {duplicata.tipo === 'provavel' && (
+                    <Button variant="outline" onClick={() => void salvarCadastro({ outraPessoa: true })}>É outra pessoa</Button>
+                  )}
+                </div>
+              )}
+              <CamposCadastro
+                prefixo="dp"
+                valores={form}
+                onChange={mudarForm}
+                extras={
+                  <>
+                    <Campo id="dp-peso" rotulo="Peso (kg)" className="flex-[1_1_120px]">
+                      <Input id="dp-peso" type="number" min={0} step="0.1" value={formPeso} onChange={(e) => setFormPeso(e.target.value)} />
+                    </Campo>
+                    <Campo id="dp-alergias" rotulo="Alergias (separe por vírgula)" className="basis-full" dica="Vai para este documento; o registro de alergias do paciente fica no cabeçalho.">
+                      <Input id="dp-alergias" value={formAlergias} onChange={(e) => setFormAlergias(e.target.value)} placeholder="Ex.: Dipirona (ou NEGA)" />
+                    </Campo>
+                  </>
+                }
+              />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                {erroCadastro ? (
+                  <span role="alert" className="flex items-center gap-1.5 text-apoio text-critico"><TriangleAlert className="size-3.5" />{erroCadastro}</span>
+                ) : <span />}
+                <div className="ml-auto flex gap-2">
+                  <Button variant="outline" onClick={() => setCadastro('fechado')}>Cancelar</Button>
+                  <Button disabled={salvando} onClick={() => void salvarCadastro()}>
+                    {salvando ? <Spinner className="size-4" /> : <Check />} Salvar e usar neste atendimento
+                  </Button>
+                </div>
+              </div>
+            </section>
           )}
 
           {/* Anexar / ler arquivo do atendimento */}
           <div className="flex flex-col gap-2 rounded-xl border border-dashed p-4">
             <Label htmlFor="int-arquivo" className="flex items-center gap-2">
-              <FileText className="size-4 text-muted-foreground" />
+              <FileText className="size-4 text-tinta-sussurro" />
               Anexar arquivo do atendimento (PDF ou imagem)
             </Label>
             <Input
@@ -326,7 +594,7 @@ export function DadosPaciente({
             />
             {arquivo && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-sm text-muted-foreground">{arquivo.name}</span>
+                <span className="text-sm text-tinta-sussurro">{arquivo.name}</span>
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={anexarArquivo} disabled={anexando || !unidadeId}>
                     {anexando ? <Spinner /> : <FolderUp />} Anexar
@@ -376,7 +644,7 @@ export function DadosPaciente({
               value={idadeTexto(dados.nascimento, dados.dataAtual) || dados.idade}
               readOnly
               placeholder="Auto"
-              className="bg-muted"
+              className="bg-trilha"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -427,16 +695,16 @@ export function DadosPaciente({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-tinta-sussurro">
               Ao salvar/continuar, o paciente será vinculado a este setor. Transferências entre
               setores ficam registradas em auditoria.
             </p>
           </div>
         )}
 
-        {erro && <p className="text-sm text-destructive">{erro}</p>}
+        {erro && <p className="text-sm text-critico">{erro}</p>}
         {perfilId && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-tinta-sussurro">
             Salvo automaticamente para a unidade atual · ID do plantonista: {perfilId.slice(0, 8)}…
           </p>
         )}

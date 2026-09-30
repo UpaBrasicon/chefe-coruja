@@ -38,7 +38,7 @@ export function InsuficienciaAdrenalAdulto() {
         </div>
         {lb && <Trecho texto={lb.texto} pagina={lb.pagina} />}
         {la && <Trecho texto={la.texto} pagina={la.pagina} />}
-        <p className="text-muted-foreground">{DIVERGENCIA_FIGURA_IA}</p>
+        <p className="text-tinta-sussurro">{DIVERGENCIA_FIGURA_IA}</p>
       </Bloco>
 
       <Bloco titulo="Crise adrenal aguda" descricao={`${C.pagina}.`}>

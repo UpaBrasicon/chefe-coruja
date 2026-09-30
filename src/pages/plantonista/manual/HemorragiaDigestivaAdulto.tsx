@@ -99,7 +99,7 @@ export function HemorragiaDigestivaAdulto() {
           <Resultado rotulo="Mais de 2 CH" valor={ch > 0 ? (mac.transfusao ? 'sim' : 'não') : '—'} />
         </div>
         <ListaRef itens={METAS_HDB} />
-        <p className="text-muted-foreground">Escore de Oakland em ferramenta própria.</p>
+        <p className="text-tinta-sussurro">Escore de Oakland em ferramenta própria.</p>
       </Bloco>
 
       <Bloco titulo="Escores de HDA: diferenças do livro" descricao="Glasgow-Blatchford, Rockall e AIMS65 já existem no produto e não foram alterados.">

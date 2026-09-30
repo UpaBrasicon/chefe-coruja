@@ -12,7 +12,9 @@ import { useEscalaSetores } from './shared/useEscalaSetores'
 import { PrescricaoTab } from './internacao/PrescricaoTab'
 import { EvolucaoTab } from './internacao/EvolucaoTab'
 import { ExamesTab } from './internacao/ExamesTab'
-import { InternacaoTab } from './internacao/InternacaoTab'
+import { FichaAdmissao } from './internacao/FichaAdmissao'
+import { LaudoAih } from './internacao/LaudoAih'
+import { AbaEvolucao } from '@/components/evolucao/AbaEvolucao'
 import { ExportarTab } from './internacao/ExportarTab'
 import { useRascunho } from './internacao/rascunho'
 import { useInternacaoAtiva } from '@/hooks/useDocumentos'
@@ -90,12 +92,12 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
     <div className={embutido ? 'flex w-full flex-col gap-6' : 'mx-auto flex w-full max-w-6xl flex-col gap-6'}>
       <div className="flex flex-col gap-1">
         {!embutido && (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/plantao/internacao" className="transition-colors hover:text-foreground">
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/plantao/internacao" className="transition-colors hover:text-tinta">
               Internação
             </Link>
             <ChevronRight className="size-3.5" />
-            <span className="font-medium text-foreground">Formulário</span>
+            <span className="font-medium text-tinta">Formulário</span>
           </div>
         )}
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -104,7 +106,7 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
           ) : (
             <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Internação</h1>
           )}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 text-xs text-tinta-sussurro">
             {salvoEm && (
               <span className="inline-flex items-center gap-1 text-conforme">
                 <CheckCircle2 className="size-3.5" /> Salvo às {salvoEm}
@@ -116,7 +118,7 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
           </div>
         </div>
         {!embutido && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             Preencha os dados do paciente acima e navegue pelas abas. Cada aba salva automaticamente
             e tudo fica pronto para exportar em PDF na última aba.
           </p>
@@ -137,7 +139,8 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
       <Tabs defaultValue="prescricao">
         <TabsList variant="line" className="w-full">
           <TabsTrigger value="prescricao">💊 Prescrição</TabsTrigger>
-          <TabsTrigger value="evolucao">📝 Evolução/Admissão</TabsTrigger>
+          <TabsTrigger value="admissao">📋 Admissão</TabsTrigger>
+          <TabsTrigger value="evolucao">📝 Evolução</TabsTrigger>
           <TabsTrigger value="exames">🩸 Pedidos de Exames</TabsTrigger>
           <TabsTrigger value="internacao">🏥 Internação</TabsTrigger>
           <TabsTrigger value="exportar">📥 Exportar PDF</TabsTrigger>
@@ -147,7 +150,20 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
           <PrescricaoTab dados={dados.paciente} pacienteId={dados.paciente.paciente_id} />
         </TabsContent>
 
+        <TabsContent value="admissao">
+          <FichaAdmissao
+            pacienteId={dados.paciente.paciente_id}
+            internacaoId={internacaoAtiva?.id ?? null}
+            leito={dados.paciente.leito}
+            onEscolherPaciente={(id) => atualizar({ paciente: { ...dados.paciente, paciente_id: id } })}
+          />
+        </TabsContent>
+
         <TabsContent value="evolucao">
+          {/* com a internação aberta, a evolução é a estruturada; a admissão tem aba própria */}
+          {internacaoAtiva && dados.paciente.paciente_id ? (
+            <AbaEvolucao pacienteId={dados.paciente.paciente_id} internacaoId={internacaoAtiva.id} />
+          ) : (
           <EvolucaoTab
             dados={dados.paciente}
             evolucao={dados.evolucao}
@@ -156,6 +172,7 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
             unidadeId={unidadeId}
             internacaoId={internacaoAtiva?.id ?? null}
           />
+          )}
         </TabsContent>
 
         <TabsContent value="exames">
@@ -167,12 +184,11 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
         </TabsContent>
 
         <TabsContent value="internacao">
-          <InternacaoTab
-            dados={dados.paciente}
-            aih={dados.aih}
-            evolucao={dados.evolucao}
-            exames={dados.exames}
-            onChange={(p) => atualizar({ aih: { ...dados.aih, ...p } })}
+          <LaudoAih
+            pacienteId={dados.paciente.paciente_id}
+            internacaoId={internacaoAtiva?.id ?? null}
+            leito={dados.paciente.leito}
+            onEscolherPaciente={(id) => atualizar({ paciente: { ...dados.paciente, paciente_id: id } })}
           />
         </TabsContent>
 
@@ -182,12 +198,11 @@ export default function Internacao({ embutido = false }: { embutido?: boolean } 
             prescricao={dados.prescricao}
             evolucao={dados.evolucao}
             exames={dados.exames}
-            aih={dados.aih}
           />
         </TabsContent>
       </Tabs>
 
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <p className="flex items-center gap-1.5 text-xs text-tinta-sussurro">
         <ClipboardPlus className="size-3.5" /> Rascunho salvo automaticamente no navegador (somente
         neste dispositivo). Persistência no Supabase será adicionada em etapa futura.
       </p>

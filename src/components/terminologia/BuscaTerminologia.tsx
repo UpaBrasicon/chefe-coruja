@@ -43,7 +43,7 @@ export function BuscaTerminologia({ tipo, onSelecionar, placeholder, className, 
   const semResultado = termo.trim().length >= 2 && !isFetching && !isError && (resultados ?? []).length === 0
 
   return (
-    <Command className={cn('h-auto rounded-xl border bg-popover', className)} shouldFilter={false}>
+    <Command className={cn('h-auto rounded-xl border bg-superficie', className)} shouldFilter={false}>
       <CommandInput
         autoFocus={autoFocus}
         value={termo}
@@ -54,7 +54,7 @@ export function BuscaTerminologia({ tipo, onSelecionar, placeholder, className, 
       {termo.trim().length >= 2 && (
         <CommandList>
           {isFetching && (
-            <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+            <div className="flex items-center justify-center gap-2 py-6 text-sm text-tinta-sussurro">
               <Loader2 className="size-4 animate-spin" /> Buscando…
             </div>
           )}
@@ -73,7 +73,7 @@ export function BuscaTerminologia({ tipo, onSelecionar, placeholder, className, 
                     setTermo('')
                   }}
                 >
-                  <span className="w-16 shrink-0 font-mono text-xs text-muted-foreground">{r.codigo}</span>
+                  <span className="w-16 shrink-0 font-mono text-xs text-tinta-sussurro">{r.codigo}</span>
                   <span className="min-w-0 flex-1 truncate">{r.descricao}</span>
                 </CommandItem>
               ))}

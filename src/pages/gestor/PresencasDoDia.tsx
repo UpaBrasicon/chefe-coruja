@@ -70,7 +70,7 @@ export function PresencasDoDia() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Users className="size-4 text-muted-foreground" />
+            <Users className="size-4 text-tinta-sussurro" />
             Presenças de hoje
           </CardTitle>
           <CardDescription>
@@ -78,12 +78,12 @@ export function PresencasDoDia() {
             {' · '}
             <span className="font-medium text-atencao">{pendentes.length} sem check-in</span>
             {' · '}
-            <span className="font-medium text-muted-foreground">{concluidos.length} concluídos</span>
+            <span className="font-medium text-tinta-sussurro">{concluidos.length} concluídos</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {(presencas ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum plantonista vinculado nesta unidade.</p>
+            <p className="text-sm text-tinta-sussurro">Nenhum plantonista vinculado nesta unidade.</p>
           ) : (
             (presencas ?? []).map((p) => (
               <div
@@ -96,7 +96,7 @@ export function PresencasDoDia() {
                   {p.checkin_dentro === true && <Badge variant="success">dentro do raio</Badge>}
                   {p.checkin_dentro === false && (<Badge variant="destructive">fora do raio{p.checkin_distancia_m != null ? ` · ${p.checkin_distancia_m} m` : ""}</Badge>)}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-tinta-sussurro">
                   {p.checkin_em ? (
                     <span className="flex items-center gap-1">
                       <LogIn className="size-3.5" />
@@ -108,7 +108,7 @@ export function PresencasDoDia() {
                     </span>
                   )}
                   {p.checkout_em && (
-                    <span className="flex items-center gap-1 text-muted-foreground">
+                    <span className="flex items-center gap-1 text-tinta-sussurro">
                       → {new Date(p.checkout_em).toLocaleTimeString('pt-BR')}{p.checkout_automatico && ' (automático)'}
                     </span>
                   )}

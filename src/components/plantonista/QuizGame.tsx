@@ -55,7 +55,7 @@ export function QuizGame({
   if (terminou) {
     return (
       <ToolLayout title={title} description={description}>
-        <Card className="border-primary">
+        <Card className="border-acao">
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-base">
               Resultado
@@ -69,7 +69,7 @@ export function QuizGame({
             {questoes.map((quest, i) => (
               <div key={i} className={cn('rounded-lg border px-3 py-2 text-sm', respostas[i] === quest.correta ? 'border-conforme/30 bg-conforme/[0.08]' : 'border-critico/30 bg-critico/[0.08]')}>
                 <p className="font-medium">{quest.pergunta}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-tinta-sussurro">
                   {respostas[i] === quest.correta ? '✓ Correto' : `✗ Sua resposta: ${quest.opcoes[respostas[i]]}`} · Resposta: {quest.opcoes[quest.correta]}
                 </p>
               </div>
@@ -102,7 +102,7 @@ export function QuizGame({
                 onClick={() => escolher(i)}
                 className={cn(
                   'rounded-lg border px-3 py-2 text-left text-sm transition-colors',
-                  resposta === undefined && 'hover:bg-muted/50',
+                  resposta === undefined && 'hover:bg-trilha/50',
                   resposta !== undefined && i === q.correta && 'border-conforme/30 bg-conforme/[0.08]',
                   resposta === i && i !== q.correta && 'border-critico/30 bg-critico/[0.08]',
                   resposta !== undefined && i !== q.correta && i !== resposta && 'opacity-60'
@@ -113,7 +113,7 @@ export function QuizGame({
             ))}
           </div>
           {resposta !== undefined && (
-            <p className="rounded-lg border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+            <p className="rounded-lg border bg-trilha/40 px-3 py-2 text-sm text-tinta-sussurro">
               {q.explicacao}
             </p>
           )}

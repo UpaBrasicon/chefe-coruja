@@ -259,15 +259,15 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       {!embutido && (
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/" className="transition-colors hover:text-foreground">
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/" className="transition-colors hover:text-tinta">
               Início
             </Link>
             <ChevronRight className="size-3.5" />
-            <span className="font-medium text-foreground">Prescrição Teste</span>
+            <span className="font-medium text-tinta">Prescrição Teste</span>
           </div>
           <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Consulta de Medicamentos</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             Comece a digitar o nome (ou parte) do medicamento para ver as sugestões, incluindo a diluição
             quando necessária.
           </p>
@@ -280,7 +280,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <User className="size-4 text-muted-foreground" />
+            <User className="size-4 text-tinta-sussurro" />
             Paciente
           </CardTitle>
           <CardDescription>Busque o paciente da unidade para vincular a prescrição.</CardDescription>
@@ -290,7 +290,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
             <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
               <div className="flex flex-col">
                 <span className="font-semibold">{pacienteSel.nome}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-tinta-sussurro">
                   {pacienteSel.cpf ?? 'sem CPF'}
                   {pacienteSel.data_nascimento
                     ? ` · ${new Date(pacienteSel.data_nascimento + 'T12:00:00').toLocaleDateString('pt-BR')}`
@@ -315,7 +315,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                     <button
                       key={p.id}
                       type="button"
-                      className="flex w-full flex-col gap-0.5 border-b px-3 py-2 text-left transition-colors last:border-0 hover:bg-muted"
+                      className="flex w-full flex-col gap-0.5 border-b px-3 py-2 text-left transition-colors last:border-0 hover:bg-trilha"
                       onClick={() => {
                         setPacienteSel(p)
                         setBuscaPaciente('')
@@ -323,7 +323,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                       }}
                     >
                       <span className="text-sm font-medium">{p.nome}</span>
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-[11px] text-tinta-sussurro">
                         {p.cpf ?? 'sem CPF'}
                         {p.data_nascimento
                           ? ` · ${new Date(p.data_nascimento + 'T12:00:00').toLocaleDateString('pt-BR')}`
@@ -334,7 +334,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                 </div>
               )}
               {focadaPaciente && buscaPaciente.trim().length >= 2 && (pacientes ?? []).length === 0 && (
-                <div className="absolute z-20 mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm text-muted-foreground shadow-lg">
+                <div className="absolute z-20 mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm text-tinta-sussurro shadow-lg">
                   Nenhum paciente encontrado.
                 </div>
               )}
@@ -346,14 +346,14 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Search className="size-4 text-muted-foreground" />
+            <Search className="size-4 text-tinta-sussurro" />
             Buscar medicamento
           </CardTitle>
           <CardDescription>Digite ao menos 2 letras para ver sugestões.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Base canônica (com diluição publicada)</span>
+            <span className="text-xs font-medium text-tinta-sussurro">Base canônica (com diluição publicada)</span>
             <div className="relative">
               <Input
                 value={busca}
@@ -362,7 +362,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                 placeholder="Ex.: dipirona, soro, ceftriaxona, omeprazol…"
               />
               {buscando && (
-                <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-tinta-sussurro" />
               )}
               {focada && busca.trim().length >= 2 && (resultados ?? []).length > 0 && (
                 <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-lg">
@@ -370,16 +370,16 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                     <button
                       key={m.id}
                       type="button"
-                      className="flex w-full flex-col gap-0.5 border-b px-3 py-2 text-left transition-colors last:border-0 hover:bg-muted"
+                      className="flex w-full flex-col gap-0.5 border-b px-3 py-2 text-left transition-colors last:border-0 hover:bg-trilha"
                       onClick={() => adicionar(m)}
                     >
                       <span className="flex items-center gap-2 text-sm font-medium">
-                        <Pill className="size-3.5 text-muted-foreground" />
+                        <Pill className="size-3.5 text-tinta-sussurro" />
                         {m.principio_ativo}
-                        {m.concentracao && <span className="text-xs font-normal text-muted-foreground">{m.concentracao}</span>}
+                        {m.concentracao && <span className="text-xs font-normal text-tinta-sussurro">{m.concentracao}</span>}
                         {m.alta_vigilancia && <ShieldAlert className="size-3.5 text-atencao" />}
                       </span>
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-[11px] text-tinta-sussurro">
                         {m.apresentacao ?? '—'}
                         {m.rxcui ? ` · rxcui ${m.rxcui}` : ''}
                       </span>
@@ -388,7 +388,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                 </div>
               )}
               {focada && busca.trim().length >= 2 && (resultados ?? []).length === 0 && !buscando && (
-                <div className="absolute z-20 mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm text-muted-foreground shadow-lg">
+                <div className="absolute z-20 mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm text-tinta-sussurro shadow-lg">
                   Nenhum medicamento encontrado.
                 </div>
               )}
@@ -396,7 +396,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Tabela CMED (ANVISA — referência de preços/registro)</span>
+            <span className="text-xs font-medium text-tinta-sussurro">Tabela CMED (ANVISA — referência de preços/registro)</span>
             <BuscaTerminologia
               tipo="medicamento_cmed"
               onSelecionar={(r) => adicionarDaCmed(r.descricao, r.codigo)}
@@ -409,7 +409,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Plus className="size-4 text-muted-foreground" />
+            <Plus className="size-4 text-tinta-sussurro" />
             Itens da prescrição
           </CardTitle>
           <CardDescription>
@@ -426,12 +426,12 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                   <span className="flex flex-wrap items-center gap-2 text-sm font-semibold">
                     {item.medicamento.principio_ativo}
                     {item.medicamento.concentracao && (
-                      <span className="font-normal text-muted-foreground">{item.medicamento.concentracao}</span>
+                      <span className="font-normal text-tinta-sussurro">{item.medicamento.concentracao}</span>
                     )}
                     {item.medicamento.alta_vigilancia && <ShieldAlert className="size-3.5 text-atencao" />}
                     {item.diluicaoPublicada && <Badge variant="success">Diluição publicada</Badge>}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-tinta-sussurro">
                     {item.medicamento.apresentacao ?? '—'}
                     {item.medicamento.rxcui ? ` · rxcui ${item.medicamento.rxcui}` : ''}
                   </span>
@@ -442,7 +442,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
               </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-muted-foreground">Dose</label>
+                  <label className="text-xs font-medium text-tinta-sussurro">Dose</label>
                   <Input
                     value={item.dose}
                     onChange={(e) => atualizarItem(item.id, 'dose', e.target.value)}
@@ -450,7 +450,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-muted-foreground">Posologia</label>
+                  <label className="text-xs font-medium text-tinta-sussurro">Posologia</label>
                   <Input
                     value={item.posologia}
                     onChange={(e) => atualizarItem(item.id, 'posologia', e.target.value)}
@@ -477,7 +477,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
 
           {itens.length > 0 && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Observações da prescrição</label>
+              <label className="text-xs font-medium text-tinta-sussurro">Observações da prescrição</label>
               <Textarea
                 value={observacoes}
                 onChange={(e) => setObservacoes(e.target.value)}

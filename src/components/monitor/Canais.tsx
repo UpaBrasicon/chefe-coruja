@@ -31,7 +31,7 @@ export function Canal({ icone: Icone, nome, exemplos, contagem, unidade, corIcon
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full flex-wrap items-center gap-x-3 gap-y-[3px] border-trilha px-3.5 py-[11px] text-left transition-colors hover:bg-campo md:flex-nowrap md:px-4 md:py-3 [&+&]:border-t"
+      className="cc-canal flex w-full flex-wrap items-center gap-x-3 gap-y-[3px] border-trilha px-3.5 py-[11px] text-left transition-colors hover:bg-campo md:flex-nowrap md:px-4 md:py-3 [&+&]:border-t"
     >
       <Icone className={cn('size-[17px] shrink-0', corIcone ?? 'text-tinta-apoio')} aria-hidden />
       <span className="flex-1 text-corpo font-semibold tracking-[-0.01em] whitespace-nowrap text-tinta md:flex-none">{nome}</span>

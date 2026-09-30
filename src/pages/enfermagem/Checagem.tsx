@@ -60,7 +60,7 @@ export default function Checagem() {
         {[...pacientes.entries()].map(([id, itens]) => (
           <Card key={id}>
             <CardHeader>
-              <CardTitle className="text-base">{itens[0].paciente_nome} <span className="text-sm font-normal text-muted-foreground">· {itens[0].local ?? '—'}</span></CardTitle>
+              <CardTitle className="text-base">{itens[0].paciente_nome} <span className="text-sm font-normal text-tinta-sussurro">· {itens[0].local ?? '—'}</span></CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-2 text-sm">
               {itens.map((l) => <ItemChecagem key={l.item_id} l={l} podeAprazar={papelAtivo === 'enfermeiro'} aoMudar={recarregar} aoErro={setErro} />)}
@@ -94,7 +94,7 @@ function ItemChecagem({ l, podeAprazar, aoMudar, aoErro }: { l: Linha; podeApraz
         {st && <Badge variant={st.variante} className="ml-auto">{st.rotulo}{l.ultima_horario ? ` ${l.ultima_horario}` : ''}</Badge>}
       </div>
       {l.diluicao_texto && <p className="text-xs text-tinta-apoio">Diluição: {l.diluicao_texto}</p>}
-      {l.ultima_em && <p className="text-xs text-muted-foreground">Última checagem: {hora(l.ultima_em)} · {l.ultima_por}</p>}
+      {l.ultima_em && <p className="text-xs text-tinta-sussurro">Última checagem: {hora(l.ultima_em)} · {l.ultima_por}</p>}
       <div className="flex flex-wrap items-center gap-2">
         {podeAprazar ? (
           <>
@@ -108,7 +108,7 @@ function ItemChecagem({ l, podeAprazar, aoMudar, aoErro }: { l: Linha; podeApraz
           </>
         ) : l.horarios?.length ? <span className="text-xs text-tinta-apoio">Aprazado: {l.horarios.join(', ')}</span> : null}
         {l.horarios?.length ? (
-          <select className="h-8 rounded-controle border border-fio bg-background px-2 text-xs" value={horario} onChange={(e) => setHorario(e.target.value)}
+          <select className="h-8 rounded-controle border border-fio bg-campo px-2 text-xs" value={horario} onChange={(e) => setHorario(e.target.value)}
             aria-label="Horário da checagem">
             <option value="">horário…</option>
             {l.horarios.map((h) => <option key={h}>{h}</option>)}

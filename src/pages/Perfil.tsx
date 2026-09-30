@@ -188,20 +188,20 @@ export default function Perfil() {
   }
 
   const inputClass =
-    'w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
+    'w-full rounded-lg border border-fio bg-campo px-3 py-2 text-sm placeholder:text-tinta-sussurro focus-visible:border-acao focus-visible:ring-3 focus-visible:ring-acao/50'
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link to="/" className="transition-colors hover:text-foreground">
+        <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+          <Link to="/" className="transition-colors hover:text-tinta">
             Início
           </Link>
           <ChevronRight className="size-3.5" />
-          <span className="font-medium text-foreground">Meu Perfil</span>
+          <span className="font-medium text-tinta">Meu Perfil</span>
         </div>
         <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Meu Perfil</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-tinta-sussurro">
           Foto, dados profissionais e de segurança. A foto aparece ao lado do seu nome no sistema.
         </p>
       </div>
@@ -220,20 +220,20 @@ export default function Perfil() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <User className="size-4 text-muted-foreground" /> Foto e identificação
+            <User className="size-4 text-tinta-sussurro" /> Foto e identificação
           </CardTitle>
           <CardDescription>Seus dados básicos e a foto exibida ao lado do nome.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex size-20 items-center justify-center overflow-hidden rounded-full border bg-muted">
+            <div className="flex size-20 items-center justify-center overflow-hidden rounded-full border bg-trilha">
               {foto ? (
                 <img src={foto} alt="Foto de perfil" className="h-full w-full object-cover" />
               ) : (
-                <User className="size-8 text-muted-foreground" />
+                <User className="size-8 text-tinta-sussurro" />
               )}
             </div>
-            <label className="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted">
+            <label className="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-fio bg-campo px-2.5 text-sm font-medium text-tinta transition-colors hover:bg-trilha">
               <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && fazerUpload(e.target.files[0])} />
               <Camera /> {foto ? 'Trocar foto' : 'Enviar foto'}
             </label>
@@ -282,7 +282,7 @@ export default function Perfil() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <UserRound className="size-4 text-muted-foreground" /> Contato de emergência
+            <UserRound className="size-4 text-tinta-sussurro" /> Contato de emergência
           </CardTitle>
           <CardDescription>
             Pessoa para avisar em caso de urgência durante o plantão (familiar ou responsável).
@@ -319,7 +319,7 @@ export default function Perfil() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Stethoscope className="size-4 text-muted-foreground" /> Dados profissionais
+            <Stethoscope className="size-4 text-tinta-sussurro" /> Dados profissionais
           </CardTitle>
           <CardDescription>Formação, especialidades e certificações — ajudam o gestor a alocar o setor certo.</CardDescription>
         </CardHeader>
@@ -340,7 +340,7 @@ export default function Perfil() {
             <Label>Especialidades</Label>
             <div className="flex flex-wrap gap-1.5">
               {dados.especialidades.map((esp) => (
-                <span key={esp} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                <span key={esp} className="inline-flex items-center gap-1 rounded-full bg-acao/10 px-2.5 py-1 text-xs font-medium text-acao">
                   {esp}
                   <button type="button" aria-label={`Remover ${esp}`} onClick={() => mudar('especialidades', dados.especialidades.filter((x) => x !== esp))}>
                     <Trash2 className="size-3" />
@@ -402,7 +402,7 @@ export default function Perfil() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <HeartPulse className="size-4 text-muted-foreground" /> Segurança assistencial
+            <HeartPulse className="size-4 text-tinta-sussurro" /> Segurança assistencial
           </CardTitle>
           <CardDescription>
             Informações que protegem você e a equipe durante o atendimento. Dado sensível — tratado conforme a LGPD.
@@ -464,7 +464,7 @@ export default function Perfil() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <MapPin className="size-4 text-muted-foreground" /> Preferências de escala
+            <MapPin className="size-4 text-tinta-sussurro" /> Preferências de escala
           </CardTitle>
           <CardDescription>Ajuda o gestor a montar a escala com mais aderência.</CardDescription>
         </CardHeader>
@@ -504,7 +504,7 @@ export default function Perfil() {
             <Label>Setores de preferência</Label>
             <div className="flex flex-wrap gap-1.5">
               {dados.setores_preferidos.map((s) => (
-                <span key={s} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                <span key={s} className="inline-flex items-center gap-1 rounded-full bg-acao/10 px-2.5 py-1 text-xs font-medium text-acao">
                   {s}
                   <button type="button" aria-label={`Remover ${s}`} onClick={() => mudar('setores_preferidos', dados.setores_preferidos.filter((x) => x !== s))}>
                     <Trash2 className="size-3" />

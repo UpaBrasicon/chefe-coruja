@@ -68,7 +68,7 @@ export function InfeccaoUrinariaPed() {
       {p.rn && <Nota>No recém-nascido o livro associa ampicilina à cefalosporina de 3ª geração ou aminoglicosídeo, sem dose neonatal (p. 596).</Nota>}
 
       <Bloco titulo="Tratamento parenteral e internação na pielonefrite (Quadro 3, p. 596–597)">
-        <ul className="list-disc pl-5 text-muted-foreground">
+        <ul className="list-disc pl-5 text-tinta-sussurro">
           {QUADRO3.map((q) => <li key={q}>{q}</li>)}
         </ul>
       </Bloco>

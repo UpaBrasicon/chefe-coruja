@@ -25,27 +25,27 @@ function Item({ b, peso, idadeMeses }: { b: Bolus; peso: number; idadeMeses?: nu
         {r && (
           <span className="tabular-nums">
             <strong>{faixaTxt(r.faixa)} {b.unidade}</strong>
-            {r.volumeMl && <span className="text-muted-foreground"> · {faixaTxt(r.volumeMl)} mL</span>}
+            {r.volumeMl && <span className="text-tinta-sussurro"> · {faixaTxt(r.volumeMl)} mL</span>}
           </span>
         )}
       </div>
       {b.semCalculo ? (
         <p className="mt-1 text-atencao">{b.semCalculo}</p>
       ) : (
-        <p className="mt-1 text-muted-foreground">
+        <p className="mt-1 text-tinta-sussurro">
           {porKgTxt(b)}
           {b.maximo !== undefined && ` · máximo ${num(b.maximo, 3)} ${b.unidade}`}
           {b.apresentacao && ` · ${b.apresentacao}`}
           {' · '}{b.via}
         </p>
       )}
-      {fora && <p className="text-muted-foreground">Fora da condição do livro para o peso/idade informados.</p>}
-      {r?.aplica === 'indefinido' && <p className="text-muted-foreground">Depende da idade: informe a idade para conferir a condição do livro.</p>}
+      {fora && <p className="text-tinta-sussurro">Fora da condição do livro para o peso/idade informados.</p>}
+      {r?.aplica === 'indefinido' && <p className="text-tinta-sussurro">Depende da idade: informe a idade para conferir a condição do livro.</p>}
       {r?.noMaximo && <p className="text-atencao">Dose limitada ao máximo do livro.</p>}
       {r?.abaixoDoAviso && b.aviso && <p className="text-atencao">{b.aviso.texto}</p>}
-      {b.errata && <p className="text-muted-foreground"><Badge variant="outline" className="mr-1">errata</Badge>{b.errata}</p>}
-      {b.nota && <p className="text-muted-foreground">No livro: {b.nota}</p>}
-      {b.anexo2Adulto && <p className="text-muted-foreground">Divergência: {b.anexo2Adulto}</p>}
+      {b.errata && <p className="text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{b.errata}</p>}
+      {b.nota && <p className="text-tinta-sussurro">No livro: {b.nota}</p>}
+      {b.anexo2Adulto && <p className="text-tinta-sussurro">Divergência: {b.anexo2Adulto}</p>}
       <p className="text-rotulo text-tinta-sussurro">PS Pediatria ICr-HCFMUSP, {b.pagina}.</p>
     </div>
   )
@@ -83,7 +83,7 @@ export function BolusPediatrico() {
             <label htmlFor="ped-busca" className="text-sm font-medium">Buscar medicamento</label>
             <Input id="ped-busca" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="ex.: naloxona, crise" />
           </div>
-          <p className="text-sm text-muted-foreground md:col-span-4">
+          <p className="text-sm text-tinta-sussurro md:col-span-4">
             {NEONATO_FORA} A idade é opcional: só muda o que o livro separa por idade (ex.: midazolam, diazepam, naloxona).
             A dose mostrada é a faixa do livro para o peso; a escolha dentro dela é do profissional.
           </p>
@@ -98,7 +98,7 @@ export function BolusPediatrico() {
 
       {!valido && !adulto && (
         <Card>
-          <CardContent className="pt-6 text-sm text-muted-foreground">Informe o peso para calcular (acima de 0 e até 150 kg).</CardContent>
+          <CardContent className="pt-6 text-sm text-tinta-sussurro">Informe o peso para calcular (acima de 0 e até 150 kg).</CardContent>
         </Card>
       )}
 

@@ -47,7 +47,7 @@ export function IntoxicacoesPed() {
 
       <Bloco titulo="Antídotos com eficácia comprovada (Tabela 3, p. 206)">
         <TabelaLivro cabecalho={['Agente tóxico', 'Antídoto/antagonista']} linhas={ANTIDOTOS_TABELA3.map(([a, b]) => [a, b])} largura={360} />
-        <p className="text-muted-foreground">Centros de intoxicações citados no Apêndice (p. 910): CCI 0800 771 3733; CEATOX 0800 148 110.</p>
+        <p className="text-tinta-sussurro">Centros de intoxicações citados no Apêndice (p. 910): CCI 0800 771 3733; CEATOX 0800 148 110.</p>
       </Bloco>
     </ToolLayout>
   )

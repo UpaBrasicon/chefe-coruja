@@ -124,15 +124,15 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       {!embutido && (
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/" className="transition-colors hover:text-foreground">
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/" className="transition-colors hover:text-tinta">
               Início
             </Link>
             <ChevronRight className="size-3.5" />
-            <span className="font-medium text-foreground">Configurações da Unidade</span>
+            <span className="font-medium text-tinta">Configurações da Unidade</span>
           </div>
           <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Configurações da Unidade</h1>
-          <p className="text-sm text-muted-foreground">Comunicação, geolocalização do check-in e valores de plantão.</p>
+          <p className="text-sm text-tinta-sussurro">Comunicação, geolocalização do check-in e valores de plantão.</p>
         </div>
       )}
 
@@ -143,7 +143,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Settings2 className="size-4 text-muted-foreground" />
+            <Settings2 className="size-4 text-tinta-sussurro" />
             Valores de plantão (extrato)
           </CardTitle>
           <CardDescription>Configure o valor por setor e turno. Deixe em branco para aplicar a todos.</CardDescription>
@@ -189,7 +189,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
 
           <div className="flex flex-col gap-2">
             {(remuneracoes ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhum valor configurado ainda.</p>
+              <p className="text-sm text-tinta-sussurro">Nenhum valor configurado ainda.</p>
             ) : (
               (remuneracoes ?? []).map((r) => (
                 <div key={r.id} className="flex items-center justify-between rounded-lg border p-2.5 text-sm">
@@ -197,7 +197,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
                     <span className="font-medium">
                       {r.setores?.nome ?? 'Todos os setores'}
                     </span>
-                    <span className="ml-2 text-muted-foreground">
+                    <span className="ml-2 text-tinta-sussurro">
                       {r.turno ? { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[r.turno as 'manha' | 'tarde' | 'noite'] ?? r.turno : 'Todos os turnos'}
                     </span>
                   </div>
@@ -257,7 +257,7 @@ function FormUnidade({ unidade, unidadeId }: { unidade: UnidadeConfig; unidadeId
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <MessageSquare className="size-4 text-muted-foreground" />
+            <MessageSquare className="size-4 text-tinta-sussurro" />
             Canal de comunicação
           </CardTitle>
           <CardDescription>
@@ -288,7 +288,7 @@ function FormUnidade({ unidade, unidadeId }: { unidade: UnidadeConfig; unidadeId
             )}
           </div>
           {canal === 'whatsapp' && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-tinta-sussurro">
               Exemplo: 5511999999999 (Brasil, SP). Os plantonistas verão um botão &quot;Falar no WhatsApp&quot;.
             </p>
           )}
@@ -315,7 +315,7 @@ function FormUnidade({ unidade, unidadeId }: { unidade: UnidadeConfig; unidadeId
               <Input type="number" value={raio} onChange={(e) => setRaio(e.target.value)} />
             </div>
           </div>
-          {erro && <p className="text-sm text-destructive">{erro}</p>}
+          {erro && <p className="text-sm text-critico">{erro}</p>}
           {msg && <p className="text-sm text-conforme">{msg}</p>}
           <div>
             <Button onClick={salvarUnidade} disabled={salvando}>

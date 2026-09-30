@@ -21,7 +21,7 @@ function ListaCriterios({ titulo, cs }: { titulo: string; cs: Criterio[] }) {
       <div className="font-medium">
         {titulo}: {todos === null ? 'dados incompletos' : todos ? 'critérios do livro presentes' : 'critérios do livro não preenchidos'}
       </div>
-      <ul className="mt-1 text-muted-foreground">
+      <ul className="mt-1 text-tinta-sussurro">
         {cs.map((c) => (
           <li key={c.nome}>
             {c.atende === null ? '○' : c.atende ? '●' : '✕'} {c.nome}: {c.texto}

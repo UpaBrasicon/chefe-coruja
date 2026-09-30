@@ -5,7 +5,7 @@ import type { DadosPaciente } from './rascunho'
 
 export function PrescricaoTab({ dados, pacienteId }: { dados: DadosPaciente; pacienteId?: string | null }) {
   if (!pacienteId) {
-    return <p className="text-sm text-muted-foreground">Identifique o paciente em Dados do Paciente para prescrever.</p>
+    return <p className="text-sm text-tinta-sussurro">Identifique o paciente em Dados do Paciente para prescrever.</p>
   }
   return (
     <PrescricaoEstruturada

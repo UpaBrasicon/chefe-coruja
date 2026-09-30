@@ -70,8 +70,8 @@ export function AnticoagulacaoPlenaAdulto() {
           )}
           pagina={CONTEXTOS_ENOXAPARINA[ctx].pagina}
         />
-        {enox?.observacoes.map((o) => <p key={o} className="text-sm text-muted-foreground">{o}</p>)}
-        {!clcrInformado && <p className="text-sm text-muted-foreground">Sem clearance informado, a conta não aplica ajuste renal.</p>}
+        {enox?.observacoes.map((o) => <p key={o} className="text-sm text-tinta-sussurro">{o}</p>)}
+        {!clcrInformado && <p className="text-sm text-tinta-sussurro">Sem clearance informado, a conta não aplica ajuste renal.</p>}
       </Bloco>
 
       <Bloco titulo="Outras heparinas (cap. 25, p. 352)">
@@ -116,7 +116,7 @@ export function AnticoagulacaoPlenaAdulto() {
           conta={enox25 ? <>{enox25.bolusMg ? `${enox25.bolusMg} mg IV + ` : ''}<strong>{fmtE(enox25.doseMg)} mg {enox25.intervalo}</strong>{enox25.noTeto ? ' (no teto das 2 primeiras doses)' : ''}</> : 'informe o peso'} />
         <LinhaManual nome="HNF com fibrinolítico" texto={`${HNF_LITICO_2025.bolusUiKg} UI/kg (máx. ${HNF_LITICO_2025.bolusMaxUi.toLocaleString('pt-BR')}) + ${HNF_LITICO_2025.infusaoUiKgH} UI/kg/h (máx. ${HNF_LITICO_2025.infusaoMaxUiH.toLocaleString('pt-BR')} UI/h), TTPa 60–80 s`} pagina={HNF_LITICO_2025.pagina}
           conta={hnf25 ? <>bolus <strong>{fmtE(hnf25.bolusUi, 0)} UI</strong>{hnf25.bolusNoTeto ? ' (teto)' : ''} · <strong>{fmtE(hnf25.infusaoUiH, 0)} UI/h</strong>{hnf25.infusaoNoTeto ? ' (teto)' : ''}</> : 'informe o peso'} />
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_ANTICOAG_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_ANTICOAG_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

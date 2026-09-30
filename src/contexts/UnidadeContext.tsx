@@ -26,6 +26,8 @@ interface UnidadeContextValue {
   unidadeAtiva: VinculoComUnidade | null
   setUnidadeAtivaId: (id: string) => void
   papelAtivo: Papel | null
+  /** Troca o perfil em foco (menu do usuário). A navegação mostra só o dele. */
+  setPapelAtivo: (papel: Papel) => void
   ehAdmin: boolean
   ehGestor: boolean
   ehPlantonista: boolean
@@ -34,6 +36,7 @@ interface UnidadeContextValue {
 }
 
 const STORAGE_KEY = 'chefe-coruja:unidade-ativa'
+const STORAGE_PAPEL = 'chefe-coruja:papel-ativo'
 
 const UnidadeContext = React.createContext<UnidadeContextValue | null>(null)
 
@@ -108,7 +111,34 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
     )
   }, [vinculos, unidadeAtiva?.unidade_id])
 
-  const papelAtivo = papeisDaUnidade[0] ?? null
+  // Perfil em foco (P/index.html, menu do usuário → Trocar perfil): quem tem
+  // mais de um papel na unidade trabalha num de cada vez. Vale por unidade e
+  // fica no aparelho; um papel que o vínculo não tem mais cai no primeiro.
+  const [papelEscolhido, setPapelEscolhido] = React.useState<Record<string, Papel>>(() => {
+    try {
+      return JSON.parse(window.localStorage.getItem(STORAGE_PAPEL) ?? '{}') as Record<string, Papel>
+    } catch {
+      return {}
+    }
+  })
+  const escolhido = unidadeAtiva ? papelEscolhido[unidadeAtiva.unidade_id] : undefined
+  const papelAtivo = (escolhido && papeisDaUnidade.includes(escolhido) ? escolhido : papeisDaUnidade[0]) ?? null
+  const unidadeAtivaId_ = unidadeAtiva?.unidade_id
+  const setPapelAtivo = React.useCallback(
+    (papel: Papel) => {
+      if (!unidadeAtivaId_) return
+      setPapelEscolhido((m) => {
+        const novo = { ...m, [unidadeAtivaId_]: papel }
+        try {
+          window.localStorage.setItem(STORAGE_PAPEL, JSON.stringify(novo))
+        } catch {
+          /* sem storage: vale só nesta sessão */
+        }
+        return novo
+      })
+    },
+    [unidadeAtivaId_],
+  )
 
   const ehAdmin = papeisDaUnidade.includes('admin')
   const ehGestor = papeisDaUnidade.includes('gestor')
@@ -131,6 +161,7 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
       unidadeAtiva,
       setUnidadeAtivaId: (id) => setUnidadeAtivaIdState(id),
       papelAtivo,
+      setPapelAtivo,
       ehAdmin,
       ehGestor,
       ehPlantonista,
@@ -144,6 +175,7 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
       unidades,
       unidadeAtiva,
       papelAtivo,
+      setPapelAtivo,
       ehAdmin,
       ehGestor,
       ehPlantonista,

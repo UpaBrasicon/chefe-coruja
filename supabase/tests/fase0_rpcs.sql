@@ -215,6 +215,9 @@ SELECT pg_temp.deve_passar('job: gerar_censo_todas_unidades como postgres',
 --    são públicas de propósito e só leem o que o token delas permite.
 --    painel_chamadas: TV da porta, por token (Fase 2.3).
 --    situacao_pacote_alta / abrir_pacote_alta: pacote de alta, por token e código (Fase 3.6).
+--    conferir_convite / pedir_novo_convite / conferir_contrato: primeiro acesso
+--      (porte de convites). Quem chega ainda não tem conta; devolvem só o
+--      cartão do vínculo ou o motivo, com limite de tentativas por origem.
 -- ════════════════════════════════════════════════════════════════════════════
 DO $$
 DECLARE n int; nomes text;
@@ -222,7 +225,8 @@ BEGIN
   SELECT count(*), string_agg(p.proname, ', ') INTO n, nomes
   FROM pg_proc p JOIN pg_namespace ns ON ns.oid = p.pronamespace
   WHERE ns.nspname = 'public' AND has_function_privilege('anon', p.oid, 'EXECUTE')
-    AND p.proname NOT IN ('painel_chamadas', 'situacao_pacote_alta', 'abrir_pacote_alta');
+    AND p.proname NOT IN ('painel_chamadas', 'situacao_pacote_alta', 'abrir_pacote_alta',
+                          'conferir_convite', 'pedir_novo_convite', 'conferir_contrato');
   IF n > 0 THEN RAISE EXCEPTION 'FALHOU: % funções de public ainda executáveis por anon (%)', n, nomes; END IF;
   RAISE NOTICE 'OK  nenhuma função de public executável por anon (fora as públicas de propósito)';
 END $$;

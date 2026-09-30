@@ -759,32 +759,32 @@ export default function Escala({
     <div className={embutido ? 'flex w-full flex-col gap-6' : 'mx-auto flex w-full max-w-6xl flex-col gap-6'}>
       <div className="flex flex-col gap-1">
         {!embutido && (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Link to="/" className="transition-colors hover:text-foreground">
+          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+            <Link to="/" className="transition-colors hover:text-tinta">
               Início
             </Link>
             <ChevronRight className="size-3.5" />
-            <span className="font-medium text-foreground">Escala</span>
+            <span className="font-medium text-tinta">Escala</span>
           </div>
         )}
         <div className="flex flex-wrap items-center justify-between gap-2">
           {embutido ? <div /> : <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Escala</h1>}
           {ehPlantonista ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-tinta-sussurro">
               <Button size="xs" variant="outline" onClick={() => mudarMes(-1)}>
                 <ChevronLeft /> Mês
               </Button>
-              <span className="font-medium text-foreground">{fmtMesBR(mesInicio)}</span>
+              <span className="font-medium text-tinta">{fmtMesBR(mesInicio)}</span>
               <Button size="xs" variant="outline" onClick={() => mudarMes(1)}>
                 Mês <ChevronRight />
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-tinta-sussurro">
               <Button size="xs" variant="outline" onClick={() => mudarSemana(-1)}>
                 <ChevronLeft /> Semana
               </Button>
-              <span className="font-medium text-foreground">
+              <span className="font-medium text-tinta">
                 {fmtDiaBR(dataInicio)} – {fmtDiaBR(dataFim)}
               </span>
               <Button size="xs" variant="outline" onClick={() => mudarSemana(1)}>
@@ -794,7 +794,7 @@ export default function Escala({
           )}
         </div>
         {!embutido && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-tinta-sussurro">
             {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
             {ehGestor ? 'Gestor — monte a escala' : ehAdmin ? 'Admin — todas as unidades' : 'Sua escala'}
           </p>
@@ -809,8 +809,8 @@ export default function Escala({
             onClick={() => setAbaPlantonista('minha')}
             className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
               abaPlantonista === 'minha'
-                ? 'border-primary bg-primary text-primary-foreground'
-                : 'border-border bg-background hover:bg-muted'
+                ? 'border-acao bg-acao text-white'
+                : 'border-fio bg-campo hover:bg-trilha'
             }`}
           >
             Minha Escala
@@ -820,8 +820,8 @@ export default function Escala({
             onClick={() => setAbaPlantonista('geral')}
             className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
               abaPlantonista === 'geral'
-                ? 'border-primary bg-primary text-primary-foreground'
-                : 'border-border bg-background hover:bg-muted'
+                ? 'border-acao bg-acao text-white'
+                : 'border-fio bg-campo hover:bg-trilha'
             }`}
           >
             Escala Geral
@@ -837,7 +837,7 @@ export default function Escala({
             <CardHeader className="flex-row items-start justify-between space-y-0">
               <div>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <CalendarClock className="size-4 text-muted-foreground" />
+                  <CalendarClock className="size-4 text-tinta-sussurro" />
                   {diaSelecionado ? `Plantão de ${fmtDiaBR(diaSelecionado)}` : `Visão geral de ${fmtMesBR(mesInicio)}`}
                 </CardTitle>
                 <CardDescription>
@@ -890,7 +890,7 @@ export default function Escala({
 
                   {!acao ? (
                     <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
-                      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
                         O que deseja fazer?
                       </div>
                       <div className="grid gap-2 sm:grid-cols-3">
@@ -901,7 +901,7 @@ export default function Escala({
                         >
                           <LogOut className="size-4 text-atencao" />
                           <span className="font-medium">Sair do fixo</span>
-                          <span className="text-[11px] font-normal text-muted-foreground">
+                          <span className="text-[11px] font-normal text-tinta-sussurro">
                             Aviso prévio de 15 dias
                           </span>
                         </Button>
@@ -912,7 +912,7 @@ export default function Escala({
                         >
                           <RefreshCcw className="size-4 text-suprimento" />
                           <span className="font-medium">Passar plantão</span>
-                          <span className="text-[11px] font-normal text-muted-foreground">
+                          <span className="text-[11px] font-normal text-tinta-sussurro">
                             Transferir para outro plantonista
                           </span>
                         </Button>
@@ -923,7 +923,7 @@ export default function Escala({
                         >
                           <RefreshCcw className="size-4 text-pediatria" />
                           <span className="font-medium">Trocar plantão</span>
-                          <span className="text-[11px] font-normal text-muted-foreground">
+                          <span className="text-[11px] font-normal text-tinta-sussurro">
                             Troca bilateral com outro plantonista
                           </span>
                         </Button>
@@ -934,7 +934,7 @@ export default function Escala({
                         >
                           <FileText className="size-4 text-critico" />
                           <span className="font-medium">Fracionar plantão</span>
-                          <span className="text-[11px] font-normal text-muted-foreground">
+                          <span className="text-[11px] font-normal text-tinta-sussurro">
                             Dividir em partes para negociação
                           </span>
                         </Button>
@@ -945,7 +945,7 @@ export default function Escala({
                         >
                           <FileText className="size-4 text-suprimento" />
                           <span className="font-medium">Justificar falta</span>
-                          <span className="text-[11px] font-normal text-muted-foreground">
+                          <span className="text-[11px] font-normal text-tinta-sussurro">
                             Atestado ou licença
                           </span>
                         </Button>
@@ -967,7 +967,7 @@ export default function Escala({
                           placeholder="Motivo da saída do plantão fixo…"
                         />
                       </div>
-                      {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
+                      {erroAcao && <p className="mt-2 text-sm text-critico">{erroAcao}</p>}
                       {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
@@ -1021,11 +1021,11 @@ export default function Escala({
                           placeholder="Motivo da troca…"
                         />
                       </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
+                      <p className="mt-2 text-xs text-tinta-sussurro">
                         Na troca bilateral, você oferece um plantão e recebe outro em troca. Validações de
                         conflito de horário são feitas automaticamente.
                       </p>
-                      {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
+                      {erroAcao && <p className="mt-2 text-sm text-critico">{erroAcao}</p>}
                       {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
@@ -1051,11 +1051,11 @@ export default function Escala({
                           </SelectContent>
                         </Select>
                       </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
+                      <p className="mt-2 text-xs text-tinta-sussurro">
                         O plantão será transformado em partes independentes (vagas) para facilitar a
                         negociação parcial. Cada parte pode ser candidatada por outros plantonistas.
                       </p>
-                      {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
+                      {erroAcao && <p className="mt-2 text-sm text-critico">{erroAcao}</p>}
                       {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
@@ -1096,11 +1096,11 @@ export default function Escala({
                           placeholder="Motivo da passagem…"
                         />
                       </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
+                      <p className="mt-2 text-xs text-tinta-sussurro">
                         A passagem pode ser aplicada na hora ou depender de aprovação do gestor (conforme
                         configuração da unidade). A pessoa que recebe o plantão será notificada.
                       </p>
-                      {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
+                      {erroAcao && <p className="mt-2 text-sm text-critico">{erroAcao}</p>}
                       {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
@@ -1138,7 +1138,7 @@ export default function Escala({
                           accept=".pdf,image/png,image/jpeg,image/jpg"
                           onChange={(e) => setAnexo(e.target.files?.[0] ?? null)}
                         />
-                        {anexo && <span className="text-xs text-muted-foreground">{anexo.name}</span>}
+                        {anexo && <span className="text-xs text-tinta-sussurro">{anexo.name}</span>}
                       </div>
                       <div className="mt-3 flex flex-col gap-1.5">
                         <Label htmlFor="falta-just">Justificativa</Label>
@@ -1149,7 +1149,7 @@ export default function Escala({
                           placeholder="Descreva o motivo da falta…"
                         />
                       </div>
-                      {erroAcao && <p className="mt-2 text-sm text-destructive">{erroAcao}</p>}
+                      {erroAcao && <p className="mt-2 text-sm text-critico">{erroAcao}</p>}
                       {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
@@ -1168,7 +1168,7 @@ export default function Escala({
                     <div
                       key={d}
                       className={`py-1 text-[11px] font-semibold uppercase tracking-wide ${
-                        idx === 0 || idx === 6 ? 'text-atencao' : 'text-muted-foreground'
+                        idx === 0 || idx === 6 ? 'text-atencao' : 'text-tinta-sussurro'
                       }`}
                     >
                       {d}
@@ -1192,15 +1192,15 @@ export default function Escala({
                             ? 'border-conforme/30 bg-leitos text-white shadow-md hover:bg-leitos hover:shadow-lg'
                             : fimSemana
                               ? 'border-atencao/30 bg-atencao/[0.08] hover:bg-atencao/[0.12]'
-                              : 'border-border bg-white hover:bg-muted'
-                        } ${selecionado ? 'ring-2 ring-primary ring-offset-2' : ''} ${eHoje ? 'ring-2 ring-primary/60' : ''}`}
+                              : 'border-fio bg-white hover:bg-trilha'
+                        } ${selecionado ? 'ring-2 ring-acao ring-offset-2' : ''} ${eHoje ? 'ring-2 ring-acao/60' : ''}`}
                       >
                         <span
                           className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-semibold ${
                             plantoes.length
                               ? 'bg-white/25 text-white'
                               : eHoje
-                                ? 'bg-primary text-primary-foreground'
+                                ? 'bg-acao text-white'
                                 : fimSemana
                                   ? 'bg-atencao/20 text-atencao'
                                   : 'bg-trilha text-tinta'
@@ -1231,7 +1231,7 @@ export default function Escala({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <RefreshCcw className="size-4 text-muted-foreground" />
+                  <RefreshCcw className="size-4 text-tinta-sussurro" />
                   Minhas trocas
                 </CardTitle>
                 <CardDescription>Solicitações de troca bilateral relacionadas a você.</CardDescription>
@@ -1253,7 +1253,7 @@ export default function Escala({
                       >
                         {t.status}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-tinta-sussurro">
                         {new Date(t.created_at).toLocaleString('pt-BR')}
                       </span>
                     </div>
@@ -1295,7 +1295,7 @@ export default function Escala({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <CalendarClock className="size-4 text-muted-foreground" />
+                <CalendarClock className="size-4 text-tinta-sussurro" />
                 Meus plantões no mês
               </CardTitle>
               <CardDescription>
@@ -1309,12 +1309,12 @@ export default function Escala({
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-1 flex-col rounded-xl border bg-muted/40 p-4">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <div className="flex flex-1 flex-col rounded-xl border bg-trilha/40 p-4">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
                       Horas no mês
                     </span>
                     <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{resumo.horas}h</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-tinta-sussurro">
                       {resumo.dias} dia(s) escalado(s) em {fmtMesBR(mesInicio)}
                     </span>
                   </div>
@@ -1346,7 +1346,7 @@ export default function Escala({
             <CardHeader className="flex-row items-start justify-between space-y-0">
               <div>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <CalendarClock className="size-4 text-muted-foreground" />
+                  <CalendarClock className="size-4 text-tinta-sussurro" />
                   {diaGeral ? `Plantões de ${fmtDiaBR(diaGeral)}` : `Escala Geral · ${fmtMesBR(mesInicio)}`}
                 </CardTitle>
                 <CardDescription>
@@ -1386,7 +1386,7 @@ export default function Escala({
                   <div className="flex flex-col gap-3">
                     {(setores ?? []).map((s) => (
                       <div key={s.id} className="rounded-xl border">
-                        <div className="rounded-t-xl bg-muted/50 px-3 py-1.5 text-sm font-semibold">{s.nome}</div>
+                        <div className="rounded-t-xl bg-trilha/50 px-3 py-1.5 text-sm font-semibold">{s.nome}</div>
                         <div className="grid gap-1 p-2 sm:grid-cols-3">
                           {TURNOS.map((t) => {
                             const ocupados = (escalaMes ?? []).filter(
@@ -1401,11 +1401,11 @@ export default function Escala({
                               <div
                                 key={`${s.id}-${t.id}`}
                                 className={`rounded-lg border p-2 ${
-                                  livre ? 'border-dashed border-conforme/30 bg-conforme/[0.06]' : 'bg-muted/40'
+                                  livre ? 'border-dashed border-conforme/30 bg-conforme/[0.06]' : 'bg-trilha/40'
                                 }`}
                               >
                                 <div className="mb-1 flex items-center justify-between">
-                                  <span className="text-xs font-semibold text-muted-foreground">{t.label}</span>
+                                  <span className="text-xs font-semibold text-tinta-sussurro">{t.label}</span>
                                   <Badge variant={livre ? 'success' : 'secondary'} className="text-[10px]">
                                     {livre ? 'Livre' : 'Ocupado'}
                                   </Badge>
@@ -1428,10 +1428,10 @@ export default function Escala({
                                     {ocupados.map((e) => (
                                       <span
                                         key={e.id}
-                                        className="rounded bg-white px-1.5 py-0.5 text-[11px] text-muted-foreground"
+                                        className="rounded bg-white px-1.5 py-0.5 text-[11px] text-tinta-sussurro"
                                       >
                                         {e.perfis?.nome_completo ?? 'Ocupado'}
-                                        {e.quinzenal && <span className="ml-1 font-semibold text-primary">15/15</span>}
+                                        {e.quinzenal && <span className="ml-1 font-semibold text-acao">15/15</span>}
                                       </span>
                                     ))}
                                   </div>
@@ -1446,18 +1446,18 @@ export default function Escala({
 
                   {/* Minhas candidaturas */}
                   <div className="mt-4 flex flex-col gap-2">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
                       Minhas candidaturas
                     </div>
                     {(candidaturas ?? []).filter((c) => c.perfil_id === perfil?.id).length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Nenhuma candidatura enviada.</p>
+                      <p className="text-sm text-tinta-sussurro">Nenhuma candidatura enviada.</p>
                     ) : (
                       (candidaturas ?? [])
                         .filter((c) => c.perfil_id === perfil?.id)
                         .map((c) => (
                           <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-2 text-sm">
                             <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-tinta-sussurro">
                               {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}
                             </span>
                             <Badge
@@ -1479,7 +1479,7 @@ export default function Escala({
                     <div
                       key={d}
                       className={`py-1 text-[11px] font-semibold uppercase tracking-wide ${
-                        idx === 0 || idx === 6 ? 'text-atencao' : 'text-muted-foreground'
+                        idx === 0 || idx === 6 ? 'text-atencao' : 'text-tinta-sussurro'
                       }`}
                     >
                       {d}
@@ -1502,13 +1502,13 @@ export default function Escala({
                         className={`flex min-h-[76px] flex-col gap-1 rounded-lg border p-1.5 text-left transition-all duration-200 ${
                           livres
                             ? 'border-dashed border-conforme/30 bg-conforme/[0.06] hover:bg-conforme/[0.12]'
-                            : 'border-border bg-white hover:bg-muted'
-                        } ${eHoje ? 'ring-2 ring-primary/60' : ''}`}
+                            : 'border-fio bg-white hover:bg-trilha'
+                        } ${eHoje ? 'ring-2 ring-acao/60' : ''}`}
                       >
                         <span
                           className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-semibold ${
                             eHoje
-                              ? 'bg-primary text-primary-foreground'
+                              ? 'bg-acao text-white'
                               : livres
                                 ? 'bg-conforme/20 text-conforme'
                                 : 'bg-trilha text-tinta'
@@ -1519,7 +1519,7 @@ export default function Escala({
                         {livres ? (
                           <span className="text-[10px] font-semibold text-conforme">Tudo livre</span>
                         ) : (
-                          <span className="text-[10px] font-semibold text-muted-foreground">
+                          <span className="text-[10px] font-semibold text-tinta-sussurro">
                             {plantoesDia.length} plantão(ões)
                           </span>
                         )}
@@ -1537,18 +1537,18 @@ export default function Escala({
               {/* Minhas candidaturas (resumo) */}
               {!diaGeral && (
                 <div className="mt-4 flex flex-col gap-2">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
                     Minhas candidaturas
                   </div>
                   {(candidaturas ?? []).filter((c) => c.perfil_id === perfil?.id).length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Nenhuma candidatura enviada.</p>
+                    <p className="text-sm text-tinta-sussurro">Nenhuma candidatura enviada.</p>
                   ) : (
                     (candidaturas ?? [])
                       .filter((c) => c.perfil_id === perfil?.id)
                       .map((c) => (
                         <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-2 text-sm">
                           <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-tinta-sussurro">
                             {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}
                           </span>
                           <Badge
@@ -1613,12 +1613,12 @@ export default function Escala({
                           <Badge variant="outline">{TIPO_SOLICITACAO_LABEL[s.tipo]}</Badge>
                           {s.status === 'pendente' && <Badge variant="warning">Pendente</Badge>}
                           {s.escala_plantao && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-tinta-sussurro">
                               {fmtDiaBR(s.escala_plantao.data)} · {TURNO_LABEL[s.escala_plantao.turno]}
                             </span>
                           )}
                           {s.tipo === 'falta' && s.tipo_falta && (
-                            <span className="text-xs text-muted-foreground">· {TIPO_FALTA_LABEL[s.tipo_falta]}</span>
+                            <span className="text-xs text-tinta-sussurro">· {TIPO_FALTA_LABEL[s.tipo_falta]}</span>
                           )}
                           {s.status === 'pendente' && (
                             <span className="ml-auto flex gap-1.5">
@@ -1641,7 +1641,7 @@ export default function Escala({
                       <CalendarClock className="size-3.5" /> Candidaturas a plantões livres
                     </div>
                     {(candidaturas ?? []).filter((c) => c.status === 'pendente').length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Nenhuma candidatura pendente.</p>
+                      <p className="text-sm text-tinta-sussurro">Nenhuma candidatura pendente.</p>
                     ) : (
                       <div className="flex flex-col gap-2">
                         {(candidaturas ?? [])
@@ -1650,7 +1650,7 @@ export default function Escala({
                             <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border bg-white p-2 text-sm">
                               <span className="font-medium">{c.perfis?.nome_completo ?? 'Plantonista'}</span>
                               <Badge variant="outline">{c.setores?.nome ?? 'Setor'}</Badge>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs text-tinta-sussurro">
                                 {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}
                               </span>
                               <span className="ml-auto flex gap-1.5">
@@ -1678,8 +1678,8 @@ export default function Escala({
               onClick={() => setAbaGestor('fixa')}
               className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                 abaGestor === 'fixa'
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-background hover:bg-muted'
+                  ? 'border-acao bg-acao text-white'
+                  : 'border-fio bg-campo hover:bg-trilha'
               }`}
             >
               Escala Fixa
@@ -1689,8 +1689,8 @@ export default function Escala({
               onClick={() => setAbaGestor('mensal')}
               className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                 abaGestor === 'mensal'
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-background hover:bg-muted'
+                  ? 'border-acao bg-acao text-white'
+                  : 'border-fio bg-campo hover:bg-trilha'
               }`}
             >
               Escala Mensal
@@ -1702,7 +1702,7 @@ export default function Escala({
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <div>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <CalendarClock className="size-4 text-muted-foreground" />
+                  <CalendarClock className="size-4 text-tinta-sussurro" />
                   Carga horária · {fmtMesBR(mesInicio)}
                 </CardTitle>
                 <CardDescription>Diurnos, noturnos e horas totais por plantonista no mês.</CardDescription>
@@ -1717,17 +1717,17 @@ export default function Escala({
                   <Spinner />
                 </div>
               ) : (resumoCarga ?? []).length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum plantão neste mês.</p>
+                <p className="text-sm text-tinta-sussurro">Nenhum plantão neste mês.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
                     <thead>
                       <tr>
-                        <th className="border-b border-r bg-muted/50 p-2 text-left text-xs font-semibold uppercase text-muted-foreground">Plantonista</th>
+                        <th className="border-b border-r bg-trilha/50 p-2 text-left text-xs font-semibold uppercase text-tinta-sussurro">Plantonista</th>
                         <th className="border-b border-r bg-suprimento/[0.08] p-2 text-center text-xs font-semibold uppercase text-suprimento">Diurnos</th>
                         <th className="border-b border-r bg-suprimento/[0.08] p-2 text-center text-xs font-semibold uppercase text-suprimento">Noturnos</th>
-                        <th className="border-b border-r p-2 text-center text-xs font-semibold uppercase text-muted-foreground">Horas</th>
-                        <th className="border-b p-2 text-center text-xs font-semibold uppercase text-muted-foreground">Dias</th>
+                        <th className="border-b border-r p-2 text-center text-xs font-semibold uppercase text-tinta-sussurro">Horas</th>
+                        <th className="border-b p-2 text-center text-xs font-semibold uppercase text-tinta-sussurro">Dias</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1756,8 +1756,8 @@ export default function Escala({
                 onClick={() => setTurno(t.id)}
                 className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                   turno === t.id
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border bg-background hover:bg-muted'
+                    ? 'border-acao bg-acao text-white'
+                    : 'border-fio bg-campo hover:bg-trilha'
                 }`}
               >
                 {t.label} <span className="opacity-70">· {t.horario}</span>
@@ -1769,7 +1769,7 @@ export default function Escala({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <CalendarClock className="size-4 text-muted-foreground" />
+                  <CalendarClock className="size-4 text-tinta-sussurro" />
                   Escala Fixa · {TURNO_LABEL[turno]}
                 </CardTitle>
                 <CardDescription>
@@ -1787,7 +1787,7 @@ export default function Escala({
                     <table className="w-full min-w-[760px] border-collapse text-sm">
                       <thead>
                         <tr>
-                          <th className="w-40 border-b border-r bg-muted/50 p-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          <th className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
                             Setor
                           </th>
                           {DIAS_SEMANA.map((d) => (
@@ -1808,14 +1808,14 @@ export default function Escala({
                                   <button
                                     type="button"
                                     onClick={() => abrirCelulaFixa(s.id, i)}
-                                    className="flex min-h-[52px] w-full flex-col gap-1 rounded-md p-1 text-left transition-colors hover:bg-primary/5"
+                                    className="flex min-h-[52px] w-full flex-col gap-1 rounded-md p-1 text-left transition-colors hover:bg-acao/5"
                                   >
-                                    {fixas.length === 0 && <span className="text-[10px] text-muted-foreground/50">+ adicionar</span>}
+                                    {fixas.length === 0 && <span className="text-[10px] text-tinta-sussurro/50">+ adicionar</span>}
                                     {fixas.map((f) => (
                                       <span key={f.id} className="group flex items-center gap-1">
-                                        <span className="block flex-1 rounded bg-muted px-1.5 py-0.5 text-[11px] leading-tight">
+                                        <span className="block flex-1 rounded bg-trilha px-1.5 py-0.5 text-[11px] leading-tight">
                                           {f.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Sem nome'}
-                                          {f.quinzenal && <span className="ml-1 font-semibold text-primary">15/15</span>}
+                                          {f.quinzenal && <span className="ml-1 font-semibold text-acao">15/15</span>}
                                         </span>
                                         <button
                                           type="button"
@@ -1823,7 +1823,7 @@ export default function Escala({
                                             e.stopPropagation()
                                             removerFixa.mutate(f.id)
                                           }}
-                                          className="hidden text-[10px] text-destructive hover:underline group-hover:block"
+                                          className="hidden text-[10px] text-critico hover:underline group-hover:block"
                                         >
                                           remover
                                         </button>
@@ -1857,7 +1857,7 @@ export default function Escala({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <CalendarClock className="size-4 text-muted-foreground" />
+                  <CalendarClock className="size-4 text-tinta-sussurro" />
                   {TURNO_LABEL[turno]} · Semana de {fmtDiaBR(dataInicio)}
                 </CardTitle>
                 <CardDescription>Clique em uma célula para adicionar ou remover plantonistas.</CardDescription>
@@ -1867,7 +1867,7 @@ export default function Escala({
                   <table className="w-full min-w-[760px] border-collapse text-sm">
                     <thead>
                       <tr>
-                        <th className="w-40 border-b border-r bg-muted/50 p-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        <th className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
                           Setor
                         </th>
                         {dias.map((d, i) => (
@@ -1878,7 +1878,7 @@ export default function Escala({
                             }`}
                           >
                             {DIAS_SEMANA_SEG[i]}
-                            <span className="block text-[10px] font-normal text-muted-foreground">{fmtDiaBR(d)}</span>
+                            <span className="block text-[10px] font-normal text-tinta-sussurro">{fmtDiaBR(d)}</span>
                           </th>
                         ))}
                       </tr>
@@ -1894,19 +1894,19 @@ export default function Escala({
                                 <button
                                   type="button"
                                   onClick={() => abrirCelula(s.id, d)}
-                                  className="flex min-h-[52px] w-full flex-col gap-1 rounded-md p-1 text-left transition-colors hover:bg-primary/5"
+                                  className="flex min-h-[52px] w-full flex-col gap-1 rounded-md p-1 text-left transition-colors hover:bg-acao/5"
                                 >
                                   {plantoes.length === 0 && (
-                                    <span className="text-[10px] text-muted-foreground/50">+ adicionar</span>
+                                    <span className="text-[10px] text-tinta-sussurro/50">+ adicionar</span>
                                   )}
                                   {plantoes.map((p) => (
                                     <span key={p.id} className="block">
-                                      <span className="block rounded bg-muted px-1.5 py-0.5 text-[11px] leading-tight">
+                                      <span className="block rounded bg-trilha px-1.5 py-0.5 text-[11px] leading-tight">
                                         {p.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Sem nome'}
-                                        {p.quinzenal && <span className="ml-1 font-semibold text-primary">15/15</span>}
+                                        {p.quinzenal && <span className="ml-1 font-semibold text-acao">15/15</span>}
                                       </span>
                                       {p.rotulo && (
-                                        <span className="block px-1.5 text-[10px] text-muted-foreground">{p.rotulo}</span>
+                                        <span className="block px-1.5 text-[10px] text-tinta-sussurro">{p.rotulo}</span>
                                       )}
                                     </span>
                                   ))}
@@ -1940,7 +1940,7 @@ export default function Escala({
                     <div key={e.id} className="flex items-center justify-between rounded-lg border p-2">
                       <div>
                         <div className="font-medium">{e.perfis?.nome_completo ?? 'Sem nome'}</div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-tinta-sussurro">
                           {e.quinzenal && '15/15 · '}
                           {e.rotulo || 'sem rótulo'}
                         </div>
@@ -1953,7 +1953,7 @@ export default function Escala({
                 {!carregandoEscala &&
                   (escala ?? []).filter(
                     (e) => e.setor_id === celula.setor_id && e.data === celula.data && e.turno === turno
-                  ).length === 0 && <p className="text-sm text-muted-foreground">Nenhum plantonista neste plantão.</p>}
+                  ).length === 0 && <p className="text-sm text-tinta-sussurro">Nenhum plantonista neste plantão.</p>}
               </CardContent>
             </Card>
           )}
@@ -1962,7 +1962,7 @@ export default function Escala({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <FileText className="size-4 text-muted-foreground" />
+                <FileText className="size-4 text-tinta-sussurro" />
                 Solicitações da escala
               </CardTitle>
               <CardDescription>Pedidos de saída do fixo, passagem de plantão e justificativa de falta.</CardDescription>
@@ -1973,7 +1973,7 @@ export default function Escala({
                   <Spinner />
                 </div>
               ) : (solicitacoes ?? []).length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhuma solicitação no momento.</p>
+                <p className="text-sm text-tinta-sussurro">Nenhuma solicitação no momento.</p>
               ) : (
                 (solicitacoes ?? []).map((s) => (
                   <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3">
@@ -1989,7 +1989,7 @@ export default function Escala({
                           {s.status === 'aprovado' ? 'Aprovado' : s.status === 'recusado' ? 'Recusado' : 'Pendente'}
                         </Badge>
                       </div>
-                      <div className="mt-0.5 text-xs text-muted-foreground">
+                      <div className="mt-0.5 text-xs text-tinta-sussurro">
                         {s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'Plantão removido'}
                         {s.tipo === 'passar_plantao' && s.destino && ` → ${s.destino.nome_completo}`}
                         {s.tipo === 'justificar_falta' && s.tipo_falta && ` · ${TIPO_FALTA_LABEL[s.tipo_falta]}`}
@@ -1998,7 +1998,7 @@ export default function Escala({
                             href={s.anexo_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="ml-1 font-medium text-primary hover:underline"
+                            className="ml-1 font-medium text-acao hover:underline"
                           >
                             ver anexo
                           </a>

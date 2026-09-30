@@ -13,7 +13,7 @@ export function usePaleta() {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
         setAberta((v) => !v)
-      } else if (e.key === '/' && !digitando(e.target)) {
+      } else if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !digitando(e.target)) {
         e.preventDefault()
         setAberta(true)
       }

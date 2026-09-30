@@ -22,6 +22,26 @@ export function faltandoVitais(valores: Record<string, string>, publico: Publico
   return VITAIS.filter((v) => obrigatorio(v, publico) && !(valores[v.k] ?? '').trim())
 }
 
+/** Chave da dor: na triagem ela pode vir da soma de uma escala (NIPS/FLACC). */
+export const VITAL_DOR = 'escala-dor'
+
+/** Rótulo do sinal pela chave (para o histórico e para mensagens). */
+export const rotuloVital = (k: string) => VITAIS.find((v) => v.k === k)?.rotulo ?? k
+
+/** "PA 120/80 · FC 88 bpm · …" — crus, sem marca de alterado (CLAUDE.md). */
+export function textoVitais(sinais: Record<string, number> | null | undefined): string {
+  if (!sinais) return ''
+  const s = sinais['pressao-arterial-sistolica']
+  const d = sinais['pressao-arterial-diastolica']
+  const partes: string[] = []
+  if (s !== undefined || d !== undefined) partes.push(`PA ${s ?? '—'}/${d ?? '—'}`)
+  for (const v of VITAIS) {
+    if (v.k.startsWith('pressao-arterial') || sinais[v.k] === undefined) continue
+    partes.push(`${v.rotulo.replace(' (0–10)', '')} ${String(sinais[v.k]).replace('.', ',')}${v.un ? ' ' + v.un : ''}`)
+  }
+  return partes.join(' · ')
+}
+
 /** Texto do formulário → números para o servidor. Lança erro com o rótulo do campo. */
 export function paraNumeros(valores: Record<string, string>): Record<string, number> {
   return Object.fromEntries(

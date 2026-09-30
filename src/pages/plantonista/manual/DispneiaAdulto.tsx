@@ -10,8 +10,8 @@ import { Bloco } from './LoteAPecas'
 import { informado } from './loteAFormato'
 
 function Lista({ itens, vazio }: { itens: Achado[]; vazio: string }) {
-  if (!itens.length) return <p className="text-muted-foreground">{vazio}</p>
-  return <ul className="list-disc pl-5">{itens.map((a) => <li key={a.texto}>{a.texto} <span className="text-muted-foreground">({a.pagina})</span></li>)}</ul>
+  if (!itens.length) return <p className="text-tinta-sussurro">{vazio}</p>
+  return <ul className="list-disc pl-5">{itens.map((a) => <li key={a.texto}>{a.texto} <span className="text-tinta-sussurro">({a.pagina})</span></li>)}</ul>
 }
 
 /** Dispneia no adulto — cortes numéricos dos caps. 26 e 1 do manual do HCFMUSP. */
@@ -56,7 +56,7 @@ export function DispneiaAdulto() {
 
       <Bloco titulo="Oxigênio (cap. 26, p. 368)">
         <Lista itens={r.oxigenio} vazio="Sem PaO2 < 55 mmHg nem SaO2 < 90% nos valores informados." />
-        <p className="text-muted-foreground">p. 368: com hipercapnia significativa na gasometria, o livro direciona para VNI ou ventilação invasiva, se necessário.</p>
+        <p className="text-tinta-sussurro">p. 368: com hipercapnia significativa na gasometria, o livro direciona para VNI ou ventilação invasiva, se necessário.</p>
       </Bloco>
 
       <Bloco titulo="Radiografia, BNP e história (cap. 26, p. 361–364)">
@@ -67,7 +67,7 @@ export function DispneiaAdulto() {
           <NumberField id="dp2-macos" label="Tabagismo" unit="maços-ano" value={macos} onChange={setMacos} step={1} />
         </div>
         <Lista itens={[...r.exames, ...r.historia]} vazio="Informe ICT, BNP, idade ou carga tabágica." />
-        <p className="text-muted-foreground">p. 361: embolia pulmonar deve ser suspeitada com história recente (&lt; 4 semanas) de cirurgia, estrógeno ou outros fatores de TVP. O escore de Wells tem ferramenta própria no pacote.</p>
+        <p className="text-tinta-sussurro">p. 361: embolia pulmonar deve ser suspeitada com história recente (&lt; 4 semanas) de cirurgia, estrógeno ou outros fatores de TVP. O escore de Wells tem ferramenta própria no pacote.</p>
         <p className="font-medium">Achados sugestivos de disfunção cardíaca (Tabela 3, p. 363)</p>
         <ul className="list-disc pl-5">{ACHADOS_IC.map((a) => <li key={a}>{a}</li>)}</ul>
       </Bloco>
@@ -77,7 +77,7 @@ export function DispneiaAdulto() {
       </Bloco>
 
       <Bloco titulo="Errata e divergências do livro">
-        <ul className="list-disc pl-5 text-muted-foreground">{ERRATA_DISPNEIA.map((e) => <li key={e}>{e}</li>)}</ul>
+        <ul className="list-disc pl-5 text-tinta-sussurro">{ERRATA_DISPNEIA.map((e) => <li key={e}>{e}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

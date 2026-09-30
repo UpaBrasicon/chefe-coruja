@@ -49,7 +49,7 @@ export function QueimaduraPed() {
         descricao={`Só entram queimaduras de 2º e 3º graus (p. 159). Marque a fração de cada superfície atingida. Regra da mão espalmada: a mão da criança ≈ ${MAO_ESPALMADA_PCT}% da superfície (p. 159).`}
       >
         {coluna === null ? (
-          <p className="text-muted-foreground">Informe a idade (até 13 anos e 11 meses) para escolher a coluna da tabela.</p>
+          <p className="text-tinta-sussurro">Informe a idade (até 13 anos e 11 meses) para escolher a coluna da tabela.</p>
         ) : (
           <>
             <p className="tabular-nums">
@@ -60,7 +60,7 @@ export function QueimaduraPed() {
               {REGIOES_LB.map((r) => (
                 <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-1.5">
                   <span>
-                    {r.nome} {r.face !== 'única' && <span className="text-muted-foreground">({r.face})</span>} <span className="text-xs text-muted-foreground">{br(valorRegiao(r, coluna), 2)}%</span>
+                    {r.nome} {r.face !== 'única' && <span className="text-tinta-sussurro">({r.face})</span>} <span className="text-xs text-tinta-sussurro">{br(valorRegiao(r, coluna), 2)}%</span>
                   </span>
                   <div className="flex gap-1">
                     {FRACOES.map(([v, t]) => (
@@ -68,7 +68,7 @@ export function QueimaduraPed() {
                         key={t}
                         type="button"
                         onClick={() => setFracoes({ ...fracoes, [r.id]: v })}
-                        className={`rounded border px-2 py-0.5 text-xs ${(fracoes[r.id] ?? 0) === v ? 'bg-primary text-primary-foreground' : ''}`}
+                        className={`rounded border px-2 py-0.5 text-xs ${(fracoes[r.id] ?? 0) === v ? 'bg-acao text-white' : ''}`}
                       >
                         {t}
                       </button>
@@ -96,7 +96,7 @@ export function QueimaduraPed() {
       )}
       {!p.rn && !(p.peso > 0) && (
         <Bloco titulo="Reposição">
-          <p className="text-muted-foreground">Informe o peso para calcular.</p>
+          <p className="text-tinta-sussurro">Informe o peso para calcular.</p>
         </Bloco>
       )}
 
@@ -129,7 +129,7 @@ export function QueimaduraPed() {
               )}
             </>
           ) : (
-            <p className="text-muted-foreground">Informe a superfície queimada.</p>
+            <p className="text-tinta-sussurro">Informe a superfície queimada.</p>
           )}
           <Nota>Pré-hospitalar: com SCQ &gt; 10% ou transporte prolongado, SF ou Ringer lactato {PRE_HOSPITALAR_ML_KG_H} mL/kg/h = {br(PRE_HOSPITALAR_ML_KG_H * p.peso, 0)} mL/h (p. 161).</Nota>
         </Bloco>

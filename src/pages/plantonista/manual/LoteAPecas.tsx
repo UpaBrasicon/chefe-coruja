@@ -11,9 +11,9 @@ import { Label } from '@/components/ui/label'
 export function Trecho({ texto, pagina, errata }: { texto: string; pagina: string; errata?: string }) {
   return (
     <p className="text-sm">
-      {texto} <span className="text-muted-foreground">(Manual HCFMUSP, {pagina})</span>
+      {texto} <span className="text-tinta-sussurro">(Manual HCFMUSP, {pagina})</span>
       {errata && (
-        <span className="mt-1 block text-muted-foreground">
+        <span className="mt-1 block text-tinta-sussurro">
           <Badge variant="outline" className="mr-1">errata</Badge>
           {errata}
         </span>
@@ -52,7 +52,7 @@ export function Bloco({ titulo, descricao, children }: { titulo: string; descric
 export function Resultado({ rotulo, valor }: { rotulo: string; valor: ReactNode }) {
   return (
     <div className="flex flex-col">
-      <span className="text-muted-foreground">{rotulo}</span>
+      <span className="text-tinta-sussurro">{rotulo}</span>
       <strong className="tabular-nums">{valor}</strong>
     </div>
   )

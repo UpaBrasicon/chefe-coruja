@@ -42,7 +42,7 @@ export function SedacaoProcedimentoAdulto() {
           Virgem de opioide (teto de 4 mg da morfina)
         </label>
       </CampoPeso>
-      <p className="text-sm text-muted-foreground">{RISCO_AUMENTADO_SAP} Em obesos, o livro manda usar o peso ideal no bolus de propofol e quetamina, sem dar a fórmula: informe o peso que será usado.</p>
+      <p className="text-sm text-tinta-sussurro">{RISCO_AUMENTADO_SAP} Em obesos, o livro manda usar o peso ideal no bolus de propofol e quetamina, sem dar a fórmula: informe o peso que será usado.</p>
 
       <Bloco titulo="Drogas (Tabela 2, p. 161–166)" descricao="Doses do livro; o volume sai da concentração da apresentação citada.">
         {DROGAS_SAP.map((d) => <Droga key={d.id} d={d} peso={peso} virgemOpioide={virgem} />)}
@@ -64,15 +64,15 @@ export function SedacaoProcedimentoAdulto() {
       <Bloco titulo="Níveis de sedoanalgesia (Tabela 1, p. 156–158)" descricao="A sedação é contínua, sem marcos definitivos entre os níveis.">
         <ul className="grid gap-1 text-sm md:grid-cols-2">
           {NIVEIS_SEDACAO.map((n) => (
-            <li key={n.nivel} className="rounded-lg border px-3 py-2"><span className="font-medium">{n.nivel}</span><br />{n.clinica}<br /><span className="text-muted-foreground">{n.via}</span></li>
+            <li key={n.nivel} className="rounded-lg border px-3 py-2"><span className="font-medium">{n.nivel}</span><br />{n.clinica}<br /><span className="text-tinta-sussurro">{n.via}</span></li>
           ))}
         </ul>
       </Bloco>
 
       <Bloco titulo="ASA, jejum e alta">
         <ul className="flex flex-col gap-1 text-sm">
-          {ASA_SAP.map((a) => <li key={a.classe}><span className="font-medium">{a.classe}:</span> {a.texto} <span className="text-muted-foreground">({a.pagina})</span></li>)}
-          <li><span className="font-medium">Jejum:</span> {JEJUM_SAP.texto} <span className="text-muted-foreground">({JEJUM_SAP.pagina})</span></li>
+          {ASA_SAP.map((a) => <li key={a.classe}><span className="font-medium">{a.classe}:</span> {a.texto} <span className="text-tinta-sussurro">({a.pagina})</span></li>)}
+          <li><span className="font-medium">Jejum:</span> {JEJUM_SAP.texto} <span className="text-tinta-sussurro">({JEJUM_SAP.pagina})</span></li>
         </ul>
         <p className="text-sm font-medium">Critérios de alta ({ALTA_SAP.pagina})</p>
         <ul className="list-disc pl-5 text-sm">

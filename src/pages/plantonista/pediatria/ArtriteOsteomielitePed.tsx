@@ -41,9 +41,9 @@ export function ArtriteOsteomielitePed() {
             <strong>{FAIXA_TEXTO[faixa]}</strong>: {TABELA2_OSTEO[faixa].agentes}. Cobertura: {TABELA2_OSTEO[faixa].cobertura}.
           </p>
         ) : (
-          <p className="text-muted-foreground">Informe a idade.</p>
+          <p className="text-tinta-sussurro">Informe a idade.</p>
         )}
-        <p className="text-muted-foreground">MSSA: oxacilina, cefazolina, ampicilina ou clindamicina. MRSA: clindamicina, vancomicina ou linezolida, conforme a sensibilidade local.</p>
+        <p className="text-tinta-sussurro">MSSA: oxacilina, cefazolina, ampicilina ou clindamicina. MRSA: clindamicina, vancomicina ou linezolida, conforme a sensibilidade local.</p>
       </Bloco>
 
       <Bloco titulo="Antibiótico pela resistência local (Tabela 3, p. 498–499)">

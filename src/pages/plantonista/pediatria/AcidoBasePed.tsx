@@ -61,7 +61,7 @@ export function AcidoBasePed() {
         <Nota>{NOTA_TEMPOS}</Nota>
         <Nota>{NOTA_MARGEM}</Nota>
         <Errata texto={ERRATA_ALCALOSE_METABOLICA} />
-        <details className="text-xs text-muted-foreground">
+        <details className="text-xs text-tinta-sussurro">
           <summary className="cursor-pointer">Valores normais por idade (Tabela 1, p. 562)</summary>
           <ul className="mt-1">
             {NORMAIS_IDADE.map((n) => (

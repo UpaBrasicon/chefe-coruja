@@ -29,7 +29,7 @@ export function TaquiarritmiasAdulto() {
         </label>
       </CampoPeso>
 
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-tinta-sussurro">
         No paciente instável o manual traz cardioversão elétrica sincronizada (desfibrilação na torsades de pointes), p. 262. O capítulo não traz a carga
         da cardioversão; a carga da desfibrilação está na tela de PCR (cap. 2, p. 48).
       </p>

@@ -9,7 +9,7 @@ export function TituloPagina({
   icone: Icone, titulo, descricao, acoes, className,
 }: { icone: LucideIcon; titulo: string; descricao?: ReactNode; acoes?: ReactNode; className?: string }) {
   return (
-    <header className={cn('mb-[22px] flex flex-wrap items-start gap-3.5', className)}>
+    <header className={cn('cc-pagina-cabeca mb-[22px] flex flex-wrap items-start gap-3.5', className)}>
       <span className="grid size-[42px] shrink-0 place-items-center rounded-controle bg-marca/10 text-acao" aria-hidden>
         <Icone className="size-5" />
       </span>

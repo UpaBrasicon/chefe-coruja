@@ -68,7 +68,7 @@ export function ReposicaoCalcio() {
           <Resultado rotulo="Bomba" valor={vel === null ? '—' : `${br(vel, 0)} mL/h`} />
         </div>
         <Alertas itens={min > 0 && min < 10 ? ['Mais rápido que 10 min: o livro associa a depressão miocárdica (Tab. 4, p. 922).'] : []} />
-        <p className="text-muted-foreground">mEq por 10 mL: cloreto 13,6 × gluconato 4,6 (nota da Tab. 6, p. 916).</p>
+        <p className="text-tinta-sussurro">mEq por 10 mL: cloreto 13,6 × gluconato 4,6 (nota da Tab. 6, p. 916).</p>
       </Bloco>
 
       <Bloco titulo="Infusão contínua (hipocalcemia persistente)" descricao="Gluconato de cálcio 10% 110 mL + SG 5% ou SF 890 mL (≈ 1 mg/mL de Ca elementar; pela conta, 0,99 mg/mL); iniciar a 50 mL/h; 0,5–1,5 mg/kg/h de Ca elementar por 6–12 h (p. 922 e 1500).">
@@ -82,7 +82,7 @@ export function ReposicaoCalcio() {
             <Resultado rotulo="Velocidade para a dose" valor={infMlH === null ? '—' : `${br(infMlH)} mL/h`} />
             <Resultado rotulo={`Dose a ${br(mlh)} mL/h`} valor={infDose === null ? '—' : `${br(infDose, 2)} mg/kg/h de Ca elementar`} />
           </div>
-        ) : <p className="text-muted-foreground">Informe o peso.</p>}
+        ) : <p className="text-tinta-sussurro">Informe o peso.</p>}
         <Alertas itens={foraFaixa ? ['Fora da faixa de 0,5–1,5 mg/kg/h que o manual traz.'] : []} />
       </Bloco>
 

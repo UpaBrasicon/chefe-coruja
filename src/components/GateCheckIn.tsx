@@ -8,6 +8,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { AvisoRascunhosCheckout } from '@/components/documento/AvisoRascunhosCheckout'
 
 /**
  * GATE DE CHECK-IN OBRIGATÓRIO (regra de ouro).
@@ -200,7 +201,7 @@ export function GateCheckIn() {
         {/* Cabeçalho — quem está fazendo check-in */}
         <div className="mb-4 flex items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white backdrop-blur">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-acao text-white">
               <MapPin className="size-5" />
             </div>
             <div className="min-w-0">
@@ -219,9 +220,9 @@ export function GateCheckIn() {
         </div>
 
         {/* Card principal */}
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-superficie shadow-2xl">
           {/* Mapa */}
-          <div className="relative h-56 w-full bg-muted">
+          <div className="relative h-56 w-full bg-trilha">
             {mapaUrl ? (
               <iframe
                 title="Mapa da unidade"
@@ -230,7 +231,7 @@ export function GateCheckIn() {
                 loading="lazy"
               />
             ) : (
-              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+              <div className="flex h-full items-center justify-center text-sm text-tinta-sussurro">
                 <Navigation className="mr-2 size-4" />
                 Unidade sem geolocalização configurada
               </div>
@@ -267,6 +268,7 @@ export function GateCheckIn() {
                   </span>
                   . Você já pode acessar o sistema.
                 </p>
+                <AvisoRascunhosCheckout unidadeId={unidadeId} />
                 <div>
                   <Button variant="outline" onClick={fazerCheckout} disabled={processando}>
                     {processando ? <Loader2 className="animate-spin" /> : <LogOut />} Check-out
@@ -277,7 +279,7 @@ export function GateCheckIn() {
               <div className="flex flex-col gap-4">
                 <div>
                   <h2 className="text-lg font-semibold tracking-tight">Faça seu check-in</h2>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-tinta-sussurro">
                     Confirme sua presença no plantão de hoje. O sistema registra o horário exato e valida
                     sua localização contra o raio configurado pela unidade.
                   </p>
@@ -289,7 +291,7 @@ export function GateCheckIn() {
                   </Button>
                   {pos && <Badge variant="success">{pos.lat.toFixed(5)}, {pos.lng.toFixed(5)}</Badge>}
                 </div>
-                {geoMsg && <p className="text-xs text-muted-foreground">{geoMsg}</p>}
+                {geoMsg && <p className="text-xs text-tinta-sussurro">{geoMsg}</p>}
 
                 <Button size="lg" className="w-full" onClick={fazerCheckin} disabled={processando}>
                   {processando ? <Loader2 className="animate-spin" /> : <LogIn />} Fazer check-in agora

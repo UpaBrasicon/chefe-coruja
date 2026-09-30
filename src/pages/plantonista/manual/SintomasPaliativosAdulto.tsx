@@ -34,7 +34,7 @@ export function SintomasPaliativosAdulto() {
       ficha={fichaPaliativoAdulto}
     >
       <CampoPeso id="pal-peso" peso={peso} onChange={setPeso} />
-      <p className="text-sm text-muted-foreground">{DOR_NAO_VERBAL_PALIATIVO}</p>
+      <p className="text-sm text-tinta-sussurro">{DOR_NAO_VERBAL_PALIATIVO}</p>
 
       <Bloco titulo="Dor intensa (7–10) sem uso prévio de opioide" descricao={DOR_PALIATIVO_PAGINA}>
         <ul className="flex flex-col gap-1 text-sm">

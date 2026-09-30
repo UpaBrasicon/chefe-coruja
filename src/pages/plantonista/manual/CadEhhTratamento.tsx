@@ -82,7 +82,7 @@ export function CadEhhTratamento() {
         <p>
           Sódio de referência {glic > 0 ? 'corrigido' : 'medido'}: {br(naRef)} mEq/L → o manual traz salina <strong>{sol ?? '—'}</strong> na 2ª fase (Na &lt; 135 → 0,9%; normal ou alto → 0,45%; as figuras usam o sódio corrigido).
         </p>
-        <p className="text-muted-foreground">Ao chegar a glicemia de 250–300 mg/dL (texto, p. 870), associar glicose 5–10% mantendo 250–500 mL/h; opção do livro: 1 L de soro glicosado + 20 mL de NaCl 20%.</p>
+        <p className="text-tinta-sussurro">Ao chegar a glicemia de 250–300 mg/dL (texto, p. 870), associar glicose 5–10% mantendo 250–500 mL/h; opção do livro: 1 L de soro glicosado + 20 mL de NaCl 20%.</p>
       </Secao>
 
       <Secao titulo="Sistema de 2 bolsas — Tabela 5 (p. 870)" descricao="Bolsa 1: SF + KCl 40 mEq/L; bolsa 2: SG 10% + KCl 40 mEq/L (Figura 1). A glicose final é proporcional à vazão da bolsa 2.">
@@ -104,7 +104,7 @@ export function CadEhhTratamento() {
             Bomba: <strong>{br(ins.uH)} U/h = {br(ins.mlH)} mL/h</strong>
             {red && <> · dose reduzida das Figuras 2–3 (0,05 U/kg/h): {br(red.uH)} U/h = {br(red.mlH)} mL/h</>}
           </p>
-        ) : <p className="text-muted-foreground">Informe o peso.</p>}
+        ) : <p className="text-tinta-sussurro">Informe o peso.</p>}
         {fk === 'baixo' && <p className="text-atencao">K &lt; 3,3 mEq/L: o manual traz repor potássio antes de iniciar a insulina.</p>}
       </Secao>
 
@@ -118,20 +118,20 @@ export function CadEhhTratamento() {
           <p className="tabular-nums">
             Queda: {br(aj.queda, 0)} mg/dL/h — {ACAO[aj.acao]} → <strong>{br(aj.novaUH)} U/h = {br(mlHDeInsulina(aj.novaUH))} mL/h</strong>
           </p>
-        ) : <p className="text-muted-foreground">Informe as duas glicemias e a taxa atual.</p>}
+        ) : <p className="text-tinta-sussurro">Informe as duas glicemias e a taxa atual.</p>}
       </Secao>
 
       <Secao titulo="Potássio (p. 871, 874)" descricao="Faixas do manual: < 3,3 / 3,3–5,0 / > 5 mEq/L. Dosar K a cada 2 h no início (p. 869).">
         {fk ? (
           <ul className="list-disc pl-5">{POTASSIO_MANUAL[fk].map((t) => <li key={t}>{t}</li>)}</ul>
-        ) : <p className="text-muted-foreground">Informe o potássio.</p>}
+        ) : <p className="text-tinta-sussurro">Informe o potássio.</p>}
       </Secao>
 
       <Secao titulo="Bicarbonato (p. 874; cap. 69, p. 938)" descricao="O manual traz bicarbonato só com pH < 6,9: 100 mEq EV em 2 h, gasometria após 1–2 h; preparo de 100 mL de NaHCO3 8,4% em 400 mL de água destilada.">
         {bic ? (
           bic.indicado ? <p>pH {br(ph, 2)} &lt; 6,9: <strong>100 mEq em 2 h</strong> — 500 mL de preparo = <strong>{br(bic.mlH, 0)} mL/h</strong></p> : <p>pH {br(ph, 2)} ≥ 6,9: fora da indicação do manual.</p>
-        ) : <p className="text-muted-foreground">Informe o pH.</p>}
-        <p className="text-muted-foreground">Fosfato (p. 874): só com disfunção cardíaca grave/arritmias, fraqueza muscular/insuficiência respiratória, rabdomiólise/anemia significativa ou fósforo &lt; 1,0 mEq/L — 25 mEq de fosfato de potássio no lugar do KCl.</p>
+        ) : <p className="text-tinta-sussurro">Informe o pH.</p>}
+        <p className="text-tinta-sussurro">Fosfato (p. 874): só com disfunção cardíaca grave/arritmias, fraqueza muscular/insuficiência respiratória, rabdomiólise/anemia significativa ou fósforo &lt; 1,0 mEq/L — 25 mEq de fosfato de potássio no lugar do KCl.</p>
       </Secao>
 
       <Secao titulo="Transição para insulina SC (p. 874)" descricao="O manual traz 2/3 da insulina das últimas 24 h, ou 0,6 U/kg de NPH; desligar a bomba ao menos 1 h após a primeira insulina regular SC.">
@@ -147,7 +147,7 @@ export function CadEhhTratamento() {
           {i24 && <> Para o peso informado: <span className="tabular-nums">0,1 U/kg/h = <strong>{br(i24.uH)} U/h = {br(i24.mlH)} mL/h</strong>; bolus só se atraso: {br(i24.bolusSeAtrasoU)} U; 0,05 U/kg/h (glicose &lt; 250 ou EHH) = {br(i24.reduzidaUH)} U/h = {br(i24.reduzidaMlH)} mL/h</span>.</>}
         </p>
         <p>
-          <strong>Potássio</strong> ({T.potassio.pagina}): {k24 ? <>{T.potassio.texto[k24]}.</> : <span className="text-muted-foreground">informe o potássio — faixas &lt; 3,5 / 3,5–5,0 / &gt; 5,0 mmol/L.</span>}
+          <strong>Potássio</strong> ({T.potassio.pagina}): {k24 ? <>{T.potassio.texto[k24]}.</> : <span className="text-tinta-sussurro">informe o potássio — faixas &lt; 3,5 / 3,5–5,0 / &gt; 5,0 mmol/L.</span>}
           {k24 === 'baixo' && <span className="text-atencao"> Insulina só depois de K &gt; 3,5 (o manual usa 3,3).</span>}
         </p>
         <p>
@@ -157,8 +157,8 @@ export function CadEhhTratamento() {
         <p><strong>Fosfato</strong> ({T.fosfato.pagina}): {T.fosfato.texto}. <strong>Monitorização</strong> ({T.monitorizacao.pagina}): {T.monitorizacao.texto}.</p>
         <p><strong>EHH</strong> ({T.ehh.pagina}): {T.ehh.texto}.</p>
         <p><strong>Transição</strong> ({T.transicao.pagina}): {T.transicao.texto}{peso > 0 && <> → basal <span className="tabular-nums">{faixa([T.transicao.basalUKg[0] * peso, T.transicao.basalUKg[1] * peso], 1)} U</span></>}.</p>
-        <details className="text-muted-foreground">
-          <summary className="cursor-pointer text-foreground">Manual do HC × consenso 2024 — todas as diferenças</summary>
+        <details className="text-tinta-sussurro">
+          <summary className="cursor-pointer text-tinta">Manual do HC × consenso 2024 — todas as diferenças</summary>
           <ul className="mt-2 flex flex-col gap-1">
             {DIFERENCAS_2024.map((d) => <li key={d.tema}><strong>{d.tema}:</strong> manual — {d.manual}; consenso — {d.consenso}.</li>)}
           </ul>
@@ -171,7 +171,7 @@ export function CadEhhTratamento() {
             <li key={d.tema}><strong>{d.tema}:</strong> texto — {d.texto}; figura — {d.figura}.</li>
           ))}
         </ul>
-        <p className="text-muted-foreground">UTI (p. 876): desconforto respiratório agudo, pH &lt; 6,9, choque cardiogênico, edema cerebral.</p>
+        <p className="text-tinta-sussurro">UTI (p. 876): desconforto respiratório agudo, pH &lt; 6,9, choque cardiogênico, edema cerebral.</p>
       </Secao>
     </ToolLayout>
   )

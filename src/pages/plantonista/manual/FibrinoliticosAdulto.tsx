@@ -32,7 +32,7 @@ export function FibrinoliticosAdulto() {
       <CampoPeso id="fib-peso" peso={peso} onChange={setPeso}>
         <NumberField id="fib-idade" label="Idade" unit="anos" value={idade} onChange={setIdade} min={0} />
       </CampoPeso>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-tinta-sussurro">
         Contraindicações: Tabela 1 do cap. 14 (p. 219–220) e Tabela 9 do cap. 32 (p. 444). No IAM com supra, o manual traz porta-agulha menor que 10 minutos (p. 218).
       </p>
 
@@ -93,7 +93,7 @@ export function FibrinoliticosAdulto() {
           pagina={ALTEPLASE_TEP.pagina}
         />
         <LinhaManual nome="Alteplase na PCR por TEP" texto={ALTEPLASE_TEP.pcr.texto} conta={<strong>{ALTEPLASE_TEP.pcr.mg} mg</strong>} pagina={ALTEPLASE_TEP.pagina} />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-tinta-sussurro">
           O manual traz que a HNF não deve ser infundida durante estreptoquinase e uroquinase, mas pode ser mantida com alteplase (p. 443).
         </p>
       </Bloco>
@@ -104,8 +104,8 @@ export function FibrinoliticosAdulto() {
           conta={alt25 ? <>{alt25.fases.map((f) => `${fmtE(f.mg)} mg ${f.fase}`).join(' · ')} · <strong>total {fmtE(alt25.totalMg)} mg</strong></> : 'informe o peso'} />
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">Diretriz</th><th className="pr-3 pb-2">Fonte</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
-            <tbody>{DIRETRIZ_SCA_2025.map((d) => <tr key={d.tema} className="border-t"><td className="pr-3 py-2 font-medium">{d.tema}</td><td className="pr-3 py-2">{d.diretriz}</td><td className="pr-3 py-2">{d.fonte}</td><td className="pr-3 py-2 text-muted-foreground">{d.livro}</td></tr>)}</tbody>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">Diretriz</th><th className="pr-3 pb-2">Fonte</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
+            <tbody>{DIRETRIZ_SCA_2025.map((d) => <tr key={d.tema} className="border-t"><td className="pr-3 py-2 font-medium">{d.tema}</td><td className="pr-3 py-2">{d.diretriz}</td><td className="pr-3 py-2">{d.fonte}</td><td className="pr-3 py-2 text-tinta-sussurro">{d.livro}</td></tr>)}</tbody>
           </table>
         </div>
       </Bloco>

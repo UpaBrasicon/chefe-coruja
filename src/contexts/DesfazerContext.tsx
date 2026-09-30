@@ -9,7 +9,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 
 const JANELA_MS = 8000
 
-type Acao = { id: number; rotulo: string; desfazer: () => void | Promise<void> }
+type Acao = { id: number; rotulo: string; desfazer: () => void | Promise<void>; desfeito?: boolean }
 
 type Ctx = { fazer: (rotulo: string, desfazer: Acao['desfazer']) => void }
 
@@ -44,16 +44,21 @@ export function DesfazerProvider({ children }: { children: ReactNode }) {
     if (!acao || desfazendo) return
     window.clearTimeout(timer.current)
     setDesfazendo(true)
+    const id = acao.id
     try {
       await acao.desfazer()
+      // "— desfeito" fica 1,6 s na barra: a confirmação de que voltou.
+      setAcao((a) => (a?.id === id ? { ...a, desfeito: true } : a))
+      timer.current = window.setTimeout(() => setAcao((a) => (a?.id === id ? null : a)), 1600)
+    } catch {
+      setAcao(null)
     } finally {
       setDesfazendo(false)
-      setAcao(null)
     }
   }, [acao, desfazendo])
 
   useEffect(() => {
-    if (!acao) return
+    if (!acao || acao.desfeito) return
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey && !digitando(e.target)) {
         e.preventDefault()
@@ -73,24 +78,31 @@ export function DesfazerProvider({ children }: { children: ReactNode }) {
         {acao && (
           <div
             key={acao.id}
-            className="pointer-events-auto relative flex w-full max-w-[460px] items-center gap-3 overflow-hidden rounded-container bg-tinta py-3 pr-3 pl-4 text-apoio text-white shadow-desfazer animate-in fade-in slide-in-from-bottom-2 duration-200"
+            className="pointer-events-auto relative flex w-full max-w-[460px] items-center gap-3.5 overflow-hidden rounded-container bg-tinta py-3 pr-3.5 pl-4 text-controle text-white shadow-desfazer animate-in fade-in slide-in-from-bottom-2 duration-200"
           >
-            <span className="min-w-0 flex-1">{acao.rotulo}</span>
-            <button
-              type="button"
-              onClick={() => void executar()}
-              disabled={desfazendo}
-              className="flex items-center gap-1.5 rounded-controle-sm px-2.5 py-1.5 font-medium text-[#99D6CE] hover:bg-white/10 disabled:opacity-60"
-            >
-              <Undo2 className="size-4" aria-hidden />
-              Desfazer
-              <kbd className="ml-1 hidden rounded-[5px] border border-white/20 px-1 font-mono text-[11px] text-white/70 sm:inline">Ctrl Z</kbd>
-            </button>
-            {/* a régua: esvazia em 8 s */}
-            <span
-              aria-hidden
-              className="absolute bottom-0 left-0 h-[3px] w-full origin-left bg-[#99D6CE] motion-safe:animate-[cc-regua_8s_linear_forwards]"
-            />
+            <Undo2 className="size-4 shrink-0 text-desfazer-regua" aria-hidden />
+            <span className="min-w-0 flex-1 leading-[1.4]">
+              {acao.rotulo}
+              {acao.desfeito && ' — desfeito'}
+            </span>
+            {!acao.desfeito && (
+              <button
+                type="button"
+                onClick={() => void executar()}
+                disabled={desfazendo}
+                className="ml-1.5 flex items-center gap-2 px-0.5 py-1 font-semibold whitespace-nowrap text-white hover:text-desfazer-regua disabled:opacity-60"
+              >
+                Desfazer
+                <kbd className="cc-tecla hidden border-grafite! bg-grafite! text-fio-forte! sm:inline-flex">ctrl Z</kbd>
+              </button>
+            )}
+            {/* a régua: esvazia em 8 s — ela É a janela, não um enfeite */}
+            {!acao.desfeito && (
+              <span
+                aria-hidden
+                className="absolute bottom-0 left-0 h-0.5 w-full origin-left bg-desfazer-regua motion-safe:animate-[cc-regua_8s_linear_forwards]"
+              />
+            )}
           </div>
         )}
       </div>

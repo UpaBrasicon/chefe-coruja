@@ -58,7 +58,7 @@ export function HemostasiaTrombosePed() {
               casas={0}
               texto={`${faixaBr(l[fator].inicial, 0)} UI/kg${l[fator].manutencao ? ` inicial; manutenção ${faixaBr(l[fator].manutencao!, 0)} UI/kg` : ''}; duração (dias): ${l.dias}`}
               pagina="p. 680"
-              extra={rep.manutencao && <span className="text-muted-foreground"> · manutenção {faixaBr(rep.manutencao, 0)} UI</span>}
+              extra={rep.manutencao && <span className="text-tinta-sussurro"> · manutenção {faixaBr(rep.manutencao, 0)} UI</span>}
             />
           )
         )}
@@ -90,7 +90,7 @@ export function HemostasiaTrombosePed() {
           <>
             <LinhaFaixa nome="Ataque" faixa={hnfAtaqueUI(p.peso)} unidade="UI" casas={0} texto="75 UI/kg EV em 10 minutos" pagina="p. 690" />
             {man === 'indefinido' ? (
-              <p className="text-muted-foreground">Com 12 meses exatos o quadro não define ("menores de 1 ano" x "acima de 1 ano"): 28 ou 20 UI/kg/h.</p>
+              <p className="text-tinta-sussurro">Com 12 meses exatos o quadro não define ("menores de 1 ano" x "acima de 1 ano"): 28 ou 20 UI/kg/h.</p>
             ) : (
               man !== null && <LinhaFaixa nome="Manutenção inicial" faixa={[man * p.peso, man * p.peso]} unidade="UI/h" casas={0} texto={`${man} UI/kg/h (${man === 28 ? '< 1 ano' : '> 1 ano'})`} pagina="p. 690" />
             )}
@@ -109,7 +109,7 @@ export function HemostasiaTrombosePed() {
       {calcIdade && (
         <Bloco titulo="Enoxaparina (Quadro 4, p. 690)" descricao="SC; anti-Xa 4–6 h após a dose: terapêutico 0,5–1,0 U/mL, profilático 0,1–0,3 U/mL.">
           {enox === 'indefinido' ? (
-            <p className="text-muted-foreground">Com 2 meses exatos o quadro não define ("&lt; 2 m" x "&gt; 2 m").</p>
+            <p className="text-tinta-sussurro">Com 2 meses exatos o quadro não define ("&lt; 2 m" x "&gt; 2 m").</p>
           ) : (
             enox && (
               <>
@@ -136,15 +136,15 @@ export function HemostasiaTrombosePed() {
       <Bloco titulo="TEV pediátrico — ASH/ISTH 2025, ao lado do cap. 65" descricao="Blood Adv 2025;9:2587–2636, conferida pelo resumo oficial das mudanças. As doses pediátricas de DOAC não constam do resumo e não são calculadas.">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Rec.</th><th className="pr-3 pb-2">População</th><th className="pr-3 pb-2">ASH/ISTH 2025</th><th className="pb-2">Mudança</th></tr></thead>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Rec.</th><th className="pr-3 pb-2">População</th><th className="pr-3 pb-2">ASH/ISTH 2025</th><th className="pb-2">Mudança</th></tr></thead>
             <tbody>
               {ASH_ISTH_ITENS.map((i) => (
-                <tr key={i.numero} className="border-t"><td className="pr-3 py-2 font-medium whitespace-nowrap">{i.numero}</td><td className="pr-3 py-2">{i.populacao}</td><td className="pr-3 py-2">{i.texto}</td><td className="py-2 text-muted-foreground">{i.mudanca}</td></tr>
+                <tr key={i.numero} className="border-t"><td className="pr-3 py-2 font-medium whitespace-nowrap">{i.numero}</td><td className="pr-3 py-2">{i.populacao}</td><td className="pr-3 py-2">{i.texto}</td><td className="py-2 text-tinta-sussurro">{i.mudanca}</td></tr>
               ))}
             </tbody>
           </table>
         </div>
-        <ul className="list-disc pl-5 text-muted-foreground">{DIFERENCAS_TEV_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_TEV_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Dos capítulos">

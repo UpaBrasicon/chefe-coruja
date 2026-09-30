@@ -84,7 +84,7 @@ function LinhaValidacao({ i, aoErro, aoMudar }: { i: ItemFila; aoErro: (m: strin
           <span>{i.dose} · {i.via} · {i.posologia}{i.se_necessario ? ' · se necessário' : ''}</span>
           {i.alta_vigilancia && <Badge variant="warning">alta vigilância</Badge>}
           {i.ultima_situacao === 'devolvido' && <Badge variant="destructive">devolvido</Badge>}
-          <span className="ml-auto text-xs text-muted-foreground">{i.paciente_nome} · {i.local ?? '—'} · {i.prescrito_por} · {hora(i.prescrito_em)}</span>
+          <span className="ml-auto text-xs text-tinta-sussurro">{i.paciente_nome} · {i.local ?? '—'} · {i.prescrito_por} · {hora(i.prescrito_em)}</span>
         </div>
         {i.peso_kg && <p className="text-xs text-tinta-apoio">Peso de referência: {i.peso_kg} kg</p>}
         {i.diluicao_texto && (
@@ -128,7 +128,7 @@ function Disponibilidade({ unidade }: { unidade: string }) {
     <div className="flex flex-col gap-2 text-sm">
       {erro && <p className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-critico">{erro}</p>}
       <Input placeholder="Filtrar medicamento" value={filtro} onChange={(e) => setFiltro(e.target.value)} />
-      <p className="text-xs text-muted-foreground">O selo é a comparação da quantidade com os limites que você define (crítico ≤ e em falta ≤). Em falta primeiro.</p>
+      <p className="text-xs text-tinta-sussurro">O selo é a comparação da quantidade com os limites que você define (crítico ≤ e em falta ≤). Em falta primeiro.</p>
       {visiveis.slice(0, 80).map((d) => <LinhaDisp key={d.medicamento_id} d={d} unidade={unidade} aoErro={setErro}
         aoMudar={() => void qc.invalidateQueries({ queryKey: ['disponibilidade'] })} />)}
     </div>
@@ -154,7 +154,7 @@ function LinhaDisp({ d, unidade, aoErro, aoMudar }: { d: Disp; unidade: string; 
         if (error) return aoErro(error.message)
         aoErro(null); aoMudar()
       }}>Salvar</Button>
-      <span className="text-xs text-muted-foreground">{hora(d.atualizado_em)}</span>
+      <span className="text-xs text-tinta-sussurro">{hora(d.atualizado_em)}</span>
     </div>
   )
 }
@@ -187,9 +187,9 @@ function Faltas({ unidade }: { unidade: string }) {
       {(lista.data ?? []).map((f) => (
         <div key={f.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-fio px-3 py-2">
           <span className="flex-1"><span className="font-medium">{f.medicamento?.principio_ativo}</span> <span className="text-tinta-apoio">{f.medicamento?.apresentacao}</span>
-            {f.observacao && <span className="block text-xs text-muted-foreground">{f.observacao}</span>}</span>
+            {f.observacao && <span className="block text-xs text-tinta-sussurro">{f.observacao}</span>}</span>
           <Badge variant={f.situacao === 'reposta' ? 'success' : f.situacao === 'em_cotacao' ? 'warning' : 'destructive'}>{SIT_FALTA[f.situacao]}</Badge>
-          <span className="text-xs text-muted-foreground">{hora(f.sinalizada_em)}</span>
+          <span className="text-xs text-tinta-sussurro">{hora(f.sinalizada_em)}</span>
           {f.situacao === 'registrada' && <Button size="xs" variant="outline" onClick={() => void avancar(f.id, 'em_cotacao')}>Em cotação</Button>}
           {f.situacao !== 'reposta' && <Button size="xs" onClick={() => void avancar(f.id, 'reposta')}>Reposta</Button>}
         </div>

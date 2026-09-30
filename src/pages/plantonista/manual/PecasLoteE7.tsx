@@ -20,7 +20,7 @@ export function Escolhas<T extends string>({ valor, opcoes, onChange }: { valor:
 export function ListaLivro({ itens }: { itens: { texto: string; pagina: string }[] }) {
   return (
     <ul className="list-disc pl-5 text-sm">
-      {itens.map((i) => <li key={i.texto}>{i.texto} <span className="text-muted-foreground">({i.pagina})</span></li>)}
+      {itens.map((i) => <li key={i.texto}>{i.texto} <span className="text-tinta-sussurro">({i.pagina})</span></li>)}
     </ul>
   )
 }

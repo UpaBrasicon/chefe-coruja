@@ -50,11 +50,16 @@ export function useRascunhoServidor(pacienteId: string | null | undefined, tipo:
   /** O rascunho do banco agora (para emitir exatamente ele). */
   const rascunhoId = useCallback(() => idRef.current, [])
 
-  /** Depois de emitir: o conteúdo atual já virou documento; não recriar rascunho com ele. */
+  /**
+   * Depois de emitir: o conteúdo atual já virou documento; não recriar
+   * rascunho com ele NEM com o formulário limpo que vem logo depois (o
+   * próximo conteúdo vira a nova referência, como ao abrir o paciente).
+   */
   const emitido = useCallback((atual: string) => {
     if (timer.current) clearTimeout(timer.current)
     ultimoEnviado.current = atual
     idRef.current = null
+    base.current = null
   }, [])
 
   /** "Limpar": o rascunho do banco é descartado (deixa de impedir a alta). */

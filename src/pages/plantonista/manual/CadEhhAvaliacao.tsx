@@ -18,16 +18,16 @@ const sn = (b: boolean | null) => (b === null ? 'não informado' : b ? 'sim' : '
 function Item({ rotulo, valor, detalhe }: { rotulo: string; valor: string; detalhe?: string }) {
   return (
     <div className="rounded-lg border px-3 py-2">
-      <div className="text-xs text-muted-foreground">{rotulo}</div>
+      <div className="text-xs text-tinta-sussurro">{rotulo}</div>
       <div className="text-base font-semibold tabular-nums">{valor}</div>
-      {detalhe && <div className="text-xs text-muted-foreground">{detalhe}</div>}
+      {detalhe && <div className="text-xs text-tinta-sussurro">{detalhe}</div>}
     </div>
   )
 }
 
 function Errata({ children }: { children: string }) {
   return (
-    <p className="text-xs text-muted-foreground">
+    <p className="text-xs text-tinta-sussurro">
       <Badge variant="outline" className="mr-1">errata</Badge>
       {children}
     </p>
@@ -101,25 +101,25 @@ export function CadEhhAvaliacao() {
             <div className="rounded-lg border p-3">
               <div className="font-medium">CAD (Fig. 2A)</div>
               {cad2024 ? (
-                <ul className="mt-1 text-muted-foreground">
+                <ul className="mt-1 text-tinta-sussurro">
                   <li>Glicose ≥ 200 mg/dL ou diabetes prévio: {sn(cad2024.hiperglicemiaOuDm)}</li>
                   <li>BHB ≥ 3,0 mmol/L ou cetonúria 2+: {sn(cad2024.cetose)}</li>
                   <li>pH &lt; 7,3 e/ou HCO₃ &lt; 18: {sn(cad2024.acidose)}</li>
-                  <li className="mt-1 font-medium text-foreground">Critérios do consenso preenchidos: {sn(cad2024.preenche)}{cad2024.euglicemica && ' — CAD euglicêmica (glicose < 200): dextrose desde o início'}</li>
+                  <li className="mt-1 font-medium text-tinta">Critérios do consenso preenchidos: {sn(cad2024.preenche)}{cad2024.euglicemica && ' — CAD euglicêmica (glicose < 200): dextrose desde o início'}</li>
                 </ul>
-              ) : <p className="text-muted-foreground">Informe glicemia, pH e bicarbonato.</p>}
+              ) : <p className="text-tinta-sussurro">Informe glicemia, pH e bicarbonato.</p>}
             </div>
             <div className="rounded-lg border p-3">
               <div className="font-medium">EHH (Fig. 2B) — os quatro juntos</div>
               {ehh2024 ? (
-                <ul className="mt-1 text-muted-foreground">
+                <ul className="mt-1 text-tinta-sussurro">
                   <li>Glicose ≥ 600 mg/dL: {sn(ehh2024.glicemia)}</li>
                   <li>Osmolalidade efetiva &gt; 300 (2 × Na medido + glicose/18 = {br(osm2024)}) ou total &gt; 320: {sn(ehh2024.hiperosmolar)}</li>
                   <li>BHB &lt; 3,0 ou cetonúria &lt; 2+: {sn(ehh2024.semCetoseSignificativa)}</li>
                   <li>pH ≥ 7,3 e HCO₃ ≥ 15: {sn(ehh2024.semAcidose)}</li>
-                  <li className="mt-1 font-medium text-foreground">Critérios do consenso preenchidos: {sn(ehh2024.preenche)}</li>
+                  <li className="mt-1 font-medium text-tinta">Critérios do consenso preenchidos: {sn(ehh2024.preenche)}</li>
                 </ul>
-              ) : <p className="text-muted-foreground">Informe glicemia, sódio, pH e bicarbonato.</p>}
+              ) : <p className="text-tinta-sussurro">Informe glicemia, sódio, pH e bicarbonato.</p>}
             </div>
           </div>
           <div className="grid gap-2 sm:grid-cols-4">
@@ -134,14 +134,14 @@ export function CadEhhAvaliacao() {
           </div>
           <p>
             Resolução da CAD (Fig. 4): pH venoso &gt; 7,3 ou HCO₃ &gt; 18 <strong>e</strong> cetona &lt; 0,6 mmol/L —{' '}
-            {resCad2024 ? <strong>{resCad2024.resolvida ? 'atinge' : 'não atinge'}</strong> : <span className="text-muted-foreground">informe pH, bicarbonato e cetona</span>}
+            {resCad2024 ? <strong>{resCad2024.resolvida ? 'atinge' : 'não atinge'}</strong> : <span className="text-tinta-sussurro">informe pH, bicarbonato e cetona</span>}
           </p>
           <p>
             Resolução do EHH (Fig. 4): osmolalidade &lt; 300, diurese &gt; 0,5 mL/kg/h e glicose &lt; 250 —{' '}
-            {resEhh2024 ? <strong>{resEhh2024.resolvido ? 'atinge' : 'não atinge'}</strong> : <span className="text-muted-foreground">informe sódio, glicemia e diurese</span>}
+            {resEhh2024 ? <strong>{resEhh2024.resolvido ? 'atinge' : 'não atinge'}</strong> : <span className="text-tinta-sussurro">informe sódio, glicemia e diurese</span>}
           </p>
-          <details className="text-muted-foreground">
-            <summary className="cursor-pointer text-foreground">Manual do HC × consenso 2024 — todas as diferenças</summary>
+          <details className="text-tinta-sussurro">
+            <summary className="cursor-pointer text-tinta">Manual do HC × consenso 2024 — todas as diferenças</summary>
             <ul className="mt-2 flex flex-col gap-1">
               {DIFERENCAS_2024.map((d) => <li key={d.tema}><strong>{d.tema}:</strong> manual — {d.manual}; consenso — {d.consenso}.</li>)}
             </ul>
@@ -174,24 +174,24 @@ export function CadEhhAvaliacao() {
           <div className="rounded-lg border p-3">
             <div className="font-medium">CAD</div>
             {cad ? (
-              <ul className="mt-1 text-muted-foreground">
+              <ul className="mt-1 text-tinta-sussurro">
                 <li>Glicemia &gt; 250: {sn(cad.glicemia)}</li>
                 <li>pH &lt; 7,3: {sn(cad.ph)}</li>
                 <li>Cetose: {sn(cad.cetose)}</li>
-                <li className="mt-1 font-medium text-foreground">Critérios do manual preenchidos: {sn(cad.preenche)}</li>
+                <li className="mt-1 font-medium text-tinta">Critérios do manual preenchidos: {sn(cad.preenche)}</li>
               </ul>
-            ) : <p className="text-muted-foreground">Informe glicemia e pH.</p>}
+            ) : <p className="text-tinta-sussurro">Informe glicemia e pH.</p>}
           </div>
           <div className="rounded-lg border p-3">
             <div className="font-medium">EHH</div>
             {ehh ? (
-              <ul className="mt-1 text-muted-foreground">
+              <ul className="mt-1 text-tinta-sussurro">
                 <li>Glicemia &gt; 600: {sn(ehh.glicemia)}</li>
                 <li>Osmolaridade efetiva &gt; 320: {sn(ehh.osmolaridade)}</li>
                 <li>pH &gt; 7,3: {sn(ehh.ph)}</li>
-                <li className="mt-1 font-medium text-foreground">Critérios do manual preenchidos: {sn(ehh.preenche)}</li>
+                <li className="mt-1 font-medium text-tinta">Critérios do manual preenchidos: {sn(ehh.preenche)}</li>
               </ul>
-            ) : <p className="text-muted-foreground">Informe glicemia, sódio e pH.</p>}
+            ) : <p className="text-tinta-sussurro">Informe glicemia, sódio e pH.</p>}
           </div>
         </CardContent>
       </Card>
@@ -218,7 +218,7 @@ export function CadEhhAvaliacao() {
               pH &gt; 7,3: {sn(res.ph)} · AG ≤ 12: {sn(res.anionGap)} · HCO3 ≥ 15: {sn(res.bicarbonato)} —{' '}
               <strong>{res.presentes} de 3</strong> {res.desligarBomba ? '(atinge o critério do manual)' : '(não atinge o critério do manual)'}
             </p>
-          ) : <p className="text-muted-foreground">Informe pH, sódio, cloro e bicarbonato.</p>}
+          ) : <p className="text-tinta-sussurro">Informe pH, sódio, cloro e bicarbonato.</p>}
         </CardContent>
       </Card>
     </ToolLayout>

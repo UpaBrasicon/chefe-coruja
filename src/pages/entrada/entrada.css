@@ -1,0 +1,78 @@
+/* Movimento da ENTRADA (login.html do protótipo, 173–217). O verde que veio
+   da landing recolhe para a coluna da marca; ao entrar, avança e engole o
+   formulário; ao voltar ao site, cobre a tela de novo. Sob
+   prefers-reduced-motion nada disso roda (a regra global de index.css zera as
+   durações, e as telas também pulam o véu). */
+
+/* Chegada vinda da landing: cobre tudo e recolhe até a coluna (46%). */
+.cc-veu-recolhe {
+  position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  background: var(--color-veu);
+  animation: cc-veu-recolhe 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes cc-veu-recolhe {
+  from { clip-path: inset(0 0 0 0); }
+  to { clip-path: inset(0 54% 0 0); }
+}
+
+/* Entrou: a coluna verde avança sobre o formulário. */
+.cc-veu-engole {
+  position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  background: var(--color-veu);
+  clip-path: inset(0 54% 0 0);
+  animation: cc-veu-engole 0.42s cubic-bezier(0.6, 0, 0.25, 1) forwards;
+}
+@keyframes cc-veu-engole {
+  from { clip-path: inset(0 54% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* Voltar ao site: o verde cobre da esquerda para a direita. */
+.cc-veu-cobre {
+  position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  background: var(--color-veu);
+  clip-path: inset(0 100% 0 0);
+  animation: cc-veu-cobre 0.68s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+}
+@keyframes cc-veu-cobre {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* Sem coluna lateral (abaixo de lg), o véu só aparece e some. */
+@media (max-width: 1023px) {
+  .cc-veu-recolhe { animation-name: cc-veu-some; }
+  .cc-veu-engole { clip-path: none; animation: cc-veu-aparece 0.34s ease forwards; }
+}
+@keyframes cc-veu-some { from { opacity: 1; } to { opacity: 0; } }
+@keyframes cc-veu-aparece { from { opacity: 0; } to { opacity: 1; } }
+
+/* A caixa do formulário sobe ao chegar e recua ao sair. */
+.cc-entra { opacity: 0; animation: cc-entra-sobe 0.5s 0.16s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+@keyframes cc-entra-sobe { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.cc-recua { animation: cc-entra-recua 0.3s cubic-bezier(0.5, 0, 0.75, 0) forwards; }
+@keyframes cc-entra-recua { to { opacity: 0; transform: translateY(-10px); } }
+
+/* Formas da coluna da marca. */
+.cc-barra-1 { animation: cc-desliza-barra 1.05s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.cc-barra-2 { animation: cc-desliza-barra 1.05s 0.64s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.cc-bolha-1 { animation: cc-cresce-bolha 1.2s 0.72s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes cc-desliza-barra {
+  from { opacity: 0; transform: rotate(-38deg) translateX(130px); }
+  to { opacity: 0.9; transform: rotate(-38deg) translateX(0); }
+}
+@keyframes cc-cresce-bolha {
+  from { opacity: 0; transform: scale(0.82); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* "Voltar ao site": a seta gira e o espaço abre ao passar o mouse. */
+.cc-voltar { transition: color 0.22s ease, gap 0.22s ease; }
+.cc-voltar svg { transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+.cc-voltar:hover { gap: 11px; }
+.cc-voltar:hover svg { transform: translateX(-3px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-entra { opacity: 1; animation: none; }
+  .cc-veu-recolhe, .cc-veu-engole, .cc-veu-cobre { display: none; }
+}

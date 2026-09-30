@@ -97,7 +97,7 @@ export function GaviaoPainel() {
         <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
           <ShieldCheck className="size-5" /> Gavião — Sentinela
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-tinta-sussurro">
           Fiscal de segurança e integridade da plataforma. Dados que o Gavião considera pertinentes.
         </p>
       </div>
@@ -154,7 +154,7 @@ export function GaviaoPainel() {
           {data?.relatorio ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-lg border p-3">
-                <div className="text-xs text-muted-foreground">Incidentes</div>
+                <div className="text-xs text-tinta-sussurro">Incidentes</div>
                 <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{data.relatorio.resumo.total_incidentes}</div>
                 <div className="mt-1 flex gap-1 text-[11px]">
                   <Badge className={SEVERIDADE_COR.critico}>C {data.relatorio.resumo.incidentes_por_severidade.critico}</Badge>
@@ -163,27 +163,27 @@ export function GaviaoPainel() {
                 </div>
               </div>
               <div className="rounded-lg border p-3">
-                <div className="text-xs text-muted-foreground">Por patrulha</div>
+                <div className="text-xs text-tinta-sussurro">Por patrulha</div>
                 <div className="text-sm font-medium">
                   dados {data.relatorio.resumo.incidentes_por_patrulha.dados} · conteúdo {data.relatorio.resumo.incidentes_por_patrulha.conteudo} · hermes {data.relatorio.resumo.incidentes_por_patrulha.hermes}
                 </div>
               </div>
               <div className="rounded-lg border p-3">
-                <div className="text-xs text-muted-foreground">Alertas de escala</div>
+                <div className="text-xs text-tinta-sussurro">Alertas de escala</div>
                 <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{data.relatorio.resumo.total_alertas}</div>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-[11px] text-tinta-sussurro">
                   {data.relatorio.resumo.alertas_por_status.novo} novos · {data.relatorio.resumo.alertas_por_status.visto} vistos
                 </div>
               </div>
               <div className="rounded-lg border p-3">
-                <div className="text-xs text-muted-foreground">Gerado em</div>
+                <div className="text-xs text-tinta-sussurro">Gerado em</div>
                 <div className="text-sm font-medium">
                   {new Date(data.relatorio.gerado_em).toLocaleString('pt-BR')}
                 </div>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Nenhum relatório semanal disponível ainda.</p>
+            <p className="text-sm text-tinta-sussurro">Nenhum relatório semanal disponível ainda.</p>
           )}
         </CardContent>
       </Card>
@@ -200,7 +200,7 @@ export function GaviaoPainel() {
               <div key={i.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
                 <div>
                   <div className="text-sm font-medium">{i.titulo}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-tinta-sussurro">
                     {i.patrulha} · {new Date(i.detectado_em).toLocaleString('pt-BR')}
                   </div>
                 </div>
@@ -219,14 +219,14 @@ export function GaviaoPainel() {
         </CardHeader>
         <CardContent>
           {alertas.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum alerta ativo no momento.</p>
+            <p className="text-sm text-tinta-sussurro">Nenhum alerta ativo no momento.</p>
           ) : (
             <div className="space-y-2">
               {alertas.map((a) => (
                 <div key={a.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
                   <div>
                     <div className="text-sm font-medium">{METRICA_LABEL[a.metrica] ?? a.metrica}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-tinta-sussurro">
                       {a.valor} (mediana da unidade: {a.mediana_unidade}) · {new Date(a.criado_em).toLocaleString('pt-BR')}
                     </div>
                   </div>

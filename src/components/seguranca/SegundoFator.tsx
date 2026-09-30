@@ -3,7 +3,7 @@ import { KeyRound, LogOut, ShieldCheck } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
-import { useSegundoFator } from '@/hooks/useSegundoFator'
+import { lerTentativasSegundoFator, MAX_TENTATIVAS_SEGUNDO_FATOR, useSegundoFator } from '@/hooks/useSegundoFator'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -11,6 +11,8 @@ import { Spinner } from '@/components/ui/spinner'
 // Segundo fator (ADR 0010): TOTP de aplicativo autenticador, pedido uma vez a
 // cada 24 horas e em todo login novo (o aal2 é da sessão). A exigência só
 // vale quando a chave `exigir_segundo_fator` estiver ligada no banco.
+// Não existe "confiar neste aparelho por 30 dias" (regra do protótipo): o
+// ADR 0010 a recusou — um celular roubado ficaria semanas com acesso clínico.
 
 function CampoCodigo({ valor, onChange, erro }: { valor: string; onChange: (v: string) => void; erro: string | null }) {
   return (
@@ -111,34 +113,149 @@ export function CadastroSegundoFator({ onPronto }: { onPronto: () => void }) {
   )
 }
 
-/** Confirmação diária: código do autenticador já cadastrado. */
-export function ConfirmarSegundoFator({ fatorId, onPronto }: { fatorId: string; onPronto: () => void }) {
+const horaCurta = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+
+function falta(ms: number) {
+  const s = Math.max(0, Math.ceil(ms / 1000))
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
+
+/**
+ * Confirmação do código do autenticador já cadastrado (login e portão da
+ * casca). Confere sozinho ao digitar o 6º dígito. Os erros são contados NO
+ * SERVIDOR (hook de verificação do Auth): 3 seguidos bloqueiam por 15 min, e
+ * durante o bloqueio nem o código certo passa — a tela só espelha isso.
+ */
+export function ConfirmarSegundoFator({
+  fatorId,
+  onPronto,
+  rotulo = 'Confirmar',
+}: {
+  fatorId: string
+  onPronto: () => void
+  rotulo?: string
+}) {
   const [codigo, setCodigo] = React.useState('')
   const [erro, setErro] = React.useState<string | null>(null)
   const [ocupado, setOcupado] = React.useState(false)
+  const [bloqueadoAte, setBloqueadoAte] = React.useState<Date | null>(null)
+  const [agora, setAgora] = React.useState(() => Date.now())
+  const enviando = React.useRef(false)
+  const campo = React.useRef<HTMLInputElement>(null)
 
-  async function confirmar(e: React.FormEvent) {
-    e.preventDefault()
-    if (codigo.length !== 6) return
-    setErro(null)
-    setOcupado(true)
-    const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId: fatorId, code: codigo })
-    setOcupado(false)
-    if (error) {
-      setErro('Código não confere. Confira o aplicativo autenticador e tente de novo.')
+  const bloqueado = !!bloqueadoAte && bloqueadoAte.getTime() > agora
+
+  // Quem chega com a conta já bloqueada vê o bloqueio antes de digitar.
+  React.useEffect(() => {
+    let vivo = true
+    void lerTentativasSegundoFator().then((t) => {
+      if (vivo && t?.bloqueadoAte && t.bloqueadoAte.getTime() > Date.now()) {
+        setBloqueadoAte(t.bloqueadoAte)
+        setErro(`Muitos códigos errados. Tente de novo depois de ${horaCurta(t.bloqueadoAte)}.`)
+      }
+    })
+    return () => {
+      vivo = false
+    }
+  }, [])
+
+  // Relógio do bloqueio: conta até o fim e libera o campo sozinho.
+  React.useEffect(() => {
+    if (!bloqueadoAte) return
+    const id = window.setInterval(() => {
+      const t = Date.now()
+      setAgora(t)
+      if (t >= bloqueadoAte.getTime()) {
+        window.clearInterval(id)
+        setBloqueadoAte(null)
+        setErro(null)
+        window.setTimeout(() => campo.current?.focus(), 0)
+      }
+    }, 1000)
+    return () => window.clearInterval(id)
+  }, [bloqueadoAte])
+
+  async function confirmar(valor: string) {
+    if (enviando.current || bloqueado) return
+    if (!/^\d{6}$/.test(valor)) {
+      setErro('Digite os 6 dígitos do código.')
       return
     }
-    onPronto()
+    enviando.current = true
+    setErro(null)
+    setOcupado(true)
+    const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId: fatorId, code: valor })
+    if (!error) {
+      onPronto()
+      return
+    }
+    const semRede = error.name === 'AuthRetryableFetchError'
+    const t = semRede ? null : await lerTentativasSegundoFator()
+    enviando.current = false
+    setOcupado(false)
+    if (semRede) {
+      setErro('Sem conexão com o servidor. Confira a rede e tente de novo.')
+    } else if (t?.bloqueadoAte && t.bloqueadoAte.getTime() > Date.now()) {
+      setAgora(Date.now())
+      setBloqueadoAte(t.bloqueadoAte)
+      setCodigo('')
+      setErro(`Três códigos errados. Por segurança, o código fica bloqueado até ${horaCurta(t.bloqueadoAte)}.`)
+      return
+    } else if (t && t.restantes < MAX_TENTATIVAS_SEGUNDO_FATOR) {
+      setErro(t.restantes === 1 ? 'Código não confere. Resta 1 tentativa.' : `Código não confere. Restam ${t.restantes} tentativas.`)
+    } else {
+      setErro('Código não confere. Confira o aplicativo autenticador e tente de novo.')
+    }
+    window.setTimeout(() => campo.current?.select(), 0)
   }
 
   return (
-    <form onSubmit={confirmar} className="flex flex-col gap-4">
-      <CampoCodigo valor={codigo} onChange={setCodigo} erro={erro} />
-      <div>
-        <Button type="submit" disabled={ocupado || codigo.length !== 6}>
-          {ocupado ? <Spinner /> : <ShieldCheck />} Confirmar
-        </Button>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        void confirmar(codigo)
+      }}
+      noValidate
+      className="flex flex-col gap-3.5"
+    >
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="codigo-2fa" className="text-apoio font-medium text-grafite">Código de 6 dígitos</label>
+        {/* Sem placeholder: "000000" legível se confunde com valor digitado. */}
+        <input
+          ref={campo}
+          id="codigo-2fa"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={6}
+          autoFocus
+          disabled={bloqueado}
+          readOnly={ocupado}
+          value={codigo}
+          onChange={(e) => {
+            const v = e.target.value.replace(/\D/g, '').slice(0, 6)
+            setCodigo(v)
+            if (erro && v.length < 6 && !bloqueado) setErro(null)
+            if (v.length === 6) void confirmar(v)
+          }}
+          aria-invalid={!!erro}
+          aria-describedby="codigo-2fa-ajuda"
+          className="min-h-[54px] rounded-controle border border-fio bg-campo text-center indent-[0.26em] text-[26px] font-semibold tracking-[0.26em] text-tinta tabular outline-none focus-visible:border-marca disabled:bg-trilha disabled:text-tinta-sussurro"
+        />
+        <span id="codigo-2fa-ajuda" className="text-rotulo text-tinta-sussurro">
+          {bloqueado && bloqueadoAte
+            ? `Liberado em ${falta(bloqueadoAte.getTime() - agora)}.`
+            : 'O código muda a cada 30 segundos no aplicativo; confere sozinho ao digitar o 6º dígito.'}
+        </span>
+        {erro && <p role="alert" className="mt-1 text-controle text-pretty text-critico">{erro}</p>}
       </div>
+      <button
+        type="submit"
+        disabled={ocupado || bloqueado}
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-controle bg-acao-pressionada text-corpo font-medium text-white hover:bg-acao disabled:opacity-60"
+      >
+        {ocupado ? <Spinner /> : <ShieldCheck className="size-4" aria-hidden />}
+        {ocupado ? 'Conferindo…' : rotulo}
+      </button>
     </form>
   )
 }

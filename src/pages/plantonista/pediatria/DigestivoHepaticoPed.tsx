@@ -94,7 +94,7 @@ export function DigestivoHepaticoPed() {
             casas={0}
             texto="restrita a 85 a 95%"
             pagina="p. 361"
-            extra={oferta && <span className="text-muted-foreground"> · {faixaBr([oferta[0] / 24, oferta[1] / 24], 0)} mL/h</span>}
+            extra={oferta && <span className="text-tinta-sussurro"> · {faixaBr([oferta[0] / 24, oferta[1] / 24], 0)} mL/h</span>}
           />
           {VITAMINA_K && <LinhaBolusApendice b={VITAMINA_K} peso={p.peso} idadeMeses={p.anos * 12 + p.meses} />}
           <Nota>Vitamina K precoce na coagulopatia da IHA (p. 363); dose do Apêndice (falência hepática, p. 910).</Nota>

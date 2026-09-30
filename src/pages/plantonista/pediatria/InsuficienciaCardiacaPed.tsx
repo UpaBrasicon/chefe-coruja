@@ -71,14 +71,14 @@ export function InsuficienciaCardiacaPed() {
 
       <Bloco titulo="Classificação funcional de Ross (Tabela 2, p. 232)">
         <TabelaLivro cabecalho={['Classe', 'Descrição']} linhas={ROSS.map(([x, y]) => [x, y])} largura={360} />
-        <p className="text-muted-foreground">Sem correlação clara com o prognóstico (p. 232).</p>
+        <p className="text-tinta-sussurro">Sem correlação clara com o prognóstico (p. 232).</p>
       </Bloco>
       <Bloco titulo="Estadiamento ISHLT (Tabela 3, p. 232)">
         <TabelaLivro cabecalho={['Estágio', 'Interpretação']} linhas={ISHLT.map(([x, y]) => [x, y])} largura={360} />
       </Bloco>
       <Bloco titulo="Do capítulo">
         {REFERENCIAS_IC.map((r) => (
-          <p key={r.texto} className="text-muted-foreground">
+          <p key={r.texto} className="text-tinta-sussurro">
             {r.texto} ({r.pagina})
           </p>
         ))}

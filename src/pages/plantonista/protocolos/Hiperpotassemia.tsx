@@ -19,7 +19,7 @@ function Escolha<T extends string>({ titulo, opcoes, valor, set }: { titulo: str
             type="button"
             aria-pressed={valor === v}
             onClick={() => set(v)}
-            className={cn('rounded-lg border px-3 py-2 text-sm', valor === v ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted/50')}
+            className={cn('rounded-lg border px-3 py-2 text-sm', valor === v ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')}
           >
             {rotulo}
           </button>
@@ -69,7 +69,7 @@ export function Hiperpotassemia() {
 
       {!r && (
         <Card>
-          <CardContent className="pt-6 text-sm text-muted-foreground">
+          <CardContent className="pt-6 text-sm text-tinta-sussurro">
             Sem o potássio sérico não há faixa a classificar. O ECG e os sintomas mandam na urgência, mas o número define a faixa.
           </CardContent>
         </Card>
@@ -77,7 +77,7 @@ export function Hiperpotassemia() {
 
       {r && (
         <>
-          <Card className={r.gravidade === 2 ? 'border-critico/30' : r.gravidade === 1 ? 'border-atencao/30' : 'border-primary'}>
+          <Card className={r.gravidade === 2 ? 'border-critico/30' : r.gravidade === 1 ? 'border-atencao/30' : 'border-acao'}>
             <CardHeader>
               <CardTitle className="flex flex-wrap items-center gap-3 text-base">
                 Gravidade <Badge className="text-base">{r.faixa}</Badge>
@@ -106,7 +106,7 @@ export function Hiperpotassemia() {
                       <span className="font-medium">{l.item}</span>
                       {l.quando && <Badge variant="secondary">{l.quando}</Badge>}
                     </div>
-                    <p className="mt-1 text-muted-foreground">{l.texto}</p>
+                    <p className="mt-1 text-tinta-sussurro">{l.texto}</p>
                   </div>
                 ))}
               </CardContent>
@@ -127,10 +127,10 @@ export function Hiperpotassemia() {
           {DIVERGENCIA_MANUAL_HC.itens.map((l) => (
             <div key={l.item} className="rounded-lg border px-3 py-2">
               <span className="font-medium">{l.item}: </span>
-              <span className="text-muted-foreground">{l.texto} ({l.pagina})</span>
+              <span className="text-tinta-sussurro">{l.texto} ({l.pagina})</span>
             </div>
           ))}
-          <ul className="list-disc pl-5 text-muted-foreground">
+          <ul className="list-disc pl-5 text-tinta-sussurro">
             {DIVERGENCIA_MANUAL_HC.diferencas.map((d) => <li key={d}>{d}</li>)}
           </ul>
         </CardContent>

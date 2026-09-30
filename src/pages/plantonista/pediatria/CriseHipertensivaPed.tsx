@@ -42,7 +42,7 @@ export function CriseHipertensivaPed() {
         </div>
         {faixa === 'crianca' && (
           <>
-            <p className="text-muted-foreground">1 a &lt; 13 anos: percentis para sexo, idade e altura nas tabelas da AAP (p. 272).</p>
+            <p className="text-tinta-sussurro">1 a &lt; 13 anos: percentis para sexo, idade e altura nas tabelas da AAP (p. 272).</p>
             <div className="grid gap-3 sm:grid-cols-4">
               <NumberField id="ha-p90s" label="p90 sistólica" unit="mmHg" value={pc.p90s} onChange={(x) => setPc({ ...pc, p90s: x })} min={0} />
               <NumberField id="ha-p95s" label="p95 sistólica" unit="mmHg" value={pc.p95s} onChange={(x) => setPc({ ...pc, p95s: x })} min={0} />
@@ -51,8 +51,8 @@ export function CriseHipertensivaPed() {
             </div>
           </>
         )}
-        {faixa === 'lactente' && <p className="text-muted-foreground">A Tabela 1 começa em 1 ano: para menores de 1 ano (e RN) o livro não classifica.</p>}
-        {faixa === 'adolescente' && <p className="text-muted-foreground">≥ 13 anos: cortes fixos (normal &lt; 120 × 80; elevada 120–129 × &lt; 80; estágio 1 130–139 × 80–89; estágio 2 ≥ 140 × 90).</p>}
+        {faixa === 'lactente' && <p className="text-tinta-sussurro">A Tabela 1 começa em 1 ano: para menores de 1 ano (e RN) o livro não classifica.</p>}
+        {faixa === 'adolescente' && <p className="text-tinta-sussurro">≥ 13 anos: cortes fixos (normal &lt; 120 × 80; elevada 120–129 × &lt; 80; estágio 1 130–139 × 80–89; estágio 2 ≥ 140 × 90).</p>}
         {estagio && (
           <p>
             Pela Tabela 1: <strong>{ROTULO_ESTAGIO[estagio]}</strong> (sistólica e diastólica avaliadas em separado; vale a mais alta).
@@ -96,7 +96,7 @@ export function CriseHipertensivaPed() {
       </Bloco>
       <Bloco titulo="Do capítulo">
         {REFERENCIAS_CRISE_HA.map((r) => (
-          <p key={r.texto} className="text-muted-foreground">
+          <p key={r.texto} className="text-tinta-sussurro">
             {r.texto} ({r.pagina})
           </p>
         ))}

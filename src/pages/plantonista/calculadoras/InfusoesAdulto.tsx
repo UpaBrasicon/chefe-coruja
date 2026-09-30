@@ -49,7 +49,7 @@ function Linha({ i, peso }: { i: InfusaoAdulto; peso: number }) {
           <Input id={`${i.id}-mlh`} inputMode="decimal" value={mlh} onChange={(e) => setMlh(e.target.value)} />
           <p className="tabular-nums">{semPeso ? 'Informe o peso.' : doseDaBomba === null ? '—' : <strong>{br(doseDaBomba, 3)} {u}</strong>}</p>
         </div>
-        <p className="text-muted-foreground md:col-span-2">
+        <p className="text-tinta-sussurro md:col-span-2">
           Manual HCFMUSP, {i.pagina}.
           {i.errata && <><Badge variant="outline" className="mx-1">errata</Badge>{i.errata}</>}
         </p>
@@ -81,7 +81,7 @@ export function InfusoesAdulto({ grupo }: { grupo: InfusaoAdulto['grupo'] }) {
           </CardHeader>
           <CardContent>
             <ul className="flex flex-col gap-2 text-sm">
-              {NOTAS_PADIS_2025.map((n) => <li key={n.tema}><span className="font-medium">{n.tema}:</span> {n.texto} <span className="text-muted-foreground">({n.forca})</span></li>)}
+              {NOTAS_PADIS_2025.map((n) => <li key={n.tema}><span className="font-medium">{n.tema}:</span> {n.texto} <span className="text-tinta-sussurro">({n.forca})</span></li>)}
             </ul>
           </CardContent>
         </Card>

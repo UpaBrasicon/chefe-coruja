@@ -32,15 +32,15 @@ export function LiseTumoralAdulto() {
       <CampoPeso id="slt-peso" peso={peso} onChange={setPeso}>
         <NumberField id="slt-sc" label="Superfície corporal" unit="m²" value={sc} onChange={setSc} min={0} step={0.01} />
       </CampoPeso>
-      <p className="text-sm text-muted-foreground">O livro não traz fórmula de superfície corporal: informe a SC já calculada.</p>
+      <p className="text-sm text-tinta-sussurro">O livro não traz fórmula de superfície corporal: informe a SC já calculada.</p>
 
       <Bloco titulo="Risco — Tabela 2 (p. 1100–1102)">
         {RISCO_SLT.map((r) => (
           <div key={r.neoplasia} className="rounded-lg border px-3 py-2 text-sm">
             <span className="font-medium">{r.neoplasia}</span>
-            <p><span className="text-muted-foreground">Baixo:</span> {r.baixo}</p>
-            <p><span className="text-muted-foreground">Moderado:</span> {r.moderado}</p>
-            <p><span className="text-muted-foreground">Alto:</span> {r.alto}</p>
+            <p><span className="text-tinta-sussurro">Baixo:</span> {r.baixo}</p>
+            <p><span className="text-tinta-sussurro">Moderado:</span> {r.moderado}</p>
+            <p><span className="text-tinta-sussurro">Alto:</span> {r.alto}</p>
           </div>
         ))}
       </Bloco>

@@ -51,7 +51,7 @@ export function EmergenciaHipertensivaAdulto() {
           <div className="grid gap-4 sm:grid-cols-3">
             <NumberField id="eh-pam" label="PAM atual" unit="mmHg" value={pam} onChange={setPam} step={1} />
             <Resultado rotulo={`PAM após redução de ${faixaBr(meta.reducaoPam, 0)}%`} valor={alvoPam ? `${faixaBr(alvoPam, 0)} mmHg` : 'informe a PAM'} />
-            <p className="text-xs text-muted-foreground sm:col-span-1">O capítulo não traz fórmula da PAM: use a PAM do monitor ou calculada.</p>
+            <p className="text-xs text-tinta-sussurro sm:col-span-1">O capítulo não traz fórmula da PAM: use a PAM do monitor ou calculada.</p>
           </div>
         )}
       </Bloco>
@@ -62,7 +62,7 @@ export function EmergenciaHipertensivaAdulto() {
           <Resultado rotulo="Minutos a 1 h (−20 a 25%)" valor={geral ? `PAS ${faixaBr(geral.pasEmAte1h, 0)} mmHg` : 'informe a PAS'} />
           <Resultado rotulo="Próximas 2 a 6 h" valor="160/100 mmHg" />
         </div>
-        <p className="text-sm text-muted-foreground">Nas 24 a 48 h seguintes, níveis normais.</p>
+        <p className="text-sm text-tinta-sussurro">Nas 24 a 48 h seguintes, níveis normais.</p>
       </Bloco>
 
       <CampoPeso id="eh-peso" peso={peso} onChange={setPeso} />
@@ -103,26 +103,26 @@ export function EmergenciaHipertensivaAdulto() {
         <div className="grid gap-4 sm:grid-cols-3">
           <NumberField id="eh-hidra" label="Hidralazina já feita em 24 h" unit="mg" value={hidraFeito} onChange={setHidraFeito} step={5} />
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-tinta-sussurro">
           Labetalol, nicardipina e clevidipina não estão na Tabela 3; o livro registra que labetalol e nicardipina EV não estão disponíveis no Brasil (cap. 38, p. 519).
         </p>
       </Bloco>
 
       <Bloco titulo="Errata">
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">{ERRATA_EH.map((e) => <li key={e}>{e}</li>)}</ul>
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{ERRATA_EH.map((e) => <li key={e}>{e}</li>)}</ul>
       </Bloco>
       <Bloco titulo="Diretriz Brasileira de Hipertensão 2025 (cap. 11) — ao lado do manual" descricao={`PDF lido. Não disponíveis no Brasil segundo a própria diretriz: ${INDISPONIVEIS_BRASIL_DBHA.join(', ')} — nenhum entra na ferramenta.`}>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Situação</th><th className="pr-3 pb-2">DBHA 2025</th><th className="pr-3 pb-2">Força</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
-            <tbody>{DBHA_2025_ALVOS.map((d) => <tr key={d.tema} className="border-t"><td className="pr-3 py-2 font-medium">{d.tema}</td><td className="pr-3 py-2">{d.dbha}</td><td className="pr-3 py-2">{d.forca}</td><td className="pr-3 py-2 text-muted-foreground">{d.livro}</td></tr>)}</tbody>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Situação</th><th className="pr-3 pb-2">DBHA 2025</th><th className="pr-3 pb-2">Força</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
+            <tbody>{DBHA_2025_ALVOS.map((d) => <tr key={d.tema} className="border-t"><td className="pr-3 py-2 font-medium">{d.tema}</td><td className="pr-3 py-2">{d.dbha}</td><td className="pr-3 py-2">{d.forca}</td><td className="pr-3 py-2 text-tinta-sussurro">{d.livro}</td></tr>)}</tbody>
           </table>
         </div>
         {QUADRO_11_4.map((q) => <LinhaManual key={q.droga} nome={`${q.droga} (Quadro 11.4)`} texto={`${q.dose} — ${q.indicacao}`} pagina="DBHA 2025, p. 101–102" errata={q.errata} />)}
         <LinhaManual nome="Esmolol pela DBHA 2025" texto="ataque 500 µg/kg; 25–50 µg/kg/min, +25 a cada 10–20 min, máx. 300 µg/kg/min" pagina="DBHA 2025, Quadro 11.4"
           conta={esm25 ? <>ataque <strong>{fmtE(esm25.ataqueMg)} mg</strong> · início {fmtE(esm25.manutInicialUgMin[0], 0)}–{fmtE(esm25.manutInicialUgMin[1], 0)} µg/min · máx. {fmtE(esm25.maximoUgMin, 0)} µg/min</> : 'informe o peso'} />
         <LinhaManual nome="Metoprolol IV" texto={`${METOPROLOL_EH_2025.doseMg} mg a cada ${METOPROLOL_EH_2025.intervaloMin} min até ${METOPROLOL_EH_2025.maximoMg} mg (${METOPROLOL_EH_2025.doses} doses)`} pagina={METOPROLOL_EH_2025.pagina} />
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_EH_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_EH_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

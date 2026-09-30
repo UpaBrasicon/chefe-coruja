@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -14,10 +14,14 @@ import { Spinner } from '@/components/ui/spinner'
 
 // ── Telas fora do shell: carregadas sob demanda ───────────────────────────────
 const Login = lazy(() => import('@/pages/Login').then((m) => ({ default: m.Login })))
+const RecuperarSenha = lazy(() => import('@/pages/RecuperarSenha'))
 const Cadastro = lazy(() => import('@/pages/Cadastro').then((m) => ({ default: m.Cadastro })))
 const PapelEmPreparo = lazy(() => import('@/pages/PapelEmPreparo'))
 const Farmacia = lazy(() => import('@/pages/farmacia/Farmacia'))
 const Checagem = lazy(() => import('@/pages/enfermagem/Checagem'))
+const ProntoSocorroEnfermagem = lazy(() => import('@/pages/enfermagem/ProntoSocorroEnfermagem'))
+const InternacaoEnfermagem = lazy(() => import('@/pages/enfermagem/InternacaoEnfermagem'))
+const InicioEnfermagem = lazy(() => import('@/pages/enfermagem/InicioEnfermagem'))
 const Recepcao = lazy(() => import('@/pages/recepcao/Recepcao'))
 const Triagem = lazy(() => import('@/pages/enfermagem/Triagem'))
 const AtendimentoPorta = lazy(() => import('@/pages/plantao/AtendimentoPorta'))
@@ -54,10 +58,15 @@ const ProntuarioLeitura = lazy(() => import('@/pages/prontuario/ProntuarioLeitur
 const PainelGestor = lazy(() => import('@/pages/gestor/PainelGestor'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
 const Teleinterconsulta = lazy(() => import('@/pages/telemedicina/Teleinterconsulta'))
+const Pareceres = lazy(() => import('@/pages/parecer/Pareceres'))
 const MeuPlantao = lazy(() => import('@/pages/MeuPlantao'))
 const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome'))
 const SectionHome = lazy(() => import('@/pages/plantonista/SectionHome'))
 const ToolRouter = lazy(() => import('@/pages/plantonista/ToolRouter').then((m) => ({ default: m.ToolRouter })))
+const PreferenciasPrescricao = lazy(() => import('@/pages/PreferenciasPrescricao'))
+const NotificacaoCompulsoria = lazy(() => import('@/pages/notificacao/NotificacaoCompulsoria'))
+const PendenciasPep = lazy(() => import('@/pages/prontuario/PendenciasPep'))
+const ImpressaoProntuario = lazy(() => import('@/pages/prontuario/ImpressaoProntuario'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -98,6 +107,22 @@ function RotaMensagens() {
   return temChat ? null : <Redirecionar para="/" />
 }
 
+/**
+ * Link de recuperação de senha que caiu na raiz (retorno não autorizado no
+ * Auth cai no site_url): o index.html já marcou a chegada; leva à troca de
+ * senha em vez de abrir o app com a sessão de recuperação.
+ */
+function DesvioRecuperacao({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation()
+  let marca = false
+  try {
+    marca = sessionStorage.getItem('supabase_recovery') === '1'
+  } catch {
+    /* sem sessionStorage, sem desvio */
+  }
+  return marca && pathname === '/' ? <Navigate to="/recuperar-senha" replace /> : <>{children}</>
+}
+
 function Carregando() {
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -113,8 +138,10 @@ export default function App() {
         <BrowserRouter>
           <ErroBoundary>
             <Suspense fallback={<Carregando />}>
+              <DesvioRecuperacao>
               <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/recuperar-senha" element={<RecuperarSenha />} />
                 <Route path="/cadastro" element={<Cadastro />} />
                 <Route path="/r/:tipo/:token" element={<LinkReceita />} />
                 <Route path="/painel/:token" element={<PainelChamada />} />
@@ -140,6 +167,20 @@ export default function App() {
                       {/* Enfermagem: checagem da prescrição (Fase 4.6) */}
                       <Route element={<RequireRole papeis={['enfermeiro', 'tecnico_enfermagem']} />}>
                         <Route path="/checagem" element={<Checagem />} />
+                        {/* Porte: Pronto Socorro e Internação da enfermagem (com a passagem de plantão) */}
+                        <Route path="/enfermagem" element={<InicioEnfermagem />} />
+                        <Route path="/enfermagem/pronto-socorro" element={<ProntoSocorroEnfermagem />} />
+                        <Route path="/enfermagem/internacao" element={<InternacaoEnfermagem />} />
+                      </Route>
+
+                      {/* Notificação compulsória (LNNC): o banco confere plantão e papel */}
+                      <Route element={<RequireRole papeis={['plantonista', 'enfermeiro', 'gestor']} />}>
+                        <Route path="/notificacao-compulsoria" element={<NotificacaoCompulsoria />} />
+                      </Route>
+
+                      {/* Avisos: de quem trabalha no plantão (a lista é do próprio perfil) */}
+                      <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin', 'enfermeiro', 'tecnico_enfermagem']} />}>
+                        <Route path="/notificacoes" element={<Notificacoes />} />
                       </Route>
 
                       {/* Farmacêutico: validação, disponibilidade, faltas e diluição padrão (Fase 4.5/4.9) */}
@@ -150,6 +191,9 @@ export default function App() {
                       {/* Atendimento médico da porta: SOAP, reclassificação e desfecho */}
                       <Route element={<RequireRole papeis={['plantonista']} />}>
                         <Route path="/atendimento" element={<AtendimentoPorta />} />
+                        {/* PEP: rascunhos a emitir, impeditivos de alta e cópia do prontuário (onda 6) */}
+                        <Route path="/pendencias-pep" element={<PendenciasPep />} />
+                        <Route path="/impressao-prontuario" element={<ImpressaoProntuario />} />
                       </Route>
 
                       {/* Classificação de risco é do enfermeiro (CONTEXT.md) */}
@@ -175,6 +219,11 @@ export default function App() {
                       {/* Fase 7: teleinterconsulta — presencial solicita, telemedicina responde */}
                       <Route element={<RequireRole papeis={['plantonista', 'gestor', 'telemedicina']} />}>
                         <Route path="/teleinterconsulta" element={<Teleinterconsulta />} />
+                      </Route>
+
+                      {/* Porte, onda 4: parecer médico — fila do especialista (o banco confere a especialidade) */}
+                      <Route element={<RequireRole papeis={['plantonista', 'gestor', 'telemedicina']} />}>
+                        <Route path="/pareceres" element={<Pareceres />} />
                       </Route>
 
                       {/* Fase 6: painel e auditoria são do GESTOR; o administrador vê só agregado */}
@@ -206,7 +255,6 @@ export default function App() {
                         <Route path="/plantonista/:section" element={<SectionHome />} />
                         <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
                         <Route path="/agenda" element={<AgendaGrupo />} />
-                        <Route path="/notificacoes" element={<Notificacoes />} />
                         <Route path="/perfil" element={<Perfil />} />
                         {/* Responsável técnico (nomeação da rede, não papel da unidade): o banco confere */}
                         <Route path="/revisao-clinica" element={<RevisaoClinica />} />
@@ -271,6 +319,8 @@ export default function App() {
                         <Route path="/plantao" element={<PlantaoHome />} />
                         <Route path="/plantao/:secao" element={<PlantaoSectionHome />} />
                         <Route path="/plantao/:secao/:tool" element={<PlantaoToolRouter />} />
+                        {/* Favoritos de prescrição pessoais (D6); o link fica no menu do usuário */}
+                        <Route path="/preferencias-prescricao" element={<PreferenciasPrescricao />} />
                       </Route>
                     </Route>
 
@@ -279,6 +329,7 @@ export default function App() {
                   </Route>
                 </Route>
               </Routes>
+              </DesvioRecuperacao>
             </Suspense>
           </ErroBoundary>
         </BrowserRouter>

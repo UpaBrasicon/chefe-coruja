@@ -46,7 +46,7 @@ export function InsuficienciaAdrenalPed() {
             casas={1}
             texto="75 a 100 mg/m²/dia EV, dividida a cada 6 horas"
             pagina="p. 530"
-            extra={man && <span className="text-muted-foreground"> · {faixaBr(man.porDose, 1)} mg/dose</span>}
+            extra={man && <span className="text-tinta-sussurro"> · {faixaBr(man.porDose, 1)} mg/dose</span>}
           />
           <LinhaFaixa nome="Redução gradual" faixa={hidrocortisonaReducao(sc)} unidade="mg/dia" casas={1} texto="reduzir para 75 e até 50 mg/m²/dia conforme a evolução; então pode iniciar VO" pagina="p. 530" />
           {calc && <LinhaFaixa nome="Expansão com SF 0,9%" faixa={expansaoAdrenalMl(p.peso)} unidade="mL" casas={0} texto="20 mL/kg a cada 20 minutos até remissão do choque" pagina="p. 530" />}

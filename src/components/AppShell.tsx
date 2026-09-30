@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Activity, LogOut, MessageSquare, Rows3, Search, UserRound } from 'lucide-react'
+import { Activity, Building2 } from 'lucide-react'
 import * as React from 'react'
 import { useQuery } from '@tanstack/react-query'
 
@@ -9,29 +9,47 @@ import { PAPEIS_POR_ESCALA, PAPEL_LABEL } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { DesfazerProvider } from '@/contexts/DesfazerContext'
+import { AvisosFlutuantesProvider, useAvisosFlutuantes } from '@/contexts/AvisosFlutuantesContext'
 import { usePlantao } from '@/hooks/usePlantao'
 import { useFilaOffline } from '@/hooks/useFilaOffline'
 import { useWebPush } from '@/hooks/useWebPush'
+import { useBanners } from '@/hooks/useBanners'
 import { useChatRealtimeGlobal, useTotalNaoLidas } from '@/hooks/useChat'
 import { ChatDrawer } from '@/components/chat/ChatDrawer'
+import { ChatFab } from '@/components/chat/ChatFab'
+import { useAvisoDeMensagem } from '@/components/chat/useAvisoDeMensagem'
 import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
 import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
 import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
 import { Spinner } from '@/components/ui/spinner'
 import { ErroBoundary } from '@/components/ErroBoundary'
-import { itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
+import { ABAS_ESTREITAS_PLANTONISTA, inicioDoPapel, itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
 import { useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
 import { Paleta } from '@/components/casca/Paleta'
 import { usePaleta } from '@/components/casca/usePaleta'
+import { Lateral } from '@/components/casca/Lateral'
+import { MenuUsuario } from '@/components/casca/MenuUsuario'
+import { DialogoSaida, SessaoEncerrada, VeuSaida } from '@/components/casca/Saida'
+import { TelaBloqueada } from '@/components/casca/Bloqueio'
+import { useBloqueioOcioso } from '@/components/casca/useBloqueioOcioso'
+import { ContextoTopo, FitaDoSinal, Topo, TopoEstreito } from '@/components/casca/Topo'
+import { useNotasNav } from '@/components/casca/useNotasNav'
+import { usePendenciasSaida } from '@/components/casca/usePendenciasSaida'
+import { useSessaoPosPlantao } from '@/components/casca/useSessaoPosPlantao'
+import { useSinal } from '@/components/casca/useSinal'
 import { PortaoSegundoFator } from '@/components/seguranca/SegundoFator'
 import { useSegundoFator } from '@/hooks/useSegundoFator'
+import type { Papel } from '@/types/database'
 
-// A casca do Monitor de Cabeceira (design_handoff/telas/09-comum-casca.md):
-// sidebar branca de 248px, topbar de 60px imóvel, coluna de conteúdo de 896px;
-// abaixo de 768px a navegação vira barra fixa inferior. Densidade compacta,
-// paleta Ctrl+K, fita "sem sinal" e régua de desfazer são globais.
+// A casca do Monitor de Cabeceira (P/index.html 882–1366): lateral recolhida
+// em ícones que abre por cima, topbar imóvel com o contexto do papel, pilha de
+// avisos, régua de desfazer, chat em botão flutuante, paleta Ctrl+K e a fita
+// do sinal. Abaixo de 1024px o plantonista ganha o topo próprio com quatro
+// abas-bloco; os demais papéis, abaixo de 768px, a barra fixa inferior.
 
 const CHAVE_DENSIDADE = 'chefe-coruja:densidade'
+const MARCA_ENTRADA = 'cc-entrou'
+const SAIDA_MS = 430
 
 function useDensidade() {
   const [compacto, setCompacto] = React.useState(() => {
@@ -54,37 +72,19 @@ function useDensidade() {
   return { compacto, alternar }
 }
 
-/** Sem conexão: a fita vale para todos os papéis, inclusive o gestor. */
-function useConectado() {
-  const [online, setOnline] = React.useState(() => navigator.onLine)
+function useLarguraAte(px: number) {
+  const consulta = `(max-width: ${px}px)`
+  const [casa, setCasa] = React.useState(() => window.matchMedia(consulta).matches)
   React.useEffect(() => {
-    const on = () => setOnline(true)
-    const off = () => setOnline(false)
-    window.addEventListener('online', on)
-    window.addEventListener('offline', off)
-    return () => {
-      window.removeEventListener('online', on)
-      window.removeEventListener('offline', off)
-    }
-  }, [])
-  return online
+    const mq = window.matchMedia(consulta)
+    const on = () => setCasa(mq.matches)
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [consulta])
+  return casa
 }
 
-function Marca({ papel }: { papel?: string }) {
-  return (
-    <span className="flex min-w-0 items-center gap-2.5">
-      <span className="grid size-7 shrink-0 place-items-center rounded-controle-sm bg-marca text-[11px] font-semibold text-white" aria-hidden>
-        CC
-      </span>
-      <span className="flex min-w-0 flex-col leading-tight">
-        <span className="text-corpo font-semibold tracking-[-0.01em] text-tinta">Chefe Coruja</span>
-        {papel && <span className="truncate text-rotulo text-tinta-sussurro">{papel}</span>}
-      </span>
-    </span>
-  )
-}
-
-function ItemLateral({ item }: { item: ItemNav }) {
+function ItemInferior({ item, nota }: { item: ItemNav; nota?: number }) {
   const Icone = item.icone
   return (
     <NavLink
@@ -92,80 +92,93 @@ function ItemLateral({ item }: { item: ItemNav }) {
       end={item.exato}
       className={({ isActive }) =>
         cn(
-          'flex items-center gap-2.5 rounded-controle px-3 py-[9px] text-corpo transition-colors',
-          isActive ? 'bg-marca/10 font-semibold text-acao' : 'text-tinta-apoio hover:bg-campo hover:text-tinta',
-        )
-      }
-    >
-      <Icone className="size-[17px] shrink-0" aria-hidden />
-      <span className="truncate">{item.rotulo}</span>
-    </NavLink>
-  )
-}
-
-function ItemInferior({ item }: { item: ItemNav }) {
-  const Icone = item.icone
-  return (
-    <NavLink
-      to={item.to}
-      end={item.exato}
-      className={({ isActive }) =>
-        cn(
-          'flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 rounded-container px-1 text-rotulo transition-colors',
+          'relative flex min-h-[52px] min-w-[64px] flex-1 flex-col items-center justify-center gap-1 rounded-container px-0.5 py-1.5 text-rotulo leading-[1.15] transition-colors',
           isActive ? 'bg-marca/10 font-semibold text-acao' : 'text-tinta-apoio',
         )
       }
     >
       <Icone className="size-5" aria-hidden />
-      <span className="truncate">{item.curto ?? item.rotulo}</span>
+      <span className="truncate text-center">{item.curto ?? item.rotulo}</span>
+      {!!nota && (
+        <span className="absolute top-[3px] right-1.5 rounded-capsula bg-nota px-[5px] text-rotulo leading-[15px] font-semibold text-atencao">{nota}</span>
+      )}
     </NavLink>
   )
 }
 
-function BotaoTopo({ rotulo, icone: Icone, onClick, children, ativo }: {
-  rotulo: string
-  icone: React.ComponentType<{ className?: string }>
-  onClick: () => void
-  children?: React.ReactNode
-  ativo?: boolean
-}) {
+/** A pilha de avisos da entrada: os três últimos avisos da unidade, uma vez. */
+function AvisosDeEntrada({ unidadeId }: { unidadeId?: string }) {
+  const { avisar } = useAvisosFlutuantes()
+  const { data: avisos, isSuccess } = useBanners(unidadeId)
+  const feito = React.useRef(false)
+  React.useEffect(() => {
+    if (feito.current || !isSuccess) return
+    let entrou = false
+    try {
+      entrou = window.sessionStorage.getItem(MARCA_ENTRADA) === '1'
+      if (entrou) window.sessionStorage.removeItem(MARCA_ENTRADA)
+    } catch {
+      /* sem storage, sem pilha */
+    }
+    feito.current = true
+    if (!entrou) return
+    avisar(
+      (avisos ?? [])
+        .filter((a) => a.titulo || a.descricao)
+        .slice(0, 3)
+        .map((a) => ({
+          tag: 'Da unidade',
+          titulo: a.titulo ?? 'Aviso da unidade',
+          texto: a.descricao ?? undefined,
+          quando: new Date(a.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' }),
+        })),
+    )
+  }, [isSuccess, avisos, avisar])
+  return null
+}
+
+/** Liga o aviso flutuante de mensagem nova (precisa do canal global do chat). */
+function AvisoDeMensagem() {
+  useAvisoDeMensagem()
+  return null
+}
+
+type MeuPlantao = { setor_nome: string; turno: string; inicio: string; fim: string }
+
+export function AppShell() {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={rotulo}
-      aria-pressed={ativo}
-      className={cn(
-        'relative inline-flex min-h-8 items-center gap-1.5 rounded-controle border border-transparent px-2.5 text-apoio transition-colors hover:text-acao',
-        ativo ? 'text-acao' : 'text-tinta-apoio',
-      )}
-    >
-      <Icone className="size-4" />
-      {children}
-    </button>
+    <AvisosFlutuantesProvider>
+      <DesfazerProvider>
+        <Casca />
+      </DesfazerProvider>
+    </AvisosFlutuantesProvider>
   )
 }
 
-export function AppShell() {
+function Casca() {
   const { signOut, perfil } = useAuth()
-  const { unidades, unidadeAtiva, papelAtivo, papeisDaUnidade, status } = useUnidade()
+  const { unidades, unidadeAtiva, papelAtivo, setPapelAtivo, papeisDaUnidade, status } = useUnidade()
   const navigate = useNavigate()
   const location = useLocation()
   const [chatAberto, setChatAberto] = React.useState(false)
   const { compacto, alternar: alternarDensidade } = useDensidade()
-  const online = useConectado()
   const paleta = usePaleta()
   const segundoFator = useSegundoFator()
+  const { sinal, tentar } = useSinal()
+  const estreito = useLarguraAte(1023)
+  const [saidaAberta, setSaidaAberta] = React.useState(false)
+  const [saindo, setSaindo] = React.useState(false)
+  const unidadeId = unidadeAtiva?.unidade_id
 
   // Web Push — só o plantonista recebe avisos de turno no aparelho.
   useWebPush(papelAtivo === 'plantonista')
 
-  // Chat: plantonista e gestor. Administrador não tem chat.
-  const chatHabilitado = papelAtivo === 'plantonista' || papelAtivo === 'gestor'
+  // Chat: plantonista, gestor e farmacêutico (P/index.html chatTemAcesso).
+  const chatHabilitado = papelAtivo === 'plantonista' || papelAtivo === 'gestor' || papelAtivo === 'farmaceutico'
   useChatRealtimeGlobal()
   const totalNaoLidas = useTotalNaoLidas()
 
-  // Rota antiga /mensagens abre o drawer do chat.
+  // Rota antiga /mensagens abre a gaveta do chat.
   const mensagensSolicitadas = location.pathname === '/mensagens' && chatHabilitado
   const chatAbertoEfetivo = chatAberto || mensagensSolicitadas
   React.useEffect(() => {
@@ -180,35 +193,45 @@ export function AppShell() {
 
   const { data: papelTecnico } = useMeuPapelTecnico()
   const ehRt = !!papelTecnico?.some((p) => p.tipo === 'medico')
-  const itens = React.useMemo(() => itensDeNavegacao(papeisDaUnidade, ehRt), [papeisDaUnidade, ehRt])
-  const ehPlantonista = papeisDaUnidade.includes('plantonista')
-  const ehAdmin = papeisDaUnidade.includes('admin')
+  const itens = React.useMemo(() => itensDeNavegacao(papelAtivo, ehRt), [papelAtivo, ehRt])
+  const inicio = inicioDoPapel(papelAtivo)
+  const notas = useNotasNav(unidadeId, papelAtivo)
+  const ehPlantonista = papelAtivo === 'plantonista'
+  const ehAdmin = papelAtivo === 'admin'
+  const ehGestor = papelAtivo === 'gestor'
+  const ehTele = papelAtivo === 'telemedicina'
+  const topoEstreito = ehPlantonista && estreito
 
-  async function handleSair() {
-    await signOut()
-    navigate('/login', { replace: true })
-  }
-
-  // A escala é a porta (ADR 0003): o plantonista só entra se estiver na escala
-  // agora, pelo relógio do servidor. Sem conexão, segue quem já estava em
+  // A escala é a porta (ADR 0003): quem entra por escala só entra se estiver
+  // nela agora, pelo relógio do servidor. Sem conexão, segue quem já estava em
   // plantão neste aparelho, nos limites do ADR 0009.
-  // Vale para todo papel assistencial: recepção, técnico, enfermeiro,
-  // plantonista e telemedicina. Farmacêutico, gestor e admin não entram por escala.
   const entraPorEscala = !!papelAtivo && PAPEIS_POR_ESCALA.includes(papelAtivo)
-  const { status: plantaoStatus } = usePlantao(entraPorEscala ? unidadeAtiva?.unidade_id : undefined)
+  const { status: plantaoStatus } = usePlantao(entraPorEscala ? unidadeId : undefined)
   const fila = useFilaOffline()
+  const sessao = useSessaoPosPlantao(plantaoStatus, entraPorEscala)
 
-  // Lembrete de check-in (a trava foi adiada em 23/08). O último check-in sem
-  // check-out é o ativo; `limit(1)` evita o erro do maybeSingle com dois ou
-  // mais registros, que deixava o lembrete aceso para sempre.
+  const { data: meuPlantao } = useQuery({
+    queryKey: ['meu-plantao-agora', perfil?.id],
+    enabled: entraPorEscala && !!perfil,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('meu_plantao_agora')
+      if (error) throw error
+      const lista = (data ?? []) as MeuPlantao[]
+      return lista.find((p) => p) ?? null
+    },
+  })
+  const fimTurno = meuPlantao ? new Date(meuPlantao.fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : undefined
+
+  // Lembrete de check-in: o último check-in sem check-out é o ativo.
   const { data: presencaAtiva } = useQuery({
-    queryKey: ['shell-checkin-ativo', unidadeAtiva?.unidade_id, perfil?.id],
-    enabled: papelAtivo === 'plantonista' && !!unidadeAtiva?.unidade_id && !!perfil,
+    queryKey: ['shell-checkin-ativo', unidadeId, perfil?.id],
+    enabled: ehPlantonista && !!unidadeId && !!perfil,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('presenca_plantonista')
         .select('id, checkin_em, checkout_em')
-        .eq('unidade_id', unidadeAtiva!.unidade_id)
+        .eq('unidade_id', unidadeId!)
         .eq('perfil_id', perfil!.id)
         .order('checkin_em', { ascending: false })
         .limit(1)
@@ -218,16 +241,110 @@ export function AppShell() {
     },
     refetchInterval: 30_000,
   })
-
   const checkinPendente =
-    papelAtivo === 'plantonista' &&
+    ehPlantonista &&
     (plantaoStatus === 'escala' || plantaoStatus === 'acesso') &&
     !(presencaAtiva && presencaAtiva.checkin_em && !presencaAtiva.checkout_em)
+
+  // Contexto da topbar por papel.
+  const { data: painelGestor } = useQuery({
+    queryKey: ['painel-gestor', unidadeId],
+    enabled: ehGestor && !!unidadeId,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('painel_gestor', { p_unidade: unidadeId! })
+      if (error) throw error
+      return data as unknown as { ocupacao?: { escalados_agora: number }[]; pedidos_acesso_pendentes?: number }
+    },
+  })
+  const { data: rede } = useQuery({
+    queryKey: ['painel-organizacao-lateral'],
+    enabled: ehAdmin,
+    refetchInterval: 120_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('painel_organizacao', { p_dias: 7 })
+      if (error) throw error
+      return (data ?? []) as { profissionais_em_expediente?: number | null }[]
+    },
+  })
+
+  const emPlantao = entraPorEscala && (plantaoStatus === 'escala' || plantaoStatus === 'sem_conexao')
+  const pendenciasSaida = usePendenciasSaida(saidaAberta, unidadeId, perfil?.id, emPlantao)
+
+  const sair = React.useCallback(async () => {
+    await signOut()
+    navigate('/login', { replace: true })
+  }, [signOut, navigate])
+  const encerrarPorInatividade = React.useCallback(() => void sair(), [sair])
+  const bloqueio = useBloqueioOcioso(!!perfil, encerrarPorInatividade)
+
+  function confirmarSaida() {
+    if (saindo) return
+    setSaidaAberta(false)
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      void sair()
+      return
+    }
+    setSaindo(true)
+    window.setTimeout(() => void sair(), SAIDA_MS)
+  }
+
+  function trocarPapel(p: Papel) {
+    setPapelAtivo(p)
+    navigate(inicioDoPapel(p))
+  }
+
+  const papelTexto = papelAtivo ? PAPEL_LABEL[papelAtivo] : ''
+  const podeTrocarUnidade = unidades.length > 1 && !ehAdmin
+  const registro = perfil?.crm ? `CRM ${perfil.crm}${perfil.uf_crm ? `/${perfil.uf_crm}` : ''}` : null
+
+  const menu = (tamanho: 32 | 38) => (
+    <MenuUsuario
+      nome={perfil?.nome_completo}
+      registro={registro}
+      fotoUrl={perfil?.foto_url}
+      unidade={!ehAdmin && !ehTele ? unidadeAtiva?.unidade.nome : undefined}
+      podeTrocarUnidade={podeTrocarUnidade}
+      papeis={papeisDaUnidade}
+      papelAtivo={papelAtivo}
+      onTrocarPapel={trocarPapel}
+      onSair={() => setSaidaAberta(true)}
+      onBloquear={bloqueio.bloquear}
+      tamanho={tamanho}
+    />
+  )
+
+  const dialogosDeSaida = (
+    <>
+      <DialogoSaida
+        aberto={saidaAberta}
+        onAbertoChange={setSaidaAberta}
+        emPlantao={emPlantao}
+        fimTurno={fimTurno}
+        pendencias={pendenciasSaida.data ?? []}
+        carregando={pendenciasSaida.isFetching}
+        onConfirmar={confirmarSaida}
+      />
+      {saindo && <VeuSaida />}
+      {bloqueio.bloqueada && !sessao.encerrada && (
+        <TelaBloqueada
+          nome={perfil?.nome_completo}
+          email={perfil?.email}
+          contexto={unidadeAtiva?.unidade.nome}
+          onDesbloquear={bloqueio.desbloquear}
+          onSair={() => void sair()}
+        />
+      )}
+      {sessao.encerrada && (
+        <SessaoEncerrada texto="O plantão terminou e a plataforma ficou 5 minutos sem uso. Por segurança, a sessão foi encerrada." onReentrar={() => void sair()} />
+      )}
+    </>
+  )
 
   // Segundo fator (ADR 0010): com a exigência ligada, nada da casca aparece
   // antes do código — dado de paciente só com aal2 confirmado nas últimas 24 h.
   if (segundoFator.data?.exigido && !segundoFator.data.valido) {
-    return <PortaoSegundoFator fatorId={segundoFator.data.fatorId} onSair={handleSair} />
+    return <PortaoSegundoFator fatorId={segundoFator.data.fatorId} onSair={() => void sair()} />
   }
 
   if (entraPorEscala) {
@@ -238,164 +355,165 @@ export function AppShell() {
         </div>
       )
     }
-    if (plantaoStatus === 'fora') return <ForaDoExpediente />
+    if (plantaoStatus === 'fora') {
+      return (
+        <>
+          <ForaDoExpediente />
+          {dialogosDeSaida}
+        </>
+      )
+    }
   }
 
-  const papelTexto = papeisDaUnidade.map((p) => PAPEL_LABEL[p]).join(' · ')
-  const avatar = (
-    <NavLink to="/perfil" aria-label="Meu perfil" className="shrink-0 rounded-capsula">
-      <span className="flex size-8 items-center justify-center overflow-hidden rounded-capsula border border-fio bg-campo">
-        {perfil?.foto_url ? (
-          <img src={perfil.foto_url} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <UserRound className="size-4 text-tinta-sussurro" />
-        )}
-      </span>
+  const contexto = ehAdmin ? 'Rede — todas as unidades' : ehTele ? `Telemedicina — ${perfil?.nome_completo ?? ''}${registro ? ` · ${registro}` : ''}` : (unidadeAtiva?.unidade.nome ?? '')
+  const escaladosAgora = (painelGestor?.ocupacao ?? []).reduce((n, s) => n + (s.escalados_agora ?? 0), 0)
+  const plantaoRede = rede?.some((u) => u.profissionais_em_expediente == null) ? null : (rede ?? []).reduce((n, u) => n + (u.profissionais_em_expediente ?? 0), 0)
+  const extraTopo = ehGestor && painelGestor ? (
+    <ContextoTopo>{`${escaladosAgora} em plantão agora`}</ContextoTopo>
+  ) : ehAdmin && rede ? (
+    <ContextoTopo icone={Building2}>{`${rede.length} unidade${rede.length === 1 ? '' : 's'} · ${plantaoRede === null ? '< 5' : plantaoRede} em plantão`}</ContextoTopo>
+  ) : ehTele ? (
+    <NavLink
+      to="/teleinterconsulta"
+      title="Plantão remoto"
+      className={cn(
+        'flex h-8 items-center gap-2 rounded-capsula border px-3 text-apoio font-medium whitespace-nowrap',
+        emPlantao ? 'border-conforme/30 bg-conforme/[0.06] text-conforme' : 'border-fio text-tinta-sussurro',
+      )}
+    >
+      <span className={cn('size-2 rounded-capsula', emPlantao ? 'bg-conforme' : 'bg-fio-forte')} aria-hidden />
+      {emPlantao ? 'Em plantão' : 'Fora do plantão'}
+      {fimTurno && (
+        <>
+          <span className="h-3 w-px bg-fio-forte" aria-hidden />
+          <span className="tabular">até {fimTurno}</span>
+        </>
+      )}
     </NavLink>
+  ) : null
+
+  const pilulaFila = (!fila.online || fila.pendentes > 0 || fila.recusados > 0) && (
+    <span
+      role="status"
+      className={cn(
+        'inline-flex h-8 items-center gap-1.5 rounded-capsula border px-2.5 text-rotulo font-medium whitespace-nowrap',
+        fila.recusados > 0 ? 'border-critico/30 text-critico' : 'border-atencao/30 text-atencao',
+      )}
+    >
+      <span className={cn('size-2 rounded-capsula', fila.online ? 'bg-atencao' : 'bg-critico')} aria-hidden />
+      {!fila.online ? 'Sem conexão' : 'Enviando'}
+      {fila.pendentes > 0 && ` · ${fila.pendentes} no aparelho`}
+      {fila.recusados > 0 && ` · ${fila.recusados} recusado${fila.recusados > 1 ? 's' : ''}`}
+    </span>
   )
 
   return (
-    <DesfazerProvider>
-      <div className={cn('min-h-dvh bg-campo md:flex', compacto && 'cc-den')} data-densidade={compacto ? 'compacta' : 'normal'}>
-        {/* Sidebar ≥768px */}
-        <aside className="sticky top-0 hidden h-dvh w-[var(--cc-lateral)] shrink-0 flex-col border-r border-fio bg-superficie md:flex">
-          <button type="button" onClick={() => navigate(itens[0]?.to ?? '/')} className="flex h-[var(--cc-topo)] items-center border-b border-fio px-4 text-left">
-            <Marca papel={papelTexto} />
-          </button>
-          <nav aria-label="Navegação principal" className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
-            {itens.map((item) => <ItemLateral key={item.to} item={item} />)}
-          </nav>
-          <div className="border-t border-fio p-3">
-            <div className="truncate px-1 text-apoio font-medium text-tinta">{perfil?.nome_completo}</div>
-            <div className="truncate px-1 text-rotulo text-tinta-sussurro">{perfil?.email}</div>
-            <button type="button" onClick={handleSair} className="mt-2 flex w-full items-center gap-2 rounded-controle px-1 py-1.5 text-apoio text-tinta-sussurro hover:text-critico">
-              <LogOut className="size-4" aria-hidden />
-              Sair
-            </button>
-          </div>
-        </aside>
+    <div className={cn('cc-shell min-h-dvh bg-campo md:flex', compacto && 'cc-den')} data-densidade={compacto ? 'compacta' : 'normal'}>
+      {!topoEstreito && (
+        <Lateral
+          itens={itens}
+          notas={notas}
+          papelTexto={papelTexto}
+          inicio={inicio}
+          unidadeId={unidadeId}
+          ehGestor={ehGestor}
+          ehAdmin={ehAdmin}
+          onSair={() => setSaidaAberta(true)}
+        />
+      )}
 
-        <div className="flex min-w-0 flex-1 flex-col md:h-dvh">
-          {/* Topbar: imóvel a partir de 1024px; abaixo, rola com a página. */}
-          <header className="z-10 border-b border-fio bg-superficie lg:sticky lg:top-0">
-            <div className="flex min-h-[var(--cc-topo)] flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-2 md:px-6">
-              <div className="md:hidden">
-                <Marca />
-              </div>
-              {unidadeAtiva && status === 'ok' && (
-                <div className="hidden min-w-0 flex-col leading-tight md:flex">
-                  <span className="truncate text-apoio font-semibold text-tinta">{unidadeAtiva.unidade.nome}</span>
-                  <span className="truncate text-rotulo text-tinta-sussurro">{papelTexto}</span>
-                </div>
-              )}
-              {unidades.length > 1 && !ehAdmin && (
-                <button type="button" onClick={() => navigate('/seletor')} className="hidden rounded-controle border border-fio px-2.5 py-1 text-rotulo text-tinta-apoio hover:border-acao hover:text-acao md:inline-flex">
-                  Trocar unidade
-                </button>
-              )}
-              <div className="ml-auto flex items-center gap-0.5">
-                {(!fila.online || fila.pendentes > 0 || fila.recusados > 0) && (
-                  <span
-                    role="status"
-                    className={cn(
-                      'mr-2 inline-flex items-center gap-1.5 rounded-capsula border px-2.5 py-1 text-rotulo font-medium',
-                      fila.recusados > 0 ? 'border-critico/30 text-critico' : 'border-atencao/30 text-atencao'
-                    )}
-                  >
-                    <span className={cn('size-2 rounded-capsula', fila.online ? 'bg-atencao' : 'bg-critico')} aria-hidden />
-                    {!fila.online ? 'Sem conexão' : 'Enviando'}
-                    {fila.pendentes > 0 && ` · ${fila.pendentes} no aparelho`}
-                    {fila.recusados > 0 && ` · ${fila.recusados} recusado${fila.recusados > 1 ? 's' : ''}`}
-                  </span>
-                )}
-                <BotaoTopo rotulo="Buscar (Ctrl+K)" icone={Search} onClick={() => paleta.setAberta(true)}>
-                  <span className="hidden min-[900px]:inline">Buscar</span>
-                  <kbd className="hidden rounded-[5px] border border-fio px-1 font-mono text-[11px] text-tinta-sussurro min-[900px]:inline">Ctrl K</kbd>
-                </BotaoTopo>
-                <BotaoTopo rotulo="Modo compacto" icone={Rows3} onClick={alternarDensidade} ativo={compacto}>
-                  <span className="hidden min-[1100px]:inline">Compacto</span>
-                </BotaoTopo>
-                {ehPlantonista && <SinoAvisos unidadeId={unidadeAtiva?.unidade_id} habilitado />}
-                {chatHabilitado && (
-                  <BotaoTopo rotulo={totalNaoLidas ? `Abrir chat, ${totalNaoLidas} não lidas` : 'Abrir chat'} icone={MessageSquare} onClick={() => setChatAberto(true)}>
-                    {totalNaoLidas > 0 && (
-                      <span className="absolute top-0.5 right-0.5 grid min-w-4 place-items-center rounded-capsula bg-critico px-1 text-[10px] font-semibold text-white tabular">
-                        {totalNaoLidas}
-                      </span>
-                    )}
-                  </BotaoTopo>
-                )}
-                <span className="ml-1">{avatar}</span>
-                <BotaoTopo rotulo="Sair" icone={LogOut} onClick={handleSair}>
-                  <span className="hidden min-[1100px]:inline">Sair</span>
-                </BotaoTopo>
-              </div>
-            </div>
-            {!online && (
-              <div role="status" className="flex flex-wrap items-center gap-2.5 border-t border-fio px-4 py-2 text-rotulo text-tinta-apoio md:px-6">
-                Sem conexão. O que aparece na tela é a última leitura recebida; nada novo chega até a rede voltar.
-              </div>
-            )}
-          </header>
-
-          <NotificacoesTurnoBanner
-            unidadeId={papelAtivo === 'plantonista' ? unidadeAtiva?.unidade_id : undefined}
-            habilitado={papelAtivo === 'plantonista'}
+      <div className="flex min-w-0 flex-1 flex-col md:h-dvh">
+        {topoEstreito ? (
+          <TopoEstreito
+            inicio={inicio}
+            plantao={{ em: emPlantao, rotulo: fimTurno ? `Plantão até ${fimTurno}` : 'Plantão', to: '/plantao' }}
+            avatar={menu(38)}
+            onSair={() => setSaidaAberta(true)}
+            abas={ABAS_ESTREITAS_PLANTONISTA}
+            notas={notas}
           />
-          {checkinPendente && (
-            <div className="flex items-center justify-between gap-3 border-b border-fio bg-atencao/[0.08] px-4 py-2 text-apoio text-atencao md:px-6">
-              <span className="flex items-center gap-2">
-                <Activity className="size-4 shrink-0" aria-hidden />
-                Você ainda não fez check-in no plantão de hoje.
-              </span>
-              <NavLink to="/plantao/check-in" className="shrink-0 rounded-controle bg-acao px-3 py-1 text-rotulo font-medium text-white hover:bg-acao-pressionada hover:text-white">
-                Fazer check-in
-              </NavLink>
-            </div>
-          )}
+        ) : (
+          <Topo
+            contexto={contexto}
+            extra={extraTopo}
+            compacto={compacto}
+            onBuscar={() => paleta.setAberta(true)}
+            onCompacto={alternarDensidade}
+            sino={ehPlantonista ? <SinoAvisos unidadeId={unidadeId} habilitado /> : undefined}
+            fila={pilulaFila}
+            avatar={menu(32)}
+            trocarUnidade={podeTrocarUnidade ? () => navigate('/seletor') : undefined}
+          />
+        )}
+        <FitaDoSinal sinal={sinal} onTentar={() => void tentar()} />
 
-          {/* De 768px para cima só a topbar fica fora da área que rola. */}
-          <main className="flex-1 pb-[calc(96px+env(safe-area-inset-bottom))] md:overflow-y-auto md:pb-[72px]">
-            <div className="mx-auto w-full max-w-[var(--cc-coluna)] px-4 pt-5 md:px-7 md:pt-7 min-[1280px]:max-w-[1200px] [.cc-den_&]:pt-4">
-              {status === 'carregando' ? (
-                <div className="flex h-40 items-center justify-center">
-                  <Spinner />
-                </div>
-              ) : (
-                <ErroBoundary key={location.pathname}>
-                  <React.Suspense
-                    fallback={
-                      <div className="flex h-40 items-center justify-center">
-                        <Spinner />
-                      </div>
-                    }
-                  >
-                    <Outlet />
-                  </React.Suspense>
-                </ErroBoundary>
-              )}
-            </div>
-          </main>
-        </div>
+        <NotificacoesTurnoBanner unidadeId={ehPlantonista ? unidadeId : undefined} habilitado={ehPlantonista} />
+        {checkinPendente && (
+          <div className="flex items-center justify-between gap-3 border-b border-fio bg-alerta-atencao px-4 py-2 text-apoio text-atencao md:px-7">
+            <span className="flex items-center gap-2">
+              <Activity className="size-4 shrink-0" aria-hidden />
+              Você ainda não fez check-in no plantão de hoje.
+            </span>
+            <NavLink to="/plantao/check-in" className="shrink-0 rounded-controle bg-acao px-3 py-1 text-rotulo font-medium text-white hover:bg-acao-pressionada hover:text-white">
+              Fazer check-in
+            </NavLink>
+          </div>
+        )}
 
-        {/* Barra inferior ≤767px */}
+        {/* De 768px para cima só a topbar fica fora da área que rola. */}
+        <main className="flex-1 pb-[calc(96px+env(safe-area-inset-bottom))] md:overflow-y-auto md:overscroll-contain md:pb-[72px]">
+          <div className="cc-pagina cc-coluna mx-auto w-full px-4 pt-5 md:px-7 md:pt-7">
+            {status === 'carregando' ? (
+              <div className="flex h-40 items-center justify-center">
+                <Spinner />
+              </div>
+            ) : (
+              <ErroBoundary key={location.pathname}>
+                <React.Suspense
+                  fallback={
+                    <div className="flex h-40 items-center justify-center">
+                      <Spinner />
+                    </div>
+                  }
+                >
+                  <Outlet />
+                </React.Suspense>
+              </ErroBoundary>
+            )}
+          </div>
+        </main>
+      </div>
+
+      {/* Barra inferior ≤767px (os papéis sem topo próprio): todos os itens, rolando se não couberem. */}
+      {!topoEstreito && (
         <nav
           aria-label="Navegação principal"
-          className="fixed inset-x-0 bottom-0 z-40 flex gap-1 border-t border-fio bg-superficie px-2 pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom))] md:hidden"
+          className="fixed inset-x-0 bottom-0 z-40 flex gap-0.5 overflow-x-auto border-t border-fio bg-superficie px-[5px] pt-[5px] pb-[calc(5px+env(safe-area-inset-bottom))] [scrollbar-width:none] md:hidden"
         >
-          {itens.slice(0, 5).map((item) => <ItemInferior key={item.to} item={item} />)}
+          {itens.map((item) => (
+            <ItemInferior key={item.to} item={item} nota={item.nota ? notas[item.nota] : undefined} />
+          ))}
         </nav>
+      )}
 
-        <Paleta
-          aberta={paleta.aberta}
-          onAbertaChange={paleta.setAberta}
-          telas={itens}
-          comFerramentas={ehPlantonista || papeisDaUnidade.includes('gestor')}
-          comPlantao={ehPlantonista}
-        />
+      <Paleta
+        aberta={paleta.aberta}
+        onAbertaChange={paleta.setAberta}
+        telas={itens}
+        comFerramentas={ehPlantonista || ehGestor}
+        comPlantao={ehPlantonista}
+      />
 
-        {chatHabilitado && <ChatDrawer aberto={chatAbertoEfetivo} onFechar={() => setChatAberto(false)} />}
-      </div>
-    </DesfazerProvider>
+      {chatHabilitado && (
+        <>
+          {!chatAbertoEfetivo && <ChatFab naoLidas={totalNaoLidas} onAbrir={() => setChatAberto(true)} />}
+          <ChatDrawer aberto={chatAbertoEfetivo} onFechar={() => setChatAberto(false)} />
+          <AvisoDeMensagem />
+        </>
+      )}
+      <AvisosDeEntrada unidadeId={unidadeId} />
+      {dialogosDeSaida}
+    </div>
   )
 }
+

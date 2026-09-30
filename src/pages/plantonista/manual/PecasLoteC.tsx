@@ -54,8 +54,8 @@ export function LinhaManual({
         <span className="font-medium">{nome}</span>
         {conta && <span className="tabular-nums">{conta}</span>}
       </div>
-      <p className="text-muted-foreground">O manual traz: {texto} ({pagina})</p>
-      {nota && <p className="text-muted-foreground">{nota}</p>}
+      <p className="text-tinta-sussurro">O manual traz: {texto} ({pagina})</p>
+      {nota && <p className="text-tinta-sussurro">{nota}</p>}
       {errata && (
         <p className="text-atencao">
           <Badge variant="warning" className="mr-1">errata</Badge>

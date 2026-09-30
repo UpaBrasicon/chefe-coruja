@@ -82,7 +82,7 @@ export function KawasakiPed() {
               peso={p.peso}
               extra={
                 d.id === 'ivig' && vel ? (
-                  <p className="text-muted-foreground">
+                  <p className="text-tinta-sussurro">
                     Velocidade pelo Apêndice (p. 904): iniciar a {br(vel.inicial, 1)} mL/h (0,01 mL/kg/min), dobrando a cada 15–30 min até {br(vel.maxima, 1)} mL/h (0,08 mL/kg/min); monitorar PA.
                   </p>
                 ) : undefined

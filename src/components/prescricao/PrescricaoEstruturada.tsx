@@ -23,6 +23,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
+import { ativas, useAlergias } from '@/components/paciente/useAlergias'
 
 type ItemVigente = {
   id: string; tipo: 'medicamento' | 'cuidado'; descricao: string; medicamento_id: string | null; dose: string | null; via: string | null
@@ -32,7 +34,6 @@ type ItemVigente = {
 }
 type Medicamento = { id: string; principio_ativo: string; apresentacao: string | null; concentracao: string | null; alta_vigilancia: boolean }
 type Diluicao = { id: string; versao: number; texto: string; fonte: string; revisor_crf: string | null }
-type Alergia = { id: string; substancia: string; reacao: string | null }
 
 export type PacientePrescricao = { nome: string; dataAtual?: string; leito?: string; diagnostico?: string }
 
@@ -60,14 +61,9 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
       return (data ?? []) as unknown as ItemVigente[]
     },
   })
-  const alergias = useQuery({
-    queryKey: ['alergias', pacienteId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('alergias_paciente').select('id, substancia, reacao').eq('paciente_id', pacienteId).is('inativada_em', null)
-      if (error) throw error
-      return (data ?? []) as Alergia[]
-    },
-  })
+  // alergia em três estados (tem / nega / não registrada): o painel mora em
+  // components/paciente; aqui só o resumo e a folha
+  const alergias = useAlergias(pacienteId)
   const peso = useQuery({
     queryKey: ['peso-atual', pacienteId],
     queryFn: async () => {
@@ -88,7 +84,10 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
         conteudo: JSON.stringify({
           paciente: {
             ...paciente,
-            alergias: (alergias.data ?? []).map((a) => a.substancia).join(', ') || 'NEGA',
+            // lista vazia não é "nega": só imprime NEGA quando há o registro explícito
+            alergias: !alergias.data ? 'NÃO VERIFICADA'
+              : alergias.data.estado === 'tem' ? ativas(alergias.data).map((a) => a.substancia).join(', ')
+              : alergias.data.estado === 'nega' ? 'NEGA' : 'NÃO REGISTRADA',
             peso: peso.data?.valor_num ?? '',
           },
           itens: lista.map((i) => ({
@@ -118,38 +117,16 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-sm">
-          <Alergias pacienteId={pacienteId} lista={alergias.data ?? []} aoMudar={recarregar} aoErro={setErro} />
-          {lista.length === 0 && <p className="text-muted-foreground">Nenhum item prescrito.</p>}
+          <ResumoAlergias pacienteId={pacienteId} nome={paciente.nome} />
+          {lista.length === 0 && <p className="text-tinta-sussurro">Nenhum item prescrito.</p>}
           {lista.map((i) => <LinhaItem key={i.id} i={i} aoMudar={recarregar} aoErro={setErro} />)}
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <Button size="sm" onClick={() => void imprimir()} disabled={lista.length === 0}><Printer /> Imprimir prescrição</Button>
-            {perfil && <span className="text-xs text-muted-foreground">Autor de cada item: quem prescreveu (login).</span>}
+            {perfil && <span className="text-xs text-tinta-sussurro">Autor de cada item: quem prescreveu (login).</span>}
           </div>
         </CardContent>
       </Card>
       <NovoItem pacienteId={pacienteId} peso={peso.data} aoMudar={recarregar} aoErro={setErro} />
-    </div>
-  )
-}
-
-function Alergias({ pacienteId, lista, aoMudar, aoErro }: { pacienteId: string; lista: Alergia[]; aoMudar: () => void; aoErro: (m: string | null) => void }) {
-  const [nova, setNova] = React.useState('')
-  return (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-2">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Alergias</span>
-        {lista.length === 0 && <span className="text-muted-foreground">nenhuma registrada</span>}
-        {lista.map((a) => <Badge key={a.id} variant="destructive">{a.substancia}{a.reacao ? ` (${a.reacao})` : ''}</Badge>)}
-      </div>
-      <div className="flex gap-2">
-        <Input className="h-8" placeholder="Registrar alergia (substância)" value={nova} onChange={(e) => setNova(e.target.value)} />
-        <Button size="sm" variant="outline" disabled={nova.trim().length < 3} onClick={async () => {
-          const { error } = await supabase.rpc('registrar_alergia', { p_paciente: pacienteId, p_substancia: nova })
-          if (error) return aoErro(error.message)
-          aoErro(null); setNova(''); aoMudar()
-        }}>Registrar</Button>
-      </div>
-      <p className="text-xs text-muted-foreground">Alergia registrada trava o item do medicamento correspondente. Nada a contorna.</p>
     </div>
   )
 }
@@ -163,8 +140,8 @@ function LinhaItem({ i, aoMudar, aoErro }: { i: ItemVigente; aoMudar: () => void
         <span className="font-medium text-tinta">{i.descricao}</span>
         {i.tipo === 'medicamento' && <span>{i.dose} · {i.via} · {i.posologia}{i.se_necessario ? ' · se necessário' : ''}</span>}
         {i.vasoativo && <Badge variant="warning">vasoativo</Badge>}
-        {i.peso_kg && <span className="text-xs text-muted-foreground">peso ref. {i.peso_kg} kg</span>}
-        <span className="ml-auto text-xs text-muted-foreground">{i.autor} · {hora(i.criado_em)}</span>
+        {i.peso_kg && <span className="text-xs text-tinta-sussurro">peso ref. {i.peso_kg} kg</span>}
+        <span className="ml-auto text-xs text-tinta-sussurro">{i.autor} · {hora(i.criado_em)}</span>
       </div>
       {i.tipo === 'medicamento' && VIAS_COM_DILUICAO.includes(i.via ?? '') && (
         <p className={`text-xs ${i.diluicao_divergente ? 'text-atencao' : 'text-tinta-apoio'}`}>
@@ -173,7 +150,7 @@ function LinhaItem({ i, aoMudar, aoErro }: { i: ItemVigente; aoMudar: () => void
             : i.diluicao_texto ? <>Diluição padrão v{i.diluicao_versao}: {i.diluicao_texto}</> : 'Sem diluição padrão publicada para esta via.'}
         </p>
       )}
-      {i.observacao && <p className="text-xs text-muted-foreground">{i.observacao}</p>}
+      {i.observacao && <p className="text-xs text-tinta-sussurro">{i.observacao}</p>}
       {i.validacao === 'devolvido' && <p className="text-xs text-critico">Farmácia devolveu para correção: {i.validacao_motivo}</p>}
       {i.validacao === 'confere' && <p className="text-xs text-conforme">Conferido pela farmácia.</p>}
       {suspendendo ? (
@@ -193,8 +170,30 @@ function LinhaItem({ i, aoMudar, aoErro }: { i: ItemVigente; aoMudar: () => void
   )
 }
 
-function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
+// Porta (protótipo, "Prescrição do Pronto Socorro"): via e "quando" em chips —
+// Agora ou Se necessário — no lugar da frequência; na criança, o campo do
+// peso aferido aparece antes do primeiro medicamento.
+const VIAS_PORTA: { v: string; rotulo: string }[] = [
+  { v: 'EV', rotulo: 'EV' }, { v: 'IM', rotulo: 'IM' }, { v: 'VO', rotulo: 'VO' }, { v: 'SC', rotulo: 'SC' },
+  { v: 'INAL', rotulo: 'Inalatória' }, { v: 'SL', rotulo: 'Sublingual' },
+]
+const QUANDO_PORTA = ['Agora', 'Se necessário'] as const
+
+function ChipPorta({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" aria-pressed={ativo} onClick={onClick}
+      className={`rounded-capsula border px-3 py-1 text-apoio transition-colors ${ativo ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao'}`}>
+      {children}
+    </button>
+  )
+}
+
+export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, pediatrico = false }: {
   pacienteId: string; peso?: { valor_num: number; aferido_em: string } | null; aoMudar: () => void; aoErro: (m: string | null) => void
+  /** Modo do Pronto-Socorro: chips de via e de "quando" (Agora / Se necessário). */
+  porta?: boolean
+  /** Criança: mostra o peso aferido desde o início. */
+  pediatrico?: boolean
 }) {
   const { perfil } = useAuth()
   const [tipo, setTipo] = React.useState<'medicamento' | 'cuidado'>('medicamento')
@@ -265,13 +264,13 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
               {t === 'medicamento' ? 'Medicamento' : 'Cuidado'}
             </Button>
           ))}
-          {peso && <span className="ml-auto self-center text-xs text-muted-foreground">Último peso: {peso.valor_num} kg ({hora(peso.aferido_em)})</span>}
+          {peso && <span className="ml-auto self-center text-xs text-tinta-sussurro">Último peso: {peso.valor_num} kg ({hora(peso.aferido_em)})</span>}
         </div>
 
-        {pedePeso && (
+        {(pedePeso || (pediatrico && tipo === 'medicamento')) && (
           <div className="flex flex-wrap items-end gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-2">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="peso-novo">Peso aferido agora (kg)</Label>
+              <Label htmlFor="peso-novo">{pediatrico ? 'Peso aferido (kg)' : 'Peso aferido agora (kg)'}</Label>
               <Input id="peso-novo" className="h-8 w-28" inputMode="decimal" value={novoPeso} onChange={(e) => setNovoPeso(e.target.value)} />
             </div>
             <Button size="sm" onClick={() => void registrarPeso()}>Registrar peso</Button>
@@ -316,10 +315,29 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
                       <span className="text-tinta-apoio">{[m.apresentacao, m.concentracao].filter(Boolean).join(' · ')}</span>
                     </button>
                   ))}
-                  {resultados.data?.length === 0 && <p className="px-2 py-1 text-xs text-muted-foreground">Nada no cadastro com esse nome.</p>}
+                  {resultados.data?.length === 0 && <p className="px-2 py-1 text-xs text-tinta-sussurro">Nada no cadastro com esse nome.</p>}
                 </div>
               </div>
             )}
+            {porta ? (
+              <>
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="item-dose">Dose e diluição *</Label>
+                  <Input id="item-dose" value={f.dose} onChange={(e) => setF({ ...f, dose: e.target.value })} placeholder="escrita pelo médico" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-apoio font-medium text-tinta-apoio">Via e quando *</span>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {VIAS_PORTA.map((v) => <ChipPorta key={v.v} ativo={f.via === v.v} onClick={() => setF({ ...f, via: v.v })}>{v.rotulo}</ChipPorta>)}
+                    <span className="mx-1 h-5 w-px bg-fio" aria-hidden />
+                    {QUANDO_PORTA.map((q) => (
+                      <ChipPorta key={q} ativo={(f.posologia || 'Agora') === q}
+                        onClick={() => setF({ ...f, posologia: q, se_necessario: q === 'Se necessário' })}>{q}</ChipPorta>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
             <div className="grid gap-2 sm:grid-cols-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-dose">Dose *</Label>
@@ -327,7 +345,7 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
               </div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-via">Via *</Label>
-                <select id="item-via" className="h-8 rounded-controle border border-fio bg-background px-2 text-sm" value={f.via}
+                <select id="item-via" className="h-8 rounded-controle border border-fio bg-campo px-2 text-sm" value={f.via}
                   onChange={(e) => setF({ ...f, via: e.target.value })}>
                   <option value="">Escolha…</option>
                   {VIAS.map((v) => <option key={v} value={v}>{v}</option>)}
@@ -338,15 +356,18 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
                 <Input id="item-freq" value={f.posologia} onChange={(e) => setF({ ...f, posologia: e.target.value })} placeholder="ex.: 8/8h" />
               </div>
             </div>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={f.se_necessario} onChange={(e) => setF({ ...f, se_necessario: e.target.checked })} /> Se necessário
-            </label>
+            )}
+            {!porta && (
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={f.se_necessario} onChange={(e) => setF({ ...f, se_necessario: e.target.checked })} /> Se necessário
+              </label>
+            )}
             {med && VIAS_COM_DILUICAO.includes(f.via) && (
               <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-2">
                 {diluicao.data ? (
                   <p className="text-tinta-apoio">
                     Diluição padrão v{diluicao.data.versao}: {diluicao.data.texto}
-                    <span className="block text-xs text-muted-foreground">Fonte: {diluicao.data.fonte} · revisão {diluicao.data.revisor_crf}</span>
+                    <span className="block text-xs text-tinta-sussurro">Fonte: {diluicao.data.fonte} · revisão {diluicao.data.revisor_crf}</span>
                   </p>
                 ) : (
                   <p className="flex items-center gap-1.5 text-atencao"><AlertTriangle className="size-3.5" /> Sem diluição padrão publicada para {med.principio_ativo} {f.via}.</p>
@@ -363,9 +384,9 @@ function NovoItem({ pacienteId, peso, aoMudar, aoErro }: {
               </div>
             )}
             <Input placeholder="Observação (opcional)" value={f.observacao} onChange={(e) => setF({ ...f, observacao: e.target.value })} />
-            <Button size="sm" className="self-start" disabled={!med || !f.dose.trim() || !f.via || !f.posologia.trim()}
+            <Button size="sm" className="self-start" disabled={!med || !f.dose.trim() || !f.via || (!porta && !f.posologia.trim())}
               onClick={() => void prescrever({
-                tipo: 'medicamento', medicamento_id: med!.id, dose: f.dose, via: f.via, posologia: f.posologia,
+                tipo: 'medicamento', medicamento_id: med!.id, dose: f.dose, via: f.via, posologia: f.posologia.trim() || (porta ? 'Agora' : ''),
                 se_necessario: f.se_necessario, observacao: f.observacao,
                 ...(divergir ? { diluicao_divergente: dilTexto, justificativa_divergencia: justificativa } : {}),
               })}>

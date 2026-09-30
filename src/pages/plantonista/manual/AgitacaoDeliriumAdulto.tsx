@@ -53,7 +53,7 @@ export function AgitacaoDeliriumAdulto() {
           pagina={QUETAMINA_AGITACAO.pagina}
         />
         {COMBINACOES_AGITACAO.map((c) => <LinhaManual key={c.nome} nome={c.nome} texto={`${c.dose}: ${c.nota}`} pagina={c.pagina} />)}
-        {TEMPOS_AGITACAO.map((t) => <p key={t.droga} className="text-sm text-muted-foreground">{t.droga}: {t.texto} ({t.pagina}).</p>)}
+        {TEMPOS_AGITACAO.map((t) => <p key={t.droga} className="text-sm text-tinta-sussurro">{t.droga}: {t.texto} ({t.pagina}).</p>)}
         {idoso === 'sim' && (
           <p className="text-sm text-atencao">
             Idosos: o livro recomenda iniciar com metade da dose inicial típica e considera antipsicóticos de primeira linha (p. 1014). Exemplo: haloperidol 5-10 mg → {faixa(metadeDaDose([5, 10]))} mg; midazolam 2-5 mg → {faixa(metadeDaDose([2, 5]))} mg.
@@ -66,7 +66,7 @@ export function AgitacaoDeliriumAdulto() {
       </Bloco>
 
       <Bloco titulo="Causas orgânicas com corte numérico — Tabela 5 (p. 1012–1014)">
-        <ul className="list-disc pl-5 text-sm">{CORTES_CAUSAS_ORGANICAS.map((c) => <li key={c.causa}>{c.causa}: {c.corte} <span className="text-muted-foreground">({c.pagina})</span></li>)}</ul>
+        <ul className="list-disc pl-5 text-sm">{CORTES_CAUSAS_ORGANICAS.map((c) => <li key={c.causa}>{c.causa}: {c.corte} <span className="text-tinta-sussurro">({c.pagina})</span></li>)}</ul>
         <div className="grid gap-3 md:grid-cols-3">
           <NumberField id="agi-fc" label="FC" unit="bpm" value={fc} onChange={setFc} min={0} />
           <NumberField id="agi-pas" label="PAS" unit="mmHg" value={pas} onChange={setPas} min={0} />
@@ -111,15 +111,15 @@ export function AgitacaoDeliriumAdulto() {
         {ACEP_2024_RECOMENDACOES.map((r) => <LinhaManual key={r.nivel} nome={`Nível ${r.nivel}`} texto={r.texto} pagina="p. e4" />)}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-left align-top text-sm">
-            <thead className="text-muted-foreground"><tr><th className="pr-3 pb-2">Droga</th><th className="pr-3 pb-2">Dose nos ensaios</th><th className="pb-2">Ensaios</th></tr></thead>
+            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Droga</th><th className="pr-3 pb-2">Dose nos ensaios</th><th className="pb-2">Ensaios</th></tr></thead>
             <tbody>
               {DOSES_ENSAIOS_ACEP.map((d) => (
-                <tr key={d.droga} className="border-t"><td className="pr-3 py-2 font-medium">{d.droga}</td><td className="pr-3 py-2">{d.dose}</td><td className="py-2 text-muted-foreground">{d.fonte}</td></tr>
+                <tr key={d.droga} className="border-t"><td className="pr-3 py-2 font-medium">{d.droga}</td><td className="pr-3 py-2">{d.dose}</td><td className="py-2 text-tinta-sussurro">{d.fonte}</td></tr>
               ))}
             </tbody>
           </table>
         </div>
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">{DIFERENCAS_AGITACAO_2024.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_AGITACAO_2024.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Errata e notas">

@@ -48,7 +48,7 @@ export function ProfilaxiaTEV() {
               <span className="font-medium">{m.contexto}</span>
               {m.mecanica && <Badge variant="secondary" className="ml-2">mecânica</Badge>}
               <br />
-              <span className="text-muted-foreground">{m.texto} ({m.pagina})</span>
+              <span className="text-tinta-sussurro">{m.texto} ({m.pagina})</span>
             </li>
           ))}
         </ul>
@@ -66,7 +66,7 @@ export function ProfilaxiaTEV() {
       </Bloco>
 
       <Bloco titulo="O que o manual não traz">
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">
+        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">
           {FORA_DO_LIVRO.map((x) => <li key={x}>{x}</li>)}
         </ul>
       </Bloco>

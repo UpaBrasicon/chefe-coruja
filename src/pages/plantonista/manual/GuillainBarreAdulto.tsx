@@ -48,7 +48,7 @@ export function GuillainBarreAdulto() {
           <NumberField id="sgb-prot" label="Proteína" unit="mg/dL" value={proteina} onChange={(v) => { setProteina(v); setLcrInformado(true) }} min={0} />
           <NumberField id="sgb-cel" label="Células" unit="/mm³" value={celulas} onChange={(v) => { setCelulas(v); setLcrInformado(true) }} min={0} />
         </div>
-        {lcr ? <ul className="list-disc pl-5 text-sm">{lcr.achados.map((a) => <li key={a}>{a}</li>)}</ul> : <p className="text-sm text-muted-foreground">Informe proteína e células.</p>}
+        {lcr ? <ul className="list-disc pl-5 text-sm">{lcr.achados.map((a) => <li key={a}>{a}</li>)}</ul> : <p className="text-sm text-tinta-sussurro">Informe proteína e células.</p>}
         <p className="text-sm font-medium">Red flags para diagnóstico alternativo (p. 603–604)</p>
         <ul className="list-disc pl-5 text-sm">{RED_FLAGS_SGB.map((r) => <li key={r}>{r}</li>)}</ul>
       </Bloco>

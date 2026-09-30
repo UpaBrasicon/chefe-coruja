@@ -107,7 +107,7 @@ export function HemocomponentesPed() {
 
       <Bloco titulo="Limiares do capítulo">
         {LIMIARES.map((l) => (
-          <p key={l.texto} className="text-muted-foreground">
+          <p key={l.texto} className="text-tinta-sussurro">
             {l.texto} ({l.pagina})
           </p>
         ))}
