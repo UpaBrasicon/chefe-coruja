@@ -159,7 +159,7 @@ export function AppShell() {
 
 function Casca() {
   const { signOut, perfil } = useAuth()
-  const { unidades, unidadeAtiva, papelAtivo, setPapelAtivo, papeisDaUnidade, status } = useUnidade()
+  const { unidades, unidadeAtiva, papelAtivo, setPapelAtivo, papeisDaUnidade, status, ehSuperAdmin } = useUnidade()
   const navigate = useNavigate()
   const location = useLocation()
   const [chatAberto, setChatAberto] = React.useState(false)
@@ -207,7 +207,9 @@ function Casca() {
   // A escala é a porta (ADR 0003): quem entra por escala só entra se estiver
   // nela agora, pelo relógio do servidor. Sem conexão, segue quem já estava em
   // plantão neste aparelho, nos limites do ADR 0009.
-  const entraPorEscala = !!papelAtivo && PAPEIS_POR_ESCALA.includes(papelAtivo)
+  // O administrador geral da plataforma não passa pela escala nem pelo
+  // check-in, em nenhum papel (decisão do usuário, 30/09/2026).
+  const entraPorEscala = !!papelAtivo && PAPEIS_POR_ESCALA.includes(papelAtivo) && !ehSuperAdmin
   const { status: plantaoStatus, checkin: situacaoCheckin, recarregar: recarregarPlantao } = usePlantao(entraPorEscala ? unidadeId : undefined)
   const [checkinAberto, setCheckinAberto] = React.useState(false)
   const fila = useFilaOffline()

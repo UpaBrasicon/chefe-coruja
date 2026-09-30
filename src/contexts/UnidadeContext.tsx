@@ -104,12 +104,14 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
   // Papéis restritos à unidade ativa. Antes as flags eram globais (qualquer
   // vínculo), o que fazia um usuário plantonista na unidade A e gestor na B ver
   // o menu dos dois papéis nas duas unidades.
+  // O administrador geral da plataforma (super_admins) é administrador em toda
+  // unidade, com ou sem vínculo de admin nela (decisão do usuário, 30/09/2026).
   const papeisDaUnidade = React.useMemo<Papel[]>(() => {
     const doVinculo = (vinculos ?? []).filter((v) => v.unidade_id === unidadeAtiva?.unidade_id)
-    return [...new Set(doVinculo.map((v) => v.papel))].sort(
-      (a, b) => ORDEM_PAPEL[a] - ORDEM_PAPEL[b]
-    )
-  }, [vinculos, unidadeAtiva?.unidade_id])
+    const papeis = new Set<Papel>(doVinculo.map((v) => v.papel))
+    if (isSuper) papeis.add('admin')
+    return [...papeis].sort((a, b) => ORDEM_PAPEL[a] - ORDEM_PAPEL[b])
+  }, [vinculos, unidadeAtiva?.unidade_id, isSuper])
 
   // Perfil em foco (P/index.html, menu do usuário → Trocar perfil): quem tem
   // mais de um papel na unidade trabalha num de cada vez. Vale por unidade e
