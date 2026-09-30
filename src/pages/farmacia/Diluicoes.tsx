@@ -12,6 +12,7 @@ import { FlaskConical } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { normalizarMedicamento } from '@/lib/search'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -121,7 +122,7 @@ function NovaDiluicao({ aoCriar, aoErro }: { aoCriar: (id: string) => void; aoEr
   const r = useQuery({
     queryKey: ['med-farmacia', busca],
     enabled: busca.trim().length >= 3 && !med,
-    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').ilike('principio_ativo', `%${busca.trim()}%`).limit(15)).data ?? [],
+    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).limit(15)).data ?? [],
   })
   return (
     <Card>

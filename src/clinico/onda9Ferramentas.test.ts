@@ -2,6 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
+import type { Respostas } from './escore.ts'
 import { temReferenciaPediatrica } from './ficha.ts'
 import { ROTA_DA_FICHA } from './indice.ts'
 import { ALARMES_LIVRO, checarAjustes, fichaVmPassos, lerAcompanhamento, vtMlKgDoQuadro } from './adulto/vmPassos.ts'
@@ -117,6 +118,23 @@ test('TIMI IAMCSST (Morrow 2000): 0 a 14 e mortalidade por ponto', () => {
   assert.match(max.nota, /35,9%/)
 })
 
+test('TIMI IAMCSST (Morrow 2000): pesos e mortalidade em 30 dias de 0 a > 8', () => {
+  // idade 65–74 = 2, ≥ 75 = 3; PAS < 100 = 3; FC > 100 = 2; Killip II–IV = 2; demais = 1
+  const base = { idade: 0 }
+  const pesos: [Respostas, number][] = [
+    [{ idade: 1 }, 2], [{ idade: 2 }, 3], [{ ...base, hist: true }, 1], [{ ...base, pas: true }, 3], [{ ...base, fc: true }, 2],
+    [{ ...base, killip: true }, 2], [{ ...base, peso: true }, 1], [{ ...base, anterior: true }, 1], [{ ...base, tempo: true }, 1],
+  ]
+  for (const [r, p] of pesos) assert.equal(timiIamcsst.calcular(r)!.valor, String(p), JSON.stringify(r))
+  // mortalidade publicada: 0 0,8 · 1 1,6 · 2 2,2 · 3 4,4 · 4 7,3 · 5 12,4 · 6 16,1 · 7 23,4 · 8 26,8 · > 8 35,9
+  const casos: [Respostas, string][] = [
+    [{ ...base, hist: true }, '1,6%'], [{ idade: 1 }, '2,2%'], [{ idade: 2 }, '4,4%'], [{ idade: 2, hist: true }, '7,3%'],
+    [{ idade: 2, fc: true }, '12,4%'], [{ idade: 2, pas: true }, '16,1%'], [{ idade: 2, pas: true, hist: true }, '23,4%'],
+    [{ idade: 2, pas: true, fc: true }, '26,8%'], [{ idade: 2, pas: true, fc: true, hist: true }, '35,9%'],
+  ]
+  for (const [r, m] of casos) assert.ok(timiIamcsst.calcular(r)!.nota.includes(m), `${JSON.stringify(r)} → ${m}`)
+})
+
 test('Canadian Syncope Risk Score: −3 a 11 e cinco categorias', () => {
   assert.equal(sincopeCanadense.calcular({ vasovagal: true, diagnostico: 0 })!.valor, '-3')
   assert.match(sincopeCanadense.calcular({ vasovagal: true, diagnostico: 0 })!.nota, /muito baixo/)
@@ -124,6 +142,24 @@ test('Canadian Syncope Risk Score: −3 a 11 e cinco categorias', () => {
   const max = sincopeCanadense.calcular({ cardiopatia: true, pas: true, troponina: true, eixo: true, qrs: true, qtc: true, diagnostico: 2 })!
   assert.equal(max.valor, '11')
   assert.match(max.nota, /muito alto/)
+})
+
+test('Canadian Syncope Risk Score (CMAJ 2016, Figura 2): pesos e limites das categorias', () => {
+  const nada = { diagnostico: 1 }
+  const pesos: [string, number][] = [['vasovagal', -1], ['cardiopatia', 1], ['pas', 2], ['troponina', 2], ['eixo', 1], ['qrs', 1], ['qtc', 2]]
+  for (const [id, p] of pesos) assert.equal(sincopeCanadense.calcular({ ...nada, [id]: true })!.valor, String(p), id)
+  assert.equal(sincopeCanadense.calcular({ diagnostico: 0 })!.valor, '-2')
+  assert.equal(sincopeCanadense.calcular({ diagnostico: 2 })!.valor, '2')
+  // muito baixo ≤ −2 · baixo −1 a 0 · médio 1 a 3 · alto 4 a 5 · muito alto ≥ 6
+  const cat = (r: Respostas) => sincopeCanadense.calcular(r)!.nota.replace(/^risco (.*) de evento.*$/, '$1')
+  assert.equal(cat({ diagnostico: 0 }), 'muito baixo')
+  assert.equal(cat({ vasovagal: true, diagnostico: 1 }), 'baixo')
+  assert.equal(cat({ diagnostico: 1 }), 'baixo')
+  assert.equal(cat({ cardiopatia: true, diagnostico: 1 }), 'médio')
+  assert.equal(cat({ cardiopatia: true, diagnostico: 2 }), 'médio')
+  assert.equal(cat({ troponina: true, diagnostico: 2 }), 'alto')
+  assert.equal(cat({ troponina: true, cardiopatia: true, diagnostico: 2 }), 'alto')
+  assert.equal(cat({ troponina: true, pas: true, diagnostico: 2 }), 'muito alto')
 })
 
 test('ISS (Baker 1974): três maiores ao quadrado; AIS 6 → 75', () => {
@@ -141,6 +177,28 @@ test('CKD-EPI 2021 (Inker 2021)', () => {
   assert.equal(ckdEpi.calcular({ creatinina: 1, idade: 60, sexo: 1 })!.valor, '86')
 })
 
+test('CKD-EPI 2021: coeficientes da Tabela 2 de Inker 2021 (142; κ 0,7/0,9; α −0,241/−0,302; −1,200; 0,9938; 1,012)', () => {
+  // acima de κ só entra o expoente −1,200; abaixo, só o α do sexo
+  const esperado = (scr: number, idade: number, f: boolean) =>
+    142 * Math.min(scr / (f ? 0.7 : 0.9), 1) ** (f ? -0.241 : -0.302) * Math.max(scr / (f ? 0.7 : 0.9), 1) ** -1.2 * 0.9938 ** idade * (f ? 1.012 : 1)
+  for (const [scr, idade] of [[0.5, 30], [0.9, 45], [2.4, 70]] as const) {
+    assert.ok(Math.abs(ckdEpi2021(scr, idade, 'f')! - esperado(scr, idade, true)) < 1e-9)
+    assert.ok(Math.abs(ckdEpi2021(scr, idade, 'm')! - esperado(scr, idade, false)) < 1e-9)
+  }
+})
+
+test('CKD-EPI 2021: categoria KDIGO lida sobre a eTFG relatada (inteira)', () => {
+  // homem, 60 anos, creatinina 1,36 → 59,58: relatada 60, logo G2 e sem alerta
+  assert.ok(ckdEpi2021(1.36, 60, 'm')! < 60)
+  const r = ckdEpi.calcular({ creatinina: 1.36, idade: 60, sexo: 1 })!
+  assert.equal(r.valor, '60')
+  assert.match(r.nota, /G2/)
+  assert.equal(r.estado, 0)
+  for (const [tfg, cat] of [[90, 'G1'], [89, 'G2'], [60, 'G2'], [59, 'G3a'], [45, 'G3a'], [44, 'G3b'], [30, 'G3b'], [29, 'G4'], [15, 'G4'], [14, 'G5']] as const) {
+    assert.ok(categoriaTfg(tfg).startsWith(cat + ' '), `${tfg} → ${cat}`)
+  }
+})
+
 test('Schwartz (ICr, Tabela 2, p. 576): 0,413 × estatura ÷ creatinina', () => {
   assert.equal(schwartzPed.calcular({ estatura: 100, creatinina: 0.5, metodo: 0 })!.valor, '83')
 })
@@ -150,4 +208,18 @@ test('PRAM (Ducharme 2008): 0–12, leve/moderada/grave', () => {
   assert.equal(pram.calcular(zero)!.estado, 0)
   assert.equal(pram.calcular({ ...zero, supraesternal: 1, entrada: 2 })!.valor, '4')
   assert.equal(pram.calcular({ supraesternal: 1, escalenos: 1, entrada: 3, sibilos: 3, spo2: 2 })!.valor, '12')
+})
+
+test('PRAM: pesos por item e limites 0–3 / 4–7 / 8–12', () => {
+  const zero = { supraesternal: 0, escalenos: 0, entrada: 0, sibilos: 0, spo2: 0 }
+  // supraesternal 0/2 · escalenos 0/2 · entrada 0–3 · sibilos 0–3 · SpO₂ 0–2
+  assert.equal(pram.calcular({ ...zero, supraesternal: 1 })!.valor, '2')
+  assert.equal(pram.calcular({ ...zero, escalenos: 1 })!.valor, '2')
+  assert.equal(pram.calcular({ ...zero, entrada: 3 })!.valor, '3')
+  assert.equal(pram.calcular({ ...zero, sibilos: 3 })!.valor, '3')
+  assert.equal(pram.calcular({ ...zero, spo2: 2 })!.valor, '2')
+  assert.equal(pram.calcular({ ...zero, sibilos: 3 })!.estado, 0)
+  assert.equal(pram.calcular({ ...zero, sibilos: 3, spo2: 1 })!.estado, 1)
+  assert.equal(pram.calcular({ ...zero, sibilos: 3, entrada: 2, spo2: 2 })!.estado, 1)
+  assert.equal(pram.calcular({ ...zero, sibilos: 3, entrada: 3, spo2: 2 })!.estado, 2)
 })

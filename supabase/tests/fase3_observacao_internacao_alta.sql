@@ -9,6 +9,9 @@ BEGIN;
 -- chega na Observação daqui a 1h; recepção (…0005) no PS.
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',
   '10000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000005');
+-- presenças de check-ins reais no banco local (desde 20261014000001 a tela cobra o check-in) não entram no teste
+DELETE FROM public.presenca_plantonista WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',
+  '10000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000005');
 ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_janela;
 INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno, inicio, duracao_min)
 SELECT '21000000-0000-4000-8000-000000000001', s, '10000000-0000-4000-8000-000000000002', private.data_atual(), 'manha', now() - interval '1 hour', 360
@@ -26,6 +29,11 @@ INSERT INTO public.leitos (setor_id, identificador, tipo) VALUES
 INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em)
 SELECT unidade_id, id, perfil_id, data, turno, now() - interval '1 hour' FROM public.escala_plantao
  WHERE perfil_id = '10000000-0000-4000-8000-000000000002' AND setor_id = '22000000-0000-4000-8000-000000000002';
+-- check-in dos plantões em curso: sem ele, passada a tolerância, a escala não abre a porta (20261014000001)
+INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em)
+SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.escala_plantao e
+ WHERE e.ativo AND e.perfil_id IS NOT NULL AND e.inicio <= now() AND now() < e.inicio + make_interval(mins => e.duracao_min)
+ON CONFLICT DO NOTHING;
 
 CREATE TEMP TABLE t (nome text PRIMARY KEY, valor text) ON COMMIT DROP;
 GRANT ALL ON t TO authenticated, anon;

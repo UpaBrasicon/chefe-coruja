@@ -199,7 +199,7 @@ const SITUACAO: Record<string, { rotulo: string; tom: 'ok' | 'atencao' | 'neutro
   atraso_fora_do_raio: { rotulo: 'Atraso e local divergente', tom: 'atencao' },
   sem_checkin: { rotulo: 'Sem check-in', tom: 'atencao' },
   sem_escala: { rotulo: 'Check-in sem plantão na escala', tom: 'atencao' },
-  aguardando: { rotulo: 'Aguardando (15 min)', tom: 'neutro' },
+  aguardando: { rotulo: 'Aguardando (na tolerância)', tom: 'neutro' },
   a_comecar: { rotulo: 'A começar', tom: 'neutro' },
 }
 const FILTROS = ['Todos', 'Divergências', 'Em conformidade'] as const

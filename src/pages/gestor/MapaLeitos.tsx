@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Setores com mapa de leitos (protótipo, aba Setores da Unidade, P/index.html
 // 7446–7520; D11). Em ordem fixa de prioridade: ocupação por setor com o
-// limite de 85%, pacientes por plantonista escalado agora, o que venceu e os
+// limite da unidade (padrão 85%), pacientes por plantonista escalado agora, o que venceu e os
 // escores em banda de alerta, e o mapa de leitos. O gestor lê por leito: nome
 // de paciente não entra; o leito ocupado abre o prontuário (com registro de
 // acesso). Dados de mapa_leitos_gestor (migration 20261007000001).

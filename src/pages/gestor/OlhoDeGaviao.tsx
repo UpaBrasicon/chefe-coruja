@@ -13,12 +13,15 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { Database } from '@/types/database'
 
+import { useLimitesUnidade } from './limites'
+
 // Olho de Gavião do gestor (P/index.html 7023–7117): os apontamentos da
 // varredura da unidade (sobrecarga, descanso, presença, documentação,
 // operação e os alertas do Sentinela), cada um com evidência e recomendação,
 // e a decisão do gestor — tratado, silenciar 7 dias, não procede (com motivo)
 // — que fica no registro com autor, hora e motivo. As regras estão na
-// migration 20261006000002.
+// migration 20261006000002; os limites (sobrecarga, descanso mínimo opcional,
+// ocupação) são da unidade desde a 20261012000001.
 
 type Apontamento = Database['public']['Functions']['gaviao_apontamentos']['Returns'][number]
 type Registro = Database['public']['Functions']['gaviao_registro']['Returns'][number]
@@ -147,6 +150,8 @@ export default function OlhoDeGaviao() {
       return data ?? []
     },
   })
+  // limites da unidade (Unidade › Configurações): o descanso só é apontado se a unidade o exige
+  const { limites } = useLimitesUnidade(unidadeId)
   const recarregar = () => {
     void qc.invalidateQueries({ queryKey: ['gaviao-apontamentos', unidadeId] })
     void qc.invalidateQueries({ queryKey: ['gaviao-registro', unidadeId] })
@@ -208,7 +213,8 @@ export default function OlhoDeGaviao() {
       {erro && <p role="alert" className="mb-3 text-apoio text-critico">{erro}</p>}
 
       {lista.length === 0 ? (
-        <Vazio icone={ShieldCheck} titulo="Nenhum apontamento agora" texto="A varredura não encontrou sobrecarga, descanso curto, falha de presença, evolução em atraso nem setor lotado." />
+        <Vazio icone={ShieldCheck} titulo="Nenhum apontamento agora"
+          texto={`A varredura não encontrou sobrecarga (mais de ${limites.sobrecarga_horas} h em 7 dias)${limites.descanso_ativo ? `, descanso menor que ${limites.descanso_horas} h` : ''}, falha de presença, evolução em atraso nem setor acima de ${limites.ocupacao_pct}% de ocupação.`} />
       ) : (
         <div className="flex flex-col gap-3">
           {lista.map((a) => (

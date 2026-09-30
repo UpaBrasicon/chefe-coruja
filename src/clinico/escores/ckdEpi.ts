@@ -50,13 +50,16 @@ export const ckdEpi: Escore = {
     const sexo: Sexo = escolha(ckdEpi, r, 'sexo')!.valor === 0 ? 'f' : 'm'
     const tfg = ckdEpi2021(numero(ckdEpi, r, 'creatinina')!, numero(ckdEpi, r, 'idade')!, sexo)
     if (tfg === null) return null
-    const cat = categoriaTfg(tfg)
+    // A eTFG é relatada em número inteiro e a categoria G é lida sobre o valor
+    // relatado: 59,6 aparece como 60 e tem de cair em G2, não em G3a.
+    const relatada = Math.round(tfg)
+    const cat = categoriaTfg(relatada)
     return {
       rotulo: 'eTFG (CKD-EPI 2021)',
-      valor: String(Math.round(tfg)),
+      valor: String(relatada),
       unidade: 'mL/min/1,73 m²',
       nota: `categoria ${cat} da KDIGO`,
-      estado: tfg < 30 ? 2 : tfg < 60 ? 1 : 0,
+      estado: relatada < 30 ? 2 : relatada < 60 ? 1 : 0,
       derivados: [['Categoria de TFG (KDIGO)', cat]],
       cuidados: [
         'Só vale com creatinina estável: na lesão renal aguda a estimativa não representa a filtração real.',

@@ -1,7 +1,9 @@
 import { escolha, type Escore, type Item } from '../escore.ts'
 
 // Injury Severity Score (Baker 1974): soma dos quadrados do maior AIS de cada
-// uma das três regiões mais gravemente atingidas; qualquer AIS 6 dá ISS 75. A
+// uma das três regiões mais gravemente atingidas; qualquer AIS 6 dá ISS 75
+// (convenção de uso atual, posterior ao artigo de 1974, cujo AIS ia de 1 a 5;
+// não conferida no texto original). A
 // ferramenta NÃO classifica a lesão em AIS (isso exige o dicionário AIS da
 // AAAM): o usuário informa o AIS de cada região. Sem corte de gravidade — o
 // artigo original não define um.
@@ -61,6 +63,7 @@ export const iss: Escore = {
       cuidados: [
         'O AIS de cada lesão vem do dicionário AIS (AAAM); a ferramenta não classifica a lesão.',
         'Use o maior AIS de cada região: só uma lesão por região entra na conta.',
+        'AIS 6 → ISS 75 é a convenção de uso atual; o artigo de 1974 usava o AIS de 1 a 5 (máximo 75 = 3 × 5²).',
         'O artigo original não define corte de "trauma grave"; nenhum é mostrado.',
         'Sem referência pediátrica declarada.',
       ],

@@ -2,6 +2,11 @@
 -- Banco local com o seed (plantonista escalado agora na Clínica Médica, onde
 -- há pacientes). Transação com ROLLBACK.
 BEGIN;
+-- check-in dos plantões em curso: sem ele, passada a tolerância, a escala não abre a porta (20261014000001)
+INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em)
+SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.escala_plantao e
+ WHERE e.ativo AND e.perfil_id IS NOT NULL AND e.inicio <= now() AND now() < e.inicio + make_interval(mins => e.duracao_min)
+ON CONFLICT DO NOTHING;
 
 CREATE FUNCTION pg_temp.sessao(aal text, minutos_desde_totp int) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN

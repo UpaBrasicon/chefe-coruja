@@ -9,7 +9,10 @@ const buttonVariants = cva(
   // Gramática do Monitor de Cabeceira (02-gramatica-visual.md, "Botões"):
   // primário é a única cor de comando; o secundário é promovido pela borda,
   // não pelo preenchimento; peso 500 só no primário; alvo mínimo de 32px.
-  "group/button inline-flex shrink-0 items-center justify-center gap-[7px] rounded-controle border border-transparent bg-clip-padding text-apoio whitespace-nowrap transition-colors duration-150 outline-none select-none disabled:pointer-events-none disabled:opacity-45 aria-invalid:border-critico [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  // Sem outline-none: o anel de foco é o global de :focus-visible (index.css),
+  // só teclado. Com outline-none o Button ficava sem anel nenhum (verificação
+  // de telas, onda 10).
+  "group/button inline-flex shrink-0 items-center justify-center gap-[7px] rounded-controle border border-transparent bg-clip-padding text-apoio whitespace-nowrap transition-colors duration-150 select-none disabled:pointer-events-none disabled:opacity-45 aria-invalid:border-critico [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {

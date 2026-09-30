@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { normalizarMedicamento } from '@/lib/search'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -70,7 +71,7 @@ export default function ReferenciaDiluicao({ embutido = false }: { embutido?: bo
         .order('principio_ativo')
         .limit(200)
       if (busca.trim().length >= 2) {
-        query = query.ilike('principio_ativo', `%${busca.trim()}%`)
+        query = query.ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`)
       }
       const { data, error } = await query
       if (error) throw error

@@ -4,6 +4,8 @@
 BEGIN;
 ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_janela;
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000004');
+-- presenças de check-ins reais no banco local (desde 20261014000001 a tela cobra o check-in) não entram no teste
+DELETE FROM public.presenca_plantonista WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000004');
 INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno, inicio, duracao_min) VALUES
   -- começou há 30 min, sem check-in → pendente
   ('21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002', private.data_atual(), 'manha', now() - interval '30 minutes', 360),

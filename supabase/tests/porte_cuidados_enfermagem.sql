@@ -18,6 +18,11 @@ FROM unnest(ARRAY['22000000-0000-4000-8000-000000000003', '22000000-0000-4000-80
      unnest(ARRAY['10000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000004',
                   '10000000-0000-4000-8000-000000000005']::uuid[]) p;
 ALTER TABLE public.escala_plantao ENABLE TRIGGER trg_escala_janela;
+-- check-in dos plantões em curso: sem ele, passada a tolerância, a escala não abre a porta (20261014000001)
+INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em)
+SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.escala_plantao e
+ WHERE e.ativo AND e.perfil_id IS NOT NULL AND e.inicio <= now() AND now() < e.inicio + make_interval(mins => e.duracao_min)
+ON CONFLICT DO NOTHING;
 INSERT INTO public.vinculos (perfil_id, unidade_id, papel)
 VALUES ('10000000-0000-4000-8000-000000000005', '21000000-0000-4000-8000-000000000001', 'tecnico_enfermagem')
 ON CONFLICT DO NOTHING;

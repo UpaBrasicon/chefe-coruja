@@ -38,13 +38,16 @@ const fmt = (v: number, casas = 1) => v.toLocaleString('pt-BR', { maximumFractio
 const plural = (v: number, um: string, varios: string) => `${v} ${v === 1 ? um : varios}`
 const minutos = (v: number | null) => (v == null ? '—' : v >= 60 ? `${Math.floor(v / 60)} h ${v % 60} min` : `${v} min`)
 
+// o limite de atenção é o da unidade (limites_unidade, padrão 85%); crítico a
+// partir de 95% ou do próprio limite, se ele for maior
 function ocupacao(n: NumerosPanorama): Medida {
   const t = pct(num(n, 'leitos_ocupados'), num(n, 'leitos'))
+  const lim = (n.ocupacao_limite_pct ?? 85) / 100
   return {
     chave: 'ocupacao', rotulo: 'Ocupação da unidade', grandeza: 'leitos',
     valor: num(n, 'leitos') ? `${Math.round(t * 100)}%` : '—',
-    nivel: t >= 0.95 ? 'critico' : t >= 0.85 ? 'atencao' : 'ok', pct: t, limite: 0.85,
-    estado: `${num(n, 'leitos_ocupados')} de ${num(n, 'leitos')} leitos · limite 85%`,
+    nivel: t >= Math.max(0.95, lim) ? 'critico' : t >= lim ? 'atencao' : 'ok', pct: t, limite: lim,
+    estado: `${num(n, 'leitos_ocupados')} de ${num(n, 'leitos')} leitos · limite ${Math.round(lim * 100)}%`,
   }
 }
 
@@ -128,7 +131,7 @@ export const PAINEIS: Painel[] = [
       contagem('escala', 'Em escala hoje', 'turno', num(n, 'escalados_hoje'), 0, false, 'profissionais'),
       contagem('checkin_feito', 'Check-in feito', 'turno', num(n, 'checkin_feitos'), num(n, 'checkin_total'), false, `de ${num(n, 'checkin_total')} previstos até agora`),
       contagem('fora_raio', 'Fora do raio', 'observacao', num(n, 'checkin_fora_do_raio'), num(n, 'checkin_total'), num(n, 'checkin_fora_do_raio') > 0, 'check-ins de hoje'),
-      contagem('sem_checkin', 'Sem check-in', 'observacao', num(n, 'sem_checkin'), num(n, 'checkin_total'), num(n, 'sem_checkin') > 0, 'depois de 15 minutos do início'),
+      contagem('sem_checkin', 'Sem check-in', 'observacao', num(n, 'sem_checkin'), num(n, 'checkin_total'), num(n, 'sem_checkin') > 0, 'depois da tolerância de check-in da unidade'),
       contagem('vagas', 'Vagas abertas na semana', 'observacao', num(n, 'vagas_abertas_7d'), 0, num(n, 'vagas_abertas_7d') > 0, 'plantões sem profissional'),
       contagem('trocas', 'Trocas aguardando você', 'turno', num(n, 'trocas_pendentes'), 0, num(n, 'trocas_pendentes') > 0, 'pedidos de troca'),
       contagem('solicitacoes', 'Solicitações de escala', 'turno', num(n, 'solicitacoes_pendentes') + num(n, 'candidaturas_pendentes'), 0,
@@ -147,9 +150,15 @@ export function usePanorama(unidadeId: string | undefined) {
     enabled: !!unidadeId,
     refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('panorama_gestor', { p_unidade: unidadeId! })
+      const [{ data, error }, lim] = await Promise.all([
+        supabase.rpc('panorama_gestor', { p_unidade: unidadeId! }),
+        supabase.rpc('limites_unidade', { p_unidade: unidadeId! }),
+      ])
       if (error) throw error
-      return data as unknown as Panorama
+      const p = data as unknown as Panorama
+      // o limite de ocupação da unidade entra junto dos números (padrão 85%)
+      const pctLimite = (lim.data as { ocupacao_pct?: number } | null)?.ocupacao_pct ?? 85
+      return { ...p, n: { ...p.n, ocupacao_limite_pct: pctLimite } }
     },
   })
 }

@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { normalizarMedicamento } from '@/lib/search'
 import { abrirProntuario } from '@/lib/prontuario'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -86,7 +87,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
         .from('medicamento')
         .select('id, principio_ativo, concentracao, apresentacao, rxcui, alta_vigilancia')
         .eq('ativo', true)
-        .ilike('principio_ativo', `%${termo}%`)
+        .ilike('principio_ativo_norm', `%${normalizarMedicamento(termo)}%`)
         .order('principio_ativo')
         .limit(12)
       if (error) throw error

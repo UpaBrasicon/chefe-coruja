@@ -10,6 +10,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Parametro, type Nivel } from '@/components/monitor/Parametros'
 import { PanoramaConfig } from '@/pages/gestor/PanoramaConfig'
+import { useLimitesUnidade } from '@/pages/gestor/limites'
 
 type CensoLinha = {
   data: string
@@ -35,10 +36,11 @@ function fmtDia(iso: string) {
   return `${d}/${m}`
 }
 
-function corTaxa(taxa: number | null) {
+// taxa em %; atenção a partir do limite da unidade, crítico 5 pontos acima
+function corTaxa(taxa: number | null, limitePct: number) {
   if (taxa == null) return 'text-tinta-sussurro'
-  if (taxa >= 90) return 'text-critico'
-  if (taxa >= 85) return 'text-atencao'
+  if (taxa >= Math.min(100, limitePct + 5)) return 'text-critico'
+  if (taxa >= limitePct) return 'text-atencao'
   return 'text-conforme'
 }
 
@@ -46,6 +48,7 @@ export default function Indicadores() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
+  const { limites } = useLimitesUnidade(unidadeId)
 
   const { data: censo, isLoading } = useQuery({
     queryKey: ['censo-recente', unidadeId],
@@ -119,7 +122,9 @@ export default function Indicadores() {
     leitos: (ocupacao ?? []).reduce((a, o) => a + o.limite, 0),
   }
   const taxaAoVivo = aoVivo.leitos > 0 ? aoVivo.internados / aoVivo.leitos : null
-  const nivelOcupacao: Nivel = taxaAoVivo === null ? 'ok' : taxaAoVivo >= 0.95 ? 'critico' : taxaAoVivo >= 0.85 ? 'atencao' : 'ok'
+  // limite de atenção da unidade (Unidade › Configurações; padrão 85%)
+  const lim = limites.ocupacao_pct / 100
+  const nivelOcupacao: Nivel = taxaAoVivo === null ? 'ok' : taxaAoVivo >= Math.max(0.95, lim) ? 'critico' : taxaAoVivo >= lim ? 'atencao' : 'ok'
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -145,8 +150,8 @@ export default function Indicadores() {
           estado={nivelOcupacao === 'critico' ? 'Acima do limite' : nivelOcupacao === 'atencao' ? 'Perto do limite' : 'Dentro da capacidade'}
           nivel={nivelOcupacao}
           pct={taxaAoVivo ?? undefined}
-          limite={taxaAoVivo === null ? undefined : 0.85}
-          limiteTexto={taxaAoVivo === null ? undefined : 'limite 85%'}
+          limite={taxaAoVivo === null ? undefined : lim}
+          limiteTexto={taxaAoVivo === null ? undefined : `limite ${limites.ocupacao_pct}%`}
         />
         <Parametro
           grandeza="leitos"
@@ -204,7 +209,7 @@ export default function Indicadores() {
                 <div key={setorId} className="rounded-lg border p-3">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-sm font-semibold">{nome}</span>
-                    <span className={`text-sm font-semibold ${corTaxa(ultimo.taxa_ocupacao)}`}>
+                    <span className={`text-sm font-semibold ${corTaxa(ultimo.taxa_ocupacao, limites.ocupacao_pct)}`}>
                       {ultimo.taxa_ocupacao != null ? `${ultimo.taxa_ocupacao}%` : '—'} ocupação
                     </span>
                   </div>

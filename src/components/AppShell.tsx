@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Activity, Building2 } from 'lucide-react'
+import { Building2 } from 'lucide-react'
 import * as React from 'react'
 import { useQuery } from '@tanstack/react-query'
 
@@ -19,6 +19,7 @@ import { ChatDrawer } from '@/components/chat/ChatDrawer'
 import { ChatFab } from '@/components/chat/ChatFab'
 import { useAvisoDeMensagem } from '@/components/chat/useAvisoDeMensagem'
 import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'
+import { AvisoCheckinPendente, GateCheckIn } from '@/components/GateCheckIn'
 import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
 import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
 import { Spinner } from '@/components/ui/spinner'
@@ -207,7 +208,8 @@ function Casca() {
   // nela agora, pelo relógio do servidor. Sem conexão, segue quem já estava em
   // plantão neste aparelho, nos limites do ADR 0009.
   const entraPorEscala = !!papelAtivo && PAPEIS_POR_ESCALA.includes(papelAtivo)
-  const { status: plantaoStatus } = usePlantao(entraPorEscala ? unidadeId : undefined)
+  const { status: plantaoStatus, checkin: situacaoCheckin, recarregar: recarregarPlantao } = usePlantao(entraPorEscala ? unidadeId : undefined)
+  const [checkinAberto, setCheckinAberto] = React.useState(false)
   const fila = useFilaOffline()
   const sessao = useSessaoPosPlantao(plantaoStatus, entraPorEscala)
 
@@ -224,28 +226,14 @@ function Casca() {
   })
   const fimTurno = meuPlantao ? new Date(meuPlantao.fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : undefined
 
-  // Lembrete de check-in: o último check-in sem check-out é o ativo.
-  const { data: presencaAtiva } = useQuery({
-    queryKey: ['shell-checkin-ativo', unidadeId, perfil?.id],
-    enabled: ehPlantonista && !!unidadeId && !!perfil,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('presenca_plantonista')
-        .select('id, checkin_em, checkout_em')
-        .eq('unidade_id', unidadeId!)
-        .eq('perfil_id', perfil!.id)
-        .order('checkin_em', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (error) throw error
-      return data as { id: string; checkin_em: string | null; checkout_em: string | null } | null
-    },
-    refetchInterval: 30_000,
-  })
-  const checkinPendente =
-    ehPlantonista &&
-    (plantaoStatus === 'escala' || plantaoStatus === 'acesso') &&
-    !(presencaAtiva && presencaAtiva.checkin_em && !presencaAtiva.checkout_em)
+  // Check-in pendente (antes da tolerância): o aviso mostra quanto falta, pelo
+  // relógio do servidor. Passada a tolerância, o servidor fecha a porta e a
+  // casca mostra só a tela de check-in (status 'checkin', abaixo).
+  const checkinPendente = entraPorEscala && plantaoStatus === 'escala' && !!situacaoCheckin?.pendente
+  const aposCheckin = React.useCallback(() => {
+    setCheckinAberto(false)
+    recarregarPlantao()
+  }, [recarregarPlantao])
 
   // Contexto da topbar por papel.
   const { data: painelGestor } = useQuery({
@@ -364,6 +352,15 @@ function Casca() {
         </>
       )
     }
+    // Tolerância vencida sem check-in: só a tela de check-in (e sair).
+    if (plantaoStatus === 'checkin') {
+      return (
+        <>
+          <GateCheckIn situacao={situacaoCheckin} bloqueado onFeito={aposCheckin} onSair={() => void sair()} />
+          {dialogosDeSaida}
+        </>
+      )
+    }
   }
 
   const contexto = ehAdmin ? 'Rede — todas as unidades' : ehTele ? `Telemedicina — ${perfil?.nome_completo ?? ''}${registro ? ` · ${registro}` : ''}` : (unidadeAtiva?.unidade.nome ?? '')
@@ -449,16 +446,11 @@ function Casca() {
         <FitaDoSinal sinal={sinal} onTentar={() => void tentar()} />
 
         <NotificacoesTurnoBanner unidadeId={ehPlantonista ? unidadeId : undefined} habilitado={ehPlantonista} />
-        {checkinPendente && (
-          <div className="flex items-center justify-between gap-3 border-b border-fio bg-alerta-atencao px-4 py-2 text-apoio text-atencao md:px-7">
-            <span className="flex items-center gap-2">
-              <Activity className="size-4 shrink-0" aria-hidden />
-              Você ainda não fez check-in no plantão de hoje.
-            </span>
-            <NavLink to="/plantao/check-in" className="shrink-0 rounded-controle bg-acao px-3 py-1 text-rotulo font-medium text-white hover:bg-acao-pressionada hover:text-white">
-              Fazer check-in
-            </NavLink>
-          </div>
+        {checkinPendente && situacaoCheckin && (
+          <AvisoCheckinPendente situacao={situacaoCheckin} onAbrir={() => setCheckinAberto(true)} onVencer={recarregarPlantao} />
+        )}
+        {checkinPendente && checkinAberto && (
+          <GateCheckIn situacao={situacaoCheckin} bloqueado={false} onFeito={aposCheckin} onFechar={() => setCheckinAberto(false)} onSair={() => void sair()} />
         )}
 
         {/* De 768px para cima só a topbar fica fora da área que rola. */}

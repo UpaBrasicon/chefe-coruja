@@ -1,315 +1,206 @@
-import { useQuery } from '@tanstack/react-query'
-import { Loader2, LogIn, LogOut, MapPin, Navigation } from 'lucide-react'
 import * as React from 'react'
+import { Clock, LogOut, MapPin, X } from 'lucide-react'
 
-import { supabase } from '@/lib/supabase'
-import { obterPosicao } from '@/lib/geolocalizacao'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { AvisoRascunhosCheckout } from '@/components/documento/AvisoRascunhosCheckout'
+import { FormularioCheckin } from '@/components/checkin/FormularioCheckin'
+import type { SituacaoCheckin } from '@/hooks/usePlantao'
 
 /**
- * GATE DE CHECK-IN OBRIGATÓRIO (regra de ouro).
+ * A tela de check-in da casca (ADR 0003; regra de 30/09/2026).
  *
- * ⚠️ TRAVA ADIADA (decisão 23/08): este componente NÃO está ativo no momento —
- * o AppShell mostra apenas o banner de lembrete não-bloqueante. Para religar a
- * trava, trocar o banner por `return <GateCheckIn />` no AppShell.
+ * Quem entra pela escala tem até a tolerância da unidade (padrão 30 min)
+ * depois do início do plantão para fazer o check-in. Passada a tolerância sem
+ * check-in, o SERVIDOR fecha a porta (private.plantoes_agora) e a casca mostra
+ * só esta tela: fazer o check-in ou sair. Feito o check-in (o atraso fica na
+ * auditoria do gestor), a porta abre na hora — sem liberação de ninguém.
+ * Antes da tolerância, a mesma tela abre pelo aviso de check-in pendente
+ * (AvisoCheckinPendente), com o tempo que falta.
  *
- * Quando ativo: overlay escuro full-screen que bloqueia a progressão do sistema
- * para plantonista em escala (relógio do servidor) sem check-in ativo. Mostra
- * o mapa da unidade + posição do plantonista e o check-in via RPC
- * registrar_checkin (revalida a escala server-side e calcula o raio).
+ * Tudo pelo relógio do servidor: a hora vem de situacao_checkin e anda aqui
+ * pelo desvio medido na resposta.
  */
-type PresencaRow = {
-  id: string
-  data: string
-  turno: string
-  checkin_em: string | null
-  checkout_em: string | null
-  checkin_dentro: boolean | null
-  observacao: string | null
+
+const TURNO: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
+const FUSO = 'America/Sao_Paulo'
+const hora = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: FUSO })
+
+/** Hora do servidor (ms), andando no aparelho pelo desvio da última leitura. */
+function useAgoraServidor(situacao: SituacaoCheckin | null, passoMs = 15_000) {
+  const desvio = situacao ? Date.parse(situacao.servidor) - situacao.recebidoEm : null
+  const [agora, setAgora] = React.useState<number | null>(null)
+  React.useEffect(() => {
+    if (desvio === null) return
+    const tique = () => setAgora(Date.now() + desvio)
+    tique()
+    const t = window.setInterval(tique, passoMs)
+    return () => window.clearInterval(t)
+  }, [desvio, passoMs])
+  return desvio === null ? null : agora
 }
 
-export function GateCheckIn() {
+function minutos(ms: number) {
+  const min = Math.max(0, Math.round(ms / 60_000))
+  if (min < 60) return `${min} min`
+  return `${Math.floor(min / 60)} h${min % 60 ? ` ${min % 60} min` : ''}`
+}
+
+export function GateCheckIn({
+  situacao,
+  bloqueado,
+  onFeito,
+  onFechar,
+  onSair,
+}: {
+  situacao: SituacaoCheckin | null
+  /** true: a tolerância venceu e o app está fechado; false: aberto pelo aviso. */
+  bloqueado: boolean
+  onFeito: () => void
+  onFechar?: () => void
+  onSair: () => void
+}) {
   const { unidadeAtiva } = useUnidade()
-  const { perfil, signOut } = useAuth()
-  const unidadeId = unidadeAtiva?.unidade_id
-
-  const [entrando, setEntrando] = React.useState(true) // animação de entrada
-  const [visivel, setVisivel] = React.useState(false) // controla fade/scale
-  const [pos, setPos] = React.useState<{ lat: number; lng: number } | null>(null)
-  const [geoMsg, setGeoMsg] = React.useState<string | null>(null)
-  const [processando, setProcessando] = React.useState(false)
-  const [erro, setErro] = React.useState<string | null>(null)
-  const [relogio, setRelogio] = React.useState(new Date())
-
-  // Relógio em tempo real (o gate mostra a hora do check-in)
-  React.useEffect(() => {
-    const t = setInterval(() => setRelogio(new Date()), 1000)
-    return () => clearInterval(t)
-  }, [])
-
-  // Animação de entrada: fade + scale suave
-  React.useEffect(() => {
-    const raf = requestAnimationFrame(() => setVisivel(true))
-    const timer = setTimeout(() => setEntrando(false), 450)
-    return () => {
-      cancelAnimationFrame(raf)
-      clearTimeout(timer)
-    }
-  }, [])
-
-  const { data: unidade } = useQuery({
-    queryKey: ['unidade-geo-gate', unidadeId],
-    enabled: !!unidadeId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('unidades')
-        .select('latitude, longitude, raio_metros, nome')
-        .eq('id', unidadeId!)
-        .single()
-      if (error) throw error
-      return data as { latitude: number | null; longitude: number | null; raio_metros: number; nome: string }
-    },
-  })
-
-  // Presença ATIVA (o gate some quando há check-in sem checkout).
-  // Sem filtro de data: usa o relógio do servidor via registrar_checkin
-  // (ON CONFLICT por dia/turno), então o "ativo" é o registro mais recente
-  // com check-in e sem check-out — robusto a fuso do navegador.
-  const { data: presencaHoje, refetch } = useQuery({
-    queryKey: ['gate-checkin-ativo', unidadeId, perfil?.id],
-    enabled: !!unidadeId && !!perfil,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('presenca_plantonista')
-        .select('id, data, turno, checkin_em, checkout_em, checkin_dentro, observacao')
-        .eq('unidade_id', unidadeId!)
-        .eq('perfil_id', perfil!.id)
-        .order('checkin_em', { ascending: false })
-        .maybeSingle()
-      if (error) throw error
-      return data as PresencaRow | null
-    },
-    refetchInterval: 15_000,
-  })
-
-  const ativo: PresencaRow | null =
-    presencaHoje && presencaHoje.checkin_em && !presencaHoje.checkout_em ? presencaHoje : null
-
-  async function localizar() {
-    setGeoMsg(null)
-    setErro(null)
-    try {
-      const p = await obterPosicao()
-      setPos(p)
-      setGeoMsg(`Localização capturada: ${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`)
-    } catch (e) {
-      setErro((e as Error).message)
-    }
-  }
-
-  async function fazerCheckin() {
-    if (!unidadeId) return
-    setProcessando(true)
-    setErro(null)
-    try {
-      let lat: number | null = pos?.lat ?? null
-      let lng: number | null = pos?.lng ?? null
-      if (lat == null || lng == null) {
-        try {
-          const p = await obterPosicao()
-          lat = p.lat
-          lng = p.lng
-        } catch {
-          lat = null
-          lng = null
-        }
-      }
-      const { error } = await supabase.rpc('registrar_checkin', {
-        p_unidade: unidadeId,
-        p_lat: lat ?? 0,
-        p_lng: lng ?? 0,
-        p_observacao: undefined,
-      })
-      if (error) throw error
-      void refetch()
-    } catch (e) {
-      setErro((e as Error).message)
-    } finally {
-      setProcessando(false)
-    }
-  }
-
-  async function fazerCheckout() {
-    if (!unidadeId || !ativo) return
-    setProcessando(true)
-    setErro(null)
-    try {
-      let lat: number | null = pos?.lat ?? null
-      let lng: number | null = pos?.lng ?? null
-      if (lat == null || lng == null) {
-        try {
-          const p = await obterPosicao()
-          lat = p.lat
-          lng = p.lng
-        } catch {
-          lat = null
-          lng = null
-        }
-      }
-      const { error } = await supabase.rpc('registrar_checkout', {
-        p_registro: ativo.id,
-        p_lat: lat ?? 0,
-        p_lng: lng ?? 0,
-      })
-      if (error) throw error
-      void refetch()
-    } catch (e) {
-      setErro((e as Error).message)
-    } finally {
-      setProcessando(false)
-    }
-  }
-
-  async function sair() {
-    await signOut()
-    window.location.href = '/login'
-  }
-
-  // Mapa OSM: centro = unidade (se configurada) senão posição do plantonista.
-  const latMapa = unidade?.latitude ?? pos?.lat
-  const lngMapa = unidade?.longitude ?? pos?.lng
-  const marcador = pos ? `&markers=${pos.lat.toFixed(5)},${pos.lng.toFixed(5)},label:P` : ''
-  const mapaUrl = latMapa != null && lngMapa != null
-    ? `https://www.openstreetmap.org/export/embed.html?bbox=${(lngMapa - 0.008).toFixed(5)}%2C${(latMapa - 0.005).toFixed(5)}%2C${(lngMapa + 0.008).toFixed(5)}%2C${(latMapa + 0.005).toFixed(5)}&layer=mapnik&marker=${latMapa.toFixed(5)}%2C${lngMapa.toFixed(5)}${marcador}`
-    : null
-
-  const horaBrasil = relogio.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  const dataBrasil = relogio.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+  const agora = useAgoraServidor(situacao)
+  const p = situacao?.pendente ?? null
+  const inicio = p ? new Date(p.inicio) : null
+  const prazo = p ? new Date(p.prazo) : null
+  const atraso = agora !== null && inicio ? agora - inicio.getTime() : null
+  const falta = agora !== null && prazo ? prazo.getTime() - agora : null
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-black/75 p-4 backdrop-blur-md transition-opacity duration-300"
-      style={{ opacity: visivel ? 1 : 0 }}
+      className={
+        bloqueado
+          ? 'flex min-h-dvh items-center justify-center bg-campo p-4'
+          : 'fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm'
+      }
+      role={bloqueado ? undefined : 'dialog'}
+      aria-modal={bloqueado ? undefined : true}
+      aria-labelledby="checkin-titulo"
     >
-      <div
-        className={`w-full max-w-2xl ${entrando ? 'scale-95' : 'scale-100'} transition-all duration-300 ease-out`}
-      >
-        {/* Cabeçalho — quem está fazendo check-in */}
-        <div className="mb-4 flex items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white backdrop-blur">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-acao text-white">
-              <MapPin className="size-5" />
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">{unidade?.nome ?? unidadeAtiva?.unidade.nome}</p>
-              <p className="truncate text-xs text-white/70">
-                {dataBrasil} · <span className="font-mono">{horaBrasil}</span>
-              </p>
+      <section className="w-full max-w-[460px] animate-cc-sobe rounded-cartao border border-fio bg-superficie p-6 shadow-repouso">
+        <div className="flex items-start justify-between gap-3">
+          <span className="grid size-[42px] place-items-center rounded-container bg-alerta-marca text-acao" aria-hidden>
+            <MapPin className="size-[21px]" />
+          </span>
+          {!bloqueado && onFechar && (
+            <button
+              type="button"
+              onClick={onFechar}
+              aria-label="Fechar"
+              className="grid size-8 place-items-center rounded-controle text-tinta-sussurro hover:bg-campo hover:text-tinta"
+            >
+              <X className="size-4" aria-hidden />
+            </button>
+          )}
+        </div>
+        <h1 id="checkin-titulo" className="mt-4 text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">
+          {bloqueado ? 'Faça o check-in para entrar' : 'Check-in do plantão'}
+        </h1>
+        <p className="mt-1.5 text-apoio text-pretty text-tinta-sussurro">
+          {bloqueado
+            ? `O prazo de ${situacao?.tolerancia_min ?? 30} min depois do início do plantão passou sem check-in, e o acesso ficou fechado. Faça o check-in agora: o acesso volta na hora e o atraso fica registrado para a coordenação.`
+            : `Você tem até ${situacao?.tolerancia_min ?? 30} min depois do início do plantão para fazer o check-in. Depois disso, o acesso fica fechado até o check-in.`}
+        </p>
+
+        {p && inicio && (
+          <div className="mt-5 overflow-hidden rounded-container border border-fio">
+            <div className="flex items-center justify-between gap-3 px-4 py-3">
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="text-corpo font-medium text-tinta">
+                  {TURNO[p.turno] ?? p.turno} · {p.setor_nome}
+                </span>
+                <span className="text-apoio text-tinta-sussurro tabular">
+                  {hora(inicio)} às {hora(new Date(p.fim))}
+                  {unidadeAtiva ? ` · ${unidadeAtiva.unidade.nome}` : ''}
+                </span>
+              </div>
+              {falta !== null && falta > 0 ? (
+                <span className="shrink-0 rounded-capsula bg-alerta-marca px-2.5 py-1 text-rotulo font-medium text-acao tabular">
+                  faltam {minutos(falta)}
+                </span>
+              ) : (
+                atraso !== null && (
+                  <span className="shrink-0 rounded-capsula bg-alerta-atencao px-2.5 py-1 text-rotulo font-medium text-atencao tabular">
+                    {minutos(atraso)} de atraso
+                  </span>
+                )
+              )}
             </div>
           </div>
+        )}
+
+        <div className="mt-5">
+          <FormularioCheckin unidadeId={unidadeAtiva?.unidade_id} comObservacao={false} rotulo="Fazer check-in agora" tamanho="lg" onFeito={onFeito} />
+        </div>
+
+        <p className="mt-4 flex items-center gap-1.5 text-rotulo text-tinta-sussurro tabular">
+          <Clock className="size-3" aria-hidden />
+          {agora !== null ? `Relógio da unidade ${hora(new Date(agora))} (servidor)` : 'Sincronizando com o relógio do servidor…'}
+        </p>
+        <p className="mt-1 text-rotulo text-pretty text-tinta-sussurro">
+          A localização é registrada (dentro ou fora do raio da unidade); fora do raio ou sem GPS, o check-in pede uma justificativa.
+        </p>
+
+        {bloqueado && (
           <button
-            onClick={sair}
-            className="rounded-lg px-3 py-1.5 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+            type="button"
+            onClick={onSair}
+            className="mt-5 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-controle border border-fio bg-superficie text-controle font-medium text-tinta-apoio hover:border-marca hover:text-acao"
           >
+            <LogOut className="size-4" aria-hidden />
             Sair
           </button>
-        </div>
-
-        {/* Card principal */}
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-superficie shadow-2xl">
-          {/* Mapa */}
-          <div className="relative h-56 w-full bg-trilha">
-            {mapaUrl ? (
-              <iframe
-                title="Mapa da unidade"
-                src={mapaUrl}
-                className="h-full w-full border-0"
-                loading="lazy"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-sm text-tinta-sussurro">
-                <Navigation className="mr-2 size-4" />
-                Unidade sem geolocalização configurada
-              </div>
-            )}
-            {pos && (
-              <div className="absolute bottom-3 left-3 rounded-lg bg-black/70 px-3 py-1.5 text-xs text-white backdrop-blur">
-                Sua posição: {pos.lat.toFixed(5)}, {pos.lng.toFixed(5)}
-              </div>
-            )}
-            {unidade?.latitude != null && (
-              <div className="absolute bottom-3 right-3 rounded-lg bg-black/70 px-3 py-1.5 text-xs text-white backdrop-blur">
-                Raio da unidade: {unidade.raio_metros}m
-              </div>
-            )}
-          </div>
-
-          {/* Corpo */}
-          <div className="flex flex-col gap-4 p-6">
-            {erro && (
-              <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>
-            )}
-
-            {ativo ? (
-              <div className="flex flex-col gap-3 rounded-xl border border-conforme/30 bg-conforme/[0.08] p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="success">Em expediente</Badge>
-                  {ativo.checkin_dentro === true && <Badge variant="success">Dentro do raio</Badge>}
-                  {ativo.checkin_dentro === false && <Badge variant="destructive">Fora do raio</Badge>}
-                </div>
-                <p className="text-sm text-conforme">
-                  Check-in às{' '}
-                  <span className="font-mono font-semibold">
-                    {ativo.checkin_em ? new Date(ativo.checkin_em).toLocaleTimeString('pt-BR') : '-'}
-                  </span>
-                  . Você já pode acessar o sistema.
-                </p>
-                <AvisoRascunhosCheckout unidadeId={unidadeId} />
-                <div>
-                  <Button variant="outline" onClick={fazerCheckout} disabled={processando}>
-                    {processando ? <Loader2 className="animate-spin" /> : <LogOut />} Check-out
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold tracking-tight">Faça seu check-in</h2>
-                  <p className="text-sm text-tinta-sussurro">
-                    Confirme sua presença no plantão de hoje. O sistema registra o horário exato e valida
-                    sua localização contra o raio configurado pela unidade.
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button variant="outline" onClick={localizar} disabled={processando}>
-                    <Navigation /> Capturar localização
-                  </Button>
-                  {pos && <Badge variant="success">{pos.lat.toFixed(5)}, {pos.lng.toFixed(5)}</Badge>}
-                </div>
-                {geoMsg && <p className="text-xs text-tinta-sussurro">{geoMsg}</p>}
-
-                <Button size="lg" className="w-full" onClick={fazerCheckin} disabled={processando}>
-                  {processando ? <Loader2 className="animate-spin" /> : <LogIn />} Fazer check-in agora
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {!ativo && (
-          <p className="mt-4 text-center text-xs text-white/60">
-            {pos ? 'Sua localização será registrada junto ao check-in.' : 'Dica: capture sua localização para validar o raio da unidade.'}
-          </p>
         )}
-      </div>
+      </section>
+    </div>
+  )
+}
 
-      {/* Bloqueio total do fundo — nada abaixo é clicável */}
-      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
+/**
+ * Aviso de check-in pendente, antes da tolerância: quanto falta pelo relógio
+ * do servidor. Ao vencer o prazo chama onVencer (a casca relê a situação e
+ * fecha a porta sem esperar o minuto seguinte).
+ */
+export function AvisoCheckinPendente({
+  situacao,
+  onAbrir,
+  onVencer,
+}: {
+  situacao: SituacaoCheckin
+  onAbrir: () => void
+  onVencer: () => void
+}) {
+  const agora = useAgoraServidor(situacao, 5_000)
+  const prazo = situacao.pendente ? Date.parse(situacao.pendente.prazo) : null
+  const falta = agora !== null && prazo !== null ? prazo - agora : null
+  const vencido = falta !== null && falta <= 0
+  React.useEffect(() => {
+    if (vencido) onVencer()
+  }, [vencido, onVencer])
+  if (!situacao.pendente || prazo === null) return null
+
+  return (
+    <div role="status" className="flex items-center justify-between gap-3 border-b border-fio bg-alerta-atencao px-4 py-2 text-apoio text-atencao md:px-7">
+      <span className="flex items-center gap-2">
+        <MapPin className="size-4 shrink-0" aria-hidden />
+        {vencido ? (
+          <span>
+            Check-in pendente em {situacao.pendente.setor_nome}: o prazo das <span className="font-semibold tabular">{hora(new Date(prazo))}</span> passou, e esse setor fica fechado até o check-in.
+          </span>
+        ) : (
+          <span>
+            Check-in pendente: faça até <span className="font-semibold tabular">{hora(new Date(prazo))}</span>
+            {falta !== null ? <span className="tabular"> (faltam {minutos(falta)})</span> : null}. Depois disso, o acesso fica fechado até o check-in.
+          </span>
+        )}
+      </span>
+      <button
+        type="button"
+        onClick={onAbrir}
+        className="shrink-0 rounded-controle bg-acao px-3 py-1 text-rotulo font-medium text-white hover:bg-acao-pressionada"
+      >
+        Fazer check-in
+      </button>
     </div>
   )
 }

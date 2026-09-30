@@ -13,6 +13,9 @@ DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-0
   '10000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000005', '10000000-0000-4000-8000-000000000006');
 DELETE FROM public.presenca_plantonista WHERE unidade_id = '21000000-0000-4000-8000-000000000001';
 DELETE FROM public.chronos_alertas_escala WHERE unidade_id = '21000000-0000-4000-8000-000000000001';
+-- a auditoria usa a tolerância de check-in da unidade (20261014000002): aqui, 15 min
+DELETE FROM public.configuracoes_unidade WHERE unidade_id = '21000000-0000-4000-8000-000000000001' AND chave = 'checkin_tolerancia_min';
+INSERT INTO public.configuracoes_unidade (unidade_id, chave, valor) VALUES ('21000000-0000-4000-8000-000000000001', 'checkin_tolerancia_min', '15');
 ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_janela;
 -- plantonista: hoje há 2 h (6 h) e cinco plantões de 12 h nos dias anteriores = 66 h em 7 dias
 INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno, inicio, duracao_min)
@@ -171,9 +174,16 @@ BEGIN
 END $$;
 
 -- ── Olho de Gavião ──────────────────────────────────────────────────────────
+-- O descanso mínimo é opcional por unidade (padrão desligado, 20261012000001):
+-- desligado, o descanso curto não é apontado; ligado com 11 h, é.
+DELETE FROM public.configuracoes_unidade WHERE unidade_id = '21000000-0000-4000-8000-000000000001'
+   AND chave IN ('descanso_minimo_ativo', 'descanso_minimo_horas', 'sobrecarga_horas_7d', 'ocupacao_limite_pct', 'checkin_tolerancia_min');
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
-INSERT INTO t SELECT 'ap', jsonb_agg(to_jsonb(x))::text FROM public.gaviao_apontamentos('21000000-0000-4000-8000-000000000001') x;
+INSERT INTO t SELECT 'desc_off', count(*)::text FROM public.gaviao_apontamentos('21000000-0000-4000-8000-000000000001') x
+  WHERE x.chave LIKE 'descanso:%';
+SELECT public.salvar_limites_unidade('21000000-0000-4000-8000-000000000001', true, 11, 60, 85, 30);
+INSERT INTO t SELECT 'ap',jsonb_agg(to_jsonb(x))::text FROM public.gaviao_apontamentos('21000000-0000-4000-8000-000000000001') x;
 INSERT INTO t SELECT 'k_horas', x.chave FROM public.gaviao_apontamentos('21000000-0000-4000-8000-000000000001') x
   WHERE x.chave LIKE 'horas:10000000-0000-4000-8000-000000000002:ultimos:%';
 INSERT INTO t SELECT 'k_desc', x.chave FROM public.gaviao_apontamentos('21000000-0000-4000-8000-000000000001') x
@@ -221,8 +231,10 @@ BEGIN
     RAISE EXCEPTION 'FALHOU: 66 horas em 7 dias viram sobrecarga alta (%)', ap;
   END IF;
   RAISE NOTICE 'OK  sobrecarga: mais de 60 horas escaladas em 7 dias';
+  IF pg_temp.v('desc_off')::int <> 0 THEN RAISE EXCEPTION 'FALHOU: descanso apontado com a exigência desligada'; END IF;
+  RAISE NOTICE 'OK  descanso mínimo desligado (padrão): nenhum apontamento de descanso';
   IF pg_temp.v('k_desc') IS NULL THEN RAISE EXCEPTION 'FALHOU: descanso de 6 horas entre jornadas (%)', ap; END IF;
-  RAISE NOTICE 'OK  descanso menor que 11 horas entre jornadas';
+  RAISE NOTICE 'OK  descanso menor que 11 horas entre jornadas (unidade exige 11 h)';
   IF pg_temp.v('k_aus') IS NULL
      OR NOT EXISTS (SELECT 1 FROM jsonb_array_elements(ap) x WHERE x ->> 'chave' LIKE 'sem_escala:10000000-0000-4000-8000-000000000006:%') THEN
     RAISE EXCEPTION 'FALHOU: presença — plantão sem check-in e check-in sem escala (%)', ap;

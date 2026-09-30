@@ -13,6 +13,7 @@ import { AlertTriangle, Ban, Pill, Printer, Plus } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { normalizarMedicamento } from '@/lib/search'
 import { abrirImpressao } from '@/lib/prontuario'
 import { gravarRegistros, novoItem } from '@/lib/offline/sincronizar'
 import { useAuth } from '@/contexts/AuthContext'
@@ -214,7 +215,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
     queryFn: async () => {
       const { data, error } = await supabase.from('medicamento')
         .select('id, principio_ativo, apresentacao, concentracao, alta_vigilancia')
-        .eq('ativo', true).ilike('principio_ativo', `%${busca.trim()}%`).order('principio_ativo').limit(15)
+        .eq('ativo', true).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).order('principio_ativo').limit(15)
       if (error) throw error
       return (data ?? []) as Medicamento[]
     },

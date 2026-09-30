@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { supabase } from '@/lib/supabase'
+import { normalizarMedicamento } from '@/lib/search'
 
 type Medicamento = { id: string; principio_ativo: string; apresentacao: string | null; concentracao: string | null }
 type Favorito = {
@@ -151,7 +152,7 @@ function NovoFavorito({ aoSalvar }: { aoSalvar: () => void }) {
         .from('medicamento')
         .select('id, principio_ativo, apresentacao, concentracao')
         .eq('ativo', true)
-        .ilike('principio_ativo', `%${busca.trim()}%`)
+        .ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`)
         .order('principio_ativo')
         .limit(15)
       if (error) throw error

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { ClipboardPlus, Gauge, Hourglass, Monitor } from 'lucide-react'
 import { FileText, History, Video } from 'lucide-react'
+import { LifeBuoy } from 'lucide-react'
 
 import type { Papel } from '@/types/database'
 
@@ -78,6 +79,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     // o gestor acompanha a revisão; quem decide é o responsável técnico
     { to: '/revisao-clinica', rotulo: 'Revisão Clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true },
     { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true },
+    // 30/09/2026: chamado técnico da unidade (a administração da rede atende)
+    { to: '/gestao/chamados', rotulo: 'Chamados técnicos', curto: 'Chamados', icone: LifeBuoy, exato: true },
   ],
   // Enfermagem (P/index.html 32225–32230): o técnico não tem Triagem nem
   // Notificações; a tela inicial dele segue a escala (InicioEnfermagem).

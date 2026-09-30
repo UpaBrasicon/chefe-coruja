@@ -15,6 +15,11 @@ INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno,
 SELECT '21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000003', p, private.data_atual(), 'manha', now() - interval '1 hour', 360
 FROM unnest(ARRAY['10000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000005']::uuid[]) p;
 ALTER TABLE public.escala_plantao ENABLE TRIGGER trg_escala_janela;
+-- check-in dos plantões em curso: sem ele, passada a tolerância, a escala não abre a porta (20261014000001)
+INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em)
+SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.escala_plantao e
+ WHERE e.ativo AND e.perfil_id IS NOT NULL AND e.inicio <= now() AND now() < e.inicio + make_interval(mins => e.duracao_min)
+ON CONFLICT DO NOTHING;
 ALTER TABLE public.chamadas DISABLE TRIGGER trg_chamadas_so_insercao;
 DELETE FROM public.chamadas WHERE setor_id = '22000000-0000-4000-8000-000000000003';
 ALTER TABLE public.chamadas ENABLE TRIGGER trg_chamadas_so_insercao;
@@ -52,8 +57,12 @@ SELECT pg_temp.falha($$SELECT * FROM public.admin_unidades()$$, 'Acesso negado: 
 SELECT pg_temp.falha($$SELECT public.admin_servidores()$$, 'Acesso negado: tela do administrador', 'a recepção não abre os servidores');
 SELECT pg_temp.falha($$SELECT * FROM public.chamados_tecnicos_lista()$$, 'Acesso negado: tela do administrador', 'a recepção não lê chamados técnicos');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
-SELECT pg_temp.falha($$SELECT public.abrir_chamado_tecnico('21000000-0000-4000-8000-000000000001', 'Impressora sem resposta', 'integracao', 'media')$$,
-  'Acesso negado: chamado técnico é do administrador', 'o gestor não abre chamado técnico');
+-- desde 20261012000001 o gestor abre chamado da SUA unidade (testado em
+-- porte_limites_chamados_fracionar.sql); de outra unidade, não
+SELECT pg_temp.falha($$SELECT public.abrir_chamado_tecnico('00000000-0000-0000-0000-000000000101', 'Impressora sem resposta', 'integracao', 'media')$$,
+  'Acesso negado: chamado técnico é do administrador', 'o gestor não abre chamado técnico de outra unidade');
+SELECT pg_temp.falha($$SELECT public.abrir_chamado_tecnico(NULL, 'Impressora sem resposta', 'integracao', 'media')$$,
+  'Acesso negado: chamado técnico é do administrador', 'o gestor não abre chamado da rede toda');
 SELECT pg_temp.falha($$SELECT * FROM public.chamados_tecnicos$$, 'permission denied', 'a tabela de chamados não se lê direto');
 
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000003');

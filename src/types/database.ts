@@ -1340,6 +1340,7 @@ export type Database = {
           turno: string
           unidade_id: string
           updated_at: string
+          vaga_id: string | null
         }
         Insert: {
           created_at?: string
@@ -1353,6 +1354,7 @@ export type Database = {
           turno: string
           unidade_id: string
           updated_at?: string
+          vaga_id?: string | null
         }
         Update: {
           created_at?: string
@@ -1366,6 +1368,7 @@ export type Database = {
           turno?: string
           unidade_id?: string
           updated_at?: string
+          vaga_id?: string | null
         }
         Relationships: [
           {
@@ -10093,6 +10096,54 @@ export type Database = {
         Args: { p_id: string }
         Returns: { autor: string; em: string; id: string; nota: string; situacao: string }[]
       }
+      // ── limites da unidade, chamado do gestor e fracionar (migration 20261012000001) ──
+      limites_unidade: { Args: { p_unidade: string }; Returns: Json }
+      salvar_limites_unidade: {
+        Args: { p_unidade: string; p_descanso_ativo: boolean; p_descanso_horas: number; p_sobrecarga_horas: number; p_ocupacao_pct: number; p_checkin_tolerancia_min: number }
+        Returns: Json
+      }
+      chamados_tecnicos_da_unidade: {
+        Args: { p_unidade: string; p_incluir_resolvidos?: boolean }
+        Returns: {
+          aberto_em: string
+          aberto_por: string
+          atualizado_em: string
+          categoria: string
+          descricao: string
+          id: string
+          meu: boolean
+          resolvido_em: string
+          responsavel: string
+          severidade: string
+          situacao: string
+          titulo: string
+          unidade_id: string
+          unidade_nome: string
+        }[]
+      }
+      comentar_chamado_tecnico: { Args: { p_id: string; p_nota: string }; Returns: undefined }
+      candidatar_vaga: { Args: { p_vaga: string }; Returns: string }
+      vagas_abertas: {
+        Args: never
+        Returns: {
+          data: string
+          especialidade: string | null
+          fim: string
+          id: string
+          inicio: string
+          latitude: number | null
+          longitude: number | null
+          minha_candidatura: string | null
+          observacao: string | null
+          parte: number | null
+          partes: number | null
+          setor_id: string
+          setor_nome: string
+          turno: string
+          unidade_id: string
+          unidade_nome: string
+        }[]
+      }
       admin_unidades: {
         Args: never
         Returns: {
@@ -10862,6 +10913,7 @@ export type Database = {
         }[]
       }
       setores_na_escala_agora: { Args: never; Returns: string[] }
+      situacao_checkin: { Args: { p_unidade: string }; Returns: Json }
       setores_observacao: {
         Args: { p_unidade: string }
         Returns: {
