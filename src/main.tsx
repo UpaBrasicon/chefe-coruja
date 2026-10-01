@@ -2,6 +2,18 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
+
+// Antes de montar o app: o retorno de recuperação de senha chega com
+// #type=recovery no fragmento. Marca na sessão para o DesvioRecuperacao levar
+// à troca de senha. Ficava inline no index.html; veio para cá para o CSP
+// poder ser script-src 'self' (sem script inline). Roda cedo, antes do React.
+try {
+  if (window.location.hash.includes('type=recovery')) {
+    sessionStorage.setItem('supabase_recovery', '1')
+  }
+} catch {
+  /* sem sessionStorage: o fluxo normal de login segue */
+}
 import { mensagemDe, reportarErro } from '@/lib/reportarErro'
 
 createRoot(document.getElementById('root')!).render(

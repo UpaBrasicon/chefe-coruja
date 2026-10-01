@@ -23,6 +23,10 @@ spikes/vidaas/.vidaas-env
 # Strix — artefatos de varredura local (nunca versionar; resumos em docs/seguranca/)
 strix_runs/
 
+# Ferramentas do agente e bytecode — artefatos locais, nunca versionar
+.claude/
+__pycache__/
+
 # deepseek-harness — clone externo do harness (tem .git próprio; nunca versionar)
 deepseek-harness/
 
