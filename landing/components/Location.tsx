@@ -1,17 +1,15 @@
 import { BUSINESS } from '@/lib/site'
 
 /**
- * Localização — Google Maps embed + link "Como chegar". Checklist item 19.
- * Requer NEXT_PUBLIC_MAPS_KEY (ver README). TODO: ajustar endereço real.
+ * Localização — Google Maps embed (keyless) + link "Como chegar". Checklist item 19.
+ * Usa o embed clássico sem API key (`output=embed`): zero exposição de billing
+ * (red-team V16). Não depende de NEXT_PUBLIC_MAPS_KEY.
  */
 export function Location() {
-  const mapsKey = process.env.NEXT_PUBLIC_MAPS_KEY
   const endereco = encodeURIComponent(
     `${BUSINESS.address.street}, ${BUSINESS.address.city} - ${BUSINESS.address.region}, ${BUSINESS.address.postalCode}`
   )
-  const embedSrc = mapsKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=${endereco}`
-    : `https://maps.google.com/maps?q=${endereco}&t=&z=15&ie=UTF8&iwloc=&output=embed`
+  const embedSrc = `https://maps.google.com/maps?q=${endereco}&t=&z=15&ie=UTF8&iwloc=&output=embed`
 
   return (
     <section className="container-site py-16">

@@ -39,7 +39,6 @@ landing/
 2. **Variáveis de ambiente** — copie `.env.local.example` para `.env.local` e preencha:
    - `NEXT_PUBLIC_SITE_URL` — domínio de produção (ex.: `https://chefecoruja.com.br`).
    - `NEXT_PUBLIC_GA_ID` — **Measurement ID do GA4** (ex.: `G-XXXXXXX`). Sem ele, o GA4 não carrega e os eventos são no-ops.
-   - `NEXT_PUBLIC_MAPS_KEY` — **Google Maps Embed API key** (sem restrição, ou restringida por domínio). Sem ela, o mapa usa fallback sem key.
    - `NEXT_PUBLIC_WHATSAPP` — número comercial com DDI+DDD (ex.: `5562999999999`).
    - `NEXT_PUBLIC_FORM_ENDPOINT` — endpoint do formulário (Formspree/Resend). Vazio = usa a API local `/api/contato` (modo demo).
 

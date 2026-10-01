@@ -144,7 +144,10 @@ para `notify-email`, remover (a função não existe mais).
 - **V14** — `xlsx@0.18.5` (CVE-2023-30533/2024-22363) só em
   `scripts/terminologia/importar-cmed.ts` (devDependency, não vai ao bundle).
   Atualizar SheetJS via cdn.sheetjs.com quando tocar o script.
-- **V16** — `NEXT_PUBLIC_MAPS_KEY` exposta ao cliente: restringir por
-  domínio/referrer no Google Cloud console (ação no painel, não no código).
+- **V16** — `NEXT_PUBLIC_MAPS_KEY` exposta ao cliente: **FECHADO (01/10/2026)**
+  removendo a key. `landing/components/Location.tsx` usa o embed keyless
+  (`maps.google.com/maps?...output=embed`) — sem API key, zero exposição de
+  billing. Removida do `.env.local.example` e do README. (Dispensa restrição no
+  Google Console; o usuário pode remover a key da Vercel/GCP.)
 - **V9** — oráculo de schema do PostgREST: aceito (sem dado de linha; correção
   no PostgREST gerenciado é mais arriscada que o achado).
