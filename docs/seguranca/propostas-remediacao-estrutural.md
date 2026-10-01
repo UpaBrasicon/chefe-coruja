@@ -93,10 +93,14 @@ inofensiva mesmo com a função dormente.
 ## Menores (registro)
 
 - **V10** — `biblioteca` confia em `tenant_id` do corpo (`biblioteca/app/main.py:46`).
-  Mitigado: o único chamador (`clinical-search`) valida a unidade pelo vínculo
-  antes. Fechar derivando `tenant_id` do JWT no edge; não confiar no corpo.
-- **V13** — replay de webhook da Meta após o TTL de dedup (24h), em
-  `hermes/src/agent/pipeline.ts:44`. Validar `timestamp`/idade da mensagem.
+  **Já mitigado na prática:** o único chamador (`clinical-search`) valida o
+  `unidade_id` (UUID + vínculo ativo ou super) antes de enviar `tenant_id`
+  (`supabase/functions/clinical-search/index.ts:86,91-96,123`). Caller não passa
+  tenant arbitrário. Fecho definitivo (chave por tenant / claim assinado na
+  biblioteca) é arquitetural e roda no VPS — pendência de infra.
+- **V13** — **CORRIGIDO** (01/10): ingestão do webhook descarta mensagem com
+  `timestamp` > 12h (`hermes/src/server.ts`), fechando replay pós-dedup.
+  Deploy no VPS pendente.
 - **V14** — `xlsx@0.18.5` (CVE-2023-30533/2024-22363) só em
   `scripts/terminologia/importar-cmed.ts` (devDependency, não vai ao bundle).
   Atualizar SheetJS via cdn.sheetjs.com quando tocar o script.
