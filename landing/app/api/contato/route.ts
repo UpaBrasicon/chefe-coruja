@@ -17,8 +17,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Dados inválidos' }, { status: 400 })
     }
 
-    // TODO: enviar para e-mail/Slack/CRM e persistir lead
-    console.log('[contato] novo lead:', { nome, email, telefone, unidade, mensagem })
+    // TODO: enviar para e-mail/Slack/CRM e persistir lead.
+    // Não logar o corpo (nome/e-mail/telefone/mensagem = PII) — red-team V12.
+    void telefone; void unidade; void mensagem
+    console.log('[contato] novo lead recebido')
 
     return NextResponse.json({ ok: true })
   } catch {

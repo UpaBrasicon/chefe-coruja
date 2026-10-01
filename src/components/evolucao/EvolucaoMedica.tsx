@@ -26,24 +26,22 @@ import {
   useContextoEvolucao, useRecarregarEvolucao, type ContextoEvolucao, type DadosEstruturados, type FormEvolucao,
 } from './dados'
 import { FONTE_LNNC as LNNC_FONTE, useNotificacaoCompulsoria } from '@/components/internacao/caderno/notificacao'
+import { carregarEnvelope, salvarEnvelope } from '@/pages/plantao/shared/rascunho'
 import { Bloco, CampoTexto, ChipEscolha, Mensagem, RotuloSecao, Selo, type Aviso } from './pecas'
 
 type Modo = 'nova' | 'corrigir' | 'complemento'
 
-// prefixo dos rascunhos clínicos (shared/rascunho.ts): some ao sair e na
-// abertura sem sessão — dado de paciente não fica no computador do posto
+// prefixo dos rascunhos clínicos (shared/rascunho.ts): some ao sair, na
+// abertura sem sessão e por TTL de 12 h (envelope) — dado de paciente não
+// fica no computador do posto entre plantões (LGPD).
 const chaveRascunho = (internacaoId: string) => `cc:rascunho:evol:${internacaoId}`
 function lerRascunho(internacaoId: string): FormEvolucao | null {
-  try {
-    const s = localStorage.getItem(chaveRascunho(internacaoId))
-    return s ? ({ ...FORM_VAZIO, ...(JSON.parse(s) as Partial<FormEvolucao>) } as FormEvolucao) : null
-  } catch {
-    return null
-  }
+  const c = carregarEnvelope<Partial<FormEvolucao>>(chaveRascunho(internacaoId))
+  return c ? ({ ...FORM_VAZIO, ...c.dados } as FormEvolucao) : null
 }
 function gravarRascunho(internacaoId: string, f: FormEvolucao | null) {
   try {
-    if (f) localStorage.setItem(chaveRascunho(internacaoId), JSON.stringify(f))
+    if (f) salvarEnvelope(chaveRascunho(internacaoId), f)
     else localStorage.removeItem(chaveRascunho(internacaoId))
   } catch {
     /* navegador sem armazenamento: o rascunho só vive na tela */

@@ -76,7 +76,7 @@ export function limparTodosRascunhos() {
 type EnvelopeRascunho<T> = { v: 1; salvoEm: number; dados: T }
 
 /** Salva o rascunho com envelope + timestamp (para TTL). */
-function salvarEnvelope<T>(chave: string, dados: T) {
+export function salvarEnvelope<T>(chave: string, dados: T) {
   const envelope: EnvelopeRascunho<T> = { v: 1, salvoEm: Date.now(), dados }
   localStorage.setItem(chave, JSON.stringify(envelope))
 }
