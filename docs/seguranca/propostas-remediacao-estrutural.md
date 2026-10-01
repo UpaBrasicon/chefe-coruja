@@ -94,6 +94,15 @@ por regra — por isso a allowlist é a barreira real.
 
 **STATUS (01/10/2026): biblioteca com NER no ar no VPS (RAG protegido); wiring do Hermes no código.** Falta no VPS: setar `DEID_URL` no `.env.prod` do Hermes + rebuild.
 
+**STATUS (01/10/2026 — FECHADO): wiring do Hermes LIVE no VPS.** `hermes-app` e
+`biblioteca-api` compartilham a rede `deploy_default` → `DEID_URL=http://biblioteca-api:8710/v1/deid`
++ `BIBLIOTECA_API_KEY` (mesma chave da biblioteca) gravados no `.env.prod` do
+Hermes, container recriado. Teste ponta a ponta do container do Hermes:
+`200 {"texto":"Paciente [PESSOA]","found":["Maria Silva"],"ner_ativo":true}` →
+`chamarIA` agora falha fechado em nome residual antes do egress offshore.
+Health `ok`. Degrada se a biblioteca cair (não derruba conversa).
+Opção 2 (allowlist, barreira dura) segue como alvo de médio prazo.
+
 **Nota de rede (`DEID_URL`):** os dois stacks docker são separados — Hermes em `/home/hermes/deploy`, biblioteca em `/srv/biblioteca` (publica `127.0.0.1:8710`). O container do Hermes não alcança `biblioteca-api` pelo nome. Opções: (a) `DEID_URL=http://<ip-do-bridge-docker-do-host>:8710/v1/deid` (ex. `172.17.0.1`), (b) colocar o Hermes e a biblioteca na mesma rede docker externa e usar `http://biblioteca-api:8710/v1/deid`, ou (c) via o domínio público da biblioteca se houver. `BIBLIOTECA_API_KEY` também precisa estar no `.env.prod` do Hermes.
 
 Enquanto o modelo não é instalado no VPS, tudo segue como hoje (fail-safe). *(Modelo já instalado em 01/10.)*
