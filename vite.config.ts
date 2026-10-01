@@ -1,9 +1,33 @@
 import path from 'path'
+import { execSync } from 'node:child_process'
+import { createRequire } from 'node:module'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+// Rótulo de versão para o relato de erros do cliente (onda 12): commit curto do
+// deploy, ou a versão do package.json quando não houver git. Tudo protegido —
+// o build não pode quebrar por causa disto.
+function versaoApp(): string {
+  const porEnv = process.env.VITE_COMMIT
+  if (porEnv) return porEnv
+  try {
+    return execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim()
+  } catch {
+    try {
+      return createRequire(import.meta.url)('./package.json').version ?? ''
+    } catch {
+      return ''
+    }
+  }
+}
+
 export default defineConfig({
+  define: {
+    __APP_VERSAO__: JSON.stringify(versaoApp()),
+  },
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { UnidadeProvider, useUnidade } from '@/contexts/UnidadeContext'
 import { RequireAuth } from '@/routes/RequireAuth'
 import { RequireRole } from '@/routes/RequireRole'
+import { RequireSuperAdmin } from '@/routes/RequireSuperAdmin'
 import { RedirectHome } from '@/routes/RedirectHome'
 import { Redirecionar } from '@/routes/Redirecionar'
 import { AppShell } from '@/components/AppShell'
@@ -51,6 +52,7 @@ const GaviaoPainel = lazy(() => import('@/pages/admin/GaviaoPainel').then((m) =>
 const Plataformas = lazy(() => import('@/pages/admin/Plataformas'))
 const PendenciasTecnicas = lazy(() => import('@/pages/admin/PendenciasTecnicas'))
 const Servidores = lazy(() => import('@/pages/admin/Servidores'))
+const ErrosEAlertas = lazy(() => import('@/pages/admin/ErrosEAlertas'))
 const Indicadores = lazy(() => import('@/pages/Indicadores'))
 const InternacaoPainel = lazy(() => import('@/pages/InternacaoPainel'))
 const Notificacoes = lazy(() => import('@/pages/Notificacoes'))
@@ -220,6 +222,11 @@ export default function App() {
                         <Route path="/servidores" element={<Servidores />} />
                         {/* legado */}
                         <Route path="/pessoas" element={<Redirecionar para="/painel?aba=pessoas" />} />
+                      </Route>
+
+                      {/* Administrador geral (super admin): erros do app e verificações da rede */}
+                      <Route element={<RequireSuperAdmin />}>
+                        <Route path="/erros-e-alertas" element={<ErrosEAlertas />} />
                       </Route>
 
                       {/* Fase 6: prontuário fora da escala — pedido ao gestor, 24 h, só leitura */}

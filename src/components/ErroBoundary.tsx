@@ -2,6 +2,7 @@ import * as React from 'react'
 import { TriangleAlert } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { reportarErro } from '@/lib/reportarErro'
 
 type Props = { children: React.ReactNode; onReset?: () => void }
 type State = { erro: Error | null }
@@ -22,6 +23,12 @@ export class ErroBoundary extends React.Component<Props, State> {
 
   componentDidCatch(erro: Error, info: React.ErrorInfo) {
     console.error('[ErroBoundary]', erro, info.componentStack)
+    // Painel de erros do admin (onda 12): tela quebrada é defeito de verdade.
+    reportarErro({
+      tipo: 'render',
+      mensagem: erro.message || erro.name,
+      detalhe: `${erro.stack ?? ''}\n${info.componentStack ?? ''}`,
+    })
   }
 
   render() {

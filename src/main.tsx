@@ -2,12 +2,45 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
+import { mensagemDe, reportarErro } from '@/lib/reportarErro'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
   </StrictMode>
 )
+
+// Painel de erros do admin (onda 12): defeitos que escapam do React.
+// — Erros de JS não tratados. Erros de CARGA de recurso (img/script) chegam
+//   neste mesmo evento com um elemento como alvo; esses não são defeito do app
+//   e são ignorados. O 'vite:preloadError' (recarga de deploy) é tratado à
+//   parte, abaixo, e não passa por aqui.
+window.addEventListener('error', (event) => {
+  try {
+    if (event.target && event.target !== window) return // falha de recurso
+    reportarErro({
+      tipo: 'erro_js',
+      mensagem: event.message || mensagemDe(event.error),
+      detalhe: event.error instanceof Error ? (event.error.stack ?? '') : '',
+    })
+  } catch {
+    /* reportar nunca pode gerar erro */
+  }
+})
+
+// — Promessas rejeitadas sem catch.
+window.addEventListener('unhandledrejection', (event) => {
+  try {
+    const motivo = event.reason
+    reportarErro({
+      tipo: 'promessa',
+      mensagem: mensagemDe(motivo),
+      detalhe: motivo instanceof Error ? (motivo.stack ?? '') : '',
+    })
+  } catch {
+    /* idem */
+  }
+})
 
 // Depois de um deploy, uma aba aberta pode pedir um pedaço do código (chunk)
 // que não existe mais. Recarrega uma vez para pegar o index.html novo —

@@ -3421,6 +3421,95 @@ export type Database = {
           },
         ]
       }
+      erros_cliente: {
+        Row: {
+          id: string
+          criado_em: string
+          perfil_id: string | null
+          unidade_id: string | null
+          papel: string | null
+          tipo: string
+          origem: string | null
+          mensagem: string | null
+          detalhe: string | null
+          assinatura: string
+          navegador: string | null
+          versao_app: string | null
+          ip: unknown | null
+        }
+        Insert: {
+          id?: string
+          criado_em?: string
+          perfil_id?: string | null
+          unidade_id?: string | null
+          papel?: string | null
+          tipo: string
+          origem?: string | null
+          mensagem?: string | null
+          detalhe?: string | null
+          assinatura: string
+          navegador?: string | null
+          versao_app?: string | null
+          ip?: unknown | null
+        }
+        Update: {
+          id?: string
+          criado_em?: string
+          perfil_id?: string | null
+          unidade_id?: string | null
+          papel?: string | null
+          tipo?: string
+          origem?: string | null
+          mensagem?: string | null
+          detalhe?: string | null
+          assinatura?: string
+          navegador?: string | null
+          versao_app?: string | null
+          ip?: unknown | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erros_cliente_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erros_cliente_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erros_cliente_resolvidos: {
+        Row: {
+          assinatura: string
+          resolvido_por: string | null
+          resolvido_em: string
+        }
+        Insert: {
+          assinatura: string
+          resolvido_por?: string | null
+          resolvido_em?: string
+        }
+        Update: {
+          assinatura?: string
+          resolvido_por?: string | null
+          resolvido_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erros_cliente_resolvidos_resolvido_por_fkey"
+            columns: ["resolvido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       escala_fixa: {
         Row: {
           ativo: boolean
@@ -8624,6 +8713,39 @@ export type Database = {
       }
     }
     Functions: {
+      // ── onda 12: erros e alertas do sistema (à mão) ──
+      registrar_erro_cliente: {
+        Args: {
+          p_tipo: string
+          p_origem: string
+          p_mensagem: string
+          p_detalhe?: string
+          p_assinatura?: string
+          p_navegador?: string
+          p_versao_app?: string
+        }
+        Returns: string | null
+      }
+      erros_cliente_agrupados: {
+        Args: { p_desde?: string; p_incluir_resolvidos?: boolean }
+        Returns: {
+          assinatura: string
+          tipo: string
+          origem: string
+          mensagem: string
+          ocorrencias: number
+          perfis_afetados: number
+          primeira_em: string
+          ultima_em: string
+          resolvido: boolean
+        }[]
+      }
+      resolver_erro_cliente: {
+        Args: { p_assinatura: string; p_resolver: boolean }
+        Returns: undefined
+      }
+      // ── onda 12, verificações do sistema (migration 20261017000001; à mão) ──
+      verificacoes_sistema: { Args: never; Returns: Json }
       // ── onda 8, gestor parte 2 (migrations 20261007000001 a …003; à mão) ──
       farmacia_do_gestor: { Args: { p_unidade: string }; Returns: Json }
       mapa_leitos_gestor: { Args: { p_unidade: string }; Returns: Json }
