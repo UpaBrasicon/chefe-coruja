@@ -6,3 +6,7 @@ openai==1.*
 pydantic==2.*
 pyyaml==6.*
 pymupdf4llm==0.0.17
+
+# Red-team V5: NER de nomes próprios (fail-safe; modelo baixado à parte:
+#   python -m spacy download pt_core_news_sm)
+spacy==3.7.*
