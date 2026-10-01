@@ -23,6 +23,16 @@ const FROM = 'Chefe Coruja <noreply@chefecoruja.com.br>'
 
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']
 
+/** Comparação de segredo em tempo constante (red-team V11 — evita timing oracle). */
+function segredoConfere(a: string, b: string): boolean {
+  const ea = new TextEncoder().encode(a)
+  const eb = new TextEncoder().encode(b)
+  if (ea.length !== eb.length) return false
+  let diff = 0
+  for (let i = 0; i < ea.length; i++) diff |= ea[i] ^ eb[i]
+  return diff === 0
+}
+
 /** Escapa caracteres HTML em dados externos (anti-XSS em templates de e-mail). */
 function escapeHtml(s: string): string {
   return String(s ?? '')
@@ -89,7 +99,7 @@ Deno.serve(async (req) => {
     return new Response('Webhook secret not configured', { status: 500 })
   }
   const auth = req.headers.get('Authorization') ?? ''
-  if (auth !== `Bearer ${WEBHOOK_SECRET}`) {
+  if (!segredoConfere(auth, `Bearer ${WEBHOOK_SECRET}`)) {
     return new Response('Unauthorized', { status: 401 })
   }
 

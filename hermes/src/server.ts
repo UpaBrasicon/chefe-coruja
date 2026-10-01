@@ -66,6 +66,14 @@ function assinaturaValida(corpo: Buffer, header: string | undefined): boolean {
   return a.length === b.length && timingSafeEqual(a, b)
 }
 
+// Comparação de token em tempo constante (red-team V11 — evita timing oracle).
+function tokenConfere(a: string | undefined, b: string | undefined): boolean {
+  if (!a || !b) return false
+  const ba = Buffer.from(a)
+  const bb = Buffer.from(b)
+  return ba.length === bb.length && timingSafeEqual(ba, bb)
+}
+
 type WebhookPayload = {
   object?: string
   entry?: {
@@ -157,12 +165,12 @@ export async function buildApp(opts: { crons?: boolean } = {}) {
     const { 'hub.mode': mode, 'hub.verify_token': token, 'hub.challenge': challenge } =
       req.query as Record<string, string>
 
-    if (mode === 'subscribe' && token === env.META_VERIFY_TOKEN && challenge) {
+    if (mode === 'subscribe' && tokenConfere(token, env.META_VERIFY_TOKEN) && challenge) {
       logger.info('[webhook] handshake verificado pela Meta')
       return reply.type('text/plain').send(challenge)
     }
 
-    logger.warn({ mode, token }, '[webhook] handshake rejeitado')
+    logger.warn({ mode }, '[webhook] handshake rejeitado')
     return reply.code(403).type('text/plain').send('verification failed')
   })
 
