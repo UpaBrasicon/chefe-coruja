@@ -16,8 +16,9 @@ const botao = (url, texto) =>
   `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px 0 6px"><tr><td style="border-radius:10px;background:${COR.acao}">` +
   `<a href="${url}" style="display:inline-block;padding:13px 22px;font:600 15px/1 Arial,Helvetica,sans-serif;color:#ffffff;text-decoration:none;border-radius:10px">${texto}</a>` +
   `</td></tr></table>` +
-  `<p style="margin:10px 0 0;font:13px/1.5 Arial,Helvetica,sans-serif;color:${COR.sussurro}">Se o botão não abrir, copie este endereço no navegador:<br>` +
-  `<a href="${url}" style="color:${COR.acao};word-break:break-all">${url}</a></p>`
+  // link como frase (não o endereço cru), para o e-mail não exibir o domínio técnico
+  `<p style="margin:10px 0 0;font:13px/1.5 Arial,Helvetica,sans-serif;color:${COR.sussurro}">Se o botão não abrir, ` +
+  `<a href="${url}" style="color:${COR.acao};text-decoration:underline">use este link</a>.</p>`
 
 const codigo = (token) =>
   `<p style="margin:20px 0 6px;font:700 30px/1 'Courier New',Courier,monospace;letter-spacing:6px;color:${COR.tinta}">${token}</p>`
