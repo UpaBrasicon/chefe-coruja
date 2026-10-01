@@ -43,7 +43,7 @@ function layout({ titulo, previa, corpo }) {
 ${corpo}
 </td></tr>
 <tr><td style="padding:16px 26px;border-top:1px solid ${COR.fio}">
-<p style="margin:0;font:12px/1.5 Arial,Helvetica,sans-serif;color:${COR.sussurro}">Mensagem automática do Chefe Coruja, enviada para {{ .Email }}. Não responda este e-mail.<br>O Chefe Coruja nunca pede a sua senha nem o código do autenticador por e-mail.</p>
+<p style="margin:0;font:12px/1.5 Arial,Helvetica,sans-serif;color:${COR.sussurro}">Mensagem automática do Chefe Coruja. Não responda este e-mail.<br>O Chefe Coruja nunca pede a sua senha nem o código do autenticador por e-mail.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -62,7 +62,7 @@ export const EMAILS = {
       titulo: 'Redefinir a sua senha',
       previa: 'Use o link para escolher uma senha nova.',
       corpo:
-        p('Recebemos um pedido para redefinir a senha da conta <strong>{{ .Email }}</strong>.') +
+        p('Recebemos um pedido para redefinir a senha da sua conta.') +
         botao('{{ .ConfirmationURL }}', 'Escolher a senha nova') +
         aviso('O link vale por 1 hora e funciona uma vez só. Se não foi você que pediu, ignore este e-mail: a sua senha continua a mesma.'),
     }),
@@ -110,7 +110,7 @@ export const EMAILS = {
       titulo: 'Confirme o novo e-mail',
       previa: 'Confirme a troca do e-mail da sua conta.',
       corpo:
-        p('Recebemos um pedido para trocar o e-mail da sua conta de <strong>{{ .Email }}</strong> para <strong>{{ .NewEmail }}</strong>.') +
+        p('Recebemos um pedido para trocar o e-mail da sua conta.') +
         botao('{{ .ConfirmationURL }}', 'Confirmar o novo e-mail') +
         aviso('Se não foi você que pediu, não clique: o e-mail continua o mesmo. Avise a coordenação da unidade.'),
     }),
@@ -134,7 +134,7 @@ export const EMAILS = {
       titulo: 'A sua senha foi alterada',
       previa: 'Aviso de segurança da sua conta.',
       corpo:
-        p('A senha da conta <strong>{{ .Email }}</strong> acabou de ser alterada.') +
+        p('A senha da sua conta acabou de ser alterada.') +
         aviso('<strong style="color:' + COR.critico + '">Não foi você?</strong> Use "Esqueci a senha" em <a href="{{ .SiteURL }}/recuperar-senha" style="color:' + COR.acao + '">{{ .SiteURL }}</a> para escolher uma senha nova agora, e avise a coordenação da unidade.'),
     }),
   },
