@@ -1,8 +1,31 @@
-# Ativar o segundo fator (2FA/TOTP) — runbook
+# Ativar o segundo fator (2FA) — runbook
 
-A "muralha do login". O mecanismo **já está todo pronto** (ADR 0010, migration
-`20260926000009_fase1_segundo_fator.sql`); ligar é uma ação de operação, não de
-código. Enquanto a flag está desligada, nada muda para ninguém.
+A "muralha do login". O mecanismo **já está todo pronto**; ligar é uma ação de
+operação, não de código. Enquanto a flag está desligada, nada muda para ninguém.
+
+## Dois métodos (coexistem)
+- **Email-OTP (padrão, migration `20261022000001`):** em login de dispositivo
+  novo, o sistema envia um código de 6 dígitos ao email cadastrado; a pessoa
+  digita e pode marcar "confiar neste dispositivo" (30 dias). **Não exige
+  cadastro prévio** — ligar a flag funciona para todos na hora. Dispositivos
+  confiáveis são revogáveis no Perfil (mitiga o risco de aparelho perdido).
+- **TOTP (app autenticador, migration `20260926000009`):** alternativa mais
+  forte; exige a pessoa cadastrar o autenticador antes.
+
+O gate (`private.segundo_fator_valido`) aceita **qualquer um dos dois**:
+`aal2`+TOTP OU sessão verificada por email.
+
+### Pré-requisito do email-OTP (uma vez, já quase todo feito)
+- Migration `20261022000001` aplicada em prod ✓.
+- Edge Function `enviar-codigo-2fa` deployada ✓.
+- **Secrets (teu):** Dashboard → Edge Functions → Secrets:
+  - `RESEND_API_KEY` = chave do Resend (`re_...`, a senha SMTP).
+  - `EMAIL_FROM` = `Chefe Coruja <nao-responda@chefecoruja.com.br>`.
+  - (`CC_PUBLISHABLE_KEY` e `APP_ORIGIN` já existem das outras functions.)
+- Teste antes do flip: logar, disparar "enviar código", conferir o email chega.
+
+Com o email-OTP, o passo "enrollment do time" abaixo **não é mais obrigatório**
+para ligar — só vale se você quiser exigir especificamente o TOTP.
 
 ## Como funciona (resumo)
 - Flag `exigir_segundo_fator` em `public.configuracao_plataforma` (default `false`).
