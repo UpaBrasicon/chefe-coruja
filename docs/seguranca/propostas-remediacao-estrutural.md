@@ -87,12 +87,21 @@ por regra — por isso a allowlist é a barreira real.
 **Cutover no VPS (seu):**
 1. Na `biblioteca`: `pip install -r requirements.txt` + `python -m spacy download pt_core_news_sm` + rebuild/restart. (RAG já ganha NER.)
 2. **Wiring dos gateways** (fecha o chat do Hermes também), controlado por env `DEID_URL` (= `{BIBLIOTECA_URL}/v1/deid`):
-   - `supabase/functions/clinical-search/index.ts`: após o `desidentificar`/`residuos` atuais e **antes** de chamar a `biblioteca`, se `DEID_URL` setado, POST `{texto: qRed}`; se `found` não-vazio → retornar 422 (como o residue atual); se o serviço cair → logar incidente e seguir com o regex (degrade), ou falhar fechado se preferir LGPD estrita.
+   - `supabase/functions/clinical-search/index.ts`: **NÃO NECESSÁRIO (01/10/2026)** — a `biblioteca` já mascara a query na entrada (`main.py:199` `q = expandir_siglas(pseudonimizar(r.q))`, NER incluso) antes de qualquer uso, e `embed()` é Ollama **local** (não offshore). Logo o LLM offshore e o embedding só veem texto já mascarado; o edge já barra resíduo de regex com 422 (`:107-113`). Wiring de `/v1/deid` no edge seria redundante (round-trip + deploy sem ganho). Reabrir só se a biblioteca deixar de mascarar na entrada.
    - `hermes/src/gateway/gateway.ts`: **JÁ IMPLEMENTADO** (commit 35717ea) — `chamarIA` chama `/v1/deid` após a limpeza regex e antes do egress; `found` não-vazio → `ChamadaBloqueada` (fail-closed). Opt-in por `DEID_URL`; serviço fora → degrada.
    - Sem `DEID_URL` = comportamento atual (aditivo, não quebra).
 3. Testar: "A paciente Maria Silva ..." → `/v1/deid` retorna `found:["Maria Silva"]` → gateway bloqueia. (Confirmado em 01/10: NER no ar, `ner_ativo:true`, mascara nome com caixa; minúscula-sem-contexto = residual do modelo.)
 
 **STATUS (01/10/2026): biblioteca com NER no ar no VPS (RAG protegido); wiring do Hermes no código.** Falta no VPS: setar `DEID_URL` no `.env.prod` do Hermes + rebuild.
+
+**STATUS (01/10/2026 — FECHADO): wiring do Hermes LIVE no VPS.** `hermes-app` e
+`biblioteca-api` compartilham a rede `deploy_default` → `DEID_URL=http://biblioteca-api:8710/v1/deid`
++ `BIBLIOTECA_API_KEY` (mesma chave da biblioteca) gravados no `.env.prod` do
+Hermes, container recriado. Teste ponta a ponta do container do Hermes:
+`200 {"texto":"Paciente [PESSOA]","found":["Maria Silva"],"ner_ativo":true}` →
+`chamarIA` agora falha fechado em nome residual antes do egress offshore.
+Health `ok`. Degrada se a biblioteca cair (não derruba conversa).
+Opção 2 (allowlist, barreira dura) segue como alvo de médio prazo.
 
 **Nota de rede (`DEID_URL`):** os dois stacks docker são separados — Hermes em `/home/hermes/deploy`, biblioteca em `/srv/biblioteca` (publica `127.0.0.1:8710`). O container do Hermes não alcança `biblioteca-api` pelo nome. Opções: (a) `DEID_URL=http://<ip-do-bridge-docker-do-host>:8710/v1/deid` (ex. `172.17.0.1`), (b) colocar o Hermes e a biblioteca na mesma rede docker externa e usar `http://biblioteca-api:8710/v1/deid`, ou (c) via o domínio público da biblioteca se houver. `BIBLIOTECA_API_KEY` também precisa estar no `.env.prod` do Hermes.
 
@@ -135,7 +144,10 @@ para `notify-email`, remover (a função não existe mais).
 - **V14** — `xlsx@0.18.5` (CVE-2023-30533/2024-22363) só em
   `scripts/terminologia/importar-cmed.ts` (devDependency, não vai ao bundle).
   Atualizar SheetJS via cdn.sheetjs.com quando tocar o script.
-- **V16** — `NEXT_PUBLIC_MAPS_KEY` exposta ao cliente: restringir por
-  domínio/referrer no Google Cloud console (ação no painel, não no código).
+- **V16** — `NEXT_PUBLIC_MAPS_KEY` exposta ao cliente: **FECHADO (01/10/2026)**
+  removendo a key. `landing/components/Location.tsx` usa o embed keyless
+  (`maps.google.com/maps?...output=embed`) — sem API key, zero exposição de
+  billing. Removida do `.env.local.example` e do README. (Dispensa restrição no
+  Google Console; o usuário pode remover a key da Vercel/GCP.)
 - **V9** — oráculo de schema do PostgREST: aceito (sem dado de linha; correção
   no PostgREST gerenciado é mais arriscada que o achado).
