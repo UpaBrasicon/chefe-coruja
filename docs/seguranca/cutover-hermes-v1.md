@@ -48,20 +48,42 @@ Aplicar em produção: `supabase db push --linked` (aditivo, seguro).
 ---
 
 ## 1. Emitir os JWTs dos dois papéis
-O Hermes usa `@supabase/supabase-js` (fala com o PostgREST). O papel vem do
-claim `role` do JWT. Gere **dois** JWTs assinados com o **JWT secret** do projeto
-(Supabase → Settings → API → JWT Secret), claim `role`:
-```json
-{ "role": "hermes_user", "iss": "hermes", "iat": <now>, "exp": <longo> }
-{ "role": "hermes_job",  "iss": "hermes", "iat": <now>, "exp": <longo> }
-```
-(Sem `sub` — o perfil do profissional vai em `p_perfil` nas RPCs, não no JWT.)
-Guarde-os no `.env.prod` do VPS como `HERMES_USER_KEY` e `HERMES_JOB_KEY`.
-**Nunca** no git (o `.dockerignore` já bloqueia `.env*`).
 
-> Alternativa sem JWT custom: conexão Postgres direta (pooler) com um login role
-> `hermes_user`/`hermes_job` + senha, trocando supabase-js por `postgres.js` no
-> cliente. Mais limpo a longo prazo, porém reescreve o cliente — opcional.
+### Mecanismo — decisão binária no dia (chaves legadas desativadas)
+O Hermes usa `@supabase/supabase-js` (fala com o PostgREST); o papel vem do
+claim `role` do JWT, que o PostgREST verifica contra o segredo configurado.
+Este projeto **desativou as API keys legadas** (anon/service_role). Isso NÃO
+desativa por si o **JWT secret** HS256. Checar uma vez no dashboard
+(**Settings → API → JWT Settings**) e escolher:
+
+- **Caminho A — JWT secret HS256 ainda presente/ativo (provável).** Self-mint
+  dos dois tokens. Use o script pronto (zero dependência, HS256 via
+  `node:crypto`):
+  ```bash
+  cd hermes
+  SUPABASE_JWT_SECRET='<JWT secret do dashboard>' node scripts/mint-hermes-jwt.mjs
+  ```
+  Ele imprime `HERMES_USER_KEY=...` e `HERMES_JOB_KEY=...` (claim `role`
+  correta, `iss: supabase`, `exp` 10 anos, sem `sub`). Nunca passe o secret em
+  argumento (fica no histórico) — só pela env. Siga para §2.
+
+- **Caminho B — projeto migrou para JWT Signing Keys assimétricas (sem secret
+  HS256 de verificação).** Não dá para self-mint com segredo compartilhado.
+  Use conexão Postgres direta (pooler) com login roles:
+  ```sql
+  -- migration nova (aditiva): dar LOGIN e senha a papéis que herdam os grants
+  CREATE ROLE hermes_app_user LOGIN PASSWORD '<forte>' IN ROLE hermes_user;
+  CREATE ROLE hermes_app_job  LOGIN PASSWORD '<forte>' IN ROLE hermes_job;
+  ```
+  e trocar `@supabase/supabase-js` por `postgres.js` nos 2 clientes de
+  `lib/supabase.ts` (as RPCs viram `SELECT * FROM public.hermes_*(...)`). Mais
+  trabalho; só se A não existir.
+
+(Sem `sub` nos tokens — o perfil do profissional vai em `p_perfil` nas RPCs,
+não no JWT.) Guarde as chaves no `.env.prod` do VPS como `HERMES_USER_KEY` e
+`HERMES_JOB_KEY`. **Nunca** no git (o `.dockerignore` já bloqueia `.env*`).
+Revogar antes do prazo = rotacionar o JWT secret (invalida todos) ou REVOKE nos
+papéis.
 
 ## 2. Dois clientes no Hermes
 `hermes/src/lib/supabase.ts`: além do cliente atual, criar **dois** clientes
