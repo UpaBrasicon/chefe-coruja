@@ -11,7 +11,19 @@ EXECUTE em RPCs scoped) e **`hermes_job`** (crons, grants mínimos).
 
 ---
 
-> **STATUS (01/10/2026): a REESCRITA DO CÓDIGO já está feita e commitada**
+> **DESFECHO (01/10/2026): swap NÃO executado — V1 fechado por guarda em CI.**
+> O self-mint (caminho A) foi testado em prod e rejeitado (PostgREST em JWKS
+> assimétrica; signing key = ECC P-256; ver §1). O caminho B (Postgres direto +
+> postgres.js) foi avaliado e **descartado por custo/benefício**: o caminho de
+> request (`supabaseUser`) já é **só `.rpc()`** em funções SECURITY DEFINER
+> scoped (cross-tenant barrado no SQL), então o swap seria só defesa em
+> profundidade — não justifica adicionar dependência de pooler/role custom em
+> produção. No lugar, entrou a guarda `hermes/src/lib/supabase-rpc-only.test.ts`
+> (CI): falha se um `.from()` cru entrar no caminho de request ou se o cliente
+> service_role for importado lá. Mesma proteção, zero risco de runtime.
+> Reabrir o caminho B só se o caminho de request precisar de acesso cru a tabela.
+>
+> **STATUS (histórico): a REESCRITA DO CÓDIGO já está feita e commitada**
 > (17 arquivos em `hermes/src`: 2 clientes em `lib/supabase.ts`, identidade,
 > sessão, tools, pipeline, skill-api migrados para `.rpc()`, crons em
 > `supabaseJob`). `cd hermes && npx tsc --noEmit` → PASS. Fallback: sem
