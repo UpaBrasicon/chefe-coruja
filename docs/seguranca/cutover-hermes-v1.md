@@ -11,6 +11,31 @@ EXECUTE em RPCs scoped) e **`hermes_job`** (crons, grants mínimos).
 
 ---
 
+> **STATUS (01/10/2026): a REESCRITA DO CÓDIGO já está feita e commitada**
+> (17 arquivos em `hermes/src`: 2 clientes em `lib/supabase.ts`, identidade,
+> sessão, tools, pipeline, skill-api migrados para `.rpc()`, crons em
+> `supabaseJob`). `cd hermes && npx tsc --noEmit` → PASS. Fallback: sem
+> `HERMES_USER_KEY`/`HERMES_JOB_KEY`, os clientes caem na service key — então
+> **nada muda até você setar as chaves no VPS**. O `export supabase`
+> (service_role) foi mantido (passo §5 — remover — é seu, após testar).
+> Grant de `confirmar_vinculo_hermes` a `hermes_user` adicionado
+> (migration `20261020000002`).
+>
+> **Deltas intencionais** (as RPCs têm shape enxuto; confirme que os consumidores aceitam):
+> `consultaAguia.censo` devolve a última linha (antes até 6); `alertas` sem LIMIT 25
+> e sem `limite_outlier`; `indicadores` sem `unidade_id`/`unidade_nome`;
+> `consultaInfra.integridade` sem `por_severidade`; `getIncidentes` só
+> `aberto`/`em_analise`. Nenhum quebra tipo.
+>
+> **Log de tentativa cross-tenant** foi de `cerbero_incidentes` para
+> `hermes_audit_log` (via `hermes_audit_registrar`), porque `hermes_user` não
+> tem grant de tabela. Se o Gavião precisar enxergar essas tentativas, criar
+> uma RPC de incidente própria para `hermes_user`.
+>
+> Resta no VPS: §1 (emitir JWTs) + §2 (chaves no `.env.prod`) + §7 (testar) + §5 (remover service_role).
+
+---
+
 ## 0. Pré-check (já feito nesta migration)
 - Roles `hermes_user` / `hermes_job` criados (NOLOGIN), concedidos ao `authenticator`.
 - `hermes_user`: **zero** grant de tabela; só EXECUTE nas 23 RPCs listadas.

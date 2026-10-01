@@ -14,7 +14,7 @@
 import type { Redis } from 'ioredis'
 import { createHash } from 'node:crypto'
 import { logger } from '../logger.js'
-import { supabase } from '../lib/supabase.js'
+import { supabaseUser, supabaseJob } from '../lib/supabase.js'
 import { enviarTexto } from '../lib/whatsapp.js'
 import { resolverIdentidadePorWaId } from './identidade.js'
 import { carregarSessao, salvarSessao, type MensagemSessao } from './sessao.js'
@@ -59,11 +59,14 @@ async function gravarAuditoria(
   direction: 'in' | 'out',
   resumo: string
 ): Promise<void> {
-  const { error } = await supabase.from('hermes_audit_log').insert({
-    user_id: userId,
-    phone: waId,
-    direction,
-    tool_result_summary: resumo.slice(0, 500),
+  // RETURNS void. userId pode ser null (mensagem antes de resolver identidade).
+  const { error } = await supabaseUser.rpc('hermes_audit_registrar', {
+    p_perfil: userId,
+    p_phone: waId,
+    p_direction: direction,
+    p_tool_name: null,
+    p_tool_args: null,
+    p_resumo: resumo.slice(0, 500),
   })
   if (error) logger.warn({ err: error.message }, '[audit] falha ao gravar')
 }
@@ -162,31 +165,21 @@ async function quarentenar(
   // Resolve perfil do autor (se cadastrado) — sem dado clínico, só ID
   const identidade = await resolverIdentidadePorWaId(waId).catch(() => null)
 
-  // Registra incidente (severidade critico: URL maliciosa interceptada)
-  const { data: incidente, error: errInc } = await supabase
-    .from('cerbero_incidentes')
-    .insert({
-      patrulha: 'conteudo',
-      severidade: 'critico',
-      titulo: 'URL maliciosa interceptada no canal',
-      evidencia: { urls, motivos: resultados.map((r) => r.motivos) },
-      status: 'aberto',
-    })
-    .select('id')
-    .single()
-
-  if (errInc) logger.warn({ err: errInc.message }, '[cerbero] falha ao criar incidente')
-
-  // Quarentena do conteúdo
-  await supabase.from('cerbero_quarentena').insert({
-    tenant_id: identidade?.organizacaoId ?? null,
-    tipo: 'url',
-    origem: 'chat_whatsapp',
-    autor_id: identidade?.perfilId ?? '00000000-0000-0000-0000-000000000000',
-    conteudo_hash: createHash('sha256').update(texto).digest('hex'),
-    motivo: `URL maliciosa: ${resultados.map((r) => r.motivos.join(',')).join('; ')}`,
-    incidente_id: incidente?.id ?? null,
+  // Uma única RPC colapsa o incidente + a quarentena (antes eram dois INSERTs
+  // separados, com o incidente_id costurado no cliente). RETURNS uuid do
+  // incidente criado.
+  const { error: errQ } = await supabaseUser.rpc('hermes_quarentenar_conteudo', {
+    p_tenant: identidade?.organizacaoId ?? null,
+    p_tipo: 'url',
+    p_origem: 'chat_whatsapp',
+    p_autor: identidade?.perfilId ?? '00000000-0000-0000-0000-000000000000',
+    p_conteudo_hash: createHash('sha256').update(texto).digest('hex'),
+    p_motivo: `URL maliciosa: ${resultados.map((r) => r.motivos.join(',')).join('; ')}`,
+    p_severidade: 'critico',
+    p_titulo: 'URL maliciosa interceptada no canal',
+    p_evidencia: { urls, motivos: resultados.map((r) => r.motivos) },
   })
+  if (errQ) logger.warn({ err: errQ.message }, '[cerbero] falha ao quarentenar conteúdo')
   logger.warn({ waId, urls }, '[cerbero] conteúdo em quarentena (URL maliciosa)')
 
   // Notifica o AUTOR que o conteúdo está em análise (transparência — item 5)
@@ -203,12 +196,14 @@ async function registrarIncidenteConteudo(
   resultados: { veredicto: string; motivos: string[] }[]
 ): Promise<void> {
   const hash = hashUrl(urls[0] ?? '')
-  // Cache 24h do veredicto (evita re-verificação)
-  await supabase.from('cerbero_url_cache').upsert(
+  // Caso SUSPEITO: segue com aviso, sem quarentena. Só cache + incidente
+  // informativo — ambos via supabaseJob (hermes_job tem INSERT em url_cache e
+  // cerbero_incidentes; hermes_quarentenar_conteudo criaria quarentena à toa).
+  await supabaseJob.from('cerbero_url_cache').upsert(
     { url_hash: hash, veredicto: 'suspeito', fonte: 'heuristica', detalhe: { urls, motivos: resultados.map((r) => r.motivos) } },
     { onConflict: 'url_hash' }
   )
-  await supabase.from('cerbero_incidentes').insert({
+  await supabaseJob.from('cerbero_incidentes').insert({
     patrulha: 'conteudo',
     severidade: 'informativo',
     titulo: 'URL suspeita no canal',

@@ -6,7 +6,7 @@
 //
 // ⚠️ Resumo com NÚMEROS e títulos — nunca dado de paciente.
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabase } from '../lib/supabase.js'
+import { supabaseJob as supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 
 export type LinhaIncidente = {

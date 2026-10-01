@@ -9,7 +9,7 @@
 //   - cancelamento tardio: repasse com created_at < 48h antes do plantão
 //   - concentracao_destino: % dos repasses por destino_perfil_id
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabase } from '../lib/supabase.js'
+import { supabaseJob as supabase } from '../lib/supabase.js'
 import { hojeBrasilia } from '../lib/tempo.js'
 import { logger } from '../logger.js'
 

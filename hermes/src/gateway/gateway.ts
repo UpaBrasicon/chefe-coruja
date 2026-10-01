@@ -12,7 +12,7 @@
 import { createHash } from 'node:crypto'
 
 import { completar, type ChamadaLLM, type MensagemLLM, type RespostaLLM, type ToolCallLLM } from '../lib/llm.js'
-import { supabase } from '../lib/supabase.js'
+import { supabaseJob as supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 import {
   desidentificar, reidentificar, residuos,

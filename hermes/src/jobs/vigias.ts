@@ -12,7 +12,7 @@
 //   Guardião .......... aberturas/impressões de prontuário fora do padrão
 //   Cadeia ............ log de auditoria adulterado
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabase } from '../lib/supabase.js'
+import { supabaseJob as supabase } from '../lib/supabase.js'
 import { hojeBrasilia } from '../lib/tempo.js'
 import { logger } from '../logger.js'
 import { chavesJaAbertas, filtrarNovos } from './dedup.js'

@@ -8,7 +8,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { hojeBrasilia } from '../lib/tempo.js'
-import { supabase } from '../lib/supabase.js'
+import { supabaseJob as supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 
 export type NotificacaoIris = {

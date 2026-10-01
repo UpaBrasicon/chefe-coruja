@@ -16,7 +16,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { DatabaseSync } from 'node:sqlite'
 import { existsSync } from 'node:fs'
-import { supabase } from '../lib/supabase.js'
+import { supabaseJob as supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 import { chavesJaAbertas, filtrarNovos } from './dedup.js'
 

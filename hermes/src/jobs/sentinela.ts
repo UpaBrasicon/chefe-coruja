@@ -10,7 +10,7 @@
 //   4. Se houver achados: resumo FACTUAL via LLM + notificação ao gestor
 //      (Telegram via gateway + notificacoes_plantonista in-app)
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabase } from '../lib/supabase.js'
+import { supabaseJob as supabase } from '../lib/supabase.js'
 import { hojeBrasilia } from '../lib/tempo.js'
 import { logger } from '../logger.js'
 import { calcularMetricasUnidade, detectarOutliers, type AlertaSentinela } from '../agent/sentinela.js'

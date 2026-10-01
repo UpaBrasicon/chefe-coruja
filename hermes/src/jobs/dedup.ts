@@ -13,7 +13,7 @@
 // os testes unitários não tocarem a rede.
 // ─────────────────────────────────────────────────────────────────────────────
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase.js'
+import { supabaseJob as supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 
 const TAMANHO_LOTE = 100

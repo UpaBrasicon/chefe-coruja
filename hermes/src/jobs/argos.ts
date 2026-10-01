@@ -11,7 +11,7 @@
 //   C. Prescrição sem paciente vinculado (órfã)
 //   D. Leito ocupado em setor sem ninguém de plantão agora (janela real)
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabase } from '../lib/supabase.js'
+import { supabaseJob as supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 import { chavesJaAbertas, filtrarNovos } from './dedup.js'
 
