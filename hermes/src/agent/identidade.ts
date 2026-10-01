@@ -10,8 +10,8 @@
 // no código. Aqui resolvemos APENAS o perfil + vínculos de quem fala —
 // nenhum dado de outro usuário é lido.
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabase } from '../lib/supabase.js'
-import { normalizarE164BR, telefoneCorrespondeWaId } from '../lib/telefone.js'
+import { supabaseUser } from '../lib/supabase.js'
+import { normalizarE164BR } from '../lib/telefone.js'
 import { logger } from '../logger.js'
 
 /** Os 8 papéis do glossário (CONTEXT.md). */
@@ -67,53 +67,32 @@ export type IdentidadeHermes = {
 }
 
 /**
- * Verifica se o perfil está na tabela `super_admins`. Fonte única — as guardas
- * de papel do backend e das skills dependem disto, nunca do texto da conversa.
+ * Linha das RPCs de identidade (hermes_identidade_por_telefone / _por_canal).
+ * O escopo (super_admin, vínculos) é resolvido DENTRO do SQL — o Hermes não lê
+ * mais `super_admins`/`vinculos` direto (hermes_user não tem grant de tabela).
  */
-export async function ehSuperAdmin(perfilId: string): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('super_admins')
-    .select('perfil_id')
-    .eq('perfil_id', perfilId)
-    .maybeSingle()
-
-  if (error) {
-    // Falha fechada: erro ao consultar NUNCA concede privilégio.
-    logger.error({ err: error.message, perfil: perfilId }, '[identidade] falha ao checar super_admin')
-    return false
-  }
-  return Boolean(data)
+type VinculoRpc = {
+  unidade_id: string
+  papel: PapelHermes
+  unidade_nome: string
+  organizacao_id: string
+}
+type IdentidadeRpc = {
+  perfil_id: string
+  nome_completo: string
+  email: string | null
+  is_super_admin: boolean
+  vinculos: VinculoRpc[] | null
 }
 
-type PerfilBase = { id: string; nome_completo: string; email: string | null }
-
-/** Monta a identidade completa (vínculos + super_admin) de um perfil ativo. */
-async function identidadeDoPerfil(perfil: PerfilBase): Promise<IdentidadeHermes> {
-  const { data: vinculos, error: errVinculos } = await supabase
-    .from('vinculos')
-    .select('papel, ativo, unidades!vinculos_unidade_id_fkey(id, nome, organizacao_id)')
-    .eq('perfil_id', perfil.id)
-    .eq('ativo', true)
-
-  if (errVinculos) {
-    logger.error({ err: errVinculos.message }, '[identidade] falha ao consultar vínculos')
-    throw new Error('falha interna ao resolver vínculos')
-  }
-
-  type Unidade = { id: string; nome: string; organizacao_id: string }
-  const linhas = (vinculos ?? []) as unknown as {
-    papel: PapelHermes
-    ativo: boolean
-    // O embed do PostgREST vem como objeto (relação para-um), mas os tipos
-    // gerados dizem array — normalizamos para aguentar os dois.
-    unidades: Unidade | Unidade[] | null
-  }[]
-
-  const listaVinculos: VinculoHermes[] = linhas.flatMap((v) => {
-    const u = Array.isArray(v.unidades) ? v.unidades[0] : v.unidades
-    if (!u) return []
-    return [{ papel: v.papel, unidadeId: u.id, unidadeNome: u.nome, organizacaoId: u.organizacao_id }]
-  })
+/** Monta a IdentidadeHermes a partir da linha da RPC (vínculos + super já vêm). */
+function montarIdentidade(row: IdentidadeRpc): IdentidadeHermes {
+  const listaVinculos: VinculoHermes[] = (row.vinculos ?? []).map((v) => ({
+    papel: v.papel,
+    unidadeId: v.unidade_id,
+    unidadeNome: v.unidade_nome,
+    organizacaoId: v.organizacao_id,
+  }))
 
   // Vínculo PRINCIPAL: maior precedência de papel, desempate determinístico
   // pelo unidade_id. Papel desconhecido pesa 0 (nunca NaN no sort).
@@ -121,18 +100,17 @@ async function identidadeDoPerfil(perfil: PerfilBase): Promise<IdentidadeHermes>
     (a, b) => peso(b.papel) - peso(a.papel) || a.unidadeId.localeCompare(b.unidadeId)
   )[0]
 
-  const superAdmin = await ehSuperAdmin(perfil.id)
-
   return {
-    perfilId: perfil.id,
-    nome: perfil.nome_completo,
-    email: perfil.email,
+    perfilId: row.perfil_id,
+    nome: row.nome_completo,
+    email: row.email,
     papel: principal?.papel ?? null,
     unidadeId: principal?.unidadeId ?? null,
     unidadeNome: principal?.unidadeNome ?? null,
     organizacaoId: principal?.organizacaoId ?? null,
     vinculos: listaVinculos,
-    superAdmin,
+    // `=== true` proposital: ausência/undefined falha FECHADA (nunca concede).
+    superAdmin: row.is_super_admin === true,
   }
 }
 
@@ -149,46 +127,21 @@ export async function resolverIdentidadePorWaId(waId: string): Promise<Identidad
   const e164 = normalizarE164BR(waId)
   if (!e164) return null
 
-  // 1) Busca direta por E.164 completo (caso comum e barato).
-  const { data: direto, error: errDireto } = await supabase
-    .from('perfis')
-    .select('id, nome_completo, email, telefone')
-    .eq('telefone', e164)
-    .eq('ativo', true)
-    .limit(2)
-  if (errDireto) {
-    logger.error({ err: errDireto.message }, '[identidade] falha ao consultar perfil direto')
+  // A RPC compara por dígitos (ignora formatação), já traz vínculos+super e
+  // devolve VAZIO quando o telefone é ambíguo (dois perfis) — o antigo scan
+  // cross-tenant da tabela `perfis` some.
+  const { data, error } = await supabaseUser.rpc('hermes_identidade_por_telefone', { p_e164: e164 })
+  if (error) {
+    logger.error({ err: error.message }, '[identidade] falha ao resolver identidade')
     throw new Error('falha interna ao resolver identidade')
   }
-  const candidatos = (direto ?? []) as (PerfilBase & { telefone: string | null })[]
-
-  // 2) Telefone guardado em outro formato ("(62) 9…"): varre, em páginas,
-  //    só perfis com telefone preenchido, com a comparação estrita.
-  if (candidatos.length === 0) {
-    for (let de = 0; ; de += 1000) {
-      const { data: pagina, error } = await supabase
-        .from('perfis')
-        .select('id, nome_completo, email, telefone')
-        .not('telefone', 'is', null)
-        .eq('ativo', true)
-        .order('id')
-        .range(de, de + 999)
-      if (error) {
-        logger.error({ err: error.message }, '[identidade] falha ao consultar perfis')
-        throw new Error('falha interna ao resolver identidade')
-      }
-      candidatos.push(...((pagina ?? []) as typeof candidatos).filter((p) => p.telefone && telefoneCorrespondeWaId(p.telefone, waId)))
-      if (!pagina || pagina.length < 1000) break
-    }
-  }
-
-  // Dois perfis com o mesmo telefone: ambíguo — melhor não responder do que
-  // responder como a pessoa errada.
-  if (candidatos.length !== 1) {
-    if (candidatos.length > 1) logger.warn({ quantidade: candidatos.length }, '[identidade] telefone ambíguo — recusado')
+  // RETURNS TABLE → array de linhas. Ambíguo/não achado → 0 linhas.
+  const linhas = (data ?? []) as IdentidadeRpc[]
+  if (linhas.length !== 1) {
+    if (linhas.length > 1) logger.warn({ quantidade: linhas.length }, '[identidade] telefone ambíguo — recusado')
     return null
   }
-  return identidadeDoPerfil(candidatos[0]!)
+  return montarIdentidade(linhas[0]!)
 }
 
 /**
@@ -198,18 +151,16 @@ export async function resolverIdentidadePorWaId(waId: string): Promise<Identidad
  */
 export async function resolverIdentidadePorCanal(canal: CanalHermes, identificador: string): Promise<IdentidadeHermes | null> {
   if (!/^[A-Za-z0-9_.:-]{1,64}$/.test(identificador)) return null
-  const { data, error } = await supabase
-    .from('hermes_identidades')
-    .select('perfis!hermes_identidades_perfil_id_fkey(id, nome_completo, email, ativo)')
-    .eq('canal', canal)
-    .eq('identificador', identificador)
-    .maybeSingle()
+  const { data, error } = await supabaseUser.rpc('hermes_identidade_por_canal', {
+    p_canal: canal,
+    p_identificador: identificador,
+  })
   if (error) {
     logger.error({ err: error.message }, '[identidade] falha ao consultar vínculo de canal')
     throw new Error('falha interna ao resolver identidade')
   }
-  const p = (data as { perfis: (PerfilBase & { ativo: boolean }) | (PerfilBase & { ativo: boolean })[] | null } | null)?.perfis
-  const perfil = Array.isArray(p) ? p[0] : p
-  if (!perfil || !perfil.ativo) return null
-  return identidadeDoPerfil(perfil)
+  // RETURNS TABLE → array; a RPC só casa perfil ATIVO. Nada casado → 0 linhas.
+  const linhas = (data ?? []) as IdentidadeRpc[]
+  if (linhas.length === 0) return null
+  return montarIdentidade(linhas[0]!)
 }

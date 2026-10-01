@@ -88,11 +88,15 @@ por regra — por isso a allowlist é a barreira real.
 1. Na `biblioteca`: `pip install -r requirements.txt` + `python -m spacy download pt_core_news_sm` + rebuild/restart. (RAG já ganha NER.)
 2. **Wiring dos gateways** (fecha o chat do Hermes também), controlado por env `DEID_URL` (= `{BIBLIOTECA_URL}/v1/deid`):
    - `supabase/functions/clinical-search/index.ts`: após o `desidentificar`/`residuos` atuais e **antes** de chamar a `biblioteca`, se `DEID_URL` setado, POST `{texto: qRed}`; se `found` não-vazio → retornar 422 (como o residue atual); se o serviço cair → logar incidente e seguir com o regex (degrade), ou falhar fechado se preferir LGPD estrita.
-   - `hermes/src/gateway/gateway.ts`: no `limparMensagem`/antes do `chamarIA`, mesma chamada; `found` não-vazio → `ChamadaBloqueada` (fail-closed já existente).
+   - `hermes/src/gateway/gateway.ts`: **JÁ IMPLEMENTADO** (commit 35717ea) — `chamarIA` chama `/v1/deid` após a limpeza regex e antes do egress; `found` não-vazio → `ChamadaBloqueada` (fail-closed). Opt-in por `DEID_URL`; serviço fora → degrada.
    - Sem `DEID_URL` = comportamento atual (aditivo, não quebra).
-3. Testar: "a maria do leito 3 está com febre" → `/v1/deid` retorna `found:["Maria"]` → gateway bloqueia.
+3. Testar: "A paciente Maria Silva ..." → `/v1/deid` retorna `found:["Maria Silva"]` → gateway bloqueia. (Confirmado em 01/10: NER no ar, `ner_ativo:true`, mascara nome com caixa; minúscula-sem-contexto = residual do modelo.)
 
-Enquanto o modelo não é instalado no VPS, tudo segue como hoje (fail-safe).
+**STATUS (01/10/2026): biblioteca com NER no ar no VPS (RAG protegido); wiring do Hermes no código.** Falta no VPS: setar `DEID_URL` no `.env.prod` do Hermes + rebuild.
+
+**Nota de rede (`DEID_URL`):** os dois stacks docker são separados — Hermes em `/home/hermes/deploy`, biblioteca em `/srv/biblioteca` (publica `127.0.0.1:8710`). O container do Hermes não alcança `biblioteca-api` pelo nome. Opções: (a) `DEID_URL=http://<ip-do-bridge-docker-do-host>:8710/v1/deid` (ex. `172.17.0.1`), (b) colocar o Hermes e a biblioteca na mesma rede docker externa e usar `http://biblioteca-api:8710/v1/deid`, ou (c) via o domínio público da biblioteca se houver. `BIBLIOTECA_API_KEY` também precisa estar no `.env.prod` do Hermes.
+
+Enquanto o modelo não é instalado no VPS, tudo segue como hoje (fail-safe). *(Modelo já instalado em 01/10.)*
 
 ---
 

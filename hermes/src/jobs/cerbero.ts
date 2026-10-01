@@ -19,7 +19,7 @@
 //
 // ⚠️ Regra inviolável: reporta IDs e números, NUNCA nome de paciente.
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabase } from '../lib/supabase.js'
+import { supabaseJob as supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 import { hojeBrasilia } from '../lib/tempo.js'
 import { chavesJaAbertas, filtrarNovos } from './dedup.js'

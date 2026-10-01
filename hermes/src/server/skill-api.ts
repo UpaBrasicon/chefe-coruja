@@ -32,7 +32,7 @@ import type { FastifyInstance } from 'fastify'
 import { env } from '../config/env.js'
 import { logger } from '../logger.js'
 import { hojeBrasilia } from '../lib/tempo.js'
-import { supabase } from '../lib/supabase.js'
+import { supabaseUser } from '../lib/supabase.js'
 import {
   resolverIdentidadePorCanal,
   resolverIdentidadePorWaId,
@@ -125,15 +125,12 @@ export function resolverUnidade(
 }
 
 /** Nomes das pessoas com vínculo na unidade — o que o gateway deve trocar por pseudônimo. */
-async function nomesDaUnidade(unidadeId: string): Promise<Conhecido[]> {
-  const { data, error } = await supabase
-    .from('vinculos')
-    .select('perfis!vinculos_perfil_id_fkey(nome_completo)')
-    .eq('unidade_id', unidadeId)
-  if (error) throw new Error(error.message)
-  return ((data ?? []) as unknown as { perfis: { nome_completo: string } | { nome_completo: string }[] | null }[])
-    .flatMap((v) => (Array.isArray(v.perfis) ? v.perfis : v.perfis ? [v.perfis] : []))
-    .map((p) => ({ valor: p.nome_completo, categoria: 'PESSOA' as const }))
+async function nomesDaUnidade(perfil: string, unidadeId: string): Promise<Conhecido[]> {
+  // RETURNS TABLE(nome_completo) → array. A RPC exige vínculo do chamador.
+  const linhas = dados<{ nome_completo: string }[]>(
+    await supabaseUser.rpc('hermes_unidade_nomes', { p_perfil: perfil, p_unidade: unidadeId })
+  )
+  return linhas.map((p) => ({ valor: p.nome_completo, categoria: 'PESSOA' as const }))
 }
 
 // ── Consultas por escopo ─────────────────────────────────────────────────────
@@ -154,80 +151,69 @@ function enumOuNulo(valor: unknown, permitidos: string[]): string | null {
   return typeof valor === 'string' && permitidos.includes(valor) ? valor : null
 }
 
-async function consultaAguia(comando: string, unidadeId: string | null): Promise<unknown> {
+async function consultaAguia(comando: string, perfil: string, unidadeId: string | null): Promise<unknown> {
   if (!unidadeId) return { erro: 'usuário sem unidade vinculada' }
 
   switch (comando) {
     case 'setores': {
-      return dados(await supabase
-        .from('setores')
-        .select('nome')
-        .eq('unidade_id', unidadeId)
-        .eq('ativo', true)
-        .order('ordem', { ascending: true }))
+      // RETURNS TABLE(nome) → array {nome} (igual ao select antigo).
+      return dados(await supabaseUser.rpc('hermes_unidade_setores', { p_perfil: perfil, p_unidade: unidadeId }))
     }
     case 'censo': {
-      return dados(await supabase
-        .from('censo_ocupacao')
-        .select('data, turno, internados, leitos_total, leitos_ocupados, leitos_livres, taxa_ocupacao')
-        .eq('unidade_id', unidadeId)
-        .order('data', { ascending: false })
-        .order('turno', { ascending: true })
-        .limit(6))
+      // RETURNS TABLE(...) → array. A RPC devolve a leitura mais recente (1),
+      // onde o select antigo trazia até 6.
+      return dados(await supabaseUser.rpc('hermes_unidade_censo', { p_perfil: perfil, p_unidade: unidadeId }))
     }
     case 'indicadores': {
-      return dados(await supabase
-        .from('vw_indicadores_unidade')
-        .select('unidade_id, unidade_nome, total_pacientes, prescricoes_assinadas, prescricoes_rascunho, receitas_retidas')
-        .eq('unidade_id', unidadeId))
+      // RETURNS TABLE(total_pacientes, prescricoes_assinadas, prescricoes_rascunho,
+      // receitas_retidas) → array de uma linha (sem unidade_id/unidade_nome).
+      return dados(await supabaseUser.rpc('hermes_unidade_indicadores', { p_perfil: perfil, p_unidade: unidadeId }))
     }
     case 'profissionais': {
       // Só a CONTAGEM por papel. Nome de colega é dado pessoal e iria ao
       // modelo de IA sem passar pelo gateway (ADR 0006, auditoria 27/09):
       // quem precisa da lista nominal usa a plataforma.
-      const { data, error } = await supabase
-        .from('vinculos')
-        .select('papel')
-        .eq('unidade_id', unidadeId)
-        .eq('ativo', true)
-      if (error) throw new Error(error.message)
+      // RETURNS TABLE(papel, total) → remonta o Record<papel, contagem>.
+      const linhas = dados<{ papel: string; total: number }[]>(
+        await supabaseUser.rpc('hermes_unidade_profissionais', { p_perfil: perfil, p_unidade: unidadeId })
+      )
       const porPapel: Record<string, number> = {}
-      for (const v of (data ?? []) as { papel: string }[]) porPapel[v.papel] = (porPapel[v.papel] ?? 0) + 1
+      for (const l of linhas) porPapel[l.papel] = Number(l.total)
       return { profissionais_por_papel: porPapel }
     }
     case 'resumo': {
       // Uma linha pronta por unidade, refeita a cada 15 min pelo banco
       // (private.hermes_atualizar_resumos) — uma leitura em vez de várias.
-      const linha = dados(await supabase
-        .from('hermes_resumo_unidade')
-        .select('dados, atualizado_em')
-        .eq('unidade_id', unidadeId)
-        .maybeSingle()) as { dados: unknown } | null
-      return linha?.dados ?? { mensagem: 'Resumo ainda não gerado para esta unidade.' }
+      // RETURNS jsonb (escalar): o próprio `dados`, ou null se ainda não gerado.
+      const { data, error } = await supabaseUser.rpc('hermes_unidade_resumo', { p_perfil: perfil, p_unidade: unidadeId })
+      if (error) throw new Error(error.message)
+      return data ?? { mensagem: 'Resumo ainda não gerado para esta unidade.' }
     }
     default:
       return { erro: 'comando desconhecido' }
   }
 }
 
-async function consultaGarca(comando: string, unidadeId: string | null): Promise<unknown> {
+async function consultaGarca(comando: string, perfil: string, unidadeId: string | null): Promise<unknown> {
   if (!unidadeId) return { erro: 'usuário sem unidade vinculada' }
 
   switch (comando) {
     case 'indicadores':
     case 'censo':
-      return consultaAguia(comando, unidadeId)
+      return consultaAguia(comando, perfil, unidadeId)
     case 'internacoes': {
-      // Só a CONTAGEM por status — nunca a lista de pacientes (LGPD).
+      // Só a CONTAGEM por status — nunca a lista de pacientes (LGPD). A RPC já
+      // agrega no banco (RETURNS TABLE(status, total)); remontamos o Record e o
+      // total — a paginação de 1000 no cliente sai.
+      const linhas = dados<{ status: string; total: number }[]>(
+        await supabaseUser.rpc('hermes_unidade_internacoes_por_status', { p_perfil: perfil, p_unidade: unidadeId })
+      )
       const porStatus: Record<string, number> = {}
       let total = 0
-      for (let de = 0; ; de += 1000) {
-        const pagina = dados<{ status: string }[]>(
-          await supabase.from('internacoes').select('status').eq('unidade_id', unidadeId).order('id').range(de, de + 999)
-        )
-        for (const i of pagina) porStatus[i.status] = (porStatus[i.status] ?? 0) + 1
-        total += pagina.length
-        if (pagina.length < 1000) break
+      for (const l of linhas) {
+        const n = Number(l.total)
+        porStatus[l.status] = n
+        total += n
       }
       return { por_status: porStatus, total }
     }
@@ -238,60 +224,54 @@ async function consultaGarca(comando: string, unidadeId: string | null): Promise
 
 async function consultaSentinela(
   comando: string,
+  perfil: string,
   unidadeId: string | null,
   args: Record<string, unknown>,
   superAdmin: boolean
 ): Promise<unknown> {
   switch (comando) {
     case 'alertas': {
+      // A RPC recebe p_status como array; preservamos o filtro por um status
+      // (default 'novo'). unidadeId null + super → todas as unidades.
+      // RETURNS TABLE(...) → array (sem `limite_outlier`; sem LIMIT 25 fixo).
       const status = enumOuNulo(args.status, STATUS_ALERTA) ?? 'novo'
-      let q = supabase
-        .from('chronos_alertas_escala')
-        .select('id, unidade_id, medico_id, metrica, valor, mediana_unidade, limite_outlier, status, criado_em')
-        .eq('status', status)
-        .order('criado_em', { ascending: false })
-        .limit(25)
-      // Gestor/admin veem só a própria unidade. super_admin sem unidade vê tudo.
-      if (unidadeId) q = q.eq('unidade_id', unidadeId)
-      return dados(await q)
+      return dados(await supabaseUser.rpc('hermes_alertas_escala', {
+        p_perfil: perfil,
+        p_unidade: unidadeId,
+        p_status: [status],
+      }))
     }
     case 'relatorio': {
       // O relatório é GLOBAL (todas as organizações): só suporte técnico.
       if (!superAdmin) return { mensagem: 'O relatório semanal é consultado na plataforma.' }
-      return dados(await supabase
-        .from('gaviao_relatorios_semanais')
-        .select('periodo_inicio, periodo_fim, resumo, gerado_em')
-        .order('periodo_inicio', { ascending: false })
-        .limit(1))
+      // RETURNS jsonb (escalar) = a linha mais recente, ou null. Mantemos o
+      // shape de "lista" (0 ou 1) que o select .limit(1) antigo entregava.
+      const { data, error } = await supabaseUser.rpc('hermes_relatorio_semanal_ultimo', { p_perfil: perfil })
+      if (error) throw new Error(error.message)
+      return data ? [data] : []
     }
     default:
       return { erro: 'comando desconhecido' }
   }
 }
 
-async function consultaSeguranca(comando: string, args: Record<string, unknown>): Promise<unknown> {
+async function consultaSeguranca(comando: string, perfil: string, args: Record<string, unknown>): Promise<unknown> {
   switch (comando) {
     case 'incidentes': {
-      let q = supabase
-        .from('cerbero_incidentes')
-        .select('id, patrulha, severidade, titulo, status, detectado_em')
-        .in('status', ['aberto', 'em_analise'])
-        .order('detectado_em', { ascending: false })
-        .limit(25)
+      // RETURNS TABLE(...) → array; a RPC já filtra status aberto/em_analise e
+      // aceita patrulha/severidade opcionais (null = sem filtro).
       const patrulha = enumOuNulo(args.patrulha, PATRULHAS)
       const severidade = enumOuNulo(args.severidade, SEVERIDADES)
-      if (patrulha) q = q.eq('patrulha', patrulha)
-      if (severidade) q = q.eq('severidade', severidade)
-      return dados(await q)
+      return dados(await supabaseUser.rpc('hermes_incidentes_abertos', {
+        p_perfil: perfil,
+        p_patrulha: patrulha,
+        p_severidade: severidade,
+      }))
     }
     case 'quarentena': {
-      const q = supabase
-        .from('cerbero_quarentena')
-        .select('id, tipo, origem, motivo, liberado, criado_em')
-        .eq('liberado', false)
-        .order('criado_em', { ascending: false })
-        .limit(25)
-      return dados(await q)
+      // RETURNS TABLE(id, tipo, origem, motivo, criado_em) → array (sem
+      // `liberado`, que era sempre false aqui).
+      return dados(await supabaseUser.rpc('hermes_quarentena_pendente', { p_perfil: perfil }))
     }
     default:
       return { erro: 'comando desconhecido' }
@@ -311,27 +291,24 @@ async function consultaOperacional(
     case 'censo':
     case 'indicadores':
     case 'profissionais':
-      return consultaAguia(comando, unidadeId)
+      return consultaAguia(comando, id.perfilId, unidadeId)
     case 'notificacoes': {
       const dias = Number(args.dias)
       const janela = Number.isFinite(dias) && dias > 0 && dias <= 90 ? dias : 7
-      const desde = hojeBrasilia(-janela)
-      // Só os avisos DA PESSOA (a RLS da tabela é perfil_id = eu; o service
-      // role não aplica RLS, então o filtro mora aqui).
-      const { data, error } = await supabase
-        .from('notificacoes_plantonista')
-        .select('tipo, mensagem, data')
-        .eq('unidade_id', unidadeId)
-        .eq('perfil_id', id.perfilId)
-        .gte('data', desde)
-        .order('data', { ascending: false })
-        .limit(50)
-      if (error) throw new Error(error.message)
+      // A RPC filtra pelo próprio perfil + unidade + janela de dias dentro do
+      // SQL. RETURNS TABLE(tipo, mensagem, data) → array.
+      const linhas = dados<{ tipo: string; mensagem: string; data: string }[]>(
+        await supabaseUser.rpc('hermes_minhas_notificacoes', {
+          p_perfil: id.perfilId,
+          p_unidade: unidadeId,
+          p_dias: janela,
+        })
+      )
       // Avisos como o do Sentinela citam colegas pelo nome: o texto passa
       // pelo gateway de desidentificação antes de ir ao modelo (ADR 0006).
-      const conhecidos = await nomesDaUnidade(unidadeId)
+      const conhecidos = await nomesDaUnidade(id.perfilId, unidadeId)
       const cofre = criarCofre()
-      return ((data ?? []) as { tipo: string; mensagem: string; data: string }[]).map((n) => ({
+      return linhas.map((n) => ({
         ...n,
         mensagem: desidentificar(n.mensagem ?? '', cofre, conhecidos).texto,
       }))
@@ -358,7 +335,7 @@ async function consultaEscala(
       const periodo = enumOuNulo(args.periodo, ['hoje', 'semana', 'mes']) ?? 'semana'
       // Janela real do plantão (início + duração), em horário de Brasília,
       // incluindo o plantão em curso que começou ontem.
-      return dados(await supabase.rpc('hermes_plantoes_do_perfil', {
+      return dados(await supabaseUser.rpc('hermes_plantoes_do_perfil', {
         p_perfil: id.perfilId, // ← nunca o que veio no argumento
         p_dias: periodo === 'hoje' ? 1 : periodo === 'semana' ? 7 : 31,
       }))
@@ -372,7 +349,7 @@ async function consultaEscala(
       const dia = typeof args.data === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(args.data) ? args.data : hojeBrasilia()
       // Contagem por setor e horário de início — sem nomes (ADR 0006; a
       // escala nominal fica na plataforma).
-      const linhas = dados(await supabase.rpc('hermes_plantao_do_dia', { p_unidade: unidadeId, p_dia: dia }))
+      const linhas = dados(await supabaseUser.rpc('hermes_plantao_do_dia', { p_unidade: unidadeId, p_dia: dia }))
       return { dia, plantoes: linhas }
     }
     default:
@@ -384,25 +361,14 @@ async function consultaEscala(
  * Infra (super_admin): panorama de integridade sem expor conteúdo. Só
  * contagens — nunca títulos de incidente, que podem carregar texto de origem.
  */
-async function consultaInfra(comando: string): Promise<unknown> {
+async function consultaInfra(comando: string, perfil: string): Promise<unknown> {
   if (comando !== 'integridade') return { erro: 'comando desconhecido' }
 
-  const [incidentes, quarentena] = await Promise.all([
-    supabase.from('cerbero_incidentes').select('severidade').in('status', ['aberto', 'em_analise']).limit(500),
-    supabase.from('cerbero_quarentena').select('id', { count: 'exact', head: true }).eq('liberado', false),
-  ])
-  const lista = dados(incidentes) as { severidade: string }[]
-  if (quarentena.error) throw new Error(quarentena.error.message)
-
-  const porSeveridade: Record<string, number> = { critico: 0, atencao: 0, informativo: 0 }
-  for (const i of lista) {
-    porSeveridade[i.severidade] = (porSeveridade[i.severidade] ?? 0) + 1
-  }
-  return {
-    incidentes_abertos: lista.length,
-    por_severidade: porSeveridade,
-    quarentena_pendente: quarentena.count ?? 0,
-  }
+  // RETURNS jsonb (escalar) = { incidentes_abertos, quarentena_pendente }. A
+  // RPC NÃO traz a quebra por_severidade que o cliente montava antes.
+  const { data, error } = await supabaseUser.rpc('hermes_integridade_resumo', { p_perfil: perfil })
+  if (error) throw new Error(error.message)
+  return data ?? { incidentes_abertos: 0, quarentena_pendente: 0 }
 }
 
 /**
@@ -457,7 +423,7 @@ export function registrarSkillApi(app: FastifyInstance): void {
         return reply.code(400).send({ ok: false, erro: 'informe a pergunta' })
       }
       try {
-        const achados = dados(await supabase.rpc('hermes_almanaque_buscar', { p_texto: texto, p_limite: 2 }))
+        const achados = dados(await supabaseUser.rpc('hermes_almanaque_buscar', { p_texto: texto, p_limite: 2 }))
         return reply.code(200).send({ ok: true, dados: achados })
       } catch (err) {
         logger.error({ err: (err as Error).message }, '[skill-api] falha no almanaque')
@@ -495,17 +461,20 @@ export function registrarSkillApi(app: FastifyInstance): void {
       identidade = { ...identidade, papel: papelNaUnidade(identidade, unidade.unidadeId), unidadeId: unidade.unidadeId }
     }
     if (!unidade.ok) {
-      // Pediu unidade à qual não está vinculado — cross-tenant. Registra como
-      // incidente: é exatamente o que o Gavião deve enxergar.
+      // Pediu unidade à qual não está vinculado — cross-tenant. Sob hermes_user
+      // (sem grant de tabela) o registro vai pelo audit_log via RPC, não mais
+      // por INSERT direto em cerbero_incidentes.
       logger.warn(
         { escopo, perfil: identidade.perfilId, pedida: args.unidade_id },
         '[skill-api] tentativa cross-tenant bloqueada'
       )
-      await supabase.from('cerbero_incidentes').insert({
-        patrulha: 'hermes',
-        severidade: 'atencao',
-        titulo: '[SkillAPI] Tentativa de acesso a unidade não vinculada',
-        evidencia: { perfil_id: identidade.perfilId, escopo, unidade_pedida: args.unidade_id },
+      await supabaseUser.rpc('hermes_audit_registrar', {
+        p_perfil: identidade.perfilId,
+        p_phone: corpo.wa_id ?? corpo.identificador ?? '',
+        p_direction: 'tool',
+        p_tool_name: 'skill_cross_tenant_bloqueado',
+        p_tool_args: { escopo, unidade_pedida: args.unidade_id },
+        p_resumo: '[SkillAPI] Tentativa de acesso a unidade não vinculada',
       })
       return reply.code(403).send({ ok: false, erro: 'nao_autorizado', resposta: RESPOSTA_GENERICA })
     }
@@ -514,10 +483,10 @@ export function registrarSkillApi(app: FastifyInstance): void {
       let dados: unknown
       switch (escopo) {
         case 'aguia':
-          dados = await consultaAguia(comando, unidade.unidadeId)
+          dados = await consultaAguia(comando, identidade.perfilId, unidade.unidadeId)
           break
         case 'garca':
-          dados = await consultaGarca(comando, unidade.unidadeId)
+          dados = await consultaGarca(comando, identidade.perfilId, unidade.unidadeId)
           break
         case 'operacional':
           dados = await consultaOperacional(comando, unidade.unidadeId, args, identidade)
@@ -526,13 +495,13 @@ export function registrarSkillApi(app: FastifyInstance): void {
           dados = await consultaEscala(comando, identidade, unidade.unidadeId, args)
           break
         case 'sentinela':
-          dados = await consultaSentinela(comando, unidade.unidadeId, args, identidade.superAdmin === true)
+          dados = await consultaSentinela(comando, identidade.perfilId, unidade.unidadeId, args, identidade.superAdmin === true)
           break
         case 'seguranca':
-          dados = await consultaSeguranca(comando, args)
+          dados = await consultaSeguranca(comando, identidade.perfilId, args)
           break
         case 'infra':
-          dados = await consultaInfra(comando)
+          dados = await consultaInfra(comando, identidade.perfilId)
           break
       }
       return reply.code(200).send({ ok: true, dados })
@@ -569,7 +538,10 @@ export function registrarSkillApi(app: FastifyInstance): void {
       return reply.code(429).send({ ok: false, erro: 'Muitas tentativas. Gere um código novo e tente em 15 minutos.' })
     }
 
-    const { data: perfilId, error } = await supabase.rpc('confirmar_vinculo_hermes', {
+    // ⚠️ confirmar_vinculo_hermes ainda NÃO está no GRANT de hermes_user na
+    // migration (só service_role). Com HERMES_USER_KEY setada isto falha até o
+    // grant ser adicionado — ver nota no relatório do cutover.
+    const { data: perfilId, error } = await supabaseUser.rpc('confirmar_vinculo_hermes', {
       p_canal: canal,
       p_identificador: identificador,
       p_codigo: codigo,

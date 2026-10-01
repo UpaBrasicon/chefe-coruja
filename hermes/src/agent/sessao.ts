@@ -6,7 +6,7 @@
 //
 // ⚠️ service_role bypassa RLS — nenhum dado sensível; só contexto de conversa.
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabase } from '../lib/supabase.js'
+import { supabaseUser } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 
 export type MensagemSessao = {
@@ -19,14 +19,13 @@ const MAX_MENSAGENS = 20
 const INATIVIDADE_MS = 2 * 60 * 60 * 1000 // 2h
 
 export async function carregarSessao(userId: string, waId: string): Promise<MensagemSessao[]> {
-  const { data, error } = await supabase
-    .from('hermes_sessions')
-    .select('id, messages, updated_at')
-    .eq('user_id', userId)
-    .eq('phone', waId)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  // RPC escopada ao próprio user_id. RETORNA jsonb (as mensagens direto) ou
+  // null — NÃO traz updated_at, então a expiração de 2h passa a usar o `ts` da
+  // última mensagem (equivalente ao updated_at do upsert).
+  const { data, error } = await supabaseUser.rpc('hermes_sessao_carregar', {
+    p_perfil: userId,
+    p_phone: waId,
+  })
 
   if (error) {
     logger.warn({ err: error.message, userId }, '[sessao] falha ao carregar')
@@ -34,13 +33,18 @@ export async function carregarSessao(userId: string, waId: string): Promise<Mens
   }
   if (!data) return []
 
-  const atualizado = new Date(data.updated_at).getTime()
-  if (Date.now() - atualizado > INATIVIDADE_MS) {
-    // Expirou: zera (a sessão antiga é substituída no próximo save).
-    return []
+  const msgs = (data as MensagemSessao[]) ?? []
+  if (msgs.length === 0) return []
+
+  const ultimoTs = msgs[msgs.length - 1]?.ts
+  if (ultimoTs) {
+    const atualizado = new Date(ultimoTs).getTime()
+    if (Number.isFinite(atualizado) && Date.now() - atualizado > INATIVIDADE_MS) {
+      // Expirou: zera (a sessão antiga é substituída no próximo save).
+      return []
+    }
   }
 
-  const msgs = (data.messages as MensagemSessao[]) ?? []
   return msgs.slice(-MAX_MENSAGENS)
 }
 
@@ -56,16 +60,11 @@ export async function salvarSessao(
 ): Promise<void> {
   const janela = mensagens.slice(-MAX_MENSAGENS)
 
-  const { error } = await supabase
-    .from('hermes_sessions')
-    .upsert(
-      {
-        user_id: userId,
-        phone: waId,
-        messages: janela,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_id,phone' }
-    )
+  // RPC faz o upsert atômico por (user_id, phone) e carimba updated_at=now().
+  const { error } = await supabaseUser.rpc('hermes_sessao_salvar', {
+    p_perfil: userId,
+    p_phone: waId,
+    p_messages: janela,
+  })
   if (error) logger.warn({ err: error.message }, '[sessao] falha no upsert')
 }

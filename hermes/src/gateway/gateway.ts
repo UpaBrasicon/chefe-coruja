@@ -12,7 +12,7 @@
 import { createHash } from 'node:crypto'
 
 import { completar, type ChamadaLLM, type MensagemLLM, type RespostaLLM, type ToolCallLLM } from '../lib/llm.js'
-import { supabase } from '../lib/supabase.js'
+import { supabaseJob as supabase } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 import {
   desidentificar, reidentificar, residuos,
@@ -42,6 +42,40 @@ export type ContextoGateway = {
 
 function somar(total: Contagem, parcial: Contagem) {
   for (const [k, n] of Object.entries(parcial) as [keyof Contagem, number][]) total[k] = (total[k] ?? 0) + n
+}
+
+// Red-team V5: passo extra de NER (nomes próprios) pelo serviço /v1/deid da
+// biblioteca, que a regex não pega. Opt-in por DEID_URL; se não setado, o
+// comportamento é o atual. Fail-closed quando acha nome; se o serviço cair,
+// degrada (não derruba a conversa — a limpeza por regex/nomes conhecidos segue).
+const DEID_URL = process.env.DEID_URL
+const DEID_KEY = process.env.BIBLIOTECA_API_KEY
+
+async function nomesNER(texto: string): Promise<number> {
+  if (!DEID_URL || !texto.trim()) return 0
+  try {
+    const r = await fetch(DEID_URL, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${DEID_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texto }),
+      signal: AbortSignal.timeout(5000),
+    })
+    if (!r.ok) return 0
+    const j = (await r.json()) as { found?: unknown }
+    return Array.isArray(j.found) ? j.found.length : 0
+  } catch {
+    return 0 // serviço indisponível → degrada (não bloqueia a conversa)
+  }
+}
+
+async function bloquearSeNomeNER(mensagens: MensagemLLM[], achados: Residuo[]): Promise<void> {
+  if (!DEID_URL) return
+  for (const m of mensagens) {
+    if (await nomesNER(m.content ?? '')) achados.push({ tipo: 'nome próprio (NER)', trecho: '[nome]' })
+    for (const tc of m.tool_calls ?? []) {
+      if (await nomesNER(tc.function.arguments)) achados.push({ tipo: 'nome próprio (NER)', trecho: '[nome]' })
+    }
+  }
 }
 
 function limparMensagem(m: MensagemLLM, ctx: ContextoGateway, total: Contagem, achados: Residuo[]): MensagemLLM {
@@ -90,6 +124,7 @@ export async function chamarIA(body: ChamadaLLM, ctx: ContextoGateway): Promise<
   const contagem: Contagem = {}
   const achados: Residuo[] = []
   const mensagens = body.mensagens.map((m) => limparMensagem(m, ctx, contagem, achados))
+  await bloquearSeNomeNER(mensagens, achados)  // red-team V5: NER fail-closed
 
   if (achados.length) {
     await registrar(ctx, { bloqueado: true, contagem, residuos: achados.length, hashEntrada })

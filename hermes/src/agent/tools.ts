@@ -8,7 +8,7 @@
 // Dados consultados: tabela de escala principal `escala_plantao`
 // (ver PREFLIGHT-HERMES.md — NUNCA inventar nomes de tabela/coluna).
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabase } from '../lib/supabase.js'
+import { supabaseUser } from '../lib/supabase.js'
 import { logger } from '../logger.js'
 import type { IdentidadeHermes } from './identidade.js'
 
@@ -54,11 +54,11 @@ export async function listarQuarentena(
 ): Promise<ResultadoTool> {
   if (!ehSuperAdmin(identidade)) return RESPOSTA_GENERICA_CERBERO
 
-  const { data, error } = await supabase
-    .from('cerbero_quarentena')
-    .select('id, tipo, origem, motivo, liberado, criado_em')
-    .order('criado_em', { ascending: false })
-    .limit(50)
+  // RETURNS TABLE → array {id,tipo,origem,motivo,criado_em} (a RPC já filtra
+  // liberado=false; o campo `liberado` some do retorno, sempre era false aqui).
+  const { data, error } = await supabaseUser.rpc('hermes_quarentena_pendente', {
+    p_perfil: identidade.perfilId,
+  })
   if (error) return { ok: false, erro: 'falha interna' }
   void _args
   return { ok: true, dados: data ?? [] }
@@ -70,15 +70,13 @@ export async function getIncidentes(
 ): Promise<ResultadoTool> {
   if (!ehSuperAdmin(identidade)) return RESPOSTA_GENERICA_CERBERO
 
-  let q = supabase
-    .from('cerbero_incidentes')
-    .select('id, patrulha, severidade, titulo, status, detectado_em')
-    .order('detectado_em', { ascending: false })
-    .limit(50)
-  if (args.patrulha) q = q.eq('patrulha', args.patrulha)
-  if (args.severidade) q = q.eq('severidade', args.severidade)
-
-  const { data, error } = await q
+  // RETURNS TABLE → array. A RPC restringe a status aberto/em_analise (antes
+  // vinha qualquer status): o foco é o que ainda precisa de ação.
+  const { data, error } = await supabaseUser.rpc('hermes_incidentes_abertos', {
+    p_perfil: identidade.perfilId,
+    p_patrulha: args.patrulha ?? null,
+    p_severidade: args.severidade ?? null,
+  })
   if (error) return { ok: false, erro: 'falha interna' }
   return { ok: true, dados: data ?? [] }
 }
@@ -96,12 +94,14 @@ export async function liberarQuarentena(
   if (!ehSuperAdmin(identidade)) return RESPOSTA_GENERICA_CERBERO
   if (!args.id) return { ok: false, erro: 'informe o id do item em quarentena' }
 
-  const { error } = await supabase
-    .from('cerbero_quarentena')
-    .update({ liberado: true })
-    .eq('id', args.id)
+  // RETURNS boolean (escalar) → true se uma linha foi liberada; false se o id
+  // não existe ou já estava liberado.
+  const { data, error } = await supabaseUser.rpc('hermes_liberar_quarentena', {
+    p_perfil: identidade.perfilId,
+    p_id: args.id,
+  })
   if (error) return { ok: false, erro: 'falha ao liberar' }
-  return { ok: true, dados: { liberado: true, id: args.id } }
+  return { ok: true, dados: { liberado: data === true, id: args.id } }
 }
 
 /**
@@ -141,13 +141,14 @@ async function registrarAuditoriaTool(
   args: Record<string, unknown>,
   resultado: ResultadoTool
 ): Promise<void> {
-  const { error } = await supabase.from('hermes_audit_log').insert({
-    user_id: identidade.perfilId,
-    phone: waId,
-    direction: 'tool',
-    tool_name: nome,
-    tool_args: args,
-    tool_result_summary: resultado.ok
+  // RETURNS void. A RPC trunca o resumo em 500 chars server-side.
+  const { error } = await supabaseUser.rpc('hermes_audit_registrar', {
+    p_perfil: identidade.perfilId,
+    p_phone: waId,
+    p_direction: 'tool',
+    p_tool_name: nome,
+    p_tool_args: args,
+    p_resumo: resultado.ok
       ? `ok ${JSON.stringify(resultado.dados).slice(0, 200)}`
       : `erro: ${resultado.erro}`,
   })
