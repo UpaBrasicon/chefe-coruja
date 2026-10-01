@@ -49,41 +49,47 @@ Aplicar em produção: `supabase db push --linked` (aditivo, seguro).
 
 ## 1. Emitir os JWTs dos dois papéis
 
-### Mecanismo — decisão binária no dia (chaves legadas desativadas)
-O Hermes usa `@supabase/supabase-js` (fala com o PostgREST); o papel vem do
-claim `role` do JWT, que o PostgREST verifica contra o segredo configurado.
-Este projeto **desativou as API keys legadas** (anon/service_role). Isso NÃO
-desativa por si o **JWT secret** HS256. Checar uma vez no dashboard
-(**Settings → API → JWT Settings**) e escolher:
+### Mecanismo — CAMINHO A TESTADO E REJEITADO EM PROD (01/10/2026)
+Mesmo com o **JWT secret HS256 presente no dashboard** (coexistindo com Signing
+Keys assimétricas), o self-mint HS256 **não funciona** neste projeto. Teste real
+no VPS (token HS256 mintado com o secret do dashboard, chamada ao PostgREST):
 
-- **Caminho A — JWT secret HS256 ainda presente/ativo (provável).** Self-mint
-  dos dois tokens. Use o script pronto (zero dependência, HS256 via
-  `node:crypto`):
-  ```bash
-  cd hermes
-  SUPABASE_JWT_SECRET='<JWT secret do dashboard>' node scripts/mint-hermes-jwt.mjs
-  ```
-  Ele imprime `HERMES_USER_KEY=...` e `HERMES_JOB_KEY=...` (claim `role`
-  correta, `iss: supabase`, `exp` 10 anos, sem `sub`). Nunca passe o secret em
-  argumento (fica no histórico) — só pela env. Siga para §2.
+1. JWT custom como `apikey` → Kong: `401 {"message":"Invalid API key"}`. Kong só
+   aceita `apikey` conhecida (sb_secret/sb_publishable), não JWT custom.
+2. `apikey: <sb_secret>` + `Authorization: Bearer <JWT HS256 custom>` → PostgREST:
+   `401 PGRST301 "No suitable key was found to decode the JWT / wrong key type"`.
+   **PostgREST verifica só com as signing keys assimétricas (JWKS)** — rejeita
+   HS256. O secret HS256 do dashboard é legado e NÃO é usado na verificação.
 
-- **Caminho B — projeto migrou para JWT Signing Keys assimétricas (sem secret
-  HS256 de verificação).** Não dá para self-mint com segredo compartilhado.
-  Use conexão Postgres direta (pooler) com login roles:
-  ```sql
-  -- migration nova (aditiva): dar LOGIN e senha a papéis que herdam os grants
-  CREATE ROLE hermes_app_user LOGIN PASSWORD '<forte>' IN ROLE hermes_user;
-  CREATE ROLE hermes_app_job  LOGIN PASSWORD '<forte>' IN ROLE hermes_job;
-  ```
-  e trocar `@supabase/supabase-js` por `postgres.js` nos 2 clientes de
-  `lib/supabase.ts` (as RPCs viram `SELECT * FROM public.hermes_*(...)`). Mais
-  trabalho; só se A não existir.
+Self-sign assimétrico também é inviável: a chave privada da signing key fica na
+Supabase (não exportável). **Portanto, o único caminho é o B (Postgres direto).**
 
-(Sem `sub` nos tokens — o perfil do profissional vai em `p_perfil` nas RPCs,
-não no JWT.) Guarde as chaves no `.env.prod` do VPS como `HERMES_USER_KEY` e
-`HERMES_JOB_KEY`. **Nunca** no git (o `.dockerignore` já bloqueia `.env*`).
-Revogar antes do prazo = rotacionar o JWT secret (invalida todos) ou REVOKE nos
-papéis.
+> O script `hermes/scripts/mint-hermes-jwt.mjs` (caminho A) fica no repo só como
+> referência; **não serve neste projeto** enquanto o PostgREST estiver em JWKS
+> assimétrica.
+
+### Caminho B — Postgres direto com login roles (ÚNICO viável aqui)
+Bypassa PostgREST/Kong/JWT. Conecta ao Postgres (pooler Supavisor, porta 5432
+session mode, ou direct 5432) como papéis LOGIN que herdam os grants mínimos:
+```sql
+-- migration nova (aditiva): login roles que herdam hermes_user / hermes_job
+CREATE ROLE hermes_app_user LOGIN PASSWORD '<forte>' IN ROLE hermes_user;
+CREATE ROLE hermes_app_job  LOGIN PASSWORD '<forte>' IN ROLE hermes_job;
+```
+Conexão: usuário `hermes_app_user.<project-ref>` (formato Supavisor) + senha, na
+connection string do pooler. Guardar `HERMES_PG_USER_URL` / `HERMES_PG_JOB_URL`
+no `.env.prod` (nunca no git).
+
+**Mudança de código (lib/supabase.ts):** trocar os 2 clientes de menor privilégio
+por `postgres.js`. Como o cutover já roteou o caminho de request **só por
+`.rpc()`**, o menor esforço é um **shim** que expõe `.rpc(nome, params)` e por
+baixo faz `sql\`select * from public.${nome}(${...})\``, mantendo os call sites.
+Os crons (`supabaseJob`) usam `.from()` cru → esses viram query `postgres.js` de
+verdade (poucos call sites: healthcheck `unidades`, jobs cerbero/argos/vigias).
+Depois: testar §7, remover service_role (§5).
+
+Esforço: 1 migration + reescrever `lib/supabase.ts` + ~poucos call sites de
+`.from()` dos crons. Agendar sessão de dev (não dá em console ao vivo).
 
 ## 2. Dois clientes no Hermes
 `hermes/src/lib/supabase.ts`: além do cliente atual, criar **dois** clientes

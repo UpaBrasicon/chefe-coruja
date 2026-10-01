@@ -1,4 +1,10 @@
 // ============================================================================
+// ⚠️ NÃO SERVE NESTE PROJETO (01/10/2026). Caminho A (self-mint HS256) foi
+// testado em prod e REJEITADO: o PostgREST verifica JWT só com signing keys
+// assimétricas (JWKS) → token HS256 dá `PGRST301 wrong key type`. Ver
+// docs/seguranca/cutover-hermes-v1.md §1. Usar o Caminho B (Postgres direto).
+// Script mantido só como referência do formato de token HS256.
+// ----------------------------------------------------------------------------
 // Mint dos JWTs de menor privilégio do Hermes (HERMES_USER_KEY / HERMES_JOB_KEY).
 // ----------------------------------------------------------------------------
 // Gera dois tokens HS256 com a claim `role` = hermes_user e hermes_job. O
