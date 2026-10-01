@@ -15,7 +15,7 @@ from openai import OpenAI
 from pydantic import BaseModel, Field
 from qdrant_client import QdrantClient, models
 
-from pii import pseudonimizar
+from pii import pseudonimizar, nomes_proprios
 from siglas import expandir_siglas
 
 E = os.environ
@@ -152,6 +152,21 @@ def health():
     except Exception:
         n = None
     return {"ok": True, "chunks": n, "modelo": MODELO}
+
+
+class DeidReq(BaseModel):
+    texto: str = Field(min_length=1, max_length=8000)
+
+
+@app.post("/v1/deid")
+def deid(r: DeidReq, authorization: str | None = Header(None)):
+    """Desidentificação NER (red-team V5): os gateways (clinical-search, Hermes)
+    chamam antes do egress. Retorna o texto mascarado e os nomes encontrados —
+    `found` não-vazio = o chamador deve falhar fechado (não enviar à IA).
+    Fail-safe: sem o modelo spaCy, `found` vem vazio e `texto` só com a regex."""
+    auth(authorization)
+    found = nomes_proprios(r.texto)
+    return {"texto": pseudonimizar(r.texto), "found": found, "ner_ativo": bool(found) or None}
 
 
 @app.post("/v1/search")

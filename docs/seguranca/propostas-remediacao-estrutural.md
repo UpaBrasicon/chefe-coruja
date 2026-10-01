@@ -37,6 +37,15 @@ trocar por RPC). Já previsto em `PREFLIGHT-HERMES.md:79`.
 **Risco da migração:** médio — fazer por etapas, uma tool de cada vez, com
 teste de autorização por escopo no CI antes de revogar o `service_role`.
 
+**STATUS (01/10/2026): camada DB construída e testada.** Migration
+`supabase/migrations/20261020000001_hermes_least_privilege.sql` cria os roles
+`hermes_user`/`hermes_job` + 20 RPCs SECURITY DEFINER scoped por `p_perfil` +
+grants (aditivo, não muda nada até o cutover). Testes em
+`supabase/tests/porte_redteam_v1_hermes.sql` (69/69 na suíte). O **cutover no
+VPS** (reescrever `.from()`→`.rpc()` no Hermes, emitir JWTs
+`hermes_user`/`hermes_job`, remover o `service_role`) está passo-a-passo em
+`docs/seguranca/cutover-hermes-v1.md` — feito e testado por você.
+
 ---
 
 ## V5 — Desidentificação por regex antes do LLM offshore (Média, LGPD)
@@ -64,6 +73,26 @@ profundidade; (3) como alvo de médio prazo para o motor clínico.
 **Esforço:** (2) médio, (1) médio-alto, (3) alto.
 **Risco residual:** aceitar e documentar que texto livre nunca é 100% limpável
 por regra — por isso a allowlist é a barreira real.
+
+**STATUS (01/10/2026): serviço NER construído (opção 1), pendente deploy+wiring no VPS.**
+- `biblioteca/app/pii.py`: passo de NER (spaCy PT, `pt_core_news_sm`) que mascara
+  nomes próprios em prosa, além da regex. **Fail-safe**: sem o modelo (ou
+  `NER_DESLIGADO=1`), cai só na regex — nada quebra. Já entra no caminho RAG
+  (a `biblioteca` chama `pseudonimizar` antes do DeepSeek).
+- `biblioteca/app/main.py`: rota `POST /v1/deid` (auth Bearer `BIBLIOTECA_API_KEY`)
+  → `{ texto (mascarado), found (nomes) }`. `found` não-vazio = o chamador deve
+  **falhar fechado**.
+- `requirements.txt`: `spacy==3.7.*` (modelo baixado à parte).
+
+**Cutover no VPS (seu):**
+1. Na `biblioteca`: `pip install -r requirements.txt` + `python -m spacy download pt_core_news_sm` + rebuild/restart. (RAG já ganha NER.)
+2. **Wiring dos gateways** (fecha o chat do Hermes também), controlado por env `DEID_URL` (= `{BIBLIOTECA_URL}/v1/deid`):
+   - `supabase/functions/clinical-search/index.ts`: após o `desidentificar`/`residuos` atuais e **antes** de chamar a `biblioteca`, se `DEID_URL` setado, POST `{texto: qRed}`; se `found` não-vazio → retornar 422 (como o residue atual); se o serviço cair → logar incidente e seguir com o regex (degrade), ou falhar fechado se preferir LGPD estrita.
+   - `hermes/src/gateway/gateway.ts`: no `limparMensagem`/antes do `chamarIA`, mesma chamada; `found` não-vazio → `ChamadaBloqueada` (fail-closed já existente).
+   - Sem `DEID_URL` = comportamento atual (aditivo, não quebra).
+3. Testar: "a maria do leito 3 está com febre" → `/v1/deid` retorna `found:["Maria"]` → gateway bloqueia.
+
+Enquanto o modelo não é instalado no VPS, tudo segue como hoje (fail-safe).
 
 ---
 
