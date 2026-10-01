@@ -15,7 +15,7 @@ from openai import OpenAI
 from pydantic import BaseModel, Field
 from qdrant_client import QdrantClient, models
 
-from pii import pseudonimizar, nomes_proprios
+from pii import pseudonimizar, nomes_proprios, ner_disponivel
 from siglas import expandir_siglas
 
 E = os.environ
@@ -166,7 +166,7 @@ def deid(r: DeidReq, authorization: str | None = Header(None)):
     Fail-safe: sem o modelo spaCy, `found` vem vazio e `texto` só com a regex."""
     auth(authorization)
     found = nomes_proprios(r.texto)
-    return {"texto": pseudonimizar(r.texto), "found": found, "ner_ativo": bool(found) or None}
+    return {"texto": pseudonimizar(r.texto), "found": found, "ner_ativo": ner_disponivel()}
 
 
 @app.post("/v1/search")

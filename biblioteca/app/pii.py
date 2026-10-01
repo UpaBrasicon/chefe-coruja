@@ -35,12 +35,18 @@ def _nlp():
             try:
                 import spacy  # type: ignore
 
-                _NLP = spacy.load(
-                    "pt_core_news_sm", disable=["parser", "lemmatizer", "tagger", "attribute_ruler"]
-                )
+                # Sem `disable`: o pt_core_news_sm não tem "tagger" e disable de
+                # componente inexistente faz o load lançar (e cair no fail-safe,
+                # desligando o NER sem querer). Carrega completo — custa ~1s.
+                _NLP = spacy.load("pt_core_news_sm")
             except Exception:
                 _NLP = False
     return _NLP or None
+
+
+def ner_disponivel() -> bool:
+    """True se o modelo spaCy carregou (para diagnóstico do /v1/deid)."""
+    return _nlp() is not None
 
 
 def nomes_proprios(t: str) -> list[str]:
