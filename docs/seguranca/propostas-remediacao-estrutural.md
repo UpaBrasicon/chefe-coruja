@@ -37,6 +37,15 @@ trocar por RPC). Já previsto em `PREFLIGHT-HERMES.md:79`.
 **Risco da migração:** médio — fazer por etapas, uma tool de cada vez, com
 teste de autorização por escopo no CI antes de revogar o `service_role`.
 
+**STATUS (01/10/2026): camada DB construída e testada.** Migration
+`supabase/migrations/20261020000001_hermes_least_privilege.sql` cria os roles
+`hermes_user`/`hermes_job` + 20 RPCs SECURITY DEFINER scoped por `p_perfil` +
+grants (aditivo, não muda nada até o cutover). Testes em
+`supabase/tests/porte_redteam_v1_hermes.sql` (69/69 na suíte). O **cutover no
+VPS** (reescrever `.from()`→`.rpc()` no Hermes, emitir JWTs
+`hermes_user`/`hermes_job`, remover o `service_role`) está passo-a-passo em
+`docs/seguranca/cutover-hermes-v1.md` — feito e testado por você.
+
 ---
 
 ## V5 — Desidentificação por regex antes do LLM offshore (Média, LGPD)
