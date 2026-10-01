@@ -87,7 +87,7 @@ por regra — por isso a allowlist é a barreira real.
 **Cutover no VPS (seu):**
 1. Na `biblioteca`: `pip install -r requirements.txt` + `python -m spacy download pt_core_news_sm` + rebuild/restart. (RAG já ganha NER.)
 2. **Wiring dos gateways** (fecha o chat do Hermes também), controlado por env `DEID_URL` (= `{BIBLIOTECA_URL}/v1/deid`):
-   - `supabase/functions/clinical-search/index.ts`: após o `desidentificar`/`residuos` atuais e **antes** de chamar a `biblioteca`, se `DEID_URL` setado, POST `{texto: qRed}`; se `found` não-vazio → retornar 422 (como o residue atual); se o serviço cair → logar incidente e seguir com o regex (degrade), ou falhar fechado se preferir LGPD estrita.
+   - `supabase/functions/clinical-search/index.ts`: **NÃO NECESSÁRIO (01/10/2026)** — a `biblioteca` já mascara a query na entrada (`main.py:199` `q = expandir_siglas(pseudonimizar(r.q))`, NER incluso) antes de qualquer uso, e `embed()` é Ollama **local** (não offshore). Logo o LLM offshore e o embedding só veem texto já mascarado; o edge já barra resíduo de regex com 422 (`:107-113`). Wiring de `/v1/deid` no edge seria redundante (round-trip + deploy sem ganho). Reabrir só se a biblioteca deixar de mascarar na entrada.
    - `hermes/src/gateway/gateway.ts`: **JÁ IMPLEMENTADO** (commit 35717ea) — `chamarIA` chama `/v1/deid` após a limpeza regex e antes do egress; `found` não-vazio → `ChamadaBloqueada` (fail-closed). Opt-in por `DEID_URL`; serviço fora → degrada.
    - Sem `DEID_URL` = comportamento atual (aditivo, não quebra).
 3. Testar: "A paciente Maria Silva ..." → `/v1/deid` retorna `found:["Maria Silva"]` → gateway bloqueia. (Confirmado em 01/10: NER no ar, `ner_ativo:true`, mascara nome com caixa; minúscula-sem-contexto = residual do modelo.)
