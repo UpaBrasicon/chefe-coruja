@@ -24,7 +24,7 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react'
-import { ClipboardPlus, Gauge, Hourglass, Monitor } from 'lucide-react'
+import { ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileText, History, Video } from 'lucide-react'
 import { LifeBuoy } from 'lucide-react'
 
@@ -129,6 +129,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/plataformas', rotulo: 'Plataformas', icone: LayoutDashboard, exato: true, nota: 'plataformas' },
     { to: '/pendencias-tecnicas', rotulo: 'Pendências', icone: ClipboardList, exato: true, nota: 'chamados' },
     { to: '/servidores', rotulo: 'Servidores', icone: Gauge, exato: true },
+    { to: '/erros-e-alertas', rotulo: 'Erros e alertas', icone: TriangleAlert, exato: true },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
     { to: '/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: ShieldCheck, exato: true },
   ],

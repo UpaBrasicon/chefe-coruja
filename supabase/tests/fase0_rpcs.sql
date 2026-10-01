@@ -223,6 +223,10 @@ SELECT pg_temp.deve_passar('job: gerar_censo_todas_unidades como postgres',
 --    conferir_convite / pedir_novo_convite / conferir_contrato: primeiro acesso
 --      (porte de convites). Quem chega ainda não tem conta; devolvem só o
 --      cartão do vínculo ou o motivo, com limite de tentativas por origem.
+--    registrar_erro_cliente: captura de erro do app (onda 12). O erro pode
+--      ocorrer antes do login (tela de entrada); só INSERE uma linha de erro
+--      já higienizada, não lê nada, deriva perfil/unidade do token e tem
+--      anti-flood por perfil/IP. É de escrita, não de leitura de dado.
 -- ════════════════════════════════════════════════════════════════════════════
 DO $$
 DECLARE n int; nomes text;
@@ -231,7 +235,8 @@ BEGIN
   FROM pg_proc p JOIN pg_namespace ns ON ns.oid = p.pronamespace
   WHERE ns.nspname = 'public' AND has_function_privilege('anon', p.oid, 'EXECUTE')
     AND p.proname NOT IN ('painel_chamadas', 'situacao_pacote_alta', 'abrir_pacote_alta',
-                          'conferir_convite', 'pedir_novo_convite', 'conferir_contrato');
+                          'conferir_convite', 'pedir_novo_convite', 'conferir_contrato',
+                          'registrar_erro_cliente');
   IF n > 0 THEN RAISE EXCEPTION 'FALHOU: % funções de public ainda executáveis por anon (%)', n, nomes; END IF;
   RAISE NOTICE 'OK  nenhuma função de public executável por anon (fora as públicas de propósito)';
 END $$;

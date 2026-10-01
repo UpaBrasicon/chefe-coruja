@@ -1,5 +1,6 @@
 import { createClient, type SupportedStorage } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
+import { mensagemDe, reportarErro } from '@/lib/reportarErro'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -129,6 +130,62 @@ const armazenamento: SupportedStorage = {
   },
 }
 
+// Caminho da API sem query string (a query pode conter ids/filtros com dado de
+// paciente — por isso usamos só o pathname) para rotular o erro.
+function caminhoApi(url: string): string {
+  try {
+    const u = new URL(url)
+    return u.pathname.replace(/^\/rest\/v1\//, '').replace(/^\/auth\/v1\//, 'auth/')
+  } catch {
+    return ''
+  }
+}
+
+function urlDaRequisicao(input: RequestInfo | URL): string {
+  if (typeof input === 'string') return input
+  if (input instanceof URL) return input.href
+  return input.url
+}
+
+/**
+ * Envolve o `fetch` do cliente central só para RELATAR defeito, sem mudar o
+ * comportamento das telas: a resposta e os erros seguem intactos.
+ *
+ * O que vira relato (onda 12):
+ *  - status 500+ → tipo 'rpc' (defeito do servidor; recusa de regra é 4xx e
+ *    não entra aqui).
+ *  - falha de rede (o fetch rejeita) → tipo 'rede'.
+ * O próprio envio do relato (RPC `registrar_erro_cliente`) é ignorado para não
+ * criar laço quando o banco/rede estiver fora.
+ */
+function fetchComRelato(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const url = urlDaRequisicao(input)
+  const ehRelato = url.includes('registrar_erro_cliente')
+  return fetch(input, init).then(
+    (resp) => {
+      if (!ehRelato && resp.status >= 500) {
+        reportarErro({
+          tipo: 'rpc',
+          mensagem: `HTTP ${resp.status} ${caminhoApi(url)}`.trim(),
+        })
+      }
+      return resp
+    },
+    (erro: unknown) => {
+      // Na dúvida de rede, marque 'rede' (recusa de regra nunca cai aqui — ela
+      // volta como resposta 4xx, não como rejeição do fetch).
+      if (!ehRelato) {
+        reportarErro({
+          tipo: 'rede',
+          mensagem: `${mensagemDe(erro)} ${caminhoApi(url)}`.trim(),
+        })
+      }
+      throw erro
+    }
+  )
+}
+
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: { storage: armazenamento },
+  global: { fetch: fetchComRelato },
 })
