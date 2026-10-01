@@ -67,26 +67,24 @@ por regra — por isso a allowlist é a barreira real.
 
 ---
 
-## V8 — Throttle do `notify-email` (Média) — BLOQUEADO por código dormente
+## V8 — `notify-email` (Média) — RESOLVIDO por REMOÇÃO (01/10/2026)
 
-A função `supabase/functions/notify-email/index.ts` referencia as tabelas
-`trocas`, `profissionais`, `plantoes`, `desistencias`, que **não existem** no
-schema atual (legado do app de escala; ver `docs/AUDITORIA-PRE-FASE1.md:112`).
-Hoje ela retorna 500 ao ser disparada — está **dormente**.
+A função era legado do app de escala: referenciava `trocas`, `profissionais`,
+`plantoes`, `desistencias` — tabelas que **não existem** no schema atual
+(`docs/AUDITORIA-PRE-FASE1.md:112`), então retornava 500 (dormente). 2 dos 4
+eventos não existem mais; os que restam já são cobertos **in-app**
+(`notificacoes_plantonista` + trigger `private.notificar_vaga` +
+polling de `trocas_plantao` no frontend). Canal atual = in-app/push, não e-mail.
 
-**Ação correta (ordem):**
-1. Repontar a função para as tabelas canônicas (trocas_plantao, perfis,
-   escala_plantao, etc.) **ou** removê-la se o fluxo de e-mail migrou para
-   outro lugar.
-2. **Só então** aplicar o throttle: tabela `public.notify_email_log`
-   (destinatario, criado_em; RLS sem policy = só service_role), e antes de cada
-   `sendEmail` contar envios ao mesmo destinatário nos últimos 10 min; acima de
-   um teto (ex. 20), pular e logar. Fail-open: se a contagem falhar, envia
-   mesmo assim (não bloquear e-mail legítimo por erro de telemetria).
+Era uma edge function com `service_role` (`chaveSecreta()`) = superfície de
+ataque viva por zero benefício. **Resolução:** removida — `supabase/functions/
+notify-email/` apagada do repo + função deployada deletada do projeto
+(`supabase functions delete notify-email`). Fecha V8 (e o throttle fica
+sem objeto). E-mail transacional, se desejado no futuro, é feature nova de
+produto (eventos nas tabelas canônicas + recipient por `perfis.email` + throttle).
 
-Construir o throttle antes de (1) seria otimizar código morto.
-A correção V11 (comparação constante do WEBHOOK_SECRET) já foi aplicada e é
-inofensiva mesmo com a função dormente.
+**Pendência do usuário:** se havia um Database Webhook no painel apontando
+para `notify-email`, remover (a função não existe mais).
 
 ---
 
