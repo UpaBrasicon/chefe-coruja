@@ -847,6 +847,57 @@ export type Database = {
           },
         ]
       }
+      arquivos_farmacia: {
+        Row: {
+          caminho: string
+          enviado_em: string
+          enviado_por: string
+          id: string
+          nome: string
+          tamanho: number
+          tipo: string
+          tipo_mime: string | null
+          unidade_id: string
+        }
+        Insert: {
+          caminho: string
+          enviado_em?: string
+          enviado_por: string
+          id?: string
+          nome: string
+          tamanho: number
+          tipo: string
+          tipo_mime?: string | null
+          unidade_id: string
+        }
+        Update: {
+          caminho?: string
+          enviado_em?: string
+          enviado_por?: string
+          id?: string
+          nome?: string
+          tamanho?: number
+          tipo?: string
+          tipo_mime?: string | null
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arquivos_farmacia_enviado_por_fkey"
+            columns: ["enviado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arquivos_farmacia_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assinaturas: {
         Row: {
           algoritmo: string
@@ -1406,6 +1457,13 @@ export type Database = {
             referencedRelation: "unidades"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "candidaturas_escala_vaga_id_fkey"
+            columns: ["vaga_id"]
+            isOneToOne: false
+            referencedRelation: "escala_vagas"
+            referencedColumns: ["id"]
+          },
         ]
       }
       censo_ocupacao: {
@@ -1672,6 +1730,128 @@ export type Database = {
           },
         ]
       }
+      chamados_tecnicos: {
+        Row: {
+          aberto_em: string
+          aberto_por: string
+          atualizado_em: string
+          categoria: string
+          descricao: string | null
+          id: string
+          organizacao_id: string
+          resolvido_em: string | null
+          resolvido_por: string | null
+          responsavel: string | null
+          severidade: string
+          situacao: string
+          titulo: string
+          unidade_id: string | null
+        }
+        Insert: {
+          aberto_em?: string
+          aberto_por: string
+          atualizado_em?: string
+          categoria: string
+          descricao?: string | null
+          id?: string
+          organizacao_id: string
+          resolvido_em?: string | null
+          resolvido_por?: string | null
+          responsavel?: string | null
+          severidade: string
+          situacao?: string
+          titulo: string
+          unidade_id?: string | null
+        }
+        Update: {
+          aberto_em?: string
+          aberto_por?: string
+          atualizado_em?: string
+          categoria?: string
+          descricao?: string | null
+          id?: string
+          organizacao_id?: string
+          resolvido_em?: string | null
+          resolvido_por?: string | null
+          responsavel?: string | null
+          severidade?: string
+          situacao?: string
+          titulo?: string
+          unidade_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chamados_tecnicos_aberto_por_fkey"
+            columns: ["aberto_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chamados_tecnicos_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chamados_tecnicos_resolvido_por_fkey"
+            columns: ["resolvido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chamados_tecnicos_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chamados_tecnicos_andamento: {
+        Row: {
+          autor_id: string
+          chamado_id: string
+          em: string
+          id: string
+          nota: string | null
+          situacao: string
+        }
+        Insert: {
+          autor_id: string
+          chamado_id: string
+          em?: string
+          id?: string
+          nota?: string | null
+          situacao: string
+        }
+        Update: {
+          autor_id?: string
+          chamado_id?: string
+          em?: string
+          id?: string
+          nota?: string | null
+          situacao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chamados_tecnicos_andamento_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chamados_tecnicos_andamento_chamado_id_fkey"
+            columns: ["chamado_id"]
+            isOneToOne: false
+            referencedRelation: "chamados_tecnicos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_mensagens: {
         Row: {
           autor_id: string
@@ -1896,6 +2076,64 @@ export type Database = {
             columns: ["classe_id"]
             isOneToOne: false
             referencedRelation: "classe_alergenica"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classificacao_fluxograma_unidade: {
+        Row: {
+          definido_em: string
+          definido_por: string
+          discriminadores: Json | null
+          estado: string
+          fluxograma_id: string
+          fonte: string | null
+          id: string
+          unidade_id: string
+          vigente_ate: string | null
+        }
+        Insert: {
+          definido_em?: string
+          definido_por: string
+          discriminadores?: Json | null
+          estado: string
+          fluxograma_id: string
+          fonte?: string | null
+          id?: string
+          unidade_id: string
+          vigente_ate?: string | null
+        }
+        Update: {
+          definido_em?: string
+          definido_por?: string
+          discriminadores?: Json | null
+          estado?: string
+          fluxograma_id?: string
+          fonte?: string | null
+          id?: string
+          unidade_id?: string
+          vigente_ate?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classificacao_fluxograma_unidade_definido_por_fkey"
+            columns: ["definido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classificacao_fluxograma_unidade_fluxograma_id_fkey"
+            columns: ["fluxograma_id"]
+            isOneToOne: false
+            referencedRelation: "protocolo_fluxogramas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classificacao_fluxograma_unidade_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
             referencedColumns: ["id"]
           },
         ]
@@ -2785,6 +3023,7 @@ export type Database = {
           reconstituicao_diluente: string | null
           reconstituicao_volume_ml: number | null
           revisor_crf: string | null
+          risco_flebite: boolean | null
           status: string
           tempo_infusao_min: number | null
           unidade_id: string | null
@@ -2824,6 +3063,7 @@ export type Database = {
           reconstituicao_diluente?: string | null
           reconstituicao_volume_ml?: number | null
           revisor_crf?: string | null
+          risco_flebite?: boolean | null
           status?: string
           tempo_infusao_min?: number | null
           unidade_id?: string | null
@@ -2863,6 +3103,7 @@ export type Database = {
           reconstituicao_diluente?: string | null
           reconstituicao_volume_ml?: number | null
           revisor_crf?: string | null
+          risco_flebite?: boolean | null
           status?: string
           tempo_infusao_min?: number | null
           unidade_id?: string | null
@@ -2903,6 +3144,108 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      diluicao_encerramentos: {
+        Row: {
+          diluicao_id: string
+          encerrado_em: string
+          encerrado_por: string
+          motivo: string
+          unidade_id: string
+        }
+        Insert: {
+          diluicao_id: string
+          encerrado_em?: string
+          encerrado_por: string
+          motivo: string
+          unidade_id: string
+        }
+        Update: {
+          diluicao_id?: string
+          encerrado_em?: string
+          encerrado_por?: string
+          motivo?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diluicao_encerramentos_diluicao_id_fkey"
+            columns: ["diluicao_id"]
+            isOneToOne: true
+            referencedRelation: "diluicao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diluicao_encerramentos_encerrado_por_fkey"
+            columns: ["encerrado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diluicao_encerramentos_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disponibilidade_telemedicina: {
+        Row: {
+          atualizado_em: string
+          estado: string
+          perfil_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          estado: string
+          perfil_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          estado?: string
+          perfil_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disponibilidade_telemedicina_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: true
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispositivos_confiaveis: {
+        Row: {
+          criado_em: string
+          expira_em: string
+          id: string
+          rotulo: string | null
+          token_hash: string
+          ultimo_uso: string | null
+          user_id: string
+        }
+        Insert: {
+          criado_em?: string
+          expira_em: string
+          id?: string
+          rotulo?: string | null
+          token_hash: string
+          ultimo_uso?: string | null
+          user_id: string
+        }
+        Update: {
+          criado_em?: string
+          expira_em?: string
+          id?: string
+          rotulo?: string | null
+          token_hash?: string
+          ultimo_uso?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       dispositivos_enfermagem: {
         Row: {
@@ -3423,49 +3766,49 @@ export type Database = {
       }
       erros_cliente: {
         Row: {
-          id: string
-          criado_em: string
-          perfil_id: string | null
-          unidade_id: string | null
-          papel: string | null
-          tipo: string
-          origem: string | null
-          mensagem: string | null
-          detalhe: string | null
           assinatura: string
+          criado_em: string
+          detalhe: string | null
+          id: string
+          ip: unknown
+          mensagem: string | null
           navegador: string | null
+          origem: string | null
+          papel: string | null
+          perfil_id: string | null
+          tipo: string
+          unidade_id: string | null
           versao_app: string | null
-          ip: unknown | null
         }
         Insert: {
-          id?: string
-          criado_em?: string
-          perfil_id?: string | null
-          unidade_id?: string | null
-          papel?: string | null
-          tipo: string
-          origem?: string | null
-          mensagem?: string | null
-          detalhe?: string | null
           assinatura: string
+          criado_em?: string
+          detalhe?: string | null
+          id?: string
+          ip?: unknown
+          mensagem?: string | null
           navegador?: string | null
+          origem?: string | null
+          papel?: string | null
+          perfil_id?: string | null
+          tipo: string
+          unidade_id?: string | null
           versao_app?: string | null
-          ip?: unknown | null
         }
         Update: {
-          id?: string
-          criado_em?: string
-          perfil_id?: string | null
-          unidade_id?: string | null
-          papel?: string | null
-          tipo?: string
-          origem?: string | null
-          mensagem?: string | null
-          detalhe?: string | null
           assinatura?: string
+          criado_em?: string
+          detalhe?: string | null
+          id?: string
+          ip?: unknown
+          mensagem?: string | null
           navegador?: string | null
+          origem?: string | null
+          papel?: string | null
+          perfil_id?: string | null
+          tipo?: string
+          unidade_id?: string | null
           versao_app?: string | null
-          ip?: unknown | null
         }
         Relationships: [
           {
@@ -3487,18 +3830,18 @@ export type Database = {
       erros_cliente_resolvidos: {
         Row: {
           assinatura: string
-          resolvido_por: string | null
           resolvido_em: string
+          resolvido_por: string | null
         }
         Insert: {
           assinatura: string
-          resolvido_por?: string | null
           resolvido_em?: string
+          resolvido_por?: string | null
         }
         Update: {
           assinatura?: string
-          resolvido_por?: string | null
           resolvido_em?: string
+          resolvido_por?: string | null
         }
         Relationships: [
           {
@@ -3670,6 +4013,147 @@ export type Database = {
           },
           {
             foreignKeyName: "escala_plantao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escala_publicacoes: {
+        Row: {
+          competencia: string
+          id: string
+          observacao: string | null
+          plantoes: number
+          publicada_em: string
+          publicada_por: string
+          unidade_id: string
+          vagas: number
+          versao: number
+        }
+        Insert: {
+          competencia: string
+          id?: string
+          observacao?: string | null
+          plantoes: number
+          publicada_em?: string
+          publicada_por: string
+          unidade_id: string
+          vagas: number
+          versao: number
+        }
+        Update: {
+          competencia?: string
+          id?: string
+          observacao?: string | null
+          plantoes?: number
+          publicada_em?: string
+          publicada_por?: string
+          unidade_id?: string
+          vagas?: number
+          versao?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escala_publicacoes_publicada_por_fkey"
+            columns: ["publicada_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_publicacoes_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escala_vagas: {
+        Row: {
+          aberta_em: string
+          aberta_por: string
+          data: string
+          duracao_min: number | null
+          fechada_em: string | null
+          fechada_por: string | null
+          id: string
+          inicio: string | null
+          observacao: string | null
+          parte: number | null
+          partes: number | null
+          plantao_origem_id: string | null
+          setor_id: string
+          turno: string
+          unidade_id: string
+        }
+        Insert: {
+          aberta_em?: string
+          aberta_por: string
+          data: string
+          duracao_min?: number | null
+          fechada_em?: string | null
+          fechada_por?: string | null
+          id?: string
+          inicio?: string | null
+          observacao?: string | null
+          parte?: number | null
+          partes?: number | null
+          plantao_origem_id?: string | null
+          setor_id: string
+          turno: string
+          unidade_id: string
+        }
+        Update: {
+          aberta_em?: string
+          aberta_por?: string
+          data?: string
+          duracao_min?: number | null
+          fechada_em?: string | null
+          fechada_por?: string | null
+          id?: string
+          inicio?: string | null
+          observacao?: string | null
+          parte?: number | null
+          partes?: number | null
+          plantao_origem_id?: string | null
+          setor_id?: string
+          turno?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escala_vagas_aberta_por_fkey"
+            columns: ["aberta_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_vagas_fechada_por_fkey"
+            columns: ["fechada_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_vagas_plantao_origem_id_fkey"
+            columns: ["plantao_origem_id"]
+            isOneToOne: false
+            referencedRelation: "escala_plantao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_vagas_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escala_vagas_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -4264,39 +4748,6 @@ export type Database = {
           },
         ]
       }
-      ferramenta_uso: {
-        Row: {
-          chave: string
-          created_at: string
-          favorita: boolean
-          favoritada_em: string | null
-          perfil_id: string
-          ultimo_uso_em: string | null
-          updated_at: string
-          usos: number
-        }
-        Insert: {
-          chave: string
-          created_at?: string
-          favorita?: boolean
-          favoritada_em?: string | null
-          perfil_id: string
-          ultimo_uso_em?: string | null
-          updated_at?: string
-          usos?: number
-        }
-        Update: {
-          chave?: string
-          created_at?: string
-          favorita?: boolean
-          favoritada_em?: string | null
-          perfil_id?: string
-          ultimo_uso_em?: string | null
-          updated_at?: string
-          usos?: number
-        }
-        Relationships: []
-      }
       faltas_medicamento: {
         Row: {
           atualizada_em: string | null
@@ -4362,6 +4813,45 @@ export type Database = {
           },
         ]
       }
+      farmacia_limites_padrao: {
+        Row: {
+          atualizado_em: string
+          atualizado_por: string
+          limite_critico: number | null
+          limite_falta: number | null
+          unidade_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          atualizado_por: string
+          limite_critico?: number | null
+          limite_falta?: number | null
+          unidade_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          atualizado_por?: string
+          limite_critico?: number | null
+          limite_falta?: number | null
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "farmacia_limites_padrao_atualizado_por_fkey"
+            columns: ["atualizado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmacia_limites_padrao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: true
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ferramenta_unidade: {
         Row: {
           definida_por: string
@@ -4416,6 +4906,47 @@ export type Database = {
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ferramenta_uso: {
+        Row: {
+          chave: string
+          created_at: string
+          favorita: boolean
+          favoritada_em: string | null
+          perfil_id: string
+          ultimo_uso_em: string | null
+          updated_at: string
+          usos: number
+        }
+        Insert: {
+          chave: string
+          created_at?: string
+          favorita?: boolean
+          favoritada_em?: string | null
+          perfil_id: string
+          ultimo_uso_em?: string | null
+          updated_at?: string
+          usos?: number
+        }
+        Update: {
+          chave?: string
+          created_at?: string
+          favorita?: boolean
+          favoritada_em?: string | null
+          perfil_id?: string
+          ultimo_uso_em?: string | null
+          updated_at?: string
+          usos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ferramenta_uso_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
             referencedColumns: ["id"]
           },
         ]
@@ -4494,6 +5025,66 @@ export type Database = {
           titulo?: string
         }
         Relationships: []
+      }
+      gaviao_decisoes: {
+        Row: {
+          autor_id: string
+          chave: string
+          criado_em: string
+          decisao: string
+          desfeita_em: string | null
+          id: string
+          motivo: string | null
+          severidade: string
+          silenciado_ate: string | null
+          tipo: string
+          titulo: string
+          unidade_id: string
+        }
+        Insert: {
+          autor_id: string
+          chave: string
+          criado_em?: string
+          decisao: string
+          desfeita_em?: string | null
+          id?: string
+          motivo?: string | null
+          severidade: string
+          silenciado_ate?: string | null
+          tipo: string
+          titulo: string
+          unidade_id: string
+        }
+        Update: {
+          autor_id?: string
+          chave?: string
+          criado_em?: string
+          decisao?: string
+          desfeita_em?: string | null
+          id?: string
+          motivo?: string | null
+          severidade?: string
+          silenciado_ate?: string | null
+          tipo?: string
+          titulo?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gaviao_decisoes_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gaviao_decisoes_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gaviao_relatorios_semanais: {
         Row: {
@@ -5469,6 +6060,64 @@ export type Database = {
           },
         ]
       }
+      medidas_pedidas: {
+        Row: {
+          autor_id: string
+          criado_em: string
+          id: string
+          painel: string | null
+          retirada_em: string | null
+          retirada_por: string | null
+          situacao: string
+          texto: string
+          unidade_id: string
+        }
+        Insert: {
+          autor_id: string
+          criado_em?: string
+          id?: string
+          painel?: string | null
+          retirada_em?: string | null
+          retirada_por?: string | null
+          situacao?: string
+          texto: string
+          unidade_id: string
+        }
+        Update: {
+          autor_id?: string
+          criado_em?: string
+          id?: string
+          painel?: string | null
+          retirada_em?: string | null
+          retirada_por?: string | null
+          situacao?: string
+          texto?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medidas_pedidas_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medidas_pedidas_retirada_por_fkey"
+            columns: ["retirada_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medidas_pedidas_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mensagens_chat: {
         Row: {
           conteudo: string
@@ -6237,6 +6886,129 @@ export type Database = {
           },
         ]
       }
+      painel_config: {
+        Row: {
+          atualizado_em: string
+          atualizado_por: string | null
+          rotulo: string
+          segundos: number
+          unidade_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          rotulo?: string
+          segundos?: number
+          unidade_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          rotulo?: string
+          segundos?: number
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "painel_config_atualizado_por_fkey"
+            columns: ["atualizado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "painel_config_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: true
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      painel_propagandas: {
+        Row: {
+          ativo: boolean
+          caminho: string
+          criado_em: string
+          criado_por: string
+          id: string
+          ordem: number
+          titulo: string
+          unidade_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          caminho: string
+          criado_em?: string
+          criado_por: string
+          id?: string
+          ordem?: number
+          titulo: string
+          unidade_id: string
+        }
+        Update: {
+          ativo?: boolean
+          caminho?: string
+          criado_em?: string
+          criado_por?: string
+          id?: string
+          ordem?: number
+          titulo?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "painel_propagandas_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "painel_propagandas_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      panorama_preferencias: {
+        Row: {
+          atualizado_em: string
+          fora: string[]
+          perfil_id: string
+          unidade_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          fora?: string[]
+          perfil_id: string
+          unidade_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          fora?: string[]
+          perfil_id?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "panorama_preferencias_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "panorama_preferencias_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pareceres_medicos: {
         Row: {
           analise_iniciada_em: string | null
@@ -6408,9 +7180,9 @@ export type Database = {
       }
       passagens_enfermagem: {
         Row: {
+          data: string | null
           entregue_em: string
           entregue_por: string
-          data: string | null
           id: string
           leitos: Json
           pendencias: Json
@@ -7342,6 +8114,7 @@ export type Database = {
           ativo: boolean
           atualizado_em: string
           atualizado_por: string | null
+          fonte: string | null
           id: string
           indicacao: string | null
           itens: Json
@@ -7353,6 +8126,7 @@ export type Database = {
           ativo?: boolean
           atualizado_em?: string
           atualizado_por?: string | null
+          fonte?: string | null
           id?: string
           indicacao?: string | null
           itens: Json
@@ -7364,6 +8138,7 @@ export type Database = {
           ativo?: boolean
           atualizado_em?: string
           atualizado_por?: string | null
+          fonte?: string | null
           id?: string
           indicacao?: string | null
           itens?: Json
@@ -7381,6 +8156,70 @@ export type Database = {
           },
           {
             foreignKeyName: "receita_protocolos_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receita_protocolos_versoes: {
+        Row: {
+          ativo: boolean
+          fonte: string | null
+          gravado_em: string
+          gravado_por: string | null
+          id: string
+          indicacao: string | null
+          itens: Json
+          nome: string
+          protocolo_id: string
+          unidade_id: string
+          versao: string | null
+        }
+        Insert: {
+          ativo: boolean
+          fonte?: string | null
+          gravado_em?: string
+          gravado_por?: string | null
+          id?: string
+          indicacao?: string | null
+          itens: Json
+          nome: string
+          protocolo_id: string
+          unidade_id: string
+          versao?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          fonte?: string | null
+          gravado_em?: string
+          gravado_por?: string | null
+          id?: string
+          indicacao?: string | null
+          itens?: Json
+          nome?: string
+          protocolo_id?: string
+          unidade_id?: string
+          versao?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receita_protocolos_versoes_gravado_por_fkey"
+            columns: ["gravado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receita_protocolos_versoes_protocolo_id_fkey"
+            columns: ["protocolo_id"]
+            isOneToOne: false
+            referencedRelation: "receita_protocolos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receita_protocolos_versoes_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -8713,65 +9552,16 @@ export type Database = {
       }
     }
     Functions: {
-      // ── onda 12: erros e alertas do sistema (à mão) ──
-      registrar_erro_cliente: {
+      abrir_chamado_tecnico: {
         Args: {
-          p_tipo: string
-          p_origem: string
-          p_mensagem: string
-          p_detalhe?: string
-          p_assinatura?: string
-          p_navegador?: string
-          p_versao_app?: string
+          p_categoria: string
+          p_descricao?: string
+          p_responsavel?: string
+          p_severidade: string
+          p_titulo: string
+          p_unidade: string
         }
-        Returns: string | null
-      }
-      erros_cliente_agrupados: {
-        Args: { p_desde?: string; p_incluir_resolvidos?: boolean }
-        Returns: {
-          assinatura: string
-          tipo: string
-          origem: string
-          mensagem: string
-          ocorrencias: number
-          perfis_afetados: number
-          primeira_em: string
-          ultima_em: string
-          resolvido: boolean
-        }[]
-      }
-      resolver_erro_cliente: {
-        Args: { p_assinatura: string; p_resolver: boolean }
-        Returns: undefined
-      }
-      // ── onda 12, verificações do sistema (migration 20261017000001; à mão) ──
-      verificacoes_sistema: { Args: never; Returns: Json }
-      // ── onda 8, gestor parte 2 (migrations 20261007000001 a …003; à mão) ──
-      farmacia_do_gestor: { Args: { p_unidade: string }; Returns: Json }
-      mapa_leitos_gestor: { Args: { p_unidade: string }; Returns: Json }
-      revisao_clinica_panorama: {
-        Args: { p_unidade: string }
-        Returns: {
-          ferramenta_id: string; titulo: string; versao_vigente: string | null; versao_ultima: string | null
-          status_ultima: string | null; publico: string | null; fontes: Json | null; decidida_por: string | null
-          decisao_registro: string | null; decidida_em: string | null; decisao_nota: string | null
-          pendentes: number; oculta: boolean; nota_local: string | null
-        }[]
-      }
-      protocolo_classificacao_da_unidade: { Args: { p_unidade: string }; Returns: Json }
-      revisar_fluxograma: {
-        Args: { p_unidade: string; p_fluxograma: string; p_acao: string; p_discriminadores?: Json; p_fonte?: string }
         Returns: string
-      }
-      escala_mes_gestor: { Args: { p_unidade: string; p_ano: number; p_mes: number }; Returns: Json }
-      marcar_vaga_escala: {
-        Args: { p_setor: string; p_data: string; p_turno: string; p_observacao?: string }
-        Returns: string
-      }
-      retirar_vaga_escala: { Args: { p_vaga: string }; Returns: undefined }
-      publicar_escala: {
-        Args: { p_unidade: string; p_ano: number; p_mes: number; p_observacao?: string }
-        Returns: number
       }
       abrir_conversa_direta: {
         Args: { p_destinatario_id: string }
@@ -8860,11 +9650,41 @@ export type Database = {
         }
         Returns: string
       }
+      adicionar_propaganda: {
+        Args: { p_caminho: string; p_titulo: string; p_unidade: string }
+        Returns: string
+      }
+      admin_servidores: { Args: never; Returns: Json }
+      admin_unidades: {
+        Args: never
+        Returns: {
+          chamados_abertos: number
+          chamados_alta: number
+          em_plantao: number
+          leitos: number
+          leitos_ocupados: number
+          municipio: string
+          nome: string
+          rnds_erro: number
+          rnds_mais_antigo: string
+          rnds_pendentes: number
+          sessoes_ativas: number
+          taxa_ocupacao: number
+          tipo: string
+          uf: string
+          ultimo_uso: string
+          unidade_id: string
+        }[]
+      }
       admissao_detalhes_config: { Args: { p_unidade: string }; Returns: Json }
       admissao_ficha: { Args: { p_internacao: string }; Returns: Json }
       aguardar_reavaliacao: {
         Args: { p_episodio: string; p_reavaliar_em: string }
         Returns: undefined
+      }
+      ajustar_diluicao_unidade: {
+        Args: { p_diluicao: string; p_unidade: string }
+        Returns: string
       }
       alergia_trava_medicamento: {
         Args: { p_medicamento: string; p_paciente: string }
@@ -8877,6 +9697,16 @@ export type Database = {
           nivel: string
           paciente_id: string
           total: number
+        }[]
+      }
+      andamento_chamado_tecnico: {
+        Args: { p_id: string }
+        Returns: {
+          autor: string
+          em: string
+          id: string
+          nota: string
+          situacao: string
         }[]
       }
       aprazar: {
@@ -8929,6 +9759,15 @@ export type Database = {
         Args: { p_ativo: boolean; p_modelo: string }
         Returns: undefined
       }
+      atualizar_chamado_tecnico: {
+        Args: {
+          p_id: string
+          p_nota?: string
+          p_responsavel?: string
+          p_situacao: string
+        }
+        Returns: undefined
+      }
       atualizar_estoque: {
         Args: {
           p_limite_critico?: number
@@ -8938,6 +9777,31 @@ export type Database = {
           p_unidade: string
         }
         Returns: undefined
+      }
+      atualizar_propaganda: {
+        Args: { p_ativo: boolean; p_id: string; p_titulo: string }
+        Returns: undefined
+      }
+      auditoria_checkin: {
+        Args: { p_data?: string; p_unidade: string }
+        Returns: {
+          dentro: boolean
+          diferenca_min: number
+          distancia_m: number
+          divergente: boolean
+          fim_previsto: string
+          justificativa: string
+          nome: string
+          papel: string
+          perfil_id: string
+          plantao_id: string
+          presenca_id: string
+          previsto: string
+          realizado: string
+          setor: string
+          situacao: string
+          turno: string
+        }[]
       }
       avaliacoes_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       avancar_falta: {
@@ -9013,6 +9877,7 @@ export type Database = {
         Args: { p_documento: string; p_motivo: string }
         Returns: undefined
       }
+      candidatar_vaga: { Args: { p_vaga: string }; Returns: string }
       censo_recente: {
         Args: { p_dias?: number; p_unidade: string }
         Returns: {
@@ -9024,6 +9889,43 @@ export type Database = {
           setor_id: string
           setor_nome: string
           taxa_ocupacao: number
+        }[]
+      }
+      chamados_tecnicos_da_unidade: {
+        Args: { p_incluir_resolvidos?: boolean; p_unidade: string }
+        Returns: {
+          aberto_em: string
+          aberto_por: string
+          atualizado_em: string
+          categoria: string
+          descricao: string
+          id: string
+          meu: boolean
+          resolvido_em: string
+          responsavel: string
+          severidade: string
+          situacao: string
+          titulo: string
+          unidade_id: string
+          unidade_nome: string
+        }[]
+      }
+      chamados_tecnicos_lista: {
+        Args: { p_incluir_resolvidos?: boolean }
+        Returns: {
+          aberto_em: string
+          aberto_por: string
+          atualizado_em: string
+          categoria: string
+          descricao: string
+          id: string
+          resolvido_em: string
+          responsavel: string
+          severidade: string
+          situacao: string
+          titulo: string
+          unidade_id: string
+          unidade_nome: string
         }[]
       }
       chamar_paciente: {
@@ -9118,6 +10020,10 @@ export type Database = {
           nome: string
           perfil_id: string
         }[]
+      }
+      comentar_chamado_tecnico: {
+        Args: { p_id: string; p_nota: string }
+        Returns: undefined
       }
       concluir_encaminhamento: {
         Args: { p_encaminhamento: string }
@@ -9230,6 +10136,15 @@ export type Database = {
         Returns: undefined
       }
       data_atual: { Args: never; Returns: string }
+      decidir_apontamento_gaviao: {
+        Args: {
+          p_chave: string
+          p_decisao: string
+          p_motivo?: string
+          p_unidade: string
+        }
+        Returns: string
+      }
       decidir_destinacao_prontuario: {
         Args: { p_aprovar: boolean; p_id: string; p_motivo?: string }
         Returns: undefined
@@ -9285,11 +10200,28 @@ export type Database = {
         }
         Returns: string
       }
+      definir_limites_padrao_farmacia: {
+        Args: {
+          p_limite_critico: number
+          p_limite_falta: number
+          p_unidade: string
+        }
+        Returns: undefined
+      }
+      definir_minha_disponibilidade_tele: {
+        Args: { p_estado: string }
+        Returns: undefined
+      }
       definir_minhas_especialidades: {
         Args: { p_especialidades: string[] }
         Returns: undefined
       }
+      definir_panorama: {
+        Args: { p_fora: string[]; p_unidade: string }
+        Returns: undefined
+      }
       descartar_rascunho: { Args: { p_rascunho: string }; Returns: undefined }
+      desfazer_decisao_gaviao: { Args: { p_id: string }; Returns: undefined }
       desfazer_pendencia: { Args: { p_pendencia: string }; Returns: undefined }
       diagnosticos_do_leito: {
         Args: { p_internacao: string }
@@ -9342,6 +10274,7 @@ export type Database = {
           reconstituicao_diluente: string | null
           reconstituicao_volume_ml: number | null
           revisor_crf: string | null
+          risco_flebite: boolean | null
           status: string
           tempo_infusao_min: number | null
           unidade_id: string | null
@@ -9377,6 +10310,10 @@ export type Database = {
           vigente_desde: string
         }[]
       }
+      diluicao_voltar_ao_modelo: {
+        Args: { p_diluicao: string; p_motivo: string }
+        Returns: undefined
+      }
       diluicoes_rascunho: {
         Args: never
         Returns: {
@@ -9408,6 +10345,7 @@ export type Database = {
           reconstituicao_diluente: string | null
           reconstituicao_volume_ml: number | null
           revisor_crf: string | null
+          risco_flebite: boolean | null
           status: string
           tempo_infusao_min: number | null
           unidade_id: string | null
@@ -9437,68 +10375,6 @@ export type Database = {
           quantidade: number
           situacao: string
         }[]
-      }
-      // ── onda 8: farmácia e telemedicina (migrations 20261009000001 e …002), à mão ──
-      ajustar_diluicao_unidade: { Args: { p_diluicao: string; p_unidade: string }; Returns: string }
-      definir_limites_padrao_farmacia: {
-        Args: { p_unidade: string; p_limite_critico: number | null; p_limite_falta: number | null }
-        Returns: undefined
-      }
-      definir_minha_disponibilidade_tele: { Args: { p_estado: string }; Returns: undefined }
-      diluicao_voltar_ao_modelo: { Args: { p_diluicao: string; p_motivo: string }; Returns: undefined }
-      farmacia_estoque: {
-        Args: { p_unidade: string }
-        Returns: {
-          medicamento_id: string
-          principio_ativo: string
-          apresentacao: string | null
-          alta_vigilancia: boolean
-          quantidade: number | null
-          limite_critico: number | null
-          limite_falta: number | null
-          limite_proprio: boolean
-          situacao: string
-          atualizado_em: string | null
-          atualizado_por: string | null
-          falta_id: string | null
-          falta_situacao: string | null
-        }[]
-      }
-      limites_voltar_ao_padrao: { Args: { p_unidade: string; p_medicamento: string }; Returns: undefined }
-      minha_situacao_tele: { Args: { p_unidade: string }; Returns: Json }
-      padrao_diluicao_unidade: { Args: { p_unidade: string }; Returns: Json }
-      registrar_arquivo_farmacia: {
-        Args: { p_unidade: string; p_tipo: string; p_caminho: string; p_nome: string; p_tamanho: number; p_tipo_mime?: string }
-        Returns: string
-      }
-      tele_cobertura: {
-        Args: { p_unidade: string; p_dias?: number }
-        Returns: { setor: string; medico: string; inicio: string; fim: string; agora: boolean; minha: boolean; situacao: string | null }[]
-      }
-      tele_credenciais: { Args: never; Returns: Json }
-      tele_extrato: {
-        Args: { p_de: string; p_ate: string }
-        Returns: {
-          escala_id: string; unidade: string; setor: string; data: string; turno: string; inicio: string; fim: string
-          checkin_em: string | null; checkout_em: string | null; horas: number; valor: number; pareceres: number; situacao: string
-        }[]
-      }
-      tele_historico: { Args: { p_dias?: number }; Returns: Json }
-      tele_minha_escala: {
-        Args: { p_de: string; p_ate: string }
-        Returns: {
-          escala_id: string; unidade: string; setor: string; data: string; turno: string; inicio: string; fim: string
-          agora: boolean; checkin_em: string | null; checkout_em: string | null
-        }[]
-      }
-      tele_outras_em_atendimento: {
-        Args: { p_unidade: string }
-        Returns: { id: string; setor: string | null; consultor: string; urgencia: string; aceita_em: string }[]
-      }
-      tele_pendencias: { Args: never; Returns: Json }
-      telemedicina_na_unidade: {
-        Args: { p_unidade: string }
-        Returns: { nome: string; crm: string | null; setor: string; ate: string; situacao: string }[]
       }
       documentos_do_paciente: {
         Args: {
@@ -9577,6 +10453,14 @@ export type Database = {
           status: string
         }[]
       }
+      enfermagem_pacientes_do_setor: {
+        Args: { p_setor: string }
+        Returns: {
+          local: string
+          nome: string
+          paciente_id: string
+        }[]
+      }
       enfermagem_pendencias: {
         Args: { p_unidade: string }
         Returns: {
@@ -9588,14 +10472,6 @@ export type Database = {
           paciente_id: string
           previsto_em: string
           setor_id: string
-        }[]
-      }
-      enfermagem_pacientes_do_setor: {
-        Args: { p_setor: string }
-        Returns: {
-          local: string
-          nome: string
-          paciente_id: string
         }[]
       }
       entregar_passagem_enfermagem: {
@@ -9610,12 +10486,49 @@ export type Database = {
         Args: { p_internacao: string; p_para: string; p_resumo: string }
         Returns: string
       }
+      erros_cliente_agrupados: {
+        Args: { p_desde?: string; p_incluir_resolvidos?: boolean }
+        Returns: {
+          assinatura: string
+          mensagem: string
+          ocorrencias: number
+          origem: string
+          perfis_afetados: number
+          primeira_em: string
+          resolvido: boolean
+          tipo: string
+          ultima_em: string
+        }[]
+      }
+      escala_mes_gestor: {
+        Args: { p_ano: number; p_mes: number; p_unidade: string }
+        Returns: Json
+      }
       estado_alergia: { Args: { p_paciente: string }; Returns: string }
       evoluir_grau_evento: {
         Args: { p_evento: string; p_grau: number }
         Returns: undefined
       }
       excluir_mensagem: { Args: { p_mensagem_id: string }; Returns: undefined }
+      farmacia_do_gestor: { Args: { p_unidade: string }; Returns: Json }
+      farmacia_estoque: {
+        Args: { p_unidade: string }
+        Returns: {
+          alta_vigilancia: boolean
+          apresentacao: string
+          atualizado_em: string
+          atualizado_por: string
+          falta_id: string
+          falta_situacao: string
+          limite_critico: number
+          limite_falta: number
+          limite_proprio: boolean
+          medicamento_id: string
+          principio_ativo: string
+          quantidade: number
+          situacao: string
+        }[]
+      }
       ferramentas_da_unidade: {
         Args: { p_unidade: string }
         Returns: {
@@ -9724,7 +10637,12 @@ export type Database = {
         Returns: Json
       }
       folha_notificaveis: {
-        Args: { p_ate?: string; p_cids?: string[]; p_de?: string; p_unidade: string }
+        Args: {
+          p_ate?: string
+          p_cids?: string[]
+          p_de?: string
+          p_unidade: string
+        }
         Returns: Json
       }
       folha_relatorio: {
@@ -9741,45 +10659,40 @@ export type Database = {
         Args: { p_partes?: number; p_plantao: string }
         Returns: number
       }
-      gaviao_painel_admin: { Args: never; Returns: Json }
       gaviao_apontamentos: {
         Args: { p_unidade: string }
         Returns: {
           chave: string
-          tipo: string
-          severidade: string
-          titulo: string
+          decidido_em: string
+          decidido_por: string
+          decisao: string
+          decisao_id: string
           evidencia: string
-          recomendacao: string
           icone: string
-          decisao_id: string | null
-          decisao: string | null
-          motivo: string | null
-          decidido_em: string | null
-          decidido_por: string | null
-          silenciado_ate: string | null
+          motivo: string
+          recomendacao: string
+          severidade: string
+          silenciado_ate: string
+          tipo: string
+          titulo: string
         }[]
       }
+      gaviao_painel_admin: { Args: never; Returns: Json }
       gaviao_registro: {
         Args: { p_unidade: string }
         Returns: {
-          id: string
-          criado_em: string
-          titulo: string
-          tipo: string
-          decisao: string
-          motivo: string | null
-          silenciado_ate: string | null
           autor_nome: string
+          criado_em: string
+          decisao: string
+          desfeita_em: string
+          id: string
           meu: boolean
-          desfeita_em: string | null
+          motivo: string
+          silenciado_ate: string
+          tipo: string
+          titulo: string
         }[]
       }
-      decidir_apontamento_gaviao: {
-        Args: { p_unidade: string; p_chave: string; p_decisao: string; p_motivo?: string }
-        Returns: string
-      }
-      desfazer_decisao_gaviao: { Args: { p_id: string }; Returns: undefined }
       gerar_censo_diario: {
         Args: { p_data: string; p_unidade: string }
         Returns: number
@@ -9853,6 +10766,19 @@ export type Database = {
           unidade_id: string
         }[]
       }
+      hermes_alertas_escala: {
+        Args: { p_perfil: string; p_status?: string[]; p_unidade?: string }
+        Returns: {
+          criado_em: string
+          id: string
+          mediana_unidade: number
+          medico_id: string
+          metrica: string
+          status: string
+          unidade_id: string
+          valor: number
+        }[]
+      }
       hermes_almanaque_buscar: {
         Args: { p_limite?: number; p_texto: string }
         Returns: {
@@ -9860,6 +10786,17 @@ export type Database = {
           relevancia: number
           resposta: string
         }[]
+      }
+      hermes_audit_registrar: {
+        Args: {
+          p_direction: string
+          p_perfil: string
+          p_phone: string
+          p_resumo?: string
+          p_tool_args?: Json
+          p_tool_name?: string
+        }
+        Returns: undefined
       }
       hermes_buracos_escala: {
         Args: { p_horas?: number }
@@ -9887,6 +10824,50 @@ export type Database = {
           crm: string
           perfis: string[]
           uf_crm: string
+        }[]
+      }
+      hermes_identidade_por_canal: {
+        Args: { p_canal: string; p_identificador: string }
+        Returns: {
+          email: string
+          is_super_admin: boolean
+          nome_completo: string
+          perfil_id: string
+          vinculos: Json
+        }[]
+      }
+      hermes_identidade_por_telefone: {
+        Args: { p_e164: string }
+        Returns: {
+          email: string
+          is_super_admin: boolean
+          nome_completo: string
+          perfil_id: string
+          vinculos: Json
+        }[]
+      }
+      hermes_incidentes_abertos: {
+        Args: { p_patrulha?: string; p_perfil: string; p_severidade?: string }
+        Returns: {
+          detectado_em: string
+          id: string
+          patrulha: string
+          severidade: string
+          status: string
+          titulo: string
+        }[]
+      }
+      hermes_integridade_resumo: { Args: { p_perfil: string }; Returns: Json }
+      hermes_liberar_quarentena: {
+        Args: { p_id: string; p_perfil: string }
+        Returns: boolean
+      }
+      hermes_minhas_notificacoes: {
+        Args: { p_dias?: number; p_perfil: string; p_unidade: string }
+        Returns: {
+          data: string
+          mensagem: string
+          tipo: string
         }[]
       }
       hermes_perfis_sem_vinculo: {
@@ -9929,6 +10910,34 @@ export type Database = {
         Args: { p_horas?: number; p_unidade: string }
         Returns: Json
       }
+      hermes_quarentena_pendente: {
+        Args: { p_perfil: string }
+        Returns: {
+          criado_em: string
+          id: string
+          motivo: string
+          origem: string
+          tipo: string
+        }[]
+      }
+      hermes_quarentenar_conteudo: {
+        Args: {
+          p_autor: string
+          p_conteudo_hash: string
+          p_evidencia?: Json
+          p_motivo: string
+          p_origem: string
+          p_severidade?: string
+          p_tenant: string
+          p_tipo: string
+          p_titulo?: string
+        }
+        Returns: string
+      }
+      hermes_relatorio_semanal_ultimo: {
+        Args: { p_perfil: string }
+        Returns: Json
+      }
       hermes_revisoes_paradas: {
         Args: never
         Returns: {
@@ -9937,12 +10946,71 @@ export type Database = {
           unidade_id: string
         }[]
       }
+      hermes_sessao_carregar: {
+        Args: { p_perfil: string; p_phone: string }
+        Returns: Json
+      }
+      hermes_sessao_salvar: {
+        Args: { p_messages: Json; p_perfil: string; p_phone: string }
+        Returns: undefined
+      }
       hermes_setores_ocupados_sem_plantao: {
         Args: never
         Returns: {
           leitos_ocupados: number
           setor_id: string
           unidade_id: string
+        }[]
+      }
+      hermes_unidade_censo: {
+        Args: { p_perfil: string; p_unidade: string }
+        Returns: {
+          data: string
+          internados: number
+          leitos_livres: number
+          leitos_ocupados: number
+          leitos_total: number
+          taxa_ocupacao: number
+          turno: string
+        }[]
+      }
+      hermes_unidade_indicadores: {
+        Args: { p_perfil: string; p_unidade: string }
+        Returns: {
+          prescricoes_assinadas: number
+          prescricoes_rascunho: number
+          receitas_retidas: number
+          total_pacientes: number
+        }[]
+      }
+      hermes_unidade_internacoes_por_status: {
+        Args: { p_perfil: string; p_unidade: string }
+        Returns: {
+          status: string
+          total: number
+        }[]
+      }
+      hermes_unidade_nomes: {
+        Args: { p_perfil: string; p_unidade: string }
+        Returns: {
+          nome_completo: string
+        }[]
+      }
+      hermes_unidade_profissionais: {
+        Args: { p_perfil: string; p_unidade: string }
+        Returns: {
+          papel: string
+          total: number
+        }[]
+      }
+      hermes_unidade_resumo: {
+        Args: { p_perfil: string; p_unidade: string }
+        Returns: Json
+      }
+      hermes_unidade_setores: {
+        Args: { p_perfil: string; p_unidade: string }
+        Returns: {
+          nome: string
         }[]
       }
       historico_evolucoes: { Args: { p_internacao: string }; Returns: Json }
@@ -9973,6 +11041,11 @@ export type Database = {
         }
         Returns: string
       }
+      limites_unidade: { Args: { p_unidade: string }; Returns: Json }
+      limites_voltar_ao_padrao: {
+        Args: { p_medicamento: string; p_unidade: string }
+        Returns: undefined
+      }
       listar_conversas: {
         Args: never
         Returns: {
@@ -9989,19 +11062,46 @@ export type Database = {
           unidade_nome: string
         }[]
       }
+      mapa_leitos_gestor: { Args: { p_unidade: string }; Returns: Json }
       marcar_agravo: {
         Args: { p_agravo: string; p_cid?: string; p_paciente: string }
         Returns: string
       }
+      marcar_avisos_lidos: {
+        Args: { p_ids?: string[]; p_unidade: string }
+        Returns: string[]
+      }
+      marcar_favorito_ferramenta: {
+        Args: { p_chave: string; p_favorita: boolean }
+        Returns: undefined
+      }
       marcar_lida: { Args: { p_conversa_id: string }; Returns: undefined }
       marcar_notificacao_lida: { Args: { p_id: string }; Returns: undefined }
-      marcar_avisos_lidos: { Args: { p_unidade: string; p_ids?: string[] }; Returns: string[] }
-      reabrir_avisos: { Args: { p_ids: string[] }; Returns: number }
       marcar_suspeita_infeccao: {
         Args: { p_ativa: boolean; p_paciente: string }
         Returns: undefined
       }
+      marcar_vaga_escala: {
+        Args: {
+          p_data: string
+          p_observacao?: string
+          p_setor: string
+          p_turno: string
+        }
+        Returns: string
+      }
       medicos_para_encaminhar: { Args: { p_paciente: string }; Returns: Json }
+      medidas_pedidas_da_unidade: {
+        Args: { p_unidade: string }
+        Returns: {
+          autor_nome: string
+          criado_em: string
+          id: string
+          minha: boolean
+          painel: string
+          texto: string
+        }[]
+      }
       meu_papel_tecnico: { Args: never; Returns: Json }
       meu_plantao_agora: {
         Args: never
@@ -10058,6 +11158,7 @@ export type Database = {
           vigente: boolean
         }[]
       }
+      minha_situacao_tele: { Args: { p_unidade: string }; Returns: Json }
       minhas_altas_recentes: {
         Args: { p_unidade: string }
         Returns: {
@@ -10078,16 +11179,11 @@ export type Database = {
         Returns: {
           chave: string
           favorita: boolean
-          favoritada_em: string | null
-          ultimo_uso_em: string | null
+          favoritada_em: string
+          ultimo_uso_em: string
           usos: number
         }[]
       }
-      marcar_favorito_ferramenta: {
-        Args: { p_chave: string; p_favorita: boolean }
-        Returns: undefined
-      }
-      registrar_uso_ferramenta: { Args: { p_chave: string }; Returns: number }
       minhas_notificacoes: {
         Args: { p_unidade: string }
         Returns: {
@@ -10186,146 +11282,10 @@ export type Database = {
           setor_nome: string
         }[]
       }
+      padrao_diluicao_unidade: { Args: { p_unidade: string }; Returns: Json }
       painel_atendimento_ps: { Args: { p_episodio: string }; Returns: Json }
-      // ── porte, onda 8: administrador e painel da TV (migration 20261008000001) ──
-      chamados_tecnicos_lista: {
-        Args: { p_incluir_resolvidos?: boolean }
-        Returns: {
-          aberto_em: string
-          aberto_por: string
-          atualizado_em: string
-          categoria: string
-          descricao: string
-          id: string
-          resolvido_em: string
-          responsavel: string
-          severidade: string
-          situacao: string
-          titulo: string
-          unidade_id: string
-          unidade_nome: string
-        }[]
-      }
-      abrir_chamado_tecnico: {
-        Args: { p_categoria: string; p_descricao?: string; p_responsavel?: string; p_severidade: string; p_titulo: string; p_unidade: string | null }
-        Returns: string
-      }
-      atualizar_chamado_tecnico: {
-        Args: { p_id: string; p_nota?: string; p_responsavel?: string; p_situacao: string }
-        Returns: undefined
-      }
-      andamento_chamado_tecnico: {
-        Args: { p_id: string }
-        Returns: { autor: string; em: string; id: string; nota: string; situacao: string }[]
-      }
-      // ── limites da unidade, chamado do gestor e fracionar (migration 20261012000001) ──
-      limites_unidade: { Args: { p_unidade: string }; Returns: Json }
-      salvar_limites_unidade: {
-        Args: { p_unidade: string; p_descanso_ativo: boolean; p_descanso_horas: number; p_sobrecarga_horas: number; p_ocupacao_pct: number; p_checkin_tolerancia_min: number }
-        Returns: Json
-      }
-      chamados_tecnicos_da_unidade: {
-        Args: { p_unidade: string; p_incluir_resolvidos?: boolean }
-        Returns: {
-          aberto_em: string
-          aberto_por: string
-          atualizado_em: string
-          categoria: string
-          descricao: string
-          id: string
-          meu: boolean
-          resolvido_em: string
-          responsavel: string
-          severidade: string
-          situacao: string
-          titulo: string
-          unidade_id: string
-          unidade_nome: string
-        }[]
-      }
-      comentar_chamado_tecnico: { Args: { p_id: string; p_nota: string }; Returns: undefined }
-      candidatar_vaga: { Args: { p_vaga: string }; Returns: string }
-      vagas_abertas: {
-        Args: never
-        Returns: {
-          data: string
-          especialidade: string | null
-          fim: string
-          id: string
-          inicio: string
-          latitude: number | null
-          longitude: number | null
-          minha_candidatura: string | null
-          observacao: string | null
-          parte: number | null
-          partes: number | null
-          setor_id: string
-          setor_nome: string
-          turno: string
-          unidade_id: string
-          unidade_nome: string
-        }[]
-      }
-      admin_unidades: {
-        Args: never
-        Returns: {
-          chamados_abertos: number
-          chamados_alta: number
-          em_plantao: number
-          leitos: number
-          leitos_ocupados: number
-          municipio: string
-          nome: string
-          rnds_erro: number
-          rnds_mais_antigo: string
-          rnds_pendentes: number
-          sessoes_ativas: number
-          taxa_ocupacao: number
-          tipo: string
-          uf: string
-          ultimo_uso: string
-          unidade_id: string
-        }[]
-      }
-      admin_servidores: { Args: never; Returns: Json }
-      painel_propaganda: { Args: { p_unidade: string }; Returns: Json }
-      salvar_painel_config: { Args: { p_rotulo: string; p_segundos: number; p_unidade: string }; Returns: undefined }
-      adicionar_propaganda: { Args: { p_caminho: string; p_titulo: string; p_unidade: string }; Returns: string }
-      atualizar_propaganda: { Args: { p_ativo: boolean; p_id: string; p_titulo: string }; Returns: undefined }
-      reordenar_propagandas: { Args: { p_ids: string[]; p_unidade: string }; Returns: undefined }
-      remover_propaganda: { Args: { p_id: string }; Returns: string }
       painel_chamadas: { Args: { p_token: string }; Returns: Json }
       painel_gestor: { Args: { p_unidade: string }; Returns: Json }
-      panorama_gestor: { Args: { p_unidade: string }; Returns: Json }
-      definir_panorama: { Args: { p_unidade: string; p_fora: string[] }; Returns: undefined }
-      perguntar_gestao: { Args: { p_unidade: string; p_pergunta: string }; Returns: Json }
-      pedir_medida: { Args: { p_unidade: string; p_texto: string; p_painel?: string }; Returns: string }
-      retirar_medida: { Args: { p_id: string; p_retirar?: boolean }; Returns: undefined }
-      medidas_pedidas_da_unidade: {
-        Args: { p_unidade: string }
-        Returns: { id: string; texto: string; painel: string | null; criado_em: string; autor_nome: string; minha: boolean }[]
-      }
-      auditoria_checkin: {
-        Args: { p_unidade: string; p_data?: string }
-        Returns: {
-          plantao_id: string | null
-          presenca_id: string | null
-          perfil_id: string
-          nome: string
-          papel: string | null
-          setor: string | null
-          turno: string
-          previsto: string | null
-          fim_previsto: string | null
-          realizado: string | null
-          diferenca_min: number | null
-          dentro: boolean | null
-          distancia_m: number | null
-          justificativa: string | null
-          situacao: string
-          divergente: boolean
-        }[]
-      }
       painel_observacao: {
         Args: { p_unidade: string }
         Returns: {
@@ -10371,6 +11331,8 @@ export type Database = {
           unidade_nome: string
         }[]
       }
+      painel_propaganda: { Args: { p_unidade: string }; Returns: Json }
+      panorama_gestor: { Args: { p_unidade: string }; Returns: Json }
       papel_na_unidade: { Args: { unidade: string }; Returns: string }
       parecer_dados_paciente: { Args: { p_id: string }; Returns: Json }
       pareceres_do_paciente: {
@@ -10475,6 +11437,10 @@ export type Database = {
         Args: { p_episodio: string; p_exames: string[] }
         Returns: number
       }
+      pedir_medida: {
+        Args: { p_painel?: string; p_texto: string; p_unidade: string }
+        Returns: string
+      }
       pedir_novo_convite: {
         Args: { p_codigo: string }
         Returns: {
@@ -10487,6 +11453,10 @@ export type Database = {
         Returns: string[]
       }
       pendencias_pep: { Args: { p_unidade: string }; Returns: Json }
+      perguntar_gestao: {
+        Args: { p_pergunta: string; p_unidade: string }
+        Returns: Json
+      }
       plantonistas_da_unidade: {
         Args: { p_unidade: string }
         Returns: {
@@ -10556,6 +11526,10 @@ export type Database = {
           sexo: string
         }[]
       }
+      protocolo_classificacao_da_unidade: {
+        Args: { p_unidade: string }
+        Returns: Json
+      }
       publicar_diluicao: {
         Args: {
           p_data_revisao?: string
@@ -10565,6 +11539,16 @@ export type Database = {
         Returns: undefined
       }
       publicar_diluicao_versao: { Args: { p_id: string }; Returns: undefined }
+      publicar_escala: {
+        Args: {
+          p_ano: number
+          p_mes: number
+          p_observacao?: string
+          p_unidade: string
+        }
+        Returns: number
+      }
+      reabrir_avisos: { Args: { p_ids: string[] }; Returns: number }
       reabrir_notificacao: {
         Args: { p_agravo: string; p_motivo: string }
         Returns: undefined
@@ -10629,6 +11613,17 @@ export type Database = {
           p_paciente: string
           p_tamanho: number
           p_tipo_mime: string
+        }
+        Returns: string
+      }
+      registrar_arquivo_farmacia: {
+        Args: {
+          p_caminho: string
+          p_nome: string
+          p_tamanho: number
+          p_tipo: string
+          p_tipo_mime?: string
+          p_unidade: string
         }
         Returns: string
       }
@@ -10711,6 +11706,18 @@ export type Database = {
           p_paciente: string
           p_tipo: string
           p_troca_prevista?: string
+        }
+        Returns: string
+      }
+      registrar_erro_cliente: {
+        Args: {
+          p_assinatura?: string
+          p_detalhe?: string
+          p_mensagem: string
+          p_navegador?: string
+          p_origem: string
+          p_tipo: string
+          p_versao_app?: string
         }
         Returns: string
       }
@@ -10843,7 +11850,13 @@ export type Database = {
         }
         Returns: string
       }
+      registrar_uso_ferramenta: { Args: { p_chave: string }; Returns: number }
       remover_fracionamento: { Args: { p_plantao: string }; Returns: undefined }
+      remover_propaganda: { Args: { p_id: string }; Returns: string }
+      reordenar_propagandas: {
+        Args: { p_ids: string[]; p_unidade: string }
+        Returns: undefined
+      }
       resolver_agravo: {
         Args: {
           p_agravo: string
@@ -10851,6 +11864,10 @@ export type Database = {
           p_notificado: boolean
           p_numero_sinan?: string
         }
+        Returns: undefined
+      }
+      resolver_erro_cliente: {
+        Args: { p_assinatura: string; p_resolver: boolean }
         Returns: undefined
       }
       resolver_exame: {
@@ -10903,7 +11920,41 @@ export type Database = {
         Args: { p_dispositivo: string; p_motivo?: string }
         Returns: undefined
       }
+      retirar_medida: {
+        Args: { p_id: string; p_retirar?: boolean }
+        Returns: undefined
+      }
       retirar_passagem: { Args: { p_passagem: string }; Returns: undefined }
+      retirar_vaga_escala: { Args: { p_vaga: string }; Returns: undefined }
+      revisao_clinica_panorama: {
+        Args: { p_unidade: string }
+        Returns: {
+          decidida_em: string
+          decidida_por: string
+          decisao_nota: string
+          decisao_registro: string
+          ferramenta_id: string
+          fontes: Json
+          nota_local: string
+          oculta: boolean
+          pendentes: number
+          publico: string
+          status_ultima: string
+          titulo: string
+          versao_ultima: string
+          versao_vigente: string
+        }[]
+      }
+      revisar_fluxograma: {
+        Args: {
+          p_acao: string
+          p_discriminadores?: Json
+          p_fluxograma: string
+          p_fonte?: string
+          p_unidade: string
+        }
+        Returns: string
+      }
       revisoes_sem_conexao: {
         Args: { p_unidade: string }
         Returns: {
@@ -10961,6 +12012,17 @@ export type Database = {
         Args: { p_agravo: string; p_ficha: Json }
         Returns: string[]
       }
+      salvar_limites_unidade: {
+        Args: {
+          p_checkin_tolerancia_min: number
+          p_descanso_ativo: boolean
+          p_descanso_horas: number
+          p_ocupacao_pct: number
+          p_sobrecarga_horas: number
+          p_unidade: string
+        }
+        Returns: Json
+      }
       salvar_modelo_termo: {
         Args: {
           p_declaracao?: string
@@ -10971,6 +12033,10 @@ export type Database = {
           p_unidade: string
         }
         Returns: string
+      }
+      salvar_painel_config: {
+        Args: { p_rotulo: string; p_segundos: number; p_unidade: string }
+        Returns: undefined
       }
       salvar_preferencias_aviso: {
         Args: { p_canal?: string; p_preferencias: Json }
@@ -11000,13 +12066,13 @@ export type Database = {
       salvar_receita_protocolo: {
         Args: {
           p_ativo?: boolean
+          p_fonte?: string
           p_indicacao: string
           p_itens: Json
           p_nome: string
           p_protocolo?: string
           p_unidade: string
           p_versao?: string
-          p_fonte?: string
         }
         Returns: string
       }
@@ -11035,7 +12101,6 @@ export type Database = {
         }[]
       }
       setores_na_escala_agora: { Args: never; Returns: string[] }
-      situacao_checkin: { Args: { p_unidade: string }; Returns: Json }
       setores_observacao: {
         Args: { p_unidade: string }
         Returns: {
@@ -11054,11 +12119,13 @@ export type Database = {
         Returns: string
       }
       sincronizar_registros: { Args: { p_itens: Json }; Returns: Json }
+      situacao_checkin: { Args: { p_unidade: string }; Returns: Json }
       situacao_ferramenta: {
         Args: { p_ferramenta: string; p_unidade?: string; p_versao: string }
         Returns: Json
       }
       situacao_pacote_alta: { Args: { p_token: string }; Returns: Json }
+      solicitar_codigo_2fa: { Args: never; Returns: string }
       solicitar_destinacao_prontuario: {
         Args: { p_destinacao: string; p_motivo: string; p_paciente: string }
         Returns: string
@@ -11093,6 +12160,64 @@ export type Database = {
         Args: { p_item: string; p_motivo: string }
         Returns: undefined
       }
+      tele_cobertura: {
+        Args: { p_dias?: number; p_unidade: string }
+        Returns: {
+          agora: boolean
+          fim: string
+          inicio: string
+          medico: string
+          minha: boolean
+          setor: string
+          situacao: string
+        }[]
+      }
+      tele_credenciais: { Args: never; Returns: Json }
+      tele_extrato: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          checkin_em: string
+          checkout_em: string
+          data: string
+          escala_id: string
+          fim: string
+          horas: number
+          inicio: string
+          pareceres: number
+          setor: string
+          situacao: string
+          turno: string
+          unidade: string
+          valor: number
+        }[]
+      }
+      tele_historico: { Args: { p_dias?: number }; Returns: Json }
+      tele_minha_escala: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          agora: boolean
+          checkin_em: string
+          checkout_em: string
+          data: string
+          escala_id: string
+          fim: string
+          inicio: string
+          setor: string
+          turno: string
+          unidade: string
+        }[]
+      }
+      tele_outras_em_atendimento: {
+        Args: { p_unidade: string }
+        Returns: {
+          aceita_em: string
+          consultor: string
+          id: string
+          setor: string
+          urgencia: string
+        }[]
+      }
+      tele_pendencias: { Args: never; Returns: Json }
       teleinterconsultas_da_unidade: {
         Args: { p_dias?: number; p_unidade: string }
         Returns: {
@@ -11114,6 +12239,16 @@ export type Database = {
           solicitante_nome: string
           status: string
           urgencia: string
+        }[]
+      }
+      telemedicina_na_unidade: {
+        Args: { p_unidade: string }
+        Returns: {
+          ate: string
+          crm: string
+          nome: string
+          setor: string
+          situacao: string
         }[]
       }
       tem_acesso_atendimento: { Args: { unidade: string }; Returns: boolean }
@@ -11183,11 +12318,38 @@ export type Database = {
           sala: string
         }[]
       }
+      vagas_abertas: {
+        Args: never
+        Returns: {
+          data: string
+          especialidade: string
+          fim: string
+          id: string
+          inicio: string
+          latitude: number
+          longitude: number
+          minha_candidatura: string
+          observacao: string
+          parte: number
+          partes: number
+          setor_id: string
+          setor_nome: string
+          turno: string
+          unidade_id: string
+          unidade_nome: string
+        }[]
+      }
       validar_item: {
         Args: { p_confere: boolean; p_item: string; p_motivo?: string }
         Returns: undefined
       }
       ver_pacote_alta_equipe: { Args: { p_pacote: string }; Returns: Json }
+      verificacoes_sistema: { Args: never; Returns: Json }
+      verificar_codigo_2fa: {
+        Args: { p_codigo: string; p_confiar?: boolean; p_rotulo?: string }
+        Returns: string
+      }
+      verificar_dispositivo_2fa: { Args: { p_token: string }; Returns: boolean }
     }
     Enums: {
       papel:

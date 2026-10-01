@@ -1,5 +1,5 @@
-import { useQueryClient } from '@tanstack/react-query'
-import { KeyRound, LogOut, ShieldCheck } from 'lucide-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { KeyRound, Laptop, LogOut, Mail, ShieldCheck, Trash2 } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -8,11 +8,42 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 
-// Segundo fator (ADR 0010): TOTP de aplicativo autenticador, pedido uma vez a
-// cada 24 horas e em todo login novo (o aal2 é da sessão). A exigência só
-// vale quando a chave `exigir_segundo_fator` estiver ligada no banco.
-// Não existe "confiar neste aparelho por 30 dias" (regra do protótipo): o
-// ADR 0010 a recusou — um celular roubado ficaria semanas com acesso clínico.
+// Segundo fator: código por EMAIL (padrão) + dispositivo confiável, e TOTP de
+// aplicativo autenticador como alternativa. Pedido em todo login de dispositivo
+// novo; "confiar neste dispositivo" guarda um token (30 dias) que pula o email.
+// A exigência só vale com a chave `exigir_segundo_fator` ligada no banco.
+// Reversão consciente do ADR 0010 ("confiar no aparelho"): mitigada por
+// dispositivos REVOGÁVEIS (seção abaixo) e token guardado só como hash.
+
+// ── Dispositivo confiável (token no navegador) ───────────────────────────────
+const CHAVE_DISPOSITIVO = 'cc_dispositivo_2fa'
+function lerTokenDispositivo(): string | null {
+  try { return localStorage.getItem(CHAVE_DISPOSITIVO) } catch { return null }
+}
+function salvarTokenDispositivo(t: string) {
+  try { localStorage.setItem(CHAVE_DISPOSITIVO, t) } catch { /* modo privado */ }
+}
+function limparTokenDispositivo() {
+  try { localStorage.removeItem(CHAVE_DISPOSITIVO) } catch { /* modo privado */ }
+}
+/** Rótulo amigável do dispositivo atual, para a lista de confiáveis. */
+function rotuloDispositivo(): string {
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : ''
+  const so = /Windows/.test(ua) ? 'Windows' : /Android/.test(ua) ? 'Android'
+    : /iPhone|iPad|iPod/.test(ua) ? 'iOS' : /Mac/.test(ua) ? 'Mac' : /Linux/.test(ua) ? 'Linux' : 'dispositivo'
+  const nav = /Edg/.test(ua) ? 'Edge' : /Chrome/.test(ua) ? 'Chrome'
+    : /Firefox/.test(ua) ? 'Firefox' : /Safari/.test(ua) ? 'Safari' : 'navegador'
+  return `${nav} em ${so}`
+}
+
+/** Mensagem legível a partir de um erro de Edge Function (lê o corpo JSON). */
+async function mensagemErroFuncao(error: unknown, fallback: string): Promise<string> {
+  try {
+    const ctx = (error as { context?: Response }).context
+    if (ctx) { const j = await ctx.json(); if (j?.erro) return String(j.erro) }
+  } catch { /* corpo não-JSON */ }
+  return fallback
+}
 
 function CampoCodigo({ valor, onChange, erro }: { valor: string; onChange: (v: string) => void; erro: string | null }) {
   return (
@@ -261,15 +292,159 @@ export function ConfirmarSegundoFator({
 }
 
 /**
+ * Segundo fator por EMAIL: pede o envio do código, confere, e opcionalmente
+ * guarda o dispositivo como confiável (pula o email nos próximos logins).
+ */
+export function ConfirmarSegundoFatorEmail({ onPronto }: { onPronto: () => void }) {
+  const [etapa, setEtapa] = React.useState<'pedir' | 'codigo'>('pedir')
+  const [codigo, setCodigo] = React.useState('')
+  const [confiar, setConfiar] = React.useState(false)
+  const [erro, setErro] = React.useState<string | null>(null)
+  const [ocupado, setOcupado] = React.useState(false)
+  const [reenvioEm, setReenvioEm] = React.useState(0)
+  const [agora, setAgora] = React.useState(() => Date.now())
+  const enviando = React.useRef(false)
+
+  React.useEffect(() => {
+    if (!reenvioEm) return
+    const id = window.setInterval(() => setAgora(Date.now()), 1000)
+    return () => window.clearInterval(id)
+  }, [reenvioEm])
+  const faltaReenvio = Math.max(0, Math.ceil((reenvioEm - agora) / 1000))
+
+  async function enviar() {
+    setErro(null)
+    setOcupado(true)
+    const { error } = await supabase.functions.invoke('enviar-codigo-2fa', { body: {} })
+    setOcupado(false)
+    if (error) {
+      setErro(await mensagemErroFuncao(error, 'Não foi possível enviar o código agora. Tente de novo.'))
+      return
+    }
+    setEtapa('codigo')
+    setReenvioEm(Date.now() + 60_000)
+    setAgora(Date.now())
+  }
+
+  async function confirmar(valor: string) {
+    if (enviando.current) return
+    if (!/^\d{6}$/.test(valor)) {
+      setErro('Digite os 6 dígitos do código.')
+      return
+    }
+    enviando.current = true
+    setErro(null)
+    setOcupado(true)
+    const { data, error } = await supabase.rpc('verificar_codigo_2fa', {
+      p_codigo: valor,
+      p_confiar: confiar,
+      p_rotulo: rotuloDispositivo(),
+    })
+    enviando.current = false
+    setOcupado(false)
+    if (error) {
+      setErro(error.message || 'Código não confere.')
+      setCodigo('')
+      return
+    }
+    if (confiar && typeof data === 'string' && data.length >= 32) salvarTokenDispositivo(data)
+    onPronto()
+  }
+
+  if (etapa === 'pedir') {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="text-apoio text-tinta-apoio">
+          Enviaremos um código de 6 dígitos para o seu email cadastrado. Ele vale por 10 minutos.
+        </p>
+        {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
+        <div>
+          <Button onClick={enviar} disabled={ocupado}>
+            {ocupado ? <Spinner /> : <Mail />} Enviar código ao meu email
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <form
+      onSubmit={(e) => { e.preventDefault(); void confirmar(codigo) }}
+      noValidate
+      className="flex flex-col gap-3.5"
+    >
+      <p className="text-apoio text-tinta-apoio">Enviamos um código ao seu email. Digite abaixo.</p>
+      <CampoCodigo
+        valor={codigo}
+        onChange={(v) => {
+          setCodigo(v)
+          if (erro && v.length < 6) setErro(null)
+          if (v.length === 6) void confirmar(v)
+        }}
+        erro={erro}
+      />
+      <label className="flex items-center gap-2 text-apoio text-tinta-apoio">
+        <input type="checkbox" checked={confiar} onChange={(e) => setConfiar(e.target.checked)} className="size-4" />
+        Confiar neste dispositivo por 30 dias (não pedir o código de novo aqui)
+      </label>
+      <button
+        type="submit"
+        disabled={ocupado || codigo.length !== 6}
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-controle bg-acao-pressionada text-corpo font-medium text-white hover:bg-acao disabled:opacity-60"
+      >
+        {ocupado ? <Spinner /> : <ShieldCheck className="size-4" aria-hidden />}
+        {ocupado ? 'Conferindo…' : 'Confirmar'}
+      </button>
+      <button
+        type="button"
+        onClick={() => void enviar()}
+        disabled={ocupado || faltaReenvio > 0}
+        className="text-apoio text-tinta-sussurro hover:text-acao disabled:opacity-60"
+      >
+        {faltaReenvio > 0 ? `Reenviar código em ${faltaReenvio}s` : 'Reenviar código'}
+      </button>
+    </form>
+  )
+}
+
+/**
  * Portão da casca: com a exigência ligada e a sessão sem segundo fator válido,
- * pede o cadastro (quem ainda não tem) ou o código (quem já tem).
+ * primeiro tenta o dispositivo confiável; senão pede o código por email (ou o
+ * aplicativo autenticador, se a pessoa tiver um cadastrado).
  */
 export function PortaoSegundoFator({ fatorId, onSair }: { fatorId: string | null; onSair: () => void }) {
   const queryClient = useQueryClient()
+  const [metodo, setMetodo] = React.useState<'email' | 'totp'>('email')
+  const [tentandoDispositivo, setTentandoDispositivo] = React.useState(true)
   const pronto = () => {
-    // O token novo (aal2) já está na sessão; tudo que foi negado é relido.
+    // A sessão foi marcada no banco (email/dispositivo) ou ganhou aal2 (TOTP);
+    // relê tudo que estava negado.
     void queryClient.invalidateQueries()
   }
+
+  // Login novo: tenta o token do dispositivo confiável antes de pedir código.
+  React.useEffect(() => {
+    let vivo = true
+    const token = lerTokenDispositivo()
+    if (!token) { setTentandoDispositivo(false); return }
+    void supabase.rpc('verificar_dispositivo_2fa', { p_token: token }).then(({ data, error }) => {
+      if (!vivo) return
+      if (!error && data === true) { pronto(); return }
+      limparTokenDispositivo()
+      setTentandoDispositivo(false)
+    })
+    return () => { vivo = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  if (tentandoDispositivo) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-campo p-4">
+        <Spinner />
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-dvh items-center justify-center bg-campo p-4">
       <section className="w-full max-w-[460px] rounded-cartao border border-fio bg-superficie p-6 shadow-repouso">
@@ -277,19 +452,90 @@ export function PortaoSegundoFator({ fatorId, onSair }: { fatorId: string | null
           <ShieldCheck className="size-5" />
         </span>
         <h1 className="mt-4 text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">
-          {fatorId ? 'Confirme que é você' : 'Ative o segundo fator'}
+          Confirme que é você
         </h1>
         <p className="mt-1.5 mb-5 text-apoio text-tinta-sussurro">
-          {fatorId
-            ? 'Faz 24 horas desde a última confirmação, ou este é um login novo. Digite o código do seu aplicativo autenticador.'
-            : 'O acesso a dados de paciente exige um segundo fator. Configure o aplicativo autenticador uma vez; depois o código é pedido a cada 24 horas.'}
+          {metodo === 'email'
+            ? 'Este é um login novo neste dispositivo. Confirme com o código enviado ao seu email.'
+            : 'Digite o código do seu aplicativo autenticador.'}
         </p>
-        {fatorId ? <ConfirmarSegundoFator fatorId={fatorId} onPronto={pronto} /> : <CadastroSegundoFator onPronto={pronto} />}
+        {metodo === 'email'
+          ? <ConfirmarSegundoFatorEmail onPronto={pronto} />
+          : <ConfirmarSegundoFator fatorId={fatorId!} onPronto={pronto} />}
+        {fatorId && (
+          <button
+            type="button"
+            onClick={() => setMetodo((m) => (m === 'email' ? 'totp' : 'email'))}
+            className="mt-4 text-apoio text-tinta-sussurro hover:text-acao"
+          >
+            {metodo === 'email' ? 'Usar o aplicativo autenticador' : 'Usar o código por email'}
+          </button>
+        )}
         <button type="button" onClick={onSair} className="mt-5 flex items-center gap-1.5 text-apoio text-tinta-sussurro hover:text-acao">
           <LogOut className="size-4" aria-hidden /> Sair
         </button>
       </section>
     </div>
+  )
+}
+
+type Dispositivo = { id: string; rotulo: string | null; criado_em: string; ultimo_uso: string | null; expira_em: string }
+
+/** Lista de dispositivos confiáveis, com remoção (corta um aparelho perdido). */
+function DispositivosConfiaveis() {
+  const queryClient = useQueryClient()
+  const { data, isLoading } = useQuery({
+    queryKey: ['dispositivos-2fa'],
+    queryFn: async (): Promise<Dispositivo[]> => {
+      const { data, error } = await supabase
+        .from('dispositivos_confiaveis')
+        .select('id, rotulo, criado_em, ultimo_uso, expira_em')
+        .order('criado_em', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+  })
+  const [removendo, setRemovendo] = React.useState<string | null>(null)
+
+  async function remover(id: string) {
+    setRemovendo(id)
+    await supabase.from('dispositivos_confiaveis').delete().eq('id', id)
+    setRemovendo(null)
+    void queryClient.invalidateQueries({ queryKey: ['dispositivos-2fa'] })
+  }
+
+  return (
+    <section aria-label="Dispositivos confiáveis" className="rounded-cartao border border-fio bg-superficie p-5 shadow-repouso">
+      <div className="mb-3 flex items-center gap-2">
+        <Laptop className="size-4 text-tinta-apoio" aria-hidden />
+        <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">Dispositivos confiáveis</h2>
+      </div>
+      <p className="mb-3 text-apoio text-tinta-apoio">
+        Aparelhos onde você marcou “confiar neste dispositivo” não pedem o código por 30 dias. Perdeu um aparelho? Remova-o aqui para cortar o acesso na hora.
+      </p>
+      {isLoading ? (
+        <Spinner />
+      ) : !data || data.length === 0 ? (
+        <p className="text-apoio text-tinta-sussurro">Nenhum dispositivo confiável.</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {data.map((d) => (
+            <li key={d.id} className="flex items-center justify-between gap-3 rounded-controle border border-fio px-3 py-2">
+              <div className="min-w-0">
+                <p className="truncate text-apoio font-medium text-tinta">{d.rotulo || 'Dispositivo'}</p>
+                <p className="text-rotulo text-tinta-sussurro">
+                  Confiado em {new Date(d.criado_em).toLocaleDateString('pt-BR')}
+                  {d.ultimo_uso && ` · último uso ${new Date(d.ultimo_uso).toLocaleDateString('pt-BR')}`}
+                </p>
+              </div>
+              <Button variant="destructive" size="sm" onClick={() => void remover(d.id)} disabled={removendo === d.id}>
+                <Trash2 className="size-4" /> Remover
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }
 
@@ -312,31 +558,51 @@ export function SecaoSegundoFator() {
   }
 
   return (
-    <section aria-label="Segundo fator" className="rounded-cartao border border-fio bg-superficie p-5 shadow-repouso">
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <ShieldCheck className="size-4 text-tinta-apoio" aria-hidden />
-        <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">Segundo fator</h2>
-        {data?.fatorId ? <Badge variant="success">Ativo</Badge> : <Badge variant="warning">Não configurado</Badge>}
-        {data?.exigido && <Badge variant="secondary">Exigido pela plataforma</Badge>}
-      </div>
-      {isLoading ? (
-        <Spinner />
-      ) : data?.fatorId ? (
-        <div className="flex flex-col gap-2 text-apoio text-tinta-apoio">
-          <p>
-            O código do aplicativo autenticador é pedido uma vez a cada 24 horas e em todo login novo.
-            {data.verificadoEm && ` Última confirmação: ${data.verificadoEm.toLocaleString('pt-BR')}.`}
-          </p>
-          {erro && <p role="alert" className="text-critico">{erro}</p>}
-          <div>
-            <Button variant="destructive" size="sm" onClick={remover} disabled={removendo}>
-              Remover autenticador
-            </Button>
-          </div>
+    <div className="flex flex-col gap-5">
+      <section aria-label="Segundo fator" className="rounded-cartao border border-fio bg-superficie p-5 shadow-repouso">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <ShieldCheck className="size-4 text-tinta-apoio" aria-hidden />
+          <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">Segundo fator</h2>
+          {data?.exigido && <Badge variant="secondary">Exigido pela plataforma</Badge>}
         </div>
-      ) : (
-        <CadastroSegundoFator onPronto={atualizar} />
-      )}
-    </section>
+        <div className="flex items-start gap-2 text-apoio text-tinta-apoio">
+          <Mail className="mt-0.5 size-4 shrink-0 text-tinta-apoio" aria-hidden />
+          <p>
+            Por padrão, em um login de dispositivo novo enviamos um código ao seu email. Nada a configurar — você pode marcar “confiar neste dispositivo” para não repetir por 30 dias.
+          </p>
+        </div>
+      </section>
+
+      <section aria-label="Aplicativo autenticador" className="rounded-cartao border border-fio bg-superficie p-5 shadow-repouso">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <KeyRound className="size-4 text-tinta-apoio" aria-hidden />
+          <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">Aplicativo autenticador</h2>
+          {data?.fatorId ? <Badge variant="success">Ativo</Badge> : <Badge variant="secondary">Opcional</Badge>}
+        </div>
+        {isLoading ? (
+          <Spinner />
+        ) : data?.fatorId ? (
+          <div className="flex flex-col gap-2 text-apoio text-tinta-apoio">
+            <p>
+              Alternativa ao email: use o código do aplicativo autenticador.
+              {data.verificadoEm && ` Última confirmação: ${data.verificadoEm.toLocaleString('pt-BR')}.`}
+            </p>
+            {erro && <p role="alert" className="text-critico">{erro}</p>}
+            <div>
+              <Button variant="destructive" size="sm" onClick={remover} disabled={removendo}>
+                Remover autenticador
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2 text-apoio text-tinta-apoio">
+            <p>Prefere um aplicativo autenticador (mais seguro que email)? Configure aqui.</p>
+            <CadastroSegundoFator onPronto={atualizar} />
+          </div>
+        )}
+      </section>
+
+      <DispositivosConfiaveis />
+    </div>
   )
 }
