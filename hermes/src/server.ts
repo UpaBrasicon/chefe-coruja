@@ -191,12 +191,23 @@ export async function buildApp(opts: { crons?: boolean } = {}) {
     )
 
     // Extrai mensagens e enfileira (Fase 1 processa de verdade).
+    // Red-team V13: além do dedup (24h), descarta mensagem antiga — um webhook
+    // válido capturado e reenviado depois do TTL do dedup não é reprocessado.
+    // 12h é folga enorme vs. a entrega real da Meta (segundos), mas ainda menor
+    // que a janela do dedup, então não há brecha entre os dois controles.
+    const MAX_IDADE_MENSAGEM_S = 12 * 60 * 60
+    const agoraS = Math.floor(Date.now() / 1000)
     const jobs: JobMensagemWhatsApp[] = []
     for (const entry of payload.entry ?? []) {
       for (const change of entry.changes ?? []) {
         if (change.field !== 'messages') continue
         for (const msg of change.value?.messages ?? []) {
           if (msg.id && msg.from) {
+            const tsMsg = msg.timestamp ? Number(msg.timestamp) : NaN
+            if (Number.isFinite(tsMsg) && agoraS - tsMsg > MAX_IDADE_MENSAGEM_S) {
+              logger.warn({ messageId: msg.id, idadeS: agoraS - tsMsg }, '[webhook] mensagem antiga descartada (replay?)')
+              continue
+            }
             jobs.push({
               message_id: msg.id,
               wa_id: msg.from,
