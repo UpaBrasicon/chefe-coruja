@@ -10,6 +10,9 @@ import { supabase } from '@/lib/supabase'
 import type { Json, Tables } from '@/types/database'
 
 export type Assinante = 'paciente' | 'responsavel' | 'ninguem_presente'
+/** Quem assina o termo (decisão do RT 02/10/2026, Código Civil arts. 3º, 4º e 1.690):
+ *  representado < 16 (assina o responsável), assistido 16–17 (paciente com o responsável), capaz ≥ 18. */
+export type FaixaAssinatura = 'representado' | 'assistido' | 'capaz'
 
 export type ModeloTermo = {
   id: string
@@ -27,7 +30,7 @@ export type ConteudoTermo = {
   texto: string
   informacoes: string | null
   declaracao: string
-  paciente: { nome: string; idade_anos: number | null; menor_14: boolean }
+  paciente: { nome: string; idade_anos: number | null; menor_14: boolean; faixa?: FaixaAssinatura; assistido?: boolean }
   assinante: Assinante
   sem_condicoes_motivo: string | null
   responsavel: { nome: string; documento: string; vinculo: string } | null
@@ -70,6 +73,7 @@ export type PainelTermos = {
     nome: string
     idade_anos: number | null
     menor_14: boolean
+    faixa: FaixaAssinatura | null
     responsavel: { nome: string; vinculo: string | null; documento: string | null } | null
   }
   unidade: string | null
@@ -113,6 +117,7 @@ export const mensagemErro = (e: unknown) => (e instanceof Error ? e.message : St
 
 export function quemAssina(c: ConteudoTermo | null) {
   if (!c) return ''
+  if (c.assinante === 'paciente' && c.responsavel) return `assina o paciente, assistido por ${c.responsavel.nome} (${c.responsavel.vinculo})`
   if (c.assinante === 'paciente') return 'assina o paciente'
   if (c.assinante === 'responsavel' && c.responsavel) return `assina ${c.responsavel.nome} (${c.responsavel.vinculo})`
   return 'sem responsável presente para assinar'

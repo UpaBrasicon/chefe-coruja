@@ -108,6 +108,16 @@ INSERT INTO t SELECT 'ep_c', public.registrar_ficha('22000000-0000-4000-8000-000
   json_build_object('nome', 'Termo Criança Souza', 'data_nascimento', (current_date - interval '8 years 6 months')::date)::jsonb) ->> 'episodio_id';
 INSERT INTO t SELECT 'pa', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep_a');
 INSERT INTO t SELECT 'pc', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep_c');
+-- decisão do RT 02/10/2026: 16–17 assina assistido; sem nascimento o termo não sai
+INSERT INTO t SELECT 'ep_17', public.registrar_ficha('22000000-0000-4000-8000-000000000003', 'Corte', NULL,
+  json_build_object('nome', 'Termo Adolescente Lima', 'data_nascimento', (current_date - interval '17 years 2 months')::date)::jsonb) ->> 'episodio_id';
+INSERT INTO t SELECT 'ep_15', public.registrar_ficha('22000000-0000-4000-8000-000000000003', 'Corte', NULL,
+  json_build_object('nome', 'Termo Adolescente Rocha', 'data_nascimento', (current_date - interval '15 years 2 months')::date)::jsonb) ->> 'episodio_id';
+INSERT INTO t SELECT 'ep_x', public.registrar_ficha('22000000-0000-4000-8000-000000000003', 'Corte', NULL,
+  json_build_object('nome', 'Termo Sem Nascimento')::jsonb) ->> 'episodio_id';
+INSERT INTO t SELECT 'p17', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep_17');
+INSERT INTO t SELECT 'p15', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep_15');
+INSERT INTO t SELECT 'px', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep_x');
 
 -- ── médico: vê os modelos ativos, não o desativado nem a versão velha ───────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
@@ -175,11 +185,38 @@ END $$;
 -- criança: não assina; responsável ou ausência registrada
 SELECT pg_temp.falha(format('SELECT public.emitir_termo_consentimento(%L, %L, %L)', pg_temp.v('pc'),
   json_build_object('procedimento', 'Sutura', 'texto', 'Sutura de corte no joelho com anestesia local.', 'assinante', 'paciente'), pg_temp.v('ep_c')),
-  'Paciente menor de 14 anos', 'menor de 14 anos não assina');
+  'Paciente com menos de 16 anos', 'menor de 16 anos não assina');
 SELECT pg_temp.falha(format('SELECT public.emitir_termo_consentimento(%L, %L, %L)', pg_temp.v('pc'),
   json_build_object('procedimento', 'Sutura', 'texto', 'Sutura de corte no joelho com anestesia local.', 'assinante', 'ninguem_presente',
     'ausencia_motivo', 'escola'), pg_temp.v('ep_c')),
   'Registre por que não há responsável', 'ausência do responsável precisa de motivo');
+-- 15 anos (representado): não assina sozinho
+SELECT pg_temp.falha(format('SELECT public.emitir_termo_consentimento(%L, %L, %L)', pg_temp.v('p15'),
+  json_build_object('procedimento', 'Sutura', 'texto', 'Sutura de corte na mão com anestesia local.', 'assinante', 'paciente'), pg_temp.v('ep_15')),
+  'Paciente com menos de 16 anos', '15 anos não assina sozinho');
+-- 17 anos (assistido): sem responsável e sem motivo, recusa; com responsável, sai assistido
+SELECT pg_temp.falha(format('SELECT public.emitir_termo_consentimento(%L, %L, %L)', pg_temp.v('p17'),
+  json_build_object('procedimento', 'Sutura', 'texto', 'Sutura de corte na mão com anestesia local.', 'assinante', 'paciente'), pg_temp.v('ep_17')),
+  'Paciente de 16 ou 17 anos assina assistido', '17 anos precisa de assistência ou motivo');
+INSERT INTO t SELECT 'd17', public.emitir_termo_consentimento(pg_temp.u('p17'),
+  json_build_object('procedimento', 'Sutura', 'texto', 'Sutura de corte na mão com anestesia local.', 'assinante', 'paciente',
+    'responsavel', json_build_object('nome', 'Maria Lima', 'documento', 'RG 123', 'vinculo', 'mãe'))::jsonb, pg_temp.u('ep_17'))::text;
+RESET ROLE;
+DO $$
+DECLARE c jsonb;
+BEGIN
+  SELECT conteudo::jsonb INTO c FROM public.documentos_clinicos WHERE id = (pg_temp.v('d17')::jsonb ->> 'id')::uuid;
+  IF c #>> '{termo,paciente,faixa}' <> 'assistido' OR (c #>> '{termo,paciente,assistido}')::boolean IS NOT TRUE
+     OR c #>> '{termo,responsavel,nome}' <> 'Maria Lima' THEN
+    RAISE EXCEPTION 'FALHOU: termo de 17 anos sem a assistência registrada: %', c -> 'termo' -> 'paciente';
+  END IF;
+  RAISE NOTICE 'OK  17 anos assina assistido pela responsável';
+END $$;
+SET LOCAL ROLE authenticated;
+-- sem data de nascimento: o termo não sai
+SELECT pg_temp.falha(format('SELECT public.emitir_termo_consentimento(%L, %L, %L)', pg_temp.v('px'),
+  json_build_object('procedimento', 'Sutura', 'texto', 'Sutura de corte na mão com anestesia local.', 'assinante', 'paciente'), pg_temp.v('ep_x')),
+  'Cadastre a data de nascimento', 'sem nascimento o termo não sai');
 INSERT INTO t SELECT 'd2', public.emitir_termo_consentimento(pg_temp.u('pc'),
   json_build_object('procedimento', 'Sutura', 'texto', 'Sutura de corte no joelho de {paciente} com anestesia local.',
     'assinante', 'ninguem_presente', 'ausencia_motivo', 'Trazida pela escola; mãe avisada por telefone, a caminho.')::jsonb,

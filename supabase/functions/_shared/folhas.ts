@@ -698,7 +698,11 @@ function termo(d: Json, ctx: ContextoFolha): string {
   const ass: Assinante[] = []
   if (t.assinante === 'responsavel' && resp) ass.push({ nome: resp.nome, linha: junta(' · ', resp.documento ? `Doc. ${resp.documento}` : '', resp.vinculo), papel: 'Responsável' })
   else if (t.assinante === 'ninguem_presente') ass.push({ nome: nomePac, linha: 'Sem acompanhante presente', papel: 'Paciente' })
-  else ass.push({ nome: nomePac, papel: 'Paciente' })
+  else if (resp) {
+    // 16 e 17 anos: o paciente assina assistido pelo responsável (os dois assinam)
+    ass.push({ nome: nomePac, papel: 'Paciente' })
+    ass.push({ nome: resp.nome, linha: junta(' · ', resp.documento ? `Doc. ${resp.documento}` : '', resp.vinculo), papel: 'Responsável (assistência)' })
+  } else ass.push({ nome: nomePac, papel: 'Paciente' })
   ass.push({ nome: medico.nome, linha: registroOuBranco(medico), papel: 'Médico responsável' })
   ass.push(t.testemunha ? { nome: t.testemunha.nome, linha: t.testemunha.documento ? `Doc. ${t.testemunha.documento}` : '', papel: 'Testemunha' } : { papel: 'Testemunha' })
   const corpo = faixaAlergia(ctx, d) +

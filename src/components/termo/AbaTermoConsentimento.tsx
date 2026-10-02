@@ -127,22 +127,28 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
     return <Aviso tom="critico">Não foi possível carregar os termos de consentimento: {mensagemErro(painel.error)}</Aviso>
   }
   const p = painel.data
-  const menor = p.paciente.menor_14
+  // quem assina (decisão do RT 02/10/2026): < 16 o responsável; 16–17 o paciente
+  // assistido pelo responsável; ≥ 18 o paciente. Sem nascimento, o termo não sai.
+  const menor = p.paciente.faixa === 'representado'
   const idadeDesconhecida = p.paciente.idade_anos == null
+  const assistido = p.paciente.faixa === 'assistido' && !f.semCondicoes
 
-  const pedeResponsavel = menor || f.semCondicoes
-  const assinante: Assinante = !pedeResponsavel ? 'paciente' : f.presenca === 'responsavel' ? 'responsavel' : 'ninguem_presente'
+  const pedeResponsavel = menor || f.semCondicoes || assistido
+  const assinante: Assinante = assistido || !pedeResponsavel ? 'paciente' : f.presenca === 'responsavel' ? 'responsavel' : 'ninguem_presente'
+  const comResponsavel = assinante === 'responsavel' || (assistido && f.presenca === 'responsavel')
+  const semResponsavel = assinante === 'ninguem_presente' || (assistido && f.presenca === 'ninguem')
 
   const faltas: string[] = []
   if (!cheio(f.procedimento, 3)) faltas.push('procedimento')
   if (!cheio(f.texto, 20)) faltas.push('informações sobre o procedimento')
   if (!menor && f.semCondicoes && !cheio(f.semCondicoesMotivo, 5)) faltas.push('por que o paciente não tem condições de assinar')
-  if (assinante === 'responsavel') {
+  if (idadeDesconhecida) faltas.push('data de nascimento no cadastro do paciente')
+  if (comResponsavel) {
     if (!cheio(f.respNome, 3)) faltas.push('nome do responsável')
     if (!cheio(f.respDocumento, 3)) faltas.push('documento do responsável')
     if (!cheio(f.respVinculo, 2)) faltas.push('vínculo do responsável')
   }
-  if (assinante === 'ninguem_presente' && !cheio(f.ausencia, 10)) faltas.push('por que não há responsável presente')
+  if (semResponsavel && !cheio(f.ausencia, 10)) faltas.push('por que não há responsável presente')
   if (f.testNome.trim() && !cheio(f.testNome, 3)) faltas.push('nome da testemunha')
   if (f.retifica && !cheio(f.motivoRetificacao, 10)) faltas.push('motivo da retificação')
 
@@ -182,7 +188,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
       informacoes: c.informacoes ?? '',
       semCondicoes: !c.paciente.menor_14 && c.assinante !== 'paciente',
       semCondicoesMotivo: c.sem_condicoes_motivo ?? '',
-      presenca: c.assinante === 'ninguem_presente' ? 'ninguem' : 'responsavel',
+      presenca: c.assinante === 'ninguem_presente' || (c.assinante === 'paciente' && !!c.ausencia_motivo) ? 'ninguem' : 'responsavel',
       respNome: c.responsavel?.nome ?? '',
       respDocumento: c.responsavel?.documento ?? '',
       respVinculo: c.responsavel?.vinculo ?? '',
@@ -209,10 +215,10 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
       informacoes: f.informacoes.trim(),
       assinante,
       sem_condicoes_motivo: !menor && f.semCondicoes ? f.semCondicoesMotivo.trim() : '',
-      responsavel: assinante === 'responsavel'
+      responsavel: comResponsavel
         ? { nome: f.respNome.trim(), documento: f.respDocumento.trim(), vinculo: f.respVinculo.trim() }
         : null,
-      ausencia_motivo: assinante === 'ninguem_presente' ? f.ausencia.trim() : '',
+      ausencia_motivo: semResponsavel ? f.ausencia.trim() : '',
       testemunha: f.testNome.trim() ? { nome: f.testNome.trim(), documento: f.testDocumento.trim() } : null,
     }
     try {
@@ -288,7 +294,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
             {/* quem assina */}
             {menor ? (
               <Aviso>
-                Paciente de 0 a 13 anos: o termo é assinado pelo responsável legal. Sem responsável presente (abrigo, escola, outro local), registre por quê.
+                Paciente com menos de 16 anos: o termo é assinado pelo responsável legal. Sem responsável presente (abrigo, escola, outro local), registre por quê.
               </Aviso>
             ) : (
               <div className="flex flex-col gap-2">
@@ -296,7 +302,10 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
                   <Opcao ativa={f.semCondicoes} onClick={alternarSemCondicoes}>Paciente sem condições de assinar</Opcao>
                 </div>
                 {idadeDesconhecida && (
-                  <p className="text-rotulo text-tinta-sussurro">Sem data de nascimento no cadastro: se for criança, marque que o paciente não tem condições de assinar.</p>
+                  <p className="text-rotulo text-critico">Sem data de nascimento no cadastro: o termo não pode ser gerado, porque a idade define quem assina. Cadastre a data de nascimento.</p>
+                )}
+                {assistido && (
+                  <p className="text-rotulo text-tinta-sussurro">Paciente de 16 ou 17 anos: assina o termo junto com o responsável legal (assistência). Sem responsável presente, registre por quê.</p>
                 )}
                 {f.semCondicoes && (
                   <Input value={f.semCondicoesMotivo} onChange={(e) => mudar({ semCondicoesMotivo: e.target.value })}
