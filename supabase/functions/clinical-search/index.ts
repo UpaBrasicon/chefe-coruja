@@ -12,6 +12,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 import { criarCofre, desidentificar, residuos, type Conhecido } from '../_shared/desidentificacao.ts'
+import { comCors } from '../_shared/cors.ts'
 import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'
 
 const cors = {
@@ -62,7 +63,10 @@ async function nomesConhecidos(admin: ReturnType<typeof createClient>, unidadeId
 const erro = (status: number, msg: string) =>
   new Response(JSON.stringify({ erro: msg }), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
-Deno.serve(async (req) => {
+// a origem do CORS é decidida por requisição (www e sem www): ver _shared/cors.ts
+Deno.serve(async (req) => comCors(req, await tratar(req)))
+
+async function tratar(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (req.method !== 'POST') return erro(405, 'método não permitido')
   const t0 = Date.now()
@@ -144,4 +148,4 @@ Deno.serve(async (req) => {
       'X-Request-Id': request_id,
     },
   })
-})
+}

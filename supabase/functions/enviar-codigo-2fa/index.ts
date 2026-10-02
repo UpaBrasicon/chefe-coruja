@@ -9,6 +9,7 @@
 // APP_ORIGIN (origem do app p/ CORS). CC_PUBLISHABLE_KEY como nas outras.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
+import { comCors } from '../_shared/cors.ts'
 import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'
 
 const cors = {
@@ -31,7 +32,10 @@ function corpoEmail(codigo: string): string {
   </div></body></html>`
 }
 
-Deno.serve(async (req) => {
+// a origem do CORS é decidida por requisição (www e sem www): ver _shared/cors.ts
+Deno.serve(async (req) => comCors(req, await tratar(req)))
+
+async function tratar(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (req.method !== 'POST') return resposta(405, { erro: 'método não permitido' })
 
@@ -71,4 +75,4 @@ Deno.serve(async (req) => {
     return resposta(502, { erro: 'não foi possível enviar o email agora' })
   }
   return resposta(200, { ok: true })
-})
+}
