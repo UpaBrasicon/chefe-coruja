@@ -187,7 +187,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex flex-col gap-1.5">
               <Label>Setor</Label>
-              <Select value={novoSetor} onValueChange={(v) => setNovoSetor(v ?? '')}>
+              <Select items={Object.fromEntries((setores ?? []).map((s) => [s.id, s.nome]))} value={novoSetor} onValueChange={(v) => setNovoSetor(v ?? '')}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>

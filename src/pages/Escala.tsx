@@ -1002,7 +1002,7 @@ export default function Escala({
                     <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
                       <div className="flex flex-col gap-1.5">
                         <Label>Meu plantão (que quero trocar)</Label>
-                        <Select value={meuPlantaoTroca || null} onValueChange={(v) => setMeuPlantaoTroca(v ?? '')}>
+                        <Select items={Object.fromEntries(meusPlantoes.map((p) => [p.id, `${fmtDiaBR(p.data)} · ${TURNO_LABEL[p.turno] ?? p.turno}`]))} value={meuPlantaoTroca || null} onValueChange={(v) => setMeuPlantaoTroca(v ?? '')}>
                           <SelectTrigger className="w-full bg-white">
                             <SelectValue placeholder="Selecione um dos meus plantões" />
                           </SelectTrigger>
@@ -1017,7 +1017,7 @@ export default function Escala({
                       </div>
                       <div className="mt-3 flex flex-col gap-1.5">
                         <Label>Plantão de outro plantonista (que quero assumir)</Label>
-                        <Select value={outroPlantaoTroca || null} onValueChange={(v) => setOutroPlantaoTroca(v ?? '')}>
+                        <Select items={Object.fromEntries((plantoesDeOutros ?? []).map((p) => [p.id, `${fmtDiaBR(p.data)} · ${TURNO_LABEL[p.turno] ?? p.turno} · ${p.perfis?.nome_completo ?? '?'}`]))} value={outroPlantaoTroca || null} onValueChange={(v) => setOutroPlantaoTroca(v ?? '')}>
                           <SelectTrigger className="w-full bg-white">
                             <SelectValue placeholder="Selecione o plantão do outro" />
                           </SelectTrigger>
@@ -1091,7 +1091,7 @@ export default function Escala({
                     <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
                       <div className="flex flex-col gap-1.5">
                         <Label>Passar para</Label>
-                        <Select value={destinoId || null} onValueChange={(v) => setDestinoId(v ?? '')}>
+                        <Select items={Object.fromEntries((plantonistas ?? []).map((p) => [p.perfil_id, p.nome_completo + (p.crm ? ` · CRM ${p.crm}` : '')]))} value={destinoId || null} onValueChange={(v) => setDestinoId(v ?? '')}>
                           <SelectTrigger className="w-full bg-white">
                             <SelectValue placeholder="Selecione o plantonista" />
                           </SelectTrigger>

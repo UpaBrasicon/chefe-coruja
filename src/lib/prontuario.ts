@@ -54,10 +54,38 @@ export type TipoDocumentoPorta = TipoFolha
 const falhaDeRede = (e: { message?: string } | null) =>
   !navigator.onLine || (!!e && /fetch|network|timeout|Failed to send/i.test(e.message ?? ''))
 
+/**
+ * Ajusta a fonte de cada via (.via) para o texto caber na folha. A folha traz
+ * um <script> que faz isso, mas a janela de impressão herda o CSP do app
+ * (script-src 'self') e o script inline não roda: texto longo era cortado no
+ * papel. Aqui o ajuste roda a partir da janela principal (mesma origem).
+ */
+function caberVias(doc: Document) {
+  const vias = doc.querySelectorAll<HTMLElement>('.via')
+  vias.forEach((p) => {
+    p.style.fontSize = ''
+    let fs = 11
+    const alto = () => {
+      const u = p.lastElementChild as HTMLElement | null
+      return u ? u.offsetTop + u.offsetHeight - p.offsetTop : 0
+    }
+    while (alto() > p.clientHeight + 1 && fs > 7.5) {
+      fs -= 0.2
+      p.style.fontSize = fs + 'pt'
+    }
+  })
+}
+
 function escrever(janela: Window, html: string) {
   janela.document.open()
   janela.document.write(html)
   janela.document.close()
+  try {
+    caberVias(janela.document)
+    janela.addEventListener('beforeprint', () => caberVias(janela.document))
+  } catch {
+    // janela fechada ou de outra origem: imprime sem o ajuste
+  }
 }
 
 /**

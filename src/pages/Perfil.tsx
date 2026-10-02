@@ -472,7 +472,7 @@ export default function Perfil() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="perf-pref-turno">Turno preferido</Label>
-              <Select value={dados.preferencia_turno || null} onValueChange={(v) => mudar('preferencia_turno', v ?? '')}>
+              <Select items={Object.fromEntries(TURNOS.map((t) => [t.id, t.label]))} value={dados.preferencia_turno || null} onValueChange={(v) => mudar('preferencia_turno', v ?? '')}>
                 <SelectTrigger id="perf-pref-turno" className="w-full">
                   <SelectValue placeholder="Sem preferência" />
                 </SelectTrigger>

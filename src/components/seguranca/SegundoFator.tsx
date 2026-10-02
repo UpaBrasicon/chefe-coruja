@@ -342,8 +342,9 @@ export function ConfirmarSegundoFatorEmail({ onPronto }: { onPronto: () => void 
     })
     enviando.current = false
     setOcupado(false)
-    if (error) {
-      setErro(error.message || 'Código não confere.')
+    if (error || data === null) {
+      // código errado volta como null (o banco guarda a tentativa; na 5ª o código morre)
+      setErro(error?.message || 'Código não confere. Depois de 5 erros, peça um novo código.')
       setCodigo('')
       return
     }
@@ -415,7 +416,7 @@ export function ConfirmarSegundoFatorEmail({ onPronto }: { onPronto: () => void 
 export function PortaoSegundoFator({ fatorId, onSair }: { fatorId: string | null; onSair: () => void }) {
   const queryClient = useQueryClient()
   const [metodo, setMetodo] = React.useState<'email' | 'totp'>('email')
-  const [tentandoDispositivo, setTentandoDispositivo] = React.useState(true)
+  const [tentandoDispositivo, setTentandoDispositivo] = React.useState(() => !!lerTokenDispositivo())
   const pronto = () => {
     // A sessão foi marcada no banco (email/dispositivo) ou ganhou aal2 (TOTP);
     // relê tudo que estava negado.
@@ -426,10 +427,11 @@ export function PortaoSegundoFator({ fatorId, onSair }: { fatorId: string | null
   React.useEffect(() => {
     let vivo = true
     const token = lerTokenDispositivo()
-    if (!token) { setTentandoDispositivo(false); return }
+    if (!token) return // sem token o estado já nasce falso
     void supabase.rpc('verificar_dispositivo_2fa', { p_token: token }).then(({ data, error }) => {
       if (!vivo) return
-      if (!error && data === true) { pronto(); return }
+      // dispositivo confiável: libera; se o portão não virar, a tela de código aparece em vez de girar
+      if (!error && data === true) { pronto(); setTentandoDispositivo(false); return }
       limparTokenDispositivo()
       setTentandoDispositivo(false)
     })
@@ -496,16 +498,21 @@ function DispositivosConfiaveis() {
     },
   })
   const [removendo, setRemovendo] = React.useState<string | null>(null)
+  const [erroRemover, setErroRemover] = React.useState<string | null>(null)
 
   async function remover(id: string) {
     setRemovendo(id)
-    await supabase.from('dispositivos_confiaveis').delete().eq('id', id)
+    setErroRemover(null)
+    const { error } = await supabase.from('dispositivos_confiaveis').delete().eq('id', id)
     setRemovendo(null)
+    // sem isto, uma recusa do banco deixava o aparelho confiável sem aviso
+    if (error) setErroRemover('Não foi possível remover o aparelho: ' + error.message)
     void queryClient.invalidateQueries({ queryKey: ['dispositivos-2fa'] })
   }
 
   return (
     <section aria-label="Dispositivos confiáveis" className="rounded-cartao border border-fio bg-superficie p-5 shadow-repouso">
+      {erroRemover && <p role="alert" className="mb-2 text-apoio text-critico">{erroRemover}</p>}
       <div className="mb-3 flex items-center gap-2">
         <Laptop className="size-4 text-tinta-apoio" aria-hidden />
         <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">Dispositivos confiáveis</h2>

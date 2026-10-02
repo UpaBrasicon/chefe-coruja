@@ -280,15 +280,17 @@ export default function App() {
                         />
                       </Route>
 
+                      {/* Todo papel: o perfil tem a gestão do 2FA (dispositivos confiáveis), e a
+                          Revisão Clínica é da nomeação de RT, não do papel na unidade (o banco confere). */}
+                      <Route path="/perfil" element={<Perfil />} />
+                      <Route path="/revisao-clinica" element={<RevisaoClinica />} />
+
                       {/* ── Plantonista + gestão ───────────────────────── */}
                       <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin']} />}>
                         <Route path="/plantonista" element={<PlantonistaHome />} />
                         <Route path="/plantonista/:section" element={<SectionHome />} />
                         <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
                         <Route path="/agenda" element={<AgendaGrupo />} />
-                        <Route path="/perfil" element={<Perfil />} />
-                        {/* Responsável técnico (nomeação da rede, não papel da unidade): o banco confere */}
-                        <Route path="/revisao-clinica" element={<RevisaoClinica />} />
 
                         <Route
                           path="/escala"

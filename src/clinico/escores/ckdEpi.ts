@@ -65,7 +65,7 @@ export const ckdEpi: Escore = {
         'Só vale com creatinina estável: na lesão renal aguda a estimativa não representa a filtração real.',
         'O resultado é indexado a 1,73 m² de superfície corporal.',
         'Categoria G isolada não define doença renal crônica (exige cronicidade e/ou marcador de lesão).',
-        'Criança e adolescente abaixo de 18 anos: use a Schwartz (livro do ICr).',
+        'Abaixo de 18 anos a CKD-EPI não vale. Até 13 anos, 11 meses e 29 dias: Schwartz (livro do ICr). De 14 a 17 anos a Central não tem fórmula com referência para este cálculo.',
       ],
     }
   },

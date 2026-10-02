@@ -270,7 +270,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
               <Label>Setor de destino</Label>
-              <Select value={destinoId || null} onValueChange={(v) => setDestinoId(v ?? '')}>
+              <Select items={Object.fromEntries((setores ?? []).map((s) => [s.id, s.nome]))} value={destinoId || null} onValueChange={(v) => setDestinoId(v ?? '')}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecione o setor" />
                 </SelectTrigger>

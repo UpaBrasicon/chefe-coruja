@@ -6,7 +6,7 @@
 //   • Sim, aceitar — assume o atendimento.
 //   • Não aceitar — justificativa de 10 letras ou mais.
 //   • Acessar o paciente — abre sem decidir (quem usa passa onAcessar).
-// A tela do PS pode usar depois; aqui não se pluga em tela nenhuma.
+// Montado na fila do PS (FilaPS), escondido quando vazio.
 // ─────────────────────────────────────────────────────────────────────────────
 import { ArrowRightLeft } from 'lucide-react'
 import * as React from 'react'

@@ -22,15 +22,15 @@ END $$;
 
 -- 2) solicitar código (1x) + código errado é recusado
 DO $$ DECLARE v_codigo text; BEGIN
-  v_codigo := public.solicitar_codigo_2fa();
+  v_codigo := public.solicitar_codigo_2fa('d2000000-0000-4000-8000-000000000001');
   IF v_codigo !~ '^\d{6}$' THEN RAISE EXCEPTION 'FALHOU: código não tem 6 dígitos (%)', v_codigo; END IF;
   PERFORM set_config('teste.codigo', v_codigo, true);  -- reusa no bloco 3 (evita cooldown)
-  BEGIN
-    PERFORM public.verificar_codigo_2fa('999999', false, NULL);
+  IF public.verificar_codigo_2fa(CASE WHEN v_codigo = '999999' THEN '000000' ELSE '999999' END, false, NULL) IS NOT NULL THEN
     RAISE EXCEPTION 'FALHOU: código inválido aceito';
-  EXCEPTION WHEN others THEN
-    IF SQLERRM NOT LIKE '%não confere%' THEN RAISE EXCEPTION 'FALHOU: erro inesperado: %', SQLERRM; END IF;
-  END;
+  END IF;
+  IF (SELECT tentativas FROM private.segundo_fator_email_codigo WHERE user_id = 'd2000000-0000-4000-8000-000000000001') <> 1 THEN
+    RAISE EXCEPTION 'FALHOU: tentativa errada não foi contada';
+  END IF;
   RAISE NOTICE 'OK  solicita código + recusa código errado';
 END $$;
 
@@ -63,6 +63,36 @@ DO $$ DECLARE v_token text; BEGIN
     RAISE EXCEPTION 'FALHOU: device token inválido aceito';
   END IF;
   RAISE NOTICE 'OK  dispositivo confiável pula o email; token inválido recusado';
+END $$;
+
+-- 5b) segurança (migration 20261022000002): authenticated não pede código (ele
+--     voltaria em claro); 5 erros matam o código; sessão verificada vence em 12 h
+DO $$ BEGIN
+  IF has_function_privilege('authenticated', 'public.solicitar_codigo_2fa(uuid)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'FALHOU: authenticated executa solicitar_codigo_2fa';
+  END IF;
+  IF has_function_privilege('authenticated', 'public.hermes_sessao_carregar(uuid,text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'FALHOU: authenticated executa funções do Hermes';
+  END IF;
+  RAISE NOTICE 'OK  pedir código e funções do Hermes só com a chave de serviço';
+END $$;
+DO $$ DECLARE v_codigo text; i int; BEGIN
+  UPDATE private.segundo_fator_email_codigo SET enviado_em = now() - interval '2 minutes' WHERE user_id = 'd2000000-0000-4000-8000-000000000001';
+  DELETE FROM private.segundo_fator_email_codigo WHERE user_id = 'd2000000-0000-4000-8000-000000000001';
+  v_codigo := public.solicitar_codigo_2fa('d2000000-0000-4000-8000-000000000001');
+  FOR i IN 1..5 LOOP
+    PERFORM public.verificar_codigo_2fa(CASE WHEN v_codigo = '999999' THEN '000000' ELSE '999999' END, false, NULL);
+  END LOOP;
+  BEGIN
+    PERFORM public.verificar_codigo_2fa(v_codigo, false, NULL);
+    RAISE EXCEPTION 'FALHOU: código certo aceito depois de 5 erros';
+  EXCEPTION WHEN others THEN
+    IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
+  END;
+  UPDATE private.segundo_fator_sessao_ok SET verificado_em = now() - interval '13 hours'
+   WHERE session_id = '5e550000-0000-4000-8000-000000000002';
+  IF private.segundo_fator_sessao_valida() THEN RAISE EXCEPTION 'FALHOU: sessão verificada há 13 h ainda vale'; END IF;
+  RAISE NOTICE 'OK  5 erros matam o código; verificação vence em 12 h';
 END $$;
 
 -- 6) com a flag desligada, o gate é sempre verdadeiro (sessão limpa)

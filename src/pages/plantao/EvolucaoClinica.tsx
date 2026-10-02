@@ -168,7 +168,7 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
           <CardDescription>Selecione o paciente internado para ver a evolução.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          <Select
+          <Select items={Object.fromEntries((pacientes ?? []).map((p) => [p.id, p.nome + (p.cpf ? ` · ${p.cpf}` : '')]))}
             value={pacienteId ?? null}
             onValueChange={(v) => {
               setPacienteId(v)
