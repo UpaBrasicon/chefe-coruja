@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Building2, CheckCircle2, Users } from 'lucide-re
 import { useAuth } from '@/contexts/AuthContext'
 import { definirManterConectado, manterConectadoMarcado, supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ConfirmarSegundoFator } from '@/components/seguranca/SegundoFator'
@@ -301,6 +302,12 @@ export function Login() {
                 Digite o código de 6 dígitos do seu aplicativo autenticador. Ele é pedido em todo login novo e, depois, a cada 24 horas.
               </p>
               <ConfirmarSegundoFator fatorId={fatorId} onPronto={entrarNoSistema} rotulo="Entrar no plantão" />
+              {/* Sem o celular: segue sem o código do autenticador e o portão do 2FA
+                  pede o código por e-mail (decisão do usuário 02/10/2026: e-mail é o
+                  caminho padrão; o autenticador é opcional). */}
+              <Button type="button" variant="outline" className="mt-3 w-full" onClick={entrarNoSistema}>
+                Estou sem o autenticador: receber código por e-mail
+              </Button>
               <p className="mt-[22px] text-apoio text-pretty text-tinta-sussurro">
                 O código vem do aplicativo que você configurou no Perfil (Google Authenticator, Microsoft Authenticator, Authy ou outro). Três códigos errados seguidos bloqueiam a confirmação por 15 minutos.
               </p>
