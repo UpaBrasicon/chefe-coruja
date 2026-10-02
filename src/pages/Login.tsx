@@ -3,12 +3,10 @@ import * as React from 'react'
 import { ArrowLeft, ArrowRight, Building2, CheckCircle2, Users } from 'lucide-react'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { definirManterConectado, manterConectadoMarcado, supabase } from '@/lib/supabase'
+import { definirManterConectado, manterConectadoMarcado } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ConfirmarSegundoFator } from '@/components/seguranca/SegundoFator'
 import { LadoMarca, MarcaCompacta } from '@/pages/entrada/LadoMarca'
 import '@/pages/entrada/entrada.css'
 
@@ -24,7 +22,7 @@ import '@/pages/entrada/entrada.css'
 // da marca; ao entrar, avança e engole o formulário; "Voltar ao site" cobre a
 // tela de novo. Sob prefers-reduced-motion, vai direto.
 
-type Passo = 'entrar' | 'primeira-vez' | 'codigo'
+type Passo = 'entrar' | 'primeira-vez'
 type Estado = { daLanding?: boolean; aviso?: string; email?: string; from?: Location } | null
 
 const MARCA_ENTRADA = 'cc-entrou'
@@ -55,7 +53,6 @@ export function Login() {
   const [email, setEmail] = React.useState(estado?.email ?? '')
   const [senha, setSenha] = React.useState('')
   const [manter, setManter] = React.useState(manterConectadoMarcado)
-  const [fatorId, setFatorId] = React.useState<string | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
   const [carregando, setCarregando] = React.useState(false)
   const [veuChegada, setVeuChegada] = React.useState(() => !!estado?.daLanding && !movimentoReduzido())
@@ -101,8 +98,6 @@ export function Login() {
     if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || ev.button !== 0) return
     ev.preventDefault()
     if (saida) return
-    // No passo do código a sessão ainda é só de senha: não a deixa para trás.
-    if (passo === 'codigo') await supabase.auth.signOut()
     if (movimentoReduzido()) {
       navigate('/')
       return
@@ -127,27 +122,10 @@ export function Login() {
       setErro(r.error === 'Invalid login credentials' ? 'E-mail ou senha não conferem.' : r.error)
       return
     }
-    // A conta exige segundo fator? (fator TOTP verificado → aal2 pendente)
-    const { data: nivel } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-    if (nivel && nivel.nextLevel === 'aal2' && nivel.currentLevel !== 'aal2') {
-      const { data: fatores } = await supabase.auth.mfa.listFactors()
-      const totp = fatores?.totp?.find((f) => f.status === 'verified')
-      if (totp) {
-        setFatorId(totp.id)
-        setCarregando(false)
-        setPasso('codigo')
-        return
-      }
-    }
+    // O segundo fator é pedido no portão da casca, com o e-mail como primeira
+    // opção e o autenticador como alternativa (decisão do usuário 02/10/2026).
     setCarregando(false)
     entrarNoSistema()
-  }
-
-  async function usarOutroEmail() {
-    await supabase.auth.signOut()
-    setFatorId(null)
-    setSenha('')
-    mostrar('entrar')
   }
 
   return (
@@ -174,27 +152,25 @@ export function Login() {
             </p>
           )}
 
-          {passo !== 'codigo' && (
-            <div role="tablist" aria-label="Entrar ou ativar convite" className="mb-[26px] grid grid-cols-2 gap-1 rounded-container bg-trilha p-1">
-              {(['entrar', 'primeira-vez'] as const).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  role="tab"
-                  id={`aba-${p}`}
-                  aria-selected={passo === p}
-                  aria-controls={`painel-${p}`}
-                  onClick={() => mostrar(p)}
-                  className={cn(
-                    'rounded-controle-sm px-3 py-[9px] text-corpo font-medium transition-[background,color,box-shadow] duration-150',
-                    passo === p ? 'bg-superficie text-acao-pressionada shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-tinta-apoio hover:text-acao',
-                  )}
-                >
-                  {p === 'entrar' ? 'Entrar' : 'Primeira vez'}
-                </button>
-              ))}
-            </div>
-          )}
+          <div role="tablist" aria-label="Entrar ou ativar convite" className="mb-[26px] grid grid-cols-2 gap-1 rounded-container bg-trilha p-1">
+            {(['entrar', 'primeira-vez'] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                role="tab"
+                id={`aba-${p}`}
+                aria-selected={passo === p}
+                aria-controls={`painel-${p}`}
+                onClick={() => mostrar(p)}
+                className={cn(
+                  'rounded-controle-sm px-3 py-[9px] text-corpo font-medium transition-[background,color,box-shadow] duration-150',
+                  passo === p ? 'bg-superficie text-acao-pressionada shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-tinta-apoio hover:text-acao',
+                )}
+              >
+                {p === 'entrar' ? 'Entrar' : 'Primeira vez'}
+              </button>
+            ))}
+          </div>
 
           {passo === 'entrar' && (
             <section id="painel-entrar" role="tabpanel" aria-labelledby="aba-entrar">
@@ -291,28 +267,6 @@ export function Login() {
             </section>
           )}
 
-          {passo === 'codigo' && fatorId && (
-            <section aria-labelledby="titulo-codigo">
-              <button type="button" onClick={usarOutroEmail} className="mb-[18px] inline-flex min-h-6 items-center gap-[7px] text-controle text-tinta-sussurro hover:text-acao">
-                <ArrowLeft className="size-[15px]" aria-hidden />
-                Usar outro e-mail
-              </button>
-              <h2 id="titulo-codigo" className="mb-1.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.026em] text-acao-pressionada">Confirme que é você</h2>
-              <p className="mb-[22px] text-corpo text-pretty text-tinta-apoio">
-                Digite o código de 6 dígitos do seu aplicativo autenticador. Ele é pedido em todo login novo e, depois, a cada 24 horas.
-              </p>
-              <ConfirmarSegundoFator fatorId={fatorId} onPronto={entrarNoSistema} rotulo="Entrar no plantão" />
-              {/* Sem o celular: segue sem o código do autenticador e o portão do 2FA
-                  pede o código por e-mail (decisão do usuário 02/10/2026: e-mail é o
-                  caminho padrão; o autenticador é opcional). */}
-              <Button type="button" variant="outline" className="mt-3 w-full" onClick={entrarNoSistema}>
-                Estou sem o autenticador: receber código por e-mail
-              </Button>
-              <p className="mt-[22px] text-apoio text-pretty text-tinta-sussurro">
-                O código vem do aplicativo que você configurou no Perfil (Google Authenticator, Microsoft Authenticator, Authy ou outro). Três códigos errados seguidos bloqueiam a confirmação por 15 minutos.
-              </p>
-            </section>
-          )}
         </div>
       </main>
     </div>

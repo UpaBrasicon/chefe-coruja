@@ -470,7 +470,7 @@ export function PortaoSegundoFator({ fatorId, onSair }: { fatorId: string | null
             onClick={() => setMetodo((m) => (m === 'email' ? 'totp' : 'email'))}
             className="mt-4 text-apoio text-tinta-sussurro hover:text-acao"
           >
-            {metodo === 'email' ? 'Usar o aplicativo autenticador' : 'Usar o código por email'}
+            {metodo === 'email' ? 'Estou sem e-mail: quero ir pelo autenticador' : 'Voltar ao código por e-mail'}
           </button>
         )}
         <button type="button" onClick={onSair} className="mt-5 flex items-center gap-1.5 text-apoio text-tinta-sussurro hover:text-acao">
