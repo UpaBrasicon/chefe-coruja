@@ -245,7 +245,7 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
                 control={control}
                 name="perfil_id"
                 render={({ field }) => (
-                  <Select value={field.value || null} onValueChange={field.onChange}>
+                  <Select items={Object.fromEntries(perfis.map((p) => [p.id, p.nome_completo]))} value={field.value || null} onValueChange={field.onChange}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione a pessoa" />
                     </SelectTrigger>
@@ -270,7 +270,7 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
                 control={control}
                 name="unidade_id"
                 render={({ field }) => (
-                  <Select value={field.value || null} onValueChange={field.onChange}>
+                  <Select items={Object.fromEntries(unidades.map((u) => [u.id, `${u.nome} (${TIPO_UNIDADE_LABEL[u.tipo]})`]))} value={field.value || null} onValueChange={field.onChange}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione a unidade" />
                     </SelectTrigger>

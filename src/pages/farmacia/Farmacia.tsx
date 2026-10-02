@@ -174,7 +174,7 @@ function LimitesPadrao({ unidade, aoMudar }: { unidade: string; aoMudar: () => v
           <label className="flex flex-col gap-1 text-apoio text-grafite">Em falta quando ≤
             <Input className="h-8 w-24" inputMode="decimal" value={f} onChange={(e) => setF(e.target.value)} /></label>
           <Button size="sm" onClick={async () => {
-            const { error } = await supabase.rpc('definir_limites_padrao_farmacia', { p_unidade: unidade, p_limite_critico: num(c), p_limite_falta: num(f) })
+            const { error } = await supabase.rpc('definir_limites_padrao_farmacia', { p_unidade: unidade, p_limite_critico: num(c) as number, p_limite_falta: num(f) as number }) // nulo limpa o limite (a função SQL aceita)
             if (error) return setErro(error.message)
             setErro(null); setAbrir(false); void padrao.refetch(); aoMudar()
           }}>Salvar padrão</Button>

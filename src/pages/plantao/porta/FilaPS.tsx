@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { BotaoChamar } from '@/components/porta/Chamada'
+import { EncaminhamentosRecebidos } from '@/components/encaminhamento/EncaminhamentosRecebidos'
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 
 import { hoje, hora, minutos, nomeDe, rotuloDesfecho, useAgora, type EpFila } from './comum'
@@ -113,6 +114,8 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
           <Check className="size-4 shrink-0" aria-hidden /> {aviso}
         </div>
       )}
+      {/* encaminhamentos internos para mim: antes ninguém podia aceitar (o componente não estava em tela nenhuma) */}
+      <EncaminhamentosRecebidos vazio={null} />
       {erro && <p className="text-apoio text-critico">{(erro as Error).message}</p>}
       {!carregando && !erro && meusSetores.length === 0 && (
         <p className="rounded-container border border-fio bg-superficie px-5 py-4 text-apoio text-tinta-sussurro">

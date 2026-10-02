@@ -1,6 +1,7 @@
 // Segundo fator por email: gera o código (RPC solicitar_codigo_2fa, que aplica
 // cooldown) e o envia ao email do usuário autenticado via API do Resend.
-// O código NUNCA volta ao cliente — só vai pelo email. A verificação é feita
+// O código NUNCA volta ao cliente — só vai pelo email; a RPC que o gera só
+// roda com a chave de serviço (migration 20261022000002). A verificação é feita
 // depois pela RPC verificar_codigo_2fa (direta do app).
 //
 // Secrets (Edge Functions → Secrets): RESEND_API_KEY (= senha SMTP do Resend),
@@ -8,7 +9,7 @@
 // APP_ORIGIN (origem do app p/ CORS). CC_PUBLISHABLE_KEY como nas outras.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-import { chavePublica } from '../_shared/chaves.ts'
+import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
@@ -42,8 +43,11 @@ Deno.serve(async (req) => {
   if (!user) return resposta(401, { erro: 'não autenticado' })
   if (!user.email) return resposta(400, { erro: 'conta sem email cadastrado' })
 
-  // Gera o código (RPC aplica o cooldown de 60s e guarda só o hash).
-  const { data: codigo, error } = await userClient.rpc('solicitar_codigo_2fa')
+  // Gera o código com a chave de SERVIÇO: a RPC devolve o código em claro e só
+  // o service_role a executa (com a chave do usuário, quem tivesse só a senha
+  // pegaria o código pela API sem abrir o e-mail). O usuário vem do token.
+  const admin = createClient(Deno.env.get('SUPABASE_URL')!, chaveSecreta())
+  const { data: codigo, error } = await admin.rpc('solicitar_codigo_2fa', { p_user: user.id })
   if (error) {
     const cooldown = /aguarde/i.test(error.message)
     return resposta(cooldown ? 429 : 400, { erro: error.message })

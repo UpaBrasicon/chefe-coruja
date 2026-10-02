@@ -10,6 +10,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { ehPediatrico } from '@/domain/idade'
 import { rotulosPrioridade } from '@/domain/prioridade'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -150,7 +151,10 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
   // a queixa revista pelo enfermeiro na triagem vale mais que a da recepção
   const queixa = [...cls].reverse().find((c) => c.queixa?.trim())?.queixa ?? ep.queixa
   const iniciado = dados.data?.episodio?.atendimento_iniciado_em ?? ep.atendimento_iniciado_em
-  const pediatrico = ep.publico === 'pediatrico'
+  // Pediatria pela IDADE do paciente na chegada (CLAUDE.md: até 13a11m29d), não
+  // pela porta: um adolescente de 15 anos atendido na porta pediátrica é adulto.
+  // Sem data de nascimento, vale a porta (a prescrição por peso é a opção segura).
+  const pediatrico = (ep.paciente?.data_nascimento ? ehPediatrico(ep.paciente.data_nascimento, ep.chegada_em) : null) ?? ep.publico === 'pediatrico'
   const p = painel.data
   const cidAtend = soap.cid.trim() || [...registros].reverse().find((r) => r.cid)?.cid || ''
 
@@ -205,7 +209,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
         {pediatrico && (
           <div className="flex items-start gap-2 rounded-container border border-pediatria/25 bg-pediatria/[0.06] px-3.5 py-2.5 text-apoio text-pediatria">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
-            <span>Paciente pediátrico (0 a 14 anos). A dose é digitada por você, pelo peso aferido. O sistema não sugere nem converte dose de adulto.</span>
+            <span>Paciente pediátrico (até 13 anos, 11 meses e 29 dias). A dose é digitada por você, pelo peso aferido. O sistema não sugere nem converte dose de adulto.</span>
           </div>
         )}
         <Tabs value={aba} onValueChange={(v) => { setAba(v as Aba); setErro(null) }}>

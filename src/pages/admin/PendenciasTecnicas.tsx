@@ -137,7 +137,7 @@ function NovoChamado({ aberta, onFechar, unidadeInicial, tituloInicial }: {
   const abrir = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('abrir_chamado_tecnico', {
-        p_unidade: unidade === 'rede' ? null : unidade,
+        p_unidade: (unidade === 'rede' ? null : unidade) as string, // nulo = chamado da rede (a função SQL aceita)
         p_titulo: titulo.trim(),
         p_categoria: categoria,
         p_severidade: severidade,

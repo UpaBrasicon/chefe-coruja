@@ -122,8 +122,14 @@ BEGIN
   IF r.convidou <> 'Gestora de Teste' OR r.pedido_em IS NULL THEN RAISE EXCEPTION 'FALHOU: pedir novo convite'; END IF;
   RAISE NOTICE 'OK  anônimo confere: válido (cartão), inexistente, formato, expirado (pede novo), revogado';
 END $$;
-SELECT pg_temp.negado(format('SELECT public.pedir_novo_convite(%L)', current_setting('teste.cod1')),
-  'pediu novo convite de um convite válido');
+-- 20261022000003: convite válido não renova e devolve vazio (sem RAISE, para a
+-- tentativa ficar contada)
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM public.pedir_novo_convite(current_setting('teste.cod1'))) THEN
+    RAISE EXCEPTION 'FALHOU: pediu novo convite de um convite válido';
+  END IF;
+  RAISE NOTICE 'OK  convite válido não renova (resposta vazia)';
+END $$;
 DO $$ BEGIN
   BEGIN
     PERFORM 1 FROM public.convites;

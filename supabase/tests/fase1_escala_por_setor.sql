@@ -60,15 +60,12 @@ DO $$ BEGIN
 END $$;
 
 DO $$ BEGIN
-  PERFORM public.registrar_prescricao_itens('23000000-0000-4000-8000-000000000001', NULL, '[]');
-  RAISE NOTICE 'OK  prescreve para paciente do setor do plantão';
-  BEGIN
-    PERFORM public.registrar_prescricao_itens('23000000-0000-4000-8000-000000000004', NULL, '[]');
-    RAISE EXCEPTION 'FALHOU: prescreveu para paciente de outro setor';
-  EXCEPTION WHEN raise_exception THEN
-    IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
-    RAISE NOTICE 'OK  prescrição fora do setor recusada (%)', SQLERRM;
-  END;
+  -- registrar_prescricao_itens (legado) saiu do authenticated em
+  -- 20261022000003: a prescrição estruturada a substituiu.
+  IF has_function_privilege('authenticated', 'public.registrar_prescricao_itens(uuid,text,jsonb)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'FALHOU: RPC legada de prescrição ainda exposta';
+  END IF;
+  RAISE NOTICE 'OK  RPC legada de prescrição fora do authenticated';
   BEGIN
     PERFORM public.salvar_documento('23000000-0000-4000-8000-000000000004', '21000000-0000-4000-8000-000000000001', 'evolucao', 'texto');
     RAISE EXCEPTION 'FALHOU: documento para paciente de outro setor';

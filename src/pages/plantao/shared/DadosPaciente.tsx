@@ -683,7 +683,7 @@ export function DadosPaciente({
         {setoresInternacao && setorDestino !== undefined && onSetorDestino && (
           <div className="flex flex-col gap-2 rounded-xl border border-dashed p-4">
             <Label htmlFor="pac-setor-destino">Setor de destino (internação)</Label>
-            <Select value={setorDestino || null} onValueChange={(v) => onSetorDestino(v ?? '')}>
+            <Select items={Object.fromEntries(setoresInternacao.map((s) => [s.id, s.nome]))} value={setorDestino || null} onValueChange={(v) => onSetorDestino(v ?? '')}>
               <SelectTrigger id="pac-setor-destino" className="w-full">
                 <SelectValue placeholder="Selecione para onde o paciente será direcionado" />
               </SelectTrigger>
