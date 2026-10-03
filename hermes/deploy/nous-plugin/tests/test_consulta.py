@@ -555,7 +555,7 @@ class TestPlugin(unittest.TestCase):
         self.assertEqual(rpc.params("hermes_plantoes_do_perfil"), {"p_perfil": "perfil-1", "p_dias": 1})
 
     def test_comando_fora_da_lista_do_plugin(self):
-        with self.direto(RpcFalso()):
+        with self.direto(RpcFalso()), mock.patch.dict(os.environ, {"CORUJA_AGENTE": "gestora"}):
             r = json.loads(plugin._consultar({"escopo": "aguia", "comando": "internacoes"}))
         self.assertEqual(r, {"ok": False, "erro": "comando inválido para aguia"})
 

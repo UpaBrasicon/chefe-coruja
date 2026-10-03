@@ -82,33 +82,72 @@ COMANDOS = {
     "infra": ["integridade"],
 }
 
-CONSULTAR_SCHEMA = {
-    "name": "coruja_consultar",
-    "description": (
-        "Consulta dados REAIS do Chefe Coruja em nome de quem está conversando (identificado pela sessão; "
-        "não informe usuário). Escopos e comandos: "
-        "escala: meus_plantoes (periodo hoje|semana|mes), plantao_do_dia (gestor; data AAAA-MM-DD); "
-        "operacional: setores, censo, indicadores, profissionais (contagem por papel), notificacoes (dias 1-90); "
-        "aguia: resumo da unidade; garca: indicadores, censo, internacoes (contagem por status); "
-        "sentinela: alertas, relatorio (gestor/admin); seguranca: incidentes, quarentena (suporte); "
-        "infra: integridade (suporte). Se a resposta disser que a conta não está vinculada, peça o código "
-        "de 6 dígitos do Perfil e use coruja_vincular."
-    ),
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "escopo": {"type": "string", "enum": list(COMANDOS)},
-            "comando": {"type": "string"},
-            "periodo": {"type": "string", "enum": ["hoje", "semana", "mes"]},
-            "data": {"type": "string", "description": "AAAA-MM-DD"},
-            "dias": {"type": "integer"},
-            "status": {"type": "string"},
-            "patrulha": {"type": "string"},
-            "severidade": {"type": "string"},
-        },
-        "required": ["escopo", "comando"],
-    },
+# ── Agentes (decisão do RT, 02/10/2026): um contêiner do Nous por agente ────
+# CORUJA_AGENTE no ambiente do contêiner escolhe ferramentas e escopos. A IA
+# não muda o ambiente: o que não está aqui não é registrado e não pode ser
+# chamado. O papel da pessoa continua conferido no banco (consulta.py).
+AGENTES = {
+    "corujinha": {"escopos": ["escala", "operacional"],
+                  "ferramentas": ["coruja_consultar", "coruja_almanaque", "coruja_vincular"]},
+    "gestora": {"escopos": ["escala", "operacional", "aguia", "garca", "sentinela"],
+                "ferramentas": ["coruja_consultar", "coruja_almanaque", "coruja_vincular"]},
+    "clinica": {"escopos": [],
+                "ferramentas": ["biblioteca_clinica_buscar", "coruja_almanaque", "coruja_vincular"]},
+    "suporte": {"escopos": ["seguranca", "infra"],
+                "ferramentas": ["coruja_consultar", "coruja_almanaque", "coruja_vincular"]},
 }
+
+DESCRICAO_ESCOPO = {
+    "escala": "escala: meus_plantoes (periodo hoje|semana|mes), plantao_do_dia (gestor; data AAAA-MM-DD)",
+    "operacional": "operacional: setores, censo, indicadores, profissionais (contagem por papel), notificacoes (dias 1-90)",
+    "aguia": "aguia: resumo da unidade",
+    "garca": "garca: indicadores, censo, internacoes (contagem por status)",
+    "sentinela": "sentinela: alertas, relatorio (gestor/admin)",
+    "seguranca": "seguranca: incidentes, quarentena (suporte)",
+    "infra": "infra: integridade (suporte)",
+}
+
+
+def _agente() -> dict | None:
+    """Configuração do agente deste contêiner; nome desconhecido → None (nada é registrado)."""
+    return AGENTES.get(os.environ.get("CORUJA_AGENTE", "corujinha").strip().lower())
+
+
+def _escopos() -> list[str]:
+    a = _agente()
+    return list(a["escopos"]) if a else []
+
+
+def schema_consultar(escopos: list[str]) -> dict:
+    """Schema do coruja_consultar só com os escopos deste agente."""
+    return {
+        "name": "coruja_consultar",
+        "description": (
+            "Consulta dados REAIS do Chefe Coruja em nome de quem está conversando (identificado pela sessão; "
+            "não informe usuário). Escopos e comandos: "
+            + "; ".join(DESCRICAO_ESCOPO[e] for e in escopos)
+            + ". Se a resposta disser que a conta não está vinculada, peça o código "
+            "de 6 dígitos do Perfil e use coruja_vincular."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "escopo": {"type": "string", "enum": list(escopos)},
+                "comando": {"type": "string"},
+                "periodo": {"type": "string", "enum": ["hoje", "semana", "mes"]},
+                "data": {"type": "string", "description": "AAAA-MM-DD"},
+                "dias": {"type": "integer"},
+                "status": {"type": "string"},
+                "patrulha": {"type": "string"},
+                "severidade": {"type": "string"},
+            },
+            "required": ["escopo", "comando"],
+        },
+    }
+
+
+# compatibilidade: o schema com todos os escopos (testes antigos e documentação)
+CONSULTAR_SCHEMA = schema_consultar(list(COMANDOS))
 
 VINCULAR_SCHEMA = {
     "name": "coruja_vincular",
@@ -192,6 +231,8 @@ def _consultar(args: dict, **_kw) -> str:
         return json.dumps({"ok": False, "erro": "Consulta disponível só pelo Telegram."}, ensure_ascii=False)
     escopo = str(args.get("escopo") or "")
     comando = str(args.get("comando") or "")
+    if escopo not in _escopos():
+        return json.dumps({"ok": False, "erro": f"escopo {escopo} não é deste assistente"}, ensure_ascii=False)
     if comando not in COMANDOS.get(escopo, []):
         return json.dumps({"ok": False, "erro": f"comando inválido para {escopo}"}, ensure_ascii=False)
     extras = {k: args[k] for k in ("periodo", "data", "dias", "status", "patrulha", "severidade") if args.get(k) is not None}
@@ -286,11 +327,19 @@ def _disponivel() -> bool:
 
 
 def register(ctx) -> None:
-    ctx.register_tool(name="coruja_consultar", toolset=TOOLSET, schema=CONSULTAR_SCHEMA,
-                      handler=_consultar, check_fn=_disponivel, emoji="🦉")
-    ctx.register_tool(name="coruja_almanaque", toolset=TOOLSET, schema=ALMANAQUE_SCHEMA,
-                      handler=_almanaque, check_fn=_disponivel, emoji="📖")
-    ctx.register_tool(name="coruja_vincular", toolset=TOOLSET, schema=VINCULAR_SCHEMA,
-                      handler=_vincular, check_fn=_disponivel, emoji="🔗")
-    ctx.register_tool(name="biblioteca_clinica_buscar", toolset=TOOLSET, schema=BIBLIOTECA_SCHEMA,
-                      handler=_biblioteca_buscar, check_fn=_biblioteca_disponivel, emoji="📚")
+    agente = _agente()
+    if agente is None:
+        # nome de agente errado no ambiente: falha fechada, nenhuma ferramenta
+        return
+    escopos = list(agente["escopos"])
+    ferramentas = {
+        "coruja_consultar": dict(schema=schema_consultar(escopos), handler=_consultar, check_fn=_disponivel, emoji="🦉"),
+        "coruja_almanaque": dict(schema=ALMANAQUE_SCHEMA, handler=_almanaque, check_fn=_disponivel, emoji="📖"),
+        "coruja_vincular": dict(schema=VINCULAR_SCHEMA, handler=_vincular, check_fn=_disponivel, emoji="🔗"),
+        "biblioteca_clinica_buscar": dict(schema=BIBLIOTECA_SCHEMA, handler=_biblioteca_buscar,
+                                          check_fn=_biblioteca_disponivel, emoji="📚"),
+    }
+    for nome in agente["ferramentas"]:
+        if nome == "coruja_consultar" and not escopos:
+            continue
+        ctx.register_tool(name=nome, toolset=TOOLSET, **ferramentas[nome])
