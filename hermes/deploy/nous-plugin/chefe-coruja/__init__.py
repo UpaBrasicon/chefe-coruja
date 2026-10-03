@@ -343,3 +343,34 @@ def register(ctx) -> None:
         if nome == "coruja_consultar" and not escopos:
             continue
         ctx.register_tool(name=nome, toolset=TOOLSET, **ferramentas[nome])
+    # trava de ferramentas (RT, 03/10/2026): só as deste agente e a LEITURA de skills
+    if hasattr(ctx, "register_hook"):
+        ctx.register_hook("pre_tool_call", _trava_ferramentas)
+
+
+# ── Trava de ferramentas das Corujas de saúde ─────────────────────────────────
+# Decisão do RT (03/10/2026): as Corujas de saúde podem LER skills aprovadas
+# (escritas pelo maestro, a Coruja Lab, e aprovadas pelo RT), mas não criar,
+# editar nem apagar — e nada de terminal, arquivos ou navegador. O Nous não tem
+# "skills só leitura" (skill_manage cria/edita/apaga), então a trava é aqui:
+# antes de cada ferramenta, o que não está na lista é bloqueado.
+LEITURA_DE_SKILLS = {"skills_list", "skill_view"}
+
+
+def ferramenta_permitida(nome: str, agente: dict | None) -> bool:
+    if agente is None or not isinstance(nome, str):
+        return False
+    if nome in agente["ferramentas"] or nome in LEITURA_DE_SKILLS:
+        return True
+    # ferramentas internas do Nous para carregar a descrição das outras sob demanda
+    return nome in {"tool_describe", "tool_search"}
+
+
+def _trava_ferramentas(tool_name=None, args=None, **_kw):
+    try:
+        if ferramenta_permitida(tool_name, _agente()):
+            return None
+    except Exception:  # noqa: BLE001 — na dúvida, bloqueia (falha fechada)
+        pass
+    return {"action": "block",
+            "message": f"A ferramenta {tool_name} não está liberada para este assistente."}
