@@ -159,3 +159,50 @@ test('Central: adulto completo com o peso; pediátrico precisa de idade abaixo d
   assert.equal(fora.completo, false)
   assert.equal(lerPaciente(PACIENTE_VAZIO).completo, false)
 })
+
+// ── R6 (auditoria 03/10/2026): pediatria pela idade; idade desconhecida não é adulto
+import { aplicaCuidadoPediatrico, faixaEtaria, ofereceConteudoAdulto, publicosDeProtocolo, rotuloFaixa } from './idade.ts'
+import { faltandoVitais, publicoDosVitais } from './vitais.ts'
+
+test('faixa etária: pela idade, não pela porta; sem nascimento é desconhecida', () => {
+  assert.equal(faixaEtaria('2016-01-10', '2026-10-03'), 'pediatrico')
+  assert.equal(faixaEtaria('2011-01-10', '2026-10-03'), 'adulto', 'adolescente de 15 é adulto mesmo na porta pediátrica')
+  assert.equal(faixaEtaria('2012-10-04', '2026-10-03'), 'pediatrico', '13a 11m 29d')
+  assert.equal(faixaEtaria('2012-10-03', '2026-10-03'), 'adulto', '14 anos completos')
+  assert.equal(faixaEtaria(null, '2026-10-03'), 'desconhecida')
+  assert.equal(faixaEtaria(undefined, '2026-10-03'), 'desconhecida')
+  assert.equal(faixaEtaria('', '2026-10-03'), 'desconhecida')
+  assert.equal(faixaEtaria('2027-01-01', '2026-10-03'), 'desconhecida', 'nascimento no futuro')
+})
+
+test('idade desconhecida: nada de adulto (receita padrão, favoritos, NEWS2/qSOFA)', () => {
+  assert.equal(ofereceConteudoAdulto('adulto'), true)
+  assert.equal(ofereceConteudoAdulto('pediatrico'), false)
+  assert.equal(ofereceConteudoAdulto('desconhecida'), false)
+})
+
+test('idade desconhecida: prescrição pelo peso aferido, como na criança', () => {
+  assert.equal(aplicaCuidadoPediatrico('pediatrico'), true)
+  assert.equal(aplicaCuidadoPediatrico('desconhecida'), true)
+  assert.equal(aplicaCuidadoPediatrico('adulto'), false)
+})
+
+test('vitais da reclassificação: PA exigida só no adulto pela idade', () => {
+  const semPa = { 'frequencia-cardiaca': '100', 'frequencia-respiratoria': '24', temperatura: '37', 'saturacao-o2': '97', 'escala-dor': '2' }
+  assert.deepEqual(faltandoVitais(semPa, publicoDosVitais('pediatrico')), [])
+  assert.deepEqual(faltandoVitais(semPa, publicoDosVitais('desconhecida')), [], 'sem idade a PA não trava')
+  assert.deepEqual(faltandoVitais(semPa, publicoDosVitais('adulto')).map((v) => v.k), ['pressao-arterial-sistolica', 'pressao-arterial-diastolica'])
+  assert.equal(faltandoVitais({}, publicoDosVitais('desconhecida')).length, 5, 'os demais continuam obrigatórios')
+})
+
+test('protocolos da observação: sem idade, só os de público "todos"', () => {
+  assert.deepEqual(publicosDeProtocolo('desconhecida'), ['todos'])
+  assert.deepEqual(publicosDeProtocolo('pediatrico'), ['todos', 'pediatrico'])
+  assert.deepEqual(publicosDeProtocolo('adulto'), ['todos', 'adulto'])
+})
+
+test('rótulo da fila: pediatria pela idade; sem nascimento avisa; adulto sem rótulo', () => {
+  assert.equal(rotuloFaixa('pediatrico'), 'pediatria')
+  assert.equal(rotuloFaixa('desconhecida'), 'sem data de nascimento')
+  assert.equal(rotuloFaixa('adulto'), '')
+})

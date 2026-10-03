@@ -52,8 +52,11 @@ export type RascunhoReceita = { receita: Rx }
 
 type Identificacao = ReturnType<typeof useIdentificacao>
 
-const TEXTO_PEDIATRICO =
+export const TEXTO_PEDIATRICO =
   'Paciente pediátrico. Os protocolos e favoritos desta unidade têm dose e apresentação de adulto e não são oferecidos. Sem referência pediátrica cadastrada, prescreva item a item pela busca, por peso aferido.'
+
+export const TEXTO_SEM_NASCIMENTO =
+  'Sem data de nascimento no cadastro: o paciente não é tratado como adulto. Os protocolos e favoritos desta unidade têm dose e apresentação de adulto e não são oferecidos. Sem referência pediátrica cadastrada, prescreva item a item pela busca, por peso aferido. Cadastre a data de nascimento.'
 
 /** Lê a receita do rascunho local, do conteúdo copiado ou de documento antigo ({tipo, itens, obs}). */
 function normalizar(r: unknown): Rx {
@@ -159,7 +162,9 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
   const [protoAberto, setProtoAberto] = React.useState<Protocolo | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
 
-  const pediatrico = ident.pediatrico === true
+  // sem conteúdo de adulto para criança E para quem está sem data de nascimento
+  // (pediatrico null): idade desconhecida não é adulto (decisão do RT, 02/10/2026)
+  const pediatrico = ident.pediatrico !== false
   const alergias = ident.cab.temAlergia ? ident.cab.alergias.split(',').map((s) => s.trim()).filter(Boolean) : []
 
   const favoritos = useQuery({
@@ -305,7 +310,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
           </section>
 
           {pediatrico ? (
-            <Aviso>{TEXTO_PEDIATRICO}</Aviso>
+            !ident.carregando && <Aviso>{ident.pediatrico === true ? TEXTO_PEDIATRICO : TEXTO_SEM_NASCIMENTO}</Aviso>
           ) : (
             <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
               <div className="flex items-center gap-2.5 border-b border-trilha px-5 py-[13px]">

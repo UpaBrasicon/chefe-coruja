@@ -7,7 +7,8 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { CORES_RISCO, gravidade, NIVEL_RISCO, type CorRisco } from '@/domain/risco'
-import { faltandoVitais, paraNumeros, textoVitais, type Publico } from '@/domain/vitais'
+import type { FaixaEtaria } from '@/domain/idade'
+import { faltandoVitais, paraNumeros, publicoDosVitais, textoVitais, type Publico } from '@/domain/vitais'
 import { useTerminologia } from '@/hooks/useTerminologia'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -53,9 +54,12 @@ export function CampoCid({ id, valor, onChange, placeholder }: { id: string; val
 }
 
 export function AbaAtendimento({
-  episodioId, pacienteId, publico, corAtual, soap, setSoap, salvoEm, classificacoes, registros, aoRegistrar,
+  episodioId, pacienteId, faixa, corAtual, soap, setSoap, salvoEm, classificacoes, registros, aoRegistrar,
 }: {
-  episodioId: string; pacienteId: string; publico: Publico | null; corAtual: CorRisco
+  episodioId: string; pacienteId: string
+  /** faixa pela IDADE do paciente (JanelaAtendimento), nunca pela porta */
+  faixa: FaixaEtaria
+  corAtual: CorRisco
   soap: Soap; setSoap: (s: Soap) => void; salvoEm: Date | null
   classificacoes: Classificacao[]; registros: RegistroSoap[]; aoRegistrar: () => void
 }) {
@@ -142,14 +146,26 @@ export function AbaAtendimento({
         {!triagem && <p className="text-apoio text-tinta-sussurro">Sem classificação registrada.</p>}
       </section>
 
-      {publico === 'pediatrico' && <SepsePorta pacienteId={pacienteId} />}
+      {/* Pela idade, não pela porta (criança na porta adulta vê; adolescente de
+          15 na porta pediátrica não). Sem data de nascimento o bloco não some
+          calado como se fosse adulto: o rastreio (Phoenix, calculado no banco)
+          depende da idade e não roda, e o motivo aparece. */}
+      {faixa === 'pediatrico' && <SepsePorta pacienteId={pacienteId} />}
+      {faixa === 'desconhecida' && (
+        <p className="rounded-container border border-atencao/25 bg-atencao/[0.06] px-3.5 py-2.5 text-apoio text-atencao">
+          Rastreio de sepse pediátrica (Phoenix) não calculado: sem data de nascimento não dá para saber se vale o critério pediátrico. Cadastre a data de nascimento.
+        </p>
+      )}
 
-      <Reclassificar episodioId={episodioId} publico={publico} corAtual={corAtual} aoRegistrar={aoRegistrar} />
+      {/* Sem data de nascimento, vitais com o público pediátrico: PA opcional
+          (exigi-la travaria a reclassificação de uma criança onde não há
+          manguito pediátrico); os demais obrigatórios são os mesmos. */}
+      <Reclassificar episodioId={episodioId} publico={publicoDosVitais(faixa)} corAtual={corAtual} aoRegistrar={aoRegistrar} />
     </div>
   )
 }
 
-function Reclassificar({ episodioId, publico, corAtual, aoRegistrar }: { episodioId: string; publico: Publico | null; corAtual: CorRisco; aoRegistrar: () => void }) {
+function Reclassificar({ episodioId, publico, corAtual, aoRegistrar }: { episodioId: string; publico: Publico; corAtual: CorRisco; aoRegistrar: () => void }) {
   const [aberto, setAberto] = React.useState(false)
   const [novaCor, setNovaCor] = React.useState<CorRisco | null>(null)
   const [vitais, setVitais] = React.useState<Record<string, string>>({})

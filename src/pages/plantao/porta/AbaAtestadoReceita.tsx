@@ -4,6 +4,9 @@
 // prescrição): aplicar um conjunto e "salvar como padrão". Emitir grava o
 // documento no episódio com número próprio (mesma folha das telas avulsas).
 // Dose e posologia são escritas pelo médico: nada é sugerido.
+// Receita padrão e favoritos têm dose de adulto: só para adulto PELA IDADE.
+// Criança e paciente sem data de nascimento (decisão do RT, 02/10/2026) não
+// os recebem — mesma regra do Receituário médico (TEXTO_PEDIATRICO).
 import { useQuery } from '@tanstack/react-query'
 import { ClipboardList, FileText, Pill, Printer, X } from 'lucide-react'
 import * as React from 'react'
@@ -18,6 +21,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
+import { Aviso } from '@/components/documentos/ui'
+import { ofereceConteudoAdulto, type FaixaEtaria } from '@/domain/idade'
+import { idadeLegivel } from '@/pages/recepcao/cadastroForm'
+import { TEXTO_PEDIATRICO, TEXTO_SEM_NASCIMENTO } from '../atendimento/ReceituarioMedico'
 
 import { hoje, hora, msg, type EstadoDocs, type ItemReceita } from './comum'
 
@@ -47,14 +54,27 @@ function Situacao({ em, rascunho }: { em: string | null; rascunho: string }) {
   return <span className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold', em ? 'bg-alerta-conforme text-conforme' : 'bg-trilha text-tinta-apoio')}>{em ? `Emitido ${hora(em)}` : rascunho}</span>
 }
 
-export function AbaAtestadoReceita({ episodioId, pacienteId, nome, nascimento, cid, estado, setEstado }: {
+export function AbaAtestadoReceita({ episodioId, pacienteId, nome, nascimento, faixa, cid, estado, setEstado }: {
   episodioId: string; pacienteId: string; nome: string; nascimento: string | null
+  /** faixa pela IDADE (JanelaAtendimento), nunca pela porta */
+  faixa: FaixaEtaria
   /** CID-10 do atendimento (SOAP registrado ou em rascunho), para o atestado a pedido. */
   cid: string
   estado: EstadoDocs; setEstado: (f: (s: EstadoDocs) => EstadoDocs) => void
 }) {
   const [erro, setErro] = React.useState<string | null>(null)
   const alergias = useAlergias(pacienteId)
+  // mesma chave e forma de AbaPrescricao / PrescricaoEstruturada (cache comum)
+  const peso = useQuery({
+    queryKey: ['peso-atual', pacienteId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('observacao').select('valor_num, aferido_em, conceito!inner(nome)')
+        .eq('paciente_id', pacienteId).eq('conceito.nome', 'peso').order('aferido_em', { ascending: false }).limit(1)
+      if (error) throw error
+      return (data?.[0] ?? null) as { valor_num: number; aferido_em: string } | null
+    },
+  })
   const docs = useQuery({
     queryKey: ['documentos-episodio', episodioId],
     queryFn: async () => {
@@ -67,7 +87,10 @@ export function AbaAtestadoReceita({ episodioId, pacienteId, nome, nascimento, c
 
   // folha: mesmos campos das telas avulsas (src/pages/plantao/shared/rascunho.ts)
   const pacienteFolha = () => ({
-    nome, nascimento: nascimento ? nascimento.split('-').reverse().join('/') : '', dataAtual: hoje(), idade: '', peso: '',
+    nome, nascimento: nascimento ? nascimento.split('-').reverse().join('/') : '', dataAtual: hoje(),
+    // idade (na data da folha) e peso aferido quando conhecidos (a folha acrescenta "kg"); sem dado, em branco
+    idade: nascimento ? idadeLegivel(nascimento) : '',
+    peso: peso.data?.valor_num != null ? String(peso.data.valor_num).replace('.', ',') : '',
     alergias: !alergias.data ? 'NÃO VERIFICADA'
       : alergias.data.estado === 'tem' ? ativas(alergias.data).map((a) => a.substancia).join(', ')
       : alergias.data.estado === 'nega' ? 'NEGA' : 'NÃO REGISTRADA',
@@ -134,7 +157,7 @@ export function AbaAtestadoReceita({ episodioId, pacienteId, nome, nascimento, c
         </div>
       </section>
 
-      <ReceitaAlta estado={estado} setEstado={setEstado} onEmitir={() => void emitirReceita()} />
+      <ReceitaAlta faixa={faixa} estado={estado} setEstado={setEstado} onEmitir={() => void emitirReceita()} />
 
       <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
         <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-4 py-3">
@@ -165,7 +188,8 @@ export function AbaAtestadoReceita({ episodioId, pacienteId, nome, nascimento, c
   )
 }
 
-function ReceitaAlta({ estado, setEstado, onEmitir }: { estado: EstadoDocs; setEstado: (f: (s: EstadoDocs) => EstadoDocs) => void; onEmitir: () => void }) {
+function ReceitaAlta({ faixa, estado, setEstado, onEmitir }: { faixa: FaixaEtaria; estado: EstadoDocs; setEstado: (f: (s: EstadoDocs) => EstadoDocs) => void; onEmitir: () => void }) {
+  const adulto = ofereceConteudoAdulto(faixa)
   const [busca, setBusca] = React.useState('')
   const [med, setMed] = React.useState<Med | null>(null)
   const [pos, setPos] = React.useState('')
@@ -176,6 +200,7 @@ function ReceitaAlta({ estado, setEstado, onEmitir }: { estado: EstadoDocs; setE
 
   const prefs = useQuery({
     queryKey: ['preferencias-prescricao'],
+    enabled: adulto,
     queryFn: async () => {
       const { data, error } = await supabase.from('preferencias_prescricao')
         .select('id, receita_padrao, dose, posologia, quantidade, medicamento_id, medicamento:medicamento(principio_ativo, apresentacao)')
@@ -197,7 +222,7 @@ function ReceitaAlta({ estado, setEstado, onEmitir }: { estado: EstadoDocs; setE
 
   const conjuntos = new Map<string, Pref[]>()
   const avulsos: Pref[] = []
-  for (const p of prefs.data ?? []) {
+  for (const p of adulto ? prefs.data ?? [] : []) {
     if (p.receita_padrao) conjuntos.set(p.receita_padrao, [...(conjuntos.get(p.receita_padrao) ?? []), p])
     else avulsos.push(p)
   }
@@ -254,7 +279,13 @@ function ReceitaAlta({ estado, setEstado, onEmitir }: { estado: EstadoDocs; setE
         <span className="text-controle font-semibold text-tinta">Receita de alta</span>
         <Situacao em={estado.rxEmitidaEm} rascunho={estado.receita.length ? 'Rascunho' : 'Sem itens'} />
       </div>
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-trilha px-4 py-3">
+      {!adulto && (
+        <div className="border-b border-trilha px-4 py-3">
+          <Aviso>{faixa === 'pediatrico' ? TEXTO_PEDIATRICO : TEXTO_SEM_NASCIMENTO}</Aviso>
+          {estado.rxEmitidaEm && <Button size="sm" variant="ghost" className="mt-2" onClick={() => setEstado((s) => ({ ...s, rxEmitidaEm: null }))}>Reabrir</Button>}
+        </div>
+      )}
+      {adulto && <div className="flex flex-wrap items-center gap-1.5 border-b border-trilha px-4 py-3">
         <span className="text-apoio text-tinta-sussurro">Receita padrão:</span>
         {[...conjuntos.entries()].map(([n, lista]) => (
           <Chip key={n} ativo={false} onClick={() => aplicar(lista)}>{n} ({lista.length})</Chip>
@@ -272,7 +303,7 @@ function ReceitaAlta({ estado, setEstado, onEmitir }: { estado: EstadoDocs; setE
           </Button>
           {estado.rxEmitidaEm && <Button size="sm" variant="ghost" onClick={() => setEstado((s) => ({ ...s, rxEmitidaEm: null }))}>Reabrir</Button>}
         </span>
-      </div>
+      </div>}
       {estado.receita.map((r, i) => (
         <div key={r.id} className="flex items-center gap-3 border-b border-trilha px-4 py-2.5">
           <span className="w-5 text-apoio tabular-nums text-tinta-sussurro">{i + 1}.</span>

@@ -7,7 +7,7 @@ import { Check, Clock, LogOut, Stethoscope } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { rotuloIdade } from '@/domain/idade'
+import { faixaEtaria, rotuloFaixa, rotuloIdade } from '@/domain/idade'
 import { rotulosPrioridade } from '@/domain/prioridade'
 import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
 import { cn } from '@/lib/utils'
@@ -135,7 +135,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
               <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
                 <span className="text-corpo font-medium text-tinta">{nomeDe(e)} <span className="text-apoio font-normal text-tinta-sussurro">{idadeDe(e.paciente)}</span></span>
                 <span className="text-apoio text-tinta-sussurro [text-wrap:pretty]">
-                  {[e.queixa, e.prioridades_legais.length ? `Prioridade: ${rotulosPrioridade(e.prioridades_legais).join(', ')}` : '', e.publico === 'pediatrico' ? 'pediatria' : '']
+                  {[e.queixa, e.prioridades_legais.length ? `Prioridade: ${rotulosPrioridade(e.prioridades_legais).join(', ')}` : '', rotuloFaixa(faixaEtaria(e.paciente?.data_nascimento, e.chegada_em))]
                     .filter(Boolean).join(' · ')}
                 </span>
                 <Pilula tom="cinza">Aguardando</Pilula>

@@ -2,7 +2,17 @@
 // PA, FC, FR, temperatura, SpO₂ e dor; na pediatria a PA é opcional (CLAUDE.md).
 // Nada aqui marca valor como alterado: a análise é da enfermagem e do médico.
 
+import type { FaixaEtaria } from './idade'
+
 export type Publico = 'adulto' | 'pediatrico'
+
+/**
+ * Público dos vitais pela IDADE (nunca pela porta). Sem data de nascimento,
+ * vale o pediátrico: a PA fica opcional (há locais sem manguito pediátrico e
+ * exigir PA travaria o registro de uma criança); os demais obrigatórios são
+ * os mesmos do adulto.
+ */
+export const publicoDosVitais = (f: FaixaEtaria): Publico => (f === 'adulto' ? 'adulto' : 'pediatrico')
 
 export const VITAIS = [
   { k: 'pressao-arterial-sistolica', rotulo: 'PA sistólica', un: 'mmHg', adulto: true, ped: false },

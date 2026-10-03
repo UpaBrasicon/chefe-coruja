@@ -68,3 +68,48 @@ export function rotuloIdade(nascimento: string | Date, hoje: string | Date): str
   if (meses < 24) return `${meses}m`
   return `${i.anos}a`
 }
+
+// ── Faixa etária para as regras de tela ─────────────────────────────────────
+// Decisão do RT (02/10/2026): sem data de nascimento (ou com data inválida) o
+// paciente NÃO é tratado como adulto. As regras abaixo dizem, para cada uso,
+// o que vale quando a idade é desconhecida — sempre o lado que não oferece
+// nada de adulto (dose, escore, protocolo) a quem pode ser criança.
+
+export type FaixaEtaria = 'pediatrico' | 'adulto' | 'desconhecida'
+
+/** Faixa pela IDADE (nunca pela porta). Sem nascimento ou inválido: 'desconhecida'. */
+export function faixaEtaria(nascimento: string | Date | null | undefined, hoje: string | Date): FaixaEtaria {
+  if (!nascimento) return 'desconhecida'
+  const p = ehPediatrico(nascimento, hoje)
+  return p === null ? 'desconhecida' : p ? 'pediatrico' : 'adulto'
+}
+
+/**
+ * Conteúdo de adulto (receita padrão e favoritos com dose de adulto, NEWS2,
+ * qSOFA, protocolo de adulto) só para quem é adulto PELA IDADE.
+ */
+export const ofereceConteudoAdulto = (f: FaixaEtaria) => f === 'adulto'
+
+/**
+ * Lado pediátrico que não oferece risco a mais quando a idade é desconhecida:
+ * prescrição pelo peso aferido (o campo de peso aparece) e PA opcional nos
+ * vitais (ver publicoDosVitais). Escores que dependem da idade (PEWS,
+ * Phoenix, NEWS2) não rodam sem ela; a tela diz o motivo.
+ */
+export const aplicaCuidadoPediatrico = (f: FaixaEtaria) => f !== 'adulto'
+
+/**
+ * Públicos de protocolo da observação que podem ser oferecidos. Sem idade,
+ * só os de público "todos": nem o de adulto (pode ser criança) nem o
+ * pediátrico (o critério do protocolo depende da idade).
+ */
+export function publicosDeProtocolo(f: FaixaEtaria): string[] {
+  if (f === 'pediatrico') return ['todos', 'pediatrico']
+  if (f === 'adulto') return ['todos', 'adulto']
+  return ['todos']
+}
+
+/** Rótulo curto da faixa para listas ("pediatria", "sem data de nascimento"); adulto não leva rótulo. */
+export function rotuloFaixa(f: FaixaEtaria): string {
+  return f === 'pediatrico' ? 'pediatria' : f === 'desconhecida' ? 'sem data de nascimento' : ''
+}

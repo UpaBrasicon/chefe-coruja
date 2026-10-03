@@ -10,7 +10,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
-import { ehPediatrico } from '@/domain/idade'
+import { aplicaCuidadoPediatrico, faixaEtaria } from '@/domain/idade'
 import { rotulosPrioridade } from '@/domain/prioridade'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -153,8 +153,12 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
   const iniciado = dados.data?.episodio?.atendimento_iniciado_em ?? ep.atendimento_iniciado_em
   // Pediatria pela IDADE do paciente na chegada (CLAUDE.md: até 13a11m29d), não
   // pela porta: um adolescente de 15 anos atendido na porta pediátrica é adulto.
-  // Sem data de nascimento, vale a porta (a prescrição por peso é a opção segura).
-  const pediatrico = (ep.paciente?.data_nascimento ? ehPediatrico(ep.paciente.data_nascimento, ep.chegada_em) : null) ?? ep.publico === 'pediatrico'
+  // Sem data de nascimento NÃO é adulto (decisão do RT, 02/10/2026) nem vale a
+  // porta: a faixa fica 'desconhecida' e cada aba aplica o lado seguro (sem
+  // receita padrão/favoritos de adulto, PA opcional, sepse pediátrica visível,
+  // prescrição por peso aferido).
+  const faixa = faixaEtaria(ep.paciente?.data_nascimento, ep.chegada_em)
+  const pediatrico = aplicaCuidadoPediatrico(faixa)
   const p = painel.data
   const cidAtend = soap.cid.trim() || [...registros].reverse().find((r) => r.cid)?.cid || ''
 
@@ -198,7 +202,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
           setorId={ep.setor_id}
           desde={ep.chegada_em}
           rotuloDesde="na porta há"
-          contexto={<>{pediatrico && 'pediatria · '}chegou {hora(ep.chegada_em)} · Queixa: {queixa}</>}
+          contexto={<>{faixa === 'pediatrico' && 'pediatria · '}{faixa === 'desconhecida' && 'sem data de nascimento · '}chegou {hora(ep.chegada_em)} · Queixa: {queixa}</>}
           corClassificacao={ultimaCor}
           onClassificacao={() => { setAba('atend'); window.setTimeout(() => document.getElementById(`triagem-${ep.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
           acuidade={aberto}
@@ -206,10 +210,16 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
           episodioAtualId={ep.id}
           className="border-0 p-0 shadow-none"
         />
-        {pediatrico && (
+        {faixa === 'pediatrico' && (
           <div className="flex items-start gap-2 rounded-container border border-pediatria/25 bg-pediatria/[0.06] px-3.5 py-2.5 text-apoio text-pediatria">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
             <span>Paciente pediátrico (até 13 anos, 11 meses e 29 dias). A dose é digitada por você, pelo peso aferido. O sistema não sugere nem converte dose de adulto.</span>
+          </div>
+        )}
+        {faixa === 'desconhecida' && (
+          <div className="flex items-start gap-2 rounded-container border border-atencao/25 bg-atencao/[0.06] px-3.5 py-2.5 text-apoio text-atencao">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <span>Sem data de nascimento no cadastro: o paciente não é tratado como adulto. Sem receita padrão nem favoritos de adulto, PA opcional e dose digitada por você, pelo peso aferido. Cadastre a data de nascimento.</span>
           </div>
         )}
         <Tabs value={aba} onValueChange={(v) => { setAba(v as Aba); setErro(null) }}>
@@ -233,7 +243,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
         {aberto && dados.data && (
           <Tabs value={aba}>
             <TabsContent value="atend">
-              <AbaAtendimento episodioId={ep.id} pacienteId={ep.paciente_id} publico={ep.publico} corAtual={ultimaCor}
+              <AbaAtendimento episodioId={ep.id} pacienteId={ep.paciente_id} faixa={faixa} corAtual={ultimaCor}
                 soap={soap} setSoap={setSoap} salvoEm={salvoEm} classificacoes={cls} registros={registros} aoRegistrar={aoRegistrarSoap} />
             </TabsContent>
             <TabsContent value="presc">
@@ -252,7 +262,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
             <TabsContent value="termo"><AbaTermoConsentimento pacienteId={ep.paciente_id} episodioId={ep.id} /></TabsContent>
             <TabsContent value="docs">
               <AbaAtestadoReceita episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} nascimento={ep.paciente?.data_nascimento ?? null}
-                cid={cidAtend} estado={docs} setEstado={setDocs} />
+                faixa={faixa} cid={cidAtend} estado={docs} setEstado={setDocs} />
             </TabsContent>
             <TabsContent value="fim">
               {p && <AbaDesfecho episodioId={ep.id} nome={nome} chegadaEm={ep.chegada_em} painel={p} registros={registros}

@@ -186,8 +186,16 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
           }>
             {apoioAberto && (
               <div className="flex basis-full flex-col gap-3 rounded-container border border-fio bg-campo px-4 py-3.5">
-                {ident.pediatrico ? (
+                {/* Só adulto PELA IDADE calcula. Sem data de nascimento (pediatrico null)
+                    não calcula: idade desconhecida não é adulto (decisão do RT, 02/10/2026). */}
+                {ident.carregando ? (
+                  <p className="text-apoio text-tinta-sussurro">Carregando o cadastro do paciente…</p>
+                ) : ident.pediatrico === true ? (
                   <p className="text-apoio text-tinta-sussurro">NEWS2 e qSOFA são escores de adulto e não valem na criança. Use a referência pediátrica da unidade.</p>
+                ) : ident.pediatrico !== false ? (
+                  <p className="text-apoio text-atencao">
+                    Sem data de nascimento no cadastro: NEWS2 e qSOFA são escores de adulto e não são calculados sem saber a idade. Cadastre a data de nascimento.
+                  </p>
                 ) : (
                   <>
                     <p className="max-w-[76ch] text-apoio text-pretty text-tinta-apoio">

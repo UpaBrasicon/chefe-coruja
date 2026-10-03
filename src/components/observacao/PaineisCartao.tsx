@@ -8,6 +8,7 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { publicosDeProtocolo, type FaixaEtaria } from '@/domain/idade'
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -184,8 +185,8 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
 // ── protocolo ───────────────────────────────────────────────────────────────
 type ItemCatalogo = { sigla: string; nome: string; publico: string; fonte: string }
 
-export function PainelEscolherProtocolo({ linha, pediatrico, acao, fechar, erro }: {
-  linha: LinhaObservacao; pediatrico: boolean; acao: Acao; fechar: () => void; erro: string | null
+export function PainelEscolherProtocolo({ linha, faixa, acao, fechar, erro }: {
+  linha: LinhaObservacao; faixa: FaixaEtaria; acao: Acao; fechar: () => void; erro: string | null
 }) {
   const catalogo = useQuery({
     queryKey: ['protocolos-observacao'],
@@ -196,7 +197,9 @@ export function PainelEscolherProtocolo({ linha, pediatrico, acao, fechar, erro 
       return (data ?? []) as ItemCatalogo[]
     },
   })
-  const opcoes = (catalogo.data ?? []).filter((p) => p.publico === 'todos' || p.publico === (pediatrico ? 'pediatrico' : 'adulto'))
+  // sem data de nascimento, só os de público "todos" (nem adulto nem pediátrico)
+  const publicos = publicosDeProtocolo(faixa)
+  const opcoes = (catalogo.data ?? []).filter((p) => publicos.includes(p.publico))
   return (
     <Painel titulo="Inserir no protocolo" erro={erro}>
       <div className="flex flex-wrap gap-[7px]">
@@ -207,6 +210,9 @@ export function PainelEscolherProtocolo({ linha, pediatrico, acao, fechar, erro 
         ))}
         {catalogo.data && opcoes.length === 0 && <span className="text-apoio text-tinta-sussurro">Nenhum protocolo com fonte para esta idade.</span>}
       </div>
+      {faixa === 'desconhecida' && (
+        <span className="text-apoio text-atencao">Cadastre a data de nascimento: sem ela, só aparecem os protocolos que valem para qualquer idade.</span>
+      )}
       <span className="text-rotulo text-tinta-sussurro">Só entram protocolos cuja sequência tem fonte declarada.</span>
       <Button size="sm" variant="outline" className="self-start" onClick={fechar}>Cancelar</Button>
     </Painel>

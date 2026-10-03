@@ -9,7 +9,7 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import { ehPediatrico, rotuloIdade } from '@/domain/idade'
+import { faixaEtaria, rotuloIdade } from '@/domain/idade'
 import { SeloAlergia } from '@/components/paciente/AlergiasEventos'
 import { Button } from '@/components/ui/button'
 
@@ -33,11 +33,17 @@ function ChipAcuidade({ pacienteId }: { pacienteId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('acuidade', { p_paciente: pacienteId })
       if (error) throw error
-      return data as unknown as { escala: string | null; total?: number; banda?: number; parcial?: boolean; aferido_em?: string | null }
+      return data as unknown as { escala: string | null; motivo?: string; total?: number; banda?: number; parcial?: boolean; aferido_em?: string | null }
     },
   })
   const a = q.data
-  if (!a?.escala) return null
+  if (!a) return null
+  // sem escala (ex.: sem data de nascimento) o servidor diz o porquê, como no leito (Acuidade.tsx)
+  if (!a.escala) {
+    return a.motivo
+      ? <span title={a.motivo} className="rounded-capsula bg-alerta-atencao px-2.5 py-[3px] text-rotulo font-semibold text-atencao">{a.motivo}</span>
+      : null
+  }
   if (!a.aferido_em || a.total === undefined) {
     return <span className="rounded-capsula bg-trilha px-2.5 py-[3px] text-rotulo font-semibold text-tinta-sussurro">{a.escala} · sem aferição</span>
   }
@@ -81,7 +87,8 @@ export function CartaoObservacao({ linha, agora, eu, unidadeId, podeAgir, ehMedi
 
   const est = ESTADOS.find((e) => e.id === linha.estado) ?? ESTADOS[0]
   const fim = linha.estado === 'finalizado'
-  const ped = linha.data_nascimento ? ehPediatrico(linha.data_nascimento, hoje()) === true : false
+  // pela idade; sem data de nascimento é 'desconhecida', nunca adulto (decisão do RT, 02/10/2026)
+  const faixa = faixaEtaria(linha.data_nascimento, hoje())
   const idade = linha.data_nascimento ? rotuloIdade(linha.data_nascimento, hoje()) : null
   const rel = relogioPermanencia(linha.entrada, linha.prazo, fim && linha.finalizado_em ? Date.parse(linha.finalizado_em) : agora)
   const espera = relogioEspera(linha.entrada, linha.primeiro_atendimento_em, agora)
@@ -166,7 +173,7 @@ export function CartaoObservacao({ linha, agora, eu, unidadeId, podeAgir, ehMedi
       {erro && !aberto && <p className="mx-5 mb-3 text-apoio text-critico">{erro}</p>}
       {aberto === 'reav' && <PainelReavaliar linha={linha} acao={acao} fechar={fechar} erro={erro} />}
       {aberto === 'fim' && <PainelDesfecho linha={linha} unidadeId={unidadeId} acao={acao} fechar={fechar} erro={erro} />}
-      {aberto === 'proto' && !pr && <PainelEscolherProtocolo linha={linha} pediatrico={ped} acao={acao} fechar={fechar} erro={erro} />}
+      {aberto === 'proto' && !pr && <PainelEscolherProtocolo linha={linha} faixa={faixa} acao={acao} fechar={fechar} erro={erro} />}
       {aberto === 'proto' && pr && <PainelProtocoloAberto key={pr.id} linha={linha} acao={acao} fechar={fechar} erro={erro} />}
       {aberto === 'passar' && <PainelPassar linha={linha} acao={acao} fechar={fechar} erro={erro} />}
       {ps && !fim && (ps.situacao !== 'aceita' || ps.de_perfil === eu || ps.para_perfil === eu) && <BlocoPassagemBox linha={linha} />}

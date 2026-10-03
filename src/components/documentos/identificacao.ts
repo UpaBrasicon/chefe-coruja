@@ -187,6 +187,9 @@ export function useIdentificacao(pacienteId: string | null | undefined, leito = 
     telefone: t(perfil?.telefone),
   }
   const retrato: Retrato = { pac, cab, unidade: unidadeProto, usuario }
+  // true/false pela idade; null = sem data de nascimento (ou ainda carregando).
+  // null NÃO é adulto (decisão do RT, 02/10/2026): quem usa compara com
+  // `=== false` para liberar conteúdo de adulto (NEWS2/qSOFA, favoritos).
   const pediatrico = pac?.nascimento ? ehPediatrico(pac.nascimento, hojeSP()) : null
 
   /**
