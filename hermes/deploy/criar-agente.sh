@@ -2,7 +2,7 @@
 # Cria (ou recria) um agente novo do Nous — um contêiner por agente
 # (decisão do RT, 02/10/2026; plano em produto/docs/propostas/migracao-hermes-nous.md).
 #
-# Uso, NA VPS, como hermes:
+# Uso, NA VPS, como root (a pasta do Nous é do uid do contêiner, 10000):
 #   sh criar-agente.sh gestora|clinica|suporte
 #
 # Antes, uma vez por agente, crie o bot no @BotFather e grave o token em
@@ -54,6 +54,7 @@ if [ -n "$T" ]; then
   sed -i "s|^  api_key: .*|  api_key: $T|" "$DIR/config.yaml"
 fi
 
+chown -R --reference="$BASE" "$DIR"   # mesmo dono da pasta da Corujinha (uid do contêiner)
 # 3. contêiner
 IMG=$(docker inspect -f '{{.Image}}' hermes-agent)
 docker rm -f "hermes-agent-$NOME" >/dev/null 2>&1 || true
