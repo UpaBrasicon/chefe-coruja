@@ -17,14 +17,59 @@ agregado (sem nome de colega, sem dado de paciente).
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
 import json
 import os
+import sys
+import threading
 import urllib.error
 import urllib.request
 
-from gateway.session_context import get_session_env
-
 TOOLSET = "chefe-coruja"
+
+# ── Consulta direta (etapa 1 da migração Hermes → Nous, RT 02/10/2026) ───────
+# CORUJA_CONSULTA_DIRETA=1 → coruja_consultar / coruja_vincular /
+# coruja_almanaque chamam as RPCs hermes_* daqui mesmo (consulta.py, com o
+# rpc() de db.py). Sem a variável, segue o caminho HTTP para o hermes-app.
+
+
+def _consulta_direta() -> bool:
+    return os.environ.get("CORUJA_CONSULTA_DIRETA") == "1"
+
+
+def _modulo(nome: str):
+    """Módulo irmão (consulta, db), com ou sem o plugin carregado como pacote."""
+    if __package__:
+        try:
+            return importlib.import_module(f"{__package__}.{nome}")
+        except ImportError:
+            pass
+    chave = f"_chefe_coruja_{nome}"
+    if chave in sys.modules:
+        return sys.modules[chave]
+    spec = importlib.util.spec_from_file_location(chave, os.path.join(os.path.dirname(__file__), f"{nome}.py"))
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[chave] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_rpc_cache = None
+_rpc_trava = threading.Lock()
+
+
+def _rpc():
+    """rpc(nome, params) do db.py, criado uma vez. Falha → exceção."""
+    global _rpc_cache
+    with _rpc_trava:
+        if _rpc_cache is None:
+            _rpc_cache = _modulo("db").criar_rpc()
+        return _rpc_cache
+
+
+def _indisponivel(e: Exception) -> dict:
+    return {"ok": False, "erro": f"backend indisponível ({e})"}
 
 # escopo → comandos aceitos (a guarda de papel é do servidor)
 COMANDOS = {
@@ -98,7 +143,13 @@ def _almanaque(args: dict, **_kw) -> str:
     pergunta = str(args.get("pergunta") or "").strip()[:300]
     if len(pergunta) < 3:
         return json.dumps({"ok": False, "erro": "informe a pergunta"}, ensure_ascii=False)
-    r = _post("/skill/consulta", {"escopo": "almanaque", "comando": "buscar", "args": {"texto": pergunta}})
+    if _consulta_direta():
+        try:
+            r = _modulo("consulta").almanaque(_rpc(), pergunta)
+        except Exception as e:  # noqa: BLE001 — driver ausente/conexão
+            r = _indisponivel(e)
+    else:
+        r = _post("/skill/consulta", {"escopo": "almanaque", "comando": "buscar", "args": {"texto": pergunta}})
     if r.get("ok") and not r.get("dados"):
         r["dica"] = "Nada no almanaque: se for sobre dados, use coruja_consultar; se estiver fora do escopo, recuse."
     return json.dumps(r, ensure_ascii=False)
@@ -106,6 +157,9 @@ def _almanaque(args: dict, **_kw) -> str:
 
 def _sujeito() -> dict | None:
     """Identidade da SESSÃO (preenchida pelo gateway), nunca de argumento."""
+    # Import aqui: os testes rodam sem o Nous (injetam um gateway.session_context falso).
+    from gateway.session_context import get_session_env
+
     plataforma = get_session_env("HERMES_SESSION_PLATFORM", "")
     usuario = get_session_env("HERMES_SESSION_USER_ID", "")
     if plataforma == "telegram" and usuario:
@@ -141,7 +195,13 @@ def _consultar(args: dict, **_kw) -> str:
     if comando not in COMANDOS.get(escopo, []):
         return json.dumps({"ok": False, "erro": f"comando inválido para {escopo}"}, ensure_ascii=False)
     extras = {k: args[k] for k in ("periodo", "data", "dias", "status", "patrulha", "severidade") if args.get(k) is not None}
-    r = _post("/skill/consulta", {**sujeito, "escopo": escopo, "comando": comando, "args": extras})
+    if _consulta_direta():
+        try:
+            r = _modulo("consulta").consultar(_rpc(), sujeito["canal"], sujeito["identificador"], escopo, comando, extras)
+        except Exception as e:  # noqa: BLE001 — driver ausente/conexão
+            r = _indisponivel(e)
+    else:
+        r = _post("/skill/consulta", {**sujeito, "escopo": escopo, "comando": comando, "args": extras})
     if r.get("erro") == "nao_autorizado":
         r["dica"] = (
             "Se a pessoa ainda não ligou o Telegram à conta: Perfil → Conectar ao Telegram gera um código; "
@@ -155,6 +215,12 @@ def _vincular(args: dict, **_kw) -> str:
     if not sujeito:
         return json.dumps({"ok": False, "erro": "Vínculo disponível só pelo Telegram."}, ensure_ascii=False)
     codigo = "".join(ch for ch in str(args.get("codigo") or "") if ch.isdigit())
+    if _consulta_direta():
+        try:
+            r = _modulo("consulta").vincular(_rpc(), sujeito["canal"], sujeito["identificador"], codigo)
+        except Exception as e:  # noqa: BLE001 — driver ausente/conexão
+            r = _indisponivel(e)
+        return json.dumps(r, ensure_ascii=False)
     return json.dumps(_post("/skill/vincular", {**sujeito, "codigo": codigo}), ensure_ascii=False)
 
 
@@ -212,6 +278,10 @@ def _biblioteca_disponivel() -> bool:
 
 
 def _disponivel() -> bool:
+    # Consulta direta não depende do hermes-app; se o driver faltar, a
+    # ferramenta responde "backend indisponível (...)" em vez de sumir.
+    if _consulta_direta():
+        return True
     return bool(os.environ.get("HERMES_BACKEND_URL") and os.environ.get("HERMES_SKILL_TOKEN"))
 
 
