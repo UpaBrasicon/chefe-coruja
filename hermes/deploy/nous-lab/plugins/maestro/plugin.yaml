@@ -1,0 +1,11 @@
+name: maestro
+version: 1.0.0
+description: "Maestro da Coruja Lab (RT, 03/10/2026): lê só números agregados das Corujas de saúde e PROPÕE skills de texto para elas. O RT aprova pelo Telegram; quem instala é o script do host (aplicar-propostas.sh)."
+author: "Chefe Coruja"
+provides_tools:
+  - numeros_corujas
+  - propor_skill
+  - listar_propostas
+  - ver_proposta
+  - aprovar_proposta
+  - rejeitar_proposta
