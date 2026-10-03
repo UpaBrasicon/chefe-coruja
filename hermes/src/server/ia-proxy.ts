@@ -26,11 +26,11 @@ import type { FastifyInstance, FastifyReply } from 'fastify'
 import { z } from 'zod'
 
 import {
-  chamarIA, ChamadaBloqueada, DesidentificacaoIndisponivel, nomesEmResultado,
+  chamarIA, ChamadaBloqueada, DesidentificacaoIndisponivel, nomesEmResultado, nomesNER,
   MSG_CHAMADA_BLOQUEADA, MSG_DESIDENTIFICACAO_INDISPONIVEL,
   type ContextoGateway, type DependenciasGateway,
 } from '../gateway/gateway.js'
-import { criarCofre } from '../gateway/desidentificacao.js'
+import { criarCofre, desidentificar } from '../gateway/desidentificacao.js'
 import type { ChamadaLLM, MensagemLLM, RespostaLLM, ToolDefLLM } from '../lib/llm.js'
 import { logger } from '../logger.js'
 
@@ -118,6 +118,38 @@ function conhecidosDasFerramentas(mensagens: MensagemLLM[]) {
     }
   }
   return achados
+}
+
+/** Caminhos de chave (só os nomes das chaves) cujo valor contém o texto. */
+function caminhosCom(dados: unknown, alvo: string, prefixo = '', saida: string[] = []): string[] {
+  if (typeof dados === 'string') {
+    if (dados.includes(alvo)) saida.push(prefixo || '(raiz)')
+  } else if (Array.isArray(dados)) {
+    dados.forEach((d) => caminhosCom(d, alvo, `${prefixo}[]`, saida))
+  } else if (dados && typeof dados === 'object') {
+    for (const [k, v] of Object.entries(dados)) caminhosCom(v, alvo, prefixo ? `${prefixo}.${k}` : k, saida)
+  }
+  return saida
+}
+
+/**
+ * Diagnóstico de bloqueio por NER: em que papel de mensagem e, no resultado de
+ * ferramenta, em que chave do JSON caiu o "nome". Nunca registra o valor.
+ */
+async function ondeNER(mensagens: MensagemLLM[], ctx: ContextoGateway) {
+  const onde: { papel: string; tamanho: number; caminhos: string[] }[] = []
+  for (const m of mensagens) {
+    if (m.role === 'system' || !m.content?.trim()) continue
+    const limpo = desidentificar(m.content, criarCofre(), ctx.conhecidos).texto
+    for (const nome of await nomesNER(limpo).catch(() => [] as string[])) {
+      let caminhos: string[] = []
+      if (m.role === 'tool') {
+        try { caminhos = [...new Set(caminhosCom(JSON.parse(m.content), nome))] } catch { caminhos = ['(texto)'] }
+      }
+      onde.push({ papel: m.role, tamanho: nome.length, caminhos })
+    }
+  }
+  return onde
 }
 
 function tokenConfere(recebido: string | undefined, esperado: string | undefined): boolean {
@@ -221,7 +253,8 @@ export function registrarProxyIA(app: FastifyInstance, opcoes: OpcoesProxyIA) {
         // Só o tipo e a quantidade (nunca o trecho): para ajustar a limpeza sem expor dado.
         const tipos: Record<string, number> = {}
         for (const r of err.residuos) tipos[r.tipo] = (tipos[r.tipo] ?? 0) + 1
-        logger.warn({ residuos: err.residuos.length, tipos }, '[ia-proxy] gateway bloqueou a chamada')
+        const onde = tipos['nome próprio (NER)'] ? await ondeNER(chamada.mensagens, ctx) : []
+        logger.warn({ residuos: err.residuos.length, tipos, onde }, '[ia-proxy] gateway bloqueou a chamada')
         return responder(reply, stream, { conteudo: MSG_CHAMADA_BLOQUEADA, toolCalls: [], modelo: 'gateway' })
       }
       logger.error({ err: (err as Error).message }, '[ia-proxy] falha no modelo')
