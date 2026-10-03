@@ -45,6 +45,19 @@ const schema = z.object({
     .string()
     .min(32, 'SKILL_API_TOKEN deve ter ao menos 32 caracteres')
     .optional(),
+
+  // Token do gateway de IA da Corujinha (POST /v1/chat/completions): o Nous
+  // usa como chave do provedor apontado para http://hermes-app:3000/v1.
+  // Sem ele a rota responde 503 (falha fechada). Decisão 4a, 02/10/2026.
+  IA_GATEWAY_TOKEN: z
+    .string()
+    .min(32, 'IA_GATEWAY_TOKEN deve ter ao menos 32 caracteres')
+    .optional(),
+
+  // NER obrigatório do gateway (/v1/deid da biblioteca). Sem eles, toda
+  // chamada ao modelo é recusada (falha fechada) — o processo sobe, mas avisa.
+  DEID_URL: z.string().url().optional(),
+  BIBLIOTECA_API_KEY: z.string().optional(),
 })
 
 function carregarEnv() {
@@ -60,4 +73,8 @@ function carregarEnv() {
 }
 
 export const env = carregarEnv()
+
+if (!env.DEID_URL || !env.BIBLIOTECA_API_KEY) {
+  console.warn('[env] DEID_URL/BIBLIOTECA_API_KEY ausentes: o gateway de IA vai recusar toda chamada ao modelo (falha fechada).')
+}
 export type Env = typeof env

@@ -6,7 +6,10 @@
 // Formato de tools: OpenAI-compatible (confirmado na doc do DeepSeek).
 // ─────────────────────────────────────────────────────────────────────────────
 import type { MensagemLLM, ToolDefLLM, ToolCallLLM } from '../lib/llm.js'
-import { chamarIA, ChamadaBloqueada, nomesEmResultado, type ContextoGateway } from '../gateway/gateway.js'
+import {
+  chamarIA, ChamadaBloqueada, DesidentificacaoIndisponivel, nomesEmResultado,
+  MSG_CHAMADA_BLOQUEADA, MSG_DESIDENTIFICACAO_INDISPONIVEL, type ContextoGateway, type DependenciasGateway,
+} from '../gateway/gateway.js'
 import { criarCofre } from '../gateway/desidentificacao.js'
 import { logger } from '../logger.js'
 import { executarTool } from './tools.js'
@@ -84,7 +87,9 @@ export async function executarLoopAgente(
   waId: string,
   systemPrompt: string,
   historico: MensagemLLM[],
-  mensagemUsuario: string
+  mensagemUsuario: string,
+  /** Só para teste: troca modelo/NER/registro do gateway. */
+  depsGateway: Partial<DependenciasGateway> = {}
 ): Promise<{ texto: string; ok: boolean }> {
   const mensagens: MensagemLLM[] = [...historico, { role: 'user', content: mensagemUsuario }]
   let iteracoes = 0
@@ -107,7 +112,7 @@ export async function executarLoopAgente(
         tools: TOOLS_DISPONIVEIS,
         toolChoice: 'auto',
         maxTokens: 512,
-      }, ctx)
+      }, ctx, depsGateway)
 
       // Sem tool calls → resposta final.
       if (resposta.toolCalls.length === 0) {
@@ -139,11 +144,13 @@ export async function executarLoopAgente(
   } catch (err) {
     if (err instanceof ChamadaBloqueada) {
       logger.warn({ residuos: err.residuos.length }, '[loop] gateway bloqueou a chamada')
-      return {
-        texto:
-          'Não enviei sua mensagem ao assistente: ela parece ter um dado que identifica alguém (número de documento, data completa ou e-mail). Reescreva sem esse dado, por favor.',
-        ok: true,
-      }
+      return { texto: MSG_CHAMADA_BLOQUEADA, ok: true }
+    }
+    // NER fora do ar / sem configuração: nada foi ao modelo. A recusa vai ao
+    // usuário como texto (ok: true), senão o pipeline trocaria por
+    // "instabilidade" e a pessoa não saberia o motivo.
+    if (err instanceof DesidentificacaoIndisponivel) {
+      return { texto: MSG_DESIDENTIFICACAO_INDISPONIVEL, ok: true }
     }
     logger.error({ err: (err as Error).message }, '[loop] falha no LLM')
     return {

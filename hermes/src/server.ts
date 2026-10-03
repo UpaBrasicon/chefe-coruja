@@ -18,6 +18,7 @@ import { supabaseJob as supabase } from './lib/supabase.js'
 import { criarConexaoRedis, criarConexaoRedisHealth, criarFila, criarWorker, type JobMensagemWhatsApp } from './queue/index.js'
 import { registrarCrons, executarJobCron, FILA_CRON } from './queue/agendador.js'
 import { registrarSkillApi } from './server/skill-api.js'
+import { registrarProxyIA } from './server/ia-proxy.js'
 import { Worker } from 'bullmq'
 
 // Worker da fila de crons (Sentinela + Cérbero)
@@ -159,6 +160,10 @@ export async function buildApp(opts: { crons?: boolean } = {}) {
 
   // ── POST /skill/consulta — API das skills (guarda de papel server-side) ────
   registrarSkillApi(app)
+
+  // ── POST /v1/chat/completions — Corujinha (Nous) pelo gateway de IA ────────
+  // Decisão 4a: o texto do Telegram só chega ao modelo desidentificado.
+  registrarProxyIA(app, { token: env.IA_GATEWAY_TOKEN })
 
   // ── GET /webhook — handshake da Meta ───────────────────────────────────────
   app.get('/webhook', async (req, reply) => {

@@ -52,7 +52,11 @@ export type RespostaLLM = {
   provedor: 'primario' | 'fallback'
   modelo: string
   latenciaMs: number
+  /** Contagem de tokens do provedor, quando vier (a Corujinha usa para compactar o contexto). */
+  uso?: UsoLLM
 }
+
+export type UsoLLM = { prompt_tokens: number; completion_tokens: number; total_tokens: number }
 
 const TIMEOUT_MS = 60_000
 
@@ -61,7 +65,7 @@ async function chamarProvedor(
   modelo: string,
   apiKey: string,
   body: ChamadaLLM
-): Promise<{ conteudo: string; toolCalls: ToolCallLLM[]; latenciaMs: number }> {
+): Promise<{ conteudo: string; toolCalls: ToolCallLLM[]; latenciaMs: number; uso?: UsoLLM }> {
   const url = `${baseUrl.replace(/\/$/, '')}/chat/completions`
   const inicio = Date.now()
 
@@ -102,12 +106,17 @@ async function chamarProvedor(
         tool_calls?: ToolCallLLM[]
       }
     }[]
+    usage?: Partial<UsoLLM>
   }
   const msg = dados.choices?.[0]?.message
+  const u = dados.usage
   return {
     conteudo: msg?.content ?? '',
     toolCalls: msg?.tool_calls ?? [],
     latenciaMs: Date.now() - inicio,
+    ...(u && typeof u.prompt_tokens === 'number' && typeof u.completion_tokens === 'number'
+      ? { uso: { prompt_tokens: u.prompt_tokens, completion_tokens: u.completion_tokens, total_tokens: u.total_tokens ?? u.prompt_tokens + u.completion_tokens } }
+      : {}),
   }
 }
 

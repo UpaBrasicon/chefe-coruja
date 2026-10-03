@@ -84,3 +84,13 @@ test('POST /webhook — assinatura válida retorna 200 rápido (enfileira, sem R
   })
   assert.equal(res.statusCode, 200)
 })
+
+test('POST /v1/chat/completions — rota da Corujinha registrada e fechada sem token (401/503)', async () => {
+  const res = await app.inject({
+    method: 'POST',
+    url: '/v1/chat/completions',
+    payload: { messages: [{ role: 'user', content: 'oi' }] },
+  })
+  // 503 se IA_GATEWAY_TOKEN não estiver no ambiente; 401 se estiver (sem Bearer)
+  assert.ok([401, 503].includes(res.statusCode), `status inesperado: ${res.statusCode}`)
+})
