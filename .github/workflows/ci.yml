@@ -1,0 +1,116 @@
+# CI do Chefe Coruja — roda a cada push e PR em master e porte-frontend.
+# Sem segredos: nada aqui fala com o Supabase de produção. O banco é o local
+# (Docker) que o `supabase start` sobe no próprio runner, com migrations + seed.
+name: CI
+
+on:
+  push:
+    branches: [master, porte-frontend]
+  pull_request:
+    branches: [master, porte-frontend]
+
+permissions:
+  contents: read
+
+# Um push novo no mesmo ramo cancela a rodada anterior que ainda estiver rodando.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Front (React + Vite) e os testes em Node puro da raiz.
+  web:
+    name: web (lint, build, testes)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Build (tsc + vite)
+        run: npm run build
+      - name: Testes clínicos
+        run: npm run test:clinico
+      - name: Gateway (cópia da desidentificação)
+        run: npm run test:gateway
+      - name: Domínio, terminologia, observação, interop
+        run: |
+          npm run test:dominio
+          npm run test:terminologia
+          npm run test:observacao
+          npm run test:interop
+      - name: src/lib (cópias das Edge Functions)
+        run: node --experimental-strip-types --test src/lib/*.test.ts
+      - name: Cofre da guarda
+        run: node --test scripts/arquivo/cofre.test.mjs
+
+  # Testes SQL (supabase/tests/*.sql) num Supabase local recém-criado.
+  banco:
+    name: banco (supabase/tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: supabase/setup-cli@v1
+        with:
+          # mesma versão do devDependency `supabase` do package.json
+          version: 2.102.0
+      - name: Subir Supabase local (migrations + seed)
+        # Fora o que os testes não usam. Ficam db, auth, rest, kong, storage
+        # (migrations mexem em storage.buckets/objects) e realtime.
+        run: supabase start -x studio,imgproxy,inbucket,edge-runtime,analytics,vector,meta
+      - name: Testes de banco
+        # o contêiner é supabase_db_<project_id> = supabase_db_chefe-coruja
+        run: npm run test:banco
+      - name: Parar Supabase
+        if: always()
+        run: supabase stop --no-backup
+
+  # Hermes / Gavião (subprojeto com package.json próprio).
+  hermes:
+    name: hermes (typecheck, lint, testes)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: hermes
+    # Valores fictícios só para o env.ts validar. Sem SVC_KEY e sem
+    # LLM_API_KEY, os testes de integração (Supabase/LLM/WhatsApp reais) pulam.
+    env:
+      NODE_ENV: test
+      SUPABASE_URL: http://127.0.0.1:54321
+      SUPABASE_SERVICE_ROLE_KEY: ci-chave-ficticia-sem-acesso
+      META_VERIFY_TOKEN: ci
+      META_APP_SECRET: ci
+      META_ACCESS_TOKEN: ci
+      META_PHONE_NUMBER_ID: ci
+      HERMES_ORG_TESTE_ID: 00000000-0000-0000-0000-000000000001
+      REDIS_URL: redis://127.0.0.1:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: hermes/package-lock.json
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint (inclui a regra do gateway de IA — ADR 0006)
+        run: npm run lint
+      - name: Guarda — supabaseUser só com .rpc()
+        run: node --import tsx --test src/lib/supabase-rpc-only.test.ts
+      - name: Testes
+        # o script usa --env-file=.env; no CI o .env fica vazio e valem as
+        # variáveis acima (o --env-file não sobrescreve o ambiente).
+        run: |
+          touch .env
+          npm test
