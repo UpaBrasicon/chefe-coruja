@@ -158,7 +158,7 @@ export function Encaminhamento({ unidadeId, perfilId }: { unidadeId?: string; pe
   }
   if (f.procCod && !/^\d{2}\.\d{2}\.\d{2}\.\d{3}-\d$/.test(f.procCod.trim())) conferir.push('Código SIGTAP fora do formato 00.00.00.000-0.')
   if (!f.tratamento.trim()) conferir.push('Tratamento realizado na origem não informado.')
-  if (pacienteId && ident.alergiasCarregadas && !cab.temAlergia && !cab.semAlergia) conferir.push('Alergias não registradas.')
+  if (pacienteId && ident.alergiasCarregadas && !cab.temAlergia && !cab.semAlergia && !cab.desconheceAlergia) conferir.push('Alergias não registradas.')
 
   async function emitir() {
     const conteudo = conteudoDoc

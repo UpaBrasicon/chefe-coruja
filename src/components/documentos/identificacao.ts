@@ -45,6 +45,7 @@ export type CabProto = {
   alergias: string
   temAlergia: boolean
   semAlergia: boolean
+  desconheceAlergia: boolean
   artigo: 'a paciente' | 'o paciente'
 }
 /** Unidade do plantão (UNIDADE do protótipo). */
@@ -169,6 +170,7 @@ export function useIdentificacao(pacienteId: string | null | undefined, leito = 
     alergias: temAlergia ? ativas(alg).map((a) => a.substancia).join(', ') : '',
     temAlergia,
     semAlergia: alg?.estado === 'nega',
+    desconheceAlergia: alg?.estado === 'desconhece',
     artigo: linha?.sexo === 'F' ? 'a paciente' : 'o paciente',
   }
   const u = unidade.data
@@ -202,7 +204,7 @@ export function useIdentificacao(pacienteId: string | null | undefined, leito = 
     dataAtual: hojeSP(),
     idade: cab.idade,
     peso: extra.peso ?? '',
-    alergias: temAlergia ? cab.alergias : cab.semAlergia ? 'NEGA' : alg ? 'NÃO REGISTRADA' : '',
+    alergias: temAlergia ? cab.alergias : cab.semAlergia ? 'NEGA' : cab.desconheceAlergia ? 'NÃO INFORMADA' : alg ? 'NÃO REGISTRADA' : '',
     dieta: extra.dieta ?? '',
     leito,
     diagnostico: extra.diagnostico ?? '',

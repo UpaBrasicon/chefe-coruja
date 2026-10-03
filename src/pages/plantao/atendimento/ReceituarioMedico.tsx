@@ -208,7 +208,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
   const pendencias: string[] = []
   if (!pacienteId) pendencias.push('escolher o paciente')
   else {
-    if (ident.alergiasCarregadas && !ident.cab.temAlergia && !ident.cab.semAlergia) pendencias.push('registrar a alergia do paciente (tem ou nega)')
+    if (ident.alergiasCarregadas && !ident.cab.temAlergia && !ident.cab.semAlergia && !ident.cab.desconheceAlergia) pendencias.push('registrar a alergia do paciente (tem ou nega)')
     if (!rx.itens.length) pendencias.push('ao menos um medicamento')
     for (const i of rx.itens) {
       const t = i.medicamento_id ? travas[i.medicamento_id] : null
@@ -297,6 +297,8 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
                   </span>
                 ) : ident.cab.semAlergia ? (
                   <span className="text-corpo text-tinta">Nega alergias</span>
+                ) : ident.cab.desconheceAlergia ? (
+                  <span className="text-apoio text-atencao">Não informada: paciente/acompanhante não soube.</span>
                 ) : (
                   <span className="text-apoio text-atencao">{ident.alergiasCarregadas ? 'Não registrada: registre no prontuário (tem ou nega) antes de emitir.' : 'Carregando…'}</span>
                 )}

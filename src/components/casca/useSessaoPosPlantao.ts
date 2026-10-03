@@ -32,6 +32,13 @@ export function useSessaoPosPlantao(status: StatusPlantao, entraPorEscala: boole
     }
   }, [status, entraPorEscala])
 
+  // Novo turno (outro fim de tolerância) rearma os avisos: o gestor pode
+  // liberar e o médico voltar a 'escala' com uma janela nova.
+  useEffect(() => {
+    avisouFim.current = false
+    avisouQuase.current = false
+  }, [fimTolerancia])
+
   // Avisos durante a tolerância pós-plantão (ainda 'escala', já passado o fim).
   useEffect(() => {
     if (!entraPorEscala || status !== 'escala' || !fimTolerancia) return

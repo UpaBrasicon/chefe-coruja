@@ -63,7 +63,7 @@ function LiberarPosPlantao({ unidadeId, perfilId, nome }: { unidadeId: string; p
       <Input className="h-8" placeholder="Motivo (mínimo 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
       {erro && <p className="text-xs text-critico">{erro}</p>}
       <div className="flex gap-2">
-        <Button size="xs" disabled={motivo.trim().length < 10 || liberar.isPending} onClick={() => { setErro(null); liberar.mutate() }}>Liberar</Button>
+        <Button size="xs" disabled={motivo.trim().length < 10 || Number(minutos) < 5 || Number(minutos) > 120 || liberar.isPending} onClick={() => { setErro(null); liberar.mutate() }}>Liberar</Button>
         <Button size="xs" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
       </div>
     </div>

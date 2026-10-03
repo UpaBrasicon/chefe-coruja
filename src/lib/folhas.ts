@@ -64,7 +64,7 @@ export type PacienteFolha = {
   setor?: string | null; leito?: string | null
 }
 export type AlergiasFolha = {
-  estado: 'tem' | 'nega' | 'nao_registrada'
+  estado: 'tem' | 'nega' | 'desconhece' | 'nao_registrada'
   itens: { substancia: string; gravidade?: string | null; reacao?: string | null }[]
 }
 export type ProfissionalFolha = { nome?: string | null; registro?: string | null }
@@ -218,6 +218,7 @@ function alergiaTexto(ctx: ContextoFolha, d: Json): string {
       return 'ALERGIAS: ' + a.itens.map((i) => i.substancia + (vz(i.gravidade) ? '' : ` (${i.gravidade})`) + (vz(i.reacao) ? '' : ` — ${i.reacao}`)).join('; ')
     }
     if (a.estado === 'nega') return 'NEGA ALERGIAS'
+    if (a.estado === 'desconhece') return 'ALERGIAS: NÃO INFORMADAS · paciente/acompanhante não soube'
     return 'ALERGIAS: NÃO REGISTRADO · confirmar'
   }
   const s = pri(d?.paciente?.alergias)
@@ -918,7 +919,7 @@ function relAlergias(d: Json, ctx: ContextoFolha): string {
     e.inativado_em ? junta(' · ', dataHoraBr(e.inativado_em), e.inativado_por) : junta(' · ', dataHoraBr(pri(e.grau_em, e.registrado_em)), e.autor),
     e.inativado_em ? `Inativo${e.motivo_inativacao ? ` (${e.motivo_inativacao})` : ''}` : 'Ativo']))
   const nega = lista(d.negacoes).find((n) => !n.encerrada_em)
-  const sit = d.estado === 'tem' ? `ALERGIAS: ${ativas.map((a) => a.substancia).join(', ')}` : d.estado === 'nega' ? 'NEGA ALERGIA' : 'NÃO REGISTRADO'
+  const sit = d.estado === 'tem' ? `ALERGIAS: ${ativas.map((a) => a.substancia).join(', ')}` : d.estado === 'nega' ? 'NEGA ALERGIA' : d.estado === 'desconhece' ? 'NÃO INFORMADAS · não soube' : 'NÃO REGISTRADO'
   const corpo = `<div class="alergia">⚠ ${esc(sit)}${nega ? ` · ${esc(junta(' · ', dataHoraBr(nega.registrado_em), nega.autor))}` : ''}</div>` +
     (lin.length
       ? `<table class="tab"><colgroup><col style="width:15%"><col style="width:17%"><col style="width:11%"><col><col style="width:20%"><col style="width:13%"></colgroup><thead><tr><th>Tipo</th><th>Registro</th><th>Severidade</th><th>Reação / observação / item</th><th>Última modificação</th><th>Situação</th></tr></thead><tbody>` +
