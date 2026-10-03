@@ -18,6 +18,28 @@
   "rota": "/plantonista/calculadoras/iot"
  },
  {
+  "id": "infusoes-adulto",
+  "nome": "Infusões contínuas — adulto",
+  "tipo": "calculadora",
+  "secao": "Calculadoras",
+  "categoria": "Calculadoras",
+  "sinonimos": [
+   "infusão",
+   "bomba",
+   "mL/h",
+   "noradrenalina",
+   "sedação",
+   "fentanil",
+   "midazolam",
+   "rocurônio",
+   "vasoativa",
+   "DVA",
+   "diluição"
+  ],
+  "descricao": "Porta única: vasoativas, sedação, bloqueio neuromuscular e atalhos da heparina, com barra de dose até o teto do manual HC.",
+  "rota": "/plantonista/calculadoras/infusoes-adulto"
+ },
+ {
   "id": "drogas-vasoativas",
   "nome": "Drogas Vasoativas",
   "tipo": "calculadora",
@@ -287,6 +309,22 @@
   "rota": "/plantonista/pediatria/asma-pediatrica"
  },
  {
+  "id": "pram",
+  "nome": "PRAM — gravidade da crise de asma (criança)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Respiratório",
+  "sinonimos": [
+   "PRAM",
+   "asma",
+   "crise",
+   "gravidade",
+   "sibilância"
+  ],
+  "descricao": "Cinco itens do exame, 0 a 12: leve, moderada ou grave (Ducharme 2008; aguarda o RT).",
+  "rota": "/plantonista/pediatria/pram"
+ },
+ {
   "id": "crise-epileptica-pediatrica",
   "nome": "Crise epiléptica — criança",
   "tipo": "conduta",
@@ -436,6 +474,21 @@
   ],
   "descricao": "Escore de Alerta Precoce Pediátrico (Figura 2 do cap. 82).",
   "rota": "/plantonista/pediatria/pews"
+ },
+ {
+  "id": "phoenix",
+  "nome": "Escore de Phoenix — sepse (criança)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Triagem e escores",
+  "sinonimos": [
+   "Phoenix",
+   "sepse",
+   "choque séptico",
+   "disfunção orgânica"
+  ],
+  "descricao": "Sepse e choque séptico pediátricos pelos critérios de 2024 (JAMA).",
+  "rota": "/plantonista/pediatria/phoenix"
  },
  {
   "id": "fluidoterapia-manutencao-ped",
@@ -897,6 +950,23 @@
   ],
   "descricao": "KDIGO pediátrico, Schwartz, FeNa, sobrecarga hídrica, furosemida, contraste e Tabela 8.",
   "rota": "/plantonista/pediatria/injuria-renal-ped"
+ },
+ {
+  "id": "tfg-schwartz-ped",
+  "nome": "TFG estimada — Schwartz / CKiD (criança)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Cardiovascular e renal",
+  "sinonimos": [
+   "Schwartz",
+   "CKiD",
+   "TFG",
+   "filtração glomerular",
+   "creatinina",
+   "função renal"
+  ],
+  "descricao": "Estatura × k ÷ creatinina, com a constante do método (livro do ICr, Tabela 2).",
+  "rota": "/plantonista/pediatria/tfg-schwartz-ped"
  },
  {
   "id": "glomerulopatias-shu-ped",
@@ -3246,6 +3316,99 @@
   "rota": "/plantonista/escores/timi"
  },
  {
+  "id": "timi-iamcsst",
+  "nome": "TIMI IAMCSST",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "TIMI",
+   "IAMCSST",
+   "supra",
+   "infarto",
+   "STEMI"
+  ],
+  "descricao": "Mortalidade em 30 dias no IAM com supra de ST por oito variáveis da admissão (Morrow 2000).",
+  "rota": "/plantonista/escores/timi-iamcsst"
+ },
+ {
+  "id": "sincope-san-francisco",
+  "nome": "Síncope — regra de San Francisco",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "síncope",
+   "San Francisco",
+   "perda de consciência"
+  ],
+  "descricao": "Cinco fatores; risco com pelo menos um (manual HC, Tabela 3).",
+  "rota": "/plantonista/escores/sincope-san-francisco"
+ },
+ {
+  "id": "sincope-canadense",
+  "nome": "Síncope — Canadian Syncope Risk Score",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "síncope",
+   "canadense",
+   "Canadian",
+   "risco"
+  ],
+  "descricao": "Nove itens, de −3 a 11, em cinco categorias de risco (Thiruganasambandamoorthy 2016).",
+  "rota": "/plantonista/escores/sincope-canadense"
+ },
+ {
+  "id": "duke-endocardite",
+  "nome": "Critérios de Duke modificados",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "Duke",
+   "endocardite",
+   "ecocardiograma",
+   "hemocultura"
+  ],
+  "descricao": "Endocardite infecciosa: 2 maiores, 1 maior e 3 menores ou 5 menores (manual HC, Tabela 2).",
+  "rota": "/plantonista/escores/duke-endocardite"
+ },
+ {
+  "id": "iss",
+  "nome": "ISS — Injury Severity Score",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "ISS",
+   "trauma",
+   "AIS",
+   "gravidade",
+   "politrauma"
+  ],
+  "descricao": "Soma dos quadrados dos três maiores AIS por região, de 0 a 75 (Baker 1974).",
+  "rota": "/plantonista/escores/iss"
+ },
+ {
+  "id": "ckd-epi",
+  "nome": "TFG estimada — CKD-EPI 2021",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Escores",
+  "sinonimos": [
+   "CKD-EPI",
+   "TFG",
+   "filtração glomerular",
+   "creatinina",
+   "função renal",
+   "clearance"
+  ],
+  "descricao": "Creatinina, idade e sexo, sem coeficiente de raça, com a categoria G da KDIGO.",
+  "rota": "/plantonista/escores/ckd-epi"
+ },
+ {
   "id": "hda-lamg",
   "nome": "Profilaxia de úlcera de estresse",
   "tipo": "protocolo",
@@ -3374,38 +3537,40 @@
   "rota": "/plantonista/dengue/manual-dengue"
  },
  {
-  "id": "infection-pneumonia",
-  "nome": "Infection — Pneumonia",
-  "tipo": "jogo",
-  "secao": "Games",
-  "categoria": "Games",
+  "id": "vm-cinco-passos",
+  "nome": "Ventilação mecânica em cinco passos",
+  "tipo": "calculadora",
+  "secao": "Ventilação Mecânica",
+  "categoria": "Ventilação Mecânica",
   "sinonimos": [
-   "game",
-   "quiz",
-   "antibiótico",
-   "pneumonia",
-   "stewardship"
+   "ventilação mecânica",
+   "VM",
+   "PEEP",
+   "volume corrente",
+   "platô",
+   "driving pressure",
+   "desmame",
+   "alarmes"
   ],
-  "descricao": "Quiz de antibioticoterapia em pneumonia na UTI.",
-  "rota": "/plantonista/games/infection-pneumonia"
+  "descricao": "Quem, modo, ajustes, acompanhamento e desmame com as tabelas do cap. 37 do manual HC.",
+  "rota": "/plantonista/ventilacao-mecanica/vm-cinco-passos"
  },
  {
-  "id": "minigame-emergencia",
-  "nome": "Minigame de Emergência",
-  "tipo": "jogo",
-  "secao": "Games",
-  "categoria": "Games",
+  "id": "vni-cinco-passos",
+  "nome": "VNI em cinco passos",
+  "tipo": "calculadora",
+  "secao": "Ventilação Mecânica",
+  "categoria": "Ventilação Mecânica",
   "sinonimos": [
-   "game",
-   "quiz",
-   "emergência",
-   "PCR",
-   "AVC",
-   "IAM",
-   "anafilaxia"
+   "VNI",
+   "ventilação não invasiva",
+   "BiPAP",
+   "CPAP",
+   "IPAP",
+   "EPAP"
   ],
-  "descricao": "Cenários rápidos de emergência.",
-  "rota": "/plantonista/games/minigame-emergencia"
+  "descricao": "Indicação, interface, ajustes, acompanhamento e retirada com o que o manual HC traz.",
+  "rota": "/plantonista/ventilacao-mecanica/vni-cinco-passos"
  },
  {
   "id": "manobra-recrutamento",

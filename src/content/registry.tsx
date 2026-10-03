@@ -3,7 +3,6 @@ import { Baby, Siren,
   Calculator,
   ClipboardList,
   FlaskConical,
-  Gamepad2,
   GraduationCap,
   Wind,
   type LucideIcon,
@@ -312,16 +311,9 @@ export const SECOES: SectionDef[] = [
       t('manual-dengue', 'Dengue — criança', 'Grupos e hidratação por peso (PS Pediatria ICr).', sobDemanda(() => import('@/pages/plantonista/pediatria/DenguePed'), 'DenguePed'), ['dengue', 'manual', 'ministério da saúde']),
     ],
   },
-  {
-    slug: 'games',
-    label: 'Games',
-    description: 'Jogos clínicos para fixar o conhecimento.',
-    icon: Gamepad2,
-    tools: [
-      t('infection-pneumonia', 'Infection — Pneumonia', 'Quiz de antibioticoterapia em pneumonia na UTI.', sobDemanda(() => import('@/pages/plantonista/games/Infection'), 'Infection'), ['game', 'quiz', 'antibiótico', 'pneumonia', 'stewardship']),
-      t('minigame-emergencia', 'Minigame de Emergência', 'Cenários rápidos de emergência.', sobDemanda(() => import('@/pages/plantonista/games/MinigameEmergencia'), 'MinigameEmergencia'), ['game', 'quiz', 'emergência', 'PCR', 'AVC', 'IAM', 'anafilaxia']),
-    ],
-  },
+  // Games (Infection, Minigame de Emergência) fora do menu e da busca até o RT
+  // aprovar o conteúdo, que ensina dose (decisão do RT, 03/10/2026; auditoria R3).
+  // O código continua em pages/plantonista/games para a revisão.
   {
     slug: 'ventilacao-mecanica',
     label: 'Ventilação Mecânica',
