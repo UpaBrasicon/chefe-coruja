@@ -137,7 +137,7 @@ function caminhosCom(dados: unknown, alvo: string, prefixo = '', saida: string[]
  * ferramenta, em que chave do JSON caiu o "nome". Nunca registra o valor.
  */
 async function ondeNER(mensagens: MensagemLLM[], ctx: ContextoGateway) {
-  const onde: { papel: string; tamanho: number; caminhos: string[] }[] = []
+  const onde: { papel: string; tamanho: number; forma: string; caminhos: string[] }[] = []
   for (const m of mensagens) {
     if (m.role === 'system' || !m.content?.trim()) continue
     const limpo = desidentificar(m.content, criarCofre(), ctx.conhecidos).texto
@@ -146,7 +146,9 @@ async function ondeNER(mensagens: MensagemLLM[], ctx: ContextoGateway) {
       if (m.role === 'tool') {
         try { caminhos = [...new Set(caminhosCom(JSON.parse(m.content), nome))] } catch { caminhos = ['(texto)'] }
       }
-      onde.push({ papel: m.role, tamanho: nome.length, caminhos })
+      // forma: letra vira A/a e dígito vira 9; pseudônimo fica como está (não é dado)
+      const forma = nome.split(/(\[[A-Z]+_\d+\])/).map((p, i) => (i % 2 ? p : p.replace(/\p{Lu}/gu, 'A').replace(/\p{Ll}/gu, 'a').replace(/\d/g, '9'))).join('')
+      onde.push({ papel: m.role, tamanho: nome.length, forma, caminhos })
     }
   }
   return onde
