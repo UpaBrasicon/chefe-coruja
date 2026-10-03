@@ -23,7 +23,8 @@ const POR_SECAO: Record<string, PublicoFerramenta> = {
 const POR_CHAVE: Record<string, PublicoFerramenta> = {
   // Dengue — criança: o mesmo componente da seção Pediatria (DenguePed).
   'dengue/manual-dengue': 'pediatrico',
-  // Hiperpotassemia: ficha 'ambos' com fonte pediátrica (src/clinico/hiperpotassemia.ts).
+  // Hiperpotassemia: ficha 'ambos'. Adulto pela referência de 2026; criança só
+  // pelo livro do ICr-HCFMUSP, cap. 54 (src/clinico/hiperpotassemia.ts, auditoria R2).
   'protocolos/hiperpotassemia': 'ambos',
 }
 

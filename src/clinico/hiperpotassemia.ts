@@ -1,22 +1,36 @@
 import type { Ficha } from './ficha.ts'
+import { BOLUS, NEONATO_FORA, type Bolus } from './pediatria/bolus.ts'
+import { CLORETO_CA_TABELA7, HIPERCALEMIA, LIMIARES_K, calcularDose, type Dose } from './pediatria/eletrolitosPed.ts'
+import { LIVRO_ICR } from './pediatria/fonteIcr.ts'
+import { textoDoseLivro, type DoseLivro } from './pediatria/fonteP4.ts'
+import { DOSES_TABELA8 } from './pediatria/injuriaRenalPed.ts'
+import { DOSES_SLT } from './pediatria/oncologiaPed.ts'
 
 // Hiperpotassemia: gravidade pelo nível, indicação de cálcio pelo ECG e a
 // conduta em três tempos (estabilizar, deslocar, remover). Portada da versão
 // revisada do protótipo (resposta E03 da revisão de evidência, 30/08/2026),
 // que substituiu a ficha antiga com poliestirenossulfonato como conduta.
 // A fonte não quantifica dose no adulto: onde ela não quantifica, aqui também não.
+//
+// CRIANÇA (auditoria 03/10/2026, R2): a referência de 2026 vale só para o
+// ADULTO (decisão do RT, 27/09). Na criança tudo sai do livro do ICr-HCFMUSP
+// (cap. 54, p. 546–549), reaproveitando os valores já conferidos em
+// ./pediatria/eletrolitosPed.ts; outras passagens do mesmo livro já modeladas
+// no app (apêndice, cap. de IRA, cap. de emergências oncológicas) aparecem
+// como divergência. Nada é digitado de novo aqui nem convertido do adulto.
 
 export const fichaHiperpotassemia: Ficha = {
   id: 'hiperpotassemia',
   titulo: 'Hiperpotassemia — conduta por nível e por ECG',
-  versao: '2026-09-27.2',
+  versao: '2026-10-03.1',
   publico: 'ambos',
   fontes: [
-    { citacao: 'Geldermann N, et al. Acute hyperkalaemia in emergency care: evidence-based approaches. Emerg Med J. 2026.', pediatrica: true },
-    { citacao: 'Arzayus-Patiño L, et al. Inhaled beta-2 agonists in hyperkalaemia. PLoS One. 2025.' },
-    { citacao: 'Divergência mostrada na tela: Brandão Neto RA, et al. (eds.). Manual de Medicina de Emergência — HCFMUSP. 3ª ed. Manole; 2022. cap. 67, p. 907–917.' },
+    { citacao: 'Adulto: Geldermann N, et al. Acute hyperkalaemia in emergency care: evidence-based approaches. Emerg Med J. 2026.' },
+    { citacao: 'Adulto: Arzayus-Patiño L, et al. Inhaled beta-2 agonists in hyperkalaemia. PLoS One. 2025.' },
+    { citacao: 'Adulto, divergência mostrada na tela: Brandão Neto RA, et al. (eds.). Manual de Medicina de Emergência — HCFMUSP. 3ª ed. Manole; 2022. cap. 67, p. 907–917.' },
+    { citacao: `Criança: ${LIVRO_ICR.citacao} cap. 54, p. 546–549 (Tabela 7); divergências do mesmo livro: apêndice (p. 894–897), IRA (p. 583), emergências oncológicas (p. 701–702).`, pediatrica: true },
   ],
-  revisadoEm: '27/09/2026 — decisão do RT: mantida a referência mais recente (2026); o manual do HCFMUSP (2022) aparece como divergência',
+  revisadoEm: '03/10/2026 — adulto: decisão do RT de 27/09/2026 (referência de 2026; manual do HCFMUSP como divergência). Criança: só o livro do ICr-HCFMUSP (auditoria R2); o período neonatal fica fora',
 }
 
 export type Ecg = 'sem_alteracao' | 'alterado' | 'nao_feito'
@@ -26,8 +40,6 @@ export type EntradaHiperK = {
   ecg: Ecg
   diureseComprometida: boolean
   acidose: boolean
-  pediatrico: boolean
-  pesoKg?: number
 }
 
 export type Faixa = 'Leve' | 'Moderada' | 'Grave' | 'Fora da faixa de hiperpotassemia'
@@ -38,7 +50,6 @@ export type ResultadoHiperK = {
   faixa: Faixa
   calcio: 'indicado' | 'nao_indicado' | 'indeterminado'
   gravidade: 0 | 1 | 2
-  emergenciaPediatrica: boolean
   blocos: Bloco[]
   alertas: string[]
 }
@@ -51,8 +62,7 @@ export function faixaPotassio(k: number): Faixa {
   return 'Fora da faixa de hiperpotassemia'
 }
 
-const fmt = (x: number, casas = 0) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
-
+/** Conduta do ADULTO (Geldermann 2026). Para criança, use `avaliarHiperpotassemiaPed`. */
 export function avaliarHiperpotassemia(e: EntradaHiperK): ResultadoHiperK | null {
   const k = e.potassio
   if (!Number.isFinite(k)) return null
@@ -62,8 +72,6 @@ export function avaliarHiperpotassemia(e: EntradaHiperK): ResultadoHiperK | null
   // ECG não feito não é ECG normal: abaixo de 6,5 a indicação fica indeterminada
   const calcio = ecgAlt || k >= 6.5 ? 'indicado' : semEcg ? 'indeterminado' : 'nao_indicado'
   const gravidade = k > 6 || ecgAlt || (semEcg && k >= 5.5) ? 2 : k >= 5.5 ? 1 : 0
-  const emergenciaPediatrica = e.pediatrico && (k > 7 || ecgAlt)
-  const peso = e.pesoKg && e.pesoKg > 0 ? e.pesoKg : null
   const diurese = !e.diureseComprometida
 
   const blocos: Bloco[] = [
@@ -102,7 +110,7 @@ export function avaliarHiperpotassemia(e: EntradaHiperK): ResultadoHiperK | null
       titulo: 'Preparo',
       sub: 'Onde a referência não quantifica dose no adulto, só a conversão da ampola — para conferir a prescrição, não para substituí-la.',
       linhas: [
-        { item: 'Gluconato de cálcio 10%', texto: '1 ampola de 10 mL = 1 g = 93 mg de cálcio elementar = 4,65 mEq. Corre em veia periférica; o cloreto de cálcio exige acesso central. Velocidade máxima de 200 mg/min no adulto e 100 mg/min em pediatria.', quando: '' },
+        { item: 'Gluconato de cálcio 10%', texto: '1 ampola de 10 mL = 1 g = 93 mg de cálcio elementar = 4,65 mEq. Corre em veia periférica; o cloreto de cálcio exige acesso central. Velocidade máxima de 200 mg/min no adulto.', quando: '' },
         { item: 'Glicose', texto: 'glicose 50%: 1 mL = 0,5 g; glicose 25%: 1 mL = 0,25 g.', quando: '' },
         { item: 'Bicarbonato de sódio 8,4%', texto: '1 mL = 1 mEq.', quando: '' },
         { item: 'Cuidado de via', texto: 'bicarbonato e cálcio NÃO correm na mesma via.', quando: 'obrigatório' },
@@ -110,26 +118,176 @@ export function avaliarHiperpotassemia(e: EntradaHiperK): ResultadoHiperK | null
     },
   ]
 
-  if (e.pediatrico) {
-    blocos.push({
-      titulo: 'Na criança',
-      sub: 'Emergência com potássio acima de 7 mEq/L ou ECG alterado. Doses da fonte (lise tumoral pediátrica).',
-      linhas: [
-        { item: 'Insulina rápida com dextrose a 25%', texto: peso ? `insulina 0,1 U/kg EV = ${fmt(0.1 * peso, 1)} U · dextrose a 25%, 2 mL/kg = ${fmt(2 * peso)} mL` : 'insulina 0,1 U/kg EV com dextrose a 25%, 2 mL/kg — informe o peso', quando: 'deslocamento' },
-        { item: 'Gluconato de cálcio', texto: peso ? `100 a 200 mg/kg = ${fmt(100 * peso)} a ${fmt(200 * peso)} mg por dose, infusão lenta com ECG` : '100 a 200 mg/kg por dose, infusão lenta com ECG', quando: 'cardioproteção' },
-        { item: 'Bicarbonato de sódio', texto: peso ? `1 a 2 mEq/kg EV = ${fmt(peso)} a ${fmt(2 * peso)} mEq` : '1 a 2 mEq/kg EV', quando: '' },
-        { item: 'Poliestirenossulfonato de sódio', texto: 'mesma ressalva do adulto: não é mais recomendado (necrose intestinal, atribuída ao sorbitol, mais relevante na criança). Só em anúrico ou gravemente oligúrico.', quando: diurese ? 'fora de linha' : 'só nesta exceção' },
-      ],
-    })
-  }
-
   const alertas = [
-    emergenciaPediatrica ? 'Criança com potássio acima de 7 mEq/L ou ECG alterado é emergência médica.' : '',
     calcio === 'indicado' ? 'Cálcio indicado agora, pela cardioproteção. Ele não reduz o potássio: os passos 2 e 3 continuam obrigatórios.' : '',
     semEcg && k >= 5 && k < 6.5 ? 'ECG não feito: abaixo de 6,5 mEq/L a indicação de cálcio depende dele.' : '',
   ].filter(Boolean)
 
-  return { faixa, calcio, gravidade, emergenciaPediatrica, blocos, alertas }
+  return { faixa, calcio, gravidade, blocos, alertas }
+}
+
+// ---------------------------------------------------------------- criança (ICr-HCFMUSP)
+
+/** Neonato: menos de 28 dias de vida. */
+export const DIAS_NEONATAL = 28
+
+/**
+ * Recém-nascido pela idade da Central. `null` quando a idade não decide:
+ * sem idade, ou "0 meses" (pode ter menos ou mais de 28 dias).
+ */
+export function neonatoPelaIdade(idade: number | null, unidade: 'dias' | 'meses' | 'anos'): boolean | null {
+  if (idade === null || !Number.isFinite(idade) || idade < 0) return null
+  if (unidade === 'dias') return idade < DIAS_NEONATAL
+  if (idade >= 1) return false
+  return null
+}
+
+export type EntradaHiperKPed = {
+  potassio: number
+  ecg: Ecg
+  /** recém-nascido (< 28 dias); `null` = não informado */
+  neonato: boolean | null
+  pesoKg?: number
+}
+
+export type DoseHiperKPed = {
+  id: string
+  nome: string
+  texto: string
+  pagina: string
+  unidade: string
+  /** dose para o peso, pelo livro; null sem peso, no neonato ou sem a idade */
+  faixa: [number, number] | null
+  noMaximo: boolean
+  errata?: string
+  nota?: string
+  /** a mesma droga em outras passagens do livro do ICr já modeladas no app */
+  divergencias: string[]
+}
+
+export type SemReferenciaPed = { item: string; texto: string }
+
+export type ResultadoHiperKPed = {
+  /** leitura do nível pelos limiares do livro (p. 546–548) */
+  leitura: string
+  acimaDoLimiar: boolean
+  risco: boolean
+  alertas: string[]
+  /** neonato: o livro não cobre; não há dose */
+  neonato: boolean
+  semPeso: boolean
+  doses: DoseHiperKPed[]
+  semReferencia: SemReferenciaPed[]
+}
+
+const faixaTexto = (f: [number, number]) => (f[0] === f[1] ? `${f[0]}` : `${f[0]} a ${f[1]}`).replace(/\./g, ',')
+
+/** Linha do apêndice (bolus.ts) como texto, só com os campos do próprio registro. */
+export function textoBolus(b: Bolus): string {
+  const partes = [`${faixaTexto(b.faixa)} ${b.unidade}${b.porKg ? '/kg' : ''}`]
+  if (b.maximo !== undefined) partes.push(`máx. ${b.maximo.toLocaleString('pt-BR')} ${b.unidade}`)
+  if (b.condicao) partes.push(b.condicao.texto)
+  partes.push(b.via)
+  return `${b.nome}: ${partes.join(' · ')} (${b.pagina})${b.errata ? `. Errata: ${b.errata}` : ''}`
+}
+
+const doLivro = (contexto: string, d: DoseLivro) =>
+  `${contexto} — ${d.nome}: ${textoDoseLivro(d)} · ${d.via} (${d.pagina})${d.nota ? `. ${d.nota}` : ''}${d.errata ? `. Errata: ${d.errata}` : ''}`
+
+const achar = <T extends { id: string }>(lista: T[], id: string): T => {
+  const x = lista.find((i) => i.id === id)
+  if (!x) throw new Error(`hiperpotassemia: item ${id} ausente na fonte pediátrica`)
+  return x
+}
+
+/** Ids do cap. 54 (eletrolitosPed) → a mesma droga em outras passagens do livro já no app. */
+const DIVERGENCIAS_PED: Record<string, { apendice?: string[]; ira?: string[]; slt?: string[] }> = {
+  'gluconato-ca': { ira: ['gluconato'], slt: ['gluconato'] },
+  'cloreto-ca': { ira: ['cacl'] },
+  bic: { apendice: ['bicarbonato-hipercalemia'], ira: ['bic'], slt: ['bic3'] },
+  insulina: { apendice: ['polarizante-insulina'], ira: ['insulina'], slt: ['insulina'] },
+  'glicose-polarizante': { apendice: ['polarizante-g10', 'polarizante-g25'], ira: ['glicose'], slt: ['glicose25'] },
+  sorcal: { ira: ['sorcal'], slt: ['sorcal'] },
+  'furosemida-k': { ira: ['furo-k'], slt: ['furo'] },
+}
+
+export function divergenciasPed(id: string): string[] {
+  const d = DIVERGENCIAS_PED[id]
+  if (!d) return []
+  return [
+    ...(d.apendice ?? []).map((x) => `Apêndice — ${textoBolus(achar(BOLUS, x))}`),
+    ...(d.ira ?? []).map((x) => doLivro('Cap. de injúria renal aguda, Tabela 8', achar(DOSES_TABELA8, x))),
+    ...(d.slt ?? []).map((x) => doLivro('Cap. de emergências oncológicas (lise tumoral), Tabela 6', achar(DOSES_SLT, x))),
+  ]
+}
+
+/** Beta-agonista: o cap. 54 não dá dose; o cap. de IRA dá (p. 583). Só divergência, sem cálculo. */
+export const BETA2_IRA = doLivro('Cap. de injúria renal aguda, Tabela 8', achar(DOSES_TABELA8, 'beta2'))
+
+/** O que a conduta do adulto tem e o cap. 54 do livro do ICr não quantifica para a criança. */
+export const SEM_REFERENCIA_PED: SemReferenciaPed[] = [
+  { item: 'Beta-agonista', texto: `o cap. 54 cita agonista beta-adrenérgico inalatório ou EV sem dose (p. 549): sem referência pediátrica de dose neste capítulo. Em outra passagem do livro: ${BETA2_IRA}` },
+  { item: 'Patirômero e ciclossilicato de zircônio e sódio', texto: 'sem referência pediátrica: o livro do ICr não traz.' },
+  { item: 'Diálise', texto: 'o livro cita a diálise como último recurso, sem critério numérico (p. 549).' },
+]
+
+/** O Anexo 2 do manual do adulto não tem registro no app para estes itens. */
+export const ANEXO2_SEM_REGISTRO =
+  'Anexo 2 do manual do adulto (padrão de diluição em crianças, p. 1490–1494): o app não tem registro destes itens de hipercalemia, então nenhuma divergência é mostrada a partir dele.'
+
+export { NEONATO_FORA }
+
+function dosePed(d: Dose, peso: number | null, calcula: boolean): DoseHiperKPed {
+  const r = calcula && peso ? calcularDose(d, peso) : null
+  return {
+    id: d.id,
+    nome: d.nome,
+    texto: d.texto,
+    pagina: d.pagina,
+    unidade: d.unidade,
+    faixa: r ? r.faixa : null,
+    noMaximo: r ? r.noMaximo : false,
+    errata: d.errata,
+    nota: d.nota,
+    divergencias: divergenciasPed(d.id),
+  }
+}
+
+/**
+ * Criança (de 1 dia a antes dos 14 anos): só o livro do ICr-HCFMUSP. Limiares
+ * e doses vêm de ./pediatria/eletrolitosPed.ts (cap. 54); no neonato não há
+ * dose (o apêndice não cobre o período neonatal, p. 894), e sem saber se é
+ * recém-nascido a ferramenta também não calcula.
+ */
+export function avaliarHiperpotassemiaPed(e: EntradaHiperKPed): ResultadoHiperKPed | null {
+  const k = e.potassio
+  if (!Number.isFinite(k) || k <= 0) return null
+  const peso = e.pesoKg && e.pesoKg > 0 ? e.pesoKg : null
+  const calcula = e.neonato === false
+  const acimaDoLimiar = k > LIMIARES_K.hipercalemia
+  const risco = k >= LIMIARES_K.hipercalemiaGrave
+  const n = (x: number) => x.toLocaleString('pt-BR')
+  const leitura = acimaDoLimiar
+    ? `Hipercalemia pelo livro: acima de ${n(LIMIARES_K.hipercalemia)} mEq/L (p. 546).`
+    : `Não passa de ${n(LIMIARES_K.hipercalemia)} mEq/L, o limiar do livro (p. 546).`
+
+  const alertas = [
+    risco ? `Potássio de ${n(LIMIARES_K.hipercalemiaGrave)} mEq/L ou mais: situação de risco pelo livro (p. 548), assim como a hipercalemia sintomática ou de 6 a 7 em elevação rápida.` : '',
+    k > LIMIARES_K.ecgAcimaDe && e.ecg === 'nao_feito' ? `Acima de ${n(LIMIARES_K.ecgAcimaDe)} mEq/L o livro pede ECG (p. 548): ainda não feito.` : '',
+    e.ecg === 'alterado' ? 'ECG alterado: o gluconato de cálcio pode ser repetido após 5 min se o ECG persistir alterado (p. 549).' : '',
+    `Em recém-nascidos e lactentes jovens o limite superior do potássio pode chegar a ${n(LIMIARES_K.hipercalemiaRN)} mEq/L (p. 546).`,
+  ].filter(Boolean)
+
+  return {
+    leitura,
+    acimaDoLimiar,
+    risco,
+    alertas,
+    neonato: e.neonato === true,
+    semPeso: peso === null,
+    doses: [...HIPERCALEMIA, CLORETO_CA_TABELA7].map((d) => dosePed(d, peso, calcula)),
+    semReferencia: SEM_REFERENCIA_PED,
+  }
 }
 
 // Decisão do RT (27/09/2026): a tela segue a referência mais recente (Geldermann
