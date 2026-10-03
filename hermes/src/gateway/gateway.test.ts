@@ -218,4 +218,7 @@ test('NER marcando o próprio pseudônimo não bloqueia; nome junto do pseudôni
   assert.equal(temNomeAlemDoPseudonimo('[PESSOA_1] e [DATA_2]'), false)
   assert.equal(temNomeAlemDoPseudonimo('[PESSOA_1] Silva'), true)
   assert.equal(temNomeAlemDoPseudonimo('Maria Lima'), true)
+  assert.equal(temNomeAlemDoPseudonimo('AAAA-MM-DD'), false, 'máscara de data não é nome')
+  assert.equal(temNomeAlemDoPseudonimo('DD/MM/AAAA'), false)
+  assert.equal(temNomeAlemDoPseudonimo('MARIA LIMA'), true, 'nome em maiúsculas continua nome')
 })

@@ -125,8 +125,10 @@ export function pedacosNER(texto: string): string[] {
 const RE_PSEUDONIMO = /\[?\b(?:PESSOA|PACIENTE|CPF|CNS|TELEFONE|EMAIL|CEP|DATA|PRONTUARIO)_\d+\b\]?/g
 /** Sobra letra depois de tirar os pseudônimos? Se não, não é nome de ninguém. */
 const CONECTIVOS = new Set(['e', 'de', 'da', 'do', 'das', 'dos'])
+/** Máscara de formato (AAAA-MM-DD, DD/MM/AAAA, HH:MM) que aparece nas descrições das ferramentas. */
+const MASCARA = /^(?:AAAA|AA|MM|DD|HH|SS)$/
 export const temNomeAlemDoPseudonimo = (n: string) =>
-  n.replace(RE_PSEUDONIMO, ' ').split(/[^\p{L}]+/u).some((w) => w && !CONECTIVOS.has(w.toLowerCase()))
+  n.replace(RE_PSEUDONIMO, ' ').split(/[^\p{L}]+/u).some((w) => w && !CONECTIVOS.has(w.toLowerCase()) && !MASCARA.test(w))
 
 const NOMES_DO_SISTEMA = new Set([
   'corujinha', 'chefe coruja', 'coruja', 'gaviao', 'hermes', 'cerbero', 'iris', 'argos',
