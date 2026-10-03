@@ -16,7 +16,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { DatabaseSync } from 'node:sqlite'
 import { existsSync } from 'node:fs'
-import { supabaseJob as supabase } from '../lib/supabase.js'
+import { inserirIncidentes } from '../lib/db-job.js'
 import { logger } from '../logger.js'
 import { chavesJaAbertas, filtrarNovos } from './dedup.js'
 
@@ -191,7 +191,7 @@ export async function rodarPatrulhaGaviao(): Promise<number> {
   const novos = filtrarNovos(achados, chaveDedupGaviao, abertas)
 
   if (novos.length > 0) {
-    const { error } = await supabase.from('cerbero_incidentes').insert(
+    const { error } = await inserirIncidentes(
       novos.map((a) => ({
         patrulha: 'hermes',
         severidade: a.severidade,

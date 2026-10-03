@@ -12,7 +12,20 @@ const schema = z.object({
 
   // Supabase — fonte da verdade
   SUPABASE_URL: z.string().url(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(10, 'SUPABASE_SERVICE_ROLE_KEY obrigatória'),
+  // Obrigatória enquanto HERMES_SEM_SERVICE_ROLE não estiver ligado (ver abaixo).
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(10, 'SUPABASE_SERVICE_ROLE_KEY obrigatória').optional(),
+
+  // Cutover V1, caminho B (docs/seguranca/cutover-hermes-v1.md): Postgres
+  // direto pelo pooler com papéis de menor privilégio.
+  //   HERMES_PG_USER_URL → hermes_app_user (caminho de request, só RPC)
+  //   HERMES_PG_JOB_URL  → hermes_app_job  (crons)
+  HERMES_PG_USER_URL: z.string().regex(/^postgres(ql)?:\/\//, 'HERMES_PG_USER_URL deve ser postgres://...').optional(),
+  HERMES_PG_JOB_URL: z.string().regex(/^postgres(ql)?:\/\//, 'HERMES_PG_JOB_URL deve ser postgres://...').optional(),
+  // 1 = não sobe sem as duas URLs acima e desliga o cliente service_role.
+  HERMES_SEM_SERVICE_ROLE: z
+    .enum(['0', '1', ''])
+    .default('')
+    .transform((v) => v === '1'),
 
   // Meta / WhatsApp Cloud API
   META_VERIFY_TOKEN: z.string().min(1, 'META_VERIFY_TOKEN obrigatório (handshake do webhook)'),
@@ -58,6 +71,18 @@ const schema = z.object({
   // chamada ao modelo é recusada (falha fechada) — o processo sobe, mas avisa.
   DEID_URL: z.string().url().optional(),
   BIBLIOTECA_API_KEY: z.string().optional(),
+}).superRefine((e, ctx) => {
+  if (e.HERMES_SEM_SERVICE_ROLE) {
+    for (const k of ['HERMES_PG_USER_URL', 'HERMES_PG_JOB_URL'] as const) {
+      if (!e[k]) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [k], message: `${k} obrigatória com HERMES_SEM_SERVICE_ROLE=1` })
+    }
+  } else if (!e.SUPABASE_SERVICE_ROLE_KEY) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['SUPABASE_SERVICE_ROLE_KEY'],
+      message: 'SUPABASE_SERVICE_ROLE_KEY obrigatória (ou ligue HERMES_SEM_SERVICE_ROLE=1 com as URLs HERMES_PG_*)',
+    })
+  }
 })
 
 function carregarEnv() {
@@ -76,5 +101,8 @@ export const env = carregarEnv()
 
 if (!env.DEID_URL || !env.BIBLIOTECA_API_KEY) {
   console.warn('[env] DEID_URL/BIBLIOTECA_API_KEY ausentes: o gateway de IA vai recusar toda chamada ao modelo (falha fechada).')
+}
+if (env.HERMES_SEM_SERVICE_ROLE && env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('[env] HERMES_SEM_SERVICE_ROLE=1 mas SUPABASE_SERVICE_ROLE_KEY ainda está no ambiente: o processo não usa, mas retire do .env.prod.')
 }
 export type Env = typeof env

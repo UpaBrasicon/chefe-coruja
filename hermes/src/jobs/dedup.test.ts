@@ -31,21 +31,11 @@ test('filtrarNovos — todas abertas = vazio', () => {
 // ── chavesJaAbertas com cliente fake (sem rede) ──────────────────────────────
 
 function clienteFake(chavesExistentes: string[]) {
-  // Retorna um objeto com .from() que responde como o supabase-js encadeado
-  // para esta consulta específica (select/in/in): o primeiro .in (status)
-  // continua a cadeia; o segundo .in (chave_dedup) resolve com os dados.
-  return {
-    from: (tabela: string) => {
-      assert.equal(tabela, 'cerbero_incidentes')
-      const builder: Record<string, unknown> = {}
-      builder.select = () => builder
-      builder.in = (coluna: string, valores: string[]) => {
-        if (coluna !== 'chave_dedup') return builder
-        const encontradas = chavesExistentes.filter((c) => valores.includes(c))
-        return Promise.resolve({ data: encontradas.map((c) => ({ chave_dedup: c })), error: null })
-      }
-      return builder
-    },
+  // Consulta fake no formato de lib/db-job.ts (chavesIncidentesAbertos):
+  // recebe a fatia de chaves e responde { data, error } com as que existem.
+  return async (fatia: string[]) => {
+    const encontradas = chavesExistentes.filter((c) => fatia.includes(c))
+    return { data: encontradas.map((c) => ({ chave_dedup: c })), error: null }
   }
 }
 
@@ -63,11 +53,9 @@ test('chavesJaAbertas — vazio quando nada existe', async () => {
 
 test('chavesJaAbertas — lista vazia retorna vazio sem consultar', async () => {
   let consultou = false
-  const cliente = {
-    from: () => {
-      consultou = true
-      throw new Error('não deveria consultar')
-    },
+  const cliente = async () => {
+    consultou = true
+    throw new Error('não deveria consultar')
   }
   const abertas = await import('./dedup.js').then((m) => m.chavesJaAbertas([], cliente))
   assert.equal(abertas.size, 0)

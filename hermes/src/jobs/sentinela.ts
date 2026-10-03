@@ -10,16 +10,13 @@
 //   4. Se houver achados: resumo FACTUAL via LLM + notificação ao gestor
 //      (Telegram via gateway + notificacoes_plantonista in-app)
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabaseJob as supabase } from '../lib/supabase.js'
+import { alertaEscalaAberto, gestoresDaUnidade, inserirAlertaEscala, nomesDePerfis, unidadesAtivas } from '../lib/db-job.js'
 import { hojeBrasilia } from '../lib/tempo.js'
 import { logger } from '../logger.js'
 import { calcularMetricasUnidade, detectarOutliers, type AlertaSentinela } from '../agent/sentinela.js'
 
 export async function rodarSentinela(): Promise<{ unidades: number; alertasNovos: number }> {
-  const { data: unidades, error } = await supabase
-    .from('unidades')
-    .select('id, nome')
-    .eq('ativo', true)
+  const { data: unidades, error } = await unidadesAtivas()
 
   if (error) {
     logger.error({ err: error.message }, '[sentinela] falha ao listar unidades')
@@ -61,20 +58,13 @@ async function inserirAlertas(unidadeId: string, alertas: AlertaSentinela[]): Pr
   let inseridos = 0
   for (const a of alertas) {
     // Já existe alerta novo/visto para médico+métrica+janela?
-    const { data: existente } = await supabase
-      .from('chronos_alertas_escala')
-      .select('id')
-      .eq('unidade_id', unidadeId)
-      .eq('medico_id', a.medicoId)
-      .eq('janela', a.janela)
-      .eq('metrica', a.metrica)
-      .in('status', ['novo', 'visto'])
-      .limit(1)
-      .maybeSingle()
+    const { data: existente } = await alertaEscalaAberto({
+      unidade_id: unidadeId, medico_id: a.medicoId, janela: a.janela, metrica: a.metrica,
+    })
 
     if (existente) continue
 
-    const { error } = await supabase.from('chronos_alertas_escala').insert({
+    const { error } = await inserirAlertaEscala({
       unidade_id: unidadeId,
       medico_id: a.medicoId,
       janela: a.janela,
@@ -95,12 +85,7 @@ async function inserirAlertas(unidadeId: string, alertas: AlertaSentinela[]): Pr
 
 async function notificarGestores(u: { unidadeId: string; unidadeNome: string; alertas: AlertaSentinela[] }): Promise<void> {
   // Busca gestores/admins da unidade (via vinculos — padrão real)
-  const { data: vinculos } = await supabase
-    .from('vinculos')
-    .select('perfil_id')
-    .eq('unidade_id', u.unidadeId)
-    .eq('ativo', true)
-    .in('papel', ['gestor', 'admin'])
+  const { data: vinculos } = await gestoresDaUnidade(u.unidadeId)
 
   const gestores = (vinculos ?? []).map((v) => v.perfil_id)
   if (gestores.length === 0) return
@@ -125,10 +110,7 @@ async function notificarGestores(u: { unidadeId: string; unidadeNome: string; al
 async function gerarResumoFactual(u: { unidadeNome: string; alertas: AlertaSentinela[] }): Promise<string> {
   // Nomes dos médicos (para o relatório legível) — busca por IDs
   const medicoIds = [...new Set(u.alertas.map((a) => a.medicoId))]
-  const { data: perfis } = await supabase
-    .from('perfis')
-    .select('id, nome_completo')
-    .in('id', medicoIds)
+  const { data: perfis } = await nomesDePerfis(medicoIds)
 
   const nomeDe = (id: string) => (perfis ?? []).find((p) => p.id === id)?.nome_completo ?? 'médico'
 

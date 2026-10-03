@@ -14,7 +14,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 import Fastify, { type FastifyRequest } from 'fastify'
 import { env } from './config/env.js'
 import { logger } from './logger.js'
-import { supabaseJob as supabase } from './lib/supabase.js'
+import { bancoResponde } from './lib/supabase.js'
 import { criarConexaoRedis, criarConexaoRedisHealth, criarFila, criarWorker, type JobMensagemWhatsApp } from './queue/index.js'
 import { registrarCrons, executarJobCron, FILA_CRON } from './queue/agendador.js'
 import { registrarSkillApi } from './server/skill-api.js'
@@ -142,9 +142,8 @@ export async function buildApp(opts: { crons?: boolean } = {}) {
     }
 
     try {
-      // Chamada mínima e barata para validar a conexão (tabela pequena).
-      const { error } = await supabase.from('unidades').select('id').limit(1)
-      supabaseOk = !error
+      // Chamada mínima e barata: as conexões do banco (request e job) respondem.
+      supabaseOk = await bancoResponde()
     } catch {
       supabaseOk = false
     }

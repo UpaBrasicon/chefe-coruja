@@ -9,7 +9,7 @@
 //   - cancelamento tardio: repasse com created_at < 48h antes do plantão
 //   - concentracao_destino: % dos repasses por destino_perfil_id
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabaseJob as supabase } from '../lib/supabase.js'
+import { escalaDaUnidade, solicitacoesDaUnidade, trocasDaUnidade } from '../lib/db-job.js'
 import { hojeBrasilia } from '../lib/tempo.js'
 import { logger } from '../logger.js'
 
@@ -64,13 +64,7 @@ async function plantoesDaUnidade(
   dias: number
 ): Promise<Map<string, { id: string; data: string; turno: string }[]>> {
   const desde = hojeBrasilia(-dias)
-  const { data, error } = await supabase
-    .from('escala_plantao')
-    .select('id, perfil_id, data, turno')
-    .eq('unidade_id', unidadeId)
-    .eq('ativo', true)
-    .gte('data', desde)
-    .lte('data', hojeBrasilia())
+  const { data, error } = await escalaDaUnidade(unidadeId, desde, hojeBrasilia())
 
   if (error) {
     logger.error({ err: error.message, unidadeId }, '[sentinela] falha ao buscar escala')
@@ -100,12 +94,7 @@ export async function calcularMetricasUnidade(
   const desdeIso = new Date(Date.now() - dias * 86_400_000).toISOString()
 
   // Repasses aprovados (com created_at para detectar tardio) e faltas
-  const { data: sols, error: errSols } = await supabase
-    .from('solicitacoes_escala')
-    .select('perfil_id, tipo, status, destino_perfil_id, created_at, escala_plantao!solicitacoes_escala_escala_plantao_id_fkey(data)')
-    .eq('unidade_id', unidadeId)
-    .gte('created_at', desdeIso)
-    .order('created_at', { ascending: true })
+  const { data: sols, error: errSols } = await solicitacoesDaUnidade(unidadeId, desdeIso)
 
   if (errSols) {
     logger.error({ err: errSols.message }, '[sentinela] falha ao buscar solicitações')
@@ -113,11 +102,7 @@ export async function calcularMetricasUnidade(
   }
 
   // Trocas iniciadas
-  const { data: trocas, error: errTrocas } = await supabase
-    .from('trocas_plantao')
-    .select('perfil_a_id, status, created_at')
-    .eq('unidade_id', unidadeId)
-    .gte('created_at', desdeIso)
+  const { data: trocas, error: errTrocas } = await trocasDaUnidade(unidadeId, desdeIso)
 
   if (errTrocas) {
     logger.error({ err: errTrocas.message }, '[sentinela] falha ao buscar trocas')

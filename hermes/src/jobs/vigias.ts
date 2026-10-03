@@ -13,6 +13,7 @@
 //   Cadeia ............ log de auditoria adulterado
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabaseJob as supabase } from '../lib/supabase.js'
+import { inserirIncidentes, unidadesAtivas as listarUnidadesAtivas } from '../lib/db-job.js'
 import { hojeBrasilia } from '../lib/tempo.js'
 import { logger } from '../logger.js'
 import { chavesJaAbertas, filtrarNovos } from './dedup.js'
@@ -24,7 +25,7 @@ function exigir<T>(r: { data: T | null; error: { message: string } | null }, con
 }
 
 async function unidadesAtivas(): Promise<{ id: string; nome: string }[]> {
-  return exigir(await supabase.from('unidades').select('id, nome').eq('ativo', true), 'unidades')
+  return exigir(await listarUnidadesAtivas(), 'unidades')
 }
 
 const NOME_COR: Record<string, string> = { vermelho: 'Vermelho', laranja: 'Laranja', amarelo: 'Amarelo', verde: 'Verde', azul: 'Azul' }
@@ -113,7 +114,7 @@ async function registrarIncidentes(lista: Incidente[]): Promise<number> {
   const abertas = await chavesJaAbertas(lista.map((i) => i.chave))
   const novos = filtrarNovos(lista, (i) => i.chave, abertas)
   if (novos.length === 0) return 0
-  const { error } = await supabase.from('cerbero_incidentes').insert(
+  const { error } = await inserirIncidentes(
     novos.map((i) => ({ patrulha: 'dados', severidade: i.severidade, titulo: i.titulo, evidencia: i.evidencia, chave_dedup: i.chave }))
   )
   if (error) throw new Error(`[vigias] falha ao registrar incidentes: ${error.message}`)

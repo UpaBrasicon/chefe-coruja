@@ -20,6 +20,7 @@
 // ⚠️ Regra inviolável: reporta IDs e números, NUNCA nome de paciente.
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabaseJob as supabase } from '../lib/supabase.js'
+import { censosNegativos, entradasAuditDesde, inserirIncidentes } from '../lib/db-job.js'
 import { logger } from '../logger.js'
 import { hojeBrasilia } from '../lib/tempo.js'
 import { chavesJaAbertas, filtrarNovos } from './dedup.js'
@@ -46,7 +47,7 @@ async function registrar(achados: IncidenciaC[]): Promise<number> {
   const abertas = await chavesJaAbertas(achados.map(chaveDedupCerbero))
   const novos = filtrarNovos(achados, chaveDedupCerbero, abertas)
   if (novos.length === 0) return 0
-  const { error } = await supabase.from('cerbero_incidentes').insert(
+  const { error } = await inserirIncidentes(
     novos.map((i) => ({
       patrulha: i.patrulha,
       severidade: i.severidade,
@@ -101,11 +102,7 @@ export async function patrulhaDados(): Promise<IncidenciaC[]> {
   const desde = hojeBrasilia(-7)
   type Censo = { unidade_id: string; setor_id: string; data: string; turno: string; internados: number; leitos_total: number; leitos_ocupados: number; leitos_livres: number }
   const censos = exigir<Censo[]>(
-    await supabase
-      .from('censo_ocupacao')
-      .select('unidade_id, setor_id, data, turno, internados, leitos_total, leitos_ocupados, leitos_livres')
-      .gte('data', desde)
-      .or('internados.lt.0,leitos_total.lt.0,leitos_ocupados.lt.0,leitos_livres.lt.0'),
+    await censosNegativos(desde),
     'censo'
   )
   for (const c of censos) {
@@ -132,13 +129,7 @@ export async function patrulhaHermes(): Promise<IncidenciaC[]> {
 
   type Msg = { id: string; phone: string; tool_result_summary: string | null; created_at: string }
   const msgs = exigir<Msg[]>(
-    await supabase
-      .from('hermes_audit_log')
-      .select('id, phone, tool_result_summary, created_at')
-      .eq('direction', 'in')
-      .gte('created_at', desde)
-      .order('created_at', { ascending: false })
-      .limit(1000),
+    await entradasAuditDesde(desde, 1000),
     'audit log'
   )
 

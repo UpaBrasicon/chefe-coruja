@@ -1,53 +1,33 @@
-// Testes da Andorinha (Íris) — dispatch de notificações com cliente fake.
+// Testes da Andorinha (Íris) — dispatch de notificações com banco fake.
 // Cobre o fluxo de dispatchIrisParaGestores sem tocar a rede.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { dispatchIris, dispatchIrisParaGestores } from './iris.js'
 
-// ── Cliente fake encadeado estilo supabase-js ────────────────────────────────
-
-type Registro = { tabela: string; operacao: string; dado?: unknown }
+// ── Banco fake no formato de lib/db-job.ts ─────────────────────────────────
 
 function clienteFake(opcoes: {
   vinculos?: { perfil_id: string; papel?: string }[]
   insertErro?: string | null
-  registro?: Registro[]
 }) {
-  const registro = opcoes.registro ?? []
   const chamadas: { tabela: string; dado?: unknown }[] = []
   let ids = 0
 
   return {
     chamadas,
-    from: (tabela: string) => {
-      const builder: Record<string, unknown> = {}
-      const filtros: { coluna: string; valores: string[] }[] = []
-      builder.select = () => builder
-      builder.eq = () => builder
-      builder.in = (coluna: string, valores: string[]) => {
-        filtros.push({ coluna, valores })
-        // Filtro de papel (como o Supabase faria): replica o `in` do SQL.
-        if (coluna === 'papel') {
-          const vinculos = (opcoes.vinculos ?? []).filter((v) => valores.includes(v.papel ?? ''))
-          return Promise.resolve({ data: vinculos.map(({ perfil_id }) => ({ perfil_id })), error: null })
-        }
-        return builder
+    // gestoresDaUnidade filtra papel gestor/admin no SQL — o fake replica.
+    gestoresDaUnidade: async () => ({
+      data: (opcoes.vinculos ?? [])
+        .filter((v) => ['gestor', 'admin'].includes(v.papel ?? ''))
+        .map(({ perfil_id }) => ({ perfil_id })),
+      error: null,
+    }),
+    inserirNotificacao: async (dado: unknown) => {
+      chamadas.push({ tabela: 'notificacoes_plantonista', dado })
+      return {
+        data: opcoes.insertErro ? null : { id: `id-${++ids}` },
+        error: opcoes.insertErro ? { message: opcoes.insertErro } : null,
       }
-      builder.insert = (dado: unknown) => {
-        chamadas.push({ tabela, dado })
-        const interno: Record<string, unknown> = {}
-        interno.select = () => {
-          interno.single = () =>
-            Promise.resolve({
-              data: opcoes.insertErro ? null : { id: `id-${++ids}` },
-              error: opcoes.insertErro ? { message: opcoes.insertErro } : null,
-            })
-          return interno
-        }
-        return interno
-      }
-      registro.push({ tabela, operacao: 'insert' })
-      return builder
     },
   }
 }

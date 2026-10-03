@@ -6,7 +6,7 @@
 //
 // ⚠️ Resumo com NÚMEROS e títulos — nunca dado de paciente.
 // ─────────────────────────────────────────────────────────────────────────────
-import { supabaseJob as supabase } from '../lib/supabase.js'
+import { alertasNoPeriodo, incidentesNoPeriodo, inserirRelatorioSemanal } from '../lib/db-job.js'
 import { logger } from '../logger.js'
 
 export type LinhaIncidente = {
@@ -67,11 +67,7 @@ export async function gerarRelatorioSemanal(): Promise<{ id?: string; incidentes
   const fimIso = fim.toISOString()
 
   // Incidentes do Cérbero na semana
-  const { data: incidentes, error: errInc } = await supabase
-    .from('cerbero_incidentes')
-    .select('id, patrulha, severidade, titulo, status, detectado_em')
-    .gte('detectado_em', inicioIso)
-    .lte('detectado_em', fimIso)
+  const { data: incidentes, error: errInc } = await incidentesNoPeriodo(inicioIso, fimIso)
 
   if (errInc) {
     logger.error({ err: errInc.message }, '[relatorio] falha ao buscar incidentes')
@@ -79,11 +75,7 @@ export async function gerarRelatorioSemanal(): Promise<{ id?: string; incidentes
   }
 
   // Alertas do Sentinela na semana
-  const { data: alertas, error: errAlertas } = await supabase
-    .from('chronos_alertas_escala')
-    .select('id, unidade_id, metrica, valor, status, criado_em')
-    .gte('criado_em', inicioIso)
-    .lte('criado_em', fimIso)
+  const { data: alertas, error: errAlertas } = await alertasNoPeriodo(inicioIso, fimIso)
 
   if (errAlertas) {
     logger.error({ err: errAlertas.message }, '[relatorio] falha ao buscar alertas')
@@ -101,16 +93,12 @@ export async function gerarRelatorioSemanal(): Promise<{ id?: string; incidentes
 
   const resumo = montarResumo(listaIncidentes, listaAlertas, inicioIso, fimIso)
 
-  const { data: inserido, error } = await supabase
-    .from('gaviao_relatorios_semanais')
-    .insert({
-      periodo_inicio: inicioIso.slice(0, 10),
-      periodo_fim: fimIso.slice(0, 10),
-      resumo,
-      detalhes: { incidentes: listaIncidentes, alertas: listaAlertas },
-    })
-    .select('id')
-    .single()
+  const { data: inserido, error } = await inserirRelatorioSemanal({
+    periodo_inicio: inicioIso.slice(0, 10),
+    periodo_fim: fimIso.slice(0, 10),
+    resumo,
+    detalhes: { incidentes: listaIncidentes, alertas: listaAlertas },
+  })
 
   if (error) {
     logger.error({ err: error.message }, '[relatorio] falha ao gravar relatório')

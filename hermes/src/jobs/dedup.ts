@@ -9,11 +9,10 @@
 // achados, 3) inserir só os novos. O índice único parcial (migration
 // 20260823000001) fica como rede de segurança no banco.
 //
-// DI leve: o cliente supabase entra por parâmetro (default = singleton) para
-// os testes unitários não tocarem a rede.
+// DI leve: a consulta entra por parâmetro (default = lib/db-job.ts, que usa a
+// conexão do job — hermes_app_job) para os testes unitários não tocarem a rede.
 // ─────────────────────────────────────────────────────────────────────────────
-import type { SupabaseClient } from '@supabase/supabase-js'
-import { supabaseJob as supabase } from '../lib/supabase.js'
+import { chavesIncidentesAbertos, type Resultado } from '../lib/db-job.js'
 import { logger } from '../logger.js'
 
 const TAMANHO_LOTE = 100
@@ -35,18 +34,14 @@ export function filtrarNovos<T>(itens: T[], chave: (item: T) => string, abertas:
  */
 export async function chavesJaAbertas(
   chaves: string[],
-  cliente: Pick<SupabaseClient, 'from'> = supabase
+  consultar: (fatia: string[]) => Promise<Resultado<{ chave_dedup: string | null }[]>> = chavesIncidentesAbertos
 ): Promise<Set<string>> {
   const encontradas = new Set<string>()
   if (chaves.length === 0) return encontradas
 
   for (let i = 0; i < chaves.length; i += TAMANHO_LOTE) {
     const fatia = chaves.slice(i, i + TAMANHO_LOTE)
-    const { data, error } = await cliente
-      .from('cerbero_incidentes')
-      .select('chave_dedup')
-      .in('status', ['aberto', 'em_analise'])
-      .in('chave_dedup', fatia)
+    const { data, error } = await consultar(fatia)
 
     if (error) {
       logger.warn({ err: error.message }, '[dedup] pre-check falhou — tratando como sem existentes')

@@ -14,7 +14,8 @@
 import type { Redis } from 'ioredis'
 import { createHash } from 'node:crypto'
 import { logger } from '../logger.js'
-import { supabaseUser, supabaseJob } from '../lib/supabase.js'
+import { supabaseUser } from '../lib/supabase.js'
+import { inserirIncidentes, upsertUrlCache } from '../lib/db-job.js'
 import { enviarTexto } from '../lib/whatsapp.js'
 import { resolverIdentidadePorWaId } from './identidade.js'
 import { carregarSessao, salvarSessao, type MensagemSessao } from './sessao.js'
@@ -197,17 +198,17 @@ async function registrarIncidenteConteudo(
 ): Promise<void> {
   const hash = hashUrl(urls[0] ?? '')
   // Caso SUSPEITO: segue com aviso, sem quarentena. Só cache + incidente
-  // informativo — ambos via supabaseJob (hermes_job tem INSERT em url_cache e
-  // cerbero_incidentes; hermes_quarentenar_conteudo criaria quarentena à toa).
-  await supabaseJob.from('cerbero_url_cache').upsert(
+  // informativo — ambos pela conexão do job (lib/db-job.ts; hermes_job tem
+  // INSERT em url_cache e cerbero_incidentes; hermes_quarentenar_conteudo
+  // criaria quarentena à toa). Consultas fixas, sem tabela vinda de fora.
+  await upsertUrlCache(
     { url_hash: hash, veredicto: 'suspeito', fonte: 'heuristica', detalhe: { urls, motivos: resultados.map((r) => r.motivos) } },
-    { onConflict: 'url_hash' }
   )
-  await supabaseJob.from('cerbero_incidentes').insert({
+  await inserirIncidentes([{
     patrulha: 'conteudo',
     severidade: 'informativo',
     titulo: 'URL suspeita no canal',
     evidencia: { waId, urls, motivos: resultados.map((r) => r.motivos) },
-  })
+  }])
   logger.info({ waId, urls }, '[cerbero] URL suspeita registrada (segue com aviso)')
 }

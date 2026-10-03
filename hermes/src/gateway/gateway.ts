@@ -14,7 +14,7 @@
 import { createHash } from 'node:crypto'
 
 import { completar, type ChamadaLLM, type MensagemLLM, type RespostaLLM, type ToolCallLLM } from '../lib/llm.js'
-import { supabaseJob as supabase } from '../lib/supabase.js'
+import { inserirGatewayLog } from '../lib/db-job.js'
 import { logger } from '../logger.js'
 import {
   desidentificar, reidentificar, residuos,
@@ -222,7 +222,7 @@ type DadosRegistro = {
 
 async function registrar(ctx: ContextoGateway, dados: DadosRegistro) {
   try {
-    const { error } = await supabase.from('ia_gateway_log').insert({
+    const { error } = await inserirGatewayLog({
       origem: ctx.origem,
       perfil_id: ctx.perfilId ?? null,
       bloqueado: dados.bloqueado,

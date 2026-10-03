@@ -538,9 +538,8 @@ export function registrarSkillApi(app: FastifyInstance): void {
       return reply.code(429).send({ ok: false, erro: 'Muitas tentativas. Gere um código novo e tente em 15 minutos.' })
     }
 
-    // ⚠️ confirmar_vinculo_hermes ainda NÃO está no GRANT de hermes_user na
-    // migration (só service_role). Com HERMES_USER_KEY setada isto falha até o
-    // grant ser adicionado — ver nota no relatório do cutover.
+    // confirmar_vinculo_hermes: EXECUTE para hermes_user (20261020000002,
+    // reafirmado em 20261022000007) e na allowlist RPC_USUARIO.
     const { data: perfilId, error } = await supabaseUser.rpc('confirmar_vinculo_hermes', {
       p_canal: canal,
       p_identificador: identificador,

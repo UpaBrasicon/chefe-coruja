@@ -12,6 +12,7 @@
 //   D. Leito ocupado em setor sem ninguém de plantão agora (janela real)
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabaseJob as supabase } from '../lib/supabase.js'
+import { inserirIncidentes, observacoesFuturas, prescricoesFuturas, prescricoesOrfas } from '../lib/db-job.js'
 import { logger } from '../logger.js'
 import { chavesJaAbertas, filtrarNovos } from './dedup.js'
 
@@ -38,11 +39,7 @@ export async function auditoriaArgos(): Promise<AchadoArgos[]> {
   const agoraIso = new Date().toISOString()
 
   // A. Observação com aferição no futuro
-  const { data: obsFuturas, error: e1 } = await supabase
-    .from('observacao')
-    .select('id, unidade_id, aferido_em')
-    .gt('aferido_em', agoraIso)
-    .limit(500)
+  const { data: obsFuturas, error: e1 } = await observacoesFuturas(agoraIso, 500)
   if (e1) throw new Error(`[argos] observação: ${e1.message}`)
   for (const o of obsFuturas ?? []) {
     achados.push({
@@ -53,11 +50,7 @@ export async function auditoriaArgos(): Promise<AchadoArgos[]> {
   }
 
   // B. Prescrição com criação no futuro
-  const { data: prescFuturas, error: e2 } = await supabase
-    .from('prescricoes')
-    .select('id, unidade_id, created_at')
-    .gt('created_at', agoraIso)
-    .limit(500)
+  const { data: prescFuturas, error: e2 } = await prescricoesFuturas(agoraIso, 500)
   if (e2) throw new Error(`[argos] prescrição futura: ${e2.message}`)
   for (const p of prescFuturas ?? []) {
     achados.push({
@@ -68,11 +61,7 @@ export async function auditoriaArgos(): Promise<AchadoArgos[]> {
   }
 
   // C. Prescrição sem paciente (órfã) — só ID, nunca nome
-  const { data: prescOrfas, error: e3 } = await supabase
-    .from('prescricoes')
-    .select('id, unidade_id')
-    .is('paciente_id', null)
-    .limit(500)
+  const { data: prescOrfas, error: e3 } = await prescricoesOrfas(500)
   if (e3) throw new Error(`[argos] prescrição órfã: ${e3.message}`)
   for (const p of prescOrfas ?? []) {
     achados.push({
@@ -109,7 +98,7 @@ export async function rodarAuditoriaArgos(): Promise<number> {
   const novos = filtrarNovos(achados, chaveDedupArgos, abertas)
 
   if (novos.length > 0) {
-    const { error } = await supabase.from('cerbero_incidentes').insert(
+    const { error } = await inserirIncidentes(
       novos.map((a) => ({
         patrulha: 'dados',
         severidade: a.severidade,

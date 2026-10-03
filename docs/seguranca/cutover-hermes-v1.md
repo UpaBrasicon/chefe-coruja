@@ -11,6 +11,124 @@ EXECUTE em RPCs scoped) e **`hermes_job`** (crons, grants mínimos).
 
 ---
 
+## DESFECHO (02/10/2026): caminho B aprovado e implementado — runbook do VPS
+
+O dono do produto aprovou em 02/10/2026 tirar o runtime do Hermes da
+`service_role`. O que estava escrito em 01/10 (abaixo) fica como histórico: o
+caminho B saiu do papel.
+
+**O que entrou no código (sem efeito até você setar as URLs no VPS):**
+- Migration `supabase/migrations/20261022000007_hermes_login_roles_pg.sql`:
+  papéis LOGIN `hermes_app_user` (herda `hermes_user`) e `hermes_app_job`
+  (herda `hermes_job`), **sem senha**, NOSUPERUSER/NOBYPASSRLS, limite de
+  conexões (10/6) e `statement_timeout` (15 s/120 s). Re-grant idempotente do
+  EXECUTE das RPCs (a revisão `20261022000002` só tirou de PUBLIC/anon/
+  authenticated; os grants a `hermes_user`/`hermes_job` continuavam).
+  **Correção encontrada:** `hermes_job` tinha GRANT de tabela mas nenhuma
+  política de RLS — sem BYPASSRLS, os crons leriam tudo vazio e todo INSERT
+  falharia. A migration cria políticas `TO hermes_job` espelhando exatamente os
+  grants que já existiam (+ SELECT/UPDATE no `cerbero_url_cache` para o upsert).
+  `hermes_user` continua com **zero** grant de tabela.
+- `hermes/src/lib/pg.ts` + `lib/supabase.ts`: `supabaseUser`/`supabaseJob` são
+  agora objetos **só com `.rpc()`** (allowlist por caminho, argumentos nomeados
+  parametrizados, JSON no formato do PostgREST). `lib/db-job.ts`: as consultas
+  de tabela dos crons em postgres.js. Sem `HERMES_PG_*_URL` → cai na
+  service_role com aviso alto no log. Com `HERMES_SEM_SERVICE_ROLE=1` → o
+  processo **não sobe** sem as duas URLs e o cliente service_role lança se tocado.
+- Guarda de CI `hermes/src/lib/supabase-rpc-only.test.ts` reescrita em AST
+  (pega alias, re-export, `import()`/`require`, `createClient`, chave em string).
+- Testes: `supabase/tests/hermes_login_roles_pg.sql` e
+  `hermes/src/lib/pg.integration.test.ts` (banco local).
+
+### Runbook (você executa; nada disso foi feito pelo agente)
+
+**(a) Aplicar a migration** (aditiva; não muda nada até as URLs existirem):
+```bash
+npx supabase db push --linked
+```
+Confira no SQL editor: `select rolname, rolcanlogin, rolsuper, rolbypassrls, rolconnlimit from pg_roles where rolname like 'hermes_app%';`
+→ 2 linhas, `rolsuper`/`rolbypassrls` = false.
+
+**(b) Definir as senhas** — gere NO VPS (nunca cole no chat, nunca no git):
+```bash
+openssl rand -hex 24   # senha do hermes_app_user
+openssl rand -hex 24   # senha do hermes_app_job
+```
+No **SQL editor** do Supabase (projeto `saqjrjtrkzkswsxxvdxn`), cole cada senha
+no lugar do marcador e rode:
+```sql
+ALTER ROLE hermes_app_user WITH PASSWORD 'COLE_A_SENHA_DO_USER';
+ALTER ROLE hermes_app_job  WITH PASSWORD 'COLE_A_SENHA_DO_JOB';
+```
+(Hex não precisa de escape na URL. O SQL editor não guarda a senha no
+histórico de migrations; mesmo assim, limpe a aba depois.)
+
+**(c) Connection string do pooler** — Supavisor, **modo session, porta 5432**.
+Para papel custom o usuário é `PAPEL.PROJECT-REF`:
+```
+postgresql://hermes_app_user.saqjrjtrkzkswsxxvdxn:SENHA@aws-N-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+postgresql://hermes_app_job.saqjrjtrkzkswsxxvdxn:SENHA@aws-N-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+```
+O `N` (`aws-0`, `aws-1`…) é o índice do cluster do pooler e **não dá para
+deduzir pela região** (doc do Supabase, "Connecting to Postgres"). Copie o host
+exato em: Dashboard → botão **Connect** (topo do projeto) → **Session pooler**
+→ troque só o usuário `postgres.saqjrjtrkzkswsxxvdxn` por
+`hermes_app_user.saqjrjtrkzkswsxxvdxn` (e `_job`). O pooler é IPv4.
+Teste rápido no VPS (antes do .env): 
+`psql "postgresql://hermes_app_user.saqjrjtrkzkswsxxvdxn:SENHA@HOST:5432/postgres?sslmode=require" -c "select current_user"`
+→ `hermes_app_user`. E `-c "select 1 from public.perfis"` → **permission denied** (é o esperado).
+
+**(d) Linhas no `/home/hermes/deploy/.env.prod`** (mantenha a
+`SUPABASE_SERVICE_ROLE_KEY` por enquanto — é o fallback):
+```
+HERMES_PG_USER_URL=postgresql://hermes_app_user.saqjrjtrkzkswsxxvdxn:SENHA_USER@HOST:5432/postgres?sslmode=require
+HERMES_PG_JOB_URL=postgresql://hermes_app_job.saqjrjtrkzkswsxxvdxn:SENHA_JOB@HOST:5432/postgres?sslmode=require
+```
+
+**(e) Rebuild do hermes-app** — o código novo traz a dependência `postgres`,
+então envie também `package.json` e `package-lock.json`:
+```bash
+scp -r package.json package-lock.json tsconfig.json src/ hermes@IP_DA_VPS:/home/hermes/deploy/
+ssh hermes@IP_DA_VPS
+cd /home/hermes/deploy
+docker compose -f docker-compose.prod.yml up -d --build app
+docker compose -f docker-compose.prod.yml logs --tail=80 app
+```
+No log **não** pode aparecer o bloco `!!! ... usando a SERVICE_ROLE`. Se
+aparecer, uma das URLs não chegou ao container.
+
+**(f) Validação** (com a service_role ainda no .env, como rede):
+- [ ] `docker exec hermes-app node -e "fetch('http://127.0.0.1:3000/health').then(r=>r.json()).then(console.log)"` → `status: 'ok'`, `supabase: 'connected'`.
+- [ ] No SQL editor: `select usename, application_name, count(*) from pg_stat_activity where usename like 'hermes_app%' group by 1,2;` → conexões `hermes-user` / `hermes-job`.
+- [ ] Mensagem real de um profissional pelo canal: identidade resolvida, dashboard da **própria** unidade responde.
+- [ ] Profissional sem vínculo pedindo outra unidade → resposta negada (no log: `42501 Acesso negado`).
+- [ ] Recepção/plantonista pedindo incidentes/quarentena → negado.
+- [ ] Rodar os crons uma vez (ou esperar o ciclo): cerbero, argos, vigias, sentinela, relatório — log sem `permission denied` nem `row-level security`.
+- [ ] `/skill/vincular` com código válido vincula o canal.
+
+**(g) Desligar a service_role** (só depois de (f) inteiro verde):
+1. No `.env.prod`: adicione `HERMES_SEM_SERVICE_ROLE=1` e **apague** a linha
+   `SUPABASE_SERVICE_ROLE_KEY=...`.
+2. `docker compose -f docker-compose.prod.yml up -d app` (sem build; só env).
+3. Repetir (f). O processo se recusa a subir se faltar uma URL (mensagem
+   `[env] Configuração inválida`) — é o comportamento desejado.
+4. Opcional e recomendado: rotacionar a `service_role` (secret key) no
+   dashboard, já que ela morou no VPS. Antes, confira que nada mais no VPS a usa
+   (`grep -r SERVICE_ROLE /home/hermes`, inclusive `deploy/validar-fluxo200.sh`
+   e o ambiente do Nous).
+
+**(h) Rollback** (qualquer etapa):
+- Antes de (g): apague (ou comente) as duas linhas `HERMES_PG_*_URL` do
+  `.env.prod` → `docker compose -f docker-compose.prod.yml up -d app`. Volta ao
+  fallback service_role, sem rebuild.
+- Depois de (g): devolva `SUPABASE_SERVICE_ROLE_KEY=...` ao `.env.prod`,
+  remova `HERMES_SEM_SERVICE_ROLE=1` (ou ponha `0`) e suba de novo.
+- Bloquear os papéis sem apagar nada: `ALTER ROLE hermes_app_user NOLOGIN;`
+  `ALTER ROLE hermes_app_job NOLOGIN;` (reabrir com `LOGIN`). A migration é
+  aditiva; não há DDL a desfazer para o rollback do runtime.
+
+---
+
 > **DESFECHO (01/10/2026): swap NÃO executado — V1 fechado por guarda em CI.**
 > O self-mint (caminho A) foi testado em prod e rejeitado (PostgREST em JWKS
 > assimétrica; signing key = ECC P-256; ver §1). O caminho B (Postgres direto +
