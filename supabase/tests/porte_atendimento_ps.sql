@@ -200,9 +200,23 @@ SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.falha(format('SELECT public.registrar_desfecho(%L, %L, NULL, %L)', pg_temp.u('c'), 'alta',
   json_build_object('alta_em', now() - interval '2 hours')), 'Alta retroativa: justifique', 'alta retroativa exige justificativa');
+-- parecer órfão: pedido aberto no episódio 'c' é cancelado ao dar alta (decisão do RT 03/10/2026)
+INSERT INTO t SELECT 'par', public.solicitar_parecer(
+  (SELECT paciente_id::text FROM public.episodios WHERE id = pg_temp.u('c'))::uuid, 'Cirurgia geral',
+  'Avaliar necessidade de abordagem cirúrgica do abdome', 'normal', NULL, pg_temp.u('c'))::text;
 SELECT public.registrar_desfecho(pg_temp.u('c'), 'alta', NULL,
   json_build_object('alta_em', now() - interval '2 hours', 'justificativa_retroativa', 'Sistema fora do ar no momento da alta')::jsonb);
 RESET ROLE;
+DO $$
+DECLARE pm public.pareceres_medicos;
+BEGIN
+  SELECT * INTO pm FROM public.pareceres_medicos WHERE id = (SELECT valor::uuid FROM t WHERE nome = 'par');
+  IF pm.status <> 'cancelado' OR pm.motivo_cancelamento NOT LIKE 'Atendimento do pronto-socorro encerrado%'
+     OR pm.documento_cancelamento_id IS NULL THEN
+    RAISE EXCEPTION 'FALHOU: parecer órfão não cancelado no desfecho (%)', pm.status;
+  END IF;
+  RAISE NOTICE 'OK  dar alta na porta cancela o parecer pendente, com motivo e documento';
+END $$;
 DO $$
 DECLARE b public.episodios; c public.episodios;
 BEGIN

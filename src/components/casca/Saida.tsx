@@ -96,7 +96,7 @@ export function SessaoEncerrada({ texto, onReentrar }: { texto: string; onReentr
         </h2>
         <p className="m-0 text-controle leading-[1.55] text-pretty text-tinta-apoio">{texto}</p>
         <p className="m-0 text-apoio leading-[1.5] text-pretty text-tinta-sussurro">
-          Fora do plantão a Central não fica aberta. Para prescrever ou evoluir depois do horário, entre de novo: a sessão vale enquanto houver uso.
+          Fora do plantão a Central não fica aberta. Houve 20 minutos de tolerância depois do fim do turno; para continuar além disso, só o gestor libera.
         </p>
         <button
           type="button"

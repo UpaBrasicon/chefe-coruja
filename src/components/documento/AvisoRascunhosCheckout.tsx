@@ -1,6 +1,6 @@
 // Fila no check-out (protótipo Bloco 4, item 4: "O que bloqueia o check-out:
-// documento seu aberto"). Aqui só AVISA: o check-out continua possível — o
-// servidor (registrar_checkout) não trava por rascunho. Leva à tela de
+// documento seu aberto"). Decisão do RT (03/10/2026): aqui só AVISA, não trava
+// — o servidor (registrar_checkout) não bloqueia por rascunho. Leva à tela de
 // pendências, onde os rascunhos são emitidos em lote.
 import { FileWarning } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -16,7 +16,7 @@ export function AvisoRascunhosCheckout({ unidadeId }: { unidadeId: string | null
       <FileWarning className="size-4 shrink-0" aria-hidden />
       <span className="min-w-0 flex-[1_1_220px] text-pretty">
         {n === 1 ? 'Você tem 1 documento em rascunho, ainda não emitido.' : `Você tem ${n} documentos em rascunho, ainda não emitidos.`}{' '}
-        Rascunho aberto impede a alta do paciente. Emita ou descarte antes de sair.
+        Rascunho não emitido não entra no prontuário e o próximo plantonista não o vê. Isto é só um aviso: dá para sair assim mesmo. Emita ou descarte antes.
       </span>
       <Link to="/pendencias-pep" className="font-medium whitespace-nowrap text-acao underline-offset-4 hover:underline">
         Ver pendências do PEP

@@ -11046,6 +11046,10 @@ export type Database = {
         }
         Returns: string
       }
+      liberar_pos_plantao: {
+        Args: { p_minutos: number; p_motivo: string; p_perfil: string; p_unidade: string }
+        Returns: string
+      }
       limites_unidade: { Args: { p_unidade: string }; Returns: Json }
       limites_voltar_ao_padrao: {
         Args: { p_medicamento: string; p_unidade: string }
@@ -11509,6 +11513,7 @@ export type Database = {
           checkin_em: string
           checkin_justificativa: string
           checkout_automatico: boolean
+          liberado_pos_ate: string
           checkout_dentro: boolean
           checkout_em: string
           em_escala: boolean

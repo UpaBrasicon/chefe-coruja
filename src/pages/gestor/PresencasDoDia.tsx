@@ -1,10 +1,13 @@
-import { useQuery } from '@tanstack/react-query'
-import { Clock, LogIn, Users } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Clock, KeyRound, LogIn, Users } from 'lucide-react'
+import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 
 type PresencaDia = {
@@ -20,6 +23,51 @@ type PresencaDia = {
   checkin_justificativa: string | null
   checkin_distancia_m: number | null
   checkout_automatico: boolean
+  /** Liberação do gestor para continuar depois da tolerância de 20 min; null se não há. */
+  liberado_pos_ate: string | null
+}
+
+const hhmm = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
+
+// Liberar continuidade depois da tolerância de 20 min (decisão do RT 03/10/2026).
+function LiberarPosPlantao({ unidadeId, perfilId, nome }: { unidadeId: string; perfilId: string; nome: string }) {
+  const qc = useQueryClient()
+  const [aberto, setAberto] = React.useState(false)
+  const [minutos, setMinutos] = React.useState('30')
+  const [motivo, setMotivo] = React.useState('')
+  const [erro, setErro] = React.useState<string | null>(null)
+  const liberar = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('liberar_pos_plantao', {
+        p_unidade: unidadeId, p_perfil: perfilId, p_minutos: Number(minutos || 0), p_motivo: motivo.trim(),
+      })
+      if (error) throw error
+    },
+    onSuccess: () => { setAberto(false); setMotivo(''); void qc.invalidateQueries({ queryKey: ['presencas-do-dia'] }) },
+    onError: (e) => setErro(e instanceof Error ? e.message : 'Falha ao liberar.'),
+  })
+  if (!aberto) {
+    return (
+      <Button size="xs" variant="outline" onClick={() => { setAberto(true); setErro(null) }}>
+        <KeyRound className="size-3.5" /> Liberar após o plantão
+      </Button>
+    )
+  }
+  return (
+    <div className="flex w-full flex-col gap-2 rounded-lg border border-fio bg-campo p-3">
+      <p className="text-xs text-tinta-apoio">Liberar {nome} a continuar depois dos 20 min de tolerância.</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="text-xs text-tinta-sussurro">Minutos (5 a 120)</label>
+        <Input className="h-8 w-20" type="number" min={5} max={120} value={minutos} onChange={(e) => setMinutos(e.target.value)} />
+      </div>
+      <Input className="h-8" placeholder="Motivo (mínimo 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+      {erro && <p className="text-xs text-critico">{erro}</p>}
+      <div className="flex gap-2">
+        <Button size="xs" disabled={motivo.trim().length < 10 || liberar.isPending} onClick={() => { setErro(null); liberar.mutate() }}>Liberar</Button>
+        <Button size="xs" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
+      </div>
+    </div>
+  )
 }
 
 /**
@@ -117,6 +165,14 @@ export function PresencasDoDia() {
                   <p className="w-full text-rotulo text-tinta-apoio">
                     Justificativa do check-in: “{p.checkin_justificativa}”
                   </p>
+                )}
+                {p.liberado_pos_ate && (
+                  <Badge variant="info" className="w-full justify-start">Liberado para continuar até {hhmm(p.liberado_pos_ate)}</Badge>
+                )}
+                {unidadeId && !p.liberado_pos_ate && (
+                  <div className="w-full">
+                    <LiberarPosPlantao unidadeId={unidadeId} perfilId={p.perfil_id} nome={p.nome} />
+                  </div>
                 )}
               </div>
             ))

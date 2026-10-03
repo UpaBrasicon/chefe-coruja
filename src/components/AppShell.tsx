@@ -213,7 +213,6 @@ function Casca() {
   const { status: plantaoStatus, checkin: situacaoCheckin, recarregar: recarregarPlantao } = usePlantao(entraPorEscala ? unidadeId : undefined)
   const [checkinAberto, setCheckinAberto] = React.useState(false)
   const fila = useFilaOffline()
-  const sessao = useSessaoPosPlantao(plantaoStatus, entraPorEscala)
 
   const { data: meuPlantao } = useQuery({
     queryKey: ['meu-plantao-agora', perfil?.id],
@@ -227,6 +226,8 @@ function Casca() {
     },
   })
   const fimTurno = meuPlantao ? new Date(meuPlantao.fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : undefined
+  // a tolerância de 20 min conta do fim do turno (decisão do RT 03/10/2026)
+  const sessao = useSessaoPosPlantao(plantaoStatus, entraPorEscala, meuPlantao?.fim ?? null)
 
   // Check-in pendente (antes da tolerância): o aviso mostra quanto falta, pelo
   // relógio do servidor. Passada a tolerância, o servidor fecha a porta e a
@@ -327,7 +328,7 @@ function Casca() {
         />
       )}
       {sessao.encerrada && (
-        <SessaoEncerrada texto="O plantão terminou e a plataforma ficou 5 minutos sem uso. Por segurança, a sessão foi encerrada." onReentrar={() => void sair()} />
+        <SessaoEncerrada texto="O plantão terminou e passaram os 20 minutos de tolerância. Por segurança, a sessão foi encerrada. Para continuar, peça ao gestor para liberar." onReentrar={() => void sair()} />
       )}
     </>
   )
