@@ -12,7 +12,7 @@ import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 
 import {
-  chamarIA, ChamadaBloqueada, DesidentificacaoIndisponivel, nomesNER, pedacosNER,
+  chamarIA, ChamadaBloqueada, DesidentificacaoIndisponivel, nomesNER, pedacosNER, temNomeAlemDoPseudonimo,
   type ConfigNER, type ContextoGateway, type DependenciasGateway,
 } from './gateway.js'
 import { criarCofre } from './desidentificacao.js'
@@ -210,4 +210,12 @@ test('nerIgnoraSistema: nome no prompt de sistema passa; o mesmo nome na mensage
   assert.equal(d.enviadosAoModelo.length, 1, 'nome só no sistema: vai ao modelo')
   await assert.rejects(chamarIA(chamada('Você é a Corujinha.', 'o Ricardo piorou'), c, deps), ChamadaBloqueada)
   await assert.rejects(chamarIA(chamada('You are talking to Ricardo.', 'oi'), ctx(), deps), ChamadaBloqueada, 'sem a opção, o sistema também passa pelo NER')
+})
+
+test('NER marcando o próprio pseudônimo não bloqueia; nome junto do pseudônimo bloqueia', () => {
+  assert.equal(temNomeAlemDoPseudonimo('[PESSOA_1]'), false)
+  assert.equal(temNomeAlemDoPseudonimo('PACIENTE_12'), false)
+  assert.equal(temNomeAlemDoPseudonimo('[PESSOA_1] e [DATA_2]'), false)
+  assert.equal(temNomeAlemDoPseudonimo('[PESSOA_1] Silva'), true)
+  assert.equal(temNomeAlemDoPseudonimo('Maria Lima'), true)
 })

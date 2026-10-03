@@ -121,6 +121,13 @@ export function pedacosNER(texto: string): string[] {
 
 // Nomes do próprio produto (agentes e sistema) que o NER pode marcar como
 // pessoa nos prompts de sistema. Só a correspondência exata sai da lista.
+/** Pseudônimo do próprio gateway ([PESSOA_1], PACIENTE_2…): o NER às vezes o marca como nome. */
+const RE_PSEUDONIMO = /\[?\b(?:PESSOA|PACIENTE|CPF|CNS|TELEFONE|EMAIL|CEP|DATA|PRONTUARIO)_\d+\b\]?/g
+/** Sobra letra depois de tirar os pseudônimos? Se não, não é nome de ninguém. */
+const CONECTIVOS = new Set(['e', 'de', 'da', 'do', 'das', 'dos'])
+export const temNomeAlemDoPseudonimo = (n: string) =>
+  n.replace(RE_PSEUDONIMO, ' ').split(/[^\p{L}]+/u).some((w) => w && !CONECTIVOS.has(w.toLowerCase()))
+
 const NOMES_DO_SISTEMA = new Set([
   'corujinha', 'chefe coruja', 'coruja', 'gaviao', 'hermes', 'cerbero', 'iris', 'argos',
   'aguia', 'garca', 'picapau', 'pica-pau', 'sentinela', 'falcao',
@@ -161,7 +168,7 @@ export async function nomesNER(texto: string, cfg: ConfigNER = configNER()): Pro
     }
     // Sem o modelo spaCy a biblioteca devolve found:[] — isso é "só regex", não NER.
     if (j.ner_ativo !== true) throw new DesidentificacaoIndisponivel('ner_inativo')
-    achados.push(...(j.found as string[]).filter((n) => !NOMES_DO_SISTEMA.has(normalizarNome(n))))
+    achados.push(...(j.found as string[]).filter((n) => temNomeAlemDoPseudonimo(n) && !NOMES_DO_SISTEMA.has(normalizarNome(n))))
   }
   return achados
 }
