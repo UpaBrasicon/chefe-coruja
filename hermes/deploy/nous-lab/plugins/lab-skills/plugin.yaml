@@ -1,0 +1,7 @@
+name: lab-skills
+version: 1.0.0
+description: "Organizador das skills da Coruja Lab (no papel da SkillRet): índice por categoria e busca das skills mais relevantes para o pedido."
+author: "Chefe Coruja"
+provides_tools:
+  - skill_buscar
+  - skill_categorias

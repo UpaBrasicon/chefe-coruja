@@ -221,3 +221,36 @@ test('NER na Corujinha: digitado sempre; ferramenta só no texto livre; fala da 
   // resultado que não é JSON: texto inteiro passa pelo NER
   assert.equal((await enviar(historico('Maria Lima'))).enviados.length, 0)
 })
+
+test('senha por agente: origem certa no registro; Lab com NER só no digitado; senha desconhecida 401', async () => {
+  const LAB = 'l'.repeat(40)
+  const registros: { origem: string }[] = []
+  const enviados: ChamadaLLM[] = []
+  const app = Fastify({ logger: false })
+  registrarProxyIA(app, {
+    token: TOKEN,
+    tokensPorAgente: { lab: LAB },
+    depsGateway: {
+      ner: async (t) => (t.includes('Usage') || t.includes('Maria') ? ['Usage'] : []),
+      completar: async (b): Promise<RespostaLLM> => { enviados.push(b); return { conteudo: 'ok', toolCalls: [], provedor: 'primario', modelo: 'm', latenciaMs: 1 } },
+      registrar: async (c) => { registros.push({ origem: c.origem }) },
+    },
+  })
+  const comTerminal = (ultima: string) => ({ model: 'x', messages: [
+    { role: 'system', content: 'Lab' },
+    { role: 'user', content: 'rode git status' },
+    { role: 'assistant', content: '', tool_calls: [{ id: 't1', type: 'function', function: { name: 'terminal', arguments: '{}' } }] },
+    { role: 'tool', tool_call_id: 't1', content: 'Usage: git status' },
+    { role: 'user', content: ultima },
+  ] })
+  await app.inject({ method: 'POST', url: '/v1/chat/completions', headers: { authorization: `Bearer ${LAB}` }, payload: comTerminal('ok') })
+  assert.equal(enviados.length, 1, 'Lab: saída do terminal não passa pelo NER')
+  assert.equal(registros.at(-1)!.origem, 'lab:telegram')
+  await app.inject({ method: 'POST', url: '/v1/chat/completions', headers: { authorization: `Bearer ${LAB}` }, payload: comTerminal('e a Maria?') })
+  assert.equal(enviados.length, 1, 'Lab: nome digitado continua bloqueado')
+  await app.inject({ method: 'POST', url: '/v1/chat/completions', headers: { authorization: `Bearer ${TOKEN}` }, payload: comTerminal('ok') })
+  assert.equal(enviados.length, 1, 'Corujinha: saída não-JSON de ferramenta passa pelo NER e bloqueia')
+  assert.equal(registros.at(-1)!.origem, 'corujinha:telegram')
+  const r = await app.inject({ method: 'POST', url: '/v1/chat/completions', headers: { authorization: `Bearer ${'z'.repeat(40)}` }, payload: comTerminal('ok') })
+  assert.equal(r.statusCode, 401)
+})

@@ -240,6 +240,16 @@ export function textosParaNER(m: MensagemLLM, todas: MensagemLLM[]): string[] {
   }
 }
 
+/**
+ * Coruja Lab (RT, 03/10/2026): agente isolado de ferramentas, sem dado do
+ * Chefe Coruja, com terminal. A saída do terminal é texto técnico em inglês
+ * que o NER marca como nome; ali o NER olha só o que a pessoa digita. Regex,
+ * resíduo e pseudônimo continuam em tudo.
+ */
+export function textosParaNERLab(m: MensagemLLM): string[] {
+  return m.role === 'user' ? [m.content ?? ''] : []
+}
+
 function tokenConfere(recebido: string | undefined, esperado: string | undefined): boolean {
   if (!recebido || !esperado) return false
   const a = Buffer.from(recebido)
@@ -286,6 +296,11 @@ function responder(reply: FastifyReply, stream: boolean, s: Saida) {
 export type OpcoesProxyIA = {
   /** Token que o Nous manda como chave do provedor. Sem ele a rota responde 503 (falha fechada). */
   token?: string
+  /**
+   * Uma senha por agente (gestora, clinica, suporte, lab). Quem chega com a
+   * senha principal é a Corujinha. A origem no ia_gateway_log diz o agente.
+   */
+  tokensPorAgente?: Record<string, string>
   /** Só para teste: troca modelo/NER/registro do gateway. */
   depsGateway?: Partial<DependenciasGateway>
 }
@@ -297,7 +312,9 @@ export function registrarProxyIA(app: FastifyInstance, opcoes: OpcoesProxyIA) {
     }
     const auth = req.headers.authorization
     const recebido = auth?.startsWith('Bearer ') ? auth.slice(7) : undefined
-    if (!tokenConfere(recebido, opcoes.token)) {
+    const agente = tokenConfere(recebido, opcoes.token) ? 'corujinha'
+      : Object.entries(opcoes.tokensPorAgente ?? {}).find(([, t]) => tokenConfere(recebido, t))?.[0]
+    if (!agente) {
       logger.warn({ ip: req.ip }, '[ia-proxy] token inválido → 401')
       return reply.code(401).send({ error: { message: 'unauthorized', type: 'invalid_request_error' } })
     }
@@ -328,13 +345,13 @@ export function registrarProxyIA(app: FastifyInstance, opcoes: OpcoesProxyIA) {
     const ctx: ContextoGateway = {
       cofre: criarCofre(),
       conhecidos: conhecidosDasFerramentas(chamada.mensagens),
-      origem: 'corujinha:telegram',
+      origem: `${agente}:telegram`,
       perfilId: null,
       // O sistema é o prompt fixo do Nous (instruções e ferramentas, em inglês,
       // que o NER em português marca como nome). Memória do Nous desligada no
       // config.yaml, para nada vindo de conversa entrar no sistema.
       nerIgnoraSistema: true,
-      nerTextos: textosParaNER,
+      nerTextos: agente === 'lab' ? textosParaNERLab : textosParaNER,
     }
 
     try {

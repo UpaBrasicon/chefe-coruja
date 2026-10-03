@@ -165,7 +165,13 @@ export async function buildApp(opts: { crons?: boolean } = {}) {
 
   // ── POST /v1/chat/completions — Corujinha (Nous) pelo gateway de IA ────────
   // Decisão 4a: o texto do Telegram só chega ao modelo desidentificado.
-  registrarProxyIA(app, { token: env.IA_GATEWAY_TOKEN })
+  // uma senha por agente do Nous: IA_GATEWAY_TOKEN_<AGENTE> no .env.prod (mín. 32 caracteres)
+  const tokensPorAgente: Record<string, string> = {}
+  for (const agente of ['gestora', 'clinica', 'suporte', 'lab']) {
+    const t = process.env[`IA_GATEWAY_TOKEN_${agente.toUpperCase()}`]?.trim()
+    if (t && t.length >= 32) tokensPorAgente[agente] = t
+  }
+  registrarProxyIA(app, { token: env.IA_GATEWAY_TOKEN, tokensPorAgente })
 
   // ── GET /webhook — handshake da Meta ───────────────────────────────────────
   app.get('/webhook', async (req, reply) => {

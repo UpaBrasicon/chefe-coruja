@@ -125,6 +125,8 @@ jobs:
           python-version: '3.13'
       - name: Plugin chefe-coruja
         run: python -m unittest discover -s hermes/deploy/nous-plugin/tests -v
+      - name: Coruja Lab (organizador de skills)
+        run: python -m unittest discover -s hermes/deploy/nous-lab/tests -v
       - name: Vigias
         run: |
           pip install tzdata
