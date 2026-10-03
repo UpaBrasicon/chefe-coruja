@@ -139,7 +139,10 @@ function caminhosCom(dados: unknown, alvo: string, prefixo = '', saida: string[]
  * ferramenta, em que chave do JSON caiu o "nome". Nunca registra o valor.
  */
 async function ondeNER(mensagens: MensagemLLM[], ctx: ContextoGateway) {
-  const onde: { papel: string; tamanho: number; forma: string; caminhos: string[] }[] = []
+  const onde: { papel: string; tamanho: number; forma: string; caminhos: string[]; trecho?: string }[] = []
+  // IA_DIAG_NER=1 (temporário, ligado pelo RT no VPS): registra o trecho marcado, para achar
+  // texto que o próprio Nous injeta. Desligar logo depois do diagnóstico.
+  const comTrecho = process.env.IA_DIAG_NER === '1'
   for (const m of mensagens) {
     if (m.role === 'system' || !m.content?.trim()) continue
     const limpo = desidentificar(m.content, criarCofre(), ctx.conhecidos).texto
@@ -150,7 +153,7 @@ async function ondeNER(mensagens: MensagemLLM[], ctx: ContextoGateway) {
       }
       // forma: letra vira A/a e dígito vira 9; pseudônimo fica como está (não é dado)
       const forma = nome.split(/(\[[A-Z]+_\d+\])/).map((p, i) => (i % 2 ? p : p.replace(/\p{Lu}/gu, 'A').replace(/\p{Ll}/gu, 'a').replace(/\d/g, '9'))).join('')
-      onde.push({ papel: m.role, tamanho: nome.length, forma, caminhos })
+      onde.push({ papel: m.role, tamanho: nome.length, forma, caminhos, ...(comTrecho ? { trecho: nome.slice(0, 60) } : {}) })
     }
   }
   return onde
