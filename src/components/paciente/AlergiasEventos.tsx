@@ -25,7 +25,7 @@ import { Spinner } from '@/components/ui/spinner'
 
 import {
   ALERGENOS, EVENTOS_COMUNS, GRAUS_EVENTO, GRAVIDADES, TIPOS_ALERGIA,
-  ativas, negaVigente, normalizar, rotuloGrau, rotuloGravidade, rotuloTipo, useAlergias, useRecarregarAlergias,
+  ativas, declaracaoVigente, negaVigente, normalizar, rotuloGrau, rotuloGravidade, rotuloTipo, useAlergias, useRecarregarAlergias,
   type EventoAdverso, type GravidadeAlergia, type PainelAlergias, type TipoAlergia,
 } from './useAlergias'
 
@@ -64,6 +64,11 @@ export function SeloAlergia({ pacienteId, onClick, className }: { pacienteId: st
     conteudo = <><ShieldCheck className="size-3.5 shrink-0" aria-hidden /> Nenhuma alergia conhecida</>
     estilo = 'text-tinta-sussurro'
     dica = `Nega alergias · ${quando(n?.registrado_em)}${n?.autor ? ` · ${n.autor}` : ''}`
+  } else if (q.data.estado === 'desconhece') {
+    const n = declaracaoVigente(q.data)
+    conteudo = <><ShieldQuestion className="size-3.5 shrink-0" aria-hidden /> Alergia não informada</>
+    estilo = 'font-medium text-atencao'
+    dica = `Perguntou e não soube informar · ${quando(n?.registrado_em)}${n?.autor ? ` · ${n.autor}` : ''}`
   } else {
     conteudo = <><ShieldQuestion className="size-3.5 shrink-0" aria-hidden /> Alergia não registrada</>
     estilo = 'font-medium text-atencao'
@@ -223,6 +228,8 @@ export function AlergiasEventos({ pacienteId }: { pacienteId: string }) {
   const p = q.data
   const listaAtivas = ativas(p)
   const nega = negaVigente(p)
+  const declaracao = declaracaoVigente(p)
+  const desconhece = declaracao?.tipo === 'desconhece' ? declaracao : null
   const regs = registrosDe(p)
   const categorias = [
     ['evento', 'Eventos adversos'] as const,
@@ -255,6 +262,11 @@ export function AlergiasEventos({ pacienteId }: { pacienteId: string }) {
             Nega alergias · {quando(nega.registrado_em)}{nega.autor ? ` · ${nega.autor}` : ''}
           </Pilula>
         )}
+        {desconhece && (
+          <Pilula className="bg-alerta-atencao text-atencao">
+            Não soube informar · {quando(desconhece.registrado_em)}{desconhece.autor ? ` · ${desconhece.autor}` : ''}
+          </Pilula>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-1.5">
@@ -265,6 +277,12 @@ export function AlergiasEventos({ pacienteId }: { pacienteId: string }) {
           onClick={() => void executar(() => supabase.rpc('registrar_nega_alergia', { p_paciente: pacienteId }),
             nega ? '"Nega alergias" reconfirmado agora.' : '"Nega alergias" registrado.')}>
           <ShieldCheck /> {nega ? 'Reconfirmar: nega alergias' : 'Nega alergias'}
+        </Button>
+        <Button size="sm" variant="outline" disabled={ocupado || listaAtivas.length > 0}
+          title={listaAtivas.length > 0 ? 'Há alergia ativa: não cabe "não soube informar".' : undefined}
+          onClick={() => void executar(() => supabase.rpc('registrar_desconhece_alergia', { p_paciente: pacienteId }),
+            desconhece ? '"Não soube informar" reconfirmado agora.' : '"Não soube informar" registrado.')}>
+          <ShieldQuestion /> {desconhece ? 'Reconfirmar: não soube' : 'Não soube informar'}
         </Button>
       </div>
       {listaAtivas.length > 0 && (
@@ -381,13 +399,13 @@ export function AlergiasEventos({ pacienteId }: { pacienteId: string }) {
       {p.negacoes.length > 0 && (
         <div className="flex flex-col gap-1">
           <button type="button" onClick={() => setHistNega(!histNega)} className="self-start text-rotulo text-acao hover:text-acao-pressionada">
-            <History className="mr-1 inline size-3" aria-hidden />{histNega ? 'Ocultar histórico de "nega alergias"' : `Histórico de "nega alergias" (${p.negacoes.length})`}
+            <History className="mr-1 inline size-3" aria-hidden />{histNega ? 'Ocultar histórico de declarações de alergia' : `Histórico de declarações de alergia (${p.negacoes.length})`}
           </button>
           {histNega && (
             <ul className="flex flex-col gap-0.5 text-rotulo text-tinta-apoio">
               {p.negacoes.map((n) => (
                 <li key={n.id}>
-                  Nega alergias · {quando(n.registrado_em)} · {n.autor ?? '—'}
+                  {n.tipo === 'desconhece' ? 'Não soube informar' : 'Nega alergias'} · {quando(n.registrado_em)} · {n.autor ?? '—'}
                   {n.encerrada_em ? ` — encerrado em ${quando(n.encerrada_em)} por ${n.encerrada_por ?? '—'} (${n.motivo_encerramento})` : ' — vigente'}
                 </li>
               ))}

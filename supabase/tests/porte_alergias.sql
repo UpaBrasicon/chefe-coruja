@@ -195,4 +195,21 @@ BEGIN
   END;
   RAISE NOTICE 'OK  histórico de grau é só de inserção';
 END $$;
+
+-- ── 4º estado: "desconhece" (decisão do RT 03/10/2026) ──────────────────────
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
+-- pac está em "nega" (nega3 vigente), sem alergia ativa
+INSERT INTO t SELECT 'desc1', public.registrar_desconhece_alergia(pg_temp.u('pac'));
+SELECT pg_temp.confere(public.estado_alergia(pg_temp.u('pac')) = 'desconhece', '"não soube informar": estado "desconhece"');
+SELECT pg_temp.confere((SELECT tipo = 'desconhece' FROM public.alergias_negacoes WHERE id = pg_temp.u('desc1')),
+  'a declaração "desconhece" guarda o tipo');
+SELECT pg_temp.confere((SELECT count(*) FROM public.alergias_negacoes WHERE paciente_id = pg_temp.u('pac') AND encerrada_em IS NULL) = 1,
+  'registrar "desconhece" encerra o "nega" vigente (uma declaração vigente só)');
+SELECT pg_temp.confere((SELECT (public.alergias_do_paciente(pg_temp.u('pac')) -> 'negacoes' -> 0 ->> 'tipo') = 'desconhece'),
+  'o painel traz o tipo da declaração vigente');
+SELECT public.registrar_nega_alergia(pg_temp.u('pac'));
+SELECT pg_temp.confere(public.estado_alergia(pg_temp.u('pac')) = 'nega', 'voltar para "nega" encerra o "desconhece"');
+RESET ROLE;
+
 ROLLBACK;

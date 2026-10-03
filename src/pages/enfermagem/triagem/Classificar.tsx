@@ -266,7 +266,7 @@ export function Classificar({ ep, onFim }: { ep: NaFila; onFim: (aviso: string |
               {pubIdade === null
                 ? 'Idade não registrada: escolha o grupo.'
                 : grupoTrocado
-                  ? `Grupo trocado à mão: o paciente tem ${anos} ano${anos === 1 ? '' : 's'}.`
+                  ? `Grupo trocado à mão: o paciente tem ${anos} ano${anos === 1 ? '' : 's'}. A troca passa a reger o atendimento (modo, protocolos, vitais).`
                   : pubIdade === 'pediatrico'
                     ? `Pediatria até 13 anos, 11 meses e 29 dias · ${rotuloIdade(nasc!, diaChegada)}.`
                     : ''}

@@ -11,7 +11,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
 
-export type EstadoAlergia = 'tem' | 'nega' | 'nao_registrada'
+// 4 estados (decisão do RT 03/10/2026): "tem" (alergia ativa), "nega" (registro
+// explícito de ausência), "desconhece" (perguntou e não soube informar) e
+// "não registrada" (ninguém perguntou). Lista vazia NÃO é "nega".
+export type EstadoAlergia = 'tem' | 'nega' | 'desconhece' | 'nao_registrada'
 export type TipoAlergia = 'medicamento' | 'alimento' | 'latex' | 'contraste' | 'outro'
 export type GravidadeAlergia = 'leve' | 'moderada' | 'grave' | 'desconhecida'
 
@@ -30,6 +33,8 @@ export type AlergiaRegistro = {
 }
 export type NegacaoRegistro = {
   id: string
+  /** nega = ausência declarada; desconhece = perguntou e não soube informar. */
+  tipo: 'nega' | 'desconhece'
   registrado_em: string
   autor: string | null
   encerrada_em: string | null
@@ -150,4 +155,10 @@ export function useRecarregarAlergias(pacienteId: string) {
 }
 
 export const ativas = (p?: PainelAlergias) => (p?.alergias ?? []).filter((a) => !a.inativada_em)
-export const negaVigente = (p?: PainelAlergias) => (p?.negacoes ?? []).find((n) => !n.encerrada_em) ?? null
+/** A declaração vigente (nega ou desconhece), se houver; no máximo uma. */
+export const declaracaoVigente = (p?: PainelAlergias) => (p?.negacoes ?? []).find((n) => !n.encerrada_em) ?? null
+/** Só a negação explícita vigente ("nega alergias"). */
+export const negaVigente = (p?: PainelAlergias) => {
+  const d = declaracaoVigente(p)
+  return d && d.tipo === 'nega' ? d : null
+}

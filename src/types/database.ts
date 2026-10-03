@@ -11800,6 +11800,7 @@ export type Database = {
         }
         Returns: Json
       }
+      registrar_desconhece_alergia: { Args: { p_paciente: string }; Returns: string }
       registrar_nega_alergia: { Args: { p_paciente: string }; Returns: string }
       registrar_notificacao: {
         Args: { p_agravo: string; p_ficha: Json; p_numero_sinan?: string }

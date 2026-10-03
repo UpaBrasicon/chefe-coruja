@@ -2,8 +2,9 @@
 // Alergia à vista nas telas da enfermagem (auditoria 03/10, R4).
 //
 // Na classificação de risco e na checagem de medicação a alergia precisa estar
-// na tela, sem clique. Usa o MESMO selo de três estados do cabeçalho do
-// paciente (tem / nega / não registrada; lista vazia não é "nega") e, abaixo,
+// na tela, sem clique. Usa o MESMO selo de quatro estados do cabeçalho do
+// paciente (tem / nega / não informada / não registrada; lista vazia não é
+// "nega") e, abaixo,
 // a gravidade e a reação de cada alergia ativa e os eventos adversos ativos.
 // Só leitura: registrar continua no painel "Alergias e eventos adversos".
 // ─────────────────────────────────────────────────────────────────────────────

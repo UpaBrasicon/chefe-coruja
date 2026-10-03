@@ -79,7 +79,8 @@ function Formulario({ ctx, pacienteId, internacaoId }: { ctx: ContextoEvolucao; 
   const painel = alergiasQ.data
   const alergias = painel?.estado === 'tem'
     ? 'Alergias: ' + ativas(painel).map((a) => a.substancia).join(', ')
-    : painel?.estado === 'nega' || negaVigente(painel) ? 'Nega alergias' : 'Alergias não registradas'
+    : painel?.estado === 'nega' || negaVigente(painel) ? 'Nega alergias'
+    : painel?.estado === 'desconhece' ? 'Alergia não informada (não soube)' : 'Alergias não registradas'
   const tomAlergia = painel?.estado === 'tem' ? 'critico' : painel?.estado === 'nega' ? 'conforme' : 'atencao'
 
   const avisos = avisosEvolucao(f)

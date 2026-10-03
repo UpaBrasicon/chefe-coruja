@@ -38,6 +38,8 @@ INSERT INTO ids SELECT 'epi_adulto', (public.registrar_ficha('22000000-0000-4000
   '{"nome":"Adulto Triagem Teste","data_nascimento":"1980-01-01"}') ->> 'episodio_id')::uuid;
 INSERT INTO ids SELECT 'epi_crianca', (public.registrar_ficha('22000000-0000-4000-8000-000000000003', 'Febre', NULL,
   '{"nome":"Criança Triagem Teste","data_nascimento":"2019-06-01"}') ->> 'episodio_id')::uuid;
+INSERT INTO ids SELECT 'epi_troca', (public.registrar_ficha('22000000-0000-4000-8000-000000000003', 'Febre', NULL,
+  '{"nome":"Adulto que vai para pediatria","data_nascimento":"1980-01-01"}') ->> 'episodio_id')::uuid;
 
 DO $$
 DECLARE
@@ -136,6 +138,33 @@ BEGIN
     IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
     RAISE NOTICE 'OK  histórico de classificação não se altera';
   END;
+END $$;
+
+
+-- troca de grupo à mão vale para o episódio (decisão do RT 03/10/2026)
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.como('10000000-0000-4000-8000-0000000000e1');
+DO $$
+DECLARE vitais_sem_pa jsonb := '{"frequencia-cardiaca":110,"frequencia-respiratoria":24,"temperatura":38.2,"saturacao-o2":96,"escala-dor":3}';
+BEGIN
+  PERFORM public.classificar_risco(pg_temp.id('epi_troca'), 'verde', vitais_sem_pa, pg_temp.id('flx_ped'),
+    (SELECT d ->> 0 FROM public.protocolo_fluxogramas f, jsonb_each(f.discriminadores) c, jsonb_array_elements(c.value) d
+      WHERE f.id = pg_temp.id('flx_ped') LIMIT 1),
+    '{}', 'pediatrico', NULL, NULL, NULL, true);
+END $$;
+RESET ROLE;
+DO $$
+DECLARE e public.episodios; c public.classificacoes_risco;
+BEGIN
+  SELECT * INTO e FROM public.episodios WHERE id = pg_temp.id('epi_troca');
+  SELECT * INTO c FROM public.classificacoes_risco WHERE episodio_id = e.id;
+  IF e.publico <> 'pediatrico' THEN
+    RAISE EXCEPTION 'FALHOU: adulto trocado à mão para pediatria não mudou o episódio (%)', e.publico;
+  END IF;
+  IF c.publico_pela_idade <> 'adulto' OR c.grupo_trocado IS NOT TRUE THEN
+    RAISE EXCEPTION 'FALHOU: a classificação não registrou a troca (idade %, trocado %)', c.publico_pela_idade, c.grupo_trocado;
+  END IF;
+  RAISE NOTICE 'OK  a troca de grupo à mão na triagem passa a reger o episódio (e fica registrada)';
 END $$;
 
 ROLLBACK;
