@@ -1,15 +1,15 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # HERMES — Caddyfile (proxy reverso + HTTPS automático Let's Encrypt)
-# MODO ATUAL: acesso por IP (HTTP) — para validar antes do domínio.
-# Quando o DNS apontar (hermes.chefecoruja.com.br → IP), troque para o bloco
-# com domínio (abaixo, comentado) que o Caddy emite HTTPS automático.
+# Domínio hermes.chefecoruja.com.br com HTTPS automático (Let's Encrypt).
 #
 # Só /webhook (Meta) e /health ficam públicos. A API das skills (/skill/*) é
 # usada pelo bot pela rede interna do Docker (hermes-app:3000) e NÃO passa por
 # aqui — antes ela respondia na internet, em HTTP (auditoria 27/09).
 # ─────────────────────────────────────────────────────────────────────────────
 
-:80 {
+# HTTPS ligado em 02/10/2026 (DNS hermes.chefecoruja.com.br → 179.199.128.141).
+# O acesso pelo IP em HTTP saiu: o Caddy redireciona o HTTP do domínio para HTTPS.
+hermes.chefecoruja.com.br {
 	@publico path /webhook /health
 	handle @publico {
 		# /webhook precisa do corpo BRUTO para validação HMAC — o Caddy repassa
@@ -19,18 +19,8 @@
 	handle {
 		respond 404
 	}
+	header -Server
 }
-
-# ── Produção final (após apontar o DNS) ───────────────────────────────────────
-# hermes.chefecoruja.com.br {
-# 	@publico path /webhook /health
-# 	handle @publico {
-# 		reverse_proxy app:3000
-# 	}
-# 	handle {
-# 		respond 404
-# 	}
-# }
 
 # Biblioteca clínica do Chefe Coruja (28/09/2026): API em outro compose
 # (/srv/biblioteca), container biblioteca-api na rede deploy_default.
