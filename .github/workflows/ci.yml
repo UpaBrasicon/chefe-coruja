@@ -114,3 +114,18 @@ jobs:
         run: |
           touch .env
           npm test
+
+  nous:
+    # Plugin e vigias do Nous (Python, só stdlib nos testes unitários).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Plugin chefe-coruja
+        run: python -m unittest discover -s hermes/deploy/nous-plugin/tests -v
+      - name: Vigias
+        run: |
+          pip install tzdata
+          python -m unittest discover -s hermes/deploy/nous-vigias/tests -v

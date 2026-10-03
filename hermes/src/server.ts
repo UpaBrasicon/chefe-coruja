@@ -17,6 +17,7 @@ import { logger } from './logger.js'
 import { bancoResponde } from './lib/supabase.js'
 import { criarConexaoRedis, criarConexaoRedisHealth, criarFila, criarWorker, type JobMensagemWhatsApp } from './queue/index.js'
 import { registrarCrons, executarJobCron, FILA_CRON } from './queue/agendador.js'
+import { cronsHabilitados } from './config/crons.js'
 import { registrarSkillApi } from './server/skill-api.js'
 import { registrarProxyIA } from './server/ia-proxy.js'
 import { Worker } from 'bullmq'
@@ -100,12 +101,14 @@ type WebhookPayload = {
 /**
  * Monta a aplicação Fastify (rotas, fila, worker) sem abrir porta.
  * Separado do listen para permitir testes com fastify.inject.
- * crons: habilita o agendador Sentinela/Cérbero (default true — desative nos
- * testes para não segurar o event loop com os workers de cron).
+ * crons: habilita o agendador Sentinela/Cérbero (default: ligado, a não ser
+ * com HERMES_CRONS=0 — os vigias valendo no cron do Nous, etapa 2 da migração;
+ * desative nos testes para não segurar o event loop com os workers de cron).
  */
 export async function buildApp(opts: { crons?: boolean } = {}) {
   const app = Fastify({ logger: false })
-  const { crons = true } = opts
+  const { crons = cronsHabilitados() } = opts
+  if (opts.crons === undefined && !crons) logger.warn('[cron] crons do Hermes DESLIGADOS (HERMES_CRONS=0): os vigias rodam no cron do Nous')
 
   registrarParserCorpoBruto(app)
 
