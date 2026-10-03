@@ -265,6 +265,10 @@ SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.falha(format('SELECT public.dar_alta(%L, %L, %L)', pg_temp.v('ia'), 'alta_melhorada', ''),
   'Informe o CID de alta', 'CID de alta obrigatório');
+SELECT pg_temp.falha(format('SELECT public.dar_alta(%L, %L, %L, NULL, NULL, %L)', pg_temp.v('ia'), 'alta_evasao', 'XYZ', 'paciente saiu sem avisar a equipe'),
+  'Informe o CID de alta', 'evasão com CID em formato errado é recusada');
+SELECT pg_temp.falha(format('SELECT public.dar_alta(%L, %L, %L, NULL, NULL, %L)', pg_temp.v('ia'), 'alta_evasao', '', 'paciente saiu sem avisar a equipe'),
+  'Existe(m) pendência(s) em aberto', 'evasão sem CID passa da regra do CID (para só nas pendências)');
 SELECT pg_temp.falha(format('SELECT public.dar_alta(%L, %L, %L)', pg_temp.v('ia'), 'alta_melhorada', 'R60'),
   'Existe(m) pendência(s) em aberto', 'parecer sem resposta e passagem aguardando impedem a alta');
 RESET ROLE;

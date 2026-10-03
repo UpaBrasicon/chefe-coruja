@@ -24,6 +24,8 @@ export type UnidadeRede = {
   rnds_pendentes: number
   rnds_erro: number
   rnds_mais_antigo: string | null
+  /** Limite de atenção da unidade (Unidade › Configurações; padrão 85). */
+  ocupacao_limite_pct: number
 }
 
 export type ChamadoTecnico = {

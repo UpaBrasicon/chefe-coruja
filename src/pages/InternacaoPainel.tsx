@@ -5,6 +5,7 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { useLimitesUnidade } from '@/pages/gestor/limites'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -40,6 +41,8 @@ export default function InternacaoPainel(props: { modo?: 'internacao' | 'observa
 function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observacao'; embutido?: boolean }) {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
+  // limite de atenção da unidade (Unidade › Configurações; padrão 85%)
+  const { limites } = useLimitesUnidade(unidadeId)
   const queryClient = useQueryClient()
 
   const [transferir, setTransferir] = React.useState<PacienteDaLista | null>(null)
@@ -190,7 +193,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
         <div className="flex flex-wrap gap-2">
           {(ocupacao ?? []).map((o) => {
             const lotado = o.limite > 0 && o.internados >= o.limite
-            const alerta = o.limite > 0 && o.internados >= Math.ceil(o.limite * 0.85)
+            const alerta = o.limite > 0 && o.internados >= Math.ceil(o.limite * (limites.ocupacao_pct / 100))
             return (
               <div
                 key={o.setor_id}

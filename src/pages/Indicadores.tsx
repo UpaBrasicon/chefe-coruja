@@ -243,7 +243,7 @@ export default function Indicadores() {
           ) : (
             (ocupacao ?? []).map((o) => {
               const lotado = o.limite > 0 && o.internados >= o.limite
-              const alerta = o.limite > 0 && o.internados >= Math.ceil(o.limite * 0.85)
+              const alerta = o.limite > 0 && o.internados >= Math.ceil(o.limite * lim)
               const p = o.limite > 0 ? Math.min(1, o.internados / o.limite) : 0
               return (
                 <div key={o.setor_id} className="flex items-center gap-3 py-1.5 text-apoio">

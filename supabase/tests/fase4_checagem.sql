@@ -70,7 +70,12 @@ SELECT pg_temp.falha(format('SELECT public.aprazar(%L, %L)', pg_temp.u('cef'), '
 SELECT public.aprazar(pg_temp.u('cef'), '{20:00,08:00}');
 SELECT pg_temp.falha(format('SELECT public.checar(%L, %L)', pg_temp.u('dip'), 'recusado'), 'Diga o motivo', 'recusado exige motivo');
 SELECT public.checar(pg_temp.u('dip'), 'recusado', NULL, 'paciente recusou por náusea');
+SELECT pg_temp.falha(format('SELECT public.checar(%L, %L)', pg_temp.u('cef'), 'feito'), 'Escolha o horário aprazado',
+  'item aprazado não se checa sem dizer o horário');
+SELECT pg_temp.falha(format('SELECT public.checar(%L, %L, %L)', pg_temp.u('cef'), 'feito', '12:00'), 'O horário 12:00 não está no aprazamento',
+  'horário fora do aprazamento é recusado');
 SELECT public.checar(pg_temp.u('cef'), 'feito', '08:00');
+INSERT INTO t SELECT 'por_horario', (SELECT por_horario::text FROM public.fila_checagem() WHERE item_id = pg_temp.u('cef'));
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.falha(format('SELECT public.registrar_desfecho(%L, %L)', pg_temp.u('ep'), 'alta_apos_medicacao'),
   'Alta após medicação: falta a enfermagem checar como administrado: Dipirona', 'recusado não conta como administrado: a alta após medicação espera');
@@ -80,6 +85,11 @@ DO $$ BEGIN
   RAISE NOTICE 'OK  vasoativo prescrito mas não administrado não conta no Phoenix';
   IF (SELECT horarios FROM public.prescricao_itens WHERE id = pg_temp.u('cef')) <> '{08:00,20:00}' THEN RAISE EXCEPTION 'FALHOU: aprazamento'; END IF;
   RAISE NOTICE 'OK  o aprazamento guarda os horários em ordem';
+  IF (SELECT valor::jsonb FROM t WHERE nome = 'por_horario') #>> '{08:00,situacao}' IS DISTINCT FROM 'feito'
+     OR (SELECT valor::jsonb FROM t WHERE nome = 'por_horario') ? '20:00' THEN
+    RAISE EXCEPTION 'FALHOU: situação por horário (%)', (SELECT valor FROM t WHERE nome = 'por_horario');
+  END IF;
+  RAISE NOTICE 'OK  a fila mostra a situação de cada horário (08:00 feito, 20:00 a checar)';
 END $$;
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');

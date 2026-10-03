@@ -103,7 +103,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
 
   function confirmar() {
     if (!desfecho) return setFalta('Escolha o desfecho.')
-    if (ehAlta && cid.trim().length < 3) return setFalta('Informe o CID de alta.')
+    if (ehAlta && desfecho !== 'evasao' && cid.trim().length < 3) return setFalta('Informe o CID de alta.')
     if (desfecho === 'transferencia' && destino.trim().length < 3) return setFalta('Informe o serviço de destino.')
     if (desfecho === 'obito' && !horaObito) return setFalta('Informe a hora do óbito.')
     if (desfecho === 'obito' && numeroDo.trim().length < 3) return setFalta('Informe o número da Declaração de Óbito.')
@@ -115,7 +115,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
     if (desfecho === 'obito') { detalhes.hora_obito = horaDoDia(horaObito, 'passado'); detalhes.numero_do = numeroDo.trim() }
     if (desfecho === 'internacao') { detalhes.setor_id = setor; if (leito) detalhes.leito_id = leito }
     void acao(() => rpc('finalizar_observacao', {
-      p_internacao: linha.internacao_id, p_desfecho: desfecho, p_cid: ehAlta ? cid.trim() : null,
+      p_internacao: linha.internacao_id, p_desfecho: desfecho, p_cid: ehAlta ? cid.trim() || null : null,
       p_relato: relato.trim() || null, p_detalhes: detalhes,
     })).then((ok) => ok && fechar())
   }
@@ -146,7 +146,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
       )}
       {ehAlta && (
         <div className="flex max-w-[170px] flex-col gap-1.5">
-          <Label htmlFor={`cid-${linha.internacao_id}`}>CID de alta</Label>
+          <Label htmlFor={`cid-${linha.internacao_id}`}>CID de alta{desfecho === 'evasao' ? ' · opcional' : ''}</Label>
           <Input id={`cid-${linha.internacao_id}`} value={cid} onChange={(e) => setCid(e.target.value.toUpperCase())} placeholder="Ex.: A90" />
         </div>
       )}

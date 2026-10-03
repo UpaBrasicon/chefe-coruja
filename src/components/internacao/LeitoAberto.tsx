@@ -22,7 +22,6 @@ import { abrirProntuario } from '@/lib/prontuario'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { ehPediatrico } from '@/domain/idade'
 import type { CorRisco } from '@/domain/risco'
 import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
 import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
@@ -322,17 +321,6 @@ function Caderno({ p, cabecalho, avisos, acoesTopo }: {
     pacienteId, unidadeId: unidadeAtiva?.unidade_id, perfilId: p.eu,
     leito: i.leito?.identificador ?? '', setorId: i.setor_atual_id, diagnostico: textoPrimario,
   })
-  const nascimento = useQuery({
-    queryKey: ['cabecalho-paciente', pacienteId],
-    staleTime: 5 * 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase.from('pacientes').select('nome, nome_social, data_nascimento, sexo').eq('id', pacienteId).maybeSingle()
-      if (error) throw error
-      return data
-    },
-  }).data?.data_nascimento
-  const hoje = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
-  const pediatrico = p.acuidade?.escala === 'PEWS' || (!!nascimento && ehPediatrico(nascimento, hoje) === true)
 
   const escreve = ativa && !ehGestor
   const disponiveis = ABAS.filter(([id]) => escreve || ABAS_LEITURA.includes(id))
@@ -410,7 +398,8 @@ function Caderno({ p, cabecalho, avisos, acoesTopo }: {
           <>
             <AbaParecer pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />
             <AbaTermoConsentimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />
-            {pediatrico && <AbaAvaliacaoCrescimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
+            {/* a própria aba escolhe as escalas pela idade (NIPS/FLACC ou Braden/Morse; sem nascimento, avisa) */}
+            <AbaAvaliacaoCrescimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />
           </>
         )}
         {atual === 'alta' && (

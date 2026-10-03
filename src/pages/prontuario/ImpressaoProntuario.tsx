@@ -85,7 +85,27 @@ function blocoTexto(d: DocumentoEpisodio): string {
 <div class="corpo">${linhasDoConteudo(d.conteudo).map((l) => `<p>${esc(l)}</p>`).join('')}</div></section>`
 }
 
-const ESTILO_COPIA = `@page{size:A4 portrait;margin:12mm}
+// O atestado e as outras folhas de duas vias ajustam a fonte para caber na
+// via (script `caber` de lib/folhas). Dentro da sombra o script da folha não
+// roda, então a cópia faz o mesmo ajuste daqui.
+function caberVias(raiz: ParentNode) {
+  for (const via of raiz.querySelectorAll<HTMLElement>('.via')) {
+    via.style.fontSize = ''
+    let fs = 11
+    const alto = () => {
+      const ultimo = via.lastElementChild
+      return ultimo ? ultimo.getBoundingClientRect().bottom - via.getBoundingClientRect().top : 0
+    }
+    while (alto() > via.clientHeight + 1 && fs > 7.5) {
+      fs -= 0.2
+      via.style.fontSize = `${fs}pt`
+    }
+  }
+}
+
+// a numeração "Página X de Y" das folhas não vale dentro da sombra: a cópia
+// numera as próprias páginas
+const ESTILO_COPIA = `@page{size:A4 portrait;margin:12mm;@bottom-right{content:"Página " counter(page) " de " counter(pages);font:8pt Arial,Helvetica,sans-serif;color:#555}}
 body{margin:0;font:12px/1.45 system-ui,sans-serif;color:#0f172a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .capa,.doc,.decl{page-break-after:always;break-after:page;padding:4mm 0}
 .folha{page-break-after:always;break-after:page}
@@ -299,16 +319,27 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
       // cada folha fica isolada numa sombra (o CSS de uma não vaza para outra);
       // rodapé fixo da folha vira rodapé do fim da folha
       const alvo = doc.getElementById('docs')!
+      const sombras: ShadowRoot[] = []
       for (const p of partes) {
         const host = doc.createElement('div')
         if (!p.folha) { host.innerHTML = p.html; alvo.appendChild(host); continue }
-        host.className = 'folha'
         const lido = new DOMParser().parseFromString(p.html, 'text/html')
+        // a marca RASCUNHO/CANCELADO da folha mora na classe do <body>: passa
+        // para o host e o seletor vira :host(...); a marca fica presa à folha
+        // (absolute), sem se repetir nas outras páginas da cópia
+        host.className = ['folha', ...lido.body.classList].join(' ')
         const estilos = [...lido.querySelectorAll('style')].map((s) => s.textContent ?? '').join('\n')
-        host.attachShadow({ mode: 'open' }).innerHTML =
-          `<style>${estilos}\n[style*="position:fixed"],[style*="position: fixed"]{position:static!important;margin-top:4mm}</style>${lido.body.innerHTML}`
+          .replace(/body\.(rascunho|cancelado)/g, ':host(.$1)')
+        const sombra = host.attachShadow({ mode: 'open' })
+        sombra.innerHTML =
+          `<style>${estilos}\n[style*="position:fixed"],[style*="position: fixed"]{position:static!important;margin-top:4mm}` +
+          `#folha{position:relative}#folha::after{position:absolute!important}</style>${lido.body.innerHTML}`
         alvo.appendChild(host)
+        sombras.push(sombra)
       }
+      const ajustar = () => sombras.forEach(caberVias)
+      ajustar()
+      janela.addEventListener('beforeprint', ajustar)
       setSel(new Set()); setSelA(new Set())
       janela.focus()
       setTimeout(() => janela.print(), 700)

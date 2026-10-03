@@ -101,7 +101,7 @@ function LinhaUnidade({ u, estado, motivos, agora }: { u: UnidadeRede; estado: 0
         <span className="text-apoio text-tinta-sussurro">{resumo}</span>
         {motivos.length > 0 && <span className={cn('text-apoio text-pretty', estado === 2 ? 'text-critico' : 'text-atencao')}>{motivos.join(' · ')}</span>}
       </div>
-      <Barra pct={pct} tom={pct !== null && pct >= 85 ? 'atencao' : 'conforme'} className="w-[110px] shrink-0" />
+      <Barra pct={pct} tom={pct !== null && pct >= u.ocupacao_limite_pct ? 'atencao' : 'conforme'} className="w-[110px] shrink-0" />
       <span className="w-11 shrink-0 text-right text-apoio font-semibold tabular-nums text-tinta">{pct === null ? '—' : `${Math.round(pct)}%`}</span>
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-apoio whitespace-nowrap text-tinta-sussurro" title="Pessoas com vínculo na unidade e sessão renovada nos últimos 30 minutos">

@@ -106,6 +106,10 @@ BEGIN
   END IF;
   IF u -> 0 ? 'paciente' OR u -> 0 ? 'nome_paciente' THEN RAISE EXCEPTION 'FALHOU: unidade com dado de paciente'; END IF;
   RAISE NOTICE 'OK  admin_unidades: só as unidades da organização, com os chamados de cada uma';
+  IF (u -> 0 ->> 'ocupacao_limite_pct')::int IS DISTINCT FROM (private.limites_unidade((u -> 0 ->> 'unidade_id')::uuid) ->> 'ocupacao_pct')::int THEN
+    RAISE EXCEPTION 'FALHOU: limite de ocupação da unidade (%)', u;
+  END IF;
+  RAISE NOTICE 'OK  admin_unidades traz o limite de ocupação configurado na unidade';
   IF NOT (s ? 'banco' AND s ? 'rnds' AND s ? 'armazenamento' AND s ? 'push' AND s ? 'auditoria' AND s ? 'sessoes')
      OR (s -> 'banco' ->> 'tamanho_bytes')::bigint <= 0 THEN
     RAISE EXCEPTION 'FALHOU: admin_servidores (%)', s;

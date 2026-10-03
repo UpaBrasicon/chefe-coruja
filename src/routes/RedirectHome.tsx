@@ -5,7 +5,7 @@ import { ROTA_INICIAL } from '@/lib/constants'
 import { Spinner } from '@/components/ui/spinner'
 
 export function RedirectHome() {
-  const { status, unidades, papeisDaUnidade } = useUnidade()
+  const { status, unidades, papelAtivo } = useUnidade()
 
   if (status === 'carregando') {
     return (
@@ -23,7 +23,8 @@ export function RedirectHome() {
     return <Navigate to="/seletor" replace />
   }
 
-  // papeisDaUnidade já vem ordenado por precedência (admin > gestor > plantonista).
-  const alvo = papeisDaUnidade.map((p) => ROTA_INICIAL[p])[0]
+  // papelAtivo é o último perfil escolhido em "Trocar perfil" (guardado por
+  // unidade); sem escolha, o contexto cai no primeiro por precedência.
+  const alvo = papelAtivo ? ROTA_INICIAL[papelAtivo] : undefined
   return <Navigate to={alvo ?? '/aguardando'} replace />
 }

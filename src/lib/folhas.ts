@@ -696,7 +696,10 @@ function termo(d: Json, ctx: ContextoFolha): string {
   const local = junta(', ', junta('/', u?.municipio, u?.uf), dataExtenso(dataRef(ctx, d)))
   const ass: Assinante[] = []
   if (t.assinante === 'responsavel' && resp) ass.push({ nome: resp.nome, linha: junta(' · ', resp.documento ? `Doc. ${resp.documento}` : '', resp.vinculo), papel: 'Responsável' })
-  else if (t.assinante === 'ninguem_presente') ass.push({ nome: nomePac, linha: 'Sem acompanhante presente', papel: 'Paciente' })
+  // ninguém presente: menor de 16 (representado) ou paciente sem condições de
+  // assinar, sem responsável. O paciente não assina; ficam o médico, a
+  // testemunha e o motivo da ausência (auditoria 03/10/2026, defeito 10).
+  else if (t.assinante === 'ninguem_presente') { /* sem linha do paciente */ }
   else if (resp) {
     // 16 e 17 anos: o paciente assina assistido pelo responsável (os dois assinam)
     ass.push({ nome: nomePac, papel: 'Paciente' })
@@ -708,7 +711,9 @@ function termo(d: Json, ctx: ContextoFolha): string {
     bloco('Procedimento', texto(t.procedimento)) +
     blocoSe('Informações sobre o procedimento', t.texto, true) +
     blocoSe('Informações específicas deste paciente', t.informacoes) +
-    bloco('Declaração', `<div class="txt">Eu, ${quem}, ${esc(pri(t.declaracao, 'declaro que recebi as informações acima, tive a oportunidade de fazer perguntas e autorizo a realização do procedimento descrito. Sei que posso retirar este consentimento antes do procedimento.'))}</div>`, true) +
+    (t.assinante === 'ninguem_presente'
+      ? bloco('Declaração', '<div class="txt">Não há paciente em condições de assinar nem responsável presente. O motivo está registrado abaixo; assinam o médico responsável e a testemunha.</div>', true)
+      : bloco('Declaração', `<div class="txt">Eu, ${quem}, ${esc(pri(t.declaracao, 'declaro que recebi as informações acima, tive a oportunidade de fazer perguntas e autorizo a realização do procedimento descrito. Sei que posso retirar este consentimento antes do procedimento.'))}</div>`, true)) +
     blocoSe('Paciente sem condições de assinar', t.sem_condicoes_motivo) +
     blocoSe('Ausência de responsável', t.ausencia_motivo) +
     `<p class="meta" style="text-align:center;margin-top:10px">${esc(local)}</p>` + assinaturas(ass)

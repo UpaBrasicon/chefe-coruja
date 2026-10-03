@@ -186,7 +186,8 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
       procedimento: c.procedimento,
       texto: c.texto,
       informacoes: c.informacoes ?? '',
-      semCondicoes: !c.paciente.menor_14 && c.assinante !== 'paciente',
+      // o servidor só guarda o motivo quando o paciente (16+) não tinha condições
+      semCondicoes: !!c.sem_condicoes_motivo,
       semCondicoesMotivo: c.sem_condicoes_motivo ?? '',
       presenca: c.assinante === 'ninguem_presente' || (c.assinante === 'paciente' && !!c.ausencia_motivo) ? 'ninguem' : 'responsavel',
       respNome: c.responsavel?.nome ?? '',

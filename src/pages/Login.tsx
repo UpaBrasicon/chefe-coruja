@@ -43,6 +43,17 @@ function Separador() {
   )
 }
 
+// O Supabase Auth responde em inglês; a tela fala português. O que não estiver
+// na lista vira uma frase genérica (nunca o texto cru do servidor).
+function mensagemDoLogin(msg: string): string {
+  if (/invalid login credentials/i.test(msg)) return 'E-mail ou senha não conferem.'
+  if (/email not confirmed/i.test(msg)) return 'Este e-mail ainda não foi confirmado. Abra o link que enviamos na hora do cadastro.'
+  if (/rate limit|too many|over_request/i.test(msg)) return 'Muitas tentativas em pouco tempo. Espere alguns minutos e tente de novo.'
+  if (/banned|disabled/i.test(msg)) return 'Esta conta está bloqueada. Fale com o gestor da sua unidade.'
+  if (/failed to fetch|network|fetch/i.test(msg)) return 'Sem conexão com o servidor. Confira a rede e tente de novo.'
+  return 'Não foi possível entrar agora. Tente de novo em instantes.'
+}
+
 export function Login() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
@@ -119,7 +130,7 @@ export function Login() {
     const r = await signIn(email.trim(), senha)
     if (r.error) {
       setCarregando(false)
-      setErro(r.error === 'Invalid login credentials' ? 'E-mail ou senha não conferem.' : r.error)
+      setErro(mensagemDoLogin(r.error))
       return
     }
     // O segundo fator é pedido no portão da casca, com o e-mail como primeira

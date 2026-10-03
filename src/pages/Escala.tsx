@@ -181,6 +181,7 @@ export default function Escala({
   const [meuPlantaoTroca, setMeuPlantaoTroca] = React.useState<string>('')
   const [outroPlantaoTroca, setOutroPlantaoTroca] = React.useState<string>('')
   const [fracionarPartes, setFracionarPartes] = React.useState('2')
+  const [turnoEscolhido, setTurnoEscolhido] = React.useState<{ dia: string; id: string } | null>(null)
 
   const ehGestor = papelAtivo === 'gestor'
   const ehAdmin = papelAtivo === 'admin'
@@ -584,6 +585,19 @@ export default function Escala({
   }, [meusPlantoes])
 
   const plantoesDoDia = (diaISO: string) => meusPlantoes.filter((p) => p.data === diaISO)
+  // Dia com mais de um turno: as ações (sair do fixo, passar, fracionar,
+  // justificar falta) valem para o turno escolhido nos chips, nunca para o
+  // primeiro da lista por acaso.
+  const plantaoDaAcao = (diaISO: string) => {
+    const doDia = plantoesDoDia(diaISO)
+    if (doDia.length === 1) return doDia[0]
+    return turnoEscolhido?.dia === diaISO ? doDia.find((p) => p.id === turnoEscolhido.id) : undefined
+  }
+  const escalaDaAcao = (diaISO: string) => {
+    const id = plantaoDaAcao(diaISO)?.id
+    if (!id) setErroAcao('Este dia tem mais de um turno: toque no turno antes de seguir.')
+    return id
+  }
 
   function abrirDia(diaISO: string) {
     const plantoes = plantoesDoDia(diaISO)
@@ -646,7 +660,7 @@ export default function Escala({
   async function enviarSairFixo() {
     if (!diaSelecionado || !unidadeId || !perfil) return
     setErroAcao(null)
-    const escalaId = plantoesDoDia(diaSelecionado)[0]?.id
+    const escalaId = escalaDaAcao(diaSelecionado)
     if (!escalaId) return
     const { error } = await supabase.from('solicitacoes_escala').insert({
       unidade_id: unidadeId,
@@ -668,7 +682,7 @@ export default function Escala({
   async function enviarJustificarFalta() {
     if (!diaSelecionado || !unidadeId || !perfil) return
     setErroAcao(null)
-    const escalaId = plantoesDoDia(diaSelecionado)[0]?.id
+    const escalaId = escalaDaAcao(diaSelecionado)
     if (!escalaId) return
 
     let anexoUrl: string | null = null
@@ -712,7 +726,7 @@ export default function Escala({
   async function enviarPassarPlantao() {
     if (!diaSelecionado || !destinoId || !perfil) return
     setErroAcao(null)
-    const escalaId = plantoesDoDia(diaSelecionado)[0]?.id
+    const escalaId = escalaDaAcao(diaSelecionado)
     if (!escalaId) return
     try {
       const { data, error } = await supabase.rpc('passar_plantao', {
@@ -756,7 +770,7 @@ export default function Escala({
     if (!diaSelecionado) return
     setErroAcao(null)
     setMensagem(null)
-    const escalaId = plantoesDoDia(diaSelecionado)[0]?.id
+    const escalaId = escalaDaAcao(diaSelecionado)
     if (!escalaId) return
     try {
       const { data, error } = await supabase.rpc('fracionar_plantao', {
@@ -894,19 +908,32 @@ export default function Escala({
                   }`}
                 >
                   <div className="flex flex-wrap gap-2">
-                    {plantoesDoDia(diaSelecionado).map((p) => (
-                      <span
+                    {plantoesDoDia(diaSelecionado).map((p, _i, doDia) => {
+                      const varios = doDia.length > 1
+                      const escolhido = varios && plantaoDaAcao(diaSelecionado)?.id === p.id
+                      return (
+                      <button
+                        type="button"
                         key={p.id}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-conforme/30 bg-leitos px-3 py-2 text-sm font-semibold text-white shadow-sm"
+                        disabled={!varios}
+                        aria-pressed={varios ? escolhido : undefined}
+                        onClick={() => { setTurnoEscolhido({ dia: diaSelecionado, id: p.id }); setErroAcao(null) }}
+                        className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold text-white shadow-sm disabled:cursor-default ${
+                          escolhido ? 'border-tinta bg-leitos ring-2 ring-tinta/40' : varios ? 'border-conforme/30 bg-leitos/60' : 'border-conforme/30 bg-leitos'
+                        }`}
                       >
                         {TURNO_LABEL[p.turno]}
                         <span className="font-normal text-white">
                           {TURNOS.find((t) => t.id === p.turno)?.horario}
                         </span>
                         {p.quinzenal && <span className="text-[10px] font-semibold text-white">15/15</span>}
-                      </span>
-                    ))}
+                      </button>
+                      )
+                    })}
                   </div>
+                  {plantoesDoDia(diaSelecionado).length > 1 && !plantaoDaAcao(diaSelecionado) && (
+                    <p className="mt-2 text-xs text-tinta-sussurro">Este dia tem mais de um turno. Toque no turno para escolher a qual a ação se aplica.</p>
+                  )}
 
                   {!acao ? (
                     <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">

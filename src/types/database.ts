@@ -9670,6 +9670,7 @@ export type Database = {
           nome: string
           rnds_erro: number
           rnds_mais_antigo: string
+          ocupacao_limite_pct: number
           rnds_pendentes: number
           sessoes_ativas: number
           taxa_ocupacao: number
@@ -10574,6 +10575,7 @@ export type Database = {
           tipo: string
           ultima_em: string
           ultima_horario: string
+          por_horario: Json
           ultima_por: string
           ultima_situacao: string
           vasoativo: boolean

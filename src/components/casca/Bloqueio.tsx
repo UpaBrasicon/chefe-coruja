@@ -51,7 +51,8 @@ export function TelaBloqueada({
     setConferindo(false)
     setSenha('')
     if (error) {
-      setErro('Senha não confere.')
+      setErro(/invalid login credentials/i.test(error.message) ? 'Senha não confere.' : /rate limit|too many/i.test(error.message)
+        ? 'Muitas tentativas em pouco tempo. Espere alguns minutos.' : 'Não foi possível conferir a senha agora. Confira a rede e tente de novo.')
       return
     }
     onDesbloquear()

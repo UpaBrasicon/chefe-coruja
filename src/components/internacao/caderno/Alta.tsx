@@ -80,7 +80,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
           </Select>
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor="alta-cid">CID de alta *</Label>
+          <Label htmlFor="alta-cid">CID de alta{tipo === 'alta_evasao' ? ' · opcional na evasão' : ' *'}</Label>
           <Input id="alta-cid" value={cid} onChange={(e) => setCid(e.target.value.toUpperCase())} placeholder="Ex.: J18.9" />
         </div>
         <div className="flex flex-col gap-1">
@@ -116,7 +116,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
           <div className="flex gap-2">
             <Button size="sm"
               onClick={() => acao(() => rpc('dar_alta', {
-                p_internacao: i.id, p_tipo: tipo, p_cid: cid,
+                p_internacao: i.id, p_tipo: tipo, p_cid: cid.trim() || null,
                 p_quando: quando ? new Date(quando).toISOString() : null,
                 p_justificativa: justificativa || null, p_observacoes: obs || null, p_detalhes: detalhes,
               }), 'Alta registrada.').then((r) => { if (r !== null) setAberto(false); setConfirmar(false) })}>
@@ -127,7 +127,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
         </div>
       ) : (
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => setConfirmar(true)} disabled={cid.trim().length < 3}>Confirmar</Button>
+          <Button size="sm" onClick={() => setConfirmar(true)} disabled={tipo !== 'alta_evasao' && cid.trim().length < 3}>Confirmar</Button>
           <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
         </div>
       )}
@@ -139,7 +139,7 @@ export function CancelarAlta({ i, acao }: { i: Internacao; acao: Acao }) {
   const [texto, setTexto] = React.useState('')
   return (
     <Secao titulo="Cancelar alta">
-      <p className="text-tinta-sussurro">Alta de {diaHora(i.data_alta)} · CID {i.cid_alta}. Cancelar devolve o paciente ao censo e revoga o link do pacote.</p>
+      <p className="text-tinta-sussurro">Alta de {diaHora(i.data_alta)} · {i.cid_alta ? `CID ${i.cid_alta}` : 'sem CID (evasão)'}. Cancelar devolve o paciente ao censo e revoga o link do pacote.</p>
       <Textarea placeholder="Justificativa (mínimo de 10 letras)" value={texto} onChange={(e) => setTexto(e.target.value)} />
       <Button size="sm" variant="outline" className="self-start" disabled={texto.trim().length < 10}
         onClick={() => acao(() => rpc('cancelar_alta', { p_internacao: i.id, p_justificativa: texto }), 'Alta cancelada: o paciente voltou ao censo.')}>
@@ -165,7 +165,7 @@ export function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, aca
   i: Internacao; pacienteId: string; pacienteNome: string; lista: Pacote[]; podeGerar: boolean; acao: Acao
 }) {
   const [aberto, setAberto] = React.useState(false)
-  const [marcadas, setMarcadas] = React.useState<number[]>([4])
+  const [marcadas, setMarcadas] = React.useState<number[]>([]) // nenhuma orientação vem marcada: quem escolhe é o médico
   const [extra, setExtra] = React.useState('')
   const [sinais, setSinais] = React.useState<number[]>([])
   const [sinaisExtra, setSinaisExtra] = React.useState('')

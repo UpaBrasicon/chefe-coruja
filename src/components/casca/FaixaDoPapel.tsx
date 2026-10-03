@@ -5,6 +5,7 @@ import { BedDouble, Building2, ClipboardList, Clock, DoorOpen, FlaskConical, Hou
 import { supabase } from '@/lib/supabase'
 import { formatarDuracao, nivelDoTurno } from '@/domain/plantao'
 import { FaixaParametros, Parametro, type Nivel } from '@/components/monitor/Parametros'
+import { LIMITES_PADRAO } from '@/pages/gestor/limites'
 import type { Papel } from '@/types/database'
 
 // Faixa de parâmetros dos papéis que a mantêm (P/index.html 32208–32218 e
@@ -15,7 +16,10 @@ import type { Papel } from '@/types/database'
 // app ainda não mede não vira número (a tendência do protótipo, por exemplo,
 // não entra: não há série guardada para calculá-la).
 
-const LIMITE_OCUPACAO = 0.85 // o mesmo limite de 85% da faixa do plantonista
+// A rede soma unidades com limites próprios (Unidade › Configurações); na
+// soma vale o padrão do produto. Cada unidade, na lista do administrador,
+// usa o seu.
+const LIMITE_OCUPACAO = LIMITES_PADRAO.ocupacao_pct / 100
 
 const minutosDesde = (iso: string, agora: Date) => Math.max(0, Math.floor((agora.getTime() - Date.parse(iso)) / 60_000))
 
@@ -120,7 +124,7 @@ function FaixaAdmin() {
         grandeza="leitos" icone={BedDouble} rotulo="Ocupação da rede"
         valor={ocup === undefined ? '—' : Math.round(ocup * 100)} unidade={ocup === undefined ? undefined : '%'}
         estado={!d ? 'Carregando' : ocup === undefined ? (suprimidas('leitos_ocupados') ? 'Contagens abaixo de 5 omitidas (LGPD)' : 'Sem leitos cadastrados') : `${ocupados} de ${leitos} leitos${suprimidas('leitos_ocupados') ? ' · unidades pequenas fora da soma' : ''}`}
-        nivel={nivelOcup} pct={ocup} limite={ocup === undefined ? undefined : LIMITE_OCUPACAO} limiteTexto={ocup === undefined ? undefined : 'limite 85%'}
+        nivel={nivelOcup} pct={ocup} limite={ocup === undefined ? undefined : LIMITE_OCUPACAO} limiteTexto={ocup === undefined ? undefined : `limite padrão ${LIMITES_PADRAO.ocupacao_pct}%`}
       />
       <Parametro
         grandeza="observacao" icone={DoorOpen} rotulo="Na porta agora"

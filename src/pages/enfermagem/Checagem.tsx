@@ -25,6 +25,8 @@ type Linha = {
   dose: string | null; via: string | null; posologia: string | null; se_necessario: boolean; horarios: string[] | null
   diluicao_texto: string | null; vasoativo: boolean; ultima_situacao: string | null; ultima_em: string | null
   ultima_por: string | null; ultima_horario: string | null
+  /** Última checagem de cada horário aprazado nas últimas 24 h (fila_checagem). */
+  por_horario: Record<string, { situacao: string; em: string }> | null
 }
 const SITUACAO: Record<string, { rotulo: string; variante: 'success' | 'warning' | 'destructive' }> = {
   feito: { rotulo: 'feito', variante: 'success' },
@@ -83,7 +85,12 @@ function ItemChecagem({ l, podeAprazar, aoMudar, aoErro }: { l: Linha; podeApraz
   const [motivo, setMotivo] = React.useState('')
   const st = l.ultima_situacao ? SITUACAO[l.ultima_situacao] : null
 
+  // item aprazado: a checagem é de um horário (o servidor também exige)
+  const aprazado = !l.se_necessario && (l.horarios?.length ?? 0) > 0
+  const faltaHorario = aprazado && !horario
+
   async function checar(situacao: 'feito' | 'nao_feito' | 'recusado', m?: string) {
+    if (faltaHorario) return aoErro(`${l.descricao}: escolha o horário aprazado que está sendo checado.`)
     const { error } = await supabase.rpc('checar', { p_item: l.item_id, p_situacao: situacao, p_horario: horario || undefined, p_motivo: m || undefined })
     if (error) return aoErro(error.message)
     aoErro(null); setPedindo(null); setMotivo(''); aoMudar()
@@ -98,6 +105,19 @@ function ItemChecagem({ l, podeAprazar, aoMudar, aoErro }: { l: Linha; podeApraz
         {st && <Badge variant={st.variante} className="ml-auto">{st.rotulo}{l.ultima_horario ? ` ${l.ultima_horario}` : ''}</Badge>}
       </div>
       {l.diluicao_texto && <p className="text-xs text-tinta-apoio">Diluição: {l.diluicao_texto}</p>}
+      {aprazado && (
+        <div className="flex flex-wrap gap-1.5" aria-label="Situação por horário (últimas 24 horas)">
+          {l.horarios!.map((h) => {
+            const s = l.por_horario?.[h]
+            const sit = s ? SITUACAO[s.situacao] : null
+            return (
+              <Badge key={h} variant={sit?.variante ?? 'outline'} title={s ? `Checado ${hora(s.em)}` : 'Sem checagem nas últimas 24 horas'}>
+                {h} · {sit?.rotulo ?? 'a checar'}
+              </Badge>
+            )
+          })}
+        </div>
+      )}
       {l.ultima_em && <p className="text-xs text-tinta-sussurro">Última checagem: {hora(l.ultima_em)} · {l.ultima_por}</p>}
       <div className="flex flex-wrap items-center gap-2">
         {podeAprazar ? (
@@ -112,9 +132,9 @@ function ItemChecagem({ l, podeAprazar, aoMudar, aoErro }: { l: Linha; podeApraz
           </>
         ) : l.horarios?.length ? <span className="text-xs text-tinta-apoio">Aprazado: {l.horarios.join(', ')}</span> : null}
         {l.horarios?.length ? (
-          <select className="h-8 rounded-controle border border-fio bg-campo px-2 text-xs" value={horario} onChange={(e) => setHorario(e.target.value)}
+          <select className={`h-8 rounded-controle border bg-campo px-2 text-xs ${faltaHorario ? 'border-atencao' : 'border-fio'}`} value={horario} onChange={(e) => setHorario(e.target.value)}
             aria-label="Horário da checagem">
-            <option value="">horário…</option>
+            <option value="">{aprazado ? 'qual horário? *' : 'horário…'}</option>
             {l.horarios.map((h) => <option key={h}>{h}</option>)}
           </select>
         ) : null}
