@@ -5325,6 +5325,7 @@ export type Database = {
           provedor: string | null
           residuos: number
           substituicoes: Json
+          tipos_bloqueio: Json | null
         }
         Insert: {
           bloqueado: boolean
@@ -5339,6 +5340,7 @@ export type Database = {
           provedor?: string | null
           residuos?: number
           substituicoes?: Json
+          tipos_bloqueio?: Json | null
         }
         Update: {
           bloqueado?: boolean
@@ -5353,6 +5355,7 @@ export type Database = {
           provedor?: string | null
           residuos?: number
           substituicoes?: Json
+          tipos_bloqueio?: Json | null
         }
         Relationships: [
           {

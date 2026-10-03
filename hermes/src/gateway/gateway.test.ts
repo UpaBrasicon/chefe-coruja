@@ -155,6 +155,38 @@ test('NER acha nome de pessoa → bloqueia (ChamadaBloqueada), modelo não é ch
   const d = dublês(cfgOk())
   await assert.rejects(chamarIA(corpo('a maria lima do leito 3 piorou'), ctx(), d.deps), ChamadaBloqueada)
   assert.equal(d.enviadosAoModelo.length, 0)
+  assert.equal(d.registros.length, 1)
+  const reg = d.registros[0] as { bloqueado: boolean; tiposBloqueio?: Record<string, number> }
+  assert.equal(reg.bloqueado, true)
+  // o dublê do NER acha nome nos dois textos (sistema e usuário): um achado por texto
+  assert.deepEqual(reg.tiposBloqueio, { 'nome próprio (NER)': 2 }, 'registro diz o tipo do bloqueio')
+  assert.doesNotMatch(JSON.stringify(reg), /maria|lima|trecho|\[nome\]/i, 'registro nunca leva o trecho')
+})
+
+test('resíduo de regex bloqueia: registro leva a contagem por tipo, nunca o trecho', async () => {
+  modo = 'ok'
+  const d = dublês(cfgOk())
+  // CPF inválido (não pseudonimizado) + data completa + e-mail sobram como resíduo
+  const texto = 'doc 12345678900, 11122233344, nasceu 12/03/1980, mail fulano.x@exemplo.com'
+  await assert.rejects(chamarIA(corpo(texto), ctx(), d.deps), ChamadaBloqueada)
+  assert.equal(d.enviadosAoModelo.length, 0)
+  assert.equal(d.registros.length, 1)
+  const reg = d.registros[0] as { bloqueado: boolean; residuos: number; tiposBloqueio?: Record<string, number> }
+  assert.equal(reg.bloqueado, true)
+  assert.ok(reg.tiposBloqueio, 'registro traz tiposBloqueio')
+  const soma = Object.values(reg.tiposBloqueio).reduce((a, b) => a + b, 0)
+  assert.equal(soma, reg.residuos, 'a soma por tipo bate com residuos')
+  for (const k of Object.keys(reg.tiposBloqueio)) {
+    assert.ok(['sequência de 11 dígitos', 'sequência de 15 dígitos', 'data completa', 'e-mail', 'nome próprio (NER)'].includes(k), `tipo inesperado: ${k}`)
+  }
+  assert.doesNotMatch(JSON.stringify(reg), /12345678900|11122233344|1980|fulano|exemplo|trecho/i, 'registro nunca leva o trecho')
+})
+
+test('caminho normal não grava tiposBloqueio', async () => {
+  modo = 'ok'
+  const d = dublês(cfgOk())
+  await chamarIA(corpo('quais meus plantões?'), ctx(), d.deps)
+  assert.equal((d.registros[0] as { tiposBloqueio?: unknown }).tiposBloqueio, undefined)
 })
 
 test('nomesNER filtra nomes do sistema devolvidos pelo serviço', async () => {
@@ -227,4 +259,6 @@ test('NER marcando o próprio pseudônimo não bloqueia; nome junto do pseudôni
   assert.equal(temNomeAlemDoPseudonimo('\\"escopo\\"}'), false, 'pedaço de JSON minúsculo não é nome')
   assert.equal(temNomeAlemDoPseudonimo('Maria Lima"'), true, 'nome colado em aspas continua nome')
   assert.equal(temNomeAlemDoPseudonimo('maria lima'), true, 'sem pontuação de JSON, minúscula continua contando')
+  assert.equal(temNomeAlemDoPseudonimo('Ligar o Telegram'), false, 'pedido de vínculo não é nome (produção 03/10)')
+  assert.equal(temNomeAlemDoPseudonimo('Ligar o Telegram da Maria'), true, 'com nome junto continua contando')
 })

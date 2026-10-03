@@ -161,6 +161,51 @@ class TestNumeros(Base):
         self.assertEqual(r["resumo"]["vigias_com_falha"], ["v2"])
         self.assertTrue(any("velhos" in a for a in r["avisos"]), "4,5 h > 3 h")
 
+    def test_tipos_bloqueio_por_agente(self):
+        hoje = AGORA.date().isoformat()
+        ontem = (AGORA.date() - timedelta(days=1)).isoformat()
+        velho = (AGORA.date() - timedelta(days=10)).isoformat()
+        self.gravar({
+            "gerado_em": (AGORA - timedelta(minutes=10)).isoformat(),
+            "gateway": [
+                {"origem": "corujinha:telegram", "dia": hoje, "total": 50, "bloqueados": 5,
+                 "tipos_bloqueio": {"nome_ner": 3, "digitos_11": 1, "email": 1}},
+                {"origem": "corujinha:whatsapp", "dia": hoje, "total": 10, "bloqueados": 1,
+                 "tipos_bloqueio": {"data_completa": 1}},
+                {"origem": "corujinha:telegram", "dia": ontem, "total": 50, "bloqueados": 6,
+                 "tipos_bloqueio": {"data_completa": 4, "digitos_15": 2, "Fulano de Tal": 9}},
+                {"origem": "corujinha:telegram", "dia": velho, "total": 50, "bloqueados": 50,
+                 "tipos_bloqueio": {"email": 50}},  # fora dos 7 dias
+                {"origem": "gestora:telegram", "dia": hoje, "total": 20, "bloqueados": 0, "tipos_bloqueio": {}},
+            ],
+        })
+        r = json.loads(maestro._numeros({}))
+        c = r["resumo"]["por_agente"]["corujinha"]
+        self.assertEqual(c["tipos_bloqueio_1d"], [{"tipo": "nome_ner", "total": 3}, {"tipo": "data_completa", "total": 1},
+                                                  {"tipo": "digitos_11", "total": 1}])
+        # 7d: chave inesperada vira "outro" (o texto cru nunca aparece no resumo)
+        self.assertEqual(c["tipos_bloqueio_7d"], [{"tipo": "outro", "total": 9}, {"tipo": "data_completa", "total": 5},
+                                                  {"tipo": "nome_ner", "total": 3}])
+        self.assertNotIn("Fulano", json.dumps(r["resumo"], ensure_ascii=False))
+        g = r["resumo"]["por_agente"]["gestora"]
+        self.assertNotIn("tipos_bloqueio_1d", g, "sem bloqueio no período: sem a chave")
+
+    def test_sem_tipos_bloqueio_continua_igual(self):
+        hoje = AGORA.date().isoformat()
+        self.gravar({"gerado_em": AGORA.isoformat(),
+                     "gateway": [{"origem": "suporte:telegram", "dia": hoje, "total": 40, "bloqueados": 4}]})
+        s = json.loads(maestro._numeros({}))["resumo"]["por_agente"]["suporte"]
+        self.assertEqual(set(s), {"total_1d", "bloqueados_1d", "total_7d", "bloqueados_7d",
+                                  "taxa_bloqueio_1d_pct", "taxa_bloqueio_7d_pct"})
+
+    def test_tipos_bloqueio_formato_dicionario(self):
+        hoje = AGORA.date().isoformat()
+        self.gravar({"gerado_em": AGORA.isoformat(),
+                     "gateway": {"clinica:telegram": {hoje: {"total": 10, "bloqueados": 2,
+                                                             "tipos_bloqueio": {"email": 2}}}}})
+        c = json.loads(maestro._numeros({}))["resumo"]["por_agente"]["clinica"]
+        self.assertEqual(c["tipos_bloqueio_7d"], [{"tipo": "email", "total": 2}])
+
     def test_sem_gerado_em(self):
         self.gravar({"gateway": {}})
         r = json.loads(maestro._numeros({}))

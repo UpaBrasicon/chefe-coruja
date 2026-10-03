@@ -128,6 +128,18 @@ class TestMontarEGravar(unittest.TestCase):
         with self.assertRaises(ValueError):
             maestro.montar(BancoFalso(rpcs={"hermes_maestro_totais": {"gateway": None}}), AGORA, self.logs)
 
+    def test_tipos_bloqueio_lista_fixa(self):
+        # chaves fixas (nome_ner/email casariam a regex de chave proibida) passam
+        bom = {**TOTAIS, "gateway": [{**TOTAIS["gateway"][0],
+                                      "tipos_bloqueio": {"nome_ner": 2, "email": 1, "digitos_11": 1, "outro": 1}}]}
+        dados = maestro.montar(BancoFalso(rpcs={"hermes_maestro_totais": bom}), AGORA, self.logs)
+        self.assertEqual(dados["gateway"][0]["tipos_bloqueio"]["nome_ner"], 2)
+        # chave fora da lista (texto cru) ou valor que não é contagem: falha fechado
+        for tipos in ({"Fulano de Tal": 1}, {"nome_ner": "Maria"}, {"email": True}):
+            ruim = {**TOTAIS, "gateway": [{**TOTAIS["gateway"][0], "tipos_bloqueio": tipos}]}
+            with self.assertRaises(ValueError):
+                maestro.montar(BancoFalso(rpcs={"hermes_maestro_totais": ruim}), AGORA, self.logs)
+
     def test_executar_grava_atomico_stdout_vazio_e_ignora_modo(self):
         banco = BancoFalso(rpcs={"hermes_maestro_totais": TOTAIS})
         out, err = io.StringIO(), io.StringIO()

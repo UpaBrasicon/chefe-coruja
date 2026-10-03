@@ -248,6 +248,44 @@ def _linhas(obj, campo: str, numero_e_o_campo: bool = False) -> list[tuple[str, 
     return saida
 
 
+# Tipos de bloqueio (decisão do RT 03/10/2026): a função do banco já devolve
+# só estas chaves fixas; o que vier fora delas conta como "outro" aqui também.
+TIPOS_BLOQUEIO = ("nome_ner", "data_completa", "digitos_11", "digitos_15", "email", "outro")
+TOP_TIPOS = 3
+
+
+def _linhas_tipos(obj) -> list[tuple[str, date, dict]]:
+    """(origem, dia, {tipo: n}) das linhas do gateway que têm ``tipos_bloqueio``.
+
+    Mesmos dois formatos de ``_linhas``. Linha sem o campo (numeros.json antigo)
+    simplesmente não entra.
+    """
+    saida = []
+    linhas = []
+    if isinstance(obj, dict):
+        for origem, por_dia in obj.items():
+            if isinstance(por_dia, dict):
+                linhas += [(origem, d, v) for d, v in por_dia.items()]
+    elif isinstance(obj, list):
+        linhas = [(r.get("origem", "?"), r.get("dia") or r.get("data"), r) for r in obj if isinstance(r, dict)]
+    for origem, d, v in linhas:
+        dia = _dia(d)
+        tipos = v.get("tipos_bloqueio") if isinstance(v, dict) else None
+        if dia is None or not isinstance(tipos, dict):
+            continue
+        norm: dict[str, int] = {}
+        for t, n in tipos.items():
+            chave = t if t in TIPOS_BLOQUEIO else "outro"
+            norm[chave] = norm.get(chave, 0) + max(_num(n), 0)
+        saida.append((str(origem), dia, norm))
+    return saida
+
+
+def _top_tipos(contagem: dict[str, int]) -> list[dict]:
+    itens = sorted(((t, n) for t, n in contagem.items() if n > 0), key=lambda x: (-x[1], x[0]))
+    return [{"tipo": t, "total": n} for t, n in itens[:TOP_TIPOS]]
+
+
 def _agente_da_origem(origem: str) -> str:
     return origem.split(":", 1)[0].strip().lower() or "?"
 
@@ -311,6 +349,23 @@ def resumir(dados: dict, agora: datetime | None = None) -> tuple[dict, list[str]
                 a[f"{chave}_7d"] += v
                 if dia == ref:
                     a[f"{chave}_1d"] += v
+        # Por que bloqueou (só o tipo): só aparece se o numeros.json trouxer
+        # tipos_bloqueio — arquivo antigo continua com o resumo de antes.
+        tipos_por_agente: dict[str, tuple[dict, dict]] = {}
+        for origem, dia, tipos in _linhas_tipos(gw):
+            if not inicio7 <= dia <= ref:
+                continue
+            t1, t7 = tipos_por_agente.setdefault(_agente_da_origem(origem), ({}, {}))
+            for t, n in tipos.items():
+                t7[t] = t7.get(t, 0) + n
+                if dia == ref:
+                    t1[t] = t1.get(t, 0) + n
+        for agente, (t1, t7) in tipos_por_agente.items():
+            if not any(t7.values()):
+                continue
+            a = por_agente.setdefault(agente, {"total_1d": 0, "bloqueados_1d": 0, "total_7d": 0, "bloqueados_7d": 0})
+            a["tipos_bloqueio_1d"] = _top_tipos(t1)
+            a["tipos_bloqueio_7d"] = _top_tipos(t7)
         for a in por_agente.values():
             a["taxa_bloqueio_1d_pct"] = round(100 * a["bloqueados_1d"] / a["total_1d"], 1) if a["total_1d"] else None
             a["taxa_bloqueio_7d_pct"] = round(100 * a["bloqueados_7d"] / a["total_7d"], 1) if a["total_7d"] else None
@@ -326,7 +381,11 @@ def resumir(dados: dict, agora: datetime | None = None) -> tuple[dict, list[str]
         "idade_horas": idade_h,
         "janela_dias": dados.get("janela_dias"),
         "dia_referencia": ref.isoformat() if ref else None,
-        "nota": "1d = dia de referência (data de gerado_em, em parte do dia); 7d = os 7 dias até ele",
+        "nota": (
+            "1d = dia de referência (data de gerado_em, em parte do dia); 7d = os 7 dias até ele; "
+            "tipos_bloqueio_* = até 3 motivos de bloqueio mais frequentes, só o tipo (nome_ner, data_completa, "
+            "digitos_11, digitos_15, email, outro), nunca o texto"
+        ),
         "por_agente": dict(sorted(por_agente.items())),
         "vigias_com_falha": falhas,
     }
@@ -338,7 +397,8 @@ NUMEROS_SCHEMA = {
     "description": (
         "Números AGREGADOS das quatro Corujas de saúde (gateway por origem e dia, bloqueados, resíduos, "
         "incidentes, alertas, notificações, vigias). Devolve os dados e um resumo: taxa de bloqueio por "
-        "agente no último dia x 7 dias, vigias com falha e idade dos dados. Sem dado pessoal."
+        "agente no último dia x 7 dias, principais TIPOS de bloqueio por agente (nome, data, dígitos, e-mail; "
+        "nunca o texto), vigias com falha e idade dos dados. Sem dado pessoal."
     ),
     "parameters": {"type": "object", "properties": {}},
 }

@@ -117,6 +117,8 @@ export type LinhaGatewayLog = {
   modelo: string | null
   latencia_ms: number | null
   erro: string | null
+  /** Tipo de bloqueio → quantidade (só tipo, nunca trecho). Opcional: null fora de bloqueio. */
+  tipos_bloqueio?: Record<string, number> | null
 }
 
 export async function inserirGatewayLog(l: LinhaGatewayLog): Promise<Resultado<null>> {
@@ -124,9 +126,10 @@ export async function inserirGatewayLog(l: LinhaGatewayLog): Promise<Resultado<n
   return pg(async (sql) => {
     await sql`
       insert into public.ia_gateway_log
-        (origem, perfil_id, bloqueado, substituicoes, residuos, hash_entrada, provedor, modelo, latencia_ms, erro)
+        (origem, perfil_id, bloqueado, substituicoes, residuos, hash_entrada, provedor, modelo, latencia_ms, erro, tipos_bloqueio)
       values (${l.origem}, ${l.perfil_id}, ${l.bloqueado}, ${json(sql, l.substituicoes)}, ${l.residuos},
-              ${l.hash_entrada}, ${l.provedor}, ${l.modelo}, ${l.latencia_ms}, ${l.erro})`
+              ${l.hash_entrada}, ${l.provedor}, ${l.modelo}, ${l.latencia_ms}, ${l.erro},
+              ${l.tipos_bloqueio ? json(sql, l.tipos_bloqueio) : null})`
     return null
   })
 }

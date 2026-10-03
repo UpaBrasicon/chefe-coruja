@@ -143,6 +143,11 @@ const CONECTIVOS = new Set([
   'preciso', 'quero', 'gostaria', 'mostre', 'mostra', 'liste', 'lista', 'faça', 'faz', 'diga', 'explique', 'busque', 'procure', 'rode', 'veja',
   'hoje', 'ontem', 'amanha', 'amanhã', 'agora', 'ainda', 'tambem', 'também', 'mais', 'menos', 'muito', 'pouco', 'todos', 'todas', 'algum', 'alguma',
   'resumo', 'unidade', 'setores', 'setor', 'plantao', 'plantão', 'plantoes', 'plantões', 'escala', 'skills', 'skill', 'tarefa', 'tarefas',
+  // Pedidos de vínculo/aprovação e nomes do produto: produção barrou "Ligar o
+  // Telegram" (forma 'Aaaaa a Aaaaaaaa') como nome.
+  'ligar', 'conectar', 'conecte', 'vincular', 'vincule', 'proponha', 'propor', 'proposta', 'aprovo', 'aprovar', 'rejeito',
+  'perfil', 'conta', 'codigo', 'código', 'telegram', 'whatsapp', 'coruja', 'corujinha', 'gestora', 'clinica', 'clínica',
+  'suporte', 'lab', 'maestro', 'chefe',
 ])
 /** Máscara de formato (AAAA-MM-DD, DD/MM/AAAA, HH:MM) que aparece nas descrições das ferramentas. */
 const MASCARA = /^(?:AAAA|AA|MM|DD|HH|SS)$/
@@ -249,6 +254,19 @@ function reidentificarChamadas(tcs: ToolCallLLM[], cofre: Cofre): ToolCallLLM[] 
 type DadosRegistro = {
   bloqueado: boolean; contagem: Contagem; residuos: number; hashEntrada: string;
   provedor?: string; modelo?: string; latenciaMs?: number; erro?: string
+  /**
+   * Por que bloqueou, só por TIPO (Residuo.tipo → quantidade), decisão do RT
+   * 03/10/2026. Nunca o trecho: o tipo é texto fixo do sistema
+   * ('sequência de 11 dígitos', 'data completa', 'e-mail', 'nome próprio (NER)').
+   */
+  tiposBloqueio?: Record<string, number>
+}
+
+/** Conta os achados por tipo — só o tipo, nunca o trecho. */
+export function contarTipos(achados: Residuo[]): Record<string, number> {
+  const t: Record<string, number> = {}
+  for (const a of achados) t[a.tipo] = (t[a.tipo] ?? 0) + 1
+  return t
 }
 
 async function registrar(ctx: ContextoGateway, dados: DadosRegistro) {
@@ -264,6 +282,7 @@ async function registrar(ctx: ContextoGateway, dados: DadosRegistro) {
       modelo: dados.modelo ?? null,
       latencia_ms: dados.latenciaMs ?? null,
       erro: dados.erro ? dados.erro.slice(0, 200) : null,
+      tipos_bloqueio: dados.tiposBloqueio && Object.keys(dados.tiposBloqueio).length ? dados.tiposBloqueio : null,
     })
     // O registro nunca derruba a conversa — mas a falha fica no log técnico.
     if (error) logger.warn({ err: error.message }, '[gateway] falha ao registrar chamada')
@@ -311,7 +330,8 @@ export async function chamarIA(
   }
 
   if (achados.length) {
-    await registrarChamada(ctx, { bloqueado: true, contagem, residuos: achados.length, hashEntrada })
+    // Regex e NER caem aqui: o registro leva a contagem por tipo, nunca o trecho.
+    await registrarChamada(ctx, { bloqueado: true, contagem, residuos: achados.length, hashEntrada, tiposBloqueio: contarTipos(achados) })
     throw new ChamadaBloqueada(achados)
   }
 

@@ -13,7 +13,8 @@ execução, se deu certo, quantas execuções e quantas falhas em 7 dias. O text
 das mensagens de falha NÃO sai.
 
 Formato combinado com o plugin maestro (hermes/deploy/nous-lab/plugins/maestro):
-- ``gateway``: lista de linhas {origem, dia, total, bloqueados, com_erro, ...};
+- ``gateway``: lista de linhas {origem, dia, total, bloqueados, com_erro, ...,
+  tipos_bloqueio: {nome_ner|data_completa|digitos_11|digitos_15|email|outro: n}};
 - ``vigias``: {job: {ultima_execucao, ok, execucoes, falhas}} — ``falhas`` é a
   contagem de 7 dias (o plugin aponta o job se for > 0 ou se ``ok`` for false);
 - ``gerado_em`` em horário de Brasília com deslocamento (o plugin usa a data
@@ -96,9 +97,20 @@ def estado_vigias(pasta: str, agora: _dt.datetime, fuso=None, dias: int = JANELA
     return saida
 
 
+# tipos_bloqueio (migration 20261022000009): a função já normaliza a chave para
+# esta lista fixa. Aqui a trava é mais estreita que a regex: só estas chaves e
+# só contagem inteira (nome_ner/email casariam a regex, mas são rótulos fixos).
+TIPOS_BLOQUEIO = frozenset({"nome_ner", "data_completa", "digitos_11", "digitos_15", "email", "outro"})
+
+
 def conferir_sem_chave_proibida(obj, caminho: str = "$") -> None:
     if isinstance(obj, dict):
         for k, v in obj.items():
+            if k == "tipos_bloqueio" and isinstance(v, dict):
+                for t, n in v.items():
+                    if t not in TIPOS_BLOQUEIO or isinstance(n, bool) or not isinstance(n, int):
+                        raise ValueError(f"tipo de bloqueio fora da lista fixa no numeros.json: {caminho}.{k}")
+                continue
             if _RE_CHAVE_PROIBIDA.search(str(k)):
                 raise ValueError(f"chave proibida no numeros.json: {caminho}.{k}")
             conferir_sem_chave_proibida(v, f"{caminho}.{k}")
