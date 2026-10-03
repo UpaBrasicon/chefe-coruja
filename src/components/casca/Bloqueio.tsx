@@ -5,6 +5,19 @@ import { supabase } from '@/lib/supabase'
 
 // A tela do bloqueio por inatividade (regras em useBloqueioOcioso.ts).
 
+/** session_id do token atual (claim do JWT da Supabase), ou null. */
+async function sessaoAtual(): Promise<string | null> {
+  try {
+    const { data } = await supabase.auth.getSession()
+    const parte = data.session?.access_token.split('.')[1]
+    if (!parte) return null
+    const json = JSON.parse(atob(parte.replace(/-/g, '+').replace(/_/g, '/'))) as { session_id?: unknown }
+    return typeof json.session_id === 'string' ? json.session_id : null
+  } catch {
+    return null
+  }
+}
+
 export function TelaBloqueada({
   nome,
   email,
@@ -27,7 +40,14 @@ export function TelaBloqueada({
     if (!email || !senha || conferindo) return
     setConferindo(true)
     setErro(null)
+    // id da sessão atual (já confirmada no segundo fator): o desbloqueio abre
+    // uma sessão nova e herda essa confirmação (RT, 03/10/2026)
+    const anterior = await sessaoAtual()
     const { error } = await supabase.auth.signInWithPassword({ email, password: senha })
+    if (!error && anterior) {
+      // sem herdar (confirmação vencida, outra pessoa…), o portão pede o código
+      await supabase.rpc('herdar_segundo_fator', { p_sessao_anterior: anterior })
+    }
     setConferindo(false)
     setSenha('')
     if (error) {

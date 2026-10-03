@@ -12352,6 +12352,7 @@ export type Database = {
         Args: { p_codigo: string; p_confiar?: boolean; p_rotulo?: string }
         Returns: string
       }
+      herdar_segundo_fator: { Args: { p_sessao_anterior: string }; Returns: boolean }
       verificar_dispositivo_2fa: { Args: { p_token: string }; Returns: boolean }
     }
     Enums: {
