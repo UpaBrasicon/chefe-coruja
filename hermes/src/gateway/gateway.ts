@@ -130,7 +130,20 @@ export function pedacosNER(texto: string): string[] {
 /** Pseudônimo do próprio gateway ([PESSOA_1], PACIENTE_2…): o NER às vezes o marca como nome. */
 const RE_PSEUDONIMO = /\[?\b(?:PESSOA|PACIENTE|CPF|CNS|TELEFONE|EMAIL|CEP|DATA|PRONTUARIO)_\d+\b\]?/g
 /** Sobra letra depois de tirar os pseudônimos? Se não, não é nome de ninguém. */
-const CONECTIVOS = new Set(['e', 'de', 'da', 'do', 'das', 'dos'])
+/**
+ * Conectivos e palavras comuns do português que o NER marca como nome quando
+ * vêm com maiúscula no início da frase ("Quais skills…", "Vou consultar…").
+ * Nunca são nome de pessoa; nome de verdade ("Maria") continua contando.
+ */
+const CONECTIVOS = new Set([
+  'e', 'de', 'da', 'do', 'das', 'dos', 'a', 'o', 'as', 'os', 'um', 'uma', 'no', 'na', 'nos', 'nas', 'em', 'por', 'para', 'pra', 'com', 'sem',
+  'qual', 'quais', 'quanto', 'quanta', 'quantos', 'quantas', 'como', 'onde', 'quando', 'quem', 'que', 'porque', 'por que',
+  'oi', 'ola', 'olá', 'bom', 'boa', 'dia', 'tarde', 'noite', 'obrigado', 'obrigada', 'valeu', 'ok', 'sim', 'nao', 'não', 'por favor',
+  'me', 'meu', 'minha', 'meus', 'minhas', 'eu', 'voce', 'você', 'tem', 'temos', 'existe', 'há', 'ha', 'vou', 'vamos', 'pode', 'poderia',
+  'preciso', 'quero', 'gostaria', 'mostre', 'mostra', 'liste', 'lista', 'faça', 'faz', 'diga', 'explique', 'busque', 'procure', 'rode', 'veja',
+  'hoje', 'ontem', 'amanha', 'amanhã', 'agora', 'ainda', 'tambem', 'também', 'mais', 'menos', 'muito', 'pouco', 'todos', 'todas', 'algum', 'alguma',
+  'resumo', 'unidade', 'setores', 'setor', 'plantao', 'plantão', 'plantoes', 'plantões', 'escala', 'skills', 'skill', 'tarefa', 'tarefas',
+])
 /** Máscara de formato (AAAA-MM-DD, DD/MM/AAAA, HH:MM) que aparece nas descrições das ferramentas. */
 const MASCARA = /^(?:AAAA|AA|MM|DD|HH|SS)$/
 /** Pontuação de JSON (aspas, chaves, barra): o NER pegou pedaço de estrutura, não texto. */
