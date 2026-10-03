@@ -214,7 +214,10 @@ export function registrarProxyIA(app: FastifyInstance, opcoes: OpcoesProxyIA) {
         return responder(reply, stream, { conteudo: MSG_DESIDENTIFICACAO_INDISPONIVEL, toolCalls: [], modelo: 'gateway' })
       }
       if (err instanceof ChamadaBloqueada) {
-        logger.warn({ residuos: err.residuos.length }, '[ia-proxy] gateway bloqueou a chamada')
+        // Só o tipo e a quantidade (nunca o trecho): para ajustar a limpeza sem expor dado.
+        const tipos: Record<string, number> = {}
+        for (const r of err.residuos) tipos[r.tipo] = (tipos[r.tipo] ?? 0) + 1
+        logger.warn({ residuos: err.residuos.length, tipos }, '[ia-proxy] gateway bloqueou a chamada')
         return responder(reply, stream, { conteudo: MSG_CHAMADA_BLOQUEADA, toolCalls: [], modelo: 'gateway' })
       }
       logger.error({ err: (err as Error).message }, '[ia-proxy] falha no modelo')
