@@ -198,3 +198,16 @@ test('loop do WhatsApp: NER indisponível → recusa ao usuário, modelo não é
   assert.equal(r.ok, true)
   assert.match(r.texto, /Desidentificação indisponível; tente mais tarde/)
 })
+
+test('nerIgnoraSistema: nome no prompt de sistema passa; o mesmo nome na mensagem do usuário bloqueia', async () => {
+  const d = dublês(cfgOk())
+  const deps = { ...d.deps, ner: async (t: string) => (/Ricardo/.test(t) ? ['Ricardo'] : []) }
+  const chamada = (sistema: string, usuario: string): ChamadaLLM => ({
+    mensagens: [{ role: 'system', content: sistema }, { role: 'user', content: usuario }],
+  })
+  const c = { ...ctx(), nerIgnoraSistema: true }
+  await chamarIA(chamada('You are talking to Ricardo.', 'oi'), c, deps)
+  assert.equal(d.enviadosAoModelo.length, 1, 'nome só no sistema: vai ao modelo')
+  await assert.rejects(chamarIA(chamada('Você é a Corujinha.', 'o Ricardo piorou'), c, deps), ChamadaBloqueada)
+  await assert.rejects(chamarIA(chamada('You are talking to Ricardo.', 'oi'), ctx(), deps), ChamadaBloqueada, 'sem a opção, o sistema também passa pelo NER')
+})

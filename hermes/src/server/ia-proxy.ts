@@ -204,6 +204,10 @@ export function registrarProxyIA(app: FastifyInstance, opcoes: OpcoesProxyIA) {
       conhecidos: conhecidosDasFerramentas(chamada.mensagens),
       origem: 'corujinha:telegram',
       perfilId: null,
+      // O sistema é o prompt fixo do Nous (instruções e ferramentas, em inglês,
+      // que o NER em português marca como nome). Memória do Nous desligada no
+      // config.yaml, para nada vindo de conversa entrar no sistema.
+      nerIgnoraSistema: true,
     }
 
     try {
