@@ -3,7 +3,9 @@
 //   1. Para emitir — meus rascunhos ainda sem número. No protótipo é "Para
 //      assinar", com assinatura em lote; aqui é a EMISSÃO numerada que já
 //      existe, um a um, depois de confirmar (a assinatura ICP-Brasil é a
-//      etapa 4.8, ainda sem provedor).
+//      etapa 4.8, ainda sem provedor). Cada rascunho mostra o que falta
+//      (o servidor confere: private.faltas_documento); quem tem falta não
+//      entra no lote — abre-se o formulário e completa-se lá.
 //   2. Impedem a alta — o que private.impeditivos_alta devolve para cada
 //      leito que eu cuido (agravo sem notificação, parecer sem resposta,
 //      exame sem resultado, pendência impeditiva, passagem, rascunho de outro).
@@ -53,7 +55,8 @@ export default function PendenciasPep() {
   const unidadeId = unidadeAtiva?.unidade_id
   const qc = useQueryClient()
   const q = usePendenciasPep(unidadeId)
-  const [desmarcados, setDesmarcados] = React.useState<Set<string>>(new Set())
+  // escolha explícita do usuário; sem ela, vem marcado quem não tem falta
+  const [escolha, setEscolha] = React.useState<Record<string, boolean>>({})
   const [confirmando, setConfirmando] = React.useState(false)
   const [emitindo, setEmitindo] = React.useState(false)
   const [resultados, setResultados] = React.useState<Resultado[] | null>(null)
@@ -63,14 +66,12 @@ export default function PendenciasPep() {
   const rascunhos = q.data?.rascunhos ?? []
   const impeditivos = q.data?.impeditivos ?? []
   const combinadas = q.data?.combinadas ?? []
-  const marcados = rascunhos.filter((r) => !desmarcados.has(r.id))
+  const faltasDe = (r: RascunhoPep) => r.faltas ?? []
+  const marcado = (r: RascunhoPep) => faltasDe(r).length === 0 && (escolha[r.id] ?? true)
+  const marcados = rascunhos.filter(marcado)
+  const comFalta = rascunhos.filter((r) => faltasDe(r).length > 0).length
 
-  const alternar = (id: string) => setDesmarcados((s) => {
-    const n = new Set(s)
-    if (n.has(id)) n.delete(id)
-    else n.add(id)
-    return n
-  })
+  const alternar = (r: RascunhoPep) => setEscolha((s) => ({ ...s, [r.id]: !marcado(r) }))
 
   async function emitirLote(lista: RascunhoPep[]) {
     setEmitindo(true)
@@ -86,7 +87,7 @@ export default function PendenciasPep() {
     setResultados(saida)
     setEmitindo(false)
     setConfirmando(false)
-    setDesmarcados(new Set())
+    setEscolha({})
     invalidarDocumentos(qc)
   }
 
@@ -113,15 +114,21 @@ export default function PendenciasPep() {
             resumo={rascunhos.length ? `${rascunhos.length} ${rascunhos.length === 1 ? 'rascunho seu aberto' : 'rascunhos seus abertos'}` : undefined}>
             {rascunhos.map((r) => (
               <Linha key={r.id}>
-                <label className="flex min-w-0 flex-[1_1_260px] cursor-pointer items-center gap-3">
-                  <input type="checkbox" checked={!desmarcados.has(r.id)} onChange={() => alternar(r.id)}
-                    className="size-[18px] shrink-0 cursor-pointer accent-acao" />
+                <label className={cn('flex min-w-0 flex-[1_1_260px] items-center gap-3', faltasDe(r).length ? 'cursor-not-allowed' : 'cursor-pointer')}>
+                  <input type="checkbox" checked={marcado(r)} disabled={faltasDe(r).length > 0} onChange={() => alternar(r)}
+                    aria-describedby={faltasDe(r).length ? `faltas-${r.id}` : undefined}
+                    className="size-[18px] shrink-0 cursor-pointer accent-acao disabled:cursor-not-allowed" />
                   <span className="flex min-w-0 flex-col gap-px">
                     <span className="text-corpo font-medium text-tinta">{rotuloDocumento(r.tipo)} · {r.paciente}</span>
                     <span className="text-apoio text-tinta-sussurro">
                       {r.leito ? `Leito ${r.leito} · ` : ''}aberto às {hora(r.criado_em)} · salvo às {hora(r.atualizado_em)}
                       {r.copia_de ? ' · cópia de documento anterior' : ''}
                     </span>
+                    {faltasDe(r).length > 0 && (
+                      <span id={`faltas-${r.id}`} className="text-apoio text-pretty text-critico">
+                        Falta para emitir: {faltasDe(r).join('; ')}. Abra e complete.
+                      </span>
+                    )}
                   </span>
                 </label>
                 <Button size="sm" variant="outline" render={<Link to={rotaDoRascunho(r.tipo)} />}>
@@ -134,6 +141,7 @@ export default function PendenciasPep() {
               <div className="flex flex-wrap items-center justify-between gap-3 bg-campo px-5 py-3">
                 <span className="flex-[1_1_260px] text-apoio text-pretty text-tinta-sussurro">
                   A emissão em lote vale para os marcados: cada um recebe número definitivo, como está. Confira antes; emitido não se edita.
+                  {comFalta > 0 && ` ${comFalta === 1 ? 'Um rascunho tem' : `${comFalta} rascunhos têm`} campo obrigatório em branco e fica fora do lote.`}
                 </span>
                 <Button disabled={marcados.length === 0 || emitindo} onClick={() => setConfirmando(true)}>
                   <Send /> Emitir {marcados.length} {marcados.length === 1 ? 'documento' : 'documentos'}

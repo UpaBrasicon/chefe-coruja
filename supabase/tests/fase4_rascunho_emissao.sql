@@ -56,7 +56,7 @@ SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 INSERT INTO t SELECT 'r1', public.salvar_rascunho(pg_temp.u('pac'), 'receita', '{"itens":["a"]}');
 INSERT INTO t SELECT 'r1b', public.salvar_rascunho(pg_temp.u('pac'), 'receita', '{"itens":["a","b"]}');
-SELECT public.salvar_rascunho(pg_temp.u('pac'), 'receita', '{"itens":["a","b","c"]}', pg_temp.u('r1'));
+SELECT public.salvar_rascunho(pg_temp.u('pac'), 'receita', '{"receita":{"itens":[{"medicamento":"a","posologia":"1 cp de 8/8 h"}]}}', pg_temp.u('r1'));
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT pg_temp.falha(format('SELECT public.salvar_rascunho(%L, %L, %L, %L)', pg_temp.u('pac'), 'receita', '{"x":1}', pg_temp.u('r1')),
   'Só o autor edita', 'só o autor edita o próprio rascunho');
@@ -68,7 +68,7 @@ DECLARE d public.documentos_clinicos;
 BEGIN
   SELECT * INTO d FROM public.documentos_clinicos WHERE id = pg_temp.u('r1');
   IF pg_temp.u('r1b') <> pg_temp.u('r1') OR d.estado <> 'rascunho' OR d.numero IS NOT NULL
-     OR d.conteudo <> '{"itens":["a","b","c"]}' OR d.internacao_id <> pg_temp.u('int') THEN
+     OR d.conteudo <> '{"receita":{"itens":[{"medicamento":"a","posologia":"1 cp de 8/8 h"}]}}' OR d.internacao_id <> pg_temp.u('int') THEN
     RAISE EXCEPTION 'FALHOU: rascunho (%)', d;
   END IF;
   RAISE NOTICE 'OK  rascunho no banco: um por autor/tipo/episódio, sem número, ligado à internação';

@@ -66,7 +66,7 @@ DO $$ DECLARE v_token text; BEGIN
 END $$;
 
 -- 5b) segurança (migration 20261022000002): authenticated não pede código (ele
---     voltaria em claro); 5 erros matam o código; sessão verificada vence em 12 h
+--     voltaria em claro); 5 erros matam o código; sessão verificada vence em 24 h (era 12 h até 03/10/2026)
 DO $$ BEGIN
   IF has_function_privilege('authenticated', 'public.solicitar_codigo_2fa(uuid)', 'EXECUTE') THEN
     RAISE EXCEPTION 'FALHOU: authenticated executa solicitar_codigo_2fa';
@@ -89,10 +89,10 @@ DO $$ DECLARE v_codigo text; i int; BEGIN
   EXCEPTION WHEN others THEN
     IF SQLERRM LIKE 'FALHOU%' THEN RAISE; END IF;
   END;
-  UPDATE private.segundo_fator_sessao_ok SET verificado_em = now() - interval '13 hours'
+  UPDATE private.segundo_fator_sessao_ok SET verificado_em = now() - interval '25 hours'
    WHERE session_id = '5e550000-0000-4000-8000-000000000002';
-  IF private.segundo_fator_sessao_valida() THEN RAISE EXCEPTION 'FALHOU: sessão verificada há 13 h ainda vale'; END IF;
-  RAISE NOTICE 'OK  5 erros matam o código; verificação vence em 12 h';
+  IF private.segundo_fator_sessao_valida() THEN RAISE EXCEPTION 'FALHOU: sessão verificada há 25 h ainda vale'; END IF;
+  RAISE NOTICE 'OK  5 erros matam o código; verificação vence em 24 h';
 END $$;
 
 -- 6) com a flag desligada, o gate é sempre verdadeiro (sessão limpa)

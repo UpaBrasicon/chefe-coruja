@@ -56,7 +56,7 @@ INSERT INTO t SELECT 'uni', unidade_id::text FROM public.pacientes WHERE id = pg
 -- ── 1. cancelar documento emitido ───────────────────────────────────────────
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-INSERT INTO t SELECT 'r1', public.salvar_rascunho(pg_temp.u('pac'), 'receita', '{"receita":{"itens":[{"medicamento":"dipirona"}]}}');
+INSERT INTO t SELECT 'r1', public.salvar_rascunho(pg_temp.u('pac'), 'receita', '{"receita":{"itens":[{"medicamento":"dipirona","posologia":"1 cp de 6/6 h se dor"}]}}');
 SELECT pg_temp.falha(format('SELECT public.cancelar_documento(%L, %L)', pg_temp.u('r1'), 'justificativa bem longa aqui'),
   'Só se cancela documento emitido', 'rascunho não se cancela: se descarta');
 SELECT public.emitir_rascunho(pg_temp.u('r1'));
@@ -78,7 +78,7 @@ BEGIN
   SELECT * INTO d FROM public.documentos_clinicos WHERE id = pg_temp.u('r1');
   IF d.estado <> 'cancelado' OR d.numero IS NULL OR d.cancelado_em IS NULL
      OR d.cancelado_por <> '10000000-0000-4000-8000-000000000002' OR d.motivo_cancelamento <> 'receita lançada no paciente errado'
-     OR d.conteudo <> '{"receita":{"itens":[{"medicamento":"dipirona"}]}}' THEN
+     OR d.conteudo <> '{"receita":{"itens":[{"medicamento":"dipirona","posologia":"1 cp de 6/6 h se dor"}]}}' THEN
     RAISE EXCEPTION 'FALHOU: cancelamento (%)', d;
   END IF;
   RAISE NOTICE 'OK  cancelado continua no prontuário, com número, conteúdo, quem, quando e por quê';
@@ -126,7 +126,7 @@ DECLARE d public.documentos_clinicos;
 BEGIN
   SELECT * INTO d FROM public.documentos_clinicos WHERE id = (pg_temp.v('cp') ->> 'id')::uuid;
   IF d.estado <> 'rascunho' OR d.numero IS NOT NULL OR d.copia_de <> pg_temp.u('r1') OR d.id = pg_temp.u('r1')
-     OR d.conteudo <> '{"receita":{"itens":[{"medicamento":"dipirona"}]}}' OR pg_temp.v('cp') ->> 'conteudo' <> d.conteudo
+     OR d.conteudo <> '{"receita":{"itens":[{"medicamento":"dipirona","posologia":"1 cp de 6/6 h se dor"}]}}' OR pg_temp.v('cp') ->> 'conteudo' <> d.conteudo
      OR d.autor_id <> '10000000-0000-4000-8000-000000000002' THEN
     RAISE EXCEPTION 'FALHOU: copiar como novo (%)', d;
   END IF;

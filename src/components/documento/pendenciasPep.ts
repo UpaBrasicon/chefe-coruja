@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase'
 export type RascunhoPep = {
   id: string; tipo: string; paciente_id: string; paciente: string; episodio_id: string | null
   internacao_id: string | null; leito: string | null; criado_em: string; atualizado_em: string; copia_de: string | null
+  /** O que falta para emitir (private.faltas_documento, migration 20261022000013); vazio = pode emitir. */
+  faltas?: string[]
 }
 export type ImpeditivoItem = { tipo: string; id: string; descricao: string; autor_id?: string }
 export type LeitoImpedido = { internacao_id: string; paciente_id: string; paciente: string; leito: string | null; itens: ImpeditivoItem[] }
