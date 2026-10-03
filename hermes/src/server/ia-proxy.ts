@@ -205,6 +205,41 @@ async function nomesDoSistema(mensagens: MensagemLLM[], ner: (t: string) => Prom
   return nomes.map((valor) => ({ valor, categoria: 'PESSOA' as const }))
 }
 
+/** Ferramentas cujo resultado é texto público ou aprovado (livros, manual da plataforma): sem NER. */
+const FERRAMENTAS_SEM_NER = new Set(['biblioteca_clinica_buscar', 'coruja_almanaque'])
+/** Campos de texto livre nos resultados das ferramentas: só eles passam pelo NER. */
+const CAMPOS_LIVRES = /^(trecho|conteudo|conteúdo|mensagem|texto|detalhe|observacao|motivo|descricao)$/i
+
+function camposLivres(dados: unknown, saida: string[] = []): string[] {
+  if (Array.isArray(dados)) dados.forEach((d) => camposLivres(d, saida))
+  else if (dados && typeof dados === 'object') {
+    for (const [k, v] of Object.entries(dados)) {
+      if (typeof v === 'string' && CAMPOS_LIVRES.test(k)) saida.push(v)
+      else camposLivres(v, saida)
+    }
+  }
+  return saida
+}
+
+/**
+ * Onde o NER olha na Corujinha (RT 02/10/2026, depois dos falsos positivos com
+ * "HCFMUSP", "Manole", "Leve", "Vou"): o que a pessoa digita (sempre); dos
+ * resultados de ferramenta, só os campos de texto livre; nada na fala da IA
+ * (ela só viu texto limpo) nem em livro/manual. Regex, resíduo e pseudônimo
+ * dos nomes conhecidos continuam valendo para todas as mensagens.
+ */
+export function textosParaNER(m: MensagemLLM, todas: MensagemLLM[]): string[] {
+  if (m.role === 'user') return [m.content ?? '']
+  if (m.role !== 'tool') return []
+  const chamada = todas.flatMap((x) => x.tool_calls ?? []).find((tc) => tc.id === m.tool_call_id)
+  if (chamada && FERRAMENTAS_SEM_NER.has(chamada.function.name)) return []
+  try {
+    return camposLivres(JSON.parse(m.content ?? ''))
+  } catch {
+    return [m.content ?? '']  // resultado que não é JSON: texto inteiro
+  }
+}
+
 function tokenConfere(recebido: string | undefined, esperado: string | undefined): boolean {
   if (!recebido || !esperado) return false
   const a = Buffer.from(recebido)
@@ -299,6 +334,7 @@ export function registrarProxyIA(app: FastifyInstance, opcoes: OpcoesProxyIA) {
       // que o NER em português marca como nome). Memória do Nous desligada no
       // config.yaml, para nada vindo de conversa entrar no sistema.
       nerIgnoraSistema: true,
+      nerTextos: textosParaNER,
     }
 
     try {

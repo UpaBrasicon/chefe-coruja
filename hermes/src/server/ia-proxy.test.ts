@@ -191,3 +191,33 @@ test('notas [System note: …] do Nous saem da mensagem do usuário antes do gat
   assert.equal(enviados.length, 1, 'não bloqueou')
   assert.doesNotMatch(JSON.stringify(enviados[0]!.mensagens), /System note|decline/)
 })
+
+test('NER na Corujinha: digitado sempre; ferramenta só no texto livre; fala da IA e biblioteca fora', async () => {
+  const ner = async (t: string) => ['Manole', 'Vou', 'Gaviao', 'Maria Lima'].filter((n) => t.includes(n))
+  const historico = (resultado: string, ferramenta = 'coruja_consultar', ultima = 'ok') => ({
+    model: 'qualquer',
+    messages: [
+      { role: 'system', content: 'Você é a Corujinha.' },
+      { role: 'user', content: 'pergunta' },
+      { role: 'assistant', content: 'Vou consultar.', tool_calls: [{ id: 'c1', type: 'function', function: { name: ferramenta, arguments: '{}' } }] },
+      { role: 'tool', tool_call_id: 'c1', content: resultado },
+      { role: 'user', content: ultima },
+    ],
+  })
+  const enviar = async (payload: object) => {
+    const { app, enviados } = montar({ ner })
+    const r = await app.inject({ method: 'POST', url: '/v1/chat/completions', headers: auth, payload })
+    return { enviados, texto: (r.json() as { choices: { message: { content: string } }[] }).choices[0]!.message.content }
+  }
+  // título de incidente e editora de livro não bloqueiam; "Vou" na fala da IA também não
+  assert.equal((await enviar(historico(JSON.stringify({ dados: [{ titulo: '[Gaviao] conteúdo' }] })))).enviados.length, 1)
+  assert.equal((await enviar(historico(JSON.stringify({ trechos: [{ editor: 'Manole' }] }), 'biblioteca_clinica_buscar'))).enviados.length, 1)
+  // nome no texto livre da ferramenta bloqueia
+  const livre = await enviar(historico(JSON.stringify({ dados: [{ trecho: 'a Maria Lima piorou' }] })))
+  assert.equal(livre.enviados.length, 0)
+  assert.equal(livre.texto, MSG_CHAMADA_BLOQUEADA)
+  // nome digitado pela pessoa bloqueia
+  assert.equal((await enviar(historico('{}', 'coruja_consultar', 'e a Maria Lima?'))).enviados.length, 0)
+  // resultado que não é JSON: texto inteiro passa pelo NER
+  assert.equal((await enviar(historico('Maria Lima'))).enviados.length, 0)
+})

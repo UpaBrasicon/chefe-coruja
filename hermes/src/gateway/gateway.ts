@@ -46,6 +46,12 @@ export type ContextoGateway = {
    * memória desligada). Regex e resíduo continuam valendo para o sistema.
    */
   nerIgnoraSistema?: boolean
+  /**
+   * Quais textos de cada mensagem (já limpa) passam pelo NER. Sem isto, todos
+   * (exceto o sistema com nerIgnoraSistema). A Corujinha usa para olhar só o
+   * texto livre: o que a pessoa digita e os campos livres das ferramentas.
+   */
+  nerTextos?: (m: MensagemLLM, todas: MensagemLLM[]) => string[]
 }
 
 function somar(total: Contagem, parcial: Contagem) {
@@ -187,10 +193,15 @@ async function bloquearSeNomeNER(
   achados: Residuo[],
   ner: (texto: string) => Promise<string[]>,
   ignorarSistema = false,
+  nerTextos?: ContextoGateway['nerTextos'],
 ): Promise<void> {
   const textos = new Set<string>()
   for (const m of mensagens) {
     if (ignorarSistema && m.role === 'system') continue
+    if (nerTextos) {
+      for (const t of nerTextos(m, mensagens)) if (t.trim()) textos.add(t)
+      continue
+    }
     if (m.content?.trim()) textos.add(m.content)
     for (const tc of m.tool_calls ?? []) if (tc.function.arguments.trim()) textos.add(tc.function.arguments)
   }
@@ -276,7 +287,7 @@ export async function chamarIA(
   const mensagens = body.mensagens.map((m) => limparMensagem(m, ctx, contagem, achados))
 
   try {
-    await bloquearSeNomeNER(mensagens, achados, ner, ctx.nerIgnoraSistema === true)  // red-team V5 + RT 02/10: NER obrigatório
+    await bloquearSeNomeNER(mensagens, achados, ner, ctx.nerIgnoraSistema === true, ctx.nerTextos)  // red-team V5 + RT 02/10: NER obrigatório
   } catch (err) {
     if (err instanceof DesidentificacaoIndisponivel) {
       // Auditoria sem texto: origem, contagens, hash e o motivo.
