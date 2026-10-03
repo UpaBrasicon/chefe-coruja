@@ -78,6 +78,31 @@ const pedido = z.object({
 
 type Pedido = z.infer<typeof pedido>
 
+/**
+ * Notas que o Nous junta à mensagem do usuário ("[System note: …]": primeira
+ * mensagem, retomada de sessão etc.). Saem antes do gateway: são instruções
+ * em inglês que o NER marca como nome. Retirar só diminui o que vai à IA — se
+ * alguém escrever "[System note: <nome>]" para driblar o NER, o trecho some.
+ * Colchete sem fechar: corta até o fim da mensagem (na dúvida, sai menos).
+ */
+export function semNotasDoNous(texto: string): string {
+  const MARCA = '[System note:'
+  let saida = ''
+  let i = 0
+  for (;;) {
+    const ini = texto.indexOf(MARCA, i)
+    if (ini < 0) return (saida + texto.slice(i)).trim()
+    saida += texto.slice(i, ini)
+    let nivel = 0
+    let fim = texto.length
+    for (let j = ini; j < texto.length; j++) {
+      if (texto[j] === '[') nivel++
+      else if (texto[j] === ']' && --nivel === 0) { fim = j + 1; break }
+    }
+    i = fim
+  }
+}
+
 const RECUSAS = new Set([MSG_SO_TEXTO, MSG_INSTABILIDADE_IA, MSG_CHAMADA_BLOQUEADA, MSG_DESIDENTIFICACAO_INDISPONIVEL])
 
 class SoTexto extends Error {}
@@ -258,7 +283,8 @@ export function registrarProxyIA(app: FastifyInstance, opcoes: OpcoesProxyIA) {
       // Não são conversa: vão ao modelo como marcador neutro (senão o NER marca
       // palavras delas como nome e uma recusa puxa a seguinte).
       chamada.mensagens = chamada.mensagens.map((m) =>
-        m.role === 'assistant' && RECUSAS.has((m.content ?? '').trim()) ? { ...m, content: '(mensagem anterior não enviada)' } : m)
+        m.role === 'assistant' && RECUSAS.has((m.content ?? '').trim()) ? { ...m, content: '(mensagem anterior não enviada)' }
+          : m.role === 'user' && m.content?.includes('[System note:') ? { ...m, content: semNotasDoNous(m.content) } : m)
     } catch (err) {
       if (err instanceof SoTexto) return responder(reply, stream, { conteudo: MSG_SO_TEXTO, toolCalls: [], modelo: 'gateway' })
       throw err

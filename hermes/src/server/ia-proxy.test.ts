@@ -9,7 +9,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import Fastify from 'fastify'
 
-import { registrarProxyIA, MSG_SO_TEXTO } from './ia-proxy.js'
+import { registrarProxyIA, MSG_SO_TEXTO, semNotasDoNous } from './ia-proxy.js'
 import {
   DesidentificacaoIndisponivel, MSG_CHAMADA_BLOQUEADA, MSG_DESIDENTIFICACAO_INDISPONIVEL,
   type DependenciasGateway,
@@ -174,4 +174,20 @@ test('recusa do gateway no histórico não vai ao modelo nem trava a volta segui
   await app.inject({ method: 'POST', url: '/v1/chat/completions', headers: auth, payload })
   assert.equal(enviados.length, 1, 'não bloqueou')
   assert.doesNotMatch(JSON.stringify(enviados[0]!.mensagens), /Reescreva/)
+})
+
+test('notas [System note: …] do Nous saem da mensagem do usuário antes do gateway', async () => {
+  const intro = 'oi' + String.fromCharCode(10, 10) + "[System note: This is the user's very first message ever. Briefly introduce yourself.]"
+  assert.equal(semNotasDoNous(intro), 'oi')
+  assert.equal(semNotasDoNous('[System note: a [b] c] resumo da unidade'), 'resumo da unidade')
+  assert.equal(semNotasDoNous('oi [System note: Maria Silva sem fechar'), 'oi', 'sem colchete de fechamento: corta até o fim')
+  assert.equal(semNotasDoNous('sem nota'), 'sem nota')
+  const { app, enviados } = montar({ ner: async (t) => (/Briefly|decline/.test(t) ? ['Briefly'] : []) })
+  const payload = { model: 'qualquer', messages: [
+    { role: 'system', content: 'Você é a Coruja Gestora.' },
+    { role: 'user', content: 'me dá o resumo [System note: OFFER to build a profile, explain they can decline.]' },
+  ] }
+  await app.inject({ method: 'POST', url: '/v1/chat/completions', headers: auth, payload })
+  assert.equal(enviados.length, 1, 'não bloqueou')
+  assert.doesNotMatch(JSON.stringify(enviados[0]!.mensagens), /System note|decline/)
 })
