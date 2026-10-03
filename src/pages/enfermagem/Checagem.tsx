@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 
+import { AlergiaNaTela } from './AlergiaNaTela'
+
 type Linha = {
   paciente_id: string; paciente_nome: string; local: string | null; item_id: string; tipo: string; descricao: string
   dose: string | null; via: string | null; posologia: string | null; se_necessario: boolean; horarios: string[] | null
@@ -61,6 +63,8 @@ export default function Checagem() {
           <Card key={id}>
             <CardHeader>
               <CardTitle className="text-base">{itens[0].paciente_nome} <span className="text-sm font-normal text-tinta-sussurro">· {itens[0].local ?? '—'}</span></CardTitle>
+              {/* alergia de cada paciente junto dos itens a administrar (R4) */}
+              <AlergiaNaTela pacienteId={id} />
             </CardHeader>
             <CardContent className="flex flex-col gap-2 text-sm">
               {itens.map((l) => <ItemChecagem key={l.item_id} l={l} podeAprazar={papelAtivo === 'enfermeiro'} aoMudar={recarregar} aoErro={setErro} />)}

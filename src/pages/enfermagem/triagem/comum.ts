@@ -4,6 +4,7 @@ import type { CorRisco } from '@/domain/risco'
 
 export type NaFila = {
   id: string
+  paciente_id: string
   setor_id: string
   chegada_em: string
   queixa: string

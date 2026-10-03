@@ -10,6 +10,7 @@ import { rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, rotulosPrioridade } from '@/domain/prioridade'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { TituloPagina } from '@/components/monitor/Pagina'
+import { AlergiaNaTela } from './AlergiaNaTela'
 import { Classificar } from './triagem/Classificar'
 import { FilaTriagem } from './triagem/Fila'
 import { dataSP, nomeDe, type NaFila } from './triagem/comum'
@@ -37,7 +38,7 @@ export default function Triagem() {
       if (setores.length === 0) return []
       const { data, error } = await supabase
         .from('episodios')
-        .select('id, setor_id, chegada_em, queixa, prioridades_legais, paciente:pacientes(nome, nome_social, data_nascimento, sexo)')
+        .select('id, paciente_id, setor_id, chegada_em, queixa, prioridades_legais, paciente:pacientes(nome, nome_social, data_nascimento, sexo)')
         .in('setor_id', setores)
         .eq('etapa', 'triagem')
       if (error) throw error
@@ -83,6 +84,8 @@ export default function Triagem() {
                     {atual.paciente?.data_nascimento ? rotuloIdade(atual.paciente.data_nascimento, dataSP()) : 'idade não informada'}
                   </span>
                 </DialogTitle>
+                {/* alergia à vista enquanto classifica (R4); a cor continua sendo do enfermeiro */}
+                <AlergiaNaTela pacienteId={atual.paciente_id} className="py-1" />
                 <DialogDescription>
                   {[`Queixa referida: ${atual.queixa}`, prios.length ? `Prioridade legal: ${prios.join(', ')}` : ''].filter(Boolean).join(' · ')}
                   <br />

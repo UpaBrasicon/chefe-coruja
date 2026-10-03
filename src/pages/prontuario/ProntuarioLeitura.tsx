@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
+import { SeloAlergia } from '@/components/paciente/AlergiasEventos'
+import { ativas, negaVigente, rotuloGrau, rotuloGravidade, rotuloTipo, useAlergias } from '@/components/paciente/useAlergias'
 import { abrirProntuario } from '@/lib/prontuario'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
@@ -35,21 +37,20 @@ export default function ProntuarioLeitura() {
     queryFn: async () => {
       await abrirProntuario(pacienteId!)
       const id = pacienteId!
-      const [pac, eps, docs, obs, presc, alerg, classif] = await Promise.all([
+      const [pac, eps, docs, obs, presc, classif] = await Promise.all([
         supabase.from('pacientes').select('id, nome, nome_social, data_nascimento, sexo, prontuario').eq('id', id).maybeSingle(),
         supabase.from('episodios').select('id, etapa, queixa, chegada_em, encerrado_em, desfecho').eq('paciente_id', id).order('chegada_em', { ascending: false }),
         supabase.from('documentos_clinicos').select('id, documento_raiz_id, versao, tipo_documento, conteudo, estado, created_at, episodio_id').eq('paciente_id', id).neq('estado', 'rascunho').order('created_at', { ascending: false }),
         supabase.from('observacao').select('id, aferido_em, valor_num, valor_texto, unidade, conceito:conceito_id(nome, unidade_padrao)').eq('paciente_id', id).order('aferido_em', { ascending: false }).limit(60),
         supabase.from('prescricoes').select('id, status, created_at, assinada_em, prescricao_itens(id, descricao, dose, posologia, via, suspenso_em)').eq('paciente_id', id).order('created_at', { ascending: false }).limit(20),
-        supabase.from('alergias_paciente').select('id, substancia, reacao, inativada_em').eq('paciente_id', id).is('inativada_em', null),
         supabase.from('classificacoes_risco').select('id, cor, criado_em, discriminador, episodio_id').eq('paciente_id', id).order('criado_em', { ascending: false }),
       ])
-      for (const r of [pac, eps, docs, obs, presc, alerg, classif]) if (r.error) throw r.error
+      for (const r of [pac, eps, docs, obs, presc, classif]) if (r.error) throw r.error
       if (!pac.data) throw new Error('Sem acesso a este paciente. O pedido pode ter vencido ou ainda não foi aprovado.')
       // só a versão mais recente de cada documento
       const vistos = new Set<string>()
       const documentos = (docs.data ?? []).filter((d) => (vistos.has(d.documento_raiz_id) ? false : (vistos.add(d.documento_raiz_id), true)))
-      return { paciente: pac.data, episodios: eps.data ?? [], documentos, observacoes: obs.data ?? [], prescricoes: presc.data ?? [], alergias: alerg.data ?? [], classificacoes: classif.data ?? [] }
+      return { paciente: pac.data, episodios: eps.data ?? [], documentos, observacoes: obs.data ?? [], prescricoes: presc.data ?? [], classificacoes: classif.data ?? [] }
     },
   })
 
@@ -62,7 +63,7 @@ export default function ProntuarioLeitura() {
       </div>
     )
   }
-  const { paciente, episodios, documentos, observacoes, prescricoes, alergias, classificacoes } = q.data
+  const { paciente, episodios, documentos, observacoes, prescricoes, classificacoes } = q.data
 
   return (
     <div className="flex w-full max-w-4xl flex-col gap-4">
@@ -77,16 +78,7 @@ export default function ProntuarioLeitura() {
         ].filter(Boolean).join(' · ')}
       />
 
-      <Card>
-        <CardHeader><CardTitle className="text-base">Alergias ativas</CardTitle></CardHeader>
-        <CardContent>
-          {alergias.length === 0 ? <p className="text-sm text-tinta-sussurro">Nenhuma registrada.</p> : (
-            <ul className="flex flex-wrap gap-2">
-              {alergias.map((a) => <li key={a.id}><Badge variant="destructive">{a.substancia}{a.reacao ? ' · ' + a.reacao : ''}</Badge></li>)}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <AlergiasLeitura pacienteId={paciente.id} />
 
       <Card>
         <CardHeader><CardTitle className="text-base">Atendimentos</CardTitle></CardHeader>
@@ -175,5 +167,58 @@ export default function ProntuarioLeitura() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+const quando = (iso: string | null | undefined) => (iso ? fmtDataHora(iso) : '')
+
+/**
+ * Alergias e eventos adversos, só leitura, com os três estados do resto do
+ * produto (tem / nega / não registrada): lista vazia não é "nega". A leitura
+ * vem de alergias_do_paciente, que aceita o pedido de acesso vigente.
+ */
+function AlergiasLeitura({ pacienteId }: { pacienteId: string }) {
+  const q = useAlergias(pacienteId)
+  const lista = ativas(q.data)
+  const nega = negaVigente(q.data)
+  const eventos = (q.data?.eventos ?? []).filter((e) => !e.inativado_em)
+  return (
+    <Card>
+      <CardHeader><CardTitle className="text-base">Alergias e eventos adversos</CardTitle></CardHeader>
+      <CardContent className="flex flex-col gap-2 text-sm">
+        <SeloAlergia pacienteId={pacienteId} />
+        {q.data?.estado === 'nega' && nega && (
+          <p className="text-tinta-sussurro">Nega alergias · registrado em {quando(nega.registrado_em)}{nega.autor ? ` por ${nega.autor}` : ''}</p>
+        )}
+        {q.data?.estado === 'nao_registrada' && (
+          <p className="text-tinta-sussurro">Ninguém registrou ainda se o paciente tem ou nega alergias.</p>
+        )}
+        {lista.length > 0 && (
+          <ul className="flex flex-col gap-1.5">
+            {lista.map((a) => (
+              <li key={a.id} className="flex flex-wrap items-center gap-2">
+                <Badge variant="destructive">{a.substancia}</Badge>
+                <span>{rotuloTipo(a.tipo)} · {rotuloGravidade(a.gravidade).toLowerCase()}{a.reacao ? ` · ${a.reacao}` : ''}</span>
+                <span className="text-xs text-tinta-sussurro">{quando(a.registrado_em)}{a.autor ? ` · ${a.autor}` : ''}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {eventos.length > 0 && (
+          <>
+            <p className="mt-1 text-xs font-semibold tracking-wide text-tinta-sussurro uppercase">Eventos adversos</p>
+            <ul className="flex flex-col gap-1.5">
+              {eventos.map((e) => (
+                <li key={e.id} className="flex flex-wrap items-center gap-2">
+                  <Badge variant="warning">{e.evento}</Badge>
+                  <span>{rotuloGrau(e.grau)}{e.item_descricao ? ` · ${e.item_descricao}` : ''}{e.observacao ? ` · ${e.observacao}` : ''}</span>
+                  <span className="text-xs text-tinta-sussurro">{quando(e.registrado_em)}{e.autor ? ` · ${e.autor}` : ''}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </CardContent>
+    </Card>
   )
 }
