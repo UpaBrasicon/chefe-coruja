@@ -34,11 +34,13 @@ class TestAgenda(unittest.TestCase):
             "coruja-vigia_porta": "5 7,19 * * *", "coruja-vigia_presenca": "*/15 * * * *",
             "coruja-vigia_escala": "0 8 * * *", "coruja-vigia_tardios": "2 8 * * *",
             "coruja-guardiao_prontuario": "20 * * * *", "coruja-cadeia_auditoria": "0 4 * * *",
+            "coruja-maestro_numeros": "50 * * * *",  # só do Nous (AGENDA_EXTRA_UTC)
         }
         self.assertEqual({n: e for n, _, e in agenda.linhas(-180)}, esperado)
 
     def test_em_utc_fica_igual(self):
-        self.assertEqual([e for _, _, e in agenda.linhas(0)], [e for _, _, e in agenda.AGENDA_UTC])
+        self.assertEqual([e for _, _, e in agenda.linhas(0)],
+                         [e for _, _, e in agenda.AGENDA_UTC + agenda.AGENDA_EXTRA_UTC])
 
     def test_virada_de_dia_com_dia_restrito_recusa(self):
         self.assertEqual(agenda.converter("0 1 * * *", -3), "0 22 * * *")

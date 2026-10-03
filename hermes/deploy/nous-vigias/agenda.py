@@ -41,6 +41,12 @@ AGENDA_UTC = [
     ("coruja-cadeia_auditoria", "cadeia_auditoria.py", "0 7 * * *"),     # 04h BR
 ]
 
+# Jobs só do Nous (não existem no agendador.ts), também em UTC.
+AGENDA_EXTRA_UTC = [
+    # Números agregados para o maestro do Coruja Lab (decisão do RT, 03/10/2026).
+    ("coruja-maestro_numeros", "maestro_numeros.py", "50 * * * *"),      # toda hora, minuto 50
+]
+
 
 def converter(expressao: str, deslocamento_horas: int) -> str:
     """Expressão cron em UTC → mesmo instante no fuso de deslocamento dado
@@ -96,7 +102,7 @@ def fuso_do_nous(ambiente=os.environ, agora: _dt.datetime | None = None) -> tupl
 def linhas(deslocamento_minutos: int) -> list[tuple[str, str, str]]:
     if deslocamento_minutos % 60:
         raise ValueError("fuso do Nous com fração de hora: ajuste a agenda à mão")
-    return [(n, s, converter(e, deslocamento_minutos // 60)) for n, s, e in AGENDA_UTC]
+    return [(n, s, converter(e, deslocamento_minutos // 60)) for n, s, e in AGENDA_UTC + AGENDA_EXTRA_UTC]
 
 
 def ids_por_nome(nome: str, caminho: str) -> list[str]:

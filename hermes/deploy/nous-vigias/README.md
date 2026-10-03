@@ -22,6 +22,7 @@ montado por código), então nada ficou de fora.
 | `coruja-vigia_tardios` | `vigia_tardios.py` | 08h02 | `vigiaTardios` |
 | `coruja-guardiao_prontuario` | `guardiao_prontuario.py` | toda hora, minuto 20 | `guardiaoProntuario` |
 | `coruja-cadeia_auditoria` | `cadeia_auditoria.py` | 04h | `cadeiaAuditoria` |
+| `coruja-maestro_numeros` | `maestro_numeros.py` | toda hora, minuto 50 | — (só do Nous; ver abaixo) |
 
 ## Como o cron do Nous roda isto (conferido na documentação e no código, 02/10/2026)
 
@@ -49,6 +50,46 @@ montado por código), então nada ficou de fora.
   em `/opt/data/cron/jobs.json`. Nome **não é único** (por isso o `instalar.sh` confere antes de criar).
   `--deliver` sem origem fica `local` (`/opt/data/cron/output/`). Aqui ele vai explícito como
   `local`: nem a falha vai para o Telegram.
+
+## Números do maestro (`maestro_numeros.py`)
+
+Decisão do RT de 03/10/2026: o Coruja Lab vira o maestro das outras Corujas, mas **sem acesso ao
+banco**. Os números chegam a ele num arquivo. Este script (sem IA, `--no-agent`, saída vazia) roda no
+contêiner da Corujinha a cada hora, no minuto 50 (`AGENDA_EXTRA_UTC` em `agenda.py`; o `instalar.sh`
+cria o job `coruja-maestro_numeros`).
+
+- Lê `public.hermes_maestro_totais()` como `hermes_app_job` (migração `20261022000008`), sempre em
+  conexão somente leitura. A função devolve só contagens dos últimos 7 dias de Brasília: gateway de
+  IA por origem e dia (total, bloqueados, com erro, resíduos, motivo da falha de desidentificação),
+  incidentes por patrulha, severidade e status, alertas do Sentinela por status e notificações por
+  tipo e dia. Não devolve pessoa, id, hash nem texto livre. O texto do erro do provedor de IA não
+  sai, só a contagem.
+- Lê os logs do próprio contêiner (`/opt/data/logs/vigias/*.log`) e devolve, por job, a última
+  execução, se deu certo, quantas execuções e quantas falhas houve em 7 dias. A mensagem de falha
+  não sai.
+- Grava `/opt/data/maestro-saida/numeros.json` de forma atômica (arquivo temporário e depois
+  `rename`). A pasta fica com 755 e o arquivo com 644, para o Lab (outro uid) conseguir ler. No host
+  o caminho é `/home/hermes/.hermes/maestro-saida/`, que o Lab monta **somente leitura**.
+  `MAESTRO_SAIDA` troca a pasta.
+- **Ignora `VIGIAS_MODO`**, porque não grava no banco. Em falha, nada é reescrito: o arquivo
+  anterior continua lá, e o Lab avisa que os dados estão velhos (mais de 3 h).
+- O formato é o que o plugin `nous-lab/plugins/maestro` lê: `gateway` como lista de linhas
+  `{origem, dia, total, bloqueados, ...}`, `vigias` como `{job: {ok, falhas, ...}}` e `gerado_em`
+  com o fuso de Brasília. O teste `tests/test_maestro.py` passa o arquivo pelo `resumir()` do
+  plugin.
+
+```json
+{"gerado_em": "2026-10-05T22:50:01-03:00", "janela_dias": 7, "desde": "2026-09-29", "ate": "2026-10-05",
+ "gateway": [{"dia": "2026-10-05", "origem": "corujinha:telegram", "total": 40, "bloqueados": 3, "com_erro": 1,
+              "erros_desidentificacao": 1, "erros_modelo": 0, "residuos": 4, "motivos_desidentificacao": {"timeout": 1}}],
+ "incidentes": [{"patrulha": "hermes", "severidade": "atencao", "status": "aberto", "total": 2}],
+ "alertas": [{"status": "novo", "total": 1, "criados_na_janela": 1}],
+ "notificacoes": [{"dia": "2026-10-05", "tipo": "escala_buraco", "total": 2}],
+ "vigias": {"argos": {"ultima_execucao": "2026-10-05T18:00:00-03:00", "ok": true, "execucoes": 2, "falhas": 0}}}
+```
+
+Teste manual na VPS: `docker exec hermes-agent hermes cron run coruja-maestro_numeros` e depois
+`docker exec hermes-agent cat /opt/data/maestro-saida/numeros.json`.
 
 ## Modo sombra e modo valer
 

@@ -32,7 +32,7 @@ echo "modo dos vigias no $C: $MODO"
 
 # 2. cópia (sem testes, sem os .sh, sem cache)
 tar -C "$AQUI" --exclude='./tests' --exclude='__pycache__' --exclude='*.sh' --exclude='*.md' -cf - . \
-  | docker exec -i -u "$U" "$C" sh -c "mkdir -p $DEST /opt/data/logs/vigias-sombra /opt/data/logs/vigias && tar -xf - -C $DEST"
+  | docker exec -i -u "$U" "$C" sh -c "mkdir -p $DEST /opt/data/logs/vigias-sombra /opt/data/logs/vigias /opt/data/maestro-saida && chmod 755 /opt/data/maestro-saida && tar -xf - -C $DEST"
 echo "scripts copiados para $DEST"
 
 # O cron roda .py com o MESMO python do Nous (sys.executable), que tem asyncpg.

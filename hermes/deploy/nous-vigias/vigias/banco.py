@@ -46,6 +46,8 @@ RPC_JOB = frozenset({
     "hermes_revisoes_paradas",
     "hermes_acessos_anomalos",
     "hermes_cadeia_auditoria",
+    # Só contagens para o maestro do Coruja Lab (maestro_numeros.py; não é do TS).
+    "hermes_maestro_totais",
 })
 
 # ── Leituras (as mesmas de lib/db-job.ts) ─────────────────────────────────────

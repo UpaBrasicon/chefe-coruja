@@ -9,12 +9,15 @@ integracao_local.sh dentro de um python:3.13-slim com asyncpg 0.31.0).
 3. Exercita as quatro gravações direto (notificação, alerta, incidente,
    relatório) como hermes_app_job — prova dos GRANTs e das políticas.
 4. Roda o compara.py do dia.
+5. Roda o maestro_numeros.py (números do Coruja Lab) e confere o numeros.json.
 """
 
 from __future__ import annotations
 
+import json
 import os
 import sqlite3
+import stat
 import subprocess
 import sys
 import tempfile
@@ -145,6 +148,29 @@ def main() -> int:
     r = subprocess.run([sys.executable, os.path.join(PASTA, "compara.py"), hoje], env=ambiente, capture_output=True, text=True, timeout=120)
     print(r.stdout)
     checar(r.returncode in (0, 3) and "RESULTADO" in r.stdout, f"compara.py rodou (código {r.returncode}) {r.stderr.strip()[:300]}")
+
+    # 5. números do maestro (Coruja Lab): RPC agregada + logs dos vigias → numeros.json
+    saida = os.path.join(tmp, "maestro-saida")
+    r = subprocess.run([sys.executable, os.path.join(PASTA, "maestro_numeros.py")],
+                       env={**ambiente, "MAESTRO_SAIDA": saida, "VIGIAS_MODO": "sombra"},
+                       capture_output=True, text=True, timeout=120)
+    checar(r.returncode == 0 and r.stdout == "",
+           f"maestro_numeros: código {r.returncode}, stdout {len(r.stdout)} chars {r.stderr.strip()[:300]}")
+    arq = os.path.join(saida, "numeros.json")
+    if os.path.isfile(arq):
+        with open(arq, encoding="utf-8") as f:
+            numeros = json.load(f)
+        print(json.dumps({k: (v if k != "vigias" else sorted(v)) for k, v in numeros.items()}, ensure_ascii=False)[:1500])
+        checar(set(numeros) >= {"gerado_em", "janela_dias", "gateway", "incidentes", "alertas", "notificacoes", "vigias"}
+               and numeros["janela_dias"] == 7 and isinstance(numeros["gateway"], list),
+               "numeros.json com as chaves combinadas")
+        checar(all(v.get("ok") is not None for v in numeros["vigias"].values())
+               and len(numeros["vigias"]) >= len(agenda.AGENDA_UTC),
+               f"vigias lidos dos logs ({len(numeros['vigias'])} jobs)")
+        checar(stat.S_IMODE(os.stat(saida).st_mode) == 0o755 and stat.S_IMODE(os.stat(arq).st_mode) == 0o644,
+               "numeros.json 644 em pasta 755 (legível pelo uid do Lab)")
+    else:
+        checar(False, "numeros.json não foi escrito")
 
     print(f"\n{len(FALHAS)} falha(s)")
     return 1 if FALHAS else 0
