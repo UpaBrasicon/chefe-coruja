@@ -159,3 +159,19 @@ test('nome do usuário no prompt de sistema sai como pseudônimo em tudo e volta
   assert.doesNotMatch(JSON.stringify(enviados[0]!.mensagens), /Ricardo/, 'o modelo não vê o nome, nem no sistema nem no histórico')
   assert.equal(r.statusCode, 200)
 })
+
+test('recusa do gateway no histórico não vai ao modelo nem trava a volta seguinte', async () => {
+  const { app, enviados } = montar({ ner: async (t) => (t.includes('Reescreva') ? ['Reescreva'] : []) })
+  const payload = {
+    model: 'qualquer',
+    messages: [
+      { role: 'system', content: 'Você é a Corujinha.' },
+      { role: 'user', content: 'oi' },
+      { role: 'assistant', content: MSG_CHAMADA_BLOQUEADA },
+      { role: 'user', content: 'quantos setores?' },
+    ],
+  }
+  await app.inject({ method: 'POST', url: '/v1/chat/completions', headers: auth, payload })
+  assert.equal(enviados.length, 1, 'não bloqueou')
+  assert.doesNotMatch(JSON.stringify(enviados[0]!.mensagens), /Reescreva/)
+})

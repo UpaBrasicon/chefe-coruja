@@ -78,6 +78,8 @@ const pedido = z.object({
 
 type Pedido = z.infer<typeof pedido>
 
+const RECUSAS = new Set([MSG_SO_TEXTO, MSG_INSTABILIDADE_IA, MSG_CHAMADA_BLOQUEADA, MSG_DESIDENTIFICACAO_INDISPONIVEL])
+
 class SoTexto extends Error {}
 
 /** Converte o pedido OpenAI no formato do gateway. Conteúdo não-texto lança SoTexto (falha fechada). */
@@ -249,6 +251,11 @@ export function registrarProxyIA(app: FastifyInstance, opcoes: OpcoesProxyIA) {
     let chamada: ChamadaLLM
     try {
       chamada = paraChamada(p.data)
+      // As recusas do próprio gateway voltam no histórico como fala do assistente.
+      // Não são conversa: vão ao modelo como marcador neutro (senão o NER marca
+      // palavras delas como nome e uma recusa puxa a seguinte).
+      chamada.mensagens = chamada.mensagens.map((m) =>
+        m.role === 'assistant' && RECUSAS.has((m.content ?? '').trim()) ? { ...m, content: '(mensagem anterior não enviada)' } : m)
     } catch (err) {
       if (err instanceof SoTexto) return responder(reply, stream, { conteudo: MSG_SO_TEXTO, toolCalls: [], modelo: 'gateway' })
       throw err

@@ -221,4 +221,7 @@ test('NER marcando o próprio pseudônimo não bloqueia; nome junto do pseudôni
   assert.equal(temNomeAlemDoPseudonimo('AAAA-MM-DD'), false, 'máscara de data não é nome')
   assert.equal(temNomeAlemDoPseudonimo('DD/MM/AAAA'), false)
   assert.equal(temNomeAlemDoPseudonimo('MARIA LIMA'), true, 'nome em maiúsculas continua nome')
+  assert.equal(temNomeAlemDoPseudonimo('\\"escopo\\"}'), false, 'pedaço de JSON minúsculo não é nome')
+  assert.equal(temNomeAlemDoPseudonimo('Maria Lima"'), true, 'nome colado em aspas continua nome')
+  assert.equal(temNomeAlemDoPseudonimo('maria lima'), true, 'sem pontuação de JSON, minúscula continua contando')
 })

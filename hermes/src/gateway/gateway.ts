@@ -127,8 +127,15 @@ const RE_PSEUDONIMO = /\[?\b(?:PESSOA|PACIENTE|CPF|CNS|TELEFONE|EMAIL|CEP|DATA|P
 const CONECTIVOS = new Set(['e', 'de', 'da', 'do', 'das', 'dos'])
 /** Máscara de formato (AAAA-MM-DD, DD/MM/AAAA, HH:MM) que aparece nas descrições das ferramentas. */
 const MASCARA = /^(?:AAAA|AA|MM|DD|HH|SS)$/
-export const temNomeAlemDoPseudonimo = (n: string) =>
-  n.replace(RE_PSEUDONIMO, ' ').split(/[^\p{L}]+/u).some((w) => w && !CONECTIVOS.has(w.toLowerCase()) && !MASCARA.test(w))
+/** Pontuação de JSON (aspas, chaves, barra): o NER pegou pedaço de estrutura, não texto. */
+const RE_JSON = /[{}"\\]/
+export const temNomeAlemDoPseudonimo = (n: string) => {
+  const palavras = n.replace(RE_PSEUDONIMO, ' ').split(/[^\p{L}]+/u).filter((w) => w && !CONECTIVOS.has(w.toLowerCase()) && !MASCARA.test(w))
+  // Pedaço de JSON só conta como nome se tiver palavra com inicial maiúscula
+  // ('"escopo"}' não é ninguém; 'Maria Lima"' é).
+  if (RE_JSON.test(n)) return palavras.some((w) => /^\p{Lu}/u.test(w))
+  return palavras.length > 0
+}
 
 const NOMES_DO_SISTEMA = new Set([
   'corujinha', 'chefe coruja', 'coruja', 'gaviao', 'hermes', 'cerbero', 'iris', 'argos',
