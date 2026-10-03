@@ -21,7 +21,7 @@
 //
 // Não é pública: o Caddy só expõe /webhook e /health.
 // ─────────────────────────────────────────────────────────────────────────────
-import { randomUUID, timingSafeEqual } from 'node:crypto'
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto'
 import type { FastifyInstance, FastifyReply } from 'fastify'
 import { z } from 'zod'
 
@@ -30,7 +30,7 @@ import {
   MSG_CHAMADA_BLOQUEADA, MSG_DESIDENTIFICACAO_INDISPONIVEL,
   type ContextoGateway, type DependenciasGateway,
 } from '../gateway/gateway.js'
-import { criarCofre, desidentificar } from '../gateway/desidentificacao.js'
+import { criarCofre, desidentificar, type Conhecido } from '../gateway/desidentificacao.js'
 import type { ChamadaLLM, MensagemLLM, RespostaLLM, ToolDefLLM } from '../lib/llm.js'
 import { logger } from '../logger.js'
 
@@ -154,6 +154,27 @@ async function ondeNER(mensagens: MensagemLLM[], ctx: ContextoGateway) {
   return onde
 }
 
+/**
+ * Nomes de pessoa no prompt de sistema do Nous (o nome do usuário do Telegram
+ * entra ali). Viram identificadores conhecidos: saem como pseudônimo em TODAS
+ * as mensagens, inclusive no próprio sistema, e voltam só na resposta. Sem
+ * isso o modelo via o nome e o repetia, e a volta seguinte travava no NER do
+ * histórico. Cache pelo hash do sistema, que quase não muda entre as voltas.
+ */
+const cacheNomesSistema = new Map<string, string[]>()
+async function nomesDoSistema(mensagens: MensagemLLM[], ner: (t: string) => Promise<string[]>): Promise<Conhecido[]> {
+  const texto = mensagens.filter((m) => m.role === 'system').map((m) => m.content ?? '').join('\n')
+  if (!texto.trim()) return []
+  const chave = createHash('sha256').update(texto).digest('hex')
+  let nomes = cacheNomesSistema.get(chave)
+  if (!nomes) {
+    nomes = [...new Set((await ner(texto)).map((n) => n.trim()).filter((n) => n.length >= 3))]
+    if (cacheNomesSistema.size >= 20) cacheNomesSistema.clear()
+    cacheNomesSistema.set(chave, nomes)
+  }
+  return nomes.map((valor) => ({ valor, categoria: 'PESSOA' as const }))
+}
+
 function tokenConfere(recebido: string | undefined, esperado: string | undefined): boolean {
   if (!recebido || !esperado) return false
   const a = Buffer.from(recebido)
@@ -245,6 +266,8 @@ export function registrarProxyIA(app: FastifyInstance, opcoes: OpcoesProxyIA) {
     }
 
     try {
+      // NER no sistema também falha fechado: sem ele, nada vai ao modelo.
+      ctx.conhecidos.push(...(await nomesDoSistema(chamada.mensagens, opcoes.depsGateway?.ner ?? ((t) => nomesNER(t)))))
       const r = await chamarIA(chamada, ctx, opcoes.depsGateway)
       return responder(reply, stream, { conteudo: r.conteudo, toolCalls: r.toolCalls, uso: r.uso, modelo: r.modelo })
     } catch (err) {
