@@ -24,12 +24,15 @@ if ! docker exec "$C" sh -c 'test -n "${HERMES_PG_JOB_URL:-}"'; then
   echo "o $C não tem HERMES_PG_JOB_URL no ambiente: ponha a linha no ~/.agent.extra.env e rode recriar-agente.sh (README)" >&2
   exit 1
 fi
+# Tudo dentro do contêiner roda com o dono de /opt/data (o uid do Nous, 10000),
+# senão o cron do Nous não consegue gravar o registro da sombra nem o jobs.json.
+U="$(docker exec "$C" stat -c %u:%g /opt/data)"
 MODO="$(docker exec "$C" sh -c 'echo "${VIGIAS_MODO:-sombra}"')"
 echo "modo dos vigias no $C: $MODO"
 
 # 2. cópia (sem testes, sem os .sh, sem cache)
 tar -C "$AQUI" --exclude='./tests' --exclude='__pycache__' --exclude='*.sh' --exclude='*.md' -cf - . \
-  | docker exec -i "$C" sh -c "mkdir -p $DEST /opt/data/logs/vigias-sombra /opt/data/logs/vigias && tar -xf - -C $DEST"
+  | docker exec -i -u "$U" "$C" sh -c "mkdir -p $DEST /opt/data/logs/vigias-sombra /opt/data/logs/vigias && tar -xf - -C $DEST"
 echo "scripts copiados para $DEST"
 
 # O cron roda .py com o MESMO python do Nous (sys.executable), que tem asyncpg.
@@ -47,7 +50,7 @@ docker exec "$C" python3 "$DEST/agenda.py" linhas | while IFS="$(printf '\t')" r
     echo "já existe: $NOME (pulado)"
     continue
   fi
-  docker exec "$C" hermes cron create "$EXPR" --no-agent --script "$SCRIPT" --name "$NOME" --deliver local </dev/null
+  docker exec -u "$U" "$C" hermes cron create "$EXPR" --no-agent --script "$SCRIPT" --name "$NOME" --deliver local </dev/null
   echo "criado: $NOME  [$EXPR]  $SCRIPT"
 done
 

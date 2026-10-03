@@ -19,7 +19,7 @@ docker exec "$C" python3 "$DEST/agenda.py" linhas | while IFS="$(printf '\t')" r
     continue
   fi
   for ID in $IDS; do
-    docker exec "$C" hermes cron remove "$ID" </dev/null
+    docker exec -u "$(docker exec "$C" stat -c %u:%g /opt/data)" "$C" hermes cron remove "$ID" </dev/null
     echo "removido: $NOME ($ID)"
   done
 done
