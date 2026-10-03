@@ -2,6 +2,8 @@
 ferramentas da Central, e resposta com citação [n] via DeepSeek. O modelo não
 calcula (R3); a pergunta chega pseudonimizada (R5) e é pseudonimizada de novo."""
 import json
+import threading
+from collections import OrderedDict
 import logging
 import os
 import re
@@ -53,7 +55,11 @@ def auth(h: str | None):
 
 
 def embed(t: str) -> list[float]:
-    r = httpx.post(f"{E['OLLAMA_URL']}/api/embed", json={"model": E["EMBED_MODEL"], "input": [t]}, timeout=60)
+    # keep_alive: sem ele o Ollama descarrega o modelo após 5 min parado e a
+    # próxima pergunta espera a recarga (5–15 s no CPU do VPS)
+    r = httpx.post(f"{E['OLLAMA_URL']}/api/embed",
+                   json={"model": E["EMBED_MODEL"], "input": [t], "keep_alive": E.get("OLLAMA_KEEP_ALIVE", "24h")},
+                   timeout=60)
     r.raise_for_status()
     return r.json()["embeddings"][0]
 
@@ -158,6 +164,54 @@ class DeidReq(BaseModel):
     texto: str = Field(min_length=1, max_length=8000)
 
 
+@app.on_event("startup")
+def _aquecer():
+    # carrega o modelo de busca já na subida, fora da primeira pergunta
+    threading.Thread(target=lambda: _tentar(lambda: embed("aquecimento")), daemon=True).start()
+
+
+def _tentar(f):
+    try:
+        f()
+    except Exception as e:  # noqa: BLE001 — aquecimento é melhor esforço
+        log.warning(json.dumps({"aquecimento": type(e).__name__}))
+
+
+# ── Respostas recentes ────────────────────────────────────────────────────────
+# A mesma pergunta (já sem dado pessoal e com siglas expandidas) nas mesmas
+# fontes volta na hora, por até CACHE_TTL_S (padrão 6 h). Não guarda pergunta
+# com dado do paciente (peso/idade), resposta com erro nem "não encontrei".
+CACHE_TTL_S = int(E.get("CACHE_TTL_S", "21600"))
+CACHE_MAX = int(E.get("CACHE_MAX", "200"))
+_cache: "OrderedDict[tuple, tuple[float, list[str]]]" = OrderedDict()
+_cache_trava = threading.Lock()
+
+
+def _chave_cache(tenant: str, q: str) -> tuple:
+    return (tenant, re.sub(r"\s+", " ", sem_acento(q)).strip(" ?!.").lower())
+
+
+def cache_ler(chave: tuple) -> list[str] | None:
+    with _cache_trava:
+        item = _cache.get(chave)
+        if not item:
+            return None
+        quando, linhas = item
+        if time.time() - quando > CACHE_TTL_S:
+            _cache.pop(chave, None)
+            return None
+        _cache.move_to_end(chave)
+        return linhas
+
+
+def cache_gravar(chave: tuple, linhas: list[str]) -> None:
+    with _cache_trava:
+        _cache[chave] = (time.time(), linhas)
+        _cache.move_to_end(chave)
+        while len(_cache) > CACHE_MAX:
+            _cache.popitem(last=False)
+
+
 @app.post("/v1/deid")
 def deid(r: DeidReq, authorization: str | None = Header(None)):
     """Desidentificação NER (red-team V5): os gateways (clinical-search, Hermes)
@@ -196,16 +250,34 @@ def ask(r: Req, authorization: str | None = Header(None)):
     t0 = time.time()
     # siglas expandidas ("icc" → "icc (insuficiência cardíaca congestiva)"):
     # sem isso a similaridade da pergunta curta com os trechos fica abaixo do gate
-    q = expandir_siglas(pseudonimizar(r.q))
+    # chave da memória pela pergunta já sem dado pessoal, antes de expandir siglas
+    # ("icc" e "ICC?" expandem diferente e são a mesma pergunta)
+    pq = pseudonimizar(r.q)
+    q = expandir_siglas(pq)
+    tem_peso = bool(re.search(r"\d+[,.]?\d*\s*(kg|quilos?|anos?|meses)\b", q, re.I))
+    chave = _chave_cache(r.tenant_id, pq)
+    guardada = None if tem_peso else cache_ler(chave)
+    if guardada is not None:
+        def repetir():
+            # o request_id da meta é o da pergunta atual
+            primeira = json.loads(guardada[0]); primeira["request_id"] = r.request_id; primeira["cache"] = True
+            yield json.dumps(primeira, ensure_ascii=False) + "\n"
+            yield from guardada[1:]
+            log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "cache": True, "ms": int((time.time() - t0) * 1000)}))
+        return StreamingResponse(repetir(), media_type="application/x-ndjson")
     tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id)
+    t_busca = int((time.time() - t0) * 1000)
     fontes = [fmt_src(i, p) for i, p in enumerate(trechos)]
     gate_ok = passa_gate(melhor, com_lexico, trechos)
     ferramentas = [fmt_tool(t) for t in tools if t.score > 0.5]
-    tem_peso = bool(re.search(r"\d+[,.]?\d*\s*(kg|quilos?|anos?|meses)\b", q, re.I))
 
     def gerar():
-        yield json.dumps({"type": "meta", "request_id": r.request_id, "gate": gate_ok, "melhor_score": round(melhor, 3),
-                          "ferramentas": ferramentas, "fontes": fontes if gate_ok else []}, ensure_ascii=False) + "\n"
+        linhas: list[str] = []
+        t_primeiro = None
+        meta = json.dumps({"type": "meta", "request_id": r.request_id, "gate": gate_ok, "melhor_score": round(melhor, 3),
+                           "ferramentas": ferramentas, "fontes": fontes if gate_ok else []}, ensure_ascii=False) + "\n"
+        linhas.append(meta)
+        yield meta
         if not gate_ok:
             yield json.dumps({"type": "delta", "text": "Não encontrei isso no material de referência."}, ensure_ascii=False) + "\n"
             yield json.dumps({"type": "done", "citacoes_invalidas": [], "sem_citacao": False}) + "\n"
@@ -230,8 +302,12 @@ def ask(r: Req, authorization: str | None = Header(None)):
             for ch in stream:
                 d = (ch.choices[0].delta.content or "") if ch.choices else ""
                 if d:
+                    if t_primeiro is None:
+                        t_primeiro = int((time.time() - t0) * 1000)
                     texto += d
-                    yield json.dumps({"type": "delta", "text": d}, ensure_ascii=False) + "\n"
+                    linha = json.dumps({"type": "delta", "text": d}, ensure_ascii=False) + "\n"
+                    linhas.append(linha)
+                    yield linha
         except Exception as e:  # modelo fora do ar: o cliente mostra "IA indisponível"
             log.error(json.dumps({"rid": r.request_id, "erro": type(e).__name__}))
             yield json.dumps({"type": "error", "text": "IA indisponível no momento."}, ensure_ascii=False) + "\n"
@@ -252,11 +328,16 @@ def ask(r: Req, authorization: str | None = Header(None)):
                 if re.sub(r"\s+", "", qtd).lower() not in base:
                     calculo_suspeito = True
                     break
-        yield json.dumps({"type": "done", "citacoes_invalidas": invalidas,
+        fim = json.dumps({"type": "done", "citacoes_invalidas": invalidas,
                           "sem_citacao": (not citadas) and (not nao_encontrou),
                           "calculo_suspeito": calculo_suspeito}) + "\n"
+        linhas.append(fim)
+        yield fim
+        if not tem_peso and not nao_encontrou and not invalidas and not calculo_suspeito and citadas:
+            cache_gravar(chave, linhas)
         log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "gate": True, "top": round(melhor, 3),
-                             "fontes": [f["titulo"] for f in fontes], "ms": int((time.time() - t0) * 1000)}, ensure_ascii=False))
+                             "fontes": [f["titulo"] for f in fontes], "ms_busca": t_busca, "ms_1o_trecho": t_primeiro,
+                             "ms": int((time.time() - t0) * 1000)}, ensure_ascii=False))
 
     return StreamingResponse(gerar(), media_type="application/x-ndjson",
                              headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
