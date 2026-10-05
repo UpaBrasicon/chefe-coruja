@@ -17,13 +17,15 @@ BEGIN
   -- trava: só em banco recém-montado pelas migrations. Aceita a organização
   -- fictícia que a migration 20260815000005_fase1_seed cria ("Rede Saúde
   -- Teste") e a própria homologação; recusa qualquer outra organização e
-  -- qualquer banco que já tenha usuário (a produção tem).
+  -- qualquer banco que já tenha atendimento ou internação (a produção tem; um
+  -- banco recém-montado não). Usuário não conta: pode já existir o de quem opera.
   IF EXISTS (SELECT 1 FROM public.organizacoes
               WHERE id NOT IN ('00000000-0000-0000-0000-000000000001', '30000000-0000-4000-8000-000000000001')) THEN
     RAISE EXCEPTION 'Este banco tem uma organização que não é da homologação: o seed só roda em banco recém-montado.';
   END IF;
-  IF EXISTS (SELECT 1 FROM auth.users) AND NOT EXISTS (SELECT 1 FROM public.organizacoes WHERE id = '30000000-0000-4000-8000-000000000001') THEN
-    RAISE EXCEPTION 'Este banco já tem usuários: o seed de homologação roda antes do primeiro usuário (confira se não é a produção).';
+  IF NOT EXISTS (SELECT 1 FROM public.organizacoes WHERE id = '30000000-0000-4000-8000-000000000001')
+     AND (EXISTS (SELECT 1 FROM public.episodios) OR EXISTS (SELECT 1 FROM public.internacoes)) THEN
+    RAISE EXCEPTION 'Este banco já tem atendimentos ou internações: o seed de homologação só roda em banco recém-montado (confira se não é a produção).';
   END IF;
 END $$;
 
