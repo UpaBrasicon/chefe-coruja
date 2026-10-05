@@ -14,9 +14,16 @@
 
 DO $$
 BEGIN
-  -- trava: este seed só roda num banco sem organização "real" cadastrada
-  IF EXISTS (SELECT 1 FROM public.organizacoes WHERE id <> '30000000-0000-4000-8000-000000000001') THEN
-    RAISE EXCEPTION 'Este banco já tem outra organização: o seed de homologação só roda em banco recém-reconstruído.';
+  -- trava: só em banco recém-montado pelas migrations. Aceita a organização
+  -- fictícia que a migration 20260815000005_fase1_seed cria ("Rede Saúde
+  -- Teste") e a própria homologação; recusa qualquer outra organização e
+  -- qualquer banco que já tenha usuário (a produção tem).
+  IF EXISTS (SELECT 1 FROM public.organizacoes
+              WHERE id NOT IN ('00000000-0000-0000-0000-000000000001', '30000000-0000-4000-8000-000000000001')) THEN
+    RAISE EXCEPTION 'Este banco tem uma organização que não é da homologação: o seed só roda em banco recém-montado.';
+  END IF;
+  IF EXISTS (SELECT 1 FROM auth.users) AND NOT EXISTS (SELECT 1 FROM public.organizacoes WHERE id = '30000000-0000-4000-8000-000000000001') THEN
+    RAISE EXCEPTION 'Este banco já tem usuários: o seed de homologação roda antes do primeiro usuário (confira se não é a produção).';
   END IF;
 END $$;
 
