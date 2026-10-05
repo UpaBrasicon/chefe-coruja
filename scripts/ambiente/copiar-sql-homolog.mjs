@@ -4,8 +4,10 @@
 // Uso: npm run homolog:copiar -- 1   (depois 2, 3, 4, 5, 6)
 // No painel de homologação: SQL Editor → New query → Ctrl+V → Run.
 //
-// Vai para o clip.exe em UTF-16LE com BOM: assim os acentos chegam intactos
-// (ler pelo PowerShell corromperia o texto — ver AGENTS.md).
+// Vai para o clip.exe em UTF-16LE SEM BOM: os acentos chegam intactos e o
+// SQL Editor não recebe um U+FEFF invisível na 1ª linha (com BOM, o clip.exe
+// o copiava junto e o Postgres acusava erro de sintaxe). Ler pelo PowerShell
+// corromperia o texto — ver AGENTS.md.
 import { readFileSync, existsSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 
@@ -29,8 +31,8 @@ if (!existsSync(arquivo)) {
   console.error(`Arquivo não encontrado: ${arquivo}`)
   process.exit(1)
 }
-const texto = readFileSync(arquivo, 'utf8')
-const dados = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(texto, 'utf16le')])
+const texto = readFileSync(arquivo, 'utf8').replace(/^﻿/, '')
+const dados = Buffer.from(texto, 'utf16le')
 const r = spawnSync('clip', { input: dados })
 if (r.status !== 0) {
   console.error('Não consegui copiar para a área de transferência (clip.exe).')
