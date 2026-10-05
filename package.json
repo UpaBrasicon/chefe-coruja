@@ -41,7 +41,8 @@
     "homolog:push": "node scripts/ambiente/supabase-alvo.mjs push homolog",
     "homolog:reset": "node scripts/ambiente/supabase-alvo.mjs reset homolog",
     "homolog:functions": "node scripts/ambiente/supabase-alvo.mjs functions homolog",
-    "producao:push": "node scripts/ambiente/supabase-alvo.mjs push producao"
+    "producao:push": "node scripts/ambiente/supabase-alvo.mjs push producao",
+    "homolog:copiar": "node scripts/ambiente/copiar-sql-homolog.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
