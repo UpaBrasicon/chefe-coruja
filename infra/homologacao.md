@@ -6,7 +6,7 @@ Fase 0, tarefa 2 do `BACKLOG.md`. Ambiente separado da produção, onde toda mig
 
 | Peça | Produção | Homologação |
 |---|---|---|
-| Banco (Supabase) | `saqjrjtrkzkswsxxvdxn` | `puzivzsfyheiqjqyibhk` (projeto antigo, zerado e reconstruído pelas migrations) |
+| Banco (Supabase) | `saqjrjtrkzkswsxxvdxn` | `kswurfyxxvfydpjfrivy` (`chefe-coruja-homolog`, criado em 05/10/2026, São Paulo) |
 | Site | `www.chefecoruja.com.br` (Vercel, branch `master`, escopo Production) | `homolog.chefecoruja.com.br` (mesmo projeto Vercel, branch `homolog`, escopo Preview) |
 | Deploys de preview de qualquer branch | — | apontam para o banco de homologação (escopo Preview) |
 | Dados | fictícios | fictícios (`supabase/homolog/seed-homolog.sql`), sem usuário criado por seed |
@@ -33,10 +33,10 @@ Fase 0, tarefa 2 do `BACKLOG.md`. Ambiente separado da produção, onde toda mig
 
 ## Como montar (ordem)
 
-1. **Ligar o CLI à homologação** — `npx supabase link --project-ref puzivzsfyheiqjqyibhk` (pede a senha do banco; se não souber, Settings → Database → Reset database password no painel de homologação). Conferir: `npm run db:alvo` → `homolog`.
-2. **Zerar e reconstruir** — `npm run homolog:reset` (APAGA o banco de homologação e reaplica todas as migrations, sem seed).
+1. **Ligar o CLI à homologação** — `npx supabase link --project-ref kswurfyxxvfydpjfrivy` (pede a senha do banco; se não souber, Settings → Database → Reset database password no painel de homologação). Conferir: `npm run db:alvo` → `homolog`.
+2. **Aplicar as migrations** — `npm run homolog:push` (projeto novo, vazio; `npm run homolog:reset` fica para quando for preciso zerar a homologação de novo).
 3. **Edge Functions** — `npm run homolog:functions`; depois configurar os segredos listados acima no painel de homologação.
-4. **Protocolo e SIGTAP×CID** — no SQL Editor de homologação (URL com `puzivzs`): rodar `supabase/dados/protocolo_aparecida_2025.sql` e `supabase/dados/sigtap_cid.sql`.
+4. **Protocolo e SIGTAP×CID** — no SQL Editor de homologação (URL com `kswurfyxxvfydpjfrivy`): rodar `supabase/dados/protocolo_aparecida_2025.sql` e `supabase/dados/sigtap_cid.sql`.
 5. **Terminologia** — no terminal, com `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` de homologação definidos só na sessão: `node scripts/terminologia/importar-cid10.ts`, `importar-sigtap.ts`, `importar-cbo.ts`, `importar-cmed.ts`, `importar-loinc.ts`.
 6. **Seed fictício** — SQL Editor: `supabase/homolog/seed-homolog.sql`.
 7. **Auth** — Authentication → URL Configuration: Site URL `https://homolog.chefecoruja.com.br`; Redirect URLs `https://homolog.chefecoruja.com.br/**`.
@@ -48,7 +48,7 @@ Fase 0, tarefa 2 do `BACKLOG.md`. Ambiente separado da produção, onde toda mig
 ## Como verificar (evidência)
 
 - `homolog.chefecoruja.com.br` abre e entra com o super admin de homologação.
-- No DevTools (Network), todas as chamadas vão para `puzivzsfyheiqjqyibhk.supabase.co`; o `index.html` de homologação traz a meta CSP com esse host, e o de produção, com `saqjrjtrkzkswsxxvdxn`.
+- No DevTools (Network), todas as chamadas vão para `kswurfyxxvfydpjfrivy.supabase.co`; o `index.html` de homologação traz a meta CSP com esse host, e o de produção, com `saqjrjtrkzkswsxxvdxn`.
 - `npm run homolog:push` com produção ligada é recusado (saída "RECUSADO").
 
 ## Como reverter

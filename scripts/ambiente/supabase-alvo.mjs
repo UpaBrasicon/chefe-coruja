@@ -19,7 +19,7 @@ import { spawnSync } from 'node:child_process'
 
 export const PROJETOS = {
   producao: 'saqjrjtrkzkswsxxvdxn',
-  homolog: 'puzivzsfyheiqjqyibhk',
+  homolog: 'kswurfyxxvfydpjfrivy',
 }
 
 const nomeDoRef = (ref) => Object.entries(PROJETOS).find(([, r]) => r === ref)?.[0] ?? 'desconhecido'

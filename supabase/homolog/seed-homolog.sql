@@ -8,7 +8,7 @@
 -- primeiro super admin sai de supabase/homolog/promover-super-admin.sql.
 --
 -- Rodar no SQL Editor do projeto de homologação. ANTES, confira que a URL do
--- painel contém puzivzsfyheiqjqyibhk (homologação), nunca saqjrjtrkzkswsxxvdxn.
+-- painel contém kswurfyxxvfydpjfrivy (homologação), nunca saqjrjtrkzkswsxxvdxn.
 -- Idempotente (ON CONFLICT / NOT EXISTS): pode rodar de novo.
 -- ════════════════════════════════════════════════════════════════════════════
 

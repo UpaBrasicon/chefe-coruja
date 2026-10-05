@@ -1,7 +1,7 @@
 -- ════════════════════════════════════════════════════════════════════════════
 -- Primeiro super admin da HOMOLOGAÇÃO (Fase 0, tarefa 2).
 --
--- 1. No painel do projeto de homologação (URL com puzivzsfyheiqjqyibhk):
+-- 1. No painel do projeto de homologação (URL com kswurfyxxvfydpjfrivy):
 --    Authentication → Users → Add user → e-mail + senha (escolhida por você,
 --    nunca a mesma da produção) → marcar "Auto Confirm User".
 -- 2. Trocar o e-mail abaixo e rodar este arquivo no SQL Editor do MESMO projeto.
