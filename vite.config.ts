@@ -1,7 +1,7 @@
 import path from 'path'
 import { execSync } from 'node:child_process'
 import { createRequire } from 'node:module'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
@@ -24,11 +24,43 @@ function versaoApp(): string {
   }
 }
 
-export default defineConfig({
+// CSP por ambiente (Fase 0, tarefa 2). O cabeçalho do vercel.json vale para
+// todos os ambientes e libera só *.supabase.co; esta meta, gerada no build com
+// o VITE_SUPABASE_URL do ambiente, estreita o connect-src ao projeto certo. O
+// navegador aplica as duas políticas (vale a interseção): produção só fala com
+// o banco de produção, homologação só com o de homologação.
+function cspDoAmbiente(mode: string): Plugin {
+  return {
+    name: 'csp-do-ambiente',
+    apply: 'build',
+    transformIndexHtml() {
+      const url = loadEnv(mode, process.cwd(), 'VITE_').VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL
+      let host: string
+      try {
+        host = url ? new URL(url).host : ''
+      } catch {
+        host = ''
+      }
+      if (!host) {
+        // no Vercel o build não sai sem saber qual banco é o dele
+        if (process.env.VERCEL === '1') throw new Error('VITE_SUPABASE_URL ausente ou inválida no build do Vercel')
+        console.warn('[csp-do-ambiente] VITE_SUPABASE_URL ausente: build sem a CSP estreita (só a do cabeçalho)')
+        return []
+      }
+      return [{
+        tag: 'meta',
+        attrs: { 'http-equiv': 'Content-Security-Policy', content: `connect-src 'self' https://${host} wss://${host}` },
+        injectTo: 'head-prepend',
+      }]
+    },
+  }
+}
+
+export default defineConfig(({ mode }) => ({
   define: {
     __APP_VERSAO__: JSON.stringify(versaoApp()),
   },
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), cspDoAmbiente(mode)],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -63,4 +95,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))
