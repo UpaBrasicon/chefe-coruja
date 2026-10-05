@@ -29,6 +29,12 @@ INSERT INTO public.unidades (id, organizacao_id, nome, tipo, latitude, longitude
   ('31000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 'UPA Homologação', 'upa', -16.6869, -49.2648, 500)
 ON CONFLICT (id) DO NOTHING;
 
+-- protocolo de classificação da triagem (carregado antes por
+-- supabase/dados/protocolo_aparecida_2025.sql); sem ele a triagem fica sem fluxogramas
+UPDATE public.unidades
+   SET protocolo_classificacao_id = (SELECT id FROM public.protocolos_classificacao WHERE codigo = 'sms-aparecida-2025')
+ WHERE id = '31000000-0000-4000-8000-000000000001' AND protocolo_classificacao_id IS NULL;
+
 INSERT INTO public.setores (id, unidade_id, nome, tipo, ordem) VALUES
   ('32000000-0000-4000-8000-000000000001', '31000000-0000-4000-8000-000000000001', 'Pronto Socorro', 'emergencia', 1),
   ('32000000-0000-4000-8000-000000000002', '31000000-0000-4000-8000-000000000001', 'Observação', 'observacao', 2),

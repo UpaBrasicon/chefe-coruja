@@ -47,3 +47,6 @@ data/terminologia/*
 
 .vercel
 .env*
+
+# partes geradas do sigtap_cid.sql para o SQL Editor (homologação)
+supabase/homolog/partes/
