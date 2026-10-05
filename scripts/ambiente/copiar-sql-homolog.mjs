@@ -2,6 +2,7 @@
 // homologação pelo SQL Editor do Supabase (Fase 0, tarefa 2).
 //
 // Uso: npm run homolog:copiar -- 1   (depois 2, 3, 4, 5, 6)
+//      npm run homolog:copiar -- 7 seu@email   (super admin; e-mail do usuário criado no painel)
 // No painel de homologação: SQL Editor → New query → Ctrl+V → Run.
 //
 // Vai para o clip.exe em UTF-16LE SEM BOM: os acentos chegam intactos e o
@@ -18,6 +19,7 @@ const ORDEM = [
   ['supabase/homolog/partes/sigtap_cid_parte3.sql', 'SIGTAP × CID, parte 3 de 4'],
   ['supabase/homolog/partes/sigtap_cid_parte4.sql', 'SIGTAP × CID, parte 4 de 4'],
   ['supabase/homolog/seed-homolog.sql', 'UPA de homologação (setores, leitos, pacientes fictícios)'],
+  ['supabase/homolog/promover-super-admin.sql', 'seu usuário vira super admin da homologação'],
 ]
 
 const n = Number(process.argv[2])
@@ -31,7 +33,15 @@ if (!existsSync(arquivo)) {
   console.error(`Arquivo não encontrado: ${arquivo}`)
   process.exit(1)
 }
-const texto = readFileSync(arquivo, 'utf8').replace(/^﻿/, '')
+let texto = readFileSync(arquivo, 'utf8').replace(/^\uFEFF/, '')
+if (arquivo.endsWith('promover-super-admin.sql')) {
+  const email = (process.argv[3] ?? '').trim()
+  if (!/^[^\s@']+@[^\s@']+\.[^\s@']+$/.test(email)) {
+    console.error('Informe o e-mail do usuário criado no painel: npm run homolog:copiar -- 7 seu@email')
+    process.exit(1)
+  }
+  texto = texto.replace('TROQUE-PELO-SEU-EMAIL@exemplo.com', email)
+}
 const dados = Buffer.from(texto, 'utf16le')
 const r = spawnSync('clip', { input: dados })
 if (r.status !== 0) {
@@ -40,5 +50,6 @@ if (r.status !== 0) {
 }
 console.log(`Copiado ${n} de ${ORDEM.length}: ${descricao} (${Math.round(texto.length / 1024)} KB).`)
 console.log('Agora, no painel de homologação: SQL Editor → New query → Ctrl+V → Run.')
-if (n < ORDEM.length) console.log(`Quando terminar sem erro: npm run homolog:copiar -- ${n + 1}`)
-else console.log('Esse era o último. Próximo passo: URL do Auth e seu usuário.')
+if (n === ORDEM.length - 1) console.log('Antes do 7: crie seu usuário (Authentication → Users → Add user). Depois: npm run homolog:copiar -- 7 seu@email')
+else if (n < ORDEM.length) console.log(`Quando terminar sem erro: npm run homolog:copiar -- ${n + 1}`)
+else console.log('Esse era o último. Entre em homolog.chefecoruja.com.br quando o domínio estiver no ar.')
