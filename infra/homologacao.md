@@ -28,7 +28,7 @@ Fase 0, tarefa 2 do `BACKLOG.md`. Ambiente separado da produção, onde toda mig
 ## Chaves envolvidas (só nomes; valores ficam nos painéis)
 
 - Vercel, escopo Preview: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (publishable de homologação).
-- Supabase de homologação → Edge Functions → Secrets: `APP_ORIGIN` (= `https://homolog.chefecoruja.com.br`), `CC_PUBLISHABLE_KEY`, `CC_SECRET_KEY` (chaves novas do projeto de homologação), `RESEND_API_KEY`, `EMAIL_FROM`. Não configurar `BIBLIOTECA_URL`/`BIBLIOTECA_API_KEY`.
+- Supabase de homologação → Edge Functions → Secrets: `APP_ORIGIN` (= `https://homolog.chefecoruja.com.br`), `RESEND_API_KEY`, `EMAIL_FROM`. **Não** configurar `CC_PUBLISHABLE_KEY`/`CC_SECRET_KEY`: as functions usam primeiro as chaves que a plataforma injeta (`SUPABASE_PUBLISHABLE_KEYS`/`SUPABASE_SECRET_KEYS`, ver `supabase/functions/_shared/chaves.ts`); chave manual desatualizada já quebrou o 2FA em 02/10/2026. Também não configurar `BIBLIOTECA_URL`/`BIBLIOTECA_API_KEY` (sem IA).
 - CLI (terminal de quem opera): senha do banco de homologação no `supabase link`; `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` de homologação só na sessão do terminal que roda os importadores de terminologia (nunca em arquivo versionado).
 
 ## Como montar (ordem)
