@@ -1,0 +1,387 @@
+# PROMPT — Execução do backlog Chefe Coruja
+
+## Papel
+Você é o engenheiro-chefe responsável pela plataforma **Chefe Coruja** (gestão hospitalar multi-tenant para UPAs, PS e hospitais pequenos). Stack: React + Vite + Tailwind + shadcn/ui (frontend, Vercel), Supabase (Postgres, RLS, RPCs, Edge Functions, Supabase Auth), Resend (e-mail), auditoria em hash-chain, sessão com 2FA. Dados clínicos e de escala médica caem sob a LGPD. Você trabalha **uma tarefa por vez**, dentro da fase atual, seguindo este backlog.
+
+## Regras globais
+1. Responda sempre em português do Brasil.
+2. Nunca invente tabelas, colunas, RPCs ou flags. Se não souber o estado atual do schema/código, **inspecione ou pergunte antes** de propor alteração.
+3. Nunca aplique nada diretamente em produção; o alvo padrão é homologação.
+4. Não misture expansão de produto com correção de risco na mesma entrega.
+5. Separe sempre "tem hoje" de "roadmap" em qualquer material comercial.
+6. Ao concluir uma tarefa, liste a evidência de que cada critério de aceite foi atendido.
+7. Toda regra de banco, RPC, RLS e operação segue o bloco "Regras de backend" abaixo.
+8. Provedor de autenticação é Supabase Auth. Não propor troca (Clerk ou outro); se o 2FA nativo se mostrar inviável, alertar antes de qualquer migração.
+9. Cada integração ou tarefa vai em branch própria e PR próprio; nada de acumular mudanças não revisadas.
+10. Toda integração de infraestrutura deixa um documento `infra/<nome>.md` (o que cobre, o que não cobre, chaves envolvidas, como reverter) e é marcada como concluída no backlog.
+
+## Regras de backend (Supabase/Postgres)
+
+### Migrations
+- Toda migration é versionada, idempotente e segue **expand/contract**:
+  1. *expand* — adiciona coluna/tabela/RPC nova, mantém a antiga;
+  2. deploy do app que funciona com as duas;
+  3. *contract* — remove a antiga somente na release seguinte.
+- Proibido: `DROP`/`RENAME` de coluna em uso, `ALTER TYPE` destrutivo, migration que exija downtime. Se for inevitável, declarar explicitamente e propor janela.
+- Toda migration tem rollback escrito e testado em homolog.
+
+### RPCs
+- Regra de negócio fica em RPC/trigger, nunca só no frontend.
+- `SECURITY DEFINER` só com `SET search_path = ''` e validação de permissão explícita dentro da função; justificar cada uso.
+- Entrada validada no banco (tipos, enums, intervalos, pertencimento à unidade do usuário). Erro de permissão e erro de validação são distintos.
+- Operações que podem ser repetidas (checagem, alta, higienização) aceitam chave de idempotência ou verificam o estado anterior antes de agir.
+- Mudança de estado (leito, prescrição, AIH, regulação) usa máquina de estados explícita: transições inválidas falham no banco.
+
+### RLS e auditoria
+- Toda tabela nova nasce com RLS habilitada e política por unidade/papel.
+- Cada política tem teste automatizado (usuário certo acessa, usuário errado não).
+- Todo evento clínico gera registro na auditoria hash-chain **na mesma transação** da escrita; se a auditoria falhar, a escrita falha.
+- Verificação da cadeia roda como job agendado e após qualquer restore.
+
+### Jobs e operação
+- Jobs (guarda de 20 anos, verificação de cadeia, expiração de reserva) rodam via `pg_cron` ou Edge Function agendada, com lock contra execução concorrente e registro de início/fim/resultado.
+- Conexões via pooler (Supavisor) em modo transaction; nada abre conexão direta.
+- Segredos (service_role, tokens de serviços, DSN privado) só em variáveis de ambiente do projeto; nunca em código, migration ou log. Antes de cada PR, auditar o bundle com build + grep pelos nomes das chaves.
+- Logs estruturados (JSON) com `request_id`, unidade e usuário; erros vão para rastreamento centralizado (ex.: Sentry).
+- Rate limit e proteção de borda ficam fora do app (CDN/WAF), não em RPC. Rate limit em aplicação só como segunda camada, em endpoint que a borda não cobre.
+
+### IA / LLM (vale para Hermes e qualquer uso futuro)
+- Todo dado de paciente passa por uma função de pseudonimização isolada e testável **antes** do dispatch ao modelo (remove/substitui nome, prontuário, datas identificáveis). A chamada é obrigatória no pipeline, não depende do desenvolvedor lembrar.
+- Auditar o que foi pseudonimizado, sem registrar o original.
+- Texto de corpus e chunks nunca saem do Supabase/VPS: nada de chunk inteiro em Sentry, PostHog ou log externo.
+- Toda resposta identifica a origem (corpus interno vs. fonte externa ao vivo) e devolve os identificadores das fontes usadas.
+
+## Princípios de arquitetura e resiliência
+| Nível | Mecanismo | Protege contra | Fase |
+|---|---|---|---|
+| 1 | Proteção de borda (WAF, rate limit, anti-DDoS) na frente de Vercel e Supabase | DDoS, força bruta, scraping | 0 |
+| 2 | PITR habilitado + teste de restore com verificação da cadeia | Ransomware, erro humano, migration ruim | 0 |
+| 3 | Release com rollback: deploys imutáveis Vercel + migrations expand/contract | Deploy ruim; é o blue-green da aplicação | 0 |
+| 3b | Observabilidade: Sentry (front + Edge Functions) com scrub LGPD e alerta de erro novo | Erro silencioso em prescrição, auth e RLS | 0 |
+| 4 | Modo de contingência documentado (papel padronizado, reentrada, limites do offline) | Qualquer indisponibilidade | 1 |
+| 5 | Read replica para BI/dashboards | Relatório pesado derrubando o atendimento | 2 |
+| 6 | Standby em segunda região (ativo-passivo) com runbook e RTO medido | Queda de região | 3+ ou quando contrato exigir |
+
+- **Ativo-ativo (multi-master) está fora do roadmap.** Para um PEP, gera leito duplamente ocupado, paciente duplicado e cadeia de auditoria bifurcada.
+- Blue-green de banco **não** é um segundo banco; é a disciplina expand/contract. O "switch" é o deploy do app.
+- Escala: subir tier de compute, pooler, índices e replica de leitura. Cliente grande (rede municipal, hospital de 300 leitos) recebe **projeto Supabase dedicado**, não malha global. Para isso ser possível sem reescrita, toda RLS mantém escopo por unidade desde agora.
+
+---
+
+Abaixo está o backlog operacional completo por fases, já no formato de execução: cada tarefa quebrada em subtarefas, critérios de aceite e ordem técnica.
+
+Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de produto com correção de risco.
+
+**Regra de execução:** Não avance uma fase inteira antes de fechar os P0 da fase atual. Um P0 só é considerado fechado com evidência registrada (teste, log ou documento) — não por declaração.
+
+| Prioridade | Significado |
+|---|---|
+| P0 | Bloqueador técnico/comercial. Fazer primeiro. Não pode ser rebaixado sem registro do motivo. |
+| P1 | Importante para vender melhor ou reduzir risco. |
+| P2 | Melhoria relevante, mas pode esperar. |
+| P3 | Futuro/estratégico. |
+
+---
+
+## Fase 0 — Hardening Obrigatório
+**Horizonte:** 0-30 dias
+**Objetivo:** deixar o sistema seguro, estável e vendável sem riscos óbvios.
+
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P0 | Ativar 2FA obrigatório em produção | Revisar flag `exigir_segundo_fator`; validar perfis que exigem 2FA; criar fallback administrativo seguro (códigos de recuperação de uso único, nunca bypass permanente); testar login, dispositivo confiável e recuperação; comunicar usuários | Usuários críticos não acessam sem 2FA; fluxo de recuperação testado; log de ativação registrado; nenhum segredo TOTP aparece em log |
+| 2 | P0 | Criar ambiente de homologação separado | Criar projeto Supabase homolog; separar variáveis Vercel; criar banco limpo ou mascarado; configurar migrations; criar domínio/URL de homolog; bloquear dados reais | Homologação acessível em URL própria; produção e homolog não compartilham banco nem chaves; deploy homolog validado |
+| 3 | P0 | Proteção de borda | Domínio de produção atrás do Cloudflare (proxy ativo); ativar Managed Ruleset (WAF OWASP, plano Free); rate limit por IP na rota de login e no endpoint do webhook de entrada; Turnstile na tela de login (brute force contra as contas de plantonistas); proteção DDoS; bloquear países sem uso; registrar bloqueios; documentar em `infra/cloudflare.md` **o que a borda cobre (Vercel, webhook) e o que não cobre (chamadas diretas do client ao `*.supabase.co`)**; opcional: Upstash Redis como rate limit de aplicação no webhook, só se ele não passar pela borda | Tráfego malicioso barrado antes do app; login com rate limit e Turnstile; painel mostra bloqueios; nenhuma função legítima afetada; documento declara explicitamente o escopo real da proteção |
+| 4 | P0 | Assinatura HMAC no webhook de entrada | Identificar o(s) webhook(s) sem verificação de origem (achado da auditoria de 17/08/2026); implementar verificação de assinatura/segredo compartilhado; rejeitar com 401 e registrar tentativa; testar replay | Webhook rejeita requisição sem assinatura válida; tentativas inválidas aparecem em log; rate limit da tarefa 3 deixa de ser a única defesa |
+| 5 | P0 | Fixar `search_path` nas funções `SECURITY DEFINER` existentes | Listar as 8 funções (auditoria de 17/08/2026); adicionar `SET search_path = ''` com referências qualificadas por schema; validar permissão explícita dentro de cada uma; migration + rollback; testar cada função em homolog | Nenhuma função `SECURITY DEFINER` sem `search_path` fixado; evidência: query no catálogo retornando zero |
+| 6 | P0 | Fechar ciclo de vida do leito | Criar RPC `concluir_higienizacao_leito`; validar permissão por papel; atualizar status `higienizacao → livre`; registrar evento/auditoria; atualizar UI no mapa de leitos | Após alta, leito vai para higienização; usuário autorizado conclui higienização; leito volta para livre; evento auditado |
+| 7 | P0 | Bloquear/desbloquear leito | Criar RPC de bloqueio; criar RPC de desbloqueio; exigir motivo; impedir ocupação de leito bloqueado (validação no banco, não só na UI); mostrar status no mapa | Leito pode ser bloqueado/desbloqueado com motivo; status aparece no mapa; leito bloqueado não aceita internação |
+| 8 | P0 | Automatizar guarda de 20 anos | Transformar CLI manual em job controlado; parametrizar credenciais; registrar sucesso/falha; alertar falha; documentar rotina | Guarda executa sem ação manual; falhas geram alerta; logs preservam data, lote e resultado |
+| 9 | P0 | Testar restauração de backup/guarda | Habilitar PITR no Supabase; criar ambiente de teste de restore; restaurar amostra; validar integridade (inclusive verificação da cadeia de auditoria após restore); documentar RPO/RTO observado; guardar relatório | PITR ativo; existe relatório de teste com data, responsável, dados restaurados e resultado; cadeia íntegra após restore |
+| 10 | P0 | Remover acessos de teste em produção | Listar usuários de teste; identificar permissões elevadas; revogar usuários não reais; auditar super admins; registrar evidência | Produção sem usuários de teste; lista de super admins revisada; evidência salva |
+| 11 | P1 | Observabilidade mínima | Instalar Sentry no frontend (Vite) e nas Edge Functions; captura prioritária: motor de prescrição (zero tolerância a erro silencioso), funções `SECURITY DEFINER`, fluxo de autenticação/RLS; `beforeSend` removendo dado clínico e corpo de RPC clínica; contexto de erro com `request_id`, unidade e papel (nunca nome de paciente); alerta por e-mail/Slack para **erro novo**, não só acúmulo; tier Developer cobre 1 usuário — avisar antes de convidar um segundo (exige Team); testar com erro forçado em homolog; documentar em `infra/sentry.md` | Erro forçado em prescrição aparece no Sentry em menos de 1 minuto, sem nenhum campo clínico no payload; alerta de erro novo recebido |
+| 12 | P1 | Reserva de leito | Criar status/fluxo de reserva; associar reserva a paciente/episódio/solicitação; definir expiração opcional; permitir cancelar reserva; auditar | Leito pode ser reservado; reserva aparece no mapa; reserva pode virar ocupação ou ser cancelada; reserva expirada libera o leito automaticamente |
+| 13 | P1 | Corrigir rascunhos em localStorage texto claro | Mapear rascunhos; remover dado sensível do localStorage; criptografar se necessário (chave derivada da sessão, descartada no logout); limpar rascunhos antigos; testar perda de sessão | Nenhum dado clínico sensível fica em texto claro no localStorage |
+| 14 | P1 | Pipeline de release com rollback | Corrigir typecheck quebrado (`baseUrl` deprecated) e tornar typecheck bloqueante no CI; adotar regra expand/contract nas migrations; documentar e testar rollback de deploy Vercel; versionar Edge Functions; criar runbook de 1 página (promover, reverter, quem decide) | CI não passa com typecheck quebrado; rollback de frontend testado em homolog; nenhuma migration destrutiva desde a adoção; runbook publicado |
+| 15 | P1 | Documento de segurança/LGPD | Descrever RLS; auditoria hash-chain; perfis; sessão; 2FA; backup/PITR; proteção de borda (com escopo real); observabilidade e o que ela não recebe; limites conhecidos; responsabilidades do cliente | PDF/Markdown pronto para enviar a cliente; não promete criptografia por prontuário nem proteção de borda sobre o Supabase direto |
+| 16 | P1 | Definir RPO/RTO mínimo | Documentar objetivo de recuperação; definir frequência de backup; definir tempo máximo aceitável de restauração; alinhar com infraestrutura | Documento com RPO/RTO publicado internamente; comparado com o RPO/RTO observado na tarefa 9 |
+| 17 | P1 | Roteiro da demo atual | Criar paciente fictício; criar cenário UPA; definir falas; preparar dados de triagem, prescrição, enfermagem, leito e alta | Demo completa roda em 15 minutos sem depender de dados reais |
+| 18 | P1 | Exportação CSV/Excel inicial | Escolher telas de indicadores atuais; implementar export CSV; validar encoding (UTF-8 com BOM para Excel pt-BR); incluir filtros aplicados; auditar export se contiver dado sensível | Gestor consegue exportar indicadores principais em CSV/Excel |
+
+**Ordem técnica da Fase 0**
+1. Separar homologação.
+2. Configurar proteção de borda.
+3. Correções rápidas de auditoria: HMAC no webhook e `search_path` nas 8 funções (em homolog, depois produção).
+4. Ativar 2FA em homolog e depois produção.
+5. Corrigir leitos (ciclo de vida e bloqueio) em homolog.
+6. Habilitar PITR e automatizar backup/restore.
+7. Revisar acessos.
+8. P1 só após os P0 fechados: observabilidade, pipeline de release, localStorage, reserva.
+9. Criar documentos e demo.
+
+---
+
+## Fase 1 — Produto Demonstrável e Valor Gerencial
+**Horizonte:** 30-60 dias
+**Objetivo:** transformar o sistema existente em algo mais fácil de vender e entender.
+
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P0 | Demo matadora PS/UPA | Criar fluxo recepção → triagem → fila → médico → prescrição → enfermagem → observação/leito → alta; preparar dados fictícios; criar script de fala; treinar apresentação | Demo reproduz fluxo completo sem erro e sem expor dado real |
+| 2 | P0 | Dashboard PS/UPA | Definir KPIs; criar consulta/RPC; criar tela; separar por etapa; destacar gargalos; incluir atualização automática | Tela mostra aguardando triagem, aguardando médico, em atendimento, medicação, observação e alta |
+| 3 | P0 | Indicador recepção → triagem | Confirmar timestamps; criar regra de cálculo; exibir média, mediana e fora do alvo; filtrar por unidade/período | Gestor vê tempo médio recepção→triagem por período e unidade |
+| 4 | P0 | Indicador triagem → médico | Usar classificação e início de atendimento; calcular por cor; alertar atrasos por tempo-alvo (tempos-alvo configuráveis por unidade, com default Manchester) | Gestor vê espera por cor e identifica pacientes fora do tempo |
+| 5 | P0 | Pacientes por classificação de risco | Agregar por cor; filtrar por período/unidade/setor; exportar CSV | Gráfico/tabela por cor disponível e exportável |
+| 6 | P0 | Evasão/abandono | Consolidar eventos de retirada; agrupar motivos; calcular taxa; listar pacientes/eventos autorizados | Taxa de evasão aparece no dashboard com motivos |
+| 7 | P1 | Filtros livres de BI | Implementar filtro por período; unidade; setor; profissional; cor; etapa; preservar filtros na URL | Dashboards principais aceitam filtros dinâmicos |
+| 8 | P1 | Histórico encerrado inline no PEP | Definir regra de permissão; mostrar resumo de atendimentos encerrados; registrar log de acesso; permitir abrir detalhes com justificativa se necessário | Médico autorizado vê histórico resumido sem pedido manual separado; todo acesso ao detalhe fica rastreável por usuário e motivo |
+| 9 | P1 | Unificação de pacientes duplicados | Criar tela de candidatos duplicados; escolher cadastro mestre; migrar episódios/documentos; manter trilha de auditoria; bloquear merge perigoso | Dois cadastros podem ser mesclados com auditoria e sem perda de histórico; merge é reversível ou, no mínimo, o cadastro absorvido fica preservado como inativo |
+| 10 | P1 | One-page comercial | Definir proposta de valor; listar módulos prontos; listar diferenciais; listar "roadmap" separado; criar PDF | Material de 1 página pronto para reunião |
+| 11 | P1 | Matriz competitiva visual | Criar tabela Chefe Coruja x MV/Tasy/TOTVS/SisHOSP; separar "tem hoje" e "roadmap"; evitar promessas falsas | Matriz pronta para uso interno/comercial |
+| 12 | P1 | Modo de contingência documentado | Definir fluxo da unidade com sistema indisponível (formulários em papel padronizados por etapa); regra de reentrada posterior com marcação de "registro retroativo"; descrever o que o modo offline atual cobre e o que não cobre; tempo máximo tolerado antes de acionar contingência | Documento de contingência pronto para o cliente; formulários disponíveis; reentrada retroativa auditada |
+| 13 | P2 | Onboarding in-app mínimo | Criar tour ou dicas nas telas críticas; incluir recepção, triagem, prescrição e leitos | Usuário novo entende o fluxo básico sem treinamento externo pesado |
+| 14 | P2 | Analytics de produto e feature flags (PostHog) | Eventos mínimos: login, troca de aba na Central Clínica, uso de cada calculadora/escore, abertura do censo, chat lateral quando lançado; feature flag para rollout do dashboard do gestor (tarefa 2) por subconjunto de unidades antes do geral; session replay **desligado ou mascarado** em toda tela com dado de paciente; nenhum identificador de paciente em propriedade de evento; documentar em `infra/posthog.md` | Dashboard do gestor pode ser ligado por unidade; eventos aparecem sem dado clínico; replay inexistente em telas clínicas (verificado) |
+
+**Ordem técnica da Fase 1**
+1. Criar base fictícia e demo.
+2. Criar RPCs/consultas dos KPIs.
+3. Criar dashboard PS/UPA.
+4. Adicionar filtros e exportações.
+5. Implementar histórico inline.
+6. Implementar merge de pacientes.
+7. Criar materiais comerciais e documento de contingência.
+8. PostHog quando o dashboard do gestor estiver pronto para rollout.
+
+---
+
+## Fase 2 — Segurança Clínica e Maturidade Operacional
+**Horizonte:** 60-90 dias
+**Objetivo:** reduzir risco clínico e melhorar prescrição/enfermagem.
+
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P0 | Dupla checagem para alto risco | Definir lista de medicamentos alto risco (base: lista ISMP Brasil); marcar no cadastro; exigir segundo profissional; registrar data/hora/usuário; impedir conclusão sem segunda checagem quando obrigatório | Medicamento alto risco só é administrado após dupla checagem; o segundo checador não pode ser o mesmo usuário do primeiro |
+| 2 | P0 | Aprazamento assistido | Mapear frequências comuns; sugerir horários; permitir ajuste manual; registrar quem alterou; respeitar início e intervalo | Enfermagem recebe sugestão de horários e pode ajustar com auditoria |
+| 3 | P1 | Base inicial de interações medicamentosas | Escolher fonte/base (verificar licença de uso comercial antes de integrar); criar tabela de pares críticos; integrar na prescrição; classificar gravidade; permitir justificativa | Prescrição alerta interações críticas antes de emitir |
+| 4 | P1 | Intercorrência estruturada | Criar tipos de intercorrência; gravidade; conduta; profissional; vínculo ao episódio/internação; relatório | Intercorrências deixam de ser apenas texto solto |
+| 5 | P1 | Expandir escalas assistenciais | Priorizar Fugulin; depois Glasgow/Morse expandido/risco de queda; criar tabela versionada; gerar histórico | Escala Fugulin disponível e vinculada à internação |
+| 6 | P1 | Alteração versionada de item de prescrição | Permitir alterar dose/via/frequência com motivo; manter versão anterior; registrar auditoria; refletir na checagem | Prescrição pode ser alterada sem apagar histórico |
+| 7 | P1 | Teste do offline atual | Criar cenário de queda; registrar sinais vitais offline; sincronizar; testar conflito; testar criptografia local; documentar limites | Relatório de teste offline com sucesso/falhas e escopo suportado; limites refletidos no documento de contingência |
+| 8 | P1 | Expandir auditoria clínica | Mapear eventos sem auditoria; incluir prescrição, checagem, evolução, leito, documentos; criar verificação de cadeia | Eventos clínicos críticos auditados e verificáveis |
+| 9 | P2 | Painel da farmácia para críticos/faltas | Consolidar faltas sinalizadas; priorizar alto risco; exibir por unidade/setor; permitir retorno da farmácia | Farmácia vê pendências críticas em painel próprio |
+| 10 | P2 | Read replica para BI | Criar replica de leitura no Supabase; apontar dashboards, exportações e relatórios para a replica; medir lag; manter operações clínicas no primário | Consultas de BI não concorrem com o atendimento; lag monitorado |
+
+**Ordem técnica da Fase 2**
+1. Ajustar cadastro de medicamentos alto risco.
+2. Implementar dupla checagem.
+3. Implementar aprazamento assistido.
+4. Implementar interações críticas.
+5. Expandir auditoria.
+6. Criar intercorrência estruturada e escalas.
+7. Testar offline.
+8. Read replica, se dashboards já pesarem.
+
+---
+
+## Fase 3 — SUS, Produção e Integrações Mínimas
+**Horizonte:** 90-120 dias
+**Objetivo:** começar a transformar dados assistenciais em produção SUS e maturidade técnica.
+
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P0 | Evoluir ciclo AIH | Criar entidade de AIH; status: solicitada, aprovada, rejeitada, cancelada; vincular internação; registrar número; registrar competência; versionar alterações | Internação possui AIH controlada por status, número e competência |
+| 2 | P0 | Críticas AIH configuráveis | Transformar avisos em críticas configuráveis; validar CID, SIGTAP (com versão da tabela registrada), idade, sexo, CNS, CBO; definir bloqueante/não bloqueante | Sistema aponta inconsistências antes de finalizar AIH |
+| 3 | P0 | BPA individualizado inicial | Definir dados mínimos; mapear procedimento/profissional/CBO/CNES/CNS; gerar relatório/arquivo conforme escopo (layout do SIA/SUS vigente) | Unidade gera BPA-I básico validável |
+| 4 | P1 | BPA consolidado | Mapear produção agregada; criar fechamento por competência; gerar saída; validar totais | Unidade gera BPA-C básico por competência |
+| 5 | P1 | APAC MVP | Definir serviços alvo; criar entidade APAC; status; vínculo com paciente/procedimento; críticas básicas | APAC mínima funcional para escopo definido |
+| 6 | P1 | Documentação API mínima | Definir recursos; criar OpenAPI/Swagger ou Markdown; documentar auth; exemplos; erros | Documento técnico de API disponível |
+| 7 | P1 | API segura de pacientes/atendimentos/leitos | Criar endpoints/RPCs auditados; escopo por unidade; rate limit na borda; logs | Terceiro autorizado consulta pacientes/atendimentos/leitos com segurança |
+| 8 | P1 | Checklist RNDS | Listar certificado, IP fixo, credenciamento, ambiente, chaves, testes; separar pendências externas | Documento RNDS pronto para execução quando credenciais chegarem |
+| 9 | P2 | Exportação estruturada CSV/JSON | Definir datasets; pacientes, atendimentos, leitos, documentos; aplicar mascaramento quando necessário | Export estruturado disponível para admin autorizado |
+| 10 | P2 | Playbook de implantação | Criar checklist de unidade; setores; leitos; usuários; escala; protocolos; medicamentos; treinamento | Implantação UPA/hospital pequeno tem roteiro padronizado |
+| 11 | P2 | Standby em segunda região | Criar projeto Supabase em região secundária com replicação; definir critério de promoção (manual ou automática); criar runbook de failover e failback; executar simulado e medir RTO/RPO reais; sobe para P1 se contrato exigir | Simulado de failover documentado com RTO medido; runbook publicado; dados consistentes após failback |
+
+**Ordem técnica da Fase 3**
+1. Modelar AIH completa.
+2. Implementar críticas.
+3. Criar BPA-I.
+4. Criar BPA-C.
+5. Avaliar APAC por demanda.
+6. Documentar API.
+7. Criar endpoints seguros.
+8. Preparar RNDS.
+9. Standby regional conforme demanda contratual.
+
+---
+
+## Fase 4 — Regulação MVP e Plataforma de Rede
+**Horizonte:** 120-180 dias
+**Objetivo:** criar diferencial estratégico de rede, sem tentar fazer UBS completa ainda.
+
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P0 | Solicitação de regulação | Criar entidade; tipos: consulta, exame, leito, transferência; origem; destino desejado; prioridade; justificativa clínica | Unidade consegue abrir solicitação regulada |
+| 2 | P0 | Fila regulada | Criar painel do regulador; filtrar por tipo, prioridade, unidade, status; ordenar por prioridade/SLA | Regulador vê e ordena solicitações |
+| 3 | P0 | Priorização clínica | Definir critérios; permitir alteração pelo regulador; exigir motivo; auditar mudança | Prioridade pode ser definida/revisada com justificativa |
+| 4 | P0 | Aceite, recusa e devolução | Criar ações; exigir justificativa; notificar unidade solicitante; registrar histórico | Solicitação pode ser aceita, recusada ou devolvida com rastreabilidade |
+| 5 | P0 | Histórico no prontuário | Vincular regulação ao paciente; exibir no PEP; registrar acesso | Médico vê histórico regulatório do paciente |
+| 6 | P1 | Anexos e laudos | Permitir anexos; controlar acesso; auditar visualização/download | Solicitação contém documentos clínicos de apoio |
+| 7 | P1 | Painel de SLA | Calcular tempo por status; alertar atrasadas; filtrar por prioridade e tipo | Regulador vê solicitações fora do prazo |
+| 8 | P1 | Mapa simples de vagas/disponibilidade | Integrar leitos livres/reservados; permitir disponibilidade manual de serviços; mostrar por unidade | Regulador vê disponibilidade básica |
+| 9 | P1 | Aceite pela unidade destino | Criar papel/permissão da unidade destino; permitir aceitar/negar; registrar data/hora | Destino participa do fluxo formalmente |
+| 10 | P2 | Indicadores de regulação | Tempo médio, fila por tipo, taxa de devolução, gargalos | Dashboard de regulação disponível |
+
+**Ordem técnica da Fase 4**
+1. Criar modelo de dados de regulação.
+2. Criar solicitações.
+3. Criar fila do regulador.
+4. Criar ações de decisão.
+5. Integrar ao PEP.
+6. Integrar anexos.
+7. Integrar vagas/leitos.
+8. Criar indicadores.
+
+---
+
+## Fase 5 — UBS, Faturamento e Escala Competitiva
+**Horizonte:** 180+ dias
+**Objetivo:** ampliar para rede completa e competir com sistemas maiores.
+
+### Fase 5A — UBS Mínima
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P1 | Tipo de unidade UBS real | Alterar enum/modelo; ajustar UI; ajustar permissões; testar criação de unidade UBS | UBS pode ser cadastrada e operar sem inconsistência |
+| 2 | P1 | Atendimento UBS simples | Criar fluxo de atendimento; evolução; CID/CIAP; conduta; encaminhamento | UBS registra atendimento básico |
+| 3 | P1 | Agenda básica | Criar agenda por profissional; horários; marcação; cancelamento; faltas | UBS agenda consulta e atende paciente |
+| 4 | P1 | CIAP-2 | Importar terminologia; criar busca; vincular ao atendimento | Atendimento UBS aceita CIAP-2 |
+| 5 | P1 | Encaminhamento UBS → UPA/regulação | Criar documento/solicitação; vincular ao paciente; rastrear status | UBS encaminha e acompanha |
+| 6 | P2 | Retorno pós-UPA/hospital | Criar fluxo de contrarreferência; alertar UBS; exibir histórico | UBS recebe retorno do paciente |
+| 7 | P2 | Programas básicos | Hiperdia, pré-natal, puericultura por prioridade comercial | Pelo menos um programa básico funcional |
+
+### Fase 5B — Faturamento Inicial
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P1 | Conta do atendimento | Criar entidade conta; vincular episódio/internação; status; responsável | Atendimento gera conta |
+| 2 | P1 | Procedimentos faturáveis | Vincular procedimentos assistenciais/SIGTAP/TUSS conforme escopo; quantidade; profissional | Procedimentos entram na conta |
+| 3 | P1 | Materiais e medicamentos | Integrar prescrição/checagem; registrar consumo; permitir ajuste auditado | Medicamentos administrados podem alimentar conta |
+| 4 | P1 | AIH/APAC vinculadas à conta | Associar produção SUS à conta; exibir status | Conta mostra AIH/APAC relacionadas |
+| 5 | P2 | Pré-auditoria | Validar dados faltantes; CID/procedimento; profissional; CNS/CNES/CBO | Conta mostra pendências antes do fechamento |
+| 6 | P2 | Glosas | Registrar glosa; motivo; valor; recurso; status | Glosas podem ser acompanhadas |
+| 7 | P3 | TISS/TUSS | Definir escopo convênio; gerar guias; XML; regras | Só iniciar se mercado privado/convênio justificar |
+
+### Fase 5C — Integrações Externas
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P1 | Integração laboratório/LIS | Definir padrão (preferir HL7 v2 ou FHIR, conforme o LIS do cliente); pedido; resultado; status; anexos; auditoria | Exame solicitado retorna resultado no prontuário |
+| 2 | P1 | Integração imagem/RIS/PACS | Pedido; laudo; link/imagem; status | Médico acessa laudo/imagem pelo PEP |
+| 3 | P2 | ERP/financeiro | Exportar conta/produção; conciliar retorno; logs | Dados financeiros enviados a ERP |
+| 4 | P2 | Webhooks | Eventos: paciente criado, atendimento aberto, alta, internação, prescrição, regulação; assinatura HMAC; retry com backoff; idempotência no receptor | Terceiro recebe eventos com segurança |
+| 5 | P2 | e-SUS/RNDS | Implementar conforme credenciais e escopo | Integração validada em ambiente oficial |
+
+**Ordem técnica da Fase 5**
+1. Decidir se foco é UBS, faturamento ou integrações primeiro.
+2. Não iniciar os três em paralelo.
+3. Se cliente público pedir rede: UBS primeiro.
+4. Se hospital pedir receita: faturamento primeiro.
+5. Se cliente já tiver sistemas legados: integrações primeiro.
+6. Cliente grande recebe projeto Supabase dedicado; não alterar o multi-tenant para isso.
+
+---
+
+## Trilha Paralela — Hermes / Evidências (RAG clínico)
+**Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
+**Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
+
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P1 | Schema e RLS do corpus | Tabelas `evidence_sources` (título, autor, tipo: livro/diretriz/protocolo_institucional/pubmed, `tenant_id` NULL para corpus global, ano, registro de licenciamento) e `evidence_chunks` (texto, embedding, `source_id`, página/posição, hash para dedup); RLS: `tenant_id` NULL visível a todos, setado só ao próprio tenant; índice HNSW; migration expand + rollback | Policies testadas (tenant A não lê chunk de tenant B) **antes** de qualquer dado real; índice criado |
+| 2 | P1 | Pseudonimização obrigatória | Implementar a função da seção "IA / LLM" das Regras de backend; testes unitários com casos de nome, prontuário, datas; encaixar no pipeline de dispatch de forma não opcional; auditoria do que foi substituído | Nenhum prompt chega ao modelo sem passar pela função; teste automatizado prova isso |
+| 3 | P1 | Ingestão dos 2 livros | Extrair PDF preservando página/capítulo; chunking por seção clínica (não por tamanho fixo), overlap pequeno; gerar embeddings; persistir com `source_type='livro'`; processo reexecutável quando o livro atualizar; registro de licenciamento preenchido | Corpus consultável com página correta; reingestão não duplica (hash) |
+| 4 | P1 | Busca + citações rastreáveis | Resposta retorna lista de `chunk_id`; frontend resolve para fonte + página, clicável (estilo OpenEvidence); confiança alta/moderada/baixa por concordância entre chunks, origem e conflito entre fontes; só alta/moderada chega ao plantonista | Toda resposta exibida tem fonte clicável; resposta de baixa confiança não é exibida |
+| 5 | P1 | Fallback PubMed sob demanda | Disparar quando o corpus interno não atinge confiança suficiente; via MCP PubMed ou API; resultados citados ao vivo, **nunca armazenados** como corpus; resposta deixa claro "corpus interno" vs "PubMed ao vivo" | Nenhum abstract do PubMed persiste em `evidence_chunks`; origem visível ao usuário |
+| 6 | P2 | Operação | Resumo semanal do gestor via `pg_cron` (não fila externa); reavaliar IVFFlat só se o corpus pesar na instância compartilhada; custo de embeddings monitorado | Job com lock e log; custo mensal conhecido |
+
+**Ordem técnica:** schema/RLS → pseudonimização → ingestão → busca/citações → PubMed → operação. Nada de dado real de paciente antes do item 2 fechado.
+
+---
+
+## Backlog Comercial Paralelo
+| Ordem | Material | Subtarefas | Critério de pronto | Pronto até |
+|---|---|---|---|---|
+| 1 | Demo comercial | Roteiro; base fictícia; falas; objeções; tempo de 15 minutos | Demo validada internamente | Fim da Fase 0 |
+| 2 | One-page | Dor; solução; módulos prontos; diferenciais; roadmap; contato | PDF pronto | Fase 1 |
+| 3 | Pitch deck | 8-10 slides; problema; solução; demo; segurança; implantação; próximos passos | Deck pronto para reunião | Fase 1 |
+| 4 | Documento segurança/LGPD | RLS; auditoria; 2FA; backup/PITR; borda; limites; responsabilidades | Enviável para TI/jurídico | Fim da Fase 0 |
+| 5 | Proposta de piloto | Escopo; duração; métricas; responsabilidades; preço/condição | Documento pronto para cliente | Fase 1 |
+| 6 | Roteiro de objeções | MV/Tasy/TOTVS; segurança; assinatura; RNDS; faturamento; offline; "e se cair?" (responder com contingência + PITR + rollback) | Respostas padronizadas | Fase 1 |
+| 7 | Matriz competitiva | Concorrentes; módulos; vantagens; lacunas; ataque comercial | Atualizada após cada fase | Contínuo |
+
+---
+
+## Checklist de Controle por Fase
+| Fase | Pode avançar quando... |
+|---|---|
+| Fase 0 | 2FA, homologação, proteção de borda, HMAC no webhook, `search_path` nas funções existentes, ciclo de vida + bloqueio de leito, PITR/backup/restore e acessos revisados estiverem resolvidos **com evidência** |
+| Trilha Hermes | Fase 0 fechada; depois disso corre em paralelo às Fases 1+ sem tomar prioridade de P0 |
+| Fase 1 | Demo, dashboard PS/UPA, documento de contingência e materiais comerciais estiverem prontos |
+| Fase 2 | Dupla checagem, aprazamento e auditoria clínica estiverem em produção/homolog |
+| Fase 3 | AIH evoluída, BPA inicial e API mínima estiverem definidos |
+| Fase 4 | Regulação MVP tiver fluxo completo de solicitação, fila e decisão |
+| Fase 5 | Houver demanda comercial clara para UBS, faturamento ou integrações |
+
+---
+
+## Plano de Trabalho — comando por tarefa
+Quando eu enviar o bloco abaixo, execute exatamente esta estrutura de entrega:
+
+```
+Vamos trabalhar a tarefa: [nome da tarefa].
+
+Contexto:
+Fase: [fase]
+Prioridade: [P0/P1/P2]
+Objetivo comercial:
+Objetivo técnico:
+Módulos afetados:
+Concorrentes que essa tarefa ajuda a enfrentar:
+```
+
+**Antes de entregar:** se faltar qualquer informação sobre schema, RPCs existentes, perfis/permissões ou fluxo atual, liste as perguntas ou inspecione o código primeiro. Não preencha lacunas com suposições.
+
+**Entregue, nesta ordem e com estes títulos:**
+1. Diagnóstico do estado atual (o que já existe, o que falta, o que está errado)
+2. Subtarefas técnicas
+3. Alterações de banco necessárias (migration expand/contract + rollback)
+4. Alterações de backend/RPC/API — para cada RPC: assinatura, permissão exigida, estados aceitos/produzidos, evento de auditoria gerado, comportamento em chamada repetida
+5. Alterações de frontend
+6. Permissões e auditoria (política RLS + teste + evento na hash-chain)
+7. Testes necessários
+8. Critérios de aceite (copiados do backlog + evidência de como cada um será comprovado)
+9. Riscos
+10. Ordem de implementação
+11. Como demonstrar isso comercialmente
+
+**Tamanho:** seja denso e objetivo; tabelas quando houver mais de 3 itens comparáveis. Não repita o backlog de volta.
+
+---
+
+## Tarefa inicial
+Comece por:
+
+**Fase 0, tarefa 2: criar ambiente de homologação separado.**
+
+Depois:
+
+**Fase 0, tarefa 3: proteção de borda.**
+
+Em seguida, as correções rápidas de auditoria:
+
+**Fase 0, tarefas 4 e 5: HMAC no webhook e `search_path` nas 8 funções** — em homolog, depois produção.
+
+E só então:
+
+**Fase 0, tarefa 1: ativar 2FA obrigatório** — primeiro em homolog, depois em produção.
+
+Depois, **tarefa 6: fechar ciclo de vida do leito**, em homolog.
+
+Observação: a ordem de execução segue a ordem técnica da Fase 0 (homolog antes de qualquer mudança), não a numeração da tabela. A numeração é prioridade de negócio; a ordem técnica é a sequência de implementação.
