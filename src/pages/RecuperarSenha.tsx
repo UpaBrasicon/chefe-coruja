@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { ConfereSenha, RegrasSenha } from '@/components/seguranca/RegrasSenha'
 import { ConfirmarSegundoFator } from '@/components/seguranca/SegundoFator'
+import { useTurnstile } from '@/components/seguranca/Turnstile'
 import { LadoMarca, MarcaCompacta } from '@/pages/entrada/LadoMarca'
 import '@/pages/entrada/entrada.css'
 
@@ -67,6 +68,7 @@ export default function RecuperarSenha() {
   const [confirmacao, setConfirmacao] = React.useState('')
   const [fatorId, setFatorId] = React.useState<string | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
+  const turnstile = useTurnstile()
   const [ocupado, setOcupado] = React.useState(false)
 
   React.useEffect(() => {
@@ -106,12 +108,23 @@ export default function RecuperarSenha() {
       setErro('Informe o e-mail da sua conta.')
       return
     }
+    if (!turnstile.pronto) {
+      setErro(turnstile.falha ?? 'Aguarde a verificação anti-robô terminar e tente de novo.')
+      return
+    }
     setErro(null)
     setOcupado(true)
     const { error } = await supabase.auth.resetPasswordForEmail(alvo, {
       redirectTo: `${window.location.origin}/recuperar-senha`,
+      captchaToken: turnstile.captchaToken,
     })
+    // o token do Turnstile vale para uma tentativa só
+    turnstile.resetar()
     setOcupado(false)
+    if (error && /captcha/i.test(error.message)) {
+      setErro('A verificação anti-robô expirou. Tente de novo.')
+      return
+    }
     // Conta inexistente e conta existente respondem igual. Só o que não é
     // sobre a conta (limite de envio, rede) vira aviso.
     if (error?.status === 429) {
@@ -190,6 +203,7 @@ export default function RecuperarSenha() {
                   <Label htmlFor="rec-email" className="text-apoio font-medium text-tinta-apoio">E-mail corporativo</Label>
                   <Input id="rec-email" type="email" autoComplete="username" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!erro} className={CAMPO} />
                 </div>
+                {turnstile.widget}
                 {erro && <p role="alert" className="text-controle text-critico">{erro}</p>}
                 <button type="submit" disabled={ocupado} className={BOTAO}>
                   {ocupado ? 'Enviando…' : 'Enviar o link'}

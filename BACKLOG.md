@@ -108,6 +108,12 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | 17 | P1 | Roteiro da demo atual | Criar paciente fictício; criar cenário UPA; definir falas; preparar dados de triagem, prescrição, enfermagem, leito e alta | Demo completa roda em 15 minutos sem depender de dados reais |
 | 18 | P1 | Exportação CSV/Excel inicial | Escolher telas de indicadores atuais; implementar export CSV; validar encoding (UTF-8 com BOM para Excel pt-BR); incluir filtros aplicados; auditar export se contiver dado sensível | Gestor consegue exportar indicadores principais em CSV/Excel |
 
+**Andamento da Fase 0**
+
+| Tarefa | Situação | Evidência |
+|---|---|---|
+| 2 — Homologação | **Concluída em 05/10/2026** | Projeto `chefe-coruja-homolog` (`kswurfyxxvfydpjfrivy`), site `homolog.chefecoruja.com.br` (branch `homolog`, Preview do Vercel com proteção de deploy mantida por decisão do responsável), CSP por ambiente e trava de alvo do CLI; PRs #1 e #2. Evidência em `produto/docs/fase0/T2-homologacao.md`; procedimento em `infra/homologacao.md`. |
+
 **Ordem técnica da Fase 0**
 1. Separar homologação.
 2. Configurar proteção de borda.
@@ -141,6 +147,8 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | 12 | P1 | Modo de contingência documentado | Definir fluxo da unidade com sistema indisponível (formulários em papel padronizados por etapa); regra de reentrada posterior com marcação de "registro retroativo"; descrever o que o modo offline atual cobre e o que não cobre; tempo máximo tolerado antes de acionar contingência | Documento de contingência pronto para o cliente; formulários disponíveis; reentrada retroativa auditada |
 | 13 | P2 | Onboarding in-app mínimo | Criar tour ou dicas nas telas críticas; incluir recepção, triagem, prescrição e leitos | Usuário novo entende o fluxo básico sem treinamento externo pesado |
 | 14 | P2 | Analytics de produto e feature flags (PostHog) | Eventos mínimos: login, troca de aba na Central Clínica, uso de cada calculadora/escore, abertura do censo, chat lateral quando lançado; feature flag para rollout do dashboard do gestor (tarefa 2) por subconjunto de unidades antes do geral; session replay **desligado ou mascarado** em toda tela com dado de paciente; nenhum identificador de paciente em propriedade de evento; documentar em `infra/posthog.md` | Dashboard do gestor pode ser ligado por unidade; eventos aparecem sem dado clínico; replay inexistente em telas clínicas (verificado) |
+| 15 | P1 | Tela "Aguardando liberação" libera sozinha | Achado na tarefa 2 da Fase 0 (05/10/2026): `src/pages/AguardandoLiberacao.tsx` não volta a consultar os vínculos nem redireciona; consultar a cada ~30 s e ir para `/` quando houver vínculo; teste do fluxo | Profissional em espera entra sozinho quando o vínculo é criado, sem sair e entrar; o texto da tela passa a ser verdadeiro |
+| 16 | P2 | Criação de conta pela administração | Achado na tarefa 2 da Fase 0: a regra "conta nova só com convite" (`20261003000009`) barra também o Add user do painel e a API admin com `app_metadata.origem = 'admin'` (o Auth grava antes do metadado); trocar a checagem por gatilho de restrição `DEFERRABLE INITIALLY DEFERRED` (validar antes se o Auth aplica o metadado na mesma transação); migration expand + rollback; testes de signUp sem código (recusado) e criação admin (aceita) | Admin cria conta pela API/painel; signUp público sem código continua recusado; evidência por teste de banco |
 
 **Ordem técnica da Fase 1**
 1. Criar base fictícia e demo.
