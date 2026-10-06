@@ -113,6 +113,8 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | Tarefa | Situação | Evidência |
 |---|---|---|
 | 2 — Homologação | **Concluída em 05/10/2026** | Projeto `chefe-coruja-homolog` (`kswurfyxxvfydpjfrivy`), site `homolog.chefecoruja.com.br` (branch `homolog`, Preview do Vercel com proteção de deploy mantida por decisão do responsável), CSP por ambiente e trava de alvo do CLI; PRs #1 e #2. Evidência em `produto/docs/fase0/T2-homologacao.md`; procedimento em `infra/homologacao.md`. |
+| 4 — HMAC no webhook | **Concluída em 05/10/2026** | Único webhook de entrada é o `/webhook` do Hermes (WhatsApp não está em uso, resposta do RT); HMAC já validado; 4 testes de replay (PR #5). Na borda, o `/webhook` fica bloqueado até o WhatsApp voltar. Evidência em `produto/docs/fase0/T4-webhook-hmac.md`. |
+| 5 — `search_path` | **Concluída em 05/10/2026** | 27 funções com `search_path = ''` (PR #4), teste de guarda no CI; consulta do catálogo: 0 no local e na homologação; na produção só a `rls_auto_enable` do Supabase (exceção documentada). Evidência em `produto/docs/fase0/T5-search-path.md`. |
 
 **Ordem técnica da Fase 0**
 1. Separar homologação.
