@@ -36,14 +36,25 @@ Fase 0, tarefa 2 do `BACKLOG.md`. Ambiente separado da produção, onde toda mig
 1. **Ligar o CLI à homologação** — `npx supabase link --project-ref kswurfyxxvfydpjfrivy` (pede a senha do banco; se não souber, Settings → Database → Reset database password no painel de homologação). Conferir: `npm run db:alvo` → `homolog`.
 2. **Aplicar as migrations** — `npm run homolog:push` (projeto novo, vazio; `npm run homolog:reset` fica para quando for preciso zerar a homologação de novo).
 3. **Edge Functions** — `npm run homolog:functions`; depois configurar os segredos listados acima no painel de homologação.
-4. **Protocolo e SIGTAP×CID** — no SQL Editor de homologação (URL com `kswurfyxxvfydpjfrivy`): rodar `supabase/dados/protocolo_aparecida_2025.sql` e `supabase/dados/sigtap_cid.sql`.
-5. **Terminologia** — no terminal, com `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` de homologação definidos só na sessão: `node scripts/terminologia/importar-cid10.ts`, `importar-sigtap.ts`, `importar-cbo.ts`, `importar-cmed.ts`, `importar-loinc.ts`.
-6. **Seed fictício** — SQL Editor: `supabase/homolog/seed-homolog.sql`.
-7. **Auth** — Authentication → URL Configuration: Site URL `https://homolog.chefecoruja.com.br`; Redirect URLs `https://homolog.chefecoruja.com.br/**`.
-8. **Primeiro super admin** — Authentication → Users → Add user (e-mail + senha própria, diferente da produção, "Auto Confirm"); depois `supabase/homolog/promover-super-admin.sql` com o e-mail trocado.
-9. **Vercel** — Settings → Environment Variables: trocar os valores do escopo **Preview** de `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` para os de homologação. Settings → Domains → Add `homolog.chefecoruja.com.br` → Git Branch `homolog`.
-10. **DNS (Registro.br)** — zona de `chefecoruja.com.br`: CNAME `homolog` → o destino que o Vercel mostrar (normalmente `cname.vercel-dns.com`).
-11. **Branch `homolog`** — criado a partir do `master` depois do merge deste PR; o fluxo passa a ser branch da tarefa → PR → `homolog` (valida) → `master`.
+4. **Dados de referência e seed** — `npm run homolog:copiar -- 1` até `-- 6` (protocolo, SIGTAP×CID em 4 partes, UPA de homologação): cada comando copia o SQL; no SQL Editor de homologação (URL com `kswurfyxxvfydpjfrivy`): Ctrl+A, Delete, Ctrl+V, Run. O seed liga a UPA ao protocolo de classificação.
+5. **Data API** — Project Settings → Data API → Exposed schemas: incluir `terminologia` (o app e os importadores leem o CID-10 por ele).
+6. **Terminologia** — PowerShell, variáveis só na sessão: `$env:SUPABASE_URL` (homologação) e `$env:SUPABASE_SERVICE_ROLE_KEY` (chave secreta `sb_secret_` da homologação); rodar `node scripts/terminologia/importar-cid10.ts`, `importar-sigtap.ts`, `importar-cbo.ts`, `importar-cmed.ts`, `importar-loinc.ts`; fechar a janela no fim.
+7. **Auth** — Authentication → URL Configuration: Site URL `https://homolog.chefecoruja.com.br`; Redirect URLs `https://homolog.chefecoruja.com.br/**`. Authentication → SMTP: Resend (`smtp.resend.com`, 465, usuário `resend`, senha = chave Resend de homologação, remetente `nao-responda@chefecoruja.com.br`) — sem isso o "Esqueci a senha" não chega.
+8. **Usuário de teste** — o "Add user" do painel é barrado pela regra de cadastro só por convite (ver defeito em `produto/docs/fase0/DIAGNOSTICO-FASE0.md`). Com o Docker Desktop aberto: `npm run homolog:usuario -- e-mail` (pede a senha oculta, calcula o bcrypt no Postgres local, copia um SQL só com o hash) → SQL Editor → Run. Depois `npm run homolog:copiar -- 8 e-mail` → Run: todos os papéis na UPA Homologação + escala no Pronto Socorro por 8 dias.
+9. **Vercel** — Settings → Environment Variables, escopo **Preview**: `VITE_SUPABASE_URL` = `https://kswurfyxxvfydpjfrivy.supabase.co` (atenção: `.co`, não `.com`) e `VITE_SUPABASE_ANON_KEY` = publishable (`sb_publishable_`) **da homologação** (a de produção é recusada: "Invalid API key"). Settings → Domains → Add `homolog.chefecoruja.com.br` → Preview, Git Branch `homolog`.
+10. **DNS (Registro.br)** — zona de `chefecoruja.com.br`: CNAME `homolog` → o destino que o Vercel mostrar.
+11. **Deploy** — o domínio só responde depois de um deploy do branch `homolog` feito após ligar o domínio (antes: `DEPLOYMENT_NOT_FOUND`). Disparar empurrando o branch (`git push origin <tarefa>:homolog`); no painel do Vercel o deploy do topo costuma ser o de Production — o de homologação é o Preview do branch `homolog`.
+
+### Problemas encontrados na montagem (05/10/2026)
+
+| Sintoma | Causa | Solução |
+|---|---|---|
+| "Sem conexão com o servidor" | `VITE_SUPABASE_URL` com `.com` | corrigir para `.co` e novo deploy |
+| "Não foi possível entrar agora" / `Invalid API key` | chave publishable de produção no escopo Preview | trocar pela da homologação e novo deploy |
+| "E-mail ou senha não conferem" com o banco certo | usuário inexistente (Add user barrado; SQL não rodado) | `npm run homolog:usuario` e conferir `auth.users` |
+| "Aguardando liberação" com vínculos gravados | dados antigos guardados no navegador | F12 → Aplicação → Armazenamento → Limpar dados do site; entrar de novo |
+| Avisos `manifest-src` bloqueado | deploy protegido redireciona o manifesto | `crossorigin="use-credentials"` no `index.html` |
+| Site pede login do Vercel | proteção de deploy do Vercel (Preview) | esperado: só quem é do time Vercel abre a homologação |
 
 ## Como verificar (evidência)
 
