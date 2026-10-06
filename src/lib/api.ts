@@ -172,22 +172,6 @@ export async function criarLeitos(input: {
   })
 }
 
-export async function atualizarStatusLeito(
-  id: string,
-  unidadeId: string,
-  status: 'livre' | 'ocupado' | 'bloqueado' | 'higienizacao'
-) {
-  const { error } = await supabase.from('leitos').update({ status }).eq('id', id)
-  if (error) throw error
-
-  await registrarAuditoria({
-    acao: `leito_${status}`,
-    entidade: 'leitos',
-    entidade_id: id,
-    unidade_id: unidadeId,
-  })
-}
-
 export async function excluirLeito(id: string, unidadeId: string) {
   const { error } = await supabase.from('leitos').delete().eq('id', id)
   if (error) throw error

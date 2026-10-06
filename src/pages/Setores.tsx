@@ -6,8 +6,6 @@ import {
   ArrowDown,
   ArrowUp,
   BedDouble,
-  Lock,
-  LockOpen,
   Plus,
   Trash2,
 } from 'lucide-react'
@@ -16,7 +14,6 @@ import * as React from 'react'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useLeitos, useSetores } from '@/hooks/useDadosUnidade'
 import {
-  atualizarStatusLeito,
   criarLeitos,
   criarSetor,
   excluirLeito,
@@ -24,7 +21,8 @@ import {
   salvarOrdemSetores,
 } from '@/lib/api'
 import { STATUS_LEITO_LABEL, STATUS_LEITO_VARIANT, TIPO_LEITO_LABEL, TIPO_SETOR_LABEL } from '@/lib/constants'
-import type { StatusLeito, TipoLeito, TipoSetor } from '@/types/database'
+import type { TipoLeito, TipoSetor } from '@/types/database'
+import { AcoesLeito } from '@/components/leito/AcoesLeito'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -141,13 +139,6 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
       setDialogLeitosAberto(false)
       leitosForm.reset({ prefixo: '', quantidade: 1, tipo: 'clinico' })
     },
-    onError: (e) => setErro(e.message),
-  })
-
-  const statusMutation = useMutation({
-    mutationFn: (v: { id: string; status: StatusLeito }) =>
-      atualizarStatusLeito(v.id, unidadeId!, v.status),
-    onSuccess: invalidar,
     onError: (e) => setErro(e.message),
   })
 
@@ -300,7 +291,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                     key={leito.id}
                     className="flex flex-col gap-2 rounded-lg border p-3"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-1">
                       <span className="text-sm font-semibold">{leito.identificador}</span>
                       <Badge variant={STATUS_LEITO_VARIANT[leito.status]}>
                         {STATUS_LEITO_LABEL[leito.status]}
@@ -311,22 +302,18 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                         {TIPO_LEITO_LABEL[leito.tipo]}
                       </span>
                       <div className="flex items-center gap-0.5">
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          aria-label={
-                            leito.status === 'bloqueado' ? 'Desbloquear leito' : 'Bloquear leito'
-                          }
-                          disabled={statusMutation.isPending}
-                          onClick={() =>
-                            statusMutation.mutate({
-                              id: leito.id,
-                              status: leito.status === 'bloqueado' ? 'livre' : 'bloqueado',
-                            })
-                          }
-                        >
-                          {leito.status === 'bloqueado' ? <LockOpen /> : <Lock />}
-                        </Button>
+                        {/* status só pelas RPCs (o banco confere papel e transição) */}
+                        <AcoesLeito
+                          leitoId={leito.id}
+                          identificador={leito.identificador}
+                          status={leito.status}
+                          podeHigienizar
+                          podeBloquear
+                          podeLiberarSemPaciente
+                          compacto
+                          invalidar={[['leitos'], ['situacao-leitos'], ['mapa-leitos-gestor'], ['censo']]}
+                          onErro={setErro}
+                        />
                         <Button
                           variant="ghost"
                           size="icon-xs"

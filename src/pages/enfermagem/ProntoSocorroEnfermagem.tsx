@@ -23,6 +23,7 @@ import type { LinhaObservacao } from '@/components/observacao/modelo'
 import { Spinner } from '@/components/ui/spinner'
 
 import { Bloco, BotaoCuidados, PilulaAtraso } from './Pecas'
+import { LeitosParaLiberar } from './LeitosParaLiberar'
 import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
 import { PILULA, TIPOS_INTERNACAO, atrasadosPorPaciente, duracao, idadeDe, msgErro, useAgora, usePendenciasEnfermagem, useSetoresDaEscala, useTiposDaEscala } from './useEnfermagem'
 
@@ -155,6 +156,7 @@ export default function ProntoSocorroEnfermagem() {
               </div>
             ))}
           </Bloco>
+          <LeitosParaLiberar unidadeId={unidadeId} setores={meusSetores} />
         </div>
       )}
       <GavetaCuidados paciente={cuidando} onFechar={() => setCuidando(null)} />
