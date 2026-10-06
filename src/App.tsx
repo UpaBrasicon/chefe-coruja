@@ -1,6 +1,6 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { AuthProvider } from '@/contexts/AuthContext'
 import { UnidadeProvider, useUnidade } from '@/contexts/UnidadeContext'
@@ -78,7 +78,20 @@ const NotificacaoCompulsoria = lazy(() => import('@/pages/notificacao/Notificaca
 const PendenciasPep = lazy(() => import('@/pages/prontuario/PendenciasPep'))
 const ImpressaoProntuario = lazy(() => import('@/pages/prontuario/ImpressaoProntuario'))
 
-const queryClient = new QueryClient({
+// O servidor recusa toda chamada sem segundo fator válido (portão do 2FA,
+// migration 20261023000001). Passadas as 24 h no meio do uso, a primeira
+// recusa já relê o estado e o portão aparece, sem esperar o intervalo do hook.
+function seSegundoFatorVenceu(erro: unknown) {
+  if (!(erro instanceof Object && 'message' in erro && String(erro.message).startsWith('SEGUNDO_FATOR'))) return
+  // com o portão já na tela, as recusas das telas de fundo são esperadas
+  if (queryClient.getQueryData<{ valido: boolean }>(['segundo-fator'])?.valido) {
+    void queryClient.invalidateQueries({ queryKey: ['segundo-fator'] })
+  }
+}
+
+const queryClient: QueryClient = new QueryClient({
+  queryCache: new QueryCache({ onError: seSegundoFatorVenceu }),
+  mutationCache: new MutationCache({ onError: seSegundoFatorVenceu }),
   defaultOptions: {
     queries: {
       staleTime: 30_000,

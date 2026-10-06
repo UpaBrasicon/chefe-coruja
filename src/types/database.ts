@@ -552,6 +552,7 @@ export type Database = {
           paciente_id: string
           registrado_em: string
           registrado_por: string
+          tipo: string
           unidade_id: string
         }
         Insert: {
@@ -562,6 +563,7 @@ export type Database = {
           paciente_id: string
           registrado_em?: string
           registrado_por: string
+          tipo?: string
           unidade_id: string
         }
         Update: {
@@ -572,6 +574,7 @@ export type Database = {
           paciente_id?: string
           registrado_em?: string
           registrado_por?: string
+          tipo?: string
           unidade_id?: string
         }
         Relationships: [
@@ -5685,6 +5688,58 @@ export type Database = {
           },
         ]
       }
+      liberacao_pos_plantao: {
+        Row: {
+          concedido_em: string
+          concedido_por: string
+          expira_em: string
+          id: string
+          motivo: string
+          perfil_id: string
+          unidade_id: string
+        }
+        Insert: {
+          concedido_em?: string
+          concedido_por: string
+          expira_em: string
+          id?: string
+          motivo: string
+          perfil_id: string
+          unidade_id: string
+        }
+        Update: {
+          concedido_em?: string
+          concedido_por?: string
+          expira_em?: string
+          id?: string
+          motivo?: string
+          perfil_id?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liberacao_pos_plantao_concedido_por_fkey"
+            columns: ["concedido_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liberacao_pos_plantao_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liberacao_pos_plantao_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       links_publicos_receita: {
         Row: {
           created_at: string
@@ -9668,9 +9723,9 @@ export type Database = {
           leitos_ocupados: number
           municipio: string
           nome: string
+          ocupacao_limite_pct: number
           rnds_erro: number
           rnds_mais_antigo: string
-          ocupacao_limite_pct: number
           rnds_pendentes: number
           sessoes_ativas: number
           taxa_ocupacao: number
@@ -10016,6 +10071,13 @@ export type Database = {
           p_sinais: Json
         }
         Returns: string
+      }
+      codigos_recuperacao_status: {
+        Args: never
+        Returns: {
+          gerados_em: string
+          restantes: number
+        }[]
       }
       colegas_para_passagem: {
         Args: { p_internacao: string }
@@ -10490,6 +10552,19 @@ export type Database = {
         Args: { p_internacao: string; p_para: string; p_resumo: string }
         Returns: string
       }
+      equipe_segundo_fator: {
+        Args: { p_unidade: string }
+        Returns: {
+          codigos_restantes: number
+          email: string
+          nome: string
+          papeis: string[]
+          perfil_id: string
+          super_admin: boolean
+          tem_autenticador: boolean
+          zerado_em: string
+        }[]
+      }
       erros_cliente_agrupados: {
         Args: { p_desde?: string; p_incluir_resolvidos?: boolean }
         Returns: {
@@ -10514,6 +10589,7 @@ export type Database = {
         Returns: undefined
       }
       excluir_mensagem: { Args: { p_mensagem_id: string }; Returns: undefined }
+      faltas_rascunho: { Args: { p_rascunho: string }; Returns: Json }
       farmacia_do_gestor: { Args: { p_unidade: string }; Returns: Json }
       farmacia_estoque: {
         Args: { p_unidade: string }
@@ -10569,13 +10645,13 @@ export type Database = {
           local: string
           paciente_id: string
           paciente_nome: string
+          por_horario: Json
           posologia: string
           prescrito_em: string
           se_necessario: boolean
           tipo: string
           ultima_em: string
           ultima_horario: string
-          por_horario: Json
           ultima_por: string
           ultima_situacao: string
           vasoativo: boolean
@@ -10707,6 +10783,7 @@ export type Database = {
         Args: { p_canal?: string }
         Returns: string
       }
+      gerar_codigos_recuperacao: { Args: never; Returns: string[] }
       gerar_convite: {
         Args: {
           p_papel: Database["public"]["Enums"]["papel"]
@@ -10761,6 +10838,10 @@ export type Database = {
         Returns: Json
       }
       guarda_prontuarios: { Args: { p_unidade: string }; Returns: Json }
+      herdar_segundo_fator: {
+        Args: { p_sessao_anterior: string }
+        Returns: boolean
+      }
       hermes_acessos_anomalos: {
         Args: { p_aberturas?: number; p_horas?: number; p_impressoes?: number }
         Returns: {
@@ -10867,6 +10948,7 @@ export type Database = {
         Args: { p_id: string; p_perfil: string }
         Returns: boolean
       }
+      hermes_maestro_totais: { Args: never; Returns: Json }
       hermes_minhas_notificacoes: {
         Args: { p_dias?: number; p_perfil: string; p_unidade: string }
         Returns: {
@@ -11047,7 +11129,12 @@ export type Database = {
         Returns: string
       }
       liberar_pos_plantao: {
-        Args: { p_minutos: number; p_motivo: string; p_perfil: string; p_unidade: string }
+        Args: {
+          p_minutos: number
+          p_motivo: string
+          p_perfil: string
+          p_unidade: string
+        }
         Returns: string
       }
       limites_unidade: { Args: { p_unidade: string }; Returns: Json }
@@ -11476,6 +11563,7 @@ export type Database = {
           uf_crm: string
         }[]
       }
+      portao_requisicao: { Args: never; Returns: undefined }
       prescrever: {
         Args: { p_item: Json; p_paciente: string }
         Returns: string
@@ -11513,10 +11601,10 @@ export type Database = {
           checkin_em: string
           checkin_justificativa: string
           checkout_automatico: boolean
-          liberado_pos_ate: string
           checkout_dentro: boolean
           checkout_em: string
           em_escala: boolean
+          liberado_pos_ate: string
           nome: string
           observacao: string
           papel: string
@@ -11684,6 +11772,10 @@ export type Database = {
         }
         Returns: string
       }
+      registrar_desconhece_alergia: {
+        Args: { p_paciente: string }
+        Returns: string
+      }
       registrar_desfecho: {
         Args: {
           p_desfecho: string
@@ -11800,7 +11892,6 @@ export type Database = {
         }
         Returns: Json
       }
-      registrar_desconhece_alergia: { Args: { p_paciente: string }; Returns: string }
       registrar_nega_alergia: { Args: { p_paciente: string }; Returns: string }
       registrar_notificacao: {
         Args: { p_agravo: string; p_ficha: Json; p_numero_sinan?: string }
@@ -12136,7 +12227,7 @@ export type Database = {
         Returns: Json
       }
       situacao_pacote_alta: { Args: { p_token: string }; Returns: Json }
-      solicitar_codigo_2fa: { Args: never; Returns: string }
+      solicitar_codigo_2fa: { Args: { p_user: string }; Returns: string }
       solicitar_destinacao_prontuario: {
         Args: { p_destinacao: string; p_motivo: string; p_paciente: string }
         Returns: string
@@ -12329,6 +12420,7 @@ export type Database = {
           sala: string
         }[]
       }
+      usar_codigo_recuperacao: { Args: { p_codigo: string }; Returns: Json }
       vagas_abertas: {
         Args: never
         Returns: {
@@ -12360,8 +12452,11 @@ export type Database = {
         Args: { p_codigo: string; p_confiar?: boolean; p_rotulo?: string }
         Returns: string
       }
-      herdar_segundo_fator: { Args: { p_sessao_anterior: string }; Returns: boolean }
       verificar_dispositivo_2fa: { Args: { p_token: string }; Returns: boolean }
+      zerar_segundo_fator: {
+        Args: { p_motivo: string; p_usuario: string }
+        Returns: undefined
+      }
     }
     Enums: {
       papel:

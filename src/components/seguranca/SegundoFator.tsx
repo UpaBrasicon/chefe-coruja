@@ -7,6 +7,7 @@ import { lerTentativasSegundoFator, MAX_TENTATIVAS_SEGUNDO_FATOR, useSegundoFato
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
+import { SecaoCodigosRecuperacao, UsarCodigoRecuperacao } from '@/components/seguranca/CodigosRecuperacao'
 
 // Segundo fator: código por EMAIL (padrão) + dispositivo confiável, e TOTP de
 // aplicativo autenticador como alternativa. Pedido em todo login de dispositivo
@@ -417,7 +418,7 @@ export function ConfirmarSegundoFatorEmail({ onPronto }: { onPronto: () => void 
  */
 export function PortaoSegundoFator({ fatorId, onSair }: { fatorId: string | null; onSair: () => void }) {
   const queryClient = useQueryClient()
-  const [metodo, setMetodo] = React.useState<'email' | 'totp'>('email')
+  const [metodo, setMetodo] = React.useState<'email' | 'totp' | 'recuperacao'>('email')
   const [tentandoDispositivo, setTentandoDispositivo] = React.useState(() => !!lerTokenDispositivo())
   const pronto = () => {
     // A sessão foi marcada no banco (email/dispositivo) ou ganhou aal2 (TOTP);
@@ -461,20 +462,35 @@ export function PortaoSegundoFator({ fatorId, onSair }: { fatorId: string | null
         <p className="mt-1.5 mb-5 text-apoio text-tinta-sussurro">
           {metodo === 'email'
             ? 'Este é um login novo neste dispositivo. Confirme com o código enviado ao seu email.'
-            : 'Digite o código do seu aplicativo autenticador.'}
+            : metodo === 'totp'
+              ? 'Digite o código do seu aplicativo autenticador.'
+              : 'Sem email e sem autenticador: use um código de recuperação.'}
         </p>
         {metodo === 'email'
           ? <ConfirmarSegundoFatorEmail onPronto={pronto} />
-          : <ConfirmarSegundoFator fatorId={fatorId!} onPronto={pronto} />}
-        {fatorId && (
-          <button
-            type="button"
-            onClick={() => setMetodo((m) => (m === 'email' ? 'totp' : 'email'))}
-            className="mt-4 text-apoio text-tinta-sussurro hover:text-acao"
-          >
-            {metodo === 'email' ? 'Estou sem e-mail: quero ir pelo autenticador' : 'Voltar ao código por e-mail'}
-          </button>
-        )}
+          : metodo === 'totp'
+            ? <ConfirmarSegundoFator fatorId={fatorId!} onPronto={pronto} />
+            : <UsarCodigoRecuperacao onPronto={pronto} />}
+        <div className="mt-4 flex flex-col items-start gap-2">
+          {fatorId && metodo !== 'totp' && (
+            <button type="button" onClick={() => setMetodo('totp')} className="text-apoio text-tinta-sussurro hover:text-acao">
+              Estou sem e-mail: quero ir pelo autenticador
+            </button>
+          )}
+          {metodo !== 'recuperacao' && (
+            <button type="button" onClick={() => setMetodo('recuperacao')} className="text-apoio text-tinta-sussurro hover:text-acao">
+              Usar um código de recuperação
+            </button>
+          )}
+          {metodo !== 'email' && (
+            <button type="button" onClick={() => setMetodo('email')} className="text-apoio text-tinta-sussurro hover:text-acao">
+              Voltar ao código por e-mail
+            </button>
+          )}
+        </div>
+        <p className="mt-3 text-rotulo text-tinta-sussurro">
+          Perdeu tudo? O gestor da sua unidade pode zerar o seu segundo fator.
+        </p>
         <button type="button" onClick={onSair} className="mt-5 flex items-center gap-1.5 text-apoio text-tinta-sussurro hover:text-acao">
           <LogOut className="size-4" aria-hidden /> Sair
         </button>
@@ -610,6 +626,8 @@ export function SecaoSegundoFator() {
           </div>
         )}
       </section>
+
+      <SecaoCodigosRecuperacao />
 
       <DispositivosConfiaveis />
     </div>

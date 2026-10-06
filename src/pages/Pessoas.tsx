@@ -10,6 +10,7 @@ import { criarOuReativarVinculo, revogarVinculo } from '@/lib/api'
 import { PAPEL_DESCRIPTION, PAPEL_LABEL, TIPO_UNIDADE_LABEL } from '@/lib/constants'
 import type { Papel } from '@/types/database'
 import { useAuth } from '@/contexts/AuthContext'
+import { ZerarSegundoFator } from '@/components/seguranca/CodigosRecuperacao'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -172,6 +173,9 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
                       <Badge variant="secondary">{PAPEL_LABEL[v.papel]}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
+                      {pessoa && pessoa.id !== perfil?.id && (
+                        <ZerarSegundoFator perfilId={pessoa.id} nome={pessoa.nome_completo} />
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
