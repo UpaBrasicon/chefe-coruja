@@ -1,0 +1,14 @@
+[Unit]
+Description=Chefe Coruja - guarda automatica de 20 anos (Fase 0, tarefa 8)
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+# a cópia sem cifra existe só dentro do container e é apagada no fim
+ExecStart=/usr/bin/docker run --rm --name chefe-coruja-guarda \
+  --env-file /etc/chefe-coruja/guarda.env \
+  -v /etc/chefe-coruja/guarda-publica.pem:/chaves/guarda-publica.pem:ro \
+  -v /var/lib/chefe-coruja-guarda:/estado \
+  chefe-coruja-guarda
+TimeoutStartSec=4h
