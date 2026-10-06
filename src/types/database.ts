@@ -9867,6 +9867,10 @@ export type Database = {
         Args: { p_falta: string; p_situacao: string }
         Returns: undefined
       }
+      bloquear_leito: {
+        Args: { p_leito: string; p_motivo: string; p_observacao?: string }
+        Returns: undefined
+      }
       buscar_paciente_para_pedido: {
         Args: {
           p_documento?: string
@@ -10095,6 +10099,7 @@ export type Database = {
         Args: { p_encaminhamento: string }
         Returns: undefined
       }
+      concluir_higienizacao: { Args: { p_leito: string }; Returns: undefined }
       concluir_parecer: {
         Args: { p_id: string; p_resposta: string }
         Returns: string
@@ -10284,6 +10289,10 @@ export type Database = {
       }
       definir_panorama: {
         Args: { p_fora: string[]; p_unidade: string }
+        Returns: undefined
+      }
+      desbloquear_leito: {
+        Args: { p_leito: string; p_observacao?: string }
         Returns: undefined
       }
       descartar_rascunho: { Args: { p_rascunho: string }; Returns: undefined }
@@ -11127,6 +11136,10 @@ export type Database = {
           p_volume_ml: number
         }
         Returns: string
+      }
+      liberar_leito_sem_paciente: {
+        Args: { p_leito: string; p_motivo: string }
+        Returns: undefined
       }
       liberar_pos_plantao: {
         Args: {
@@ -12225,6 +12238,20 @@ export type Database = {
       situacao_ferramenta: {
         Args: { p_ferramenta: string; p_unidade?: string; p_versao: string }
         Returns: Json
+      }
+      situacao_leitos: {
+        Args: { p_unidade: string }
+        Returns: {
+          desde: string
+          identificador: string
+          leito_id: string
+          motivo: string
+          pode_bloquear: boolean
+          pode_higienizar: boolean
+          setor_id: string
+          setor_nome: string
+          status: Database["public"]["Enums"]["status_leito"]
+        }[]
       }
       situacao_pacote_alta: { Args: { p_token: string }; Returns: Json }
       solicitar_codigo_2fa: { Args: { p_user: string }; Returns: string }

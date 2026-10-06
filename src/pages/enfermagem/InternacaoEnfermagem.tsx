@@ -18,6 +18,7 @@ import { Spinner } from '@/components/ui/spinner'
 
 import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
 import { PassagemEnfermagem } from './PassagemEnfermagem'
+import { LeitosParaLiberar } from './LeitosParaLiberar'
 import { Bloco, BotaoCuidados, PilulaAtraso } from './Pecas'
 import { duracao, idadeDe, msgErro, useAgora, useSetoresDaEscala, type LeitoEnfermagem } from './useEnfermagem'
 
@@ -98,6 +99,7 @@ export default function InternacaoEnfermagem() {
               })}
             </Bloco>
           ))}
+          <LeitosParaLiberar unidadeId={unidadeId} setores={meusSetores} />
           <PassagemEnfermagem setores={nomesSetores.data ?? []} />
         </div>
       )}
