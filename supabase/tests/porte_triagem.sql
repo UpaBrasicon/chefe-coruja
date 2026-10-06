@@ -254,10 +254,11 @@ BEGIN
 
   SELECT * INTO c FROM public.classificacoes_risco WHERE episodio_id = pg_temp.id('epi_troca');
   SELECT * INTO e FROM public.episodios WHERE id = pg_temp.id('epi_troca');
-  IF NOT c.grupo_trocado OR c.publico <> 'pediatrico' OR c.publico_pela_idade <> 'adulto' OR e.publico <> 'adulto' THEN
+  -- decisão do RT 3b (03/10/2026, migration 20261022000020): a troca à mão rege o episódio
+  IF NOT c.grupo_trocado OR c.publico <> 'pediatrico' OR c.publico_pela_idade <> 'adulto' OR e.publico <> 'pediatrico' THEN
     RAISE EXCEPTION 'FALHOU: grupo trocado (%, %, %, %)', c.grupo_trocado, c.publico, c.publico_pela_idade, e.publico;
   END IF;
-  RAISE NOTICE 'OK  troca de grupo registrada na classificação; o episódio fica com o grupo da idade';
+  RAISE NOTICE 'OK  troca de grupo registrada na classificação e aplicada ao episódio (a idade fica registrada ao lado)';
 
   SELECT * INTO c FROM public.classificacoes_risco WHERE episodio_id = pg_temp.id('epi_crianca');
   IF c.dor ->> 'escala' <> 'flacc' OR (c.dor ->> 'total')::int <> 3 OR (c.dor -> 'itens' ->> 'choro')::int <> 1 THEN
