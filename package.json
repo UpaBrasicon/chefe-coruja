@@ -21,6 +21,7 @@
     "guarda:enviar": "node scripts/arquivo/enviar-guarda.mjs",
     "guarda:abrir": "node scripts/arquivo/abrir-guarda.mjs",
     "guarda:chaves": "node scripts/arquivo/gerar-chaves-guarda.mjs",
+    "guarda:baixar": "node scripts/arquivo/baixar-guarda.mjs",
     "test:banco": "node scripts/testes-banco.mjs",
     "test:gateway": "node --test scripts/gateway/*.test.ts",
     "test:dominio": "node --experimental-strip-types --test src/domain/dominio.test.ts",
