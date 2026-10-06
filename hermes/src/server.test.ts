@@ -4,7 +4,7 @@
 // pipeline.integration.test.ts / e2e local.
 import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildApp } from './server.js'
+import { buildApp, mensagensDoPayload, MAX_IDADE_MENSAGEM_S } from './server.js'
 import { env } from './config/env.js'
 
 let app: Awaited<ReturnType<typeof buildApp>>
@@ -93,4 +93,54 @@ test('POST /v1/chat/completions — rota da Corujinha registrada e fechada sem t
   })
   // 503 se IA_GATEWAY_TOKEN não estiver no ambiente; 401 se estiver (sem Bearer)
   assert.ok([401, 503].includes(res.statusCode), `status inesperado: ${res.statusCode}`)
+})
+
+// ── Replay (Fase 0, tarefa 4 do BACKLOG.md) ──────────────────────────────────
+// Webhook capturado e reenviado: a assinatura continua válida, então a defesa
+// é a idade da mensagem (além do dedup de 24 h na fila).
+function payloadCom(timestamp: number) {
+  return {
+    object: 'whatsapp_business_account',
+    entry: [{ changes: [{ field: 'messages', value: { messages: [
+      { id: 'wamid.teste', from: '5511999999999', timestamp: String(timestamp), type: 'text', text: { body: 'oi' } },
+    ] } }] }],
+  }
+}
+
+test('replay — mensagem recente entra na fila', () => {
+  const agora = 1_800_000_000
+  assert.equal(mensagensDoPayload(payloadCom(agora - 5), agora).length, 1)
+})
+
+test('replay — mensagem reenviada depois de 12 h é descartada', () => {
+  const agora = 1_800_000_000
+  assert.equal(mensagensDoPayload(payloadCom(agora - MAX_IDADE_MENSAGEM_S - 1), agora).length, 0)
+})
+
+test('replay — corpo alterado com a assinatura antiga retorna 401', async () => {
+  const crypto = await import('node:crypto')
+  const original = JSON.stringify(payloadCom(Math.floor(Date.now() / 1000)))
+  const sig = 'sha256=' + crypto.createHmac('sha256', env.META_APP_SECRET).update(original).digest('hex')
+  const adulterado = original.replace('"oi"', '"ola"')
+  const res = await app.inject({
+    method: 'POST',
+    url: '/webhook',
+    payload: adulterado,
+    headers: { 'content-type': 'application/json', 'x-hub-signature-256': sig },
+  })
+  assert.equal(res.statusCode, 401)
+})
+
+test('replay — webhook antigo com assinatura válida responde 200 e não enfileira', async () => {
+  // Sem Redis no teste: se a mensagem fosse enfileirada, o addBulk falharia/travaria.
+  const crypto = await import('node:crypto')
+  const velho = JSON.stringify(payloadCom(Math.floor(Date.now() / 1000) - MAX_IDADE_MENSAGEM_S - 60))
+  const sig = 'sha256=' + crypto.createHmac('sha256', env.META_APP_SECRET).update(velho).digest('hex')
+  const res = await app.inject({
+    method: 'POST',
+    url: '/webhook',
+    payload: velho,
+    headers: { 'content-type': 'application/json', 'x-hub-signature-256': sig },
+  })
+  assert.equal(res.statusCode, 200)
 })
