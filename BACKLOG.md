@@ -108,6 +108,8 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | 17 | P1 | Roteiro da demo atual | Criar paciente fictício; criar cenário UPA; definir falas; preparar dados de triagem, prescrição, enfermagem, leito e alta | Demo completa roda em 15 minutos sem depender de dados reais |
 | 18 | P1 | Exportação CSV/Excel inicial | Escolher telas de indicadores atuais; implementar export CSV; validar encoding (UTF-8 com BOM para Excel pt-BR); incluir filtros aplicados; auditar export se contiver dado sensível | Gestor consegue exportar indicadores principais em CSV/Excel |
 
+**Decisão do responsável (06/10/2026) — tarefa 9 sem PITR durante o piloto.** A produção ainda é piloto (sem paciente real). O PITR (add-on de US$ 100/mês, 7 dias) **não** é ligado agora; o teste de restauração da tarefa 9 usa o **backup diário do plano Pro** (7 dias) e a guarda automática passa a ser **diária**. **O PITR é obrigatório antes de entrar o primeiro paciente real** (portão de entrada em produção), e então a evidência da tarefa 9 é refeita com ele.
+
 **Andamento da Fase 0**
 
 | Tarefa | Situação | Evidência |
@@ -115,6 +117,8 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | 2 — Homologação | **Concluída em 05/10/2026** | Projeto `chefe-coruja-homolog` (`kswurfyxxvfydpjfrivy`), site `homolog.chefecoruja.com.br` (branch `homolog`, Preview do Vercel com proteção de deploy mantida por decisão do responsável), CSP por ambiente e trava de alvo do CLI; PRs #1 e #2. Evidência em `produto/docs/fase0/T2-homologacao.md`; procedimento em `infra/homologacao.md`. |
 | 4 — HMAC no webhook | **Concluída em 05/10/2026** | Único webhook de entrada é o `/webhook` do Hermes (WhatsApp não está em uso, resposta do RT); HMAC já validado; 4 testes de replay (PR #5). Na borda, o `/webhook` fica bloqueado até o WhatsApp voltar. Evidência em `produto/docs/fase0/T4-webhook-hmac.md`. |
 | 5 — `search_path` | **Concluída em 05/10/2026** | 27 funções com `search_path = ''` (PR #4), teste de guarda no CI; consulta do catálogo: 0 no local e na homologação; na produção só a `rls_auto_enable` do Supabase (exceção documentada). Evidência em `produto/docs/fase0/T5-search-path.md`. |
+| 1 — 2FA obrigatório | **Concluída em 06/10/2026** | Portão do 2FA antes de toda requisição à API (`pgrst.db_pre_request`, fechou ~150 RPCs que entregavam dado sem 2FA), Storage com 2FA, 10 códigos de recuperação de uso único, reset pelo gestor/super admin com motivo, registro de eventos (PR #7). Evidência em `produto/docs/fase0/T1-2fa.md`. |
+| 6 e 7 — Ciclo de vida e bloqueio do leito | **Concluídas em 06/10/2026** | Trava de transições no banco (só ocupa leito livre; corrige `abrir_internacao` e transferência), higienização (enfermagem e gestor), bloqueio/desbloqueio com motivo (gestor e enfermeiro), status fora da API (PR #8). Evidência em `produto/docs/fase0/T6-T7-leitos.md`. |
 
 **Ordem técnica da Fase 0**
 1. Separar homologação.

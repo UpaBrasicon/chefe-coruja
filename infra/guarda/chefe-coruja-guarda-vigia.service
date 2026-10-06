@@ -1,0 +1,9 @@
+[Unit]
+Description=Chefe Coruja - vigia da guarda (alerta se passar de 36 h sem guarda)
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker run --rm --env-file /etc/chefe-coruja/guarda.env \
+  -v /var/lib/chefe-coruja-guarda:/estado chefe-coruja-guarda --vigiar

@@ -6,7 +6,16 @@
 //   "CCG1" (4) | sal do scrypt (16) | iv (12) | tag GCM (16) | texto cifrado
 // A chave AES-256 sai do scrypt da senha com o sal; o sal é um por guarda.
 // Sem a senha não há como abrir: ela não vai para a nuvem nem para o disco.
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, scryptSync } from 'node:crypto'
+//
+// Guarda automática (Fase 0, tarefa 8): não há quem digite senha, então a
+// chave AES-256 é sorteada por guarda e vai "envelopada" com a chave PÚBLICA
+// do responsável (RSA-OAEP-SHA256, 4096 bits). O servidor só cifra; abrir
+// exige a chave privada, que fica fora do servidor.
+//   "CCG2" (4) | tamanho do envelope (2, big-endian) | envelope | iv (12) | tag GCM (16) | texto cifrado
+import {
+  constants, createCipheriv, createDecipheriv, createHash, createHmac, createPrivateKey, createPublicKey,
+  privateDecrypt, publicEncrypt, randomBytes, scryptSync,
+} from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
 const MAGICO = Buffer.from('CCG1')
@@ -49,6 +58,63 @@ export function decifrar(chave, cifrado) {
   }
 }
 
+// ── CCG2: envelope com a chave pública ──────────────────────────────────────
+
+const MAGICO2 = Buffer.from('CCG2')
+const OAEP = { padding: constants.RSA_PKCS1_OAEP_PADDING, oaepHash: 'sha256' }
+
+/** Chave AES-256 da guarda (uma por guarda) e o envelope dela para a chave pública. */
+export function novaChaveEnvelopada(chavePublicaPem) {
+  const chave = randomBytes(32)
+  const envelope = publicEncrypt({ key: createPublicKey(chavePublicaPem), ...OAEP }, chave)
+  return { chave, envelope }
+}
+
+/** Impressão digital da chave pública (sha256 do DER), para conferir que é a certa. */
+export function digitalDaChave(chavePublicaPem) {
+  const der = createPublicKey(chavePublicaPem).export({ type: 'spki', format: 'der' })
+  return sha256(der).toString('hex').match(/.{4}/g).join(':')
+}
+
+export function cifrar2(chave, envelope, claro) {
+  const iv = randomBytes(12)
+  const c = createCipheriv('aes-256-gcm', chave, iv)
+  const corpo = Buffer.concat([c.update(claro), c.final()])
+  const tam = Buffer.alloc(2)
+  tam.writeUInt16BE(envelope.length)
+  return Buffer.concat([MAGICO2, tam, envelope, iv, c.getAuthTag(), corpo])
+}
+
+export const formatoDe = (cifrado) => cifrado.subarray(0, 4).toString('latin1')
+
+/** Envelope de um .ccg CCG2 (para abrir com a chave privada antes de decifrar). */
+export function envelopeDe(cifrado) {
+  if (!cifrado.subarray(0, 4).equals(MAGICO2)) throw new Error('não é um arquivo CCG2 da guarda')
+  return cifrado.subarray(6, 6 + cifrado.readUInt16BE(4))
+}
+
+/** Abre o envelope com a chave privada (PEM, protegida pela frase do responsável). */
+export function abrirEnvelope(chavePrivadaPem, frase, envelope) {
+  try {
+    return privateDecrypt({ key: createPrivateKey({ key: chavePrivadaPem, passphrase: frase }), ...OAEP }, envelope)
+  } catch {
+    throw new Error('chave privada ou frase erradas (ou envelope de outra chave)')
+  }
+}
+
+export function decifrar2(chave, cifrado) {
+  const fim = 6 + envelopeDe(cifrado).length
+  const iv = cifrado.subarray(fim, fim + 12)
+  const tag = cifrado.subarray(fim + 12, fim + 28)
+  const d = createDecipheriv('aes-256-gcm', chave, iv)
+  d.setAuthTag(tag)
+  try {
+    return Buffer.concat([d.update(cifrado.subarray(fim + 28)), d.final()])
+  } catch {
+    throw new Error('chave errada ou arquivo alterado')
+  }
+}
+
 // ── S3: assinatura AWS SigV4 ────────────────────────────────────────────────
 
 const hmac = (k, s) => createHmac('sha256', k).update(s).digest()
@@ -71,7 +137,7 @@ export function credenciais(csv) {
 }
 
 /** Monta um pedido assinado ao S3 (estilo virtual-hosted). */
-export function assinar({ metodo, bucket, regiao, chaveObjeto, cabecalhos = {}, corpoHash, cred, agora = new Date(), host = `${bucket}.s3.${regiao}.amazonaws.com` }) {
+export function assinar({ metodo, bucket, regiao, chaveObjeto, cabecalhos = {}, corpoHash, cred, agora = new Date(), host = `${bucket}.s3.${regiao}.amazonaws.com`, protocolo = 'https' }) {
   const caminho = '/' + chaveObjeto.split('/').map(encodeURIComponent).join('/')
   const amzData = agora.toISOString().replace(/[:-]|\.\d{3}/g, '')
   const dia = amzData.slice(0, 8)
@@ -88,14 +154,21 @@ export function assinar({ metodo, bucket, regiao, chaveObjeto, cabecalhos = {}, 
   const saida = { ...h }
   delete saida.host
   saida.authorization = `AWS4-HMAC-SHA256 Credential=${cred.id}/${escopo}, SignedHeaders=${assinados}, Signature=${assinatura}`
-  return { url: `https://${host}${caminho}`, cabecalhos: saida }
+  return { url: `${protocolo}://${host}${caminho}`, cabecalhos: saida }
 }
 
+// Destino alternativo (cofre local de teste, estilo caminho):
+// { host, protocolo, caminhoBase } → <protocolo>://<host>/<caminhoBase>/<bucket>/<objeto>
+const destino = ({ bucket, chaveObjeto, host, protocolo, caminhoBase }) => (caminhoBase
+  ? { chaveObjeto: `${caminhoBase.replace(/^\/|\/$/g, '')}/${bucket}/${chaveObjeto}`, host, protocolo }
+  : { chaveObjeto, ...(host ? { host } : {}), ...(protocolo ? { protocolo } : {}) })
+
 /** Envia um objeto com sha256 conferido pelo S3 (exigido pelo Object Lock). */
-export async function enviar({ bucket, regiao, chaveObjeto, corpo, cred }) {
+export async function enviar({ bucket, regiao, chaveObjeto, corpo, cred, host, protocolo, caminhoBase }) {
   const hash = sha256(corpo)
   const { url, cabecalhos } = assinar({
-    metodo: 'PUT', bucket, regiao, chaveObjeto, cred, corpoHash: hash.toString('hex'),
+    metodo: 'PUT', bucket, regiao, cred, corpoHash: hash.toString('hex'),
+    ...destino({ bucket, chaveObjeto, host, protocolo, caminhoBase }),
     cabecalhos: { 'x-amz-checksum-sha256': hash.toString('base64') },
   })
   const r = await fetch(url, { method: 'PUT', headers: cabecalhos, body: corpo })
@@ -104,10 +177,11 @@ export async function enviar({ bucket, regiao, chaveObjeto, corpo, cred }) {
 }
 
 /** Lê os metadados do objeto enviado: checksum, trava e data de liberação. */
-export async function consultar({ bucket, regiao, chaveObjeto, cred }) {
+export async function consultar({ bucket, regiao, chaveObjeto, cred, host, protocolo, caminhoBase }) {
   const vazio = sha256('').toString('hex')
   const { url, cabecalhos } = assinar({
-    metodo: 'HEAD', bucket, regiao, chaveObjeto, cred, corpoHash: vazio,
+    metodo: 'HEAD', bucket, regiao, cred, corpoHash: vazio,
+    ...destino({ bucket, chaveObjeto, host, protocolo, caminhoBase }),
     cabecalhos: { 'x-amz-checksum-mode': 'ENABLED' },
   })
   const r = await fetch(url, { method: 'HEAD', headers: cabecalhos })
@@ -118,6 +192,17 @@ export async function consultar({ bucket, regiao, chaveObjeto, cred }) {
     ate: r.headers.get('x-amz-object-lock-retain-until-date'),
     bytes: Number(r.headers.get('content-length')),
   }
+}
+
+/** Baixa um objeto (conferência de cofre que não devolve checksum, ex.: teste local). */
+export async function baixar({ bucket, regiao, chaveObjeto, cred, host, protocolo, caminhoBase }) {
+  const { url, cabecalhos } = assinar({
+    metodo: 'GET', bucket, regiao, cred, corpoHash: 'UNSIGNED-PAYLOAD',
+    ...destino({ bucket, chaveObjeto, host, protocolo, caminhoBase }),
+  })
+  const r = await fetch(url, { headers: cabecalhos })
+  if (!r.ok) throw new Error(`download de ${chaveObjeto} falhou: HTTP ${r.status}`)
+  return Buffer.from(await r.arrayBuffer())
 }
 
 // ── senha digitada sem aparecer na tela ─────────────────────────────────────
