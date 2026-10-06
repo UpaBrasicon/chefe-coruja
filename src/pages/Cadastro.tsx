@@ -17,6 +17,7 @@ import {
 } from '@/lib/primeiroAcesso'
 import type { Database, Papel } from '@/types/database'
 import { Button, buttonVariants } from '@/components/ui/button'
+import { useTurnstile } from '@/components/seguranca/Turnstile'
 import { Input } from '@/components/ui/input'
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -293,6 +294,7 @@ export function Cadastro() {
   const [canal, setCanal] = React.useState<'plataforma' | 'aparelho'>('plataforma')
   const [salvandoAvisos, setSalvandoAvisos] = React.useState(false)
   const [erroAvisos, setErroAvisos] = React.useState<string | null>(null)
+  const turnstile = useTurnstile()
 
   const refDepois = React.useRef<HTMLDivElement>(null)
   const refTitulo2 = React.useRef<HTMLHeadingElement>(null)
@@ -449,6 +451,7 @@ export function Cadastro() {
   const pronto = falta.length === 0
 
   function mensagemDoCadastro(msg: string): string {
+    if (/captcha/i.test(msg)) return 'A verificação anti-robô expirou. Tente concluir de novo.'
     if (/already registered|already exists/i.test(msg)) {
       return 'Este e-mail já tem conta. Entre com ela; um convite novo pode ser aceito depois de entrar, nesta mesma tela.'
     }
@@ -519,6 +522,10 @@ export function Cadastro() {
   /** Cria a conta (signUp). O gatilho do banco consome o convite e grava os avisos. */
   async function criarConta(comAvisos: boolean) {
     if (!vinculo) return
+    if (!turnstile.pronto) {
+      setErroAvisos(turnstile.falha ?? 'Aguarde a verificação anti-robô terminar e tente de novo.')
+      return
+    }
     setErroAvisos(null)
     setSalvandoAvisos(true)
     const registroDados = pedeRegistro || registro.trim()
@@ -529,6 +536,7 @@ export function Cadastro() {
       password: senha,
       options: {
         emailRedirectTo: `${window.location.origin}/login`,
+        captchaToken: turnstile.captchaToken,
         data: {
           nome_completo: nome.trim().replace(/\s+/g, ' '),
           ...(vinculo.tipo === 'convite' ? { codigo_convite: vinculo.codigo } : { codigo_contrato: vinculo.codigo }),
@@ -540,6 +548,8 @@ export function Cadastro() {
         },
       },
     })
+    // o token do Turnstile vale para uma tentativa só
+    turnstile.resetar()
     setSalvandoAvisos(false)
     if (error) {
       setErroAvisos(mensagemDoCadastro(error.message))
@@ -862,6 +872,7 @@ export function Cadastro() {
                 )}
               </div>
 
+              {!logado && turnstile.widget}
               {erroAvisos && (
                 <div role="alert" className="mb-3 rounded-controle border border-[#FECACA] bg-[#FEF2F2] px-3 py-2.5 text-apoio text-[#7F1D1D]">
                   {erroAvisos}

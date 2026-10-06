@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { definirManterConectado, manterConectadoMarcado } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
+import { useTurnstile } from '@/components/seguranca/Turnstile'
 import { Label } from '@/components/ui/label'
 import { LadoMarca, MarcaCompacta } from '@/pages/entrada/LadoMarca'
 import '@/pages/entrada/entrada.css'
@@ -47,6 +48,7 @@ function Separador() {
 // na lista vira uma frase genérica (nunca o texto cru do servidor).
 function mensagemDoLogin(msg: string): string {
   if (/invalid login credentials/i.test(msg)) return 'E-mail ou senha não conferem.'
+  if (/captcha/i.test(msg)) return 'A verificação anti-robô expirou ou falhou. Tente entrar de novo.'
   if (/email not confirmed/i.test(msg)) return 'Este e-mail ainda não foi confirmado. Abra o link que enviamos na hora do cadastro.'
   if (/rate limit|too many|over_request/i.test(msg)) return 'Muitas tentativas em pouco tempo. Espere alguns minutos e tente de novo.'
   if (/banned|disabled/i.test(msg)) return 'Esta conta está bloqueada. Fale com o gestor da sua unidade.'
@@ -56,6 +58,7 @@ function mensagemDoLogin(msg: string): string {
 
 export function Login() {
   const { signIn } = useAuth()
+  const turnstile = useTurnstile()
   const navigate = useNavigate()
   const location = useLocation()
   const estado = location.state as Estado
@@ -127,7 +130,14 @@ export function Login() {
     setCarregando(true)
     // Onde a sessão vai morar: decidido ANTES de ela existir.
     definirManterConectado(manter)
-    const r = await signIn(email.trim(), senha)
+    if (!turnstile.pronto) {
+      setCarregando(false)
+      setErro(turnstile.falha ?? 'Aguarde a verificação anti-robô terminar e tente de novo.')
+      return
+    }
+    const r = await signIn(email.trim(), senha, turnstile.captchaToken)
+    // o token do Turnstile vale para uma tentativa só
+    turnstile.resetar()
     if (r.error) {
       setCarregando(false)
       setErro(mensagemDoLogin(r.error))
@@ -209,6 +219,7 @@ export function Login() {
                     Esqueci a senha
                   </Link>
                 </div>
+                {turnstile.widget}
                 {erro && <p role="alert" className="text-controle text-critico">{erro}</p>}
                 <button
                   type="submit"

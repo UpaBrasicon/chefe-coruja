@@ -2,6 +2,7 @@ import { Lock, LogOut } from 'lucide-react'
 import { useState } from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { useTurnstile } from '@/components/seguranca/Turnstile'
 
 // A tela do bloqueio por inatividade (regras em useBloqueioOcioso.ts).
 
@@ -33,17 +34,24 @@ export function TelaBloqueada({
 }) {
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState<string | null>(null)
+  const turnstile = useTurnstile()
   const [conferindo, setConferindo] = useState(false)
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault()
     if (!email || !senha || conferindo) return
+    if (!turnstile.pronto) {
+      setErro(turnstile.falha ?? 'Aguarde a verificação anti-robô terminar e tente de novo.')
+      return
+    }
     setConferindo(true)
     setErro(null)
     // id da sessão atual (já confirmada no segundo fator): o desbloqueio abre
     // uma sessão nova e herda essa confirmação (RT, 03/10/2026)
     const anterior = await sessaoAtual()
-    const { error } = await supabase.auth.signInWithPassword({ email, password: senha })
+    const { error } = await supabase.auth.signInWithPassword({ email, password: senha, options: { captchaToken: turnstile.captchaToken } })
+    // o token do Turnstile vale para uma tentativa só
+    turnstile.resetar()
     if (!error && anterior) {
       // sem herdar (confirmação vencida, outra pessoa…), o portão pede o código
       await supabase.rpc('herdar_segundo_fator', { p_sessao_anterior: anterior })
@@ -52,7 +60,8 @@ export function TelaBloqueada({
     setSenha('')
     if (error) {
       setErro(/invalid login credentials/i.test(error.message) ? 'Senha não confere.' : /rate limit|too many/i.test(error.message)
-        ? 'Muitas tentativas em pouco tempo. Espere alguns minutos.' : 'Não foi possível conferir a senha agora. Confira a rede e tente de novo.')
+        ? 'Muitas tentativas em pouco tempo. Espere alguns minutos.' : /captcha/i.test(error.message)
+          ? 'A verificação anti-robô expirou. Tente de novo.' : 'Não foi possível conferir a senha agora. Confira a rede e tente de novo.')
       return
     }
     onDesbloquear()
@@ -86,6 +95,7 @@ export function TelaBloqueada({
           onChange={(e) => setSenha(e.target.value)}
           className="min-h-11 rounded-controle border border-fio bg-campo px-3 text-corpo text-tinta outline-none focus-visible:border-marca"
         />
+        {turnstile.widget}
         {erro && (
           <p role="alert" className="m-0 text-controle text-critico">
             {erro}

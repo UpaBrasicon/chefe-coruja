@@ -7,7 +7,8 @@ import type { Perfis } from '@/types/database'
 interface AuthContextValue {
   perfil: Perfis['Row'] | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  /** captchaToken: token do Turnstile (obrigatório quando o CAPTCHA do Auth está ligado) */
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: string | null }>
   signUp: (email: string, password: string, nomeCompleto: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
 }
@@ -85,8 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       perfil,
       loading,
-      signIn: async (email, password) => {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
+      signIn: async (email, password, captchaToken) => {
+        const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } })
         return { error: error?.message ?? null }
       },
       signUp: async (email, password, nomeCompleto) => {
