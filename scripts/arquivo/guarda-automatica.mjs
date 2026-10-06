@@ -87,7 +87,12 @@ function registrar(resultado) {
 }
 
 try {
-  const chavePublica = readFileSync(exigir('GUARDA_CHAVE_PUBLICA'), 'utf8')
+  const caminhoChave = exigir('GUARDA_CHAVE_PUBLICA')
+  // o Docker cria uma PASTA quando o arquivo montado não existe no servidor
+  if (!existsSync(caminhoChave) || statSync(caminhoChave).isDirectory()) {
+    throw new Error(`chave pública não encontrada em ${caminhoChave}: copie guarda-publica.pem para /etc/chefe-coruja/ no servidor (se lá houver uma pasta com esse nome, apague-a antes)`)
+  }
+  const chavePublica = readFileSync(caminhoChave, 'utf8')
   const cofre = {
     bucket: exigir('GUARDA_BUCKET'),
     regiao: env.GUARDA_REGIAO ?? 'sa-east-1',
