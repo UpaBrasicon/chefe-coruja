@@ -2,9 +2,10 @@
 //
 //   guarda-publica.pem   vai para o servidor (VPS). Só cifra: quem a tiver
 //                        NÃO consegue abrir nenhuma guarda.
-//   guarda-privada.pem   fica com o responsável, FORA do servidor (dois pen
-//                        drives em lugares diferentes). Protegida por uma frase
-//                        digitada aqui (não aparece na tela nem é gravada).
+//   guarda-privada.pem   fica com o responsável, FORA do servidor (nota segura
+//                        no Bitwarden + uma cópia offline). Protegida por uma
+//                        frase digitada aqui (não aparece na tela nem é gravada),
+//                        guardada em outro lugar que não o da chave.
 //
 // Sem a chave privada E a frase, nenhuma guarda abre — nem pelo responsável.
 //
@@ -43,7 +44,7 @@ writeFileSync(publica, publicKey)
 writeFileSync(privada, privateKey, { mode: 0o600 })
 
 console.log(`✔ ${publica}  → copie para o servidor`)
-console.log(`✔ ${privada}  → copie para DOIS pen drives e apague deste computador`)
+console.log(`✔ ${privada}  → Bitwarden (item separado da frase) + uma cópia offline; depois apague deste computador`)
 console.log(`  impressão digital da pública: ${digitalDaChave(publicKey)}`)
-console.log('  Anote a impressão digital junto da frase (cofre de senhas e papel lacrado).')
+console.log('  Anote a impressão digital nos itens do Bitwarden (chave e frase).')
 console.log('  Perder a chave privada ou a frase = nenhuma guarda abre mais.')

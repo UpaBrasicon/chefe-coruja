@@ -15,7 +15,8 @@ VPS (container chefe-coruja-guarda)            Supabase (produção)        AWS 
 | Peça | Onde fica | Se vazar |
 |---|---|---|
 | Chave **pública** | VPS | nada: só cifra |
-| Chave **privada** + frase | 2 pen drives do responsável + frase no cofre de senhas e em papel lacrado | abre as guardas — por isso nunca vai ao servidor |
+| Chave **privada** | Bitwarden (nota segura própria) + uma cópia offline (pen drive ou papel) | sozinha não abre nada (está cifrada pela frase) |
+| Frase da chave privada | Bitwarden, **em outro item** que não o da chave | com a chave, abre as guardas — por isso nenhuma das duas vai ao servidor |
 | Senha da `guarda_leitura` | `/etc/chefe-coruja/guarda.env` (VPS) | lê o banco (não grava) |
 | Chave do IAM `guarda-envio` | idem | grava no cofre; não apaga (Object Lock) |
 | Chave S3 do Storage | idem | lê/grava anexos |
@@ -27,7 +28,7 @@ VPS (container chefe-coruja-guarda)            Supabase (produção)        AWS 
    ```bash
    node scripts/arquivo/gerar-chaves-guarda.mjs --saida <pasta-no-pen-drive>
    ```
-   Escolha a frase (16+ caracteres). Copie `guarda-privada.pem` para um **segundo** pen drive. Anote a impressão digital. A `guarda-publica.pem` vai para o VPS.
+   Use como frase a senha criada no Bitwarden (16+ caracteres). Guarde o texto de `guarda-privada.pem` numa **nota segura do Bitwarden separada da frase** e numa cópia offline (pen drive ou papel); anote a impressão digital nos dois itens; apague o `.pem` privado do computador. A `guarda-publica.pem` vai para o VPS. A chave privada e a frase **nunca** vão para o VPS nem para banco nenhum.
 2. **Conta de leitura na produção** — SQL Editor da produção (depois do merge e da migration `20261025000001`), com uma senha forte sua:
    ```sql
    ALTER ROLE guarda_leitura WITH LOGIN PASSWORD '<senha forte>';
