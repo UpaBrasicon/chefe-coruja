@@ -11,6 +11,7 @@ const Banners = lazy(() => import('@/pages/gestor/Banners').then((m) => ({ defau
 const RevisaoSemConexao = lazy(() => import('@/pages/gestor/RevisaoSemConexao'))
 const FerramentasUnidade = lazy(() => import('@/pages/gestor/FerramentasUnidade'))
 const Convites = lazy(() => import('@/pages/gestor/Convites'))
+const SegurancaEquipe = lazy(() => import('@/pages/gestor/SegurancaEquipe'))
 const ModelosTermoUnidade = lazy(() => import('@/components/termo/ModelosTermoUnidade'))
 
 /**
@@ -46,6 +47,8 @@ export default function UnidadeGrupo() {
           { valor: 'ferramentas', rotulo: 'Ferramentas clínicas', conteudo: () => <FerramentasUnidade /> },
           // Modelos de termo de consentimento (onda 4): só o gestor escreve (o banco confere).
           { valor: 'termos', rotulo: 'Termos de consentimento', conteudo: () => <ModelosTermoUnidade /> },
+          // Segundo fator da equipe: estado e reset (Fase 0, tarefa 1; o banco confere o gestor).
+          { valor: 'seguranca', rotulo: 'Segurança da equipe', conteudo: () => <SegurancaEquipe /> },
         ]
       : []),
   ]

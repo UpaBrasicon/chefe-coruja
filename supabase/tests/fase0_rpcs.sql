@@ -236,7 +236,9 @@ BEGIN
   WHERE ns.nspname = 'public' AND has_function_privilege('anon', p.oid, 'EXECUTE')
     AND p.proname NOT IN ('painel_chamadas', 'situacao_pacote_alta', 'abrir_pacote_alta',
                           'conferir_convite', 'pedir_novo_convite', 'conferir_contrato',
-                          'registrar_erro_cliente');
+                          'registrar_erro_cliente',
+                          -- o PostgREST roda o portão do 2FA em toda requisição, anon inclusive
+                          'portao_requisicao');
   IF n > 0 THEN RAISE EXCEPTION 'FALHOU: % funções de public ainda executáveis por anon (%)', n, nomes; END IF;
   RAISE NOTICE 'OK  nenhuma função de public executável por anon (fora as públicas de propósito)';
 END $$;
