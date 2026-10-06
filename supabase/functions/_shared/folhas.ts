@@ -65,7 +65,7 @@ export type PacienteFolha = {
   setor?: string | null; leito?: string | null
 }
 export type AlergiasFolha = {
-  estado: 'tem' | 'nega' | 'nao_registrada'
+  estado: 'tem' | 'nega' | 'desconhece' | 'nao_registrada'
   itens: { substancia: string; gravidade?: string | null; reacao?: string | null }[]
 }
 export type ProfissionalFolha = { nome?: string | null; registro?: string | null }
@@ -219,6 +219,7 @@ function alergiaTexto(ctx: ContextoFolha, d: Json): string {
       return 'ALERGIAS: ' + a.itens.map((i) => i.substancia + (vz(i.gravidade) ? '' : ` (${i.gravidade})`) + (vz(i.reacao) ? '' : ` — ${i.reacao}`)).join('; ')
     }
     if (a.estado === 'nega') return 'NEGA ALERGIAS'
+    if (a.estado === 'desconhece') return 'ALERGIAS: NÃO INFORMADAS · paciente/acompanhante não soube'
     return 'ALERGIAS: NÃO REGISTRADO · confirmar'
   }
   const s = pri(d?.paciente?.alergias)
@@ -697,7 +698,10 @@ function termo(d: Json, ctx: ContextoFolha): string {
   const local = junta(', ', junta('/', u?.municipio, u?.uf), dataExtenso(dataRef(ctx, d)))
   const ass: Assinante[] = []
   if (t.assinante === 'responsavel' && resp) ass.push({ nome: resp.nome, linha: junta(' · ', resp.documento ? `Doc. ${resp.documento}` : '', resp.vinculo), papel: 'Responsável' })
-  else if (t.assinante === 'ninguem_presente') ass.push({ nome: nomePac, linha: 'Sem acompanhante presente', papel: 'Paciente' })
+  // ninguém presente: menor de 16 (representado) ou paciente sem condições de
+  // assinar, sem responsável. O paciente não assina; ficam o médico, a
+  // testemunha e o motivo da ausência (auditoria 03/10/2026, defeito 10).
+  else if (t.assinante === 'ninguem_presente') { /* sem linha do paciente */ }
   else if (resp) {
     // 16 e 17 anos: o paciente assina assistido pelo responsável (os dois assinam)
     ass.push({ nome: nomePac, papel: 'Paciente' })
@@ -709,7 +713,9 @@ function termo(d: Json, ctx: ContextoFolha): string {
     bloco('Procedimento', texto(t.procedimento)) +
     blocoSe('Informações sobre o procedimento', t.texto, true) +
     blocoSe('Informações específicas deste paciente', t.informacoes) +
-    bloco('Declaração', `<div class="txt">Eu, ${quem}, ${esc(pri(t.declaracao, 'declaro que recebi as informações acima, tive a oportunidade de fazer perguntas e autorizo a realização do procedimento descrito. Sei que posso retirar este consentimento antes do procedimento.'))}</div>`, true) +
+    (t.assinante === 'ninguem_presente'
+      ? bloco('Declaração', '<div class="txt">Não há paciente em condições de assinar nem responsável presente. O motivo está registrado abaixo; assinam o médico responsável e a testemunha.</div>', true)
+      : bloco('Declaração', `<div class="txt">Eu, ${quem}, ${esc(pri(t.declaracao, 'declaro que recebi as informações acima, tive a oportunidade de fazer perguntas e autorizo a realização do procedimento descrito. Sei que posso retirar este consentimento antes do procedimento.'))}</div>`, true)) +
     blocoSe('Paciente sem condições de assinar', t.sem_condicoes_motivo) +
     blocoSe('Ausência de responsável', t.ausencia_motivo) +
     `<p class="meta" style="text-align:center;margin-top:10px">${esc(local)}</p>` + assinaturas(ass)
@@ -914,7 +920,7 @@ function relAlergias(d: Json, ctx: ContextoFolha): string {
     e.inativado_em ? junta(' · ', dataHoraBr(e.inativado_em), e.inativado_por) : junta(' · ', dataHoraBr(pri(e.grau_em, e.registrado_em)), e.autor),
     e.inativado_em ? `Inativo${e.motivo_inativacao ? ` (${e.motivo_inativacao})` : ''}` : 'Ativo']))
   const nega = lista(d.negacoes).find((n) => !n.encerrada_em)
-  const sit = d.estado === 'tem' ? `ALERGIAS: ${ativas.map((a) => a.substancia).join(', ')}` : d.estado === 'nega' ? 'NEGA ALERGIA' : 'NÃO REGISTRADO'
+  const sit = d.estado === 'tem' ? `ALERGIAS: ${ativas.map((a) => a.substancia).join(', ')}` : d.estado === 'nega' ? 'NEGA ALERGIA' : d.estado === 'desconhece' ? 'NÃO INFORMADAS · não soube' : 'NÃO REGISTRADO'
   const corpo = `<div class="alergia">⚠ ${esc(sit)}${nega ? ` · ${esc(junta(' · ', dataHoraBr(nega.registrado_em), nega.autor))}` : ''}</div>` +
     (lin.length
       ? `<table class="tab"><colgroup><col style="width:15%"><col style="width:17%"><col style="width:11%"><col><col style="width:20%"><col style="width:13%"></colgroup><thead><tr><th>Tipo</th><th>Registro</th><th>Severidade</th><th>Reação / observação / item</th><th>Última modificação</th><th>Situação</th></tr></thead><tbody>` +
