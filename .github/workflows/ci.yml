@@ -48,6 +48,8 @@ jobs:
         run: node --experimental-strip-types --test src/lib/*.test.ts
       - name: Cofre da guarda
         run: node --test scripts/arquivo/cofre.test.mjs
+      - name: Trava de alvo do Supabase (homologação antes de produção)
+        run: node --test scripts/ambiente/supabase-alvo.test.mjs
 
   # Testes SQL (supabase/tests/*.sql) num Supabase local recém-criado.
   banco:
