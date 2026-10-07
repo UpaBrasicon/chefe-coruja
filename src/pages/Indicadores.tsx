@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BarChart3, BedDouble, Hourglass, LineChart, RefreshCw, Repeat } from 'lucide-react'
+import { BarChart3, BedDouble, Download, Hourglass, LineChart, RefreshCw, Repeat } from 'lucide-react'
 import * as React from 'react'
 
+import { baixarCsv, gerarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Button } from '@/components/ui/button'
@@ -126,6 +127,40 @@ export default function Indicadores() {
   const lim = limites.ocupacao_pct / 100
   const nivelOcupacao: Nivel = taxaAoVivo === null ? 'ok' : taxaAoVivo >= Math.max(0.95, lim) ? 'critico' : taxaAoVivo >= lim ? 'atencao' : 'ok'
 
+  // Exportação (Fase 0, item 18): só números agregados por setor, sem
+  // paciente — não precisa de registro na auditoria (decisão do RT, 07/10/2026).
+  const nomeUnidade = unidadeAtiva?.unidade?.nome ?? ''
+  const agora = () => new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+  const hojeArquivo = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+
+  function exportarCenso() {
+    const linhas = [...(censo ?? [])]
+      .sort((a, b) => a.setor_nome.localeCompare(b.setor_nome, 'pt-BR') || a.data.localeCompare(b.data))
+      .map((c) => [
+        c.data.split('-').reverse().join('/'), c.setor_nome, c.internados, c.leitos_total,
+        c.taxa_ocupacao == null ? null : Number(c.taxa_ocupacao),
+        c.permanencia_media_h == null ? null : Number(c.permanencia_media_h),
+        c.giro_leito == null ? null : Number(c.giro_leito),
+      ])
+    baixarCsv(nomeArquivoCsv(`censo por setor ${nomeUnidade}`, hojeArquivo()), gerarCsv(
+      ['Data', 'Setor', 'Internados', 'Leitos', 'Taxa de ocupação (%)', 'Permanência média (h)', 'Giro de leito'],
+      linhas,
+      { contexto: [['Unidade', nomeUnidade], ['Relatório', 'Censo por setor'], ['Período', 'últimos 7 dias com censo gravado'], ['Gerado em', agora()]] },
+    ))
+  }
+
+  function exportarOcupacao() {
+    const linhas = (ocupacao ?? []).map((o) => [
+      o.setor_nome, o.internados, o.limite,
+      o.limite > 0 ? Math.round((o.internados / o.limite) * 1000) / 10 : null,
+    ])
+    baixarCsv(nomeArquivoCsv(`ocupacao ao vivo ${nomeUnidade}`, hojeArquivo()), gerarCsv(
+      ['Setor', 'Internados', 'Leitos', 'Taxa de ocupação (%)'],
+      linhas,
+      { contexto: [['Unidade', nomeUnidade], ['Relatório', 'Ocupação ao vivo por setor'], ['Limite de atenção (%)', limites.ocupacao_pct], ['Gerado em', agora()]] },
+    ))
+  }
+
   return (
     <div className="flex w-full flex-col gap-6">
       <TituloPagina
@@ -183,10 +218,15 @@ export default function Indicadores() {
       {/* Censo por setor (série de 7 dias) */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <BarChart3 className="size-4 text-tinta-sussurro" />
-            Censo por setor (últimos 7 dias)
-          </CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BarChart3 className="size-4 text-tinta-sussurro" />
+              Censo por setor (últimos 7 dias)
+            </CardTitle>
+            <Button variant="outline" size="sm" onClick={exportarCenso} disabled={(censo ?? []).length === 0}>
+              <Download /> Exportar CSV
+            </Button>
+          </div>
           <CardDescription>
             Internados, taxa de ocupação, permanência média (h) e giro de leito.
           </CardDescription>
@@ -235,7 +275,12 @@ export default function Indicadores() {
       {/* Ocupação ao vivo por setor */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Ocupação ao vivo por setor</CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="text-base">Ocupação ao vivo por setor</CardTitle>
+            <Button variant="outline" size="sm" onClick={exportarOcupacao} disabled={(ocupacao ?? []).length === 0}>
+              <Download /> Exportar CSV
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {(ocupacao ?? []).length === 0 ? (
