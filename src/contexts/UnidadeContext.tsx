@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { ORDEM_PAPEL } from '@/lib/constants'
 import type { Papel, TipoUnidade } from '@/types/database'
 import { useAuth } from '@/contexts/AuthContext'
+import { definirContextoErro } from '@/lib/sentry'
 
 export type VinculoComUnidade = {
   id: string
@@ -126,6 +127,10 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
   const escolhido = unidadeAtiva ? papelEscolhido[unidadeAtiva.unidade_id] : undefined
   const papelAtivo = (escolhido && papeisDaUnidade.includes(escolhido) ? escolhido : papeisDaUnidade[0]) ?? null
   const unidadeAtivaId_ = unidadeAtiva?.unidade_id
+  // Contexto dos relatos de erro (Sentry): unidade e papel, nunca nome.
+  React.useEffect(() => {
+    definirContextoErro({ unidadeId: unidadeAtiva?.unidade_id ?? null, papel: papelAtivo })
+  }, [unidadeAtiva?.unidade_id, papelAtivo])
   const setPapelAtivo = React.useCallback(
     (papel: Papel) => {
       if (!unidadeAtivaId_) return
