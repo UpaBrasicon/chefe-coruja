@@ -44,3 +44,9 @@ test('alvo e ação desconhecidos são recusados', () => {
   assert.equal(conferirAlvo({ acao: 'push', alvo: 'staging', ligado: H }).ok, false)
   assert.equal(conferirAlvo({ acao: 'drop', alvo: 'homolog', ligado: H }).ok, false)
 })
+
+test('versão das Edge Functions: commit, data e marca de modificado', async () => {
+  const { conteudoVersao } = await import('./supabase-alvo.mjs')
+  assert.match(conteudoVersao('abc1234', '2026-10-07T01:00Z', false), /export const VERSAO = 'abc1234@2026-10-07T01:00Z'/)
+  assert.match(conteudoVersao('abc1234', '2026-10-07T01:00Z', true), /'abc1234-modificado@/)
+})

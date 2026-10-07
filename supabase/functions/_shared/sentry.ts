@@ -6,6 +6,8 @@
 // de requisição, pergunta clínica, resposta do banco ou dado de paciente.
 // Relatar nunca derruba a função: tudo em try/catch, sem esperar a resposta.
 
+import { VERSAO } from './versao.ts'
+
 const DSN_PADRAO = 'https://c4ff5eec6cc7d1cf63df712d20dcf9ae@o4512212070301696.ingest.de.sentry.io/4512212075741264'
 
 export function higienizar(texto: string): string {
@@ -40,6 +42,7 @@ export function relatarErro(funcao: string, ponto: string, erro: unknown): void 
       platform: 'javascript',
       level: 'error',
       environment: amb,
+      release: VERSAO,
       message: { formatted: mensagem },
       tags: { tipo: 'edge_function', funcao, ponto, area: funcao === 'enviar-codigo-2fa' ? 'autenticacao' : 'edge' },
       fingerprint: [funcao, ponto],
@@ -64,16 +67,19 @@ export function relatarErro(funcao: string, ponto: string, erro: unknown): void 
   }
 }
 
-/** Envolve o handler: exceção não tratada vira relato + 500 genérico (sem detalhe ao cliente). */
+/** Envolve o handler: exceção não tratada vira relato + 500 genérico (sem detalhe ao cliente);
+ * toda resposta leva a versão publicada no cabeçalho `x-cc-versao` (item 14). */
 export function comRelato(funcao: string, handler: (req: Request) => Promise<Response>) {
   return async (req: Request): Promise<Response> => {
     try {
-      return await handler(req)
+      const resp = await handler(req)
+      try { resp.headers.set('x-cc-versao', VERSAO) } catch { /* cabeçalhos imutáveis: segue sem */ }
+      return resp
     } catch (e) {
       relatarErro(funcao, 'nao_tratado', e)
       return new Response(JSON.stringify({ erro: 'erro interno' }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-cc-versao': VERSAO },
       })
     }
   }
