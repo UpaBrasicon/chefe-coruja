@@ -32,6 +32,9 @@ jobs:
       - run: npm ci
       - name: Lint
         run: npm run lint
+      # Fase 0, item 14: typecheck é passo próprio e bloqueante (o build também roda tsc)
+      - name: Typecheck
+        run: npm run typecheck
       - name: Build (tsc + vite)
         run: npm run build
       - name: Testes clínicos
@@ -50,6 +53,11 @@ jobs:
         run: node --test scripts/arquivo/cofre.test.mjs
       - name: Trava de alvo do Supabase (homologação antes de produção)
         run: node --test scripts/ambiente/supabase-alvo.test.mjs
+      # Fase 0, item 14: migration nova não apaga nem renomeia o que a versão anterior usa
+      - name: Expand/contract nas migrations
+        run: |
+          node --test scripts/ambiente/migrations-destrutivas.test.mjs
+          node scripts/ambiente/migrations-destrutivas.mjs
 
   # Testes SQL (supabase/tests/*.sql) num Supabase local recém-criado.
   banco:

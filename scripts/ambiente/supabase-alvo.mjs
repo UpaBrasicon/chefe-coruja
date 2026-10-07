@@ -14,8 +14,8 @@
 //
 // Ligar um projeto (pede a senha do banco, digitada por quem opera):
 //   npx supabase link --project-ref <ref>
-import { readFileSync } from 'node:fs'
-import { spawnSync } from 'node:child_process'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { execSync, spawnSync } from 'node:child_process'
 
 export const PROJETOS = {
   producao: 'saqjrjtrkzkswsxxvdxn',
@@ -56,6 +56,21 @@ const COMANDOS = {
   functions: ['supabase', 'functions', 'deploy'],
 }
 
+const ARQUIVO_VERSAO = 'supabase/functions/_shared/versao.ts'
+
+/** Conteúdo do versao.ts publicado: commit curto + data. Puro, para teste. */
+export function conteudoVersao(commit, data, modificado) {
+  return `// Gerado no deploy (scripts/ambiente/supabase-alvo.mjs) — não editar.
+export const VERSAO = '${commit}${modificado ? '-modificado' : ''}@${data}'
+`
+}
+
+/** Commit atual e se há mudança não commitada nas funções. */
+function estadoDasFuncoes() {
+  const sh = (c) => execSync(c, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+  return { commit: sh('git rev-parse --short HEAD'), modificado: sh('git status --porcelain supabase/functions') !== '' }
+}
+
 function principal(argv) {
   const [acao, alvo, ...resto] = argv
   const ligado = projetoLigado()
@@ -70,9 +85,26 @@ function principal(argv) {
   }
   const args = [...COMANDOS[acao]]
   if (acao === 'functions') args.push('--project-ref', PROJETOS[alvo])
+  // Item 14: a função publicada carrega o commit (x-cc-versao). Produção só sai
+  // de código commitado — senão não há para onde voltar.
+  let original = null
+  if (acao === 'functions') {
+    const { commit, modificado } = estadoDasFuncoes()
+    if (alvo === 'producao' && modificado) {
+      console.error('RECUSADO: há mudança não commitada em supabase/functions; produção só publica código commitado')
+      return 1
+    }
+    original = readFileSync(ARQUIVO_VERSAO, 'utf8')
+    writeFileSync(ARQUIVO_VERSAO, conteudoVersao(commit, new Date().toISOString().slice(0, 16) + 'Z', modificado))
+    console.log(`Versão das funções: ${commit}${modificado ? '-modificado' : ''}`)
+  }
   console.log(`Alvo conferido: ${alvo} (${PROJETOS[alvo]}). Rodando: npx ${args.join(' ')}`)
-  const p = spawnSync('npx', args, { stdio: 'inherit', shell: process.platform === 'win32' })
-  return p.status ?? 1
+  try {
+    const p = spawnSync('npx', args, { stdio: 'inherit', shell: process.platform === 'win32' })
+    return p.status ?? 1
+  } finally {
+    if (original !== null) writeFileSync(ARQUIVO_VERSAO, original)
+  }
 }
 
 // só roda quando chamado direto (o teste importa sem executar)
