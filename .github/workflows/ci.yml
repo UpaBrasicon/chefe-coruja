@@ -48,7 +48,7 @@ jobs:
           npm run test:observacao
           npm run test:interop
       - name: src/lib (cópias das Edge Functions)
-        run: node --experimental-strip-types --test src/lib/*.test.ts
+        run: node --experimental-strip-types --test src/lib/*.test.ts src/lib/offline/*.test.ts
       - name: Cofre da guarda
         run: node --test scripts/arquivo/cofre.test.mjs
       - name: Trava de alvo do Supabase (homologação antes de produção)
