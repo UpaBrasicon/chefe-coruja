@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase'
-import { enviarAoSentry } from '@/lib/sentry'
 
 /**
  * Captura de erros do cliente (onda 12 — "Erros e alertas do sistema").
@@ -26,8 +25,6 @@ export interface EntradaErro {
   detalhe?: string
   /** Rota de origem; se faltar, deriva de `window.location`. */
   origem?: string
-  /** Id da requisição na Supabase (cabeçalho da resposta), para cruzar com os logs. */
-  requestId?: string
 }
 
 const LIMITE_MENSAGEM = 300
@@ -190,7 +187,7 @@ function navegador(): string {
   }
 }
 
-export function versaoApp(): string {
+function versaoApp(): string {
   try {
     // Injetado pelo Vite (ver vite.config.ts). Sem build, '' — e fica como
     // pendência conhecida até existir VITE_COMMIT no deploy.
@@ -218,9 +215,6 @@ export function reportarErro(entrada: EntradaErro): void {
     const assinatura = assinaturaDe(entrada.tipo, origem, mensagem)
 
     if (recenteDemais(assinatura)) return
-
-    // Sentry (item 11): o mesmo relato, já higienizado e filtrado — nada além disso.
-    enviarAoSentry({ tipo: entrada.tipo, mensagem, detalhe, origem, assinatura, requestId: entrada.requestId })
 
     // `Promise.resolve` transforma o builder (thenable) numa Promise de verdade
     // com `.catch` — nunca propagar: reportar não pode gerar erro.

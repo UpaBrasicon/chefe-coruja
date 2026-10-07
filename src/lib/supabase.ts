@@ -1,7 +1,6 @@
 import { createClient, type SupportedStorage } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 import { mensagemDe, reportarErro } from '@/lib/reportarErro'
-import { ehDefeitoDoBanco } from '@/lib/defeitoBanco'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -152,12 +151,9 @@ function urlDaRequisicao(input: RequestInfo | URL): string {
  * Envolve o `fetch` do cliente central só para RELATAR defeito, sem mudar o
  * comportamento das telas: a resposta e os erros seguem intactos.
  *
- * O que vira relato (onda 12; item 11 da Fase 0):
- *  - status 500+ → tipo 'rpc' (defeito do servidor);
- *  - 4xx da API do banco cujo CÓDIGO indica defeito (erro interno de função,
- *    coluna/função inexistente, deadlock — ver `defeitoBanco.ts`). Recusa de
- *    regra (RAISE das RPCs, permissão, JWT) continua fora. Vai só o código e a
- *    rota, nunca a mensagem do banco (pode trazer dado digitado).
+ * O que vira relato (onda 12):
+ *  - status 500+ → tipo 'rpc' (defeito do servidor; recusa de regra é 4xx e
+ *    não entra aqui).
  *  - falha de rede (o fetch rejeita) → tipo 'rede'.
  * O próprio envio do relato (RPC `registrar_erro_cliente`) é ignorado para não
  * criar laço quando o banco/rede estiver fora.
@@ -167,22 +163,11 @@ function fetchComRelato(input: RequestInfo | URL, init?: RequestInit): Promise<R
   const ehRelato = url.includes('registrar_erro_cliente')
   return fetch(input, init).then(
     (resp) => {
-      if (!ehRelato && resp.status >= 400) {
-        const requestId = resp.headers.get('sb-request-id') ?? resp.headers.get('x-request-id') ?? undefined
-        if (resp.status >= 500) {
-          reportarErro({ tipo: 'rpc', mensagem: `HTTP ${resp.status} ${caminhoApi(url)}`.trim(), requestId })
-        } else if (url.includes('/rest/v1/')) {
-          // lê uma cópia do corpo só pelo código; a tela recebe a resposta intacta
-          void resp.clone().json().then(
-            (corpo: { code?: string } | null) => {
-              const codigo = corpo?.code ?? null
-              if (ehDefeitoDoBanco(resp.status, codigo)) {
-                reportarErro({ tipo: 'rpc', mensagem: `PG ${codigo} HTTP ${resp.status} ${caminhoApi(url)}`.trim(), requestId })
-              }
-            },
-            () => undefined,
-          )
-        }
+      if (!ehRelato && resp.status >= 500) {
+        reportarErro({
+          tipo: 'rpc',
+          mensagem: `HTTP ${resp.status} ${caminhoApi(url)}`.trim(),
+        })
       }
       return resp
     },

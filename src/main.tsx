@@ -14,11 +14,7 @@ try {
 } catch {
   /* sem sessionStorage: o fluxo normal de login segue */
 }
-import { higienizar, mensagemDe, reportarErro, versaoApp } from '@/lib/reportarErro'
-import { iniciarSentry } from '@/lib/sentry'
-
-// Sentry (item 11): sem coleta automática; só recebe o que reportarErro manda.
-iniciarSentry(higienizar, versaoApp())
+import { mensagemDe, reportarErro } from '@/lib/reportarErro'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

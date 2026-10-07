@@ -11,7 +11,6 @@ import { RedirectHome } from '@/routes/RedirectHome'
 import { Redirecionar } from '@/routes/Redirecionar'
 import { AppShell } from '@/components/AppShell'
 import { ErroBoundary } from '@/components/ErroBoundary'
-import { ErroForcado } from '@/components/ErroForcado'
 import { Spinner } from '@/components/ui/spinner'
 
 // ── Telas fora do shell: carregadas sob demanda ───────────────────────────────
@@ -161,7 +160,6 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <ErroBoundary>
-            <ErroForcado />
             <Suspense fallback={<Carregando />}>
               <DesvioRecuperacao>
               <Routes>

@@ -14,7 +14,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { contextoDoBanco, folhaDoRegistro, montarRelatorio, type TipoRelatorio } from '../_shared/folhas.ts'
 import { chavePublica } from '../_shared/chaves.ts'
-import { comRelato, relatarErro } from '../_shared/sentry.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -27,7 +26,7 @@ function erro(status: number, mensagem: string) {
 }
 const html = (h: string) => new Response(h, { headers: { ...CORS, 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } })
 
-Deno.serve(comRelato('folha', async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (req.method !== 'POST') return erro(405, 'Use POST.')
   const auth = req.headers.get('Authorization')
@@ -82,8 +81,7 @@ Deno.serve(comRelato('folha', async (req) => {
   if (error) return erro(403, error.message)
   try {
     return html(folhaDoRegistro(data as Parameters<typeof folhaDoRegistro>[0]))
-  } catch (e) {
-    relatarErro('folha', 'documento_ilegivel', e)
+  } catch {
     return erro(422, 'Conteúdo do documento ilegível.')
   }
-}))
+})

@@ -14,7 +14,6 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { criarCofre, desidentificar, residuos, type Conhecido } from '../_shared/desidentificacao.ts'
 import { comCors } from '../_shared/cors.ts'
 import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'
-import { comRelato, relatarErro } from '../_shared/sentry.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
@@ -65,7 +64,7 @@ const erro = (status: number, msg: string) =>
   new Response(JSON.stringify({ erro: msg }), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
 // a origem do CORS é decidida por requisição (www e sem www): ver _shared/cors.ts
-Deno.serve(comRelato('clinical-search', async (req) => comCors(req, await tratar(req))))
+Deno.serve(async (req) => comCors(req, await tratar(req)))
 
 async function tratar(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -129,7 +128,6 @@ async function tratar(req: Request): Promise<Response> {
       signal: AbortSignal.timeout(mode === 'ask' ? 120_000 : 45_000),
     }).catch((e: unknown) => {
       console.error('biblioteca indisponível', request_id, e instanceof Error ? e.message : String(e))
-      relatarErro('clinical-search', 'biblioteca_indisponivel', e)
       return null
     })
   }

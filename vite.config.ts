@@ -29,9 +29,6 @@ function versaoApp(): string {
 // o VITE_SUPABASE_URL do ambiente, estreita o connect-src ao projeto certo. O
 // navegador aplica as duas políticas (vale a interseção): produção só fala com
 // o banco de produção, homologação só com o de homologação.
-// Sentry (Fase 0, item 11): host de ingestão da região UE, o mesmo do DSN em src/lib/sentry.ts.
-const SENTRY_HOST = 'o4512212070301696.ingest.de.sentry.io'
-
 function cspDoAmbiente(mode: string): Plugin {
   return {
     name: 'csp-do-ambiente',
@@ -52,7 +49,7 @@ function cspDoAmbiente(mode: string): Plugin {
       }
       return [{
         tag: 'meta',
-        attrs: { 'http-equiv': 'Content-Security-Policy', content: `connect-src 'self' https://${host} wss://${host} https://${SENTRY_HOST}` },
+        attrs: { 'http-equiv': 'Content-Security-Policy', content: `connect-src 'self' https://${host} wss://${host}` },
         injectTo: 'head-prepend',
       }]
     },
