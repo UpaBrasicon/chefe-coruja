@@ -310,6 +310,9 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                           podeHigienizar
                           podeBloquear
                           podeLiberarSemPaciente
+                          podeReservar
+                          podeCancelarReserva
+                          unidadeId={unidadeId}
                           compacto
                           invalidar={[['leitos'], ['situacao-leitos'], ['mapa-leitos-gestor'], ['censo']]}
                           onErro={setErro}

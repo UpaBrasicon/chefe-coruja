@@ -79,9 +79,9 @@ function CampoProcedimento({ cid, valor, onChange }: { cid: string; valor: strin
 }
 
 export function AbaDesfecho({
-  episodioId, nome, chegadaEm, painel, registros, soap, agora, onConfirmado,
+  episodioId, pacienteId, nome, chegadaEm, painel, registros, soap, agora, onConfirmado,
 }: {
-  episodioId: string; nome: string; chegadaEm: string; painel: PainelPS; registros: RegistroSoap[]
+  episodioId: string; pacienteId: string; nome: string; chegadaEm: string; painel: PainelPS; registros: RegistroSoap[]
   soap: Soap; agora: number; onConfirmado: (aviso: string) => void
 }) {
   const { perfil } = useAuth()
@@ -111,7 +111,26 @@ export function AbaDesfecho({
       return data ?? []
     },
   })
-  const leitosLivres = (destinos.data ?? []).find((x) => x.id === setorInt)?.leitos.filter((l) => l.ativo && l.status === 'livre') ?? []
+  // livres + reservados para este paciente (ou por motivo livre) — item 12 da Fase 0
+  const ocupaveis = useQuery({
+    queryKey: ['leitos-para-ocupar', setorInt, pacienteId],
+    enabled: d === 'internacao' && !!setorInt,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('leitos_para_ocupar', { p_setor: setorInt, p_paciente: pacienteId })
+      if (error) throw error
+      return data ?? []
+    },
+  })
+  const leitosLivres = ocupaveis.data ?? []
+  const [horasReserva, setHorasReserva] = React.useState(2)
+  const [msgReserva, setMsgReserva] = React.useState<string | null>(null)
+  async function reservarLeito() {
+    setMsgReserva(null)
+    const { error } = await supabase.rpc('reservar_leito', { p_leito: leitoInt, p_horas: horasReserva, p_paciente: pacienteId })
+    if (error) { setMsgReserva(error.message); return }
+    setMsgReserva(`Leito reservado para ${nome} por ${horasReserva} h.`)
+    void ocupaveis.refetch()
+  }
 
   // CID do atendimento: o do rascunho (vai ser registrado) ou o último SOAP
   const cidAtendimento = soap.cid.trim() || [...registros].reverse().find((r) => r.cid)?.cid || ''
@@ -232,9 +251,21 @@ export function AbaDesfecho({
             <select id="int-leito" className="h-9 rounded-controle border border-fio bg-campo px-2 text-controle" value={leitoInt}
               onChange={(e) => setLeitoInt(e.target.value)} disabled={!setorInt}>
               <option value="">Definir depois</option>
-              {leitosLivres.map((l) => <option key={l.id} value={l.id}>{l.identificador}</option>)}
+              {leitosLivres.map((l) => <option key={l.id} value={l.id}>{l.identificador}{l.reservado ? ' (reservado)' : ''}</option>)}
             </select>
           </div>
+          {/* Reserva (item 12): guarda o leito para este paciente sem finalizar o atendimento */}
+          {leitoInt && !leitosLivres.find((l) => l.id === leitoInt)?.reservado && (
+            <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
+              <span className="text-apoio text-tinta-apoio">Ainda não vai subir? Reservar este leito por</span>
+              <select aria-label="Validade da reserva" className="h-8 rounded-controle border border-fio bg-campo px-2 text-controle"
+                value={horasReserva} onChange={(e) => setHorasReserva(Number(e.target.value))}>
+                {[1, 2, 4, 8].map((h) => <option key={h} value={h}>{h} h</option>)}
+              </select>
+              <Button type="button" size="sm" variant="outline" onClick={() => void reservarLeito()}>Reservar leito</Button>
+            </div>
+          )}
+          {msgReserva && <p role="status" className="text-apoio text-tinta sm:col-span-2">{msgReserva}</p>}
         </div>
       )}
 

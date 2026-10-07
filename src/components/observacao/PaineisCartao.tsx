@@ -89,12 +89,13 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
     queryFn: async () => (await rpc('setores_internacao', { p_unidade: unidadeId })) as { id: string; nome: string }[],
   })
   const leitos = useQuery({
-    queryKey: ['leitos-livres', setor],
+    queryKey: ['leitos-livres', setor, linha.paciente_id],
     enabled: desfecho === 'internacao' && !!setor,
     queryFn: async () => {
-      const { data, error } = await supabase.from('leitos').select('id, identificador').eq('setor_id', setor).eq('ativo', true).eq('status', 'livre').order('identificador')
+      // livres + reservados para este paciente (item 12 da Fase 0)
+      const { data, error } = await supabase.rpc('leitos_para_ocupar', { p_setor: setor, p_paciente: linha.paciente_id })
       if (error) throw error
-      return data ?? []
+      return (data ?? []).map((l) => ({ id: l.id, identificador: l.reservado ? `${l.identificador} (reservado)` : l.identificador }))
     },
   })
 
