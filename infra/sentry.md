@@ -44,3 +44,7 @@ Sentry → Alerts → Create alert → *Issues* → quando **"A new issue is cre
 | Alerta "Erro novo" | regra criada (issue nova, escalada, regressão → e-mail); notificação de teste recebida; **e-mail de issue nova recebido pelo erro forçado** |
 | Testes | `defeitoBanco.test.ts` (código do Postgres → defeito/regra), `test:clinico` 923, build com o host do Sentry na CSP |
 | Edge Functions | implantadas na homologação com o relato (`clinical-search`, `enviar-codigo-2fa`, `folha`); envio de envelope ao projeto conferido (HTTP 200) |
+
+## Produção (06/10/2026)
+
+PR #14 mergeado → a Vercel publicou o site com o Sentry (CSP de produção com `o4512212070301696.ingest.de.sentry.io`; DSN no pacote `supabase-*.js`); Edge Functions publicadas na produção com o relato (`supabase-alvo.mjs functions producao --confirmo-producao`). O `?forcar-erro-sentry` não funciona na produção, de propósito.
