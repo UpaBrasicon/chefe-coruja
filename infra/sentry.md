@@ -2,6 +2,8 @@
 
 Projeto `chefe-coruja` no Sentry, **região UE** (dados na Alemanha), plano **Developer** (gratuito, **1 usuário** — convidar uma segunda pessoa exige o plano Team: avisar o responsável antes). Só *Error monitoring*; **Session replay desligado de propósito** (gravaria a tela com dado de paciente).
 
+**Projeto travado contra dado pessoal** (Settings → Projects → chefe-coruja → Security & Privacy): *Prevent Storing of IP Addresses* **ligado**, *Data Scrubber* e *Use Default Scrubbers* ligados. (O evento de teste de instalação, enviado do computador do responsável, tinha gravado o IP de origem — daí a trava no projeto, além do `sendDefaultPii: false` no código.)
+
 DSN (não é segredo; vai embutido no site): `https://c4ff5eec6cc7d1cf63df712d20dcf9ae@o4512212070301696.ingest.de.sentry.io/4512212075741264` — em `src/lib/sentry.ts` e `supabase/functions/_shared/sentry.ts`; o host está na CSP (`vercel.json` e `vite.config.ts`).
 
 ## O que vai ao Sentry — e o que nunca vai
