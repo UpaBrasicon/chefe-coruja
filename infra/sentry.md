@@ -32,3 +32,15 @@ Sentry → Alerts → Create alert → *Issues* → quando **"A new issue is cre
 1. Abrir `https://homolog.chefecoruja.com.br/?forcar-erro-sentry` (só fora da produção) → a tela de erro aparece.
 2. No Sentry, em menos de 1 minuto: issue "Teste do Sentry: erro forçado no motor de prescrição (CPF `<doc>`, contato `<email>`, prescrição `<id>`)", `environment: homolog`, `area: prescricao` — **sem o CPF, o e-mail e o id originais**.
 3. E-mail de "new issue" recebido.
+
+## Evidência (homologação, 06/10/2026)
+
+| Verificação | Resultado |
+|---|---|
+| `homolog.chefecoruja.com.br/?forcar-erro-sentry` | tela "Algo quebrou nesta tela" (ErroBoundary) |
+| Issue no Sentry (JAVASCRIPT-REACT-3), menos de 1 min | "Teste do Sentry: erro forçado no motor de prescrição (CPF `<doc>`, contato `<email>`, prescrição `<id>`)" — **CPF, e-mail e id originais não chegaram** |
+| Tags | `area: prescricao`, `environment: homolog`, `tipo: render`, `release: 33e218c` (commit do deploy), `origem: /`; `unidade`/`papel` "—" (erro antes do login) |
+| Usuário/IP | **Users 0** (IP não armazenado) |
+| Alerta "Erro novo" | regra criada (issue nova, escalada, regressão → e-mail); notificação de teste recebida |
+| Testes | `defeitoBanco.test.ts` (código do Postgres → defeito/regra), `test:clinico` 923, build com o host do Sentry na CSP |
+| Edge Functions | implantadas na homologação com o relato (`clinical-search`, `enviar-codigo-2fa`, `folha`); envio de envelope ao projeto conferido (HTTP 200) |
