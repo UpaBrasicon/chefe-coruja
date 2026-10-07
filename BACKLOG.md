@@ -131,6 +131,7 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | 12 — Reserva de leito (P1) | **Concluída em 07/10/2026 (produção)** | Leito reservado para paciente ou por motivo, validade de 1/2/4/8 h; só o paciente da reserva ocupa (a trava do banco confere); reserva vira ocupação, pode ser cancelada com motivo e expira sozinha (pg_cron a cada 5 min); aparece no mapa e nas telas de Setores, enfermagem, desfecho do PS e observação. Evidência em `produto/docs/fase0/item12-reserva-leito.md`. |
 | 15 — Documento de segurança/LGPD (P1) | **Pronto em 07/10/2026 — revisão do responsável** | `produto/docs/seguranca-lgpd.md` e página para enviar a cliente (privada até ser compartilhada): RLS, 2FA no servidor, sessão, auditoria encadeada, rascunhos cifrados, backup/guarda/PITR, borda com escopo real, Sentry sem dado clínico, IA desidentificada, limites conhecidos, responsabilidades da unidade. Não promete criptografia por prontuário nem borda sobre o Supabase. |
 | 16 — RPO/RTO mínimo (P1) | **Concluída em 07/10/2026** | RPO 24 h no piloto e 5 min com paciente real (PITR); RTO 4 h; comparado com o observado na tarefa 9 (restore de dados em minutos; recuperação total ainda sem ensaio). `produto/docs/fase0/item16-rpo-rto.md`. |
+| 17 — Roteiro da demo (P1) | **Pronto em 07/10/2026 — falta o ensaio do responsável** | Roteiro de 15 min para gestor de UPA, uma pessoa trocando de perfil, na homologação (`produto/docs/demo/roteiro-demo-gestor-upa.md`); scripts `demo-medicamentos.sql` (catálogo mínimo, sem dose) e `demo-preparar.sql` (escala do dia no PS e na Clínica Médica). Fluxo recepção → triagem → atendimento → prescrição → reserva e internação → painel percorrido de ponta a ponta no ambiente local. Fecha com o ensaio cronometrado na homologação. |
 
 **Ordem técnica da Fase 0**
 1. Separar homologação.
@@ -411,3 +412,14 @@ E só então:
 Depois, **tarefa 6: fechar ciclo de vida do leito**, em homolog.
 
 Observação: a ordem de execução segue a ordem técnica da Fase 0 (homolog antes de qualquer mudança), não a numeração da tabela. A numeração é prioridade de negócio; a ordem técnica é a sequência de implementação.
+
+## Depois do backlog — achados guardados
+
+Pedidos e achados que o responsável decidiu deixar para **depois de terminar este backlog**. Não entram em nenhuma fase até lá.
+
+| Data | Achado | Origem | Decisão |
+|---|---|---|---|
+| 07/10/2026 | **Rascunho cifrado na triagem.** A tela de classificação (`src/pages/enfermagem/triagem/Classificar.tsx`) não guarda rascunho: recarregar a página, cair a conexão ou acabar a bateria apaga sinais vitais, Glasgow e avaliação já digitados. Usar o mesmo mecanismo do item 13 (AES-GCM, chave por sessão). | Ensaio da demo (item 17) na homologação | RT: guardar para depois do backlog |
+| 07/10/2026 | **Frequência / horários na prescrição do PS.** Na porta só há "Agora" e "Se necessário" (desenho do protótipo); a frequência com horário (8/8h, 12/12h) existe só na observação e na internação. | Ensaio da demo (item 17) | RT: guardar para depois do backlog |
+| 07/10/2026 | **Favoritos de prescrição na porta.** As "Minhas preferências de prescrição" (favoritos do próprio médico, posologia escrita por ele) aparecem no Receituário, não na prescrição do PS. O sistema continua sem sugerir dose. | Ensaio da demo (item 17) | RT: guardar para depois do backlog |
+| 07/10/2026 | **Sugerir CID a partir da Avaliação.** Hoje a busca de CID só funciona no campo CID-10; a ideia é sugerir o código a partir do texto da hipótese diagnóstica (ex.: "pneumonia" → J18.9), com a escolha sempre do médico. | Ensaio da demo (item 17) | RT: guardar para depois do backlog |
