@@ -11,6 +11,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 
 import { comCors } from '../_shared/cors.ts'
 import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'
+import { comRelato, relatarErro } from '../_shared/sentry.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
@@ -33,7 +34,7 @@ function corpoEmail(codigo: string): string {
 }
 
 // a origem do CORS é decidida por requisição (www e sem www): ver _shared/cors.ts
-Deno.serve(async (req) => comCors(req, await tratar(req)))
+Deno.serve(comRelato('enviar-codigo-2fa', async (req) => comCors(req, await tratar(req))))
 
 async function tratar(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -58,7 +59,10 @@ async function tratar(req: Request): Promise<Response> {
   }
 
   const apiKey = Deno.env.get('RESEND_API_KEY')
-  if (!apiKey) return resposta(500, { erro: 'envio de email não configurado' })
+  if (!apiKey) {
+    relatarErro('enviar-codigo-2fa', 'sem_chave_resend', 'RESEND_API_KEY ausente')
+    return resposta(500, { erro: 'envio de email não configurado' })
+  }
 
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -72,6 +76,7 @@ async function tratar(req: Request): Promise<Response> {
   })
   if (!r.ok) {
     console.error('resend falhou', r.status, await r.text().catch(() => ''))
+    relatarErro('enviar-codigo-2fa', 'resend_falhou', `HTTP ${r.status}`)
     return resposta(502, { erro: 'não foi possível enviar o email agora' })
   }
   return resposta(200, { ok: true })
