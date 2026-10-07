@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { cifrar, decifrar, estaCifrado, temChave } from '@/lib/cofreLocal'
+
 /** TTL de rascunhos clínicos no navegador (LGPD — computador compartilhado de UPA). */
 const TTL_RASCUNHO_MS = 12 * 60 * 60 * 1000 // 12 horas
 
@@ -75,18 +77,38 @@ export function limparTodosRascunhos() {
 
 type EnvelopeRascunho<T> = { v: 1; salvoEm: number; dados: T }
 
-/** Salva o rascunho com envelope + timestamp (para TTL). */
+/**
+ * Salva o rascunho com envelope + timestamp (para TTL), CIFRADO com a chave da
+ * sessão (item 13 da Fase 0 — `@/lib/cofreLocal`). Sem chave (sem conexão numa
+ * aba nova), não grava: o rascunho fica só na memória da tela, nunca em claro.
+ */
 export function salvarEnvelope<T>(chave: string, dados: T) {
   const envelope: EnvelopeRascunho<T> = { v: 1, salvoEm: Date.now(), dados }
-  localStorage.setItem(chave, JSON.stringify(envelope))
+  const cifrado = cifrar(JSON.stringify(envelope))
+  if (cifrado) localStorage.setItem(chave, cifrado)
 }
 
 /** Carrega o rascunho; se expirado (TTL de 12h) ou no formato antigo (sem envelope),
  * remove a chave e retorna `null` para o caller decidir o estado inicial. */
 export function carregarEnvelope<T>(chave: string): { dados: T } | null {
   try {
-    const raw = localStorage.getItem(chave)
-    if (!raw) return null
+    const guardado = localStorage.getItem(chave)
+    if (!guardado) return null
+    // Cifrado com a chave da sessão; ilegível (outra sessão, chave descartada)
+    // = rascunho sem dono, sai. Texto claro de antes da cifra é regravado
+    // cifrado (ou apagado, se não houver chave agora).
+    let raw: string | null = guardado
+    let legado = false
+    if (estaCifrado(guardado)) {
+      if (!temChave()) return null // chave ainda não chegou: não apaga
+      raw = decifrar(guardado)
+      if (raw === null) {
+        localStorage.removeItem(chave)
+        return null
+      }
+    } else {
+      legado = true
+    }
     let parsed: unknown
     try {
       parsed = JSON.parse(raw)
@@ -105,6 +127,11 @@ export function carregarEnvelope<T>(chave: string): { dados: T } | null {
       localStorage.removeItem(chave)
       return null
     }
+    if (legado) {
+      localStorage.removeItem(chave)
+      const cifrado = cifrar(raw)
+      if (cifrado) localStorage.setItem(chave, cifrado)
+    }
     return { dados: env.dados }
   } catch {
     return null
@@ -112,7 +139,7 @@ export function carregarEnvelope<T>(chave: string): { dados: T } | null {
 }
 
 /**
- * Autosave genérico em memória (localStorage) com debounce — sem cliques.
+ * Autosave genérico em memória (localStorage cifrado) com debounce — sem cliques.
  * `load` restaura o rascunho da chave; o valor é salvo automaticamente a cada mudança.
  * Rascunhos expiram após 12 horas (TTL) e são removidos no logout.
  */

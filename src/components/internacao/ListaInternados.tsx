@@ -16,7 +16,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { rotuloIdade } from '@/domain/idade'
-import { carregarEnvelope, novaChave, useRascunho } from '@/pages/plantao/shared/rascunho'
+import { carregarEnvelope, novaChave, salvarEnvelope, useRascunho } from '@/pages/plantao/shared/rascunho'
 import { Chip, Chips, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -369,7 +369,7 @@ function Prancheta({ paciente, leito, unidadeId, perfilId, aoFechar }: {
   const fechar = () => {
     // o salvamento automático espera meio segundo; fechar antes não pode perder a última tecla
     try {
-      if (dados.texto.trim()) localStorage.setItem(chave, JSON.stringify({ v: 1, salvoEm: Date.now(), dados }))
+      if (dados.texto.trim()) salvarEnvelope(chave, dados)
     } catch {
       // armazenamento indisponível: fica o que o salvamento automático já gravou
     }

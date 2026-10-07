@@ -41,6 +41,7 @@ import { useSessaoPosPlantao } from '@/components/casca/useSessaoPosPlantao'
 import { useSinal } from '@/components/casca/useSinal'
 import { PortaoSegundoFator } from '@/components/seguranca/SegundoFator'
 import { useSegundoFator } from '@/hooks/useSegundoFator'
+import { useChaveRascunho } from '@/hooks/useChaveRascunho'
 import type { Papel } from '@/types/database'
 
 // A casca do Monitor de Cabeceira (P/index.html 882–1366): lateral recolhida
@@ -166,6 +167,8 @@ function Casca() {
   const { compacto, alternar: alternarDensidade } = useDensidade()
   const paleta = usePaleta()
   const segundoFator = useSegundoFator()
+  // rascunho cifrado (item 13): a chave da sessão chega depois do 2FA e antes das telas
+  const chaveRascunhoPronta = useChaveRascunho(!!segundoFator.data && (!segundoFator.data.exigido || segundoFator.data.valido))
   const { sinal, tentar } = useSinal()
   const estreito = useLarguraAte(1023)
   const [saidaAberta, setSaidaAberta] = React.useState(false)
@@ -337,6 +340,9 @@ function Casca() {
   // antes do código — dado de paciente só com aal2 confirmado nas últimas 24 h.
   if (segundoFator.data?.exigido && !segundoFator.data.valido) {
     return <PortaoSegundoFator fatorId={segundoFator.data.fatorId} onSair={() => void sair()} />
+  }
+  if (!chaveRascunhoPronta) {
+    return <div className="flex min-h-dvh items-center justify-center bg-campo"><Spinner /></div>
   }
 
   if (entraPorEscala) {
