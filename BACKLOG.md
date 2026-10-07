@@ -412,3 +412,11 @@ E só então:
 Depois, **tarefa 6: fechar ciclo de vida do leito**, em homolog.
 
 Observação: a ordem de execução segue a ordem técnica da Fase 0 (homolog antes de qualquer mudança), não a numeração da tabela. A numeração é prioridade de negócio; a ordem técnica é a sequência de implementação.
+
+## Depois do backlog — achados guardados
+
+Pedidos e achados que o responsável decidiu deixar para **depois de terminar este backlog**. Não entram em nenhuma fase até lá.
+
+| Data | Achado | Origem | Decisão |
+|---|---|---|---|
+| 07/10/2026 | **Rascunho cifrado na triagem.** A tela de classificação (`src/pages/enfermagem/triagem/Classificar.tsx`) não guarda rascunho: recarregar a página, cair a conexão ou acabar a bateria apaga sinais vitais, Glasgow e avaliação já digitados. Usar o mesmo mecanismo do item 13 (AES-GCM, chave por sessão). | Ensaio da demo (item 17) na homologação | RT: guardar para depois do backlog |
