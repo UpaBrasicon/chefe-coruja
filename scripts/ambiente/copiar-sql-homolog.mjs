@@ -4,6 +4,9 @@
 // Uso: npm run homolog:copiar -- 1   (depois 2, 3, 4, 5, 6)
 //      npm run homolog:copiar -- 7 seu@email   (super admin de um usuário que já existe)
 //      npm run homolog:copiar -- 8 seu@email   (todos os papéis na UPA Homologação + escala no PS)
+//      npm run homolog:copiar -- 9             (demo: catálogo mínimo de medicamentos)
+//      npm run homolog:copiar -- 10 seu@email  (demo: escala hoje e amanhã no PS e na Clínica Médica)
+//      npm run homolog:copiar -- 11            (CID-10, depois 12, 13, 14, 15 — gerado por gerar-cid10-sql.ts)
 // No painel de homologação: SQL Editor → New query → Ctrl+V → Run.
 //
 // Vai para o clip.exe em UTF-16LE SEM BOM: os acentos chegam intactos e o
@@ -22,6 +25,13 @@ const ORDEM = [
   ['supabase/homolog/seed-homolog.sql', 'UPA de homologação (setores, leitos, pacientes fictícios)'],
   ['supabase/homolog/promover-super-admin.sql', 'seu usuário vira super admin da homologação'],
   ['supabase/homolog/vincular-usuario-teste.sql', 'todos os papéis na UPA Homologação + escala no Pronto Socorro'],
+  ['supabase/homolog/demo-medicamentos.sql', 'demo: catálogo mínimo de medicamentos de PS (sem dose)'],
+  ['supabase/homolog/demo-preparar.sql', 'demo: escala hoje e amanhã no PS e na Clínica Médica'],
+  ['supabase/homolog/partes/cid10_parte1.sql', 'CID-10, parte 1 de 5'],
+  ['supabase/homolog/partes/cid10_parte2.sql', 'CID-10, parte 2 de 5'],
+  ['supabase/homolog/partes/cid10_parte3.sql', 'CID-10, parte 3 de 5'],
+  ['supabase/homolog/partes/cid10_parte4.sql', 'CID-10, parte 4 de 5'],
+  ['supabase/homolog/partes/cid10_parte5.sql', 'CID-10, parte 5 de 5'],
 ]
 
 const n = Number(process.argv[2])
@@ -36,7 +46,7 @@ if (!existsSync(arquivo)) {
   process.exit(1)
 }
 let texto = readFileSync(arquivo, 'utf8').replace(/^\uFEFF/, '')
-if (arquivo.endsWith('promover-super-admin.sql') || arquivo.endsWith('vincular-usuario-teste.sql')) {
+if (arquivo.endsWith('promover-super-admin.sql') || arquivo.endsWith('vincular-usuario-teste.sql') || arquivo.endsWith('demo-preparar.sql')) {
   const email = (process.argv[3] ?? '').trim()
   if (!/^[^\s@']+@[^\s@']+\.[^\s@']+$/.test(email)) {
     console.error('Informe o e-mail do usuário criado no painel: npm run homolog:copiar -- 7 seu@email')
