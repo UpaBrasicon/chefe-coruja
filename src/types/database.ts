@@ -8384,6 +8384,97 @@ export type Database = {
           },
         ]
       }
+      reservas_leito: {
+        Row: {
+          encerrada_em: string | null
+          encerrada_por: string | null
+          expira_em: string
+          id: string
+          internacao_id: string | null
+          leito_id: string
+          motivo: string | null
+          motivo_encerramento: string | null
+          paciente_id: string | null
+          reservado_em: string
+          reservado_por: string
+          situacao: string
+          unidade_id: string
+        }
+        Insert: {
+          encerrada_em?: string | null
+          encerrada_por?: string | null
+          expira_em: string
+          id?: string
+          internacao_id?: string | null
+          leito_id: string
+          motivo?: string | null
+          motivo_encerramento?: string | null
+          paciente_id?: string | null
+          reservado_em?: string
+          reservado_por: string
+          situacao?: string
+          unidade_id: string
+        }
+        Update: {
+          encerrada_em?: string | null
+          encerrada_por?: string | null
+          expira_em?: string
+          id?: string
+          internacao_id?: string | null
+          leito_id?: string
+          motivo?: string | null
+          motivo_encerramento?: string | null
+          paciente_id?: string | null
+          reservado_em?: string
+          reservado_por?: string
+          situacao?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservas_leito_encerrada_por_fkey"
+            columns: ["encerrada_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservas_leito_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservas_leito_leito_id_fkey"
+            columns: ["leito_id"]
+            isOneToOne: false
+            referencedRelation: "leitos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservas_leito_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservas_leito_reservado_por_fkey"
+            columns: ["reservado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservas_leito_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       responsaveis_tecnicos: {
         Row: {
           ativo: boolean
@@ -9935,6 +10026,10 @@ export type Database = {
         Returns: undefined
       }
       cancelar_pedido_acesso: { Args: { p_pedido: string }; Returns: undefined }
+      cancelar_reserva: {
+        Args: { p_leito: string; p_motivo: string }
+        Returns: undefined
+      }
       cancelar_teleinterconsulta: { Args: { p_id: string }; Returns: undefined }
       cancelar_termo_consentimento: {
         Args: { p_documento: string; p_motivo: string }
@@ -11138,6 +11233,14 @@ export type Database = {
         }
         Returns: string
       }
+      leitos_para_ocupar: {
+        Args: { p_paciente?: string; p_setor: string }
+        Returns: {
+          id: string
+          identificador: string
+          reservado: boolean
+        }[]
+      }
       liberar_leito_sem_paciente: {
         Args: { p_leito: string; p_motivo: string }
         Returns: undefined
@@ -11973,6 +12076,15 @@ export type Database = {
         Args: { p_ids: string[]; p_unidade: string }
         Returns: undefined
       }
+      reservar_leito: {
+        Args: {
+          p_horas: number
+          p_leito: string
+          p_motivo?: string
+          p_paciente?: string
+        }
+        Returns: string
+      }
       resolver_agravo: {
         Args: {
           p_agravo: string
@@ -12248,7 +12360,12 @@ export type Database = {
           leito_id: string
           motivo: string
           pode_bloquear: boolean
+          pode_cancelar_reserva: boolean
           pode_higienizar: boolean
+          pode_reservar: boolean
+          reserva_expira_em: string
+          reserva_motivo: string
+          reserva_paciente: string
           setor_id: string
           setor_nome: string
           status: Database["public"]["Enums"]["status_leito"]
@@ -12496,7 +12613,12 @@ export type Database = {
         | "recepcao"
         | "farmaceutico"
         | "telemedicina"
-      status_leito: "livre" | "ocupado" | "bloqueado" | "higienizacao"
+      status_leito:
+        | "livre"
+        | "ocupado"
+        | "bloqueado"
+        | "higienizacao"
+        | "reservado"
       tipo_leito: "clinico" | "isolamento" | "estabilizacao" | "observacao"
       tipo_setor:
         | "emergencia"
@@ -12855,7 +12977,13 @@ export const Constants = {
         "farmaceutico",
         "telemedicina",
       ],
-      status_leito: ["livre", "ocupado", "bloqueado", "higienizacao"],
+      status_leito: [
+        "livre",
+        "ocupado",
+        "bloqueado",
+        "higienizacao",
+        "reservado",
+      ],
       tipo_leito: ["clinico", "isolamento", "estabilizacao", "observacao"],
       tipo_setor: [
         "emergencia",
