@@ -15,7 +15,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { CamposCadastro } from '@/pages/recepcao/CamposCadastro'
 import { CADASTRO_VAZIO, errosCadastro, normalizarCadastro, type Cadastro, type CampoCadastro } from '@/pages/recepcao/cadastroForm'
 import { useEscalaSetores } from '@/pages/plantao/shared/useEscalaSetores'
-import { useRascunho } from '@/pages/plantao/shared/rascunho'
+import { carregarEnvelope, useRascunho } from '@/pages/plantao/shared/rascunho'
 import { usePacienteDaUrl } from '@/pages/plantao/shared/usePacienteDaUrl'
 import type { PacProto } from './identificacao'
 
@@ -34,16 +34,10 @@ export function usePacienteDoDocumento(ferramenta: string, unidadeId?: string, p
   }, [r])
   return [r.dados.paciente_id, escolher] as const
 }
-const CARREGAR = (chave: string) => {
-  try {
-    const raw = localStorage.getItem(chave)
-    const env = raw ? (JSON.parse(raw) as { v?: number; salvoEm?: number; dados?: { paciente_id?: string | null } }) : null
-    if (env?.v === 1 && env.salvoEm && Date.now() - env.salvoEm < 12 * 3600_000) return { paciente_id: env.dados?.paciente_id ?? null }
-  } catch {
-    /* sem armazenamento */
-  }
-  return { paciente_id: null }
-}
+// rascunho cifrado (item 13): mesmo envelope e prazo dos outros rascunhos
+const CARREGAR = (chave: string) => ({
+  paciente_id: carregarEnvelope<{ paciente_id?: string | null }>(chave)?.dados?.paciente_id ?? null,
+})
 
 type Achado = { id: string; nome: string; nome_social: string | null; cpf: string | null; cns: string | null; data_nascimento: string | null; prontuario: string | null }
 

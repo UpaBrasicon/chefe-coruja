@@ -9995,6 +9995,7 @@ export type Database = {
         Args: { p_episodio: string; p_sala: string }
         Returns: Json
       }
+      chave_rascunho: { Args: never; Returns: string }
       checar: {
         Args: {
           p_horario?: string
