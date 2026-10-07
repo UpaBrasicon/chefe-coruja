@@ -38,6 +38,8 @@ O WhatsApp não está em uso (tarefa 4). Quando voltar: trocar por uma regra que
 ```
 Efeito colateral: quem viaja ou usa VPN fora do Brasil fica de fora (decisão do responsável, 05/10/2026). Para liberar alguém pontualmente: acrescentar `and not ip.src in {<ip>}`.
 
+Reconfirmado em 07/10/2026: no ensaio da demo, a própria aba do responsável saiu por um IP da Amazon nos EUA (provável VPN automática do antivírus) e foi bloqueada. O responsável decidiu **manter o bloqueio** sem exceção; a saída é desligar a VPN e conferir `loc=BR` em `/cdn-cgi/trace`.
+
 **Rate limit:** nenhum por enquanto. O Caddy do Hermes só expõe `/webhook` (fechado pela regra 1) e `/health`; `/v1/chat/completions` não é público (404 na origem, conferido em 06/10/2026). Quando o `/webhook` voltar, a única regra de rate limit do plano gratuito vai para ele:
 ```
 (http.host eq "hermes.chefecoruja.com.br" and starts_with(http.request.uri.path, "/webhook"))
