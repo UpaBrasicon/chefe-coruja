@@ -41,6 +41,6 @@ Sentry → Alerts → Create alert → *Issues* → quando **"A new issue is cre
 | Issue no Sentry (JAVASCRIPT-REACT-3), menos de 1 min | "Teste do Sentry: erro forçado no motor de prescrição (CPF `<doc>`, contato `<email>`, prescrição `<id>`)" — **CPF, e-mail e id originais não chegaram** |
 | Tags | `area: prescricao`, `environment: homolog`, `tipo: render`, `release: 33e218c` (commit do deploy), `origem: /`; `unidade`/`papel` "—" (erro antes do login) |
 | Usuário/IP | **Users 0** (IP não armazenado) |
-| Alerta "Erro novo" | regra criada (issue nova, escalada, regressão → e-mail); notificação de teste recebida |
+| Alerta "Erro novo" | regra criada (issue nova, escalada, regressão → e-mail); notificação de teste recebida; **e-mail de issue nova recebido pelo erro forçado** |
 | Testes | `defeitoBanco.test.ts` (código do Postgres → defeito/regra), `test:clinico` 923, build com o host do Sentry na CSP |
 | Edge Functions | implantadas na homologação com o relato (`clinical-search`, `enviar-codigo-2fa`, `folha`); envio de envelope ao projeto conferido (HTTP 200) |
