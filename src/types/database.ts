@@ -10601,6 +10601,10 @@ export type Database = {
         }
         Returns: string
       }
+      encerrar_sessao_anterior: {
+        Args: { p_sessao_anterior: string }
+        Returns: boolean
+      }
       encerrar_responsavel_tecnico: {
         Args: { p_id: string }
         Returns: undefined
