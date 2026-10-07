@@ -55,6 +55,10 @@ export function TelaBloqueada({
     if (!error && anterior) {
       // sem herdar (confirmação vencida, outra pessoa…), o portão pede o código
       await supabase.rpc('herdar_segundo_fator', { p_sessao_anterior: anterior })
+      // a sessão anterior acaba aqui, e a chave dos rascunhos passa para a nova
+      // (item 19: cada desbloqueio deixava uma sessão viva). Sem 2FA herdado o
+      // banco recusa; aí quem encerra é a inatividade de 30 min do servidor.
+      await supabase.rpc('encerrar_sessao_anterior', { p_sessao_anterior: anterior })
     }
     setConferindo(false)
     setSenha('')
