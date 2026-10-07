@@ -2,7 +2,8 @@
 -- de UPA, apresentada por uma pessoa só (usuário com todos os papéis).
 --
 --   • escala do usuário da demo HOJE e AMANHÃ, nos 3 turnos, no Pronto Socorro
---     (porta: fila do médico e triagem) e na Clínica Médica (internação);
+--     (porta: fila do médico e triagem), na Observação (checagem, alta e leito)
+--     e na Clínica Médica (internação);
 --   • o check-in fica para a demo (é uma das telas mostradas);
 --   • o catálogo de medicamentos vem de demo-medicamentos.sql (rode antes).
 --
@@ -13,6 +14,7 @@ DECLARE
   v_email   text := 'TROQUE-PELO-SEU-EMAIL@exemplo.com';
   v_unidade uuid := '31000000-0000-4000-8000-000000000001';  -- UPA Homologação
   v_setores uuid[] := ARRAY['32000000-0000-4000-8000-000000000001',   -- Pronto Socorro
+                            '32000000-0000-4000-8000-000000000002',   -- Observação
                             '32000000-0000-4000-8000-000000000003']::uuid[];  -- Clínica Médica
   v_id      uuid;
   v_n       int;
@@ -35,6 +37,6 @@ BEGIN
   ON CONFLICT DO NOTHING;
   GET DIAGNOSTICS v_n = ROW_COUNT;
 
-  RAISE NOTICE 'Escala da demo: % plantão(ões) novo(s) para % (PS e Clínica Médica, hoje e amanhã). Medicamentos no catálogo: %.',
+  RAISE NOTICE 'Escala da demo: % plantão(ões) novo(s) para % (PS, Observação e Clínica Médica, hoje e amanhã). Medicamentos no catálogo: %.',
     v_n, v_email, (SELECT count(*) FROM public.medicamento WHERE ativo);
 END $$;
