@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { manterConectadoVencido, supabase } from '@/lib/supabase'
 import { limparTodosRascunhos } from '@/pages/plantao/shared/rascunho'
+import { definirChave } from '@/lib/cofreLocal'
 import type { Perfis } from '@/types/database'
 
 interface AuthContextValue {
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const encerrarLocal = React.useCallback(async () => {
     // LGPD: computador compartilhado de UPA — dado de paciente não fica.
     limparTodosRascunhos()
+    definirChave(null) // a chave do servidor morre junto com a sessão (gatilho em auth.sessions)
     queryClient.clear()
     await supabase.auth.signOut({ scope: 'local' })
   }, [queryClient])
@@ -65,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Sem sessão (aba fechada sem "Sair", sessão vencida): rascunho clínico
         // que ficou no navegador não tem mais dono — sai agora.
         limparTodosRascunhos()
+        definirChave(null)
         setLoading(false)
       }
     })
@@ -109,6 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           /* sem canal: as outras abas saem quando o token vencer */
         }
         limparTodosRascunhos()
+        definirChave(null)
         queryClient.clear()
         // escopo local: revoga no servidor o refresh token DESTA sessão (o
         // celular do médico continua logado); o global derrubaria todos.
