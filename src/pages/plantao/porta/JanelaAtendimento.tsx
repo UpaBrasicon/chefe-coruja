@@ -265,7 +265,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
                 faixa={faixa} cid={cidAtend} estado={docs} setEstado={setDocs} />
             </TabsContent>
             <TabsContent value="fim">
-              {p && <AbaDesfecho episodioId={ep.id} nome={nome} chegadaEm={ep.chegada_em} painel={p} registros={registros}
+              {p && <AbaDesfecho episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} chegadaEm={ep.chegada_em} painel={p} registros={registros}
                 soap={soap} agora={agora} onConfirmado={(aviso) => { recarregar(); onFechar(aviso) }} />}
             </TabsContent>
           </Tabs>

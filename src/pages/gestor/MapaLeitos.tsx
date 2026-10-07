@@ -146,6 +146,7 @@ export function MapaLeitos() {
             <div className="flex flex-wrap items-center gap-3 text-rotulo text-tinta-sussurro">
               <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-conforme/30" />Livre</span>
               <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-critico/30" />Ocupado</span>
+              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-atencao/30" />Reservado</span>
               <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-trilha" />Bloqueado ou em higienização</span>
               <span>Clique no leito ocupado para abrir o paciente</span>
             </div>
@@ -155,6 +156,7 @@ export function MapaLeitos() {
               const cls = cn('grid h-11 place-items-center rounded-[10px] border text-apoio font-medium tabular-nums',
                 l.ocupado ? 'border-critico/20 bg-critico/[0.06] text-critico'
                   : l.status === 'livre' ? 'border-conforme/20 bg-conforme/[0.06] text-conforme'
+                  : l.status === 'reservado' ? 'border-atencao/30 bg-atencao/[0.08] text-atencao'
                   : 'border-fio bg-trilha text-tinta-sussurro')
               const marca = (l.vencidas > 0 || (l.banda ?? 0) >= 1) && <span className="sr-only"> com alerta</span>
               const titulo = [l.status === 'higienizacao' ? 'em higienização' : l.status, l.vencidas ? `${l.vencidas} vencida(s)` : '', (l.banda ?? 0) >= 1 ? 'escore em alerta' : ''].filter(Boolean).join(' · ')

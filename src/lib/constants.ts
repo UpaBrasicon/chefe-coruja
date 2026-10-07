@@ -49,6 +49,7 @@ export const STATUS_LEITO_LABEL: Record<StatusLeito, string> = {
   ocupado: 'Ocupado',
   bloqueado: 'Bloqueado',
   higienizacao: 'Higienização',
+  reservado: 'Reservado',
 }
 
 // Leito ocupado é o normal de uma enfermaria, não alarme: vermelho é estado
@@ -58,6 +59,7 @@ export const STATUS_LEITO_VARIANT: Record<StatusLeito, 'success' | 'secondary' |
   ocupado: 'secondary',
   bloqueado: 'warning',
   higienizacao: 'info',
+  reservado: 'info',
 }
 
 export const UFS = [

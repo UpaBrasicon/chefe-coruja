@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { BedSingle, Lock, LockOpen, Sparkles } from 'lucide-react'
+import { BedSingle, BookmarkMinus, BookmarkPlus, Lock, LockOpen, Sparkles } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -16,6 +16,7 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { MOTIVOS_BLOQUEIO, type MotivoBloqueio } from '@/components/leito/motivos'
+import { ReservarLeito } from '@/components/leito/ReservarLeito'
 
 // Fase 0, tarefas 6 e 7 (migration 20261024000001): o status do leito só muda
 // pelas RPCs. Higienização: enfermagem e gestor. Bloqueio/desbloqueio: gestor e
@@ -29,6 +30,10 @@ type Props = {
   podeBloquear: boolean
   /** gestor: leito "ocupado" sem internação (dado antigo) vai para higienização */
   podeLiberarSemPaciente?: boolean
+  /** reserva (item 12): plantonista, enfermeiro e gestor reservam; a unidade é para a busca de paciente */
+  podeReservar?: boolean
+  podeCancelarReserva?: boolean
+  unidadeId?: string
   /** cartão pequeno (Setores): só ícones */
   compacto?: boolean
   /** chaves de consulta a reler depois da ação */
@@ -36,10 +41,10 @@ type Props = {
   onErro?: (mensagem: string) => void
 }
 
-export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, podeBloquear, podeLiberarSemPaciente, compacto, invalidar, onErro }: Props) {
+export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, podeBloquear, podeLiberarSemPaciente, podeReservar, podeCancelarReserva, unidadeId, compacto, invalidar, onErro }: Props) {
   const queryClient = useQueryClient()
   const [ocupado, setOcupado] = React.useState(false)
-  const [dialogo, setDialogo] = React.useState<'bloquear' | 'liberar' | null>(null)
+  const [dialogo, setDialogo] = React.useState<'bloquear' | 'liberar' | 'reservar' | 'cancelar-reserva' | null>(null)
   const [motivo, setMotivo] = React.useState<MotivoBloqueio | ''>('')
   const [observacao, setObservacao] = React.useState('')
   const [erro, setErro] = React.useState<string | null>(null)
@@ -66,6 +71,17 @@ export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, pod
     const { error } = await supabase.rpc('bloquear_leito', {
       p_leito: leitoId, p_motivo: motivo, p_observacao: observacao.trim() || undefined,
     })
+    setOcupado(false)
+    if (error) { setErro(error.message); return }
+    setDialogo(null)
+    reler()
+  }
+
+  async function cancelarReserva() {
+    if (observacao.trim().length < 5) { setErro('Escreva o motivo do cancelamento.'); return }
+    setErro(null)
+    setOcupado(true)
+    const { error } = await supabase.rpc('cancelar_reserva', { p_leito: leitoId, p_motivo: observacao.trim() })
     setOcupado(false)
     if (error) { setErro(error.message); return }
     setDialogo(null)
@@ -126,6 +142,49 @@ export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, pod
         </Button>
       )}
 
+      {status === 'livre' && podeReservar && unidadeId && (
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          aria-label={`Reservar leito ${identificador}`}
+          title="Reservar leito"
+          disabled={ocupado}
+          onClick={() => setDialogo('reservar')}
+        >
+          <BookmarkPlus />
+        </Button>
+      )}
+      {status === 'reservado' && podeCancelarReserva && (
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          aria-label={`Cancelar a reserva do leito ${identificador}`}
+          title="Cancelar reserva"
+          disabled={ocupado}
+          onClick={() => { setObservacao(''); setErro(null); setDialogo('cancelar-reserva') }}
+        >
+          <BookmarkMinus />
+        </Button>
+      )}
+      {unidadeId && dialogo === 'reservar' && (
+        <ReservarLeito aberto onFechar={() => setDialogo(null)} leitoId={leitoId} identificador={identificador} unidadeId={unidadeId} invalidar={invalidar} />
+      )}
+      <Dialog open={dialogo === 'cancelar-reserva'} onOpenChange={(o) => { if (!o) setDialogo(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancelar a reserva do leito {identificador}</DialogTitle>
+            <DialogDescription>O leito volta a livre. O motivo fica registrado.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor={`motivo-cancelar-reserva-${leitoId}`} className="text-apoio font-medium text-grafite">Motivo</label>
+            <Textarea id={`motivo-cancelar-reserva-${leitoId}`} value={observacao} onChange={(e) => setObservacao(e.target.value)} rows={2} maxLength={300} />
+          </div>
+          {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
+          <DialogFooter>
+            <Button variant="destructive" onClick={() => void cancelarReserva()} disabled={ocupado}>{ocupado && <Spinner />} Cancelar reserva</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {status === 'ocupado' && podeLiberarSemPaciente && (
         <Button
           variant="ghost"
