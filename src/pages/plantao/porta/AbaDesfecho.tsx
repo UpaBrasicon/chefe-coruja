@@ -6,6 +6,8 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { Check, CircleAlert, DoorOpen } from 'lucide-react'
 import * as React from 'react'
 
+import { SeletorMotivoEvasao } from '@/components/porta/MotivoEvasao'
+import type { MotivoEvasao } from '@/lib/evasao'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -88,6 +90,7 @@ export function AbaDesfecho({
   const { unidadeAtiva } = useUnidade()
   const [d, setD] = React.useState<Desfecho | null>(null)
   const [relato, setRelato] = React.useState('')
+  const [motivoEvasao, setMotivoEvasao] = React.useState<MotivoEvasao | null>(null) // Fase 1, tarefa 6
   const [destino, setDestino] = React.useState('')
   const [horaObito, setHoraObito] = React.useState('')
   const [numeroDo, setNumeroDo] = React.useState('')
@@ -157,6 +160,7 @@ export function AbaDesfecho({
       regras.push({ ok: meds.length > 0 && falta.length === 0, texto: falta.length ? `Medicação administrada — falta checar: ${falta.join(', ')}` : 'Medicação administrada (checada pela enfermagem)' })
     }
     if (EXIGE_CID.includes(d)) regras.push({ ok: CID_OK.test(cid), texto: 'Diagnóstico de alta (CID)' })
+    if (d === 'evasao') regras.push({ ok: !!motivoEvasao, texto: 'Motivo da evasão' })
     if (RELATO[d]) regras.push({ ok: relato.trim().length >= 15, texto: `${RELATO[d]} (mínimo de 15 letras)` })
     if (d === 'transferencia') regras.push({ ok: destino.trim().length >= 3, texto: 'Serviço de destino' })
     if (d === 'obito') {
@@ -183,6 +187,7 @@ export function AbaDesfecho({
       }
       const det: Record<string, string> = {}
       if (d === 'transferencia') det.destino = destino.trim()
+      if (d === 'evasao' && motivoEvasao) det.motivo_evasao = motivoEvasao
       if (d === 'obito') {
         det.hora_obito = new Date(horaObito).toISOString()
         det.numero_do = numeroDo
@@ -230,6 +235,7 @@ export function AbaDesfecho({
           <Input id="d-hora" type="datetime-local" value={horaObito} max={localAgora(agora)} onChange={(e) => setHoraObito(e.target.value)} />
         </div>
       )}
+      {d === 'evasao' && <SeletorMotivoEvasao valor={motivoEvasao} onChange={setMotivoEvasao} />}
       {d && RELATO[d] && (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="d-relato">{RELATO[d]}</Label>
