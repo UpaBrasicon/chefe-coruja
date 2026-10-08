@@ -110,7 +110,7 @@ export function EsperaMedico({ unidadeId, nomeUnidade }: { unidadeId: string; no
                   return (
                     <div key={c} className="flex flex-col gap-1.5 rounded-lg border border-fio px-3 py-2.5">
                       <PilulaRisco cor={c} className="self-start" />
-                      <span className={cn('text-[22px] leading-none font-semibold tabular', v.mediana_min != null && v.mediana_min > v.alvo_min ? 'text-critico' : 'text-tinta')}>
+                      <span className={cn('text-[22px] leading-none font-semibold tabular', v.mediana_min != null && Math.floor(v.mediana_min) > v.alvo_min ? 'text-critico' : 'text-tinta')}>
                         {minutos(v.mediana_min)}
                       </span>
                       <span className="text-rotulo text-tinta-sussurro">mediana · alvo {rotuloAlvo(v.alvo_min)}</span>
