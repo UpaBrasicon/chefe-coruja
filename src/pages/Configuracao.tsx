@@ -374,6 +374,7 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
   const [sobrecarga, setSobrecarga] = React.useState(String(inicial.sobrecarga_horas))
   const [ocupacao, setOcupacao] = React.useState(String(inicial.ocupacao_pct))
   const [tolerancia, setTolerancia] = React.useState(String(inicial.checkin_tolerancia_min))
+  const [alvoTriagem, setAlvoTriagem] = React.useState(String(inicial.alvo_triagem_min))
   const [salvando, setSalvando] = React.useState(false)
   const [msg, setMsg] = React.useState<string | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
@@ -391,12 +392,15 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
       p_ocupacao_pct: Number(ocupacao),
       p_checkin_tolerancia_min: Number(tolerancia),
     })
+    // alvo da chegada à triagem (Fase 1, tarefa 3): RPC própria, migration 20261029000002
+    const alvo = error ? null : await supabase.rpc('salvar_alvo_triagem', { p_unidade: unidadeId, p_minutos: Number(alvoTriagem) })
     setSalvando(false)
-    if (error) {
-      setErro(error.message)
+    if (error || alvo?.error) {
+      setErro((error ?? alvo?.error)!.message)
       return
     }
     setMsg('Limites salvos.')
+    void queryClient.invalidateQueries({ queryKey: ['espera-triagem', unidadeId] })
     void queryClient.invalidateQueries({ queryKey: chaveLimites(unidadeId) })
     void queryClient.invalidateQueries({ queryKey: ['panorama-gestor', unidadeId] })
   }
@@ -439,10 +443,11 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
           </label>
           {descansoAtivo && campo('lim-descanso', 'Descanso mínimo', descansoHoras, setDescansoHoras, 1, 24, 'horas', 'Entre o fim de uma jornada e o início da seguinte. A CLT pede 11 horas.')}
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {campo('lim-sobrecarga', 'Sobrecarga', sobrecarga, setSobrecarga, 12, 168, 'horas em 7 dias', 'Acima disso o profissional aparece no Olho de Gavião.')}
           {campo('lim-ocupacao', 'Limite de ocupação', ocupacao, setOcupacao, 50, 100, '% dos leitos', 'A partir daqui o setor fica em atenção.')}
           {campo('lim-tolerancia', 'Tolerância do check-in', tolerancia, setTolerancia, 0, 120, 'minutos', 'Depois do início do plantão. Passado esse prazo sem check-in, o acesso fica bloqueado até a pessoa fazer o check-in.')}
+          {campo('lim-alvo-triagem', 'Alvo chegada → triagem', alvoTriagem, setAlvoTriagem, 1, 240, 'minutos', 'Da ficha na recepção até a classificação. Usado no indicador de espera da triagem.')}
         </div>
         {erro && <p className="text-sm text-critico">{erro}</p>}
         {msg && <p className="text-sm text-conforme">{msg}</p>}
