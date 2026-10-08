@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Megaphone, Trash2, UserX } from 'lucide-react'
 import * as React from 'react'
 
+import { SeletorMotivoEvasao } from '@/components/porta/MotivoEvasao'
+import type { MotivoEvasao } from '@/lib/evasao'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useSalas } from '@/hooks/useChamadas'
@@ -85,9 +87,14 @@ type Motivo = (typeof MOTIVOS)[number]['valor']
 function useRetirar(episodioId: string, aoTerminar: () => void) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ motivo, just }: { motivo: Motivo; just: string }) => {
+    mutationFn: async ({ motivo, just, motivoEvasao }: { motivo: Motivo; just: string; motivoEvasao: MotivoEvasao | null }) => {
       const { error } = await supabase.rpc('retirar_da_fila', { p_episodio: episodioId, p_motivo: motivo, p_justificativa: just })
       if (error) throw error
+      // Fase 1, tarefa 6: o motivo de lista da evasão (migration 20261029000006)
+      if (motivo === 'evasao' && motivoEvasao) {
+        const { error: e2 } = await supabase.rpc('registrar_motivo_evasao', { p_episodio: episodioId, p_motivo: motivoEvasao })
+        if (e2) throw e2
+      }
     },
     onSuccess: () => {
       aoTerminar()
@@ -99,8 +106,10 @@ function useRetirar(episodioId: string, aoTerminar: () => void) {
 export function RetirarDaFila({ episodioId, aviso }: { episodioId: string; aviso: boolean }) {
   const [aberto, setAberto] = React.useState(false)
   const [motivo, setMotivo] = React.useState<Motivo>('evasao')
+  const [motivoEvasao, setMotivoEvasao] = React.useState<MotivoEvasao | null>(null)
   const [just, setJust] = React.useState('')
   const retirar = useRetirar(episodioId, () => setAberto(false))
+  const faltaMotivo = motivo === 'evasao' && !motivoEvasao
 
   return (
     <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
@@ -122,11 +131,12 @@ export function RetirarDaFila({ episodioId, aviso }: { episodioId: string; aviso
               </Button>
             ))}
           </div>
+          {motivo === 'evasao' && <SeletorMotivoEvasao valor={motivoEvasao} onChange={setMotivoEvasao} />}
           <Input aria-label="Justificativa" placeholder="Justificativa (mínimo de 15 letras)" value={just} onChange={(e) => setJust(e.target.value)} />
           {retirar.error && <span className="text-xs text-critico">{(retirar.error as Error).message}</span>}
           <div className="flex gap-2">
             <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Manter na fila</Button>
-            <Button size="sm" variant="destructive" disabled={just.trim().length < 15 || retirar.isPending} onClick={() => retirar.mutate({ motivo, just })}>
+            <Button size="sm" variant="destructive" disabled={just.trim().length < 15 || faltaMotivo || retirar.isPending} onClick={() => retirar.mutate({ motivo, just, motivoEvasao })}>
               Retirar
             </Button>
           </div>
@@ -144,15 +154,18 @@ export function RetirarDaFila({ episodioId, aviso }: { episodioId: string; aviso
 export function ExcluirDaFila({ episodioId, nome }: { episodioId: string; nome: string }) {
   const [aberto, setAberto] = React.useState(false)
   const [motivo, setMotivo] = React.useState<Motivo>('evasao')
+  const [motivoEvasao, setMotivoEvasao] = React.useState<MotivoEvasao | null>(null)
   const [just, setJust] = React.useState('')
   const [tentou, setTentou] = React.useState(false)
   const retirar = useRetirar(episodioId, () => setAberto(false))
   const curta = just.trim().length < 15
+  const faltaMotivo = motivo === 'evasao' && !motivoEvasao
 
   function abrir(v: boolean) {
     setAberto(v)
     if (v) {
       setMotivo('evasao')
+      setMotivoEvasao(null)
       setJust('')
       setTentou(false)
       retirar.reset()
@@ -199,6 +212,7 @@ export function ExcluirDaFila({ episodioId, nome }: { episodioId: string; nome: 
             ))}
           </div>
         </div>
+        {motivo === 'evasao' && <SeletorMotivoEvasao valor={motivoEvasao} onChange={setMotivoEvasao} invalido={tentou && faltaMotivo} />}
         <div className="flex flex-col gap-[5px]">
           <Label htmlFor={`excl-just-${episodioId}`} className="text-apoio font-medium text-grafite">Justificativa</Label>
           <Textarea
@@ -220,7 +234,7 @@ export function ExcluirDaFila({ episodioId, nome }: { episodioId: string; nome: 
             disabled={retirar.isPending}
             onClick={() => {
               setTentou(true)
-              if (!curta) retirar.mutate({ motivo, just: just.trim() })
+              if (!curta && !faltaMotivo) retirar.mutate({ motivo, just: just.trim(), motivoEvasao })
             }}
           >
             <Trash2 /> Excluir da fila

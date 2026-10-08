@@ -6,6 +6,8 @@
 import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
 
+import { SeletorMotivoEvasao } from '@/components/porta/MotivoEvasao'
+import type { MotivoEvasao } from '@/lib/evasao'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { publicosDeProtocolo, type FaixaEtaria } from '@/domain/idade'
@@ -79,6 +81,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
   const [horaObito, setHoraObito] = React.useState('')
   const [numeroDo, setNumeroDo] = React.useState('')
   const [relato, setRelato] = React.useState('')
+  const [motivoEvasao, setMotivoEvasao] = React.useState<MotivoEvasao | null>(null) // Fase 1, tarefa 6
   const [setor, setSetor] = React.useState('')
   const [leito, setLeito] = React.useState('')
   const [falta, setFalta] = React.useState<string | null>(null)
@@ -106,6 +109,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
     if (!desfecho) return setFalta('Escolha o desfecho.')
     if (ehAlta && desfecho !== 'evasao' && cid.trim().length < 3) return setFalta('Informe o CID de alta.')
     if (desfecho === 'transferencia' && destino.trim().length < 3) return setFalta('Informe o serviço de destino.')
+    if (desfecho === 'evasao' && !motivoEvasao) return setFalta('Escolha o motivo da evasão.')
     if (desfecho === 'obito' && !horaObito) return setFalta('Informe a hora do óbito.')
     if (desfecho === 'obito' && numeroDo.trim().length < 3) return setFalta('Informe o número da Declaração de Óbito.')
     if (desfecho === 'internacao' && !setor) return setFalta('Escolha o setor de internação.')
@@ -113,6 +117,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
     setFalta(null)
     const detalhes: Record<string, string> = {}
     if (desfecho === 'transferencia') detalhes.destino = destino.trim()
+    if (desfecho === 'evasao' && motivoEvasao) detalhes.motivo_evasao = motivoEvasao
     if (desfecho === 'obito') { detalhes.hora_obito = horaDoDia(horaObito, 'passado'); detalhes.numero_do = numeroDo.trim() }
     if (desfecho === 'internacao') { detalhes.setor_id = setor; if (leito) detalhes.leito_id = leito }
     void acao(() => rpc('finalizar_observacao', {
@@ -126,6 +131,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
       <div className="flex flex-wrap gap-[7px]">
         {DESFECHOS.map(([k, r]) => <Opcao key={k} ativa={desfecho === k} onClick={() => { setDesfecho(k); setFalta(null) }}>{r}</Opcao>)}
       </div>
+      {desfecho === 'evasao' && <SeletorMotivoEvasao valor={motivoEvasao} onChange={(v) => { setMotivoEvasao(v); setFalta(null) }} />}
       {desfecho === 'internacao' && (
         <div className="grid max-w-[520px] gap-2.5 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">

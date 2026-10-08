@@ -11230,6 +11230,10 @@ export type Database = {
         Args: { p_ate: string; p_de: string; p_unidade: string }
         Returns: Json
       }
+      indicador_evasao: {
+        Args: { p_ate: string; p_de: string; p_unidade: string }
+        Returns: Json
+      }
       iniciar_analise_parecer: { Args: { p_id: string }; Returns: undefined }
       iniciar_atendimento: { Args: { p_episodio: string }; Returns: undefined }
       integridade_trilha: { Args: { p_unidade: string }; Returns: Json }
@@ -12032,6 +12036,10 @@ export type Database = {
           p_recebedor_nome: string
         }
         Returns: Json
+      }
+      registrar_motivo_evasao: {
+        Args: { p_episodio: string; p_motivo: string }
+        Returns: undefined
       }
       registrar_nega_alergia: { Args: { p_paciente: string }; Returns: string }
       registrar_notificacao: {

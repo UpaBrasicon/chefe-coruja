@@ -7,6 +7,7 @@ import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/moni
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import type { CorRisco } from '@/domain/risco'
+import { taxa } from '@/lib/evasao'
 import { gargalo, tempo, type EtapaChave, type Paciente, type Porta } from '@/lib/portaAgora'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -101,6 +102,15 @@ export default function PortaAgora() {
               )
             })}
           </section>
+
+          {data.hoje && (
+            <p className="text-apoio text-tinta-apoio">
+              Hoje: <strong className="font-semibold text-tinta">{data.hoje.chegadas}</strong> chegadas ·{' '}
+              <strong className={cn('font-semibold', data.hoje.evasoes > 0 ? 'text-critico' : 'text-tinta')}>{data.hoje.evasoes}</strong> evasões ({taxa(data.hoje.evasoes, data.hoje.chegadas)}) ·{' '}
+              <strong className="font-semibold text-tinta">{data.hoje.alta_a_pedido}</strong> altas a pedido ({taxa(data.hoje.alta_a_pedido, data.hoje.chegadas)}).
+              <span className="text-tinta-sussurro"> Detalhes em Indicadores.</span>
+            </p>
+          )}
 
           <section aria-label="Aguardando médico por cor" className="flex flex-col gap-2">
             <TituloSecao>Aguardando médico, por cor</TituloSecao>
