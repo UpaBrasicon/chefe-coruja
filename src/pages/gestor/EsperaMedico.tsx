@@ -3,15 +3,16 @@ import { Download, Stethoscope } from 'lucide-react'
 import * as React from 'react'
 
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
-import { Chip, Chips } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { baixarCsv, gerarCsv, nomeArquivoCsv } from '@/lib/csv'
-import { minutos, periodoDe, rotuloAlvo, type CorAlvo, type EsperaMedico as Dados, type Periodo } from '@/lib/esperaTriagem'
+import { minutos, rotuloAlvo, type CorAlvo, type EsperaMedico as Dados } from '@/lib/esperaTriagem'
+import { descreverFiltros } from '@/lib/filtrosBi'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+
+import type { ContextoFiltros } from './useFiltrosBI'
 
 // Indicador triagem → médico (Fase 1, tarefa 4 do BACKLOG). Da 1ª
 // classificação até o médico abrir o atendimento; a cor e o alvo são os da
@@ -19,29 +20,20 @@ import { cn } from '@/lib/utils'
 // (Unidade › Configurações; sem ajuste, o protocolo). A lista dos atrasados
 // traz o nome — o banco registra o acesso na auditoria (migration 20261029000003).
 
-const PERIODOS: { chave: Periodo; rotulo: string }[] = [
-  { chave: 'hoje', rotulo: 'Hoje' },
-  { chave: '7d', rotulo: '7 dias' },
-  { chave: '30d', rotulo: '30 dias' },
-  { chave: 'intervalo', rotulo: 'Intervalo' },
-]
 const CORES: CorAlvo[] = ['vermelho', 'laranja', 'amarelo', 'verde', 'azul']
 const fmtDia = (iso: string) => iso.split('-').reverse().join('/')
 const fmtHora = (iso: string) => new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', ' ·')
 
-export function EsperaMedico({ unidadeId, nomeUnidade }: { unidadeId: string; nomeUnidade: string }) {
-  const [periodo, setPeriodo] = React.useState<Periodo>('7d')
+export function EsperaMedico({ unidadeId, nomeUnidade, ctx }: { unidadeId: string; nomeUnidade: string; ctx: ContextoFiltros }) {
   const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
-  const [de, setDe] = React.useState(hoje)
-  const [ate, setAte] = React.useState(hoje)
   const [verAtrasados, setVerAtrasados] = React.useState(false)
-  const faixa = periodoDe(periodo, hoje, de, ate)
+  const faixa = ctx.faixa
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['espera-medico', unidadeId, faixa.de, faixa.ate],
+    queryKey: ['espera-medico', unidadeId, ctx.args],
     enabled: !!faixa.de && !!faixa.ate && faixa.de <= faixa.ate,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('indicador_espera_medico', { p_unidade: unidadeId, p_de: faixa.de, p_ate: faixa.ate })
+      const { data, error } = await supabase.rpc('indicador_espera_medico', { p_unidade: unidadeId, ...ctx.args })
       if (error) throw error
       return data as unknown as Dados
     },
@@ -51,7 +43,7 @@ export function EsperaMedico({ unidadeId, nomeUnidade }: { unidadeId: string; no
     if (!data) return
     const contexto: [string, string | number][] = [
       ['Unidade', nomeUnidade], ['Relatório', 'Espera da triagem ao médico'],
-      ['Período', `${fmtDia(data.de)} a ${fmtDia(data.ate)}`],
+      ['Período', `${fmtDia(data.de)} a ${fmtDia(data.ate)}`], ['Filtros', descreverFiltros(ctx.filtros, ctx.nomes)],
       ['Alvos (min)', CORES.map((c) => `${c} ${data.alvos[c]}`).join(', ')],
       ['Base', 'da 1ª classificação ao início do atendimento; cor da última classificação antes do médico'],
       ['Gerado em', new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })],
@@ -80,22 +72,7 @@ export function EsperaMedico({ unidadeId, nomeUnidade }: { unidadeId: string; no
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Chips rotulo="Período">
-            {PERIODOS.map((p) => (
-              <Chip key={p.chave} ativo={periodo === p.chave} onClick={() => setPeriodo(p.chave)}>{p.rotulo}</Chip>
-            ))}
-          </Chips>
-          {periodo === 'intervalo' && (
-            <div className="flex items-center gap-2 text-apoio">
-              <Input type="date" aria-label="De" value={de} max={hoje} onChange={(e) => setDe(e.target.value)} className="w-40" />
-              <span className="text-tinta-sussurro">a</span>
-              <Input type="date" aria-label="Até" value={ate} max={hoje} onChange={(e) => setAte(e.target.value)} className="w-40" />
-            </div>
-          )}
-        </div>
 
-        {faixa.de > faixa.ate && <p className="text-apoio text-critico">A data inicial é depois da final.</p>}
         {isLoading && <div className="flex h-20 items-center justify-center"><Spinner /></div>}
         {error && <p role="alert" className="text-apoio text-critico">{(error as Error).message}</p>}
 

@@ -61,13 +61,13 @@ BEGIN
   IF jsonb_array_length(v -> 'setores') <> 2 THEN RAISE EXCEPTION 'FALHOU: setores do filtro %', v -> 'setores'; END IF;
   RAISE NOTICE 'OK  cor final (laranja do reclassificado, verde do que baixou), sem classificação, subiu/baixou';
 
-  v := public.pacientes_por_cor(u, d, d, '00000000-0000-4000-8000-00000000c9a3');
+  v := public.pacientes_por_cor(u, d, d, p_setor => '00000000-0000-4000-8000-00000000c9a3');
   IF (v ->> 'total')::int <> 1 OR (v #>> '{por_cor,verde}')::int <> 1 THEN RAISE EXCEPTION 'FALHOU: filtro de setor %', v; END IF;
-  v := public.pacientes_por_cor(u, d, d, NULL, 'pediatrico');
+  v := public.pacientes_por_cor(u, d, d, p_publico => 'pediatrico');
   IF (v ->> 'total')::int <> 1 THEN RAISE EXCEPTION 'FALHOU: filtro pediátrico %', v ->> 'total'; END IF;
-  v := public.pacientes_por_cor(u, d, d, NULL, NULL, 'manha');
+  v := public.pacientes_por_cor(u, d, d, p_turno => 'manha');
   IF (v ->> 'total')::int <> 2 OR (v #>> '{por_cor,vermelho}')::int <> 1 THEN RAISE EXCEPTION 'FALHOU: turno manhã %', v; END IF;
-  v := public.pacientes_por_cor(u, d, d, NULL, NULL, 'noite');
+  v := public.pacientes_por_cor(u, d, d, p_turno => 'noite');
   IF (v ->> 'total')::int <> 2 OR (v #>> '{por_cor,sem_classificacao}')::int <> 1 THEN RAISE EXCEPTION 'FALHOU: turno noite (20h e 3h) %', v; END IF;
   RAISE NOTICE 'OK  filtros de setor, grupo pediátrico e turno (noite inclui a madrugada)';
 END $$;
@@ -80,7 +80,7 @@ EXCEPTION WHEN insufficient_privilege THEN
 END $$;
 RESET ROLE;
 DO $$ BEGIN
-  IF has_function_privilege('anon', 'public.pacientes_por_cor(uuid, date, date, uuid, text, text)', 'EXECUTE') THEN RAISE EXCEPTION 'FALHOU: anon executa'; END IF;
+  IF has_function_privilege('anon', 'public.pacientes_por_cor(uuid, date, date, uuid, text, text, text, uuid)', 'EXECUTE') THEN RAISE EXCEPTION 'FALHOU: anon executa'; END IF;
   RAISE NOTICE 'OK  fora do anon';
 END $$;
 ROLLBACK;
