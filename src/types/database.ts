@@ -11222,6 +11222,10 @@ export type Database = {
         Args: { p_alergias: string[]; p_eventos: string[]; p_motivo: string }
         Returns: number
       }
+      indicador_espera_medico: {
+        Args: { p_ate: string; p_de: string; p_unidade: string }
+        Returns: Json
+      }
       indicador_espera_triagem: {
         Args: { p_ate: string; p_de: string; p_unidade: string }
         Returns: Json
@@ -12223,6 +12227,10 @@ export type Database = {
       }
       salvar_alvo_triagem: {
         Args: { p_minutos: number; p_unidade: string }
+        Returns: Json
+      }
+      salvar_alvos_medico: {
+        Args: { p_alvos: Json; p_unidade: string }
         Returns: Json
       }
       salvar_cadastro_paciente: {

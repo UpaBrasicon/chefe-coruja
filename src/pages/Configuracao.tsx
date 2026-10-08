@@ -375,6 +375,9 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
   const [ocupacao, setOcupacao] = React.useState(String(inicial.ocupacao_pct))
   const [tolerancia, setTolerancia] = React.useState(String(inicial.checkin_tolerancia_min))
   const [alvoTriagem, setAlvoTriagem] = React.useState(String(inicial.alvo_triagem_min))
+  // alvos da classificação ao médico, por cor (Fase 1, tarefa 4; migration 20261029000003)
+  const [alvosMedico, setAlvosMedico] = React.useState<Record<string, string>>(
+    Object.fromEntries(Object.entries(inicial.alvos_medico).map(([c, v]) => [c, String(v)])))
   const [salvando, setSalvando] = React.useState(false)
   const [msg, setMsg] = React.useState<string | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
@@ -394,13 +397,19 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
     })
     // alvo da chegada à triagem (Fase 1, tarefa 3): RPC própria, migration 20261029000002
     const alvo = error ? null : await supabase.rpc('salvar_alvo_triagem', { p_unidade: unidadeId, p_minutos: Number(alvoTriagem) })
+    const alvos = error || alvo?.error ? null : await supabase.rpc('salvar_alvos_medico', {
+      p_unidade: unidadeId,
+      p_alvos: Object.fromEntries(Object.entries(alvosMedico).map(([c, v]) => [c, Number(v)])),
+    })
     setSalvando(false)
-    if (error || alvo?.error) {
-      setErro((error ?? alvo?.error)!.message)
+    if (error || alvo?.error || alvos?.error) {
+      setErro((error ?? alvo?.error ?? alvos?.error)!.message)
       return
     }
     setMsg('Limites salvos.')
     void queryClient.invalidateQueries({ queryKey: ['espera-triagem', unidadeId] })
+    void queryClient.invalidateQueries({ queryKey: ['espera-medico', unidadeId] })
+    void queryClient.invalidateQueries({ queryKey: ['porta-agora', unidadeId] })
     void queryClient.invalidateQueries({ queryKey: chaveLimites(unidadeId) })
     void queryClient.invalidateQueries({ queryKey: ['panorama-gestor', unidadeId] })
   }
@@ -448,6 +457,21 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
           {campo('lim-ocupacao', 'Limite de ocupação', ocupacao, setOcupacao, 50, 100, '% dos leitos', 'A partir daqui o setor fica em atenção.')}
           {campo('lim-tolerancia', 'Tolerância do check-in', tolerancia, setTolerancia, 0, 120, 'minutos', 'Depois do início do plantão. Passado esse prazo sem check-in, o acesso fica bloqueado até a pessoa fazer o check-in.')}
           {campo('lim-alvo-triagem', 'Alvo chegada → triagem', alvoTriagem, setAlvoTriagem, 1, 240, 'minutos', 'Da ficha na recepção até a classificação. Usado no indicador de espera da triagem.')}
+        </div>
+        <div className="flex flex-col gap-2 rounded-lg border border-fio p-3">
+          <span className="text-sm font-medium text-tinta">Alvo da classificação ao médico, por cor</span>
+          <span className="text-xs text-tinta-sussurro">
+            Em minutos, da 1ª classificação até o médico abrir o atendimento. Vem do protocolo de classificação; mude só se a unidade adota outro tempo. Usado na tela Porta e nos Indicadores. 0 = imediato.
+          </span>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+            {(['vermelho', 'laranja', 'amarelo', 'verde', 'azul'] as const).map((c) => (
+              <div key={c} className="flex flex-col gap-1">
+                <Label htmlFor={`alvo-${c}`} className="capitalize">{c}</Label>
+                <Input id={`alvo-${c}`} type="number" inputMode="numeric" min={0} max={1440} value={alvosMedico[c] ?? ''} disabled={!podeEditar}
+                  onChange={(e) => setAlvosMedico((a) => ({ ...a, [c]: e.target.value }))} className="w-24" />
+              </div>
+            ))}
+          </div>
         </div>
         {erro && <p className="text-sm text-critico">{erro}</p>}
         {msg && <p className="text-sm text-conforme">{msg}</p>}
