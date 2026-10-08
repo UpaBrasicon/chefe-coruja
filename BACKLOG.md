@@ -174,6 +174,12 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | 15 | P1 | Tela "Aguardando liberação" libera sozinha | Achado na tarefa 2 da Fase 0 (05/10/2026): `src/pages/AguardandoLiberacao.tsx` não volta a consultar os vínculos nem redireciona; consultar a cada ~30 s e ir para `/` quando houver vínculo; teste do fluxo | Profissional em espera entra sozinho quando o vínculo é criado, sem sair e entrar; o texto da tela passa a ser verdadeiro |
 | 16 | P2 | Criação de conta pela administração | Achado na tarefa 2 da Fase 0: a regra "conta nova só com convite" (`20261003000009`) barra também o Add user do painel e a API admin com `app_metadata.origem = 'admin'` (o Auth grava antes do metadado); trocar a checagem por gatilho de restrição `DEFERRABLE INITIALLY DEFERRED` (validar antes se o Auth aplica o metadado na mesma transação); migration expand + rollback; testes de signUp sem código (recusado) e criação admin (aceita) | Admin cria conta pela API/painel; signUp público sem código continua recusado; evidência por teste de banco |
 
+**Andamento da Fase 1**
+
+| Tarefa | Situação | Evidência / observação |
+|---|---|---|
+| 1 — Demo PS/UPA (P0) | **Concluída em 07/10/2026 — ensaio na homologação em 14 minutos, fluxo completo, só dado fictício (responsável)** | Roteiro estendido até a alta (`produto/docs/demo/roteiro-demo-gestor-upa.md`): recepção → triagem → fila → médico → prescrição → observação → checagem da enfermagem → alta médica com CID → leito em higienização liberado pela enfermagem → painel do gestor; variante de internação com reserva e bloqueio de leito. `demo-preparar.sql` passa a escalar também na Observação. Sem código novo: o fluxo já existe no sistema. |
+
 **Ordem técnica da Fase 1**
 1. Criar base fictícia e demo.
 2. Criar RPCs/consultas dos KPIs.
