@@ -14,7 +14,9 @@ import { EsperaMedico } from '@/pages/gestor/EsperaMedico'
 import { EsperaTriagem } from '@/pages/gestor/EsperaTriagem'
 import { EvasaoIndicador } from '@/pages/gestor/EvasaoIndicador'
 import { PacientesPorCor } from '@/pages/gestor/PacientesPorCor'
+import { BarraFiltrosBI } from '@/pages/gestor/FiltrosBI'
 import { PanoramaConfig } from '@/pages/gestor/PanoramaConfig'
+import { useFiltrosBI } from '@/pages/gestor/useFiltrosBI'
 import { useLimitesUnidade } from '@/pages/gestor/limites'
 
 type CensoLinha = {
@@ -54,6 +56,8 @@ export default function Indicadores() {
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
   const { limites } = useLimitesUnidade(unidadeId)
+  // Fase 1, tarefa 7: uma barra de filtros para os indicadores da porta, no endereço da página
+  const filtrosBI = useFiltrosBI(papelAtivo === 'gestor' ? unidadeId : undefined)
 
   const { data: censo, isLoading } = useQuery({
     queryKey: ['censo-recente', unidadeId],
@@ -311,14 +315,16 @@ export default function Indicadores() {
         </CardContent>
       </Card>
 
-      {/* Fase 1, tarefa 3: espera da chegada à triagem (gestor) */}
-      {papelAtivo === 'gestor' && unidadeId && <EsperaTriagem unidadeId={unidadeId} nomeUnidade={nomeUnidade} />}
-      {/* Fase 1, tarefa 4: espera da triagem ao médico, por cor (gestor) */}
-      {papelAtivo === 'gestor' && unidadeId && <EsperaMedico unidadeId={unidadeId} nomeUnidade={nomeUnidade} />}
-      {/* Fase 1, tarefa 5: pacientes por classificação de risco (gestor) */}
-      {papelAtivo === 'gestor' && unidadeId && <PacientesPorCor unidadeId={unidadeId} nomeUnidade={nomeUnidade} />}
-      {/* Fase 1, tarefa 6: evasão e alta a pedido (gestor) */}
-      {papelAtivo === 'gestor' && unidadeId && <EvasaoIndicador unidadeId={unidadeId} nomeUnidade={nomeUnidade} />}
+      {/* Fase 1, tarefas 3 a 7: indicadores da porta no período, com a barra única de filtros (gestor) */}
+      {papelAtivo === 'gestor' && unidadeId && (
+        <section aria-label="Indicadores da porta" className="flex flex-col gap-4">
+          <BarraFiltrosBI ctx={filtrosBI} />
+          <EsperaTriagem unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
+          <EsperaMedico unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
+          <PacientesPorCor unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
+          <EvasaoIndicador unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
+        </section>
+      )}
 
       {papelAtivo === 'gestor' && unidadeId && <PanoramaConfig unidadeId={unidadeId} />}
     </div>

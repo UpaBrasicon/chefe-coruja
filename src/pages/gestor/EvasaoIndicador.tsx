@@ -3,16 +3,16 @@ import { Download, LogOut } from 'lucide-react'
 import * as React from 'react'
 
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
-import { Chip, Chips } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import type { CorRisco } from '@/domain/risco'
 import { baixarCsv, gerarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { MOMENTOS_EVASAO, MOTIVOS_EVASAO, rotuloMomento, rotuloMotivo, taxa, type IndicadorEvasao } from '@/lib/evasao'
-import { periodoDe, type Periodo } from '@/lib/esperaTriagem'
+import { descreverFiltros } from '@/lib/filtrosBi'
 import { supabase } from '@/lib/supabase'
+
+import type { ContextoFiltros } from './useFiltrosBI'
 
 // Evasão e abandono (Fase 1, tarefa 6 do BACKLOG): taxa de evasão sobre as
 // chegadas, pelo momento em que o paciente saiu, pelo motivo (lista curta
@@ -20,10 +20,6 @@ import { supabase } from '@/lib/supabase'
 // A lista dos casos traz o nome — o banco registra o acesso na auditoria
 // (migration 20261029000006).
 
-const PERIODOS: { chave: Periodo; rotulo: string }[] = [
-  { chave: 'hoje', rotulo: 'Hoje' }, { chave: '7d', rotulo: '7 dias' },
-  { chave: '30d', rotulo: '30 dias' }, { chave: 'intervalo', rotulo: 'Intervalo' },
-]
 const TURNOS = [['manha', 'Manhã (07–13)'], ['tarde', 'Tarde (13–19)'], ['noite', 'Noite (19–07)']] as const
 const fmtDia = (iso: string) => iso.split('-').reverse().join('/')
 const fmtHora = (iso: string | null) => iso
@@ -47,19 +43,16 @@ function Barras({ titulo, itens, total }: { titulo: string; itens: { rotulo: str
   )
 }
 
-export function EvasaoIndicador({ unidadeId, nomeUnidade }: { unidadeId: string; nomeUnidade: string }) {
-  const [periodo, setPeriodo] = React.useState<Periodo>('7d')
+export function EvasaoIndicador({ unidadeId, nomeUnidade, ctx }: { unidadeId: string; nomeUnidade: string; ctx: ContextoFiltros }) {
   const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
-  const [de, setDe] = React.useState(hoje)
-  const [ate, setAte] = React.useState(hoje)
   const [verCasos, setVerCasos] = React.useState(false)
-  const faixa = periodoDe(periodo, hoje, de, ate)
+  const faixa = ctx.faixa
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['indicador-evasao', unidadeId, faixa.de, faixa.ate],
+    queryKey: ['indicador-evasao', unidadeId, ctx.args],
     enabled: !!faixa.de && !!faixa.ate && faixa.de <= faixa.ate,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('indicador_evasao', { p_unidade: unidadeId, p_de: faixa.de, p_ate: faixa.ate })
+      const { data, error } = await supabase.rpc('indicador_evasao', { p_unidade: unidadeId, ...ctx.args })
       if (error) throw error
       return data as unknown as IndicadorEvasao
     },
@@ -74,7 +67,7 @@ export function EvasaoIndicador({ unidadeId, nomeUnidade }: { unidadeId: string;
         d.alta_a_pedido, d.chegadas ? Math.round((d.alta_a_pedido / d.chegadas) * 1000) / 10 : null,
       ]),
       { contexto: [
-        ['Unidade', nomeUnidade], ['Relatório', 'Evasão e alta a pedido'], ['Período', `${fmtDia(data.de)} a ${fmtDia(data.ate)}`],
+        ['Unidade', nomeUnidade], ['Relatório', 'Evasão e alta a pedido'], ['Período', `${fmtDia(data.de)} a ${fmtDia(data.ate)}`], ['Filtros', descreverFiltros(ctx.filtros, ctx.nomes)],
         ['Evasões por momento', MOMENTOS_EVASAO.map((m) => `${m.rotulo} ${data.por_momento[m.valor]}`).join('; ')],
         ['Evasões por motivo', MOTIVOS_EVASAO.map((m) => `${m.rotulo} ${data.por_motivo[m.valor]}`).join('; ')],
         ['Gerado em', new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })],
@@ -97,20 +90,7 @@ export function EvasaoIndicador({ unidadeId, nomeUnidade }: { unidadeId: string;
         <CardDescription>Sobre as chegadas do período. Alta a pedido em taxa separada; não soma com a evasão.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Chips rotulo="Período">
-            {PERIODOS.map((p) => <Chip key={p.chave} ativo={periodo === p.chave} onClick={() => setPeriodo(p.chave)}>{p.rotulo}</Chip>)}
-          </Chips>
-          {periodo === 'intervalo' && (
-            <div className="flex items-center gap-2 text-apoio">
-              <Input type="date" aria-label="De" value={de} max={hoje} onChange={(e) => setDe(e.target.value)} className="w-40" />
-              <span className="text-tinta-sussurro">a</span>
-              <Input type="date" aria-label="Até" value={ate} max={hoje} onChange={(e) => setAte(e.target.value)} className="w-40" />
-            </div>
-          )}
-        </div>
 
-        {faixa.de > faixa.ate && <p className="text-apoio text-critico">A data inicial é depois da final.</p>}
         {isLoading && <div className="flex h-20 items-center justify-center"><Spinner /></div>}
         {error && <p role="alert" className="text-apoio text-critico">{(error as Error).message}</p>}
 

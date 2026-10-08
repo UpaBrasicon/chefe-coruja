@@ -11223,15 +11223,42 @@ export type Database = {
         Returns: number
       }
       indicador_espera_medico: {
-        Args: { p_ate: string; p_de: string; p_unidade: string }
+        Args: {
+          p_ate: string
+          p_cor?: string
+          p_de: string
+          p_medico?: string
+          p_publico?: string
+          p_setor?: string
+          p_turno?: string
+          p_unidade: string
+        }
         Returns: Json
       }
       indicador_espera_triagem: {
-        Args: { p_ate: string; p_de: string; p_unidade: string }
+        Args: {
+          p_ate: string
+          p_cor?: string
+          p_de: string
+          p_medico?: string
+          p_publico?: string
+          p_setor?: string
+          p_turno?: string
+          p_unidade: string
+        }
         Returns: Json
       }
       indicador_evasao: {
-        Args: { p_ate: string; p_de: string; p_unidade: string }
+        Args: {
+          p_ate: string
+          p_cor?: string
+          p_de: string
+          p_medico?: string
+          p_publico?: string
+          p_setor?: string
+          p_turno?: string
+          p_unidade: string
+        }
         Returns: Json
       }
       iniciar_analise_parecer: { Args: { p_id: string }; Returns: undefined }
@@ -11511,10 +11538,16 @@ export type Database = {
           setor_nome: string
         }[]
       }
+      opcoes_filtros_bi: {
+        Args: { p_ate: string; p_de: string; p_unidade: string }
+        Returns: Json
+      }
       pacientes_por_cor: {
         Args: {
           p_ate: string
+          p_cor?: string
           p_de: string
+          p_medico?: string
           p_publico?: string
           p_setor?: string
           p_turno?: string
