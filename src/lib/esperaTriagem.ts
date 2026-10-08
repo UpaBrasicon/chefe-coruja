@@ -34,3 +34,19 @@ export function minutos(v: number | null | undefined): string {
   const m = Math.round(v % 60)
   return m ? `${h} h ${m} min` : `${h} h`
 }
+
+// Indicador triagem → médico (Fase 1, tarefa 4): formato de indicador_espera_medico().
+export type CorAlvo = 'vermelho' | 'laranja' | 'amarelo' | 'verde' | 'azul'
+export type EsperaMedico = {
+  de: string; ate: string; alvos: Record<CorAlvo, number>
+  classificados: number; atendidos: number; sem_medico: number
+  media_min: number | null; mediana_min: number | null; fora_alvo: number
+  por_cor: Record<CorAlvo, { alvo_min: number; atendidos: number; mediana_min: number | null; media_min: number | null; fora_alvo: number; sem_medico: number }>
+  por_dia: { dia: string; atendidos: number; mediana_min: number | null; media_min: number | null; fora_alvo: number }[]
+  atrasados: { nome: string; cor: CorAlvo | null; chegada_em: string; classificado_em: string; atendido_em: string | null; espera_min: number; alvo_min: number | null; sem_medico: boolean; desfecho: string | null }[]
+}
+
+/** Alvo 0 = atendimento imediato. */
+export function rotuloAlvo(min: number): string {
+  return min === 0 ? 'imediato' : minutos(min)
+}
