@@ -11,6 +11,7 @@ export type LimitesUnidade = {
   sobrecarga_horas: number
   ocupacao_pct: number
   checkin_tolerancia_min: number
+  alvo_triagem_min: number
   atualizado_em: string | null
 }
 
@@ -20,6 +21,7 @@ export const LIMITES_PADRAO: LimitesUnidade = {
   sobrecarga_horas: 60,
   ocupacao_pct: 85,
   checkin_tolerancia_min: 30,
+  alvo_triagem_min: 10,
   atualizado_em: null,
 }
 
