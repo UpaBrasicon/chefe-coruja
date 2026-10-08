@@ -34,7 +34,7 @@ O WhatsApp não está em uso (tarefa 4). Quando voltar: trocar por uma regra que
 
 **2. Fora do Brasil** — ação **Block**
 ```
-(http.host in {"chefecoruja.com.br" "www.chefecoruja.com.br" "homolog.chefecoruja.com.br" "hermes.chefecoruja.com.br"} and ip.src.country ne "BR")
+(http.host in {"chefecoruja.com.br" "www.chefecoruja.com.br" "hermes.chefecoruja.com.br"} and ip.src.country ne "BR")
 ```
 Efeito colateral: quem viaja ou usa VPN fora do Brasil fica de fora (decisão do responsável, 05/10/2026). Para liberar alguém pontualmente: acrescentar `and not ip.src in {<ip>}`.
 
@@ -68,3 +68,9 @@ Tem que vir **404 da origem** (Vercel/Caddy), não **301 do Cloudflare**. Se vie
 | Um subdomínio com problema | DNS → o registro → nuvem **cinza** (DNS only): o tráfego vai direto à origem na hora |
 | Tudo com problema | todas as nuvens cinza (o Cloudflare vira só DNS) |
 | Sair do Cloudflare | Registro.br → voltar aos servidores DNS do Registro.br e recriar os 9 registros (tabela em `T3-borda.md`) — **desligar o DNSSEC antes**, senão o domínio para de resolver |
+
+### Homologação fora da regra "Fora do Brasil" (decisão do RT, 07/10/2026)
+
+No teste da Fase 1 (tarefa 4) a homologação voltou a bloquear o responsável com o Ctrl+Shift+R, mesmo com as exceções do antivírus. Os eventos mostraram pedidos de robô (user agent `Chrome/154` fixo também no teste pelo Edge, `GET /`, HTTP/1.1, sem referer) saindo da Amazon em Virgínia, Oregon e Paris — as regiões da Vercel —, e a **produção nunca bloqueou** no mesmo teste. A diferença é a proteção de login da Vercel, que só a homologação tem: a causa provável são pedidos da própria Vercel, não o antivírus (a explicação anterior, do antivírus, não se confirmou).
+
+Decisão: **tirar `homolog.chefecoruja.com.br` da regra**. A homologação continua protegida pelo login da Vercel (só o time entra) e pelo login do sistema com segundo fator, e só tem dado fictício. Produção, `www` e Hermes seguem com a regra.

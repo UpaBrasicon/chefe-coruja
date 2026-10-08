@@ -12,6 +12,7 @@ export type LimitesUnidade = {
   ocupacao_pct: number
   checkin_tolerancia_min: number
   alvo_triagem_min: number
+  alvos_medico: Record<'vermelho' | 'laranja' | 'amarelo' | 'verde' | 'azul', number>
   atualizado_em: string | null
 }
 
@@ -22,6 +23,7 @@ export const LIMITES_PADRAO: LimitesUnidade = {
   ocupacao_pct: 85,
   checkin_tolerancia_min: 30,
   alvo_triagem_min: 10,
+  alvos_medico: { vermelho: 0, laranja: 10, amarelo: 60, verde: 120, azul: 240 },
   atualizado_em: null,
 }
 

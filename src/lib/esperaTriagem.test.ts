@@ -22,3 +22,10 @@ test('minutos por extenso, com vírgula', () => {
   assert.equal(minutos(60), '1 h')
   assert.equal(minutos(75.4), '1 h 15 min')
 })
+
+test('alvo zero é imediato', async () => {
+  const { rotuloAlvo } = await import('./esperaTriagem.ts')
+  assert.equal(rotuloAlvo(0), 'imediato')
+  assert.equal(rotuloAlvo(10), '10 min')
+  assert.equal(rotuloAlvo(240), '4 h')
+})
