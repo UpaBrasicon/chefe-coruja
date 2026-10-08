@@ -117,7 +117,7 @@ EXCEPTION WHEN insufficient_privilege THEN
 END $$;
 RESET ROLE;
 DO $$ BEGIN
-  IF has_function_privilege('anon', 'public.indicador_evasao(uuid, date, date)', 'EXECUTE')
+  IF has_function_privilege('anon', 'public.indicador_evasao(uuid, date, date, uuid, text, text, text, uuid)', 'EXECUTE')
      OR has_function_privilege('anon', 'public.registrar_motivo_evasao(uuid, text)', 'EXECUTE') THEN RAISE EXCEPTION 'FALHOU: anon executa'; END IF;
   RAISE NOTICE 'OK  fora do anon';
 END $$;

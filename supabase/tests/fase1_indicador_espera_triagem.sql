@@ -96,7 +96,7 @@ EXCEPTION WHEN insufficient_privilege THEN
 END $$;
 RESET ROLE;
 DO $$ BEGIN
-  IF has_function_privilege('anon', 'public.indicador_espera_triagem(uuid, date, date)', 'EXECUTE') THEN RAISE EXCEPTION 'FALHOU: anon executa'; END IF;
+  IF has_function_privilege('anon', 'public.indicador_espera_triagem(uuid, date, date, uuid, text, text, text, uuid)', 'EXECUTE') THEN RAISE EXCEPTION 'FALHOU: anon executa'; END IF;
   RAISE NOTICE 'OK  fora do anon';
 END $$;
 ROLLBACK;

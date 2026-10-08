@@ -106,7 +106,7 @@ EXCEPTION WHEN insufficient_privilege THEN
 END $$;
 RESET ROLE;
 DO $$ BEGIN
-  IF has_function_privilege('anon', 'public.indicador_espera_medico(uuid, date, date)', 'EXECUTE')
+  IF has_function_privilege('anon', 'public.indicador_espera_medico(uuid, date, date, uuid, text, text, text, uuid)', 'EXECUTE')
      OR has_function_privilege('anon', 'public.salvar_alvos_medico(uuid, jsonb)', 'EXECUTE') THEN RAISE EXCEPTION 'FALHOU: anon executa'; END IF;
   RAISE NOTICE 'OK  fora do anon';
 END $$;
