@@ -12,26 +12,29 @@ INSERT INTO public.vinculos (perfil_id, unidade_id, papel)
 VALUES ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-00000000b8a1', 'gestor');
 INSERT INTO public.pacientes (id, unidade_id, nome)
 SELECT ('00000000-0000-4000-8000-0000000b80' || lpad(n::text, 2, '0'))::uuid, '00000000-0000-4000-8000-00000000b8a1', 'Paciente M' || n
-  FROM generate_series(1, 4) n;
+  FROM generate_series(1, 6) n;
 CREATE TEMP TABLE base AS SELECT ((private.data_atual() - 1)::timestamp + time '09:00') AT TIME ZONE 'America/Sao_Paulo' AS t0;
 -- 1: amarelo, médico em 30 min (alvo 60: no prazo)
 -- 2: amarelo reclassificado laranja; médico 35 min depois da 1ª (alvo 10: atraso)
 -- 3: verde, nunca viu o médico, evadiu 195 min depois (alvo 120: atraso, sem médico)
 -- 4: azul, médico em 60 min (alvo 240: no prazo)
+-- 5: vermelho, médico 20 s depois (alvo imediato: no prazo, 0 min inteiro)
+-- 6: vermelho, médico 70 s depois (alvo imediato: atraso, 1 min completo)
 INSERT INTO public.episodios (id, unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por, chegada_em, atendimento_iniciado_em, desfecho, encerrado_em)
 SELECT ('00000000-0000-4000-8000-0000000b8e0' || x.n)::uuid, '00000000-0000-4000-8000-00000000b8a1',
        ('00000000-0000-4000-8000-0000000b80' || lpad(x.n::text, 2, '0'))::uuid, '00000000-0000-4000-8000-00000000b8a2',
        x.etapa, 'Queixa', '10000000-0000-4000-8000-000000000004', (SELECT t0 FROM base),
-       (SELECT t0 FROM base) + make_interval(mins => x.med), x.desf,
+       (SELECT t0 FROM base) + make_interval(secs => x.med), x.desf,
        CASE WHEN x.etapa = 'encerrado' THEN (SELECT t0 FROM base) + interval '200 minutes' END
-  FROM (VALUES (1, 'atendimento', 35, NULL), (2, 'atendimento', 40, NULL), (3, 'encerrado', NULL, 'evasao'), (4, 'atendimento', 65, NULL))
+  FROM (VALUES (1, 'atendimento', 35 * 60, NULL), (2, 'atendimento', 40 * 60, NULL), (3, 'encerrado', NULL, 'evasao'),
+               (4, 'atendimento', 65 * 60, NULL), (5, 'atendimento', 5 * 60 + 20, NULL), (6, 'atendimento', 5 * 60 + 70, NULL))
        AS x(n, etapa, med, desf);
 INSERT INTO public.classificacoes_risco (episodio_id, unidade_id, paciente_id, cor, publico, autor_id, autor_papel, reclassificacao, criado_em)
 SELECT ('00000000-0000-4000-8000-0000000b8e0' || x.n)::uuid, '00000000-0000-4000-8000-00000000b8a1',
        ('00000000-0000-4000-8000-0000000b80' || lpad(x.n::text, 2, '0'))::uuid, x.cor, 'adulto',
        '10000000-0000-4000-8000-000000000004', 'enfermeiro', x.rc, (SELECT t0 FROM base) + make_interval(mins => x.m)
   FROM (VALUES (1, 'amarelo', 5, false), (2, 'amarelo', 5, false), (2, 'laranja', 10, true),
-               (3, 'verde', 5, false), (4, 'azul', 5, false)) x(n, cor, m, rc);
+               (3, 'verde', 5, false), (4, 'azul', 5, false), (5, 'vermelho', 5, false), (6, 'vermelho', 5, false)) x(n, cor, m, rc);
 
 CREATE FUNCTION pg_temp.como(p_user text) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
@@ -48,21 +51,24 @@ RESET ROLE;
 DO $$
 DECLARE v jsonb := (SELECT v FROM r);
 BEGIN
-  IF (v ->> 'classificados')::int <> 4 OR (v ->> 'atendidos')::int <> 3 OR (v ->> 'sem_medico')::int <> 1 THEN RAISE EXCEPTION 'FALHOU: contagens %', v; END IF;
-  IF (v ->> 'mediana_min')::numeric <> 35.0 THEN RAISE EXCEPTION 'FALHOU: mediana de 30, 35 e 60 é 35; veio %', v ->> 'mediana_min'; END IF;
-  IF (v ->> 'fora_alvo')::int <> 2 THEN RAISE EXCEPTION 'FALHOU: 2 atrasos (laranja reclassificado e verde que evadiu); veio %', v ->> 'fora_alvo'; END IF;
+  IF (v ->> 'classificados')::int <> 6 OR (v ->> 'atendidos')::int <> 5 OR (v ->> 'sem_medico')::int <> 1 THEN RAISE EXCEPTION 'FALHOU: contagens %', v; END IF;
+  IF (v ->> 'mediana_min')::numeric <> 30.0 THEN RAISE EXCEPTION 'FALHOU: mediana de 0,3; 1,2; 30; 35 e 60 é 30; veio %', v ->> 'mediana_min'; END IF;
+  IF (v ->> 'fora_alvo')::int <> 3 THEN RAISE EXCEPTION 'FALHOU: 3 atrasos (laranja reclassificado, verde que evadiu, vermelho de 70 s); veio %', v ->> 'fora_alvo'; END IF;
+  IF (v #>> '{por_cor,vermelho,fora_alvo}')::int <> 1 OR (v #>> '{por_cor,vermelho,atendidos}')::int <> 2 THEN
+    RAISE EXCEPTION 'FALHOU: vermelho em 20 s está no prazo; em 70 s atrasou: %', v #> '{por_cor,vermelho}';
+  END IF;
   IF (v #>> '{por_cor,laranja,fora_alvo}')::int <> 1 OR (v #>> '{por_cor,amarelo,atendidos}')::int <> 1 THEN
     RAISE EXCEPTION 'FALHOU: a cor que vale é a última antes do médico: %', v -> 'por_cor';
   END IF;
   IF (v #>> '{por_cor,verde,sem_medico}')::int <> 1 THEN RAISE EXCEPTION 'FALHOU: verde sem médico'; END IF;
-  IF jsonb_array_length(v -> 'atrasados') <> 2
+  IF jsonb_array_length(v -> 'atrasados') <> 3
      OR NOT EXISTS (SELECT 1 FROM jsonb_array_elements(v -> 'atrasados') a WHERE a ->> 'nome' = 'Paciente M3' AND (a ->> 'sem_medico')::boolean) THEN
     RAISE EXCEPTION 'FALHOU: lista de atrasados com nome %', v -> 'atrasados';
   END IF;
   IF (SELECT count(*) FROM public.log_auditoria WHERE acao = 'ver_atrasos_medico' AND unidade_id = '00000000-0000-4000-8000-00000000b8a1') <> 1 THEN
     RAISE EXCEPTION 'FALHOU: acesso aos nomes sem auditoria';
   END IF;
-  RAISE NOTICE 'OK  mediana 35; 2 atrasos (reclassificado e evadido); cor da última classificação; atrasados com nome e auditoria';
+  RAISE NOTICE 'OK  mediana 30; 3 atrasos (reclassificado, evadido, vermelho de 70 s; o de 20 s no prazo); cor da última classificação; atrasados com nome e auditoria';
 END $$;
 
 -- a unidade ajusta o amarelo para 20 min: o paciente 1 (30 min) passa a atrasar;
@@ -75,7 +81,7 @@ DELETE FROM r;
 INSERT INTO r SELECT public.indicador_espera_medico('00000000-0000-4000-8000-00000000b8a1', private.data_atual() - 1, private.data_atual());
 RESET ROLE;
 DO $$ BEGIN
-  IF ((SELECT v FROM r) ->> 'fora_alvo')::int <> 3 THEN RAISE EXCEPTION 'FALHOU: alvo da unidade não aplicado'; END IF;
+  IF ((SELECT v FROM r) ->> 'fora_alvo')::int <> 4 THEN RAISE EXCEPTION 'FALHOU: alvo da unidade não aplicado'; END IF;
   IF (SELECT count(*) FROM public.configuracoes_unidade WHERE unidade_id = '00000000-0000-4000-8000-00000000b8a1' AND chave LIKE 'alvo_medico_%') <> 1 THEN
     RAISE EXCEPTION 'FALHOU: só o amarelo difere do protocolo';
   END IF;
