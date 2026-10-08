@@ -11222,6 +11222,10 @@ export type Database = {
         Args: { p_alergias: string[]; p_eventos: string[]; p_motivo: string }
         Returns: number
       }
+      indicador_espera_triagem: {
+        Args: { p_ate: string; p_de: string; p_unidade: string }
+        Returns: Json
+      }
       iniciar_analise_parecer: { Args: { p_id: string }; Returns: undefined }
       iniciar_atendimento: { Args: { p_episodio: string }; Returns: undefined }
       integridade_trilha: { Args: { p_unidade: string }; Returns: Json }
@@ -12216,6 +12220,10 @@ export type Database = {
           p_unidade: string
         }
         Returns: string
+      }
+      salvar_alvo_triagem: {
+        Args: { p_minutos: number; p_unidade: string }
+        Returns: Json
       }
       salvar_cadastro_paciente: {
         Args: {
