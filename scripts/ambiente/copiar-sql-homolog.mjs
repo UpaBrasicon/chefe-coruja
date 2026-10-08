@@ -49,7 +49,7 @@ let texto = readFileSync(arquivo, 'utf8').replace(/^\uFEFF/, '')
 if (arquivo.endsWith('promover-super-admin.sql') || arquivo.endsWith('vincular-usuario-teste.sql') || arquivo.endsWith('demo-preparar.sql')) {
   const email = (process.argv[3] ?? '').trim()
   if (!/^[^\s@']+@[^\s@']+\.[^\s@']+$/.test(email)) {
-    console.error('Informe o e-mail do usuário criado no painel: npm run homolog:copiar -- 7 seu@email')
+    console.error(`Informe o e-mail do usuário criado no painel: npm run homolog:copiar -- ${n} seu@email`)
     process.exit(1)
   }
   texto = texto.replace('TROQUE-PELO-SEU-EMAIL@exemplo.com', email)
