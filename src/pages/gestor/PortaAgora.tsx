@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils'
 // por etapa, com a espera mais antiga de cada uma, quem passou do tempo-alvo
 // da cor e a etapa gargalo. A lista traz nome, setor e leito/poltrona (decisão
 // do RT, 07/10/2026) — o banco registra o acesso na auditoria (migration
-// 20261029000001). Atualiza sozinha a cada minuto.
+// 20261029000001). Atualiza sozinha a cada 15 segundos.
 
 const ETAPAS: { chave: EtapaChave; rotulo: string; desde: string }[] = [
   { chave: 'triagem', rotulo: 'Aguardando triagem', desde: 'desde a chegada' },
@@ -39,7 +39,11 @@ export default function PortaAgora() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['porta-agora', unidadeId],
     enabled: !!unidadeId,
-    refetchInterval: 60_000,
+    // 15 s: quem chega na recepção aparece logo (o teste do RT achou 1 min lento);
+    // ao voltar para a aba, atualiza na hora
+    refetchInterval: 15_000,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('porta_agora', { p_unidade: unidadeId! })
       if (error) throw error
@@ -57,7 +61,7 @@ export default function PortaAgora() {
       <TituloPagina
         icone={DoorOpen}
         titulo="Porta"
-        descricao={`O pronto-socorro agora, da chegada à alta${hora ? ` · atualizado às ${hora}, a cada minuto` : ''}.`}
+        descricao={`O pronto-socorro agora, da chegada à alta${hora ? ` · atualizado às ${hora}, a cada 15 segundos` : ''}.`}
       />
 
       {isLoading && <div className="flex h-32 items-center justify-center"><Spinner /></div>}
