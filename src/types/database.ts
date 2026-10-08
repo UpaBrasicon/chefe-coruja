@@ -11684,6 +11684,7 @@ export type Database = {
           uf_crm: string
         }[]
       }
+      porta_agora: { Args: { p_unidade: string }; Returns: Json }
       portao_requisicao: { Args: never; Returns: undefined }
       prescrever: {
         Args: { p_item: Json; p_paciente: string }

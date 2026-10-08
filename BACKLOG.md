@@ -179,6 +179,7 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | Tarefa | Situação | Evidência / observação |
 |---|---|---|
 | 1 — Demo PS/UPA (P0) | **Concluída em 07/10/2026 — ensaio na homologação em 14 minutos, fluxo completo, só dado fictício (responsável)** | Roteiro estendido até a alta (`produto/docs/demo/roteiro-demo-gestor-upa.md`): recepção → triagem → fila → médico → prescrição → observação → checagem da enfermagem → alta médica com CID → leito em higienização liberado pela enfermagem → painel do gestor; variante de internação com reserva e bloqueio de leito. `demo-preparar.sql` passa a escalar também na Observação. Sem código novo: o fluxo já existe no sistema. |
+| 2 — Dashboard PS/UPA (P0) | **Pronto na homologação em 07/10/2026 — falta teste do responsável** | Decisões do RT: tela própria **Porta** (`/gestao/porta`, menu do gestor); 6 etapas (aguardando triagem, aguardando médico, em atendimento, medicação pendente, em observação, altas hoje) com a espera mais antiga; aguardando médico por cor com quantos passaram do tempo-alvo do protocolo da unidade; observação acima de 6 h; gargalo destacado; lista com **nome, setor e leito/poltrona** (acesso registrado na auditoria, no máximo a cada 15 min). Atualiza a cada minuto. RPC `porta_agora` (migration 20261029000001), teste `fase1_porta_agora.sql`; regras da tela em `src/lib/portaAgora.ts` (+ teste). |
 
 **Ordem técnica da Fase 1**
 1. Criar base fictícia e demo.

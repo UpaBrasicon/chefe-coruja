@@ -65,6 +65,7 @@ const PainelGestor = lazy(() => import('@/pages/gestor/PainelGestor'))
 const FarmaciaGestor = lazy(() => import('@/pages/gestor/FarmaciaGestor'))
 const ProtocolosGestor = lazy(() => import('@/pages/gestor/Protocolos'))
 const OlhoDeGaviao = lazy(() => import('@/pages/gestor/OlhoDeGaviao'))
+const PortaAgora = lazy(() => import('@/pages/gestor/PortaAgora'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
 const Teleinterconsulta = lazy(() => import('@/pages/telemedicina/Teleinterconsulta'))
@@ -273,6 +274,8 @@ export default function App() {
                         <Route path="/gestao/farmacia" element={<FarmaciaGestor />} />
                         <Route path="/gestao/protocolos" element={<ProtocolosGestor />} />
                         <Route path="/gestao/gaviao" element={<OlhoDeGaviao />} />
+                        {/* Fase 1, tarefa 2: Dashboard PS/UPA */}
+                        <Route path="/gestao/porta" element={<PortaAgora />} />
                         {/* 30/09/2026: o gestor abre e acompanha chamado técnico da unidade */}
                         <Route path="/gestao/chamados" element={<ChamadosTecnicosGestor />} />
                         <Route path="/auditoria" element={<Auditoria />} />

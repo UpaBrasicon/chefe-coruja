@@ -68,6 +68,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   ],
   gestor: [
     { to: '/gestao', rotulo: 'Painel', icone: LayoutDashboard, exato: true },
+    { to: '/gestao/porta', rotulo: 'Porta', icone: DoorOpen, exato: true },
     { to: '/gestao/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: Bird, exato: true },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
     { to: '/gestao/farmacia', rotulo: 'Farmácia', icone: FlaskConical, exato: true },
