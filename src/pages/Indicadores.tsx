@@ -12,6 +12,7 @@ import { TituloPagina } from '@/components/monitor/Pagina'
 import { Parametro, type Nivel } from '@/components/monitor/Parametros'
 import { EsperaMedico } from '@/pages/gestor/EsperaMedico'
 import { EsperaTriagem } from '@/pages/gestor/EsperaTriagem'
+import { PacientesPorCor } from '@/pages/gestor/PacientesPorCor'
 import { PanoramaConfig } from '@/pages/gestor/PanoramaConfig'
 import { useLimitesUnidade } from '@/pages/gestor/limites'
 
@@ -313,6 +314,8 @@ export default function Indicadores() {
       {papelAtivo === 'gestor' && unidadeId && <EsperaTriagem unidadeId={unidadeId} nomeUnidade={nomeUnidade} />}
       {/* Fase 1, tarefa 4: espera da triagem ao médico, por cor (gestor) */}
       {papelAtivo === 'gestor' && unidadeId && <EsperaMedico unidadeId={unidadeId} nomeUnidade={nomeUnidade} />}
+      {/* Fase 1, tarefa 5: pacientes por classificação de risco (gestor) */}
+      {papelAtivo === 'gestor' && unidadeId && <PacientesPorCor unidadeId={unidadeId} nomeUnidade={nomeUnidade} />}
 
       {papelAtivo === 'gestor' && unidadeId && <PanoramaConfig unidadeId={unidadeId} />}
     </div>
