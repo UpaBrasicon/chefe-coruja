@@ -178,7 +178,7 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 
 | Tarefa | Situação | Evidência / observação |
 |---|---|---|
-| 1 — Demo PS/UPA (P0) | **Em andamento desde 07/10/2026 — falta o ensaio na homologação** | Roteiro estendido até a alta (`produto/docs/demo/roteiro-demo-gestor-upa.md`): recepção → triagem → fila → médico → prescrição → observação → checagem da enfermagem → alta médica com CID → leito em higienização liberado pela enfermagem → painel do gestor; variante de internação com reserva e bloqueio de leito. `demo-preparar.sql` passa a escalar também na Observação. Sem código novo: o fluxo já existe no sistema. |
+| 1 — Demo PS/UPA (P0) | **Concluída em 07/10/2026 — ensaio na homologação em 14 minutos, fluxo completo, só dado fictício (responsável)** | Roteiro estendido até a alta (`produto/docs/demo/roteiro-demo-gestor-upa.md`): recepção → triagem → fila → médico → prescrição → observação → checagem da enfermagem → alta médica com CID → leito em higienização liberado pela enfermagem → painel do gestor; variante de internação com reserva e bloqueio de leito. `demo-preparar.sql` passa a escalar também na Observação. Sem código novo: o fluxo já existe no sistema. |
 
 **Ordem técnica da Fase 1**
 1. Criar base fictícia e demo.
