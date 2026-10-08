@@ -13,6 +13,8 @@ export type Porta = {
   etapas: Record<EtapaChave, { n: number; espera_max_min?: number | null; fora_alvo?: number; acima_6h?: number }>
   aguardando_por_cor: Record<CorRisco, { n: number; fora_alvo: number; alvo_min: number }>
   pacientes: Paciente[]
+  /** evasões e altas a pedido de hoje, sobre as chegadas de hoje (tarefa 6) */
+  hoje?: { chegadas: number; evasoes: number; alta_a_pedido: number }
 }
 
 export function tempo(min: number | null | undefined): string {
