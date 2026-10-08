@@ -29,3 +29,12 @@ test('alvo zero é imediato', async () => {
   assert.equal(rotuloAlvo(10), '10 min')
   assert.equal(rotuloAlvo(240), '4 h')
 })
+
+test('percentual inteiro, com <1% para frações pequenas', async () => {
+  const { percentual } = await import('./esperaTriagem.ts')
+  assert.equal(percentual(0, 0), '—')
+  assert.equal(percentual(1, 3), '33%')
+  assert.equal(percentual(2, 3), '67%')
+  assert.equal(percentual(1, 400), '<1%')
+  assert.equal(percentual(0, 10), '0%')
+})

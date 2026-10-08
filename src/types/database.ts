@@ -11507,6 +11507,17 @@ export type Database = {
           setor_nome: string
         }[]
       }
+      pacientes_por_cor: {
+        Args: {
+          p_ate: string
+          p_de: string
+          p_publico?: string
+          p_setor?: string
+          p_turno?: string
+          p_unidade: string
+        }
+        Returns: Json
+      }
       padrao_diluicao_unidade: { Args: { p_unidade: string }; Returns: Json }
       painel_atendimento_ps: { Args: { p_episodio: string }; Returns: Json }
       painel_chamadas: { Args: { p_token: string }; Returns: Json }

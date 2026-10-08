@@ -50,3 +50,20 @@ export type EsperaMedico = {
 export function rotuloAlvo(min: number): string {
   return min === 0 ? 'imediato' : minutos(min)
 }
+
+// Pacientes por classificação de risco (Fase 1, tarefa 5): formato de pacientes_por_cor().
+export type ContagemCores = Record<CorAlvo | 'sem_classificacao', number>
+export type PacientesPorCor = {
+  de: string; ate: string; total: number
+  por_cor: ContagemCores
+  reclassificados: { total: number; subiram: number; baixaram: number }
+  por_dia: ({ dia: string; total: number } & ContagemCores)[]
+  setores: { id: string; nome: string }[]
+}
+
+/** Percentual inteiro de n em total ("—" sem total), para a barra e a legenda. */
+export function percentual(n: number, total: number): string {
+  if (!total) return '—'
+  const p = (n / total) * 100
+  return `${p > 0 && p < 1 ? '<1' : Math.round(p)}%`
+}
