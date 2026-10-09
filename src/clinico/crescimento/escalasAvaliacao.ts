@@ -53,14 +53,17 @@ export const fichaBraden: Ficha = {
 export const fichaMorse: Ficha = {
   id: 'avaliacao-morse',
   titulo: 'Morse — risco de queda',
-  versao: '2026-09-29.1',
+  versao: '2026-10-09.1',
   publico: 'adulto',
   fontes: [
     { citacao: 'Morse JM, Morse RM, Tylko SJ. Development of a scale to identify the fall-prone patient. Can J Aging. 1989;8(4):366–377.' },
-    // o protótipo cita só autor, revista e páginas da versão brasileira; conferir a referência completa
-    { citacao: 'Versão brasileira: Urbanetto JS, et al. Rev Gaúcha Enferm. 2013;34:21–8.' },
+    // Revisão PubMed de 09/10/2026: a citação antiga ("Rev Gaúcha Enferm. 2013;34:21–8")
+    // não existe no PubMed. A tradução é da Rev Esc Enferm USP 2013 e o corte de 44,78
+    // (coerente com ≥ 45 = alto risco) vem da validação de 2016.
+    { citacao: 'Versão brasileira (tradução e adaptação): Urbanetto JS, Creutzberg M, Franz F, et al. Morse Fall Scale: tradução e adaptação transcultural para a língua portuguesa. Rev Esc Enferm USP. 2013;47(3):569–575 (PMID 24601131).', url: 'https://doi.org/10.1590/s0080-623420130000300007' },
+    { citacao: 'Validação e ponto de corte (44,78): Urbanetto JS, Pasa TS, Bittencout HR, et al. Analysis of risk prediction capability and validity of Morse Fall Scale Brazilian version. Rev Gaúcha Enferm. 2016;37(4):e62200 (PMID 28225854).', url: 'https://doi.org/10.1590/1983-1447.2016.04.62200' },
   ],
-  revisadoEm: REVISADO,
+  revisadoEm: '09/10/2026 (citação da versão brasileira corrigida pelo PubMed)',
 }
 
 const op = (pares: [number, string][]) => pares.map(([valor, rotulo]) => ({ valor, rotulo }))
