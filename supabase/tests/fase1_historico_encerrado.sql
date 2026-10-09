@@ -1,4 +1,4 @@
--- Fase 1, tarefa 8 — migration 20261030000002_historico_encerrado.sql: quem
+-- Fase 1, tarefa 8 — migrations 20261030000002_historico_encerrado.sql e 20261030000003 (vários papéis): quem
 -- cuida do paciente agora vê o resumo dos atendimentos encerrados da unidade e
 -- abre o detalhe com motivo (12 h, só leitura), registrado no acesso.
 BEGIN;
@@ -108,6 +108,21 @@ DO $$ BEGIN
     RAISE EXCEPTION 'FALHOU: Auditoria sem o motivo';
   END IF;
   RAISE NOTICE 'OK  gestor vê quem, quando e o motivo';
+END $$;
+RESET ROLE;
+-- o médico que também é gestor (vários papéis) continua sendo "quem cuida" (20261030000003)
+INSERT INTO public.vinculos (perfil_id, unidade_id, papel)
+VALUES ('10000000-0000-4000-8000-000000000002', '21000000-0000-4000-8000-000000000001', 'gestor')
+ON CONFLICT DO NOTHING;
+UPDATE public.vinculos SET ativo = true
+ WHERE perfil_id = '10000000-0000-4000-8000-000000000002' AND unidade_id = '21000000-0000-4000-8000-000000000001';
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
+DO $$ BEGIN
+  IF NOT (public.historico_encerrado('00000000-0000-4000-8000-0000000a8001') ->> 'pode_abrir_detalhe')::boolean THEN
+    RAISE EXCEPTION 'FALHOU: médico que também é gestor perdeu o "Ver detalhe"';
+  END IF;
+  RAISE NOTICE 'OK  médico com vários papéis continua podendo abrir com motivo';
 END $$;
 RESET ROLE;
 DO $$ BEGIN
