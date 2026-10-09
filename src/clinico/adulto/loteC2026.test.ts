@@ -22,7 +22,8 @@ test('lote C: fichas de adulto na versão .1 de 28/09, com o manual como primeir
     [fichaTetanoAdulto, /Guia de Vigilância em Saúde/],
   ]
   for (const [f, re] of casos) {
-    assert.equal(f.versao, '2026-09-28.1', f.id)
+    // revisão PubMed de 09/10/2026 subiu a versão de algumas fichas do lote
+    assert.ok(f.versao >= '2026-09-28.1', f.id)
     assert.equal(f.publico, 'adulto', f.id)
     assert.match(f.fontes[0].citacao, /Manual de Medicina de Emergência/, f.id)
     assert.ok(f.fontes.some((x) => re.test(x.citacao)), f.id)
