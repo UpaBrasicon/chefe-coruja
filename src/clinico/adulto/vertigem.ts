@@ -1,3 +1,4 @@
+import type { Fonte } from '../ficha.ts'
 import { completo, escolha, type Escore } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
 
@@ -9,9 +10,21 @@ import { fichaAdulto } from './fonte.ts'
 const CAP = 'cap. 42 Vertigem'
 
 /** valor 1 = achado de padrão central */
+// Revisão PubMed de 09/10/2026 (decisão do RT): aviso de uso pela diretriz
+// GRACE-3 da SAEM (2023) — HINTS só com examinador treinado e só no paciente
+// com síndrome vestibular aguda e nistagmo; sem treino o exame é impreciso.
+export const GRACE3_TONTURA: Fonte = {
+  citacao: 'Edlow JA, Carpenter C, Akhter M, et al. Guidelines for reasonable and appropriate care in the emergency department 3 (GRACE-3): Acute dizziness and vertigo in the emergency department. Acad Emerg Med. 2023;30(5):442–486 (PMID 37166022).',
+  url: 'https://doi.org/10.1111/acem.14728',
+}
+
+export const AVISO_HINTS_GRACE3 = 'GRACE-3 (2023): use o HINTS só se tiver treino no exame e só na síndrome vestibular aguda com nistagmo. Sem nistagmo, avalie a gravidade do desequilíbrio da marcha. TC de crânio não exclui AVC; RM serve para confirmar quando o HINTS é central ou duvidoso. Sem treino, o HINTS é impreciso.'
+
+const fichaHintsLivro = fichaAdulto('adulto-hints-plus', 'HINTS e HINTS plus — síndrome vestibular aguda (adulto)', `${CAP}, p. 580–584`)
+
 export const hintsPlus: Escore = {
-  ficha: fichaAdulto('adulto-hints-plus', 'HINTS e HINTS plus — síndrome vestibular aguda (adulto)', `${CAP}, p. 580–584`),
-  descricao: 'Impulso cefálico, nistagmo e desvio skew (HINTS), mais a audição (HINTS plus), para separar padrão periférico de central na síndrome vestibular aguda.',
+  ficha: { ...fichaHintsLivro, versao: '2026-10-09.1', fontes: [...fichaHintsLivro.fontes, GRACE3_TONTURA], revisadoEm: '09/10/2026 (aviso de uso pela GRACE-3 2023)' },
+  descricao: 'Só para examinador treinado e paciente com síndrome vestibular aguda e nistagmo (GRACE-3). Impulso cefálico, nistagmo e desvio skew (HINTS), mais a audição (HINTS plus), para separar padrão periférico de central.',
   itens: [
     { tipo: 'escolha', id: 'impulso', rotulo: 'Head impulse (reflexo vestíbulo-ocular)', ajuda: 'Olhar fixo no nariz do examinador, versão cefálica rápida para cada lado (p. 581).', opcoes: [
       { rotulo: 'Alterado (atraso do olhar com sacada de correção) — padrão periférico', valor: 0 },
@@ -45,6 +58,7 @@ export const hintsPlus: Escore = {
       derivados: centrais.length ? [['Achados de padrão central', centrais.join('; ')]] : [],
       alerta: centrais.length ? 'O livro orienta conduzir a síndrome vestibular aguda de origem central como AVC agudo (p. 584).' : undefined,
       cuidados: [
+        AVISO_HINTS_GRACE3,
         'Vale para a síndrome vestibular aguda (episódio único e prolongado), não para vertigem recorrente ou posicional (p. 578–579).',
         'HINTS plus: sensibilidade de 99,2% e especificidade de 97% para origem central (p. 583).',
         'RM é falso-negativa em 12 a 13,3% das vertigens centrais por AVC isquêmico nas primeiras 48 h (p. 579).',

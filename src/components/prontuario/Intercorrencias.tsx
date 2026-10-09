@@ -120,14 +120,12 @@ function FormIntercorrencia({ pacienteId, episodioId, internacaoId, retifica, ao
 
   const registrar = useMutation({
     mutationFn: async () => {
-      // nulos explícitos: a função do servidor não tem padrão para atendimento,
-      // internação e "Outra"; se o campo não vai, o PostgREST não acha a função
       const { error } = await supabase.rpc('registrar_intercorrencia', {
-        p_paciente: pacienteId, p_episodio: (retifica ? retifica.episodio_id : episodioId) ?? null,
-        p_internacao: (retifica ? retifica.internacao_id : internacaoId) ?? null,
-        p_tipo: tipo, p_tipo_outro: tipo === 'outra' ? tipoOutro.trim() : null, p_gravidade: gravidade,
+        p_paciente: pacienteId, p_episodio: (retifica ? retifica.episodio_id : episodioId) ?? undefined,
+        p_internacao: (retifica ? retifica.internacao_id : internacaoId) ?? undefined,
+        p_tipo: tipo, p_tipo_outro: tipo === 'outra' ? tipoOutro.trim() : undefined, p_gravidade: gravidade,
         p_ocorrida_em: new Date(quando).toISOString(), p_descricao: descricao.trim(), p_conduta: conduta.trim(),
-        p_retifica: retifica?.id ?? null,
+        p_retifica: retifica?.id,
       })
       if (error) throw error
     },

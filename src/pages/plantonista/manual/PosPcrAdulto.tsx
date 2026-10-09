@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  AMIODARONA_TEMPESTADE, METAS_POS_PCR, MILRINONA_ATAQUE, MONITORIZACAO, PROGNOSTICO_TEXTO, REAQUECIMENTO, RESFRIAMENTO_EXTERNO_C_H, SF_FRIO,
+  AMIODARONA_TEMPESTADE, METAS_ERC_2025, METAS_POS_PCR, MILRINONA_ATAQUE, MONITORIZACAO, PROGNOSTICO_TEXTO, REAQUECIMENTO, RESFRIAMENTO_EXTERNO_C_H, SF_FRIO,
   amiodaronaTempestade, fichaPosPcrAdulto, horasResfriamentoExterno, janelasAtingidas, lerMetas, milrinonaAtaque, reaquecimento, sfFrio,
 } from '@/clinico/adulto/posPcr'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -38,13 +38,16 @@ export function PosPcrAdulto() {
   return (
     <ToolLayout
       title="Cuidados pós-PCR — adulto"
-      description="Metas numéricas, SF a 4 °C por peso, tempos de resfriamento e reaquecimento, amiodarona na tempestade elétrica e janelas do neuroprognóstico, como o manual do HCFMUSP traz. Adulto (14 anos ou mais)."
+      description="Metas pela diretriz ERC-ESICM 2025 (prevenção de febre, PAM > 60–65, SpO2 94–98%), com os números do manual do HCFMUSP (2022) como referência; tempos de resfriamento e reaquecimento, amiodarona na tempestade elétrica e janelas do neuroprognóstico. Adulto (14 anos ou mais)."
       ficha={fichaPosPcrAdulto}
     >
       <CampoPeso id="ppcr-peso" peso={peso} onChange={setPeso} />
 
-      <Bloco titulo="Metas (p. 105–111)">
-        {METAS_POS_PCR.map((m) => <Trecho key={m.id} texto={`${m.parametro}: ${m.meta}`} pagina={m.pagina} />)}
+      <Bloco titulo="Metas — ERC-ESICM 2025" descricao="Diretriz posterior ao livro: os valores digitados abaixo são lidos por ela.">
+        {METAS_ERC_2025.map((m) => <Trecho key={m.id} texto={`${m.parametro}: ${m.meta}`} pagina={m.pagina} />)}
+      </Bloco>
+
+      <Bloco titulo="Seus valores">
         <div className="grid gap-4 sm:grid-cols-3">
           <NumberField id="ppcr-paco2" label="PaCO2" unit="mmHg" value={paco2} onChange={setPaco2} step={1} />
           <NumberField id="ppcr-sat" label="SatO2" unit="%" value={sato2} onChange={setSato2} step={1} />
@@ -55,10 +58,14 @@ export function PosPcrAdulto() {
         {leituras.map((l) => <p key={l.id} className={l.fora ? 'text-atencao' : ''}>{l.texto}</p>)}
       </Bloco>
 
-      <Bloco titulo="Controle de temperatura (p. 106–110)" descricao="CT < 36 °C para lesão leve/moderada; HT 32–34 °C para lesão grave; sem diferença de mortalidade entre 33 e 36 °C nos estudos citados (p. 108–109).">
+      <Bloco titulo="Metas do livro, 2022 (referência, p. 105–111)" descricao="Superadas pela diretriz de 2025 em temperatura (32–36 °C deu lugar à prevenção de febre) e na preferência de PAM 80–100.">
+        {METAS_POS_PCR.map((m) => <Trecho key={m.id} texto={`${m.parametro}: ${m.meta}`} pagina={m.pagina} />)}
+      </Bloco>
+
+      <Bloco titulo="Controle de temperatura" descricao="ERC-ESICM 2025: prevenir febre (≤ 37,5 °C) por 36–72 h; não reaquecer ativamente quem já está com hipotermia leve; contra o fluido frio pré-hospitalar de rotina. O livro (p. 106–110) ainda traz hipotermia-alvo de 32–36 °C e SF a 4 °C: as contas abaixo ficam só para quando o médico decidir resfriar.">
         <LinhaManual
           nome={`SF 0,9% a ${SF_FRIO.temperaturaC} °C`}
-          texto={`${faixaBr(SF_FRIO.mlKg, 0)} mL/kg em ${SF_FRIO.minutos} min; ${SF_FRIO.referencia}. Pode causar edema pulmonar; evitar em ICC, disfunção renal ou congestos`}
+          texto={`Livro (2022): ${faixaBr(SF_FRIO.mlKg, 0)} mL/kg em ${SF_FRIO.minutos} min; ${SF_FRIO.referencia}. Pode causar edema pulmonar; evitar em ICC, disfunção renal ou congestos. A ERC-ESICM 2025 recomenda contra o resfriamento pré-hospitalar de rotina com fluido frio`}
           conta={sf ? <><strong>{faixaBr(sf.volumeMl, 0)} mL</strong> · {faixaBr(sf.mlH, 0)} mL/h em 30 min</> : pede}
           pagina={SF_FRIO.pagina}
         />
@@ -74,7 +81,7 @@ export function PosPcrAdulto() {
         </div>
         <p className="text-sm text-tinta-sussurro">
           Reaquecimento após {REAQUECIMENTO.aposHorasHT} h de HT ({REAQUECIMENTO.pagina}). O livro não fixa a temperatura final no texto; 36 °C aparece na Tabela 3 (sangramento maior, p. 111).
-          CT por pelo menos 24 h, idealmente 48 h após o RCE (p. 109).
+          Livro: CT por pelo menos 24 h, idealmente 48 h após o RCE (p. 109). ERC-ESICM 2025: prevenção de febre por 36–72 h.
         </p>
       </Bloco>
 

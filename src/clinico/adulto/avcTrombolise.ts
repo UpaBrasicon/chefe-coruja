@@ -25,6 +25,18 @@ export const AHA_ASA_2026: Fonte = {
   url: 'https://doi.org/10.1161/STR.0000000000000513',
 }
 
+/**
+ * Revisão PubMed de 09/10/2026: a AHA/ASA publicou correção oficial da
+ * diretriz em 07/2026 (Stroke 2026;57(8):e461–e467, PMID 42507797). O texto da
+ * correção não estava acessível na revisão; os trechos desta ferramenta são da
+ * versão original (PDF lido em 28/09/2026). Até o RT conferir a versão
+ * corrigida, a tela avisa.
+ */
+export const CORRECAO_AHA_2026 = {
+  texto: 'A AHA/ASA publicou correção oficial desta diretriz em julho de 2026 (Stroke 2026;57(8):e461–e467, PMID 42507797). Os trechos abaixo vêm da versão original, lida em 28/09/2026: confira na versão corrigida antes de usar, em especial as Tabelas 5 e 7.',
+  url: 'https://doi.org/10.1161/STR.0000000000000530',
+}
+
 const PAG_AVC_LIVRO = 'cap. 38 Acidente vascular cerebral isquêmico, p. 518–529 e 537 (Tabelas 3–7)'
 
 export const fichaTromboliseAvcAdulto: Ficha = {

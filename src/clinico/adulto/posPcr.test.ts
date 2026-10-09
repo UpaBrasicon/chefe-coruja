@@ -29,10 +29,20 @@ test('pós-PCR: reaquecimento 0,25 °C/h (teto 0,5 °C/h) — 33 → 36 °C em 1
   assert.equal(velocidadeReaquecimento(33, 33.5, 2)!.acimaDoTeto, false)
 })
 
-test('pós-PCR: metas — SatO2 > 94, PaO2 > 300, PAM > 65 (80–100), glicemia 140–180', () => {
-  const l = lerMetas({ sato2: 94, pao2: 350, pam: 70, glicemia: 200 })
-  assert.deepEqual(l.map((x) => x.fora), [true, true, false, true])
-  assert.match(l[2].texto, /fora da preferência/)
+test('pós-PCR: metas pela ERC-ESICM 2025 — SpO2 94–98, PaO2 75–100, PaCO2 35–45, PAM > 60–65; glicemia do livro', () => {
+  const l = lerMetas({ paco2: 50, sato2: 99, pao2: 350, pam: 70, glicemia: 200 })
+  assert.deepEqual(l.map((x) => x.fora), [true, true, true, false, true])
+  assert.match(l[1].texto, /acima de 98%/)
+  assert.match(l[3].texto, /acima de 65/)
+  assert.doesNotMatch(l[3].texto, /80–100/)
+  const limite = lerMetas({ pam: 63, sato2: 96, pao2: 90, paco2: 40 })
+  assert.deepEqual(limite.map((x) => x.fora), [false, false, false, false])
+  assert.match(limite.find((x) => x.id === 'pam')!.texto, /entre 60 e 65/)
+})
+
+test('pós-PCR: ficha cita a ERC-ESICM 2025 junto do livro', () => {
+  assert.equal(fichaPosPcrAdulto.fontes.length, 2)
+  assert.match(fichaPosPcrAdulto.fontes[1].citacao, /PMID 41117575/)
 })
 
 test('pós-PCR: milrinona 50 µg/kg em 10 min — 70 kg = 3.500 µg = 17,5 mL a 200 µg/mL (p. 106; Anexo 1)', () => {

@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaP4, type DoseLivro } from './fonteP4.ts'
 
 // Infecção urinária — livro do ICr, cap. 57 (p. 588–601). Contagem de fatores
@@ -6,7 +7,39 @@ import { fichaP4, type DoseLivro } from './fonteP4.ts'
 // Máximos que o capítulo não traz vêm do Apêndice (p. 897–910). O capítulo não
 // dá dose para o recém-nascido ("associa-se ampicilina", sem dose): RN bloqueado.
 
-export const fichaItuPed = fichaP4('ped-infeccao-urinaria', 'Infecção urinária — criança', 'cap. 57, p. 588–601; Apêndice, p. 898–909')
+// Revisão PubMed de 09/10/2026 (decisão do RT): a diretriz da AAP de out/2026
+// (8 dias a 5 anos) substitui a de 2011 que o livro cita. Entram só as mudanças
+// confirmadas nos resumos do PubMed. Os limiares novos de piúria e de urocultura
+// por idade e coleta não foram lidos (texto integral bloqueado): ficam pendentes
+// do PDF e a ferramenta continua mostrando os do livro.
+export const AAP_ITU_2026: Fonte = {
+  citacao: 'Alverson BK, Hains DS, Downs SM, et al. Clinical Practice Guideline for the Diagnosis and Treatment of Urinary Tract Infection in Children From 8 Days to 5 Years of Age. Pediatrics. 2026;158(4) (PMID 42803578).',
+  url: 'https://doi.org/10.1542/peds.2026-078565',
+}
+export const AAP_ITU_2026_DIAGNOSTICO: Fonte = {
+  citacao: 'Forster CS, Nelson C, El Feghaly R, et al. Urinary Tract Infection Diagnosis — A Companion to the AAP 2026 Clinical Practice Guideline: Technical Report. Pediatrics. 2026;158(4) (PMID 42803592).',
+  url: 'https://doi.org/10.1542/peds.2026-078566',
+}
+export const AAP_ITU_2026_MANEJO: Fonte = {
+  citacao: 'AlShenaiber L, Senerth E, Babatunde I, et al. A Systematic Review and Meta-Analysis of the Prevention and Management of Pediatric Urinary Tract Infection and Suspected Urinary Tract Infection: Technical Report. Pediatrics. 2026;158(4) (PMID 42803594).',
+  url: 'https://doi.org/10.1542/peds.2026-078568',
+}
+
+export const AVISO_AAP_2026: string[] = [
+  'A AAP publicou em out/2026 diretriz nova para 8 dias a 5 anos, que substitui a de 2011 citada pelo livro (inclusive a Tabela 2).',
+  'Definição nova de ITU em três domínios: sintomas, sinais de inflamação e urocultura. A piúria passa a ser critério diagnóstico, com limiares por idade e conforme a urocultura já esteja disponível ou ainda pendente; o limiar de urocultura positiva passa a depender da idade e do método de coleta.',
+  'Os números novos não foram conferidos (texto integral não aberto): a ferramenta continua mostrando os limiares do livro até o RT trazer o PDF.',
+  'Tratamento (revisão sistemática, certeza baixa a muito baixa): curso de 7 dias ou menos parece não aumentar recorrência e reduz efeitos adversos; via oral parece tão eficaz quanto parenteral ou parenteral seguida de oral; profilaxia contínua no refluxo não mostrou menos ITU de escape nem menos cicatriz e pode aumentar resistência; avaliação em até 72 h do início dos sintomas se associou a menos cicatriz renal.',
+  'Dose nenhuma muda: as doses abaixo continuam as do livro. Recém-nascido de até 7 dias está fora da diretriz.',
+]
+
+const fichaItuLivro = fichaP4('ped-infeccao-urinaria', 'Infecção urinária — criança', 'cap. 57, p. 588–601; Apêndice, p. 898–909')
+export const fichaItuPed: Ficha = {
+  ...fichaItuLivro,
+  versao: '2026-10-09.1',
+  fontes: [...fichaItuLivro.fontes, AAP_ITU_2026, AAP_ITU_2026_DIAGNOSTICO, AAP_ITU_2026_MANEJO],
+  revisadoEm: '09/10/2026 (aviso da diretriz AAP 2026; limiares novos pendentes do texto integral)',
+}
 
 export type Sexo = 'menina' | 'menino'
 

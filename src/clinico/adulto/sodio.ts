@@ -1,10 +1,27 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
 
 // Distúrbios do sódio no adulto — cap. 66 do Manual de Medicina de Emergência
 // do HCFMUSP (3ª ed., 2022), p. 882–899. Todo número tem página; a decisão é
 // do profissional (ADR 0007): aqui só se calcula e se mostra o que o manual traz.
 
-export const fichaHiponatremia = fichaAdulto('adulto-hiponatremia', 'Hiponatremia — NaCl 3% pelo manual', 'cap. 66, p. 882–891')
+// Revisão PubMed de 09/10/2026 (decisão do RT): o teto de 8 mEq/L em 24 h na
+// crônica continua; entra o alerta contra a subcorreção, pela metanálise do
+// JAMA Intern Med 2025 (coortes, certeza moderada a baixa).
+export const META_CORRECAO_HIPONATREMIA_2025: Fonte = {
+  citacao: 'Ayus JC, Moritz ML, Fuentes NA, et al. Correction Rates and Clinical Outcomes in Hospitalized Adults With Severe Hyponatremia: A Systematic Review and Meta-Analysis. JAMA Intern Med. 2025;185(1):38–51 (PMID 39556338).',
+  url: 'https://doi.org/10.1001/jamainternmed.2024.5981',
+}
+
+export const ALERTA_SUBCORRECAO = 'Corrigir devagar demais também faz mal. Na metanálise do JAMA Intern Med 2025 (16 coortes, 11.811 pacientes com sódio < 120, ou < 125 com sintomas graves), a correção lenta (< 8 mEq/L/24 h) e muito lenta (< 4–6 mEq/L/24 h) se associou a mais mortes e internação mais longa que a correção rápida (≥ 8–10 mEq/L/24 h), sem aumento significativo de desmielinização osmótica. São estudos observacionais (certeza moderada a baixa). O teto do manual (8 mEq/L em 24 h na crônica) continua; o alerta é para não ficar muito abaixo dele.'
+
+const fichaHiponaLivro = fichaAdulto('adulto-hiponatremia', 'Hiponatremia — NaCl 3% pelo manual', 'cap. 66, p. 882–891')
+export const fichaHiponatremia: Ficha = {
+  ...fichaHiponaLivro,
+  versao: '2026-10-09.1',
+  fontes: [...fichaHiponaLivro.fontes, META_CORRECAO_HIPONATREMIA_2025],
+  revisadoEm: '09/10/2026 (alerta contra a subcorreção, JAMA Intern Med 2025)',
+}
 export const fichaHipernatremia = fichaAdulto('adulto-hipernatremia', 'Hipernatremia — água livre e Adrogué-Madias', 'cap. 66, p. 892–899')
 
 const ok = (...xs: number[]) => xs.every((x) => Number.isFinite(x))

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  DOSES_ITU_ORAL, DOSES_ITU_PARENTERAL, ERRATA_ITU, FATORES_MENINA, FATORES_MENINO, LEUCOCITURIA, NOTA_TABELA2, QUADRO3, REFERENCIAS_ITU, fichaItuPed, lerUrocultura,
+  AVISO_AAP_2026, DOSES_ITU_ORAL, DOSES_ITU_PARENTERAL, ERRATA_ITU, FATORES_MENINA, FATORES_MENINO, LEUCOCITURIA, NOTA_TABELA2, QUADRO3, REFERENCIAS_ITU, fichaItuPed, lerUrocultura,
   testarUrinaAap, type Coleta, type Sexo,
 } from '@/clinico/pediatria/ituPed'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -33,6 +33,13 @@ export function InfeccaoUrinariaPed() {
       ficha={fichaItuPed}
     >
       <CampoPaciente id="itu" p={p} onChange={setP} />
+
+      <div role="note" className="flex flex-col gap-1 rounded-md border border-atencao/40 bg-atencao/[0.08] px-3 py-2 text-sm text-atencao">
+        <p className="font-medium">Diretriz nova da AAP (Pediatrics, out/2026), posterior ao livro</p>
+        <ul className="list-disc pl-5">
+          {AVISO_AAP_2026.map((t) => <li key={t}>{t}</li>)}
+        </ul>
+      </div>
 
       <Bloco titulo="Testar a urina? Tabela 2 da AAP (p. 592)" descricao="Primeira ITU, 2 meses a 2 anos, febre sem sinais localizatórios, sem antibiótico imediato e sem doença urinária conhecida.">
         <Opcoes label="Sexo" valor={sexo} opcoes={[['menina', 'Menina'], ['menino', 'Menino']]} onChange={(s) => { setSexo(s); setFatores(new Set()) }} />

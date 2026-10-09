@@ -12,7 +12,7 @@ import { sincopeSanFrancisco } from './adulto/sincopeSanFrancisco.ts'
 import { timiIamcsst } from './escores/timiIamcsst.ts'
 import { sincopeCanadense } from './escores/sincopeCanadense.ts'
 import { calcularIss, iss } from './escores/iss.ts'
-import { ckdEpi, ckdEpi2021, categoriaTfg } from './escores/ckdEpi.ts'
+import { ckdEpi, ckdEpi2021, categoriaTfg, ckdEpi2009 } from './escores/ckdEpi.ts'
 import { pram } from './escores/pram.ts'
 import { schwartzPed } from './pediatria/schwartzPed.ts'
 import { fichaPhoenixPed } from './pediatria/choque.ts'
@@ -23,7 +23,8 @@ const FICHAS = [fichaVmPassos, fichaVniPassos, duke.ficha, sincopeSanFrancisco.f
 test('onda 9: toda ficha nova tem fonte, versão nova e rota na Central', () => {
   for (const f of FICHAS) {
     assert.ok(f.fontes.length > 0, f.id)
-    assert.equal(f.versao, '2026-09-30.1', f.id)
+    // revisão PubMed de 09/10/2026 subiu a versão de algumas fichas da onda
+    assert.ok(f.versao >= '2026-09-30.1', f.id)
     assert.ok(ROTA_DA_FICHA[f.id], `sem rota: ${f.id}`)
   }
   assert.ok(ROTA_DA_FICHA[fichaInfusoesAdulto.id].endsWith('/infusoes-adulto'))
@@ -103,6 +104,12 @@ test('Duke modificado (Tabela 2, p. 324): 2M, 1M+3m ou 5m', () => {
   assert.equal(preencheDuke(0, 5), true)
   assert.equal(preencheDuke(0, 4), false)
   assert.equal(duke.calcular({ microbiologico: true, febre: true, predisposicao: true, vascular: true })!.estado, 2)
+  // Duke-ISCVID 2023 (revisão PubMed 09/10/2026): possível e critério patológico
+  assert.equal(duke.calcular({ imagem: true, febre: true })!.estado, 1)
+  assert.equal(duke.calcular({ febre: true, vascular: true, imunologico: true })!.estado, 1)
+  assert.equal(duke.calcular({ febre: true, vascular: true })!.estado, 0)
+  assert.equal(duke.calcular({ patologico: true })!.estado, 2)
+  assert.equal(duke.calcular({ cirurgico: true, microbiologico: true })!.estado, 2)
 })
 
 test('San Francisco (Tabela 3, p. 238): risco com ≥ 1 fator', () => {
@@ -171,6 +178,10 @@ test('ISS (Baker 1974): três maiores ao quadrado; AIS 6 → 75', () => {
 
 test('CKD-EPI 2021 (Inker 2021)', () => {
   assert.equal(Math.round(ckdEpi2021(1.0, 60, 'm')!), 86)
+  // CKD-EPI 2009 sem coeficiente racial (Levey 2009): homem, 50 anos, Scr 1,0 → 87; mulher, 50 anos, Scr 0,7 → 101
+  assert.equal(Math.round(ckdEpi2009(1.0, 50, 'm')!), 87)
+  assert.equal(Math.round(ckdEpi2009(0.7, 50, 'f')!), 101)
+  assert.equal(ckdEpi2009(1, 17, 'm'), null)
   assert.equal(Math.round(ckdEpi2021(0.7, 50, 'f')!), 105)
   assert.equal(ckdEpi2021(1, 17, 'm'), null)
   assert.equal(categoriaTfg(44.9), 'G3b (30–44)')
