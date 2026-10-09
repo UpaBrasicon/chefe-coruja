@@ -9869,7 +9869,7 @@ export type Database = {
         }[]
       }
       aprazar: {
-        Args: { p_horarios: string[]; p_item: string }
+        Args: { p_horarios: string[]; p_item: string; p_motivo?: string }
         Returns: undefined
       }
       aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
@@ -10971,6 +10971,7 @@ export type Database = {
         }
         Returns: Json
       }
+      grade_aprazamento_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       guarda_prontuarios: { Args: { p_unidade: string }; Returns: Json }
       herdar_segundo_fator: {
         Args: { p_sessao_anterior: string }
@@ -12353,6 +12354,10 @@ export type Database = {
         Args: { p_agravo: string; p_ficha: Json }
         Returns: string[]
       }
+      salvar_grade_aprazamento: {
+        Args: { p_grades?: Json; p_inicio: string; p_unidade: string }
+        Returns: Json
+      }
       salvar_limites_unidade: {
         Args: {
           p_checkin_tolerancia_min: number
@@ -12516,6 +12521,7 @@ export type Database = {
         Args: { p_mensagem?: string; p_plantao_a: string; p_plantao_b: string }
         Returns: string
       }
+      sugestoes_aprazamento: { Args: { p_itens: string[] }; Returns: Json }
       suspender_item: {
         Args: { p_item: string; p_motivo: string }
         Returns: undefined
