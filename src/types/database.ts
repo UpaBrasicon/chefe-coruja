@@ -9997,6 +9997,7 @@ export type Database = {
           prontuario: string
         }[]
       }
+      cadastros_do_paciente: { Args: { p_paciente: string }; Returns: string[] }
       cancelar_alta: {
         Args: { p_internacao: string; p_justificativa: string }
         Returns: undefined
@@ -10040,7 +10041,9 @@ export type Database = {
         Args: { p_documento: string; p_motivo: string }
         Returns: undefined
       }
+      cancelar_unificacao: { Args: { p_pedido: string }; Returns: undefined }
       candidatar_vaga: { Args: { p_vaga: string }; Returns: string }
+      candidatos_duplicados: { Args: { p_unidade: string }; Returns: Json }
       censo_recente: {
         Args: { p_dias?: number; p_unidade: string }
         Returns: {
@@ -10349,6 +10352,10 @@ export type Database = {
         Args: { p_aceitar: boolean; p_id: string; p_motivo: string }
         Returns: undefined
       }
+      decidir_unificacao: {
+        Args: { p_aprovar: boolean; p_motivo?: string; p_pedido: string }
+        Returns: string
+      }
       decidir_versao_ferramenta: {
         Args: {
           p_aprovar: boolean
@@ -10399,6 +10406,7 @@ export type Database = {
       descartar_rascunho: { Args: { p_rascunho: string }; Returns: undefined }
       desfazer_decisao_gaviao: { Args: { p_id: string }; Returns: undefined }
       desfazer_pendencia: { Args: { p_pendencia: string }; Returns: undefined }
+      desfazer_unificacao: { Args: { p_motivo: string; p_pedido: string }; Returns: undefined }
       diagnosticos_do_leito: {
         Args: { p_internacao: string }
         Returns: {
@@ -11708,6 +11716,7 @@ export type Database = {
           valido_ate: string
         }[]
       }
+      pedidos_unificacao_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       pedir_acesso_prontuario: {
         Args: { p_motivo: string; p_paciente: string }
         Returns: string
@@ -11726,6 +11735,10 @@ export type Database = {
           convidou: string
           pedido_em: string
         }[]
+      }
+      pedir_unificacao: {
+        Args: { p_absorvido: string; p_motivo: string; p_principal: string }
+        Returns: string
       }
       pendencias_para_encaminhar: {
         Args: { p_episodio?: string; p_internacao?: string; p_paciente: string }
