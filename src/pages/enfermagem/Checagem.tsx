@@ -7,11 +7,15 @@
 // novo, e vale o último registro. Medicamento de alta vigilância (Fase 2,
 // tarefa 1) só é "feito" depois de duas conferências por profissionais
 // diferentes: a 1ª da enfermagem, a 2ª de enfermeiro ou farmacêutico.
+// Aprazamento assistido (Fase 2, tarefa 2): a posologia vira sugestão de
+// horários pela grade da unidade; o enfermeiro aceita ou ajusta, e o ajuste
+// fica registrado.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ClipboardCheck, ShieldAlert } from 'lucide-react'
 import * as React from 'react'
 
+import { lerHorarios, mesmaLista, type SugestaoItem } from '@/lib/aprazamento'
 import { etapaDupla, type EstadoDupla } from '@/lib/duplaChecagem'
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -63,9 +67,20 @@ export default function Checagem() {
       return new Map(((data ?? []) as unknown as EstadoDupla[]).map((e) => [e.item_id, e]))
     },
   })
+  // sugestão de horários pela grade da unidade e o último aprazamento de cada item
+  const apraz = useQuery({
+    queryKey: ['sugestoes-aprazamento', ids.join(',')],
+    enabled: ids.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('sugestoes_aprazamento', { p_itens: ids })
+      if (error) throw error
+      return new Map(((data ?? []) as unknown as SugestaoItem[]).map((e) => [e.item_id, e]))
+    },
+  })
   const recarregar = () => {
     void qc.invalidateQueries({ queryKey: ['fila-checagem'] })
     void qc.invalidateQueries({ queryKey: ['estado-dupla'] })
+    void qc.invalidateQueries({ queryKey: ['sugestoes-aprazamento'] })
   }
   const pacientes = new Map<string, Linha[]>()
   for (const l of fila.data ?? []) pacientes.set(l.paciente_id, [...(pacientes.get(l.paciente_id) ?? []), l])
@@ -87,7 +102,7 @@ export default function Checagem() {
               <AlergiaNaTela pacienteId={id} />
             </CardHeader>
             <CardContent className="flex flex-col gap-2 text-sm">
-              {itens.map((l) => <ItemChecagem key={l.item_id} l={l} dupla={dupla.data?.get(l.item_id)} souEnfermeiro={papelAtivo === 'enfermeiro'} aoMudar={recarregar} aoErro={setErro} />)}
+              {itens.map((l) => <ItemChecagem key={l.item_id} l={l} dupla={dupla.data?.get(l.item_id)} apraz={apraz.data?.get(l.item_id)} souEnfermeiro={papelAtivo === 'enfermeiro'} aoMudar={recarregar} aoErro={setErro} />)}
             </CardContent>
           </Card>
         ))}
@@ -96,12 +111,17 @@ export default function Checagem() {
   )
 }
 
-function ItemChecagem({ l, dupla, souEnfermeiro, aoMudar, aoErro }: {
-  l: Linha; dupla: EstadoDupla | undefined; souEnfermeiro: boolean; aoMudar: () => void; aoErro: (m: string | null) => void
+function ItemChecagem({ l, dupla, apraz, souEnfermeiro, aoMudar, aoErro }: {
+  l: Linha; dupla: EstadoDupla | undefined; apraz: SugestaoItem | undefined; souEnfermeiro: boolean
+  aoMudar: () => void; aoErro: (m: string | null) => void
 }) {
   const podeAprazar = souEnfermeiro
   const [horarios, setHorarios] = React.useState((l.horarios ?? []).join(', '))
   const [horario, setHorario] = React.useState('')
+  const [motivoAjuste, setMotivoAjuste] = React.useState('')
+  const sugestao = apraz?.sugestao ?? null
+  const digitados = lerHorarios(horarios)
+  const ajustando = !!sugestao && digitados.horarios.length > 0 && !mesmaLista(digitados.horarios, sugestao.horarios)
   const [pedindo, setPedindo] = React.useState<'nao_feito' | 'recusado' | null>(null)
   const [motivo, setMotivo] = React.useState('')
   const st = l.ultima_situacao ? SITUACAO[l.ultima_situacao] : null
@@ -149,6 +169,28 @@ function ItemChecagem({ l, dupla, souEnfermeiro, aoMudar, aoErro }: {
           })}
         </div>
       )}
+      {podeAprazar && sugestao && (
+        <div className="flex flex-wrap items-center gap-2 text-xs text-tinta-apoio">
+          <span>
+            Sugestão ({sugestao.intervalo_h}/{sugestao.intervalo_h} h, {sugestao.origem}): <span className="font-medium text-tinta">{sugestao.horarios.join(', ')}</span>
+            {sugestao.primeira && <> · prescrito às {sugestao.prescrito_as}, 1ª dose da grade às {sugestao.primeira}</>}
+          </span>
+          {!mesmaLista(l.horarios, sugestao.horarios) && (
+            <Button size="xs" variant="ghost" onClick={() => setHorarios(sugestao.horarios.join(', '))}>Usar sugestão</Button>
+          )}
+        </div>
+      )}
+      {podeAprazar && ajustando && (
+        <Input className="h-8 max-w-md text-xs" placeholder="Motivo do ajuste (opcional; fica registrado)" value={motivoAjuste}
+          onChange={(e) => setMotivoAjuste(e.target.value)} />
+      )}
+      {apraz?.ultimo && (
+        <p className="text-xs text-tinta-sussurro">
+          Aprazado por {apraz.ultimo.por ?? '—'}, {hora(apraz.ultimo.em)}
+          {apraz.ultimo.ajustado && apraz.ultimo.sugeridos ? ` · ajustado da sugestão (${apraz.ultimo.sugeridos.join(', ')})` : ''}
+          {apraz.ultimo.motivo ? `: “${apraz.ultimo.motivo}”` : ''}
+        </p>
+      )}
       {etapa && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-critico/30 bg-critico/[0.05] px-2.5 py-1.5 text-xs">
           {etapa.etapa === 'nenhuma' && (
@@ -180,10 +222,12 @@ function ItemChecagem({ l, dupla, souEnfermeiro, aoMudar, aoErro }: {
           <>
             <Input className="h-8 w-44" placeholder="Horários: 08:00, 20:00" value={horarios} onChange={(e) => setHorarios(e.target.value)} />
             <Button size="xs" variant="outline" onClick={async () => {
-              const lista = horarios.split(',').map((h) => h.trim()).filter(Boolean)
-              const { error } = await supabase.rpc('aprazar', { p_item: l.item_id, p_horarios: lista })
+              if (digitados.invalidos.length) return aoErro(`${l.descricao}: horário inválido (${digitados.invalidos.join(', ')}).`)
+              const { error } = await supabase.rpc('aprazar', {
+                p_item: l.item_id, p_horarios: digitados.horarios, p_motivo: ajustando && motivoAjuste.trim() ? motivoAjuste.trim() : undefined,
+              })
               if (error) return aoErro(error.message)
-              aoErro(null); aoMudar()
+              aoErro(null); setMotivoAjuste(''); aoMudar()
             }}>Aprazar</Button>
           </>
         ) : l.horarios?.length ? <span className="text-xs text-tinta-apoio">Aprazado: {l.horarios.join(', ')}</span> : null}

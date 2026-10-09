@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { DetalhesAdmissao } from '@/pages/gestor/DetalhesAdmissao'
+import { GradeAprazamento } from '@/pages/gestor/GradeAprazamento'
 import { chaveLimites, useLimitesUnidade, type LimitesUnidade } from '@/pages/gestor/limites'
 
 type UnidadeConfig = {
@@ -172,6 +173,9 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
       {limites.data && (
         <FormLimites key={unidadeId} inicial={limites.data} unidadeId={unidadeId} podeEditar={ehGestor} />
       )}
+
+      {/* Fase 2, tarefa 2: grade de aprazamento sugerida à enfermagem */}
+      {unidadeId && <GradeAprazamento unidadeId={unidadeId} podeEditar={ehGestor} />}
 
       {ehGestor && <DetalhesAdmissao />}
 

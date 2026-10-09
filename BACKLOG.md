@@ -237,6 +237,7 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | Tarefa | Situação | Onde |
 |---|---|---|
 | 1 — Dupla checagem | Pronta na homologação, aguardando teste do RT | Branch `fase2/dupla-checagem`; migration `20261031000001_dupla_checagem.sql` (só homologação); teste `supabase/tests/fase2_dupla_checagem.sql` |
+| 2 — Aprazamento assistido | Pronta na homologação, aguardando teste do RT | Branch `fase2/aprazamento-assistido` (sobre a da tarefa 1); migration `20261031000002_aprazamento_assistido.sql` (só homologação); teste `supabase/tests/fase2_aprazamento_assistido.sql` |
 
 Tarefa 1, como ficou:
 - **Lista.** Regras do ISMP Brasil 2019 (Boletim v. 8, n. 1, fev. 2019) marcam o cadastro pelo princípio ativo, pela via na apresentação e pela concentração. Exemplos: glicose ≥ 20% e NaCl > 0,9%. Ficam só as regras e a citação, sem o texto do boletim, que tem direitos reservados.
@@ -244,6 +245,13 @@ Tarefa 1, como ficou:
 - **Checagem.** O item mostra "alta vigilância · dupla checagem". A 1ª conferência é da enfermagem de plantão. A 2ª é de um enfermeiro de plantão ou de um farmacêutico, nunca do mesmo usuário. "Feito" fica bloqueado até as duas conferências, que valem por 2 horas e servem a uma única administração. "Não feito" e "recusado" seguem livres.
 - **Tela "Alta vigilância".** Para o farmacêutico, o enfermeiro e o gestor: fila da 2ª conferência e lista da unidade.
 - **Teste do RT.** Na homologação, como enfermeiro de plantão, prescrever morfina injetável e ver o bloqueio do "Feito". Fazer a 1ª conferência. Fazer a 2ª com outro usuário (enfermeiro ou farmacêutico), em Checagem ou na tela "Alta vigilância". Depois registrar "Feito".
+
+Tarefa 2, como ficou:
+- **Frequência.** Sai da posologia escrita pelo médico: "8/8h", "de 6 em 6 horas", "a cada 12 h", "2x ao dia", "1x/dia". Só os intervalos que dividem o dia têm sugestão (1, 2, 3, 4, 6, 8, 12 e 24 h). "Agora", "se necessário", "contínuo", 48/48h e 5/5h ficam com o enfermeiro.
+- **Grade.** Fica em Configuração > Grade de aprazamento, e quem altera é o gestor. Define o início do dia (padrão 06:00); cada intervalo segue o início, salvo quando a unidade escreve uma grade própria para ele (ex.: 8/8h = 08, 16, 24).
+- **Checagem.** O enfermeiro vê a sugestão, a origem dela e a primeira dose da grade depois da hora da prescrição. Usa a sugestão com um clique ou digita outros horários, com motivo opcional.
+- **Registro.** Cada aprazamento guarda o sugerido, o escolhido, quem, quando e o motivo. Só aceita inserção, e a tela mostra o último.
+- **Teste do RT.** Como gestor, salvar a grade em Configuração. Como médico, prescrever um item 8/8h. Como enfermeiro, na Checagem, usar a sugestão em um item e ajustar outro com motivo. Conferir a linha "Aprazado por…".
 
 **Ordem técnica da Fase 2**
 1. Ajustar cadastro de medicamentos alto risco.
