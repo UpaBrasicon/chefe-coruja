@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
+import { AlterarItem } from '@/components/prescricao/AlterarItem'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
 
 type ItemVigente = {
@@ -165,7 +166,11 @@ function LinhaItem({ i, aoMudar, aoErro }: { i: ItemVigente; aoMudar: () => void
           <Button size="sm" variant="ghost" onClick={() => setSuspendendo(false)}>Voltar</Button>
         </div>
       ) : (
-        <Button size="xs" variant="ghost" className="self-start" onClick={() => setSuspendendo(true)}><Ban /> Suspender</Button>
+        <div className="flex flex-wrap items-start gap-1">
+          <Button size="xs" variant="ghost" onClick={() => setSuspendendo(true)}><Ban /> Suspender</Button>
+          {/* Fase 2, tarefa 6: alteração versionada (só medicamento) */}
+          {i.tipo === 'medicamento' && <AlterarItem itemId={i.id} atual={i} aoMudar={aoMudar} />}
+        </div>
       )}
     </div>
   )

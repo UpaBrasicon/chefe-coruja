@@ -240,6 +240,8 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | 2 — Aprazamento assistido | Pronta na homologação, aguardando teste do RT | Branch `fase2/aprazamento-assistido` (sobre a da tarefa 1); migration `20261031000002_aprazamento_assistido.sql` (só homologação); teste `supabase/tests/fase2_aprazamento_assistido.sql` |
 | 3 — Interações medicamentosas | Parada: o RT escolhe a fonte | Opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
 | 4 — Intercorrência estruturada | Pronta na homologação, aguardando teste do RT | Branch `fase2/intercorrencia` (sobre a da tarefa 2); migration `20261031000003_intercorrencia.sql` (só homologação); teste `supabase/tests/fase2_intercorrencia.sql` |
+| 5 — Fugulin | Parada: o RT escolhe a versão | Ver "Fugulin: decisão pendente" abaixo |
+| 6 — Alteração versionada de item | Pronta na homologação, aguardando teste do RT | Branch `fase2/alteracao-prescricao` (sobre a da tarefa 4); migration `20261031000004_alteracao_item_prescricao.sql` (só homologação); teste `supabase/tests/fase2_alteracao_item_prescricao.sql` |
 
 Tarefa 1, como ficou:
 - **Lista.** Regras do ISMP Brasil 2019 (Boletim v. 8, n. 1, fev. 2019) marcam o cadastro pelo princípio ativo, pela via na apresentação e pela concentração. Exemplos: glicose ≥ 20% e NaCl > 0,9%. Ficam só as regras e a citação, sem o texto do boletim, que tem direitos reservados.
@@ -261,6 +263,19 @@ Tarefa 4, como ficou:
 - **Correção.** Só por inserção: corrigir é "Retificar". A versão anterior fica guardada e aparece riscada.
 - **Relatório do gestor.** Em Gestão > Intercorrências: total por gravidade, por tipo (com as graves), por setor e por papel, e os casos. Conta a versão vigente, e os nomes dos pacientes ficam na trilha de auditoria.
 - **Teste do RT.** Registrar uma intercorrência como técnico, outra como enfermeiro e retificá-la como médico. Ver o relatório como gestor.
+
+**Fugulin: decisão pendente do RT (08/10/2026).** O artigo-fonte (Fugulin, Gaidzinski, Kurcgant. Rev Latino-am Enfermagem 2005;13(1):72-8, Tabela 1) traz 9 áreas de cuidado, pontuadas de 1 a 4. As faixas são: mínimos 9–14, intermediários 15–20, alta dependência 21–26, semi-intensivos 27–31 e intensivos acima de 31. Os protocolos atuais usam outra versão, com 12 áreas: as mesmas 9 e mais três, entre elas integridade cutâneo-mucosa. Nessa versão as faixas são 12–17, 18–22, 23–28, 29–34 e acima de 34, e é ela que aparece com o COFEN. Antes de construir, o RT diz:
+- qual versão a unidade usa;
+- qual é a fonte primária da versão de 12 áreas, se for ela.
+
+O artigo de 2005 tem licença CC BY-NC (uso não comercial). O RT também decide se o texto das graduações pode entrar no produto ou se é preciso autorização ou outra fonte, por exemplo um ato oficial do COFEN.
+
+Tarefa 6, como ficou:
+- **Alterar.** Botão "Alterar" nos itens de medicamento, na prescrição da porta e na da internação. Só o médico de plantão, com motivo. Muda dose, via, frequência e "se necessário".
+- **Versões.** A versão anterior é suspensa com "Alterado: <motivo>" e guarda as checagens. A nova passa pelas mesmas travas da prescrição (alergia, peso da criança, diluição vigente) e aponta a anterior, com o número da versão. Se a nova não passa, nada muda.
+- **Aprazamento.** Com a mesma frequência, a nova versão herda o aprazamento. Com frequência nova, volta a pedir aprazamento.
+- **Aviso.** A Checagem mostra "Prescrição alterada (versão N)", o que mudou e o motivo. A alteração vai para a auditoria com o antes e o depois.
+- **Teste do RT.** Como médico, prescrever um item 12/12h e alterar a dose. Depois alterar a frequência. Como enfermeiro, ver o aviso e conferir que o aprazamento se manteve na 1ª alteração e caiu na 2ª.
 
 **Ordem técnica da Fase 2**
 1. Ajustar cadastro de medicamentos alto risco.

@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
+import { AlterarItem } from '@/components/prescricao/AlterarItem'
 import { NovoItem } from '@/components/prescricao/PrescricaoEstruturada'
 
 import { hora, type ItemPS } from './comum'
@@ -48,6 +49,10 @@ function Linha({ i, n, aoMudar }: { i: ItemPS; n: number; aoMudar: () => void })
           <Button size="xs" variant="ghost" onClick={() => setSuspendendo(true)}><Ban /> Suspender</Button>
         )}
       </div>
+      {/* Fase 2, tarefa 6: alteração versionada (só medicamento) */}
+      {!i.suspenso_em && !suspendendo && i.tipo === 'medicamento' && (
+        <div className="pl-8"><AlterarItem itemId={i.id} atual={i} aoMudar={aoMudar} /></div>
+      )}
       {suspendendo && (
         <div className="flex flex-wrap gap-2 pl-8">
           <Input className="h-8 min-w-48 flex-1" placeholder="Por que suspende" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
