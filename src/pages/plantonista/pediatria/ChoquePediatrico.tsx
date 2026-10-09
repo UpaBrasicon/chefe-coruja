@@ -54,7 +54,10 @@ export function ChoquePediatrico() {
               {DIRETRIZ_SSC_PED_2026.map((d) => (
                 <tr key={d.tema} className="border-t">
                   <td className="pr-3 py-2 font-medium">{d.tema}</td>
-                  <td className="pr-3 py-2">{d.ssc.texto} <span className="text-tinta-sussurro">({d.ssc.pagina})</span></td>
+                  <td className="pr-3 py-2">
+                    {d.ssc.texto} <span className="text-tinta-sussurro">({d.ssc.pagina})</span>
+                    {d.nota && <p role="note" className="mt-2 rounded-md border border-atencao/40 bg-atencao/[0.08] px-2 py-1 text-xs text-atencao">{d.nota}</p>}
+                  </td>
                   <td className="py-2 text-tinta-sussurro">{d.livro ? `${d.livro.texto} (${d.livro.pagina})` : '—'}</td>
                 </tr>
               ))}

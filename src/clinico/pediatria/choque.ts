@@ -26,15 +26,29 @@ export const SSC_PED_2026: Fonte = {
   pediatrica: true,
 }
 
+// Revisão PubMed de 09/10/2026 (decisão do RT): o ECR PRoMPT BOLUS (NEJM
+// 2026), posterior à SSC pediátrica 2026, não achou diferença entre fluido
+// balanceado e SF 0,9% no desfecho principal. Entra como nota no tema "Qual
+// fluido"; volume e dose não mudam.
+export const PROMPT_BOLUS_2026: Fonte = {
+  citacao: 'Balamuth F, Weiss SL, Long E, et al. Balanced Fluid or 0.9% Saline in Children Treated for Septic Shock. N Engl J Med. 2026;395(9):870–881 (PMID 42028918).',
+  url: 'https://doi.org/10.1056/NEJMoa2601969',
+  pediatrica: true,
+}
+
+export const NOTA_PROMPT_BOLUS =
+  'PRoMPT BOLUS (NEJM 2026, posterior à SSC): ECR pragmático em 47 prontos-socorros de 5 países, 8.482 crianças de 2 meses a < 18 anos com choque séptico suspeito e perfusão anormal, fluido por até 48 h. Evento renal maior em 30 dias (morte, diálise nova ou disfunção renal persistente): 3,4% com balanceado e 3,0% com SF 0,9% (RR 1,10; IC 95% 0,88–1,40), sem diferença. Hipercloremia 31,4% vs 49,0% e hipernatremia 1,8% vs 3,1% (mais com SF); hiperlactatemia 19,8% vs 16,7% (mais com balanceado). A preferência por balanceado da SSC (certeza muito baixa) fica relativizada: os dois são aceitáveis; volume e velocidade não mudam.'
+
 export const fichaChoquePediatrico: Ficha = {
   ...fichaP2('ped-choque-icr', 'Choque séptico — criança', 'cap. 5, p. 79–88'),
-  versao: '2026-09-28.1',
+  versao: '2026-10-09.1',
   fontes: [
     ...fichaP2('ped-choque-icr', 'Choque séptico — criança', 'cap. 5, p. 79–88').fontes,
     { ...PHOENIX_2024, citacao: `${PHOENIX_2024.citacao} Tabela do escore (p. E3 do PDF).` },
     { ...SSC_PED_2026, citacao: `${SSC_PED_2026.citacao} Tabela 3, rec. 3, 5–7, 19–24, 28–32, 39 e 40 (p. 944–951).` },
+    PROMPT_BOLUS_2026,
   ],
-  revisadoEm: '28/09/2026 (Phoenix 2024 e SSC pediátrica 2026 conferidas no texto; livro do ICr mantido como base)',
+  revisadoEm: '09/10/2026 (nota do PRoMPT BOLUS no fluido; Phoenix 2024 e SSC pediátrica 2026 conferidas no texto; livro do ICr mantido como base)',
 }
 
 /** Phoenix como ferramenta própria da Central (onda 9): mesma regra de phoenix(), só a fonte do escore. */
@@ -202,7 +216,7 @@ export const DIRETRIZ_SSC_PED_2026: DiretrizPed[] = [
   { tema: 'Antimicrobiano', ssc: { texto: 'Choque séptico suspeito: o mais rápido possível, idealmente em até 1 h do reconhecimento (forte, certeza muito baixa). Sepse provável sem choque: investigação rápida limitada no tempo e, confirmada a suspeita, antimicrobiano idealmente em até 3 h (condicional, certeza muito baixa). Hemoculturas antes, se não atrasarem', pagina: 'rec. 4–7, p. 944' }, livro: { texto: 'Antibiótico em até 60 min', pagina: 'p. 83' } },
   { tema: 'Bolus onde há UTI', ssc: { texto: 'Choque séptico com UTI disponível: até 40–60 mL/kg em bolus (10–20 mL/kg por bolus) na 1ª hora, titulando por marcadores clínicos de débito cardíaco e parando se surgir sobrecarga (condicional, certeza baixa), em vez de nenhum bolus', pagina: 'rec. 19, p. 946' }, livro: { texto: 'Bolus 10–20 mL/kg; 40–60 mL/kg na 1ª hora', pagina: 'p. 85' } },
   { tema: 'Bolus onde não há UTI', ssc: { texto: 'Sem UTI e SEM hipotensão: contra bolus, iniciando manutenção (forte, certeza alta). Sem UTI e COM hipotensão: até 40 mL/kg (10–20 mL/kg por bolus) na 1ª hora, titulando e parando se sobrecarga (condicional, certeza baixa). Marcadores: FC, PA, TEC, consciência, diurese', pagina: 'rec. 20, p. 946–947' }, livro: { texto: 'Sem suporte ventilatório/vasoativo: só no hipotenso, até 40 mL/kg', pagina: 'p. 85' } },
-  { tema: 'Qual fluido', ssc: { texto: 'Cristaloide em vez de albumina (condicional, certeza moderada); balanceado/tamponado em vez de SF 0,9% (condicional, certeza muito baixa); contra amidos (forte)', pagina: 'rec. 22–24, p. 947' }, livro: { texto: 'Balanceados (Ringer lactato, Plasmalyte) preferidos ao SF', pagina: 'p. 86' } },
+  { tema: 'Qual fluido', ssc: { texto: 'Cristaloide em vez de albumina (condicional, certeza moderada); balanceado/tamponado em vez de SF 0,9% (condicional, certeza muito baixa); contra amidos (forte)', pagina: 'rec. 22–24, p. 947' }, livro: { texto: 'Balanceados (Ringer lactato, Plasmalyte) preferidos ao SF', pagina: 'p. 86' }, nota: NOTA_PROMPT_BOLUS },
   { tema: 'Vasoativo: qual', ssc: { texto: 'Adrenalina em vez de dopamina (condicional, certeza baixa); noradrenalina em vez de dopamina (condicional, certeza muito baixa); sem evidência para eleger adrenalina ou noradrenalina como 1ª linha; dopamina só se as duas não estiverem disponíveis', pagina: 'rec. 28–31, p. 948–949' }, livro: { texto: 'Epinefrina e noradrenalina preferenciais; dopamina quando não disponíveis', pagina: 'p. 86' } },
   { tema: 'Vasoativo: quando e por onde', ssc: { texto: 'Razoável começar após 40–60 mL/kg se a perfusão continua anormal; iniciar por acesso periférico (ou intraósseo) em vez de esperar o acesso central (condicional, certeza muito baixa); sem consenso sobre iniciar antes ou depois de 40 mL/kg', pagina: 'rec. 31–32, p. 948–949' }, livro: { texto: 'Após 40–60 mL/kg ou antes se sobrecarga; periférico com no máximo 16 µg/mL', pagina: 'p. 86' } },
   { tema: 'Catecolamina em dose alta', ssc: { texto: 'Adicionar vasopressina ou titular mais a catecolamina (condicional, certeza baixa); sem consenso sobre o limiar', pagina: 'rec. 32 (2020) / p. 949' } },
