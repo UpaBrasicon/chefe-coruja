@@ -12,7 +12,7 @@ import { sincopeSanFrancisco } from './adulto/sincopeSanFrancisco.ts'
 import { timiIamcsst } from './escores/timiIamcsst.ts'
 import { sincopeCanadense } from './escores/sincopeCanadense.ts'
 import { calcularIss, iss } from './escores/iss.ts'
-import { ckdEpi, ckdEpi2021, categoriaTfg } from './escores/ckdEpi.ts'
+import { ckdEpi, ckdEpi2021, categoriaTfg, ckdEpi2009 } from './escores/ckdEpi.ts'
 import { pram } from './escores/pram.ts'
 import { schwartzPed } from './pediatria/schwartzPed.ts'
 import { fichaPhoenixPed } from './pediatria/choque.ts'
@@ -178,6 +178,10 @@ test('ISS (Baker 1974): três maiores ao quadrado; AIS 6 → 75', () => {
 
 test('CKD-EPI 2021 (Inker 2021)', () => {
   assert.equal(Math.round(ckdEpi2021(1.0, 60, 'm')!), 86)
+  // CKD-EPI 2009 sem coeficiente racial (Levey 2009): homem, 50 anos, Scr 1,0 → 87; mulher, 50 anos, Scr 0,7 → 101
+  assert.equal(Math.round(ckdEpi2009(1.0, 50, 'm')!), 87)
+  assert.equal(Math.round(ckdEpi2009(0.7, 50, 'f')!), 101)
+  assert.equal(ckdEpi2009(1, 17, 'm'), null)
   assert.equal(Math.round(ckdEpi2021(0.7, 50, 'f')!), 105)
   assert.equal(ckdEpi2021(1, 17, 'm'), null)
   assert.equal(categoriaTfg(44.9), 'G3b (30–44)')
