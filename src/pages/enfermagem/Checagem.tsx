@@ -15,6 +15,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ClipboardCheck, ShieldAlert } from 'lucide-react'
 import * as React from 'react'
 
+import { resumoMudanca, type Alteracao } from '@/lib/alteracaoPrescricao'
 import { lerHorarios, mesmaLista, type SugestaoItem } from '@/lib/aprazamento'
 import { etapaDupla, type EstadoDupla } from '@/lib/duplaChecagem'
 import { supabase } from '@/lib/supabase'
@@ -77,10 +78,21 @@ export default function Checagem() {
       return new Map(((data ?? []) as unknown as SugestaoItem[]).map((e) => [e.item_id, e]))
     },
   })
+  // item alterado pelo médico (Fase 2, tarefa 6): o que mudou e o motivo
+  const alteracoes = useQuery({
+    queryKey: ['alteracoes-itens', ids.join(',')],
+    enabled: ids.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('alteracoes_de_itens', { p_itens: ids })
+      if (error) throw error
+      return new Map(((data ?? []) as unknown as Alteracao[]).map((e) => [e.item_id, e]))
+    },
+  })
   const recarregar = () => {
     void qc.invalidateQueries({ queryKey: ['fila-checagem'] })
     void qc.invalidateQueries({ queryKey: ['estado-dupla'] })
     void qc.invalidateQueries({ queryKey: ['sugestoes-aprazamento'] })
+    void qc.invalidateQueries({ queryKey: ['alteracoes-itens'] })
   }
   const pacientes = new Map<string, Linha[]>()
   for (const l of fila.data ?? []) pacientes.set(l.paciente_id, [...(pacientes.get(l.paciente_id) ?? []), l])
@@ -102,7 +114,7 @@ export default function Checagem() {
               <AlergiaNaTela pacienteId={id} />
             </CardHeader>
             <CardContent className="flex flex-col gap-2 text-sm">
-              {itens.map((l) => <ItemChecagem key={l.item_id} l={l} dupla={dupla.data?.get(l.item_id)} apraz={apraz.data?.get(l.item_id)} souEnfermeiro={papelAtivo === 'enfermeiro'} aoMudar={recarregar} aoErro={setErro} />)}
+              {itens.map((l) => <ItemChecagem key={l.item_id} l={l} dupla={dupla.data?.get(l.item_id)} apraz={apraz.data?.get(l.item_id)} alteracao={alteracoes.data?.get(l.item_id)} souEnfermeiro={papelAtivo === 'enfermeiro'} aoMudar={recarregar} aoErro={setErro} />)}
             </CardContent>
           </Card>
         ))}
@@ -111,8 +123,8 @@ export default function Checagem() {
   )
 }
 
-function ItemChecagem({ l, dupla, apraz, souEnfermeiro, aoMudar, aoErro }: {
-  l: Linha; dupla: EstadoDupla | undefined; apraz: SugestaoItem | undefined; souEnfermeiro: boolean
+function ItemChecagem({ l, dupla, apraz, alteracao, souEnfermeiro, aoMudar, aoErro }: {
+  l: Linha; dupla: EstadoDupla | undefined; apraz: SugestaoItem | undefined; alteracao: Alteracao | undefined; souEnfermeiro: boolean
   aoMudar: () => void; aoErro: (m: string | null) => void
 }) {
   const podeAprazar = souEnfermeiro
@@ -155,6 +167,13 @@ function ItemChecagem({ l, dupla, apraz, souEnfermeiro, aoMudar, aoErro }: {
         {dupla && <Badge variant="destructive" title={dupla.regra}><ShieldAlert className="size-3" /> alta vigilância · dupla checagem</Badge>}
         {st && <Badge variant={st.variante} className="ml-auto">{st.rotulo}{l.ultima_horario ? ` ${l.ultima_horario}` : ''}</Badge>}
       </div>
+      {alteracao && (
+        <p role="note" className="rounded-md border border-atencao/40 bg-atencao/[0.08] px-2.5 py-1.5 text-xs text-atencao">
+          <strong>Prescrição alterada</strong> (versão {alteracao.versao}) por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}:{' '}
+          {resumoMudanca(alteracao.anterior, { dose: l.dose, via: l.via, posologia: l.posologia, se_necessario: l.se_necessario }) || 'observação'}
+          {alteracao.motivo ? ` — “${alteracao.motivo}”` : ''}
+        </p>
+      )}
       {l.diluicao_texto && <p className="text-xs text-tinta-apoio">Diluição: {l.diluicao_texto}</p>}
       {aprazado && (
         <div className="flex flex-wrap gap-1.5" aria-label="Situação por horário (últimas 24 horas)">

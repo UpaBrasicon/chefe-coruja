@@ -7752,6 +7752,7 @@ export type Database = {
           id: string
           justificativa_divergencia: string | null
           medicamento_id: string | null
+          motivo_alteracao: string | null
           motivo_suspensao: string | null
           observacao: string | null
           ordem: number
@@ -7760,8 +7761,10 @@ export type Database = {
           prescricao_id: string
           se_necessario: boolean
           suspenso_em: string | null
+          substitui_item_id: string | null
           suspenso_por: string | null
           tipo: string
+          versao: number
           via: string | null
         }
         Insert: {
@@ -7778,6 +7781,7 @@ export type Database = {
           id?: string
           justificativa_divergencia?: string | null
           medicamento_id?: string | null
+          motivo_alteracao?: string | null
           motivo_suspensao?: string | null
           observacao?: string | null
           ordem?: number
@@ -7786,8 +7790,10 @@ export type Database = {
           prescricao_id: string
           se_necessario?: boolean
           suspenso_em?: string | null
+          substitui_item_id?: string | null
           suspenso_por?: string | null
           tipo?: string
+          versao?: number
           via?: string | null
         }
         Update: {
@@ -7804,6 +7810,7 @@ export type Database = {
           id?: string
           justificativa_divergencia?: string | null
           medicamento_id?: string | null
+          motivo_alteracao?: string | null
           motivo_suspensao?: string | null
           observacao?: string | null
           ordem?: number
@@ -7812,8 +7819,10 @@ export type Database = {
           prescricao_id?: string
           se_necessario?: boolean
           suspenso_em?: string | null
+          substitui_item_id?: string | null
           suspenso_por?: string | null
           tipo?: string
+          versao?: number
           via?: string | null
         }
         Relationships: [
@@ -9864,6 +9873,11 @@ export type Database = {
         }[]
       }
       alta_vigilancia_da_unidade: { Args: { p_busca?: string; p_unidade: string }; Returns: Json }
+      alteracoes_de_itens: { Args: { p_itens: string[] }; Returns: Json }
+      alterar_item_prescricao: {
+        Args: { p_item: string; p_motivo: string; p_mudancas: Json }
+        Returns: string
+      }
       andamento_chamado_tecnico: {
         Args: { p_id: string }
         Returns: {
