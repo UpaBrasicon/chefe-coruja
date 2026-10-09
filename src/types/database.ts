@@ -6008,6 +6008,7 @@ export type Database = {
       medicamento: {
         Row: {
           alta_vigilancia: boolean
+          alta_vigilancia_regra: string | null
           anvisa_empresa: string | null
           anvisa_produto: string | null
           anvisa_registro: string | null
@@ -6030,6 +6031,7 @@ export type Database = {
         }
         Insert: {
           alta_vigilancia?: boolean
+          alta_vigilancia_regra?: string | null
           anvisa_empresa?: string | null
           anvisa_produto?: string | null
           anvisa_registro?: string | null
@@ -6052,6 +6054,7 @@ export type Database = {
         }
         Update: {
           alta_vigilancia?: boolean
+          alta_vigilancia_regra?: string | null
           anvisa_empresa?: string | null
           anvisa_produto?: string | null
           anvisa_registro?: string | null
@@ -9854,6 +9857,7 @@ export type Database = {
           total: number
         }[]
       }
+      alta_vigilancia_da_unidade: { Args: { p_busca?: string; p_unidade: string }; Returns: Json }
       andamento_chamado_tecnico: {
         Args: { p_id: string }
         Returns: {
@@ -10222,6 +10226,7 @@ export type Database = {
         }
         Returns: Json
       }
+      conferir_alta_vigilancia: { Args: { p_horario?: string; p_item: string }; Returns: string }
       conferir_contrato: {
         Args: { p_codigo: string; p_email: string }
         Returns: {
@@ -10368,6 +10373,10 @@ export type Database = {
       }
       definir_admissao_detalhes_obrigatorio: {
         Args: { p_obrigatorio: boolean; p_setor: string }
+        Returns: undefined
+      }
+      definir_alta_vigilancia: {
+        Args: { p_exige: boolean; p_medicamento: string; p_motivo: string; p_unidade: string }
         Returns: undefined
       }
       definir_ferramenta_unidade: {
@@ -10570,6 +10579,7 @@ export type Database = {
         }
         Returns: Json
       }
+      duplas_pendentes: { Args: { p_unidade: string }; Returns: Json }
       editar_mensagem: {
         Args: { p_corpo: string; p_mensagem_id: string }
         Returns: undefined
@@ -10707,6 +10717,7 @@ export type Database = {
         Returns: Json
       }
       estado_alergia: { Args: { p_paciente: string }; Returns: string }
+      estado_dupla_checagem: { Args: { p_itens: string[] }; Returns: Json }
       evoluir_grau_evento: {
         Args: { p_evento: string; p_grau: number }
         Returns: undefined

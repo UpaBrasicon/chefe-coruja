@@ -232,6 +232,19 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 - Alteração versionada de item de prescrição: **só o médico, com motivo**; versão anterior guardada; enfermagem vê o aviso na checagem.
 - Read replica: **não agora** (só quando os painéis pesarem).
 
+**Andamento da Fase 2**
+
+| Tarefa | Situação | Onde |
+|---|---|---|
+| 1 — Dupla checagem | Pronta na homologação, aguardando teste do RT | Branch `fase2/dupla-checagem`; migration `20261031000001_dupla_checagem.sql` (só homologação); teste `supabase/tests/fase2_dupla_checagem.sql` |
+
+Tarefa 1, como ficou:
+- **Lista.** Regras do ISMP Brasil 2019 (Boletim v. 8, n. 1, fev. 2019) marcam o cadastro pelo princípio ativo, pela via na apresentação e pela concentração. Exemplos: glicose ≥ 20% e NaCl > 0,9%. Ficam só as regras e a citação, sem o texto do boletim, que tem direitos reservados.
+- **Ajuste da unidade.** O farmacêutico ou o gestor marca e desmarca com motivo, e o histórico fica guardado. As vias epidural e intratecal e os antineoplásicos dependem da marcação da farmácia.
+- **Checagem.** O item mostra "alta vigilância · dupla checagem". A 1ª conferência é da enfermagem de plantão. A 2ª é de um enfermeiro de plantão ou de um farmacêutico, nunca do mesmo usuário. "Feito" fica bloqueado até as duas conferências, que valem por 2 horas e servem a uma única administração. "Não feito" e "recusado" seguem livres.
+- **Tela "Alta vigilância".** Para o farmacêutico, o enfermeiro e o gestor: fila da 2ª conferência e lista da unidade.
+- **Teste do RT.** Na homologação, como enfermeiro de plantão, prescrever morfina injetável e ver o bloqueio do "Feito". Fazer a 1ª conferência. Fazer a 2ª com outro usuário (enfermeiro ou farmacêutico), em Checagem ou na tela "Alta vigilância". Depois registrar "Feito".
+
 **Ordem técnica da Fase 2**
 1. Ajustar cadastro de medicamentos alto risco.
 2. Implementar dupla checagem.
