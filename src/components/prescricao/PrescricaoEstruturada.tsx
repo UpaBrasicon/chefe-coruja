@@ -27,7 +27,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
 import { AlterarItem } from '@/components/prescricao/AlterarItem'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
-import { interacoesDoErro, type InteracaoJustificada, type InteracaoNaPrescricao } from '@/lib/interacoes'
+import { frase, interacoesDoErro, semPontoFinal, type InteracaoJustificada, type InteracaoNaPrescricao } from '@/lib/interacoes'
+import { resumoMudanca, type Alteracao } from '@/lib/alteracaoPrescricao'
 
 type ItemVigente = {
   id: string; tipo: 'medicamento' | 'cuidado'; descricao: string; medicamento_id: string | null; dose: string | null; via: string | null
@@ -54,6 +55,7 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
   const [erro, setErro] = React.useState<string | null>(null)
   const recarregar = () => {
     for (const k of ['prescricao-vigente', 'alergias', 'peso-atual']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
+    void qc.invalidateQueries({ queryKey: ['alteracoes-itens'] })
   }
 
   const itens = useQuery({
@@ -119,6 +121,16 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
       return (data ?? []) as unknown as InteracaoJustificada[]
     },
   })
+  // item alterado (Fase 2, tarefa 6): versão, o que mudou e o motivo, como na Checagem
+  const alteracoes = useQuery({
+    queryKey: ['alteracoes-itens', lista.map((i) => i.id).join(',')],
+    enabled: lista.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('alteracoes_de_itens', { p_itens: lista.map((i) => i.id) })
+      if (error) throw error
+      return new Map(((data ?? []) as unknown as Alteracao[]).map((e) => [e.item_id, e]))
+    },
+  })
   return (
     <div className="flex flex-col gap-4">
       {erro && <p className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</p>}
@@ -132,7 +144,7 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
         <CardContent className="flex flex-col gap-2 text-sm">
           <ResumoAlergias pacienteId={pacienteId} nome={paciente.nome} />
           {lista.length === 0 && <p className="text-tinta-sussurro">Nenhum item prescrito.</p>}
-          {lista.map((i) => <LinhaItem key={i.id} i={i} justificadas={(justificadas.data ?? []).filter((j) => j.item_id === i.id)} aoMudar={recarregar} aoErro={setErro} />)}
+          {lista.map((i) => <LinhaItem key={i.id} i={i} justificadas={(justificadas.data ?? []).filter((j) => j.item_id === i.id)} alteracao={alteracoes.data?.get(i.id)} aoMudar={recarregar} aoErro={setErro} />)}
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <Button size="sm" onClick={() => void imprimir()} disabled={lista.length === 0}><Printer /> Imprimir prescrição</Button>
             {perfil && <span className="text-xs text-tinta-sussurro">Autor de cada item: quem prescreveu (login).</span>}
@@ -144,8 +156,8 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
   )
 }
 
-function LinhaItem({ i, justificadas, aoMudar, aoErro }: {
-  i: ItemVigente; justificadas: InteracaoJustificada[]; aoMudar: () => void; aoErro: (m: string | null) => void
+function LinhaItem({ i, justificadas, alteracao, aoMudar, aoErro }: {
+  i: ItemVigente; justificadas: InteracaoJustificada[]; alteracao: Alteracao | undefined; aoMudar: () => void; aoErro: (m: string | null) => void
 }) {
   const [suspendendo, setSuspendendo] = React.useState(false)
   const [motivo, setMotivo] = React.useState('')
@@ -165,10 +177,17 @@ function LinhaItem({ i, justificadas, aoMudar, aoErro }: {
             : i.diluicao_texto ? <>Diluição padrão v{i.diluicao_versao}: {i.diluicao_texto}</> : 'Sem diluição padrão publicada para esta via.'}
         </p>
       )}
+      {alteracao && (
+        <p className="text-xs text-atencao">
+          Versão {alteracao.versao}, alterada por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}:{' '}
+          {resumoMudanca(alteracao.anterior, { dose: i.dose, via: i.via, posologia: i.posologia, se_necessario: i.se_necessario }) || 'observação'}
+          {alteracao.motivo ? ` — “${alteracao.motivo}”` : ''}
+        </p>
+      )}
       {i.observacao && <p className="text-xs text-tinta-sussurro">{i.observacao}</p>}
       {justificadas.map((j) => (
         <p key={j.outro + j.em} className="text-xs text-critico">
-          Interação {j.gravidade} com {j.outro} ({j.efeito}) — justificada por {j.por ?? '—'}: “{j.justificativa}”
+          Interação {j.gravidade} com {j.outro} ({semPontoFinal(j.efeito)}) — justificada por {j.por ?? '—'}: “{j.justificativa}”
         </p>
       ))}
       {i.validacao === 'devolvido' && <p className="text-xs text-critico">Farmácia devolveu para correção: {i.validacao_motivo}</p>}
@@ -443,7 +462,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 {interacao.lista.map((x) => (
                   <div key={x.interacao_id + x.outro_item_id} className="flex flex-col gap-0.5">
                     <span className="text-tinta"><b>{x.outro}</b> · {x.gravidade} · {x.grupos}</span>
-                    <span className="text-tinta-apoio">{x.efeito}{x.conduta ? ` Conduta: ${x.conduta}` : ''}</span>
+                    <span className="text-tinta-apoio">{frase(x.efeito)}{x.conduta ? ` Conduta: ${frase(x.conduta)}` : ''}</span>
                     <span className="text-xs text-tinta-sussurro">Fonte: {x.fonte}</span>
                   </div>
                 ))}

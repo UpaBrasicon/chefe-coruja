@@ -24,7 +24,11 @@ export type FaltaPriorizada = {
 }
 const SIT: Record<string, string> = { registrada: 'Registrada', em_cotacao: 'Em cotação', reposta: 'Reposta' }
 
-export function PainelFarmacia({ unidade, podeAgir, irPara }: { unidade: string; podeAgir: boolean; irPara?: (aba: 'faltas' | 'validacao' | 'disponibilidade') => void }) {
+export function PainelFarmacia({ unidade, podeAgir, irPara, semNumeros = false }: {
+  unidade: string; podeAgir: boolean; irPara?: (aba: 'faltas' | 'validacao' | 'disponibilidade') => void
+  /** O farmacêutico já vê os números na faixa do topo da Central: não repetir. */
+  semNumeros?: boolean
+}) {
   const faltas = useQuery({
     queryKey: ['faltas-priorizadas', unidade],
     refetchInterval: 60_000,
@@ -68,12 +72,12 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: { unidade: string;
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid gap-3 sm:grid-cols-4">
+      {!semNumeros && <div className="grid gap-3 sm:grid-cols-4">
         <Numero rotulo="Faltas abertas" valor={faltas.data?.length} destaque={(faltas.data ?? []).some((f) => f.alta_vigilancia)} />
         <Numero rotulo="Estoque crítico ou em falta" valor={estoque.data?.length} onClick={irPara ? () => irPara('disponibilidade') : undefined} />
         {podeAgir && <Numero rotulo="Validação pendente (alta vigilância)" valor={validacao.data} destaque={(validacao.data ?? 0) > 0} onClick={irPara ? () => irPara('validacao') : undefined} />}
         {podeAgir && <Numero rotulo="Aguardando 2ª conferência" valor={duplas.data} destaque={(duplas.data ?? 0) > 0} href="/alta-vigilancia" />}
-      </div>
+      </div>}
       <section className="flex flex-col gap-2">
         <TituloSecao>Faltas abertas, por prioridade</TituloSecao>
         <span className="text-rotulo text-tinta-sussurro">Primeiro alta vigilância, depois quantos pacientes têm o medicamento prescrito agora, depois a mais antiga.</span>

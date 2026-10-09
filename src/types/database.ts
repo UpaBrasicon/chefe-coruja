@@ -12147,14 +12147,14 @@ export type Database = {
         Args: {
           p_conduta: string
           p_descricao: string
-          p_episodio?: string
+          p_episodio: string | null
           p_gravidade: string
-          p_internacao?: string
+          p_internacao: string | null
           p_ocorrida_em: string
           p_paciente: string
-          p_retifica?: string
+          p_retifica?: string | null
           p_tipo: string
-          p_tipo_outro?: string
+          p_tipo_outro: string | null
         }
         Returns: string
       }

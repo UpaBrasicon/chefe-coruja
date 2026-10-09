@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { BedDouble, Building2, ClipboardList, Clock, DoorOpen, FlaskConical, Hourglass, MonitorSmartphone, PackageX, Users } from 'lucide-react'
+import { BedDouble, Building2, ClipboardList, Clock, DoorOpen, FlaskConical, Hourglass, MonitorSmartphone, PackageX, ShieldAlert, Users } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
 import { formatarDuracao, nivelDoTurno } from '@/domain/plantao'
@@ -39,16 +39,21 @@ function FaixaFarmaceutico({ unidadeId }: { unidadeId: string }) {
     queryKey: ['faixa-farmaceutico', unidadeId],
     refetchInterval: 60_000,
     queryFn: async () => {
-      const [agora, fila, disp, faltas] = await Promise.all([
+      const [agora, fila, disp, faltas, duplas] = await Promise.all([
         horaServidor(),
         supabase.rpc('fila_validacao', { p_unidade: unidadeId }),
         supabase.rpc('disponibilidade', { p_unidade: unidadeId }),
         supabase.from('faltas_medicamento').select('id', { count: 'exact', head: true }).eq('unidade_id', unidadeId).neq('situacao', 'reposta'),
+        supabase.rpc('duplas_pendentes', { p_unidade: unidadeId }),
       ])
       if (fila.error) throw fila.error
       if (disp.error) throw disp.error
       if (faltas.error) throw faltas.error
-      return { agora, fila: (fila.data ?? []) as ItemFila[], disp: (disp.data ?? []) as Disp[], faltasAbertas: faltas.count ?? 0 }
+      if (duplas.error) throw duplas.error
+      return {
+        agora, fila: (fila.data ?? []) as ItemFila[], disp: (disp.data ?? []) as Disp[], faltasAbertas: faltas.count ?? 0,
+        duplas: Array.isArray(duplas.data) ? duplas.data.length : 0,
+      }
     },
   })
   const fila = d?.fila ?? []
@@ -71,14 +76,20 @@ function FaixaFarmaceutico({ unidadeId }: { unidadeId: string }) {
       <Parametro
         grandeza="observacao" icone={ClipboardList} rotulo="Prescrições a conferir"
         valor={d ? fila.length : '—'} unidade="na fila"
-        estado={!d ? 'Carregando' : !fila.length ? 'Nada para validar' : [divergentes && `${divergentes} fora do padrão de diluição`, altaVig && `${altaVig} de alta vigilância`].filter(Boolean).join(' · ') || 'Dentro do padrão'}
+        estado={!d ? 'Carregando' : !fila.length ? 'Nada para validar' : [
+          divergentes && `${divergentes} fora do padrão de diluição`, altaVig && `${altaVig} de alta vigilância`,
+          maisAntigo !== null && `mais antigo há ${formatarDuracao(maisAntigo)}`,
+        ].filter(Boolean).join(' · ')}
         nivel={divergentes || altaVig ? 'atencao' : 'ok'}
       />
+      {/* Fase 2: a 2ª conferência entra no lugar do "item mais antigo", que
+          passou para o estado da fila; a Central não repete estes números */}
       <Parametro
-        grandeza="turno" icone={Hourglass} rotulo="Item mais antigo na fila"
-        valor={maisAntigo === null ? '—' : formatarDuracao(maisAntigo)}
-        estado={maisAntigo === null ? 'Fila vazia' : 'Desde a prescrição · relógio do servidor'}
-        nivel="ok"
+        grandeza="turno" icone={ShieldAlert} rotulo="Aguardando 2ª conferência"
+        valor={d ? d.duplas : '—'} unidade="alta vigilância"
+        estado={!d ? 'Carregando' : d.duplas ? 'Dupla checagem aberta na enfermagem' : 'Nenhuma pendente'}
+        nivel={d?.duplas ? 'atencao' : 'ok'}
+        onClick={() => navigate('/alta-vigilancia')}
       />
       <Parametro
         grandeza="leitos" icone={PackageX} rotulo="Faltas sinalizadas em aberto"

@@ -32,6 +32,14 @@ export function etapaDupla(estado: EstadoDupla | undefined, horario: string | nu
   return c.segundo_por ? { etapa: 'pronta', conferencia: c } : { etapa: 'aguardando_segunda', conferencia: c }
 }
 
+/**
+ * Dose única ("Agora", do Pronto-Socorro) já registrada como feita: não há
+ * outra dose para conferir nem checar. Nova dose precisa de nova prescrição.
+ */
+export function doseUnicaFeita(posologia: string | null, seNecessario: boolean, ultimaSituacao: string | null): boolean {
+  return !seNecessario && (posologia ?? '').trim().toLowerCase() === 'agora' && ultimaSituacao === 'feito'
+}
+
 /** De onde vem a exigência, para a farmácia conferir. */
 export function origemAltaVigilancia(i: ItemAltaVigilancia): string {
   if (i.ajuste) return i.ajuste.exige ? 'Marcado pela unidade' : 'Desmarcado pela unidade'
