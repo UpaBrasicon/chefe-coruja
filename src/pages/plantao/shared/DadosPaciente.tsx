@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, FolderUp, History, PencilLine, Plus, Search, Stethoscope, FileText, Loader2, TriangleAlert } from 'lucide-react'
 import * as React from 'react'
 
+import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
 import { supabase } from '@/lib/supabase'
 import { CATEGORIAS, faltasParaAih, RACAS_COR, SEXOS } from '@/lib/cadastro'
 import { formatarCns, formatarCpf } from '@/lib/documentos'
@@ -529,7 +530,9 @@ export function DadosPaciente({
                   </div>
                 ))}
               </div>
-              <p className="text-apoio text-tinta-sussurro">Os dados vêm do cadastro do paciente. Atendimentos de setores fora do seu plantão não aparecem.</p>
+              <p className="text-apoio text-tinta-sussurro">Os dados vêm do cadastro do paciente. Atendimentos de setores fora do seu plantão não aparecem aqui; o histórico encerrado da unidade está logo abaixo.</p>
+              {/* Fase 1, tarefa 8: histórico encerrado para quem cuida do paciente */}
+              <HistoricoEncerrado pacienteId={pacienteId} />
             </div>
           )}
 
