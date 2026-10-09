@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
 import { calcularDoseLivro } from './fonteP4.ts'
-import { DOSES_ITU_ORAL, DOSES_ITU_PARENTERAL, QUADRO3, fichaItuPed, lerUrocultura, testarUrinaAap } from './ituPed.ts'
+import { AVISO_AAP_2026, DOSES_ITU_ORAL, DOSES_ITU_PARENTERAL, QUADRO3, fichaItuPed, lerUrocultura, testarUrinaAap } from './ituPed.ts'
 
 const d = (id: string) => [...DOSES_ITU_ORAL, ...DOSES_ITU_PARENTERAL].find((x) => x.id === id)!
 
@@ -34,4 +34,10 @@ test('Tabelas 3 e 4 (p. 597–598) com máximos do Apêndice', () => {
   assert.deepEqual(calcularDoseLivro(d('gentamicina'), 10)!.porDose, [25, 75])
   assert.deepEqual(calcularDoseLivro(d('cipro-iv'), 40)!.dia, [800, 800])
   assert.equal(QUADRO3.length, 9)
+})
+
+test('AAP 2026 citada sem limiar novo (texto integral pendente)', () => {
+  assert.ok(fichaItuPed.fontes.some((f) => f.citacao.includes('PMID 42803578')))
+  assert.ok(fichaItuPed.versao >= '2026-10-09.1')
+  assert.ok(!AVISO_AAP_2026.join(' ').match(/UFC|\d+\.\d{3}/))
 })
