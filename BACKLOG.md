@@ -241,6 +241,8 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | 3 — Interações medicamentosas | **Pronta na homologação (opção A), aguardando teste do RT.** Branch `fase2/interacoes`; migration `20261031000005_interacoes_criticas.sql` (só homologação); teste `supabase/tests/fase2_interacoes_criticas.sql`. Decidida em 09/10: **opção C**. Começa pela A (lista curada de pares críticos pelo RT/farmacêutico, a partir da lista ONC e das bulas ANVISA, com fonte por linha); a B (base comercial licenciada) fica como plano futuro | Opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
 | 4 — Intercorrência estruturada | Pronta na homologação, aguardando teste do RT | Branch `fase2/intercorrencia` (sobre a da tarefa 2); migration `20261031000003_intercorrencia.sql` (só homologação); teste `supabase/tests/fase2_intercorrencia.sql` |
 | 5 — Fugulin | **Pronta na homologação, aguardando teste do RT.** Branch `fase2/fugulin`; migration `20261031000006_fugulin.sql` (só homologação); teste `supabase/tests/fase2_fugulin.sql`. Decidida em 09/10: **versão de 12 áreas** (intensivo acima de 34; a unidade tem leito semi-intensivo). Na tela, **só um resumo** de cada graduação, sem o texto do artigo | Ver "Fugulin" abaixo |
+| 9 — Painel da farmácia | **Pronta na homologação, aguardando teste do RT.** Branch `fase2/painel-farmacia`; migration `20261031000008_painel_farmacia.sql` (só homologação); teste `supabase/tests/fase2_painel_farmacia.sql` | Ver "Tarefa 9, como ficou" |
+| 10 — Réplica de leitura | Não agora (decisão do RT de 08/10) | — |
 | 8 — Auditoria clínica | **Pronta na homologação, aguardando teste do RT.** Branch `fase2/auditoria-clinica`; migration `20261031000007_auditoria_clinica.sql` (só homologação); teste `supabase/tests/fase2_auditoria_clinica.sql` | Ver "Tarefa 8, como ficou" |
 | 7 — Teste do offline | **Concluída em 09/10** (relatório; sem migration) | Branch `fase2/teste-offline`; `produto/docs/fase2/teste-offline-2026-10-09.md`; plano de contingência atualizado |
 | 6 — Alteração versionada de item | Pronta na homologação, aguardando teste do RT | Branch `fase2/alteracao-prescricao` (sobre a da tarefa 4); migration `20261031000004_alteracao_item_prescricao.sql` (só homologação); teste `supabase/tests/fase2_alteracao_item_prescricao.sql` |
@@ -312,6 +314,16 @@ Tarefa 8, como ficou:
   - a integridade da cadeia (já existia);
   - um quadro novo de **cobertura**: por tipo de evento, quantos registros clínicos dos últimos 30 dias (desde a instalação) ficaram sem linha na trilha.
 - **Teste do RT.** Fazer uma prescrição, uma checagem e uma classificação. Depois, como gestor, ver a trilha e o quadro de cobertura com zero "sem trilha".
+
+Tarefa 9, como ficou:
+- **Painel do farmacêutico.** Nova aba "Painel", a primeira da Central do Farmacêutico, com quatro números: faltas abertas, estoque crítico ou em falta, validação pendente de alta vigilância e aguardando a 2ª conferência.
+- **Faltas por prioridade.** Primeiro alta vigilância, depois quantos pacientes têm o medicamento prescrito agora e em quais setores, depois a mais antiga.
+- **Retorno da farmácia.** Em cada falta, o farmacêutico escreve substituto, previsão ou conduta (só inserção, com autor e hora) e avança Em cotação → Reposta. O médico vê o retorno ao escolher o medicamento em falta na prescrição.
+- **Gestor.** Em Gestão > Farmácia vê o mesmo painel, sem agir.
+- **Verificado no navegador local.** Gestor: falta da selegilina com "1 paciente · Clínica Médica".
+- **Teste do RT.** Como médico, sinalizar falta de um medicamento de alta vigilância. Como farmacêutico, ver a falta no topo do Painel e enviar o retorno. Como médico, escolher o medicamento e ver o retorno.
+
+**Fase 2 construída em 09/10/2026.** Tarefas 1 a 9 na homologação; a 10 não agora. Falta o teste do RT, os merges e o "ok produção" das migrations 20261031000001 a 000008.
 
 **Ordem técnica da Fase 2**
 1. Ajustar cadastro de medicamentos alto risco.
