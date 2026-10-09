@@ -10894,6 +10894,8 @@ export type Database = {
         Args: { p_partes?: number; p_plantao: string }
         Returns: number
       }
+      fugulin_da_internacao: { Args: { p_internacao: string }; Returns: Json }
+      fugulin_de_hoje: { Args: { p_internacoes: string[] }; Returns: Json }
       gaviao_apontamentos: {
         Args: { p_unidade: string }
         Returns: {
@@ -12109,6 +12111,10 @@ export type Database = {
           p_setor: string
         }
         Returns: Json
+      }
+      registrar_fugulin: {
+        Args: { p_internacao: string; p_motivo?: string; p_respostas: Json }
+        Returns: string
       }
       registrar_impressao: {
         Args: {

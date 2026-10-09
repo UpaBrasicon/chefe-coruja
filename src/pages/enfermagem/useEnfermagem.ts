@@ -22,6 +22,14 @@ export type PassagemEnfermagem = Omit<Fn['passagens_enfermagem_do_plantao']['Ret
 
 const hoje = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
 export const idadeDe = (nasc: string | null | undefined) => (nasc ? rotuloIdade(nasc, hoje()) : '')
+/** Adulto (14 anos completos ou mais, CLAUDE.md)? Sem data de nascimento: não se sabe (null). */
+export function ehAdulto(nasc: string | null | undefined): boolean | null {
+  if (!nasc) return null
+  const [a, m, d] = nasc.slice(0, 10).split('-').map(Number)
+  const [ha, hm, hd] = hoje().split('-').map(Number)
+  const anos = ha - a - (hm < m || (hm === m && hd < d) ? 1 : 0)
+  return anos >= 14
+}
 export const hora = (iso: string | null | undefined) =>
   iso ? new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }) : '—'
 export const quando = (iso: string | null | undefined) =>
