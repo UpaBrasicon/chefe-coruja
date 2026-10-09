@@ -18,6 +18,7 @@ import {
 import * as React from 'react'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
+import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
 import { supabase } from '@/lib/supabase'
 import { abrirProntuario } from '@/lib/prontuario'
 import { cn } from '@/lib/utils'
@@ -272,6 +273,7 @@ type PartesLeito = {
 /** Aba Resumo (e o corpo do modo simples): acuidade, sepse, pendências, passagem. */
 function Resumo({ p }: { p: PartesLeito }) {
   const { i, ativa, ehGestor } = p
+  const unidadeResumo = useUnidade().unidadeAtiva?.unidade_id
   return (
     <>
       {ativa && (
@@ -286,6 +288,8 @@ function Resumo({ p }: { p: PartesLeito }) {
       {ativa && <PassagensDoPlantao pacienteId={p.pacienteId} />}
       {/* Fase 1, tarefa 8: atendimentos encerrados do paciente, para quem cuida */}
       {ativa && <HistoricoEncerrado pacienteId={p.pacienteId} />}
+      {/* Fase 1, tarefa 12: reentrada de contingência do atendimento que gerou a internação */}
+      {unidadeResumo && i.episodio_id && <ReentradaContingencia unidadeId={unidadeResumo} episodioId={i.episodio_id} chegadaEm={i.data_admissao} />}
     </>
   )
 }

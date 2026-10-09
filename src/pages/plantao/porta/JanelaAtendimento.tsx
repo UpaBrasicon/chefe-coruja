@@ -10,6 +10,8 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
+import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { supabase } from '@/lib/supabase'
 import { aplicaCuidadoPediatrico, faixaEtaria } from '@/domain/idade'
 import { rotulosPrioridade } from '@/domain/prioridade'
@@ -76,6 +78,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
   const painel = usePainelPS(ep.id, aberto)
   const alergias = useAlergias(ep.paciente_id)
 
+  const unidadeJanela = useUnidade().unidadeAtiva?.unidade_id
   const [verHistorico, setVerHistorico] = React.useState(false)
   const [aba, setAba] = React.useState<Aba>(ep.reavaliar_em ? 'reav' : 'atend')
   const [erro, setErro] = React.useState<string | null>(null)
@@ -215,6 +218,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
           className="border-0 p-0 shadow-none"
         />
         {verHistorico && <HistoricoEncerrado pacienteId={ep.paciente_id} />}
+        {/* Fase 1, tarefa 12: marca de reentrada de contingência (papel) */}
+        {unidadeJanela && <ReentradaContingencia unidadeId={unidadeJanela} episodioId={ep.id} chegadaEm={ep.chegada_em} />}
         {faixa === 'pediatrico' && (
           <div className="flex items-start gap-2 rounded-container border border-pediatria/25 bg-pediatria/[0.06] px-3.5 py-2.5 text-apoio text-pediatria">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
