@@ -43,7 +43,7 @@ function LinhaCadastro({ c, destaque }: { c: Cadastro | PedidoUnificacao['princi
       {k.atendimentos !== undefined && (
         <span className="text-rotulo text-tinta-sussurro">
           {k.cpf ? `CPF ${k.cpf} · ` : ''}{k.atendimentos} atendimento{k.atendimentos === 1 ? '' : 's'}
-          {k.aberto ? ' · atendimento aberto agora' : k.ultimo_atendimento ? ` · último ${fmtData(k.ultimo_atendimento)}` : ''}
+          {k.aberto ? ' · atendimento aberto agora' : k.ultimo_atendimento ? ` · último ${fmtData(k.ultimo_atendimento.slice(0, 10))}` : ''}
         </span>
       )}
     </div>
