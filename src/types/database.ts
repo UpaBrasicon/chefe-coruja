@@ -10263,6 +10263,7 @@ export type Database = {
       }
       contexto_evolucao: { Args: { p_internacao: string }; Returns: Json }
       contexto_sem_conexao: { Args: never; Returns: Json }
+      contingencias_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       convites_da_unidade: {
         Args: { p_unidade: string }
         Returns: {
@@ -11347,6 +11348,10 @@ export type Database = {
       }
       marcar_lida: { Args: { p_conversa_id: string }; Returns: undefined }
       marcar_notificacao_lida: { Args: { p_id: string }; Returns: undefined }
+      marcar_reentrada_contingencia: {
+        Args: { p_contingencia: string; p_descricao: string; p_episodio: string }
+        Returns: string
+      }
       marcar_suspeita_infeccao: {
         Args: { p_ativa: boolean; p_paciente: string }
         Returns: undefined
@@ -11864,6 +11869,7 @@ export type Database = {
         Args: { p_motivo?: string; p_troca: string }
         Returns: undefined
       }
+      reentradas_do_episodio: { Args: { p_episodio: string }; Returns: Json }
       registrar_acesso_prontuario: {
         Args: {
           p_documento?: string
@@ -11955,6 +11961,10 @@ export type Database = {
       registrar_checkout: {
         Args: { p_lat?: number; p_lng?: number; p_registro: string }
         Returns: undefined
+      }
+      registrar_contingencia: {
+        Args: { p_fim: string; p_inicio: string; p_motivo: string; p_unidade: string }
+        Returns: string
       }
       registrar_curativo: {
         Args: {

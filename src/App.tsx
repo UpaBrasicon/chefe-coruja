@@ -67,6 +67,7 @@ const ProtocolosGestor = lazy(() => import('@/pages/gestor/Protocolos'))
 const OlhoDeGaviao = lazy(() => import('@/pages/gestor/OlhoDeGaviao'))
 const PortaAgora = lazy(() => import('@/pages/gestor/PortaAgora'))
 const CadastrosDuplicados = lazy(() => import('@/pages/recepcao/CadastrosDuplicados'))
+const Contingencia = lazy(() => import('@/pages/Contingencia'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
 const Teleinterconsulta = lazy(() => import('@/pages/telemedicina/Teleinterconsulta'))
@@ -187,6 +188,10 @@ export default function App() {
 
                       {/* ── Admin ──────────────────────────────────────── */}
                       {/* Ficha: Recepção, ou quem está de plantão na porta quando não há Recepção */}
+                      <Route element={<RequireRole papeis={['plantonista', 'enfermeiro', 'gestor']} />}>
+                        {/* Fase 1, tarefa 12: período de contingência em papel */}
+                        <Route path="/contingencia" element={<Contingencia />} />
+                      </Route>
                       <Route element={<RequireRole papeis={['recepcao', 'gestor']} />}>
                         {/* Fase 1, tarefa 9: unificação de cadastros duplicados */}
                         <Route path="/cadastros-duplicados" element={<CadastrosDuplicados />} />

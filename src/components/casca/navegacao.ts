@@ -26,7 +26,7 @@ import {
 } from 'lucide-react'
 import { ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileText, History, Video } from 'lucide-react'
-import { GitMerge, LifeBuoy } from 'lucide-react'
+import { FileWarning, GitMerge, LifeBuoy } from 'lucide-react'
 
 import type { Papel } from '@/types/database'
 
@@ -57,6 +57,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
     { to: '/plantonista', rotulo: 'Central do Plantonista', curto: 'Central', icone: Stethoscope },
     { to: '/plantao', rotulo: 'Plantão', icone: Activity },
+    { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },
     { to: '/teleinterconsulta', rotulo: 'Telemedicina', curto: 'Tele', icone: MonitorSmartphone, exato: true, nota: 'tele' },
     { to: '/pareceres', rotulo: 'Pareceres', icone: MessageSquare, exato: true },
@@ -92,6 +93,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/notificacao-compulsoria', rotulo: 'Notificações', icone: Shield, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
     { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
+    { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     ITEM_AVISOS,
     ITEM_PRONTUARIOS,
   ],
