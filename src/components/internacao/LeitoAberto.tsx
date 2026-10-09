@@ -18,6 +18,7 @@ import {
 import * as React from 'react'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
+import { Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
 import { supabase } from '@/lib/supabase'
 import { abrirProntuario } from '@/lib/prontuario'
@@ -290,6 +291,8 @@ function Resumo({ p }: { p: PartesLeito }) {
       {ativa && <HistoricoEncerrado pacienteId={p.pacienteId} />}
       {/* Fase 1, tarefa 12: reentrada de contingência do atendimento que gerou a internação */}
       {unidadeResumo && i.episodio_id && <ReentradaContingencia unidadeId={unidadeResumo} episodioId={i.episodio_id} chegadaEm={i.data_admissao} />}
+      {/* Fase 2, tarefa 4: intercorrência estruturada, ligada à internação */}
+      <Intercorrencias pacienteId={p.pacienteId} internacaoId={ativa ? i.id : null} episodioId={ativa ? i.episodio_id : null} />
     </>
   )
 }

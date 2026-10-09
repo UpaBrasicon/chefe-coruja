@@ -7752,6 +7752,7 @@ export type Database = {
           id: string
           justificativa_divergencia: string | null
           medicamento_id: string | null
+          motivo_alteracao: string | null
           motivo_suspensao: string | null
           observacao: string | null
           ordem: number
@@ -7760,8 +7761,10 @@ export type Database = {
           prescricao_id: string
           se_necessario: boolean
           suspenso_em: string | null
+          substitui_item_id: string | null
           suspenso_por: string | null
           tipo: string
+          versao: number
           via: string | null
         }
         Insert: {
@@ -7778,6 +7781,7 @@ export type Database = {
           id?: string
           justificativa_divergencia?: string | null
           medicamento_id?: string | null
+          motivo_alteracao?: string | null
           motivo_suspensao?: string | null
           observacao?: string | null
           ordem?: number
@@ -7786,8 +7790,10 @@ export type Database = {
           prescricao_id: string
           se_necessario?: boolean
           suspenso_em?: string | null
+          substitui_item_id?: string | null
           suspenso_por?: string | null
           tipo?: string
+          versao?: number
           via?: string | null
         }
         Update: {
@@ -7804,6 +7810,7 @@ export type Database = {
           id?: string
           justificativa_divergencia?: string | null
           medicamento_id?: string | null
+          motivo_alteracao?: string | null
           motivo_suspensao?: string | null
           observacao?: string | null
           ordem?: number
@@ -7812,8 +7819,10 @@ export type Database = {
           prescricao_id?: string
           se_necessario?: boolean
           suspenso_em?: string | null
+          substitui_item_id?: string | null
           suspenso_por?: string | null
           tipo?: string
+          versao?: number
           via?: string | null
         }
         Relationships: [
@@ -9329,6 +9338,12 @@ export type Database = {
           },
         ]
       }
+      tipos_intercorrencia: {
+        Row: { ativo: boolean; codigo: string; ordem: number; rotulo: string }
+        Insert: { ativo?: boolean; codigo: string; ordem: number; rotulo: string }
+        Update: { ativo?: boolean; codigo?: string; ordem?: number; rotulo?: string }
+        Relationships: []
+      }
       transferencias_paciente: {
         Row: {
           created_at: string
@@ -9858,6 +9873,11 @@ export type Database = {
         }[]
       }
       alta_vigilancia_da_unidade: { Args: { p_busca?: string; p_unidade: string }; Returns: Json }
+      alteracoes_de_itens: { Args: { p_itens: string[] }; Returns: Json }
+      alterar_item_prescricao: {
+        Args: { p_item: string; p_motivo: string; p_mudancas: Json }
+        Returns: string
+      }
       andamento_chamado_tecnico: {
         Args: { p_id: string }
         Returns: {
@@ -11291,6 +11311,7 @@ export type Database = {
       iniciar_analise_parecer: { Args: { p_id: string }; Returns: undefined }
       iniciar_atendimento: { Args: { p_episodio: string }; Returns: undefined }
       integridade_trilha: { Args: { p_unidade: string }; Returns: Json }
+      intercorrencias_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       lancar_balanco: {
         Args: {
           p_aferido_em?: string
@@ -12111,6 +12132,21 @@ export type Database = {
         }
         Returns: Json
       }
+      registrar_intercorrencia: {
+        Args: {
+          p_conduta: string
+          p_descricao: string
+          p_episodio?: string
+          p_gravidade: string
+          p_internacao?: string
+          p_ocorrida_em: string
+          p_paciente: string
+          p_retifica?: string
+          p_tipo: string
+          p_tipo_outro?: string
+        }
+        Returns: string
+      }
       registrar_motivo_evasao: {
         Args: { p_episodio: string; p_motivo: string }
         Returns: undefined
@@ -12176,6 +12212,7 @@ export type Database = {
         Returns: string
       }
       registrar_uso_ferramenta: { Args: { p_chave: string }; Returns: number }
+      relatorio_intercorrencias: { Args: { p_ate: string; p_de: string; p_unidade: string }; Returns: Json }
       remover_fracionamento: { Args: { p_plantao: string }; Returns: undefined }
       remover_propaganda: { Args: { p_id: string }; Returns: string }
       reordenar_propagandas: {
