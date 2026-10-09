@@ -187,17 +187,26 @@ export const atsIdsaPac: Escore = {
 // não foram revisados por ela (segue a ATS/IDSA 2019); o manual fica como base.
 
 export const ATS_PAC_2026: Fonte = {
-  citacao: 'Metlay JP, et al. Diagnosis and Management of Community-acquired Pneumonia: An Official American Thoracic Society Clinical Practice Guideline. Am J Respir Crit Care Med. 2026;212(1):24–44 (on-line 11/11/2025). Recomendações lidas na página do periódico e no comunicado da ATS; texto integral não aberto.',
-  url: 'https://doi.org/10.1164/rccm.202505-1077ST',
+  citacao: 'Jones BE, Ramirez JA, Oren E, et al. Diagnosis and Management of Community-acquired Pneumonia: An Official American Thoracic Society Clinical Practice Guideline. Am J Respir Crit Care Med. 2026;212(1):24–44 (on-line 11/11/2025; PMID 40679934). Diretriz só da ATS, sem endosso da IDSA. Recomendações lidas na página do periódico e no comunicado da ATS; texto integral não aberto.',
+  url: 'https://doi.org/10.1164/rccm.202507-1692ST',
 }
+
+// Revisão PubMed de 09/10/2026: ensaio posterior à ATS 2026 sobre o corticoide
+// na PAC grave, mostrado ao lado da recomendação (decisão do RT).
+export const REMAP_CAP_CORTICOIDE_2025: Fonte = {
+  citacao: 'REMAP-CAP Investigators (Angus DC, et al.). Effect of hydrocortisone on mortality in patients with severe community-acquired pneumonia: the REMAP-CAP Corticosteroid Domain Randomized Clinical Trial. Intensive Care Med. 2025;51(4):665–680 (PMID 40261382).',
+  url: 'https://doi.org/10.1007/s00134-025-07861-w',
+}
+
+export const EVIDENCIA_CORTICOIDE_PAC = 'Ensaio posterior (REMAP-CAP 2025, PMID 40261382): na PAC grave em UTI, hidrocortisona 50 mg EV de 6/6 h por 7 dias fixos foi interrompida por futilidade; mortalidade em 90 dias de 15% com hidrocortisona e 9,8% no controle, sem diferença estatística. Benefício pequeno e dano possível não foram excluídos. O peso dessa evidência contra a sugestão condicional da ATS é decisão clínica.'
 
 const PAG_PAC_ATB = `${PAC}, p. 452–465 (Tabelas 5, 8 e 10)`
 
 export const fichaPacAntibioticoAdulto: Ficha = {
   ...fichaAdulto('adulto-pac-antibiotico', 'PAC — antibiótico por grupo de risco (adulto)', PAG_PAC_ATB),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_PAC_ATB), ATS_PAC_2026],
-  revisadoEm: '28/09/2026 (ATS 2026 conferida pela página do periódico; manual mantido como base)',
+  versao: '2026-10-09.1',
+  fontes: [pagina(PAG_PAC_ATB), ATS_PAC_2026, REMAP_CAP_CORTICOIDE_2025],
+  revisadoEm: '09/10/2026 (citação da ATS corrigida; REMAP-CAP 2025 ao lado do corticoide)',
 }
 
 export type ItemPac2026 = { tema: string; ats: string; forca: string; livro: string }

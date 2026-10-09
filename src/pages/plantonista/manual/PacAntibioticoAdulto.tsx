@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  CRITERIOS_ALTA_PAC, DESTINO_POR_PORT, DIRETRIZ_PAC_2026, DURACAO_PAC, FATORES_PSEUDOMONAS, METILPREDNISOLONA_PAC, NOTA_CLARITROMICINA, PAC_ANTIBIOTICOS,
+  CRITERIOS_ALTA_PAC, DESTINO_POR_PORT, DIRETRIZ_PAC_2026, EVIDENCIA_CORTICOIDE_PAC, DURACAO_PAC, FATORES_PSEUDOMONAS, METILPREDNISOLONA_PAC, NOTA_CLARITROMICINA, PAC_ANTIBIOTICOS,
   PROCALCITONINA_PAC, fichaPacAntibioticoAdulto, metilprednisolonaPac, type GrupoPac,
 } from '@/clinico/adulto/tepPac'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -64,6 +64,7 @@ export function PacAntibioticoAdulto() {
             </tbody>
           </table>
         </div>
+        <p role="note" className="rounded-md border border-atencao/40 bg-atencao/[0.08] px-3 py-2 text-sm text-atencao">{EVIDENCIA_CORTICOIDE_PAC}</p>
       </Bloco>
 
       <Bloco titulo="Procalcitonina e alta (p. 452, 464–465)">
