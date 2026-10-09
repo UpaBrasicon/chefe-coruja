@@ -68,6 +68,7 @@ const OlhoDeGaviao = lazy(() => import('@/pages/gestor/OlhoDeGaviao'))
 const PortaAgora = lazy(() => import('@/pages/gestor/PortaAgora'))
 const CadastrosDuplicados = lazy(() => import('@/pages/recepcao/CadastrosDuplicados'))
 const Contingencia = lazy(() => import('@/pages/Contingencia'))
+const AltaVigilancia = lazy(() => import('@/pages/farmacia/AltaVigilancia'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
 const Teleinterconsulta = lazy(() => import('@/pages/telemedicina/Teleinterconsulta'))
@@ -219,6 +220,11 @@ export default function App() {
                       {/* Avisos: de quem trabalha no plantão (a lista é do próprio perfil) */}
                       <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin', 'enfermeiro', 'tecnico_enfermagem']} />}>
                         <Route path="/notificacoes" element={<Notificacoes />} />
+                      </Route>
+
+                      {/* Alta vigilância: fila da 2ª conferência e lista da unidade (Fase 2, tarefa 1) */}
+                      <Route element={<RequireRole papeis={['farmaceutico', 'enfermeiro', 'gestor']} />}>
+                        <Route path="/alta-vigilancia" element={<AltaVigilancia />} />
                       </Route>
 
                       {/* Farmacêutico: validação, disponibilidade, faltas e diluição padrão (Fase 4.5/4.9) */}

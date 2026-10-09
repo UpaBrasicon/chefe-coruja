@@ -26,7 +26,7 @@ import {
 } from 'lucide-react'
 import { ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileText, History, Video } from 'lucide-react'
-import { FileWarning, GitMerge, LifeBuoy } from 'lucide-react'
+import { FileWarning, GitMerge, LifeBuoy, ShieldAlert } from 'lucide-react'
 
 import type { Papel } from '@/types/database'
 
@@ -74,6 +74,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/gestao/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: Bird, exato: true },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
     { to: '/gestao/farmacia', rotulo: 'Farmácia', icone: FlaskConical, exato: true },
+    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
     { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true },
     { to: '/internacao', rotulo: 'Internação', icone: Hospital, exato: true },
     { to: '/observacao', rotulo: 'Observação', icone: Eye, exato: true },
@@ -93,6 +94,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/notificacao-compulsoria', rotulo: 'Notificações', icone: Shield, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
     { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
+    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
     { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     ITEM_AVISOS,
     ITEM_PRONTUARIOS,
@@ -115,6 +117,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   ],
   farmaceutico: [
     { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia' },
+    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
     ITEM_PRONTUARIOS,
   ],
   telemedicina: [
