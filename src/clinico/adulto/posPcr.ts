@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
 import { INFUSOES_ADULTO, concentracao } from './infusoes.ts'
 import { esquemaAmiodarona, type Faixa } from './pcr.ts'
@@ -7,8 +8,27 @@ import { esquemaAmiodarona, type Faixa } from './pcr.ts'
 // temperatura (volume de SF a 4 °C, tempo de resfriamento e de reaquecimento),
 // amiodarona na tempestade elétrica e janelas do neuroprognóstico. A
 // ferramenta posiciona o valor e faz a conta; a decisão é do médico (ADR 0007).
+//
+// Revisão PubMed de 09/10/2026 (decisão do RT): as metas passam a ser lidas
+// pela diretriz ERC-ESICM 2025 de cuidados pós-ressuscitação, posterior ao
+// livro. Ela troca a hipotermia-alvo pela prevenção de febre (≤ 37,5 °C por
+// 36–72 h), pede PAM > 60–65 (o BOX não achou diferença entre 63 e 77 mmHg),
+// SpO2 94–98% ou PaO2 75–100, PaCO2 35–45, e recomenda contra o resfriamento
+// pré-hospitalar de rotina com fluido frio. Os números do livro continuam
+// visíveis, com a página, como referência.
 
-export const fichaPosPcrAdulto = fichaAdulto('adulto-pos-pcr', 'Cuidados pós-PCR — metas, temperatura e prognóstico (adulto)', 'cap. 6 Cuidados pós-parada cardíaca, p. 98–113')
+export const ERC_ESICM_2025_POS_PCR: Fonte = {
+  citacao: 'Nolan JP, Sandroni C, Cariou A, et al. European Resuscitation Council and European Society of Intensive Care Medicine Guidelines 2025: Post-Resuscitation Care. Resuscitation. 2025;215 Suppl 1:110809 (PMID 41117575; doi:10.1016/j.resuscitation.2025.110809) e Intensive Care Med. 2025;51(12):2213–2288 (PMID 41123621). Recomendações conferidas na versão do Resuscitation Council UK, "Post-resuscitation care Guidelines" (27/10/2025).',
+  url: 'https://www.resus.org.uk/node/36441',
+}
+
+const fichaLivro = fichaAdulto('adulto-pos-pcr', 'Cuidados pós-PCR — metas, temperatura e prognóstico (adulto)', 'cap. 6 Cuidados pós-parada cardíaca, p. 98–113')
+export const fichaPosPcrAdulto: Ficha = {
+  ...fichaLivro,
+  versao: '2026-10-09.1',
+  fontes: [...fichaLivro.fontes, ERC_ESICM_2025_POS_PCR],
+  revisadoEm: '09/10/2026 (metas pela ERC-ESICM 2025; livro mantido como referência)',
+}
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
 const vezes = (f: Faixa, k: number): Faixa => [f[0] * k, f[1] * k]
@@ -17,6 +37,19 @@ const vezes = (f: Faixa, k: number): Faixa => [f[0] * k, f[1] * k]
 
 export type Meta = { id: string; parametro: string; meta: string; pagina: string }
 
+/** Metas da ERC-ESICM 2025 (posteriores ao livro): as que a ferramenta usa para ler os valores. */
+export const METAS_ERC_2025: Meta[] = [
+  { id: 'temperatura', parametro: 'Temperatura', meta: 'prevenir febre ativamente (≤ 37,5 °C) por 36–72 h no paciente que segue em coma; não reaquecer ativamente quem já está com hipotermia leve', pagina: 'ERC-ESICM 2025' },
+  { id: 'pam', parametro: 'Pressão arterial', meta: 'PAM > 60–65 mmHg ou PAS > 100 mmHg (alvo mais alto pode ser individualizado no hipertenso crônico ou com hipoperfusão)', pagina: 'ERC-ESICM 2025' },
+  { id: 'oxigenio', parametro: 'Oxigenação', meta: 'SpO2 94–98% ou PaO2 75–100 mmHg; evitar hipoxemia (PaO2 < 60) e hiperóxia', pagina: 'ERC-ESICM 2025' },
+  { id: 'paco2', parametro: 'PaCO2', meta: 'normocapnia, 35–45 mmHg', pagina: 'ERC-ESICM 2025' },
+  { id: 'glicemia', parametro: 'Glicemia', meta: 'protocolos habituais de controle glicêmico', pagina: 'ERC-ESICM 2025' },
+  { id: 'antibiotico', parametro: 'Antibiótico', meta: 'sem profilaxia de rotina; limiar baixo para tratar se houver suspeita de pneumonia', pagina: 'ERC-ESICM 2025' },
+  { id: 'fluido-frio', parametro: 'Fluido frio', meta: 'contra o resfriamento pré-hospitalar de rotina com fluido EV frio', pagina: 'ERC-ESICM 2025' },
+  { id: 'prognostico', parametro: 'Neuroprognóstico', meta: 'conclusão só na avaliação clínica a partir de 72 h do RCE', pagina: 'ERC-ESICM 2025' },
+]
+
+/** Metas do livro (2022), mantidas como referência. */
 export const METAS_POS_PCR: Meta[] = [
   { id: 'paco2', parametro: 'PaCO2', meta: 'aproximadamente 40 mmHg (normocapnia)', pagina: 'p. 105' },
   { id: 'etco2', parametro: 'EtCO2', meta: '35 mmHg', pagina: 'p. 105' },
@@ -29,15 +62,28 @@ export const METAS_POS_PCR: Meta[] = [
 
 export type Leitura = { id: string; texto: string; fora: boolean }
 
-/** Posiciona cada valor informado em relação à meta do livro. */
+/**
+ * Posiciona cada valor informado em relação às metas da ERC-ESICM 2025
+ * (PaCO2, SpO2, PaO2 e PAM); a glicemia segue a faixa do livro, que a
+ * diretriz não substitui por número.
+ */
 export function lerMetas(v: { paco2?: number; sato2?: number; pao2?: number; pam?: number; glicemia?: number }): Leitura[] {
   const r: Leitura[] = []
-  if (v.paco2 !== undefined && valido(v.paco2)) r.push({ id: 'paco2', texto: `PaCO2 ${v.paco2} mmHg — o livro dá "aproximadamente 40 mmHg", sem faixa`, fora: false })
-  if (v.sato2 !== undefined && valido(v.sato2)) r.push({ id: 'sato2', texto: v.sato2 > 94 ? `SatO2 ${v.sato2}% — acima de 94%` : `SatO2 ${v.sato2}% — não está acima de 94%`, fora: v.sato2 <= 94 })
-  if (v.pao2 !== undefined && valido(v.pao2)) r.push({ id: 'pao2', texto: v.pao2 > 300 ? `PaO2 ${v.pao2} mmHg — acima de 300 (hiperóxia no livro)` : `PaO2 ${v.pao2} mmHg — não passa de 300`, fora: v.pao2 > 300 })
+  if (v.paco2 !== undefined && valido(v.paco2)) {
+    const dentro = v.paco2 >= 35 && v.paco2 <= 45
+    r.push({ id: 'paco2', texto: `PaCO2 ${v.paco2} mmHg — ${dentro ? 'dentro de 35–45 (normocapnia)' : v.paco2 < 35 ? 'abaixo de 35' : 'acima de 45'}`, fora: !dentro })
+  }
+  if (v.sato2 !== undefined && valido(v.sato2)) {
+    const dentro = v.sato2 >= 94 && v.sato2 <= 98
+    r.push({ id: 'sato2', texto: `SpO2 ${v.sato2}% — ${dentro ? 'dentro de 94–98%' : v.sato2 < 94 ? 'abaixo de 94%' : 'acima de 98% (evitar hiperóxia)'}`, fora: !dentro })
+  }
+  if (v.pao2 !== undefined && valido(v.pao2)) {
+    const dentro = v.pao2 >= 75 && v.pao2 <= 100
+    r.push({ id: 'pao2', texto: `PaO2 ${v.pao2} mmHg — ${dentro ? 'dentro de 75–100' : v.pao2 < 60 ? 'abaixo de 60 (hipoxemia)' : v.pao2 < 75 ? 'abaixo de 75' : 'acima de 100 (evitar hiperóxia)'}`, fora: !dentro })
+  }
   if (v.pam !== undefined && valido(v.pam)) {
-    const t = v.pam <= 65 ? 'não está acima de 65' : v.pam >= 80 && v.pam <= 100 ? 'acima de 65 e dentro de 80–100' : 'acima de 65, fora da preferência de 80–100'
-    r.push({ id: 'pam', texto: `PAM ${v.pam} mmHg — ${t}`, fora: v.pam <= 65 })
+    const t = v.pam > 65 ? 'acima de 65' : v.pam > 60 ? 'entre 60 e 65 (limite da faixa; considerar alvo individual)' : 'não passa de 60'
+    r.push({ id: 'pam', texto: `PAM ${v.pam} mmHg — ${t}`, fora: v.pam <= 60 })
   }
   if (v.glicemia !== undefined && valido(v.glicemia)) {
     const dentro = v.glicemia >= 140 && v.glicemia <= 180
