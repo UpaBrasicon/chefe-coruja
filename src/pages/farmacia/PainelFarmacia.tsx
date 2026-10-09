@@ -34,13 +34,17 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: { unidade: string;
       return (data ?? []) as unknown as FaltaPriorizada[]
     },
   })
+  // as chaves 'farmacia-estoque' e 'duplas-pendentes' são as mesmas da aba
+  // Disponibilidade e da tela Alta vigilância: o cache guarda a lista inteira e
+  // o painel só filtra ou conta na leitura (select), senão uma tela quebra a outra
   const estoque = useQuery({
     queryKey: ['farmacia-estoque', unidade],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('farmacia_estoque', { p_unidade: unidade })
       if (error) throw error
-      return (data ?? []).filter((e) => e.situacao === 'falta' || e.situacao === 'critico')
+      return data ?? []
     },
+    select: (lista) => lista.filter((e) => e.situacao === 'falta' || e.situacao === 'critico'),
   })
   const validacao = useQuery({
     queryKey: ['fila-validacao-av', unidade],
@@ -57,8 +61,9 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: { unidade: string;
     queryFn: async () => {
       const { data, error } = await supabase.rpc('duplas_pendentes', { p_unidade: unidade })
       if (error) throw error
-      return Array.isArray(data) ? data.length : 0
+      return (data ?? []) as unknown as unknown[]
     },
+    select: (lista) => (Array.isArray(lista) ? lista.length : 0),
   })
 
   return (
