@@ -223,6 +223,15 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | 9 | P2 | Painel da farmácia para críticos/faltas | Consolidar faltas sinalizadas; priorizar alto risco; exibir por unidade/setor; permitir retorno da farmácia | Farmácia vê pendências críticas em painel próprio |
 | 10 | P2 | Read replica para BI | Criar replica de leitura no Supabase; apontar dashboards, exportações e relatórios para a replica; medir lag; manter operações clínicas no primário | Consultas de BI não concorrem com o atendimento; lag monitorado |
 
+**Decisões do RT para a Fase 2 (08/10/2026)**
+- Dupla checagem: medicamentos da **lista ISMP Brasil** (alta vigilância) marcados no cadastro; o farmacêutico marca/desmarca outros com motivo. **Segundo checador: enfermeiro ou farmacêutico**, nunca o mesmo usuário.
+- Aprazamento: grade de horários **configurável por unidade** (sem configuração, início às 06h); enfermagem ajusta caso a caso com registro.
+- Interações: **pesquisar bases com licença comercial e trazer opções**; a tarefa 3 só começa depois da escolha.
+- Fugulin: **enfermeiro, 1x por dia**, na internação, com fonte citada e histórico.
+- Intercorrência: registram **médico, enfermeiro e técnico de enfermagem**.
+- Alteração versionada de item de prescrição: **só o médico, com motivo**; versão anterior guardada; enfermagem vê o aviso na checagem.
+- Read replica: **não agora** (só quando os painéis pesarem).
+
 **Ordem técnica da Fase 2**
 1. Ajustar cadastro de medicamentos alto risco.
 2. Implementar dupla checagem.
