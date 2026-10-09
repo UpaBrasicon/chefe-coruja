@@ -18,14 +18,14 @@ export const psi: Escore = {
   ficha: {
     id: 'psi-port',
     titulo: 'PSI / PORT — gravidade da pneumonia adquirida na comunidade',
-    versao: '2026-09-27.1',
+    versao: '2026-10-09.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Fine MJ, Auble TE, Yealy DM, et al. A prediction rule to identify low-risk patients with community-acquired pneumonia. N Engl J Med. 1997;336(4):243–250.', url: 'https://doi.org/10.1056/NEJM199701233360402' },
       { citacao: 'Metlay JP, Waterer GW, Long AC, et al. Diagnosis and treatment of adults with community-acquired pneumonia. An official ATS/IDSA clinical practice guideline. Am J Respir Crit Care Med. 2019;200(7):e45–e67.', url: 'https://doi.org/10.1164/rccm.201908-1581ST' },
-      { citacao: 'Bai AD, Loeb M. Community-acquired pneumonia in adults. N Engl J Med. 2025.', url: 'https://doi.org/10.1056/NEJMra2405509' },
+      { citacao: 'Bai AD, Loeb M. Community-Acquired Pneumonia in Adults. NEJM Evid. 2025;4(12):EVIDra2500170 (PMID 41288422).', url: 'https://doi.org/10.1056/EVIDra2500170' },
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '09/10/2026 (citação de Bai e Loeb corrigida pelo PubMed: NEJM Evidence)',
   },
   descricao: 'Classe de gravidade da pneumonia adquirida na comunidade e mortalidade em 30 dias da coorte original',
   itens: [

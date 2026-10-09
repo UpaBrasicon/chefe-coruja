@@ -22,15 +22,15 @@ import { DOSES_SLT } from './pediatria/oncologiaPed.ts'
 export const fichaHiperpotassemia: Ficha = {
   id: 'hiperpotassemia',
   titulo: 'Hiperpotassemia — conduta por nível e por ECG',
-  versao: '2026-10-03.1',
+  versao: '2026-10-09.1',
   publico: 'ambos',
   fontes: [
     { citacao: 'Adulto: Geldermann N, et al. Acute hyperkalaemia in emergency care: evidence-based approaches. Emerg Med J. 2026.' },
-    { citacao: 'Adulto: Arzayus-Patiño L, et al. Inhaled beta-2 agonists in hyperkalaemia. PLoS One. 2025.' },
+    { citacao: 'Adulto: Arzayus-Patiño L, Hinojosa-Angulo AY, Rodríguez-Angulo KA, et al. Utility of inhaled β2-agonists in reducing serum potassium levels in adult patients with hyperkalemia: A scoping review. PLoS One. 2026;21(2):e0342309 (PMID 41632760). Revisão de escopo (5 estudos).', url: 'https://doi.org/10.1371/journal.pone.0342309' },
     { citacao: 'Adulto, divergência mostrada na tela: Brandão Neto RA, et al. (eds.). Manual de Medicina de Emergência — HCFMUSP. 3ª ed. Manole; 2022. cap. 67, p. 907–917.' },
     { citacao: `Criança: ${LIVRO_ICR.citacao} cap. 54, p. 546–549 (Tabela 7); divergências do mesmo livro: apêndice (p. 894–897), IRA (p. 583), emergências oncológicas (p. 701–702).`, pediatrica: true },
   ],
-  revisadoEm: '03/10/2026 — adulto: decisão do RT de 27/09/2026 (referência de 2026; manual do HCFMUSP como divergência). Criança: só o livro do ICr-HCFMUSP (auditoria R2); o período neonatal fica fora',
+  revisadoEm: '09/10/2026 (citação de Arzayus-Patiño corrigida pelo PubMed); 03/10/2026 — adulto: decisão do RT de 27/09/2026 (referência de 2026; manual do HCFMUSP como divergência). Criança: só o livro do ICr-HCFMUSP (auditoria R2); o período neonatal fica fora',
 }
 
 export type Ecg = 'sem_alteracao' | 'alterado' | 'nao_feito'
