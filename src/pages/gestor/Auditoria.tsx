@@ -244,6 +244,16 @@ function TrilhaUnidade() {
       return data as unknown as { integra: boolean; quebra_seq: number | null; conferido_em: string; registros: number }
     },
   })
+  // Fase 2, tarefa 8: registro clínico sem a linha na trilha (desde a instalação)
+  const cobertura = useQuery({
+    queryKey: ['cobertura-auditoria', unidadeId],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('cobertura_auditoria_clinica', { p_unidade: unidadeId!, p_dias: 30 })
+      if (error) throw error
+      return data as unknown as { desde: string; conferido_em: string; eventos: { evento: string; registros: number; sem_trilha: number }[] | null }
+    },
+  })
   const trilha = useQuery({
     queryKey: ['trilha-unidade', unidadeId, de, ate],
     enabled: !!unidadeId && !!de && !!ate,
@@ -265,6 +275,30 @@ function TrilhaUnidade() {
             : `Cadeia de auditoria QUEBRADA no registro ${i.quebra_seq}. Algum registro foi alterado fora do sistema: acione o suporte e preserve o banco.`}
         </div>
       )}
+      {cobertura.data && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Cobertura da auditoria clínica</CardTitle>
+            <CardDescription>
+              Registros clínicos da unidade desde {fmtDataHora(cobertura.data.desde)} (últimos 30 dias) e quantos ficaram sem a linha correspondente na trilha.
+              Sinais vitais não entram: cada aferição já é registro só de inserção, com autor e hora.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+              {(cobertura.data.eventos ?? []).map((e) => (
+                <div key={e.evento} className="flex items-center justify-between gap-3 border-b border-trilha py-1">
+                  <span className="text-tinta">{e.evento}</span>
+                  <span className={e.sem_trilha > 0 ? 'font-medium text-critico' : 'text-conforme'}>
+                    {e.registros} {e.sem_trilha > 0 ? `· ${e.sem_trilha} sem trilha` : '· todos na trilha'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {cobertura.error && <p className="text-sm text-critico">{(cobertura.error as Error).message}</p>}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Trilha de ações da unidade</CardTitle>

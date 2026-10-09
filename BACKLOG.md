@@ -241,6 +241,7 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 | 3 — Interações medicamentosas | **Pronta na homologação (opção A), aguardando teste do RT.** Branch `fase2/interacoes`; migration `20261031000005_interacoes_criticas.sql` (só homologação); teste `supabase/tests/fase2_interacoes_criticas.sql`. Decidida em 09/10: **opção C**. Começa pela A (lista curada de pares críticos pelo RT/farmacêutico, a partir da lista ONC e das bulas ANVISA, com fonte por linha); a B (base comercial licenciada) fica como plano futuro | Opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
 | 4 — Intercorrência estruturada | Pronta na homologação, aguardando teste do RT | Branch `fase2/intercorrencia` (sobre a da tarefa 2); migration `20261031000003_intercorrencia.sql` (só homologação); teste `supabase/tests/fase2_intercorrencia.sql` |
 | 5 — Fugulin | **Pronta na homologação, aguardando teste do RT.** Branch `fase2/fugulin`; migration `20261031000006_fugulin.sql` (só homologação); teste `supabase/tests/fase2_fugulin.sql`. Decidida em 09/10: **versão de 12 áreas** (intensivo acima de 34; a unidade tem leito semi-intensivo). Na tela, **só um resumo** de cada graduação, sem o texto do artigo | Ver "Fugulin" abaixo |
+| 8 — Auditoria clínica | **Pronta na homologação, aguardando teste do RT.** Branch `fase2/auditoria-clinica`; migration `20261031000007_auditoria_clinica.sql` (só homologação); teste `supabase/tests/fase2_auditoria_clinica.sql` | Ver "Tarefa 8, como ficou" |
 | 7 — Teste do offline | **Concluída em 09/10** (relatório; sem migration) | Branch `fase2/teste-offline`; `produto/docs/fase2/teste-offline-2026-10-09.md`; plano de contingência atualizado |
 | 6 — Alteração versionada de item | Pronta na homologação, aguardando teste do RT | Branch `fase2/alteracao-prescricao` (sobre a da tarefa 4); migration `20261031000004_alteracao_item_prescricao.sql` (só homologação); teste `supabase/tests/fase2_alteracao_item_prescricao.sql` |
 
@@ -275,7 +276,7 @@ Tarefa 6, como ficou:
 - **Alterar.** Botão "Alterar" nos itens de medicamento, na prescrição da porta e na da internação. Só o médico de plantão, com motivo. Muda dose, via, frequência e "se necessário".
 - **Versões.** A versão anterior é suspensa com "Alterado: <motivo>" e guarda as checagens. A nova passa pelas mesmas travas da prescrição (alergia, peso da criança, diluição vigente) e aponta a anterior, com o número da versão. Se a nova não passa, nada muda.
 - **Aprazamento.** Com a mesma frequência, a nova versão herda o aprazamento. Com frequência nova, volta a pedir aprazamento.
-- **Aviso.** A Checagem mostra "Prescrição alterada (versão N)", o que mudou e o motivo. A alteração vai para a auditoria com o antes e o depois.
+- **Aviso.** A Checagem mostra "Prescrição alterada (versão N)", o que mudou e o motivo. A alteração deixa linha na trilha de auditoria. O antes e o depois ficam nas duas versões do item, porque a trilha guarda só campos de uma lista fechada, sem texto clínico.
 - **Teste do RT.** Como médico, prescrever um item 12/12h e alterar a dose. Depois alterar a frequência. Como enfermeiro, ver o aviso e conferir que o aprazamento se manteve na 1ª alteração e caiu na 2ª.
 
 Tarefa 7, como ficou:
@@ -288,7 +289,7 @@ Tarefa 7, como ficou:
 Tarefa 3, como ficou (opção A da decisão C):
 - **Lista da unidade.** Grupos de fármacos (por princípio ativo) e pares de grupos, com gravidade (contraindicada ou grave), efeito, conduta e fonte. Quem cuida dela é o farmacêutico ou o gestor, em Interações críticas. O médico só lê.
 - **Modelo ONC.** Os 15 pares da lista ONC (Phansalkar 2012), resumidos com as nossas palavras, chegam como **proposta**, que não alerta. Os grupos de um fármaco só já vêm preenchidos (atazanavir, febuxostate, irinotecano, ramelteona, tizanidina, tranilcipromina, procarbazina). Os grupos de classe (IMAO, ISRS, opioides, prolongam o QT, inibidores e indutores de CYP etc.) **ficam vazios para a farmácia preencher a partir das bulas**. Par sem fármaco nos grupos não ativa.
-- **Prescrição.** Com par ativo e o outro fármaco vigente, o item não entra. Aparece o alerta (fármaco, gravidade, grupos, efeito, conduta, fonte), e o médico prescreve só com justificativa. A justificativa fica no item, aparece na linha da prescrição e vai para a auditoria. Ao alterar o item, a justificativa da versão anterior segue com ele.
+- **Prescrição.** Com par ativo e o outro fármaco vigente, o item não entra. Aparece o alerta (fármaco, gravidade, grupos, efeito, conduta, fonte), e o médico prescreve só com justificativa. A justificativa fica gravada (`alertas_interacao`) e aparece na linha da prescrição. A trilha de auditoria registra a ação, sem o texto. Ao alterar o item, a justificativa da versão anterior segue com ele.
 - **Verificado no navegador local.** Fluoxetina e depois selegilina com o par ISRS × IMAO ativo: alerta, justificativa e linha com a interação justificada.
 - **Teste do RT.** Como farmacêutico ou gestor, em Interações críticas: preencher os grupos de um par (ex.: ISRS e IMAO) e ativar. Como médico: prescrever os dois e ver o alerta.
 - **Plano B.** A base comercial licenciada fica para o futuro. A tabela já guarda a fonte por linha.
@@ -300,6 +301,17 @@ Tarefa 5, como ficou:
 - **Pediatria.** Fugulin é instrumento do adulto, então criança não se classifica por ele. O instrumento pediátrico (Dini, Fugulin et al. 2011) ficou guardado em "Depois do backlog".
 - **Verificado no navegador local.** Selo de pendente na lista; 12 áreas marcadas com 2 dão 24, "Alta dependência", com autor e hora.
 - **Teste do RT.** Como enfermeiro, em Internação > Cuidados > Escalas, classificar um paciente e retificar no mesmo dia com motivo.
+
+Tarefa 8, como ficou:
+- **Mapa do que faltava.** Prescrição (criar, suspender, aprazar), checagem, SOAP, evolução, SAE, classificação de risco, alergia (registrar, inativar), escalas e Fugulin, transferência de setor e a internação (abertura, leito, setor, status de alta, óbito ou transferência) gravavam o registro, mas **não deixavam linha na trilha encadeada**.
+- **Agora.** Um gatilho por tabela grava a linha na mesma transação, com autor do login, hora do servidor e elo de hash.
+- **Fora de propósito.** Sinais vitais: volume alto, e cada aferição já é registro só de inserção, com autor, hora e marca de sem conexão.
+- **Lista fechada.** O payload da trilha continua sem texto clínico nem nome. Ganhou só chaves estruturais (situação, gravidade, versão, horário, cor, escala, anterior, retifica).
+- **Achado.** Os eventos novos da Fase 2 perdiam o conteúdo do payload por causa da lista fechada. Isso está certo para a LGPD: o conteúdo mora nas tabelas versionadas. O texto do BACKLOG das tarefas 3 e 6 foi corrigido.
+- **Verificação.** Em Gestão > Auditoria:
+  - a integridade da cadeia (já existia);
+  - um quadro novo de **cobertura**: por tipo de evento, quantos registros clínicos dos últimos 30 dias (desde a instalação) ficaram sem linha na trilha.
+- **Teste do RT.** Fazer uma prescrição, uma checagem e uma classificação. Depois, como gestor, ver a trilha e o quadro de cobertura com zero "sem trilha".
 
 **Ordem técnica da Fase 2**
 1. Ajustar cadastro de medicamentos alto risco.
