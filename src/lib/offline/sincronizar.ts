@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { aparelhoId, enfileirar, listar, marcarRecusado, remover, type ItemSync } from './fila'
+import { ehFalhaDeRede } from './regras'
 import { agoraServidor, situacaoSemConexao, sincronizarRelogio, ultimoContato } from './relogio'
 
 // Porta única de gravação dos registros que podem nascer sem conexão
@@ -14,10 +15,7 @@ export type ResultadoGravacao = { gravados: number; naFila: number; recusados: s
 export const EVENTO_FILA = 'cc-fila-mudou'
 const avisar = () => window.dispatchEvent(new Event(EVENTO_FILA))
 
-function falhaDeRede(error: { message?: string } | null): boolean {
-  if (!navigator.onLine) return true
-  return !!error && /fetch|network|rede|timeout/i.test(error.message ?? '')
-}
+const falhaDeRede = (error: { message?: string } | null) => ehFalhaDeRede(navigator.onLine, error)
 
 async function enviar(itens: ItemSync[]): Promise<Resposta[]> {
   const { data, error } = await supabase.rpc('sincronizar_registros', { p_itens: itens as never })
