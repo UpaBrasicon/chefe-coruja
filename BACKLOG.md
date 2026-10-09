@@ -353,19 +353,22 @@ Regras:
 
 | # | Item | Situação |
 |---|---|---|
-| 1 | Pós-PCR pela ERC-ESICM 2025 | Em andamento, branch `revisao/pos-pcr-erc-2025` |
-| 2 | Trombólise no AVC: correção oficial da AHA/ASA 2026 | A fazer |
-| 3 | PAC: REMAP-CAP 2025 e citação da ATS 2025 | A fazer |
-| 4 | Endocardite: Duke-ISCVID 2023 | A fazer |
-| 5 | HINTS: aviso de uso (GRACE-3 2023) | A fazer |
-| 6 | Carvão ativado: consenso CTRC 2026 | A fazer |
-| 7 | Síndrome hepatorrenal: ADQI-ICA 2024 | A fazer |
-| 8 | Hiponatremia: alerta contra a subcorreção | A fazer |
-| 9 | CKD-EPI: equação de 2009 no Brasil | A fazer |
-| 10 | ITU pediátrica: AAP 2026 | A fazer |
-| 11 | Choque séptico pediátrico: PRoMPT BOLUS | A fazer |
-| 12 | Citações erradas (Morse, ATS 2025, Bai & Loeb, Arzayus-Patiño) | A fazer |
-| 13 | Biblioteca: fontes novas (CC BY, CC BY-NC e fichas de referência) | A fazer |
+| 1 | Pós-PCR pela ERC-ESICM 2025 | Feito, branch `revisao/pos-pcr-erc-2025` |
+| 2 | Trombólise no AVC: correção oficial da AHA/ASA 2026 | Aviso feito, branch `revisao/avc-correcao-aha`. Pendente: o RT trazer o PDF da correção para conferir as Tabelas 5 e 7 |
+| 3 | PAC: REMAP-CAP 2025 e citação da ATS 2025 | Feito, branch `revisao/pac-remap-cap` |
+| 4 | Endocardite: Duke-ISCVID 2023 | Feito, branch `revisao/endocardite-duke-iscvid` |
+| 5 | HINTS: aviso de uso (GRACE-3 2023) | Feito, branch `revisao/hints-grace3` |
+| 6 | Carvão ativado: consenso CTRC 2026 | Feito, branch `revisao/carvao-ctrc-2026` |
+| 7 | Síndrome hepatorrenal: ADQI-ICA 2024 | Feito, branch `revisao/shr-adqi-2024` |
+| 8 | Hiponatremia: alerta contra a subcorreção | Feito, branch `revisao/hiponatremia-subcorrecao` |
+| 9 | CKD-EPI: equação de 2009 no Brasil | Feito, branch `revisao/ckd-epi-2009` (2009 e 2021 lado a lado, sem campo de raça) |
+| 10 | ITU pediátrica: AAP 2026 | Aviso feito, branch `revisao/itu-aap-2026`. Pendente: limiares novos de piúria e urocultura (texto integral bloqueado; a ferramenta segue com os do livro) |
+| 11 | Choque séptico pediátrico: PRoMPT BOLUS | Feito, branch `revisao/prompt-bolus` |
+| 12 | Citações erradas (Morse, ATS 2025, Bai & Loeb, Arzayus-Patiño) | Feito, branch `revisao/citacoes` (ATS no item 3) |
+| 13 | Biblioteca: fontes novas (CC BY, CC BY-NC e fichas de referência) | 12 fichas de referência feitas, branch `revisao/biblioteca-referencias`. Licenças conferidas e entradas de `fontes.yaml` prontas em `produto/docs/pesquisa/revisao-pubmed-2026-10/item13-biblioteca.md`. Pendente com o RT: baixar os PDFs, registrar em `fontes.yaml` e ingerir no VPS |
+| — | Registro das versões novas das fichas no banco | Feito, branch `revisao/registro-versoes` (migration `20261101000001`). As 14 versões novas entram na fila de aprovação do RT |
+
+As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nessa ordem. A homologação recebe a última branch, que contém todas.
 
 ## Fase 3 — SUS, Produção e Integrações Mínimas
 **Horizonte:** 90-120 dias
