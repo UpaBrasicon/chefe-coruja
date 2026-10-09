@@ -365,7 +365,7 @@ Regras:
 | 10 | ITU pediátrica: AAP 2026 | Aviso feito, branch `revisao/itu-aap-2026`. Pendente: limiares novos de piúria e urocultura (texto integral bloqueado; a ferramenta segue com os do livro) |
 | 11 | Choque séptico pediátrico: PRoMPT BOLUS | Feito, branch `revisao/prompt-bolus` |
 | 12 | Citações erradas (Morse, ATS 2025, Bai & Loeb, Arzayus-Patiño) | Feito, branch `revisao/citacoes` (ATS no item 3) |
-| 13 | Biblioteca: fontes novas (CC BY, CC BY-NC e fichas de referência) | 12 fichas de referência feitas, branch `revisao/biblioteca-referencias`. Licenças conferidas e entradas de `fontes.yaml` prontas em `produto/docs/pesquisa/revisao-pubmed-2026-10/item13-biblioteca.md`. Pendente com o RT: baixar os PDFs, registrar em `fontes.yaml` e ingerir no VPS |
+| 13 | Biblioteca: fontes novas (CC BY, CC BY-NC e fichas de referência) | Feito, branch `revisao/biblioteca-referencias`: 12 fichas de referência e o texto integral de 19 artigos abertos (14 CC BY, 5 CC BY-NC), baixado do Europe PMC com autorização do RT e convertido para Markdown. Guia em `produto/docs/pesquisa/revisao-pubmed-2026-10/item13-biblioteca.md`. Pendente com o RT: registrar as 3 pastas em `fontes.yaml` e ingerir no VPS |
 | — | Registro das versões novas das fichas no banco | Feito, branch `revisao/registro-versoes` (migration `20261101000001`). As 14 versões novas entram na fila de aprovação do RT |
 
 As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nessa ordem. A homologação recebe a última branch, que contém todas.
