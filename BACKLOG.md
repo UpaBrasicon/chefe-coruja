@@ -238,6 +238,8 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 |---|---|---|
 | 1 — Dupla checagem | Pronta na homologação, aguardando teste do RT | Branch `fase2/dupla-checagem`; migration `20261031000001_dupla_checagem.sql` (só homologação); teste `supabase/tests/fase2_dupla_checagem.sql` |
 | 2 — Aprazamento assistido | Pronta na homologação, aguardando teste do RT | Branch `fase2/aprazamento-assistido` (sobre a da tarefa 1); migration `20261031000002_aprazamento_assistido.sql` (só homologação); teste `supabase/tests/fase2_aprazamento_assistido.sql` |
+| 3 — Interações medicamentosas | Parada: o RT escolhe a fonte | Opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
+| 4 — Intercorrência estruturada | Pronta na homologação, aguardando teste do RT | Branch `fase2/intercorrencia` (sobre a da tarefa 2); migration `20261031000003_intercorrencia.sql` (só homologação); teste `supabase/tests/fase2_intercorrencia.sql` |
 
 Tarefa 1, como ficou:
 - **Lista.** Regras do ISMP Brasil 2019 (Boletim v. 8, n. 1, fev. 2019) marcam o cadastro pelo princípio ativo, pela via na apresentação e pela concentração. Exemplos: glicose ≥ 20% e NaCl > 0,9%. Ficam só as regras e a citação, sem o texto do boletim, que tem direitos reservados.
@@ -252,6 +254,13 @@ Tarefa 2, como ficou:
 - **Checagem.** O enfermeiro vê a sugestão, a origem dela e a primeira dose da grade depois da hora da prescrição. Usa a sugestão com um clique ou digita outros horários, com motivo opcional.
 - **Registro.** Cada aprazamento guarda o sugerido, o escolhido, quem, quando e o motivo. Só aceita inserção, e a tela mostra o último.
 - **Teste do RT.** Como gestor, salvar a grade em Configuração. Como médico, prescrever um item 8/8h. Como enfermeiro, na Checagem, usar a sugestão em um item e ajustar outro com motivo. Conferir a linha "Aprazado por…".
+
+Tarefa 4, como ficou:
+- **Registro.** Médico, enfermeiro e técnico de enfermagem de plantão com o paciente registram pelo botão "Registrar intercorrência". O botão fica na janela do atendimento da porta e no resumo do leito da internação. O registro tem tipo, gravidade (leve, moderada, grave, com a definição na tela), hora em que ocorreu (até 72 h antes), o que aconteceu, a conduta, o autor (usuário do login, com o papel) e o setor.
+- **Tipos.** A lista de 21 tipos fica numa tabela e é uma **proposta para o RT revisar**. Inclui PCR, instabilidade, insuficiência respiratória, rebaixamento, convulsão, hipoglicemia, reação a medicamento, erro de medicação, queda, perda de dispositivo, evasão e "Outra", que pede o nome.
+- **Correção.** Só por inserção: corrigir é "Retificar". A versão anterior fica guardada e aparece riscada.
+- **Relatório do gestor.** Em Gestão > Intercorrências: total por gravidade, por tipo (com as graves), por setor e por papel, e os casos. Conta a versão vigente, e os nomes dos pacientes ficam na trilha de auditoria.
+- **Teste do RT.** Registrar uma intercorrência como técnico, outra como enfermeiro e retificá-la como médico. Ver o relatório como gestor.
 
 **Ordem técnica da Fase 2**
 1. Ajustar cadastro de medicamentos alto risco.
