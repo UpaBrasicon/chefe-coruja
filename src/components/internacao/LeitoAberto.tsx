@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import * as React from 'react'
 
+import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
 import { supabase } from '@/lib/supabase'
 import { abrirProntuario } from '@/lib/prontuario'
 import { cn } from '@/lib/utils'
@@ -283,6 +284,8 @@ function Resumo({ p }: { p: PartesLeito }) {
       <BlocoPendencias internacaoId={i.id} ativa={ativa} lista={p.pendencias} eu={p.eu} acao={p.acao} />
       {ativa && !ehGestor && <BlocoPassagem i={i} lista={p.passagens} eu={p.eu} acao={p.acao} />}
       {ativa && <PassagensDoPlantao pacienteId={p.pacienteId} />}
+      {/* Fase 1, tarefa 8: atendimentos encerrados do paciente, para quem cuida */}
+      {ativa && <HistoricoEncerrado pacienteId={p.pacienteId} />}
     </>
   )
 }
