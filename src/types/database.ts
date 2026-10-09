@@ -11311,6 +11311,7 @@ export type Database = {
       iniciar_analise_parecer: { Args: { p_id: string }; Returns: undefined }
       iniciar_atendimento: { Args: { p_episodio: string }; Returns: undefined }
       integridade_trilha: { Args: { p_unidade: string }; Returns: Json }
+      interacoes_justificadas: { Args: { p_itens: string[] }; Returns: Json }
       intercorrencias_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       lancar_balanco: {
         Args: {
@@ -11350,6 +11351,7 @@ export type Database = {
         Args: { p_medicamento: string; p_unidade: string }
         Returns: undefined
       }
+      lista_interacoes: { Args: { p_unidade: string }; Returns: Json }
       listar_conversas: {
         Args: never
         Returns: {
@@ -12394,6 +12396,25 @@ export type Database = {
       salvar_grade_aprazamento: {
         Args: { p_grades?: Json; p_inicio: string; p_unidade: string }
         Returns: Json
+      }
+      salvar_grupo_interacao: {
+        Args: { p_nome: string; p_principios: string[]; p_unidade: string }
+        Returns: string
+      }
+      salvar_interacao: {
+        Args: {
+          p_conduta: string
+          p_efeito: string
+          p_fonte: string
+          p_gravidade: string
+          p_grupo_a: string
+          p_grupo_b: string
+          p_id: string | null
+          p_motivo: string
+          p_situacao: string
+          p_unidade: string
+        }
+        Returns: string
       }
       salvar_limites_unidade: {
         Args: {

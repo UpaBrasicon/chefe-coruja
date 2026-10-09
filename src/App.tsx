@@ -70,6 +70,7 @@ const IntercorrenciasRelatorio = lazy(() => import('@/pages/gestor/Intercorrenci
 const CadastrosDuplicados = lazy(() => import('@/pages/recepcao/CadastrosDuplicados'))
 const Contingencia = lazy(() => import('@/pages/Contingencia'))
 const AltaVigilancia = lazy(() => import('@/pages/farmacia/AltaVigilancia'))
+const Interacoes = lazy(() => import('@/pages/farmacia/Interacoes'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
 const Teleinterconsulta = lazy(() => import('@/pages/telemedicina/Teleinterconsulta'))
@@ -226,6 +227,10 @@ export default function App() {
                       {/* Alta vigilância: fila da 2ª conferência e lista da unidade (Fase 2, tarefa 1) */}
                       <Route element={<RequireRole papeis={['farmaceutico', 'enfermeiro', 'gestor']} />}>
                         <Route path="/alta-vigilancia" element={<AltaVigilancia />} />
+                      </Route>
+                      {/* Interações críticas: lista curada da unidade (Fase 2, tarefa 3) */}
+                      <Route element={<RequireRole papeis={['farmaceutico', 'gestor', 'plantonista']} />}>
+                        <Route path="/interacoes" element={<Interacoes />} />
                       </Route>
 
                       {/* Farmacêutico: validação, disponibilidade, faltas e diluição padrão (Fase 4.5/4.9) */}
