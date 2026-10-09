@@ -37,13 +37,17 @@ export default function ProntuarioLeitura() {
     queryFn: async () => {
       await abrirProntuario(pacienteId!)
       const id = pacienteId!
+      // cadastros unificados (Fase 1, tarefa 9): o que foi gravado no cadastro
+      // absorvido aparece junto, sem ter mudado de paciente
+      const fam = await supabase.rpc('cadastros_do_paciente', { p_paciente: id })
+      const ids = fam.error || !fam.data?.length ? [id] : (fam.data as string[])
       const [pac, eps, docs, obs, presc, classif] = await Promise.all([
         supabase.from('pacientes').select('id, nome, nome_social, data_nascimento, sexo, prontuario').eq('id', id).maybeSingle(),
-        supabase.from('episodios').select('id, etapa, queixa, chegada_em, encerrado_em, desfecho').eq('paciente_id', id).order('chegada_em', { ascending: false }),
-        supabase.from('documentos_clinicos').select('id, documento_raiz_id, versao, tipo_documento, conteudo, estado, created_at, episodio_id').eq('paciente_id', id).neq('estado', 'rascunho').order('created_at', { ascending: false }),
-        supabase.from('observacao').select('id, aferido_em, valor_num, valor_texto, unidade, conceito:conceito_id(nome, unidade_padrao)').eq('paciente_id', id).order('aferido_em', { ascending: false }).limit(60),
-        supabase.from('prescricoes').select('id, status, created_at, assinada_em, prescricao_itens(id, descricao, dose, posologia, via, suspenso_em)').eq('paciente_id', id).order('created_at', { ascending: false }).limit(20),
-        supabase.from('classificacoes_risco').select('id, cor, criado_em, discriminador, episodio_id').eq('paciente_id', id).order('criado_em', { ascending: false }),
+        supabase.from('episodios').select('id, etapa, queixa, chegada_em, encerrado_em, desfecho').in('paciente_id', ids).order('chegada_em', { ascending: false }),
+        supabase.from('documentos_clinicos').select('id, documento_raiz_id, versao, tipo_documento, conteudo, estado, created_at, episodio_id').in('paciente_id', ids).neq('estado', 'rascunho').order('created_at', { ascending: false }),
+        supabase.from('observacao').select('id, aferido_em, valor_num, valor_texto, unidade, conceito:conceito_id(nome, unidade_padrao)').in('paciente_id', ids).order('aferido_em', { ascending: false }).limit(60),
+        supabase.from('prescricoes').select('id, status, created_at, assinada_em, prescricao_itens(id, descricao, dose, posologia, via, suspenso_em)').in('paciente_id', ids).order('created_at', { ascending: false }).limit(20),
+        supabase.from('classificacoes_risco').select('id, cor, criado_em, discriminador, episodio_id').in('paciente_id', ids).order('criado_em', { ascending: false }),
       ])
       for (const r of [pac, eps, docs, obs, presc, classif]) if (r.error) throw r.error
       if (!pac.data) throw new Error('Sem acesso a este paciente. O pedido pode ter vencido ou ainda não foi aprovado.')
