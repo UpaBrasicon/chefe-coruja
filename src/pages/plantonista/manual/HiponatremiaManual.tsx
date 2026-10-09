@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  CONDUTA_HIPONATREMIA, ERRATA_HIPONATREMIA, ERRATA_SODIO_CORRIGIDO, LIMITES_HIPONATREMIA, SALINA_3, TONICIDADE_TEXTO, elevacaoEstimadaSalina3,
+  ALERTA_SUBCORRECAO, CONDUTA_HIPONATREMIA, ERRATA_HIPONATREMIA, ERRATA_SODIO_CORRIGIDO, LIMITES_HIPONATREMIA, SALINA_3, TONICIDADE_TEXTO, elevacaoEstimadaSalina3,
   fichaHiponatremia, gravidadeHiponatremia, mlSalina3ParaElevar, sodioCorrigido, tonicidade, type CenarioHipo,
 } from '@/clinico/adulto/sodio'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -67,6 +67,7 @@ export function HiponatremiaManual() {
           <CardDescription>Preparo do manual: {SALINA_3.sfMl} mL de SF + {SALINA_3.nacl20Ml} mL de NaCl 20% = {SALINA_3.totalMl} mL de NaCl 3%. Dica do livro: cada 1 mL/kg eleva o sódio em cerca de 1 mEq/L (estimativa).</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-sm">
+          <p role="note" className="rounded-md border border-atencao/40 bg-atencao/[0.08] px-3 py-2 text-atencao">{ALERTA_SUBCORRECAO}</p>
           {!(peso > 0) ? <p className="text-tinta-sussurro">Informe o peso.</p> : (
             <>
               <p className="tabular-nums">Bolus de {LIMITES_HIPONATREMIA.bolusMl} mL ≈ <strong>+{br(sobeBolus)} mEq/L</strong> · máximo de {LIMITES_HIPONATREMIA.bolusMaxMl} mL ≈ +{br(sobeMax)} mEq/L</p>
