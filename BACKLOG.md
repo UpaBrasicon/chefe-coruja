@@ -325,12 +325,12 @@ Tarefa 9, como ficou:
 
 **Teste do roteiro (09/10/2026):** rodado no app local, resultado em `produto/docs/fase2/resultado-roteiro-2026-10-09.md`.
 - **Defeitos graves (corrigidos na branch `fase2/correcoes-roteiro`, já na homologação):** registrar intercorrência falhava sempre; enfermeiro e técnico não tinham o botão. É só a tela, sem migration.
-- **Defeitos leves, para a volta à Fase 2:**
-  - item "Agora" já feito volta a oferecer a 1ª conferência;
-  - a mensagem "Grade salva" some;
-  - a prescrição do médico não mostra a versão do item alterado;
-  - pontuação no alerta de interação;
-  - números repetidos na Central do Farmacêutico.
+- **Defeitos leves (corrigidos em 09/10/2026, branch `fase2/defeitos-leves`, sem migration):**
+  - item "Agora" já feito voltava a oferecer a 1ª conferência: dose única feita não pede mais conferência nem checagem, e a tela avisa que nova dose precisa de nova prescrição;
+  - a mensagem "Grade salva" sumia: agora fica, porque o formulário que se remonta não guarda mais a mensagem;
+  - a prescrição do médico não mostrava a versão do item alterado: agora mostra versão, o que mudou, quem alterou e o motivo, como a Checagem;
+  - pontuação no alerta de interação: o efeito entre parênteses perde o ponto final, e efeito e conduta terminam em ponto;
+  - números repetidos na Central do Farmacêutico: os números ficam só na faixa do topo (a 2ª conferência entrou no lugar do "item mais antigo", que passou para o texto da fila) e o Painel não os repete para o farmacêutico; o gestor continua vendo os números no Painel.
 
 **Fase 2 PAUSADA em 09/10/2026 por decisão do RT**, para a revisão das ferramentas, das calculadoras e da biblioteca médica com o PubMed. Na volta: os defeitos leves acima e o teste do RT na homologação.
 

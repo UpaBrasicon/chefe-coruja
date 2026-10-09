@@ -17,7 +17,7 @@ import * as React from 'react'
 
 import { resumoMudanca, type Alteracao } from '@/lib/alteracaoPrescricao'
 import { lerHorarios, mesmaLista, type SugestaoItem } from '@/lib/aprazamento'
-import { etapaDupla, type EstadoDupla } from '@/lib/duplaChecagem'
+import { doseUnicaFeita, etapaDupla, type EstadoDupla } from '@/lib/duplaChecagem'
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
@@ -141,7 +141,9 @@ function ItemChecagem({ l, dupla, apraz, alteracao, souEnfermeiro, aoMudar, aoEr
   // item aprazado: a checagem é de um horário (o servidor também exige)
   const aprazado = !l.se_necessario && (l.horarios?.length ?? 0) > 0
   const faltaHorario = aprazado && !horario
-  const etapa = dupla ? etapaDupla(dupla, horario || null) : null
+  // dose única já feita: nada mais a conferir nem a checar
+  const unicaFeita = doseUnicaFeita(l.posologia, l.se_necessario, l.ultima_situacao)
+  const etapa = dupla && !unicaFeita ? etapaDupla(dupla, horario || null) : null
   const bloqueadoPelaDupla = !!etapa && etapa.etapa !== 'pronta'
 
   async function conferir() {
@@ -235,6 +237,7 @@ function ItemChecagem({ l, dupla, apraz, alteracao, souEnfermeiro, aoMudar, aoEr
           )}
         </div>
       )}
+      {unicaFeita && <p className="text-xs text-conforme">Dose única (Agora) já registrada como feita. Nova dose precisa de nova prescrição.</p>}
       {l.ultima_em && <p className="text-xs text-tinta-sussurro">Última checagem: {hora(l.ultima_em)} · {l.ultima_por}</p>}
       <div className="flex flex-wrap items-center gap-2">
         {podeAprazar ? (
@@ -257,10 +260,14 @@ function ItemChecagem({ l, dupla, apraz, alteracao, souEnfermeiro, aoMudar, aoEr
             {l.horarios.map((h) => <option key={h}>{h}</option>)}
           </select>
         ) : null}
-        <Button size="xs" disabled={bloqueadoPelaDupla} title={bloqueadoPelaDupla ? 'Alta vigilância: faltam as duas conferências' : undefined}
-          onClick={() => void checar('feito')}>Feito</Button>
-        <Button size="xs" variant="outline" onClick={() => setPedindo('nao_feito')}>Não feito</Button>
-        <Button size="xs" variant="outline" onClick={() => setPedindo('recusado')}>Recusado</Button>
+        {!unicaFeita && (
+          <>
+            <Button size="xs" disabled={bloqueadoPelaDupla} title={bloqueadoPelaDupla ? 'Alta vigilância: faltam as duas conferências' : undefined}
+              onClick={() => void checar('feito')}>Feito</Button>
+            <Button size="xs" variant="outline" onClick={() => setPedindo('nao_feito')}>Não feito</Button>
+            <Button size="xs" variant="outline" onClick={() => setPedindo('recusado')}>Recusado</Button>
+          </>
+        )}
       </div>
       {pedindo && (
         <div className="flex gap-2">

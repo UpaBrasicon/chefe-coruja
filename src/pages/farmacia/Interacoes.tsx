@@ -11,7 +11,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
-import { lerPrincipios, type GrupoInteracao, type ListaInteracoes, type ParInteracao } from '@/lib/interacoes'
+import { frase, lerPrincipios, type GrupoInteracao, type ListaInteracoes, type ParInteracao } from '@/lib/interacoes'
 import { supabase } from '@/lib/supabase'
 
 // Interações críticas da unidade (Fase 2, tarefa 3; migration 20261031000005).
@@ -125,7 +125,7 @@ function LinhaPar({ p, grupos, unidadeId, podeEditar }: { p: ParInteracao; grupo
         <Badge variant={st.variante}>{st.rotulo}</Badge>
         {podeEditar && <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setEditando(true)}>Editar</Button>}
       </div>
-      <span className="text-tinta">{p.efeito}{p.conduta ? ` Conduta: ${p.conduta}` : ''}</span>
+      <span className="text-tinta">{frase(p.efeito)}{p.conduta ? ` Conduta: ${frase(p.conduta)}` : ''}</span>
       <span className="text-xs text-tinta-sussurro">
         Fonte: {p.fonte}{p.atualizado_por ? ` · ${p.atualizado_por}, ${fmtDataHora(p.atualizado_em)}` : ''}{p.motivo ? ` — “${p.motivo}”` : ''}
       </span>

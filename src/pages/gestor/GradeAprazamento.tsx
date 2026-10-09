@@ -16,6 +16,8 @@ import { supabase } from '@/lib/supabase'
 // enfermagem recebe a sugestão na Checagem e ajusta caso a caso.
 
 export function GradeAprazamento({ unidadeId, podeEditar }: { unidadeId: string; podeEditar: boolean }) {
+  // a mensagem fica aqui: salvar troca a chave do formulário, que se remonta
+  const [msg, setMsg] = React.useState<string | null>(null)
   const grade = useQuery({
     queryKey: ['grade-aprazamento', unidadeId],
     queryFn: async () => {
@@ -26,10 +28,12 @@ export function GradeAprazamento({ unidadeId, podeEditar }: { unidadeId: string;
   })
   if (grade.isLoading) return <Spinner />
   if (grade.error) return <p className="text-sm text-critico">{(grade.error as Error).message}</p>
-  return <FormGrade key={grade.data!.atualizado_em ?? 'padrao'} inicial={grade.data!} unidadeId={unidadeId} podeEditar={podeEditar} />
+  return <FormGrade key={grade.data!.atualizado_em ?? 'padrao'} inicial={grade.data!} unidadeId={unidadeId} podeEditar={podeEditar} msg={msg} setMsg={setMsg} />
 }
 
-function FormGrade({ inicial, unidadeId, podeEditar }: { inicial: Grade; unidadeId: string; podeEditar: boolean }) {
+function FormGrade({ inicial, unidadeId, podeEditar, msg, setMsg }: {
+  inicial: Grade; unidadeId: string; podeEditar: boolean; msg: string | null; setMsg: (m: string | null) => void
+}) {
   const qc = useQueryClient()
   const [inicio, setInicio] = React.useState(inicial.inicio)
   // texto de cada intervalo; vazio = segue o início
@@ -38,7 +42,6 @@ function FormGrade({ inicial, unidadeId, podeEditar }: { inicial: Grade; unidade
     return [n, g?.origem === 'grade da unidade' ? g.horarios.join(', ') : '']
   })))
   const [salvando, setSalvando] = React.useState(false)
-  const [msg, setMsg] = React.useState<string | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
   const inicioOk = /^([01]\d|2[0-3]):[0-5]\d$/.test(inicio)
 

@@ -30,3 +30,14 @@ export function interacoesDoErro(erro: { hint?: string | null; details?: string 
 export function lerPrincipios(texto: string): string[] {
   return [...new Set(texto.split(/[,;\n]+/).map((p) => p.trim().toLowerCase()).filter((p) => p.length >= 3))]
 }
+
+/** Texto sem o ponto final, para caber entre parênteses: "(Risco de X)". */
+export function semPontoFinal(t: string): string {
+  return t.trim().replace(/[.;]+$/, '')
+}
+
+/** Texto terminado em ponto, para emendar outra frase depois: "Risco de X. Conduta: Y." */
+export function frase(t: string): string {
+  const s = t.trim()
+  return !s || /[.!?]$/.test(s) ? s : `${s}.`
+}

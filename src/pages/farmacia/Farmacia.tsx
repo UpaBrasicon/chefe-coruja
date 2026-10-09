@@ -63,7 +63,7 @@ export function Filtro({ ativo, onClick, children }: { ativo: boolean; onClick: 
 export default function Farmacia() {
   const [aba, setAba] = React.useState<Aba>('painel')
   const [rascunho, setRascunho] = React.useState<string | null>(null)
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidade = unidadeAtiva?.unidade_id
   return (
     <div className="flex w-full max-w-5xl flex-col">
@@ -71,7 +71,7 @@ export default function Farmacia() {
         descricao="O que existe na unidade, como se dilui e o que volta para correção" />
       <Abas abas={ABAS} valor={aba} onChange={setAba} rotulo="Central do Farmacêutico" />
       {/* Fase 2, tarefa 9: painel de críticos e faltas */}
-      {unidade && aba === 'painel' && <PainelFarmacia unidade={unidade} podeAgir irPara={setAba} />}
+      {unidade && aba === 'painel' && <PainelFarmacia unidade={unidade} podeAgir irPara={setAba} semNumeros={papelAtivo === 'farmaceutico'} />}
       {unidade && aba === 'disponibilidade' && <Disponibilidade unidade={unidade} />}
       {unidade && aba === 'diluicao' && <PadraoUnidade unidade={unidade} abrirRascunho={(id) => { setRascunho(id); setAba('rascunhos') }} />}
       {aba === 'rascunhos' && <Diluicoes embutido selecionadaInicial={rascunho} />}

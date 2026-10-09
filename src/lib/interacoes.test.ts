@@ -1,7 +1,7 @@
 // node --experimental-strip-types --test src/lib/interacoes.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { interacoesDoErro, lerPrincipios } from './interacoes.ts'
+import { frase, interacoesDoErro, lerPrincipios, semPontoFinal } from './interacoes.ts'
 
 test('lê as interações do erro da prescrição', () => {
   const det = JSON.stringify([{ interacao_id: 'i', outro_item_id: 'o', outro: 'Fluoxetina', gravidade: 'contraindicada', efeito: 'x', conduta: null, fonte: 'ONC', grupos: 'A × B' }])
@@ -13,4 +13,12 @@ test('lê as interações do erro da prescrição', () => {
 
 test('lista de princípios do grupo', () => {
   assert.deepEqual(lerPrincipios('Fluoxetina, Sertralina; fluoxetina\nab'), ['fluoxetina', 'sertralina'])
+})
+
+test('pontuação do efeito e da conduta', () => {
+  assert.equal(semPontoFinal('Risco de síndrome serotoninérgica.'), 'Risco de síndrome serotoninérgica')
+  assert.equal(semPontoFinal(' Risco de sangramento '), 'Risco de sangramento')
+  assert.equal(frase('Risco de síndrome serotoninérgica'), 'Risco de síndrome serotoninérgica.')
+  assert.equal(frase('Risco de sangramento.'), 'Risco de sangramento.')
+  assert.equal(frase(''), '')
 })
