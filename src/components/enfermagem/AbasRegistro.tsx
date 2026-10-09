@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 
+import { CartaoFugulin } from './CartaoFugulin'
 import { msg, quando, useExecutar, useRecarregarCuidados, type Contexto, type Cuidados } from './dadosCuidados'
 import { Aviso, Cartao, Nota, Registro } from './pecas'
 
@@ -184,7 +185,12 @@ export function AbaEscalas({ ctx, dados, publico }: { ctx: Contexto; dados: Cuid
           ultima={(q.data ?? []).find((a) => a.escala === e && !a.cancelada_em) ?? null} />
       ))}
       {q.error && <p className="text-apoio text-critico">{msg(q.error)}</p>}
-      <Nota>Fugulin fica para quando a unidade disser qual versão usa. O histórico completo e o cancelamento ficam na aba Avaliação e crescimento.</Nota>
+      {/* Fase 2, tarefa 5: Fugulin (12 áreas), enfermeiro, uma vez por dia, na internação; só adulto */}
+      {dados.internacao_id && publico !== 'pediatrico' && <CartaoFugulin internacaoId={dados.internacao_id} />}
+      {publico === 'pediatrico' && (
+        <Nota>Fugulin é instrumento do adulto: na criança não se usa. O instrumento pediátrico (Dini, Fugulin et al., 2011) ainda não está no produto.</Nota>
+      )}
+      <Nota>O histórico completo e o cancelamento das outras escalas ficam na aba Avaliação e crescimento.</Nota>
     </div>
   )
 }
