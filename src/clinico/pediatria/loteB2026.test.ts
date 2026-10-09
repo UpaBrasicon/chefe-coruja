@@ -11,9 +11,9 @@ import { DIFERENCAS_MS_2026, MS_ARANHAS_TABELA, PCDT_ESCORPIAO, fichaPeconhentos
 // 2026, PCDT escorpiônicos 2026 + portal MS aranhas, nirsevimabe MS + Australásia
 // 2025, PCDT falciforme 2024. Fontes lidas no texto.
 
-test('lote B: fichas pediátricas na versão .1 de 28/09, com fonte pediátrica declarada', () => {
+test('lote B: fichas pediátricas na versão .1 de 28/09 ou posterior, com fonte pediátrica declarada', () => {
   for (const f of [fichaChoquePediatrico, fichaPeconhentosPed, fichaBronquiolite, fichaFalciformePed]) {
-    assert.equal(f.versao, '2026-09-28.1', f.id)
+    assert.ok(f.versao >= '2026-09-28.1', f.id)
     assert.ok(f.fontes.length >= 2, f.id)
     assert.equal(temReferenciaPediatrica(f), true, f.id)
   }
@@ -119,4 +119,10 @@ test('PCDT falciforme 2024: hidroxiureia 15 → 35 mg/kg/dia; penicilina V e ben
   assert.equal(PCDT_FALCIFORME.sta.spo2Uti, 93)
   assert.ok(PCDT_FALCIFORME.transfusaoSimples.indicacoes.some((i) => /1,5 g\/dL/.test(i)))
   assert.ok(DIFERENCAS_PCDT_FALCIFORME.length >= 3)
+})
+
+test('choque séptico: nota do PRoMPT BOLUS no tema do fluido (revisão de 09/10/2026)', () => {
+  assert.ok(fichaChoquePediatrico.fontes.some((f) => f.citacao.includes('PMID 42028918')))
+  const fluido = DIRETRIZ_SSC_PED_2026.find((d) => d.tema === 'Qual fluido')!
+  assert.match(fluido.nota ?? '', /PRoMPT BOLUS/)
 })
