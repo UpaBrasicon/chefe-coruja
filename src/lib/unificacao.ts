@@ -6,7 +6,7 @@ export type Cadastro = {
   prontuario: string | null; cpf: string | null; cns: string | null; criado_em: string
   atendimentos: number; aberto: boolean; ultimo_atendimento: string | null
 }
-export type Candidato = { regras: ('nome_nascimento' | 'mae_nascimento' | 'documento')[]; pedido_pendente: boolean; cadastros: Cadastro[] }
+export type Candidato = { regras: ('nome_nascimento' | 'mae_nascimento' | 'documento' | 'nome_conferir')[]; pedido_pendente: boolean; cadastros: Cadastro[] }
 
 type Resumo = { id: string; nome: string; prontuario: string | null; data_nascimento: string | null; nome_mae: string | null }
 export type PedidoUnificacao = {
@@ -21,6 +21,7 @@ export const ROTULO_REGRA: Record<Candidato['regras'][number], string> = {
   nome_nascimento: 'mesmo nome e nascimento',
   mae_nascimento: 'mesma mãe e nascimento',
   documento: 'mesmo CPF ou CNS',
+  nome_conferir: 'mesmo nome, nascimento diferente ou em branco — conferir',
 }
 
 /**
