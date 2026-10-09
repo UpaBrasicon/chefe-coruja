@@ -44,6 +44,8 @@ type Acesso = {
   documento_tipo: string | null
   ip: string | null
   via_pedido: boolean
+  /** motivo de quem cuida ao abrir o histórico encerrado (Fase 1, tarefa 8) */
+  motivo?: string | null
 }
 type Trilha = { seq: number; criado_em: string; ator_nome: string | null; acao: string; entidade: string; entidade_id: string | null; payload: Record<string, unknown> | null }
 
@@ -209,7 +211,13 @@ function AcessosProntuario() {
                     <td className="pr-2">{a.profissional_nome}<span className="text-xs text-tinta-sussurro"> · {PAPEL[a.papel ?? ''] ?? a.papel ?? '—'}</span></td>
                     <td className="pr-2">{a.paciente_nome}</td>
                     <td className="pr-2">{TIPO_ACESSO[a.tipo_acesso] ?? a.tipo_acesso}{a.documento_tipo ? ` · ${a.documento_tipo.replace(/_/g, ' ')}` : ''}</td>
-                    <td>{a.via_pedido ? <Badge variant="info">pedido aprovado</Badge> : <span className="text-xs text-tinta-sussurro">{a.papel === 'gestor' ? 'gestor (sem pedido)' : 'escala'}</span>}</td>
+                    <td>
+                      {a.via_pedido ? <Badge variant="info">pedido aprovado</Badge>
+                        : a.motivo ? <Badge variant="outline">motivo de quem cuida</Badge>
+                        : <span className="text-xs text-tinta-sussurro">{a.papel === 'gestor' ? 'gestor (sem pedido)' : 'escala'}</span>}
+                      {/* Fase 1, tarefa 8: histórico encerrado aberto com motivo */}
+                      {a.motivo && <span className="mt-0.5 block text-xs text-pretty text-tinta-apoio">“{a.motivo}”</span>}
+                    </td>
                   </tr>
                 ))}
               </tbody>

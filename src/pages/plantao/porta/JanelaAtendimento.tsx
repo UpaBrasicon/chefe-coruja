@@ -5,10 +5,11 @@
 // abre o prontuário, consulta registrada). Tudo o que grava é do servidor;
 // a tela só mostra e pede. Nada sugere dose, cor ou conduta.
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangle, Check, Clock, FileText, X } from 'lucide-react'
+import { AlertTriangle, Check, Clock, FileText, History, X } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
+import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
 import { supabase } from '@/lib/supabase'
 import { aplicaCuidadoPediatrico, faixaEtaria } from '@/domain/idade'
 import { rotulosPrioridade } from '@/domain/prioridade'
@@ -75,6 +76,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
   const painel = usePainelPS(ep.id, aberto)
   const alergias = useAlergias(ep.paciente_id)
 
+  const [verHistorico, setVerHistorico] = React.useState(false)
   const [aba, setAba] = React.useState<Aba>(ep.reavaliar_em ? 'reav' : 'atend')
   const [erro, setErro] = React.useState<string | null>(null)
   const [reavHora, setReavHora] = React.useState('')
@@ -190,6 +192,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
                 <Clock className="size-3.5" aria-hidden /> Em atendimento há {minutos(iniciado, agora)}
               </span>
             )}
+            {/* Fase 1, tarefa 8: resumo dos atendimentos encerrados para quem atende */}
+            <Button size="sm" variant="outline" aria-expanded={verHistorico} onClick={() => setVerHistorico((v) => !v)}><History /> Histórico</Button>
             <Button size="sm" variant="outline" render={<Link to={`/prontuarios/${ep.paciente_id}`} />}><FileText /> Prontuário completo</Button>
             <Button size="icon-sm" variant="outline" aria-label="Fechar e salvar" title="Fechar (o rascunho fica salvo)" onClick={() => void salvarEFechar()}><X /></Button>
           </span>
@@ -210,6 +214,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
           episodioAtualId={ep.id}
           className="border-0 p-0 shadow-none"
         />
+        {verHistorico && <HistoricoEncerrado pacienteId={ep.paciente_id} />}
         {faixa === 'pediatrico' && (
           <div className="flex items-start gap-2 rounded-container border border-pediatria/25 bg-pediatria/[0.06] px-3.5 py-2.5 text-apoio text-pediatria">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />

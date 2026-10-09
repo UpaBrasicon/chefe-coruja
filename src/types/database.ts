@@ -9717,6 +9717,10 @@ export type Database = {
         Returns: string
       }
       abrir_conversa_suporte: { Args: never; Returns: string }
+      abrir_historico_encerrado: {
+        Args: { p_motivo: string; p_paciente: string }
+        Returns: string
+      }
       abrir_internacao: {
         Args: {
           p_leito?: string
@@ -9784,6 +9788,7 @@ export type Database = {
           profissional_nome: string
           tipo_acesso: string
           via_pedido: boolean
+          motivo: string | null
         }[]
       }
       acuidade: { Args: { p_paciente: string }; Returns: Json }
@@ -11209,6 +11214,7 @@ export type Database = {
           nome: string
         }[]
       }
+      historico_encerrado: { Args: { p_paciente: string }; Returns: Json }
       historico_evolucoes: { Args: { p_internacao: string }; Returns: Json }
       hook_segundo_fator_tentativa: { Args: { event: Json }; Returns: Json }
       horario_servidor: { Args: never; Returns: string }
