@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
 
 // Intoxicações e antídotos do adulto — caps. 97 (manejo inicial, p. 1297–1306),
@@ -7,11 +8,27 @@ import { fichaAdulto } from './fonte.ts'
 // velocidade; a indicação é do médico (ADR 0007). Os valores pediátricos que o
 // capítulo 99 cita no cianeto não são implementados (ficha de adulto).
 
-export const fichaIntoxicacoesAdulto = fichaAdulto(
+// Revisão PubMed de 09/10/2026 (decisão do RT): o carvão ativado passa a
+// mostrar o consenso do Clinical Toxicology Recommendations Collaborative
+// (CTRC, 2026) ao lado do livro. O consenso amplia a janela para até 6 h em
+// muitos venenos (o livro trata > 2 h como contraindicação), lista onde o
+// carvão não tem papel e cria a "dose adicional".
+export const CTRC_CARVAO_2026: Fonte = {
+  citacao: 'Hoegberg LCG, Gosselin S, Buckley NA, et al. Recommendations from the Clinical Toxicology Recommendations Collaborative on the administration of activated charcoal in acute oral overdose. Clin Toxicol (Phila). 2026;64(6):419–475 (PMID 41906697).',
+  url: 'https://doi.org/10.1080/15563650.2025.2609807',
+}
+
+const fichaIntoxLivro = fichaAdulto(
   'adulto-intoxicacoes-antidotos',
   'Intoxicações e antídotos — adulto',
   'caps. 97–99 (Manejo inicial das intoxicações exógenas; Intoxicações por fármacos; Intoxicações ambientais e drogas de abuso), p. 1299–1337; NaHCO3 8,4% = 50 mEq/50 mL: cap. 69, p. 938; emulsão lipídica na PCR: cap. 2, p. 50',
 )
+export const fichaIntoxicacoesAdulto: Ficha = {
+  ...fichaIntoxLivro,
+  versao: '2026-10-09.1',
+  fontes: [...fichaIntoxLivro.fontes, CTRC_CARVAO_2026],
+  revisadoEm: '09/10/2026 (carvão ativado com o consenso CTRC 2026 ao lado do livro)',
+}
 
 export type Faixa = [number, number]
 
@@ -47,6 +64,16 @@ export const CARVAO_INDICACAO: ItemManual[] = [
   { id: 'contraindicacoes', nome: 'Contraindicações', texto: 'rebaixamento sem proteção de via aérea ou alto risco de broncoaspiração; apresentação > 2 h; paciente agitado, rebaixado ou não colaborativo (não usar SNG em não intubado; não intubar só para o carvão); necessidade de endoscopia; toxinas pouco adsorvíveis; obstrução intestinal', pagina: 'p. 1299–1300' },
   { id: 'multiplas', nome: 'Múltiplas doses', texto: 'carbamazepina, dapsona, fenobarbital, quinina, teofilina, AAS e fenitoína (dados de voluntários também para amitriptilina, digoxina, disopiramida, nadolol e piroxicam); 50 g a cada 4 h ou 25 g a cada 2 h após a 1ª dose', pagina: 'p. 1300–1302',
     errata: 'Duração: a p. 1301 diz "manter esse regime por 12 horas"; as p. 1308, 1315, 1319 e 1323 dizem 12–24 h. O quinino (p. 1300) aparece como "quinina" na p. 1302, e cafeína só na p. 1300.' },
+]
+
+/** Consenso CTRC 2026 (PMID 41906697): o que muda em relação ao livro. Sem doses novas. */
+export const CARVAO_CTRC_2026: ItemManual[] = [
+  { id: 'ctrc-janela', nome: 'Janela (CTRC 2026)', texto: 'com avaliação individual de risco, o carvão é apropriado até 6 h após a ingestão para muitos venenos; além de 6 h se houver absorção contínua (farmacobezoar, liberação modificada ou carga acima da solubilidade). O limite varia por veneno e apresentação', pagina: 'CTRC 2026' },
+  { id: 'ctrc-sem-papel', nome: 'Sem papel do carvão (CTRC 2026)', texto: 'arsênio, césio, cobre, etanol, metanol, etilenoglicol, ferro, chumbo, lítio e metformina', pagina: 'CTRC 2026' },
+  { id: 'ctrc-apropriado', nome: 'Apropriado (CTRC 2026)', texto: 'antiarrítmicos, betabloqueadores, bupropiona, bloqueadores de canal de cálcio, carbamazepina, glicosídeos cardíacos, cloroquina, cocaína, colchicina, cianeto, dapsona, difenidramina, disopiramida, inibidores do fator Xa, ibuprofeno, isoniazida, lamotrigina, metotrexato, moclobemida, opioides, inseticidas organofosforados, paracetamol, paraquat, fenobarbital, fenitoína, quinidina e quinino, salicilatos, ISRS, sulfonilureias, tálio, teofilina, tricíclicos, ácido valproico, venlafaxina e varfarina', pagina: 'CTRC 2026' },
+  { id: 'ctrc-adicional', nome: 'Dose adicional para completar a descontaminação (CTRC 2026)', texto: 'carbamazepina, paracetamol, paraquat, fenobarbital, salicilatos, tálio, teofilina, ácido valproico e verapamil', pagina: 'CTRC 2026' },
+  { id: 'ctrc-multiplas', nome: 'Múltiplas doses para aumentar a eliminação (CTRC 2026)', texto: 'carbamazepina, glicosídeos cardíacos, colchicina, dapsona, fenobarbital, fenitoína, tálio e teofilina', pagina: 'CTRC 2026' },
+  { id: 'ctrc-via-aerea', nome: 'Via aérea (CTRC 2026)', texto: 'não intubar só para dar carvão quando não se espera toxicidade clinicamente importante; não passar sonda naso ou orogástrica sem intubação só para o carvão; com intubação indicada por outro motivo, a sonda para o carvão é razoável; com risco de toxicidade grave e sem outra opção, intubar para descontaminar pode ser razoável', pagina: 'CTRC 2026' },
 ]
 
 /** Carvão pela massa ingerida: 10 g de carvão para cada 1 g da substância (p. 1300). */
