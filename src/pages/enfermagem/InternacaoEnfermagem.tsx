@@ -20,7 +20,7 @@ import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
 import { PassagemEnfermagem } from './PassagemEnfermagem'
 import { LeitosParaLiberar } from './LeitosParaLiberar'
 import { Bloco, BotaoCuidados, PilulaAtraso } from './Pecas'
-import { duracao, idadeDe, msgErro, useAgora, useSetoresDaEscala, type LeitoEnfermagem } from './useEnfermagem'
+import { duracao, ehAdulto, idadeDe, msgErro, useAgora, useSetoresDaEscala, type LeitoEnfermagem } from './useEnfermagem'
 
 export default function InternacaoEnfermagem() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
@@ -49,6 +49,18 @@ export default function InternacaoEnfermagem() {
       const { data, error } = await supabase.rpc('enfermagem_leitos', { p_unidade: unidadeId! })
       if (error) throw error
       return (data ?? []) as LeitoEnfermagem[]
+    },
+  })
+
+  // Fugulin de hoje por internação (Fase 2, tarefa 5): nulo = pendente
+  const idsInternacao = (leitos.data ?? []).map((l) => l.internacao_id)
+  const fugulin = useQuery({
+    queryKey: ['fugulin-hoje', idsInternacao.join(',')],
+    enabled: idsInternacao.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('fugulin_de_hoje', { p_internacoes: idsInternacao })
+      if (error) throw error
+      return (data ?? {}) as unknown as Record<string, { total: number; categoria: string } | null>
     },
   })
 
@@ -88,6 +100,11 @@ export default function InternacaoEnfermagem() {
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       <PilulaAtraso n={l.aprazamentos_atrasados} />
+                      {fugulin.data && ehAdulto(l.data_nascimento) !== false && (
+                        fugulin.data[l.internacao_id]
+                          ? <span className="rounded-capsula bg-trilha px-2 py-0.5 text-rotulo text-tinta-apoio" title={fugulin.data[l.internacao_id]!.categoria}>Fugulin {fugulin.data[l.internacao_id]!.total}</span>
+                          : <span className="rounded-capsula bg-atencao/10 px-2 py-0.5 text-rotulo text-atencao">Fugulin de hoje pendente</span>
+                      )}
                     </div>
                     <BotaoCuidados onClick={() => setCuidando({
                       pacienteId: l.paciente_id, episodioId: l.episodio_id, internacaoId: l.internacao_id, nome: l.nome,
