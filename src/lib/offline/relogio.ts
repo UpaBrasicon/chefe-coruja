@@ -1,18 +1,14 @@
 import { supabase } from '@/lib/supabase'
 
+import { avaliarSemConexao, horaServidor, type ContextoRelogio } from './regras'
+
 // Relógio do servidor no aparelho (ADR 0009). A cada contato guardamos a hora
 // do servidor e o relógio monotônico da página (performance.now), que não
 // muda quando alguém mexe no relógio do celular. Se a página for recarregada
 // sem conexão, sobra a diferença para o relógio do aparelho — e o limite de
 // 2 h continua valendo.
 
-type Contexto = {
-  servidor: number // ms, hora do servidor no último contato
-  local: number // Date.now() no mesmo instante (só para recarga sem conexão)
-  fimPlantao: number | null // ms
-  toleranciaMs: number
-  limiteMs: number
-}
+type Contexto = ContextoRelogio
 
 const CHAVE = 'cc-relogio-servidor'
 let base: { servidor: number; perf: number } | null = null
@@ -52,10 +48,7 @@ export async function sincronizarRelogio(): Promise<void> {
 
 /** Hora do servidor agora (ms), ou null se nunca houve contato. */
 export function agoraServidor(): number | null {
-  if (base) return base.servidor + (performance.now() - base.perf)
-  if (!contexto) return null
-  const passou = Date.now() - contexto.local
-  return passou < 0 ? null : contexto.servidor + passou // relógio do aparelho voltou: não confiar
+  return horaServidor(base, contexto, performance.now(), Date.now())
 }
 
 export function ultimoContato(): number | null {
@@ -64,21 +57,8 @@ export function ultimoContato(): number | null {
 
 /**
  * Pode registrar sem conexão? Só quem já estava em plantão neste aparelho,
- * até 2 h sem contato e até 15 min depois do fim do plantão.
+ * até 2 h sem contato e até a tolerância do servidor (20 min) depois do fim.
  */
 export function situacaoSemConexao(): { pode: true } | { pode: false; motivo: string } {
-  const agora = agoraServidor()
-  if (!contexto || agora === null) {
-    return { pode: false, motivo: 'Este aparelho ainda não falou com o servidor neste plantão.' }
-  }
-  if (contexto.fimPlantao === null) {
-    return { pode: false, motivo: 'Sem conexão, só continua quem já estava em plantão neste aparelho.' }
-  }
-  if (agora - contexto.servidor > contexto.limiteMs) {
-    return { pode: false, motivo: 'Mais de 2 horas sem conexão: registre em papel até a conexão voltar.' }
-  }
-  if (agora > contexto.fimPlantao + contexto.toleranciaMs) {
-    return { pode: false, motivo: 'O plantão terminou há mais de 15 minutos: o registro sem conexão fechou.' }
-  }
-  return { pode: true }
+  return avaliarSemConexao(contexto, agoraServidor())
 }

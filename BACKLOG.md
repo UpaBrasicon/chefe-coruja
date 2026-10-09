@@ -238,9 +238,10 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 |---|---|---|
 | 1 — Dupla checagem | Pronta na homologação, aguardando teste do RT | Branch `fase2/dupla-checagem`; migration `20261031000001_dupla_checagem.sql` (só homologação); teste `supabase/tests/fase2_dupla_checagem.sql` |
 | 2 — Aprazamento assistido | Pronta na homologação, aguardando teste do RT | Branch `fase2/aprazamento-assistido` (sobre a da tarefa 1); migration `20261031000002_aprazamento_assistido.sql` (só homologação); teste `supabase/tests/fase2_aprazamento_assistido.sql` |
-| 3 — Interações medicamentosas | Parada: o RT escolhe a fonte | Opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
+| 3 — Interações medicamentosas | Decidida em 09/10: **opção C**. Começa pela A (lista curada de pares críticos pelo RT/farmacêutico, a partir da lista ONC e das bulas ANVISA, com fonte por linha); a B (base comercial licenciada) fica como plano futuro | Opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
 | 4 — Intercorrência estruturada | Pronta na homologação, aguardando teste do RT | Branch `fase2/intercorrencia` (sobre a da tarefa 2); migration `20261031000003_intercorrencia.sql` (só homologação); teste `supabase/tests/fase2_intercorrencia.sql` |
-| 5 — Fugulin | Parada: o RT escolhe a versão | Ver "Fugulin: decisão pendente" abaixo |
+| 5 — Fugulin | Decidida em 09/10: **versão de 12 áreas** (intensivo acima de 34; a unidade tem leito semi-intensivo). Na tela, **só um resumo** de cada graduação, sem o texto do artigo | Ver "Fugulin" abaixo |
+| 7 — Teste do offline | **Concluída em 09/10** (relatório; sem migration) | Branch `fase2/teste-offline`; `produto/docs/fase2/teste-offline-2026-10-09.md`; plano de contingência atualizado |
 | 6 — Alteração versionada de item | Pronta na homologação, aguardando teste do RT | Branch `fase2/alteracao-prescricao` (sobre a da tarefa 4); migration `20261031000004_alteracao_item_prescricao.sql` (só homologação); teste `supabase/tests/fase2_alteracao_item_prescricao.sql` |
 
 Tarefa 1, como ficou:
@@ -264,11 +265,11 @@ Tarefa 4, como ficou:
 - **Relatório do gestor.** Em Gestão > Intercorrências: total por gravidade, por tipo (com as graves), por setor e por papel, e os casos. Conta a versão vigente, e os nomes dos pacientes ficam na trilha de auditoria.
 - **Teste do RT.** Registrar uma intercorrência como técnico, outra como enfermeiro e retificá-la como médico. Ver o relatório como gestor.
 
-**Fugulin: decisão pendente do RT (08/10/2026).** O artigo-fonte (Fugulin, Gaidzinski, Kurcgant. Rev Latino-am Enfermagem 2005;13(1):72-8, Tabela 1) traz 9 áreas de cuidado, pontuadas de 1 a 4. As faixas são: mínimos 9–14, intermediários 15–20, alta dependência 21–26, semi-intensivos 27–31 e intensivos acima de 31. Os protocolos atuais usam outra versão, com 12 áreas: as mesmas 9 e mais três, entre elas integridade cutâneo-mucosa. Nessa versão as faixas são 12–17, 18–22, 23–28, 29–34 e acima de 34, e é ela que aparece com o COFEN. Antes de construir, o RT diz:
+**Fugulin (pergunta de 08/10/2026; decisão do RT em 09/10/2026, no fim do item).** O artigo-fonte (Fugulin, Gaidzinski, Kurcgant. Rev Latino-am Enfermagem 2005;13(1):72-8, Tabela 1) traz 9 áreas de cuidado, pontuadas de 1 a 4. As faixas são: mínimos 9–14, intermediários 15–20, alta dependência 21–26, semi-intensivos 27–31 e intensivos acima de 31. Os protocolos atuais usam outra versão, com 12 áreas: as mesmas 9 e mais três, entre elas integridade cutâneo-mucosa. Nessa versão as faixas são 12–17, 18–22, 23–28, 29–34 e acima de 34, e é ela que aparece com o COFEN. Antes de construir, o RT diz:
 - qual versão a unidade usa;
 - qual é a fonte primária da versão de 12 áreas, se for ela.
 
-O artigo de 2005 tem licença CC BY-NC (uso não comercial). O RT também decide se o texto das graduações pode entrar no produto ou se é preciso autorização ou outra fonte, por exemplo um ato oficial do COFEN.
+O artigo de 2005 tem licença CC BY-NC (uso não comercial). **Decisão do RT (09/10/2026):** fica a versão de 12 áreas (Santos, Rogenski, Baptista, Fugulin. Rev Latino-am Enferm 2007;15(5):980-5), com intensivo acima de 34, porque as unidades têm leito semi-intensivo. O texto das graduações não entra no produto; a tela mostra só um resumo de cada graduação, com a citação.
 
 Tarefa 6, como ficou:
 - **Alterar.** Botão "Alterar" nos itens de medicamento, na prescrição da porta e na da internação. Só o médico de plantão, com motivo. Muda dose, via, frequência e "se necessário".
@@ -276,6 +277,13 @@ Tarefa 6, como ficou:
 - **Aprazamento.** Com a mesma frequência, a nova versão herda o aprazamento. Com frequência nova, volta a pedir aprazamento.
 - **Aviso.** A Checagem mostra "Prescrição alterada (versão N)", o que mudou e o motivo. A alteração vai para a auditoria com o antes e o depois.
 - **Teste do RT.** Como médico, prescrever um item 12/12h e alterar a dose. Depois alterar a frequência. Como enfermeiro, ver o aviso e conferir que o aprazamento se manteve na 1ª alteração e caiu na 2ª.
+
+Tarefa 7, como ficou:
+- **Cenário de queda.** Feito no app local com o gateway do Supabase parado, e passou: sinais vitais na fila cifrada (nada em claro no IndexedDB, chave não exportável), sincronização ao voltar, com a marca "sem conexão", a hora do fato, a hora de chegada e o autor do login.
+- **Conflito.** Reenvio não duplica (`ja_recebido`).
+- **Regras do cliente.** Têm teste próprio (`src/lib/offline/regras.test.ts`).
+- **Limites.** Recarregar durante a queda leva ao login (guardado em "Depois do backlog"). A mensagem do app agora usa a tolerância do servidor, de 20 min por decisão do RT de 03/10, e não os 15 do ADR.
+- **Relatório.** `produto/docs/fase2/teste-offline-2026-10-09.md`. O plano de contingência foi atualizado.
 
 **Ordem técnica da Fase 2**
 1. Ajustar cadastro de medicamentos alto risco.
@@ -505,4 +513,5 @@ Pedidos e achados que o responsável decidiu deixar para **depois de terminar es
 | 07/10/2026 | **Exportações antigas sem proteção.** A escala (`Escala.tsx`) e a auditoria de transferências (`InternacaoPainel.tsx`) montam o CSV à mão: texto com ";" ou quebra de linha desalinha a planilha, texto começando com "=" vira fórmula, e a de transferências leva nome de paciente sem registro na auditoria. Passar as duas para `src/lib/csv.ts` e auditar a de transferências. | Item 18 | RT: fora desta entrega (só Indicadores) |
 | 07/10/2026 | **Chave da fila sem conexão vinda do servidor.** Hoje a chave da fila fica no navegador (não exportável, mas usável por qualquer script da origem): num computador compartilhado, alguém com as ferramentas de desenvolvedor poderia decifrar a fila **ainda não sincronizada** de outra pessoa daquele navegador. Alternativa: chave por pessoa entregue pelo servidor só depois de login + 2FA — com o cuidado de não impedir o registro quando a aba recarrega sem internet. | Item 20 | RT: guardar para depois do backlog |
 | 08/10/2026 | **Histórico encerrado com muitos atendimentos fica poluído.** Hoje a lista mostra todos (até 200), um por linha, com rolagem dentro do cartão. Repensar a apresentação: agrupar (por ano, por desfecho ou só os mais recentes com "ver mais"), destacar internações e retornos, resumo no topo. | Teste da tarefa 8 (Fase 1) | RT: guardar para depois do backlog |
+| 09/10/2026 | **Recarregar a página sem conexão leva ao login.** A fila não se perde, mas a enfermagem fica sem o sistema até a rede voltar, porque o perfil é lido do servidor a cada carga (`AuthContext.loadPerfil`). Alternativa: guardar no aparelho, cifrado, o perfil do último login e manter o modo sem conexão depois da recarga, com as mesmas regras de 2 h e 20 min. Até lá, o plano de contingência diz para não recarregar durante a queda. | Fase 2, tarefa 7 (teste do offline) | Guardado (achado do teste; o RT decide) |
 | 08/10/2026 | **Tela "Prontuário completo" (leitura) ruim de layout e de lógica.** `src/pages/prontuario/ProntuarioLeitura.tsx` lista episódios, documentos, observação, prescrições e classificações de forma solta. Redesenhar a leitura do prontuário (linha do tempo por atendimento, o que é de cada episódio junto, navegação) e revisar a lógica de quais blocos aparecem. | Teste da tarefa 8 (Fase 1) | RT: guardar para depois do backlog |
