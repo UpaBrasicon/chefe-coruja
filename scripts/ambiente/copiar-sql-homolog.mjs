@@ -7,6 +7,7 @@
 //      npm run homolog:copiar -- 9             (demo: catálogo mínimo de medicamentos)
 //      npm run homolog:copiar -- 10 seu@email  (demo: escala hoje e amanhã no PS, na Observação e na Clínica Médica)
 //      npm run homolog:copiar -- 11            (CID-10, depois 12, 13, 14, 15 — gerado por gerar-cid10-sql.ts)
+//      npm run homolog:copiar -- 16            (Fase 2: complemento do catálogo para o roteiro de teste)
 // No painel de homologação: SQL Editor → New query → Ctrl+V → Run.
 //
 // Vai para o clip.exe em UTF-16LE SEM BOM: os acentos chegam intactos e o
@@ -32,6 +33,7 @@ const ORDEM = [
   ['supabase/homolog/partes/cid10_parte3.sql', 'CID-10, parte 3 de 5'],
   ['supabase/homolog/partes/cid10_parte4.sql', 'CID-10, parte 4 de 5'],
   ['supabase/homolog/partes/cid10_parte5.sql', 'CID-10, parte 5 de 5'],
+  ['supabase/homolog/demo-medicamentos-fase2.sql', 'Fase 2: complemento do catálogo (tramadol, ISRS, IMAO, eletrólitos) para o roteiro'],
 ]
 
 const n = Number(process.argv[2])
