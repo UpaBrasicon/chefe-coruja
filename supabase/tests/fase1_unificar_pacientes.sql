@@ -1,4 +1,4 @@
--- Fase 1, tarefa 9 — migration 20261030000004_unificar_pacientes.sql: recepção
+-- Fase 1, tarefa 9 — migrations 20261030000004_unificar_pacientes.sql e 20261030000005 (mesmo nome): recepção
 -- pede, gestor aprova; o absorvido fica inativo apontando para o principal,
 -- sem mover registro; bloqueios (dois abertos, alergia escondida); desfazer.
 BEGIN;
@@ -7,7 +7,10 @@ UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_se
 INSERT INTO public.pacientes (id, unidade_id, nome, nome_mae, data_nascimento, cpf, prontuario) VALUES
   ('00000000-0000-4000-8000-0000000b9001', '21000000-0000-4000-8000-000000000001', 'Joana da Silva', 'Maria da Silva', '1980-05-05', NULL, 'TU-1'),
   ('00000000-0000-4000-8000-0000000b9002', '21000000-0000-4000-8000-000000000001', 'Joana D. Silva', 'MARIA DA SÍLVA', '1980-05-05', '52998224725', 'TU-2'),
-  ('00000000-0000-4000-8000-0000000b9003', '21000000-0000-4000-8000-000000000001', 'Outra Pessoa', 'Outra Mãe', '1990-01-01', NULL, 'TU-3');
+  ('00000000-0000-4000-8000-0000000b9003', '21000000-0000-4000-8000-000000000001', 'Outra Pessoa', 'Outra Mãe', '1990-01-01', NULL, 'TU-3'),
+  -- mesmo nome, nascimento digitado diferente e em branco: regra ampla
+  ('00000000-0000-4000-8000-0000000b9004', '21000000-0000-4000-8000-000000000001', 'Pedro Homônimo', 'teste', '1994-06-10', NULL, 'TU-4'),
+  ('00000000-0000-4000-8000-0000000b9005', '21000000-0000-4000-8000-000000000001', 'PEDRO HOMÔNIMO', NULL, NULL, NULL, 'TU-5');
 -- o duplicado tem um atendimento antigo encerrado e um aberto; o principal, um aberto
 INSERT INTO public.episodios (id, unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por, chegada_em, desfecho, encerrado_em) VALUES
   ('00000000-0000-4000-8000-0000000b9e01', '21000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000b9002',
@@ -41,7 +44,11 @@ BEGIN
   IF EXISTS (SELECT 1 FROM jsonb_array_elements(c) x WHERE x::text LIKE '%0000000b9003%') THEN
     RAISE EXCEPTION 'FALHOU: cadastro sem relação virou candidato';
   END IF;
-  RAISE NOTICE 'OK  candidatos: mesma mãe + nascimento (sem acento/maiúscula); sem relação fora';
+  IF NOT EXISTS (SELECT 1 FROM jsonb_array_elements(c) x
+                  WHERE x -> 'regras' ? 'nome_conferir' AND x::text LIKE '%0000000b9004%' AND x::text LIKE '%0000000b9005%') THEN
+    RAISE EXCEPTION 'FALHOU: mesmo nome com nascimento diferente/em branco não apareceu';
+  END IF;
+  RAISE NOTICE 'OK  candidatos: mesma mãe + nascimento; mesmo nome com nascimento diferente/em branco; sem relação fora';
 END $$;
 INSERT INTO t SELECT 'pedido', public.pedir_unificacao('00000000-0000-4000-8000-0000000b9001', '00000000-0000-4000-8000-0000000b9002', 'Mesma paciente: nome digitado diferente na recepção')::text;
 DO $$ BEGIN
