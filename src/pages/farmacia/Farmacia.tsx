@@ -18,9 +18,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Diluicoes from './Diluicoes'
 import { EnviarArquivo } from './EnviarArquivo'
+import { PainelFarmacia } from './PainelFarmacia'
 
 const ABAS = [
-  ['disponibilidade', 'Disponibilidade'], ['diluicao', 'Diluição padrão'], ['rascunhos', 'Rascunhos'],
+  ['painel', 'Painel'], ['disponibilidade', 'Disponibilidade'], ['diluicao', 'Diluição padrão'], ['rascunhos', 'Rascunhos'],
   ['faltas', 'Faltas'], ['validacao', 'Validação'],
 ] as const
 type Aba = (typeof ABAS)[number][0]
@@ -60,7 +61,7 @@ export function Filtro({ ativo, onClick, children }: { ativo: boolean; onClick: 
 }
 
 export default function Farmacia() {
-  const [aba, setAba] = React.useState<Aba>('disponibilidade')
+  const [aba, setAba] = React.useState<Aba>('painel')
   const [rascunho, setRascunho] = React.useState<string | null>(null)
   const { unidadeAtiva } = useUnidade()
   const unidade = unidadeAtiva?.unidade_id
@@ -69,6 +70,8 @@ export default function Farmacia() {
       <TituloPagina icone={FlaskConical} titulo="Central do Farmacêutico"
         descricao="O que existe na unidade, como se dilui e o que volta para correção" />
       <Abas abas={ABAS} valor={aba} onChange={setAba} rotulo="Central do Farmacêutico" />
+      {/* Fase 2, tarefa 9: painel de críticos e faltas */}
+      {unidade && aba === 'painel' && <PainelFarmacia unidade={unidade} podeAgir irPara={setAba} />}
       {unidade && aba === 'disponibilidade' && <Disponibilidade unidade={unidade} />}
       {unidade && aba === 'diluicao' && <PadraoUnidade unidade={unidade} abrirRascunho={(id) => { setRascunho(id); setAba('rascunhos') }} />}
       {aba === 'rascunhos' && <Diluicoes embutido selecionadaInicial={rascunho} />}

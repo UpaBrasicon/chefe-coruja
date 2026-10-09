@@ -246,6 +246,16 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
       return (data ?? []) as Medicamento[]
     },
   })
+  // Fase 2, tarefa 9: medicamento em falta na farmácia e o retorno dela
+  const falta = useQuery({
+    queryKey: ['falta-medicamento', unidadeAtiva?.unidade_id, med?.id],
+    enabled: !!med && !!unidadeAtiva?.unidade_id,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('falta_do_medicamento', { p_unidade: unidadeAtiva!.unidade_id, p_medicamento: med!.id })
+      if (error) throw error
+      return data as unknown as { situacao: string; sinalizada_em: string; retorno: { texto: string; por: string | null; em: string } | null } | null
+    },
+  })
   const diluicao = useQuery({
     queryKey: ['diluicao-vigente', med?.id, f.via],
     enabled: !!med && VIAS_COM_DILUICAO.includes(f.via),
@@ -332,6 +342,12 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                   if (!error) setFaltaAvisada(true)
                 }}>{faltaAvisada ? 'Falta sinalizada' : 'Sinalizar falta'}</Button>
                 <Button size="xs" variant="ghost" onClick={() => { setMed(null); setFaltaAvisada(false) }}>Trocar</Button>
+                {falta.data && (
+                  <span role="note" className="w-full text-xs text-atencao">
+                    Em falta na farmácia ({falta.data.situacao === 'em_cotacao' ? 'em cotação' : 'sinalizada'}).
+                    {falta.data.retorno ? ` Retorno da farmácia: “${falta.data.retorno.texto}”.` : ' Sem retorno da farmácia ainda.'}
+                  </span>
+                )}
               </div>
             ) : (
               <div className="flex flex-col gap-1">

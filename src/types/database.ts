@@ -10744,6 +10744,8 @@ export type Database = {
         Returns: undefined
       }
       excluir_mensagem: { Args: { p_mensagem_id: string }; Returns: undefined }
+      falta_do_medicamento: { Args: { p_medicamento: string; p_unidade: string }; Returns: Json }
+      faltas_priorizadas: { Args: { p_unidade: string }; Returns: Json }
       faltas_rascunho: { Args: { p_rascunho: string }; Returns: Json }
       farmacia_do_gestor: { Args: { p_unidade: string }; Returns: Json }
       farmacia_estoque: {
@@ -12196,6 +12198,7 @@ export type Database = {
         }
         Returns: string
       }
+      registrar_retorno_falta: { Args: { p_falta: string; p_texto: string }; Returns: string }
       registrar_sae: {
         Args: {
           p_avaliacao: string

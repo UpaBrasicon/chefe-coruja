@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Spinner } from '@/components/ui/spinner'
+import { PainelFarmacia } from '@/pages/farmacia/PainelFarmacia'
 
 type Falta = {
   id: string; medicamento: string; apresentacao: string | null; situacao: 'registrada' | 'em_cotacao' | 'reposta'
@@ -73,6 +74,8 @@ export default function FarmaciaGestor() {
   return (
     <div className="mx-auto w-full max-w-[896px]">
       <TituloPagina icone={FlaskConical} titulo="Farmácia" />
+      {/* Fase 2, tarefa 9: o gestor vê o painel de críticos e faltas (a ação é do farmacêutico) */}
+      {unidadeId && <div className="mb-6"><PainelFarmacia unidade={unidadeId} podeAgir={false} /></div>}
       {dados.error && <p className="mb-3 text-apoio text-critico">{(dados.error as Error).message}</p>}
       {dados.isLoading && <div className="flex justify-center py-8"><Spinner /></div>}
 
