@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { numero, type Escore } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
 import { nacVO } from './intoxicacoes.ts'
@@ -8,11 +9,31 @@ import { nacVO } from './intoxicacoes.ts'
 // terlipressina, estádio ICA-AKI, Maddrey, King's College, NAC por peso) e
 // mostra cada número com a página. A decisão é do médico (ADR 0007).
 
-export const fichaAsciteShr = fichaAdulto(
+// Revisão PubMed de 09/10/2026 (decisão do RT): os critérios de SHR do
+// consenso ADQI-ICA 2024 entram ao lado do livro, com a divergência explícita
+// (a EASL mantém as 48 h de albumina). Nenhuma dose nova.
+export const ADQI_ICA_2024: Fonte = {
+  citacao: 'Nadim MK, Kellum JA, Forni L, et al. Acute kidney injury in patients with cirrhosis: Acute Disease Quality Initiative (ADQI) and International Club of Ascites (ICA) joint multidisciplinary consensus meeting. J Hepatol. 2024;81(1):163–183 (PMID 38527522).',
+  url: 'https://doi.org/10.1016/j.jhep.2024.03.031',
+}
+export const CONTESTACAO_SHR_2025: Fonte = {
+  citacao: 'Schleicher EM, et al. J Hepatol. 2025;83:682–691 (PMID 40118117) e Angeli P, et al. J Hepatol. 2025;83:800–802 (PMID 40250764): resposta à albumina entre 24 e 48 h em parte dos pacientes; seguir o algoritmo EASL (48 h) até haver mais dados.',
+  url: 'https://doi.org/10.1016/j.jhep.2025.03.008',
+}
+
+export const DIVERGENCIA_SHR_2024 = 'ADQI-ICA 2024 (posterior ao livro): a LRA na cirrose segue o KDIGO, incluindo a diurese ≤ 0,5 mL/kg/h por ≥ 6 h; HRS-AKI é a falta de melhora da creatinina e/ou da diurese em 24 h após ressuscitação volêmica adequada, quando indicada; o consenso é contra exigir 48 h de albumina para o diagnóstico (risco de sobrecarga e de atrasar a terlipressina); os nomes passam a HRS-AKI, HRS-AKD e HRS-CKD. Divergência: estudo de 2025 mostrou resposta à albumina só entre 24 e 48 h em 18–28% dos pacientes, e a EASL recomenda manter as 48 h até haver mais dados. A ferramenta mostra o esquema do livro; a escolha é do médico.'
+
+const fichaAsciteLivro = fichaAdulto(
   'adulto-ascite-pbe-hepatorrenal',
   'Ascite, PBE e síndrome hepatorrenal — adulto',
   'cap. 55 Ascite, p. 755–767; cap. 57 Peritonite bacteriana espontânea, p. 779–786; cap. 58 Síndrome hepatorrenal, p. 789–797',
 )
+export const fichaAsciteShr: Ficha = {
+  ...fichaAsciteLivro,
+  versao: '2026-10-09.1',
+  fontes: [...fichaAsciteLivro.fontes, ADQI_ICA_2024, CONTESTACAO_SHR_2025],
+  revisadoEm: '09/10/2026 (ADQI-ICA 2024 e a divergência EASL ao lado do livro)',
+}
 
 export const fichaInsuficienciaHepatica = fichaAdulto(
   'adulto-encefalopatia-hepatites-graves',
