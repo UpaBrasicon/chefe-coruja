@@ -10,6 +10,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
+import { Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { supabase } from '@/lib/supabase'
@@ -220,6 +221,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
         {verHistorico && <HistoricoEncerrado pacienteId={ep.paciente_id} />}
         {/* Fase 1, tarefa 12: marca de reentrada de contingência (papel) */}
         {unidadeJanela && <ReentradaContingencia unidadeId={unidadeJanela} episodioId={ep.id} chegadaEm={ep.chegada_em} />}
+        {/* Fase 2, tarefa 4: intercorrência estruturada */}
+        <Intercorrencias pacienteId={ep.paciente_id} episodioId={ep.id} />
         {faixa === 'pediatrico' && (
           <div className="flex items-start gap-2 rounded-container border border-pediatria/25 bg-pediatria/[0.06] px-3.5 py-2.5 text-apoio text-pediatria">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />

@@ -26,7 +26,7 @@ import {
 } from 'lucide-react'
 import { ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileText, History, Video } from 'lucide-react'
-import { FileWarning, GitMerge, LifeBuoy, ShieldAlert } from 'lucide-react'
+import { FileWarning, GitMerge, LifeBuoy, ShieldAlert, Siren } from 'lucide-react'
 
 import type { Papel } from '@/types/database'
 
@@ -70,6 +70,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   gestor: [
     { to: '/gestao', rotulo: 'Painel', icone: LayoutDashboard, exato: true },
     { to: '/gestao/porta', rotulo: 'Porta', icone: DoorOpen, exato: true },
+    { to: '/gestao/intercorrencias', rotulo: 'Intercorrências', curto: 'Intercorr.', icone: Siren, exato: true },
     { to: '/cadastros-duplicados', rotulo: 'Cadastros duplicados', curto: 'Duplicados', icone: GitMerge, exato: true },
     { to: '/gestao/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: Bird, exato: true },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },

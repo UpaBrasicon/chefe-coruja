@@ -66,6 +66,7 @@ const FarmaciaGestor = lazy(() => import('@/pages/gestor/FarmaciaGestor'))
 const ProtocolosGestor = lazy(() => import('@/pages/gestor/Protocolos'))
 const OlhoDeGaviao = lazy(() => import('@/pages/gestor/OlhoDeGaviao'))
 const PortaAgora = lazy(() => import('@/pages/gestor/PortaAgora'))
+const IntercorrenciasRelatorio = lazy(() => import('@/pages/gestor/IntercorrenciasRelatorio'))
 const CadastrosDuplicados = lazy(() => import('@/pages/recepcao/CadastrosDuplicados'))
 const Contingencia = lazy(() => import('@/pages/Contingencia'))
 const AltaVigilancia = lazy(() => import('@/pages/farmacia/AltaVigilancia'))
@@ -292,6 +293,8 @@ export default function App() {
                         <Route path="/gestao/gaviao" element={<OlhoDeGaviao />} />
                         {/* Fase 1, tarefa 2: Dashboard PS/UPA */}
                         <Route path="/gestao/porta" element={<PortaAgora />} />
+                        {/* Fase 2, tarefa 4: relatório de intercorrências */}
+                        <Route path="/gestao/intercorrencias" element={<IntercorrenciasRelatorio />} />
                         {/* 30/09/2026: o gestor abre e acompanha chamado técnico da unidade */}
                         <Route path="/gestao/chamados" element={<ChamadosTecnicosGestor />} />
                         <Route path="/auditoria" element={<Auditoria />} />
