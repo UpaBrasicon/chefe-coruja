@@ -4,12 +4,15 @@
 // Itens ativos das prescrições dos pacientes do meu plantão. O enfermeiro
 // apraza; a enfermagem checa cada administração — feito, não feito ou
 // recusado (os dois últimos com motivo). Nada se apaga: corrigir é checar de
-// novo, e vale o último registro.
+// novo, e vale o último registro. Medicamento de alta vigilância (Fase 2,
+// tarefa 1) só é "feito" depois de duas conferências por profissionais
+// diferentes: a 1ª da enfermagem, a 2ª de enfermeiro ou farmacêutico.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ClipboardCheck } from 'lucide-react'
+import { ClipboardCheck, ShieldAlert } from 'lucide-react'
 import * as React from 'react'
 
+import { etapaDupla, type EstadoDupla } from '@/lib/duplaChecagem'
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
@@ -48,7 +51,22 @@ export default function Checagem() {
       return (data ?? []) as Linha[]
     },
   })
-  const recarregar = () => void qc.invalidateQueries({ queryKey: ['fila-checagem'] })
+  const ids = (fila.data ?? []).map((l) => l.item_id)
+  // quais itens exigem dupla checagem e as conferências em aberto
+  const dupla = useQuery({
+    queryKey: ['estado-dupla', ids.join(',')],
+    enabled: ids.length > 0,
+    refetchInterval: 15_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('estado_dupla_checagem', { p_itens: ids })
+      if (error) throw error
+      return new Map(((data ?? []) as unknown as EstadoDupla[]).map((e) => [e.item_id, e]))
+    },
+  })
+  const recarregar = () => {
+    void qc.invalidateQueries({ queryKey: ['fila-checagem'] })
+    void qc.invalidateQueries({ queryKey: ['estado-dupla'] })
+  }
   const pacientes = new Map<string, Linha[]>()
   for (const l of fila.data ?? []) pacientes.set(l.paciente_id, [...(pacientes.get(l.paciente_id) ?? []), l])
 
@@ -69,7 +87,7 @@ export default function Checagem() {
               <AlergiaNaTela pacienteId={id} />
             </CardHeader>
             <CardContent className="flex flex-col gap-2 text-sm">
-              {itens.map((l) => <ItemChecagem key={l.item_id} l={l} podeAprazar={papelAtivo === 'enfermeiro'} aoMudar={recarregar} aoErro={setErro} />)}
+              {itens.map((l) => <ItemChecagem key={l.item_id} l={l} dupla={dupla.data?.get(l.item_id)} souEnfermeiro={papelAtivo === 'enfermeiro'} aoMudar={recarregar} aoErro={setErro} />)}
             </CardContent>
           </Card>
         ))}
@@ -78,7 +96,10 @@ export default function Checagem() {
   )
 }
 
-function ItemChecagem({ l, podeAprazar, aoMudar, aoErro }: { l: Linha; podeAprazar: boolean; aoMudar: () => void; aoErro: (m: string | null) => void }) {
+function ItemChecagem({ l, dupla, souEnfermeiro, aoMudar, aoErro }: {
+  l: Linha; dupla: EstadoDupla | undefined; souEnfermeiro: boolean; aoMudar: () => void; aoErro: (m: string | null) => void
+}) {
+  const podeAprazar = souEnfermeiro
   const [horarios, setHorarios] = React.useState((l.horarios ?? []).join(', '))
   const [horario, setHorario] = React.useState('')
   const [pedindo, setPedindo] = React.useState<'nao_feito' | 'recusado' | null>(null)
@@ -88,6 +109,15 @@ function ItemChecagem({ l, podeAprazar, aoMudar, aoErro }: { l: Linha; podeApraz
   // item aprazado: a checagem é de um horário (o servidor também exige)
   const aprazado = !l.se_necessario && (l.horarios?.length ?? 0) > 0
   const faltaHorario = aprazado && !horario
+  const etapa = dupla ? etapaDupla(dupla, horario || null) : null
+  const bloqueadoPelaDupla = !!etapa && etapa.etapa !== 'pronta'
+
+  async function conferir() {
+    if (faltaHorario) return aoErro(`${l.descricao}: escolha o horário aprazado antes da conferência.`)
+    const { error } = await supabase.rpc('conferir_alta_vigilancia', { p_item: l.item_id, p_horario: horario || undefined })
+    if (error) return aoErro(error.message)
+    aoErro(null); aoMudar()
+  }
 
   async function checar(situacao: 'feito' | 'nao_feito' | 'recusado', m?: string) {
     if (faltaHorario) return aoErro(`${l.descricao}: escolha o horário aprazado que está sendo checado.`)
@@ -102,6 +132,7 @@ function ItemChecagem({ l, podeAprazar, aoMudar, aoErro }: { l: Linha; podeApraz
         <span className="font-medium text-tinta">{l.descricao}</span>
         {l.tipo === 'medicamento' && <span>{l.dose} · {l.via} · {l.posologia}{l.se_necessario ? ' · se necessário' : ''}</span>}
         {l.vasoativo && <Badge variant="warning">vasoativo</Badge>}
+        {dupla && <Badge variant="destructive" title={dupla.regra}><ShieldAlert className="size-3" /> alta vigilância · dupla checagem</Badge>}
         {st && <Badge variant={st.variante} className="ml-auto">{st.rotulo}{l.ultima_horario ? ` ${l.ultima_horario}` : ''}</Badge>}
       </div>
       {l.diluicao_texto && <p className="text-xs text-tinta-apoio">Diluição: {l.diluicao_texto}</p>}
@@ -116,6 +147,31 @@ function ItemChecagem({ l, podeAprazar, aoMudar, aoErro }: { l: Linha; podeApraz
               </Badge>
             )
           })}
+        </div>
+      )}
+      {etapa && (
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-critico/30 bg-critico/[0.05] px-2.5 py-1.5 text-xs">
+          {etapa.etapa === 'nenhuma' && (
+            <>
+              <span className="text-tinta-apoio">Confira paciente, medicamento, dose, via e diluição e registre a 1ª conferência{aprazado ? ' do horário escolhido' : ''}.</span>
+              <Button size="xs" variant="outline" onClick={() => void conferir()}>1ª conferência</Button>
+            </>
+          )}
+          {etapa.etapa === 'aguardando_segunda' && (
+            <>
+              <span className="text-tinta-apoio">
+                1ª conferência: {etapa.conferencia.primeiro_por}, {hora(etapa.conferencia.primeiro_em)}. Falta a 2ª, de outro profissional (enfermeiro ou farmacêutico).
+              </span>
+              {souEnfermeiro && !etapa.conferencia.sou_o_primeiro && (
+                <Button size="xs" variant="outline" onClick={() => void conferir()}>2ª conferência</Button>
+              )}
+            </>
+          )}
+          {etapa.etapa === 'pronta' && (
+            <span className="text-conforme">
+              Conferido por {etapa.conferencia.primeiro_por} e {etapa.conferencia.segundo_por}. Pode registrar como feito.
+            </span>
+          )}
         </div>
       )}
       {l.ultima_em && <p className="text-xs text-tinta-sussurro">Última checagem: {hora(l.ultima_em)} · {l.ultima_por}</p>}
@@ -138,7 +194,8 @@ function ItemChecagem({ l, podeAprazar, aoMudar, aoErro }: { l: Linha; podeApraz
             {l.horarios.map((h) => <option key={h}>{h}</option>)}
           </select>
         ) : null}
-        <Button size="xs" onClick={() => void checar('feito')}>Feito</Button>
+        <Button size="xs" disabled={bloqueadoPelaDupla} title={bloqueadoPelaDupla ? 'Alta vigilância: faltam as duas conferências' : undefined}
+          onClick={() => void checar('feito')}>Feito</Button>
         <Button size="xs" variant="outline" onClick={() => setPedindo('nao_feito')}>Não feito</Button>
         <Button size="xs" variant="outline" onClick={() => setPedindo('recusado')}>Recusado</Button>
       </div>
