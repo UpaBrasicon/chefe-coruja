@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ALCOOIS, BCC, BETABLOQUEADOR, BICARBONATO_ERRATA, BICARBONATO_LITIO, BICARBONATO_USOS, CARVAO, CARVAO_INDICACAO, CIANETO,
+  ALCOOIS, BCC, BETABLOQUEADOR, BICARBONATO_ERRATA, BICARBONATO_LITIO, BICARBONATO_USOS, CARVAO, CARVAO_CTRC_2026, CARVAO_INDICACAO, CIANETO,
   DIGOXINA, FISOSTIGMINA, FLUMAZENIL, KINGS_COLLEGE, MONOXIDO, NAC, NALOXONA, ORGANOFOSFORADO, PEDIATRICO_CITADO,
   acidoFolicoMg, atropinaDobrando, bccFigura, bicarbonatoBolus, calcioBccManutencao, carvaoMultiplasDoses, carvaoPorMassaIngerida,
   carvaoPorPeso, carvaoTriciclico, etanolEV, fichaIntoxicacoesAdulto, flumazenilBolusMaximos, fomepizol, frascosPorDose,
@@ -43,6 +43,11 @@ function Carvao({ peso }: { peso: number }) {
         opcoes={[{ value: '2', label: 'a cada 2 h' }, { value: '3', label: 'a cada 3 h' }, { value: '4', label: 'a cada 4 h' }]} />
       <LinhaManual nome="Múltiplas doses" texto="12,5 g/hora ou o equivalente a cada 2 a 4 horas (ex.: 50 g a cada 4 h)" pagina="p. 1302"
         conta={mult !== null ? <strong>{br(mult)} g por dose</strong> : undefined} />
+      <p role="note" className="rounded-md border border-atencao/40 bg-atencao/[0.08] px-3 py-2 text-sm text-atencao">
+        Consenso CTRC 2026 (Clin Toxicol 2026, PMID 41906697), posterior ao livro: amplia a janela para até 6 h em muitos venenos. O livro (2022) trata apresentação &gt; 2 h como contraindicação. A decisão é do médico, pelo veneno, pelo tempo e pela gravidade.
+      </p>
+      {CARVAO_CTRC_2026.map((i) => <LinhaManual key={i.id} nome={i.nome} texto={i.texto} pagina={i.pagina} />)}
+      <p className="text-sm font-medium text-tinta-sussurro">O que o livro traz (2022)</p>
       {CARVAO_INDICACAO.map((i) => <LinhaManual key={i.id} nome={i.nome} texto={i.texto} pagina={i.pagina} errata={i.errata} />)}
     </Bloco>
   )
