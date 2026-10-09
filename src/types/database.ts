@@ -10204,6 +10204,7 @@ export type Database = {
         }
         Returns: string
       }
+      cobertura_auditoria_clinica: { Args: { p_dias?: number; p_unidade: string }; Returns: Json }
       codigos_recuperacao_status: {
         Args: never
         Returns: {
