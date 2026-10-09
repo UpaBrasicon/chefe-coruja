@@ -13,10 +13,13 @@ const run = (cmd, args) => execFileSync(cmd, args, { cwd: raiz, stdio: 'inherit'
 run('node', ['--experimental-strip-types', 'scripts/ferramentas-json.mjs'])
 run('node', ['--experimental-strip-types', 'scripts/corpus-central.mjs'])
 run('scp', ['-q', 'biblioteca/ferramentas.json', 'biblioteca/fontes.yaml', `${VPS}:/srv/biblioteca/`])
-run('scp', ['-q', '-r', 'biblioteca/corpus', `${VPS}:/srv/biblioteca/`])
+run('scp', ['-q', '-r', 'biblioteca/corpus', 'biblioteca/referencias', 'biblioteca/abertas-cc-by', 'biblioteca/abertas-cc-by-nc', `${VPS}:/srv/biblioteca/`])
 run('scp', ['-q', 'biblioteca/app/main.py', 'biblioteca/app/pii.py', 'biblioteca/app/ingest.py', 'biblioteca/app/index_tools.py',
   'biblioteca/app/Dockerfile', 'biblioteca/app/requirements.txt', `${VPS}:/srv/biblioteca/app/`])
 run('scp', ['-q', 'biblioteca/evals/perguntas.yaml', 'biblioteca/evals/run.py', `${VPS}:/srv/biblioteca/evals/`])
+// referencias/: fichas-resumo de obras com direitos reservados (só citação e resumo da equipe);
+// abertas-cc-by/ e abertas-cc-by-nc/: texto integral de artigos abertos (Europe PMC);
+// entram na ingestão depois que o RT registrar as pastas em fontes.yaml
 const ingerir = process.argv.includes('--ingerir') ? ' && docker compose run --rm -T api python ingest.py corpus' : ''
 // os .py entram na imagem (Dockerfile COPY): rebuild antes de rodar
 run('ssh', [VPS, `chown -R hermes:hermes /srv/biblioteca && cd /srv/biblioteca && docker compose build -q api && docker compose run --rm -T api python index_tools.py${ingerir}`])
