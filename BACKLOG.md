@@ -238,7 +238,7 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 |---|---|---|
 | 1 — Dupla checagem | Pronta na homologação, aguardando teste do RT | Branch `fase2/dupla-checagem`; migration `20261031000001_dupla_checagem.sql` (só homologação); teste `supabase/tests/fase2_dupla_checagem.sql` |
 | 2 — Aprazamento assistido | Pronta na homologação, aguardando teste do RT | Branch `fase2/aprazamento-assistido` (sobre a da tarefa 1); migration `20261031000002_aprazamento_assistido.sql` (só homologação); teste `supabase/tests/fase2_aprazamento_assistido.sql` |
-| 3 — Interações medicamentosas | Decidida em 09/10: **opção C**. Começa pela A (lista curada de pares críticos pelo RT/farmacêutico, a partir da lista ONC e das bulas ANVISA, com fonte por linha); a B (base comercial licenciada) fica como plano futuro | Opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
+| 3 — Interações medicamentosas | **Pronta na homologação (opção A), aguardando teste do RT.** Branch `fase2/interacoes`; migration `20261031000005_interacoes_criticas.sql` (só homologação); teste `supabase/tests/fase2_interacoes_criticas.sql`. Decidida em 09/10: **opção C**. Começa pela A (lista curada de pares críticos pelo RT/farmacêutico, a partir da lista ONC e das bulas ANVISA, com fonte por linha); a B (base comercial licenciada) fica como plano futuro | Opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
 | 4 — Intercorrência estruturada | Pronta na homologação, aguardando teste do RT | Branch `fase2/intercorrencia` (sobre a da tarefa 2); migration `20261031000003_intercorrencia.sql` (só homologação); teste `supabase/tests/fase2_intercorrencia.sql` |
 | 5 — Fugulin | Decidida em 09/10: **versão de 12 áreas** (intensivo acima de 34; a unidade tem leito semi-intensivo). Na tela, **só um resumo** de cada graduação, sem o texto do artigo | Ver "Fugulin" abaixo |
 | 7 — Teste do offline | **Concluída em 09/10** (relatório; sem migration) | Branch `fase2/teste-offline`; `produto/docs/fase2/teste-offline-2026-10-09.md`; plano de contingência atualizado |
@@ -284,6 +284,14 @@ Tarefa 7, como ficou:
 - **Regras do cliente.** Têm teste próprio (`src/lib/offline/regras.test.ts`).
 - **Limites.** Recarregar durante a queda leva ao login (guardado em "Depois do backlog"). A mensagem do app agora usa a tolerância do servidor, de 20 min por decisão do RT de 03/10, e não os 15 do ADR.
 - **Relatório.** `produto/docs/fase2/teste-offline-2026-10-09.md`. O plano de contingência foi atualizado.
+
+Tarefa 3, como ficou (opção A da decisão C):
+- **Lista da unidade.** Grupos de fármacos (por princípio ativo) e pares de grupos, com gravidade (contraindicada ou grave), efeito, conduta e fonte. Quem cuida dela é o farmacêutico ou o gestor, em Interações críticas. O médico só lê.
+- **Modelo ONC.** Os 15 pares da lista ONC (Phansalkar 2012), resumidos com as nossas palavras, chegam como **proposta**, que não alerta. Os grupos de um fármaco só já vêm preenchidos (atazanavir, febuxostate, irinotecano, ramelteona, tizanidina, tranilcipromina, procarbazina). Os grupos de classe (IMAO, ISRS, opioides, prolongam o QT, inibidores e indutores de CYP etc.) **ficam vazios para a farmácia preencher a partir das bulas**. Par sem fármaco nos grupos não ativa.
+- **Prescrição.** Com par ativo e o outro fármaco vigente, o item não entra. Aparece o alerta (fármaco, gravidade, grupos, efeito, conduta, fonte), e o médico prescreve só com justificativa. A justificativa fica no item, aparece na linha da prescrição e vai para a auditoria. Ao alterar o item, a justificativa da versão anterior segue com ele.
+- **Verificado no navegador local.** Fluoxetina e depois selegilina com o par ISRS × IMAO ativo: alerta, justificativa e linha com a interação justificada.
+- **Teste do RT.** Como farmacêutico ou gestor, em Interações críticas: preencher os grupos de um par (ex.: ISRS e IMAO) e ativar. Como médico: prescrever os dois e ver o alerta.
+- **Plano B.** A base comercial licenciada fica para o futuro. A tabela já guarda a fonte por linha.
 
 **Ordem técnica da Fase 2**
 1. Ajustar cadastro de medicamentos alto risco.

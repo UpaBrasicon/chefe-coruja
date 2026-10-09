@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
 import { AlterarItem } from '@/components/prescricao/AlterarItem'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
+import { interacoesDoErro, type InteracaoJustificada, type InteracaoNaPrescricao } from '@/lib/interacoes'
 
 type ItemVigente = {
   id: string; tipo: 'medicamento' | 'cuidado'; descricao: string; medicamento_id: string | null; dose: string | null; via: string | null
@@ -108,6 +109,16 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
   }
 
   const lista = itens.data ?? []
+  // interações justificadas pelo médico (Fase 2, tarefa 3)
+  const justificadas = useQuery({
+    queryKey: ['interacoes-justificadas', pacienteId, lista.map((i) => i.id).join(',')],
+    enabled: lista.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('interacoes_justificadas', { p_itens: lista.map((i) => i.id) })
+      if (error) throw error
+      return (data ?? []) as unknown as InteracaoJustificada[]
+    },
+  })
   return (
     <div className="flex flex-col gap-4">
       {erro && <p className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</p>}
@@ -121,7 +132,7 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
         <CardContent className="flex flex-col gap-2 text-sm">
           <ResumoAlergias pacienteId={pacienteId} nome={paciente.nome} />
           {lista.length === 0 && <p className="text-tinta-sussurro">Nenhum item prescrito.</p>}
-          {lista.map((i) => <LinhaItem key={i.id} i={i} aoMudar={recarregar} aoErro={setErro} />)}
+          {lista.map((i) => <LinhaItem key={i.id} i={i} justificadas={(justificadas.data ?? []).filter((j) => j.item_id === i.id)} aoMudar={recarregar} aoErro={setErro} />)}
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <Button size="sm" onClick={() => void imprimir()} disabled={lista.length === 0}><Printer /> Imprimir prescrição</Button>
             {perfil && <span className="text-xs text-tinta-sussurro">Autor de cada item: quem prescreveu (login).</span>}
@@ -133,7 +144,9 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
   )
 }
 
-function LinhaItem({ i, aoMudar, aoErro }: { i: ItemVigente; aoMudar: () => void; aoErro: (m: string | null) => void }) {
+function LinhaItem({ i, justificadas, aoMudar, aoErro }: {
+  i: ItemVigente; justificadas: InteracaoJustificada[]; aoMudar: () => void; aoErro: (m: string | null) => void
+}) {
   const [suspendendo, setSuspendendo] = React.useState(false)
   const [motivo, setMotivo] = React.useState('')
   return (
@@ -153,6 +166,11 @@ function LinhaItem({ i, aoMudar, aoErro }: { i: ItemVigente; aoMudar: () => void
         </p>
       )}
       {i.observacao && <p className="text-xs text-tinta-sussurro">{i.observacao}</p>}
+      {justificadas.map((j) => (
+        <p key={j.outro + j.em} className="text-xs text-critico">
+          Interação {j.gravidade} com {j.outro} ({j.efeito}) — justificada por {j.por ?? '—'}: “{j.justificativa}”
+        </p>
+      ))}
       {i.validacao === 'devolvido' && <p className="text-xs text-critico">Farmácia devolveu para correção: {i.validacao_motivo}</p>}
       {i.validacao === 'confere' && <p className="text-xs text-conforme">Conferido pela farmácia.</p>}
       {suspendendo ? (
@@ -212,6 +230,9 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   const [novoPeso, setNovoPeso] = React.useState('')
   const [pedePeso, setPedePeso] = React.useState(false)
   const [faltaAvisada, setFaltaAvisada] = React.useState(false)
+  // Fase 2, tarefa 3: interação crítica trava o item até o médico justificar
+  const [interacao, setInteracao] = React.useState<{ item: Record<string, unknown>; lista: InteracaoNaPrescricao[] } | null>(null)
+  const [justInteracao, setJustInteracao] = React.useState('')
   const { unidadeAtiva } = useUnidade()
 
   const resultados = useQuery({
@@ -243,9 +264,11 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
     const { error } = await supabase.rpc('prescrever', { p_paciente: pacienteId, p_item: item as never })
     if (error) {
       if (/registre o peso/.test(error.message)) setPedePeso(true)
+      const lista = interacoesDoErro(error)
+      if (lista) { setInteracao({ item, lista }); return aoErro(null) }
       return aoErro(error.message)
     }
-    aoErro(null); limpar(); aoMudar()
+    aoErro(null); limpar(); setInteracao(null); setJustInteracao(''); aoMudar()
   }
   async function registrarPeso() {
     const n = Number(novoPeso.replace(',', '.'))
@@ -398,6 +421,25 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               })}>
               Prescrever
             </Button>
+            {interacao && (
+              <div role="alert" className="flex flex-col gap-2 rounded-lg border border-critico/40 bg-critico/[0.06] p-3 text-sm">
+                <strong className="text-critico">Interação crítica com a prescrição vigente</strong>
+                {interacao.lista.map((x) => (
+                  <div key={x.interacao_id + x.outro_item_id} className="flex flex-col gap-0.5">
+                    <span className="text-tinta"><b>{x.outro}</b> · {x.gravidade} · {x.grupos}</span>
+                    <span className="text-tinta-apoio">{x.efeito}{x.conduta ? ` Conduta: ${x.conduta}` : ''}</span>
+                    <span className="text-xs text-tinta-sussurro">Fonte: {x.fonte}</span>
+                  </div>
+                ))}
+                <Textarea placeholder="Por que prescrever mesmo assim (mínimo de 10 letras; fica no prontuário e na auditoria)" value={justInteracao}
+                  onChange={(e) => setJustInteracao(e.target.value)} />
+                <div className="flex gap-2">
+                  <Button size="sm" variant="destructive" disabled={justInteracao.trim().length < 10}
+                    onClick={() => void prescrever({ ...interacao.item, justificativa_interacao: justInteracao.trim() })}>Prescrever com justificativa</Button>
+                  <Button size="sm" variant="ghost" onClick={() => { setInteracao(null); setJustInteracao('') }}>Não prescrever</Button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </CardContent>
