@@ -232,20 +232,28 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 - Alteração versionada de item de prescrição: **só o médico, com motivo**; versão anterior guardada; enfermagem vê o aviso na checagem.
 - Read replica: **não agora** (só quando os painéis pesarem).
 
-**Andamento da Fase 2**
+**Andamento da Fase 2** (atualizado em 09/10/2026, noite)
+
+Todas as tarefas de 1 a 9 estão **em produção**. As PRs foram mergeadas no master, e as migrations `20261031000001` a `000008` foram aplicadas na produção com o "ok produção" do RT de 09/10/2026. O roteiro foi rodado no app local, com os resultados em `produto/docs/fase2/resultado-roteiro-2026-10-09.md`.
 
 | Tarefa | Situação | Onde |
 |---|---|---|
-| 1 — Dupla checagem | Pronta na homologação, aguardando teste do RT | Branch `fase2/dupla-checagem`; migration `20261031000001_dupla_checagem.sql` (só homologação); teste `supabase/tests/fase2_dupla_checagem.sql` |
-| 2 — Aprazamento assistido | Pronta na homologação, aguardando teste do RT | Branch `fase2/aprazamento-assistido` (sobre a da tarefa 1); migration `20261031000002_aprazamento_assistido.sql` (só homologação); teste `supabase/tests/fase2_aprazamento_assistido.sql` |
-| 3 — Interações medicamentosas | **Pronta na homologação (opção A), aguardando teste do RT.** Branch `fase2/interacoes`; migration `20261031000005_interacoes_criticas.sql` (só homologação); teste `supabase/tests/fase2_interacoes_criticas.sql`. Decidida em 09/10: **opção C**. Começa pela A (lista curada de pares críticos pelo RT/farmacêutico, a partir da lista ONC e das bulas ANVISA, com fonte por linha); a B (base comercial licenciada) fica como plano futuro | Opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
-| 4 — Intercorrência estruturada | Pronta na homologação, aguardando teste do RT | Branch `fase2/intercorrencia` (sobre a da tarefa 2); migration `20261031000003_intercorrencia.sql` (só homologação); teste `supabase/tests/fase2_intercorrencia.sql` |
-| 5 — Fugulin | **Pronta na homologação, aguardando teste do RT.** Branch `fase2/fugulin`; migration `20261031000006_fugulin.sql` (só homologação); teste `supabase/tests/fase2_fugulin.sql`. Decidida em 09/10: **versão de 12 áreas** (intensivo acima de 34; a unidade tem leito semi-intensivo). Na tela, **só um resumo** de cada graduação, sem o texto do artigo | Ver "Fugulin" abaixo |
-| 9 — Painel da farmácia | **Pronta na homologação, aguardando teste do RT.** Branch `fase2/painel-farmacia`; migration `20261031000008_painel_farmacia.sql` (só homologação); teste `supabase/tests/fase2_painel_farmacia.sql` | Ver "Tarefa 9, como ficou" |
+| 1 — Dupla checagem | Em produção | Migration `20261031000001_dupla_checagem.sql`; teste `supabase/tests/fase2_dupla_checagem.sql` |
+| 2 — Aprazamento assistido | Em produção | Migration `20261031000002_aprazamento_assistido.sql`; teste `supabase/tests/fase2_aprazamento_assistido.sql` |
+| 3 — Interações medicamentosas | Em produção (opção A: lista curada de pares críticos, com fonte por linha; a base comercial, opção B, fica como plano futuro) | Migration `20261031000005_interacoes_criticas.sql`; teste `supabase/tests/fase2_interacoes_criticas.sql`; opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
+| 4 — Intercorrência estruturada | Em produção (os dois defeitos graves do roteiro foram corrigidos, PR #45) | Migration `20261031000003_intercorrencia.sql`; teste `supabase/tests/fase2_intercorrencia.sql` |
+| 5 — Fugulin | Em produção (12 áreas; intensivo acima de 34; na tela, só um resumo de cada graduação) | Migration `20261031000006_fugulin.sql`; teste `supabase/tests/fase2_fugulin.sql`; ficha registrada pela migration `20261101000001` |
+| 6 — Alteração versionada de item | Em produção | Migration `20261031000004_alteracao_item_prescricao.sql`; teste `supabase/tests/fase2_alteracao_item_prescricao.sql` |
+| 7 — Teste do offline | Concluída (relatório) | `produto/docs/fase2/teste-offline-2026-10-09.md`; plano de contingência atualizado |
+| 8 — Auditoria clínica | Em produção | Migration `20261031000007_auditoria_clinica.sql`; teste `supabase/tests/fase2_auditoria_clinica.sql` |
+| 9 — Painel da farmácia | Em produção (a correção do cache entrou pela PR #43) | Migration `20261031000008_painel_farmacia.sql`; teste `supabase/tests/fase2_painel_farmacia.sql` |
 | 10 — Réplica de leitura | Não agora (decisão do RT de 08/10) | — |
-| 8 — Auditoria clínica | **Pronta na homologação, aguardando teste do RT.** Branch `fase2/auditoria-clinica`; migration `20261031000007_auditoria_clinica.sql` (só homologação); teste `supabase/tests/fase2_auditoria_clinica.sql` | Ver "Tarefa 8, como ficou" |
-| 7 — Teste do offline | **Concluída em 09/10** (relatório; sem migration) | Branch `fase2/teste-offline`; `produto/docs/fase2/teste-offline-2026-10-09.md`; plano de contingência atualizado |
-| 6 — Alteração versionada de item | Pronta na homologação, aguardando teste do RT | Branch `fase2/alteracao-prescricao` (sobre a da tarefa 4); migration `20261031000004_alteracao_item_prescricao.sql` (só homologação); teste `supabase/tests/fase2_alteracao_item_prescricao.sql` |
+| Defeitos leves do roteiro | Corrigidos e conferidos no navegador local; na homologação; falta o PR | Branch `fase2/defeitos-leves`, sem migration |
+
+**Para encerrar a Fase 2 (com o RT):**
+1. Testar os 5 defeitos leves na homologação, pela seção 10 do roteiro. Depois, merge do PR `fase2/defeitos-leves`.
+2. Fazer o teste final pelo roteiro `produto/docs/fase2/roteiro-teste-fase2.md`, na homologação.
+3. Assinar o encerramento em `produto/docs/fase2/ENCERRAMENTO-FASE2.md`, com as evidências já reunidas.
 
 Tarefa 1, como ficou:
 - **Lista.** Regras do ISMP Brasil 2019 (Boletim v. 8, n. 1, fev. 2019) marcam o cadastro pelo princípio ativo, pela via na apresentação e pela concentração. Exemplos: glicose ≥ 20% e NaCl > 0,9%. Ficam só as regras e a citação, sem o texto do boletim, que tem direitos reservados.
@@ -334,7 +342,9 @@ Tarefa 9, como ficou:
 
 **Fase 2 PAUSADA em 09/10/2026 por decisão do RT**, para a revisão das ferramentas, das calculadoras e da biblioteca médica com o PubMed. Na volta: os defeitos leves acima e o teste do RT na homologação.
 
-**Fase 2 construída em 09/10/2026.** Tarefas 1 a 9 na homologação; a 10 não agora. Falta o teste do RT, os merges e o "ok produção" das migrations 20261031000001 a 000008.
+**Fase 2 RETOMADA em 09/10/2026, à noite**, depois da revisão PubMed (os 14 PRs foram mergeados, e a migration `20261101000001` foi aplicada na produção). Os defeitos leves já estão corrigidos. Falta o teste final do RT.
+
+**Fase 2 construída em 09/10/2026.** Tarefas 1 a 9 em produção desde 09/10/2026; a 10 não agora. Falta o teste final do RT (ver "Para encerrar a Fase 2").
 
 **Ordem técnica da Fase 2**
 1. Ajustar cadastro de medicamentos alto risco.
