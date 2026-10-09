@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ALBUMINA_COM_TERLIPRESSINA, ALBUMINA_FRASCO, ALBUMINA_PARACENTESE, ALBUMINA_PBE, ALBUMINA_SHR, ATB_PBE, CRITERIOS_SHR, DIFERENCIAL_LRA_CIRROSE, ERRATA_DISPENSA_ALBUMINA_PBE,
+  ALBUMINA_COM_TERLIPRESSINA, ALBUMINA_FRASCO, ALBUMINA_PARACENTESE, ALBUMINA_PBE, ALBUMINA_SHR, ATB_PBE, CRITERIOS_SHR, DIFERENCIAL_LRA_CIRROSE, DIVERGENCIA_SHR_2024, ERRATA_DISPENSA_ALBUMINA_PBE,
   ERRATA_GASA, ERRATA_NEJM_TERLIPRESSINA, ERRATA_RESPOSTA_PBE, FORA_HEPATOPATA, LIQUIDO_ASCITICO, NOTA_ALBUMINA_D1_TERLIPRESSINA, NOTA_ICA_AKI, NOTA_PARACENTESE,
   NOTA_PMN_250, NOTA_PROTEINURIA_INDICE, NOTA_RESPOSTA_25, NOTA_TERLIPRESSINA_CONTINUA, PROFILAXIA_PBE, TERLIPRESSINA_SHR, albuminaComTerlipressina,
   albuminaParacentese, albuminaPbe, albuminaShr, classificarLiquidoAscitico, criteriosDispensaAlbuminaPbe, criteriosPeritoniteSecundaria, degrausContinua,
@@ -136,6 +136,7 @@ export function AsciteHepatorrenalAdulto() {
       </Bloco>
 
       <Bloco titulo="Síndrome hepatorrenal — albumina e terlipressina" descricao={`${TERLIPRESSINA_SHR.pagina}.`}>
+        <p role="note" className="rounded-md border border-atencao/40 bg-atencao/[0.08] px-3 py-2 text-sm text-atencao">{DIVERGENCIA_SHR_2024}</p>
         <LinhaManual nome="Albumina — expansão" texto={ALBUMINA_SHR.texto} pagina={ALBUMINA_SHR.pagina}
           conta={shr ? <strong>{br(shr.gDia)} g/dia × 2 dias{shr.limitadoA100 ? ' (limitado a 100 g/dia)' : ''}</strong> : 'informe o peso'}
           nota={shr ? `Por dia: ${frascos(shr.frascosDia)}.` : undefined} />
