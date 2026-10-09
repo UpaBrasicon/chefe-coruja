@@ -323,6 +323,17 @@ Tarefa 9, como ficou:
 - **Verificado no navegador local.** Gestor: falta da selegilina com "1 paciente · Clínica Médica".
 - **Teste do RT.** Como médico, sinalizar falta de um medicamento de alta vigilância. Como farmacêutico, ver a falta no topo do Painel e enviar o retorno. Como médico, escolher o medicamento e ver o retorno.
 
+**Teste do roteiro (09/10/2026):** rodado no app local, resultado em `produto/docs/fase2/resultado-roteiro-2026-10-09.md`.
+- **Defeitos graves (corrigidos na branch `fase2/correcoes-roteiro`, já na homologação):** registrar intercorrência falhava sempre; enfermeiro e técnico não tinham o botão. É só a tela, sem migration.
+- **Defeitos leves, para a volta à Fase 2:**
+  - item "Agora" já feito volta a oferecer a 1ª conferência;
+  - a mensagem "Grade salva" some;
+  - a prescrição do médico não mostra a versão do item alterado;
+  - pontuação no alerta de interação;
+  - números repetidos na Central do Farmacêutico.
+
+**Fase 2 PAUSADA em 09/10/2026 por decisão do RT**, para a revisão das ferramentas, das calculadoras e da biblioteca médica com o PubMed. Na volta: os defeitos leves acima e o teste do RT na homologação.
+
 **Fase 2 construída em 09/10/2026.** Tarefas 1 a 9 na homologação; a 10 não agora. Falta o teste do RT, os merges e o "ok produção" das migrations 20261031000001 a 000008.
 
 **Ordem técnica da Fase 2**

@@ -8,6 +8,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import type { CorRisco } from '@/domain/risco'
 import { PainelCuidados } from '@/components/enfermagem/PainelCuidados'
+import { Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
 import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
 
@@ -36,6 +37,8 @@ export function GavetaCuidados({ paciente, onFechar }: { paciente: PacienteEmCui
             <CabecalhoPaciente pacienteId={paciente.pacienteId} nome={paciente.nome} local={paciente.local} setorId={paciente.setorId}
               contexto={paciente.contexto} desde={paciente.desde} rotuloDesde={paciente.rotuloDesde} corClassificacao={paciente.cor}
               acuidade className="shadow-none" />
+            {/* Fase 2, tarefa 4: enfermeiro e técnico também registram intercorrência (decisão do RT) */}
+            <Intercorrencias pacienteId={paciente.pacienteId} episodioId={paciente.episodioId} internacaoId={paciente.internacaoId} />
             <PainelCuidados pacienteId={paciente.pacienteId} episodioId={paciente.episodioId} internacaoId={paciente.internacaoId} />
           </div>
         </>
