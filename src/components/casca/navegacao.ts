@@ -26,7 +26,7 @@ import {
 } from 'lucide-react'
 import { ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileText, History, Video } from 'lucide-react'
-import { FileWarning, GitMerge, LifeBuoy, ShieldAlert, Siren } from 'lucide-react'
+import { FileWarning, GitMerge, LifeBuoy, Pill, ShieldAlert, Siren } from 'lucide-react'
 
 import type { Papel } from '@/types/database'
 
@@ -76,6 +76,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
     { to: '/gestao/farmacia', rotulo: 'Farmácia', icone: FlaskConical, exato: true },
     { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
+    { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
     { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true },
     { to: '/internacao', rotulo: 'Internação', icone: Hospital, exato: true },
     { to: '/observacao', rotulo: 'Observação', icone: Eye, exato: true },
@@ -119,6 +120,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   farmaceutico: [
     { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia' },
     { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
+    { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
     ITEM_PRONTUARIOS,
   ],
   telemedicina: [
