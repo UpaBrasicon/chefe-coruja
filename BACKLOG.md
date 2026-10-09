@@ -348,6 +348,36 @@ Tarefa 9, como ficou:
 
 ---
 
+## Revisão PubMed das ferramentas — decidida pelo RT em 09/10/2026
+
+A Fase 2 está pausada. Este bloco entra antes de retomá-la, por decisão do RT, que respondeu aos três pontos do resumo em `produto/docs/pesquisa/revisao-pubmed-2026-10/RESUMO.md`:
+1. resolver os 11 itens de prioridade alta;
+2. corrigir as citações erradas;
+3. trazer todas as fontes para a biblioteca.
+
+Regras:
+- Cada item tem branch e PR próprios e passa pela homologação.
+- Toda mudança clínica cita o PMID. O livro do HC continua visível como referência.
+- Número sem confirmação no texto da fonte não entra.
+
+**Fontes de direitos reservados (decisão do RT, 09/10):** podem ser usadas com citação. Nas ferramentas, entra a recomendação, com as nossas palavras e a citação. Na biblioteca, entra uma ficha de referência (citação mais resumo nosso), não o texto integral. As CC BY-NC entram por decisão do RT, que assume o risco da cláusula "não comercial".
+
+| # | Item | Situação |
+|---|---|---|
+| 1 | Pós-PCR pela ERC-ESICM 2025 | Em andamento, branch `revisao/pos-pcr-erc-2025` |
+| 2 | Trombólise no AVC: correção oficial da AHA/ASA 2026 | A fazer |
+| 3 | PAC: REMAP-CAP 2025 e citação da ATS 2025 | A fazer |
+| 4 | Endocardite: Duke-ISCVID 2023 | A fazer |
+| 5 | HINTS: aviso de uso (GRACE-3 2023) | A fazer |
+| 6 | Carvão ativado: consenso CTRC 2026 | A fazer |
+| 7 | Síndrome hepatorrenal: ADQI-ICA 2024 | A fazer |
+| 8 | Hiponatremia: alerta contra a subcorreção | A fazer |
+| 9 | CKD-EPI: equação de 2009 no Brasil | A fazer |
+| 10 | ITU pediátrica: AAP 2026 | A fazer |
+| 11 | Choque séptico pediátrico: PRoMPT BOLUS | A fazer |
+| 12 | Citações erradas (Morse, ATS 2025, Bai & Loeb, Arzayus-Patiño) | A fazer |
+| 13 | Biblioteca: fontes novas (CC BY, CC BY-NC e fichas de referência) | A fazer |
+
 ## Fase 3 — SUS, Produção e Integrações Mínimas
 **Horizonte:** 90-120 dias
 **Objetivo:** começar a transformar dados assistenciais em produção SUS e maturidade técnica.
