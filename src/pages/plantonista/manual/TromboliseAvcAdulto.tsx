@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ALTEPLASE_AVC, ALVOS_PA_AVC, ANGIOEDEMA_POS_ALTEPLASE, ASPECTS_LIVRO, CONTRAINDICACOES_ABSOLUTAS, CUIDADOS_AVC, DIRETRIZ_AVC_2026, ERRATA_PA_AVC,
+  ALTEPLASE_AVC, ALVOS_PA_AVC, ANGIOEDEMA_POS_ALTEPLASE, ASPECTS_LIVRO, CONTRAINDICACOES_ABSOLUTAS, CORRECAO_AHA_2026, CUIDADOS_AVC, DIRETRIZ_AVC_2026, ERRATA_PA_AVC,
   NITROPRUSSIATO_AVC, SANGRAMENTO_POS_ALTEPLASE, TABELA4_PAGINA, TENECTEPLASE_2026, TENECTEPLASE_AVC, alteplaseAvc, avaliarTrombolise, conferirPa,
   fichaTromboliseAvcAdulto, nitroprussiatoMlH, reducao15, tenecteplase2026, tenecteplaseAvc, tranexamicoPosAlteplase, type Faixa, type SituacaoPa,
 } from '@/clinico/adulto/avcTrombolise'
@@ -88,6 +88,9 @@ export function TromboliseAvcAdulto() {
       </Bloco>
 
       <Bloco titulo="AHA/ASA 2026 — o que a diretriz escreve, com classe e página" descricao="Prabhakaran et al., Stroke 2026;57:e316–e436 (páginas do PDF). Decisão do responsável técnico (28/09/2026): alteplase e tenecteplase lado a lado. A ferramenta mostra; a indicação é do médico.">
+        <p role="note" className="rounded-md border border-atencao/40 bg-atencao/[0.08] px-3 py-2 text-sm text-atencao">
+          {CORRECAO_AHA_2026.texto} <a className="underline" href={CORRECAO_AHA_2026.url} target="_blank" rel="noreferrer">Correção</a>
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left align-top text-sm">
             <thead className="text-tinta-sussurro">
