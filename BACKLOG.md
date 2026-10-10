@@ -469,13 +469,28 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
   - tabelas de caráter do atendimento, nacionalidade e tipo de logradouro;
   - prazo de apresentação: a competência atual e as 3 anteriores (Portaria SAES 1.110/2021).
 
+**Decisões do RT para a Fase 3, tarefa 4 — BPA consolidado (10/10/2026)**
+
+- **O que vai no BPA-C:**
+  - Tudo continua no BPA-I, como o DATASUS recomenda. Vai para o BPA-C só o que não fecha no BPA-I:
+    - código que o SIGTAP aceita só em BPA-C;
+    - linha sem identificação do paciente, com procedimento que aceita BPA-C.
+  - A unidade também pode marcar um código para ir sempre no BPA-C.
+- **Arquivo:** um só por competência, com as linhas "02" (BPA-C) e "03" (BPA-I). O cabeçalho e o campo de controle somam tudo. Um fechamento por competência.
+- **SIGTAP completo:** carregar, do zip 202609 já baixado, estas tabelas:
+  - instrumento de registro (`rl_procedimento_registro`: 01 BPA-C, 02 BPA-I);
+  - CBO por procedimento (`rl_procedimento_ocupacao`);
+  - quantidade máxima (`QT_MAXIMA_EXECUCAO`).
+  A conferência passa a criticar CBO não aceito, instrumento errado e quantidade acima do máximo.
+- **Valores do SIGTAP:** o importador gravava em centavos (R$ 11,00 ficava 1100). Corrigir junto com esta tarefa e recarregar os 3 bancos, depois de conferir onde o valor aparece na tela.
+
 **Andamento da Fase 3**
 
 | Tarefa | Situação | Onde |
 |---|---|---|
-| 1 — Ciclo da AIH | **Migrations em produção** (ok do RT em 09/10). Frontend na branch; o deploy da homologação foi barrado pelo limite diário da Vercel. Falta o redeploy, o teste do RT e o merge | Branch `fase3/aih-ciclo`; migrations `20261102000001_papel_regulador.sql` e `20261102000002_aih_ciclo.sql`; teste `supabase/tests/fase3_aih_ciclo.sql`; tela `/aih` (médico regulador decide, gestor acompanha) e a situação da AIH na lista de laudos do médico |
-| 2 — Críticas da AIH configuráveis | **Construída e conferida no navegador local**; ainda não publicada (limite da Vercel). Falta publicar na homologação, o teste do RT e o "ok produção" | Branch local `fase3/aih-criticas` (sobre a `fase3/aih-ciclo`); migration `20261102000003_aih_criticas.sql`; teste `supabase/tests/fase3_aih_criticas.sql`; cartão "Críticas da AIH" em Unidade › Configurações (gestor), CBO no perfil do médico, críticas no laudo e na fila do regulador |
-| 3 — BPA individualizado | **Construída e conferida no navegador local** (configurar, conferir, lançar, fechar, reabrir); ainda não publicada (limite da Vercel). Falta publicar na homologação, o teste do RT com importação no BPA Magnético e o "ok produção" | Branch local `fase3/bpa-i` (sobre a `fase3/aih-criticas`); migrations `20261103000001_papel_faturamento.sql`, `20261103000002_bpa_i.sql` e `20261103000003_cnes_pelo_gestor.sql`; teste `supabase/tests/fase3_bpa_i.sql`; tela `/faturamento` (faturamento e gestor), aba Procedimentos no atendimento da porta, quadro na gaveta de cuidados da enfermagem, endereço do SUS na ficha, CNS e CBO no perfil; roteiro em `produto/docs/fase3/roteiro-teste-fase3.md` |
+| 1 — Ciclo da AIH | **Em produção** (PR #62; roteiro rodado no app local em 10/10) | Branch `fase3/aih-ciclo`; migrations `20261102000001_papel_regulador.sql` e `20261102000002_aih_ciclo.sql`; teste `supabase/tests/fase3_aih_ciclo.sql`; tela `/aih` (médico regulador decide, gestor acompanha) e a situação da AIH na lista de laudos do médico |
+| 2 — Críticas da AIH configuráveis | **Em produção** (PR #63; ok do RT em 10/10; roteiro rodado no app local) | Branch local `fase3/aih-criticas` (sobre a `fase3/aih-ciclo`); migration `20261102000003_aih_criticas.sql`; teste `supabase/tests/fase3_aih_criticas.sql`; cartão "Críticas da AIH" em Unidade › Configurações (gestor), CBO no perfil do médico, críticas no laudo e na fila do regulador |
+| 3 — BPA individualizado | **Em produção** (10/10; migrations com o ok do RT; PRs #63–#65). Roteiro rodado no app local em 10/10. Falta só a importação do arquivo no BPA Magnético | Branch local `fase3/bpa-i` (sobre a `fase3/aih-criticas`); migrations `20261103000001_papel_faturamento.sql`, `20261103000002_bpa_i.sql` e `20261103000003_cnes_pelo_gestor.sql`; teste `supabase/tests/fase3_bpa_i.sql`; tela `/faturamento` (faturamento e gestor), aba Procedimentos no atendimento da porta, quadro na gaveta de cuidados da enfermagem, endereço do SUS na ficha, CNS e CBO no perfil; roteiro em `produto/docs/fase3/roteiro-teste-fase3.md` |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
