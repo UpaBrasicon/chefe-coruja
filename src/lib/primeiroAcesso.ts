@@ -25,7 +25,9 @@ export function exigeRegistro(papel: Papel | null | undefined): boolean {
     papel === 'telemedicina' ||
     papel === 'enfermeiro' ||
     papel === 'tecnico_enfermagem' ||
-    papel === 'farmaceutico'
+    papel === 'farmaceutico' ||
+    // médico regulador decide a AIH com o CRM (o banco recusa a decisão sem CRM)
+    papel === 'regulador'
   )
 }
 

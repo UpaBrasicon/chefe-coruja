@@ -350,6 +350,10 @@ Tarefa 9, como ficou:
 
 **Fase 2 RETOMADA em 09/10/2026, à noite**, depois da revisão PubMed (os 14 PRs foram mergeados, e a migration `20261101000001` foi aplicada na produção). Os defeitos leves já estão corrigidos. Falta o teste final do RT.
 
+**FASE 2 ENCERRADA em 09/10/2026.** Aceite do RT em `produto/docs/fase2/ENCERRAMENTO-FASE2.md`.
+- As tarefas de 1 a 9 estão em produção. A tarefa 1 foi revista: o controle passou a ser a liberação da farmácia (PR #61). A 10 (réplica de leitura) ficou para depois.
+- O teste geral das Fases 0 a 2 está em `produto/docs/fase2/teste-geral-fases-0-1-2-2026-10-09.md`. Achou 2 defeitos leves, corrigidos na branch `fase2/correcoes-teste-geral`, e 1 configuração para o RT: ligar a proteção contra senha vazada no Auth.
+
 **Fase 2 construída em 09/10/2026.** Tarefas 1 a 9 em produção desde 09/10/2026; a 10 não agora. Falta o teste final do RT (ver "Para encerrar a Fase 2").
 
 **Ordem técnica da Fase 2**
@@ -398,6 +402,7 @@ Regras:
 As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nessa ordem. A homologação recebe a última branch, que contém todas.
 
 ## Fase 3 — SUS, Produção e Integrações Mínimas
+**Fase atual desde 09/10/2026** (aberta depois do aceite da Fase 2).
 **Horizonte:** 90-120 dias
 **Objetivo:** começar a transformar dados assistenciais em produção SUS e maturidade técnica.
 
@@ -414,6 +419,20 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 9 | P2 | Exportação estruturada CSV/JSON | Definir datasets; pacientes, atendimentos, leitos, documentos; aplicar mascaramento quando necessário | Export estruturado disponível para admin autorizado |
 | 10 | P2 | Playbook de implantação | Criar checklist de unidade; setores; leitos; usuários; escala; protocolos; medicamentos; treinamento | Implantação UPA/hospital pequeno tem roteiro padronizado |
 | 11 | P2 | Standby em segunda região | Criar projeto Supabase em região secundária com replicação; definir critério de promoção (manual ou automática); criar runbook de failover e failback; executar simulado e medir RTO/RPO reais; sobe para P1 se contrato exigir | Simulado de failover documentado com RTO medido; runbook publicado; dados consistentes após failback |
+
+**Decisões do RT para a Fase 3, tarefa 1 — ciclo da AIH (09/10/2026)**
+
+- **Diagnóstico:** hoje a AIH é só o documento "laudo de AIH". Ele é versionado e numerado, e o cadastro bloqueia a emissão. As críticas SIGTAP (CID, sexo, idade, causa externa) são só avisos. Não há entidade AIH, status, número de 13 dígitos, competência nem quem aprove. Furo técnico: `emitir_documento` emite o laudo sem passar pelas faltas de cadastro (corrigir junto).
+- **Quem decide:** o **médico regulador**, papel novo na unidade (`regulador`). Ele entra pela escala, como os outros papéis, e aprova (com o número da AIH) ou rejeita (com motivo). O médico que solicitou pode aprovar só se for regulador. Quem não é regulador nunca aprova. O papel fica para a Regulação da Fase 4.
+- **AIH por internação:** uma ativa por vez. Rejeitada ou cancelada, abre-se outra. Continuidade e mudança de procedimento ficam para quando forem necessárias.
+- **Competência:** o sistema sugere o mês da alta, ou o mês corrente com o paciente internado. O regulador confirma ou troca, e a troca fica registrada.
+- **Número da AIH:** 13 dígitos. O dígito verificador só será conferido com fonte oficial do algoritmo. Sem ela, confere-se só o formato.
+
+**Andamento da Fase 3**
+
+| Tarefa | Situação | Onde |
+|---|---|---|
+| 1 — Ciclo da AIH | **Pronta na homologação**, conferida no navegador local; falta o teste do RT e o "ok produção" | Branch `fase3/aih-ciclo`; migrations `20261102000001_papel_regulador.sql` e `20261102000002_aih_ciclo.sql`; teste `supabase/tests/fase3_aih_ciclo.sql`; tela `/aih` (médico regulador decide, gestor acompanha) e a situação da AIH na lista de laudos do médico |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
@@ -444,6 +463,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 8 | P1 | Mapa simples de vagas/disponibilidade | Integrar leitos livres/reservados; permitir disponibilidade manual de serviços; mostrar por unidade | Regulador vê disponibilidade básica |
 | 9 | P1 | Aceite pela unidade destino | Criar papel/permissão da unidade destino; permitir aceitar/negar; registrar data/hora | Destino participa do fluxo formalmente |
 | 10 | P2 | Indicadores de regulação | Tempo médio, fila por tipo, taxa de devolução, gargalos | Dashboard de regulação disponível |
+| 11 | A definir com o RT | NIR — Núcleo Interno de Regulação (pedido do RT em 09/10/2026) | Função administrativa "NIR": acompanha as regulações da unidade e os documentos em falta (laudos de AIH pendentes, AIH solicitada sem decisão, rejeitada sem nova, documentos clínicos com falta). Definir: papel próprio ou permissão, o que vê, o que cobra de quem e como avisa | NIR vê, num painel, as regulações e os documentos em falta da unidade e cobra os responsáveis |
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.

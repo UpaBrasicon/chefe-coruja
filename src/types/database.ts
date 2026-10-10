@@ -9876,6 +9876,15 @@ export type Database = {
         }[]
       }
       administracoes_sem_liberacao: { Args: { p_unidade: string }; Returns: Json }
+      aihs_da_unidade: { Args: { p_status?: string; p_unidade: string }; Returns: Json }
+      aihs_dos_laudos: { Args: { p_laudos: string[] }; Returns: Json }
+      ajustar_competencia_aih: { Args: { p_aih: string; p_competencia: string; p_motivo: string }; Returns: undefined }
+      cancelar_aih: { Args: { p_aih: string; p_motivo: string }; Returns: undefined }
+      decidir_aih: {
+        Args: { p_aih: string; p_aprovar: boolean; p_competencia?: string; p_motivo?: string; p_numero?: string }
+        Returns: undefined
+      }
+      eventos_aih: { Args: { p_aih: string }; Returns: Json }
       alta_vigilancia_da_unidade: { Args: { p_busca?: string; p_unidade: string }; Returns: Json }
       alteracoes_de_itens: { Args: { p_itens: string[] }; Returns: Json }
       alterar_item_prescricao: {
@@ -12805,6 +12814,7 @@ export type Database = {
         | "recepcao"
         | "farmaceutico"
         | "telemedicina"
+        | "regulador"
       status_leito:
         | "livre"
         | "ocupado"
@@ -13168,6 +13178,7 @@ export const Constants = {
         "recepcao",
         "farmaceutico",
         "telemedicina",
+        "regulador",
       ],
       status_leito: [
         "livre",

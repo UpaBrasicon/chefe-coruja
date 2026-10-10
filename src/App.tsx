@@ -70,6 +70,7 @@ const IntercorrenciasRelatorio = lazy(() => import('@/pages/gestor/Intercorrenci
 const CadastrosDuplicados = lazy(() => import('@/pages/recepcao/CadastrosDuplicados'))
 const Contingencia = lazy(() => import('@/pages/Contingencia'))
 const AltaVigilancia = lazy(() => import('@/pages/farmacia/AltaVigilancia'))
+const AihUnidade = lazy(() => import('@/pages/regulacao/Aih'))
 const Interacoes = lazy(() => import('@/pages/farmacia/Interacoes'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
@@ -227,6 +228,10 @@ export default function App() {
                       {/* Alta vigilância: administradas sem liberação e lista da unidade (Fase 2, tarefa 1) */}
                       <Route element={<RequireRole papeis={['farmaceutico', 'enfermeiro', 'gestor']} />}>
                         <Route path="/alta-vigilancia" element={<AltaVigilancia />} />
+                      </Route>
+                      {/* AIH: o médico regulador decide; o gestor acompanha (Fase 3, tarefa 1) */}
+                      <Route element={<RequireRole papeis={['regulador', 'gestor']} />}>
+                        <Route path="/aih" element={<AihUnidade />} />
                       </Route>
                       {/* Interações críticas: lista curada da unidade (Fase 2, tarefa 3) */}
                       <Route element={<RequireRole papeis={['farmaceutico', 'gestor', 'plantonista']} />}>
