@@ -484,6 +484,16 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
   A conferência passa a criticar CBO não aceito, instrumento errado e quantidade acima do máximo.
 - **Valores do SIGTAP:** o importador gravava em centavos (R$ 11,00 ficava 1100). Corrigir junto com esta tarefa e recarregar os 3 bancos, depois de conferir onde o valor aparece na tela.
 
+**Decisões do RT para a Fase 3, tarefa 5 — APAC (10/10/2026)**
+
+- **Avaliação: sem demanda agora.** As unidades que vão usar o Chefe Coruja agora são UPA e pronto-atendimento, e nelas APAC é rara. A APAC fica para quando houver demanda; nada é construído agora.
+- **Gatilho para construir:** unidade ou contrato que precise solicitar APAC pelo sistema.
+- **Quando construir:**
+  - alvo inicial: exames de alta complexidade; os outros serviços a definir com as secretarias;
+  - o médico regulador autoriza (o mesmo papel da AIH), com número e validade, ou rejeita com motivo;
+  - o leiaute do APAC Magnético é baixado do DATASUS nessa hora.
+- **BPA Magnético e Firebird (10/10/2026):** cada secretaria instala e mantém o BPA Magnético e o Firebird. O Chefe Coruja entrega o arquivo no leiaute oficial. O Windows 11 bloqueia o Firebird 1.5 que o DATASUS distribui; o 2.5.9 (32 bits, com o `gds32.dll` de compatibilidade) é a alternativa conhecida.
+
 **Andamento da Fase 3**
 
 | Tarefa | Situação | Onde |
@@ -491,7 +501,8 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 1 — Ciclo da AIH | **Em produção** (PR #62; roteiro rodado no app local em 10/10) | Branch `fase3/aih-ciclo`; migrations `20261102000001_papel_regulador.sql` e `20261102000002_aih_ciclo.sql`; teste `supabase/tests/fase3_aih_ciclo.sql`; tela `/aih` (médico regulador decide, gestor acompanha) e a situação da AIH na lista de laudos do médico |
 | 2 — Críticas da AIH configuráveis | **Em produção** (PR #63; ok do RT em 10/10; roteiro rodado no app local) | Branch local `fase3/aih-criticas` (sobre a `fase3/aih-ciclo`); migration `20261102000003_aih_criticas.sql`; teste `supabase/tests/fase3_aih_criticas.sql`; cartão "Críticas da AIH" em Unidade › Configurações (gestor), CBO no perfil do médico, críticas no laudo e na fila do regulador |
 | 3 — BPA individualizado | **Em produção** (10/10; migrations com o ok do RT; PRs #63–#65). Roteiro rodado no app local em 10/10. Falta só a importação do arquivo no BPA Magnético | Branch local `fase3/bpa-i` (sobre a `fase3/aih-criticas`); migrations `20261103000001_papel_faturamento.sql`, `20261103000002_bpa_i.sql` e `20261103000003_cnes_pelo_gestor.sql`; teste `supabase/tests/fase3_bpa_i.sql`; tela `/faturamento` (faturamento e gestor), aba Procedimentos no atendimento da porta, quadro na gaveta de cuidados da enfermagem, endereço do SUS na ficha, CNS e CBO no perfil; roteiro em `produto/docs/fase3/roteiro-teste-fase3.md` |
-| 4 — BPA consolidado | **Construída e conferida no app local**; falta homologação, teste do RT e "ok produção" | Branch `fase3/bpa-c`; migration `20261103000004_bpa_c.sql`; teste `supabase/tests/fase3_bpa_c.sql`. O SIGTAP passou a ter instrumento, CBO por procedimento e quantidade máxima (gerador `scripts/terminologia/gerar-sigtap-sql.ts`), e os valores foram corrigidos para reais. Na tela: destino de cada linha (BPA-I, BPA-C ou fora) com motivo, e "sempre BPA-C" por código |
+| 4 — BPA consolidado | **Em produção** (10/10; PR #67; migration e carga do SIGTAP aplicadas antes do merge, com ok do RT) | Branch `fase3/bpa-c`; migration `20261103000004_bpa_c.sql`; teste `supabase/tests/fase3_bpa_c.sql`. O SIGTAP passou a ter instrumento, CBO por procedimento e quantidade máxima (gerador `scripts/terminologia/gerar-sigtap-sql.ts`), e os valores foram corrigidos para reais. Na tela: destino de cada linha (BPA-I, BPA-C ou fora) com motivo, e "sempre BPA-C" por código |
+| 5 — APAC | **Avaliada em 10/10: sem demanda agora** (decisões acima); nada construído | — |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
