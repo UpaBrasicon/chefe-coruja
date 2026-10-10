@@ -168,10 +168,10 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
         </span>
       </div>
 
-      <FormUnidade key={unidade.id} unidade={unidade} unidadeId={unidadeId} />
+      <FormUnidade key={`unidade-${unidade.id}`} unidade={unidade} unidadeId={unidadeId} />
 
       {limites.data && (
-        <FormLimites key={unidadeId} inicial={limites.data} unidadeId={unidadeId} podeEditar={ehGestor} />
+        <FormLimites key={`limites-${unidadeId}`} inicial={limites.data} unidadeId={unidadeId} podeEditar={ehGestor} />
       )}
 
       {/* Fase 2, tarefa 2: grade de aprazamento sugerida à enfermagem */}
