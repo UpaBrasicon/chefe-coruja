@@ -46,7 +46,7 @@ import {
 } from './caderno/comum'
 import { AbaDiagnostico } from './caderno/Diagnostico'
 import { useDiagnosticos } from './caderno/diagnosticos'
-import { AbaAdmissao, AbaAih, AbaAtestado, AbaExames, AbaPrescricao } from './caderno/Documentos'
+import { AbaAdmissao, AbaAih, AbaApac, AbaAtestado, AbaExames, AbaPrescricao } from './caderno/Documentos'
 import { useDocumentosLeito } from './caderno/rascunhoLeito'
 import { BlocoPassagem } from './caderno/Passagem'
 import { BlocoPendencias } from './caderno/Pendencias'
@@ -55,7 +55,7 @@ import { ChecklistAdmissao, TrilhaEpisodio } from './caderno/Trilha'
 
 export { SepsePorta } from './caderno/Sepse'
 
-type IdAba = 'resumo' | 'classif' | 'evol' | 'diag' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'encaminhamento' | 'atestado' | 'comp' | 'alta'
+type IdAba = 'resumo' | 'classif' | 'evol' | 'diag' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'atestado' | 'comp' | 'alta'
 
 // LEITO_ABAS do protótipo (index.html ~21611), na mesma ordem.
 const ABAS: [IdAba, string, LucideIcon][] = [
@@ -67,6 +67,7 @@ const ABAS: [IdAba, string, LucideIcon][] = [
   ['receituario', 'Prescrição', Pill],
   ['exames', 'Exames', FlaskConical],
   ['aih', 'AIH', ClipboardList],
+  ['apac', 'APAC', ClipboardList],
   ['encaminhamento', 'Encaminhamento', ArrowUpRight],
   ['atestado', 'Atestado', FileText],
   ['comp', 'Parecer e termos', MessageSquare],
@@ -402,6 +403,7 @@ function Caderno({ p, cabecalho, avisos, acoesTopo }: {
         {atual === 'receituario' && <AbaPrescricao doc={doc} />}
         {atual === 'exames' && <AbaExames doc={doc} pacienteId={pacienteId} medico={!ehGestor} />}
         {atual === 'aih' && <AbaAih doc={doc} internacaoId={i.id} />}
+        {atual === 'apac' && <AbaApac doc={doc} internacaoId={i.id} />}
         {atual === 'encaminhamento' && <AbaEncaminhamentoInterno pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
         {atual === 'atestado' && <AbaAtestado pacienteId={pacienteId} podeEmitir={escreve} />}
         {atual === 'comp' && (

@@ -72,13 +72,13 @@ export function AbaExames({ doc, pacienteId, medico }: { doc: Doc; pacienteId: s
 }
 
 export function AbaAih({ doc, internacaoId }: { doc: Doc; internacaoId?: string }) {
-  return (
-    <div className="flex flex-col gap-4">
-      <LaudoAih pacienteId={doc.dadosPaciente.paciente_id} internacaoId={internacaoId} leito={doc.dadosPaciente.leito} fixo />
-      {/* Fase 3, tarefa 5: APAC solicitada pelo médico; o regulador autoriza em /apac */}
-      {doc.dadosPaciente.paciente_id && <SolicitarApac pacienteId={doc.dadosPaciente.paciente_id} internacaoId={internacaoId} />}
-    </div>
-  )
+  return <LaudoAih pacienteId={doc.dadosPaciente.paciente_id} internacaoId={internacaoId} leito={doc.dadosPaciente.leito} fixo />
+}
+
+/** Fase 3, tarefa 5: APAC em aba própria, ao lado da AIH (pedido do RT); o regulador autoriza em /apac. */
+export function AbaApac({ doc, internacaoId }: { doc: Doc; internacaoId?: string }) {
+  if (!doc.dadosPaciente.paciente_id) return null
+  return <SolicitarApac pacienteId={doc.dadosPaciente.paciente_id} internacaoId={internacaoId} />
 }
 
 /** Atestado: os emitidos para o paciente e o emissor da porta, já com ele. */
