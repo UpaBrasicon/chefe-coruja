@@ -34,6 +34,8 @@ Worker.
    ```bash
    openssl rand -hex 32
    ```
+   No PowerShell sem openssl, use
+   `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
    Use um valor diferente para a homologação e para a produção.
 2. Grave o segredo na função:
    ```bash
@@ -98,6 +100,6 @@ recusada até o segredo existir.
 
 ## Reverter
 
-- Para desligar a API: apague o Custom Domain do Worker. Os endereços param de
-  responder e o resto do sistema não muda.
+- Para desligar a API: apague a Workers Route e o registro DNS `api` (ou
+  `api-homolog`). Os endereços param de responder e o resto do sistema não muda.
 - Para cortar um integrador: revogue a chave dele. Vale na hora.
