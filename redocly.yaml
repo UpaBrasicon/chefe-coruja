@@ -1,0 +1,6 @@
+# Validação do contrato da API pública (docs/api/openapi.yaml) — Fase 3, tarefa 6.
+extends:
+  - recommended
+rules:
+  # licença proprietária: não há identificador SPDX nem URL pública
+  info-license-strict: off

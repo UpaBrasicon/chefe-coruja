@@ -1,0 +1,703 @@
+openapi: 3.1.0
+info:
+  title: Chefe Coruja — API para integradores
+  version: 1.0.0
+  summary: Consulta de pacientes, atendimentos, leitos e produção SUS, só leitura e por unidade.
+  description: |
+    API pública do Chefe Coruja para integradores autorizados: secretarias de
+    saúde, regulação, hospitais parceiros e empresas contratadas.
+
+    **Situação:** este é o contrato da versão 1. A implementação é a tarefa 7
+    da Fase 3 do BACKLOG. Até ela entrar no ar, os endereços respondem 503.
+
+    ## Acesso
+
+    - Cada integrador recebe uma **chave** criada pelo administrador do Chefe
+      Coruja. A chave vale para as unidades e os recursos liberados nela.
+    - Mande a chave no cabeçalho `Authorization: Bearer <chave>`.
+    - A chave aparece uma única vez, na criação. O sistema guarda só o hash
+      dela. Se perder a chave, peça outra; a antiga é revogada.
+    - Toda consulta fica registrada na auditoria do Chefe Coruja: chave,
+      recurso, unidade, horário e resultado.
+    - Use só HTTPS.
+
+    ## Dados do paciente (LGPD)
+
+    A API entrega o mínimo necessário para a integração:
+    - nome e nome social, nascimento, sexo e CNS;
+    - o município de residência;
+    - o CPF só quando o paciente não tem CNS.
+
+    Ficam fora: endereço, telefone, nome da mãe e dados clínicos. A exceção é
+    o atendimento, que traz a cor da classificação de risco, o CID principal e
+    a situação.
+
+    ## Limite de consultas
+
+    - O limite é por chave e por minuto. Ele é informado nos cabeçalhos
+      `RateLimit-Limit`, `RateLimit-Remaining` e `RateLimit-Reset`.
+    - Acima do limite, a resposta é **429**, com `Retry-After` em segundos.
+
+    ## Paginação
+
+    - As listas devolvem `dados` e `proximo_cursor`.
+    - Para a página seguinte, repita a consulta com `cursor=<proximo_cursor>`.
+    - Quando `proximo_cursor` vem `null`, a lista acabou.
+    - `limite` vai de 1 a 100 (padrão 50).
+
+    ## Formatos
+
+    - Datas e horas em ISO 8601 com fuso (`2026-10-10T14:30:00-03:00`).
+    - Datas puras como `AAAA-MM-DD`.
+    - Competência SUS como `AAAAMM`.
+    - Identificadores são UUID.
+
+    ## Erros
+
+    Os erros seguem o RFC 9457 (`application/problem+json`): `type`, `title`,
+    `status`, `detail`, `codigo` e `requisicao`. Guarde o valor de
+    `requisicao` (o mesmo do cabeçalho `X-Request-Id`) para falar com o
+    suporte.
+
+    ## Versões
+
+    - A versão vai no caminho (`/v1`).
+    - Campo novo não quebra a versão: ignore os campos que você não conhece.
+    - Mudança que quebra compatibilidade vira `/v2`. A versão anterior é
+      mantida por pelo menos 6 meses, com aviso no cabeçalho `Deprecation`.
+  contact:
+    name: Chefe Coruja — suporte técnico
+  license:
+    name: Uso restrito a integradores autorizados pelo Chefe Coruja
+servers:
+  - url: https://api.chefecoruja.com.br/v1
+    description: Produção
+  - url: https://api-homolog.chefecoruja.com.br/v1
+    description: Homologação (dados fictícios)
+security:
+  - chave: []
+tags:
+  - name: Unidades
+    description: Unidades liberadas na chave e os recursos de cada uma.
+  - name: Pacientes
+    description: Identificação mínima do paciente (LGPD), por busca exata.
+  - name: Atendimentos
+    description: Episódios de porta, com classificação de risco, CID principal e desfecho.
+  - name: Leitos
+    description: Leitos da unidade e a ocupação no momento.
+  - name: Produção SUS
+    description: AIH, APAC e fechamentos de competência do BPA e da APAC.
+paths:
+  /unidades:
+    get:
+      tags: [Unidades]
+      operationId: listarUnidades
+      summary: Unidades liberadas para a chave
+      responses:
+        '200':
+          description: Unidades que a chave pode consultar, com os recursos liberados em cada uma.
+          headers:
+            RateLimit-Limit: { $ref: '#/components/headers/RateLimitLimit' }
+            RateLimit-Remaining: { $ref: '#/components/headers/RateLimitRemaining' }
+            RateLimit-Reset: { $ref: '#/components/headers/RateLimitReset' }
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [dados]
+                properties:
+                  dados:
+                    type: array
+                    items: { $ref: '#/components/schemas/Unidade' }
+              example:
+                dados:
+                  - id: 21000000-0000-4000-8000-000000000001
+                    nome: UPA Centro
+                    cnes: '2077485'
+                    municipio: São Paulo
+                    uf: SP
+                    recursos: [pacientes, atendimentos, leitos, producao]
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '429': { $ref: '#/components/responses/LimiteExcedido' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /pacientes:
+    get:
+      tags: [Pacientes]
+      operationId: buscarPaciente
+      summary: Busca exata de paciente por CNS ou CPF
+      description: |
+        Não há listagem livre de pacientes. A busca é exata, por CNS ou por
+        CPF (um dos dois), e só dentro da unidade informada.
+      parameters:
+        - $ref: '#/components/parameters/UnidadeId'
+        - name: cns
+          in: query
+          description: CNS com 15 dígitos.
+          schema: { type: string, pattern: '^[0-9]{15}$' }
+        - name: cpf
+          in: query
+          description: CPF com 11 dígitos.
+          schema: { type: string, pattern: '^[0-9]{11}$' }
+      responses:
+        '200':
+          description: Zero ou um paciente.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [dados]
+                properties:
+                  dados:
+                    type: array
+                    maxItems: 1
+                    items: { $ref: '#/components/schemas/Paciente' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/ForaDoEscopo' }
+        '429': { $ref: '#/components/responses/LimiteExcedido' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /pacientes/{id}:
+    get:
+      tags: [Pacientes]
+      operationId: obterPaciente
+      summary: Paciente pelo identificador
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: O paciente.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Paciente' }
+              example:
+                id: 23000000-0000-4000-8000-000000000001
+                unidade_id: 21000000-0000-4000-8000-000000000001
+                nome: Maria da Silva
+                nome_social: null
+                nascimento: '1980-04-12'
+                sexo: F
+                cns: '898001160012344'
+                cpf: null
+                municipio_ibge: '355030'
+                municipio: São Paulo
+                uf: SP
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/ForaDoEscopo' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '429': { $ref: '#/components/responses/LimiteExcedido' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /atendimentos:
+    get:
+      tags: [Atendimentos]
+      operationId: listarAtendimentos
+      summary: Atendimentos da unidade num período
+      description: |
+        Atendimentos (episódios de porta) pela data de chegada. O período
+        máximo de uma consulta é de 31 dias.
+      parameters:
+        - $ref: '#/components/parameters/UnidadeId'
+        - name: desde
+          in: query
+          required: true
+          description: Início do período (chegada), ISO 8601.
+          schema: { type: string, format: date-time }
+        - name: ate
+          in: query
+          required: true
+          description: Fim do período (chegada), ISO 8601, exclusivo.
+          schema: { type: string, format: date-time }
+        - name: situacao
+          in: query
+          schema: { $ref: '#/components/schemas/SituacaoAtendimento' }
+        - name: paciente_id
+          in: query
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/Limite'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Página de atendimentos.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagina'
+                  - type: object
+                    properties:
+                      dados:
+                        type: array
+                        items: { $ref: '#/components/schemas/Atendimento' }
+              example:
+                dados:
+                  - id: 25000000-0000-4000-8000-000000000001
+                    unidade_id: 21000000-0000-4000-8000-000000000001
+                    paciente: { id: 23000000-0000-4000-8000-000000000001, nome: Maria da Silva, cns: '898001160012344' }
+                    setor: Pronto Socorro
+                    chegada_em: '2026-10-10T08:12:00-03:00'
+                    situacao: em_atendimento
+                    classificacao: { cor: amarelo, classificada_em: '2026-10-10T08:20:00-03:00' }
+                    atendimento_medico_em: '2026-10-10T08:55:00-03:00'
+                    cid_principal: J18.9
+                    desfecho: null
+                    desfecho_em: null
+                proximo_cursor: null
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/ForaDoEscopo' }
+        '429': { $ref: '#/components/responses/LimiteExcedido' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /atendimentos/{id}:
+    get:
+      tags: [Atendimentos]
+      operationId: obterAtendimento
+      summary: Atendimento pelo identificador
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: O atendimento.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Atendimento' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/ForaDoEscopo' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '429': { $ref: '#/components/responses/LimiteExcedido' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /leitos:
+    get:
+      tags: [Leitos]
+      operationId: listarLeitos
+      summary: Leitos da unidade e a ocupação agora
+      parameters:
+        - $ref: '#/components/parameters/UnidadeId'
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/StatusLeito' }
+        - $ref: '#/components/parameters/Limite'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Página de leitos.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagina'
+                  - type: object
+                    properties:
+                      dados:
+                        type: array
+                        items: { $ref: '#/components/schemas/Leito' }
+              example:
+                dados:
+                  - id: 26000000-0000-4000-8000-000000000001
+                    unidade_id: 21000000-0000-4000-8000-000000000001
+                    setor: Clínica Médica
+                    identificador: 13A
+                    tipo: clinico
+                    status: ocupado
+                    paciente_id: 23000000-0000-4000-8000-000000000001
+                    ocupado_desde: '2026-10-09T17:51:00-03:00'
+                proximo_cursor: null
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/ForaDoEscopo' }
+        '429': { $ref: '#/components/responses/LimiteExcedido' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /producao/aih:
+    get:
+      tags: [Produção SUS]
+      operationId: listarAih
+      summary: AIH da unidade
+      parameters:
+        - $ref: '#/components/parameters/UnidadeId'
+        - name: status
+          in: query
+          schema: { type: string, enum: [solicitada, aprovada, rejeitada, cancelada] }
+        - $ref: '#/components/parameters/Competencia'
+        - $ref: '#/components/parameters/Limite'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Página de AIH.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagina'
+                  - type: object
+                    properties:
+                      dados:
+                        type: array
+                        items: { $ref: '#/components/schemas/Aih' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/ForaDoEscopo' }
+        '429': { $ref: '#/components/responses/LimiteExcedido' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /producao/apac:
+    get:
+      tags: [Produção SUS]
+      operationId: listarApac
+      summary: APAC da unidade
+      parameters:
+        - $ref: '#/components/parameters/UnidadeId'
+        - name: status
+          in: query
+          schema: { type: string, enum: [solicitada, autorizada, rejeitada, cancelada] }
+        - $ref: '#/components/parameters/Limite'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Página de APAC.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagina'
+                  - type: object
+                    properties:
+                      dados:
+                        type: array
+                        items: { $ref: '#/components/schemas/Apac' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/ForaDoEscopo' }
+        '429': { $ref: '#/components/responses/LimiteExcedido' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /producao/fechamentos:
+    get:
+      tags: [Produção SUS]
+      operationId: listarFechamentos
+      summary: Competências fechadas (BPA e APAC)
+      description: |
+        Resumo dos fechamentos de competência feitos pelo faturamento. O
+        arquivo do BPA Magnético e o do APAC Magnético não saem pela API:
+        quem baixa é o faturamento, na tela.
+      parameters:
+        - $ref: '#/components/parameters/UnidadeId'
+        - name: instrumento
+          in: query
+          schema: { type: string, enum: [bpa, apac] }
+        - $ref: '#/components/parameters/Competencia'
+      responses:
+        '200':
+          description: Fechamentos, mais recentes primeiro.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [dados]
+                properties:
+                  dados:
+                    type: array
+                    items: { $ref: '#/components/schemas/Fechamento' }
+              example:
+                dados:
+                  - instrumento: bpa
+                    competencia: '202609'
+                    situacao: fechada
+                    linhas: 1840
+                    linhas_bpa_c: 12
+                    apacs: null
+                    controle: 1383
+                    fechado_em: '2026-10-05T10:00:00-03:00'
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/ForaDoEscopo' }
+        '429': { $ref: '#/components/responses/LimiteExcedido' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+components:
+  securitySchemes:
+    chave:
+      type: http
+      scheme: bearer
+      bearerFormat: chave do integrador (cc_live_… na produção, cc_test_… na homologação)
+      description: Chave criada pelo administrador do Chefe Coruja, presa às unidades e aos recursos liberados.
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    UnidadeId:
+      name: unidade_id
+      in: query
+      required: true
+      description: Unidade consultada; precisa estar liberada na chave.
+      schema: { type: string, format: uuid }
+    Competencia:
+      name: competencia
+      in: query
+      description: Competência SUS (AAAAMM).
+      schema: { type: string, pattern: '^[0-9]{4}(0[1-9]|1[0-2])$' }
+    Limite:
+      name: limite
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+    Cursor:
+      name: cursor
+      in: query
+      description: Valor de `proximo_cursor` da página anterior.
+      schema: { type: string }
+
+  headers:
+    RequestId:
+      description: Identificador da requisição (o mesmo de `requisicao` nos erros).
+      schema: { type: string }
+    RateLimitLimit:
+      description: Consultas permitidas por minuto para a chave.
+      schema: { type: integer }
+    RateLimitRemaining:
+      description: Consultas que ainda cabem na janela atual.
+      schema: { type: integer }
+    RateLimitReset:
+      description: Segundos até a janela recomeçar.
+      schema: { type: integer }
+
+  responses:
+    RequisicaoInvalida:
+      description: Parâmetro ausente ou fora do formato.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+          example:
+            type: https://api.chefecoruja.com.br/erros/requisicao-invalida
+            title: Requisição inválida
+            status: 400
+            detail: Informe cns ou cpf (um dos dois).
+            codigo: requisicao_invalida
+            requisicao: 7f3c1a2e
+    NaoAutenticado:
+      description: Chave ausente, inválida, revogada ou vencida.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+          example:
+            type: https://api.chefecoruja.com.br/erros/chave-invalida
+            title: Chave inválida
+            status: 401
+            detail: A chave não existe ou foi revogada.
+            codigo: chave_invalida
+            requisicao: 7f3c1a2e
+    ForaDoEscopo:
+      description: A chave não libera esta unidade ou este recurso.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+          example:
+            type: https://api.chefecoruja.com.br/erros/fora-do-escopo
+            title: Fora do escopo da chave
+            status: 403
+            detail: A chave não libera o recurso producao nesta unidade.
+            codigo: fora_do_escopo
+            requisicao: 7f3c1a2e
+    NaoEncontrado:
+      description: Não existe, ou existe fora das unidades da chave (as duas situações respondem igual).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+    LimiteExcedido:
+      description: Limite de consultas por minuto excedido.
+      headers:
+        Retry-After:
+          description: Segundos para tentar de novo.
+          schema: { type: integer }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+    ErroInterno:
+      description: Erro do servidor. Tente de novo; se repetir, mande o `requisicao` ao suporte.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problema' }
+
+  schemas:
+    Problema:
+      type: object
+      description: Erro no formato do RFC 9457.
+      required: [type, title, status, codigo, requisicao]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        codigo:
+          type: string
+          enum: [requisicao_invalida, chave_invalida, fora_do_escopo, nao_encontrado, limite_excedido, erro_interno, indisponivel]
+        requisicao: { type: string }
+
+    Pagina:
+      type: object
+      required: [dados, proximo_cursor]
+      properties:
+        dados: { type: array, items: {} }
+        proximo_cursor: { type: [string, 'null'] }
+
+    Unidade:
+      type: object
+      required: [id, nome, cnes, recursos]
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string }
+        cnes: { type: [string, 'null'], pattern: '^[0-9]{7}$' }
+        municipio: { type: [string, 'null'] }
+        uf: { type: [string, 'null'] }
+        recursos:
+          type: array
+          items: { type: string, enum: [pacientes, atendimentos, leitos, producao] }
+
+    PacienteResumo:
+      type: object
+      required: [id, nome]
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string, description: Nome social quando houver; senão o nome. }
+        cns: { type: [string, 'null'] }
+
+    Paciente:
+      type: object
+      required: [id, unidade_id, nome]
+      properties:
+        id: { type: string, format: uuid }
+        unidade_id: { type: string, format: uuid }
+        nome: { type: string }
+        nome_social: { type: [string, 'null'] }
+        nascimento: { type: [string, 'null'], format: date }
+        sexo: { type: [string, 'null'], enum: [M, F, null] }
+        cns: { type: [string, 'null'], pattern: '^[0-9]{15}$' }
+        cpf:
+          type: [string, 'null']
+          pattern: '^[0-9]{11}$'
+          description: Só quando o paciente não tem CNS.
+        municipio_ibge: { type: [string, 'null'], pattern: '^[0-9]{6}$', description: Código IBGE (6 dígitos). }
+        municipio: { type: [string, 'null'] }
+        uf: { type: [string, 'null'] }
+
+    SituacaoAtendimento:
+      type: string
+      enum: [aguardando_triagem, aguardando_medico, em_atendimento, em_observacao, internado, encerrado]
+
+    CorRisco:
+      type: string
+      enum: [vermelho, laranja, amarelo, verde, azul]
+
+    Atendimento:
+      type: object
+      required: [id, unidade_id, paciente, chegada_em, situacao]
+      properties:
+        id: { type: string, format: uuid }
+        unidade_id: { type: string, format: uuid }
+        paciente: { $ref: '#/components/schemas/PacienteResumo' }
+        setor: { type: [string, 'null'] }
+        chegada_em: { type: string, format: date-time }
+        situacao: { $ref: '#/components/schemas/SituacaoAtendimento' }
+        classificacao:
+          type: [object, 'null']
+          description: Última classificação de risco (decisão da enfermagem).
+          properties:
+            cor: { $ref: '#/components/schemas/CorRisco' }
+            classificada_em: { type: string, format: date-time }
+        atendimento_medico_em: { type: [string, 'null'], format: date-time }
+        cid_principal: { type: [string, 'null'], description: CID-10 principal registrado no atendimento. }
+        desfecho:
+          type: [string, 'null']
+          enum: [alta, internacao, transferencia, evasao, obito, outro, null]
+        desfecho_em: { type: [string, 'null'], format: date-time }
+
+    StatusLeito:
+      type: string
+      enum: [livre, ocupado, bloqueado, higienizacao, reservado]
+
+    Leito:
+      type: object
+      required: [id, unidade_id, identificador, status]
+      properties:
+        id: { type: string, format: uuid }
+        unidade_id: { type: string, format: uuid }
+        setor: { type: [string, 'null'] }
+        identificador: { type: string }
+        tipo: { type: string, enum: [clinico, isolamento, estabilizacao, observacao] }
+        status: { $ref: '#/components/schemas/StatusLeito' }
+        paciente_id:
+          type: [string, 'null']
+          format: uuid
+          description: Paciente no leito ocupado (consulte /pacientes/{id}, se a chave liberar pacientes).
+        ocupado_desde: { type: [string, 'null'], format: date-time }
+
+    Aih:
+      type: object
+      required: [id, unidade_id, paciente, status]
+      properties:
+        id: { type: string, format: uuid }
+        unidade_id: { type: string, format: uuid }
+        paciente: { $ref: '#/components/schemas/PacienteResumo' }
+        internacao_id: { type: [string, 'null'], format: uuid }
+        status: { type: string, enum: [solicitada, aprovada, rejeitada, cancelada] }
+        numero: { type: [string, 'null'], pattern: '^[0-9]{13}$' }
+        competencia: { type: [string, 'null'], pattern: '^[0-9]{6}$' }
+        procedimento: { type: [string, 'null'], pattern: '^[0-9]{10}$' }
+        cid_principal: { type: [string, 'null'] }
+        solicitada_em: { type: string, format: date-time }
+        decidida_em: { type: [string, 'null'], format: date-time }
+
+    Apac:
+      type: object
+      required: [id, unidade_id, paciente, status, procedimento]
+      properties:
+        id: { type: string, format: uuid }
+        unidade_id: { type: string, format: uuid }
+        paciente: { $ref: '#/components/schemas/PacienteResumo' }
+        status: { type: string, enum: [solicitada, autorizada, rejeitada, cancelada] }
+        tipo: { type: string, enum: ['1', '2', '3'], description: '1 inicial, 2 continuidade, 3 única.' }
+        numero: { type: [string, 'null'], pattern: '^[0-9]{13}$' }
+        validade_inicio: { type: [string, 'null'], format: date }
+        validade_fim: { type: [string, 'null'], format: date }
+        procedimento: { type: string, pattern: '^[0-9]{10}$' }
+        cid_principal: { type: string }
+        competencias_executadas:
+          type: array
+          items: { type: string, pattern: '^[0-9]{6}$' }
+        solicitada_em: { type: string, format: date-time }
+        decidida_em: { type: [string, 'null'], format: date-time }
+
+    Fechamento:
+      type: object
+      required: [instrumento, competencia, situacao, controle, fechado_em]
+      properties:
+        instrumento: { type: string, enum: [bpa, apac] }
+        competencia: { type: string, pattern: '^[0-9]{6}$' }
+        situacao: { type: string, enum: [fechada, reaberta] }
+        linhas: { type: [integer, 'null'], description: BPA — linhas do arquivo (BPA-I + BPA-C). }
+        linhas_bpa_c: { type: [integer, 'null'] }
+        apacs: { type: [integer, 'null'], description: APAC — quantidade de APAC no arquivo. }
+        controle: { type: integer, minimum: 1111, maximum: 2221 }
+        fechado_em: { type: string, format: date-time }
+        reaberto_em: { type: [string, 'null'], format: date-time }

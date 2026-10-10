@@ -37,6 +37,14 @@ jobs:
         run: npm run typecheck
       - name: Build (tsc + vite)
         run: npm run build
+      # Fase 3, tarefa 6: contrato da API pública (OpenAPI 3.1)
+      - name: Contrato da API (OpenAPI)
+        run: npm run api:lint
+        env:
+          REDOCLY_TELEMETRY: 'off'
+      # Fase 3, tarefa 7: rotas, parâmetros e erros da Edge Function `api`
+      - name: Edge Function da API (regras)
+        run: node --experimental-strip-types --test supabase/functions/api/contrato.test.ts
       - name: Testes clínicos
         run: npm run test:clinico
       - name: Gateway (cópia da desidentificação)
