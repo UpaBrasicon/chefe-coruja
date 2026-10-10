@@ -72,6 +72,7 @@ const Contingencia = lazy(() => import('@/pages/Contingencia'))
 const AltaVigilancia = lazy(() => import('@/pages/farmacia/AltaVigilancia'))
 const AihUnidade = lazy(() => import('@/pages/regulacao/Aih'))
 const FaturamentoBpa = lazy(() => import('@/pages/faturamento/Bpa'))
+const ApacUnidade = lazy(() => import('@/pages/regulacao/Apac'))
 const Interacoes = lazy(() => import('@/pages/farmacia/Interacoes'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
@@ -237,6 +238,10 @@ export default function App() {
                       {/* BPA: o faturamento confere, fecha e gera o arquivo; o gestor também (Fase 3, tarefa 3) */}
                       <Route element={<RequireRole papeis={['faturamento', 'gestor']} />}>
                         <Route path="/faturamento" element={<FaturamentoBpa />} />
+                      </Route>
+                      {/* APAC: o regulador autoriza; o faturamento registra a execução e gera o arquivo (Fase 3, tarefa 5) */}
+                      <Route element={<RequireRole papeis={['regulador', 'faturamento', 'gestor']} />}>
+                        <Route path="/apac" element={<ApacUnidade />} />
                       </Route>
                       {/* Interações críticas: lista curada da unidade (Fase 2, tarefa 3) */}
                       <Route element={<RequireRole papeis={['farmaceutico', 'gestor', 'plantonista']} />}>
