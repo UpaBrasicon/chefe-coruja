@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Spinner } from '@/components/ui/spinner'
 import { DetalhesAdmissao } from '@/pages/gestor/DetalhesAdmissao'
 import { GradeAprazamento } from '@/pages/gestor/GradeAprazamento'
+import { CnesUnidade } from '@/pages/gestor/CnesUnidade'
 import { CriticasAih } from '@/pages/gestor/CriticasAih'
 import { chaveLimites, useLimitesUnidade, type LimitesUnidade } from '@/pages/gestor/limites'
 
@@ -151,11 +152,12 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
 
       {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
 
-      {/* Identificação (protótipo: nome, CNES e tipo); o cadastro é da rede, aqui só leitura */}
+      {/* Identificação (protótipo: nome, CNES e tipo); o cadastro é da rede, mas o CNES é do gestor (RT, 10/10/2026) */}
       <div className="grid gap-4 rounded-cartao border border-fio bg-superficie px-5 py-4 shadow-repouso sm:grid-cols-3">
+        {ehGestor && unidadeId && <CnesUnidade key={`cnes-${unidadeId}`} unidadeId={unidadeId} atual={unidade.cnes} />}
         {[
           ['Nome da unidade', unidade.nome],
-          ['CNES', unidade.cnes ?? 'não informado'],
+          ...(ehGestor ? [] : [['CNES', unidade.cnes ?? 'não informado']]),
           ['Tipo', TIPO_UNIDADE[unidade.tipo] ?? unidade.tipo],
         ].map(([r, v]) => (
           <div key={r} className="flex min-w-0 flex-col gap-[3px]">
@@ -165,7 +167,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
         ))}
         <span className="text-rotulo text-tinta-sussurro sm:col-span-3">
           {[unidade.municipio, unidade.uf].filter(Boolean).join(' / ')}
-          {unidade.municipio ? ' · ' : ''}O cadastro da unidade é da administração da rede.
+          {unidade.municipio ? ' · ' : ''}O cadastro da unidade é da administração da rede; o CNES é preenchido pelo gestor.
         </span>
       </div>
 

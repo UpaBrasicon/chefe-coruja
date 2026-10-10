@@ -414,7 +414,7 @@ function Cabecalho({ unidade, c }: { unidade: string; c: ConfigBpa }) {
       <CardHeader>
         <CardTitle className="text-base">Cabeçalho do arquivo</CardTitle>
         <CardDescription>
-          CNES da unidade: {c.cnes ?? 'não cadastrado (Unidade)'}.
+          CNES da unidade: {c.cnes ?? 'não preenchido'} (o gestor preenche em Unidade › Configurações).
           {c.atualizado_em && <> Alterado por {c.atualizado_por ?? '—'} em {fmtDataHora(c.atualizado_em)}.</>}
         </CardDescription>
       </CardHeader>
