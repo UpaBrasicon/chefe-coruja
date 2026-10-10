@@ -1,10 +1,10 @@
 -- GERADO por scripts/gerar-sigtap-cid-sql.mjs — não editar à mão.
 -- Compatibilidade procedimento × CID do SIGTAP (DATASUS, Tabela Unificada),
--- competência 202608: 82103 pares. Fonte: rl_procedimento_cid.txt.
+-- competência 202609: 82103 pares. Fonte: rl_procedimento_cid.txt.
 BEGIN;
-DELETE FROM terminologia.sigtap_procedimento_cid WHERE competencia <> '202608';
+DELETE FROM terminologia.sigtap_procedimento_cid WHERE competencia <> '202609';
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0201010038','C73',true),
 ('0201010038','D09.3',true),
 ('0201010038','D34',true),
@@ -5008,7 +5008,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0203010035','N18.8',true),
 ('0203010035','N18.9',true),
 ('0203010035','N19',true),
@@ -10012,7 +10012,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0203020030','Q21.8',true),
 ('0203020030','Q21.9',true),
 ('0203020030','Q22.0',true),
@@ -15016,7 +15016,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0301080208','F84.0',true),
 ('0301080208','F84.1',true),
 ('0301080208','F84.2',true),
@@ -20020,7 +20020,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0302020020','D45',true),
 ('0302020020','D46.0',true),
 ('0302020020','D46.1',true),
@@ -25024,7 +25024,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0303040149','I61.0',true),
 ('0303040149','I61.1',true),
 ('0303040149','I61.2',true),
@@ -30028,7 +30028,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0303170140','F33.0',true),
 ('0303170140','F33.1',true),
 ('0303170140','F33.2',true),
@@ -35032,7 +35032,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0304080012','C44.0',true),
 ('0304080012','C44.1',true),
 ('0304080012','C44.2',true),
@@ -40036,7 +40036,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0404010350','H65.2',true),
 ('0404010350','H70.0',true),
 ('0404010350','H70.1',true),
@@ -45040,7 +45040,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0406040273','I77.2',true),
 ('0406040273','S15.0',true),
 ('0406040273','S15.1',true),
@@ -50044,7 +50044,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0408030330','M51.3',true),
 ('0408030330','M51.8',true),
 ('0408030330','M51.9',true),
@@ -55048,7 +55048,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0408030852','M96.0',true),
 ('0408030852','M96.1',true),
 ('0408030852','M96.2',true),
@@ -60052,7 +60052,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0408060581','Q74.1',true),
 ('0408060581','Q74.3',true),
 ('0408060581','Q74.8',true),
@@ -65056,7 +65056,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0416080081','C10.3',true),
 ('0416080081','C10.4',true),
 ('0416080081','C10.8',true),
@@ -70060,7 +70060,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0604530013','T86.1',true),
 ('0604530013','T86.2',true),
 ('0604530013','T86.4',true),
@@ -75064,7 +75064,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0701010312','F84.2',true),
 ('0701010312','F84.9',true),
 ('0701010312','G09',true),
@@ -80068,7 +80068,7 @@ SELECT v.p, v.c, v.s, '202608' FROM (VALUES
 ) AS v(p, c, s)
 ON CONFLICT (procedimento, cid) DO UPDATE SET principal = EXCLUDED.principal, competencia = EXCLUDED.competencia;
 INSERT INTO terminologia.sigtap_procedimento_cid (procedimento, cid, principal, competencia)
-SELECT v.p, v.c, v.s, '202608' FROM (VALUES
+SELECT v.p, v.c, v.s, '202609' FROM (VALUES
 ('0701050020','C17.0',true),
 ('0701050020','C17.1',true),
 ('0701050020','C17.2',true),

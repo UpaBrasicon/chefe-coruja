@@ -7,6 +7,8 @@
 -- Perfis do seed: gestor (…01), plantonista (…02, escalado aqui na Clínica
 -- Médica) e o perfil …06, que vira regulador com CRM.
 BEGIN;
+-- banco limpo (CI) não tem a CID-10 carregada; a crítica da AIH confere o CID na tabela
+INSERT INTO terminologia.cid10 (codigo, descricao) VALUES ('J18.9', 'CID do teste J18.9') ON CONFLICT DO NOTHING;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 
 INSERT INTO public.pacientes (id, unidade_id, nome, data_nascimento, prontuario, setor_id, sexo, cns, raca_cor, nome_mae, endereco, municipio, uf)
