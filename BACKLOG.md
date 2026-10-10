@@ -350,6 +350,10 @@ Tarefa 9, como ficou:
 
 **Fase 2 RETOMADA em 09/10/2026, à noite**, depois da revisão PubMed (os 14 PRs foram mergeados, e a migration `20261101000001` foi aplicada na produção). Os defeitos leves já estão corrigidos. Falta o teste final do RT.
 
+**FASE 2 ENCERRADA em 09/10/2026.** Aceite do RT em `produto/docs/fase2/ENCERRAMENTO-FASE2.md`.
+- As tarefas de 1 a 9 estão em produção. A tarefa 1 foi revista: o controle passou a ser a liberação da farmácia (PR #61). A 10 (réplica de leitura) ficou para depois.
+- O teste geral das Fases 0 a 2 está em `produto/docs/fase2/teste-geral-fases-0-1-2-2026-10-09.md`. Achou 2 defeitos leves, corrigidos na branch `fase2/correcoes-teste-geral`, e 1 configuração para o RT: ligar a proteção contra senha vazada no Auth.
+
 **Fase 2 construída em 09/10/2026.** Tarefas 1 a 9 em produção desde 09/10/2026; a 10 não agora. Falta o teste final do RT (ver "Para encerrar a Fase 2").
 
 **Ordem técnica da Fase 2**
@@ -398,6 +402,7 @@ Regras:
 As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nessa ordem. A homologação recebe a última branch, que contém todas.
 
 ## Fase 3 — SUS, Produção e Integrações Mínimas
+**Fase atual desde 09/10/2026** (aberta depois do aceite da Fase 2).
 **Horizonte:** 90-120 dias
 **Objetivo:** começar a transformar dados assistenciais em produção SUS e maturidade técnica.
 
