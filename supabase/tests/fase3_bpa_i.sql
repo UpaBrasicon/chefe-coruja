@@ -253,4 +253,14 @@ SELECT pg_temp.como('10000000-0000-4000-8000-000000000006');
 SELECT pg_temp.falha($$SELECT public.salvar_endereco_sus('23000000-0000-4000-8000-000000000972', '{"cep": "01310100"}')$$,
   'Acesso negado', 'fora do plantão e sem faturamento não mexe no endereço');
 
+-- ── 7. CNES pelo gestor (decisão do RT de 10/10/2026) ───────────────────────
+SELECT pg_temp.falha($$SELECT public.definir_cnes_unidade('21000000-0000-4000-8000-000000000097', '1234567')$$,
+  'O CNES da unidade é preenchido pelo gestor', 'só o gestor define o CNES');
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
+SELECT pg_temp.falha($$SELECT public.definir_cnes_unidade('21000000-0000-4000-8000-000000000001', '12345')$$,
+  'CNES com 7 dígitos', 'CNES com 7 dígitos');
+SELECT pg_temp.falha($$SELECT public.definir_cnes_unidade('21000000-0000-4000-8000-000000000001', '7654321')$$,
+  'Este CNES já está em outra unidade', 'CNES não se repete entre unidades');
+SELECT pg_temp.ok(public.definir_cnes_unidade('21000000-0000-4000-8000-000000000001', '2.077.485') = '2077485', 'gestor grava o CNES (só dígitos)');
+
 ROLLBACK;
