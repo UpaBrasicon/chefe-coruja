@@ -428,11 +428,31 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 - **Competência:** o sistema sugere o mês da alta, ou o mês corrente com o paciente internado. O regulador confirma ou troca, e a troca fica registrada.
 - **Número da AIH:** 13 dígitos. O dígito verificador só será conferido com fonte oficial do algoritmo. Sem ela, confere-se só o formato.
 
+**Decisões do RT para a Fase 3, tarefa 2 — críticas da AIH configuráveis (09/10/2026)**
+
+- **Quem configura:** o gestor da unidade marca cada crítica como bloqueante ou só aviso, com motivo e histórico. Sem configuração, vale o padrão do produto.
+- **Onde bloqueia:** na emissão do laudo de AIH. O médico corrige na hora; o regulador recebe só laudos sem bloqueio e vê os avisos.
+- **Padrão do produto, bloqueantes:**
+  - CID principal inexistente;
+  - procedimento fora do SIGTAP;
+  - CID incompatível com o procedimento ou não aceito como principal;
+  - sexo e idade fora do SIGTAP;
+  - CNS com dígito verificador inválido;
+  - lesão (S/T) sem CID de causa externa.
+- **CBO:** campo novo no perfil do médico, pela lista oficial do CBO que já está na terminologia. A crítica confere se está preenchido e é válido.
+- **Prazos, como alerta:**
+  - AIH solicitada há mais de 72 h desde a internação, sem decisão: alerta na fila do regulador;
+  - competência a mais de 3 meses da alta: alerta ao aprovar e ao ajustar.
+  - Fonte: pesquisa do NIR, `produto/docs/pesquisa/nir-nucleo-interno-regulacao.md`.
+- **SIGTAP:** cada AIH guarda a competência da tabela SIGTAP usada nas críticas. A tabela continua sendo atualizada à mão, pela administração. Quando ela estiver desatualizada há mais de 1 mês, aparece um aviso.
+- **Guardar:** as críticas encontradas ficam registradas em cada AIH.
+
 **Andamento da Fase 3**
 
 | Tarefa | Situação | Onde |
 |---|---|---|
-| 1 — Ciclo da AIH | **Pronta na homologação**, conferida no navegador local; falta o teste do RT e o "ok produção" | Branch `fase3/aih-ciclo`; migrations `20261102000001_papel_regulador.sql` e `20261102000002_aih_ciclo.sql`; teste `supabase/tests/fase3_aih_ciclo.sql`; tela `/aih` (médico regulador decide, gestor acompanha) e a situação da AIH na lista de laudos do médico |
+| 1 — Ciclo da AIH | **Migrations em produção** (ok do RT em 09/10). Frontend na branch; o deploy da homologação foi barrado pelo limite diário da Vercel. Falta o redeploy, o teste do RT e o merge | Branch `fase3/aih-ciclo`; migrations `20261102000001_papel_regulador.sql` e `20261102000002_aih_ciclo.sql`; teste `supabase/tests/fase3_aih_ciclo.sql`; tela `/aih` (médico regulador decide, gestor acompanha) e a situação da AIH na lista de laudos do médico |
+| 2 — Críticas da AIH configuráveis | **Construída e conferida no navegador local**; ainda não publicada (limite da Vercel). Falta publicar na homologação, o teste do RT e o "ok produção" | Branch local `fase3/aih-criticas` (sobre a `fase3/aih-ciclo`); migration `20261102000003_aih_criticas.sql`; teste `supabase/tests/fase3_aih_criticas.sql`; cartão "Críticas da AIH" em Unidade › Configurações (gestor), CBO no perfil do médico, críticas no laudo e na fila do regulador |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.

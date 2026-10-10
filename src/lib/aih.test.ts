@@ -1,7 +1,7 @@
 // node --experimental-strip-types --test src/lib/aih.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { competenciaNaTela, lerCompetencia, numeroAih, numeroAihValido } from './aih.ts'
+import { competenciaDaData, competenciaForaDoPrazo, competenciaNaTela, lerCompetencia, numeroAih, numeroAihValido, somarMeses } from './aih.ts'
 
 test('número da AIH: 13 dígitos, aceitando separadores', () => {
   assert.equal(numeroAih('3526.100.012.345'), '3526100012345')
@@ -21,4 +21,18 @@ test('competência: MM/AAAA ou AAAAMM', () => {
   assert.equal(lerCompetencia('2026-10'), null)
   assert.equal(competenciaNaTela('202610'), '10/2026')
   assert.equal(competenciaNaTela(null), '—')
+})
+
+test('competência até 3 meses da alta', () => {
+  assert.equal(somarMeses('202611', 3), '202702')
+  assert.equal(somarMeses('202601', -1), '202512')
+  assert.equal(competenciaForaDoPrazo('202702', '202611'), false)
+  assert.equal(competenciaForaDoPrazo('202703', '202611'), true)
+  assert.equal(competenciaForaDoPrazo('202703', null), false)
+})
+
+test('competência de uma data em Brasília', () => {
+  assert.equal(competenciaDaData('2026-11-01T01:00:00Z'), '202610')
+  assert.equal(competenciaDaData('2026-11-01T12:00:00Z'), '202611')
+  assert.equal(competenciaDaData(null), null)
 })

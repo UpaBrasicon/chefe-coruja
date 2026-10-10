@@ -8,12 +8,14 @@ export type StatusAih = 'solicitada' | 'aprovada' | 'rejeitada' | 'cancelada'
 export type AihFila = {
   id: string; status: StatusAih; numero: string | null; competencia: string | null; competencia_sugerida: string
   paciente_id: string; paciente: string; sexo: string | null; nascimento: string | null; cns: string | null
-  local: string | null; internacao_id: string | null; alta_em: string | null
+  local: string | null; internacao_id: string | null; internado_em?: string | null; alta_em: string | null
   solicitada_por: string | null; solicitada_em: string; solicitada_por_mim: boolean
   decidida_por: string | null; decidida_em: string | null; motivo: string | null
   laudo_numero: string | null; laudo_versao: number
   carater: string | null; diagnostico: string | null; cid: string | null; cid_sec: string | null
   proc_cod: string | null; proc_desc: string | null; clinica: string | null
+  /** Fase 3, tarefa 2: críticas gravadas na AIH, competência do SIGTAP e alertas de prazo. */
+  criticas?: CriticaAih[]; sigtap_competencia?: string | null; alerta_72h?: boolean; alerta_competencia?: boolean
 }
 
 /** aihs_dos_laudos: a AIH de cada laudo, para o médico. */
@@ -71,3 +73,37 @@ export function competenciaNaTela(competencia: string | null): string {
 export const MINIMO_REJEICAO = 10
 export const MINIMO_AJUSTE = 10
 export const MINIMO_CANCELAMENTO = 15
+
+/** Crítica da AIH (Fase 3, tarefa 2): a bloqueante impede emitir o laudo. */
+export type CriticaAih = { codigo: string; campo: string; texto: string; bloqueante: boolean }
+
+/** criticas_aih_da_unidade: o catálogo, com o padrão e o ajuste do gestor. */
+export type ConfigCritica = {
+  codigo: string; titulo: string; padrao: boolean; bloqueante: boolean
+  ajuste: { motivo: string; por: string | null; em: string } | null
+}
+
+/** AAAAMM + n meses. */
+export function somarMeses(competencia: string, n: number): string {
+  const ano = Number(competencia.slice(0, 4))
+  const mes = Number(competencia.slice(4)) - 1 + n
+  const a = ano + Math.floor(mes / 12)
+  const m = ((mes % 12) + 12) % 12 + 1
+  return `${a}${String(m).padStart(2, '0')}`
+}
+
+/**
+ * Competência além de 3 meses da alta (a AIH vale até 3 competências depois
+ * da alta; pesquisa do NIR, Manual do SIH). Sem alta, não há alerta.
+ */
+export function competenciaForaDoPrazo(competencia: string | null, competenciaDaAlta: string | null): boolean {
+  if (!competencia || !competenciaDaAlta) return false
+  return competencia > somarMeses(competenciaDaAlta, 3)
+}
+
+/** Competência (AAAAMM) de uma data, no fuso de Brasília. */
+export function competenciaDaData(iso: string | null): string | null {
+  if (!iso) return null
+  const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit' }).format(new Date(iso))
+  return p.replace('-', '')
+}

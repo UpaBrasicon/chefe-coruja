@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import {
-  competenciaNaTela, EVENTO_AIH, lerCompetencia, MINIMO_AJUSTE, MINIMO_CANCELAMENTO, MINIMO_REJEICAO, numeroAih, numeroAihValido,
+  competenciaDaData, competenciaForaDoPrazo, competenciaNaTela, EVENTO_AIH, lerCompetencia, MINIMO_AJUSTE, MINIMO_CANCELAMENTO, MINIMO_REJEICAO, numeroAih, numeroAihValido,
   STATUS_AIH, type AihFila, type EventoAih, type StatusAih,
 } from '@/lib/aih'
 import { fmtData, fmtDataHora } from '@/lib/datas'
@@ -108,6 +108,8 @@ function CartaoAih({ a, regulador }: { a: AihFila; regulador: boolean }) {
         <span className="text-tinta-sussurro">{a.local ?? '—'}</span>
         {a.nascimento && <span className="text-tinta-sussurro">nasc. {fmtData(a.nascimento)}</span>}
         {a.sexo && <span className="text-tinta-sussurro">{a.sexo}</span>}
+        {a.alerta_72h && <Badge variant="destructive">mais de 72 h sem decisão</Badge>}
+        {a.alerta_competencia && <Badge variant="destructive">competência além de 3 meses da alta</Badge>}
         <Badge variant={st.variante} className="ml-auto">{st.rotulo}</Badge>
       </div>
       <div className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
@@ -122,6 +124,12 @@ function CartaoAih({ a, regulador }: { a: AihFila; regulador: boolean }) {
         Solicitada por {a.solicitada_por ?? '—'}, {fmtDataHora(a.solicitada_em)}
         {a.decidida_em && <> · {a.status === 'rejeitada' ? 'rejeitada' : 'decidida'} por {a.decidida_por ?? '—'}, {fmtDataHora(a.decidida_em)}</>}
       </span>
+      {(a.criticas ?? []).length > 0 && (
+        <div className="flex flex-col gap-0.5 rounded-md border border-atencao/40 bg-atencao/[0.06] px-2.5 py-1.5 text-xs text-atencao">
+          <span className="font-medium">Críticas no laudo (avisos aceitos pelo médico){a.sigtap_competencia ? ` · SIGTAP ${competenciaNaTela(a.sigtap_competencia)}` : ''}:</span>
+          {(a.criticas ?? []).map((c, i) => <span key={i}>Campo {c.campo}: {c.texto}</span>)}
+        </div>
+      )}
       {a.status === 'aprovada' && (
         <span className="text-conforme">AIH nº {a.numero} · competência {competenciaNaTela(a.competencia)}</span>
       )}
@@ -145,6 +153,9 @@ function CartaoAih({ a, regulador }: { a: AihFila; regulador: boolean }) {
               <Input className="h-8 w-32" placeholder="MM/AAAA" value={competencia} onChange={(e) => setCompetencia(e.target.value)} aria-label="Competência" />
               <span className="self-center text-xs text-tinta-sussurro">Competência sugerida: {competenciaNaTela(a.competencia_sugerida)} ({a.alta_em ? 'mês da alta' : 'internado: mês corrente'})</span>
             </div>
+          )}
+          {(acao === 'aprovar' || acao === 'competencia') && competenciaForaDoPrazo(lerCompetencia(competencia), competenciaDaData(a.alta_em)) && (
+            <span role="alert" className="text-xs text-critico">A competência passa de 3 meses da alta: a AIH pode não ser mais aceita no SUS.</span>
           )}
           {acao === 'competencia' && (
             <Input className="h-8 w-32" placeholder="MM/AAAA" value={competencia} onChange={(e) => setCompetencia(e.target.value)} aria-label="Nova competência" />
