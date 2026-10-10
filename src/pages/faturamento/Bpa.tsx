@@ -30,7 +30,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { competenciaDaData, competenciaNaTela, lerCompetencia } from '@/lib/aih'
 import {
-  codigoSigtapNaTela, competenciasNaJanela, CRITICA_BPA, ORIGEM_BPA, SUGESTAO_SIGTAP, USO_PROCEDIMENTO, foraDaJanela,
+  codigoSigtapNaTela, competenciasNaJanela, CRITICA_BPA, DESTINO_BPA, INSTRUMENTO_SIGTAP, ORIGEM_BPA, SUGESTAO_SIGTAP, USO_PROCEDIMENTO, foraDaJanela,
   type AtendimentoParaFaturar, type Conferencia, type ConfigBpa, type FechamentoBpa, type OrigemBpa,
   type ProfissionalParaFaturar, type UsoProcedimento,
 } from '@/lib/bpa'
@@ -152,7 +152,7 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
     <div className="flex flex-col gap-4">
       <div className="grid gap-2 sm:grid-cols-4">
         <Numero rotulo="Linhas na competência" valor={c.total} />
-        <Numero rotulo="Prontas para o arquivo" valor={c.prontas} />
+        <Numero rotulo={c.bpa_c !== undefined ? `Prontas (BPA-I ${c.bpa_i ?? 0} · BPA-C ${c.bpa_c})` : 'Prontas para o arquivo'} valor={c.prontas} />
         <Numero rotulo="Com crítica (ficam fora)" valor={c.com_critica} tom={c.com_critica > 0 ? 'critico' : undefined} />
         <Numero rotulo="Com aviso (vão com campo vazio)" valor={c.com_aviso} tom={c.com_aviso > 0 ? 'atencao' : undefined} />
       </div>
@@ -176,7 +176,7 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
         <CardContent className="flex flex-col gap-2 text-apoio">
           {c.fechamento && (
             <p className="text-tinta-apoio">
-              {fechada ? 'Fechada' : 'Reaberta'} · {c.fechamento.linhas} linhas em {c.fechamento.folhas} folhas · controle {c.fechamento.controle}
+              {fechada ? 'Fechada' : 'Reaberta'} · {c.fechamento.linhas} linhas{c.fechamento.linhas_bpa_c ? ` (${c.fechamento.linhas_bpa_c} de BPA-C)` : ''} em {c.fechamento.folhas} folhas · controle {c.fechamento.controle}
               {' '}· processamento {competenciaNaTela(c.fechamento.processamento)} · por {c.fechamento.fechado_por ?? '—'} em {fmtDataHora(c.fechamento.fechado_em)}
               {c.fechamento.reaberto_em && <> · reaberta por {c.fechamento.reaberto_por ?? '—'} em {fmtDataHora(c.fechamento.reaberto_em)}: “{c.fechamento.motivo_reabertura}”</>}
             </p>
@@ -216,7 +216,7 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Para corrigir</CardTitle>
-          <CardDescription>Linha com crítica fica fora do arquivo; com aviso, vai com o campo vazio. Até 500 linhas, as com crítica primeiro.</CardDescription>
+          <CardDescription>Linha com crítica fica fora do arquivo; com aviso, vai com o campo vazio. O que não fecha no BPA-I e o procedimento aceita no consolidado vai para o BPA-C, com o motivo. Até 500 linhas, as com crítica primeiro.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-apoio">
           {Object.keys(c.por_critica).length > 0 && (
@@ -234,11 +234,13 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
                 <li key={`${l.origem}-${l.origem_id}`} className="flex flex-col gap-0.5 rounded-md border border-fio px-3 py-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium text-tinta">{l.paciente}</span>
+                    {l.destino && <Badge variant={l.destino === 'fora' ? 'destructive' : l.destino === 'bpa_c' ? 'info' : 'secondary'}>{DESTINO_BPA[l.destino]}</Badge>}
                     <span className="text-xs text-tinta-sussurro">
                       {ORIGEM_BPA[l.origem]} · {codigoSigtapNaTela(l.procedimento)}{l.quantidade > 1 ? ` × ${l.quantidade}` : ''} · {fmtDataHora(l.em)} · {l.profissional ?? '—'}
                     </span>
                   </div>
-                  {l.criticas.map((k) => <span key={k.codigo} className="text-xs text-critico">{k.texto}</span>)}
+                  {l.destino === 'bpa_c' && l.motivo_c && <span className="text-xs text-tinta-apoio">Vai no BPA-C: {l.motivo_c}</span>}
+                  {l.destino !== 'bpa_c' && l.criticas.map((k) => <span key={k.codigo} className="text-xs text-critico">{k.texto}</span>)}
                   {l.avisos.map((k) => <span key={k.codigo} className="text-xs text-atencao">{k.texto}</span>)}
                 </li>
               ))}
@@ -379,7 +381,7 @@ function AbaConfiguracao({ unidade }: { unidade: string }) {
           <CardDescription>O que a enfermagem e os médicos registram na hora, e o que o faturamento lança. Mantenha a lista curta.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          {c.procedimentos.filter((p) => p.uso === 'lista').map((p) => <ItemLista key={p.id} unidade={unidade} id={p.id} codigo={p.procedimento} nome={p.nome} />)}
+          {c.procedimentos.filter((p) => p.uso === 'lista').map((p) => <ItemLista key={p.id} unidade={unidade} p={p} />)}
           <BuscaSigtap rotulo="Acrescentar à lista" onEscolher={async (codigo) => {
             const { error } = await supabase.rpc('associar_procedimento_bpa', { p_unidade: unidade, p_procedimento: codigo, p_uso: 'lista' })
             if (error) throw error
@@ -468,6 +470,7 @@ function FonteCodigo({ unidade, uso, atual }: { unidade: string; uso: UsoProcedi
             <span className="text-xs text-tinta-sussurro"> · por {atual.definido_por ?? '—'}, {fmtDataHora(atual.definido_em)}</span>
           </span>
         ) : <Badge variant="warning">sem código: estas linhas ficam fora</Badge>}
+        {atual && <InstrumentoBpa unidade={unidade} p={atual} />}
       </div>
       {!atual && sugestao && (
         <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -481,18 +484,19 @@ function FonteCodigo({ unidade, uso, atual }: { unidade: string; uso: UsoProcedi
   )
 }
 
-function ItemLista({ unidade, id, codigo, nome }: { unidade: string; id: string; codigo: string; nome: string | null }) {
+function ItemLista({ unidade, p }: { unidade: string; p: ConfigBpa['procedimentos'][number] }) {
   const qc = useQueryClient()
   const retirar = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc('retirar_procedimento_bpa', { p_id: id })
+      const { error } = await supabase.rpc('retirar_procedimento_bpa', { p_id: p.id })
       if (error) throw error
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['bpa-config', unidade] }),
   })
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-md border border-fio px-3 py-1.5 text-apoio">
-      <span className="text-tinta">{codigoSigtapNaTela(codigo)} · {nome ?? 'fora do SIGTAP carregado'}</span>
+      <span className="text-tinta">{codigoSigtapNaTela(p.procedimento)} · {p.nome ?? 'fora do SIGTAP carregado'}</span>
+      <InstrumentoBpa unidade={unidade} p={p} />
       <Button size="xs" variant="ghost" className="ml-auto" disabled={retirar.isPending} onClick={() => retirar.mutate()}>Retirar</Button>
       {retirar.error && <span role="alert" className="basis-full text-xs text-critico">{(retirar.error as Error).message}</span>}
     </div>
@@ -556,7 +560,7 @@ function AbaHistorico({ unidade }: { unidade: string }) {
           <span className="font-medium text-tinta">{competenciaNaTela(f.competencia)}</span>
           <Badge variant={f.situacao === 'fechada' ? 'success' : 'secondary'}>{f.situacao}</Badge>
           <span className="text-xs text-tinta-sussurro">
-            {f.linhas} linhas · {f.folhas} folhas · controle {f.controle} · {f.excluidas} fora por crítica · processamento {competenciaNaTela(f.processamento)}
+            {f.linhas} linhas{f.linhas_bpa_c ? ` (${f.linhas_bpa_c} de BPA-C)` : ''} · {f.folhas} folhas · controle {f.controle} · {f.excluidas} fora por crítica · processamento {competenciaNaTela(f.processamento)}
             {' '}· fechada por {f.fechado_por ?? '—'} em {fmtDataHora(f.fechado_em)}
             {f.reaberto_em && <> · reaberta por {f.reaberto_por ?? '—'} em {fmtDataHora(f.reaberto_em)}: “{f.motivo_reabertura}”</>}
           </span>
@@ -566,5 +570,34 @@ function AbaHistorico({ unidade }: { unidade: string }) {
         </div>
       ))}
     </div>
+  )
+}
+
+// Instrumentos do SIGTAP do código e a marca "sempre BPA-C" da unidade (tarefa 4).
+function InstrumentoBpa({ unidade, p }: { unidade: string; p: ConfigBpa['procedimentos'][number] }) {
+  const qc = useQueryClient()
+  const marcar = useMutation({
+    mutationFn: async (sempre: boolean) => {
+      const { error } = await supabase.rpc('marcar_sempre_bpa_c', { p_id: p.id, p_sempre: sempre })
+      if (error) throw error
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['bpa-config', unidade] }),
+  })
+  const inst = p.instrumentos ?? []
+  const aceitaC = inst.includes('01')
+  const soC = aceitaC && !inst.includes('02')
+  return (
+    <span className="flex flex-wrap items-center gap-1.5 text-xs">
+      {inst.filter((i) => INSTRUMENTO_SIGTAP[i]).map((i) => <Badge key={i} variant="secondary">{INSTRUMENTO_SIGTAP[i]}</Badge>)}
+      {inst.length > 0 && !inst.includes('01') && !inst.includes('02') && <Badge variant="warning">sem BPA no SIGTAP</Badge>}
+      {soC && <span className="text-tinta-sussurro">vai sempre no BPA-C</span>}
+      {aceitaC && !soC && (
+        <label className="flex items-center gap-1 text-tinta-apoio">
+          <input type="checkbox" checked={!!p.sempre_bpa_c} disabled={marcar.isPending} onChange={(e) => marcar.mutate(e.target.checked)} />
+          sempre BPA-C
+        </label>
+      )}
+      {marcar.error && <span role="alert" className="text-critico">{(marcar.error as Error).message}</span>}
+    </span>
   )
 }

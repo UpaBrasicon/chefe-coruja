@@ -7,6 +7,9 @@
 -- motivo, o CNS do perfil e o endereço do SUS.
 BEGIN;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
+-- regras do BPA-I puro: sem instrumento/CBO do SIGTAP carregados (o BPA-C tem teste próprio)
+DELETE FROM terminologia.sigtap_procedimento_registro;
+DELETE FROM terminologia.sigtap_procedimento_ocupacao;
 
 INSERT INTO terminologia.sigtap_procedimento (codigo, nome, complexidade, sexo, idade_min, idade_max, competencia) VALUES
   ('0301060096', 'ATENDIMENTO MEDICO EM UNIDADE DE PRONTO ATENDIMENTO', '2', 'I', 0, 1560, to_char(now() AT TIME ZONE 'America/Sao_Paulo', 'YYYYMM')),

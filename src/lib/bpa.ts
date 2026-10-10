@@ -34,11 +34,16 @@ export type LinhaConferencia = {
   paciente: string; profissional: string | null; em: string
   procedimento: string | null; quantidade: number
   criticas: CriticaBpa[]; avisos: CriticaBpa[]
+  /** BPA-I, BPA-C (o que não fecha no BPA-I) ou fora (crítica) — tarefa 4 */
+  destino?: DestinoBpa; motivo_c?: string | null
 }
+
+export type DestinoBpa = 'bpa_i' | 'bpa_c' | 'fora'
+export const DESTINO_BPA: Record<DestinoBpa, string> = { bpa_i: 'BPA-I', bpa_c: 'BPA-C', fora: 'fora do arquivo' }
 
 export type FechamentoResumo = {
   id: string; situacao: 'fechada' | 'reaberta'; processamento: string
-  linhas: number; folhas: number; controle: number
+  linhas: number; linhas_bpa_c?: number; folhas: number; controle: number
   fechado_por: string | null; fechado_em: string
   reaberto_por: string | null; reaberto_em: string | null; motivo_reabertura: string | null
 }
@@ -47,6 +52,7 @@ export type Conferencia = {
   competencia: string
   globais: GlobalBpa[]
   total: number; prontas: number; com_critica: number; com_aviso: number
+  bpa_i?: number; bpa_c?: number
   por_origem: Partial<Record<OrigemBpa, number>>
   por_critica: Record<string, number>
   linhas: LinhaConferencia[]
@@ -57,6 +63,8 @@ export type FechamentoBpa = FechamentoResumo & { competencia: string; excluidas:
 
 export type ProcedimentoUnidade = {
   id: string; procedimento: string; uso: UsoProcedimento; nome: string | null; no_sigtap: boolean
+  /** instrumentos do SIGTAP (01 BPA-C, 02 BPA-I...) e a marca da unidade — tarefa 4 */
+  sempre_bpa_c?: boolean; instrumentos?: string[]
   definido_por: string | null; definido_em: string
 }
 
@@ -104,7 +112,13 @@ export const CRITICA_BPA: Record<string, string> = {
   documento: 'Paciente sem CNS nem CPF',
   endereco: 'Endereço incompleto',
   nacionalidade: 'Nacionalidade ausente',
+  instrumento: 'Procedimento sem BPA no SIGTAP',
+  cbo_nao_aceito: 'CBO não aceito pelo procedimento',
+  quantidade_maxima: 'Quantidade acima do máximo',
 }
+
+/** Instrumentos do SIGTAP (tb_registro) que importam aqui. */
+export const INSTRUMENTO_SIGTAP: Record<string, string> = { '01': 'BPA-C', '02': 'BPA-I', '03': 'AIH', '06': 'APAC' }
 
 /** 0301060096 → 03.01.06.009-6 (como o SIGTAP mostra). */
 export function codigoSigtapNaTela(codigo: string | null): string {
