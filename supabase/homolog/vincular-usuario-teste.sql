@@ -1,7 +1,8 @@
 -- ════════════════════════════════════════════════════════════════════════════
 -- Vínculos e escala do usuário de TESTE da homologação (Fase 0, tarefa 2).
 --
--- Dá ao usuário todos os papéis na "UPA Homologação" (troca pelo menu
+-- Dá ao usuário todos os papéis na "UPA Homologação" (inclusive o regulador da Fase 3,
+-- com CRM fictício de teste) (troca pelo menu
 -- "Trocar perfil") e escala no Pronto Socorro de hoje até daqui a 7 dias, nos
 -- três turnos — a escala é a porta de acesso de plantonista, enfermagem e
 -- recepção (ADR 0003). Gestor e admin não precisam de escala.
@@ -28,6 +29,10 @@ BEGIN
   SELECT v_id, v_unidade, p, v_id
     FROM unnest(enum_range(NULL::public.papel)) AS p
   ON CONFLICT (perfil_id, unidade_id, papel) DO UPDATE SET ativo = true;
+
+  -- o médico regulador (Fase 3) só decide AIH com CRM no cadastro: registro
+  -- fictício, só para o usuário de teste da homologação (não sobrescreve)
+  UPDATE public.perfis SET crm = coalesce(crm, '000000'), uf_crm = coalesce(uf_crm, 'SP') WHERE id = v_id;
 
   INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno, observacao)
   SELECT v_unidade, v_ps, v_id, d::date, t, 'usuario-teste-homologacao'

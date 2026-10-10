@@ -79,6 +79,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
     { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true },
     { to: '/internacao', rotulo: 'Internação', icone: Hospital, exato: true },
+    // Fase 3: o gestor acompanha as AIHs; quem decide é o médico regulador
+    { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true },
     { to: '/observacao', rotulo: 'Observação', icone: Eye, exato: true },
     { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos' },
     { to: '/gestao/protocolos', rotulo: 'Protocolos', icone: ClipboardPlus, exato: true },
@@ -117,6 +119,11 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/recepcao/painel', rotulo: 'Painel de chamada', curto: 'Painel', icone: Monitor, exato: true },
     { to: '/cadastros-duplicados', rotulo: 'Cadastros duplicados', curto: 'Duplicados', icone: GitMerge, exato: true },
   ],
+  // Fase 3, tarefa 1: médico regulador — decide a AIH (aprova com número e
+  // competência, ou rejeita com motivo)
+  regulador: [
+    { to: '/aih', rotulo: 'Pedidos de AIH', curto: 'AIH', icone: FileText, exato: true },
+  ],
   farmaceutico: [
     { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia' },
     { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
@@ -140,7 +147,6 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/plataformas', rotulo: 'Plataformas', icone: LayoutDashboard, exato: true, nota: 'plataformas' },
     { to: '/pendencias-tecnicas', rotulo: 'Pendências', icone: ClipboardList, exato: true, nota: 'chamados' },
     { to: '/servidores', rotulo: 'Servidores', icone: Gauge, exato: true },
-    { to: '/erros-e-alertas', rotulo: 'Erros e alertas', icone: TriangleAlert, exato: true },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
     { to: '/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: ShieldCheck, exato: true },
   ],
@@ -148,12 +154,21 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
 
 const ITEM_REVISAO_CLINICA: ItemNav = { to: '/revisao-clinica', rotulo: 'Revisão Clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true, nota: 'revisao' }
 
+// "Erros e alertas" é do administrador geral (RequireSuperAdmin em App.tsx):
+// o administrador da organização que não é super admin não vê o item
+const ITEM_ERROS_E_ALERTAS: ItemNav = { to: '/erros-e-alertas', rotulo: 'Erros e alertas', icone: TriangleAlert, exato: true }
+
 /**
  * Itens do papel em foco. O responsável técnico (nomeação da rede, não papel
- * da unidade) ganha a Revisão Clínica em qualquer perfil.
+ * da unidade) ganha a Revisão Clínica em qualquer perfil; o super admin ganha
+ * "Erros e alertas" no perfil de administrador.
  */
-export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false): ItemNav[] {
+export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false, superAdmin = false): ItemNav[] {
   const itens = [...POR_PAPEL[papel ?? 'plantonista']]
+  if (papel === 'admin' && superAdmin) {
+    const i = itens.findIndex((x) => x.to === '/servidores')
+    itens.splice(i >= 0 ? i + 1 : itens.length, 0, ITEM_ERROS_E_ALERTAS)
+  }
   if (responsavelTecnico) {
     // o gestor já tem o item; o responsável técnico o ganha com a nota da fila
     const i = itens.findIndex((x) => x.to === ITEM_REVISAO_CLINICA.to)

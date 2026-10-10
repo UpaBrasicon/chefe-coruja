@@ -111,11 +111,22 @@ SELECT pg_temp.negado($$SELECT public.registrar_admissao('24000000-0000-4000-800
   '{"subjetivo":"x","objetivo":"y","cid":"A90","plano":"z","detalhes":[{"esquema":"Via de chegada","item":"SAMU"}]}')$$, 'segunda admissão da internação');
 
 -- ── 4. laudos de AIH do plantão ─────────────────────────────────────────────
+-- desde a migration 20261102000002 o emitir_documento confere as faltas do
+-- laudo de AIH (laudo completo e cadastro completo), como o caminho do rascunho
+SELECT pg_temp.negado($$SELECT public.emitir_documento('23000000-0000-4000-8000-000000000096', 'laudo_aih',
+  '{"aih":{"cid":"A91","procCod":"03.03.01.002-9","procDesc":"Tratamento de dengue hemorrágica"}}')$$, 'laudo de AIH incompleto pelo emitir_documento');
+RESET ROLE;
+UPDATE public.pacientes SET prontuario = coalesce(prontuario, 'P-096'), cns = '898001160012344', raca_cor = 'parda',
+       nome_mae = 'Mãe do Teste', endereco = 'Rua do Teste, 96', municipio = 'São Paulo', uf = 'SP',
+       sexo = coalesce(sexo, 'F'), data_nascimento = coalesce(data_nascimento, '1990-01-01')
+ WHERE id = '23000000-0000-4000-8000-000000000096';
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 DO $$
 DECLARE r record;
 BEGIN
   PERFORM public.emitir_documento('23000000-0000-4000-8000-000000000096', 'laudo_aih',
-    '{"aih":{"cid":"A91","procCod":"03.03.01.002-9","procDesc":"Tratamento de dengue hemorrágica"}}');
+    '{"aih":{"cid":"A91","procCod":"03.03.01.002-9","procDesc":"Tratamento de dengue hemorrágica","sinais":"Febre e sangramento gengival","condicoes":"Plaquetopenia e sinais de alarme","diagnostico":"Dengue com sinais de alarme","clinica":"Clínica médica"}}');
   SELECT * INTO r FROM public.meus_laudos_aih_do_plantao() LIMIT 1;
   IF r.cid IS DISTINCT FROM 'A91' OR r.procedimento NOT LIKE '03.03.01.002-9%' OR r.numero IS NULL THEN
     RAISE EXCEPTION 'FALHOU: laudo emitido não aparece na lista do plantão (%)', r;
