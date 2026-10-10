@@ -198,7 +198,7 @@ function Casca() {
 
   const { data: papelTecnico } = useMeuPapelTecnico()
   const ehRt = !!papelTecnico?.some((p) => p.tipo === 'medico')
-  const itens = React.useMemo(() => itensDeNavegacao(papelAtivo, ehRt), [papelAtivo, ehRt])
+  const itens = React.useMemo(() => itensDeNavegacao(papelAtivo, ehRt, ehSuperAdmin), [papelAtivo, ehRt, ehSuperAdmin])
   const inicio = inicioDoPapel(papelAtivo)
   const notas = useNotasNav(unidadeId, papelAtivo)
   const ehPlantonista = papelAtivo === 'plantonista'
