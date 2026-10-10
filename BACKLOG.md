@@ -420,6 +420,14 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 10 | P2 | Playbook de implantação | Criar checklist de unidade; setores; leitos; usuários; escala; protocolos; medicamentos; treinamento | Implantação UPA/hospital pequeno tem roteiro padronizado |
 | 11 | P2 | Standby em segunda região | Criar projeto Supabase em região secundária com replicação; definir critério de promoção (manual ou automática); criar runbook de failover e failback; executar simulado e medir RTO/RPO reais; sobe para P1 se contrato exigir | Simulado de failover documentado com RTO medido; runbook publicado; dados consistentes após failback |
 
+**Decisões do RT para a Fase 3, tarefa 1 — ciclo da AIH (09/10/2026)**
+
+- **Diagnóstico:** hoje a AIH é só o documento "laudo de AIH". Ele é versionado e numerado, e o cadastro bloqueia a emissão. As críticas SIGTAP (CID, sexo, idade, causa externa) são só avisos. Não há entidade AIH, status, número de 13 dígitos, competência nem quem aprove. Furo técnico: `emitir_documento` emite o laudo sem passar pelas faltas de cadastro (corrigir junto).
+- **Quem decide:** o **médico regulador**, papel novo na unidade (`regulador`). Ele entra pela escala, como os outros papéis, e aprova (com o número da AIH) ou rejeita (com motivo). O médico que solicitou pode aprovar só se for regulador. Quem não é regulador nunca aprova. O papel fica para a Regulação da Fase 4.
+- **AIH por internação:** uma ativa por vez. Rejeitada ou cancelada, abre-se outra. Continuidade e mudança de procedimento ficam para quando forem necessárias.
+- **Competência:** o sistema sugere o mês da alta, ou o mês corrente com o paciente internado. O regulador confirma ou troca, e a troca fica registrada.
+- **Número da AIH:** 13 dígitos. O dígito verificador só será conferido com fonte oficial do algoritmo. Sem ela, confere-se só o formato.
+
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
 2. Implementar críticas.
