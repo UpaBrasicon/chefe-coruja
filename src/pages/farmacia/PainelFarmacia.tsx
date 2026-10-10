@@ -14,7 +14,7 @@ import { supabase } from '@/lib/supabase'
 // Painel da farmácia (Fase 2, tarefa 9; migration 20261031000008). Junta o
 // que é crítico: faltas abertas priorizadas (alta vigilância, pacientes
 // afetados, setores), estoque crítico, validação pendente de alta vigilância
-// e 2ª conferência pendente. A farmácia dá retorno em cada falta; o plantão
+// e administradas sem liberação da farmácia. A farmácia dá retorno em cada falta; o plantão
 // vê o retorno ao escolher o medicamento na prescrição.
 
 export type FaltaPriorizada = {
@@ -38,7 +38,7 @@ export function PainelFarmacia({ unidade, podeAgir, irPara, semNumeros = false }
       return (data ?? []) as unknown as FaltaPriorizada[]
     },
   })
-  // as chaves 'farmacia-estoque' e 'duplas-pendentes' são as mesmas da aba
+  // as chaves 'farmacia-estoque' e 'sem-liberacao' são as mesmas da aba
   // Disponibilidade e da tela Alta vigilância: o cache guarda a lista inteira e
   // o painel só filtra ou conta na leitura (select), senão uma tela quebra a outra
   const estoque = useQuery({
@@ -59,11 +59,12 @@ export function PainelFarmacia({ unidade, podeAgir, irPara, semNumeros = false }
       return (data ?? []).filter((i) => i.alta_vigilancia && !i.ultima_situacao).length
     },
   })
-  const duplas = useQuery({
-    queryKey: ['duplas-pendentes', unidade],
-    enabled: podeAgir,
+  // alta vigilância administrada sem a liberação da farmácia (decisão do RT de 09/10/2026)
+  const semLiberacao = useQuery({
+    queryKey: ['sem-liberacao', unidade],
+    enabled: !semNumeros,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('duplas_pendentes', { p_unidade: unidade })
+      const { data, error } = await supabase.rpc('administracoes_sem_liberacao', { p_unidade: unidade })
       if (error) throw error
       return (data ?? []) as unknown as unknown[]
     },
@@ -76,7 +77,7 @@ export function PainelFarmacia({ unidade, podeAgir, irPara, semNumeros = false }
         <Numero rotulo="Faltas abertas" valor={faltas.data?.length} destaque={(faltas.data ?? []).some((f) => f.alta_vigilancia)} />
         <Numero rotulo="Estoque crítico ou em falta" valor={estoque.data?.length} onClick={irPara ? () => irPara('disponibilidade') : undefined} />
         {podeAgir && <Numero rotulo="Validação pendente (alta vigilância)" valor={validacao.data} destaque={(validacao.data ?? 0) > 0} onClick={irPara ? () => irPara('validacao') : undefined} />}
-        {podeAgir && <Numero rotulo="Aguardando 2ª conferência" valor={duplas.data} destaque={(duplas.data ?? 0) > 0} href="/alta-vigilancia" />}
+        <Numero rotulo="Administradas sem liberação" valor={semLiberacao.data} destaque={(semLiberacao.data ?? 0) > 0} href="/alta-vigilancia" />
       </div>}
       <section className="flex flex-col gap-2">
         <TituloSecao>Faltas abertas, por prioridade</TituloSecao>

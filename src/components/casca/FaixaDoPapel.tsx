@@ -39,20 +39,20 @@ function FaixaFarmaceutico({ unidadeId }: { unidadeId: string }) {
     queryKey: ['faixa-farmaceutico', unidadeId],
     refetchInterval: 60_000,
     queryFn: async () => {
-      const [agora, fila, disp, faltas, duplas] = await Promise.all([
+      const [agora, fila, disp, faltas, semLib] = await Promise.all([
         horaServidor(),
         supabase.rpc('fila_validacao', { p_unidade: unidadeId }),
         supabase.rpc('disponibilidade', { p_unidade: unidadeId }),
         supabase.from('faltas_medicamento').select('id', { count: 'exact', head: true }).eq('unidade_id', unidadeId).neq('situacao', 'reposta'),
-        supabase.rpc('duplas_pendentes', { p_unidade: unidadeId }),
+        supabase.rpc('administracoes_sem_liberacao', { p_unidade: unidadeId }),
       ])
       if (fila.error) throw fila.error
       if (disp.error) throw disp.error
       if (faltas.error) throw faltas.error
-      if (duplas.error) throw duplas.error
+      if (semLib.error) throw semLib.error
       return {
         agora, fila: (fila.data ?? []) as ItemFila[], disp: (disp.data ?? []) as Disp[], faltasAbertas: faltas.count ?? 0,
-        duplas: Array.isArray(duplas.data) ? duplas.data.length : 0,
+        semLiberacao: Array.isArray(semLib.data) ? semLib.data.length : 0,
       }
     },
   })
@@ -82,13 +82,14 @@ function FaixaFarmaceutico({ unidadeId }: { unidadeId: string }) {
         ].filter(Boolean).join(' · ')}
         nivel={divergentes || altaVig ? 'atencao' : 'ok'}
       />
-      {/* Fase 2: a 2ª conferência entra no lugar do "item mais antigo", que
-          passou para o estado da fila; a Central não repete estes números */}
+      {/* Fase 2: alta vigilância administrada sem a liberação da farmácia
+          (com justificativa) entra no lugar do "item mais antigo", que passou
+          para o estado da fila; a Central não repete estes números */}
       <Parametro
-        grandeza="turno" icone={ShieldAlert} rotulo="Aguardando 2ª conferência"
-        valor={d ? d.duplas : '—'} unidade="alta vigilância"
-        estado={!d ? 'Carregando' : d.duplas ? 'Dupla checagem aberta na enfermagem' : 'Nenhuma pendente'}
-        nivel={d?.duplas ? 'atencao' : 'ok'}
+        grandeza="turno" icone={ShieldAlert} rotulo="Administradas sem liberação"
+        valor={d ? d.semLiberacao : '—'} unidade="alta vigilância"
+        estado={!d ? 'Carregando' : d.semLiberacao ? 'Conferir e liberar o item' : 'Nada para conferir'}
+        nivel={d?.semLiberacao ? 'atencao' : 'ok'}
         onClick={() => navigate('/alta-vigilancia')}
       />
       <Parametro

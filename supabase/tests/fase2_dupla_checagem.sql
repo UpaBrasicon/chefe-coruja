@@ -1,6 +1,8 @@
 -- Fase 2, tarefa 1 — migration 20261031000001_dupla_checagem.sql: medicamento de
 -- alta vigilância (regras ISMP Brasil 2019 + ajuste da farmácia) só é checado
 -- como "feito" depois de duas conferências por profissionais diferentes.
+-- Desde a migration 20261101000002 a regra é a liberação da farmácia; a dupla
+-- continua aceita na transição (ver fase2_liberacao_farmacia.sql).
 BEGIN;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',
@@ -76,7 +78,7 @@ INSERT INTO t SELECT 'dip', public.prescrever(pg_temp.u('pac'), json_build_objec
 -- sem dupla checagem, a morfina não é "feito"
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT pg_temp.falha(format('SELECT public.checar(%L, %L)', pg_temp.u('mor'), 'feito'),
-  'Medicamento de alta vigilância: faça a dupla checagem', 'alta vigilância sem dupla checagem não é registrada como feita');
+  'Alta vigilância sem liberação da farmácia', 'alta vigilância sem liberação nem dupla não é feita sem justificativa');
 SELECT pg_temp.falha(format('SELECT public.conferir_alta_vigilancia(%L)', pg_temp.u('dip')),
   'Este item não exige dupla checagem', 'item comum não tem dupla checagem');
 -- 1ª conferência é da enfermagem; a mesma pessoa não faz a 2ª
@@ -88,7 +90,7 @@ INSERT INTO t SELECT 'c1', public.conferir_alta_vigilancia(pg_temp.u('mor'));
 SELECT pg_temp.falha(format('SELECT public.conferir_alta_vigilancia(%L)', pg_temp.u('mor')),
   'A segunda conferência é de outro profissional', 'o mesmo usuário não faz as duas conferências');
 SELECT pg_temp.falha(format('SELECT public.checar(%L, %L)', pg_temp.u('mor'), 'feito'),
-  'Medicamento de alta vigilância', 'uma conferência só não basta');
+  'Alta vigilância sem liberação da farmácia', 'uma conferência só não basta');
 INSERT INTO t SELECT 'estado', public.estado_dupla_checagem(ARRAY[pg_temp.u('mor'), pg_temp.u('dip')])::text;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000006');
 INSERT INTO t SELECT 'pendentes', public.duplas_pendentes('21000000-0000-4000-8000-000000000001')::text;
@@ -108,7 +110,7 @@ SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT public.checar(pg_temp.u('mor'), 'feito');
 -- a dupla checagem vale para uma administração: a próxima pede outra
 SELECT pg_temp.falha(format('SELECT public.checar(%L, %L)', pg_temp.u('mor'), 'feito'),
-  'Medicamento de alta vigilância', 'a dupla checagem é consumida pela administração');
+  'Alta vigilância sem liberação da farmácia', 'a dupla checagem é consumida pela administração');
 SELECT public.checar(pg_temp.u('mor'), 'nao_feito', NULL, 'paciente dormindo, sem dor');
 
 -- ajuste da unidade: só farmacêutico ou gestor, com motivo
@@ -123,7 +125,7 @@ INSERT INTO t SELECT 'lista', public.alta_vigilancia_da_unidade('21000000-0000-4
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT public.checar(pg_temp.u('mor'), 'feito');
 SELECT pg_temp.falha(format('SELECT public.checar(%L, %L)', pg_temp.u('dip'), 'feito'),
-  'Medicamento de alta vigilância', 'item marcado pela farmácia passa a exigir a dupla checagem');
+  'Alta vigilância sem liberação da farmácia', 'item marcado pela farmácia passa a exigir a liberação');
 RESET ROLE;
 
 DO $$
