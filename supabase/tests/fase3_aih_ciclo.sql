@@ -33,6 +33,8 @@ SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.es
    AND now() < e.inicio + make_interval(mins => e.duracao_min)
 ON CONFLICT DO NOTHING;
 
+-- a gestora (…01) não é reguladora neste teste
+UPDATE public.vinculos SET ativo = false WHERE perfil_id = '10000000-0000-4000-8000-000000000001' AND papel = 'regulador';
 -- …06 vira médico regulador, com CRM
 INSERT INTO public.vinculos (perfil_id, unidade_id, papel)
 VALUES ('10000000-0000-4000-8000-000000000006', '21000000-0000-4000-8000-000000000001', 'regulador')
@@ -102,8 +104,8 @@ SELECT pg_temp.falha(format('SELECT public.decidir_aih(%L, true, %L)', pg_temp.u
   'Número da AIH: 13 dígitos', 'número fora do formato');
 SELECT pg_temp.falha(format('SELECT public.decidir_aih(%L, false, NULL, NULL, %L)', pg_temp.u('aih1'), 'curto'),
   'Rejeitar exige motivo', 'rejeitar sem motivo');
-SELECT public.decidir_aih(pg_temp.u('aih1'), true, '3526100012345', NULL, NULL);
-SELECT pg_temp.falha(format('SELECT public.decidir_aih(%L, true, %L)', pg_temp.u('aih1'), '3526100012346'),
+SELECT public.decidir_aih(pg_temp.u('aih1'), true, '3526199900011', NULL, NULL);
+SELECT pg_temp.falha(format('SELECT public.decidir_aih(%L, true, %L)', pg_temp.u('aih1'), '3526199900012'),
   'Só se decide AIH solicitada', 'AIH já decidida não se decide de novo');
 -- competência: formato e motivo
 SELECT pg_temp.falha(format('SELECT public.ajustar_competencia_aih(%L, %L, %L)', pg_temp.u('aih1'), '202613', 'Alta no mês seguinte ao previsto'),
@@ -143,9 +145,9 @@ RESET ROLE;
 INSERT INTO t SELECT 'aih3', id::text FROM public.aihs WHERE laudo_id = pg_temp.u('laudo4');
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-SELECT pg_temp.falha(format('SELECT public.decidir_aih(%L, true, %L)', pg_temp.u('aih3'), '3526100012345'),
+SELECT pg_temp.falha(format('SELECT public.decidir_aih(%L, true, %L)', pg_temp.u('aih3'), '3526199900011'),
   'Este número de AIH já está em outra AIH', 'número repetido de outra AIH');
-SELECT public.decidir_aih(pg_temp.u('aih3'), true, '3526100099999', '202610', NULL);
+SELECT public.decidir_aih(pg_temp.u('aih3'), true, '3526199900013', '202610', NULL);
 -- cancelar o laudo cancela a AIH
 SELECT public.cancelar_documento(pg_temp.u('laudo4'), 'Laudo emitido para o paciente errado no plantão');
 
@@ -153,7 +155,7 @@ SELECT public.cancelar_documento(pg_temp.u('laudo4'), 'Laudo emitido para o paci
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
 INSERT INTO t SELECT 'gestor', public.aihs_da_unidade('21000000-0000-4000-8000-000000000001')::text;
 INSERT INTO t SELECT 'eventos1', public.eventos_aih(pg_temp.u('aih1'))::text;
-SELECT pg_temp.falha(format('SELECT public.decidir_aih(%L, true, %L)', pg_temp.u('aih3'), '3526100088888'),
+SELECT pg_temp.falha(format('SELECT public.decidir_aih(%L, true, %L)', pg_temp.u('aih3'), '3526199900014'),
   'A decisão da AIH é do médico regulador', 'gestor não decide AIH');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT pg_temp.falha(format('SELECT public.aihs_da_unidade(%L)', '21000000-0000-4000-8000-000000000001'),
@@ -183,7 +185,7 @@ BEGIN
      <> 'solicitada,laudo_retificado,aprovada,competencia_ajustada,cancelada' THEN
     RAISE EXCEPTION 'FALHOU: histórico da AIH (%)', e;
   END IF;
-  IF e -> 2 ->> 'numero' <> '3526100012345' OR e -> 2 ->> 'competencia' <> to_char(now() AT TIME ZONE 'America/Sao_Paulo', 'YYYYMM')
+  IF e -> 2 ->> 'numero' <> '3526199900011' OR e -> 2 ->> 'competencia' <> to_char(now() AT TIME ZONE 'America/Sao_Paulo', 'YYYYMM')
      OR e -> 3 ->> 'competencia' <> '203001' OR e -> 4 ->> 'motivo' <> 'Procedimento principal mudou, nova AIH' THEN
     RAISE EXCEPTION 'FALHOU: dados do histórico (%)', e;
   END IF;
@@ -197,7 +199,8 @@ BEGIN
     RAISE EXCEPTION 'FALHOU: autoaprovação do regulador ou cancelamento pelo laudo (%)', pg_temp.status(pg_temp.u('aih3'));
   END IF;
   RAISE NOTICE 'OK  quem é regulador aprova a própria AIH; cancelar o laudo cancela a AIH';
-  IF jsonb_array_length((SELECT valor FROM t WHERE nome = 'gestor')::jsonb) <> 3 THEN
+  IF (SELECT count(*) FROM jsonb_array_elements((SELECT valor FROM t WHERE nome = 'gestor')::jsonb) x
+       WHERE x ->> 'paciente_id' = '23000000-0000-4000-8000-000000000097') <> 3 THEN
     RAISE EXCEPTION 'FALHOU: gestor deveria ver as 3 AIHs';
   END IF;
   RAISE NOTICE 'OK  gestor lê todas as AIHs da unidade';

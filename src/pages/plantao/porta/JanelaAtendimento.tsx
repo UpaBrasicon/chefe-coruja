@@ -26,6 +26,7 @@ import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCrescimento'
 import { AbaEncaminhamentoInterno } from '@/components/encaminhamento/AbaEncaminhamentoInterno'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
+import { QuadroProcedimentos } from '@/components/paciente/ProcedimentosRealizados'
 
 import { AbaAtendimento, type Classificacao, type RegistroSoap } from './AbaAtendimento'
 import { AbaAtestadoReceita } from './AbaAtestadoReceita'
@@ -38,7 +39,7 @@ import {
   type EpFila, type EstadoDocs, type Soap,
 } from './comum'
 
-type Aba = 'atend' | 'presc' | 'exames' | 'reav' | 'alg' | 'par' | 'aval' | 'enc' | 'termo' | 'docs' | 'fim'
+type Aba = 'atend' | 'presc' | 'exames' | 'reav' | 'alg' | 'par' | 'aval' | 'enc' | 'termo' | 'docs' | 'proc' | 'fim'
 const ESPERA_RASCUNHO_MS = 1500
 
 export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (aviso?: string) => void }) {
@@ -179,6 +180,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
     { k: 'enc', rotulo: 'Encaminhar' },
     { k: 'termo', rotulo: 'Termo' },
     { k: 'docs', rotulo: 'Atestado e receita', n: ((docs.atEmitidoEm ? 1 : 0) + (docs.rxEmitidaEm ? 1 : 0)) || undefined },
+    // Fase 3, tarefa 3: procedimentos realizados (BPA) e endereço do SUS
+    { k: 'proc', rotulo: 'Procedimentos' },
     { k: 'fim', rotulo: 'Desfecho' },
   ]
 
@@ -276,6 +279,9 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
             <TabsContent value="docs">
               <AbaAtestadoReceita episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} nascimento={ep.paciente?.data_nascimento ?? null}
                 faixa={faixa} cid={cidAtend} estado={docs} setEstado={setDocs} />
+            </TabsContent>
+            <TabsContent value="proc">
+              {unidadeJanela && <QuadroProcedimentos pacienteId={ep.paciente_id} unidadeId={unidadeJanela} episodioId={ep.id} />}
             </TabsContent>
             <TabsContent value="fim">
               {p && <AbaDesfecho episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} chegadaEm={ep.chegada_em} painel={p} registros={registros}

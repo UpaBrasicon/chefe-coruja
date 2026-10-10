@@ -10,6 +10,7 @@ export const PAPEL_LABEL: Record<Papel, string> = {
   farmaceutico: 'Farmacêutico',
   telemedicina: 'Telemedicina',
   regulador: 'Médico regulador',
+  faturamento: 'Faturamento',
 }
 
 export const PAPEL_DESCRIPTION: Record<Papel, string> = {
@@ -22,6 +23,7 @@ export const PAPEL_DESCRIPTION: Record<Papel, string> = {
   farmaceutico: 'Diluição padrão, validação de prescrição e faltas',
   telemedicina: 'Teleinterconsulta de apoio ao plantonista',
   regulador: 'Autoriza a AIH: aprova (número e competência) ou rejeita',
+  faturamento: 'BPA: confere, fecha a competência e gera o arquivo do SUS',
 }
 
 export const TIPO_UNIDADE_LABEL: Record<TipoUnidade, string> = {
@@ -84,6 +86,7 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   farmaceutico: '/farmacia',
   telemedicina: '/teleinterconsulta',
   regulador: '/aih',
+  faturamento: '/faturamento',
 }
 
 export const ORDEM_PAPEL: Record<Papel, number> = {
@@ -96,6 +99,7 @@ export const ORDEM_PAPEL: Record<Papel, number> = {
   farmaceutico: 6,
   recepcao: 7,
   regulador: 8,
+  faturamento: 9,
 }
 
 /** Papéis que só entram com plantão na escala agora (ADR 0003). */
