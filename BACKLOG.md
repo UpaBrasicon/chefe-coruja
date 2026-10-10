@@ -498,6 +498,24 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
   - Tipo de atendimento, motivo de saída, órgão emissor e nacionalidade são códigos digitados, com a portaria indicada; nenhum valor foi inventado.
 - **BPA Magnético e Firebird (10/10/2026):** cada secretaria instala e mantém o BPA Magnético e o Firebird. O Chefe Coruja entrega o arquivo no leiaute oficial. O Windows 11 bloqueia o Firebird 1.5 que o DATASUS distribui; o 2.5.9 (32 bits, com o `gds32.dll` de compatibilidade) é a alternativa conhecida.
 
+**Decisões do RT para a Fase 3, tarefa 6 — documentação da API (10/10/2026)**
+
+- **Para quem:**
+  - integradores externos: secretaria, regulação, hospital parceiro, empresa contratada;
+  - equipe interna: catálogo das RPCs que o frontend usa, gerado do banco.
+- **Recursos da API pública** (o que a tarefa 7 constrói), só leitura e com escopo por unidade:
+  - pacientes, atendimentos e leitos;
+  - produção SUS: status, número e competência de AIH, BPA e APAC.
+- **Acesso:** chave por integrador.
+  - O administrador cria a chave, presa às unidades e aos recursos liberados.
+  - A chave é guardada só como hash e pode ser revogada.
+  - Todo acesso fica na auditoria.
+  - Limite de requisições na borda (Cloudflare).
+- **Dados do paciente (LGPD, o mínimo necessário):** nome, nome social, nascimento, sexo, CNS e município; CPF só sem CNS.
+  - Ficam de fora: endereço, telefone, nome da mãe e dados clínicos, exceto a cor de risco, o CID e a situação do atendimento.
+- **Endereço:** `api.chefecoruja.com.br/v1`, no Cloudflare, apontando para uma Edge Function do Supabase.
+- **Formato:** OpenAPI 3.1 no repositório, validado no CI, mais uma página legível gerada dele para o integrador.
+
 **Andamento da Fase 3**
 
 | Tarefa | Situação | Onde |
@@ -506,7 +524,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 2 — Críticas da AIH configuráveis | **Em produção** (PR #63; ok do RT em 10/10; roteiro rodado no app local) | Branch local `fase3/aih-criticas` (sobre a `fase3/aih-ciclo`); migration `20261102000003_aih_criticas.sql`; teste `supabase/tests/fase3_aih_criticas.sql`; cartão "Críticas da AIH" em Unidade › Configurações (gestor), CBO no perfil do médico, críticas no laudo e na fila do regulador |
 | 3 — BPA individualizado | **Em produção** (10/10; migrations com o ok do RT; PRs #63–#65). Roteiro rodado no app local em 10/10. Falta só a importação do arquivo no BPA Magnético | Branch local `fase3/bpa-i` (sobre a `fase3/aih-criticas`); migrations `20261103000001_papel_faturamento.sql`, `20261103000002_bpa_i.sql` e `20261103000003_cnes_pelo_gestor.sql`; teste `supabase/tests/fase3_bpa_i.sql`; tela `/faturamento` (faturamento e gestor), aba Procedimentos no atendimento da porta, quadro na gaveta de cuidados da enfermagem, endereço do SUS na ficha, CNS e CBO no perfil; roteiro em `produto/docs/fase3/roteiro-teste-fase3.md` |
 | 4 — BPA consolidado | **Em produção** (10/10; PR #67; migration e carga do SIGTAP aplicadas antes do merge, com ok do RT) | Branch `fase3/bpa-c`; migration `20261103000004_bpa_c.sql`; teste `supabase/tests/fase3_bpa_c.sql`. O SIGTAP passou a ter instrumento, CBO por procedimento e quantidade máxima (gerador `scripts/terminologia/gerar-sigtap-sql.ts`), e os valores foram corrigidos para reais. Na tela: destino de cada linha (BPA-I, BPA-C ou fora) com motivo, e "sempre BPA-C" por código |
-| 5 — APAC | **Construída e conferida no app local** (solicitar, autorizar, execução com crítica de CBO, fechar e arquivo); falta homologação, teste do RT e "ok produção" | Branch `fase3/apac`; migration `20261104000001_apac.sql`; teste `supabase/tests/fase3_apac.sql`; tela `/apac` (regulador, faturamento, gestor); solicitação no atendimento da porta (aba Procedimentos) e na internação (aba AIH); órgão emissor em Faturamento › Configuração |
+| 5 — APAC | **Em produção** (10/10; PRs #69 e #70; migration aplicada antes do merge, com ok do RT; aba própria na internação) | Branch `fase3/apac`; migration `20261104000001_apac.sql`; teste `supabase/tests/fase3_apac.sql`; tela `/apac` (regulador, faturamento, gestor); solicitação no atendimento da porta (aba Procedimentos) e na internação (aba AIH); órgão emissor em Faturamento › Configuração |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
