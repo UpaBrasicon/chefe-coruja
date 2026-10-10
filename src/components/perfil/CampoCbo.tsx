@@ -1,6 +1,6 @@
-// CBO do médico (Fase 3, tarefa 2): entra no laudo de AIH e é conferido pela
-// crítica "cbo" — na lista oficial (terminologia.cbo). O servidor confere de
-// novo (definir_meu_cbo).
+// CBO do profissional (Fase 3, tarefas 2 e 3): entra no laudo de AIH (crítica
+// "cbo") e em toda linha do BPA-I; na lista oficial (terminologia.cbo). O
+// servidor confere de novo (definir_meu_cbo).
 import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
 
@@ -42,7 +42,7 @@ export function CampoCbo({ inicial }: { inicial: string | null }) {
 
   return (
     <div className="flex flex-col gap-1.5 sm:col-span-2">
-      <Label htmlFor="perf-cbo">CBO (ocupação) — vai no laudo de AIH</Label>
+      <Label htmlFor="perf-cbo">CBO (ocupação) — vai na AIH e no BPA</Label>
       {atual && (
         <span className="text-apoio text-tinta">{atual}{titulo.data ? ` · ${titulo.data}` : ''}</span>
       )}

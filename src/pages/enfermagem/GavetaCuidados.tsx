@@ -10,6 +10,8 @@ import type { CorRisco } from '@/domain/risco'
 import { PainelCuidados } from '@/components/enfermagem/PainelCuidados'
 import { Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
+import { QuadroProcedimentos } from '@/components/paciente/ProcedimentosRealizados'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
 
 export type PacienteEmCuidado = {
@@ -27,6 +29,7 @@ export type PacienteEmCuidado = {
 }
 
 export function GavetaCuidados({ paciente, onFechar }: { paciente: PacienteEmCuidado | null; onFechar: () => void }) {
+  const unidadeId = useUnidade().unidadeAtiva?.unidade_id
   return (
     <Gaveta aberta={!!paciente} onAbertaChange={(v) => { if (!v) onFechar() }}
       rotulo={paciente ? `Cuidados de ${paciente.nome}` : 'Cuidados de enfermagem'} className="max-w-[760px]">
@@ -40,6 +43,10 @@ export function GavetaCuidados({ paciente, onFechar }: { paciente: PacienteEmCui
             {/* Fase 2, tarefa 4: enfermeiro e técnico também registram intercorrência (decisão do RT) */}
             <Intercorrencias pacienteId={paciente.pacienteId} episodioId={paciente.episodioId} internacaoId={paciente.internacaoId} />
             <PainelCuidados pacienteId={paciente.pacienteId} episodioId={paciente.episodioId} internacaoId={paciente.internacaoId} />
+            {/* Fase 3, tarefa 3: no Pronto Socorro, o que a enfermagem faz vai para o BPA (internação vai na AIH) */}
+            {unidadeId && !paciente.internacaoId && (
+              <QuadroProcedimentos pacienteId={paciente.pacienteId} unidadeId={unidadeId} episodioId={paciente.episodioId} />
+            )}
           </div>
         </>
       )}

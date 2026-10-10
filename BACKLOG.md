@@ -447,12 +447,35 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 - **SIGTAP:** cada AIH guarda a competência da tabela SIGTAP usada nas críticas. A tabela continua sendo atualizada à mão, pela administração. Quando ela estiver desatualizada há mais de 1 mês, aparece um aviso.
 - **Guardar:** as críticas encontradas ficam registradas em cada AIH.
 
+**Decisões do RT para a Fase 3, tarefa 3 — BPA individualizado (09/10/2026)**
+
+- **O que entra:**
+  - o atendimento médico na porta e a classificação de risco;
+  - os procedimentos e as medicações. A medicação administrada na Checagem entra sozinha.
+  - Cada atendimento ou procedimento recebe o código SIGTAP que a unidade associar, sempre conferido na tabela.
+- **Quem registra os procedimentos:** os dois caminhos.
+  - Quem fez registra na hora: enfermagem e médico, de uma lista curta da unidade.
+  - O faturamento também lança depois, a partir do prontuário.
+- **Saída:** arquivo no leiaute oficial do BPA Magnético, versão 05.00 do DATASUS (07/2026), com relatório de conferência por competência. A linha com crítica fica de fora e aparece para corrigir.
+- **Quem fecha:** papel novo **faturamento** (sem escala), que também servirá ao BPA-C e à APAC. Ele fecha e reabre a competência com motivo.
+- **CNES da unidade (RT, 10/10/2026):** cada unidade tem o seu, preenchido pelo gestor em Unidade › Configurações (7 dígitos, sem repetir entre unidades, com auditoria).
+- **CNS do profissional:** campo no perfil, validado pelo dígito. Atendimento de quem não tem CNS vira pendência no fechamento.
+- **Endereço do paciente:** campos estruturados na ficha da recepção (CEP, município com código IBGE, logradouro, número, bairro, nacionalidade e etnia). Não são obrigatórios para abrir a ficha. O que faltar vira pendência no fechamento.
+- **Fontes:**
+  - leiaute vigente em `produto/docs/pesquisa/bpa-leiaute-oficial/` (PDF e transcrição);
+  - regras e códigos de UPA conferidos no SIGTAP em `produto/docs/pesquisa/bpa-i-leiaute-e-regras.md`.
+- **Pontos a confirmar:**
+  - INE: o leiaute marca como obrigatório, e a UPA não tem equipe;
+  - tabelas de caráter do atendimento, nacionalidade e tipo de logradouro;
+  - prazo de apresentação: a competência atual e as 3 anteriores (Portaria SAES 1.110/2021).
+
 **Andamento da Fase 3**
 
 | Tarefa | Situação | Onde |
 |---|---|---|
 | 1 — Ciclo da AIH | **Migrations em produção** (ok do RT em 09/10). Frontend na branch; o deploy da homologação foi barrado pelo limite diário da Vercel. Falta o redeploy, o teste do RT e o merge | Branch `fase3/aih-ciclo`; migrations `20261102000001_papel_regulador.sql` e `20261102000002_aih_ciclo.sql`; teste `supabase/tests/fase3_aih_ciclo.sql`; tela `/aih` (médico regulador decide, gestor acompanha) e a situação da AIH na lista de laudos do médico |
 | 2 — Críticas da AIH configuráveis | **Construída e conferida no navegador local**; ainda não publicada (limite da Vercel). Falta publicar na homologação, o teste do RT e o "ok produção" | Branch local `fase3/aih-criticas` (sobre a `fase3/aih-ciclo`); migration `20261102000003_aih_criticas.sql`; teste `supabase/tests/fase3_aih_criticas.sql`; cartão "Críticas da AIH" em Unidade › Configurações (gestor), CBO no perfil do médico, críticas no laudo e na fila do regulador |
+| 3 — BPA individualizado | **Construída e conferida no navegador local** (configurar, conferir, lançar, fechar, reabrir); ainda não publicada (limite da Vercel). Falta publicar na homologação, o teste do RT com importação no BPA Magnético e o "ok produção" | Branch local `fase3/bpa-i` (sobre a `fase3/aih-criticas`); migrations `20261103000001_papel_faturamento.sql`, `20261103000002_bpa_i.sql` e `20261103000003_cnes_pelo_gestor.sql`; teste `supabase/tests/fase3_bpa_i.sql`; tela `/faturamento` (faturamento e gestor), aba Procedimentos no atendimento da porta, quadro na gaveta de cuidados da enfermagem, endereço do SUS na ficha, CNS e CBO no perfil; roteiro em `produto/docs/fase3/roteiro-teste-fase3.md` |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
