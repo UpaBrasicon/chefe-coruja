@@ -14,7 +14,7 @@
 // dele, não um login):
 //   npx supabase functions deploy api --no-verify-jwt --project-ref <ref>
 // Segredo opcional API_BORDA_SEGREDO: o mesmo que a borda (Cloudflare) manda
-// no cabeçalho X-Coruja-Borda, para o IP do CF-Connecting-IP valer.
+// no cabeçalho X-Coruja-Borda, para o IP do X-Coruja-IP-Cliente valer.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { chaveSecreta } from '../_shared/chaves.ts'

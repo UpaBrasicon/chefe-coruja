@@ -7,9 +7,10 @@
 //   ORIGEM         texto:  https://<ref>.supabase.co/functions/v1/api
 //   BORDA_SEGREDO  segredo: o MESMO valor do segredo API_BORDA_SEGREDO da Edge Function
 //
-// A Edge Function só confia no CF-Connecting-IP (lista de IPs da chave) quando
-// o cabeçalho X-Coruja-Borda traz esse segredo. O Worker apaga o que o cliente
-// mandar nesse cabeçalho e põe o valor certo.
+// A Edge Function só usa o X-Coruja-IP-Cliente (lista de IPs da chave) quando
+// o X-Coruja-Borda traz esse segredo. O Worker monta os dois do zero; nada do
+// que o cliente mandar nesses cabeçalhos passa. O CF-Connecting-IP não serve
+// porque o Supabase também está atrás do Cloudflare, que o reescreve.
 
 export default {
   async fetch(request, env) {
@@ -24,7 +25,7 @@ export default {
     const auth = request.headers.get('Authorization')
     if (auth) cabecalhos.set('Authorization', auth)
     cabecalhos.set('Accept', 'application/json')
-    cabecalhos.set('CF-Connecting-IP', request.headers.get('CF-Connecting-IP') ?? '')
+    cabecalhos.set('X-Coruja-IP-Cliente', request.headers.get('CF-Connecting-IP') ?? '')
     cabecalhos.set('X-Coruja-Borda', env.BORDA_SEGREDO)
     const resposta = await fetch(destino, { method: 'GET', headers: cabecalhos })
     const saida = new Headers(resposta.headers)

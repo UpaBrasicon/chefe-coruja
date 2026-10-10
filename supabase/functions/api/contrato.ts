@@ -136,12 +136,14 @@ export function chaveDoCabecalho(auth: string | null): string | null {
 }
 
 /**
- * IP de origem. Atrás do Cloudflare, vale o CF-Connecting-IP só quando a
- * borda prova que é ela (cabeçalho X-Coruja-Borda com o segredo
- * compartilhado). Sem isso, vale o primeiro IP do X-Forwarded-For.
+ * IP de origem. Atrás do Cloudflare, vale o X-Coruja-IP-Cliente que o Worker
+ * da borda manda, e só quando ele prova que é a borda (X-Coruja-Borda com o
+ * segredo compartilhado). O CF-Connecting-IP não serve: o Supabase também
+ * está atrás do Cloudflare, que reescreve esse cabeçalho com o IP do Worker.
+ * Sem a prova da borda, vale o primeiro IP do X-Forwarded-For.
  */
 export function ipDeOrigem(cab: (n: string) => string | null, segredoBorda: string | undefined): string | null {
-  if (segredoBorda && cab('x-coruja-borda') === segredoBorda && cab('cf-connecting-ip')) return cab('cf-connecting-ip')
+  if (segredoBorda && cab('x-coruja-borda') === segredoBorda && cab('x-coruja-ip-cliente')) return cab('x-coruja-ip-cliente')
   const xff = cab('x-forwarded-for')
   return xff ? xff.split(',')[0].trim() || null : null
 }
