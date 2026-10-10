@@ -486,12 +486,16 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 
 **Decisões do RT para a Fase 3, tarefa 5 — APAC (10/10/2026)**
 
-- **Avaliação: sem demanda agora.** As unidades que vão usar o Chefe Coruja agora são UPA e pronto-atendimento, e nelas APAC é rara. A APAC fica para quando houver demanda; nada é construído agora.
-- **Gatilho para construir:** unidade ou contrato que precise solicitar APAC pelo sistema.
-- **Quando construir:**
-  - alvo inicial: exames de alta complexidade; os outros serviços a definir com as secretarias;
-  - o médico regulador autoriza (o mesmo papel da AIH), com número e validade, ou rejeita com motivo;
-  - o leiaute do APAC Magnético é baixado do DATASUS nessa hora.
+- **Construir já, mesmo sem demanda agora:** as unidades de hoje (UPA e pronto-atendimento) quase não usam APAC, mas o RT quer tudo pronto.
+- **Procedimentos:** só os que o SIGTAP registra em APAC (instrumento 06 principal e 07 secundário), com críticas de CID, sexo, idade, CBO e quantidade.
+  - Alvo inicial: exames de alta complexidade, que usam o laudo geral (parte variável 06). Os outros laudos (oncologia, nefrologia, medicamentos, bariátrica, prótese) ficam para quando houver demanda.
+- **Fluxo:**
+  - quem solicita é o médico que atende;
+  - quem autoriza é o médico regulador (mesmo papel da AIH), com número de 13 dígitos e validade, ou rejeita com motivo;
+  - o faturamento registra a execução por competência (procedimentos, executante, motivo de saída), fecha a competência e gera o arquivo do APAC Magnético.
+- **Leiaute:** `layout_Exportacao_APAC.pdf` (DATASUS, 08/07/2026), transcrito em `produto/docs/pesquisa/apac-leiaute-oficial/leiaute-apac.md`.
+  - Ambiguidades a conferir no APAC Magnético: o campo de controle e a posição do fim de linha do laudo geral.
+  - Tipo de atendimento, motivo de saída, órgão emissor e nacionalidade são códigos digitados, com a portaria indicada; nenhum valor foi inventado.
 - **BPA Magnético e Firebird (10/10/2026):** cada secretaria instala e mantém o BPA Magnético e o Firebird. O Chefe Coruja entrega o arquivo no leiaute oficial. O Windows 11 bloqueia o Firebird 1.5 que o DATASUS distribui; o 2.5.9 (32 bits, com o `gds32.dll` de compatibilidade) é a alternativa conhecida.
 
 **Andamento da Fase 3**
@@ -502,7 +506,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 2 — Críticas da AIH configuráveis | **Em produção** (PR #63; ok do RT em 10/10; roteiro rodado no app local) | Branch local `fase3/aih-criticas` (sobre a `fase3/aih-ciclo`); migration `20261102000003_aih_criticas.sql`; teste `supabase/tests/fase3_aih_criticas.sql`; cartão "Críticas da AIH" em Unidade › Configurações (gestor), CBO no perfil do médico, críticas no laudo e na fila do regulador |
 | 3 — BPA individualizado | **Em produção** (10/10; migrations com o ok do RT; PRs #63–#65). Roteiro rodado no app local em 10/10. Falta só a importação do arquivo no BPA Magnético | Branch local `fase3/bpa-i` (sobre a `fase3/aih-criticas`); migrations `20261103000001_papel_faturamento.sql`, `20261103000002_bpa_i.sql` e `20261103000003_cnes_pelo_gestor.sql`; teste `supabase/tests/fase3_bpa_i.sql`; tela `/faturamento` (faturamento e gestor), aba Procedimentos no atendimento da porta, quadro na gaveta de cuidados da enfermagem, endereço do SUS na ficha, CNS e CBO no perfil; roteiro em `produto/docs/fase3/roteiro-teste-fase3.md` |
 | 4 — BPA consolidado | **Em produção** (10/10; PR #67; migration e carga do SIGTAP aplicadas antes do merge, com ok do RT) | Branch `fase3/bpa-c`; migration `20261103000004_bpa_c.sql`; teste `supabase/tests/fase3_bpa_c.sql`. O SIGTAP passou a ter instrumento, CBO por procedimento e quantidade máxima (gerador `scripts/terminologia/gerar-sigtap-sql.ts`), e os valores foram corrigidos para reais. Na tela: destino de cada linha (BPA-I, BPA-C ou fora) com motivo, e "sempre BPA-C" por código |
-| 5 — APAC | **Avaliada em 10/10: sem demanda agora** (decisões acima); nada construído | — |
+| 5 — APAC | **Construída e conferida no app local** (solicitar, autorizar, execução com crítica de CBO, fechar e arquivo); falta homologação, teste do RT e "ok produção" | Branch `fase3/apac`; migration `20261104000001_apac.sql`; teste `supabase/tests/fase3_apac.sql`; tela `/apac` (regulador, faturamento, gestor); solicitação no atendimento da porta (aba Procedimentos) e na internação (aba AIH); órgão emissor em Faturamento › Configuração |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.

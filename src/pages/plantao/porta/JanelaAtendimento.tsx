@@ -27,6 +27,7 @@ import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCres
 import { AbaEncaminhamentoInterno } from '@/components/encaminhamento/AbaEncaminhamentoInterno'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
 import { QuadroProcedimentos } from '@/components/paciente/ProcedimentosRealizados'
+import { SolicitarApac } from '@/components/apac/SolicitarApac'
 
 import { AbaAtendimento, type Classificacao, type RegistroSoap } from './AbaAtendimento'
 import { AbaAtestadoReceita } from './AbaAtestadoReceita'
@@ -281,7 +282,10 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
                 faixa={faixa} cid={cidAtend} estado={docs} setEstado={setDocs} />
             </TabsContent>
             <TabsContent value="proc">
-              {unidadeJanela && <QuadroProcedimentos pacienteId={ep.paciente_id} unidadeId={unidadeJanela} episodioId={ep.id} />}
+              <div className="flex flex-col gap-4">
+                {unidadeJanela && <QuadroProcedimentos pacienteId={ep.paciente_id} unidadeId={unidadeJanela} episodioId={ep.id} />}
+                <SolicitarApac pacienteId={ep.paciente_id} episodioId={ep.id} />
+              </div>
             </TabsContent>
             <TabsContent value="fim">
               {p && <AbaDesfecho episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} chegadaEm={ep.chegada_em} painel={p} registros={registros}

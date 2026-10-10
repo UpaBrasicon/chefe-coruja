@@ -361,6 +361,7 @@ function AbaConfiguracao({ unidade }: { unidade: string }) {
   return (
     <div className="flex flex-col gap-4">
       <Cabecalho unidade={unidade} c={c} />
+      <OrgaoEmissorApac unidade={unidade} atual={c.apac_orgao_emissor ?? null} />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Códigos SIGTAP das fontes automáticas</CardTitle>
@@ -599,5 +600,31 @@ function InstrumentoBpa({ unidade, p }: { unidade: string; p: ConfigBpa['procedi
       )}
       {marcar.error && <span role="alert" className="text-critico">{(marcar.error as Error).message}</span>}
     </span>
+  )
+}
+
+// APAC (tarefa 5): código do órgão emissor que vai no corpo de toda APAC.
+function OrgaoEmissorApac({ unidade, atual }: { unidade: string; atual: string | null }) {
+  const qc = useQueryClient()
+  const [v, setV] = React.useState(atual ?? '')
+  const salvar = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('definir_apac_orgao_emissor', { p_unidade: unidade, p_codigo: v.trim() })
+      if (error) throw error
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['bpa-config', unidade] }),
+  })
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">APAC</CardTitle>
+        <CardDescription>Código do órgão emissor da APAC (Portaria SAS 637/2005): confira com a Secretaria. Sem ele, o arquivo da APAC não fecha.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-wrap items-center gap-2">
+        <Input className="h-8 w-48" maxLength={10} aria-label="Código do órgão emissor da APAC" placeholder="até 10 caracteres" value={v} onChange={(e) => setV(e.target.value)} />
+        <Button size="sm" disabled={salvar.isPending || v.trim() === (atual ?? '')} onClick={() => salvar.mutate()}>Salvar</Button>
+        {salvar.error && <span role="alert" className="text-xs text-critico">{(salvar.error as Error).message}</span>}
+      </CardContent>
+    </Card>
   )
 }
