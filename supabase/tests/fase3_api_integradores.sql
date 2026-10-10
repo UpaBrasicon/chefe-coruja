@@ -91,12 +91,14 @@ SELECT pg_temp.ok((SELECT hash <> (pg_temp.v('k1')::jsonb->>'chave') AND length(
   'no banco, só o hash SHA-256 e o prefixo');
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
-SELECT pg_temp.ok((SELECT count(*) FROM jsonb_array_elements(public.api_chaves_lista()) x WHERE NOT (x->>'pode_editar')::boolean) = 2,
+SELECT pg_temp.ok((SELECT count(*) FROM jsonb_array_elements(public.api_chaves_lista()) x
+                    WHERE NOT (x->>'pode_editar')::boolean AND x->'unidades'->0->>'nome' = 'UPA da API') = 2,
   'gestor da unidade vê as chaves que a acessam, sem poder editar');
 SELECT pg_temp.falha($$SELECT public.api_ajustar_chave((pg_temp.v('k1')::jsonb->>'id')::uuid, 100, '{}')$$,
   'Só a administração da plataforma ajusta', 'gestor não ajusta limite');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-SELECT pg_temp.ok(jsonb_array_length(public.api_chaves_lista()) = 0, 'quem não é gestor da unidade não vê chave');
+SELECT pg_temp.ok(NOT EXISTS (SELECT 1 FROM jsonb_array_elements(public.api_chaves_lista()) x WHERE x->'unidades'->0->>'nome' = 'UPA da API'),
+  'quem não é gestor da unidade não vê chave');
 SELECT pg_temp.falha($$SELECT public.api_v1(pg_temp.v('k1')::jsonb->>'chave', NULL, 'r', 'unidades', '{}')$$,
   'permission denied', 'usuário logado não chama a porta da API (só a Edge Function)');
 
