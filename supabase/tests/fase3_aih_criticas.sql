@@ -4,6 +4,8 @@
 -- gravadas na AIH, CBO no perfil, alertas de prazo na fila do regulador e
 -- laudo sincronizado sem conexão que não é barrado.
 BEGIN;
+-- banco limpo (CI) não tem a CID-10 carregada; a crítica da AIH confere o CID na tabela
+INSERT INTO terminologia.cid10 (codigo, descricao) VALUES ('J18.9', 'CID do teste J18.9'), ('N40', 'CID do teste N40') ON CONFLICT DO NOTHING;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 
 -- SIGTAP e CBO de teste, na competência corrente

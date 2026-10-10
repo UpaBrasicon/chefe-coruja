@@ -6,6 +6,8 @@
 -- escalado agora na Clínica Médica (…22…0001), onde fica o paciente internado
 -- criado aqui (…0096), com uma classificação de risco na porta.
 BEGIN;
+-- banco limpo (CI) não tem a CID-10 carregada; a crítica da AIH confere o CID na tabela
+INSERT INTO terminologia.cid10 (codigo, descricao) VALUES ('A90', 'CID do teste A90'), ('A91', 'CID do teste A91') ON CONFLICT DO NOTHING;
 
 INSERT INTO public.pacientes (id, unidade_id, nome, data_nascimento, prontuario, setor_id, sexo)
 VALUES ('23000000-0000-4000-8000-000000000096', '21000000-0000-4000-8000-000000000001', 'Paciente do Teste de Documentos',
