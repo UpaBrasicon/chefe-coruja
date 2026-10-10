@@ -428,6 +428,12 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 - **Competência:** o sistema sugere o mês da alta, ou o mês corrente com o paciente internado. O regulador confirma ou troca, e a troca fica registrada.
 - **Número da AIH:** 13 dígitos. O dígito verificador só será conferido com fonte oficial do algoritmo. Sem ela, confere-se só o formato.
 
+**Andamento da Fase 3**
+
+| Tarefa | Situação | Onde |
+|---|---|---|
+| 1 — Ciclo da AIH | **Pronta na homologação**, conferida no navegador local; falta o teste do RT e o "ok produção" | Branch `fase3/aih-ciclo`; migrations `20261102000001_papel_regulador.sql` e `20261102000002_aih_ciclo.sql`; teste `supabase/tests/fase3_aih_ciclo.sql`; tela `/aih` (médico regulador decide, gestor acompanha) e a situação da AIH na lista de laudos do médico |
+
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
 2. Implementar críticas.

@@ -79,6 +79,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
     { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true },
     { to: '/internacao', rotulo: 'Internação', icone: Hospital, exato: true },
+    // Fase 3: o gestor acompanha as AIHs; quem decide é o médico regulador
+    { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true },
     { to: '/observacao', rotulo: 'Observação', icone: Eye, exato: true },
     { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos' },
     { to: '/gestao/protocolos', rotulo: 'Protocolos', icone: ClipboardPlus, exato: true },
@@ -116,6 +118,11 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/recepcao/fila-medica', rotulo: 'Fila médica', curto: 'Médica', icone: Stethoscope, exato: true, nota: 'fila_medica' },
     { to: '/recepcao/painel', rotulo: 'Painel de chamada', curto: 'Painel', icone: Monitor, exato: true },
     { to: '/cadastros-duplicados', rotulo: 'Cadastros duplicados', curto: 'Duplicados', icone: GitMerge, exato: true },
+  ],
+  // Fase 3, tarefa 1: médico regulador — decide a AIH (aprova com número e
+  // competência, ou rejeita com motivo)
+  regulador: [
+    { to: '/aih', rotulo: 'Pedidos de AIH', curto: 'AIH', icone: FileText, exato: true },
   ],
   farmaceutico: [
     { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia' },

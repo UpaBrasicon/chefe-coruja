@@ -12,9 +12,11 @@ import * as React from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { competenciaNaTela, STATUS_AIH, type AihDoLaudo } from '@/lib/aih'
 import { supabase } from '@/lib/supabase'
 import { abrirImpressao, folhaDoDocumentoEmitido } from '@/lib/prontuario'
 import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { BarraDocumento } from '@/components/documento/BarraDocumento'
 import { diaHora, invalidarDocumentos } from '@/components/documento/documentos'
@@ -82,6 +84,19 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
       const { data, error } = await supabase.rpc('meus_laudos_aih_do_plantao')
       if (error) throw error
       return data ?? []
+    },
+  })
+
+  // Fase 3: a AIH de cada laudo emitido (solicitada, aprovada com número, rejeitada com motivo)
+  const idsEmitidos = (emitidos.data ?? []).map((r) => r.id)
+  const aihs = useQuery({
+    queryKey: ['aihs-dos-laudos', idsEmitidos.join(',')],
+    enabled: idsEmitidos.length > 0,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('aihs_dos_laudos', { p_laudos: idsEmitidos })
+      if (error) throw error
+      return new Map(((data ?? []) as unknown as AihDoLaudo[]).map((x) => [x.laudo_id, x]))
     },
   })
 
@@ -326,6 +341,7 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
                 <span className="text-apoio text-tinta-sussurro">
                   {[`nº ${r.numero}`, diaHora(r.emitido_em), r.cid, r.procedimento].filter(Boolean).join(' · ')}
                 </span>
+                <SituacaoAih aih={aihs.data?.get(r.id)} />
               </div>
               <Button size="sm" variant="outline" onClick={() => void reimprimir(r.id)}><Printer /> Reimprimir</Button>
             </div>
@@ -333,5 +349,19 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
         </Cartao>
       )}
     </div>
+  )
+}
+
+/** A AIH do laudo, na lista do plantão (Fase 3, tarefa 1). */
+function SituacaoAih({ aih }: { aih: AihDoLaudo | undefined }) {
+  if (!aih) return null
+  const st = STATUS_AIH[aih.status]
+  return (
+    <span className="flex flex-wrap items-center gap-2 text-apoio">
+      <Badge variant={st.variante}>AIH {st.rotulo}</Badge>
+      {aih.status === 'aprovada' && <span className="text-conforme">nº {aih.numero} · competência {competenciaNaTela(aih.competencia)}</span>}
+      {aih.status === 'rejeitada' && <span className="text-critico">{aih.motivo}</span>}
+      {aih.status === 'solicitada' && <span className="text-tinta-sussurro">aguardando o médico regulador</span>}
+    </span>
   )
 }
