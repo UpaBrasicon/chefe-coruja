@@ -50,3 +50,6 @@ data/terminologia/*
 
 # partes geradas do sigtap_cid.sql para o SQL Editor (homologação)
 supabase/homolog/partes/
+
+# grafo local do graphify (cache, não versionar)
+graphify-out/
