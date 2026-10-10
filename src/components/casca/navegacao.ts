@@ -25,7 +25,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
-import { FileText, History, Receipt, Video } from 'lucide-react'
+import { FileCheck, FileText, History, Receipt, Video } from 'lucide-react'
 import { FileWarning, GitMerge, LifeBuoy, Pill, ShieldAlert, Siren } from 'lucide-react'
 
 import type { Papel } from '@/types/database'
@@ -82,6 +82,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     // Fase 3: o gestor acompanha as AIHs; quem decide é o médico regulador
     { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true },
     { to: '/faturamento', rotulo: 'Faturamento (BPA)', curto: 'BPA', icone: Receipt, exato: true },
+    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
     { to: '/observacao', rotulo: 'Observação', icone: Eye, exato: true },
     { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos' },
     { to: '/gestao/protocolos', rotulo: 'Protocolos', icone: ClipboardPlus, exato: true },
@@ -124,11 +125,13 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   // competência, ou rejeita com motivo)
   regulador: [
     { to: '/aih', rotulo: 'Pedidos de AIH', curto: 'AIH', icone: FileText, exato: true },
+    { to: '/apac', rotulo: 'Pedidos de APAC', curto: 'APAC', icone: FileCheck, exato: true },
   ],
   // Fase 3, tarefa 3: faturamento (sem escala) — conferência e fechamento do
   // BPA, lançamento de procedimentos e códigos SIGTAP da unidade
   faturamento: [
     { to: '/faturamento', rotulo: 'BPA', icone: Receipt, exato: true },
+    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
   ],
   farmaceutico: [
     { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia' },

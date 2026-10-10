@@ -73,6 +73,8 @@ export type ConfigBpa = {
   orgao_origem: string | null; sigla: string | null; cnpj: string | null
   orgao_destino: string | null; destino: 'M' | 'E' | null
   carater_atendimento: string | null; ine: string | null
+  /** APAC (tarefa 5): código do órgão emissor, Portaria SAS 637/2005 */
+  apac_orgao_emissor?: string | null
   atualizado_por: string | null; atualizado_em: string | null
   sigtap_competencia: string | null
   procedimentos: ProcedimentoUnidade[]

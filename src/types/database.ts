@@ -9929,6 +9929,36 @@ export type Database = {
       definir_meu_cns: { Args: { p_cns: string }; Returns: string }
       definir_cnes_unidade: { Args: { p_cnes: string; p_unidade: string }; Returns: string }
       marcar_sempre_bpa_c: { Args: { p_id: string; p_sempre: boolean }; Returns: undefined }
+      apac_conferencia: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
+      apac_fechamentos_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      apacs_da_unidade: { Args: { p_status?: string; p_unidade: string }; Returns: Json }
+      apacs_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      arquivo_apac: { Args: { p_fechamento: string }; Returns: Json }
+      buscar_sigtap_apac: { Args: { p_termo: string }; Returns: Json }
+      cancelar_apac: { Args: { p_apac: string; p_motivo: string }; Returns: undefined }
+      cancelar_execucao_apac: { Args: { p_execucao: string; p_motivo: string }; Returns: undefined }
+      conferir_apac: { Args: { p_cid: string; p_cid_causa?: string; p_cid_sec?: string; p_paciente: string; p_procedimento: string }; Returns: Json }
+      decidir_apac: {
+        Args: { p_apac: string; p_autorizar: boolean; p_motivo?: string; p_numero?: string; p_validade_fim?: string; p_validade_inicio?: string }
+        Returns: undefined
+      }
+      definir_apac_orgao_emissor: { Args: { p_codigo: string; p_unidade: string }; Returns: undefined }
+      eventos_apac: { Args: { p_apac: string }; Returns: Json }
+      fechar_competencia_apac: { Args: { p_competencia: string; p_unidade: string }; Returns: string }
+      reabrir_competencia_apac: { Args: { p_fechamento: string; p_motivo: string }; Returns: undefined }
+      registrar_execucao_apac: {
+        Args: {
+          p_apac: string
+          p_competencia: string
+          p_data_ocorrencia: string | null
+          p_executante: string
+          p_motivo_saida: string
+          p_procedimentos: Json
+          p_tipo_atendimento: string
+        }
+        Returns: string
+      }
+      solicitar_apac: { Args: { p_dados: Json; p_paciente: string }; Returns: string }
       endereco_sus: { Args: { p_paciente: string }; Returns: Json }
       fechar_competencia_bpa: { Args: { p_competencia: string; p_processamento?: string; p_unidade: string }; Returns: string }
       procedimentos_do_paciente: { Args: { p_paciente: string }; Returns: Json }
