@@ -224,7 +224,7 @@ export default function App() {
                         <Route path="/notificacoes" element={<Notificacoes />} />
                       </Route>
 
-                      {/* Alta vigilância: fila da 2ª conferência e lista da unidade (Fase 2, tarefa 1) */}
+                      {/* Alta vigilância: administradas sem liberação e lista da unidade (Fase 2, tarefa 1) */}
                       <Route element={<RequireRole papeis={['farmaceutico', 'enfermeiro', 'gestor']} />}>
                         <Route path="/alta-vigilancia" element={<AltaVigilancia />} />
                       </Route>

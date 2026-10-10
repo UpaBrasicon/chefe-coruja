@@ -9,20 +9,21 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
-import { origemAltaVigilancia, type DuplaPendente, type ItemAltaVigilancia } from '@/lib/duplaChecagem'
+import { origemAltaVigilancia, type ItemAltaVigilancia, type SemLiberacao } from '@/lib/duplaChecagem'
 import { supabase } from '@/lib/supabase'
 
-// Alta vigilância (Fase 2, tarefa 1 do BACKLOG). Duas partes:
-//  • fila da 2ª conferência — o enfermeiro ou o farmacêutico confere o que a
-//    enfermagem já conferiu uma vez (nunca quem fez a 1ª);
+// Alta vigilância (Fase 2, tarefa 1, revista pelo RT em 09/10/2026). Duas partes:
+//  • administradas sem liberação — a enfermagem administrou com justificativa,
+//    sem a liberação da farmácia; o farmacêutico confere e libera o item;
 //  • lista da unidade — vem das regras do ISMP Brasil 2019 (Boletim v. 8, n. 1,
 //    fev. 2019); o farmacêutico ou o gestor marca e desmarca, com motivo.
-// Migration 20261031000001_dupla_checagem.sql.
+// A liberação do dia a dia é a validação do item (Central do Farmacêutico ›
+// Validação). Migrations 20261031000001 e 20261101000002.
 
 export default function AltaVigilancia() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
-  const podeConferir = papelAtivo === 'farmaceutico' || papelAtivo === 'enfermeiro'
+  const veLista = papelAtivo === 'farmaceutico' || papelAtivo === 'gestor'
   const podeAjustar = papelAtivo === 'farmaceutico' || papelAtivo === 'gestor'
 
   return (
@@ -30,59 +31,60 @@ export default function AltaVigilancia() {
       <TituloPagina
         icone={ShieldAlert}
         titulo="Alta vigilância"
-        descricao="Medicamentos que só são registrados como administrados depois de duas conferências, por profissionais diferentes."
+        descricao="Medicamentos que a farmácia libera antes da administração. Sem liberação, a enfermagem administra com justificativa e o farmacêutico confere depois."
       />
-      {unidadeId && podeConferir && <FilaSegunda unidadeId={unidadeId} />}
+      {unidadeId && veLista && <SemLiberacaoLista unidadeId={unidadeId} podeLiberar={papelAtivo === 'farmaceutico'} />}
       {unidadeId && <ListaUnidade unidadeId={unidadeId} podeAjustar={podeAjustar} />}
     </div>
   )
 }
 
-function FilaSegunda({ unidadeId }: { unidadeId: string }) {
+function SemLiberacaoLista({ unidadeId, podeLiberar }: { unidadeId: string; podeLiberar: boolean }) {
   const qc = useQueryClient()
-  const fila = useQuery({
-    queryKey: ['duplas-pendentes', unidadeId],
-    refetchInterval: 15_000,
+  const lista = useQuery({
+    queryKey: ['sem-liberacao', unidadeId],
+    refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('duplas_pendentes', { p_unidade: unidadeId })
+      const { data, error } = await supabase.rpc('administracoes_sem_liberacao', { p_unidade: unidadeId })
       if (error) throw error
-      return (data ?? []) as unknown as DuplaPendente[]
+      return (data ?? []) as unknown as SemLiberacao[]
     },
   })
-  const conferir = useMutation({
-    mutationFn: async (d: DuplaPendente) => {
-      const { error } = await supabase.rpc('conferir_alta_vigilancia', { p_item: d.item_id, p_horario: d.horario ?? undefined })
+  const liberar = useMutation({
+    mutationFn: async (a: SemLiberacao) => {
+      const { error } = await supabase.rpc('validar_item', { p_item: a.item_id, p_confere: true })
       if (error) throw error
     },
-    onSettled: () => void qc.invalidateQueries({ queryKey: ['duplas-pendentes', unidadeId] }),
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: ['sem-liberacao', unidadeId] })
+      void qc.invalidateQueries({ queryKey: ['fila-validacao-av', unidadeId] })
+    },
   })
 
   return (
     <section className="flex flex-col gap-2">
-      <TituloSecao>Aguardando a 2ª conferência</TituloSecao>
-      {conferir.error && <p role="alert" className="text-apoio text-critico">{(conferir.error as Error).message}</p>}
-      {fila.isLoading ? <Spinner /> : fila.error ? (
-        <p role="alert" className="text-apoio text-critico">{(fila.error as Error).message}</p>
-      ) : (fila.data ?? []).length === 0 ? (
-        <Vazio icone={ShieldAlert} titulo="Nada aguardando" texto="Quando a enfermagem fizer a 1ª conferência de um item de alta vigilância, ele aparece aqui (vale por 2 horas)." />
-      ) : (fila.data ?? []).map((d) => (
-        <div key={`${d.item_id}-${d.horario ?? ''}`} className="flex flex-col gap-1.5 rounded-lg border border-critico/30 bg-superficie px-4 py-3 text-apoio">
+      <TituloSecao>Administradas sem liberação</TituloSecao>
+      {liberar.error && <p role="alert" className="text-apoio text-critico">{(liberar.error as Error).message}</p>}
+      {lista.isLoading ? <Spinner /> : lista.error ? (
+        <p role="alert" className="text-apoio text-critico">{(lista.error as Error).message}</p>
+      ) : (lista.data ?? []).length === 0 ? (
+        <Vazio icone={ShieldAlert} titulo="Nada para conferir" texto="Quando a enfermagem administrar alta vigilância sem a liberação da farmácia, com justificativa, aparece aqui." />
+      ) : (lista.data ?? []).map((a) => (
+        <div key={a.id} className="flex flex-col gap-1.5 rounded-lg border border-atencao/40 bg-superficie px-4 py-3 text-apoio">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="font-medium text-tinta">{d.paciente}</span>
-            <span className="text-tinta-sussurro">{d.local ?? '—'}</span>
-            {d.horario && <Badge variant="outline">horário {d.horario}</Badge>}
-            <Badge variant="destructive" className="ml-auto">{d.regra}</Badge>
+            <span className="font-medium text-tinta">{a.paciente}</span>
+            <span className="text-tinta-sussurro">{a.local ?? '—'}</span>
+            {a.horario && <Badge variant="outline">horário {a.horario}</Badge>}
           </div>
-          <span className="text-tinta">{d.descricao} · {d.dose ?? '—'} · {d.via ?? '—'} · {d.posologia ?? '—'}</span>
-          {d.diluicao && <span className="text-xs text-tinta-apoio">Diluição: {d.diluicao}</span>}
-          <span className="text-xs text-tinta-sussurro">1ª conferência: {d.primeiro_por}, {fmtDataHora(d.primeiro_em)}</span>
-          <div>
-            {d.sou_o_primeiro ? (
-              <span className="text-xs text-tinta-apoio">Você fez a 1ª conferência: a 2ª é de outro profissional.</span>
-            ) : (
-              <Button size="xs" disabled={conferir.isPending} onClick={() => conferir.mutate(d)}>Conferi: registrar 2ª conferência</Button>
-            )}
-          </div>
+          <span className="text-tinta">{a.descricao} · {a.dose ?? '—'} · {a.via ?? '—'} · {a.posologia ?? '—'}</span>
+          <span className="text-xs text-tinta-apoio">
+            Administrado por {a.administrado_por ?? '—'}, {fmtDataHora(a.administrado_em)}. Justificativa: “{a.justificativa ?? '—'}”
+          </span>
+          {podeLiberar && (
+            <div>
+              <Button size="xs" disabled={liberar.isPending} onClick={() => liberar.mutate(a)}>Conferi: liberar o item</Button>
+            </div>
+          )}
         </div>
       ))}
     </section>
@@ -144,7 +146,7 @@ function LinhaItem({ i, unidadeId, podeAjustar, aoMudar }: { i: ItemAltaVigilanc
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="font-medium text-tinta">{i.principio_ativo}</span>
         <span className="text-tinta-apoio">{i.apresentacao}{i.concentracao ? ` · ${i.concentracao}` : ''}</span>
-        <Badge variant={i.exige ? 'destructive' : 'outline'} className="ml-auto">{i.exige ? 'exige dupla checagem' : 'não exige'}</Badge>
+        <Badge variant={i.exige ? 'destructive' : 'outline'} className="ml-auto">{i.exige ? 'exige liberação da farmácia' : 'não exige'}</Badge>
       </div>
       <span className="text-xs text-tinta-sussurro">
         {origemAltaVigilancia(i)}

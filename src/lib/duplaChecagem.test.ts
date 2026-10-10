@@ -1,23 +1,17 @@
 // node --experimental-strip-types --test src/lib/duplaChecagem.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { doseUnicaFeita, etapaDupla, origemAltaVigilancia, type ConferenciaAberta, type ItemAltaVigilancia } from './duplaChecagem.ts'
+import { doseUnicaFeita, estadoLiberacao, origemAltaVigilancia, type ItemAltaVigilancia, type Liberacao } from './duplaChecagem.ts'
 
-const conf = (horario: string | null, segundo: string | null): ConferenciaAberta => ({
-  horario, primeiro_por: 'Ana', primeiro_em: '2026-10-08T10:00:00Z', segundo_por: segundo,
-  segundo_em: segundo ? '2026-10-08T10:02:00Z' : null, sou_o_primeiro: false,
+test('estado da liberação da farmácia', () => {
+  const base: Liberacao = { item_id: 'i', regra: 'Analgésicos opioides', situacao: null, motivo: null, por: null, em: null }
+  assert.equal(estadoLiberacao(undefined), 'nao_exige')
+  assert.equal(estadoLiberacao(base), 'aguardando')
+  assert.equal(estadoLiberacao({ ...base, situacao: 'confere', por: 'Fábio', em: '2026-10-09T22:00:00Z' }), 'liberado')
+  assert.equal(estadoLiberacao({ ...base, situacao: 'devolvido', motivo: 'dose acima do protocolo' }), 'devolvido')
 })
 
-test('etapa da dupla checagem por horário', () => {
-  assert.equal(etapaDupla(undefined, null).etapa, 'nenhuma')
-  const estado = { item_id: 'i', regra: 'Insulinas (todas)', abertas: [conf('08:00', 'Bia'), conf('20:00', null)] }
-  assert.equal(etapaDupla(estado, '08:00').etapa, 'pronta')
-  assert.equal(etapaDupla(estado, '20:00').etapa, 'aguardando_segunda')
-  assert.equal(etapaDupla(estado, '14:00').etapa, 'nenhuma')
-  assert.equal(etapaDupla({ item_id: 'i', regra: 'x', abertas: [conf(null, null)] }, '').etapa, 'aguardando_segunda')
-})
-
-test('dose única "Agora" já feita não volta a pedir conferência', () => {
+test('dose única "Agora" já feita não volta a pedir checagem', () => {
   assert.equal(doseUnicaFeita('Agora', false, 'feito'), true)
   assert.equal(doseUnicaFeita(' agora ', false, 'feito'), true)
   assert.equal(doseUnicaFeita('Agora', false, null), false)
