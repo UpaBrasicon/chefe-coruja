@@ -225,6 +225,11 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 
 **Decisões do RT para a Fase 2 (08/10/2026)**
 - Dupla checagem: medicamentos da **lista ISMP Brasil** (alta vigilância) marcados no cadastro; o farmacêutico marca/desmarca outros com motivo. **Segundo checador: enfermeiro ou farmacêutico**, nunca o mesmo usuário.
+  - **Revista pelo RT em 09/10/2026: o controle passa a ser a liberação da farmácia, e a dupla conferência de enfermagem sai.** Motivo: a dupla de enfermagem fica na contramão e depende demais da enfermagem; quem dispensa já confere e libera.
+    - Vale a mesma lista de alta vigilância, sem marcação nova.
+    - O farmacêutico libera o **item** da prescrição pela Validação que já existe. Item alterado pelo médico precisa de nova liberação.
+    - Sem farmacêutico de plantão, a enfermagem administra **com justificativa**. A administração fica marcada e entra na lista "Administradas sem liberação" da farmácia, para conferir depois.
+    - Risco registrado: o ISMP recomenda dupla checagem independente na administração de alguns itens (insulina, heparina, KCl EV). Com a mudança, essa conferência à beira do leito deixa de existir. Decisão do RT.
 - Aprazamento: grade de horários **configurável por unidade** (sem configuração, início às 06h); enfermagem ajusta caso a caso com registro.
 - Interações: **pesquisar bases com licença comercial e trazer opções**; a tarefa 3 só começa depois da escolha.
 - Fugulin: **enfermeiro, 1x por dia**, na internação, com fonte citada e histórico.
@@ -238,7 +243,7 @@ Todas as tarefas de 1 a 9 estão **em produção**. As PRs foram mergeadas no ma
 
 | Tarefa | Situação | Onde |
 |---|---|---|
-| 1 — Dupla checagem | Em produção | Migration `20261031000001_dupla_checagem.sql`; teste `supabase/tests/fase2_dupla_checagem.sql` |
+| 1 — Dupla checagem → liberação da farmácia | A versão com dupla de enfermagem está em produção. **A troca para liberação da farmácia (decisão do RT de 09/10) está na homologação.** Falta o teste do RT e o "ok produção" | Migrations `20261031000001_dupla_checagem.sql` e `20261101000002_liberacao_farmacia_alta_vigilancia.sql` (só homologação); testes `fase2_dupla_checagem.sql` e `fase2_liberacao_farmacia.sql`; branch `fase2/liberacao-farmacia` (sobre a `fase2/defeitos-leves`) |
 | 2 — Aprazamento assistido | Em produção | Migration `20261031000002_aprazamento_assistido.sql`; teste `supabase/tests/fase2_aprazamento_assistido.sql` |
 | 3 — Interações medicamentosas | Em produção (opção A: lista curada de pares críticos, com fonte por linha; a base comercial, opção B, fica como plano futuro) | Migration `20261031000005_interacoes_criticas.sql`; teste `supabase/tests/fase2_interacoes_criticas.sql`; opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
 | 4 — Intercorrência estruturada | Em produção (os dois defeitos graves do roteiro foram corrigidos, PR #45) | Migration `20261031000003_intercorrencia.sql`; teste `supabase/tests/fase2_intercorrencia.sql` |
@@ -252,6 +257,7 @@ Todas as tarefas de 1 a 9 estão **em produção**. As PRs foram mergeadas no ma
 
 **Para encerrar a Fase 2 (com o RT):**
 1. Testar os 5 defeitos leves na homologação, pela seção 10 do roteiro. Depois, merge do PR `fase2/defeitos-leves`.
+1a. Testar a liberação da farmácia, pela tarefa 1 do roteiro, que foi refeita. Dar o "ok produção" da migration `20261101000002`, aplicada antes do merge, e depois fazer o merge do PR `fase2/liberacao-farmacia`.
 2. Fazer o teste final pelo roteiro `produto/docs/fase2/roteiro-teste-fase2.md`, na homologação.
 3. Assinar o encerramento em `produto/docs/fase2/ENCERRAMENTO-FASE2.md`, com as evidências já reunidas.
 

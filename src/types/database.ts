@@ -191,6 +191,7 @@ export type Database = {
           paciente_id: string
           registrado_em: string
           registrado_por: string
+          sem_liberacao: boolean
           situacao: string
           unidade_id: string
         }
@@ -202,6 +203,7 @@ export type Database = {
           paciente_id: string
           registrado_em?: string
           registrado_por: string
+          sem_liberacao?: boolean
           situacao: string
           unidade_id: string
         }
@@ -213,6 +215,7 @@ export type Database = {
           paciente_id?: string
           registrado_em?: string
           registrado_por?: string
+          sem_liberacao?: boolean
           situacao?: string
           unidade_id?: string
         }
@@ -9872,6 +9875,7 @@ export type Database = {
           total: number
         }[]
       }
+      administracoes_sem_liberacao: { Args: { p_unidade: string }; Returns: Json }
       alta_vigilancia_da_unidade: { Args: { p_busca?: string; p_unidade: string }; Returns: Json }
       alteracoes_de_itens: { Args: { p_itens: string[] }; Returns: Json }
       alterar_item_prescricao: {
@@ -11318,6 +11322,7 @@ export type Database = {
       integridade_trilha: { Args: { p_unidade: string }; Returns: Json }
       interacoes_justificadas: { Args: { p_itens: string[] }; Returns: Json }
       intercorrencias_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      liberacao_farmacia: { Args: { p_itens: string[] }; Returns: Json }
       lancar_balanco: {
         Args: {
           p_aferido_em?: string
