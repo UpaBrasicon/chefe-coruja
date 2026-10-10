@@ -227,6 +227,7 @@ RETURNS jsonb LANGUAGE sql STABLE SET search_path = '' AS $$
     'situacao', CASE
       WHEN e.etapa = 'encerrado' THEN 'encerrado'
       WHEN e.etapa = 'observacao' THEN 'em_observacao'
+      WHEN e.etapa = 'internacao' THEN 'internado'
       WHEN e.etapa = 'triagem' THEN 'aguardando_triagem'
       WHEN e.atendimento_iniciado_em IS NOT NULL THEN 'em_atendimento'
       ELSE 'aguardando_medico' END,

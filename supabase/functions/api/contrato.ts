@@ -36,7 +36,7 @@ export function problema(status: number, codigo: CodigoErro, detalhe: string | u
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const COMPETENCIA = /^[0-9]{4}(0[1-9]|1[0-2])$/
-const SITUACOES = ['aguardando_triagem', 'aguardando_medico', 'em_atendimento', 'em_observacao', 'encerrado']
+const SITUACOES = ['aguardando_triagem', 'aguardando_medico', 'em_atendimento', 'em_observacao', 'internado', 'encerrado']
 const STATUS_LEITO = ['livre', 'ocupado', 'bloqueado', 'higienizacao', 'reservado']
 const STATUS_AIH = ['solicitada', 'aprovada', 'rejeitada', 'cancelada']
 const STATUS_APAC = ['solicitada', 'autorizada', 'rejeitada', 'cancelada']
