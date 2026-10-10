@@ -9928,6 +9928,7 @@ export type Database = {
       definir_bpa_config: { Args: { p_dados: Json; p_unidade: string }; Returns: undefined }
       definir_meu_cns: { Args: { p_cns: string }; Returns: string }
       definir_cnes_unidade: { Args: { p_cnes: string; p_unidade: string }; Returns: string }
+      marcar_sempre_bpa_c: { Args: { p_id: string; p_sempre: boolean }; Returns: undefined }
       endereco_sus: { Args: { p_paciente: string }; Returns: Json }
       fechar_competencia_bpa: { Args: { p_competencia: string; p_processamento?: string; p_unidade: string }; Returns: string }
       procedimentos_do_paciente: { Args: { p_paciente: string }; Returns: Json }

@@ -34,7 +34,7 @@ async function main() {
     chave: 'codigo',
     colunas: [
       'nome', 'complexidade', 'sexo', 'idade_min', 'idade_max',
-      'valor_sa', 'valor_sh', 'valor_sp', 'competencia',
+      'valor_sa', 'valor_sh', 'valor_sp', 'qt_maxima', 'competencia',
     ],
     mapear,
   }, linhas as never)
