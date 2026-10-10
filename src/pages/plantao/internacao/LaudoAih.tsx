@@ -12,7 +12,7 @@ import * as React from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { competenciaNaTela, STATUS_AIH, type AihDoLaudo } from '@/lib/aih'
+import { competenciaNaTela, STATUS_AIH, type AihDoLaudo, type CriticaAih } from '@/lib/aih'
 import { supabase } from '@/lib/supabase'
 import { abrirImpressao, folhaDoDocumentoEmitido } from '@/lib/prontuario'
 import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
@@ -34,7 +34,7 @@ import {
   AIH_VAZIO, aihTemAlgo, CAUSAS_EXTERNAS, codigoCid, conteudoAih, formDoConteudoAih, pendenciasAih, type CausaExterna, type FormAih,
 } from './documentosInternacao'
 
-type Conferencia = { avisos: { campo: string; texto: string }[]; competencia: string | null; nota: string }
+type Conferencia = { avisos: { campo: string; texto: string }[]; criticas?: CriticaAih[]; competencia: string | null; nota: string }
 
 const carregar = (chave: string): FormAih => ({ ...AIH_VAZIO, ...(carregarEnvelope<Partial<FormAih>>(chave)?.dados ?? {}) })
 
@@ -75,7 +75,12 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
       return data as unknown as Conferencia
     },
   })
-  const avisos = conferencia.data?.avisos ?? []
+  // Fase 3, tarefa 2: críticas da unidade — as bloqueantes impedem emitir; os
+  // avisos pedem o "ciente" e seguem para o regulador. Servidor antigo: só avisos.
+  const criticas: CriticaAih[] = conferencia.data?.criticas
+    ?? (conferencia.data?.avisos ?? []).map((a) => ({ ...a, codigo: 'sigtap', bloqueante: false }))
+  const bloqueantes = criticas.filter((c) => c.bloqueante)
+  const avisos = criticas.filter((c) => !c.bloqueante)
 
   const emitidos = useQuery({
     queryKey: ['laudos-aih-plantao'],
@@ -101,7 +106,7 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
   })
 
   const falta = ident.pac ? cadastroFaltaAih(ident.pac) : []
-  const pendencias = pendenciasAih({ form, pacienteId, cadastroFalta: falta, avisosSigtap: avisos.length })
+  const pendencias = pendenciasAih({ form, pacienteId, cadastroFalta: falta, avisosSigtap: avisos.length, bloqueantes: bloqueantes.map((c) => c.texto) })
   const temAlgo = aihTemAlgo(form)
   const conteudo = conteudoAih({
     form, pac: ident.pac, pacienteAntigo: ident.pacienteAntigo({ diagnostico: form.diagnostico }), unidade: ident.unidade, usuario: ident.usuario,
@@ -269,6 +274,16 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
               procDesc={form.procDesc} procCod={form.procCod}
               onDigitar={(v) => set({ procDesc: v, procCod: '', cienteSigtap: false })}
               onEscolher={(codigo, nome) => set({ procDesc: nome, procCod: codigo, cienteSigtap: false })} />
+            {bloqueantes.length > 0 && (
+              <div role="alert" className="flex basis-full flex-col gap-2 rounded-container border border-critico/30 bg-critico/[0.06] px-3.5 py-3">
+                <span className="text-apoio font-medium text-critico">Impede emitir o laudo (crítica bloqueante da unidade):</span>
+                {bloqueantes.map((a, k) => (
+                  <span key={k} className="flex items-start gap-2 text-apoio text-pretty text-critico">
+                    <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden /> Campo {a.campo}: {a.texto}
+                  </span>
+                ))}
+              </div>
+            )}
             {avisos.length > 0 && (
               <div className="flex basis-full flex-col gap-2 rounded-container border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-3">
                 {avisos.map((a, k) => (
@@ -282,7 +297,7 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
                 </label>
               </div>
             )}
-            {conferencia.data && avisos.length === 0 && (
+            {conferencia.data && avisos.length === 0 && bloqueantes.length === 0 && (
               <span className="flex basis-full items-center gap-1.5 text-apoio text-conforme"><CheckCircle2 className="size-3.5" aria-hidden /> Conferência do SIGTAP sem aviso de glosa.</span>
             )}
             <Campo rotulo="Clínica" largura="cheio">

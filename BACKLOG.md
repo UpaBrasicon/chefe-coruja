@@ -451,7 +451,8 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 
 | Tarefa | Situação | Onde |
 |---|---|---|
-| 1 — Ciclo da AIH | **Pronta na homologação**, conferida no navegador local; falta o teste do RT e o "ok produção" | Branch `fase3/aih-ciclo`; migrations `20261102000001_papel_regulador.sql` e `20261102000002_aih_ciclo.sql`; teste `supabase/tests/fase3_aih_ciclo.sql`; tela `/aih` (médico regulador decide, gestor acompanha) e a situação da AIH na lista de laudos do médico |
+| 1 — Ciclo da AIH | **Migrations em produção** (ok do RT em 09/10). Frontend na branch; o deploy da homologação foi barrado pelo limite diário da Vercel. Falta o redeploy, o teste do RT e o merge | Branch `fase3/aih-ciclo`; migrations `20261102000001_papel_regulador.sql` e `20261102000002_aih_ciclo.sql`; teste `supabase/tests/fase3_aih_ciclo.sql`; tela `/aih` (médico regulador decide, gestor acompanha) e a situação da AIH na lista de laudos do médico |
+| 2 — Críticas da AIH configuráveis | **Construída e conferida no navegador local**; ainda não publicada (limite da Vercel). Falta publicar na homologação, o teste do RT e o "ok produção" | Branch local `fase3/aih-criticas` (sobre a `fase3/aih-ciclo`); migration `20261102000003_aih_criticas.sql`; teste `supabase/tests/fase3_aih_criticas.sql`; cartão "Críticas da AIH" em Unidade › Configurações (gestor), CBO no perfil do médico, críticas no laudo e na fila do regulador |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.

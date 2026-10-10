@@ -7594,6 +7594,7 @@ export type Database = {
       perfis: {
         Row: {
           ativo: boolean
+          cbo: string | null
           conselho: string | null
           cpf: string | null
           created_at: string
@@ -7613,6 +7614,7 @@ export type Database = {
         }
         Insert: {
           ativo?: boolean
+          cbo?: string | null
           conselho?: string | null
           cpf?: string | null
           created_at?: string
@@ -7632,6 +7634,7 @@ export type Database = {
         }
         Update: {
           ativo?: boolean
+          cbo?: string | null
           conselho?: string | null
           cpf?: string | null
           created_at?: string
@@ -9877,6 +9880,10 @@ export type Database = {
       }
       administracoes_sem_liberacao: { Args: { p_unidade: string }; Returns: Json }
       aihs_da_unidade: { Args: { p_status?: string; p_unidade: string }; Returns: Json }
+      buscar_cbo: { Args: { p_termo: string }; Returns: Json }
+      criticas_aih_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      definir_critica_aih: { Args: { p_bloqueante: boolean; p_critica: string; p_motivo: string; p_unidade: string }; Returns: undefined }
+      definir_meu_cbo: { Args: { p_cbo: string }; Returns: Json }
       aihs_dos_laudos: { Args: { p_laudos: string[] }; Returns: Json }
       ajustar_competencia_aih: { Args: { p_aih: string; p_competencia: string; p_motivo: string }; Returns: undefined }
       cancelar_aih: { Args: { p_aih: string; p_motivo: string }; Returns: undefined }

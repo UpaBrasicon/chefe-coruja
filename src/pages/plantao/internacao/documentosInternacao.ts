@@ -65,8 +65,10 @@ export function aihTemAlgo(f: FormAih) {
 }
 
 /** O que impede o laudo de sair (aihPendencias do protótipo). */
-export function pendenciasAih({ form, pacienteId, cadastroFalta, avisosSigtap }: {
+export function pendenciasAih({ form, pacienteId, cadastroFalta, avisosSigtap, bloqueantes = [] }: {
   form: FormAih; pacienteId: string | null | undefined; cadastroFalta: string[]; avisosSigtap: number
+  /** Críticas bloqueantes da unidade (Fase 3, tarefa 2): impedem emitir até corrigir. */
+  bloqueantes?: string[]
 }): string[] {
   const p: string[] = []
   if (!pacienteId) p.push('Escolher ou cadastrar o paciente')
@@ -77,6 +79,7 @@ export function pendenciasAih({ form, pacienteId, cadastroFalta, avisosSigtap }:
   if (!t(form.procDesc) || !t(form.procCod)) p.push('Procedimento com código SIGTAP')
   if (!t(form.clinica)) p.push('Clínica')
   if (pacienteId && cadastroFalta.length) p.push(`Completar o cadastro: ${cadastroFalta.join(', ')}`)
+  for (const b of bloqueantes) p.push(`Corrigir: ${b}`)
   if (avisosSigtap > 0 && !form.cienteSigtap) p.push('Confirmar os avisos da conferência do SIGTAP')
   return p
 }
