@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { EnderecoSus } from '@/components/paciente/EnderecoSus'
 import { ExcluirDaFila } from '@/components/porta/Chamada'
 
 import { Campo, CamposCadastro } from './CamposCadastro'
@@ -553,6 +554,14 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
           )}
 
           <CamposCadastro prefixo="rec" valores={dados} onChange={mudar} identificacao={modo === 'novo'} hoje={hoje} />
+
+          {/* Fase 3, tarefa 3: endereço do SUS (BPA), sem travar a ficha */}
+          {modo === 'existente' && existente && (
+            <details className="rounded-container border border-fio px-3.5 py-2.5">
+              <summary className="cursor-pointer text-apoio text-tinta-apoio">Endereço e dados do SUS (para o BPA; não obrigatório)</summary>
+              <div className="pt-2"><EnderecoSus pacienteId={existente.id} titulo={false} /></div>
+            </details>
+          )}
 
           {foraDaPorta && <p className="text-apoio text-atencao">{foraDaPorta}</p>}
 

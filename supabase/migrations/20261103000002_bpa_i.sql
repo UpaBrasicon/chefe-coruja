@@ -853,7 +853,7 @@ BEGIN
                                                        'cns_ok', private.cns_valido(x.cns), 'papeis', x.papeis) ORDER BY x.nome_completo)
     FROM (SELECT pf.id, pf.nome_completo, pf.cbo, pf.cns, array_agg(DISTINCT v.papel::text) AS papeis
             FROM public.vinculos v JOIN public.perfis pf ON pf.id = v.perfil_id
-           WHERE v.unidade_id = p_unidade AND v.ativo AND v.papel::text NOT IN ('admin', 'faturamento')
+           WHERE v.unidade_id = p_unidade AND v.ativo AND v.papel::text NOT IN ('admin', 'faturamento', 'recepcao')
            GROUP BY pf.id) x), '[]'::jsonb);
 END $$;
 REVOKE ALL ON FUNCTION public.profissionais_para_faturar(uuid) FROM PUBLIC, anon;

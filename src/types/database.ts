@@ -6725,6 +6725,16 @@ export type Database = {
       }
       pacientes: {
         Row: {
+          bairro: string | null
+          cep: string | null
+          complemento: string | null
+          etnia: string | null
+          municipio_ibge: string | null
+          nacionalidade: string | null
+          numero_endereco: string | null
+          tipo_logradouro: string | null
+          sem_documento: boolean
+          situacao_rua: boolean
           ativo: boolean
           categoria: string | null
           cns: string | null
@@ -6753,6 +6763,16 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          bairro?: string | null
+          cep?: string | null
+          complemento?: string | null
+          etnia?: string | null
+          municipio_ibge?: string | null
+          nacionalidade?: string | null
+          numero_endereco?: string | null
+          tipo_logradouro?: string | null
+          sem_documento?: boolean
+          situacao_rua?: boolean
           ativo?: boolean
           categoria?: string | null
           cns?: string | null
@@ -6781,6 +6801,16 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          bairro?: string | null
+          cep?: string | null
+          complemento?: string | null
+          etnia?: string | null
+          municipio_ibge?: string | null
+          nacionalidade?: string | null
+          numero_endereco?: string | null
+          tipo_logradouro?: string | null
+          sem_documento?: boolean
+          situacao_rua?: boolean
           ativo?: boolean
           categoria?: string | null
           cns?: string | null
@@ -7595,6 +7625,7 @@ export type Database = {
         Row: {
           ativo: boolean
           cbo: string | null
+          cns: string | null
           conselho: string | null
           cpf: string | null
           created_at: string
@@ -7615,6 +7646,7 @@ export type Database = {
         Insert: {
           ativo?: boolean
           cbo?: string | null
+          cns?: string | null
           conselho?: string | null
           cpf?: string | null
           created_at?: string
@@ -7635,6 +7667,7 @@ export type Database = {
         Update: {
           ativo?: boolean
           cbo?: string | null
+          cns?: string | null
           conselho?: string | null
           cpf?: string | null
           created_at?: string
@@ -9884,6 +9917,35 @@ export type Database = {
       criticas_aih_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       definir_critica_aih: { Args: { p_bloqueante: boolean; p_critica: string; p_motivo: string; p_unidade: string }; Returns: undefined }
       definir_meu_cbo: { Args: { p_cbo: string }; Returns: Json }
+      arquivo_bpa: { Args: { p_fechamento: string }; Returns: Json }
+      associar_procedimento_bpa: { Args: { p_procedimento: string; p_unidade: string; p_uso: string }; Returns: string }
+      atendimentos_para_faturar: { Args: { p_busca?: string; p_competencia: string; p_unidade: string }; Returns: Json }
+      bpa_conferencia: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
+      bpa_config: { Args: { p_unidade: string }; Returns: Json }
+      bpa_fechamentos_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      buscar_sigtap: { Args: { p_termo: string }; Returns: Json }
+      cancelar_procedimento_realizado: { Args: { p_id: string; p_motivo: string }; Returns: undefined }
+      definir_bpa_config: { Args: { p_dados: Json; p_unidade: string }; Returns: undefined }
+      definir_meu_cns: { Args: { p_cns: string }; Returns: string }
+      endereco_sus: { Args: { p_paciente: string }; Returns: Json }
+      fechar_competencia_bpa: { Args: { p_competencia: string; p_processamento?: string; p_unidade: string }; Returns: string }
+      procedimentos_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      procedimentos_registraveis: { Args: { p_unidade: string }; Returns: Json }
+      profissionais_para_faturar: { Args: { p_unidade: string }; Returns: Json }
+      reabrir_competencia_bpa: { Args: { p_fechamento: string; p_motivo: string }; Returns: undefined }
+      registrar_procedimento: {
+        Args: {
+          p_episodio?: string
+          p_paciente: string
+          p_procedimento: string
+          p_profissional?: string
+          p_quantidade?: number
+          p_realizado_em?: string
+        }
+        Returns: string
+      }
+      retirar_procedimento_bpa: { Args: { p_id: string }; Returns: undefined }
+      salvar_endereco_sus: { Args: { p_dados: Json; p_paciente: string }; Returns: undefined }
       aihs_dos_laudos: { Args: { p_laudos: string[] }; Returns: Json }
       ajustar_competencia_aih: { Args: { p_aih: string; p_competencia: string; p_motivo: string }; Returns: undefined }
       cancelar_aih: { Args: { p_aih: string; p_motivo: string }; Returns: undefined }
@@ -12822,6 +12884,7 @@ export type Database = {
         | "farmaceutico"
         | "telemedicina"
         | "regulador"
+        | "faturamento"
       status_leito:
         | "livre"
         | "ocupado"
@@ -13186,6 +13249,7 @@ export const Constants = {
         "farmaceutico",
         "telemedicina",
         "regulador",
+        "faturamento",
       ],
       status_leito: [
         "livre",
