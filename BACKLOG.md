@@ -542,6 +542,23 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
   - do RAC: manual de integração v2.0, manual de apoio às credenciais, mensagens de erro v3.0, modelo de informação, exemplos JSON e coleção do Postman;
   - do Sumário de Alta: manual, exemplo JSON, coleção do Postman e definições do validador.
 
+**Decisões do RT para a Fase 3, tarefa 9 — exportação estruturada (10/10/2026)**
+
+- **Quem exporta:** o gestor, só da sua unidade, e o super admin, de qualquer unidade. Toda exportação fica na auditoria: quem, quando, conjunto, período, filtros, formato, linhas e se saiu mascarada.
+- **Conjuntos:**
+  - atendimentos;
+  - leitos e internações;
+  - cadastro de pacientes;
+  - lista de documentos (tipo, data, autor e versão, sem o texto clínico).
+- **Dados que identificam o paciente** (nome, CPF, CNS, nascimento):
+  - saem **mascarados por padrão**;
+  - a versão completa exige motivo escrito (mínimo de 10 letras) e o código do segundo fator.
+- **Formatos:**
+  - CSV, com o padrão de `src/lib/csv.ts`;
+  - JSON simples, com os mesmos campos e nomes do contrato da API v1.
+- **Período:** até 12 meses por exportação.
+- **Tela:** nova, "Exportar dados", no menu do gestor e do super admin.
+
 **Andamento da Fase 3**
 
 | Tarefa | Situação | Onde |
@@ -554,6 +571,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 6 — Documentação da API | **Pronta** (contrato v1 validado no CI) | Branch `fase3/api-doc`. `docs/api/openapi.yaml` (OpenAPI 3.1, validado por `npm run api:lint` no CI), `docs/api/index.html` (página para o integrador), `docs/api/catalogo-rpc.md` (485 RPCs internas, `npm run api:catalogo`) e `docs/api/README.md`. A implementação é a tarefa 7 |
 | 7 — API segura | **Em produção** (10/10; PR #72): homologação testada de ponta a ponta com chave real; produção com migration, função e Cloudflare (Workers, DNS, WAF BR e rate limit) | Branch `fase3/api-segura`; migration `20261104000002_api_integradores.sql`; teste `supabase/tests/fase3_api_integradores.sql`; Edge Function `supabase/functions/api`; tela `/integracoes`; passo a passo `docs/api/implantacao.md`; Worker `infra/cloudflare/api-worker.js` |
 | 8 — Checklist da RNDS | **Pronto** (10/10; PR #73): documento para executar quando as credenciais chegarem | Branch `fase3/checklist-rnds`; `docs/rnds/CHECKLIST.md` (portfólios, pendências externas e internas, formulário, IP, autenticação, evidência, divergências do código com o oficial, perguntas para o chamado); manuais oficiais em `produto/docs/pesquisa/rnds-oficial/` |
+| 9 — Exportação estruturada | **Em produção** (10/10; testada pelo RT na homologação; migrations `20261105000001` e `20261105000002` aplicadas na produção antes do merge, com ok do RT) | Branch `fase3/exportacao`; migration `20261105000001_exportacao_estruturada.sql`; teste `supabase/tests/fase3_exportacao.sql` (39 OK); `src/lib/exportacao.ts` (+ teste); tela `/exportar` (gestor e super admin); a confirmação da versão completa usa o código digitado (nova coluna `codigo_em`), não o dispositivo confiável; roteiro em `produto/docs/fase3/roteiro-teste-fase3.md`. Ajustes do teste do RT (10/10): datas do CSV no formato pt-BR e no fuso local; desfecho "observacao" e "cancelado" com o próprio nome (antes saíam como "internacao" e "outro", também na API) e `desfecho_em` com o encerramento quando falta (migration `20261105000002`) |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.

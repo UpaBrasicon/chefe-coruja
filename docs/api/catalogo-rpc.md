@@ -7,7 +7,7 @@ São as funções públicas do banco que o frontend conhece, tiradas de
 migration que define a função e os arquivos que a chamam. A API para
 integradores externos é outra: está em `docs/api/openapi.yaml`.
 
-- Funções: 485
+- Funções: 494
 - Sem chamada no frontend: 72 (usadas por outras funções, por Edge Functions ou ainda sem tela)
 
 | RPC | Parâmetros | Retorno | Migration | Chamada em |
@@ -48,6 +48,11 @@ integradores externos é outra: está em `docs/api/openapi.yaml`.
 | `apac_fechamentos_da_unidade` | { p_unidade: string } | Json | 20261104000001_apac.sql | `src/pages/regulacao/Apac.tsx` |
 | `apacs_da_unidade` | { p_status?: string; p_unidade: string } | Json | 20261104000001_apac.sql | `src/pages/regulacao/Apac.tsx` |
 | `apacs_do_paciente` | { p_paciente: string } | Json | 20261104000001_apac.sql | `src/components/apac/SolicitarApac.tsx` |
+| `api_acessos_da_chave` | { p_id: string } | Json | 20261104000002_api_integradores.sql | `src/pages/admin/Integracoes.tsx` |
+| `api_ajustar_chave` | { p_id: string; p_ips: string[]; p_limite: number } | undefined | 20261104000002_api_integradores.sql | `src/pages/admin/Integracoes.tsx` |
+| `api_chaves_lista` | never; | Json | 20261104000002_api_integradores.sql | `src/pages/admin/Integracoes.tsx` |
+| `api_criar_chave` | { p_ambiente: string; p_ips?: string[]; p_limite?: number; p_nome: string; p_recursos: string[]; p_unidades: string[]; p_validade_meses?: number } | Json | 20261104000002_api_integradores.sql | `src/pages/admin/Integracoes.tsx` |
+| `api_revogar_chave` | { p_id: string; p_motivo: string } | undefined | 20261104000002_api_integradores.sql | `src/pages/admin/Integracoes.tsx` |
 | `aprazar` | { p_horarios: string[]; p_item: string; p_motivo?: string } | undefined | 20261031000002_aprazamento_assistido.sql | `src/pages/enfermagem/Checagem.tsx` |
 | `aprovar_candidatura` | { p_candidatura: string } | string | 20261022000005_fix_revisao_segundo_fator_documentos.sql | `src/pages/Escala.tsx` |
 | `aprovar_troca` | { p_troca: string } | undefined | 20261022000022_search_path_vazio.sql | `src/pages/Escala.tsx` |
@@ -189,6 +194,10 @@ integradores externos é outra: está em `docs/api/openapi.yaml`.
 | `eventos_apac` | { p_apac: string } | Json | 20261104000001_apac.sql | `src/pages/regulacao/Apac.tsx` |
 | `evoluir_grau_evento` | { p_evento: string; p_grau: number } | undefined | 20261003000002_alergias_eventos_adversos.sql | `src/components/paciente/AlergiasEventos.tsx` |
 | `excluir_mensagem` | { p_mensagem_id: string } | undefined | 20261022000022_search_path_vazio.sql | — |
+| `exportacao_concluir` | { p_id: string } | undefined | 20261105000001_exportacao_estruturada.sql | `src/pages/gestor/ExportarDados.tsx` |
+| `exportacao_iniciar` | { p_ate: string \| null; p_conjunto: string; p_desde: string \| null; p_formato: string; p_mascarado?: boolean; p_motivo?: string \| null; p_unidade: string } | Json | 20261105000001_exportacao_estruturada.sql | `src/pages/gestor/ExportarDados.tsx` |
+| `exportacao_pagina` | { p_desloc?: number; p_id: string } | Json | 20261105000001_exportacao_estruturada.sql | `src/pages/gestor/ExportarDados.tsx` |
+| `exportacoes_lista` | { p_unidade: string } | Json | 20261105000001_exportacao_estruturada.sql | `src/pages/gestor/ExportarDados.tsx` |
 | `falta_do_medicamento` | { p_medicamento: string; p_unidade: string } | Json | 20261031000008_painel_farmacia.sql | `src/components/prescricao/PrescricaoEstruturada.tsx` |
 | `faltas_priorizadas` | { p_unidade: string } | Json | 20261031000008_painel_farmacia.sql | `src/pages/farmacia/PainelFarmacia.tsx` |
 | `faltas_rascunho` | { p_rascunho: string } | Json | 20261022000013_faltas_documento.sql | — |
@@ -494,6 +503,6 @@ integradores externos é outra: está em `docs/api/openapi.yaml`.
 | `validar_item` | { p_confere: boolean; p_item: string; p_motivo?: string } | undefined | 20260929000008_fase4_farmacia.sql | `src/pages/farmacia/AltaVigilancia.tsx`<br>`src/pages/farmacia/Farmacia.tsx` |
 | `ver_pacote_alta_equipe` | { p_pacote: string } | Json | 20261003000006_pacote_alta_paciente.sql | `src/pages/public/PacoteAlta.tsx` |
 | `verificacoes_sistema` | never; | Json | 20261017000001_verificacoes_sistema.sql | `src/pages/admin/ErrosEAlertas.tsx` |
-| `verificar_codigo_2fa` | { p_codigo: string; p_confiar?: boolean; p_rotulo?: string } | string | 20261022000002_fix_2fa_email_hermes_grants.sql | `src/components/seguranca/SegundoFator.tsx` |
+| `verificar_codigo_2fa` | { p_codigo: string; p_confiar?: boolean; p_rotulo?: string } | string | 20261105000001_exportacao_estruturada.sql | `src/components/seguranca/SegundoFator.tsx` |
 | `verificar_dispositivo_2fa` | { p_token: string } | boolean | 20261022000001_segundo_fator_email.sql | `src/components/seguranca/SegundoFator.tsx` |
 | `zerar_segundo_fator` | { p_motivo: string; p_usuario: string } | undefined | 20261023000001_segundo_fator_servidor.sql | `src/components/seguranca/CodigosRecuperacao.tsx` |
