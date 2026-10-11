@@ -12,6 +12,9 @@
 //   prioridade e espera), com filtros, busca, "Assumir" e "Devolver à fila",
 //   atualizada a cada 30 s (tarefa 2); anota a regulação externa e a
 //   prioridade da central. A decisão é a tarefa 4.
+// • Prazos (tarefa 7): painel de SLA na central e na origem, prazos da
+//   central, selos na fila e na lista, tempo por status e evolução no detalhe
+//   (src/components/regulacao/SlaRegulacao.tsx).
 // Migration 20261107000001_regulacao_solicitacao.sql; src/lib/regulacao.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -20,6 +23,7 @@ import * as React from 'react'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
+import { PainelSla, PrazosCentral, PrazosDoPedido, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 import { Badge } from '@/components/ui/badge'
@@ -36,7 +40,7 @@ import {
   filtrosParaEnvio, formatarEspera, marcadoresPelaIdade,
   erroArquivo, novosDesde, prioridadeEfetiva, resumoPedido,
   type Carater, type DestinoTipo, type FiltrosFila, type Formulario, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
-  type MotivoNegacao, type Vulnerabilidade,
+  type MotivoNegacao, type Sla, type Vulnerabilidade,
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
@@ -72,6 +76,9 @@ type Solicitacao = {
   externo_sistema: string | null; externo_protocolo: string | null
   criada_em: string; cancelada_em: string | null; cancelamento_origem: string | null; motivo_cancelamento: string | null
   eventos?: { evento: string; por: string | null; em: string; detalhes: Record<string, unknown> | null }[]
+  sla: Sla | null
+  tempos?: { status: StatusRegulacao; segundos: number; vezes: number; atual: boolean }[]
+  evolucoes?: Evolucao[]; pode_evoluir?: boolean
 }
 
 const TOM: Record<string, 'destructive' | 'warning' | 'info' | 'secondary'> = {
@@ -102,13 +109,23 @@ export default function Regulacao() {
           : 'Pedidos de consulta, exame, leito ou transferência para a Central de Regulação da rede.'} />
       {c?.sou_super_admin && <Centrais />}
       {!unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <Erro texto={(ctx.error as Error).message} /> : !c ? null
-        : c.sou_central ? (<><Fila centralId={unidadeId} souRegulador={c.sou_regulador} /><Criterios unidadeId={unidadeId} editavel /></>)
+        : c.sou_central ? (
+          <>
+            <Fila centralId={unidadeId} souRegulador={c.sou_regulador} />
+            <PainelSla unidadeId={unidadeId} central
+              detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central podeRegistrarExterno={c.sou_regulador} />} />
+            <PrazosCentral unidadeId={unidadeId} editavel />
+            <Criterios unidadeId={unidadeId} editavel />
+          </>
+        )
         : !c.central ? (
           <Vazio icone={Waypoints} titulo="A rede ainda não tem Central de Regulação"
             texto="A administração da plataforma define a central da organização. Até lá, não há para onde enviar." />
         ) : c.pode_solicitar ? (
           <>
             <NovaSolicitacao unidadeId={unidadeId} ctx={c} aoEnviar={setRecemEnviada} />
+            <PainelSla unidadeId={unidadeId} central={false}
+              detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central={false} podeRegistrarExterno={false} />} />
             <Lista unidadeId={unidadeId} central={false} podeRegistrarExterno={false} abrir={recemEnviada} />
           </>
         ) : (
@@ -615,6 +632,7 @@ function Lista({ unidadeId, central, podeRegistrarExterno, abrir }: { unidadeId:
                   <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}</span>
                   <span className="text-tinta-apoio">{resumoPedido(s)}</span>
                   {central && <span className="text-tinta-sussurro">de {s.origem.nome}</span>}
+                  <SeloSla sla={s.sla} />
                   <Badge variant={s.status === 'cancelada' ? 'secondary' : 'info'} className="ml-auto">{STATUS[s.status]}</Badge>
                   <span className="text-tinta-sussurro">{fmtDataHora(s.criada_em)}</span>
                   <span className="text-rotulo text-acao">{aberta === s.id ? 'Fechar' : 'Ver detalhes'}</span>
@@ -654,6 +672,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
     void qc.invalidateQueries({ queryKey: ['regulacao-detalhe', id] })
     void qc.invalidateQueries({ queryKey: ['regulacao-lista', unidadeId] })
     void qc.invalidateQueries({ queryKey: ['regulacao-fila', unidadeId] })
+    void qc.invalidateQueries({ queryKey: ['regulacao-sla', unidadeId] })
   }
   const priorizar = useMutation({
     mutationFn: async () => {
@@ -717,6 +736,8 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
       </dl>
       {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
       <BlocosDecisao s={s} />
+      <PrazosDoPedido id={s.id} sla={s.sla} tempos={s.tempos ?? []} evolucoes={s.evolucoes ?? []}
+        podeEvoluir={!central && !!s.pode_evoluir} aoFim={recarregar} />
       <AnexosRegulacao solicitacaoId={s.id} />
       {!central && s.origem_pode_responder && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={recarregar} />}
       {!central && s.origem_pode_responder && s.status === 'devolvida' && <Reenviar s={s} aoFim={recarregar} />}
@@ -953,6 +974,7 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
                     <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}</span>
                     <span className="text-tinta-apoio">{resumoPedido(s)}</span>
                     {s.isolamento && <Badge variant="destructive">isolamento</Badge>}
+                    <SeloSla sla={s.sla} />
                     {(s.vulnerabilidades ?? []).map((v) => <Badge key={v} variant="secondary">{VULNERABILIDADES[v]}</Badge>)}
                     <span className="text-tinta-sussurro">{CARATER[s.carater]} · de {s.origem.nome} · nº {s.numero}</span>
                   </button>
