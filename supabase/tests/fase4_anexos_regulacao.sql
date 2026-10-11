@@ -3,7 +3,7 @@
 -- - quem anexa (origem e regulador da central; enfermagem não) e com o pedido aberto;
 -- - arquivo: tipo, tamanho, caminho do próprio pedido, objeto no armazenamento;
 -- - documento do prontuário do mesmo paciente (também escolhido na nova solicitação);
--- - limite de 10 anexos;
+-- - sem teto de anexos por pedido (migration 20261112000003);
 -- - abrir registra o acesso e libera a leitura do arquivo por 2 min;
 -- - retirar com motivo, sem apagar; histórico e auditoria.
 BEGIN;
@@ -43,7 +43,8 @@ VALUES
 -- arquivos "já enviados" ao bucket (o envio real é do navegador)
 INSERT INTO storage.objects (bucket_id, name) VALUES
   ('regulacao', '2a000000-0000-4000-8000-0000000009d1/ecg.pdf'),
-  ('regulacao', '2a000000-0000-4000-8000-0000000009d1/foto.png');
+  ('regulacao', '2a000000-0000-4000-8000-0000000009d1/foto.png'),
+  ('regulacao', '2a000000-0000-4000-8000-0000000009d1/onze.pdf');
 
 CREATE TEMP TABLE t (nome text PRIMARY KEY, valor text) ON COMMIT DROP;
 GRANT ALL ON t TO authenticated;
@@ -130,7 +131,7 @@ SELECT pg_temp.ok(pg_temp.acessos() = 2, 'cada abertura entra no registro de ace
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 SELECT pg_temp.falha(format('SELECT public.regulacao_anexo_abrir(%L)', pg_temp.v('a1')), 'Acesso negado', 'quem não vê o pedido não abre');
 
--- ── 4. retirar e limite ─────────────────────────────────────────────────────
+-- ── 4. retirar e sem teto ─────────────────────────────────────────────────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.falha(format('SELECT public.regulacao_retirar_anexo(%L, %L)', pg_temp.v('a2'), 'curto'), 'Escreva o motivo', 'retirar pede motivo');
 SELECT public.regulacao_retirar_anexo(pg_temp.v('a2')::uuid, 'Imagem do paciente errado');
@@ -145,8 +146,9 @@ SELECT '2a000000-0000-4000-8000-0000000009d1', 'arquivo', '2a000000-0000-4000-80
        '10000000-0000-4000-8000-000000000002' FROM generate_series(1, 8) n;
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-SELECT pg_temp.falha($$SELECT public.regulacao_anexar_documento('2a000000-0000-4000-8000-0000000009d1', '26000000-0000-4000-8000-0000000009d1')$$,
-  'O pedido já tem 10 anexos', 'limite de 10 anexos');
+SELECT pg_temp.ok(public.regulacao_registrar_anexo('2a000000-0000-4000-8000-0000000009d1', '2a000000-0000-4000-8000-0000000009d1/onze.pdf',
+                    'onze.pdf', 1000, 'application/pdf') IS NOT NULL,
+  'sem teto: o 11º anexo entra');
 
 -- ── 5. pedido fechado não recebe anexo ──────────────────────────────────────
 RESET ROLE;
@@ -156,7 +158,7 @@ SELECT pg_temp.ok(NOT private.regulacao_pode_subir('2a000000-0000-4000-8000-0000
               AND NOT (public.regulacao_anexos('2a000000-0000-4000-8000-0000000009d1')->>'pode_anexar')::boolean,
   'pedido fechado não recebe anexo');
 SELECT pg_temp.ok((SELECT count(*) FROM jsonb_array_elements(public.regulacao_detalhe('2a000000-0000-4000-8000-0000000009d1')->'eventos') e
-                    WHERE e->>'evento' IN ('anexo_incluido', 'anexo_aberto', 'anexo_retirado')) = 6,
+                    WHERE e->>'evento' IN ('anexo_incluido', 'anexo_aberto', 'anexo_retirado')) = 7,
   'histórico: inclusões, aberturas e retirada');
 
 ROLLBACK;
