@@ -76,6 +76,7 @@ const ApacUnidade = lazy(() => import('@/pages/regulacao/Apac'))
 const Integracoes = lazy(() => import('@/pages/admin/Integracoes'))
 const ExportarDados = lazy(() => import('@/pages/gestor/ExportarDados'))
 const Implantacao = lazy(() => import('@/pages/gestor/Implantacao'))
+const Regulacao = lazy(() => import('@/pages/regulacao/Regulacao'))
 const Interacoes = lazy(() => import('@/pages/farmacia/Interacoes'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
@@ -253,6 +254,10 @@ export default function App() {
                         <Route path="/exportar" element={<ExportarDados />} />
                         {/* Playbook de implantação: implantador (super admin) e gestor (Fase 3, tarefa 10) */}
                         <Route path="/implantacao" element={<Implantacao />} />
+                      </Route>
+                      {/* Regulação da rede: origem (médico, gestor), central (regulador) e super admin (Fase 4, tarefa 1) */}
+                      <Route element={<RequireRole papeis={['plantonista', 'gestor', 'regulador', 'admin']} />}>
+                        <Route path="/regulacao" element={<Regulacao />} />
                       </Route>
                       {/* Interações críticas: lista curada da unidade (Fase 2, tarefa 3) */}
                       <Route element={<RequireRole papeis={['farmaceutico', 'gestor', 'plantonista']} />}>

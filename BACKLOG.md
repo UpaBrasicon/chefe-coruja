@@ -629,6 +629,39 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 - **Vínculo:** pode ser ligada a um atendimento ou a uma internação aberta, ou só ao paciente cadastrado (por exemplo, consulta eletiva).
 - **Regulação externa:** sem integração agora. A central anota o sistema externo (SISREG, e-SUS Regulação, central estadual) e o número do protocolo. A integração fica para a Fase 5C, conforme as credenciais.
 
+**Revisão das decisões da tarefa 1 depois da pesquisa dos sistemas de regulação (RT, 11/10/2026)**
+
+Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SISREG, e-SUS Regulação, CROSS, SUSfácil, GERCON/GERINT, centrais estaduais de leitos, NIR e o SERVIR de Goiás. Em Goiás, o SERVIR está sendo trocado pelo GERINT desde 11/2024. A Portaria GM/MS 9.262/2025 (Política Nacional de Regulação) exige que todo sistema de regulação, inclusive um sistema próprio, tenha no mínimo os campos do MIRA e os envie à RNDS.
+
+- **Campos do MIRA, todos obrigatórios:**
+  - CNS ou CPF do paciente (o paciente não identificado fica marcado);
+  - CNES da unidade solicitante;
+  - procedimento do SIGTAP em **todos** os tipos (no leito, o procedimento da AIH);
+  - CBO na consulta;
+  - caráter (eletivo ou urgência), novo e separado da prioridade;
+  - CID-10;
+  - modalidade assistencial, derivada do tipo e do caráter.
+- **Prioridade:** os 4 níveis, mais "não classificada". A prioridade da central é guardada à parte, como veio. Nada é automático.
+- **Justificativa em blocos:** o quadro clínico, com o tempo de evolução, é obrigatório. Sinais vitais com hora, exames com data, medicações em uso e hipótese são opcionais. Na criança, a PA não é obrigatória. Isso substitui a decisão de 10/10 de usar só texto e CID.
+- **Leitos:** clínico, cirúrgico, pediátrico, obstétrico, psiquiátrico (com o tipo de internação: voluntária, involuntária ou compulsória), UTI adulto, pediátrica e neonatal, UCI adulto, pediátrica e neonatal, UTI de queimados, unidade coronariana e outro. O isolamento passa a ser atributo do pedido: sim ou não, e o tipo (contato, gotícula ou aerossol).
+- **Status:** rascunho, enviada, em análise, pendência, devolvida, autorizada, agendada, em trânsito, realizada, falta, negada, cancelada (com quem cancelou) e excluída.
+- **Transporte:**
+  - tipos: transporte sanitário (A), básica (B), avançada (D, que é o mesmo que "UTI móvel"), aéreo (E), embarcação (F) e meios próprios;
+  - campo à parte para o transporte definido pela central;
+  - incubadora no recém-nascido.
+- **Duplicidade:** pedido aberto para o mesmo paciente e o mesmo procedimento ou tipo de leito gera aviso, sem bloquear.
+- **Ficam para as próximas tarefas:**
+  - relógios de 12 h, 3 h e 72 h, na tarefa 7 (SLA);
+  - consentimento e documento de transferência;
+  - blocos obstétrico e de judicialização.
+- **Envio à RNDS no formato MIRA:** a tarefa 1 já guarda os dados. O envio entra como item da Fase 5C.
+
+**Andamento da Fase 4**
+
+| Tarefa | Situação | Onde |
+|---|---|---|
+| 1 — Solicitação de regulação | **Em produção** (11/10; migration aplicada na produção antes do merge, com ok do RT). O PR #78 tinha entrado antes da hora e foi revertido (PR #80); a tarefa voltou com o modelo revisto pela pesquisa | Branch `fase4/regulacao-solicitacao`; migration `20261107000001_regulacao_solicitacao.sql`; teste `supabase/tests/fase4_regulacao_solicitacao.sql` (40 OK); `src/lib/regulacao.ts` (+ teste); tela `/regulacao` (origem, central e super admin); pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md` |
+
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.
 2. Criar solicitações.
@@ -675,6 +708,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 3 | P2 | ERP/financeiro | Exportar conta/produção; conciliar retorno; logs | Dados financeiros enviados a ERP |
 | 4 | P2 | Webhooks | Eventos: paciente criado, atendimento aberto, alta, internação, prescrição, regulação; assinatura HMAC; retry com backoff; idempotência no receptor | Terceiro recebe eventos com segurança |
 | 5 | P2 | e-SUS/RNDS | Implementar conforme credenciais e escopo | Integração validada em ambiente oficial |
+| 5a | P2 | Envio da regulação à RNDS (MIRA) | Exigido pela Portaria GM/MS 9.262/2025 para sistema próprio. Montar o registro MIRA a partir das solicitações de regulação (os campos já são guardados desde a Fase 4, tarefa 1), enviar à RNDS e reenviar ao mudar o status. Decisão do RT de 11/10/2026 | Solicitações de regulação aceitas no ambiente de homologação da RNDS |
 
 **Ordem técnica da Fase 5**
 1. Decidir se foco é UBS, faturamento ou integrações primeiro.
