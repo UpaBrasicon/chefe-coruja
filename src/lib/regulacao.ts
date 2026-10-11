@@ -257,3 +257,79 @@ export function caminhoAnexo(solicitacaoId: string, nome: string, agora: number)
   const seguro = nome.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9._-]+/g, '-').slice(-120)
   return `${solicitacaoId}/${agora}-${seguro}`
 }
+
+// ── prazos (SLA) da regulação (Fase 4, tarefa 7) ────────────────────────────
+export type Sla = {
+  fila: { prazo_min: number | null; central_seg: number; correndo: boolean; atrasado: boolean }
+  pendencia: { desde: string; prazo_h: number; vence_em: string; atrasada: boolean } | null
+  evolucao: { ultima_em: string; prazo_h: number; vence_em: string; atrasada: boolean; limite_h: number; risco_cancelamento: boolean } | null
+  atrasado_central: boolean
+  atrasado_origem: boolean
+}
+export type NivelFila = 'emergencia' | 'urgencia' | 'prioritaria' | 'eletiva'
+export const NIVEIS_FILA: NivelFila[] = ['emergencia', 'urgencia', 'prioritaria', 'eletiva']
+export type Prazos = {
+  central_id: string; fila: Record<NivelFila, number | null>
+  evolucao_h: number; pendencia_h: number; sem_evolucao_h: number
+  ajustado: boolean; atualizado_em: string | null; atualizado_por: string | null
+}
+/** Formulário dos prazos: texto, como digitado. Fila vazia = sem prazo. */
+export type FormPrazos = { fila: Record<NivelFila, string>; evolucao_h: string; pendencia_h: string; sem_evolucao_h: string }
+
+export function prazosParaForm(p: Prazos): FormPrazos {
+  const fila = Object.fromEntries(NIVEIS_FILA.map((k) => [k, p.fila[k] == null ? '' : String(p.fila[k])])) as Record<NivelFila, string>
+  return { fila, evolucao_h: String(p.evolucao_h), pendencia_h: String(p.pendencia_h), sem_evolucao_h: String(p.sem_evolucao_h) }
+}
+
+const inteiro = (v: string) => (/^\d+$/.test(v.trim()) ? Number(v.trim()) : NaN)
+
+/** Mesmas regras do banco (regulacao_definir_prazos). */
+export function errosPrazos(f: FormPrazos): string[] {
+  const erros: string[] = []
+  for (const k of NIVEIS_FILA) {
+    const v = f.fila[k].trim()
+    if (v && !(inteiro(v) >= 1 && inteiro(v) <= 43200)) erros.push(`Fila (${PRIORIDADES[k].rotulo}): de 1 minuto a 30 dias, ou vazio.`)
+  }
+  const evol = inteiro(f.evolucao_h), pend = inteiro(f.pendencia_h), sem = inteiro(f.sem_evolucao_h)
+  if (!(evol >= 1 && evol <= 168)) erros.push('Evolução: de 1 a 168 horas.')
+  if (!(pend >= 1 && pend <= 72)) erros.push('Resposta à pendência: de 1 a 72 horas.')
+  if (!(sem >= 2 && sem <= 720) || !(sem > evol)) erros.push('Sem evolução: até 720 horas e maior que o prazo da evolução.')
+  return erros
+}
+
+export function prazosParaEnvio(f: FormPrazos) {
+  return {
+    fila: Object.fromEntries(NIVEIS_FILA.map((k) => [k, f.fila[k].trim() ? inteiro(f.fila[k]) : null])),
+    evolucao_h: inteiro(f.evolucao_h), pendencia_h: inteiro(f.pendencia_h), sem_evolucao_h: inteiro(f.sem_evolucao_h),
+  }
+}
+
+export type AlertaSla = { texto: string; tom: 'critico' | 'atencao' | 'neutro' }
+
+/**
+ * Selos dos relógios de um pedido. A central vê o prazo da fila e o que a
+ * origem deve; a origem vê os relógios dela e, se houver, o atraso da central.
+ */
+export function alertasSla(sla: Sla | null | undefined, agoraMs: number): AlertaSla[] {
+  if (!sla) return []
+  const a: AlertaSla[] = []
+  const hora = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  const fila = sla.fila
+  if (fila.prazo_min != null) {
+    const usado = `${formatarEspera(fila.central_seg)} de ${formatarEspera(fila.prazo_min * 60)}`
+    if (fila.atrasado) a.push({ texto: `Fila: prazo vencido (${usado})${fila.correndo ? '' : ', pausado'}`, tom: fila.correndo ? 'critico' : 'neutro' })
+    else a.push({ texto: `Fila: ${usado}${fila.correndo ? '' : ' (pausado)'}`, tom: 'neutro' })
+  }
+  if (sla.pendencia) {
+    a.push(sla.pendencia.atrasada
+      ? { texto: `Resposta à central vencida (${sla.pendencia.prazo_h} h)`, tom: 'critico' }
+      : { texto: `Responder à central até ${hora(sla.pendencia.vence_em)}`, tom: 'atencao' })
+  }
+  if (sla.evolucao) {
+    const e = sla.evolucao
+    if (e.risco_cancelamento) a.push({ texto: `${e.limite_h} h sem evolução: risco de cancelamento`, tom: 'critico' })
+    else if (e.atrasada) a.push({ texto: `Evolução vencida (${e.prazo_h} h)`, tom: 'critico' })
+    else if (new Date(e.vence_em).getTime() - agoraMs <= 2 * 3600_000) a.push({ texto: `Evolução até ${hora(e.vence_em)}`, tom: 'atencao' })
+  }
+  return a
+}

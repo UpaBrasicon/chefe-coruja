@@ -710,6 +710,22 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
   - o que não subir fica avisado e pode ir pelo detalhe do pedido;
   - na lista, cada pedido mostra que abre (seta e "Ver detalhes"), e o pedido recém-enviado já aparece aberto.
 
+**Decisões do RT para a Fase 4, tarefa 7 — painel de SLA (11/10/2026)**
+
+- **Relógios:**
+  - na origem, os três da pesquisa, só como alerta e sem ação automática: evolução do pedido a cada 12 h, resposta à pendência da central em 3 h e 72 h sem evolução (fontes: Nota Técnica SES-MG 15/2008 e Deliberação CIB-SP 35/2022, em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`);
+  - na central, o tempo do pedido esperando decisão, com prazo por nível de prioridade;
+  - o detalhe do pedido mostra o tempo gasto em cada status.
+- **Tipos:** 12 h e 72 h valem para leito e transferência, como nas fontes. As 3 h da pendência valem para todos os tipos.
+- **Prazo da fila por prioridade:** não há regra nacional. Cada central cadastra o prazo de cada nível. Começa vazio, e um nível sem prazo só mostra o tempo de espera.
+- **Valores dos relógios da origem:** começam em 12 h, 3 h e 72 h. A central ajusta para a rede inteira, junto com o prazo da fila, e a mudança fica auditada.
+- **Pausa:** o prazo da fila conta só o tempo com a central. Com o pedido em pendência ou devolvido, corre o relógio de 3 h da origem.
+- **Atualizar evolução:** ação nova no detalhe do pedido para a origem (solicitante, médico assistente e gestor): texto da evolução e sinais vitais opcionais. Fica no histórico, a central vê e o relógio de 12 h e 72 h recomeça.
+- **Alerta:**
+  - selo "atrasado" na fila e no painel;
+  - aviso na categoria Regulação para quem deve agir: a origem (solicitante e médico assistente) nos relógios dela, os reguladores no prazo da fila.
+- **Quem vê o painel:** o regulador vê todos os pedidos da rede; a origem (médico e gestor) vê os da própria unidade, com o que está atrasado do lado dela.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
@@ -719,7 +735,8 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 | 3 — Priorização clínica | **Em produção** (11/10; migration `20261109000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/priorizacao`; migration `20261109000001_priorizacao_regulacao.sql`; teste `supabase/tests/fase4_priorizacao.sql` (19 OK); na tela `/regulacao`: "Definir prioridade" no detalhe (regulador), selo da prioridade efetiva com a proposta ao lado, marcadores de vulnerabilidade na solicitação e na fila, e o cartão "Critérios de prioridade da central" |
 | 4 — Aceite, recusa e devolução | **Em produção** (11/10; migration `20261110000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/decisao-regulacao`; migration `20261110000001_decisao_regulacao.sql`; teste `supabase/tests/fase4_decisao_regulacao.sql` (34 OK); na tela `/regulacao`: painel "Decisão da central" (autorizar, pergunta à origem, devolver, negar), resposta e "Corrigir e reenviar" na origem, e a categoria "Regulação" nos Avisos |
 | 5 — Histórico no prontuário | **Em produção** (11/10; migration `20261111000001` aplicada na produção antes do merge, com ok do RT). Com ela, os P0 da Fase 4 estão concluídos | Branch `fase4/historico-regulacao`; migration `20261111000001_historico_regulacao.sql`; teste `supabase/tests/fase4_historico_regulacao.sql` (12 OK); cartão "Regulações" (`src/components/regulacao/HistoricoRegulacao.tsx`) no Resumo do leito e no Prontuário completo, com os pedidos da rede (CPF/CNS e cadastro unificado), só para médico e gestor; abrir o detalhe registra o acesso na unidade do pedido |
-| 6 — Anexos e laudos | **Na homologação** (11/10), com o ajuste pedido no teste do RT (anexar já na nova solicitação). Falta: teste do RT e "ok produção" | Branch `fase4/anexos-regulacao`; migrations `20261112000001_anexos_regulacao.sql` (bucket privado `regulacao`), `20261112000002_anexos_no_pedido.sql` (documentos do paciente para a nova solicitação) e `20261112000003_anexos_sem_teto.sql` (tira o teto de 10 anexos); teste `supabase/tests/fase4_anexos_regulacao.sql` (27 OK); `src/components/regulacao/AnexosRegulacao.tsx` no detalhe do pedido e no histórico do prontuário. O arquivo só fica legível depois de "abrir", que registra o acesso e libera a leitura por 2 min. No local, o envio de arquivo falha para qualquer bucket (o esquema de armazenamento é mais novo que o serviço local): o envio de verdade se confere na homologação |
+| 6 — Anexos e laudos | **Em produção** (11/10; migrations `20261112000001`, `20261112000002` e `20261112000003` aplicadas na produção antes do merge, com ok do RT). No teste da homologação o RT pediu anexar já na nova solicitação e tirar o teto de anexos | Branch `fase4/anexos-regulacao`; migrations `20261112000001_anexos_regulacao.sql` (bucket privado `regulacao`), `20261112000002_anexos_no_pedido.sql` (documentos do paciente para a nova solicitação) e `20261112000003_anexos_sem_teto.sql` (tira o teto de 10 anexos); teste `supabase/tests/fase4_anexos_regulacao.sql` (27 OK); `src/components/regulacao/AnexosRegulacao.tsx` no detalhe do pedido e no histórico do prontuário. O arquivo só fica legível depois de "abrir", que registra o acesso e libera a leitura por 2 min. No local, o envio de arquivo falha para qualquer bucket (o esquema de armazenamento é mais novo que o serviço local): o envio de verdade se confere na homologação |
+| 7 — Painel de SLA | **Na homologação** (11/10). Falta: teste do RT e "ok produção" | Branch `fase4/sla-regulacao`; migration `20261113000001_sla_regulacao.sql` (prazos da central com histórico de ajustes, tempo em cada status, evoluções do pedido, painel `regulacao_sla_painel` e job `regulacao-sla-avisos` a cada 15 min, que avisa uma vez por dia e por relógio); teste `supabase/tests/fase4_sla_regulacao.sql` (32 OK); `src/components/regulacao/SlaRegulacao.tsx` (painel na central e na origem, prazos da central, selos na fila e na lista, tempo por status e "Atualizar evolução" no detalhe). Os relógios de 12 h e 72 h correm enquanto o pedido espera decisão (enviada, em análise, pendência, devolvida). Pedidos anteriores à migration têm o tempo por status aproximado pelas datas que já guardavam |
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.
