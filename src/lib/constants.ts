@@ -14,6 +14,7 @@ export const PAPEL_LABEL: Record<Papel, string> = {
   secretaria: 'Secretaria (rede)',
   regulacao_regional: 'Regulação regional',
   faturamento_rede: 'Faturamento da secretaria',
+  nir: 'NIR',
 }
 
 export const PAPEL_DESCRIPTION: Record<Papel, string> = {
@@ -30,6 +31,7 @@ export const PAPEL_DESCRIPTION: Record<Papel, string> = {
   secretaria: 'Acompanha a rede: números, mapa de vagas e prazos das unidades liberadas',
   regulacao_regional: 'Acompanha os pedidos de regulação das unidades liberadas (só leitura)',
   faturamento_rede: 'Produção e arquivos fechados das unidades liberadas (só leitura)',
+  nir: 'Núcleo Interno de Regulação: acompanha regulações, AIH e APAC da unidade e cobra os responsáveis',
 }
 
 export const TIPO_UNIDADE_LABEL: Record<TipoUnidade, string> = {
@@ -96,6 +98,7 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   secretaria: '/rede',
   regulacao_regional: '/rede',
   faturamento_rede: '/rede',
+  nir: '/nir',
 }
 
 export const ORDEM_PAPEL: Record<Papel, number> = {
@@ -112,11 +115,14 @@ export const ORDEM_PAPEL: Record<Papel, number> = {
   secretaria: 10,
   regulacao_regional: 11,
   faturamento_rede: 12,
+  nir: 13,
 }
 
 /** Papéis que só entram com plantão na escala agora (ADR 0003). */
 export const PAPEIS_POR_ESCALA: readonly Papel[] = ['plantonista', 'enfermeiro', 'tecnico_enfermagem', 'recepcao', 'telemedicina', 'regulador',
   // Fase 4, tarefa 12: papéis de rede, escalados na unidade Secretaria
-  'secretaria', 'regulacao_regional', 'faturamento_rede']
+  'secretaria', 'regulacao_regional', 'faturamento_rede',
+  // Fase 4, tarefa 11: NIR
+  'nir']
 /** Papéis de rede (Fase 4, tarefa 12): só na unidade Secretaria. */
 export const PAPEIS_REDE: readonly Papel[] = ['secretaria', 'regulacao_regional', 'faturamento_rede']

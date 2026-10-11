@@ -145,7 +145,7 @@ SELECT pg_temp.ok(pg_temp.avisos('10000000-0000-4000-8000-000000000002', 'reg_de
 
 -- ── 5. saída e chegada ──────────────────────────────────────────────────────
 SELECT pg_temp.falha(format('SELECT public.regulacao_marcar_saida(%L)', pg_temp.id(1)),
-  'Marca a saída a equipe médica ou o gestor da origem', 'destino não marca a saída');
+  'Marca a saída a equipe médica, o gestor ou o NIR da origem', 'destino não marca a saída');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT public.regulacao_marcar_saida(pg_temp.id(1));
 SELECT pg_temp.ok(pg_temp.campo(1, 'status') = 'em_transito' AND pg_temp.campo(1, 'saida_em') IS NOT NULL, 'origem marca a saída');

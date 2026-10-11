@@ -26,7 +26,7 @@ import { Chip, Chips, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 // acesso, na unidade e no papel escolhidos. Gestão e administração não entram
 // por convite — entram pelo contrato da rede.
 
-const PAPEIS_ATENDIMENTO: Papel[] = ['plantonista', 'enfermeiro', 'tecnico_enfermagem', 'farmaceutico', 'recepcao', 'telemedicina', 'regulador', 'faturamento']
+const PAPEIS_ATENDIMENTO: Papel[] = ['plantonista', 'enfermeiro', 'tecnico_enfermagem', 'farmaceutico', 'recepcao', 'telemedicina', 'regulador', 'faturamento', 'nir']
 const VALIDADES: Record<string, string> = { '2': '2 dias', '7': '7 dias', '14': '14 dias', '30': '30 dias' }
 
 const SITUACAO: Record<SituacaoConvite, { rotulo: string; variante: 'info' | 'success' | 'warning' | 'secondary' }> = {

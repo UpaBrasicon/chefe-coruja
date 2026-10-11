@@ -89,6 +89,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     // o gestor acompanha a revisão; quem decide é o responsável técnico
     { to: '/revisao-clinica', rotulo: 'Revisão Clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true },
     { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true },
+    // Fase 4, tarefa 11: o gestor acompanha o painel do NIR
+    { to: '/nir', rotulo: 'Pendências (NIR)', curto: 'NIR', icone: ClipboardList, exato: true },
     // 30/09/2026: chamado técnico da unidade (a administração da rede atende)
     { to: '/gestao/chamados', rotulo: 'Chamados técnicos', curto: 'Chamados', icone: LifeBuoy, exato: true },
   ],
@@ -155,6 +157,12 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   secretaria: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS],
   regulacao_regional: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS],
   faturamento_rede: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }],
+  // Fase 4, tarefa 11: NIR — pendências da unidade e a regulação (sem ato médico)
+  nir: [
+    { to: '/nir', rotulo: 'Pendências', icone: ClipboardList, exato: true },
+    { to: '/regulacao', rotulo: 'Regulação', icone: Waypoints, exato: true },
+    ITEM_AVISOS,
+  ],
   admin: [
     { to: '/painel', rotulo: 'Rede', icone: Building2, exato: true },
     { to: '/plataformas', rotulo: 'Plataformas', icone: LayoutDashboard, exato: true, nota: 'plataformas' },

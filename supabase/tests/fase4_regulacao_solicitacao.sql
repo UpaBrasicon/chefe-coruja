@@ -111,7 +111,7 @@ SET LOCAL ROLE authenticated;
 -- ── 2. quem abre e validações ───────────────────────────────────────────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT pg_temp.falha($$SELECT pg_temp.solicitar('23000000-0000-4000-8000-000000000971')$$,
-  'Abre a solicitação o médico ou o gestor', 'enfermeiro não abre');
+  'Abre a solicitação o médico, o gestor ou o NIR', 'enfermeiro não abre');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.ok((public.regulacao_contexto('21000000-0000-4000-8000-000000000971')->'central'->>'nome') = 'Central de Regulação'
               AND (public.regulacao_contexto('21000000-0000-4000-8000-000000000971')->>'pode_solicitar')::boolean
@@ -208,7 +208,7 @@ SELECT pg_temp.ok((public.regulacao_detalhe(pg_temp.v('s1')::uuid)->'eventos'->0
               AND (public.regulacao_detalhe(pg_temp.v('s1')::uuid)->'destino_unidade'->>'nome') = 'Hospital Destino',
   'detalhe com histórico, CID e destino');
 SELECT pg_temp.falha($$SELECT public.regulacao_solicitar('21000000-0000-4000-8000-000000000973', '23000000-0000-4000-8000-000000000971', pg_temp.pedido())$$,
-  'Abre a solicitação o médico ou o gestor', 'regulador não solicita');
+  'Abre a solicitação o médico, o gestor ou o NIR', 'regulador não solicita');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 SELECT pg_temp.falha(format('SELECT public.regulacao_detalhe(%L)', pg_temp.v('s1')), 'Solicitação não encontrada', 'quem não é da origem nem da central não vê');
 SELECT pg_temp.falha($$SELECT * FROM public.regulacao_solicitacoes$$, 'permission denied', 'tabela fechada para leitura direta');
