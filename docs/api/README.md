@@ -8,16 +8,17 @@ BACKLOG.
 | `openapi.yaml` | Integradores e equipe | Contrato da API pública v1 (OpenAPI 3.1). É a fonte da verdade. |
 | `index.html` | Integradores | Página legível gerada do contrato (Redoc). Pode ser enviada ao integrador. |
 | `catalogo-rpc.md` | Equipe interna | Funções do banco que o frontend chama, com parâmetros e onde são usadas. |
+| `implantacao.md` | Equipe e RT | Publicação: migration, Edge Function, segredo da borda e Cloudflare. |
 
 ## Situação
 
-O contrato v1 está pronto. A implementação é a **tarefa 7** da Fase 3:
-- a Edge Function em `api.chefecoruja.com.br/v1`;
-- as chaves por integrador;
-- o limite de requisições no Cloudflare;
-- a auditoria.
-
-Até lá, os endereços não respondem.
+- Contrato v1 pronto (tarefa 6).
+- Implementação pronta (tarefa 7):
+  - Edge Function `supabase/functions/api`;
+  - chaves em **Integrações (API)**;
+  - porta única `public.api_v1` no banco, com auditoria.
+- A publicação segue o passo a passo de `implantacao.md`, que inclui o
+  Cloudflare.
 
 ## Resumo para o integrador
 

@@ -603,7 +603,7 @@ components:
 
     SituacaoAtendimento:
       type: string
-      enum: [aguardando_triagem, aguardando_medico, em_atendimento, em_observacao, encerrado]
+      enum: [aguardando_triagem, aguardando_medico, em_atendimento, em_observacao, internado, encerrado]
 
     CorRisco:
       type: string

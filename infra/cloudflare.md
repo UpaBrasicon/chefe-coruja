@@ -9,6 +9,7 @@ Diagnóstico, decisões e roteiro da troca de DNS: `produto/docs/fase0/T3-borda.
 | `chefecoruja.com.br`, `www` (site, Vercel) | **sim** (proxy) | WAF, regra de país, Turnstile no login |
 | `homolog.chefecoruja.com.br` (Vercel Preview) | **sim** (proxy) | idem + proteção de deploy da Vercel |
 | `hermes.chefecoruja.com.br` (VPS: só `/health` e `/webhook` são públicos) | **sim** (proxy) | WAF, regra de país, `/webhook` bloqueado |
+| `api.chefecoruja.com.br`, `api-homolog.chefecoruja.com.br` (API para integradores: Worker → Edge Function `api`) | **sim** (proxy, AAAA `100::` + Workers Route) | WAF, regra de país, rate limit por IP; chave, escopo e limite por chave no banco (`docs/api/implantacao.md`) |
 | `biblioteca.chefecoruja.com.br` (VPS, busca IA) | **não** (DNS só) | fora do proxy por decisão do roteiro; proteção é a do próprio serviço no VPS |
 | Registros de e-mail (MX, SPF, DKIM, DMARC) | não (DNS só) | — |
 | **Navegador → `*.supabase.co`** (Auth, banco/PostgREST, Storage, Edge Functions) | **NÃO** | CAPTCHA (Turnstile) no Auth, limites de taxa do Supabase Auth, RLS, portão do 2FA antes de toda requisição (tarefa 1), `search_path` fixo (tarefa 5) |
@@ -34,7 +35,7 @@ O WhatsApp não está em uso (tarefa 4). Quando voltar: trocar por uma regra que
 
 **2. Fora do Brasil** — ação **Block**
 ```
-(http.host in {"chefecoruja.com.br" "www.chefecoruja.com.br" "hermes.chefecoruja.com.br"} and ip.src.country ne "BR")
+(http.host in {"chefecoruja.com.br" "www.chefecoruja.com.br" "hermes.chefecoruja.com.br" "api.chefecoruja.com.br" "api-homolog.chefecoruja.com.br"} and ip.src.country ne "BR")
 ```
 Efeito colateral: quem viaja ou usa VPN fora do Brasil fica de fora (decisão do responsável, 05/10/2026). Para liberar alguém pontualmente: acrescentar `and not ip.src in {<ip>}`.
 
@@ -44,7 +45,9 @@ Reconfirmado em 07/10/2026: no ensaio da demo, a própria aba do responsável sa
 
 **Na implantação de cada unidade:** testar o acesso **de dentro da rede da unidade, nos computadores dela**, antes do primeiro plantão. Antivírus com varredura em nuvem ou proxy corporativo da prefeitura (filtro web em nuvem) podem cair na mesma regra. Correção: exceção para `chefecoruja.com.br` no antivírus/proxy; a regra do Cloudflare não muda.
 
-**Rate limit:** nenhum por enquanto. O Caddy do Hermes só expõe `/webhook` (fechado pela regra 1) e `/health`; `/v1/chat/completions` não é público (404 na origem, conferido em 06/10/2026). Quando o `/webhook` voltar, a única regra de rate limit do plano gratuito vai para ele:
+**Rate limit (10/10/2026):** a única regra do plano gratuito é a "API integradores": 100 requisições em 10 segundos por IP nos hosts `api` e `api-homolog`, com Block por 10 segundos. Antes:
+
+nenhum. O Caddy do Hermes só expõe `/webhook` (fechado pela regra 1) e `/health`; `/v1/chat/completions` não é público (404 na origem, conferido em 06/10/2026). Quando o `/webhook` voltar, a única regra de rate limit do plano gratuito vai para ele:
 ```
 (http.host eq "hermes.chefecoruja.com.br" and starts_with(http.request.uri.path, "/webhook"))
 ```

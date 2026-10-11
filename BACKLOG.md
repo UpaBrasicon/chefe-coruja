@@ -516,6 +516,17 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 - **Endereço:** `api.chefecoruja.com.br/v1`, no Cloudflare, apontando para uma Edge Function do Supabase.
 - **Formato:** OpenAPI 3.1 no repositório, validado no CI, mais uma página legível gerada dele para o integrador.
 
+**Decisões do RT para a Fase 3, tarefa 7 — API segura (10/10/2026)**
+
+- **Contrato:** `docs/api/openapi.yaml` (tarefa 6). Só leitura, por unidade, chave por integrador, dados mínimos do paciente.
+- **Quem cria as chaves:** só o super admin da plataforma, escolhendo as unidades e os recursos. O gestor vê as chaves que acessam a unidade dele e pode revogar.
+- **Validade:** 12 meses. O gestor recebe aviso 30 dias antes. Renovar é criar outra chave. A revogação é imediata, a qualquer hora.
+- **Limite:** 60 consultas por minuto por chave, padrão que o super admin ajusta por chave. Há também um teto por IP na borda (Cloudflare).
+- **IP de origem:** lista opcional por chave; vazia aceita qualquer IP.
+- **Infraestrutura:**
+  - Edge Function do Supabase atrás de `api.chefecoruja.com.br`.
+  - O DNS e as regras do Cloudflare são da conta do RT: Claude prepara a configuração e o passo a passo, e o RT aplica.
+
 **Andamento da Fase 3**
 
 | Tarefa | Situação | Onde |
@@ -526,6 +537,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 4 — BPA consolidado | **Em produção** (10/10; PR #67; migration e carga do SIGTAP aplicadas antes do merge, com ok do RT) | Branch `fase3/bpa-c`; migration `20261103000004_bpa_c.sql`; teste `supabase/tests/fase3_bpa_c.sql`. O SIGTAP passou a ter instrumento, CBO por procedimento e quantidade máxima (gerador `scripts/terminologia/gerar-sigtap-sql.ts`), e os valores foram corrigidos para reais. Na tela: destino de cada linha (BPA-I, BPA-C ou fora) com motivo, e "sempre BPA-C" por código |
 | 5 — APAC | **Em produção** (10/10; PRs #69 e #70; migration aplicada antes do merge, com ok do RT; aba própria na internação) | Branch `fase3/apac`; migration `20261104000001_apac.sql`; teste `supabase/tests/fase3_apac.sql`; tela `/apac` (regulador, faturamento, gestor); solicitação no atendimento da porta (aba Procedimentos) e na internação (aba AIH); órgão emissor em Faturamento › Configuração |
 | 6 — Documentação da API | **Pronta** (contrato v1 validado no CI) | Branch `fase3/api-doc`. `docs/api/openapi.yaml` (OpenAPI 3.1, validado por `npm run api:lint` no CI), `docs/api/index.html` (página para o integrador), `docs/api/catalogo-rpc.md` (485 RPCs internas, `npm run api:catalogo`) e `docs/api/README.md`. A implementação é a tarefa 7 |
+| 7 — API segura | **Implantada** (10/10): homologação testada de ponta a ponta com chave real; produção com migration, função e Cloudflare (Workers, DNS, WAF BR e rate limit). Falta o merge do PR | Branch `fase3/api-segura`; migration `20261104000002_api_integradores.sql`; teste `supabase/tests/fase3_api_integradores.sql`; Edge Function `supabase/functions/api`; tela `/integracoes`; passo a passo `docs/api/implantacao.md`; Worker `infra/cloudflare/api-worker.js` |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
