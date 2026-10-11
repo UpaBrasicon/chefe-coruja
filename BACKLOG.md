@@ -666,12 +666,22 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
   - busca por nome do paciente, nº da solicitação ou protocolo externo.
 - **Atualização:** automática a cada 30 s, com destaque para o que chegou e o tempo de espera ao vivo.
 
+**Decisões do RT para a Fase 4, tarefa 3 — priorização clínica (11/10/2026)**
+
+- **Prioridade do regulador:** guardada à parte da proposta do solicitante, com quem, quando e motivo. A fila passa a ordenar por ela quando existir. Toda mudança fica no histórico.
+- **Critérios:** cada nível (emergência, urgência, prioritária e eletiva) tem uma descrição do que cabe nele. A central escreve e edita esses textos, e eles aparecem para o solicitante e para o regulador. O sistema não sugere o nível.
+- **Vulnerabilidade:** a Portaria GM/MS 9.262/2025 manda considerar risco, tempo e vulnerabilidade.
+  - O solicitante marca os marcadores: gestante, idoso (60 anos ou mais), criança, pessoa com deficiência, situação de rua, paciente oncológico e caso judicializado.
+  - Eles aparecem como selos na fila e no detalhe, sem pontuação. O regulador decide.
+- **A origem fica sabendo** pela lista e pelo histórico: a solicitação mostra a prioridade do regulador e o motivo. Os avisos ativos entram na tarefa 4.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
 |---|---|---|
 | 1 — Solicitação de regulação | **Em produção** (11/10; migration aplicada na produção antes do merge, com ok do RT). O PR #78 tinha entrado antes da hora e foi revertido (PR #80); a tarefa voltou com o modelo revisto pela pesquisa | Branch `fase4/regulacao-solicitacao`; migration `20261107000001_regulacao_solicitacao.sql`; teste `supabase/tests/fase4_regulacao_solicitacao.sql` (40 OK); `src/lib/regulacao.ts` (+ teste); tela `/regulacao` (origem, central e super admin); pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md` |
-| 2 — Fila regulada | **Em produção** (11/10; migration `20261108000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/fila-regulada`; migration `20261108000001_fila_regulada.sql`; teste `supabase/tests/fase4_fila_regulada.sql` (30 OK); fila na tela `/regulacao` da central. O regulador da central entra pela escala, como os outros papéis: a central precisa de um setor (ex.: "Regulação") e dos plantões dos reguladores |
+| 2 — Fila regulada | **Em produção** (11/10; migration `20261108000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/fila-regulada`; migration `20261108000001_fila_regulada.sql`; teste `supabase/tests/fase4_fila_regulada.sql` (26 OK); fila na tela `/regulacao` da central. O regulador da central entra pela escala, como os outros papéis: a central precisa de um setor (ex.: "Regulação") e dos plantões dos reguladores |
+| 3 — Priorização clínica | **Em produção** (11/10; migration `20261109000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/priorizacao`; migration `20261109000001_priorizacao_regulacao.sql`; teste `supabase/tests/fase4_priorizacao.sql` (19 OK); na tela `/regulacao`: "Definir prioridade" no detalhe (regulador), selo da prioridade efetiva com a proposta ao lado, marcadores de vulnerabilidade na solicitação e na fila, e o cartão "Critérios de prioridade da central" |
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.

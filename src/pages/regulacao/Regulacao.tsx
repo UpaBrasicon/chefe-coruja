@@ -31,8 +31,10 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import {
   CARATER, FORMULARIO_VAZIO, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS, TIPOS_LEITO, TRANSPORTES,
-  dadosParaEnvio, ehNeonato, faltasFormulario, filtrosParaEnvio, formatarEspera, novosDesde, resumoPedido,
+  VULNERABILIDADES, dadosParaEnvio, ehNeonato, faltasFormulario, filtrosParaEnvio, formatarEspera, marcadoresPelaIdade,
+  novosDesde, prioridadeEfetiva, resumoPedido,
   type Carater, type DestinoTipo, type FiltrosFila, type Formulario, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
+  type Vulnerabilidade,
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
@@ -46,6 +48,8 @@ type Contexto = {
 type Solicitacao = {
   id: string; numero: number; status: StatusRegulacao; tipo: TipoSolicitacao; carater: Carater; modalidade: string
   prioridade: Prioridade; prioridade_central: string | null
+  prioridade_regulador: Prioridade | null; prioridade_regulador_por: string | null; prioridade_regulador_em: string | null
+  prioridade_regulador_motivo: string | null; vulnerabilidades: Vulnerabilidade[]
   procedimento: string; procedimento_nome: string | null; especialidade: string | null; cbo: string | null
   tipo_leito: string | null; internacao_psiquiatrica: string | null; isolamento: boolean; isolamento_tipo: string | null
   transporte: string | null; transporte_central: string | null; incubadora: boolean | null
@@ -89,7 +93,7 @@ export default function Regulacao() {
           : 'Pedidos de consulta, exame, leito ou transferência para a Central de Regulação da rede.'} />
       {c?.sou_super_admin && <Centrais />}
       {!unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <Erro texto={(ctx.error as Error).message} /> : !c ? null
-        : c.sou_central ? <Fila centralId={unidadeId} souRegulador={c.sou_regulador} />
+        : c.sou_central ? (<><Fila centralId={unidadeId} souRegulador={c.sou_regulador} /><Criterios unidadeId={unidadeId} editavel /></>)
         : !c.central ? (
           <Vazio icone={Waypoints} titulo="A rede ainda não tem Central de Regulação"
             texto="A administração da plataforma define a central da organização. Até lá, não há para onde enviar." />
@@ -191,6 +195,8 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
   const [ligar, setLigar] = React.useState<'episodio' | 'internacao' | 'nenhum'>('nenhum')
   const [medico, setMedico] = React.useState('')
   const [naoIdentificado, setNaoIdentificado] = React.useState(false)
+  const [vulnerabilidades, setVulnerabilidades] = React.useState<Vulnerabilidade[]>([])
+  const criterios = useCriterios(unidadeId)
   const [f, setF] = React.useState<Formulario>(FORMULARIO_VAZIO)
   const [cidRotulo, setCidRotulo] = React.useState('')
   const [procRotulo, setProcRotulo] = React.useState('')
@@ -215,6 +221,7 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
       if (error) throw error
       const v = data as unknown as Vinculos
       setLigar(v.internacao ? 'internacao' : v.episodio ? 'episodio' : 'nenhum')
+      setVulnerabilidades(marcadoresPelaIdade(v.nascimento, hoje()))
       return v
     },
   })
@@ -224,12 +231,12 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
     mutationFn: async () => {
       const { data, error } = await supabase.rpc('regulacao_solicitar', {
         p_unidade: unidadeId, p_paciente: paciente!.id,
-        p_dados: dadosParaEnvio(f, {
+        p_dados: { ...dadosParaEnvio(f, {
           episodio_id: ligar === 'episodio' ? v?.episodio?.id : null,
           internacao_id: ligar === 'internacao' ? v?.internacao?.id : null,
           medico_assistente_id: souGestor ? medico || null : null,
           paciente_nao_identificado: !v?.tem_documento && naoIdentificado,
-        }),
+        }), vulnerabilidades },
       })
       if (error) throw error
       return data as unknown as { numero: number; aviso_duplicidade: boolean }
@@ -237,7 +244,7 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
     onSuccess: (r) => {
       setEnviada({ numero: r.numero, duplicidade: r.aviso_duplicidade })
       setF(FORMULARIO_VAZIO); setCidRotulo(''); setProcRotulo(''); setCboRotulo(''); setPaciente(null); setTermo(''); setMedico('')
-      setNaoIdentificado(false)
+      setNaoIdentificado(false); setVulnerabilidades([])
       void qc.invalidateQueries({ queryKey: ['regulacao-lista', unidadeId] })
     },
   })
@@ -409,14 +416,31 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
                 <legend className="text-xs text-tinta-apoio">Prioridade proposta (o regulador da central revisa)</legend>
                 <div className="flex flex-wrap gap-3">
                   {(Object.keys(PRIORIDADES) as Prioridade[]).map((k) => (
-                    <label key={k} className="flex items-center gap-1.5" title={PRIORIDADES[k].descricao}>
+                    <label key={k} className="flex items-center gap-1.5" title={criterios.data?.[k]?.texto ?? PRIORIDADES[k].descricao}>
                       <input type="radio" name="reg-prioridade" className="size-4" checked={f.prioridade === k} onChange={() => set('prioridade', k)} />
                       {PRIORIDADES[k].rotulo}
                     </label>
                   ))}
                 </div>
+                {f.prioridade && f.prioridade !== 'nao_classificada' && criterios.data?.[f.prioridade]?.texto && (
+                  <span className="text-rotulo text-tinta-apoio">Critério da central: {criterios.data[f.prioridade]!.texto}</span>
+                )}
               </fieldset>
             </div>
+
+            {/* vulnerabilidade: selos, sem pontuação; a idade já marca idoso ou criança */}
+            <fieldset className="flex flex-col gap-1">
+              <legend className="text-xs text-tinta-apoio">Vulnerabilidade (aparece como selo para o regulador)</legend>
+              <div className="flex flex-wrap gap-3">
+                {(Object.keys(VULNERABILIDADES) as Vulnerabilidade[]).map((k) => (
+                  <label key={k} className="flex items-center gap-1.5">
+                    <input type="checkbox" className="size-4" checked={vulnerabilidades.includes(k)}
+                      onChange={(e) => setVulnerabilidades((x) => e.target.checked ? [...x, k] : x.filter((y) => y !== k))} />
+                    {VULNERABILIDADES[k]}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
             {/* justificativa em blocos */}
             <CampoTerminologia tipo="cid10" escolhido={cidRotulo} rotulo="CID-10"
@@ -484,7 +508,7 @@ function Lista({ unidadeId, central, podeRegistrarExterno }: { unidadeId: string
               <li key={s.id} className="py-2">
                 <button type="button" className="flex w-full flex-wrap items-center gap-2 text-left" onClick={() => setAberta(aberta === s.id ? null : s.id)}>
                   <span className="text-tinta-sussurro">nº {s.numero}</span>
-                  <Badge variant={TOM[PRIORIDADES[s.prioridade].tom]}>{PRIORIDADES[s.prioridade].rotulo}</Badge>
+                  <SeloPrioridade s={s} />
                   <span className="text-tinta-sussurro">{CARATER[s.carater]}</span>
                   <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}</span>
                   <span className="text-tinta-apoio">{resumoPedido(s)}</span>
@@ -521,10 +545,20 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
   const [sistema, setSistema] = React.useState('')
   const [protocolo, setProtocolo] = React.useState('')
   const [prioridadeCentral, setPrioridadeCentral] = React.useState('')
+  const [novaPrioridade, setNovaPrioridade] = React.useState<Prioridade | ''>('')
+  const [motivoPrioridade, setMotivoPrioridade] = React.useState('')
   const recarregar = () => {
     void qc.invalidateQueries({ queryKey: ['regulacao-detalhe', id] })
     void qc.invalidateQueries({ queryKey: ['regulacao-lista', unidadeId] })
+    void qc.invalidateQueries({ queryKey: ['regulacao-fila', unidadeId] })
   }
+  const priorizar = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('regulacao_priorizar', { p_id: id, p_prioridade: novaPrioridade, p_motivo: motivoPrioridade.trim() })
+      if (error) throw error
+    },
+    onSuccess: () => { setNovaPrioridade(''); setMotivoPrioridade(''); recarregar() },
+  })
   const cancelar = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('regulacao_cancelar', { p_id: id, p_motivo: motivo.trim() })
@@ -554,6 +588,10 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
         {s.cbo && <Linha rotulo="CBO" valor={s.cbo} />}
         <Linha rotulo="Caráter / modalidade" valor={`${CARATER[s.carater]} · ${s.modalidade}`} />
         <Linha rotulo="Prioridade proposta" valor={PRIORIDADES[s.prioridade].rotulo} />
+        {s.prioridade_regulador && (
+          <Linha rotulo="Prioridade do regulador" valor={`${PRIORIDADES[s.prioridade_regulador].rotulo} — ${s.prioridade_regulador_por ?? ''}, ${s.prioridade_regulador_em ? fmtDataHora(s.prioridade_regulador_em) : ''}: ${s.prioridade_regulador_motivo ?? ''}`} />
+        )}
+        {(s.vulnerabilidades ?? []).length > 0 && <Linha rotulo="Vulnerabilidade" valor={s.vulnerabilidades.map((v) => VULNERABILIDADES[v]).join(', ')} />}
         <Linha rotulo="Prioridade da central" valor={s.prioridade_central} />
         {s.tipo_leito && <Linha rotulo="Leito" valor={TIPOS_LEITO[s.tipo_leito] + (s.internacao_psiquiatrica ? ` · ${INTERNACAO_PSIQUIATRICA[s.internacao_psiquiatrica]}` : '')} />}
         {s.isolamento && <Linha rotulo="Isolamento" valor={s.isolamento_tipo ? ISOLAMENTOS[s.isolamento_tipo] : 'sim'} />}
@@ -578,6 +616,20 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
       <ul className="text-rotulo text-tinta-sussurro">
         {(s.eventos ?? []).map((e, i) => <li key={i}>{fmtDataHora(e.em)} · {e.evento.replace('_', ' ')} · {e.por ?? '—'}</li>)}
       </ul>
+      {podeRegistrarExterno && ['enviada', 'em_analise', 'pendencia', 'devolvida'].includes(s.status) && (
+        <div className="flex flex-wrap items-end gap-2">
+          <Campo id={`prio-${id}`} rotulo="Prioridade do regulador">
+            <select id={`prio-${id}`} className={SELECT} value={novaPrioridade} onChange={(e) => setNovaPrioridade(e.target.value as Prioridade | '')}>
+              <option value="">Escolha…</option>
+              {(['emergencia', 'urgencia', 'prioritaria', 'eletiva'] as Prioridade[]).map((k) => <option key={k} value={k}>{PRIORIDADES[k].rotulo}</option>)}
+            </select>
+          </Campo>
+          <Campo id={`prio-mot-${id}`} rotulo="Motivo (fica no histórico e a origem vê)" className="min-w-60 flex-1">
+            <Input id={`prio-mot-${id}`} className="h-8" value={motivoPrioridade} onChange={(e) => setMotivoPrioridade(e.target.value)} />
+          </Campo>
+          <Button size="sm" onClick={() => priorizar.mutate()} disabled={priorizar.isPending || !novaPrioridade || motivoPrioridade.trim().length < 10}>Definir prioridade</Button>
+        </div>
+      )}
       {podeRegistrarExterno && (
         <div className="flex flex-wrap items-end gap-2">
           <Campo id={`ext-sis-${id}`} rotulo="Sistema externo"><Input id={`ext-sis-${id}`} className="h-8" placeholder="SISREG, e-SUS Regulação, GERINT…" value={sistema} onChange={(e) => setSistema(e.target.value)} /></Campo>
@@ -592,8 +644,81 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
           <Button size="sm" variant="destructive" onClick={() => cancelar.mutate()} disabled={cancelar.isPending || motivo.trim().length < 10}>Cancelar solicitação</Button>
         </div>
       )}
-      <Erro texto={(cancelar.error ?? externo.error) ? ((cancelar.error ?? externo.error) as Error).message : null} />
+      <Erro texto={(cancelar.error ?? externo.error ?? priorizar.error) ? ((cancelar.error ?? externo.error ?? priorizar.error) as Error).message : null} />
     </div>
+  )
+}
+
+/** Prioridade que vale (a do regulador, se houver), com a proposta quando é diferente. */
+function SeloPrioridade({ s }: { s: Pick<Solicitacao, 'prioridade' | 'prioridade_regulador'> }) {
+  const ef = prioridadeEfetiva(s)
+  return (
+    <>
+      <Badge variant={TOM[PRIORIDADES[ef].tom]}>{PRIORIDADES[ef].rotulo}</Badge>
+      {s.prioridade_regulador && s.prioridade_regulador !== s.prioridade && (
+        <span className="text-rotulo text-tinta-sussurro">regulador · proposta {PRIORIDADES[s.prioridade].rotulo}</span>
+      )}
+    </>
+  )
+}
+
+type Criterio = { texto: string; em: string; por: string | null }
+function useCriterios(unidadeId: string) {
+  return useQuery({
+    queryKey: ['regulacao-criterios', unidadeId],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_criterios', { p_unidade: unidadeId })
+      if (error) throw error
+      return (data ?? {}) as unknown as Partial<Record<Prioridade, Criterio>>
+    },
+  })
+}
+
+/** Critérios por nível, escritos pela central (Fase 4, tarefa 3). O sistema não sugere nível. */
+function Criterios({ unidadeId, editavel }: { unidadeId: string; editavel: boolean }) {
+  const qc = useQueryClient()
+  const criterios = useCriterios(unidadeId)
+  const [rascunho, setRascunho] = React.useState<Partial<Record<Prioridade, string>>>({})
+  const salvar = useMutation({
+    mutationFn: async (k: Prioridade) => {
+      const { error } = await supabase.rpc('regulacao_definir_criterio', { p_central: unidadeId, p_prioridade: k, p_texto: (rascunho[k] ?? '').trim() })
+      if (error) throw error
+    },
+    onSuccess: (_, k) => {
+      setRascunho((x) => { const n = { ...x }; delete n[k]; return n })
+      void qc.invalidateQueries({ queryKey: ['regulacao-criterios', unidadeId] })
+    },
+  })
+  const niveis: Prioridade[] = ['emergencia', 'urgencia', 'prioritaria', 'eletiva']
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Critérios de prioridade da central</CardTitle>
+        <CardDescription>O que cabe em cada nível. Aparece para quem solicita e para o regulador; o sistema não sugere nível.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 text-apoio">
+        {niveis.map((k) => {
+          const atual = criterios.data?.[k]
+          const valor = rascunho[k] ?? atual?.texto ?? ''
+          return (
+            <div key={k} className="flex flex-col gap-1">
+              <Label htmlFor={`crit-${k}`} className="text-xs">{PRIORIDADES[k].rotulo}</Label>
+              {editavel ? (
+                <div className="flex flex-wrap items-start gap-2">
+                  <textarea id={`crit-${k}`} rows={2} className="min-w-60 flex-1 rounded-controle border border-fio bg-campo px-2 py-1.5"
+                    value={valor} onChange={(e) => setRascunho((x) => ({ ...x, [k]: e.target.value }))} />
+                  <Button size="sm" variant="outline" onClick={() => salvar.mutate(k)}
+                    disabled={salvar.isPending || rascunho[k] === undefined || (rascunho[k] ?? '').trim().length < 10}>Salvar</Button>
+                </div>
+              ) : <p className="text-tinta">{atual?.texto ?? '—'}</p>}
+              {atual && <span className="text-rotulo text-tinta-sussurro">{atual.por ?? '—'} · {fmtDataHora(atual.em)}</span>}
+            </div>
+          )
+        })}
+        <Erro texto={salvar.error ? (salvar.error as Error).message : null} />
+      </CardContent>
+    </Card>
   )
 }
 
@@ -714,12 +839,13 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
               <li key={s.id} className={`py-2 ${novos.has(s.id) ? 'rounded-md bg-alerta-atencao/40 px-2' : ''}`}>
                 <div className="flex flex-wrap items-center gap-2">
                   <button type="button" className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-left" onClick={() => setAberta(aberta === s.id ? null : s.id)}>
-                    <Badge variant={TOM[PRIORIDADES[s.prioridade].tom]}>{PRIORIDADES[s.prioridade].rotulo}</Badge>
+                    <SeloPrioridade s={s} />
                     {novos.has(s.id) && <Badge variant="warning">novo</Badge>}
                     <span className="font-semibold tabular-nums text-tinta">{formatarEspera(s.espera_segundos + decorrido)}</span>
                     <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}</span>
                     <span className="text-tinta-apoio">{resumoPedido(s)}</span>
                     {s.isolamento && <Badge variant="destructive">isolamento</Badge>}
+                    {(s.vulnerabilidades ?? []).map((v) => <Badge key={v} variant="secondary">{VULNERABILIDADES[v]}</Badge>)}
                     <span className="text-tinta-sussurro">{CARATER[s.carater]} · de {s.origem.nome} · nº {s.numero}</span>
                   </button>
                   <Badge variant="info">{STATUS[s.status]}</Badge>

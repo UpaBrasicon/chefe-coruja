@@ -63,3 +63,14 @@ test('fila: tempo de espera, filtros e novos', async () => {
   assert.deepEqual([...novosDesde(null, ['a'])], [])
   assert.deepEqual([...novosDesde(new Set(['a']), ['a', 'b'])], ['b'])
 })
+
+test('priorização: prioridade efetiva e marcadores pela idade', async () => {
+  const { prioridadeEfetiva, marcadoresPelaIdade } = await import('./regulacao.ts')
+  assert.equal(prioridadeEfetiva({ prioridade: 'eletiva', prioridade_regulador: 'emergencia' }), 'emergencia')
+  assert.equal(prioridadeEfetiva({ prioridade: 'nao_classificada', prioridade_regulador: null }), 'nao_classificada')
+  assert.deepEqual(marcadoresPelaIdade('1960-10-11', '2026-10-11'), ['idoso'])
+  assert.deepEqual(marcadoresPelaIdade('1966-10-12', '2026-10-11'), [])
+  assert.deepEqual(marcadoresPelaIdade('2012-10-12', '2026-10-11'), ['crianca'])
+  assert.deepEqual(marcadoresPelaIdade('2012-10-11', '2026-10-11'), [])
+  assert.deepEqual(marcadoresPelaIdade(null, '2026-10-11'), [])
+})
