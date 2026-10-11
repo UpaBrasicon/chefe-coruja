@@ -675,6 +675,16 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
   - Eles aparecem como selos na fila e no detalhe, sem pontuação. O regulador decide.
 - **A origem fica sabendo** pela lista e pelo histórico: a solicitação mostra a prioridade do regulador e o motivo. Os avisos ativos entram na tarefa 4.
 
+**Decisões do RT para a Fase 4, tarefa 4 — aceite, recusa e devolução (11/10/2026)**
+
+- **Decisões do regulador:**
+  - **autorizar**: a vaga fica reservada ou o procedimento autorizado. Só o destino é obrigatório (unidade da rede ou serviço de fora). Transporte, data e hora e observação são opcionais. O aceite da unidade de destino é a tarefa 9;
+  - **negar**, com motivo de uma lista (sem indicação clínica, sem oferta na rede, fora do escopo da central, duplicidade, paciente já atendido ou óbito, outro) e texto obrigatório;
+  - **devolver à origem** para corrigir e reenviar. No reenvio, o pedido **mantém a posição** na fila: a espera conta desde o pedido original;
+  - **pendência**: uma pergunta à origem sem tirar o pedido da fila. A origem responde e o pedido segue.
+- **Quem responde na origem:** o solicitante, o médico assistente ou o gestor, sempre com o próprio login.
+- **Avisos:** cada decisão gera um aviso na tela "Avisos" para o solicitante e para o médico assistente. Vale para autorizada, negada, devolvida, pendência e mudança de prioridade. Sem WhatsApp por enquanto.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
