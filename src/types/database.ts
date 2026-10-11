@@ -9967,6 +9967,13 @@ export type Database = {
         Returns: Json
       }
       api_revogar_chave: { Args: { p_id: string; p_motivo: string }; Returns: undefined }
+      exportacao_concluir: { Args: { p_id: string }; Returns: undefined }
+      exportacao_iniciar: {
+        Args: { p_ate: string | null; p_conjunto: string; p_desde: string | null; p_formato: string; p_mascarado?: boolean; p_motivo?: string | null; p_unidade: string }
+        Returns: Json
+      }
+      exportacao_pagina: { Args: { p_desloc?: number; p_id: string }; Returns: Json }
+      exportacoes_lista: { Args: { p_unidade: string }; Returns: Json }
       endereco_sus: { Args: { p_paciente: string }; Returns: Json }
       fechar_competencia_bpa: { Args: { p_competencia: string; p_processamento?: string; p_unidade: string }; Returns: string }
       procedimentos_do_paciente: { Args: { p_paciente: string }; Returns: Json }
