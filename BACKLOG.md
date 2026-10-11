@@ -608,6 +608,27 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 11 | A definir com o RT | NIR — Núcleo Interno de Regulação (pedido do RT em 09/10/2026) | Função administrativa "NIR": acompanha as regulações da unidade e os documentos em falta (laudos de AIH pendentes, AIH solicitada sem decisão, rejeitada sem nova, documentos clínicos com falta). Definir: papel próprio ou permissão, o que vê, o que cobra de quem e como avisa | NIR vê, num painel, as regulações e os documentos em falta da unidade e cobra os responsáveis |
 | 12 | A definir com o RT | Papéis de rede como módulo (pedido do RT em 10/10/2026) | Papéis para fora da unidade: Secretaria (acompanha a rede), Regulação regional e Faturamento da secretaria. O super admin tem o módulo; o gestor decide se a rede dele usa ou não. Definir: o que cada papel vê (só agregados ou também paciente), a quais unidades tem acesso e como se liga à escala. Até lá, integração externa usa as chaves da API (tarefa 7 da Fase 3) | Papéis de rede ligados ou desligados pelo gestor, com escopo de unidades e auditoria |
 
+**Decisões do RT para a Fase 4, tarefa 1 — solicitação de regulação (10/10/2026)**
+
+- **Quem regula:** a Central de Regulação da rede. Ela é cadastrada pelo super admin como uma unidade do tipo central, dentro da organização. Os médicos reguladores ficam vinculados a ela. A central recebe as solicitações de todas as unidades da organização.
+- **Quem abre:**
+  - o médico que cuida do paciente;
+  - o gestor ou NIR da unidade, que pode enviar direto com a justificativa. Nesse caso, o médico assistente fica só informado.
+  - O autor é sempre quem está logado.
+- **Destino:**
+  - uma unidade da rede Chefe Coruja;
+  - um serviço de fora da rede, escrito;
+  - ou "a definir pela regulação".
+- **Tipos:**
+  - consulta, por especialidade;
+  - exame, por procedimento do SIGTAP;
+  - leito, com o tipo: enfermaria, UTI adulto, UTI pediátrica, UTI neonatal, semi-intensiva, isolamento etc.;
+  - transferência, com o tipo de transporte.
+- **Prioridade:** quatro níveis (emergência, urgência, prioridade não urgente e eletivo). O solicitante propõe; o regulador revisa com motivo, na tarefa 3.
+- **Justificativa clínica:** texto livre e CID.
+- **Vínculo:** pode ser ligada a um atendimento ou a uma internação aberta, ou só ao paciente cadastrado (por exemplo, consulta eletiva).
+- **Regulação externa:** sem integração agora. A central anota o sistema externo (SISREG, e-SUS Regulação, central estadual) e o número do protocolo. A integração fica para a Fase 5C, conforme as credenciais.
+
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.
 2. Criar solicitações.
