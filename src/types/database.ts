@@ -10021,6 +10021,16 @@ export type Database = {
       regulacao_marcar_chegada: { Args: { p_chegou: boolean; p_id: string; p_observacao?: string | null }; Returns: Json }
       regulacao_marcar_saida: { Args: { p_id: string }; Returns: Json }
       regulacao_registrar_resposta_externa: { Args: { p_aceita: boolean; p_id: string; p_meio: string; p_motivo?: string | null; p_quem: string; p_texto?: string | null }; Returns: Json }
+      rede_baixar_arquivo: { Args: { p_fechamento: string; p_tipo: string; p_unidade: string }; Returns: Json }
+      rede_contexto: { Args: { p_unidade: string }; Returns: Json }
+      rede_definir_modulo: { Args: { p_ativo: boolean; p_org: string; p_secretaria: string | null }; Returns: undefined }
+      rede_faturamento: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
+      rede_liberacao: { Args: { p_unidade: string }; Returns: Json }
+      rede_liberar_unidade: { Args: { p_liberar: boolean; p_unidade: string }; Returns: undefined }
+      rede_modulos: { Args: Record<PropertyKey, never>; Returns: Json }
+      rede_regulacao_detalhe: { Args: { p_id: string; p_unidade: string }; Returns: Json }
+      rede_regulacao_resumo: { Args: { p_unidade: string }; Returns: Json }
+      rede_regulacoes: { Args: { p_filtros?: Json; p_unidade: string }; Returns: Json }
       regulacao_registrar_externo: { Args: { p_id: string; p_prioridade_central?: string | null; p_protocolo: string; p_sistema: string }; Returns: undefined }
       regulacao_solicitar: { Args: { p_dados: Json; p_paciente: string; p_unidade: string }; Returns: Json }
       regulacao_vinculos_paciente: { Args: { p_paciente: string }; Returns: Json }
@@ -12989,6 +12999,9 @@ export type Database = {
         | "telemedicina"
         | "regulador"
         | "faturamento"
+        | "secretaria"
+        | "regulacao_regional"
+        | "faturamento_rede"
       status_leito:
         | "livre"
         | "ocupado"
@@ -13354,6 +13367,9 @@ export const Constants = {
         "telemedicina",
         "regulador",
         "faturamento",
+        "secretaria",
+        "regulacao_regional",
+        "faturamento_rede",
       ],
       status_leito: [
         "livre",

@@ -1,10 +1,12 @@
+import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
 import { Check, Copy, MailPlus, Ticket, TicketX } from 'lucide-react'
 
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useSetores } from '@/hooks/useDadosUnidade'
 import { useConvites, useGerarConvite, useRevogarConvite, type ConviteDaUnidade, type SituacaoConvite } from '@/hooks/useConvites'
-import { PAPEL_DESCRIPTION, PAPEL_LABEL } from '@/lib/constants'
+import { PAPEIS_REDE, PAPEL_DESCRIPTION, PAPEL_LABEL } from '@/lib/constants'
+import { supabase } from '@/lib/supabase'
 import { formatarDiaHora, formatarPlantao } from '@/lib/primeiroAcesso'
 import { cn } from '@/lib/utils'
 import type { Papel } from '@/types/database'
@@ -24,7 +26,7 @@ import { Chip, Chips, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 // acesso, na unidade e no papel escolhidos. Gestão e administração não entram
 // por convite — entram pelo contrato da rede.
 
-const PAPEIS_CONVITE: Papel[] = ['plantonista', 'enfermeiro', 'tecnico_enfermagem', 'farmaceutico', 'recepcao', 'telemedicina', 'regulador', 'faturamento']
+const PAPEIS_ATENDIMENTO: Papel[] = ['plantonista', 'enfermeiro', 'tecnico_enfermagem', 'farmaceutico', 'recepcao', 'telemedicina', 'regulador', 'faturamento']
 const VALIDADES: Record<string, string> = { '2': '2 dias', '7': '7 dias', '14': '14 dias', '30': '30 dias' }
 
 const SITUACAO: Record<SituacaoConvite, { rotulo: string; variante: 'info' | 'success' | 'warning' | 'secondary' }> = {
@@ -131,6 +133,17 @@ export default function Convites() {
   const gerar = useGerarConvite(unidadeId)
   const revogar = useRevogarConvite(unidadeId)
   const { copiado, copiar } = useCopiar()
+  // Fase 4, tarefa 12: na unidade Secretaria, só papéis de rede (o super admin convida; o banco confere)
+  const rede = useQuery({
+    queryKey: ['rede-contexto', unidadeId],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('rede_contexto', { p_unidade: unidadeId! })
+      if (error) throw error
+      return data as unknown as { eh_secretaria: boolean }
+    },
+  })
+  const PAPEIS_CONVITE: readonly Papel[] = rede.data?.eh_secretaria ? PAPEIS_REDE : PAPEIS_ATENDIMENTO
 
   const [filtro, setFiltro] = React.useState<Filtro>('abertos')
   const [dialogo, setDialogo] = React.useState(false)
