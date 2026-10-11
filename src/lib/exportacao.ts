@@ -120,25 +120,44 @@ export type Contexto = {
   ate: string | null
   mascarado: boolean
   geradoEm: string
+  /** fuso das datas no CSV (IANA); o JSON fica em ISO 8601, como a API */
+  fuso?: string
+}
+
+const ISO_DATA_HORA = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/
+const ISO_DATA = /^(\d{4})-(\d{2})-(\d{2})$/
+
+/** No CSV, data e hora no formato do Excel pt-BR (dd/mm/aaaa hh:mm:ss) e no fuso pedido. */
+export function dataParaCsv(v: ValorCsv, fuso: string): ValorCsv {
+  if (typeof v !== 'string') return v
+  const d = ISO_DATA.exec(v)
+  if (d) return `${d[3]}/${d[2]}/${d[1]}`
+  if (!ISO_DATA_HORA.test(v)) return v
+  const t = new Date(v)
+  if (Number.isNaN(t.getTime())) return v
+  return t.toLocaleString('pt-BR', { timeZone: fuso, day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(',', '')
 }
 
 /** Conteúdo do arquivo, no formato pedido. */
 export function montarArquivo(formato: Formato, ctx: Contexto, linhas: Linha[]): string {
   const c = CONJUNTOS[ctx.conjunto]
-  const periodo = c.comPeriodo ? `${ctx.desde} a ${ctx.ate}` : 'situação no momento da exportação'
   if (formato === 'json') {
     return JSON.stringify({
       unidade: ctx.unidade, conjunto: ctx.conjunto, periodo: c.comPeriodo ? { desde: ctx.desde, ate: ctx.ate } : null,
       mascarado: ctx.mascarado, gerado_em: ctx.geradoEm, linhas: linhas.length, dados: linhas,
     }, null, 2)
   }
-  return gerarCsv(c.colunas.map(([r]) => r), linhas.map((l) => c.colunas.map(([, f]) => f(l))), {
+  const fuso = ctx.fuso ?? 'America/Sao_Paulo'
+  const periodo = c.comPeriodo ? `${dataParaCsv(ctx.desde, fuso)} a ${dataParaCsv(ctx.ate, fuso)}` : 'situação no momento da exportação'
+  return gerarCsv(c.colunas.map(([r]) => r), linhas.map((l) => c.colunas.map(([, f]) => dataParaCsv(f(l), fuso))), {
     contexto: [
       ['Unidade', ctx.unidade],
       ['Conjunto', c.rotulo],
       ['Período', periodo],
       ['Dados do paciente', ctx.mascarado ? 'mascarados' : 'completos'],
-      ['Gerado em', new Date(ctx.geradoEm).toLocaleString('pt-BR')],
+      ['Gerado em', dataParaCsv(ctx.geradoEm, fuso)],
+      ['Fuso das datas', fuso],
       ['Linhas', linhas.length],
     ],
   })

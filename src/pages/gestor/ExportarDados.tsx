@@ -128,7 +128,7 @@ export default function ExportarDados() {
       const { error: fim } = await supabase.rpc('exportacao_concluir', { p_id: id })
       if (fim) throw fim
       const ctx = { unidade: unidadeNome, conjunto, desde: c.comPeriodo ? desde : null, ate: c.comPeriodo ? ate : null,
-        mascarado, geradoEm: new Date().toISOString() }
+        mascarado, geradoEm: new Date().toISOString(), fuso: Intl.DateTimeFormat().resolvedOptions().timeZone }
       const nome = nomeArquivo(formato, ctx)
       baixar(nome, montarArquivo(formato, ctx, linhas), formato)
       setPronto(`${nome} — ${linhas.length === 1 ? '1 linha' : `${linhas.length} linhas`}.`)
