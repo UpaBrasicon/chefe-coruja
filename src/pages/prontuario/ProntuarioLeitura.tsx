@@ -12,6 +12,7 @@ import { ativas, negaVigente, rotuloGrau, rotuloGravidade, rotuloTipo, useAlergi
 import { abrirProntuario } from '@/lib/prontuario'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
+import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
 
 // Leitura do prontuário (fase 6). Serve a quem tem pedido aprovado e vigente
 // e a quem já tem acesso pela escala. Só leitura: não há botão de escrever,
@@ -108,6 +109,8 @@ export default function ProntuarioLeitura() {
           )}
         </CardContent>
       </Card>
+      {/* Fase 4, tarefa 5: regulações do paciente na rede (médico e gestor) */}
+      <HistoricoRegulacao pacienteId={paciente.id} />
 
       <Card>
         <CardHeader><CardTitle className="text-base">Documentos</CardTitle></CardHeader>
