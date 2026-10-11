@@ -10033,6 +10033,7 @@ export type Database = {
       rede_regulacoes: { Args: { p_filtros?: Json; p_unidade: string }; Returns: Json }
       nir_cobrar: { Args: { p_ref: string; p_tipo: string; p_unidade: string }; Returns: number }
       nir_pendencias: { Args: { p_unidade: string }; Returns: Json }
+      regulacao_indicadores: { Args: { p_filtros?: Json; p_unidade: string }; Returns: Json }
       regulacao_registrar_externo: { Args: { p_id: string; p_prioridade_central?: string | null; p_protocolo: string; p_sistema: string }; Returns: undefined }
       regulacao_solicitar: { Args: { p_dados: Json; p_paciente: string; p_unidade: string }; Returns: Json }
       regulacao_vinculos_paciente: { Args: { p_paciente: string }; Returns: Json }
