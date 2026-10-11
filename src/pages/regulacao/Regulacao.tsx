@@ -236,6 +236,8 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
   // quem é médico e gestor na unidade solicita como médico (o banco decide igual)
   const { papeisDaUnidade } = useUnidade()
   const souGestor = papeisDaUnidade.includes('gestor') && !papeisDaUnidade.includes('plantonista')
+  // Fase 4, tarefa 11: o NIR abre o pedido em nome do médico assistente (obrigatório)
+  const souNir = papeisDaUnidade.includes('nir') && !papeisDaUnidade.includes('plantonista') && !papeisDaUnidade.includes('gestor')
   const [termo, setTermo] = React.useState('')
   const [paciente, setPaciente] = React.useState<Paciente | null>(null)
   const [ligar, setLigar] = React.useState<'episodio' | 'internacao' | 'nenhum'>('nenhum')
@@ -304,7 +306,7 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
         p_dados: { ...dadosParaEnvio(f, {
           episodio_id: ligar === 'episodio' ? v?.episodio?.id : null,
           internacao_id: ligar === 'internacao' ? v?.internacao?.id : null,
-          medico_assistente_id: souGestor ? medico || null : null,
+          medico_assistente_id: souGestor || souNir ? medico || null : null,
           paciente_nao_identificado: !v?.tem_documento && naoIdentificado,
         }), vulnerabilidades },
       })
@@ -335,7 +337,8 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
       aoEnviar(r.id)
     },
   })
-  const faltas = faltasFormulario(f, { neonato, semDocumento: v ? !v.tem_documento : false, naoIdentificado })
+  const faltas = [...faltasFormulario(f, { neonato, semDocumento: v ? !v.tem_documento : false, naoIdentificado }),
+    ...(souNir && !medico ? ['médico assistente'] : [])]
   const leitoOuTransf = f.tipo === 'leito' || f.tipo === 'transferencia'
 
   return (
@@ -587,10 +590,10 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
               {erroAnexo && <span role="alert" className="text-rotulo text-critico">{erroAnexo}</span>}
             </div>
 
-            {souGestor && (
-              <Campo id="reg-medico" rotulo="Médico assistente (fica informado)" className="max-w-sm">
+            {(souGestor || souNir) && (
+              <Campo id="reg-medico" rotulo={souNir ? 'Médico assistente (obrigatório: o NIR abre em nome dele)' : 'Médico assistente (fica informado)'} className="max-w-sm">
                 <select id="reg-medico" className={SELECT} value={medico} onChange={(e) => setMedico(e.target.value)}>
-                  <option value="">Não informar</option>
+                  <option value="">{souNir ? 'Escolha…' : 'Não informar'}</option>
                   {v.medicos.map((m) => <option key={m.id} value={m.id}>{m.nome}</option>)}
                 </select>
               </Campo>
@@ -671,6 +674,8 @@ function Linha({ rotulo, valor }: { rotulo: string; valor: React.ReactNode }) {
 }
 
 function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string; unidadeId: string; central: boolean; podeRegistrarExterno: boolean }) {
+  const { papeisDaUnidade } = useUnidade()
+  const souNir = papeisDaUnidade.includes('nir')
   const qc = useQueryClient()
   const d = useQuery({
     queryKey: ['regulacao-detalhe', id],
@@ -757,13 +762,13 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
       {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
       <BlocosDecisao s={s} />
       <BlocoDestino s={s} />
-      <AcoesDestino s={s} aoFim={recarregar} />
-      {!central && <SaidaOrigem s={s} aoFim={recarregar} />}
+      <AcoesDestino s={s} aoFim={recarregar} nir={souNir && s.destino_unidade?.id === unidadeId} />
+      {!central && <SaidaOrigem s={s} aoFim={recarregar} nir={souNir && s.origem.id === unidadeId} />}
       {central && podeRegistrarExterno && <DestinoExterno s={s} aoFim={recarregar} />}
       <PrazosDoPedido id={s.id} sla={s.sla} tempos={s.tempos ?? []} evolucoes={s.evolucoes ?? []}
         podeEvoluir={!central && !!s.pode_evoluir} aoFim={recarregar} />
       <AnexosRegulacao solicitacaoId={s.id} />
-      {!central && s.origem_pode_responder && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={recarregar} />}
+      {!central && (s.origem_pode_responder || (souNir && s.origem.id === unidadeId)) && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={recarregar} />}
       {!central && s.origem_pode_responder && s.status === 'devolvida' && <Reenviar s={s} aoFim={recarregar} />}
       {central && podeRegistrarExterno && emDecisao(s.status) && <PainelDecisao s={s} centralId={unidadeId} aoFim={recarregar} />}
       <ul className="text-rotulo text-tinta-sussurro">
