@@ -694,6 +694,18 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 - **Quem vê:** só o médico e o gestor da unidade. A enfermagem não vê.
 - **Registro:** a lista (nº, data, unidade, tipo, prioridade, status e destino) não registra acesso. Abrir o detalhe grava no registro de acesso ao prontuário, que aparece na Auditoria do gestor.
 
+**Decisões do RT para a Fase 4, tarefa 6 — anexos e laudos (11/10/2026)**
+
+- **Arquivos:**
+  - PDF, JPG e PNG, até 10 MB cada e até 10 por pedido;
+  - ficam em área privada, e abrir gera um link temporário de 60 segundos.
+- **Do prontuário:** também se anexa um documento já emitido no prontuário do paciente, sem imprimir nem escanear. A central vê a versão anexada.
+- **Quem anexa, com o pedido em aberto:**
+  - na origem: o solicitante, o médico assistente e o gestor;
+  - na central: o regulador.
+- **Retirar:** um anexo enviado por engano sai da lista com motivo, mas continua guardado (guarda do prontuário). Quem retirou e o motivo ficam na auditoria.
+- **Quem abre e baixa:** quem vê o pedido (a origem e a central) e, pelo histórico do prontuário, o médico e o gestor. Toda visualização ou download fica no registro de acesso.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
