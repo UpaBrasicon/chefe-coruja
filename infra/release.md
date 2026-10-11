@@ -11,6 +11,18 @@
 5. Banco/funções na produção, com o "ok" do RT: `npx supabase link --project-ref saqjrjtrkzkswsxxvdxn`, `npm run producao:push -- --confirmo-producao` e/ou `node scripts/ambiente/supabase-alvo.mjs functions producao --confirmo-producao` (recusa código não commitado), religar à homologação (`--project-ref kswurfyxxvfydpjfrivy`).
 6. Conferir: site abre, login, `x-cc-versao` das funções, Sentry sem erro novo.
 
+**Quais branches a Vercel publica (desde 11/10/2026).** O plano gratuito
+permite 100 deploys por dia. Em 10/10/2026 o limite estourou com os envios de
+branch, e a homologação e a produção ficaram sem deploy por 24 horas. Desde
+então:
+
+- **App** (`vercel.json`): publica só `master` (produção) e `homolog`.
+- **Landing** (`landing/vercel.json`): publica só `master`.
+
+As demais branches (`fase*/`, `docs/`, `revisao/`, `infra/`, `fix/`, `feat/`,
+`chore/`, `legacy/`, `porte-*`) não geram deploy. Quem cria uma branch com
+outro prefixo deve acrescentá-lo às duas listas (`git.deploymentEnabled`).
+
 ## B. Reverter
 
 | O que | Como | Tempo |
