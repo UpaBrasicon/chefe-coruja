@@ -812,6 +812,16 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 
 ---
 
+## Portão antes da Fase 5 — teste de ponta a ponta do fluxo assistencial
+
+**Pedido do RT em 11/10/2026.** A Fase 5 só abre depois deste teste e da decisão do RT sobre as correções.
+
+- **Escopo:** fluxo assistencial completo (recepção, triagem, atendimento, observação, internação, regulação, transferência, enfermagem, técnico, farmácia, gestor) com uma coorte de 15 pacientes simulados, permissões negativas, auditoria, concorrência, datas, casos-limite de cadastro, documentos, notificações, evasão e alta a pedido, passagem de plantão, rascunhos, celular, desempenho e Hermes. Nenhuma feature nova.
+- **Ambiente (decisão do RT):** o teste roda no ambiente local (banco isolado, mesmas migrations), com uma conta de teste por papel e pelas telas e pelo banco. Os scripts ficam prontos para o RT repetir a coorte na homologação a cada release.
+- **Hermes:** só é testado se houver um gateway de teste; casos simulados não vão para o serviço da produção.
+- **Regra:** nada é corrigido durante o teste. Primeiro o relatório; o RT decide a ordem das correções.
+- **Entregáveis:** `produto/docs/teste-e2e/RELATORIO_E2E_AAAA-MM-DD.md` (defeitos por severidade, lacunas, cobertura), scripts e seeds reutilizáveis e as perguntas de produto para o RT.
+
 ## Fase 5 — UBS, Faturamento e Escala Competitiva
 **Horizonte:** 180+ dias
 **Objetivo:** ampliar para rede completa e competir com sistemas maiores.
