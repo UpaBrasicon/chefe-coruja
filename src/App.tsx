@@ -77,6 +77,7 @@ const Integracoes = lazy(() => import('@/pages/admin/Integracoes'))
 const ExportarDados = lazy(() => import('@/pages/gestor/ExportarDados'))
 const Implantacao = lazy(() => import('@/pages/gestor/Implantacao'))
 const Regulacao = lazy(() => import('@/pages/regulacao/Regulacao'))
+const Rede = lazy(() => import('@/pages/rede/Rede'))
 const Interacoes = lazy(() => import('@/pages/farmacia/Interacoes'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
@@ -258,6 +259,10 @@ export default function App() {
                       {/* Regulação da rede: origem (médico, gestor), central (regulador) e super admin (Fase 4, tarefa 1) */}
                       <Route element={<RequireRole papeis={['plantonista', 'gestor', 'regulador', 'admin']} />}>
                         <Route path="/regulacao" element={<Regulacao />} />
+                      </Route>
+                      {/* Papéis de rede: Secretaria, Regulação regional, Faturamento da secretaria; módulo pelo super admin (Fase 4, tarefa 12) */}
+                      <Route element={<RequireRole papeis={['secretaria', 'regulacao_regional', 'faturamento_rede', 'admin']} />}>
+                        <Route path="/rede" element={<Rede />} />
                       </Route>
                       {/* Interações críticas: lista curada da unidade (Fase 2, tarefa 3) */}
                       <Route element={<RequireRole papeis={['farmaceutico', 'gestor', 'plantonista']} />}>

@@ -26,7 +26,7 @@ import {
 } from 'lucide-react'
 import { ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, History, KeyRound, Receipt, Rocket, Video, Waypoints } from 'lucide-react'
-import { FileWarning, GitMerge, LifeBuoy, Pill, ShieldAlert, Siren } from 'lucide-react'
+import { FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
 
 import type { Papel } from '@/types/database'
 
@@ -151,6 +151,10 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   ],
   // Administrador (P/index.html 32242–32246): Rede, Plataformas, Pendências e
   // Servidores; Escala e Olho de Gavião continuam do app.
+  // Fase 4, tarefa 12: papéis de rede (Secretaria), escalados na unidade Secretaria
+  secretaria: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS],
+  regulacao_regional: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS],
+  faturamento_rede: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }],
   admin: [
     { to: '/painel', rotulo: 'Rede', icone: Building2, exato: true },
     { to: '/plataformas', rotulo: 'Plataformas', icone: LayoutDashboard, exato: true, nota: 'plataformas' },
@@ -174,6 +178,8 @@ const ITEM_EXPORTAR: ItemNav = { to: '/exportar', rotulo: 'Exportar dados', curt
 const ITEM_IMPLANTACAO: ItemNav = { to: '/implantacao', rotulo: 'Implantação', icone: Rocket, exato: true }
 // Fase 4, tarefa 1: regulação da rede (origem, central e super admin)
 const ITEM_REGULACAO: ItemNav = { to: '/regulacao', rotulo: 'Regulação', icone: Waypoints, exato: true }
+// Fase 4, tarefa 12: módulo de papéis de rede (o super admin liga por organização)
+const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Papéis de rede', curto: 'Rede', icone: Network, exato: true }
 
 /**
  * Itens do papel em foco. O responsável técnico (nomeação da rede, não papel
@@ -184,7 +190,7 @@ export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false
   const itens = [...POR_PAPEL[papel ?? 'plantonista']]
   if (papel === 'admin' && superAdmin) {
     const i = itens.findIndex((x) => x.to === '/servidores')
-    itens.splice(i >= 0 ? i + 1 : itens.length, 0, ITEM_ERROS_E_ALERTAS, ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO, ITEM_REGULACAO)
+    itens.splice(i >= 0 ? i + 1 : itens.length, 0, ITEM_ERROS_E_ALERTAS, ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO, ITEM_REGULACAO, ITEM_MODULO_REDE)
   }
   if (papel === 'gestor') itens.push(ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO, ITEM_REGULACAO)
   if (papel === 'plantonista' || papel === 'regulador') itens.push(ITEM_REGULACAO)

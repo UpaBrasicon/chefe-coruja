@@ -11,6 +11,9 @@ export const PAPEL_LABEL: Record<Papel, string> = {
   telemedicina: 'Telemedicina',
   regulador: 'Médico regulador',
   faturamento: 'Faturamento',
+  secretaria: 'Secretaria (rede)',
+  regulacao_regional: 'Regulação regional',
+  faturamento_rede: 'Faturamento da secretaria',
 }
 
 export const PAPEL_DESCRIPTION: Record<Papel, string> = {
@@ -24,6 +27,9 @@ export const PAPEL_DESCRIPTION: Record<Papel, string> = {
   telemedicina: 'Teleinterconsulta de apoio ao plantonista',
   regulador: 'Autoriza a AIH: aprova (número e competência) ou rejeita',
   faturamento: 'BPA: confere, fecha a competência e gera o arquivo do SUS',
+  secretaria: 'Acompanha a rede: números, mapa de vagas e prazos das unidades liberadas',
+  regulacao_regional: 'Acompanha os pedidos de regulação das unidades liberadas (só leitura)',
+  faturamento_rede: 'Produção e arquivos fechados das unidades liberadas (só leitura)',
 }
 
 export const TIPO_UNIDADE_LABEL: Record<TipoUnidade, string> = {
@@ -87,6 +93,9 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   telemedicina: '/teleinterconsulta',
   regulador: '/aih',
   faturamento: '/faturamento',
+  secretaria: '/rede',
+  regulacao_regional: '/rede',
+  faturamento_rede: '/rede',
 }
 
 export const ORDEM_PAPEL: Record<Papel, number> = {
@@ -100,7 +109,14 @@ export const ORDEM_PAPEL: Record<Papel, number> = {
   recepcao: 7,
   regulador: 8,
   faturamento: 9,
+  secretaria: 10,
+  regulacao_regional: 11,
+  faturamento_rede: 12,
 }
 
 /** Papéis que só entram com plantão na escala agora (ADR 0003). */
-export const PAPEIS_POR_ESCALA: readonly Papel[] = ['plantonista', 'enfermeiro', 'tecnico_enfermagem', 'recepcao', 'telemedicina', 'regulador']
+export const PAPEIS_POR_ESCALA: readonly Papel[] = ['plantonista', 'enfermeiro', 'tecnico_enfermagem', 'recepcao', 'telemedicina', 'regulador',
+  // Fase 4, tarefa 12: papéis de rede, escalados na unidade Secretaria
+  'secretaria', 'regulacao_regional', 'faturamento_rede']
+/** Papéis de rede (Fase 4, tarefa 12): só na unidade Secretaria. */
+export const PAPEIS_REDE: readonly Papel[] = ['secretaria', 'regulacao_regional', 'faturamento_rede']
