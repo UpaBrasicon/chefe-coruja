@@ -527,6 +527,21 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
   - Edge Function do Supabase atrás de `api.chefecoruja.com.br`.
   - O DNS e as regras do Cloudflare são da conta do RT: Claude prepara a configuração e o passo a passo, e o RT aplica.
 
+**Decisões do RT para a Fase 3, tarefa 8 — checklist da RNDS (10/10/2026)**
+
+- **Escopo:** quatro modelos.
+  - RAC, para o atendimento na porta.
+  - Sumário de Alta, para a internação.
+  - RIA, para a unidade que vacina.
+  - REL, para a unidade que faz exame laboratorial.
+- **Saída com IP fixo:** o envio à RNDS sai pelo VPS que já existe (o da biblioteca), que faz o papel de intermediário com o certificado. Supabase e Vercel não têm IP de saída fixo.
+- **Credencial:** cada gestor pede a credencial da sua unidade. O Chefe Coruja aparece como o sistema integrador. Não se pede uma credencial única para a rede.
+- **Identificação:** segue a recomendação do DATASUS. Vai o CPF do paciente e do profissional; o CNS só entra quando falta o CPF.
+- **Profissional sem CBO no CNES:** o sistema não envia em nome dele e avisa o gestor. A RNDS recusa esse envio (erro EHR-ERR906).
+- **Documentos oficiais:** baixados com o ok do RT em 10/10/2026, para `produto/docs/pesquisa/rnds-oficial/`, com o SHA-256 de cada arquivo:
+  - do RAC: manual de integração v2.0, manual de apoio às credenciais, mensagens de erro v3.0, modelo de informação, exemplos JSON e coleção do Postman;
+  - do Sumário de Alta: manual, exemplo JSON, coleção do Postman e definições do validador.
+
 **Andamento da Fase 3**
 
 | Tarefa | Situação | Onde |
@@ -538,6 +553,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 5 — APAC | **Em produção** (10/10; PRs #69 e #70; migration aplicada antes do merge, com ok do RT; aba própria na internação) | Branch `fase3/apac`; migration `20261104000001_apac.sql`; teste `supabase/tests/fase3_apac.sql`; tela `/apac` (regulador, faturamento, gestor); solicitação no atendimento da porta (aba Procedimentos) e na internação (aba AIH); órgão emissor em Faturamento › Configuração |
 | 6 — Documentação da API | **Pronta** (contrato v1 validado no CI) | Branch `fase3/api-doc`. `docs/api/openapi.yaml` (OpenAPI 3.1, validado por `npm run api:lint` no CI), `docs/api/index.html` (página para o integrador), `docs/api/catalogo-rpc.md` (485 RPCs internas, `npm run api:catalogo`) e `docs/api/README.md`. A implementação é a tarefa 7 |
 | 7 — API segura | **Implantada** (10/10): homologação testada de ponta a ponta com chave real; produção com migration, função e Cloudflare (Workers, DNS, WAF BR e rate limit). Falta o merge do PR | Branch `fase3/api-segura`; migration `20261104000002_api_integradores.sql`; teste `supabase/tests/fase3_api_integradores.sql`; Edge Function `supabase/functions/api`; tela `/integracoes`; passo a passo `docs/api/implantacao.md`; Worker `infra/cloudflare/api-worker.js` |
+| 8 — Checklist da RNDS | **Pronto** (10/10): documento para executar quando as credenciais chegarem | Branch `fase3/checklist-rnds`; `docs/rnds/CHECKLIST.md` (portfólios, pendências externas e internas, formulário, IP, autenticação, evidência, divergências do código com o oficial, perguntas para o chamado); manuais oficiais em `produto/docs/pesquisa/rnds-oficial/` |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
@@ -569,6 +585,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 9 | P1 | Aceite pela unidade destino | Criar papel/permissão da unidade destino; permitir aceitar/negar; registrar data/hora | Destino participa do fluxo formalmente |
 | 10 | P2 | Indicadores de regulação | Tempo médio, fila por tipo, taxa de devolução, gargalos | Dashboard de regulação disponível |
 | 11 | A definir com o RT | NIR — Núcleo Interno de Regulação (pedido do RT em 09/10/2026) | Função administrativa "NIR": acompanha as regulações da unidade e os documentos em falta (laudos de AIH pendentes, AIH solicitada sem decisão, rejeitada sem nova, documentos clínicos com falta). Definir: papel próprio ou permissão, o que vê, o que cobra de quem e como avisa | NIR vê, num painel, as regulações e os documentos em falta da unidade e cobra os responsáveis |
+| 12 | A definir com o RT | Papéis de rede como módulo (pedido do RT em 10/10/2026) | Papéis para fora da unidade: Secretaria (acompanha a rede), Regulação regional e Faturamento da secretaria. O super admin tem o módulo; o gestor decide se a rede dele usa ou não. Definir: o que cada papel vê (só agregados ou também paciente), a quais unidades tem acesso e como se liga à escala. Até lá, integração externa usa as chaves da API (tarefa 7 da Fase 3) | Papéis de rede ligados ou desligados pelo gestor, com escopo de unidades e auditoria |
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.
