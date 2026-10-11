@@ -542,6 +542,23 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
   - do RAC: manual de integração v2.0, manual de apoio às credenciais, mensagens de erro v3.0, modelo de informação, exemplos JSON e coleção do Postman;
   - do Sumário de Alta: manual, exemplo JSON, coleção do Postman e definições do validador.
 
+**Decisões do RT para a Fase 3, tarefa 9 — exportação estruturada (10/10/2026)**
+
+- **Quem exporta:** o gestor, só da sua unidade, e o super admin, de qualquer unidade. Toda exportação fica na auditoria: quem, quando, conjunto, período, filtros, formato, linhas e se saiu mascarada.
+- **Conjuntos:**
+  - atendimentos;
+  - leitos e internações;
+  - cadastro de pacientes;
+  - lista de documentos (tipo, data, autor e versão, sem o texto clínico).
+- **Dados que identificam o paciente** (nome, CPF, CNS, nascimento):
+  - saem **mascarados por padrão**;
+  - a versão completa exige motivo escrito (mínimo de 10 letras) e o código do segundo fator.
+- **Formatos:**
+  - CSV, com o padrão de `src/lib/csv.ts`;
+  - JSON simples, com os mesmos campos e nomes do contrato da API v1.
+- **Período:** até 12 meses por exportação.
+- **Tela:** nova, "Exportar dados", no menu do gestor e do super admin.
+
 **Andamento da Fase 3**
 
 | Tarefa | Situação | Onde |
