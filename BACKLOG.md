@@ -738,6 +738,17 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 - **Quem vê:** o regulador e o gestor da central veem a rede inteira. O gestor da unidade vê a rede e edita os serviços da própria unidade. Só números, sem nome de paciente.
 - **Ação:** o mapa é só consulta. A reserva do leito e o aceite ficam com a unidade destino (tarefa 9). Ao autorizar um pedido, o regulador vê o mapa ao lado para escolher o destino.
 
+**Decisões do RT para a Fase 4, tarefa 9 — aceite pela unidade destino (11/10/2026)**
+
+- **Fluxo:** como nos sistemas pesquisados (SUSfácil, CROSS, SISREG), a central autoriza para uma unidade da rede e o pedido fica "aguardando o destino". O destino aceita ("reserva confirmada") ou recusa com motivo. Na recusa, o pedido volta à fila da central, com o motivo, para a escolha de outro destino.
+- **Quem responde pelo destino:** o médico plantonista e o gestor da unidade destino. O autor (com o CRM, no caso do médico) e a hora ficam no histórico. O papel NIR fica para a tarefa 11.
+- **Reserva:** no pedido de leito, quem aceita escolhe um leito livre do destino, que fica reservado para o pedido pela reserva que o mapa de leitos já tem e aparece como reservado no mapa de vagas.
+- **Prazo de resposta:** 24 h, só como alerta, nos relógios da tarefa 7; a central ajusta. Vencido, avisa o destino e a central. Nada é automático. (A Deliberação CIB-SP 35/2022 usa 60 min com destinação automática; o RT escolheu 24 h e sem ação automática.)
+- **Recusa:** lista curta (sem leito ou vaga; sem o recurso ou a especialidade; perfil clínico fora do serviço; outro) e texto obrigatório, que a central e a origem veem.
+- **Chegada:** a origem marca "saiu" (em trânsito); o destino marca "chegou" (realizada, e a reserva fica pronta para ocupar o leito) ou "não chegou" (falta), com a hora.
+- **Destino fora da rede:** a central registra o aceite ou a recusa do serviço externo, com o nome de quem confirmou, a hora e o meio (telefone, sistema externo).
+- **Avisos (categoria Regulação):** o destino (médicos e gestor) recebe "pedido aguardando aceite"; a origem (solicitante e médico assistente) e o regulador recebem o aceite ou a recusa.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
