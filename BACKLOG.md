@@ -812,6 +812,35 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 
 ---
 
+## Portão antes da Fase 5 — teste de ponta a ponta do fluxo assistencial
+
+**Pedido do RT em 11/10/2026.** A Fase 5 só abre depois deste teste e da decisão do RT sobre as correções.
+
+- **Escopo:** fluxo assistencial completo (recepção, triagem, atendimento, observação, internação, regulação, transferência, enfermagem, técnico, farmácia, gestor) com uma coorte de 15 pacientes simulados, permissões negativas, auditoria, concorrência, datas, casos-limite de cadastro, documentos, notificações, evasão e alta a pedido, passagem de plantão, rascunhos, celular, desempenho e Hermes. Nenhuma feature nova.
+- **Ambiente (decisão do RT):** o teste roda no ambiente local (banco isolado, mesmas migrations), com uma conta de teste por papel e pelas telas e pelo banco. Os scripts ficam prontos para o RT repetir a coorte na homologação a cada release.
+- **Hermes:** só é testado se houver um gateway de teste; casos simulados não vão para o serviço da produção.
+- **Regra:** nada é corrigido durante o teste. Primeiro o relatório; o RT decide a ordem das correções.
+- **Entregáveis:** `produto/docs/teste-e2e/RELATORIO_E2E_AAAA-MM-DD.md` (defeitos por severidade, lacunas, cobertura), scripts e seeds reutilizáveis e as perguntas de produto para o RT.
+
+**Teste feito em 11/10/2026.** Relatório: `produto/docs/teste-e2e/RELATORIO_E2E_2026-10-11.md`; scripts: `scripts/e2e/`. Resultado: 340 passos, nenhum P0, 5 defeitos P1, 5 defeitos P2, 12 lacunas e 8 perguntas de produto.
+
+### Correções do portão — ordem aprovada pelo RT em 11/10/2026
+
+Uma tarefa por vez, cada uma em branch e PR próprios, com homologação antes da produção. A Fase 5 só abre depois da última.
+
+| # | Defeitos | Tarefa | Critério de aceite |
+|---|---|---|---|
+| 1 | P1-03, P1-02 | Fechar o que fica aberto no desfecho: óbito e transferência externa encerram as prescrições e somem da checagem; o óbito não é travado por exame sem resultado | Depois de óbito ou transferência externa, nenhum item do paciente aparece na fila de checagem; o óbito é registrado com exame pendente, que recebe o tratamento decidido pelo RT; prescrições ativas de internações já encerradas são corrigidas na produção |
+| 2 | Pergunta 2 | Reclassificação de risco pela enfermagem, conforme a decisão do RT | A regra do banco segue a definição da unidade ("classificação de risco é da enfermagem") ou a exceção decidida pelo RT |
+| 3 | P1-01 | Validar o CID no SOAP contra a CID-10 | O SOAP recusa CID inexistente com a mesma mensagem da regulação; levantamento dos CIDs inválidos já gravados entregue ao RT |
+| 4 | P1-05 | Tipo da internação quando a observação vira internação | A internação vinda da observação fica com o tipo de internação; as antigas são corrigidas na produção |
+| 5 | P1-04 | Ocupação por setor pelas internações abertas | O painel bate com as internações por setor atual, incluindo isolamento e UTI |
+| 6 | P2-05 | Trilha de leitura e impressão do pacote de alta pela equipe | Abrir e imprimir pela equipe gera registro em `log_acesso_prontuario` |
+| 7 | P2-01, P2-02 | Avisos de item devolvido pela farmácia e de leito liberado | O médico prescritor recebe o aviso da devolução; o NIR e a regulação interna recebem o aviso do leito liberado |
+| 8 | P2-04, P2-03 | Gêmeos distinguíveis na fila da triagem; barra inferior do enfermeiro no celular | A fila mostra um diferenciador; a barra cabe a 375 px |
+
+**Fora das correções:** as 12 lacunas do relatório aguardam a decisão do RT sobre a entrada no backlog. As que têm peso legal ou de segurança são medicação controlada (Portaria 344), declaração de óbito, registro de contenção, pulseira e cadastro de não identificado. O teste do anexo de arquivo fica para a homologação, com as contas de teste criadas pelo RT.
+
 ## Fase 5 — UBS, Faturamento e Escala Competitiva
 **Horizonte:** 180+ dias
 **Objetivo:** ampliar para rede completa e competir com sistemas maiores.
