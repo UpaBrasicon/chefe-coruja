@@ -10008,6 +10008,12 @@ export type Database = {
       regulacao_definir_prazos: { Args: { p_central: string; p_dados: Json }; Returns: Json }
       regulacao_prazos: { Args: { p_unidade: string }; Returns: Json }
       regulacao_sla_painel: { Args: { p_filtros?: Json; p_unidade: string }; Returns: Json }
+      regulacao_confirmar_servico: { Args: { p_id: string }; Returns: undefined }
+      regulacao_desativar_servico: { Args: { p_id: string }; Returns: undefined }
+      regulacao_mapa_vagas: { Args: { p_unidade: string }; Returns: Json }
+      regulacao_ofertar_setor: { Args: { p_setor: string; p_tipo_leito: string | null }; Returns: undefined }
+      regulacao_salvar_servico: { Args: { p_dados: Json; p_id: string | null; p_unidade: string }; Returns: string }
+      regulacao_setores_oferta: { Args: { p_unidade: string }; Returns: Json }
       regulacao_registrar_externo: { Args: { p_id: string; p_prioridade_central?: string | null; p_protocolo: string; p_sistema: string }; Returns: undefined }
       regulacao_solicitar: { Args: { p_dados: Json; p_paciente: string; p_unidade: string }; Returns: Json }
       regulacao_vinculos_paciente: { Args: { p_paciente: string }; Returns: Json }
