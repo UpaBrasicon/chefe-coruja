@@ -629,8 +629,12 @@ components:
         cid_principal: { type: [string, 'null'], description: CID-10 principal registrado no atendimento. }
         desfecho:
           type: [string, 'null']
-          enum: [alta, internacao, transferencia, evasao, obito, outro, null]
-        desfecho_em: { type: [string, 'null'], format: date-time }
+          description: |
+            Desfecho da porta. "alta" junta alta, alta após medicação e alta a pedido;
+            "observacao" é a ida para a observação da própria unidade; "cancelado" é o
+            atendimento aberto por engano. "outro" fica reservado para valores futuros.
+          enum: [alta, internacao, observacao, transferencia, evasao, obito, cancelado, outro, null]
+        desfecho_em: { type: [string, 'null'], format: date-time, description: 'Quando o desfecho foi registrado (ou o encerramento, se faltar).' }
 
     StatusLeito:
       type: string

@@ -1,11 +1,11 @@
 // node --experimental-strip-types --test src/lib/exportacao.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { CONJUNTOS, erroPeriodo, montarArquivo, nomeArquivo, type Contexto } from './exportacao.ts'
+import { CONJUNTOS, dataParaCsv, erroPeriodo, montarArquivo, nomeArquivo, type Contexto } from './exportacao.ts'
 
 const ctx: Contexto = {
   unidade: 'UPA Centro', conjunto: 'atendimentos', desde: '2026-10-01', ate: '2026-10-07', mascarado: true,
-  geradoEm: '2026-10-10T12:00:00Z',
+  geradoEm: '2026-10-10T12:00:00Z', fuso: 'America/Sao_Paulo',
 }
 const atendimento = {
   id: 'e1', paciente: { id: 'p1', nome: 'M. S. S.', cns: '***********7290' }, setor: 'PS', chegada_em: '2026-10-02T10:00:00Z',
@@ -21,7 +21,10 @@ test('exportação: CSV achata o paciente e a classificação, com contexto', ()
   assert.ok(linhas.includes('Dados do paciente;mascarados'))
   const cab = linhas.indexOf(CONJUNTOS.atendimentos.colunas.map(([r]) => r).join(';'))
   assert.ok(cab > 0)
-  assert.equal(linhas[cab + 1], 'e1;p1;M. S. S.;***********7290;PS;2026-10-02T10:00:00Z;encerrado;amarelo;2026-10-02T10:05:00Z;;J18.9;alta;2026-10-02T13:00:00Z')
+  // datas no horário de Brasília, no formato do Excel pt-BR
+  assert.equal(linhas[cab + 1], 'e1;p1;M. S. S.;***********7290;PS;02/10/2026 07:00:00;encerrado;amarelo;02/10/2026 07:05:00;;J18.9;alta;02/10/2026 10:00:00')
+  assert.ok(linhas.includes('Gerado em;10/10/2026 09:00:00'))
+  assert.ok(linhas.includes('Fuso das datas;America/Sao_Paulo'))
 })
 
 test('exportação: JSON guarda as linhas como vieram da API', () => {
@@ -53,4 +56,12 @@ test('exportação: período de até 12 meses', () => {
   assert.equal(erroPeriodo('2026-01-01', '2027-01-01'), 'O período vai até 12 meses.')
   assert.equal(erroPeriodo('2026-10-07', '2026-10-01'), 'O fim vem antes do início.')
   assert.equal(erroPeriodo('', '2026-10-01'), 'Informe o início e o fim.')
+})
+
+test('exportação: datas do CSV — data simples, ano mascarado e texto comum', () => {
+  assert.equal(dataParaCsv('1980-04-12', 'America/Sao_Paulo'), '12/04/1980')
+  assert.equal(dataParaCsv('1980', 'America/Sao_Paulo'), '1980')
+  assert.equal(dataParaCsv('2026-10-07T17:33:53.482296+00:00', 'America/Sao_Paulo'), '07/10/2026 14:33:53')
+  assert.equal(dataParaCsv('J18.9', 'America/Sao_Paulo'), 'J18.9')
+  assert.equal(dataParaCsv(2.5, 'America/Sao_Paulo'), 2.5)
 })
