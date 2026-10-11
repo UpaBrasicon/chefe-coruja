@@ -705,6 +705,10 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
   - na central: o regulador.
 - **Retirar:** um anexo enviado por engano sai da lista com motivo, mas continua guardado (guarda do prontuário). Quem retirou e o motivo ficam na auditoria.
 - **Quem abre e baixa:** quem vê o pedido (a origem e a central) e, pelo histórico do prontuário, o médico e o gestor. Toda visualização ou download fica no registro de acesso.
+- **Ajuste do teste na homologação (11/10/2026):**
+  - os anexos (arquivos e documentos do prontuário) já se escolhem na nova solicitação e sobem logo depois do envio;
+  - o que não subir fica avisado e pode ir pelo detalhe do pedido;
+  - na lista, cada pedido mostra que abre (seta e "Ver detalhes"), e o pedido recém-enviado já aparece aberto.
 
 **Andamento da Fase 4**
 
@@ -715,7 +719,7 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 | 3 — Priorização clínica | **Em produção** (11/10; migration `20261109000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/priorizacao`; migration `20261109000001_priorizacao_regulacao.sql`; teste `supabase/tests/fase4_priorizacao.sql` (19 OK); na tela `/regulacao`: "Definir prioridade" no detalhe (regulador), selo da prioridade efetiva com a proposta ao lado, marcadores de vulnerabilidade na solicitação e na fila, e o cartão "Critérios de prioridade da central" |
 | 4 — Aceite, recusa e devolução | **Em produção** (11/10; migration `20261110000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/decisao-regulacao`; migration `20261110000001_decisao_regulacao.sql`; teste `supabase/tests/fase4_decisao_regulacao.sql` (34 OK); na tela `/regulacao`: painel "Decisão da central" (autorizar, pergunta à origem, devolver, negar), resposta e "Corrigir e reenviar" na origem, e a categoria "Regulação" nos Avisos |
 | 5 — Histórico no prontuário | **Em produção** (11/10; migration `20261111000001` aplicada na produção antes do merge, com ok do RT). Com ela, os P0 da Fase 4 estão concluídos | Branch `fase4/historico-regulacao`; migration `20261111000001_historico_regulacao.sql`; teste `supabase/tests/fase4_historico_regulacao.sql` (12 OK); cartão "Regulações" (`src/components/regulacao/HistoricoRegulacao.tsx`) no Resumo do leito e no Prontuário completo, com os pedidos da rede (CPF/CNS e cadastro unificado), só para médico e gestor; abrir o detalhe registra o acesso na unidade do pedido |
-| 6 — Anexos e laudos | **Construída e conferida no local** (11/10). Falta: homologação, teste do RT e "ok produção" | Branch `fase4/anexos-regulacao`; migration `20261112000001_anexos_regulacao.sql` (bucket privado `regulacao`); teste `supabase/tests/fase4_anexos_regulacao.sql` (25 OK); `src/components/regulacao/AnexosRegulacao.tsx` no detalhe do pedido e no histórico do prontuário. O arquivo só fica legível depois de "abrir", que registra o acesso e libera a leitura por 2 min. No local, o envio de arquivo falha para qualquer bucket (o esquema de armazenamento é mais novo que o serviço local): o envio de verdade se confere na homologação |
+| 6 — Anexos e laudos | **Na homologação** (11/10), com o ajuste pedido no teste do RT (anexar já na nova solicitação). Falta: teste do RT e "ok produção" | Branch `fase4/anexos-regulacao`; migrations `20261112000001_anexos_regulacao.sql` (bucket privado `regulacao`) e `20261112000002_anexos_no_pedido.sql` (documentos do paciente para a nova solicitação); teste `supabase/tests/fase4_anexos_regulacao.sql` (27 OK); `src/components/regulacao/AnexosRegulacao.tsx` no detalhe do pedido e no histórico do prontuário. O arquivo só fica legível depois de "abrir", que registra o acesso e libera a leitura por 2 min. No local, o envio de arquivo falha para qualquer bucket (o esquema de armazenamento é mais novo que o serviço local): o envio de verdade se confere na homologação |
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.

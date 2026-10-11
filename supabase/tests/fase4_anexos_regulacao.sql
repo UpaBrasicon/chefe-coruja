@@ -2,7 +2,7 @@
 -- laudos da regulação. Cobre:
 -- - quem anexa (origem e regulador da central; enfermagem não) e com o pedido aberto;
 -- - arquivo: tipo, tamanho, caminho do próprio pedido, objeto no armazenamento;
--- - documento do prontuário do mesmo paciente;
+-- - documento do prontuário do mesmo paciente (também escolhido na nova solicitação);
 -- - limite de 10 anexos;
 -- - abrir registra o acesso e libera a leitura do arquivo por 2 min;
 -- - retirar com motivo, sem apagar; histórico e auditoria.
@@ -101,6 +101,14 @@ SELECT pg_temp.ok(pg_temp.v('a2') IS NOT NULL, 'regulador da central também ane
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.ok(jsonb_array_length(public.regulacao_documentos_anexaveis('2a000000-0000-4000-8000-0000000009d1')) = 1,
   'só os documentos do próprio paciente aparecem para anexar');
+-- migration 20261112000002: escolher os documentos já na nova solicitação
+SELECT pg_temp.ok(jsonb_array_length(public.regulacao_documentos_do_paciente('23000000-0000-4000-8000-0000000009d1')) = 1
+              AND NOT (public.regulacao_documentos_do_paciente('23000000-0000-4000-8000-0000000009d1')->0 ? 'conteudo'),
+  'nova solicitação lista os documentos do paciente, sem o texto');
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
+SELECT pg_temp.falha($$SELECT public.regulacao_documentos_do_paciente('23000000-0000-4000-8000-0000000009d1')$$,
+  'Acesso negado', 'enfermagem não lista documentos para a solicitação');
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.falha($$SELECT public.regulacao_anexar_documento('2a000000-0000-4000-8000-0000000009d1', '26000000-0000-4000-8000-0000000009d2')$$,
   'Documento não encontrado no prontuário deste paciente', 'documento de outro paciente recusado');
 INSERT INTO t SELECT 'a3', public.regulacao_anexar_documento('2a000000-0000-4000-8000-0000000009d1', '26000000-0000-4000-8000-0000000009d1')::text;
