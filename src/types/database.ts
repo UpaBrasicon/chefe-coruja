@@ -10003,6 +10003,7 @@ export type Database = {
       regulacao_documentos_anexaveis: { Args: { p_solicitacao: string }; Returns: Json }
       regulacao_registrar_anexo: { Args: { p_caminho: string; p_nome: string; p_solicitacao: string; p_tamanho: number; p_tipo_mime: string }; Returns: string }
       regulacao_retirar_anexo: { Args: { p_anexo: string; p_motivo: string }; Returns: undefined }
+      regulacao_documentos_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       regulacao_registrar_externo: { Args: { p_id: string; p_prioridade_central?: string | null; p_protocolo: string; p_sistema: string }; Returns: undefined }
       regulacao_solicitar: { Args: { p_dados: Json; p_paciente: string; p_unidade: string }; Returns: Json }
       regulacao_vinculos_paciente: { Args: { p_paciente: string }; Returns: Json }
