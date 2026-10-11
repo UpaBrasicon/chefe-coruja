@@ -159,6 +159,25 @@ function Campo({ id, rotulo, children, className }: { id?: string; rotulo: React
   )
 }
 
+/** Busca de terminologia em linha própria; escolhido o item, mostra o código e "Trocar". */
+function CampoTerminologia({ rotulo, tipo, escolhido, onEscolher, onLimpar }: {
+  rotulo: React.ReactNode; tipo: 'sigtap_procedimento' | 'cbo' | 'cid10'; escolhido: string
+  onEscolher: (codigo: string, rotulo: string) => void; onLimpar: () => void
+}) {
+  return (
+    <Campo rotulo={rotulo}>
+      {escolhido ? (
+        <div className="flex items-center gap-2 rounded-controle border border-fio bg-campo px-2 py-1.5">
+          <span className="min-w-0 flex-1 truncate text-tinta">{escolhido}</span>
+          <Button size="xs" variant="ghost" onClick={onLimpar}>Trocar</Button>
+        </div>
+      ) : (
+        <BuscaTerminologia tipo={tipo} onSelecionar={(r) => onEscolher(r.codigo, `${r.codigo} ${r.descricao}`)} />
+      )}
+    </Campo>
+  )
+}
+
 function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto }) {
   const qc = useQueryClient()
   // quem é médico e gestor na unidade solicita como médico (o banco decide igual)
@@ -289,26 +308,23 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
             )}
 
             {/* o que se pede */}
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Campo id="reg-tipo" rotulo="Tipo">
-                <select id="reg-tipo" className={SELECT} value={f.tipo} onChange={(e) => set('tipo', e.target.value as TipoSolicitacao)}>
-                  {(Object.keys(TIPOS) as TipoSolicitacao[]).map((k) => <option key={k} value={k}>{TIPOS[k]}</option>)}
-                </select>
-              </Campo>
-              <Campo rotulo={<>Procedimento (SIGTAP){f.tipo === 'leito' && ' — o da internação'}{procRotulo && <b className="ml-1 text-tinta">{procRotulo}</b>}</>} className="sm:col-span-2">
-                <BuscaTerminologia tipo="sigtap_procedimento" onSelecionar={(r) => { set('procedimento', r.codigo); setProcRotulo(`${r.codigo} ${r.descricao}`) }} />
-              </Campo>
-            </div>
+            <Campo id="reg-tipo" rotulo="Tipo" className="sm:max-w-xs">
+              <select id="reg-tipo" className={SELECT} value={f.tipo} onChange={(e) => set('tipo', e.target.value as TipoSolicitacao)}>
+                {(Object.keys(TIPOS) as TipoSolicitacao[]).map((k) => <option key={k} value={k}>{TIPOS[k]}</option>)}
+              </select>
+            </Campo>
+            <CampoTerminologia tipo="sigtap_procedimento" escolhido={procRotulo}
+              rotulo={<>Procedimento (SIGTAP){f.tipo === 'leito' && ' — o da internação'}</>}
+              onEscolher={(c, r) => { set('procedimento', c); setProcRotulo(r) }} onLimpar={() => { set('procedimento', ''); setProcRotulo('') }} />
             {f.tipo === 'consulta' && (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Campo id="reg-esp" rotulo="Especialidade">
+              <>
+                <Campo id="reg-esp" rotulo="Especialidade" className="sm:max-w-md">
                   <Input id="reg-esp" className="h-8" list="reg-especialidades" value={f.especialidade} onChange={(e) => set('especialidade', e.target.value)} />
                   <datalist id="reg-especialidades">{ESPECIALIDADES.map((e) => <option key={e} value={e} />)}</datalist>
                 </Campo>
-                <Campo rotulo={<>CBO da especialidade{cboRotulo && <b className="ml-1 text-tinta">{cboRotulo}</b>}</>}>
-                  <BuscaTerminologia tipo="cbo" onSelecionar={(r) => { set('cbo', r.codigo); setCboRotulo(`${r.codigo} ${r.descricao}`) }} />
-                </Campo>
-              </div>
+                <CampoTerminologia tipo="cbo" escolhido={cboRotulo} rotulo="CBO da especialidade"
+                  onEscolher={(c, r) => { set('cbo', c); setCboRotulo(r) }} onLimpar={() => { set('cbo', ''); setCboRotulo('') }} />
+              </>
             )}
             {leitoOuTransf && (
               <div className="grid gap-3 sm:grid-cols-3">
@@ -400,9 +416,8 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
             </div>
 
             {/* justificativa em blocos */}
-            <Campo rotulo={<>CID-10{cidRotulo && <b className="ml-1 text-tinta">{cidRotulo}</b>}</>}>
-              <BuscaTerminologia tipo="cid10" onSelecionar={(r) => { set('cid', r.codigo); setCidRotulo(`${r.codigo} ${r.descricao}`) }} />
-            </Campo>
+            <CampoTerminologia tipo="cid10" escolhido={cidRotulo} rotulo="CID-10"
+              onEscolher={(c, r) => { set('cid', c); setCidRotulo(r) }} onLimpar={() => { set('cid', ''); setCidRotulo('') }} />
             <Campo id="reg-quadro" rotulo="Quadro clínico (obrigatório)">
               <textarea id="reg-quadro" rows={4} className="rounded-controle border border-fio bg-campo px-2 py-1.5"
                 value={f.quadro_clinico} onChange={(e) => set('quadro_clinico', e.target.value)} />
