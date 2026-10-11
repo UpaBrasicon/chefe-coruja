@@ -656,6 +656,16 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
   - blocos obstétrico e de judicialização.
 - **Envio à RNDS no formato MIRA:** a tarefa 1 já guarda os dados. O envio entra como item da Fase 5C.
 
+**Decisões do RT para a Fase 4, tarefa 2 — fila regulada (11/10/2026)**
+
+- **Ordem:** por prioridade (emergência, urgência, prioritária e eletiva). Dentro de cada nível, quem espera há mais tempo vem primeiro. Os pedidos "não classificada" aparecem em destaque no topo, para o regulador classificar.
+- **Assumir:** o regulador clica em "Assumir" e o pedido passa a "em análise" com o nome dele. Os outros reguladores veem quem está com o pedido. Ele pode devolver o pedido à fila. Tudo fica no histórico.
+- **Filtros:**
+  - os do BACKLOG: tipo, prioridade, unidade de origem e status;
+  - os clínicos: caráter, tipo de leito e isolamento;
+  - busca por nome do paciente, nº da solicitação ou protocolo externo.
+- **Atualização:** automática a cada 30 s, com destaque para o que chegou e o tempo de espera ao vivo.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
