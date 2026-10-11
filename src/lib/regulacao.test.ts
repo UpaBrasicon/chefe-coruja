@@ -84,3 +84,12 @@ test('decisão: pedidos em decisão e data prevista', async () => {
   assert.equal(typeof dataHoraLocalParaIso('2026-10-11T18:30'), 'string')
   assert.equal(Object.keys(MOTIVOS_NEGACAO).length, 6)
 })
+
+test('anexos: tipo, tamanho, limite e caminho', async () => {
+  const { erroArquivo, caminhoAnexo } = await import('./regulacao.ts')
+  assert.equal(erroArquivo({ type: 'application/pdf', size: 1000 }, 0), null)
+  assert.equal(erroArquivo({ type: 'image/gif', size: 1000 }, 0), 'Envie PDF, JPG ou PNG.')
+  assert.equal(erroArquivo({ type: 'image/png', size: 11 * 1024 * 1024 }, 0), 'O arquivo vai até 10 MB.')
+  assert.equal(erroArquivo({ type: 'image/png', size: 10 }, 10), 'O pedido já tem 10 anexos. Retire um para incluir outro.')
+  assert.equal(caminhoAnexo('abc', 'Eletrocardiograma às 14h.pdf', 5), 'abc/5-Eletrocardiograma-as-14h.pdf')
+})

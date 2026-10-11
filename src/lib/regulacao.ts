@@ -239,3 +239,22 @@ export function dataHoraLocalParaIso(v: string): string | null {
   const d = new Date(v)
   return Number.isNaN(d.getTime()) ? null : d.toISOString()
 }
+
+// ── anexos (Fase 4, tarefa 6) ───────────────────────────────────────────────
+export const ANEXO_TIPOS = ['application/pdf', 'image/jpeg', 'image/png'] as const
+export const ANEXO_LIMITE_BYTES = 10 * 1024 * 1024
+export const ANEXO_MAXIMO = 10
+
+/** Confere o arquivo antes de enviar (o banco e o armazenamento conferem de novo). */
+export function erroArquivo(f: { type: string; size: number }, jaAnexados: number): string | null {
+  if (jaAnexados >= ANEXO_MAXIMO) return 'O pedido já tem 10 anexos. Retire um para incluir outro.'
+  if (!(ANEXO_TIPOS as readonly string[]).includes(f.type)) return 'Envie PDF, JPG ou PNG.'
+  if (f.size <= 0 || f.size > ANEXO_LIMITE_BYTES) return 'O arquivo vai até 10 MB.'
+  return null
+}
+
+/** Caminho no armazenamento: a pasta é o pedido; o nome sem acento nem espaço. */
+export function caminhoAnexo(solicitacaoId: string, nome: string, agora: number): string {
+  const seguro = nome.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9._-]+/g, '-').slice(-120)
+  return `${solicitacaoId}/${agora}-${seguro}`
+}

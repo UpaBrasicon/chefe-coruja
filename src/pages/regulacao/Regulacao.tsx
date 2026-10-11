@@ -19,6 +19,7 @@ import { Send, Waypoints } from 'lucide-react'
 import * as React from 'react'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
+import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 import { Badge } from '@/components/ui/badge'
@@ -621,6 +622,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
       </dl>
       {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
       <BlocosDecisao s={s} />
+      <AnexosRegulacao solicitacaoId={s.id} />
       {!central && s.origem_pode_responder && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={recarregar} />}
       {!central && s.origem_pode_responder && s.status === 'devolvida' && <Reenviar s={s} aoFim={recarregar} />}
       {central && podeRegistrarExterno && emDecisao(s.status) && <PainelDecisao s={s} centralId={unidadeId} aoFim={recarregar} />}
