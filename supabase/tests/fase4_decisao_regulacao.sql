@@ -100,7 +100,8 @@ SELECT pg_temp.falha(format('SELECT public.regulacao_autorizar(%L, %L, %L)', pg_
 SELECT pg_temp.falha(format('SELECT public.regulacao_autorizar(%L, %L, NULL, %L)', pg_temp.id(1), 'externo', 'X'),
   'Informe o serviço de destino', 'destino externo precisa de nome');
 SELECT public.regulacao_autorizar(pg_temp.id(1), 'rede', '21000000-0000-4000-8000-0000000009a2');
-SELECT pg_temp.ok(pg_temp.campo(1, 'status') = 'autorizada' AND pg_temp.campo(1, 'destino_unidade_id') = '21000000-0000-4000-8000-0000000009a2'
+-- desde a tarefa 9 (migration 20261115000001), autorizar manda o pedido ao destino, que aceita ou recusa
+SELECT pg_temp.ok(pg_temp.campo(1, 'status') = 'aguardando_destino' AND pg_temp.campo(1, 'destino_unidade_id') = '21000000-0000-4000-8000-0000000009a2'
               AND pg_temp.campo(1, 'autorizada_por') = '10000000-0000-4000-8000-000000000006' AND pg_temp.campo(1, 'data_prevista') IS NULL,
   'autorizada só com o destino; transporte e data ficam opcionais');
 SELECT public.regulacao_autorizar(pg_temp.id(2), 'externo', NULL, 'Hospital Estadual X', 'ambulancia_avancada', now() + interval '2 hours', 'Leito 12 reservado');

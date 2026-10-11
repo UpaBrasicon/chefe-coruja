@@ -9,7 +9,7 @@ export type TipoSolicitacao = 'consulta' | 'exame' | 'leito' | 'transferencia'
 export type Carater = 'eletivo' | 'urgencia'
 export type Prioridade = 'emergencia' | 'urgencia' | 'prioritaria' | 'eletiva' | 'nao_classificada'
 export type DestinoTipo = 'rede' | 'externo' | 'a_definir'
-export type StatusRegulacao = 'rascunho' | 'enviada' | 'em_analise' | 'pendencia' | 'devolvida' | 'autorizada' | 'agendada'
+export type StatusRegulacao = 'rascunho' | 'enviada' | 'em_analise' | 'pendencia' | 'devolvida' | 'aguardando_destino' | 'autorizada' | 'agendada'
   | 'em_transito' | 'realizada' | 'falta' | 'negada' | 'cancelada' | 'excluida'
 
 export const TIPOS: Record<TipoSolicitacao, string> = {
@@ -49,7 +49,7 @@ export const TRANSPORTES: Record<string, string> = {
 
 export const STATUS: Record<StatusRegulacao, string> = {
   rascunho: 'Rascunho', enviada: 'Enviada', em_analise: 'Em análise', pendencia: 'Pendência', devolvida: 'Devolvida',
-  autorizada: 'Autorizada', agendada: 'Agendada', em_transito: 'Em trânsito', realizada: 'Realizada', falta: 'Falta',
+  aguardando_destino: 'Aguardando o destino', autorizada: 'Autorizada', agendada: 'Agendada', em_transito: 'Em trânsito', realizada: 'Realizada', falta: 'Falta',
   negada: 'Negada', cancelada: 'Cancelada', excluida: 'Excluída',
 }
 
@@ -265,20 +265,26 @@ export type Sla = {
   evolucao: { ultima_em: string; prazo_h: number; vence_em: string; atrasada: boolean; limite_h: number; risco_cancelamento: boolean } | null
   atrasado_central: boolean
   atrasado_origem: boolean
+  /** Tarefa 9: espera pelo aceite do destino. Ausente em respostas antigas. */
+  destino?: { desde: string; prazo_h: number; vence_em: string; atrasado: boolean } | null
+  atrasado_destino?: boolean
 }
 export type NivelFila = 'emergencia' | 'urgencia' | 'prioritaria' | 'eletiva'
 export const NIVEIS_FILA: NivelFila[] = ['emergencia', 'urgencia', 'prioritaria', 'eletiva']
 export type Prazos = {
   central_id: string; fila: Record<NivelFila, number | null>
-  evolucao_h: number; pendencia_h: number; sem_evolucao_h: number
+  evolucao_h: number; pendencia_h: number; sem_evolucao_h: number; destino_h: number
   ajustado: boolean; atualizado_em: string | null; atualizado_por: string | null
 }
 /** Formulário dos prazos: texto, como digitado. Fila vazia = sem prazo. */
-export type FormPrazos = { fila: Record<NivelFila, string>; evolucao_h: string; pendencia_h: string; sem_evolucao_h: string }
+export type FormPrazos = { fila: Record<NivelFila, string>; evolucao_h: string; pendencia_h: string; sem_evolucao_h: string; destino_h: string }
 
 export function prazosParaForm(p: Prazos): FormPrazos {
   const fila = Object.fromEntries(NIVEIS_FILA.map((k) => [k, p.fila[k] == null ? '' : String(p.fila[k])])) as Record<NivelFila, string>
-  return { fila, evolucao_h: String(p.evolucao_h), pendencia_h: String(p.pendencia_h), sem_evolucao_h: String(p.sem_evolucao_h) }
+  return {
+    fila, evolucao_h: String(p.evolucao_h), pendencia_h: String(p.pendencia_h), sem_evolucao_h: String(p.sem_evolucao_h),
+    destino_h: String(p.destino_h ?? 24),
+  }
 }
 
 const inteiro = (v: string) => (/^\d+$/.test(v.trim()) ? Number(v.trim()) : NaN)
@@ -294,6 +300,8 @@ export function errosPrazos(f: FormPrazos): string[] {
   if (!(evol >= 1 && evol <= 168)) erros.push('Evolução: de 1 a 168 horas.')
   if (!(pend >= 1 && pend <= 72)) erros.push('Resposta à pendência: de 1 a 72 horas.')
   if (!(sem >= 2 && sem <= 720) || !(sem > evol)) erros.push('Sem evolução: até 720 horas e maior que o prazo da evolução.')
+  const dest = inteiro(f.destino_h)
+  if (!(dest >= 1 && dest <= 168)) erros.push('Resposta do destino: de 1 a 168 horas.')
   return erros
 }
 
@@ -301,6 +309,7 @@ export function prazosParaEnvio(f: FormPrazos) {
   return {
     fila: Object.fromEntries(NIVEIS_FILA.map((k) => [k, f.fila[k].trim() ? inteiro(f.fila[k]) : null])),
     evolucao_h: inteiro(f.evolucao_h), pendencia_h: inteiro(f.pendencia_h), sem_evolucao_h: inteiro(f.sem_evolucao_h),
+    destino_h: inteiro(f.destino_h),
   }
 }
 
@@ -324,6 +333,11 @@ export function alertasSla(sla: Sla | null | undefined, agoraMs: number): Alerta
     a.push(sla.pendencia.atrasada
       ? { texto: `Resposta à central vencida (${sla.pendencia.prazo_h} h)`, tom: 'critico' }
       : { texto: `Responder à central até ${hora(sla.pendencia.vence_em)}`, tom: 'atencao' })
+  }
+  if (sla.destino) {
+    a.push(sla.destino.atrasado
+      ? { texto: `Destino sem resposta (${sla.destino.prazo_h} h)`, tom: 'critico' }
+      : { texto: `Destino responde até ${hora(sla.destino.vence_em)}`, tom: 'neutro' })
   }
   if (sla.evolucao) {
     const e = sla.evolucao
@@ -366,4 +380,19 @@ export function servicoParaEnvio(f: FormServico) {
     nome: f.nome.trim(), tipo: f.tipo, situacao: f.situacao, procedimento: f.procedimento.trim() || null,
     vagas: f.vagas.trim() || null, observacao: f.observacao.trim() || null,
   }
+}
+
+// ── aceite pela unidade destino (Fase 4, tarefa 9) ──────────────────────────
+export type MotivoRecusaDestino = 'sem_vaga' | 'sem_recurso' | 'perfil_incompativel' | 'outro'
+export const MOTIVOS_RECUSA_DESTINO: Record<MotivoRecusaDestino, string> = {
+  sem_vaga: 'Sem leito ou vaga', sem_recurso: 'Sem o recurso ou a especialidade',
+  perfil_incompativel: 'Perfil clínico fora do serviço', outro: 'Outro',
+}
+export type MeioConfirmacao = 'telefone' | 'sistema_externo' | 'presencial' | 'outro'
+export const MEIOS_CONFIRMACAO: Record<MeioConfirmacao, string> = {
+  telefone: 'Telefone', sistema_externo: 'Sistema externo', presencial: 'Presencial', outro: 'Outro',
+}
+/** O pedido está com o destino: esperando aceite ou esperando a chegada. */
+export function esperandoChegada(status: StatusRegulacao): boolean {
+  return status === 'autorizada' || status === 'agendada' || status === 'em_transito'
 }
