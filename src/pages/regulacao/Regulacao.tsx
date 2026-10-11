@@ -18,6 +18,9 @@
 // • Mapa de vagas (tarefa 8): na central e para o gestor da unidade, que
 //   oferta os setores e informa os serviços; ao lado da autorização
 //   (src/components/regulacao/MapaVagas.tsx).
+// • Aceite pelo destino (tarefa 9): o destino aceita ou recusa e marca a
+//   chegada; a origem marca a saída; a central registra o destino de fora
+//   (src/components/regulacao/DestinoRegulacao.tsx).
 // Migration 20261107000001_regulacao_solicitacao.sql; src/lib/regulacao.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -26,6 +29,7 @@ import * as React from 'react'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
+import { AcoesDestino, BlocoDestino, DestinoExterno, RecebidosDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
 import { MapaVagas, OfertaSetores } from '@/components/regulacao/MapaVagas'
 import { PainelSla, PrazosCentral, PrazosDoPedido, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
@@ -55,7 +59,7 @@ type Contexto = {
   central: Ref | null; sou_central: boolean; pode_solicitar: boolean; sou_regulador: boolean; sou_super_admin: boolean
   unidades_rede: Ref[]
 }
-type Solicitacao = {
+type Solicitacao = Omit<PedidoDestino, 'destino_tipo' | 'destino_unidade' | 'destino_externo'> & {
   id: string; numero: number; status: StatusRegulacao; tipo: TipoSolicitacao; carater: Carater; modalidade: string
   prioridade: Prioridade; prioridade_central: string | null
   prioridade_regulador: Prioridade | null; prioridade_regulador_por: string | null; prioridade_regulador_em: string | null
@@ -133,6 +137,8 @@ export default function Regulacao() {
             <PainelSla unidadeId={unidadeId} central={false}
               detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central={false} podeRegistrarExterno={false} />} />
             <Lista unidadeId={unidadeId} central={false} podeRegistrarExterno={false} abrir={recemEnviada} />
+            <RecebidosDestino unidadeId={unidadeId}
+              detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central={false} podeRegistrarExterno={false} />} />
             {souGestorDaUnidade && (
               <>
                 <MapaVagas unidadeId={unidadeId} />
@@ -685,6 +691,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
     void qc.invalidateQueries({ queryKey: ['regulacao-lista', unidadeId] })
     void qc.invalidateQueries({ queryKey: ['regulacao-fila', unidadeId] })
     void qc.invalidateQueries({ queryKey: ['regulacao-sla', unidadeId] })
+    void qc.invalidateQueries({ queryKey: ['regulacao-destino', unidadeId] })
   }
   const priorizar = useMutation({
     mutationFn: async () => {
@@ -713,7 +720,8 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
   if (d.error || !d.data) return <Erro texto={d.error ? (d.error as Error).message : 'Não encontrada.'} />
   const s = d.data
   const destino = s.destino_tipo === 'rede' ? s.destino_unidade?.nome : s.destino_tipo === 'externo' ? `${s.destino_externo} (fora da rede)` : 'A definir pela regulação'
-  const cancelavel = !central && ['rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida'].includes(s.status)
+  const cancelavel = !central && s.origem_pode_responder
+    && ['rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida', 'aguardando_destino', 'autorizada', 'agendada'].includes(s.status)
   return (
     <div className="mt-2 flex flex-col gap-2 rounded-md border border-fio bg-campo p-3">
       <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-2">
@@ -748,6 +756,10 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
       </dl>
       {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
       <BlocosDecisao s={s} />
+      <BlocoDestino s={s} />
+      <AcoesDestino s={s} aoFim={recarregar} />
+      {!central && <SaidaOrigem s={s} aoFim={recarregar} />}
+      {central && podeRegistrarExterno && <DestinoExterno s={s} aoFim={recarregar} />}
       <PrazosDoPedido id={s.id} sla={s.sla} tempos={s.tempos ?? []} evolucoes={s.evolucoes ?? []}
         podeEvoluir={!central && !!s.pode_evoluir} aoFim={recarregar} />
       <AnexosRegulacao solicitacaoId={s.id} />

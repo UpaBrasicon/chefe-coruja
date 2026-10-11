@@ -97,13 +97,14 @@ test('prazos (SLA): formulário, validação e selos', async () => {
   const { alertasSla, errosPrazos, prazosParaEnvio, prazosParaForm } = await import('./regulacao.ts')
   const form = prazosParaForm({
     central_id: 'c', fila: { emergencia: 30, urgencia: 60, prioritaria: null, eletiva: null },
-    evolucao_h: 12, pendencia_h: 3, sem_evolucao_h: 72, ajustado: false, atualizado_em: null, atualizado_por: null,
+    evolucao_h: 12, pendencia_h: 3, sem_evolucao_h: 72, destino_h: 24, ajustado: false, atualizado_em: null, atualizado_por: null,
   })
   assert.equal(form.fila.prioritaria, '')
   assert.deepEqual(errosPrazos(form), [])
   assert.deepEqual(prazosParaEnvio(form), {
-    fila: { emergencia: 30, urgencia: 60, prioritaria: null, eletiva: null }, evolucao_h: 12, pendencia_h: 3, sem_evolucao_h: 72,
+    fila: { emergencia: 30, urgencia: 60, prioritaria: null, eletiva: null }, evolucao_h: 12, pendencia_h: 3, sem_evolucao_h: 72, destino_h: 24,
   })
+  assert.deepEqual(errosPrazos({ ...form, destino_h: '200' }), ['Resposta do destino: de 1 a 168 horas.'])
   assert.equal(errosPrazos({ ...form, sem_evolucao_h: '12' }).length, 1)
   assert.equal(errosPrazos({ ...form, fila: { ...form.fila, urgencia: '0' } }).length, 1)
   assert.equal(errosPrazos({ ...form, pendencia_h: '1,5' }).length, 1)
@@ -137,4 +138,17 @@ test('mapa de vagas: formulário do serviço', async () => {
   assert.deepEqual(errosServico({ ...tc, vagas: '-1' }), ['Vagas: número de 0 a 9999, ou vazio.'])
   assert.deepEqual(servicoParaEnvio({ ...tc, vagas: '', observacao: '  ' }),
     { nome: 'Tomografia', tipo: 'exame', situacao: 'restrito', procedimento: '0206010079', vagas: null, observacao: null })
+})
+
+test('aceite pelo destino: selo do prazo e espera da chegada', async () => {
+  const { alertasSla, esperandoChegada, STATUS } = await import('./regulacao.ts')
+  const agora = Date.parse('2026-10-11T12:00:00Z')
+  const base = { fila: { prazo_min: null, central_seg: 0, correndo: false, atrasado: false }, pendencia: null, evolucao: null,
+    atrasado_central: false, atrasado_origem: false }
+  assert.deepEqual(alertasSla({ ...base, destino: { desde: '2026-10-10T10:00:00Z', prazo_h: 24, vence_em: '2026-10-11T10:00:00Z', atrasado: true } }, agora),
+    [{ texto: 'Destino sem resposta (24 h)', tom: 'critico' }])
+  assert.equal(alertasSla({ ...base, destino: { desde: '2026-10-11T10:00:00Z', prazo_h: 24, vence_em: '2026-10-12T10:00:00Z', atrasado: false } }, agora)[0].tom, 'neutro')
+  assert.equal(esperandoChegada('em_transito'), true)
+  assert.equal(esperandoChegada('aguardando_destino'), false)
+  assert.equal(STATUS.aguardando_destino, 'Aguardando o destino')
 })

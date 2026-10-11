@@ -10014,6 +10014,13 @@ export type Database = {
       regulacao_ofertar_setor: { Args: { p_setor: string; p_tipo_leito: string | null }; Returns: undefined }
       regulacao_salvar_servico: { Args: { p_dados: Json; p_id: string | null; p_unidade: string }; Returns: string }
       regulacao_setores_oferta: { Args: { p_unidade: string }; Returns: Json }
+      regulacao_destino_aceitar: { Args: { p_id: string; p_leito?: string | null; p_observacao?: string | null }; Returns: Json }
+      regulacao_destino_lista: { Args: { p_unidade: string }; Returns: Json }
+      regulacao_destino_recusar: { Args: { p_id: string; p_motivo: string; p_texto: string }; Returns: Json }
+      regulacao_leitos_destino: { Args: { p_id: string }; Returns: Json }
+      regulacao_marcar_chegada: { Args: { p_chegou: boolean; p_id: string; p_observacao?: string | null }; Returns: Json }
+      regulacao_marcar_saida: { Args: { p_id: string }; Returns: Json }
+      regulacao_registrar_resposta_externa: { Args: { p_aceita: boolean; p_id: string; p_meio: string; p_motivo?: string | null; p_quem: string; p_texto?: string | null }; Returns: Json }
       regulacao_registrar_externo: { Args: { p_id: string; p_prioridade_central?: string | null; p_protocolo: string; p_sistema: string }; Returns: undefined }
       regulacao_solicitar: { Args: { p_dados: Json; p_paciente: string; p_unidade: string }; Returns: Json }
       regulacao_vinculos_paciente: { Args: { p_paciente: string }; Returns: Json }
