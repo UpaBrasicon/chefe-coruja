@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Anexos e laudos da regulação (Fase 4, tarefa 6; decisões do RT de 11/10/2026).
 //
-// • Arquivo PDF, JPG ou PNG (até 10 MB, 10 por pedido), ou documento já emitido
+// • Arquivo PDF, JPG ou PNG (até 10 MB, sem teto por pedido), ou documento já emitido
 //   no prontuário do paciente.
 // • Anexam a origem (solicitante, médico assistente, gestor) e o regulador da
 //   central, com o pedido em aberto. Retirar pede motivo; o anexo fica guardado.
@@ -47,7 +47,7 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
 
   async function enviar(arquivo: File) {
     setErro(null)
-    const problema = erroArquivo(arquivo, total)
+    const problema = erroArquivo(arquivo)
     if (problema) return setErro(problema)
     setEnviando(true)
     try {
@@ -91,9 +91,9 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
   return (
     <div className="flex flex-col gap-2 rounded-md border border-fio bg-superficie p-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos ({total}/10)</span>
+        <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos ({total})</span>
         {l.retirados > 0 && <span className="text-rotulo text-tinta-sussurro">{l.retirados} retirado(s), guardado(s)</span>}
-        {l.pode_anexar && total < 10 && (
+        {l.pode_anexar && (
           <>
             <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-marca">
               <input type="file" accept={ANEXO_TIPOS.join(',')} className="sr-only" disabled={enviando}

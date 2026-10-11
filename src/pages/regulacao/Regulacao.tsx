@@ -32,7 +32,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import {
   CARATER, FORMULARIO_VAZIO, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS, TIPOS_LEITO, TRANSPORTES,
-  ANEXO_MAXIMO, ANEXO_TIPOS, MOTIVOS_NEGACAO, VULNERABILIDADES, caminhoAnexo, dadosParaEnvio, dataHoraLocalParaIso, ehNeonato, emDecisao, faltasFormulario,
+  ANEXO_TIPOS, MOTIVOS_NEGACAO, VULNERABILIDADES, caminhoAnexo, dadosParaEnvio, dataHoraLocalParaIso, ehNeonato, emDecisao, faltasFormulario,
   filtrosParaEnvio, formatarEspera, marcadoresPelaIdade,
   erroArquivo, novosDesde, prioridadeEfetiva, resumoPedido,
   type Carater, type DestinoTipo, type FiltrosFila, type Formulario, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
@@ -254,12 +254,11 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
   const totalAnexos = arquivos.length + docsEscolhidos.length
   function incluirArquivos(lista: FileList | null) {
     setErroAnexo(null)
-    let n = totalAnexos
     const novos: File[] = []
     for (const f of Array.from(lista ?? [])) {
-      const problema = erroArquivo(f, n)
+      const problema = erroArquivo(f)
       if (problema) { setErroAnexo(`${f.name}: ${problema}`); break }
-      novos.push(f); n++
+      novos.push(f)
     }
     setArquivos((x) => [...x, ...novos])
   }
@@ -519,14 +518,12 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
             {/* anexos: escolhidos aqui, enviados junto com o pedido */}
             <div className="flex flex-col gap-2 rounded-md border border-fio p-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos (opcional) {totalAnexos}/{ANEXO_MAXIMO}</span>
-                {totalAnexos < ANEXO_MAXIMO && (
-                  <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-marca">
-                    <input type="file" multiple accept={ANEXO_TIPOS.join(',')} className="sr-only"
-                      onChange={(e) => { incluirArquivos(e.target.files); e.target.value = '' }} />
-                    <Paperclip className="size-3.5" aria-hidden /> Anexar arquivo (PDF, JPG, PNG — até 10 MB)
-                  </label>
-                )}
+                <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos (opcional){totalAnexos > 0 ? ` · ${totalAnexos}` : ''}</span>
+                <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-marca">
+                  <input type="file" multiple accept={ANEXO_TIPOS.join(',')} className="sr-only"
+                    onChange={(e) => { incluirArquivos(e.target.files); e.target.value = '' }} />
+                  <Paperclip className="size-3.5" aria-hidden /> Anexar arquivo (PDF, JPG, PNG — até 10 MB cada)
+                </label>
               </div>
               {arquivos.length > 0 && (
                 <ul className="flex flex-col gap-1">
@@ -545,7 +542,6 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
                   {documentos.data!.map((d) => (
                     <label key={d.id} className="flex flex-wrap items-center gap-2">
                       <input type="checkbox" className="size-4" checked={docsEscolhidos.includes(d.id)}
-                        disabled={!docsEscolhidos.includes(d.id) && totalAnexos >= ANEXO_MAXIMO}
                         onChange={(e) => setDocsEscolhidos((x) => e.target.checked ? [...x, d.id] : x.filter((y) => y !== d.id))} />
                       <span className="text-tinta">{d.tipo.replace(/_/g, ' ')}{d.numero ? ` nº ${d.numero}` : ''}</span>
                       <span className="text-rotulo text-tinta-sussurro">versão {d.versao} · {d.autor ?? '—'} · {fmtDataHora(d.emitido_em)}</span>
