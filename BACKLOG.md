@@ -710,6 +710,22 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
   - o que não subir fica avisado e pode ir pelo detalhe do pedido;
   - na lista, cada pedido mostra que abre (seta e "Ver detalhes"), e o pedido recém-enviado já aparece aberto.
 
+**Decisões do RT para a Fase 4, tarefa 7 — painel de SLA (11/10/2026)**
+
+- **Relógios:**
+  - na origem, os três da pesquisa, só como alerta e sem ação automática: evolução do pedido a cada 12 h, resposta à pendência da central em 3 h e 72 h sem evolução (fontes: Nota Técnica SES-MG 15/2008 e Deliberação CIB-SP 35/2022, em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`);
+  - na central, o tempo do pedido esperando decisão, com prazo por nível de prioridade;
+  - o detalhe do pedido mostra o tempo gasto em cada status.
+- **Tipos:** 12 h e 72 h valem para leito e transferência, como nas fontes. As 3 h da pendência valem para todos os tipos.
+- **Prazo da fila por prioridade:** não há regra nacional. Cada central cadastra o prazo de cada nível. Começa vazio, e um nível sem prazo só mostra o tempo de espera.
+- **Valores dos relógios da origem:** começam em 12 h, 3 h e 72 h. A central ajusta para a rede inteira, junto com o prazo da fila, e a mudança fica auditada.
+- **Pausa:** o prazo da fila conta só o tempo com a central. Com o pedido em pendência ou devolvido, corre o relógio de 3 h da origem.
+- **Atualizar evolução:** ação nova no detalhe do pedido para a origem (solicitante, médico assistente e gestor): texto da evolução e sinais vitais opcionais. Fica no histórico, a central vê e o relógio de 12 h e 72 h recomeça.
+- **Alerta:**
+  - selo "atrasado" na fila e no painel;
+  - aviso na categoria Regulação para quem deve agir: a origem (solicitante e médico assistente) nos relógios dela, os reguladores no prazo da fila.
+- **Quem vê o painel:** o regulador vê todos os pedidos da rede; a origem (médico e gestor) vê os da própria unidade, com o que está atrasado do lado dela.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
