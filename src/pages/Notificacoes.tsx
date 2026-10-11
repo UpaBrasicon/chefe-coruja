@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bell, CalendarClock, Clock, MessageSquare, ShieldCheck, TriangleAlert, Users, type LucideIcon } from 'lucide-react'
+import { Bell, CalendarClock, Clock, MessageSquare, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -16,7 +16,7 @@ import type { MinhaNotificacao } from '@/types/database'
 // por aviso e "Marcar todas como lidas", com desfazer que volta no servidor
 // (marcar_avisos_lidos / reabrir_avisos). A categoria sai do tipo do aviso.
 
-type Categoria = 'Turno' | 'Observação' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Outros'
+type Categoria = 'Turno' | 'Observação' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'Outros'
 
 function categoria(tipo: string): Categoria {
   if (/^(noite|manha|tarde|turno)_/.test(tipo)) return 'Turno'
@@ -24,6 +24,7 @@ function categoria(tipo: string): Categoria {
   if (tipo.startsWith('solic_') || tipo.startsWith('vaga_')) return 'Escala'
   if (tipo.startsWith('cand_')) return 'Candidatura'
   if (tipo.startsWith('chat_')) return 'Mensagem'
+  if (tipo.startsWith('reg_')) return 'Regulação'
   return 'Outros'
 }
 
@@ -33,9 +34,10 @@ const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: { to: s
   Escala: { icone: CalendarClock, cor: 'text-tinta-apoio bg-trilha', acao: { to: '/agenda', rotulo: 'Ver escala' } },
   Candidatura: { icone: Users, cor: 'text-tinta-apoio bg-trilha', acao: { to: '/agenda', rotulo: 'Ver vagas' } },
   Mensagem: { icone: MessageSquare, cor: 'text-tinta-apoio bg-trilha' },
+  Regulação: { icone: Waypoints, cor: 'text-acao bg-acao/10', acao: { to: '/regulacao', rotulo: 'Abrir Regulação' } },
   Outros: { icone: Bell, cor: 'text-tinta-apoio bg-trilha' },
 }
-const FILTROS = ['Todos', 'Não lidos', 'Turno', 'Observação', 'Escala', 'Candidatura'] as const
+const FILTROS = ['Todos', 'Não lidos', 'Turno', 'Observação', 'Escala', 'Candidatura', 'Regulação'] as const
 
 function haQuanto(iso: string) {
   const min = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)

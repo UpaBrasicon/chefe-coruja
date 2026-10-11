@@ -675,6 +675,16 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
   - Eles aparecem como selos na fila e no detalhe, sem pontuação. O regulador decide.
 - **A origem fica sabendo** pela lista e pelo histórico: a solicitação mostra a prioridade do regulador e o motivo. Os avisos ativos entram na tarefa 4.
 
+**Decisões do RT para a Fase 4, tarefa 4 — aceite, recusa e devolução (11/10/2026)**
+
+- **Decisões do regulador:**
+  - **autorizar**: a vaga fica reservada ou o procedimento autorizado. Só o destino é obrigatório (unidade da rede ou serviço de fora). Transporte, data e hora e observação são opcionais. O aceite da unidade de destino é a tarefa 9;
+  - **negar**, com motivo de uma lista (sem indicação clínica, sem oferta na rede, fora do escopo da central, duplicidade, paciente já atendido ou óbito, outro) e texto obrigatório;
+  - **devolver à origem** para corrigir e reenviar. No reenvio, o pedido **mantém a posição** na fila: a espera conta desde o pedido original;
+  - **pendência**: uma pergunta à origem sem tirar o pedido da fila. A origem responde e o pedido segue.
+- **Quem responde na origem:** o solicitante, o médico assistente ou o gestor, sempre com o próprio login.
+- **Avisos:** cada decisão gera um aviso na tela "Avisos" para o solicitante e para o médico assistente. Vale para autorizada, negada, devolvida, pendência e mudança de prioridade. Sem WhatsApp por enquanto.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
@@ -682,6 +692,7 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 | 1 — Solicitação de regulação | **Em produção** (11/10; migration aplicada na produção antes do merge, com ok do RT). O PR #78 tinha entrado antes da hora e foi revertido (PR #80); a tarefa voltou com o modelo revisto pela pesquisa | Branch `fase4/regulacao-solicitacao`; migration `20261107000001_regulacao_solicitacao.sql`; teste `supabase/tests/fase4_regulacao_solicitacao.sql` (40 OK); `src/lib/regulacao.ts` (+ teste); tela `/regulacao` (origem, central e super admin); pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md` |
 | 2 — Fila regulada | **Em produção** (11/10; migration `20261108000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/fila-regulada`; migration `20261108000001_fila_regulada.sql`; teste `supabase/tests/fase4_fila_regulada.sql` (26 OK); fila na tela `/regulacao` da central. O regulador da central entra pela escala, como os outros papéis: a central precisa de um setor (ex.: "Regulação") e dos plantões dos reguladores |
 | 3 — Priorização clínica | **Em produção** (11/10; migration `20261109000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/priorizacao`; migration `20261109000001_priorizacao_regulacao.sql`; teste `supabase/tests/fase4_priorizacao.sql` (19 OK); na tela `/regulacao`: "Definir prioridade" no detalhe (regulador), selo da prioridade efetiva com a proposta ao lado, marcadores de vulnerabilidade na solicitação e na fila, e o cartão "Critérios de prioridade da central" |
+| 4 — Aceite, recusa e devolução | **Em produção** (11/10; migration `20261110000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/decisao-regulacao`; migration `20261110000001_decisao_regulacao.sql`; teste `supabase/tests/fase4_decisao_regulacao.sql` (34 OK); na tela `/regulacao`: painel "Decisão da central" (autorizar, pergunta à origem, devolver, negar), resposta e "Corrigir e reenviar" na origem, e a categoria "Regulação" nos Avisos |
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.
