@@ -402,7 +402,7 @@ Regras:
 As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nessa ordem. A homologação recebe a última branch, que contém todas.
 
 ## Fase 3 — SUS, Produção e Integrações Mínimas
-**Fase atual desde 09/10/2026** (aberta depois do aceite da Fase 2).
+**Encerrada em 10/10/2026** por decisão do RT. As tarefas de 1 a 10 estão concluídas; a tarefa 11 aguarda contrato. Evidências em `produto/docs/fase3/ENCERRAMENTO-FASE3.md`.
 **Horizonte:** 90-120 dias
 **Objetivo:** começar a transformar dados assistenciais em produção SUS e maturidade técnica.
 
@@ -573,6 +573,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 8 — Checklist da RNDS | **Pronto** (10/10; PR #73): documento para executar quando as credenciais chegarem | Branch `fase3/checklist-rnds`; `docs/rnds/CHECKLIST.md` (portfólios, pendências externas e internas, formulário, IP, autenticação, evidência, divergências do código com o oficial, perguntas para o chamado); manuais oficiais em `produto/docs/pesquisa/rnds-oficial/` |
 | 9 — Exportação estruturada | **Em produção** (10/10; testada pelo RT na homologação; migrations `20261105000001` e `20261105000002` aplicadas na produção antes do merge, com ok do RT) | Branch `fase3/exportacao`; migration `20261105000001_exportacao_estruturada.sql`; teste `supabase/tests/fase3_exportacao.sql` (39 OK); `src/lib/exportacao.ts` (+ teste); tela `/exportar` (gestor e super admin); a confirmação da versão completa usa o código digitado (nova coluna `codigo_em`), não o dispositivo confiável; roteiro em `produto/docs/fase3/roteiro-teste-fase3.md`. Ajustes do teste do RT (10/10): datas do CSV no formato pt-BR e no fuso local; desfecho "observacao" e "cancelado" com o próprio nome (antes saíam como "internacao" e "outro", também na API) e `desfecho_em` com o encerramento quando falta (migration `20261105000002`) |
 | 10 — Playbook de implantação | **Em produção** (10/10; homologação testada pelo RT; migration `20261106000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase3/implantacao`; roteiro `docs/implantacao/PLAYBOOK.md` e seis roteiros de treinamento em `docs/implantacao/treinamento/`; migration `20261106000001_implantacao.sql`; teste `supabase/tests/fase3_implantacao.sql` (36 OK); `src/lib/implantacao.ts` (+ teste); tela `/implantacao` (implantador e gestor) com itens por fase, conferências automáticas, treinamento e aceite conjunto |
+| 11 — Standby em segunda região | **Aguardando contrato** (decisão do RT em 10/10/2026). Não entra até um contrato exigir; aí sobe para P1. Tem custo mensal: um segundo projeto no Supabase, mais a replicação | Nada construído. Quando entrar: projeto Supabase noutra região com replicação, critério de promoção, runbook de failover e de failback, simulado com RTO e RPO medidos |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
@@ -588,6 +589,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 ---
 
 ## Fase 4 — Regulação MVP e Plataforma de Rede
+**Fase atual desde 10/10/2026** (aberta depois do encerramento da Fase 3).
 **Horizonte:** 120-180 dias
 **Objetivo:** criar diferencial estratégico de rede, sem tentar fazer UBS completa ainda.
 
