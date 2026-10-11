@@ -190,3 +190,32 @@ export function novosDesde(anteriores: Set<string> | null, atuais: string[]): Se
   if (!anteriores) return new Set()
   return new Set(atuais.filter((id) => !anteriores.has(id)))
 }
+
+// ── priorização clínica (Fase 4, tarefa 3) ──────────────────────────────────
+export type Vulnerabilidade = 'gestante' | 'idoso' | 'crianca' | 'pcd' | 'situacao_rua' | 'oncologico' | 'judicializado'
+
+/** Selos, sem pontuação (Portaria GM/MS 9.262/2025: risco, tempo e vulnerabilidade). */
+export const VULNERABILIDADES: Record<Vulnerabilidade, string> = {
+  gestante: 'Gestante', idoso: 'Idoso (60+)', crianca: 'Criança', pcd: 'Pessoa com deficiência',
+  situacao_rua: 'Situação de rua', oncologico: 'Oncológico', judicializado: 'Judicializado',
+}
+
+/** Prioridade que vale na fila: a do regulador, se houver; senão a proposta. */
+export function prioridadeEfetiva(s: { prioridade: Prioridade; prioridade_regulador?: Prioridade | null }): Prioridade {
+  return s.prioridade_regulador ?? s.prioridade
+}
+
+/**
+ * Marcadores que a idade já indica, para vir marcados (o solicitante pode
+ * desmarcar): idoso a partir de 60 anos; criança até 13 anos, 11 meses e 29
+ * dias (definição pediátrica da unidade).
+ */
+export function marcadoresPelaIdade(nascimento: string | null | undefined, hoje: string): Vulnerabilidade[] {
+  if (!nascimento) return []
+  const [a, m, d] = nascimento.split('-').map(Number)
+  const [ha, hm, hd] = hoje.split('-').map(Number)
+  const anos = ha - a - (hm < m || (hm === m && hd < d) ? 1 : 0)
+  if (anos >= 60) return ['idoso']
+  if (anos < 14 && anos >= 0) return ['crianca']
+  return []
+}
