@@ -1,5 +1,10 @@
 # Implantação da API para integradores (Fase 3, tarefa 7)
 
+**Situação em 10/10/2026:**
+- Implantada na homologação (`api-homolog.chefecoruja.com.br`) e na produção (`api.chefecoruja.com.br`).
+- Teste de ponta a ponta com chave real na homologação: 200, com o IP real registrado.
+- Na produção, conferidos o 401 (sem chave e com chave inexistente) e o IP real registrado.
+
 Ordem: homologação primeiro, depois a produção, que pede o "ok produção" do RT.
 
 Quem faz cada passo:
@@ -20,12 +25,17 @@ Quem faz cada passo:
 ## 2. Segredo da borda (RT)
 
 O segredo prova à função que a requisição passou pelo Cloudflare. Só assim o
-IP real do integrador vale para a lista de IPs da chave.
+IP real do integrador, que o Worker manda em `X-Coruja-IP-Cliente`, vale para
+a lista de IPs da chave. O `CF-Connecting-IP` não serve, porque o Supabase
+também está atrás do Cloudflare, que reescreve esse cabeçalho com o IP do
+Worker.
 
 1. Gere um valor aleatório e guarde-o no cofre de senhas:
    ```bash
    openssl rand -hex 32
    ```
+   No PowerShell sem openssl, use
+   `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
    Use um valor diferente para a homologação e para a produção.
 2. Grave o segredo na função:
    ```bash
@@ -45,10 +55,16 @@ recusada até o segredo existir.
 2. **Variáveis do Worker** (Settings → Variables):
    - `ORIGEM` (texto): `https://saqjrjtrkzkswsxxvdxn.supabase.co/functions/v1/api` (homologação: `https://kswurfyxxvfydpjfrivy.supabase.co/functions/v1/api`);
    - `BORDA_SEGREDO` (tipo **Secret**): o mesmo valor do passo 2.
-3. **Domínio:**
-   - Worker → Settings → Domains & Routes → Add → Custom Domain.
-   - `api.chefecoruja.com.br` (homologação: `api-homolog.chefecoruja.com.br`).
-   - O Cloudflare cria o registro DNS e o certificado.
+3. **Domínio.** Em 10/10/2026 o "Custom domain" do Worker não achou a zona
+   (mesmo estando na mesma conta). O caminho que funcionou foi pelo domínio:
+   - Em chefecoruja.com.br → DNS → Records → Add record:
+     - tipo `AAAA`;
+     - nome `api` (homologação: `api-homolog`);
+     - endereço `100::`;
+     - **Proxied** (nuvem laranja).
+   - Em chefecoruja.com.br → Workers Routes → Add route:
+     - `api.chefecoruja.com.br/*` → `chefe-coruja-api`;
+     - homologação: `api-homolog.chefecoruja.com.br/*` → `chefe-coruja-api-homolog`.
 4. **Regra "Fora do Brasil"** (Security → WAF → Custom rules, regra 2):
    acrescente `"api.chefecoruja.com.br" "api-homolog.chefecoruja.com.br"` à
    lista de hosts. Integrador fora do Brasil precisa de exceção por IP.
@@ -84,6 +100,6 @@ recusada até o segredo existir.
 
 ## Reverter
 
-- Para desligar a API: apague o Custom Domain do Worker. Os endereços param de
-  responder e o resto do sistema não muda.
+- Para desligar a API: apague a Workers Route e o registro DNS `api` (ou
+  `api-homolog`). Os endereços param de responder e o resto do sistema não muda.
 - Para cortar um integrador: revogue a chave dele. Vale na hora.

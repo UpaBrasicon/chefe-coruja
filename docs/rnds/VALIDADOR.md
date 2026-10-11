@@ -43,6 +43,17 @@ O script executa o JAR com o Bundle como entrada e reporta o retorno
 - `scripts/interop/__snapshots__/rac-com-evasao.json`
 - `scripts/interop/__snapshots__/sumario-alta-para-casa.json`
 
+## Arquivo baixado (10/10/2026)
+
+O aplicativo oficial foi baixado com o ok do RT, mas **não foi executado**:
+
+- Arquivo: `produto/docs/pesquisa/rnds-oficial/validador/SOA-RNDS_ValidadorLocal_Aplicativo.zip`
+  (65,7 MB; SHA-256 em `SHA256SUMS.txt`), origem
+  https://servicos-datasus.saude.gov.br/assets/data/SOA-RNDS_ValidadorLocal_Aplicativo.zip .
+- É Java, montado em 2020 sobre o HAPI FHIR 5.1.0, sem assinatura conferível.
+- As definições de cada modelo vêm à parte (`sa/` e `ria/` na mesma pasta).
+- Rodar só com o ok do RT, numa máquina separada e sem dado real.
+
 ## Status atual
 
 - [ ] Validador baixado para `tools/rnds/validador-rnds.jar`

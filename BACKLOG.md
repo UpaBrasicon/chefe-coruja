@@ -527,6 +527,38 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
   - Edge Function do Supabase atrás de `api.chefecoruja.com.br`.
   - O DNS e as regras do Cloudflare são da conta do RT: Claude prepara a configuração e o passo a passo, e o RT aplica.
 
+**Decisões do RT para a Fase 3, tarefa 8 — checklist da RNDS (10/10/2026)**
+
+- **Escopo:** quatro modelos.
+  - RAC, para o atendimento na porta.
+  - Sumário de Alta, para a internação.
+  - RIA, para a unidade que vacina.
+  - REL, para a unidade que faz exame laboratorial.
+- **Saída com IP fixo:** o envio à RNDS sai pelo VPS que já existe (o da biblioteca), que faz o papel de intermediário com o certificado. Supabase e Vercel não têm IP de saída fixo.
+- **Credencial:** cada gestor pede a credencial da sua unidade. O Chefe Coruja aparece como o sistema integrador. Não se pede uma credencial única para a rede.
+- **Identificação:** segue a recomendação do DATASUS. Vai o CPF do paciente e do profissional; o CNS só entra quando falta o CPF.
+- **Profissional sem CBO no CNES:** o sistema não envia em nome dele e avisa o gestor. A RNDS recusa esse envio (erro EHR-ERR906).
+- **Documentos oficiais:** baixados com o ok do RT em 10/10/2026, para `produto/docs/pesquisa/rnds-oficial/`, com o SHA-256 de cada arquivo:
+  - do RAC: manual de integração v2.0, manual de apoio às credenciais, mensagens de erro v3.0, modelo de informação, exemplos JSON e coleção do Postman;
+  - do Sumário de Alta: manual, exemplo JSON, coleção do Postman e definições do validador.
+
+**Decisões do RT para a Fase 3, tarefa 9 — exportação estruturada (10/10/2026)**
+
+- **Quem exporta:** o gestor, só da sua unidade, e o super admin, de qualquer unidade. Toda exportação fica na auditoria: quem, quando, conjunto, período, filtros, formato, linhas e se saiu mascarada.
+- **Conjuntos:**
+  - atendimentos;
+  - leitos e internações;
+  - cadastro de pacientes;
+  - lista de documentos (tipo, data, autor e versão, sem o texto clínico).
+- **Dados que identificam o paciente** (nome, CPF, CNS, nascimento):
+  - saem **mascarados por padrão**;
+  - a versão completa exige motivo escrito (mínimo de 10 letras) e o código do segundo fator.
+- **Formatos:**
+  - CSV, com o padrão de `src/lib/csv.ts`;
+  - JSON simples, com os mesmos campos e nomes do contrato da API v1.
+- **Período:** até 12 meses por exportação.
+- **Tela:** nova, "Exportar dados", no menu do gestor e do super admin.
+
 **Andamento da Fase 3**
 
 | Tarefa | Situação | Onde |
@@ -537,7 +569,9 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 4 — BPA consolidado | **Em produção** (10/10; PR #67; migration e carga do SIGTAP aplicadas antes do merge, com ok do RT) | Branch `fase3/bpa-c`; migration `20261103000004_bpa_c.sql`; teste `supabase/tests/fase3_bpa_c.sql`. O SIGTAP passou a ter instrumento, CBO por procedimento e quantidade máxima (gerador `scripts/terminologia/gerar-sigtap-sql.ts`), e os valores foram corrigidos para reais. Na tela: destino de cada linha (BPA-I, BPA-C ou fora) com motivo, e "sempre BPA-C" por código |
 | 5 — APAC | **Em produção** (10/10; PRs #69 e #70; migration aplicada antes do merge, com ok do RT; aba própria na internação) | Branch `fase3/apac`; migration `20261104000001_apac.sql`; teste `supabase/tests/fase3_apac.sql`; tela `/apac` (regulador, faturamento, gestor); solicitação no atendimento da porta (aba Procedimentos) e na internação (aba AIH); órgão emissor em Faturamento › Configuração |
 | 6 — Documentação da API | **Pronta** (contrato v1 validado no CI) | Branch `fase3/api-doc`. `docs/api/openapi.yaml` (OpenAPI 3.1, validado por `npm run api:lint` no CI), `docs/api/index.html` (página para o integrador), `docs/api/catalogo-rpc.md` (485 RPCs internas, `npm run api:catalogo`) e `docs/api/README.md`. A implementação é a tarefa 7 |
-| 7 — API segura | **Construída e conferida no local** (função respondendo com chave, escopo, IP, limite e erros do contrato; tela de chaves); falta homologação, Cloudflare (RT), teste do RT e "ok produção" | Branch `fase3/api-segura`; migration `20261104000002_api_integradores.sql`; teste `supabase/tests/fase3_api_integradores.sql`; Edge Function `supabase/functions/api`; tela `/integracoes`; passo a passo `docs/api/implantacao.md`; Worker `infra/cloudflare/api-worker.js` |
+| 7 — API segura | **Em produção** (10/10; PR #72): homologação testada de ponta a ponta com chave real; produção com migration, função e Cloudflare (Workers, DNS, WAF BR e rate limit) | Branch `fase3/api-segura`; migration `20261104000002_api_integradores.sql`; teste `supabase/tests/fase3_api_integradores.sql`; Edge Function `supabase/functions/api`; tela `/integracoes`; passo a passo `docs/api/implantacao.md`; Worker `infra/cloudflare/api-worker.js` |
+| 8 — Checklist da RNDS | **Pronto** (10/10; PR #73): documento para executar quando as credenciais chegarem | Branch `fase3/checklist-rnds`; `docs/rnds/CHECKLIST.md` (portfólios, pendências externas e internas, formulário, IP, autenticação, evidência, divergências do código com o oficial, perguntas para o chamado); manuais oficiais em `produto/docs/pesquisa/rnds-oficial/` |
+| 9 — Exportação estruturada | **Construída e conferida no local** (10/10). Falta: homologação, teste do RT e "ok produção" | Branch `fase3/exportacao`; migration `20261105000001_exportacao_estruturada.sql`; teste `supabase/tests/fase3_exportacao.sql` (39 OK); `src/lib/exportacao.ts` (+ teste); tela `/exportar` (gestor e super admin); a confirmação da versão completa usa o código digitado (nova coluna `codigo_em`), não o dispositivo confiável; roteiro em `produto/docs/fase3/roteiro-teste-fase3.md` |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
@@ -569,6 +603,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 9 | P1 | Aceite pela unidade destino | Criar papel/permissão da unidade destino; permitir aceitar/negar; registrar data/hora | Destino participa do fluxo formalmente |
 | 10 | P2 | Indicadores de regulação | Tempo médio, fila por tipo, taxa de devolução, gargalos | Dashboard de regulação disponível |
 | 11 | A definir com o RT | NIR — Núcleo Interno de Regulação (pedido do RT em 09/10/2026) | Função administrativa "NIR": acompanha as regulações da unidade e os documentos em falta (laudos de AIH pendentes, AIH solicitada sem decisão, rejeitada sem nova, documentos clínicos com falta). Definir: papel próprio ou permissão, o que vê, o que cobra de quem e como avisa | NIR vê, num painel, as regulações e os documentos em falta da unidade e cobra os responsáveis |
+| 12 | A definir com o RT | Papéis de rede como módulo (pedido do RT em 10/10/2026) | Papéis para fora da unidade: Secretaria (acompanha a rede), Regulação regional e Faturamento da secretaria. O super admin tem o módulo; o gestor decide se a rede dele usa ou não. Definir: o que cada papel vê (só agregados ou também paciente), a quais unidades tem acesso e como se liga à escala. Até lá, integração externa usa as chaves da API (tarefa 7 da Fase 3) | Papéis de rede ligados ou desligados pelo gestor, com escopo de unidades e auditoria |
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.
@@ -742,3 +777,4 @@ Pedidos e achados que o responsável decidiu deixar para **depois de terminar es
 | 09/10/2026 | **Classificação de pacientes pediátricos.** O Fugulin é instrumento do adulto e não se usa na criança. Existe um instrumento pediátrico validado, de Dini AP, Fugulin FMT, Veríssimo MLÓR, Guirardello EB (Rev Esc Enferm USP 2011;45(3):575-80, [doi:10.1590/s0080-62342011000300004](https://doi.org/10.1590/s0080-62342011000300004)), com as mesmas cinco categorias. Avaliar a fonte e a licença antes de entrar. | Fase 2, tarefa 5 (Fugulin), pesquisa no PubMed | Guardado (o RT decide) |
 | 09/10/2026 | **Recarregar a página sem conexão leva ao login.** A fila não se perde, mas a enfermagem fica sem o sistema até a rede voltar, porque o perfil é lido do servidor a cada carga (`AuthContext.loadPerfil`). Alternativa: guardar no aparelho, cifrado, o perfil do último login e manter o modo sem conexão depois da recarga, com as mesmas regras de 2 h e 20 min. Até lá, o plano de contingência diz para não recarregar durante a queda. | Fase 2, tarefa 7 (teste do offline) | Guardado (achado do teste; o RT decide) |
 | 08/10/2026 | **Tela "Prontuário completo" (leitura) ruim de layout e de lógica.** `src/pages/prontuario/ProntuarioLeitura.tsx` lista episódios, documentos, observação, prescrições e classificações de forma solta. Redesenhar a leitura do prontuário (linha do tempo por atendimento, o que é de cada episódio junto, navegação) e revisar a lógica de quais blocos aparecem. | Teste da tarefa 8 (Fase 1) | RT: guardar para depois do backlog |
+| 10/10/2026 | **Modelo pronto do Power BI sobre a API.** Consultas em Power Query (M) com a paginação por cursor resolvida, para leitos, atendimentos e produção SUS, e um passo a passo de 1 página para a secretaria. Cuidados: a atualização não é ao vivo (até 8 vezes por dia no Pro); a regra "fora do Brasil" do Cloudflare bloqueia o Power BI hospedado fora do país, então usar o gateway local num computador no Brasil ou abrir exceção para os IPs da Microsoft; usar uma chave só com os recursos do painel. | Conversa sobre a API (Fase 3, tarefa 7) | RT: guardar para depois do backlog |

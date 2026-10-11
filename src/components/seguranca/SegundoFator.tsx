@@ -296,7 +296,11 @@ export function ConfirmarSegundoFator({
  * Segundo fator por EMAIL: pede o envio do código, confere, e opcionalmente
  * guarda o dispositivo como confiável (pula o email nos próximos logins).
  */
-export function ConfirmarSegundoFatorEmail({ onPronto }: { onPronto: () => void }) {
+export function ConfirmarSegundoFatorEmail({ onPronto, permitirConfiar = true }: {
+  onPronto: () => void
+  /** false na confirmação de ação sensível: ali não se guarda o aparelho */
+  permitirConfiar?: boolean
+}) {
   const [etapa, setEtapa] = React.useState<'pedir' | 'codigo'>('pedir')
   const [codigo, setCodigo] = React.useState('')
   const [confiar, setConfiar] = React.useState(false)
@@ -378,10 +382,12 @@ export function ConfirmarSegundoFatorEmail({ onPronto }: { onPronto: () => void 
       <p className="text-apoio text-tinta-apoio">Enviamos um código ao seu email. Digite abaixo.</p>
       {/* antes do campo: colar ou digitar o 6º dígito já confere o código, então a
           escolha de confiar no aparelho precisa vir primeiro */}
-      <label className="flex items-center gap-2 text-apoio text-tinta-apoio">
-        <input type="checkbox" checked={confiar} onChange={(e) => setConfiar(e.target.checked)} className="size-4" />
-        Confiar neste dispositivo por 30 dias (não pedir o código de novo aqui)
-      </label>
+      {permitirConfiar && (
+        <label className="flex items-center gap-2 text-apoio text-tinta-apoio">
+          <input type="checkbox" checked={confiar} onChange={(e) => setConfiar(e.target.checked)} className="size-4" />
+          Confiar neste dispositivo por 30 dias (não pedir o código de novo aqui)
+        </label>
+      )}
       <CampoCodigo
         valor={codigo}
         onChange={(v) => {
