@@ -559,6 +559,26 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 - **Período:** até 12 meses por exportação.
 - **Tela:** nova, "Exportar dados", no menu do gestor e do super admin.
 
+**Decisões do RT para a Fase 3, tarefa 10 — playbook de implantação (10/10/2026)**
+
+- **Formato:** um roteiro escrito e uma tela "Implantação" no sistema.
+  - A tela mostra os itens da unidade.
+  - O que o sistema consegue conferir sozinho (setores, leitos, usuários, escala) ele marca como feito.
+- **Quem conduz:** o implantador da equipe Chefe Coruja (super admin), junto com o gestor. Cada item tem responsável.
+- **Unidades:**
+  - UPA 24h, pronto-socorro e hospital pequeno.
+  - Ambulatório e policlínica entram como seção prevista, marcada "a construir": o módulo ambulatorial ainda não existe.
+- **Fases:**
+  - preparação, de D-30 a D-7: cadastros, homologação e treinamento;
+  - virada no D0, com o plano de contingência;
+  - operação assistida, de D+1 a D+14;
+  - encerramento no D+30, com indicadores e aceite.
+- **Treinamento:**
+  - um roteiro curto por papel (recepção, enfermagem, médico, farmácia, faturamento, gestor), feito na homologação com dados de teste;
+  - a tela registra quem foi treinado, em qual papel e quando, e mostra quem falta;
+  - o acesso não depende do treinamento.
+- **Virada:** com os itens obrigatórios concluídos, o implantador e o gestor registram o aceite: quem, quando e as pendências aceitas. O sistema não trava nada.
+
 **Andamento da Fase 3**
 
 | Tarefa | Situação | Onde |
