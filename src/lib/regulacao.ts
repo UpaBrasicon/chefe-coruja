@@ -1,90 +1,144 @@
-// Solicitação de regulação (Fase 4, tarefa 1; decisões do RT de 10/10/2026).
+// Solicitação de regulação (Fase 4, tarefa 1; decisões do RT de 10/10/2026,
+// revistas em 11/10/2026 depois da pesquisa dos sistemas de regulação:
+// produto/docs/pesquisa/regulacao-modelos-sistemas.md).
 // Rótulos e a conferência do formulário antes de enviar; o banco confere de
-// novo (migration 20261107000001_regulacao_solicitacao.sql).
+// novo (migration 20261107000001_regulacao_solicitacao.sql). Todo pedido
+// guarda os campos do MIRA (Portaria GM/MS 9.262/2025).
 
 export type TipoSolicitacao = 'consulta' | 'exame' | 'leito' | 'transferencia'
-export type Prioridade = 'emergencia' | 'urgencia' | 'prioritaria' | 'eletiva'
+export type Carater = 'eletivo' | 'urgencia'
+export type Prioridade = 'emergencia' | 'urgencia' | 'prioritaria' | 'eletiva' | 'nao_classificada'
 export type DestinoTipo = 'rede' | 'externo' | 'a_definir'
-export type StatusRegulacao = 'enviada' | 'em_analise' | 'aceita' | 'recusada' | 'devolvida' | 'cancelada' | 'concluida'
+export type StatusRegulacao = 'rascunho' | 'enviada' | 'em_analise' | 'pendencia' | 'devolvida' | 'autorizada' | 'agendada'
+  | 'em_transito' | 'realizada' | 'falta' | 'negada' | 'cancelada' | 'excluida'
 
 export const TIPOS: Record<TipoSolicitacao, string> = {
   consulta: 'Consulta', exame: 'Exame', leito: 'Leito', transferencia: 'Transferência',
 }
 
-/** Ordem de gravidade: emergência primeiro. */
+export const CARATER: Record<Carater, string> = { eletivo: 'Eletivo', urgencia: 'Urgência' }
+
+/** Ordem de gravidade. Correspondência: SISREG vermelho/amarelo/verde/azul; e-SUS muito alta/alta/média/baixa. */
 export const PRIORIDADES: Record<Prioridade, { rotulo: string; descricao: string; tom: 'critico' | 'atencao' | 'info' | 'neutro' }> = {
-  emergencia: { rotulo: 'Emergência', descricao: 'Risco de vida imediato', tom: 'critico' },
-  urgencia: { rotulo: 'Urgência', descricao: 'Precisa de resolução em horas', tom: 'atencao' },
-  prioritaria: { rotulo: 'Prioritária', descricao: 'Não urgente, mas não pode esperar a fila comum', tom: 'info' },
-  eletiva: { rotulo: 'Eletiva', descricao: 'Pode aguardar a fila', tom: 'neutro' },
+  emergencia: { rotulo: '1 · Emergência', descricao: 'Risco de vida imediato (SISREG vermelho, e-SUS muito alta)', tom: 'critico' },
+  urgencia: { rotulo: '2 · Urgência', descricao: 'Resolução em horas (SISREG amarelo, e-SUS alta)', tom: 'atencao' },
+  prioritaria: { rotulo: '3 · Prioritária', descricao: 'Não urgente, mas não pode esperar a fila comum (SISREG verde, e-SUS média)', tom: 'info' },
+  eletiva: { rotulo: '4 · Eletiva', descricao: 'Pode aguardar a fila (SISREG azul, e-SUS baixa)', tom: 'neutro' },
+  nao_classificada: { rotulo: 'Não classificada', descricao: 'O regulador da central classifica', tom: 'neutro' },
 }
 
 export const TIPOS_LEITO: Record<string, string> = {
-  enfermaria: 'Enfermaria', uti_adulto: 'UTI adulto', uti_pediatrica: 'UTI pediátrica', uti_neonatal: 'UTI neonatal',
-  semi_intensiva: 'Semi-intensiva', isolamento: 'Isolamento', obstetrico: 'Obstétrico', psiquiatria: 'Psiquiatria', outro: 'Outro',
+  clinico: 'Clínico', cirurgico: 'Cirúrgico', pediatrico: 'Pediátrico', obstetrico: 'Obstétrico', psiquiatrico: 'Psiquiátrico',
+  uti_adulto: 'UTI adulto', uti_pediatrica: 'UTI pediátrica', uti_neonatal: 'UTI neonatal',
+  uci_adulto: 'UCI adulto', uci_pediatrica: 'UCI pediátrica', uci_neonatal: 'UCI neonatal',
+  uti_queimados: 'UTI de queimados', unidade_coronariana: 'Unidade coronariana', outro: 'Outro',
 }
 
+export const INTERNACAO_PSIQUIATRICA: Record<string, string> = {
+  voluntaria: 'Voluntária', involuntaria: 'Involuntária', compulsoria: 'Compulsória',
+}
+
+export const ISOLAMENTOS: Record<string, string> = { contato: 'Contato', goticula: 'Gotícula', aerossol: 'Aerossol' }
+
+/** Portaria 2.048/2002: A sanitário, B básica, D avançada ("UTI móvel"), E aéreo, F embarcação. */
 export const TRANSPORTES: Record<string, string> = {
-  ambulancia_basica: 'Ambulância básica (USB)', ambulancia_avancada: 'Ambulância avançada (USA)', uti_movel: 'UTI móvel',
-  transporte_sanitario: 'Transporte sanitário', aereo: 'Aéreo', meios_proprios: 'Meios próprios',
+  transporte_sanitario: 'Transporte sanitário (A)', ambulancia_basica: 'Ambulância básica — USB (B)',
+  ambulancia_avancada: 'Ambulância avançada — USA / UTI móvel (D)', aereo: 'Aéreo (E)', embarcacao: 'Embarcação (F)',
+  meios_proprios: 'Meios próprios',
 }
 
 export const STATUS: Record<StatusRegulacao, string> = {
-  enviada: 'Enviada', em_analise: 'Em análise', aceita: 'Aceita', recusada: 'Recusada',
-  devolvida: 'Devolvida', cancelada: 'Cancelada', concluida: 'Concluída',
+  rascunho: 'Rascunho', enviada: 'Enviada', em_analise: 'Em análise', pendencia: 'Pendência', devolvida: 'Devolvida',
+  autorizada: 'Autorizada', agendada: 'Agendada', em_transito: 'Em trânsito', realizada: 'Realizada', falta: 'Falta',
+  negada: 'Negada', cancelada: 'Cancelada', excluida: 'Excluída',
 }
 
 export type Formulario = {
   tipo: TipoSolicitacao
-  especialidade: string
   procedimento: string
+  especialidade: string
+  cbo: string
   tipo_leito: string
+  internacao_psiquiatrica: string
+  isolamento: boolean
+  isolamento_tipo: string
   transporte: string
+  incubadora: '' | 'sim' | 'nao'
   destino_tipo: DestinoTipo
   destino_unidade_id: string
   destino_externo: string
+  carater: Carater | ''
   prioridade: Prioridade | ''
   cid: string
-  justificativa: string
+  quadro_clinico: string
+  tempo_evolucao: string
+  sinais_vitais: string
+  exames: string
+  medicacoes: string
+  hipotese: string
+  telefone_contato: string
 }
 
 export const FORMULARIO_VAZIO: Formulario = {
-  tipo: 'leito', especialidade: '', procedimento: '', tipo_leito: '', transporte: '',
-  destino_tipo: 'a_definir', destino_unidade_id: '', destino_externo: '', prioridade: '', cid: '', justificativa: '',
+  tipo: 'leito', procedimento: '', especialidade: '', cbo: '', tipo_leito: '', internacao_psiquiatrica: '',
+  isolamento: false, isolamento_tipo: '', transporte: '', incubadora: '',
+  destino_tipo: 'a_definir', destino_unidade_id: '', destino_externo: '', carater: '', prioridade: '', cid: '',
+  quadro_clinico: '', tempo_evolucao: '', sinais_vitais: '', exames: '', medicacoes: '', hipotese: '', telefone_contato: '',
 }
 
 /** O que falta preencher, na ordem do formulário (vazio = pode enviar). */
-export function faltasFormulario(f: Formulario): string[] {
+export function faltasFormulario(f: Formulario, ctx: { neonato?: boolean; semDocumento?: boolean; naoIdentificado?: boolean } = {}): string[] {
   const faltas: string[] = []
-  if (f.tipo === 'consulta' && !f.especialidade.trim()) faltas.push('especialidade')
-  if (f.tipo === 'exame' && !f.procedimento.trim()) faltas.push('procedimento do SIGTAP')
+  if (ctx.semDocumento && !ctx.naoIdentificado) faltas.push('CNS/CPF do paciente ou a marca de não identificado')
+  if (!f.procedimento.trim()) faltas.push('procedimento do SIGTAP')
+  if (f.tipo === 'consulta' && (!f.especialidade.trim() || !f.cbo.trim())) faltas.push('especialidade (CBO)')
   if (f.tipo === 'leito' && !f.tipo_leito) faltas.push('tipo de leito')
+  if (f.tipo_leito === 'psiquiatrico' && !f.internacao_psiquiatrica) faltas.push('tipo de internação psiquiátrica')
+  if (f.isolamento && !f.isolamento_tipo) faltas.push('tipo de isolamento')
   if (f.tipo === 'transferencia' && !f.transporte) faltas.push('transporte')
+  if (f.tipo === 'transferencia' && ctx.neonato && !f.incubadora) faltas.push('incubadora (recém-nascido)')
   if (f.destino_tipo === 'rede' && !f.destino_unidade_id) faltas.push('unidade de destino')
   if (f.destino_tipo === 'externo' && f.destino_externo.trim().length < 3) faltas.push('serviço de destino')
+  if (!f.carater) faltas.push('caráter')
   if (!f.prioridade) faltas.push('prioridade')
   if (!f.cid.trim()) faltas.push('CID-10')
-  if (f.justificativa.trim().length < 20) faltas.push('justificativa (mínimo de 20 letras)')
+  if (f.quadro_clinico.trim().length < 20) faltas.push('quadro clínico (mínimo de 20 letras)')
   return faltas
 }
 
 /** Só os campos do tipo escolhido vão para o banco. */
-export function dadosParaEnvio(f: Formulario, extra: { episodio_id?: string | null; internacao_id?: string | null; medico_assistente_id?: string | null }) {
+export function dadosParaEnvio(f: Formulario, extra: { episodio_id?: string | null; internacao_id?: string | null;
+  medico_assistente_id?: string | null; paciente_nao_identificado?: boolean }) {
+  const leitoOuTransf = f.tipo === 'leito' || f.tipo === 'transferencia'
+  const t = (v: string) => v.trim() || null
   return {
     tipo: f.tipo,
-    especialidade: f.tipo === 'consulta' ? f.especialidade.trim() : null,
-    procedimento: f.tipo === 'exame' ? f.procedimento : null,
-    tipo_leito: f.tipo === 'leito' ? f.tipo_leito : null,
+    procedimento: f.procedimento,
+    especialidade: f.tipo === 'consulta' ? t(f.especialidade) : null,
+    cbo: f.tipo === 'consulta' ? t(f.cbo) : null,
+    tipo_leito: leitoOuTransf ? f.tipo_leito || null : null,
+    internacao_psiquiatrica: leitoOuTransf && f.tipo_leito === 'psiquiatrico' ? f.internacao_psiquiatrica || null : null,
+    isolamento: f.isolamento,
+    isolamento_tipo: f.isolamento ? f.isolamento_tipo || null : null,
     transporte: f.tipo === 'transferencia' ? f.transporte : null,
+    incubadora: f.tipo === 'transferencia' && f.incubadora ? f.incubadora === 'sim' : null,
     destino_tipo: f.destino_tipo,
     destino_unidade_id: f.destino_tipo === 'rede' ? f.destino_unidade_id : null,
-    destino_externo: f.destino_tipo === 'externo' ? f.destino_externo.trim() : null,
+    destino_externo: f.destino_tipo === 'externo' ? t(f.destino_externo) : null,
+    carater: f.carater,
     prioridade: f.prioridade,
     cid: f.cid,
-    justificativa: f.justificativa.trim(),
+    quadro_clinico: f.quadro_clinico.trim(),
+    tempo_evolucao: t(f.tempo_evolucao),
+    sinais_vitais: t(f.sinais_vitais),
+    exames: t(f.exames),
+    medicacoes: t(f.medicacoes),
+    hipotese: t(f.hipotese),
+    telefone_contato: t(f.telefone_contato),
     episodio_id: extra.episodio_id ?? null,
     internacao_id: extra.internacao_id ?? null,
     medico_assistente_id: extra.medico_assistente_id ?? null,
+    paciente_nao_identificado: extra.paciente_nao_identificado ?? false,
   }
 }
 
@@ -96,4 +150,11 @@ export function resumoPedido(s: { tipo: TipoSolicitacao; especialidade?: string 
     : s.tipo === 'leito' ? (s.tipo_leito ? TIPOS_LEITO[s.tipo_leito] ?? s.tipo_leito : null)
     : s.transporte ? TRANSPORTES[s.transporte] ?? s.transporte : null
   return det ? `${TIPOS[s.tipo]} · ${det}` : TIPOS[s.tipo]
+}
+
+/** Recém-nascido: até 27 dias de vida (a incubadora precisa ser informada na transferência). */
+export function ehNeonato(nascimento: string | null | undefined, hoje: string): boolean {
+  if (!nascimento) return false
+  const dias = Math.round((Date.parse(hoje + 'T12:00:00Z') - Date.parse(nascimento + 'T12:00:00Z')) / 86_400_000)
+  return dias >= 0 && dias < 28
 }

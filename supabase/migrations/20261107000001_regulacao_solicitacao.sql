@@ -9,11 +9,16 @@
 -- • Abre a solicitação o médico (plantonista da unidade de origem) ou o gestor
 --   (NIR), que pode enviar direto com a justificativa; o médico assistente fica
 --   informado. O autor é sempre quem está logado.
--- • Tipos: consulta (especialidade), exame (procedimento SIGTAP), leito (tipo
---   de leito) e transferência (tipo de transporte).
+-- • Tipos: consulta (especialidade e CBO), exame, leito (tipo de leito,
+--   isolamento) e transferência (transporte da Portaria 2.048/2002).
 -- • Destino: unidade da rede, serviço de fora (texto) ou "a definir".
--- • Prioridade: emergência, urgência, prioritária (não urgente) e eletiva.
--- • Justificativa: texto livre e CID-10.
+-- • Revisão de 11/10/2026, depois da pesquisa dos sistemas de regulação
+--   (produto/docs/pesquisa/regulacao-modelos-sistemas.md): todo pedido guarda
+--   os campos do MIRA (Portaria GM/MS 9.262/2025) — CNS ou CPF, CNES
+--   solicitante, procedimento SIGTAP, caráter, modalidade e CID-10 — para o
+--   envio futuro à RNDS (Fase 5C). Prioridade em 4 níveis ou "não classificada",
+--   com a prioridade da central guardada à parte. Justificativa em blocos (o
+--   quadro clínico é obrigatório). Status no vocabulário comum dos sistemas.
 -- • Pode ser ligada a um atendimento ou internação aberta, ou só ao paciente.
 -- • Regulação externa: a central anota o sistema e o número do protocolo.
 --
@@ -33,41 +38,74 @@ CREATE TABLE IF NOT EXISTS public.regulacao_solicitacoes (
   organizacao_id      uuid NOT NULL REFERENCES public.organizacoes(id),
   central_id          uuid NOT NULL REFERENCES public.unidades(id),
   unidade_origem_id   uuid NOT NULL REFERENCES public.unidades(id),
+  cnes_solicitante    text NOT NULL CHECK (cnes_solicitante ~ '^\d{7}$'),
   paciente_id         uuid NOT NULL REFERENCES public.pacientes(id),
+  paciente_nao_identificado boolean NOT NULL DEFAULT false,
   episodio_id         uuid REFERENCES public.episodios(id),
   internacao_id       uuid REFERENCES public.internacoes(id),
   tipo                text NOT NULL CHECK (tipo IN ('consulta', 'exame', 'leito', 'transferencia')),
+  -- MIRA: procedimento SIGTAP em todo pedido; CBO na consulta
+  procedimento        text NOT NULL,
   especialidade       text,
-  procedimento        text,
-  tipo_leito          text CHECK (tipo_leito IN ('enfermaria', 'uti_adulto', 'uti_pediatrica', 'uti_neonatal',
-                                                 'semi_intensiva', 'isolamento', 'obstetrico', 'psiquiatria', 'outro')),
-  transporte          text CHECK (transporte IN ('ambulancia_basica', 'ambulancia_avancada', 'uti_movel',
-                                                 'transporte_sanitario', 'aereo', 'meios_proprios')),
+  cbo                 text,
+  tipo_leito          text CHECK (tipo_leito IN ('clinico', 'cirurgico', 'pediatrico', 'obstetrico', 'psiquiatrico',
+                                                 'uti_adulto', 'uti_pediatrica', 'uti_neonatal',
+                                                 'uci_adulto', 'uci_pediatrica', 'uci_neonatal',
+                                                 'uti_queimados', 'unidade_coronariana', 'outro')),
+  internacao_psiquiatrica text CHECK (internacao_psiquiatrica IN ('voluntaria', 'involuntaria', 'compulsoria')),
+  isolamento          boolean NOT NULL DEFAULT false,
+  isolamento_tipo     text CHECK (isolamento_tipo IN ('contato', 'goticula', 'aerossol')),
+  -- Portaria 2.048/2002: A sanitário, B básica, D avançada (= "UTI móvel"), E aéreo, F embarcação
+  transporte          text CHECK (transporte IN ('transporte_sanitario', 'ambulancia_basica', 'ambulancia_avancada',
+                                                 'aereo', 'embarcacao', 'meios_proprios')),
+  transporte_central  text CHECK (transporte_central IN ('transporte_sanitario', 'ambulancia_basica', 'ambulancia_avancada',
+                                                         'aereo', 'embarcacao', 'meios_proprios')),
+  incubadora          boolean,
   destino_tipo        text NOT NULL CHECK (destino_tipo IN ('rede', 'externo', 'a_definir')),
   destino_unidade_id  uuid REFERENCES public.unidades(id),
   destino_externo     text,
-  prioridade          text NOT NULL CHECK (prioridade IN ('emergencia', 'urgencia', 'prioritaria', 'eletiva')),
+  carater             text NOT NULL CHECK (carater IN ('eletivo', 'urgencia')),
+  -- MIRA: 04 hospitalar, 06 urgência/emergência, 07 ambulatorial especializada
+  modalidade          text NOT NULL CHECK (modalidade IN ('04', '06', '07')),
+  prioridade          text NOT NULL CHECK (prioridade IN ('emergencia', 'urgencia', 'prioritaria', 'eletiva', 'nao_classificada')),
+  prioridade_central  text,
+  prioridade_central_em timestamptz,
+  prioridade_central_por uuid REFERENCES public.perfis(id),
   cid                 text NOT NULL,
-  justificativa       text NOT NULL,
+  -- justificativa em blocos: o quadro é obrigatório; o resto, opcional
+  quadro_clinico      text NOT NULL,
+  tempo_evolucao      text,
+  sinais_vitais       text,
+  exames              text,
+  medicacoes          text,
+  hipotese            text,
+  telefone_contato    text,
   medico_assistente_id uuid REFERENCES public.perfis(id),
   solicitante_id      uuid NOT NULL REFERENCES public.perfis(id),
   solicitante_papel   text NOT NULL CHECK (solicitante_papel IN ('medico', 'gestor')),
   status              text NOT NULL DEFAULT 'enviada'
-                      CHECK (status IN ('enviada', 'em_analise', 'aceita', 'recusada', 'devolvida', 'cancelada', 'concluida')),
+                      CHECK (status IN ('rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida', 'autorizada', 'agendada',
+                                        'em_transito', 'realizada', 'falta', 'negada', 'cancelada', 'excluida')),
   externo_sistema     text,
   externo_protocolo   text,
   criada_em           timestamptz NOT NULL DEFAULT now(),
+  autorizada_em       timestamptz,
+  realizada_em        timestamptz,
   cancelada_em        timestamptz,
   cancelada_por       uuid REFERENCES public.perfis(id),
+  cancelamento_origem text CHECK (cancelamento_origem IN ('solicitante', 'central', 'prazo')),
   motivo_cancelamento text,
-  CHECK (tipo <> 'consulta' OR especialidade IS NOT NULL),
-  CHECK (tipo <> 'exame' OR procedimento IS NOT NULL),
+  CHECK (procedimento ~ '^\d{10}$'),
+  CHECK (tipo <> 'consulta' OR (especialidade IS NOT NULL AND cbo IS NOT NULL)),
   CHECK (tipo <> 'leito' OR tipo_leito IS NOT NULL),
+  CHECK (tipo_leito IS DISTINCT FROM 'psiquiatrico' OR internacao_psiquiatrica IS NOT NULL),
+  CHECK (NOT isolamento OR isolamento_tipo IS NOT NULL),
   CHECK (tipo <> 'transferencia' OR transporte IS NOT NULL),
   CHECK (destino_tipo <> 'rede' OR destino_unidade_id IS NOT NULL),
   CHECK (destino_tipo <> 'externo' OR length(btrim(coalesce(destino_externo, ''))) >= 3),
-  CHECK (length(btrim(justificativa)) >= 20),
-  CHECK (status <> 'cancelada' OR (cancelada_em IS NOT NULL AND length(btrim(coalesce(motivo_cancelamento, ''))) >= 10))
+  CHECK (length(btrim(quadro_clinico)) >= 20),
+  CHECK (status <> 'cancelada' OR (cancelada_em IS NOT NULL AND cancelamento_origem IS NOT NULL
+                                   AND length(btrim(coalesce(motivo_cancelamento, ''))) >= 10))
 );
 CREATE INDEX IF NOT EXISTS idx_regulacao_central ON public.regulacao_solicitacoes (central_id, status, criada_em);
 CREATE INDEX IF NOT EXISTS idx_regulacao_origem ON public.regulacao_solicitacoes (unidade_origem_id, criada_em DESC);
@@ -114,26 +152,34 @@ REVOKE ALL ON FUNCTION private.regulacao_pode_ver(public.regulacao_solicitacoes)
 CREATE OR REPLACE FUNCTION private.regulacao_json(s public.regulacao_solicitacoes)
 RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
   SELECT jsonb_build_object(
-    'id', s.id, 'numero', s.numero, 'status', s.status, 'tipo', s.tipo, 'prioridade', s.prioridade,
-    'especialidade', s.especialidade,
+    'id', s.id, 'numero', s.numero, 'status', s.status, 'tipo', s.tipo,
+    'carater', s.carater, 'modalidade', s.modalidade, 'prioridade', s.prioridade,
+    'prioridade_central', s.prioridade_central, 'prioridade_central_em', s.prioridade_central_em,
     'procedimento', s.procedimento,
     'procedimento_nome', (SELECT p.nome FROM terminologia.sigtap_procedimento p WHERE p.codigo = s.procedimento),
-    'tipo_leito', s.tipo_leito, 'transporte', s.transporte,
+    'especialidade', s.especialidade, 'cbo', s.cbo,
+    'tipo_leito', s.tipo_leito, 'internacao_psiquiatrica', s.internacao_psiquiatrica,
+    'isolamento', s.isolamento, 'isolamento_tipo', s.isolamento_tipo,
+    'transporte', s.transporte, 'transporte_central', s.transporte_central, 'incubadora', s.incubadora,
     'destino_tipo', s.destino_tipo,
     'destino_unidade', (SELECT jsonb_build_object('id', u.id, 'nome', u.nome) FROM public.unidades u WHERE u.id = s.destino_unidade_id),
     'destino_externo', s.destino_externo,
     'cid', s.cid, 'cid_descricao', (SELECT c.descricao FROM terminologia.cid10 c WHERE c.codigo = s.cid),
-    'justificativa', s.justificativa,
+    'quadro_clinico', s.quadro_clinico, 'tempo_evolucao', s.tempo_evolucao, 'sinais_vitais', s.sinais_vitais,
+    'exames', s.exames, 'medicacoes', s.medicacoes, 'hipotese', s.hipotese, 'telefone_contato', s.telefone_contato,
     'paciente', (SELECT jsonb_build_object('id', pa.id, 'nome', coalesce(pa.nome_social, pa.nome), 'nascimento', pa.data_nascimento,
                                            'sexo', pa.sexo, 'cns', pa.cns) FROM public.pacientes pa WHERE pa.id = s.paciente_id),
+    'paciente_nao_identificado', s.paciente_nao_identificado,
     'episodio_id', s.episodio_id, 'internacao_id', s.internacao_id,
     'origem', (SELECT jsonb_build_object('id', u.id, 'nome', u.nome) FROM public.unidades u WHERE u.id = s.unidade_origem_id),
+    'cnes_solicitante', s.cnes_solicitante,
     'central', (SELECT jsonb_build_object('id', u.id, 'nome', u.nome) FROM public.unidades u WHERE u.id = s.central_id),
     'solicitante', (SELECT p.nome_completo FROM public.perfis p WHERE p.id = s.solicitante_id),
     'solicitante_papel', s.solicitante_papel,
     'medico_assistente', (SELECT p.nome_completo FROM public.perfis p WHERE p.id = s.medico_assistente_id),
     'externo_sistema', s.externo_sistema, 'externo_protocolo', s.externo_protocolo,
-    'criada_em', s.criada_em, 'cancelada_em', s.cancelada_em, 'motivo_cancelamento', s.motivo_cancelamento)
+    'criada_em', s.criada_em, 'cancelada_em', s.cancelada_em, 'cancelamento_origem', s.cancelamento_origem,
+    'motivo_cancelamento', s.motivo_cancelamento)
 $$;
 REVOKE ALL ON FUNCTION private.regulacao_json(public.regulacao_solicitacoes) FROM PUBLIC, anon, authenticated;
 
@@ -207,8 +253,9 @@ CREATE OR REPLACE FUNCTION public.regulacao_solicitar(p_unidade uuid, p_paciente
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE
   d jsonb := coalesce(p_dados, '{}'::jsonb);
-  u public.unidades; c public.centrais_regulacao; s public.regulacao_solicitacoes;
-  v_papel text; v_medico uuid; v_ep uuid; v_int uuid; v_dest uuid; v_cid text; v_proc text;
+  u public.unidades; c public.centrais_regulacao; s public.regulacao_solicitacoes; pa public.pacientes;
+  v_papel text; v_medico uuid; v_ep uuid; v_int uuid; v_dest uuid; v_cid text; v_proc text; v_cbo text;
+  v_nao_ident boolean; v_carater text; v_modalidade text; v_neonato boolean; v_dup boolean;
 BEGIN
   PERFORM private.exigir_segundo_fator();
   SELECT * INTO u FROM public.unidades WHERE id = p_unidade;
@@ -220,8 +267,16 @@ BEGIN
   SELECT * INTO c FROM public.centrais_regulacao WHERE organizacao_id = u.organizacao_id;
   IF NOT FOUND THEN RAISE EXCEPTION 'A rede ainda não tem Central de Regulação. Fale com a administração da plataforma.'; END IF;
   IF c.unidade_id = p_unidade THEN RAISE EXCEPTION 'A central não solicita regulação para si mesma.'; END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.pacientes WHERE id = p_paciente AND unidade_id = p_unidade AND ativo) THEN
-    RAISE EXCEPTION 'Paciente não encontrado nesta unidade.';
+  -- MIRA: CNES da unidade solicitante
+  IF coalesce(u.cnes, '') !~ '^\d{7}$' THEN
+    RAISE EXCEPTION 'A unidade precisa do CNES (Unidade › Configurações) para solicitar regulação.';
+  END IF;
+  SELECT * INTO pa FROM public.pacientes WHERE id = p_paciente AND unidade_id = p_unidade AND ativo;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Paciente não encontrado nesta unidade.'; END IF;
+  -- MIRA: CNS ou CPF; sem nenhum dos dois, só com a marca de não identificado
+  v_nao_ident := NOT (coalesce(private.cns_valido(pa.cns), false) OR coalesce(private.cpf_valido(pa.cpf), false));
+  IF v_nao_ident AND NOT coalesce((d->>'paciente_nao_identificado')::boolean, false) THEN
+    RAISE EXCEPTION 'O paciente está sem CNS e sem CPF válidos. Complete o cadastro ou marque como paciente não identificado.';
   END IF;
 
   -- vínculo opcional com atendimento ou internação aberta do mesmo paciente
@@ -253,10 +308,15 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM terminologia.cid10 x WHERE x.codigo = v_cid) THEN
     RAISE EXCEPTION 'Informe um CID-10 válido.';
   END IF;
-  IF d->>'tipo' = 'exame' THEN
-    v_proc := regexp_replace(coalesce(d->>'procedimento', ''), '\D', '', 'g');
-    IF NOT EXISTS (SELECT 1 FROM terminologia.sigtap_procedimento p WHERE p.codigo = v_proc) THEN
-      RAISE EXCEPTION 'Informe um procedimento do SIGTAP.';
+  -- MIRA: procedimento SIGTAP em todo pedido
+  v_proc := regexp_replace(coalesce(d->>'procedimento', ''), '\D', '', 'g');
+  IF NOT EXISTS (SELECT 1 FROM terminologia.sigtap_procedimento p WHERE p.codigo = v_proc) THEN
+    RAISE EXCEPTION 'Informe o procedimento do SIGTAP (no leito, o procedimento da internação).';
+  END IF;
+  IF d->>'tipo' = 'consulta' THEN
+    v_cbo := regexp_replace(coalesce(d->>'cbo', ''), '\D', '', 'g');
+    IF NOT EXISTS (SELECT 1 FROM terminologia.cbo x WHERE x.codigo = v_cbo) THEN
+      RAISE EXCEPTION 'Na consulta, informe a especialidade pelo CBO.';
     END IF;
   END IF;
   IF d->>'destino_tipo' = 'rede' THEN
@@ -267,28 +327,58 @@ BEGIN
     END IF;
     IF v_dest = p_unidade THEN RAISE EXCEPTION 'O destino não pode ser a própria unidade.'; END IF;
   END IF;
+  -- transporte de recém-nascido: incubadora precisa ser informada (Portaria 2.048/2002)
+  v_neonato := pa.data_nascimento IS NOT NULL AND pa.data_nascimento > current_date - 28;
+  IF d->>'tipo' = 'transferencia' AND v_neonato AND (d->>'incubadora') IS NULL THEN
+    RAISE EXCEPTION 'Recém-nascido: informe se a transferência precisa de incubadora.';
+  END IF;
+
+  v_carater := d->>'carater';
+  -- MIRA, modalidade: leito e transferência são hospitalares; urgência é 06; o resto, ambulatorial especializada
+  v_modalidade := CASE WHEN d->>'tipo' IN ('leito', 'transferencia') THEN '04'
+                       WHEN v_carater = 'urgencia' THEN '06' ELSE '07' END;
+
+  -- aviso de duplicidade: pedido aberto do mesmo paciente para o mesmo procedimento ou tipo de leito
+  v_dup := EXISTS (SELECT 1 FROM public.regulacao_solicitacoes x
+                    WHERE x.paciente_id = p_paciente
+                      AND x.status IN ('rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida', 'autorizada', 'agendada', 'em_transito')
+                      AND (x.procedimento = v_proc OR (d->>'tipo' = 'leito' AND x.tipo_leito = d->>'tipo_leito')));
 
   BEGIN
-    INSERT INTO public.regulacao_solicitacoes (organizacao_id, central_id, unidade_origem_id, paciente_id, episodio_id, internacao_id,
-      tipo, especialidade, procedimento, tipo_leito, transporte, destino_tipo, destino_unidade_id, destino_externo,
-      prioridade, cid, justificativa, medico_assistente_id, solicitante_id, solicitante_papel)
-    VALUES (u.organizacao_id, c.unidade_id, p_unidade, p_paciente, v_ep, v_int,
-      d->>'tipo',
+    INSERT INTO public.regulacao_solicitacoes (organizacao_id, central_id, unidade_origem_id, cnes_solicitante,
+      paciente_id, paciente_nao_identificado, episodio_id, internacao_id,
+      tipo, procedimento, especialidade, cbo, tipo_leito, internacao_psiquiatrica, isolamento, isolamento_tipo,
+      transporte, incubadora, destino_tipo, destino_unidade_id, destino_externo,
+      carater, modalidade, prioridade, cid,
+      quadro_clinico, tempo_evolucao, sinais_vitais, exames, medicacoes, hipotese, telefone_contato,
+      medico_assistente_id, solicitante_id, solicitante_papel)
+    VALUES (u.organizacao_id, c.unidade_id, p_unidade, u.cnes,
+      p_paciente, v_nao_ident, v_ep, v_int,
+      d->>'tipo', v_proc,
       CASE WHEN d->>'tipo' = 'consulta' THEN nullif(btrim(coalesce(d->>'especialidade', '')), '') END,
-      CASE WHEN d->>'tipo' = 'exame' THEN v_proc END,
-      CASE WHEN d->>'tipo' = 'leito' THEN nullif(d->>'tipo_leito', '') END,
+      CASE WHEN d->>'tipo' = 'consulta' THEN v_cbo END,
+      CASE WHEN d->>'tipo' IN ('leito', 'transferencia') THEN nullif(d->>'tipo_leito', '') END,
+      CASE WHEN d->>'tipo_leito' = 'psiquiatrico' THEN nullif(d->>'internacao_psiquiatrica', '') END,
+      coalesce((d->>'isolamento')::boolean, false),
+      CASE WHEN coalesce((d->>'isolamento')::boolean, false) THEN nullif(d->>'isolamento_tipo', '') END,
       CASE WHEN d->>'tipo' = 'transferencia' THEN nullif(d->>'transporte', '') END,
+      CASE WHEN d->>'tipo' = 'transferencia' THEN (d->>'incubadora')::boolean END,
       d->>'destino_tipo', v_dest,
       CASE WHEN d->>'destino_tipo' = 'externo' THEN btrim(coalesce(d->>'destino_externo', '')) END,
-      d->>'prioridade', v_cid, btrim(coalesce(d->>'justificativa', '')), v_medico, private.meu_perfil_id(), v_papel)
+      v_carater, v_modalidade, d->>'prioridade', v_cid,
+      btrim(coalesce(d->>'quadro_clinico', '')),
+      nullif(btrim(coalesce(d->>'tempo_evolucao', '')), ''), nullif(btrim(coalesce(d->>'sinais_vitais', '')), ''),
+      nullif(btrim(coalesce(d->>'exames', '')), ''), nullif(btrim(coalesce(d->>'medicacoes', '')), ''),
+      nullif(btrim(coalesce(d->>'hipotese', '')), ''), nullif(btrim(coalesce(d->>'telefone_contato', '')), ''),
+      v_medico, private.meu_perfil_id(), v_papel)
     RETURNING * INTO s;
   EXCEPTION WHEN check_violation OR not_null_violation THEN
-    RAISE EXCEPTION 'Confira o pedido: tipo, o campo do tipo (especialidade, procedimento, tipo de leito ou transporte), destino, prioridade e justificativa (mínimo de 20 letras).';
+    RAISE EXCEPTION 'Confira o pedido: tipo e o campo do tipo (especialidade, tipo de leito, transporte), isolamento, internação psiquiátrica, destino, caráter, prioridade e quadro clínico (mínimo de 20 letras).';
   END;
-  PERFORM private.regulacao_evento(s.id, 'enviada', jsonb_build_object('papel', v_papel));
+  PERFORM private.regulacao_evento(s.id, 'enviada', jsonb_build_object('papel', v_papel, 'duplicidade', v_dup));
   PERFORM private.registrar_auditoria('regulacao_solicitada', 'regulacao_solicitacoes', s.id, p_unidade,
-    jsonb_build_object('tipo', s.tipo, 'prioridade', s.prioridade, 'central', c.unidade_id));
-  RETURN jsonb_build_object('id', s.id, 'numero', s.numero);
+    jsonb_build_object('tipo', s.tipo, 'prioridade', s.prioridade, 'carater', s.carater, 'central', c.unidade_id));
+  RETURN jsonb_build_object('id', s.id, 'numero', s.numero, 'aviso_duplicidade', v_dup);
 END $$;
 REVOKE ALL ON FUNCTION public.regulacao_solicitar(uuid, uuid, jsonb) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.regulacao_solicitar(uuid, uuid, jsonb) TO authenticated;
@@ -303,10 +393,10 @@ BEGIN
   IF NOT (s.solicitante_id = private.meu_perfil_id() OR private.tenho_papel(s.unidade_origem_id, 'gestor')) THEN
     RAISE EXCEPTION 'Cancela quem solicitou ou o gestor da unidade de origem.' USING ERRCODE = 'insufficient_privilege';
   END IF;
-  IF s.status NOT IN ('enviada', 'em_analise', 'devolvida') THEN RAISE EXCEPTION 'Esta solicitação não pode mais ser cancelada.'; END IF;
+  IF s.status NOT IN ('rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida') THEN RAISE EXCEPTION 'Esta solicitação não pode mais ser cancelada.'; END IF;
   IF length(btrim(coalesce(p_motivo, ''))) < 10 THEN RAISE EXCEPTION 'Escreva o motivo (mínimo de 10 letras).'; END IF;
   UPDATE public.regulacao_solicitacoes SET status = 'cancelada', cancelada_em = now(), cancelada_por = private.meu_perfil_id(),
-         motivo_cancelamento = btrim(p_motivo) WHERE id = s.id;
+         cancelamento_origem = 'solicitante', motivo_cancelamento = btrim(p_motivo) WHERE id = s.id;
   PERFORM private.regulacao_evento(s.id, 'cancelada', jsonb_build_object('motivo', btrim(p_motivo)));
   PERFORM private.registrar_auditoria('regulacao_cancelada', 'regulacao_solicitacoes', s.id, s.unidade_origem_id,
     jsonb_build_object('motivo', btrim(p_motivo)));
@@ -315,7 +405,8 @@ REVOKE ALL ON FUNCTION public.regulacao_cancelar(uuid, text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.regulacao_cancelar(uuid, text) TO authenticated;
 
 -- A central anota a regulação externa (sistema e número do protocolo).
-CREATE OR REPLACE FUNCTION public.regulacao_registrar_externo(p_id uuid, p_sistema text, p_protocolo text)
+CREATE OR REPLACE FUNCTION public.regulacao_registrar_externo(p_id uuid, p_sistema text, p_protocolo text,
+  p_prioridade_central text DEFAULT NULL)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE s public.regulacao_solicitacoes;
 BEGIN
@@ -328,11 +419,17 @@ BEGIN
   IF length(btrim(coalesce(p_sistema, ''))) < 2 OR length(btrim(coalesce(p_protocolo, ''))) < 3 THEN
     RAISE EXCEPTION 'Informe o sistema e o número do protocolo.';
   END IF;
-  UPDATE public.regulacao_solicitacoes SET externo_sistema = btrim(p_sistema), externo_protocolo = btrim(p_protocolo) WHERE id = s.id;
-  PERFORM private.regulacao_evento(s.id, 'externo_registrado', jsonb_build_object('sistema', btrim(p_sistema), 'protocolo', btrim(p_protocolo)));
+  -- a prioridade da central é guardada como veio do sistema externo, com quem e quando
+  UPDATE public.regulacao_solicitacoes SET externo_sistema = btrim(p_sistema), externo_protocolo = btrim(p_protocolo),
+         prioridade_central = coalesce(nullif(btrim(coalesce(p_prioridade_central, '')), ''), prioridade_central),
+         prioridade_central_em = CASE WHEN nullif(btrim(coalesce(p_prioridade_central, '')), '') IS NOT NULL THEN now() ELSE prioridade_central_em END,
+         prioridade_central_por = CASE WHEN nullif(btrim(coalesce(p_prioridade_central, '')), '') IS NOT NULL THEN private.meu_perfil_id() ELSE prioridade_central_por END
+   WHERE id = s.id;
+  PERFORM private.regulacao_evento(s.id, 'externo_registrado', jsonb_build_object('sistema', btrim(p_sistema), 'protocolo', btrim(p_protocolo),
+    'prioridade_central', nullif(btrim(coalesce(p_prioridade_central, '')), '')));
 END $$;
-REVOKE ALL ON FUNCTION public.regulacao_registrar_externo(uuid, text, text) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.regulacao_registrar_externo(uuid, text, text) TO authenticated;
+REVOKE ALL ON FUNCTION public.regulacao_registrar_externo(uuid, text, text, text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.regulacao_registrar_externo(uuid, text, text, text) TO authenticated;
 
 -- ── listas ──────────────────────────────────────────────────────────────────
 -- Na unidade de origem: as solicitações da unidade. Na central: as recebidas
@@ -379,6 +476,10 @@ BEGIN
     RAISE EXCEPTION 'Acesso negado.' USING ERRCODE = 'insufficient_privilege';
   END IF;
   RETURN jsonb_build_object(
+    -- MIRA: sem CNS nem CPF válidos, o pedido sai marcado como paciente não identificado
+    'tem_documento', (SELECT coalesce(private.cns_valido(pa.cns), false) OR coalesce(private.cpf_valido(pa.cpf), false)
+                        FROM public.pacientes pa WHERE pa.id = p_paciente),
+    'nascimento', (SELECT pa.data_nascimento FROM public.pacientes pa WHERE pa.id = p_paciente),
     'episodio', (SELECT jsonb_build_object('id', e.id, 'chegada_em', e.chegada_em, 'etapa', e.etapa) FROM public.episodios e
                   WHERE e.paciente_id = p_paciente AND e.unidade_id = v_unidade AND e.etapa <> 'encerrado'
                   ORDER BY e.chegada_em DESC LIMIT 1),
