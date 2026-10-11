@@ -685,6 +685,15 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 - **Quem responde na origem:** o solicitante, o médico assistente ou o gestor, sempre com o próprio login.
 - **Avisos:** cada decisão gera um aviso na tela "Avisos" para o solicitante e para o médico assistente. Vale para autorizada, negada, devolvida, pendência e mudança de prioridade. Sem WhatsApp por enquanto.
 
+**Decisões do RT para a Fase 4, tarefa 5 — histórico no prontuário (11/10/2026)**
+
+- **Onde:** no Resumo do leito da internação e no "Prontuário completo".
+- **Alcance:** pedidos de **toda a rede**. Os pedidos do mesmo paciente em outras unidades da organização entram juntos, ligados pelo CPF ou CNS válido.
+  - Isso compartilha dados clínicos entre unidades da rede.
+  - O acesso ao detalhe de um pedido de outra unidade fica no registro de acesso daquela unidade, à vista do gestor dela.
+- **Quem vê:** só o médico e o gestor da unidade. A enfermagem não vê.
+- **Registro:** a lista (nº, data, unidade, tipo, prioridade, status e destino) não registra acesso. Abrir o detalhe grava no registro de acesso ao prontuário, que aparece na Auditoria do gestor.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
@@ -693,6 +702,7 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 | 2 — Fila regulada | **Em produção** (11/10; migration `20261108000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/fila-regulada`; migration `20261108000001_fila_regulada.sql`; teste `supabase/tests/fase4_fila_regulada.sql` (26 OK); fila na tela `/regulacao` da central. O regulador da central entra pela escala, como os outros papéis: a central precisa de um setor (ex.: "Regulação") e dos plantões dos reguladores |
 | 3 — Priorização clínica | **Em produção** (11/10; migration `20261109000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/priorizacao`; migration `20261109000001_priorizacao_regulacao.sql`; teste `supabase/tests/fase4_priorizacao.sql` (19 OK); na tela `/regulacao`: "Definir prioridade" no detalhe (regulador), selo da prioridade efetiva com a proposta ao lado, marcadores de vulnerabilidade na solicitação e na fila, e o cartão "Critérios de prioridade da central" |
 | 4 — Aceite, recusa e devolução | **Em produção** (11/10; migration `20261110000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/decisao-regulacao`; migration `20261110000001_decisao_regulacao.sql`; teste `supabase/tests/fase4_decisao_regulacao.sql` (34 OK); na tela `/regulacao`: painel "Decisão da central" (autorizar, pergunta à origem, devolver, negar), resposta e "Corrigir e reenviar" na origem, e a categoria "Regulação" nos Avisos |
+| 5 — Histórico no prontuário | **Em produção** (11/10; migration `20261111000001` aplicada na produção antes do merge, com ok do RT). Com ela, os P0 da Fase 4 estão concluídos | Branch `fase4/historico-regulacao`; migration `20261111000001_historico_regulacao.sql`; teste `supabase/tests/fase4_historico_regulacao.sql` (12 OK); cartão "Regulações" (`src/components/regulacao/HistoricoRegulacao.tsx`) no Resumo do leito e no Prontuário completo, com os pedidos da rede (CPF/CNS e cadastro unificado), só para médico e gestor; abrir o detalhe registra o acesso na unidade do pedido |
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.
