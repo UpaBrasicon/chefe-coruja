@@ -9974,6 +9974,15 @@ export type Database = {
       }
       exportacao_pagina: { Args: { p_desloc?: number; p_id: string }; Returns: Json }
       exportacoes_lista: { Args: { p_unidade: string }; Returns: Json }
+      regulacao_cancelar: { Args: { p_id: string; p_motivo: string }; Returns: undefined }
+      regulacao_centrais: { Args: never; Returns: Json }
+      regulacao_contexto: { Args: { p_unidade: string }; Returns: Json }
+      regulacao_definir_central: { Args: { p_unidade: string }; Returns: undefined }
+      regulacao_detalhe: { Args: { p_id: string }; Returns: Json }
+      regulacao_lista: { Args: { p_unidade: string }; Returns: Json }
+      regulacao_registrar_externo: { Args: { p_id: string; p_prioridade_central?: string | null; p_protocolo: string; p_sistema: string }; Returns: undefined }
+      regulacao_solicitar: { Args: { p_dados: Json; p_paciente: string; p_unidade: string }; Returns: Json }
+      regulacao_vinculos_paciente: { Args: { p_paciente: string }; Returns: Json }
       implantacao_abrir: { Args: { p_d0: string; p_tipo: string; p_unidade: string }; Returns: string }
       implantacao_aceitar: { Args: { p_etapa: string; p_id: string; p_pendencias?: string | null }; Returns: Json }
       implantacao_destreinar: { Args: { p_treinamento: string }; Returns: undefined }

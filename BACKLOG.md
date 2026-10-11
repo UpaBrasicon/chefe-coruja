@@ -402,7 +402,7 @@ Regras:
 As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nessa ordem. A homologação recebe a última branch, que contém todas.
 
 ## Fase 3 — SUS, Produção e Integrações Mínimas
-**Fase atual desde 09/10/2026** (aberta depois do aceite da Fase 2).
+**Encerrada em 10/10/2026** por decisão do RT. As tarefas de 1 a 10 estão concluídas; a tarefa 11 aguarda contrato. Evidências em `produto/docs/fase3/ENCERRAMENTO-FASE3.md`.
 **Horizonte:** 90-120 dias
 **Objetivo:** começar a transformar dados assistenciais em produção SUS e maturidade técnica.
 
@@ -572,7 +572,8 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 7 — API segura | **Em produção** (10/10; PR #72): homologação testada de ponta a ponta com chave real; produção com migration, função e Cloudflare (Workers, DNS, WAF BR e rate limit) | Branch `fase3/api-segura`; migration `20261104000002_api_integradores.sql`; teste `supabase/tests/fase3_api_integradores.sql`; Edge Function `supabase/functions/api`; tela `/integracoes`; passo a passo `docs/api/implantacao.md`; Worker `infra/cloudflare/api-worker.js` |
 | 8 — Checklist da RNDS | **Pronto** (10/10; PR #73): documento para executar quando as credenciais chegarem | Branch `fase3/checklist-rnds`; `docs/rnds/CHECKLIST.md` (portfólios, pendências externas e internas, formulário, IP, autenticação, evidência, divergências do código com o oficial, perguntas para o chamado); manuais oficiais em `produto/docs/pesquisa/rnds-oficial/` |
 | 9 — Exportação estruturada | **Em produção** (10/10; testada pelo RT na homologação; migrations `20261105000001` e `20261105000002` aplicadas na produção antes do merge, com ok do RT) | Branch `fase3/exportacao`; migration `20261105000001_exportacao_estruturada.sql`; teste `supabase/tests/fase3_exportacao.sql` (39 OK); `src/lib/exportacao.ts` (+ teste); tela `/exportar` (gestor e super admin); a confirmação da versão completa usa o código digitado (nova coluna `codigo_em`), não o dispositivo confiável; roteiro em `produto/docs/fase3/roteiro-teste-fase3.md`. Ajustes do teste do RT (10/10): datas do CSV no formato pt-BR e no fuso local; desfecho "observacao" e "cancelado" com o próprio nome (antes saíam como "internacao" e "outro", também na API) e `desfecho_em` com o encerramento quando falta (migration `20261105000002`) |
-| 10 — Playbook de implantação | **Construído e conferido no local** (10/10). Falta: homologação, teste do RT e "ok produção" | Branch `fase3/implantacao`; roteiro `docs/implantacao/PLAYBOOK.md` e seis roteiros de treinamento em `docs/implantacao/treinamento/`; migration `20261106000001_implantacao.sql`; teste `supabase/tests/fase3_implantacao.sql` (36 OK); `src/lib/implantacao.ts` (+ teste); tela `/implantacao` (implantador e gestor) com itens por fase, conferências automáticas, treinamento e aceite conjunto |
+| 10 — Playbook de implantação | **Em produção** (10/10; homologação testada pelo RT; migration `20261106000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase3/implantacao`; roteiro `docs/implantacao/PLAYBOOK.md` e seis roteiros de treinamento em `docs/implantacao/treinamento/`; migration `20261106000001_implantacao.sql`; teste `supabase/tests/fase3_implantacao.sql` (36 OK); `src/lib/implantacao.ts` (+ teste); tela `/implantacao` (implantador e gestor) com itens por fase, conferências automáticas, treinamento e aceite conjunto |
+| 11 — Standby em segunda região | **Aguardando contrato** (decisão do RT em 10/10/2026). Não entra até um contrato exigir; aí sobe para P1. Tem custo mensal: um segundo projeto no Supabase, mais a replicação | Nada construído. Quando entrar: projeto Supabase noutra região com replicação, critério de promoção, runbook de failover e de failback, simulado com RTO e RPO medidos |
 
 **Ordem técnica da Fase 3**
 1. Modelar AIH completa.
@@ -588,6 +589,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 ---
 
 ## Fase 4 — Regulação MVP e Plataforma de Rede
+**Fase atual desde 10/10/2026** (aberta depois do encerramento da Fase 3).
 **Horizonte:** 120-180 dias
 **Objetivo:** criar diferencial estratégico de rede, sem tentar fazer UBS completa ainda.
 
@@ -605,6 +607,54 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 10 | P2 | Indicadores de regulação | Tempo médio, fila por tipo, taxa de devolução, gargalos | Dashboard de regulação disponível |
 | 11 | A definir com o RT | NIR — Núcleo Interno de Regulação (pedido do RT em 09/10/2026) | Função administrativa "NIR": acompanha as regulações da unidade e os documentos em falta (laudos de AIH pendentes, AIH solicitada sem decisão, rejeitada sem nova, documentos clínicos com falta). Definir: papel próprio ou permissão, o que vê, o que cobra de quem e como avisa | NIR vê, num painel, as regulações e os documentos em falta da unidade e cobra os responsáveis |
 | 12 | A definir com o RT | Papéis de rede como módulo (pedido do RT em 10/10/2026) | Papéis para fora da unidade: Secretaria (acompanha a rede), Regulação regional e Faturamento da secretaria. O super admin tem o módulo; o gestor decide se a rede dele usa ou não. Definir: o que cada papel vê (só agregados ou também paciente), a quais unidades tem acesso e como se liga à escala. Até lá, integração externa usa as chaves da API (tarefa 7 da Fase 3) | Papéis de rede ligados ou desligados pelo gestor, com escopo de unidades e auditoria |
+
+**Decisões do RT para a Fase 4, tarefa 1 — solicitação de regulação (10/10/2026)**
+
+- **Quem regula:** a Central de Regulação da rede. Ela é cadastrada pelo super admin como uma unidade do tipo central, dentro da organização. Os médicos reguladores ficam vinculados a ela. A central recebe as solicitações de todas as unidades da organização.
+- **Quem abre:**
+  - o médico que cuida do paciente;
+  - o gestor ou NIR da unidade, que pode enviar direto com a justificativa. Nesse caso, o médico assistente fica só informado.
+  - O autor é sempre quem está logado.
+- **Destino:**
+  - uma unidade da rede Chefe Coruja;
+  - um serviço de fora da rede, escrito;
+  - ou "a definir pela regulação".
+- **Tipos:**
+  - consulta, por especialidade;
+  - exame, por procedimento do SIGTAP;
+  - leito, com o tipo: enfermaria, UTI adulto, UTI pediátrica, UTI neonatal, semi-intensiva, isolamento etc.;
+  - transferência, com o tipo de transporte.
+- **Prioridade:** quatro níveis (emergência, urgência, prioridade não urgente e eletivo). O solicitante propõe; o regulador revisa com motivo, na tarefa 3.
+- **Justificativa clínica:** texto livre e CID.
+- **Vínculo:** pode ser ligada a um atendimento ou a uma internação aberta, ou só ao paciente cadastrado (por exemplo, consulta eletiva).
+- **Regulação externa:** sem integração agora. A central anota o sistema externo (SISREG, e-SUS Regulação, central estadual) e o número do protocolo. A integração fica para a Fase 5C, conforme as credenciais.
+
+**Revisão das decisões da tarefa 1 depois da pesquisa dos sistemas de regulação (RT, 11/10/2026)**
+
+Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SISREG, e-SUS Regulação, CROSS, SUSfácil, GERCON/GERINT, centrais estaduais de leitos, NIR e o SERVIR de Goiás. Em Goiás, o SERVIR está sendo trocado pelo GERINT desde 11/2024. A Portaria GM/MS 9.262/2025 (Política Nacional de Regulação) exige que todo sistema de regulação, inclusive um sistema próprio, tenha no mínimo os campos do MIRA e os envie à RNDS.
+
+- **Campos do MIRA, todos obrigatórios:**
+  - CNS ou CPF do paciente (o paciente não identificado fica marcado);
+  - CNES da unidade solicitante;
+  - procedimento do SIGTAP em **todos** os tipos (no leito, o procedimento da AIH);
+  - CBO na consulta;
+  - caráter (eletivo ou urgência), novo e separado da prioridade;
+  - CID-10;
+  - modalidade assistencial, derivada do tipo e do caráter.
+- **Prioridade:** os 4 níveis, mais "não classificada". A prioridade da central é guardada à parte, como veio. Nada é automático.
+- **Justificativa em blocos:** o quadro clínico, com o tempo de evolução, é obrigatório. Sinais vitais com hora, exames com data, medicações em uso e hipótese são opcionais. Na criança, a PA não é obrigatória. Isso substitui a decisão de 10/10 de usar só texto e CID.
+- **Leitos:** clínico, cirúrgico, pediátrico, obstétrico, psiquiátrico (com o tipo de internação: voluntária, involuntária ou compulsória), UTI adulto, pediátrica e neonatal, UCI adulto, pediátrica e neonatal, UTI de queimados, unidade coronariana e outro. O isolamento passa a ser atributo do pedido: sim ou não, e o tipo (contato, gotícula ou aerossol).
+- **Status:** rascunho, enviada, em análise, pendência, devolvida, autorizada, agendada, em trânsito, realizada, falta, negada, cancelada (com quem cancelou) e excluída.
+- **Transporte:**
+  - tipos: transporte sanitário (A), básica (B), avançada (D, que é o mesmo que "UTI móvel"), aéreo (E), embarcação (F) e meios próprios;
+  - campo à parte para o transporte definido pela central;
+  - incubadora no recém-nascido.
+- **Duplicidade:** pedido aberto para o mesmo paciente e o mesmo procedimento ou tipo de leito gera aviso, sem bloquear.
+- **Ficam para as próximas tarefas:**
+  - relógios de 12 h, 3 h e 72 h, na tarefa 7 (SLA);
+  - consentimento e documento de transferência;
+  - blocos obstétrico e de judicialização.
+- **Envio à RNDS no formato MIRA:** a tarefa 1 já guarda os dados. O envio entra como item da Fase 5C.
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.
@@ -652,6 +702,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 3 | P2 | ERP/financeiro | Exportar conta/produção; conciliar retorno; logs | Dados financeiros enviados a ERP |
 | 4 | P2 | Webhooks | Eventos: paciente criado, atendimento aberto, alta, internação, prescrição, regulação; assinatura HMAC; retry com backoff; idempotência no receptor | Terceiro recebe eventos com segurança |
 | 5 | P2 | e-SUS/RNDS | Implementar conforme credenciais e escopo | Integração validada em ambiente oficial |
+| 5a | P2 | Envio da regulação à RNDS (MIRA) | Exigido pela Portaria GM/MS 9.262/2025 para sistema próprio. Montar o registro MIRA a partir das solicitações de regulação (os campos já são guardados desde a Fase 4, tarefa 1), enviar à RNDS e reenviar ao mudar o status. Decisão do RT de 11/10/2026 | Solicitações de regulação aceitas no ambiente de homologação da RNDS |
 
 **Ordem técnica da Fase 5**
 1. Decidir se foco é UBS, faturamento ou integrações primeiro.
@@ -779,3 +830,4 @@ Pedidos e achados que o responsável decidiu deixar para **depois de terminar es
 | 09/10/2026 | **Recarregar a página sem conexão leva ao login.** A fila não se perde, mas a enfermagem fica sem o sistema até a rede voltar, porque o perfil é lido do servidor a cada carga (`AuthContext.loadPerfil`). Alternativa: guardar no aparelho, cifrado, o perfil do último login e manter o modo sem conexão depois da recarga, com as mesmas regras de 2 h e 20 min. Até lá, o plano de contingência diz para não recarregar durante a queda. | Fase 2, tarefa 7 (teste do offline) | Guardado (achado do teste; o RT decide) |
 | 08/10/2026 | **Tela "Prontuário completo" (leitura) ruim de layout e de lógica.** `src/pages/prontuario/ProntuarioLeitura.tsx` lista episódios, documentos, observação, prescrições e classificações de forma solta. Redesenhar a leitura do prontuário (linha do tempo por atendimento, o que é de cada episódio junto, navegação) e revisar a lógica de quais blocos aparecem. | Teste da tarefa 8 (Fase 1) | RT: guardar para depois do backlog |
 | 10/10/2026 | **Modelo pronto do Power BI sobre a API.** Consultas em Power Query (M) com a paginação por cursor resolvida, para leitos, atendimentos e produção SUS, e um passo a passo de 1 página para a secretaria. Cuidados: a atualização não é ao vivo (até 8 vezes por dia no Pro); a regra "fora do Brasil" do Cloudflare bloqueia o Power BI hospedado fora do país, então usar o gateway local num computador no Brasil ou abrir exceção para os IPs da Microsoft; usar uma chave só com os recursos do painel. | Conversa sobre a API (Fase 3, tarefa 7) | RT: guardar para depois do backlog |
+| 11/10/2026 | **Limite de deploys da Vercel.** O plano gratuito permite 100 deploys por dia, e o limite estourou em 10/10 com os envios de branch (cada envio publica o app e a landing). Por 24 horas, nem a homologação nem a produção recebem deploy. Correção: `git.deploymentEnabled` no `vercel.json` e no `landing/vercel.json`; o app publica só `master` e `homolog`, a landing só `master`. Registrado em `infra/release.md`. | PR da Fase 4, tarefa 1 | RT: fazer agora (feito em 11/10) |
