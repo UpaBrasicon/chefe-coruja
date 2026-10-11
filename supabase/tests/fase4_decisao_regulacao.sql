@@ -123,7 +123,7 @@ SELECT pg_temp.falha(format('SELECT public.regulacao_pendencia(%L, %L)', pg_temp
   'Já há uma pergunta esperando resposta', 'uma pergunta por vez');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 SELECT pg_temp.falha(format('SELECT public.regulacao_responder_pendencia(%L, %L)', pg_temp.id(3), 'Troponina 2,3'),
-  'Responde o solicitante, o médico assistente ou o gestor', 'recepção não responde');
+  'Responde o solicitante, o médico assistente, o gestor ou o NIR', 'recepção não responde');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT public.regulacao_responder_pendencia(pg_temp.id(3), 'Troponina 2,3 ng/mL às 14h; ECG às 14h10 com supra inferior.');
 SELECT pg_temp.ok(pg_temp.campo(3, 'status') = 'em_analise' AND pg_temp.campo(3, 'pendencia_respondida_por') = '10000000-0000-4000-8000-000000000004',

@@ -92,12 +92,13 @@ export function BlocoDestino({ s }: { s: PedidoDestino }) {
 type LeitoLivre = { id: string; leito: string; setor: string; tipo_regulacao: string | null; do_tipo: boolean }
 
 /** O destino da rede responde (aceita ou recusa) e, depois, marca a chegada. */
-export function AcoesDestino({ s, aoFim }: { s: PedidoDestino; aoFim: () => void }) {
+export function AcoesDestino({ s, aoFim, nir = false }: { s: PedidoDestino; aoFim: () => void; nir?: boolean }) {
   const [acao, setAcao] = React.useState<'aceitar' | 'recusar' | 'nao_chegou' | null>(null)
   const [leito, setLeito] = React.useState('')
   const [texto, setTexto] = React.useState('')
   const [motivo, setMotivo] = React.useState<MotivoRecusaDestino | ''>('')
-  const aguardando = s.status === 'aguardando_destino' && s.destino_tipo === 'rede'
+  // o NIR do destino marca a chegada, mas não aceita nem recusa (Fase 4, tarefa 11)
+  const aguardando = s.status === 'aguardando_destino' && s.destino_tipo === 'rede' && !!s.sou_destino
   const leitos = useQuery({
     queryKey: ['regulacao-leitos-destino', s.id],
     enabled: aguardando && acao === 'aceitar',
@@ -117,7 +118,7 @@ export function AcoesDestino({ s, aoFim }: { s: PedidoDestino; aoFim: () => void
     },
     onSuccess: () => { setAcao(null); setTexto(''); setMotivo(''); setLeito(''); aoFim() },
   })
-  if (!s.sou_destino || !(aguardando || (s.destino_tipo === 'rede' && esperandoChegada(s.status)))) return null
+  if (!(s.sou_destino || nir) || !(aguardando || (s.destino_tipo === 'rede' && esperandoChegada(s.status)))) return null
   const exigeLeito = s.tipo === 'leito'
   return (
     <div className="flex flex-col gap-2 rounded-md border border-acao/30 p-3">
@@ -184,7 +185,7 @@ export function AcoesDestino({ s, aoFim }: { s: PedidoDestino; aoFim: () => void
 }
 
 /** A origem marca a saída do paciente. */
-export function SaidaOrigem({ s, aoFim }: { s: PedidoDestino; aoFim: () => void }) {
+export function SaidaOrigem({ s, aoFim, nir = false }: { s: PedidoDestino; aoFim: () => void; nir?: boolean }) {
   const sair = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('regulacao_marcar_saida', { p_id: s.id })
@@ -192,7 +193,7 @@ export function SaidaOrigem({ s, aoFim }: { s: PedidoDestino; aoFim: () => void 
     },
     onSuccess: aoFim,
   })
-  if (!s.origem_pode_responder || !(s.status === 'autorizada' || s.status === 'agendada')) return null
+  if (!(s.origem_pode_responder || nir) || !(s.status === 'autorizada' || s.status === 'agendada')) return null
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Button size="sm" onClick={() => sair.mutate()} disabled={sair.isPending}>Paciente saiu</Button>

@@ -78,6 +78,7 @@ const ExportarDados = lazy(() => import('@/pages/gestor/ExportarDados'))
 const Implantacao = lazy(() => import('@/pages/gestor/Implantacao'))
 const Regulacao = lazy(() => import('@/pages/regulacao/Regulacao'))
 const Rede = lazy(() => import('@/pages/rede/Rede'))
+const Nir = lazy(() => import('@/pages/nir/Nir'))
 const Interacoes = lazy(() => import('@/pages/farmacia/Interacoes'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
@@ -257,8 +258,12 @@ export default function App() {
                         <Route path="/implantacao" element={<Implantacao />} />
                       </Route>
                       {/* Regulação da rede: origem (médico, gestor), central (regulador) e super admin (Fase 4, tarefa 1) */}
-                      <Route element={<RequireRole papeis={['plantonista', 'gestor', 'regulador', 'admin']} />}>
+                      <Route element={<RequireRole papeis={['plantonista', 'gestor', 'regulador', 'admin', 'nir']} />}>
                         <Route path="/regulacao" element={<Regulacao />} />
+                      </Route>
+                      {/* NIR: pendências da unidade (NIR e gestor; Fase 4, tarefa 11) */}
+                      <Route element={<RequireRole papeis={['nir', 'gestor']} />}>
+                        <Route path="/nir" element={<Nir />} />
                       </Route>
                       {/* Papéis de rede: Secretaria, Regulação regional, Faturamento da secretaria; módulo pelo super admin (Fase 4, tarefa 12) */}
                       <Route element={<RequireRole papeis={['secretaria', 'regulacao_regional', 'faturamento_rede', 'admin']} />}>

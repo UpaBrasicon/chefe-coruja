@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bell, CalendarClock, Clock, MessageSquare, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
+import { Bell, CalendarClock, Clock, FileCheck, FileText, MessageSquare, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -8,6 +8,7 @@ import { Chip, Chips, TituloPagina } from '@/components/monitor/Pagina'
 import { Spinner } from '@/components/ui/spinner'
 import { useDesfazer } from '@/contexts/DesfazerContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { categoriaCobranca } from '@/lib/nir'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { MinhaNotificacao } from '@/types/database'
@@ -16,7 +17,7 @@ import type { MinhaNotificacao } from '@/types/database'
 // por aviso e "Marcar todas como lidas", com desfazer que volta no servidor
 // (marcar_avisos_lidos / reabrir_avisos). A categoria sai do tipo do aviso.
 
-type Categoria = 'Turno' | 'Observação' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'Outros'
+type Categoria = 'Turno' | 'Observação' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'AIH' | 'APAC' | 'Outros'
 
 function categoria(tipo: string): Categoria {
   if (/^(noite|manha|tarde|turno)_/.test(tipo)) return 'Turno'
@@ -25,6 +26,9 @@ function categoria(tipo: string): Categoria {
   if (tipo.startsWith('cand_')) return 'Candidatura'
   if (tipo.startsWith('chat_')) return 'Mensagem'
   if (tipo.startsWith('reg_')) return 'Regulação'
+  // cobranças do NIR (Fase 4, tarefa 11): a categoria é o assunto
+  const nir = categoriaCobranca(tipo)
+  if (nir) return nir
   return 'Outros'
 }
 
@@ -35,9 +39,11 @@ const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: { to: s
   Candidatura: { icone: Users, cor: 'text-tinta-apoio bg-trilha', acao: { to: '/agenda', rotulo: 'Ver vagas' } },
   Mensagem: { icone: MessageSquare, cor: 'text-tinta-apoio bg-trilha' },
   Regulação: { icone: Waypoints, cor: 'text-acao bg-acao/10', acao: { to: '/regulacao', rotulo: 'Abrir Regulação' } },
+  AIH: { icone: FileText, cor: 'text-acao bg-acao/10', acao: { to: '/aih', rotulo: 'Abrir AIH' } },
+  APAC: { icone: FileCheck, cor: 'text-acao bg-acao/10', acao: { to: '/apac', rotulo: 'Abrir APAC' } },
   Outros: { icone: Bell, cor: 'text-tinta-apoio bg-trilha' },
 }
-const FILTROS = ['Todos', 'Não lidos', 'Turno', 'Observação', 'Escala', 'Candidatura', 'Regulação'] as const
+const FILTROS = ['Todos', 'Não lidos', 'Turno', 'Observação', 'Escala', 'Candidatura', 'Regulação', 'AIH', 'APAC'] as const
 
 function haQuanto(iso: string) {
   const min = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
