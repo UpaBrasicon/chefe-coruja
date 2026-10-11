@@ -28,7 +28,11 @@ capaz de:
 - terminar o **mTLS** com o certificado do estabelecimento;
 - ler da fila `interop_outbox` (status `pendente`) e enviar os Bundles.
 
-Opções a avaliar na 4B (não decidido nesta fase):
+**Decisão do RT (10/10/2026, Fase 3, tarefa 8):** o envio sai pelo VPS que
+já existe (`179.199.128.141`, IPv4 de datacenter da Hostinger). Detalhes e
+riscos em `CHECKLIST.md`, item I1.
+
+Opções avaliadas antes da decisão:
 
 | Opção | Prós | Contras |
 |---|---|---|
