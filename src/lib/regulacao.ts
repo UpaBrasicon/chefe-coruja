@@ -333,3 +333,37 @@ export function alertasSla(sla: Sla | null | undefined, agoraMs: number): Alerta
   }
   return a
 }
+
+// ── mapa de vagas (Fase 4, tarefa 8) ────────────────────────────────────────
+export type TipoServico = 'exame' | 'consulta' | 'procedimento' | 'cirurgia' | 'outro'
+export const TIPOS_SERVICO: Record<TipoServico, string> = {
+  exame: 'Exame', consulta: 'Consulta', procedimento: 'Procedimento', cirurgia: 'Cirurgia', outro: 'Outro',
+}
+export type SituacaoServico = 'disponivel' | 'restrito' | 'indisponivel'
+export const SITUACOES_SERVICO: Record<SituacaoServico, { rotulo: string; tom: 'sucesso' | 'atencao' | 'critico' }> = {
+  disponivel: { rotulo: 'Disponível', tom: 'sucesso' },
+  restrito: { rotulo: 'Restrito', tom: 'atencao' },
+  indisponivel: { rotulo: 'Indisponível', tom: 'critico' },
+}
+export type FormServico = {
+  nome: string; tipo: TipoServico | ''; procedimento: string; situacao: SituacaoServico | ''; vagas: string; observacao: string
+}
+export const SERVICO_VAZIO: FormServico = { nome: '', tipo: '', procedimento: '', situacao: '', vagas: '', observacao: '' }
+
+/** Mesmas regras do banco (regulacao_salvar_servico), menos a existência do SIGTAP. */
+export function errosServico(f: FormServico): string[] {
+  const e: string[] = []
+  if (f.nome.trim().length < 3) e.push('Escreva o nome do serviço.')
+  if (!f.tipo) e.push('Escolha o tipo.')
+  if (!f.situacao) e.push('Escolha a situação.')
+  if (f.procedimento.trim() && !/^\d{10}$/.test(f.procedimento.trim())) e.push('Procedimento SIGTAP: 10 dígitos.')
+  if (f.vagas.trim() && !/^\d{1,4}$/.test(f.vagas.trim())) e.push('Vagas: número de 0 a 9999, ou vazio.')
+  return e
+}
+
+export function servicoParaEnvio(f: FormServico) {
+  return {
+    nome: f.nome.trim(), tipo: f.tipo, situacao: f.situacao, procedimento: f.procedimento.trim() || null,
+    vagas: f.vagas.trim() || null, observacao: f.observacao.trim() || null,
+  }
+}

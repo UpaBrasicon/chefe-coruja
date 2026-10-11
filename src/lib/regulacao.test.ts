@@ -127,3 +127,14 @@ test('prazos (SLA): formulário, validação e selos', async () => {
     pendencia: { desde: '2026-10-11T08:00:00Z', prazo_h: 3, vence_em: '2026-10-11T11:00:00Z', atrasada: true } }, agora)[0].texto,
     'Resposta à central vencida (3 h)')
 })
+
+test('mapa de vagas: formulário do serviço', async () => {
+  const { SERVICO_VAZIO, errosServico, servicoParaEnvio } = await import('./regulacao.ts')
+  assert.equal(errosServico(SERVICO_VAZIO).length, 3)
+  const tc = { ...SERVICO_VAZIO, nome: ' Tomografia ', tipo: 'exame' as const, situacao: 'restrito' as const, procedimento: '0206010079', vagas: '2' }
+  assert.deepEqual(errosServico(tc), [])
+  assert.deepEqual(errosServico({ ...tc, procedimento: '02060' }), ['Procedimento SIGTAP: 10 dígitos.'])
+  assert.deepEqual(errosServico({ ...tc, vagas: '-1' }), ['Vagas: número de 0 a 9999, ou vazio.'])
+  assert.deepEqual(servicoParaEnvio({ ...tc, vagas: '', observacao: '  ' }),
+    { nome: 'Tomografia', tipo: 'exame', situacao: 'restrito', procedimento: '0206010079', vagas: null, observacao: null })
+})

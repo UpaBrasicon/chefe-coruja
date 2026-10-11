@@ -15,6 +15,9 @@
 // • Prazos (tarefa 7): painel de SLA na central e na origem, prazos da
 //   central, selos na fila e na lista, tempo por status e evolução no detalhe
 //   (src/components/regulacao/SlaRegulacao.tsx).
+// • Mapa de vagas (tarefa 8): na central e para o gestor da unidade, que
+//   oferta os setores e informa os serviços; ao lado da autorização
+//   (src/components/regulacao/MapaVagas.tsx).
 // Migration 20261107000001_regulacao_solicitacao.sql; src/lib/regulacao.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -23,6 +26,7 @@ import * as React from 'react'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
+import { MapaVagas, OfertaSetores } from '@/components/regulacao/MapaVagas'
 import { PainelSla, PrazosCentral, PrazosDoPedido, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
@@ -88,8 +92,9 @@ const SELECT = 'h-8 rounded-controle border border-fio bg-campo px-2'
 const hoje = () => new Date().toLocaleDateString('sv-SE')
 
 export default function Regulacao() {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papeisDaUnidade } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id ?? ''
+  const souGestorDaUnidade = papeisDaUnidade.includes('gestor')
   const [recemEnviada, setRecemEnviada] = React.useState<string | null>(null)
   const ctx = useQuery({
     queryKey: ['regulacao-contexto', unidadeId],
@@ -114,6 +119,7 @@ export default function Regulacao() {
             <Fila centralId={unidadeId} souRegulador={c.sou_regulador} />
             <PainelSla unidadeId={unidadeId} central
               detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central podeRegistrarExterno={c.sou_regulador} />} />
+            <MapaVagas unidadeId={unidadeId} />
             <PrazosCentral unidadeId={unidadeId} editavel />
             <Criterios unidadeId={unidadeId} editavel />
           </>
@@ -127,6 +133,12 @@ export default function Regulacao() {
             <PainelSla unidadeId={unidadeId} central={false}
               detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central={false} podeRegistrarExterno={false} />} />
             <Lista unidadeId={unidadeId} central={false} podeRegistrarExterno={false} abrir={recemEnviada} />
+            {souGestorDaUnidade && (
+              <>
+                <MapaVagas unidadeId={unidadeId} />
+                <OfertaSetores unidadeId={unidadeId} />
+              </>
+            )}
           </>
         ) : (
           <Vazio icone={Waypoints} titulo="Sem acesso à regulação nesta unidade" texto="Solicitam o médico e o gestor da unidade; quem regula é a central da rede." />
@@ -1116,6 +1128,7 @@ function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: str
   const [dataPrevista, setDataPrevista] = React.useState('')
   const [texto, setTexto] = React.useState('')
   const [motivo, setMotivo] = React.useState<MotivoNegacao | ''>('')
+  const [verMapa, setVerMapa] = React.useState(false)
   const decidir = useMutation({
     mutationFn: async () => {
       const r = acao === 'autorizar'
@@ -1178,6 +1191,10 @@ function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: str
           <Campo id={`aut-obs-${s.id}`} rotulo="Observação (opcional)">
             <Input id={`aut-obs-${s.id}`} className="h-8" value={texto} onChange={(e) => setTexto(e.target.value)} />
           </Campo>
+          <div className="sm:col-span-3">
+            <Button size="xs" variant="ghost" onClick={() => setVerMapa(!verMapa)}>{verMapa ? 'Esconder o mapa de vagas' : 'Ver o mapa de vagas'}</Button>
+            {verMapa && <MapaVagas unidadeId={centralId} compacto />}
+          </div>
         </div>
       )}
       {acao === 'negar' && (
