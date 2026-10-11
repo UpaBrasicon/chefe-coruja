@@ -74,3 +74,13 @@ test('priorização: prioridade efetiva e marcadores pela idade', async () => {
   assert.deepEqual(marcadoresPelaIdade('2012-10-11', '2026-10-11'), [])
   assert.deepEqual(marcadoresPelaIdade(null, '2026-10-11'), [])
 })
+
+test('decisão: pedidos em decisão e data prevista', async () => {
+  const { emDecisao, dataHoraLocalParaIso, MOTIVOS_NEGACAO } = await import('./regulacao.ts')
+  assert.equal(emDecisao('pendencia'), true)
+  assert.equal(emDecisao('devolvida'), false)
+  assert.equal(emDecisao('autorizada'), false)
+  assert.equal(dataHoraLocalParaIso(''), null)
+  assert.equal(typeof dataHoraLocalParaIso('2026-10-11T18:30'), 'string')
+  assert.equal(Object.keys(MOTIVOS_NEGACAO).length, 6)
+})

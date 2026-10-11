@@ -31,10 +31,11 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import {
   CARATER, FORMULARIO_VAZIO, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS, TIPOS_LEITO, TRANSPORTES,
-  VULNERABILIDADES, dadosParaEnvio, ehNeonato, faltasFormulario, filtrosParaEnvio, formatarEspera, marcadoresPelaIdade,
+  MOTIVOS_NEGACAO, VULNERABILIDADES, dadosParaEnvio, dataHoraLocalParaIso, ehNeonato, emDecisao, faltasFormulario,
+  filtrosParaEnvio, formatarEspera, marcadoresPelaIdade,
   novosDesde, prioridadeEfetiva, resumoPedido,
   type Carater, type DestinoTipo, type FiltrosFila, type Formulario, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
-  type Vulnerabilidade,
+  type MotivoNegacao, type Vulnerabilidade,
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
@@ -50,6 +51,12 @@ type Solicitacao = {
   prioridade: Prioridade; prioridade_central: string | null
   prioridade_regulador: Prioridade | null; prioridade_regulador_por: string | null; prioridade_regulador_em: string | null
   prioridade_regulador_motivo: string | null; vulnerabilidades: Vulnerabilidade[]
+  autorizada_em: string | null; autorizada_por: string | null; data_prevista: string | null; observacao_decisao: string | null
+  negada_em: string | null; negada_por: string | null; motivo_negacao: MotivoNegacao | null
+  devolvida_em: string | null; devolvida_por: string | null; motivo_devolucao: string | null; reenviada_em: string | null
+  pendencia_pergunta: string | null; pendencia_em: string | null; pendencia_por: string | null
+  pendencia_resposta: string | null; pendencia_respondida_em: string | null; pendencia_respondida_por: string | null
+  origem_pode_responder: boolean
   procedimento: string; procedimento_nome: string | null; especialidade: string | null; cbo: string | null
   tipo_leito: string | null; internacao_psiquiatrica: string | null; isolamento: boolean; isolamento_tipo: string | null
   transporte: string | null; transporte_central: string | null; incubadora: boolean | null
@@ -613,6 +620,10 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
         <Linha rotulo="Hipótese" valor={s.hipotese} />
       </dl>
       {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
+      <BlocosDecisao s={s} />
+      {!central && s.origem_pode_responder && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={recarregar} />}
+      {!central && s.origem_pode_responder && s.status === 'devolvida' && <Reenviar s={s} aoFim={recarregar} />}
+      {central && podeRegistrarExterno && emDecisao(s.status) && <PainelDecisao s={s} centralId={unidadeId} aoFim={recarregar} />}
       <ul className="text-rotulo text-tinta-sussurro">
         {(s.eventos ?? []).map((e, i) => <li key={i}>{fmtDataHora(e.em)} · {e.evento.replace('_', ' ')} · {e.por ?? '—'}</li>)}
       </ul>
@@ -867,5 +878,216 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
         )}
       </CardContent>
     </Card>
+  )
+}
+
+// ── decisão do regulador e respostas da origem (Fase 4, tarefa 4) ─────────────
+function BlocosDecisao({ s }: { s: Solicitacao }) {
+  const destino = s.destino_tipo === 'rede' ? s.destino_unidade?.nome : s.destino_tipo === 'externo' ? s.destino_externo : null
+  return (
+    <>
+      {s.status === 'autorizada' && (
+        <div className="rounded-md border border-sucesso/30 bg-sucesso/5 px-3 py-2 text-tinta">
+          <b>Autorizada</b> por {s.autorizada_por ?? '—'}{s.autorizada_em ? ` em ${fmtDataHora(s.autorizada_em)}` : ''}: destino {destino ?? '—'}
+          {s.transporte_central && <> · transporte {TRANSPORTES[s.transporte_central] ?? s.transporte_central}</>}
+          {s.data_prevista && <> · previsto para {fmtDataHora(s.data_prevista)}</>}
+          {s.observacao_decisao && <span className="block text-tinta-apoio">{s.observacao_decisao}</span>}
+        </div>
+      )}
+      {s.status === 'negada' && (
+        <div className="rounded-md border border-critico/30 bg-alerta-critico px-3 py-2 text-tinta">
+          <b>Negada</b> por {s.negada_por ?? '—'}{s.negada_em ? ` em ${fmtDataHora(s.negada_em)}` : ''}: {s.motivo_negacao ? MOTIVOS_NEGACAO[s.motivo_negacao] : ''}
+          {s.observacao_decisao && <span className="block text-tinta-apoio">{s.observacao_decisao}</span>}
+        </div>
+      )}
+      {s.motivo_devolucao && (s.status === 'devolvida' || s.reenviada_em) && (
+        <div className="rounded-md border border-atencao/30 bg-alerta-atencao px-3 py-2 text-tinta">
+          <b>Devolvida</b> por {s.devolvida_por ?? '—'}{s.devolvida_em ? ` em ${fmtDataHora(s.devolvida_em)}` : ''}: {s.motivo_devolucao}
+          {s.reenviada_em && <span className="block text-tinta-apoio">Corrigida e reenviada em {fmtDataHora(s.reenviada_em)} (mantém a posição na fila).</span>}
+        </div>
+      )}
+      {s.pendencia_pergunta && (
+        <div className="rounded-md border border-fio bg-superficie px-3 py-2 text-tinta">
+          <b>Pergunta da central</b> ({s.pendencia_por ?? '—'}{s.pendencia_em ? `, ${fmtDataHora(s.pendencia_em)}` : ''}): {s.pendencia_pergunta}
+          {s.pendencia_resposta
+            ? <span className="block text-tinta-apoio">Resposta de {s.pendencia_respondida_por ?? '—'}{s.pendencia_respondida_em ? ` (${fmtDataHora(s.pendencia_respondida_em)})` : ''}: {s.pendencia_resposta}</span>
+            : <span className="block text-atencao">Aguardando resposta da origem.</span>}
+        </div>
+      )}
+    </>
+  )
+}
+
+function ResponderPendencia({ s, aoFim }: { s: Solicitacao; aoFim: () => void }) {
+  const [resposta, setResposta] = React.useState('')
+  const enviar = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('regulacao_responder_pendencia', { p_id: s.id, p_resposta: resposta.trim() })
+      if (error) throw error
+    },
+    onSuccess: () => { setResposta(''); aoFim() },
+  })
+  return (
+    <div className="flex flex-wrap items-end gap-2">
+      <Campo id={`resp-${s.id}`} rotulo="Resposta à central" className="min-w-60 flex-1">
+        <textarea id={`resp-${s.id}`} rows={2} className="rounded-controle border border-fio bg-campo px-2 py-1.5" value={resposta} onChange={(e) => setResposta(e.target.value)} />
+      </Campo>
+      <Button size="sm" onClick={() => enviar.mutate()} disabled={enviar.isPending || resposta.trim().length < 5}>Responder</Button>
+      <Erro texto={enviar.error ? (enviar.error as Error).message : null} />
+    </div>
+  )
+}
+
+/** Corrige o pedido devolvido e reenvia; mantém a posição na fila. */
+function Reenviar({ s, aoFim }: { s: Solicitacao; aoFim: () => void }) {
+  const [cid, setCid] = React.useState(s.cid)
+  const [cidRotulo, setCidRotulo] = React.useState(`${s.cid} ${s.cid_descricao ?? ''}`)
+  const [d, setD] = React.useState({
+    quadro_clinico: s.quadro_clinico, tempo_evolucao: s.tempo_evolucao ?? '', sinais_vitais: s.sinais_vitais ?? '',
+    exames: s.exames ?? '', medicacoes: s.medicacoes ?? '', hipotese: s.hipotese ?? '',
+  })
+  const set = (k: keyof typeof d, v: string) => setD((x) => ({ ...x, [k]: v }))
+  const enviar = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('regulacao_reenviar', { p_id: s.id, p_dados: { ...d, cid } })
+      if (error) throw error
+    },
+    onSuccess: aoFim,
+  })
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-atencao/30 p-3">
+      <span className="font-medium text-tinta">Corrigir e reenviar</span>
+      <CampoTerminologia tipo="cid10" escolhido={cidRotulo} rotulo="CID-10"
+        onEscolher={(c, r) => { setCid(c); setCidRotulo(r) }} onLimpar={() => { setCid(''); setCidRotulo('') }} />
+      <Campo id={`re-quadro-${s.id}`} rotulo="Quadro clínico">
+        <textarea id={`re-quadro-${s.id}`} rows={3} className="rounded-controle border border-fio bg-campo px-2 py-1.5" value={d.quadro_clinico} onChange={(e) => set('quadro_clinico', e.target.value)} />
+      </Campo>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Campo id={`re-evol-${s.id}`} rotulo="Tempo de evolução"><Input id={`re-evol-${s.id}`} className="h-8" value={d.tempo_evolucao} onChange={(e) => set('tempo_evolucao', e.target.value)} /></Campo>
+        <Campo id={`re-sv-${s.id}`} rotulo="Sinais vitais, com a hora"><Input id={`re-sv-${s.id}`} className="h-8" value={d.sinais_vitais} onChange={(e) => set('sinais_vitais', e.target.value)} /></Campo>
+        <Campo id={`re-ex-${s.id}`} rotulo="Exames, com a data"><Input id={`re-ex-${s.id}`} className="h-8" value={d.exames} onChange={(e) => set('exames', e.target.value)} /></Campo>
+        <Campo id={`re-med-${s.id}`} rotulo="Tratamento e medicações"><Input id={`re-med-${s.id}`} className="h-8" value={d.medicacoes} onChange={(e) => set('medicacoes', e.target.value)} /></Campo>
+        <Campo id={`re-hip-${s.id}`} rotulo="Hipótese"><Input id={`re-hip-${s.id}`} className="h-8" value={d.hipotese} onChange={(e) => set('hipotese', e.target.value)} /></Campo>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button size="sm" onClick={() => enviar.mutate()} disabled={enviar.isPending || !cid || d.quadro_clinico.trim().length < 20}>
+          <Send className="size-4" /> Reenviar à central
+        </Button>
+        <Erro texto={enviar.error ? (enviar.error as Error).message : null} />
+      </div>
+    </div>
+  )
+}
+
+type Acao = 'autorizar' | 'negar' | 'devolver' | 'pendencia'
+function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: string; aoFim: () => void }) {
+  const ctx = useQuery({
+    queryKey: ['regulacao-contexto', centralId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_contexto', { p_unidade: centralId })
+      if (error) throw error
+      return data as unknown as Contexto
+    },
+  })
+  const [acao, setAcao] = React.useState<Acao | null>(null)
+  const [destinoTipo, setDestinoTipo] = React.useState<'rede' | 'externo'>(s.destino_tipo === 'externo' ? 'externo' : 'rede')
+  const [destinoUnidade, setDestinoUnidade] = React.useState(s.destino_unidade?.id ?? '')
+  const [destinoExterno, setDestinoExterno] = React.useState(s.destino_externo ?? '')
+  const [transporte, setTransporte] = React.useState('')
+  const [dataPrevista, setDataPrevista] = React.useState('')
+  const [texto, setTexto] = React.useState('')
+  const [motivo, setMotivo] = React.useState<MotivoNegacao | ''>('')
+  const decidir = useMutation({
+    mutationFn: async () => {
+      const r = acao === 'autorizar'
+        ? await supabase.rpc('regulacao_autorizar', {
+            p_id: s.id, p_destino_tipo: destinoTipo,
+            p_destino_unidade_id: destinoTipo === 'rede' ? destinoUnidade || null : null,
+            p_destino_externo: destinoTipo === 'externo' ? destinoExterno.trim() : null,
+            p_transporte: transporte || null, p_data_prevista: dataHoraLocalParaIso(dataPrevista), p_observacao: texto.trim() || null,
+          })
+        : acao === 'negar' ? await supabase.rpc('regulacao_negar', { p_id: s.id, p_motivo: motivo, p_texto: texto.trim() })
+        : acao === 'devolver' ? await supabase.rpc('regulacao_devolver', { p_id: s.id, p_motivo: texto.trim() })
+        : await supabase.rpc('regulacao_pendencia', { p_id: s.id, p_pergunta: texto.trim() })
+      if (r.error) throw r.error
+    },
+    onSuccess: () => { setAcao(null); setTexto(''); setMotivo(''); aoFim() },
+  })
+  const pronto = acao === 'autorizar' ? (destinoTipo === 'rede' ? !!destinoUnidade : destinoExterno.trim().length >= 3)
+    : acao === 'negar' ? !!motivo && texto.trim().length >= 10
+    : texto.trim().length >= 10
+  const BOTOES: [Acao, string, 'default' | 'outline' | 'destructive'][] = [
+    ['autorizar', 'Autorizar', 'default'], ['pendencia', 'Pergunta à origem', 'outline'],
+    ['devolver', 'Devolver à origem', 'outline'], ['negar', 'Negar', 'destructive'],
+  ]
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-acao/30 p-3">
+      <span className="font-medium text-tinta">Decisão da central</span>
+      <div className="flex flex-wrap gap-2">
+        {BOTOES.filter(([a]) => !(a === 'pendencia' && s.status === 'pendencia')).map(([a, rotulo, variante]) => (
+          <Button key={a} size="xs" variant={acao === a ? 'default' : variante === 'destructive' ? 'destructive' : 'outline'} onClick={() => setAcao(acao === a ? null : a)}>{rotulo}</Button>
+        ))}
+      </div>
+      {acao === 'autorizar' && (
+        <div className="grid gap-2 sm:grid-cols-3">
+          <Campo id={`aut-dt-${s.id}`} rotulo="Destino (obrigatório)">
+            <select id={`aut-dt-${s.id}`} className={SELECT} value={destinoTipo} onChange={(e) => setDestinoTipo(e.target.value as 'rede' | 'externo')}>
+              <option value="rede">Unidade da rede</option><option value="externo">Serviço fora da rede</option>
+            </select>
+          </Campo>
+          {destinoTipo === 'rede' ? (
+            <Campo id={`aut-un-${s.id}`} rotulo="Unidade" className="sm:col-span-2">
+              <select id={`aut-un-${s.id}`} className={SELECT} value={destinoUnidade} onChange={(e) => setDestinoUnidade(e.target.value)}>
+                <option value="">Escolha…</option>
+                {(ctx.data?.unidades_rede ?? []).filter((u) => u.id !== s.origem.id).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
+              </select>
+            </Campo>
+          ) : (
+            <Campo id={`aut-ext-${s.id}`} rotulo="Serviço (nome e município)" className="sm:col-span-2">
+              <Input id={`aut-ext-${s.id}`} className="h-8" value={destinoExterno} onChange={(e) => setDestinoExterno(e.target.value)} />
+            </Campo>
+          )}
+          <Campo id={`aut-tr-${s.id}`} rotulo="Transporte (opcional)">
+            <select id={`aut-tr-${s.id}`} className={SELECT} value={transporte} onChange={(e) => setTransporte(e.target.value)}>
+              <option value="">Não definir agora</option>
+              {Object.entries(TRANSPORTES).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
+            </select>
+          </Campo>
+          <Campo id={`aut-dp-${s.id}`} rotulo="Data e hora previstas (opcional)">
+            <Input id={`aut-dp-${s.id}`} type="datetime-local" className="h-8" value={dataPrevista} onChange={(e) => setDataPrevista(e.target.value)} />
+          </Campo>
+          <Campo id={`aut-obs-${s.id}`} rotulo="Observação (opcional)">
+            <Input id={`aut-obs-${s.id}`} className="h-8" value={texto} onChange={(e) => setTexto(e.target.value)} />
+          </Campo>
+        </div>
+      )}
+      {acao === 'negar' && (
+        <div className="grid gap-2 sm:grid-cols-3">
+          <Campo id={`neg-mot-${s.id}`} rotulo="Motivo">
+            <select id={`neg-mot-${s.id}`} className={SELECT} value={motivo} onChange={(e) => setMotivo(e.target.value as MotivoNegacao | '')}>
+              <option value="">Escolha…</option>
+              {(Object.keys(MOTIVOS_NEGACAO) as MotivoNegacao[]).map((k) => <option key={k} value={k}>{MOTIVOS_NEGACAO[k]}</option>)}
+            </select>
+          </Campo>
+          <Campo id={`neg-txt-${s.id}`} rotulo="Justificativa (a origem vê)" className="sm:col-span-2">
+            <Input id={`neg-txt-${s.id}`} className="h-8" value={texto} onChange={(e) => setTexto(e.target.value)} />
+          </Campo>
+        </div>
+      )}
+      {(acao === 'devolver' || acao === 'pendencia') && (
+        <Campo id={`txt-${s.id}`} rotulo={acao === 'devolver' ? 'O que a origem precisa corrigir' : 'Pergunta à origem (o pedido continua na fila)'}>
+          <textarea id={`txt-${s.id}`} rows={2} className="rounded-controle border border-fio bg-campo px-2 py-1.5" value={texto} onChange={(e) => setTexto(e.target.value)} />
+        </Campo>
+      )}
+      {acao && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant={acao === 'negar' ? 'destructive' : 'default'} onClick={() => decidir.mutate()} disabled={decidir.isPending || !pronto}>
+            Confirmar: {BOTOES.find(([a]) => a === acao)![1].toLowerCase()}
+          </Button>
+          <span className="text-rotulo text-tinta-sussurro">O solicitante e o médico assistente recebem um aviso.</span>
+        </div>
+      )}
+      <Erro texto={decidir.error ? (decidir.error as Error).message : null} />
+    </div>
   )
 }

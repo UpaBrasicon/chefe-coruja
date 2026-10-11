@@ -9986,6 +9986,15 @@ export type Database = {
       regulacao_criterios: { Args: { p_unidade: string }; Returns: Json }
       regulacao_definir_criterio: { Args: { p_central: string; p_prioridade: string; p_texto: string }; Returns: undefined }
       regulacao_priorizar: { Args: { p_id: string; p_motivo: string; p_prioridade: string }; Returns: Json }
+      regulacao_autorizar: {
+        Args: { p_data_prevista?: string | null; p_destino_externo?: string | null; p_destino_tipo: string; p_destino_unidade_id?: string | null; p_id: string; p_observacao?: string | null; p_transporte?: string | null }
+        Returns: Json
+      }
+      regulacao_devolver: { Args: { p_id: string; p_motivo: string }; Returns: Json }
+      regulacao_negar: { Args: { p_id: string; p_motivo: string; p_texto: string }; Returns: Json }
+      regulacao_pendencia: { Args: { p_id: string; p_pergunta: string }; Returns: Json }
+      regulacao_reenviar: { Args: { p_dados: Json; p_id: string }; Returns: undefined }
+      regulacao_responder_pendencia: { Args: { p_id: string; p_resposta: string }; Returns: undefined }
       regulacao_registrar_externo: { Args: { p_id: string; p_prioridade_central?: string | null; p_protocolo: string; p_sistema: string }; Returns: undefined }
       regulacao_solicitar: { Args: { p_dados: Json; p_paciente: string; p_unidade: string }; Returns: Json }
       regulacao_vinculos_paciente: { Args: { p_paciente: string }; Returns: Json }

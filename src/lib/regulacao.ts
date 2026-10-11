@@ -219,3 +219,23 @@ export function marcadoresPelaIdade(nascimento: string | null | undefined, hoje:
   if (anos < 14 && anos >= 0) return ['crianca']
   return []
 }
+
+// ── decisão do regulador (Fase 4, tarefa 4) ─────────────────────────────────
+export type MotivoNegacao = 'sem_indicacao' | 'sem_oferta' | 'fora_escopo' | 'duplicidade' | 'ja_atendido_obito' | 'outro'
+
+export const MOTIVOS_NEGACAO: Record<MotivoNegacao, string> = {
+  sem_indicacao: 'Sem indicação clínica', sem_oferta: 'Sem oferta na rede', fora_escopo: 'Fora do escopo da central',
+  duplicidade: 'Duplicidade', ja_atendido_obito: 'Paciente já atendido ou óbito', outro: 'Outro',
+}
+
+/** Pedido em que o regulador ainda decide (na fila da central). */
+export function emDecisao(status: StatusRegulacao): boolean {
+  return status === 'enviada' || status === 'em_analise' || status === 'pendencia'
+}
+
+/** 'aaaa-mm-ddThh:mm' do campo datetime-local → ISO com o fuso de quem preenche (vazio → null). */
+export function dataHoraLocalParaIso(v: string): string | null {
+  if (!v) return null
+  const d = new Date(v)
+  return Number.isNaN(d.getTime()) ? null : d.toISOString()
+}
