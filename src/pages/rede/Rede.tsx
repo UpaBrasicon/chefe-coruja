@@ -19,6 +19,7 @@ import { ChevronDown, ChevronRight, Download, Network } from 'lucide-react'
 import * as React from 'react'
 
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulacao'
 import { MapaVagas } from '@/components/regulacao/MapaVagas'
 import { SeloSla } from '@/components/regulacao/SlaRegulacao'
 import { Badge } from '@/components/ui/badge'
@@ -76,6 +77,7 @@ export default function Rede() {
             {(papeis.includes('secretaria') || papeis.includes('regulacao_regional')) && (
               <>
                 <ResumoRegulacao unidadeId={unidadeId} />
+                <IndicadoresRegulacao unidadeId={unidadeId} unidades={c.unidades} />
                 <MapaVagas unidadeId={unidadeId} />
               </>
             )}

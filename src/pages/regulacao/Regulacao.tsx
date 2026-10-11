@@ -21,6 +21,8 @@
 // • Aceite pelo destino (tarefa 9): o destino aceita ou recusa e marca a
 //   chegada; a origem marca a saída; a central registra o destino de fora
 //   (src/components/regulacao/DestinoRegulacao.tsx).
+// • Indicadores (tarefa 10): aba para a central e para o gestor da unidade
+//   (src/components/regulacao/IndicadoresRegulacao.tsx).
 // Migration 20261107000001_regulacao_solicitacao.sql; src/lib/regulacao.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -29,6 +31,7 @@ import * as React from 'react'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
+import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulacao'
 import { AcoesDestino, BlocoDestino, DestinoExterno, RecebidosDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
 import { MapaVagas, OfertaSetores } from '@/components/regulacao/MapaVagas'
 import { PainelSla, PrazosCentral, PrazosDoPedido, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
@@ -100,6 +103,7 @@ export default function Regulacao() {
   const unidadeId = unidadeAtiva?.unidade_id ?? ''
   const souGestorDaUnidade = papeisDaUnidade.includes('gestor')
   const [recemEnviada, setRecemEnviada] = React.useState<string | null>(null)
+  const [aba, setAba] = React.useState<'pedidos' | 'indicadores'>('pedidos')
   const ctx = useQuery({
     queryKey: ['regulacao-contexto', unidadeId],
     enabled: !!unidadeId,
@@ -117,7 +121,16 @@ export default function Regulacao() {
           ? 'Solicitações recebidas pela Central de Regulação da rede.'
           : 'Pedidos de consulta, exame, leito ou transferência para a Central de Regulação da rede.'} />
       {c?.sou_super_admin && <Centrais />}
-      {!unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <Erro texto={(ctx.error as Error).message} /> : !c ? null
+      {/* Indicadores (tarefa 10): central (rede) e gestor da unidade (origem e destino) */}
+      {c && (c.sou_central || (c.central && souGestorDaUnidade)) && (
+        <div className="flex gap-1.5" role="tablist" aria-label="Regulação">
+          <Button size="sm" role="tab" aria-selected={aba === 'pedidos'} variant={aba === 'pedidos' ? 'default' : 'outline'} onClick={() => setAba('pedidos')}>Pedidos</Button>
+          <Button size="sm" role="tab" aria-selected={aba === 'indicadores'} variant={aba === 'indicadores' ? 'default' : 'outline'} onClick={() => setAba('indicadores')}>Indicadores</Button>
+        </div>
+      )}
+      {c && aba === 'indicadores' && (c.sou_central || (c.central && souGestorDaUnidade)) ? (
+        <IndicadoresRegulacao unidadeId={unidadeId} unidades={c.sou_central ? c.unidades_rede : []} />
+      ) : !unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <Erro texto={(ctx.error as Error).message} /> : !c ? null
         : c.sou_central ? (
           <>
             <Fila centralId={unidadeId} souRegulador={c.sou_regulador} />
