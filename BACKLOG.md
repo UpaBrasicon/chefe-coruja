@@ -726,6 +726,18 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
   - aviso na categoria Regulação para quem deve agir: a origem (solicitante e médico assistente) nos relógios dela, os reguladores no prazo da fila.
 - **Quem vê o painel:** o regulador vê todos os pedidos da rede; a origem (médico e gestor) vê os da própria unidade, com o que está atrasado do lado dela.
 
+**Decisões do RT para a Fase 4, tarefa 8 — mapa simples de vagas (11/10/2026)**
+
+- **Tipo de leito:** o gestor da unidade marca cada setor ofertado à regulação com um tipo da lista da regulação (por exemplo, UTI adulto, clínico, pediátrico). Setor não marcado não aparece no mapa: porta, sala vermelha e observação da UPA ficam de fora se o gestor não marcar.
+- **Leitos:** vêm do mapa de leitos em tempo real, sem digitação. O mapa mostra livre (a vaga), reservado, em higienização (vaga em breve), bloqueado e ocupado, com o total, por unidade e por tipo.
+- **Serviços (disponibilidade manual):**
+  - o gestor cadastra os serviços da unidade (por exemplo, tomografia, hemodinâmica, consulta de cardiologia), com tipo e procedimento SIGTAP opcional;
+  - marca a situação: disponível, restrito ou indisponível, com vagas opcionais e observação;
+  - fica a hora e o autor de cada atualização;
+  - depois de 12 h sem confirmar, o serviço aparece como "desatualizado"; "Confirmar" renova sem mudar a situação.
+- **Quem vê:** o regulador e o gestor da central veem a rede inteira. O gestor da unidade vê a rede e edita os serviços da própria unidade. Só números, sem nome de paciente.
+- **Ação:** o mapa é só consulta. A reserva do leito e o aceite ficam com a unidade destino (tarefa 9). Ao autorizar um pedido, o regulador vê o mapa ao lado para escolher o destino.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
