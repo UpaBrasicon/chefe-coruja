@@ -605,8 +605,8 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 | 8 | P1 | Mapa simples de vagas/disponibilidade | Integrar leitos livres/reservados; permitir disponibilidade manual de serviços; mostrar por unidade | Regulador vê disponibilidade básica |
 | 9 | P1 | Aceite pela unidade destino | Criar papel/permissão da unidade destino; permitir aceitar/negar; registrar data/hora | Destino participa do fluxo formalmente |
 | 10 | P2 | Indicadores de regulação | Tempo médio, fila por tipo, taxa de devolução, gargalos | Dashboard de regulação disponível |
-| 11 | A definir com o RT | NIR — Núcleo Interno de Regulação (pedido do RT em 09/10/2026) | Função administrativa "NIR": acompanha as regulações da unidade e os documentos em falta (laudos de AIH pendentes, AIH solicitada sem decisão, rejeitada sem nova, documentos clínicos com falta). Definir: papel próprio ou permissão, o que vê, o que cobra de quem e como avisa | NIR vê, num painel, as regulações e os documentos em falta da unidade e cobra os responsáveis |
-| 12 | A definir com o RT | Papéis de rede como módulo (pedido do RT em 10/10/2026) | Papéis para fora da unidade: Secretaria (acompanha a rede), Regulação regional e Faturamento da secretaria. O super admin tem o módulo; o gestor decide se a rede dele usa ou não. Definir: o que cada papel vê (só agregados ou também paciente), a quais unidades tem acesso e como se liga à escala. Até lá, integração externa usa as chaves da API (tarefa 7 da Fase 3) | Papéis de rede ligados ou desligados pelo gestor, com escopo de unidades e auditoria |
+| 11 | P1 (definida em 11/10/2026) | NIR — Núcleo Interno de Regulação (pedido do RT em 09/10/2026) | Função administrativa "NIR": acompanha as regulações da unidade e os documentos em falta (laudos de AIH pendentes, AIH solicitada sem decisão, rejeitada sem nova, documentos clínicos com falta). Definir: papel próprio ou permissão, o que vê, o que cobra de quem e como avisa | NIR vê, num painel, as regulações e os documentos em falta da unidade e cobra os responsáveis |
+| 12 | P1 (definida em 11/10/2026) | Papéis de rede como módulo (pedido do RT em 10/10/2026) | Papéis para fora da unidade: Secretaria (acompanha a rede), Regulação regional e Faturamento da secretaria. O super admin tem o módulo; o gestor decide se a rede dele usa ou não. Definir: o que cada papel vê (só agregados ou também paciente), a quais unidades tem acesso e como se liga à escala. Até lá, integração externa usa as chaves da API (tarefa 7 da Fase 3) | Papéis de rede ligados ou desligados pelo gestor, com escopo de unidades e auditoria |
 
 **Decisões do RT para a Fase 4, tarefa 1 — solicitação de regulação (10/10/2026)**
 
@@ -748,6 +748,40 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 - **Chegada:** a origem marca "saiu" (em trânsito); o destino marca "chegou" (realizada, e a reserva fica pronta para ocupar o leito) ou "não chegou" (falta), com a hora.
 - **Destino fora da rede:** a central registra o aceite ou a recusa do serviço externo, com o nome de quem confirmou, a hora e o meio (telefone, sistema externo).
 - **Avisos (categoria Regulação):** o destino (médicos e gestor) recebe "pedido aguardando aceite"; a origem (solicitante e médico assistente) e o regulador recebem o aceite ou a recusa.
+
+**Decisões do RT para a Fase 4, tarefas 10, 11 e 12 (11/10/2026)**
+
+**Ordem de construção:** 12, depois 11, depois 10. A tarefa 12 define o acesso de rede que a 11 (papel NIR) e a 10 (quem vê os indicadores) usam. As perguntas das três foram feitas juntas; cada uma continua com branch, PR, homologação e "ok produção" próprios.
+
+**Tarefa 12 — papéis de rede como módulo**
+
+- **Papéis:** Secretaria (gestão da rede), Regulação regional e Faturamento da secretaria.
+- **Quem liga e quem libera:** o super admin liga o módulo na organização e cadastra as pessoas de rede. O gestor de cada unidade decide se a unidade dele entra (ou sai) do alcance dos papéis de rede. Tudo auditado.
+- **O que veem:**
+  - Secretaria: só agregados (números, gráficos, mapa de vagas, prazos), sem nome nem prontuário;
+  - Regulação regional: também a lista nominal dos pedidos de regulação, só leitura, com o acesso registrado;
+  - Faturamento da secretaria: produção consolidada por unidade e competência e os arquivos já gerados (BPA, AIH, APAC), só leitura; não edita nem gera lote; sem prontuário.
+- **Escala:** regra geral do RT: todo mundo tem escala, menos o administrador e o gestor. Os papéis de rede ficam vinculados e escalados numa unidade administrativa "Secretaria", que o super admin cadastra na organização (como a central). O alcance vem das unidades que os gestores liberaram.
+
+**Tarefa 11 — NIR (Núcleo Interno de Regulação)**
+
+- **Papel próprio "NIR"** na unidade, dado pelo gestor, com escala como os outros papéis. Sem acesso clínico além do que a função precisa.
+- **Na regulação, operacional, sem ato médico:** abre pedido (como NIR, com o médico assistente), anexa documentos, responde pendência administrativa e marca saída e chegada. Aceite ou recusa como destino e evolução clínica ficam com médico e gestor.
+- **Painel de pendências da unidade:**
+  - AIH: laudo pendente, solicitada sem decisão, rejeitada sem nova solicitação;
+  - regulações com prazo vencido: pendência sem resposta, evolução vencida, destino sem resposta, chegada sem registro;
+  - APAC: pendente de autorização ou rejeitada sem nova.
+- **Cobrança:** cada pendência mostra o responsável e o tempo parado; o botão "Cobrar" manda aviso ao responsável (na categoria do assunto nos Avisos) e fica registrado quem cobrou e quando.
+
+**Tarefa 10 — indicadores de regulação**
+
+- **Indicadores:**
+  - tempos: até a decisão da central (só o tempo com ela), até o aceite do destino e até a chegada, por prioridade e tipo;
+  - fila atual por tipo e prioridade; pedidos por período, origem e destino;
+  - desfechos: taxas de autorização, negação (por motivo), devolução, recusa do destino (por motivo), cancelamento e falta;
+  - cumprimento dos prazos (fila, pendência, evolução, destino) e gargalos por unidade, tipo de leito e motivo.
+- **Medida dos tempos:** mediana e percentil 90 (a média distorce com poucos casos longos).
+- **Onde e quem vê:** aba "Indicadores" na tela Regulação, com filtros de período, tipo, prioridade, origem e destino. A central e a Secretaria/Regulação regional veem a rede; o gestor vê a unidade dele como origem e como destino. Só números; exporta CSV como na Fase 3.
 
 **Andamento da Fase 4**
 
