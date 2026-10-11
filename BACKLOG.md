@@ -685,6 +685,15 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 - **Quem responde na origem:** o solicitante, o médico assistente ou o gestor, sempre com o próprio login.
 - **Avisos:** cada decisão gera um aviso na tela "Avisos" para o solicitante e para o médico assistente. Vale para autorizada, negada, devolvida, pendência e mudança de prioridade. Sem WhatsApp por enquanto.
 
+**Decisões do RT para a Fase 4, tarefa 5 — histórico no prontuário (11/10/2026)**
+
+- **Onde:** no Resumo do leito da internação e no "Prontuário completo".
+- **Alcance:** pedidos de **toda a rede**. Os pedidos do mesmo paciente em outras unidades da organização entram juntos, ligados pelo CPF ou CNS válido.
+  - Isso compartilha dados clínicos entre unidades da rede.
+  - O acesso ao detalhe de um pedido de outra unidade fica no registro de acesso daquela unidade, à vista do gestor dela.
+- **Quem vê:** só o médico e o gestor da unidade. A enfermagem não vê.
+- **Registro:** a lista (nº, data, unidade, tipo, prioridade, status e destino) não registra acesso. Abrir o detalhe grava no registro de acesso ao prontuário, que aparece na Auditoria do gestor.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
