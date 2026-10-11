@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Waypoints } from 'lucide-react'
 import * as React from 'react'
 
+import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
@@ -127,6 +128,7 @@ function Detalhe({ pacienteId, id }: { pacienteId: string; id: string }) {
       <Linha rotulo="Negação" valor={s.motivo_negacao ? `${MOTIVOS_NEGACAO[s.motivo_negacao]}${s.observacao_decisao ? ` — ${s.observacao_decisao}` : ''}` : null} />
       {!s.motivo_negacao && <Linha rotulo="Observação da central" valor={s.observacao_decisao} />}
       <Linha rotulo="Devolução" valor={s.motivo_devolucao} />
+      <AnexosRegulacao solicitacaoId={id} />
       <ul className="mt-1 text-rotulo text-tinta-sussurro">
         {(s.eventos ?? []).map((e, i) => <li key={i}>{fmtDataHora(e.em)} · {e.evento.replace(/_/g, ' ')} · {e.por ?? '—'}</li>)}
       </ul>
