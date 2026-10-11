@@ -656,11 +656,22 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
   - blocos obstétrico e de judicialização.
 - **Envio à RNDS no formato MIRA:** a tarefa 1 já guarda os dados. O envio entra como item da Fase 5C.
 
+**Decisões do RT para a Fase 4, tarefa 2 — fila regulada (11/10/2026)**
+
+- **Ordem:** por prioridade (emergência, urgência, prioritária e eletiva). Dentro de cada nível, quem espera há mais tempo vem primeiro. Os pedidos "não classificada" aparecem em destaque no topo, para o regulador classificar.
+- **Assumir:** o regulador clica em "Assumir" e o pedido passa a "em análise" com o nome dele. Os outros reguladores veem quem está com o pedido. Ele pode devolver o pedido à fila. Tudo fica no histórico.
+- **Filtros:**
+  - os do BACKLOG: tipo, prioridade, unidade de origem e status;
+  - os clínicos: caráter, tipo de leito e isolamento;
+  - busca por nome do paciente, nº da solicitação ou protocolo externo.
+- **Atualização:** automática a cada 30 s, com destaque para o que chegou e o tempo de espera ao vivo.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
 |---|---|---|
 | 1 — Solicitação de regulação | **Em produção** (11/10; migration aplicada na produção antes do merge, com ok do RT). O PR #78 tinha entrado antes da hora e foi revertido (PR #80); a tarefa voltou com o modelo revisto pela pesquisa | Branch `fase4/regulacao-solicitacao`; migration `20261107000001_regulacao_solicitacao.sql`; teste `supabase/tests/fase4_regulacao_solicitacao.sql` (40 OK); `src/lib/regulacao.ts` (+ teste); tela `/regulacao` (origem, central e super admin); pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md` |
+| 2 — Fila regulada | **Em produção** (11/10; migration `20261108000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/fila-regulada`; migration `20261108000001_fila_regulada.sql`; teste `supabase/tests/fase4_fila_regulada.sql` (30 OK); fila na tela `/regulacao` da central. O regulador da central entra pela escala, como os outros papéis: a central precisa de um setor (ex.: "Regulação") e dos plantões dos reguladores |
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.

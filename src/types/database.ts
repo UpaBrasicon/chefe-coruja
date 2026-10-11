@@ -9980,6 +9980,9 @@ export type Database = {
       regulacao_definir_central: { Args: { p_unidade: string }; Returns: undefined }
       regulacao_detalhe: { Args: { p_id: string }; Returns: Json }
       regulacao_lista: { Args: { p_unidade: string }; Returns: Json }
+      regulacao_assumir: { Args: { p_id: string }; Returns: Json }
+      regulacao_fila: { Args: { p_central: string; p_filtros?: Json }; Returns: Json }
+      regulacao_soltar: { Args: { p_id: string; p_motivo?: string | null }; Returns: undefined }
       regulacao_registrar_externo: { Args: { p_id: string; p_prioridade_central?: string | null; p_protocolo: string; p_sistema: string }; Returns: undefined }
       regulacao_solicitar: { Args: { p_dados: Json; p_paciente: string; p_unidade: string }; Returns: Json }
       regulacao_vinculos_paciente: { Args: { p_paciente: string }; Returns: Json }
