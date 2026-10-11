@@ -75,6 +75,7 @@ const FaturamentoBpa = lazy(() => import('@/pages/faturamento/Bpa'))
 const ApacUnidade = lazy(() => import('@/pages/regulacao/Apac'))
 const Integracoes = lazy(() => import('@/pages/admin/Integracoes'))
 const ExportarDados = lazy(() => import('@/pages/gestor/ExportarDados'))
+const Implantacao = lazy(() => import('@/pages/gestor/Implantacao'))
 const Interacoes = lazy(() => import('@/pages/farmacia/Interacoes'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
@@ -250,6 +251,8 @@ export default function App() {
                         <Route path="/integracoes" element={<Integracoes />} />
                         {/* Exportação estruturada CSV/JSON: gestor (a unidade dele) e super admin (Fase 3, tarefa 9) */}
                         <Route path="/exportar" element={<ExportarDados />} />
+                        {/* Playbook de implantação: implantador (super admin) e gestor (Fase 3, tarefa 10) */}
+                        <Route path="/implantacao" element={<Implantacao />} />
                       </Route>
                       {/* Interações críticas: lista curada da unidade (Fase 2, tarefa 3) */}
                       <Route element={<RequireRole papeis={['farmaceutico', 'gestor', 'plantonista']} />}>

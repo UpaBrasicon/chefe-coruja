@@ -25,7 +25,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
-import { FileCheck, FileDown, FileText, History, KeyRound, Receipt, Video } from 'lucide-react'
+import { FileCheck, FileDown, FileText, History, KeyRound, Receipt, Rocket, Video } from 'lucide-react'
 import { FileWarning, GitMerge, LifeBuoy, Pill, ShieldAlert, Siren } from 'lucide-react'
 
 import type { Papel } from '@/types/database'
@@ -170,6 +170,8 @@ const ITEM_ERROS_E_ALERTAS: ItemNav = { to: '/erros-e-alertas', rotulo: 'Erros e
 const ITEM_INTEGRACOES: ItemNav = { to: '/integracoes', rotulo: 'Integrações (API)', curto: 'API', icone: KeyRound, exato: true }
 // Fase 3, tarefa 9: exportação estruturada (gestor e super admin)
 const ITEM_EXPORTAR: ItemNav = { to: '/exportar', rotulo: 'Exportar dados', curto: 'Exportar', icone: FileDown, exato: true }
+// Fase 3, tarefa 10: implantação da unidade (implantador e gestor)
+const ITEM_IMPLANTACAO: ItemNav = { to: '/implantacao', rotulo: 'Implantação', icone: Rocket, exato: true }
 
 /**
  * Itens do papel em foco. O responsável técnico (nomeação da rede, não papel
@@ -180,9 +182,9 @@ export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false
   const itens = [...POR_PAPEL[papel ?? 'plantonista']]
   if (papel === 'admin' && superAdmin) {
     const i = itens.findIndex((x) => x.to === '/servidores')
-    itens.splice(i >= 0 ? i + 1 : itens.length, 0, ITEM_ERROS_E_ALERTAS, ITEM_INTEGRACOES, ITEM_EXPORTAR)
+    itens.splice(i >= 0 ? i + 1 : itens.length, 0, ITEM_ERROS_E_ALERTAS, ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO)
   }
-  if (papel === 'gestor') itens.push(ITEM_INTEGRACOES, ITEM_EXPORTAR)
+  if (papel === 'gestor') itens.push(ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO)
   if (responsavelTecnico) {
     // o gestor já tem o item; o responsável técnico o ganha com a nota da fila
     const i = itens.findIndex((x) => x.to === ITEM_REVISAO_CLINICA.to)

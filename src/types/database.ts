@@ -9974,6 +9974,13 @@ export type Database = {
       }
       exportacao_pagina: { Args: { p_desloc?: number; p_id: string }; Returns: Json }
       exportacoes_lista: { Args: { p_unidade: string }; Returns: Json }
+      implantacao_abrir: { Args: { p_d0: string; p_tipo: string; p_unidade: string }; Returns: string }
+      implantacao_aceitar: { Args: { p_etapa: string; p_id: string; p_pendencias?: string | null }; Returns: Json }
+      implantacao_destreinar: { Args: { p_treinamento: string }; Returns: undefined }
+      implantacao_marcar: { Args: { p_feito: boolean; p_item: string; p_observacao?: string | null }; Returns: undefined }
+      implantacao_mudar_d0: { Args: { p_d0: string; p_id: string; p_motivo: string }; Returns: undefined }
+      implantacao_painel: { Args: { p_unidade: string }; Returns: Json }
+      implantacao_treinar: { Args: { p_data?: string; p_implantacao: string; p_observacao?: string | null; p_papel: string; p_perfil: string }; Returns: undefined }
       endereco_sus: { Args: { p_paciente: string }; Returns: Json }
       fechar_competencia_bpa: { Args: { p_competencia: string; p_processamento?: string; p_unidade: string }; Returns: string }
       procedimentos_do_paciente: { Args: { p_paciente: string }; Returns: Json }
