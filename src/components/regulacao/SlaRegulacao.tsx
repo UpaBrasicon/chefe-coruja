@@ -47,7 +47,7 @@ type ItemPainel = {
   paciente: { nome: string }; paciente_nao_identificado: boolean; origem: { nome: string }; assumida_por: string | null
   criada_em: string; sla: Sla | null
 }
-type Resumo = { abertos: number; fila_atrasada: number; fila_sem_prazo: number; pendencia_atrasada: number; evolucao_atrasada: number; risco_cancelamento: number }
+type Resumo = { abertos: number; fila_atrasada: number; fila_sem_prazo: number; pendencia_atrasada: number; evolucao_atrasada: number; risco_cancelamento: number; destino_atrasado?: number }
 type RespostaPainel = { central: boolean; dados: ItemPainel[]; resumo: Resumo; prazos: Prazos | null; agora: string }
 type Filtros = { tipo?: TipoSolicitacao; prioridade?: Prioridade; so_atrasados?: boolean }
 
@@ -78,6 +78,7 @@ export function PainelSla({ unidadeId, central, detalhe }: {
           {res && res.pendencia_atrasada > 0 && <Badge variant="destructive">Pendência vencida: {res.pendencia_atrasada}</Badge>}
           {res && res.evolucao_atrasada > 0 && <Badge variant="warning">Evolução vencida: {res.evolucao_atrasada}</Badge>}
           {res && res.risco_cancelamento > 0 && <Badge variant="destructive">Risco de cancelamento: {res.risco_cancelamento}</Badge>}
+          {res && (res.destino_atrasado ?? 0) > 0 && <Badge variant="destructive">Destino sem resposta: {res.destino_atrasado}</Badge>}
         </CardTitle>
         <CardDescription>
           {central
@@ -166,7 +167,7 @@ export function PrazosCentral({ unidadeId, editavel }: { unidadeId: string; edit
   const f = form ?? prazosParaForm(p)
   const erros = errosPrazos(f)
   const mudar = (x: Partial<FormPrazos>) => setForm({ ...f, ...x })
-  const campoHoras = (k: 'evolucao_h' | 'pendencia_h' | 'sem_evolucao_h', rotulo: string) => (
+  const campoHoras = (k: 'evolucao_h' | 'pendencia_h' | 'sem_evolucao_h' | 'destino_h', rotulo: string) => (
     <div className="flex flex-col gap-1">
       <Label htmlFor={`prazo-${k}`} className="text-xs">{rotulo}</Label>
       <Input id={`prazo-${k}`} className="h-8 w-24" inputMode="numeric" disabled={!editavel} value={f[k]} onChange={(e) => mudar({ [k]: e.target.value })} />
@@ -195,6 +196,7 @@ export function PrazosCentral({ unidadeId, editavel }: { unidadeId: string; edit
           {campoHoras('evolucao_h', 'Evolução do pedido (h)')}
           {campoHoras('pendencia_h', 'Resposta à pendência (h)')}
           {campoHoras('sem_evolucao_h', 'Sem evolução (h)')}
+          {campoHoras('destino_h', 'Resposta do destino (h)')}
         </div>
         <span className="text-rotulo text-tinta-sussurro">
           {p.ajustado ? `Ajustado por ${p.atualizado_por ?? '—'} em ${p.atualizado_em ? fmtDataHora(p.atualizado_em) : '—'}.` : 'Valores de partida.'}
