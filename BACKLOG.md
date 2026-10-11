@@ -666,6 +666,15 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
   - busca por nome do paciente, nº da solicitação ou protocolo externo.
 - **Atualização:** automática a cada 30 s, com destaque para o que chegou e o tempo de espera ao vivo.
 
+**Decisões do RT para a Fase 4, tarefa 3 — priorização clínica (11/10/2026)**
+
+- **Prioridade do regulador:** guardada à parte da proposta do solicitante, com quem, quando e motivo. A fila passa a ordenar por ela quando existir. Toda mudança fica no histórico.
+- **Critérios:** cada nível (emergência, urgência, prioritária e eletiva) tem uma descrição do que cabe nele. A central escreve e edita esses textos, e eles aparecem para o solicitante e para o regulador. O sistema não sugere o nível.
+- **Vulnerabilidade:** a Portaria GM/MS 9.262/2025 manda considerar risco, tempo e vulnerabilidade.
+  - O solicitante marca os marcadores: gestante, idoso (60 anos ou mais), criança, pessoa com deficiência, situação de rua, paciente oncológico e caso judicializado.
+  - Eles aparecem como selos na fila e no detalhe, sem pontuação. O regulador decide.
+- **A origem fica sabendo** pela lista e pelo histórico: a solicitação mostra a prioridade do regulador e o motivo. Os avisos ativos entram na tarefa 4.
+
 **Andamento da Fase 4**
 
 | Tarefa | Situação | Onde |
