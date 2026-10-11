@@ -13,6 +13,7 @@ const FerramentasUnidade = lazy(() => import('@/pages/gestor/FerramentasUnidade'
 const Convites = lazy(() => import('@/pages/gestor/Convites'))
 const SegurancaEquipe = lazy(() => import('@/pages/gestor/SegurancaEquipe'))
 const ModelosTermoUnidade = lazy(() => import('@/components/termo/ModelosTermoUnidade'))
+const LiberacaoRede = lazy(() => import('@/components/rede/LiberacaoRede'))
 
 /**
  * Unidade — as três telas de configuração da mesma unidade.
@@ -49,6 +50,8 @@ export default function UnidadeGrupo() {
           { valor: 'termos', rotulo: 'Termos de consentimento', conteudo: () => <ModelosTermoUnidade /> },
           // Segundo fator da equipe: estado e reset (Fase 0, tarefa 1; o banco confere o gestor).
           { valor: 'seguranca', rotulo: 'Segurança da equipe', conteudo: () => <SegurancaEquipe /> },
+          // Papéis de rede: o gestor libera ou retira a unidade (Fase 4, tarefa 12; o banco confere).
+          { valor: 'rede', rotulo: 'Rede', conteudo: () => <LiberacaoRede /> },
         ]
       : []),
   ]
