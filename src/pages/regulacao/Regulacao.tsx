@@ -15,10 +15,11 @@
 // Migration 20261107000001_regulacao_solicitacao.sql; src/lib/regulacao.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Send, Waypoints } from 'lucide-react'
+import { ChevronDown, ChevronRight, FileText, Paperclip, Send, Waypoints, X } from 'lucide-react'
 import * as React from 'react'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
+import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 import { Badge } from '@/components/ui/badge'
@@ -31,9 +32,9 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import {
   CARATER, FORMULARIO_VAZIO, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS, TIPOS_LEITO, TRANSPORTES,
-  MOTIVOS_NEGACAO, VULNERABILIDADES, dadosParaEnvio, dataHoraLocalParaIso, ehNeonato, emDecisao, faltasFormulario,
+  ANEXO_TIPOS, MOTIVOS_NEGACAO, VULNERABILIDADES, caminhoAnexo, dadosParaEnvio, dataHoraLocalParaIso, ehNeonato, emDecisao, faltasFormulario,
   filtrosParaEnvio, formatarEspera, marcadoresPelaIdade,
-  novosDesde, prioridadeEfetiva, resumoPedido,
+  erroArquivo, novosDesde, prioridadeEfetiva, resumoPedido,
   type Carater, type DestinoTipo, type FiltrosFila, type Formulario, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
   type MotivoNegacao, type Vulnerabilidade,
 } from '@/lib/regulacao'
@@ -82,6 +83,7 @@ const hoje = () => new Date().toLocaleDateString('sv-SE')
 export default function Regulacao() {
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id ?? ''
+  const [recemEnviada, setRecemEnviada] = React.useState<string | null>(null)
   const ctx = useQuery({
     queryKey: ['regulacao-contexto', unidadeId],
     enabled: !!unidadeId,
@@ -106,8 +108,8 @@ export default function Regulacao() {
             texto="A administração da plataforma define a central da organização. Até lá, não há para onde enviar." />
         ) : c.pode_solicitar ? (
           <>
-            <NovaSolicitacao unidadeId={unidadeId} ctx={c} />
-            <Lista unidadeId={unidadeId} central={false} podeRegistrarExterno={false} />
+            <NovaSolicitacao unidadeId={unidadeId} ctx={c} aoEnviar={setRecemEnviada} />
+            <Lista unidadeId={unidadeId} central={false} podeRegistrarExterno={false} abrir={recemEnviada} />
           </>
         ) : (
           <Vazio icone={Waypoints} titulo="Sem acesso à regulação nesta unidade" texto="Solicitam o médico e o gestor da unidade; quem regula é a central da rede." />
@@ -192,7 +194,9 @@ function CampoTerminologia({ rotulo, tipo, escolhido, onEscolher, onLimpar }: {
   )
 }
 
-function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto }) {
+type DocumentoProntuario = { id: string; tipo: string; numero: string | null; versao: number; emitido_em: string; autor: string | null }
+
+function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx: Contexto; aoEnviar: (id: string) => void }) {
   const qc = useQueryClient()
   // quem é médico e gestor na unidade solicita como médico (o banco decide igual)
   const { papeisDaUnidade } = useUnidade()
@@ -208,7 +212,11 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
   const [cidRotulo, setCidRotulo] = React.useState('')
   const [procRotulo, setProcRotulo] = React.useState('')
   const [cboRotulo, setCboRotulo] = React.useState('')
-  const [enviada, setEnviada] = React.useState<{ numero: number; duplicidade: boolean } | null>(null)
+  const [enviada, setEnviada] = React.useState<{ numero: number; duplicidade: boolean; anexos: number; falhas: string[] } | null>(null)
+  // anexos escolhidos antes do envio; sobem logo depois que o pedido é criado
+  const [arquivos, setArquivos] = React.useState<File[]>([])
+  const [docsEscolhidos, setDocsEscolhidos] = React.useState<string[]>([])
+  const [erroAnexo, setErroAnexo] = React.useState<string | null>(null)
   const set = <K extends keyof Formulario>(k: K, v: Formulario[K]) => setF((x) => ({ ...x, [k]: v }))
 
   const busca = useQuery({
@@ -234,6 +242,26 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
   })
   const v = vinculos.data
   const neonato = ehNeonato(v?.nascimento, hoje())
+  const documentos = useQuery({
+    queryKey: ['regulacao-docs-paciente', paciente?.id],
+    enabled: !!paciente,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_documentos_do_paciente', { p_paciente: paciente!.id })
+      if (error) throw error
+      return (data ?? []) as unknown as DocumentoProntuario[]
+    },
+  })
+  const totalAnexos = arquivos.length + docsEscolhidos.length
+  function incluirArquivos(lista: FileList | null) {
+    setErroAnexo(null)
+    const novos: File[] = []
+    for (const f of Array.from(lista ?? [])) {
+      const problema = erroArquivo(f)
+      if (problema) { setErroAnexo(`${f.name}: ${problema}`); break }
+      novos.push(f)
+    }
+    setArquivos((x) => [...x, ...novos])
+  }
   const enviar = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.rpc('regulacao_solicitar', {
@@ -246,13 +274,30 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
         }), vulnerabilidades },
       })
       if (error) throw error
-      return data as unknown as { numero: number; aviso_duplicidade: boolean }
+      const r = data as unknown as { id: string; numero: number; aviso_duplicidade: boolean }
+      // o pedido já existe: sobem os anexos; o que falhar fica avisado e pode ir pelo detalhe
+      const falhas: string[] = []
+      let anexos = 0
+      for (const arquivo of arquivos) {
+        const caminho = caminhoAnexo(r.id, arquivo.name, Date.now())
+        const up = await supabase.storage.from('regulacao').upload(caminho, arquivo, { contentType: arquivo.type, upsert: false })
+        const reg = up.error ? up : await supabase.rpc('regulacao_registrar_anexo', {
+          p_solicitacao: r.id, p_caminho: caminho, p_nome: arquivo.name, p_tamanho: arquivo.size, p_tipo_mime: arquivo.type,
+        })
+        if (reg.error) falhas.push(`${arquivo.name} (${reg.error.message})`); else anexos++
+      }
+      for (const doc of docsEscolhidos) {
+        const { error: e } = await supabase.rpc('regulacao_anexar_documento', { p_solicitacao: r.id, p_documento: doc })
+        if (e) falhas.push(`documento do prontuário (${e.message})`); else anexos++
+      }
+      return { ...r, anexos, falhas }
     },
     onSuccess: (r) => {
-      setEnviada({ numero: r.numero, duplicidade: r.aviso_duplicidade })
+      setEnviada({ numero: r.numero, duplicidade: r.aviso_duplicidade, anexos: r.anexos, falhas: r.falhas })
       setF(FORMULARIO_VAZIO); setCidRotulo(''); setProcRotulo(''); setCboRotulo(''); setPaciente(null); setTermo(''); setMedico('')
-      setNaoIdentificado(false); setVulnerabilidades([])
+      setNaoIdentificado(false); setVulnerabilidades([]); setArquivos([]); setDocsEscolhidos([]); setErroAnexo(null)
       void qc.invalidateQueries({ queryKey: ['regulacao-lista', unidadeId] })
+      aoEnviar(r.id)
     },
   })
   const faltas = faltasFormulario(f, { neonato, semDocumento: v ? !v.tem_documento : false, naoIdentificado })
@@ -267,8 +312,11 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
       <CardContent className="flex flex-col gap-3 text-apoio">
         {enviada && (
           <p role="status" className="text-sucesso">
-            Solicitação nº {enviada.numero} enviada à central.
+            Solicitação nº {enviada.numero} enviada à central{enviada.anexos > 0 ? `, com ${enviada.anexos} anexo(s)` : ''}. Ela está aberta abaixo.
             {enviada.duplicidade && <span className="ml-1 text-atencao">Atenção: já havia um pedido aberto igual para este paciente.</span>}
+            {enviada.falhas.length > 0 && (
+              <span className="block text-critico">Não subiu: {enviada.falhas.join('; ')}. Anexe de novo no detalhe do pedido.</span>
+            )}
           </p>
         )}
 
@@ -467,6 +515,43 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
               <Campo id="reg-tel" rotulo="Telefone de contato da origem"><Input id="reg-tel" className="h-8" value={f.telefone_contato} onChange={(e) => set('telefone_contato', e.target.value)} /></Campo>
             </div>
 
+            {/* anexos: escolhidos aqui, enviados junto com o pedido */}
+            <div className="flex flex-col gap-2 rounded-md border border-fio p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos (opcional){totalAnexos > 0 ? ` · ${totalAnexos}` : ''}</span>
+                <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-marca">
+                  <input type="file" multiple accept={ANEXO_TIPOS.join(',')} className="sr-only"
+                    onChange={(e) => { incluirArquivos(e.target.files); e.target.value = '' }} />
+                  <Paperclip className="size-3.5" aria-hidden /> Anexar arquivo (PDF, JPG, PNG — até 10 MB cada)
+                </label>
+              </div>
+              {arquivos.length > 0 && (
+                <ul className="flex flex-col gap-1">
+                  {arquivos.map((a, i) => (
+                    <li key={`${a.name}-${i}`} className="flex items-center gap-2">
+                      <span className="text-tinta">{a.name}</span>
+                      <span className="text-rotulo text-tinta-sussurro">{Math.max(1, Math.round(a.size / 1024))} KB</span>
+                      <Button size="xs" variant="ghost" aria-label={`Tirar ${a.name}`} onClick={() => setArquivos((x) => x.filter((_, j) => j !== i))}><X className="size-3.5" /></Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {(documentos.data ?? []).length > 0 && (
+                <fieldset className="flex flex-col gap-1">
+                  <legend className="flex items-center gap-1.5 text-xs text-tinta-apoio"><FileText className="size-3.5" aria-hidden /> Documentos do prontuário deste paciente</legend>
+                  {documentos.data!.map((d) => (
+                    <label key={d.id} className="flex flex-wrap items-center gap-2">
+                      <input type="checkbox" className="size-4" checked={docsEscolhidos.includes(d.id)}
+                        onChange={(e) => setDocsEscolhidos((x) => e.target.checked ? [...x, d.id] : x.filter((y) => y !== d.id))} />
+                      <span className="text-tinta">{d.tipo.replace(/_/g, ' ')}{d.numero ? ` nº ${d.numero}` : ''}</span>
+                      <span className="text-rotulo text-tinta-sussurro">versão {d.versao} · {d.autor ?? '—'} · {fmtDataHora(d.emitido_em)}</span>
+                    </label>
+                  ))}
+                </fieldset>
+              )}
+              {erroAnexo && <span role="alert" className="text-rotulo text-critico">{erroAnexo}</span>}
+            </div>
+
             {souGestor && (
               <Campo id="reg-medico" rotulo="Médico assistente (fica informado)" className="max-w-sm">
                 <select id="reg-medico" className={SELECT} value={medico} onChange={(e) => setMedico(e.target.value)}>
@@ -490,7 +575,7 @@ function NovaSolicitacao({ unidadeId, ctx }: { unidadeId: string; ctx: Contexto 
   )
 }
 
-function Lista({ unidadeId, central, podeRegistrarExterno }: { unidadeId: string; central: boolean; podeRegistrarExterno: boolean }) {
+function Lista({ unidadeId, central, podeRegistrarExterno, abrir }: { unidadeId: string; central: boolean; podeRegistrarExterno: boolean; abrir?: string | null }) {
   const lista = useQuery({
     queryKey: ['regulacao-lista', unidadeId],
     queryFn: async () => {
@@ -500,10 +585,17 @@ function Lista({ unidadeId, central, podeRegistrarExterno }: { unidadeId: string
     },
   })
   const [aberta, setAberta] = React.useState<string | null>(null)
+  // pedido recém-enviado: abre o detalhe (com os anexos) na lista
+  const [abrirVisto, setAbrirVisto] = React.useState(abrir)
+  if (abrir !== abrirVisto) {
+    setAbrirVisto(abrir)
+    if (abrir) setAberta(abrir)
+  }
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">{central ? 'Recebidas' : 'Solicitações da unidade'}</CardTitle>
+        <CardDescription>Clique num pedido para ver o detalhe, os anexos e o histórico.</CardDescription>
         {central && <CardDescription>As 200 mais recentes. A fila com filtros e a decisão chegam nas próximas tarefas.</CardDescription>}
       </CardHeader>
       <CardContent className="text-apoio">
@@ -513,7 +605,10 @@ function Lista({ unidadeId, central, podeRegistrarExterno }: { unidadeId: string
           <ul className="flex flex-col divide-y divide-fio">
             {(lista.data ?? []).map((s) => (
               <li key={s.id} className="py-2">
-                <button type="button" className="flex w-full flex-wrap items-center gap-2 text-left" onClick={() => setAberta(aberta === s.id ? null : s.id)}>
+                <button type="button" aria-expanded={aberta === s.id}
+                  className="flex w-full flex-wrap items-center gap-2 rounded-md px-1 py-0.5 text-left hover:bg-campo"
+                  onClick={() => setAberta(aberta === s.id ? null : s.id)}>
+                  {aberta === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
                   <span className="text-tinta-sussurro">nº {s.numero}</span>
                   <SeloPrioridade s={s} />
                   <span className="text-tinta-sussurro">{CARATER[s.carater]}</span>
@@ -522,6 +617,7 @@ function Lista({ unidadeId, central, podeRegistrarExterno }: { unidadeId: string
                   {central && <span className="text-tinta-sussurro">de {s.origem.nome}</span>}
                   <Badge variant={s.status === 'cancelada' ? 'secondary' : 'info'} className="ml-auto">{STATUS[s.status]}</Badge>
                   <span className="text-tinta-sussurro">{fmtDataHora(s.criada_em)}</span>
+                  <span className="text-rotulo text-acao">{aberta === s.id ? 'Fechar' : 'Ver detalhes'}</span>
                 </button>
                 {aberta === s.id && <Detalhe id={s.id} unidadeId={unidadeId} central={central} podeRegistrarExterno={podeRegistrarExterno} />}
               </li>
@@ -621,6 +717,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
       </dl>
       {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
       <BlocosDecisao s={s} />
+      <AnexosRegulacao solicitacaoId={s.id} />
       {!central && s.origem_pode_responder && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={recarregar} />}
       {!central && s.origem_pode_responder && s.status === 'devolvida' && <Reenviar s={s} aoFim={recarregar} />}
       {central && podeRegistrarExterno && emDecisao(s.status) && <PainelDecisao s={s} centralId={unidadeId} aoFim={recarregar} />}
