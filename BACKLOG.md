@@ -589,7 +589,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 ---
 
 ## Fase 4 — Regulação MVP e Plataforma de Rede
-**Fase atual desde 10/10/2026** (aberta depois do encerramento da Fase 3).
+**Encerrada em 11/10/2026** por decisão do RT. As 12 tarefas estão em produção. Evidências em `produto/docs/fase4/ENCERRAMENTO-FASE4.md`. A Fase 5 ainda não foi aberta: começa quando o RT mandar.
 **Horizonte:** 120-180 dias
 **Objetivo:** criar diferencial estratégico de rede, sem tentar fazer UBS completa ainda.
 
