@@ -158,3 +158,35 @@ export function ehNeonato(nascimento: string | null | undefined, hoje: string): 
   const dias = Math.round((Date.parse(hoje + 'T12:00:00Z') - Date.parse(nascimento + 'T12:00:00Z')) / 86_400_000)
   return dias >= 0 && dias < 28
 }
+
+/** Tempo de espera na fila: "agora", "12 min", "2 h 05 min", "3 d 4 h". */
+export function formatarEspera(segundos: number): string {
+  const min = Math.max(0, Math.floor(segundos / 60))
+  if (min < 1) return 'agora'
+  if (min < 60) return `${min} min`
+  const h = Math.floor(min / 60)
+  if (h < 24) return `${h} h ${String(min % 60).padStart(2, '0')} min`
+  return `${Math.floor(h / 24)} d ${h % 24} h`
+}
+
+export type FiltrosFila = {
+  tipo?: TipoSolicitacao; prioridade?: Prioridade; unidade_origem_id?: string; status?: StatusRegulacao[]
+  carater?: Carater; tipo_leito?: string; isolamento?: boolean; busca?: string
+}
+
+/** Só os filtros preenchidos vão para o banco (vazio = padrão: em aberto na central). */
+export function filtrosParaEnvio(f: FiltrosFila): Record<string, unknown> {
+  const saida: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(f)) {
+    if (v === undefined || v === '' || (Array.isArray(v) && v.length === 0)) continue
+    if (k === 'busca' && typeof v === 'string') { if (v.trim()) saida.busca = v.trim(); continue }
+    saida[k] = v
+  }
+  return saida
+}
+
+/** Ids que chegaram desde a última leitura (para destacar na fila). */
+export function novosDesde(anteriores: Set<string> | null, atuais: string[]): Set<string> {
+  if (!anteriores) return new Set()
+  return new Set(atuais.filter((id) => !anteriores.has(id)))
+}

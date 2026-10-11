@@ -671,6 +671,7 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 | Tarefa | Situação | Onde |
 |---|---|---|
 | 1 — Solicitação de regulação | **Em produção** (11/10; migration aplicada na produção antes do merge, com ok do RT). O PR #78 tinha entrado antes da hora e foi revertido (PR #80); a tarefa voltou com o modelo revisto pela pesquisa | Branch `fase4/regulacao-solicitacao`; migration `20261107000001_regulacao_solicitacao.sql`; teste `supabase/tests/fase4_regulacao_solicitacao.sql` (40 OK); `src/lib/regulacao.ts` (+ teste); tela `/regulacao` (origem, central e super admin); pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md` |
+| 2 — Fila regulada | **Construída e conferida no local** (11/10). Falta: homologação, teste do RT e "ok produção" | Branch `fase4/fila-regulada`; migration `20261108000001_fila_regulada.sql`; teste `supabase/tests/fase4_fila_regulada.sql` (30 OK); fila na tela `/regulacao` da central. O regulador da central entra pela escala, como os outros papéis: a central precisa de um setor (ex.: "Regulação") e dos plantões dos reguladores |
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.

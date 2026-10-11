@@ -8,8 +8,10 @@
 //   CID-10, CBO na consulta —, prioridade (4 níveis ou não classificada) e o
 //   quadro clínico em blocos; liga ou não a um atendimento/internação aberta;
 //   acompanha e cancela com motivo.
-// • Central (regulador): vê as recebidas e anota a regulação externa e a
-//   prioridade da central. A fila com filtros e a decisão são as tarefas 2 a 4.
+// • Central (regulador): fila ordenada (não classificadas no topo, depois
+//   prioridade e espera), com filtros, busca, "Assumir" e "Devolver à fila",
+//   atualizada a cada 30 s (tarefa 2); anota a regulação externa e a
+//   prioridade da central. A decisão é a tarefa 4.
 // Migration 20261107000001_regulacao_solicitacao.sql; src/lib/regulacao.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -29,10 +31,11 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import {
   CARATER, FORMULARIO_VAZIO, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS, TIPOS_LEITO, TRANSPORTES,
-  dadosParaEnvio, ehNeonato, faltasFormulario, resumoPedido,
-  type Carater, type DestinoTipo, type Formulario, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
+  dadosParaEnvio, ehNeonato, faltasFormulario, filtrosParaEnvio, formatarEspera, novosDesde, resumoPedido,
+  type Carater, type DestinoTipo, type FiltrosFila, type Formulario, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
+import type { Json } from '@/types/database'
 import { Erro } from '@/pages/farmacia/Farmacia'
 
 type Ref = { id: string; nome: string }
@@ -86,7 +89,7 @@ export default function Regulacao() {
           : 'Pedidos de consulta, exame, leito ou transferência para a Central de Regulação da rede.'} />
       {c?.sou_super_admin && <Centrais />}
       {!unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <Erro texto={(ctx.error as Error).message} /> : !c ? null
-        : c.sou_central ? <Lista unidadeId={unidadeId} central podeRegistrarExterno={c.sou_regulador} />
+        : c.sou_central ? <Fila centralId={unidadeId} souRegulador={c.sou_regulador} />
         : !c.central ? (
           <Vazio icone={Waypoints} titulo="A rede ainda não tem Central de Regulação"
             texto="A administração da plataforma define a central da organização. Até lá, não há para onde enviar." />
@@ -591,5 +594,152 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
       )}
       <Erro texto={(cancelar.error ?? externo.error) ? ((cancelar.error ?? externo.error) as Error).message : null} />
     </div>
+  )
+}
+
+// ── Fila regulada (Fase 4, tarefa 2) ──────────────────────────────────────────
+type ItemFila = Solicitacao & {
+  assumida_por: string | null; assumida_por_mim: boolean; assumida_em: string | null; espera_segundos: number
+}
+type RespostaFila = { dados: ItemFila[]; resumo: Partial<Record<Prioridade, number>>; origens: Ref[]; agora: string }
+
+function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: boolean }) {
+  const qc = useQueryClient()
+  const [filtros, setFiltros] = React.useState<FiltrosFila>({})
+  const [busca, setBusca] = React.useState('')
+  const [aberta, setAberta] = React.useState<string | null>(null)
+  const [novos, setNovos] = React.useState<Set<string>>(new Set())
+  const vistos = React.useRef<Set<string> | null>(null)
+  const [lidoEm, setLidoEm] = React.useState(() => Date.now())
+  const [agora, setAgora] = React.useState(() => Date.now())
+  // o tempo de espera corre na tela entre uma leitura e outra
+  React.useEffect(() => {
+    const id = window.setInterval(() => setAgora(Date.now()), 30_000)
+    return () => window.clearInterval(id)
+  }, [])
+  const fila = useQuery({
+    queryKey: ['regulacao-fila', centralId, filtros],
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_fila', { p_central: centralId, p_filtros: filtrosParaEnvio(filtros) as unknown as Json })
+      if (error) throw error
+      const r = data as unknown as RespostaFila
+      const ids = r.dados.map((d) => d.id)
+      setNovos(novosDesde(vistos.current, ids))
+      vistos.current = new Set([...(vistos.current ?? []), ...ids])
+      setLidoEm(Date.now()); setAgora(Date.now())
+      return r
+    },
+  })
+  const recarregar = () => {
+    void qc.invalidateQueries({ queryKey: ['regulacao-fila', centralId] })
+    if (aberta) void qc.invalidateQueries({ queryKey: ['regulacao-detalhe', aberta] })
+  }
+  const assumir = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('regulacao_assumir', { p_id: id })
+      if (error) throw error
+    },
+    onSuccess: recarregar,
+  })
+  const soltar = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('regulacao_soltar', { p_id: id })
+      if (error) throw error
+    },
+    onSuccess: recarregar,
+  })
+  const setF = <K extends keyof FiltrosFila>(k: K, v: FiltrosFila[K] | '') =>
+    setFiltros((x) => { const n = { ...x }; if (v === '' || v === undefined) delete n[k]; else n[k] = v as FiltrosFila[K]; return n })
+  const r = fila.data
+  const decorrido = Math.floor((agora - lidoEm) / 1000)
+  const resumo = r?.resumo ?? {}
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+          Fila da central
+          {(Object.keys(PRIORIDADES) as Prioridade[]).filter((p) => resumo[p]).map((p) => (
+            <Badge key={p} variant={TOM[PRIORIDADES[p].tom]}>{PRIORIDADES[p].rotulo}: {resumo[p]}</Badge>
+          ))}
+        </CardTitle>
+        <CardDescription>
+          Não classificadas no topo; depois por prioridade e, em cada nível, quem espera há mais tempo. Atualiza a cada 30 segundos.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 text-apoio">
+        <div className="grid gap-2 sm:grid-cols-4">
+          <select aria-label="Tipo" className={SELECT} value={filtros.tipo ?? ''} onChange={(e) => setF('tipo', e.target.value as TipoSolicitacao | '')}>
+            <option value="">Todos os tipos</option>
+            {(Object.keys(TIPOS) as TipoSolicitacao[]).map((k) => <option key={k} value={k}>{TIPOS[k]}</option>)}
+          </select>
+          <select aria-label="Prioridade" className={SELECT} value={filtros.prioridade ?? ''} onChange={(e) => setF('prioridade', e.target.value as Prioridade | '')}>
+            <option value="">Todas as prioridades</option>
+            {(Object.keys(PRIORIDADES) as Prioridade[]).map((k) => <option key={k} value={k}>{PRIORIDADES[k].rotulo}</option>)}
+          </select>
+          <select aria-label="Unidade de origem" className={SELECT} value={filtros.unidade_origem_id ?? ''} onChange={(e) => setF('unidade_origem_id', e.target.value)}>
+            <option value="">Todas as unidades</option>
+            {(r?.origens ?? []).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
+          </select>
+          <select aria-label="Status" className={SELECT} value={filtros.status?.[0] ?? ''}
+            onChange={(e) => setF('status', e.target.value ? [e.target.value as StatusRegulacao] : '')}>
+            <option value="">Em aberto (enviada, em análise, pendência)</option>
+            {(Object.keys(STATUS) as StatusRegulacao[]).map((k) => <option key={k} value={k}>{STATUS[k]}</option>)}
+          </select>
+          <select aria-label="Caráter" className={SELECT} value={filtros.carater ?? ''} onChange={(e) => setF('carater', e.target.value as Carater | '')}>
+            <option value="">Eletivo e urgência</option>
+            {(Object.keys(CARATER) as Carater[]).map((k) => <option key={k} value={k}>{CARATER[k]}</option>)}
+          </select>
+          <select aria-label="Tipo de leito" className={SELECT} value={filtros.tipo_leito ?? ''} onChange={(e) => setF('tipo_leito', e.target.value)}>
+            <option value="">Todos os leitos</option>
+            {Object.entries(TIPOS_LEITO).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
+          </select>
+          <select aria-label="Isolamento" className={SELECT} value={filtros.isolamento === undefined ? '' : String(filtros.isolamento)}
+            onChange={(e) => setF('isolamento', e.target.value === '' ? '' : e.target.value === 'true')}>
+            <option value="">Com e sem isolamento</option>
+            <option value="true">Só com isolamento</option>
+            <option value="false">Sem isolamento</option>
+          </select>
+          <form className="flex gap-1" onSubmit={(e) => { e.preventDefault(); setF('busca', busca) }}>
+            <Input aria-label="Buscar" className="h-8" placeholder="Paciente, nº ou protocolo" value={busca} onChange={(e) => setBusca(e.target.value)} />
+            <Button size="sm" variant="outline" type="submit">Buscar</Button>
+          </form>
+        </div>
+        <Erro texto={(fila.error ?? assumir.error ?? soltar.error) ? ((fila.error ?? assumir.error ?? soltar.error) as Error).message : null} />
+        {fila.isLoading ? <Spinner /> : (r?.dados ?? []).length === 0 ? (
+          <Vazio icone={Waypoints} titulo="Fila vazia" texto="Nenhuma solicitação com esses filtros." />
+        ) : (
+          <ul className="flex flex-col divide-y divide-fio">
+            {r!.dados.map((s) => (
+              <li key={s.id} className={`py-2 ${novos.has(s.id) ? 'rounded-md bg-alerta-atencao/40 px-2' : ''}`}>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button type="button" className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-left" onClick={() => setAberta(aberta === s.id ? null : s.id)}>
+                    <Badge variant={TOM[PRIORIDADES[s.prioridade].tom]}>{PRIORIDADES[s.prioridade].rotulo}</Badge>
+                    {novos.has(s.id) && <Badge variant="warning">novo</Badge>}
+                    <span className="font-semibold tabular-nums text-tinta">{formatarEspera(s.espera_segundos + decorrido)}</span>
+                    <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}</span>
+                    <span className="text-tinta-apoio">{resumoPedido(s)}</span>
+                    {s.isolamento && <Badge variant="destructive">isolamento</Badge>}
+                    <span className="text-tinta-sussurro">{CARATER[s.carater]} · de {s.origem.nome} · nº {s.numero}</span>
+                  </button>
+                  <Badge variant="info">{STATUS[s.status]}</Badge>
+                  {s.assumida_por && !s.assumida_por_mim && <span className="text-tinta-sussurro">com {s.assumida_por}</span>}
+                  {souRegulador && !s.assumida_por && (
+                    <Button size="xs" onClick={() => assumir.mutate(s.id)} disabled={assumir.isPending}>Assumir</Button>
+                  )}
+                  {s.assumida_por_mim && (
+                    <>
+                      <span className="text-sucesso">com você</span>
+                      <Button size="xs" variant="ghost" onClick={() => soltar.mutate(s.id)} disabled={soltar.isPending}>Devolver à fila</Button>
+                    </>
+                  )}
+                </div>
+                {aberta === s.id && <Detalhe id={s.id} unidadeId={centralId} central podeRegistrarExterno={souRegulador} />}
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
   )
 }

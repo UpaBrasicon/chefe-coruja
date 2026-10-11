@@ -51,3 +51,15 @@ test('regulação: resumo do pedido e recém-nascido', () => {
   assert.equal(ehNeonato('2026-09-13', '2026-10-11'), false)
   assert.equal(ehNeonato(null, '2026-10-11'), false)
 })
+
+test('fila: tempo de espera, filtros e novos', async () => {
+  const { formatarEspera, filtrosParaEnvio, novosDesde } = await import('./regulacao.ts')
+  assert.equal(formatarEspera(20), 'agora')
+  assert.equal(formatarEspera(12 * 60), '12 min')
+  assert.equal(formatarEspera(125 * 60), '2 h 05 min')
+  assert.equal(formatarEspera((3 * 24 + 4) * 3600), '3 d 4 h')
+  assert.deepEqual(filtrosParaEnvio({ tipo: 'leito', busca: '  ', status: [], isolamento: false }), { tipo: 'leito', isolamento: false })
+  assert.deepEqual(filtrosParaEnvio({ busca: ' Maria ' }), { busca: 'Maria' })
+  assert.deepEqual([...novosDesde(null, ['a'])], [])
+  assert.deepEqual([...novosDesde(new Set(['a']), ['a', 'b'])], ['b'])
+})
