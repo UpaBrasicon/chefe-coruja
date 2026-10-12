@@ -205,6 +205,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
                 <span className={`text-sm font-semibold tabular-nums ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-tinta'}`}>
                   {o.internados}/{o.limite || '∞'}
                 </span>
+                {o.sem_leito > 0 && <span className="text-xs text-atencao">{o.sem_leito} sem leito</span>}
                 {lotado && <span className="text-xs font-semibold text-critico">LOTADO</span>}
               </div>
             )
