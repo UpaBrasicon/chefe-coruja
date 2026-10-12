@@ -216,3 +216,21 @@ test('CID: normaliza como o banco (K359 vira K35.9; categoria de 3 caracteres va
   assert.equal(normalizarCid('apendicite'), null)
   assert.equal(normalizarCid('K3'), null)
 })
+
+import { diferenciador, homonimos } from './homonimos.ts'
+
+test('homônimos: mesmo nome (sem acento e caixa) e nascimento marcam as duas linhas', () => {
+  const lista = [
+    { id: 'a', paciente: { nome: 'Gêmeo Silva', data_nascimento: '2022-03-10', prontuario: '2026.000079' } },
+    { id: 'b', paciente: { nome: 'GEMEO  SILVA', data_nascimento: '2022-03-10', prontuario: '2026.000080' } },
+    { id: 'c', paciente: { nome: 'Gêmeo Silva', data_nascimento: '2021-01-01' } },
+    { id: 'd', paciente: { nome: 'Sem Data', data_nascimento: null } },
+    { id: 'e', paciente: { nome: 'Sem Data', data_nascimento: null } },
+  ]
+  assert.deepEqual([...homonimos(lista)].sort(), ['a', 'b'])
+})
+
+test('homônimos: o diferenciador traz prontuário e mãe, ou o responsável', () => {
+  assert.equal(diferenciador({ nome: 'X', data_nascimento: null, prontuario: '1', nome_mae: 'Ana' }), 'Prontuário 1 · Mãe: Ana')
+  assert.equal(diferenciador({ nome: 'X', data_nascimento: null, prontuario: '2', responsavel_nome: 'Escola' }), 'Prontuário 2 · Responsável: Escola')
+})

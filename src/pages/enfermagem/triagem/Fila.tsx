@@ -5,10 +5,12 @@ import * as React from 'react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { rotuloIdade } from '@/domain/idade'
+import { homonimos } from '@/domain/homonimos'
 import { rotulosPrioridade } from '@/domain/prioridade'
 import { Button } from '@/components/ui/button'
 import { Chip } from '@/components/monitor/Pagina'
 import { ExcluirDaFila } from '@/components/porta/Chamada'
+import { SeloHomonimo } from '@/components/porta/SeloHomonimo'
 import { dataSP, esperaMin, gravarSala, hora, lerSala, nomeDe, type NaFila } from './comum'
 
 // Fila da triagem no desenho do protótipo: sala escolhida uma vez no topo
@@ -157,6 +159,7 @@ export function FilaTriagem({ fila, carregando, erro, onTriar }: { fila: NaFila[
 
   const hoje = dataSP()
   const n = fila.length
+  const iguais = homonimos(fila)
 
   return (
     <div className="flex flex-col gap-3">
@@ -187,6 +190,7 @@ export function FilaTriagem({ fila, carregando, erro, onTriar }: { fila: NaFila[
                   <span className="text-apoio text-pretty text-tinta-sussurro">
                     {[`Queixa: ${e.queixa}`, prios.length ? `Prioridade: ${prios.join(', ')}` : '', `Ficha às ${hora(e.chegada_em)}`].filter(Boolean).join(' · ')}
                   </span>
+                  {iguais.has(e.id) && <SeloHomonimo paciente={e.paciente} />}
                   <span className={cn(PILULA, 'self-start', st.classe)}>{st.texto}</span>
                 </div>
                 <span className="text-apoio whitespace-nowrap tabular-nums text-tinta-apoio" title="Espera desde a ficha da recepção">
