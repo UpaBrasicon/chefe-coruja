@@ -104,9 +104,9 @@ SELECT e2e.passo('8.sae', 5, 'enfermeiro', '/enfermagem/internacao', 'SAE do pac
 SELECT e2e.passo('8.curativo', 5, 'enfermeiro', '/enfermagem/internacao', 'Curativo (pós-operatório simulado)',
   format('SELECT public.registrar_curativo(%L::uuid, %L, %L, %L, NULL, NULL, NULL, %L::uuid)::text', e2e.u('pac5'), 'Fossa ilíaca direita', 'Gaze estéril', 'limpo', e2e.u('int5')));
 SELECT e2e.passo('8.dispositivo', 10, 'enfermeiro', '/enfermagem/internacao', 'Sonda nasogástrica',
-  format('SELECT public.registrar_dispositivo(%L::uuid, %L, %L, %L, %L::date, NULL, NULL, NULL, %L::uuid)::text', e2e.u('pac10'), 'Sonda nasogástrica ou nasoenteral', 'Narina direita', '16Fr', current_date, e2e.u('int10')));
+  format('SELECT public.registrar_dispositivo(%L::uuid, %L, %L, %L, %L::date, NULL, NULL, NULL, %L::uuid)::text', e2e.u('pac10'), 'Sonda nasogástrica ou nasoenteral', 'Narina direita', '16Fr', private.data_atual(), e2e.u('int10')));
 SELECT e2e.passo('8.dispositivo', 13, 'enfermeiro', '/enfermagem/internacao', 'Acesso venoso periférico',
-  format('SELECT public.registrar_dispositivo(%L::uuid, %L, %L, %L, %L::date, NULL, NULL, NULL, %L::uuid)::text', e2e.u('pac13'), 'Acesso venoso periférico', 'MSE', '18G', current_date, e2e.u('int13')));
+  format('SELECT public.registrar_dispositivo(%L::uuid, %L, %L, %L, %L::date, NULL, NULL, NULL, %L::uuid)::text', e2e.u('pac13'), 'Acesso venoso periférico', 'MSE', '18G', private.data_atual(), e2e.u('int13')));
 SELECT e2e.passo('8.queda', 11, 'enfermeiro', '/enfermagem/internacao', 'Notifica queda (intercorrência) na idosa com delirium',
   format('SELECT public.registrar_intercorrencia(%L::uuid, NULL, %L::uuid, %L, NULL, %L, now(), %L, %L)::text', e2e.u('pac11'), e2e.u('int11'), 'queda', 'leve',
          'Queda da própria altura ao tentar levantar sozinha (teste E2E).', 'Avaliada, sem lesão; grade elevada e acompanhante orientado.'));
