@@ -69,8 +69,13 @@ DO $$ BEGIN
   BEGIN
     PERFORM public.registrar_soap(pg_temp.v('a'), 'edema', 'estável', 'angioedema leve', 'anti-histamínico', 'T78.3X');
     RAISE EXCEPTION 'FALHOU: CID inválido aceito';
-  EXCEPTION WHEN check_violation THEN
-    RAISE NOTICE 'OK  CID com formato inválido é recusado';
+  EXCEPTION
+    WHEN check_violation THEN
+      RAISE NOTICE 'OK  CID com formato inválido é recusado';
+    -- com a CID-10 carregada, a conferência da tarefa 3 do portão recusa antes
+    WHEN raise_exception THEN
+      IF SQLERRM NOT LIKE 'Informe um CID-10 válido%' AND SQLERRM NOT LIKE 'CID fora do formato%' THEN RAISE; END IF;
+      RAISE NOTICE 'OK  CID fora da CID-10 é recusado';
   END;
   PERFORM public.registrar_soap(pg_temp.v('a'), 'Edema labial há 2 h', 'Sem estridor, SpO2 98%', 'Angioedema leve', 'Anti-histamínico e observação da resposta', 'T78.3');
   PERFORM public.registrar_soap(pg_temp.v('a'), NULL, 'Reavaliado: edema regrediu', NULL, 'Alta com orientações');

@@ -12,6 +12,8 @@ CREATE TABLE e2e.coorte (
   n int PRIMARY KEY, nome text, nascimento date, sexo text, cpf text, queixa text, cid text, cor text,
   fluxograma text, publico text, desfecho text, vitais jsonb, dados jsonb DEFAULT '{}'
 );
+-- CIDs da CID-10 do DATASUS (a tabela do SUS não tem K35.8 nem N18.5 da OMS;
+-- correções do portão, tarefa 3): apendicite K35.9, renal crônica N18.0
 INSERT INTO e2e.coorte VALUES
   (1,  'E2E Lactente Febril',          current_date - interval '4 months',   'M', e2e.cpf('900000001'), 'Febre e irritabilidade', 'R50.9', 'laranja',  'Alterações do Sistema Nervoso Central', 'pediatrico', 'observacao',
        '{"frequencia-cardiaca":178,"frequencia-respiratoria":52,"temperatura":39.1,"saturacao-o2":95,"escala-dor":4}', '{"responsavel_nome":"E2E Mãe do Lactente","responsavel_parentesco":"mãe"}'),
@@ -21,13 +23,13 @@ INSERT INTO e2e.coorte VALUES
        '{"frequencia-cardiaca":88,"frequencia-respiratoria":16,"temperatura":36.5,"saturacao-o2":99,"escala-dor":5,"pressao-arterial-sistolica":118,"pressao-arterial-diastolica":72}', '{"responsavel_nome":"E2E Tia do Adolescente","responsavel_parentesco":"tia"}'),
   (4,  'E2E Adulto Meningite',         current_date - interval '28 years',   'F', e2e.cpf('900000004'), 'Cefaleia intensa e rigidez de nuca', 'G03.9', 'laranja', 'Dor de cabeça', 'adulto', 'internacao',
        '{"frequencia-cardiaca":112,"frequencia-respiratoria":22,"temperatura":39.4,"saturacao-o2":97,"escala-dor":9,"pressao-arterial-sistolica":110,"pressao-arterial-diastolica":70}', '{}'),
-  (5,  'E2E Adulto Apendicite',        current_date - interval '35 years',   'M', e2e.cpf('900000005'), 'Dor abdominal em fossa ilíaca direita', 'K35.8', 'amarelo', 'Dor abdominal', 'adulto', 'internacao',
+  (5,  'E2E Adulto Apendicite',        current_date - interval '35 years',   'M', e2e.cpf('900000005'), 'Dor abdominal em fossa ilíaca direita', 'K35.9', 'amarelo', 'Dor abdominal', 'adulto', 'internacao',
        '{"frequencia-cardiaca":104,"frequencia-respiratoria":18,"temperatura":38.1,"saturacao-o2":98,"escala-dor":7,"pressao-arterial-sistolica":126,"pressao-arterial-diastolica":80}', '{}'),
   (6,  'E2E Gestante Sangramento',     current_date - interval '30 years',   'F', e2e.cpf('900000006'), 'Sangramento vaginal na gestação de 32 semanas', 'O46.9', 'laranja', 'Sangramentos', 'adulto', 'internacao',
        '{"frequencia-cardiaca":108,"frequencia-respiratoria":20,"temperatura":36.7,"saturacao-o2":98,"escala-dor":6,"pressao-arterial-sistolica":100,"pressao-arterial-diastolica":60}', '{}'),
   (7,  'E2E Adulto Infarto',           current_date - interval '45 years',   'M', e2e.cpf('900000007'), 'Dor torácica em aperto há 1 hora', 'I21.9', 'vermelho', 'Dor torácica', 'adulto', 'internacao',
        '{"frequencia-cardiaca":96,"frequencia-respiratoria":22,"temperatura":36.4,"saturacao-o2":94,"escala-dor":9,"pressao-arterial-sistolica":150,"pressao-arterial-diastolica":95}', '{}'),
-  (8,  'E2E Adulto Renal',             current_date - interval '52 years',   'F', e2e.cpf('900000008'), 'Fraqueza; faz hemodiálise e faltou à sessão', 'N18.5', 'laranja', 'Mal-estar geral', 'adulto', 'internacao',
+  (8,  'E2E Adulto Renal',             current_date - interval '52 years',   'F', e2e.cpf('900000008'), 'Fraqueza; faz hemodiálise e faltou à sessão', 'N18.0', 'laranja', 'Mal-estar geral', 'adulto', 'internacao',
        '{"frequencia-cardiaca":52,"frequencia-respiratoria":20,"temperatura":36.3,"saturacao-o2":96,"escala-dor":2,"pressao-arterial-sistolica":168,"pressao-arterial-diastolica":98}', '{}'),
   (9,  'E2E Idoso AVC',                current_date - interval '68 years',   'M', e2e.cpf('900000009'), 'Fraqueza súbita no lado direito e fala enrolada', 'I63.9', 'vermelho', 'Mal-estar geral', 'adulto', 'internacao',
        '{"frequencia-cardiaca":84,"frequencia-respiratoria":18,"temperatura":36.6,"saturacao-o2":96,"escala-dor":0,"pressao-arterial-sistolica":182,"pressao-arterial-diastolica":104}', '{}'),
