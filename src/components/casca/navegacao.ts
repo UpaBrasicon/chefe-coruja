@@ -212,6 +212,27 @@ export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false
 }
 
 /**
+ * Barra inferior do celular (correções do portão, tarefa 8): no máximo cinco
+ * posições. Com mais itens, quatro fixos e o "Mais", que abre a lista do resto.
+ * Os fixos seguem a ordem do menu, salvo o papel que tem os seus (decisão do
+ * RT: no enfermeiro, Triagem e Pronto Socorro fazem a mesma função, e
+ * Internação e Checagem também — fica um de cada, mais Notificações e Alta
+ * vigilância).
+ */
+export const MAX_BARRA_CELULAR = 5
+const FIXOS_CELULAR: Partial<Record<Papel, string[]>> = {
+  enfermeiro: ['/triagem', '/enfermagem/internacao', '/notificacao-compulsoria', '/alta-vigilancia'],
+}
+export function dividirBarraCelular(papel: Papel | null, itens: ItemNav[]): { fixos: ItemNav[]; mais: ItemNav[] } {
+  if (itens.length <= MAX_BARRA_CELULAR) return { fixos: itens, mais: [] }
+  const preferidos = ((papel && FIXOS_CELULAR[papel]) || [])
+    .map((to) => itens.find((i) => i.to === to))
+    .filter((i): i is ItemNav => !!i)
+  const fixos = [...preferidos, ...itens.filter((i) => !preferidos.includes(i))].slice(0, MAX_BARRA_CELULAR - 1)
+  return { fixos, mais: itens.filter((i) => !fixos.includes(i)) }
+}
+
+/**
  * As quatro abas do plantonista abaixo de 1024px (P/index.html, "DUAS abas no
  * celular" que viraram quatro em 29/08): ícone em cima do rótulo, e sobra
  * largura para o numeral da pendência.

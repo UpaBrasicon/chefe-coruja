@@ -9,7 +9,11 @@ export type NaFila = {
   chegada_em: string
   queixa: string
   prioridades_legais: string[]
-  paciente: { nome: string; nome_social: string | null; data_nascimento: string | null; sexo: string | null } | null
+  paciente: {
+    nome: string; nome_social: string | null; data_nascimento: string | null; sexo: string | null
+    /** para separar gêmeos e homônimos na fila (correções do portão, tarefa 8) */
+    prontuario?: string | null; nome_mae?: string | null; responsavel_nome?: string | null
+  } | null
 }
 
 /** Classificado e ainda à espera do médico: o enfermeiro pode reclassificar. */

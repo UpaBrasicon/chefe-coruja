@@ -44,7 +44,7 @@ export default function Triagem() {
       if (setores.length === 0) return []
       const { data, error } = await supabase
         .from('episodios')
-        .select('id, paciente_id, setor_id, chegada_em, queixa, prioridades_legais, paciente:pacientes(nome, nome_social, data_nascimento, sexo)')
+        .select('id, paciente_id, setor_id, chegada_em, queixa, prioridades_legais, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome, sexo)')
         .in('setor_id', setores)
         .eq('etapa', 'triagem')
       if (error) throw error
@@ -63,7 +63,7 @@ export default function Triagem() {
       if (setores.length === 0) return []
       const { data, error } = await supabase
         .from('episodios')
-        .select('id, paciente_id, setor_id, chegada_em, queixa, prioridades_legais, cor_atual, classificado_em, paciente:pacientes(nome, nome_social, data_nascimento, sexo)')
+        .select('id, paciente_id, setor_id, chegada_em, queixa, prioridades_legais, cor_atual, classificado_em, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome, sexo)')
         .in('setor_id', setores)
         .eq('etapa', 'atendimento')
         .is('atendimento_iniciado_em', null)

@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Building2 } from 'lucide-react'
+import { Building2, Ellipsis } from 'lucide-react'
 import * as React from 'react'
 import { useQuery } from '@tanstack/react-query'
 
@@ -24,7 +24,8 @@ import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTu
 import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
 import { Spinner } from '@/components/ui/spinner'
 import { ErroBoundary } from '@/components/ErroBoundary'
-import { ABAS_ESTREITAS_PLANTONISTA, inicioDoPapel, itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
+import { ABAS_ESTREITAS_PLANTONISTA, dividirBarraCelular, inicioDoPapel, itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
+import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
 import { useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
 import { Paleta } from '@/components/casca/Paleta'
 import { usePaleta } from '@/components/casca/usePaleta'
@@ -106,6 +107,48 @@ function ItemInferior({ item, nota }: { item: ItemNav; nota?: number }) {
         <span className="absolute top-[3px] right-1.5 rounded-capsula bg-nota px-[5px] text-rotulo leading-[15px] font-semibold text-atencao">{nota}</span>
       )}
     </NavLink>
+  )
+}
+
+/** "Mais" da barra do celular: os itens que não couberam, numa gaveta. A nota
+ *  soma as pendências deles; fica marcado quando a tela aberta é um deles. */
+function BotaoMais({ itens, notas }: { itens: ItemNav[]; notas: Partial<Record<string, number>> }) {
+  const [aberta, setAberta] = React.useState(false)
+  const location = useLocation()
+  const ativo = itens.some((i) => (i.exato ? location.pathname === i.to : location.pathname.startsWith(i.to)))
+  const soma = itens.reduce((a, i) => a + (i.nota ? notas[i.nota] ?? 0 : 0), 0)
+  return (
+    <>
+      <button type="button" onClick={() => setAberta(true)} aria-haspopup="dialog"
+        className={cn(
+          'relative flex min-h-[52px] min-w-[64px] flex-1 flex-col items-center justify-center gap-1 rounded-container px-0.5 py-1.5 text-rotulo leading-[1.15] transition-colors',
+          ativo ? 'bg-marca/10 font-semibold text-acao' : 'text-tinta-apoio',
+        )}>
+        <Ellipsis className="size-5" aria-hidden />
+        <span className="truncate text-center">Mais</span>
+        {soma > 0 && (
+          <span className="absolute top-[3px] right-1.5 rounded-capsula bg-nota px-[5px] text-rotulo leading-[15px] font-semibold text-atencao">{soma}</span>
+        )}
+      </button>
+      <Gaveta aberta={aberta} onAbertaChange={setAberta} rotulo="Mais telas">
+        <GavetaCabeca titulo="Mais telas" />
+        <nav aria-label="Mais telas" className="flex flex-col p-2">
+          {itens.map((item) => {
+            const Icone = item.icone
+            const nota = item.nota ? notas[item.nota] : undefined
+            return (
+              <NavLink key={item.to} to={item.to} end={item.exato} onClick={() => setAberta(false)}
+                className={({ isActive }) => cn('flex min-h-12 items-center gap-3 rounded-container px-3.5 text-controle',
+                  isActive ? 'bg-marca/10 font-semibold text-acao' : 'text-tinta')}>
+                <Icone className="size-5 shrink-0" aria-hidden />
+                <span className="flex-1">{item.rotulo}</span>
+                {!!nota && <span className="rounded-capsula bg-nota px-[7px] text-rotulo leading-[18px] font-semibold text-atencao">{nota}</span>}
+              </NavLink>
+            )
+          })}
+        </nav>
+      </Gaveta>
+    </>
   )
 }
 
@@ -201,6 +244,7 @@ function Casca() {
   const itens = React.useMemo(() => itensDeNavegacao(papelAtivo, ehRt, ehSuperAdmin), [papelAtivo, ehRt, ehSuperAdmin])
   const inicio = inicioDoPapel(papelAtivo)
   const notas = useNotasNav(unidadeId, papelAtivo)
+  const barra = React.useMemo(() => dividirBarraCelular(papelAtivo, itens), [papelAtivo, itens])
   const ehPlantonista = papelAtivo === 'plantonista'
   const ehAdmin = papelAtivo === 'admin'
   const ehGestor = papelAtivo === 'gestor'
@@ -490,15 +534,16 @@ function Casca() {
         </main>
       </div>
 
-      {/* Barra inferior ≤767px (os papéis sem topo próprio): todos os itens, rolando se não couberem. */}
+      {/* Barra inferior ≤767px (os papéis sem topo próprio): até cinco posições; com mais itens, quatro e "Mais". */}
       {!topoEstreito && (
         <nav
           aria-label="Navegação principal"
           className="fixed inset-x-0 bottom-0 z-40 flex gap-0.5 overflow-x-auto border-t border-fio bg-superficie px-[5px] pt-[5px] pb-[calc(5px+env(safe-area-inset-bottom))] [scrollbar-width:none] md:hidden"
         >
-          {itens.map((item) => (
+          {barra.fixos.map((item) => (
             <ItemInferior key={item.to} item={item} nota={item.nota ? notas[item.nota] : undefined} />
           ))}
+          {barra.mais.length > 0 && <BotaoMais itens={barra.mais} notas={notas} />}
         </nav>
       )}
 

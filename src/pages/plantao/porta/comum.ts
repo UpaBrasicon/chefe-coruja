@@ -20,7 +20,11 @@ export type EpFila = {
   prioridades_legais: string[]
   atendimento_iniciado_em: string | null
   reavaliar_em: string | null
-  paciente: { nome: string; nome_social: string | null; data_nascimento: string | null } | null
+  paciente: {
+    nome: string; nome_social: string | null; data_nascimento: string | null
+    /** para separar gêmeos e homônimos na fila (correções do portão, tarefa 8) */
+    prontuario?: string | null; nome_mae?: string | null; responsavel_nome?: string | null
+  } | null
 }
 
 export const hoje = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })

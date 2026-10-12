@@ -8,6 +8,7 @@ import { Check, Clock, LogOut, Stethoscope } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { faixaEtaria, rotuloFaixa, rotuloIdade } from '@/domain/idade'
+import { homonimos } from '@/domain/homonimos'
 import { rotulosPrioridade } from '@/domain/prioridade'
 import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
 import { cn } from '@/lib/utils'
@@ -15,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { BotaoChamar } from '@/components/porta/Chamada'
+import { SeloHomonimo } from '@/components/porta/SeloHomonimo'
 import { EncaminhamentosRecebidos } from '@/components/encaminhamento/EncaminhamentosRecebidos'
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 
@@ -71,7 +73,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
     queryFn: async () => {
       const { data, error } = await supabase
         .from('episodios')
-        .select('id, paciente_id, setor_id, cor_atual, classificado_em, chegada_em, queixa, publico, prioridades_legais, atendimento_iniciado_em, reavaliar_em, paciente:pacientes(nome, nome_social, data_nascimento)')
+        .select('id, paciente_id, setor_id, cor_atual, classificado_em, chegada_em, queixa, publico, prioridades_legais, atendimento_iniciado_em, reavaliar_em, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome)')
         .in('setor_id', meusSetores)
         .eq('etapa', 'atendimento')
       if (error) throw error
@@ -101,6 +103,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
 
   const aguardando = (fila.data ?? []).filter((e) => !e.atendimento_iniciado_em)
   const emAtendimento = (fila.data ?? []).filter((e) => e.atendimento_iniciado_em)
+  const iguais = homonimos(fila.data ?? [])
   const setoresDaFila = [...new Set((fila.data ?? []).map((e) => e.setor_id))]
   const chamadas = useChamadasPorEpisodio(setoresDaFila, 'atendimento')
 
@@ -138,6 +141,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                   {[e.queixa, e.prioridades_legais.length ? `Prioridade: ${rotulosPrioridade(e.prioridades_legais).join(', ')}` : '', rotuloFaixa(faixaEtaria(e.paciente?.data_nascimento, e.chegada_em))]
                     .filter(Boolean).join(' · ')}
                 </span>
+                {iguais.has(e.id) && <SeloHomonimo paciente={e.paciente} />}
                 <Pilula tom="cinza">Aguardando</Pilula>
               </div>
               <span className={cn('text-apoio whitespace-nowrap tabular-nums', acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>
@@ -163,6 +167,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                 <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
                   <span className="text-corpo font-medium text-tinta">{nomeDe(e)} <span className="text-apoio font-normal text-tinta-sussurro">{idadeDe(e.paciente)}</span></span>
                   <span className="text-apoio text-tinta-sussurro [text-wrap:pretty]">{e.queixa}</span>
+                  {iguais.has(e.id) && <SeloHomonimo paciente={e.paciente} />}
                   {reav
                     ? <Pilula tom={atrasada ? 'vermelho' : 'ambar'}><Clock className="size-3" aria-hidden /> Em reavaliação · às {hora(e.reavaliar_em)}{atrasada ? ' · atrasada' : ''}</Pilula>
                     : <Pilula tom="teal">Em atendimento</Pilula>}
