@@ -5487,6 +5487,7 @@ export type Database = {
           data_entrada_setor: string | null
           episodio_id: string | null
           id: string
+          internado_em: string | null
           leito_atual_id: string | null
           motivo_alta: string | null
           organizacao_id: string
@@ -5512,6 +5513,7 @@ export type Database = {
           data_entrada_setor?: string | null
           episodio_id?: string | null
           id?: string
+          internado_em?: string | null
           leito_atual_id?: string | null
           motivo_alta?: string | null
           organizacao_id: string
@@ -5537,6 +5539,7 @@ export type Database = {
           data_entrada_setor?: string | null
           episodio_id?: string | null
           id?: string
+          internado_em?: string | null
           leito_atual_id?: string | null
           motivo_alta?: string | null
           organizacao_id?: string

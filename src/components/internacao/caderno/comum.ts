@@ -6,6 +6,8 @@ export type Internacao = {
   id: string
   status: string
   data_admissao: string
+  /** hora em que passou a internado (a conversão, quando veio da observação) */
+  internado_em: string | null
   data_alta: string | null
   alta_registrada_em: string | null
   alta_por: string | null
