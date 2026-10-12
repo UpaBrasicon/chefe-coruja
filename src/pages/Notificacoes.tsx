@@ -17,11 +17,13 @@ import type { MinhaNotificacao } from '@/types/database'
 // por aviso e "Marcar todas como lidas", com desfazer que volta no servidor
 // (marcar_avisos_lidos / reabrir_avisos). A categoria sai do tipo do aviso.
 
-type Categoria = 'Turno' | 'Observação' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'AIH' | 'APAC' | 'Outros'
+type Categoria = 'Turno' | 'Observação' | 'Triagem' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'AIH' | 'APAC' | 'Outros'
 
 function categoria(tipo: string): Categoria {
   if (/^(noite|manha|tarde|turno)_/.test(tipo)) return 'Turno'
   if (tipo.startsWith('obs_')) return 'Observação'
+  // piora reclassificada pela enfermagem na espera (correções do portão, tarefa 2)
+  if (tipo.startsWith('triagem_')) return 'Triagem'
   if (tipo.startsWith('solic_') || tipo.startsWith('vaga_')) return 'Escala'
   if (tipo.startsWith('cand_')) return 'Candidatura'
   if (tipo.startsWith('chat_')) return 'Mensagem'
@@ -35,6 +37,7 @@ function categoria(tipo: string): Categoria {
 const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: { to: string; rotulo: string } }> = {
   Turno: { icone: Clock, cor: 'text-marca bg-marca/10', acao: { to: '/plantao', rotulo: 'Abrir Plantão' } },
   Observação: { icone: TriangleAlert, cor: 'text-atencao bg-atencao/10', acao: { to: '/observacao', rotulo: 'Abrir Observação' } },
+  Triagem: { icone: TriangleAlert, cor: 'text-critico bg-critico/10', acao: { to: '/atendimento', rotulo: 'Abrir atendimento' } },
   Escala: { icone: CalendarClock, cor: 'text-tinta-apoio bg-trilha', acao: { to: '/agenda', rotulo: 'Ver escala' } },
   Candidatura: { icone: Users, cor: 'text-tinta-apoio bg-trilha', acao: { to: '/agenda', rotulo: 'Ver vagas' } },
   Mensagem: { icone: MessageSquare, cor: 'text-tinta-apoio bg-trilha' },
@@ -95,7 +98,7 @@ export default function Notificacoes() {
   const rotas = new Set(itensDeNavegacao(papelAtivo).map((i) => i.to))
   const todos = notificacoes ?? []
   const categorias = new Set(todos.map((n) => categoria(n.tipo)))
-  const filtros = [...FILTROS, ...(categorias.has('Mensagem') ? ['Mensagem'] : []), ...(categorias.has('Outros') ? ['Outros'] : [])]
+  const filtros = [...FILTROS, ...(categorias.has('Triagem') ? ['Triagem'] : []), ...(categorias.has('Mensagem') ? ['Mensagem'] : []), ...(categorias.has('Outros') ? ['Outros'] : [])]
   const lista = todos.filter((n) => filtro === 'Todos' || (filtro === 'Não lidos' ? !n.lida : categoria(n.tipo) === filtro))
   const naoLidos = todos.filter((n) => !n.lida).length
 

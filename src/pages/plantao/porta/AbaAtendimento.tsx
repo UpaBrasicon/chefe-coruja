@@ -1,6 +1,7 @@
 // Aba "Atendimento" (protótipo): SOAP com rascunho contínuo no servidor, os
 // sinais da triagem logo abaixo do Objetivo, os registros já feitos e a
-// reclassificação (só o médico). Nada aqui sugere cor, dose ou conduta.
+// reclassificação (no atendimento, só o médico; na espera, também a
+// enfermagem). Nada aqui sugere cor, dose ou conduta.
 import { useMutation } from '@tanstack/react-query'
 import { ClipboardCheck } from 'lucide-react'
 import * as React from 'react'
@@ -23,6 +24,7 @@ import { hora, msg, soapVazio, type Soap } from './comum'
 export type Classificacao = {
   id: string; cor: CorRisco; fluxograma_nome: string | null; discriminador: string | null; queixa: string | null
   reclassificacao: boolean; motivo: string | null; justificativa: string | null; autor_nome: string | null
+  autor_papel?: string | null
   criado_em: string; sinais: Record<string, number> | null
 }
 export type RegistroSoap = { id: string; subjetivo: string | null; objetivo: string | null; avaliacao: string | null; cid: string | null; plano: string | null; criado_em: string }
@@ -138,7 +140,7 @@ export function AbaAtendimento({
         {classificacoes.map((c) => (
           <div key={c.id} className="text-apoio text-tinta-apoio">
             <PilulaRisco cor={c.cor} className="mr-2" />
-            {c.reclassificacao ? `Reclassificado pelo médico: ${c.motivo}` : [c.fluxograma_nome, c.discriminador].filter(Boolean).join(' · ')}
+            {c.reclassificacao ? `Reclassificado ${c.autor_papel === 'enfermeiro' ? 'pela enfermagem na espera' : 'pelo médico'}: ${c.motivo}` : [c.fluxograma_nome, c.discriminador].filter(Boolean).join(' · ')}
             {c.justificativa && ` · justificativa: ${c.justificativa}`}
             <span className="text-rotulo text-tinta-sussurro"> · {c.autor_nome ? `${c.autor_nome} · ` : ''}{hora(c.criado_em)}</span>
           </div>
@@ -185,7 +187,7 @@ function Reclassificar({ episodioId, publico, corAtual, aoRegistrar }: { episodi
     <section className="flex flex-col gap-3 rounded-container border border-fio px-4 py-3">
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-controle font-semibold text-tinta">Reclassificar</h3>
-        <span className="text-rotulo text-tinta-sussurro">Só o médico reclassifica: motivo, sinais vitais novos e, para baixar a prioridade, justificativa.</span>
+        <span className="text-rotulo text-tinta-sussurro">No atendimento, só o médico reclassifica (na espera, a enfermagem também): motivo, sinais vitais novos e, para baixar a prioridade, justificativa.</span>
         {!aberto && <Button size="sm" variant="outline" className="ml-auto" onClick={() => setAberto(true)}>Reclassificar</Button>}
       </div>
       {aberto && (

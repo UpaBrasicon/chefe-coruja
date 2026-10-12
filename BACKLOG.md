@@ -589,7 +589,7 @@ As branches estão empilhadas na ordem da tabela. Os PRs devem ser mergeados nes
 ---
 
 ## Fase 4 — Regulação MVP e Plataforma de Rede
-**Fase atual desde 10/10/2026** (aberta depois do encerramento da Fase 3).
+**Encerrada em 11/10/2026** por decisão do RT. As 12 tarefas estão em produção. Evidências em `produto/docs/fase4/ENCERRAMENTO-FASE4.md`. A Fase 5 ainda não foi aberta: começa quando o RT mandar.
 **Horizonte:** 120-180 dias
 **Objetivo:** criar diferencial estratégico de rede, sem tentar fazer UBS completa ainda.
 
@@ -798,7 +798,7 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 | 9 — Aceite pela unidade destino | **Em produção** (11/10; migration `20261115000001` aplicada na produção antes do merge, com ok do RT; testado na homologação com o Hospital de Referência como destino) | Branch `fase4/aceite-destino`; migration `20261115000001_aceite_destino.sql` (status "aguardando o destino", respostas do destino com histórico, reserva do leito no aceite, saída, chegada e falta, prazo de 24 h nos relógios, resposta do serviço de fora pela central); teste `supabase/tests/fase4_aceite_destino.sql` (30 OK) e ajuste em `fase4_decisao_regulacao.sql` (autorizar agora espera o destino); `src/components/regulacao/DestinoRegulacao.tsx` ("Recebidos da central" na unidade, aceite e recusa, chegada, "Paciente saiu" na origem, resposta do serviço de fora na central). A reserva do leito vale 24 h, ou até 8 h depois da data prevista, e é estendida por 8 h na saída e na chegada. A origem pode cancelar também esperando o destino ou a chegada; a reserva é liberada e o destino avisado |
 | 12 — Papéis de rede como módulo | **Em produção** (11/10; migrations `20261116000001` e `20261116000002` aplicadas na produção antes do merge, com ok do RT; o módulo começa desligado em todas as organizações) | Branch `fase4/papeis-rede`; migrations `20261116000001_papeis_rede_enum.sql` (papéis secretaria, regulacao_regional, faturamento_rede) e `20261116000002_papeis_rede.sql` (módulo por organização com a unidade Secretaria, liberação por unidade pelo gestor com histórico, papel de rede só na Secretaria e convite só pelo super admin, escala obrigatória, resumo da regulação, lista nominal e detalhe da Regulação regional com acesso registrado, produção e arquivos fechados para o Faturamento da secretaria, mapa de vagas das liberadas); teste `supabase/tests/fase4_papeis_rede.sql` (27 OK); tela `/rede` (`src/pages/rede/Rede.tsx`) e aba Unidade → Rede para o gestor (`src/components/rede/LiberacaoRede.tsx`). Pendência anotada: o papel Faturamento da unidade hoje entra sem escala; pela regra geral do RT (só administrador e gestor sem escala) ele passa a ter escala, a fazer em tarefa própria |
 | 11 — NIR | **Em produção** (11/10; migrations `20261117000001` e `20261117000002` aplicadas na produção antes do merge, com ok do RT; antes, conferido que as funções reescritas eram iguais às da produção) | Branch `fase4/nir`; migrations `20261117000001_nir_enum.sql` (papel nir) e `20261117000002_nir.sql` (o NIR abre pedido com o médico assistente, anexa, responde pendência, marca saída e chegada; não evolui, não corrige o devolvido, não cancela, não aceita como destino; painel `nir_pendencias` e `nir_cobrar` com registro em `nir_cobrancas`); teste `supabase/tests/fase4_nir.sql` (21 OK) e mensagens de erro atualizadas em três testes da regulação; tela `/nir` (`src/pages/nir/Nir.tsx`, `src/lib/nir.ts` + teste) para o NIR e o gestor, categorias AIH e APAC nos Avisos, NIR nos convites e na escala. "Internação sem AIH" vale para internação aberta que não é de observação; o responsável é o médico no plantão do setor (sem ninguém escalado, os médicos da unidade). "Chegada sem registro" lista todo pedido em trânsito para a unidade, com o tempo desde a saída, sem prazo fixo |
-| 10 — Indicadores de regulação | **Na homologação** (11/10). Falta: teste do RT e "ok produção" | Branch `fase4/indicadores-regulacao`; migration `20261118000001_indicadores_regulacao.sql` (`regulacao_indicadores`: tempos em mediana e p90 até a decisão, o aceite e a chegada, fila atual, volume, desfechos e motivos, cumprimento dos prazos e gargalos; escopo da central, dos papéis de rede e do gestor); teste `supabase/tests/fase4_indicadores_regulacao.sql` (15 OK); aba Indicadores na tela Regulação e na tela Rede (`src/components/regulacao/IndicadoresRegulacao.tsx`, `src/lib/indicadoresRegulacao.ts` + teste), com exportação CSV. O cumprimento da evolução mede o maior intervalo entre evoluções enquanto o pedido esperava decisão |
+| 10 — Indicadores de regulação | **Em produção** (11/10; migration `20261118000001` aplicada na produção antes do merge, com ok do RT) | Branch `fase4/indicadores-regulacao`; migration `20261118000001_indicadores_regulacao.sql` (`regulacao_indicadores`: tempos em mediana e p90 até a decisão, o aceite e a chegada, fila atual, volume, desfechos e motivos, cumprimento dos prazos e gargalos; escopo da central, dos papéis de rede e do gestor); teste `supabase/tests/fase4_indicadores_regulacao.sql` (15 OK); aba Indicadores na tela Regulação e na tela Rede (`src/components/regulacao/IndicadoresRegulacao.tsx`, `src/lib/indicadoresRegulacao.ts` + teste), com exportação CSV. O cumprimento da evolução mede o maior intervalo entre evoluções enquanto o pedido esperava decisão |
 
 **Ordem técnica da Fase 4**
 1. Criar modelo de dados de regulação.
@@ -811,6 +811,39 @@ Pesquisa em `produto/docs/pesquisa/regulacao-modelos-sistemas.md`. Ela cobre SIS
 8. Criar indicadores.
 
 ---
+
+## Portão antes da Fase 5 — teste de ponta a ponta do fluxo assistencial
+
+**Pedido do RT em 11/10/2026.** A Fase 5 só abre depois deste teste e da decisão do RT sobre as correções.
+
+- **Escopo:** fluxo assistencial completo (recepção, triagem, atendimento, observação, internação, regulação, transferência, enfermagem, técnico, farmácia, gestor) com uma coorte de 15 pacientes simulados, permissões negativas, auditoria, concorrência, datas, casos-limite de cadastro, documentos, notificações, evasão e alta a pedido, passagem de plantão, rascunhos, celular, desempenho e Hermes. Nenhuma feature nova.
+- **Ambiente (decisão do RT):** o teste roda no ambiente local (banco isolado, mesmas migrations), com uma conta de teste por papel e pelas telas e pelo banco. Os scripts ficam prontos para o RT repetir a coorte na homologação a cada release.
+- **Hermes:** só é testado se houver um gateway de teste; casos simulados não vão para o serviço da produção.
+- **Regra:** nada é corrigido durante o teste. Primeiro o relatório; o RT decide a ordem das correções.
+- **Entregáveis:** `produto/docs/teste-e2e/RELATORIO_E2E_AAAA-MM-DD.md` (defeitos por severidade, lacunas, cobertura), scripts e seeds reutilizáveis e as perguntas de produto para o RT.
+
+**Teste feito em 11/10/2026.** Relatório: `produto/docs/teste-e2e/RELATORIO_E2E_2026-10-11.md`; scripts: `scripts/e2e/`. Resultado: 340 passos, nenhum P0, 5 defeitos P1, 5 defeitos P2, 12 lacunas e 8 perguntas de produto.
+
+### Correções do portão — ordem aprovada pelo RT em 11/10/2026
+
+Uma tarefa por vez, cada uma em branch e PR próprios, com homologação antes da produção. A Fase 5 só abre depois da última.
+
+| # | Defeitos | Tarefa | Critério de aceite |
+|---|---|---|---|
+| 1 | P1-03, P1-02 | Fechar o que fica aberto no desfecho: óbito e transferência externa encerram as prescrições e somem da checagem; o óbito não é travado por exame sem resultado | Depois de óbito ou transferência externa, nenhum item do paciente aparece na fila de checagem; o óbito é registrado com exame pendente, que recebe o tratamento decidido pelo RT; prescrições ativas de internações já encerradas são corrigidas na produção |
+| 2 | Pergunta 2 | Reclassificação de risco pela enfermagem, conforme a decisão do RT | A regra do banco segue a definição da unidade ("classificação de risco é da enfermagem") ou a exceção decidida pelo RT |
+| 3 | P1-01 | Validar o CID no SOAP contra a CID-10 | O SOAP recusa CID inexistente com a mesma mensagem da regulação; levantamento dos CIDs inválidos já gravados entregue ao RT |
+| 4 | P1-05 | Tipo da internação quando a observação vira internação | A internação vinda da observação fica com o tipo de internação; as antigas são corrigidas na produção |
+| 5 | P1-04 | Ocupação por setor pelas internações abertas | O painel bate com as internações por setor atual, incluindo isolamento e UTI |
+| 6 | P2-05 | Trilha de leitura e impressão do pacote de alta pela equipe | Abrir e imprimir pela equipe gera registro em `log_acesso_prontuario` |
+| 7 | P2-01, P2-02 | Avisos de item devolvido pela farmácia e de leito liberado | O médico prescritor recebe o aviso da devolução; o NIR e a regulação interna recebem o aviso do leito liberado |
+| 8 | P2-04, P2-03 | Gêmeos distinguíveis na fila da triagem; barra inferior do enfermeiro no celular | A fila mostra um diferenciador; a barra cabe a 375 px |
+
+**Tarefa 1 — concluída, em produção em 11/10/2026 (PR #100).** Decisões do RT: no óbito, exame sem resultado é cancelado com o motivo "Óbito" e auditado; no óbito e na transferência externa só o agravo suspeito sem notificação continua impedindo (pareceres, passagens e pendências impeditivas são cancelados com o motivo; rascunho de documento não impede); a transferência externa segue a regra do óbito com o motivo "Transferência externa"; todo desfecho que tira o paciente da unidade encerra a prescrição (status `encerrada`), e a prescrição da porta continua quando a porta vira observação ou internação; depois da alta, checar, aprazar, sinais, prescrição, exames e registros de enfermagem fecham na hora (`private.paciente_em_cuidado_no_plantao`), e a leitura e os documentos da alta e do óbito (sumário de óbito, receita, atestado) ficam com a equipe do setor por 24 horas (`private.paciente_no_meu_plantao`, que antes valia sem prazo) — confirmado pelo RT; depois, só pelo pedido de acesso ao gestor. Migration `20261119000001_desfecho_encerra_cuidado.sql`; regressão `scripts/e2e/17_correcao_t1_desfecho.sql`.
+
+**Tarefa 2 — decisões do RT em 11/10/2026.** O enfermeiro também reclassifica, mas só enquanto o paciente espera o médico (antes do início do atendimento); depois, só o médico. A reclassificação do enfermeiro exige fluxograma e discriminador do protocolo, sinais vitais novos e motivo (10 letras ou mais); baixar a prioridade exige justificativa (20 letras ou mais). O técnico não reclassifica. Subir para vermelho ou laranja na espera avisa os médicos escalados na porta; as outras mudanças só reordenam a fila. O glossário (`CONTEXT.md`) e os textos das telas acompanham a regra. Migration `20261119000002_reclassificacao_enfermagem.sql`; regressão `scripts/e2e/18_correcao_t2_reclassificacao.sql`.
+
+**Fora das correções:** as 12 lacunas do relatório aguardam a decisão do RT sobre a entrada no backlog. As que têm peso legal ou de segurança são medicação controlada (Portaria 344), declaração de óbito, registro de contenção, pulseira e cadastro de não identificado. O teste do anexo de arquivo fica para a homologação, com as contas de teste criadas pelo RT.
 
 ## Fase 5 — UBS, Faturamento e Escala Competitiva
 **Horizonte:** 180+ dias

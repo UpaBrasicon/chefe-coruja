@@ -12,6 +12,9 @@ export type NaFila = {
   paciente: { nome: string; nome_social: string | null; data_nascimento: string | null; sexo: string | null } | null
 }
 
+/** Classificado e ainda à espera do médico: o enfermeiro pode reclassificar. */
+export type NaEspera = NaFila & { cor_atual: CorRisco; classificado_em: string }
+
 export type Fluxograma = {
   id: string
   nome: string
