@@ -12344,6 +12344,13 @@ export type Database = {
           protocolo: string
         }[]
       }
+      registrar_impressao_pacote_alta: {
+        Args: { p_documento?: string; p_pacote: string }
+        Returns: {
+          emitido_em: string
+          protocolo: string
+        }[]
+      }
       registrar_impressao_prontuario: {
         Args: {
           p_anexos: string[]
