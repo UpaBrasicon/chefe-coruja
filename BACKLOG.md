@@ -857,6 +857,17 @@ Uma tarefa por vez, cada uma em branch e PR próprios, com homologação antes d
 
 **Fora das correções:** as 12 lacunas do relatório aguardam a decisão do RT sobre a entrada no backlog. As que têm peso legal ou de segurança são medicação controlada (Portaria 344), declaração de óbito, registro de contenção, pulseira e cadastro de não identificado. O teste do anexo de arquivo fica para a homologação, com as contas de teste criadas pelo RT.
 
+## Portão 2 antes da Fase 5 — Rodada 2 do teste de ponta a ponta e validação do "Pergunte à IA"
+
+**Pedido do RT em 12/10/2026, com as correções do portão concluídas (PRs #100 a #108).** A Fase 5 só abre depois desta rodada e da decisão do RT sobre os achados.
+
+- **Escopo:** coorte 2 com 16 pacientes novos (#16 a #34: recém-nascido ictérico, intoxicação infantil, cetoacidose, adolescente com gravidez ectópica, pré-eclâmpsia grave, mastite puerperal, intoxicação alcoólica com agitação, acidente botrópico, politrauma, queimadura 25%, anafilaxia, hipoglicemia, TEP, fratura de fêmur, paliativo terminal, tuberculose com HIV, nome social, ficha com CPF de outro paciente e retorno em 48 h), as mesmas 11 etapas da Rodada 1 e os acréscimos pedidos (notificações compulsórias, isolamento, alergia nova, correção de identidade, transfusão, calculadoras). Regressão de todos os P0/P1 da Rodada 1. Cenários extras: troca de unidade no meio do atendimento, expiração de sessão e 2FA, lote de 40 pacientes, exportações do gestor, teclado e leitor de tela, webhook com origem inválida.
+- **Ambiente (decisão do RT):** homologação (Supabase `kswurfyx`), com as 11 etapas executadas por SQL como cada papel (RLS ligado), como na Rodada 1, pelo plugin do Supabase. As contas de teste são criadas no banco da homologação pelos scripts; as telas da homologação são conferidas pelo RT com essas contas.
+- **IA (decisão do RT): as duas.** (1) O que está no sistema: a Edge Function `clinical-search` ("Pergunte à IA" do plantonista: busca por evidência, com fonte e página; não conversa nem lê o prontuário) e `perguntar_gestao` (SQL do banco, sem LLM), com a homologação apontada para a biblioteca de produção, só leitura (secrets `BIBLIOTECA_URL`/`BIBLIOTECA_API_KEY` configuradas pelo RT). (2) A Coruja Clínica (Nous, Telegram): o RT faz as perguntas T1/T2/T3 pelo roteiro e cola respostas e logs; o teste pontua e monta `TABELA_IA.csv` e `AVALIACAO_HERMES.md`. O guardrail é o gateway de desidentificação (NER); não existe componente chamado "GATE".
+- **Regra:** nada é corrigido durante a rodada. Mesmo formato de defeito da Rodada 1.
+- **Entregáveis:** `produto/docs/teste-e2e/RELATORIO_E2E_R2_AAAA-MM-DD.md`, `TABELA_IA.csv`, `AVALIACAO_HERMES.md`, seeds da coorte 2 e dos CNES novos em `scripts/e2e/` (pasta `homolog/` com a versão para o SQL da homologação) e a lista de decisões de produto para o RT.
+- **Fica com o RT:** derrubar contêineres do VPS e medir a degradação; logs DEBUG e conferência de vazamento nos payloads; expiração de sessão e 2FA nas telas; leitor de tela; PDF impresso; webhook do prescreve.com (não existe no repositório: o RT aponta o achado).
+
 ## Fase 5 — UBS, Faturamento e Escala Competitiva
 **Horizonte:** 180+ dias
 **Objetivo:** ampliar para rede completa e competir com sistemas maiores.
