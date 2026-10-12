@@ -19,6 +19,8 @@ import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { CamposVitais } from '@/components/clinico/CamposVitais'
 import { SepsePorta } from '@/components/internacao/LeitoAberto'
 
+import { normalizarCid } from '@/domain/cid'
+
 import { hora, msg, soapVazio, type Soap } from './comum'
 
 export type Classificacao = {
@@ -29,16 +31,32 @@ export type Classificacao = {
 }
 export type RegistroSoap = { id: string; subjetivo: string | null; objetivo: string | null; avaliacao: string | null; cid: string | null; plano: string | null; criado_em: string }
 
-/** Sugestões de CID-10 enquanto digita (terminologia do servidor). */
+/** Sugestões de CID-10 enquanto digita (terminologia do servidor) e, com um
+ *  código digitado, o aviso na hora se ele não existe na CID-10 do DATASUS —
+ *  a mesma conferência do banco (correções do portão, tarefa 3). */
 export function CampoCid({ id, valor, onChange, placeholder }: { id: string; valor: string; onChange: (v: string) => void; placeholder?: string }) {
   const [foco, setFoco] = React.useState(false)
   const sug = useTerminologia('cid10', foco && valor.trim().length >= 2 ? valor : '', 6)
   const lista = (sug.data ?? []).filter((r) => r.codigo.toUpperCase() !== valor.trim().toUpperCase())
+  const codigo = normalizarCid(valor)
+  const confere = useTerminologia('cid10', codigo ?? '', 10)
+  const naoExiste = !!codigo && confere.isSuccess && !confere.isPlaceholderData
+    && !(confere.data ?? []).some((r) => r.codigo.toUpperCase() === codigo)
+  const foraDoFormato = !codigo && valor.trim().length >= 3 && /^[A-Z]\d/i.test(valor.trim())
   return (
     <div className="relative">
       <Input id={id} value={valor} placeholder={placeholder ?? 'Código ou nome'} autoComplete="off"
+        aria-invalid={naoExiste || foraDoFormato || undefined}
+        aria-describedby={naoExiste || foraDoFormato ? `${id}-aviso` : undefined}
         onFocus={() => setFoco(true)} onBlur={() => window.setTimeout(() => setFoco(false), 150)}
         onChange={(e) => onChange(e.target.value.toUpperCase())} />
+      {(naoExiste || foraDoFormato) && (
+        <span id={`${id}-aviso`} role="alert" className="mt-1 block text-rotulo text-critico">
+          {naoExiste
+            ? `CID não encontrado: ${codigo} não está na CID-10 do DATASUS usada pelo SUS. Escolha um da lista.`
+            : 'CID fora do formato: letra e números (ex.: J18.9).'}
+        </span>
+      )}
       {foco && lista.length > 0 && (
         <div role="listbox" className="absolute top-full right-0 left-0 z-20 mt-1 max-h-56 overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
           {lista.map((r) => (

@@ -76,7 +76,7 @@ SELECT e2e.passo('10.liberar_alta_vigilancia', 7, 'farmaceutico', '/farmacia', '
 SELECT e2e.passo('10.devolver_ao_medico', 13, 'farmaceutico', '/farmacia', 'Farmacêutica devolve a piperacilina ao médico (dose a rever)',
   format('SELECT public.validar_item(%L::uuid, false, %L)::text', e2e.item(13, 'Piperacilina + tazobactam'), 'Ajustar a dose à função renal do paciente'));
 SELECT e2e.passo('10.farmaceutico_alta', 5, 'farmaceutico', '/internacao', 'Farmacêutica tenta dar alta (deve ser negado)',
-  format('SELECT public.dar_alta(%L::uuid, %L, %L)::text', e2e.u('int5'), 'alta_melhorada', 'K35.8'), 'erro');
+  format('SELECT public.dar_alta(%L::uuid, %L, %L)::text', e2e.u('int5'), 'alta_melhorada', 'K35.9'), 'erro');
 SELECT e2e.lacuna('10.controlados', 12, 'farmaceutico', 'Aprovação/rejeição de controlados, intervenção farmacêutica, dispensação e lote',
   'A farmácia valida/libera item (validar_item) e cuida de faltas e estoque; não há aprovação de controlados, registro de intervenção, dispensação nem rastreio de lote.');
 -- checagem (técnico)

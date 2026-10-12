@@ -95,7 +95,7 @@ SELECT e2e.passo('3.farmaceutico_desfecho', 14, 'farmaceutico', '/plantao/porta'
 SELECT e2e.passo('3.outra_rede', 4, 'plantonista_outra_rede', '/prontuarios', 'Médico de outra organização tenta ver o paciente (deve ser negado)',
   format('SELECT CASE WHEN count(*) = 0 THEN e2e.falhar(''nenhuma linha visível'') ELSE count(*)::text END FROM public.pacientes WHERE id = %L', e2e.u('pac4')), 'erro');
 SELECT e2e.passo('3.segundo_medico', 5, 'plantonista2', '/plantao/porta', 'Segundo plantonista (escalado na Observação) escreve no atendimento da porta',
-  format('SELECT public.registrar_soap(%L::uuid, %L, %L, %L, %L, %L)::text', e2e.u('ep5'), 'Complemento do segundo médico (teste E2E).', 'Sem mudança.', 'K35.8 mantido.', 'Mantém.', 'K35.8'), 'erro');
+  format('SELECT public.registrar_soap(%L::uuid, %L, %L, %L, %L, %L)::text', e2e.u('ep5'), 'Complemento do segundo médico (teste E2E).', 'Sem mudança.', 'K35.9 mantido.', 'Mantém.', 'K35.9'), 'erro');
 SELECT e2e.lacuna('3.medicacao_controlada', 12, 'plantonista', 'Prescrição de medicação controlada (receita especial, aprovação da farmácia)',
   'O catálogo não marca controlado e a prescrição/farmácia não têm regra de controlados (haloperidol e midazolam entram como qualquer item).');
 SELECT e2e.lacuna('3.reabrir_atendimento', NULL, 'plantonista', 'Reabrir atendimento depois do desfecho', 'Não há RPC de reabertura; depois do desfecho a etapa sai de "atendimento" e tudo fica bloqueado.');

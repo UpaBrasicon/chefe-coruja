@@ -206,3 +206,13 @@ test('rÃ³tulo da fila: pediatria pela idade; sem nascimento avisa; adulto sem rÃ
   assert.equal(rotuloFaixa('desconhecida'), 'sem data de nascimento')
   assert.equal(rotuloFaixa('adulto'), '')
 })
+
+import { normalizarCid } from './cid.ts'
+
+test('CID: normaliza como o banco (K359 vira K35.9; categoria de 3 caracteres vale)', () => {
+  assert.equal(normalizarCid('k359'), 'K35.9')
+  assert.equal(normalizarCid(' J18.9 '), 'J18.9')
+  assert.equal(normalizarCid('K35'), 'K35')
+  assert.equal(normalizarCid('apendicite'), null)
+  assert.equal(normalizarCid('K3'), null)
+})
