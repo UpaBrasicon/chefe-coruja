@@ -175,6 +175,11 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
           </div>
         </div>
       )}
+      {(desfecho === 'obito' || desfecho === 'transferencia') && (
+        <span className="text-apoio text-tinta-apoio">
+          Exames sem resultado, pareceres, passagens de plantão e pendências em aberto são cancelados com o motivo. Agravo suspeito precisa da notificação antes.
+        </span>
+      )}
       {pedeRelato && (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor={`rel-${linha.internacao_id}`}>{pedeRelato}</Label>

@@ -7907,10 +7907,13 @@ export type Database = {
           assinada_em: string | null
           created_at: string
           criada_por: string | null
+          encerrada_em: string | null
+          encerrada_por: string | null
           episodio_id: string | null
           id: string
           internacao_id: string | null
           medico_id: string
+          motivo_encerramento: string | null
           observacoes: string | null
           paciente_id: string
           status: string
@@ -7922,10 +7925,13 @@ export type Database = {
           assinada_em?: string | null
           created_at?: string
           criada_por?: string | null
+          encerrada_em?: string | null
+          encerrada_por?: string | null
           episodio_id?: string | null
           id?: string
           internacao_id?: string | null
           medico_id: string
+          motivo_encerramento?: string | null
           observacoes?: string | null
           paciente_id: string
           status?: string
@@ -7937,10 +7943,13 @@ export type Database = {
           assinada_em?: string | null
           created_at?: string
           criada_por?: string | null
+          encerrada_em?: string | null
+          encerrada_por?: string | null
           episodio_id?: string | null
           id?: string
           internacao_id?: string | null
           medico_id?: string
+          motivo_encerramento?: string | null
           observacoes?: string | null
           paciente_id?: string
           status?: string
