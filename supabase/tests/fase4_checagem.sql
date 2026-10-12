@@ -96,6 +96,10 @@ SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT public.checar(pg_temp.u('dip'), 'feito', NULL, NULL);
 SELECT public.checar(pg_temp.u('sos'), 'feito');
 INSERT INTO t SELECT 'fila', (SELECT count(*) FROM public.fila_checagem() WHERE paciente_id = pg_temp.u('pac'))::text;
+-- Phoenix durante o cuidado (depois do desfecho a prescrição se encerra)
+RESET ROLE;
+INSERT INTO t SELECT 'ph', private.calcular_phoenix(pg_temp.u('pac'), 100, '{"motivo":"teste"}')::text;
+INSERT INTO t SELECT 'vaso', private.vasoativos_prescritos(pg_temp.u('pac'))::text;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT public.registrar_desfecho(pg_temp.u('ep'), 'alta_apos_medicacao');
 RESET ROLE;
@@ -113,12 +117,16 @@ BEGIN
     IF SQLERRM NOT LIKE '%só de inserção%' THEN RAISE; END IF;
   END;
   RAISE NOTICE 'OK  checagem é só de inserção: corrigir é checar de novo';
-  ph := private.calcular_phoenix(pg_temp.u('pac'), 100, '{"motivo":"teste"}');
-  IF private.vasoativos_prescritos(pg_temp.u('pac')) <> 1
+  ph := (SELECT valor FROM t WHERE nome = 'ph')::jsonb;
+  IF (SELECT valor FROM t WHERE nome = 'vaso')::int <> 1
      OR NOT EXISTS (SELECT 1 FROM jsonb_array_elements(ph -> 'itens') x WHERE x ->> 'detalhe' LIKE '1 vasoativa(s) na prescrição checada%')
      OR (ph -> 'faltando') ? 'Drogas vasoativas (número)' THEN
     RAISE EXCEPTION 'FALHOU: Phoenix com vasoativo da prescrição (%)', ph;
   END IF;
   RAISE NOTICE 'OK  Phoenix conta o vasoativo administrado a partir da prescrição checada';
+  IF EXISTS (SELECT 1 FROM public.prescricoes WHERE episodio_id = pg_temp.u('ep') AND status = 'ativa') THEN
+    RAISE EXCEPTION 'FALHOU: prescrição continua ativa depois da alta';
+  END IF;
+  RAISE NOTICE 'OK  a alta encerra a prescrição (correções do portão, tarefa 1)';
 END $$;
 ROLLBACK;

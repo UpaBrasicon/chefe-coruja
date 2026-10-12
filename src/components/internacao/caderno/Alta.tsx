@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 
 import { Secao } from './caixas'
-import { type Acao, diaHora, type Internacao, type Pacote, rpc, TIPO_ALTA } from './comum'
+import { type Acao, diaHora, type Internacao, type Pacote, ROTULO_ALTA, rpc, TIPO_ALTA } from './comum'
 
 // Frases-modelo do protótipo (ESTADO.md, pacote de alta). Nenhuma vem marcada:
 // quem marca é o médico, conforme o caso.
@@ -28,6 +28,12 @@ const MODELOS_ORIENTACAO = [
   'Não dirija nem levante peso nos primeiros sete dias.',
   'Mantenha a ferida seca e troque o curativo uma vez por dia.',
 ]
+
+// Óbito e transferência externa não esperam o que ficou aberto (decisão do RT,
+// 11/10/2026): o servidor cancela com motivo. Só o agravo suspeito impede.
+const SAIDA_SEM_ESPERA = ['obito', 'transferencia_externa']
+const impedeSaida = (tipo: string, x: { tipo: string }) =>
+  SAIDA_SEM_ESPERA.includes(tipo) ? x.tipo === 'agravo' : true
 
 const paraInputLocal = (d: Date) => {
   const p = (n: number) => String(n).padStart(2, '0')
@@ -50,6 +56,8 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
   const [confirmar, setConfirmar] = React.useState(false)
   const [abertoEm] = React.useState(() => Date.now())
   const retroativa = !!quando && Date.parse(quando) < abertoEm - 30 * 60_000
+  const impedem = impeditivos.filter((x) => impedeSaida(tipo, x))
+  const seraoCancelados = SAIDA_SEM_ESPERA.includes(tipo) ? impeditivos.filter((x) => x.tipo !== 'agravo' && x.tipo !== 'documento') : []
 
   if (!aberto) {
     return (
@@ -59,7 +67,11 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
             {impeditivos.map((x, k) => <li key={k} className="flex gap-1.5"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" />{x.descricao}</li>)}
           </ul>
         )}
-        <Button size="xs" variant="outline" className="self-start" disabled={impeditivos.length > 0}
+        {impeditivos.length > 0 && !impeditivos.some((x) => x.tipo === 'agravo') && (
+          <p className="text-tinta-sussurro">Óbito e transferência externa podem ser registrados mesmo assim: o que está em aberto é cancelado com o motivo.</p>
+        )}
+        <Button size="xs" variant="outline" className="self-start"
+          disabled={impeditivos.some((x) => x.tipo === 'agravo')}
           onClick={() => { setQuando(paraInputLocal(new Date())); if (!cid && cidSugerido) setCid(cidSugerido); setAberto(true) }}>
           <DoorOpen /> Dar alta
         </Button>
@@ -100,6 +112,17 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
           </div>
         )}
       </div>
+      {impedem.length > 0 && (
+        <ul className="flex flex-col gap-1 text-atencao">
+          {impedem.map((x, k) => <li key={k} className="flex gap-1.5"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" />{x.descricao}</li>)}
+        </ul>
+      )}
+      {seraoCancelados.length > 0 && (
+        <div className="flex flex-col gap-1 text-tinta-sussurro">
+          <p>Ao confirmar, ficam cancelados com o motivo "{ROTULO_ALTA[tipo]}":</p>
+          <ul className="list-disc pl-5">{seraoCancelados.map((x, k) => <li key={k}>{x.descricao}</li>)}</ul>
+        </div>
+      )}
       {retroativa && (
         <div className="flex flex-col gap-1">
           <Label htmlFor="alta-just" className="text-atencao">Alta retroativa (mais de 30 minutos atrás): justifique *</Label>
@@ -112,7 +135,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
       </div>
       {confirmar ? (
         <div className="flex flex-col gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-3">
-          <p>Deseja finalizar o atendimento? O paciente sai do censo, vira histórico do gestor e você perde o acesso (cancelar a alta é possível por 24 horas, com justificativa).</p>
+          <p>Deseja finalizar o atendimento? O paciente sai do censo e vira histórico do gestor. As prescrições são encerradas e checagem, aprazamento e sinais fecham na hora; a equipe do setor ainda consulta e emite documentos por 24 horas. Cancelar a alta é possível por 24 horas, com justificativa.</p>
           <div className="flex gap-2">
             <Button size="sm"
               onClick={() => acao(() => rpc('dar_alta', {
@@ -127,7 +150,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
         </div>
       ) : (
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => setConfirmar(true)} disabled={tipo !== 'alta_evasao' && cid.trim().length < 3}>Confirmar</Button>
+          <Button size="sm" onClick={() => setConfirmar(true)} disabled={impedem.length > 0 || (tipo !== 'alta_evasao' && cid.trim().length < 3)}>Confirmar</Button>
           <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
         </div>
       )}

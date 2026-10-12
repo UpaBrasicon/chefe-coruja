@@ -5,10 +5,11 @@
 BEGIN;
 
 -- ── V3: registrar_prescricao_itens não sobrescreve prescrição de outro médico ─
--- Isola o guard do DONO: o check de acesso real (paciente_no_meu_plantao) já é
--- coberto pelos testes de plantão; aqui é stubado para true para alcançar o
--- guard. Prescrição ativa pertence ao médico ...0001.
-CREATE OR REPLACE FUNCTION private.paciente_no_meu_plantao(p_paciente uuid)
+-- Isola o guard do DONO: o check de acesso real (paciente_em_cuidado_no_plantao,
+-- que também alimenta paciente_no_meu_plantao) já é coberto pelos testes de
+-- plantão; aqui é stubado para true para alcançar o guard. Prescrição ativa
+-- pertence ao médico ...0001.
+CREATE OR REPLACE FUNCTION private.paciente_em_cuidado_no_plantao(p_paciente uuid)
   RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $f$ SELECT true $f$;
 
 INSERT INTO public.prescricoes (unidade_id, paciente_id, medico_id, status, criada_por)
