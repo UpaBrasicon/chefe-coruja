@@ -40,6 +40,7 @@ type LinhaInternacao = {
   paciente_id: string
   status: string
   data_admissao: string
+  internado_em: string | null
   cid_principal: string | null
   leito: { identificador: string } | null
   episodio: { queixa: string | null } | null
@@ -87,7 +88,7 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
     queryFn: async () => {
       const { data, error } = await supabase
         .from('internacoes')
-        .select('id, paciente_id, status, data_admissao, cid_principal, leito:leitos!internacoes_leito_atual_id_fkey(identificador), episodio:episodios!internacoes_episodio_id_fkey(queixa)')
+        .select('id, paciente_id, status, data_admissao, internado_em, cid_principal, leito:leitos!internacoes_leito_atual_id_fkey(identificador), episodio:episodios!internacoes_episodio_id_fkey(queixa)')
         .in('paciente_id', ids)
         .in('status', ATIVO)
       if (error) throw error
@@ -214,7 +215,7 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
                     </span>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-0.5">
-                    <span className="text-apoio text-tinta-apoio tabular-nums">{i ? tempoDesde(i.data_admissao, agora) : '—'}</span>
+                    <span className="text-apoio text-tinta-apoio tabular-nums">{i ? tempoDesde(i.status === 'em_observacao' ? i.data_admissao : i.internado_em ?? i.data_admissao, agora) : '—'}</span>
                     <span className={cn('max-w-[260px] truncate text-apoio', primeira ? (vencida ? 'font-semibold text-critico' : 'text-atencao') : 'text-tinta-sussurro')}
                       title={pend.map((x) => x.descricao).join(' · ') || undefined}>
                       {primeira

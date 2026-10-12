@@ -104,7 +104,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
     queryFn: async () => {
       const { data, error } = await supabase
         .from('internacoes')
-        .select('id, status, data_admissao, data_alta, alta_registrada_em, alta_por, cid_alta, cid_principal, episodio_id, leito:leitos!internacoes_leito_atual_id_fkey(identificador), setor_atual_id, episodio:episodios!internacoes_episodio_id_fkey(cor_atual, queixa)')
+        .select('id, status, data_admissao, internado_em, data_alta, alta_registrada_em, alta_por, cid_alta, cid_principal, episodio_id, leito:leitos!internacoes_leito_atual_id_fkey(identificador), setor_atual_id, episodio:episodios!internacoes_episodio_id_fkey(cor_atual, queixa)')
         .eq('paciente_id', pacienteId)
         .order('data_admissao', { ascending: false })
         .limit(1)
@@ -213,9 +213,12 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
       nome={pacienteNome}
       local={i.leito ? i.leito.identificador : ativa ? 'Aguardando box/leito' : null}
       setorId={i.setor_atual_id}
-      desde={ativa ? i.data_admissao : null}
+      // internado há: da conversão quando veio da observação (correções do portão, tarefa 4)
+      desde={ativa ? (i.status === 'em_observacao' ? i.data_admissao : i.internado_em ?? i.data_admissao) : null}
       rotuloDesde={i.status === 'em_observacao' ? 'em observação há' : 'internado há'}
-      contexto={`desde ${diaHora(i.data_admissao)}`}
+      contexto={i.status !== 'em_observacao' && i.internado_em && i.internado_em !== i.data_admissao
+        ? `internado em ${diaHora(i.internado_em)} · na unidade desde ${diaHora(i.data_admissao)}`
+        : `desde ${diaHora(i.data_admissao)}`}
       extra={
         <Badge variant={ativa ? 'info' : 'secondary'}>
           {i.status === 'em_observacao' ? 'Em observação' : ativa ? 'Internado' : 'Alta ' + diaHora(i.data_alta)}
