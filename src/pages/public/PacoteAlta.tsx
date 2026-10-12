@@ -61,6 +61,10 @@ function VisaoEquipe({ pacote }: { pacote: string }) {
     queryKey: ['pacote-alta-equipe', pacote],
     enabled: !!pacote,
     retry: false,
+    // cada abertura fica registrada no prontuário: sem nova leitura ao voltar à aba
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('ver_pacote_alta_equipe', { p_pacote: pacote })
       if (error) throw error
@@ -71,7 +75,7 @@ function VisaoEquipe({ pacote }: { pacote: string }) {
     return (
       <>
         <Topo unidade={q.data.unidade} />
-        <DocumentosAlta p={q.data} equipe />
+        <DocumentosAlta p={q.data} equipe pacoteId={pacote} />
       </>
     )
   }

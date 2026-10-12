@@ -7,11 +7,16 @@
 //
 // Um PDF por documento: "Baixar em PDF" abre o documento escolhido, marca o
 // body e chama a impressão; as regras de impressão escondem todo o resto. A
-// equipe (visão da equipe) imprime o pacote inteiro.
+// equipe (visão da equipe) imprime o pacote inteiro. Na visão da equipe, toda
+// impressão é registrada antes (registrar_impressao_pacote_alta) e sai com o
+// protocolo no rodapé; sem registro, nada é impresso (correções do portão,
+// tarefa 6).
 // ─────────────────────────────────────────────────────────────────────────────
 import { AlertTriangle, ChevronRight, ClipboardList, Download, FileText, FlaskConical, Pill, Printer, ShieldCheck, Signpost, Stethoscope } from 'lucide-react'
 import * as React from 'react'
+import { flushSync } from 'react-dom'
 
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
   assinatura, dia, diaCurto, hora, idade, legivel, lerAtestado, lerEncaminhamento, lerPedidoExames, lerReceita, lerSumario,
@@ -278,13 +283,32 @@ function montarDocumentos(p: ConteudoPacote): { docs: Doc[]; diagnostico: string
   return { docs, diagnostico: diagnostico || p.diagnostico_cid || '' }
 }
 
-export function DocumentosAlta({ p, equipe = false }: { p: ConteudoPacote; equipe?: boolean }) {
+export function DocumentosAlta({ p, equipe = false, pacoteId }: {
+  p: ConteudoPacote; equipe?: boolean
+  /** na visão da equipe: o pacote, para registrar cada impressão */
+  pacoteId?: string
+}) {
   const raiz = React.useRef<HTMLDivElement>(null)
   const { docs, diagnostico } = React.useMemo(() => montarDocumentos(p), [p])
+  const [rodape, setRodape] = React.useState<string | null>(null)
+  const [erroImpressao, setErroImpressao] = React.useState<string | null>(null)
 
   // Um <details> fechado não imprime o conteúdo: os pedidos abrem antes e
   // voltam ao estado em que o leitor os deixou depois.
-  function imprimir(id: string | null) {
+  async function imprimir(id: string | null) {
+    if (equipe) {
+      setErroImpressao(null)
+      if (!pacoteId) return setErroImpressao('Pacote não identificado: nada foi impresso.')
+      const titulo = id ? docs.find((d) => d.id === id)?.titulo ?? id : undefined
+      const { data, error } = await supabase.rpc('registrar_impressao_pacote_alta', { p_pacote: pacoteId, p_documento: titulo })
+      const registro = Array.isArray(data) ? data[0] : null
+      if (error || !registro) {
+        return setErroImpressao(`Não foi possível registrar a impressão${error ? `: ${error.message}` : ''}. Nada foi impresso.`)
+      }
+      const emitido = new Date(registro.emitido_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+      // o rodapé precisa estar na tela antes de a impressão começar
+      flushSync(() => setRodape(`Impressão ${registro.protocolo} registrada no Chefe Coruja em ${emitido}`))
+    }
     const todos = Array.from(raiz.current?.querySelectorAll<HTMLDetailsElement>('details[data-doc]') ?? [])
     const alvos = id ? todos.filter((d) => d.dataset.doc === id) : todos
     const antes = todos.map((d) => d.open)
@@ -319,7 +343,7 @@ export function DocumentosAlta({ p, equipe = false }: { p: ConteudoPacote; equip
               Imprima o pacote para entregar em mão a quem não tem celular.
               {p.situacao_link && LINK[p.situacao_link] && <> {LINK[p.situacao_link]}</>}
             </span>
-            <Button size="lg" className="min-h-11 px-4 text-[15px]" onClick={() => imprimir(null)}>
+            <Button size="lg" className="min-h-11 px-4 text-[15px]" onClick={() => void imprimir(null)}>
               <Printer className="size-4" />Imprimir o pacote inteiro
             </Button>
             {window.history.length > 1 && (
@@ -328,6 +352,15 @@ export function DocumentosAlta({ p, equipe = false }: { p: ConteudoPacote; equip
               </Button>
             )}
           </div>
+        )}
+
+        {equipe && erroImpressao && (
+          <p role="alert" className="mb-4 rounded-[14px] border border-critico/30 bg-critico/[0.06] px-[15px] py-[11px] text-sm text-critico print:hidden">
+            {erroImpressao}
+          </p>
+        )}
+        {equipe && rodape && (
+          <div className="fixed inset-x-0 bottom-[6mm] hidden text-center text-[9px] text-tinta-sussurro print:block">{rodape}</div>
         )}
 
         <div className="mb-3 hidden text-[11pt] text-tinta-apoio print:block">
@@ -363,7 +396,7 @@ export function DocumentosAlta({ p, equipe = false }: { p: ConteudoPacote; equip
               {d.corpo}
               <div className="mt-4 flex flex-wrap gap-2 print:hidden">
                 <Button variant={d.forte ? 'default' : 'outline'} size="lg" className="min-h-11 px-4 text-[15px] max-[420px]:flex-auto"
-                  onClick={() => imprimir(d.id)}>
+                  onClick={() => void imprimir(d.id)}>
                   <Download className="size-4" />Baixar em PDF
                 </Button>
               </div>
