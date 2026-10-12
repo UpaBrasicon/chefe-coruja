@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bell, CalendarClock, Clock, FileCheck, FileText, MessageSquare, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
+import { BedDouble, Bell, CalendarClock, Clock, FileCheck, FileText, MessageSquare, Pill, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -17,13 +17,16 @@ import type { MinhaNotificacao } from '@/types/database'
 // por aviso e "Marcar todas como lidas", com desfazer que volta no servidor
 // (marcar_avisos_lidos / reabrir_avisos). A categoria sai do tipo do aviso.
 
-type Categoria = 'Turno' | 'Observação' | 'Triagem' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'AIH' | 'APAC' | 'Outros'
+type Categoria = 'Turno' | 'Observação' | 'Triagem' | 'Farmácia' | 'Leitos' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'AIH' | 'APAC' | 'Outros'
 
 function categoria(tipo: string): Categoria {
   if (/^(noite|manha|tarde|turno)_/.test(tipo)) return 'Turno'
   if (tipo.startsWith('obs_')) return 'Observação'
   // piora reclassificada pela enfermagem na espera (correções do portão, tarefa 2)
   if (tipo.startsWith('triagem_')) return 'Triagem'
+  // item devolvido pela farmácia e leito liberado (correções do portão, tarefa 7)
+  if (tipo.startsWith('farm_')) return 'Farmácia'
+  if (tipo.startsWith('leito_')) return 'Leitos'
   if (tipo.startsWith('solic_') || tipo.startsWith('vaga_')) return 'Escala'
   if (tipo.startsWith('cand_')) return 'Candidatura'
   if (tipo.startsWith('chat_')) return 'Mensagem'
@@ -34,10 +37,18 @@ function categoria(tipo: string): Categoria {
   return 'Outros'
 }
 
-const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: { to: string; rotulo: string } }> = {
+// a ação aparece se a rota estiver no menu do papel; com mais de uma, vale a
+// primeira que o papel tem (ex.: o leito liberado abre o NIR para o NIR e a
+// internação para a enfermagem)
+type Acao = { to: string; rotulo: string }
+const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: Acao | Acao[] }> = {
   Turno: { icone: Clock, cor: 'text-marca bg-marca/10', acao: { to: '/plantao', rotulo: 'Abrir Plantão' } },
   Observação: { icone: TriangleAlert, cor: 'text-atencao bg-atencao/10', acao: { to: '/observacao', rotulo: 'Abrir Observação' } },
   Triagem: { icone: TriangleAlert, cor: 'text-critico bg-critico/10', acao: { to: '/atendimento', rotulo: 'Abrir atendimento' } },
+  Farmácia: { icone: Pill, cor: 'text-critico bg-critico/10', acao: [
+    { to: '/plantao/internacao/pacientes', rotulo: 'Abrir leitos' }, { to: '/atendimento', rotulo: 'Abrir atendimento' }] },
+  Leitos: { icone: BedDouble, cor: 'text-conforme bg-conforme/10', acao: [
+    { to: '/nir', rotulo: 'Abrir NIR' }, { to: '/enfermagem/internacao', rotulo: 'Abrir internação' }, { to: '/internacao', rotulo: 'Abrir internação' }] },
   Escala: { icone: CalendarClock, cor: 'text-tinta-apoio bg-trilha', acao: { to: '/agenda', rotulo: 'Ver escala' } },
   Candidatura: { icone: Users, cor: 'text-tinta-apoio bg-trilha', acao: { to: '/agenda', rotulo: 'Ver vagas' } },
   Mensagem: { icone: MessageSquare, cor: 'text-tinta-apoio bg-trilha' },
@@ -47,6 +58,8 @@ const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: { to: s
   Outros: { icone: Bell, cor: 'text-tinta-apoio bg-trilha' },
 }
 const FILTROS = ['Todos', 'Não lidos', 'Turno', 'Observação', 'Escala', 'Candidatura', 'Regulação', 'AIH', 'APAC'] as const
+// categorias que só aparecem no filtro quando há aviso delas
+const FILTROS_SE_HOUVER = ['Triagem', 'Farmácia', 'Leitos', 'Mensagem', 'Outros'] as const
 
 function haQuanto(iso: string) {
   const min = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
@@ -98,7 +111,7 @@ export default function Notificacoes() {
   const rotas = new Set(itensDeNavegacao(papelAtivo).map((i) => i.to))
   const todos = notificacoes ?? []
   const categorias = new Set(todos.map((n) => categoria(n.tipo)))
-  const filtros = [...FILTROS, ...(categorias.has('Triagem') ? ['Triagem'] : []), ...(categorias.has('Mensagem') ? ['Mensagem'] : []), ...(categorias.has('Outros') ? ['Outros'] : [])]
+  const filtros = [...FILTROS, ...FILTROS_SE_HOUVER.filter((c) => categorias.has(c))]
   const lista = todos.filter((n) => filtro === 'Todos' || (filtro === 'Não lidos' ? !n.lida : categoria(n.tipo) === filtro))
   const naoLidos = todos.filter((n) => !n.lida).length
 
@@ -128,7 +141,7 @@ export default function Notificacoes() {
         ) : lista.map((n) => {
           const cat = categoria(n.tipo)
           const v = VISUAL[cat]
-          const acao = v.acao && rotas.has(v.acao.to) ? v.acao : null
+          const acao = (v.acao ? [v.acao].flat() : []).find((a) => rotas.has(a.to)) ?? null
           return (
             <div key={n.id} className={cn('flex items-start gap-[13px] border-b border-trilha px-5 py-[15px] last:border-0', !n.lida && 'bg-marca/[0.04]')}>
               <span className={cn('mt-[7px] size-[7px] shrink-0 rounded-full', n.lida ? 'bg-transparent' : 'bg-marca')} aria-hidden />
