@@ -1,9 +1,11 @@
 import { RefreshCw } from 'lucide-react'
 
 import { rotuloIdade } from '@/domain/idade'
+import { homonimos } from '@/domain/homonimos'
 import { rotulosPrioridade } from '@/domain/prioridade'
 import { Button } from '@/components/ui/button'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
+import { SeloHomonimo } from '@/components/porta/SeloHomonimo'
 import { dataSP, esperaMin, hora, nomeDe, type NaEspera } from './comum'
 
 // Classificados que ainda esperam o médico (correções do portão, tarefa 2):
@@ -16,6 +18,7 @@ export function EsperaMedico({ lista, carregando, erro, onReclassificar }: {
 }) {
   const hoje = dataSP()
   const n = lista.length
+  const iguais = homonimos(lista)
   return (
     <div className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
       <div className="border-b border-trilha px-5 py-[13px] text-apoio text-tinta-sussurro">
@@ -39,6 +42,7 @@ export function EsperaMedico({ lista, carregando, erro, onReclassificar }: {
               <span className="text-apoio text-pretty text-tinta-sussurro">
                 {[`Queixa: ${e.queixa}`, prios.length ? `Prioridade: ${prios.join(', ')}` : '', `Classificado às ${hora(e.classificado_em)}`].filter(Boolean).join(' · ')}
               </span>
+              {iguais.has(e.id) && <SeloHomonimo paciente={e.paciente} />}
             </div>
             <span className="text-apoio whitespace-nowrap tabular-nums text-tinta-apoio" title="Espera desde a ficha da recepção">
               {esperaMin(e.chegada_em)} min
