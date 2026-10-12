@@ -8,11 +8,13 @@ CREATE OR REPLACE FUNCTION e2e.leito(p_ident text) RETURNS uuid LANGUAGE sql STA
 $$;
 
 -- reclassificação verde → laranja depois de piora (#3)
-SELECT e2e.passo('2.reclassificar_enfermagem', 3, 'enfermeiro', '/triagem', 'Enfermeira reclassifica verde → laranja após piora',
+-- o #3 já está em atendimento (iniciado em 11): depois do início, só o médico
+-- reclassifica (correções do portão, tarefa 2); a enfermagem na espera está em 18
+SELECT e2e.passo('2.reclassificar_enfermagem', 3, 'enfermeiro', '/triagem', 'Enfermeira tenta reclassificar depois do início do atendimento (deve recusar)',
   format('SELECT public.classificar_risco(%L::uuid, %L, %L::jsonb, (SELECT id FROM public.protocolo_fluxogramas WHERE nome = %L AND publico = %L), %L, ''{}''::jsonb, NULL, %L)::text',
          e2e.u('ep3'), 'laranja', '{"frequencia-cardiaca":124,"frequencia-respiratoria":24,"temperatura":36.6,"saturacao-o2":97,"escala-dor":9,"pressao-arterial-sistolica":96,"pressao-arterial-diastolica":60}',
          'Politraumas', 'adulto', e2e.disc('e1100000-0000-4000-8000-000000000001', (SELECT id FROM public.protocolo_fluxogramas WHERE nome = 'Politraumas' AND publico = 'adulto'), 'laranja'),
-         'Piora da dor e queda da pressão na sala de espera'));
+         'Piora da dor e queda da pressão na sala de espera'), 'erro:O atendimento médico já começou');
 SELECT e2e.passo('2.reclassificar_medico', 3, 'plantonista', '/plantao/porta', 'Plantonista reclassifica verde → laranja (motivo)',
   format('SELECT public.classificar_risco(%L::uuid, %L, %L::jsonb, (SELECT id FROM public.protocolo_fluxogramas WHERE nome = %L AND publico = %L), %L, ''{}''::jsonb, NULL, %L)::text',
          e2e.u('ep3'), 'laranja', '{"frequencia-cardiaca":124,"frequencia-respiratoria":24,"temperatura":36.6,"saturacao-o2":97,"escala-dor":9,"pressao-arterial-sistolica":96,"pressao-arterial-diastolica":60}',

@@ -90,10 +90,12 @@ BEGIN
 
   BEGIN
     PERFORM public.classificar_risco(pg_temp.id('epi_adulto'), 'vermelho', vitais, NULL, NULL, '{}', NULL, 'piora do quadro agora');
-    RAISE EXCEPTION 'FALHOU: enfermeiro reclassificou';
+    RAISE EXCEPTION 'FALHOU: enfermeiro reclassificou sem o protocolo';
   EXCEPTION WHEN raise_exception THEN
-    IF SQLERRM NOT LIKE 'Só o médico reclassifica%' THEN RAISE; END IF;
-    RAISE NOTICE 'OK  enfermeiro não reclassifica';
+    -- na espera o enfermeiro reclassifica, mas com fluxograma e discriminador
+    -- (correções do portão, tarefa 2; o caminho completo está no e2e/18)
+    IF SQLERRM NOT LIKE 'Informe o fluxograma e o discriminador%' THEN RAISE; END IF;
+    RAISE NOTICE 'OK  enfermeiro só reclassifica com o protocolo';
   END;
 
   PERFORM pg_temp.como('10000000-0000-4000-8000-000000000002');

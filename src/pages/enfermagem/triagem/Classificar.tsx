@@ -7,12 +7,13 @@ import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { ehPediatrico, idadeEm, rotuloIdade } from '@/domain/idade'
 import { rotulosPrioridade } from '@/domain/prioridade'
-import { CORES_RISCO, FONTE_CORES, NIVEL_RISCO, rotuloCor, textoAlvo, type CorRisco } from '@/domain/risco'
+import { CORES_RISCO, FONTE_CORES, gravidade, NIVEL_RISCO, rotuloCor, textoAlvo, type CorRisco } from '@/domain/risco'
 import { faltandoVitais, paraNumeros, VITAL_DOR } from '@/domain/vitais'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { Textarea } from '@/components/ui/textarea'
 import { Chip } from '@/components/monitor/Pagina'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { CamposVitais } from '@/components/clinico/CamposVitais'
@@ -25,7 +26,10 @@ import { HistoricoClassificacoes } from './Historico'
 import { ReferenciaSinal } from './ReferenciaSinal'
 import { dataSP, ehFeminino, esperaMin, hora, nomeDe, type Fluxograma, type NaFila } from './comum'
 
-// Classificação inicial pela enfermagem (porte do protótipo, Etapa 3).
+// Classificação inicial pela enfermagem (porte do protótipo, Etapa 3) e,
+// com corAtual, a reclassificação enquanto o paciente espera o médico
+// (correções do portão, tarefa 2): o mesmo protocolo e sinais vitais novos,
+// mais o motivo; baixar a prioridade pede justificativa.
 // O protocolo da unidade aparece como REFERÊNCIA: o discriminador mostra a cor
 // que tem no protocolo, mas a cor do paciente é a que o enfermeiro marca; o
 // sistema nunca pré-seleciona nem troca (CLAUDE.md, ADR 0007).
@@ -55,7 +59,12 @@ const Secao = ({ children, className }: { children: React.ReactNode; className?:
 )
 const Rotulo = ({ children }: { children: React.ReactNode }) => <span className="text-apoio font-medium text-grafite">{children}</span>
 
-export function Classificar({ ep, onFim }: { ep: NaFila; onFim: (aviso: string | null) => void }) {
+export function Classificar({ ep, onFim, corAtual = null }: {
+  ep: NaFila; onFim: (aviso: string | null) => void
+  /** cor da última classificação: liga o modo reclassificação */
+  corAtual?: CorRisco | null
+}) {
+  const reclass = corAtual !== null
   const { unidadeAtiva } = useUnidade()
   const queryClient = useQueryClient()
   const hoje = dataSP()
@@ -104,6 +113,9 @@ export function Classificar({ ep, onFim }: { ep: NaFila; onFim: (aviso: string |
   const [litros, setLitros] = React.useState('')
   const [gest, setGest] = React.useState<Gestacao>(GESTACAO_VAZIA)
   const [tentou, setTentou] = React.useState(false)
+  const [motivo, setMotivo] = React.useState('')
+  const [justificativa, setJustificativa] = React.useState('')
+  const baixou = reclass && !!cor && gravidade(cor) > gravidade(corAtual!)
 
   const doGrupo = (fluxos ?? []).filter((f) => f.publico === publico)
   const fluxo = doGrupo.find((f) => f.id === fluxoId) ?? null
@@ -157,6 +169,8 @@ export function Classificar({ ep, onFim }: { ep: NaFila; onFim: (aviso: string |
       const eg = erroGestacao(gest, hoje)
       if (eg) return eg
     }
+    if (reclass && motivo.trim().length < 10) return 'Informe o motivo da reclassificação (mínimo de 10 letras).'
+    if (baixou && justificativa.trim().length < 20) return 'Baixar a prioridade exige justificativa (mínimo de 20 letras).'
     return ''
   }
   const erroAtual = erro()
@@ -179,12 +193,17 @@ export function Classificar({ ep, onFim }: { ep: NaFila; onFim: (aviso: string |
         p_dor: registroDor(escala, itensDor, sinais[VITAL_DOR]),
         p_oxigenio: modoO2 === 'o2_suplementar' && l !== null ? { modo: modoO2, litros_min: l } : { modo: modoO2 },
         p_gestacao: feminino ? registroGestacao(gest) ?? undefined : undefined,
+        p_motivo: reclass ? motivo.trim() : undefined,
+        p_justificativa: baixou ? justificativa.trim() : undefined,
       })
       if (error) throw error
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['triagem-fila'] })
-      onFim(`${nomeDe(ep)} ${feminino ? 'classificada e enviada' : 'classificado e enviado'} para a fila do atendimento médico.`)
+      void queryClient.invalidateQueries({ queryKey: ['triagem-espera'] })
+      onFim(reclass
+        ? `${nomeDe(ep)} ${feminino ? 'reclassificada' : 'reclassificado'}: de ${rotuloCor(corAtual!)} para ${rotuloCor(cor!)}. A fila do atendimento médico já mostra a nova prioridade.`
+        : `${nomeDe(ep)} ${feminino ? 'classificada e enviada' : 'classificado e enviado'} para a fila do atendimento médico.`)
     },
   })
 
@@ -200,22 +219,27 @@ export function Classificar({ ep, onFim }: { ep: NaFila; onFim: (aviso: string |
       {/* situação */}
       <Secao>
         <div className="flex flex-wrap items-center gap-3.5">
-          <PilulaRisco cor={null} className="min-w-[90px] py-2 text-controle" />
+          <PilulaRisco cor={corAtual} className="min-w-[90px] py-2 text-controle" />
           <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-0.5">
-            <span className="text-corpo font-semibold text-tinta">Aguardando classificação da enfermagem</span>
+            <span className="text-corpo font-semibold text-tinta">
+              {reclass ? `Classificado como ${rotuloCor(corAtual!)} · aguardando o médico` : 'Aguardando classificação da enfermagem'}
+            </span>
             <span className="text-apoio text-tinta-sussurro">
-              Na fila há {esperaMin(ep.chegada_em)} min (ficha às {hora(ep.chegada_em)}). O médico só reclassifica.
+              Na fila há {esperaMin(ep.chegada_em)} min (ficha às {hora(ep.chegada_em)}).{' '}
+              {reclass
+                ? 'Reclassifique se o quadro mudou na espera. Depois que o médico iniciar o atendimento, só ele reclassifica.'
+                : 'Enquanto o paciente espera o médico, a enfermagem pode reclassificar.'}
             </span>
             {prios.length > 0 && <span className="text-apoio text-tinta-apoio">Prioridade legal: {prios.join(', ')}</span>}
           </div>
         </div>
         <p className="text-rotulo text-pretty text-tinta-sussurro">
-          {FONTE_CORES}. Fluxograma e discriminador: {fonteProtocolo ?? 'protocolo de classificação de risco da unidade'}. A classificação é da enfermagem; o médico reclassifica.
+          {FONTE_CORES}. Fluxograma e discriminador: {fonteProtocolo ?? 'protocolo de classificação de risco da unidade'}. A classificação é da enfermagem; na espera, a enfermagem reclassifica; no atendimento, o médico.
         </p>
       </Secao>
 
       <Secao>
-        <h2 className="text-corpo font-semibold text-tinta">Classificação inicial · enfermagem</h2>
+        <h2 className="text-corpo font-semibold text-tinta">{reclass ? 'Reclassificação na espera · enfermagem' : 'Classificação inicial · enfermagem'}</h2>
 
         {/* prioridade: nunca pré-selecionada */}
         <div className="flex flex-col gap-2">
@@ -454,13 +478,28 @@ export function Classificar({ ep, onFim }: { ep: NaFila; onFim: (aviso: string |
           )}
         </div>
 
+        {reclass && (
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="t-motivo">Motivo da reclassificação *</Label>
+              <Textarea id="t-motivo" rows={2} placeholder="O que mudou na espera (mínimo de 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+            </div>
+            {baixou && (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="t-just" className="text-atencao">Baixar a prioridade: justificativa *</Label>
+                <Textarea id="t-just" rows={2} placeholder="Mínimo de 20 letras" value={justificativa} onChange={(e) => setJustificativa(e.target.value)} />
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="min-w-0 flex-[1_1_240px] text-apoio text-pretty text-critico" role="alert">
             {tentou && erroAtual ? erroAtual : salvar.error ? (salvar.error as Error).message : ''}
           </span>
           <Button variant="outline" onClick={() => onFim(null)}>Cancelar</Button>
           <Button onClick={registrar} disabled={salvar.isPending}>
-            {salvar.isPending ? <Spinner className="size-4" /> : <Check />} Registrar classificação
+            {salvar.isPending ? <Spinner className="size-4" /> : <Check />} {reclass ? 'Registrar reclassificação' : 'Registrar classificação'}
           </Button>
         </div>
       </Secao>
