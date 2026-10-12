@@ -33,8 +33,11 @@ type CensoLinha = {
 type OcupacaoSetor = {
   setor_id: string
   setor_nome: string
+  /** internações abertas no setor (com e sem leito) */
   internados: number
   limite: number
+  /** internados no setor ainda sem leito */
+  sem_leito: number
 }
 
 function fmtDia(iso: string) {
@@ -161,9 +164,10 @@ export default function Indicadores() {
     const linhas = (ocupacao ?? []).map((o) => [
       o.setor_nome, o.internados, o.limite,
       o.limite > 0 ? Math.round((o.internados / o.limite) * 1000) / 10 : null,
+      o.sem_leito,
     ])
     baixarCsv(nomeArquivoCsv(`ocupacao ao vivo ${nomeUnidade}`, hojeArquivo()), gerarCsv(
-      ['Setor', 'Internados', 'Leitos', 'Taxa de ocupação (%)'],
+      ['Setor', 'Internados', 'Leitos', 'Taxa de ocupação (%)', 'Sem leito'],
       linhas,
       { contexto: [['Unidade', nomeUnidade], ['Relatório', 'Ocupação ao vivo por setor'], ['Limite de atenção (%)', limites.ocupacao_pct], ['Gerado em', agora()]] },
     ))
@@ -307,6 +311,7 @@ export default function Indicadores() {
                   <span className={`w-[92px] text-right font-semibold tabular ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-tinta'}`}>
                     {o.limite > 0 ? `${Math.round((o.internados / o.limite) * 100)}%` : '—'}
                     <span className="font-normal text-tinta-sussurro"> · {o.internados}/{o.limite || '∞'}</span>
+                    {o.sem_leito > 0 && <span className="block font-normal text-atencao">{o.sem_leito} sem leito</span>}
                   </span>
                 </div>
               )

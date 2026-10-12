@@ -11805,6 +11805,7 @@ export type Database = {
         Returns: {
           internados: number
           limite: number
+          sem_leito: number
           setor_id: string
           setor_nome: string
         }[]
