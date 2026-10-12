@@ -24,7 +24,19 @@ Relatório da rodada de 11/10/2026: `produto/docs/teste-e2e/RELATORIO_E2E_2026-1
 | `14_coorte_regulacao_alta.sql` | AIH, APAC, regulação, transferência, óbito, alta e casos-limite de cadastro |
 | `15_gestor_transversais.sql` | Gestor, auditoria, concorrência, evasão, alta a pedido e avisos |
 | `16_carga.sql` | 60 internados a mais e o tempo de cada tela |
+| `17_correcao_t1_desfecho.sql` a `23_correcao_t7_avisos.sql` | Regressão das correções do portão (tarefas 1 a 7), uma por script |
+| `30_rede_coorte2.sql` | Rodada 2: seis unidades novas (infantil, alto risco, psiquiátrico, queimados, trauma, CIATox), seis contas de médico e a escala |
+| `31_coorte2_catalogo.sql` | Rodada 2: medicamentos que a coorte 2 prescreve (sem dose) |
+| `32_coorte2_porta.sql` | Rodada 2: coorte 2 (#16 a #34) na recepção, triagem, atendimento e desfecho; rode `03` antes |
+| `33_coorte2_internacao.sql` | Rodada 2: observação, internação, notificações, identidade, retorno, paliativo, isolamento, regulação e transferência |
+| `34_coorte2_extras.sql` | Rodada 2: troca de unidade, segundo fator, `perguntar_gestao`, lote de 40 fichas e exportações |
 | `99_limpar_rede_e2e.sql` | Apaga a Rede E2E e tudo o que foi gravado nela |
+
+Na homologação os scripts são colados no SQL do plugin do Supabase, que não entende os
+comandos do psql (`\set`) nem a variável `:'senha'`. `homolog/preparar.mjs` gera a versão
+para colar: tira os comandos e troca a senha pelo hash bcrypt passado em `HASH_E2E` (o hash
+não fica no repositório). Ordem na homologação: `01`, `02`, `03`, `04`, `10` a `16`, `17` a
+`23`, `30`, `31`, `03` de novo, `32`, `33`, `34`.
 
 ## Como rodar (local)
 

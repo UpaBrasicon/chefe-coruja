@@ -167,7 +167,8 @@ SELECT e2e.passo('6.aviso_gestor_24h', 1, 'gestor', '/notificacoes', 'Gestor da 
   $q$SELECT CASE WHEN count(*) > 0 THEN count(*)::text ELSE e2e.falhar('nenhum aviso ao gestor da origem') END FROM public.notificacoes_plantonista WHERE perfil_id = private.meu_perfil_id() AND tipo LIKE 'reg_prazo%'$q$);
 
 -- ── 5. óbito (#13) e altas ──────────────────────────────────────────────────
-SELECT e2e.passo('5.obito_com_exame_pendente', 13, 'plantonista2', '/internacao', 'Óbito com exame ainda sem resultado (o óbito não deveria esperar exame)',
+-- Correção da tarefa 1 (PR #100): o óbito não espera exame; o exame pedido é cancelado no desfecho.
+SELECT e2e.passo('5.obito', 13, 'plantonista2', '/internacao', 'Óbito na unidade com exame ainda sem resultado (com número da D.O.)',
   format('SELECT public.dar_alta(%L::uuid, %L, %L, NULL, NULL, %L, %L::jsonb)::text', e2e.u('int13'), 'obito', 'A41.9',
          'Óbito às 03h10 após choque refratário (teste E2E).', jsonb_build_object('numero_do', '123456789', 'hora_obito', to_char(now(), 'HH24:MI'))));
 DO $$
@@ -178,9 +179,9 @@ BEGIN
       format('SELECT public.resolver_exame(%L::uuid, %L)::text', x.id, 'Resultado de teste E2E'));
   END LOOP;
 END $$;
-SELECT e2e.passo('5.obito', 13, 'plantonista2', '/internacao', 'Óbito na unidade (com número da D.O.)',
-  format('SELECT public.dar_alta(%L::uuid, %L, %L, NULL, NULL, %L, %L::jsonb)::text', e2e.u('int13'), 'obito', 'A41.9',
-         'Óbito às 03h10 após choque refratário (teste E2E).', jsonb_build_object('numero_do', '123456789', 'hora_obito', to_char(now(), 'HH24:MI'))));
+SELECT e2e.conferir('5.obito_cancela_exames', 13, 'Os exames do #13 sem resultado foram cancelados no óbito (correção da tarefa 1)',
+  NOT EXISTS (SELECT 1 FROM public.exames_pedidos WHERE paciente_id = e2e.u('pac13') AND situacao = 'pedido'),
+  (SELECT string_agg(exame || ':' || situacao, ', ') FROM public.exames_pedidos WHERE paciente_id = e2e.u('pac13')));
 SELECT e2e.passo('5.sumario_obito', 13, 'plantonista2', '/internacao', 'Sumário de óbito',
   format('SELECT (public.emitir_documento(%L::uuid, %L, %L) ->> ''id'')', e2e.u('pac13'), 'sumario_obito', 'Sumário de óbito de teste E2E: choque séptico refratário.'));
 SELECT e2e.lacuna('5.declaracao_obito', 13, 'plantonista', 'Declaração de óbito (D.O.) e comunicação à família/serviços', 'Não há documento de D.O. (só o número dentro do desfecho) nem registro de comunicação do óbito.');

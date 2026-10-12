@@ -27,11 +27,14 @@ SELECT e2e.ajuste('11.banco_internados', 'Conferência no banco: internações a
 -- histórico do paciente com alta: exige justificativa e fica na auditoria
 SELECT e2e.passo('11.historico_sem_motivo', 14, 'gestor', '/prontuarios', 'Abrir histórico encerrado sem justificativa (deve recusar)',
   format('SELECT public.abrir_historico_encerrado(%L::uuid, %L)::text', e2e.u('pac14'), 'curto'), 'erro');
-SELECT e2e.passo('11.historico_com_motivo', 14, 'gestor', '/prontuarios', 'Abrir histórico encerrado com justificativa',
-  format('SELECT public.abrir_historico_encerrado(%L::uuid, %L)::text', e2e.u('pac14'), 'Auditoria interna do teste de ponta a ponta'));
-SELECT e2e.passo('11.historico_auditado', 14, 'gestor', '/auditoria', 'Acesso aparece no registro de acessos ao prontuário',
-  format($q$SELECT CASE WHEN count(*) > 0 THEN count(*)::text ELSE e2e.falhar('sem registro') END FROM public.acessos_prontuario_da_unidade(%L, now() - interval '1 hour', now(), NULL, %L) x$q$,
-         'e1100000-0000-4000-8000-000000000001', e2e.u('pac14')));
+-- Regra da Fase 3 (commit 472be01): só quem cuida do paciente agora abre o histórico encerrado com motivo; o gestor faz o pedido de acesso.
+SELECT e2e.passo('11.historico_com_motivo', 14, 'gestor', '/prontuarios', 'Gestor tenta abrir histórico encerrado com justificativa (regra: o gestor faz o pedido)',
+  format('SELECT public.abrir_historico_encerrado(%L::uuid, %L)::text', e2e.u('pac14'), 'Auditoria interna do teste de ponta a ponta'), 'erro:Só quem cuida do paciente agora');
+SELECT e2e.passo('11.historico_pedido', 14, 'gestor', '/prontuarios', 'Gestor pede acesso ao histórico com justificativa',
+  format('SELECT public.pedir_acesso_prontuario(%L::uuid, %L)::text', e2e.u('pac14'), 'Auditoria interna do teste de ponta a ponta (gestor).'), 'ok', 'pedido14g');
+SELECT e2e.passo('11.historico_auditado', 14, 'gestor', '/auditoria', 'O pedido aparece na lista de pedidos de acesso da unidade',
+  format($q$SELECT CASE WHEN count(*) > 0 THEN count(*)::text ELSE e2e.falhar('sem pedido') END FROM public.meus_pedidos_acesso(%L) x$q$,
+         'e1100000-0000-4000-8000-000000000001'));
 SELECT e2e.passo('11.gestor_prescreve', 5, 'gestor', '/plantao', 'Gestor tenta prescrever (deve ser negado)',
   format('SELECT public.prescrever(%L::uuid, %L::jsonb)::text', e2e.u('pac5'),
          jsonb_build_object('tipo', 'medicamento', 'medicamento_id', e2e.med('Paracetamol'), 'dose', '750 mg', 'via', 'oral', 'posologia', 'dose única')), 'erro');
@@ -85,7 +88,7 @@ SELECT e2e.ajuste('N.avisos', 'Conferência: avisos gerados no teste, por tipo',
   $q$INSERT INTO e2e.vars SELECT 'avisos_tipos', string_agg(t || ':' || n, ' ' ORDER BY t) FROM (SELECT regexp_replace(tipo, '_[0-9a-f-]+$', '') t, count(*) n FROM public.notificacoes_plantonista WHERE perfil_id::text LIKE 'e2000000%' GROUP BY 1) x ON CONFLICT (nome) DO UPDATE SET valor = excluded.valor$q$);
 SELECT e2e.passo('N.aviso_negativa', 9, 'plantonista2', '/notificacoes', 'Origem recebe aviso da regulação negada',
   $q$SELECT CASE WHEN count(*) > 0 THEN count(*)::text ELSE e2e.falhar('sem aviso') END FROM public.notificacoes_plantonista WHERE perfil_id = private.meu_perfil_id() AND tipo LIKE 'reg_negada%'$q$);
-SELECT e2e.passo('N.aviso_farmacia_devolveu', 13, 'plantonista2', '/notificacoes', 'Médico recebe aviso do item devolvido pela farmácia',
+SELECT e2e.passo('N.aviso_farmacia_devolveu', 13, 'plantonista', '/notificacoes', 'Médico que prescreveu recebe aviso do item devolvido pela farmácia (correção da tarefa 7)',
   $q$SELECT CASE WHEN count(*) > 0 THEN count(*)::text ELSE e2e.falhar('sem aviso ao médico do item devolvido') END FROM public.notificacoes_plantonista WHERE perfil_id = private.meu_perfil_id() AND tipo NOT LIKE 'reg_%'$q$);
 SELECT e2e.passo('N.aviso_leito_liberado', 7, 'nir', '/notificacoes', 'Aviso de leito liberado (higienização concluída)',
   $q$SELECT CASE WHEN count(*) > 0 THEN count(*)::text ELSE e2e.falhar('sem aviso de leito liberado') END FROM public.notificacoes_plantonista WHERE perfil_id = private.meu_perfil_id() AND tipo ILIKE '%leito%'$q$);

@@ -867,6 +867,7 @@ Uma tarefa por vez, cada uma em branch e PR próprios, com homologação antes d
 - **Regra:** nada é corrigido durante a rodada. Mesmo formato de defeito da Rodada 1.
 - **Entregáveis:** `produto/docs/teste-e2e/RELATORIO_E2E_R2_AAAA-MM-DD.md`, `TABELA_IA.csv`, `AVALIACAO_HERMES.md`, seeds da coorte 2 e dos CNES novos em `scripts/e2e/` (pasta `homolog/` com a versão para o SQL da homologação) e a lista de decisões de produto para o RT.
 - **Fica com o RT:** derrubar contêineres do VPS e medir a degradação; logs DEBUG e conferência de vazamento nos payloads; expiração de sessão e 2FA nas telas; leitor de tela; PDF impresso; webhook do prescreve.com (não existe no repositório: o RT aponta o achado).
+- **Rodada executada em 12/10/2026** na homologação: 464 passos da Rodada 2 (436 ok, 2 falhas, 21 lacunas), 204 passos de regressão das tarefas 1 a 7 sem falha. Relatório em `produto/docs/teste-e2e/RELATORIO_E2E_R2_2026-10-12.md` (defeitos R2-01 a R2-04, 7 perguntas ao RT), `TABELA_IA.csv` e `AVALIACAO_HERMES.md`. Falta a parte da IA que depende do RT: `clinical-search` com as secrets da biblioteca, Coruja Clínica e Gestora no Telegram, degradação no VPS, telas (sessão, 2FA, leitor de tela, PDF). A decisão sobre os achados abre ou não a Fase 5.
 
 ## Fase 5 — UBS, Faturamento e Escala Competitiva
 **Horizonte:** 180+ dias
