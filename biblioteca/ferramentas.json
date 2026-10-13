@@ -15,7 +15,8 @@
    "IOT"
   ],
   "descricao": "Indução, analgesia e bloqueio por peso (padrão HC).",
-  "rota": "/plantonista/calculadoras/iot"
+  "rota": "/plantonista/calculadoras/iot",
+  "publico": "adulto"
  },
  {
   "id": "infusoes-adulto",
@@ -37,7 +38,8 @@
    "diluição"
   ],
   "descricao": "Porta única: vasoativas, sedação, bloqueio neuromuscular e atalhos da heparina, com barra de dose até o teto do manual HC.",
-  "rota": "/plantonista/calculadoras/infusoes-adulto"
+  "rota": "/plantonista/calculadoras/infusoes-adulto",
+  "publico": "adulto"
  },
  {
   "id": "drogas-vasoativas",
@@ -55,7 +57,8 @@
    "DVA"
   ],
   "descricao": "Preparo padrão HC, mL/h pela dose e dose pela bomba.",
-  "rota": "/plantonista/calculadoras/drogas-vasoativas"
+  "rota": "/plantonista/calculadoras/drogas-vasoativas",
+  "publico": "adulto"
  },
  {
   "id": "sedacao-continua",
@@ -72,7 +75,8 @@
    "analgesia"
   ],
   "descricao": "Propofol, midazolam, dexmedetomidina, quetamina e fentanil.",
-  "rota": "/plantonista/calculadoras/sedacao-continua"
+  "rota": "/plantonista/calculadoras/sedacao-continua",
+  "publico": "adulto"
  },
  {
   "id": "bloqueio-neuromuscular",
@@ -87,7 +91,8 @@
    "paralisia"
   ],
   "descricao": "Rocurônio e cisatracúrio (padrão HC).",
-  "rota": "/plantonista/calculadoras/bloqueio-neuromuscular"
+  "rota": "/plantonista/calculadoras/bloqueio-neuromuscular",
+  "publico": "adulto"
  },
  {
   "id": "heparinizacao-venosa",
@@ -103,7 +108,8 @@
    "TEP"
   ],
   "descricao": "80 UI/kg + 18 UI/kg/h e ajuste pelo TTPa (manual HC).",
-  "rota": "/plantonista/calculadoras/heparinizacao-venosa"
+  "rota": "/plantonista/calculadoras/heparinizacao-venosa",
+  "publico": "adulto"
  },
  {
   "id": "hiponatremia",
@@ -118,7 +124,8 @@
    "eletrólitos"
   ],
   "descricao": "NaCl 3%: preparo, bolus e limites de correção (manual HC).",
-  "rota": "/plantonista/calculadoras/hiponatremia"
+  "rota": "/plantonista/calculadoras/hiponatremia",
+  "publico": "adulto"
  },
  {
   "id": "hipernatremia",
@@ -133,7 +140,8 @@
    "eletrólitos"
   ],
   "descricao": "Água livre e Adrogué-Madias (manual HC).",
-  "rota": "/plantonista/calculadoras/hipernatremia"
+  "rota": "/plantonista/calculadoras/hipernatremia",
+  "publico": "adulto"
  },
  {
   "id": "hidantalizacao",
@@ -148,7 +156,8 @@
    "epilepsia"
   ],
   "descricao": "1ª, 2ª e 3ª linha por peso (manual HC).",
-  "rota": "/plantonista/calculadoras/hidantalizacao"
+  "rota": "/plantonista/calculadoras/hidantalizacao",
+  "publico": "adulto"
  },
  {
   "id": "profilaxia-tev",
@@ -165,7 +174,8 @@
    "TVP"
   ],
   "descricao": "Doses de profilaxia pelo manual HC (sem escore de risco).",
-  "rota": "/plantonista/calculadoras/profilaxia-tev"
+  "rota": "/plantonista/calculadoras/profilaxia-tev",
+  "publico": "adulto"
  },
  {
   "id": "acesso-venoso",
@@ -182,7 +192,8 @@
    "central"
   ],
   "descricao": "Recomendação de dispositivo por perfil e terapia.",
-  "rota": "/plantonista/calculadoras/acesso-venoso"
+  "rota": "/plantonista/calculadoras/acesso-venoso",
+  "publico": "adulto"
  },
  {
   "id": "heparinizacao-ajuste",
@@ -197,7 +208,8 @@
    "anticoagulação"
   ],
   "descricao": "Nomograma da Tabela 7 do manual HC.",
-  "rota": "/plantonista/calculadoras/heparinizacao-ajuste"
+  "rota": "/plantonista/calculadoras/heparinizacao-ajuste",
+  "publico": "adulto"
  },
  {
   "id": "bolus",
@@ -214,7 +226,8 @@
    "antídoto"
   ],
   "descricao": "Apêndice do PS Pediatria ICr: emergência, RCP, sedação e antídotos.",
-  "rota": "/plantonista/pediatria/bolus"
+  "rota": "/plantonista/pediatria/bolus",
+  "publico": "pediatrico"
  },
  {
   "id": "infusoes",
@@ -230,7 +243,8 @@
    "mL/h"
   ],
   "descricao": "Faixa de dose do livro e mL/h pela concentração do seu preparo.",
-  "rota": "/plantonista/pediatria/infusoes"
+  "rota": "/plantonista/pediatria/infusoes",
+  "publico": "pediatrico"
  },
  {
   "id": "rcp-pediatrica",
@@ -249,7 +263,8 @@
    "epinefrina"
   ],
   "descricao": "Compressão/ventilação por faixa, cargas de desfibrilação e cardioversão por peso, drogas da PCR, bradicardia e TSV.",
-  "rota": "/plantonista/pediatria/rcp-pediatrica"
+  "rota": "/plantonista/pediatria/rcp-pediatrica",
+  "publico": "pediatrico"
  },
  {
   "id": "via-aerea",
@@ -268,7 +283,8 @@
    "lâmina"
   ],
   "descricao": "Tubo com e sem cuff, profundidade, equipamento por idade e doses da SRI.",
-  "rota": "/plantonista/pediatria/via-aerea"
+  "rota": "/plantonista/pediatria/via-aerea",
+  "publico": "pediatrico"
  },
  {
   "id": "anafilaxia-pediatrica",
@@ -287,7 +303,8 @@
    "fenoterol"
   ],
   "descricao": "Epinefrina IM por peso ou dose fixa por idade, 2ª/3ª linha e refratária.",
-  "rota": "/plantonista/pediatria/anafilaxia-pediatrica"
+  "rota": "/plantonista/pediatria/anafilaxia-pediatrica",
+  "publico": "pediatrico"
  },
  {
   "id": "asma-pediatrica",
@@ -306,7 +323,8 @@
    "prednisolona"
   ],
   "descricao": "Corticoide, ipratrópio, magnésio e salbutamol contínuo por peso; classificação da crise como referência.",
-  "rota": "/plantonista/pediatria/asma-pediatrica"
+  "rota": "/plantonista/pediatria/asma-pediatrica",
+  "publico": "pediatrico"
  },
  {
   "id": "pram",
@@ -322,7 +340,8 @@
    "sibilância"
   ],
   "descricao": "Cinco itens do exame, 0 a 12: leve, moderada ou grave (Ducharme 2008; aguarda o RT).",
-  "rota": "/plantonista/pediatria/pram"
+  "rota": "/plantonista/pediatria/pram",
+  "publico": "pediatrico"
  },
  {
   "id": "crise-epileptica-pediatrica",
@@ -341,7 +360,8 @@
    "fenobarbital"
   ],
   "descricao": "Benzodiazepínicos, ataque, fenobarbital e EME refratário por peso, com tempo de infusão.",
-  "rota": "/plantonista/pediatria/crise-epileptica-pediatrica"
+  "rota": "/plantonista/pediatria/crise-epileptica-pediatrica",
+  "publico": "pediatrico"
  },
  {
   "id": "sinais-vitais-pediatricos",
@@ -358,7 +378,8 @@
    "hipotensão"
   ],
   "descricao": "FC normal, valores anormais no choque, PA sistólica baixa e FR normal para a idade (só referência).",
-  "rota": "/plantonista/pediatria/sinais-vitais-pediatricos"
+  "rota": "/plantonista/pediatria/sinais-vitais-pediatricos",
+  "publico": "pediatrico"
  },
  {
   "id": "choque-pediatrico",
@@ -377,7 +398,8 @@
    "dopamina"
   ],
   "descricao": "Expansão volêmica em mL/kg, vasoativas em µg/min e metas da primeira hora.",
-  "rota": "/plantonista/pediatria/choque-pediatrico"
+  "rota": "/plantonista/pediatria/choque-pediatrico",
+  "publico": "pediatrico"
  },
  {
   "id": "tce-grave-pediatrico",
@@ -395,7 +417,8 @@
    "manitol"
   ],
   "descricao": "NaCl 3% e manitol por peso; metas de PaCO₂, PIC, PPC e osmolaridade.",
-  "rota": "/plantonista/pediatria/tce-grave-pediatrico"
+  "rota": "/plantonista/pediatria/tce-grave-pediatrico",
+  "publico": "pediatrico"
  },
  {
   "id": "pecarn-menor-2-anos",
@@ -411,7 +434,8 @@
    "lactente"
   ],
   "descricao": "Figura 2 do cap. 16.",
-  "rota": "/plantonista/pediatria/pecarn-menor-2-anos"
+  "rota": "/plantonista/pediatria/pecarn-menor-2-anos",
+  "publico": "pediatrico"
  },
  {
   "id": "pecarn-2-anos-ou-mais",
@@ -426,7 +450,8 @@
    "tomografia"
   ],
   "descricao": "Figura 3 do cap. 16.",
-  "rota": "/plantonista/pediatria/pecarn-2-anos-ou-mais"
+  "rota": "/plantonista/pediatria/pecarn-2-anos-ou-mais",
+  "publico": "pediatrico"
  },
  {
   "id": "glasgow-pediatrico",
@@ -442,7 +467,8 @@
    "TCE"
   ],
   "descricao": "Com a escala modificada (James) para menores de 5 anos.",
-  "rota": "/plantonista/pediatria/glasgow-pediatrico"
+  "rota": "/plantonista/pediatria/glasgow-pediatrico",
+  "publico": "pediatrico"
  },
  {
   "id": "pops",
@@ -457,7 +483,8 @@
    "escore de alerta"
   ],
   "descricao": "Escore de Observação de Prioridade Pediátrica (Tabela 4 do cap. 82).",
-  "rota": "/plantonista/pediatria/pops"
+  "rota": "/plantonista/pediatria/pops",
+  "publico": "pediatrico"
  },
  {
   "id": "pews",
@@ -473,7 +500,8 @@
    "deterioração"
   ],
   "descricao": "Escore de Alerta Precoce Pediátrico (Figura 2 do cap. 82).",
-  "rota": "/plantonista/pediatria/pews"
+  "rota": "/plantonista/pediatria/pews",
+  "publico": "pediatrico"
  },
  {
   "id": "phoenix",
@@ -488,7 +516,8 @@
    "disfunção orgânica"
   ],
   "descricao": "Sepse e choque séptico pediátricos pelos critérios de 2024 (JAMA).",
-  "rota": "/plantonista/pediatria/phoenix"
+  "rota": "/plantonista/pediatria/phoenix",
+  "publico": "pediatrico"
  },
  {
   "id": "fluidoterapia-manutencao-ped",
@@ -505,7 +534,8 @@
    "SIHAD"
   ],
   "descricao": "Holliday-Segar, regra prática (teto 100 mL/h), soluções-padrão e categorias da Figura 1.",
-  "rota": "/plantonista/pediatria/fluidoterapia-manutencao-ped"
+  "rota": "/plantonista/pediatria/fluidoterapia-manutencao-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "desidratacao-diarreia-ped",
@@ -524,7 +554,8 @@
    "reidratação"
   ],
   "descricao": "Escala clínica, grau pelo peso perdido, planos A/B/C por peso e idade.",
-  "rota": "/plantonista/pediatria/desidratacao-diarreia-ped"
+  "rota": "/plantonista/pediatria/desidratacao-diarreia-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "sodio-ped",
@@ -542,7 +573,8 @@
    "Adrogué-Madias"
   ],
   "descricao": "Na corrigido, osmolalidade efetiva, NaCl 3% por peso, Tabela 3 por litro, déficit de água livre.",
-  "rota": "/plantonista/pediatria/sodio-ped"
+  "rota": "/plantonista/pediatria/sodio-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "eletrolitos-ped",
@@ -561,7 +593,8 @@
    "fósforo"
   ],
   "descricao": "Reposições e hipercalemia por peso, máximos, FEMg.",
-  "rota": "/plantonista/pediatria/eletrolitos-ped"
+  "rota": "/plantonista/pediatria/eletrolitos-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "cad-ehh-ped",
@@ -580,7 +613,8 @@
    "manitol"
   ],
   "descricao": "Critérios, gravidade, Quadro 6, fluidos, K, insulina EV/SC, bicarbonato, edema cerebral.",
-  "rota": "/plantonista/pediatria/cad-ehh-ped"
+  "rota": "/plantonista/pediatria/cad-ehh-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "hipoglicemia-ped",
@@ -597,7 +631,8 @@
    "TIG"
   ],
   "descricao": "Glicose VO/EV por idade (texto e Tabela 2), glucagon, VIG → mL/h.",
-  "rota": "/plantonista/pediatria/hipoglicemia-ped"
+  "rota": "/plantonista/pediatria/hipoglicemia-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "acidobase-ped",
@@ -615,7 +650,8 @@
    "delta-delta"
   ],
   "descricao": "Leitura em 3 etapas, compensação (Tabela 3), ânion-gap, ΔAG/ΔHCO3, bicarbonato 1,4%, HCl.",
-  "rota": "/plantonista/pediatria/acidobase-ped"
+  "rota": "/plantonista/pediatria/acidobase-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "queimadura-ped",
@@ -632,7 +668,8 @@
    "reposição volêmica"
   ],
   "descricao": "Lund e Browder por região e idade, Parkland (3 mL/kg/%SCQ) com manutenção e diurese-alvo.",
-  "rota": "/plantonista/pediatria/queimadura-ped"
+  "rota": "/plantonista/pediatria/queimadura-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "intoxicacoes-ped",
@@ -651,7 +688,8 @@
    "pralidoxima"
   ],
   "descricao": "Descontaminação, eliminação e antídotos por peso, toxíndromes e tabela de antídotos.",
-  "rota": "/plantonista/pediatria/intoxicacoes-ped"
+  "rota": "/plantonista/pediatria/intoxicacoes-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "escorpiao-aranhas-ped",
@@ -670,7 +708,8 @@
    "peçonhento"
   ],
   "descricao": "Classe escolhida pelo médico → ampolas das Tabelas 1–4, volume do SAAr, prednisona e expansão.",
-  "rota": "/plantonista/pediatria/escorpiao-aranhas-ped"
+  "rota": "/plantonista/pediatria/escorpiao-aranhas-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "sedacao-procedimento-ped",
@@ -689,7 +728,8 @@
    "dexmedetomidina"
   ],
   "descricao": "Jejum, ASA, sugestões por procedimento, sedativos e reversores por peso.",
-  "rota": "/plantonista/pediatria/sedacao-procedimento-ped"
+  "rota": "/plantonista/pediatria/sedacao-procedimento-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "vias-aereas-superiores-ped",
@@ -708,7 +748,8 @@
    "dexametasona"
   ],
   "descricao": "Antibióticos e corticoide por peso e gravidade do crupe (Tabela 6).",
-  "rota": "/plantonista/pediatria/vias-aereas-superiores-ped"
+  "rota": "/plantonista/pediatria/vias-aereas-superiores-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "bronquiolite-ped",
@@ -726,7 +767,8 @@
    "palivizumabe"
   ],
   "descricao": "Indicações de internação, CNAF 1–2 L/kg/min, critérios de palivizumabe.",
-  "rota": "/plantonista/pediatria/bronquiolite-ped"
+  "rota": "/plantonista/pediatria/bronquiolite-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "insuficiencia-cardiaca-ped",
@@ -745,7 +787,8 @@
    "levosimendana"
   ],
   "descricao": "Diuréticos, iECA, betabloqueadores, digoxina, levosimendana, ICT, Ross e ISHLT.",
-  "rota": "/plantonista/pediatria/insuficiencia-cardiaca-ped"
+  "rota": "/plantonista/pediatria/insuficiencia-cardiaca-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "crise-hipertensiva-ped",
@@ -764,7 +807,8 @@
    "minoxidil"
   ],
   "descricao": "Classificação da PA (Tabela 1) com p90/p95 informados, meta da PAM e drogas por peso.",
-  "rota": "/plantonista/pediatria/crise-hipertensiva-ped"
+  "rota": "/plantonista/pediatria/crise-hipertensiva-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "meningite-ped",
@@ -783,7 +827,8 @@
    "aciclovir"
   ],
   "descricao": "Acidente de punção, BMS, antibióticos neonatal/pós-neonatal, aciclovir, dexametasona e profilaxia.",
-  "rota": "/plantonista/pediatria/meningite-ped"
+  "rota": "/plantonista/pediatria/meningite-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "infeccao-urinaria-ped",
@@ -802,7 +847,8 @@
    "ceftriaxona"
   ],
   "descricao": "Fatores da AAP, urocultura por método de coleta, antibióticos orais e parenterais por peso.",
-  "rota": "/plantonista/pediatria/infeccao-urinaria-ped"
+  "rota": "/plantonista/pediatria/infeccao-urinaria-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "pneumonia-ped",
@@ -821,7 +867,8 @@
    "coqueluche"
   ],
   "descricao": "Antibiótico domiciliar/hospitalar por faixa e peso, situações especiais e líquido pleural.",
-  "rota": "/plantonista/pediatria/pneumonia-ped"
+  "rota": "/plantonista/pediatria/pneumonia-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "hemocomponentes-ped",
@@ -840,7 +887,8 @@
    "albumina"
   ],
   "descricao": "CH, PFC, plaquetas (fórmula da p. 727), fatores VIII/IX, crio, albumina e cálcio na maciça.",
-  "rota": "/plantonista/pediatria/hemocomponentes-ped"
+  "rota": "/plantonista/pediatria/hemocomponentes-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "falciforme-ped",
@@ -858,7 +906,8 @@
    "síndrome torácica aguda"
   ],
   "descricao": "Dor pela Figura 1, morfina e analgésicos por peso, febre, sequestro, AVC e STA.",
-  "rota": "/plantonista/pediatria/falciforme-ped"
+  "rota": "/plantonista/pediatria/falciforme-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "kawasaki-ped",
@@ -875,7 +924,8 @@
    "Z-score"
   ],
   "descricao": "Critérios clássicos, forma incompleta (AHA), Z-score e doses por peso.",
-  "rota": "/plantonista/pediatria/kawasaki-ped"
+  "rota": "/plantonista/pediatria/kawasaki-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "dengue-ped",
@@ -894,7 +944,8 @@
    "grupo D"
   ],
   "descricao": "Grupos A–D, hidratação por faixa de peso (Quadro 8), expansões C/D, albumina 5% e prova do laço.",
-  "rota": "/plantonista/pediatria/dengue-ped"
+  "rota": "/plantonista/pediatria/dengue-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "febre-sem-sinais-ped",
@@ -913,7 +964,8 @@
    "ceftriaxona"
   ],
   "descricao": "Faixa dos fluxogramas, leucograma/PCR de risco, coleta de urina e antibióticos por peso.",
-  "rota": "/plantonista/pediatria/febre-sem-sinais-ped"
+  "rota": "/plantonista/pediatria/febre-sem-sinais-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "insuficiencia-adrenal-ped",
@@ -930,7 +982,8 @@
    "choque"
   ],
   "descricao": "Hidrocortisona em bolo/manutenção por SC informada, SF, fludrocortisona e alternativa do Apêndice.",
-  "rota": "/plantonista/pediatria/insuficiencia-adrenal-ped"
+  "rota": "/plantonista/pediatria/insuficiencia-adrenal-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "injuria-renal-ped",
@@ -949,7 +1002,8 @@
    "hipercalemia"
   ],
   "descricao": "KDIGO pediátrico, Schwartz, FeNa, sobrecarga hídrica, furosemida, contraste e Tabela 8.",
-  "rota": "/plantonista/pediatria/injuria-renal-ped"
+  "rota": "/plantonista/pediatria/injuria-renal-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "tfg-schwartz-ped",
@@ -966,7 +1020,8 @@
    "função renal"
   ],
   "descricao": "Estatura × k ÷ creatinina, com a constante do método (livro do ICr, Tabela 2).",
-  "rota": "/plantonista/pediatria/tfg-schwartz-ped"
+  "rota": "/plantonista/pediatria/tfg-schwartz-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "glomerulopatias-shu-ped",
@@ -985,7 +1040,8 @@
    "hemolítico-urêmica"
   ],
   "descricao": "Pr/Cr, albumina 20% e diuréticos, GNPE, pulso de metilprednisolona e limiares da SHU.",
-  "rota": "/plantonista/pediatria/glomerulopatias-shu-ped"
+  "rota": "/plantonista/pediatria/glomerulopatias-shu-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "hemorragia-digestiva-hepatica-ped",
@@ -1004,7 +1060,8 @@
    "PALF"
   ],
   "descricao": "Octreotida, somatostatina e omeprazol por peso; PALF, paracetamol, amônia e suporte da IHA.",
-  "rota": "/plantonista/pediatria/hemorragia-digestiva-hepatica-ped"
+  "rota": "/plantonista/pediatria/hemorragia-digestiva-hepatica-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "coma-hic-ped",
@@ -1022,7 +1079,8 @@
    "dexametasona"
   ],
   "descricao": "GCS-Pupilas, PPC e metas por idade, bainha do nervo óptico, glicose, midazolam e dexametasona.",
-  "rota": "/plantonista/pediatria/coma-hic-ped"
+  "rota": "/plantonista/pediatria/coma-hic-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "hemostasia-trombose-ped",
@@ -1041,7 +1099,8 @@
    "varfarina"
   ],
   "descricao": "Fator por tipo de sangramento, DDAVP, tranexâmico, PTI, heparina com nomograma, enoxaparina, varfarina.",
-  "rota": "/plantonista/pediatria/hemostasia-trombose-ped"
+  "rota": "/plantonista/pediatria/hemostasia-trombose-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "emergencias-oncologicas-ped",
@@ -1060,7 +1119,8 @@
    "compressão medular"
   ],
   "descricao": "Lise tumoral, hemocomponentes, hiperviscosidade, neutropenia febril (Tabela 11) e compressivas.",
-  "rota": "/plantonista/pediatria/emergencias-oncologicas-ped"
+  "rota": "/plantonista/pediatria/emergencias-oncologicas-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "choque-toxico-partes-moles-ped",
@@ -1079,7 +1139,8 @@
    "fasceíte necrotizante"
   ],
   "descricao": "Critérios do CDC, penicilina + clindamicina + IGIV, antibióticos de pele (doses do Apêndice).",
-  "rota": "/plantonista/pediatria/choque-toxico-partes-moles-ped"
+  "rota": "/plantonista/pediatria/choque-toxico-partes-moles-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "febre-imunodeprimido-ped",
@@ -1098,7 +1159,8 @@
    "fluconazol"
   ],
   "descricao": "Tabela 7 por peso com máximos do Apêndice, corticoide imunossupressor, profilaxias.",
-  "rota": "/plantonista/pediatria/febre-imunodeprimido-ped"
+  "rota": "/plantonista/pediatria/febre-imunodeprimido-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "artrite-osteomielite-ped",
@@ -1117,7 +1179,8 @@
    "vancomicina"
   ],
   "descricao": "Antibiótico por resistência local (doses mínimas), cobertura por idade, sinovial e duração.",
-  "rota": "/plantonista/pediatria/artrite-osteomielite-ped"
+  "rota": "/plantonista/pediatria/artrite-osteomielite-ped",
+  "publico": "pediatrico"
  },
  {
   "id": "hipocalemia-reposicao-potassio",
@@ -1132,7 +1195,8 @@
    "reposição"
   ],
   "descricao": "Classificação, KCl EV e VO, mEq/h e mL/h.",
-  "rota": "/plantonista/emergencias/hipocalemia-reposicao-potassio"
+  "rota": "/plantonista/emergencias/hipocalemia-reposicao-potassio",
+  "publico": "adulto"
  },
  {
   "id": "hipomagnesemia-reposicao-magnesio",
@@ -1146,7 +1210,8 @@
    "sulfato de magnésio"
   ],
   "descricao": "Esquemas de MgSO4 e preparo.",
-  "rota": "/plantonista/emergencias/hipomagnesemia-reposicao-magnesio"
+  "rota": "/plantonista/emergencias/hipomagnesemia-reposicao-magnesio",
+  "publico": "adulto"
  },
  {
   "id": "hipocalcemia-reposicao-calcio",
@@ -1160,7 +1225,8 @@
    "gluconato"
   ],
   "descricao": "Cálcio corrigido, bolus e infusão.",
-  "rota": "/plantonista/emergencias/hipocalcemia-reposicao-calcio"
+  "rota": "/plantonista/emergencias/hipocalcemia-reposicao-calcio",
+  "publico": "adulto"
  },
  {
   "id": "hipercalcemia",
@@ -1175,7 +1241,8 @@
    "bifosfonato"
   ],
   "descricao": "Gravidade, FECa e tratamento agudo.",
-  "rota": "/plantonista/emergencias/hipercalcemia"
+  "rota": "/plantonista/emergencias/hipercalcemia",
+  "publico": "adulto"
  },
  {
   "id": "hipofosfatemia-reposicao-fosforo",
@@ -1189,7 +1256,8 @@
    "hipofosfatemia"
   ],
   "descricao": "Reposição IV e VO com limites.",
-  "rota": "/plantonista/emergencias/hipofosfatemia-reposicao-fosforo"
+  "rota": "/plantonista/emergencias/hipofosfatemia-reposicao-fosforo",
+  "publico": "adulto"
  },
  {
   "id": "gasometria-acidobase",
@@ -1205,7 +1273,8 @@
    "Winter"
   ],
   "descricao": "Compensação, ânion-gap, delta-delta, gap osmolar.",
-  "rota": "/plantonista/emergencias/gasometria-acidobase"
+  "rota": "/plantonista/emergencias/gasometria-acidobase",
+  "publico": "adulto"
  },
  {
   "id": "bicarbonato-de-sodio",
@@ -1219,7 +1288,8 @@
    "NaHCO3"
   ],
   "descricao": "Déficit e esquemas de preparo.",
-  "rota": "/plantonista/emergencias/bicarbonato-de-sodio"
+  "rota": "/plantonista/emergencias/bicarbonato-de-sodio",
+  "publico": "adulto"
  },
  {
   "id": "cad-ehh-criterios",
@@ -1234,7 +1304,8 @@
    "osmolaridade"
   ],
   "descricao": "Na corrigido, osmolaridade, ânion-gap e gravidade.",
-  "rota": "/plantonista/emergencias/cad-ehh-criterios"
+  "rota": "/plantonista/emergencias/cad-ehh-criterios",
+  "publico": "adulto"
  },
  {
   "id": "cad-ehh-tratamento",
@@ -1250,7 +1321,8 @@
    "potássio"
   ],
   "descricao": "Hidratação, insulina EV, potássio e transição.",
-  "rota": "/plantonista/emergencias/cad-ehh-tratamento"
+  "rota": "/plantonista/emergencias/cad-ehh-tratamento",
+  "publico": "adulto"
  },
  {
   "id": "hipoglicemia-adulto",
@@ -1264,7 +1336,8 @@
    "glucagon"
   ],
   "descricao": "Limiar e doses de glicose, glucagon e tiamina.",
-  "rota": "/plantonista/emergencias/hipoglicemia-adulto"
+  "rota": "/plantonista/emergencias/hipoglicemia-adulto",
+  "publico": "adulto"
  },
  {
   "id": "pcr-adulto",
@@ -1280,7 +1353,8 @@
    "desfibrilação"
   ],
   "descricao": "Doses da Tabela 2 do HC e carga do choque.",
-  "rota": "/plantonista/emergencias/pcr-adulto"
+  "rota": "/plantonista/emergencias/pcr-adulto",
+  "publico": "adulto"
  },
  {
   "id": "bradicardia-adulto",
@@ -1295,7 +1369,8 @@
    "marca-passo"
   ],
   "descricao": "Atropina, dopamina e adrenalina.",
-  "rota": "/plantonista/emergencias/bradicardia-adulto"
+  "rota": "/plantonista/emergencias/bradicardia-adulto",
+  "publico": "adulto"
  },
  {
   "id": "taquiarritmias-adulto",
@@ -1310,7 +1385,8 @@
    "amiodarona"
   ],
   "descricao": "Adenosina, amiodarona, lidocaína, verapamil, diltiazem, magnésio.",
-  "rota": "/plantonista/emergencias/taquiarritmias-adulto"
+  "rota": "/plantonista/emergencias/taquiarritmias-adulto",
+  "publico": "adulto"
  },
  {
   "id": "anafilaxia-adulto",
@@ -1324,7 +1400,8 @@
    "choque anafilático"
   ],
   "descricao": "Adrenalina IM/EV/infusão, volume e segunda linha.",
-  "rota": "/plantonista/emergencias/anafilaxia-adulto"
+  "rota": "/plantonista/emergencias/anafilaxia-adulto",
+  "publico": "adulto"
  },
  {
   "id": "anticoagulacao-plena-adulto",
@@ -1343,7 +1420,8 @@
    "HNF"
   ],
   "descricao": "Enoxaparina com ajuste renal/idade, fondaparinux e outros.",
-  "rota": "/plantonista/emergencias/anticoagulacao-plena-adulto"
+  "rota": "/plantonista/emergencias/anticoagulacao-plena-adulto",
+  "publico": "adulto"
  },
  {
   "id": "fibrinoliticos-adulto",
@@ -1359,7 +1437,8 @@
    "TEP"
   ],
   "descricao": "Estreptoquinase, alteplase e tenecteplase.",
-  "rota": "/plantonista/emergencias/fibrinoliticos-adulto"
+  "rota": "/plantonista/emergencias/fibrinoliticos-adulto",
+  "publico": "adulto"
  },
  {
   "id": "intoxicacoes-antidotos-adulto",
@@ -1378,7 +1457,8 @@
    "NAC"
   ],
   "descricao": "Carvão, NAC, antídotos, cardiotóxicos, digoxina, bicarbonato, álcoois, organofosforados e cianeto (manual HC).",
-  "rota": "/plantonista/emergencias/intoxicacoes-antidotos-adulto"
+  "rota": "/plantonista/emergencias/intoxicacoes-antidotos-adulto",
+  "publico": "adulto"
  },
  {
   "id": "animais-peconhentos-adulto",
@@ -1397,7 +1477,8 @@
    "crotálico"
   ],
   "descricao": "Ampolas de soro por gravidade, pré-medicação por peso e neostigmina (manual HC).",
-  "rota": "/plantonista/emergencias/animais-peconhentos-adulto"
+  "rota": "/plantonista/emergencias/animais-peconhentos-adulto",
+  "publico": "adulto"
  },
  {
   "id": "tetano-profilaxia-adulto",
@@ -1416,7 +1497,8 @@
    "vacina"
   ],
   "descricao": "Vacina e SAT/IGHAT por ferimento × histórico; doses do tratamento (manual HC).",
-  "rota": "/plantonista/emergencias/tetano-profilaxia-adulto"
+  "rota": "/plantonista/emergencias/tetano-profilaxia-adulto",
+  "publico": "adulto"
  },
  {
   "id": "raiva-pos-exposicao-adulto",
@@ -1435,7 +1517,8 @@
    "vacina"
   ],
   "descricao": "Fluxograma do Anexo 4: vacina, sorovacinação ou observação do animal.",
-  "rota": "/plantonista/emergencias/raiva-pos-exposicao-adulto"
+  "rota": "/plantonista/emergencias/raiva-pos-exposicao-adulto",
+  "publico": "adulto"
  },
  {
   "id": "hepatite-b-pos-exposicao-adulto",
@@ -1454,7 +1537,8 @@
    "anti-HBs"
   ],
   "descricao": "Fonte × situação vacinal → vacina, HBIG (mL por peso) e anti-HBs.",
-  "rota": "/plantonista/emergencias/hepatite-b-pos-exposicao-adulto"
+  "rota": "/plantonista/emergencias/hepatite-b-pos-exposicao-adulto",
+  "publico": "adulto"
  },
  {
   "id": "sedacao-procedimento-adulto",
@@ -1473,7 +1557,8 @@
    "quetamina"
   ],
   "descricao": "Etomidato, midazolam, propofol, quetamina EV/IM, fentanil e morfina por peso, reversores, níveis de sedação, ASA, jejum e alta.",
-  "rota": "/plantonista/emergencias/sedacao-procedimento-adulto"
+  "rota": "/plantonista/emergencias/sedacao-procedimento-adulto",
+  "publico": "adulto"
  },
  {
   "id": "dor-analgesia-adulto",
@@ -1492,7 +1577,8 @@
    "morfina"
   ],
   "descricao": "Escala numérica, escada analgésica, opioides da Tabela 3 com conta por peso e por dia, quetamina analgésica.",
-  "rota": "/plantonista/emergencias/dor-analgesia-adulto"
+  "rota": "/plantonista/emergencias/dor-analgesia-adulto",
+  "publico": "adulto"
  },
  {
   "id": "sintomas-paliativos-adulto",
@@ -1511,7 +1597,8 @@
    "quetamina"
   ],
   "descricao": "Resgate de 1/6 da dose diária, morfina e midazolam na dispneia, quetamina e sedação paliativa com midazolam.",
-  "rota": "/plantonista/emergencias/sintomas-paliativos-adulto"
+  "rota": "/plantonista/emergencias/sintomas-paliativos-adulto",
+  "publico": "adulto"
  },
  {
   "id": "trombolise-avc-adulto",
@@ -1530,7 +1617,8 @@
    "TEV"
   ],
   "descricao": "Alteplase e tenecteplase por peso, critérios numéricos da Tabela 4, alvos de PA (com errata), nitroprussiato, sangramento e angioedema.",
-  "rota": "/plantonista/emergencias/trombolise-avc-adulto"
+  "rota": "/plantonista/emergencias/trombolise-avc-adulto",
+  "publico": "adulto"
  },
  {
   "id": "reversao-anticoagulacao-adulto",
@@ -1551,7 +1639,8 @@
    "protamina"
   ],
   "descricao": "Varfarina por INR × sangramento, CCP, plasma, vitamina K, crioprecipitado, protamina, DOAC e metas da HIP.",
-  "rota": "/plantonista/emergencias/reversao-anticoagulacao-adulto"
+  "rota": "/plantonista/emergencias/reversao-anticoagulacao-adulto",
+  "publico": "adulto"
  },
  {
   "id": "escala-numerica-dor",
@@ -1567,7 +1656,8 @@
    "intensidade"
   ],
   "descricao": "Nota de 0 a 10 com a faixa e o degrau da escada analgésica.",
-  "rota": "/plantonista/emergencias/escala-numerica-dor"
+  "rota": "/plantonista/emergencias/escala-numerica-dor",
+  "publico": "adulto"
  },
  {
   "id": "painad",
@@ -1583,7 +1673,8 @@
    "paliativo"
   ],
   "descricao": "Cinco itens de 0 a 2; faixas 1–3/4–6/7–10 do livro.",
-  "rota": "/plantonista/emergencias/painad"
+  "rota": "/plantonista/emergencias/painad",
+  "publico": "adulto"
  },
  {
   "id": "bps-dor",
@@ -1600,7 +1691,8 @@
    "UTI"
   ],
   "descricao": "Três itens de 1 a 4 para sedado ou em VM; o livro não traz corte.",
-  "rota": "/plantonista/emergencias/bps-dor"
+  "rota": "/plantonista/emergencias/bps-dor",
+  "publico": "adulto"
  },
  {
   "id": "rankin-modificada",
@@ -1616,7 +1708,8 @@
    "funcionalidade"
   ],
   "descricao": "Grau 0 a 6 com os cortes do capítulo (trombólise, trombectomia, hemicraniectomia).",
-  "rota": "/plantonista/emergencias/rankin-modificada"
+  "rota": "/plantonista/emergencias/rankin-modificada",
+  "publico": "adulto"
  },
  {
   "id": "escore-ich",
@@ -1633,7 +1726,8 @@
    "prognóstico"
   ],
   "descricao": "Glasgow, volume, extensão ventricular, infratentorial e idade, com a mortalidade em 30 dias da Tabela 2.",
-  "rota": "/plantonista/emergencias/escore-ich"
+  "rota": "/plantonista/emergencias/escore-ich",
+  "publico": "adulto"
  },
  {
   "id": "transfusao-hemocomponentes-adulto",
@@ -1652,7 +1746,8 @@
    "plasma"
   ],
   "descricao": "Gatilhos, incremento esperado, volume e velocidade de CH, plaquetas, PFC, crioprecipitado e CCP.",
-  "rota": "/plantonista/emergencias/transfusao-hemocomponentes-adulto"
+  "rota": "/plantonista/emergencias/transfusao-hemocomponentes-adulto",
+  "publico": "adulto"
  },
  {
   "id": "abc-score-transfusao-macica",
@@ -1670,7 +1765,8 @@
    "choque hemorrágico"
   ],
   "descricao": "Quatro critérios de 1 ponto com os dois cortes do manual (≥ 2 e > 2).",
-  "rota": "/plantonista/emergencias/abc-score-transfusao-macica"
+  "rota": "/plantonista/emergencias/abc-score-transfusao-macica",
+  "publico": "adulto"
  },
  {
   "id": "ressuscitacao-volemica-adulto",
@@ -1689,7 +1785,8 @@
    "soro fisiológico"
   ],
   "descricao": "30 mL/kg e alíquotas, metas de PAM/diurese/lactato, gatilho de vasopressina, corticoide, soluções.",
-  "rota": "/plantonista/emergencias/ressuscitacao-volemica-adulto"
+  "rota": "/plantonista/emergencias/ressuscitacao-volemica-adulto",
+  "publico": "adulto"
  },
  {
   "id": "asma-exacerbacao-adulto",
@@ -1708,7 +1805,8 @@
    "sulfato de magnésio"
   ],
   "descricao": "Parâmetros na Tabela 1, β2, ipratrópio, corticoide e sulfato de magnésio com preparo.",
-  "rota": "/plantonista/emergencias/asma-exacerbacao-adulto"
+  "rota": "/plantonista/emergencias/asma-exacerbacao-adulto",
+  "publico": "adulto"
  },
  {
   "id": "dpoc-exacerbacao-adulto",
@@ -1727,7 +1825,8 @@
    "EPAP"
   ],
   "descricao": "Sintomas cardinais, cortes gasométricos, broncodilatador, corticoide, VNI e VM inicial.",
-  "rota": "/plantonista/emergencias/dpoc-exacerbacao-adulto"
+  "rota": "/plantonista/emergencias/dpoc-exacerbacao-adulto",
+  "publico": "adulto"
  },
  {
   "id": "vm-ajuste-inicial-adulto",
@@ -1746,7 +1845,8 @@
    "PSV"
   ],
   "descricao": "Indicações (PO2 < 60, PCO2 > 55), Tabela 2 por modo, Vt 6–8 mL/kg pelo peso informado, I:E, pós-intubação, DOPE e assincronias.",
-  "rota": "/plantonista/emergencias/vm-ajuste-inicial-adulto"
+  "rota": "/plantonista/emergencias/vm-ajuste-inicial-adulto",
+  "publico": "adulto"
  },
  {
   "id": "vm-obstruido-grave-adulto",
@@ -1765,7 +1865,8 @@
    "relação I:E"
   ],
   "descricao": "Tabela 4: Vt 6 mL/kg, PEEP a 85% da auto-PEEP, FR 8–12, I:E ≥ 1:3 e ≤ 1:5, limites de platô e pico, conferência do ventilador.",
-  "rota": "/plantonista/emergencias/vm-obstruido-grave-adulto"
+  "rota": "/plantonista/emergencias/vm-obstruido-grave-adulto",
+  "publico": "adulto"
  },
  {
   "id": "mecanica-ventilatoria-adulto",
@@ -1784,7 +1885,8 @@
    "pausa inspiratória"
   ],
   "descricao": "Resistência, complacência estática, constante de tempo e driving pressure com as faixas do livro; exemplo da Figura 2.",
-  "rota": "/plantonista/emergencias/mecanica-ventilatoria-adulto"
+  "rota": "/plantonista/emergencias/mecanica-ventilatoria-adulto",
+  "publico": "adulto"
  },
  {
   "id": "sdra-ventilacao-adulto",
@@ -1803,7 +1905,8 @@
    "PEEP"
   ],
   "descricao": "Berlim pela P/F, Vt por gravidade, tabelas PEEP × FiO2 (ARDSnet, ALVEOLI, LOVS), driving pressure, marcos de prona e bloqueio.",
-  "rota": "/plantonista/emergencias/sdra-ventilacao-adulto"
+  "rota": "/plantonista/emergencias/sdra-ventilacao-adulto",
+  "publico": "adulto"
  },
  {
   "id": "desmame-vm-adulto",
@@ -1821,7 +1924,8 @@
    "weaning"
   ],
   "descricao": "Parâmetros para o TRE (PO2 ≥ 60 com FiO2 ≤ 0,4, P/F ≥ 150, PEEP ≤ 5 a 8, FC < 140) e critérios de falência durante o teste.",
-  "rota": "/plantonista/emergencias/desmame-vm-adulto"
+  "rota": "/plantonista/emergencias/desmame-vm-adulto",
+  "publico": "adulto"
  },
  {
   "id": "oxigenacao-irpa-adulto",
@@ -1840,7 +1944,8 @@
    "oxigenoterapia"
   ],
   "descricao": "Gradiente A-a e esperado por idade, P/F, tipo de IRpA, hipercapnia aguda × crônica, FiO2 dos dispositivos, alvos de SatO2, cortes de VNI e IOT.",
-  "rota": "/plantonista/emergencias/oxigenacao-irpa-adulto"
+  "rota": "/plantonista/emergencias/oxigenacao-irpa-adulto",
+  "publico": "adulto"
  },
  {
   "id": "dispneia-abordagem-adulto",
@@ -1859,7 +1964,8 @@
    "insuficiência cardíaca"
   ],
   "descricao": "Cortes de gravidade, ABCDE, oxigênio, índice cardiotorácico, BNP e história, com o que o livro diz de cada um.",
-  "rota": "/plantonista/emergencias/dispneia-abordagem-adulto"
+  "rota": "/plantonista/emergencias/dispneia-abordagem-adulto",
+  "publico": "adulto"
  },
  {
   "id": "fibrilacao-atrial-adulto",
@@ -1878,7 +1984,8 @@
    "digoxina"
   ],
   "descricao": "Esmolol, verapamil, diltiazem, digoxina e amiodarona por peso com mL/h da Tabela 3; propafenona; janela de 48 h e anticoagulação.",
-  "rota": "/plantonista/emergencias/fibrilacao-atrial-adulto"
+  "rota": "/plantonista/emergencias/fibrilacao-atrial-adulto",
+  "publico": "adulto"
  },
  {
   "id": "emergencia-hipertensiva-adulto",
@@ -1897,7 +2004,8 @@
    "nitroglicerina"
   ],
   "descricao": "Alvo de PA/FC com tempo por condição (Tabela 4), regra geral 20–25% e 160/100, esmolol, nitroprussiato, nitroglicerina e hidralazina com mL/h.",
-  "rota": "/plantonista/emergencias/emergencia-hipertensiva-adulto"
+  "rota": "/plantonista/emergencias/emergencia-hipertensiva-adulto",
+  "publico": "adulto"
  },
  {
   "id": "sindrome-aortica-adulto",
@@ -1915,7 +2023,8 @@
    "diâmetro aórtico"
   ],
   "descricao": "Alvo PAS < 120 e FC < 60 na dissecção, cortes de diâmetro e complicações anuais por tamanho da aorta.",
-  "rota": "/plantonista/emergencias/sindrome-aortica-adulto"
+  "rota": "/plantonista/emergencias/sindrome-aortica-adulto",
+  "publico": "adulto"
  },
  {
   "id": "add-rs-disseccao-aorta",
@@ -1932,7 +2041,8 @@
    "escore"
   ],
   "descricao": "Um ponto por coluna (0–3) e leitura do D-dímero < / ≥ 500 ng/mL FEU para 0–1 ponto.",
-  "rota": "/plantonista/emergencias/add-rs-disseccao-aorta"
+  "rota": "/plantonista/emergencias/add-rs-disseccao-aorta",
+  "publico": "adulto"
  },
  {
   "id": "insuficiencia-cardiaca-aguda-adulto",
@@ -1951,7 +2061,8 @@
    "dobutamina"
   ],
   "descricao": "Perfil A/B/C/L, coluna de PAS da Figura 1, furosemida por peso, resposta ao diurético, inotrópicos com mL/h, peptídeos, prognóstico e critérios de UTI.",
-  "rota": "/plantonista/emergencias/insuficiencia-cardiaca-aguda-adulto"
+  "rota": "/plantonista/emergencias/insuficiencia-cardiaca-aguda-adulto",
+  "publico": "adulto"
  },
  {
   "id": "pos-pcr-adulto",
@@ -1970,7 +2081,8 @@
    "tempestade elétrica"
   ],
   "descricao": "Metas numéricas, SF 0,9% a 4 °C por peso, tempos de resfriamento e reaquecimento, milrinona, amiodarona na tempestade elétrica e janelas do neuroprognóstico.",
-  "rota": "/plantonista/emergencias/pos-pcr-adulto"
+  "rota": "/plantonista/emergencias/pos-pcr-adulto",
+  "publico": "adulto"
  },
  {
   "id": "trauma-inicial-adulto",
@@ -1989,7 +2101,8 @@
    "torniquete"
   ],
   "descricao": "Janela e velocidade do ácido tranexâmico, débito do dreno no hemotórax, torniquete, cristaloide antes da transfusão e critérios de coluna.",
-  "rota": "/plantonista/emergencias/trauma-inicial-adulto"
+  "rota": "/plantonista/emergencias/trauma-inicial-adulto",
+  "publico": "adulto"
  },
  {
   "id": "nexus-coluna-cervical",
@@ -2005,7 +2118,8 @@
    "imagem cervical"
   ],
   "descricao": "Cinco critérios; não se aplica acima de 60 anos nem em criança.",
-  "rota": "/plantonista/emergencias/nexus-coluna-cervical"
+  "rota": "/plantonista/emergencias/nexus-coluna-cervical",
+  "publico": "adulto"
  },
  {
   "id": "regra-canadense-coluna-cervical",
@@ -2022,7 +2136,8 @@
    "tomografia"
   ],
   "descricao": "Alto risco, baixo risco e rotação a 45°, como a Tabela 1 do livro imprime, com a errata.",
-  "rota": "/plantonista/emergencias/regra-canadense-coluna-cervical"
+  "rota": "/plantonista/emergencias/regra-canadense-coluna-cervical",
+  "publico": "adulto"
  },
  {
   "id": "mgap-trauma",
@@ -2040,7 +2155,8 @@
    "regulação"
   ],
   "descricao": "Mecanismo, Glasgow, idade e PAS (3–29), com a errata dos rótulos de gravidade.",
-  "rota": "/plantonista/emergencias/mgap-trauma"
+  "rota": "/plantonista/emergencias/mgap-trauma",
+  "publico": "adulto"
  },
  {
   "id": "triage-rts-trauma",
@@ -2058,7 +2174,8 @@
    "centro de trauma"
   ],
   "descricao": "Glasgow, PAS e frequência ventilatória (0–12); < 11 indica centro de trauma.",
-  "rota": "/plantonista/emergencias/triage-rts-trauma"
+  "rota": "/plantonista/emergencias/triage-rts-trauma",
+  "publico": "adulto"
  },
  {
   "id": "hemorragia-digestiva-adulto",
@@ -2077,7 +2194,8 @@
    "omeprazol"
   ],
   "descricao": "Metas, omeprazol em dose alta, vasoativos nas varizes, antibiótico no cirrótico, Forrest, índice de choque.",
-  "rota": "/plantonista/emergencias/hemorragia-digestiva-adulto"
+  "rota": "/plantonista/emergencias/hemorragia-digestiva-adulto",
+  "publico": "adulto"
  },
  {
   "id": "oakland-hdb",
@@ -2094,7 +2212,8 @@
    "colonoscopia"
   ],
   "descricao": "Idade, sexo, HDB prévia, FC, PAS e Hb, com o corte do sangramento menor e a errata do 8.",
-  "rota": "/plantonista/emergencias/oakland-hdb"
+  "rota": "/plantonista/emergencias/oakland-hdb",
+  "publico": "adulto"
  },
  {
   "id": "ascite-pbe-hepatorrenal-adulto",
@@ -2113,7 +2232,8 @@
    "ceftriaxona"
   ],
   "descricao": "GASA, albumina pós-paracentese, na PBE e na SHR, terlipressina escalonada e estádio ICA-AKI.",
-  "rota": "/plantonista/emergencias/ascite-pbe-hepatorrenal-adulto"
+  "rota": "/plantonista/emergencias/ascite-pbe-hepatorrenal-adulto",
+  "publico": "adulto"
  },
  {
   "id": "encefalopatia-hepatites-graves-adulto",
@@ -2132,7 +2252,8 @@
    "King’s College"
   ],
   "descricao": "West Haven, lactulose, meta nutricional, King's College, N-acetilcisteína e plasma.",
-  "rota": "/plantonista/emergencias/encefalopatia-hepatites-graves-adulto"
+  "rota": "/plantonista/emergencias/encefalopatia-hepatites-graves-adulto",
+  "publico": "adulto"
  },
  {
   "id": "maddrey",
@@ -2148,7 +2269,8 @@
    "TP"
   ],
   "descricao": "4,6 × (TP − controle) + bilirrubina, corte de 32.",
-  "rota": "/plantonista/emergencias/maddrey"
+  "rota": "/plantonista/emergencias/maddrey",
+  "publico": "adulto"
  },
  {
   "id": "lesao-renal-aguda-adulto",
@@ -2167,7 +2289,8 @@
    "FENa"
   ],
   "descricao": "Estágio KDIGO por creatinina e diurese, FENa, FEUr, índices urinários, teste de furosemida e indicações de diálise.",
-  "rota": "/plantonista/emergencias/lesao-renal-aguda-adulto"
+  "rota": "/plantonista/emergencias/lesao-renal-aguda-adulto",
+  "publico": "adulto"
  },
  {
   "id": "rabdomiolise-adulto",
@@ -2186,7 +2309,8 @@
    "manitol"
   ],
   "descricao": "CPK × LSN, hidratação, solução de bicarbonato e manitol da Tabela 3.",
-  "rota": "/plantonista/emergencias/rabdomiolise-adulto"
+  "rota": "/plantonista/emergencias/rabdomiolise-adulto",
+  "publico": "adulto"
  },
  {
   "id": "mcmahon-rabdomiolise",
@@ -2202,7 +2326,8 @@
    "prognóstico"
   ],
   "descricao": "Risco de óbito ou diálise pela Tabela 2 (< 5 e > 10 pontos).",
-  "rota": "/plantonista/emergencias/mcmahon-rabdomiolise"
+  "rota": "/plantonista/emergencias/mcmahon-rabdomiolise",
+  "publico": "adulto"
  },
  {
   "id": "crise-tireotoxica-adulto",
@@ -2221,7 +2346,8 @@
    "iodo"
   ],
   "descricao": "Propiltiouracil, metimazol, iodo, lítio, betabloqueadores e corticoide com totais diários.",
-  "rota": "/plantonista/emergencias/crise-tireotoxica-adulto"
+  "rota": "/plantonista/emergencias/crise-tireotoxica-adulto",
+  "publico": "adulto"
  },
  {
   "id": "burch-wartofsky",
@@ -2236,7 +2362,8 @@
    "tireotoxicose"
   ],
   "descricao": "Soma da Tabela 4 com as faixas improvável, iminente e crise.",
-  "rota": "/plantonista/emergencias/burch-wartofsky"
+  "rota": "/plantonista/emergencias/burch-wartofsky",
+  "publico": "adulto"
  },
  {
   "id": "estado-mixedematoso-adulto",
@@ -2255,7 +2382,8 @@
    "hidrocortisona"
   ],
   "descricao": "T4, T3 e hidrocortisona e suporte da Tabela 5.",
-  "rota": "/plantonista/emergencias/estado-mixedematoso-adulto"
+  "rota": "/plantonista/emergencias/estado-mixedematoso-adulto",
+  "publico": "adulto"
  },
  {
   "id": "escore-mixedema",
@@ -2270,7 +2398,8 @@
    "escore diagnóstico"
   ],
   "descricao": "Soma da Tabela 3 com os cortes 25 e 60.",
-  "rota": "/plantonista/emergencias/escore-mixedema"
+  "rota": "/plantonista/emergencias/escore-mixedema",
+  "publico": "adulto"
  },
  {
   "id": "insuficiencia-adrenal-adulto",
@@ -2289,7 +2418,8 @@
    "choque séptico"
   ],
   "descricao": "Cortes do cortisol, hidrocortisona, fludrocortisona e volume; corticoide no choque séptico refratário.",
-  "rota": "/plantonista/emergencias/insuficiencia-adrenal-adulto"
+  "rota": "/plantonista/emergencias/insuficiencia-adrenal-adulto",
+  "publico": "adulto"
  },
  {
   "id": "agitacao-delirium-adulto",
@@ -2308,7 +2438,8 @@
    "prometazina"
   ],
   "descricao": "Contenção química por nível (Tabela 4), quetamina por peso, contenção mecânica, shock index, antipsicóticos da Tabela 7 no delirium e síndrome neuroléptica maligna (dantroleno por peso).",
-  "rota": "/plantonista/emergencias/agitacao-delirium-adulto"
+  "rota": "/plantonista/emergencias/agitacao-delirium-adulto",
+  "publico": "adulto"
  },
  {
   "id": "bars-agitacao",
@@ -2324,7 +2455,8 @@
    "sedação"
   ],
   "descricao": "Níveis 1 a 7 com a triagem pré-hospitalar da Tabela 1.",
-  "rota": "/plantonista/emergencias/bars-agitacao"
+  "rota": "/plantonista/emergencias/bars-agitacao",
+  "publico": "adulto"
  },
  {
   "id": "hsa-adulto",
@@ -2343,7 +2475,8 @@
    "Doppler transcraniano"
   ],
   "descricao": "Nimodipino 60 mg 4/4 h por 21 dias com a conta de doses e as metas numéricas do capítulo.",
-  "rota": "/plantonista/emergencias/hsa-adulto"
+  "rota": "/plantonista/emergencias/hsa-adulto",
+  "publico": "adulto"
  },
  {
   "id": "ottawa-hsa",
@@ -2359,7 +2492,8 @@
    "hemorragia subaracnóidea"
   ],
   "descricao": "Seis itens; qualquer positivo indica investigação de HSA.",
-  "rota": "/plantonista/emergencias/ottawa-hsa"
+  "rota": "/plantonista/emergencias/ottawa-hsa",
+  "publico": "adulto"
  },
  {
   "id": "hunt-hess",
@@ -2374,7 +2508,8 @@
    "grau clínico"
   ],
   "descricao": "Grau clínico I a V na admissão (Tabela 3).",
-  "rota": "/plantonista/emergencias/hunt-hess"
+  "rota": "/plantonista/emergencias/hunt-hess",
+  "publico": "adulto"
  },
  {
   "id": "wfns-hsa",
@@ -2390,7 +2525,8 @@
    "hemorragia subaracnóidea"
   ],
   "descricao": "Grau 1 a 5 por Glasgow e déficit motor (Tabela 4).",
-  "rota": "/plantonista/emergencias/wfns-hsa"
+  "rota": "/plantonista/emergencias/wfns-hsa",
+  "publico": "adulto"
  },
  {
   "id": "fisher-hsa",
@@ -2405,7 +2541,8 @@
    "vasoespasmo"
   ],
   "descricao": "Padrão do sangramento na TC, 1 a 4 (Tabela 5), para risco de vasoespasmo.",
-  "rota": "/plantonista/emergencias/fisher-hsa"
+  "rota": "/plantonista/emergencias/fisher-hsa",
+  "publico": "adulto"
  },
  {
   "id": "hints-plus",
@@ -2424,7 +2561,8 @@
    "skew"
   ],
   "descricao": "Impulso cefálico, nistagmo, skew e audição: padrão periférico × central.",
-  "rota": "/plantonista/emergencias/hints-plus"
+  "rota": "/plantonista/emergencias/hints-plus",
+  "publico": "adulto"
  },
  {
   "id": "guillain-barre-adulto",
@@ -2443,7 +2581,8 @@
    "dissociação proteinocitológica"
   ],
   "descricao": "Imunoglobulina e plasmaférese por peso, leitura do liquor, red flags e recomendações da AAN.",
-  "rota": "/plantonista/emergencias/guillain-barre-adulto"
+  "rota": "/plantonista/emergencias/guillain-barre-adulto",
+  "publico": "adulto"
  },
  {
   "id": "criterios-vm-sgb",
@@ -2461,7 +2600,8 @@
    "capacidade vital"
   ],
   "descricao": "pCO2, pO2, CVF em mL/kg e PImáx (maiores) e três menores; 1 maior ou 2 menores.",
-  "rota": "/plantonista/emergencias/criterios-vm-sgb"
+  "rota": "/plantonista/emergencias/criterios-vm-sgb",
+  "publico": "adulto"
  },
  {
   "id": "gbs-incapacidade",
@@ -2476,7 +2616,8 @@
    "SGB"
   ],
   "descricao": "Grau funcional 0 a 6 (Tabela 5), com o corte ≥ 3 do capítulo.",
-  "rota": "/plantonista/emergencias/gbs-incapacidade"
+  "rota": "/plantonista/emergencias/gbs-incapacidade",
+  "publico": "adulto"
  },
  {
   "id": "egos",
@@ -2492,7 +2633,8 @@
    "marcha"
   ],
   "descricao": "Idade, diarreia prévia e incapacidade em 2 semanas: 1 a 7.",
-  "rota": "/plantonista/emergencias/egos"
+  "rota": "/plantonista/emergencias/egos",
+  "publico": "adulto"
  },
  {
   "id": "perc",
@@ -2508,7 +2650,8 @@
    "D-dímero"
   ],
   "descricao": "Oito critérios; todos negativos descartam com probabilidade pré-teste improvável (com a errata do Wells simplificado).",
-  "rota": "/plantonista/emergencias/perc"
+  "rota": "/plantonista/emergencias/perc",
+  "publico": "adulto"
  },
  {
   "id": "hestia",
@@ -2524,7 +2667,8 @@
    "alta precoce"
   ],
   "descricao": "Onze critérios de exclusão; combinados com PESI I ou II.",
-  "rota": "/plantonista/emergencias/hestia"
+  "rota": "/plantonista/emergencias/hestia",
+  "publico": "adulto"
  },
  {
   "id": "smart-cop",
@@ -2541,7 +2685,8 @@
    "ventilação"
   ],
   "descricao": "Oito variáveis; ≥ 3 pontos no protocolo do HC (cap. 90 usa > 3).",
-  "rota": "/plantonista/emergencias/smart-cop"
+  "rota": "/plantonista/emergencias/smart-cop",
+  "publico": "adulto"
  },
  {
   "id": "ats-idsa-pac",
@@ -2557,7 +2702,8 @@
    "UTI"
   ],
   "descricao": "2 maiores e 9 menores; mostra a regra do livro (2 menores) e a da diretriz (3 menores).",
-  "rota": "/plantonista/emergencias/ats-idsa-pac"
+  "rota": "/plantonista/emergencias/ats-idsa-pac",
+  "publico": "adulto"
  },
  {
   "id": "pac-antibiotico-adulto",
@@ -2576,7 +2722,8 @@
    "ceftriaxona"
   ],
   "descricao": "Esquemas da Tabela 10 por grupo, destino por PORT, fatores de Pseudomonas, metilprednisolona por peso, procalcitonina e alta.",
-  "rota": "/plantonista/emergencias/pac-antibiotico-adulto"
+  "rota": "/plantonista/emergencias/pac-antibiotico-adulto",
+  "publico": "adulto"
  },
  {
   "id": "mascc",
@@ -2592,7 +2739,8 @@
    "risco"
   ],
   "descricao": "Soma 0 a 26; < 21 é critério de alto risco (com a errata de sintomas graves).",
-  "rota": "/plantonista/emergencias/mascc"
+  "rota": "/plantonista/emergencias/mascc",
+  "publico": "adulto"
  },
  {
   "id": "neutropenia-febril-adulto",
@@ -2611,7 +2759,8 @@
    "anfotericina"
   ],
   "descricao": "Definições, β-lactâmicos antipseudomonas, indicações de Gram-positivo, antifúngicos por peso e duração.",
-  "rota": "/plantonista/emergencias/neutropenia-febril-adulto"
+  "rota": "/plantonista/emergencias/neutropenia-febril-adulto",
+  "publico": "adulto"
  },
  {
   "id": "cairo-bishop",
@@ -2629,7 +2778,8 @@
    "oncologia"
   ],
   "descricao": "SLT laboratorial (2 critérios) e clínica (+1 critério clínico).",
-  "rota": "/plantonista/emergencias/cairo-bishop"
+  "rota": "/plantonista/emergencias/cairo-bishop",
+  "publico": "adulto"
  },
  {
   "id": "lise-tumoral-adulto",
@@ -2648,7 +2798,8 @@
    "oncologia"
   ],
   "descricao": "Risco da Tabela 2, hidratação por m², diurese-alvo, alopurinol com ajuste renal, rasburicase por peso e produto Ca × P.",
-  "rota": "/plantonista/emergencias/lise-tumoral-adulto"
+  "rota": "/plantonista/emergencias/lise-tumoral-adulto",
+  "publico": "adulto"
  },
  {
   "id": "falciforme-adulto",
@@ -2667,7 +2818,8 @@
    "hidratação"
   ],
   "descricao": "50 mL/kg/24 h, analgesia da Tabela 5 com morfina e quetamina por peso, antibiótico da STA, metas e alta.",
-  "rota": "/plantonista/emergencias/falciforme-adulto"
+  "rota": "/plantonista/emergencias/falciforme-adulto",
+  "publico": "adulto"
  },
  {
   "id": "sindrome-toracica-aguda-adulto",
@@ -2681,7 +2833,8 @@
    "falciforme"
   ],
   "descricao": "Infiltrado novo + ≥ 1 dos 7 critérios da Tabela 3.",
-  "rota": "/plantonista/emergencias/sindrome-toracica-aguda-adulto"
+  "rota": "/plantonista/emergencias/sindrome-toracica-aguda-adulto",
+  "publico": "adulto"
  },
  {
   "id": "szpilman-afogamento",
@@ -2697,7 +2850,8 @@
    "prognóstico"
   ],
   "descricao": "Grau 0 a VI com a sobrevida da Tabela 1 e os indicadores de pior prognóstico.",
-  "rota": "/plantonista/emergencias/szpilman-afogamento"
+  "rota": "/plantonista/emergencias/szpilman-afogamento",
+  "publico": "adulto"
  },
  {
   "id": "hipotermia-adulto",
@@ -2715,7 +2869,8 @@
    "Osborn"
   ],
   "descricao": "Estágio HT I-IV, regras de RCP/adrenalina/choque pela temperatura, método e taxa de reaquecimento.",
-  "rota": "/plantonista/emergencias/hipotermia-adulto"
+  "rota": "/plantonista/emergencias/hipotermia-adulto",
+  "publico": "adulto"
  },
  {
   "id": "regiscar",
@@ -2731,7 +2886,8 @@
    "reação a droga"
   ],
   "descricao": "Soma −4 a 9; < 2 exclui, 2-3 possível, 4-5 provável, > 5 definitivo.",
-  "rota": "/plantonista/emergencias/regiscar"
+  "rota": "/plantonista/emergencias/regiscar",
+  "publico": "adulto"
  },
  {
   "id": "scorten-uti",
@@ -2748,7 +2904,8 @@
    "UTI"
   ],
   "descricao": "Sete itens; dois ou mais é o critério do livro para UTI (sem mortalidade).",
-  "rota": "/plantonista/emergencias/scorten-uti"
+  "rota": "/plantonista/emergencias/scorten-uti",
+  "publico": "adulto"
  },
  {
   "id": "dermatoses-graves-adulto",
@@ -2767,7 +2924,8 @@
    "herpes-zóster"
   ],
   "descricao": "Prednisona e ciclosporina por peso na SSJ/NET e DRESS; anti-histamínicos, zóster, erisipela e celulite.",
-  "rota": "/plantonista/emergencias/dermatoses-graves-adulto"
+  "rota": "/plantonista/emergencias/dermatoses-graves-adulto",
+  "publico": "adulto"
  },
  {
   "id": "acessos-calibres-adulto",
@@ -2786,7 +2944,8 @@
    "IO"
   ],
   "descricao": "French ↔ mm, tabelas de gauge, agulha IO pelo peso, sítios e lidocaína IO.",
-  "rota": "/plantonista/emergencias/acessos-calibres-adulto"
+  "rota": "/plantonista/emergencias/acessos-calibres-adulto",
+  "publico": "adulto"
  },
  {
   "id": "marca-passo-provisorio-adulto",
@@ -2805,7 +2964,8 @@
    "captura"
   ],
   "descricao": "MPTC (FC, corrente = limiar + 5-10 mA, < 120 min), MPTV às cegas, sensibilidade 50% e saída 2 × limiar + 1, ímã.",
-  "rota": "/plantonista/emergencias/marca-passo-provisorio-adulto"
+  "rota": "/plantonista/emergencias/marca-passo-provisorio-adulto",
+  "publico": "adulto"
  },
  {
   "id": "glasgow",
@@ -2820,7 +2980,8 @@
    "GCS-P"
   ],
   "descricao": "Abertura ocular, resposta verbal e resposta motora, com o GCS-P pelas pupilas.",
-  "rota": "/plantonista/escores/glasgow"
+  "rota": "/plantonista/escores/glasgow",
+  "publico": "adulto"
  },
  {
   "id": "curb-65",
@@ -2835,7 +2996,8 @@
    "comunitária"
   ],
   "descricao": "Gravidade da pneumonia comunitária e mortalidade em 30 dias da coorte original.",
-  "rota": "/plantonista/escores/curb-65"
+  "rota": "/plantonista/escores/curb-65",
+  "publico": "adulto"
  },
  {
   "id": "cha2ds2-va",
@@ -2850,7 +3012,8 @@
    "atrial"
   ],
   "descricao": "Risco de AVC na fibrilação atrial, sem a categoria de sexo (ESC 2024).",
-  "rota": "/plantonista/escores/cha2ds2-va"
+  "rota": "/plantonista/escores/cha2ds2-va",
+  "publico": "adulto"
  },
  {
   "id": "has-bled",
@@ -2865,7 +3028,8 @@
    "maior"
   ],
   "descricao": "No paciente em anticoagulação oral por fibrilação atrial.",
-  "rota": "/plantonista/escores/has-bled"
+  "rota": "/plantonista/escores/has-bled",
+  "publico": "adulto"
  },
  {
   "id": "child-pugh",
@@ -2879,7 +3043,8 @@
    "cirrose"
   ],
   "descricao": "Classe A, B ou C, e a sobrevida estimada.",
-  "rota": "/plantonista/escores/child-pugh"
+  "rota": "/plantonista/escores/child-pugh",
+  "publico": "adulto"
  },
  {
   "id": "heart",
@@ -2893,7 +3058,8 @@
    "pronto-socorro"
   ],
   "descricao": "Risco de evento cardíaco maior em 6 semanas.",
-  "rota": "/plantonista/escores/heart"
+  "rota": "/plantonista/escores/heart",
+  "publico": "adulto"
  },
  {
   "id": "wells-tvp",
@@ -2910,7 +3076,8 @@
    "profunda"
   ],
   "descricao": "Probabilidade clínica de TVP: nove itens e um subtrator.",
-  "rota": "/plantonista/escores/wells-tvp"
+  "rota": "/plantonista/escores/wells-tvp",
+  "publico": "adulto"
  },
  {
   "id": "alvarado",
@@ -2925,7 +3092,8 @@
    "aguda"
   ],
   "descricao": "Oito itens de história, exame e hemograma, de 0 a 10.",
-  "rota": "/plantonista/escores/alvarado"
+  "rota": "/plantonista/escores/alvarado",
+  "publico": "adulto"
  },
  {
   "id": "abcd2",
@@ -2939,7 +3107,8 @@
    "depois"
   ],
   "descricao": "Risco de AVC em 2 e 7 dias após ataque isquêmico transitório.",
-  "rota": "/plantonista/escores/abcd2"
+  "rota": "/plantonista/escores/abcd2",
+  "publico": "adulto"
  },
  {
   "id": "4t-hit",
@@ -2954,7 +3123,8 @@
    "heparina"
   ],
   "descricao": "Probabilidade pré-teste de trombocitopenia induzida por heparina, de 0 a 8 pontos.",
-  "rota": "/plantonista/escores/4t-hit"
+  "rota": "/plantonista/escores/4t-hit",
+  "publico": "adulto"
  },
  {
   "id": "aims65",
@@ -2970,7 +3140,8 @@
    "alta"
   ],
   "descricao": "Mortalidade hospitalar na hemorragia digestiva alta com cinco itens da chegada.",
-  "rota": "/plantonista/escores/aims65"
+  "rota": "/plantonista/escores/aims65",
+  "publico": "adulto"
  },
  {
   "id": "bisap",
@@ -2985,7 +3156,8 @@
    "aguda"
   ],
   "descricao": "Gravidade da pancreatite aguda nas primeiras 24 horas e mortalidade da coorte original.",
-  "rota": "/plantonista/escores/bisap"
+  "rota": "/plantonista/escores/bisap",
+  "publico": "adulto"
  },
  {
   "id": "cam-icu",
@@ -3000,7 +3172,8 @@
    "crítico"
   ],
   "descricao": "Delirium no paciente crítico por quatro características, incluindo o intubado.",
-  "rota": "/plantonista/escores/cam-icu"
+  "rota": "/plantonista/escores/cam-icu",
+  "publico": "adulto"
  },
  {
   "id": "civd-isth",
@@ -3015,7 +3188,8 @@
    "ISTH"
   ],
   "descricao": "Quatro parâmetros laboratoriais, 0 a 8 pontos, com a doença de base como pré-requisito.",
-  "rota": "/plantonista/escores/civd-isth"
+  "rota": "/plantonista/escores/civd-isth",
+  "publico": "adulto"
  },
  {
   "id": "canadian-ct-head",
@@ -3031,7 +3205,8 @@
    "adulto"
   ],
   "descricao": "TCE leve no adulto: cinco critérios de alto risco e dois de risco médio.",
-  "rota": "/plantonista/escores/canadian-ct-head"
+  "rota": "/plantonista/escores/canadian-ct-head",
+  "publico": "adulto"
  },
  {
   "id": "light",
@@ -3046,7 +3221,8 @@
    "transudato"
   ],
   "descricao": "Exsudato ou transudato no derrame pleural, com o gradiente de albumina.",
-  "rota": "/plantonista/escores/light"
+  "rota": "/plantonista/escores/light",
+  "publico": "adulto"
  },
  {
   "id": "four",
@@ -3062,7 +3238,8 @@
    "crítico"
   ],
   "descricao": "Quatro domínios de 0 a 4, sem depender de resposta verbal.",
-  "rota": "/plantonista/escores/four"
+  "rota": "/plantonista/escores/four",
+  "publico": "adulto"
  },
  {
   "id": "grace",
@@ -3078,7 +3255,8 @@
    "aguda"
   ],
   "descricao": "Mortalidade hospitalar na síndrome coronariana aguda por oito variáveis da admissão.",
-  "rota": "/plantonista/escores/grace"
+  "rota": "/plantonista/escores/grace",
+  "publico": "adulto"
  },
  {
   "id": "genebra-revisado",
@@ -3094,7 +3272,8 @@
    "pulmonar"
   ],
   "descricao": "Probabilidade pré-teste de embolia pulmonar só com itens objetivos.",
-  "rota": "/plantonista/escores/genebra-revisado"
+  "rota": "/plantonista/escores/genebra-revisado",
+  "publico": "adulto"
  },
  {
   "id": "glasgow-blatchford",
@@ -3109,7 +3288,8 @@
    "alta"
   ],
   "descricao": "Risco de necessidade de intervenção na hemorragia digestiva alta, com dados anteriores à endoscopia.",
-  "rota": "/plantonista/escores/glasgow-blatchford"
+  "rota": "/plantonista/escores/glasgow-blatchford",
+  "publico": "adulto"
  },
  {
   "id": "killip",
@@ -3124,7 +3304,8 @@
    "infarto"
   ],
   "descricao": "Classe de congestão no infarto, de I a IV, pelo exame físico da admissão.",
-  "rota": "/plantonista/escores/killip"
+  "rota": "/plantonista/escores/killip",
+  "publico": "adulto"
  },
  {
   "id": "meld-3",
@@ -3139,7 +3320,8 @@
    "hepática"
   ],
   "descricao": "Mortalidade em 3 meses na doença hepática avançada, com MELD-Na e MELD original para comparação.",
-  "rota": "/plantonista/escores/meld-3"
+  "rota": "/plantonista/escores/meld-3",
+  "publico": "adulto"
  },
  {
   "id": "psi-port",
@@ -3155,7 +3337,8 @@
    "comunidade"
   ],
   "descricao": "Classe de gravidade da pneumonia adquirida na comunidade e mortalidade em 30 dias da coorte original.",
-  "rota": "/plantonista/escores/psi-port"
+  "rota": "/plantonista/escores/psi-port",
+  "publico": "adulto"
  },
  {
   "id": "rass",
@@ -3171,7 +3354,8 @@
    "Richmond"
   ],
   "descricao": "Nível de agitação ou sedação, de +4 combativo a −5 sem despertar.",
-  "rota": "/plantonista/escores/rass"
+  "rota": "/plantonista/escores/rass",
+  "publico": "adulto"
  },
  {
   "id": "ranson",
@@ -3186,7 +3370,8 @@
    "biliar"
   ],
   "descricao": "Gravidade da pancreatite aguda não biliar: cinco critérios na admissão e seis nas primeiras 48 horas.",
-  "rota": "/plantonista/escores/ranson"
+  "rota": "/plantonista/escores/ranson",
+  "publico": "adulto"
  },
  {
   "id": "rockall",
@@ -3200,7 +3385,8 @@
    "mortalidade"
   ],
   "descricao": "Mortalidade e ressangramento na hemorragia digestiva alta, na forma clínica ou completa.",
-  "rota": "/plantonista/escores/rockall"
+  "rota": "/plantonista/escores/rockall",
+  "publico": "adulto"
  },
  {
   "id": "sepse-adulto",
@@ -3216,7 +3402,8 @@
    "lactato"
   ],
   "descricao": "Sinal de alerta qSOFA, disfunção orgânica pelo SOFA e clareamento de lactato.",
-  "rota": "/plantonista/escores/sepse-adulto"
+  "rota": "/plantonista/escores/sepse-adulto",
+  "publico": "adulto"
  },
  {
   "id": "wells-tep",
@@ -3232,7 +3419,8 @@
    "pulmonar"
   ],
   "descricao": "Probabilidade pré-teste de embolia pulmonar, nas leituras de três níveis e dicotomizada, com o limiar de D-dímero ajustado pela idade.",
-  "rota": "/plantonista/escores/wells-tep"
+  "rota": "/plantonista/escores/wells-tep",
+  "publico": "adulto"
  },
  {
   "id": "years",
@@ -3248,7 +3436,8 @@
    "D-dímero"
   ],
   "descricao": "Três itens clínicos e o limiar de D-dímero de 1000 ou 500 ng/mL na suspeita de embolia pulmonar.",
-  "rota": "/plantonista/escores/years"
+  "rota": "/plantonista/escores/years",
+  "publico": "adulto"
  },
  {
   "id": "pesi",
@@ -3263,7 +3452,8 @@
    "prognóstico"
   ],
   "descricao": "Classes I–V pela Tabela 10 do manual HC.",
-  "rota": "/plantonista/escores/pesi"
+  "rota": "/plantonista/escores/pesi",
+  "publico": "adulto"
  },
  {
   "id": "nih-avc",
@@ -3279,7 +3469,8 @@
    "stroke"
   ],
   "descricao": "Escala do manual HC (15 itens, máximo 42).",
-  "rota": "/plantonista/escores/nih-avc"
+  "rota": "/plantonista/escores/nih-avc",
+  "publico": "adulto"
  },
  {
   "id": "news2",
@@ -3297,7 +3488,8 @@
    "rastreio"
   ],
   "descricao": "Alerta precoce de deterioração; rastreio de sepse pela SSC 2026.",
-  "rota": "/plantonista/escores/news2"
+  "rota": "/plantonista/escores/news2",
+  "publico": "adulto"
  },
  {
   "id": "timi",
@@ -3313,7 +3505,8 @@
    "risco"
   ],
   "descricao": "Risco em angina instável / IAM sem supra de ST.",
-  "rota": "/plantonista/escores/timi"
+  "rota": "/plantonista/escores/timi",
+  "publico": "adulto"
  },
  {
   "id": "timi-iamcsst",
@@ -3329,7 +3522,8 @@
    "STEMI"
   ],
   "descricao": "Mortalidade em 30 dias no IAM com supra de ST por oito variáveis da admissão (Morrow 2000).",
-  "rota": "/plantonista/escores/timi-iamcsst"
+  "rota": "/plantonista/escores/timi-iamcsst",
+  "publico": "adulto"
  },
  {
   "id": "sincope-san-francisco",
@@ -3343,7 +3537,8 @@
    "perda de consciência"
   ],
   "descricao": "Cinco fatores; risco com pelo menos um (manual HC, Tabela 3).",
-  "rota": "/plantonista/escores/sincope-san-francisco"
+  "rota": "/plantonista/escores/sincope-san-francisco",
+  "publico": "adulto"
  },
  {
   "id": "sincope-canadense",
@@ -3358,7 +3553,8 @@
    "risco"
   ],
   "descricao": "Nove itens, de −3 a 11, em cinco categorias de risco (Thiruganasambandamoorthy 2016).",
-  "rota": "/plantonista/escores/sincope-canadense"
+  "rota": "/plantonista/escores/sincope-canadense",
+  "publico": "adulto"
  },
  {
   "id": "duke-endocardite",
@@ -3373,7 +3569,8 @@
    "hemocultura"
   ],
   "descricao": "Endocardite infecciosa: 2 maiores, 1 maior e 3 menores ou 5 menores (manual HC, Tabela 2).",
-  "rota": "/plantonista/escores/duke-endocardite"
+  "rota": "/plantonista/escores/duke-endocardite",
+  "publico": "adulto"
  },
  {
   "id": "iss",
@@ -3389,7 +3586,8 @@
    "politrauma"
   ],
   "descricao": "Soma dos quadrados dos três maiores AIS por região, de 0 a 75 (Baker 1974).",
-  "rota": "/plantonista/escores/iss"
+  "rota": "/plantonista/escores/iss",
+  "publico": "adulto"
  },
  {
   "id": "ckd-epi",
@@ -3406,7 +3604,8 @@
    "clearance"
   ],
   "descricao": "Creatinina, idade e sexo, sem coeficiente de raça, com a categoria G da KDIGO.",
-  "rota": "/plantonista/escores/ckd-epi"
+  "rota": "/plantonista/escores/ckd-epi",
+  "publico": "adulto"
  },
  {
   "id": "hda-lamg",
@@ -3421,7 +3620,8 @@
    "sangramento digestivo"
   ],
   "descricao": "Omeprazol e gastroproteção na dupla antiagregação (manual HC).",
-  "rota": "/plantonista/protocolos/hda-lamg"
+  "rota": "/plantonista/protocolos/hda-lamg",
+  "publico": "adulto"
  },
  {
   "id": "hiperpotassemia",
@@ -3437,7 +3637,8 @@
    "ECG"
   ],
   "descricao": "Gravidade, cálcio pelo ECG e conduta em três tempos.",
-  "rota": "/plantonista/protocolos/hiperpotassemia"
+  "rota": "/plantonista/protocolos/hiperpotassemia",
+  "publico": "ambos"
  },
  {
   "id": "abstinencia",
@@ -3454,7 +3655,8 @@
    "tiamina"
   ],
   "descricao": "CIWA-Ar, critérios de Caine e doses (manual HC, cap. 78).",
-  "rota": "/plantonista/protocolos/abstinencia"
+  "rota": "/plantonista/protocolos/abstinencia",
+  "publico": "adulto"
  },
  {
   "id": "decanulacao",
@@ -3469,7 +3671,8 @@
    "cânula"
   ],
   "descricao": "Roteiro para retirada da traqueostomia.",
-  "rota": "/plantonista/protocolos/decanulacao"
+  "rota": "/plantonista/protocolos/decanulacao",
+  "publico": "adulto"
  },
  {
   "id": "consulta-medicamentos",
@@ -3487,7 +3690,8 @@
    "farmácia"
   ],
   "descricao": "Busca por nome com apresentação, dose e diluição.",
-  "rota": "/plantonista/farmacia/consulta-medicamentos"
+  "rota": "/plantonista/farmacia/consulta-medicamentos",
+  "publico": "adulto"
  },
  {
   "id": "referencia-diluicao",
@@ -3504,7 +3708,8 @@
    "compatibilidade"
   ],
   "descricao": "Diluições publicadas e revisadas por farmacêutico.",
-  "rota": "/plantonista/farmacia/referencia-diluicao"
+  "rota": "/plantonista/farmacia/referencia-diluicao",
+  "publico": "adulto"
  },
  {
   "id": "classificacao-conduta-hidratacao",
@@ -3520,7 +3725,8 @@
    "choque"
   ],
   "descricao": "Grupos A–D e hidratação conforme o MS.",
-  "rota": "/plantonista/dengue/classificacao-conduta-hidratacao"
+  "rota": "/plantonista/dengue/classificacao-conduta-hidratacao",
+  "publico": "adulto"
  },
  {
   "id": "manual-dengue",
@@ -3534,7 +3740,8 @@
    "ministério da saúde"
   ],
   "descricao": "Grupos e hidratação por peso (PS Pediatria ICr).",
-  "rota": "/plantonista/dengue/manual-dengue"
+  "rota": "/plantonista/dengue/manual-dengue",
+  "publico": "pediatrico"
  },
  {
   "id": "vm-cinco-passos",
@@ -3553,7 +3760,8 @@
    "alarmes"
   ],
   "descricao": "Quem, modo, ajustes, acompanhamento e desmame com as tabelas do cap. 37 do manual HC.",
-  "rota": "/plantonista/ventilacao-mecanica/vm-cinco-passos"
+  "rota": "/plantonista/ventilacao-mecanica/vm-cinco-passos",
+  "publico": "adulto"
  },
  {
   "id": "vni-cinco-passos",
@@ -3570,7 +3778,8 @@
    "EPAP"
   ],
   "descricao": "Indicação, interface, ajustes, acompanhamento e retirada com o que o manual HC traz.",
-  "rota": "/plantonista/ventilacao-mecanica/vni-cinco-passos"
+  "rota": "/plantonista/ventilacao-mecanica/vni-cinco-passos",
+  "publico": "adulto"
  },
  {
   "id": "manobra-recrutamento",
@@ -3585,7 +3794,8 @@
    "manobra"
   ],
   "descricao": "Berlim, PEEP × FiO₂ e prona (manual HC, cap. 37).",
-  "rota": "/plantonista/ventilacao-mecanica/manobra-recrutamento"
+  "rota": "/plantonista/ventilacao-mecanica/manobra-recrutamento",
+  "publico": "adulto"
  },
  {
   "id": "suporte-ventilatorio",
@@ -3601,7 +3811,8 @@
    "proteção pulmonar"
   ],
   "descricao": "Parâmetros iniciais por modo e relação I:E (manual HC, cap. 37).",
-  "rota": "/plantonista/ventilacao-mecanica/suporte-ventilatorio"
+  "rota": "/plantonista/ventilacao-mecanica/suporte-ventilatorio",
+  "publico": "adulto"
  },
  {
   "id": "mobilidade-funcional",
@@ -3616,6 +3827,7 @@
    "UTI"
   ],
   "descricao": "Níveis e critérios de mobilização.",
-  "rota": "/plantonista/ventilacao-mecanica/mobilidade-funcional"
+  "rota": "/plantonista/ventilacao-mecanica/mobilidade-funcional",
+  "publico": "adulto"
  }
 ]

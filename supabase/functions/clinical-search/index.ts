@@ -79,7 +79,7 @@ async function tratar(req: Request): Promise<Response> {
   const { data: { user } } = await userClient.auth.getUser()
   if (!user) return erro(401, 'não autenticado')
 
-  let corpo: { q?: unknown; mode?: unknown; unidade_id?: unknown }
+  let corpo: { q?: unknown; mode?: unknown; unidade_id?: unknown; publico?: unknown }
   try {
     corpo = await req.json()
   } catch {
@@ -88,6 +88,8 @@ async function tratar(req: Request): Promise<Response> {
   const q = typeof corpo.q === 'string' ? corpo.q.trim() : ''
   const mode = corpo.mode === 'ask' ? 'ask' : corpo.mode === 'search' ? 'search' : null
   const unidadeId = typeof corpo.unidade_id === 'string' ? corpo.unidade_id : ''
+  // modo do paciente na Central (R2-13): pergunta de criança só busca em fonte pediátrica
+  const publico = corpo.publico === 'pediatrico' || corpo.publico === 'adulto' ? corpo.publico : undefined
   if (q.length < 2 || q.length > 800 || !mode || !/^[0-9a-f-]{36}$/i.test(unidadeId)) return erro(400, 'pedido inválido')
 
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, chaveSecreta())
@@ -125,7 +127,7 @@ async function tratar(req: Request): Promise<Response> {
     upstream = await fetch(`${base}/v1/${mode}`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: qRed, tenant_id: unidadeId, request_id }),
+      body: JSON.stringify({ q: qRed, tenant_id: unidadeId, request_id, publico }),
       signal: AbortSignal.timeout(mode === 'ask' ? 120_000 : 45_000),
     }).catch((e: unknown) => {
       console.error('biblioteca indisponível', request_id, e instanceof Error ? e.message : String(e))
