@@ -23,9 +23,9 @@ export type ToolHit = { id: string; nome: string; tipo: string; categoria: strin
 export type StatusIa = 'idle' | 'loading' | 'streaming' | 'done' | 'blocked' | 'error' | 'limite' | 'indisponivel' | 'identificacao'
 
 type Evento =
-  | { type: 'meta'; request_id: string; gate: boolean; ferramentas: ToolHit[]; fontes: Fonte[] }
+  | { type: 'meta'; request_id: string; gate: boolean; publico?: 'adulto' | 'pediatrico'; ferramentas: ToolHit[]; fontes: Fonte[] }
   | { type: 'delta'; text: string }
-  | { type: 'done'; citacoes_invalidas?: number[]; sem_citacao?: boolean; calculo_suspeito?: boolean }
+  | { type: 'done'; citacoes_invalidas?: number[]; sem_citacao?: boolean; calculo_suspeito?: boolean; nao_encontrou?: boolean }
   | { type: 'error'; text: string }
 
 const URL_FUNCAO = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/clinical-search`
@@ -39,15 +39,18 @@ async function cabecalhos() {
   }
 }
 
+/** Modo do paciente na Central: a biblioteca filtra as fontes por público (R2-13). */
+export type ModoIa = 'adulto' | 'pediatrico' | null | undefined
+
 export type ResultadoBusca = { ferramentas: ToolHit[]; trechos: (Fonte & { preview: string })[] }
 
 /** Busca semântica (sem IA gerando texto): sugere ferramentas por significado. */
-export async function buscarSemantico(q: string, unidadeId: string, signal?: AbortSignal): Promise<ResultadoBusca | null> {
+export async function buscarSemantico(q: string, unidadeId: string, signal?: AbortSignal, publico?: ModoIa): Promise<ResultadoBusca | null> {
   try {
     const res = await fetch(URL_FUNCAO, {
       method: 'POST',
       headers: await cabecalhos(),
-      body: JSON.stringify({ q, mode: 'search', unidade_id: unidadeId }),
+      body: JSON.stringify({ q, mode: 'search', unidade_id: unidadeId, publico }),
       signal,
     })
     if (!res.ok) return null
@@ -57,7 +60,7 @@ export async function buscarSemantico(q: string, unidadeId: string, signal?: Abo
   }
 }
 
-export function useClinicalAsk(unidadeId?: string) {
+export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
   const [pergunta, setPergunta] = useState('')
   const [texto, setTexto] = useState('')
   const [fontes, setFontes] = useState<Fonte[]>([])
@@ -65,13 +68,14 @@ export function useClinicalAsk(unidadeId?: string) {
   const [status, setStatus] = useState<StatusIa>('idle')
   const [alerta, setAlerta] = useState<string | null>(null)
   const [requestId, setRequestId] = useState<string | null>(null)
+  const [publico, setPublico] = useState<'adulto' | 'pediatrico' | null>(null)
   const controle = useRef<AbortController | null>(null)
 
   useEffect(() => () => controle.current?.abort(), [])
 
   const limpar = useCallback(() => {
     controle.current?.abort()
-    setPergunta(''); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null)
+    setPergunta(''); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null)
     setStatus('idle')
   }, [])
 
@@ -80,14 +84,14 @@ export function useClinicalAsk(unidadeId?: string) {
     controle.current?.abort()
     const ac = new AbortController()
     controle.current = ac
-    setPergunta(q); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null)
+    setPergunta(q); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null)
     setStatus('loading')
     let res: Response
     try {
       res = await fetch(URL_FUNCAO, {
         method: 'POST',
         headers: await cabecalhos(),
-        body: JSON.stringify({ q, mode: 'ask', unidade_id: unidadeId }),
+        body: JSON.stringify({ q, mode: 'ask', unidade_id: unidadeId, publico: modo ?? undefined }),
         signal: ac.signal,
       })
     } catch {
@@ -119,6 +123,7 @@ export function useClinicalAsk(unidadeId?: string) {
             setRequestId((r) => r ?? ev.request_id)
             setFontes(ev.fontes ?? [])
             setFerramentas(ev.ferramentas ?? [])
+            setPublico(ev.publico ?? null)
             bloqueado = !ev.gate
             setStatus(ev.gate ? 'streaming' : 'blocked')
           } else if (ev.type === 'delta') {
@@ -126,6 +131,8 @@ export function useClinicalAsk(unidadeId?: string) {
           } else if (ev.type === 'error') {
             setStatus('indisponivel')
           } else if (ev.type === 'done') {
+            // R2-11: sem resposta, nada de fonte ou ferramenta sem relação
+            if (ev.nao_encontrou) { setFontes([]); setFerramentas([]) }
             if (ev.calculo_suspeito) setAlerta('A resposta pode trazer um número calculado para o paciente. A IA não deve calcular: use a ferramenta indicada e confira a dose de referência na fonte.')
             else if (ev.sem_citacao || ev.citacoes_invalidas?.length) setAlerta('Resposta com citação incompleta — confira as fontes.')
             if (!bloqueado) setStatus('done')
@@ -135,7 +142,7 @@ export function useClinicalAsk(unidadeId?: string) {
     } catch {
       if (!ac.signal.aborted) setStatus('error')
     }
-  }, [unidadeId])
+  }, [unidadeId, modo])
 
-  return { ask, limpar, pergunta, texto, fontes, ferramentas, status, alerta, requestId }
+  return { ask, limpar, pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico }
 }

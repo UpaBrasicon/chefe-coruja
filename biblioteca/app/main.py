@@ -9,6 +9,8 @@ import os
 import re
 import time
 import unicodedata
+from pathlib import Path
+from typing import Literal
 
 import httpx
 from fastapi import FastAPI, Header, HTTPException
@@ -18,6 +20,7 @@ from pydantic import BaseModel, Field
 from qdrant_client import QdrantClient, models
 
 from pii import pseudonimizar, nomes_proprios, ner_disponivel
+from publico import ADULTO, AMBOS, MSG_SEM_PEDIATRIA, PED, Fontes, ferramenta_serve, publico_da_pergunta
 from siglas import expandir_siglas
 
 E = os.environ
@@ -36,6 +39,9 @@ MODELO = E.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
 MAX_TOKENS = int(E.get("LLM_MAX_TOKENS", 3000))
 # parâmetros extras do provedor (JSON), ex.: {"thinking": {"type": "disabled"}}
 EXTRA_LLM = json.loads(E.get("LLM_EXTRA_BODY", "{}") or "{}")
+# público de cada fonte (fontes.yaml + cabeçalho das fichas): R2-13
+FONTES = Fontes(Path(E.get("BIBLIOTECA_DIR", "/srv/biblioteca")))
+NAO_ENCONTREI = "Não encontrei isso no material de referência."
 
 STOP = set("""a o os as um uma uns umas de do da dos das em no na nos nas por para com sem sob sobre e ou que qual quais
 como quando onde quanto quantos qual é são ser está estão foi ao aos à às se não sim mais menos muito pouco já ainda
@@ -47,6 +53,8 @@ class Req(BaseModel):
     q: str = Field(min_length=2, max_length=800)
     tenant_id: str = Field(min_length=1, max_length=64)
     request_id: str = Field(min_length=1, max_length=80)
+    # modo do paciente na tela da Central; o texto da pergunta também conta
+    publico: Literal["adulto", "pediatrico"] | None = None
 
 
 def auth(h: str | None):
@@ -86,17 +94,36 @@ def filtro_tenant(tid: str) -> models.Filter:
         models.FieldCondition(key="tenant_id", match=models.MatchValue(value=tid))])
 
 
-def buscar(q: str, tid: str):
+def filtro_publico(publico: str) -> tuple[list, list] | None:
+    """(must, must_not) por fonte. Criança: só fontes pediátricas ou gerais;
+    adulto: tudo menos as só pediátricas. None = não há fonte para a criança."""
+    if publico == PED:
+        ids = FONTES.ids({PED, AMBOS})
+        if not ids:
+            return None
+        return [models.FieldCondition(key="fonte_id", match=models.MatchAny(any=ids))], []
+    so_ped = FONTES.ids({PED})
+    return [], ([models.FieldCondition(key="fonte_id", match=models.MatchAny(any=so_ped))] if so_ped else [])
+
+
+def buscar(q: str, tid: str, publico: str = ADULTO):
     v = embed(q)
-    tools = qd.query_points("ferramentas", query=v, limit=5, with_payload=True).points
+    tools = [t for t in qd.query_points("ferramentas", query=v, limit=12, with_payload=True).points
+             if ferramenta_serve(t.payload, publico)][:5]
+    pf = filtro_publico(publico)
+    if pf is None:
+        return tools, [], 0.0, False
+    must_pub, must_not_pub = pf
     n = TOP_K * 4
-    densos = qd.query_points("biblioteca", query=v, limit=n, query_filter=filtro_tenant(tid), with_payload=True).points
+    filtro = models.Filter(must=[models.Filter(should=filtro_tenant(tid).should), *must_pub], must_not=must_not_pub)
+    densos = qd.query_points("biblioteca", query=v, limit=n, query_filter=filtro, with_payload=True).points
     chaves = palavras_chave(q)
     lex = []
     if chaves:
         f = models.Filter(
-            must=[models.Filter(should=[models.FieldCondition(key="texto", match=models.MatchText(text=c)) for c in chaves])],
-            should=filtro_tenant(tid).should)
+            must=[models.Filter(should=[models.FieldCondition(key="texto", match=models.MatchText(text=c)) for c in chaves]),
+                  models.Filter(should=filtro_tenant(tid).should), *must_pub],
+            must_not=must_not_pub)
         lex = qd.scroll("biblioteca", limit=n, with_payload=True, scroll_filter=f)[0]
     # fusão: RRF do denso + cobertura das palavras-chave no texto
     por_id, score = {}, {}
@@ -227,8 +254,9 @@ def deid(r: DeidReq, authorization: str | None = Header(None)):
 def search(r: Req, authorization: str | None = Header(None)):
     auth(authorization)
     q = expandir_siglas(pseudonimizar(r.q))
-    tools, trechos, melhor, _ = buscar(q, r.tenant_id)
-    return {"request_id": r.request_id, "melhor_score": round(melhor, 3),
+    publico = publico_da_pergunta(q, r.publico)
+    tools, trechos, melhor, _ = buscar(q, r.tenant_id, publico)
+    return {"request_id": r.request_id, "melhor_score": round(melhor, 3), "publico": publico,
             "ferramentas": [fmt_tool(t) for t in tools if t.score > 0.45],
             "trechos": [fmt_src(i, p) | {"preview": p.payload["texto"][:240]} for i, p in enumerate(trechos)]}
 
@@ -239,7 +267,7 @@ Regras obrigatórias:
 2. Cite cada afirmação com [n], onde n é o número do trecho. Toda frase com dado clínico precisa de citação.
 3. Se os trechos não cobrem a pergunta, diga exatamente: "Não encontrei isso no material de referência." e pare.
 4. Nunca calcule doses, volumes, velocidades de infusão ou escores para um paciente específico. Se a pergunta trouxer peso, idade ou valores do paciente, NÃO multiplique nem some: responda só com a dose de referência do trecho (por kg, por dose) e a apresentação, e indique a ferramenta da Central para o cálculo, se houver na lista FERRAMENTAS.
-5. Pediatria: só afirme algo para criança se o trecho for explicitamente pediátrico. Nunca converta dado de adulto para criança.
+5. Pediatria: só afirme algo para criança se o trecho for explicitamente pediátrico. Nunca converta dado de adulto para criança. Se a pergunta for de criança e nenhum trecho trouxer a resposta para criança, diga exatamente: "Não há referência pediátrica no material para esta pergunta." e pare.
 6. Formato: resposta direta primeiro; depois tópicos curtos (avaliação, conduta, sinais de alarme) quando aplicável. Português do Brasil, linguagem técnica médica, sem floreios.
 7. Você dá suporte; a decisão é do médico assistente. Não escreva avisos de responsabilidade: o sistema já mostra."""
 
@@ -255,7 +283,8 @@ def ask(r: Req, authorization: str | None = Header(None)):
     pq = pseudonimizar(r.q)
     q = expandir_siglas(pq)
     tem_peso = bool(re.search(r"\d+[,.]?\d*\s*(kg|quilos?|anos?|meses)\b", q, re.I))
-    chave = _chave_cache(r.tenant_id, pq)
+    publico = publico_da_pergunta(q, r.publico)
+    chave = _chave_cache(f"{r.tenant_id}|{publico}", pq)
     guardada = None if tem_peso else cache_ler(chave)
     if guardada is not None:
         def repetir():
@@ -265,32 +294,42 @@ def ask(r: Req, authorization: str | None = Header(None)):
             yield from guardada[1:]
             log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "cache": True, "ms": int((time.time() - t0) * 1000)}))
         return StreamingResponse(repetir(), media_type="application/x-ndjson")
-    tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id)
+    tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico)
     t_busca = int((time.time() - t0) * 1000)
     fontes = [fmt_src(i, p) for i, p in enumerate(trechos)]
     gate_ok = passa_gate(melhor, com_lexico, trechos)
-    ferramentas = [fmt_tool(t) for t in tools if t.score > 0.5]
+    # R2-11: sem resposta, nenhuma ferramenta ou fonte sem relação na tela
+    ferramentas = [fmt_tool(t) for t in tools if t.score > 0.5] if gate_ok else []
+    sem_resposta = MSG_SEM_PEDIATRIA if publico == PED else NAO_ENCONTREI
 
     def gerar():
         linhas: list[str] = []
         t_primeiro = None
         meta = json.dumps({"type": "meta", "request_id": r.request_id, "gate": gate_ok, "melhor_score": round(melhor, 3),
-                           "ferramentas": ferramentas, "fontes": fontes if gate_ok else []}, ensure_ascii=False) + "\n"
+                           "publico": publico, "ferramentas": ferramentas, "fontes": fontes if gate_ok else []},
+                          ensure_ascii=False) + "\n"
         linhas.append(meta)
         yield meta
         if not gate_ok:
-            yield json.dumps({"type": "delta", "text": "Não encontrei isso no material de referência."}, ensure_ascii=False) + "\n"
-            yield json.dumps({"type": "done", "citacoes_invalidas": [], "sem_citacao": False}) + "\n"
-            log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "gate": False, "top": round(melhor, 3),
+            yield json.dumps({"type": "delta", "text": sem_resposta}, ensure_ascii=False) + "\n"
+            yield json.dumps({"type": "done", "citacoes_invalidas": [], "sem_citacao": False, "nao_encontrou": True}) + "\n"
+            log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": False, "top": round(melhor, 3),
                                  "ms": int((time.time() - t0) * 1000)}))
             return
+        mapa = FONTES.mapa()
+        rotulo = {PED: "fonte pediátrica", AMBOS: "fonte adulto e criança", ADULTO: "fonte de adulto"}
         contexto = "\n\n".join(
-            f"[{i + 1}] ({p.payload['titulo']}, {p.payload.get('secao') or 'sem seção'}, {local(p)})\n{p.payload['texto']}"
+            f"[{i + 1}] ({p.payload['titulo']}, {p.payload.get('secao') or 'sem seção'}, {local(p)}; "
+            f"{rotulo[mapa.get(p.payload.get('fonte_id'), ADULTO)]})\n{p.payload['texto']}"
             for i, p in enumerate(trechos))
         lista_tools = "\n".join(f"- {t['nome']} ({t['rota']})" for t in ferramentas) or "- nenhuma"
         lembrete = "\n\nLembrete: cada afirmação clínica termina com a citação [n] do trecho."
         if tem_peso:
             lembrete += " A pergunta traz dados do paciente: NÃO calcule a dose para ele; dê só a dose de referência por kg e aponte a ferramenta."
+        if publico == PED:
+            lembrete += (" A pergunta é de CRIANÇA (pediatria até 13 anos e 11 meses): use só o que o trecho afirma para criança;"
+                         " em trecho de adulto e criança, só a parte pediátrica. Se nada responder para criança, diga exatamente:"
+                         f' "{MSG_SEM_PEDIATRIA}" e pare.')
         texto = ""
         try:
             # max_tokens alto: em modelo com "raciocínio" os tokens de pensamento
@@ -318,7 +357,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
             return
         citadas = {int(n) for n in re.findall(r"\[(\d+)\]", texto)}
         invalidas = sorted(n for n in citadas if n < 1 or n > len(trechos))
-        nao_encontrou = "Não encontrei isso no material de referência" in texto
+        nao_encontrou = NAO_ENCONTREI.rstrip(".") in texto or MSG_SEM_PEDIATRIA.rstrip(".") in texto
         # pós-checagem R3: com dados do paciente na pergunta, uma quantidade na
         # resposta que não existe em nenhum trecho sugere cálculo feito pelo modelo
         calculo_suspeito = False
@@ -330,12 +369,12 @@ def ask(r: Req, authorization: str | None = Header(None)):
                     break
         fim = json.dumps({"type": "done", "citacoes_invalidas": invalidas,
                           "sem_citacao": (not citadas) and (not nao_encontrou),
-                          "calculo_suspeito": calculo_suspeito}) + "\n"
+                          "calculo_suspeito": calculo_suspeito, "nao_encontrou": nao_encontrou}) + "\n"
         linhas.append(fim)
         yield fim
         if not tem_peso and not nao_encontrou and not invalidas and not calculo_suspeito and citadas:
             cache_gravar(chave, linhas)
-        log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "gate": True, "top": round(melhor, 3),
+        log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": True, "top": round(melhor, 3),
                              "fontes": [f["titulo"] for f in fontes], "ms_busca": t_busca, "ms_1o_trecho": t_primeiro,
                              "ms": int((time.time() - t0) * 1000)}, ensure_ascii=False))
 

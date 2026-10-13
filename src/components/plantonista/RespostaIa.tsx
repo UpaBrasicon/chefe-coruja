@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { BookOpen, ExternalLink, Sparkles, ThumbsDown, ThumbsUp, X } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
+import { SEM_PEDIATRIA, semResposta } from '@/lib/respostaIa'
 import type { Fonte, StatusIa, ToolHit } from '@/lib/useClinicalAsk'
 import { cn } from '@/lib/utils'
 
@@ -20,6 +21,8 @@ type Props = {
   status: StatusIa
   alerta: string | null
   requestId: string | null
+  /** Público que a biblioteca usou (R2-13): pergunta de criança só busca em fonte pediátrica. */
+  publico?: 'adulto' | 'pediatrico' | null
   onFechar: () => void
 }
 
@@ -126,11 +129,13 @@ function CartoesFerramentas({ ferramentas }: { ferramentas: ToolHit[] }) {
   )
 }
 
-export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alerta, requestId, onFechar }: Props) {
+export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, onFechar }: Props) {
   if (status === 'idle') return null
+  const curto = status === 'streaming' || status === 'done' ? semResposta(texto) : null
+  if (curto) { fontes = []; ferramentas = [] }
   const mensagem: Record<string, string | null> = {
     loading: 'Consultando o material de referência…',
-    blocked: 'Não encontrei isso no material de referência.',
+    blocked: publico === 'pediatrico' ? SEM_PEDIATRIA : 'Não encontrei isso no material de referência.',
     limite: 'Limite de 30 perguntas por hora atingido. A busca local continua disponível.',
     indisponivel: 'IA indisponível no momento. A busca local continua disponível.',
     error: 'Não foi possível consultar a IA agora.',
@@ -143,6 +148,7 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
         <div className="min-w-0">
           <p className="rotulo flex items-center gap-1.5 text-tinta-sussurro"><Sparkles className="size-3.5 text-marca" aria-hidden /> Perguntar à IA</p>
           <p className="truncate text-corpo font-semibold text-tinta">“{pergunta}”</p>
+          {publico === 'pediatrico' && <p className="text-apoio text-tinta-sussurro">Pergunta de criança: só fontes pediátricas.</p>}
         </div>
         <button type="button" onClick={onFechar} aria-label="Fechar resposta" className="rounded-controle-sm p-1 text-tinta-sussurro hover:text-acao">
           <X className="size-4" />
@@ -152,7 +158,7 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
       <div className="space-y-4 px-4 py-3">
         {alerta && <p className="rounded-controle-sm border border-alerta/40 bg-alerta/10 px-3 py-2 text-apoio text-tinta">{alerta}</p>}
         {aviso && <p className={cn('text-corpo', status === 'loading' ? 'animate-pulse text-tinta-sussurro' : 'text-tinta')}>{aviso}</p>}
-        {(status === 'streaming' || status === 'done') && <Texto texto={texto} fontes={fontes} />}
+        {(status === 'streaming' || status === 'done') && (curto ? <p className="text-corpo text-tinta">{curto}</p> : <Texto texto={texto} fontes={fontes} />)}
         {status === 'streaming' && <span className="inline-block h-4 w-1.5 animate-pulse bg-marca align-middle" aria-hidden />}
 
         <CartoesFerramentas ferramentas={ferramentas} />

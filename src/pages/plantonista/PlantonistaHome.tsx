@@ -134,7 +134,7 @@ export default function PlantonistaHome() {
   const { favoritos, usos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   const paciente = usePacienteCentral()
   const unidadeId = unidadeAtiva?.unidade_id
-  const ia = useClinicalAsk(unidadeId)
+  const ia = useClinicalAsk(unidadeId, paciente.modo)
   const campoBusca = useRef<HTMLInputElement>(null)
   const [destacado, setDestacado] = useState(-1)
   const [sugestoes, setSugestoes] = useState<ToolHit[] | null>(null)
@@ -161,11 +161,11 @@ export default function PlantonistaHome() {
     if (!perguntavel || resultados.length > 0 || !unidadeId) return
     const ac = new AbortController()
     const t = window.setTimeout(async () => {
-      const r = await buscarSemantico(consulta.trim(), unidadeId, ac.signal)
+      const r = await buscarSemantico(consulta.trim(), unidadeId, ac.signal, paciente.modo)
       if (!ac.signal.aborted) setSugestoes(r?.ferramentas ?? null)
     }, 450)
     return () => { window.clearTimeout(t); ac.abort() }
-  }, [consulta, perguntavel, resultados.length, unidadeId])
+  }, [consulta, perguntavel, resultados.length, unidadeId, paciente.modo])
 
   const aoDigitar = (valor: string) => {
     setConsulta(valor)
@@ -270,6 +270,7 @@ export default function PlantonistaHome() {
           status={ia.status}
           alerta={ia.alerta}
           requestId={ia.requestId}
+          publico={ia.publico}
           onFechar={ia.limpar}
         />
 
