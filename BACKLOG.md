@@ -869,6 +869,23 @@ Uma tarefa por vez, cada uma em branch e PR próprios, com homologação antes d
 - **Fica com o RT:** derrubar contêineres do VPS e medir a degradação; logs DEBUG e conferência de vazamento nos payloads; expiração de sessão e 2FA nas telas; leitor de tela; PDF impresso; webhook do prescreve.com (não existe no repositório: o RT aponta o achado).
 - **Rodada executada em 12/10/2026** na homologação: 464 passos da Rodada 2 (436 ok, 2 falhas, 21 lacunas), 204 passos de regressão das tarefas 1 a 7 sem falha. Relatório em `produto/docs/teste-e2e/RELATORIO_E2E_R2_2026-10-12.md` (defeitos R2-01 a R2-04, 7 perguntas ao RT), `TABELA_IA.csv` e `AVALIACAO_HERMES.md`. Falta a parte da IA que depende do RT: `clinical-search` com as secrets da biblioteca, Coruja Clínica e Gestora no Telegram, degradação no VPS, telas (sessão, 2FA, leitor de tela, PDF). A decisão sobre os achados abre ou não a Fase 5.
 
+### Correções do Portão 2 (decisões do RT em 13/10/2026)
+
+Respostas do RT às 8 perguntas do relatório da Rodada 2. A pergunta 1 (histórico encerrado:
+vale a regra do produto) e a 6 (termo do responsável: a tela já pede os mesmos campos) não
+geram tarefa. Ordem proposta, por risco assistencial; cada tarefa em branch e PR próprios,
+com homologação antes de produção. **Aguarda o RT confirmar a ordem.**
+
+| # | Achado | Tarefa | Critério de aceite |
+|---|---|---|---|
+| 1 | R2-01 (P1), pergunta 2 | Isolamento trava o leito: marcar no paciente a indicação de isolamento (tipo) e recusar leito ou setor que não seja de isolamento no desfecho, na transferência de leito e no aceite da regulação | Paciente marcado não entra em leito comum por nenhum caminho; a mensagem diz o motivo |
+| 2 | Pergunta 7 | Prescrição de medicamento exige idade e peso | Sem data de nascimento (ou idade) e sem peso aferido no atendimento, a prescrição é recusada com a mensagem do que falta |
+| 3 | R2-02 (P1), pergunta 3 | Unificação de cadastros com CPF ou CNS diferentes: aceitar com alerta | O pedido mostra o alerta de documento divergente e quem decide vê o alerta antes de aprovar |
+| 4 | R2-07, pergunta 8 | Escala recusa sobreposição: o mesmo profissional não fica em dois setores no mesmo período | Escala sobreposta é recusada; levantamento das sobreposições já gravadas entregue ao RT |
+| 5 | Pergunta 4 | RN vinculado à mãe: cadastro do recém-nascido como "RN de <nome da mãe>", ligado ao cadastro da mãe, aceito pela regulação | RN sem CNS sai pela regulação sem a marca de não identificado |
+| 6 | R2-03, R2-04, R2-05, R2-06, R2-08 | Respostas do "Pergunte à IA" do gestor: ocupação diz que conta pacientes sem leito; permanência ignora intervalo negativo; check-in mostra o turno; farmácia diz o nome do remédio em falta; espera acima de um dia em dias e horas, com alerta de ficha parada | As sete perguntas da tela respondem sem os achados |
+| 7 | R2-09 | Evasão gravada sem data do desfecho: achar a origem e corrigir os registros | Toda evasão tem `desfecho_em`; o indicador de 7 dias bate com o banco |
+
 ## Fase 5 — UBS, Faturamento e Escala Competitiva
 **Horizonte:** 180+ dias
 **Objetivo:** ampliar para rede completa e competir com sistemas maiores.
