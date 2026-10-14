@@ -26,6 +26,12 @@ MSG_SEM_PEDIATRIA = "Não há referência pediátrica no material para esta perg
 _PALAVRAS_PED = re.compile(
     r"\b(crianca|criancas|pediatri\w*|rn|rns|recem[- ]?nascid\w*|neonat\w*|lactente\w*|bebe|bebes|"
     r"menin[oa]s?|infantil|escolar|pre[- ]?escolar|adolescente\w*|puerici\w*)\b")
+# doença própria da criança: sem idade nem adulto declarado, a pergunta é de
+# pediatria (avaliação de 14/10/2026: "invaginação intestinal sinais" ia como
+# adulto e a busca tirava o livro do ICr, onde o assunto está)
+_DOENCA_PED = re.compile(
+    r"\b(bronquiolite\w*|kawasaki|invaginac\w*|intussuscep\w*|crupe|laringotraque\w*|"
+    r"estenose\s+hipertrofica\s+(?:de|do)\s+piloro)\b")
 # idade em dias/semanas/meses só quando é idade de quem é atendido: "3 meses de
 # idade", "10 dias de vida", "paciente de 8 meses". "Tosse de 3 semanas",
 # "febre de 5 dias" e "gestante de 36 semanas" são tempo, não idade (o "RN de
@@ -72,6 +78,8 @@ def publico_da_pergunta(q: str, modo: str | None = None) -> str:
         if not re.search(r"\b(rn|recem[- ]?nascid\w*|neonat\w*|lactente\w*)\b", t):
             return ADULTO
     if _IDADE_CURTA.search(t) or _PALAVRAS_PED.search(t):
+        return PED
+    if _DOENCA_PED.search(t) and not _ADULTO_DECLARADO.search(t):
         return PED
     return ADULTO
 

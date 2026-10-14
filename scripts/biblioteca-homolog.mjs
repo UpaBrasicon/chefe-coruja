@@ -11,7 +11,7 @@
 //
 // Uso: npm run biblioteca:homolog                  (código + corpus no VPS)
 //      npm run biblioteca:homolog -- --ingerir     (e reingere o corpus na coleção da homologação)
-//      npm run biblioteca:homolog -- --avaliar     (e roda as evals contra a homologação)
+//      npm run biblioteca:homolog -- --avaliar     (e roda as evals contra a homologação; --avaliar-r2 só as da Rodada 2)
 //      npm run biblioteca:homolog -- --orfaos      (lista trechos órfãos; --limpar-orfaos apaga, só na homologação)
 import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
@@ -20,7 +20,8 @@ const raiz = join(import.meta.dirname, '..')
 const VPS = process.env.BIBLIOTECA_VPS ?? 'root@179.199.128.141'
 const run = (cmd, args) => execFileSync(cmd, args, { cwd: raiz, stdio: 'inherit' })
 const ingerir = process.argv.includes('--ingerir')
-const avaliar = process.argv.includes('--avaliar')
+const avaliar = process.argv.includes('--avaliar') || process.argv.includes('--avaliar-r2')
+const listas = process.argv.includes('--avaliar-r2') ? ['perguntas-r2.yaml'] : ['perguntas-r2.yaml', 'perguntas.yaml', 'perguntas-falhas.yaml']
 // trechos de fichas renomeadas ou apagadas (sem público conhecido): listar ou apagar só na coleção da homologação
 const orfaos = process.argv.includes('--limpar-orfaos') ? ' --apagar' : process.argv.includes('--orfaos') ? '' : null
 const COMPOSE = 'docker compose -f docker-compose.yml -f docker-compose.homolog.yml'
@@ -59,7 +60,7 @@ run('ssh', [VPS, 'chown -R hermes:hermes /srv/biblioteca && cd /srv/biblioteca'
   + ' && curl -s -w "\\nhomolog health: %{http_code}\\n" http://127.0.0.1:8711/health'])
 
 if (avaliar) {
-  for (const arq of ['perguntas-r2.yaml', 'perguntas.yaml', 'perguntas-falhas.yaml']) {
+  for (const arq of listas) {
     try {
       run('ssh', [VPS, 'docker exec -e BIBLIOTECA_URL=http://127.0.0.1:8710'
         + ` -e EVALS_ARQUIVO=/srv/biblioteca/evals/${arq} biblioteca-api-homolog python -u /srv/biblioteca/evals/run.py`])

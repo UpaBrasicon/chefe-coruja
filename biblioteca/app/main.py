@@ -336,7 +336,7 @@ Regras obrigatórias:
 
 # R2-18: a regra de pediatria só entra quando a pergunta é de criança
 REGRA_PED = """
-8. Pediatria: só afirme algo para criança se o trecho for explicitamente pediátrico. Nunca converta dado de adulto para criança. Se nenhum trecho trouxer a resposta para criança, diga exatamente: "Não há referência pediátrica no material para esta pergunta." e pare."""
+8. Pediatria: só afirme algo para criança se o trecho for explicitamente pediátrico. Nunca converta dado de adulto para criança. Se nenhum trecho pediátrico (ou de adulto e criança) trata do assunto, diga exatamente: "Não há referência pediátrica no material para esta pergunta." e pare. Se tratam de parte da pergunta, responda essa parte só com eles, sem essa frase, e diga em uma linha o que o material pediátrico não traz."""
 
 
 def resposta_fixa(r: Req, publico: str, tipo: str, t0: float):
@@ -415,8 +415,8 @@ def ask(r: Req, authorization: str | None = Header(None)):
             lembrete += " A pergunta traz dados do paciente: NÃO calcule a dose para ele; dê só a dose de referência por kg e aponte a ferramenta."
         if publico == PED:
             lembrete += (" A pergunta é de CRIANÇA (pediatria até 13 anos e 11 meses): use só o que o trecho afirma para criança;"
-                         " em trecho de adulto e criança, só a parte pediátrica. Se nada responder para criança, diga exatamente:"
-                         f' "{MSG_SEM_PEDIATRIA}" e pare.')
+                         " em trecho de adulto e criança, só a parte pediátrica. Se nenhum trecho para criança tratar do assunto, diga exatamente:"
+                         f' "{MSG_SEM_PEDIATRIA}" e pare; se tratarem de parte, responda essa parte.')
         texto = ""
         try:
             # max_tokens alto: em modelo com "raciocínio" os tokens de pensamento

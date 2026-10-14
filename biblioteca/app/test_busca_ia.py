@@ -230,6 +230,13 @@ class TestPublicoPelaReescrita(unittest.TestCase):
                           ("kawasaki critérios", "doença de Kawasaki, critérios diagnósticos, criança")]:
             self.assertEqual(pub.publico_com_termos(q, termos), pub.PED, q)
 
+    def test_doenca_da_crianca_na_propria_pergunta(self):
+        self.assertEqual(pub.publico_da_pergunta("invaginação intestinal sinais"), pub.PED)
+        self.assertEqual(pub.publico_da_pergunta("bronquiolite precisa de corticoide"), pub.PED)
+        self.assertEqual(pub.publico_da_pergunta("kawasaki critérios"), pub.PED)
+        self.assertEqual(pub.publico_da_pergunta("invaginação intestinal no adulto"), pub.ADULTO)
+        self.assertEqual(pub.publico_da_pergunta("Homem de 40 anos com intussuscepção"), pub.ADULTO)
+
     def test_adulto_ou_idade_declarados_valem(self):
         self.assertEqual(pub.publico_com_termos("Homem com dor abdominal em cólica", "invaginação intestinal, criança"), pub.ADULTO)
         self.assertEqual(pub.publico_com_termos("Paciente de 40 anos com febre", "febre, criança"), pub.ADULTO)
