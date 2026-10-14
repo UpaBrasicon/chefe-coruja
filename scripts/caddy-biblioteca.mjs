@@ -1,13 +1,15 @@
 // Publica hermes/deploy/Caddyfile no VPS e recarrega o Caddy do Hermes, com
 // as travas que a troca de proxy pede (R2-13, 13/10/2026):
-//   1. o Caddyfile do servidor tem de ser igual ao da master (senão alguém
-//      mexeu lá e a troca apagaria a mudança: o script para e mostra);
+//   1. o Caddyfile do servidor tem de ser igual ao retrato registrado em
+//      hermes/deploy/Caddyfile.servidor (senão alguém mexeu lá e a troca
+//      apagaria a mudança: o script para e mostra);
 //   2. cópia de segurança antes;
 //   3. grava no MESMO arquivo (o contêiner monta o arquivo, não a pasta);
 //   4. `caddy validate`; se falhar, volta a cópia e não recarrega;
 //   5. `caddy reload` e conferência dos dois endereços.
 // Uso: npm run caddy:biblioteca
 import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const raiz = join(import.meta.dirname, '..')
@@ -18,8 +20,8 @@ const lf = (s) => s.replace(/\r\n/g, '\n')
 const sh = (cmd, input) =>
   execFileSync('ssh', [VPS, cmd], { cwd: raiz, input, encoding: 'utf8', stdio: [input === undefined ? 'inherit' : 'pipe', 'pipe', 'inherit'] })
 
-const novo = lf(execFileSync('git', ['show', 'HEAD:hermes/deploy/Caddyfile'], { cwd: raiz, encoding: 'utf8' }))
-const base = lf(execFileSync('git', ['show', 'origin/master:hermes/deploy/Caddyfile'], { cwd: raiz, encoding: 'utf8' }))
+const novo = lf(readFileSync(join(raiz, 'hermes/deploy/Caddyfile'), 'utf8'))
+const base = lf(readFileSync(join(raiz, 'hermes/deploy/Caddyfile.servidor'), 'utf8'))
 const servidor = lf(sh(`cat ${ARQ}`))
 
 if (servidor === novo) {
@@ -27,7 +29,7 @@ if (servidor === novo) {
   process.exit(0)
 }
 if (servidor !== base) {
-  console.error(`PARADO: o Caddyfile do servidor (${ARQ}) é diferente do da master.`)
+  console.error(`PARADO: o Caddyfile do servidor (${ARQ}) é diferente de hermes/deploy/Caddyfile.servidor.`)
   console.error('Alguém mudou o arquivo direto no VPS. Compare antes de trocar:')
   console.error(`  ssh ${VPS} "cat ${ARQ}"`)
   process.exit(1)

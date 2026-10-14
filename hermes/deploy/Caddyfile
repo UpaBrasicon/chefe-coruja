@@ -1,19 +1,8 @@
-# ─────────────────────────────────────────────────────────────────────────────
 # HERMES — Caddyfile (proxy reverso + HTTPS automático Let's Encrypt)
-# Domínio hermes.chefecoruja.com.br com HTTPS automático (Let's Encrypt).
-#
-# Só /webhook (Meta) e /health ficam públicos. A API das skills (/skill/*) é
-# usada pelo bot pela rede interna do Docker (hermes-app:3000) e NÃO passa por
-# aqui — antes ela respondia na internet, em HTTP (auditoria 27/09).
-# ─────────────────────────────────────────────────────────────────────────────
-
-# HTTPS ligado em 02/10/2026 (DNS hermes.chefecoruja.com.br → 179.199.128.141).
-# O acesso pelo IP em HTTP saiu: o Caddy redireciona o HTTP do domínio para HTTPS.
+# HTTPS ligado em 02/10/2026. Só /webhook e /health são públicos.
 hermes.chefecoruja.com.br {
 	@publico path /webhook /health
 	handle @publico {
-		# /webhook precisa do corpo BRUTO para validação HMAC — o Caddy repassa
-		# o body sem alterações (não usamos compressão aqui).
 		reverse_proxy app:3000
 	}
 	handle {
@@ -22,23 +11,18 @@ hermes.chefecoruja.com.br {
 	header -Server
 }
 
-# Biblioteca clínica do Chefe Coruja (28/09/2026): API em outro compose
-# (/srv/biblioteca), container biblioteca-api na rede deploy_default.
-# 179-199-128-141.sslip.io é o nome provisório até o DNS de
-# biblioteca.chefecoruja.com.br apontar para este VPS.
-# /homolog/ (13/10/2026, R2-13): API da biblioteca da HOMOLOGAÇÃO
-# (biblioteca-api-homolog, docker-compose.homolog.yml), com o código em teste.
-# A produção continua em biblioteca-api.
+# Biblioteca clínica (28/09/2026). /homolog/ (13/10/2026, R2-13): API da
+# biblioteca da HOMOLOGAÇÃO (biblioteca-api-homolog); o resto vai para a produção.
 biblioteca.chefecoruja.com.br, 179-199-128-141.sslip.io {
-    handle_path /homolog/* {
-        reverse_proxy biblioteca-api-homolog:8710 {
-            flush_interval -1
-        }
-    }
-    handle {
-        reverse_proxy biblioteca-api:8710 {
-            flush_interval -1
-        }
-    }
-    header -Server
+	handle_path /homolog/* {
+		reverse_proxy biblioteca-api-homolog:8710 {
+			flush_interval -1
+		}
+	}
+	handle {
+		reverse_proxy biblioteca-api:8710 {
+			flush_interval -1
+		}
+	}
+	header -Server
 }
