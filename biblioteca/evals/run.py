@@ -60,6 +60,7 @@ for i, it in enumerate(itens):
                     r["gate"] = ev["gate"]
                     r["fontes"] = [f["titulo"] for f in ev["fontes"]]
                     r["ferramentas"] = [f["id"] for f in ev["ferramentas"]]
+                    r["ferramentas_score"] = {f["id"]: f.get("score") for f in ev["ferramentas"]}
                     r["melhor"] = ev.get("melhor_score")
                 elif ev["type"] == "delta":
                     if r["t1"] is None:
@@ -90,7 +91,7 @@ for i, it in enumerate(itens):
     checks = (r["ok_fonte"], r["ok_ferramenta"], r["ok_gate"], r["ok_contem"], r["ok_nao_contem"])
     marca = "✗" if any(x is False for x in checks) or r["erro"] or r["vazia"] else "✓"
     print(f"{marca} {it['q'][:58]:58} gate={r['gate']} top={r['melhor']} fontes={[f[:28] for f in r['fontes'][:2]]} "
-          f"tools={r['ferramentas'][:3]} t1={r['t1'] and round(r['t1'], 2)}"
+          f"tools={[f'{k}:{v}' for k, v in list(r.get('ferramentas_score', {}).items())[:3]]} t1={r['t1'] and round(r['t1'], 2)}"
           f"{' ERRO=' + str(r['erro']) if r['erro'] else ''}{' VAZIA' if r['vazia'] else ''}"
           f"{' SEM_CITACAO' if r['gate'] and r['sem_citacao'] else ''}{' CALCULO_SUSPEITO' if r['calculo_suspeito'] else ''}", flush=True)
 

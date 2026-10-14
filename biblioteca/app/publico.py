@@ -41,6 +41,23 @@ def _plano(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn").lower()
 
 
+_ADULTO_DECLARADO = re.compile(r"\b(adult\w*|gestante\w*|gravida\w*|puerper\w*|idos[oa]s?|homem|mulher|senhora?)\b")
+
+
+def publico_com_termos(q: str, termos: str | None, modo: str | None = None) -> str:
+    """Como publico_da_pergunta, mas a pergunta sem idade nem adulto declarado
+    vai para a pediatria quando os termos da reescrita falam de criança
+    (doença própria da criança: bronquiolite, invaginação, Kawasaki)."""
+    base = publico_da_pergunta(q, modo)
+    # o modo adulto escolhido na tela também vale sobre a reescrita
+    if base == PED or not termos or modo == ADULTO:
+        return base
+    t = _plano(q)
+    if _IDADE_ANOS.search(t) or _ADULTO_DECLARADO.search(t):
+        return base
+    return PED if publico_da_pergunta(termos) == PED else base
+
+
 def publico_da_pergunta(q: str, modo: str | None = None) -> str:
     """'pediatrico' ou 'adulto'. O modo pediátrico da tela vale sempre; o texto
     da pergunta também leva a pediatria quando fala de criança (o mais seguro)."""

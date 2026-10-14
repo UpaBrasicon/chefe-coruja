@@ -158,7 +158,8 @@
   espera_fonte_contendo: "Pronto-Socorro"
 - q: "gastroenterite aguda plano B de hidratação"
   espera_gate: true
-  espera_fonte_contendo: "Pronto-Socorro"
+  # a ficha da Central sai do mesmo livro (ICr) e traz os planos A, B e C (14/10/2026)
+  espera_fonte_contendo: ["Pronto-Socorro", "Diarreia aguda — desidratação"]
 - q: "invaginação intestinal sinais"
   espera_gate: true
   espera_fonte_contendo: "Pronto-Socorro"

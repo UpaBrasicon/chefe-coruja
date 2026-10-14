@@ -21,7 +21,7 @@ from qdrant_client import QdrantClient, models
 
 from armadilhas import RESPOSTA as RESPOSTA_ARMADILHA, armadilha
 from pii import pseudonimizar, nomes_proprios, ner_disponivel
-from publico import ADULTO, AMBOS, MSG_SEM_PEDIATRIA, PED, Fontes, ferramenta_serve, publico_da_pergunta
+from publico import ADULTO, AMBOS, MSG_SEM_PEDIATRIA, PED, Fontes, ferramenta_serve, publico_com_termos, publico_da_pergunta
 from siglas import expandir_siglas
 
 E = os.environ
@@ -117,7 +117,7 @@ def filtro_publico(publico: str) -> tuple[list, list] | None:
     return [], ([models.FieldCondition(key="fonte_id", match=models.MatchAny(any=so_ped))] if so_ped else [])
 
 
-SYSTEM_REESCRITA = """Você recebe a pergunta de um médico de pronto-socorro sobre um paciente. Escreva os termos que um manual de emergência usaria no título do capítulo ou da seção que responde a ela: diagnóstico ou síndrome provável, intoxicação e classe do medicamento envolvido, procedimento ou escore, e se o paciente é criança, gestante ou adulto.
+SYSTEM_REESCRITA = """Você recebe a pergunta de um médico de pronto-socorro sobre um paciente. Escreva os termos que um manual de emergência usaria no título do capítulo ou da seção que responde a ela: diagnóstico ou síndrome provável, intoxicação e classe do medicamento envolvido, procedimento ou escore. Escreva "criança" só quando a pergunta falar de criança ou quando a doença for própria da criança (ex.: bronquiolite, invaginação intestinal, doença de Kawasaki); escreva "adulto" ou "gestante" quando a pergunta indicar; se servir para qualquer idade, não escreva faixa etária.
 Não responda à pergunta. Não dê dose, conduta nem número. Não invente dado que a pergunta não traz.
 Escreva só os termos, separados por vírgula, em até 25 palavras. Se a pergunta não for clínica, escreva só: FORA"""
 
@@ -327,7 +327,7 @@ SYSTEM = """Você é um assistente de suporte à decisão clínica para médicos
 Regras obrigatórias:
 1. Responda SOMENTE com base nos TRECHOS fornecidos. Não use conhecimento externo. Não complete lacunas com o que você "sabe".
 2. Cite cada afirmação com [n], onde n é o número do trecho. Toda frase com dado clínico precisa de citação.
-3. Se os trechos não cobrem a pergunta, diga exatamente: "Não encontrei isso no material de referência." e pare.
+3. Se nenhum trecho trata do assunto perguntado, diga exatamente: "Não encontrei isso no material de referência." e pare, sem acrescentar nada. Se a pergunta é ampla (só o nome da doença ou do escore) ou os trechos respondem só a uma parte, responda com o que os trechos trazem, sem essa frase, e diga em uma linha o que o material não traz.
 4. Nunca calcule doses, volumes, velocidades de infusão ou escores para um paciente específico. Se a pergunta trouxer peso, idade ou valores do paciente, NÃO multiplique nem some: responda só com a dose de referência do trecho (por kg, por dose) e a apresentação, e indique a ferramenta da Central para o cálculo, se houver na lista FERRAMENTAS.
 5. Cada trecho traz o título e a seção de onde vem. Use só o trecho cuja seção trata da condição perguntada; não leve o dado de uma condição para outra (ex.: estado hiperosmolar não é cetoacidose).
 6. Formato: resposta direta primeiro; depois tópicos curtos (avaliação, conduta, sinais de alarme) quando aplicável. Português do Brasil, linguagem técnica médica, sem floreios.
@@ -362,10 +362,14 @@ def ask(r: Req, authorization: str | None = Header(None)):
     pq = pseudonimizar(r.q)
     q = expandir_siglas(pq)
     tem_peso = bool(re.search(r"\d+[,.]?\d*\s*(kg|quilos?|anos?|meses)\b", q, re.I))
-    publico = publico_da_pergunta(q, r.publico)
     tipo = armadilha(q)
     if tipo:
-        return resposta_fixa(r, publico, tipo, t0)
+        return resposta_fixa(r, publico_da_pergunta(q, r.publico), tipo, t0)
+    termos = reescrever(q)
+    t_reescrita = int((time.time() - t0) * 1000)
+    # pergunta sem idade sobre doença da criança ("bronquiolite precisa de
+    # corticoide"): os termos da reescrita levam à pediatria (avaliação de 14/10)
+    publico = publico_com_termos(q, termos, r.publico)
     chave = _chave_cache(f"{r.tenant_id}|{publico}", pq)
     guardada = None if tem_peso else cache_ler(chave)
     if guardada is not None:
@@ -376,8 +380,6 @@ def ask(r: Req, authorization: str | None = Header(None)):
             yield from guardada[1:]
             log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "cache": True, "ms": int((time.time() - t0) * 1000)}))
         return StreamingResponse(repetir(), media_type="application/x-ndjson")
-    termos = reescrever(q)
-    t_reescrita = int((time.time() - t0) * 1000)
     tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico, termos)
     t_busca = int((time.time() - t0) * 1000)
     fontes = [fmt_src(i, p) for i, p in enumerate(trechos)]

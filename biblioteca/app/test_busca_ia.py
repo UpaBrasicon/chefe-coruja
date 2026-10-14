@@ -220,6 +220,40 @@ class TestRespostaComTrecho(unittest.TestCase):
         self.assertEqual(b.call_args.args[3], "intoxicação exógena, criança")
 
 
+class TestPublicoPelaReescrita(unittest.TestCase):
+    """Avaliação de 14/10: "bronquiolite precisa de corticoide" ia como adulto e
+    a busca tirava o livro de pediatria."""
+
+    def test_doenca_da_crianca_sem_idade(self):
+        for q, termos in [("bronquiolite precisa de corticoide", "bronquiolite viral aguda, lactente, corticoide"),
+                          ("invaginação intestinal sinais", "invaginação intestinal, criança, abdome agudo"),
+                          ("kawasaki critérios", "doença de Kawasaki, critérios diagnósticos, criança")]:
+            self.assertEqual(pub.publico_com_termos(q, termos), pub.PED, q)
+
+    def test_adulto_ou_idade_declarados_valem(self):
+        self.assertEqual(pub.publico_com_termos("Homem com dor abdominal em cólica", "invaginação intestinal, criança"), pub.ADULTO)
+        self.assertEqual(pub.publico_com_termos("Paciente de 40 anos com febre", "febre, criança"), pub.ADULTO)
+        self.assertEqual(pub.publico_com_termos("Gestante com cefaleia", "pré-eclâmpsia, gestante"), pub.ADULTO)
+        self.assertEqual(pub.publico_com_termos("dor abdominal", "invaginação intestinal, criança", "adulto"), pub.ADULTO)
+
+    def test_sem_faixa_nos_termos_fica_adulto(self):
+        self.assertEqual(pub.publico_com_termos("dpoc exacerbado", "exacerbação de DPOC, adulto"), pub.ADULTO)
+        self.assertEqual(pub.publico_com_termos("tce", "traumatismo cranioencefálico"), pub.ADULTO)
+        self.assertEqual(pub.publico_com_termos("tce", None), pub.ADULTO)
+
+    def test_chega_na_busca(self):
+        cliente = TestClient(main.app)
+        main._cache.clear()
+        b = mock.patch.object(main, "buscar", return_value=([], [], 0.0, False)).start()
+        mock.patch.object(main, "reescrever", return_value="bronquiolite viral aguda, lactente").start()
+        try:
+            ev = perguntar(cliente, "bronquiolite precisa de corticoide")
+        finally:
+            mock.patch.stopall()
+        self.assertEqual(b.call_args.args[2], pub.PED)
+        self.assertEqual(ev[0]["publico"], pub.PED)
+
+
 class TestSugestoesPorSignificado(unittest.TestCase):
     def setUp(self):
         self.cliente = TestClient(main.app)

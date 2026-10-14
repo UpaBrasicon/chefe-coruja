@@ -12,6 +12,7 @@
 // Uso: npm run biblioteca:homolog                  (código + corpus no VPS)
 //      npm run biblioteca:homolog -- --ingerir     (e reingere o corpus na coleção da homologação)
 //      npm run biblioteca:homolog -- --avaliar     (e roda as evals contra a homologação)
+//      npm run biblioteca:homolog -- --orfaos      (lista trechos órfãos; --limpar-orfaos apaga, só na homologação)
 import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
 
@@ -20,6 +21,8 @@ const VPS = process.env.BIBLIOTECA_VPS ?? 'root@179.199.128.141'
 const run = (cmd, args) => execFileSync(cmd, args, { cwd: raiz, stdio: 'inherit' })
 const ingerir = process.argv.includes('--ingerir')
 const avaliar = process.argv.includes('--avaliar')
+// trechos de fichas renomeadas ou apagadas (sem público conhecido): listar ou apagar só na coleção da homologação
+const orfaos = process.argv.includes('--limpar-orfaos') ? ' --apagar' : process.argv.includes('--orfaos') ? '' : null
 const COMPOSE = 'docker compose -f docker-compose.yml -f docker-compose.homolog.yml'
 const QD = 'http://127.0.0.1:6333/collections'
 
@@ -28,7 +31,7 @@ run('node', ['--experimental-strip-types', 'scripts/corpus-central.mjs'])
 run('ssh', [VPS, 'mkdir -p /srv/biblioteca/app-homolog /srv/biblioteca/evals && rm -rf /srv/biblioteca/corpus-homolog'])
 run('scp', ['-q', 'biblioteca/ferramentas.json', 'biblioteca/fontes.yaml', 'biblioteca/docker-compose.homolog.yml', `${VPS}:/srv/biblioteca/`])
 run('scp', ['-q', 'biblioteca/app/main.py', 'biblioteca/app/pii.py', 'biblioteca/app/publico.py', 'biblioteca/app/siglas.py',
-  'biblioteca/app/armadilhas.py', 'biblioteca/app/ingest.py', 'biblioteca/app/index_tools.py', 'biblioteca/app/Dockerfile',
+  'biblioteca/app/armadilhas.py', 'biblioteca/app/orfaos.py', 'biblioteca/app/ingest.py', 'biblioteca/app/index_tools.py', 'biblioteca/app/Dockerfile',
   'biblioteca/app/requirements.txt', `${VPS}:/srv/biblioteca/app-homolog/`])
 run('scp', ['-q', '-r', 'biblioteca/corpus', `${VPS}:/srv/biblioteca/corpus-homolog`])
 run('scp', ['-q', 'biblioteca/evals/run.py', 'biblioteca/evals/perguntas.yaml', 'biblioteca/evals/perguntas-falhas.yaml',
@@ -51,7 +54,9 @@ run('ssh', [VPS, 'chown -R hermes:hermes /srv/biblioteca && cd /srv/biblioteca'
   // docker exec no container já de pé: o `docker compose run` da ingestão
   // terminou mas não devolveu o terminal (14/10/2026)
   + (ingerir ? ' && docker exec biblioteca-api-homolog python -u ingest.py corpus' : '')
-  + ' && sleep 5 && curl -s -w "\\nhomolog health: %{http_code}\\n" http://127.0.0.1:8711/health'])
+  + ' && sleep 5'
+  + (orfaos !== null ? ` && docker exec biblioteca-api-homolog python -u orfaos.py${orfaos}` : '')
+  + ' && curl -s -w "\\nhomolog health: %{http_code}\\n" http://127.0.0.1:8711/health'])
 
 if (avaliar) {
   for (const arq of ['perguntas-r2.yaml', 'perguntas.yaml', 'perguntas-falhas.yaml']) {
