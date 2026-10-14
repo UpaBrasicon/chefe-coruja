@@ -51,18 +51,17 @@ const copiarColecao = `if ! curl -sf ${QD}/biblioteca_homolog > /dev/null; then`
 run('ssh', [VPS, 'chown -R hermes:hermes /srv/biblioteca && cd /srv/biblioteca'
   + ` && ${copiarColecao}`
   + ` && ${COMPOSE} up -d --build api-homolog`
-  + ' && docker compose run --rm -T api python index_tools.py'
-  // docker exec no container já de pé: o `docker compose run` da ingestão
-  // terminou mas não devolveu o terminal (14/10/2026)
-  + (ingerir ? ' && docker exec biblioteca-api-homolog python -u ingest.py corpus' : '')
-  + ' && sleep 5'
-  + (orfaos !== null ? ` && docker exec biblioteca-api-homolog python -u orfaos.py${orfaos}` : '')
+  // tudo por docker exec no container já de pé, com tempo-limite: o `docker
+  // compose run --rm` terminou o trabalho e prendeu o terminal duas vezes (14/10/2026)
+  + ' && sleep 5 && timeout 600 docker exec biblioteca-api-homolog python -u index_tools.py'
+  + (ingerir ? ' && timeout 5400 docker exec biblioteca-api-homolog python -u ingest.py corpus' : '')
+  + (orfaos !== null ? ` && timeout 600 docker exec biblioteca-api-homolog python -u orfaos.py${orfaos}` : '')
   + ' && curl -s -w "\\nhomolog health: %{http_code}\\n" http://127.0.0.1:8711/health'])
 
 if (avaliar) {
   for (const arq of listas) {
     try {
-      run('ssh', [VPS, 'docker exec -e BIBLIOTECA_URL=http://127.0.0.1:8710'
+      run('ssh', [VPS, 'timeout 3600 docker exec -e BIBLIOTECA_URL=http://127.0.0.1:8710'
         + ` -e EVALS_ARQUIVO=/srv/biblioteca/evals/${arq} biblioteca-api-homolog python -u /srv/biblioteca/evals/run.py`])
     } catch {
       console.log(`evals ${arq}: REPROVADO (ver a lista de falhas acima)`)
