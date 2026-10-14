@@ -25,7 +25,7 @@ export type StatusIa = 'idle' | 'loading' | 'streaming' | 'done' | 'blocked' | '
 type Evento =
   | { type: 'meta'; request_id: string; gate: boolean; publico?: 'adulto' | 'pediatrico'; ferramentas: ToolHit[]; fontes: Fonte[] }
   | { type: 'delta'; text: string }
-  | { type: 'done'; citacoes_invalidas?: number[]; sem_citacao?: boolean; calculo_suspeito?: boolean; nao_encontrou?: boolean }
+  | { type: 'done'; citacoes_invalidas?: number[]; sem_citacao?: boolean; calculo_suspeito?: boolean; nao_encontrou?: boolean; recusa?: boolean }
   | { type: 'error'; text: string }
 
 const URL_FUNCAO = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/clinical-search`
@@ -133,7 +133,8 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
           } else if (ev.type === 'done') {
             // R2-11: sem resposta, nada de fonte ou ferramenta sem relação
             if (ev.nao_encontrou) { setFontes([]); setFerramentas([]) }
-            if (ev.calculo_suspeito) setAlerta('A resposta pode trazer um número calculado para o paciente. A IA não deve calcular: use a ferramenta indicada e confira a dose de referência na fonte.')
+            // R2-17: "não encontrei" mostra só a frase, sem alerta de cálculo
+            if (ev.calculo_suspeito && !ev.nao_encontrou) setAlerta('A resposta pode trazer um número calculado para o paciente. A IA não deve calcular: use a ferramenta indicada e confira a dose de referência na fonte.')
             else if (ev.sem_citacao || ev.citacoes_invalidas?.length) setAlerta('Resposta com citação incompleta — confira as fontes.')
             if (!bloqueado) setStatus('done')
           }
