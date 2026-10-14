@@ -161,7 +161,10 @@ def ingerir_pasta_md(fonte: dict):
         print(f"AVISO: nenhum .md em {pasta}", file=sys.stderr)
         return
     total = 0
-    for arq in arquivos:
+    for i, arq in enumerate(arquivos, 1):
+        # progresso: sem ele a ingestão longa parecia travada (14/10/2026)
+        if i % 20 == 0:
+            print(f"{fonte['pasta']}: {i}/{len(arquivos)} arquivos, {total} chunks", flush=True)
         meta = cabecalho_md(arq.read_text(encoding="utf-8"))
         f = {**fonte,
              "titulo": f"{fonte['titulo']} — {meta.get('titulo') or arq.stem}",
