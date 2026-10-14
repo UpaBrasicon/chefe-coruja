@@ -5,7 +5,8 @@
 // possam divergir entre telas: leito/box/setor, nome, idade e sexo, contexto
 // (queixa, desde quando), o SELO DE ALERGIA em três estados sempre visível
 // (vermelho quando tem; abre "Alergias e eventos adversos"), o chip da cor da
-// classificação da porta, o chip de acuidade quando houver e o botão de
+// classificação da porta, o selo de ISOLAMENTO (vermelho quando ativo; marca e
+// retira), o chip de acuidade quando houver e o botão de
 // atendimento anterior sem desfecho (D5; o botão some quando não há). Não gruda: fica no topo do conteúdo (D4).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
@@ -18,6 +19,7 @@ import { NIVEL_RISCO, type CorRisco } from '@/domain/risco'
 import { BotaoEpisodiosAnteriores } from '@/components/prontuario/GavetaEpisodios'
 
 import { GavetaAlergias, SeloAlergia } from './AlergiasEventos'
+import { GavetaIsolamento, SeloIsolamento } from './Isolamento'
 
 const hoje = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
 const SEXO: Record<string, string> = { M: 'masculino', F: 'feminino', I: 'sexo ignorado' }
@@ -74,6 +76,7 @@ export function CabecalhoPaciente({
   corClassificacao, onClassificacao, acuidade = false, episodios = false, episodioAtualId, className,
 }: CabecalhoPacienteProps) {
   const [alergiasAbertas, setAlergiasAbertas] = React.useState(false)
+  const [isolamentoAberto, setIsolamentoAberto] = React.useState(false)
   const [agora, setAgora] = React.useState(() => Date.now())
   React.useEffect(() => {
     const t = window.setInterval(() => setAgora(Date.now()), 60_000)
@@ -142,6 +145,7 @@ export function CabecalhoPaciente({
       {onde && <span className="rounded-capsula bg-marca/10 px-[9px] py-1 text-apoio font-semibold text-acao">{onde}</span>}
       {extra}
       <SeloAlergia pacienteId={pacienteId} onClick={() => setAlergiasAbertas(true)} />
+      <SeloIsolamento pacienteId={pacienteId} onClick={() => setIsolamentoAberto(true)} />
 
       {corClassificacao && (
         onClassificacao ? (
@@ -167,6 +171,7 @@ export function CabecalhoPaciente({
       </div>
 
       <GavetaAlergias pacienteId={pacienteId} nome={nomeVisivel} aberta={alergiasAbertas} onAbertaChange={setAlergiasAbertas} />
+      <GavetaIsolamento pacienteId={pacienteId} nome={nomeVisivel} aberta={isolamentoAberto} onAbertaChange={setIsolamentoAberto} />
     </div>
   )
 }
