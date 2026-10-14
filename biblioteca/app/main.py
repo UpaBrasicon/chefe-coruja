@@ -393,7 +393,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
         linhas: list[str] = []
         t_primeiro = None
         meta = json.dumps({"type": "meta", "request_id": r.request_id, "gate": gate_ok, "melhor_score": round(melhor, 3),
-                           "publico": publico, "ferramentas": ferramentas, "fontes": fontes if gate_ok else []},
+                           "publico": publico, "termos": termos, "ferramentas": ferramentas, "fontes": fontes if gate_ok else []},
                           ensure_ascii=False) + "\n"
         linhas.append(meta)
         yield meta

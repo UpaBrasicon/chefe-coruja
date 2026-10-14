@@ -66,6 +66,14 @@ function lerExports(arq) {
   return out
 }
 
+// Ficha que divide o arquivo com outras sem nome que as separe: leva só os
+// blocos "// ----" indicados, e as outras fichas do arquivo não os levam
+// (avaliação de 14/10/2026: adulto/glicemia.ts tem CAD e hipoglicemia, e a
+// ficha da hipoglicemia só trazia CAD).
+const BLOCOS_DA_FICHA = {
+  'adulto-hipoglicemia': /^hipoglicemia\b/i,
+}
+
 const ehFicha = (v) => v && typeof v === 'object' && typeof v.id === 'string' && typeof v.versao === 'string' && Array.isArray(v.fontes)
 const escapar = (s) => String(s).replace(/\r?\n/g, ' ').trim()
 
@@ -108,6 +116,10 @@ for (const arq of arquivos) {
     const blocos = dono ? [[nome, dono]] : dados.filter(([n]) => fichas.length === 1 || n.toLowerCase().includes(ficha.id.replace(/-/g, '').slice(0, 6)))
     const usados = new Map(blocos.length ? blocos : dados)
     const daFicha = (n) => dono ? n === nome : fichas.length === 1 || n.toLowerCase().includes(ficha.id.replace(/-/g, '').slice(0, 6))
+    const meus = BLOCOS_DA_FICHA[ficha.id]
+    const deOutra = fichas.map(([, f]) => BLOCOS_DA_FICHA[f.id]).filter((r) => r && r !== meus)
+    const temBloco = Boolean(meus)
+    const noBloco = (b) => (meus ? meus.test(b) : !deOutra.some((r) => r.test(b)))
     // seções na ordem do arquivo: dado (comentário + valores) ou função com comentário (só o texto)
     const secoes = []
     const vistos = new Set()
@@ -115,11 +127,13 @@ for (const arq of arquivos) {
       const v = usados.get(e.nome)
       const corpo = [e.doc, v !== undefined ? texto(v) : ''].filter(Boolean).join('\n')
       vistos.add(e.nome)
-      if (!corpo || (v === undefined && (!e.doc || typeof mod[e.nome] !== 'function' || !daFicha(e.nome)))) continue
+      if (!noBloco(e.banner)) continue
+      const doBloco = temBloco && typeof mod[e.nome] === 'function'
+      if (!corpo || (v === undefined && (!e.doc || typeof mod[e.nome] !== 'function' || !(doBloco || daFicha(e.nome))))) continue
       secoes.push({ nome: e.nome, banner: e.banner, corpo })
     }
     for (const [n, v] of usados) {
-      const corpo = vistos.has(n) ? '' : texto(v)
+      const corpo = vistos.has(n) || temBloco ? '' : texto(v)
       if (corpo) secoes.push({ nome: n, banner: '', corpo })
     }
     const sep = SEPARAR[ficha.id]
