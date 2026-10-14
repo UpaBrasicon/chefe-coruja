@@ -17,6 +17,8 @@ const VPS = process.env.BIBLIOTECA_VPS ?? 'root@179.199.128.141'
 const ARQ = '/home/hermes/deploy/deploy/Caddyfile'
 const CONTEINER = 'hermes-caddy'
 const lf = (s) => s.replace(/\r\n/g, '\n')
+// tabulação ou espaços não mudam o Caddyfile: compara só o conteúdo
+const igual = (a, b) => a.replace(/[ \t]+/g, ' ').trim() === b.replace(/[ \t]+/g, ' ').trim()
 const sh = (cmd, input) =>
   execFileSync('ssh', [VPS, cmd], { cwd: raiz, input, encoding: 'utf8', stdio: [input === undefined ? 'inherit' : 'pipe', 'pipe', 'inherit'] })
 
@@ -24,11 +26,11 @@ const novo = lf(readFileSync(join(raiz, 'hermes/deploy/Caddyfile'), 'utf8'))
 const base = lf(readFileSync(join(raiz, 'hermes/deploy/Caddyfile.servidor'), 'utf8'))
 const servidor = lf(sh(`cat ${ARQ}`))
 
-if (servidor === novo) {
+if (igual(servidor, novo)) {
   console.log('O Caddyfile do servidor já é o desta branch. Nada a fazer.')
   process.exit(0)
 }
-if (servidor !== base) {
+if (!igual(servidor, base)) {
   console.error(`PARADO: o Caddyfile do servidor (${ARQ}) é diferente de hermes/deploy/Caddyfile.servidor.`)
   console.error('Alguém mudou o arquivo direto no VPS. Compare antes de trocar:')
   console.error(`  ssh ${VPS} "cat ${ARQ}"`)
