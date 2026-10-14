@@ -35,6 +35,9 @@ class TestPublicoDaPergunta(unittest.TestCase):
             "bebê com 3 meses de idade e tosse",
             "Qual a dose de amoxicilina para uma criança de 12 kg?",
             "Adolescente com dor abdominal",
+            "Paciente de 8 meses com febre",
+            "10 dias de vida, icterícia",
+            "RN com 5 dias e sucção fraca",
         ]:
             self.assertEqual(pub.publico_da_pergunta(q), pub.PED, q)
 
@@ -49,6 +52,11 @@ class TestPublicoDaPergunta(unittest.TestCase):
             "Febre há 10 dias e tosse",
             "Dose de 0,5 a 1 g/kg de carvão ativado",
             "Cirurgia de joelho há 10 anos, agora dispneia",
+            # tempo de doença ou de gestação não é idade (regressão de 13/10/2026)
+            "Gestante de 36 semanas, 68 kg, pré-eclâmpsia grave. Qual a dose do sulfato de magnésio?",
+            "Tosse de 3 semanas e emagrecimento",
+            "Febre de 5 dias com mialgia",
+            "Dor lombar com 2 meses de evolução",
         ]:
             self.assertEqual(pub.publico_da_pergunta(q), pub.ADULTO, q)
 

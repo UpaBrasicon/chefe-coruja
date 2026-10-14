@@ -26,10 +26,13 @@ MSG_SEM_PEDIATRIA = "Não há referência pediátrica no material para esta perg
 _PALAVRAS_PED = re.compile(
     r"\b(crianca|criancas|pediatri\w*|rn|rns|recem[- ]?nascid\w*|neonat\w*|lactente\w*|bebe|bebes|"
     r"menin[oa]s?|infantil|escolar|pre[- ]?escolar|adolescente\w*|puerici\w*)\b")
-# idade em dias/semanas/meses de vida ("RN de 10 dias", "lactente de 8 meses", "3 meses de idade")
+# idade em dias/semanas/meses só quando é idade de quem é atendido: "3 meses de
+# idade", "10 dias de vida", "paciente de 8 meses". "Tosse de 3 semanas",
+# "febre de 5 dias" e "gestante de 36 semanas" são tempo, não idade (o "RN de
+# 10 dias" e o "lactente de 8 meses" já entram pela palavra).
 _IDADE_CURTA = re.compile(
-    r"\b(?:de|com)\s+\d{1,3}\s*(?:dias?|semanas?|meses|mes)\b(?!\s+de\s+(?:evolucao|historia|febre|tosse|sintoma))"
-    r"|\b\d{1,3}\s*(?:dias?|semanas?|meses|mes)\s+de\s+(?:vida|idade)\b")
+    r"\b\d{1,3}\s*(?:dias?|semanas?|meses|mes)\s+de\s+(?:vida|idade)\b"
+    r"|\b(?:paciente|pcte|pct)\s+(?:de|com)\s+\d{1,3}\s*(?:dias?|semanas?|meses|mes)\b")
 # idade em anos de quem é atendido; "há 10 anos" (tempo decorrido) não conta
 _IDADE_ANOS = re.compile(r"(?<!ha )(?<!desde )\b(\d{1,3})\s*anos?\b(?!\s+(?:atras|antes))")
 
