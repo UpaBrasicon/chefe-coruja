@@ -11526,6 +11526,7 @@ export type Database = {
       }
       iniciar_analise_parecer: { Args: { p_id: string }; Returns: undefined }
       iniciar_atendimento: { Args: { p_episodio: string }; Returns: undefined }
+      isolamento_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       integridade_trilha: { Args: { p_unidade: string }; Returns: Json }
       interacoes_justificadas: { Args: { p_itens: string[] }; Returns: Json }
       intercorrencias_do_paciente: { Args: { p_paciente: string }; Returns: Json }
@@ -11602,6 +11603,10 @@ export type Database = {
       marcar_notificacao_lida: { Args: { p_id: string }; Returns: undefined }
       marcar_reentrada_contingencia: {
         Args: { p_contingencia: string; p_descricao: string; p_episodio: string }
+        Returns: string
+      }
+      marcar_isolamento: {
+        Args: { p_motivo: string; p_paciente: string; p_tipo: string }
         Returns: string
       }
       marcar_suspeita_infeccao: {
@@ -12521,6 +12526,10 @@ export type Database = {
       }
       retirar_dispositivo: {
         Args: { p_dispositivo: string; p_motivo?: string }
+        Returns: undefined
+      }
+      retirar_isolamento: {
+        Args: { p_isolamento: string; p_motivo: string }
         Returns: undefined
       }
       retirar_medida: {
