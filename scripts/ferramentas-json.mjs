@@ -9,6 +9,8 @@ import { pathToFileURL } from 'node:url'
 const raiz = join(import.meta.dirname, '..')
 const registry = readFileSync(join(raiz, 'src/content/registry.tsx'), 'utf8')
 const { GRUPOS_SECAO } = await import(pathToFileURL(join(raiz, 'src/content/gruposSecoes.ts')).href)
+// público de cada ferramenta (R2-13): a biblioteca não sugere ferramenta de adulto para criança
+const { publicoDaFerramenta } = await import(pathToFileURL(join(raiz, 'src/content/publicoFerramentas.ts')).href)
 
 const TIPO = {
   calculadoras: 'calculadora', pediatria: 'conduta', emergencias: 'conduta', escores: 'escore',
@@ -36,6 +38,7 @@ for (const m of registry.matchAll(re)) {
     sinonimos: tags,
     descricao: limpar(m[3]),
     rota: `/plantonista/${secao.slug}/${m[1]}`,
+    publico: publicoDaFerramenta(secao.slug, m[1]),
   })
 }
 const esperado = (registry.match(/sobDemanda\(\(\) => import/g) ?? []).length

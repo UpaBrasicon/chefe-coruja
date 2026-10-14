@@ -13,6 +13,8 @@
     "ferramentas:json": "node --experimental-strip-types scripts/ferramentas-json.mjs",
     "corpus:central": "node --experimental-strip-types scripts/corpus-central.mjs",
     "biblioteca:sync": "node --experimental-strip-types scripts/biblioteca-sync.mjs",
+    "biblioteca:homolog": "node scripts/biblioteca-homolog.mjs",
+    "caddy:biblioteca": "node scripts/caddy-biblioteca.mjs",
     "rotas:fichas": "node --experimental-strip-types scripts/rotas-fichas.mjs",
     "fichas:sql": "node --experimental-strip-types scripts/fichas-sql.mjs",
     "test:clinico": "node --experimental-strip-types --test \"src/clinico/**/*.test.ts\" \"src/content/*.test.ts\"",

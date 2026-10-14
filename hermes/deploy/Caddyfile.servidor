@@ -1,0 +1,20 @@
+# HERMES — Caddyfile (proxy reverso + HTTPS automático Let's Encrypt)
+# HTTPS ligado em 02/10/2026. Só /webhook e /health são públicos.
+hermes.chefecoruja.com.br {
+	@publico path /webhook /health
+	handle @publico {
+		reverse_proxy app:3000
+	}
+	handle {
+		respond 404
+	}
+	header -Server
+}
+
+# Biblioteca clínica (28/09/2026)
+biblioteca.chefecoruja.com.br, 179-199-128-141.sslip.io {
+	reverse_proxy biblioteca-api:8710 {
+		flush_interval -1
+	}
+	header -Server
+}

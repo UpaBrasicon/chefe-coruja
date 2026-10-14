@@ -1,0 +1,16 @@
+# Biblioteca da HOMOLOGAÇÃO (decisão do RT em 13/10/2026, R2-13): uma segunda
+# API, com o código da branch em teste, sobre o mesmo Qdrant e o mesmo Ollama.
+# A produção (serviço `api`) não muda até o "ok produção".
+#   docker compose -f docker-compose.yml -f docker-compose.homolog.yml up -d --build api-homolog
+# O Caddy publica em https://biblioteca.chefecoruja.com.br/homolog/ (handle_path).
+services:
+  api-homolog:
+    build: ./app-homolog
+    container_name: biblioteca-api-homolog
+    restart: unless-stopped
+    env_file: ./app/.env
+    ports: ["127.0.0.1:8711:8710"]
+    depends_on: [qdrant, ollama]
+    volumes: ["/srv/biblioteca:/srv/biblioteca:ro"]
+    networks: [default, hermes]
+    deploy: { resources: { limits: { memory: 600m } } }
