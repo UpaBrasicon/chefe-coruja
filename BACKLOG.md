@@ -878,6 +878,7 @@ com homologação antes de produção. **Aguarda o RT confirmar a ordem.**
 
 | # | Achado | Tarefa | Critério de aceite |
 |---|---|---|---|
+| 0 | R2-13 (P0), R2-11 | **Feito em 13/10/2026 (bug crítico em produção, fora da fila por decisão do RT):** "Pergunte à IA" filtra as fontes pelo público da pergunta (criança só fonte pediátrica; sem ela, "Não há referência pediátrica no material"); a tela mostra só as fontes citadas e nada quando não há resposta. Branch `correcoes/r2-13-ia-publico`, biblioteca de homologação separada (`/homolog/`) | Reteste na homologação e na produção em 13/10: criança em cetoacidose sem nenhuma dose de adulto |
 | 1 | R2-01 (P1), pergunta 2 | Isolamento trava o leito: marcar no paciente a indicação de isolamento (tipo) e recusar leito ou setor que não seja de isolamento no desfecho, na transferência de leito e no aceite da regulação | Paciente marcado não entra em leito comum por nenhum caminho; a mensagem diz o motivo |
 | 2 | Pergunta 7 | Prescrição de medicamento exige idade e peso | Sem data de nascimento (ou idade) e sem peso aferido no atendimento, a prescrição é recusada com a mensagem do que falta |
 | 3 | R2-02 (P1), pergunta 3 | Unificação de cadastros com CPF ou CNS diferentes: aceitar com alerta | O pedido mostra o alerta de documento divergente e quem decide vê o alerta antes de aprovar |
