@@ -24,7 +24,8 @@ from qdrant_client import QdrantClient, models
 BASE = Path(os.environ.get("BIBLIOTECA_DIR", "/srv/biblioteca"))
 RAW = BASE / "raw"
 LICENCAS_CONHECIDAS = ("acesso-aberto-governo", "creative-commons-", "licenciado-", "institucional", "sem-licenca")
-COL, DIM = "biblioteca", 1024
+# a homologação ingere numa cópia da coleção (BIBLIOTECA_COLECAO=biblioteca_homolog)
+COL, DIM = os.environ.get("BIBLIOTECA_COLECAO", "biblioteca"), 1024
 MAX_PALAVRAS, OVERLAP = 380, 60
 MIN_PALAVRAS = 25
 

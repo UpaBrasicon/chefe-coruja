@@ -4,8 +4,14 @@
 // faixas). É conteúdo do próprio Chefe Coruja (licença institucional) — não é
 // o texto dos livros. A biblioteca cita "Central do Plantonista — <ferramenta>"
 // e, dentro, a fonte com página que a ficha declara.
+//
+// Cada seção leva o comentário /** ... */ que o código traz acima da constante
+// ou da função (texto com unidade e página) e o bloco do arquivo (as linhas
+// "// ---- insulina (p. 521–522)"): sem isso a IA via só "INSULINA_EHH: faixa
+// 0.025, 0.05" e confundia a insulina do EHH com a da CAD (R2-14, Portão 2,
+// tarefa 1b). SEPARAR divide uma ficha em mais de um arquivo por bloco.
 // Uso: node --experimental-strip-types scripts/corpus-central.mjs
-import { mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
@@ -23,6 +29,41 @@ for (const pasta of ['', 'adulto', 'pediatria', 'escores']) {
     if (!f.endsWith('.ts') || IGNORAR.test(f) || statSync(join(dir, f)).isDirectory()) continue
     arquivos.push(join(dir, f))
   }
+}
+
+// Fichas que viram mais de um arquivo: as seções do bloco `banner` vão para a
+// parte; o resto fica no arquivo principal, com o título novo. O texto e as
+// páginas são os mesmos da ficha.
+const SEPARAR = {
+  'ped-cad-ehh': {
+    titulo: 'Cetoacidose diabética (CAD) — criança',
+    partes: [{ id: 'ped-cad-ehh-ehh', titulo: 'Estado hiperosmolar hiperglicêmico (EHH) — criança', banner: /^EHH\b/ }],
+  },
+}
+
+/** Comentário /** *\/ e bloco "// ----" de cada export, na ordem do arquivo. */
+function lerExports(arq) {
+  const src = readFileSync(arq, 'utf8')
+  const out = []
+  let banner = ''
+  const re = /\/\*\*([\s\S]*?)\*\/\s*$|^\/\/ -{8,}\s*(.+)$|^export (?:async )?(?:const|function) (\w+)/gm
+  let doc = null
+  let fimDoc = -1
+  for (const m of src.matchAll(re)) {
+    if (m[1] !== undefined) {
+      doc = m[1].split(/\r?\n/).map((l) => l.replace(/^\s*\*\s?/, '').trim()).filter(Boolean).join(' ')
+      fimDoc = m.index + m[0].length
+    } else if (m[2] !== undefined) {
+      banner = m[2].replace(/^[/\s]+|[-\s]+$/g, '')
+      doc = null
+    } else {
+      // o comentário vale só quando está logo acima do export
+      const colado = doc && src.slice(fimDoc, m.index).trim() === ''
+      out.push({ nome: m[3], doc: colado ? doc : '', banner })
+      doc = null
+    }
+  }
+  return out
 }
 
 const ehFicha = (v) => v && typeof v === 'object' && typeof v.id === 'string' && typeof v.versao === 'string' && Array.isArray(v.fontes)
@@ -51,6 +92,7 @@ function texto(v, nivel = 0) {
 let gerados = 0
 for (const arq of arquivos) {
   const mod = await import(pathToFileURL(arq).href)
+  const ordem = lerExports(arq)
   const fichas = []
   const dados = []
   for (const [nome, v] of Object.entries(mod)) {
@@ -63,32 +105,54 @@ for (const arq of arquivos) {
     const rota = ROTA_DA_FICHA[ficha.id]
     const publico = { adulto: 'adulto (14 anos ou mais)', pediatrico: 'pediátrico (até antes dos 14 anos)', ambos: 'adulto e pediátrico' }[ficha.publico] ?? ficha.publico
     const fontes = ficha.fontes.map((f) => f.citacao + (f.pediatrica ? ' (fonte pediátrica)' : '')).join(' · ')
-    const linhas = [
-      '---',
-      `titulo: ${JSON.stringify(ficha.titulo)}`,
-      `ficha: ${ficha.id}`,
-      `versao: ${ficha.versao}`,
-      `publico: ${JSON.stringify(publico)}`,
-      `fontes: ${JSON.stringify(fontes)}`,
-      `rota: ${JSON.stringify(rota ?? '')}`,
-      '---',
-      `# ${ficha.titulo}`,
-      '',
-      `Ferramenta da Central do Plantonista (Chefe Coruja). Público: ${publico}. Versão ${ficha.versao}, revisada em ${ficha.revisadoEm}.`,
-      `Fonte declarada pela ficha: ${fontes}.`,
-      rota ? `Abrir na Central: ${rota}.` : '',
-      '',
-    ]
     const blocos = dono ? [[nome, dono]] : dados.filter(([n]) => fichas.length === 1 || n.toLowerCase().includes(ficha.id.replace(/-/g, '').slice(0, 6)))
-    const usados = blocos.length ? blocos : dados
-    for (const [n, v] of usados) {
-      const corpo = texto(v)
-      if (!corpo) continue
-      linhas.push(`## ${ficha.titulo} — ${n}`, '', corpo, '')
+    const usados = new Map(blocos.length ? blocos : dados)
+    const daFicha = (n) => dono ? n === nome : fichas.length === 1 || n.toLowerCase().includes(ficha.id.replace(/-/g, '').slice(0, 6))
+    // seções na ordem do arquivo: dado (comentário + valores) ou função com comentário (só o texto)
+    const secoes = []
+    const vistos = new Set()
+    for (const e of ordem) {
+      const v = usados.get(e.nome)
+      const corpo = [e.doc, v !== undefined ? texto(v) : ''].filter(Boolean).join('\n')
+      vistos.add(e.nome)
+      if (!corpo || (v === undefined && (!e.doc || typeof mod[e.nome] !== 'function' || !daFicha(e.nome)))) continue
+      secoes.push({ nome: e.nome, banner: e.banner, corpo })
     }
-    const md = linhas.join('\n')
-    writeFileSync(join(destino, `${ficha.id}.md`), md.length > 60000 ? md.slice(0, 60000) + '\n…' : md)
-    gerados++
+    for (const [n, v] of usados) {
+      const corpo = vistos.has(n) ? '' : texto(v)
+      if (corpo) secoes.push({ nome: n, banner: '', corpo })
+    }
+    const sep = SEPARAR[ficha.id]
+    const arquivosDaFicha = sep
+      ? [{ id: ficha.id, titulo: sep.titulo, secoes: secoes.filter((x) => !sep.partes.some((p) => p.banner.test(x.banner))) },
+         ...sep.partes.map((p) => ({ id: p.id, titulo: p.titulo, secoes: secoes.filter((x) => p.banner.test(x.banner)) }))]
+      : [{ id: ficha.id, titulo: ficha.titulo, secoes }]
+    for (const a of arquivosDaFicha) {
+      const outras = arquivosDaFicha.filter((o) => o !== a).map((o) => `"${o.titulo}"`)
+      const linhas = [
+        '---',
+        `titulo: ${JSON.stringify(a.titulo)}`,
+        `ficha: ${a.id}`,
+        `versao: ${ficha.versao}`,
+        `publico: ${JSON.stringify(publico)}`,
+        `fontes: ${JSON.stringify(fontes)}`,
+        `rota: ${JSON.stringify(rota ?? '')}`,
+        '---',
+        `# ${a.titulo}`,
+        '',
+        `Ferramenta da Central do Plantonista (Chefe Coruja). Público: ${publico}. Versão ${ficha.versao}, revisada em ${ficha.revisadoEm}.`,
+        `Fonte declarada pela ficha: ${fontes}.`,
+        outras.length ? `Esta parte trata só de ${a.titulo.split(' — ')[0]}. A mesma ferramenta da Central ("${ficha.titulo}") tem também: ${outras.join(', ')}.` : '',
+        rota ? `Abrir na Central: ${rota}.` : '',
+        '',
+      ]
+      for (const x of a.secoes) {
+        linhas.push(`## ${a.titulo} — ${x.banner ? `${x.banner} — ` : ''}${x.nome}`, '', x.corpo, '')
+      }
+      const md = linhas.join('\n')
+      writeFileSync(join(destino, `${a.id}.md`), md.length > 60000 ? md.slice(0, 60000) + '\n…' : md)
+      gerados++
+    }
   }
 }
 console.log(`${gerados} arquivos em biblioteca/corpus`)

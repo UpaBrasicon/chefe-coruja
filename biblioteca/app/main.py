@@ -19,6 +19,7 @@ from openai import OpenAI
 from pydantic import BaseModel, Field
 from qdrant_client import QdrantClient, models
 
+from armadilhas import RESPOSTA as RESPOSTA_ARMADILHA, armadilha
 from pii import pseudonimizar, nomes_proprios, ner_disponivel
 from publico import ADULTO, AMBOS, MSG_SEM_PEDIATRIA, PED, Fontes, ferramenta_serve, publico_da_pergunta
 from siglas import expandir_siglas
@@ -42,6 +43,16 @@ EXTRA_LLM = json.loads(E.get("LLM_EXTRA_BODY", "{}") or "{}")
 # público de cada fonte (fontes.yaml + cabeçalho das fichas): R2-13
 FONTES = Fontes(Path(E.get("BIBLIOTECA_DIR", "/srv/biblioteca")))
 NAO_ENCONTREI = "Não encontrei isso no material de referência."
+# coleção dos trechos: a homologação usa uma cópia (biblioteca_homolog), para
+# reingerir o corpus sem mexer no que a produção lê (Portão 2, tarefa 1b)
+COLECAO = E.get("BIBLIOTECA_COLECAO", "biblioteca")
+# corte de semelhança para sugerir ferramenta (R2-15): só com material achado
+FERRAMENTA_MIN = float(E.get("FERRAMENTA_MIN_SCORE", 0.55))
+# R2-12: a pergunta que descreve o paciente é reescrita nos termos do manual
+# antes da busca; a busca usa a original e a reescrita. REESCRITA=0 desliga.
+REESCRITA = E.get("REESCRITA", "1") != "0"
+REESCRITA_TIMEOUT_S = float(E.get("REESCRITA_TIMEOUT_S", 8))
+REESCRITA_MAX_TOKENS = int(E.get("REESCRITA_MAX_TOKENS", 600))
 
 STOP = set("""a o os as um uma uns umas de do da dos das em no na nos nas por para com sem sob sobre e ou que qual quais
 como quando onde quanto quantos qual é são ser está estão foi ao aos à às se não sim mais menos muito pouco já ainda
@@ -106,30 +117,77 @@ def filtro_publico(publico: str) -> tuple[list, list] | None:
     return [], ([models.FieldCondition(key="fonte_id", match=models.MatchAny(any=so_ped))] if so_ped else [])
 
 
-def buscar(q: str, tid: str, publico: str = ADULTO):
-    v = embed(q)
-    tools = [t for t in qd.query_points("ferramentas", query=v, limit=12, with_payload=True).points
-             if ferramenta_serve(t.payload, publico)][:5]
+SYSTEM_REESCRITA = """Você recebe a pergunta de um médico de pronto-socorro sobre um paciente. Escreva os termos que um manual de emergência usaria no título do capítulo ou da seção que responde a ela: diagnóstico ou síndrome provável, intoxicação e classe do medicamento envolvido, procedimento ou escore, e se o paciente é criança, gestante ou adulto.
+Não responda à pergunta. Não dê dose, conduta nem número. Não invente dado que a pergunta não traz.
+Escreva só os termos, separados por vírgula, em até 25 palavras. Se a pergunta não for clínica, escreva só: FORA"""
+
+_reescritas: "OrderedDict[str, str | None]" = OrderedDict()
+_reescritas_trava = threading.Lock()
+
+
+def reescrever(q: str) -> str | None:
+    """Termos de manual para a pergunta (R2-12). None: desligada, fora do escopo
+    ou o modelo não respondeu a tempo (a busca segue só com a pergunta)."""
+    if not REESCRITA:
+        return None
+    chave = re.sub(r"\s+", " ", sem_acento(q)).strip(" ?!.")
+    with _reescritas_trava:
+        if chave in _reescritas:
+            _reescritas.move_to_end(chave)
+            return _reescritas[chave]
+    try:
+        r = llm.with_options(timeout=REESCRITA_TIMEOUT_S, max_retries=0).chat.completions.create(
+            model=MODELO, temperature=0, max_tokens=REESCRITA_MAX_TOKENS, extra_body=EXTRA_LLM,
+            messages=[{"role": "system", "content": SYSTEM_REESCRITA}, {"role": "user", "content": q}])
+        t = re.sub(r"\s+", " ", (r.choices[0].message.content or "")).strip()
+    except Exception as e:  # noqa: BLE001 — sem reescrita a busca continua
+        log.warning(json.dumps({"reescrita": type(e).__name__}))
+        return None
+    termos = None if not t or t.upper().startswith("FORA") else t[:300]
+    with _reescritas_trava:
+        _reescritas[chave] = termos
+        while len(_reescritas) > CACHE_MAX:
+            _reescritas.popitem(last=False)
+    return termos
+
+
+def buscar(q: str, tid: str, publico: str = ADULTO, termos: str | None = None):
+    """Trechos para a pergunta. `termos` (a reescrita) entra como segunda
+    consulta: densa e lexical, fundidas com a da pergunta original."""
+    vetores = [embed(q)] + ([embed(termos)] if termos else [])
+    melhores_tools: dict = {}
+    for v in vetores:
+        for t in qd.query_points("ferramentas", query=v, limit=12, with_payload=True).points:
+            k = t.payload.get("id") or t.payload.get("nome")
+            if ferramenta_serve(t.payload, publico) and (k not in melhores_tools or t.score > melhores_tools[k].score):
+                melhores_tools[k] = t
+    tools = sorted(melhores_tools.values(), key=lambda t: t.score, reverse=True)[:5]
     pf = filtro_publico(publico)
     if pf is None:
         return tools, [], 0.0, False
     must_pub, must_not_pub = pf
     n = TOP_K * 4
     filtro = models.Filter(must=[models.Filter(should=filtro_tenant(tid).should), *must_pub], must_not=must_not_pub)
-    densos = qd.query_points("biblioteca", query=v, limit=n, query_filter=filtro, with_payload=True).points
+    listas = [qd.query_points(COLECAO, query=v, limit=n, query_filter=filtro, with_payload=True).points for v in vetores]
+    densos = listas[0]
     chaves = palavras_chave(q)
+    for c in (palavras_chave(termos) if termos else []):
+        if c not in chaves:
+            chaves.append(c)
+    chaves = chaves[:12]
     lex = []
     if chaves:
         f = models.Filter(
             must=[models.Filter(should=[models.FieldCondition(key="texto", match=models.MatchText(text=c)) for c in chaves]),
                   models.Filter(should=filtro_tenant(tid).should), *must_pub],
             must_not=must_not_pub)
-        lex = qd.scroll("biblioteca", limit=n, with_payload=True, scroll_filter=f)[0]
-    # fusão: RRF do denso + cobertura das palavras-chave no texto
+        lex = qd.scroll(COLECAO, limit=n, with_payload=True, scroll_filter=f)[0]
+    # fusão: RRF de cada lista densa + cobertura das palavras-chave no texto
     por_id, score = {}, {}
-    for rank, p in enumerate(densos):
-        por_id[p.id] = p
-        score[p.id] = score.get(p.id, 0) + 1 / (60 + rank) + max(p.score - 0.4, 0) * 0.05
+    for lista in listas:
+        for rank, p in enumerate(lista):
+            por_id.setdefault(p.id, p)
+            score[p.id] = score.get(p.id, 0) + 1 / (60 + rank) + max(p.score - 0.4, 0) * 0.05
     for p in lex:
         por_id.setdefault(p.id, p)
     for pid, p in por_id.items():
@@ -148,9 +206,9 @@ def buscar(q: str, tid: str, publico: str = ADULTO):
         trechos.append(p)
         if len(trechos) >= TOP_K:
             break
-    melhor = densos[0].score if densos else 0.0
+    melhor = max((lista[0].score for lista in listas if lista), default=0.0)
     # cobertura lexical do topo denso: alguma palavra-chave da pergunta aparece?
-    topo = " ".join(sem_acento(p.payload["texto"]) for p in densos[:3])
+    topo = " ".join(sem_acento(p.payload["texto"]) for lista in listas for p in lista[:3])
     com_lexico = any(sem_acento(c) in topo for c in chaves) if chaves else False
     return tools, trechos, melhor, com_lexico
 
@@ -181,7 +239,7 @@ def local(p) -> str:
 @app.get("/health")
 def health():
     try:
-        n = qd.get_collection("biblioteca").points_count
+        n = qd.get_collection(COLECAO).points_count
     except Exception:
         n = None
     return {"ok": True, "chunks": n, "modelo": MODELO}
@@ -255,10 +313,14 @@ def search(r: Req, authorization: str | None = Header(None)):
     auth(authorization)
     q = expandir_siglas(pseudonimizar(r.q))
     publico = publico_da_pergunta(q, r.publico)
-    tools, trechos, melhor, _ = buscar(q, r.tenant_id, publico)
+    if armadilha(q):
+        return {"request_id": r.request_id, "melhor_score": 0.0, "publico": publico, "ferramentas": [], "trechos": []}
+    tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico)
+    # R2-15: "Sugestões por significado" só quando a busca acha material
+    gate_ok = passa_gate(melhor, com_lexico, trechos)
     return {"request_id": r.request_id, "melhor_score": round(melhor, 3), "publico": publico,
-            "ferramentas": [fmt_tool(t) for t in tools if t.score > 0.45],
-            "trechos": [fmt_src(i, p) | {"preview": p.payload["texto"][:240]} for i, p in enumerate(trechos)]}
+            "ferramentas": [fmt_tool(t) for t in tools if t.score > FERRAMENTA_MIN] if gate_ok else [],
+            "trechos": [fmt_src(i, p) | {"preview": p.payload["texto"][:240]} for i, p in enumerate(trechos)] if gate_ok else []}
 
 
 SYSTEM = """Você é um assistente de suporte à decisão clínica para médicos plantonistas de UPA e pronto-socorro no Brasil.
@@ -267,9 +329,26 @@ Regras obrigatórias:
 2. Cite cada afirmação com [n], onde n é o número do trecho. Toda frase com dado clínico precisa de citação.
 3. Se os trechos não cobrem a pergunta, diga exatamente: "Não encontrei isso no material de referência." e pare.
 4. Nunca calcule doses, volumes, velocidades de infusão ou escores para um paciente específico. Se a pergunta trouxer peso, idade ou valores do paciente, NÃO multiplique nem some: responda só com a dose de referência do trecho (por kg, por dose) e a apresentação, e indique a ferramenta da Central para o cálculo, se houver na lista FERRAMENTAS.
-5. Pediatria: só afirme algo para criança se o trecho for explicitamente pediátrico. Nunca converta dado de adulto para criança. Se a pergunta for de criança e nenhum trecho trouxer a resposta para criança, diga exatamente: "Não há referência pediátrica no material para esta pergunta." e pare.
+5. Cada trecho traz o título e a seção de onde vem. Use só o trecho cuja seção trata da condição perguntada; não leve o dado de uma condição para outra (ex.: estado hiperosmolar não é cetoacidose).
 6. Formato: resposta direta primeiro; depois tópicos curtos (avaliação, conduta, sinais de alarme) quando aplicável. Português do Brasil, linguagem técnica médica, sem floreios.
 7. Você dá suporte; a decisão é do médico assistente. Não escreva avisos de responsabilidade: o sistema já mostra."""
+
+# R2-18: a regra de pediatria só entra quando a pergunta é de criança
+REGRA_PED = """
+8. Pediatria: só afirme algo para criança se o trecho for explicitamente pediátrico. Nunca converta dado de adulto para criança. Se nenhum trecho trouxer a resposta para criança, diga exatamente: "Não há referência pediátrica no material para esta pergunta." e pare."""
+
+
+def resposta_fixa(r: Req, publico: str, tipo: str, t0: float):
+    """Armadilha (dose letal, dado pessoal, assinatura): resposta fixa, sem busca."""
+    def gerar():
+        yield json.dumps({"type": "meta", "request_id": r.request_id, "gate": True, "melhor_score": 0.0, "publico": publico,
+                          "armadilha": tipo, "ferramentas": [], "fontes": []}, ensure_ascii=False) + "\n"
+        yield json.dumps({"type": "delta", "text": RESPOSTA_ARMADILHA[tipo]}, ensure_ascii=False) + "\n"
+        yield json.dumps({"type": "done", "citacoes_invalidas": [], "sem_citacao": False, "calculo_suspeito": False,
+                          "nao_encontrou": False, "recusa": True}) + "\n"
+        log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "armadilha": tipo,
+                             "ms": int((time.time() - t0) * 1000)}))
+    return StreamingResponse(gerar(), media_type="application/x-ndjson")
 
 
 @app.post("/v1/ask")
@@ -284,6 +363,9 @@ def ask(r: Req, authorization: str | None = Header(None)):
     q = expandir_siglas(pq)
     tem_peso = bool(re.search(r"\d+[,.]?\d*\s*(kg|quilos?|anos?|meses)\b", q, re.I))
     publico = publico_da_pergunta(q, r.publico)
+    tipo = armadilha(q)
+    if tipo:
+        return resposta_fixa(r, publico, tipo, t0)
     chave = _chave_cache(f"{r.tenant_id}|{publico}", pq)
     guardada = None if tem_peso else cache_ler(chave)
     if guardada is not None:
@@ -294,12 +376,14 @@ def ask(r: Req, authorization: str | None = Header(None)):
             yield from guardada[1:]
             log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "cache": True, "ms": int((time.time() - t0) * 1000)}))
         return StreamingResponse(repetir(), media_type="application/x-ndjson")
-    tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico)
+    termos = reescrever(q)
+    t_reescrita = int((time.time() - t0) * 1000)
+    tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico, termos)
     t_busca = int((time.time() - t0) * 1000)
     fontes = [fmt_src(i, p) for i, p in enumerate(trechos)]
     gate_ok = passa_gate(melhor, com_lexico, trechos)
     # R2-11: sem resposta, nenhuma ferramenta ou fonte sem relação na tela
-    ferramentas = [fmt_tool(t) for t in tools if t.score > 0.5] if gate_ok else []
+    ferramentas = [fmt_tool(t) for t in tools if t.score > FERRAMENTA_MIN] if gate_ok else []
     sem_resposta = MSG_SEM_PEDIATRIA if publico == PED else NAO_ENCONTREI
 
     def gerar():
@@ -314,7 +398,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
             yield json.dumps({"type": "delta", "text": sem_resposta}, ensure_ascii=False) + "\n"
             yield json.dumps({"type": "done", "citacoes_invalidas": [], "sem_citacao": False, "nao_encontrou": True}) + "\n"
             log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": False, "top": round(melhor, 3),
-                                 "ms": int((time.time() - t0) * 1000)}))
+                                 "reescrita": termos is not None, "ms_reescrita": t_reescrita, "ms": int((time.time() - t0) * 1000)}))
             return
         mapa = FONTES.mapa()
         rotulo = {PED: "fonte pediátrica", AMBOS: "fonte adulto e criança", ADULTO: "fonte de adulto"}
@@ -336,7 +420,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
             # contam no limite e um limite curto devolvia resposta vazia (evals 28/09).
             stream = llm.chat.completions.create(
                 model=MODELO, temperature=0.1, stream=True, max_tokens=MAX_TOKENS, extra_body=EXTRA_LLM,
-                messages=[{"role": "system", "content": SYSTEM},
+                messages=[{"role": "system", "content": SYSTEM + (REGRA_PED if publico == PED else "")},
                           {"role": "user", "content": f"TRECHOS:\n{contexto}\n\nFERRAMENTAS DA CENTRAL:\n{lista_tools}\n\nPERGUNTA: {q}{lembrete}"}])
             for ch in stream:
                 d = (ch.choices[0].delta.content or "") if ch.choices else ""
@@ -360,8 +444,9 @@ def ask(r: Req, authorization: str | None = Header(None)):
         nao_encontrou = NAO_ENCONTREI.rstrip(".") in texto or MSG_SEM_PEDIATRIA.rstrip(".") in texto
         # pós-checagem R3: com dados do paciente na pergunta, uma quantidade na
         # resposta que não existe em nenhum trecho sugere cálculo feito pelo modelo
+        # R2-17: "não encontrei" não leva o alerta de cálculo (a tela mostra só a frase)
         calculo_suspeito = False
-        if tem_peso:
+        if tem_peso and not nao_encontrou:
             base = re.sub(r"\s+", "", " ".join(p.payload["texto"] for p in trechos)).lower()
             for qtd in re.findall(r"\d+(?:[,.]\d+)?\s*(?:mg|ml|mcg|µg|ui|meq|mmol|g)\b", texto, re.I):
                 if re.sub(r"\s+", "", qtd).lower() not in base:
@@ -375,7 +460,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
         if not tem_peso and not nao_encontrou and not invalidas and not calculo_suspeito and citadas:
             cache_gravar(chave, linhas)
         log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": True, "top": round(melhor, 3),
-                             "fontes": [f["titulo"] for f in fontes], "ms_busca": t_busca, "ms_1o_trecho": t_primeiro,
+                             "fontes": [f["titulo"] for f in fontes], "reescrita": termos is not None, "ms_reescrita": t_reescrita, "ms_busca": t_busca, "ms_1o_trecho": t_primeiro,
                              "ms": int((time.time() - t0) * 1000)}, ensure_ascii=False))
 
     return StreamingResponse(gerar(), media_type="application/x-ndjson",
