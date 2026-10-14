@@ -119,6 +119,7 @@ def filtro_publico(publico: str) -> tuple[list, list] | None:
 
 SYSTEM_REESCRITA = """Você recebe a pergunta de um médico de pronto-socorro sobre um paciente. Escreva os termos que um manual de emergência usaria no título do capítulo ou da seção que responde a ela: diagnóstico ou síndrome provável, intoxicação e classe do medicamento envolvido, procedimento ou escore. Escreva "criança" só quando a pergunta falar de criança ou quando a doença for própria da criança (ex.: bronquiolite, invaginação intestinal, doença de Kawasaki); escreva "adulto" ou "gestante" quando a pergunta indicar; se servir para qualquer idade, não escreva faixa etária.
 Não responda à pergunta. Não dê dose, conduta nem número. Não invente dado que a pergunta não traz.
+A pergunta pode ter erro de digitação ou abreviação ("anafilaxa", "hipocalemia" escrita "ipocalemia"): escreva os termos corretos.
 Escreva só os termos, separados por vírgula, em até 25 palavras. Se a pergunta não for clínica, escreva só: FORA"""
 
 _reescritas: "OrderedDict[str, str | None]" = OrderedDict()
