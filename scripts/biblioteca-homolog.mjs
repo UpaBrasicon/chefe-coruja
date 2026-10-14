@@ -48,14 +48,16 @@ run('ssh', [VPS, 'chown -R hermes:hermes /srv/biblioteca && cd /srv/biblioteca'
   + ` && ${copiarColecao}`
   + ` && ${COMPOSE} up -d --build api-homolog`
   + ' && docker compose run --rm -T api python index_tools.py'
-  + (ingerir ? ` && ${COMPOSE} run --rm -T api-homolog python ingest.py corpus` : '')
+  // docker exec no container já de pé: o `docker compose run` da ingestão
+  // terminou mas não devolveu o terminal (14/10/2026)
+  + (ingerir ? ' && docker exec biblioteca-api-homolog python -u ingest.py corpus' : '')
   + ' && sleep 5 && curl -s -w "\\nhomolog health: %{http_code}\\n" http://127.0.0.1:8711/health'])
 
 if (avaliar) {
   for (const arq of ['perguntas-r2.yaml', 'perguntas.yaml', 'perguntas-falhas.yaml']) {
     try {
-      run('ssh', [VPS, `cd /srv/biblioteca && ${COMPOSE} run --rm -T -e BIBLIOTECA_URL=http://api-homolog:8710`
-        + ` -e EVALS_ARQUIVO=/srv/biblioteca/evals/${arq} api-homolog python -u /srv/biblioteca/evals/run.py`])
+      run('ssh', [VPS, 'docker exec -e BIBLIOTECA_URL=http://127.0.0.1:8710'
+        + ` -e EVALS_ARQUIVO=/srv/biblioteca/evals/${arq} biblioteca-api-homolog python -u /srv/biblioteca/evals/run.py`])
     } catch {
       console.log(`evals ${arq}: REPROVADO (ver a lista de falhas acima)`)
     }
