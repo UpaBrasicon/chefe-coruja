@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { BookOpen, ExternalLink, Sparkles, ThumbsDown, ThumbsUp, X } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
-import { SEM_PEDIATRIA, semResposta } from '@/lib/respostaIa'
+import { fontesCitadas, SEM_PEDIATRIA, semResposta } from '@/lib/respostaIa'
 import type { Fonte, StatusIa, ToolHit } from '@/lib/useClinicalAsk'
 import { cn } from '@/lib/utils'
 
@@ -132,7 +132,7 @@ function CartoesFerramentas({ ferramentas }: { ferramentas: ToolHit[] }) {
 export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, onFechar }: Props) {
   if (status === 'idle') return null
   const curto = status === 'streaming' || status === 'done' ? semResposta(texto) : null
-  if (curto) { fontes = []; ferramentas = [] }
+  if (curto) { fontes = []; ferramentas = [] } else if (status === 'done') fontes = fontesCitadas(texto, fontes)
   const mensagem: Record<string, string | null> = {
     loading: 'Consultando o material de referência…',
     blocked: publico === 'pediatrico' ? SEM_PEDIATRIA : 'Não encontrei isso no material de referência.',
