@@ -857,6 +857,37 @@ Uma tarefa por vez, cada uma em branch e PR próprios, com homologação antes d
 
 **Fora das correções:** as 12 lacunas do relatório aguardam a decisão do RT sobre a entrada no backlog. As que têm peso legal ou de segurança são medicação controlada (Portaria 344), declaração de óbito, registro de contenção, pulseira e cadastro de não identificado. O teste do anexo de arquivo fica para a homologação, com as contas de teste criadas pelo RT.
 
+## Portão 2 antes da Fase 5 — Rodada 2 do teste de ponta a ponta e validação do "Pergunte à IA"
+
+**Pedido do RT em 12/10/2026, com as correções do portão concluídas (PRs #100 a #108).** A Fase 5 só abre depois desta rodada e da decisão do RT sobre os achados.
+
+- **Escopo:** coorte 2 com 16 pacientes novos (#16 a #34: recém-nascido ictérico, intoxicação infantil, cetoacidose, adolescente com gravidez ectópica, pré-eclâmpsia grave, mastite puerperal, intoxicação alcoólica com agitação, acidente botrópico, politrauma, queimadura 25%, anafilaxia, hipoglicemia, TEP, fratura de fêmur, paliativo terminal, tuberculose com HIV, nome social, ficha com CPF de outro paciente e retorno em 48 h), as mesmas 11 etapas da Rodada 1 e os acréscimos pedidos (notificações compulsórias, isolamento, alergia nova, correção de identidade, transfusão, calculadoras). Regressão de todos os P0/P1 da Rodada 1. Cenários extras: troca de unidade no meio do atendimento, expiração de sessão e 2FA, lote de 40 pacientes, exportações do gestor, teclado e leitor de tela, webhook com origem inválida.
+- **Ambiente (decisão do RT):** homologação (Supabase `kswurfyx`), com as 11 etapas executadas por SQL como cada papel (RLS ligado), como na Rodada 1, pelo plugin do Supabase. As contas de teste são criadas no banco da homologação pelos scripts; as telas da homologação são conferidas pelo RT com essas contas.
+- **IA (decisão do RT): as duas.** (1) O que está no sistema: a Edge Function `clinical-search` ("Pergunte à IA" do plantonista: busca por evidência, com fonte e página; não conversa nem lê o prontuário) e `perguntar_gestao` (SQL do banco, sem LLM), com a homologação apontada para a biblioteca de produção, só leitura (secrets `BIBLIOTECA_URL`/`BIBLIOTECA_API_KEY` configuradas pelo RT). (2) A Coruja Clínica (Nous, Telegram): o RT faz as perguntas T1/T2/T3 pelo roteiro e cola respostas e logs; o teste pontua e monta `TABELA_IA.csv` e `AVALIACAO_HERMES.md`. O guardrail é o gateway de desidentificação (NER); não existe componente chamado "GATE".
+- **Regra:** nada é corrigido durante a rodada. Mesmo formato de defeito da Rodada 1.
+- **Entregáveis:** `produto/docs/teste-e2e/RELATORIO_E2E_R2_AAAA-MM-DD.md`, `TABELA_IA.csv`, `AVALIACAO_HERMES.md`, seeds da coorte 2 e dos CNES novos em `scripts/e2e/` (pasta `homolog/` com a versão para o SQL da homologação) e a lista de decisões de produto para o RT.
+- **Fica com o RT:** derrubar contêineres do VPS e medir a degradação; logs DEBUG e conferência de vazamento nos payloads; expiração de sessão e 2FA nas telas; leitor de tela; PDF impresso; webhook do prescreve.com (não existe no repositório: o RT aponta o achado).
+- **Rodada executada em 12/10/2026** na homologação: 464 passos da Rodada 2 (436 ok, 2 falhas, 21 lacunas), 204 passos de regressão das tarefas 1 a 7 sem falha. Relatório em `produto/docs/teste-e2e/RELATORIO_E2E_R2_2026-10-12.md` (defeitos R2-01 a R2-04, 7 perguntas ao RT), `TABELA_IA.csv` e `AVALIACAO_HERMES.md`. Falta a parte da IA que depende do RT: `clinical-search` com as secrets da biblioteca, Coruja Clínica e Gestora no Telegram, degradação no VPS, telas (sessão, 2FA, leitor de tela, PDF). A decisão sobre os achados abre ou não a Fase 5.
+
+### Correções do Portão 2 (decisões do RT em 13/10/2026)
+
+Respostas do RT às 8 perguntas do relatório da Rodada 2. A pergunta 1 (histórico encerrado:
+vale a regra do produto) e a 6 (termo do responsável: a tela já pede os mesmos campos) não
+geram tarefa. Ordem proposta, por risco assistencial; cada tarefa em branch e PR próprios,
+com homologação antes de produção. **Aguarda o RT confirmar a ordem.**
+
+| # | Achado | Tarefa | Critério de aceite |
+|---|---|---|---|
+| 0 | R2-13 (P0), R2-11 | **Feito em 13/10/2026 (bug crítico em produção, fora da fila por decisão do RT):** "Pergunte à IA" filtra as fontes pelo público da pergunta (criança só fonte pediátrica; sem ela, "Não há referência pediátrica no material"); a tela mostra só as fontes citadas e nada quando não há resposta. Branch `correcoes/r2-13-ia-publico`, biblioteca de homologação separada (`/homolog/`) | Reteste na homologação e na produção em 13/10: criança em cetoacidose sem nenhuma dose de adulto |
+| 1 | R2-01 (P1), pergunta 2 | Isolamento trava o leito: marcar no paciente a indicação de isolamento (tipo) e recusar leito ou setor que não seja de isolamento no desfecho, na transferência de leito e no aceite da regulação | Paciente marcado não entra em leito comum por nenhum caminho; a mensagem diz o motivo |
+| 1b | R2-12 (P1), R2-14, R2-15, R2-17, R2-18 | "Pergunte à IA": a busca acha o material quando a pergunta descreve o paciente (sintomas, exames, sinais vitais), não só quando usa o nome da síndrome ou do remédio; sugestões de ferramenta com corte de relevância; alerta de cálculo só quando há cálculo; regras fixas nas armadilhas (dose letal, dado pessoal, assinatura, contraindicação). Teste de 13/10: 32 perguntas, média 1,03 de 2 | As 8 perguntas que voltaram "Não encontrei" com material na biblioteca passam a responder com a ficha certa; nenhuma regressão no filtro de público |
+| 2 | Pergunta 7 | Prescrição de medicamento exige idade e peso | Sem data de nascimento (ou idade) e sem peso aferido no atendimento, a prescrição é recusada com a mensagem do que falta |
+| 3 | R2-02 (P1), pergunta 3 | Unificação de cadastros com CPF ou CNS diferentes: aceitar com alerta | O pedido mostra o alerta de documento divergente e quem decide vê o alerta antes de aprovar |
+| 4 | R2-07, pergunta 8 | Escala recusa sobreposição: o mesmo profissional não fica em dois setores no mesmo período | Escala sobreposta é recusada; levantamento das sobreposições já gravadas entregue ao RT |
+| 5 | Pergunta 4 | RN vinculado à mãe: cadastro do recém-nascido como "RN de <nome da mãe>", ligado ao cadastro da mãe, aceito pela regulação | RN sem CNS sai pela regulação sem a marca de não identificado |
+| 6 | R2-03, R2-04, R2-05, R2-06, R2-08 | Respostas do "Pergunte à IA" do gestor: ocupação diz que conta pacientes sem leito; permanência ignora intervalo negativo; check-in mostra o turno; farmácia diz o nome do remédio em falta; espera acima de um dia em dias e horas, com alerta de ficha parada | As sete perguntas da tela respondem sem os achados |
+| 7 | R2-09 | Evasão gravada sem data do desfecho: achar a origem e corrigir os registros | Toda evasão tem `desfecho_em`; o indicador de 7 dias bate com o banco |
+
 ## Fase 5 — UBS, Faturamento e Escala Competitiva
 **Horizonte:** 180+ dias
 **Objetivo:** ampliar para rede completa e competir com sistemas maiores.
