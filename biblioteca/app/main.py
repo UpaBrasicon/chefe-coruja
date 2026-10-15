@@ -117,7 +117,7 @@ def filtro_publico(publico: str) -> tuple[list, list] | None:
     return [], ([models.FieldCondition(key="fonte_id", match=models.MatchAny(any=so_ped))] if so_ped else [])
 
 
-SYSTEM_REESCRITA = """Você recebe a pergunta de um médico de pronto-socorro sobre um paciente. Escreva os termos que um manual de emergência usaria no título do capítulo ou da seção que responde a ela: diagnóstico ou síndrome provável, intoxicação e classe do medicamento envolvido, procedimento ou escore. Escreva "criança" só quando a pergunta falar de criança ou quando a doença for própria da criança (ex.: bronquiolite, invaginação intestinal, doença de Kawasaki); escreva "adulto" ou "gestante" quando a pergunta indicar; se servir para qualquer idade, não escreva faixa etária.
+SYSTEM_REESCRITA = """Você recebe a pergunta de um médico de pronto-socorro sobre um paciente. Escreva os termos que um manual de emergência usaria no título do capítulo ou da seção que responde a ela: diagnóstico ou síndrome provável, intoxicação e classe do medicamento envolvido, procedimento ou escore. Comece pelo nome geral do quadro (ex.: "intoxicação exógena aguda", "politrauma, atendimento inicial", "emergência hipertensiva na gestação") e depois o específico. Escreva "criança" só quando a pergunta falar de criança ou quando a doença for própria da criança (ex.: bronquiolite, invaginação intestinal, doença de Kawasaki); escreva "adulto" ou "gestante" quando a pergunta indicar; se servir para qualquer idade, não escreva faixa etária.
 Não responda à pergunta. Não dê dose, conduta nem número. Não invente dado que a pergunta não traz.
 A pergunta pode ter erro de digitação ou abreviação ("anafilaxa", "hipocalemia" escrita "ipocalemia"): escreva os termos corretos.
 Escreva só os termos, separados por vírgula, em até 25 palavras. Se a pergunta não for clínica, escreva só: FORA"""
@@ -328,7 +328,7 @@ SYSTEM = """Você é um assistente de suporte à decisão clínica para médicos
 Regras obrigatórias:
 1. Responda SOMENTE com base nos TRECHOS fornecidos. Não use conhecimento externo. Não complete lacunas com o que você "sabe".
 2. Cite cada afirmação com [n], onde n é o número do trecho. Toda frase com dado clínico precisa de citação.
-3. Se nenhum trecho trata do assunto perguntado, diga exatamente: "Não encontrei isso no material de referência." e pare, sem acrescentar nada. Se a pergunta é ampla (só o nome da doença ou do escore) ou os trechos respondem só a uma parte, responda com o que os trechos trazem, sem essa frase, e diga em uma linha o que o material não traz.
+3. Se nenhum trecho trata do assunto perguntado, diga exatamente: "Não encontrei isso no material de referência." e pare, sem acrescentar nada. Se a pergunta é ampla (só o nome da doença ou do escore) ou os trechos respondem só a uma parte, responda com o que os trechos trazem, sem essa frase, e diga em uma linha o que o material não traz. Se nenhum trecho fala do agente ou do detalhe específico, mas há trechos sobre o quadro geral (ex.: conduta geral na intoxicação exógena, atendimento inicial ao trauma, droga da emergência hipertensiva na gestação), responda com a conduta geral desses trechos e diga em uma linha que o material não traz o específico.
 4. Nunca calcule doses, volumes, velocidades de infusão ou escores para um paciente específico. Se a pergunta trouxer peso, idade ou valores do paciente, NÃO multiplique nem some: responda só com a dose de referência do trecho (por kg, por dose) e a apresentação, e indique a ferramenta da Central para o cálculo, se houver na lista FERRAMENTAS.
 5. Cada trecho traz o título e a seção de onde vem. Use só o trecho cuja seção trata da condição perguntada; não leve o dado de uma condição para outra (ex.: estado hiperosmolar não é cetoacidose).
 6. Formato: resposta direta primeiro; depois tópicos curtos (avaliação, conduta, sinais de alarme) quando aplicável. Português do Brasil, linguagem técnica médica, sem floreios.
@@ -336,7 +336,7 @@ Regras obrigatórias:
 
 # R2-18: a regra de pediatria só entra quando a pergunta é de criança
 REGRA_PED = """
-8. Pediatria: só afirme algo para criança se o trecho for explicitamente pediátrico. Nunca converta dado de adulto para criança. Se nenhum trecho pediátrico (ou de adulto e criança) trata do assunto, diga exatamente: "Não há referência pediátrica no material para esta pergunta." e pare. Se tratam de parte da pergunta, responda essa parte só com eles, sem essa frase, e diga em uma linha o que o material pediátrico não traz."""
+8. Pediatria: só afirme algo para criança se o trecho for explicitamente pediátrico. Nunca converta dado de adulto para criança. Se nenhum trecho pediátrico (ou de adulto e criança) trata do assunto, diga exatamente: "Não há referência pediátrica no material para esta pergunta." e pare. Se tratam de parte da pergunta, ou só do quadro geral (ex.: conduta geral na intoxicação exógena da criança, sem o agente específico), responda essa parte só com eles, sem essa frase, e diga em uma linha o que o material pediátrico não traz."""
 
 
 def resposta_fixa(r: Req, publico: str, tipo: str, t0: float):
@@ -410,7 +410,11 @@ def ask(r: Req, authorization: str | None = Header(None)):
             f"{rotulo[mapa.get(p.payload.get('fonte_id'), ADULTO)]})\n{p.payload['texto']}"
             for i, p in enumerate(trechos))
         lista_tools = "\n".join(f"- {t['nome']} ({t['rota']})" for t in ferramentas) or "- nenhuma"
-        lembrete = "\n\nLembrete: cada afirmação clínica termina com a citação [n] do trecho."
+        # a tela mostra só a frase quando a resposta começa por "Não encontrei" (R2-11);
+        # resposta parcial que começava pela frase sumia (avaliação de 14/10/2026)
+        lembrete = ("\n\nLembrete: cada afirmação clínica termina com a citação [n] do trecho."
+                    " Se algum trecho responde a qualquer parte da pergunta, NÃO comece com"
+                    f' "{NAO_ENCONTREI}": comece pela parte que o material traz.')
         if tem_peso:
             lembrete += " A pergunta traz dados do paciente: NÃO calcule a dose para ele; dê só a dose de referência por kg e aponte a ferramenta."
         if publico == PED:
