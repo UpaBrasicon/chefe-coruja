@@ -83,15 +83,32 @@ def apagar_fonte(fonte_id: str):
         must=[models.FieldCondition(key="fonte_id", match=models.MatchValue(value=fonte_id))])))
 
 
+def secao_do_livro(capitulo: str, titulo: str) -> str:
+    """Capítulo + último título visto. A página sem título herda os da página
+    anterior: no ICr a insulina do EHH (p. 523) fica sob "TRATAMENTO DO EHH",
+    impresso na p. 522; sem isso o trecho ia sem seção e a IA o tomava como da
+    cetoacidose (R2-14, avaliação de 15/10/2026)."""
+    if capitulo and titulo and titulo != capitulo:
+        return f"{capitulo} — {titulo}"
+    return capitulo or titulo
+
+
 def chunks_pdf(caminho: Path):
     import pymupdf4llm
     paginas = pymupdf4llm.to_markdown(str(caminho), page_chunks=True, show_progress=False)
+    capitulo, titulo = "", ""
     for pg in paginas:
         n_pag = pg["metadata"]["page"]
         for secao, bloco in chunks_da_pagina(pg["text"]):
+            if secao:
+                # título que começa por número é o do capítulo ("52 Cetoacidose diabética…")
+                if re.match(r"^\d{1,3}\s+\S", secao):
+                    capitulo, titulo = secao, ""
+                else:
+                    titulo = secao
             for trecho in janelas(bloco):
                 if len(trecho.split()) >= MIN_PALAVRAS:
-                    yield {"texto": trecho, "secao": secao, "pagina": n_pag}
+                    yield {"texto": trecho, "secao": secao_do_livro(capitulo, titulo), "pagina": n_pag}
 
 
 def chunks_md(caminho: Path, ref: str):

@@ -11,6 +11,7 @@
 //
 // Uso: npm run biblioteca:homolog                  (código + corpus no VPS)
 //      npm run biblioteca:homolog -- --ingerir     (e reingere o corpus na coleção da homologação)
+//      npm run biblioteca:homolog -- --ingerir-pdf=ps_pediatria_icr_4ed_2023.pdf  (reingere um livro, só na homologação)
 //      npm run biblioteca:homolog -- --avaliar     (e roda as evals contra a homologação; --avaliar-r2 só as da Rodada 2)
 //      npm run biblioteca:homolog -- --orfaos      (lista trechos órfãos; --limpar-orfaos apaga, só na homologação)
 //      npm run biblioteca:homolog -- --acompanhar  (só acompanha o log do trabalho em andamento no servidor)
@@ -24,6 +25,8 @@ const run = (cmd, args) => execFileSync(cmd, args, { cwd: raiz, stdio: 'inherit'
 // mantém a conexão viva e percebe quando ela cai
 const SSH = ['-o', 'ServerAliveInterval=20', '-o', 'ServerAliveCountMax=6']
 const ingerir = process.argv.includes('--ingerir')
+// --ingerir-pdf=arquivo.pdf: reingere um livro de fontes.yaml só na coleção da homologação
+const pdfs = process.argv.filter((a) => a.startsWith('--ingerir-pdf=')).map((a) => a.slice('--ingerir-pdf='.length)).filter((a) => /^[w.-]+.pdf$/.test(a))
 const avaliar = process.argv.includes('--avaliar') || process.argv.includes('--avaliar-r2')
 const listas = process.argv.includes('--avaliar-r2') ? ['perguntas-r2.yaml'] : ['perguntas-r2.yaml', 'perguntas.yaml', 'perguntas-falhas.yaml']
 // trechos de fichas renomeadas ou apagadas (sem público conhecido): listar ou apagar só na coleção da homologação
@@ -97,6 +100,7 @@ const passos = [
   'timeout 600 docker exec biblioteca-api-homolog python -u index_tools.py || { echo "FALHOU: index_tools"; exit 1; }',
   ...(ingerir ? [`test "$(docker exec biblioteca-api-homolog sh -c 'ls /srv/biblioteca/corpus/*.md 2>/dev/null | wc -l')" -gt 0 || { echo "FALHOU: o container não vê o corpus"; exit 1; }`] : []),
   ...(ingerir ? ['timeout 5400 docker exec biblioteca-api-homolog python -u ingest.py corpus || { echo "FALHOU: ingestão"; exit 1; }'] : []),
+  ...pdfs.map((f) => `timeout 14400 docker exec biblioteca-api-homolog python -u ingest.py ${f} || { echo "FALHOU: ingestão de ${f}"; exit 1; }`),
   ...(orfaos !== null ? [`timeout 600 docker exec biblioteca-api-homolog python -u orfaos.py${orfaos} || { echo "FALHOU: órfãos"; exit 1; }`] : []),
   'curl -s -w "\nhomolog health: %{http_code}\n" http://127.0.0.1:8711/health',
   ...(avaliar ? listas.map((arq) => 'timeout 3600 docker exec -e BIBLIOTECA_URL=http://127.0.0.1:8710'

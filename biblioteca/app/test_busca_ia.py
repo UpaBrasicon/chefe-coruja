@@ -261,6 +261,22 @@ class TestPublicoPelaReescrita(unittest.TestCase):
         self.assertEqual(ev[0]["publico"], pub.PED)
 
 
+class TestSecaoDoLivro(unittest.TestCase):
+    """R2-14 (15/10): a página sem título herda o capítulo e o último título."""
+
+    def test_pagina_sem_titulo_herda(self):
+        import ingest
+        paginas = [
+            {"metadata": {"page": 516}, "text": "## 52 Cetoacidose diabética e estado hiperglicêmico hiperosmolar\n" + "texto da cad " * 40},
+            {"metadata": {"page": 522}, "text": "## TRATAMENTO DO EHH\n" + "texto do ehh " * 40},
+            {"metadata": {"page": 523}, "text": "insulina 0,025 a 0,05 U/kg/hora " * 10},
+        ]
+        with mock.patch.dict("sys.modules", {"pymupdf4llm": SimpleNamespace(to_markdown=lambda *a, **k: paginas)}):
+            secoes = {c["pagina"]: c["secao"] for c in ingest.chunks_pdf("livro.pdf")}
+        self.assertEqual(secoes[516], "52 Cetoacidose diabética e estado hiperglicêmico hiperosmolar")
+        self.assertEqual(secoes[523], "52 Cetoacidose diabética e estado hiperglicêmico hiperosmolar — TRATAMENTO DO EHH")
+
+
 class TestSugestoesPorSignificado(unittest.TestCase):
     def setUp(self):
         self.cliente = TestClient(main.app)
