@@ -214,6 +214,32 @@ def buscar(q: str, tid: str, publico: str = ADULTO, termos: str | None = None):
     return tools, trechos, melhor, com_lexico
 
 
+# Condições irmãs com doses diferentes (R2-14): a pergunta de uma não recebe
+# trecho cuja seção é só da outra. A regra 5 do comando não bastou: com o
+# trecho do ICr marcado "TRATAMENTO DO EHH", a IA ainda deu a insulina do EHH
+# (0,025–0,05 U/kg/h) para a cetoacidose da criança (avaliação de 15/10/2026).
+CONDICOES_IRMAS = [
+    (re.compile(r"\bcetoacidose\b|\bcad\b"), re.compile(r"\behh\b|hiperosmolar")),
+]
+
+
+def foco_do_trecho(p) -> str:
+    """Título da ficha e a última parte da seção (o capítulo do livro cita as duas)."""
+    pl = p.payload
+    secao = (pl.get("secao") or "").split(" — ")
+    return sem_acento(f"{pl.get('titulo', '')} {secao[-1]}")
+
+
+def sem_condicao_irma(pergunta: str, trechos: list) -> list:
+    alvo = sem_acento(pergunta)
+    for a, b in CONDICOES_IRMAS:
+        for fala, outra in ((a, b), (b, a)):
+            if fala.search(alvo) and not outra.search(alvo):
+                trechos = [p for p in trechos
+                           if not (outra.search(foco_do_trecho(p)) and not fala.search(foco_do_trecho(p)))]
+    return trechos
+
+
 def passa_gate(melhor: float, com_lexico: bool, trechos: list) -> bool:
     if not trechos:
         return False
@@ -382,6 +408,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
             log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "cache": True, "ms": int((time.time() - t0) * 1000)}))
         return StreamingResponse(repetir(), media_type="application/x-ndjson")
     tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico, termos)
+    trechos = sem_condicao_irma(q, trechos)
     t_busca = int((time.time() - t0) * 1000)
     fontes = [fmt_src(i, p) for i, p in enumerate(trechos)]
     gate_ok = passa_gate(melhor, com_lexico, trechos)

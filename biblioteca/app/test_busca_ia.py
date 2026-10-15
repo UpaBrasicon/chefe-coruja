@@ -277,6 +277,34 @@ class TestSecaoDoLivro(unittest.TestCase):
         self.assertEqual(secoes[523], "52 Cetoacidose diabética e estado hiperglicêmico hiperosmolar — TRATAMENTO DO EHH")
 
 
+class TestCondicoesIrmas(unittest.TestCase):
+    """R2-14: pergunta de cetoacidose não recebe trecho só do EHH (e o inverso)."""
+
+    def trecho(self, titulo, secao, pid):
+        return SimpleNamespace(id=pid, score=0.8, payload={"titulo": titulo, "secao": secao, "texto": "x", "fonte_id": "f"})
+
+    def setUp(self):
+        self.livro_cad = self.trecho("Pronto-Socorro — Pediatria ICr-HCFMUSP, 4ª ed.",
+                                     "52 Cetoacidose diabética e estado hiperglicêmico hiperosmolar — TRATAMENTO DA CETOACIDOSE DIABÉTICA E ESTADO HIPERGLICÊMICO HIPEROSMOLAR", 1)
+        self.livro_ehh = self.trecho("Pronto-Socorro — Pediatria ICr-HCFMUSP, 4ª ed.",
+                                     "52 Cetoacidose diabética e estado hiperglicêmico hiperosmolar — TRATAMENTO DO EHH", 2)
+        self.ficha_ehh = self.trecho("Central do Plantonista — Estado hiperosmolar hiperglicêmico (EHH) — criança", "INSULINA_EHH", 3)
+        self.ficha_cad = self.trecho("Central do Plantonista — Cetoacidose diabética (CAD) — criança", "INSULINA_EV", 4)
+
+    def ids(self, q):
+        return [p.id for p in main.sem_condicao_irma(q, [self.livro_cad, self.livro_ehh, self.ficha_ehh, self.ficha_cad])]
+
+    def test_pergunta_de_cetoacidose(self):
+        self.assertEqual(self.ids("Criança de 9 anos em cetoacidose diabética. Pode fazer bolus de insulina?"), [1, 4])
+
+    def test_pergunta_do_ehh(self):
+        self.assertEqual(self.ids("Criança com estado hiperosmolar: insulina?"), [1, 2, 3])
+
+    def test_pergunta_das_duas_ou_de_outra_coisa(self):
+        self.assertEqual(self.ids("Diferença entre CAD e EHH na criança"), [1, 2, 3, 4])
+        self.assertEqual(self.ids("dose de adrenalina na anafilaxia"), [1, 2, 3, 4])
+
+
 class TestSugestoesPorSignificado(unittest.TestCase):
     def setUp(self):
         self.cliente = TestClient(main.app)
