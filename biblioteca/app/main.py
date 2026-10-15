@@ -196,6 +196,9 @@ def buscar(q: str, tid: str, publico: str = ADULTO, termos: str | None = None):
         cobertura = sum(1 for c in chaves if sem_acento(c) in txt) / (len(chaves) or 1)
         score[pid] = score.get(pid, 0) + cobertura * 0.02
     ordem = sorted(score, key=score.get, reverse=True)
+    # condição irmã fora antes do corte em TOP_K, para não sobrar trecho de menos (R2-14)
+    permitidos = {p.id for p in sem_condicao_irma(q, [por_id[i] for i in ordem])}
+    ordem = [i for i in ordem if i in permitidos]
     # no máximo 3 trechos da mesma fonte, para diversificar
     trechos, por_fonte = [], {}
     for pid in ordem:
@@ -408,7 +411,6 @@ def ask(r: Req, authorization: str | None = Header(None)):
             log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "cache": True, "ms": int((time.time() - t0) * 1000)}))
         return StreamingResponse(repetir(), media_type="application/x-ndjson")
     tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico, termos)
-    trechos = sem_condicao_irma(q, trechos)
     t_busca = int((time.time() - t0) * 1000)
     fontes = [fmt_src(i, p) for i, p in enumerate(trechos)]
     gate_ok = passa_gate(melhor, com_lexico, trechos)

@@ -119,7 +119,10 @@ def chunks_md(caminho: Path, ref: str):
         secao_atual = secao or secao_atual
         for trecho in janelas(bloco):
             if len(trecho.split()) >= 12:
-                yield {"texto": trecho, "secao": secao_atual, "pagina": None, "ref": ref}
+                # o texto leva o título da ficha e da seção: sem ele, "ANTIDOTOS_APENDICE"
+                # não ligava à pergunta de intoxicação exógena (avaliação de 15/10/2026)
+                texto = f"{secao_atual}\n{trecho}" if secao_atual else trecho
+                yield {"texto": texto, "secao": secao_atual, "pagina": None, "ref": ref}
 
 
 def gravar(fonte: dict, fonte_id: str, lote: list[dict]) -> int:
