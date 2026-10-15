@@ -26,7 +26,7 @@ const run = (cmd, args) => execFileSync(cmd, args, { cwd: raiz, stdio: 'inherit'
 const SSH = ['-o', 'ServerAliveInterval=20', '-o', 'ServerAliveCountMax=6']
 const ingerir = process.argv.includes('--ingerir')
 // --ingerir-pdf=arquivo.pdf: reingere um livro de fontes.yaml só na coleção da homologação
-const pdfs = process.argv.filter((a) => a.startsWith('--ingerir-pdf=')).map((a) => a.slice('--ingerir-pdf='.length)).filter((a) => /^[w.-]+.pdf$/.test(a))
+const pdfs = process.argv.filter((a) => a.startsWith('--ingerir-pdf=')).map((a) => a.slice('--ingerir-pdf='.length)).filter((a) => /^[\w.-]+\.pdf$/.test(a))
 const avaliar = process.argv.includes('--avaliar') || process.argv.includes('--avaliar-r2')
 const listas = process.argv.includes('--avaliar-r2') ? ['perguntas-r2.yaml'] : ['perguntas-r2.yaml', 'perguntas.yaml', 'perguntas-falhas.yaml']
 // trechos de fichas renomeadas ou apagadas (sem público conhecido): listar ou apagar só na coleção da homologação
