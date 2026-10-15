@@ -66,7 +66,7 @@ run('ssh', [...SSH, VPS, 'mkdir -p /srv/biblioteca/app-homolog /srv/biblioteca/e
   // esvazia sem apagar a pasta: o container de pé guarda a pasta montada; apagar
   // e recriar deixava o container lendo a pasta antiga, vazia (avaliação de 14/10/2026)
   + ' && find /srv/biblioteca/corpus-homolog -mindepth 1 -delete'])
-run('scp', [...SSH, '-q', 'biblioteca/ferramentas.json', 'biblioteca/fontes.yaml', 'biblioteca/docker-compose.homolog.yml', `${VPS}:/srv/biblioteca/`])
+run('scp', [...SSH, '-q', 'biblioteca/ferramentas.json', 'biblioteca/fontes.yaml', 'biblioteca/vocabulario-clinico.txt', 'biblioteca/docker-compose.homolog.yml', `${VPS}:/srv/biblioteca/`])
 run('scp', [...SSH, '-q', 'biblioteca/app/main.py', 'biblioteca/app/pii.py', 'biblioteca/app/publico.py', 'biblioteca/app/siglas.py',
   'biblioteca/app/armadilhas.py', 'biblioteca/app/orfaos.py', 'biblioteca/app/ingest.py', 'biblioteca/app/index_tools.py', 'biblioteca/app/Dockerfile',
   'biblioteca/app/requirements.txt', `${VPS}:/srv/biblioteca/app-homolog/`])

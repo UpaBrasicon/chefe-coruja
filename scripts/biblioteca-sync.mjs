@@ -12,7 +12,7 @@ const run = (cmd, args) => execFileSync(cmd, args, { cwd: raiz, stdio: 'inherit'
 
 run('node', ['--experimental-strip-types', 'scripts/ferramentas-json.mjs'])
 run('node', ['--experimental-strip-types', 'scripts/corpus-central.mjs'])
-run('scp', ['-q', 'biblioteca/ferramentas.json', 'biblioteca/fontes.yaml', `${VPS}:/srv/biblioteca/`])
+run('scp', ['-q', 'biblioteca/ferramentas.json', 'biblioteca/fontes.yaml', 'biblioteca/vocabulario-clinico.txt', `${VPS}:/srv/biblioteca/`])
 run('scp', ['-q', '-r', 'biblioteca/corpus', 'biblioteca/referencias', 'biblioteca/abertas-cc-by', 'biblioteca/abertas-cc-by-nc', `${VPS}:/srv/biblioteca/`])
 run('scp', ['-q', 'biblioteca/app/main.py', 'biblioteca/app/pii.py', 'biblioteca/app/publico.py', 'biblioteca/app/siglas.py', 'biblioteca/app/armadilhas.py', 'biblioteca/app/orfaos.py',
   'biblioteca/app/ingest.py', 'biblioteca/app/index_tools.py',
