@@ -9,6 +9,9 @@
 -- - aceite conjunto: exige obrigatórios, um por lado, situação avança;
 -- - gestor de outra unidade e enfermeiro sem acesso.
 BEGIN;
+-- Portão 2, tarefa 4: este teste escala a mesma pessoa em mais de um setor por
+-- conveniência; a regra de sobreposição tem teste próprio (portao2_escala_sobreposicao.sql)
+ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_sem_sobreposicao;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 
 INSERT INTO public.super_admins (perfil_id) VALUES ('10000000-0000-4000-8000-000000000003') ON CONFLICT DO NOTHING;

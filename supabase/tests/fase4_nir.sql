@@ -5,6 +5,9 @@
 -- - painel de pendências (AIH, APAC, regulação) com o responsável e o tempo
 --   parado; só NIR no plantão e gestor; "Cobrar" avisa e fica registrado.
 BEGIN;
+-- Portão 2, tarefa 4: este teste escala a mesma pessoa em mais de um setor por
+-- conveniência; a regra de sobreposição tem teste próprio (portao2_escala_sobreposicao.sql)
+ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_sem_sobreposicao;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 INSERT INTO terminologia.cid10 (codigo, descricao) VALUES ('I21.9', 'CID do teste I21.9') ON CONFLICT DO NOTHING;
 INSERT INTO terminologia.sigtap_procedimento (codigo, nome, complexidade, sexo, idade_min, idade_max, competencia) VALUES
