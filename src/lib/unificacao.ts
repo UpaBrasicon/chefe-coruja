@@ -14,6 +14,8 @@ export type PedidoUnificacao = {
   pedido_em: string; pedido_por: string | null; meu: boolean
   decidido_por: string | null; decidido_em: string | null; motivo_decisao: string | null
   desfeito_em: string | null; motivo_desfazer: string | null
+  /** Portão 2, tarefa 3: documentos diferentes (CPF, CNS) e as confirmações */
+  divergencias: string[]; confirmado_no_pedido: boolean; confirmado_na_decisao: boolean
   principal: Resumo; absorvido: Resumo
 }
 
@@ -33,3 +35,21 @@ export function sugerirPrincipal(cadastros: Cadastro[]): string {
     Number(b.aberto) - Number(a.aberto) || b.atendimentos - a.atendimentos || a.criado_em.localeCompare(b.criado_em))
   return ordem[0].id
 }
+
+const digitos = (v: string | null) => (v ?? '').replace(/\D/g, '')
+
+/**
+ * Documentos diferentes entre dois cadastros (Portão 2, tarefa 3, decisão 1a do
+ * RT): CPF ou CNS preenchidos nos dois e diferentes. A mesma regra está no
+ * servidor (private.documentos_divergentes), que é quem trava.
+ */
+export function documentosDivergentes(cadastros: Pick<Cadastro, 'cpf' | 'cns'>[]): string[] {
+  const [a, b] = cadastros
+  if (!a || !b) return []
+  return ([['CPF', a.cpf, b.cpf], ['CNS', a.cns, b.cns]] as const)
+    .filter(([, x, y]) => digitos(x) !== '' && digitos(y) !== '' && digitos(x) !== digitos(y))
+    .map(([nome]) => nome)
+}
+
+/** Motivo mínimo do pedido: 30 letras com documento diferente, 10 sem. */
+export const motivoMinimo = (divergencias: string[]) => (divergencias.length > 0 ? 30 : 10)
