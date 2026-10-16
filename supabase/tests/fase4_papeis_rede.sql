@@ -8,6 +8,9 @@
 -- - Regulação regional vê a lista nominal e o detalhe, com acesso registrado;
 -- - Faturamento da secretaria vê a produção e baixa o arquivo fechado.
 BEGIN;
+-- Portão 2, tarefa 4: este teste escala a mesma pessoa em mais de um setor por
+-- conveniência; a regra de sobreposição tem teste próprio (portao2_escala_sobreposicao.sql)
+ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_sem_sobreposicao;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 INSERT INTO terminologia.cid10 (codigo, descricao) VALUES ('I21.9', 'CID do teste I21.9') ON CONFLICT DO NOTHING;
 
