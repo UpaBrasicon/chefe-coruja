@@ -22,12 +22,12 @@ CREATE TEMP TABLE base AS SELECT ((private.data_atual() - 1)::timestamp + time '
 -- 5: alta a pedido (não é evasão)
 -- 6: alta comum
 INSERT INTO public.episodios (id, unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por, chegada_em,
-                              atendimento_iniciado_em, desfecho, desfecho_motivo, desfecho_detalhes, encerrado_em)
+                              atendimento_iniciado_em, desfecho, desfecho_motivo, desfecho_detalhes, encerrado_em, desfecho_em)
 SELECT ('00000000-0000-4000-8000-0000000d6e0' || x.n)::uuid, '00000000-0000-4000-8000-00000000d6a1',
        ('00000000-0000-4000-8000-0000000d60' || lpad(x.n::text, 2, '0'))::uuid, '00000000-0000-4000-8000-00000000d6a2',
        'encerrado', 'Queixa', '10000000-0000-4000-8000-000000000004', (SELECT t0 FROM base),
        CASE WHEN x.atend THEN (SELECT t0 FROM base) + interval '40 minutes' END,
-       x.desf, x.dm, x.det::jsonb, (SELECT t0 FROM base) + interval '90 minutes'
+       x.desf, x.dm, x.det::jsonb, (SELECT t0 FROM base) + interval '90 minutes', (SELECT t0 FROM base) + interval '90 minutes'
   FROM (VALUES (1, false, 'evasao', 'evasao: cansou de esperar na recepção', '{"motivo_evasao": "demora"}'),
                (2, false, 'evasao', 'evasao: saiu sem avisar', NULL),
                (3, true,  'evasao', 'Saiu durante a reavaliação', '{"motivo_evasao": "melhorou"}'),

@@ -20,11 +20,12 @@ CREATE TEMP TABLE base AS SELECT ((private.data_atual() - 1)::timestamp + time '
 -- 4: azul, médico em 60 min (alvo 240: no prazo)
 -- 5: vermelho, médico 20 s depois (alvo imediato: no prazo, 0 min inteiro)
 -- 6: vermelho, médico 70 s depois (alvo imediato: atraso, 1 min completo)
-INSERT INTO public.episodios (id, unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por, chegada_em, atendimento_iniciado_em, desfecho, encerrado_em)
+INSERT INTO public.episodios (id, unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por, chegada_em, atendimento_iniciado_em, desfecho, encerrado_em, desfecho_em)
 SELECT ('00000000-0000-4000-8000-0000000b8e0' || x.n)::uuid, '00000000-0000-4000-8000-00000000b8a1',
        ('00000000-0000-4000-8000-0000000b80' || lpad(x.n::text, 2, '0'))::uuid, '00000000-0000-4000-8000-00000000b8a2',
        x.etapa, 'Queixa', '10000000-0000-4000-8000-000000000004', (SELECT t0 FROM base),
        (SELECT t0 FROM base) + make_interval(secs => x.med), x.desf,
+       CASE WHEN x.etapa = 'encerrado' THEN (SELECT t0 FROM base) + interval '200 minutes' END,
        CASE WHEN x.etapa = 'encerrado' THEN (SELECT t0 FROM base) + interval '200 minutes' END
   FROM (VALUES (1, 'atendimento', 35 * 60, NULL), (2, 'atendimento', 40 * 60, NULL), (3, 'encerrado', NULL, 'evasao'),
                (4, 'atendimento', 65 * 60, NULL), (5, 'atendimento', 5 * 60 + 20, NULL), (6, 'atendimento', 5 * 60 + 70, NULL))

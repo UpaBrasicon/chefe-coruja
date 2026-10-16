@@ -39,9 +39,9 @@ VALUES ('25000000-0000-4000-8000-000000000096', '21000000-0000-4000-8000-0000000
        ('25000000-0000-4000-8000-000000000097', '21000000-0000-4000-8000-000000000001', '23000000-0000-4000-8000-000000000095',
         '22000000-0000-4000-8000-000000000003', 'atendimento', 'dor torácica', '10000000-0000-4000-8000-000000000002');
 DO $$ BEGIN
-  UPDATE public.episodios SET etapa = 'encerrado', encerrado_em = now(), desfecho = 'alta'
+  UPDATE public.episodios SET etapa = 'encerrado', encerrado_em = now(), desfecho = 'alta', desfecho_em = now()
    WHERE id = '25000000-0000-4000-8000-000000000096';
-  UPDATE public.episodios SET etapa = 'encerrado', encerrado_em = now(), desfecho = 'internacao'
+  UPDATE public.episodios SET etapa = 'encerrado', encerrado_em = now(), desfecho = 'internacao', desfecho_em = now()
    WHERE id = '25000000-0000-4000-8000-000000000097';
   IF NOT EXISTS (SELECT 1 FROM public.interop_outbox WHERE tipo_documento = 'rac' AND referencia_id = '25000000-0000-4000-8000-000000000096') THEN
     RAISE EXCEPTION 'FALHOU: atendimento encerrado com alta não entrou como RAC';
