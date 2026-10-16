@@ -72,6 +72,7 @@ const Contingencia = lazy(() => import('@/pages/Contingencia'))
 const AltaVigilancia = lazy(() => import('@/pages/farmacia/AltaVigilancia'))
 const AihUnidade = lazy(() => import('@/pages/regulacao/Aih'))
 const FaturamentoBpa = lazy(() => import('@/pages/faturamento/Bpa'))
+const FaturamentoContas = lazy(() => import('@/pages/faturamento/Contas'))
 const ApacUnidade = lazy(() => import('@/pages/regulacao/Apac'))
 const Integracoes = lazy(() => import('@/pages/admin/Integracoes'))
 const ExportarDados = lazy(() => import('@/pages/gestor/ExportarDados'))
@@ -244,6 +245,8 @@ export default function App() {
                       {/* BPA: o faturamento confere, fecha e gera o arquivo; o gestor também (Fase 3, tarefa 3) */}
                       <Route element={<RequireRole papeis={['faturamento', 'gestor']} />}>
                         <Route path="/faturamento" element={<FaturamentoBpa />} />
+                        {/* Fase 5B, tarefa 1: contas do atendimento */}
+                        <Route path="/faturamento/contas" element={<FaturamentoContas />} />
                       </Route>
                       {/* APAC: o regulador autoriza; o faturamento registra a execução e gera o arquivo (Fase 3, tarefa 5) */}
                       <Route element={<RequireRole papeis={['regulador', 'faturamento', 'gestor']} />}>
