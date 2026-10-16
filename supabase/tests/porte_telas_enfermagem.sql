@@ -7,6 +7,9 @@
 -- com texto, retrato das pendências em cada leito, receber uma vez por outra
 -- pessoa da enfermagem do setor, sem alterar nem apagar.
 BEGIN;
+-- Portão 2, tarefa 4: este teste escala a mesma pessoa em mais de um setor por
+-- conveniência; a regra de sobreposição tem teste próprio (portao2_escala_sobreposicao.sql)
+ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_sem_sobreposicao;
 -- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
 -- todo paciente que ainda não tem peso no atendimento atual
 CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$

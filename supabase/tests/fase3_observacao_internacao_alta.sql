@@ -5,6 +5,9 @@
 -- (impeditivos, CID, retroativa, cancelar), passagem (aceite, recusa com motivo,
 -- retirar/reenviar, check-out bloqueado) e vitais crus.
 BEGIN;
+-- Portão 2, tarefa 4: este teste escala a mesma pessoa em mais de um setor por
+-- conveniência; a regra de sobreposição tem teste próprio (portao2_escala_sobreposicao.sql)
+ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_sem_sobreposicao;
 -- médico (…0002) no PS, na Observação e na Clínica Médica; enfermeira (…0004)
 -- chega na Observação daqui a 1h; recepção (…0005) no PS.
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',
