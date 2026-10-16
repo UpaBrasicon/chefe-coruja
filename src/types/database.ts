@@ -6749,6 +6749,8 @@ export type Database = {
           created_at: string
           data_nascimento: string | null
           data_nascimento_estimada: boolean
+          mae_id: string | null
+          rn_ordem: number | null
           endereco: string | null
           estado_civil: string | null
           id: string
@@ -6788,6 +6790,8 @@ export type Database = {
           created_at?: string
           data_nascimento?: string | null
           data_nascimento_estimada?: boolean
+          mae_id?: string | null
+          rn_ordem?: number | null
           endereco?: string | null
           estado_civil?: string | null
           id?: string
@@ -6827,6 +6831,8 @@ export type Database = {
           created_at?: string
           data_nascimento?: string | null
           data_nascimento_estimada?: boolean
+          mae_id?: string | null
+          rn_ordem?: number | null
           endereco?: string | null
           estado_civil?: string | null
           id?: string
@@ -10238,6 +10244,10 @@ export type Database = {
           nome_social: string
           prontuario: string
         }[]
+      }
+      cadastrar_rn: {
+        Args: { p_data_nascimento: string; p_gemelar?: number; p_mae: string; p_setor?: string; p_sexo?: string }
+        Returns: Json
       }
       cadastros_do_paciente: { Args: { p_paciente: string }; Returns: string[] }
       cancelar_alta: {
