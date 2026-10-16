@@ -79,10 +79,12 @@ REVOKE ALL ON FUNCTION public.pedir_unificacao(uuid, uuid, text, boolean) FROM P
 GRANT EXECUTE ON FUNCTION public.pedir_unificacao(uuid, uuid, text, boolean) TO authenticated;
 
 -- 3a. aprovar com divergência exige a confirmação do gestor. A decisão antiga
--- fica intacta em private e só é chamada por este invólucro.
-ALTER FUNCTION public.decidir_unificacao(uuid, boolean, text) RENAME TO decidir_unificacao_base;
-ALTER FUNCTION public.decidir_unificacao_base(uuid, boolean, text) SET SCHEMA private;
-REVOKE ALL ON FUNCTION private.decidir_unificacao_base(uuid, boolean, text) FROM PUBLIC, anon, authenticated;
+-- muda para private com o mesmo nome (sem renomear) e só é chamada por este
+-- invólucro. Expand/contract: a versão anterior do app chama
+-- public.decidir_unificacao(p_pedido, p_aprovar, p_motivo), que continua
+-- existindo (o invólucro aceita os mesmos argumentos; p_confirmo tem default).
+ALTER FUNCTION public.decidir_unificacao(uuid, boolean, text) SET SCHEMA private;
+REVOKE ALL ON FUNCTION private.decidir_unificacao(uuid, boolean, text) FROM PUBLIC, anon, authenticated;
 
 CREATE FUNCTION public.decidir_unificacao(p_pedido uuid, p_aprovar boolean, p_motivo text DEFAULT NULL, p_confirmo boolean DEFAULT false)
 RETURNS text LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $function$
@@ -99,7 +101,7 @@ BEGIN
         USING HINT = 'documentos_divergentes';
     END IF;
   END IF;
-  v_res := private.decidir_unificacao_base(p_pedido, p_aprovar, p_motivo);
+  v_res := private.decidir_unificacao(p_pedido, p_aprovar, p_motivo);
   IF v_res = 'aprovado' THEN
     UPDATE public.pedidos_unificacao SET divergencias = coalesce(v_div, '{}'), confirmado_na_decisao = cardinality(coalesce(v_div, '{}')) > 0
      WHERE id = p_pedido;

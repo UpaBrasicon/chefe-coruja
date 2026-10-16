@@ -101,7 +101,7 @@ END $$;
 RESET ROLE;
 
 DO $$ BEGIN
-  IF has_function_privilege('authenticated', 'private.decidir_unificacao_base(uuid, boolean, text)', 'EXECUTE')
+  IF has_function_privilege('authenticated', 'private.decidir_unificacao(uuid, boolean, text)', 'EXECUTE')
      OR has_function_privilege('anon', 'public.pedir_unificacao(uuid, uuid, text, boolean)', 'EXECUTE') THEN
     RAISE EXCEPTION 'FALHOU: caminho sem a checagem exposto';
   END IF;
