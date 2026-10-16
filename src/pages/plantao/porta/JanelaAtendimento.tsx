@@ -236,7 +236,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
         {faixa === 'desconhecida' && (
           <div className="flex items-start gap-2 rounded-container border border-atencao/25 bg-atencao/[0.06] px-3.5 py-2.5 text-apoio text-atencao">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
-            <span>Sem data de nascimento no cadastro: o paciente não é tratado como adulto. Sem receita padrão nem favoritos de adulto, PA opcional e dose digitada por você, pelo peso aferido. Cadastre a data de nascimento.</span>
+            <span>Sem data de nascimento no cadastro: o paciente não é tratado como adulto. Sem receita padrão nem favoritos de adulto, PA opcional e dose digitada por você, pelo peso. Cadastre a data de nascimento ou, na Prescrição, a idade estimada.</span>
           </div>
         )}
         <Tabs value={aba} onValueChange={(v) => { setAba(v as Aba); setErro(null) }}>

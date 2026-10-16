@@ -6,6 +6,14 @@
 -- controle, CNS ou CPF), o fechamento que trava o registro e a reabertura com
 -- motivo, o CNS do perfil e o endereço do SUS.
 BEGIN;
+-- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
+-- todo paciente que ainda não tem peso no atendimento atual
+CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+  SELECT p.unidade_id, p.id, c.id, now(), 70, 'manual'
+    FROM public.pacientes p JOIN public.conceito c ON c.nome = 'peso' AND c.unidade_id IS NULL
+   WHERE private.peso_do_atendimento(p.id) IS NULL $$;
+GRANT EXECUTE ON FUNCTION pg_temp.pesar() TO authenticated;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 -- regras do BPA-I puro: sem instrumento/CBO do SIGTAP carregados (o BPA-C tem teste próprio)
 DELETE FROM terminologia.sigtap_procedimento_registro;
@@ -98,6 +106,7 @@ VALUES ('25000000-0000-4000-8000-000000000971', '21000000-0000-4000-8000-0000000
 INSERT INTO public.prescricoes (id, unidade_id, paciente_id, medico_id, status, episodio_id)
 VALUES ('26000000-0000-4000-8000-000000000971', '21000000-0000-4000-8000-000000000097', '23000000-0000-4000-8000-000000000971',
         '10000000-0000-4000-8000-000000000002', 'ativa', '25000000-0000-4000-8000-000000000971');
+SELECT pg_temp.pesar();
 INSERT INTO public.prescricao_itens (id, prescricao_id, descricao, tipo)
 VALUES ('27000000-0000-4000-8000-000000000971', '26000000-0000-4000-8000-000000000971', 'Dipirona 1 g IV', 'medicamento'),
        ('27000000-0000-4000-8000-000000000972', '26000000-0000-4000-8000-000000000971', 'Cabeceira elevada', 'cuidado');

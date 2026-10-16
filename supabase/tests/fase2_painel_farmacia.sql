@@ -2,6 +2,14 @@
 -- abertas priorizadas (alta vigilância, pacientes afetados, setores), retorno
 -- da farmácia só por inserção e visível na prescrição.
 BEGIN;
+-- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
+-- todo paciente que ainda não tem peso no atendimento atual
+CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+  SELECT p.unidade_id, p.id, c.id, now(), 70, 'manual'
+    FROM public.pacientes p JOIN public.conceito c ON c.nome = 'peso' AND c.unidade_id IS NULL
+   WHERE private.peso_do_atendimento(p.id) IS NULL $$;
+GRANT EXECUTE ON FUNCTION pg_temp.pesar() TO authenticated;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 INSERT INTO public.vinculos (perfil_id, unidade_id, papel)
 VALUES ('10000000-0000-4000-8000-000000000006', '21000000-0000-4000-8000-000000000001', 'farmaceutico');
@@ -44,6 +52,7 @@ RESET ROLE;
 INSERT INTO t SELECT 'pac', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep');
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
+SELECT pg_temp.pesar();
 SELECT public.prescrever(pg_temp.u('pac'), json_build_object('medicamento_id', pg_temp.u('morfina'), 'dose', '2 mg', 'via', 'EV', 'posologia', 'agora')::jsonb);
 -- plantão sinaliza as duas faltas (dipirona primeiro)
 INSERT INTO t SELECT 'f_dip', public.sinalizar_falta('21000000-0000-4000-8000-000000000001', pg_temp.u('dipirona'), 'acabou no setor')::text;

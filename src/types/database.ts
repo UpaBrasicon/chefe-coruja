@@ -6352,6 +6352,7 @@ export type Database = {
           flag: string
           id: string
           internacao_id: string | null
+          metodo: string | null
           observacao_pai_id: string | null
           origem: string
           paciente_id: string
@@ -6374,6 +6375,7 @@ export type Database = {
           flag?: string
           id?: string
           internacao_id?: string | null
+          metodo?: string | null
           observacao_pai_id?: string | null
           origem?: string
           paciente_id: string
@@ -6396,6 +6398,7 @@ export type Database = {
           flag?: string
           id?: string
           internacao_id?: string | null
+          metodo?: string | null
           observacao_pai_id?: string | null
           origem?: string
           paciente_id?: string
@@ -6745,6 +6748,7 @@ export type Database = {
           cpf: string | null
           created_at: string
           data_nascimento: string | null
+          data_nascimento_estimada: boolean
           endereco: string | null
           estado_civil: string | null
           id: string
@@ -6783,6 +6787,7 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
+          data_nascimento_estimada?: boolean
           endereco?: string | null
           estado_civil?: string | null
           id?: string
@@ -6821,6 +6826,7 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
+          data_nascimento_estimada?: boolean
           endereco?: string | null
           estado_civil?: string | null
           id?: string
@@ -12400,6 +12406,10 @@ export type Database = {
           p_prazo?: string
           p_tipo: string
         }
+        Returns: string
+      }
+      registrar_idade_estimada: {
+        Args: { p_anos: number; p_paciente: string }
         Returns: string
       }
       registrar_prescricao_itens: {

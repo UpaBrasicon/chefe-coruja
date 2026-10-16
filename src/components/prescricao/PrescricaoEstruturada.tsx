@@ -3,7 +3,9 @@
 //
 // Item ligado ao medicamento do cadastro; dose, via e frequência escritas pelo
 // médico (nada é sugerido). Nada se apaga: suspender deixa o item no histórico.
-// Criança: peso aferido no atendimento antes do primeiro medicamento. Alergia
+// Medicamento, em qualquer idade (Portão 2, tarefa 2): data de nascimento ou
+// idade estimada, e peso deste atendimento — aferido, estimado ou referido
+// pelo paciente, com a marca de como foi obtido. Alergia
 // registrada trava o item. O item guarda a diluição padrão vigente (publicada
 // pelo farmacêutico); diluir diferente só com justificativa. Toda regra é do
 // servidor; aqui só se mostra e se pede.
@@ -40,6 +42,14 @@ type Medicamento = { id: string; principio_ativo: string; apresentacao: string |
 type Diluicao = { id: string; versao: number; texto: string; fonte: string; revisor_crf: string | null }
 
 export type PacientePrescricao = { nome: string; dataAtual?: string; leito?: string; diagnostico?: string }
+export type PesoAtual = { valor_num: number; aferido_em: string; metodo: string | null }
+
+// como o peso foi obtido (observacao.metodo); nulo = aferido
+const METODOS_PESO = [
+  { v: 'aferido', rotulo: 'Aferido' }, { v: 'estimado', rotulo: 'Estimado' }, { v: 'referido', rotulo: 'Referido pelo paciente' },
+] as const
+type MetodoPeso = (typeof METODOS_PESO)[number]['v']
+const rotuloMetodoPeso = (m: string | null) => (m && m !== 'aferido' ? METODOS_PESO.find((x) => x.v === m)?.rotulo.toLowerCase() ?? m : null)
 
 const VIAS = ['VO', 'EV', 'IM', 'SC', 'SL', 'INAL', 'TÓPICA', 'RETAL', 'SNE', 'OCULAR']
 const VIAS_COM_DILUICAO = ['EV', 'IM', 'SC']
@@ -73,10 +83,10 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
     queryKey: ['peso-atual', pacienteId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('observacao').select('valor_num, aferido_em, conceito!inner(nome)')
+        .from('observacao').select('valor_num, aferido_em, metodo, conceito!inner(nome)')
         .eq('paciente_id', pacienteId).eq('conceito.nome', 'peso').order('aferido_em', { ascending: false }).limit(1)
       if (error) throw error
-      return (data?.[0] ?? null) as { valor_num: number; aferido_em: string } | null
+      return (data?.[0] ?? null) as PesoAtual | null
     },
   })
 
@@ -232,13 +242,14 @@ function ChipPorta({ ativo, onClick, children }: { ativo: boolean; onClick: () =
 }
 
 export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, pediatrico = false }: {
-  pacienteId: string; peso?: { valor_num: number; aferido_em: string } | null; aoMudar: () => void; aoErro: (m: string | null) => void
+  pacienteId: string; peso?: PesoAtual | null; aoMudar: () => void; aoErro: (m: string | null) => void
   /** Modo do Pronto-Socorro: chips de via e de "quando" (Agora / Se necessário). */
   porta?: boolean
-  /** Criança: mostra o peso aferido desde o início. */
+  /** Criança: mostra o campo do peso desde o início. */
   pediatrico?: boolean
 }) {
   const { perfil } = useAuth()
+  const qc = useQueryClient()
   const [tipo, setTipo] = React.useState<'medicamento' | 'cuidado'>('medicamento')
   const [busca, setBusca] = React.useState('')
   const [med, setMed] = React.useState<Medicamento | null>(null)
@@ -248,6 +259,9 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   const [justificativa, setJustificativa] = React.useState('')
   const [novoPeso, setNovoPeso] = React.useState('')
   const [pedePeso, setPedePeso] = React.useState(false)
+  const [metodoPeso, setMetodoPeso] = React.useState<MetodoPeso>('aferido')
+  const [pedeIdade, setPedeIdade] = React.useState(false)
+  const [anos, setAnos] = React.useState('')
   const [faltaAvisada, setFaltaAvisada] = React.useState(false)
   // Fase 2, tarefa 3: interação crítica trava o item até o médico justificar
   const [interacao, setInteracao] = React.useState<{ item: Record<string, unknown>; lista: InteracaoNaPrescricao[] } | null>(null)
@@ -275,6 +289,16 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
       return data as unknown as { situacao: string; sinalizada_em: string; retorno: { texto: string; por: string | null; em: string } | null } | null
     },
   })
+  // sem data de nascimento, o campo da idade estimada aparece antes do medicamento
+  const idade = useQuery({
+    queryKey: ['idade-paciente', pacienteId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('pacientes').select('data_nascimento, data_nascimento_estimada').eq('id', pacienteId).maybeSingle()
+      if (error) throw error
+      return data
+    },
+  })
+  const semIdade = !!idade.data && !idade.data.data_nascimento
   const diluicao = useQuery({
     queryKey: ['diluicao-vigente', med?.id, f.via],
     enabled: !!med && VIAS_COM_DILUICAO.includes(f.via),
@@ -292,7 +316,9 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   async function prescrever(item: Record<string, unknown>) {
     const { error } = await supabase.rpc('prescrever', { p_paciente: pacienteId, p_item: item as never })
     if (error) {
-      if (/registre o peso/.test(error.message)) setPedePeso(true)
+      // "Falta para prescrever: …" (servidor) diz o que falta; abre os campos correspondentes
+      if (/peso deste atendimento/.test(error.message)) setPedePeso(true)
+      if (/data de nascimento ou idade estimada/.test(error.message)) setPedeIdade(true)
       const lista = interacoesDoErro(error)
       if (lista) { setInteracao({ item, lista }); return aoErro(null) }
       return aoErro(error.message)
@@ -304,9 +330,19 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
     if (!perfil || !(n > 0)) return
     const { data: c } = await supabase.from('conceito').select('id').eq('nome', 'peso').is('unidade_id', null).single()
     if (!c) return aoErro('Conceito de peso não encontrado.')
-    const r = await gravarRegistros(perfil.id, [novoItem('observacao', { paciente_id: pacienteId, conceito_id: c.id, valor_num: n, origem: 'manual' })])
+    const r = await gravarRegistros(perfil.id, [novoItem('observacao', {
+      paciente_id: pacienteId, conceito_id: c.id, valor_num: n, origem: 'manual', metodo: metodoPeso,
+    })])
     if (r.recusados.length) return aoErro(r.recusados[0])
-    setPedePeso(false); setNovoPeso(''); aoErro(null); aoMudar()
+    setPedePeso(false); setNovoPeso(''); setMetodoPeso('aferido'); aoErro(null); aoMudar()
+  }
+  async function registrarIdade() {
+    const n = Number(anos.replace(',', '.'))
+    if (anos.trim() === '' || !(n >= 0)) return
+    const { error } = await supabase.rpc('registrar_idade_estimada', { p_paciente: pacienteId, p_anos: n })
+    if (error) return aoErro(error.message)
+    setPedeIdade(false); setAnos(''); aoErro(null); aoMudar()
+    for (const k of ['idade-paciente', 'cabecalho-paciente']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
   }
 
   return (
@@ -322,14 +358,32 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               {t === 'medicamento' ? 'Medicamento' : 'Cuidado'}
             </Button>
           ))}
-          {peso && <span className="ml-auto self-center text-xs text-tinta-sussurro">Último peso: {peso.valor_num} kg ({hora(peso.aferido_em)})</span>}
+          {peso && (
+            <span className="ml-auto self-center text-xs text-tinta-sussurro">
+              Último peso: {peso.valor_num} kg{rotuloMetodoPeso(peso.metodo) ? `, ${rotuloMetodoPeso(peso.metodo)}` : ''} ({hora(peso.aferido_em)})
+            </span>
+          )}
         </div>
 
-        {(pedePeso || (pediatrico && tipo === 'medicamento')) && (
+        {tipo === 'medicamento' && (pedeIdade || semIdade) && (
           <div className="flex flex-wrap items-end gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-2">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="peso-novo">{pediatrico ? 'Peso aferido (kg)' : 'Peso aferido agora (kg)'}</Label>
+              <Label htmlFor="idade-estimada">Sem data de nascimento: idade estimada (anos)</Label>
+              <Input id="idade-estimada" className="h-8 w-28" inputMode="decimal" value={anos} onChange={(e) => setAnos(e.target.value)} />
+            </div>
+            <Button size="sm" onClick={() => void registrarIdade()}>Registrar idade estimada</Button>
+            <span className="w-full text-xs text-tinta-sussurro">Fica no cadastro com a marca “estimada”. A data real, quando chegar, substitui.</span>
+          </div>
+        )}
+
+        {tipo === 'medicamento' && (pedePeso || pediatrico) && (
+          <div className="flex flex-wrap items-end gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-2">
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="peso-novo">Peso deste atendimento (kg)</Label>
               <Input id="peso-novo" className="h-8 w-28" inputMode="decimal" value={novoPeso} onChange={(e) => setNovoPeso(e.target.value)} />
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Como o peso foi obtido">
+              {METODOS_PESO.map((m) => <ChipPorta key={m.v} ativo={metodoPeso === m.v} onClick={() => setMetodoPeso(m.v)}>{m.rotulo}</ChipPorta>)}
             </div>
             <Button size="sm" onClick={() => void registrarPeso()}>Registrar peso</Button>
           </div>

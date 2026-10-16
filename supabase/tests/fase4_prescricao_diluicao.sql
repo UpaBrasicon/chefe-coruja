@@ -2,6 +2,14 @@
 -- (prescrição estruturada). ROLLBACK no fim. O banco local não traz o cadastro
 -- de medicamentos: o teste usa uma amostra própria.
 BEGIN;
+-- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
+-- todo adulto que ainda não tem peso no atendimento atual (a criança fica sem, para o teste da trava)
+CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+  SELECT p.unidade_id, p.id, c.id, now(), 70, 'manual'
+    FROM public.pacientes p JOIN public.conceito c ON c.nome = 'peso' AND c.unidade_id IS NULL
+   WHERE private.peso_do_atendimento(p.id) IS NULL AND p.data_nascimento <= current_date - interval '14 years' $$;
+GRANT EXECUTE ON FUNCTION pg_temp.pesar() TO authenticated;
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',
   '10000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000005');
 ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_janela;
@@ -78,6 +86,7 @@ INSERT INTO t SELECT 'crianca', paciente_id::text FROM public.episodios WHERE id
 
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
+SELECT pg_temp.pesar();
 SELECT pg_temp.falha(format('SELECT public.prescrever(%L, %L)', pg_temp.u('pac'),
   json_build_object('medicamento_id', pg_temp.u('cef'), 'dose', '1 g', 'via', 'EV', 'posologia', '24/24h')),
   'A prescrição é do médico', 'enfermagem não prescreve');
@@ -103,7 +112,7 @@ INSERT INTO t SELECT 'i2', public.prescrever(pg_temp.u('pac'),
 INSERT INTO t SELECT 'i3', public.prescrever(pg_temp.u('pac'), '{"tipo":"cuidado","descricao":"Cabeceira elevada 30°"}');
 SELECT pg_temp.falha(format('SELECT public.prescrever(%L, %L)', pg_temp.u('crianca'),
   json_build_object('medicamento_id', pg_temp.u('cef'), 'dose', '50 mg/kg', 'via', 'EV', 'posologia', '24/24h')),
-  'Criança: registre o peso', 'criança sem peso aferido no atendimento não recebe medicamento');
+  'Falta para prescrever: peso deste atendimento', 'criança sem peso no atendimento não recebe medicamento');
 RESET ROLE;
 INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, valor_num, aferido_em)
 SELECT '21000000-0000-4000-8000-000000000001', pg_temp.u('crianca'), id, 16.4, clock_timestamp() FROM public.conceito WHERE nome = 'peso' AND unidade_id IS NULL;

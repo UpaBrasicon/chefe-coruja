@@ -2,6 +2,14 @@
 -- classe ATC do princípio ativo). ROLLBACK no fim. Mesmo preparo de
 -- porte_alergias.sql.
 BEGIN;
+-- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
+-- todo paciente que ainda não tem peso no atendimento atual
+CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+  SELECT p.unidade_id, p.id, c.id, now(), 70, 'manual'
+    FROM public.pacientes p JOIN public.conceito c ON c.nome = 'peso' AND c.unidade_id IS NULL
+   WHERE private.peso_do_atendimento(p.id) IS NULL $$;
+GRANT EXECUTE ON FUNCTION pg_temp.pesar() TO authenticated;
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',
   '10000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000005');
 ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_janela;
@@ -69,6 +77,7 @@ SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT public.registrar_alergia(pg_temp.u('pac'), 'Penicilinas', 'urticária', 'medicamento', 'grave');
 SELECT public.registrar_alergia(pg_temp.u('pac2'), 'AINES', 'broncoespasmo', 'medicamento', 'grave');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
+SELECT pg_temp.pesar();
 SELECT pg_temp.falha(format('SELECT public.prescrever(%L, %L)', pg_temp.u('pac'), json_build_object('medicamento_id', pg_temp.u('amox'), 'dose', '875 mg', 'via', 'EV', 'posologia', '8/8h')),
   'ALERGIA', '"Penicilinas" (classe) trava amoxicilina + clavulanato');
 SELECT pg_temp.falha(format('SELECT public.prescrever(%L, %L)', pg_temp.u('pac'), json_build_object('medicamento_id', pg_temp.u('bpg'), 'dose', '1.200.000 UI', 'via', 'EV', 'posologia', '8/8h')),

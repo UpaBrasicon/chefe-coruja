@@ -3,6 +3,14 @@
 -- trava sem justificativa; justificativa gravada; alteração carrega a
 -- justificativa.
 BEGIN;
+-- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
+-- todo paciente que ainda não tem peso no atendimento atual
+CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+  SELECT p.unidade_id, p.id, c.id, now(), 70, 'manual'
+    FROM public.pacientes p JOIN public.conceito c ON c.nome = 'peso' AND c.unidade_id IS NULL
+   WHERE private.peso_do_atendimento(p.id) IS NULL $$;
+GRANT EXECUTE ON FUNCTION pg_temp.pesar() TO authenticated;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 -- parte de uma lista sem par ativo (o banco local pode ter sobras de verificação)
 UPDATE public.interacoes_criticas SET situacao = 'proposta' WHERE unidade_id = '21000000-0000-4000-8000-000000000001';
@@ -69,6 +77,7 @@ SELECT pg_temp.como('10000000-0000-4000-8000-000000000006');
 INSERT INTO t SELECT 'lista', public.lista_interacoes('21000000-0000-4000-8000-000000000001')::text;
 -- proposta não alerta: médico prescreve os dois sem justificar
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
+SELECT pg_temp.pesar();
 INSERT INTO t SELECT 'flu', public.prescrever(pg_temp.u('pac'), json_build_object('medicamento_id', pg_temp.u('fluoxetina'),
   'dose', '20 mg', 'via', 'VO', 'posologia', '1x/dia')::jsonb);
 INSERT INTO t SELECT 'sel0', public.prescrever(pg_temp.u('pac'), json_build_object('medicamento_id', pg_temp.u('selegilina'),
