@@ -21,17 +21,28 @@ BASE = Path(os.environ.get("BIBLIOTECA_DIR", "/srv/biblioteca"))
 qd = QdrantClient(url=os.environ["QDRANT_URL"], timeout=120)
 
 
+def prefixos_registrados() -> tuple[str, ...]:
+    """Títulos das fontes de fontes.yaml. Trecho de fonte que não está aqui
+    (pasta ingerida e nunca registrada) NÃO é órfão: em 16/10/2026 os artigos
+    abertos e as fichas de referência apareceram como órfãos só por isso."""
+    import yaml
+    fontes = yaml.safe_load(open(BASE / "fontes.yaml", encoding="utf-8")) or []
+    return tuple(f"{f['titulo']} — " if f.get("pasta") else f["titulo"] for f in fontes if f.get("titulo"))
+
+
 def orfaos() -> tuple[Counter, dict]:
     conhecidos = set(mapa_de_fontes(BASE))
     if not conhecidos:
         sys.exit("fontes.yaml não lido: nada a comparar")
+    prefixos = prefixos_registrados()
     contagem, titulo = Counter(), {}
     proximo = None
     while True:
         pontos, proximo = qd.scroll(COL, limit=1000, offset=proximo, with_payload=["fonte_id", "titulo"], with_vectors=False)
         for p in pontos:
             fid = p.payload.get("fonte_id")
-            if fid not in conhecidos:
+            # só é órfão o trecho de fonte registrada cujo arquivo saiu da pasta
+            if fid not in conhecidos and str(p.payload.get("titulo") or "").startswith(prefixos):
                 contagem[fid] += 1
                 titulo.setdefault(fid, p.payload.get("titulo"))
         if proximo is None:
