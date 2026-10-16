@@ -17,13 +17,14 @@ SELECT ('00000000-0000-4000-8000-0000000f70' || lpad(n::text, 2, '0'))::uuid, '0
 --   cores finais: 1 amarelo, 2 verde, 3 amarelo, 4 verde
 CREATE TEMP TABLE base AS SELECT ((private.data_atual() - 1)::timestamp + time '10:00') AT TIME ZONE 'America/Sao_Paulo' AS t0;
 INSERT INTO public.episodios (id, unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por, chegada_em,
-                              atendimento_medico_id, atendimento_iniciado_em, desfecho, encerrado_em)
+                              atendimento_medico_id, atendimento_iniciado_em, desfecho, encerrado_em, desfecho_em)
 SELECT ('00000000-0000-4000-8000-0000000f7e0' || x.n)::uuid, '00000000-0000-4000-8000-00000000f7a1',
        ('00000000-0000-4000-8000-0000000f70' || lpad(x.n::text, 2, '0'))::uuid, '00000000-0000-4000-8000-00000000f7a2',
        CASE WHEN x.med IS NULL THEN 'encerrado' ELSE 'atendimento' END, 'Queixa', '10000000-0000-4000-8000-000000000004',
        (SELECT t0 FROM base), x.med::uuid,
        CASE WHEN x.med IS NOT NULL THEN (SELECT t0 FROM base) + interval '30 minutes' END,
        CASE WHEN x.med IS NULL THEN 'evasao' END,
+       CASE WHEN x.med IS NULL THEN (SELECT t0 FROM base) + interval '50 minutes' END,
        CASE WHEN x.med IS NULL THEN (SELECT t0 FROM base) + interval '50 minutes' END
   FROM (VALUES (1, '10000000-0000-4000-8000-000000000002'), (2, '10000000-0000-4000-8000-000000000002'),
                (3, '10000000-0000-4000-8000-000000000003'), (4, NULL)) x(n, med);
