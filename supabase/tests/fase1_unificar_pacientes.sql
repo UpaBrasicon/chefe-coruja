@@ -12,13 +12,13 @@ INSERT INTO public.pacientes (id, unidade_id, nome, nome_mae, data_nascimento, c
   ('00000000-0000-4000-8000-0000000b9004', '21000000-0000-4000-8000-000000000001', 'Pedro Homônimo', 'teste', '1994-06-10', NULL, 'TU-4'),
   ('00000000-0000-4000-8000-0000000b9005', '21000000-0000-4000-8000-000000000001', 'PEDRO HOMÔNIMO', NULL, NULL, NULL, 'TU-5');
 -- o duplicado tem um atendimento antigo encerrado e um aberto; o principal, um aberto
-INSERT INTO public.episodios (id, unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por, chegada_em, desfecho, encerrado_em) VALUES
+INSERT INTO public.episodios (id, unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por, chegada_em, desfecho, encerrado_em, desfecho_em) VALUES
   ('00000000-0000-4000-8000-0000000b9e01', '21000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000b9002',
-   '22000000-0000-4000-8000-000000000003', 'encerrado', 'Antigo', '10000000-0000-4000-8000-000000000004', now() - interval '60 days', 'alta', now() - interval '60 days'),
+   '22000000-0000-4000-8000-000000000003', 'encerrado', 'Antigo', '10000000-0000-4000-8000-000000000004', now() - interval '60 days', 'alta', now() - interval '60 days', now() - interval '60 days'),
   ('00000000-0000-4000-8000-0000000b9e02', '21000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000b9002',
-   '22000000-0000-4000-8000-000000000003', 'triagem', 'Ficha duplicada de hoje', '10000000-0000-4000-8000-000000000004', now(), NULL, NULL),
+   '22000000-0000-4000-8000-000000000003', 'triagem', 'Ficha duplicada de hoje', '10000000-0000-4000-8000-000000000004', now(), NULL, NULL, NULL),
   ('00000000-0000-4000-8000-0000000b9e03', '21000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000b9001',
-   '22000000-0000-4000-8000-000000000003', 'triagem', 'Ficha de hoje', '10000000-0000-4000-8000-000000000004', now(), NULL, NULL);
+   '22000000-0000-4000-8000-000000000003', 'triagem', 'Ficha de hoje', '10000000-0000-4000-8000-000000000004', now(), NULL, NULL, NULL);
 INSERT INTO public.alergias_paciente (unidade_id, paciente_id, substancia, substancia_norm, tipo, registrado_por)
 VALUES ('21000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000b9002', 'Dipirona', 'dipirona', 'medicamento', '10000000-0000-4000-8000-000000000004');
 
@@ -68,7 +68,7 @@ EXCEPTION WHEN raise_exception THEN
   RAISE NOTICE 'OK  dois atendimentos abertos: recusado';
 END $$;
 RESET ROLE;
-UPDATE public.episodios SET etapa = 'encerrado', desfecho = 'cancelado', encerrado_em = now() WHERE id = '00000000-0000-4000-8000-0000000b9e02';
+UPDATE public.episodios SET etapa = 'encerrado', desfecho = 'cancelado', encerrado_em = now(), desfecho_em = now() WHERE id = '00000000-0000-4000-8000-0000000b9e02';
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
 DO $$ BEGIN

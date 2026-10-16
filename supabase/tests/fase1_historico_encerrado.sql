@@ -20,15 +20,15 @@ INSERT INTO public.pacientes (id, unidade_id, nome, setor_id) VALUES
   ('00000000-0000-4000-8000-0000000a8001', '21000000-0000-4000-8000-000000000001', 'Paciente do Histórico', '22000000-0000-4000-8000-000000000001'),
   ('00000000-0000-4000-8000-0000000a8002', '21000000-0000-4000-8000-000000000001', 'Paciente de Outro Setor', '22000000-0000-4000-8000-000000000003');
 INSERT INTO public.episodios (id, unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por, chegada_em, cor_atual,
-                              atendimento_medico_id, desfecho, desfecho_detalhes, encerrado_em) VALUES
+                              atendimento_medico_id, desfecho, desfecho_detalhes, encerrado_em, desfecho_em) VALUES
   ('00000000-0000-4000-8000-0000000a8e01', '21000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000a8001',
    '22000000-0000-4000-8000-000000000003', 'encerrado', 'Dor lombar', '10000000-0000-4000-8000-000000000004',
    now() - interval '90 days', 'verde', '10000000-0000-4000-8000-000000000002', 'alta', '{"cid_alta": "M54.5"}',
-   now() - interval '90 days' + interval '2 hours'),
+   now() - interval '90 days' + interval '2 hours', now() - interval '90 days' + interval '2 hours'),
   ('00000000-0000-4000-8000-0000000a8e02', '21000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000a8001',
    '22000000-0000-4000-8000-000000000003', 'encerrado', 'Febre', '10000000-0000-4000-8000-000000000004',
    now() - interval '10 days', 'amarelo', '10000000-0000-4000-8000-000000000002', 'observacao', NULL,
-   now() - interval '10 days' + interval '1 hour');
+   now() - interval '10 days' + interval '1 hour', now() - interval '10 days' + interval '1 hour');
 INSERT INTO public.internacoes (organizacao_id, unidade_id, paciente_id, status, setor_atual_id, data_admissao, data_alta, episodio_id, cid_alta)
 SELECT u.organizacao_id, u.id, '00000000-0000-4000-8000-0000000a8001', x.st, '22000000-0000-4000-8000-000000000001',
        x.adm, x.alta, x.ep::uuid, x.cid
