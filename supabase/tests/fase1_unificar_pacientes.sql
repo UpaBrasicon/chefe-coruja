@@ -125,7 +125,9 @@ DO $$ BEGIN
   RAISE NOTICE 'OK  desfeito: cadastro reativado e CPF devolvido';
 END $$;
 DO $$ BEGIN
-  IF has_function_privilege('anon', 'public.decidir_unificacao(uuid, boolean, text)', 'EXECUTE')
+  -- Portão 2, tarefa 3: a decisão ganhou p_confirmo; a antiga foi para private
+  IF has_function_privilege('anon', 'public.decidir_unificacao(uuid, boolean, text, boolean)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'private.decidir_unificacao(uuid, boolean, text)', 'EXECUTE')
      OR has_table_privilege('authenticated', 'public.pedidos_unificacao', 'INSERT') THEN RAISE EXCEPTION 'FALHOU: exposto'; END IF;
   RAISE NOTICE 'OK  fora do anon; pedidos só por RPC';
 END $$;

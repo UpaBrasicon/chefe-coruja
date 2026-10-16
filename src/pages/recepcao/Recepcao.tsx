@@ -40,6 +40,8 @@ type Achado = {
   cns_final: string | null
   prontuario: string | null
   episodio_etapa: string | null
+  /** achado pelo CPF/CNS de um cadastro já unificado a este (Portão 2, tarefa 3) */
+  documento_unificado?: boolean
 }
 type NaFila = {
   episodio_id: string
@@ -479,6 +481,9 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
                     {nomeExibicao(a.nome, a.nome_social)}{' '}
                     <span className="text-apoio font-normal text-tinta-sussurro">{a.data_nascimento ? rotuloIdade(a.data_nascimento, hoje) : ''}</span>
                   </span>
+                  {a.documento_unificado && (
+                    <span className="text-apoio text-observacao">Documento de cadastro unificado: o documento buscado é de um cadastro unificado a este.</span>
+                  )}
                   <span className="text-apoio text-pretty text-tinta-sussurro">
                     {[
                       `CPF ${a.cpf_final ?? '—'}`,
