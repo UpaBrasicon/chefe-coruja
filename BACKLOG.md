@@ -908,7 +908,7 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 ### Fase 5B — Faturamento Inicial
 | Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
 |---|---|---|---|---|
-| 1 | P1 | Conta do atendimento | Criar entidade conta; vincular episódio/internação; status; responsável | Atendimento gera conta |
+| 1 | P1 | Conta do atendimento | **Feito em 16/10/2026 (PR #127, produção no mesmo dia). Decisões do RT em 16/10:** só SUS nesta fase; contas separadas da porta (BPA) e da internação (AIH), ligadas; abre sozinha (a de internação quando o paciente é internado; observação fica na da porta); aberta → em conferência → fechada → faturada, com histórico e auditoria; o faturamento conduz e fecha depois do desfecho ou da alta, o gestor reabre com motivo; pagador da categoria do paciente, troca com motivo. Tela `/faturamento/contas`. Migration `20261127000001_conta_atendimento.sql`; teste `supabase/tests/fase5_conta_atendimento.sql`. Subtarefas: criar entidade conta; vincular episódio/internação; status; responsável | Atendimento gera conta |
 | 2 | P1 | Procedimentos faturáveis | Vincular procedimentos assistenciais/SIGTAP/TUSS conforme escopo; quantidade; profissional | Procedimentos entram na conta |
 | 3 | P1 | Materiais e medicamentos | Integrar prescrição/checagem; registrar consumo; permitir ajuste auditado | Medicamentos administrados podem alimentar conta |
 | 4 | P1 | AIH/APAC vinculadas à conta | Associar produção SUS à conta; exibir status | Conta mostra AIH/APAC relacionadas |
