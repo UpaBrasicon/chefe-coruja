@@ -1,5 +1,13 @@
 -- Testes da migration 20260929000006_fase4_checagem.sql. ROLLBACK no fim.
 BEGIN;
+-- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
+-- todo paciente que ainda não tem peso no atendimento atual
+CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+  SELECT p.unidade_id, p.id, c.id, now(), 70, 'manual'
+    FROM public.pacientes p JOIN public.conceito c ON c.nome = 'peso' AND c.unidade_id IS NULL
+   WHERE private.peso_do_atendimento(p.id) IS NULL $$;
+GRANT EXECUTE ON FUNCTION pg_temp.pesar() TO authenticated;
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',
   '10000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000005');
 ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_janela;
@@ -54,6 +62,7 @@ SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.falha(format('SELECT public.registrar_desfecho(%L, %L)', pg_temp.u('ep'), 'alta_apos_medicacao'),
   'Alta após medicação: não há medicação prescrita', 'alta após medicação sem medicação prescrita não passa');
+SELECT pg_temp.pesar();
 INSERT INTO t SELECT 'dip', public.prescrever(pg_temp.u('pac'), json_build_object('medicamento_id', pg_temp.u('dipirona'),
   'dose', '1 comprimido', 'via', 'VO', 'posologia', 'agora')::jsonb);
 INSERT INTO t SELECT 'cef', public.prescrever(pg_temp.u('pac'), json_build_object('medicamento_id', pg_temp.u('ceftriaxona'),

@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
 import { AlterarItem } from '@/components/prescricao/AlterarItem'
-import { NovoItem } from '@/components/prescricao/PrescricaoEstruturada'
+import { NovoItem, type PesoAtual } from '@/components/prescricao/PrescricaoEstruturada'
 
 import { hora, type ItemPS } from './comum'
 
@@ -77,10 +77,10 @@ export function AbaPrescricao({ pacienteId, nome, itens, pediatrico, aoMudar }: 
     queryKey: ['peso-atual', pacienteId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('observacao').select('valor_num, aferido_em, conceito!inner(nome)')
+        .from('observacao').select('valor_num, aferido_em, metodo, conceito!inner(nome)')
         .eq('paciente_id', pacienteId).eq('conceito.nome', 'peso').order('aferido_em', { ascending: false }).limit(1)
       if (error) throw error
-      return (data?.[0] ?? null) as { valor_num: number; aferido_em: string } | null
+      return (data?.[0] ?? null) as PesoAtual | null
     },
   })
   const ativos = itens.filter((i) => !i.suspenso_em)

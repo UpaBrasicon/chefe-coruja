@@ -8,6 +8,14 @@
 -- antibiótico e dia de uso, medicações da prescrição vigente, eletrólitos,
 -- condutas, histórico com autor e especialidade, nada se apaga.
 BEGIN;
+-- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
+-- todo paciente que ainda não tem peso no atendimento atual
+CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+  SELECT p.unidade_id, p.id, c.id, now(), 70, 'manual'
+    FROM public.pacientes p JOIN public.conceito c ON c.nome = 'peso' AND c.unidade_id IS NULL
+   WHERE private.peso_do_atendimento(p.id) IS NULL $$;
+GRANT EXECUTE ON FUNCTION pg_temp.pesar() TO authenticated;
 -- médico (…0002) no PS e na Observação; enfermeira (…0004) no PS e na
 -- Observação; recepção (…0005) no PS.
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',
@@ -75,6 +83,7 @@ WITH x AS (
   VALUES ('21000000-0000-4000-8000-000000000001', pg_temp.u('p'), '10000000-0000-4000-8000-000000000002', 'ativa', pg_temp.u('i'),
           '10000000-0000-4000-8000-000000000002') RETURNING id)
 INSERT INTO t SELECT 'presc', id::text FROM x;
+SELECT pg_temp.pesar();
 WITH x AS (
   INSERT INTO public.prescricao_itens (prescricao_id, descricao, dose, via, posologia, ordem, created_at, autor_id)
   VALUES (pg_temp.u('presc'), 'Ceftriaxona', '1 g', 'IV', '12/12h', 1, now() - interval '2 days', '10000000-0000-4000-8000-000000000002')

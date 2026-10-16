@@ -1,18 +1,14 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronRight, Loader2, Pill, Plus, Search, ShieldAlert, Trash2, User } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { ChevronRight, Loader2, Pill, Plus, Search, ShieldAlert, Trash2 } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
-import { abrirProntuario } from '@/lib/prontuario'
-import { useUnidade } from '@/contexts/UnidadeContext'
-import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
 import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 
 type Medicamento = {
@@ -39,13 +35,6 @@ type DiluicaoPublicada = {
   revisor_crf: string | null
 }
 
-type Paciente = {
-  id: string
-  nome: string
-  cpf: string | null
-  data_nascimento: string | null
-}
-
 type ItemPrescricao = {
   id: string
   medicamento: Medicamento
@@ -56,22 +45,10 @@ type ItemPrescricao = {
 }
 
 export default function PrescricaoTeste({ embutido = false }: { embutido?: boolean } = {}) {
-  const { unidadeAtiva } = useUnidade()
-  const { perfil } = useAuth()
-  const unidadeId = unidadeAtiva?.unidade_id
-  const queryClient = useQueryClient()
-
   const [busca, setBusca] = React.useState('')
   const [focada, setFocada] = React.useState(false)
   const [buscaDeb, setBuscaDeb] = React.useState('')
-  const [buscaPaciente, setBuscaPaciente] = React.useState('')
-  const [focadaPaciente, setFocadaPaciente] = React.useState(false)
-  const [pacienteSel, setPacienteSel] = React.useState<Paciente | null>(null)
   const [itens, setItens] = React.useState<ItemPrescricao[]>([])
-  const [observacoes, setObservacoes] = React.useState('')
-  const [salvando, setSalvando] = React.useState(false)
-  const [msg, setMsg] = React.useState<string | null>(null)
-  const [erro, setErro] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     const t = setTimeout(() => setBuscaDeb(busca), 350)
@@ -171,90 +148,6 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
     setItens((prev) => prev.filter((i) => i.id !== id))
   }
 
-  const { data: pacientes } = useQuery({
-    queryKey: ['pacientes-teste', unidadeId, buscaPaciente],
-    enabled: !!unidadeId && buscaPaciente.trim().length >= 2,
-    queryFn: async () => {
-      const termo = buscaPaciente.trim()
-      const { data, error } = await supabase
-        .from('pacientes')
-        .select('id, nome, cpf, data_nascimento')
-        .eq('unidade_id', unidadeId!)
-        .ilike('nome', `%${termo}%`)
-        .order('nome')
-        .limit(8)
-      if (error) throw error
-      if ((data ?? []).length === 0) {
-        const { data: d2, error: e2 } = await supabase
-          .from('pacientes')
-          .select('id, nome, cpf, data_nascimento')
-          .eq('unidade_id', unidadeId!)
-          .ilike('cpf', `%${termo}%`)
-          .order('nome')
-          .limit(8)
-        if (e2) throw e2
-        return (d2 ?? []) as Paciente[]
-      }
-      return (data ?? []) as Paciente[]
-    },
-  })
-
-  async function salvar() {
-    if (!unidadeId || !perfil || itens.length === 0) return
-    if (!pacienteSel) {
-      setErro('Selecione um paciente antes de salvar.')
-      return
-    }
-    setSalvando(true)
-    setErro(null)
-    setMsg(null)
-
-    try {
-      await abrirProntuario(pacienteSel.id)
-    } catch (e) {
-      setErro(e instanceof Error ? e.message : 'Não foi possível abrir o prontuário.')
-      setSalvando(false)
-      return
-    }
-    const { data: prescricao, error: err1 } = await supabase
-      .from('prescricoes')
-      .insert({
-        unidade_id: unidadeId,
-        paciente_id: pacienteSel.id,
-        medico_id: perfil.id,
-        criada_por: perfil.id,
-        status: 'rascunho',
-        observacoes: observacoes || null,
-      })
-      .select('id')
-      .single()
-    if (err1) {
-      setErro(err1.message)
-      setSalvando(false)
-      return
-    }
-
-    const { error: err2 } = await supabase.from('prescricao_itens').insert(
-      itens.map((i, idx) => ({
-        prescricao_id: prescricao.id,
-        medicamento_id: i.medicamento.id,
-        descricao: i.medicamento.principio_ativo,
-        dose: i.dose || null,
-        posologia: i.posologia || null,
-        observacao: i.diluicaoEditada || null,
-        ordem: idx,
-      }))
-    )
-    setSalvando(false)
-    if (err2) {
-      setErro(err2.message)
-      return
-    }
-    setMsg(`Prescrição rascunho salva (id ${prescricao.id.slice(0, 8)}).`)
-    setItens([])
-    setObservacoes('')
-    void queryClient.invalidateQueries({ queryKey: ['prescricoes'] })
-  }
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
@@ -275,74 +168,10 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
         </div>
       )}
 
-      {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
-      {msg && <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">{msg}</div>}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <User className="size-4 text-tinta-sussurro" />
-            Paciente
-          </CardTitle>
-          <CardDescription>Busque o paciente da unidade para vincular a prescrição.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          {pacienteSel ? (
-            <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
-              <div className="flex flex-col">
-                <span className="font-semibold">{pacienteSel.nome}</span>
-                <span className="text-xs text-tinta-sussurro">
-                  {pacienteSel.cpf ?? 'sem CPF'}
-                  {pacienteSel.data_nascimento
-                    ? ` · ${new Date(pacienteSel.data_nascimento + 'T12:00:00').toLocaleDateString('pt-BR')}`
-                    : ''}
-                </span>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => setPacienteSel(null)}>
-                Trocar
-              </Button>
-            </div>
-          ) : (
-            <div className="relative">
-              <Input
-                value={buscaPaciente}
-                onChange={(e) => setBuscaPaciente(e.target.value)}
-                onFocus={() => setFocadaPaciente(true)}
-                placeholder="Buscar paciente por nome ou CPF…"
-              />
-              {focadaPaciente && buscaPaciente.trim().length >= 2 && (pacientes ?? []).length > 0 && (
-                <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-lg">
-                  {(pacientes ?? []).map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      className="flex w-full flex-col gap-0.5 border-b px-3 py-2 text-left transition-colors last:border-0 hover:bg-trilha"
-                      onClick={() => {
-                        setPacienteSel(p)
-                        setBuscaPaciente('')
-                        setFocadaPaciente(false)
-                      }}
-                    >
-                      <span className="text-sm font-medium">{p.nome}</span>
-                      <span className="text-[11px] text-tinta-sussurro">
-                        {p.cpf ?? 'sem CPF'}
-                        {p.data_nascimento
-                          ? ` · ${new Date(p.data_nascimento + 'T12:00:00').toLocaleDateString('pt-BR')}`
-                          : ''}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-              {focadaPaciente && buscaPaciente.trim().length >= 2 && (pacientes ?? []).length === 0 && (
-                <div className="absolute z-20 mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm text-tinta-sussurro shadow-lg">
-                  Nenhum paciente encontrado.
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <p className="rounded-lg border border-fio bg-trilha/50 p-3 text-sm text-tinta-apoio">
+        Esta tela é só consulta de medicamento e diluição. Para prescrever, abra a prescrição do paciente: lá o sistema
+        confere alergia, idade e peso deste atendimento (Portão 2, tarefa 2).
+      </p>
 
       <Card>
         <CardHeader>
@@ -476,25 +305,11 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
             </div>
           ))}
 
-          {itens.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-tinta-sussurro">Observações da prescrição</label>
-              <Textarea
-                value={observacoes}
-                onChange={(e) => setObservacoes(e.target.value)}
-                placeholder="Orientações gerais…"
-                className="min-h-[70px]"
-              />
-            </div>
-          )}
 
           {itens.length > 0 && (
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setItens([])}>
                 Limpar
-              </Button>
-              <Button onClick={salvar} disabled={salvando}>
-                {salvando ? <Loader2 className="animate-spin" /> : <Pill />} Salvar prescrição (rascunho)
               </Button>
             </div>
           )}

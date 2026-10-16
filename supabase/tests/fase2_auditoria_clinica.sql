@@ -3,6 +3,14 @@
 -- fechada de campos; a cobertura conta o que ficou sem trilha; a cadeia segue
 -- íntegra.
 BEGIN;
+-- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
+-- todo paciente que ainda não tem peso no atendimento atual
+CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+  SELECT p.unidade_id, p.id, c.id, now(), 70, 'manual'
+    FROM public.pacientes p JOIN public.conceito c ON c.nome = 'peso' AND c.unidade_id IS NULL
+   WHERE private.peso_do_atendimento(p.id) IS NULL $$;
+GRANT EXECUTE ON FUNCTION pg_temp.pesar() TO authenticated;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',
   '10000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000005');
@@ -43,6 +51,7 @@ RESET ROLE;
 INSERT INTO t SELECT 'pac', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep');
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
+SELECT pg_temp.pesar();
 INSERT INTO t SELECT 'item', public.prescrever(pg_temp.u('pac'), json_build_object('medicamento_id', pg_temp.u('ceftriaxona'),
   'dose', '1 g', 'via', 'EV', 'posologia', '12/12h')::jsonb);
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');

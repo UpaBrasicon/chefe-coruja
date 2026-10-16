@@ -3,6 +3,14 @@
 --   docker exec -i supabase_db_chefe-coruja psql -U postgres -d postgres \
 --     -v ON_ERROR_STOP=1 < supabase/tests/porte_atendimento_ps.sql
 BEGIN;
+-- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
+-- todo paciente que ainda não tem peso no atendimento atual
+CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+  SELECT p.unidade_id, p.id, c.id, now(), 70, 'manual'
+    FROM public.pacientes p JOIN public.conceito c ON c.nome = 'peso' AND c.unidade_id IS NULL
+   WHERE private.peso_do_atendimento(p.id) IS NULL $$;
+GRANT EXECUTE ON FUNCTION pg_temp.pesar() TO authenticated;
 
 -- médico (…0002), enfermeira (…0004) e recepção (…0005) de plantão AGORA no PS
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',
@@ -91,6 +99,7 @@ SELECT pg_temp.falha(format('SELECT public.aguardar_reavaliacao(%L, %L)', pg_tem
 SELECT public.pedir_exames_atendimento(pg_temp.u('a'), ARRAY['Hemograma completo', 'PCR']);
 SELECT pg_temp.falha(format('SELECT public.pedir_exames_atendimento(%L, %L)', pg_temp.u('a'), '{PCR}'),
   'Esses exames já estão pedidos', 'o mesmo exame sem resultado não é pedido duas vezes');
+SELECT pg_temp.pesar();
 INSERT INTO t SELECT 'dip', public.prescrever(pg_temp.u('pac_a'), json_build_object('medicamento_id', pg_temp.u('dipirona'),
   'dose', '2 mL diluído em 10 mL AD', 'via', 'EV', 'posologia', 'Agora')::jsonb);
 SELECT pg_temp.falha(format('SELECT public.aguardar_reavaliacao(%L, %L)', pg_temp.u('a'), now() + interval '2 days'),
