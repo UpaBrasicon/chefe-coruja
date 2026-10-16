@@ -7,6 +7,14 @@
 -- com texto, retrato das pendências em cada leito, receber uma vez por outra
 -- pessoa da enfermagem do setor, sem alterar nem apagar.
 BEGIN;
+-- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
+-- todo paciente que ainda não tem peso no atendimento atual
+CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+  SELECT p.unidade_id, p.id, c.id, now(), 70, 'manual'
+    FROM public.pacientes p JOIN public.conceito c ON c.nome = 'peso' AND c.unidade_id IS NULL
+   WHERE private.peso_do_atendimento(p.id) IS NULL $$;
+GRANT EXECUTE ON FUNCTION pg_temp.pesar() TO authenticated;
 -- médico (…0002) e enfermeira (…0004) na Clínica Médica agora; a recepção
 -- (…0005) ganha também o vínculo de técnico de enfermagem e fica na Clínica
 -- Médica; a enfermeira fica ainda na Observação.
@@ -58,6 +66,7 @@ GRANT EXECUTE ON FUNCTION pg_temp.falha(text, text, text) TO authenticated;
 -- ── prescrição no Paciente Fictício Um (internado na Clínica Médica) ────────
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
+SELECT pg_temp.pesar();
 INSERT INTO t SELECT 'it', public.prescrever('23000000-0000-4000-8000-000000000001', json_build_object('medicamento_id', pg_temp.u('dipirona'),
   'dose', '1 comprimido', 'via', 'VO', 'posologia', '6/6h')::jsonb);
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');

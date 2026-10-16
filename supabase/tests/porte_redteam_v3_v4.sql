@@ -3,6 +3,14 @@
 --     -v ON_ERROR_STOP=1 < supabase/tests/porte_redteam_v3_v4.sql
 -- Ids do seed: unidade 21..01, plantonista A ...0002, médico ...0001, paciente 23..01.
 BEGIN;
+-- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
+-- todo paciente que ainda não tem peso no atendimento atual
+CREATE FUNCTION pg_temp.pesar() RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
+  INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
+  SELECT p.unidade_id, p.id, c.id, now(), 70, 'manual'
+    FROM public.pacientes p JOIN public.conceito c ON c.nome = 'peso' AND c.unidade_id IS NULL
+   WHERE private.peso_do_atendimento(p.id) IS NULL $$;
+GRANT EXECUTE ON FUNCTION pg_temp.pesar() TO authenticated;
 
 -- ── V3: registrar_prescricao_itens não sobrescreve prescrição de outro médico ─
 -- Isola o guard do DONO: o check de acesso real (paciente_em_cuidado_no_plantao,
@@ -19,6 +27,7 @@ VALUES ('21000000-0000-4000-8000-000000000001','23000000-0000-4000-8000-00000000
 -- não-dono (plantonista ...0002, não gestor) → BLOQUEADO
 SELECT set_config('request.jwt.claims',
   json_build_object('sub','10000000-0000-4000-8000-000000000002','role','authenticated')::text, true);
+SELECT pg_temp.pesar();
 DO $$
 BEGIN
   PERFORM public.registrar_prescricao_itens('23000000-0000-4000-8000-000000000001','x','[{"descricao":"a"}]'::jsonb);

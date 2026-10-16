@@ -87,7 +87,7 @@ export function CabecalhoPaciente({
     queryKey: ['cabecalho-paciente', pacienteId],
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from('pacientes').select('nome, nome_social, data_nascimento, sexo').eq('id', pacienteId).maybeSingle()
+      const { data, error } = await supabase.from('pacientes').select('nome, nome_social, data_nascimento, data_nascimento_estimada, sexo').eq('id', pacienteId).maybeSingle()
       if (error) throw error
       return data
     },
@@ -115,7 +115,8 @@ export function CabecalhoPaciente({
 
   const p = paciente.data
   const nomeVisivel = nome || p?.nome_social || p?.nome || 'Paciente'
-  const idade = p?.data_nascimento ? rotuloIdade(p.data_nascimento, hoje()) : null
+  // idade estimada (Portão 2, tarefa 2) leva a marca
+  const idade = p?.data_nascimento ? `${rotuloIdade(p.data_nascimento, hoje())}${p.data_nascimento_estimada ? ' (estimada)' : ''}` : null
   const sexo = p?.sexo ? SEXO[p.sexo] ?? p.sexo : null
   const onde = [local, setor.data].filter(Boolean).join(' · ')
   const a = acu.data
