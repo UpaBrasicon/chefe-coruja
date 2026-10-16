@@ -129,6 +129,10 @@ DECLARE
     END IF;
     v_peso := private.peso_do_atendimento(p_paciente);$new$;
 BEGIN
+  -- o arquivo desta migração também pode chegar com \r (checkout no Windows):
+  -- em 16/10/2026 a produção recusou por isso, com o corpo idêntico
+  antigo := replace(antigo, E'\r', '');
+  novo := replace(novo, E'\r', '');
   IF position(antigo IN def) = 0 THEN
     RAISE EXCEPTION 'prescrever mudou: o bloco de peso pediátrico não foi encontrado';
   END IF;
