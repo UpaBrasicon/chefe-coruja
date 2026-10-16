@@ -80,7 +80,9 @@ type Solicitacao = Omit<PedidoDestino, 'destino_tipo' | 'destino_unidade' | 'des
   cid: string; cid_descricao: string | null
   quadro_clinico: string; tempo_evolucao: string | null; sinais_vitais: string | null; exames: string | null
   medicacoes: string | null; hipotese: string | null; telefone_contato: string | null
-  paciente: { id: string; nome: string; nascimento: string | null; sexo: string | null; cns: string | null }
+  paciente: { id: string; nome: string; nascimento: string | null; sexo: string | null; cns: string | null
+    /** Portão 2, tarefa 5: recém-nascido vinculado à mãe (documento dela) */
+    mae?: { nome: string; cns: string | null; cpf: string | null } | null }
   paciente_nao_identificado: boolean
   episodio_id: string | null; internacao_id: string | null; origem: Ref; cnes_solicitante: string; central: Ref
   solicitante: string | null; solicitante_papel: 'medico' | 'gestor'; medico_assistente: string | null
@@ -97,6 +99,10 @@ const TOM: Record<string, 'destructive' | 'warning' | 'info' | 'secondary'> = {
 }
 const SELECT = 'h-8 rounded-controle border border-fio bg-campo px-2'
 const hoje = () => new Date().toLocaleDateString('sv-SE')
+
+// RN vinculado à mãe: a regulação o identifica pelo CNS/CPF da mãe (Portão 2, tarefa 5)
+const docMae = (m?: { nome: string; cns: string | null; cpf: string | null } | null) =>
+  m ? ` · mãe: ${m.nome}${m.cns ? ` · CNS ${m.cns}` : m.cpf ? ` · CPF ${m.cpf}` : ' · sem documento'}` : ''
 
 export default function Regulacao() {
   const { unidadeAtiva, papeisDaUnidade } = useUnidade()
@@ -663,7 +669,7 @@ function Lista({ unidadeId, central, podeRegistrarExterno, abrir }: { unidadeId:
                   <span className="text-tinta-sussurro">nº {s.numero}</span>
                   <SeloPrioridade s={s} />
                   <span className="text-tinta-sussurro">{CARATER[s.carater]}</span>
-                  <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}</span>
+                  <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}{docMae(s.paciente.mae)}</span>
                   <span className="text-tinta-apoio">{resumoPedido(s)}</span>
                   {central && <span className="text-tinta-sussurro">de {s.origem.nome}</span>}
                   <SeloSla sla={s.sla} />
@@ -1013,7 +1019,7 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
                     <SeloPrioridade s={s} />
                     {novos.has(s.id) && <Badge variant="warning">novo</Badge>}
                     <span className="font-semibold tabular-nums text-tinta">{formatarEspera(s.espera_segundos + decorrido)}</span>
-                    <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}</span>
+                    <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}{docMae(s.paciente.mae)}</span>
                     <span className="text-tinta-apoio">{resumoPedido(s)}</span>
                     {s.isolamento && <Badge variant="destructive">isolamento</Badge>}
                     <SeloSla sla={s.sla} />
