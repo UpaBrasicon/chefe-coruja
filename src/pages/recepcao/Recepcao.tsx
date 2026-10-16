@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, Check, ClipboardList, ClipboardPlus, Hourglass, Monitor, Search, Stethoscope, TriangleAlert, X } from 'lucide-react'
+import { ArrowRight, Baby, Check, ClipboardList, ClipboardPlus, Hourglass, Monitor, Search, Stethoscope, TriangleAlert, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -17,6 +17,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { EnderecoSus } from '@/components/paciente/EnderecoSus'
+import { FormRn, type RnCriado } from '@/components/paciente/CadastroRn'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ExcluirDaFila } from '@/components/porta/Chamada'
 
 import { Campo, CamposCadastro } from './CamposCadastro'
@@ -298,6 +300,7 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
   const [prioridades, setPrioridades] = React.useState<PrioridadeLegal[]>([])
   const [duplicata, setDuplicata] = React.useState<{ tipo: 'documento' | 'provavel'; id: string; texto: string } | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
+  const [rnAberto, setRnAberto] = React.useState(false)
   const [erroLocal, setErroLocal] = React.useState<string | null>(null)
   // paciente com episódio aberto: avisa na seleção (busca) ou quando a RPC recusa
   const [alvoAberto, setAlvoAberto] = React.useState<string | null>(null)
@@ -356,6 +359,14 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
     setModo('existente')
     setAviso(null)
     if (a.episodio_etapa) setAlvoAberto(a.id)
+  }
+
+  // Portão 2, tarefa 5: recém-nascido "RN de <mãe>", ligado ao cadastro da mãe; segue para a ficha
+  function rnCadastrado(rn: RnCriado) {
+    setRnAberto(false)
+    usarExistente({ id: rn.paciente_id, nome: rn.nome, nome_social: null, data_nascimento: rn.data_nascimento, nome_mae: rn.nome_mae,
+      cpf_final: null, cns_final: null, prontuario: rn.prontuario, episodio_etapa: null })
+    if (!rn.mae_tem_documento) setAviso('Recém-nascido cadastrado. A mãe está sem CNS e sem CPF válidos: na regulação, o RN sai como não identificado até o documento dela ser completado.')
   }
 
   function novoCadastro() {
@@ -465,6 +476,9 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
         </label>
         <Button className="min-h-[42px] px-[15px]" onClick={novoCadastro}>
           <ClipboardPlus /> Novo cadastro
+        </Button>
+        <Button variant="outline" className="min-h-[42px] px-[15px]" onClick={() => setRnAberto(true)}>
+          <Baby /> Recém-nascido
         </Button>
       </div>
 
@@ -614,6 +628,15 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
           <span className="text-controle text-acao">{aviso}</span>
         </div>
       )}
+      <Dialog open={rnAberto} onOpenChange={setRnAberto}>
+        <DialogContent className="sm:max-w-[560px]">
+          <DialogHeader>
+            <DialogTitle className="text-dialogo">Recém-nascido de paciente cadastrada</DialogTitle>
+            <DialogDescription className="text-controle">Escolha o cadastro da mãe. O RN fica como “RN de (nome da mãe)” e segue para a ficha.</DialogDescription>
+          </DialogHeader>
+          {rnAberto && <FormRn onCriado={rnCadastrado} />}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

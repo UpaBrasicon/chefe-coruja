@@ -29,6 +29,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import type { CorRisco } from '@/domain/risco'
 import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
 import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
+import { BotaoRnDaMae } from '@/components/paciente/CadastroRn'
 import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCrescimento'
 import { AbaEncaminhamentoInterno } from '@/components/encaminhamento/AbaEncaminhamentoInterno'
 import { AbaEvolucao } from '@/components/evolucao/AbaEvolucao'
@@ -220,9 +221,13 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
         ? `internado em ${diaHora(i.internado_em)} · na unidade desde ${diaHora(i.data_admissao)}`
         : `desde ${diaHora(i.data_admissao)}`}
       extra={
-        <Badge variant={ativa ? 'info' : 'secondary'}>
-          {i.status === 'em_observacao' ? 'Em observação' : ativa ? 'Internado' : 'Alta ' + diaHora(i.data_alta)}
-        </Badge>
+        <>
+          <Badge variant={ativa ? 'info' : 'secondary'}>
+            {i.status === 'em_observacao' ? 'Em observação' : ativa ? 'Internado' : 'Alta ' + diaHora(i.data_alta)}
+          </Badge>
+          {/* Portão 2, tarefa 5: recém-nascido cadastrado a partir do leito da mãe */}
+          {ativa && <BotaoRnDaMae maeId={pacienteId} maeNome={pacienteNome} />}
+        </>
       }
       corClassificacao={(i.episodio?.cor_atual as CorRisco | null | undefined) ?? null}
       onClassificacao={onClassificacao}
