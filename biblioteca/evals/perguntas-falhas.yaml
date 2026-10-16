@@ -156,9 +156,11 @@
 - q: "laringite estridor dexametasona criança"
   espera_gate: true
   espera_fonte_contendo: "Pronto-Socorro"
-- q: "gastroenterite aguda plano B de hidratação"
+# Decisão do RT em 15/10/2026: pergunta sem idade vale como adulto (R2-13); o
+# plano B só está na ficha pediátrica, então a pergunta do gabarito diz "criança".
+- q: "gastroenterite aguda na criança, plano B de hidratação"
   espera_gate: true
-  espera_fonte_contendo: "Pronto-Socorro"
+  espera_fonte_contendo: ["Pronto-Socorro", "Diarreia aguda — desidratação"]
 - q: "invaginação intestinal sinais"
   espera_gate: true
   espera_fonte_contendo: "Pronto-Socorro"
