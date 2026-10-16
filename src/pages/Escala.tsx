@@ -132,6 +132,8 @@ type SolicitacaoComExtra = SolicitacaoEscala & {
   destino: { nome_completo: string } | null
 }
 
+type VagaGeracao = { data: string; turno: string; setor: string | null; profissional: string | null; conflito: string }
+
 export default function Escala({
   embutido = false,
   aba,
@@ -176,6 +178,8 @@ export default function Escala({
   const [mensagem, setMensagem] = React.useState<string | null>(null)
   const [erroAcao, setErroAcao] = React.useState<string | null>(null)
   const [mensagemGeracao, setMensagemGeracao] = React.useState<string | null>(null)
+  // Portão 2, tarefa 4: plantões da fixa que bateram com outro plantão da pessoa viram vaga aberta
+  const [vagasGeracao, setVagasGeracao] = React.useState<VagaGeracao[]>([])
 
   // Troca bilateral
   const [meuPlantaoTroca, setMeuPlantaoTroca] = React.useState<string>('')
@@ -460,7 +464,7 @@ export default function Escala({
     mutationFn: async () => {
       if (!unidadeId) return
       const [ano, mesNum] = mes.split('-').map(Number)
-      const { data, error } = await supabase.rpc('gerar_escala_mensal', {
+      const { data, error } = await supabase.rpc('gerar_escala_mensal_detalhada', {
         p_unidade: unidadeId,
         p_ano: ano,
         p_mes: mesNum,
@@ -468,9 +472,11 @@ export default function Escala({
       if (error) throw error
       return data
     },
-    onSuccess: (dias) => {
+    onSuccess: (r) => {
       invalidar()
-      setMensagemGeracao(dias ? `Mês gerado: ${dias} dias processados.` : 'Mês gerado a partir da escala fixa.')
+      const g = r as unknown as { dias: number; gerados: number; vagas: VagaGeracao[] } | undefined
+      setVagasGeracao(g?.vagas ?? [])
+      setMensagemGeracao(g ? `Mês gerado: ${g.dias} dias processados, ${g.gerados} plantões gravados.` : 'Mês gerado a partir da escala fixa.')
     },
   })
 
@@ -1888,6 +1894,20 @@ export default function Escala({
                   </div>
                 )}
                 {mensagemGeracao && <p className="text-sm text-conforme">{mensagemGeracao}</p>}
+                {vagasGeracao.length > 0 && (
+                  <div role="alert" className="flex flex-col gap-1 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-3 text-sm">
+                    <span className="font-medium text-tinta">
+                      {vagasGeracao.length} plantão(ões) viraram vaga aberta: a pessoa já estava escalada em outro lugar no mesmo horário.
+                    </span>
+                    <ul className="list-disc pl-5 text-tinta-apoio">
+                      {vagasGeracao.map((v) => (
+                        <li key={`${v.data}-${v.turno}-${v.setor}-${v.profissional}`}>
+                          {v.data.split('-').reverse().join('/')} · {v.turno} · {v.setor ?? 'setor'}: {v.profissional ?? 'profissional'} já estava {v.conflito}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2">
                   <Button onClick={() => gerarMes.mutate()} disabled={gerarMes.isPending || carregandoFixa}>
                     {gerarMes.isPending ? <Spinner /> : <RefreshCcw />} Gerar mês {fmtMesBR(mesInicio)} a partir da fixa
