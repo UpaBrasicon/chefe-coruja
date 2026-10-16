@@ -892,6 +892,8 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 **Horizonte:** 180+ dias
 **Objetivo:** ampliar para rede completa e competir com sistemas maiores.
 
+**Fase 5 aberta pelo RT em 16/10/2026**, depois do Portão 2 encerrado (PR #125). Primeiro passo, pela ordem técnica abaixo: o RT escolhe o foco (UBS, faturamento ou integrações); as três frentes não andam em paralelo. **Ordem decidida pelo RT em 16/10/2026: 5B Faturamento, depois 5C Integrações, depois 5A UBS.** Estado de partida: o tipo de unidade só aceita hospital, UPA e clínica; não há agenda, CIAP-2, conta do atendimento, TUSS nem webhooks; já existem AIH, BPA-I, BPA-C e APAC (Fase 3), a API de leitura e o checklist da RNDS.
+
 ### Fase 5A — UBS Mínima
 | Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
 |---|---|---|---|---|
