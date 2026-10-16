@@ -10230,6 +10230,7 @@ export type Database = {
           cns_final: string
           cpf_final: string
           data_nascimento: string
+          documento_unificado: boolean
           episodio_etapa: string
           id: string
           nome: string
@@ -10597,7 +10598,7 @@ export type Database = {
         Returns: undefined
       }
       decidir_unificacao: {
-        Args: { p_aprovar: boolean; p_motivo?: string; p_pedido: string }
+        Args: { p_aprovar: boolean; p_confirmo?: boolean; p_motivo?: string; p_pedido: string }
         Returns: string
       }
       decidir_versao_ferramenta: {
@@ -12006,7 +12007,7 @@ export type Database = {
         }[]
       }
       pedir_unificacao: {
-        Args: { p_absorvido: string; p_motivo: string; p_principal: string }
+        Args: { p_absorvido: string; p_confirmo?: boolean; p_motivo: string; p_principal: string }
         Returns: string
       }
       pendencias_para_encaminhar: {
