@@ -11181,6 +11181,10 @@ export type Database = {
         Args: { p_ano: number; p_mes: number; p_unidade: string }
         Returns: number
       }
+      gerar_escala_mensal_detalhada: {
+        Args: { p_ano: number; p_mes: number; p_unidade: string }
+        Returns: Json
+      }
       gerar_extrato_plantonista: {
         Args: { p_fim: string; p_inicio: string; p_unidade: string }
         Returns: {

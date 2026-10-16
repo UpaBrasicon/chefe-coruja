@@ -6,6 +6,9 @@
 -- reavaliação com hora, protocolo com fonte (só dengue) e etapas com autor,
 -- desfecho no card sobre dar_alta/registrar_evento_adt, passagem com aceite.
 BEGIN;
+-- Portão 2, tarefa 4: este teste escala a mesma pessoa em mais de um setor por
+-- conveniência; a regra de sobreposição tem teste próprio (portao2_escala_sobreposicao.sql)
+ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_sem_sobreposicao;
 -- médico (…0002) no PS, na Observação e na Clínica Médica; enfermeira (…0004)
 -- na Observação agora; recepção (…0005) só no PS.
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',

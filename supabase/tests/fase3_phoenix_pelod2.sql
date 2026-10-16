@@ -4,6 +4,9 @@
 -- O cálculo do Phoenix é conferido contra as duas vinhetas clínicas da
 -- própria fonte (Sanchez-Pinto et al., JAMA 2024, Supplement 1, eAppendix 2).
 BEGIN;
+-- Portão 2, tarefa 4: este teste escala a mesma pessoa em mais de um setor por
+-- conveniência; a regra de sobreposição tem teste próprio (portao2_escala_sobreposicao.sql)
+ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_sem_sobreposicao;
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002',
   '10000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000005');
 ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_janela;
