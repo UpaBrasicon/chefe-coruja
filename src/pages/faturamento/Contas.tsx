@@ -35,6 +35,7 @@ import { codigoSigtapNaTela, type ProfissionalParaFaturar } from '@/lib/bpa'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { Erro } from '@/pages/farmacia/Farmacia'
+import { CartaoGlosa, RegistrarGlosa } from '@/pages/faturamento/Glosas'
 
 const MINIMO_MOTIVO = 10
 const VARIANTE: Record<EtapaConta, 'info' | 'warning' | 'secondary' | 'outline'> = {
@@ -245,6 +246,17 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
                   </>
                 )}
               </div>
+            )}
+
+            {(c.status === 'fechada' || c.status === 'faturada' || (c.glosas ?? []).length > 0) && (
+              <section className="flex flex-col gap-2">
+                <TituloSecao className="mb-0" extra="a conta não muda de etapa">Glosas</TituloSecao>
+                {(c.glosas ?? []).length === 0 && <p className="text-tinta-sussurro">Nenhuma glosa registrada.</p>}
+                {(c.glosas ?? []).map((g) => (
+                  <CartaoGlosa key={g.id} g={g} quem={{ pode_conduzir: c.pode_conduzir, pode_perder: c.pode_reabrir }} aoMudar={recarregar} />
+                ))}
+                {c.pode_conduzir && (c.glosaveis ?? []).length > 0 && <RegistrarGlosa contaId={c.id} glosaveis={c.glosaveis} aoMudar={recarregar} />}
+              </section>
             )}
 
             <TituloSecao className="mb-1 mt-2">Histórico</TituloSecao>

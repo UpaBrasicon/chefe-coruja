@@ -2,6 +2,8 @@
 // tela oferece em cada etapa. Quem decide é o servidor (public.mudar_etapa_conta);
 // aqui só se escolhe o que mostrar.
 
+import type { Glosa, Glosavel } from './glosas.ts'
+
 export type EtapaConta = 'aberta' | 'em_conferencia' | 'fechada' | 'faturada'
 export type TipoConta = 'ambulatorial' | 'internacao'
 export type Pagador = 'sus' | 'convenio' | 'particular'
@@ -70,6 +72,9 @@ export type ContaDetalhe = Conta & {
   bloqueantes_sem_liberacao: number
   liberacao: { em: string; por: string | null; motivo: string; pendencias: Pendencia[] } | null
   pode_liberar: boolean
+  /** Fase 5B, tarefa 6: glosas da conta e o que pode ser glosado (só na conta fechada ou faturada). */
+  glosas: Glosa[]
+  glosaveis: Glosavel[]
 }
 
 /** Pendência da pré-auditoria (Fase 5B, tarefa 5). */

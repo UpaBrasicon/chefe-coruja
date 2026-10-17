@@ -25,7 +25,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
-import { FileCheck, FileDown, FileText, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
+import { FileCheck, FileDown, FileText, FileX, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
 
 import type { Papel } from '@/types/database'
@@ -86,6 +86,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/faturamento', rotulo: 'Faturamento (BPA)', curto: 'BPA', icone: Receipt, exato: true },
     // Fase 5B, tarefa 1: o gestor acompanha as contas e reabre com motivo
     { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true },
+    // Fase 5B, tarefa 6: o gestor acompanha as glosas e marca as perdidas
+    { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true },
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
     { to: '/observacao', rotulo: 'Observação', icone: Eye, exato: true },
     { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos' },
@@ -142,6 +144,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   faturamento: [
     { to: '/faturamento', rotulo: 'BPA', icone: Receipt, exato: true },
     { to: '/faturamento/contas', rotulo: 'Contas', icone: Wallet, exato: true },
+    { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true },
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
   ],
   farmaceutico: [
