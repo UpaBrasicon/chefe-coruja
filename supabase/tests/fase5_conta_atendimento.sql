@@ -100,6 +100,10 @@ SELECT pg_temp.falha(format('SELECT public.mudar_etapa_conta(%L, %L)', pg_temp.u
   'Mudança de etapa não permitida: de aberta para faturada', 'não pula etapa');
 SELECT public.trocar_pagador_conta(pg_temp.u('a2'), 'sus', 'paciente apresentou cartão SUS e quer pelo SUS');
 SELECT public.mudar_etapa_conta(pg_temp.u('a2'), 'em_conferencia');
+-- Fase 5B, tarefa 5: a conta de teste tem pendência bloqueante; o gestor libera
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
+SELECT public.liberar_fechamento_conta(pg_temp.u('a2'), 'liberado no teste da tarefa anterior');
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 SELECT public.mudar_etapa_conta(pg_temp.u('a2'), 'fechada');
 SELECT pg_temp.falha(format('SELECT public.trocar_pagador_conta(%L, %L, %L)', pg_temp.u('a2'), 'particular', 'mudou de ideia de novo'),
   'Conta fechada: o gestor reabre', 'pagador não muda com a conta fechada');
@@ -115,13 +119,13 @@ SELECT public.mudar_etapa_conta(pg_temp.u('a2'), 'aberta', 'glosa do município:
 RESET ROLE;
 DO $$ BEGIN
   IF (SELECT string_agg(evento, ',' ORDER BY em, evento) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2'))
-     NOT LIKE 'aberta,%pagador%' OR (SELECT count(*) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2')) <> 6 THEN
+     NOT LIKE 'aberta,%pagador%' OR (SELECT count(*) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2')) <> 7 THEN  -- 7 com a liberação do gestor (tarefa 5)
     RAISE EXCEPTION 'FALHOU: histórico da conta: %', (SELECT string_agg(evento, ',' ORDER BY em) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2'));
   END IF;
   IF (SELECT status || '|' || pagador FROM public.contas WHERE id = pg_temp.u('a2')) <> 'aberta|sus' THEN
     RAISE EXCEPTION 'FALHOU: estado final da conta encerrada';
   END IF;
-  IF (SELECT count(*) FROM public.log_auditoria WHERE entidade_id = pg_temp.u('a2') AND acao LIKE 'conta_%') <> 5 THEN
+  IF (SELECT count(*) FROM public.log_auditoria WHERE entidade_id = pg_temp.u('a2') AND acao LIKE 'conta_%') <> 6 THEN  -- 6 com a liberação do gestor (tarefa 5)
     RAISE EXCEPTION 'FALHOU: auditoria das mudanças da conta';
   END IF;
   IF has_table_privilege('authenticated', 'public.contas', 'INSERT') OR has_table_privilege('authenticated', 'public.contas', 'UPDATE') THEN

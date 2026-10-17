@@ -141,6 +141,10 @@ UPDATE public.internacoes SET data_alta = now(), status = 'alta_melhorada' WHERE
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 SELECT public.mudar_etapa_conta(pg_temp.u('int'), 'em_conferencia');
+-- Fase 5B, tarefa 5: a conta de teste tem pendência bloqueante; o gestor libera
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
+SELECT public.liberar_fechamento_conta(pg_temp.u('int'), 'liberado no teste da tarefa anterior');
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 SELECT public.mudar_etapa_conta(pg_temp.u('int'), 'fechada');
 SELECT pg_temp.falha(format('SELECT public.lancar_procedimento_conta(%L, %L)', pg_temp.u('int'), '0802010999'),
   'Conta fechada: o gestor reabre', 'conta fechada não recebe lançamento');

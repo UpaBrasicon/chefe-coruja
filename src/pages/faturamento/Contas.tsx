@@ -24,8 +24,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import {
-  acoesDaConta, ETAPA, EVENTO, ORIGEM_ITEM, PAGADOR, reais, TIPO,
-  SITUACAO_DOCUMENTO, TIPO_APAC,
+  acoesDaConta, ETAPA, EVENTO, GRUPO_PENDENCIA, ondeCorrigir, ORIGEM_ITEM, PAGADOR, reais, TIPO,
+  SITUACAO_DOCUMENTO, TIPO_APAC, type GrupoPendencia,
   type AcaoConta, type AihConta, type ApacConta, type Conta, type ContaDetalhe, type EtapaConta, type ItemConta, type MedicamentoConta,
   type Pagador, type TipoConta,
 } from '@/lib/contas'
@@ -59,6 +59,12 @@ export default function Contas() {
     },
   })
   const totais = lista.data?.totais
+  // Fase 5B, tarefa 5 (4a): filtro pelo resumo de pendências que vem com a lista
+  const [filtroPend, setFiltroPend] = React.useState<'todas' | 'com' | 'bloqueante'>('todas')
+  const contas = (lista.data?.contas ?? []).filter((c) =>
+    filtroPend === 'todas' ? true
+      : filtroPend === 'bloqueante' ? (c.pendencias?.bloqueantes ?? 0) > 0
+        : (c.pendencias?.bloqueantes ?? 0) + (c.pendencias?.avisos ?? 0) > 0)
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -77,9 +83,15 @@ export default function Contas() {
         <Chip ativo={tipo === null} onClick={() => setTipo(null)}>porta e internação</Chip>
         {(['ambulatorial', 'internacao'] as const).map((t) => <Chip key={t} ativo={tipo === t} onClick={() => setTipo(t)}>{TIPO[t]}</Chip>)}
       </Chips>
+      <Chips rotulo="Pendências">
+        <Chip ativo={filtroPend === 'todas'} onClick={() => setFiltroPend('todas')}>todas</Chip>
+        <Chip ativo={filtroPend === 'com'} onClick={() => setFiltroPend('com')}>com pendência</Chip>
+        <Chip ativo={filtroPend === 'bloqueante'} onClick={() => setFiltroPend('bloqueante')}>com bloqueante</Chip>
+      </Chips>
       <Erro texto={lista.error ? (lista.error as Error).message : null} />
-      {lista.isLoading ? <Spinner /> : (lista.data?.contas ?? []).length === 0 ? (
-        <Vazio icone={Wallet} titulo="Nenhuma conta nesta etapa" texto="As contas abrem sozinhas com o atendimento na porta e com a internação." />
+      {lista.isLoading ? <Spinner /> : contas.length === 0 ? (
+        <Vazio icone={Wallet} titulo={filtroPend === 'todas' ? 'Nenhuma conta nesta etapa' : 'Nenhuma conta com pendência neste filtro'}
+          texto="As contas abrem sozinhas com o atendimento na porta e com a internação." />
       ) : (
         <div className="overflow-x-auto rounded-container border border-fio bg-superficie">
           <table className="w-full min-w-[720px] text-apoio">
@@ -88,10 +100,11 @@ export default function Contas() {
                 <th className="px-3 py-2 font-medium">Conta</th><th className="px-3 py-2 font-medium">Paciente</th>
                 <th className="px-3 py-2 font-medium">Tipo</th><th className="px-3 py-2 font-medium">Atendimento</th>
                 <th className="px-3 py-2 font-medium">Pagador</th><th className="px-3 py-2 font-medium">Etapa</th>
+                <th className="px-3 py-2 font-medium">Pendências</th>
               </tr>
             </thead>
             <tbody>
-              {lista.data!.contas.map((c) => (
+              {contas.map((c) => (
                 <tr key={c.id} className="cursor-pointer border-b border-trilha last:border-0 hover:bg-trilha/60" onClick={() => setAberta(c.id)}>
                   <td className="whitespace-nowrap px-3 py-2 font-medium text-tinta">
                     {c.numero}
@@ -105,6 +118,11 @@ export default function Contas() {
                   </td>
                   <td className="px-3 py-2">{PAGADOR[c.pagador]}</td>
                   <td className="px-3 py-2"><Badge variant={VARIANTE[c.status]}>{ETAPA[c.status]}</Badge></td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    {(c.pendencias?.bloqueantes ?? 0) > 0 && <Badge variant="destructive">{c.pendencias!.bloqueantes} bloqueante(s)</Badge>}
+                    {(c.pendencias?.avisos ?? 0) > 0 && <span className="ml-1 text-rotulo text-atencao">{c.pendencias!.avisos} aviso(s)</span>}
+                    {!(c.pendencias?.bloqueantes || c.pendencias?.avisos) && <span className="text-tinta-sussurro">—</span>}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -182,6 +200,8 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
             )}
             <Erro texto={erro?.message ?? null} />
 
+            <PendenciasConta c={c} aoMudar={recarregar} />
+
             <ItensConta c={c} podeMexer={c.pode_conduzir && (c.status === 'aberta' || c.status === 'em_conferencia')} aoMudar={recarregar} />
             <DocumentosSusConta c={c} />
             <MedicamentosConta c={c} podeMexer={c.pode_conduzir && (c.status === 'aberta' || c.status === 'em_conferencia')} aoMudar={recarregar} />
@@ -197,7 +217,7 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
                 ))}
               </div>
             )}
-            {acoes.find((a) => a.bloqueio) && <p className="text-rotulo text-tinta-sussurro">{acoes.find((a) => a.bloqueio)!.bloqueio} A conta fecha depois.</p>}
+            {acoes.find((a) => a.bloqueio) && <p className="text-rotulo text-tinta-sussurro">{acoes.find((a) => a.bloqueio)!.bloqueio}{c.atendimento_terminou ? '' : ' A conta fecha depois.'}</p>}
             {acao && (
               <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-3">
                 <Label htmlFor="conta-motivo">{acao.rotulo}: motivo</Label>
@@ -317,6 +337,86 @@ function ItensConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer: boo
         </div>
       )}
       {podeMexer && <LancarProcedimento c={c} aoMudar={aoMudar} />}
+    </section>
+  )
+}
+
+// Fase 5B, tarefa 5: pré-auditoria. Pendências agrupadas, com o que corrigir e
+// onde. A bloqueante trava o fechamento; só o gestor libera, com justificativa,
+// e a liberação cobre as pendências daquele momento. Na conta fechada aparece a
+// lista guardada no fechamento.
+function PendenciasConta({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void }) {
+  const [liberando, setLiberando] = React.useState(false)
+  const [motivo, setMotivo] = React.useState('')
+  const liberar = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('liberar_fechamento_conta', { p_conta: c.id, p_motivo: motivo.trim() })
+      if (error) throw error
+    },
+    onSuccess: () => { setLiberando(false); setMotivo(''); aoMudar() },
+  })
+  const pend = c.pendencias ?? []
+  const aberta = c.status === 'aberta' || c.status === 'em_conferencia'
+  const liberadas = new Set((c.liberacao?.pendencias ?? []).map((p) => p.chave))
+  const grupos = (Object.keys(GRUPO_PENDENCIA) as GrupoPendencia[]).filter((g) => pend.some((p) => p.grupo === g))
+  const bloqueantes = pend.filter((p) => p.bloqueante).length
+  return (
+    <section className="flex flex-col gap-2">
+      <TituloSecao className="mb-0" extra={aberta ? 'conferência de agora' : 'guardadas no fechamento'}>
+        Pendências
+      </TituloSecao>
+      {!c.pendencias_registradas ? (
+        <p className="text-tinta-sussurro">Conta fechada antes da pré-auditoria: as pendências não foram guardadas.</p>
+      ) : pend.length === 0 ? (
+        <p className="text-conforme">Nenhuma pendência.</p>
+      ) : (
+        <>
+          <p className="text-rotulo text-tinta-apoio">
+            {bloqueantes > 0 ? `${bloqueantes} bloqueante(s)` : 'Nenhuma bloqueante'}
+            {pend.length - bloqueantes > 0 ? ` e ${pend.length - bloqueantes} aviso(s)` : ''}.
+            {aberta && bloqueantes > 0 && c.bloqueantes_sem_liberacao === 0 ? ' As bloqueantes estão liberadas pelo gestor.' : ''}
+          </p>
+          <div className="flex flex-col divide-y divide-trilha rounded-lg border border-fio">
+            {grupos.map((g) => (
+              <div key={g} className="flex flex-col gap-1 px-3 py-2">
+                <span className="text-rotulo font-medium text-tinta-sussurro">{GRUPO_PENDENCIA[g]}</span>
+                {pend.filter((p) => p.grupo === g).map((p) => (
+                  <div key={p.chave} className="flex flex-col">
+                    <span className="flex flex-wrap items-center gap-1.5">
+                      <Badge variant={p.bloqueante ? (liberadas.has(p.chave) ? 'secondary' : 'destructive') : 'warning'}>
+                        {p.bloqueante ? (liberadas.has(p.chave) ? 'liberada' : 'bloqueia') : 'aviso'}
+                      </Badge>
+                      <span className="text-tinta">{p.texto}</span>
+                      {p.vezes > 1 && <span className="text-rotulo text-tinta-sussurro">({p.vezes} vezes)</span>}
+                    </span>
+                    {aberta && <span className="text-rotulo text-tinta-sussurro">Onde corrigir: {ondeCorrigir(p, c.tipo)}</span>}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      {c.liberacao && (
+        <p className="text-rotulo text-tinta-apoio">
+          Fechamento liberado por {c.liberacao.por ?? '—'} em {fmtDataHora(c.liberacao.em)}: “{c.liberacao.motivo}”
+        </p>
+      )}
+      {c.pode_liberar && c.status === 'em_conferencia' && c.bloqueantes_sem_liberacao > 0 && (
+        liberando ? (
+          <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-3">
+            <Label htmlFor="liberar-motivo">Liberar o fechamento com {c.bloqueantes_sem_liberacao} pendência(s) bloqueante(s): justificativa</Label>
+            <Textarea id="liberar-motivo" rows={2} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+            {liberar.error && <p role="alert" className="text-critico">{(liberar.error as Error).message}</p>}
+            <div className="flex justify-end gap-2">
+              <Button size="sm" variant="ghost" onClick={() => setLiberando(false)}>Voltar</Button>
+              <Button size="sm" disabled={motivo.trim().length < MINIMO_MOTIVO || liberar.isPending} onClick={() => liberar.mutate()}>Liberar fechamento</Button>
+            </div>
+          </div>
+        ) : (
+          <Button size="sm" variant="outline" className="self-start" onClick={() => { setLiberando(true); setMotivo('') }}>Liberar fechamento</Button>
+        )
+      )}
     </section>
   )
 }

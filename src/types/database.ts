@@ -10290,6 +10290,10 @@ export type Database = {
         Args: { p_conta: string; p_procedimento: string; p_profissional?: string; p_quantidade?: number; p_realizado_em?: string }
         Returns: Json
       }
+      liberar_fechamento_conta: {
+        Args: { p_conta: string; p_motivo: string }
+        Returns: Json
+      }
       medicamento_fora_da_conta: {
         Args: { p_conta: string; p_fora: boolean; p_item: string; p_motivo: string }
         Returns: Json
