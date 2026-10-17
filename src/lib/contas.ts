@@ -33,6 +33,24 @@ export type MedicamentoConta = {
   administrado: number; aviso: string | null
   fora_da_conta: boolean; fora_motivo: string | null; fora_por: string | null
 }
+/** AIH e APAC ligadas à conta (Fase 5B, tarefa 4): só mostra; quem pede e decide é a regulação. */
+export type AihConta = {
+  id: string; status: 'solicitada' | 'aprovada' | 'rejeitada' | 'cancelada'; numero: string | null; competencia: string | null
+  procedimento: string | null; nome: string | null; solicitada_em: string; decidida_em: string | null; motivo: string | null; vigente: boolean
+}
+export type ApacConta = {
+  id: string; tipo: '1' | '2' | '3'; status: 'solicitada' | 'autorizada' | 'rejeitada' | 'cancelada'; numero: string | null
+  procedimento: string; nome: string | null; validade_inicio: string | null; validade_fim: string | null
+  solicitada_em: string; decidida_em: string | null; motivo: string | null
+  competencias: { competencia: string; fechada: boolean; fora_do_arquivo: boolean }[]
+}
+export type DocumentosSus = { aihs: AihConta[]; apacs: ApacConta[]; avisos: string[] }
+
+export const SITUACAO_DOCUMENTO: Record<AihConta['status'] | ApacConta['status'], string> = {
+  solicitada: 'solicitada', aprovada: 'aprovada', autorizada: 'autorizada', rejeitada: 'rejeitada', cancelada: 'cancelada',
+}
+export const TIPO_APAC: Record<ApacConta['tipo'], string> = { '1': 'inicial', '2': 'continuidade', '3': 'única' }
+
 export type ContaDetalhe = Conta & {
   eventos: { evento: string; de: string | null; para: string | null; motivo: string | null; por: string | null; em: string }[]
   pode_conduzir: boolean
@@ -43,6 +61,7 @@ export type ContaDetalhe = Conta & {
   itens_com_aviso: number
   medicamentos: MedicamentoConta[]
   medicamentos_com_aviso: number
+  documentos_sus: DocumentosSus
 }
 
 export const ORIGEM_ITEM: Record<ItemConta['origem'], string> = {

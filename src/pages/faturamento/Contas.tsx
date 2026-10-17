@@ -12,6 +12,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link2, Wallet } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
@@ -24,11 +25,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import {
   acoesDaConta, ETAPA, EVENTO, ORIGEM_ITEM, PAGADOR, reais, TIPO,
-  type AcaoConta, type Conta, type ContaDetalhe, type EtapaConta, type ItemConta, type MedicamentoConta, type Pagador, type TipoConta,
+  SITUACAO_DOCUMENTO, TIPO_APAC,
+  type AcaoConta, type AihConta, type ApacConta, type Conta, type ContaDetalhe, type EtapaConta, type ItemConta, type MedicamentoConta,
+  type Pagador, type TipoConta,
 } from '@/lib/contas'
+import { competenciaNaTela } from '@/lib/aih'
 import { rotuloUnidade } from '@/lib/unidadeConsumo'
 import { codigoSigtapNaTela, type ProfissionalParaFaturar } from '@/lib/bpa'
-import { fmtDataHora } from '@/lib/datas'
+import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { Erro } from '@/pages/farmacia/Farmacia'
 
@@ -179,6 +183,7 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
             <Erro texto={erro?.message ?? null} />
 
             <ItensConta c={c} podeMexer={c.pode_conduzir && (c.status === 'aberta' || c.status === 'em_conferencia')} aoMudar={recarregar} />
+            <DocumentosSusConta c={c} />
             <MedicamentosConta c={c} podeMexer={c.pode_conduzir && (c.status === 'aberta' || c.status === 'em_conferencia')} aoMudar={recarregar} />
 
             {acoes.length > 0 && (
@@ -312,6 +317,85 @@ function ItensConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer: boo
         </div>
       )}
       {podeMexer && <LancarProcedimento c={c} aoMudar={aoMudar} />}
+    </section>
+  )
+}
+
+// Fase 5B, tarefa 4: AIH e APAC ligadas à conta. Na internação, todas as AIHs
+// (a que vale marcada; rejeitada e cancelada ficam como histórico); a APAC vai
+// na conta a que está ligada. A conta só mostra a situação de agora: quem pede
+// e decide continua na regulação. Os avisos não travam o fechamento.
+const VARIANTE_DOC: Record<AihConta['status'] | ApacConta['status'], 'success' | 'warning' | 'destructive' | 'secondary'> = {
+  aprovada: 'success', autorizada: 'success', solicitada: 'warning', rejeitada: 'destructive', cancelada: 'secondary',
+}
+
+function DocumentosSusConta({ c }: { c: ContaDetalhe }) {
+  const { papeisDaUnidade } = useUnidade()
+  const docs = c.documentos_sus ?? { aihs: [], apacs: [], avisos: [] }
+  const abreAih = papeisDaUnidade.some((p) => p === 'regulador' || p === 'gestor')
+  const abreApac = papeisDaUnidade.some((p) => p === 'regulador' || p === 'faturamento' || p === 'gestor')
+  const vazio = docs.aihs.length === 0 && docs.apacs.length === 0
+  // na porta, a seção só aparece quando há APAC
+  if (c.tipo !== 'internacao' && vazio && docs.avisos.length === 0) return null
+  return (
+    <section className="flex flex-col gap-2">
+      <TituloSecao className="mb-0" extra="situação de agora; quem pede e decide é a regulação">
+        {c.tipo === 'internacao' ? 'AIH e APAC' : 'APAC'}
+      </TituloSecao>
+      {docs.avisos.map((a) => <p key={a} className="text-rotulo text-atencao">{a} O aviso não impede o fechamento.</p>)}
+      {vazio && docs.avisos.length === 0 && (
+        <p className="text-tinta-sussurro">Nenhuma AIH ou APAC ligada a esta conta.</p>
+      )}
+      {!vazio && (
+        <ul className="flex flex-col divide-y divide-trilha rounded-lg border border-fio">
+          {docs.aihs.map((a) => (
+            <li key={a.id} className={`flex flex-col gap-0.5 px-3 py-2${a.vigente ? '' : ' text-tinta-sussurro'}`}>
+              <span className="flex flex-wrap items-center gap-1.5">
+                <span className="font-medium text-tinta">AIH {a.numero ?? 'sem número'}</span>
+                <Badge variant={VARIANTE_DOC[a.status]}>{SITUACAO_DOCUMENTO[a.status]}</Badge>
+                {a.vigente && <Badge variant="outline">a que vale</Badge>}
+                {a.competencia && <span className="text-rotulo">competência {competenciaNaTela(a.competencia)}</span>}
+              </span>
+              {a.procedimento && <span className="text-rotulo">{codigoSigtapNaTela(a.procedimento)} {a.nome ?? ''}</span>}
+              <span className="text-rotulo text-tinta-sussurro">
+                pedida {fmtDataHora(a.solicitada_em)}{a.decidida_em ? ` · decidida ${fmtDataHora(a.decidida_em)}` : ''}
+                {a.motivo && (a.status === 'rejeitada' || a.status === 'cancelada') ? ` · “${a.motivo}”` : ''}
+              </span>
+            </li>
+          ))}
+          {docs.apacs.map((a) => (
+            <li key={a.id} className="flex flex-col gap-0.5 px-3 py-2">
+              <span className="flex flex-wrap items-center gap-1.5">
+                <span className="font-medium text-tinta">APAC {a.numero ?? 'sem número'}</span>
+                <Badge variant={VARIANTE_DOC[a.status]}>{SITUACAO_DOCUMENTO[a.status]}</Badge>
+                <span className="text-rotulo text-tinta-sussurro">{TIPO_APAC[a.tipo]}</span>
+                {a.validade_inicio && a.validade_fim && (
+                  <span className="text-rotulo">validade {fmtData(a.validade_inicio)} a {fmtData(a.validade_fim)}</span>
+                )}
+              </span>
+              <span className="text-rotulo">{codigoSigtapNaTela(a.procedimento)} {a.nome ?? ''}</span>
+              {a.competencias.length > 0 && (
+                <span className="flex flex-wrap gap-1.5 text-rotulo">
+                  {a.competencias.map((k) => (
+                    <span key={k.competencia} className={k.fora_do_arquivo ? 'text-atencao' : 'text-tinta-apoio'}>
+                      {competenciaNaTela(k.competencia)}: {k.fora_do_arquivo ? 'fora do arquivo (crítica)' : k.fechada ? 'no arquivo do mês' : 'competência aberta'}
+                    </span>
+                  ))}
+                </span>
+              )}
+              {a.motivo && (a.status === 'rejeitada' || a.status === 'cancelada') && (
+                <span className="text-rotulo text-tinta-sussurro">“{a.motivo}”</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {(docs.aihs.length > 0 && abreAih) || (docs.apacs.length > 0 && abreApac) ? (
+        <span className="flex flex-wrap gap-3 text-rotulo">
+          {docs.aihs.length > 0 && abreAih && <Link className="font-medium text-acao underline" to="/aih">Abrir a tela de AIH</Link>}
+          {docs.apacs.length > 0 && abreApac && <Link className="font-medium text-acao underline" to="/apac">Abrir a tela de APAC</Link>}
+        </span>
+      ) : null}
     </section>
   )
 }
