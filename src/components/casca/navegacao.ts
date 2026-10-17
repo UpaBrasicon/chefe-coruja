@@ -25,7 +25,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
-import { FileCheck, FileDown, FileText, History, KeyRound, Receipt, Rocket, PackageCheck, Video, Wallet, Waypoints } from 'lucide-react'
+import { FileCheck, FileDown, FileText, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
 
 import type { Papel } from '@/types/database'
@@ -77,6 +77,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/gestao/farmacia', rotulo: 'Farmácia', icone: FlaskConical, exato: true },
     { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
     { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true },
+    { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true },
     { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
     { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true },
     { to: '/internacao', rotulo: 'Internação', icone: Hospital, exato: true },
@@ -105,6 +106,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/notificacao-compulsoria', rotulo: 'Notificações', icone: Shield, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
     { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
+    // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
+    { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true },
     { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
     { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     ITEM_AVISOS,
@@ -114,6 +117,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto Socorro', curto: 'PS', icone: Stethoscope, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
     { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
+    // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
+    { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true },
     ITEM_AVISOS,
     ITEM_PRONTUARIOS,
   ],
@@ -144,6 +149,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
     // Fase 5B, etapa 3.1: unidade de consumo (vale para todas as unidades)
     { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true },
+    { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true },
     { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
     ITEM_PRONTUARIOS,
   ],
