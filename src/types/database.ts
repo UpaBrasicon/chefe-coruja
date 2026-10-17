@@ -6022,6 +6022,10 @@ export type Database = {
           anvisa_vinculo_pendente: boolean
           apresentacao: string | null
           ativo: boolean
+          unidade_consumo: string | null
+          unidade_consumo_conferida_em: string | null
+          unidade_consumo_conferida_por: string | null
+          unidade_consumo_outra: string | null
           concentracao: string | null
           created_at: string
           fonte: string
@@ -6045,6 +6049,10 @@ export type Database = {
           anvisa_vinculo_pendente?: boolean
           apresentacao?: string | null
           ativo?: boolean
+          unidade_consumo?: string | null
+          unidade_consumo_conferida_em?: string | null
+          unidade_consumo_conferida_por?: string | null
+          unidade_consumo_outra?: string | null
           concentracao?: string | null
           created_at?: string
           fonte?: string
@@ -6068,6 +6076,10 @@ export type Database = {
           anvisa_vinculo_pendente?: boolean
           apresentacao?: string | null
           ativo?: boolean
+          unidade_consumo?: string | null
+          unidade_consumo_conferida_em?: string | null
+          unidade_consumo_conferida_por?: string | null
+          unidade_consumo_outra?: string | null
           concentracao?: string | null
           created_at?: string
           fonte?: string
@@ -10251,6 +10263,21 @@ export type Database = {
       }
       cadastros_do_paciente: { Args: { p_paciente: string }; Returns: string[] }
       conta_detalhe: { Args: { p_conta: string }; Returns: Json }
+      conferir_dispensacao: { Args: { p_dispensacao: string }; Returns: undefined }
+      devolver_dispensacao: {
+        Args: { p_dispensacao: string; p_motivo: string; p_quantidade: number }
+        Returns: Json
+      }
+      dispensacoes_da_unidade: { Args: { p_horas?: number; p_unidade: string }; Returns: Json }
+      dispensar_avulso: {
+        Args: { p_destino: string; p_medicamento: string; p_motivo: string; p_quantidade: number; p_unidade: string }
+        Returns: Json
+      }
+      dispensar_item: {
+        Args: { p_item: string; p_justificativa?: string; p_quantidade: number }
+        Returns: Json
+      }
+      itens_para_dispensar: { Args: { p_busca?: string; p_unidade: string }; Returns: Json }
       definir_unidade_consumo: {
         Args: { p_medicamento: string; p_outra?: string; p_unidade: string }
         Returns: Json
