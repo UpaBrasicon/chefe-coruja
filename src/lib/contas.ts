@@ -26,6 +26,13 @@ export type ItemConta = {
   retiravel: boolean
   aih?: { status: string; numero: string | null; competencia: string | null }
 }
+/** Medicamento da conta (Fase 5B, etapa 3.3): o que a farmácia dispensou (menos o que voltou) ao lado do que a enfermagem deu. */
+export type MedicamentoConta = {
+  item_id: string; medicamento: string; unidade_consumo: string | null; prescricao: string
+  dispensado: number; devolvido: number; liquido: number; sem_farmaceutico: boolean
+  administrado: number; aviso: string | null
+  fora_da_conta: boolean; fora_motivo: string | null; fora_por: string | null
+}
 export type ContaDetalhe = Conta & {
   eventos: { evento: string; de: string | null; para: string | null; motivo: string | null; por: string | null; em: string }[]
   pode_conduzir: boolean
@@ -34,6 +41,8 @@ export type ContaDetalhe = Conta & {
   congelada_em: string | null
   total_referencia: number
   itens_com_aviso: number
+  medicamentos: MedicamentoConta[]
+  medicamentos_com_aviso: number
 }
 
 export const ORIGEM_ITEM: Record<ItemConta['origem'], string> = {
@@ -54,6 +63,7 @@ export const EVENTO: Record<string, string> = {
   aberta: 'Conta aberta', conferencia: 'Em conferência', devolvida: 'Voltou a aberta', fechada: 'Fechada',
   faturada: 'Faturada', reaberta: 'Reaberta pelo gestor', pagador: 'Pagador trocado',
   lancamento: 'Procedimento lançado', retirada: 'Procedimento retirado',
+  medicamento_fora: 'Medicamento fora da conta', medicamento_volta: 'Medicamento voltou à conta',
 }
 
 export type AcaoConta = { para: EtapaConta; rotulo: string; pedeMotivo: boolean; bloqueio?: string }

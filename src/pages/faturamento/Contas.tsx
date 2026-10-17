@@ -24,8 +24,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import {
   acoesDaConta, ETAPA, EVENTO, ORIGEM_ITEM, PAGADOR, reais, TIPO,
-  type AcaoConta, type Conta, type ContaDetalhe, type EtapaConta, type ItemConta, type Pagador, type TipoConta,
+  type AcaoConta, type Conta, type ContaDetalhe, type EtapaConta, type ItemConta, type MedicamentoConta, type Pagador, type TipoConta,
 } from '@/lib/contas'
+import { rotuloUnidade } from '@/lib/unidadeConsumo'
 import { codigoSigtapNaTela, type ProfissionalParaFaturar } from '@/lib/bpa'
 import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
@@ -178,6 +179,7 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
             <Erro texto={erro?.message ?? null} />
 
             <ItensConta c={c} podeMexer={c.pode_conduzir && (c.status === 'aberta' || c.status === 'em_conferencia')} aoMudar={recarregar} />
+            <MedicamentosConta c={c} podeMexer={c.pode_conduzir && (c.status === 'aberta' || c.status === 'em_conferencia')} aoMudar={recarregar} />
 
             {acoes.length > 0 && (
               <div className="flex flex-wrap gap-2">
@@ -310,6 +312,90 @@ function ItensConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer: boo
         </div>
       )}
       {podeMexer && <LancarProcedimento c={c} aoMudar={aoMudar} />}
+    </section>
+  )
+}
+
+// Fase 5B, etapa 3.3: medicamentos da conta. Fonte é a dispensação da farmácia
+// (menos devolução), em unidade de consumo; a administração da enfermagem fica
+// ao lado para conferir. Aviso só nos casos claros e não trava o fechamento. O
+// faturamento tira o item da conta com motivo e pode trazer de volta enquanto a
+// conta está aberta ou em conferência. Sem valor: só consumo.
+function MedicamentosConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer: boolean; aoMudar: () => void }) {
+  const [ajuste, setAjuste] = React.useState<{ m: MedicamentoConta; fora: boolean } | null>(null)
+  const [motivo, setMotivo] = React.useState('')
+  const ajustar = useMutation({
+    mutationFn: async (a: { m: MedicamentoConta; fora: boolean }) => {
+      const { error } = await supabase.rpc('medicamento_fora_da_conta', { p_conta: c.id, p_item: a.m.item_id, p_fora: a.fora, p_motivo: motivo.trim() })
+      if (error) throw error
+    },
+    onSuccess: () => { setAjuste(null); setMotivo(''); aoMudar() },
+  })
+  const meds = c.medicamentos ?? []
+  return (
+    <section className="flex flex-col gap-2">
+      <TituloSecao className="mb-0" extra={c.congelada_em ? `congelados no fechamento, ${fmtDataHora(c.congelada_em)}` : 'dispensado pela farmácia × administrado'}>
+        Medicamentos
+      </TituloSecao>
+      {meds.length === 0 ? <p className="text-tinta-sussurro">Nenhum medicamento dispensado ou administrado nesta conta.</p> : (
+        <div className="overflow-x-auto rounded-lg border border-fio">
+          <table className="w-full min-w-[520px] text-apoio">
+            <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
+              <tr><th className="px-2 py-1.5 font-medium">Medicamento</th><th className="px-2 py-1.5 font-medium">Dispensado</th>
+                <th className="px-2 py-1.5 font-medium">Administrado</th><th /></tr>
+            </thead>
+            <tbody>
+              {meds.map((m) => (
+                <tr key={m.item_id} className={`border-b border-trilha align-top last:border-0${m.fora_da_conta ? ' text-tinta-sussurro' : ''}`}>
+                  <td className="px-2 py-1.5">
+                    <span className={m.fora_da_conta ? 'line-through' : 'font-medium text-tinta'}>{m.medicamento}</span>
+                    {m.fora_da_conta && <Badge variant="outline" className="ml-1.5">fora da conta</Badge>}
+                    <span className="block text-rotulo text-tinta-sussurro">{m.prescricao}</span>
+                    {m.fora_da_conta && m.fora_motivo && (
+                      <span className="block text-rotulo text-tinta-sussurro">“{m.fora_motivo}”{m.fora_por ? ` · ${m.fora_por}` : ''}</span>
+                    )}
+                    {m.aviso && !m.fora_da_conta && <span className="block text-rotulo text-atencao">{m.aviso}</span>}
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-1.5">
+                    {m.liquido} {rotuloUnidade(m.unidade_consumo)}
+                    {m.devolvido > 0 && <span className="block text-rotulo text-tinta-sussurro">{m.dispensado} {m.dispensado === 1 ? 'saiu' : 'saíram'}, {m.devolvido} {m.devolvido === 1 ? 'voltou' : 'voltaram'}</span>}
+                    {m.sem_farmaceutico && <span className="block text-rotulo text-tinta-sussurro">sem farmacêutico no turno</span>}
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-1.5">{m.administrado === 0 ? 'nenhuma vez' : m.administrado === 1 ? '1 vez' : `${m.administrado} vezes`}</td>
+                  <td className="px-2 py-1.5 text-right">
+                    {podeMexer && (
+                      <Button size="xs" variant="ghost" onClick={() => { setAjuste({ m, fora: !m.fora_da_conta }); setMotivo('') }}>
+                        {m.fora_da_conta ? 'Voltar à conta' : 'Fora da conta'}
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-fio">
+                <td colSpan={4} className="px-2 py-1.5 text-rotulo text-tinta-sussurro">
+                  Quantidade em unidade de consumo, já sem o que voltou à farmácia. Sem valor: entra no custeio ou no pacote.
+                  {c.medicamentos_com_aviso > 0 ? ` ${c.medicamentos_com_aviso} medicamento(s) com aviso; o aviso não impede o fechamento.` : ''}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      )}
+      {ajuste && (
+        <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-3">
+          <Label htmlFor="med-motivo">{ajuste.fora ? 'Tirar da conta' : 'Voltar à conta'} {ajuste.m.medicamento}: motivo</Label>
+          <Textarea id="med-motivo" rows={2} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+          {ajustar.error && <p role="alert" className="text-critico">{(ajustar.error as Error).message}</p>}
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setAjuste(null)}>Voltar</Button>
+            <Button size="sm" disabled={motivo.trim().length < MINIMO_MOTIVO || ajustar.isPending} onClick={() => ajustar.mutate(ajuste)}>
+              {ajuste.fora ? 'Tirar da conta' : 'Voltar à conta'}
+            </Button>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
