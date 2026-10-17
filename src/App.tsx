@@ -70,6 +70,7 @@ const IntercorrenciasRelatorio = lazy(() => import('@/pages/gestor/Intercorrenci
 const CadastrosDuplicados = lazy(() => import('@/pages/recepcao/CadastrosDuplicados'))
 const Contingencia = lazy(() => import('@/pages/Contingencia'))
 const AltaVigilancia = lazy(() => import('@/pages/farmacia/AltaVigilancia'))
+const UnidadeConsumo = lazy(() => import('@/pages/farmacia/UnidadeConsumo'))
 const AihUnidade = lazy(() => import('@/pages/regulacao/Aih'))
 const FaturamentoBpa = lazy(() => import('@/pages/faturamento/Bpa'))
 const FaturamentoContas = lazy(() => import('@/pages/faturamento/Contas'))
@@ -237,6 +238,10 @@ export default function App() {
                       {/* Alta vigilância: administradas sem liberação e lista da unidade (Fase 2, tarefa 1) */}
                       <Route element={<RequireRole papeis={['farmaceutico', 'enfermeiro', 'gestor']} />}>
                         <Route path="/alta-vigilancia" element={<AltaVigilancia />} />
+                      </Route>
+                      {/* Fase 5B, etapa 3.1: unidade de consumo do cadastro de medicamentos */}
+                      <Route element={<RequireRole papeis={['farmaceutico', 'gestor']} />}>
+                        <Route path="/unidade-consumo" element={<UnidadeConsumo />} />
                       </Route>
                       {/* AIH: o médico regulador decide; o gestor acompanha (Fase 3, tarefa 1) */}
                       <Route element={<RequireRole papeis={['regulador', 'gestor']} />}>
