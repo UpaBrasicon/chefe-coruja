@@ -10290,6 +10290,18 @@ export type Database = {
         Args: { p_conta: string; p_procedimento: string; p_profissional?: string; p_quantidade?: number; p_realizado_em?: string }
         Returns: Json
       }
+      registrar_glosa: {
+        Args: { p_competencia?: string; p_conta: string; p_item?: string; p_motivo_codigo: string; p_motivo_texto?: string; p_origem?: string; p_valor?: number }
+        Returns: Json
+      }
+      mudar_glosa: {
+        Args: { p_competencia?: string; p_glosa: string; p_motivo: string; p_para: string; p_valor_recuperado?: number }
+        Returns: Json
+      }
+      glosas_da_unidade: {
+        Args: { p_competencia?: string; p_status?: string; p_unidade: string }
+        Returns: Json
+      }
       liberar_fechamento_conta: {
         Args: { p_conta: string; p_motivo: string }
         Returns: Json
