@@ -1,7 +1,7 @@
 // node --experimental-strip-types --test src/lib/contas.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { acoesDaConta } from './contas.ts'
+import { acoesDaConta, reais } from './contas.ts'
 
 const base = { tipo: 'ambulatorial' as const, atendimento_terminou: true, pode_conduzir: true, pode_reabrir: false }
 const paras = (a: ReturnType<typeof acoesDaConta>) => a.map((x) => x.para)
@@ -25,4 +25,9 @@ test('gestor só reabre, com motivo', () => {
   const g = { ...base, pode_conduzir: false, pode_reabrir: true }
   assert.deepEqual(paras(acoesDaConta({ ...g, status: 'aberta' })), [])
   assert.deepEqual(acoesDaConta({ ...g, status: 'faturada' }).map((x) => [x.para, x.pedeMotivo]), [['aberta', true]])
+})
+
+test('valor de referência em reais', () => {
+  assert.equal(reais(12).replace(/\s/g, ' '), 'R$ 12,00')
+  assert.equal(reais(null), '—')
 })

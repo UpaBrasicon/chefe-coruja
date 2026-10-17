@@ -10251,6 +10251,14 @@ export type Database = {
       }
       cadastros_do_paciente: { Args: { p_paciente: string }; Returns: string[] }
       conta_detalhe: { Args: { p_conta: string }; Returns: Json }
+      lancar_procedimento_conta: {
+        Args: { p_conta: string; p_procedimento: string; p_profissional?: string; p_quantidade?: number; p_realizado_em?: string }
+        Returns: Json
+      }
+      retirar_procedimento_conta: {
+        Args: { p_conta: string; p_id: string; p_motivo: string; p_origem: string }
+        Returns: Json
+      }
       contas_da_unidade: {
         Args: { p_status?: string; p_tipo?: string; p_unidade: string }
         Returns: Json

@@ -16,11 +16,34 @@ export type Conta = {
   origem: Ligacao | null
   derivadas: Ligacao[]
 }
+/** Item da conta (Fase 5B, tarefa 2): linha do BPA na porta; AIH ou especial lançado na internação. */
+export type ItemConta = {
+  origem: 'atendimento' | 'classificacao' | 'medicacao' | 'registro' | 'aih' | 'lancamento'
+  origem_id: string; procedimento: string | null; nome: string | null; quantidade: number
+  profissional: string | null; cbo: string | null; em: string | null
+  valor_unitario: number | null; valor_total: number | null
+  criticas: { codigo: string; texto: string; bloqueante?: boolean }[]; avisos: { codigo: string; texto: string }[]
+  retiravel: boolean
+  aih?: { status: string; numero: string | null; competencia: string | null }
+}
 export type ContaDetalhe = Conta & {
   eventos: { evento: string; de: string | null; para: string | null; motivo: string | null; por: string | null; em: string }[]
   pode_conduzir: boolean
   pode_reabrir: boolean
+  itens: ItemConta[]
+  congelada_em: string | null
+  total_referencia: number
+  itens_com_aviso: number
 }
+
+export const ORIGEM_ITEM: Record<ItemConta['origem'], string> = {
+  atendimento: 'Atendimento médico', classificacao: 'Classificação de risco', medicacao: 'Medicação administrada',
+  registro: 'Lançado', aih: 'AIH (principal)', lancamento: 'Lançado (especial)',
+}
+
+/** Real com vírgula, para o valor de referência do SIGTAP. */
+export const reais = (v: number | null | undefined) =>
+  v == null ? '—' : v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
 export const ETAPA: Record<EtapaConta, string> = {
   aberta: 'aberta', em_conferencia: 'em conferência', fechada: 'fechada', faturada: 'faturada',
@@ -30,6 +53,7 @@ export const PAGADOR: Record<Pagador, string> = { sus: 'SUS', convenio: 'Convên
 export const EVENTO: Record<string, string> = {
   aberta: 'Conta aberta', conferencia: 'Em conferência', devolvida: 'Voltou a aberta', fechada: 'Fechada',
   faturada: 'Faturada', reaberta: 'Reaberta pelo gestor', pagador: 'Pagador trocado',
+  lancamento: 'Procedimento lançado', retirada: 'Procedimento retirado',
 }
 
 export type AcaoConta = { para: EtapaConta; rotulo: string; pedeMotivo: boolean; bloqueio?: string }
