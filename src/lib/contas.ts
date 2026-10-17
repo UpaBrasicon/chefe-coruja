@@ -15,6 +15,8 @@ export type Conta = {
   atendimento_terminou: boolean
   origem: Ligacao | null
   derivadas: Ligacao[]
+  /** Fase 5B, tarefa 5: resumo para a marca e o filtro da lista (bloqueantes sem liberação do gestor). */
+  pendencias?: { bloqueantes: number; avisos: number }
 }
 /** Item da conta (Fase 5B, tarefa 2): linha do BPA na porta; AIH ou especial lançado na internação. */
 export type ItemConta = {
@@ -62,6 +64,36 @@ export type ContaDetalhe = Conta & {
   medicamentos: MedicamentoConta[]
   medicamentos_com_aviso: number
   documentos_sus: DocumentosSus
+  pendencias: Pendencia[]
+  /** Falso na conta fechada antes da pré-auditoria (nada foi guardado). */
+  pendencias_registradas: boolean
+  bloqueantes_sem_liberacao: number
+  liberacao: { em: string; por: string | null; motivo: string; pendencias: Pendencia[] } | null
+  pode_liberar: boolean
+}
+
+/** Pendência da pré-auditoria (Fase 5B, tarefa 5). */
+export type GrupoPendencia = 'unidade' | 'paciente' | 'profissional' | 'procedimento' | 'documento' | 'medicamento'
+export type Pendencia = { chave: string; grupo: GrupoPendencia; codigo: string; texto: string; bloqueante: boolean; vezes: number }
+
+export const GRUPO_PENDENCIA: Record<GrupoPendencia, string> = {
+  unidade: 'Unidade', paciente: 'Paciente', profissional: 'Profissional', procedimento: 'Procedimento',
+  documento: 'AIH e APAC', medicamento: 'Medicamento',
+}
+
+/** Onde se corrige: pelo código quando ele diz mais que o grupo. */
+export function ondeCorrigir(p: Pick<Pendencia, 'grupo' | 'codigo'>, tipo: TipoConta): string {
+  if (p.codigo === 'sem_codigo') return 'Faturamento → BPA → Configuração (códigos da unidade)'
+  if (p.codigo === 'cid_exigido' || p.codigo === 'cid_procedimento') return 'Diagnóstico do atendimento, no prontuário'
+  if (p.codigo === 'sigtap_desatualizado') return 'Carga da tabela SIGTAP'
+  switch (p.grupo) {
+    case 'unidade': return 'Cadastro da unidade'
+    case 'paciente': return 'Cadastro do paciente'
+    case 'profissional': return 'Perfil do profissional (CNS e CBO)'
+    case 'procedimento': return tipo === 'internacao' ? 'Laudo da AIH ou lançamento na conta' : 'Procedimentos da conta ou do BPA'
+    case 'documento': return 'Tela de AIH ou de APAC, na regulação'
+    case 'medicamento': return 'Dispensação e checagem da enfermagem'
+  }
 }
 
 export const ORIGEM_ITEM: Record<ItemConta['origem'], string> = {
@@ -83,20 +115,27 @@ export const EVENTO: Record<string, string> = {
   faturada: 'Faturada', reaberta: 'Reaberta pelo gestor', pagador: 'Pagador trocado',
   lancamento: 'Procedimento lançado', retirada: 'Procedimento retirado',
   medicamento_fora: 'Medicamento fora da conta', medicamento_volta: 'Medicamento voltou à conta',
+  liberada: 'Fechamento liberado pelo gestor',
 }
 
 export type AcaoConta = { para: EtapaConta; rotulo: string; pedeMotivo: boolean; bloqueio?: string }
 
 /** Ações da etapa atual para quem está vendo (4a/5a): faturamento conduz, gestor reabre. */
-export function acoesDaConta(c: Pick<ContaDetalhe, 'status' | 'tipo' | 'atendimento_terminou' | 'pode_conduzir' | 'pode_reabrir'>): AcaoConta[] {
+export function acoesDaConta(
+  c: Pick<ContaDetalhe, 'status' | 'tipo' | 'atendimento_terminou' | 'pode_conduzir' | 'pode_reabrir'> & { bloqueantes_sem_liberacao?: number },
+): AcaoConta[] {
   const a: AcaoConta[] = []
   if (c.pode_conduzir) {
     if (c.status === 'aberta') a.push({ para: 'em_conferencia', rotulo: 'Iniciar conferência', pedeMotivo: false })
     if (c.status === 'em_conferencia') {
       a.push({
         para: 'fechada', rotulo: 'Fechar conta', pedeMotivo: false,
-        bloqueio: c.atendimento_terminou ? undefined
-          : c.tipo === 'ambulatorial' ? 'O atendimento ainda não terminou.' : 'A internação ainda não teve alta.',
+        bloqueio: !c.atendimento_terminou
+          ? (c.tipo === 'ambulatorial' ? 'O atendimento ainda não terminou.' : 'A internação ainda não teve alta.')
+          // Fase 5B, tarefa 5 (1a/3a): pendência bloqueante sem liberação do gestor
+          : (c.bloqueantes_sem_liberacao ?? 0) > 0
+            ? `Há ${c.bloqueantes_sem_liberacao} pendência(s) bloqueante(s): corrija na origem ou peça ao gestor a liberação.`
+            : undefined,
       })
       a.push({ para: 'aberta', rotulo: 'Voltar a aberta', pedeMotivo: true })
     }

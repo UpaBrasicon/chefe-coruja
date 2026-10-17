@@ -157,6 +157,10 @@ UPDATE public.episodios SET etapa = 'encerrado', desfecho = 'internacao', desfec
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 SELECT public.mudar_etapa_conta(pg_temp.u('porta'), 'em_conferencia');
+-- Fase 5B, tarefa 5: a conta de teste tem pendência bloqueante; o gestor libera
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
+SELECT public.liberar_fechamento_conta(pg_temp.u('porta'), 'liberado no teste da tarefa anterior');
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 SELECT public.mudar_etapa_conta(pg_temp.u('porta'), 'fechada');
 DO $$ BEGIN
   IF (public.conta_detalhe(pg_temp.u('porta')) ->> 'status') <> 'fechada'
