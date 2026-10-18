@@ -4658,6 +4658,10 @@ export type Database = {
           documento_id: string | null
           episodio_id: string | null
           exame: string
+          loinc: string | null
+          observacao: string | null
+          procedimento: string | null
+          urgencia: string
           id: string
           internacao_id: string | null
           motivo_cancelamento: string | null
@@ -4674,6 +4678,10 @@ export type Database = {
           documento_id?: string | null
           episodio_id?: string | null
           exame: string
+          loinc?: string | null
+          observacao?: string | null
+          procedimento?: string | null
+          urgencia?: string
           id?: string
           internacao_id?: string | null
           motivo_cancelamento?: string | null
@@ -4690,6 +4698,10 @@ export type Database = {
           documento_id?: string | null
           episodio_id?: string | null
           exame?: string
+          loinc?: string | null
+          observacao?: string | null
+          procedimento?: string | null
+          urgencia?: string
           id?: string
           internacao_id?: string | null
           motivo_cancelamento?: string | null
@@ -10289,6 +10301,26 @@ export type Database = {
       lancar_procedimento_conta: {
         Args: { p_conta: string; p_procedimento: string; p_profissional?: string; p_quantidade?: number; p_realizado_em?: string }
         Returns: Json
+      }
+      exames_da_unidade: {
+        Args: { p_unidade: string }
+        Returns: Json
+      }
+      buscar_exames: {
+        Args: { p_termo: string; p_todos?: boolean; p_unidade: string }
+        Returns: Json
+      }
+      definir_exame_unidade: {
+        Args: { p_botao?: boolean; p_loinc?: string; p_nome_curto: string; p_ordem?: number; p_procedimento: string; p_unidade: string }
+        Returns: Json
+      }
+      retirar_exame_unidade: {
+        Args: { p_motivo: string; p_procedimento: string; p_unidade: string }
+        Returns: Json
+      }
+      pedir_exames: {
+        Args: { p_episodio: string; p_itens: Json; p_observacao?: string; p_urgencia?: string }
+        Returns: number
       }
       registrar_glosa: {
         Args: { p_competencia?: string; p_conta: string; p_item?: string; p_motivo_codigo: string; p_motivo_texto?: string; p_origem?: string; p_valor?: number }

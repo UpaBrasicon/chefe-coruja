@@ -82,9 +82,7 @@ export const COM_DADOS_ALTA: Desfecho[] = ['alta', 'alta_apos_medicacao', 'alta_
 /** Desfechos em que o CID de alta é exigido pelo servidor. */
 export const EXIGE_CID: Desfecho[] = ['alta', 'alta_apos_medicacao', 'alta_a_pedido', 'transferencia', 'obito']
 
-// Exames do pedido rápido (protótipo EXAMES_DISP). Nome livre também entra.
-export const EXAMES_RAPIDOS = ['Hemograma completo', 'PCR', 'Ureia e creatinina', 'Sódio e potássio', 'Gasometria arterial', 'Lactato',
-  'TGO / TGP', 'Troponina', 'Urina tipo I', 'Radiografia de tórax', 'ECG', 'Hemocultura']
+// Os botões de exame do atendimento estão em @/lib/exames (Fase 5C, etapa 1.1).
 
 // ── SOAP em rascunho ────────────────────────────────────────────────────────
 export type Soap = { s: string; o: string; a: string; cid: string; p: string }
@@ -109,6 +107,8 @@ export type ItemPS = {
 export type ExamePS = {
   id: string; exame: string; situacao: 'pedido' | 'resultado' | 'cancelado'; pedido_em: string; resolvido_em: string | null
   resultado: string | null; motivo_cancelamento: string | null; impresso: boolean; pedido_por: string | null
+  // Fase 5C, etapa 1.1: código do catálogo (null = texto livre), urgência e observação
+  procedimento?: string | null; urgencia?: 'rotina' | 'urgente'; observacao?: string | null
 }
 export type ReavPS = { id: string; tipo: 'aguardar' | 'reavaliacao'; reavaliar_em: string | null; pendencia: string | null; texto: string | null; criado_em: string; autor: string | null }
 export type PainelPS = {

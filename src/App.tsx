@@ -65,6 +65,7 @@ const PainelGestor = lazy(() => import('@/pages/gestor/PainelGestor'))
 const FarmaciaGestor = lazy(() => import('@/pages/gestor/FarmaciaGestor'))
 const ProtocolosGestor = lazy(() => import('@/pages/gestor/Protocolos'))
 const OlhoDeGaviao = lazy(() => import('@/pages/gestor/OlhoDeGaviao'))
+const ExamesUnidade = lazy(() => import('@/pages/gestor/ExamesUnidade'))
 const PortaAgora = lazy(() => import('@/pages/gestor/PortaAgora'))
 const IntercorrenciasRelatorio = lazy(() => import('@/pages/gestor/IntercorrenciasRelatorio'))
 const CadastrosDuplicados = lazy(() => import('@/pages/recepcao/CadastrosDuplicados'))
@@ -353,6 +354,8 @@ export default function App() {
                         <Route path="/gestao/farmacia" element={<FarmaciaGestor />} />
                         <Route path="/gestao/protocolos" element={<ProtocolosGestor />} />
                         <Route path="/gestao/gaviao" element={<OlhoDeGaviao />} />
+                        {/* Fase 5C, etapa 1.1: exames da unidade */}
+                        <Route path="/gestao/exames" element={<ExamesUnidade />} />
                         {/* Fase 1, tarefa 2: Dashboard PS/UPA */}
                         <Route path="/gestao/porta" element={<PortaAgora />} />
                         {/* Fase 2, tarefa 4: relatório de intercorrências */}

@@ -7,13 +7,15 @@ import { FlaskConical, Megaphone, Printer } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
+import { useUnidade } from '@/contexts/UnidadeContext'
+import { botoesDeExame, codigoExameNaTela, jaPedido, type ExameBuscado, type ListaExamesUnidade, type Urgencia } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-import { EXAMES_RAPIDOS, hora, type ExamePS } from './comum'
+import { hora, type ExamePS } from './comum'
 
 type Agravo = { id: string; agravo: string; cid: string | null; situacao: string; numero_sinan: string | null; motivo_descarte: string | null }
 
@@ -33,7 +35,10 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
       <div className="flex flex-wrap items-center gap-2.5">
         <span className="min-w-0 flex-[1_1_180px] text-controle text-tinta">
           {e.exame}
+          {e.urgencia === 'urgente' && <Badge variant="destructive" className="ml-2">urgente</Badge>}
           {e.impresso && <span className="ml-2 text-rotulo text-tinta-sussurro">pedido impresso</span>}
+          {!e.procedimento && <span className="ml-2 text-rotulo text-tinta-sussurro" title="Não vai ao laboratório integrado">sem código</span>}
+          {e.observacao && <span className="block text-rotulo text-tinta-sussurro">Obs.: {e.observacao}</span>}
         </span>
         <span className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold whitespace-nowrap', tom)}>{sit}</span>
         {e.situacao === 'pedido' && (
@@ -62,18 +67,48 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
   )
 }
 
+// Fase 5C, etapa 1.1: o pedido usa o catálogo da unidade (lista do gestor sobre o
+// grupo 02.02 do SIGTAP). Os botões vêm da lista; sem lista, ficam os de antes.
+// A busca acha no catálogo; o texto livre continua, sem código (não vai ao
+// laboratório integrado). Urgência e observação valem para o que for pedido.
 export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodioId: string; pacienteId: string; exames: ExamePS[]; aoMudar: () => void }) {
+  const { unidadeAtiva } = useUnidade()
+  const unidadeId = unidadeAtiva?.unidade_id
   const [outro, setOutro] = React.useState('')
+  const [urgencia, setUrgencia] = React.useState<Urgencia>('rotina')
+  const [observacao, setObservacao] = React.useState('')
   const [erro, setErro] = React.useState<string | null>(null)
   const [pedindo, setPedindo] = React.useState(false)
-  const pedir = async (lista: string[]) => {
+  const lista = useQuery({
+    queryKey: ['exames-unidade', unidadeId],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('exames_da_unidade', { p_unidade: unidadeId! })
+      if (error) throw error
+      return data as unknown as ListaExamesUnidade
+    },
+  })
+  const termo = outro.trim()
+  const busca = useQuery({
+    queryKey: ['buscar-exames', unidadeId, termo],
+    enabled: !!unidadeId && termo.length >= 3,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('buscar_exames', { p_unidade: unidadeId!, p_termo: termo })
+      if (error) throw error
+      return (data ?? []) as unknown as ExameBuscado[]
+    },
+  })
+  const pedir = async (itens: ({ procedimento: string } | { nome: string })[]) => {
     setPedindo(true)
-    const { error } = await supabase.rpc('pedir_exames_atendimento', { p_episodio: episodioId, p_exames: lista })
+    const { error } = await supabase.rpc('pedir_exames', {
+      p_episodio: episodioId, p_itens: itens, p_urgencia: urgencia, p_observacao: observacao.trim() || undefined,
+    })
     setPedindo(false)
     if (error) return setErro(error.message)
-    setErro(null); setOutro(''); aoMudar()
+    setErro(null); setOutro(''); setObservacao(''); aoMudar()
   }
-  const ativo = (nome: string) => exames.some((x) => x.situacao !== 'cancelado' && x.exame.toLowerCase() === nome.toLowerCase())
+  const botoes = botoesDeExame(lista.data?.exames)
+  const comLista = (lista.data?.exames ?? []).length > 0
 
   return (
     <div className="flex flex-col gap-4">
@@ -83,26 +118,55 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
           <span className="text-controle font-semibold text-tinta">Pedido de exames</span>
           <span className="text-apoio text-tinta-sussurro">Pedido rápido, sem imprimir. Fica pendente até o resultado.</span>
         </div>
+        <div className="flex flex-wrap items-center gap-2 px-4 pt-3">
+          <span className="text-rotulo text-tinta-sussurro">Urgência</span>
+          {(['rotina', 'urgente'] as const).map((u) => (
+            <button key={u} type="button" aria-pressed={urgencia === u} onClick={() => setUrgencia(u)}
+              className={cn('rounded-capsula border px-3 py-0.5 text-apoio',
+                urgencia === u ? (u === 'urgente' ? 'border-critico bg-critico font-medium text-white' : 'border-acao bg-acao font-medium text-white') : 'border-fio text-tinta-apoio')}>
+              {u}
+            </button>
+          ))}
+          <Input className="h-8 min-w-48 flex-1" aria-label="Observação do pedido (opcional)" placeholder="Observação (opcional)" maxLength={300}
+            value={observacao} onChange={(e) => setObservacao(e.target.value)} />
+        </div>
         <div className="flex flex-wrap gap-1.5 px-4 py-3">
-          {EXAMES_RAPIDOS.map((x) => {
-            const on = ativo(x)
+          {botoes.map((b) => {
+            const on = jaPedido(b, exames)
             return (
-              <button key={x} type="button" aria-pressed={on} disabled={on || pedindo} onClick={() => void pedir([x])}
-                title={on ? 'Já pedido neste atendimento' : `Pedir ${x}`}
+              <button key={b.rotulo + (b.procedimento ?? '')} type="button" aria-pressed={on} disabled={on || pedindo}
+                onClick={() => void pedir([b.procedimento ? { procedimento: b.procedimento } : { nome: b.rotulo }])}
+                title={on ? 'Já pedido neste atendimento' : `Pedir ${b.rotulo}${b.procedimento ? '' : ' (sem código)'}`}
                 className={cn('rounded-capsula border px-3 py-1 text-apoio transition-colors',
                   on ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao disabled:opacity-50')}>
-                {x}
+                {b.rotulo}
               </button>
             )
           })}
         </div>
-        <div className="flex flex-wrap gap-2 border-t border-trilha px-4 py-3">
-          <Input className="h-8 min-w-48 flex-1" aria-label="Outro exame" placeholder="Outro exame (nome)" value={outro} onChange={(e) => setOutro(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && outro.trim().length >= 2) void pedir([outro]) }} />
-          <Button size="sm" variant="outline" disabled={outro.trim().length < 2 || pedindo} onClick={() => void pedir([outro])}>Pedir</Button>
-          <Button size="sm" variant="ghost" render={<Link to={`/plantao/atendimento-porta/pedido-exames?paciente=${pacienteId}`} />}>
-            <Printer /> Pedido impresso
-          </Button>
+        <div className="flex flex-col gap-2 border-t border-trilha px-4 py-3">
+          <div className="flex flex-wrap gap-2">
+            <Input className="h-8 min-w-48 flex-1" aria-label="Buscar exame" placeholder={comLista ? 'Buscar na lista da unidade' : 'Buscar no SIGTAP (laboratório)'}
+              value={outro} onChange={(e) => setOutro(e.target.value)} />
+            <Button size="sm" variant="outline" disabled={termo.length < 2 || pedindo} onClick={() => void pedir([{ nome: termo }])}
+              title="Sem código: não vai ao laboratório integrado">Pedir como texto livre</Button>
+            <Button size="sm" variant="ghost" render={<Link to={`/plantao/atendimento-porta/pedido-exames?paciente=${pacienteId}`} />}>
+              <Printer /> Pedido impresso
+            </Button>
+          </div>
+          {(busca.data ?? []).length > 0 && (
+            <div className="flex max-h-48 flex-col overflow-y-auto rounded-md border border-fio">
+              {(busca.data ?? []).map((x) => (
+                <Button key={x.procedimento} type="button" variant="ghost" size="sm" className="justify-start" disabled={pedindo}
+                  onClick={() => void pedir([{ procedimento: x.procedimento }])}>
+                  {x.nome}<span className="ml-1 text-rotulo text-tinta-sussurro">{codigoExameNaTela(x.procedimento)}</span>
+                </Button>
+              ))}
+            </div>
+          )}
+          {termo.length >= 3 && busca.isSuccess && (busca.data ?? []).length === 0 && (
+            <span className="text-rotulo text-tinta-sussurro">Nada no catálogo com esse nome. Pode pedir como texto livre (sem código).</span>
+          )}
         </div>
         {erro && <p className="border-t border-trilha px-4 py-2 text-apoio text-critico">{erro}</p>}
         {exames.length === 0 && <p className="border-t border-trilha px-4 py-3 text-apoio text-tinta-sussurro">Nenhum exame pedido neste atendimento.</p>}

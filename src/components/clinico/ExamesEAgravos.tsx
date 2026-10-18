@@ -12,7 +12,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-type Exame = { id: string; exame: string; situacao: string; resultado: string | null; motivo_cancelamento: string | null; pedido_em: string }
+type Exame = {
+  id: string; exame: string; situacao: string; resultado: string | null; motivo_cancelamento: string | null; pedido_em: string
+  // Fase 5C, etapa 1.1: código do catálogo (null = texto livre) e urgência
+  procedimento: string | null; urgencia: string
+}
 type Agravo = { id: string; agravo: string; cid: string | null; situacao: string; numero_sinan: string | null; motivo_descarte: string | null }
 
 const hora = (iso: string) => new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })
@@ -23,7 +27,7 @@ export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; med
   const exames = useQuery({
     queryKey: ['exames-pedidos', pacienteId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('exames_pedidos').select('id, exame, situacao, resultado, motivo_cancelamento, pedido_em')
+      const { data, error } = await supabase.from('exames_pedidos').select('id, exame, situacao, resultado, motivo_cancelamento, pedido_em, procedimento, urgencia')
         .eq('paciente_id', pacienteId).order('pedido_em', { ascending: false }).limit(40)
       if (error) throw error
       return (data ?? []) as Exame[]
@@ -85,6 +89,8 @@ function LinhaExame({ e, aoResolver }: { e: Exame; aoResolver: (resultado?: stri
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.05] px-3 py-2">
       <span className="font-medium">{e.exame}</span>
+      {e.urgencia === 'urgente' && <Badge variant="destructive">urgente</Badge>}
+      {!e.procedimento && <span className="text-xs text-tinta-sussurro" title="Não vai ao laboratório integrado">sem código</span>}
       <span className="text-xs text-tinta-sussurro">pedido {hora(e.pedido_em)}</span>
       <Input className="h-8 min-w-48 flex-1" placeholder="Resultado, ou motivo do cancelamento" value={texto} onChange={(ev) => setTexto(ev.target.value)} />
       <Button size="xs" disabled={!texto.trim()} onClick={() => void aoResolver(texto).then((ok) => ok && setTexto(''))}>Registrar resultado</Button>
