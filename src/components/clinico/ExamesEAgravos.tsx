@@ -7,6 +7,8 @@ import { FlaskConical, Megaphone } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
+import { ResultadoExame } from '@/components/clinico/ResultadoExame'
+import { PENDENTE, SITUACAO_EXAME, type SituacaoExame } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -16,6 +18,8 @@ type Exame = {
   id: string; exame: string; situacao: string; resultado: string | null; motivo_cancelamento: string | null; pedido_em: string
   // Fase 5C, etapa 1.1: código do catálogo (null = texto livre) e urgência
   procedimento: string | null; urgencia: string
+  // etapa 1.2: situações novas, crítico do laboratório e "novo" até alguém abrir
+  critico: boolean; resultado_visto_em: string | null
 }
 type Agravo = { id: string; agravo: string; cid: string | null; situacao: string; numero_sinan: string | null; motivo_descarte: string | null }
 
@@ -27,7 +31,7 @@ export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; med
   const exames = useQuery({
     queryKey: ['exames-pedidos', pacienteId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('exames_pedidos').select('id, exame, situacao, resultado, motivo_cancelamento, pedido_em, procedimento, urgencia')
+      const { data, error } = await supabase.from('exames_pedidos').select('id, exame, situacao, resultado, motivo_cancelamento, pedido_em, procedimento, urgencia, critico, resultado_visto_em')
         .eq('paciente_id', pacienteId).order('pedido_em', { ascending: false }).limit(40)
       if (error) throw error
       return (data ?? []) as Exame[]
@@ -50,8 +54,8 @@ export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; med
     if (error) { setErro(error.message); return false }
     setErro(null); recarregar(); return true
   }
-  const pendentes = (exames.data ?? []).filter((e) => e.situacao === 'pedido')
-  const resolvidos = (exames.data ?? []).filter((e) => e.situacao !== 'pedido')
+  const pendentes = (exames.data ?? []).filter((e) => PENDENTE.includes(e.situacao as SituacaoExame))
+  const resolvidos = (exames.data ?? []).filter((e) => !PENDENTE.includes(e.situacao as SituacaoExame))
 
   return (
     <div className="flex flex-col gap-4 text-sm">
@@ -61,13 +65,15 @@ export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; med
           <FlaskConical className="size-3.5" /> Exames pedidos
         </div>
         {pendentes.length === 0 && <p className="text-tinta-sussurro">Nenhum exame aguardando resultado. (Os exames entram quando o pedido é impresso.)</p>}
-        {pendentes.map((e) => <LinhaExame key={e.id} e={e} aoResolver={(r, m) => rpc('resolver_exame', { p_exame: e.id, p_resultado: r, p_motivo_cancelamento: m })} />)}
-        {resolvidos.length > 0 && (
+        {pendentes.map((e) => <LinhaExame key={e.id} e={e} aoMudar={recarregar} aoResolver={(r, m) => rpc('resolver_exame', { p_exame: e.id, p_resultado: r, p_motivo_cancelamento: m })} />)}
+        {/* resultado novo (ainda não aberto) fica fora do recolhido */}
+        {resolvidos.filter((e) => e.situacao === 'resultado' && !e.resultado_visto_em).map((e) => <LinhaResolvido key={e.id} e={e} aoMudar={recarregar} />)}
+        {resolvidos.some((e) => e.situacao !== 'resultado' || e.resultado_visto_em) && (
           <details className="text-xs text-tinta-sussurro">
-            <summary className="cursor-pointer">Resolvidos ({resolvidos.length})</summary>
-            {resolvidos.map((e) => (
-              <div key={e.id}>{e.exame}: {e.situacao === 'resultado' ? e.resultado : `cancelado — ${e.motivo_cancelamento}`} · pedido {hora(e.pedido_em)}</div>
-            ))}
+            <summary className="cursor-pointer">Resolvidos ({resolvidos.filter((e) => e.situacao !== 'resultado' || e.resultado_visto_em).length})</summary>
+            <div className="mt-1 flex flex-col gap-1">
+              {resolvidos.filter((e) => e.situacao !== 'resultado' || e.resultado_visto_em).map((e) => <LinhaResolvido key={e.id} e={e} aoMudar={recarregar} />)}
+            </div>
           </details>
         )}
       </div>
@@ -84,17 +90,40 @@ export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; med
   )
 }
 
-function LinhaExame({ e, aoResolver }: { e: Exame; aoResolver: (resultado?: string, motivo?: string) => Promise<boolean> }) {
+function LinhaExame({ e, aoResolver, aoMudar }: { e: Exame; aoResolver: (resultado?: string, motivo?: string) => Promise<boolean>; aoMudar: () => void }) {
   const [texto, setTexto] = React.useState('')
+  const [aberto, setAberto] = React.useState(false)
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.05] px-3 py-2">
+    <div className="flex flex-col gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.05] px-3 py-2">
+    <div className="flex flex-wrap items-center gap-2">
       <span className="font-medium">{e.exame}</span>
+      <span className="text-xs text-tinta-apoio">{SITUACAO_EXAME[e.situacao as SituacaoExame]}</span>
       {e.urgencia === 'urgente' && <Badge variant="destructive">urgente</Badge>}
       {!e.procedimento && <span className="text-xs text-tinta-sussurro" title="Não vai ao laboratório integrado">sem código</span>}
       <span className="text-xs text-tinta-sussurro">pedido {hora(e.pedido_em)}</span>
       <Input className="h-8 min-w-48 flex-1" placeholder="Resultado, ou motivo do cancelamento" value={texto} onChange={(ev) => setTexto(ev.target.value)} />
       <Button size="xs" disabled={!texto.trim()} onClick={() => void aoResolver(texto).then((ok) => ok && setTexto(''))}>Registrar resultado</Button>
       <Button size="xs" variant="outline" disabled={texto.trim().length < 10} onClick={() => void aoResolver(undefined, texto).then((ok) => ok && setTexto(''))}>Cancelar</Button>
+      <Button size="xs" variant="ghost" onClick={() => setAberto(!aberto)}>{aberto ? 'Fechar' : 'Detalhe'}</Button>
+    </div>
+    {aberto && <ResultadoExame exameId={e.id} aoMudar={aoMudar} />}
+    </div>
+  )
+}
+
+// resultado ou cancelado: abre o resultado completo (versões, laudo, ciência)
+function LinhaResolvido({ e, aoMudar }: { e: Exame; aoMudar: () => void }) {
+  const [aberto, setAberto] = React.useState(false)
+  const novo = e.situacao === 'resultado' && !e.resultado_visto_em
+  return (
+    <div className={`flex flex-col gap-1 ${novo ? 'rounded-lg border border-acao/30 px-3 py-2' : ''}`}>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className={novo ? 'font-medium text-tinta' : ''}>{e.exame}: {e.situacao === 'resultado' ? e.resultado : `cancelado — ${e.motivo_cancelamento}`} · pedido {hora(e.pedido_em)}</span>
+        {novo && <Badge variant={e.critico ? 'destructive' : 'info'}>{e.critico ? 'crítico · novo' : 'novo'}</Badge>}
+        {!novo && e.critico && <Badge variant="destructive">crítico</Badge>}
+        {e.situacao === 'resultado' && <Button size="xs" variant="ghost" onClick={() => setAberto(!aberto)}>{aberto ? 'Fechar' : 'Ver resultado'}</Button>}
+      </div>
+      {aberto && <ResultadoExame exameId={e.id} aoMudar={aoMudar} />}
     </div>
   )
 }

@@ -105,10 +105,12 @@ export type ItemPS = {
   checagem: { situacao: 'feito' | 'nao_feito' | 'recusado'; em: string; por: string | null; motivo: string | null } | null
 }
 export type ExamePS = {
-  id: string; exame: string; situacao: 'pedido' | 'resultado' | 'cancelado'; pedido_em: string; resolvido_em: string | null
+  id: string; exame: string; situacao: 'pedido' | 'coletado' | 'em_analise' | 'resultado' | 'cancelado'; pedido_em: string; resolvido_em: string | null
   resultado: string | null; motivo_cancelamento: string | null; impresso: boolean; pedido_por: string | null
   // Fase 5C, etapa 1.1: código do catálogo (null = texto livre), urgência e observação
   procedimento?: string | null; urgencia?: 'rotina' | 'urgente'; observacao?: string | null
+  // etapa 1.2: coleta, crítico (só do laboratório), origem e "novo" até alguém abrir
+  coletado_em?: string | null; critico?: boolean; origem?: 'manual' | 'laboratorio' | null; novo?: boolean
 }
 export type ReavPS = { id: string; tipo: 'aguardar' | 'reavaliacao'; reavaliar_em: string | null; pendencia: string | null; texto: string | null; criado_em: string; autor: string | null }
 export type PainelPS = {
