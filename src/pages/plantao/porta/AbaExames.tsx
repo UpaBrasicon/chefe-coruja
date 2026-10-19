@@ -25,7 +25,7 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
   const [cancelando, setCancelando] = React.useState(false)
   const [erro, setErro] = React.useState<string | null>(null)
   const [aberto, setAberto] = React.useState(false)
-  const pendente = e.situacao === 'pedido' || e.situacao === 'coletado' || e.situacao === 'em_analise'
+  const pendente = e.situacao === 'pedido' || e.situacao === 'coletado' || e.situacao === 'em_analise' || e.situacao === 'realizado'
   const resolver = async (resultado?: string, motivo?: string) => {
     const { error } = await supabase.rpc('resolver_exame', { p_exame: e.id, p_resultado: resultado, p_motivo_cancelamento: motivo })
     if (error) return setErro(error.message)
@@ -33,7 +33,8 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
   }
   const tom = e.situacao === 'resultado' ? (e.critico ? 'bg-alerta-critico text-critico' : 'bg-alerta-conforme text-conforme') : e.situacao === 'cancelado' ? 'bg-trilha text-tinta-sussurro' : 'bg-alerta-atencao text-atencao'
   const sit = e.situacao === 'resultado' ? `Resultado ${hora(e.resolvido_em)}` : e.situacao === 'cancelado' ? `Cancelado ${hora(e.resolvido_em)}`
-    : e.situacao === 'coletado' ? `Coletado ${hora(e.coletado_em ?? e.pedido_em)}` : e.situacao === 'em_analise' ? 'Em análise' : `Pedido ${hora(e.pedido_em)}`
+    : e.situacao === 'coletado' ? `Coletado ${hora(e.coletado_em ?? e.pedido_em)}` : e.situacao === 'em_analise' ? 'Em análise'
+    : e.situacao === 'realizado' ? `Realizado ${hora(e.realizado_em ?? e.pedido_em)}` : `Pedido ${hora(e.pedido_em)}`
   return (
     <div className="flex flex-col gap-1.5 border-b border-trilha px-4 py-2.5 last:border-0">
       <div className="flex flex-wrap items-center gap-2.5">

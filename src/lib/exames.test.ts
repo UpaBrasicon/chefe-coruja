@@ -1,7 +1,7 @@
 // node --experimental-strip-types --test src/lib/exames.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { botoesDeExame, caminhoLaudo, codigoExameNaTela, erroLaudo, EXAMES_LIVRES_LAB, jaPedido, LAUDO_MAX_BYTES, loincValido, type ExameUnidade } from './exames.ts'
+import { botoesDeExame, caminhoLaudo, tipoDoCodigo, codigoExameNaTela, erroLaudo, EXAMES_LIVRES_LAB, jaPedido, LAUDO_MAX_BYTES, loincValido, type ExameUnidade } from './exames.ts'
 
 const ex = (p: Partial<ExameUnidade>): ExameUnidade => ({
   id: 'x', procedimento: '0202990001', nome_curto: 'Hemograma', nome_sigtap: null, loinc: null, botao: true, ordem: 0,
@@ -38,4 +38,15 @@ test('laudo: só PDF até 10 MB; caminho na pasta do exame, sem acento nem espa�
   assert.equal(erroLaudo({ name: 'a.png', type: 'image/png', size: 1000 }), 'O laudo precisa ser PDF.')
   assert.equal(erroLaudo({ name: 'a.pdf', type: 'application/pdf', size: LAUDO_MAX_BYTES + 1 }), 'O laudo passa de 10 MB.')
   assert.equal(caminhoLaudo('ex-1', 'Laudo Hemograma ção.pdf', 5), 'ex-1/5-Laudo-Hemograma-cao.pdf')
+})
+
+test('5C-2: com exame de imagem na lista, RX e ECG em texto livre saem dos botões; foto só em imagem', () => {
+  const b = botoesDeExame([ex({ ordem: 1 }), ex({ nome_curto: 'RX de tórax', procedimento: '0204030153', ordem: 2 })])
+  assert.deepEqual(b.map((x) => x.rotulo), ['Hemograma', 'RX de tórax'])
+  assert.equal(tipoDoCodigo('0211020036'), 'imagem')
+  assert.equal(tipoDoCodigo('0202020380'), 'laboratorio')
+  assert.equal(tipoDoCodigo(null), null)
+  assert.equal(erroLaudo({ name: 'ecg.jpg', type: 'image/jpeg', size: 10 }, true), null)
+  assert.equal(erroLaudo({ name: 'ecg.jpg', type: 'image/jpeg', size: 10 }), 'O laudo precisa ser PDF.')
+  assert.equal(caminhoLaudo('ex-1', 'traçado.PNG', 5), 'ex-1/5-tracado.PNG')
 })

@@ -70,7 +70,7 @@ SELECT pg_temp.falha($$SELECT public.definir_exame_unidade('21000000-0000-4000-8
   'Acesso negado: a lista de exames é do gestor', 'médico não mexe na lista');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
 SELECT pg_temp.falha($$SELECT public.definir_exame_unidade('21000000-0000-4000-8000-000000000001', '0301990001', 'Consulta')$$,
-  'Procedimento 0301990001 não está no grupo 02.02', 'só laboratório clínico');
+  'Procedimento 0301990001 não é de laboratório', 'só exame (laboratório, imagem ou método gráfico)');
 SELECT pg_temp.falha($$SELECT public.definir_exame_unidade('21000000-0000-4000-8000-000000000001', '0202990001', 'Hemograma', 'abc')$$,
   'LOINC no formato', 'LOINC com formato conferido');
 SELECT public.definir_exame_unidade('21000000-0000-4000-8000-000000000001', '02.02.99.000-1', 'Hemo', NULL, true, 1);
