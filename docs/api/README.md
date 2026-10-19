@@ -56,6 +56,37 @@ curl -s "https://api.chefecoruja.com.br/v1/atendimentos?unidade_id=21000000-0000
   -H "Authorization: Bearer $CHEFE_CORUJA_CHAVE"
 ```
 
+## Laboratório (LIS) — porta FHIR R4
+
+Fase 5C, tarefa 1, etapa 1.3 (decisões do RT de 19/10/2026 no BACKLOG).
+
+- **Chave:** criada em **Integrações (API)** com o recurso "Laboratório (LIS)".
+  Ela só lê os pedidos de exame e só grava coleta, situação e laudo.
+- **Pedidos:** `GET /v1/fhir/ServiceRequest` devolve um Bundle com os pedidos
+  com código ainda pendentes (pedido, coletado ou em análise), com o paciente
+  contido. Exame pedido em texto livre não sai do sistema.
+- **Coleta:** `POST /v1/fhir/Specimen`.
+- **Situação e laudo:** `POST /v1/fhir/DiagnosticReport`. `preliminary` põe em
+  análise; `final` grava o resultado (analitos e PDF); `amended` grava versão
+  nova; `cancelled` cancela. O mesmo laudo reenviado não vira versão nova.
+- **Erros:** `OperationOutcome` FHIR. Cada chamada fica em **Integrações (API)**
+  → acessos da chave.
+- **O que a porta oferece:** `GET /v1/fhir/metadata` (sem chave).
+
+### Testar sem LIS real (só homologação)
+
+`scripts/lis-simulador.mjs` faz o papel do laboratório: busca os pedidos,
+registra a coleta, põe em análise e devolve um laudo de TESTE (o texto
+"TESTE — simulador, não é exame real" e um PDF de teste). Reenvia o mesmo
+laudo para mostrar que ele não duplica. Recusa chave de produção (`cc_live_`).
+
+```bash
+LIS_URL=https://<projeto>.supabase.co/functions/v1/api/v1 LIS_CHAVE=cc_test_... node scripts/lis-simulador.mjs --critico
+```
+
+`--critico` marca o analito de teste como crítico do laboratório, para ver o
+aviso; `--sem-pdf` não manda o PDF; `--limite N` trata N pedidos (padrão 5).
+
 ## Para a equipe
 
 - `npm run api:lint`: valida o contrato. O CI roda isso no job web.

@@ -59,6 +59,13 @@ info:
     `requisicao` (o mesmo do cabeçalho `X-Request-Id`) para falar com o
     suporte.
 
+    ## Laboratório (LIS) — FHIR R4
+
+    O sistema do laboratório usa uma chave com o recurso `laboratorio`. Ele
+    busca os pedidos pendentes em `/fhir/ServiceRequest` e devolve a coleta
+    (`/fhir/Specimen`) e o laudo (`/fhir/DiagnosticReport`). Os erros dessa
+    porta vêm como `OperationOutcome` FHIR (`application/fhir+json`).
+
     ## Versões
 
     - A versão vai no caminho (`/v1`).
@@ -87,6 +94,8 @@ tags:
     description: Leitos da unidade e a ocupação no momento.
   - name: Produção SUS
     description: AIH, APAC e fechamentos de competência do BPA e da APAC.
+  - name: Laboratório (FHIR)
+    description: Porta FHIR R4 para o sistema do laboratório (LIS) ler os pedidos de exame e devolver coleta, situação e laudo. Chave com o recurso `laboratorio`.
 paths:
   /unidades:
     get:
@@ -433,6 +442,169 @@ paths:
         '429': { $ref: '#/components/responses/LimiteExcedido' }
         '500': { $ref: '#/components/responses/ErroInterno' }
 
+  /fhir/metadata:
+    get:
+      tags: [Laboratório (FHIR)]
+      operationId: fhirMetadata
+      summary: O que a porta do laboratório oferece (CapabilityStatement)
+      security: []
+      responses:
+        '200':
+          description: CapabilityStatement FHIR R4 da porta do laboratório.
+          content:
+            application/fhir+json:
+              schema: { $ref: '#/components/schemas/RecursoFhir' }
+        '405': { $ref: '#/components/responses/FhirErro' }
+  /fhir/ServiceRequest:
+    get:
+      tags: [Laboratório (FHIR)]
+      operationId: fhirPedidosPendentes
+      summary: Pedidos de exame pendentes para o laboratório
+      description: |
+        Pedidos com código (do catálogo da unidade) que ainda aguardam
+        resultado: pedido, coletado ou em análise. Exame pedido em texto livre
+        não sai do sistema. O paciente vem contido no pedido (`#paciente`):
+        nome, nascimento, sexo, CNS ou CPF quando houver e prontuário. A
+        situação no Chefe Coruja vai em `meta.tag`.
+        Consulte a cada poucos minutos. A chave precisa do recurso
+        `laboratorio`.
+      parameters:
+        - name: unidade_id
+          in: query
+          description: Uma das unidades da chave (sem ele, todas as da chave).
+          schema: { type: string, format: uuid }
+        - name: authored
+          in: query
+          description: Pedidos a partir de uma data, no formato `ge<ISO 8601>`.
+          schema: { type: string, example: 'ge2026-10-19T00:00:00-03:00' }
+        - name: _count
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+        - name: cursor
+          in: query
+          description: Valor do link `next` da página anterior.
+          schema: { type: string }
+      responses:
+        '200':
+          description: Bundle searchset de ServiceRequest; o link `next` traz a próxima página.
+          headers:
+            RateLimit-Limit: { $ref: '#/components/headers/RateLimitLimit' }
+            RateLimit-Remaining: { $ref: '#/components/headers/RateLimitRemaining' }
+            RateLimit-Reset: { $ref: '#/components/headers/RateLimitReset' }
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/fhir+json:
+              schema: { $ref: '#/components/schemas/RecursoFhir' }
+              example:
+                resourceType: Bundle
+                type: searchset
+                link: [{ relation: self, url: 'https://api.chefecoruja.com.br/v1/fhir/ServiceRequest?_count=50' }]
+                entry:
+                  - fullUrl: https://api.chefecoruja.com.br/v1/fhir/ServiceRequest/2b000000-0000-4000-8000-0000000d3201
+                    resource:
+                      resourceType: ServiceRequest
+                      id: 2b000000-0000-4000-8000-0000000d3201
+                      meta: { tag: [{ system: 'https://api.chefecoruja.com.br/fhir/situacao-exame', code: pedido }] }
+                      contained:
+                        - resourceType: Patient
+                          id: paciente
+                          identifier: [{ system: 'https://api.chefecoruja.com.br/fhir/prontuario', value: '2026.000123' }]
+                          name: [{ text: Maria da Silva }]
+                          gender: female
+                          birthDate: '1980-04-04'
+                      status: active
+                      intent: order
+                      priority: urgent
+                      code:
+                        coding: [{ system: 'http://www.saude.gov.br/fhir/r4/CodeSystem/BRTabelaSUS', code: '0202020380', display: HEMOGRAMA COMPLETO }]
+                        text: Hemograma
+                      subject: { reference: '#paciente' }
+                      authoredOn: '2026-10-19T10:00:00-03:00'
+                    search: { mode: match }
+        '400': { $ref: '#/components/responses/FhirErro' }
+        '401': { $ref: '#/components/responses/FhirErro' }
+        '403': { $ref: '#/components/responses/FhirErro' }
+        '429': { $ref: '#/components/responses/FhirErro' }
+        '500': { $ref: '#/components/responses/FhirErro' }
+  /fhir/Specimen:
+    post:
+      tags: [Laboratório (FHIR)]
+      operationId: fhirColeta
+      summary: Registra a coleta do pedido
+      description: |
+        `request[0].reference` aponta o pedido (`ServiceRequest/<id>`) e
+        `collection.collectedDateTime` traz a hora da coleta. Reenviar a coleta
+        de um pedido já coletado não muda nada.
+      requestBody:
+        required: true
+        content:
+          application/fhir+json:
+            schema: { $ref: '#/components/schemas/RecursoFhir' }
+            example:
+              resourceType: Specimen
+              request: [{ reference: ServiceRequest/2b000000-0000-4000-8000-0000000d3201 }]
+              collection: { collectedDateTime: '2026-10-19T10:20:00-03:00' }
+      responses:
+        '200': { $ref: '#/components/responses/FhirOk' }
+        '400': { $ref: '#/components/responses/FhirErro' }
+        '401': { $ref: '#/components/responses/FhirErro' }
+        '403': { $ref: '#/components/responses/FhirErro' }
+        '404': { $ref: '#/components/responses/FhirErro' }
+        '409': { $ref: '#/components/responses/FhirErro' }
+        '429': { $ref: '#/components/responses/FhirErro' }
+        '500': { $ref: '#/components/responses/FhirErro' }
+  /fhir/DiagnosticReport:
+    post:
+      tags: [Laboratório (FHIR)]
+      operationId: fhirLaudo
+      summary: Situação e laudo do pedido
+      description: |
+        `basedOn[0].reference` aponta o pedido. O `status` diz o que acontece:
+        - `registered`, `partial` ou `preliminary`: o exame fica em análise;
+        - `final`: grava o resultado (os analitos em Observation contidas,
+          referidas em `result[]`, e o laudo em PDF em `presentedForm`, base64,
+          até 10 MB);
+        - `amended`, `corrected` ou `appended`: grava uma versão nova, com o
+          motivo "Retificado pelo laboratório" e a `conclusion`;
+        - `cancelled`: cancela o pedido, com a `conclusion` como motivo.
+
+        O valor de cada analito é guardado como veio. O exame só fica marcado
+        como crítico quando o laboratório marca `interpretation` com HH, LL ou
+        AA. O mesmo laudo reenviado (mesmo `identifier` e mesmo conteúdo) não
+        gera versão nova. Pedido que não está no Chefe Coruja, ou foi em texto
+        livre, responde 404.
+      requestBody:
+        required: true
+        content:
+          application/fhir+json:
+            schema: { $ref: '#/components/schemas/RecursoFhir' }
+            example:
+              resourceType: DiagnosticReport
+              status: final
+              identifier: [{ value: LAB-000123 }]
+              basedOn: [{ reference: ServiceRequest/2b000000-0000-4000-8000-0000000d3201 }]
+              conclusion: Laudo liberado.
+              contained:
+                - resourceType: Observation
+                  id: hb
+                  status: final
+                  code: { coding: [{ system: 'http://loinc.org', code: 718-7 }], text: Hemoglobina }
+                  valueQuantity: { value: 13.2, unit: g/dL }
+                  referenceRange: [{ text: '12,0 a 16,0 g/dL' }]
+              result: [{ reference: '#hb' }]
+              presentedForm: [{ contentType: application/pdf, title: laudo.pdf, data: JVBERi0xLjQK }]
+      responses:
+        '200': { $ref: '#/components/responses/FhirOk' }
+        '400': { $ref: '#/components/responses/FhirErro' }
+        '401': { $ref: '#/components/responses/FhirErro' }
+        '403': { $ref: '#/components/responses/FhirErro' }
+        '404': { $ref: '#/components/responses/FhirErro' }
+        '409': { $ref: '#/components/responses/FhirErro' }
+        '413': { $ref: '#/components/responses/FhirErro' }
+        '422': { $ref: '#/components/responses/FhirErro' }
+        '429': { $ref: '#/components/responses/FhirErro' }
+        '500': { $ref: '#/components/responses/FhirErro' }
+
 components:
   securitySchemes:
     chave:
@@ -483,6 +655,22 @@ components:
       schema: { type: integer }
 
   responses:
+    FhirOk:
+      description: Recebido. OperationOutcome informativo com o que mudou (ou que nada mudou, no reenvio).
+      content:
+        application/fhir+json:
+          schema: { $ref: '#/components/schemas/RecursoFhir' }
+          example:
+            resourceType: OperationOutcome
+            issue: [{ severity: information, code: informational, diagnostics: 'Laudo recebido (situação: resultado, versão 1).' }]
+    FhirErro:
+      description: Erro da porta do laboratório, como OperationOutcome FHIR (o `meta.tag` traz o identificador da requisição).
+      content:
+        application/fhir+json:
+          schema: { $ref: '#/components/schemas/RecursoFhir' }
+          example:
+            resourceType: OperationOutcome
+            issue: [{ severity: error, code: not-found, diagnostics: Pedido de exame não encontrado. }]
     RequisicaoInvalida:
       description: Parâmetro ausente ou fora do formato.
       content:
@@ -540,6 +728,13 @@ components:
           schema: { $ref: '#/components/schemas/Problema' }
 
   schemas:
+    RecursoFhir:
+      type: object
+      description: Recurso FHIR R4 em JSON (Bundle, ServiceRequest, Specimen, DiagnosticReport, OperationOutcome ou CapabilityStatement).
+      required: [resourceType]
+      properties:
+        resourceType: { type: string }
+      additionalProperties: true
     Problema:
       type: object
       description: Erro no formato do RFC 9457.
