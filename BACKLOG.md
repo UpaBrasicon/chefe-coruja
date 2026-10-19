@@ -936,6 +936,26 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 5. Se cliente já tiver sistemas legados: integrações primeiro.
 6. Cliente grande recebe projeto Supabase dedicado; não alterar o multi-tenant para isso.
 
+**Pausa da 5C em 19/10/2026 (decisão do RT, "1b"):** a 5C para na tarefa 2. A etapa 2.1 (imagem e
+métodos gráficos no sistema) está na homologação, esperando o teste do RT e o "ok produção"; a 2.2
+(porta FHIR da imagem e simulador) volta depois da trilha "Padrão do frontend", abaixo.
+
+---
+
+## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
+
+**Pedido do RT:** "organizar o frontend e manter o padrão daqui pra frente". Entra agora, com a 5C
+pausada ("1b"). Escopo em quatro partes, cada uma em PR próprio ("2a"). O pacote `impeccable`
+(habilidades de design e detecção de anti-padrões para agentes de IA) é testado como apoio antes de
+virar regra na CI ("3a").
+
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P1 | Levantamento do frontend | Telas, componentes e onde o padrão diverge: cores fora dos tokens, espaçamentos, botões, tabelas, diálogos, estados vazios, mensagens de erro e textos | Documento com o mapa e a lista de divergências por tela, em ordem de uso |
+| 2 | P1 | Guia do padrão | Cores e tokens, tipografia, espaçamento, componentes de base e quando usar cada um, tom e forma dos textos | Guia escrito no repositório, aprovado pelo RT |
+| 3 | P1 | Verificação automática na CI | Regras que barram o que foge do guia (ex.: cor fora dos tokens, componente duplicado); avaliar o `impeccable` como apoio | CI acusa a divergência em PR novo |
+| 4 | P2 | Correção tela por tela | Ajustar as telas na ordem de uso, sem mudar regra de negócio | Telas da lista sem divergência do guia |
+
 ---
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
