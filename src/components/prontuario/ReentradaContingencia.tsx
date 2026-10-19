@@ -83,7 +83,7 @@ export function ReentradaContingencia({ unidadeId, episodioId, chegadaEm }: { un
           <div role="radiogroup" aria-label="Contingência" className="flex flex-col gap-1.5">
             {cabem.map((c) => (
               <button key={c.id} type="button" role="radio" aria-checked={contingencia === c.id} onClick={() => setContingencia(c.id)}
-                className={cn('rounded-lg border px-3 py-2 text-left text-apoio', contingencia === c.id ? 'border-marca ring-1 ring-marca' : 'border-fio')}>
+                className={cn('rounded-lg border px-3 py-2 text-left text-apoio', contingencia === c.id ? 'border-acao ring-1 ring-acao' : 'border-fio')}>
                 {fmtDataHora(c.inicio)} a {fmtDataHora(c.fim)} · “{c.motivo}”
               </button>
             ))}

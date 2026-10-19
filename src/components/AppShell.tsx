@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { PAPEIS_POR_ESCALA, PAPEL_LABEL } from '@/lib/constants'
+import { ehTema } from '@/lib/tema'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { DesfazerProvider } from '@/contexts/DesfazerContext'
@@ -97,7 +98,7 @@ function ItemInferior({ item, nota }: { item: ItemNav; nota?: number }) {
       className={({ isActive }) =>
         cn(
           'relative flex min-h-[52px] min-w-[64px] flex-1 flex-col items-center justify-center gap-1 rounded-container px-0.5 py-1.5 text-rotulo leading-[1.15] transition-colors',
-          isActive ? 'bg-marca/10 font-semibold text-acao' : 'text-tinta-apoio',
+          isActive ? 'bg-acao/10 font-semibold text-acao' : 'text-tinta-apoio',
         )
       }
     >
@@ -122,7 +123,7 @@ function BotaoMais({ itens, notas }: { itens: ItemNav[]; notas: Partial<Record<s
       <button type="button" onClick={() => setAberta(true)} aria-haspopup="dialog"
         className={cn(
           'relative flex min-h-[52px] min-w-[64px] flex-1 flex-col items-center justify-center gap-1 rounded-container px-0.5 py-1.5 text-rotulo leading-[1.15] transition-colors',
-          ativo ? 'bg-marca/10 font-semibold text-acao' : 'text-tinta-apoio',
+          ativo ? 'bg-acao/10 font-semibold text-acao' : 'text-tinta-apoio',
         )}>
         <Ellipsis className="size-5" aria-hidden />
         <span className="truncate text-center">Mais</span>
@@ -139,7 +140,7 @@ function BotaoMais({ itens, notas }: { itens: ItemNav[]; notas: Partial<Record<s
             return (
               <NavLink key={item.to} to={item.to} end={item.exato} onClick={() => setAberta(false)}
                 className={({ isActive }) => cn('flex min-h-12 items-center gap-3 rounded-container px-3.5 text-controle',
-                  isActive ? 'bg-marca/10 font-semibold text-acao' : 'text-tinta')}>
+                  isActive ? 'bg-acao/10 font-semibold text-acao' : 'text-tinta')}>
                 <Icone className="size-5 shrink-0" aria-hidden />
                 <span className="flex-1">{item.rotulo}</span>
                 {!!nota && <span className="rounded-capsula bg-nota px-[7px] text-rotulo leading-[18px] font-semibold text-atencao">{nota}</span>}
@@ -202,7 +203,7 @@ export function AppShell() {
 }
 
 function Casca() {
-  const { signOut, perfil } = useAuth()
+  const { signOut, perfil, definirTema } = useAuth()
   const { unidades, unidadeAtiva, papelAtivo, setPapelAtivo, papeisDaUnidade, status, ehSuperAdmin } = useUnidade()
   const navigate = useNavigate()
   const location = useLocation()
@@ -349,6 +350,8 @@ function Casca() {
       onTrocarPapel={trocarPapel}
       onSair={() => setSaidaAberta(true)}
       onBloquear={bloqueio.bloquear}
+      tema={ehTema(perfil?.tema) ? perfil.tema : 'automatico'}
+      onTrocarTema={(t) => void definirTema(t)}
       tamanho={tamanho}
     />
   )

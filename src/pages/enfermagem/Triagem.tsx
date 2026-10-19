@@ -84,10 +84,10 @@ export default function Triagem() {
     <>
       <TituloPagina icone={Stethoscope} titulo="Triagem" descricao="Fichas da recepção aguardando classificação. O protocolo é referência; a cor é sua." />
       {aviso && (
-        <div role="status" className="mb-3 flex flex-wrap items-center gap-[9px] rounded-container border border-marca/20 bg-marca/5 px-[15px] py-[11px] text-controle text-acao">
+        <div role="status" className="mb-3 flex flex-wrap items-center gap-[9px] rounded-container border border-acao/20 bg-acao/5 px-[15px] py-[11px] text-controle text-acao">
           <Check className="size-[15px]" aria-hidden />
           <span className="flex-[1_1_220px]">{aviso.texto}</span>
-          <Button variant="outline" size="sm" className="border-marca/35 bg-superficie text-acao"
+          <Button variant="outline" size="sm" className="border-acao/35 bg-superficie text-acao"
             onClick={() => void imprimirRelatorio({ tipo: 'classificacao', episodioId: aviso.episodioId })}>
             <Printer /> Imprimir resumo
           </Button>

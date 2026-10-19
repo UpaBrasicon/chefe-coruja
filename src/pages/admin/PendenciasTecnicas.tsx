@@ -100,7 +100,7 @@ export default function PendenciasTecnicas() {
             <button
               type="button"
               onClick={() => setAberto(c)}
-              className="self-center rounded-[9px] border border-fio bg-superficie px-3 py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-marca hover:text-acao"
+              className="self-center rounded-[9px] border border-fio bg-superficie px-3 py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao"
             >
               Abrir chamado
             </button>

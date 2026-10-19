@@ -94,7 +94,7 @@ export function ReservarLeito({ aberto, onFechar, leitoId, identificador, unidad
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
                 autoComplete="off"
-                className="min-h-10 rounded-controle border border-fio bg-campo px-3 text-controle outline-none focus-visible:border-marca"
+                className="min-h-10 rounded-controle border border-fio bg-campo px-3 text-controle outline-none focus-visible:border-acao"
               />
               {achados.isLoading && <Spinner />}
               <ul className="flex flex-col">

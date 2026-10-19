@@ -24,7 +24,7 @@ const GRUPO_FORA = 'Fora do seu acesso'
 const CLASSE_GRUPO =
   '[&_[cmdk-group-heading]]:block [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-[9px] [&_[cmdk-group-heading]]:pb-[5px] [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-[0.07em] [&_[cmdk-group-heading]]:text-tinta-sussurro [&_[cmdk-group-heading]]:uppercase'
 const CLASSE_ITEM =
-  'group flex cursor-pointer items-center gap-2.5 rounded-controle px-3 py-[9px] text-tinta data-[selected=true]:bg-marca/10 data-[selected=true]:text-acao'
+  'group flex cursor-pointer items-center gap-2.5 rounded-controle px-3 py-[9px] text-tinta data-[selected=true]:bg-acao/10 data-[selected=true]:text-acao'
 
 export function Paleta({
   aberta, onAbertaChange, telas, comFerramentas, comPlantao,

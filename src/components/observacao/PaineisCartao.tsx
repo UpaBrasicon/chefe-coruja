@@ -35,7 +35,7 @@ export function Opcao({ ativa, onClick, children }: { ativa: boolean; onClick: (
   return (
     <button type="button" aria-pressed={ativa} onClick={onClick}
       className={cn('rounded-capsula border px-[11px] py-[5px] text-left text-apoio transition-colors',
-        ativa ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+        ativa ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
       {children}
     </button>
   )

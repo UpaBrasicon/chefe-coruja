@@ -123,7 +123,7 @@ export default function NotificacaoCompulsoria() {
           <span className="text-apoio font-medium text-grafite">CIDs considerados:</span>
           {cids.length === 0 && <span className="text-apoio text-tinta-sussurro">todos os notificáveis</span>}
           {cids.map((c) => (
-            <span key={c} className="inline-flex items-center gap-1.5 rounded-capsula border border-marca/40 bg-marca/10 py-1 pr-1.5 pl-[11px] text-apoio font-medium text-acao">
+            <span key={c} className="inline-flex items-center gap-1.5 rounded-capsula border border-acao/40 bg-acao/10 py-1 pr-1.5 pl-[11px] text-apoio font-medium text-acao">
               {c}
               <button type="button" aria-label={`Excluir ${c}`} onClick={() => setCids((x) => x.filter((y) => y !== c))} className="flex p-0.5">
                 <X className="size-3.5" aria-hidden />

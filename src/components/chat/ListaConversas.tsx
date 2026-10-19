@@ -60,7 +60,7 @@ function Linha({
         {previa && <span className="truncate text-apoio text-tinta-apoio">{previa}</span>}
       </span>
       {naoLidas > 0 && (
-        <span className="mt-0.5 grid h-[18px] min-w-[18px] shrink-0 place-items-center rounded-capsula bg-acao px-[5px] text-rotulo leading-none font-semibold text-white">
+        <span className="mt-0.5 grid h-[18px] min-w-[18px] shrink-0 place-items-center rounded-capsula bg-acao px-[5px] text-rotulo leading-none font-semibold text-sobre-acao">
           {naoLidas > 99 ? '99+' : naoLidas}
           <span className="sr-only"> não lida{naoLidas === 1 ? '' : 's'}</span>
         </span>

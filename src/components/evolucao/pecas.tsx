@@ -49,7 +49,7 @@ export function ChipEscolha({ ativo, onClick, children }: { ativo: boolean; onCl
       onClick={onClick}
       className={cn(
         'inline-flex min-h-8 items-center rounded-capsula border px-3 py-1 text-apoio transition-colors',
-        ativo ? 'border-marca/40 bg-marca/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+        ativo ? 'border-acao/40 bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
       )}
     >
       {children}
@@ -59,7 +59,7 @@ export function ChipEscolha({ ativo, onClick, children }: { ativo: boolean; onCl
 
 export function Selo({ tom = 'marca', children, className }: { tom?: 'marca' | 'conforme' | 'atencao' | 'critico' | 'neutro'; children: React.ReactNode; className?: string }) {
   const cores = {
-    marca: 'bg-marca/10 text-acao',
+    marca: 'bg-acao/10 text-acao',
     conforme: 'bg-conforme/10 text-conforme',
     atencao: 'bg-atencao/10 text-atencao',
     critico: 'bg-critico/10 text-critico',

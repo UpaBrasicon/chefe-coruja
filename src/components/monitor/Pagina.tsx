@@ -10,7 +10,7 @@ export function TituloPagina({
 }: { icone: LucideIcon; titulo: string; descricao?: ReactNode; acoes?: ReactNode; className?: string }) {
   return (
     <header className={cn('cc-pagina-cabeca mb-[22px] flex flex-wrap items-start gap-3.5', className)}>
-      <span className="grid size-[42px] shrink-0 place-items-center rounded-controle bg-marca/10 text-acao" aria-hidden>
+      <span className="grid size-[42px] shrink-0 place-items-center rounded-controle bg-acao/10 text-acao" aria-hidden>
         <Icone className="size-5" />
       </span>
       <div className="min-w-0 flex-1">
@@ -62,7 +62,7 @@ export function Chip({ ativo, children, onClick, contagem }: { ativo: boolean; c
       onClick={onClick}
       className={cn(
         'inline-flex items-center gap-1.5 rounded-capsula border px-[13px] py-[5px] text-apoio transition-colors',
-        ativo ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+        ativo ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
       )}
     >
       {children}

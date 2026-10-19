@@ -85,10 +85,10 @@ function Droga({ i, peso }: { i: InfusaoAdulto; peso: number }) {
 
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Diluição">
-          <button type="button" aria-pressed={!servico} onClick={() => setServico(false)} className={cn('min-h-11 flex-1 rounded-controle border px-3 font-medium', !servico ? 'border-acao bg-acao text-white' : 'border-fio text-tinta-apoio')}>
+          <button type="button" aria-pressed={!servico} onClick={() => setServico(false)} className={cn('min-h-11 flex-1 rounded-controle border px-3 font-medium', !servico ? 'border-acao bg-acao text-sobre-acao' : 'border-fio text-tinta-apoio')}>
             Padrão HC ({br(concentracao(i), 2)} {unConc})
           </button>
-          <button type="button" aria-pressed={servico} onClick={() => setServico(true)} className={cn('min-h-11 flex-1 rounded-controle border px-3 font-medium', servico ? 'border-acao bg-acao text-white' : 'border-fio text-tinta-apoio')}>
+          <button type="button" aria-pressed={servico} onClick={() => setServico(true)} className={cn('min-h-11 flex-1 rounded-controle border px-3 font-medium', servico ? 'border-acao bg-acao text-sobre-acao' : 'border-fio text-tinta-apoio')}>
             Diluição do serviço
           </button>
         </div>

@@ -384,7 +384,7 @@ function Caderno({ p, cabecalho, avisos, acoesTopo }: {
               onClick={() => setAba(id)}
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-capsula border px-3 py-[5px] text-apoio whitespace-nowrap transition-colors',
-                atual === id ? 'border-marca/35 bg-marca/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-marca hover:text-acao',
+                atual === id ? 'border-acao/35 bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
               )}>
               <Icone className="size-3.5" aria-hidden /> {rotulo}
             </button>

@@ -1,16 +1,21 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
-import { Building2, Lock, LogOut, Repeat, SlidersHorizontal, UserRound } from 'lucide-react'
+import { Building2, Lock, LogOut, Monitor, Moon, Repeat, SlidersHorizontal, Sun, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { Button } from '@/components/ui/button'
 import { PAPEL_LABEL } from '@/lib/constants'
+import { TEMA_ESCURO_LIBERADO, TEMAS, type Tema } from '@/lib/tema'
 import { cn } from '@/lib/utils'
 import type { Papel } from '@/types/database'
 
 // Menu do usuário (P/index.html 1057–1092, 25/09): o avatar com as iniciais
 // abre nome, registro, perfil e unidade; troca de unidade e de perfil; as
 // preferências de prescrição (só plantonista); e Sair, que passa pela
-// pergunta de saída.
+// pergunta de saída. O tema (claro, escuro, automático) aparece quando o escuro
+// for liberado (guia do padrão, 1.4; TEMA_ESCURO_LIBERADO em lib/tema.ts).
+
+const ICONE_TEMA = { claro: Sun, escuro: Moon, automatico: Monitor } as const
 
 function iniciais(nome: string | undefined) {
   const w = (nome ?? '')
@@ -31,6 +36,8 @@ export function MenuUsuario({
   onTrocarPapel,
   onSair,
   onBloquear,
+  tema = 'automatico',
+  onTrocarTema,
   tamanho = 32,
 }: {
   nome?: string
@@ -44,6 +51,8 @@ export function MenuUsuario({
   onSair: () => void
   /** Bloqueia a tela agora (quem sai da frente do computador). */
   onBloquear: () => void
+  tema?: Tema
+  onTrocarTema?: (tema: Tema) => void
   tamanho?: 32 | 38
 }) {
   const navigate = useNavigate()
@@ -108,11 +117,35 @@ export function MenuUsuario({
                         }}
                         className={cn(
                           'rounded-capsula px-2.5 py-[3px] text-rotulo whitespace-nowrap hover:text-acao',
-                          on ? 'bg-marca/10 font-semibold text-acao' : 'text-tinta-sussurro',
+                          on ? 'bg-acao/10 font-semibold text-acao' : 'text-tinta-sussurro',
                         )}
                       >
                         {PAPEL_LABEL[p]}
                       </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            {TEMA_ESCURO_LIBERADO && onTrocarTema && (
+              <div className="flex flex-col gap-2 border-t border-trilha px-4 py-3">
+                <span className="rotulo text-tinta-sussurro">Tema</span>
+                <div className="flex gap-1.5" role="radiogroup" aria-label="Tema da tela">
+                  {TEMAS.map(({ valor, rotulo }) => {
+                    const Icone = ICONE_TEMA[valor]
+                    const on = valor === tema
+                    return (
+                      <Button
+                        key={valor}
+                        size="sm"
+                        variant={on ? 'secondary' : 'ghost'}
+                        role="radio"
+                        aria-checked={on}
+                        onClick={() => onTrocarTema(valor)}
+                      >
+                        <Icone aria-hidden />
+                        {rotulo}
+                      </Button>
                     )
                   })}
                 </div>

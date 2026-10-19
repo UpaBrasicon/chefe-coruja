@@ -123,7 +123,7 @@ export function BlocoAcuidade({ a, carregando, pacienteId, internacaoId, podeLan
         {geo ? (
           <button type="button" onClick={() => setMotivoAberto((x) => !x)}
             aria-label={`Tendência do ${a.escala} em ${janela}: ${rumo}. Abre o motivo do alerta.`}
-            className="-ml-1 flex shrink-0 flex-col items-start gap-0.5 rounded-[9px] px-1.5 py-1 hover:bg-marca/[0.06]">
+            className="-ml-1 flex shrink-0 flex-col items-start gap-0.5 rounded-[9px] px-1.5 py-1 hover:bg-acao/[0.06]">
             <svg viewBox="0 0 104 30" width="104" height="30" aria-hidden className="block">
               <polyline points={geo.pontos} fill="none" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className={BANDA_TRACO[banda]} />
               <circle cx={geo.fimX.toFixed(1)} cy={geo.fimY.toFixed(1)} r="2.7" className={BANDA_PONTO[banda]} />
@@ -139,13 +139,13 @@ export function BlocoAcuidade({ a, carregando, pacienteId, internacaoId, podeLan
         </span>
         {!semAfericao && (
           <button type="button" onClick={() => setMotivoAberto((x) => !x)} aria-expanded={motivoAberto}
-            className="flex items-center gap-1.5 rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio font-medium whitespace-nowrap text-tinta-apoio hover:border-marca hover:text-acao">
+            className="flex items-center gap-1.5 rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio font-medium whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao">
             <Activity className="size-3.5" aria-hidden /> Motivo do alerta
           </button>
         )}
         {podeLancar && !lancando && (
           <button type="button" onClick={() => setLancando(true)}
-            className="flex items-center gap-1.5 rounded-[9px] bg-acao px-3 py-[7px] text-apoio font-medium whitespace-nowrap text-white hover:bg-acao-pressionada">
+            className="flex items-center gap-1.5 rounded-[9px] bg-acao px-3 py-[7px] text-apoio font-medium whitespace-nowrap text-sobre-acao hover:bg-acao-pressionada">
             <Thermometer className="size-3.5" aria-hidden /> Lançar vitais
           </button>
         )}
@@ -275,7 +275,7 @@ function CampoNumero({ nome, rotulo, unidade, valor, mudar }: { nome: string; ro
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={`v-${nome}`} className="text-[12px] font-medium text-tinta-sussurro">{rotulo}</label>
-      <div className="flex items-center gap-1.5 rounded-[9px] border border-fio bg-campo px-2.5 py-[7px] focus-within:border-marca">
+      <div className="flex items-center gap-1.5 rounded-[9px] border border-fio bg-campo px-2.5 py-[7px] focus-within:border-acao">
         <input id={`v-${nome}`} inputMode="decimal" value={valor} onChange={(e) => mudar(e.target.value)}
           className="w-full min-w-0 flex-1 border-0 bg-transparent text-corpo text-tinta tabular-nums outline-none" />
         {unidade && <span className="text-[12px] whitespace-nowrap text-tinta-sussurro">{unidade}</span>}

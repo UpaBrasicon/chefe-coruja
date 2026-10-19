@@ -99,7 +99,7 @@ export function ForaDoExpediente() {
             </p>
           ) : (
             <div className="flex items-center gap-3.5 px-4 py-3.5">
-              <div className="flex size-[52px] shrink-0 flex-col items-center justify-center rounded-container bg-acao text-white" aria-hidden>
+              <div className="flex size-[52px] shrink-0 flex-col items-center justify-center rounded-container bg-acao text-sobre-acao" aria-hidden>
                 <span className="text-secao leading-none font-semibold tabular">{diaMes(proximo.inicio)}</span>
                 <span className="text-rotulo opacity-80">{semana(proximo.inicio)}</span>
               </div>
@@ -134,7 +134,7 @@ export function ForaDoExpediente() {
           <div className="mt-5 flex flex-col gap-2">
             {outrosPapeis.map((p) => (
               <button key={p} type="button" onClick={() => { setPapelAtivo(p); navigate(ROTA_INICIAL[p], { replace: true }) }}
-                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-controle bg-acao text-controle font-medium text-white hover:bg-acao/90">
+                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-controle bg-acao text-controle font-medium text-sobre-acao hover:bg-acao/90">
                 <UserCog className="size-4" aria-hidden />
                 Entrar como {PAPEL_LABEL[p]}
               </button>
@@ -145,7 +145,7 @@ export function ForaDoExpediente() {
         <button
           type="button"
           onClick={handleSair}
-          className="mt-5 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-controle border border-fio bg-superficie text-controle font-medium text-tinta-apoio hover:border-marca hover:text-acao"
+          className="mt-5 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-controle border border-fio bg-superficie text-controle font-medium text-tinta-apoio hover:border-acao hover:text-acao"
         >
           <LogOut className="size-4" aria-hidden />
           Sair

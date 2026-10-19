@@ -141,7 +141,7 @@ export function GavetaIsolamento({ pacienteId, nome, aberta, onAbertaChange }: {
             <div className="flex flex-col gap-1.5" role="radiogroup" aria-label="Tipo de isolamento">
               {livres.map((t) => (
                 <label key={t} className={cn('flex cursor-pointer items-start gap-2 rounded-controle border px-3 py-2',
-                  tipo === t ? 'border-acao bg-marca/10' : 'border-fio')}>
+                  tipo === t ? 'border-acao bg-acao/10' : 'border-fio')}>
                   <input type="radio" name="tipo-isolamento" className="mt-1" checked={tipo === t} onChange={() => setTipo(t)} />
                   <span className="flex flex-col">
                     <span className="text-corpo font-medium text-tinta">{ROTULO_ISOLAMENTO[t]}</span>

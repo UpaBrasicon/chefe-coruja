@@ -158,7 +158,7 @@ function Agenda() {
           {(escala.data ?? []).map((e) => (
             <li key={e.escala_id} className="flex flex-wrap items-center gap-3 border-b border-trilha px-5 py-2.5 last:border-0">
               <span className={cn('grid w-12 shrink-0 place-items-center rounded-controle border py-1.5 text-rotulo font-semibold leading-tight',
-                e.agora ? 'border-marca/30 bg-alerta-marca text-acao' : 'border-fio bg-trilha/60 text-tinta-apoio')}>
+                e.agora ? 'border-acao/30 bg-alerta-marca text-acao' : 'border-fio bg-trilha/60 text-tinta-apoio')}>
                 <span className="capitalize">{diaSemana(e.inicio)}</span><span className="font-normal">{diaMes(e.inicio)}</span>
               </span>
               <span className="w-28 text-apoio tabular-nums text-tinta">{hhmm(e.inicio)}–{hhmm(e.fim)}</span>
@@ -199,7 +199,7 @@ function Extrato() {
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="grid size-[34px] place-items-center rounded-controle bg-marca/10 text-acao" aria-hidden><Receipt className="size-4" /></span>
+        <span className="grid size-[34px] place-items-center rounded-controle bg-acao/10 text-acao" aria-hidden><Receipt className="size-4" /></span>
         <div className="min-w-0 flex-1">
           <h2 className="text-secao font-semibold text-tinta">Extrato · {nomeMes}</h2>
           <p className="text-apoio text-tinta-sussurro">Plantão conta pelo valor da unidade para o setor e o turno escalados; o parecer respondido aparece no plantão em que foi escrito</p>
@@ -271,7 +271,7 @@ function Telemonitoramento({ unidadeId }: { unidadeId: string }) {
   const depois = (q.data ?? []).filter((c) => !c.agora)
   const Linha = ({ c }: { c: NonNullable<typeof q.data>[number] }) => (
     <li className={cn('flex flex-wrap items-center gap-3 border-b border-trilha px-5 py-3 last:border-0', c.minha && 'bg-alerta-marca/40')}>
-      <span aria-hidden className={cn('size-2 shrink-0 rounded-full', c.agora ? 'bg-marca' : 'bg-fio')} />
+      <span aria-hidden className={cn('size-2 shrink-0 rounded-full', c.agora ? 'bg-acao' : 'bg-fio')} />
       <div className="flex min-w-[200px] flex-1 flex-col gap-0.5">
         <span className="text-apoio font-medium text-tinta">{c.setor}</span>
         <span className="text-rotulo text-tinta-sussurro">{c.minha ? 'Minha escala' : `Coberto por ${c.medico}`} · {capital(diaSemana(c.inicio))} {diaMes(c.inicio)} {hhmm(c.inicio)}–{hhmm(c.fim)}</span>
@@ -387,7 +387,7 @@ function Historico() {
       <div role="group" aria-label="Período" className="flex flex-wrap gap-1.5">
         {[7, 30, 90].map((n) => (
           <button key={n} type="button" aria-pressed={dias === n} onClick={() => setDias(n)}
-            className={cn('rounded-capsula border px-[13px] py-[5px] text-apoio', dias === n ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+            className={cn('rounded-capsula border px-[13px] py-[5px] text-apoio', dias === n ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
             {n} dias
           </button>
         ))}

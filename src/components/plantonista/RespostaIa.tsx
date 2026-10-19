@@ -48,7 +48,7 @@ function Texto({ texto, fontes }: { texto: string; fontes: Fonte[] }) {
         disabled={!existe}
         onClick={() => document.getElementById(`fonte-ia-${n}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
         className={cn('mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 align-baseline text-[11px] font-semibold tabular-nums',
-          existe ? 'bg-marca/15 text-marca hover:bg-marca/25' : 'bg-alerta/20 text-alerta')}
+          existe ? 'bg-acao/15 text-acao hover:bg-acao/25' : 'bg-alerta/20 text-alerta')}
         aria-label={`Fonte ${n}`}
       >
         {n}
@@ -118,7 +118,7 @@ function CartoesFerramentas({ ferramentas }: { ferramentas: ToolHit[] }) {
       <div className="flex flex-wrap gap-2">
         {ferramentas.map((t) => (
           <button key={t.id} type="button" onClick={() => navigate(t.rota)}
-            className="flex items-center gap-2 rounded-container border border-fio bg-superficie px-3 py-1.5 text-apoio text-tinta shadow-repouso hover:border-marca">
+            className="flex items-center gap-2 rounded-container border border-fio bg-superficie px-3 py-1.5 text-apoio text-tinta shadow-repouso hover:border-acao">
             <span className="font-medium">{t.nome}</span>
             <span className="text-tinta-sussurro">{t.categoria}</span>
             <span className="text-acao">Abrir</span>
@@ -146,7 +146,7 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
     <section aria-live="polite" aria-label="Resposta da IA" className="mb-[22px] rounded-container border border-fio bg-superficie shadow-repouso">
       <header className="flex items-start justify-between gap-3 border-b border-fio px-4 py-3">
         <div className="min-w-0">
-          <p className="rotulo flex items-center gap-1.5 text-tinta-sussurro"><Sparkles className="size-3.5 text-marca" aria-hidden /> Perguntar à IA</p>
+          <p className="rotulo flex items-center gap-1.5 text-tinta-sussurro"><Sparkles className="size-3.5 text-acao" aria-hidden /> Perguntar à IA</p>
           <p className="truncate text-corpo font-semibold text-tinta">“{pergunta}”</p>
           {publico === 'pediatrico' && <p className="text-apoio text-tinta-sussurro">Pergunta de criança: só fontes pediátricas.</p>}
         </div>
@@ -159,7 +159,7 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
         {alerta && <p className="rounded-controle-sm border border-alerta/40 bg-alerta/10 px-3 py-2 text-apoio text-tinta">{alerta}</p>}
         {aviso && <p className={cn('text-corpo', status === 'loading' ? 'animate-pulse text-tinta-sussurro' : 'text-tinta')}>{aviso}</p>}
         {(status === 'streaming' || status === 'done') && (curto ? <p className="text-corpo text-tinta">{curto}</p> : <Texto texto={texto} fontes={fontes} />)}
-        {status === 'streaming' && <span className="inline-block h-4 w-1.5 animate-pulse bg-marca align-middle" aria-hidden />}
+        {status === 'streaming' && <span className="inline-block h-4 w-1.5 animate-pulse bg-acao align-middle" aria-hidden />}
 
         <CartoesFerramentas ferramentas={ferramentas} />
 
@@ -168,8 +168,8 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
             <p className="rotulo mb-1.5 flex items-center gap-1.5 text-tinta-sussurro"><BookOpen className="size-3.5" aria-hidden /> Fontes</p>
             <ol className="space-y-1.5">
               {fontes.map((f) => (
-                <li key={f.n} id={`fonte-ia-${f.n}`} className="flex gap-2 rounded-controle-sm px-2 py-1 text-apoio text-tinta target:bg-marca/10">
-                  <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-marca/15 px-1.5 text-[11px] font-semibold text-marca tabular-nums">{f.n}</span>
+                <li key={f.n} id={`fonte-ia-${f.n}`} className="flex gap-2 rounded-controle-sm px-2 py-1 text-apoio text-tinta target:bg-acao/10">
+                  <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-acao/15 px-1.5 text-[11px] font-semibold text-acao tabular-nums">{f.n}</span>
                   <span className="min-w-0">
                     <span className="font-medium">{f.titulo}</span>
                     <span className="text-tinta-sussurro"> · {f.editor}, {f.ano}{f.secao ? ` · ${f.secao}` : ''}{f.pagina ? ` · p. ${f.pagina}` : ''}</span>

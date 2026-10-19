@@ -82,7 +82,7 @@ export function UsarCodigoRecuperacao({ onPronto }: { onPronto: () => void }) {
           value={codigo}
           onChange={(e) => { setCodigo(e.target.value.toUpperCase()); if (erro) setErro(null) }}
           aria-invalid={!!erro}
-          className="min-h-[54px] rounded-controle border border-fio bg-campo text-center text-[22px] font-semibold tracking-[0.2em] text-tinta outline-none focus-visible:border-marca"
+          className="min-h-[54px] rounded-controle border border-fio bg-campo text-center text-[22px] font-semibold tracking-[0.2em] text-tinta outline-none focus-visible:border-acao"
         />
         {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
       </div>

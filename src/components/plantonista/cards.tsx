@@ -26,7 +26,7 @@ export function SectionCard({
     <Link to={to} className="group block text-tinta hover:text-tinta">
       <div className="flex h-full flex-col gap-3 rounded-cartao border border-fio bg-superficie p-5 shadow-repouso transition-[transform,box-shadow] duration-150 group-hover:-translate-y-0.5 group-hover:shadow-halo-ferramenta">
         <div className="flex items-start justify-between">
-          <span className="grid size-[42px] place-items-center rounded-controle bg-marca/10 text-acao">
+          <span className="grid size-[42px] place-items-center rounded-controle bg-acao/10 text-acao">
             <Icon className="size-5" />
           </span>
           <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />
@@ -75,7 +75,7 @@ export function ToolCard({
           className="absolute top-2.5 right-2.5 rounded-controle-sm p-1 text-tinta-sussurro hover:text-acao"
           onClick={onFavoritar}
         >
-          <Star className={cn('size-4', favorito && 'fill-marca text-marca')} />
+          <Star className={cn('size-4', favorito && 'fill-acao text-acao')} />
         </button>
       )}
     </div>

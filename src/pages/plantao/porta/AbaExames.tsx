@@ -132,7 +132,7 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
           {(['rotina', 'urgente'] as const).map((u) => (
             <button key={u} type="button" aria-pressed={urgencia === u} onClick={() => setUrgencia(u)}
               className={cn('rounded-capsula border px-3 py-0.5 text-apoio',
-                urgencia === u ? (u === 'urgente' ? 'border-critico bg-critico font-medium text-white' : 'border-acao bg-acao font-medium text-white') : 'border-fio text-tinta-apoio')}>
+                urgencia === u ? (u === 'urgente' ? 'border-critico bg-critico font-medium text-white' : 'border-acao bg-acao font-medium text-sobre-acao') : 'border-fio text-tinta-apoio')}>
               {u}
             </button>
           ))}
@@ -147,7 +147,7 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
                 onClick={() => void pedir([b.procedimento ? { procedimento: b.procedimento } : { nome: b.rotulo }])}
                 title={on ? 'Já pedido neste atendimento' : `Pedir ${b.rotulo}${b.procedimento ? '' : ' (sem código)'}`}
                 className={cn('rounded-capsula border px-3 py-1 text-apoio transition-colors',
-                  on ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao disabled:opacity-50')}>
+                  on ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao disabled:opacity-50')}>
                 {b.rotulo}
               </button>
             )

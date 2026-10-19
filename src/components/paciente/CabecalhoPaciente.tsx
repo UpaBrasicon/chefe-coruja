@@ -143,7 +143,7 @@ export function CabecalhoPaciente({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-      {onde && <span className="rounded-capsula bg-marca/10 px-[9px] py-1 text-apoio font-semibold text-acao">{onde}</span>}
+      {onde && <span className="rounded-capsula bg-acao/10 px-[9px] py-1 text-apoio font-semibold text-acao">{onde}</span>}
       {extra}
       <SeloAlergia pacienteId={pacienteId} onClick={() => setAlergiasAbertas(true)} />
       <SeloIsolamento pacienteId={pacienteId} onClick={() => setIsolamentoAberto(true)} />

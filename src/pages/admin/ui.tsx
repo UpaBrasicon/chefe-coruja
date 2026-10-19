@@ -47,7 +47,7 @@ export function Abas<V extends string>({ opcoes, valor, onChange, rotulo }: {
             onClick={() => onChange(o.valor)}
             className={cn(
               '-mb-px border-b-2 px-[15px] py-[11px] text-apoio whitespace-nowrap transition-colors',
-              ativa ? 'border-marca font-semibold text-acao' : 'border-transparent text-tinta-sussurro hover:text-acao',
+              ativa ? 'border-acao font-semibold text-acao' : 'border-transparent text-tinta-sussurro hover:text-acao',
             )}
           >
             {o.rotulo}

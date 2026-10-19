@@ -65,7 +65,7 @@ export function DaUnidade({ unidadeId }: { unidadeId?: string }) {
                   aria-selected={k === i % banners.length}
                   aria-label={`Aviso ${k + 1} de ${banners.length}`}
                   onClick={() => setI(k)}
-                  className={cn('h-1.5 rounded-capsula transition-[width] duration-200', k === i % banners.length ? 'w-4 bg-marca' : 'w-1.5 bg-fio-forte')}
+                  className={cn('h-1.5 rounded-capsula transition-[width] duration-200', k === i % banners.length ? 'w-4 bg-acao' : 'w-1.5 bg-fio-forte')}
                 />
               ))}
             </div>

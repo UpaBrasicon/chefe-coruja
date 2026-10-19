@@ -91,7 +91,7 @@ function buscarLocal(consulta: string): Ferramenta[] {
 function CartaoFerramenta({ f, favorito, onFavoritar, destacado, aviso }: { f: Ferramenta; favorito: boolean; onFavoritar: () => void; destacado?: boolean; aviso?: string }) {
   const navigate = useNavigate()
   return (
-    <div className={cn('group relative rounded-container border border-fio bg-superficie shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-halo', destacado && 'border-marca ring-2 ring-marca/30')}>
+    <div className={cn('group relative rounded-container border border-fio bg-superficie shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-halo', destacado && 'border-acao ring-2 ring-acao/30')}>
       <button type="button" onClick={() => navigate(`/plantonista/${f.secao}/${f.slug}`)} className="block w-full px-4 py-3 pr-10 text-left">
         <span className="rotulo block text-tinta-sussurro">{f.secaoLabel}{aviso ? ` · ${aviso}` : ''}</span>
         <span className="mt-1 block text-corpo font-semibold tracking-[-0.01em] text-tinta">{f.label}</span>
@@ -104,7 +104,7 @@ function CartaoFerramenta({ f, favorito, onFavoritar, destacado, aviso }: { f: F
         aria-label={favorito ? `Tirar ${f.label} dos favoritos` : `Favoritar ${f.label}`}
         className="absolute top-2.5 right-2.5 rounded-controle-sm p-1 text-tinta-sussurro hover:text-acao"
       >
-        <Star className={cn('size-4', favorito && 'fill-marca text-marca')} />
+        <Star className={cn('size-4', favorito && 'fill-acao text-acao')} />
       </button>
     </div>
   )
@@ -119,7 +119,7 @@ function Atalho({ f, vezes, favorito }: { f: Ferramenta; vezes: number; favorito
       onClick={() => navigate(`/plantonista/${f.secao}/${f.slug}`)}
       className="flex items-center gap-[9px] rounded-container border border-fio bg-superficie px-5 py-[13px] text-left shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-halo"
     >
-      {favorito ? <Star className="size-4 shrink-0 fill-marca text-marca" aria-hidden /> : <History className={cn('size-4 shrink-0', coresDaSecao(f.secao).texto)} aria-hidden />}
+      {favorito ? <Star className="size-4 shrink-0 fill-acao text-acao" aria-hidden /> : <History className={cn('size-4 shrink-0', coresDaSecao(f.secao).texto)} aria-hidden />}
       <span className="min-w-0 flex-1 text-apoio font-medium text-tinta">{f.label}</span>
       {vezes > 0 && <span className="text-rotulo text-tinta-sussurro tabular" title={`Aberta ${vezes} ${vezes === 1 ? 'vez' : 'vezes'} por você`}>{vezes}×</span>}
     </button>
@@ -243,7 +243,7 @@ export default function PlantonistaHome() {
               aria-keyshortcuts="/"
               autoComplete="off"
               maxLength={800}
-              className="h-11 w-full rounded-container border border-fio bg-superficie pr-3 pl-10 text-corpo text-tinta shadow-repouso outline-none placeholder:text-tinta-sussurro focus-visible:border-marca"
+              className="h-11 w-full rounded-container border border-fio bg-superficie pr-3 pl-10 text-corpo text-tinta shadow-repouso outline-none placeholder:text-tinta-sussurro focus-visible:border-acao"
             />
           </div>
           {consulta.trim() && (
@@ -252,9 +252,9 @@ export default function PlantonistaHome() {
                 type="button"
                 onClick={perguntar}
                 disabled={!perguntavel || !unidadeId || ia.status === 'loading' || ia.status === 'streaming'}
-                className="inline-flex items-center gap-1.5 rounded-container border border-fio bg-superficie px-3 py-1.5 text-apoio font-medium text-tinta shadow-repouso hover:border-marca disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-container border border-fio bg-superficie px-3 py-1.5 text-apoio font-medium text-tinta shadow-repouso hover:border-acao disabled:opacity-50"
               >
-                <Sparkles className="size-4 text-marca" aria-hidden />
+                <Sparkles className="size-4 text-acao" aria-hidden />
                 Perguntar à IA: “{consulta.trim()}”
               </button>
               <span className="text-apoio text-tinta-sussurro">Não digite nome, CPF ou dados identificáveis do paciente. Enter pergunta; ↑↓ escolhem uma ferramenta.</span>
@@ -307,7 +307,7 @@ export default function PlantonistaHome() {
             {favoritosCards.length > 0 && (
               <section className="mb-[26px]">
                 <h2 className="rotulo mb-2.5 flex items-center gap-1.5 font-semibold text-tinta-sussurro uppercase">
-                  <Star className="size-[13px] fill-marca text-marca" aria-hidden />
+                  <Star className="size-[13px] fill-acao text-acao" aria-hidden />
                   Favoritos
                 </h2>
                 <div className="grid grid-cols-[repeat(auto-fill,minmax(258px,1fr))] gap-3.5">

@@ -350,9 +350,9 @@ export function Classificar({ ep, onFim, corAtual = null }: {
                         type="button"
                         aria-pressed={on}
                         onClick={() => setDisc(texto)}
-                        className={cn('flex w-full items-start gap-[11px] border-b border-trilha px-3.5 py-2.5 text-left last:border-b-0', on ? 'bg-marca/10' : 'bg-superficie hover:bg-campo')}
+                        className={cn('flex w-full items-start gap-[11px] border-b border-trilha px-3.5 py-2.5 text-left last:border-b-0', on ? 'bg-acao/10' : 'bg-superficie hover:bg-campo')}
                       >
-                        <span className={cn('mt-px grid size-[18px] shrink-0 place-items-center rounded-micro border', on ? 'border-acao bg-acao text-white' : 'border-fio-forte bg-superficie text-transparent')}>
+                        <span className={cn('mt-px grid size-[18px] shrink-0 place-items-center rounded-micro border', on ? 'border-acao bg-acao text-sobre-acao' : 'border-fio-forte bg-superficie text-transparent')}>
                           <Check className="size-3" aria-hidden />
                         </span>
                         <span className="flex min-w-0 flex-col gap-0.5">

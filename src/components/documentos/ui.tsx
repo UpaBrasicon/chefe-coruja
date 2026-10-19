@@ -18,7 +18,7 @@ export function Cartao({ icone, titulo, acoes, children, className, corpo = true
   return (
     <section className={cn('overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso', className)}>
       <div className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-[13px]">
-        {icone && <span className="text-marca [&_svg]:size-4" aria-hidden>{icone}</span>}
+        {icone && <span className="text-acao [&_svg]:size-4" aria-hidden>{icone}</span>}
         <h2 className="text-corpo font-semibold text-tinta">{titulo}</h2>
         {acoes && <div className="ml-auto flex flex-wrap items-center gap-1.5">{acoes}</div>}
       </div>
@@ -100,7 +100,7 @@ export function Pilulas<V extends string>({ opcoes, valor, onChange, rotulos, ro
       {opcoes.map((o) => (
         <button key={o} type="button" aria-pressed={valor === o} onClick={() => onChange(o)}
           className={cn('rounded-capsula border px-[13px] py-1.5 text-apoio transition-colors',
-            valor === o ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-marca hover:text-acao')}>
+            valor === o ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
           {rotulos?.[o] ?? o}
         </button>
       ))}
@@ -115,8 +115,8 @@ export function Chip({ ativo, onClick, children, titulo, tom = 'acao', desabilit
     <button type="button" aria-pressed={!!ativo} title={titulo} onClick={onClick} disabled={desabilitado}
       className={cn('flex items-center gap-1.5 rounded-capsula border px-[13px] py-1.5 text-left text-apoio transition-colors disabled:cursor-not-allowed',
         ativo
-          ? tom === 'acao' ? 'border-acao bg-acao font-medium text-white' : 'border-marca bg-alerta-marca font-medium text-acao'
-          : 'border-fio bg-superficie text-tinta-apoio hover:border-marca hover:text-acao')}>
+          ? tom === 'acao' ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-acao bg-alerta-marca font-medium text-acao'
+          : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
       {children}
     </button>
   )
@@ -162,7 +162,7 @@ export function Aviso({ children, tom = 'atencao', acao }: { children: React.Rea
   return (
     <div role="status" className={cn('flex flex-wrap items-start gap-2.5 rounded-container border px-3.5 py-3',
       tom === 'critico' ? 'border-critico/30 bg-alerta-critico text-critico'
-        : tom === 'marca' ? 'border-marca/30 bg-alerta-marca text-acao'
+        : tom === 'marca' ? 'border-acao/30 bg-alerta-marca text-acao'
         : 'border-[#FDE68A] bg-[#FFFBEB] text-atencao')}>
       <AlertTriangle className="mt-px size-4 shrink-0" aria-hidden />
       <span className="min-w-0 flex-[1_1_260px] text-apoio text-pretty">{children}</span>
@@ -208,7 +208,7 @@ export function AnexosLaudo({ anexos, lendo, arrastando, onArquivos, onRemover, 
       <input id={id} type="file" accept=".pdf,application/pdf,image/*" multiple className="hidden"
         onChange={(e) => { onArquivos(Array.from(e.target.files ?? [])); e.target.value = '' }} />
       {arrastando && (
-        <span className="flex items-center gap-[7px] rounded-controle border border-dashed border-marca bg-alerta-marca px-3 py-2 text-apoio text-acao">
+        <span className="flex items-center gap-[7px] rounded-controle border border-dashed border-acao bg-alerta-marca px-3 py-2 text-apoio text-acao">
           <Upload className="size-3.5" aria-hidden /> Solte aqui: o laudo é lido no aparelho e os pontos principais entram no campo, para conferir.
         </span>
       )}
@@ -234,7 +234,7 @@ export function AnexosLaudo({ anexos, lendo, arrastando, onArquivos, onRemover, 
 export function BotaoAnexar({ htmlFor }: { htmlFor: string }) {
   return (
     <label htmlFor={htmlFor} title="Envie o PDF ou a foto do laudo. O texto é lido no aparelho e os pontos principais entram no campo, para conferir."
-      className="flex cursor-pointer items-center gap-1.5 rounded-capsula border border-fio bg-superficie px-3 py-[5px] text-apoio text-acao hover:border-marca">
+      className="flex cursor-pointer items-center gap-1.5 rounded-capsula border border-fio bg-superficie px-3 py-[5px] text-apoio text-acao hover:border-acao">
       <Upload className="size-3.5" aria-hidden /> Anexar laudo (PDF ou imagem)
     </label>
   )

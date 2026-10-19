@@ -51,7 +51,7 @@ export function Escolhas<V extends string>({ rotulo, opcoes, valor, onChange, cl
               onClick={() => onChange(on ? '' : o.valor)}
               className={cn(
                 'rounded-capsula border px-[13px] py-1.5 text-apoio transition-colors',
-                on ? 'border-marca bg-marca/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+                on ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
               )}
             >
               {o.rotulo}
@@ -63,7 +63,7 @@ export function Escolhas<V extends string>({ rotulo, opcoes, valor, onChange, cl
   )
 }
 
-const SELECT = 'h-9 w-full min-w-0 rounded-controle border border-fio bg-campo px-2.5 text-controle text-tinta outline-none focus-visible:border-marca'
+const SELECT = 'h-9 w-full min-w-0 rounded-controle border border-fio bg-campo px-2.5 text-controle text-tinta outline-none focus-visible:border-acao'
 
 /**
  * O formulário. `identificacao=false` esconde nome, nascimento, sexo e mãe

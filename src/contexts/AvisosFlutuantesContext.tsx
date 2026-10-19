@@ -69,7 +69,7 @@ export function AvisosFlutuantesProvider({ children }: { children: ReactNode }) 
         className="pointer-events-none fixed top-[calc(var(--cc-topo)+10px)] right-5 z-30 flex w-[340px] max-w-[calc(100vw-40px)] flex-col-reverse gap-2.5 lg:right-7"
       >
         {itens.map((t) => {
-          const cor = t.cor ?? '#0F766E'
+          const cor = t.cor ?? 'var(--color-acao)'
           const Icone = t.icone ?? Megaphone
           return (
             <div
@@ -79,7 +79,7 @@ export function AvisosFlutuantesProvider({ children }: { children: ReactNode }) 
                 (t.saindo ? 'animate-cc-toast-sai' : 'animate-cc-toast')
               }
             >
-              <span className="grid size-7 shrink-0 place-items-center rounded-controle-sm" style={{ color: cor, background: `${cor}14` }}>
+              <span className="grid size-7 shrink-0 place-items-center rounded-controle-sm" style={{ color: cor, background: `color-mix(in oklab, ${cor} 8%, transparent)` }}>
                 <Icone className="size-[15px]" aria-hidden />
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-[3px]">

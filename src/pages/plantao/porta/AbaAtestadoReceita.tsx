@@ -45,7 +45,7 @@ const nomeMed = (m: { principio_ativo: string; apresentacao: string | null } | n
 function Chip({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button type="button" aria-pressed={ativo} onClick={onClick}
-      className={cn('rounded-capsula border px-3 py-1 text-apoio transition-colors', ativo ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+      className={cn('rounded-capsula border px-3 py-1 text-apoio transition-colors', ativo ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
       {children}
     </button>
   )

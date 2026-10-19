@@ -336,7 +336,7 @@ export function DocumentosAlta({ p, equipe = false, pacoteId }: {
       <style>{CSS_IMPRESSAO}</style>
       <main className="mx-auto max-w-[620px] px-5 pb-14 pt-[18px] print:max-w-none print:p-0">
         {equipe && (
-          <div className="mb-4 flex flex-wrap items-start gap-2.5 rounded-[14px] border border-marca/20 bg-alerta-marca px-[15px] py-[13px] text-sm text-acao-pressionada print:hidden">
+          <div className="mb-4 flex flex-wrap items-start gap-2.5 rounded-[14px] border border-acao/20 bg-alerta-marca px-[15px] py-[13px] text-sm text-acao-pressionada print:hidden">
             <ShieldCheck className="mt-[3px] size-[17px] shrink-0 text-acao" />
             <span className="min-w-0 flex-[1_1_260px] text-pretty">
               <b>Visão da equipe.</b> O paciente só chega aqui depois de digitar o código impresso na orientação de alta.
