@@ -66,8 +66,8 @@ O produto não é um prontuário com agenda anexa: é a escala operando como ace
   nem convertidos de adulto para criança.
 - **Modo escuro é obrigatório** (decisão de 19/10/2026): o padrão do frontend
   precisa funcionar no tema claro e no escuro.
-- Em aberto: o guia do padrão do frontend (trilha "Padrão do frontend" do
-  BACKLOG) define cores, tipografia, componentes e tom dos textos.
+- O guia do padrão do frontend (`docs/frontend/GUIA.md`, trilha "Padrão do
+  frontend" do BACKLOG) define cores, tipografia, componentes e tom dos textos.
 
 ## Brand Commitments
 
@@ -106,7 +106,7 @@ pacientes de homologação são fictícios.
 
 ## Accessibility & Inclusion
 
-O código atual tem contraste AA medido, foco visível ao teclado, `lang="pt-BR"` e
-nomes acessíveis nos controles. Como piso formal do padrão, isso fica **em aberto**
-para o guia (parte 2): o responsável técnico não o marcou como compromisso
-intocável em 19/10/2026. O modo escuro é obrigatório pela cena de madrugada.
+**WCAG AA é piso obrigatório nos dois temas** (decisão do RT no guia, 19/10/2026):
+4,5:1 para texto e 3:1 para ícone, borda e elemento não textual. Foco visível ao
+teclado, `lang="pt-BR"` e nomes acessíveis nos controles. O modo escuro é
+obrigatório pela cena de madrugada.
