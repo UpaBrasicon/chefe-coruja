@@ -46,6 +46,24 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
     void supabase.rpc('marcar_resultado_visto', { p_exame: exameId }).then(({ error }) => { if (!error) aoMudar?.() })
   }, [d, exameId, aoMudar])
 
+  const [link, setLink] = React.useState('')
+  const [editandoLink, setEditandoLink] = React.useState(false)
+  const realizar = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('marcar_exame_realizado', { p_exame: exameId, p_imagem_url: link.trim() || undefined })
+      if (error) throw error
+    },
+    onSuccess: () => { setLink(''); setEditandoLink(false); recarregar() },
+    onError: (e) => setErro((e as Error).message),
+  })
+  const salvarLink = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('definir_link_imagem', { p_exame: exameId, p_url: link.trim() })
+      if (error) throw error
+    },
+    onSuccess: () => { setLink(''); setEditandoLink(false); recarregar() },
+    onError: (e) => setErro((e as Error).message),
+  })
   const coletar = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('marcar_exame_coletado', { p_exame: exameId })
@@ -76,7 +94,14 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
         {SITUACAO_EXAME[d.situacao]} · pedido {fmtDataHora(d.pedido_em)}{d.pedido_por ? ` por ${d.pedido_por}` : ''}
         {d.coletado_em ? ` · coletado ${fmtDataHora(d.coletado_em)}${d.coletado_por ? ` por ${d.coletado_por}` : ''}` : ''}
         {d.em_analise_em ? ` · em análise desde ${fmtDataHora(d.em_analise_em)}` : ''}
+        {d.realizado_em ? ` · realizado ${fmtDataHora(d.realizado_em)}${d.realizado_por ? ` por ${d.realizado_por}` : ''}` : ''}
       </span>
+      {/* 5C-2, 3a: a imagem fica no PACS; aqui só o link para o visualizador */}
+      {d.imagem_url && (
+        <a href={d.imagem_url} target="_blank" rel="noopener noreferrer" className="self-start text-apoio font-medium text-acao underline">
+          Ver imagem no PACS
+        </a>
+      )}
       {erro && <p role="alert" className="text-critico">{erro}</p>}
 
       {vigente && <Versao v={vigente} />}
@@ -97,13 +122,29 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
 
       <div className="flex flex-wrap gap-2">
         {d.pode_coletar && <Button size="sm" variant="outline" disabled={coletar.isPending} onClick={() => coletar.mutate()}>Coletado</Button>}
+        {d.pode_realizar && !editandoLink && <Button size="sm" variant="outline" onClick={() => { setEditandoLink(true); setLink('') }}>Realizado</Button>}
+        {d.tipo === 'imagem' && d.pode_registrar && d.situacao !== 'pedido' && d.situacao !== 'cancelado' && !editandoLink && (
+          <Button size="sm" variant="ghost" onClick={() => { setEditandoLink(true); setLink(d.imagem_url ?? '') }}>{d.imagem_url ? 'Trocar link da imagem' : 'Link da imagem'}</Button>
+        )}
         {d.pode_registrar && pendente && !registrando && <Button size="sm" variant="outline" onClick={() => setRegistrando('novo')}>Registrar resultado</Button>}
         {d.pode_registrar && d.situacao === 'resultado' && !registrando && (
           <Button size="sm" variant="ghost" onClick={() => setRegistrando('retificar')}>Retificar</Button>
         )}
       </div>
+      {editandoLink && (
+        <div className="flex flex-wrap items-end gap-2 rounded-md border border-fio p-2.5">
+          <label className="flex min-w-56 flex-1 flex-col gap-1 text-rotulo text-tinta-apoio">
+            Link da imagem no visualizador do PACS (https://){d.situacao === 'pedido' ? ' — opcional' : ''}
+            <input className="h-8 rounded-controle border border-fio bg-campo px-2 text-apoio" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://" />
+          </label>
+          <Button size="sm" variant="ghost" onClick={() => setEditandoLink(false)}>Voltar</Button>
+          {d.situacao === 'pedido'
+            ? <Button size="sm" disabled={realizar.isPending} onClick={() => realizar.mutate()}>Marcar realizado</Button>
+            : <Button size="sm" disabled={!link.trim().startsWith('https://') || salvarLink.isPending} onClick={() => salvarLink.mutate()}>Salvar link</Button>}
+        </div>
+      )}
       {registrando && (
-        <RegistrarResultado exameId={exameId} retificar={registrando === 'retificar'}
+        <RegistrarResultado exameId={exameId} aceitaFoto={d.tipo === 'imagem'} retificar={registrando === 'retificar'}
           aoFechar={() => setRegistrando(null)} aoGravar={() => { setRegistrando(null); recarregar() }} />
       )}
     </div>
@@ -153,7 +194,7 @@ function Versao({ v }: { v: VersaoResultado }) {
       {v.texto && <p className="whitespace-pre-wrap text-tinta">{v.texto}</p>}
       {v.tem_pdf && (
         <Button size="xs" variant="outline" className="self-start" onClick={() => void abrirLaudo()}>
-          <FileText /> Laudo em PDF{v.pdf_nome ? ` (${v.pdf_nome})` : ''}
+          <FileText /> {/\.(jpe?g|png)$/i.test(v.pdf_nome ?? '') ? 'Traçado / imagem' : 'Laudo em PDF'}{v.pdf_nome ? ` (${v.pdf_nome})` : ''}
         </Button>
       )}
       {v.cientes.length > 0 && <span className="text-rotulo text-tinta-sussurro">Ciente: {v.cientes.map((c) => `${c.por} (${fmtDataHora(c.em)})`).join(', ')}</span>}
@@ -163,7 +204,9 @@ function Versao({ v }: { v: VersaoResultado }) {
   )
 }
 
-function RegistrarResultado({ exameId, retificar, aoFechar, aoGravar }: { exameId: string; retificar: boolean; aoFechar: () => void; aoGravar: () => void }) {
+function RegistrarResultado({ exameId, retificar, aceitaFoto, aoFechar, aoGravar }: {
+  exameId: string; retificar: boolean; aceitaFoto: boolean; aoFechar: () => void; aoGravar: () => void
+}) {
   const [texto, setTexto] = React.useState('')
   const [motivo, setMotivo] = React.useState('')
   const [arquivo, setArquivo] = React.useState<File | null>(null)
@@ -171,13 +214,13 @@ function RegistrarResultado({ exameId, retificar, aoFechar, aoGravar }: { exameI
   const [gravando, setGravando] = React.useState(false)
   const gravar = async () => {
     setErro(null)
-    if (arquivo) { const p = erroLaudo(arquivo); if (p) return setErro(p) }
+    if (arquivo) { const p = erroLaudo(arquivo, aceitaFoto); if (p) return setErro(p) }
     setGravando(true)
     try {
       let caminho: string | undefined
       if (arquivo) {
         caminho = caminhoLaudo(exameId, arquivo.name, Date.now())
-        const up = await supabase.storage.from('exames').upload(caminho, arquivo, { contentType: 'application/pdf', upsert: false })
+        const up = await supabase.storage.from('exames').upload(caminho, arquivo, { contentType: arquivo.type, upsert: false })
         if (up.error) throw up.error
       }
       const { error } = await supabase.rpc('registrar_resultado_exame', {
@@ -198,8 +241,8 @@ function RegistrarResultado({ exameId, retificar, aoFechar, aoGravar }: { exameI
       <Label htmlFor={`res-texto-${exameId}`}>{retificar ? 'Retificar o resultado (fica como versão nova)' : 'Resultado (manual)'}</Label>
       <Textarea id={`res-texto-${exameId}`} rows={3} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Como veio do laboratório" />
       <label className="flex flex-wrap items-center gap-2 text-rotulo text-tinta-apoio">
-        Laudo em PDF (opcional, até 10 MB)
-        <input type="file" accept="application/pdf" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} />
+        {aceitaFoto ? 'Laudo ou traçado em PDF, JPG ou PNG (opcional, até 10 MB)' : 'Laudo em PDF (opcional, até 10 MB)'}
+        <input type="file" accept={aceitaFoto ? 'application/pdf,image/jpeg,image/png' : 'application/pdf'} onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} />
       </label>
       {retificar && (
         <>

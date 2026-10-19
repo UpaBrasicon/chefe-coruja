@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { codigoExameNaTela, loincValido, type ExameBuscado, type ExameUnidade, type ListaExamesUnidade } from '@/lib/exames'
+import { codigoExameNaTela, loincValido, tipoDoCodigo, type ExameBuscado, type ExameUnidade, type ListaExamesUnidade } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
 import { Erro } from '@/pages/farmacia/Farmacia'
 
@@ -83,14 +83,14 @@ export default function ExamesUnidade() {
       <TituloPagina
         icone={TestTube}
         titulo="Exames da unidade"
-        descricao="Exames de laboratório que a unidade oferece, do grupo 02.02 do SIGTAP, com o nome que aparece no pedido. Os marcados como botão aparecem no pedido rápido do atendimento. Sem lista, o pedido busca no grupo 02.02 inteiro."
+        descricao="Exames que a unidade oferece, do SIGTAP: laboratório (02.02), imagem (02.04 a 02.07) e métodos gráficos como o ECG (02.11), com o nome que aparece no pedido. Os marcados como botão aparecem no pedido rápido do atendimento. Sem lista, o pedido busca nesses grupos inteiros."
       />
       <Erro texto={(lista.error ?? salvar.error ?? retirar.error) ? ((lista.error ?? salvar.error ?? retirar.error) as Error).message : null} />
 
       {pode && !editando && (
         <section className="flex flex-col gap-2 rounded-container border border-fio bg-superficie p-3">
           <Label htmlFor="exame-busca">Incluir exame do SIGTAP</Label>
-          <Input id="exame-busca" className="h-9" placeholder="Nome ou código (ex.: hemograma, 0202020380)" value={termo} onChange={(e) => setTermo(e.target.value)} />
+          <Input id="exame-busca" className="h-9" placeholder="Nome ou código (ex.: hemograma, radiografia, eletrocardiograma)" value={termo} onChange={(e) => setTermo(e.target.value)} />
           {(busca.data ?? []).length > 0 && (
             <div className="flex max-h-56 flex-col overflow-y-auto rounded-md border border-fio">
               {(busca.data ?? []).map((x) => (
@@ -148,7 +148,9 @@ export default function ExamesUnidade() {
             <tbody>
               {exames.map((e) => (
                 <tr key={e.id} className="border-b border-trilha align-top last:border-0">
-                  <td className="px-3 py-2 font-medium text-tinta">{e.nome_curto}</td>
+                  <td className="px-3 py-2 font-medium text-tinta">{e.nome_curto}
+                    <Badge variant={tipoDoCodigo(e.procedimento) === 'imagem' ? 'secondary' : 'outline'} className="ml-1.5">{tipoDoCodigo(e.procedimento) === 'imagem' ? 'imagem' : 'laboratório'}</Badge>
+                  </td>
                   <td className="px-3 py-2">{codigoExameNaTela(e.procedimento)}<span className="block text-rotulo text-tinta-sussurro">{e.nome_sigtap ?? ''}</span></td>
                   <td className="px-3 py-2">{e.loinc ?? <span className="text-tinta-sussurro">—</span>}</td>
                   <td className="px-3 py-2">{e.botao ? <Badge variant="info">botão · {e.ordem}</Badge> : <span className="text-tinta-sussurro">—</span>}</td>
