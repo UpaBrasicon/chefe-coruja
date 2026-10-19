@@ -937,7 +937,7 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 6. Cliente grande recebe projeto Supabase dedicado; não alterar o multi-tenant para isso.
 
 **Pausa da 5C em 19/10/2026 (decisão do RT, "1b"):** a 5C para na tarefa 2. A etapa 2.1 (imagem e
-métodos gráficos no sistema) está na homologação, esperando o teste do RT e o "ok produção"; a 2.2
+métodos gráficos no sistema) está em produção desde 19/10/2026; a 2.2
 (porta FHIR da imagem e simulador) volta depois da trilha "Padrão do frontend", abaixo.
 
 ---
@@ -955,6 +955,16 @@ virar regra na CI ("3a").
 | 2 | P1 | Guia do padrão | Cores e tokens, tipografia, espaçamento, componentes de base e quando usar cada um, tom e forma dos textos | Guia escrito no repositório, aprovado pelo RT |
 | 3 | P1 | Verificação automática na CI | Regras que barram o que foge do guia (ex.: cor fora dos tokens, componente duplicado); avaliar o `impeccable` como apoio | CI acusa a divergência em PR novo |
 | 4 | P2 | Correção tela por tela | Ajustar as telas na ordem de uso, sem mudar regra de negócio | Telas da lista sem divergência do guia |
+
+**Andamento (19/10/2026):** partes 1 (levantamento, PR #143), 2 (guia, PR #144) e 3 (catraca na
+CI, PR #145) concluídas. Parte 4.1 (cores como variáveis, tema escuro pronto e escondido, ação em
+petróleo; PR #146) em produção. Seguem as peças únicas e as telas, na ordem do guia (seção 6).
+
+**Correção de segurança encaixada pelo RT ("2a", 19/10/2026), logo depois da 4.1:**
+
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| S1 | P0 | Trava das colunas do próprio perfil | A pessoa só altera pela API foto, tipo sanguíneo, dados pessoais e tema; CBO e CNS pelas funções com validação; nome, CPF, nascimento, conselho, registro, CRM, e-mail e `ativo` travados ("1a"). Registro digitado errado na ativação: pendência, correção pontual a pedido do RT ("2a") | Teste de banco recusa a troca de CRM, registro e `ativo` pela API; as telas de perfil e de tema seguem gravando |
 
 ---
 
