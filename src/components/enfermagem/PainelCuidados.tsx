@@ -61,7 +61,7 @@ export function PainelCuidados({ pacienteId, episodioId, internacaoId }: PainelC
           <button key={a.id} type="button" role="tab" aria-selected={aba === a.id} onClick={() => setAba(a.id)}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-capsula border px-[13px] py-[5px] text-apoio transition-colors',
-              aba === a.id ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+              aba === a.id ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
             )}>
             {a.rotulo}
             {a.contagem !== undefined && <span className="tabular-nums opacity-80">{a.contagem}</span>}

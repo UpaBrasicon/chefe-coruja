@@ -849,7 +849,7 @@ export default function Escala({
             onClick={() => setAbaPlantonista('minha')}
             className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
               abaPlantonista === 'minha'
-                ? 'border-acao bg-acao text-white'
+                ? 'border-acao bg-acao text-sobre-acao'
                 : 'border-fio bg-campo hover:bg-trilha'
             }`}
           >
@@ -860,7 +860,7 @@ export default function Escala({
             onClick={() => setAbaPlantonista('geral')}
             className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
               abaPlantonista === 'geral'
-                ? 'border-acao bg-acao text-white'
+                ? 'border-acao bg-acao text-sobre-acao'
                 : 'border-fio bg-campo hover:bg-trilha'
             }`}
           >
@@ -1254,7 +1254,7 @@ export default function Escala({
                             plantoes.length
                               ? 'bg-white/25 text-white'
                               : eHoje
-                                ? 'bg-acao text-white'
+                                ? 'bg-acao text-sobre-acao'
                                 : fimSemana
                                   ? 'bg-atencao/20 text-atencao'
                                   : 'bg-trilha text-tinta'
@@ -1562,7 +1562,7 @@ export default function Escala({
                         <span
                           className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-semibold ${
                             eHoje
-                              ? 'bg-acao text-white'
+                              ? 'bg-acao text-sobre-acao'
                               : livres
                                 ? 'bg-conforme/20 text-conforme'
                                 : 'bg-trilha text-tinta'
@@ -1732,7 +1732,7 @@ export default function Escala({
               onClick={() => setAbaGestor('fixa')}
               className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                 abaGestor === 'fixa'
-                  ? 'border-acao bg-acao text-white'
+                  ? 'border-acao bg-acao text-sobre-acao'
                   : 'border-fio bg-campo hover:bg-trilha'
               }`}
             >
@@ -1743,7 +1743,7 @@ export default function Escala({
               onClick={() => setAbaGestor('mensal')}
               className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                 abaGestor === 'mensal'
-                  ? 'border-acao bg-acao text-white'
+                  ? 'border-acao bg-acao text-sobre-acao'
                   : 'border-fio bg-campo hover:bg-trilha'
               }`}
             >
@@ -1810,7 +1810,7 @@ export default function Escala({
                 onClick={() => setTurno(t.id)}
                 className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                   turno === t.id
-                    ? 'border-acao bg-acao text-white'
+                    ? 'border-acao bg-acao text-sobre-acao'
                     : 'border-fio bg-campo hover:bg-trilha'
                 }`}
               >

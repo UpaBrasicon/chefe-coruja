@@ -18,7 +18,7 @@ function Balao({ m, minha }: { m: MensagemChat; minha: boolean }) {
     <div
       className={cn(
         'flex max-w-[84%] flex-col gap-[3px] rounded-[14px] border px-[13px] py-2.5',
-        minha ? 'self-end border-[#0D948833] bg-[#0D94881A]' : 'self-start border-fio bg-campo',
+        minha ? 'self-end border-acao/20 bg-acao/10' : 'self-start border-fio bg-campo',
         m.id.startsWith('temp-') && 'opacity-70',
       )}
     >
@@ -145,7 +145,7 @@ export function Thread({ conversaId, perfilId }: { conversaId: string; perfilId?
                 type="button"
                 onClick={alternarAntes}
                 aria-expanded={verAntes}
-                className="cursor-pointer self-center rounded-capsula border border-fio bg-superficie px-[13px] py-[5px] text-apoio text-tinta-apoio hover:border-marca hover:text-acao focus-visible:border-marca focus-visible:outline-none"
+                className="cursor-pointer self-center rounded-capsula border border-fio bg-superficie px-[13px] py-[5px] text-apoio text-tinta-apoio hover:border-acao hover:text-acao focus-visible:border-acao focus-visible:outline-none"
               >
                 {verAntes ? 'Ocultar plantão anterior' : 'Ver plantão anterior'}
               </button>
@@ -205,12 +205,12 @@ export function Thread({ conversaId, perfilId }: { conversaId: string; perfilId?
             maxLength={4000}
             placeholder="Escrever mensagem"
             aria-label="Escrever mensagem"
-            className="field-sizing-content max-h-32 min-w-0 flex-1 resize-none rounded-controle border border-fio bg-campo px-3 py-2.5 text-corpo leading-[1.35] text-tinta outline-none placeholder:text-tinta-sussurro focus:border-marca"
+            className="field-sizing-content max-h-32 min-w-0 flex-1 resize-none rounded-controle border border-fio bg-campo px-3 py-2.5 text-corpo leading-[1.35] text-tinta outline-none placeholder:text-tinta-sussurro focus:border-acao"
           />
           <button
             type="submit"
             disabled={!podeEnviar}
-            className="flex shrink-0 items-center gap-1.5 rounded-controle border-0 bg-acao px-3.5 py-[9px] text-apoio font-semibold text-white hover:bg-acao-pressionada disabled:cursor-not-allowed disabled:bg-[#94A3B8] disabled:hover:bg-[#94A3B8]"
+            className="flex shrink-0 items-center gap-1.5 rounded-controle border-0 bg-acao px-3.5 py-[9px] text-apoio font-semibold text-sobre-acao hover:bg-acao-pressionada disabled:cursor-not-allowed disabled:bg-[#94A3B8] disabled:hover:bg-[#94A3B8]"
           >
             {enviar.isPending && <Loader2 className="size-3.5 animate-spin" aria-hidden />}
             Enviar

@@ -16,7 +16,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-acao font-medium text-white hover:bg-acao-pressionada",
+        default: "bg-acao font-medium text-sobre-acao hover:bg-acao-pressionada",
         outline:
           "border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao aria-expanded:border-acao aria-expanded:text-acao",
         secondary:

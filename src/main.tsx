@@ -2,6 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
+import { iniciarTema } from '@/lib/tema'
+
+// Tema (guia do padrão, 1.4): pinta antes do React, com a cópia do aparelho.
+iniciarTema()
 
 // Antes de montar o app: o retorno de recuperação de senha chega com
 // #type=recovery no fragmento. Marca na sessão para o DesvioRecuperacao levar

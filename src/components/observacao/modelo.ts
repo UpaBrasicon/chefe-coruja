@@ -46,7 +46,7 @@ export type LinhaObservacao = Omit<LinhaBanco, 'estado' | 'protocolo' | 'passage
 /** Estados na ordem do protótipo (OBS_ESTADOS), com o tom de cada pílula. */
 export const ESTADOS: { id: EstadoObservacao; rotulo: string; classe: string }[] = [
   { id: 'nao', rotulo: 'Não atendido', classe: 'bg-trilha text-tinta-apoio' },
-  { id: 'atendimento', rotulo: 'Em atendimento', classe: 'bg-marca/10 text-acao' },
+  { id: 'atendimento', rotulo: 'Em atendimento', classe: 'bg-acao/10 text-acao' },
   { id: 'reavaliacao', rotulo: 'Em reavaliação', classe: 'bg-observacao/10 text-observacao' },
   { id: 'encaminhado', rotulo: 'Encaminhado', classe: 'bg-suprimento/10 text-suprimento' },
   { id: 'finalizado', rotulo: 'Finalizado', classe: 'bg-conforme/10 text-conforme' },

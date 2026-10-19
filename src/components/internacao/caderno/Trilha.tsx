@@ -115,7 +115,7 @@ export function ChecklistAdmissao({ pacienteId, unidadeId, prontuarioAberto }: {
         return (
           <button key={campo} type="button" aria-pressed={marcado} onClick={() => void alternar(campo)}
             className={`rounded-capsula border px-3 py-[5px] text-apoio font-medium transition-colors ${
-              marcado ? 'border-conforme/30 bg-conforme/[0.08] text-conforme' : 'border-fio bg-superficie text-tinta-apoio hover:border-marca'}`}>
+              marcado ? 'border-conforme/30 bg-conforme/[0.08] text-conforme' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao'}`}>
             {marcado ? '✓ ' : '○ '}{rotulo}
           </button>
         )

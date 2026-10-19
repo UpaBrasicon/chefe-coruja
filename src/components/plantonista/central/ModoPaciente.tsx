@@ -22,7 +22,7 @@ function BotaoModo({ ativo, pedi, onClick, children }: { ativo: boolean; pedi?: 
       className={cn(
         'flex min-h-11 min-w-0 flex-1 items-center justify-center gap-[7px] rounded-bloco border px-3 text-controle font-semibold whitespace-nowrap transition-colors',
         ativo
-          ? pedi ? 'border-pediatria bg-pediatria text-white' : 'border-acao bg-acao text-white'
+          ? pedi ? 'border-pediatria bg-pediatria text-white' : 'border-acao bg-acao text-sobre-acao'
           : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
       )}
     >
@@ -58,7 +58,7 @@ export function ModoPaciente() {
 
   const pedi = p.modo === 'pediatrico'
   const pesoInvalido = p.peso.trim() !== '' && leitura.pesoKg === null
-  const campo = pedi ? 'border-pediatria/25 focus-visible:border-pediatria' : 'border-marca/25 focus-visible:border-marca'
+  const campo = pedi ? 'border-pediatria/25 focus-visible:border-pediatria' : 'border-acao/25 focus-visible:border-acao'
 
   return (
     <section aria-label="Modo do paciente" className="mb-4 flex flex-col gap-3">
@@ -66,7 +66,7 @@ export function ModoPaciente() {
         <span
           className={cn(
             'flex items-center gap-[7px] rounded-capsula border px-3 py-[5px] text-apoio font-semibold whitespace-nowrap',
-            pedi ? 'border-pediatria/20 bg-pediatria/[0.08] text-pediatria' : 'border-marca/20 bg-alerta-marca text-acao',
+            pedi ? 'border-pediatria/20 bg-pediatria/[0.08] text-pediatria' : 'border-acao/20 bg-alerta-marca text-acao',
           )}
         >
           {pedi ? 'Pediátrico' : 'Adulto'}
@@ -85,7 +85,7 @@ export function ModoPaciente() {
       <div
         className={cn(
           'flex flex-col gap-[13px] rounded-menu border px-[15px] py-[13px]',
-          pedi ? 'border-pediatria/15 bg-pediatria/[0.06]' : 'border-marca/15 bg-alerta-marca',
+          pedi ? 'border-pediatria/15 bg-pediatria/[0.06]' : 'border-acao/15 bg-alerta-marca',
         )}
       >
         <span className={cn('rotulo font-semibold uppercase', pedi ? 'text-pediatria' : 'text-acao')}>
@@ -159,10 +159,10 @@ export function ModoPaciente() {
             onClick={() => alterarPaciente({ gestante: !p.gestante })}
             className={cn(
               'flex min-h-11 items-center gap-2.5 self-start rounded-controle border px-3.5 text-controle text-grafite',
-              p.gestante ? 'border-acao bg-marca/[0.05]' : 'border-fio-forte bg-superficie',
+              p.gestante ? 'border-acao bg-acao/[0.05]' : 'border-fio-forte bg-superficie',
             )}
           >
-            <span className={cn('grid size-[18px] place-items-center rounded-micro border', p.gestante ? 'border-acao bg-acao text-white' : 'border-fio-forte bg-superficie text-transparent')}>
+            <span className={cn('grid size-[18px] place-items-center rounded-micro border', p.gestante ? 'border-acao bg-acao text-sobre-acao' : 'border-fio-forte bg-superficie text-transparent')}>
               <Check className="size-3" aria-hidden />
             </span>
             Gestante

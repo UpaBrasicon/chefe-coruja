@@ -76,7 +76,7 @@ function Cartao({ a, pedindo, onPedir, onDecidir, ocupado }: {
         <h3 className="text-corpo leading-[1.3] font-semibold tracking-[-0.01em] text-tinta">{a.titulo}</h3>
         <p className="text-apoio leading-[1.5] text-pretty text-tinta-apoio">{a.evidencia}</p>
         <div className="flex items-start gap-[7px] rounded-controle border border-fio bg-campo px-3 py-2.5">
-          <ShieldCheck className="mt-px size-[15px] shrink-0 text-marca" aria-hidden />
+          <ShieldCheck className="mt-px size-[15px] shrink-0 text-acao" aria-hidden />
           <span className="text-apoio leading-[1.45] text-pretty text-grafite">{a.recomendacao}</span>
         </div>
         {dec ? (
@@ -104,7 +104,7 @@ function Cartao({ a, pedindo, onPedir, onDecidir, ocupado }: {
         ) : (
           <div className="mt-[3px] flex flex-wrap items-center gap-2">
             <button type="button" disabled={ocupado} onClick={() => onDecidir('tratado')}
-              className="flex items-center gap-1.5 rounded-[9px] bg-acao px-[13px] py-[7px] text-apoio font-medium text-white hover:bg-acao-pressionada disabled:opacity-60">
+              className="flex items-center gap-1.5 rounded-[9px] bg-acao px-[13px] py-[7px] text-apoio font-medium text-sobre-acao hover:bg-acao-pressionada disabled:opacity-60">
               <ShieldCheck className="size-3.5" aria-hidden /> Tratado
             </button>
             <button type="button" disabled={ocupado} onClick={() => onDecidir('silenciado')}
@@ -195,8 +195,8 @@ export default function OlhoDeGaviao() {
         titulo="Olho de Gavião"
         descricao={`Alertas de escala, carga horária e presença na unidade · varredura às ${varredura} · ${abertos.length === 1 ? '1 apontamento aberto' : `${abertos.length} apontamentos abertos`}`}
         acoes={
-          <span className="flex items-center gap-1.5 rounded-capsula bg-marca/10 px-2 py-[3px] text-rotulo font-semibold tracking-[0.04em] text-acao uppercase">
-            <span className="size-1.5 rounded-full bg-marca" aria-hidden /> Varredura ativa
+          <span className="flex items-center gap-1.5 rounded-capsula bg-acao/10 px-2 py-[3px] text-rotulo font-semibold tracking-[0.04em] text-acao uppercase">
+            <span className="size-1.5 rounded-full bg-acao" aria-hidden /> Varredura ativa
           </span>
         }
       />

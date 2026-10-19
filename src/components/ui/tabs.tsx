@@ -59,7 +59,7 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
       data-slot="tabs-trigger"
       className={cn(
         "relative -mb-px inline-flex items-center gap-[7px] border-b-2 border-transparent px-0.5 pt-1 pb-2.5 text-apoio whitespace-nowrap text-tinta-sussurro transition-colors hover:text-acao disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "data-active:border-marca data-active:font-semibold data-active:text-acao",
+        "data-active:border-acao data-active:font-semibold data-active:text-acao",
         "group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start group-data-vertical/tabs:border-b-0 group-data-vertical/tabs:border-l-2 group-data-vertical/tabs:py-1.5 group-data-vertical/tabs:pl-3",
         className
       )}

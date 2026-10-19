@@ -255,7 +255,7 @@ export default function CadastrosDuplicados() {
           <div role="radiogroup" aria-label="Cadastro que fica" className="flex flex-col gap-2">
             {pedindo?.cadastros.map((k) => (
               <button key={k.id} type="button" role="radio" aria-checked={principal === k.id} onClick={() => setPrincipal(k.id)}
-                className={cn('rounded-lg border text-left', principal === k.id ? 'border-marca ring-1 ring-marca' : 'border-fio')}>
+                className={cn('rounded-lg border text-left', principal === k.id ? 'border-acao ring-1 ring-acao' : 'border-fio')}>
                 <LinhaCadastro c={k} destaque={principal === k.id ? 'fica' : undefined} />
               </button>
             ))}

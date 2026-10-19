@@ -455,7 +455,7 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
   return (
     <div className="flex flex-col">
       <div className="mb-3.5 flex flex-wrap gap-2.5">
-        <label className={cn(cartao, 'flex min-w-0 flex-[1_1_320px] items-center gap-2.5 px-3.5 py-[11px] focus-within:border-marca')}>
+        <label className={cn(cartao, 'flex min-w-0 flex-[1_1_320px] items-center gap-2.5 px-3.5 py-[11px] focus-within:border-acao')}>
           <Search className="size-[17px] shrink-0 text-tinta-sussurro" aria-hidden />
           <input
             value={termo}
@@ -601,7 +601,7 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
                     onClick={() => setPrioridades((l) => (l.includes(p) ? l.filter((x) => x !== p) : [...l, p]))}
                     className={cn(
                       'rounded-capsula border px-[13px] py-1.5 text-apoio transition-colors',
-                      on ? 'border-marca bg-marca/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+                      on ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
                     )}
                   >
                     {PRIORIDADE_ROTULO[p]}
@@ -623,7 +623,7 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
       )}
 
       {aviso && (
-        <div role="status" className="mt-3.5 flex items-center gap-2.5 rounded-container border border-marca/20 bg-marca/[0.06] px-[15px] py-3">
+        <div role="status" className="mt-3.5 flex items-center gap-2.5 rounded-container border border-acao/20 bg-acao/[0.06] px-[15px] py-3">
           <Check className="size-4 text-acao" aria-hidden />
           <span className="text-controle text-acao">{aviso}</span>
         </div>
@@ -669,7 +669,7 @@ function LinhaFila({ e, agora, hoje }: { e: NaFila; agora: number; hoje: string 
   let estiloStatus = 'bg-trilha text-tinta-apoio'
   if (e.atendimento_iniciado_em) {
     status = `Em atendimento${e.medico ? ` · ${e.medico}` : ''}`
-    estiloStatus = 'bg-marca/10 text-acao'
+    estiloStatus = 'bg-acao/10 text-acao'
   } else if (e.chamadas > 0) {
     status = `Chamado${e.chamadas > 1 ? ` ${e.chamadas}ª vez` : ''}${e.ultima_sala ? ` · ${e.ultima_sala}` : ''}${e.ultimo_chamador ? ` · ${e.ultimo_chamador}` : ''}`
     estiloStatus = 'bg-[#FEF3C7] text-atencao'

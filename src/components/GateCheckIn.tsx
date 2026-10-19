@@ -145,7 +145,7 @@ export function GateCheckIn({
           <button
             type="button"
             onClick={onSair}
-            className="mt-5 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-controle border border-fio bg-superficie text-controle font-medium text-tinta-apoio hover:border-marca hover:text-acao"
+            className="mt-5 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-controle border border-fio bg-superficie text-controle font-medium text-tinta-apoio hover:border-acao hover:text-acao"
           >
             <LogOut className="size-4" aria-hidden />
             Sair
@@ -197,7 +197,7 @@ export function AvisoCheckinPendente({
       <button
         type="button"
         onClick={onAbrir}
-        className="shrink-0 rounded-controle bg-acao px-3 py-1 text-rotulo font-medium text-white hover:bg-acao-pressionada"
+        className="shrink-0 rounded-controle bg-acao px-3 py-1 text-rotulo font-medium text-sobre-acao hover:bg-acao-pressionada"
       >
         Fazer check-in
       </button>

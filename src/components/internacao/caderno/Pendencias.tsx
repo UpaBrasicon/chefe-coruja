@@ -51,13 +51,13 @@ export function BlocoPendencias({ internacaoId, ativa, lista, eu, acao }: {
   return (
     <Caixa>
       <CaixaCabeca
-        icone={<ClipboardList className="size-[15px] text-marca" aria-hidden />}
+        icone={<ClipboardList className="size-[15px] text-acao" aria-hidden />}
         titulo="Pendências"
         resumo={resumo}
         resumoClasse={nVencidas ? 'text-critico' : undefined}
         acao={ativa && !aberto ? (
           <button type="button" onClick={() => setAberto(true)}
-            className="flex items-center gap-1.5 rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio font-medium whitespace-nowrap text-tinta-apoio hover:border-marca hover:text-acao">
+            className="flex items-center gap-1.5 rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio font-medium whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao">
             <ClipboardPlus className="size-3.5" aria-hidden /> Nova pendência
           </button>
         ) : undefined}
@@ -116,7 +116,7 @@ export function BlocoPendencias({ internacaoId, ativa, lista, eu, acao }: {
           </div>
           <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="O que precisa ser feito neste leito"
             aria-label="Descrição da pendência"
-            className="w-full rounded-[10px] border border-fio bg-campo px-3 py-2.5 text-corpo text-tinta outline-none focus:border-marca" />
+            className="w-full rounded-[10px] border border-fio bg-campo px-3 py-2.5 text-corpo text-tinta outline-none focus:border-acao" />
           <div className="flex flex-wrap gap-[7px]" role="radiogroup" aria-label="Prazo">
             {PRAZOS.map(([k, r]) => (
               <Chip key={k} role="radio" aria-checked={prazo === k} ativo={prazo === k} onClick={() => setPrazo(k)}>{r}</Chip>

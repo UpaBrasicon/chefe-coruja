@@ -133,7 +133,7 @@ export function MapaLeitos() {
                 <span className="text-apoio text-tinta-sussurro">{[a.setor, a.nota, a.prazo && `prazo ${hora(a.prazo)}`].filter(Boolean).join(' · ')}</span>
               </div>
               <span className={cn(SELO, a.ordem === 2 ? 'bg-atencao/[0.08] text-atencao' : 'bg-critico/[0.08] text-critico')}>{a.selo}</span>
-              <Link to={`/prontuarios/${a.paciente_id}`} className="rounded-controle border border-fio px-3 py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-marca hover:text-acao">Ver leito</Link>
+              <Link to={`/prontuarios/${a.paciente_id}`} className="rounded-controle border border-fio px-3 py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao">Ver leito</Link>
             </div>
           ))}
         </div>

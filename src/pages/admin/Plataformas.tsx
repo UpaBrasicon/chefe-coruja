@@ -90,7 +90,7 @@ export default function Plataformas() {
             <button
               type="button"
               onClick={() => abrirChamado(u.unidade_id, motivos[0] ? `${u.nome}: ${motivos[0]}` : u.nome)}
-              className="rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-marca hover:text-acao"
+              className="rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao"
             >
               Abrir chamado
             </button>

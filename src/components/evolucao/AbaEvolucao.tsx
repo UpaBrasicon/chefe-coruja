@@ -30,7 +30,7 @@ export function AbaEvolucao({ pacienteId, internacaoId }: AbaEvolucaoProps) {
         {SUBS.map(({ id, rotulo, Icone }) => (
           <button key={id} type="button" role="tab" aria-selected={sub === id} onClick={() => setSub(id)}
             className={cn('inline-flex min-h-10 items-center gap-[7px] rounded-controle border px-3.5 py-2 text-controle',
-              sub === id ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+              sub === id ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
             <Icone className="size-[15px]" aria-hidden /> {rotulo}
           </button>
         ))}

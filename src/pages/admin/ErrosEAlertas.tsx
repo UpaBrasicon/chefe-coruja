@@ -90,7 +90,7 @@ function ErroItem({ erro }: { erro: ErroGrupo }) {
         type="button"
         onClick={() => { setErroAcao(null); resolver.mutate() }}
         disabled={resolver.isPending}
-        className="flex items-center gap-1.5 self-center rounded-[9px] border border-fio bg-superficie px-3 py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-marca hover:text-acao disabled:opacity-60"
+        className="flex items-center gap-1.5 self-center rounded-[9px] border border-fio bg-superficie px-3 py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao disabled:opacity-60"
       >
         {resolver.isPending ? <Spinner className="size-4" /> : erro.resolvido ? <RotateCcw className="size-4" /> : <CircleCheck className="size-4" />}
         {erro.resolvido ? 'Reabrir' : 'Marcar resolvido'}
@@ -122,7 +122,7 @@ function BlocoErros() {
                 onClick={() => setDias(d)}
                 className={cn(
                   'rounded-capsula border px-[11px] py-1 transition-colors',
-                  dias === d ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+                  dias === d ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
                 )}
               >
                 {d} dias

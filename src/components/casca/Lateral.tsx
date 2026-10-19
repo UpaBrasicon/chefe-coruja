@@ -25,7 +25,7 @@ function ItemLateral({ item, nota }: { item: ItemNav; nota?: number }) {
       className={({ isActive }) =>
         cn(
           'relative flex w-full items-center gap-2.5 rounded-controle py-[9px] pr-3 pl-[15px] text-corpo whitespace-nowrap transition-colors',
-          isActive ? 'bg-marca/10 font-semibold text-acao hover:text-acao' : 'text-tinta-apoio hover:bg-trilha hover:text-tinta-apoio',
+          isActive ? 'bg-acao/10 font-semibold text-acao hover:text-acao' : 'text-tinta-apoio hover:bg-trilha hover:text-tinta-apoio',
         )
       }
     >
@@ -69,7 +69,7 @@ function DaUnidadeLateral({ unidadeId, ehGestor }: { unidadeId?: string; ehGesto
         <div className="flex flex-1 flex-col gap-[7px] p-3" aria-live={pausado ? 'polite' : 'off'}>
           {a ? (
             <>
-              <span className="w-fit rounded-capsula bg-marca/10 px-1.5 py-0.5 text-rotulo font-semibold tracking-[0.05em] text-acao uppercase">Aviso</span>
+              <span className="w-fit rounded-capsula bg-acao/10 px-1.5 py-0.5 text-rotulo font-semibold tracking-[0.05em] text-acao uppercase">Aviso</span>
               {a.titulo && <span className="text-apoio leading-[1.35] font-semibold tracking-[-0.005em] text-tinta">{a.titulo}</span>}
               {a.descricao && <span className="text-rotulo leading-[1.4] text-pretty text-tinta-sussurro">{a.descricao}</span>}
               {ehGestor ? (
@@ -112,7 +112,7 @@ function DaUnidadeLateral({ unidadeId, ehGestor }: { unidadeId?: string; ehGesto
                       type="button"
                       onClick={() => setI(k)}
                       aria-label={`Aviso ${k + 1} de ${avisos.length}`}
-                      className={cn('h-[5px] rounded-capsula transition-[width] duration-200', k === i % avisos.length ? 'w-3.5 bg-marca' : 'w-[5px] bg-fio-forte')}
+                      className={cn('h-[5px] rounded-capsula transition-[width] duration-200', k === i % avisos.length ? 'w-3.5 bg-acao' : 'w-[5px] bg-fio-forte')}
                     />
                   ))}
               </div>

@@ -194,7 +194,7 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
             return (
               <div key={p.id} className="border-b border-trilha last:border-b-0">
                 <div className="flex flex-wrap items-center gap-3.5 px-5 py-[13px] hover:bg-campo">
-                  <span className="shrink-0 rounded-capsula bg-marca/10 px-[9px] py-1 text-apoio font-semibold text-acao tabular-nums">
+                  <span className="shrink-0 rounded-capsula bg-acao/10 px-[9px] py-1 text-apoio font-semibold text-acao tabular-nums">
                     {leitoDe(p) ?? p.setores?.nome ?? 'sem leito'}
                   </span>
                   <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
@@ -226,13 +226,13 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
                   <div className="flex shrink-0 gap-[7px]">
                     <button type="button" onClick={() => setAberto(eAberto ? null : p.id)} aria-expanded={eAberto}
                       className={cn('flex items-center gap-1.5 rounded-[9px] border px-[11px] py-1.5 text-apoio font-medium whitespace-nowrap',
-                        eAberto ? 'border-marca/35 bg-marca/10 text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-marca hover:text-acao')}>
+                        eAberto ? 'border-acao/35 bg-acao/10 text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
                       <ChevronRight className={cn('size-3.5 transition-transform duration-200', eAberto ? '-rotate-90' : 'rotate-90')} aria-hidden />
                       {eAberto ? 'Fechar' : 'Abrir leito'}
                     </button>
                     <button type="button" onClick={() => setPrancheta(p)}
                       className={cn('flex items-center gap-1.5 rounded-[9px] border px-[11px] py-1.5 text-apoio whitespace-nowrap',
-                        pranchetaEm ? 'border-marca/35 bg-marca/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-marca hover:text-acao')}>
+                        pranchetaEm ? 'border-acao/35 bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
                       <ClipboardList className="size-3.5" aria-hidden /> {pranchetaEm ? `Prancheta · ${pranchetaEm}` : 'Prancheta'}
                     </button>
                   </div>
@@ -334,7 +334,7 @@ function AltasRecentes({ unidadeId }: { unidadeId: string }) {
               <div className="flex flex-wrap gap-1.5">
                 <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Justificativa do cancelamento (mínimo 10 caracteres)"
                   aria-label="Justificativa do cancelamento"
-                  className="min-w-0 flex-[1_1_260px] rounded-[10px] border border-fio bg-campo px-[11px] py-2 text-controle text-tinta outline-none focus:border-marca" />
+                  className="min-w-0 flex-[1_1_260px] rounded-[10px] border border-fio bg-campo px-[11px] py-2 text-controle text-tinta outline-none focus:border-acao" />
                 <Button size="sm" variant="outline" onClick={() => setCancelando(null)}>Voltar</Button>
                 <Button size="sm" variant="outline" className="border-critico/40 text-critico" disabled={texto.trim().length < 10} onClick={() => void confirmar(a)}>
                   Confirmar cancelamento
@@ -383,7 +383,7 @@ function Prancheta({ paciente, leito, unidadeId, perfilId, aoFechar }: {
         <textarea value={dados.texto} autoFocus rows={12} aria-label="Anotações"
           onChange={(e) => atualizar({ texto: e.target.value, quando: hora(new Date().toISOString()) })}
           placeholder="O que você quer lembrar deste paciente: exame a conferir, conversa com a família, dose a rever…"
-          className="w-full flex-1 resize-none rounded-[10px] border border-fio bg-campo px-3 py-2.5 text-corpo leading-[1.5] text-tinta outline-none focus:border-marca" />
+          className="w-full flex-1 resize-none rounded-[10px] border border-fio bg-campo px-3 py-2.5 text-corpo leading-[1.5] text-tinta outline-none focus:border-acao" />
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" disabled={!dados.texto.trim()}
             onClick={() => void navigator.clipboard?.writeText(dados.texto).then(() => setCopiado(true))}>

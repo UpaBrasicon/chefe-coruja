@@ -119,9 +119,9 @@ export function EscalaMes() {
     <section className="mb-6 overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-trilha px-5 py-3.5">
         <div className="flex items-center gap-2">
-          <button type="button" aria-label="Mês anterior" onClick={() => mudarMes(-1)} className="grid size-8 place-items-center rounded-controle border border-fio hover:border-marca hover:text-acao"><ChevronLeft className="size-4" /></button>
+          <button type="button" aria-label="Mês anterior" onClick={() => mudarMes(-1)} className="grid size-8 place-items-center rounded-controle border border-fio hover:border-acao hover:text-acao"><ChevronLeft className="size-4" /></button>
           <span className="min-w-[150px] text-center text-corpo font-semibold text-tinta">{MESES[mesNum - 1][0].toUpperCase() + MESES[mesNum - 1].slice(1)} de {ano}</span>
-          <button type="button" aria-label="Próximo mês" onClick={() => mudarMes(1)} className="grid size-8 place-items-center rounded-controle border border-fio hover:border-marca hover:text-acao"><ChevronRight className="size-4" /></button>
+          <button type="button" aria-label="Próximo mês" onClick={() => mudarMes(1)} className="grid size-8 place-items-center rounded-controle border border-fio hover:border-acao hover:text-acao"><ChevronRight className="size-4" /></button>
         </div>
         <Button onClick={() => { setErro(null); setPublicando(true) }} disabled={!m || plantoesMes === 0 || mesPassou}>
           <ShieldCheck /> Publicar escala
@@ -162,8 +162,8 @@ export function EscalaMes() {
               const pessoas = new Set(fs.flatMap((f) => f.escalados.map((e) => e.plantao_id))).size
               return (
                 <button key={d} type="button" onClick={() => setDia(d)}
-                  className={cn('flex min-h-[84px] flex-col gap-1.5 rounded-controle border p-2 text-left transition-colors hover:border-marca',
-                    d === hoje ? 'border-marca bg-alerta-marca/40' : 'border-fio bg-superficie', d < hoje && 'opacity-70')}>
+                  className={cn('flex min-h-[84px] flex-col gap-1.5 rounded-controle border p-2 text-left transition-colors hover:border-acao',
+                    d === hoje ? 'border-acao bg-alerta-marca/40' : 'border-fio bg-superficie', d < hoje && 'opacity-70')}>
                   <span className="flex items-center gap-1 text-apoio font-semibold tabular-nums text-tinta">
                     {Number(d.slice(8))}{d === hoje && <span className="size-1.5 rounded-full bg-acao" aria-label="hoje" />}
                   </span>

@@ -42,7 +42,7 @@ export function Abas<K extends string>({ abas, valor, onChange, rotulo }: {
       {abas.map(([k, r]) => (
         <button key={k} type="button" role="tab" aria-selected={valor === k} onClick={() => onChange(k)}
           className={cn('rounded-capsula border px-[13px] py-[5px] text-apoio transition-colors',
-            valor === k ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+            valor === k ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
           {r}
         </button>
       ))}
@@ -54,7 +54,7 @@ export function Filtro({ ativo, onClick, children }: { ativo: boolean; onClick: 
   return (
     <button type="button" aria-pressed={ativo} onClick={onClick}
       className={cn('inline-flex items-center gap-1.5 rounded-capsula border px-3 py-[5px] text-apoio whitespace-nowrap transition-colors',
-        ativo ? 'border-marca bg-alerta-marca font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-marca hover:text-acao')}>
+        ativo ? 'border-acao bg-alerta-marca font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
       {children}
     </button>
   )
@@ -163,7 +163,7 @@ function LimitesPadrao({ unidade, aoMudar }: { unidade: string; aoMudar: () => v
   return (
     <div className="flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-5 py-3.5 shadow-repouso">
       <div className="flex flex-wrap items-center gap-2.5">
-        <SlidersHorizontal className="size-4 text-marca" aria-hidden />
+        <SlidersHorizontal className="size-4 text-acao" aria-hidden />
         <span className="text-apoio font-semibold text-tinta">Padrão da unidade</span>
         <span className="text-apoio text-tinta-sussurro">{resumo}</span>
         <Button size="xs" variant="outline" className="ml-auto" onClick={() => {
@@ -213,7 +213,7 @@ function LinhaEstoque({ d, unidade, aoErro, aoMudar }: { d: Estoque; unidade: st
           <span className="text-rotulo text-tinta-sussurro">{d.apresentacao ?? '—'}{d.atualizado_em ? ` · atualizado ${hora(d.atualizado_em)}${d.atualizado_por ? ` por ${d.atualizado_por}` : ''}` : ''}</span>
         </div>
         <button type="button" onClick={() => { setC(d.limite_proprio ? d.limite_critico?.toString() ?? '' : ''); setF(d.limite_proprio ? d.limite_falta?.toString() ?? '' : ''); setEditando(!editando) }}
-          className="inline-flex items-center gap-1.5 rounded-controle border border-fio bg-superficie px-2.5 py-1 text-rotulo text-tinta-apoio hover:border-marca hover:text-acao">
+          className="inline-flex items-center gap-1.5 rounded-controle border border-fio bg-superficie px-2.5 py-1 text-rotulo text-tinta-apoio hover:border-acao hover:text-acao">
           <SlidersHorizontal className="size-3.5" aria-hidden /> {limiteResumo}
         </button>
         <div className="flex items-center gap-1.5">

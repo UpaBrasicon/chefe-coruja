@@ -36,7 +36,7 @@ function CampoCid({ id, valor, mudar, desabilitado, placeholder, rotulo }: {
     <div className="relative">
       <input id={id} value={valor} disabled={desabilitado} placeholder={placeholder} aria-label={rotulo} autoComplete="off"
         onChange={(e) => mudar(e.target.value)} onFocus={() => setFoco(true)} onBlur={() => setTimeout(() => setFoco(false), 150)}
-        className="w-full rounded-[10px] border border-fio bg-campo px-3 py-2.5 text-corpo text-tinta outline-none focus:border-marca disabled:cursor-not-allowed disabled:opacity-60" />
+        className="w-full rounded-[10px] border border-fio bg-campo px-3 py-2.5 text-corpo text-tinta outline-none focus:border-acao disabled:cursor-not-allowed disabled:opacity-60" />
       {lista.length > 0 && (
         <div role="listbox" className="absolute top-full right-0 left-0 z-30 mt-0.5 max-h-[280px] overflow-y-auto rounded-[10px] border border-fio bg-superficie shadow-[0_12px_32px_rgba(15,23,42,0.14)]">
           {lista.map((r) => (
@@ -195,7 +195,7 @@ function FormPrimario({ internacaoId, primario, acao }: { internacaoId: string; 
           <div className="flex flex-wrap items-center gap-1.5">
             <input value={tempo} onChange={(e) => setTempo(e.target.value.replace(/\D/g, '').slice(0, 3))} inputMode="numeric"
               maxLength={3} placeholder="—" aria-label="Tempo da doença"
-              className="w-16 rounded-[10px] border border-fio bg-campo px-2.5 py-[9px] text-corpo text-tinta tabular-nums outline-none focus:border-marca" />
+              className="w-16 rounded-[10px] border border-fio bg-campo px-2.5 py-[9px] text-corpo text-tinta tabular-nums outline-none focus:border-acao" />
             {UNIDADES.map(([k, r]) => (
               <Chip key={k} ativo={unidade === k} onClick={() => setUnidade(k)} aria-pressed={unidade === k}>{r}</Chip>
             ))}

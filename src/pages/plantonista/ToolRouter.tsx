@@ -39,7 +39,7 @@ export function ToolRouter() {
           <SeloSemReferenciaPediatrica publico={publico} />
           {vezes > 0 && <span className="text-rotulo text-tinta-sussurro tabular" title="Quantas vezes você abriu esta ferramenta">{vezes}×</span>}
           <Button variant="ghost" size="sm" aria-pressed={ehFavorito} onClick={() => alternarFavorito(chave)}>
-            <Star className={cn(ehFavorito && 'fill-marca text-marca')} />
+            <Star className={cn(ehFavorito && 'fill-acao text-acao')} />
             {ehFavorito ? 'Favorita' : 'Favoritar'}
           </Button>
         </div>

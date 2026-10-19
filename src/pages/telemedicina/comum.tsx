@@ -110,11 +110,11 @@ export type Situacao = {
 
 export const ROTULO_SITUACAO: Record<Situacao['estado'], string> = { disponivel: 'Disponível', ausente: 'Ausente', em_consulta: 'Em consulta' }
 export const COR_SITUACAO: Record<Situacao['estado'], string> = {
-  disponivel: 'border-marca/30 bg-alerta-marca text-acao',
+  disponivel: 'border-acao/30 bg-alerta-marca text-acao',
   ausente: 'border-fio bg-trilha text-tinta-apoio',
   em_consulta: 'border-critico/30 bg-alerta-critico text-critico',
 }
-const PONTO: Record<Situacao['estado'], string> = { disponivel: 'bg-marca', ausente: 'bg-tinta-sussurro', em_consulta: 'bg-critico' }
+const PONTO: Record<Situacao['estado'], string> = { disponivel: 'bg-acao', ausente: 'bg-tinta-sussurro', em_consulta: 'bg-critico' }
 
 export function useSituacaoTele(unidadeId?: string) {
   return useQuery({
