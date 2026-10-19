@@ -24,9 +24,11 @@ import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { Erro } from '@/pages/farmacia/Farmacia'
 
-type Recurso = 'pacientes' | 'atendimentos' | 'leitos' | 'producao'
+type Recurso = 'pacientes' | 'atendimentos' | 'leitos' | 'producao' | 'laboratorio'
 const RECURSOS: Record<Recurso, string> = {
   pacientes: 'Pacientes', atendimentos: 'Atendimentos', leitos: 'Leitos', producao: 'Produção SUS (AIH, APAC, fechamentos)',
+  // Fase 5C, etapa 1.3: chave do LIS (lê pedidos de exame, grava coleta e laudo pela porta FHIR)
+  laboratorio: 'Laboratório (LIS): pedidos de exame, coleta e laudo — FHIR',
 }
 
 type Chave = {
