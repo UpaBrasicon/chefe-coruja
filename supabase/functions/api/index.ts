@@ -110,7 +110,7 @@ async function portaFhir(req: Request, url: URL, requisicao: string): Promise<Re
   if (!chave) return fhirErro(401, 'Mande a chave no cabeçalho Authorization: Bearer <chave>.', requisicao)
   const ip = ipDeOrigem((n) => req.headers.get(n), Deno.env.get('API_BORDA_SEGREDO') || undefined)
 
-  let dados: Record<string, unknown> = {}
+  let dados: Record<string, unknown>
   let pdfCaminho: string | null = null
   const banco = createClient(Deno.env.get('SUPABASE_URL')!, chaveSecreta(), { auth: { persistSession: false } })
   try {
