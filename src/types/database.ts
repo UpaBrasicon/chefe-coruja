@@ -4665,6 +4665,10 @@ export type Database = {
           resultado_visto_em: string | null
           resultado_visto_por: string | null
           exame: string
+          imagem_url: string | null
+          realizado_em: string | null
+          realizado_por: string | null
+          tipo: string | null
           loinc: string | null
           observacao: string | null
           procedimento: string | null
@@ -4692,6 +4696,10 @@ export type Database = {
           resultado_visto_em?: string | null
           resultado_visto_por?: string | null
           exame: string
+          imagem_url?: string | null
+          realizado_em?: string | null
+          realizado_por?: string | null
+          tipo?: string | null
           loinc?: string | null
           observacao?: string | null
           procedimento?: string | null
@@ -4719,6 +4727,10 @@ export type Database = {
           resultado_visto_em?: string | null
           resultado_visto_por?: string | null
           exame?: string
+          imagem_url?: string | null
+          realizado_em?: string | null
+          realizado_por?: string | null
+          tipo?: string | null
           loinc?: string | null
           observacao?: string | null
           procedimento?: string | null
@@ -10322,6 +10334,14 @@ export type Database = {
       lancar_procedimento_conta: {
         Args: { p_conta: string; p_procedimento: string; p_profissional?: string; p_quantidade?: number; p_realizado_em?: string }
         Returns: Json
+      }
+      marcar_exame_realizado: {
+        Args: { p_exame: string; p_imagem_url?: string }
+        Returns: undefined
+      }
+      definir_link_imagem: {
+        Args: { p_exame: string; p_url: string }
+        Returns: undefined
       }
       exame_detalhe: {
         Args: { p_exame: string }
