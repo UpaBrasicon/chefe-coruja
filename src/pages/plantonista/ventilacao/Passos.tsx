@@ -22,7 +22,7 @@ export function BarraPassos({ passos, atual, ir, nota }: { passos: readonly stri
                 onClick={() => ir(n)}
                 className={cn(
                   'flex w-full flex-col items-center gap-0.5 rounded-controle border px-1.5 py-2.5 transition-colors',
-                  n === atual ? 'border-acao bg-acao text-white' : n < atual ? 'border-acao bg-card text-acao' : 'border-fio bg-card text-tinta-sussurro hover:bg-trilha/50',
+                  n === atual ? 'border-acao bg-acao text-sobre-acao' : n < atual ? 'border-acao bg-card text-acao' : 'border-fio bg-card text-tinta-sussurro hover:bg-trilha/50',
                 )}
               >
                 <span className="text-[19px] leading-none font-semibold tabular-nums">{n}</span>

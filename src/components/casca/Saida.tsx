@@ -66,7 +66,7 @@ export function DialogoSaida({
             <button
               type="button"
               onClick={onConfirmar}
-              className="flex items-center gap-[7px] rounded-controle bg-acao px-4 py-[9px] text-apoio font-semibold text-white hover:bg-[#0B5D57]"
+              className="flex items-center gap-[7px] rounded-controle bg-acao px-4 py-[9px] text-apoio font-semibold text-sobre-acao hover:bg-[#0B5D57]"
             >
               <LogOut className="size-3.5" aria-hidden />
               {emPlantao ? 'Sair mesmo assim' : 'Sair'}
@@ -88,7 +88,7 @@ export function SessaoEncerrada({ texto, onReentrar }: { texto: string; onReentr
   return (
     <div role="dialog" aria-modal="true" aria-labelledby="cc-sessao-titulo" className="fixed inset-0 z-[1000] grid place-items-center bg-[#0B1220EB] p-6">
       <div className="flex w-full max-w-[420px] flex-col gap-3.5 rounded-[18px] bg-superficie px-7 pt-7 pb-6 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
-        <div className="grid size-11 place-items-center rounded-container bg-marca/10 text-acao">
+        <div className="grid size-11 place-items-center rounded-container bg-acao/10 text-acao">
           <Clock className="size-[22px]" aria-hidden />
         </div>
         <h2 id="cc-sessao-titulo" className="m-0 text-dialogo font-semibold tracking-[-0.02em] text-tinta">
@@ -102,7 +102,7 @@ export function SessaoEncerrada({ texto, onReentrar }: { texto: string; onReentr
           type="button"
           autoFocus
           onClick={onReentrar}
-          className="mt-1 inline-flex items-center justify-center gap-[7px] rounded-controle bg-acao px-4 py-[11px] text-controle font-medium text-white hover:bg-acao-pressionada"
+          className="mt-1 inline-flex items-center justify-center gap-[7px] rounded-controle bg-acao px-4 py-[11px] text-controle font-medium text-sobre-acao hover:bg-acao-pressionada"
         >
           Entrar novamente
         </button>

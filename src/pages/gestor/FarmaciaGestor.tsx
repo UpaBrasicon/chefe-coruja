@@ -112,7 +112,7 @@ export default function FarmaciaGestor() {
                 {estoque.length ? `${emFalta} em falta · ${criticos} crítico${criticos === 1 ? '' : 's'}` : 'O farmacêutico ainda não informou o estoque.'}
               </span>
               <button type="button" onClick={() => void copiarPedido()} disabled={!estoque.length && !faltas.length}
-                className="flex items-center gap-1.5 rounded-controle border border-fio bg-superficie px-3 py-[7px] text-apoio whitespace-nowrap text-tinta-apoio hover:border-marca hover:text-acao disabled:opacity-50">
+                className="flex items-center gap-1.5 rounded-controle border border-fio bg-superficie px-3 py-[7px] text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao disabled:opacity-50">
                 {copiado ? <Check className="size-3.5" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
                 {copiado ? 'Copiado' : 'Exportar pedido de reposição'}
               </button>

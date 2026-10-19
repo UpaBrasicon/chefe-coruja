@@ -97,7 +97,7 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
               </button>
               <button type="button" role="switch" aria-checked={ligado} aria-label={`${ligado ? 'Tirar' : 'Pôr'} o painel ${p.titulo} no carrossel`}
                 onClick={() => alternar(chavePainel(p.chave))}
-                className={cn('relative h-5 w-[34px] shrink-0 rounded-capsula transition-colors', ligado ? 'bg-marca' : 'bg-fio-forte')}>
+                className={cn('relative h-5 w-[34px] shrink-0 rounded-capsula transition-colors', ligado ? 'bg-acao' : 'bg-fio-forte')}>
                 <span className={cn('absolute top-0.5 size-4 rounded-full bg-white transition-[left]', ligado ? 'left-4' : 'left-0.5')} />
               </button>
             </div>
@@ -108,7 +108,7 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
                   return (
                     <button key={m.chave} type="button" aria-pressed={on} onClick={() => alternar(chaveMedida(p.chave, m.chave))}
                       className={cn('rounded-capsula border px-[13px] py-[5px] text-apoio whitespace-nowrap transition-colors',
-                        on ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-marca hover:text-acao')}>
+                        on ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
                       {m.rotulo}
                     </button>
                   )
@@ -124,14 +124,14 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
         <form onSubmit={(e) => { e.preventDefault(); if (texto.trim().length >= 5) pedir.mutate() }} className="flex flex-wrap gap-2">
           <input value={texto} onChange={(e) => setTexto(e.target.value)} maxLength={300} aria-label="O que você quer medir na unidade"
             placeholder="O que você quer medir na unidade"
-            className="min-w-[220px] flex-1 rounded-controle border border-fio bg-superficie px-3 py-2 text-controle text-tinta outline-none focus:border-marca" />
+            className="min-w-[220px] flex-1 rounded-controle border border-fio bg-superficie px-3 py-2 text-controle text-tinta outline-none focus:border-acao" />
           <select value={painel} onChange={(e) => setPainel(e.target.value)} aria-label="Painel da medida"
             className="rounded-controle border border-fio bg-superficie px-2.5 py-2 text-controle text-tinta-apoio">
             <option value="">Painel: qualquer</option>
             {PAINEIS.map((p) => <option key={p.chave} value={p.titulo}>{p.titulo}</option>)}
           </select>
           <button type="submit" disabled={pedir.isPending || texto.trim().length < 5}
-            className="rounded-controle bg-acao px-3.5 py-2 text-apoio font-medium text-white hover:bg-acao-pressionada disabled:opacity-60">
+            className="rounded-controle bg-acao px-3.5 py-2 text-apoio font-medium text-sobre-acao hover:bg-acao-pressionada disabled:opacity-60">
             Pedir medida
           </button>
         </form>
@@ -139,7 +139,7 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
           <span className="text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">Exemplos</span>
           {EXEMPLOS.map((t) => (
             <button key={t} type="button" onClick={() => setTexto(t)}
-              className="rounded-capsula border border-fio bg-superficie px-3 py-[5px] text-apoio text-tinta-apoio hover:border-marca hover:bg-marca/5 hover:text-acao">{t}</button>
+              className="rounded-capsula border border-fio bg-superficie px-3 py-[5px] text-apoio text-tinta-apoio hover:border-acao hover:bg-acao/5 hover:text-acao">{t}</button>
           ))}
         </div>
         {pedir.error && <p className="text-apoio text-critico">{(pedir.error as Error).message}</p>}
@@ -160,7 +160,7 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
               </div>
               <span className="rounded-capsula bg-atencao/10 px-2 py-[3px] text-rotulo font-semibold tracking-[0.03em] text-atencao uppercase">Em preparo</span>
               <button type="button" disabled={retirar.isPending} onClick={() => retirar.mutate({ id: m.id, texto: m.texto })}
-                className="rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio text-tinta-apoio hover:border-marca hover:text-acao">
+                className="rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio text-tinta-apoio hover:border-acao hover:text-acao">
                 Retirar
               </button>
             </div>

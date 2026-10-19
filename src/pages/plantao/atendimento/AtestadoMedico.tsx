@@ -127,7 +127,7 @@ function partes(f: FormAtestado, nome: string, cpf: string, feminino: boolean): 
   return P
 }
 
-const CLASSE_BOTAO_PASSO = 'grid h-[38px] w-9 place-items-center rounded-controle border border-fio bg-superficie text-tinta-apoio transition-colors hover:border-marca hover:text-acao'
+const CLASSE_BOTAO_PASSO = 'grid h-[38px] w-9 place-items-center rounded-controle border border-fio bg-superficie text-tinta-apoio transition-colors hover:border-acao hover:text-acao'
 
 export function AtestadoMedico({ unidadeId, perfilId }: { unidadeId?: string; perfilId?: string }) {
   const qc = useQueryClient()
@@ -254,7 +254,7 @@ export function AtestadoMedico({ unidadeId, perfilId }: { unidadeId?: string; pe
                   </button>
                   <input id="at-dias" type="text" inputMode="numeric" value={f.dias}
                     onChange={(e) => { const v = e.target.value.replace(/\D/g, ''); mudar({ dias: v ? String(Math.min(90, Number(v))) : '' }) }}
-                    className="w-16 rounded-controle border border-fio bg-campo px-2.5 py-[9px] text-center text-corpo tabular-nums text-tinta outline-none focus-visible:border-marca" />
+                    className="w-16 rounded-controle border border-fio bg-campo px-2.5 py-[9px] text-center text-corpo tabular-nums text-tinta outline-none focus-visible:border-acao" />
                   <button type="button" aria-label="Mais um dia" className={CLASSE_BOTAO_PASSO} onClick={() => mudar({ dias: String(Math.min(90, dias + 1)) })}>
                     <Plus className="size-[15px]" />
                   </button>

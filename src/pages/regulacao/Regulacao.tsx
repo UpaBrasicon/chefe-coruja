@@ -576,7 +576,7 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
             <div className="flex flex-col gap-2 rounded-md border border-fio p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos (opcional){totalAnexos > 0 ? ` · ${totalAnexos}` : ''}</span>
-                <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-marca">
+                <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-acao">
                   <input type="file" multiple accept={ANEXO_TIPOS.join(',')} className="sr-only"
                     onChange={(e) => { incluirArquivos(e.target.files); e.target.value = '' }} />
                   <Paperclip className="size-3.5" aria-hidden /> Anexar arquivo (PDF, JPG, PNG — até 10 MB cada)

@@ -322,7 +322,7 @@ function EditorReceita({ unidadeId, p, onFim, onCancelar }: {
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-cartao border border-marca/40 bg-superficie px-5 py-4 shadow-repouso">
+    <section className="flex flex-col gap-4 rounded-cartao border border-acao/40 bg-superficie px-5 py-4 shadow-repouso">
       <div className="flex flex-wrap gap-3">
         <label className="flex flex-[1_1_240px] flex-col gap-[5px]"><span className="text-apoio font-medium text-grafite">Nome</span>
           <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex.: Pneumonia comunitária" /></label>

@@ -7711,6 +7711,7 @@ export type Database = {
           registro_numero: string | null
           registro_uf: string | null
           telefone: string | null
+          tema: string
           tipo_sanguineo: string | null
           uf_crm: string | null
           updated_at: string
@@ -7732,6 +7733,7 @@ export type Database = {
           registro_numero?: string | null
           registro_uf?: string | null
           telefone?: string | null
+          tema?: string
           tipo_sanguineo?: string | null
           uf_crm?: string | null
           updated_at?: string
@@ -7753,6 +7755,7 @@ export type Database = {
           registro_numero?: string | null
           registro_uf?: string | null
           telefone?: string | null
+          tema?: string
           tipo_sanguineo?: string | null
           uf_crm?: string | null
           updated_at?: string

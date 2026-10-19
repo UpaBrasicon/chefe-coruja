@@ -177,7 +177,7 @@ function Panorama() {
         </label>
         <button type="button" aria-pressed={soPendentes} onClick={() => setSoPendentes((v) => !v)}
           className={cn('flex items-center gap-1.5 rounded-capsula border px-[13px] py-1.5 text-apoio',
-            soPendentes ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-marca hover:text-acao')}>
+            soPendentes ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
           <AlertTriangle className="size-3.5" aria-hidden /> Só pendentes
         </button>
       </div>

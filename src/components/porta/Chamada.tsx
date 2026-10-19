@@ -204,7 +204,7 @@ export function ExcluirDaFila({ episodioId, nome }: { episodioId: string; nome: 
                 onClick={() => setMotivo(m.valor)}
                 className={cn(
                   'min-h-9 rounded-capsula border px-[13px] text-apoio whitespace-nowrap transition-colors',
-                  motivo === m.valor ? 'border-marca bg-marca/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao',
+                  motivo === m.valor ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao',
                 )}
               >
                 {m.rotulo}

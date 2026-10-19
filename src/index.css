@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
+@custom-variant dark (&:where([data-tema="escuro"], [data-tema="escuro"] *));
+
 /*
  * "O Monitor de Cabeceira" — sistema visual do Chefe Coruja.
  * Fonte: design_handoff_chefe_coruja/01-tokens.md e 02-gramatica-visual.md.
@@ -11,9 +13,11 @@
  *   A identidade pertence à grandeza (rótulo e barra): leitos, observação,
  *   turno, suprimento — cor fixa, nunca varia por situação.
  *   O estado pertence ao numeral: cor do estado e corpo 30/36/42px.
- * O teal é o sinal de que algo é clicável; não nomeia grandeza nem estado.
+ * A cor de ação (petróleo) é o sinal de que algo é clicável; não nomeia
+ * grandeza nem estado. O teal fica só na marca (guia do padrão, 1.1).
  *
- * Modo diurno por decisão de produto: não há dark mode.
+ * Dois temas, claro e escuro (guia 1.4): as cores moram em --cc-* no :root e
+ * em :root[data-tema="escuro"]; o @theme só aponta para elas.
  */
 
 @theme inline {
@@ -22,68 +26,74 @@
     --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 
     /* ── Ação e marca ─────────────────────────────────────────── */
-    --color-acao: #0F766E;
-    --color-acao-pressionada: #134E4A;
-    --color-marca: #0D9488;
+    --color-acao: var(--cc-acao);
+    --color-acao-pressionada: var(--cc-acao-pressionada);
+    --color-marca: var(--cc-marca);
+    /* Texto sobre o fundo da ação (botão principal). */
+    --color-sobre-acao: var(--cc-sobre-acao);
+    /* Telas de marca (entrada, painel da TV, página pública), guia 4.6. */
+    --color-marca-escura: var(--cc-marca-escura);
+    --color-marca-clara: var(--cc-marca-clara);
+    --color-marca-texto-claro: var(--cc-marca-texto-claro);
 
     /* ── As quatro grandezas (rótulo e barra) ─────────────────── */
-    --color-leitos: #15803D;
-    --color-observacao: #B45309;
-    --color-turno: #475569;
-    --color-suprimento: #1D4ED8;
+    --color-leitos: var(--cc-leitos);
+    --color-observacao: var(--cc-observacao);
+    --color-turno: var(--cc-turno);
+    --color-suprimento: var(--cc-suprimento);
 
     /* ── Os estados (numeral, selo, texto de estado) ──────────── */
-    --color-ok: #1E293B;
-    --color-atencao: #92400E;
-    --color-critico: #B91C1C;
-    --color-conforme: #15803D;
+    --color-ok: var(--cc-ok);
+    --color-atencao: var(--cc-atencao);
+    --color-critico: var(--cc-critico);
+    --color-conforme: var(--cc-conforme);
 
     /* ── Neutros ──────────────────────────────────────────────── */
-    --color-tinta: #1E293B;
-    --color-tinta-apoio: #475569;
-    --color-tinta-sussurro: #64748B;
-    --color-grafite: #334155;
-    --color-superficie: #FFFFFF;
-    --color-campo: #F8FAFC;
-    --color-trilha: #F1F5F9;
-    --color-fio: #E2E8F0;
-    --color-fio-forte: #CBD5E1;
+    --color-tinta: var(--cc-tinta);
+    --color-tinta-apoio: var(--cc-tinta-apoio);
+    --color-tinta-sussurro: var(--cc-tinta-sussurro);
+    --color-grafite: var(--cc-grafite);
+    --color-superficie: var(--cc-superficie);
+    --color-campo: var(--cc-campo);
+    --color-trilha: var(--cc-trilha);
+    --color-fio: var(--cc-fio);
+    --color-fio-forte: var(--cc-fio-forte);
 
     /* ── Classificação de risco (Manchester) ─────────────────── */
-    --color-mts-vermelho: #B91C1C;
-    --color-mts-laranja: #C2410C;
-    --color-mts-amarelo: #FACC15;
-    --color-mts-amarelo-texto: #422006;
-    --color-mts-verde: #15803D;
-    --color-mts-azul: #1D4ED8;
+    --color-mts-vermelho: var(--cc-mts-vermelho);
+    --color-mts-laranja: var(--cc-mts-laranja);
+    --color-mts-amarelo: var(--cc-mts-amarelo);
+    --color-mts-amarelo-texto: var(--cc-mts-amarelo-texto);
+    --color-mts-verde: var(--cc-mts-verde);
+    --color-mts-azul: var(--cc-mts-azul);
 
     /* ── Modo pediátrico ─────────────────────────────────────── */
-    --color-pediatria: #6D28D9;
+    --color-pediatria: var(--cc-pediatria);
 
     /* ── Cor por seção da Central (P/index.html COR_SECAO) ──────
        Os passos profundos da rampa: o nome da seção é 15px/600, piso 4,5:1. */
-    --color-secao-calculadoras: #0F766E;
-    --color-secao-cardiologia: #BE123C;
-    --color-secao-trauma: #B91C1C;
-    --color-secao-gastro: #B45309;
-    --color-secao-neurologia: #4338CA;
-    --color-secao-terapia-intensiva: #4F46E5;
-    --color-secao-endocrinologia: #86198F;
-    --color-secao-toxicologia: #9A3412;
-    --color-secao-protocolos: #15803D;
-    --color-secao-ventilacao: #0E7490;
-    --color-secao-farmacia: #7C3AED;
-    --color-secao-games: #B91C1C;
+    --color-secao-calculadoras: var(--cc-secao-calculadoras);
+    --color-secao-cardiologia: var(--cc-secao-cardiologia);
+    --color-secao-trauma: var(--cc-secao-trauma);
+    --color-secao-gastro: var(--cc-secao-gastro);
+    --color-secao-neurologia: var(--cc-secao-neurologia);
+    --color-secao-terapia-intensiva: var(--cc-secao-terapia-intensiva);
+    --color-secao-endocrinologia: var(--cc-secao-endocrinologia);
+    --color-secao-toxicologia: var(--cc-secao-toxicologia);
+    --color-secao-protocolos: var(--cc-secao-protocolos);
+    --color-secao-ventilacao: var(--cc-secao-ventilacao);
+    --color-secao-farmacia: var(--cc-secao-farmacia);
+    --color-secao-games: var(--cc-secao-games);
 
     /* ── Lavagens de alerta (cor + 14 hex, como no protótipo) ── */
-    --color-alerta-atencao: #92400E14;
-    --color-alerta-critico: #B91C1C14;
-    --color-alerta-observacao: #B4530914;
-    --color-alerta-marca: #0D948814;
-    --color-alerta-conforme: #15803D14;
-    --color-nota: #F59E0B1F;
-    --color-desfazer-regua: #99D6CE;
-    --color-veu: #0B3B34;
+    --color-alerta-atencao: var(--cc-alerta-atencao);
+    --color-alerta-critico: var(--cc-alerta-critico);
+    --color-alerta-observacao: var(--cc-alerta-observacao);
+    --color-alerta-marca: var(--cc-alerta-marca);
+    --color-alerta-conforme: var(--cc-alerta-conforme);
+    --color-nota: var(--cc-nota);
+    --color-desfazer-regua: var(--cc-desfazer-regua);
+    --color-veu: var(--cc-veu);
 
     /* ── Escala tipográfica: 12·13·14·15·17·20·24 e 25·30·36·42 ──
        14 é o tamanho de controle (campo, item de menu) e 20 o do título de
@@ -110,10 +120,10 @@
     --radius-cartao: 16px;
     --radius-capsula: 999px;
 
-    /* ── Sombra: espessador de borda e halos tingidos de teal ─── */
+    /* ── Sombra: espessador de borda e halos tingidos da ação ─── */
     --shadow-repouso: 0 1px 2px rgba(15, 23, 42, 0.04);
-    --shadow-halo: 0 6px 16px rgba(13, 148, 136, 0.12);
-    --shadow-halo-ferramenta: 0 8px 22px rgba(13, 148, 136, 0.13);
+    --shadow-halo: 0 6px 16px color-mix(in oklab, var(--cc-acao) 12%, transparent);
+    --shadow-halo-ferramenta: 0 8px 22px color-mix(in oklab, var(--cc-acao) 13%, transparent);
     --shadow-popover: 0 12px 32px rgba(15, 23, 42, 0.14);
     --shadow-toast: 0 10px 28px rgba(15, 23, 42, 0.16);
     --shadow-dialogo: 0 24px 60px rgba(15, 23, 42, 0.24);
@@ -121,7 +131,7 @@
     --shadow-desfazer: 0 16px 40px rgba(15, 23, 42, 0.3);
     --shadow-lateral: -12px 0 40px rgba(15, 23, 42, 0.18);
     --shadow-lateral-aberta: 8px 0 24px rgba(15, 23, 42, 0.1);
-    --shadow-fab: 0 6px 20px rgba(15, 118, 110, 0.28), 0 1px 2px rgba(15, 23, 42, 0.12);
+    --shadow-fab: 0 6px 20px color-mix(in oklab, var(--cc-acao) 28%, transparent), 0 1px 2px rgba(15, 23, 42, 0.12);
 
     /* ── Movimento (P/index.html, keyframes cc-*) ─────────────── */
     --animate-cc-sobe: cc-sobe 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
@@ -194,49 +204,102 @@
      * um verde só (#15803D), um vermelho só (#B91C1C), e o âmbar
      * #F59E0B (2,1:1) saiu — o âmbar do sistema é o da observação.
      */
-    --cor-primaria: #0D9488;
-    --cor-primaria-hover: #0F766E;
-    --cor-secundaria: #B45309;
-    --cor-fundo: #F8FAFC;
-    --cor-superficie: #FFFFFF;
-    --cor-borda: #E2E8F0;
-    --cor-texto: #1E293B;
-    --cor-texto-suave: #64748B;
-    --cor-sucesso: #15803D;
-    --cor-vago: #B91C1C;
+    /* Cores do tema claro (os tokens --color-* do @theme leem daqui). */
+    --cc-acao: #155E75;
+    --cc-acao-pressionada: #164E63;
+    --cc-marca: #0D9488;
+    --cc-leitos: #15803D;
+    --cc-observacao: #B45309;
+    --cc-turno: #475569;
+    --cc-suprimento: #1D4ED8;
+    --cc-ok: #1E293B;
+    --cc-atencao: #92400E;
+    --cc-critico: #B91C1C;
+    --cc-conforme: #15803D;
+    --cc-tinta: #1E293B;
+    --cc-tinta-apoio: #475569;
+    --cc-tinta-sussurro: #64748B;
+    --cc-grafite: #334155;
+    --cc-superficie: #FFFFFF;
+    --cc-campo: #F8FAFC;
+    --cc-trilha: #F1F5F9;
+    --cc-fio: #E2E8F0;
+    --cc-fio-forte: #CBD5E1;
+    --cc-mts-vermelho: #B91C1C;
+    --cc-mts-laranja: #C2410C;
+    --cc-mts-amarelo: #FACC15;
+    --cc-mts-amarelo-texto: #422006;
+    --cc-mts-verde: #15803D;
+    --cc-mts-azul: #1D4ED8;
+    --cc-pediatria: #6D28D9;
+    --cc-secao-calculadoras: #0F766E;
+    --cc-secao-cardiologia: #BE123C;
+    --cc-secao-trauma: #B91C1C;
+    --cc-secao-gastro: #B45309;
+    --cc-secao-neurologia: #4338CA;
+    --cc-secao-terapia-intensiva: #4F46E5;
+    --cc-secao-endocrinologia: #86198F;
+    --cc-secao-toxicologia: #9A3412;
+    --cc-secao-protocolos: #15803D;
+    --cc-secao-ventilacao: #0E7490;
+    --cc-secao-farmacia: #7C3AED;
+    --cc-secao-games: #B91C1C;
+    --cc-alerta-atencao: #92400E14;
+    --cc-alerta-critico: #B91C1C14;
+    --cc-alerta-observacao: #B4530914;
+    --cc-alerta-marca: #0D948814;
+    --cc-alerta-conforme: #15803D14;
+    --cc-nota: #F59E0B1F;
+    --cc-desfazer-regua: #99D6CE;
+    --cc-veu: #0B3B34;
+    --cc-sobre-acao: #FFFFFF;
+    --cc-marca-escura: #0B3D3A;
+    --cc-marca-clara: #5EEAD4;
+    --cc-marca-texto-claro: #B7DED8;
 
-    --background: #F8FAFC;
-    --foreground: #1E293B;
-    --card: #FFFFFF;
-    --card-foreground: #1E293B;
-    --popover: #FFFFFF;
-    --popover-foreground: #1E293B;
-    --primary: #0F766E;
-    --primary-foreground: #FFFFFF;
-    --secondary: #F1F5F9;
-    --secondary-foreground: #1E293B;
-    --muted: #F1F5F9;
-    --muted-foreground: #64748B;
-    --accent: #F8FAFC;
-    --accent-foreground: #1E293B;
-    --destructive: #B91C1C;
-    --border: #E2E8F0;
-    --input: #E2E8F0;
-    --ring: #0F766E;
-    --chart-1: #15803D;
-    --chart-2: #B45309;
-    --chart-3: #475569;
-    --chart-4: #1D4ED8;
-    --chart-5: #0F766E;
+    --cor-primaria: var(--cc-acao);
+    --cor-primaria-hover: var(--cc-acao-pressionada);
+    --cor-secundaria: var(--cc-observacao);
+    --cor-fundo: var(--cc-campo);
+    --cor-superficie: var(--cc-superficie);
+    --cor-borda: var(--cc-fio);
+    --cor-texto: var(--cc-tinta);
+    --cor-texto-suave: var(--cc-tinta-sussurro);
+    --cor-sucesso: var(--cc-conforme);
+    --cor-vago: var(--cc-critico);
+
+    --background: var(--cc-campo);
+    --foreground: var(--cc-tinta);
+    --card: var(--cc-superficie);
+    --card-foreground: var(--cc-tinta);
+    --popover: var(--cc-superficie);
+    --popover-foreground: var(--cc-tinta);
+    --primary: var(--cc-acao);
+    --primary-foreground: var(--cc-sobre-acao);
+    --secondary: var(--cc-trilha);
+    --secondary-foreground: var(--cc-tinta);
+    --muted: var(--cc-trilha);
+    --muted-foreground: var(--cc-tinta-sussurro);
+    --accent: var(--cc-campo);
+    --accent-foreground: var(--cc-tinta);
+    --destructive: var(--cc-critico);
+    --border: var(--cc-fio);
+    --input: var(--cc-fio);
+    --ring: var(--cc-acao);
+    --chart-1: var(--cc-leitos);
+    --chart-2: var(--cc-observacao);
+    --chart-3: var(--cc-turno);
+    --chart-4: var(--cc-suprimento);
+    --chart-5: var(--cc-acao);
     --radius: 0.625rem;
-    --sidebar: #FFFFFF;
-    --sidebar-foreground: #1E293B;
-    --sidebar-primary: #0F766E;
-    --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: rgba(13, 148, 136, 0.1);
-    --sidebar-accent-foreground: #0F766E;
-    --sidebar-border: #E2E8F0;
-    --sidebar-ring: #0F766E;
+    --sidebar: var(--cc-superficie);
+    --sidebar-foreground: var(--cc-tinta);
+    --sidebar-primary: var(--cc-acao);
+    --sidebar-primary-foreground: var(--cc-sobre-acao);
+    --sidebar-accent: color-mix(in oklab, var(--cc-acao) 10%, transparent);
+    --sidebar-accent-foreground: var(--cc-acao);
+    --sidebar-border: var(--cc-fio);
+    --sidebar-ring: var(--cc-acao);
 
     /* Geometria da casca */
     --cc-lateral: 248px;
@@ -245,6 +308,67 @@
     --cc-coluna: 896px;
 
     color-scheme: light;
+}
+
+/*
+ * TEMA ESCURO (guia do padrão, 1.1 e 1.4). Vale com data-tema="escuro" no
+ * <html> (src/lib/tema.ts). A classificação de risco (mts-*) é a mesma nos dois
+ * temas; a marca também. A folha impressa não lê estes tokens.
+ */
+:root[data-tema="escuro"] {
+    --cc-acao: #67E8F9;
+    --cc-acao-pressionada: #22D3EE;
+    --cc-sobre-acao: #0F172A;
+    --cc-marca: #0D9488;
+    --cc-marca-escura: #0B3D3A;
+    --cc-marca-clara: #5EEAD4;
+    --cc-marca-texto-claro: #B7DED8;
+    --cc-leitos: #4ADE80;
+    --cc-observacao: #FB923C;
+    --cc-turno: #94A3B8;
+    --cc-suprimento: #60A5FA;
+    --cc-ok: #E2E8F0;
+    --cc-atencao: #FBBF24;
+    --cc-critico: #F87171;
+    --cc-conforme: #4ADE80;
+    --cc-tinta: #E2E8F0;
+    --cc-tinta-apoio: #CBD5E1;
+    --cc-tinta-sussurro: #94A3B8;
+    --cc-grafite: #CBD5E1;
+    --cc-superficie: #1E293B;
+    --cc-campo: #0F172A;
+    --cc-trilha: #273449;
+    --cc-fio: #334155;
+    --cc-fio-forte: #64748B;
+    --cc-mts-vermelho: #B91C1C;
+    --cc-mts-laranja: #C2410C;
+    --cc-mts-amarelo: #FACC15;
+    --cc-mts-amarelo-texto: #422006;
+    --cc-mts-verde: #15803D;
+    --cc-mts-azul: #1D4ED8;
+    --cc-pediatria: #C4B5FD;
+    --cc-secao-calculadoras: #2DD4BF;
+    --cc-secao-cardiologia: #FB7185;
+    --cc-secao-trauma: #F87171;
+    --cc-secao-gastro: #FB923C;
+    --cc-secao-neurologia: #A5B4FC;
+    --cc-secao-terapia-intensiva: #C7D2FE;
+    --cc-secao-endocrinologia: #E879F9;
+    --cc-secao-toxicologia: #FDBA74;
+    --cc-secao-protocolos: #4ADE80;
+    --cc-secao-ventilacao: #22D3EE;
+    --cc-secao-farmacia: #C4B5FD;
+    --cc-secao-games: #F87171;
+    --cc-alerta-atencao: #FBBF2424;
+    --cc-alerta-critico: #F8717124;
+    --cc-alerta-observacao: #FB923C24;
+    --cc-alerta-marca: #2DD4BF24;
+    --cc-alerta-conforme: #4ADE8024;
+    --cc-nota: #F59E0B2E;
+    --cc-desfazer-regua: #22D3EE;
+    --cc-veu: #0B3B34;
+
+    color-scheme: dark;
 }
 
 @layer base {
@@ -280,11 +404,11 @@
     select:focus-visible,
     [contenteditable]:focus-visible {
         outline: none;
-        box-shadow: 0 0 0 3px #0D948859;
+        box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-acao) 35%, transparent);
     }
 
     ::selection {
-        background: #0D948826;
+        background: color-mix(in oklab, var(--color-acao) 15%, transparent);
     }
 }
 

@@ -60,7 +60,7 @@ function CampoCodigo({ valor, onChange, erro }: { valor: string; onChange: (v: s
         value={valor}
         onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
         aria-invalid={!!erro}
-        className="min-h-[54px] rounded-controle border border-fio bg-campo text-center text-[24px] font-semibold tracking-[0.3em] text-tinta tabular outline-none focus-visible:border-marca"
+        className="min-h-[54px] rounded-controle border border-fio bg-campo text-center text-[24px] font-semibold tracking-[0.3em] text-tinta tabular outline-none focus-visible:border-acao"
       />
       {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
     </div>
@@ -271,7 +271,7 @@ export function ConfirmarSegundoFator({
           }}
           aria-invalid={!!erro}
           aria-describedby="codigo-2fa-ajuda"
-          className="min-h-[54px] rounded-controle border border-fio bg-campo text-center indent-[0.26em] text-[26px] font-semibold tracking-[0.26em] text-tinta tabular outline-none focus-visible:border-marca disabled:bg-trilha disabled:text-tinta-sussurro"
+          className="min-h-[54px] rounded-controle border border-fio bg-campo text-center indent-[0.26em] text-[26px] font-semibold tracking-[0.26em] text-tinta tabular outline-none focus-visible:border-acao disabled:bg-trilha disabled:text-tinta-sussurro"
         />
         <span id="codigo-2fa-ajuda" className="text-rotulo text-tinta-sussurro">
           {bloqueado && bloqueadoAte
@@ -283,7 +283,7 @@ export function ConfirmarSegundoFator({
       <button
         type="submit"
         disabled={ocupado || bloqueado}
-        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-controle bg-acao-pressionada text-corpo font-medium text-white hover:bg-acao disabled:opacity-60"
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-controle bg-acao-pressionada text-corpo font-medium text-sobre-acao hover:bg-acao disabled:opacity-60"
       >
         {ocupado ? <Spinner /> : <ShieldCheck className="size-4" aria-hidden />}
         {ocupado ? 'Conferindo…' : rotulo}
@@ -400,7 +400,7 @@ export function ConfirmarSegundoFatorEmail({ onPronto, permitirConfiar = true }:
       <button
         type="submit"
         disabled={ocupado || codigo.length !== 6}
-        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-controle bg-acao-pressionada text-corpo font-medium text-white hover:bg-acao disabled:opacity-60"
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-controle bg-acao-pressionada text-corpo font-medium text-sobre-acao hover:bg-acao disabled:opacity-60"
       >
         {ocupado ? <Spinner /> : <ShieldCheck className="size-4" aria-hidden />}
         {ocupado ? 'Conferindo…' : 'Confirmar'}
@@ -459,7 +459,7 @@ export function PortaoSegundoFator({ fatorId, onSair }: { fatorId: string | null
   return (
     <div className="flex min-h-dvh items-center justify-center bg-campo p-4">
       <section className="w-full max-w-[460px] rounded-cartao border border-fio bg-superficie p-6 shadow-repouso">
-        <span className="grid size-[42px] place-items-center rounded-controle bg-marca/10 text-acao" aria-hidden>
+        <span className="grid size-[42px] place-items-center rounded-controle bg-acao/10 text-acao" aria-hidden>
           <ShieldCheck className="size-5" />
         </span>
         <h1 className="mt-4 text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">

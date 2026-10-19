@@ -60,7 +60,7 @@ export function EnviarArquivo({ unidade, tipo, rotulo, ajuda, icone: Icone }: {
   return (
     <div className="flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-5 py-3.5 shadow-repouso">
       <div className="flex flex-wrap items-center gap-3">
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-controle bg-acao px-3.5 py-2 text-apoio font-medium text-white transition-opacity hover:opacity-90 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-marca">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-controle bg-acao px-3.5 py-2 text-apoio font-medium text-sobre-acao transition-opacity hover:opacity-90 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-acao">
           <input type="file" accept={ACEITOS} className="sr-only" disabled={enviando}
             onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void enviar(f) }} />
           {enviando ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Icone className="size-4" aria-hidden />}

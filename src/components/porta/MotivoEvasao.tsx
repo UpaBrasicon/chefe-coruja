@@ -16,7 +16,7 @@ export function SeletorMotivoEvasao({ valor, onChange, invalido }: { valor: Moti
             onClick={() => onChange(m.valor)}
             className={cn(
               'min-h-9 rounded-capsula border px-[13px] text-apoio whitespace-nowrap transition-colors',
-              valor === m.valor ? 'border-marca bg-marca/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao',
+              valor === m.valor ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao',
             )}
           >
             {m.rotulo}

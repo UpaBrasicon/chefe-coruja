@@ -118,7 +118,7 @@ export function ResumoClinico({ pacienteId, internacaoId }: { pacienteId: string
         <RotuloSecao>Condutas</RotuloSecao>
         {r.condutas.map((c, k) => (
           <div key={`${c.quando}-${k}`} className="grid grid-cols-[8px_minmax(0,1fr)] gap-[11px]">
-            <span className={cn('mt-1.5 size-2 rounded-full', k === 0 ? 'bg-marca' : 'bg-fio-forte')} />
+            <span className={cn('mt-1.5 size-2 rounded-full', k === 0 ? 'bg-acao' : 'bg-fio-forte')} />
             <div className="flex min-w-0 flex-col gap-0.5">
               <span className={cn('text-controle leading-[1.5] text-pretty whitespace-pre-wrap', k === 0 ? 'text-tinta' : 'text-tinta-apoio')}>{c.texto}</span>
               <span className="tabular text-rotulo text-tinta-sussurro">{diaHora(c.quando)} · {c.quem ?? '—'}</span>
@@ -136,7 +136,7 @@ function Casca({ children, contexto }: { children: React.ReactNode; contexto?: s
     <section aria-label="Resumo evoluções" className="overflow-hidden rounded-menu border border-fio bg-campo">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-fio px-4 py-3">
         <span className="flex items-center gap-2 text-apoio font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">
-          <Activity className="size-[15px] text-marca" aria-hidden /> Resumo evoluções
+          <Activity className="size-[15px] text-acao" aria-hidden /> Resumo evoluções
         </span>
         {contexto && <span className="text-apoio text-tinta-apoio">{contexto}</span>}
       </div>

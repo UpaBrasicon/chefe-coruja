@@ -157,7 +157,7 @@ function Formulario({ ctx, pacienteId, internacaoId }: { ctx: ContextoEvolucao; 
       )}
 
       {jaTem && ctx.pode_registrar && modo === 'nova' && (
-        <div className="flex flex-col gap-2 rounded-bloco border border-marca/30 bg-marca/[0.06] px-3.5 py-3">
+        <div className="flex flex-col gap-2 rounded-bloco border border-acao/30 bg-acao/[0.06] px-3.5 py-3">
           <span className="flex items-center gap-2 text-controle text-tinta">
             <ClipboardCheck className="size-4 text-acao" aria-hidden />
             Sua evolução de hoje foi registrada às {diaHora(jaTem.criado_em).split(' · ')[1]}{jaTem.versao > 1 ? ` (corrigida, versão ${jaTem.versao})` : ''}.

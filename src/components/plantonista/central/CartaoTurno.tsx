@@ -148,7 +148,7 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
             to="/plantao/check-in"
             className={cn(
               'ml-auto inline-flex items-center gap-1.5 rounded-controle-sm border bg-superficie px-[11px] py-[5px] text-apoio whitespace-nowrap',
-              posPlantao ? 'border-atencao/40 text-atencao hover:border-atencao' : 'border-fio text-tinta-apoio hover:border-marca hover:text-acao',
+              posPlantao ? 'border-atencao/40 text-atencao hover:border-atencao' : 'border-fio text-tinta-apoio hover:border-acao hover:text-acao',
             )}
           >
             <LogOut className="size-[13px]" aria-hidden />
@@ -218,14 +218,14 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
           )}
         </div>
         <div className="flex flex-auto flex-wrap items-center justify-end gap-2">
-          <Link to="/plantao" className="inline-flex items-center gap-1.5 rounded-controle border border-fio bg-superficie px-3.5 py-[7px] text-apoio text-tinta-apoio whitespace-nowrap hover:border-marca hover:text-acao">
+          <Link to="/plantao" className="inline-flex items-center gap-1.5 rounded-controle border border-fio bg-superficie px-3.5 py-[7px] text-apoio text-tinta-apoio whitespace-nowrap hover:border-acao hover:text-acao">
             Abrir plantão
           </Link>
           <Link
             to="/plantao/observacao"
             className={cn(
               'inline-flex items-center gap-1.5 rounded-controle border px-3.5 py-[7px] text-apoio whitespace-nowrap',
-              nivelObs === 'critico' ? 'border-critico bg-critico font-medium text-white hover:text-white' : nivelObs === 'atencao' ? 'border-atencao/40 bg-alerta-atencao font-medium text-atencao' : 'border-fio bg-superficie text-tinta-apoio hover:border-marca hover:text-acao',
+              nivelObs === 'critico' ? 'border-critico bg-critico font-medium text-white hover:text-white' : nivelObs === 'atencao' ? 'border-atencao/40 bg-alerta-atencao font-medium text-atencao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
             )}
             title={obsMin === null ? 'Ninguém em observação no seu acesso' : `Maior permanência em observação: ${formatarDuracao(obsMin)} (janela de ${JANELA_OBSERVACAO_MIN / 60} h)`}
           >

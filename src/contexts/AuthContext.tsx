@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { manterConectadoVencido, supabase } from '@/lib/supabase'
 import { limparTodosRascunhos } from '@/pages/plantao/shared/rascunho'
 import { definirChave } from '@/lib/cofreLocal'
+import { aplicarTema, ehTema, type Tema } from '@/lib/tema'
 import type { Perfis } from '@/types/database'
 
 interface AuthContextValue {
@@ -12,6 +13,8 @@ interface AuthContextValue {
   signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: string | null }>
   signUp: (email: string, password: string, nomeCompleto: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
+  /** Grava o tema da pessoa no perfil e aplica na tela (guia do padrão, 1.4). */
+  definirTema: (tema: Tema) => Promise<{ error: string | null }>
 }
 
 const AuthContext = React.createContext<AuthContextValue | null>(null)
@@ -41,6 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq('id', userId)
       .maybeSingle()
     setPerfil(data ?? null)
+    if (data && ehTema(data.tema)) aplicarTema(data.tema)
     setLoading(false)
     if (error) console.error('Erro ao carregar perfil:', error)
   }, [])
@@ -117,6 +121,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // escopo local: revoga no servidor o refresh token DESTA sessão (o
         // celular do médico continua logado); o global derrubaria todos.
         await supabase.auth.signOut({ scope: 'local' })
+      },
+      definirTema: async (tema) => {
+        aplicarTema(tema)
+        if (!perfil) return { error: null }
+        const { error } = await supabase.from('perfis').update({ tema }).eq('id', perfil.id)
+        if (error) return { error: 'Não foi possível guardar o tema no seu perfil. Ele vale só neste aparelho.' }
+        setPerfil({ ...perfil, tema })
+        return { error: null }
       },
     }),
     [perfil, loading, queryClient]

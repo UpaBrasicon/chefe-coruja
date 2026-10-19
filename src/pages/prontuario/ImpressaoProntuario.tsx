@@ -371,7 +371,7 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
             {(pacientes.data ?? []).map((p) => (
               <button key={p.id} type="button" onClick={() => escolher(p.id)}
                 className={cn('rounded-capsula border px-[13px] py-1.5 text-apoio',
-                  pacienteId === p.id ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+                  pacienteId === p.id ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
                 {p.nome}{p.prontuario ? ` · ${p.prontuario}` : ''}{p.data_nascimento ? ` · ${dataCivil(p.data_nascimento)}` : ''}
               </button>
             ))}
@@ -420,7 +420,7 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
 
           <div className={cabecalhoCaixa}>
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="flex items-center gap-2 text-corpo font-semibold text-tinta"><Paperclip className="size-4 text-marca" aria-hidden />Anexos do prontuário</h3>
+              <h3 className="flex items-center gap-2 text-corpo font-semibold text-tinta"><Paperclip className="size-4 text-acao" aria-hidden />Anexos do prontuário</h3>
               <label className={cn('ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle-sm border border-fio bg-superficie px-2.5 py-1.5 text-apoio text-tinta-apoio hover:border-acao hover:text-acao',
                 enviando && 'pointer-events-none opacity-50')}>
                 {enviando ? <Spinner /> : <Paperclip className="size-3.5" aria-hidden />} Anexar PDF ou imagem

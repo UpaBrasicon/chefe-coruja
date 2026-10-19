@@ -44,7 +44,7 @@ function categoria(tipo: string): Categoria {
 // internação para a enfermagem)
 type Acao = { to: string; rotulo: string }
 const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: Acao | Acao[] }> = {
-  Turno: { icone: Clock, cor: 'text-marca bg-marca/10', acao: { to: '/plantao', rotulo: 'Abrir Plantão' } },
+  Turno: { icone: Clock, cor: 'text-acao bg-acao/10', acao: { to: '/plantao', rotulo: 'Abrir Plantão' } },
   Observação: { icone: TriangleAlert, cor: 'text-atencao bg-atencao/10', acao: { to: '/observacao', rotulo: 'Abrir Observação' } },
   Triagem: { icone: TriangleAlert, cor: 'text-critico bg-critico/10', acao: { to: '/atendimento', rotulo: 'Abrir atendimento' } },
   Farmácia: { icone: Pill, cor: 'text-critico bg-critico/10', acao: [
@@ -127,7 +127,7 @@ export default function Notificacoes() {
         descricao={naoLidos ? `${naoLidos} não ${naoLidos === 1 ? 'lido' : 'lidos'}` : 'Tudo lido'}
         acoes={
           <button type="button" disabled={!naoLidos || marcar.isPending} onClick={() => marcar.mutate(null)}
-            className="flex items-center gap-[7px] rounded-controle border border-fio bg-superficie px-[13px] py-2 text-apoio text-tinta-apoio hover:border-marca hover:text-acao disabled:opacity-60">
+            className="flex items-center gap-[7px] rounded-controle border border-fio bg-superficie px-[13px] py-2 text-apoio text-tinta-apoio hover:border-acao hover:text-acao disabled:opacity-60">
             <ShieldCheck className="size-[15px]" aria-hidden /> Marcar todas como lidas
           </button>
         }
@@ -147,8 +147,8 @@ export default function Notificacoes() {
           const v = VISUAL[cat]
           const acao = (v.acao ? [v.acao].flat() : []).find((a) => rotas.has(a.to)) ?? null
           return (
-            <div key={n.id} className={cn('flex items-start gap-[13px] border-b border-trilha px-5 py-[15px] last:border-0', !n.lida && 'bg-marca/[0.04]')}>
-              <span className={cn('mt-[7px] size-[7px] shrink-0 rounded-full', n.lida ? 'bg-transparent' : 'bg-marca')} aria-hidden />
+            <div key={n.id} className={cn('flex items-start gap-[13px] border-b border-trilha px-5 py-[15px] last:border-0', !n.lida && 'bg-acao/[0.04]')}>
+              <span className={cn('mt-[7px] size-[7px] shrink-0 rounded-full', n.lida ? 'bg-transparent' : 'bg-acao')} aria-hidden />
               <span className={cn('grid size-[34px] shrink-0 place-items-center rounded-controle', v.cor)} aria-hidden>
                 <v.icone className="size-[17px]" />
               </span>

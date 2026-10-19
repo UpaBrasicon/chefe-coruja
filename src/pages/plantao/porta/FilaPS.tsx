@@ -113,7 +113,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
   return (
     <div className="flex flex-col gap-3">
       {aviso && (
-        <div role="status" className="flex items-center gap-2 rounded-container border border-marca/20 bg-alerta-marca px-4 py-3 text-controle text-acao">
+        <div role="status" className="flex items-center gap-2 rounded-container border border-acao/20 bg-alerta-marca px-4 py-3 text-controle text-acao">
           <Check className="size-4 shrink-0" aria-hidden /> {aviso}
         </div>
       )}

@@ -34,7 +34,7 @@ function SelectTrigger({
       data-size={size}
       className={cn(
         // Campo de escolha na gramática do protótipo: branco, fio, raio 10, 14px.
-        "flex w-fit items-center justify-between gap-1.5 rounded-controle border border-fio bg-superficie py-[7px] pr-2 pl-3 text-controle text-tinta whitespace-nowrap transition-colors outline-none select-none hover:border-fio-forte focus-visible:border-acao focus-visible:shadow-[0_0_0_3px_#0D948859] disabled:cursor-not-allowed disabled:opacity-45 aria-invalid:border-critico data-placeholder:text-tinta-sussurro data-[size=default]:min-h-8 data-[size=sm]:min-h-[30px] data-[size=sm]:rounded-controle-sm data-[size=sm]:py-1 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "flex w-fit items-center justify-between gap-1.5 rounded-controle border border-fio bg-superficie py-[7px] pr-2 pl-3 text-controle text-tinta whitespace-nowrap transition-colors outline-none select-none hover:border-fio-forte focus-visible:border-acao focus-visible:shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-acao)_35%,transparent)] disabled:cursor-not-allowed disabled:opacity-45 aria-invalid:border-critico data-placeholder:text-tinta-sussurro data-[size=default]:min-h-8 data-[size=sm]:min-h-[30px] data-[size=sm]:rounded-controle-sm data-[size=sm]:py-1 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -113,7 +113,7 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex w-full cursor-default items-center gap-1.5 rounded-controle-sm py-[7px] pr-8 pl-2.5 text-controle text-tinta outline-hidden select-none focus:bg-marca/10 focus:text-acao data-selected:font-medium data-disabled:pointer-events-none data-disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "relative flex w-full cursor-default items-center gap-1.5 rounded-controle-sm py-[7px] pr-8 pl-2.5 text-controle text-tinta outline-hidden select-none focus:bg-acao/10 focus:text-acao data-selected:font-medium data-disabled:pointer-events-none data-disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}

@@ -83,7 +83,7 @@ export function Historico({ internacaoId }: { internacaoId: string }) {
           return (
             <button key={t.valor} type="button" aria-pressed={on} onClick={() => setFora((x) => ({ ...x, [t.valor]: on }))}
               className={cn('min-h-[34px] rounded-capsula border px-3 py-1.5 text-apoio',
-                on ? 'border-marca/40 bg-marca/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-sussurro')}>
+                on ? 'border-acao/40 bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-sussurro')}>
               {t.rotulo} · {semTipo.filter((r) => r.tipo === t.valor).length}
             </button>
           )
@@ -94,7 +94,7 @@ export function Historico({ internacaoId }: { internacaoId: string }) {
         <label className="flex flex-col gap-[5px] text-apoio font-medium text-grafite">
           Prestador
           <select value={prestador} onChange={(e) => setPrestador(e.target.value)}
-            className="min-h-[38px] rounded-controle border border-fio bg-campo px-2.5 py-2 text-controle text-tinta outline-none focus-visible:border-marca">
+            className="min-h-[38px] rounded-controle border border-fio bg-campo px-2.5 py-2 text-controle text-tinta outline-none focus-visible:border-acao">
             <option value="">Todos</option>
             {prestadores.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
@@ -165,7 +165,7 @@ export function HistoricoLateral({ internacaoId, aoVerTudo }: { internacaoId: st
       </div>
       {aoVerTudo && (
         <button type="button" onClick={aoVerTudo}
-          className="flex min-h-9 items-center justify-center gap-1.5 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio text-acao hover:bg-marca/[0.06]">
+          className="flex min-h-9 items-center justify-center gap-1.5 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio text-acao hover:bg-acao/[0.06]">
           Filtrar e ler tudo <ArrowRight className="size-[13px]" aria-hidden />
         </button>
       )}

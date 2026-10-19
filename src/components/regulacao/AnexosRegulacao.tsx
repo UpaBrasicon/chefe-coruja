@@ -95,7 +95,7 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
         {l.retirados > 0 && <span className="text-rotulo text-tinta-sussurro">{l.retirados} retirado(s), guardado(s)</span>}
         {l.pode_anexar && (
           <>
-            <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-marca">
+            <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-acao">
               <input type="file" accept={ANEXO_TIPOS.join(',')} className="sr-only" disabled={enviando}
                 onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void enviar(f) }} />
               {enviando ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : <Paperclip className="size-3.5" aria-hidden />}

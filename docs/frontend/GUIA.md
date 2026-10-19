@@ -28,6 +28,28 @@ Base: `docs/frontend/LEVANTAMENTO.md` (o que existe e onde diverge) e
   não depender só da cor.
 - Imagens de comparação: `docs/frontend/propostas-cor/`.
 
+### 1.1.1 Paleta do tema escuro — aprovada pelo RT ("1a", 19/10/2026)
+
+Contraste medido sobre o fundo (`#0F172A`) e o cartão (`#1E293B`); todo texto
+passa de 4,5:1 também sobre a faixa (`#273449`). Os valores moram em
+`src/index.css` (`--cc-*` em `:root[data-tema="escuro"]`). Imagens:
+`docs/frontend/tema-4-1/`.
+
+| Papel | Token | Escuro | Contraste (fundo / cartão) |
+|---|---|---|---|
+| Fundo da página | `campo` | `#0F172A` | — |
+| Cartão | `superficie` | `#1E293B` | — |
+| Faixa e hover | `trilha` | `#273449` | — |
+| Borda / borda forte | `fio` / `fio-forte` | `#334155` / `#64748B` | borda forte 3,8 / 3,1 |
+| Texto / apoio / sussurro | `tinta` / `tinta-apoio` / `tinta-sussurro` | `#E2E8F0` / `#CBD5E1` / `#94A3B8` | 14,5 / 12,0 / 7,0 sobre o fundo |
+| Ação / pressionada | `acao` / `acao-pressionada` | `#67E8F9` / `#22D3EE` | 12,3 / 9,9 |
+| Texto sobre a ação | `sobre-acao` | `#0F172A` | 12,3 |
+| Crítico / atenção / conforme | `critico` / `atencao` / `conforme` | `#F87171` / `#FBBF24` / `#4ADE80` | 6,5 / 10,7 / 10,3 |
+| Observação / suprimento / pediatria | `observacao` / `suprimento` / `pediatria` | `#FB923C` / `#60A5FA` / `#C4B5FD` | 7,9 / 7,0 / 9,7 |
+
+A classificação de risco (`mts-*`) e a marca têm o mesmo valor nos dois temas.
+A folha impressa não lê estes tokens e sai sempre clara.
+
 ### 1.2 Contraste — "2a"
 
 AA é piso obrigatório nos dois temas: 4,5:1 para texto e 3:1 para ícone, borda

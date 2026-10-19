@@ -161,7 +161,7 @@ export default function PendenciasPep() {
             resumo="Agravo sem notificação, parecer sem resposta, exame sem resultado e o que mais travar a alta">
             {impeditivos.map((l) => (
               <Linha key={l.internacao_id}>
-                <span className="rounded-capsula bg-marca/10 px-2.5 py-1 text-apoio font-semibold text-acao">{l.leito ? `Leito ${l.leito}` : 'Sem leito'}</span>
+                <span className="rounded-capsula bg-acao/10 px-2.5 py-1 text-apoio font-semibold text-acao">{l.leito ? `Leito ${l.leito}` : 'Sem leito'}</span>
                 <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-px">
                   <span className="text-corpo font-medium text-tinta">{l.paciente}</span>
                   {l.itens.map((i) => <span key={i.tipo + i.id} className="text-apoio text-pretty text-critico">{i.descricao}</span>)}
@@ -172,7 +172,7 @@ export default function PendenciasPep() {
             {impeditivos.length === 0 && <Vazio>Nenhum leito seu com pendência que impeça a alta.</Vazio>}
           </Quadro>
 
-          <Quadro icone={<ClipboardList className="size-4 text-marca" aria-hidden />} titulo="Combinadas nos leitos"
+          <Quadro icone={<ClipboardList className="size-4 text-acao" aria-hidden />} titulo="Combinadas nos leitos"
             resumo={combinadas.length ? `${combinadas.length} em aberto` : undefined}>
             {combinadas.map((p) => {
               const vencida = !!p.prazo && Date.parse(p.prazo) < agora

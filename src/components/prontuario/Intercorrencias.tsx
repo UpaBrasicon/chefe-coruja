@@ -157,7 +157,7 @@ function FormIntercorrencia({ pacienteId, episodioId, internacaoId, retifica, ao
         <div role="radiogroup" aria-label="Gravidade" className="grid gap-1.5 sm:grid-cols-3">
           {GRAVIDADES.map((g) => (
             <button key={g.valor} type="button" role="radio" aria-checked={gravidade === g.valor} onClick={() => setGravidade(g.valor)}
-              className={cn('flex flex-col gap-0.5 rounded-lg border px-3 py-2 text-left', gravidade === g.valor ? 'border-marca ring-1 ring-marca' : 'border-fio')}>
+              className={cn('flex flex-col gap-0.5 rounded-lg border px-3 py-2 text-left', gravidade === g.valor ? 'border-acao ring-1 ring-acao' : 'border-fio')}>
               <span className="text-apoio font-medium text-tinta">{g.rotulo}</span>
               <span className="text-rotulo text-tinta-sussurro">{g.ajuda}</span>
             </button>

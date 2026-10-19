@@ -126,7 +126,7 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
         <div className="flex min-w-0 flex-[1_1_200px] flex-col gap-1">
           <label htmlFor="enc-med" className="text-apoio font-medium text-grafite">Médico (opcional)</label>
           <select id="enc-med" value={f.medico} onChange={(e) => setF({ ...f, medico: e.target.value })}
-            className="min-h-9 w-full rounded-controle border border-fio bg-campo px-[11px] py-[7px] text-controle text-tinta outline-none focus-visible:border-marca">
+            className="min-h-9 w-full rounded-controle border border-fio bg-campo px-[11px] py-[7px] text-controle text-tinta outline-none focus-visible:border-acao">
             <option value="">Qualquer médico do plantão</option>
             {(medicos.data ?? []).map((m) => <option key={m.id} value={m.id}>{m.nome}{m.registro ? ` · ${m.registro}` : ''}</option>)}
           </select>

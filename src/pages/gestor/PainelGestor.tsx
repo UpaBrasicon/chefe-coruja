@@ -73,7 +73,7 @@ function Panorama({ unidadeId }: { unidadeId: string }) {
       className="mb-[22px] overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso"
     >
       <div className="flex items-center gap-[11px] border-b border-trilha px-5 py-[15px]">
-        <span className="grid size-[34px] shrink-0 place-items-center rounded-controle bg-marca/10 text-acao" aria-hidden>
+        <span className="grid size-[34px] shrink-0 place-items-center rounded-controle bg-acao/10 text-acao" aria-hidden>
           <Icone className="size-[17px]" />
         </span>
         <h2 className="min-w-0 flex-1 text-corpo font-semibold tracking-[-0.01em] text-tinta">
@@ -83,11 +83,11 @@ function Panorama({ unidadeId }: { unidadeId: string }) {
         {total > 1 && (
           <div className="flex gap-[7px]">
             <button type="button" aria-label="Painel anterior" onClick={() => setI((x) => (x - 1 + total) % total)}
-              className="grid size-[30px] place-items-center rounded-[9px] border border-fio bg-superficie text-tinta-sussurro hover:border-marca hover:text-acao">
+              className="grid size-[30px] place-items-center rounded-[9px] border border-fio bg-superficie text-tinta-sussurro hover:border-acao hover:text-acao">
               <ChevronLeft className="size-[15px]" />
             </button>
             <button type="button" aria-label="Próximo painel" onClick={() => setI((x) => (x + 1) % total)}
-              className="grid size-[30px] place-items-center rounded-[9px] border border-fio bg-superficie text-tinta-sussurro hover:border-marca hover:text-acao">
+              className="grid size-[30px] place-items-center rounded-[9px] border border-fio bg-superficie text-tinta-sussurro hover:border-acao hover:text-acao">
               <ChevronRight className="size-[15px]" />
             </button>
           </div>
@@ -99,7 +99,7 @@ function Panorama({ unidadeId }: { unidadeId: string }) {
           <span className="text-corpo text-pretty text-tinta-apoio">
             {atual ? 'Este painel está sem medidas escolhidas.' : 'Nenhum painel escolhido para o carrossel.'}
           </span>
-          <Link to="/indicadores" className="flex items-center gap-[7px] rounded-controle border border-fio bg-superficie px-[13px] py-2 text-apoio font-medium text-tinta-apoio hover:border-marca hover:text-acao">
+          <Link to="/indicadores" className="flex items-center gap-[7px] rounded-controle border border-fio bg-superficie px-[13px] py-2 text-apoio font-medium text-tinta-apoio hover:border-acao hover:text-acao">
             <TrendingUp className="size-[15px]" /> Escolher em Indicadores
           </Link>
         </div>
@@ -119,7 +119,7 @@ function Panorama({ unidadeId }: { unidadeId: string }) {
             {lista.map((p, k) => (
               <button key={p.chave} type="button" aria-label={`Painel ${k + 1} de ${total}: ${p.titulo}`} aria-current={k === i % total}
                 onClick={() => setI(k)}
-                className={cn('h-1.5 rounded-capsula transition-[width] duration-200', k === i % total ? 'w-[18px] bg-marca' : 'w-1.5 bg-fio-forte')} />
+                className={cn('h-1.5 rounded-capsula transition-[width] duration-200', k === i % total ? 'w-[18px] bg-acao' : 'w-1.5 bg-fio-forte')} />
             ))}
           </div>
         </div>
@@ -147,13 +147,13 @@ function Pergunta({ unidadeId }: { unidadeId: string }) {
   return (
     <section className="mb-[26px] rounded-cartao border border-fio bg-superficie px-5 py-4 shadow-repouso">
       <form onSubmit={(e) => { e.preventDefault(); enviar(texto) }}
-        className="flex items-center gap-2.5 rounded-controle border border-fio bg-campo px-3.5 py-[11px] focus-within:border-marca">
+        className="flex items-center gap-2.5 rounded-controle border border-fio bg-campo px-3.5 py-[11px] focus-within:border-acao">
         <Search className="size-[17px] shrink-0 text-tinta-sussurro" aria-hidden />
         <input value={texto} onChange={(e) => setTexto(e.target.value)} maxLength={300}
           placeholder="Pergunte sobre a gestão da unidade" aria-label="Pergunte sobre a gestão da unidade"
           className="min-w-0 flex-1 border-0 bg-transparent text-corpo text-tinta outline-none placeholder:text-tinta-sussurro" />
         <button type="submit" disabled={perguntar.isPending || texto.trim().length < 3}
-          className="rounded-[9px] bg-acao px-[13px] py-[7px] text-apoio font-medium whitespace-nowrap text-white hover:bg-acao-pressionada disabled:opacity-60">
+          className="rounded-[9px] bg-acao px-[13px] py-[7px] text-apoio font-medium whitespace-nowrap text-sobre-acao hover:bg-acao-pressionada disabled:opacity-60">
           {perguntar.isPending ? 'Consultando…' : 'Perguntar'}
         </button>
       </form>
@@ -161,7 +161,7 @@ function Pergunta({ unidadeId }: { unidadeId: string }) {
         <span className="mr-0.5 text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">Exemplos</span>
         {PERGUNTAS.map((p) => (
           <button key={p} type="button" onClick={() => { setTexto(p); enviar(p) }}
-            className="rounded-capsula border border-fio bg-superficie px-3 py-[5px] text-apoio text-tinta-apoio hover:border-marca hover:bg-marca/5 hover:text-acao">
+            className="rounded-capsula border border-fio bg-superficie px-3 py-[5px] text-apoio text-tinta-apoio hover:border-acao hover:bg-acao/5 hover:text-acao">
             {p}
           </button>
         ))}
@@ -231,7 +231,7 @@ function AuditoriaCheckin({ unidadeId }: { unidadeId: string }) {
     <section className="mb-[26px]">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3.5">
         <div className="flex items-center gap-2.5">
-          <MapPin className="size-[17px] text-marca" aria-hidden />
+          <MapPin className="size-[17px] text-acao" aria-hidden />
           <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">Auditoria de check-in</h2>
         </div>
         {data && <span className={cn('text-apoio', div ? 'text-atencao' : 'text-tinta-sussurro')}>{div} de {contaveis.length} com divergência hoje</span>}

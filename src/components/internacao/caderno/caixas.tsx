@@ -51,9 +51,9 @@ export function Chip({ ativo, forte = false, children, onClick, disabled, role, 
         'inline-flex items-center gap-1.5 rounded-capsula border px-3 py-[5px] text-apoio whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50',
         ativo
           ? forte
-            ? 'border-acao bg-acao font-medium text-white'
-            : 'border-marca/35 bg-marca/10 font-medium text-acao'
-          : 'border-fio bg-superficie text-tinta-apoio hover:border-marca hover:text-acao',
+            ? 'border-acao bg-acao font-medium text-sobre-acao'
+            : 'border-acao/35 bg-acao/10 font-medium text-acao'
+          : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
       )}
     >
       {children}

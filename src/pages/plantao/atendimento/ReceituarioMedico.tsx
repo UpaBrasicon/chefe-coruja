@@ -316,13 +316,13 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
           ) : (
             <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
               <div className="flex items-center gap-2.5 border-b border-trilha px-5 py-[13px]">
-                <ClipboardPlus className="size-4 text-marca" aria-hidden />
+                <ClipboardPlus className="size-4 text-acao" aria-hidden />
                 <h2 className="text-corpo font-semibold text-tinta">Protocolos da instituição</h2>
               </div>
               <div className="flex flex-wrap gap-2 px-5 py-3.5">
                 {(protocolos.data ?? []).map((p) => (
                   <button key={p.id} type="button" onClick={() => setProtoAberto(p)}
-                    className="flex max-w-[260px] flex-col items-start gap-0.5 rounded-container border border-fio bg-superficie px-3.5 py-2.5 text-left hover:border-marca hover:bg-alerta-marca">
+                    className="flex max-w-[260px] flex-col items-start gap-0.5 rounded-container border border-fio bg-superficie px-3.5 py-2.5 text-left hover:border-acao hover:bg-alerta-marca">
                     <span className="text-controle font-medium text-tinta">{p.nome}</span>
                     <span className="text-apoio text-tinta-sussurro">{[p.indicacao, `${p.itens.length} ${p.itens.length === 1 ? 'item' : 'itens'}`].filter(Boolean).join(' · ')}</span>
                   </button>
@@ -348,7 +348,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
                       className={cn('flex items-center gap-[7px] rounded-capsula border px-[13px] py-1.5 text-apoio whitespace-nowrap',
                         trava ? 'cursor-not-allowed border-critico/25 bg-alerta-critico text-critico'
                           : dentro ? 'cursor-default border-conforme/25 bg-alerta-conforme text-conforme'
-                          : 'border-fio bg-superficie text-tinta-apoio hover:border-marca hover:text-acao')}>
+                          : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
                       {trava && <TriangleAlert className="size-[13px]" aria-hidden />}
                       {dentro && <Check className="size-[13px]" aria-hidden />}
                       {nome}{f.receita_padrao ? <span className="text-tinta-sussurro"> · {f.receita_padrao}</span> : null}
@@ -366,7 +366,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
 
           <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
             <div className="flex items-center gap-2.5 border-b border-trilha px-5 py-3.5">
-              <Pill className="size-4 text-marca" aria-hidden />
+              <Pill className="size-4 text-acao" aria-hidden />
               <h2 className="text-corpo font-semibold text-tinta">Medicamentos</h2>
               <span className="ml-auto text-apoio text-tinta-sussurro">{rx.itens.length} {rx.itens.length === 1 ? 'item' : 'itens'}</span>
             </div>
@@ -389,7 +389,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
                   onCancelar={() => setEditando(null)} />
               ) : (
                 <button type="button" onClick={() => setEditando('novo')}
-                  className="flex w-full items-center gap-[7px] rounded-controle border border-dashed border-[#CBD5E1] bg-campo px-3.5 py-2.5 text-apoio text-tinta-apoio hover:border-marca hover:bg-alerta-marca hover:text-acao">
+                  className="flex w-full items-center gap-[7px] rounded-controle border border-dashed border-[#CBD5E1] bg-campo px-3.5 py-2.5 text-apoio text-tinta-apoio hover:border-acao hover:bg-alerta-marca hover:text-acao">
                   <ClipboardPlus className="size-[15px]" aria-hidden /> Adicionar medicamento
                 </button>
               )}
@@ -608,7 +608,7 @@ function DialogoProtocolo({ protocolo, alergias, jaTem, nomePaciente, onFechar, 
                 className={cn('flex w-full items-start gap-[11px] border-b border-trilha px-3.5 py-3 text-left last:border-0',
                   t ? 'cursor-not-allowed bg-alerta-critico/50' : 'hover:bg-alerta-marca')}>
                 <span aria-hidden className={cn('mt-px grid size-[18px] shrink-0 place-items-center rounded-[5px] border text-[12px] font-bold leading-none',
-                  t ? 'border-fio bg-trilha text-tinta-sussurro' : marcado ? 'border-acao bg-acao text-white' : 'border-[#CBD5E1] bg-superficie text-transparent')}>
+                  t ? 'border-fio bg-trilha text-tinta-sussurro' : marcado ? 'border-acao bg-acao text-sobre-acao' : 'border-[#CBD5E1] bg-superficie text-transparent')}>
                   {t ? '×' : marcado ? '✓' : ''}
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">

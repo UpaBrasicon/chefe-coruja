@@ -23,7 +23,7 @@ function Pilula({ rotulo, titulo, icone: Icone, onClick, ativo }: { rotulo: stri
       aria-pressed={ativo}
       className={cn(
         'flex h-8 items-center gap-1.5 rounded-capsula border px-[11px] text-apoio whitespace-nowrap transition-colors hover:border-[#94A3B8]',
-        ativo ? 'border-marca/35 bg-marca/10 text-acao' : 'border-fio bg-superficie text-tinta-sussurro',
+        ativo ? 'border-acao/35 bg-acao/10 text-acao' : 'border-fio bg-superficie text-tinta-sussurro',
       )}
     >
       <Icone className="size-[15px]" aria-hidden />
@@ -148,7 +148,7 @@ export function TopoEstreito({
               className={({ isActive }) =>
                 cn(
                   'flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-container border px-1 py-[5px] text-rotulo whitespace-nowrap',
-                  isActive ? 'border-marca/35 bg-marca/10 font-semibold text-acao' : 'border-fio bg-superficie text-tinta-apoio',
+                  isActive ? 'border-acao/35 bg-acao/10 font-semibold text-acao' : 'border-fio bg-superficie text-tinta-apoio',
                 )
               }
             >

@@ -117,7 +117,7 @@ export default function PreferenciasPrescricao() {
               <Button
                 size="sm"
                 variant="outline"
-                className="border-acao/35 bg-marca/10 text-acao"
+                className="border-acao/35 bg-acao/10 text-acao"
                 disabled={remover.isPending && remover.variables === f.id}
                 onClick={() => remover.mutate(f.id)}
               >
