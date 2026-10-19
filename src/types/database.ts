@@ -4657,6 +4657,13 @@ export type Database = {
         Row: {
           documento_id: string | null
           episodio_id: string | null
+          coletado_em: string | null
+          coletado_por: string | null
+          critico: boolean
+          em_analise_em: string | null
+          resultado_origem: string | null
+          resultado_visto_em: string | null
+          resultado_visto_por: string | null
           exame: string
           loinc: string | null
           observacao: string | null
@@ -4677,6 +4684,13 @@ export type Database = {
         Insert: {
           documento_id?: string | null
           episodio_id?: string | null
+          coletado_em?: string | null
+          coletado_por?: string | null
+          critico?: boolean
+          em_analise_em?: string | null
+          resultado_origem?: string | null
+          resultado_visto_em?: string | null
+          resultado_visto_por?: string | null
           exame: string
           loinc?: string | null
           observacao?: string | null
@@ -4697,6 +4711,13 @@ export type Database = {
         Update: {
           documento_id?: string | null
           episodio_id?: string | null
+          coletado_em?: string | null
+          coletado_por?: string | null
+          critico?: boolean
+          em_analise_em?: string | null
+          resultado_origem?: string | null
+          resultado_visto_em?: string | null
+          resultado_visto_por?: string | null
           exame?: string
           loinc?: string | null
           observacao?: string | null
@@ -10300,6 +10321,30 @@ export type Database = {
       }
       lancar_procedimento_conta: {
         Args: { p_conta: string; p_procedimento: string; p_profissional?: string; p_quantidade?: number; p_realizado_em?: string }
+        Returns: Json
+      }
+      exame_detalhe: {
+        Args: { p_exame: string }
+        Returns: Json
+      }
+      marcar_resultado_visto: {
+        Args: { p_exame: string }
+        Returns: undefined
+      }
+      marcar_exame_coletado: {
+        Args: { p_exame: string }
+        Returns: undefined
+      }
+      dar_ciencia_resultado: {
+        Args: { p_exame: string }
+        Returns: Json
+      }
+      exame_laudo_abrir: {
+        Args: { p_resultado: string }
+        Returns: Json
+      }
+      registrar_resultado_exame: {
+        Args: { p_exame: string; p_motivo_retificacao?: string; p_pdf_caminho?: string; p_pdf_nome?: string; p_texto?: string }
         Returns: Json
       }
       exames_da_unidade: {
