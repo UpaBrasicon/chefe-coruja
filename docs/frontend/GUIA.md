@@ -200,9 +200,38 @@ Exames, Faturamento e Unidade — numa tarefa própria da parte 4.
    formatação de data fora de `formato.ts`) e um script com catraca, que
    guarda a contagem de divergências por arquivo e falha se ela subir. Assim o
    guia vale já para código novo.
+   Feita na parte 3 (seção 7).
 4. **Correção tela por tela (parte 4)**, na ordem do plantão: casca e menus,
    recepção e painel da TV, atendimento e documentos da porta, triagem e
    enfermagem, leito aberto, observação, farmácia, Central do Plantonista e
    ferramentas. A escala do gestor e o menu do gestor são tarefas próprias. O
    formulário de internação legado sai.
 
+
+## 7. Verificação na CI (parte 3, decisões "1a 2a 3a 4a 5a", 19/10/2026)
+
+- **Um script só, com catraca** ("1a"). `scripts/padrao-frontend.mjs` lê cada
+  arquivo de `src/` pela árvore do TypeScript e conta, por arquivo e por regra, o
+  que foge deste guia. O ESLint fica com as regras que já estão em zero; hoje
+  nenhuma regra do guia está em zero, então o ESLint não mudou.
+- **Regras contadas:** cor crua (paleta do Tailwind, branco e preto), cor e
+  opacidade arbitrárias em classe, hex/rgb fora de classe, tamanho de texto fora
+  dos tokens, canto fora dos quatro nomes, `<button>`, `<select>`, `<table>` e
+  `<h1>`/`<h2>` fora da base, data/hora/número formatado fora de
+  `src/lib/formato.ts`, importação cruzada, emoji e "Pronto Socorro" sem hífen.
+  As exceções declaradas na seção 1.5 (painel da TV e folha impressa) ficam
+  fora da conta de texto; a folha impressa, também da conta de hex.
+- **Como trava** ("2a"). A base fica em `scripts/padrao-frontend.base.json`. A CI
+  falha se algum arquivo subir em alguma regra, se um arquivo novo nascer com
+  divergência, se a base ficar para trás de uma correção e se a base do PR subir
+  em relação à do ramo de destino. Quem corrige roda
+  `node scripts/padrao-frontend.mjs --atualizar` e comita a base junto.
+- **Exceção pontual** ("3a"). `// padrao-ok: <motivo>` na linha ou na linha de
+  cima (no JSX, `{/* padrao-ok: <motivo> */}`). Sem motivo, a CI falha. O
+  relatório (`npm run padrao`) lista todas as exceções.
+- **`impeccable`** ("4a") fica fora da CI: o detector dele procura vícios
+  genéricos de design e não conhece os tokens nem os componentes deste guia.
+  Continua como ferramenta local de revisão de tela na parte 4.
+- **Verificação no navegador** ("5a") — contraste, foco e transbordo com
+  `scripts/verificacao-telas.mjs` — entra no fim da parte 4, quando os tokens
+  já forem variáveis com os dois temas.

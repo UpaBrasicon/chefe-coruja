@@ -32,6 +32,16 @@ jobs:
       - run: npm ci
       - name: Lint
         run: npm run lint
+      # Trilha "Padrão do frontend", parte 3: catraca do guia (docs/frontend/GUIA.md).
+      # Falha se algum arquivo piorar, se a base ficar para trás de uma correção ou
+      # se a base do PR subir em relação à do ramo de destino.
+      - name: Padrão do frontend
+        env:
+          RAMO_DESTINO: ${{ github.base_ref || 'master' }}
+        run: |
+          node --test scripts/padrao-frontend.test.mjs
+          git fetch --no-tags --depth=1 origin "$RAMO_DESTINO"
+          node scripts/padrao-frontend.mjs --ci --comparar FETCH_HEAD
       # Fase 0, item 14: typecheck é passo próprio e bloqueante (o build também roda tsc)
       - name: Typecheck
         run: npm run typecheck
