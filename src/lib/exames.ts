@@ -39,3 +39,42 @@ export const codigoExameNaTela = (c: string) =>
 
 /** LOINC no formato 12345-6 (vazio é aceito: a implantação preenche quando o LIS pedir). */
 export const loincValido = (t: string) => t.trim() === '' || /^\d{1,7}-\d$/.test(t.trim())
+
+// ── Fase 5C, etapa 1.2: situação e resultado em versões ─────────────────────
+export type SituacaoExame = 'pedido' | 'coletado' | 'em_analise' | 'resultado' | 'cancelado'
+export const SITUACAO_EXAME: Record<SituacaoExame, string> = {
+  pedido: 'Pedido', coletado: 'Coletado', em_analise: 'Em análise', resultado: 'Resultado', cancelado: 'Cancelado',
+}
+export const PENDENTE: SituacaoExame[] = ['pedido', 'coletado', 'em_analise']
+
+/** Analito como o laboratório mandou: o sistema não interpreta nem marca nada. */
+export type ItemResultado = {
+  analito: string; loinc: string | null; valor: string | null; valor_num: number | null
+  unidade: string | null; referencia: string | null; marca: string | null; critico: boolean
+}
+export type VersaoResultado = {
+  id: string; versao: number; origem: 'manual' | 'laboratorio'; texto: string | null; tem_pdf: boolean; pdf_nome: string | null
+  critico: boolean; liberado_em: string; registrado_por: string | null; vigente: boolean
+  retificado_em: string | null; motivo_retificacao: string | null
+  itens: ItemResultado[]; cientes: { por: string; em: string }[]
+}
+export type ExameDetalhe = {
+  id: string; exame: string; procedimento: string | null; situacao: SituacaoExame; urgencia: Urgencia; observacao: string | null
+  pedido_em: string; pedido_por: string | null; coletado_em: string | null; coletado_por: string | null; em_analise_em: string | null
+  critico: boolean; origem: 'manual' | 'laboratorio' | null; visto_em: string | null; visto_por: string | null
+  versoes: VersaoResultado[]
+  pode_registrar: boolean; pode_coletar: boolean; pode_dar_ciencia: boolean; ja_ciente: boolean
+}
+
+export const LAUDO_MAX_BYTES = 10 * 1024 * 1024
+/** 4a: laudo só em PDF, até 10 MB. */
+export function erroLaudo(arquivo: { name: string; type: string; size: number }): string | null {
+  if (arquivo.type !== 'application/pdf' || !arquivo.name.toLowerCase().endsWith('.pdf')) return 'O laudo precisa ser PDF.'
+  if (arquivo.size > LAUDO_MAX_BYTES) return 'O laudo passa de 10 MB.'
+  return null
+}
+/** Caminho do laudo na área privada: <exame>/<marca de tempo>-<nome limpo>.pdf */
+export function caminhoLaudo(exameId: string, nome: string, agora: number): string {
+  const limpo = nome.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/-+/g, '-').slice(-80)
+  return `${exameId}/${agora}-${limpo.toLowerCase().endsWith('.pdf') ? limpo : `${limpo}.pdf`}`
+}

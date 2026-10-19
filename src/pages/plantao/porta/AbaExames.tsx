@@ -7,6 +7,7 @@ import { FlaskConical, Megaphone, Printer } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
+import { ResultadoExame } from '@/components/clinico/ResultadoExame'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { botoesDeExame, codigoExameNaTela, jaPedido, type ExameBuscado, type ListaExamesUnidade, type Urgencia } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
@@ -23,13 +24,16 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
   const [texto, setTexto] = React.useState('')
   const [cancelando, setCancelando] = React.useState(false)
   const [erro, setErro] = React.useState<string | null>(null)
+  const [aberto, setAberto] = React.useState(false)
+  const pendente = e.situacao === 'pedido' || e.situacao === 'coletado' || e.situacao === 'em_analise'
   const resolver = async (resultado?: string, motivo?: string) => {
     const { error } = await supabase.rpc('resolver_exame', { p_exame: e.id, p_resultado: resultado, p_motivo_cancelamento: motivo })
     if (error) return setErro(error.message)
     setErro(null); setTexto(''); setCancelando(false); aoMudar()
   }
-  const tom = e.situacao === 'resultado' ? 'bg-alerta-conforme text-conforme' : e.situacao === 'cancelado' ? 'bg-trilha text-tinta-sussurro' : 'bg-alerta-atencao text-atencao'
-  const sit = e.situacao === 'resultado' ? `Resultado ${hora(e.resolvido_em)}` : e.situacao === 'cancelado' ? `Cancelado ${hora(e.resolvido_em)}` : `Pedido ${hora(e.pedido_em)}`
+  const tom = e.situacao === 'resultado' ? (e.critico ? 'bg-alerta-critico text-critico' : 'bg-alerta-conforme text-conforme') : e.situacao === 'cancelado' ? 'bg-trilha text-tinta-sussurro' : 'bg-alerta-atencao text-atencao'
+  const sit = e.situacao === 'resultado' ? `Resultado ${hora(e.resolvido_em)}` : e.situacao === 'cancelado' ? `Cancelado ${hora(e.resolvido_em)}`
+    : e.situacao === 'coletado' ? `Coletado ${hora(e.coletado_em ?? e.pedido_em)}` : e.situacao === 'em_analise' ? 'Em análise' : `Pedido ${hora(e.pedido_em)}`
   return (
     <div className="flex flex-col gap-1.5 border-b border-trilha px-4 py-2.5 last:border-0">
       <div className="flex flex-wrap items-center gap-2.5">
@@ -41,7 +45,10 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
           {e.observacao && <span className="block text-rotulo text-tinta-sussurro">Obs.: {e.observacao}</span>}
         </span>
         <span className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold whitespace-nowrap', tom)}>{sit}</span>
-        {e.situacao === 'pedido' && (
+        {e.novo && <Badge variant={e.critico ? 'destructive' : 'info'}>{e.critico ? 'crítico · novo' : 'novo'}</Badge>}
+        {!e.novo && e.critico && <Badge variant="destructive">crítico</Badge>}
+        <Button size="xs" variant="ghost" onClick={() => setAberto(!aberto)}>{aberto ? 'Fechar' : e.situacao === 'resultado' ? 'Ver resultado' : 'Detalhe'}</Button>
+        {pendente && (
           <>
             <Input className="h-8 w-56" aria-label={`Resultado de ${e.exame} (opcional)`} placeholder={cancelando ? 'Motivo do cancelamento (10 letras)' : 'Resultado (opcional)'}
               value={texto} onChange={(ev) => setTexto(ev.target.value)} />
@@ -59,9 +66,10 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
           </>
         )}
       </div>
-      {e.situacao !== 'pedido' && (e.resultado || e.motivo_cancelamento) && (
+      {!pendente && !aberto && (e.resultado || e.motivo_cancelamento) && (
         <span className="text-rotulo text-tinta-sussurro">{e.situacao === 'resultado' ? e.resultado : `Motivo: ${e.motivo_cancelamento}`}</span>
       )}
+      {aberto && <ResultadoExame exameId={e.id} aoMudar={aoMudar} />}
       {erro && <p className="text-apoio text-critico">{erro}</p>}
     </div>
   )

@@ -1,7 +1,7 @@
 // node --experimental-strip-types --test src/lib/exames.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { botoesDeExame, codigoExameNaTela, EXAMES_LIVRES_LAB, jaPedido, loincValido, type ExameUnidade } from './exames.ts'
+import { botoesDeExame, caminhoLaudo, codigoExameNaTela, erroLaudo, EXAMES_LIVRES_LAB, jaPedido, LAUDO_MAX_BYTES, loincValido, type ExameUnidade } from './exames.ts'
 
 const ex = (p: Partial<ExameUnidade>): ExameUnidade => ({
   id: 'x', procedimento: '0202990001', nome_curto: 'Hemograma', nome_sigtap: null, loinc: null, botao: true, ordem: 0,
@@ -31,4 +31,11 @@ test('código e LOINC na tela', () => {
   assert.equal(loincValido(''), true)
   assert.equal(loincValido('12345-6'), true)
   assert.equal(loincValido('12345'), false)
+})
+
+test('laudo: só PDF até 10 MB; caminho na pasta do exame, sem acento nem espaço', () => {
+  assert.equal(erroLaudo({ name: 'a.pdf', type: 'application/pdf', size: 1000 }), null)
+  assert.equal(erroLaudo({ name: 'a.png', type: 'image/png', size: 1000 }), 'O laudo precisa ser PDF.')
+  assert.equal(erroLaudo({ name: 'a.pdf', type: 'application/pdf', size: LAUDO_MAX_BYTES + 1 }), 'O laudo passa de 10 MB.')
+  assert.equal(caminhoLaudo('ex-1', 'Laudo Hemograma ção.pdf', 5), 'ex-1/5-Laudo-Hemograma-cao.pdf')
 })
