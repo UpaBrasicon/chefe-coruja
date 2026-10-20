@@ -43,6 +43,8 @@ export type ItemNav = {
   exato?: boolean
   /** A nota do item: pendências que moram naquela tela. */
   nota?: ChaveNota
+  /** Grupo do item no menu (por enquanto só no gestor, parte 4.11). */
+  grupo?: string
 }
 
 // Navegação por papel (P/index.html ~32220). Um papel por vez: quem tem mais
@@ -68,39 +70,39 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_PRONTUARIOS,
   ],
   gestor: [
+    // Parte 4.11 do padrão do frontend (RT "2a 3a"): menu agrupado por área.
     { to: '/gestao', rotulo: 'Painel', icone: LayoutDashboard, exato: true },
-    { to: '/gestao/porta', rotulo: 'Porta', icone: DoorOpen, exato: true },
-    { to: '/gestao/intercorrencias', rotulo: 'Intercorrências', curto: 'Intercorr.', icone: Siren, exato: true },
-    { to: '/cadastros-duplicados', rotulo: 'Cadastros duplicados', curto: 'Duplicados', icone: GitMerge, exato: true },
-    { to: '/gestao/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: Bird, exato: true },
-    { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
-    { to: '/gestao/farmacia', rotulo: 'Farmácia', icone: FlaskConical, exato: true },
-    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
-    { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true },
-    { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true },
-    // Fase 5C, etapa 1.1: lista de exames de laboratório da unidade
-    { to: '/gestao/exames', rotulo: 'Exames da unidade', curto: 'Exames', icone: TestTube, exato: true },
-    { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
-    { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true },
-    { to: '/internacao', rotulo: 'Internação', icone: Hospital, exato: true },
-    // Fase 3: o gestor acompanha as AIHs; quem decide é o médico regulador
-    { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true },
-    { to: '/faturamento', rotulo: 'BPA', curto: 'BPA', icone: Receipt, exato: true },
-    // Fase 5B, tarefa 1: o gestor acompanha as contas e reabre com motivo
-    { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true },
-    // Fase 5B, tarefa 6: o gestor acompanha as glosas e marca as perdidas
-    { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true },
-    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
-    { to: '/observacao', rotulo: 'Observação', icone: Eye, exato: true },
-    { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos' },
-    { to: '/gestao/protocolos', rotulo: 'Protocolos', icone: ClipboardPlus, exato: true },
-    // o gestor acompanha a revisão; quem decide é o responsável técnico
-    { to: '/revisao-clinica', rotulo: 'Revisão clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true },
-    { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true },
-    // Fase 4, tarefa 11: o gestor acompanha o painel do NIR
-    { to: '/nir', rotulo: 'Pendências do NIR', curto: 'NIR', icone: ClipboardList, exato: true },
-    // 30/09/2026: chamado técnico da unidade (a administração da rede atende)
-    { to: '/gestao/chamados', rotulo: 'Chamados técnicos', curto: 'Chamados', icone: LifeBuoy, exato: true },
+    // ── Porta
+    { to: '/gestao/porta', rotulo: 'Porta', icone: DoorOpen, exato: true, grupo: 'Porta' },
+    { to: '/gestao/intercorrencias', rotulo: 'Intercorrências', curto: 'Intercorr.', icone: Siren, exato: true, grupo: 'Porta' },
+    { to: '/cadastros-duplicados', rotulo: 'Cadastros duplicados', curto: 'Duplicados', icone: GitMerge, exato: true, grupo: 'Porta' },
+    // ── Leitos
+    { to: '/internacao', rotulo: 'Internação', icone: Hospital, exato: true, grupo: 'Leitos' },
+    { to: '/observacao', rotulo: 'Observação', icone: Eye, exato: true, grupo: 'Leitos' },
+    { to: '/nir', rotulo: 'Pendências do NIR', curto: 'NIR', icone: ClipboardList, exato: true, grupo: 'Leitos' },
+    // ── Farmácia
+    { to: '/gestao/farmacia', rotulo: 'Farmácia', icone: FlaskConical, exato: true, grupo: 'Farmácia' },
+    { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true, grupo: 'Farmácia' },
+    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true, grupo: 'Farmácia' },
+    { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true, grupo: 'Farmácia' },
+    { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true, grupo: 'Farmácia' },
+    // ── Exames
+    { to: '/gestao/exames', rotulo: 'Exames da unidade', curto: 'Exames', icone: TestTube, exato: true, grupo: 'Exames' },
+    // ── Faturamento
+    { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true, grupo: 'Faturamento' },
+    { to: '/faturamento', rotulo: 'BPA', curto: 'BPA', icone: Receipt, exato: true, grupo: 'Faturamento' },
+    { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true, grupo: 'Faturamento' },
+    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true, grupo: 'Faturamento' },
+    { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true, grupo: 'Faturamento' },
+    // ── Unidade
+    { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true, grupo: 'Unidade' },
+    { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true, grupo: 'Unidade' },
+    { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true, grupo: 'Unidade' },
+    { to: '/gestao/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: Bird, exato: true, grupo: 'Unidade' },
+    { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos', grupo: 'Unidade' },
+    { to: '/gestao/protocolos', rotulo: 'Protocolos', icone: ClipboardPlus, exato: true, grupo: 'Unidade' },
+    { to: '/revisao-clinica', rotulo: 'Revisão clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true, grupo: 'Unidade' },
+    { to: '/gestao/chamados', rotulo: 'Chamados técnicos', curto: 'Chamados', icone: LifeBuoy, exato: true, grupo: 'Unidade' },
   ],
   // Enfermagem (P/index.html 32225–32230): o técnico não tem Triagem nem
   // Notificações; a tela inicial dele segue a escala (InicioEnfermagem).
@@ -217,15 +219,36 @@ export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false
     const i = itens.findIndex((x) => x.to === '/servidores')
     itens.splice(i >= 0 ? i + 1 : itens.length, 0, ITEM_ERROS_E_ALERTAS, ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO, ITEM_REGULACAO, ITEM_MODULO_REDE)
   }
-  if (papel === 'gestor') itens.push(ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO, ITEM_REGULACAO)
+  if (papel === 'gestor') {
+    itens.push({ ...ITEM_REGULACAO, grupo: 'Leitos' }, ...[ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO].map((i) => ({ ...i, grupo: 'Unidade' })))
+  }
   if (papel === 'plantonista' || papel === 'regulador') itens.push(ITEM_REGULACAO)
   if (responsavelTecnico) {
     // o gestor já tem o item; o responsável técnico o ganha com a nota da fila
     const i = itens.findIndex((x) => x.to === ITEM_REVISAO_CLINICA.to)
-    if (i >= 0) itens[i] = ITEM_REVISAO_CLINICA
+    if (i >= 0) itens[i] = { ...ITEM_REVISAO_CLINICA, grupo: itens[i].grupo }
     else itens.push(ITEM_REVISAO_CLINICA)
   }
-  return itens
+  return papel === 'gestor' ? ordenarPorGrupo(itens) : itens
+}
+
+const ORDEM_GRUPOS = [undefined, 'Porta', 'Leitos', 'Farmácia', 'Exames', 'Faturamento', 'Unidade']
+/** Ordem estável pelos grupos: quem entrou depois (Regulação, Integrações…) cai no fim do seu grupo. */
+function ordenarPorGrupo(itens: ItemNav[]): ItemNav[] {
+  const pos = (i: ItemNav) => { const p = ORDEM_GRUPOS.indexOf(i.grupo); return p < 0 ? ORDEM_GRUPOS.length : p }
+  return itens.map((item, k) => ({ item, k })).sort((a, b) => pos(a.item) - pos(b.item) || a.k - b.k).map((x) => x.item)
+}
+
+/** Itens em blocos consecutivos do mesmo grupo (grupo null = sem título). */
+export function agruparNavegacao(itens: ItemNav[]): { grupo: string | null; itens: ItemNav[] }[] {
+  const blocos: { grupo: string | null; itens: ItemNav[] }[] = []
+  for (const item of itens) {
+    const g = item.grupo ?? null
+    const ult = blocos[blocos.length - 1]
+    if (ult && ult.grupo === g) ult.itens.push(item)
+    else blocos.push({ grupo: g, itens: [item] })
+  }
+  return blocos
 }
 
 /**

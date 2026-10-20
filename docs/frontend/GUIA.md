@@ -211,7 +211,11 @@ funcionam nos dois temas.
 ### 5.6 Menu do gestor — "6a"
 
 O menu do gestor (30 itens) é agrupado por área — Porta, Leitos, Farmácia,
-Exames, Faturamento e Unidade — numa tarefa própria da parte 4.
+Exames, Faturamento e Unidade — numa tarefa própria da parte 4. Feito na parte 4.11
+("1a 2a 3a"): título de grupo sempre aberto na lateral (recolhida, só o fio) e
+na gaveta "Mais" do celular; o Painel fica no topo; Regulação entra em Leitos e
+os itens técnicos (integrações, exportar, implantação) em Unidade.
+O grupo é o campo `grupo` do item em `src/components/casca/navegacao.ts`.
 
 ## 6. Como o guia entra no código (partes 3 e 4)
 
