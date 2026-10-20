@@ -43,7 +43,7 @@ export function EnderecoSus({ pacienteId, titulo = true }: { pacienteId: string;
     onSuccess: () => { setMudou({}); void qc.invalidateQueries({ queryKey: ['endereco-sus', pacienteId] }) },
   })
   if (atual.isLoading) return <Spinner />
-  if (atual.error) return <p role="alert" className="text-xs text-critico">{(atual.error as Error).message}</p>
+  if (atual.error) return <p role="alert" className="text-rotulo text-critico">{(atual.error as Error).message}</p>
   const e = atual.data!
   const valor = (k: Campo) => (k in mudou ? String(mudou[k] ?? '') : (e[k] ?? ''))
   const marcado = (k: 'situacao_rua' | 'sem_documento') => (k in mudou ? Boolean(mudou[k]) : e[k])
@@ -54,26 +54,26 @@ export function EnderecoSus({ pacienteId, titulo = true }: { pacienteId: string;
       {titulo && (
         <div>
           <p className="text-apoio font-medium text-tinta">Endereço e dados do SUS</p>
-          <p className="text-xs text-tinta-sussurro">Vão no BPA. Não são obrigatórios para abrir a ficha; o que faltar aparece para o faturamento.</p>
+          <p className="text-rotulo text-tinta-sussurro">Vão no BPA. Não são obrigatórios para abrir a ficha; o que faltar aparece para o faturamento.</p>
         </div>
       )}
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {CAMPOS.map((c) => (
           <div key={c.k} className="flex flex-col gap-1">
-            <Label htmlFor={`sus-${c.k}-${pacienteId}`} className="text-xs">{c.rotulo}</Label>
+            <Label htmlFor={`sus-${c.k}-${pacienteId}`} className="text-rotulo">{c.rotulo}</Label>
             <Input id={`sus-${c.k}-${pacienteId}`} className="h-8" maxLength={c.max} inputMode={c.numerico ? 'numeric' : undefined}
               placeholder={c.dica} value={valor(c.k)} onChange={(ev) => setMudou((m) => ({ ...m, [c.k]: ev.target.value }))} />
           </div>
         ))}
         {indigena && (
           <div className="flex flex-col gap-1">
-            <Label htmlFor={`sus-etnia-${pacienteId}`} className="text-xs">Etnia (código, 4 dígitos)</Label>
+            <Label htmlFor={`sus-etnia-${pacienteId}`} className="text-rotulo">Etnia (código, 4 dígitos)</Label>
             <Input id={`sus-etnia-${pacienteId}`} className="h-8" maxLength={4} inputMode="numeric" value={valor('etnia')}
               onChange={(ev) => setMudou((m) => ({ ...m, etnia: ev.target.value }))} />
           </div>
         )}
       </div>
-      {e.municipio && <span className="text-xs text-tinta-sussurro">Município no cadastro: {e.municipio}{e.uf ? `/${e.uf}` : ''}</span>}
+      {e.municipio && <span className="text-rotulo text-tinta-sussurro">Município no cadastro: {e.municipio}{e.uf ? `/${e.uf}` : ''}</span>}
       <div className="flex flex-wrap items-center gap-4 text-apoio">
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={marcado('situacao_rua')} onChange={(ev) => setMudou((m) => ({ ...m, situacao_rua: ev.target.checked }))} />
@@ -87,7 +87,7 @@ export function EnderecoSus({ pacienteId, titulo = true }: { pacienteId: string;
           Salvar endereço do SUS
         </Button>
       </div>
-      {salvar.error && <p role="alert" className="text-xs text-critico">{(salvar.error as Error).message}</p>}
+      {salvar.error && <p role="alert" className="text-rotulo text-critico">{(salvar.error as Error).message}</p>}
     </div>
   )
 }

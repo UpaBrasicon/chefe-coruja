@@ -13,6 +13,7 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { diaMesHora } from '@/lib/formato'
 import { Button } from '@/components/ui/button'
 import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
 import { Spinner } from '@/components/ui/spinner'
@@ -29,8 +30,7 @@ const EXEMPLO: Record<TipoIsolamento, string> = {
 }
 
 const erroTexto = (e: unknown) => (e instanceof Error ? e.message : (e as { message?: string })?.message) ?? 'Não foi possível salvar.'
-const quando = (iso: string) =>
-  new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
+const quando = (iso: string) => diaMesHora(iso)
 
 function useIsolamento(pacienteId: string) {
   return useQuery({
@@ -50,16 +50,16 @@ export function SeloIsolamento({ pacienteId, onClick }: { pacienteId: string; on
   if (q.isLoading || q.error) return null
   if (!lista.length) {
     return (
-      <button type="button" onClick={onClick} title="Sem isolamento. Marcar isolamento."
-        className="inline-flex items-center gap-1 text-apoio text-tinta-sussurro hover:text-acao">
+      <Button variant="ghost" onClick={onClick} title="Sem isolamento. Marcar isolamento." className="min-h-0 gap-1 p-0">
         <ShieldAlert className="size-3.5" aria-hidden /> Isolamento
-      </button>
+      </Button>
     )
   }
   const tipos = lista.map((i) => ROTULO_ISOLAMENTO[i.tipo].toLowerCase()).join(' e ')
   return (
+    // padrao-ok: selo de isolamento ativo, cápsula vermelha cheia como o selo de alergia; nenhuma peça tem esse tom
     <button type="button" onClick={onClick} title={`Isolamento por ${tipos}: só leito de isolamento. Abrir isolamento.`}
-      className="inline-flex items-center gap-1.5 rounded-capsula bg-critico px-[11px] py-1 text-apoio font-semibold text-white hover:opacity-90">
+      className="inline-flex items-center gap-1.5 rounded-capsula bg-critico px-[11px] py-1 text-apoio font-semibold text-sobre-acao hover:opacity-90">
       <ShieldAlert className="size-3.5 shrink-0" aria-hidden /> Isolamento · {tipos}
     </button>
   )
@@ -106,7 +106,7 @@ export function GavetaIsolamento({ pacienteId, nome, aberta, onAbertaChange }: {
         detalhe="Vale para o atendimento atual e sai sozinho na alta. Com isolamento, só leito de isolamento; sem leito livre, o paciente aguarda e o NIR é avisado." />
       <div className="flex flex-col gap-5 px-5 py-4">
         {q.isLoading && <Spinner className="size-4" />}
-        {erro && <p role="alert" className="rounded-controle-sm border border-critico/40 bg-critico/10 px-3 py-2 text-apoio text-tinta">{erro}</p>}
+        {erro && <p role="alert" className="rounded-controle border border-critico/40 bg-critico/10 px-3 py-2 text-apoio text-tinta">{erro}</p>}
 
         <section className="flex flex-col gap-2">
           <h3 className="rotulo text-tinta-sussurro">Ativo</h3>

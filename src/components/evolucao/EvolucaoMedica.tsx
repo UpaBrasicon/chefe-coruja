@@ -18,6 +18,7 @@ import { supabase } from '@/lib/supabase'
 import { useTerminologia } from '@/hooks/useTerminologia'
 import { useAlergias, ativas, negaVigente } from '@/components/paciente/useAlergias'
 import { Button } from '@/components/ui/button'
+import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
@@ -157,7 +158,7 @@ function Formulario({ ctx, pacienteId, internacaoId }: { ctx: ContextoEvolucao; 
       )}
 
       {jaTem && ctx.pode_registrar && modo === 'nova' && (
-        <div className="flex flex-col gap-2 rounded-bloco border border-acao/30 bg-acao/[0.06] px-3.5 py-3">
+        <div className="flex flex-col gap-2 rounded-container border border-acao/30 bg-alerta-marca px-3.5 py-3">
           <span className="flex items-center gap-2 text-controle text-tinta">
             <ClipboardCheck className="size-4 text-acao" aria-hidden />
             Sua evolução de hoje foi registrada às {diaHora(jaTem.criado_em).split(' · ')[1]}{jaTem.versao > 1 ? ` (corrigida, versão ${jaTem.versao})` : ''}.
@@ -215,10 +216,10 @@ function Formulario({ ctx, pacienteId, internacaoId }: { ctx: ContextoEvolucao; 
               {f.antimicrobianosManuais.map((a, i) => (
                 <span key={`${a.nome}-${i}`} className="flex items-center gap-2 text-controle text-tinta">
                   {a.nome} · D{diaDeUso(a.inicio, ctx.hoje)} <span className="text-tinta-sussurro">(início {dataLonga(a.inicio)})</span>
-                  <button type="button" aria-label={`Remover ${a.nome}`} className="p-0.5 text-tinta-sussurro hover:text-critico"
+                  <Button variant="ghost" size="icon-xs" aria-label={`Remover ${a.nome}`} className="hover:text-critico"
                     onClick={() => set({ antimicrobianosManuais: f.antimicrobianosManuais.filter((_, j) => j !== i) })}>
                     <X className="size-3.5" aria-hidden />
-                  </button>
+                  </Button>
                 </span>
               ))}
               {ctx.antimicrobianos.length === 0 && f.antimicrobianosManuais.length === 0 && <span className="text-apoio text-tinta-sussurro">Nenhum em uso.</span>}
@@ -353,12 +354,10 @@ function CampoCid({ valor, onValor }: { valor: FormEvolucao['cid']; onValor: (v:
         {sugestoes.length > 0 && (
           <div role="listbox" className="absolute top-full right-0 left-0 z-30 mt-1 max-h-[280px] overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
             {sugestoes.map((s) => (
-              <button key={s.codigo} type="button" role="option" aria-selected={false}
-                className="flex w-full items-baseline gap-2.5 border-b border-trilha px-3 py-2 text-left hover:bg-campo"
-                onMouseDown={(e) => e.preventDefault()}
+              <OpcaoLista key={s.codigo} className="items-baseline gap-2.5 hover:bg-campo"
                 onClick={() => { onValor({ ...valor, codigo: s.codigo, descricao: s.descricao }); setTermo(`${s.codigo} — ${s.descricao}`); setAberto(false) }}>
                 <span className="text-controle text-tinta">{s.codigo} — {s.descricao}</span>
-              </button>
+              </OpcaoLista>
             ))}
           </div>
         )}

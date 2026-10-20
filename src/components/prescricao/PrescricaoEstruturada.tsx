@@ -15,6 +15,7 @@ import { AlertTriangle, Ban, Pill, Printer, Plus } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { dataHora } from '@/lib/formato'
 import { normalizarMedicamento } from '@/lib/search'
 import { abrirImpressao } from '@/lib/prontuario'
 import { gravarRegistros, novoItem } from '@/lib/offline/sincronizar'
@@ -22,6 +23,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { BotaoLinha } from '@/components/ui/botao-linha'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { Chip } from '@/components/monitor/Pagina'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -57,7 +61,7 @@ const VIAS_COM_DILUICAO = ['EV', 'IM', 'SC']
 const CUIDADOS = ['Dieta', 'Cabeceira elevada', 'Precaução padrão', 'Vigilância de sintomas álgicos', 'Sinais vitais',
   'Comunicar intercorrências', 'Cuidados gerais de enfermagem', 'Medicações de uso contínuo', 'Mudança de decúbito']
 
-const hora = (iso: string) => new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })
+const hora = (iso: string) => dataHora(iso)
 
 export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: string; paciente: PacientePrescricao }) {
   const qc = useQueryClient()
@@ -143,21 +147,21 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
   })
   return (
     <div className="flex flex-col gap-4">
-      {erro && <p className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</p>}
+      {erro && <p className="rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</p>}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Pill className="size-4" /> Prescrição vigente</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-corpo"><Pill className="size-4" /> Prescrição vigente</CardTitle>
           <CardDescription>
             Itens ativos agora. Suspender deixa o item no histórico. A diluição mostrada é a versão padrão vigente quando o item foi prescrito.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2 text-sm">
+        <CardContent className="flex flex-col gap-2 text-apoio">
           <ResumoAlergias pacienteId={pacienteId} nome={paciente.nome} />
           {lista.length === 0 && <p className="text-tinta-sussurro">Nenhum item prescrito.</p>}
           {lista.map((i) => <LinhaItem key={i.id} i={i} justificadas={(justificadas.data ?? []).filter((j) => j.item_id === i.id)} alteracao={alteracoes.data?.get(i.id)} aoMudar={recarregar} aoErro={setErro} />)}
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <Button size="sm" onClick={() => void imprimir()} disabled={lista.length === 0}><Printer /> Imprimir prescrição</Button>
-            {perfil && <span className="text-xs text-tinta-sussurro">Autor de cada item: quem prescreveu (login).</span>}
+            {perfil && <span className="text-rotulo text-tinta-sussurro">Autor de cada item: quem prescreveu (login).</span>}
           </div>
         </CardContent>
       </Card>
@@ -172,36 +176,36 @@ function LinhaItem({ i, justificadas, alteracao, aoMudar, aoErro }: {
   const [suspendendo, setSuspendendo] = React.useState(false)
   const [motivo, setMotivo] = React.useState('')
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-fio px-3 py-2">
+    <div className="flex flex-col gap-1 rounded-controle border border-fio px-3 py-2">
       <div className="flex flex-wrap items-baseline gap-2">
         <span className="font-medium text-tinta">{i.descricao}</span>
         {i.tipo === 'medicamento' && <span>{i.dose} · {i.via} · {i.posologia}{i.se_necessario ? ' · se necessário' : ''}</span>}
         {i.vasoativo && <Badge variant="warning">vasoativo</Badge>}
-        {i.peso_kg && <span className="text-xs text-tinta-sussurro">peso ref. {i.peso_kg} kg</span>}
-        <span className="ml-auto text-xs text-tinta-sussurro">{i.autor} · {hora(i.criado_em)}</span>
+        {i.peso_kg && <span className="text-rotulo text-tinta-sussurro">peso ref. {i.peso_kg} kg</span>}
+        <span className="ml-auto text-rotulo text-tinta-sussurro">{i.autor} · {hora(i.criado_em)}</span>
       </div>
       {i.tipo === 'medicamento' && VIAS_COM_DILUICAO.includes(i.via ?? '') && (
-        <p className={`text-xs ${i.diluicao_divergente ? 'text-atencao' : 'text-tinta-apoio'}`}>
+        <p className={`text-rotulo ${i.diluicao_divergente ? 'text-atencao' : 'text-tinta-apoio'}`}>
           {i.diluicao_divergente
             ? <>Diluição fora do padrão: {i.diluicao_texto} — justificativa: {i.justificativa_divergencia}</>
             : i.diluicao_texto ? <>Diluição padrão v{i.diluicao_versao}: {i.diluicao_texto}</> : 'Sem diluição padrão publicada para esta via.'}
         </p>
       )}
       {alteracao && (
-        <p className="text-xs text-atencao">
+        <p className="text-rotulo text-atencao">
           Versão {alteracao.versao}, alterada por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}:{' '}
           {resumoMudanca(alteracao.anterior, { dose: i.dose, via: i.via, posologia: i.posologia, se_necessario: i.se_necessario }) || 'observação'}
           {alteracao.motivo ? ` — “${alteracao.motivo}”` : ''}
         </p>
       )}
-      {i.observacao && <p className="text-xs text-tinta-sussurro">{i.observacao}</p>}
+      {i.observacao && <p className="text-rotulo text-tinta-sussurro">{i.observacao}</p>}
       {justificadas.map((j) => (
-        <p key={j.outro + j.em} className="text-xs text-critico">
+        <p key={j.outro + j.em} className="text-rotulo text-critico">
           Interação {j.gravidade} com {j.outro} ({semPontoFinal(j.efeito)}) — justificada por {j.por ?? '—'}: “{j.justificativa}”
         </p>
       ))}
-      {i.validacao === 'devolvido' && <p className="text-xs text-critico">Farmácia devolveu para correção: {i.validacao_motivo}</p>}
-      {i.validacao === 'confere' && <p className="text-xs text-conforme">Conferido pela farmácia.</p>}
+      {i.validacao === 'devolvido' && <p className="text-rotulo text-critico">Farmácia devolveu para correção: {i.validacao_motivo}</p>}
+      {i.validacao === 'confere' && <p className="text-rotulo text-conforme">Conferido pela farmácia.</p>}
       {suspendendo ? (
         <div className="flex gap-2">
           <Input className="h-8" placeholder="Por que suspende" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
@@ -233,12 +237,7 @@ const VIAS_PORTA: { v: string; rotulo: string }[] = [
 const QUANDO_PORTA = ['Agora', 'Se necessário'] as const
 
 function ChipPorta({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button type="button" aria-pressed={ativo} onClick={onClick}
-      className={`rounded-capsula border px-3 py-1 text-apoio transition-colors ${ativo ? 'border-acao bg-acao font-medium text-white' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao'}`}>
-      {children}
-    </button>
-  )
+  return <Chip ativo={ativo} onClick={onClick}>{children}</Chip>
 }
 
 export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, pediatrico = false }: {
@@ -348,10 +347,10 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base"><Plus className="size-4" /> Novo item</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-corpo"><Plus className="size-4" /> Novo item</CardTitle>
         <CardDescription>Dose, via e frequência são escritas por você: o sistema não sugere dose.</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 text-sm">
+      <CardContent className="flex flex-col gap-3 text-apoio">
         <div className="flex gap-2">
           {(['medicamento', 'cuidado'] as const).map((t) => (
             <Button key={t} size="sm" variant={tipo === t ? 'default' : 'outline'} onClick={() => setTipo(t)}>
@@ -359,25 +358,25 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
             </Button>
           ))}
           {peso && (
-            <span className="ml-auto self-center text-xs text-tinta-sussurro">
+            <span className="ml-auto self-center text-rotulo text-tinta-sussurro">
               Último peso: {peso.valor_num} kg{rotuloMetodoPeso(peso.metodo) ? `, ${rotuloMetodoPeso(peso.metodo)}` : ''} ({hora(peso.aferido_em)})
             </span>
           )}
         </div>
 
         {tipo === 'medicamento' && (pedeIdade || semIdade) && (
-          <div className="flex flex-wrap items-end gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-2">
+          <div className="flex flex-wrap items-end gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao p-2">
             <div className="flex flex-col gap-1">
               <Label htmlFor="idade-estimada">Sem data de nascimento: idade estimada (anos)</Label>
               <Input id="idade-estimada" className="h-8 w-28" inputMode="decimal" value={anos} onChange={(e) => setAnos(e.target.value)} />
             </div>
             <Button size="sm" onClick={() => void registrarIdade()}>Registrar idade estimada</Button>
-            <span className="w-full text-xs text-tinta-sussurro">Fica no cadastro com a marca “estimada”. A data real, quando chegar, substitui.</span>
+            <span className="w-full text-rotulo text-tinta-sussurro">Fica no cadastro com a marca “estimada”. A data real, quando chegar, substitui.</span>
           </div>
         )}
 
         {tipo === 'medicamento' && (pedePeso || pediatrico) && (
-          <div className="flex flex-wrap items-end gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-2">
+          <div className="flex flex-wrap items-end gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao p-2">
             <div className="flex flex-col gap-1">
               <Label htmlFor="peso-novo">Peso deste atendimento (kg)</Label>
               <Input id="peso-novo" className="h-8 w-28" inputMode="decimal" value={novoPeso} onChange={(e) => setNovoPeso(e.target.value)} />
@@ -393,8 +392,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
           <>
             <div className="flex flex-wrap gap-1.5">
               {CUIDADOS.map((c) => (
-                <button key={c} type="button" onClick={() => setF({ ...f, descricao: c })}
-                  className="rounded-md border border-fio px-2 py-0.5 text-xs hover:bg-trilha">{c}</button>
+                <Button key={c} size="xs" variant="outline" onClick={() => setF({ ...f, descricao: c })}>{c}</Button>
               ))}
             </div>
             <Input placeholder="Descreva o cuidado" value={f.descricao} onChange={(e) => setF({ ...f, descricao: e.target.value })} />
@@ -404,7 +402,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
         ) : (
           <>
             {med ? (
-              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-fio px-3 py-2">
+              <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio px-3 py-2">
                 <span className="font-medium">{med.principio_ativo}</span>
                 <span className="text-tinta-apoio">{[med.apresentacao, med.concentracao].filter(Boolean).join(' · ')}</span>
                 {med.alta_vigilancia && <Badge variant="warning">alta vigilância</Badge>}
@@ -416,7 +414,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 }}>{faltaAvisada ? 'Falta sinalizada' : 'Sinalizar falta'}</Button>
                 <Button size="xs" variant="ghost" onClick={() => { setMed(null); setFaltaAvisada(false) }}>Trocar</Button>
                 {falta.data && (
-                  <span role="note" className="w-full text-xs text-atencao">
+                  <span role="note" className="w-full text-rotulo text-atencao">
                     Em falta na farmácia ({falta.data.situacao === 'em_cotacao' ? 'em cotação' : 'sinalizada'}).
                     {falta.data.retorno ? ` Retorno da farmácia: “${falta.data.retorno.texto}”.` : ' Sem retorno da farmácia ainda.'}
                   </span>
@@ -427,13 +425,13 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 <Input placeholder="Buscar medicamento do cadastro (3 letras ou mais)" value={busca} onChange={(e) => setBusca(e.target.value)} />
                 <div className="max-h-48 overflow-y-auto">
                   {(resultados.data ?? []).map((m) => (
-                    <button key={m.id} type="button" onClick={() => setMed(m)}
-                      className="flex w-full gap-2 border-b border-fio px-2 py-1 text-left text-xs last:border-0 hover:bg-trilha">
+                    <BotaoLinha key={m.id} variante="linha" onClick={() => setMed(m)}
+                      className="gap-2 border-fio px-2 py-1 text-rotulo hover:bg-trilha">
                       <span className="font-medium">{m.principio_ativo}</span>
                       <span className="text-tinta-apoio">{[m.apresentacao, m.concentracao].filter(Boolean).join(' · ')}</span>
-                    </button>
+                    </BotaoLinha>
                   ))}
-                  {resultados.data?.length === 0 && <p className="px-2 py-1 text-xs text-tinta-sussurro">Nada no cadastro com esse nome.</p>}
+                  {resultados.data?.length === 0 && <p className="px-2 py-1 text-rotulo text-tinta-sussurro">Nada no cadastro com esse nome.</p>}
                 </div>
               </div>
             )}
@@ -463,11 +461,11 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               </div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-via">Via *</Label>
-                <select id="item-via" className="h-8 rounded-controle border border-fio bg-campo px-2 text-sm" value={f.via}
+                <CampoSelecao id="item-via" tamanho="compacto" value={f.via}
                   onChange={(e) => setF({ ...f, via: e.target.value })}>
                   <option value="">Escolha…</option>
                   {VIAS.map((v) => <option key={v} value={v}>{v}</option>)}
-                </select>
+                </CampoSelecao>
               </div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-freq">Frequência *</Label>
@@ -481,16 +479,16 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               </label>
             )}
             {med && VIAS_COM_DILUICAO.includes(f.via) && (
-              <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-2">
+              <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-2">
                 {diluicao.data ? (
                   <p className="text-tinta-apoio">
                     Diluição padrão v{diluicao.data.versao}: {diluicao.data.texto}
-                    <span className="block text-xs text-tinta-sussurro">Fonte: {diluicao.data.fonte} · revisão {diluicao.data.revisor_crf}</span>
+                    <span className="block text-rotulo text-tinta-sussurro">Fonte: {diluicao.data.fonte} · revisão {diluicao.data.revisor_crf}</span>
                   </p>
                 ) : (
                   <p className="flex items-center gap-1.5 text-atencao"><AlertTriangle className="size-3.5" /> Sem diluição padrão publicada para {med.principio_ativo} {f.via}.</p>
                 )}
-                <label className="flex items-center gap-2 text-xs">
+                <label className="flex items-center gap-2 text-rotulo">
                   <input type="checkbox" checked={divergir} onChange={(e) => setDivergir(e.target.checked)} /> Diluir diferente do padrão
                 </label>
                 {divergir && (
@@ -511,13 +509,13 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               Prescrever
             </Button>
             {interacao && (
-              <div role="alert" className="flex flex-col gap-2 rounded-lg border border-critico/40 bg-critico/[0.06] p-3 text-sm">
+              <div role="alert" className="flex flex-col gap-2 rounded-controle border border-critico/40 bg-alerta-critico p-3 text-apoio">
                 <strong className="text-critico">Interação crítica com a prescrição vigente</strong>
                 {interacao.lista.map((x) => (
                   <div key={x.interacao_id + x.outro_item_id} className="flex flex-col gap-0.5">
                     <span className="text-tinta"><b>{x.outro}</b> · {x.gravidade} · {x.grupos}</span>
                     <span className="text-tinta-apoio">{frase(x.efeito)}{x.conduta ? ` Conduta: ${frase(x.conduta)}` : ''}</span>
-                    <span className="text-xs text-tinta-sussurro">Fonte: {x.fonte}</span>
+                    <span className="text-rotulo text-tinta-sussurro">Fonte: {x.fonte}</span>
                   </div>
                 ))}
                 <Textarea placeholder="Por que prescrever mesmo assim (mínimo de 10 letras; fica no prontuário e na auditoria)" value={justInteracao}

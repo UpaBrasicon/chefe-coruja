@@ -8,6 +8,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
+import { data as dataDoInstante, dataIso, dataPura, diaMes, diaMesHora } from '@/lib/formato'
 import { abrirProntuarioDaInternacao } from '@/lib/prontuario'
 import type { Json } from '@/types/database'
 
@@ -270,14 +271,13 @@ export function herdarDaUltima(d: DadosEstruturados | undefined): FormEvolucao {
   }
 }
 
-// ── formatação ──────────────────────────────────────────────────────────────
-const TZ = 'America/Sao_Paulo'
-export const diaHora = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: TZ }).replace(',', ' ·') : '—'
-export const dataCurta = (iso: string | null | undefined) =>
-  iso ? new Date(iso.length === 10 ? `${iso}T12:00:00` : iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: TZ }) : '—'
-export const dataLonga = (iso: string | null | undefined) =>
-  iso ? new Date(iso.length === 10 ? `${iso}T12:00:00` : iso).toLocaleDateString('pt-BR', { timeZone: TZ }) : '—'
+// ── formatação (pelo @/lib/formato, no fuso de Brasília) ────────────────────
+/** "19/10 · 19:43" */
+export const diaHora = (iso: string | null | undefined) => (iso ? diaMesHora(iso).replace(',', ' ·') : '—')
+/** "19/10"; data pura (AAAA-MM-DD) sem deslocar o dia. */
+export const dataCurta = (iso: string | null | undefined) => (iso ? diaMes(iso.length === 10 ? `${iso}T12:00:00Z` : iso) : '—')
+/** "19/10/2026"; data pura (AAAA-MM-DD) sem deslocar o dia. */
+export const dataLonga = (iso: string | null | undefined) => (iso ? (iso.length === 10 ? dataPura(iso) : dataDoInstante(iso)) : '—')
 /** Chave do dia (AAAA-MM-DD) no fuso da unidade. */
-export const chaveDia = (iso: string) => new Date(iso).toLocaleDateString('sv-SE', { timeZone: TZ })
+export const chaveDia = (iso: string) => dataIso(iso)
 export const mensagemErro = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))

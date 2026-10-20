@@ -8,6 +8,7 @@ import * as React from 'react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useTerminologia } from '@/hooks/useTerminologia'
+import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -36,16 +37,15 @@ function CampoCid({ id, valor, mudar, desabilitado, placeholder, rotulo }: {
     <div className="relative">
       <input id={id} value={valor} disabled={desabilitado} placeholder={placeholder} aria-label={rotulo} autoComplete="off"
         onChange={(e) => mudar(e.target.value)} onFocus={() => setFoco(true)} onBlur={() => setTimeout(() => setFoco(false), 150)}
-        className="w-full rounded-[10px] border border-fio bg-campo px-3 py-2.5 text-corpo text-tinta outline-none focus:border-acao disabled:cursor-not-allowed disabled:opacity-60" />
+        className="w-full rounded-controle border border-fio bg-campo px-3 py-2.5 text-corpo text-tinta outline-none focus:border-acao disabled:cursor-not-allowed disabled:opacity-60" />
       {lista.length > 0 && (
-        <div role="listbox" className="absolute top-full right-0 left-0 z-30 mt-0.5 max-h-[280px] overflow-y-auto rounded-[10px] border border-fio bg-superficie shadow-[0_12px_32px_rgba(15,23,42,0.14)]">
+        <div role="listbox" className="absolute top-full right-0 left-0 z-30 mt-0.5 max-h-[280px] overflow-y-auto rounded-controle border border-fio bg-superficie shadow-[0_12px_32px_rgba(15,23,42,0.14)]">
           {lista.map((r) => (
-            <button key={r.codigo} type="button" role="option" aria-selected={false}
-              onMouseDown={(e) => e.preventDefault()}
+            <OpcaoLista key={r.codigo}
               onClick={() => { mudar(`${r.codigo} — ${r.descricao}`); setFoco(false) }}
-              className="block w-full border-b border-trilha px-3 py-2 text-left text-controle text-tinta last:border-b-0 hover:bg-campo">
+              className="block text-controle text-tinta hover:bg-campo">
               {r.codigo} — {r.descricao}
-            </button>
+            </OpcaoLista>
           ))}
         </div>
       )}
@@ -79,7 +79,7 @@ export function AbaDiagnostico({ internacaoId, podeEditar, acao, onAbrirNotifica
 
   return (
     <div className="grid gap-3.5 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="flex min-w-0 flex-col gap-3.5 rounded-[14px] border border-fio bg-superficie p-4">
+      <div className="flex min-w-0 flex-col gap-3.5 rounded-container border border-fio bg-superficie p-4">
         <div className="flex flex-wrap items-baseline gap-2.5">
           <span className="flex items-center gap-[7px] text-corpo font-semibold text-tinta">
             <ClipboardList className="size-[15px] text-acao" aria-hidden /> Diagnóstico
@@ -88,7 +88,7 @@ export function AbaDiagnostico({ internacaoId, podeEditar, acao, onAbrirNotifica
         </div>
 
         {imediatas.length > 0 && (
-          <div role="alert" className="flex items-start gap-2 rounded-[10px] border border-critico/30 bg-critico/[0.06] px-3 py-2.5">
+          <div role="alert" className="flex items-start gap-2 rounded-controle border border-critico/30 bg-alerta-critico px-3 py-2.5">
             <AlertTriangle className="mt-0.5 size-[15px] shrink-0 text-critico" aria-hidden />
             <span className="flex-1 text-controle leading-[1.45] text-pretty text-critico">
               Notificação imediata, até 24 h: {imediatas.map((x) => `${itemTxt(x)}${x.destino ? ` para ${x.destino}` : ''}`).join('; ')}.
@@ -112,17 +112,17 @@ export function AbaDiagnostico({ internacaoId, podeEditar, acao, onAbrirNotifica
           <span className="text-apoio font-medium text-grafite">Diagnósticos secundários</span>
           {secundarios.length === 0 && <span className="text-apoio text-tinta-sussurro">Nenhum.</span>}
           {secundarios.map((s) => (
-            <div key={s.id} className="flex items-center gap-2.5 rounded-[10px] border border-fio bg-campo px-3 py-2">
+            <div key={s.id} className="flex items-center gap-2.5 rounded-controle border border-fio bg-campo px-3 py-2">
               <span className="min-w-0 flex-1 text-controle text-tinta">{rotuloCid(s)} <span className="text-tinta-sussurro">· {ROTULO_STATUS[s.status]}</span></span>
               {podeEditar && (
-                <button type="button" className="text-apoio text-critico hover:underline"
+                <Button variant="link" className="min-h-0 px-0 py-0 text-critico hover:text-critico"
                   onClick={() => void acao(async () => {
                     const { error } = await supabase.rpc('retirar_diagnostico', { p_diagnostico: s.id })
                     if (error) throw error
                   },
                     `${s.cid} retirado dos secundários (fica no histórico).`)}>
                   Remover
-                </button>
+                </Button>
               )}
             </div>
           ))}
@@ -138,7 +138,7 @@ export function AbaDiagnostico({ internacaoId, podeEditar, acao, onAbrirNotifica
           </p>
         )}
         {itens.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 rounded-[10px] border border-[#F59E0B66] bg-nota px-3 py-2">
+          <div className="flex flex-wrap items-center gap-2 rounded-controle border border-atencao/40 bg-nota px-3 py-2">
             <Shield className="size-[15px] shrink-0 text-observacao" aria-hidden />
             <span className="flex-[1_1_240px] text-apoio leading-[1.45] text-pretty text-atencao">
               {semanais.length > 0 && <>Notificação compulsória: {semanais.map((x) => `${itemTxt(x)}${x.condicao ? `, imediata se ${x.condicao}` : ', semanal'}`).join('; ')}. </>}
@@ -195,7 +195,7 @@ function FormPrimario({ internacaoId, primario, acao }: { internacaoId: string; 
           <div className="flex flex-wrap items-center gap-1.5">
             <input value={tempo} onChange={(e) => setTempo(e.target.value.replace(/\D/g, '').slice(0, 3))} inputMode="numeric"
               maxLength={3} placeholder="—" aria-label="Tempo da doença"
-              className="w-16 rounded-[10px] border border-fio bg-campo px-2.5 py-[9px] text-corpo text-tinta tabular-nums outline-none focus:border-acao" />
+              className="w-16 rounded-controle border border-fio bg-campo px-2.5 py-[9px] text-corpo text-tinta tabular-nums outline-none focus:border-acao" />
             {UNIDADES.map(([k, r]) => (
               <Chip key={k} ativo={unidade === k} onClick={() => setUnidade(k)} aria-pressed={unidade === k}>{r}</Chip>
             ))}
@@ -238,7 +238,7 @@ function IncluirSecundario({ internacaoId, temPrimario, acao }: { internacaoId: 
 
 function Historico({ linhas }: { linhas: Linha[] }) {
   return (
-    <div className="flex min-w-0 flex-col overflow-hidden rounded-[14px] border border-fio bg-superficie">
+    <div className="flex min-w-0 flex-col overflow-hidden rounded-container border border-fio bg-superficie">
       <div className="flex items-center gap-2 border-b border-trilha px-4 py-3 text-apoio font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">
         <History className="size-3.5" aria-hidden /> Histórico
       </div>

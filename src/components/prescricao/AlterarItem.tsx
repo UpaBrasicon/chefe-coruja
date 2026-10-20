@@ -2,6 +2,7 @@ import { Pencil } from 'lucide-react'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { resumoMudanca, type CamposItem } from '@/lib/alteracaoPrescricao'
 import { supabase } from '@/lib/supabase'
@@ -35,20 +36,20 @@ export function AlterarItem({ itemId, atual, aoMudar }: { itemId: string; atual:
   }
 
   return (
-    <div className="flex w-full flex-col gap-2 rounded-lg border border-acao/30 bg-acao/[0.04] p-2.5">
+    <div className="flex w-full flex-col gap-2 rounded-controle border border-acao/30 bg-alerta-marca p-2.5">
       <div className="flex flex-wrap items-center gap-2">
         <Input className="h-8 w-40" aria-label="Dose" placeholder="Dose" value={f.dose} onChange={(e) => setF({ ...f, dose: e.target.value })} />
-        <select aria-label="Via" className="h-8 rounded-controle border border-fio bg-campo px-2 text-xs" value={f.via} onChange={(e) => setF({ ...f, via: e.target.value })}>
+        <CampoSelecao tamanho="compacto" aria-label="Via" className="text-rotulo" value={f.via} onChange={(e) => setF({ ...f, via: e.target.value })}>
           {[...new Set([f.via, ...VIAS])].filter(Boolean).map((v) => <option key={v}>{v}</option>)}
-        </select>
+        </CampoSelecao>
         <Input className="h-8 w-36" aria-label="Frequência" placeholder="Frequência" value={f.posologia} onChange={(e) => setF({ ...f, posologia: e.target.value })} />
-        <label className="flex items-center gap-1.5 text-xs">
+        <label className="flex items-center gap-1.5 text-rotulo">
           <input type="checkbox" checked={f.se_necessario} onChange={(e) => setF({ ...f, se_necessario: e.target.checked })} /> se necessário
         </label>
       </div>
       <Input className="h-8" placeholder="Motivo da alteração (obrigatório)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
-      {mudanca && <span className="text-xs text-tinta-apoio">Muda: {mudanca}. A versão anterior fica guardada.</span>}
-      {erro && <span role="alert" className="text-xs text-critico">{erro}</span>}
+      {mudanca && <span className="text-rotulo text-tinta-apoio">Muda: {mudanca}. A versão anterior fica guardada.</span>}
+      {erro && <span role="alert" className="text-rotulo text-critico">{erro}</span>}
       <div className="flex gap-2">
         <Button size="sm" disabled={!mudanca || motivo.trim().length < 5 || salvando} onClick={() => void salvar()}>Salvar alteração</Button>
         <Button size="sm" variant="ghost" onClick={() => { setAberto(false); setErro(null) }}>Voltar</Button>

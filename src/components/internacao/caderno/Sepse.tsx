@@ -3,14 +3,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
+import { numero } from '@/lib/formato'
 
 import { Secao } from './caixas'
 import { type Acao, type Acuidade, msg, rpc } from './comum'
 
 const BANDA = [
-  'border-conforme/30 bg-conforme/[0.08] text-conforme',
-  'border-atencao/30 bg-atencao/[0.08] text-atencao',
-  'border-critico/30 bg-critico/[0.08] text-critico',
+  'border-conforme/30 bg-alerta-conforme text-conforme',
+  'border-atencao/30 bg-alerta-atencao text-atencao',
+  'border-critico/30 bg-alerta-critico text-critico',
 ]
 
 /** Na porta: o mesmo rastreio do leito, para a criança ainda em atendimento. */
@@ -27,7 +28,7 @@ export function SepsePorta({ pacienteId }: { pacienteId: string }) {
       .then((r) => { setErro(null); void qc.invalidateQueries({ queryKey: ['acuidade'] }); return r })
       .catch((e) => { setErro(msg(e)); return null })
   return (
-    <div className="flex flex-col gap-2 text-sm">
+    <div className="flex flex-col gap-2 text-apoio">
       {erro && <p className="text-critico">{erro}</p>}
       <BlocoSepse a={acuidade.data} pacienteId={pacienteId} podeMarcar acao={acao} />
     </div>
@@ -53,12 +54,12 @@ export function BlocoSepse({ a, pacienteId, podeMarcar, acao }: { a: Acuidade; p
           </p>
         ) : (
           <>
-            <div className={`flex flex-wrap items-baseline gap-2 rounded-lg border px-3 py-2 ${ph.choque || ph.sepse ? BANDA[2] : BANDA[0]}`}>
-              <span className="text-2xl font-semibold tabular-nums">{ph.total}{ph.parcial ? '*' : ''}</span>
+            <div className={`flex flex-wrap items-baseline gap-2 rounded-controle border px-3 py-2 ${ph.choque || ph.sepse ? BANDA[2] : BANDA[0]}`}>
+              <span className="text-titulo font-semibold tabular-nums">{ph.total}{ph.parcial ? '*' : ''}</span>
               <span className="font-medium">
                 {ph.choque ? 'critérios de choque séptico' : ph.sepse ? 'critérios de sepse' : 'abaixo do critério de sepse (< 2)'}
               </span>
-              <span className="ml-auto text-xs">{ph.gatilho.descricao}</span>
+              <span className="ml-auto text-rotulo">{ph.gatilho.descricao}</span>
             </div>
             <ul className="grid gap-x-4 gap-y-0.5 sm:grid-cols-2">
               {ph.itens.map((x) => (
@@ -68,17 +69,17 @@ export function BlocoSepse({ a, pacienteId, podeMarcar, acao }: { a: Acuidade; p
                 </li>
               ))}
             </ul>
-            {ph.parcial && <p className="text-xs text-atencao">* Faltou medir: {ph.faltando.join(', ')}. Variável não medida não soma ponto.</p>}
-            <p className="text-xs text-tinta-sussurro">{ph.fonte} {ph.notas}</p>
+            {ph.parcial && <p className="text-rotulo text-atencao">* Faltou medir: {ph.faltando.join(', ')}. Variável não medida não soma ponto.</p>}
+            <p className="text-rotulo text-tinta-sussurro">{ph.fonte} {ph.notas}</p>
           </>
         )}
       </Secao>
       {a.pelod2?.indicado && (
         <Secao titulo="PELOD-2 · disfunção orgânica">
-          <div className="flex flex-wrap items-baseline gap-2 rounded-lg border border-fio px-3 py-2">
-            <span className="text-2xl font-semibold tabular-nums">{a.pelod2.total}{a.pelod2.completo ? '' : '*'}</span>
+          <div className="flex flex-wrap items-baseline gap-2 rounded-controle border border-fio px-3 py-2">
+            <span className="text-titulo font-semibold tabular-nums">{a.pelod2.total}{a.pelod2.completo ? '' : '*'}</span>
             <span className="font-medium">pontos</span>
-            <span className="text-tinta-apoio">· mortalidade prevista na coorte de origem {(a.pelod2.mortalidade_prevista * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</span>
+            <span className="text-tinta-apoio">· mortalidade prevista na coorte de origem {numero(Math.round(a.pelod2.mortalidade_prevista * 1000) / 10)}%</span>
           </div>
           <ul className="grid gap-x-4 gap-y-0.5 sm:grid-cols-2">
             {a.pelod2.itens.map((x) => (
@@ -89,11 +90,11 @@ export function BlocoSepse({ a, pacienteId, podeMarcar, acao }: { a: Acuidade; p
             ))}
           </ul>
           {!a.pelod2.completo && (
-            <p className="text-xs text-atencao">
+            <p className="text-rotulo text-atencao">
               * Não medidos (contam como normais): {a.pelod2.faltando.join(', ')}. A pendência “PELOD-2 do dia” fecha sozinha quando as 10 variáveis estiverem registradas.
             </p>
           )}
-          <p className="text-xs text-tinta-sussurro">{a.pelod2.fonte} {a.pelod2.notas}</p>
+          <p className="text-rotulo text-tinta-sussurro">{a.pelod2.fonte} {a.pelod2.notas}</p>
         </Secao>
       )}
     </>

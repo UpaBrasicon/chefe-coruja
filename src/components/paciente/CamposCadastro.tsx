@@ -6,6 +6,8 @@ import { CATEGORIAS, ESTADOS_CIVIS, RACAS_COR, SEXOS } from '@/lib/cadastro'
 import { erroCns, erroCpf, erroNascimento, formatarCns, formatarCpf, soDigitos } from '@/lib/documentos'
 import { cn } from '@/lib/utils'
 import { ehPediatrico, idadeEm } from '@/domain/idade'
+import { Chip } from '@/components/monitor/Pagina'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
@@ -43,19 +45,9 @@ export function Escolhas<V extends string>({ rotulo, opcoes, valor, onChange, cl
         {opcoes.map((o) => {
           const on = valor === o.valor
           return (
-            <button
-              key={o.valor}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => onChange(on ? '' : o.valor)}
-              className={cn(
-                'rounded-capsula border px-[13px] py-1.5 text-apoio transition-colors',
-                on ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
-              )}
-            >
+            <Chip key={o.valor} variante="opcao" radio ativo={on} onClick={() => onChange(on ? '' : o.valor)}>
               {o.rotulo}
-            </button>
+            </Chip>
           )
         })}
       </div>
@@ -63,7 +55,7 @@ export function Escolhas<V extends string>({ rotulo, opcoes, valor, onChange, cl
   )
 }
 
-const SELECT = 'h-9 w-full min-w-0 rounded-controle border border-fio bg-campo px-2.5 text-controle text-tinta outline-none focus-visible:border-acao'
+const SELECT = 'w-full min-w-0 px-2.5 text-controle outline-none focus-visible:border-acao'
 
 /**
  * O formulário. `identificacao=false` esconde nome, nascimento, sexo e mãe
@@ -143,14 +135,14 @@ export function CamposCadastro({ prefixo, valores, onChange, identificacao = tru
         </Campo>
       )}
       <Campo id={id('estado_civil')} rotulo="Estado civil" className="flex-[1_1_180px]">
-        <select id={id('estado_civil')} className={SELECT} value={valores.estado_civil} onChange={(e) => onChange('estado_civil', e.target.value)}>
+        <CampoSelecao id={id('estado_civil')} className={SELECT} value={valores.estado_civil} onChange={(e) => onChange('estado_civil', e.target.value)}>
           <option value="">—</option>
           {/* valor antigo fora da lista continua visível */}
           {valores.estado_civil && !(ESTADOS_CIVIS as readonly string[]).includes(valores.estado_civil) && (
             <option value={valores.estado_civil}>{valores.estado_civil}</option>
           )}
           {ESTADOS_CIVIS.map((e) => <option key={e} value={e}>{e}</option>)}
-        </select>
+        </CampoSelecao>
       </Campo>
       <Escolhas rotulo="Categoria" opcoes={CATEGORIAS} valor={valores.categoria} onChange={(v) => onChange('categoria', v)} className="flex-[1_1_240px]" />
       {valores.categoria === 'convenio' && (
@@ -169,10 +161,10 @@ export function CamposCadastro({ prefixo, valores, onChange, identificacao = tru
         <Input {...txt('municipio')} autoComplete="off" />
       </Campo>
       <Campo id={id('uf')} rotulo="UF" className="flex-[0_1_96px]">
-        <select id={id('uf')} className={SELECT} value={valores.uf} onChange={(e) => onChange('uf', e.target.value)}>
+        <CampoSelecao id={id('uf')} className={SELECT} value={valores.uf} onChange={(e) => onChange('uf', e.target.value)}>
           <option value="">—</option>
           {UFS.map((u) => <option key={u} value={u}>{u}</option>)}
-        </select>
+        </CampoSelecao>
       </Campo>
       <Campo id={id('responsavel_nome')} rotulo="Nome do responsável" className="flex-[1_1_300px]"
         dica={menor && !valores.responsavel_nome.trim() ? 'Menor sem responsável pode ser cadastrado (abrigo, escola, outro local).' : undefined}>

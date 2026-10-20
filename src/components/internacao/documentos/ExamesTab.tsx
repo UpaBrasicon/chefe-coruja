@@ -73,20 +73,21 @@ export function ExamesTab({
     <div className="grid gap-4 lg:grid-cols-2">
       <Card className="h-fit">
         <CardHeader>
-          <CardTitle className="text-base">Gerador de Exames</CardTitle>
+          <CardTitle className="text-corpo">Gerador de Exames</CardTitle>
           <CardDescription>Clique nos exames sugeridos ou digite livremente. O texto é salvo automaticamente.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-wrap gap-2">
             {EXAMES_SUGERIDOS.map((ex) => (
-              <button
+              <Button
                 key={ex}
-                type="button"
+                variant="outline"
+                size="xs"
                 onClick={() => adicionarSugerido(ex)}
-                className="rounded-lg border border-fio bg-campo px-2.5 py-1 text-xs font-medium text-tinta transition-colors hover:border-acao hover:bg-acao/5"
+                className="rounded-controle bg-campo px-2.5 py-1 font-medium text-tinta hover:bg-acao/5 hover:text-tinta"
               >
                 + {ex}
-              </button>
+              </Button>
             ))}
           </div>
           <div className="flex gap-2">
@@ -104,7 +105,7 @@ export function ExamesTab({
               <Plus /> Adicionar
             </Button>
           </div>
-          <p className="text-xs text-tinta-sussurro">
+          <p className="text-rotulo text-tinta-sussurro">
             Dica: use Enter ou o botão Imprimir abaixo para gerar o pedido em folha de exames (paisagem).
           </p>
         </CardContent>
@@ -113,7 +114,7 @@ export function ExamesTab({
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
           <div>
-            <CardTitle className="text-base">Texto do Pedido</CardTitle>
+            <CardTitle className="text-corpo">Texto do Pedido</CardTitle>
             <CardDescription>Pode ser ajustado antes de imprimir.</CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={() => onChange({ texto: '' })}>
@@ -125,13 +126,13 @@ export function ExamesTab({
             value={exames.texto}
             onChange={(e) => onChange({ texto: e.target.value })}
             placeholder="Os exames gerados aparecerão aqui…"
-            className="min-h-[320px] font-mono text-xs leading-relaxed"
+            className="min-h-[320px] font-mono text-rotulo leading-relaxed"
           />
           <div className="flex items-center justify-between">
             <Button onClick={imprimir} disabled={!exames.texto.trim()}>
               <Printer /> Imprimir Pedido
             </Button>
-            <span className="text-xs text-tinta-sussurro">salvo automaticamente</span>
+            <span className="text-rotulo text-tinta-sussurro">salvo automaticamente</span>
           </div>
         </CardContent>
       </Card>

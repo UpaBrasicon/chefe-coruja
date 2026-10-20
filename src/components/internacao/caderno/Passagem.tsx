@@ -25,7 +25,7 @@ export function BlocoPassagem({ i, lista, eu, acao }: { i: Internacao; lista: Pa
   return (
     <Secao titulo="Passagem de plantão">
       {aguardando ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.06] px-3 py-2">
+        <div className="flex flex-wrap items-center gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2">
           <span className="flex-1">Aguardando aceite desde {hora(aguardando.enviada_em)}. Seu check-out fica bloqueado até lá.</span>
           {aguardando.de_perfil === eu && (
             <Button size="xs" variant="outline" onClick={() => acao(() => rpc('retirar_passagem', { p_passagem: aguardando.id }), 'Passagem retirada.')}>Retirar</Button>
@@ -49,7 +49,7 @@ export function BlocoPassagem({ i, lista, eu, acao }: { i: Internacao; lista: Pa
                   {(colegas.data ?? []).map((c) => <SelectItem key={c.perfil_id} value={c.perfil_id}>{c.nome} · a partir de {hora(c.inicio)}</SelectItem>)}
                 </SelectContent>
               </Select>
-              {colegas.data && colegas.data.length === 0 && <p className="text-xs text-atencao">Ninguém na escala deste setor agora nem nas próximas 12 horas.</p>}
+              {colegas.data && colegas.data.length === 0 && <p className="text-rotulo text-atencao">Ninguém na escala deste setor agora nem nas próximas 12 horas.</p>}
               <Textarea placeholder="Situação, o que está pendente, o que observar (mínimo de 15 letras)" value={resumo} onChange={(e) => setResumo(e.target.value)} />
               <div className="flex gap-2">
                 <Button size="sm" disabled={!para || resumo.trim().length < 15}

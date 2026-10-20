@@ -15,6 +15,9 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { imprimirRelatorio } from '@/lib/prontuario'
 import { Button } from '@/components/ui/button'
+import { BotaoLinha } from '@/components/ui/botao-linha'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { Chip } from '@/components/monitor/Pagina'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { TIPOS_REGISTRO, chaveDia, diaHora, ehMedico, mensagemErro, rotuloTipo, useHistoricoEvolucoes, type RegistroHistorico, type TipoRegistro } from './dados'
@@ -81,11 +84,9 @@ export function Historico({ internacaoId }: { internacaoId: string }) {
         {TIPOS_REGISTRO.map((t) => {
           const on = !fora[t.valor]
           return (
-            <button key={t.valor} type="button" aria-pressed={on} onClick={() => setFora((x) => ({ ...x, [t.valor]: on }))}
-              className={cn('min-h-[34px] rounded-capsula border px-3 py-1.5 text-apoio',
-                on ? 'border-acao/40 bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-sussurro')}>
+            <Chip key={t.valor} variante="opcao" ativo={on} onClick={() => setFora((x) => ({ ...x, [t.valor]: on }))}>
               {t.rotulo} · {semTipo.filter((r) => r.tipo === t.valor).length}
-            </button>
+            </Chip>
           )
         })}
       </div>
@@ -93,11 +94,10 @@ export function Historico({ internacaoId }: { internacaoId: string }) {
       <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5">
         <label className="flex flex-col gap-[5px] text-apoio font-medium text-grafite">
           Prestador
-          <select value={prestador} onChange={(e) => setPrestador(e.target.value)}
-            className="min-h-[38px] rounded-controle border border-fio bg-campo px-2.5 py-2 text-controle text-tinta outline-none focus-visible:border-acao">
+          <CampoSelecao value={prestador} onChange={(e) => setPrestador(e.target.value)} className="px-2.5 text-controle">
             <option value="">Todos</option>
             {prestadores.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
+          </CampoSelecao>
         </label>
         <label className="flex flex-col gap-[5px] text-apoio font-medium text-grafite">De<Input type="date" value={de} onChange={(e) => setDe(e.target.value)} /></label>
         <label className="flex flex-col gap-[5px] text-apoio font-medium text-grafite">Até<Input type="date" value={ate} onChange={(e) => setAte(e.target.value)} /></label>
@@ -118,7 +118,7 @@ export function Historico({ internacaoId }: { internacaoId: string }) {
                   <span className="tabular text-apoio font-semibold text-tinta">{diaHora(r.registrado_em)}</span>
                   <span className={cn('text-rotulo font-semibold', corTipo(r.tipo))}>{rotuloTipo(r.tipo)}</span>
                   <span className="text-apoio text-tinta-apoio">{r.autor ?? '—'} · {r.especialidade}</span>
-                  <span className={cn('rounded-capsula px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap', s.classe)}>{s.rotulo}</span>
+                  <span className={cn('rounded-capsula px-2 py-0.5 text-rotulo font-semibold whitespace-nowrap', s.classe)}>{s.rotulo}</span>
                 </div>
                 <span className="text-controle leading-[1.5] text-pretty whitespace-pre-wrap text-grafite">{r.texto}</span>
                 {r.versao > 1 && r.motivo_correcao && (
@@ -140,7 +140,7 @@ export function HistoricoLateral({ internacaoId, aoVerTudo }: { internacaoId: st
   const [aberto, setAberto] = React.useState<string | null>(null)
   const regs = q.data ?? []
   return (
-    <aside aria-label="Histórico de evoluções" className="flex min-w-0 flex-col gap-2.5 rounded-menu border border-fio bg-superficie p-3.5">
+    <aside aria-label="Histórico de evoluções" className="flex min-w-0 flex-col gap-2.5 rounded-container border border-fio bg-superficie p-3.5">
       <div className="flex items-center gap-2">
         <span className="flex items-center gap-[7px] text-controle font-semibold text-tinta"><History className="size-[15px] text-acao" aria-hidden /> Histórico</span>
         <span className="ml-auto text-rotulo text-tinta-sussurro">{regs.length} {regs.length === 1 ? 'registro' : 'registros'}</span>
@@ -150,24 +150,23 @@ export function HistoricoLateral({ internacaoId, aoVerTudo }: { internacaoId: st
         {regs.map((r) => {
           const expandido = aberto === r.id
           return (
-            <button key={r.id} type="button" aria-expanded={expandido} onClick={() => setAberto(expandido ? null : r.id)}
-              className="flex flex-col gap-[3px] border-b border-trilha py-[9px] text-left last:border-b-0 hover:bg-campo/60">
+            <BotaoLinha key={r.id} variante="linha" aria-expanded={expandido} onClick={() => setAberto(expandido ? null : r.id)}
+              className="flex-col gap-[3px] px-0 py-[9px] hover:bg-campo/60">
               <span className="flex flex-wrap items-baseline gap-[7px]">
                 <span className="tabular text-rotulo font-semibold text-tinta">{diaHora(r.registrado_em)}</span>
-                <span className={cn('text-[11px] font-semibold', corTipo(r.tipo))}>{rotuloTipo(r.tipo)}{r.papel === 'complemento' ? ' · complemento' : ''}</span>
+                <span className={cn('text-rotulo font-semibold', corTipo(r.tipo))}>{rotuloTipo(r.tipo)}{r.papel === 'complemento' ? ' · complemento' : ''}</span>
               </span>
               <span className="text-rotulo text-tinta-sussurro">{r.autor ?? '—'}</span>
               <span className={cn('text-apoio leading-[1.45] whitespace-pre-wrap text-grafite', !expandido && 'line-clamp-3')}>{r.texto}</span>
-            </button>
+            </BotaoLinha>
           )
         })}
         {!q.isLoading && regs.length === 0 && <span className="py-2 text-apoio text-tinta-sussurro">Nenhum registro nesta internação ainda.</span>}
       </div>
       {aoVerTudo && (
-        <button type="button" onClick={aoVerTudo}
-          className="flex min-h-9 items-center justify-center gap-1.5 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio text-acao hover:bg-acao/[0.06]">
+        <Button variant="outline" onClick={aoVerTudo} className="min-h-9 gap-1.5 px-3 py-2 text-acao hover:bg-alerta-marca">
           Filtrar e ler tudo <ArrowRight className="size-[13px]" aria-hidden />
-        </button>
+        </Button>
       )}
     </aside>
   )
