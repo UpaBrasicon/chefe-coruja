@@ -12,9 +12,11 @@ import { AlertTriangle, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-re
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { dataHora, dataIso, dataPorExtenso } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Button } from '@/components/ui/button'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
@@ -32,8 +34,8 @@ const SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 const FAIXA: Record<Faixa['turno'], [string, string]> = { manha: ['Manhã', '07h–13h'], tarde: ['Tarde', '13h–19h'], noite: ['Noite', '19h–07h'] }
 const COR = { coberto: 'bg-conforme', vaga: 'bg-atencao', sem_plantao: 'bg-trilha' } as const
 
-const hojeSP = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
-const quando = (iso: string) => new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })
+const hojeSP = () => dataIso()
+const quando = (iso: string) => dataHora(iso)
 const ORDEM_FAIXA: Faixa['turno'][] = ['manha', 'tarde', 'noite']
 
 /** Situação do setor no dia: vaga se alguma faixa está vaga; coberto se tem alguém; senão sem plantão. */
@@ -119,9 +121,9 @@ export function EscalaMes() {
     <section className="mb-6 overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-trilha px-5 py-3.5">
         <div className="flex items-center gap-2">
-          <button type="button" aria-label="Mês anterior" onClick={() => mudarMes(-1)} className="grid size-8 place-items-center rounded-controle border border-fio hover:border-acao hover:text-acao"><ChevronLeft className="size-4" /></button>
+          <Button variant="outline" size="icon" aria-label="Mês anterior" onClick={() => mudarMes(-1)}><ChevronLeft className="size-4" /></Button>
           <span className="min-w-[150px] text-center text-corpo font-semibold text-tinta">{MESES[mesNum - 1][0].toUpperCase() + MESES[mesNum - 1].slice(1)} de {ano}</span>
-          <button type="button" aria-label="Próximo mês" onClick={() => mudarMes(1)} className="grid size-8 place-items-center rounded-controle border border-fio hover:border-acao hover:text-acao"><ChevronRight className="size-4" /></button>
+          <Button variant="outline" size="icon" aria-label="Próximo mês" onClick={() => mudarMes(1)}><ChevronRight className="size-4" /></Button>
         </div>
         <Button onClick={() => { setErro(null); setPublicando(true) }} disabled={!m || plantoesMes === 0 || mesPassou}>
           <ShieldCheck /> Publicar escala
@@ -161,11 +163,11 @@ export function EscalaMes() {
               const vagas = fs.filter((f) => f.situacao === 'vaga').length
               const pessoas = new Set(fs.flatMap((f) => f.escalados.map((e) => e.plantao_id))).size
               return (
-                <button key={d} type="button" onClick={() => setDia(d)}
-                  className={cn('flex min-h-[84px] flex-col gap-1.5 rounded-controle border p-2 text-left transition-colors hover:border-acao',
+                <BotaoLinha key={d} onClick={() => setDia(d)}
+                  className={cn('min-h-[84px] items-stretch gap-1.5 rounded-controle p-2',
                     d === hoje ? 'border-acao bg-alerta-marca/40' : 'border-fio bg-superficie', d < hoje && 'opacity-70')}>
                   <span className="flex items-center gap-1 text-apoio font-semibold tabular-nums text-tinta">
-                    {Number(d.slice(8))}{d === hoje && <span className="size-1.5 rounded-full bg-acao" aria-label="hoje" />}
+                    {Number(d.slice(8))}{d === hoje && <span className="size-1.5 rounded-capsula bg-acao" aria-label="hoje" />}
                   </span>
                   <span className="flex flex-col gap-[3px]" aria-hidden>
                     {setores.map((s) => (
@@ -180,7 +182,7 @@ export function EscalaMes() {
                       </span>
                     )}
                   </span>
-                </button>
+                </BotaoLinha>
               )
             })}
           </div>
@@ -192,7 +194,7 @@ export function EscalaMes() {
           <div className="flex flex-wrap items-center gap-3 border-b border-trilha px-5 py-3">
             <Button size="sm" variant="outline" onClick={() => setDia(null)}><ChevronLeft /> Voltar ao mês</Button>
             <span className="text-corpo font-semibold text-tinta">
-              {new Date(`${dia}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {dataPorExtenso(`${dia}T12:00:00Z`)}
             </span>
           </div>
           {setores.map((s) => {
@@ -208,7 +210,7 @@ export function EscalaMes() {
                       <div className="flex flex-wrap items-baseline gap-x-2">
                         <span className="text-apoio font-semibold text-tinta">{FAIXA[f.turno][0]}</span>
                         <span className="text-rotulo text-tinta-sussurro">{FAIXA[f.turno][1]}</span>
-                        {f.situacao === 'vaga' && <span className="ml-auto rounded-capsula bg-atencao/[0.12] px-1.5 text-rotulo font-semibold text-atencao uppercase">Vaga aberta</span>}
+                        {f.situacao === 'vaga' && <span className="ml-auto rounded-capsula bg-atencao/10 px-1.5 text-rotulo font-semibold text-atencao uppercase">Vaga aberta</span>}
                       </div>
                       {f.escalados.map((e) => (
                         <span key={e.plantao_id} className="text-apoio text-tinta">
@@ -223,9 +225,9 @@ export function EscalaMes() {
                       )}
                       {f.situacao === 'coberto' && f.vaga_id && <span className="text-rotulo text-conforme">Vaga marcada, já coberta</span>}
                       {f.vaga_id ? (
-                        <button type="button" onClick={() => void retirarVaga(f.vaga_id!)} className="w-fit text-rotulo text-tinta-sussurro underline-offset-2 hover:text-critico hover:underline">Retirar vaga</button>
+                        <Button variant="link" onClick={() => void retirarVaga(f.vaga_id!)} className="min-h-0 w-fit p-0 text-rotulo text-tinta-sussurro underline-offset-2 hover:text-critico">Retirar vaga</Button>
                       ) : f.situacao === 'sem_plantao' && dia >= hoje ? (
-                        <button type="button" onClick={() => void marcarVaga(f)} className="w-fit text-rotulo text-acao underline-offset-2 hover:underline">Marcar vaga</button>
+                        <Button variant="link" onClick={() => void marcarVaga(f)} className="min-h-0 w-fit p-0 text-rotulo underline-offset-2">Marcar vaga</Button>
                       ) : null}
                     </div>
                   ))}

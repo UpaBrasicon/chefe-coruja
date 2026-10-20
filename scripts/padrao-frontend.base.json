@@ -1,16 +1,16 @@
 {
   "_leia": "Base da catraca do padrão do frontend (scripts/padrao-frontend.mjs). Só desce: depois de corrigir, rode `node scripts/padrao-frontend.mjs --atualizar` e comite junto.",
   "totais": {
-    "cor-crua": 75,
-    "cor-arbitraria": 119,
+    "cor-crua": 44,
+    "cor-arbitraria": 101,
     "cor-hex": 55,
-    "texto-escala": 661,
-    "canto": 258,
-    "botao-solto": 107,
+    "texto-escala": 502,
+    "canto": 212,
+    "botao-solto": 88,
     "select-solto": 66,
-    "tabela-solta": 23,
-    "titulo-solto": 57,
-    "data-local": 135,
+    "tabela-solta": 20,
+    "titulo-solto": 52,
+    "data-local": 116,
     "importacao-cruzada": 0,
     "emoji": 1,
     "pronto-socorro": 0
@@ -282,29 +282,6 @@
     "src/pages/Contingencia.tsx": {
       "canto": 1
     },
-    "src/pages/Escala.tsx": {
-      "botao-solto": 14,
-      "canto": 37,
-      "cor-arbitraria": 15,
-      "cor-crua": 31,
-      "data-local": 2,
-      "tabela-solta": 3,
-      "texto-escala": 115,
-      "titulo-solto": 1
-    },
-    "src/pages/Extrato.tsx": {
-      "canto": 1,
-      "data-local": 6,
-      "texto-escala": 9,
-      "titulo-solto": 1
-    },
-    "src/pages/HistoricoEscala.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "data-local": 1,
-      "texto-escala": 8,
-      "titulo-solto": 1
-    },
     "src/pages/Login.tsx": {
       "botao-solto": 4,
       "canto": 3,
@@ -318,12 +295,6 @@
       "cor-arbitraria": 3,
       "data-local": 3,
       "texto-escala": 12,
-      "titulo-solto": 1
-    },
-    "src/pages/MinhaAgenda.tsx": {
-      "canto": 2,
-      "data-local": 1,
-      "texto-escala": 6,
       "titulo-solto": 1
     },
     "src/pages/Notificacoes.tsx": {
@@ -383,12 +354,6 @@
       "botao-solto": 1,
       "canto": 2,
       "texto-escala": 15,
-      "titulo-solto": 1
-    },
-    "src/pages/Vagas.tsx": {
-      "canto": 1,
-      "data-local": 3,
-      "texto-escala": 13,
       "titulo-solto": 1
     },
     "src/pages/admin/ErrosEAlertas.tsx": {
@@ -474,12 +439,6 @@
     "src/pages/gestor/CriticasAih.tsx": {
       "canto": 1,
       "texto-escala": 4
-    },
-    "src/pages/gestor/EscalaMes.tsx": {
-      "botao-solto": 5,
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "data-local": 3
     },
     "src/pages/gestor/EsperaMedico.tsx": {
       "canto": 2,
@@ -574,12 +533,6 @@
       "data-local": 1,
       "tabela-solta": 1,
       "texto-escala": 2
-    },
-    "src/pages/gestor/PresencasDoDia.tsx": {
-      "canto": 3,
-      "cor-arbitraria": 1,
-      "data-local": 3,
-      "texto-escala": 8
     },
     "src/pages/gestor/Protocolos.tsx": {
       "botao-solto": 2,

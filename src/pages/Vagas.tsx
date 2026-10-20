@@ -1,9 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { BriefcaseBusiness, ChevronRight } from 'lucide-react'
+import { BriefcaseBusiness } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { dataPura, hora, moeda, numero } from '@/lib/formato'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,12 +28,7 @@ type Remuneracao = {
 
 const TURNO_LABEL: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }
 
-const hora = (iso: string) =>
-  new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
-
-function brl(v: number) {
-  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
+const brl = moeda
 
 function distanciaKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const r = 6371
@@ -124,28 +120,20 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       {!embutido && (
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
-            <Link to="/" className="transition-colors hover:text-tinta">
-              Início
-            </Link>
-            <ChevronRight className="size-3.5" />
-            <span className="font-medium text-tinta">Vagas de Plantão</span>
-          </div>
-          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Vagas de Plantão</h1>
-          <p className="text-sm text-tinta-sussurro">
-            Plantões e partes de plantão livres, com filtros por unidade, turno, especialidade, distância e valor.
-          </p>
+        <div className="flex flex-col">
+          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Vagas de plantão' }]} />
+          <TituloPagina icone={BriefcaseBusiness} titulo="Vagas de plantão" className="mb-0"
+            descricao="Plantões e partes de plantão livres, com filtros por unidade, turno, especialidade, distância e valor." />
         </div>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Filtros</CardTitle>
+          <CardTitle className="text-corpo">Filtros</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-tinta-sussurro">Unidade</label>
+            <label className="text-rotulo font-medium text-tinta-sussurro">Unidade</label>
             <Select value={unidadeFiltro || null} onValueChange={(v) => setUnidadeFiltro(v ?? '')}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Todas" />
@@ -160,7 +148,7 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
             </Select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-tinta-sussurro">Turno</label>
+            <label className="text-rotulo font-medium text-tinta-sussurro">Turno</label>
             <Select value={turnoFiltro || null} onValueChange={(v) => setTurnoFiltro(v ?? '')}>
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="Todos" />
@@ -173,11 +161,11 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
             </Select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-tinta-sussurro">Especialidade</label>
+            <label className="text-rotulo font-medium text-tinta-sussurro">Especialidade</label>
             <Input value={especialidadeFiltro} onChange={(e) => setEspecialidadeFiltro(e.target.value)} placeholder="Ex.: clínica" className="w-40" />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-tinta-sussurro">Distância (km)</label>
+            <label className="text-rotulo font-medium text-tinta-sussurro">Distância (km)</label>
             <Input type="number" min={0} value={raioKm || ''} onChange={(e) => setRaioKm(Number(e.target.value))} placeholder="Sem limite" className="w-28" />
           </div>
           <Button variant="outline" size="sm" onClick={capturarPosicao}>
@@ -188,35 +176,35 @@ export default function Vagas({ embutido = false }: { embutido?: boolean } = {})
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <BriefcaseBusiness className="size-4 text-tinta-sussurro" />
             {vagasFiltradas.length} vaga(s) disponível(is)
           </CardTitle>
           <CardDescription>Candidate-se às vagas de sua preferência. O gestor da unidade aprova na escala.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          {erro && <p role="alert" className="text-sm text-critico">{erro}</p>}
+          {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
           {isLoading ? (
             <div className="flex h-24 items-center justify-center">
               <Spinner />
             </div>
           ) : vagasFiltradas.length === 0 ? (
-            <p className="text-sm text-tinta-sussurro">Nenhuma vaga encontrada com os filtros atuais.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhuma vaga encontrada com os filtros atuais.</p>
           ) : (
             vagasFiltradas.map((v) => (
-              <div key={v.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 text-sm">
+              <div key={v.id} className="flex flex-wrap items-center justify-between gap-3 rounded-controle border p-3 text-apoio">
                 <div className="flex flex-col">
                   <div className="flex flex-wrap items-center gap-2 font-medium">
-                    {new Date(v.data + 'T12:00:00').toLocaleDateString('pt-BR')} · {TURNO_LABEL[v.turno] ?? v.turno}
-                    <span className="text-xs font-normal text-tinta-apoio">{hora(v.inicio)}–{hora(v.fim)}</span>
+                    {dataPura(v.data)} ·{TURNO_LABEL[v.turno] ?? v.turno}
+                    <span className="text-rotulo font-normal text-tinta-apoio">{hora(v.inicio)}–{hora(v.fim)}</span>
                     {v.parte && v.partes && <Badge variant="outline">Parte {v.parte} de {v.partes}</Badge>}
                     <Badge variant="success">{brl(valorDaVaga(v))}</Badge>
                   </div>
-                  <div className="mt-0.5 text-xs text-tinta-sussurro">
+                  <div className="mt-0.5 text-rotulo text-tinta-sussurro">
                     {v.unidade_nome} — {v.setor_nome}
                     {v.especialidade ? ` · ${v.especialidade}` : ''}
                     {pos && v.latitude != null && v.longitude != null && (
-                      <> · a {distanciaKm(pos, { lat: v.latitude, lng: v.longitude }).toFixed(1)} km</>
+                      <> · a {numero(distanciaKm(pos, { lat: v.latitude, lng: v.longitude }), 1)} km</>
                     )}
                   </div>
                 </div>
