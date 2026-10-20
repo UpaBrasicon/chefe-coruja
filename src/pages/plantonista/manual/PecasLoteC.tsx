@@ -24,7 +24,7 @@ export function Bloco({ titulo, descricao, children }: { titulo: string; descric
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{titulo}</CardTitle>
+        <CardTitle className="text-corpo">{titulo}</CardTitle>
         {descricao && <CardDescription>{descricao}</CardDescription>}
       </CardHeader>
       <CardContent className="flex flex-col gap-2">{children}</CardContent>
@@ -49,7 +49,7 @@ export function LinhaManual({
   nota?: string
 }) {
   return (
-    <div className="rounded-lg border px-3 py-2 text-sm">
+    <div className="rounded-controle border px-3 py-2 text-apoio">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">{nome}</span>
         {conta && <span className="tabular-nums">{conta}</span>}

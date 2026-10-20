@@ -10,7 +10,8 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
-import { CampoPeso } from './PecasLoteC'
+import { CampoPeso } from './PecasLoteC'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const traco = (x: number | null | undefined, sufixo: string, casas = 0) => (x === null || x === undefined ? '—' : `${br(x, casas)} ${sufixo}`)
 
@@ -111,39 +112,39 @@ export function RessuscitacaoVolemicaAdulto() {
 
       <Bloco titulo="SSC 2026 × ILAS jul/2026 × manual do HC" descricao="O que cada fonte escreve, com página. Decisão do responsável técnico (28/09/2026): o ILAS entra como referência brasileira ao lado da SSC 2026; o livro fica como base. A ferramenta mostra; a conduta é do médico.">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro">
-              <tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">SSC 2026</th><th className="pr-3 pb-2">ILAS jul/2026</th><th className="pb-2">Manual do HC</th></tr>
-            </thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[720px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro">
+              <TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">SSC 2026</TableHead><TableHead className="pr-3 pb-2">ILAS jul/2026</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow>
+            </TableHeader>
+            <TableBody>
               {DIRETRIZES_2026.map((d) => (
-                <tr key={d.tema} className="border-t">
-                  <td className="pr-3 py-2 font-medium">{d.tema}{d.nota && <p className="mt-1 font-normal text-atencao">{d.nota}</p>}</td>
+                <TableRow key={d.tema} className="border-t">
+                  <TableCell className="pr-3 py-2 font-medium">{d.tema}{d.nota && <p className="mt-1 font-normal text-atencao">{d.nota}</p>}</TableCell>
                   {[d.ssc, d.ilas, d.livro].map((c, i) => (
-                    <td key={i} className="pr-3 py-2">{c ? <>{c.texto} <span className="text-tinta-sussurro">({c.pagina})</span></> : <span className="text-tinta-sussurro">—</span>}</td>
+                    <TableCell key={i} className="pr-3 py-2">{c ? <>{c.texto} <span className="text-tinta-sussurro">({c.pagina})</span></> : <span className="text-tinta-sussurro">—</span>}</TableCell>
                   ))}
-                </tr>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </Bloco>
 
       <Bloco titulo="Soluções cristaloides" descricao="Tabela 5 do cap. 4 (p. 74), em mmol/L; osmolaridade em mOsm/L.">
         <div className="overflow-x-auto">
-          <table className="w-full text-left tabular-nums">
-            <thead className="text-tinta-sussurro">
-              <tr><th className="pr-3">Solução</th><th className="pr-3">Osm</th><th className="pr-3">Na</th><th className="pr-3">Cl</th><th className="pr-3">K</th><th className="pr-3">Ca</th><th>Lactato</th></tr>
-            </thead>
-            <tbody>
+          <Table variante="referencia" className="w-full text-left tabular-nums">
+            <TableHeader className="text-tinta-sussurro">
+              <TableRow><TableHead className="pr-3">Solução</TableHead><TableHead className="pr-3">Osm</TableHead><TableHead className="pr-3">Na</TableHead><TableHead className="pr-3">Cl</TableHead><TableHead className="pr-3">K</TableHead><TableHead className="pr-3">Ca</TableHead><TableHead>Lactato</TableHead></TableRow>
+            </TableHeader>
+            <TableBody>
               {SOLUCOES_TABELA5.map((s) => (
-                <tr key={s.id} className="border-t">
-                  <td className="pr-3">{s.nome}</td>
-                  {[s.osm, s.na, s.cl, s.k, s.ca, s.lactato].map((x, i) => <td key={i} className="pr-3">{x === null ? '–' : br(x)}</td>)}
-                </tr>
+                <TableRow key={s.id} className="border-t">
+                  <TableCell className="pr-3">{s.nome}</TableCell>
+                  {[s.osm, s.na, s.cl, s.k, s.ca, s.lactato].map((x, i) => <TableCell key={i} className="pr-3">{x === null ? '–' : br(x)}</TableCell>)}
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
         {SOLUCOES_TABELA5.filter((s) => s.nota).map((s) => <p key={s.id} className="text-atencao">{s.nome}: {s.nota}</p>)}
         <p className="text-tinta-sussurro">Tabela 7 do cap. 7 (p. 122): {SOLUCOES_TABELA7.map((s) => `${s.nome} — ${s.texto}`).join('; ')}.</p>

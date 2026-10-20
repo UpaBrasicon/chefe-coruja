@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 
 export function Trecho({ texto, pagina, errata }: { texto: string; pagina: string; errata?: string }) {
   return (
-    <p className="text-sm">
+    <p className="text-apoio">
       {texto} <span className="text-tinta-sussurro">(Manual HCFMUSP, {pagina})</span>
       {errata && (
         <span className="mt-1 block text-tinta-sussurro">
@@ -41,10 +41,10 @@ export function Bloco({ titulo, descricao, children }: { titulo: string; descric
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{titulo}</CardTitle>
+        <CardTitle className="text-corpo">{titulo}</CardTitle>
         {descricao && <CardDescription>{descricao}</CardDescription>}
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 text-sm">{children}</CardContent>
+      <CardContent className="flex flex-col gap-3 text-apoio">{children}</CardContent>
     </Card>
   )
 }

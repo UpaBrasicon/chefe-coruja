@@ -5,7 +5,9 @@ import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Trecho } from './LoteAPecas'
-import { Bloco, LinhaManual } from './PecasLoteC'
+import { Bloco, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Síndrome aórtica aguda do adulto (cap. 20 do manual do HCFMUSP): alvos, cortes de diâmetro e Tabela 3. O ADD-RS tem tela própria. */
 export function SindromeAorticaAdulto() {
@@ -21,7 +23,7 @@ export function SindromeAorticaAdulto() {
     >
       <Bloco titulo="Alvo na dissecção de aorta (cap. 19, Tabela 4, p. 274)">
         <LinhaManual nome="Dissecção de aorta" texto={<>alvo: {disseccao.alvo}. Tempo: {disseccao.tempo}</>} pagina="Tabela 4, p. 274" errata={disseccao.errata} />
-        <p className="text-sm text-tinta-sussurro">Esmolol e nitroprussiato com mL/h: tela de emergência hipertensiva. Risco pelo ADD-RS: tela própria.</p>
+        <p className="text-apoio text-tinta-sussurro">Esmolol e nitroprussiato com mL/h: tela de emergência hipertensiva. Risco pelo ADD-RS: tela própria.</p>
       </Bloco>
 
       <Bloco titulo="Cortes e prognóstico">
@@ -33,18 +35,18 @@ export function SindromeAorticaAdulto() {
           <NumberField id="aorta-cm" label="Diâmetro da aorta" unit="cm" value={cm} onChange={setCm} step={0.1} />
         </div>
         {cm > 0 && (linha
-          ? <p className="tabular-nums">Faixa &gt; {linha.acimaDeCm.toLocaleString('pt-BR')} cm: ruptura {linha.ruptura}, dissecção {linha.disseccao}, morte {linha.morte}, total {linha.total} ao ano.</p>
+          ? <p className="tabular-nums">Faixa &gt; {numero(linha.acimaDeCm)} cm: ruptura {linha.ruptura}, dissecção {linha.disseccao}, morte {linha.morte}, total {linha.total} ao ano.</p>
           : <p className="text-tinta-sussurro">Até 3,5 cm a Tabela 3 não tem linha.</p>)}
-        <table className="w-full text-sm tabular-nums">
-          <thead><tr className="text-left text-tinta-sussurro"><th>Tamanho</th><th>Ruptura</th><th>Dissecção</th><th>Morte</th><th>Total</th></tr></thead>
-          <tbody>
+        <Table variante="referencia" className="w-full text-apoio tabular-nums">
+          <TableHeader><TableRow className="text-left text-tinta-sussurro"><TableHead>Tamanho</TableHead><TableHead>Ruptura</TableHead><TableHead>Dissecção</TableHead><TableHead>Morte</TableHead><TableHead>Total</TableHead></TableRow></TableHeader>
+          <TableBody>
             {COMPLICACOES_DIAMETRO.map((l) => (
-              <tr key={l.acimaDeCm} className={linha?.acimaDeCm === l.acimaDeCm ? 'font-semibold' : ''}>
-                <td>&gt; {l.acimaDeCm.toLocaleString('pt-BR')} cm</td><td>{l.ruptura}</td><td>{l.disseccao}</td><td>{l.morte}</td><td>{l.total}</td>
-              </tr>
+              <TableRow key={l.acimaDeCm} className={linha?.acimaDeCm === l.acimaDeCm ? 'font-semibold' : ''}>
+                <TableCell>&gt; {numero(l.acimaDeCm)} cm</TableCell><TableCell>{l.ruptura}</TableCell><TableCell>{l.disseccao}</TableCell><TableCell>{l.morte}</TableCell><TableCell>{l.total}</TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </Bloco>
     </ToolLayout>
   )

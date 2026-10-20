@@ -8,19 +8,20 @@ import { sodioCorrigido } from '@/clinico/adulto/sodio'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { numero } from '@/lib/formato'
 
-const br = (x: number | null | undefined, casas = 1) => (x === null || x === undefined ? '—' : (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR'))
+const br = (x: number | null | undefined, casas = 1) => (x === null || x === undefined ? '—' : numero(Math.round(x * 10 ** casas) / 10 ** casas))
 const faixa = (f: [number, number] | undefined, casas = 0) => (f ? `${br(f[0], casas)}–${br(f[1], casas)}` : '—')
 
 function Secao({ titulo, descricao, children }: { titulo: string; descricao: string; children: ReactNode }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{titulo}</CardTitle>
+        <CardTitle className="text-corpo">{titulo}</CardTitle>
         <CardDescription>{descricao}</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 text-sm">{children}</CardContent>
+      <CardContent className="flex flex-col gap-3 text-apoio">{children}</CardContent>
     </Card>
   )
 }

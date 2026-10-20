@@ -9,7 +9,8 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Trecho } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 
 const pede = 'informe o peso'
@@ -40,7 +41,7 @@ export function FibrilacaoAtrialAdulto() {
     >
       <CampoPeso id="fa-peso" peso={peso} onChange={setPeso} />
 
-      <p className="text-sm text-tinta-sussurro">
+      <p className="text-apoio text-tinta-sussurro">
         O livro traz cardioversão elétrica na instabilidade causada pela FA ou na FA com pré-excitação (Figura 3, p. 255; p. 248) e, de emergência, na isquemia
         coronariana aguda, no edema agudo de pulmão ou na hipoperfusão (p. 247). O capítulo não traz carga em joules. Na FA com pré-excitação o livro diz para
         nunca usar digoxina, betabloqueador nem bloqueador de canal de cálcio (p. 248).
@@ -96,7 +97,7 @@ export function FibrilacaoAtrialAdulto() {
       <Bloco titulo="Tempo de FA e anticoagulação">
         <div className="grid gap-4 sm:grid-cols-3">
           <NumberField id="fa-horas" label="Duração da FA" unit="h" value={horas} onChange={setHoras} step={1} />
-          <label className="flex items-center gap-2 self-end text-sm">
+          <label className="flex items-center gap-2 self-end text-apoio">
             <input type="checkbox" checked={!horasSabidas} onChange={(e) => setHorasSabidas(!e.target.checked)} />
             Tempo indeterminado
           </label>
@@ -104,11 +105,11 @@ export function FibrilacaoAtrialAdulto() {
         <p className={janela === 'menos-de-48h' ? '' : 'text-atencao'}>{TEXTO_JANELA[janela]}</p>
         {ANTICOAGULACAO_FA.map((a) => <LinhaManual key={a.id} nome={a.nome} texto={`${a.dose} — ${a.quando}`} pagina={a.pagina} />)}
         <div className="grid gap-4 sm:grid-cols-3">
-          <label className="flex items-center gap-2 self-end text-sm">
+          <label className="flex items-center gap-2 self-end text-apoio">
             <input type="checkbox" checked={idoso} onChange={(e) => setIdoso(e.target.checked)} />
             Idoso (o livro não define a idade)
           </label>
-          <div className="flex flex-col text-sm">
+          <div className="flex flex-col text-apoio">
             <span className="text-tinta-sussurro">Varfarina inicial</span>
             <strong className="tabular-nums">{wf ? `${br(wf)} mg/d` : pede}</strong>
           </div>
@@ -120,7 +121,7 @@ export function FibrilacaoAtrialAdulto() {
       </Bloco>
 
       <Bloco titulo="Errata e lacunas do capítulo">
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">
           {ERRATA_FA.map((e) => <li key={e}>{e}</li>)}
         </ul>
       </Bloco>
@@ -128,12 +129,12 @@ export function FibrilacaoAtrialAdulto() {
         <LinhaManual nome={j24 === 'ate-24h' ? 'Até 24 h' : 'Mais de 24 h ou indeterminada'} texto={TEXTO_JANELA_2024[j24]} pagina="ESC 2024 p. 3355–3356; SBC 2025 p. 37" />
         {ANTICOAGULACAO_FA_2025.map((a) => <LinhaManual key={a.tema} nome={a.tema} texto={a.texto} pagina={a.fonte} />)}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Droga</th><th className="pr-3 pb-2">ESC 2024</th><th className="pr-3 pb-2">SBC 2025</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
-            <tbody>{DOSES_FA_2024.map((d) => <tr key={d.droga} className="border-t"><td className="pr-3 py-2 font-medium">{d.droga}</td><td className="pr-3 py-2">{d.esc}</td><td className="pr-3 py-2">{d.sbc}</td><td className="pr-3 py-2 text-tinta-sussurro">{d.livro}</td></tr>)}</tbody>
-          </table>
+          <Table variante="referencia" className="w-full min-w-[720px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Droga</TableHead><TableHead className="pr-3 pb-2">ESC 2024</TableHead><TableHead className="pr-3 pb-2">SBC 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DOSES_FA_2024.map((d) => <TableRow key={d.droga} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.droga}</TableCell><TableCell className="pr-3 py-2">{d.esc}</TableCell><TableCell className="pr-3 py-2">{d.sbc}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
         </div>
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_FA_2024.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_FA_2024.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

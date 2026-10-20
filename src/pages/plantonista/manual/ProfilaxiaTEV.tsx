@@ -8,9 +8,10 @@ import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 
-import { Bloco, LinhaManual } from './PecasLoteC'
+import { Bloco, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
 
-const br = (x: number, casas = 2) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 2) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: [number, number], casas = 2) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
 
 /** Profilaxia de TEV: doses e menções do manual do HCFMUSP, sem escore de risco. */
@@ -42,9 +43,9 @@ export function ProfilaxiaTEV() {
       </Bloco>
 
       <Bloco titulo="Onde o manual cita profilaxia de TEV" descricao="Texto de cada capítulo; em AVC, HIP e HSA o livro fala em compressão pneumática.">
-        <ul className="flex flex-col gap-1.5 text-sm">
+        <ul className="flex flex-col gap-1.5 text-apoio">
           {MENCOES_PROFILAXIA_TEV.map((m) => (
-            <li key={m.contexto} className="rounded-lg border px-3 py-2">
+            <li key={m.contexto} className="rounded-controle border px-3 py-2">
               <span className="font-medium">{m.contexto}</span>
               {m.mecanica && <Badge variant="secondary" className="ml-2">mecânica</Badge>}
               <br />
@@ -58,7 +59,7 @@ export function ProfilaxiaTEV() {
         <div className="max-w-xs">
           <NumberField id="tev-ui" label="Heparina SC recebida" unit="UI" value={ui} onChange={setUi} min={0} step={500} />
         </div>
-        <p className="text-sm tabular-nums">
+        <p className="text-apoio tabular-nums">
           {!prot ? 'Informe as unidades de heparina.' : (
             <>Protamina <strong>{faixa(prot.mg, 1)} mg</strong> = {faixa(prot.ampolas)} ampola(s){prot.limitadoAoTeto && ' (no teto de 50 mg)'}</>
           )}
@@ -66,7 +67,7 @@ export function ProfilaxiaTEV() {
       </Bloco>
 
       <Bloco titulo="O que o manual não traz">
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">
           {FORA_DO_LIVRO.map((x) => <li key={x}>{x}</li>)}
         </ul>
       </Bloco>

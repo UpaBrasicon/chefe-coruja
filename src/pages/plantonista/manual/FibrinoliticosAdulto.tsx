@@ -6,11 +6,13 @@ import {
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-const fmtE = (x: number, c = 1) => (Math.round(x * 10 ** c) / 10 ** c).toLocaleString('pt-BR')
+const fmtE = (x: number, c = 1) => numero(Math.round(x * 10 ** c) / 10 ** c)
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 
 /** Fibrinolíticos do adulto no IAM com supra e no TEP (caps. 14 e 32 do manual do HCFMUSP). */
 export function FibrinoliticosAdulto() {
@@ -32,7 +34,7 @@ export function FibrinoliticosAdulto() {
       <CampoPeso id="fib-peso" peso={peso} onChange={setPeso}>
         <NumberField id="fib-idade" label="Idade" unit="anos" value={idade} onChange={setIdade} min={0} />
       </CampoPeso>
-      <p className="text-sm text-tinta-sussurro">
+      <p className="text-apoio text-tinta-sussurro">
         Contraindicações: Tabela 1 do cap. 14 (p. 219–220) e Tabela 9 do cap. 32 (p. 444). No IAM com supra, o manual traz porta-agulha menor que 10 minutos (p. 218).
       </p>
 
@@ -93,7 +95,7 @@ export function FibrinoliticosAdulto() {
           pagina={ALTEPLASE_TEP.pagina}
         />
         <LinhaManual nome="Alteplase na PCR por TEP" texto={ALTEPLASE_TEP.pcr.texto} conta={<strong>{ALTEPLASE_TEP.pcr.mg} mg</strong>} pagina={ALTEPLASE_TEP.pagina} />
-        <p className="text-sm text-tinta-sussurro">
+        <p className="text-apoio text-tinta-sussurro">
           O manual traz que a HNF não deve ser infundida durante estreptoquinase e uroquinase, mas pode ser mantida com alteplase (p. 443).
         </p>
       </Bloco>
@@ -103,10 +105,10 @@ export function FibrinoliticosAdulto() {
         <LinhaManual nome="Alteplase acelerada — corte em 67 kg (AHA 2025)" texto="≥ 67 kg: 15 + 50/30 min + 35/60 min; < 67 kg: 15 mg + 0,75 mg/kg (máx. 50) + 0,5 mg/kg (máx. 35)" pagina="AHA 2025 e806"
           conta={alt25 ? <>{alt25.fases.map((f) => `${fmtE(f.mg)} mg ${f.fase}`).join(' · ')} · <strong>total {fmtE(alt25.totalMg)} mg</strong></> : 'informe o peso'} />
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">Diretriz</th><th className="pr-3 pb-2">Fonte</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
-            <tbody>{DIRETRIZ_SCA_2025.map((d) => <tr key={d.tema} className="border-t"><td className="pr-3 py-2 font-medium">{d.tema}</td><td className="pr-3 py-2">{d.diretriz}</td><td className="pr-3 py-2">{d.fonte}</td><td className="pr-3 py-2 text-tinta-sussurro">{d.livro}</td></tr>)}</tbody>
-          </table>
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Fonte</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_SCA_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz}</TableCell><TableCell className="pr-3 py-2">{d.fonte}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
         </div>
       </Bloco>
     </ToolLayout>

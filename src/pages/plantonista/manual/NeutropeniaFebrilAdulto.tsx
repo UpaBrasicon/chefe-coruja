@@ -27,9 +27,9 @@ export function NeutropeniaFebrilAdulto() {
 
       <Bloco titulo="Alto risco: monoterapia antipseudomonas em internação (p. 1069–1070)">
         {ATB_ALTO_RISCO.map((a) => <LinhaManual key={a.nome} nome={a.nome} texto={a.dose} pagina="p. 1069–1070" />)}
-        <p className="text-sm font-medium">Vancomicina ou teicoplanina não fazem parte do esquema inicial; o livro associa em (p. 1070):</p>
-        <ul className="list-disc pl-5 text-sm">{INDICACOES_VANCO_NF.map((i) => <li key={i}>{i}</li>)}</ul>
-        <p className="text-sm text-tinta-sussurro">O livro não traz dose de vancomicina nem de teicoplanina neste capítulo.</p>
+        <p className="text-apoio font-medium">Vancomicina ou teicoplanina não fazem parte do esquema inicial; o livro associa em (p. 1070):</p>
+        <ul className="list-disc pl-5 text-apoio">{INDICACOES_VANCO_NF.map((i) => <li key={i}>{i}</li>)}</ul>
+        <p className="text-apoio text-tinta-sussurro">O livro não traz dose de vancomicina nem de teicoplanina neste capítulo.</p>
       </Bloco>
 
       <CampoPeso id="nf-peso" peso={peso} onChange={setPeso} />
