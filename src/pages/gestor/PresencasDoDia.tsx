@@ -3,6 +3,7 @@ import { Clock, KeyRound, LogIn, Users } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { hora } from '@/lib/formato'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -27,7 +28,7 @@ type PresencaDia = {
   liberado_pos_ate: string | null
 }
 
-const hhmm = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
+const hhmm = (iso: string) => hora(iso)
 
 // Liberar continuidade depois da tolerância de 20 min (decisão do RT 03/10/2026).
 function LiberarPosPlantao({ unidadeId, perfilId, nome }: { unidadeId: string; perfilId: string; nome: string }) {
@@ -54,14 +55,14 @@ function LiberarPosPlantao({ unidadeId, perfilId, nome }: { unidadeId: string; p
     )
   }
   return (
-    <div className="flex w-full flex-col gap-2 rounded-lg border border-fio bg-campo p-3">
-      <p className="text-xs text-tinta-apoio">Liberar {nome} a continuar depois dos 20 min de tolerância.</p>
+    <div className="flex w-full flex-col gap-2 rounded-controle border border-fio bg-campo p-3">
+      <p className="text-rotulo text-tinta-apoio">Liberar {nome} a continuar depois dos 20 min de tolerância.</p>
       <div className="flex flex-wrap items-center gap-2">
-        <label className="text-xs text-tinta-sussurro">Minutos (5 a 120)</label>
+        <label className="text-rotulo text-tinta-sussurro">Minutos (5 a 120)</label>
         <Input className="h-8 w-20" type="number" min={5} max={120} value={minutos} onChange={(e) => setMinutos(e.target.value)} />
       </div>
       <Input className="h-8" placeholder="Motivo (mínimo 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
-      {erro && <p className="text-xs text-critico">{erro}</p>}
+      {erro && <p className="text-rotulo text-critico">{erro}</p>}
       <div className="flex gap-2">
         <Button size="xs" disabled={motivo.trim().length < 10 || Number(minutos) < 5 || Number(minutos) > 120 || liberar.isPending} onClick={() => { setErro(null); liberar.mutate() }}>Liberar</Button>
         <Button size="xs" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
@@ -99,7 +100,7 @@ export function PresencasDoDia() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-4 text-sm text-critico">
+      <div className="rounded-controle border border-critico/30 bg-alerta-critico p-4 text-apoio text-critico">
         Falha ao carregar presenças: {(error as Error).message}
       </div>
     )
@@ -117,7 +118,7 @@ export function PresencasDoDia() {
     <div className="flex flex-col gap-4">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <Users className="size-4 text-tinta-sussurro" />
             Presenças de hoje
           </CardTitle>
@@ -131,12 +132,12 @@ export function PresencasDoDia() {
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {(presencas ?? []).length === 0 ? (
-            <p className="text-sm text-tinta-sussurro">Nenhum plantonista vinculado nesta unidade.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhum plantonista vinculado nesta unidade.</p>
           ) : (
             (presencas ?? []).map((p) => (
               <div
                 key={p.perfil_id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-controle border p-3 text-apoio"
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <span className="truncate font-medium">{p.nome}</span>
@@ -144,11 +145,11 @@ export function PresencasDoDia() {
                   {p.checkin_dentro === true && <Badge variant="success">dentro do raio</Badge>}
                   {p.checkin_dentro === false && (<Badge variant="destructive">fora do raio{p.checkin_distancia_m != null ? ` · ${p.checkin_distancia_m} m` : ""}</Badge>)}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-tinta-sussurro">
+                <div className="flex items-center gap-2 text-rotulo text-tinta-sussurro">
                   {p.checkin_em ? (
                     <span className="flex items-center gap-1">
                       <LogIn className="size-3.5" />
-                      {new Date(p.checkin_em).toLocaleTimeString('pt-BR')}
+                      {hhmm(p.checkin_em)}
                     </span>
                   ) : (
                     <span className="flex items-center gap-1 font-medium text-atencao">
@@ -157,7 +158,7 @@ export function PresencasDoDia() {
                   )}
                   {p.checkout_em && (
                     <span className="flex items-center gap-1 text-tinta-sussurro">
-                      → {new Date(p.checkout_em).toLocaleTimeString('pt-BR')}{p.checkout_automatico && ' (automático)'}
+                      → {hhmm(p.checkout_em)}{p.checkout_automatico && ' (automático)'}
                     </span>
                   )}
                 </div>

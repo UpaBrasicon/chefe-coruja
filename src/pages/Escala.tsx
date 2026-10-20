@@ -28,6 +28,10 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Abas, Chip, TituloPagina } from '@/components/monitor/Pagina'
+import { dataHora, hora } from '@/lib/formato'
+import { cn } from '@/lib/utils'
 import type { CandidaturaEscala, EscalaFixa, EscalaPlantao, PlantonistaDaUnidade, ResumoCargaPlantonista, SolicitacaoEscala } from '@/types/database'
 
 const TURNOS = [
@@ -336,8 +340,7 @@ export default function Escala({
   const janelaDaVaga = (vagaId: string | null) => {
     const v = vagaId ? (vagasAbertas ?? []).find((x) => x.id === vagaId) : undefined
     if (!v?.parte) return ''
-    const h = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
-    return ` · parte ${v.parte} de ${v.partes}, ${h(v.inicio)}–${h(v.fim)}`
+    return ` · parte ${v.parte} de ${v.partes}, ${hora(v.inicio)}–${hora(v.fim)}`
   }
 
   const candidatar = useMutation({
@@ -799,7 +802,7 @@ export default function Escala({
     <div className={embutido ? 'flex w-full flex-col gap-6' : 'mx-auto flex w-full max-w-6xl flex-col gap-6'}>
       <div className="flex flex-col gap-1">
         {!embutido && (
-          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
+          <div className="flex items-center gap-1 text-apoio text-tinta-sussurro">
             <Link to="/" className="transition-colors hover:text-tinta">
               Início
             </Link>
@@ -808,9 +811,9 @@ export default function Escala({
           </div>
         )}
         <div className="flex flex-wrap items-center justify-between gap-2">
-          {embutido ? <div /> : <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Escala</h1>}
+          {embutido ? <div /> : <TituloPagina icone={CalendarClock} titulo="Escala" className="mb-0" />}
           {ehPlantonista ? (
-            <div className="flex items-center gap-2 text-sm text-tinta-sussurro">
+            <div className="flex items-center gap-2 text-apoio text-tinta-sussurro">
               <Button size="xs" variant="outline" onClick={() => mudarMes(-1)}>
                 <ChevronLeft /> Mês
               </Button>
@@ -820,7 +823,7 @@ export default function Escala({
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-sm text-tinta-sussurro">
+            <div className="flex items-center gap-2 text-apoio text-tinta-sussurro">
               <Button size="xs" variant="outline" onClick={() => mudarSemana(-1)}>
                 <ChevronLeft /> Semana
               </Button>
@@ -834,7 +837,7 @@ export default function Escala({
           )}
         </div>
         {!embutido && (
-          <p className="text-sm text-tinta-sussurro">
+          <p className="text-apoio text-tinta-sussurro">
             {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
             {ehGestor ? 'Gestor — monte a escala' : ehAdmin ? 'Admin — todas as unidades' : 'Sua escala'}
           </p>
@@ -843,30 +846,13 @@ export default function Escala({
 
       {/* Abas do plantonista: Minha Escala / Escala Geral */}
       {ehPlantonista && !aba && (
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setAbaPlantonista('minha')}
-            className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-              abaPlantonista === 'minha'
-                ? 'border-acao bg-acao text-sobre-acao'
-                : 'border-fio bg-campo hover:bg-trilha'
-            }`}
-          >
-            Minha Escala
-          </button>
-          <button
-            type="button"
-            onClick={() => setAbaPlantonista('geral')}
-            className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-              abaPlantonista === 'geral'
-                ? 'border-acao bg-acao text-sobre-acao'
-                : 'border-fio bg-campo hover:bg-trilha'
-            }`}
-          >
-            Escala Geral
-          </button>
-        </div>
+        <Abas
+          abas={[['minha', 'Minha escala'], ['geral', 'Escala geral']]}
+          valor={abaPlantonista}
+          onChange={setAbaPlantonista}
+          rotulo="Visão da escala"
+          className="mb-0 gap-2"
+        />
       )}
 
       {ehPlantonista ? (
@@ -876,7 +862,7 @@ export default function Escala({
           <Card>
             <CardHeader className="flex-row items-start justify-between space-y-0">
               <div>
-                <CardTitle className="flex items-center gap-2 text-base">
+                <CardTitle className="flex items-center gap-2 text-corpo">
                   <CalendarClock className="size-4 text-tinta-sussurro" />
                   {diaSelecionado ? `Plantão de ${fmtDiaBR(diaSelecionado)}` : `Visão geral de ${fmtMesBR(mesInicio)}`}
                 </CardTitle>
@@ -887,16 +873,16 @@ export default function Escala({
                 </CardDescription>
               </div>
               {diaSelecionado && (
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
                   onClick={fecharDia}
-                  className="group relative h-14 w-48 rounded-2xl bg-white text-xl font-semibold text-black transition-shadow hover:shadow-md"
+                  className="group relative h-14 w-48 rounded-cartao bg-superficie p-0 text-dialogo font-semibold text-tinta transition-shadow hover:text-tinta hover:shadow-md"
                 >
-                  <div className="absolute top-[4px] left-1 z-10 flex h-12 w-1/4 items-center justify-center rounded-xl bg-leitos duration-500 group-hover:w-[184px]">
-                    <ChevronLeft className="size-6 text-black" />
+                  <div className="absolute top-[4px] left-1 z-10 flex h-12 w-1/4 items-center justify-center rounded-container bg-leitos duration-500 group-hover:w-[184px]">
+                    <ChevronLeft className="size-6 text-tinta" />
                   </div>
                   <p className="translate-x-2">Voltar</p>
-                </button>
+                </Button>
               )}
             </CardHeader>
             <CardContent>
@@ -918,87 +904,91 @@ export default function Escala({
                       const varios = doDia.length > 1
                       const escolhido = varios && plantaoDaAcao(diaSelecionado)?.id === p.id
                       return (
-                      <button
-                        type="button"
+                      <Button
                         key={p.id}
                         disabled={!varios}
                         aria-pressed={varios ? escolhido : undefined}
                         onClick={() => { setTurnoEscolhido({ dia: diaSelecionado, id: p.id }); setErroAcao(null) }}
-                        className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold text-white shadow-sm disabled:cursor-default ${
-                          escolhido ? 'border-tinta bg-leitos ring-2 ring-tinta/40' : varios ? 'border-conforme/30 bg-leitos/60' : 'border-conforme/30 bg-leitos'
-                        }`}
+                        className={cn(
+                          'h-auto gap-1.5 rounded-container border px-3 py-2 font-semibold text-sobre-acao shadow-sm disabled:cursor-default disabled:opacity-100',
+                          escolhido
+                            ? 'border-tinta bg-leitos ring-2 ring-tinta/40 hover:bg-leitos'
+                            : varios
+                              ? 'border-conforme/30 bg-leitos/60 hover:bg-leitos/60'
+                              : 'border-conforme/30 bg-leitos hover:bg-leitos',
+                        )}
                       >
                         {TURNO_LABEL[p.turno]}
-                        <span className="font-normal text-white">
+                        <span className="font-normal text-sobre-acao">
                           {TURNOS.find((t) => t.id === p.turno)?.horario}
                         </span>
-                        {p.quinzenal && <span className="text-[10px] font-semibold text-white">15/15</span>}
-                      </button>
+                        {p.quinzenal && <span className="text-rotulo font-semibold text-sobre-acao">15/15</span>}
+                      </Button>
                       )
                     })}
                   </div>
                   {plantoesDoDia(diaSelecionado).length > 1 && !plantaoDaAcao(diaSelecionado) && (
-                    <p className="mt-2 text-xs text-tinta-sussurro">Este dia tem mais de um turno. Toque no turno para escolher a qual a ação se aplica.</p>
+                    <p className="mt-2 text-rotulo text-tinta-sussurro">Este dia tem mais de um turno. Toque no turno para escolher a qual a ação se aplica.</p>
                   )}
 
                   {!acao ? (
                     <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
-                      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
+                      <div className="mb-2 text-rotulo font-semibold uppercase tracking-wide text-tinta-sussurro">
                         O que deseja fazer?
                       </div>
                       <div className="grid gap-2 sm:grid-cols-3">
                         <Button
                           variant="outline"
-                          className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
+                          className="h-auto flex-col items-start gap-1 bg-superficie p-4 text-left"
                           onClick={() => setAcao('sair_fixo')}
                         >
                           <LogOut className="size-4 text-atencao" />
                           <span className="font-medium">Sair do fixo</span>
-                          <span className="text-[11px] font-normal text-tinta-sussurro">
+                          <span className="text-rotulo font-normal text-tinta-sussurro">
                             Aviso prévio de 15 dias
                           </span>
                         </Button>
                         <Button
                           variant="outline"
-                          className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
+                          className="h-auto flex-col items-start gap-1 bg-superficie p-4 text-left"
                           onClick={() => setAcao('passar_plantao')}
                         >
                           <RefreshCcw className="size-4 text-suprimento" />
                           <span className="font-medium">Passar plantão</span>
-                          <span className="text-[11px] font-normal text-tinta-sussurro">
+                          <span className="text-rotulo font-normal text-tinta-sussurro">
                             Transferir para outro plantonista
                           </span>
                         </Button>
                         <Button
                           variant="outline"
-                          className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
+                          className="h-auto flex-col items-start gap-1 bg-superficie p-4 text-left"
                           onClick={() => setAcao('trocar_plantao')}
                         >
                           <RefreshCcw className="size-4 text-pediatria" />
                           <span className="font-medium">Trocar plantão</span>
-                          <span className="text-[11px] font-normal text-tinta-sussurro">
+                          <span className="text-rotulo font-normal text-tinta-sussurro">
                             Troca bilateral com outro plantonista
                           </span>
                         </Button>
                         <Button
                           variant="outline"
-                          className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
+                          className="h-auto flex-col items-start gap-1 bg-superficie p-4 text-left"
                           onClick={() => setAcao('fracionar')}
                         >
                           <FileText className="size-4 text-critico" />
                           <span className="font-medium">Fracionar plantão</span>
-                          <span className="text-[11px] font-normal text-tinta-sussurro">
+                          <span className="text-rotulo font-normal text-tinta-sussurro">
                             Dividir em partes para negociação
                           </span>
                         </Button>
                         <Button
                           variant="outline"
-                          className="h-auto flex-col items-start gap-1 bg-white p-4 text-left"
+                          className="h-auto flex-col items-start gap-1 bg-superficie p-4 text-left"
                           onClick={() => setAcao('justificar_falta')}
                         >
                           <FileText className="size-4 text-suprimento" />
                           <span className="font-medium">Justificar falta</span>
-                          <span className="text-[11px] font-normal text-tinta-sussurro">
+                          <span className="text-rotulo font-normal text-tinta-sussurro">
                             Atestado ou licença
                           </span>
                         </Button>
@@ -1006,7 +996,7 @@ export default function Escala({
                     </div>
                   ) : acao === 'sair_fixo' ? (
                     <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
-                      <div className="rounded-lg border border-atencao/30 bg-atencao/[0.08] p-3 text-sm text-atencao">
+                      <div className="rounded-controle border border-atencao/30 bg-alerta-atencao p-3 text-apoio text-atencao">
                         <strong>Aviso prévio:</strong> a saída do plantão fixo deve ser comunicada com{' '}
                         <strong>pelo menos 15 dias de antecedência</strong>. Faltam{' '}
                         <strong>{Math.max(0, diasPara(diaSelecionado))} dia(s)</strong> para este plantão.
@@ -1020,8 +1010,8 @@ export default function Escala({
                           placeholder="Motivo da saída do plantão fixo…"
                         />
                       </div>
-                      {erroAcao && <p className="mt-2 text-sm text-critico">{erroAcao}</p>}
-                      {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
+                      {erroAcao && <p className="mt-2 text-apoio text-critico">{erroAcao}</p>}
+                      {mensagem && <p className="mt-2 text-apoio text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
                           Voltar
@@ -1036,7 +1026,7 @@ export default function Escala({
                       <div className="flex flex-col gap-1.5">
                         <Label>Meu plantão (que quero trocar)</Label>
                         <Select items={Object.fromEntries(meusPlantoes.map((p) => [p.id, `${fmtDiaBR(p.data)} · ${TURNO_LABEL[p.turno] ?? p.turno}`]))} value={meuPlantaoTroca || null} onValueChange={(v) => setMeuPlantaoTroca(v ?? '')}>
-                          <SelectTrigger className="w-full bg-white">
+                          <SelectTrigger className="w-full bg-superficie">
                             <SelectValue placeholder="Selecione um dos meus plantões" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1051,7 +1041,7 @@ export default function Escala({
                       <div className="mt-3 flex flex-col gap-1.5">
                         <Label>Plantão de outro plantonista (que quero assumir)</Label>
                         <Select items={Object.fromEntries((plantoesDeOutros ?? []).map((p) => [p.id, `${fmtDiaBR(p.data)} · ${TURNO_LABEL[p.turno] ?? p.turno} · ${p.perfis?.nome_completo ?? '?'}`]))} value={outroPlantaoTroca || null} onValueChange={(v) => setOutroPlantaoTroca(v ?? '')}>
-                          <SelectTrigger className="w-full bg-white">
+                          <SelectTrigger className="w-full bg-superficie">
                             <SelectValue placeholder="Selecione o plantão do outro" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1074,12 +1064,12 @@ export default function Escala({
                           placeholder="Motivo da troca…"
                         />
                       </div>
-                      <p className="mt-2 text-xs text-tinta-sussurro">
+                      <p className="mt-2 text-rotulo text-tinta-sussurro">
                         Na troca bilateral, você oferece um plantão e recebe outro em troca. Validações de
                         conflito de horário são feitas automaticamente.
                       </p>
-                      {erroAcao && <p className="mt-2 text-sm text-critico">{erroAcao}</p>}
-                      {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
+                      {erroAcao && <p className="mt-2 text-apoio text-critico">{erroAcao}</p>}
+                      {mensagem && <p className="mt-2 text-apoio text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
                           Voltar
@@ -1094,7 +1084,7 @@ export default function Escala({
                       <div className="flex flex-col gap-1.5">
                         <Label>Em quantas partes deseja dividir?</Label>
                         <Select value={fracionarPartes} onValueChange={(v) => setFracionarPartes(v ?? '2')}>
-                          <SelectTrigger className="w-full bg-white">
+                          <SelectTrigger className="w-full bg-superficie">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -1104,13 +1094,13 @@ export default function Escala({
                           </SelectContent>
                         </Select>
                       </div>
-                      <p className="mt-2 text-xs text-tinta-sussurro">
+                      <p className="mt-2 text-rotulo text-tinta-sussurro">
                         O horário do plantão é dividido em partes iguais (12 h em 2 = duas de 6 h). A 1ª
                         parte continua com você; as outras viram vagas, e outros plantonistas se candidatam
                         em Vagas. O gestor aprova quem assume cada parte.
                       </p>
-                      {erroAcao && <p className="mt-2 text-sm text-critico">{erroAcao}</p>}
-                      {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
+                      {erroAcao && <p className="mt-2 text-apoio text-critico">{erroAcao}</p>}
+                      {mensagem && <p className="mt-2 text-apoio text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
                           Voltar
@@ -1125,7 +1115,7 @@ export default function Escala({
                       <div className="flex flex-col gap-1.5">
                         <Label>Passar para</Label>
                         <Select items={Object.fromEntries((plantonistas ?? []).map((p) => [p.perfil_id, p.nome_completo + (p.crm ? ` · CRM ${p.crm}` : '')]))} value={destinoId || null} onValueChange={(v) => setDestinoId(v ?? '')}>
-                          <SelectTrigger className="w-full bg-white">
+                          <SelectTrigger className="w-full bg-superficie">
                             <SelectValue placeholder="Selecione o plantonista" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1150,12 +1140,12 @@ export default function Escala({
                           placeholder="Motivo da passagem…"
                         />
                       </div>
-                      <p className="mt-2 text-xs text-tinta-sussurro">
+                      <p className="mt-2 text-rotulo text-tinta-sussurro">
                         A passagem pode ser aplicada na hora ou depender de aprovação do gestor (conforme
                         configuração da unidade). A pessoa que recebe o plantão será notificada.
                       </p>
-                      {erroAcao && <p className="mt-2 text-sm text-critico">{erroAcao}</p>}
-                      {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
+                      {erroAcao && <p className="mt-2 text-apoio text-critico">{erroAcao}</p>}
+                      {mensagem && <p className="mt-2 text-apoio text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
                           Voltar
@@ -1175,7 +1165,7 @@ export default function Escala({
                             setTipoFalta((v as 'atestado_medico' | 'licenca_maternidade') ?? 'atestado_medico')
                           }
                         >
-                          <SelectTrigger className="w-full bg-white">
+                          <SelectTrigger className="w-full bg-superficie">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -1192,7 +1182,7 @@ export default function Escala({
                           accept=".pdf,image/png,image/jpeg,image/jpg"
                           onChange={(e) => setAnexo(e.target.files?.[0] ?? null)}
                         />
-                        {anexo && <span className="text-xs text-tinta-sussurro">{anexo.name}</span>}
+                        {anexo && <span className="text-rotulo text-tinta-sussurro">{anexo.name}</span>}
                       </div>
                       <div className="mt-3 flex flex-col gap-1.5">
                         <Label htmlFor="falta-just">Justificativa</Label>
@@ -1203,8 +1193,8 @@ export default function Escala({
                           placeholder="Descreva o motivo da falta…"
                         />
                       </div>
-                      {erroAcao && <p className="mt-2 text-sm text-critico">{erroAcao}</p>}
-                      {mensagem && <p className="mt-2 text-sm text-conforme">{mensagem}</p>}
+                      {erroAcao && <p className="mt-2 text-apoio text-critico">{erroAcao}</p>}
+                      {mensagem && <p className="mt-2 text-apoio text-conforme">{mensagem}</p>}
                       <div className="mt-3 flex justify-end gap-2">
                         <Button variant="ghost" onClick={() => setAcao(null)}>
                           Voltar
@@ -1221,7 +1211,7 @@ export default function Escala({
                   {DIAS_SEMANA.map((d, idx) => (
                     <div
                       key={d}
-                      className={`py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                      className={`py-1 text-rotulo font-semibold uppercase tracking-wide ${
                         idx === 0 || idx === 6 ? 'text-atencao' : 'text-tinta-sussurro'
                       }`}
                     >
@@ -1237,22 +1227,23 @@ export default function Escala({
                     const dow = new Date(c.iso + 'T12:00:00').getDay()
                     const fimSemana = dow === 0 || dow === 6
                     return (
+                      // padrao-ok: célula do calendário mensal da escala (cor por plantão/fim de semana/hoje; nenhuma peça cobre)
                       <button
                         key={c.iso}
                         type="button"
                         onClick={() => (plantoes.length ? abrirDia(c.iso) : undefined)}
-                        className={`flex min-h-[76px] flex-col gap-1 rounded-lg border p-1.5 text-left transition-all duration-200 ${
+                        className={`flex min-h-[76px] min-w-0 flex-col gap-1 rounded-controle border p-1.5 text-left transition-all duration-200 ${
                           plantoes.length
-                            ? 'border-conforme/30 bg-leitos text-white shadow-md hover:bg-leitos hover:shadow-lg'
+                            ? 'border-conforme/30 bg-leitos text-sobre-acao shadow-md hover:bg-leitos hover:shadow-lg'
                             : fimSemana
-                              ? 'border-atencao/30 bg-atencao/[0.08] hover:bg-atencao/[0.12]'
-                              : 'border-fio bg-white hover:bg-trilha'
+                              ? 'border-atencao/30 bg-alerta-atencao hover:bg-atencao/10'
+                              : 'border-fio bg-superficie hover:bg-trilha'
                         } ${selecionado ? 'ring-2 ring-acao ring-offset-2' : ''} ${eHoje ? 'ring-2 ring-acao/60' : ''}`}
                       >
                         <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-semibold ${
+                          className={`flex h-6 w-6 items-center justify-center rounded-capsula text-apoio font-semibold ${
                             plantoes.length
-                              ? 'bg-white/25 text-white'
+                              ? 'bg-superficie/25 text-sobre-acao'
                               : eHoje
                                 ? 'bg-acao text-sobre-acao'
                                 : fimSemana
@@ -1265,8 +1256,8 @@ export default function Escala({
                         {turnos.map((t) => (
                           <span
                             key={t}
-                            className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
-                              plantoes.length ? 'bg-white/25 text-white' : 'bg-trilha text-tinta-apoio'
+                            className={`truncate rounded-capsula px-1.5 py-0.5 text-rotulo leading-none font-semibold ${
+                              plantoes.length ? 'bg-superficie/25 text-sobre-acao' : 'bg-trilha text-tinta-apoio'
                             }`}
                           >
                             {TURNO_LABEL[t]}
@@ -1284,7 +1275,7 @@ export default function Escala({
           {(minhasTrocas ?? []).length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
+                <CardTitle className="flex items-center gap-2 text-corpo">
                   <RefreshCcw className="size-4 text-tinta-sussurro" />
                   Minhas trocas
                 </CardTitle>
@@ -1292,7 +1283,7 @@ export default function Escala({
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 {(minhasTrocas ?? []).map((t) => (
-                  <div key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-2.5 text-sm">
+                  <div key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-controle border p-2.5 text-apoio">
                     <div className="flex items-center gap-2">
                       <Badge
                         variant={
@@ -1307,12 +1298,12 @@ export default function Escala({
                       >
                         {t.status}
                       </Badge>
-                      <span className="text-xs text-tinta-sussurro">
-                        {new Date(t.created_at).toLocaleString('pt-BR')}
+                      <span className="text-rotulo text-tinta-sussurro">
+                        {dataHora(t.created_at)}
                       </span>
                     </div>
                     {t.status === 'erro' && t.erro && (
-                      <span className="text-xs text-critico">{t.erro}</span>
+                      <span className="text-rotulo text-critico">{t.erro}</span>
                     )}
                     {t.status === 'pendente' && (
                       <div className="flex items-center gap-2">
@@ -1348,7 +1339,7 @@ export default function Escala({
           {/* CONTADOR MENSAL */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-corpo">
                 <CalendarClock className="size-4 text-tinta-sussurro" />
                 Meus plantões no mês
               </CardTitle>
@@ -1363,30 +1354,30 @@ export default function Escala({
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-1 flex-col rounded-xl border bg-trilha/40 p-4">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
+                  <div className="flex flex-1 flex-col rounded-container border bg-trilha/40 p-4">
+                    <span className="text-rotulo font-semibold uppercase tracking-wide text-tinta-sussurro">
                       Horas no mês
                     </span>
                     <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{resumo.horas}h</span>
-                    <span className="text-xs text-tinta-sussurro">
+                    <span className="text-rotulo text-tinta-sussurro">
                       {resumo.dias} dia(s) escalado(s) em {fmtMesBR(mesInicio)}
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col rounded-xl border bg-suprimento/[0.08] p-4">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-suprimento">
+                  <div className="flex flex-1 flex-col rounded-container border bg-suprimento/10 p-4">
+                    <span className="text-rotulo font-semibold uppercase tracking-wide text-suprimento">
                       Diurnos (manhã + tarde = 12h)
                     </span>
                     <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular text-suprimento">{resumo.diurnos}</span>
-                    <span className="text-xs text-suprimento">
+                    <span className="text-rotulo text-suprimento">
                       {resumo.diurnos * 12}h · manhã e tarde juntas contam como diurno
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col rounded-xl border bg-suprimento/[0.08] p-4">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-suprimento">
+                  <div className="flex flex-1 flex-col rounded-container border bg-suprimento/10 p-4">
+                    <span className="text-rotulo font-semibold uppercase tracking-wide text-suprimento">
                       Noturnos (noite = 12h)
                     </span>
                     <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular text-suprimento">{resumo.noturnos}</span>
-                    <span className="text-xs text-suprimento">{resumo.noturnos * 12}h</span>
+                    <span className="text-rotulo text-suprimento">{resumo.noturnos * 12}h</span>
                   </div>
                 </>
               )}
@@ -1399,7 +1390,7 @@ export default function Escala({
           <Card>
             <CardHeader className="flex-row items-start justify-between space-y-0">
               <div>
-                <CardTitle className="flex items-center gap-2 text-base">
+                <CardTitle className="flex items-center gap-2 text-corpo">
                   <CalendarClock className="size-4 text-tinta-sussurro" />
                   {diaGeral ? `Plantões de ${fmtDiaBR(diaGeral)}` : `Escala Geral · ${fmtMesBR(mesInicio)}`}
                 </CardTitle>
@@ -1410,16 +1401,16 @@ export default function Escala({
                 </CardDescription>
               </div>
               {diaGeral && (
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
                   onClick={fecharDiaGeral}
-                  className="group relative h-14 w-48 shrink-0 rounded-2xl bg-white text-xl font-semibold text-black transition-shadow hover:shadow-md"
+                  className="group relative h-14 w-48 shrink-0 rounded-cartao bg-superficie p-0 text-dialogo font-semibold text-tinta transition-shadow hover:text-tinta hover:shadow-md"
                 >
-                  <div className="absolute top-[4px] left-1 z-10 flex h-12 w-1/4 items-center justify-center rounded-xl bg-leitos duration-500 group-hover:w-[184px]">
-                    <ChevronLeft className="size-6 text-black" />
+                  <div className="absolute top-[4px] left-1 z-10 flex h-12 w-1/4 items-center justify-center rounded-container bg-leitos duration-500 group-hover:w-[184px]">
+                    <ChevronLeft className="size-6 text-tinta" />
                   </div>
                   <p className="translate-x-2">Voltar</p>
-                </button>
+                </Button>
               )}
             </CardHeader>
             <CardContent>
@@ -1439,8 +1430,8 @@ export default function Escala({
                 >
                   <div className="flex flex-col gap-3">
                     {(setores ?? []).map((s) => (
-                      <div key={s.id} className="rounded-xl border">
-                        <div className="rounded-t-xl bg-trilha/50 px-3 py-1.5 text-sm font-semibold">{s.nome}</div>
+                      <div key={s.id} className="rounded-container border">
+                        <div className="rounded-t-container bg-trilha/50 px-3 py-1.5 text-apoio font-semibold">{s.nome}</div>
                         <div className="grid gap-1 p-2 sm:grid-cols-3">
                           {TURNOS.map((t) => {
                             const ocupados = (escalaMes ?? []).filter(
@@ -1454,35 +1445,35 @@ export default function Escala({
                             return (
                               <div
                                 key={`${s.id}-${t.id}`}
-                                className={`rounded-lg border p-2 ${
-                                  livre ? 'border-dashed border-conforme/30 bg-conforme/[0.06]' : 'bg-trilha/40'
+                                className={`rounded-controle border p-2 ${
+                                  livre ? 'border-dashed border-conforme/30 bg-alerta-conforme' : 'bg-trilha/40'
                                 }`}
                               >
                                 <div className="mb-1 flex items-center justify-between">
-                                  <span className="text-xs font-semibold text-tinta-sussurro">{t.label}</span>
-                                  <Badge variant={livre ? 'success' : 'secondary'} className="text-[10px]">
+                                  <span className="text-rotulo font-semibold text-tinta-sussurro">{t.label}</span>
+                                  <Badge variant={livre ? 'success' : 'secondary'} className="text-rotulo">
                                     {livre ? 'Livre' : 'Ocupado'}
                                   </Badge>
                                 </div>
                                 {livre ? (
-                                  <button
-                                    type="button"
+                                  <Button
                                     disabled={jaCand || candidatar.isPending}
                                     onClick={() => candidatar.mutate({ setor_id: s.id, data: diaGeral, turno: t.id })}
-                                    className={`w-full rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${
+                                    className={cn(
+                                      'min-h-0 w-full px-2 py-1.5 text-rotulo font-semibold disabled:opacity-100',
                                       jaCand
-                                        ? 'cursor-default bg-suprimento/[0.12] text-suprimento'
-                                        : 'bg-leitos text-white hover:bg-leitos'
-                                    }`}
+                                        ? 'cursor-default bg-suprimento/10 text-suprimento hover:bg-suprimento/10'
+                                        : 'bg-leitos text-sobre-acao hover:bg-leitos',
+                                    )}
                                   >
                                     {jaCand ? 'Candidatura enviada' : 'Candidatar-se'}
-                                  </button>
+                                  </Button>
                                 ) : (
                                   <div className="flex flex-col gap-0.5">
                                     {ocupados.map((e) => (
                                       <span
                                         key={e.id}
-                                        className="rounded bg-white px-1.5 py-0.5 text-[11px] text-tinta-sussurro"
+                                        className="rounded-controle bg-superficie px-1.5 py-0.5 text-rotulo text-tinta-sussurro"
                                       >
                                         {e.perfis?.nome_completo ?? 'Ocupado'}
                                         {e.quinzenal && <span className="ml-1 font-semibold text-acao">15/15</span>}
@@ -1500,18 +1491,18 @@ export default function Escala({
 
                   {/* Minhas candidaturas */}
                   <div className="mt-4 flex flex-col gap-2">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
+                    <div className="text-rotulo font-semibold uppercase tracking-wide text-tinta-sussurro">
                       Minhas candidaturas
                     </div>
                     {(candidaturas ?? []).filter((c) => c.perfil_id === perfil?.id).length === 0 ? (
-                      <p className="text-sm text-tinta-sussurro">Nenhuma candidatura enviada.</p>
+                      <p className="text-apoio text-tinta-sussurro">Nenhuma candidatura enviada.</p>
                     ) : (
                       (candidaturas ?? [])
                         .filter((c) => c.perfil_id === perfil?.id)
                         .map((c) => (
-                          <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-2 text-sm">
+                          <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-controle border p-2 text-apoio">
                             <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
-                            <span className="text-xs text-tinta-sussurro">
+                            <span className="text-rotulo text-tinta-sussurro">
                               {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}
                             </span>
                             <Badge
@@ -1532,7 +1523,7 @@ export default function Escala({
                   {DIAS_SEMANA.map((d, idx) => (
                     <div
                       key={d}
-                      className={`py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                      className={`py-1 text-rotulo font-semibold uppercase tracking-wide ${
                         idx === 0 || idx === 6 ? 'text-atencao' : 'text-tinta-sussurro'
                       }`}
                     >
@@ -1549,18 +1540,19 @@ export default function Escala({
                     const temMinhaCand = candidaturasDia.length > 0
                     const eHoje = ehHoje(c.iso)
                     return (
+                      // padrao-ok: célula do calendário mensal da escala geral (livre/ocupado/hoje; nenhuma peça cobre)
                       <button
                         key={c.iso}
                         type="button"
                         onClick={() => setDiaGeral(c.iso)}
-                        className={`flex min-h-[76px] flex-col gap-1 rounded-lg border p-1.5 text-left transition-all duration-200 ${
+                        className={`flex min-h-[76px] min-w-0 flex-col gap-1 rounded-controle border p-1.5 text-left transition-all duration-200 ${
                           livres
-                            ? 'border-dashed border-conforme/30 bg-conforme/[0.06] hover:bg-conforme/[0.12]'
-                            : 'border-fio bg-white hover:bg-trilha'
+                            ? 'border-dashed border-conforme/30 bg-alerta-conforme hover:bg-conforme/10'
+                            : 'border-fio bg-superficie hover:bg-trilha'
                         } ${eHoje ? 'ring-2 ring-acao/60' : ''}`}
                       >
                         <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-full text-sm font-semibold ${
+                          className={`flex h-6 w-6 items-center justify-center rounded-capsula text-apoio font-semibold ${
                             eHoje
                               ? 'bg-acao text-sobre-acao'
                               : livres
@@ -1571,14 +1563,14 @@ export default function Escala({
                           {c.dia}
                         </span>
                         {livres ? (
-                          <span className="text-[10px] font-semibold text-conforme">Tudo livre</span>
+                          <span className="text-rotulo font-semibold text-conforme">Tudo livre</span>
                         ) : (
-                          <span className="text-[10px] font-semibold text-tinta-sussurro">
+                          <span className="text-rotulo font-semibold text-tinta-sussurro">
                             {plantoesDia.length} plantão(ões)
                           </span>
                         )}
                         {temMinhaCand && (
-                          <span className="rounded-full bg-suprimento/[0.12] px-1.5 py-0.5 text-[9px] font-semibold text-suprimento">
+                          <span className="truncate rounded-capsula bg-suprimento/10 px-1.5 py-0.5 text-rotulo leading-none font-semibold text-suprimento">
                             {candidaturasDia.length} candidatura(s)
                           </span>
                         )}
@@ -1591,18 +1583,18 @@ export default function Escala({
               {/* Minhas candidaturas (resumo) */}
               {!diaGeral && (
                 <div className="mt-4 flex flex-col gap-2">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
+                  <div className="text-rotulo font-semibold uppercase tracking-wide text-tinta-sussurro">
                     Minhas candidaturas
                   </div>
                   {(candidaturas ?? []).filter((c) => c.perfil_id === perfil?.id).length === 0 ? (
-                    <p className="text-sm text-tinta-sussurro">Nenhuma candidatura enviada.</p>
+                    <p className="text-apoio text-tinta-sussurro">Nenhuma candidatura enviada.</p>
                   ) : (
                     (candidaturas ?? [])
                       .filter((c) => c.perfil_id === perfil?.id)
                       .map((c) => (
-                        <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-2 text-sm">
+                        <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-controle border p-2 text-apoio">
                           <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
-                          <span className="text-xs text-tinta-sussurro">
+                          <span className="text-rotulo text-tinta-sussurro">
                             {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}
                           </span>
                           <Badge
@@ -1625,9 +1617,9 @@ export default function Escala({
       : (
         <>
           {/* PAINEL DE ALERTAS (gestor/admin) */}
-          <Card className="border-atencao/30 bg-atencao/[0.06]">
+          <Card className="border-atencao/30 bg-alerta-atencao">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-corpo">
                 <CalendarClock className="size-4 text-atencao" />
                 Alertas da escala
               </CardTitle>
@@ -1643,36 +1635,36 @@ export default function Escala({
               ) : (
                 <>
                   <div className="flex flex-wrap gap-2">
-                    <Badge variant="warning" className="px-3 py-1 text-xs">
+                    <Badge variant="warning" className="px-3 py-1 text-rotulo">
                       {alertas.pendentes} pendente(s)
                     </Badge>
-                    <Badge variant="info" className="px-3 py-1 text-xs">
+                    <Badge variant="info" className="px-3 py-1 text-rotulo">
                       {alertas.sairam} saíram do plantão
                     </Badge>
-                    <Badge variant="destructive" className="px-3 py-1 text-xs">
+                    <Badge variant="destructive" className="px-3 py-1 text-rotulo">
                       {alertas.atestados} atestado(s)
                     </Badge>
-                    <Badge variant="destructive" className="px-3 py-1 text-xs">
+                    <Badge variant="destructive" className="px-3 py-1 text-rotulo">
                       {alertas.faltas} falta(s)
                     </Badge>
-                    <Badge variant="secondary" className="px-3 py-1 text-xs">
+                    <Badge variant="secondary" className="px-3 py-1 text-rotulo">
                       {alertas.interesses} interesse(s) em sair
                     </Badge>
                   </div>
                   {alertas.lista.length > 0 && (
                     <div className="flex flex-col gap-2">
                       {alertas.lista.map((s) => (
-                        <div key={s.id} className="flex flex-wrap items-center gap-2 rounded-lg border bg-white p-2 text-sm">
+                        <div key={s.id} className="flex flex-wrap items-center gap-2 rounded-controle border bg-superficie p-2 text-apoio">
                           <span className="font-medium">{s.solicitante?.nome_completo ?? 'Plantonista'}</span>
                           <Badge variant="outline">{TIPO_SOLICITACAO_LABEL[s.tipo]}</Badge>
                           {s.status === 'pendente' && <Badge variant="warning">Pendente</Badge>}
                           {s.escala_plantao && (
-                            <span className="text-xs text-tinta-sussurro">
+                            <span className="text-rotulo text-tinta-sussurro">
                               {fmtDiaBR(s.escala_plantao.data)} · {TURNO_LABEL[s.escala_plantao.turno]}
                             </span>
                           )}
                           {s.tipo === 'falta' && s.tipo_falta && (
-                            <span className="text-xs text-tinta-sussurro">· {TIPO_FALTA_LABEL[s.tipo_falta]}</span>
+                            <span className="text-rotulo text-tinta-sussurro">· {TIPO_FALTA_LABEL[s.tipo_falta]}</span>
                           )}
                           {s.status === 'pendente' && (
                             <span className="ml-auto flex gap-1.5">
@@ -1691,20 +1683,20 @@ export default function Escala({
 
                   {/* Candidaturas a plantões livres */}
                   <div className="mt-2 border-t border-atencao/30 pt-3">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-atencao">
+                    <div className="mb-2 flex items-center gap-2 text-rotulo font-semibold uppercase tracking-wide text-atencao">
                       <CalendarClock className="size-3.5" /> Candidaturas a plantões livres
                     </div>
                     {(candidaturas ?? []).filter((c) => c.status === 'pendente').length === 0 ? (
-                      <p className="text-sm text-tinta-sussurro">Nenhuma candidatura pendente.</p>
+                      <p className="text-apoio text-tinta-sussurro">Nenhuma candidatura pendente.</p>
                     ) : (
                       <div className="flex flex-col gap-2">
                         {(candidaturas ?? [])
                           .filter((c) => c.status === 'pendente')
                           .map((c) => (
-                            <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-lg border bg-white p-2 text-sm">
+                            <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-controle border bg-superficie p-2 text-apoio">
                               <span className="font-medium">{c.perfis?.nome_completo ?? 'Plantonista'}</span>
                               <Badge variant="outline">{c.setores?.nome ?? 'Setor'}</Badge>
-                              <span className="text-xs text-tinta-sussurro">
+                              <span className="text-rotulo text-tinta-sussurro">
                                 {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}
                               </span>
                               <span className="ml-auto flex gap-1.5">
@@ -1726,36 +1718,19 @@ export default function Escala({
           </Card>
 
           {/* Abas: Escala Fixa / Mensal */}
-          <div className={abaGestorFixa ? 'hidden' : 'flex flex-wrap gap-2'}>
-            <button
-              type="button"
-              onClick={() => setAbaGestor('fixa')}
-              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-                abaGestor === 'fixa'
-                  ? 'border-acao bg-acao text-sobre-acao'
-                  : 'border-fio bg-campo hover:bg-trilha'
-              }`}
-            >
-              Escala Fixa
-            </button>
-            <button
-              type="button"
-              onClick={() => setAbaGestor('mensal')}
-              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-                abaGestor === 'mensal'
-                  ? 'border-acao bg-acao text-sobre-acao'
-                  : 'border-fio bg-campo hover:bg-trilha'
-              }`}
-            >
-              Escala Mensal
-            </button>
-          </div>
+          <Abas
+            abas={[['fixa', 'Escala fixa'], ['mensal', 'Escala mensal']]}
+            valor={abaGestor}
+            onChange={setAbaGestor}
+            rotulo="Tipo de escala"
+            className={abaGestorFixa ? 'hidden' : 'mb-0 gap-2'}
+          />
 
           {/* E1: resumo de carga horária + E5: exportar */}
           <Card>
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <div>
-                <CardTitle className="flex items-center gap-2 text-base">
+                <CardTitle className="flex items-center gap-2 text-corpo">
                   <CalendarClock className="size-4 text-tinta-sussurro" />
                   Carga horária · {fmtMesBR(mesInicio)}
                 </CardTitle>
@@ -1771,58 +1746,47 @@ export default function Escala({
                   <Spinner />
                 </div>
               ) : (resumoCarga ?? []).length === 0 ? (
-                <p className="text-sm text-tinta-sussurro">Nenhum plantão neste mês.</p>
+                <p className="text-apoio text-tinta-sussurro">Nenhum plantão neste mês.</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-sm">
-                    <thead>
-                      <tr>
-                        <th className="border-b border-r bg-trilha/50 p-2 text-left text-xs font-semibold uppercase text-tinta-sussurro">Plantonista</th>
-                        <th className="border-b border-r bg-suprimento/[0.08] p-2 text-center text-xs font-semibold uppercase text-suprimento">Diurnos</th>
-                        <th className="border-b border-r bg-suprimento/[0.08] p-2 text-center text-xs font-semibold uppercase text-suprimento">Noturnos</th>
-                        <th className="border-b border-r p-2 text-center text-xs font-semibold uppercase text-tinta-sussurro">Horas</th>
-                        <th className="border-b p-2 text-center text-xs font-semibold uppercase text-tinta-sussurro">Dias</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(resumoCarga ?? []).map((r) => (
-                        <tr key={r.perfil_id}>
-                          <td className="border-b border-r p-2 font-medium">{r.nome}</td>
-                          <td className="border-b border-r p-2 text-center font-semibold text-suprimento">{r.diurnos}</td>
-                          <td className="border-b border-r p-2 text-center font-semibold text-suprimento">{r.noturnos}</td>
-                          <td className="border-b border-r p-2 text-center font-semibold">{r.horas}h</td>
-                          <td className="border-b p-2 text-center">{r.dias}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <Table variante="referencia" className="w-full border-collapse text-apoio">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="border-b border-r bg-trilha/50 p-2 text-left text-rotulo font-semibold uppercase text-tinta-sussurro">Plantonista</TableHead>
+                      <TableHead className="border-b border-r bg-suprimento/10 p-2 text-center text-rotulo font-semibold uppercase text-suprimento">Diurnos</TableHead>
+                      <TableHead className="border-b border-r bg-suprimento/10 p-2 text-center text-rotulo font-semibold uppercase text-suprimento">Noturnos</TableHead>
+                      <TableHead className="border-b border-r p-2 text-center text-rotulo font-semibold uppercase text-tinta-sussurro">Horas</TableHead>
+                      <TableHead className="border-b p-2 text-center text-rotulo font-semibold uppercase text-tinta-sussurro">Dias</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(resumoCarga ?? []).map((r) => (
+                      <TableRow key={r.perfil_id}>
+                        <TableCell className="border-b border-r p-2 font-medium">{r.nome}</TableCell>
+                        <TableCell className="border-b border-r p-2 text-center font-semibold text-suprimento">{r.diurnos}</TableCell>
+                        <TableCell className="border-b border-r p-2 text-center font-semibold text-suprimento">{r.noturnos}</TableCell>
+                        <TableCell className="border-b border-r p-2 text-center font-semibold">{r.horas}h</TableCell>
+                        <TableCell className="border-b p-2 text-center">{r.dias}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
 
           {/* Turnos (gestor/admin) */}
-          <div className="flex flex-wrap gap-2">
+          <div role="radiogroup" aria-label="Turno" className="flex flex-wrap gap-2">
             {TURNOS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTurno(t.id)}
-                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-                  turno === t.id
-                    ? 'border-acao bg-acao text-sobre-acao'
-                    : 'border-fio bg-campo hover:bg-trilha'
-                }`}
-              >
+              <Chip key={t.id} radio ativo={turno === t.id} onClick={() => setTurno(t.id)}>
                 {t.label} <span className="opacity-70">· {t.horario}</span>
-              </button>
+              </Chip>
             ))}
           </div>
 
           {abaGestor === 'fixa' ? (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
+                <CardTitle className="flex items-center gap-2 text-corpo">
                   <CalendarClock className="size-4 text-tinta-sussurro" />
                   Escala Fixa · {TURNO_LABEL[turno]}
                 </CardTitle>
@@ -1837,65 +1801,65 @@ export default function Escala({
                     <Spinner />
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[760px] border-collapse text-sm">
-                      <thead>
-                        <tr>
-                          <th className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
-                            Setor
-                          </th>
-                          {DIAS_SEMANA.map((d) => (
-                            <th key={d} className="border-b border-r p-2 text-center text-xs font-semibold uppercase tracking-wide">
-                              {d}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(setores ?? []).map((s) => (
-                          <tr key={s.id}>
-                            <td className="border-b border-r p-2 align-top font-medium">{s.nome}</td>
-                            {DIAS_SEMANA.map((_, i) => {
-                              const fixas = fixasDoCelula(s.id, i)
-                              return (
-                                <td key={i} className="border-b border-r p-1 align-top">
-                                  <button
-                                    type="button"
-                                    onClick={() => abrirCelulaFixa(s.id, i)}
-                                    className="flex min-h-[52px] w-full flex-col gap-1 rounded-md p-1 text-left transition-colors hover:bg-acao/5"
-                                  >
-                                    {fixas.length === 0 && <span className="text-[10px] text-tinta-sussurro/50">+ adicionar</span>}
-                                    {fixas.map((f) => (
-                                      <span key={f.id} className="group flex items-center gap-1">
-                                        <span className="block flex-1 rounded bg-trilha px-1.5 py-0.5 text-[11px] leading-tight">
-                                          {f.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Sem nome'}
-                                          {f.quinzenal && <span className="ml-1 font-semibold text-acao">15/15</span>}
-                                        </span>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation()
-                                            removerFixa.mutate(f.id)
-                                          }}
-                                          className="hidden text-[10px] text-critico hover:underline group-hover:block"
-                                        >
-                                          remover
-                                        </button>
-                                      </span>
-                                    ))}
-                                  </button>
-                                </td>
-                              )
-                            })}
-                          </tr>
+                  <Table variante="referencia" className="w-full min-w-[760px] border-collapse text-apoio">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-rotulo font-semibold uppercase tracking-wide text-tinta-sussurro">
+                          Setor
+                        </TableHead>
+                        {DIAS_SEMANA.map((d) => (
+                          <TableHead key={d} className="border-b border-r p-2 text-center text-rotulo font-semibold uppercase tracking-wide">
+                            {d}
+                          </TableHead>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(setores ?? []).map((s) => (
+                        <TableRow key={s.id}>
+                          <TableCell className="border-b border-r p-2 align-top font-medium">{s.nome}</TableCell>
+                          {DIAS_SEMANA.map((_, i) => {
+                            const fixas = fixasDoCelula(s.id, i)
+                            return (
+                              <TableCell key={i} className="border-b border-r p-1 align-top">
+                                {/* padrao-ok: célula da grade da escala fixa (setor × dia; contém o "remover" de cada nome) */}
+                                <button
+                                  type="button"
+                                  onClick={() => abrirCelulaFixa(s.id, i)}
+                                  className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle p-1 text-left transition-colors hover:bg-acao/5"
+                                >
+                                  {fixas.length === 0 && <span className="text-rotulo text-tinta-sussurro/50">+ adicionar</span>}
+                                  {fixas.map((f) => (
+                                    <span key={f.id} className="group flex items-center gap-1">
+                                      <span className="block flex-1 rounded-controle bg-trilha px-1.5 py-0.5 text-rotulo leading-tight">
+                                        {f.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Sem nome'}
+                                        {f.quinzenal && <span className="ml-1 font-semibold text-acao">15/15</span>}
+                                      </span>
+                                      <Button
+                                        variant="link"
+                                        size="xs"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          removerFixa.mutate(f.id)
+                                        }}
+                                        className="hidden min-h-0 px-0 text-rotulo text-critico hover:text-critico group-hover:block"
+                                      >
+                                        remover
+                                      </Button>
+                                    </span>
+                                  ))}
+                                </button>
+                              </TableCell>
+                            )
+                          })}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 )}
-                {mensagemGeracao && <p className="text-sm text-conforme">{mensagemGeracao}</p>}
+                {mensagemGeracao && <p className="text-apoio text-conforme">{mensagemGeracao}</p>}
                 {vagasGeracao.length > 0 && (
-                  <div role="alert" className="flex flex-col gap-1 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-3 text-sm">
+                  <div role="alert" className="flex flex-col gap-1 rounded-controle border border-atencao/30 bg-alerta-atencao p-3 text-apoio">
                     <span className="font-medium text-tinta">
                       {vagasGeracao.length} plantão(ões) viraram vaga aberta: a pessoa já estava escalada em outro lugar no mesmo horário.
                     </span>
@@ -1924,69 +1888,68 @@ export default function Escala({
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
+                <CardTitle className="flex items-center gap-2 text-corpo">
                   <CalendarClock className="size-4 text-tinta-sussurro" />
                   {TURNO_LABEL[turno]} · Semana de {fmtDiaBR(dataInicio)}
                 </CardTitle>
                 <CardDescription>Clique em uma célula para adicionar ou remover plantonistas.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[760px] border-collapse text-sm">
-                    <thead>
-                      <tr>
-                        <th className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-xs font-semibold uppercase tracking-wide text-tinta-sussurro">
-                          Setor
-                        </th>
-                        {dias.map((d, i) => (
-                          <th
-                            key={d}
-                            className={`border-b p-2 text-center text-xs font-semibold uppercase tracking-wide ${
-                              i >= 5 ? 'border-r border-r-amber-200 bg-atencao/[0.08] text-atencao' : 'border-r'
-                            }`}
-                          >
-                            {DIAS_SEMANA_SEG[i]}
-                            <span className="block text-[10px] font-normal text-tinta-sussurro">{fmtDiaBR(d)}</span>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(setores ?? []).map((s) => (
-                        <tr key={s.id}>
-                          <td className="border-b border-r p-2 align-top font-medium">{s.nome}</td>
-                          {dias.map((d) => {
-                            const plantoes = plantoesDaCelula(s.id, d)
-                            return (
-                              <td key={d} className="border-b border-r p-1 align-top">
-                                <button
-                                  type="button"
-                                  onClick={() => abrirCelula(s.id, d)}
-                                  className="flex min-h-[52px] w-full flex-col gap-1 rounded-md p-1 text-left transition-colors hover:bg-acao/5"
-                                >
-                                  {plantoes.length === 0 && (
-                                    <span className="text-[10px] text-tinta-sussurro/50">+ adicionar</span>
-                                  )}
-                                  {plantoes.map((p) => (
-                                    <span key={p.id} className="block">
-                                      <span className="block rounded bg-trilha px-1.5 py-0.5 text-[11px] leading-tight">
-                                        {p.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Sem nome'}
-                                        {p.quinzenal && <span className="ml-1 font-semibold text-acao">15/15</span>}
-                                      </span>
-                                      {p.rotulo && (
-                                        <span className="block px-1.5 text-[10px] text-tinta-sussurro">{p.rotulo}</span>
-                                      )}
-                                    </span>
-                                  ))}
-                                </button>
-                              </td>
-                            )
-                          })}
-                        </tr>
+                <Table variante="referencia" className="w-full min-w-[760px] border-collapse text-apoio">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-rotulo font-semibold uppercase tracking-wide text-tinta-sussurro">
+                        Setor
+                      </TableHead>
+                      {dias.map((d, i) => (
+                        <TableHead
+                          key={d}
+                          className={`border-b p-2 text-center text-rotulo font-semibold uppercase tracking-wide ${
+                            i >= 5 ? 'border-r border-r-atencao/30 bg-alerta-atencao text-atencao' : 'border-r'
+                          }`}
+                        >
+                          {DIAS_SEMANA_SEG[i]}
+                          <span className="block text-rotulo font-normal text-tinta-sussurro">{fmtDiaBR(d)}</span>
+                        </TableHead>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(setores ?? []).map((s) => (
+                      <TableRow key={s.id}>
+                        <TableCell className="border-b border-r p-2 align-top font-medium">{s.nome}</TableCell>
+                        {dias.map((d) => {
+                          const plantoes = plantoesDaCelula(s.id, d)
+                          return (
+                            <TableCell key={d} className="border-b border-r p-1 align-top">
+                              {/* padrao-ok: célula da grade da escala semanal (setor × dia; abre a edição do plantão) */}
+                              <button
+                                type="button"
+                                onClick={() => abrirCelula(s.id, d)}
+                                className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle p-1 text-left transition-colors hover:bg-acao/5"
+                              >
+                                {plantoes.length === 0 && (
+                                  <span className="text-rotulo text-tinta-sussurro/50">+ adicionar</span>
+                                )}
+                                {plantoes.map((p) => (
+                                  <span key={p.id} className="block">
+                                    <span className="block rounded-controle bg-trilha px-1.5 py-0.5 text-rotulo leading-tight">
+                                      {p.perfis?.nome_completo?.split(' ').slice(0, 2).join(' ') ?? 'Sem nome'}
+                                      {p.quinzenal && <span className="ml-1 font-semibold text-acao">15/15</span>}
+                                    </span>
+                                    {p.rotulo && (
+                                      <span className="block px-1.5 text-rotulo text-tinta-sussurro">{p.rotulo}</span>
+                                    )}
+                                  </span>
+                                ))}
+                              </button>
+                            </TableCell>
+                          )
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           )}
@@ -1995,7 +1958,7 @@ export default function Escala({
           {ehGestor && celula && !dialogAberto && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">
+                <CardTitle className="text-corpo">
                   {setores?.find((s) => s.id === celula.setor_id)?.nome} · {fmtDiaBR(celula.data)} ·{' '}
                   {TURNO_LABEL[turno]}
                 </CardTitle>
@@ -2005,10 +1968,10 @@ export default function Escala({
                 {(escala ?? [])
                   .filter((e) => e.setor_id === celula.setor_id && e.data === celula.data && e.turno === turno)
                   .map((e) => (
-                    <div key={e.id} className="flex items-center justify-between rounded-lg border p-2">
+                    <div key={e.id} className="flex items-center justify-between rounded-controle border p-2">
                       <div>
                         <div className="font-medium">{e.perfis?.nome_completo ?? 'Sem nome'}</div>
-                        <div className="text-xs text-tinta-sussurro">
+                        <div className="text-rotulo text-tinta-sussurro">
                           {e.quinzenal && '15/15 · '}
                           {e.rotulo || 'sem rótulo'}
                         </div>
@@ -2021,7 +1984,7 @@ export default function Escala({
                 {!carregandoEscala &&
                   (escala ?? []).filter(
                     (e) => e.setor_id === celula.setor_id && e.data === celula.data && e.turno === turno
-                  ).length === 0 && <p className="text-sm text-tinta-sussurro">Nenhum plantonista neste plantão.</p>}
+                  ).length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum plantonista neste plantão.</p>}
               </CardContent>
             </Card>
           )}
@@ -2029,7 +1992,7 @@ export default function Escala({
           {/* Gestor: solicitações de escala */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-corpo">
                 <FileText className="size-4 text-tinta-sussurro" />
                 Solicitações da escala
               </CardTitle>
@@ -2041,10 +2004,10 @@ export default function Escala({
                   <Spinner />
                 </div>
               ) : (solicitacoes ?? []).length === 0 ? (
-                <p className="text-sm text-tinta-sussurro">Nenhuma solicitação no momento.</p>
+                <p className="text-apoio text-tinta-sussurro">Nenhuma solicitação no momento.</p>
               ) : (
                 (solicitacoes ?? []).map((s) => (
-                  <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3">
+                  <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-controle border p-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium">{s.solicitante?.nome_completo ?? 'Plantonista'}</span>
@@ -2057,7 +2020,7 @@ export default function Escala({
                           {s.status === 'aprovado' ? 'Aprovado' : s.status === 'recusado' ? 'Recusado' : 'Pendente'}
                         </Badge>
                       </div>
-                      <div className="mt-0.5 text-xs text-tinta-sussurro">
+                      <div className="mt-0.5 text-rotulo text-tinta-sussurro">
                         {s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'Plantão removido'}
                         {s.tipo === 'passar_plantao' && s.destino && ` → ${s.destino.nome_completo}`}
                         {s.tipo === 'justificar_falta' && s.tipo_falta && ` · ${TIPO_FALTA_LABEL[s.tipo_falta]}`}
@@ -2072,7 +2035,7 @@ export default function Escala({
                           </a>
                         )}
                       </div>
-                      {s.justificativa && <div className="mt-1 text-xs">{s.justificativa}</div>}
+                      {s.justificativa && <div className="mt-1 text-rotulo">{s.justificativa}</div>}
                     </div>
                     {s.status === 'pendente' && (
                       <div className="flex gap-2">
@@ -2141,7 +2104,7 @@ export default function Escala({
               </div>
             )}
 
-            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+            <label className="flex cursor-pointer items-center gap-2 text-apoio font-medium">
               <input
                 type="checkbox"
                 className="size-4 accent-primary"

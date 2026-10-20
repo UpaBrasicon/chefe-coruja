@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import { CalendarRange, ChevronRight, ChevronLeft, ChevronRight as Next } from 'lucide-react'
+import { CalendarRange, ChevronLeft, ChevronRight as Next } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,6 +12,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 
 const TURNO_LABEL: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
 
 type MeuPlantao = {
   id: string
@@ -81,30 +82,22 @@ export default function MinhaAgenda({ embutido = false }: { embutido?: boolean }
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       {!embutido && (
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
-            <Link to="/" className="transition-colors hover:text-tinta">
-              Início
-            </Link>
-            <ChevronRight className="size-3.5" />
-            <span className="font-medium text-tinta">Minha Agenda</span>
-          </div>
-          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Minha Agenda</h1>
-          <p className="text-sm text-tinta-sussurro">
-            Todos os seus plantões de todas as unidades em um único calendário.
-          </p>
+        <div className="flex flex-col">
+          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Minha agenda' }]} />
+          <TituloPagina icone={CalendarRange} titulo="Minha agenda" className="mb-0"
+            descricao="Todos os seus plantões de todas as unidades em um único calendário." />
         </div>
       )}
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => mover(-1)}>
+          <Button variant="outline" size="sm" aria-label="Mês anterior" onClick={() => mover(-1)}>
             <ChevronLeft />
           </Button>
-          <span className="text-sm font-semibold">
-            {primeiroDia.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+          <span className="text-apoio font-semibold">
+            {MESES[mês - 1]} de {ano}
           </span>
-          <Button variant="outline" size="sm" onClick={() => mover(1)}>
+          <Button variant="outline" size="sm" aria-label="Próximo mês" onClick={() => mover(1)}>
             <Next />
           </Button>
         </div>
@@ -119,7 +112,7 @@ export default function MinhaAgenda({ embutido = false }: { embutido?: boolean }
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <CalendarRange className="size-4 text-tinta-sussurro" />
             Calendário consolidado
           </CardTitle>
@@ -133,7 +126,7 @@ export default function MinhaAgenda({ embutido = false }: { embutido?: boolean }
           ) : (
             <div className="grid grid-cols-7 gap-1.5">
               {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((d) => (
-                <div key={d} className="pb-1 text-center text-xs font-medium text-tinta-sussurro">
+                <div key={d} className="pb-1 text-center text-rotulo font-medium text-tinta-sussurro">
                   {d}
                 </div>
               ))}
@@ -148,7 +141,7 @@ export default function MinhaAgenda({ embutido = false }: { embutido?: boolean }
                   <div
                     key={dataStr}
                     className={cn(
-                      'flex min-h-16 flex-col gap-1 rounded-lg border p-1.5 text-xs',
+                      'flex min-h-16 flex-col gap-1 rounded-controle border p-1.5 text-rotulo',
                       doDia.length === 0 ? 'bg-trilha/40' : 'bg-superficie'
                     )}
                   >
@@ -156,7 +149,7 @@ export default function MinhaAgenda({ embutido = false }: { embutido?: boolean }
                     {doDia.map((p) => {
                       const info = porUnidade.get(p.unidade_id)
                       return (
-                        <span key={p.id} className={cn('rounded px-1.5 py-0.5 font-medium', info?.cor)}>
+                        <span key={p.id} className={cn('rounded-controle px-1.5 py-0.5 font-medium', info?.cor)}>
                           {TURNO_LABEL[p.turno] ?? p.turno} {info?.nome}
                         </span>
                       )

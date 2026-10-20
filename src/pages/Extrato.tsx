@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { ChevronRight, Download, Wallet } from 'lucide-react'
+import { Download, Wallet } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { dataHora, dataPura, moeda } from '@/lib/formato'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -24,9 +25,7 @@ type ExtratoLinha = {
 
 const TURNO_LABEL: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }
 
-function brl(v: number) {
-  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
+const brl = moeda
 
 export default function Extrato({ embutido = false }: { embutido?: boolean } = {}) {
   const { unidadeAtiva } = useUnidade()
@@ -68,8 +67,8 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
     doc.text('Extrato de Plantões', 14, y0 + 8)
     doc.setFontSize(9)
     doc.text(`Unidade: ${unidadeAtiva?.unidade.nome ?? ''}`, 14, y0 + 16)
-    doc.text(`Período: ${new Date(inicio + 'T12:00:00').toLocaleDateString('pt-BR')} a ${new Date(fim + 'T12:00:00').toLocaleDateString('pt-BR')}`, 14, y0 + 22)
-    doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, y0 + 28)
+    doc.text(`Período: ${dataPura(inicio)} a ${dataPura(fim)}`, 14, y0 + 22)
+    doc.text(`Gerado em: ${dataHora(new Date())}`, 14, y0 + 28)
     doc.line(14, y0 + 32, 196, y0 + 32)
 
     let y = y0 + 40
@@ -80,7 +79,7 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
         y = 18
       }
       doc.text(
-        `${new Date(l.data + 'T12:00:00').toLocaleDateString('pt-BR')} | ${TURNO_LABEL[l.turno] ?? l.turno} | ${l.setor_nome} | ${l.nome_completo}`,
+        `${dataPura(l.data)} |${TURNO_LABEL[l.turno] ?? l.turno} | ${l.setor_nome} | ${l.nome_completo}`,
         14,
         y
       )
@@ -97,28 +96,20 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       {!embutido && (
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
-            <Link to="/" className="transition-colors hover:text-tinta">
-              Início
-            </Link>
-            <ChevronRight className="size-3.5" />
-            <span className="font-medium text-tinta">Extrato Financeiro</span>
-          </div>
-          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Extrato Financeiro</h1>
-          <p className="text-sm text-tinta-sussurro">
-            Valores por plantão calculados a partir da escala e das remunerações configuradas pela unidade.
-          </p>
+        <div className="flex flex-col">
+          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Extrato financeiro' }]} />
+          <TituloPagina icone={Wallet} titulo="Extrato financeiro" className="mb-0"
+            descricao="Valores por plantão calculados a partir da escala e das remunerações configuradas pela unidade." />
         </div>
       )}
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-tinta-sussurro">De</label>
+          <label className="text-rotulo font-medium text-tinta-sussurro">De</label>
           <Input type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} className="w-40" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-tinta-sussurro">Até</label>
+          <label className="text-rotulo font-medium text-tinta-sussurro">Até</label>
           <Input type="date" value={fim} onChange={(e) => setFim(e.target.value)} className="w-40" />
         </div>
         <Button variant="outline" onClick={baixarRecibo} disabled={(linhas ?? []).length === 0}>
@@ -128,7 +119,7 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <Wallet className="size-4 text-tinta-sussurro" />
             Plantões no período
           </CardTitle>
@@ -140,25 +131,25 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
               <Spinner />
             </div>
           ) : (linhas ?? []).length === 0 ? (
-            <p className="text-sm text-tinta-sussurro">
+            <p className="text-apoio text-tinta-sussurro">
               Nenhum plantão no período ou valores ainda não configurados.
             </p>
           ) : (
             <div className="flex flex-col gap-2">
               {(linhas ?? []).map((l) => (
-                <div key={l.plantao_id} className="flex items-center justify-between rounded-lg border p-2.5 text-sm">
+                <div key={l.plantao_id} className="flex items-center justify-between rounded-controle border p-2.5 text-apoio">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">
-                      {new Date(l.data + 'T12:00:00').toLocaleDateString('pt-BR')} · {TURNO_LABEL[l.turno] ?? l.turno}
+                      {dataPura(l.data)} ·{TURNO_LABEL[l.turno] ?? l.turno}
                     </span>
                     <span className="text-tinta-sussurro">{l.setor_nome}</span>
                   </div>
                   <span className="font-semibold">{brl(l.valor || 0)}</span>
                 </div>
               ))}
-              <div className="mt-2 flex items-center justify-between border-t pt-3 text-sm font-semibold">
+              <div className="mt-2 flex items-center justify-between border-t pt-3 text-apoio font-semibold">
                 <span>Total</span>
-                <span className="text-lg">{brl(total)}</span>
+                <span className="text-secao">{brl(total)}</span>
               </div>
             </div>
           )}
