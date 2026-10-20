@@ -2,6 +2,7 @@
 -- etapa 1.3): chave com recurso laboratorio; pedidos como ServiceRequest;
 -- coleta; laudo preliminar, final, reenvio e corrigido; cancelamento pelo
 -- laboratório; exame não pedido recusado; registro de cada chamada. ROLLBACK no fim.
+-- Desde a 2.2 (migration 20261212000001) a porta é a public.api_v1_fhir.
 BEGIN;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 -- médico (…0002), enfermeira (…0004) e recepção (…0005) de plantão agora no PS
@@ -59,7 +60,7 @@ INSERT INTO public.api_chaves (nome, ambiente, prefixo, hash, unidades, recursos
   ('Leitura de teste', 'test', 'cc_test_cdcdcdcd', private.api_hash('cc_test_' || repeat('cd', 24)), ARRAY['21000000-0000-4000-8000-000000000001']::uuid[],
    ARRAY['pacientes'], '10000000-0000-4000-8000-000000000001', now() + interval '1 month');
 CREATE FUNCTION pg_temp.lab(p_acao text, p_dados jsonb) RETURNS jsonb LANGUAGE sql AS $$
-  SELECT public.api_v1_laboratorio('cc_test_' || repeat('ab', 24), '10.0.0.1', 'req-teste', p_acao, p_dados) $$;
+  SELECT public.api_v1_fhir('cc_test_' || repeat('ab', 24), '10.0.0.1', 'req-teste', p_acao, p_dados) $$;
 CREATE FUNCTION pg_temp.ex(p text) RETURNS uuid LANGUAGE sql AS $$
   SELECT id FROM public.exames_pedidos WHERE episodio_id = (SELECT valor::uuid FROM t WHERE nome = 'a') AND exame = p $$;
 
@@ -72,8 +73,8 @@ INSERT INTO t SELECT 'pota', id::text FROM public.exames_pedidos WHERE procedime
 
 -- 1a. a chave precisa do recurso laboratorio
 DO $$ BEGIN
-  IF (public.api_v1_laboratorio('cc_test_' || repeat('cd', 24), NULL, 'r', 'pedidos', '{}') ->> 'status')::int <> 403
-     OR (public.api_v1_laboratorio('cc_test_' || repeat('ef', 24), NULL, 'r', 'pedidos', '{}') ->> 'status')::int <> 401 THEN
+  IF (public.api_v1_fhir('cc_test_' || repeat('cd', 24), NULL, 'r', 'pedidos', '{}') ->> 'status')::int <> 403
+     OR (public.api_v1_fhir('cc_test_' || repeat('ef', 24), NULL, 'r', 'pedidos', '{}') ->> 'status')::int <> 401 THEN
     RAISE EXCEPTION 'FALHOU: escopo da chave';
   END IF;
   RAISE NOTICE 'OK  1a: só chave com o recurso laboratorio entra; chave inexistente é recusada';
@@ -173,11 +174,11 @@ DO $$ BEGIN
     RAISE EXCEPTION 'FALHOU: exame sem código';
   END IF;
   IF (SELECT count(*) FROM public.api_acessos a JOIN public.api_chaves k ON k.id = a.chave_id
-       WHERE k.prefixo = 'cc_test_abababab' AND a.recurso LIKE 'laboratorio_%') < 12
+       WHERE k.prefixo = 'cc_test_abababab' AND (a.recurso LIKE 'laboratorio_%' OR a.recurso LIKE 'fhir_%')) < 12
      OR NOT EXISTS (SELECT 1 FROM public.api_acessos a JOIN public.api_chaves k ON k.id = a.chave_id
-                     WHERE k.prefixo = 'cc_test_abababab' AND a.recurso = 'laboratorio_laudo' AND a.status = 404)
-     OR has_function_privilege('authenticated', 'public.api_v1_laboratorio(text, text, text, text, jsonb)', 'EXECUTE')
-     OR has_function_privilege('anon', 'public.api_v1_laboratorio(text, text, text, text, jsonb)', 'EXECUTE') THEN
+                     WHERE k.prefixo = 'cc_test_abababab' AND a.recurso = 'fhir_laudo' AND a.status = 404)
+     OR has_function_privilege('authenticated', 'public.api_v1_fhir(text, text, text, text, jsonb)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.api_v1_fhir(text, text, text, text, jsonb)', 'EXECUTE') THEN
     RAISE EXCEPTION 'FALHOU: registro de chamadas ou privilégios';
   END IF;
   RAISE NOTICE 'OK  5a: exame não pedido ao laboratório é recusado e fica no registro de chamadas; porta só para a Edge Function';

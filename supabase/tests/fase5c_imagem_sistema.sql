@@ -147,14 +147,14 @@ RESET ROLE;
 
 -- a porta do laboratório só vê o grupo 02.02
 DO $$
-DECLARE r jsonb := public.api_v1_laboratorio('cc_test_' || repeat('ab', 24), NULL, 'r', 'pedidos', '{}');
+DECLARE r jsonb := public.api_v1_fhir('cc_test_' || repeat('ab', 24), NULL, 'r', 'pedidos', '{}');
 BEGIN
   IF EXISTS (SELECT 1 FROM jsonb_array_elements(r -> 'corpo' -> 'pedidos') x WHERE x -> 'code' -> 'coding' -> 0 ->> 'code' NOT LIKE '0202%')
      OR NOT EXISTS (SELECT 1 FROM jsonb_array_elements(r -> 'corpo' -> 'pedidos') x WHERE x -> 'code' -> 'coding' -> 0 ->> 'code' = '0202990021') THEN
     RAISE EXCEPTION 'FALHOU: porta do laboratório com imagem: %', r;
   END IF;
-  r := public.api_v1_laboratorio('cc_test_' || repeat('ab', 24), NULL, 'r', 'coleta', jsonb_build_object('exame_id', pg_temp.ex('RX de tórax')));
-  IF (r ->> 'status')::int <> 404 OR public.api_laboratorio_pode_anexar('cc_test_' || repeat('ab', 24), pg_temp.ex('RX de tórax')) THEN
+  r := public.api_v1_fhir('cc_test_' || repeat('ab', 24), NULL, 'r', 'coleta', jsonb_build_object('exame_id', pg_temp.ex('RX de tórax')));
+  IF (r ->> 'status')::int <> 403 OR public.api_fhir_pode_anexar('cc_test_' || repeat('ab', 24), pg_temp.ex('RX de tórax')) THEN
     RAISE EXCEPTION 'FALHOU: laboratório mexendo em exame de imagem: %', r;
   END IF;
   IF has_function_privilege('anon', 'public.marcar_exame_realizado(uuid, text)', 'EXECUTE')
