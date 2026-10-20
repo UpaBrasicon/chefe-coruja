@@ -22,6 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { fmtDataHora } from '@/lib/datas'
 import {
   SERVICO_VAZIO, SITUACOES_SERVICO, TIPOS_LEITO, TIPOS_SERVICO, errosServico, servicoParaEnvio,
@@ -29,8 +30,8 @@ import {
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 
-const SELECT = 'h-8 rounded-controle border border-fio bg-campo px-2'
 const TOM_SITUACAO = { sucesso: 'success', atencao: 'warning', critico: 'destructive' } as const
 
 type Leitos = { tipo_leito: string; livre: number; reservado: number; higienizacao: number; bloqueado: number; ocupado: number; total: number }
@@ -73,11 +74,11 @@ export function MapaVagas({ unidadeId, compacto = false }: { unidadeId: string; 
       <span className="text-rotulo text-tinta-sussurro">Leitos em tempo real; atualiza a cada minuto. Só números, sem paciente.</span>
     </div>
   )
-  if (compacto) return <div className="flex flex-col gap-2 rounded-md border border-fio bg-superficie p-3 text-apoio">{conteudo}</div>
+  if (compacto) return <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3 text-apoio">{conteudo}</div>
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base"><BedDouble className="size-4" aria-hidden /> Mapa de vagas da rede</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-corpo"><BedDouble className="size-4" aria-hidden /> Mapa de vagas da rede</CardTitle>
         <CardDescription>Leitos dos setores ofertados à regulação e serviços informados pelas unidades. Só consulta: a reserva e o aceite são da unidade destino.</CardDescription>
       </CardHeader>
       <CardContent className="text-apoio">{conteudo}</CardContent>
@@ -88,7 +89,7 @@ export function MapaVagas({ unidadeId, compacto = false }: { unidadeId: string; 
 function UnidadeDoMapa({ u, unidadeConsulta, compacto }: { u: UnidadeMapa; unidadeConsulta: string; compacto: boolean }) {
   const [novo, setNovo] = React.useState(false)
   return (
-    <section className="flex flex-col gap-2 rounded-md border border-fio p-3" aria-label={u.nome}>
+    <section className="flex flex-col gap-2 rounded-controle border border-fio p-3" aria-label={u.nome}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium text-tinta">{u.nome}</span>
         {u.cnes && <span className="text-rotulo text-tinta-sussurro">CNES {u.cnes}</span>}
@@ -96,22 +97,20 @@ function UnidadeDoMapa({ u, unidadeConsulta, compacto }: { u: UnidadeMapa; unida
         {u.editavel && !compacto && !novo && <Button size="xs" variant="outline" className="ml-auto" onClick={() => setNovo(true)}>Novo serviço</Button>}
       </div>
       {u.leitos.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[30rem] text-left">
-            <thead className="text-rotulo text-tinta-sussurro">
-              <tr><th className="py-1 font-normal">Leito</th><th className="font-normal">Livre</th><th className="font-normal">Reservado</th><th className="font-normal">Higienização</th><th className="font-normal">Bloqueado</th><th className="font-normal">Ocupado</th><th className="font-normal">Total</th></tr>
-            </thead>
-            <tbody className="tabular-nums">
-              {u.leitos.map((l) => (
-                <tr key={l.tipo_leito} className="border-t border-fio">
-                  <td className="py-1 text-tinta">{TIPOS_LEITO[l.tipo_leito] ?? l.tipo_leito}</td>
-                  <td className={l.livre > 0 ? 'font-semibold text-conforme' : 'text-tinta-sussurro'}>{l.livre}</td>
-                  <td>{l.reservado}</td><td>{l.higienizacao}</td><td>{l.bloqueado}</td><td>{l.ocupado}</td><td>{l.total}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table variante="referencia" className="w-full min-w-[30rem] text-left">
+          <TableHeader className="text-rotulo text-tinta-sussurro">
+            <TableRow><TableHead className="py-1 font-normal">Leito</TableHead><TableHead className="font-normal">Livre</TableHead><TableHead className="font-normal">Reservado</TableHead><TableHead className="font-normal">Higienização</TableHead><TableHead className="font-normal">Bloqueado</TableHead><TableHead className="font-normal">Ocupado</TableHead><TableHead className="font-normal">Total</TableHead></TableRow>
+          </TableHeader>
+          <TableBody className="tabular-nums">
+            {u.leitos.map((l) => (
+              <TableRow key={l.tipo_leito} className="border-t border-fio">
+                <TableCell className="py-1 text-tinta">{TIPOS_LEITO[l.tipo_leito] ?? l.tipo_leito}</TableCell>
+                <TableCell className={l.livre > 0 ? 'font-semibold text-conforme' : 'text-tinta-sussurro'}>{l.livre}</TableCell>
+                <TableCell>{l.reservado}</TableCell><TableCell>{l.higienizacao}</TableCell><TableCell>{l.bloqueado}</TableCell><TableCell>{l.ocupado}</TableCell><TableCell>{l.total}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       ) : <span className="text-rotulo text-tinta-sussurro">Nenhum setor ofertado à regulação.</span>}
       {novo && <FormularioServico unidadeId={u.id} unidadeConsulta={unidadeConsulta} aoFim={() => setNovo(false)} />}
       {u.servicos.length > 0 && (
@@ -187,36 +186,36 @@ function FormularioServico({ unidadeId, unidadeConsulta, servico, aoFim }: {
   const id = servico?.id ?? 'novo'
   const set = <K extends keyof FormServico>(k: K, v: FormServico[K]) => setF((x) => ({ ...x, [k]: v }))
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-acao/30 p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-acao/30 p-3">
       <div className="grid gap-2 sm:grid-cols-3">
         <div className="flex flex-col gap-1 sm:col-span-2">
-          <Label htmlFor={`sv-nome-${id}`} className="text-xs">Serviço</Label>
+          <Label htmlFor={`sv-nome-${id}`} className="text-rotulo">Serviço</Label>
           <Input id={`sv-nome-${id}`} className="h-8" placeholder="ex.: Tomografia, Hemodinâmica, Consulta de cardiologia" value={f.nome} onChange={(e) => set('nome', e.target.value)} />
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor={`sv-tipo-${id}`} className="text-xs">Tipo</Label>
-          <select id={`sv-tipo-${id}`} className={SELECT} value={f.tipo} onChange={(e) => set('tipo', e.target.value as TipoServico | '')}>
+          <Label htmlFor={`sv-tipo-${id}`} className="text-rotulo">Tipo</Label>
+          <CampoSelecao id={`sv-tipo-${id}`} tamanho="compacto" value={f.tipo} onChange={(e) => set('tipo', e.target.value as TipoServico | '')}>
             <option value="">Escolha…</option>
             {(Object.keys(TIPOS_SERVICO) as TipoServico[]).map((k) => <option key={k} value={k}>{TIPOS_SERVICO[k]}</option>)}
-          </select>
+          </CampoSelecao>
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor={`sv-sit-${id}`} className="text-xs">Situação</Label>
-          <select id={`sv-sit-${id}`} className={SELECT} value={f.situacao} onChange={(e) => set('situacao', e.target.value as SituacaoServico | '')}>
+          <Label htmlFor={`sv-sit-${id}`} className="text-rotulo">Situação</Label>
+          <CampoSelecao id={`sv-sit-${id}`} tamanho="compacto" value={f.situacao} onChange={(e) => set('situacao', e.target.value as SituacaoServico | '')}>
             <option value="">Escolha…</option>
             {(Object.keys(SITUACOES_SERVICO) as SituacaoServico[]).map((k) => <option key={k} value={k}>{SITUACOES_SERVICO[k].rotulo}</option>)}
-          </select>
+          </CampoSelecao>
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor={`sv-vagas-${id}`} className="text-xs">Vagas (opcional)</Label>
+          <Label htmlFor={`sv-vagas-${id}`} className="text-rotulo">Vagas (opcional)</Label>
           <Input id={`sv-vagas-${id}`} className="h-8" inputMode="numeric" value={f.vagas} onChange={(e) => set('vagas', e.target.value)} />
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor={`sv-proc-${id}`} className="text-xs">Procedimento SIGTAP (opcional)</Label>
+          <Label htmlFor={`sv-proc-${id}`} className="text-rotulo">Procedimento SIGTAP (opcional)</Label>
           <Input id={`sv-proc-${id}`} className="h-8" inputMode="numeric" placeholder="10 dígitos" value={f.procedimento} onChange={(e) => set('procedimento', e.target.value)} />
         </div>
         <div className="flex flex-col gap-1 sm:col-span-3">
-          <Label htmlFor={`sv-obs-${id}`} className="text-xs">Observação (opcional)</Label>
+          <Label htmlFor={`sv-obs-${id}`} className="text-rotulo">Observação (opcional)</Label>
           <Input id={`sv-obs-${id}`} className="h-8" placeholder="ex.: até 22h; só adulto" value={f.observacao} onChange={(e) => set('observacao', e.target.value)} />
         </div>
       </div>
@@ -259,7 +258,7 @@ export function OfertaSetores({ unidadeId }: { unidadeId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Setores ofertados à regulação</CardTitle>
+        <CardTitle className="text-corpo">Setores ofertados à regulação</CardTitle>
         <CardDescription>Marque o tipo de leito da regulação de cada setor que recebe pacientes regulados. Setor sem marca não aparece no mapa de vagas.</CardDescription>
       </CardHeader>
       <CardContent className="text-apoio">
@@ -269,11 +268,11 @@ export function OfertaSetores({ unidadeId }: { unidadeId: string }) {
               <li key={st.id} className="flex flex-wrap items-center gap-2 py-1.5">
                 <span className="text-tinta">{st.nome}</span>
                 <span className="text-rotulo text-tinta-sussurro">{st.leitos} leito{st.leitos === 1 ? '' : 's'}{st.especialidade ? ` · ${st.especialidade}` : ''}</span>
-                <select aria-label={`Tipo de leito da regulação — ${st.nome}`} className={`${SELECT} ml-auto`} value={st.regulacao_tipo_leito ?? ''}
+                <CampoSelecao aria-label={`Tipo de leito da regulação — ${st.nome}`} tamanho="compacto" className="ml-auto" value={st.regulacao_tipo_leito ?? ''}
                   disabled={ofertar.isPending} onChange={(e) => ofertar.mutate({ setor: st.id, tipo: e.target.value || null })}>
                   <option value="">Não ofertado</option>
                   {Object.entries(TIPOS_LEITO).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-                </select>
+                </CampoSelecao>
                 {st.ofertado_em && <span className="w-full text-rotulo text-tinta-sussurro">{st.ofertado_por ?? '—'} · {fmtDataHora(st.ofertado_em)}</span>}
               </li>
             ))}

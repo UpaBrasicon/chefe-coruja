@@ -15,6 +15,7 @@ import * as React from 'react'
 
 import { Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -26,8 +27,8 @@ import {
   type MeioConfirmacao, type MotivoRecusaDestino, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 
-const SELECT = 'h-8 rounded-controle border border-fio bg-campo px-2'
 
 /** Campos do pedido que o destino e a chegada usam. */
 export type PedidoDestino = {
@@ -58,20 +59,20 @@ export function BlocoDestino({ s }: { s: PedidoDestino }) {
   return (
     <>
       {s.status === 'aguardando_destino' && (
-        <div className="rounded-md border border-atencao/30 bg-alerta-atencao px-3 py-2 text-tinta">
+        <div className="rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-tinta">
           <b>Aguardando o destino</b>: {nome ?? '—'}{s.destino_enviado_em ? `, desde ${fmtDataHora(s.destino_enviado_em)}` : ''}.
           {s.destino_tipo === 'externo' && <span className="block text-tinta-apoio">Serviço de fora da rede: a central registra a resposta.</span>}
         </div>
       )}
       {a && s.destino_resposta === 'aceita' && ['autorizada', 'agendada', 'em_transito', 'realizada', 'falta'].includes(s.status) && (
-        <div className="rounded-md border border-sucesso/30 bg-sucesso/5 px-3 py-2 text-tinta">
+        <div className="rounded-controle border border-sucesso/30 bg-sucesso/5 px-3 py-2 text-tinta">
           <b>Aceito pelo destino</b> ({nome ?? '—'}) por {quem(a)} em {fmtDataHora(a.em)}
           {s.reserva && <> · leito <b>{s.reserva.leito}</b> ({s.reserva.setor}) {s.reserva.situacao === 'ativa' ? `reservado até ${fmtDataHora(s.reserva.expira_em)}` : `— reserva ${s.reserva.situacao}`}</>}
           {a.texto && <span className="block text-tinta-apoio">{a.texto}</span>}
         </div>
       )}
       {r && ['enviada', 'em_analise', 'pendencia'].includes(s.status) && s.destino_resposta === 'recusada' && (
-        <div className="rounded-md border border-critico/30 bg-alerta-critico px-3 py-2 text-tinta">
+        <div className="rounded-controle border border-critico/30 bg-alerta-critico px-3 py-2 text-tinta">
           <b>Recusado pelo destino</b> ({r.destino ?? '—'}) por {quem(r)} em {fmtDataHora(r.em)}: {r.motivo ? MOTIVOS_RECUSA_DESTINO[r.motivo] : ''}
           {r.texto && <span className="block text-tinta-apoio">{r.texto}</span>}
           <span className="block text-tinta-apoio">O pedido voltou à central para escolher outro destino.</span>
@@ -121,7 +122,7 @@ export function AcoesDestino({ s, aoFim, nir = false }: { s: PedidoDestino; aoFi
   if (!(s.sou_destino || nir) || !(aguardando || (s.destino_tipo === 'rede' && esperandoChegada(s.status)))) return null
   const exigeLeito = s.tipo === 'leito'
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-acao/30 p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-acao/30 p-3">
       <span className="font-medium text-tinta">{aguardando ? 'Resposta da unidade destino' : 'Chegada do paciente'}</span>
       <div className="flex flex-wrap gap-2">
         {aguardando ? (
@@ -139,16 +140,16 @@ export function AcoesDestino({ s, aoFim, nir = false }: { s: PedidoDestino; aoFi
       {acao === 'aceitar' && (
         <div className="grid gap-2 sm:grid-cols-3">
           <div className="flex flex-col gap-1 sm:col-span-2">
-            <Label htmlFor={`ac-leito-${s.id}`} className="text-xs">{exigeLeito ? 'Leito reservado para o paciente (obrigatório)' : 'Leito reservado (opcional)'}</Label>
+            <Label htmlFor={`ac-leito-${s.id}`} className="text-rotulo">{exigeLeito ? 'Leito reservado para o paciente (obrigatório)' : 'Leito reservado (opcional)'}</Label>
             {leitos.isLoading ? <Spinner /> : (
-              <select id={`ac-leito-${s.id}`} className={SELECT} value={leito} onChange={(e) => setLeito(e.target.value)}>
+              <CampoSelecao id={`ac-leito-${s.id}`} tamanho="compacto" value={leito} onChange={(e) => setLeito(e.target.value)}>
                 <option value="">{(leitos.data ?? []).length === 0 ? 'Nenhum leito livre' : 'Escolha…'}</option>
                 {(leitos.data ?? []).map((l) => <option key={l.id} value={l.id}>{l.leito} · {l.setor}{l.do_tipo ? ' (do tipo pedido)' : ''}</option>)}
-              </select>
+              </CampoSelecao>
             )}
           </div>
           <div className="flex flex-col gap-1">
-            <Label htmlFor={`ac-obs-${s.id}`} className="text-xs">Observação (opcional)</Label>
+            <Label htmlFor={`ac-obs-${s.id}`} className="text-rotulo">Observação (opcional)</Label>
             <Input id={`ac-obs-${s.id}`} className="h-8" value={texto} onChange={(e) => setTexto(e.target.value)} />
           </div>
           <div><Button size="sm" onClick={() => fazer.mutate('aceitar')} disabled={fazer.isPending || (exigeLeito && !leito)}>Confirmar aceite</Button></div>
@@ -157,14 +158,14 @@ export function AcoesDestino({ s, aoFim, nir = false }: { s: PedidoDestino; aoFi
       {acao === 'recusar' && (
         <div className="grid gap-2 sm:grid-cols-3">
           <div className="flex flex-col gap-1">
-            <Label htmlFor={`rc-mot-${s.id}`} className="text-xs">Motivo</Label>
-            <select id={`rc-mot-${s.id}`} className={SELECT} value={motivo} onChange={(e) => setMotivo(e.target.value as MotivoRecusaDestino | '')}>
+            <Label htmlFor={`rc-mot-${s.id}`} className="text-rotulo">Motivo</Label>
+            <CampoSelecao id={`rc-mot-${s.id}`} tamanho="compacto" value={motivo} onChange={(e) => setMotivo(e.target.value as MotivoRecusaDestino | '')}>
               <option value="">Escolha…</option>
               {(Object.keys(MOTIVOS_RECUSA_DESTINO) as MotivoRecusaDestino[]).map((k) => <option key={k} value={k}>{MOTIVOS_RECUSA_DESTINO[k]}</option>)}
-            </select>
+            </CampoSelecao>
           </div>
           <div className="flex flex-col gap-1 sm:col-span-2">
-            <Label htmlFor={`rc-txt-${s.id}`} className="text-xs">Justificativa (a central e a origem veem)</Label>
+            <Label htmlFor={`rc-txt-${s.id}`} className="text-rotulo">Justificativa (a central e a origem veem)</Label>
             <Input id={`rc-txt-${s.id}`} className="h-8" value={texto} onChange={(e) => setTexto(e.target.value)} />
           </div>
           <div><Button size="sm" variant="destructive" onClick={() => fazer.mutate('recusar')} disabled={fazer.isPending || !motivo || texto.trim().length < 10}>Confirmar recusa</Button></div>
@@ -173,7 +174,7 @@ export function AcoesDestino({ s, aoFim, nir = false }: { s: PedidoDestino; aoFi
       {acao === 'nao_chegou' && (
         <div className="flex flex-wrap items-end gap-2">
           <div className="flex min-w-60 flex-1 flex-col gap-1">
-            <Label htmlFor={`nc-${s.id}`} className="text-xs">O que aconteceu (a origem é avisada; a reserva do leito é liberada)</Label>
+            <Label htmlFor={`nc-${s.id}`} className="text-rotulo">O que aconteceu (a origem é avisada; a reserva do leito é liberada)</Label>
             <Input id={`nc-${s.id}`} className="h-8" value={texto} onChange={(e) => setTexto(e.target.value)} />
           </div>
           <Button size="sm" variant="destructive" onClick={() => fazer.mutate('nao_chegou')} disabled={fazer.isPending || texto.trim().length < 10}>Registrar falta</Button>
@@ -232,37 +233,37 @@ export function DestinoExterno({ s, aoFim }: { s: PedidoDestino; aoFim: () => vo
   if (s.status === 'aguardando_destino') {
     const pronto = aceita && quem.trim().length >= 3 && meio && (aceita === 'sim' || (motivo && texto.trim().length >= 10))
     return (
-      <div className="flex flex-col gap-2 rounded-md border border-acao/30 p-3">
+      <div className="flex flex-col gap-2 rounded-controle border border-acao/30 p-3">
         <span className="font-medium text-tinta">Resposta do serviço de fora da rede ({s.destino_externo})</span>
         <div className="grid gap-2 sm:grid-cols-3">
           <div className="flex flex-col gap-1">
-            <Label htmlFor={`ex-ac-${s.id}`} className="text-xs">Resposta</Label>
-            <select id={`ex-ac-${s.id}`} className={SELECT} value={aceita} onChange={(e) => setAceita(e.target.value as 'sim' | 'nao' | '')}>
+            <Label htmlFor={`ex-ac-${s.id}`} className="text-rotulo">Resposta</Label>
+            <CampoSelecao id={`ex-ac-${s.id}`} tamanho="compacto" value={aceita} onChange={(e) => setAceita(e.target.value as 'sim' | 'nao' | '')}>
               <option value="">Escolha…</option><option value="sim">Aceitou</option><option value="nao">Recusou</option>
-            </select>
+            </CampoSelecao>
           </div>
           <div className="flex flex-col gap-1">
-            <Label htmlFor={`ex-quem-${s.id}`} className="text-xs">Quem confirmou no serviço</Label>
+            <Label htmlFor={`ex-quem-${s.id}`} className="text-rotulo">Quem confirmou no serviço</Label>
             <Input id={`ex-quem-${s.id}`} className="h-8" value={quem} onChange={(e) => setQuem(e.target.value)} />
           </div>
           <div className="flex flex-col gap-1">
-            <Label htmlFor={`ex-meio-${s.id}`} className="text-xs">Meio</Label>
-            <select id={`ex-meio-${s.id}`} className={SELECT} value={meio} onChange={(e) => setMeio(e.target.value as MeioConfirmacao | '')}>
+            <Label htmlFor={`ex-meio-${s.id}`} className="text-rotulo">Meio</Label>
+            <CampoSelecao id={`ex-meio-${s.id}`} tamanho="compacto" value={meio} onChange={(e) => setMeio(e.target.value as MeioConfirmacao | '')}>
               <option value="">Escolha…</option>
               {(Object.keys(MEIOS_CONFIRMACAO) as MeioConfirmacao[]).map((k) => <option key={k} value={k}>{MEIOS_CONFIRMACAO[k]}</option>)}
-            </select>
+            </CampoSelecao>
           </div>
           {aceita === 'nao' && (
             <div className="flex flex-col gap-1">
-              <Label htmlFor={`ex-mot-${s.id}`} className="text-xs">Motivo da recusa</Label>
-              <select id={`ex-mot-${s.id}`} className={SELECT} value={motivo} onChange={(e) => setMotivo(e.target.value as MotivoRecusaDestino | '')}>
+              <Label htmlFor={`ex-mot-${s.id}`} className="text-rotulo">Motivo da recusa</Label>
+              <CampoSelecao id={`ex-mot-${s.id}`} tamanho="compacto" value={motivo} onChange={(e) => setMotivo(e.target.value as MotivoRecusaDestino | '')}>
                 <option value="">Escolha…</option>
                 {(Object.keys(MOTIVOS_RECUSA_DESTINO) as MotivoRecusaDestino[]).map((k) => <option key={k} value={k}>{MOTIVOS_RECUSA_DESTINO[k]}</option>)}
-              </select>
+              </CampoSelecao>
             </div>
           )}
           <div className={`flex flex-col gap-1 ${aceita === 'nao' ? 'sm:col-span-2' : 'sm:col-span-3'}`}>
-            <Label htmlFor={`ex-txt-${s.id}`} className="text-xs">{aceita === 'nao' ? 'Justificativa' : 'Observação (opcional)'}</Label>
+            <Label htmlFor={`ex-txt-${s.id}`} className="text-rotulo">{aceita === 'nao' ? 'Justificativa' : 'Observação (opcional)'}</Label>
             <Input id={`ex-txt-${s.id}`} className="h-8" value={texto} onChange={(e) => setTexto(e.target.value)} />
           </div>
         </div>
@@ -273,7 +274,7 @@ export function DestinoExterno({ s, aoFim }: { s: PedidoDestino; aoFim: () => vo
   }
   if (!esperandoChegada(s.status)) return null
   return (
-    <div className="flex flex-wrap items-end gap-2 rounded-md border border-acao/30 p-3">
+    <div className="flex flex-wrap items-end gap-2 rounded-controle border border-acao/30 p-3">
       <span className="w-full font-medium text-tinta">Chegada ao serviço de fora da rede</span>
       <Button size="xs" onClick={() => chegada.mutate(true)} disabled={chegada.isPending}>Paciente chegou</Button>
       <Button size="xs" variant="outline" onClick={() => setFalta(!falta)}>Não chegou</Button>
@@ -310,7 +311,7 @@ export function RecebidosDestino({ unidadeId, detalhe }: { unidadeId: string; de
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle className="flex items-center gap-2 text-corpo">
           <Hospital className="size-4" aria-hidden /> Recebidos da central
           {aguardando > 0 && <Badge variant="warning">Aguardando aceite: {aguardando}</Badge>}
         </CardTitle>
@@ -326,8 +327,8 @@ export function RecebidosDestino({ unidadeId, detalhe }: { unidadeId: string; de
                 const ef = s.prioridade_regulador ?? s.prioridade
                 return (
                   <li key={s.id} className="py-2">
-                    <button type="button" aria-expanded={aberta === s.id}
-                      className="flex w-full flex-wrap items-center gap-2 rounded-md px-1 py-0.5 text-left hover:bg-campo"
+                    <BotaoLinha variante="linha" aria-expanded={aberta === s.id}
+                      className="flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo"
                       onClick={() => setAberta(aberta === s.id ? null : s.id)}>
                       {aberta === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
                       <Badge variant={PRIORIDADES[ef].tom === 'critico' ? 'destructive' : PRIORIDADES[ef].tom === 'atencao' ? 'warning' : 'secondary'}>{PRIORIDADES[ef].rotulo}</Badge>
@@ -336,7 +337,7 @@ export function RecebidosDestino({ unidadeId, detalhe }: { unidadeId: string; de
                       <span className="text-tinta-sussurro">nº {s.numero} · de {s.origem.nome}</span>
                       <Badge variant={s.status === 'aguardando_destino' ? 'warning' : 'info'}>{STATUS[s.status]}</Badge>
                       <span className="ml-auto text-rotulo text-acao">{aberta === s.id ? 'Fechar' : 'Ver detalhes'}</span>
-                    </button>
+                    </BotaoLinha>
                     {aberta === s.id && detalhe(s.id)}
                   </li>
                 )

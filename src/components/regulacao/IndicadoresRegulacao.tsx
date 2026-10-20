@@ -18,7 +18,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { baixarCsv, gerarCsv, nomeArquivoCsv } from '@/lib/csv'
+import { dataIso } from '@/lib/formato'
 import {
   filtrosIndicadoresParaEnvio, linhasCsvIndicadores, taxa, tempo,
   type BlocoTempo, type FiltrosIndicadores, type Indicadores,
@@ -26,10 +28,10 @@ import {
 import { MOTIVOS_NEGACAO, MOTIVOS_RECUSA_DESTINO, PRIORIDADES, TIPOS, TIPOS_LEITO, type Prioridade, type TipoSolicitacao } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 
-const SELECT = 'h-8 rounded-controle border border-fio bg-campo px-2'
-const hoje = () => new Date().toLocaleDateString('sv-SE')
-const diasAtras = (n: number) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toLocaleDateString('sv-SE') }
+const hoje = () => dataIso()
+const diasAtras = (n: number) => dataIso(Date.now() - n * 86_400_000)
 const ROTULO_TEMPO = { decisao: 'Até a decisão da central', aceite: 'Até o aceite do destino', chegada: 'Até a chegada' }
 const ROTULO_PRAZO = { fila: 'Fila (decisão da central)', pendencia: 'Resposta à pendência', evolucao: 'Evolução do pedido', destino: 'Resposta do destino' }
 
@@ -63,7 +65,7 @@ export function IndicadoresRegulacao({ unidadeId, unidades = [] }: { unidadeId: 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+        <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
           <LineChart className="size-4" aria-hidden /> Indicadores de regulação
           {d && <Badge variant="secondary">{d.total} pedidos no período</Badge>}
           {d && <Button size="xs" variant="outline" className="ml-auto" onClick={exportar}><Download className="size-3.5" /> Exportar CSV</Button>}
@@ -77,30 +79,30 @@ export function IndicadoresRegulacao({ unidadeId, unidades = [] }: { unidadeId: 
           <Filtro id="ind-de" rotulo="De"><Input id="ind-de" type="date" className="h-8" value={filtros.de} onChange={(e) => set('de', e.target.value)} /></Filtro>
           <Filtro id="ind-ate" rotulo="Até"><Input id="ind-ate" type="date" className="h-8" value={filtros.ate} onChange={(e) => set('ate', e.target.value)} /></Filtro>
           <Filtro id="ind-tipo" rotulo="Tipo">
-            <select id="ind-tipo" className={SELECT} value={filtros.tipo ?? ''} onChange={(e) => set('tipo', e.target.value)}>
+            <CampoSelecao id="ind-tipo" tamanho="compacto" value={filtros.tipo ?? ''} onChange={(e) => set('tipo', e.target.value)}>
               <option value="">Todos</option>
               {(Object.keys(TIPOS) as TipoSolicitacao[]).map((k) => <option key={k} value={k}>{TIPOS[k]}</option>)}
-            </select>
+            </CampoSelecao>
           </Filtro>
           <Filtro id="ind-pri" rotulo="Prioridade">
-            <select id="ind-pri" className={SELECT} value={filtros.prioridade ?? ''} onChange={(e) => set('prioridade', e.target.value)}>
+            <CampoSelecao id="ind-pri" tamanho="compacto" value={filtros.prioridade ?? ''} onChange={(e) => set('prioridade', e.target.value)}>
               <option value="">Todas</option>
               {(Object.keys(PRIORIDADES) as Prioridade[]).map((k) => <option key={k} value={k}>{PRIORIDADES[k].rotulo}</option>)}
-            </select>
+            </CampoSelecao>
           </Filtro>
           {unidades.length > 0 && (
             <>
               <Filtro id="ind-orig" rotulo="Origem">
-                <select id="ind-orig" className={SELECT} value={filtros.origem_id ?? ''} onChange={(e) => set('origem_id', e.target.value)}>
+                <CampoSelecao id="ind-orig" tamanho="compacto" value={filtros.origem_id ?? ''} onChange={(e) => set('origem_id', e.target.value)}>
                   <option value="">Todas</option>
                   {unidades.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-                </select>
+                </CampoSelecao>
               </Filtro>
               <Filtro id="ind-dest" rotulo="Destino">
-                <select id="ind-dest" className={SELECT} value={filtros.destino_id ?? ''} onChange={(e) => set('destino_id', e.target.value)}>
+                <CampoSelecao id="ind-dest" tamanho="compacto" value={filtros.destino_id ?? ''} onChange={(e) => set('destino_id', e.target.value)}>
                   <option value="">Todos</option>
                   {unidades.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-                </select>
+                </CampoSelecao>
               </Filtro>
             </>
           )}
@@ -170,7 +172,7 @@ export function IndicadoresRegulacao({ unidadeId, unidades = [] }: { unidadeId: 
 }
 
 function Filtro({ id, rotulo, children }: { id: string; rotulo: string; children: React.ReactNode }) {
-  return <div className="flex flex-col gap-1"><Label htmlFor={id} className="text-xs">{rotulo}</Label>{children}</div>
+  return <div className="flex flex-col gap-1"><Label htmlFor={id} className="text-rotulo">{rotulo}</Label>{children}</div>
 }
 
 function Secao({ titulo, children }: { titulo: string; children: React.ReactNode }) {
@@ -184,11 +186,11 @@ function Item({ rotulo, valor }: { rotulo: string; valor: React.ReactNode }) {
 function Tempo({ titulo, b }: { titulo: string; b: BlocoTempo }) {
   const grupos = [...b.por_prioridade, ...b.por_tipo]
   return (
-    <div className="flex flex-col gap-1 rounded-md border border-fio p-3">
+    <div className="flex flex-col gap-1 rounded-controle border border-fio p-3">
       <span className="text-rotulo text-tinta-sussurro">{titulo}</span>
       {b.geral && b.geral.n > 0 ? (
         <>
-          <span className="text-lg font-semibold tabular-nums text-tinta">{tempo(b.geral.mediana)}</span>
+          <span className="text-secao font-semibold tabular-nums text-tinta">{tempo(b.geral.mediana)}</span>
           <span className="text-rotulo text-tinta-apoio">p90 {tempo(b.geral.p90)} · {b.geral.n} pedido(s)</span>
           <ul className="mt-1 text-rotulo text-tinta-apoio">
             {grupos.map((g) => <li key={g.grupo}>{rotuloGrupo(g.grupo)}: {tempo(g.mediana)} (p90 {tempo(g.p90)}, {g.n})</li>)}
@@ -208,14 +210,12 @@ function Motivos({ titulo, m, rotulo }: { titulo: string; m: Record<string, numb
 function Tabela({ cab, linhas }: { cab: string[]; linhas: (string | number)[][] }) {
   if (linhas.length === 0) return null
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[28rem] text-left">
-        <thead className="text-rotulo text-tinta-sussurro"><tr>{cab.map((c) => <th key={c} className="py-1 font-normal">{c}</th>)}</tr></thead>
-        <tbody className="tabular-nums">
-          {linhas.map((l, i) => <tr key={i} className="border-t border-fio">{l.map((v, j) => <td key={j} className={j === 0 ? 'py-1 text-tinta' : ''}>{v}</td>)}</tr>)}
-        </tbody>
-      </table>
-    </div>
+    <Table variante="referencia" className="w-full min-w-[28rem] text-left">
+      <TableHeader className="text-rotulo text-tinta-sussurro"><TableRow>{cab.map((c) => <TableHead key={c} className="py-1 font-normal">{c}</TableHead>)}</TableRow></TableHeader>
+      <TableBody className="tabular-nums">
+        {linhas.map((l, i) => <TableRow key={i} className="border-t border-fio">{l.map((v, j) => <TableCell key={j} className={j === 0 ? 'py-1 text-tinta' : ''}>{v}</TableCell>)}</TableRow>)}
+      </TableBody>
+    </Table>
   )
 }
 
@@ -227,7 +227,7 @@ function PorDia({ dias }: { dias: { dia: string; n: number }[] }) {
       {dias.map((x) => (
         <li key={x.dia} className="flex items-center gap-2 text-rotulo">
           <span className="w-20 tabular-nums text-tinta-sussurro">{x.dia.split('-').reverse().slice(0, 2).join('/')}</span>
-          <span className="h-2 rounded-full bg-acao/60" style={{ width: `${Math.max(4, (x.n / max) * 100)}%`, maxWidth: '70%' }} aria-hidden />
+          <span className="h-2 rounded-capsula bg-acao/60" style={{ width: `${Math.max(4, (x.n / max) * 100)}%`, maxWidth: '70%' }} aria-hidden />
           <span className="tabular-nums text-tinta">{x.n}</span>
         </li>
       ))}
