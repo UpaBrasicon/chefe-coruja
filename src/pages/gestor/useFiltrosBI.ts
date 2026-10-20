@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 
 import { argsFiltros, escreverFiltros, lerFiltros, type FiltrosBi } from '@/lib/filtrosBi'
+import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
 // Estado da barra de filtros da tela Indicadores (Fase 1, tarefa 7): lê e grava
@@ -17,7 +18,7 @@ export type ContextoFiltros = {
 
 export function useFiltrosBI(unidadeId: string | undefined): ContextoFiltros & { definir: (p: Partial<FiltrosBi>) => void; limpar: () => void; opcoes: { setores: { id: string; nome: string }[]; medicos: { id: string; nome: string }[] } } {
   const [q, setQ] = useSearchParams()
-  const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+  const hoje = dataIso()
   const filtros = lerFiltros(q, hoje)
   const { faixa, args } = argsFiltros(filtros, hoje)
 

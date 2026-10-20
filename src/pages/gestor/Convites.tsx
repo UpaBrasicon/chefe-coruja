@@ -274,8 +274,8 @@ export default function Convites() {
                   Passe o código para a pessoa. Ele vale até {formatarDiaHora(gerado.expira_em)} e abre um acesso só.
                 </DialogDescription>
               </DialogHeader>
-              <div className="flex flex-col items-center gap-3 rounded-container border border-[#B7DED8] bg-[#ECF7F5] px-4 py-5">
-                <span className="tabular text-[28px] font-semibold tracking-[0.16em] text-acao-pressionada">{gerado.codigo}</span>
+              <div className="flex flex-col items-center gap-3 rounded-container border border-acao/30 bg-alerta-marca px-4 py-5">
+                <span className="tabular text-numeral-ok font-semibold tracking-[0.16em] text-acao-pressionada">{gerado.codigo}</span>
                 <Button variant="outline" onClick={() => void copiar(gerado.codigo)}>
                   {copiado === gerado.codigo ? <Check /> : <Copy />}
                   {copiado === gerado.codigo ? 'Copiado' : 'Copiar código'}

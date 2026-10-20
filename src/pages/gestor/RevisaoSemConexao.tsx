@@ -3,6 +3,7 @@ import { Check, X } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { dataHora } from '@/lib/formato'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -26,7 +27,7 @@ type Linha = {
   motivo: string | null
 }
 
-const fmt = (iso: string) => new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' })
+const fmt = (iso: string) => dataHora(iso)
 
 function atraso(fato: string, chegada: string) {
   const h = Math.round((Date.parse(chegada) - Date.parse(fato)) / 3_600_000)
@@ -77,7 +78,7 @@ export default function RevisaoSemConexao() {
     <div className="flex flex-col gap-4">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Registros tardios</CardTitle>
+          <CardTitle className="text-corpo">Registros tardios</CardTitle>
           <CardDescription>
             Feitos sem conexão e recebidos mais de 24 horas depois do fato. Só entram no prontuário se você aceitar.
             Confira com o registro em papel antes de decidir.
@@ -85,19 +86,19 @@ export default function RevisaoSemConexao() {
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {isLoading && <Spinner />}
-          {error && <p className="text-sm text-critico">{(error as Error).message}</p>}
+          {error && <p className="text-apoio text-critico">{(error as Error).message}</p>}
           {!isLoading && pendentes.length === 0 && (
-            <p className="text-sm text-tinta-sussurro">Nenhum registro aguardando revisão.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhum registro aguardando revisão.</p>
           )}
           {pendentes.map((l) => (
             <div key={l.id} className="flex flex-col gap-2 rounded-controle border border-fio p-3">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="font-medium text-tinta">{l.paciente_nome}</span>
-                <span className="text-xs text-tinta-sussurro">
+                <span className="text-rotulo text-tinta-sussurro">
                   fato {fmt(l.hora_fato)} · chegou {atraso(l.hora_fato, l.recebido_em)}
                 </span>
               </div>
-              <div className="text-sm text-tinta-apoio">
+              <div className="text-apoio text-tinta-apoio">
                 {l.tipo === 'documento' ? (
                   <>Documento (folha provisória): <span className="font-medium">{(l.dados.tipo ?? '').replace('_', ' ')}</span></>
                 ) : (
@@ -133,18 +134,18 @@ export default function RevisaoSemConexao() {
               </div>
             </div>
           ))}
-          {decidir.isError && <p className="text-sm text-critico">{(decidir.error as Error).message}</p>}
+          {decidir.isError && <p className="text-apoio text-critico">{(decidir.error as Error).message}</p>}
         </CardContent>
       </Card>
 
       {decididos.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Decididos</CardTitle>
+            <CardTitle className="text-corpo">Decididos</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-1.5">
             {decididos.map((l) => (
-              <div key={l.id} className="text-sm text-tinta-apoio">
+              <div key={l.id} className="text-apoio text-tinta-apoio">
                 <span className={l.decisao === 'aceito' ? 'text-conforme' : 'text-critico'}>
                   {l.decisao === 'aceito' ? 'Aceito' : 'Descartado'}
                 </span>

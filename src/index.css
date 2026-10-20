@@ -111,6 +111,8 @@
     /* Véu atrás de diálogo e o da sessão encerrada (tela cheia). */
     --color-veu-dialogo: var(--cc-veu-dialogo);
     --color-veu-sessao: var(--cc-veu-sessao);
+    /* Texto sobre os véus (igual nos dois temas). */
+    --color-sobre-veu: var(--cc-sobre-veu);
 
     /* ── Escala tipográfica: 12·13·14·15·17·20·24 e 25·30·36·42 ──
        14 é o tamanho de controle (campo, item de menu) e 20 o do título de
@@ -279,6 +281,7 @@
     --cc-veu: #0B3B34;
     --cc-veu-dialogo: rgba(15, 23, 42, 0.42);
     --cc-veu-sessao: #0B1220EB;
+    --cc-sobre-veu: #FFFFFF;
     --cc-sobre-acao: #FFFFFF;
     --cc-marca-escura: #0B3D3A;
     --cc-marca-clara: #5EEAD4;

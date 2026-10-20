@@ -1,10 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, ChevronRight, Gauge, Loader2, MessageSquare, Settings2 } from 'lucide-react'
+import { Check, Gauge, Loader2, MessageSquare, Settings, Settings2 } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 
+import { moeda } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -123,7 +124,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
   }
 
   function brl(v: number) {
-    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+    return moeda(v)
   }
 
   if (isLoading || !unidade) {
@@ -137,20 +138,18 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       {!embutido && (
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
-            <Link to="/" className="transition-colors hover:text-tinta">
-              Início
-            </Link>
-            <ChevronRight className="size-3.5" />
-            <span className="font-medium text-tinta">Configurações da Unidade</span>
-          </div>
-          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Configurações da Unidade</h1>
-          <p className="text-sm text-tinta-sussurro">Comunicação, geolocalização do check-in, limites da unidade e valores de plantão.</p>
+        <div>
+          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Configurações da unidade' }]} />
+          <TituloPagina
+            icone={Settings}
+            titulo="Configurações da unidade"
+            descricao="Comunicação, geolocalização do check-in, limites da unidade e valores de plantão."
+            className="mb-0"
+          />
         </div>
       )}
 
-      {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
+      {erro && <div className="rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</div>}
 
       {/* Identificação (protótipo: nome, CNES e tipo); o cadastro é da rede, mas o CNES é do gestor (RT, 10/10/2026) */}
       <div className="grid gap-4 rounded-cartao border border-fio bg-superficie px-5 py-4 shadow-repouso sm:grid-cols-3">
@@ -185,7 +184,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <Settings2 className="size-4 text-tinta-sussurro" />
             Valores de plantão (extrato)
           </CardTitle>
@@ -232,10 +231,10 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
 
           <div className="flex flex-col gap-2">
             {(remuneracoes ?? []).length === 0 ? (
-              <p className="text-sm text-tinta-sussurro">Nenhum valor configurado ainda.</p>
+              <p className="text-apoio text-tinta-sussurro">Nenhum valor configurado ainda.</p>
             ) : (
               (remuneracoes ?? []).map((r) => (
-                <div key={r.id} className="flex items-center justify-between rounded-lg border p-2.5 text-sm">
+                <div key={r.id} className="flex items-center justify-between rounded-controle border p-2.5 text-apoio">
                   <div>
                     <span className="font-medium">
                       {r.setores?.nome ?? 'Todos os setores'}
@@ -299,7 +298,7 @@ function FormUnidade({ unidade, unidadeId }: { unidade: UnidadeConfig; unidadeId
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <MessageSquare className="size-4 text-tinta-sussurro" />
             Canal de comunicação
           </CardTitle>
@@ -331,7 +330,7 @@ function FormUnidade({ unidade, unidadeId }: { unidade: UnidadeConfig; unidadeId
             )}
           </div>
           {canal === 'whatsapp' && (
-            <p className="text-xs text-tinta-sussurro">
+            <p className="text-rotulo text-tinta-sussurro">
               Exemplo: 5511999999999 (Brasil, SP). Os plantonistas verão um botão &quot;Falar no WhatsApp&quot;.
             </p>
           )}
@@ -340,7 +339,7 @@ function FormUnidade({ unidade, unidadeId }: { unidade: UnidadeConfig; unidadeId
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Geolocalização do check-in</CardTitle>
+          <CardTitle className="text-corpo">Geolocalização do check-in</CardTitle>
           <CardDescription>Usada para validar se o plantonista está na unidade ao registrar presença.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -358,8 +357,8 @@ function FormUnidade({ unidade, unidadeId }: { unidade: UnidadeConfig; unidadeId
               <Input type="number" value={raio} onChange={(e) => setRaio(e.target.value)} />
             </div>
           </div>
-          {erro && <p className="text-sm text-critico">{erro}</p>}
-          {msg && <p className="text-sm text-conforme">{msg}</p>}
+          {erro && <p className="text-apoio text-critico">{erro}</p>}
+          {msg && <p className="text-apoio text-conforme">{msg}</p>}
           <div>
             <Button onClick={salvarUnidade} disabled={salvando}>
               {salvando ? <Loader2 className="animate-spin" /> : <Check />} Salvar unidade
@@ -428,16 +427,16 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
       <div className="flex items-center gap-2">
         <Input id={id} type="number" inputMode="numeric" min={min} max={max} value={valor} disabled={!podeEditar}
           onChange={(e) => set(e.target.value)} className="w-24" />
-        <span className="text-sm text-tinta-sussurro">{sufixo}</span>
+        <span className="text-apoio text-tinta-sussurro">{sufixo}</span>
       </div>
-      <span className="text-xs text-tinta-sussurro">{ajuda}</span>
+      <span className="text-rotulo text-tinta-sussurro">{ajuda}</span>
     </div>
   )
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle className="flex items-center gap-2 text-corpo">
           <Gauge className="size-4 text-tinta-sussurro" />
           Limites da unidade
         </CardTitle>
@@ -447,13 +446,13 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        <div className="flex flex-col gap-3 rounded-lg border border-fio p-3">
-          <label className="flex items-start gap-2.5 text-sm">
+        <div className="flex flex-col gap-3 rounded-controle border border-fio p-3">
+          <label className="flex items-start gap-2.5 text-apoio">
             <input type="checkbox" checked={descansoAtivo} disabled={!podeEditar} onChange={(e) => setDescansoAtivo(e.target.checked)}
               className="mt-0.5 size-4 accent-[var(--color-acao)]" />
             <span className="flex flex-col gap-0.5">
               <span className="font-medium text-tinta">Exigir descanso mínimo entre jornadas</span>
-              <span className="text-xs text-tinta-sussurro">
+              <span className="text-rotulo text-tinta-sussurro">
                 Deixe desligado quando os contratos não são CLT. Desligado, o Olho de Gavião não aponta descanso curto.
               </span>
             </span>
@@ -466,9 +465,9 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
           {campo('lim-tolerancia', 'Tolerância do check-in', tolerancia, setTolerancia, 0, 120, 'minutos', 'Depois do início do plantão. Passado esse prazo sem check-in, o acesso fica bloqueado até a pessoa fazer o check-in.')}
           {campo('lim-alvo-triagem', 'Alvo chegada → triagem', alvoTriagem, setAlvoTriagem, 1, 240, 'minutos', 'Da ficha na recepção até a classificação. Usado no indicador de espera da triagem.')}
         </div>
-        <div className="flex flex-col gap-2 rounded-lg border border-fio p-3">
-          <span className="text-sm font-medium text-tinta">Alvo da classificação ao médico, por cor</span>
-          <span className="text-xs text-tinta-sussurro">
+        <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
+          <span className="text-apoio font-medium text-tinta">Alvo da classificação ao médico, por cor</span>
+          <span className="text-rotulo text-tinta-sussurro">
             Em minutos, da 1ª classificação até o médico abrir o atendimento. Vem do protocolo de classificação; mude só se a unidade adota outro tempo. Usado na tela Porta e nos Indicadores. 0 = imediato.
           </span>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -481,8 +480,8 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
             ))}
           </div>
         </div>
-        {erro && <p className="text-sm text-critico">{erro}</p>}
-        {msg && <p className="text-sm text-conforme">{msg}</p>}
+        {erro && <p className="text-apoio text-critico">{erro}</p>}
+        {msg && <p className="text-apoio text-conforme">{msg}</p>}
         {podeEditar && (
           <div>
             <Button onClick={salvar} disabled={salvando}>

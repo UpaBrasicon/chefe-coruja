@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ShieldCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
+import { hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -25,7 +26,6 @@ type Alerta = { ordem: number; leito: string; setor: string; paciente_id: string
 type Mapa = { limite: number; setores: Setor[]; plantonistas: Plantonista[]; alertas: Alerta[] }
 
 const SELO = 'shrink-0 whitespace-nowrap rounded-capsula px-2 py-[3px] text-rotulo font-semibold uppercase tracking-[0.03em]'
-const hora = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
 
 function Cabeca({ titulo, resumo, tom = 'neutro' }: { titulo: string; resumo: string; tom?: 'neutro' | 'atencao' | 'critico' | 'ok' }) {
   return (
@@ -84,7 +84,7 @@ export function MapaLeitos() {
                   <span className={cn('text-secao font-semibold tabular-nums tracking-[-0.02em]', cor[0])}>{s.leitos_total ? `${Math.round(t * 100)}%` : '—'}</span>
                   <div className="relative h-[5px] w-full rounded-capsula bg-trilha" aria-hidden>
                     <div className={cn('absolute inset-y-0 left-0 rounded-capsula', cor[1])} style={{ width: `${Math.min(100, Math.round(t * 100))}%` }} />
-                    <span className="absolute -top-0.5 -bottom-0.5 w-0.5 rounded-sm bg-tinta/35" style={{ left: `${lim * 100}%` }} />
+                    <span className="absolute -top-0.5 -bottom-0.5 w-0.5 rounded-controle bg-tinta/35" style={{ left: `${lim * 100}%` }} />
                   </div>
                   <span className="text-rotulo text-tinta-sussurro">limite {Math.round(lim * 100)}%</span>
                 </div>
@@ -132,7 +132,7 @@ export function MapaLeitos() {
                 <span className="text-corpo text-tinta">{a.texto}</span>
                 <span className="text-apoio text-tinta-sussurro">{[a.setor, a.nota, a.prazo && `prazo ${hora(a.prazo)}`].filter(Boolean).join(' · ')}</span>
               </div>
-              <span className={cn(SELO, a.ordem === 2 ? 'bg-atencao/[0.08] text-atencao' : 'bg-critico/[0.08] text-critico')}>{a.selo}</span>
+              <span className={cn(SELO, a.ordem === 2 ? 'bg-alerta-atencao text-atencao' : 'bg-alerta-critico text-critico')}>{a.selo}</span>
               <Link to={`/prontuarios/${a.paciente_id}`} className="rounded-controle border border-fio px-3 py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao">Ver leito</Link>
             </div>
           ))}
@@ -144,26 +144,26 @@ export function MapaLeitos() {
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <span className="text-apoio font-semibold text-tinta">Leitos · {s.nome}</span>
             <div className="flex flex-wrap items-center gap-3 text-rotulo text-tinta-sussurro">
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-conforme/30" />Livre</span>
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-critico/30" />Ocupado</span>
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-atencao/30" />Reservado</span>
-              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-trilha" />Bloqueado ou em higienização</span>
+              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-controle bg-conforme/30" />Livre</span>
+              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-controle bg-critico/30" />Ocupado</span>
+              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-controle bg-atencao/30" />Reservado</span>
+              <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-controle bg-trilha" />Bloqueado ou em higienização</span>
               <span>Clique no leito ocupado para abrir o paciente</span>
             </div>
           </div>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-2">
             {s.leitos.map((l) => {
-              const cls = cn('grid h-11 place-items-center rounded-[10px] border text-apoio font-medium tabular-nums',
-                l.ocupado ? 'border-critico/20 bg-critico/[0.06] text-critico'
-                  : l.status === 'livre' ? 'border-conforme/20 bg-conforme/[0.06] text-conforme'
-                  : l.status === 'reservado' ? 'border-atencao/30 bg-atencao/[0.08] text-atencao'
+              const cls = cn('grid h-11 place-items-center rounded-controle border text-apoio font-medium tabular-nums',
+                l.ocupado ? 'border-critico/20 bg-alerta-critico text-critico'
+                  : l.status === 'livre' ? 'border-conforme/20 bg-alerta-conforme text-conforme'
+                  : l.status === 'reservado' ? 'border-atencao/30 bg-alerta-atencao text-atencao'
                   : 'border-fio bg-trilha text-tinta-sussurro')
               const marca = (l.vencidas > 0 || (l.banda ?? 0) >= 1) && <span className="sr-only"> com alerta</span>
               const titulo = [l.status === 'higienizacao' ? 'em higienização' : l.status, l.vencidas ? `${l.vencidas} vencida(s)` : '', (l.banda ?? 0) >= 1 ? 'escore em alerta' : ''].filter(Boolean).join(' · ')
               return l.paciente_id ? (
                 <Link key={l.id} to={`/prontuarios/${l.paciente_id}`} title={titulo} className={cn(cls, 'relative hover:ring-2 hover:ring-critico/30')}>
                   {l.identificador}{marca}
-                  {(l.vencidas > 0 || (l.banda ?? 0) >= 1) && <span className="absolute top-1 right-1 size-1.5 rounded-full bg-atencao" aria-hidden />}
+                  {(l.vencidas > 0 || (l.banda ?? 0) >= 1) && <span className="absolute top-1 right-1 size-1.5 rounded-capsula bg-atencao" aria-hidden />}
                 </Link>
               ) : (
                 <span key={l.id} title={titulo} className={cls}>{l.identificador}</span>

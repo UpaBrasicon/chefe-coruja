@@ -4,9 +4,11 @@ import { Download, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { baixarCsv, gerarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { minutos, type EsperaTriagem as Dados } from '@/lib/esperaTriagem'
 import { descreverFiltros } from '@/lib/filtrosBi'
+import { dataHora, dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -22,7 +24,7 @@ import type { ContextoFiltros } from './useFiltrosBI'
 const fmtDia = (iso: string) => iso.split('-').reverse().join('/')
 
 export function EsperaTriagem({ unidadeId, nomeUnidade, ctx }: { unidadeId: string; nomeUnidade: string; ctx: ContextoFiltros }) {
-  const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+  const hoje = dataIso()
   const faixa = ctx.faixa
 
   const { data, isLoading, error } = useQuery({
@@ -44,7 +46,7 @@ export function EsperaTriagem({ unidadeId, nomeUnidade, ctx }: { unidadeId: stri
         ['Unidade', nomeUnidade], ['Relatório', 'Espera da chegada à triagem'],
         ['Período', `${fmtDia(data.de)} a ${fmtDia(data.ate)}`], ['Filtros', descreverFiltros(ctx.filtros, ctx.nomes)], ['Alvo (min)', data.alvo_min],
         ['Base', 'da ficha na recepção à primeira classificação; reclassificação não conta'],
-        ['Gerado em', new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })],
+        ['Gerado em', dataHora(new Date())],
       ] },
     ))
   }
@@ -55,7 +57,7 @@ export function EsperaTriagem({ unidadeId, nomeUnidade, ctx }: { unidadeId: stri
     <Card>
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <Timer className="size-4 text-tinta-sussurro" />
             Espera da chegada à triagem
           </CardTitle>
@@ -74,7 +76,7 @@ export function EsperaTriagem({ unidadeId, nomeUnidade, ctx }: { unidadeId: stri
 
         {data && (
           data.chegadas === 0 ? (
-            <p className="text-sm text-tinta-sussurro">Nenhuma chegada no período.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhuma chegada no período.</p>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -89,31 +91,31 @@ export function EsperaTriagem({ unidadeId, nomeUnidade, ctx }: { unidadeId: stri
                 {data.p90_min != null ? ` · 9 em cada 10 triados em até ${minutos(data.p90_min)}` : ''}
               </p>
               {data.por_dia.length > 1 && (
-                <div className="overflow-x-auto rounded-lg border border-fio">
-                  <table className="w-full min-w-[560px] text-apoio">
-                    <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
-                      <tr>
-                        <th className="px-3 py-2 font-medium">Dia</th>
-                        <th className="px-3 py-2 text-right font-medium">Chegadas</th>
-                        <th className="px-3 py-2 text-right font-medium">Mediana</th>
-                        <th className="px-3 py-2 text-right font-medium">Média</th>
-                        <th className="px-3 py-2 text-right font-medium">Fora do alvo</th>
-                        <th className="px-3 py-2 text-right font-medium">Até a chamada</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                <div className="overflow-x-auto rounded-controle border border-fio">
+                  <Table variante="referencia" className="w-full min-w-[560px] text-apoio">
+                    <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
+                      <TableRow>
+                        <TableHead className="px-3 py-2 font-medium">Dia</TableHead>
+                        <TableHead className="px-3 py-2 text-right font-medium">Chegadas</TableHead>
+                        <TableHead className="px-3 py-2 text-right font-medium">Mediana</TableHead>
+                        <TableHead className="px-3 py-2 text-right font-medium">Média</TableHead>
+                        <TableHead className="px-3 py-2 text-right font-medium">Fora do alvo</TableHead>
+                        <TableHead className="px-3 py-2 text-right font-medium">Até a chamada</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {data.por_dia.map((d) => (
-                        <tr key={d.dia} className="border-b border-trilha last:border-0 tabular">
-                          <td className="px-3 py-1.5">{fmtDia(d.dia)}</td>
-                          <td className="px-3 py-1.5 text-right">{d.chegadas}</td>
-                          <td className={cn('px-3 py-1.5 text-right', d.mediana_min != null && d.mediana_min > data.alvo_min && 'font-semibold text-critico')}>{minutos(d.mediana_min)}</td>
-                          <td className="px-3 py-1.5 text-right">{minutos(d.media_min)}</td>
-                          <td className={cn('px-3 py-1.5 text-right', d.fora_alvo > 0 && 'text-critico')}>{d.fora_alvo}</td>
-                          <td className="px-3 py-1.5 text-right">{minutos(d.chamada_mediana_min)}</td>
-                        </tr>
+                        <TableRow key={d.dia} className="border-b border-trilha last:border-0 tabular">
+                          <TableCell className="px-3 py-1.5">{fmtDia(d.dia)}</TableCell>
+                          <TableCell className="px-3 py-1.5 text-right">{d.chegadas}</TableCell>
+                          <TableCell className={cn('px-3 py-1.5 text-right', d.mediana_min != null && d.mediana_min > data.alvo_min && 'font-semibold text-critico')}>{minutos(d.mediana_min)}</TableCell>
+                          <TableCell className="px-3 py-1.5 text-right">{minutos(d.media_min)}</TableCell>
+                          <TableCell className={cn('px-3 py-1.5 text-right', d.fora_alvo > 0 && 'text-critico')}>{d.fora_alvo}</TableCell>
+                          <TableCell className="px-3 py-1.5 text-right">{minutos(d.chamada_mediana_min)}</TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </>
@@ -126,9 +128,9 @@ export function EsperaTriagem({ unidadeId, nomeUnidade, ctx }: { unidadeId: stri
 
 function Numero({ rotulo, valor, detalhe, fora }: { rotulo: string; valor: string; detalhe?: string; fora?: boolean }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-fio px-3 py-2.5">
+    <div className="flex flex-col gap-1 rounded-controle border border-fio px-3 py-2.5">
       <span className="text-rotulo text-tinta-apoio">{rotulo}</span>
-      <span className={cn('text-[22px] leading-none font-semibold tabular', fora ? 'text-critico' : 'text-tinta')}>{valor}</span>
+      <span className={cn('text-titulo leading-none font-semibold tabular', fora ? 'text-critico' : 'text-tinta')}>{valor}</span>
       {detalhe && <span className="text-rotulo text-tinta-sussurro">{detalhe}</span>}
     </div>
   )

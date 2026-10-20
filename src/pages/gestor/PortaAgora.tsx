@@ -5,9 +5,11 @@ import * as React from 'react'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import type { CorRisco } from '@/domain/risco'
 import { taxa } from '@/lib/evasao'
+import { hora as fmtHora } from '@/lib/formato'
 import { gargalo, tempo, type EtapaChave, type Paciente, type Porta } from '@/lib/portaAgora'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -55,7 +57,7 @@ export default function PortaAgora() {
   const g = data ? gargalo(data) : null
   const lista = (data?.pacientes ?? []).filter((p) =>
     filtro === 'Atrasados' ? p.fora_alvo : filtro === 'Medicação pendente' ? p.medicacao_pendente : true)
-  const hora = data ? new Date(data.gerado_em).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }) : null
+  const hora = data ? fmtHora(data.gerado_em) : null
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -72,7 +74,7 @@ export default function PortaAgora() {
         <>
           {g && (
             <div role="status" className={cn('flex items-center gap-2 rounded-container border px-4 py-3 text-apoio',
-              g.critico ? 'border-critico/30 bg-critico/[0.06] text-critico' : 'border-atencao/30 bg-atencao/[0.06] text-atencao')}>
+              g.critico ? 'border-critico/30 bg-alerta-critico text-critico' : 'border-atencao/30 bg-alerta-atencao text-atencao')}>
               <TriangleAlert className="size-4 shrink-0" aria-hidden />
               <span>
                 <strong className="font-semibold">Gargalo: {ETAPAS.find((x) => x.chave === g.chave)?.rotulo}</strong> — {g.motivo}.
@@ -88,7 +90,7 @@ export default function PortaAgora() {
                 <div key={et.chave} className={cn('flex flex-col gap-1 rounded-container border bg-superficie px-4 py-3',
                   destaque ? (g?.critico ? 'border-critico ring-1 ring-critico/40' : 'border-atencao ring-1 ring-atencao/40') : 'border-fio')}>
                   <span className="text-rotulo font-medium text-tinta-apoio">{et.rotulo}</span>
-                  <span className="text-[28px] leading-none font-semibold tracking-[-0.03em] tabular text-tinta">{v.n}</span>
+                  <span className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular text-tinta">{v.n}</span>
                   <span className="text-rotulo text-tinta-sussurro">
                     {v.espera_max_min != null ? `mais antiga: ${tempo(v.espera_max_min)}` : et.desde}
                   </span>
@@ -120,7 +122,7 @@ export default function PortaAgora() {
                 return (
                   <div key={c} className="flex flex-col gap-1.5 rounded-container border border-fio bg-superficie px-3 py-2.5">
                     <PilulaRisco cor={c} className="self-start" />
-                    <span className="text-[22px] leading-none font-semibold tabular text-tinta">{v.n}</span>
+                    <span className="text-titulo leading-none font-semibold tabular text-tinta">{v.n}</span>
                     <span className={cn('text-rotulo', v.fora_alvo > 0 ? 'font-medium text-critico' : 'text-tinta-sussurro')}>
                       {v.fora_alvo > 0 ? `${v.fora_alvo} fora do alvo` : 'no prazo'} · alvo {v.alvo_min === 0 ? 'imediato' : `${v.alvo_min} min`}
                     </span>
@@ -144,39 +146,39 @@ export default function PortaAgora() {
               <Vazio icone={DoorOpen} titulo={filtro === 'Todos' ? 'Ninguém na porta agora' : 'Nenhum paciente neste filtro'} />
             ) : (
               <div className="overflow-x-auto rounded-container border border-fio bg-superficie">
-                <table className="w-full min-w-[720px] text-apoio">
-                  <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
-                    <tr>
-                      <th className="px-4 py-2 font-medium">Paciente</th>
-                      <th className="px-3 py-2 font-medium">Etapa</th>
-                      <th className="px-3 py-2 font-medium">Cor</th>
-                      <th className="px-3 py-2 font-medium">Setor</th>
-                      <th className="px-3 py-2 font-medium">Leito / poltrona</th>
-                      <th className="px-3 py-2 text-right font-medium">Espera</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <Table variante="referencia" className="w-full min-w-[720px] text-apoio">
+                  <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
+                    <TableRow>
+                      <TableHead className="px-4 py-2 font-medium">Paciente</TableHead>
+                      <TableHead className="px-3 py-2 font-medium">Etapa</TableHead>
+                      <TableHead className="px-3 py-2 font-medium">Cor</TableHead>
+                      <TableHead className="px-3 py-2 font-medium">Setor</TableHead>
+                      <TableHead className="px-3 py-2 font-medium">Leito / poltrona</TableHead>
+                      <TableHead className="px-3 py-2 text-right font-medium">Espera</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {lista.map((p, i) => (
-                      <tr key={i} className="border-b border-trilha last:border-0">
-                        <td className="px-4 py-2 font-medium text-tinta">
+                      <TableRow key={i} className="border-b border-trilha last:border-0">
+                        <TableCell className="px-4 py-2 font-medium text-tinta">
                           {p.nome}
                           {p.medicacao_pendente && (
                             <span className="ml-2 inline-flex items-center gap-1 text-rotulo font-normal text-atencao">
                               <Pill className="size-3" aria-hidden /> medicação sem checagem
                             </span>
                           )}
-                        </td>
-                        <td className="px-3 py-2 text-tinta-apoio">{ROTULO_ETAPA[p.etapa]}</td>
-                        <td className="px-3 py-2"><PilulaRisco cor={p.cor} /></td>
-                        <td className="px-3 py-2 text-tinta-apoio">{p.setor ?? '—'}</td>
-                        <td className="px-3 py-2 text-tinta-apoio">{p.leito ?? '—'}</td>
-                        <td className={cn('px-3 py-2 text-right tabular', p.fora_alvo ? 'font-semibold text-critico' : 'text-tinta')}>
+                        </TableCell>
+                        <TableCell className="px-3 py-2 text-tinta-apoio">{ROTULO_ETAPA[p.etapa]}</TableCell>
+                        <TableCell className="px-3 py-2"><PilulaRisco cor={p.cor} /></TableCell>
+                        <TableCell className="px-3 py-2 text-tinta-apoio">{p.setor ?? '—'}</TableCell>
+                        <TableCell className="px-3 py-2 text-tinta-apoio">{p.leito ?? '—'}</TableCell>
+                        <TableCell className={cn('px-3 py-2 text-right tabular', p.fora_alvo ? 'font-semibold text-critico' : 'text-tinta')}>
                           {tempo(p.espera_min)}{p.fora_alvo && <span className="sr-only"> (fora do alvo)</span>}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             )}
           </section>

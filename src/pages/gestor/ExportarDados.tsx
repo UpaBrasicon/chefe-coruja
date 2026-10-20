@@ -19,12 +19,14 @@ import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { ConfirmarSegundoFator, ConfirmarSegundoFatorEmail } from '@/components/seguranca/SegundoFator'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
+import { dataIso } from '@/lib/formato'
 import { CONJUNTOS, erroPeriodo, montarArquivo, nomeArquivo, type Conjunto, type Formato } from '@/lib/exportacao'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
@@ -35,8 +37,8 @@ type Registro = {
   solicitada_por: string | null; solicitada_em: string; concluida_em: string | null
 }
 
-const hoje = () => new Date().toLocaleDateString('sv-SE')
-const diasAtras = (n: number) => new Date(Date.now() - n * 86_400_000).toLocaleDateString('sv-SE')
+const hoje = () => dataIso()
+const diasAtras = (n: number) => dataIso(Date.now() - n * 86_400_000)
 
 function baixar(nome: string, conteudo: string, formato: Formato) {
   const tipo = formato === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8'
@@ -128,6 +130,7 @@ export default function ExportarDados() {
       const { error: fim } = await supabase.rpc('exportacao_concluir', { p_id: id })
       if (fim) throw fim
       const ctx = { unidade: unidadeNome, conjunto, desde: c.comPeriodo ? desde : null, ate: c.comPeriodo ? ate : null,
+        // padrao-ok: lê o fuso do aparelho para o cabeçalho do arquivo exportado; não formata data na tela
         mascarado, geradoEm: new Date().toISOString(), fuso: Intl.DateTimeFormat().resolvedOptions().timeZone }
       const nome = nomeArquivo(formato, ctx)
       baixar(nome, montarArquivo(formato, ctx, linhas), formato)
@@ -148,46 +151,46 @@ export default function ExportarDados() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Nova exportação</CardTitle>
+          <CardTitle className="text-corpo">Nova exportação</CardTitle>
           <CardDescription>{c.descricao}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-apoio">
           <div className="grid gap-3 sm:grid-cols-3">
             {ehSuperAdmin && (
               <div className="flex flex-col gap-1">
-                <Label htmlFor="exp-unidade" className="text-xs">Unidade</Label>
-                <select id="exp-unidade" className="h-8 rounded-controle border border-fio bg-campo px-2" value={unidadeId}
+                <Label htmlFor="exp-unidade" className="text-rotulo">Unidade</Label>
+                <CampoSelecao id="exp-unidade" tamanho="compacto" value={unidadeId}
                   onChange={(e) => setUnidadeEscolhida(e.target.value)} disabled={ocupado}>
                   <option value="">Escolha…</option>
                   {(todas.data ?? []).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-                </select>
+                </CampoSelecao>
               </div>
             )}
             <div className="flex flex-col gap-1">
-              <Label htmlFor="exp-conjunto" className="text-xs">Conjunto</Label>
-              <select id="exp-conjunto" className="h-8 rounded-controle border border-fio bg-campo px-2" value={conjunto}
+              <Label htmlFor="exp-conjunto" className="text-rotulo">Conjunto</Label>
+              <CampoSelecao id="exp-conjunto" tamanho="compacto" value={conjunto}
                 onChange={(e) => setConjunto(e.target.value as Conjunto)} disabled={ocupado}>
                 {(Object.keys(CONJUNTOS) as Conjunto[]).map((k) => <option key={k} value={k}>{CONJUNTOS[k].rotulo}</option>)}
-              </select>
+              </CampoSelecao>
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="exp-formato" className="text-xs">Formato</Label>
-              <select id="exp-formato" className="h-8 rounded-controle border border-fio bg-campo px-2" value={formato}
+              <Label htmlFor="exp-formato" className="text-rotulo">Formato</Label>
+              <CampoSelecao id="exp-formato" tamanho="compacto" value={formato}
                 onChange={(e) => setFormato(e.target.value as Formato)} disabled={ocupado}>
                 <option value="csv">CSV (Excel)</option>
                 <option value="json">JSON (campos da API)</option>
-              </select>
+              </CampoSelecao>
             </div>
           </div>
 
           {c.comPeriodo ? (
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="flex flex-col gap-1">
-                <Label htmlFor="exp-desde" className="text-xs">De</Label>
+                <Label htmlFor="exp-desde" className="text-rotulo">De</Label>
                 <Input id="exp-desde" type="date" className="h-8" value={desde} max={ate} onChange={(e) => setDesde(e.target.value)} disabled={ocupado} />
               </div>
               <div className="flex flex-col gap-1">
-                <Label htmlFor="exp-ate" className="text-xs">Até</Label>
+                <Label htmlFor="exp-ate" className="text-rotulo">Até</Label>
                 <Input id="exp-ate" type="date" className="h-8" value={ate} min={desde} onChange={(e) => setAte(e.target.value)} disabled={ocupado} />
               </div>
               <p className="self-end text-rotulo text-tinta-sussurro">Até 12 meses por exportação.</p>
@@ -197,7 +200,7 @@ export default function ExportarDados() {
           )}
 
           <fieldset className="flex flex-col gap-1.5">
-            <legend className="text-xs text-tinta-apoio">Dados do paciente (nome, CPF, CNS, nascimento)</legend>
+            <legend className="text-rotulo text-tinta-apoio">Dados do paciente (nome, CPF, CNS, nascimento)</legend>
             <label className="flex items-center gap-2">
               <input type="radio" name="exp-mascara" className="size-4" checked={mascarado} onChange={() => { setMascarado(true); setConfirmar(false) }} disabled={ocupado} />
               Mascarados (iniciais, CPF e CNS parciais, só o ano de nascimento)
@@ -210,7 +213,7 @@ export default function ExportarDados() {
 
           {!mascarado && (
             <div className="flex flex-col gap-1">
-              <Label htmlFor="exp-motivo" className="text-xs">Motivo da exportação completa</Label>
+              <Label htmlFor="exp-motivo" className="text-rotulo">Motivo da exportação completa</Label>
               <Input id="exp-motivo" className="h-8" placeholder="ex.: auditoria do SUS pediu a lista nominal de setembro"
                 value={motivo} onChange={(e) => setMotivo(e.target.value)} disabled={ocupado} />
               <span className="text-rotulo text-tinta-sussurro">
@@ -220,7 +223,7 @@ export default function ExportarDados() {
           )}
 
           {confirmar && !mascarado && (
-            <div className="flex flex-col gap-2 rounded-md border border-acao/40 bg-campo p-3">
+            <div className="flex flex-col gap-2 rounded-controle border border-acao/40 bg-campo p-3">
               <span className="flex items-center gap-1.5 font-medium text-tinta"><ShieldCheck className="size-4" aria-hidden /> Confirme que é você</span>
               {fator.data ? (
                 <ConfirmarSegundoFator fatorId={fator.data} rotulo="Confirmar e exportar"
@@ -251,7 +254,7 @@ export default function ExportarDados() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Exportações desta unidade</CardTitle>
+          <CardTitle className="text-corpo">Exportações desta unidade</CardTitle>
           <CardDescription>As 50 mais recentes, de qualquer pessoa: quem pediu, quando, o quê e se saiu completa.</CardDescription>
         </CardHeader>
         <CardContent className="text-apoio">

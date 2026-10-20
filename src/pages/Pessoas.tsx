@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { UserPlus, UserRoundX } from 'lucide-react'
+import { UserPlus, UserRoundX, Users } from 'lucide-react'
 import * as React from 'react'
 
 import { usePessoasAdmin } from '@/hooks/usePessoas'
@@ -11,6 +11,7 @@ import { PAPEL_DESCRIPTION, PAPEL_LABEL, TIPO_UNIDADE_LABEL } from '@/lib/consta
 import type { Papel } from '@/types/database'
 import { useAuth } from '@/contexts/AuthContext'
 import { ZerarSegundoFator } from '@/components/seguranca/CodigosRecuperacao'
+import { TituloPagina } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -115,33 +116,38 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
   }
 
   if (error || !data) {
-    return <p className="text-sm text-critico">Falha ao carregar pessoas: {error?.message}</p>
+    return <p className="text-apoio text-critico">Falha ao carregar pessoas: {error?.message}</p>
   }
 
   const { perfis, unidades, vinculos } = data
   const vinculosAtivos = vinculos.filter((v) => v.ativo)
   const semVinculo = perfis.filter((p) => !vinculosAtivos.some((v) => v.perfil_id === p.id))
 
+  const botaoNovoVinculo = (
+    <Button onClick={() => abrirDialog()}>
+      <UserPlus />
+      Novo vínculo
+    </Button>
+  )
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        {embutido ? (
+      {embutido ? (
+        <div className="flex items-center justify-between">
           <div />
-        ) : (
-          <div>
-            <h1 className="text-xl font-semibold">Pessoas</h1>
-            <p className="text-sm text-tinta-sussurro">
-              Crie e revogue vínculos por unidade. Todas as alterações ficam no log de auditoria.
-            </p>
-          </div>
-        )}
-        <Button onClick={() => abrirDialog()}>
-          <UserPlus />
-          Novo vínculo
-        </Button>
-      </div>
+          {botaoNovoVinculo}
+        </div>
+      ) : (
+        <TituloPagina
+          icone={Users}
+          titulo="Pessoas"
+          descricao="Crie e revogue vínculos por unidade. Todas as alterações ficam no log de auditoria."
+          acoes={botaoNovoVinculo}
+          className="mb-0"
+        />
+      )}
 
-      {erro && <p className="text-sm text-critico">{erro}</p>}
+      {erro && <p className="text-apoio text-critico">{erro}</p>}
 
       <Card>
         <CardHeader>
@@ -166,7 +172,7 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
                   <TableRow key={v.id}>
                     <TableCell>
                       <div className="font-medium">{pessoa?.nome_completo ?? '—'}</div>
-                      <div className="text-xs text-tinta-sussurro">{pessoa?.email}</div>
+                      <div className="text-rotulo text-tinta-sussurro">{pessoa?.email}</div>
                     </TableCell>
                     <TableCell>{unidade?.nome ?? '—'}</TableCell>
                     <TableCell>
@@ -193,7 +199,7 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
           </Table>
 
           {vinculosAtivos.length === 0 && (
-            <p className="py-6 text-center text-sm text-tinta-sussurro">
+            <p className="py-6 text-center text-apoio text-tinta-sussurro">
               Nenhum vínculo ativo ainda.
             </p>
           )}
@@ -213,11 +219,11 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
             {semVinculo.map((p) => (
               <div
                 key={p.id}
-                className="flex items-center justify-between rounded-lg border px-3 py-2"
+                className="flex items-center justify-between rounded-controle border px-3 py-2"
               >
                 <div>
-                  <div className="text-sm font-medium">{p.nome_completo}</div>
-                  <div className="text-xs text-tinta-sussurro">{p.email}</div>
+                  <div className="text-apoio font-medium">{p.nome_completo}</div>
+                  <div className="text-rotulo text-tinta-sussurro">{p.email}</div>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => abrirDialog(p.id)}>
                   Vincular
@@ -225,7 +231,7 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
               </div>
             ))}
             {semVinculo.length === 0 && (
-              <p className="py-4 text-center text-sm text-tinta-sussurro">
+              <p className="py-4 text-center text-apoio text-tinta-sussurro">
                 Nenhuma conta aguardando liberação.
               </p>
             )}
@@ -264,7 +270,7 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
                 )}
               />
               {errors.perfil_id && (
-                <p className="text-xs text-critico">{errors.perfil_id.message}</p>
+                <p className="text-rotulo text-critico">{errors.perfil_id.message}</p>
               )}
             </div>
 
@@ -289,7 +295,7 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
                 )}
               />
               {errors.unidade_id && (
-                <p className="text-xs text-critico">{errors.unidade_id.message}</p>
+                <p className="text-rotulo text-critico">{errors.unidade_id.message}</p>
               )}
             </div>
 
@@ -308,7 +314,7 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
                         <SelectItem key={p} value={p}>
                           <div className="flex flex-col gap-0.5">
                             <span>{PAPEL_LABEL[p]}</span>
-                            <span className="text-xs text-tinta-sussurro">
+                            <span className="text-rotulo text-tinta-sussurro">
                               {PAPEL_DESCRIPTION[p]}
                             </span>
                           </div>
@@ -318,7 +324,7 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
                   </Select>
                 )}
               />
-              {errors.papel && <p className="text-xs text-critico">{errors.papel.message}</p>}
+              {errors.papel && <p className="text-rotulo text-critico">{errors.papel.message}</p>}
             </div>
 
             <DialogFooter>

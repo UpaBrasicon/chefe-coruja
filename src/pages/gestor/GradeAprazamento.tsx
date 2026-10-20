@@ -27,7 +27,7 @@ export function GradeAprazamento({ unidadeId, podeEditar }: { unidadeId: string;
     },
   })
   if (grade.isLoading) return <Spinner />
-  if (grade.error) return <p className="text-sm text-critico">{(grade.error as Error).message}</p>
+  if (grade.error) return <p className="text-apoio text-critico">{(grade.error as Error).message}</p>
   return <FormGrade key={grade.data!.atualizado_em ?? 'padrao'} inicial={grade.data!} unidadeId={unidadeId} podeEditar={podeEditar} msg={msg} setMsg={setMsg} />
 }
 
@@ -67,7 +67,7 @@ function FormGrade({ inicial, unidadeId, podeEditar, msg, setMsg }: {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle className="flex items-center gap-2 text-corpo">
           <CalendarClock className="size-4 text-tinta-sussurro" />
           Grade de aprazamento
         </CardTitle>
@@ -90,13 +90,13 @@ function FormGrade({ inicial, unidadeId, podeEditar, msg, setMsg }: {
                 <Label htmlFor={`grade-${n}`}>{n}/{n} h <span className="font-normal text-tinta-sussurro">({24 / n} horário{24 / n > 1 ? 's' : ''})</span></Label>
                 <Input id={`grade-${n}`} value={textos[n] ?? ''} disabled={!podeEditar} placeholder={derivada}
                   onChange={(e) => setTextos((t) => ({ ...t, [n]: e.target.value }))} />
-                <span className="text-xs text-tinta-sussurro">{textos[n]?.trim() ? 'Grade própria da unidade.' : `Segue o início: ${derivada}.`}</span>
+                <span className="text-rotulo text-tinta-sussurro">{textos[n]?.trim() ? 'Grade própria da unidade.' : `Segue o início: ${derivada}.`}</span>
               </div>
             )
           })}
         </div>
-        {erro && <p className="text-sm text-critico">{erro}</p>}
-        {msg && <p className="text-sm text-conforme">{msg}</p>}
+        {erro && <p className="text-apoio text-critico">{erro}</p>}
+        {msg && <p className="text-apoio text-conforme">{msg}</p>}
         {podeEditar && (
           <div>
             <Button onClick={salvar} disabled={salvando || !inicioOk}>
