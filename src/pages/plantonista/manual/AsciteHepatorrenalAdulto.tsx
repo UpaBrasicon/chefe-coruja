@@ -13,7 +13,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
 import { CampoPeso, LinhaManual } from './PecasLoteC'
-import { Errata, Fora, ListaRef, Marca } from './PecasLoteE6'
+import { Errata, Fora, ListaRef, Marca } from './PecasLoteE6'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const frascos = (f: { exato: number; inteiros: number } | null) => (f ? `${br(f.exato)} frascos de 10 g (${f.inteiros} inteiros)` : '—')

@@ -9,7 +9,7 @@ import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
-import { br, faixaBr } from './loteAFormato'
+import { br, faixaBr } from './loteAFormato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Distúrbios acidobásicos: passo a passo do cap. 69 (primário, compensação, AG, delta-delta, AG urinário, Cl urinário, gap osmolar). */

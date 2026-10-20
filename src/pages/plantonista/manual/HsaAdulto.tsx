@@ -1,7 +1,7 @@
 import { DIRETRIZ_HSA_2023, METAS_HSA, NIMODIPINO, contaNimodipino, fichaHsaAdulto } from '@/clinico/adulto/hsa'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
-import { Bloco, LinhaManual } from './PecasLoteC'
+import { Bloco, LinhaManual } from './PecasLoteC'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** HSA não traumática: nimodipino e metas numéricas (cap. 40 do manual do HCFMUSP). */

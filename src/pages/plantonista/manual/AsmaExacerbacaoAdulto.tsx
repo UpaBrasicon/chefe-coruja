@@ -9,7 +9,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
-import { LinhaManual } from './PecasLoteC'
+import { LinhaManual } from './PecasLoteC'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const COLUNAS: Coluna[] = ['leve', 'moderada', 'grave', 'iminencia']

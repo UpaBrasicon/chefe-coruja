@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Erratas, Escolhas, ListaLivro } from './PecasLoteE7'
-import { br, faixa, lerNumero } from './loteE7Formato'
+import { br, faixa, lerNumero } from './loteE7Formato'
 import { numero } from '@/lib/formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 

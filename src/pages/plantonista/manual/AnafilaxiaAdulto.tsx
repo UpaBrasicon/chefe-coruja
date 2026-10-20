@@ -8,7 +8,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 
 const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)

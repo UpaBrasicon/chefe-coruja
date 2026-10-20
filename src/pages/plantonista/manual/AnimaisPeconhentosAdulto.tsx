@@ -7,7 +7,7 @@ import {
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Escolha } from './LoteAPecas'
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 

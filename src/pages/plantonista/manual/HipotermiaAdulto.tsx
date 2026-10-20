@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 
 import { Bloco, LinhaManual } from './PecasLoteC'
 import { Erratas, Escolhas, ListaLivro } from './PecasLoteE7'
-import { br, lerNumero } from './loteE7Formato'
+import { br, lerNumero } from './loteE7Formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 function CampoTemp({ id, rotulo, valor, onChange }: { id: string; rotulo: string; valor: string; onChange: (v: string) => void }) {

@@ -7,7 +7,7 @@ import {
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 
-import { Bloco, LinhaManual } from './PecasLoteC'
+import { Bloco, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 
 function Marca({ rotulo, marcado, onChange }: { rotulo: string; marcado: boolean; onChange: (v: boolean) => void }) {

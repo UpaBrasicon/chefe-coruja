@@ -8,7 +8,7 @@ import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Alertas, Bloco, Escolha, Resultado } from './LoteAPecas'
-import { br, faixaBr, informado } from './loteAFormato'
+import { br, faixaBr, informado } from './loteAFormato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const colunaTexto = (c: ColunaPeep) => `FiO2 ${faixaBr(c.fio2, 1)} → PEEP ${faixaBr(c.peep, 0)}`

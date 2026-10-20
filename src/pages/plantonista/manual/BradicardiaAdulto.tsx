@@ -5,7 +5,7 @@ import {
 } from '@/clinico/adulto/pcr'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 
 
