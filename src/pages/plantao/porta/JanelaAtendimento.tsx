@@ -192,7 +192,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
       <div className="flex flex-col gap-3 border-b border-fio bg-superficie px-5 pt-4">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-apoio text-tinta-sussurro">
-            {ep.prioridades_legais.length > 0 ? `Prioridade: ${rotulosPrioridade(ep.prioridades_legais).join(', ')}` : 'Atendimento do Pronto Socorro'}
+            {ep.prioridades_legais.length > 0 ? `Prioridade: ${rotulosPrioridade(ep.prioridades_legais).join(', ')}` : 'Atendimento do Pronto-Socorro'}
           </span>
           <span className="ml-auto flex flex-wrap items-center gap-2">
             {iniciado && (
@@ -228,13 +228,13 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
         {/* Fase 2, tarefa 4: intercorrência estruturada */}
         <Intercorrencias pacienteId={ep.paciente_id} episodioId={ep.id} />
         {faixa === 'pediatrico' && (
-          <div className="flex items-start gap-2 rounded-container border border-pediatria/25 bg-pediatria/[0.06] px-3.5 py-2.5 text-apoio text-pediatria">
+          <div className="flex items-start gap-2 rounded-container border border-pediatria/25 bg-pediatria/10 px-3.5 py-2.5 text-apoio text-pediatria">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
             <span>Paciente pediátrico (até 13 anos, 11 meses e 29 dias). A dose é digitada por você, pelo peso aferido. O sistema não sugere nem converte dose de adulto.</span>
           </div>
         )}
         {faixa === 'desconhecida' && (
-          <div className="flex items-start gap-2 rounded-container border border-atencao/25 bg-atencao/[0.06] px-3.5 py-2.5 text-apoio text-atencao">
+          <div className="flex items-start gap-2 rounded-container border border-atencao/25 bg-alerta-atencao px-3.5 py-2.5 text-apoio text-atencao">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
             <span>Sem data de nascimento no cadastro: o paciente não é tratado como adulto. Sem receita padrão nem favoritos de adulto, PA opcional e dose digitada por você, pelo peso. Cadastre a data de nascimento ou, na Prescrição, a idade estimada.</span>
           </div>

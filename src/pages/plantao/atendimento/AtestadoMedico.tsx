@@ -6,12 +6,11 @@
 // nenhum nome, CNS ou CNES é digitado aqui. A folha A4 (meia A4, 2 vias) é
 // montada por src/lib/folhas.ts a partir do `conteudo` gravado.
 import { useQueryClient } from '@tanstack/react-query'
-import { Check, Minus, Plus, Trash2 } from 'lucide-react'
+import { Minus, Plus, Trash2 } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { abrirImpressao } from '@/lib/prontuario'
-import { cn } from '@/lib/utils'
 import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
 import { Button } from '@/components/ui/button'
 import { BarraDocumento } from '@/components/documento/BarraDocumento'
@@ -22,6 +21,8 @@ import { BuscaCid } from '@/components/documentos/busca'
 import { Aviso, Campo, Pendencias, Pilulas, Texto } from '@/components/documentos/ui'
 import { hojeSP } from '@/lib/cadastroPaciente'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
+import { CaixaMarcar } from '@/components/ui/caixa-marcar'
+import { hora } from '@/lib/formato'
 
 const TIPOS = ['afastamento', 'comparecimento', 'acompanhante'] as const
 type TipoAtestado = (typeof TIPOS)[number]
@@ -126,8 +127,6 @@ function partes(f: FormAtestado, nome: string, cpf: string, feminino: boolean): 
   b(`${dias} (${extenso(dias)}) ${dias === 1 ? 'dia' : 'dias'}`); t(', de '); b(br(ini)); t(' a '); b(br(somaDias(ini, dias - 1))); t(', inclusive.')
   return P
 }
-
-const CLASSE_BOTAO_PASSO = 'grid h-[38px] w-9 place-items-center rounded-controle border border-fio bg-superficie text-tinta-apoio transition-colors hover:border-acao hover:text-acao'
 
 export function AtestadoMedico({ unidadeId, perfilId }: { unidadeId?: string; perfilId?: string }) {
   const qc = useQueryClient()
@@ -249,15 +248,15 @@ export function AtestadoMedico({ unidadeId, perfilId }: { unidadeId?: string; pe
             {f.tipo === 'afastamento' && (
               <Campo id="at-dias" rotulo="Dias de afastamento" largura="mini">
                 <div className="flex items-center gap-2">
-                  <button type="button" aria-label="Menos um dia" className={CLASSE_BOTAO_PASSO} onClick={() => mudar({ dias: String(Math.max(1, dias - 1)) })}>
-                    <Minus className="size-[15px]" />
-                  </button>
+                  <Button variant="outline" size="icon-lg" aria-label="Menos um dia" onClick={() => mudar({ dias: String(Math.max(1, dias - 1)) })}>
+                    <Minus aria-hidden />
+                  </Button>
                   <input id="at-dias" type="text" inputMode="numeric" value={f.dias}
                     onChange={(e) => { const v = e.target.value.replace(/\D/g, ''); mudar({ dias: v ? String(Math.min(90, Number(v))) : '' }) }}
                     className="w-16 rounded-controle border border-fio bg-campo px-2.5 py-[9px] text-center text-corpo tabular-nums text-tinta outline-none focus-visible:border-acao" />
-                  <button type="button" aria-label="Mais um dia" className={CLASSE_BOTAO_PASSO} onClick={() => mudar({ dias: String(Math.min(90, dias + 1)) })}>
-                    <Plus className="size-[15px]" />
-                  </button>
+                  <Button variant="outline" size="icon-lg" aria-label="Mais um dia" onClick={() => mudar({ dias: String(Math.min(90, dias + 1)) })}>
+                    <Plus aria-hidden />
+                  </Button>
                 </div>
               </Campo>
             )}
@@ -278,16 +277,11 @@ export function AtestadoMedico({ unidadeId, perfilId }: { unidadeId?: string; pe
           )}
 
           <div className="flex flex-col gap-[9px]">
-            <button type="button" role="checkbox" aria-checked={f.comCid} onClick={() => mudar({ comCid: !f.comCid })}
-              className="flex w-full items-start gap-[11px] text-left">
-              <span className={cn('grid size-[19px] shrink-0 place-items-center rounded-[6px] border text-white',
-                f.comCid ? 'border-acao bg-acao' : 'border-fio-forte bg-campo')}>
-                {f.comCid && <Check className="size-3" strokeWidth={3} aria-hidden />}
-              </span>
+            <CaixaMarcar marcado={f.comCid} onChange={(comCid) => mudar({ comCid })}>
               <span className="text-controle text-pretty text-tinta-apoio leading-normal">
                 Incluir o CID no documento. Só marque a pedido do paciente — o diagnóstico no atestado depende de autorização expressa dele (Res. CFM 1.658/2002, art. 3º).
               </span>
-            </button>
+            </CaixaMarcar>
             {f.comCid && (
               <BuscaCid id="at-cid" rotulo="CID-10" valor={f.cid} confirmado={f.cidOk}
                 onDigitar={(cid) => mudar({ cid, cidOk: false })} onEscolher={(c, n) => mudar({ cid: `${c} — ${n}`, cidOk: true })} />
@@ -297,7 +291,7 @@ export function AtestadoMedico({ unidadeId, perfilId }: { unidadeId?: string; pe
           <Texto id="at-obs" rotulo="Observação (opcional)" dica="Ex.: retorno ao trabalho após reavaliação" largura="cheio" valor={f.obs} onChange={(obs) => mudar({ obs })} />
 
           {pendencias.length > 0 && (
-            <div className="rounded-container border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-3">
+            <div className="rounded-container border border-atencao/30 bg-alerta-atencao px-3.5 py-3">
               <Pendencias itens={pendencias} titulo="Falta preencher" />
             </div>
           )}
@@ -325,7 +319,7 @@ export function AtestadoMedico({ unidadeId, perfilId }: { unidadeId?: string; pe
             </span>
             <span className="text-rotulo text-tinta-sussurro/80">
               {servidor.salvoEm
-                ? `Rascunho salvo no servidor às ${servidor.salvoEm.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+                ? `Rascunho salvo no servidor às ${hora(servidor.salvoEm)}`
                 : salvoEm ? `Rascunho salvo neste aparelho às ${salvoEm}` : 'O rascunho deste atestado fica salvo neste aparelho, por paciente.'}
             </span>
           </div>

@@ -28,7 +28,7 @@ export default function AtendimentoPorta() {
 
   return (
     <>
-      <TituloPagina icone={Stethoscope} titulo="Pronto Socorro" descricao="Pacientes triados por prioridade · chamar e atender. A cor manda; 80+ e prioridade legal só desempatam dentro da mesma cor." />
+      <TituloPagina icone={Stethoscope} titulo="Pronto-Socorro" descricao="Pacientes triados por prioridade · chamar e atender. A cor manda; 80+ e prioridade legal só desempatam dentro da mesma cor." />
       <FilaPS aviso={aviso} onAbrir={(e) => { setAviso(null); setAtual(e) }} />
     </>
   )

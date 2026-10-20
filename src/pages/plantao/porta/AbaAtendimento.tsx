@@ -22,6 +22,7 @@ import { SepsePorta } from '@/components/internacao/LeitoAberto'
 import { normalizarCid } from '@/domain/cid'
 
 import { hora, msg, soapVazio, type Soap } from './comum'
+import { OpcaoLista } from '@/components/ui/botao-linha'
 
 export type Classificacao = {
   id: string; cor: CorRisco; fluxograma_nome: string | null; discriminador: string | null; queixa: string | null
@@ -60,12 +61,10 @@ export function CampoCid({ id, valor, onChange, placeholder }: { id: string; val
       {foco && lista.length > 0 && (
         <div role="listbox" className="absolute top-full right-0 left-0 z-20 mt-1 max-h-56 overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
           {lista.map((r) => (
-            <button key={r.codigo} type="button" role="option" aria-selected={false}
-              onMouseDown={(e) => e.preventDefault()} onClick={() => { onChange(r.codigo); setFoco(false) }}
-              className="flex w-full gap-2 border-b border-trilha px-3 py-2 text-left text-apoio last:border-0 hover:bg-trilha">
+            <OpcaoLista key={r.codigo} onClick={() => { onChange(r.codigo); setFoco(false) }}>
               <span className="font-semibold tabular-nums text-tinta">{r.codigo}</span>
               <span className="text-tinta-apoio">{r.descricao}</span>
-            </button>
+            </OpcaoLista>
           ))}
         </div>
       )}
@@ -172,7 +171,7 @@ export function AbaAtendimento({
           depende da idade e não roda, e o motivo aparece. */}
       {faixa === 'pediatrico' && <SepsePorta pacienteId={pacienteId} />}
       {faixa === 'desconhecida' && (
-        <p className="rounded-container border border-atencao/25 bg-atencao/[0.06] px-3.5 py-2.5 text-apoio text-atencao">
+        <p className="rounded-container border border-atencao/25 bg-alerta-atencao px-3.5 py-2.5 text-apoio text-atencao">
           Rastreio de sepse pediátrica (Phoenix) não calculado: sem data de nascimento não dá para saber se vale o critério pediátrico. Cadastre a data de nascimento.
         </p>
       )}

@@ -7,6 +7,7 @@ import * as React from 'react'
 import { supabase } from '@/lib/supabase'
 import type { CorRisco } from '@/domain/risco'
 import type { Publico } from '@/domain/vitais'
+import { dataIso, hora as horaFmt } from '@/lib/formato'
 
 export type EpFila = {
   id: string
@@ -27,9 +28,8 @@ export type EpFila = {
   } | null
 }
 
-export const hoje = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
-export const hora = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }) : '—'
+export const hoje = () => dataIso()
+export const hora = (iso: string | null | undefined) => (iso ? horaFmt(iso) : '—')
 export const nomeDe = (e: Pick<EpFila, 'paciente'>) => e.paciente?.nome_social || e.paciente?.nome || 'Paciente'
 export const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
 

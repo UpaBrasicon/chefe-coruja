@@ -18,6 +18,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
 import { CampoCid, type RegistroSoap } from './AbaAtendimento'
+import { Chip } from '@/components/monitor/Pagina'
+import { OpcaoLista } from '@/components/ui/botao-linha'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import {
   COM_DADOS_ALTA, DESFECHOS, EXIGE_CID, NOTA, RELATO, hora, msg, rotuloDesfecho, soapVazio,
   type Desfecho, type PainelPS, type Soap,
@@ -32,14 +35,6 @@ const localAgora = (ms: number) => {
 const soDigitos = (s: string) => s.replace(/\D/g, '')
 const CID_OK = /^[A-Z][0-9]{2}(\.?[0-9A-Z]{1,2})?$/
 
-function Chip({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button type="button" aria-pressed={ativo} onClick={onClick}
-      className={cn('rounded-capsula border px-3.5 py-1.5 text-controle transition-colors', ativo ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
-      {children}
-    </button>
-  )
-}
 
 function CampoProcedimento({ cid, valor, onChange }: { cid: string; valor: string; onChange: (v: string) => void }) {
   const [foco, setFoco] = React.useState(false)
@@ -67,12 +62,10 @@ function CampoProcedimento({ cid, valor, onChange }: { cid: string; valor: strin
       {foco && (lista.data ?? []).length > 0 && (
         <div role="listbox" className="absolute top-full right-0 left-0 z-20 mt-1 max-h-60 overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
           {(lista.data ?? []).map((p) => (
-            <button key={p.codigo} type="button" role="option" aria-selected={false}
-              onMouseDown={(e) => e.preventDefault()} onClick={() => { onChange(p.codigo); setTermo(''); setFoco(false) }}
-              className="flex w-full flex-col border-b border-trilha px-3 py-2 text-left text-apoio last:border-0 hover:bg-trilha">
+            <OpcaoLista key={p.codigo} onClick={() => { onChange(p.codigo); setTermo(''); setFoco(false) }} className="flex-col gap-0">
               <span className="text-tinta"><strong className="tabular-nums">{p.codigo}</strong> · {p.nome}</span>
               {p.compativel && <span className="text-rotulo text-conforme">compatível com {cidOk}{p.como_principal ? ' (principal)' : ''}</span>}
-            </button>
+            </OpcaoLista>
           ))}
         </div>
       )}
@@ -246,28 +239,28 @@ export function AbaDesfecho({
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="int-setor">Setor de internação</Label>
-            <select id="int-setor" className="h-9 rounded-controle border border-fio bg-campo px-2 text-controle" value={setorInt}
+            <CampoSelecao id="int-setor" className="text-controle" value={setorInt}
               onChange={(e) => { setSetorInt(e.target.value); setLeitoInt('') }}>
               <option value="">Escolha…</option>
               {(destinos.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}
-            </select>
+            </CampoSelecao>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="int-leito">Leito (opcional)</Label>
-            <select id="int-leito" className="h-9 rounded-controle border border-fio bg-campo px-2 text-controle" value={leitoInt}
+            <CampoSelecao id="int-leito" className="text-controle" value={leitoInt}
               onChange={(e) => setLeitoInt(e.target.value)} disabled={!setorInt}>
               <option value="">Definir depois</option>
               {leitosLivres.map((l) => <option key={l.id} value={l.id}>{l.identificador}{l.reservado ? ' (reservado)' : ''}</option>)}
-            </select>
+            </CampoSelecao>
           </div>
           {/* Reserva (item 12): guarda o leito para este paciente sem finalizar o atendimento */}
           {leitoInt && !leitosLivres.find((l) => l.id === leitoInt)?.reservado && (
             <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
               <span className="text-apoio text-tinta-apoio">Ainda não vai subir? Reservar este leito por</span>
-              <select aria-label="Validade da reserva" className="h-8 rounded-controle border border-fio bg-campo px-2 text-controle"
+              <CampoSelecao aria-label="Validade da reserva" tamanho="compacto" className="text-controle"
                 value={horasReserva} onChange={(e) => setHorasReserva(Number(e.target.value))}>
                 {[1, 2, 4, 8].map((h) => <option key={h} value={h}>{h} h</option>)}
-              </select>
+              </CampoSelecao>
               <Button type="button" size="sm" variant="outline" onClick={() => void reservarLeito()}>Reservar leito</Button>
             </div>
           )}

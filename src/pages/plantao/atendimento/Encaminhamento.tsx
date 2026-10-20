@@ -21,6 +21,7 @@ import { textoVitaisTriagem, useTriagemRecente } from '@/components/documentos/t
 import { AnexosLaudo, Bloco, BotaoAnexar, Campo, Cartao, Leitura, Pendencias, Pilulas, Rodape, Texto } from '@/components/documentos/ui'
 import { useLeituraLaudo } from '@/components/documentos/useLeituraLaudo'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
+import { Button } from '@/components/ui/button'
 
 type Prioridade = (typeof PRIORIDADES_ENC)[number]
 
@@ -207,7 +208,7 @@ export function Encaminhamento({ unidadeId, perfilId }: { unidadeId?: string; pe
         icone={<ArrowUpRight />}
         titulo={<>Encaminhamento de usuários <span className="ml-1.5 text-apoio font-normal text-tinta-sussurro">Referência e contra-referência</span></>}
         acoes={temAlgo && (
-          <button type="button" onClick={limparTudo} className="px-2 py-1.5 text-apoio text-tinta-sussurro hover:text-critico">Limpar</button>
+          <Button variant="ghost" size="sm" onClick={limparTudo} className="hover:text-critico">Limpar</Button>
         )}
       >
         <Bloco
