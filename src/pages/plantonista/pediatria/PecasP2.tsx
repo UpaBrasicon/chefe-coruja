@@ -19,7 +19,7 @@ export function CampoPesoRn({ id, peso, setPeso, rn, setRn }: { id: string; peso
     <Card>
       <CardContent className="grid gap-4 pt-6 md:grid-cols-2">
         <NumberField id={id} label="Peso aferido ou estimado" unit="kg" value={peso} onChange={setPeso} min={0} step={0.1} />
-        <label className="flex cursor-pointer items-center gap-2 self-end rounded-md border px-3 py-2 text-sm hover:bg-trilha/50">
+        <label className="flex cursor-pointer items-center gap-2 self-end rounded-controle border px-3 py-2 text-apoio hover:bg-trilha/50">
           <input type="checkbox" className="size-4" checked={rn} onChange={(e) => setRn(e.target.checked)} />
           Recém-nascido (período neonatal)
         </label>
@@ -31,7 +31,7 @@ export function CampoPesoRn({ id, peso, setPeso, rn, setRn }: { id: string; peso
 export function AvisoRn() {
   return (
     <Card>
-      <CardContent className="pt-6 text-sm text-tinta-sussurro">{SEM_VALOR_NEONATAL_P2}</CardContent>
+      <CardContent className="pt-6 text-apoio text-tinta-sussurro">{SEM_VALOR_NEONATAL_P2}</CardContent>
     </Card>
   )
 }
@@ -39,7 +39,7 @@ export function AvisoRn() {
 export function PesoInvalido() {
   return (
     <Card>
-      <CardContent className="pt-6 text-sm text-tinta-sussurro">Informe o peso para calcular (acima de 0 e até 80 kg).</CardContent>
+      <CardContent className="pt-6 text-apoio text-tinta-sussurro">Informe o peso para calcular (acima de 0 e até 80 kg).</CardContent>
     </Card>
   )
 }
@@ -49,7 +49,7 @@ export function LinhaDose({ d, peso, extra }: { d: DosePeso; peso: number; extra
   const r = calcularDose(d, peso)
   if (!r) return null
   return (
-    <div className="rounded-lg border px-3 py-2 text-sm">
+    <div className="rounded-controle border px-3 py-2 text-apoio">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">{d.nome}</span>
         <span className="tabular-nums">
@@ -76,9 +76,9 @@ export function Bloco({ titulo, children }: { titulo: string; children: ReactNod
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{titulo}</CardTitle>
+        <CardTitle className="text-corpo">{titulo}</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2 text-sm">{children}</CardContent>
+      <CardContent className="flex flex-col gap-2 text-apoio">{children}</CardContent>
     </Card>
   )
 }
@@ -86,7 +86,7 @@ export function Bloco({ titulo, children }: { titulo: string; children: ReactNod
 /** Item de referência sem cálculo (texto do livro + página). */
 export function LinhaReferencia({ rotulo, texto, pagina }: { rotulo?: string; texto: string; pagina: string }) {
   return (
-    <div className="rounded-lg border px-3 py-2 text-sm">
+    <div className="rounded-controle border px-3 py-2 text-apoio">
       {rotulo && <p className="font-medium">{rotulo}</p>}
       <p className={rotulo ? 'text-tinta-sussurro' : ''}>{texto}</p>
       <p className="text-rotulo text-tinta-sussurro">Livro ICr, {pagina}.</p>

@@ -17,7 +17,7 @@ import { Bloco, CampoPaciente, Errata, LinhaLivro, Nota, Opcoes, Pendencia } fro
 function ListaCriterios({ titulo, cs }: { titulo: string; cs: Criterio[] }) {
   const todos = todosAtendem(cs)
   return (
-    <div className="rounded-lg border px-3 py-2">
+    <div className="rounded-controle border px-3 py-2">
       <div className="font-medium">
         {titulo}: {todos === null ? 'dados incompletos' : todos ? 'critérios do livro presentes' : 'critérios do livro não preenchidos'}
       </div>

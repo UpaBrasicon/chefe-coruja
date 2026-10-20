@@ -1,8 +1,11 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 
+import { TituloSecao } from '@/components/monitor/Pagina'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 // Barra de passos das ferramentas "em cinco passos" (protótipo: vmPassos e
 // vniPassos): número grande, rótulo curto, passo atual cheio, passos já
@@ -16,18 +19,17 @@ export function BarraPassos({ passos, atual, ir, nota }: { passos: readonly stri
           const n = i + 1
           return (
             <li key={rotulo} className="min-w-24 flex-1">
-              <button
-                type="button"
+              <BotaoLinha
                 aria-current={n === atual ? 'step' : undefined}
                 onClick={() => ir(n)}
                 className={cn(
-                  'flex w-full flex-col items-center gap-0.5 rounded-controle border px-1.5 py-2.5 transition-colors',
-                  n === atual ? 'border-acao bg-acao text-sobre-acao' : n < atual ? 'border-acao bg-card text-acao' : 'border-fio bg-card text-tinta-sussurro hover:bg-trilha/50',
+                  'w-full items-center gap-0.5 rounded-controle px-1.5 py-2.5 text-center',
+                  n === atual ? 'border-acao bg-acao text-sobre-acao hover:bg-acao' : n < atual ? 'border-acao bg-card text-acao' : 'border-fio bg-card text-tinta-sussurro hover:border-fio hover:bg-trilha/50',
                 )}
               >
-                <span className="text-[19px] leading-none font-semibold tabular-nums">{n}</span>
+                <span className="text-dialogo leading-none font-semibold tabular-nums">{n}</span>
                 <span className="text-rotulo font-medium">{rotulo}</span>
-              </button>
+              </BotaoLinha>
             </li>
           )
         })}
@@ -55,8 +57,8 @@ export function NavPassos({ atual, total, ir, proximo }: { atual: number; total:
 /** Cartão de um passo, com título "n · pergunta". */
 export function CartaoPasso({ n, titulo, children }: { n: number; titulo: string; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-4 rounded-container border border-fio bg-card p-5 text-sm">
-      <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">{n} · {titulo}</h2>
+    <section className="flex flex-col gap-4 rounded-container border border-fio bg-card p-5 text-apoio">
+      <TituloSecao className="mb-0">{n} · {titulo}</TituloSecao>
       {children}
     </section>
   )
@@ -76,21 +78,21 @@ const ROTULO: Record<EstadoLinha, string> = { ok: 'dentro do livro', fora: 'fora
 export function TabelaConferencia({ linhas }: { linhas: { parametro: string; valor: string; livro: string; estado: EstadoLinha; nota?: string; pagina: string }[] }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[560px] text-left align-top text-sm">
-        <thead className="text-tinta-sussurro">
-          <tr><th className="pr-3 pb-2 font-medium">Parâmetro</th><th className="pr-3 pb-2 font-medium">Valor</th><th className="pr-3 pb-2 font-medium">Livro</th><th className="pb-2 font-medium">Leitura</th></tr>
-        </thead>
-        <tbody>
+      <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
+        <TableHeader className="text-tinta-sussurro">
+          <TableRow><TableHead className="pr-3 pb-2 font-medium">Parâmetro</TableHead><TableHead className="pr-3 pb-2 font-medium">Valor</TableHead><TableHead className="pr-3 pb-2 font-medium">Livro</TableHead><TableHead className="pb-2 font-medium">Leitura</TableHead></TableRow>
+        </TableHeader>
+        <TableBody>
           {linhas.map((l) => (
-            <tr key={l.parametro} className="border-t border-fio">
-              <td className="py-2 pr-3 font-medium">{l.parametro}</td>
-              <td className="py-2 pr-3 tabular-nums">{l.valor}</td>
-              <td className="py-2 pr-3">{l.livro} <span className="text-tinta-sussurro">({l.pagina})</span>{l.nota && <span className="mt-0.5 block text-tinta-sussurro">{l.nota}</span>}</td>
-              <td className={cn('py-2 font-medium', COR[l.estado])}>{ROTULO[l.estado]}</td>
-            </tr>
+            <TableRow key={l.parametro} className="border-t border-fio">
+              <TableCell className="py-2 pr-3 font-medium">{l.parametro}</TableCell>
+              <TableCell className="py-2 pr-3 tabular-nums">{l.valor}</TableCell>
+              <TableCell className="py-2 pr-3">{l.livro} <span className="text-tinta-sussurro">({l.pagina})</span>{l.nota && <span className="mt-0.5 block text-tinta-sussurro">{l.nota}</span>}</TableCell>
+              <TableCell className={cn('py-2 font-medium', COR[l.estado])}>{ROTULO[l.estado]}</TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }

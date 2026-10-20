@@ -1,6 +1,7 @@
 import { completo, escolha, somar, type Escore, type Item } from '../escore.ts'
 import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto, pagina } from './fonte.ts'
+import { numero as numeroBr } from '../../lib/formato.ts'
 
 // Trombólise endovenosa no AVC isquêmico do adulto — cap. 38 do Manual de
 // Medicina de Emergência do HCFMUSP (3ª ed., 2022), p. 513–541 (Tabelas 2–7 e
@@ -182,7 +183,7 @@ export function avaliarTrombolise(d: DadosTrombolise): AvaliacaoTrombolise {
       if (d.avcPrevioEDiabetes) r.ponderar.push('Entre 3 e 4,5 h com antecedente de AVC e diabetes melito')
     } else r.foraDaIndicacao.push(`${d.horas} h da última vez assintomático (janela do livro: < 4,5 h, p. 521)`)
   } else r.faltando.push('tempo desde a última vez assintomático')
-  if (tem(d.plaquetas)) { if (d.plaquetas < 100_000) r.absolutas.push(`Plaquetas ${d.plaquetas.toLocaleString('pt-BR')}/mm³ (< 100.000)`) } else r.faltando.push('plaquetas')
+  if (tem(d.plaquetas)) { if (d.plaquetas < 100_000) r.absolutas.push(`Plaquetas ${numeroBr(d.plaquetas)}/mm³ (< 100.000)`) } else r.faltando.push('plaquetas')
   if (tem(d.inr) && d.inr > 1.7) r.absolutas.push(`INR ${d.inr} (> 1,7)`)
   if (tem(d.ttpaS) && d.ttpaS > 40) r.absolutas.push(`TTPa ${d.ttpaS} s (> 40 s)`)
   if (tem(d.tpS) && d.tpS > 15) r.absolutas.push(`TP ${d.tpS} s (> 15 s)`)

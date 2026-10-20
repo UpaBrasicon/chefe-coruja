@@ -1,5 +1,6 @@
 import type { Ficha } from '../ficha.ts'
 import { fichaAdulto, pagina } from './fonte.ts'
+import { numero as numeroBr } from '../../lib/formato.ts'
 import {
   AJUSTE_INICIAL, OBSTRUIDO, SDRA, TABELAS_PEEP, peepParaFio2, relacaoIE, tinsVcv, vcPorPeso,
   type ClasseBerlim, type Faixa, type Modo, type TabelaPeepId,
@@ -82,8 +83,8 @@ export type LinhaChecagem = {
 
 const valido = (x: number | undefined): x is number => x !== undefined && Number.isFinite(x) && x > 0
 const naoNeg = (x: number | undefined): x is number => x !== undefined && Number.isFinite(x) && x >= 0
-const n1 = (x: number) => (Math.round(x * 10) / 10).toLocaleString('pt-BR')
-const n2 = (x: number) => (Math.round(x * 100) / 100).toLocaleString('pt-BR')
+const n1 = (x: number) => numeroBr(Math.round(x * 10) / 10)
+const n2 = (x: number) => numeroBr(Math.round(x * 100) / 100)
 const fx = (f: Faixa, u: string) => (f[0] === f[1] ? `${n1(f[0])} ${u}` : `${n1(f[0])}–${n1(f[1])} ${u}`)
 const dentro = (x: number, f: Faixa) => x >= f[0] - 1e-9 && x <= f[1] + 1e-9
 

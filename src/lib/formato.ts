@@ -75,3 +75,6 @@ export const diaMesHora = (v: Instante) => fmtDiaMesHora.format(comoData(v))
 
 /** "2026-10-19T19:43": valor de <input type="datetime-local"> no fuso de Brasília. */
 export const dataHoraInput = (v: Instante = Date.now()) => fmtInput.format(comoData(v)).replace(' ', 'T')
+
+/** "1.234,5": até `maxCasas` decimais (sem completar com zeros). */
+export const numeroAte = (n: number, maxCasas: number) => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: maxCasas }).format(n)

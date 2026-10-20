@@ -1,3 +1,4 @@
+import { numeroAte as numeroBrAte } from '../../lib/formato.ts'
 // Balanço hídrico da enfermagem (porte do protótipo: "Sinais vitais e BH").
 //
 // O protótipo soma entradas e subtrai saídas de todos os lançamentos
@@ -125,6 +126,6 @@ export function balancoDoDia(
 /** "+200 mL", "−350,5 mL", "0 mL" (sinal de menos tipográfico). */
 export function textoBalanco(ml: number): string {
   const v = r1(ml)
-  const abs = Math.abs(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 })
+  const abs = numeroBrAte(Math.abs(v), 1)
   return `${v > 0 ? '+' : v < 0 ? '−' : ''}${abs} mL`
 }

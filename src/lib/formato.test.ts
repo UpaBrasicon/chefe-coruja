@@ -52,3 +52,9 @@ test('formato: dia e mês com hora, valor de datetime-local e data ISO', async (
   assert.equal(dataHoraInput('2026-10-19T22:43:00Z'), '2026-10-19T19:43')
   assert.equal(dataIso('2026-10-20T01:00:00Z'), '2026-10-19')
 })
+
+test('formato: número com até N casas', async () => {
+  const { numeroAte } = await import('./formato.ts')
+  assert.equal(numeroAte(1234.56, 1), '1.234,6')
+  assert.equal(numeroAte(2, 1), '2')
+})

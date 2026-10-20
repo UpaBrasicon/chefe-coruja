@@ -1,7 +1,8 @@
+import { numero } from '@/lib/formato'
 // Formatação das telas do lote P3 (livro do ICr-HCFMUSP). Só apresentação.
 
 export const br = (x: number | null | undefined, casas = 1) =>
-  x === null || x === undefined || !Number.isFinite(x) ? '—' : (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+  x === null || x === undefined || !Number.isFinite(x) ? '—' : numero(Math.round(x * 10 ** casas) / 10 ** casas)
 
 export const faixaBr = (f: [number, number] | null | undefined, casas = 1) => {
   if (!f) return '—'

@@ -10,6 +10,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { PACIENTE_VAZIO, idadePediatrica } from './formatoIcr'
 import { Bloco, CampoPaciente, Errata, Nota, Opcoes } from './PecasIcr'
 import { Aviso, LinhaDoseLivro, TabelaLivro } from './PecasP4'
+import { numero } from '@/lib/formato'
 
 /** Pneumonia adquirida na comunidade — cap. 30 do livro do ICr. */
 export function PneumoniaPed() {
@@ -80,7 +81,7 @@ export function PneumoniaPed() {
         {ESQUEMAS_SBP_2024.map((e) => <p key={e.situacao} className="text-tinta-sussurro"><span className="font-medium text-tinta">{e.situacao}:</span> {e.texto} (SBP 2024, {e.pagina})</p>)}
         <p><span className="font-medium">Drenagem pleural simples (SBP 2024, p. 13):</span> {DRENAGEM_SBP_2024.indicacoes.join('; ')}. Falha: {DRENAGEM_SBP_2024.falha.join('; ')}. Retirada do dreno: {DRENAGEM_SBP_2024.retirada}.</p>
         <p className="text-tinta-sussurro">Empiema (p. 7): {DRENAGEM_SBP_2024.empiema}. Fibrinolítico (p. 12–13): {DRENAGEM_SBP_2024.fibrinolitico}.</p>
-        {(() => { const u = p.rn ? uroquinasePleural(0) : uroquinasePleural(p.anos * 12 + p.meses); return u ? <p>Uroquinase intrapleural pela idade: <strong>{u.ui.toLocaleString('pt-BR')} UI em {u.mlSf} mL de SF 0,9%</strong> (SBP 2024, p. 12–13).</p> : null })()}
+        {(() => { const u = p.rn ? uroquinasePleural(0) : uroquinasePleural(p.anos * 12 + p.meses); return u ? <p>Uroquinase intrapleural pela idade: <strong>{numero(u.ui)} UI em {u.mlSf} mL de SF 0,9%</strong> (SBP 2024, p. 12–13).</p> : null })()}
         {DERRAME_IDSA_2026.map((d) => <p key={d.tema} className="text-tinta-sussurro"><span className="font-medium text-tinta">{d.tema}:</span> {d.texto} (IDSA/PIDS 2026)</p>)}
         <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_PAC_2024.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>

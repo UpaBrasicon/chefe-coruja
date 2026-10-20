@@ -1,4 +1,5 @@
 import { fichaAdulto } from './fonte.ts'
+import { numero as numeroBr } from '../../lib/formato.ts'
 
 // Intubação em sequência rápida do adulto — Anexo 1 do Manual de Medicina de
 // Emergência do HCFMUSP (3ª ed., 2022), p. 1480–1482. Dose por kg e
@@ -38,7 +39,7 @@ export const DROGAS_ISR: DrogaIsr[] = [
 
 export type DoseIsr = { dose: string; volumeMl: string; ampolas: number }
 
-const br = (x: number) => (Math.round(x * 100) / 100).toLocaleString('pt-BR')
+const br = (x: number) => numeroBr(Math.round(x * 100) / 100)
 
 /** Dose, volume e nº de ampolas para o peso. Peso inválido não calcula. */
 export function calcularIsr(d: DrogaIsr, pesoKg: number): DoseIsr | null {

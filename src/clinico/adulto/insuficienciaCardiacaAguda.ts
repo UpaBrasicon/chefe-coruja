@@ -2,6 +2,7 @@ import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto, pagina } from './fonte.ts'
 import { INFUSOES_ADULTO, concentracao, velocidadeAdulto } from './infusoes.ts'
 import type { Faixa } from './pcr.ts'
+import { numero as numeroBr } from '../../lib/formato.ts'
 
 // Insuficiência cardíaca aguda do adulto — Manual de Medicina de Emergência do
 // HCFMUSP (3ª ed., 2022), cap. 21, p. 286–303. Perfil hemodinâmico, faixa de
@@ -148,9 +149,9 @@ export function leituraBnp(bnp: number): string | null {
 export function leituraNtProBnp(valor: number, idade: number): string | null {
   if (!Number.isFinite(valor) || valor < 0 || !valido(idade)) return null
   const corte = idade < 50 ? 450 : idade <= 75 ? 900 : 1800
-  if (valor >= corte) return `NT-proBNP ≥ ${corte.toLocaleString('pt-BR')} pg/mL para a idade — IC provável`
+  if (valor >= corte) return `NT-proBNP ≥ ${numeroBr(corte)} pg/mL para a idade — IC provável`
   if (valor < 300) return 'NT-proBNP < 300 pg/mL — IC improvável'
-  return `NT-proBNP entre 300 e ${corte.toLocaleString('pt-BR')} pg/mL para a idade — o livro não classifica`
+  return `NT-proBNP entre 300 e ${numeroBr(corte)} pg/mL para a idade — o livro não classifica`
 }
 
 export const MR_PROANP_CORTE = 120 // pg/mL, p. 294

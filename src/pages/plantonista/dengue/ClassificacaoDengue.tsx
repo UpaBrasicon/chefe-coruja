@@ -7,17 +7,19 @@ import {
   antitromboticoDengue, bicarbonatoDengue, cardiopataDengue, fichaDengue, grupoDPorPeso, grupoDengue, hidratacaoAdulto, hipocalemiaDengue, hiponatremiaDengue, provaDoLaco,
   type Antitrombotico, type ClasseNyha,
 } from '@/clinico/dengue'
+import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { SemReferenciaPediatrica } from '@/components/plantonista/SemReferenciaPediatrica'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
 
 import { Bloco, LinhaManual } from '../manual/PecasLoteC'
+import { numero } from '@/lib/formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-const n = (x: number, c = 0) => (Math.round(x * 10 ** c) / 10 ** c).toLocaleString('pt-BR')
+const n = (x: number, c = 0) => numero(Math.round(x * 10 ** c) / 10 ** c)
 const faixa = (f: [number, number], c = 0) => `${n(f[0], c)}–${n(f[1], c)}`
 
 const DESCRICAO_GRUPO = {
@@ -29,7 +31,7 @@ const DESCRICAO_GRUPO = {
 
 function Marca({ texto, marcado, onChange }: { texto: string; marcado: boolean; onChange: () => void }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm hover:bg-trilha/50">
+    <label className="flex cursor-pointer items-center gap-2 rounded-controle border px-2.5 py-1.5 text-apoio hover:bg-trilha/50">
       <input type="checkbox" checked={marcado} onChange={onChange} className="size-4" />
       <span>{texto}</span>
     </label>
@@ -37,7 +39,7 @@ function Marca({ texto, marcado, onChange }: { texto: string; marcado: boolean; 
 }
 
 function Lista({ itens }: { itens: string[] }) {
-  return <ul className="list-disc pl-5 text-sm">{itens.map((i) => <li key={i}>{i}</li>)}</ul>
+  return <ul className="list-disc pl-5 text-apoio">{itens.map((i) => <li key={i}>{i}</li>)}</ul>
 }
 
 /** Dengue no adulto pelo manual do MS (6ª ed., 2024). */
@@ -82,12 +84,11 @@ export function ClassificacaoDengue() {
         <CardContent className="grid gap-4 pt-6 md:grid-cols-3">
           <div className="flex flex-col gap-2">
             <Label>Paciente</Label>
-            <div className="flex gap-2">
+            <div role="radiogroup" aria-label="Paciente" className="flex flex-wrap gap-2">
               {([['adulto', 'Adulto (14 anos ou mais)'], ['crianca', 'Criança (menos de 14 anos)']] as const).map(([v, rotulo]) => (
-                <button key={v} type="button" aria-pressed={paciente === v} onClick={() => setPaciente(v)}
-                  className={cn('rounded-lg border px-3 py-2 text-left text-sm', paciente === v ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')}>
+                <Chip key={v} variante="opcao" radio ativo={paciente === v} onClick={() => setPaciente(v)}>
                   {rotulo}
-                </button>
+                </Chip>
               ))}
             </div>
           </div>
@@ -96,44 +97,44 @@ export function ClassificacaoDengue() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Achados (Figura 2, p. 27)</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-corpo">Achados (Figura 2, p. 27)</CardTitle></CardHeader>
         <CardContent className="flex flex-col gap-1.5">
-          <p className="text-sm text-tinta-sussurro">{CASO_SUSPEITO}</p>
+          <p className="text-apoio text-tinta-sussurro">{CASO_SUSPEITO}</p>
           <Marca texto="Sangramento de pele espontâneo ou induzido (petéquias, prova do laço positiva)" marcado={sangramentoPele} onChange={() => setSangramentoPele((v) => !v)} />
           <Marca texto={`Condição especial, risco social ou comorbidade: ${CONDICOES_ESPECIAIS.join(', ')}`} marcado={especial} onChange={() => setEspecial((v) => !v)} />
-          <div className="mt-2 text-xs font-medium text-tinta-sussurro">Sinais de alarme (Quadro 1, p. 13)</div>
+          <div className="mt-2 text-rotulo font-medium text-tinta-sussurro">Sinais de alarme (Quadro 1, p. 13)</div>
           {SINAIS_ALARME.map((s) => <Marca key={s} texto={s} marcado={alarme.has(s)} onChange={() => alternar(alarme, setAlarme, s)} />)}
-          <div className="mt-2 text-xs font-medium text-tinta-sussurro">Gravidade (p. 36, 56)</div>
+          <div className="mt-2 text-rotulo font-medium text-tinta-sussurro">Gravidade (p. 36, 56)</div>
           {SINAIS_GRAVIDADE.map((s) => <Marca key={s} texto={s} marcado={grave.has(s)} onChange={() => alternar(grave, setGrave, s)} />)}
-          <p className="text-sm text-tinta-sussurro">{HIPOTENSAO}</p>
+          <p className="text-apoio text-tinta-sussurro">{HIPOTENSAO}</p>
         </CardContent>
       </Card>
 
       <Card className={grupo === 'D' ? 'border-critico/30' : grupo === 'C' ? 'border-atencao/30' : 'border-acao'}>
         <CardHeader>
-          <CardTitle className="flex flex-wrap items-center gap-3 text-base">
-            Grupo <Badge className="text-lg">{grupo}</Badge>
-            <span className="text-sm font-normal text-tinta-sussurro">{DESCRICAO_GRUPO[grupo]}</span>
+          <CardTitle className="flex flex-wrap items-center gap-3 text-corpo">
+            Grupo <Badge className="text-secao">{grupo}</Badge>
+            <span className="text-apoio font-normal text-tinta-sussurro">{DESCRICAO_GRUPO[grupo]}</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2 text-sm">
+        <CardContent className="flex flex-col gap-2 text-apoio">
           {crianca ? (
             <SemReferenciaPediatrica detalhe="A classificação acima vale para a criança. Os volumes da criança estão na ferramenta Dengue — criança (seção Pediatria), pelo livro do ICr-HCFMUSP com o manual do MS ao lado." />
           ) : (
-            <table className="w-full text-sm">
-              <tbody>
+            <Table variante="referencia" className="w-full text-apoio">
+              <TableBody>
                 {fases.map((f) => (
-                  <tr key={f.etapa} className="border-b last:border-0 align-top">
-                    <td className="py-1.5 pr-3 font-medium">{f.etapa}</td>
-                    <td className="py-1.5 pr-3 text-tinta-sussurro">{f.regra}</td>
-                    <td className="py-1.5 text-right tabular-nums whitespace-nowrap">
-                      {f.volumeMl === null ? '—' : `${f.volumeMl.toLocaleString('pt-BR')} mL`}
-                      {f.mlH ? <span className="block text-xs text-tinta-sussurro">{f.mlH.toLocaleString('pt-BR')} mL/h</span> : null}
-                    </td>
-                  </tr>
+                  <TableRow key={f.etapa} className="border-b last:border-0 align-top">
+                    <TableCell className="py-1.5 pr-3 font-medium">{f.etapa}</TableCell>
+                    <TableCell className="py-1.5 pr-3 text-tinta-sussurro">{f.regra}</TableCell>
+                    <TableCell className="py-1.5 text-right tabular-nums whitespace-nowrap">
+                      {f.volumeMl === null ? '—' : `${numero(f.volumeMl)} mL`}
+                      {f.mlH ? <span className="block text-rotulo text-tinta-sussurro">{numero(f.mlH)} mL/h</span> : null}
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
           <p><span className="font-medium">Reavaliação:</span> {REAVALIACAO[grupo]}</p>
           <p><span className="font-medium">Exames:</span> {EXAMES[grupo]}</p>
@@ -148,11 +149,11 @@ export function ClassificacaoDengue() {
             conta={d ? <><strong>{faixa(d.albuminaG)} g</strong> = {faixa(d.albumina5Ml)} mL a 5% ({faixa(d.albumina20Ml)} mL de albumina 20% + {faixa(d.sfParaAlbuminaMl)} mL de SF) · coloide {n(d.coloideMlH)} mL/h</> : 'informe o peso'} />
           <LinhaManual nome="Ht em queda com hemorragia — concentrado de hemácias" texto="10 a 15 mL/kg/dia" pagina="p. 38" conta={d ? <strong>{faixa(d.concentradoHemaciasMlDia)} mL/dia</strong> : 'informe o peso'} />
           <LinhaManual nome="Coagulopatia — plasma, vitamina K e crioprecipitado" texto="plasma 10 mL/kg; vitamina K EV; crioprecipitado 1 U para cada 5–10 kg" pagina="p. 38" conta={d ? <>plasma <strong>{n(d.plasmaMl)} mL</strong> · crio <strong>{faixa(d.crioU)} U</strong></> : 'informe o peso'} />
-          <p className="text-sm">{PLAQUETAS_GRUPO_D}</p>
-          <p className="text-sm">{HIPERIDRATACAO}</p>
-          <p className="text-sm font-medium">Reduzir ou interromper a infusão quando houver:</p>
+          <p className="text-apoio">{PLAQUETAS_GRUPO_D}</p>
+          <p className="text-apoio">{HIPERIDRATACAO}</p>
+          <p className="text-apoio font-medium">Reduzir ou interromper a infusão quando houver:</p>
           <Lista itens={INTERROMPER_INFUSAO} />
-          <p className="text-sm font-medium">Inotrópicos no choque com disfunção miocárdica (p. 40):</p>
+          <p className="text-apoio font-medium">Inotrópicos no choque com disfunção miocárdica (p. 40):</p>
           <Lista itens={INOTROPICOS.map((i) => `${i.droga} ${faixa(i.ugKgMin, 1)} µg/kg/min${peso > 0 ? ` = ${faixa([i.ugKgMin[0] * peso, i.ugKgMin[1] * peso], 0)} µg/min` : ''}`)} />
         </Bloco>
       )}
@@ -176,15 +177,14 @@ export function ClassificacaoDengue() {
           conta={<><strong>{faixa(hipoK.mEqH, 1)} mEq/h</strong>{hipoK.indicada ? '' : ' — K ≥ 2,5: fora do critério EV do manual'}</>} />}
         {bic && <LinhaManual nome="Bicarbonato" texto="só com HCO3 < 10 e/ou pH < 7,20: (HCO3 desejado 15 a 22 − encontrado) × 0,4 × peso" pagina="p. 41"
           conta={<><strong>{faixa(bic.mEq)} mEq</strong>{bic.indicado ? '' : ' — fora do critério do manual'}</>} />}
-        <p className="text-sm text-tinta-sussurro">{BICARBONATO_SEM_GASOMETRIA}</p>
+        <p className="text-apoio text-tinta-sussurro">{BICARBONATO_SEM_GASOMETRIA}</p>
       </Bloco>
 
       <Bloco titulo="Hipertensos e cardiopatas (p. 44–51)">
         <Lista itens={HIPERTENSOS} />
-        <div className="flex flex-wrap gap-2 pt-2">
+        <div role="radiogroup" aria-label="Classe NYHA" className="flex flex-wrap gap-2 pt-2">
           {([1, 2, 3, 4] as ClasseNyha[]).map((c) => (
-            <button key={c} type="button" aria-pressed={nyha === c} onClick={() => setNyha(c)}
-              className={cn('rounded-lg border px-3 py-1.5 text-sm', nyha === c ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')}>NYHA {['I', 'II', 'III', 'IV'][c - 1]}</button>
+            <Chip key={c} variante="opcao" radio ativo={nyha === c} onClick={() => setNyha(c)}>NYHA {['I', 'II', 'III', 'IV'][c - 1]}</Chip>
           ))}
         </div>
         <LinhaManual nome={`Cardiopata NYHA ${['I', 'II', 'III', 'IV'][nyha - 1]}`} texto={card.etapa} pagina="p. 49–51"
@@ -196,19 +196,19 @@ export function ClassificacaoDengue() {
       <Bloco titulo="Antiagregantes e anticoagulantes pela contagem de plaquetas (p. 58–63)">
         <div className="flex flex-col gap-1.5">
           {ANTITROMBOTICOS.map((a) => (
-            <label key={a.value} className="flex items-center gap-2 text-sm"><input type="radio" name="dg-anti" checked={droga === a.value} onChange={() => setDroga(a.value)} className="size-4" /> {a.label}</label>
+            <label key={a.value} className="flex items-center gap-2 text-apoio"><input type="radio" name="dg-anti" checked={droga === a.value} onChange={() => setDroga(a.value)} className="size-4" /> {a.label}</label>
           ))}
         </div>
         <NumberField id="dg-plaq" label="Plaquetas" unit="/mm³" value={plaq} onChange={setPlaq} min={0} step={1000} />
-        {anti ? <p className="text-sm font-medium">{anti}</p> : <p className="text-sm text-tinta-sussurro">Informe a contagem de plaquetas.</p>}
-        <p className="text-sm text-tinta-sussurro">{SANGRAMENTO_ANTITROMBOTICO}</p>
+        {anti ? <p className="text-apoio font-medium">{anti}</p> : <p className="text-apoio text-tinta-sussurro">Informe a contagem de plaquetas.</p>}
+        <p className="text-apoio text-tinta-sussurro">{SANGRAMENTO_ANTITROMBOTICO}</p>
       </Bloco>
 
       <Bloco titulo="Gestante (p. 19, 52–54)"><Lista itens={GESTANTE} /></Bloco>
 
       <Bloco titulo="Analgesia — Apêndice H (p. 77)">
         <Lista itens={ANALGESICOS_ADULTO.map((a) => `${a.droga}: ${a.dose}`)} />
-        <p className="text-sm text-tinta-sussurro">Errata: {ERRATA_PARACETAMOL}</p>
+        <p className="text-apoio text-tinta-sussurro">Errata: {ERRATA_PARACETAMOL}</p>
       </Bloco>
 
       <Bloco titulo="Prova do laço — Apêndice G (p. 76)" descricao={`Adulto: insuflar até o valor médio por ${PROVA_LACO.adulto.minutos} min; positiva com ${PROVA_LACO.adulto.petequias} ou mais petéquias no quadrado de 2,5 cm. ${PROVA_LACO.nota}`}>
@@ -216,28 +216,28 @@ export function ClassificacaoDengue() {
           <NumberField id="dg-pas" label="PAS" unit="mmHg" value={pa.pas} onChange={(x) => setPa({ ...pa, pas: x })} min={0} />
           <NumberField id="dg-pad" label="PAD" unit="mmHg" value={pa.pad} onChange={(x) => setPa({ ...pa, pad: x })} min={0} />
         </div>
-        {laco !== null && <p className="text-sm">Insuflar a <strong>{n(laco)} mmHg</strong>.</p>}
+        {laco !== null && <p className="text-apoio">Insuflar a <strong>{n(laco)} mmHg</strong>.</p>}
       </Bloco>
 
       <Bloco titulo="Internação e alta (p. 43)">
-        <p className="text-sm font-medium">Indicações de internação</p>
+        <p className="text-apoio font-medium">Indicações de internação</p>
         <Lista itens={INTERNACAO} />
-        <p className="text-sm font-medium">Alta: todos os cinco critérios</p>
+        <p className="text-apoio font-medium">Alta: todos os cinco critérios</p>
         <Lista itens={ALTA} />
       </Bloco>
 
       <Bloco titulo="Avaliação hemodinâmica — Tabela 1 (p. 15)">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Parâmetro</th><th className="pr-3 pb-2">Sem choque</th><th className="pr-3 pb-2">Choque compensado</th><th className="pb-2">Choque com hipotensão</th></tr></thead>
-            <tbody>{TABELA_HEMODINAMICA.map((l) => <tr key={l.parametro} className="border-t"><td className="pr-3 py-2 font-medium">{l.parametro}</td><td className="pr-3 py-2">{l.ausente}</td><td className="pr-3 py-2">{l.compensado}</td><td className="py-2">{l.hipotensao}</td></tr>)}</tbody>
-          </table>
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Parâmetro</TableHead><TableHead className="pr-3 pb-2">Sem choque</TableHead><TableHead className="pr-3 pb-2">Choque compensado</TableHead><TableHead className="pb-2">Choque com hipotensão</TableHead></TableRow></TableHeader>
+            <TableBody>{TABELA_HEMODINAMICA.map((l) => <TableRow key={l.parametro} className="border-t"><TableCell className="pr-3 py-2 font-medium">{l.parametro}</TableCell><TableCell className="pr-3 py-2">{l.ausente}</TableCell><TableCell className="pr-3 py-2">{l.compensado}</TableCell><TableCell className="py-2">{l.hipotensao}</TableCell></TableRow>)}</TableBody>
+          </Table>
         </div>
       </Bloco>
 
       <Bloco titulo="Diagnóstico, notificação e diferencial (p. 20, 34–35, 55–57)">
         <Lista itens={DIAGNOSTICO_LAB} />
-        <p className="text-sm text-tinta-sussurro">{DIFERENCIAL}</p>
+        <p className="text-apoio text-tinta-sussurro">{DIFERENCIAL}</p>
       </Bloco>
 
       <Bloco titulo="Quadro 2 do MS — referência do protocolo (p. 25)" descricao="Cor da classificação de risco que o manual associa a cada grupo. A classificação de risco do paciente é da enfermagem; a tela não atribui cor.">
@@ -245,7 +245,7 @@ export function ClassificacaoDengue() {
       </Bloco>
 
       <Bloco titulo="O que mudou nesta versão">
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_2024.map((x) => <li key={x}>{x}</li>)}</ul>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_2024.map((x) => <li key={x}>{x}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

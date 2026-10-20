@@ -8,6 +8,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { faixaTxt, num, pesoValido } from './formatoP2'
 import { AvisoRn, Bloco, CampoPesoRn, Errata, LinhaDose, LinhaReferencia, PesoInvalido } from './PecasP2'
 import { PhoenixCalculo } from './PhoenixPed'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Choque séptico na criança: volume em mL/kg e vasoativas (livro do ICr, cap. 5), critérios de Phoenix 2024 e SSC pediátrica 2026. */
 export function ChoquePediatrico() {
@@ -48,21 +49,21 @@ export function ChoquePediatrico() {
 
       <Bloco titulo="SSC pediátrica 2026 × livro do ICr">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">SSC pediátrica 2026</th><th className="pb-2">Livro do ICr</th></tr></thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">SSC pediátrica 2026</TableHead><TableHead className="pb-2">Livro do ICr</TableHead></TableRow></TableHeader>
+            <TableBody>
               {DIRETRIZ_SSC_PED_2026.map((d) => (
-                <tr key={d.tema} className="border-t">
-                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
-                  <td className="pr-3 py-2">
+                <TableRow key={d.tema} className="border-t">
+                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                  <TableCell className="pr-3 py-2">
                     {d.ssc.texto} <span className="text-tinta-sussurro">({d.ssc.pagina})</span>
-                    {d.nota && <p role="note" className="mt-2 rounded-md border border-atencao/40 bg-atencao/[0.08] px-2 py-1 text-xs text-atencao">{d.nota}</p>}
-                  </td>
-                  <td className="py-2 text-tinta-sussurro">{d.livro ? `${d.livro.texto} (${d.livro.pagina})` : '—'}</td>
-                </tr>
+                    {d.nota && <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{d.nota}</p>}
+                  </TableCell>
+                  <TableCell className="py-2 text-tinta-sussurro">{d.livro ? `${d.livro.texto} (${d.livro.pagina})` : '—'}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </Bloco>
     </ToolLayout>

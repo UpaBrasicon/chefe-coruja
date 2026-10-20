@@ -4,31 +4,25 @@ import {
   ANEXO2_SEM_REGISTRO, DIVERGENCIA_MANUAL_HC, NEONATO_FORA, avaliarHiperpotassemia, avaliarHiperpotassemiaPed, fichaHiperpotassemia, neonatoPelaIdade,
   type Ecg, type ResultadoHiperKPed,
 } from '@/clinico/hiperpotassemia'
+import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { usePacienteCentral } from '@/lib/pacienteCentral'
-import { cn } from '@/lib/utils'
 import { faixaBr } from '@/pages/plantonista/pediatria/formatoIcr'
 import { LinhaLivro, Nota } from '@/pages/plantonista/pediatria/PecasIcr'
 
 function Escolha<T extends string>({ titulo, opcoes, valor, set }: { titulo: string; opcoes: [T, string][]; valor: T | null; set: (v: T) => void }) {
   return (
     <div className="flex flex-col gap-2">
-      <Label className="text-sm font-semibold">{titulo}</Label>
-      <div className="flex flex-wrap gap-2">
+      <Label className="text-apoio font-semibold">{titulo}</Label>
+      <div role="radiogroup" aria-label={titulo} className="flex flex-wrap gap-2">
         {opcoes.map(([v, rotulo]) => (
-          <button
-            key={v}
-            type="button"
-            aria-pressed={valor === v}
-            onClick={() => set(v)}
-            className={cn('rounded-lg border px-3 py-2 text-sm', valor === v ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')}
-          >
+          <Chip key={v} variante="opcao" radio ativo={valor === v} onClick={() => set(v)}>
             {rotulo}
-          </button>
+          </Chip>
         ))}
       </div>
     </div>
@@ -44,10 +38,10 @@ function ResultadoCrianca({ r }: { r: ResultadoHiperKPed }) {
     <>
       <Card className={r.risco ? 'border-critico/30' : r.acimaDoLimiar ? 'border-atencao/30' : 'border-acao'}>
         <CardHeader>
-          <CardTitle className="text-base">Na criança — livro do ICr-HCFMUSP</CardTitle>
+          <CardTitle className="text-corpo">Na criança — livro do ICr-HCFMUSP</CardTitle>
           <CardDescription>{r.leitura}</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-1 text-sm">
+        <CardContent className="flex flex-col gap-1 text-apoio">
           {r.alertas.map((a) => (
             <p key={a} className={a.startsWith('Em recém-nascidos') ? 'text-tinta-sussurro' : 'text-critico'}>{a}</p>
           ))}
@@ -57,14 +51,14 @@ function ResultadoCrianca({ r }: { r: ResultadoHiperKPed }) {
       {r.neonato ? (
         <Card className="border-atencao/30">
           <CardHeader>
-            <CardTitle className="text-base">Recém-nascido: sem referência pediátrica de dose</CardTitle>
+            <CardTitle className="text-corpo">Recém-nascido: sem referência pediátrica de dose</CardTitle>
             <CardDescription>{NEONATO_FORA}</CardDescription>
           </CardHeader>
         </Card>
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Tratamento da hipercalemia (cap. 54, p. 549; Tabela 7)</CardTitle>
+            <CardTitle className="text-corpo">Tratamento da hipercalemia (cap. 54, p. 549; Tabela 7)</CardTitle>
             <CardDescription>
               Doses por peso como o livro traz, com página; a indicação e a escolha são do profissional.
               {r.semPeso && ' Informe o peso para ver a dose calculada.'}
@@ -89,7 +83,7 @@ function ResultadoCrianca({ r }: { r: ResultadoHiperKPed }) {
                   }
                 />
                 {d.divergencias.length > 0 && (
-                  <details className="ml-3 text-xs text-tinta-sussurro">
+                  <details className="ml-3 text-rotulo text-tinta-sussurro">
                     <summary className="cursor-pointer">Divergência em outras passagens do livro ({d.divergencias.length})</summary>
                     <ul className="mt-1 list-disc pl-5">
                       {d.divergencias.map((x) => <li key={x}>{x}</li>)}
@@ -104,12 +98,12 @@ function ResultadoCrianca({ r }: { r: ResultadoHiperKPed }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Sem referência pediátrica de dose</CardTitle>
+          <CardTitle className="text-corpo">Sem referência pediátrica de dose</CardTitle>
           <CardDescription>O que a conduta do adulto tem e o capítulo do livro do ICr não quantifica para a criança. Nada é convertido do adulto.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2 text-sm">
+        <CardContent className="flex flex-col gap-2 text-apoio">
           {r.semReferencia.map((s) => (
-            <div key={s.item} className="rounded-lg border px-3 py-2">
+            <div key={s.item} className="rounded-controle border px-3 py-2">
               <span className="font-medium">{s.item}: </span>
               <span className="text-tinta-sussurro">{s.texto}</span>
             </div>
@@ -152,7 +146,7 @@ export function Hiperpotassemia() {
       <Card>
         <CardContent className="flex flex-col gap-4 pt-6">
           {central.modo ? (
-            <p className="text-sm text-tinta-sussurro">
+            <p className="text-apoio text-tinta-sussurro">
               Paciente da Central: <strong>{crianca ? 'criança (menos de 14 anos)' : 'adulto (14 anos ou mais)'}</strong>. Para trocar, troque o paciente na Central.
             </p>
           ) : (
@@ -177,7 +171,7 @@ export function Hiperpotassemia() {
 
       {!r && !rPed && (
         <Card>
-          <CardContent className="pt-6 text-sm text-tinta-sussurro">
+          <CardContent className="pt-6 text-apoio text-tinta-sussurro">
             Sem o potássio sérico não há faixa a classificar. O ECG e os sintomas mandam na urgência, mas o número define a faixa.
           </CardContent>
         </Card>
@@ -189,15 +183,15 @@ export function Hiperpotassemia() {
         <>
           <Card className={r.gravidade === 2 ? 'border-critico/30' : r.gravidade === 1 ? 'border-atencao/30' : 'border-acao'}>
             <CardHeader>
-              <CardTitle className="flex flex-wrap items-center gap-3 text-base">
-                Gravidade <Badge className="text-base">{r.faixa}</Badge>
+              <CardTitle className="flex flex-wrap items-center gap-3 text-corpo">
+                Gravidade <Badge className="text-corpo">{r.faixa}</Badge>
               </CardTitle>
               <CardDescription>
                 {r.calcio === 'indicado' ? 'Cálcio indicado' : r.calcio === 'indeterminado' ? 'Sem ECG, a indicação de cálcio não pode ser descartada' : 'Cálcio não indicado por estes dados'}
               </CardDescription>
             </CardHeader>
             {r.alertas.length > 0 && (
-              <CardContent className="flex flex-col gap-1 text-sm text-critico">
+              <CardContent className="flex flex-col gap-1 text-apoio text-critico">
                 {r.alertas.map((a) => <p key={a}>{a}</p>)}
               </CardContent>
             )}
@@ -206,12 +200,12 @@ export function Hiperpotassemia() {
           {r.blocos.map((b) => (
             <Card key={b.titulo}>
               <CardHeader>
-                <CardTitle className="text-base">{b.titulo}</CardTitle>
+                <CardTitle className="text-corpo">{b.titulo}</CardTitle>
                 <CardDescription>{b.sub}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 {b.linhas.map((l) => (
-                  <div key={l.item} className="rounded-lg border px-3 py-2 text-sm">
+                  <div key={l.item} className="rounded-controle border px-3 py-2 text-apoio">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-medium">{l.item}</span>
                       {l.quando && <Badge variant="secondary">{l.quando}</Badge>}
@@ -228,15 +222,15 @@ export function Hiperpotassemia() {
       {!crianca && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Divergência: {DIVERGENCIA_MANUAL_HC.fonte}</CardTitle>
+            <CardTitle className="text-corpo">Divergência: {DIVERGENCIA_MANUAL_HC.fonte}</CardTitle>
             <CardDescription>
               Esta tela segue a referência mais recente (decisão do responsável técnico). O manual do HCFMUSP traz outra classificação e quantifica as doses.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-2 text-sm">
+          <CardContent className="flex flex-col gap-2 text-apoio">
             <p>{DIVERGENCIA_MANUAL_HC.classificacao}</p>
             {DIVERGENCIA_MANUAL_HC.itens.map((l) => (
-              <div key={l.item} className="rounded-lg border px-3 py-2">
+              <div key={l.item} className="rounded-controle border px-3 py-2">
                 <span className="font-medium">{l.item}: </span>
                 <span className="text-tinta-sussurro">{l.texto} ({l.pagina})</span>
               </div>

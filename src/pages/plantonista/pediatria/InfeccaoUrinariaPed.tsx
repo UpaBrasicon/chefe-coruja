@@ -34,7 +34,7 @@ export function InfeccaoUrinariaPed() {
     >
       <CampoPaciente id="itu" p={p} onChange={setP} />
 
-      <div role="note" className="flex flex-col gap-1 rounded-md border border-atencao/40 bg-atencao/[0.08] px-3 py-2 text-sm text-atencao">
+      <div role="note" className="flex flex-col gap-1 rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">
         <p className="font-medium">Diretriz nova da AAP (Pediatrics, out/2026), posterior ao livro</p>
         <ul className="list-disc pl-5">
           {AVISO_AAP_2026.map((t) => <li key={t}>{t}</li>)}
