@@ -89,3 +89,35 @@ export function Vazio({ icone: Icone, titulo, texto }: { icone: LucideIcon; titu
     </div>
   )
 }
+
+/** Título de cartão (14px/600), menor que o de seção (guia do padrão, 4.1). */
+export function TituloCartao({ children, extra, className }: { children: ReactNode; extra?: ReactNode; className?: string }) {
+  return (
+    <div className={cn('mb-2 flex items-baseline justify-between gap-3', className)}>
+      <h3 className="text-controle leading-[1.3] font-semibold text-tinta">{children}</h3>
+      {extra && <span className="text-rotulo text-tinta-sussurro">{extra}</span>}
+    </div>
+  )
+}
+
+/** Vazio de uma linha, dentro de seção ou cartão: "Nenhum exame pedido neste atendimento." (guia 2.3). */
+export function VazioLinha({ children, className }: { children: ReactNode; className?: string }) {
+  return <p className={cn('py-justo text-apoio text-tinta-sussurro', className)}>{children}</p>
+}
+
+/** Abas em cápsula, uma por vez (role tablist). Era a peça da farmácia usada por dez áreas. */
+export function Abas<K extends string>({ abas, valor, onChange, rotulo }: {
+  abas: readonly (readonly [K, string])[]; valor: K; onChange: (k: K) => void; rotulo: string
+}) {
+  return (
+    <div role="tablist" aria-label={rotulo} className="mb-[18px] flex flex-wrap gap-1.5">
+      {abas.map(([k, r]) => (
+        <button key={k} type="button" role="tab" aria-selected={valor === k} onClick={() => onChange(k)}
+          className={cn('rounded-capsula border px-[13px] py-[5px] text-apoio transition-colors',
+            valor === k ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+          {r}
+        </button>
+      ))}
+    </div>
+  )
+}

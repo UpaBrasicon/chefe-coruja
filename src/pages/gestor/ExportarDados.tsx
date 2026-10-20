@@ -27,7 +27,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { CONJUNTOS, erroPeriodo, montarArquivo, nomeArquivo, type Conjunto, type Formato } from '@/lib/exportacao'
 import { supabase } from '@/lib/supabase'
-import { Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 
 type Registro = {
   id: string; conjunto: Conjunto; formato: Formato; desde: string | null; ate: string | null
@@ -232,7 +232,7 @@ export default function ExportarDados() {
             </div>
           )}
 
-          <Erro texto={erro} />
+          <MensagemErro texto={erro} />
           {pronto && <p role="status" className="text-apoio text-sucesso">Arquivo gerado: {pronto}</p>}
 
           <div className="flex flex-wrap items-center gap-3">
@@ -255,7 +255,7 @@ export default function ExportarDados() {
           <CardDescription>As 50 mais recentes, de qualquer pessoa: quem pediu, quando, o quê e se saiu completa.</CardDescription>
         </CardHeader>
         <CardContent className="text-apoio">
-          {!unidadeId ? null : lista.isLoading ? <Spinner /> : lista.error ? <Erro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
+          {!unidadeId ? null : lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
             <Vazio icone={FileDown} titulo="Nenhuma exportação" texto="As exportações desta unidade aparecem aqui." />
           ) : (
             <ul className="flex flex-col divide-y divide-fio">

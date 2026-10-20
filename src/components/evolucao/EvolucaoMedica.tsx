@@ -26,7 +26,7 @@ import {
   useContextoEvolucao, useRecarregarEvolucao, type ContextoEvolucao, type DadosEstruturados, type FormEvolucao,
 } from './dados'
 import { FONTE_LNNC as LNNC_FONTE, useNotificacaoCompulsoria } from '@/components/internacao/caderno/notificacao'
-import { carregarEnvelope, salvarEnvelope } from '@/pages/plantao/shared/rascunho'
+import { carregarEnvelope, salvarEnvelope } from '@/lib/rascunho'
 import { Bloco, CampoTexto, ChipEscolha, Mensagem, RotuloSecao, Selo, type Aviso } from './pecas'
 
 type Modo = 'nova' | 'corrigir' | 'complemento'

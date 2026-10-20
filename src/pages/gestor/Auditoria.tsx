@@ -12,7 +12,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { supabase } from '@/lib/supabase'
 import { fmtData, fmtDataHora } from '@/lib/datas'
-import { StatusPedido } from '@/pages/prontuario/PedidosProntuario'
+import { StatusPedido } from '@/components/prontuario/StatusPedido'
 
 // Auditoria da unidade (fase 6): pedidos de acesso ao prontuário encerrado,
 // acessos ao prontuário (log_acesso_prontuario) e trilha de ações

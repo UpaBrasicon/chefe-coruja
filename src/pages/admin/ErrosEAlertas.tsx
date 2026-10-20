@@ -11,8 +11,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import type { Database } from '@/types/database'
 
-import { haQuanto, selo } from './dadosAdmin'
-import { cartao } from './ui'
+import { haQuanto, selo } from '@/lib/dadosAdmin'
+import { cartao } from '@/components/admin/ui'
 
 // Onda 12 — "Erros e alertas do sistema" do administrador geral. Duas partes:
 //  • Erros do aplicativo: os defeitos capturados no navegador (erros_cliente),

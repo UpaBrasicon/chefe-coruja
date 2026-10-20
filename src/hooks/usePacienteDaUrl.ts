@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { abrirProntuario } from '@/lib/prontuario'
-import type { DadosPaciente } from './rascunho'
+import type { DadosPaciente } from '@/lib/rascunho'
 
 /**
  * `?paciente=<id>` na URL (ex.: vindo do Atendimento) preenche o paciente do

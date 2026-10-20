@@ -23,7 +23,8 @@ import {
 } from '@/lib/aih'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
-import { Abas, Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { Abas } from '@/components/monitor/Pagina'
 
 type Filtro = StatusAih | 'todas'
 const ABAS: readonly (readonly [Filtro, string])[] = [
@@ -53,7 +54,7 @@ export default function Aih() {
           ? 'Laudos de AIH emitidos na unidade. Aprove com o número da AIH e a competência, ou rejeite com o motivo.'
           : 'Acompanhamento das AIHs da unidade. Quem decide é o médico regulador.'} />
       <Abas abas={ABAS} valor={filtro} onChange={setFiltro} rotulo="Situação da AIH" />
-      {lista.isLoading ? <Spinner /> : lista.error ? <Erro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
+      {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
         <Vazio icone={FileText} titulo="Nenhuma AIH aqui" texto="Quando o médico emitir o laudo de AIH, ele aparece em Solicitadas." />
       ) : (
         <div className="flex flex-col gap-3">
@@ -162,7 +163,7 @@ function CartaoAih({ a, regulador }: { a: AihFila; regulador: boolean }) {
           )}
           <Input className="h-8" value={motivo} onChange={(e) => setMotivo(e.target.value)}
             placeholder={acao === 'aprovar' ? 'Observação (opcional)' : acao === 'rejeitar' ? 'Motivo da rejeição' : acao === 'competencia' ? 'Motivo do ajuste' : 'Motivo do cancelamento'} />
-          {fazer.error && <Erro texto={(fazer.error as Error).message} />}
+          {fazer.error && <MensagemErro texto={(fazer.error as Error).message} />}
           <div className="flex gap-1.5">
             <Button size="xs" disabled={!pode || fazer.isPending} onClick={() => fazer.mutate()}>
               {acao === 'aprovar' ? 'Aprovar AIH' : acao === 'rejeitar' ? 'Rejeitar AIH' : acao === 'competencia' ? 'Salvar competência' : 'Cancelar AIH'}
@@ -190,7 +191,7 @@ function HistoricoAih({ aih }: { aih: string }) {
     },
   })
   if (eventos.isLoading) return <Spinner />
-  if (eventos.error) return <Erro texto={(eventos.error as Error).message} />
+  if (eventos.error) return <MensagemErro texto={(eventos.error as Error).message} />
   return (
     <ol className="flex flex-col gap-1 border-l border-fio pl-3 text-xs">
       {(eventos.data ?? []).map((e, i) => (

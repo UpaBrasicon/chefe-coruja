@@ -21,9 +21,9 @@ import { FormRn, type RnCriado } from '@/components/paciente/CadastroRn'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ExcluirDaFila } from '@/components/porta/Chamada'
 
-import { Campo, CamposCadastro } from './CamposCadastro'
+import { Campo, CamposCadastro } from '@/components/paciente/CamposCadastro'
 import { PropagandaPainel } from './PropagandaPainel'
-import { CADASTRO_VAZIO, errosCadastro, hojeSP, IDENTIDADE, normalizarCadastro, type Cadastro, type CampoCadastro } from './cadastroForm'
+import { CADASTRO_VAZIO, errosCadastro, hojeSP, IDENTIDADE, normalizarCadastro, type Cadastro, type CampoCadastro } from '@/lib/cadastroPaciente'
 
 // Recepção (protótipo: rec-cadastro, rec-fila-enf, rec-fila-med, rec-painel).
 // Procurar antes de cadastrar, abrir a ficha — que abre o episódio — e

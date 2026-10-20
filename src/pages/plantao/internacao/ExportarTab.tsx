@@ -4,7 +4,7 @@ import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { escapeHtml } from '@/lib/utils'
-import type { DadosPaciente, Evolucao, Exames, Prescricao } from './rascunho'
+import type { DadosPaciente, Evolucao, Exames, Prescricao } from '@/lib/rascunhoInternacao'
 import { supabase } from '@/lib/supabase'
 
 function fmtData(iso: string) {

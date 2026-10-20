@@ -5,7 +5,7 @@ import { BedDouble, Building2, ClipboardList, Clock, DoorOpen, FlaskConical, Hou
 import { supabase } from '@/lib/supabase'
 import { formatarDuracao, nivelDoTurno } from '@/domain/plantao'
 import { FaixaParametros, Parametro, type Nivel } from '@/components/monitor/Parametros'
-import { LIMITES_PADRAO } from '@/pages/gestor/limites'
+import { LIMITES_PADRAO } from '@/lib/limitesUnidade'
 import type { Papel } from '@/types/database'
 
 // Faixa de parâmetros dos papéis que a mantêm (P/index.html 32208–32218 e

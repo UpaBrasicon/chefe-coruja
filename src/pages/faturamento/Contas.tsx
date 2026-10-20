@@ -34,7 +34,7 @@ import { rotuloUnidade } from '@/lib/unidadeConsumo'
 import { codigoSigtapNaTela, type ProfissionalParaFaturar } from '@/lib/bpa'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
-import { Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { CartaoGlosa, RegistrarGlosa } from '@/pages/faturamento/Glosas'
 
 const MINIMO_MOTIVO = 10
@@ -89,7 +89,7 @@ export default function Contas() {
         <Chip ativo={filtroPend === 'com'} onClick={() => setFiltroPend('com')}>com pendência</Chip>
         <Chip ativo={filtroPend === 'bloqueante'} onClick={() => setFiltroPend('bloqueante')}>com bloqueante</Chip>
       </Chips>
-      <Erro texto={lista.error ? (lista.error as Error).message : null} />
+      <MensagemErro texto={lista.error ? (lista.error as Error).message : null} />
       {lista.isLoading ? <Spinner /> : contas.length === 0 ? (
         <Vazio icone={Wallet} titulo={filtroPend === 'todas' ? 'Nenhuma conta nesta etapa' : 'Nenhuma conta com pendência neste filtro'}
           texto="As contas abrem sozinhas com o atendimento na porta e com a internação." />
@@ -199,7 +199,7 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
                 ))}
               </div>
             )}
-            <Erro texto={erro?.message ?? null} />
+            <MensagemErro texto={erro?.message ?? null} />
 
             <PendenciasConta c={c} aoMudar={recarregar} />
 

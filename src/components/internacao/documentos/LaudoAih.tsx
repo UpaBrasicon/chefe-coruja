@@ -27,12 +27,12 @@ import { cadastroFaltaAih, useIdentificacao } from '@/components/documentos/iden
 import { SeletorPaciente } from '@/components/documentos/SeletorPaciente'
 import { AnexosLaudo, Aviso, Bloco, BotaoAnexar, Campo, Cartao, Leitura, Pilulas, Rodape, Texto } from '@/components/documentos/ui'
 import { useLeituraLaudo } from '@/components/documentos/useLeituraLaudo'
-import { carregarEnvelope, useRascunho } from '@/pages/plantao/shared/rascunho'
+import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 import { cn } from '@/lib/utils'
 
 import {
   AIH_VAZIO, aihTemAlgo, CAUSAS_EXTERNAS, codigoCid, conteudoAih, formDoConteudoAih, pendenciasAih, type CausaExterna, type FormAih,
-} from './documentosInternacao'
+} from '@/components/internacao/documentos/documentosInternacao'
 
 type Conferencia = { avisos: { campo: string; texto: string }[]; criticas?: CriticaAih[]; competencia: string | null; nota: string }
 

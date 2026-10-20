@@ -1,7 +1,7 @@
-import type { DadosPaciente } from '../shared/rascunho'
-import { carregarEnvelope, hojeLocal, useRascunho as useRascunhoBase } from '../shared/rascunho'
+import type { DadosPaciente } from '@/lib/rascunho'
+import { carregarEnvelope, hojeLocal, useRascunho as useRascunhoBase } from '@/lib/rascunho'
 
-export type { DadosPaciente } from '../shared/rascunho'
+export type { DadosPaciente } from '@/lib/rascunho'
 
 export type Prescricao = {
   marcados: string[]

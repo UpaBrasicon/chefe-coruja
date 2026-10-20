@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { TituloPagina } from '@/components/monitor/Pagina'
 
-import { bytes, haQuanto, LATENCIA_ALVO_MS, selo, SELO_ESTADO, useLatencia, useServidores, type Estado } from './dadosAdmin'
-import { cartao } from './ui'
+import { bytes, haQuanto, LATENCIA_ALVO_MS, selo, SELO_ESTADO, useLatencia, useServidores, type Estado } from '@/lib/dadosAdmin'
+import { cartao } from '@/components/admin/ui'
 
 // Servidores (P/index.html 10070–10097). No protótipo, sete serviços com
 // medidas fixas (p95 da API, entrega de push, 4 TB contratados, janela de

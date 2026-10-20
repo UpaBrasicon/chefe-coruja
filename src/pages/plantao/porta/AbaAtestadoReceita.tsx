@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
 import { Aviso } from '@/components/documentos/ui'
 import { ofereceConteudoAdulto, type FaixaEtaria } from '@/domain/idade'
-import { idadeLegivel } from '@/pages/recepcao/cadastroForm'
+import { idadeLegivel } from '@/lib/cadastroPaciente'
 import { TEXTO_PEDIATRICO, TEXTO_SEM_NASCIMENTO } from '../atendimento/ReceituarioMedico'
 
 import { hoje, hora, msg, type EstadoDocs, type ItemReceita } from './comum'

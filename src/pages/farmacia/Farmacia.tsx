@@ -19,6 +19,8 @@ import { Input } from '@/components/ui/input'
 import Diluicoes from './Diluicoes'
 import { EnviarArquivo } from './EnviarArquivo'
 import { PainelFarmacia } from './PainelFarmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { Abas } from '@/components/monitor/Pagina'
 
 const ABAS = [
   ['painel', 'Painel'], ['disponibilidade', 'Disponibilidade'], ['diluicao', 'Diluição padrão'], ['rascunhos', 'Rascunhos'],
@@ -28,27 +30,6 @@ type Aba = (typeof ABAS)[number][0]
 const hora = (iso: string | null) => (iso ? new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }) : '—')
 const num = (x: string) => (x.trim() === '' ? null : Number(x.replace(',', '.')))
 const fmt = (n: number | null | undefined) => (n == null ? '—' : n.toLocaleString('pt-BR'))
-
-export function Erro({ texto }: { texto: string | null }) {
-  if (!texto) return null
-  return <p role="alert" className="rounded-container border border-critico/30 bg-alerta-critico px-3.5 py-2.5 text-apoio text-critico">{texto}</p>
-}
-
-export function Abas<K extends string>({ abas, valor, onChange, rotulo }: {
-  abas: readonly (readonly [K, string])[]; valor: K; onChange: (k: K) => void; rotulo: string
-}) {
-  return (
-    <div role="tablist" aria-label={rotulo} className="mb-[18px] flex flex-wrap gap-1.5">
-      {abas.map(([k, r]) => (
-        <button key={k} type="button" role="tab" aria-selected={valor === k} onClick={() => onChange(k)}
-          className={cn('rounded-capsula border px-[13px] py-[5px] text-apoio transition-colors',
-            valor === k ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
-          {r}
-        </button>
-      ))}
-    </div>
-  )
-}
 
 export function Filtro({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -119,7 +100,7 @@ function Disponibilidade({ unidade }: { unidade: string }) {
       <EnviarArquivo unidade={unidade} tipo="lista_medicacoes" icone={ClipboardPlus} rotulo="Enviar lista de medicações"
         ajuda="Planilha, documento ou PDF da farmácia central (.xlsx, .xls, .csv, .doc, .docx, .pdf). Fica registrado quem enviou e quando; o saldo abaixo é o que você informa." />
       <LimitesPadrao unidade={unidade} aoMudar={recarregar} />
-      <Erro texto={erro ?? (lista.error ? (lista.error as Error).message : null)} />
+      <MensagemErro texto={erro ?? (lista.error ? (lista.error as Error).message : null)} />
       <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
         <div className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-3">
           <span className="text-apoio text-tinta-sussurro">Saldo da unidade: {informados} de {(lista.data ?? []).length} itens informados. O que está em falta ou crítico vem primeiro.</span>
@@ -182,7 +163,7 @@ function LimitesPadrao({ unidade, aoMudar }: { unidade: string; aoMudar: () => v
             setErro(null); setAbrir(false); void padrao.refetch(); aoMudar()
           }}>Salvar padrão</Button>
           <span className="basis-full text-rotulo text-tinta-sussurro">Vale para todo item sem limite próprio. "Voltar ao padrão" no item apaga o limite dele e ele passa a seguir este.</span>
-          <div className="basis-full"><Erro texto={erro} /></div>
+          <div className="basis-full"><MensagemErro texto={erro} /></div>
         </div>
       )}
     </div>
@@ -303,7 +284,7 @@ function PadraoUnidade({ unidade, abrirRascunho }: { unidade: string; abrirRascu
     <div className="flex flex-col gap-4">
       <EnviarArquivo unidade={unidade} tipo="padrao_diluicao" icone={FlaskConical} rotulo="Enviar padrão da unidade"
         ajuda="O padrão de diluição da unidade no formato em que a farmácia já mantém. Fica registrado como comprovante; o que chega ao prescritor é o que você publica linha a linha abaixo." />
-      <Erro texto={erro ?? (lista.error ? (lista.error as Error).message : null)} />
+      <MensagemErro texto={erro ?? (lista.error ? (lista.error as Error).message : null)} />
       <div className="flex flex-wrap items-center gap-2">
         <label className="relative">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
@@ -426,7 +407,7 @@ function Faltas({ unidade }: { unidade: string }) {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-apoio text-tinta-sussurro">O que a unidade já sinalizou. A farmácia recebe na hora e o gestor vê no painel.</p>
-      <Erro texto={erro ?? (lista.error ? (lista.error as Error).message : null)} />
+      <MensagemErro texto={erro ?? (lista.error ? (lista.error as Error).message : null)} />
       <ul className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
         {(lista.data ?? []).map((f) => (
           <li key={f.id} className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-3 last:border-0">
@@ -472,7 +453,7 @@ function Validacao({ unidade }: { unidade: string }) {
       <p className="text-apoio text-tinta-sussurro">
         {itens.length} {itens.length === 1 ? 'item a conferir' : 'itens a conferir'}{itens.some((i) => i.diluicao_divergente) ? ` · ${itens.filter((i) => i.diluicao_divergente).length} fora do padrão de diluição` : ''} · o que não confere volta para quem prescreveu, com o motivo.
       </p>
-      <Erro texto={erro ?? (fila.error ? (fila.error as Error).message : null)} />
+      <MensagemErro texto={erro ?? (fila.error ? (fila.error as Error).message : null)} />
       {itens.map((i) => (
         <LinhaValidacao key={i.item_id} i={i} aoErro={setErro} aoMudar={() => {
           void qc.invalidateQueries({ queryKey: ['fila-validacao'] })

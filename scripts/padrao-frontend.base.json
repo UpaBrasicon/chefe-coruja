@@ -6,12 +6,12 @@
     "cor-hex": 124,
     "texto-escala": 1281,
     "canto": 485,
-    "botao-solto": 257,
+    "botao-solto": 256,
     "select-solto": 88,
     "tabela-solta": 61,
     "titulo-solto": 85,
-    "data-local": 295,
-    "importacao-cruzada": 78,
+    "data-local": 293,
+    "importacao-cruzada": 0,
     "emoji": 17,
     "pronto-socorro": 12
   },
@@ -55,8 +55,7 @@
     "src/components/AppShell.tsx": {
       "botao-solto": 1,
       "cor-arbitraria": 1,
-      "data-local": 2,
-      "importacao-cruzada": 1
+      "data-local": 2
     },
     "src/components/ErroBoundary.tsx": {
       "canto": 2,
@@ -68,6 +67,10 @@
       "cor-crua": 1,
       "data-local": 1,
       "titulo-solto": 1
+    },
+    "src/components/admin/ui.tsx": {
+      "botao-solto": 1,
+      "texto-escala": 1
     },
     "src/components/alta/DocumentosAlta.tsx": {
       "canto": 9,
@@ -101,8 +104,12 @@
       "titulo-solto": 1
     },
     "src/components/casca/FaixaDoPapel.tsx": {
-      "data-local": 2,
-      "importacao-cruzada": 1
+      "data-local": 2
+    },
+    "src/components/casca/ForaDoExpediente.tsx": {
+      "botao-solto": 2,
+      "data-local": 4,
+      "titulo-solto": 1
     },
     "src/components/casca/Lateral.tsx": {
       "botao-solto": 3,
@@ -135,9 +142,6 @@
     },
     "src/components/casca/navegacao.ts": {
       "pronto-socorro": 2
-    },
-    "src/components/casca/useNotasNav.ts": {
-      "importacao-cruzada": 1
     },
     "src/components/casca/useSessaoPosPlantao.ts": {
       "cor-hex": 1,
@@ -190,11 +194,7 @@
     },
     "src/components/documentos/SeletorPaciente.tsx": {
       "botao-solto": 2,
-      "cor-arbitraria": 2,
-      "importacao-cruzada": 5
-    },
-    "src/components/documentos/identificacao.ts": {
-      "importacao-cruzada": 1
+      "cor-arbitraria": 2
     },
     "src/components/documentos/ui.tsx": {
       "botao-solto": 5,
@@ -231,14 +231,20 @@
     "src/components/enfermagem/pecas.tsx": {
       "canto": 1
     },
+    "src/components/entrada/LadoMarca.tsx": {
+      "canto": 3,
+      "cor-arbitraria": 6,
+      "cor-crua": 8,
+      "texto-escala": 2,
+      "titulo-solto": 1
+    },
     "src/components/evolucao/AbaEvolucao.tsx": {
       "botao-solto": 1
     },
     "src/components/evolucao/EvolucaoMedica.tsx": {
       "botao-solto": 2,
       "canto": 1,
-      "cor-arbitraria": 1,
-      "importacao-cruzada": 1
+      "cor-arbitraria": 1
     },
     "src/components/evolucao/Historico.tsx": {
       "botao-solto": 3,
@@ -271,7 +277,6 @@
       "botao-solto": 2,
       "canto": 4,
       "data-local": 1,
-      "importacao-cruzada": 1,
       "texto-escala": 1
     },
     "src/components/internacao/PassagensDoPlantao.tsx": {
@@ -303,7 +308,6 @@
     },
     "src/components/internacao/caderno/Documentos.tsx": {
       "canto": 3,
-      "importacao-cruzada": 5,
       "select-solto": 1
     },
     "src/components/internacao/caderno/Passagem.tsx": {
@@ -337,8 +341,23 @@
     "src/components/internacao/caderno/comum.ts": {
       "data-local": 2
     },
-    "src/components/internacao/caderno/rascunhoLeito.ts": {
-      "importacao-cruzada": 2
+    "src/components/internacao/documentos/ExamesTab.tsx": {
+      "botao-solto": 1,
+      "canto": 1,
+      "texto-escala": 6
+    },
+    "src/components/internacao/documentos/FichaAdmissao.tsx": {
+      "botao-solto": 1,
+      "cor-hex": 4,
+      "data-local": 1
+    },
+    "src/components/internacao/documentos/LaudoAih.tsx": {
+      "cor-arbitraria": 3,
+      "cor-hex": 2,
+      "data-local": 1
+    },
+    "src/components/internacao/documentos/PrescricaoTab.tsx": {
+      "texto-escala": 1
     },
     "src/components/leito/ReservarLeito.tsx": {
       "botao-solto": 1,
@@ -389,6 +408,10 @@
       "data-local": 1,
       "select-solto": 2,
       "texto-escala": 8
+    },
+    "src/components/paciente/CamposCadastro.tsx": {
+      "botao-solto": 1,
+      "select-solto": 2
     },
     "src/components/paciente/EnderecoSus.tsx": {
       "texto-escala": 6
@@ -619,9 +642,6 @@
     "src/content/coresSecao.ts": {
       "cor-arbitraria": 13
     },
-    "src/contexts/AuthContext.tsx": {
-      "importacao-cruzada": 1
-    },
     "src/contexts/AvisosFlutuantesContext.tsx": {
       "botao-solto": 1,
       "canto": 1
@@ -639,14 +659,17 @@
     "src/lib/aih.ts": {
       "data-local": 1
     },
+    "src/lib/cadastroPaciente.ts": {
+      "data-local": 1
+    },
     "src/lib/contas.ts": {
       "data-local": 1
     },
     "src/lib/csv.ts": {
       "data-local": 1
     },
-    "src/lib/datas.ts": {
-      "data-local": 2
+    "src/lib/dadosAdmin.ts": {
+      "data-local": 1
     },
     "src/lib/esperaTriagem.ts": {
       "data-local": 1
@@ -671,6 +694,9 @@
       "cor-hex": 7,
       "data-local": 1
     },
+    "src/lib/rascunho.ts": {
+      "data-local": 1
+    },
     "src/lib/regulacao.ts": {
       "data-local": 1
     },
@@ -691,7 +717,6 @@
       "canto": 4,
       "cor-arbitraria": 1,
       "data-local": 1,
-      "importacao-cruzada": 5,
       "texto-escala": 20,
       "titulo-solto": 1
     },
@@ -721,17 +746,10 @@
       "texto-escala": 8,
       "titulo-solto": 1
     },
-    "src/pages/Indicadores.tsx": {
-      "canto": 2,
-      "data-local": 4,
-      "importacao-cruzada": 8,
-      "texto-escala": 10
-    },
     "src/pages/InternacaoPainel.tsx": {
       "canto": 3,
       "cor-arbitraria": 3,
       "data-local": 1,
-      "importacao-cruzada": 1,
       "texto-escala": 14,
       "titulo-solto": 1
     },
@@ -740,7 +758,6 @@
       "canto": 3,
       "cor-arbitraria": 3,
       "cor-crua": 5,
-      "importacao-cruzada": 2,
       "texto-escala": 2,
       "titulo-solto": 2
     },
@@ -790,7 +807,6 @@
       "botao-solto": 4,
       "cor-arbitraria": 1,
       "cor-crua": 2,
-      "importacao-cruzada": 2,
       "texto-escala": 1,
       "titulo-solto": 5
     },
@@ -837,7 +853,6 @@
     },
     "src/pages/admin/Integracoes.tsx": {
       "canto": 1,
-      "importacao-cruzada": 1,
       "select-solto": 1,
       "texto-escala": 15
     },
@@ -859,13 +874,6 @@
     },
     "src/pages/admin/Servidores.tsx": {
       "data-local": 1,
-      "texto-escala": 1
-    },
-    "src/pages/admin/dadosAdmin.ts": {
-      "data-local": 1
-    },
-    "src/pages/admin/ui.tsx": {
-      "botao-solto": 1,
       "texto-escala": 1
     },
     "src/pages/enfermagem/Checagem.tsx": {
@@ -921,13 +929,6 @@
     "src/pages/enfermagem/useEnfermagem.ts": {
       "data-local": 3
     },
-    "src/pages/entrada/LadoMarca.tsx": {
-      "canto": 3,
-      "cor-arbitraria": 6,
-      "cor-crua": 8,
-      "texto-escala": 2,
-      "titulo-solto": 1
-    },
     "src/pages/farmacia/AltaVigilancia.tsx": {
       "canto": 2,
       "texto-escala": 3
@@ -952,7 +953,7 @@
       "data-local": 1
     },
     "src/pages/farmacia/Farmacia.tsx": {
-      "botao-solto": 3,
+      "botao-solto": 2,
       "data-local": 2
     },
     "src/pages/farmacia/Interacoes.tsx": {
@@ -973,21 +974,18 @@
     "src/pages/faturamento/Bpa.tsx": {
       "botao-solto": 1,
       "canto": 6,
-      "importacao-cruzada": 1,
       "select-solto": 2,
       "texto-escala": 32
     },
     "src/pages/faturamento/Contas.tsx": {
       "botao-solto": 2,
       "canto": 12,
-      "importacao-cruzada": 1,
       "select-solto": 2,
       "tabela-solta": 3
     },
     "src/pages/faturamento/Glosas.tsx": {
       "botao-solto": 1,
       "canto": 3,
-      "importacao-cruzada": 1,
       "select-solto": 2,
       "tabela-solta": 1
     },
@@ -995,7 +993,6 @@
       "canto": 4,
       "cor-arbitraria": 2,
       "data-local": 2,
-      "importacao-cruzada": 1,
       "tabela-solta": 2,
       "texto-escala": 30
     },
@@ -1008,8 +1005,7 @@
     "src/pages/gestor/ChamadosTecnicos.tsx": {
       "botao-solto": 1,
       "canto": 1,
-      "data-local": 1,
-      "importacao-cruzada": 2
+      "data-local": 1
     },
     "src/pages/gestor/CnesUnidade.tsx": {
       "texto-escala": 2
@@ -1048,13 +1044,11 @@
     },
     "src/pages/gestor/ExamesUnidade.tsx": {
       "canto": 2,
-      "importacao-cruzada": 1,
       "tabela-solta": 1
     },
     "src/pages/gestor/ExportarDados.tsx": {
       "canto": 1,
       "data-local": 3,
-      "importacao-cruzada": 1,
       "select-solto": 3,
       "texto-escala": 9
     },
@@ -1062,7 +1056,6 @@
       "botao-solto": 1,
       "cor-arbitraria": 5,
       "data-local": 2,
-      "importacao-cruzada": 1,
       "titulo-solto": 1
     },
     "src/pages/gestor/FerramentasUnidade.tsx": {
@@ -1079,9 +1072,13 @@
     },
     "src/pages/gestor/Implantacao.tsx": {
       "data-local": 1,
-      "importacao-cruzada": 1,
       "select-solto": 2,
       "texto-escala": 12
+    },
+    "src/pages/gestor/Indicadores.tsx": {
+      "canto": 2,
+      "data-local": 4,
+      "texto-escala": 10
     },
     "src/pages/gestor/IntercorrenciasRelatorio.tsx": {
       "canto": 3,
@@ -1153,21 +1150,8 @@
     "src/pages/gestor/useFiltrosBI.ts": {
       "data-local": 1
     },
-    "src/pages/grupos/AgendaGrupo.tsx": {
-      "importacao-cruzada": 4
-    },
-    "src/pages/grupos/EscalaGrupo.tsx": {
-      "importacao-cruzada": 4
-    },
-    "src/pages/grupos/OrganizacaoGrupo.tsx": {
-      "importacao-cruzada": 2
-    },
-    "src/pages/grupos/UnidadeGrupo.tsx": {
-      "importacao-cruzada": 8
-    },
     "src/pages/landing/Landing.tsx": {
       "cor-hex": 35,
-      "importacao-cruzada": 1,
       "titulo-solto": 9
     },
     "src/pages/nir/Nir.tsx": {
@@ -1217,8 +1201,7 @@
       "canto": 1,
       "cor-arbitraria": 2,
       "cor-crua": 1,
-      "data-local": 1,
-      "importacao-cruzada": 1
+      "data-local": 1
     },
     "src/pages/plantao/atendimento/Encaminhamento.tsx": {
       "botao-solto": 1
@@ -1242,11 +1225,6 @@
       "emoji": 2,
       "texto-escala": 11
     },
-    "src/pages/plantao/internacao/ExamesTab.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "texto-escala": 6
-    },
     "src/pages/plantao/internacao/ExportarTab.tsx": {
       "canto": 2,
       "cor-crua": 1,
@@ -1254,26 +1232,12 @@
       "emoji": 8,
       "texto-escala": 5
     },
-    "src/pages/plantao/internacao/FichaAdmissao.tsx": {
-      "botao-solto": 1,
-      "cor-hex": 4,
-      "data-local": 1
-    },
-    "src/pages/plantao/internacao/LaudoAih.tsx": {
-      "cor-arbitraria": 3,
-      "cor-hex": 2,
-      "data-local": 1
-    },
-    "src/pages/plantao/internacao/PrescricaoTab.tsx": {
-      "texto-escala": 1
-    },
     "src/pages/plantao/porta/AbaAtendimento.tsx": {
       "botao-solto": 1,
       "cor-arbitraria": 1
     },
     "src/pages/plantao/porta/AbaAtestadoReceita.tsx": {
-      "botao-solto": 2,
-      "importacao-cruzada": 1
+      "botao-solto": 2
     },
     "src/pages/plantao/porta/AbaDesfecho.tsx": {
       "botao-solto": 2,
@@ -1294,28 +1258,13 @@
     "src/pages/plantao/porta/comum.ts": {
       "data-local": 2
     },
-    "src/pages/plantao/secoes/CheckIn.tsx": {
-      "importacao-cruzada": 1
-    },
-    "src/pages/plantao/secoes/PacientesInternados.tsx": {
-      "importacao-cruzada": 1
-    },
     "src/pages/plantao/shared/DadosPaciente.tsx": {
       "botao-solto": 3,
       "canto": 4,
       "cor-arbitraria": 3,
       "data-local": 1,
-      "importacao-cruzada": 2,
       "pronto-socorro": 1,
       "texto-escala": 11
-    },
-    "src/pages/plantao/shared/rascunho.ts": {
-      "data-local": 1
-    },
-    "src/pages/plantonista/ForaDoExpediente.tsx": {
-      "botao-solto": 2,
-      "data-local": 4,
-      "titulo-solto": 1
     },
     "src/pages/plantonista/PlantonistaHome.tsx": {
       "botao-solto": 5,
@@ -1348,12 +1297,6 @@
       "data-local": 3,
       "tabela-solta": 2,
       "texto-escala": 31
-    },
-    "src/pages/plantonista/farmacia/ConsultaMedicamentos.tsx": {
-      "importacao-cruzada": 1
-    },
-    "src/pages/plantonista/farmacia/ReferenciaDiluicaoTool.tsx": {
-      "importacao-cruzada": 1
     },
     "src/pages/plantonista/manual/Abstinencia.tsx": {
       "botao-solto": 1,
@@ -1776,10 +1719,6 @@
       "canto": 4,
       "cor-arbitraria": 1
     },
-    "src/pages/recepcao/CamposCadastro.tsx": {
-      "botao-solto": 1,
-      "select-solto": 2
-    },
     "src/pages/recepcao/PropagandaPainel.tsx": {
       "canto": 1,
       "titulo-solto": 1
@@ -1792,9 +1731,6 @@
       "texto-escala": 1,
       "titulo-solto": 1
     },
-    "src/pages/recepcao/cadastroForm.ts": {
-      "data-local": 1
-    },
     "src/pages/rede/Rede.tsx": {
       "botao-solto": 1,
       "canto": 3,
@@ -1806,12 +1742,10 @@
     "src/pages/regulacao/Aih.tsx": {
       "canto": 3,
       "cor-arbitraria": 1,
-      "importacao-cruzada": 1,
       "texto-escala": 5
     },
     "src/pages/regulacao/Apac.tsx": {
       "canto": 6,
-      "importacao-cruzada": 1,
       "select-solto": 2,
       "texto-escala": 18
     },
@@ -1819,7 +1753,6 @@
       "botao-solto": 3,
       "canto": 13,
       "data-local": 1,
-      "importacao-cruzada": 1,
       "select-solto": 23,
       "texto-escala": 12
     },

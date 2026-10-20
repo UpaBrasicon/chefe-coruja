@@ -12,3 +12,13 @@ function Spinner({ className, rotulo = 'Carregando' }: { className?: string; rot
 }
 
 export { Spinner }
+
+/** Carregando com o nome do que carrega, centralizado (guia do padrão, 2.3). */
+export function Carregando({ rotulo, className }: { rotulo: string; className?: string }) {
+  return (
+    <div role="status" className={cn('flex items-center justify-center gap-2 py-proximo text-apoio text-tinta-sussurro', className)}>
+      <Loader2 className="size-4 animate-spin" aria-hidden />
+      {rotulo}
+    </div>
+  )
+}

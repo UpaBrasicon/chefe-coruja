@@ -20,8 +20,8 @@ import { cpfValido, useIdentificacao } from '@/components/documentos/identificac
 import { SeletorPaciente, usePacienteDoDocumento } from '@/components/documentos/SeletorPaciente'
 import { BuscaCid } from '@/components/documentos/busca'
 import { Aviso, Campo, Pendencias, Pilulas, Texto } from '@/components/documentos/ui'
-import { hojeSP } from '@/pages/recepcao/cadastroForm'
-import { carregarEnvelope, useRascunho } from '../shared/rascunho'
+import { hojeSP } from '@/lib/cadastroPaciente'
+import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 
 const TIPOS = ['afastamento', 'comparecimento', 'acompanhante'] as const
 type TipoAtestado = (typeof TIPOS)[number]

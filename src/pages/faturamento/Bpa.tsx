@@ -36,7 +36,8 @@ import {
 } from '@/lib/bpa'
 import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
-import { Abas, Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { Abas } from '@/components/monitor/Pagina'
 
 type Aba = 'competencia' | 'lancar' | 'configuracao' | 'historico'
 const ABAS: readonly (readonly [Aba, string])[] = [
@@ -142,7 +143,7 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
   const download = useMutation({ mutationFn: baixarFechamento })
 
   if (conf.isLoading) return <Spinner />
-  if (conf.error) return <Erro texto={(conf.error as Error).message} />
+  if (conf.error) return <MensagemErro texto={(conf.error as Error).message} />
   const c = conf.data!
   const bloqueios = c.globais.filter((g) => g.tipo === 'bloqueio')
   const avisos = c.globais.filter((g) => g.tipo === 'aviso')
@@ -209,7 +210,7 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
               </Button>
             </div>
           )}
-          {[fechar.error, reabrir.error, download.error].filter(Boolean).map((e, i) => <Erro key={i} texto={(e as Error).message} />)}
+          {[fechar.error, reabrir.error, download.error].filter(Boolean).map((e, i) => <MensagemErro key={i} texto={(e as Error).message} />)}
         </CardContent>
       </Card>
 
@@ -326,7 +327,7 @@ function AbaLancar({ unidade, competencia }: { unidade: string; competencia: str
   return (
     <div className="flex flex-col gap-3">
       <Input placeholder="Buscar paciente pelo nome" value={busca} onChange={(e) => setBusca(e.target.value)} aria-label="Buscar paciente" />
-      {atendimentos.isLoading ? <Spinner /> : atendimentos.error ? <Erro texto={(atendimentos.error as Error).message} /> : (atendimentos.data ?? []).length === 0 ? (
+      {atendimentos.isLoading ? <Spinner /> : atendimentos.error ? <MensagemErro texto={(atendimentos.error as Error).message} /> : (atendimentos.data ?? []).length === 0 ? (
         <Vazio icone={Receipt} titulo="Nenhum atendimento" texto={`Nenhuma chegada em ${competenciaNaTela(competencia)}${busca.trim() ? ' com esse nome' : ''}.`} />
       ) : (
         <ul className="flex flex-col gap-1.5">
@@ -356,7 +357,7 @@ function AbaConfiguracao({ unidade }: { unidade: string }) {
     },
   })
   if (cfg.isLoading) return <Spinner />
-  if (cfg.error) return <Erro texto={(cfg.error as Error).message} />
+  if (cfg.error) return <MensagemErro texto={(cfg.error as Error).message} />
   const c = cfg.data!
   return (
     <div className="flex flex-col gap-4">
@@ -445,7 +446,7 @@ function Cabecalho({ unidade, c }: { unidade: string; c: ConfigBpa }) {
           <Button size="sm" disabled={salvar.isPending} onClick={() => salvar.mutate()}>Salvar cabeçalho</Button>
           {salvar.isSuccess && <span className="text-xs text-tinta-sussurro">Salvo.</span>}
         </div>
-        {salvar.error && <Erro texto={(salvar.error as Error).message} />}
+        {salvar.error && <MensagemErro texto={(salvar.error as Error).message} />}
       </CardContent>
     </Card>
   )
@@ -551,11 +552,11 @@ function AbaHistorico({ unidade }: { unidade: string }) {
   })
   const download = useMutation({ mutationFn: baixarFechamento })
   if (lista.isLoading) return <Spinner />
-  if (lista.error) return <Erro texto={(lista.error as Error).message} />
+  if (lista.error) return <MensagemErro texto={(lista.error as Error).message} />
   if ((lista.data ?? []).length === 0) return <Vazio icone={Receipt} titulo="Nenhum fechamento" texto="Quando o faturamento fechar uma competência, ela aparece aqui." />
   return (
     <div className="flex flex-col gap-2">
-      {download.error && <Erro texto={(download.error as Error).message} />}
+      {download.error && <MensagemErro texto={(download.error as Error).message} />}
       {(lista.data ?? []).map((f) => (
         <div key={f.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-fio px-3 py-2 text-apoio">
           <span className="font-medium text-tinta">{competenciaNaTela(f.competencia)}</span>

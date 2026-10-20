@@ -7,8 +7,8 @@ import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
-import { RASCUNHO_INICIAL, type DadosPaciente, type Evolucao, type Exames } from '@/pages/plantao/internacao/rascunho'
-import { carregarEnvelope, hojeLocal, idadeTexto, useRascunho } from '@/pages/plantao/shared/rascunho'
+import { RASCUNHO_INICIAL, type DadosPaciente, type Evolucao, type Exames } from '@/lib/rascunhoInternacao'
+import { carregarEnvelope, hojeLocal, idadeTexto, useRascunho } from '@/lib/rascunho'
 
 export type RascunhoLeito = { evolucao: Evolucao; exames: Exames; peso: string; dieta: string }
 

@@ -22,7 +22,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { codigoExameNaTela, loincValido, tipoDoCodigo, type ExameBuscado, type ExameUnidade, type ListaExamesUnidade } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
-import { Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 
 type Rascunho = { procedimento: string; nome_sigtap: string | null; nome_curto: string; loinc: string; botao: boolean; ordem: string }
 
@@ -85,7 +85,7 @@ export default function ExamesUnidade() {
         titulo="Exames da unidade"
         descricao="Exames que a unidade oferece, do SIGTAP: laboratório (02.02), imagem (02.04 a 02.07) e métodos gráficos como o ECG (02.11), com o nome que aparece no pedido. Os marcados como botão aparecem no pedido rápido do atendimento. Sem lista, o pedido busca nesses grupos inteiros."
       />
-      <Erro texto={(lista.error ?? salvar.error ?? retirar.error) ? ((lista.error ?? salvar.error ?? retirar.error) as Error).message : null} />
+      <MensagemErro texto={(lista.error ?? salvar.error ?? retirar.error) ? ((lista.error ?? salvar.error ?? retirar.error) as Error).message : null} />
 
       {pode && !editando && (
         <section className="flex flex-col gap-2 rounded-container border border-fio bg-superficie p-3">

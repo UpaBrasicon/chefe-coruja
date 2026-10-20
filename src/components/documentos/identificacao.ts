@@ -10,7 +10,7 @@ import { RACAS_COR } from '@/lib/cadastro'
 import { useAuth } from '@/contexts/AuthContext'
 import { ehPediatrico } from '@/domain/idade'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
-import { hojeSP, idadeLegivel } from '@/pages/recepcao/cadastroForm'
+import { hojeSP, idadeLegivel } from '@/lib/cadastroPaciente'
 
 /** Paciente como o protótipo chama (portaPacientes()). Datas em ISO. */
 export type PacProto = {

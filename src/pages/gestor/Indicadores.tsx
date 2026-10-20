@@ -17,7 +17,7 @@ import { PacientesPorCor } from '@/pages/gestor/PacientesPorCor'
 import { BarraFiltrosBI } from '@/pages/gestor/FiltrosBI'
 import { PanoramaConfig } from '@/pages/gestor/PanoramaConfig'
 import { useFiltrosBI } from '@/pages/gestor/useFiltrosBI'
-import { useLimitesUnidade } from '@/pages/gestor/limites'
+import { useLimitesUnidade } from '@/lib/limitesUnidade'
 
 type CensoLinha = {
   data: string

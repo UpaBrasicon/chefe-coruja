@@ -14,8 +14,8 @@ import { Campo, Pilulas, Texto } from '@/components/documentos/ui'
 import {
   CATEGORIA, haQuanto, selo, SEVERIDADE, SITUACAO, useChamadosTecnicos, useUnidadesRede,
   type Categoria, type ChamadoTecnico, type Severidade, type Situacao,
-} from './dadosAdmin'
-import { Abas, cartao } from './ui'
+} from '@/lib/dadosAdmin'
+import { Abas, cartao } from '@/components/admin/ui'
 
 // Pendências técnicas (P/index.html 10029–10068). No protótipo eram sete
 // chamados fixos; aqui são os chamados técnicos da organização, abertos e
