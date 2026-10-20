@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 
 import { TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
@@ -113,7 +114,7 @@ function Numero({ rotulo, valor, destaque, onClick, href }: { rotulo: string; va
   )
   const cls = 'flex flex-col gap-0.5 rounded-cartao border border-fio bg-superficie px-4 py-3 text-left'
   if (href) return <Link to={href} className={cls}>{corpo}</Link>
-  if (onClick) return <button type="button" onClick={onClick} className={cls}>{corpo}</button>
+  if (onClick) return <BotaoLinha variante="cartao" onClick={onClick} className={cls}>{corpo}</BotaoLinha>
   return <div className={cls}>{corpo}</div>
 }
 
@@ -132,7 +133,7 @@ function LinhaFalta({ f, unidade, podeAgir }: { f: FaltaPriorizada; unidade: str
     setErro(null); setTexto(''); recarregar()
   }
   return (
-    <div className={`flex flex-col gap-1.5 rounded-lg border bg-superficie px-4 py-3 text-apoio ${f.alta_vigilancia ? 'border-critico/40' : 'border-fio'}`}>
+    <div className={`flex flex-col gap-1.5 rounded-controle border bg-superficie px-4 py-3 text-apoio ${f.alta_vigilancia ? 'border-critico/40' : 'border-fio'}`}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium text-tinta">{f.principio_ativo}</span>
         <span className="text-tinta-apoio">{f.apresentacao}</span>
@@ -143,8 +144,8 @@ function LinhaFalta({ f, unidade, podeAgir }: { f: FaltaPriorizada; unidade: str
         {f.pacientes > 0 ? `${f.pacientes} paciente(s) com o medicamento prescrito agora` : 'Nenhum paciente com o medicamento prescrito agora'}
         {f.setores.length > 0 ? ` · ${f.setores.join(', ')}` : ''}
       </span>
-      <span className="text-xs text-tinta-sussurro">Sinalizada por {f.sinalizada_por ?? '—'}, {fmtDataHora(f.sinalizada_em)}{f.observacao ? ` — “${f.observacao}”` : ''}</span>
-      {f.retorno && <span className="text-xs text-conforme">Retorno da farmácia: “{f.retorno.texto}” ({f.retorno.por ?? '—'}, {fmtDataHora(f.retorno.em)})</span>}
+      <span className="text-rotulo text-tinta-sussurro">Sinalizada por {f.sinalizada_por ?? '—'}, {fmtDataHora(f.sinalizada_em)}{f.observacao ? ` — “${f.observacao}”` : ''}</span>
+      {f.retorno && <span className="text-rotulo text-conforme">Retorno da farmácia: “{f.retorno.texto}” ({f.retorno.por ?? '—'}, {fmtDataHora(f.retorno.em)})</span>}
       {podeAgir && (
         <div className="flex flex-wrap items-center gap-2">
           <Input className="h-8 min-w-56 flex-1" placeholder="Retorno ao plantão: substituto, previsão ou conduta" value={texto} onChange={(e) => setTexto(e.target.value)} />
@@ -153,7 +154,7 @@ function LinhaFalta({ f, unidade, podeAgir }: { f: FaltaPriorizada; unidade: str
           <Button size="xs" variant="outline" onClick={() => void chamar(supabase.rpc('avancar_falta', { p_falta: f.id, p_situacao: 'reposta' }))}>Reposta</Button>
         </div>
       )}
-      {erro && <span role="alert" className="text-xs text-critico">{erro}</span>}
+      {erro && <span role="alert" className="text-rotulo text-critico">{erro}</span>}
     </div>
   )
 }

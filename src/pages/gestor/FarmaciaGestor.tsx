@@ -11,10 +11,12 @@ import { useQuery } from '@tanstack/react-query'
 import { Check, Copy, FlaskConical, Megaphone } from 'lucide-react'
 import * as React from 'react'
 
+import { dataHora, numero } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { TituloCartao, TituloPagina } from '@/components/monitor/Pagina'
+import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { PainelFarmacia } from '@/pages/farmacia/PainelFarmacia'
 
@@ -31,9 +33,8 @@ type Estoque = {
 const SIT_FALTA = { registrada: 'Registrada', em_cotacao: 'Em cotação', reposta: 'Reposta' } as const
 const SIT_ESTOQUE = { falta: 'Em falta', critico: 'Crítico', ok: 'Adequado' } as const
 const SELO = 'inline-flex items-center whitespace-nowrap rounded-capsula px-2 py-[3px] text-rotulo font-semibold uppercase tracking-[0.03em]'
-const quando = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }) : '—'
-const num = (n: number | null) => (n == null ? '—' : n.toLocaleString('pt-BR'))
+const quando = (iso: string | null) => (iso ? dataHora(iso) : '—')
+const num = (n: number | null) => (n == null ? '—' : numero(n))
 
 export default function FarmaciaGestor() {
   const { unidadeAtiva } = useUnidade()
@@ -84,7 +85,7 @@ export default function FarmaciaGestor() {
           <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
             <div className="flex items-center gap-2.5 border-b border-trilha px-5 py-3.5">
               <Megaphone className="size-4 text-atencao" aria-hidden />
-              <h2 className="text-corpo font-semibold tracking-[-0.01em] text-tinta">Sinalizado pelo farmacêutico</h2>
+              <TituloCartao className="mb-0">Sinalizado pelo farmacêutico</TituloCartao>
             </div>
             {faltas.length === 0 && (
               <p className="border-b border-trilha px-5 py-3.5 text-apoio text-tinta-sussurro">Nenhuma falta aberta. As repostas nos últimos 7 dias também aparecem aqui.</p>
@@ -95,7 +96,7 @@ export default function FarmaciaGestor() {
                   <span className="text-corpo font-medium text-tinta">{f.medicamento}{f.apresentacao && <span className="font-normal text-tinta-sussurro"> · {f.apresentacao}</span>}</span>
                   {f.observacao && <span className="text-apoio text-pretty text-tinta-sussurro">{f.observacao}</span>}
                 </div>
-                <span className={cn(SELO, f.situacao === 'reposta' ? 'bg-conforme/[0.08] text-conforme' : 'bg-atencao/[0.08] text-atencao')}>{SIT_FALTA[f.situacao]}</span>
+                <span className={cn(SELO, f.situacao === 'reposta' ? 'bg-alerta-conforme text-conforme' : 'bg-alerta-atencao text-atencao')}>{SIT_FALTA[f.situacao]}</span>
                 <span className="text-apoio whitespace-nowrap text-tinta-sussurro">
                   {f.sinalizada_por ?? '—'} · {quando(f.sinalizada_em)}
                 </span>
@@ -111,11 +112,10 @@ export default function FarmaciaGestor() {
               <span className={cn('text-apoio', emFalta + criticos ? 'text-atencao' : 'text-tinta-sussurro')}>
                 {estoque.length ? `${emFalta} em falta · ${criticos} crítico${criticos === 1 ? '' : 's'}` : 'O farmacêutico ainda não informou o estoque.'}
               </span>
-              <button type="button" onClick={() => void copiarPedido()} disabled={!estoque.length && !faltas.length}
-                className="flex items-center gap-1.5 rounded-controle border border-fio bg-superficie px-3 py-[7px] text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao disabled:opacity-50">
+              <Button variant="outline" onClick={() => void copiarPedido()} disabled={!estoque.length && !faltas.length} className="gap-1.5 px-3">
                 {copiado ? <Check className="size-3.5" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
                 {copiado ? 'Copiado' : 'Exportar pedido de reposição'}
-              </button>
+              </Button>
             </div>
             {estoque.length > 0 && (
               <div className="flex items-center gap-3 border-b border-fio bg-campo px-5 py-[11px] text-rotulo font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">
@@ -135,7 +135,7 @@ export default function FarmaciaGestor() {
                     <span className="text-apoio text-tinta-sussurro">{[e.apresentacao, `atualizado ${quando(e.atualizado_em)}`, e.atualizado_por].filter(Boolean).join(' · ')}</span>
                   </div>
                   <div className="w-[120px] shrink-0">
-                    <span className={cn(SELO, e.situacao === 'ok' ? 'bg-conforme/[0.08] text-conforme' : e.situacao === 'critico' ? 'bg-atencao/[0.08] text-atencao' : 'bg-critico/[0.08] text-critico')}>
+                    <span className={cn(SELO, e.situacao === 'ok' ? 'bg-alerta-conforme text-conforme' : e.situacao === 'critico' ? 'bg-alerta-atencao text-atencao' : 'bg-alerta-critico text-critico')}>
                       {SIT_ESTOQUE[e.situacao]}
                     </span>
                   </div>

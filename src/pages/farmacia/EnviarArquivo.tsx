@@ -6,13 +6,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Download, Loader2, ShieldCheck, type LucideIcon } from 'lucide-react'
 import * as React from 'react'
 
+import { Button } from '@/components/ui/button'
+import { dataHora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
 type Arquivo = { id: string; nome: string; tamanho: number; caminho: string; enviado_em: string; enviado_por: { nome_completo: string } | null }
 
 const ACEITOS = '.xlsx,.xls,.csv,.doc,.docx,.pdf'
 const tamanho = (b: number) => (b < 1024 * 1024 ? `${Math.max(1, Math.round(b / 1024))} KB` : `${(b / 1024 / 1024).toFixed(1).replace('.', ',')} MB`)
-const quando = (iso: string) => new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })
+const quando = (iso: string) => dataHora(iso)
 
 export function EnviarArquivo({ unidade, tipo, rotulo, ajuda, icone: Icone }: {
   unidade: string; tipo: 'lista_medicacoes' | 'padrao_diluicao'; rotulo: string; ajuda: string; icone: LucideIcon
@@ -72,9 +74,9 @@ export function EnviarArquivo({ unidade, tipo, rotulo, ajuda, icone: Icone }: {
         <div className="flex flex-wrap items-center gap-2 text-apoio text-conforme">
           <ShieldCheck className="size-4 shrink-0" aria-hidden />
           <span>{ultimo.nome} · {tamanho(ultimo.tamanho)} · recebido {quando(ultimo.enviado_em)}{ultimo.enviado_por ? ` · ${ultimo.enviado_por.nome_completo}` : ''}</span>
-          <button type="button" onClick={() => void baixar(ultimo)} className="inline-flex items-center gap-1 text-rotulo text-acao hover:underline">
+          <Button variant="link" size="xs" onClick={() => void baixar(ultimo)} className="h-auto min-h-0 gap-1 px-0">
             <Download className="size-3.5" aria-hidden /> Baixar
-          </button>
+          </Button>
         </div>
       )}
       {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}

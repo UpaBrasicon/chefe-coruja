@@ -13,13 +13,17 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { cn } from '@/lib/utils'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { data as dataFmt } from '@/lib/formato'
 
 type Diluicao = {
   id: string; medicamento_id: string | null; principio_ativo: string; apresentacao: string; via: string; status: string; versao: number
@@ -42,7 +46,7 @@ const STATUS: Record<string, { rotulo: string; variante: 'success' | 'warning' |
   revisado: { rotulo: 'rascunho', variante: 'warning' },
   substituido: { rotulo: 'substituída', variante: 'secondary' },
 }
-const dia = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '—')
+const dia = (iso: string | null) => (iso ? dataFmt(iso) : '—')
 
 export default function Diluicoes({ embutido = false, selecionadaInicial = null }: { embutido?: boolean; selecionadaInicial?: string | null } = {}) {
   const qc = useQueryClient()
@@ -77,7 +81,7 @@ export default function Diluicoes({ embutido = false, selecionadaInicial = null 
         <TituloPagina icone={FlaskConical} titulo="Diluição padrão"
           descricao="Você revisa e publica. Publicada não se edita: mudar é nova versão, e a anterior fica no histórico." />
       )}
-      {erro && <p className="mb-3 rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</p>}
+      {erro && <p className="mb-3 rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</p>}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <Card>
           <CardHeader>
@@ -93,16 +97,16 @@ export default function Diluicoes({ embutido = false, selecionadaInicial = null 
               <Button size="xs" variant={soAv ? 'default' : 'outline'} aria-pressed={soAv} onClick={() => setSoAv(!soAv)}>Só alta vigilância</Button>
             </div>
           </CardHeader>
-          <CardContent className="flex max-h-[70vh] flex-col overflow-y-auto text-sm">
+          <CardContent className="flex max-h-[70vh] flex-col overflow-y-auto text-apoio">
             {visiveis.map((d) => (
-              <button key={d.id} type="button" onClick={() => { setSelecionada(d.id); setErro(null) }}
-                className={`flex items-center gap-2 border-b border-fio px-2 py-1.5 text-left last:border-0 hover:bg-trilha ${selecionada === d.id ? 'bg-trilha' : ''}`}>
+              <BotaoLinha key={d.id} variante="linha" aria-pressed={selecionada === d.id} onClick={() => { setSelecionada(d.id); setErro(null) }}
+                className={cn('items-center gap-2 border-fio px-2 py-1.5 hover:bg-trilha', selecionada === d.id && 'bg-trilha')}>
                 <span className="flex-1"><span className="font-medium">{d.principio_ativo}</span> <span className="text-tinta-apoio">· {d.via} · {d.apresentacao}</span></span>
-                <span className="text-xs text-tinta-sussurro">v{d.versao}</span>
+                <span className="text-rotulo text-tinta-sussurro">v{d.versao}</span>
                 {d.alta_vigilancia && <Badge variant="warning">AV</Badge>}
                 {d.unidade_id && <Badge variant="info">unidade</Badge>}
                 {!d.medicamento_id && <Badge variant="outline">sem cadastro</Badge>}
-              </button>
+              </BotaoLinha>
             ))}
             {visiveis.length === 0 && <p className="text-tinta-sussurro">Nada nesta lista.</p>}
           </CardContent>
@@ -127,23 +131,23 @@ function NovaDiluicao({ aoCriar, aoErro }: { aoCriar: (id: string) => void; aoEr
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Nova diluição</CardTitle>
+        <CardTitle className="text-corpo">Nova diluição</CardTitle>
         <CardDescription>Escolha uma diluição na lista para revisar, ou crie uma para um medicamento do cadastro.</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2 text-sm">
+      <CardContent className="flex flex-col gap-2 text-apoio">
         {med ? <p><strong>{med.principio_ativo}</strong> · {med.apresentacao} <Button size="xs" variant="ghost" onClick={() => setMed(null)}>Trocar</Button></p> : (
           <>
             <Input placeholder="Medicamento do cadastro (3 letras ou mais)" value={busca} onChange={(e) => setBusca(e.target.value)} />
             {(r.data ?? []).map((m) => (
-              <button key={m.id} type="button" className="text-left text-xs hover:underline" onClick={() => setMed(m)}>{m.principio_ativo} · {m.apresentacao}</button>
+              <Button key={m.id} variant="link" size="xs" className="h-auto min-h-0 justify-start self-start px-0 text-left whitespace-normal text-tinta hover:text-tinta" onClick={() => setMed(m)}>{m.principio_ativo} · {m.apresentacao}</Button>
             ))}
           </>
         )}
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col gap-1"><Label htmlFor="nd-via">Via</Label>
-            <select id="nd-via" className="h-8 rounded-controle border border-fio bg-campo px-2" value={via} onChange={(e) => setVia(e.target.value)}>
+            <CampoSelecao id="nd-via" tamanho="compacto" value={via} onChange={(e) => setVia(e.target.value)}>
               {['EV', 'IM', 'SC'].map((v) => <option key={v}>{v}</option>)}
-            </select>
+            </CampoSelecao>
           </div>
           <div className="flex flex-col gap-1"><Label htmlFor="nd-fonte">Fonte</Label><Input id="nd-fonte" value={fonte} onChange={(e) => setFonte(e.target.value)} placeholder="manual, versão, página" /></div>
         </div>
@@ -197,8 +201,8 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex flex-wrap items-center gap-2 text-base">
-          {d.principio_ativo} · {d.via} <Badge variant={st.variante}>{st.rotulo}</Badge> <span className="text-xs text-tinta-sussurro">versão {d.versao}</span>
+        <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
+          {d.principio_ativo} · {d.via} <Badge variant={st.variante}>{st.rotulo}</Badge> <span className="text-rotulo text-tinta-sussurro">versão {d.versao}</span>
         </CardTitle>
         <CardDescription>
           {d.apresentacao}
@@ -206,7 +210,7 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
           {d.vigente_ate && <> · substituída em {dia(d.vigente_ate)}</>}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2 text-sm">
+      <CardContent className="flex flex-col gap-2 text-apoio">
         {d.unidade_id && <p className="text-acao">Ajuste da unidade: publicado, vale só para esta unidade e substitui nela o modelo da rede.</p>}
         {!d.medicamento_id && <p className="text-atencao">Esta diluição não está ligada ao cadastro de medicamentos: não pode ser publicada até ser ligada.</p>}
         <div className="grid gap-2 sm:grid-cols-2">
@@ -214,10 +218,10 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
             <div key={k} className="flex flex-col gap-1">
               <Label htmlFor={`dil-${k}`}>{r}</Label>
               {t === 'bool' ? (
-                <select id={`dil-${k}`} disabled={!editavel} className="h-8 rounded-controle border border-fio bg-campo px-2" value={f[k] ?? ''}
+                <CampoSelecao id={`dil-${k}`} tamanho="compacto" disabled={!editavel} value={f[k] ?? ''}
                   onChange={(e) => setF({ ...f, [k]: e.target.value })}>
                   <option value="">—</option><option>sim</option><option>não</option>
-                </select>
+                </CampoSelecao>
               ) : (
                 <Input id={`dil-${k}`} disabled={!editavel} value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}
                   inputMode={t === 'numero' ? 'decimal' : undefined} />
@@ -250,7 +254,7 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
             }}>Criar nova versão</Button>
           ) : null}
         </div>
-        <p className="text-xs text-tinta-sussurro">
+        <p className="text-rotulo text-tinta-sussurro">
           Publicar exige CRF do revisor e fonte; via EV exige também volume mínimo e tempo de infusão. Nova versão pede o que mudou.
         </p>
       </CardContent>
