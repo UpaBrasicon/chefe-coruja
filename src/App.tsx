@@ -47,6 +47,7 @@ const AgendaGrupo = lazy(() => import('@/pages/grupos/AgendaGrupo'))
 const PlantaoHome = lazy(() => import('@/pages/plantao/PlantaoHome'))
 const PlantaoSectionHome = lazy(() => import('@/pages/plantao/PlantaoSectionHome'))
 const PlantaoToolRouter = lazy(() => import('@/pages/plantao/PlantaoToolRouter'))
+const RedirecionarFormulario = lazy(() => import('@/pages/plantao/secoes/FormularioInternacao'))
 
 // ── Telas que continuam avulsas ───────────────────────────────────────────────
 const GaviaoPainel = lazy(() => import('@/pages/admin/GaviaoPainel').then((m) => ({ default: m.GaviaoPainel })))
@@ -453,6 +454,8 @@ export default function App() {
                       <Route element={<RequireRole papeis={['plantonista']} />}>
                         <Route path="/plantao" element={<PlantaoHome />} />
                         <Route path="/plantao/:secao" element={<PlantaoSectionHome />} />
+                        {/* formulário de internação antigo retirado (parte 4.7a): o endereço leva ao leito aberto */}
+                        <Route path="/plantao/internacao/formulario" element={<RedirecionarFormulario />} />
                         <Route path="/plantao/:secao/:tool" element={<PlantaoToolRouter />} />
                         {/* Favoritos de prescrição pessoais (D6); o link fica no menu do usuário */}
                         <Route path="/preferencias-prescricao" element={<PreferenciasPrescricao />} />

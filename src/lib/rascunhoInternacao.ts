@@ -1,5 +1,4 @@
 import type { DadosPaciente } from '@/lib/rascunho'
-import { carregarEnvelope, hojeLocal, useRascunho as useRascunhoBase } from '@/lib/rascunho'
 
 export type { DadosPaciente } from '@/lib/rascunho'
 
@@ -49,27 +48,4 @@ export const RASCUNHO_INICIAL: Rascunho = {
   exames: {
     texto: '',
   },
-}
-
-export function carregarRascunho(chave: string): Rascunho {
-  const carregado = carregarEnvelope<Rascunho>(chave)
-  if (!carregado) return RASCUNHO_INICIAL
-  try {
-    const parsed = carregado.dados as Partial<Rascunho>
-    const r: Rascunho = {
-      paciente: { ...RASCUNHO_INICIAL.paciente, ...(parsed.paciente ?? {}) },
-      prescricao: { ...RASCUNHO_INICIAL.prescricao, ...(parsed.prescricao ?? {}) },
-      evolucao: { ...RASCUNHO_INICIAL.evolucao, ...(parsed.evolucao ?? {}) },
-      exames: { ...RASCUNHO_INICIAL.exames, ...(parsed.exames ?? {}) },
-    }
-    if (!r.paciente.dataAtual) r.paciente.dataAtual = hojeLocal()
-    return r
-  } catch {
-    return RASCUNHO_INICIAL
-  }
-}
-
-/** Autosave da Internação (localStorage por unidade + plantonista). */
-export function useRascunho(unidadeId?: string, perfilId?: string) {
-  return useRascunhoBase<Rascunho>('internacao', unidadeId, perfilId, carregarRascunho)
 }

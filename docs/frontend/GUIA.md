@@ -199,7 +199,9 @@ Escreve-se "Pronto-Socorro", com hífen.
 
 - Emoji fica proibido na tela e na folha impressa; no lugar, ícone (lucide).
 - O formulário de internação legado (`/plantao/internacao/formulario`) é
-  retirado, como a auditoria de 03/10/2026 sugeria.
+  retirado, como a auditoria de 03/10/2026 sugeria. Feito na parte 4.7a: o endereço antigo, a
+  busca rápida e as pendências do PEP levam ao leito aberto do paciente
+  (`/plantao/internacao/pacientes?paciente=…&aba=…`, `src/components/internacao/rotas.ts`).
 
 ### 5.5 Gráficos — "5a"
 

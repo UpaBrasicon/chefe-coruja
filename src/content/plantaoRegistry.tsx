@@ -105,7 +105,7 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
   {
     slug: 'internacao',
     label: 'Internação',
-    description: 'Pacientes internados e o formulário completo de internação.',
+    description: 'Pacientes internados: o leito aberto tem o caderno com evolução, prescrição e documentos.',
     icon: Hospital,
     tools: [
       f(
@@ -113,12 +113,6 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
         'Pacientes internados',
         'Enfermarias e sala vermelha — dos setores onde você está na escala.',
         sobDemanda(() => import('@/pages/plantao/secoes/PacientesInternados'), 'PacientesInternados')
-      ),
-      f(
-        'formulario',
-        'Formulário de internação',
-        'Prescrição, evolução/admissão, exames, internação e exportação em PDF.',
-        sobDemanda(() => import('@/pages/plantao/secoes/FormularioInternacao'), 'FormularioInternacao')
       ),
       // protótipo PLANTAO_SECOES: as duas telas do PEP moram na Internação;
       // aqui são rotas próprias, e o cartão leva a elas
