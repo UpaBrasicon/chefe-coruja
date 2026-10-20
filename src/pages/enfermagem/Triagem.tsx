@@ -10,7 +10,7 @@ import { rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, rotulosPrioridade } from '@/domain/prioridade'
 import { ordemMedica, rotuloCor, type CorRisco } from '@/domain/risco'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { AlergiaNaTela } from './AlergiaNaTela'
 import { Classificar } from './triagem/Classificar'
 import { EsperaMedico } from './triagem/Espera'
@@ -99,7 +99,7 @@ export default function Triagem() {
         erro={fila.error as Error | null}
         onTriar={(e) => { setAviso(null); setCorAtual(null); setAtual(e) }}
       />
-      <h2 className="mt-5 mb-2 text-corpo font-semibold text-tinta">Classificados aguardando o médico</h2>
+      <TituloSecao className="mt-5 mb-2">Classificados aguardando o médico</TituloSecao>
       <EsperaMedico
         lista={espera.data ?? []}
         carregando={espera.isLoading}

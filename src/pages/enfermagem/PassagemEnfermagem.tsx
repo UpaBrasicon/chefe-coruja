@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 
 import { PILULA, hora, msgErro, quando, usePendenciasEnfermagem, type PassagemEnfermagem as Passagem } from './useEnfermagem'
+import { TituloCartao } from '@/components/monitor/Pagina'
 
 const TURNO: Record<string, string> = { manha: 'manhã', tarde: 'tarde', noite: 'noite', diurno: 'diurno', noturno: 'noturno' }
 type PacienteDoSetor = { paciente_id: string; nome: string; local: string | null }
@@ -95,7 +96,7 @@ export function PassagemEnfermagem({ setores }: { setores: { id: string; nome: s
 
   return (
     <section className="flex flex-col gap-3 rounded-cartao border border-fio bg-superficie px-5 py-[18px] shadow-repouso">
-      <h2 className="text-corpo font-semibold text-tinta">Passagem de plantão da enfermagem</h2>
+      <TituloCartao className="mb-0">Passagem de plantão da enfermagem</TituloCartao>
       {setores.length > 1 && (
         <Chips rotulo="Setor da passagem">
           {setores.map((s) => <Chip key={s.id} ativo={s.id === setor.id} onClick={() => setSetorSel(s.id)}>{s.nome}</Chip>)}

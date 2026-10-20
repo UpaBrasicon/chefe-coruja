@@ -45,3 +45,10 @@ test('formato: dia, semana e por extenso', async () => {
   assert.equal(semanaCurta('2026-10-19T22:43:00Z'), 'seg')
   assert.equal(dataPorExtenso('2026-10-19T22:43:00Z'), 'Segunda-feira, 19 de outubro')
 })
+
+test('formato: dia e mês com hora, valor de datetime-local e data ISO', async () => {
+  const { diaMesHora, dataHoraInput, dataIso } = await import('./formato.ts')
+  assert.equal(diaMesHora('2026-10-19T22:43:00Z'), '19/10, 19:43')
+  assert.equal(dataHoraInput('2026-10-19T22:43:00Z'), '2026-10-19T19:43')
+  assert.equal(dataIso('2026-10-20T01:00:00Z'), '2026-10-19')
+})

@@ -18,6 +18,8 @@ import {
   type Contexto, type Cuidados, type Dispositivo, type LancamentoBh, type TipoDispositivo,
 } from './dadosCuidados'
 import { Aviso, Campo, Cartao, Nota, Registro } from './pecas'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { numero } from '@/lib/formato'
 
 const atendimento = (d: Cuidados) => ({ p_episodio: d.episodio_id ?? undefined, p_internacao: d.internacao_id ?? undefined })
 const semPermissao = 'Registro da enfermagem de plantão com o paciente, com o atendimento aberto.'
@@ -173,15 +175,15 @@ export function AbaBalanco({ ctx, dados }: { ctx: Contexto; dados: Cuidados }) {
           <Button size="icon-sm" variant="ghost" aria-label="Dia seguinte" disabled={dias >= 0} onClick={() => setDias(dias + 1)}><ChevronRight /></Button>
           <span className="ml-auto flex flex-wrap items-center gap-1.5 text-rotulo text-tinta-sussurro">
             <label htmlFor="bh-inicio">Início do dia</label>
-            <select id="bh-inicio" className="rounded-controle-sm border border-fio bg-campo px-1.5 py-0.5 text-rotulo text-tinta"
+            <CampoSelecao id="bh-inicio" className="h-auto px-1.5 py-0.5 text-rotulo"
               value={inicioHora} onChange={(e) => setInicioHora(Number(e.target.value))}>
               {Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>)}
-            </select>
+            </CampoSelecao>
             <label htmlFor="bh-periodo">Período</label>
-            <select id="bh-periodo" className="rounded-controle-sm border border-fio bg-campo px-1.5 py-0.5 text-rotulo text-tinta"
+            <CampoSelecao id="bh-periodo" className="h-auto px-1.5 py-0.5 text-rotulo"
               value={periodo} onChange={(e) => setPeriodo(Number(e.target.value))}>
               {[6, 12, 24].map((h) => <option key={h} value={h}>{h} h</option>)}
-            </select>
+            </CampoSelecao>
           </span>
         </div>
         <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] gap-x-4 gap-y-1 text-apoio tabular-nums">
@@ -192,14 +194,14 @@ export function AbaBalanco({ ctx, dados }: { ctx: Contexto; dados: Cuidados }) {
           {dia.periodos.map((p) => (
             <React.Fragment key={p.inicio.toISOString()}>
               <span className="text-tinta">{hora(p.inicio)}–{hora(p.fim)}</span>
-              <span className="text-right text-tinta">{p.entradas.toLocaleString('pt-BR')} mL</span>
-              <span className="text-right text-tinta">{p.saidas.toLocaleString('pt-BR')} mL</span>
+              <span className="text-right text-tinta">{numero(p.entradas)} mL</span>
+              <span className="text-right text-tinta">{numero(p.saidas)} mL</span>
               <span className={cn('text-right font-medium', p.lancamentos ? tomSaldo(p.balanco) : 'text-tinta-sussurro')}>{textoBalanco(p.balanco)}</span>
             </React.Fragment>
           ))}
           <span className="border-t border-trilha pt-1 font-semibold text-tinta">24 h</span>
-          <span className="border-t border-trilha pt-1 text-right font-semibold text-tinta">{dia.entradas.toLocaleString('pt-BR')} mL</span>
-          <span className="border-t border-trilha pt-1 text-right font-semibold text-tinta">{dia.saidas.toLocaleString('pt-BR')} mL</span>
+          <span className="border-t border-trilha pt-1 text-right font-semibold text-tinta">{numero(dia.entradas)} mL</span>
+          <span className="border-t border-trilha pt-1 text-right font-semibold text-tinta">{numero(dia.saidas)} mL</span>
           <span className={cn('border-t border-trilha pt-1 text-right font-semibold', tomSaldo(dia.balanco))}>{textoBalanco(dia.balanco)}</span>
         </div>
         <Nota>Balanço = entradas − saídas dos lançamentos do período (cancelados não somam). Sem perdas insensíveis. Início do dia e período são da rotina da unidade.</Nota>
@@ -214,7 +216,7 @@ export function AbaBalanco({ ctx, dados }: { ctx: Contexto; dados: Cuidados }) {
                 meta={`${l.autor ?? '—'} · ${quando(l.aferido_em)}${cancelado ? ` · cancelado por ${l.cancelado_por ?? '—'} em ${quando(l.cancelado_em)} (${l.motivo_cancelamento})` : ''}`}
                 acao={!cancelado && dados.pode_registrar && cancelando !== l.id
                   ? <Button size="xs" variant="outline" onClick={() => { setCancelando(l.id); setMotivo('') }}>Cancelar</Button> : undefined}>
-                {l.tipo === 'entrada' ? 'Entrada' : 'Saída'} · {l.descricao} · {Number(l.volume_ml).toLocaleString('pt-BR')} mL
+                {l.tipo === 'entrada' ? 'Entrada' : 'Saída'} · {l.descricao} · {numero(Number(l.volume_ml))} mL
               </Registro>
               {cancelando === l.id && (
                 <div className="flex flex-col gap-2 rounded-controle border border-critico/30 bg-alerta-critico p-2.5">

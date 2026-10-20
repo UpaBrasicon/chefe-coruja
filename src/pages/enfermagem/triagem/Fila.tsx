@@ -102,7 +102,7 @@ function statusDe(ch: UltimaChamada | undefined) {
   if (!ch) return { texto: 'Aguardando', classe: 'bg-trilha text-tinta-apoio' }
   const base = `Chamado${ch.numero > 1 ? ` ${ch.numero}ª vez` : ''}${ch.sala ? ` · ${ch.sala}` : ''} · ${hora(ch.em)}`
   if (ch.numero >= 3) return { texto: `${base} · sem resposta após 3 chamadas`, classe: 'bg-alerta-critico text-critico whitespace-normal' }
-  return { texto: base, classe: 'bg-[#FEF3C7] text-atencao' }
+  return { texto: base, classe: 'bg-alerta-atencao text-atencao' }
 }
 
 function BotaoChamar({ ep, salaId, chamadas }: { ep: NaFila; salaId: string | undefined; chamadas: number }) {

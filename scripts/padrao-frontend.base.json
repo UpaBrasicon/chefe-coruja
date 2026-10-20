@@ -1,19 +1,19 @@
 {
   "_leia": "Base da catraca do padrão do frontend (scripts/padrao-frontend.mjs). Só desce: depois de corrigir, rode `node scripts/padrao-frontend.mjs --atualizar` e comite junto.",
   "totais": {
-    "cor-crua": 113,
-    "cor-arbitraria": 211,
+    "cor-crua": 105,
+    "cor-arbitraria": 202,
     "cor-hex": 119,
-    "texto-escala": 1268,
-    "canto": 460,
-    "botao-solto": 202,
-    "select-solto": 84,
-    "tabela-solta": 61,
-    "titulo-solto": 73,
-    "data-local": 270,
+    "texto-escala": 1251,
+    "canto": 451,
+    "botao-solto": 195,
+    "select-solto": 81,
+    "tabela-solta": 60,
+    "titulo-solto": 68,
+    "data-local": 251,
     "importacao-cruzada": 0,
     "emoji": 17,
-    "pronto-socorro": 6
+    "pronto-socorro": 1
   },
   "arquivos": {
     "src/clinico/adulto/acidobase.ts": {
@@ -127,26 +127,6 @@
     },
     "src/components/encaminhamento/useEncaminhamentos.ts": {
       "data-local": 1
-    },
-    "src/components/enfermagem/AbaSae.tsx": {
-      "botao-solto": 1
-    },
-    "src/components/enfermagem/AbasLeito.tsx": {
-      "canto": 2,
-      "data-local": 5,
-      "select-solto": 2
-    },
-    "src/components/enfermagem/CartaoFugulin.tsx": {
-      "data-local": 1
-    },
-    "src/components/enfermagem/PainelCuidados.tsx": {
-      "botao-solto": 1
-    },
-    "src/components/enfermagem/dadosCuidados.ts": {
-      "data-local": 4
-    },
-    "src/components/enfermagem/pecas.tsx": {
-      "canto": 1
     },
     "src/components/entrada/LadoMarca.tsx": {
       "canto": 3,
@@ -774,59 +754,6 @@
     "src/pages/admin/Servidores.tsx": {
       "data-local": 1,
       "texto-escala": 1
-    },
-    "src/pages/enfermagem/Checagem.tsx": {
-      "canto": 4,
-      "cor-arbitraria": 5,
-      "data-local": 1,
-      "select-solto": 1,
-      "texto-escala": 14
-    },
-    "src/pages/enfermagem/InternacaoEnfermagem.tsx": {
-      "pronto-socorro": 1
-    },
-    "src/pages/enfermagem/LeitosParaLiberar.tsx": {
-      "data-local": 2
-    },
-    "src/pages/enfermagem/PassagemEnfermagem.tsx": {
-      "titulo-solto": 1
-    },
-    "src/pages/enfermagem/Pecas.tsx": {
-      "botao-solto": 1
-    },
-    "src/pages/enfermagem/ProntoSocorroEnfermagem.tsx": {
-      "pronto-socorro": 4
-    },
-    "src/pages/enfermagem/Triagem.tsx": {
-      "titulo-solto": 1
-    },
-    "src/pages/enfermagem/triagem/Classificar.tsx": {
-      "botao-solto": 4,
-      "canto": 1,
-      "cor-arbitraria": 2,
-      "cor-crua": 8,
-      "titulo-solto": 1
-    },
-    "src/pages/enfermagem/triagem/Fila.tsx": {
-      "cor-arbitraria": 1
-    },
-    "src/pages/enfermagem/triagem/Gestacao.tsx": {
-      "titulo-solto": 1
-    },
-    "src/pages/enfermagem/triagem/Historico.tsx": {
-      "titulo-solto": 1
-    },
-    "src/pages/enfermagem/triagem/ReferenciaSinal.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "tabela-solta": 1,
-      "texto-escala": 3
-    },
-    "src/pages/enfermagem/triagem/comum.ts": {
-      "data-local": 3
-    },
-    "src/pages/enfermagem/useEnfermagem.ts": {
-      "data-local": 3
     },
     "src/pages/farmacia/AltaVigilancia.tsx": {
       "canto": 2,

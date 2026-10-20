@@ -104,9 +104,9 @@ function ListaSae({ id, itens, pode, rotuloDetalhe, novo, setNovo, tirar, inclui
             {x.detalhe && <span className="text-apoio text-pretty text-tinta-sussurro">{x.detalhe}</span>}
           </div>
           {pode && (
-            <button type="button" aria-label={`Remover ${x.titulo}`} onClick={() => tirar(i)} className="flex text-tinta-sussurro hover:text-critico">
-              <X className="size-3.5" />
-            </button>
+            <Button variant="ghost" size="icon-xs" aria-label={`Remover ${x.titulo}`} onClick={() => tirar(i)} className="hover:text-critico">
+              <X aria-hidden />
+            </Button>
           )}
         </div>
       ))}

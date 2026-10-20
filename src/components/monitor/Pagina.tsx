@@ -119,16 +119,18 @@ export function VazioLinha({ children, className }: { children: ReactNode; class
 }
 
 /** Abas em cápsula, uma por vez (role tablist). Era a peça da farmácia usada por dez áreas. */
-export function Abas<K extends string>({ abas, valor, onChange, rotulo }: {
-  abas: readonly (readonly [K, string])[]; valor: K; onChange: (k: K) => void; rotulo: string
+export function Abas<K extends string>({ abas, valor, onChange, rotulo, className }: {
+  /** [chave, rótulo] ou [chave, rótulo, contagem]. */
+  abas: readonly (readonly [K, string] | readonly [K, string, number | undefined])[]; valor: K; onChange: (k: K) => void; rotulo: string; className?: string
 }) {
   return (
-    <div role="tablist" aria-label={rotulo} className="mb-[18px] flex flex-wrap gap-1.5">
-      {abas.map(([k, r]) => (
+    <div role="tablist" aria-label={rotulo} className={cn('mb-[18px] flex flex-wrap gap-1.5', className)}>
+      {abas.map(([k, r, n]) => (
         <button key={k} type="button" role="tab" aria-selected={valor === k} onClick={() => onChange(k)}
-          className={cn('rounded-capsula border px-[13px] py-[5px] text-apoio transition-colors',
+          className={cn('inline-flex items-center gap-1.5 rounded-capsula border px-[13px] py-[5px] text-apoio transition-colors',
             valor === k ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
           {r}
+          {n !== undefined && <span className="tabular-nums opacity-80">{n}</span>}
         </button>
       ))}
     </div>

@@ -14,7 +14,6 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { ehPediatrico } from '@/domain/idade'
-import { cn } from '@/lib/utils'
 import { usePacienteCurva } from '@/components/avaliacao/useAvaliacao'
 import { buttonVariants } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -24,6 +23,7 @@ import { AbaBalanco, AbaCurativos, AbaDispositivos } from './AbasLeito'
 import { AbaAnotacao, AbaEscalas, AbaSinaisVitais } from './AbasRegistro'
 import { hojeSP, msg, useCuidados } from './dadosCuidados'
 import { Cartao, Nota } from './pecas'
+import { Abas } from '@/components/monitor/Pagina'
 
 export type PainelCuidadosProps = { pacienteId: string; episodioId?: string | null; internacaoId?: string | null }
 
@@ -56,18 +56,8 @@ export function PainelCuidados({ pacienteId, episodioId, internacaoId }: PainelC
 
   return (
     <div className="flex flex-col gap-3.5">
-      <div role="tablist" aria-label="Cuidados de enfermagem" className="flex flex-wrap gap-1.5">
-        {abas.map((a) => (
-          <button key={a.id} type="button" role="tab" aria-selected={aba === a.id} onClick={() => setAba(a.id)}
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-capsula border px-[13px] py-[5px] text-apoio transition-colors',
-              aba === a.id ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
-            )}>
-            {a.rotulo}
-            {a.contagem !== undefined && <span className="tabular-nums opacity-80">{a.contagem}</span>}
-          </button>
-        ))}
-      </div>
+      <Abas rotulo="Cuidados de enfermagem" className="mb-0" valor={aba} onChange={setAba}
+        abas={abas.map((a) => [a.id, a.rotulo, a.contagem] as const)} />
       {!dados.atendimento_aberto && (
         <Nota>Sem atendimento ou internação em aberto para este paciente: os cuidados ficam só para leitura.</Nota>
       )}

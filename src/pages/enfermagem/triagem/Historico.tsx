@@ -7,6 +7,7 @@ import { textoVitais } from '@/domain/vitais'
 import { ESCALAS_DOR, type EscalaDor } from '@/clinico/triagem/dor'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { quando } from './comum'
+import { TituloCartao } from '@/components/monitor/Pagina'
 
 // Histórico de classificações do episódio (mais recente primeiro): quem
 // classificou, fluxograma, discriminador, sinais vitais crus e, na
@@ -48,9 +49,10 @@ export function HistoricoClassificacoes({ episodioId }: { episodioId: string }) 
   return (
     <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
       <div className="flex items-center gap-2.5 border-b border-trilha px-5 py-3.5">
-        <h2 className="flex items-center gap-2 text-corpo font-semibold text-tinta">
-          <History className="size-4 text-acao" aria-hidden /> Histórico de classificações do episódio
-        </h2>
+        <History className="size-4 text-acao" aria-hidden />
+        <TituloCartao className="mb-0">
+        Histórico de classificações do episódio
+        </TituloCartao>
         <span className="text-apoio text-tinta-sussurro">{lista.length} {lista.length === 1 ? 'registro' : 'registros'}</span>
       </div>
       {hist.isLoading && <div className="px-5 py-3.5 text-apoio text-tinta-sussurro">Carregando…</div>}
