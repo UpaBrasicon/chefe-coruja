@@ -501,8 +501,9 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* Sem imagem: a ilustração antiga sugeria um certificado de LGPD que não existe. */}
         <section className="env" id="lgpd">
-          <div className="duo duo-invertido">
+          <div>
             <div>
               <span className="rotulo-secao">Dados pessoais</span>
               {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
@@ -519,17 +520,6 @@ export default function Landing() {
                   Antes de qualquer consulta a um modelo de IA, o gateway retira os identificadores. Se não conseguir, não envia.
                 </Marcador>
               </div>
-            </div>
-            <div className="duo-midia">
-              <span className="duo-placa" aria-hidden="true" style={{ background: 'var(--lavagem)' }}>
-                <Barra width={420} height={72} left={-90} top={-30} background="color-mix(in oklab, var(--marca) 15%, transparent)" />
-                <Barra width={300} height={72} left={-60} bottom={40} background="color-mix(in oklab, var(--marca) 8%, transparent)" />
-                <span className="bolha" style={{ width: 140, height: 140, right: -30, bottom: -40, background: 'color-mix(in oklab, var(--marca) 10%, transparent)' }} />
-              </span>
-              <img className="cena-foto" src="/landing/lgpd.webp" loading="lazy" alt="Médica segurando o certificado de conformidade com a LGPD" />
-              <span className="disco" style={{ width: 52, height: 52, left: -14, top: 44, background: 'var(--leitos)' }} aria-hidden="true">
-                <ShieldCheck size={22} />
-              </span>
             </div>
           </div>
         </section>
