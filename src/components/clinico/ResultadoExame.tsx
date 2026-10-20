@@ -15,10 +15,11 @@ import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { fmtDataHora } from '@/lib/datas'
-import { caminhoLaudo, erroLaudo, PENDENTE, SITUACAO_EXAME, type ExameDetalhe, type VersaoResultado } from '@/lib/exames'
+import { caminhoLaudo, erroLaudo, PENDENTE, SITUACAO_EXAME, type ExameDetalhe, type OrigemResultado, type VersaoResultado } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
 
 const MINIMO_MOTIVO = 10
+const ORIGEM: Record<OrigemResultado, string> = { manual: 'manual', laboratorio: 'laboratório', imagem: 'serviço de imagem' }
 
 export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?: () => void }) {
   const qc = useQueryClient()
@@ -167,8 +168,8 @@ function Versao({ v }: { v: VersaoResultado }) {
     <div className={`flex flex-col gap-1.5 rounded-controle border px-2.5 py-2 ${v.critico ? 'border-critico/50 bg-alerta-critico' : 'border-trilha'}${v.vigente ? '' : ' opacity-75'}`}>
       <span className="flex flex-wrap items-center gap-1.5 text-rotulo text-tinta-sussurro">
         <span className="font-medium text-tinta">Versão {v.versao}</span>
-        <Badge variant={v.origem === 'laboratorio' ? 'info' : 'secondary'}>{v.origem === 'laboratorio' ? 'laboratório' : 'manual'}</Badge>
-        {v.critico && <Badge variant="destructive">crítico (laboratório)</Badge>}
+        <Badge variant={v.origem === 'manual' ? 'secondary' : 'info'}>{ORIGEM[v.origem]}</Badge>
+        {v.critico && <Badge variant="destructive">crítico ({ORIGEM[v.origem]})</Badge>}
         {!v.vigente && <Badge variant="outline">retificada</Badge>}
         <span>liberado {fmtDataHora(v.liberado_em)}{v.registrado_por ? ` · ${v.registrado_por}` : ''}</span>
       </span>

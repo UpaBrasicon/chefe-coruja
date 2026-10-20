@@ -3,6 +3,8 @@
 // grupo 02.02 do SIGTAP; o pedido em texto livre continua, sem código.
 
 export type TipoExame = 'laboratorio' | 'imagem'
+/** De onde veio o resultado: à mão, do LIS ou do RIS (porta FHIR, 5C-1 e 5C-2). */
+export type OrigemResultado = 'manual' | 'laboratorio' | 'imagem'
 export type ExameUnidade = {
   id: string; procedimento: string; nome_curto: string; nome_sigtap: string | null; tipo?: TipoExame
   loinc: string | null; botao: boolean; ordem: number; definido_por: string | null; definido_em: string
@@ -63,7 +65,7 @@ export type ItemResultado = {
   unidade: string | null; referencia: string | null; marca: string | null; critico: boolean
 }
 export type VersaoResultado = {
-  id: string; versao: number; origem: 'manual' | 'laboratorio'; texto: string | null; tem_pdf: boolean; pdf_nome: string | null
+  id: string; versao: number; origem: OrigemResultado; texto: string | null; tem_pdf: boolean; pdf_nome: string | null
   critico: boolean; liberado_em: string; registrado_por: string | null; vigente: boolean
   retificado_em: string | null; motivo_retificacao: string | null
   itens: ItemResultado[]; cientes: { por: string; em: string }[]
@@ -72,7 +74,7 @@ export type ExameDetalhe = {
   id: string; exame: string; procedimento: string | null; tipo: TipoExame | null; situacao: SituacaoExame; urgencia: Urgencia; observacao: string | null
   realizado_em: string | null; realizado_por: string | null; imagem_url: string | null
   pedido_em: string; pedido_por: string | null; coletado_em: string | null; coletado_por: string | null; em_analise_em: string | null
-  critico: boolean; origem: 'manual' | 'laboratorio' | null; visto_em: string | null; visto_por: string | null
+  critico: boolean; origem: OrigemResultado | null; visto_em: string | null; visto_por: string | null
   versoes: VersaoResultado[]
   pode_registrar: boolean; pode_coletar: boolean; pode_realizar: boolean; pode_dar_ciencia: boolean; ja_ciente: boolean
 }
