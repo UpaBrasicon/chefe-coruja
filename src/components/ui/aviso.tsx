@@ -15,19 +15,21 @@ const TOM: Record<TomAviso, { classe: string; icone: LucideIcon }> = {
 }
 
 /** Aviso com tom (guia do padrão, 2.1). Para falha de ação, use MensagemErro. */
-export function Aviso({ tom = 'atencao', titulo, children, acao, icone, className }: {
+export function Aviso({ tom = 'atencao', titulo, children, acao, icone, anunciar = false, className }: {
   tom?: TomAviso
   titulo?: ReactNode
   children?: ReactNode
   /** Botão ou link à direita. */
   acao?: ReactNode
   icone?: LucideIcon
+  /** Anuncia na hora ao leitor de tela (role="alert"), para aviso que pede ação já. */
+  anunciar?: boolean
   className?: string
 }) {
   const { classe, icone: padrao } = TOM[tom]
   const Icone = icone ?? padrao
   return (
-    <div role="status" className={cn('flex flex-wrap items-start gap-2.5 rounded-container border px-3.5 py-3', classe, className)}>
+    <div role={anunciar ? 'alert' : 'status'} className={cn('flex flex-wrap items-start gap-2.5 rounded-container border px-3.5 py-3', classe, className)}>
       <Icone className="mt-px size-4 shrink-0" aria-hidden />
       <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-0.5 text-apoio text-pretty">
         {titulo && <span className="font-semibold">{titulo}</span>}

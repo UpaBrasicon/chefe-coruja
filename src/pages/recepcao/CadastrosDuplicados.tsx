@@ -30,7 +30,7 @@ import { cn } from '@/lib/utils'
 function AlertaDocumentos({ divergencias }: { divergencias: string[] }) {
   if (divergencias.length === 0) return null
   return (
-    <p role="alert" className="flex items-start gap-2 rounded-lg border border-critico/30 bg-critico/[0.08] px-3 py-2 text-apoio text-critico">
+    <p role="alert" className="flex items-start gap-2 rounded-controle border border-critico/30 bg-alerta-critico px-3 py-2 text-apoio text-critico">
       <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
       Documentos diferentes ({divergencias.join(' e ')}): os cadastros podem ser de pessoas diferentes. Confira o documento antes de unificar.
     </p>
@@ -57,7 +57,7 @@ const STATUS: Record<PedidoUnificacao['status'], { rotulo: string; variante: 'in
 function LinhaCadastro({ c, destaque }: { c: Cadastro | PedidoUnificacao['principal']; destaque?: string }) {
   const k = c as Partial<Cadastro>
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-0.5 rounded-lg border border-fio px-3 py-2">
+    <div className="flex min-w-0 flex-1 flex-col gap-0.5 rounded-controle border border-fio px-3 py-2">
       <span className="flex flex-wrap items-center gap-1.5 text-controle font-medium text-tinta">
         {c.nome} {destaque && <Badge variant="info">{destaque}</Badge>}
       </span>
@@ -226,7 +226,7 @@ export default function CadastrosDuplicados() {
         <section className="flex flex-col gap-2">
           <TituloSecao>Histórico</TituloSecao>
           {historico.map((p) => (
-            <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-fio bg-superficie px-3 py-2 text-apoio">
+            <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
               <Badge variant={STATUS[p.status].variante}>{STATUS[p.status].rotulo}</Badge>
               <span className="text-tinta">{p.absorvido.nome} ({p.absorvido.prontuario}) → {p.principal.nome} ({p.principal.prontuario})</span>
               {(p.divergencias ?? []).length > 0 && <Badge variant="outline">documentos diferentes ({p.divergencias.join(' e ')}), confirmado</Badge>}
@@ -254,8 +254,9 @@ export default function CadastrosDuplicados() {
           </DialogHeader>
           <div role="radiogroup" aria-label="Cadastro que fica" className="flex flex-col gap-2">
             {pedindo?.cadastros.map((k) => (
+              // padrao-ok: cartão selecionável do par de cadastros (radio); não há peça de base para cartão
               <button key={k.id} type="button" role="radio" aria-checked={principal === k.id} onClick={() => setPrincipal(k.id)}
-                className={cn('rounded-lg border text-left', principal === k.id ? 'border-acao ring-1 ring-acao' : 'border-fio')}>
+                className={cn('rounded-controle border text-left', principal === k.id ? 'border-acao ring-1 ring-acao' : 'border-fio')}>
                 <LinhaCadastro c={k} destaque={principal === k.id ? 'fica' : undefined} />
               </button>
             ))}
