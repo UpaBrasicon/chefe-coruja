@@ -87,7 +87,7 @@ export function OxigenacaoIrpaAdulto() {
         {cat && <Alertas itens={cat.avisos} />}
         <div className="flex flex-col gap-2">
           {DISPOSITIVOS.map((d) => (
-            <div key={d.id} className="rounded-lg border px-3 py-2">
+            <div key={d.id} className="rounded-controle border px-3 py-2">
               <p className="font-medium">{d.nome}</p>
               {d.cap1 && <p className="text-tinta-sussurro">Cap. 1: {d.cap1}</p>}
               {d.cap27 && <p className="text-tinta-sussurro">Cap. 27: {d.cap27}</p>}

@@ -8,8 +8,10 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Escolha } from './LoteAPecas'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
 const ampolas = (f: Faixa) => `${faixa(f, 0)} ampola${f[1] > 1 ? 's' : ''}`
 
@@ -46,31 +48,31 @@ export function AnimaisPeconhentosAdulto() {
           nota={acidente.nota}
           errata={acidente.errata}
         />
-        <ul className="grid gap-1 text-sm md:grid-cols-3">
+        <ul className="grid gap-1 text-apoio md:grid-cols-3">
           {acidente.classes.map((c) => (
-            <li key={c.gravidade} className="rounded-lg border px-3 py-2">
+            <li key={c.gravidade} className="rounded-controle border px-3 py-2">
               <span className="font-medium capitalize">{c.gravidade}</span>: {c.ampolas ? ampolas(c.ampolas) : 'sem soro'}
               {c.ampolasAlternativa && ` (${c.ampolasAlternativa.rotulo}: ${ampolas(c.ampolasAlternativa.ampolas)})`}
             </li>
           ))}
         </ul>
-        <p className="text-sm text-tinta-sussurro">{SORO_ADMINISTRACAO.texto} ({SORO_ADMINISTRACAO.pagina})</p>
+        <p className="text-apoio text-tinta-sussurro">{SORO_ADMINISTRACAO.texto} ({SORO_ADMINISTRACAO.pagina})</p>
       </Bloco>
 
       <Bloco titulo="Ministério da Saúde — PCDT dos acidentes escorpiônicos (2026) e portal das aranhas" descricao="Decisão do responsável técnico (28/09/2026): os PCDTs do MS são a fonte dos peçonhentos. As serpentes seguem o manual até o PCDT completo dos acidentes ofídicos ser lido (o resumo não traz ampolas).">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">MS</th><th className="pb-2">Manual do HC</th></tr></thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">MS</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>
               {MS_2026_PECONHENTOS.map((d) => (
-                <tr key={d.tema} className="border-t">
-                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
-                  <td className="pr-3 py-2">{d.ms} <span className="text-tinta-sussurro">({d.pagina})</span></td>
-                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
-                </tr>
+                <TableRow key={d.tema} className="border-t">
+                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                  <TableCell className="pr-3 py-2">{d.ms} <span className="text-tinta-sussurro">({d.pagina})</span></TableCell>
+                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </Bloco>
 
@@ -88,7 +90,7 @@ export function AnimaisPeconhentosAdulto() {
       <Bloco titulo="Neostigmina no acidente elapídico (p. 1352–1353)">
         <LinhaManual nome="Neostigmina (1 mL = 0,5 mg)" texto={NEOSTIGMINA.texto} pagina={NEOSTIGMINA.pagina} nota={NEOSTIGMINA.nota}
           conta={<>bolus <strong>{faixa(neo.bolusMg, 0)} mg</strong> = {faixa(neo.bolusMl, 0)} mL{neo.infusaoUgH !== null && <> · infusão inicial <strong>{br(neo.infusaoUgH, 0)} µg/h</strong></>}</>} />
-        <p className="text-sm text-tinta-sussurro">Valores pediátricos que o capítulo cita e esta ferramenta de adulto não usa: {PEDIATRICO_CITADO.join('; ')}.</p>
+        <p className="text-apoio text-tinta-sussurro">Valores pediátricos que o capítulo cita e esta ferramenta de adulto não usa: {PEDIATRICO_CITADO.join('; ')}.</p>
       </Bloco>
     </ToolLayout>
   )

@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
 const lerNumero = (v: string) => (v.trim() === '' ? Number.NaN : Number(v.replace(',', '.')))
 
@@ -52,7 +53,7 @@ export function AnafilaxiaAdulto() {
           conta={<>{br(ugMlInfusao(), 0)} µg/mL · <strong>{faixa(faixaMlH, 0)} mL/h</strong> = {faixa(faixaUg, 0)} µg/min</>}
           pagina={ADRENALINA_INFUSAO.pagina}
         />
-        <div className="grid gap-3 text-sm md:grid-cols-2">
+        <div className="grid gap-3 text-apoio md:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="ana-mlmin">Velocidade do manual (mL/min) → bomba</Label>
             <Input id="ana-mlmin" inputMode="decimal" value={mlMin} onChange={(e) => setMlMin(e.target.value)} />
@@ -70,7 +71,7 @@ export function AnafilaxiaAdulto() {
 
       <Bloco titulo="Volume no choque">
         <LinhaManual nome="Cristaloide" texto="10 a 20 mL por kg de peso nos primeiros minutos, por acesso calibroso" conta={vol ? <strong>{faixa(vol, 0)} mL</strong> : 'informe o peso'} pagina="p. 177" />
-        {CUIDADOS_ANAFILAXIA.map((c) => <p key={c.texto} className="text-sm text-tinta-sussurro">{c.texto} ({c.pagina}).</p>)}
+        {CUIDADOS_ANAFILAXIA.map((c) => <p key={c.texto} className="text-apoio text-tinta-sussurro">{c.texto} ({c.pagina}).</p>)}
       </Bloco>
 
       <Bloco titulo="Segunda linha" descricao="Doses de adulto do capítulo. As doses por kg que o capítulo dá para criança não entram nesta tela.">

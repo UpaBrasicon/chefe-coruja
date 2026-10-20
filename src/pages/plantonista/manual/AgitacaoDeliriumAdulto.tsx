@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Erratas, Escolhas, ListaLivro } from './PecasLoteE7'
 import { br, faixa, lerNumero } from './loteE7Formato'
+import { numero } from '@/lib/formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Paciente agitado, delirium e síndrome neuroléptica maligna (caps. 8 e 76 do manual do HCFMUSP). */
 export function AgitacaoDeliriumAdulto() {
@@ -53,9 +55,9 @@ export function AgitacaoDeliriumAdulto() {
           pagina={QUETAMINA_AGITACAO.pagina}
         />
         {COMBINACOES_AGITACAO.map((c) => <LinhaManual key={c.nome} nome={c.nome} texto={`${c.dose}: ${c.nota}`} pagina={c.pagina} />)}
-        {TEMPOS_AGITACAO.map((t) => <p key={t.droga} className="text-sm text-tinta-sussurro">{t.droga}: {t.texto} ({t.pagina}).</p>)}
+        {TEMPOS_AGITACAO.map((t) => <p key={t.droga} className="text-apoio text-tinta-sussurro">{t.droga}: {t.texto} ({t.pagina}).</p>)}
         {idoso === 'sim' && (
-          <p className="text-sm text-atencao">
+          <p className="text-apoio text-atencao">
             Idosos: o livro recomenda iniciar com metade da dose inicial típica e considera antipsicóticos de primeira linha (p. 1014). Exemplo: haloperidol 5-10 mg → {faixa(metadeDaDose([5, 10]))} mg; midazolam 2-5 mg → {faixa(metadeDaDose([2, 5]))} mg.
           </p>
         )}
@@ -66,11 +68,11 @@ export function AgitacaoDeliriumAdulto() {
       </Bloco>
 
       <Bloco titulo="Causas orgânicas com corte numérico — Tabela 5 (p. 1012–1014)">
-        <ul className="list-disc pl-5 text-sm">{CORTES_CAUSAS_ORGANICAS.map((c) => <li key={c.causa}>{c.causa}: {c.corte} <span className="text-tinta-sussurro">({c.pagina})</span></li>)}</ul>
+        <ul className="list-disc pl-5 text-apoio">{CORTES_CAUSAS_ORGANICAS.map((c) => <li key={c.causa}>{c.causa}: {c.corte} <span className="text-tinta-sussurro">({c.pagina})</span></li>)}</ul>
         <div className="grid gap-3 md:grid-cols-3">
           <NumberField id="agi-fc" label="FC" unit="bpm" value={fc} onChange={setFc} min={0} />
           <NumberField id="agi-pas" label="PAS" unit="mmHg" value={pas} onChange={setPas} min={0} />
-          <p className="self-end text-sm tabular-nums">
+          <p className="self-end text-apoio tabular-nums">
             {si ? <>Shock index <strong>{br(si.valor, 2)}</strong>{si.acimaDoCorte ? ' — acima de 0,7' : ' — até 0,7'}</> : 'informe FC e PAS'}
           </p>
         </div>
@@ -80,7 +82,7 @@ export function AgitacaoDeliriumAdulto() {
         {DELIRIUM_TABELA7.map((d) => (
           <LinhaManual key={d.id} nome={d.nome} texto={`inicial ${faixa(d.inicialMg, 2)} mg; máxima ${br(d.maximaMg, 1)} mg; ${d.vias}`} pagina="p. 136–137" nota={d.nota} />
         ))}
-        <div className="grid gap-3 text-sm md:grid-cols-2">
+        <div className="grid gap-3 text-apoio md:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label>Droga</Label>
             <Escolhas valor={droga} opcoes={DELIRIUM_TABELA7.map((d) => [d.id, d.nome] as const)} onChange={setDroga} />
@@ -96,7 +98,7 @@ export function AgitacaoDeliriumAdulto() {
         </div>
       </Bloco>
 
-      <Bloco titulo="Síndrome neuroléptica maligna (p. 1015–1016)" descricao={`CPK tipicamente > ${SNM.cpkUiL.toLocaleString('pt-BR')} UI/L; suspender o agente causador; reposição volêmica muitas vezes agressiva.`}>
+      <Bloco titulo="Síndrome neuroléptica maligna (p. 1015–1016)" descricao={`CPK tipicamente > ${numero(SNM.cpkUiL)} UI/L; suspender o agente causador; reposição volêmica muitas vezes agressiva.`}>
         <LinhaManual nome="Volume" texto="3-4 L/dia para evitar rabdomiólise" conta={snm ? <strong>{faixa(snm.volumeMlH, 0)} mL/h</strong> : '125–167 mL/h'} pagina={SNM.pagina} />
         <LinhaManual
           nome="Dantroleno"
@@ -110,16 +112,16 @@ export function AgitacaoDeliriumAdulto() {
       <Bloco titulo="ACEP 2024 — agitação grave no PS" descricao="Política clínica da ACEP (Ann Emerg Med 2024;83:e1–e30), lida no texto. As doses listadas são as dos ensaios que a política resume, não uma prescrição da ACEP.">
         {ACEP_2024_RECOMENDACOES.map((r) => <LinhaManual key={r.nivel} nome={`Nível ${r.nivel}`} texto={r.texto} pagina="p. e4" />)}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Droga</th><th className="pr-3 pb-2">Dose nos ensaios</th><th className="pb-2">Ensaios</th></tr></thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Droga</TableHead><TableHead className="pr-3 pb-2">Dose nos ensaios</TableHead><TableHead className="pb-2">Ensaios</TableHead></TableRow></TableHeader>
+            <TableBody>
               {DOSES_ENSAIOS_ACEP.map((d) => (
-                <tr key={d.droga} className="border-t"><td className="pr-3 py-2 font-medium">{d.droga}</td><td className="pr-3 py-2">{d.dose}</td><td className="py-2 text-tinta-sussurro">{d.fonte}</td></tr>
+                <TableRow key={d.droga} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.droga}</TableCell><TableCell className="pr-3 py-2">{d.dose}</TableCell><TableCell className="py-2 text-tinta-sussurro">{d.fonte}</TableCell></TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_AGITACAO_2024.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_AGITACAO_2024.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Errata e notas">

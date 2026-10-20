@@ -10,6 +10,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Distúrbios acidobásicos: passo a passo do cap. 69 (primário, compensação, AG, delta-delta, AG urinário, Cl urinário, gap osmolar). */
 export function GasometriaAcidoBase() {
@@ -88,12 +89,12 @@ export function GasometriaAcidoBase() {
         </div>
         {agu && <Trecho texto={`AG urinário ${br(agu.valor)} mEq/L. ${agu.texto}`} pagina="p. 937" />}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead><tr className="text-tinta-sussurro"><th className="pr-2">ATR (Tab. 4, p. 937)</th><th className="pr-2">Grau</th><th className="pr-2">K sérico</th><th className="pr-2">pH urinário</th><th>AG urinário</th></tr></thead>
-            <tbody>
-              {TABELA_ATR.map((t) => <tr key={t.tipo}><td className="pr-2">{t.tipo}</td><td className="pr-2">{t.grau}</td><td className="pr-2">{t.potassio}</td><td className="pr-2">{t.phUrinario}</td><td>{t.agUrinario}</td></tr>)}
-            </tbody>
-          </table>
+          <Table variante="referencia" className="w-full text-left text-rotulo">
+            <TableHeader><TableRow className="text-tinta-sussurro"><TableHead className="pr-2">ATR (Tab. 4, p. 937)</TableHead><TableHead className="pr-2">Grau</TableHead><TableHead className="pr-2">K sérico</TableHead><TableHead className="pr-2">pH urinário</TableHead><TableHead>AG urinário</TableHead></TableRow></TableHeader>
+            <TableBody>
+              {TABELA_ATR.map((t) => <TableRow key={t.tipo}><TableCell className="pr-2">{t.tipo}</TableCell><TableCell className="pr-2">{t.grau}</TableCell><TableCell className="pr-2">{t.potassio}</TableCell><TableCell className="pr-2">{t.phUrinario}</TableCell><TableCell>{t.agUrinario}</TableCell></TableRow>)}
+            </TableBody>
+          </Table>
         </div>
       </Bloco>
 

@@ -13,8 +13,9 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Escolha } from './LoteAPecas'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
 const PESO = 'informe o peso'
 
@@ -43,11 +44,11 @@ function Carvao({ peso }: { peso: number }) {
         opcoes={[{ value: '2', label: 'a cada 2 h' }, { value: '3', label: 'a cada 3 h' }, { value: '4', label: 'a cada 4 h' }]} />
       <LinhaManual nome="Múltiplas doses" texto="12,5 g/hora ou o equivalente a cada 2 a 4 horas (ex.: 50 g a cada 4 h)" pagina="p. 1302"
         conta={mult !== null ? <strong>{br(mult)} g por dose</strong> : undefined} />
-      <p role="note" className="rounded-md border border-atencao/40 bg-atencao/[0.08] px-3 py-2 text-sm text-atencao">
+      <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">
         Consenso CTRC 2026 (Clin Toxicol 2026, PMID 41906697), posterior ao livro: amplia a janela para até 6 h em muitos venenos. O livro (2022) trata apresentação &gt; 2 h como contraindicação. A decisão é do médico, pelo veneno, pelo tempo e pela gravidade.
       </p>
       {CARVAO_CTRC_2026.map((i) => <LinhaManual key={i.id} nome={i.nome} texto={i.texto} pagina={i.pagina} />)}
-      <p className="text-sm font-medium text-tinta-sussurro">O que o livro traz (2022)</p>
+      <p className="text-apoio font-medium text-tinta-sussurro">O que o livro traz (2022)</p>
       {CARVAO_INDICACAO.map((i) => <LinhaManual key={i.id} nome={i.nome} texto={i.texto} pagina={i.pagina} errata={i.errata} />)}
     </Bloco>
   )
@@ -70,26 +71,26 @@ function Paracetamol({ peso }: { peso: number }) {
         <NumberField id="intox-pcm-g" label="Paracetamol ingerido" unit="g" value={gramas} onChange={setGramas} min={0} step={0.5} />
         <NumberField id="intox-pcm-nivel" label="Nível sérico" unit="µg/mL" value={nivelUg} onChange={setNivelUg} min={0} step={1} />
       </div>
-      {grav && <p className="text-sm">Gravidade pela quantidade: <strong>{grav.rotulo}</strong> ({grav.pagina})</p>}
+      {grav && <p className="text-apoio">Gravidade pela quantidade: <strong>{grav.rotulo}</strong> ({grav.pagina})</p>}
       <div className="grid gap-3 md:grid-cols-2">
         <Escolha label="Nível sérico disponível?" value={nivel} onChange={setNivel} opcoes={SIM_NAO} />
         <Escolha label="Tempo da ingestão desconhecido?" value={tempoDesc} onChange={setTempoDesc} opcoes={SIM_NAO} />
         <Escolha label="Nível após 4 h acima da linha do nomograma?" value={linha} onChange={setLinha} opcoes={SIM_NAO} />
         <Escolha label="Transaminases > 2–3 × LSN?" value={hepato} onChange={setHepato} opcoes={SIM_NAO} />
       </div>
-      <p className="text-sm">
+      <p className="text-apoio">
         Indicações de NAC presentes (p. 1311): {ind.length === 0 ? <strong>nenhuma das listadas</strong> : <strong>{ind.join('; ')}</strong>}
       </p>
-      <p className="text-sm text-tinta-sussurro">O nomograma de Rumack-Matthew é só citado no manual (a linha não está no livro); a posição do nível em relação à linha é informada por quem usa.</p>
+      <p className="text-apoio text-tinta-sussurro">O nomograma de Rumack-Matthew é só citado no manual (a linha não está no livro); a posição do nível em relação à linha é informada por quem usa.</p>
       <LinhaManual nome="NAC VO" texto={NAC.vo.texto} pagina={NAC.vo.pagina}
         conta={vo ? <>ataque <strong>{br(vo.ataqueMg, 0)} mg</strong> · manutenção <strong>{br(vo.manutencaoMg, 0)} mg</strong> 4/4 h (≈ {vo.doses} doses)</> : PESO} />
       <LinhaManual nome="NAC EV (3 fases)" texto={`${NAC.ev.quando}: 150 mg/kg em 60 min em 200–300 mL de SF ou SG 5%; 50 mg/kg em 4 h; 100 mg/kg em 16 h`}
         pagina={NAC.ev.pagina} errata={NAC.ev.errata}
         conta={ev ? <>total <strong>{br(ev.totalMg, 0)} mg</strong> ({ev.totalMgKg} mg/kg em 21 h)</> : PESO} />
       {ev && (
-        <ul className="grid gap-1 text-sm md:grid-cols-3">
+        <ul className="grid gap-1 text-apoio md:grid-cols-3">
           {ev.fases.map((f) => (
-            <li key={f.rotulo} className="rounded-lg border px-3 py-2">
+            <li key={f.rotulo} className="rounded-controle border px-3 py-2">
               <span className="font-medium">{f.rotulo}</span><br />
               {br(f.mg, 0)} mg em {f.horas} h = {br(f.mgH, 0)} mg/h ({br(f.mgKgH, 2)} mg/kg/h)<br />
               <span className="text-tinta-sussurro">{f.preparo}</span>
@@ -109,7 +110,7 @@ function AntidotosFixos() {
       {NALOXONA.cenarios.map((c) => (
         <LinhaManual key={c.id} nome={`Naloxona — ${c.rotulo}`} texto={`${faixa(c.mg, 2)} mg IV; ${NALOXONA.alvo}`} pagina={NALOXONA.pagina} />
       ))}
-      <p className="text-sm text-tinta-sussurro">Naloxona: {NALOXONA.reconsiderar}; {NALOXONA.alta} ({NALOXONA.pagina}).</p>
+      <p className="text-apoio text-tinta-sussurro">Naloxona: {NALOXONA.reconsiderar}; {NALOXONA.alta} ({NALOXONA.pagina}).</p>
       <LinhaManual nome={FISOSTIGMINA.nome} texto={FISOSTIGMINA.texto} pagina={FISOSTIGMINA.pagina} nota={FISOSTIGMINA.nota} />
     </Bloco>
   )
@@ -143,8 +144,8 @@ function Cardiotoxicos({ peso }: { peso: number }) {
           conta={fig ? <>bolus <strong>{faixa(fig.insulinaBolusUi, 0)} UI</strong> · <strong>{faixa(fig.insulinaInfusaoUiH, 0)} UI/h</strong></> : PESO} />
         <LinhaManual nome="Emulsão lipídica 20% (figura)" texto="1,5 mL/kg em bolus de 2–3 min, seguido de 0,5 mL/kg/min" pagina={BCC.figura.pagina}
           conta={fig ? <>bolus <strong>{br(fig.emulsaoBolusMl, 0)} mL</strong> · <strong>{br(fig.emulsaoMlMin)} mL/min</strong> ({br(fig.emulsaoMlH, 0)} mL/h)</> : PESO} />
-        <p className="text-sm text-tinta-sussurro">{BCC.figura.depois} ({BCC.figura.pagina}).</p>
-        <ul className="list-disc pl-5 text-sm text-atencao">
+        <p className="text-apoio text-tinta-sussurro">{BCC.figura.depois} ({BCC.figura.pagina}).</p>
+        <ul className="list-disc pl-5 text-apoio text-atencao">
           {BCC.divergencias.map((d) => <li key={d}>{d}</li>)}
         </ul>
       </Bloco>
@@ -235,9 +236,9 @@ function Cianeto() {
         conta={<><strong>12,5 g</strong> = {br(tiossulfatoAdultoMl(), 0)} mL a 25%</>} />
       <LinhaManual nome="Nitritos (sem hidroxocobalamina)" texto={`${CIANETO.nitritoAmila}; ${CIANETO.nitritoSodio.texto}; depois tiossulfato 12,5 g EV`} pagina={CIANETO.pagina}
         conta={<>nitrito de sódio <strong>{br(nitritoSodioMg(), 0)} mg</strong> (10 mL a 3%)</>} />
-      <p className="text-sm text-tinta-sussurro">{CIANETO.sequencia}</p>
+      <p className="text-apoio text-tinta-sussurro">{CIANETO.sequencia}</p>
       <LinhaManual nome={MONOXIDO.nome} texto={MONOXIDO.texto} pagina={MONOXIDO.pagina} />
-      <p className="text-sm text-tinta-sussurro">Valores pediátricos que o capítulo cita e esta ferramenta de adulto não usa: {PEDIATRICO_CITADO.join('; ')}.</p>
+      <p className="text-apoio text-tinta-sussurro">Valores pediátricos que o capítulo cita e esta ferramenta de adulto não usa: {PEDIATRICO_CITADO.join('; ')}.</p>
     </Bloco>
   )
 }

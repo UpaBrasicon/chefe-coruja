@@ -10,6 +10,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Bloco, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
 import { LinhaManual } from './PecasLoteC'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const COLUNAS: Coluna[] = ['leve', 'moderada', 'grave', 'iminencia']
 const PARAMETROS = Object.keys(TABELA1_NUMERICA) as ParametroAsma[]
@@ -49,7 +50,7 @@ export function AsmaExacerbacaoAdulto() {
         {pos.itens.length > 0 && (
           <div className="flex flex-col gap-1">
             {pos.itens.map((i) => (
-              <div key={i.parametro} className="rounded-md border px-3 py-1.5">
+              <div key={i.parametro} className="rounded-controle border px-3 py-1.5">
                 <span className="font-medium">{TABELA1_NUMERICA[i.parametro].rotulo} {br(i.valor)} {TABELA1_NUMERICA[i.parametro].unidade}</span>:{' '}
                 {i.posicao.colunas.length ? i.posicao.colunas.map((c) => `${NOME_COLUNA[c]} (${TABELA1_NUMERICA[i.parametro].texto[c]})`).join(' ou ') : 'sem coluna na tabela'}
                 {i.posicao.nota && <span className="block text-tinta-sussurro">{i.posicao.nota}</span>}
@@ -62,19 +63,19 @@ export function AsmaExacerbacaoAdulto() {
 
       <Bloco titulo="Tabela 1 — achados clínicos" descricao="p. 407–408">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="text-tinta-sussurro">
-              <tr><th className="pr-3">Sintoma</th>{COLUNAS.map((c) => <th key={c} className="pr-3">{NOME_COLUNA[c]}</th>)}</tr>
-            </thead>
-            <tbody>
+          <Table variante="referencia" className="w-full text-left">
+            <TableHeader className="text-tinta-sussurro">
+              <TableRow><TableHead className="pr-3">Sintoma</TableHead>{COLUNAS.map((c) => <TableHead key={c} className="pr-3">{NOME_COLUNA[c]}</TableHead>)}</TableRow>
+            </TableHeader>
+            <TableBody>
               {TABELA1_CLINICA.map((l) => (
-                <tr key={l.rotulo} className="border-t align-top">
-                  <td className="pr-3 font-medium">{l.rotulo}</td>
-                  {COLUNAS.map((c) => <td key={c} className="pr-3">{l.colunas[c] ?? ''}</td>)}
-                </tr>
+                <TableRow key={l.rotulo} className="border-t align-top">
+                  <TableCell className="pr-3 font-medium">{l.rotulo}</TableCell>
+                  {COLUNAS.map((c) => <TableCell key={c} className="pr-3">{l.colunas[c] ?? ''}</TableCell>)}
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
         <Trecho texto={`Leve/moderada: ${FIGURA1_ASMA.leveModerada}. Grave: ${FIGURA1_ASMA.grave}. ${FIGURA1_ASMA.imediato}. Reavaliação: ${FIGURA1_ASMA.reavaliacao}`} pagina={FIGURA1_ASMA.pagina} errata="O fluxograma usa 50% de VEF1/peak flow e SaO2 90–95%; a Tabela 1 usa 60% e 91–95%." />
       </Bloco>
@@ -109,7 +110,7 @@ export function AsmaExacerbacaoAdulto() {
       </Bloco>
 
       <Bloco titulo="GINA 2026 — gravidade e tratamento (Figura 9, p. 36)" descricao="Usa a FR, a SaO2 e o VEF1/PFE informados acima. Marque os achados clínicos. A classificação segue a Figura 9; a decisão é do médico.">
-        <div className="flex flex-wrap gap-4 text-sm">
+        <div className="flex flex-wrap gap-4 text-apoio">
           <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={gina.frases} onChange={(e) => setGina({ ...gina, frases: e.target.checked })} /> Fala em frases (não em sentenças)</label>
           <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={gina.incapaz} onChange={(e) => setGina({ ...gina, incapaz: e.target.checked })} /> Incapaz de falar, beber ou deitar</label>
           <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={gina.silente} onChange={(e) => setGina({ ...gina, silente: e.target.checked })} /> Tórax silente</label>
@@ -118,23 +119,23 @@ export function AsmaExacerbacaoAdulto() {
         {g.gravidade ? (
           <>
             <Resultado rotulo="Gravidade pela GINA 2026" valor={<>{g.gravidade}{g.motivos.length ? ` — ${g.motivos.join('; ')}` : ''}</>} />
-            <p className="text-sm">{GINA_TRATAMENTO[g.gravidade]}</p>
+            <p className="text-apoio">{GINA_TRATAMENTO[g.gravidade]}</p>
           </>
         ) : <p className="text-tinta-sussurro">Informe SaO2, VEF1/PFE ou marque os achados.</p>}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">GINA 2026</th><th className="pr-3 pb-2">p.</th><th className="pb-2">Manual do HC</th></tr></thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">GINA 2026</TableHead><TableHead className="pr-3 pb-2">p.</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>
               {GINA_ITENS.map((d) => (
-                <tr key={d.tema} className="border-t">
-                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
-                  <td className="pr-3 py-2">{d.gina}</td>
-                  <td className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.pagina}</td>
-                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
-                </tr>
+                <TableRow key={d.tema} className="border-t">
+                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                  <TableCell className="pr-3 py-2">{d.gina}</TableCell>
+                  <TableCell className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.pagina}</TableCell>
+                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </Bloco>
 

@@ -7,8 +7,9 @@ import {
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
 
 function textoDose(d: DrogaAtaque) {
@@ -41,9 +42,9 @@ export function EstadoDeMalAdulto() {
       <CampoPeso id="eme-peso" peso={peso} onChange={setPeso} />
 
       <Bloco titulo="Tempos do manual" descricao={`Estabilização: ${ESTABILIZACAO_ESTADO_DE_MAL.texto} (${ESTABILIZACAO_ESTADO_DE_MAL.pagina}).`}>
-        <ul className="grid gap-1 text-sm md:grid-cols-4">
+        <ul className="grid gap-1 text-apoio md:grid-cols-4">
           {TEMPOS_ESTADO_DE_MAL.map((t) => (
-            <li key={t.etapa} className="rounded-lg border px-3 py-2"><span className="font-medium">{t.etapa}</span><br />{t.janela} <span className="text-tinta-sussurro">({t.pagina})</span></li>
+            <li key={t.etapa} className="rounded-controle border px-3 py-2"><span className="font-medium">{t.etapa}</span><br />{t.janela} <span className="text-tinta-sussurro">({t.pagina})</span></li>
           ))}
         </ul>
       </Bloco>
@@ -77,7 +78,7 @@ export function EstadoDeMalAdulto() {
             />
           )
         })}
-        <p className="text-sm text-tinta-sussurro">{DESMAME_ESTADO_DE_MAL.texto} ({DESMAME_ESTADO_DE_MAL.pagina})</p>
+        <p className="text-apoio text-tinta-sussurro">{DESMAME_ESTADO_DE_MAL.texto} ({DESMAME_ESTADO_DE_MAL.pagina})</p>
       </Bloco>
     </ToolLayout>
   )

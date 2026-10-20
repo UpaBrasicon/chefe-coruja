@@ -51,7 +51,7 @@ export function TransfusaoAdulto() {
         <NumberField id="tr-hb" label="Hb atual" unit="g/dL" value={hb} onChange={setHb} step={0.1} />
         <div className="flex flex-col gap-1">
           {GATILHOS_HB.map((g) => (
-            <div key={g.id} className={`rounded-md border px-3 py-1.5 ${abaixo.includes(g.id) ? 'border-atencao' : ''}`}>
+            <div key={g.id} className={`rounded-controle border px-3 py-1.5 ${abaixo.includes(g.id) ? 'border-atencao' : ''}`}>
               <span className="font-medium">{g.condicao}</span>: {g.texto}
               {abaixo.includes(g.id) && <span className="ml-1 text-atencao">— Hb informada abaixo do número da tabela</span>}
             </div>
@@ -63,7 +63,7 @@ export function TransfusaoAdulto() {
       <Bloco titulo="AABB 2023 e AABB 2025 (IAM) — limiares de Hb, ao lado do manual" descricao={BOA_PRATICA_AABB_2023}>
         <div className="flex flex-col gap-1">
           {GATILHOS_HB_AABB.map((g) => (
-            <div key={g.id} className={`rounded-md border px-3 py-1.5 ${abaixoAabb.includes(g.id) ? 'border-atencao' : ''}`}>
+            <div key={g.id} className={`rounded-controle border px-3 py-1.5 ${abaixoAabb.includes(g.id) ? 'border-atencao' : ''}`}>
               <span className="font-medium">{g.situacao}</span>: Hb &lt; {br(g.hb, 1)} g/dL <span className="text-tinta-sussurro">({g.forca}; {g.fonte})</span>
               {abaixoAabb.includes(g.id) && <span className="ml-1 text-atencao">— Hb informada abaixo do limiar</span>}
             </div>
@@ -115,7 +115,7 @@ export function TransfusaoAdulto() {
       <Bloco titulo="Plaquetas" descricao={`Tabela 3, p. 1078. ${PLAQUETAS.contraProfilatica} (p. 1078).`}>
         <div className="flex flex-col gap-1">
           {GATILHOS_PLAQUETAS.map((g) => (
-            <div key={g.condicoes[0]} className="rounded-md border px-3 py-1.5">
+            <div key={g.condicoes[0]} className="rounded-controle border px-3 py-1.5">
               <span className="font-medium">{g.limiar ? `< ${mil(g.limiar)}/µL` : '—'}</span>: {g.condicoes.join('; ')}
             </div>
           ))}
@@ -142,7 +142,7 @@ export function TransfusaoAdulto() {
       <Bloco titulo="AABB/ICTMG 2025 — plaquetas por situação (resumo da diretriz)" descricao="Estratégia restritiva; a decisão considera o contexto clínico e as alternativas. Forte = evidência alta/moderada; condicional = baixa/muito baixa.">
         <div className="flex flex-col gap-1">
           {PLAQUETAS_AABB_2025.map((g) => (
-            <div key={g.situacao} className="rounded-md border px-3 py-1.5">
+            <div key={g.situacao} className="rounded-controle border px-3 py-1.5">
               <span className="font-medium">{g.limiar ? `< ${mil(g.limiar)}/µL` : 'não transfundir'}</span>: {g.situacao} <span className="text-tinta-sussurro">({g.forca})</span>
             </div>
           ))}
@@ -192,7 +192,7 @@ export function TransfusaoAdulto() {
           <p>O livro não traz dose por peso para INR abaixo de 2.</p>
         ) : (
           ccp.map((d) => (
-            <div key={d.faixa} className="rounded-md border px-3 py-2">
+            <div key={d.faixa} className="rounded-controle border px-3 py-2">
               <p className="font-medium">{d.faixa}</p>
               <p className="tabular-nums">
                 {br(d.uiKg, 0)} UI/kg × {br(peso)} kg = {mil(d.uiCalculada)} UI{d.limitada ? ` → teto de ${mil(d.maxUi)} UI` : ''} · <strong>{mil(d.ui)} UI</strong> · ≥ {br(d.minutos, 0)} min a {CCP.uiMin} UI/min

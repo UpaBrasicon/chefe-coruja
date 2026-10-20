@@ -14,6 +14,7 @@ import { Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
 import { CampoPeso, LinhaManual } from './PecasLoteC'
 import { Errata, Fora, ListaRef, Marca } from './PecasLoteE6'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const frascos = (f: { exato: number; inteiros: number } | null) => (f ? `${br(f.exato)} frascos de 10 g (${f.inteiros} inteiros)` : '—')
 
@@ -125,18 +126,18 @@ export function AsciteHepatorrenalAdulto() {
         <ul className="list-disc pl-5">{CRITERIOS_SHR.map((c) => <li key={c}>{c}</li>)}</ul>
         <p className="text-tinta-sussurro">Critérios diagnósticos da SHR (Tabela 2, p. 790–791).</p>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead><tr className="border-b"><th className="py-1 pr-2">Tabela 4 (p. 792–793)</th><th className="pr-2">Pré-renal</th><th className="pr-2">SHR</th><th>NTA</th></tr></thead>
-            <tbody>
-              {DIFERENCIAL_LRA_CIRROSE.map((d) => <tr key={d.item} className="border-b"><td className="py-1 pr-2 font-medium">{d.item}</td><td className="pr-2">{d.preRenal}</td><td className="pr-2">{d.shr}</td><td>{d.nta}</td></tr>)}
-            </tbody>
-          </table>
+          <Table variante="referencia" className="w-full text-left text-apoio">
+            <TableHeader><TableRow className="border-b"><TableHead className="py-1 pr-2">Tabela 4 (p. 792–793)</TableHead><TableHead className="pr-2">Pré-renal</TableHead><TableHead className="pr-2">SHR</TableHead><TableHead>NTA</TableHead></TableRow></TableHeader>
+            <TableBody>
+              {DIFERENCIAL_LRA_CIRROSE.map((d) => <TableRow key={d.item} className="border-b"><TableCell className="py-1 pr-2 font-medium">{d.item}</TableCell><TableCell className="pr-2">{d.preRenal}</TableCell><TableCell className="pr-2">{d.shr}</TableCell><TableCell>{d.nta}</TableCell></TableRow>)}
+            </TableBody>
+          </Table>
         </div>
         <p className="text-tinta-sussurro">{NOTA_PROTEINURIA_INDICE}</p>
       </Bloco>
 
       <Bloco titulo="Síndrome hepatorrenal — albumina e terlipressina" descricao={`${TERLIPRESSINA_SHR.pagina}.`}>
-        <p role="note" className="rounded-md border border-atencao/40 bg-atencao/[0.08] px-3 py-2 text-sm text-atencao">{DIVERGENCIA_SHR_2024}</p>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{DIVERGENCIA_SHR_2024}</p>
         <LinhaManual nome="Albumina — expansão" texto={ALBUMINA_SHR.texto} pagina={ALBUMINA_SHR.pagina}
           conta={shr ? <strong>{br(shr.gDia)} g/dia × 2 dias{shr.limitadoA100 ? ' (limitado a 100 g/dia)' : ''}</strong> : 'informe o peso'}
           nota={shr ? `Por dia: ${frascos(shr.frascosDia)}.` : undefined} />

@@ -10,8 +10,9 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
 
 function contaOpioide(o: Opioide, peso: number) {
@@ -50,20 +51,20 @@ export function DorAnalgesiaAdulto() {
         <NumberField id="dor-nota" label="Escala numérica (0–10)" value={nota} onChange={setNota} min={0} max={10} />
       </CampoPeso>
       {intensidade && (
-        <p className="flex flex-wrap items-center gap-2 text-sm">
+        <p className="flex flex-wrap items-center gap-2 text-apoio">
           Nota {nota}: <Badge variant={intensidade === 'intensa' ? 'destructive' : intensidade === 'moderada' ? 'warning' : 'success'}>{intensidade}</Badge>
           <span className="text-tinta-sussurro">faixas da Figura 2 (p. 147). Para quem não se comunica: PAINAD e BPS (Tabelas 1 e 2).</span>
         </p>
       )}
 
       <Bloco titulo={`Escada analgésica (${ESCADA_PAGINA})`} descricao={ADJUVANTES_TEXTO}>
-        <ul className="grid gap-1 text-sm md:grid-cols-2">
+        <ul className="grid gap-1 text-apoio md:grid-cols-2">
           {ESCADA_ANALGESICA.map((e) => (
-            <li key={e.degrau} className="rounded-lg border px-3 py-2"><span className="font-medium">{e.degrau}º — {e.dor}</span><br />{e.classe}</li>
+            <li key={e.degrau} className="rounded-controle border px-3 py-2"><span className="font-medium">{e.degrau}º — {e.dor}</span><br />{e.classe}</li>
           ))}
         </ul>
-        <p className="text-sm text-tinta-sussurro">Dor neuropática, sequência do livro ({DOR_NEUROPATICA.pagina}): {DOR_NEUROPATICA.sequencia.map((s, i) => `${i + 1}. ${s}`).join('; ')}.</p>
-        <p className="text-sm text-tinta-sussurro">Octreotide: {OCTREOTIDE.texto} ({OCTREOTIDE.pagina}).</p>
+        <p className="text-apoio text-tinta-sussurro">Dor neuropática, sequência do livro ({DOR_NEUROPATICA.pagina}): {DOR_NEUROPATICA.sequencia.map((s, i) => `${i + 1}. ${s}`).join('; ')}.</p>
+        <p className="text-apoio text-tinta-sussurro">Octreotide: {OCTREOTIDE.texto} ({OCTREOTIDE.pagina}).</p>
       </Bloco>
 
       <Bloco titulo="Opioides (Tabela 3, p. 147–149)" descricao="O livro não traz tabela de equianalgesia: não há conversão entre opioides nesta tela.">

@@ -9,10 +9,12 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Label } from '@/components/ui/label'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 
-const fmtE = (x: number, c = 1) => (Math.round(x * 10 ** c) / 10 ** c).toLocaleString('pt-BR')
+const fmtE = (x: number, c = 1) => numero(Math.round(x * 10 ** c) / 10 ** c)
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
 
 /** Anticoagulação plena por peso do adulto (caps. 13, 14, 25 e 32 do manual do HCFMUSP). */
@@ -44,11 +46,11 @@ export function AnticoagulacaoPlenaAdulto() {
       <Bloco titulo="Enoxaparina">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="acp-ctx">Contexto do capítulo</Label>
-          <select id="acp-ctx" className="h-9 rounded-md border bg-transparent px-2 text-sm" value={ctx} onChange={(e) => setCtx(e.target.value as ContextoEnoxaparina)}>
+          <CampoSelecao id="acp-ctx" className="bg-transparent" value={ctx} onChange={(e) => setCtx(e.target.value as ContextoEnoxaparina)}>
             {(Object.keys(CONTEXTOS_ENOXAPARINA) as ContextoEnoxaparina[]).map((k) => <option key={k} value={k}>{CONTEXTOS_ENOXAPARINA[k].rotulo}</option>)}
-          </select>
+          </CampoSelecao>
           {ctx === 'iamcsst-trombolise' && (
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-center gap-2 text-apoio">
               <input type="checkbox" checked={sk} onChange={(e) => setSk(e.target.checked)} /> Trombólise feita com estreptoquinase
             </label>
           )}
@@ -70,8 +72,8 @@ export function AnticoagulacaoPlenaAdulto() {
           )}
           pagina={CONTEXTOS_ENOXAPARINA[ctx].pagina}
         />
-        {enox?.observacoes.map((o) => <p key={o} className="text-sm text-tinta-sussurro">{o}</p>)}
-        {!clcrInformado && <p className="text-sm text-tinta-sussurro">Sem clearance informado, a conta não aplica ajuste renal.</p>}
+        {enox?.observacoes.map((o) => <p key={o} className="text-apoio text-tinta-sussurro">{o}</p>)}
+        {!clcrInformado && <p className="text-apoio text-tinta-sussurro">Sem clearance informado, a conta não aplica ajuste renal.</p>}
       </Bloco>
 
       <Bloco titulo="Outras heparinas (cap. 25, p. 352)">
@@ -114,9 +116,9 @@ export function AnticoagulacaoPlenaAdulto() {
       <Bloco titulo="AHA/ACC 2025 — anticoagulação com fibrinolítico no IAM (e795)" descricao="Usa peso, idade e clearance informados acima, ao lado da dose do manual (contexto IAM com supra após trombólise).">
         <LinhaManual nome="Enoxaparina com fibrinolítico" texto={enox25 ? enox25.regra : '< 75 anos: 30 mg IV + 1 mg/kg 12/12 h (máx. 100 mg nas 2 primeiras); ≥ 75: 0,75 mg/kg sem bolus (máx. 75 mg); ClCr < 30 em qualquer idade: 1 mg/kg 24/24 h'} pagina="AHA 2025 e795"
           conta={enox25 ? <>{enox25.bolusMg ? `${enox25.bolusMg} mg IV + ` : ''}<strong>{fmtE(enox25.doseMg)} mg {enox25.intervalo}</strong>{enox25.noTeto ? ' (no teto das 2 primeiras doses)' : ''}</> : 'informe o peso'} />
-        <LinhaManual nome="HNF com fibrinolítico" texto={`${HNF_LITICO_2025.bolusUiKg} UI/kg (máx. ${HNF_LITICO_2025.bolusMaxUi.toLocaleString('pt-BR')}) + ${HNF_LITICO_2025.infusaoUiKgH} UI/kg/h (máx. ${HNF_LITICO_2025.infusaoMaxUiH.toLocaleString('pt-BR')} UI/h), TTPa 60–80 s`} pagina={HNF_LITICO_2025.pagina}
+        <LinhaManual nome="HNF com fibrinolítico" texto={`${HNF_LITICO_2025.bolusUiKg} UI/kg (máx. ${numero(HNF_LITICO_2025.bolusMaxUi)}) + ${HNF_LITICO_2025.infusaoUiKgH} UI/kg/h (máx. ${numero(HNF_LITICO_2025.infusaoMaxUiH)} UI/h), TTPa 60–80 s`} pagina={HNF_LITICO_2025.pagina}
           conta={hnf25 ? <>bolus <strong>{fmtE(hnf25.bolusUi, 0)} UI</strong>{hnf25.bolusNoTeto ? ' (teto)' : ''} · <strong>{fmtE(hnf25.infusaoUiH, 0)} UI/h</strong>{hnf25.infusaoNoTeto ? ' (teto)' : ''}</> : 'informe o peso'} />
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_ANTICOAG_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_ANTICOAG_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

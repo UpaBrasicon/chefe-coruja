@@ -11,20 +11,21 @@ import { Label } from '@/components/ui/label'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Erratas, Escolhas } from './PecasLoteE7'
 import { br } from './loteE7Formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 function TabelaCalibres({ itens, comFrench }: { itens: Calibre[]; comFrench?: boolean }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm tabular-nums">
-        <thead><tr className="text-left text-tinta-sussurro"><th className="pr-3">Calibre</th><th className="pr-3">Cor</th><th className="pr-3">Diâmetro</th>{comFrench && <th>≈ French</th>}</tr></thead>
-        <tbody>
+      <Table variante="referencia" className="w-full text-apoio tabular-nums">
+        <TableHeader><TableRow className="text-left text-tinta-sussurro"><TableHead className="pr-3">Calibre</TableHead><TableHead className="pr-3">Cor</TableHead><TableHead className="pr-3">Diâmetro</TableHead>{comFrench && <TableHead>≈ French</TableHead>}</TableRow></TableHeader>
+        <TableBody>
           {itens.map((c) => (
-            <tr key={c.gauge} className="border-t">
-              <td className="pr-3">{c.gauge} G</td><td className="pr-3">{c.cor}</td><td className="pr-3">{br(c.mm, 2)} mm</td>{comFrench && <td>{br(frenchDoCalibre(c))} Fr</td>}
-            </tr>
+            <TableRow key={c.gauge} className="border-t">
+              <TableCell className="pr-3">{c.gauge} G</TableCell><TableCell className="pr-3">{c.cor}</TableCell><TableCell className="pr-3">{br(c.mm, 2)} mm</TableCell>{comFrench && <TableCell>{br(frenchDoCalibre(c))} Fr</TableCell>}
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }
@@ -50,19 +51,19 @@ export function AcessosCalibresAdulto() {
         <div className="grid gap-3 md:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <NumberField id="ace-fr" label="French" unit="Fr" value={fr} onChange={setFr} min={0} step={0.5} />
-            <p className="text-sm tabular-nums">{conv ? <><strong>{br(conv.mm, 2)} mm</strong> (× 0,33) · {br(conv.mmPorTerco, 2)} mm (÷ 3)</> : '—'}</p>
+            <p className="text-apoio tabular-nums">{conv ? <><strong>{br(conv.mm, 2)} mm</strong> (× 0,33) · {br(conv.mmPorTerco, 2)} mm (÷ 3)</> : '—'}</p>
           </div>
           <div className="flex flex-col gap-1.5">
             <NumberField id="ace-mm" label="Diâmetro" unit="mm" value={mm} onChange={setMm} min={0} step={0.1} />
-            <p className="text-sm tabular-nums">{deMm !== null ? <strong>{br(deMm)} Fr</strong> : '—'}</p>
+            <p className="text-apoio tabular-nums">{deMm !== null ? <strong>{br(deMm)} Fr</strong> : '—'}</p>
           </div>
         </div>
       </Bloco>
 
       <Bloco titulo="Dispositivos periféricos — Tabelas 1 e 2 (p. 1396–1397)">
-        <p className="text-sm font-medium">Flexíveis (16 a 24 G no texto; a tabela inclui 14 G)</p>
+        <p className="text-apoio font-medium">Flexíveis (16 a 24 G no texto; a tabela inclui 14 G)</p>
         <TabelaCalibres itens={FLEXIVEIS} comFrench />
-        <p className="text-sm font-medium">Agulhados (19 a 27 G)</p>
+        <p className="text-apoio font-medium">Agulhados (19 a 27 G)</p>
         <TabelaCalibres itens={AGULHADOS} />
       </Bloco>
 

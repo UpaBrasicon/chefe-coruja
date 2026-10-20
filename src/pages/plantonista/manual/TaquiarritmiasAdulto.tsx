@@ -6,8 +6,9 @@ import {
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
 
 /** Drogas EV das taquiarritmias do adulto (cap. 18 do manual do HCFMUSP). */
@@ -23,13 +24,13 @@ export function TaquiarritmiasAdulto() {
       ficha={fichaTaquiarritmiaAdulto}
     >
       <CampoPeso id="taqui-peso" peso={peso} onChange={setPeso}>
-        <label className="flex items-center gap-2 self-end text-sm md:col-span-2">
+        <label className="flex items-center gap-2 self-end text-apoio md:col-span-2">
           <input type="checkbox" checked={central} onChange={(e) => setCentral(e.target.checked)} />
           Adenosina por acesso venoso central de cava superior
         </label>
       </CampoPeso>
 
-      <p className="text-sm text-tinta-sussurro">
+      <p className="text-apoio text-tinta-sussurro">
         No paciente instável o manual traz cardioversão elétrica sincronizada (desfibrilação na torsades de pointes), p. 262. O capítulo não traz a carga
         da cardioversão; a carga da desfibrilação está na tela de PCR (cap. 2, p. 48).
       </p>

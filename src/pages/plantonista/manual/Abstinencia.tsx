@@ -7,15 +7,14 @@ import {
 import type { Respostas } from '@/clinico/escore'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 
 import { Bloco, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
+import { Chip } from '@/components/monitor/Pagina'
 
-const br = (x: number) => (Math.round(x * 10) / 10).toLocaleString('pt-BR')
+const br = (x: number) => numero(Math.round(x * 10) / 10)
 const faixa = (f: Faixa) => (f[0] === f[1] ? br(f[0]) : `${br(f[0])}–${br(f[1])}`)
 
-const botao = (ativo: boolean) =>
-  cn('rounded-md border px-2.5 py-1.5 text-left text-sm transition-colors', ativo ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')
 
 function contaDose(d: DoseAbstinencia) {
   if (d.id === 'midazolam') {
@@ -52,12 +51,12 @@ export function Abstinencia() {
         <div className="flex flex-col gap-4">
           {ciwaAr.itens.map((item) => item.tipo === 'escolha' && (
             <div key={item.id} className="flex flex-col gap-1.5">
-              <span className="text-sm font-semibold">{item.rotulo}</span>
+              <span className="text-apoio font-semibold">{item.rotulo}</span>
               <div className="grid gap-1.5 sm:grid-cols-2">
                 {item.opcoes.map((o, idx) => (
-                  <button key={o.rotulo} type="button" aria-pressed={r[item.id] === idx} onClick={() => setR((x) => ({ ...x, [item.id]: idx }))} className={botao(r[item.id] === idx)}>
+                  <Chip key={o.rotulo} variante="opcao" ativo={r[item.id] === idx} onClick={() => setR((x) => ({ ...x, [item.id]: idx }))}>
                     {o.rotulo}
-                  </button>
+                  </Chip>
                 ))}
               </div>
             </div>
@@ -67,11 +66,11 @@ export function Abstinencia() {
 
       <Bloco titulo="Resultado">
         {!res ? (
-          <p className="text-sm text-tinta-sussurro">Responda os 10 itens ({respondidos} de 10).</p>
+          <p className="text-apoio text-tinta-sussurro">Responda os 10 itens ({respondidos} de 10).</p>
         ) : (
-          <div className="flex flex-col gap-2 text-sm">
+          <div className="flex flex-col gap-2 text-apoio">
             <p className="flex flex-wrap items-center gap-2">
-              CIWA-Ar <Badge className="text-lg">{res.valor}</Badge> <span className="text-tinta-sussurro">{res.unidade}</span>
+              CIWA-Ar <Badge className="text-secao">{res.valor}</Badge> <span className="text-tinta-sussurro">{res.unidade}</span>
               <Badge variant={res.estado === 2 ? 'destructive' : res.estado === 1 ? 'warning' : 'success'}>{res.nota}</Badge>
             </p>
             <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
@@ -82,20 +81,20 @@ export function Abstinencia() {
             {res.alerta && <p className="text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{res.alerta}</p>}
           </div>
         )}
-        <p className="text-sm text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_CIWA.cabecalho}</p>
+        <p className="text-apoio text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_CIWA.cabecalho}</p>
       </Bloco>
 
       <Bloco titulo="Critérios de Caine — encefalopatia de Wernicke (Tabela 4, p. 1032)" descricao="O livro exige dois critérios para o diagnóstico.">
         <div className="grid gap-1.5 sm:grid-cols-2">
           {CRITERIOS_CAINE.map((c) => (
-            <label key={c} className="flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm hover:bg-trilha/50">
+            <label key={c} className="flex cursor-pointer items-center gap-2 rounded-controle border px-2.5 py-1.5 text-apoio hover:bg-trilha/50">
               <input type="checkbox" className="size-4" checked={caineMarcados.includes(c)}
                 onChange={(e) => setCaine((x) => (e.target.checked ? [...x, c] : x.filter((y) => y !== c)))} />
               {c}
             </label>
           ))}
         </div>
-        <p className="text-sm">{cn2.marcados} de 4 — {cn2.preenche ? <strong>critério de Caine preenchido (2 ou mais)</strong> : 'menos de 2 critérios'}</p>
+        <p className="text-apoio">{cn2.marcados} de 4 — {cn2.preenche ? <strong>critério de Caine preenchido (2 ou mais)</strong> : 'menos de 2 critérios'}</p>
       </Bloco>
 
       <Bloco titulo="Doses do manual (p. 1031–1034)" descricao="O livro coloca os benzodiazepínicos como esteio do tratamento; a conta mostra só a dose diária do esquema citado.">
@@ -105,21 +104,21 @@ export function Abstinencia() {
       </Bloco>
 
       <Bloco titulo="Citados sem dose no capítulo">
-        <ul className="flex flex-col gap-1 text-sm">
+        <ul className="flex flex-col gap-1 text-apoio">
           {SEM_DOSE_NO_CAPITULO.map((x) => <li key={x.nome}><span className="font-medium">{x.nome}:</span> {x.texto} <span className="text-tinta-sussurro">({x.pagina})</span></li>)}
         </ul>
       </Bloco>
 
       <Bloco titulo="Tempo de aparecimento (Tabela 2, p. 1026–1027)" descricao={NOTAS_TEMPO_SAA}>
-        <ul className="grid gap-1 text-sm md:grid-cols-2">
+        <ul className="grid gap-1 text-apoio md:grid-cols-2">
           {TEMPOS_SAA.map((t) => (
-            <li key={t.sindrome} className="rounded-lg border px-3 py-2"><span className="font-medium">{t.sindrome}</span> · {t.tempo}<br /><span className="text-tinta-sussurro">{t.achados}</span></li>
+            <li key={t.sindrome} className="rounded-controle border px-3 py-2"><span className="font-medium">{t.sindrome}</span> · {t.tempo}<br /><span className="text-tinta-sussurro">{t.achados}</span></li>
           ))}
         </ul>
       </Bloco>
 
       <Bloco titulo={`Fatores de risco (${FATORES_RISCO_SAA.pagina})`}>
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">
           {FATORES_RISCO_SAA.itens.map((f) => <li key={f}>{f}</li>)}
         </ul>
       </Bloco>

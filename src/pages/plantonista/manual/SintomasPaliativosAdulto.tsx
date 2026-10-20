@@ -9,8 +9,9 @@ import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
 
 /** Dor, dispneia e sedação paliativa do adulto (cap. 104 do manual do HCFMUSP). */
@@ -34,10 +35,10 @@ export function SintomasPaliativosAdulto() {
       ficha={fichaPaliativoAdulto}
     >
       <CampoPeso id="pal-peso" peso={peso} onChange={setPeso} />
-      <p className="text-sm text-tinta-sussurro">{DOR_NAO_VERBAL_PALIATIVO}</p>
+      <p className="text-apoio text-tinta-sussurro">{DOR_NAO_VERBAL_PALIATIVO}</p>
 
       <Bloco titulo="Dor intensa (7–10) sem uso prévio de opioide" descricao={DOR_PALIATIVO_PAGINA}>
-        <ul className="flex flex-col gap-1 text-sm">
+        <ul className="flex flex-col gap-1 text-apoio">
           {DOR_PALIATIVO_SEM_OPIOIDE.map((d) => <li key={d.droga}><span className="font-medium">{d.droga}:</span> {d.texto}</li>)}
         </ul>
       </Bloco>
@@ -47,7 +48,7 @@ export function SintomasPaliativosAdulto() {
           <NumberField id="pal-total" label="Dose total diária de morfina" unit="mg/dia" value={totalDia} onChange={setTotalDia} min={0} step={0.5} />
         </div>
         {resgate && (
-          <p className="text-sm">Resgate <strong>{br(resgate.resgateMg)} mg</strong> · nova dose total <strong>{faixa(resgate.novaTotalMg)} mg/dia</strong></p>
+          <p className="text-apoio">Resgate <strong>{br(resgate.resgateMg)} mg</strong> · nova dose total <strong>{faixa(resgate.novaTotalMg)} mg/dia</strong></p>
         )}
       </Bloco>
 
@@ -77,7 +78,7 @@ export function SintomasPaliativosAdulto() {
           <NumberField id="pal-mgh" label="Infusão atual (opcional)" unit="mg/h" value={mgHAtual} onChange={setMgHAtual} min={0} step={0.5} />
         </div>
         {sed && (
-          <p className="text-sm">
+          <p className="text-apoio">
             Manutenção pelo bolus: <strong>{br(sed.manutencaoPeloBolusMgH, 2)} mg/h</strong> = {br(sed.mlH, 2)} mL/h (1 mg/mL) · faixa do livro {faixa(SEDACAO_PALIATIVA.manutencaoMgH)} mg/h
             {sed.acimaDoLimite === true && <span className="text-atencao"> · acima de 20 mg/h: o livro diz considerar associação</span>}
             {sed.acimaDoLimite === 'faixa' && <span className="text-atencao"> · entre 15 e 20 mg/h: faixa em que o livro diz considerar associação</span>}
@@ -86,10 +87,10 @@ export function SintomasPaliativosAdulto() {
       </Bloco>
 
       <Bloco titulo={`Extubação paliativa (${EXTUBACAO_PALIATIVA.pagina})`}>
-        <ul className="list-disc pl-5 text-sm">
+        <ul className="list-disc pl-5 text-apoio">
           {EXTUBACAO_PALIATIVA.itens.map((i) => <li key={i}>{i}</li>)}
         </ul>
-        <p className="text-sm text-atencao">{EXTUBACAO_PALIATIVA.errata}</p>
+        <p className="text-apoio text-atencao">{EXTUBACAO_PALIATIVA.errata}</p>
       </Bloco>
     </ToolLayout>
   )

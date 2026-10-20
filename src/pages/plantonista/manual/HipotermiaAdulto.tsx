@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Bloco, LinhaManual } from './PecasLoteC'
 import { Erratas, Escolhas, ListaLivro } from './PecasLoteE7'
 import { br, lerNumero } from './loteE7Formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 function CampoTemp({ id, rotulo, valor, onChange }: { id: string; rotulo: string; valor: string; onChange: (v: string) => void }) {
   return (
@@ -61,9 +62,9 @@ export function HipotermiaAdulto() {
           <>
             <LinhaManual nome={est.estagio} texto={est.nome} pagina="p. 1360" />
             {est.reaquecimento !== '—' && <LinhaManual nome="Reaquecimento (Tabela 6)" texto={est.reaquecimento} pagina="p. 1370" />}
-            {est.nota && <p className="text-sm text-atencao">{est.nota}</p>}
+            {est.nota && <p className="text-apoio text-atencao">{est.nota}</p>}
           </>
-        ) : <p className="text-sm text-tinta-sussurro">Informe a temperatura central.</p>}
+        ) : <p className="text-apoio text-tinta-sussurro">Informe a temperatura central.</p>}
       </Bloco>
 
       <Bloco titulo="RCP na hipotermia (p. 1366–1367)" descricao={Number.isFinite(t) ? `Para ${br(t)} °C.` : 'Temperatura desconhecida.'}>
@@ -78,7 +79,7 @@ export function HipotermiaAdulto() {
           <CampoTemp id="hip-t2" rotulo="Temperatura atual (°C)" valor={t2} onChange={setT2} />
           <CampoTemp id="hip-h" rotulo="Intervalo (horas)" valor={horas} onChange={setHoras} />
         </div>
-        <p className="text-sm tabular-nums">
+        <p className="text-apoio tabular-nums">
           {taxa ? <><strong>{br(taxa.cPorHora, 2)} °C/h</strong>{taxa.falhaPassivo ? ' — abaixo de 0,5 °C/h (critério do livro de falha do passivo)' : ''}</> : 'informe as duas temperaturas e o intervalo'}
         </p>
         {METODOS_REAQUECIMENTO.map((m) => <LinhaManual key={m.metodo} nome={m.metodo} texto={`${m.tecnica}; indicação: ${m.indicacao}; ganho: ${m.taxa}`} pagina="p. 1368–1369" />)}
@@ -93,26 +94,26 @@ export function HipotermiaAdulto() {
             <Escolhas valor={arritmia} opcoes={[['nao', 'Não'], ['sim', 'Sim']] as const} onChange={setArritmia} />
           </div>
         </div>
-        <p className="text-sm">{ecpr.length ? <>Critério(s) presente(s): <strong>{ecpr.join('; ')}</strong>.</> : 'Nenhum dos quatro critérios (FC < 45, PAS < 90, arritmia ventricular, T < 30 °C) com os dados informados.'}</p>
-        <ul className="grid gap-1 text-sm md:grid-cols-2">
-          {ESTAGIOS_ERC_2025.map((e) => <li key={e.estagio} className="rounded-lg border px-3 py-2"><span className="font-medium">Estágio {e.estagio}</span> — {e.clinica}; {e.tempC}</li>)}
+        <p className="text-apoio">{ecpr.length ? <>Critério(s) presente(s): <strong>{ecpr.join('; ')}</strong>.</> : 'Nenhum dos quatro critérios (FC < 45, PAS < 90, arritmia ventricular, T < 30 °C) com os dados informados.'}</p>
+        <ul className="grid gap-1 text-apoio md:grid-cols-2">
+          {ESTAGIOS_ERC_2025.map((e) => <li key={e.estagio} className="rounded-controle border px-3 py-2"><span className="font-medium">Estágio {e.estagio}</span> — {e.clinica}; {e.tempC}</li>)}
         </ul>
       </Bloco>
 
       <Bloco titulo="ERC/RCUK 2025 × manual do HC">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">ERC/RCUK 2025</th><th className="pb-2">Manual do HC</th></tr></thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ERC/RCUK 2025</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>
               {DIRETRIZ_HIPOTERMIA_2025.map((d) => (
-                <tr key={d.tema} className="border-t">
-                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
-                  <td className="pr-3 py-2">{d.erc}</td>
-                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
-                </tr>
+                <TableRow key={d.tema} className="border-t">
+                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                  <TableCell className="pr-3 py-2">{d.erc}</TableCell>
+                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </Bloco>
 

@@ -9,8 +9,9 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { numero } from '@/lib/formato'
 
-const br = (x: number | null | undefined, casas = 1) => (x === null || x === undefined ? '—' : (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR'))
+const br = (x: number | null | undefined, casas = 1) => (x === null || x === undefined ? '—' : numero(Math.round(x * 10 ** casas) / 10 ** casas))
 
 const CENARIOS = Object.entries(CONDUTA_HIPONATREMIA) as [CenarioHipo, (typeof CONDUTA_HIPONATREMIA)[CenarioHipo]][]
 
@@ -51,23 +52,23 @@ export function HiponatremiaManual() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Classificação (p. 883, 886, 888)</CardTitle>
+          <CardTitle className="text-corpo">Classificação (p. 883, 886, 888)</CardTitle>
           <CardDescription>Hiponatremia: Na &lt; 135 (p. 882). Leve 130–134, moderada 120–129, grave &lt; 120. Aguda &lt; 48 h; crônica &gt; 48 h ou tempo desconhecido.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2 text-sm">
+        <CardContent className="flex flex-col gap-2 text-apoio">
           <p>Sódio {glic > 0 ? 'corrigido pela glicemia' : 'medido'}: <strong>{br(naCorr)} mEq/L</strong> — {naCorr === null ? '—' : grav ? <strong>{grav}</strong> : 'não é hiponatremia pelo corte do manual'}</p>
           {ton && <p>Pela osmolaridade: <strong>{TONICIDADE_TEXTO[ton]}</strong></p>}
-          <p className="text-xs text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{ERRATA_SODIO_CORRIGIDO}</p>
+          <p className="text-rotulo text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{ERRATA_SODIO_CORRIGIDO}</p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">NaCl 3% (p. 889)</CardTitle>
+          <CardTitle className="text-corpo">NaCl 3% (p. 889)</CardTitle>
           <CardDescription>Preparo do manual: {SALINA_3.sfMl} mL de SF + {SALINA_3.nacl20Ml} mL de NaCl 20% = {SALINA_3.totalMl} mL de NaCl 3%. Dica do livro: cada 1 mL/kg eleva o sódio em cerca de 1 mEq/L (estimativa).</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 text-sm">
-          <p role="note" className="rounded-md border border-atencao/40 bg-atencao/[0.08] px-3 py-2 text-atencao">{ALERTA_SUBCORRECAO}</p>
+        <CardContent className="flex flex-col gap-3 text-apoio">
+          <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-atencao">{ALERTA_SUBCORRECAO}</p>
           {!(peso > 0) ? <p className="text-tinta-sussurro">Informe o peso.</p> : (
             <>
               <p className="tabular-nums">Bolus de {LIMITES_HIPONATREMIA.bolusMl} mL ≈ <strong>+{br(sobeBolus)} mEq/L</strong> · máximo de {LIMITES_HIPONATREMIA.bolusMaxMl} mL ≈ +{br(sobeMax)} mEq/L</p>
@@ -86,16 +87,16 @@ export function HiponatremiaManual() {
               </div>
             </>
           )}
-          <p className="text-xs text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{ERRATA_HIPONATREMIA}</p>
+          <p className="text-rotulo text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{ERRATA_HIPONATREMIA}</p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Tabelas 4 e 5 — o que o manual traz</CardTitle>
+          <CardTitle className="text-corpo">Tabelas 4 e 5 — o que o manual traz</CardTitle>
           <CardDescription>Escolha o cenário. A decisão é de quem assiste o paciente.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 text-sm">
+        <CardContent className="flex flex-col gap-3 text-apoio">
           <div className="flex flex-wrap gap-2">
             {CENARIOS.map(([id, l]) => (
               <Button key={id} type="button" size="sm" variant={cenario === id ? 'default' : 'outline'} onClick={() => setCenario(id)} className="whitespace-normal text-left">{l.cenario}</Button>
