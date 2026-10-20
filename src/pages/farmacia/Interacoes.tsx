@@ -5,6 +5,7 @@ import * as React from 'react'
 import { TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
@@ -90,10 +91,10 @@ function LinhaGrupo({ g, unidadeId, podeEditar }: { g: GrupoInteracao | null; un
 
   if (!editando) {
     return g ? (
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-fio bg-superficie px-3 py-2 text-apoio">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
         <span className="font-medium text-tinta">{g.nome}</span>
         <span className={g.membros.length ? 'text-tinta-apoio' : 'text-atencao'}>{g.membros.length ? g.membros.join(', ') : 'sem fármaco: a farmácia preenche'}</span>
-        <span className="text-xs text-tinta-sussurro">{g.no_cadastro} no cadastro</span>
+        <span className="text-rotulo text-tinta-sussurro">{g.no_cadastro} no cadastro</span>
         {podeEditar && <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setEditando(true)}>Editar</Button>}
       </div>
     ) : (
@@ -101,10 +102,10 @@ function LinhaGrupo({ g, unidadeId, podeEditar }: { g: GrupoInteracao | null; un
     )
   }
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-acao/30 bg-acao/[0.04] p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-acao/30 bg-alerta-marca p-3">
       <Input placeholder="Nome do grupo" value={nome} disabled={!!g} onChange={(e) => setNome(e.target.value)} />
       <Textarea rows={2} placeholder="Princípios ativos, separados por vírgula (ex.: fluoxetina, sertralina)" value={membros} onChange={(e) => setMembros(e.target.value)} />
-      {salvar.error && <span role="alert" className="text-xs text-critico">{(salvar.error as Error).message}</span>}
+      {salvar.error && <span role="alert" className="text-rotulo text-critico">{(salvar.error as Error).message}</span>}
       <div className="flex gap-2">
         <Button size="sm" disabled={nome.trim().length < 3 || salvar.isPending} onClick={() => salvar.mutate()}>Salvar grupo</Button>
         <Button size="sm" variant="ghost" onClick={() => setEditando(false)}>Voltar</Button>
@@ -118,7 +119,7 @@ function LinhaPar({ p, grupos, unidadeId, podeEditar }: { p: ParInteracao; grupo
   const st = SITUACAO[p.situacao]
   if (editando) return <FormPar inicial={p} grupos={grupos} unidadeId={unidadeId} aoFechar={() => setEditando(false)} />
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-fio bg-superficie px-3 py-2 text-apoio">
+    <div className="flex flex-col gap-1 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium text-tinta">{p.grupo_a} × {p.grupo_b}</span>
         <Badge variant={p.gravidade === 'contraindicada' ? 'destructive' : 'warning'}>{p.gravidade}</Badge>
@@ -126,7 +127,7 @@ function LinhaPar({ p, grupos, unidadeId, podeEditar }: { p: ParInteracao; grupo
         {podeEditar && <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setEditando(true)}>Editar</Button>}
       </div>
       <span className="text-tinta">{frase(p.efeito)}{p.conduta ? ` Conduta: ${frase(p.conduta)}` : ''}</span>
-      <span className="text-xs text-tinta-sussurro">
+      <span className="text-rotulo text-tinta-sussurro">
         Fonte: {p.fonte}{p.atualizado_por ? ` · ${p.atualizado_por}, ${fmtDataHora(p.atualizado_em)}` : ''}{p.motivo ? ` — “${p.motivo}”` : ''}
       </span>
     </div>
@@ -157,18 +158,18 @@ function FormPar({ inicial, grupos, unidadeId, aoFechar }: { inicial: ParInterac
     onSuccess: () => { recarregar(); aoFechar() },
   })
   const seletor = (id: string, valor: string, set: (v: string) => void) => (
-    <select id={id} className="h-9 rounded-controle border border-fio bg-campo px-2 text-controle" value={valor} onChange={(e) => set(e.target.value)}>
+    <CampoSelecao id={id} className="text-controle" value={valor} onChange={(e) => set(e.target.value)}>
       <option value="">Escolha o grupo…</option>
       {grupos.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
-    </select>
+    </CampoSelecao>
   )
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-acao/30 bg-acao/[0.04] p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-acao/30 bg-alerta-marca p-3">
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="flex flex-col gap-1"><Label htmlFor="par-a">Grupo A</Label>{seletor('par-a', f.grupo_a, (v) => setF({ ...f, grupo_a: v }))}</div>
         <div className="flex flex-col gap-1"><Label htmlFor="par-b">Grupo B</Label>{seletor('par-b', f.grupo_b, (v) => setF({ ...f, grupo_b: v }))}</div>
       </div>
-      <div className="flex flex-wrap gap-3 text-sm">
+      <div className="flex flex-wrap gap-3 text-apoio">
         {(['contraindicada', 'grave'] as const).map((g) => (
           <label key={g} className="flex items-center gap-1.5"><input type="radio" checked={f.gravidade === g} onChange={() => setF({ ...f, gravidade: g })} /> {g}</label>
         ))}
@@ -181,7 +182,7 @@ function FormPar({ inicial, grupos, unidadeId, aoFechar }: { inicial: ParInterac
       <Input placeholder="Conduta (opcional)" value={f.conduta} onChange={(e) => setF({ ...f, conduta: e.target.value })} />
       <Input placeholder="Fonte (bula ANVISA, lista ONC…)" value={f.fonte} onChange={(e) => setF({ ...f, fonte: e.target.value })} />
       <Input placeholder="Motivo da mudança (obrigatório)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
-      {salvar.error && <span role="alert" className="text-xs text-critico">{(salvar.error as Error).message}</span>}
+      {salvar.error && <span role="alert" className="text-rotulo text-critico">{(salvar.error as Error).message}</span>}
       <div className="flex gap-2">
         <Button size="sm" disabled={!f.grupo_a || !f.grupo_b || f.efeito.trim().length < 5 || f.fonte.trim().length < 5 || motivo.trim().length < 5 || salvar.isPending}
           onClick={() => salvar.mutate()}>Salvar</Button>

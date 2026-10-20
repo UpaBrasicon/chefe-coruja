@@ -12,14 +12,14 @@ import * as React from 'react'
 
 import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { rotuloUnidade, UNIDADES_CONSUMO, type MedicamentoUnidade, type UnidadeConsumo } from '@/lib/unidadeConsumo'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
-
-const selectCls = 'h-8 rounded-controle border border-fio bg-campo px-2 text-apoio'
 
 export default function UnidadeConsumoPagina() {
   const [aConferir, setAConferir] = React.useState(true)
@@ -59,14 +59,18 @@ export default function UnidadeConsumoPagina() {
         <Vazio icone={PackageCheck} titulo={aConferir ? 'Nada a conferir' : 'Nenhum medicamento'} texto={aConferir ? 'Todas as unidades de consumo já foram conferidas.' : undefined} />
       ) : (
         <div className="overflow-x-auto rounded-container border border-fio bg-superficie">
-          <table className="w-full min-w-[640px] text-apoio">
-            <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
-              <tr><th className="px-3 py-2 font-medium">Medicamento</th><th className="px-3 py-2 font-medium">Unidade de consumo</th><th className="px-3 py-2 font-medium">Conferida</th></tr>
-            </thead>
-            <tbody>
+          <Table className="min-w-[640px] text-apoio">
+            <TableHeader className="bg-transparent">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="px-3 py-2 text-rotulo font-medium tracking-normal normal-case">Medicamento</TableHead>
+                <TableHead className="px-3 py-2 text-rotulo font-medium tracking-normal normal-case">Unidade de consumo</TableHead>
+                <TableHead className="px-3 py-2 text-rotulo font-medium tracking-normal normal-case">Conferida</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {lista.data!.itens.map((m) => <Linha key={m.id} m={m} />)}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>
@@ -89,18 +93,18 @@ function Linha({ m }: { m: MedicamentoUnidade }) {
   const mudou = unidade !== (m.unidade_consumo ?? '') || (unidade === 'outra' && outra.trim() !== (m.unidade_consumo_outra ?? ''))
   const pronto = !!unidade && (unidade !== 'outra' || outra.trim().length >= 3)
   return (
-    <tr className="border-b border-trilha align-top last:border-0">
-      <td className="px-3 py-2">
+    <TableRow className="align-top hover:bg-transparent">
+      <TableCell className="px-3 py-2 align-top whitespace-normal">
         <span className="font-medium text-tinta">{m.principio_ativo}</span>
         <span className="block text-rotulo text-tinta-sussurro">{[m.apresentacao, m.concentracao].filter(Boolean).join(' · ')}</span>
-      </td>
-      <td className="px-3 py-2">
+      </TableCell>
+      <TableCell className="px-3 py-2 align-top whitespace-normal">
         <div className="flex flex-wrap items-center gap-2">
-          <select aria-label={`Unidade de consumo de ${m.principio_ativo}`} className={selectCls} value={unidade}
+          <CampoSelecao aria-label={`Unidade de consumo de ${m.principio_ativo}`} tamanho="compacto" value={unidade}
             onChange={(e) => setUnidade(e.target.value as UnidadeConsumo | '')}>
             <option value="">Escolha…</option>
             {UNIDADES_CONSUMO.map(([k, r]) => <option key={k} value={k}>{r}</option>)}
-          </select>
+          </CampoSelecao>
           {unidade === 'outra' && (
             <Input className="h-8 w-40" aria-label="Qual unidade" placeholder="Qual unidade" value={outra} onChange={(e) => setOutra(e.target.value)} />
           )}
@@ -110,10 +114,10 @@ function Linha({ m }: { m: MedicamentoUnidade }) {
           </Button>
         </div>
         {salvar.error && <span role="alert" className="block text-rotulo text-critico">{(salvar.error as Error).message}</span>}
-      </td>
-      <td className="px-3 py-2 text-tinta-apoio">
+      </TableCell>
+      <TableCell className="px-3 py-2 align-top whitespace-normal text-tinta-apoio">
         {m.conferida_em ? `${rotuloUnidade(m.unidade_consumo, m.unidade_consumo_outra)} · ${m.conferida_por ?? '—'}, ${fmtDataHora(m.conferida_em)}` : 'sugerida, a conferir'}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 }

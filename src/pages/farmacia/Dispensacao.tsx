@@ -14,10 +14,12 @@ import * as React from 'react'
 
 import { TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
@@ -174,7 +176,7 @@ function Avulsa({ unidade }: { unidade: string }) {
     <div className="flex max-w-xl flex-col gap-3 text-apoio">
       <p className="text-tinta-sussurro">Saída sem prescrição (ex.: reposição do carrinho de emergência). Sai do estoque e fica registrada com destino e motivo.</p>
       {med ? (
-        <div className="flex items-center justify-between rounded-lg border border-fio px-3 py-2">
+        <div className="flex items-center justify-between rounded-controle border border-fio px-3 py-2">
           <span><span className="font-medium text-tinta">{med.principio_ativo}</span> {med.apresentacao ?? ''} · {rotuloUnidade(med.unidade_consumo, med.unidade_consumo_outra)}</span>
           <Button size="xs" variant="ghost" onClick={() => setMed(null)}>Trocar</Button>
         </div>
@@ -182,9 +184,9 @@ function Avulsa({ unidade }: { unidade: string }) {
         <div className="flex flex-col gap-1">
           <Input aria-label="Medicamento" placeholder="Medicamento do cadastro (3 letras ou mais)" value={busca} onChange={(e) => setBusca(e.target.value)} />
           {(resultados.data ?? []).map((m) => (
-            <button key={m.id} type="button" onClick={() => setMed(m)} className="flex gap-2 border-b border-fio px-2 py-1 text-left text-xs last:border-0 hover:bg-trilha">
+            <BotaoLinha key={m.id} variante="linha" onClick={() => setMed(m)} className="gap-2 border-fio px-2 py-1 text-rotulo hover:bg-trilha">
               <span className="font-medium">{m.principio_ativo}</span><span className="text-tinta-apoio">{m.apresentacao}</span>
-            </button>
+            </BotaoLinha>
           ))}
         </div>
       )}
@@ -240,7 +242,7 @@ function Registro({ unidade, podeAgir }: { unidade: string; podeAgir: boolean })
     <div className="flex flex-col gap-3 text-apoio">
       <MensagemErro texto={(lista.error ?? conferir.error ?? devolver.error) ? ((lista.error ?? conferir.error ?? devolver.error) as Error).message : null} />
       {(d?.estoque_negativo.length ?? 0) > 0 && (
-        <div role="alert" className="rounded-lg border border-atencao/30 bg-atencao/[0.06] px-3 py-2">
+        <div role="alert" className="rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2">
           <span className="font-medium text-tinta">Saldo negativo: confira o estoque destes medicamentos.</span>
           <ul className="list-disc pl-5 text-tinta-apoio">{d!.estoque_negativo.map((e) => <li key={e.medicamento}>{e.medicamento}: {e.saldo}</li>)}</ul>
         </div>
@@ -248,38 +250,44 @@ function Registro({ unidade, podeAgir }: { unidade: string; podeAgir: boolean })
       <TituloSecao extra={d && d.a_conferir > 0 ? `${d.a_conferir} retirada(s) sem farmacêutico a conferir` : 'últimas 72 h'}>Dispensações</TituloSecao>
       {lista.isLoading ? <Spinner /> : (d?.dispensacoes ?? []).length === 0 ? <p className="text-tinta-sussurro">Nenhuma dispensação nas últimas 72 h.</p> : (
         <div className="overflow-x-auto rounded-container border border-fio bg-superficie">
-          <table className="w-full min-w-[640px]">
-            <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
-              <tr><th className="px-3 py-2 font-medium">Medicamento</th><th className="px-3 py-2 font-medium">Para</th><th className="px-3 py-2 font-medium">Qtd.</th><th className="px-3 py-2 font-medium">Quem, quando</th><th /></tr>
-            </thead>
-            <tbody>
+          <Table className="min-w-[640px] text-apoio">
+            <TableHeader className="bg-transparent">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="px-3 py-2 text-rotulo font-medium tracking-normal normal-case">Medicamento</TableHead>
+                <TableHead className="px-3 py-2 text-rotulo font-medium tracking-normal normal-case">Para</TableHead>
+                <TableHead className="px-3 py-2 text-rotulo font-medium tracking-normal normal-case">Qtd.</TableHead>
+                <TableHead className="px-3 py-2 text-rotulo font-medium tracking-normal normal-case">Quem, quando</TableHead>
+                <TableHead className="px-3 py-2" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {d!.dispensacoes.map((x) => (
-                <tr key={x.id} className="border-b border-trilha align-top last:border-0">
-                  <td className="px-3 py-2">{x.medicamento}</td>
-                  <td className="px-3 py-2">{x.paciente ?? `Avulsa: ${x.destino}`}{x.motivo ? <span className="block text-rotulo text-tinta-sussurro">“{x.motivo}”</span> : null}</td>
-                  <td className="px-3 py-2">{x.quantidade}{x.devolvido > 0 ? ` (voltou ${x.devolvido})` : ''} {rotuloUnidade(x.unidade_consumo).toLowerCase()}</td>
-                  <td className="px-3 py-2">
+                <TableRow key={x.id} className="align-top hover:bg-transparent">
+                  <TableCell className="px-3 py-2 align-top whitespace-normal">{x.medicamento}</TableCell>
+                  <TableCell className="px-3 py-2 align-top whitespace-normal">{x.paciente ?? `Avulsa: ${x.destino}`}{x.motivo ? <span className="block text-rotulo text-tinta-sussurro">“{x.motivo}”</span> : null}</TableCell>
+                  <TableCell className="px-3 py-2 align-top whitespace-normal">{x.quantidade}{x.devolvido > 0 ? ` (voltou ${x.devolvido})` : ''} {rotuloUnidade(x.unidade_consumo).toLowerCase()}</TableCell>
+                  <TableCell className="px-3 py-2 align-top whitespace-normal">
                     {x.dispensada_por ?? '—'}, {fmtDataHora(x.dispensada_em)}
                     {x.sem_farmaceutico && (
                       <span className="block text-rotulo">
                         {x.conferida_em ? <span className="text-conforme">sem farmacêutico · conferida por {x.conferida_por}</span> : <Badge variant="warning">sem farmacêutico · a conferir</Badge>}
                       </span>
                     )}
-                  </td>
-                  <td className="px-3 py-2 text-right">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-right align-top whitespace-normal">
                     {podeAgir && x.sem_farmaceutico && !x.conferida_em && <Button size="xs" onClick={() => conferir.mutate(x.id)}>Conferir</Button>}
                     {podeAgir && x.quantidade - x.devolvido > 0 && (
                       <Button size="xs" variant="ghost" onClick={() => { setDevolvendo(x); setQtd('1'); setMotivo('') }}>Devolução</Button>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
       {devolvendo && (
-        <div className="flex flex-col gap-2 rounded-lg border border-fio p-3">
+        <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
           <span className="font-medium text-tinta">Devolução: {devolvendo.medicamento} (até {devolvendo.quantidade - devolvendo.devolvido})</span>
           <div className="flex flex-wrap items-end gap-2">
             <div className="flex flex-col gap-1">

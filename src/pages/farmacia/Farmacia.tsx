@@ -9,10 +9,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, CheckCircle2, ClipboardPlus, FlaskConical, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react'
 import * as React from 'react'
 
+import { dataHora, numero } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { Chip, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,18 +28,13 @@ const ABAS = [
   ['faltas', 'Faltas'], ['validacao', 'Validação'],
 ] as const
 type Aba = (typeof ABAS)[number][0]
-const hora = (iso: string | null) => (iso ? new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }) : '—')
+const hora = (iso: string | null) => (iso ? dataHora(iso) : '—')
 const num = (x: string) => (x.trim() === '' ? null : Number(x.replace(',', '.')))
-const fmt = (n: number | null | undefined) => (n == null ? '—' : n.toLocaleString('pt-BR'))
+const fmt = (n: number | null | undefined) => (n == null ? '—' : numero(n))
 
 export function Filtro({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button type="button" aria-pressed={ativo} onClick={onClick}
-      className={cn('inline-flex items-center gap-1.5 rounded-capsula border px-3 py-[5px] text-apoio whitespace-nowrap transition-colors',
-        ativo ? 'border-acao bg-alerta-marca font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
-      {children}
-    </button>
-  )
+  // Adaptador para o Chip único (monitor/Pagina): filtro que liga e desliga.
+  return <Chip ativo={ativo} onClick={onClick}>{children}</Chip>
 }
 
 export default function Farmacia() {
@@ -193,10 +189,10 @@ function LinhaEstoque({ d, unidade, aoErro, aoMudar }: { d: Estoque; unidade: st
           </span>
           <span className="text-rotulo text-tinta-sussurro">{d.apresentacao ?? '—'}{d.atualizado_em ? ` · atualizado ${hora(d.atualizado_em)}${d.atualizado_por ? ` por ${d.atualizado_por}` : ''}` : ''}</span>
         </div>
-        <button type="button" onClick={() => { setC(d.limite_proprio ? d.limite_critico?.toString() ?? '' : ''); setF(d.limite_proprio ? d.limite_falta?.toString() ?? '' : ''); setEditando(!editando) }}
-          className="inline-flex items-center gap-1.5 rounded-controle border border-fio bg-superficie px-2.5 py-1 text-rotulo text-tinta-apoio hover:border-acao hover:text-acao">
+        <Button size="xs" variant="outline" onClick={() => { setC(d.limite_proprio ? d.limite_critico?.toString() ?? '' : ''); setF(d.limite_proprio ? d.limite_falta?.toString() ?? '' : ''); setEditando(!editando) }}
+          className="gap-1.5 rounded-controle px-2.5 py-1">
           <SlidersHorizontal className="size-3.5" aria-hidden /> {limiteResumo}
-        </button>
+        </Button>
         <div className="flex items-center gap-1.5">
           <Input aria-label={`Saldo de ${d.principio_ativo}`} className="h-8 w-20 tabular-nums" inputMode="decimal" value={q} onChange={(e) => setQ(e.target.value)} placeholder="saldo" />
           <Button size="xs" variant="outline" disabled={q.trim() === '' || num(q) === d.quantidade}
