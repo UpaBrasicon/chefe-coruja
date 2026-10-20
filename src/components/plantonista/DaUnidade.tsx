@@ -1,6 +1,8 @@
 import { ArrowRight, ImageOff, Pause, Play } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+import { TituloCartao } from '@/components/monitor/Pagina'
+import { Button } from '@/components/ui/button'
 import { useBanners } from '@/hooks/useBanners'
 import { cn } from '@/lib/utils'
 
@@ -29,16 +31,16 @@ export function DaUnidade({ unidadeId }: { unidadeId?: string }) {
   return (
     <section aria-label="Da unidade" className="overflow-hidden rounded-container border border-fio bg-superficie">
       <div className="flex items-center justify-between border-b border-trilha px-4 py-2.5">
-        <h2 className="rotulo text-tinta-apoio">Da unidade</h2>
+        <TituloCartao className="mb-0">Da unidade</TituloCartao>
         {banners.length > 1 && (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setPausado((v) => !v)}
             aria-label={pausado ? 'Retomar a troca automática' : 'Pausar a troca automática'}
-            className="rounded-controle-sm p-1 text-tinta-sussurro hover:text-acao"
           >
             {pausado ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}
-          </button>
+          </Button>
         )}
       </div>
       {atual ? (
@@ -58,6 +60,7 @@ export function DaUnidade({ unidadeId }: { unidadeId?: string }) {
           {banners.length > 1 && (
             <div className="flex justify-center gap-1.5 pb-3" role="tablist" aria-label="Avisos da unidade">
               {banners.map((b, k) => (
+                // padrao-ok: ponto do carrossel (marcador de 6 px que alarga quando ativo); nenhuma peça tem essa forma
                 <button
                   key={b.id}
                   type="button"

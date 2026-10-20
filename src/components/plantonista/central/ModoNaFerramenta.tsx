@@ -42,8 +42,8 @@ export function FaixaModo({ publico }: { publico: PublicoFerramenta }) {
     <div
       role={alerta ? 'alert' : 'note'}
       className={cn(
-        'mb-[18px] flex items-start gap-2.5 rounded-menu border px-[15px] py-[13px]',
-        alerta ? 'border-critico/20 bg-alerta-critico text-critico' : pedi ? 'border-pediatria/20 bg-pediatria/[0.06] text-pediatria' : 'border-acao/20 bg-alerta-marca text-acao',
+        'mb-[18px] flex items-start gap-2.5 rounded-container border px-[15px] py-[13px]',
+        alerta ? 'border-critico/20 bg-alerta-critico text-critico' : pedi ? 'border-pediatria/20 bg-pediatria/10 text-pediatria' : 'border-acao/20 bg-alerta-marca text-acao',
       )}
     >
       {alerta ? <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden /> : <Baby className="mt-0.5 size-4 shrink-0" aria-hidden />}
