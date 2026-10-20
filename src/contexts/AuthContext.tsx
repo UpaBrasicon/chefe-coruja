@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { manterConectadoVencido, supabase } from '@/lib/supabase'
-import { limparTodosRascunhos } from '@/pages/plantao/shared/rascunho'
+import { limparTodosRascunhos } from '@/lib/rascunho'
 import { definirChave } from '@/lib/cofreLocal'
 import { aplicarTema, ehTema, type Tema } from '@/lib/tema'
 import type { Perfis } from '@/types/database'

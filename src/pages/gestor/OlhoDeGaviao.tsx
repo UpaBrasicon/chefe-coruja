@@ -13,7 +13,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { Database } from '@/types/database'
 
-import { useLimitesUnidade } from './limites'
+import { useLimitesUnidade } from '@/lib/limitesUnidade'
 
 // Olho de Gavião do gestor (P/index.html 7023–7117): os apontamentos da
 // varredura da unidade (sobrecarga, descanso, presença, documentação,

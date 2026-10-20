@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { useTurnstile } from '@/components/seguranca/Turnstile'
 import { Label } from '@/components/ui/label'
-import { LadoMarca, MarcaCompacta } from '@/pages/entrada/LadoMarca'
-import '@/pages/entrada/entrada.css'
+import { LadoMarca, MarcaCompacta } from '@/components/entrada/LadoMarca'
+import '@/components/entrada/entrada.css'
 
 // Login (login.html do protótipo): abas Entrar e Primeira vez, e o passo do
 // código quando a conta tem segundo fator. "Criar conta" não existe: o

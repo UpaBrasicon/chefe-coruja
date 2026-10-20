@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils'
 import { Spinner } from '@/components/ui/spinner'
 import { TituloPagina } from '@/components/monitor/Pagina'
 
-import { avaliarUnidade, haQuanto, LATENCIA_ALVO_MS, lugar, selo, SELO_ESTADO, useLatencia, useServidores, useUnidadesRede } from './dadosAdmin'
-import { cartao, Metricas } from './ui'
+import { avaliarUnidade, haQuanto, LATENCIA_ALVO_MS, lugar, selo, SELO_ESTADO, useLatencia, useServidores, useUnidadesRede } from '@/lib/dadosAdmin'
+import { cartao, Metricas } from '@/components/admin/ui'
 
 // Plataformas (P/index.html 9383–9454): o software em cada unidade da rede.
 // O protótipo trazia versão, latência, uptime e backup por unidade, com

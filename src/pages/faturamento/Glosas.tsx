@@ -30,7 +30,7 @@ import {
   type AcaoGlosa, type EtapaGlosa, type Glosa, type Glosavel, type MotivoGlosa, type PainelGlosas,
 } from '@/lib/glosas'
 import { supabase } from '@/lib/supabase'
-import { Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 
 const MINIMO_MOTIVO = 10
 const VARIANTE: Record<EtapaGlosa, 'destructive' | 'warning' | 'success' | 'secondary'> = {
@@ -66,7 +66,7 @@ export default function Glosas() {
         titulo="Glosas"
         descricao="Produção recusada pelo SIA/SIH ou pelo gestor municipal, registrada a partir do relatório de rejeição. O faturamento acompanha o recurso; só o gestor marca como perdida."
       />
-      <Erro texto={painel.error ? (painel.error as Error).message : null} />
+      <MensagemErro texto={painel.error ? (painel.error as Error).message : null} />
       {painel.isLoading || !p ? <Spinner /> : (
         <>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

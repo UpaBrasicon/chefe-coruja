@@ -13,8 +13,8 @@ import { Campo, Pilulas, Texto } from '@/components/documentos/ui'
 import {
   CATEGORIA, haQuanto, selo, SEVERIDADE, SITUACAO,
   type Categoria, type Severidade, type Situacao,
-} from '@/pages/admin/dadosAdmin'
-import { cartao } from '@/pages/admin/ui'
+} from '@/lib/dadosAdmin'
+import { cartao } from '@/components/admin/ui'
 import type { Database } from '@/types/database'
 
 // Chamados técnicos do gestor (decisão de 30/09/2026, migration

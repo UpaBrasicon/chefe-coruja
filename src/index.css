@@ -111,6 +111,13 @@
     --text-numeral-critico: 42px;
 
     /* ── Raios ────────────────────────────────────────────────── */
+    /* Espaçamento: os cinco passos do ritmo (guia do padrão, 4.3): p-justo, gap-base… */
+    --spacing-justo: 7px;
+    --spacing-proximo: 12px;
+    --spacing-base: 14px;
+    --spacing-secao: 22px;
+    --spacing-pagina: 28px;
+
     --radius-micro: 5px;
     --radius-controle-sm: 9px;
     --radius-controle: 10px;

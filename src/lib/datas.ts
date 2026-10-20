@@ -1,5 +1,3 @@
-// Datas no fuso da unidade (Brasília), para listas de auditoria e pedidos.
-export const fmtDataHora = (iso: string) =>
-  new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' })
-/** Data pura (YYYY-MM-DD), sem deslocar o dia pelo fuso. */
-export const fmtData = (d: string) => new Date(d + 'T12:00:00').toLocaleDateString('pt-BR')
+// Nomes antigos, mantidos para quem já usa (decisão do RT "2a", 19/10/2026).
+// A formatação mora em src/lib/formato.ts; código novo importa de lá.
+export { dataHora as fmtDataHora, dataPura as fmtData } from '@/lib/formato'

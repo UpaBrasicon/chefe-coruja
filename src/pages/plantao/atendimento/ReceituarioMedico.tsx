@@ -34,7 +34,7 @@ import { invalidarDocumentos, useDocumentosEpisodio } from '@/components/documen
 import { useIdentificacao } from '@/components/documentos/identificacao'
 import { SeletorPaciente, usePacienteDoDocumento } from '@/components/documentos/SeletorPaciente'
 import { Aviso, Bloco, Chip, Leitura, Pilulas, Rodape, Sugestoes, Texto } from '@/components/documentos/ui'
-import { carregarEnvelope, useRascunho } from '../shared/rascunho'
+import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 
 type ItemRx = {
   id: string

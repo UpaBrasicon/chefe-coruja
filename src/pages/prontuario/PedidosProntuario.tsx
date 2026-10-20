@@ -4,7 +4,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { TituloPagina } from '@/components/monitor/Pagina'
-import { Badge } from '@/components/ui/badge'
+import { StatusPedido, type SituacaoPedido } from '@/components/prontuario/StatusPedido'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -34,19 +34,12 @@ type MeuPedido = {
   paciente_id: string
   paciente_nome: string
   motivo: string
-  status: 'pendente' | 'aprovado' | 'recusado' | 'cancelado'
+  status: SituacaoPedido
   criado_em: string
   decidido_em: string | null
   motivo_decisao: string | null
   valido_ate: string | null
   vigente: boolean
-}
-
-export function StatusPedido({ status, vigente }: { status: MeuPedido['status']; vigente?: boolean }) {
-  if (status === 'aprovado') return <Badge variant={vigente === false ? 'secondary' : 'success'}>{vigente === false ? 'Aprovado · vencido' : 'Aprovado'}</Badge>
-  if (status === 'pendente') return <Badge variant="warning">Aguardando o gestor</Badge>
-  if (status === 'recusado') return <Badge variant="destructive">Recusado</Badge>
-  return <Badge variant="secondary">Cancelado</Badge>
 }
 
 export default function PedidosProntuario() {

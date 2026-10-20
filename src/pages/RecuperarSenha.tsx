@@ -10,8 +10,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { ConfereSenha, RegrasSenha } from '@/components/seguranca/RegrasSenha'
 import { ConfirmarSegundoFator } from '@/components/seguranca/SegundoFator'
 import { useTurnstile } from '@/components/seguranca/Turnstile'
-import { LadoMarca, MarcaCompacta } from '@/pages/entrada/LadoMarca'
-import '@/pages/entrada/entrada.css'
+import { LadoMarca, MarcaCompacta } from '@/components/entrada/LadoMarca'
+import '@/components/entrada/entrada.css'
 
 // Recuperação de senha, nas duas pontas:
 //   1. pedir: e-mail → resetPasswordForEmail com retorno para esta rota. A

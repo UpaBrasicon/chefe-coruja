@@ -6,8 +6,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { Vazio } from '@/components/monitor/Pagina'
 import { NumerosOrganizacao } from '@/pages/admin/NumerosOrganizacao'
 
-import { avaliarUnidade, haQuanto, lugar, selo, SELO_ESTADO, useChamadosTecnicos, useUnidadesRede, type UnidadeRede } from './dadosAdmin'
-import { Abas, Barra, cartao, Metricas } from './ui'
+import { avaliarUnidade, haQuanto, lugar, selo, SELO_ESTADO, useChamadosTecnicos, useUnidadesRede, type UnidadeRede } from '@/lib/dadosAdmin'
+import { Abas, Barra, cartao, Metricas } from '@/components/admin/ui'
 
 // Rede (P/index.html 9979–10027): todas as unidades da organização, sem
 // identidade de paciente. No protótipo a situação era "sincronizada / versão

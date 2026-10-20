@@ -55,7 +55,7 @@ import {
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
-import { Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 
 type Ref = { id: string; nome: string }
 type Contexto = {
@@ -136,7 +136,7 @@ export default function Regulacao() {
       )}
       {c && aba === 'indicadores' && (c.sou_central || (c.central && souGestorDaUnidade)) ? (
         <IndicadoresRegulacao unidadeId={unidadeId} unidades={c.sou_central ? c.unidades_rede : []} />
-      ) : !unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <Erro texto={(ctx.error as Error).message} /> : !c ? null
+      ) : !unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <MensagemErro texto={(ctx.error as Error).message} /> : !c ? null
         : c.sou_central ? (
           <>
             <Fila centralId={unidadeId} souRegulador={c.sou_regulador} />
@@ -206,7 +206,7 @@ function Centrais() {
             </select>
           </div>
         ))}
-        <Erro texto={(lista.error ?? definir.error) ? ((lista.error ?? definir.error) as Error).message : null} />
+        <MensagemErro texto={(lista.error ?? definir.error) ? ((lista.error ?? definir.error) as Error).message : null} />
       </CardContent>
     </Card>
   )
@@ -618,7 +618,7 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
               </Campo>
             )}
 
-            <Erro texto={enviar.error ? (enviar.error as Error).message : null} />
+            <MensagemErro texto={enviar.error ? (enviar.error as Error).message : null} />
             <div className="flex flex-wrap items-center gap-3">
               <Button onClick={() => enviar.mutate()} disabled={faltas.length > 0 || enviar.isPending}>
                 {enviar.isPending ? <Spinner /> : <Send className="size-4" />} Enviar à central
@@ -656,7 +656,7 @@ function Lista({ unidadeId, central, podeRegistrarExterno, abrir }: { unidadeId:
         {central && <CardDescription>As 200 mais recentes. A fila com filtros e a decisão chegam nas próximas tarefas.</CardDescription>}
       </CardHeader>
       <CardContent className="text-apoio">
-        {lista.isLoading ? <Spinner /> : lista.error ? <Erro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
+        {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
           <Vazio icone={Waypoints} titulo="Nenhuma solicitação" texto={central ? 'As solicitações das unidades da rede aparecem aqui.' : 'As solicitações enviadas pela unidade aparecem aqui.'} />
         ) : (
           <ul className="flex flex-col divide-y divide-fio">
@@ -741,7 +741,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
     onSuccess: recarregar,
   })
   if (d.isLoading) return <Spinner />
-  if (d.error || !d.data) return <Erro texto={d.error ? (d.error as Error).message : 'Não encontrada.'} />
+  if (d.error || !d.data) return <MensagemErro texto={d.error ? (d.error as Error).message : 'Não encontrada.'} />
   const s = d.data
   const destino = s.destino_tipo === 'rede' ? s.destino_unidade?.nome : s.destino_tipo === 'externo' ? `${s.destino_externo} (fora da rede)` : 'A definir pela regulação'
   const cancelavel = !central && s.origem_pode_responder
@@ -821,7 +821,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
           <Button size="sm" variant="destructive" onClick={() => cancelar.mutate()} disabled={cancelar.isPending || motivo.trim().length < 10}>Cancelar solicitação</Button>
         </div>
       )}
-      <Erro texto={(cancelar.error ?? externo.error ?? priorizar.error) ? ((cancelar.error ?? externo.error ?? priorizar.error) as Error).message : null} />
+      <MensagemErro texto={(cancelar.error ?? externo.error ?? priorizar.error) ? ((cancelar.error ?? externo.error ?? priorizar.error) as Error).message : null} />
     </div>
   )
 }
@@ -893,7 +893,7 @@ function Criterios({ unidadeId, editavel }: { unidadeId: string; editavel: boole
             </div>
           )
         })}
-        <Erro texto={salvar.error ? (salvar.error as Error).message : null} />
+        <MensagemErro texto={salvar.error ? (salvar.error as Error).message : null} />
       </CardContent>
     </Card>
   )
@@ -1007,7 +1007,7 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
             <Button size="sm" variant="outline" type="submit">Buscar</Button>
           </form>
         </div>
-        <Erro texto={(fila.error ?? assumir.error ?? soltar.error) ? ((fila.error ?? assumir.error ?? soltar.error) as Error).message : null} />
+        <MensagemErro texto={(fila.error ?? assumir.error ?? soltar.error) ? ((fila.error ?? assumir.error ?? soltar.error) as Error).message : null} />
         {fila.isLoading ? <Spinner /> : (r?.dados ?? []).length === 0 ? (
           <Vazio icone={Waypoints} titulo="Fila vazia" texto="Nenhuma solicitação com esses filtros." />
         ) : (
@@ -1100,7 +1100,7 @@ function ResponderPendencia({ s, aoFim }: { s: Solicitacao; aoFim: () => void })
         <textarea id={`resp-${s.id}`} rows={2} className="rounded-controle border border-fio bg-campo px-2 py-1.5" value={resposta} onChange={(e) => setResposta(e.target.value)} />
       </Campo>
       <Button size="sm" onClick={() => enviar.mutate()} disabled={enviar.isPending || resposta.trim().length < 5}>Responder</Button>
-      <Erro texto={enviar.error ? (enviar.error as Error).message : null} />
+      <MensagemErro texto={enviar.error ? (enviar.error as Error).message : null} />
     </div>
   )
 }
@@ -1140,7 +1140,7 @@ function Reenviar({ s, aoFim }: { s: Solicitacao; aoFim: () => void }) {
         <Button size="sm" onClick={() => enviar.mutate()} disabled={enviar.isPending || !cid || d.quadro_clinico.trim().length < 20}>
           <Send className="size-4" /> Reenviar à central
         </Button>
-        <Erro texto={enviar.error ? (enviar.error as Error).message : null} />
+        <MensagemErro texto={enviar.error ? (enviar.error as Error).message : null} />
       </div>
     </div>
   )
@@ -1259,7 +1259,7 @@ function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: str
           <span className="text-rotulo text-tinta-sussurro">O solicitante e o médico assistente recebem um aviso.</span>
         </div>
       )}
-      <Erro texto={decidir.error ? (decidir.error as Error).message : null} />
+      <MensagemErro texto={decidir.error ? (decidir.error as Error).message : null} />
     </div>
   )
 }

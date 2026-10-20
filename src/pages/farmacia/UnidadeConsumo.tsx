@@ -17,7 +17,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { rotuloUnidade, UNIDADES_CONSUMO, type MedicamentoUnidade, type UnidadeConsumo } from '@/lib/unidadeConsumo'
-import { Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 
 const selectCls = 'h-8 rounded-controle border border-fio bg-campo px-2 text-apoio'
 
@@ -54,7 +54,7 @@ export default function UnidadeConsumoPagina() {
       {(lista.data?.sem_unidade ?? 0) > 0 && (
         <p className="text-apoio text-atencao">{lista.data!.sem_unidade} medicamento(s) sem unidade: a apresentação não diz a forma. Escolha na lista.</p>
       )}
-      <Erro texto={lista.error ? (lista.error as Error).message : null} />
+      <MensagemErro texto={lista.error ? (lista.error as Error).message : null} />
       {lista.isLoading ? <Spinner /> : (lista.data?.itens ?? []).length === 0 ? (
         <Vazio icone={PackageCheck} titulo={aConferir ? 'Nada a conferir' : 'Nenhum medicamento'} texto={aConferir ? 'Todas as unidades de consumo já foram conferidas.' : undefined} />
       ) : (
