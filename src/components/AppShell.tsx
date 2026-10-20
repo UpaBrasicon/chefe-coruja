@@ -25,7 +25,7 @@ import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTu
 import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
 import { Spinner } from '@/components/ui/spinner'
 import { ErroBoundary } from '@/components/ErroBoundary'
-import { ABAS_ESTREITAS_PLANTONISTA, dividirBarraCelular, inicioDoPapel, itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
+import { ABAS_ESTREITAS_PLANTONISTA, agruparNavegacao, dividirBarraCelular, inicioDoPapel, itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
 import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
 import { useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
 import { Paleta } from '@/components/casca/Paleta'
@@ -135,7 +135,10 @@ function BotaoMais({ itens, notas }: { itens: ItemNav[]; notas: Partial<Record<s
       <Gaveta aberta={aberta} onAbertaChange={setAberta} rotulo="Mais telas">
         <GavetaCabeca titulo="Mais telas" />
         <nav aria-label="Mais telas" className="flex flex-col p-2">
-          {itens.map((item) => {
+          {agruparNavegacao(itens).map((bloco, k) => (
+            <div key={bloco.grupo ?? `bloco-${k}`} role={bloco.grupo ? 'group' : undefined} aria-label={bloco.grupo ?? undefined} className="flex flex-col">
+              {bloco.grupo && <span aria-hidden className="rotulo px-3.5 pt-3 pb-1 text-tinta-sussurro">{bloco.grupo}</span>}
+              {bloco.itens.map((item) => {
             const Icone = item.icone
             const nota = item.nota ? notas[item.nota] : undefined
             return (
@@ -148,6 +151,8 @@ function BotaoMais({ itens, notas }: { itens: ItemNav[]; notas: Partial<Record<s
               </NavLink>
             )
           })}
+            </div>
+          ))}
         </nav>
       </Gaveta>
     </>

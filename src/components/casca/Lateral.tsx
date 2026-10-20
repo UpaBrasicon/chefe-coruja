@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
 import { Marca } from './Marca'
-import type { ChaveNota, ItemNav } from './navegacao'
+import { agruparNavegacao, type ChaveNota, type ItemNav } from './navegacao'
 import { diaMes as fmtData } from '@/lib/formato'
 
 // A lateral da casca (P/index.html 895–973): recolhida em 68px de ícones,
@@ -195,8 +195,15 @@ export function Lateral({
             <Marca papel={papelTexto} />
           </Link>
           <nav aria-label="Navegação principal" className="flex flex-col gap-[3px] px-2.5">
-            {itens.map((item) => (
-              <ItemLateral key={item.to} item={item} nota={item.nota ? notas[item.nota] : undefined} />
+            {agruparNavegacao(itens).map((bloco, k) => (
+              <div key={bloco.grupo ?? `bloco-${k}`} role={bloco.grupo ? 'group' : undefined} aria-label={bloco.grupo ?? undefined}
+                className={cn('flex flex-col gap-[3px]', bloco.grupo && 'mt-1.5 border-t border-trilha pt-1.5')}>
+                {/* título do grupo; com a lateral recolhida some e fica só o fio */}
+                {bloco.grupo && <span aria-hidden className="cc-some rotulo px-2.5 pt-0.5 pb-0.5 text-tinta-sussurro">{bloco.grupo}</span>}
+                {bloco.itens.map((item) => (
+                  <ItemLateral key={item.to} item={item} nota={item.nota ? notas[item.nota] : undefined} />
+                ))}
+              </div>
             ))}
           </nav>
           {ehAdmin ? <DaRede /> : <DaUnidadeLateral unidadeId={unidadeId} ehGestor={ehGestor} />}
