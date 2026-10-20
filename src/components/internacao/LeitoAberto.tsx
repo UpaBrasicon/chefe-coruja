@@ -37,6 +37,7 @@ import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 
 import { BlocoAcuidade } from './caderno/Acuidade'
@@ -193,7 +194,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
       })
 
   if (internacao.isLoading) return <Spinner />
-  if (!i) return <p className="text-sm text-tinta-sussurro">Sem internação ou observação registrada para este paciente.</p>
+  if (!i) return <p className="text-apoio text-tinta-sussurro">Sem internação ou observação registrada para este paciente.</p>
 
   const altaRecente = !ativa && !!i.alta_registrada_em && Date.parse(i.alta_registrada_em) > agora - 24 * 3600_000
   const aoGravarVitais = () => {
@@ -239,14 +240,14 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
   )
   const avisos = (
     <>
-      {erro && <p role="alert" className="rounded-lg border border-critico/30 bg-critico/[0.08] p-2 text-critico">{erro}</p>}
-      {aviso && <p className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-2 text-conforme">{aviso}</p>}
+      {erro && <p role="alert" className="rounded-controle border border-critico/30 bg-alerta-critico p-2 text-critico">{erro}</p>}
+      {aviso && <p className="rounded-controle border border-conforme/30 bg-alerta-conforme p-2 text-conforme">{aviso}</p>}
     </>
   )
 
   if (modo === 'simples') {
     return (
-      <div className="flex flex-col gap-5 text-sm">
+      <div className="flex flex-col gap-5 text-apoio">
         {cabecalho()}
         {avisos}
         <Resumo p={p} />
@@ -377,20 +378,17 @@ function Caderno({ p, cabecalho, avisos, acoesTopo, abaInicial }: {
   }
 
   return (
-    <div className="flex flex-col gap-4 text-sm">
+    <div className="flex flex-col gap-4 text-apoio">
       {cabecalho(() => setAba('classif'))}
 
       <div className="flex flex-wrap items-center gap-2">
         <div role="tablist" aria-label="Documentos do leito" className="flex flex-1 flex-wrap gap-1.5">
           {disponiveis.map(([id, rotulo, Icone]) => (
-            <button key={id} type="button" role="tab" aria-selected={atual === id} aria-controls={`caderno-${id}`}
+            <Button key={id} variant="outline" size="sm" role="tab" aria-selected={atual === id} aria-controls={`caderno-${id}`}
               onClick={() => setAba(id)}
-              className={cn(
-                'inline-flex items-center gap-1.5 rounded-capsula border px-3 py-[5px] text-apoio whitespace-nowrap transition-colors',
-                atual === id ? 'border-acao/35 bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
-              )}>
+              className={cn('min-h-0 gap-1.5 rounded-capsula px-3 py-[5px]', atual === id && 'border-acao/35 bg-acao/10 font-medium text-acao')}>
               <Icone className="size-3.5" aria-hidden /> {rotulo}
-            </button>
+            </Button>
           ))}
         </div>
         {acoesTopo}

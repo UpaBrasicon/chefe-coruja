@@ -14,6 +14,7 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { dataIso, hora } from '@/lib/formato'
 import { rotuloIdade } from '@/domain/idade'
 import { NIVEL_RISCO, type CorRisco } from '@/domain/risco'
 import { BotaoEpisodiosAnteriores } from '@/components/prontuario/GavetaEpisodios'
@@ -21,7 +22,7 @@ import { BotaoEpisodiosAnteriores } from '@/components/prontuario/GavetaEpisodio
 import { GavetaAlergias, SeloAlergia } from './AlergiasEventos'
 import { GavetaIsolamento, SeloIsolamento } from './Isolamento'
 
-const hoje = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+const hoje = () => dataIso()
 const SEXO: Record<string, string> = { M: 'masculino', F: 'feminino', I: 'sexo ignorado' }
 
 /** "45 min", "3h20", "4 dias" desde o instante. */
@@ -33,11 +34,11 @@ function duracao(desde: string, agora: number) {
 }
 
 const MTS: Record<CorRisco, string> = {
-  vermelho: 'bg-mts-vermelho text-white',
-  laranja: 'bg-mts-laranja text-white',
+  vermelho: 'bg-mts-vermelho text-mts-texto',
+  laranja: 'bg-mts-laranja text-mts-texto',
   amarelo: 'bg-mts-amarelo text-mts-amarelo-texto',
-  verde: 'bg-mts-verde text-white',
-  azul: 'bg-mts-azul text-white',
+  verde: 'bg-mts-verde text-mts-texto',
+  azul: 'bg-mts-azul text-mts-texto',
 }
 const BANDA = ['bg-alerta-conforme text-conforme', 'bg-alerta-atencao text-atencao', 'bg-alerta-critico text-critico']
 type AcuidadeResumo = { escala: 'NEWS2' | 'PEWS' | null; total?: number; banda?: 0 | 1 | 2; parcial?: boolean; aferido_em?: string | null }
@@ -150,21 +151,22 @@ export function CabecalhoPaciente({
 
       {corClassificacao && (
         onClassificacao ? (
+          // padrao-ok: a pílula da classificação clicável usa as cores do protocolo; nenhuma peça tem esses tons
           <button type="button" onClick={onClassificacao} title="Classificação de risco da porta (Manchester). Abrir a classificação."
-            className={cn('rounded-capsula px-2.5 py-[3px] text-[12px] font-semibold capitalize hover:opacity-90', MTS[corClassificacao])}>
+            className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold capitalize hover:opacity-90', MTS[corClassificacao])}>
             {corClassificacao} · {NIVEL_RISCO[corClassificacao]}
           </button>
         ) : (
           <span title="Classificação de risco da porta (Manchester)"
-            className={cn('rounded-capsula px-2.5 py-[3px] text-[12px] font-semibold capitalize', MTS[corClassificacao])}>
+            className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold capitalize', MTS[corClassificacao])}>
             {corClassificacao} · {NIVEL_RISCO[corClassificacao]}
           </span>
         )
       )}
 
       {temAcuidade && (
-        <span title={`Acuidade pelo ${a!.escala}, aferido às ${new Date(a!.aferido_em!).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}`}
-          className={cn('rounded-capsula px-2.5 py-[3px] text-[12px] font-semibold tabular-nums', BANDA[a!.banda ?? 0])}>
+        <span title={`Acuidade pelo ${a!.escala}, aferido às ${hora(a!.aferido_em!)}`}
+          className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold tabular-nums', BANDA[a!.banda ?? 0])}>
           {a!.escala} {a!.total}{a!.parcial ? '*' : ''}
         </span>
       )}

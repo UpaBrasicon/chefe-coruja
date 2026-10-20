@@ -4,7 +4,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { History } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import type { ChecklistAdmissao as Checklist, Database } from '@/types/database'
 
 import { diaHora } from './comum'
@@ -54,7 +56,7 @@ export function TrilhaEpisodio({ pacienteId }: { pacienteId: string }) {
   })
   const lista = eventos.data ?? []
   return (
-    <details className="rounded-[14px] border border-fio bg-superficie px-4 py-3">
+    <details className="rounded-container border border-fio bg-superficie px-4 py-3">
       <summary className="flex cursor-pointer items-center gap-2 text-apoio font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">
         <History className="size-3.5" aria-hidden /> Trilha do episódio · {lista.length} {lista.length === 1 ? 'evento' : 'eventos'}
       </summary>
@@ -69,7 +71,7 @@ export function TrilhaEpisodio({ pacienteId }: { pacienteId: string }) {
         ))}
         {(transferencias.data ?? []).length > 0 && (
           <>
-            <span className="mt-1.5 text-[12px] font-semibold tracking-wide text-tinta-sussurro uppercase">Transferências entre setores</span>
+            <span className="mt-1.5 text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">Transferências entre setores</span>
             {(transferencias.data ?? []).map((t) => (
               <span key={t.id} className="text-apoio text-tinta-apoio">
                 {diaHora(t.created_at)} · {t.perfis?.nome_completo ?? '—'} · {t.motivo || 'sem motivo'}
@@ -108,16 +110,16 @@ export function ChecklistAdmissao({ pacienteId, unidadeId, prontuarioAberto }: {
     if (!error) void qc.invalidateQueries({ queryKey: ['checklist-admissao'] })
   }
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-[14px] border border-fio bg-campo px-4 py-3">
+    <div className="flex flex-wrap items-center gap-2 rounded-container border border-fio bg-campo px-4 py-3">
       <span className="mr-1 text-apoio font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">Checklist de admissão</span>
       {ITENS.map(([campo, rotulo]) => {
         const marcado = checklist.data?.[campo] ?? false
         return (
-          <button key={campo} type="button" aria-pressed={marcado} onClick={() => void alternar(campo)}
-            className={`rounded-capsula border px-3 py-[5px] text-apoio font-medium transition-colors ${
-              marcado ? 'border-conforme/30 bg-conforme/[0.08] text-conforme' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao'}`}>
+          <Button key={campo} variant="outline" size="sm" aria-pressed={marcado} onClick={() => void alternar(campo)}
+            className={cn('min-h-0 rounded-capsula px-3 py-[5px] font-medium',
+              marcado ? 'border-conforme/30 bg-alerta-conforme text-conforme hover:border-conforme/30 hover:text-conforme' : 'hover:text-tinta-apoio')}>
             {marcado ? '✓ ' : '○ '}{rotulo}
-          </button>
+          </Button>
         )
       })}
     </div>

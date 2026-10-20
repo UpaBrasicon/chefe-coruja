@@ -9,6 +9,7 @@ import { Activity, FileText, History } from 'lucide-react'
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import { EvolucaoMedica } from './EvolucaoMedica'
 import { Historico, HistoricoLateral } from './Historico'
 import { ResumoClinico } from './ResumoClinico'
@@ -28,11 +29,12 @@ export function AbaEvolucao({ pacienteId, internacaoId }: AbaEvolucaoProps) {
     <div className="flex flex-col">
       <div role="tablist" aria-label="Evolução" className="mb-3.5 flex flex-wrap gap-1.5">
         {SUBS.map(({ id, rotulo, Icone }) => (
-          <button key={id} type="button" role="tab" aria-selected={sub === id} onClick={() => setSub(id)}
-            className={cn('inline-flex min-h-10 items-center gap-[7px] rounded-controle border px-3.5 py-2 text-controle',
-              sub === id ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+          // Subaba com ícone: o Button no papel de aba (a peça Abas não leva ícone).
+          <Button key={id} role="tab" aria-selected={sub === id} onClick={() => setSub(id)}
+            variant={sub === id ? 'default' : 'outline'}
+            className={cn('min-h-10 px-3.5 py-2 text-controle', sub === id && 'border-acao')}>
             <Icone className="size-[15px]" aria-hidden /> {rotulo}
-          </button>
+          </Button>
         ))}
       </div>
       <div className="flex flex-wrap items-start gap-3.5">

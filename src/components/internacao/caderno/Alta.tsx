@@ -134,7 +134,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
         <Textarea id="alta-obs" value={obs} onChange={(e) => setObs(e.target.value)} />
       </div>
       {confirmar ? (
-        <div className="flex flex-col gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-3">
+        <div className="flex flex-col gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao p-3">
           <p>Deseja finalizar o atendimento? O paciente sai do censo e vira histórico do gestor. As prescrições são encerradas e checagem, aprazamento e sinais fecham na hora; a equipe do setor ainda consulta e emite documentos por 24 horas. Cancelar a alta é possível por 24 horas, com justificativa.</p>
           <div className="flex gap-2">
             <Button size="sm"
@@ -211,14 +211,14 @@ export function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, aca
     const imp = await pImp
     if (!imp) return
     if (!r) {
-      imp.janela.document.write('<p style="font:15px system-ui;padding:24px;color:#B91C1C">O pacote não foi gerado. Nada foi impresso.</p>')
+      imp.janela.document.write('<p style="font:15px system-ui;padding:24px;color:#B91C1C">O pacote não foi gerado. Nada foi impresso.</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
       imp.janela.document.close()
       return
     }
     const link = `${window.location.origin}/alta/${r.token}`
     imp.janela.document.write(`<html><head><title>Orientação de alta</title><style>
-      body{font:12pt/1.5 system-ui,sans-serif;margin:18mm;color:#0f172a}h1{font-size:16pt;margin:0 0 8px}
-      li{margin:4px 0}.cx{border:1.5px solid #0f172a;padding:10px 14px;margin-top:16px}.cod{font:700 22pt ui-monospace,monospace;letter-spacing:6px}
+      body{font:12pt/1.5 system-ui,sans-serif;margin:18mm;color:#0f172a}h1{font-size:16pt;margin:0 0 8px}/* padrao-ok: CSS da folha impressa, que não lê os tokens do app */
+      li{margin:4px 0}.cx{border:1.5px solid #0f172a;padding:10px 14px;margin-top:16px}.cod{font:700 22pt ui-monospace,monospace;letter-spacing:6px}.nota{font-size:9pt;color:#475569}
     </style></head><body>
       <h1>Orientações de alta</h1>
       <p><strong>Paciente:</strong> ${escapeHtml(pacienteNome)}</p>
@@ -231,7 +231,7 @@ export function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, aca
         <p>Seus documentos da alta (receita, atestado, encaminhamento e estas orientações) também ficam no celular, por 30 dias:</p>
         <p><strong>${escapeHtml(link)}</strong></p>
         <p>Código de acesso (pedido a cada abertura):</p><p class="cod">${r.codigo}</p>
-        <p style="font-size:9pt;color:#475569">Guarde esta folha. Três códigos errados bloqueiam o link; peça outro na unidade.</p>
+        <p class="nota">Guarde esta folha. Três códigos errados bloqueiam o link; peça outro na unidade.</p>
       </div>
       ${imp.rodape}</body></html>`)
     imp.janela.document.close()
@@ -289,7 +289,7 @@ export function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, aca
           <Input placeholder="Quando (ex.: 31/08 às 9h)" value={ret.quando} onChange={(e) => setRet({ ...ret, quando: e.target.value })} />
           <Input placeholder="Exame de controle (opcional)" value={ret.exame_controle} onChange={(e) => setRet({ ...ret, exame_controle: e.target.value })} />
           <Input placeholder="O que levar (ex.: esta alta e as caixas dos remédios)" value={ret.levar} onChange={(e) => setRet({ ...ret, levar: e.target.value })} />
-          <p className="text-xs text-tinta-sussurro">Receita, atestado, encaminhamento, pedido de exames, sumário de alta e exames com resultado do episódio entram no pacote automaticamente.</p>
+          <p className="text-rotulo text-tinta-sussurro">Receita, atestado, encaminhamento, pedido de exames, sumário de alta e exames com resultado do episódio entram no pacote automaticamente.</p>
           <div className="flex gap-2">
             <Button size="sm" onClick={() => void gerarEImprimir()}><Printer /> Gerar e imprimir</Button>
             <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>

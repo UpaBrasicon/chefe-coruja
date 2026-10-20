@@ -18,6 +18,9 @@ import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
 import { cn } from '@/lib/utils'
+import { diaMesHora } from '@/lib/formato'
+import { Chip as ChipBase } from '@/components/monitor/Pagina'
+import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
 import { Input } from '@/components/ui/input'
@@ -29,8 +32,7 @@ import {
   type EventoAdverso, type GravidadeAlergia, type PainelAlergias, type TipoAlergia,
 } from './useAlergias'
 
-const quando = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : ''
+const quando = (iso: string | null | undefined) => (iso ? diaMesHora(iso) : '')
 const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
 
 // ── selo de alergia: o mesmo no cabeçalho, na prescrição e no painel ─────────
@@ -57,7 +59,7 @@ export function SeloAlergia({ pacienteId, onClick, className }: { pacienteId: st
     dica = q.error ? msg(q.error) : 'Alergia não verificada'
   } else if (q.data.estado === 'tem') {
     conteudo = <><AlertTriangle className="size-3.5 shrink-0" aria-hidden /> Alergia · {lista.map((a) => a.substancia).join(', ')}</>
-    estilo = 'rounded-capsula bg-critico px-[11px] py-1 font-semibold text-white'
+    estilo = 'rounded-capsula bg-critico px-[11px] py-1 font-semibold text-sobre-acao'
     dica = 'Alergias ativas: ' + lista.map((a) => `${a.substancia} (${rotuloGravidade(a.gravidade).toLowerCase()})`).join('; ')
   } else if (q.data.estado === 'nega') {
     const n = negaVigente(q.data)
@@ -76,6 +78,7 @@ export function SeloAlergia({ pacienteId, onClick, className }: { pacienteId: st
   }
   if (!onClick) return <span className={cn(base, estilo, className)} title={dica}>{conteudo}</span>
   return (
+    // padrao-ok: o selo de alergia clicável tem a forma do selo em cada estado (vermelho cheio, cinza, âmbar); nenhuma peça tem esses tons
     <button type="button" onClick={onClick} title={`${dica}. Abrir alergias e eventos adversos.`}
       className={cn(base, estilo, 'cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-acao', className)}>
       {conteudo}
@@ -104,11 +107,11 @@ export function GavetaAlergias({ pacienteId, nome, aberta, onAbertaChange }: {
 export function ResumoAlergias({ pacienteId, nome }: { pacienteId: string; nome: string }) {
   const [aberta, setAberta] = React.useState(false)
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-fio p-2">
-      <span className="text-xs font-semibold tracking-wide text-tinta-sussurro uppercase">Alergias</span>
+    <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio p-2">
+      <span className="text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">Alergias</span>
       <SeloAlergia pacienteId={pacienteId} onClick={() => setAberta(true)} />
       <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setAberta(true)}>Alergias e eventos adversos</Button>
-      <p className="w-full text-xs text-tinta-sussurro">Alergia registrada trava o item do medicamento correspondente. Nada a contorna.</p>
+      <p className="w-full text-rotulo text-tinta-sussurro">Alergia registrada trava o item do medicamento correspondente. Nada a contorna.</p>
       <GavetaAlergias pacienteId={pacienteId} nome={nome} aberta={aberta} onAbertaChange={setAberta} />
     </div>
   )
@@ -116,13 +119,7 @@ export function ResumoAlergias({ pacienteId, nome }: { pacienteId: string; nome:
 
 // ── peças visuais ────────────────────────────────────────────────────────────
 function Chip({ on, onClick, children, disabled }: { on: boolean; onClick: () => void; children: React.ReactNode; disabled?: boolean }) {
-  return (
-    <button type="button" onClick={onClick} disabled={disabled} aria-pressed={on}
-      className={cn('rounded-capsula border px-3 py-1 text-apoio transition-colors disabled:opacity-45',
-        on ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
-      {children}
-    </button>
-  )
+  return <ChipBase variante="opcao" ativo={on} onClick={onClick} desabilitado={disabled}>{children}</ChipBase>
 }
 
 // cores do protótipo (algCor): leve verde, moderado laranja, grave vermelho,
@@ -134,7 +131,7 @@ const PILULA_GRAVIDADE: Record<GravidadeAlergia, string> = {
   desconhecida: 'bg-trilha text-tinta-apoio',
 }
 const PILULA_GRAU = ['bg-alerta-conforme text-conforme', 'bg-alerta-conforme text-conforme', 'bg-alerta-atencao text-atencao',
-  'bg-alerta-critico text-critico', 'bg-critico/15 font-bold text-critico', 'bg-tinta text-white']
+  'bg-alerta-critico text-critico', 'bg-critico/15 font-bold text-critico', 'bg-tinta text-superficie']
 function Pilula({ className, children }: { className: string; children: React.ReactNode }) {
   return <span className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold whitespace-nowrap', className)}>{children}</span>
 }
@@ -147,11 +144,10 @@ function Sugestoes<T>({ itens, chave, rotulo, sub, usar }: {
     <div className="relative z-30 h-0">
       <div role="listbox" className="absolute inset-x-0 top-1 max-h-60 overflow-y-auto rounded-controle border border-fio bg-superficie shadow-lg">
         {itens.map((x) => (
-          <button key={chave(x)} type="button" role="option" aria-selected={false} onClick={() => usar(x)}
-            className="flex w-full items-baseline gap-2.5 border-b border-trilha px-3 py-2 text-left last:border-0 hover:bg-campo">
+          <OpcaoLista key={chave(x)} onClick={() => usar(x)} className="items-baseline gap-2.5">
             <span className="text-controle text-tinta">{rotulo(x)}</span>
             {sub && <span className="text-rotulo text-tinta-sussurro">{sub(x)}</span>}
-          </button>
+          </OpcaoLista>
         ))}
       </div>
     </div>
@@ -313,7 +309,7 @@ export function AlergiasEventos({ pacienteId }: { pacienteId: string }) {
       {/* lista */}
       <div className="flex flex-col gap-2">
         {visiveis.map((r) => (
-          <div key={r.chave} className={cn('flex flex-col gap-1.5 rounded-[10px] border px-3 py-2.5',
+          <div key={r.chave} className={cn('flex flex-col gap-1.5 rounded-controle border px-3 py-2.5',
             r.ativo ? 'border-fio bg-superficie' : 'border-trilha bg-campo opacity-75')}>
             <div className="flex flex-wrap items-center gap-2.5">
               {r.ativo && (
@@ -339,10 +335,9 @@ export function AlergiasEventos({ pacienteId }: { pacienteId: string }) {
             )}
             {r.evento && (
               <>
-                <button type="button" onClick={() => setHist({ ...hist, [r.chave]: !hist[r.chave] })}
-                  className="self-start text-rotulo text-acao hover:text-acao-pressionada">
-                  <History className="mr-1 inline size-3" aria-hidden />{hist[r.chave] ? 'Ocultar histórico do evento' : 'Histórico do evento'}
-                </button>
+                <Button variant="link" size="xs" className="min-h-0 self-start px-0" onClick={() => setHist({ ...hist, [r.chave]: !hist[r.chave] })}>
+                  <History aria-hidden />{hist[r.chave] ? 'Ocultar histórico do evento' : 'Histórico do evento'}
+                </Button>
                 {hist[r.chave] && (
                   <ul className="flex flex-col gap-0.5 text-rotulo text-tinta-apoio">
                     {(r.evento.graus ?? []).map((g, j) => (
@@ -398,9 +393,9 @@ export function AlergiasEventos({ pacienteId }: { pacienteId: string }) {
       {/* histórico do "nega" */}
       {p.negacoes.length > 0 && (
         <div className="flex flex-col gap-1">
-          <button type="button" onClick={() => setHistNega(!histNega)} className="self-start text-rotulo text-acao hover:text-acao-pressionada">
-            <History className="mr-1 inline size-3" aria-hidden />{histNega ? 'Ocultar histórico de declarações de alergia' : `Histórico de declarações de alergia (${p.negacoes.length})`}
-          </button>
+          <Button variant="link" size="xs" className="min-h-0 self-start px-0" onClick={() => setHistNega(!histNega)}>
+            <History aria-hidden />{histNega ? 'Ocultar histórico de declarações de alergia' : `Histórico de declarações de alergia (${p.negacoes.length})`}
+          </Button>
           {histNega && (
             <ul className="flex flex-col gap-0.5 text-rotulo text-tinta-apoio">
               {p.negacoes.map((n) => (
@@ -461,7 +456,7 @@ function NovaAlergia({ pacienteId, ocupado, executar, fechar }: { pacienteId: st
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-[12px] border border-fio bg-campo p-3">
+    <div className="flex flex-col gap-2 rounded-container border border-fio bg-campo p-3">
       <span className="text-apoio font-semibold text-tinta">Nova alergia · tipo, gravidade e substância são obrigatórios</span>
       <div className="flex flex-wrap gap-1.5" role="group" aria-label="Tipo">
         {TIPOS_ALERGIA.map((t) => (
@@ -527,7 +522,7 @@ function NovoEvento({ pacienteId, ocupado, executar, fechar }: { pacienteId: str
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-[12px] border border-fio bg-campo p-3">
+    <div className="flex flex-col gap-2 rounded-container border border-fio bg-campo p-3">
       <span className="text-apoio font-semibold text-tinta">Evento adverso · item de prescrição, evento e grau</span>
       <span className="text-rotulo text-tinta-apoio">Item da prescrição (quando houver)</span>
       <div className="flex flex-wrap gap-1.5">

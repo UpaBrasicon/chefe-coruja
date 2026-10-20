@@ -5,10 +5,11 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 import { Textarea } from '@/components/ui/textarea'
+import { Chip } from '@/components/monitor/Pagina'
 
 export function Bloco({ children, className, ...props }: React.ComponentProps<'section'>) {
   return (
-    <section className={cn('flex min-w-0 flex-col gap-3 rounded-menu border border-fio bg-superficie p-4', className)} {...props}>
+    <section className={cn('flex min-w-0 flex-col gap-3 rounded-container border border-fio bg-superficie p-4', className)} {...props}>
       {children}
     </section>
   )
@@ -42,19 +43,7 @@ export function CampoTexto({
 
 /** Chip de escolha única (SpO₂ em, estado do CID, movimento do antibiótico). */
 export function ChipEscolha({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={ativo}
-      onClick={onClick}
-      className={cn(
-        'inline-flex min-h-8 items-center rounded-capsula border px-3 py-1 text-apoio transition-colors',
-        ativo ? 'border-acao/40 bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
-      )}
-    >
-      {children}
-    </button>
-  )
+  return <Chip variante="opcao" ativo={ativo} onClick={onClick}>{children}</Chip>
 }
 
 export function Selo({ tom = 'marca', children, className }: { tom?: 'marca' | 'conforme' | 'atencao' | 'critico' | 'neutro'; children: React.ReactNode; className?: string }) {
@@ -74,7 +63,7 @@ export function Mensagem({ aviso }: { aviso: Aviso }) {
   if (!aviso) return null
   return (
     <p role={aviso.erro ? 'alert' : 'status'} className={cn('rounded-controle border px-3 py-2 text-apoio',
-      aviso.erro ? 'border-critico/30 bg-critico/[0.06] text-critico' : 'border-conforme/30 bg-conforme/[0.06] text-conforme')}>
+      aviso.erro ? 'border-critico/30 bg-alerta-critico text-critico' : 'border-conforme/30 bg-alerta-conforme text-conforme')}>
       {aviso.texto}
     </p>
   )

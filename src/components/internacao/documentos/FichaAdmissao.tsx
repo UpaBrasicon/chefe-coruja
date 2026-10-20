@@ -28,6 +28,7 @@ import { SeletorPaciente } from '@/components/documentos/SeletorPaciente'
 import { useTriagemRecente, vitaisDaTriagem } from '@/components/documentos/triagem'
 import { Bloco, Campo, Cartao, Chip, Leitura, Pilulas, Rodape, Texto } from '@/components/documentos/ui'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
+import { dataHora } from '@/lib/formato'
 
 import {
   ADM_VAZIO, admTemAlgo, fichaAdm, pendenciasAdm, textoAdm, type DetalheAdm, type FormAdm, type Sepse, type Spo2Cond,
@@ -138,8 +139,8 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
     const janela = window.open('', '_blank')
     if (!janela) return setErro('O navegador bloqueou a janela de impressão. Libere pop-ups e tente de novo.')
     const escrever = (html: string) => { janela.document.open(); janela.document.write(html); janela.document.close() }
-    const falha = (m: string) => { escrever(`<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${m}</p>`); setErro(m) }
-    escrever('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando a admissão…</p>')
+    const falha = (m: string) => { escrever(`<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${m}</p>`); setErro(m) } // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
+    escrever('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando a admissão…</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     setRegistrando(true)
     try {
       const f = fichaAdm({ a, setor, regulacao, pacienteAntigo: ident.pacienteAntigo({ diagnostico: v('cid') }), pac: ident.pac, agora: new Date() })
@@ -162,9 +163,10 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
   async function reimprimir(id: string) {
     const janela = window.open('', '_blank')
     if (!janela) return setErro('O navegador bloqueou a janela de impressão.')
-    janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>')
+    janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     const r = await folhaDoDocumentoEmitido(id, 'Ficha de admissão médica · reimpressão')
     janela.document.open()
+    // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     janela.document.write('erro' in r ? `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">A folha não pôde ser montada${r.erro ? `: ${r.erro}` : ''}.</p>` : r.html)
     janela.document.close()
     if (!('erro' in r)) {
@@ -186,7 +188,7 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
 
   const pac = ident.pac
   const nasc = [pac?.nascimento ? pac.nascimento.split('-').reverse().join('/') : '', pac?.idade].filter(Boolean).join(' · ')
-  const agora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' })
+  const agora = dataHora(new Date())
   const detalhes = a.detalhes ?? []
   const esq = esquemas.find((e) => e.nome === esquemaSel)
   const alternarDetalhe = (d: DetalheAdm) => {
@@ -302,7 +304,7 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
                 {detalhes.length === 0 ? <span className="text-apoio text-tinta-sussurro">Nenhum detalhe marcado.</span> : detalhes.map((d) => (
                   <span key={`${d.esquema}:${d.item}`} className="flex items-center gap-1.5 rounded-capsula bg-trilha px-3 py-1 text-apoio text-tinta">
                     {d.esquema} · {d.item}
-                    <button type="button" aria-label={`Remover ${d.item}`} onClick={() => alternarDetalhe(d)} className="hover:text-critico"><X className="size-3.5" /></button>
+                    <Button variant="ghost" size="icon-xs" aria-label={`Remover ${d.item}`} onClick={() => alternarDetalhe(d)} className="size-auto text-tinta hover:text-critico"><X className="size-3.5" /></Button>
                   </span>
                 ))}
               </div>

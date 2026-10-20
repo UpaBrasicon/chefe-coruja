@@ -1,6 +1,7 @@
 // Peças comuns do caderno do leito: tipos do que o banco devolve, formatação
 // de hora e o chamador de RPC.
 import { supabase } from '@/lib/supabase'
+import { dataHora, hora as fmtHora } from '@/lib/formato'
 
 export type Internacao = {
   id: string
@@ -103,10 +104,8 @@ export const TIPO_ALTA = [
 ] as const
 export const ROTULO_ALTA: Record<string, string> = Object.fromEntries(TIPO_ALTA)
 
-export const hora = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : '—'
-export const diaHora = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }) : '—'
+export const hora = (iso: string | null | undefined) => (iso ? fmtHora(iso) : '—')
+export const diaHora = (iso: string | null | undefined) => (iso ? dataHora(iso) : '—')
 export const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
 
 /** "45 min", "5h", "3 dias" desde o instante. */

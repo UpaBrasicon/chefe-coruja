@@ -9,6 +9,7 @@ import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Spinner } from '@/components/ui/spinner'
 import { ExamesTab } from '@/components/internacao/documentos/ExamesTab'
 import { FichaAdmissao } from '@/components/internacao/documentos/FichaAdmissao'
@@ -26,17 +27,17 @@ type Doc = ReturnType<typeof useDocumentosLeito>
 /** Peso e dieta: o que as folhas pedem e o cadastro não tem. */
 function PesoDieta({ doc }: { doc: Doc }) {
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-[14px] border border-fio bg-campo px-4 py-3">
+    <div className="flex flex-wrap items-end gap-3 rounded-container border border-fio bg-campo px-4 py-3">
       <div className="flex w-28 flex-col gap-1">
         <Label htmlFor="leito-peso">Peso (kg)</Label>
         <Input id="leito-peso" inputMode="decimal" value={doc.dados.peso} onChange={(e) => doc.atualizar({ peso: e.target.value })} />
       </div>
       <div className="flex min-w-48 flex-col gap-1">
         <Label htmlFor="leito-dieta">Dieta</Label>
-        <select id="leito-dieta" value={doc.dados.dieta} onChange={(e) => doc.atualizar({ dieta: e.target.value })}
-          className="h-9 rounded-md border border-fio bg-superficie px-2 text-controle text-tinta">
+        <CampoSelecao id="leito-dieta" value={doc.dados.dieta} onChange={(e) => doc.atualizar({ dieta: e.target.value })}
+          className="bg-superficie text-controle">
           {DIETAS.map((d) => <option key={d} value={d}>{d}</option>)}
-        </select>
+        </CampoSelecao>
       </div>
       <span className="text-apoio text-tinta-sussurro">
         {doc.salvoEm ? `Rascunho deste leito salvo às ${doc.salvoEm}` : 'Rascunho deste leito'} · só neste navegador, por 12 horas.
@@ -86,7 +87,7 @@ export function AbaAtestado({ pacienteId, podeEmitir }: { pacienteId: string; po
   const docs = useDocumentos(pacienteId)
   const atestados = (docs.data ?? []).filter((d) => d.tipo_documento === 'atestado' && d.estado !== 'rascunho')
   return (
-    <div className="flex flex-col gap-3 rounded-[14px] border border-fio bg-superficie p-4">
+    <div className="flex flex-col gap-3 rounded-container border border-fio bg-superficie p-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex items-center gap-2 text-corpo font-semibold text-tinta">
           <FileText className="size-[15px] text-acao" aria-hidden /> Atestados

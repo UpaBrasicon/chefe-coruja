@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
-import { ArrowRightLeft, ChevronRight, UserPlus } from 'lucide-react'
+import { ArrowRightLeft, BedDouble, UserPlus } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { data as dataDoInstante } from '@/lib/formato'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useLimitesUnidade } from '@/lib/limitesUnidade'
 import { Button } from '@/components/ui/button'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
@@ -23,7 +24,7 @@ function fmtDia(iso: string | null | undefined) {
   if (!iso) return '—'
   const d = new Date(iso)
   if (isNaN(d.getTime())) return '—'
-  return d.toLocaleDateString('pt-BR')
+  return dataDoInstante(d)
 }
 
 type Setor = { id: string; nome: string; tipo: string; ordem: number }
@@ -173,20 +174,13 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
       {!embutido && (
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
-            <Link to="/" className="transition-colors hover:text-tinta">
-              Início
-            </Link>
-            <ChevronRight className="size-3.5" />
-            <span className="font-medium text-tinta">{titulo}</span>
-          </div>
-          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">{titulo}</h1>
-          <p className="text-sm text-tinta-sussurro">{unidadeAtiva?.unidade.nome ?? 'Unidade'}</p>
+        <div>
+          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: titulo }]} />
+          <TituloPagina icone={BedDouble} titulo={titulo} descricao={unidadeAtiva?.unidade.nome ?? 'Unidade'} className="mb-0" />
         </div>
       )}
 
-      {sucesso && <p className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">{sucesso}</p>}
+      {sucesso && <p className="rounded-controle border border-conforme/30 bg-alerta-conforme p-3 text-apoio text-conforme">{sucesso}</p>}
 
       {/* I2/I3: ocupação por setor + alerta de superlotação */}
       {(ocupacao ?? []).length > 0 && (
@@ -197,16 +191,16 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
             return (
               <div
                 key={o.setor_id}
-                className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
-                  lotado ? 'border-critico/30 bg-critico/[0.08]' : alerta ? 'border-atencao/30 bg-atencao/[0.08]' : 'border-fio bg-superficie'
+                className={`flex items-center gap-2 rounded-container border px-3 py-2 ${
+                  lotado ? 'border-critico/30 bg-alerta-critico' : alerta ? 'border-atencao/30 bg-alerta-atencao' : 'border-fio bg-superficie'
                 }`}
               >
-                <span className="text-sm font-medium">{o.setor_nome}</span>
-                <span className={`text-sm font-semibold tabular-nums ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-tinta'}`}>
+                <span className="text-apoio font-medium">{o.setor_nome}</span>
+                <span className={`text-apoio font-semibold tabular-nums ${lotado ? 'text-critico' : alerta ? 'text-atencao' : 'text-tinta'}`}>
                   {o.internados}/{o.limite || '∞'}
                 </span>
-                {o.sem_leito > 0 && <span className="text-xs text-atencao">{o.sem_leito} sem leito</span>}
-                {lotado && <span className="text-xs font-semibold text-critico">LOTADO</span>}
+                {o.sem_leito > 0 && <span className="text-rotulo text-atencao">{o.sem_leito} sem leito</span>}
+                {lotado && <span className="text-rotulo font-semibold text-critico">LOTADO</span>}
               </div>
             )
           })}
@@ -229,7 +223,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-corpo">
                 <ArrowRightLeft className="size-4 text-tinta-sussurro" />
                 Transferências recentes
               </CardTitle>
@@ -245,12 +239,12 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
                 <Spinner />
               </div>
             ) : (transferencias ?? []).length === 0 ? (
-              <p className="text-sm text-tinta-sussurro">Nenhuma transferência registrada.</p>
+              <p className="text-apoio text-tinta-sussurro">Nenhuma transferência registrada.</p>
             ) : (
               (transferencias ?? []).map((t) => (
-                <div key={t.id} className="rounded-lg border p-2 text-sm">
+                <div key={t.id} className="rounded-controle border p-2 text-apoio">
                   <div className="font-medium">{t.pacientes?.nome ?? 'Paciente'}</div>
-                  <div className="text-xs text-tinta-sussurro">
+                  <div className="text-rotulo text-tinta-sussurro">
                     {fmtDia(t.created_at)} · {t.motivo || 'sem motivo'}
                   </div>
                 </div>
@@ -301,10 +295,10 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
                 required
               />
               {!motivo.trim() && (
-                <p className="text-xs text-atencao">Informe o motivo para justificar a transferência.</p>
+                <p className="text-rotulo text-atencao">Informe o motivo para justificar a transferência.</p>
               )}
             </div>
-            {erro && <p className="text-sm text-critico">{erro}</p>}
+            {erro && <p className="text-apoio text-critico">{erro}</p>}
           </div>
 
           <DialogFooter>
@@ -321,7 +315,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
         </DialogContent>
       </Dialog>
 
-      <p className="flex items-center gap-1.5 text-xs text-tinta-sussurro">
+      <p className="flex items-center gap-1.5 text-rotulo text-tinta-sussurro">
         <UserPlus className="size-3.5" /> Para internar um paciente, use o desfecho do atendimento na porta (internação) e
         direcione-o para o setor. Transferências entre setores são registradas em auditoria.
       </p>
