@@ -22,7 +22,9 @@ import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { EnderecoSus } from '@/components/paciente/EnderecoSus'
 import { ProcedimentosRealizados } from '@/components/paciente/ProcedimentosRealizados'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -43,7 +45,6 @@ type Aba = 'competencia' | 'lancar' | 'configuracao' | 'historico'
 const ABAS: readonly (readonly [Aba, string])[] = [
   ['competencia', 'Competência'], ['lancar', 'Lançar procedimento'], ['configuracao', 'Configuração'], ['historico', 'Histórico'],
 ]
-const selectCls = 'h-9 rounded-controle border border-fio bg-campo px-2 text-apoio'
 const MINIMO_REABERTURA = 10
 
 function baixar(nome: string, conteudo: string) {
@@ -157,7 +158,7 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
         <Numero rotulo="Com crítica (ficam fora)" valor={c.com_critica} tom={c.com_critica > 0 ? 'critico' : undefined} />
         <Numero rotulo="Com aviso (vão com campo vazio)" valor={c.com_aviso} tom={c.com_aviso > 0 ? 'atencao' : undefined} />
       </div>
-      <div className="flex flex-wrap gap-2 text-xs text-tinta-apoio">
+      <div className="flex flex-wrap gap-2 text-rotulo text-tinta-apoio">
         {(Object.keys(ORIGEM_BPA) as OrigemBpa[]).map((o) => (
           <span key={o} className="rounded-capsula border border-fio px-2.5 py-1">{ORIGEM_BPA[o]}: {c.por_origem[o] ?? 0}</span>
         ))}
@@ -171,7 +172,7 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Fechamento</CardTitle>
+          <CardTitle className="text-corpo">Fechamento</CardTitle>
           <CardDescription>Fechar congela o arquivo e trava novos registros desta competência. Reabrir pede motivo e fica no histórico.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-apoio">
@@ -201,7 +202,7 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
           ) : (
             <div className="flex flex-wrap items-end gap-2">
               <div className="flex flex-col gap-1">
-                <Label htmlFor="bpa-proc" className="text-xs">Competência de processamento</Label>
+                <Label htmlFor="bpa-proc" className="text-rotulo">Competência de processamento</Label>
                 <Input id="bpa-proc" className="h-8 w-28" value={processamento} onChange={(e) => setProcessamento(e.target.value)} placeholder="MM/AAAA" />
               </div>
               <Button size="sm" disabled={bloqueios.length > 0 || c.prontas === 0 || !lerCompetencia(processamento) || fechar.isPending}
@@ -216,7 +217,7 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Para corrigir</CardTitle>
+          <CardTitle className="text-corpo">Para corrigir</CardTitle>
           <CardDescription>Linha com crítica fica fora do arquivo; com aviso, vai com o campo vazio. O que não fecha no BPA-I e o procedimento aceita no consolidado vai para o BPA-C, com o motivo. Até 500 linhas, as com crítica primeiro.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-apoio">
@@ -232,17 +233,17 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
           ) : (
             <ul className="flex flex-col gap-1.5">
               {c.linhas.map((l) => (
-                <li key={`${l.origem}-${l.origem_id}`} className="flex flex-col gap-0.5 rounded-md border border-fio px-3 py-2">
+                <li key={`${l.origem}-${l.origem_id}`} className="flex flex-col gap-0.5 rounded-controle border border-fio px-3 py-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium text-tinta">{l.paciente}</span>
                     {l.destino && <Badge variant={l.destino === 'fora' ? 'destructive' : l.destino === 'bpa_c' ? 'info' : 'secondary'}>{DESTINO_BPA[l.destino]}</Badge>}
-                    <span className="text-xs text-tinta-sussurro">
+                    <span className="text-rotulo text-tinta-sussurro">
                       {ORIGEM_BPA[l.origem]} · {codigoSigtapNaTela(l.procedimento)}{l.quantidade > 1 ? ` × ${l.quantidade}` : ''} · {fmtDataHora(l.em)} · {l.profissional ?? '—'}
                     </span>
                   </div>
-                  {l.destino === 'bpa_c' && l.motivo_c && <span className="text-xs text-tinta-apoio">Vai no BPA-C: {l.motivo_c}</span>}
-                  {l.destino !== 'bpa_c' && l.criticas.map((k) => <span key={k.codigo} className="text-xs text-critico">{k.texto}</span>)}
-                  {l.avisos.map((k) => <span key={k.codigo} className="text-xs text-atencao">{k.texto}</span>)}
+                  {l.destino === 'bpa_c' && l.motivo_c && <span className="text-rotulo text-tinta-apoio">Vai no BPA-C: {l.motivo_c}</span>}
+                  {l.destino !== 'bpa_c' && l.criticas.map((k) => <span key={k.codigo} className="text-rotulo text-critico">{k.texto}</span>)}
+                  {l.avisos.map((k) => <span key={k.codigo} className="text-rotulo text-atencao">{k.texto}</span>)}
                 </li>
               ))}
             </ul>
@@ -256,8 +257,8 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
 function Numero({ rotulo, valor, tom }: { rotulo: string; valor: number; tom?: 'critico' | 'atencao' }) {
   return (
     <div className="rounded-container border border-fio bg-superficie px-3 py-2.5">
-      <p className="text-xs text-tinta-sussurro">{rotulo}</p>
-      <p className={`text-xl font-semibold ${tom === 'critico' ? 'text-critico' : tom === 'atencao' ? 'text-atencao' : 'text-tinta'}`}>{valor}</p>
+      <p className="text-rotulo text-tinta-sussurro">{rotulo}</p>
+      <p className={`text-dialogo font-semibold ${tom === 'critico' ? 'text-critico' : tom === 'atencao' ? 'text-atencao' : 'text-tinta'}`}>{valor}</p>
     </div>
   )
 }
@@ -291,24 +292,24 @@ function AbaLancar({ unidade, competencia }: { unidade: string; competencia: str
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" variant="ghost" onClick={() => setEscolhido(null)}>← Atendimentos</Button>
           <span className="font-medium text-tinta">{escolhido.paciente}</span>
-          <span className="text-xs text-tinta-sussurro">chegada {fmtDataHora(escolhido.chegada_em)} · médico {escolhido.medico ?? '—'}</span>
+          <span className="text-rotulo text-tinta-sussurro">chegada {fmtDataHora(escolhido.chegada_em)} · médico {escolhido.medico ?? '—'}</span>
         </div>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Lançar em nome de quem fez</CardTitle>
+            <CardTitle className="text-corpo">Lançar em nome de quem fez</CardTitle>
             <CardDescription>O CNS e o CBO da linha são os de quem fez; você fica registrado como quem lançou.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="bpa-prof" className="text-xs">Quem fez</Label>
-              <select id="bpa-prof" className={selectCls} value={profissional} onChange={(e) => setProfissional(e.target.value)}>
+              <Label htmlFor="bpa-prof" className="text-rotulo">Quem fez</Label>
+              <CampoSelecao id="bpa-prof" value={profissional} onChange={(e) => setProfissional(e.target.value)}>
                 <option value="">Escolha…</option>
                 {(profissionais.data ?? []).map((p) => (
                   <option key={p.id} value={p.id}>{p.nome}{p.cbo ? ` · CBO ${p.cbo}` : ' · sem CBO'}{p.cns_ok ? '' : ' · sem CNS'}</option>
                 ))}
-              </select>
+              </CampoSelecao>
               {prof && (!prof.cns_ok || !prof.cbo) && (
-                <span className="text-xs text-atencao">Sem {[!prof.cns_ok && 'CNS', !prof.cbo && 'CBO'].filter(Boolean).join(' e ')} no perfil: a linha terá crítica até o profissional completar.</span>
+                <span className="text-rotulo text-atencao">Sem {[!prof.cns_ok && 'CNS', !prof.cbo && 'CBO'].filter(Boolean).join(' e ')} no perfil: a linha terá crítica até o profissional completar.</span>
               )}
             </div>
             <ProcedimentosRealizados key={escolhido.episodio_id} pacienteId={escolhido.paciente_id} unidadeId={unidade} episodioId={escolhido.episodio_id}
@@ -333,11 +334,11 @@ function AbaLancar({ unidade, competencia }: { unidade: string; competencia: str
         <ul className="flex flex-col gap-1.5">
           {(atendimentos.data ?? []).map((a) => (
             <li key={a.episodio_id}>
-              <button type="button" onClick={() => setEscolhido(a)}
-                className="flex w-full flex-wrap items-center gap-2 rounded-md border border-fio px-3 py-2 text-left text-apoio hover:border-acao">
+              <BotaoLinha onClick={() => setEscolhido(a)}
+                className="w-full flex-row flex-wrap items-center gap-2 rounded-controle px-3 py-2 text-apoio">
                 <span className="font-medium text-tinta">{a.paciente}</span>
-                <span className="text-xs text-tinta-sussurro">{fmtDataHora(a.chegada_em)} · médico {a.medico ?? '—'}</span>
-              </button>
+                <span className="text-rotulo text-tinta-sussurro">{fmtDataHora(a.chegada_em)} · médico {a.medico ?? '—'}</span>
+              </BotaoLinha>
             </li>
           ))}
         </ul>
@@ -365,7 +366,7 @@ function AbaConfiguracao({ unidade }: { unidade: string }) {
       <OrgaoEmissorApac unidade={unidade} atual={c.apac_orgao_emissor ?? null} />
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Códigos SIGTAP das fontes automáticas</CardTitle>
+          <CardTitle className="text-corpo">Códigos SIGTAP das fontes automáticas</CardTitle>
           <CardDescription>
             Cada atendimento médico, primeira classificação de risco e medicação checada vira linha com o código escolhido aqui.
             Tabela SIGTAP carregada: {competenciaNaTela(c.sigtap_competencia)}.
@@ -379,7 +380,7 @@ function AbaConfiguracao({ unidade }: { unidade: string }) {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Lista de procedimentos registráveis</CardTitle>
+          <CardTitle className="text-corpo">Lista de procedimentos registráveis</CardTitle>
           <CardDescription>O que a enfermagem e os médicos registram na hora, e o que o faturamento lança. Mantenha a lista curta.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
@@ -409,14 +410,14 @@ function Cabecalho({ unidade, c }: { unidade: string; c: ConfigBpa }) {
   })
   const campo = (k: keyof typeof f, rotulo: string, max: number, dica?: string) => (
     <div className="flex flex-col gap-1">
-      <Label htmlFor={`bpa-${k}`} className="text-xs">{rotulo}</Label>
+      <Label htmlFor={`bpa-${k}`} className="text-rotulo">{rotulo}</Label>
       <Input id={`bpa-${k}`} className="h-8" maxLength={max} placeholder={dica} value={f[k]} onChange={(e) => setF((v) => ({ ...v, [k]: e.target.value }))} />
     </div>
   )
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Cabeçalho do arquivo</CardTitle>
+        <CardTitle className="text-corpo">Cabeçalho do arquivo</CardTitle>
         <CardDescription>
           CNES da unidade: {c.cnes ?? 'não preenchido'} (o gestor preenche em Unidade › Configurações).
           {c.atualizado_em && <> Alterado por {c.atualizado_por ?? '—'} em {fmtDataHora(c.atualizado_em)}.</>}
@@ -429,22 +430,22 @@ function Cabecalho({ unidade, c }: { unidade: string; c: ConfigBpa }) {
           {campo('cnpj', 'CNPJ (ou CPF) do prestador', 18)}
           {campo('orgao_destino', 'Órgão de saúde de destino', 40, 'ex.: Secretaria Municipal de Saúde')}
           <div className="flex flex-col gap-1">
-            <Label htmlFor="bpa-destino" className="text-xs">Destino</Label>
-            <select id="bpa-destino" className={selectCls} value={f.destino} onChange={(e) => setF((v) => ({ ...v, destino: e.target.value }))}>
+            <Label htmlFor="bpa-destino" className="text-rotulo">Destino</Label>
+            <CampoSelecao id="bpa-destino" value={f.destino} onChange={(e) => setF((v) => ({ ...v, destino: e.target.value }))}>
               <option value="">Escolha…</option>
               <option value="M">Municipal</option>
               <option value="E">Estadual</option>
-            </select>
+            </CampoSelecao>
           </div>
           {campo('carater_atendimento', 'Caráter do atendimento (código)', 2, 'tabela do SIA')}
           {campo('ine', 'INE da equipe (se houver)', 10)}
         </div>
-        <p className="text-xs text-tinta-sussurro">
+        <p className="text-rotulo text-tinta-sussurro">
           Caráter do atendimento e INE: confira o código com a Secretaria. Sem eles, o campo sai em branco e a conferência avisa.
         </p>
         <div className="flex gap-2">
           <Button size="sm" disabled={salvar.isPending} onClick={() => salvar.mutate()}>Salvar cabeçalho</Button>
-          {salvar.isSuccess && <span className="text-xs text-tinta-sussurro">Salvo.</span>}
+          {salvar.isSuccess && <span className="text-rotulo text-tinta-sussurro">Salvo.</span>}
         </div>
         {salvar.error && <MensagemErro texto={(salvar.error as Error).message} />}
       </CardContent>
@@ -463,25 +464,25 @@ function FonteCodigo({ unidade, uso, atual }: { unidade: string; uso: UsoProcedi
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['bpa-config', unidade] }),
   })
   return (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-fio px-3 py-2 text-apoio">
+    <div className="flex flex-col gap-1.5 rounded-controle border border-fio px-3 py-2 text-apoio">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium text-tinta">{USO_PROCEDIMENTO[uso]}</span>
         {atual ? (
           <span className="text-tinta-apoio">
             {codigoSigtapNaTela(atual.procedimento)} · {atual.nome ?? 'fora do SIGTAP carregado'}
-            <span className="text-xs text-tinta-sussurro"> · por {atual.definido_por ?? '—'}, {fmtDataHora(atual.definido_em)}</span>
+            <span className="text-rotulo text-tinta-sussurro"> · por {atual.definido_por ?? '—'}, {fmtDataHora(atual.definido_em)}</span>
           </span>
         ) : <Badge variant="warning">sem código: estas linhas ficam fora</Badge>}
         {atual && <InstrumentoBpa unidade={unidade} p={atual} />}
       </div>
       {!atual && sugestao && (
-        <div className="flex flex-wrap items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2 text-rotulo">
           <span className="text-tinta-sussurro">Na pesquisa do SIGTAP (09/2026), o código desta fonte é {codigoSigtapNaTela(sugestao)}.</span>
           <Button size="xs" variant="outline" disabled={associar.isPending} onClick={() => associar.mutate(sugestao)}>Usar {codigoSigtapNaTela(sugestao)}</Button>
         </div>
       )}
       <BuscaSigtap rotulo={atual ? 'Trocar o código' : 'Escolher outro código'} onEscolher={(codigo) => associar.mutateAsync(codigo)} invalidar={['bpa-config', unidade]} />
-      {associar.error && <span role="alert" className="text-xs text-critico">{(associar.error as Error).message}</span>}
+      {associar.error && <span role="alert" className="text-rotulo text-critico">{(associar.error as Error).message}</span>}
     </div>
   )
 }
@@ -496,11 +497,11 @@ function ItemLista({ unidade, p }: { unidade: string; p: ConfigBpa['procedimento
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['bpa-config', unidade] }),
   })
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-md border border-fio px-3 py-1.5 text-apoio">
+    <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio px-3 py-1.5 text-apoio">
       <span className="text-tinta">{codigoSigtapNaTela(p.procedimento)} · {p.nome ?? 'fora do SIGTAP carregado'}</span>
       <InstrumentoBpa unidade={unidade} p={p} />
       <Button size="xs" variant="ghost" className="ml-auto" disabled={retirar.isPending} onClick={() => retirar.mutate()}>Retirar</Button>
-      {retirar.error && <span role="alert" className="basis-full text-xs text-critico">{(retirar.error as Error).message}</span>}
+      {retirar.error && <span role="alert" className="basis-full text-rotulo text-critico">{(retirar.error as Error).message}</span>}
     </div>
   )
 }
@@ -526,7 +527,7 @@ function BuscaSigtap({ rotulo, onEscolher, invalidar }: { rotulo: string; onEsco
     <div className="flex flex-col gap-1">
       <Input className="h-8" placeholder={`${rotulo}: código ou nome no SIGTAP`} value={termo} onChange={(e) => setTermo(e.target.value)} aria-label={rotulo} />
       {(busca.data ?? []).length > 0 && (
-        <div className="flex max-h-48 flex-col overflow-y-auto rounded-md border border-fio">
+        <div className="flex max-h-48 flex-col overflow-y-auto rounded-controle border border-fio">
           {(busca.data ?? []).map((p) => (
             <Button key={p.codigo} type="button" variant="ghost" size="sm" className="justify-start" onClick={() => void escolher(p.codigo)}>
               {codigoSigtapNaTela(p.codigo)} · {p.nome}
@@ -534,8 +535,8 @@ function BuscaSigtap({ rotulo, onEscolher, invalidar }: { rotulo: string; onEsco
           ))}
         </div>
       )}
-      {termo.trim().length >= 3 && busca.data && busca.data.length === 0 && <span className="text-xs text-tinta-sussurro">Nada no SIGTAP carregado.</span>}
-      {erro && <span role="alert" className="text-xs text-critico">{erro}</span>}
+      {termo.trim().length >= 3 && busca.data && busca.data.length === 0 && <span className="text-rotulo text-tinta-sussurro">Nada no SIGTAP carregado.</span>}
+      {erro && <span role="alert" className="text-rotulo text-critico">{erro}</span>}
     </div>
   )
 }
@@ -558,10 +559,10 @@ function AbaHistorico({ unidade }: { unidade: string }) {
     <div className="flex flex-col gap-2">
       {download.error && <MensagemErro texto={(download.error as Error).message} />}
       {(lista.data ?? []).map((f) => (
-        <div key={f.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-fio px-3 py-2 text-apoio">
+        <div key={f.id} className="flex flex-wrap items-center gap-2 rounded-controle border border-fio px-3 py-2 text-apoio">
           <span className="font-medium text-tinta">{competenciaNaTela(f.competencia)}</span>
           <Badge variant={f.situacao === 'fechada' ? 'success' : 'secondary'}>{f.situacao}</Badge>
-          <span className="text-xs text-tinta-sussurro">
+          <span className="text-rotulo text-tinta-sussurro">
             {f.linhas} linhas{f.linhas_bpa_c ? ` (${f.linhas_bpa_c} de BPA-C)` : ''} · {f.folhas} folhas · controle {f.controle} · {f.excluidas} fora por crítica · processamento {competenciaNaTela(f.processamento)}
             {' '}· fechada por {f.fechado_por ?? '—'} em {fmtDataHora(f.fechado_em)}
             {f.reaberto_em && <> · reaberta por {f.reaberto_por ?? '—'} em {fmtDataHora(f.reaberto_em)}: “{f.motivo_reabertura}”</>}
@@ -589,7 +590,7 @@ function InstrumentoBpa({ unidade, p }: { unidade: string; p: ConfigBpa['procedi
   const aceitaC = inst.includes('01')
   const soC = aceitaC && !inst.includes('02')
   return (
-    <span className="flex flex-wrap items-center gap-1.5 text-xs">
+    <span className="flex flex-wrap items-center gap-1.5 text-rotulo">
       {inst.filter((i) => INSTRUMENTO_SIGTAP[i]).map((i) => <Badge key={i} variant="secondary">{INSTRUMENTO_SIGTAP[i]}</Badge>)}
       {inst.length > 0 && !inst.includes('01') && !inst.includes('02') && <Badge variant="warning">sem BPA no SIGTAP</Badge>}
       {soC && <span className="text-tinta-sussurro">vai sempre no BPA-C</span>}
@@ -618,13 +619,13 @@ function OrgaoEmissorApac({ unidade, atual }: { unidade: string; atual: string |
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">APAC</CardTitle>
+        <CardTitle className="text-corpo">APAC</CardTitle>
         <CardDescription>Código do órgão emissor da APAC (Portaria SAS 637/2005): confira com a Secretaria. Sem ele, o arquivo da APAC não fecha.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap items-center gap-2">
         <Input className="h-8 w-48" maxLength={10} aria-label="Código do órgão emissor da APAC" placeholder="até 10 caracteres" value={v} onChange={(e) => setV(e.target.value)} />
         <Button size="sm" disabled={salvar.isPending || v.trim() === (atual ?? '')} onClick={() => salvar.mutate()}>Salvar</Button>
-        {salvar.error && <span role="alert" className="text-xs text-critico">{(salvar.error as Error).message}</span>}
+        {salvar.error && <span role="alert" className="text-rotulo text-critico">{(salvar.error as Error).message}</span>}
       </CardContent>
     </Card>
   )

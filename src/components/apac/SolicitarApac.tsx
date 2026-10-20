@@ -8,6 +8,7 @@ import * as React from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,7 +17,6 @@ import { codigoSigtapNaTela } from '@/lib/bpa'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 
-const selectCls = 'h-9 rounded-controle border border-fio bg-campo px-2 text-apoio'
 const VAZIO = { procedimento: '', procNome: '', cid: '', cidSec: '', cidCausa: '', carater: '01', tipo: '3' as TipoApac,
   anterior: '', sinais: '', exames: '', justificativa: '' }
 
@@ -85,15 +85,15 @@ export function SolicitarApac({ pacienteId, episodioId, internacaoId }: { pacien
       <div className="flex flex-wrap items-center gap-2">
         <div className="min-w-0 flex-1">
           <h3 className="text-corpo font-semibold text-tinta">APAC</h3>
-          <p className="text-xs text-tinta-sussurro">Procedimento ambulatorial de alta complexidade. Você solicita; o médico regulador autoriza com o número.</p>
+          <p className="text-rotulo text-tinta-sussurro">Procedimento ambulatorial de alta complexidade. Você solicita; o médico regulador autoriza com o número.</p>
         </div>
         {!abrindo && <Button size="sm" variant="outline" onClick={() => setAbrindo(true)}>Solicitar APAC</Button>}
       </div>
 
       {abrindo && (
-        <div className="flex flex-col gap-3 rounded-md border border-fio p-3">
+        <div className="flex flex-col gap-3 rounded-controle border border-fio p-3">
           <div className="flex flex-col gap-1">
-            <Label htmlFor={`apac-proc-${pacienteId}`} className="text-xs">Procedimento (só os de APAC no SIGTAP)</Label>
+            <Label htmlFor={`apac-proc-${pacienteId}`} className="text-rotulo">Procedimento (só os de APAC no SIGTAP)</Label>
             {f.procedimento ? (
               <div className="flex flex-wrap items-center gap-2 text-apoio">
                 <span className="text-tinta">{codigoSigtapNaTela(f.procedimento)} · {f.procNome}</span>
@@ -103,7 +103,7 @@ export function SolicitarApac({ pacienteId, episodioId, internacaoId }: { pacien
               <>
                 <Input id={`apac-proc-${pacienteId}`} className="h-8" placeholder="Código ou nome (mínimo 3 letras)" value={termo} onChange={(e) => setTermo(e.target.value)} />
                 {(busca.data ?? []).length > 0 && (
-                  <div className="flex max-h-48 flex-col overflow-y-auto rounded-md border border-fio">
+                  <div className="flex max-h-48 flex-col overflow-y-auto rounded-controle border border-fio">
                     {(busca.data ?? []).map((p) => (
                       <Button key={p.codigo} type="button" variant="ghost" size="sm" className="justify-start"
                         onClick={() => { set({ procedimento: p.codigo, procNome: p.nome }); setTermo('') }}>
@@ -113,7 +113,7 @@ export function SolicitarApac({ pacienteId, episodioId, internacaoId }: { pacien
                   </div>
                 )}
                 {termo.trim().length >= 3 && busca.data && busca.data.length === 0 && (
-                  <span className="text-xs text-tinta-sussurro">Nenhum procedimento de APAC com esse termo no SIGTAP carregado.</span>
+                  <span className="text-rotulo text-tinta-sussurro">Nenhum procedimento de APAC com esse termo no SIGTAP carregado.</span>
                 )}
               </>
             )}
@@ -121,39 +121,39 @@ export function SolicitarApac({ pacienteId, episodioId, internacaoId }: { pacien
           <div className="grid gap-2 sm:grid-cols-3">
             {([['cid', 'CID-10 principal'], ['cidSec', 'CID-10 secundário'], ['cidCausa', 'CID de causa associada']] as const).map(([k, r]) => (
               <div key={k} className="flex flex-col gap-1">
-                <Label htmlFor={`apac-${k}-${pacienteId}`} className="text-xs">{r}</Label>
+                <Label htmlFor={`apac-${k}-${pacienteId}`} className="text-rotulo">{r}</Label>
                 <Input id={`apac-${k}-${pacienteId}`} className="h-8" placeholder="ex.: C50.9" value={f[k]} onChange={(e) => set({ [k]: e.target.value.toUpperCase() })} />
               </div>
             ))}
           </div>
           <div className="grid gap-2 sm:grid-cols-3">
             <div className="flex flex-col gap-1">
-              <Label htmlFor={`apac-tipo-${pacienteId}`} className="text-xs">Tipo</Label>
-              <select id={`apac-tipo-${pacienteId}`} className={selectCls} value={f.tipo} onChange={(e) => set({ tipo: e.target.value as TipoApac })}>
+              <Label htmlFor={`apac-tipo-${pacienteId}`} className="text-rotulo">Tipo</Label>
+              <CampoSelecao id={`apac-tipo-${pacienteId}`} value={f.tipo} onChange={(e) => set({ tipo: e.target.value as TipoApac })}>
                 {(Object.keys(TIPO_APAC) as TipoApac[]).map((t) => <option key={t} value={t}>{TIPO_APAC[t]}</option>)}
-              </select>
+              </CampoSelecao>
             </div>
             <div className="flex flex-col gap-1 sm:col-span-2">
-              <Label htmlFor={`apac-carater-${pacienteId}`} className="text-xs">Caráter do atendimento</Label>
-              <select id={`apac-carater-${pacienteId}`} className={selectCls} value={f.carater} onChange={(e) => set({ carater: e.target.value })}>
+              <Label htmlFor={`apac-carater-${pacienteId}`} className="text-rotulo">Caráter do atendimento</Label>
+              <CampoSelecao id={`apac-carater-${pacienteId}`} value={f.carater} onChange={(e) => set({ carater: e.target.value })}>
                 {Object.entries(CARATER_APAC).map(([k, r]) => <option key={k} value={k}>{k} · {r}</option>)}
-              </select>
+              </CampoSelecao>
             </div>
             {f.tipo === '2' && (
               <div className="flex flex-col gap-1">
-                <Label htmlFor={`apac-ant-${pacienteId}`} className="text-xs">Número da APAC anterior</Label>
+                <Label htmlFor={`apac-ant-${pacienteId}`} className="text-rotulo">Número da APAC anterior</Label>
                 <Input id={`apac-ant-${pacienteId}`} className="h-8" inputMode="numeric" placeholder="13 dígitos" value={f.anterior} onChange={(e) => set({ anterior: e.target.value })} />
               </div>
             )}
           </div>
           {([['sinais', 'Principais sinais e sintomas'], ['exames', 'Exames e resultados que justificam (com data)'], ['justificativa', 'Justificativa do procedimento']] as const).map(([k, r]) => (
             <div key={k} className="flex flex-col gap-1">
-              <Label htmlFor={`apac-${k}-${pacienteId}`} className="text-xs">{r}{k === 'justificativa' ? ' (obrigatória)' : ''}</Label>
+              <Label htmlFor={`apac-${k}-${pacienteId}`} className="text-rotulo">{r}{k === 'justificativa' ? ' (obrigatória)' : ''}</Label>
               <Textarea id={`apac-${k}-${pacienteId}`} className="min-h-[56px]" value={f[k]} onChange={(e) => set({ [k]: e.target.value })} />
             </div>
           ))}
           {criticas.length > 0 && (
-            <ul className="flex flex-col gap-0.5 text-xs">
+            <ul className="flex flex-col gap-0.5 text-rotulo">
               {criticas.map((c, i) => <li key={i} className={c.bloqueante ? 'text-critico' : 'text-atencao'}>{c.bloqueante ? 'Impede: ' : 'Aviso: '}{c.texto}</li>)}
             </ul>
           )}
@@ -161,17 +161,17 @@ export function SolicitarApac({ pacienteId, episodioId, internacaoId }: { pacien
             <Button size="sm" disabled={!pronto || enviar.isPending} onClick={() => enviar.mutate()}>Solicitar</Button>
             <Button size="sm" variant="ghost" onClick={() => { setAbrindo(false); setF(VAZIO); enviar.reset() }}>Cancelar</Button>
           </div>
-          {enviar.error && <p role="alert" className="text-xs text-critico">{(enviar.error as Error).message}</p>}
+          {enviar.error && <p role="alert" className="text-rotulo text-critico">{(enviar.error as Error).message}</p>}
         </div>
       )}
 
-      {lista.error ? <p role="alert" className="text-xs text-critico">{(lista.error as Error).message}</p> : (lista.data ?? []).length > 0 && (
+      {lista.error ? <p role="alert" className="text-rotulo text-critico">{(lista.error as Error).message}</p> : (lista.data ?? []).length > 0 && (
         <ul className="flex flex-col gap-1">
           {(lista.data ?? []).map((a) => (
-            <li key={a.id} className="flex flex-wrap items-center gap-2 rounded-md border border-fio px-2.5 py-1.5 text-apoio">
+            <li key={a.id} className="flex flex-wrap items-center gap-2 rounded-controle border border-fio px-2.5 py-1.5 text-apoio">
               <Badge variant={a.status === 'autorizada' ? 'success' : a.status === 'solicitada' ? 'info' : 'secondary'}>{STATUS_APAC[a.status]}</Badge>
               <span className="text-tinta">{codigoSigtapNaTela(a.procedimento)} · {a.procedimento_nome ?? '—'}</span>
-              <span className="text-xs text-tinta-sussurro">
+              <span className="text-rotulo text-tinta-sussurro">
                 {TIPO_APAC[a.tipo]} · CID {a.cid_principal} · {fmtDataHora(a.solicitada_em)}
                 {a.numero && <> · nº {a.numero} · validade {fmtData(a.validade_inicio!)} a {fmtData(a.validade_fim!)}</>}
                 {a.motivo && <> · “{a.motivo}”</>}

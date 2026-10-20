@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { SeloAlergia } from '@/components/paciente/AlergiasEventos'
 import { ativas, negaVigente, rotuloGrau, rotuloGravidade, rotuloTipo, useAlergias } from '@/components/paciente/useAlergias'
 import { abrirProntuario } from '@/lib/prontuario'
@@ -63,7 +64,7 @@ export default function ProntuarioLeitura() {
   if (q.error || !q.data) {
     return (
       <div className="flex max-w-2xl flex-col gap-3">
-        <p className="rounded-lg border border-critico/30 bg-critico/[0.08] p-4 text-sm text-critico">{(q.error as Error)?.message ?? 'Sem acesso.'}</p>
+        <p className="rounded-controle border border-critico/30 bg-alerta-critico p-4 text-apoio text-critico">{(q.error as Error)?.message ?? 'Sem acesso.'}</p>
         <Button variant="outline" render={<Link to="/prontuarios" />}>Voltar aos pedidos</Button>
       </div>
     )
@@ -86,14 +87,14 @@ export default function ProntuarioLeitura() {
       <AlergiasLeitura pacienteId={paciente.id} />
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Atendimentos</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-corpo">Atendimentos</CardTitle></CardHeader>
         <CardContent>
-          {episodios.length === 0 ? <p className="text-sm text-tinta-sussurro">Nenhum.</p> : (
-            <ul className="divide-y rounded-lg border">
+          {episodios.length === 0 ? <p className="text-apoio text-tinta-sussurro">Nenhum.</p> : (
+            <ul className="divide-y rounded-controle border">
               {episodios.map((e) => {
                 const cls = classificacoes.find((c) => c.episodio_id === e.id)
                 return (
-                  <li key={e.id} className="p-3 text-sm">
+                  <li key={e.id} className="p-3 text-apoio">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium">{fmtDataHora(e.chegada_em)}</span>
                       <Badge variant="secondary">{ETAPA[e.etapa] ?? e.etapa}</Badge>
@@ -101,7 +102,7 @@ export default function ProntuarioLeitura() {
                       {cls && <Badge variant="outline">classificação: {cls.cor}</Badge>}
                     </div>
                     <p className="mt-1">{e.queixa}</p>
-                    {e.encerrado_em && <p className="text-xs text-tinta-sussurro">Encerrado em {fmtDataHora(e.encerrado_em)}</p>}
+                    {e.encerrado_em && <p className="text-rotulo text-tinta-sussurro">Encerrado em {fmtDataHora(e.encerrado_em)}</p>}
                   </li>
                 )
               })}
@@ -113,51 +114,51 @@ export default function ProntuarioLeitura() {
       <HistoricoRegulacao pacienteId={paciente.id} />
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Documentos</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-corpo">Documentos</CardTitle></CardHeader>
         <CardContent className="flex flex-col gap-3">
-          {documentos.length === 0 && <p className="text-sm text-tinta-sussurro">Nenhum documento.</p>}
+          {documentos.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum documento.</p>}
           {documentos.map((d) => (
-            <article key={d.id} className="rounded-lg border p-3">
-              <header className="mb-2 flex flex-wrap items-center gap-2 text-sm">
+            <article key={d.id} className="rounded-controle border p-3">
+              <header className="mb-2 flex flex-wrap items-center gap-2 text-apoio">
                 <span className="font-medium">{ROTULO_DOC[d.tipo_documento] ?? d.tipo_documento}</span>
                 <span className="text-tinta-sussurro">{fmtDataHora(d.created_at)}</span>
                 {d.versao > 1 && <Badge variant="secondary">versão {d.versao}</Badge>}
                 {d.estado === 'cancelado' && <Badge variant="destructive">cancelado</Badge>}
               </header>
-              <pre className="whitespace-pre-wrap font-sans text-sm">{d.conteudo}</pre>
+              <pre className="whitespace-pre-wrap font-sans text-apoio">{d.conteudo}</pre>
             </article>
           ))}
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Sinais vitais e medidas (últimas 60)</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-corpo">Sinais vitais e medidas (últimas 60)</CardTitle></CardHeader>
         <CardContent>
-          {observacoes.length === 0 ? <p className="text-sm text-tinta-sussurro">Nenhuma.</p> : (
-            <table className="w-full text-sm">
-              <tbody>
+          {observacoes.length === 0 ? <p className="text-apoio text-tinta-sussurro">Nenhuma.</p> : (
+            <Table variante="referencia" className="w-full text-apoio">
+              <TableBody>
                 {observacoes.map((o) => (
-                  <tr key={o.id} className="border-b last:border-0">
-                    <td className="py-1.5 pr-3 whitespace-nowrap text-tinta-sussurro">{fmtDataHora(o.aferido_em)}</td>
-                    <td className="py-1.5 pr-3">{(o.conceito as { nome?: string } | null)?.nome?.replace(/-/g, ' ') ?? '—'}</td>
-                    <td className="py-1.5 tabular">
+                  <TableRow key={o.id} className="border-b last:border-0">
+                    <TableCell className="py-1.5 pr-3 whitespace-nowrap text-tinta-sussurro">{fmtDataHora(o.aferido_em)}</TableCell>
+                    <TableCell className="py-1.5 pr-3">{(o.conceito as { nome?: string } | null)?.nome?.replace(/-/g, ' ') ?? '—'}</TableCell>
+                    <TableCell className="py-1.5 tabular">
                       {o.valor_num != null ? String(o.valor_num).replace('.', ',') : o.valor_texto ?? '—'}{' '}
                       {o.unidade ?? (o.conceito as { unidade_padrao?: string | null } | null)?.unidade_padrao ?? ''}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Prescrições (últimas 20)</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-corpo">Prescrições (últimas 20)</CardTitle></CardHeader>
         <CardContent className="flex flex-col gap-3">
-          {prescricoes.length === 0 && <p className="text-sm text-tinta-sussurro">Nenhuma.</p>}
+          {prescricoes.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhuma.</p>}
           {prescricoes.map((p) => (
-            <div key={p.id} className="rounded-lg border p-3 text-sm">
+            <div key={p.id} className="rounded-controle border p-3 text-apoio">
               <div className="mb-1 flex items-center gap-2">
                 <span className="font-medium">{fmtDataHora(p.created_at)}</span>
                 <Badge variant="secondary">{p.status}</Badge>
@@ -191,8 +192,8 @@ function AlergiasLeitura({ pacienteId }: { pacienteId: string }) {
   const eventos = (q.data?.eventos ?? []).filter((e) => !e.inativado_em)
   return (
     <Card>
-      <CardHeader><CardTitle className="text-base">Alergias e eventos adversos</CardTitle></CardHeader>
-      <CardContent className="flex flex-col gap-2 text-sm">
+      <CardHeader><CardTitle className="text-corpo">Alergias e eventos adversos</CardTitle></CardHeader>
+      <CardContent className="flex flex-col gap-2 text-apoio">
         <SeloAlergia pacienteId={pacienteId} />
         {q.data?.estado === 'nega' && nega && (
           <p className="text-tinta-sussurro">Nega alergias · registrado em {quando(nega.registrado_em)}{nega.autor ? ` por ${nega.autor}` : ''}</p>
@@ -206,20 +207,20 @@ function AlergiasLeitura({ pacienteId }: { pacienteId: string }) {
               <li key={a.id} className="flex flex-wrap items-center gap-2">
                 <Badge variant="destructive">{a.substancia}</Badge>
                 <span>{rotuloTipo(a.tipo)} · {rotuloGravidade(a.gravidade).toLowerCase()}{a.reacao ? ` · ${a.reacao}` : ''}</span>
-                <span className="text-xs text-tinta-sussurro">{quando(a.registrado_em)}{a.autor ? ` · ${a.autor}` : ''}</span>
+                <span className="text-rotulo text-tinta-sussurro">{quando(a.registrado_em)}{a.autor ? ` · ${a.autor}` : ''}</span>
               </li>
             ))}
           </ul>
         )}
         {eventos.length > 0 && (
           <>
-            <p className="mt-1 text-xs font-semibold tracking-wide text-tinta-sussurro uppercase">Eventos adversos</p>
+            <p className="mt-1 text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">Eventos adversos</p>
             <ul className="flex flex-col gap-1.5">
               {eventos.map((e) => (
                 <li key={e.id} className="flex flex-wrap items-center gap-2">
                   <Badge variant="warning">{e.evento}</Badge>
                   <span>{rotuloGrau(e.grau)}{e.item_descricao ? ` · ${e.item_descricao}` : ''}{e.observacao ? ` · ${e.observacao}` : ''}</span>
-                  <span className="text-xs text-tinta-sussurro">{quando(e.registrado_em)}{e.autor ? ` · ${e.autor}` : ''}</span>
+                  <span className="text-rotulo text-tinta-sussurro">{quando(e.registrado_em)}{e.autor ? ` · ${e.autor}` : ''}</span>
                 </li>
               ))}
             </ul>

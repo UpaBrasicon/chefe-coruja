@@ -22,14 +22,16 @@ import { useSearchParams } from 'react-router-dom'
 import {
   type DocumentoEpisodio, diaHora, estadoDoDocumento, NOME_ESTADO, COR_ESTADO, rotuloDocumento, TIPOS_COM_FOLHA,
 } from '@/components/documento/documentos'
-import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
+import { Chip, TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CaixaMarcar } from '@/components/ui/caixa-marcar'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { data as dataFmt, dataHoraCarimbo } from '@/lib/formato'
 import { abrirProntuario, folhaDoDocumentoEmitido } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -54,7 +56,7 @@ type PacienteCopia = {
 
 const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 const dataCivil = (iso: string | null) => (iso && /^\d{4}-\d{2}-\d{2}/.test(iso) ? iso.slice(0, 10).split('-').reverse().join('/') : '—')
-const dia = (iso: string) => new Date(iso).toLocaleDateString('pt-BR')
+const dia = (iso: string) => dataFmt(iso)
 const nomeItem = (d: DocumentoEpisodio) => rotuloDocumento(d.tipo) + (d.numero ? ` nº ${d.numero}` : '') + (d.versao > 1 ? ` (versão ${d.versao})` : '')
 
 /** Conteúdo do documento (JSON do formulário ou texto) em linhas "campo: valor". */
@@ -105,17 +107,17 @@ function caberVias(raiz: ParentNode) {
 
 // a numeração "Página X de Y" das folhas não vale dentro da sombra: a cópia
 // numera as próprias páginas
-const ESTILO_COPIA = `@page{size:A4 portrait;margin:12mm;@bottom-right{content:"Página " counter(page) " de " counter(pages);font:8pt Arial,Helvetica,sans-serif;color:#555}}
-body{margin:0;font:12px/1.45 system-ui,sans-serif;color:#0f172a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+const ESTILO_COPIA = `@page{size:A4 portrait;margin:12mm;@bottom-right{content:"Página " counter(page) " de " counter(pages);font:8pt Arial,Helvetica,sans-serif;color:#555}} /* padrao-ok: CSS da janela de impressão, que não lê os tokens do app */
+body{margin:0;font:12px/1.45 system-ui,sans-serif;color:#0f172a;-webkit-print-color-adjust:exact;print-color-adjust:exact} /* padrao-ok: CSS da janela de impressão, que não lê os tokens do app */
 .capa,.doc,.decl{page-break-after:always;break-after:page;padding:4mm 0}
 .folha{page-break-after:always;break-after:page}
 h1{font-size:18px;margin:0 0 6px}h2{font-size:15px;margin:0 0 4px}
-.meta{color:#475569;margin:0 0 8px}.corpo p{margin:0 0 3px;white-space:pre-wrap}
-.selo{border:1.5px solid #B91C1C;color:#B91C1C;font-weight:700;padding:4px 8px;margin:6px 0 10px}
-.selo.cinza{border-color:#64748B;color:#475569}
-table{border-collapse:collapse;width:100%}td,th{border:1px solid #94a3b8;padding:4px 6px;text-align:left;vertical-align:top}
-.assin{display:flex;gap:24px;margin-top:40px}.assin div{flex:1;border-top:1px solid #0f172a;padding-top:4px;text-align:center}
-.rodape{margin-top:18px;color:#64748B;font-size:10px}`
+.meta{color:#475569;margin:0 0 8px}.corpo p{margin:0 0 3px;white-space:pre-wrap} /* padrao-ok: CSS da janela de impressão, que não lê os tokens do app */
+.selo{border:1.5px solid #B91C1C;color:#B91C1C;font-weight:700;padding:4px 8px;margin:6px 0 10px} /* padrao-ok: CSS da janela de impressão, que não lê os tokens do app */
+.selo.cinza{border-color:#64748B;color:#475569} /* padrao-ok: CSS da janela de impressão, que não lê os tokens do app */
+table{border-collapse:collapse;width:100%}td,th{border:1px solid #94a3b8;padding:4px 6px;text-align:left;vertical-align:top} /* padrao-ok: CSS da janela de impressão, que não lê os tokens do app */
+.assin{display:flex;gap:24px;margin-top:40px}.assin div{flex:1;border-top:1px solid #0f172a;padding-top:4px;text-align:center} /* padrao-ok: CSS da janela de impressão, que não lê os tokens do app */
+.rodape{margin-top:18px;color:#64748B;font-size:10px} /* padrao-ok: CSS da janela de impressão, que não lê os tokens do app */`
 
 export default function ImpressaoProntuario() {
   const { unidadeAtiva, papelAtivo } = useUnidade() as ReturnType<typeof useUnidade> & { papelAtivo?: string | null }
@@ -266,7 +268,7 @@ export default function ImpressaoProntuario() {
     // a janela abre dentro do clique, senão o navegador bloqueia
     const janela = window.open('', '_blank')
     if (!janela) { setAviso('O navegador bloqueou a janela de impressão. Libere pop-ups para este endereço.'); return }
-    janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando a cópia do prontuário…</p>')
+    janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando a cópia do prontuário…</p>') // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
     setImprimindo(true)
     setAviso(null)
     try {
@@ -276,7 +278,7 @@ export default function ImpressaoProntuario() {
         p_autorizador: aut.trim(), p_observacao: obs.trim(), p_recebedor_nome: recNome.trim(), p_recebedor_documento: recDoc.trim(),
       })
       if (error || !data) {
-        janela.document.body.innerHTML = `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">Não foi possível registrar a cópia: ${esc(error?.message)}. Nada foi impresso.</p>`
+        janela.document.body.innerHTML = `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">Não foi possível registrar a cópia: ${esc(error?.message)}. Nada foi impresso.</p>` // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
         return
       }
       const reg = data as unknown as { id: string; protocolo: string; impresso_em: string }
@@ -291,7 +293,7 @@ export default function ImpressaoProntuario() {
         partes.push({ html: blocoTexto(d), folha: false })
       }
       const itens = [...ordem.map((d) => nomeItem(d) + (estadoDoDocumento(d) === 'cancelado' ? ' — CANCELADO' : '')), ...selAnex.map((a) => `Anexo · ${a.nome}`)]
-      const quando = new Date(reg.impresso_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+      const quando = dataHoraCarimbo(reg.impresso_em)
       const capa = `<section class="capa"><h1>Cópia de prontuário · ${esc(reg.protocolo)}</h1>
 <p class="meta">${esc(pac.nome)}${pac.prontuario ? ` · prontuário ${esc(pac.prontuario)}` : ''} · ${esc(unidadeAtiva?.unidade?.nome ?? '')}</p>
 <p>${itens.length} ${itens.length === 1 ? 'item' : 'itens'} · impressa em ${esc(quando)} por ${esc(perfil?.nome_completo ?? '')}</p>
@@ -350,8 +352,6 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
   }
 
   const cabecalhoCaixa = 'flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-5 py-4 shadow-repouso'
-  const marca = (on: boolean) => cn('grid size-5 shrink-0 place-items-center rounded-micro border text-[12px] font-bold text-white',
-    on ? 'border-acao bg-acao' : 'border-fio-forte bg-superficie')
 
   return (
     <div className="flex w-full max-w-4xl flex-col gap-4">
@@ -369,11 +369,9 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
           <div className="flex flex-wrap gap-1.5">
             {pacientes.isLoading && <Spinner />}
             {(pacientes.data ?? []).map((p) => (
-              <button key={p.id} type="button" onClick={() => escolher(p.id)}
-                className={cn('rounded-capsula border px-[13px] py-1.5 text-apoio',
-                  pacienteId === p.id ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+              <Chip key={p.id} ativo={pacienteId === p.id} onClick={() => escolher(p.id)}>
                 {p.nome}{p.prontuario ? ` · ${p.prontuario}` : ''}{p.data_nascimento ? ` · ${dataCivil(p.data_nascimento)}` : ''}
-              </button>
+              </Chip>
             ))}
             {pacientes.data?.length === 0 && <span className="text-apoio text-tinta-sussurro">Nenhum paciente com esse nome no seu acesso.</span>}
           </div>
@@ -402,11 +400,11 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
                   const e = estadoDoDocumento(d)
                   return (
                     <div key={d.id} className="flex flex-wrap items-center gap-2.5 border-b border-trilha py-1.5">
-                      <button type="button" role="checkbox" aria-checked={sel.has(d.id)} aria-label={`Marcar ${nomeItem(d)}`}
-                        onClick={() => alternar(setSel, d.id)} className={marca(sel.has(d.id))}>{sel.has(d.id) ? '✓' : ''}</button>
-                      <span className={cn('min-w-0 flex-[1_1_200px] text-corpo', e === 'cancelado' ? 'text-tinta-sussurro line-through' : 'text-tinta')}>
-                        {nomeItem(d)} <span className="text-apoio text-tinta-sussurro">· {d.autor ?? '—'}</span>
-                      </span>
+                      <CaixaMarcar marcado={sel.has(d.id)} onChange={() => alternar(setSel, d.id)} className="w-auto min-w-0 flex-[1_1_200px] items-center">
+                        <span className={cn('text-corpo', e === 'cancelado' ? 'text-tinta-sussurro line-through' : 'text-tinta')}>
+                          {nomeItem(d)} <span className="text-apoio text-tinta-sussurro">· {d.autor ?? '—'}</span>
+                        </span>
+                      </CaixaMarcar>
                       {e !== 'emitido' && <Badge variant={COR_ESTADO[e]}>{NOME_ESTADO[e]}</Badge>}
                       <span className="text-rotulo text-tinta-sussurro tabular-nums">{diaHora(d.emitido_em ?? d.criado_em)}</span>
                       <Button size="sm" variant="outline" onClick={() => setVendo(d)}>Visualizar</Button>
@@ -421,7 +419,7 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
           <div className={cabecalhoCaixa}>
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="flex items-center gap-2 text-corpo font-semibold text-tinta"><Paperclip className="size-4 text-acao" aria-hidden />Anexos do prontuário</h3>
-              <label className={cn('ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle-sm border border-fio bg-superficie px-2.5 py-1.5 text-apoio text-tinta-apoio hover:border-acao hover:text-acao',
+              <label className={cn('ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio bg-superficie px-2.5 py-1.5 text-apoio text-tinta-apoio hover:border-acao hover:text-acao',
                 enviando && 'pointer-events-none opacity-50')}>
                 {enviando ? <Spinner /> : <Paperclip className="size-3.5" aria-hidden />} Anexar PDF ou imagem
                 <input type="file" multiple accept="application/pdf,image/*" onChange={(e) => void anexar(e)} className="hidden" />
@@ -430,11 +428,12 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
             {anexos.map((a) => (
               <div key={a.id} className="flex flex-col gap-1 border-b border-trilha py-1.5">
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <button type="button" role="checkbox" aria-checked={selA.has(a.id)} aria-label={`Marcar ${a.nome}`} disabled={!!a.cancelado_em}
-                    onClick={() => alternar(setSelA, a.id)} className={cn(marca(selA.has(a.id)), a.cancelado_em && 'opacity-40')}>{selA.has(a.id) ? '✓' : ''}</button>
-                  <span className={cn('min-w-0 flex-[1_1_200px] text-corpo [overflow-wrap:anywhere]', a.cancelado_em ? 'text-tinta-sussurro line-through' : 'text-tinta')}>
-                    {a.nome} <span className="text-apoio text-tinta-sussurro">· {Math.max(1, Math.round(a.tamanho / 1024))} KB · {diaHora(a.criado_em)}</span>
-                  </span>
+                  <CaixaMarcar marcado={selA.has(a.id)} onChange={() => alternar(setSelA, a.id)} desabilitado={!!a.cancelado_em}
+                    className="w-auto min-w-0 flex-[1_1_200px] items-center disabled:[&>span:first-child]:opacity-40">
+                    <span className={cn('text-corpo [overflow-wrap:anywhere]', a.cancelado_em ? 'text-tinta-sussurro line-through' : 'text-tinta')}>
+                      {a.nome} <span className="text-apoio text-tinta-sussurro">· {Math.max(1, Math.round(a.tamanho / 1024))} KB · {diaHora(a.criado_em)}</span>
+                    </span>
+                  </CaixaMarcar>
                   <Button size="sm" variant="outline" onClick={() => void abrirAnexo(a)}><ExternalLink /> Abrir</Button>
                   {!a.cancelado_em && (a.autor_id === perfil?.id || ehGestor) && (
                     <Button size="sm" variant="destructive" onClick={() => { setCancelando({ tipo: 'anexo', id: a.id }); setCancTxt('') }}><X /> Cancelar</Button>

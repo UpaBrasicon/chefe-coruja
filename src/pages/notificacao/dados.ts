@@ -5,6 +5,7 @@
 // como o protótipo cita); o mapeamento CID → agravo aguarda a vigilância.
 import { useQuery } from '@tanstack/react-query'
 
+import { dataHora, dataIso, diaMes } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
 export const FONTE_LNNC = 'Portaria GM/MS nº 10.175, de 23/01/2026'
@@ -82,15 +83,15 @@ export const ROTULO_SITUACAO: Record<Situacao, string> = {
   descartado: 'Descartado',
 }
 
-export const hojeSP = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+export const hojeSP = () => dataIso()
+/** Soma dias a uma data pura (AAAA-MM-DD), em UTC ao meio-dia para não mudar de dia. */
 export const somarDias = (iso: string, dias: number) => {
-  const d = new Date(`${iso}T12:00:00`)
-  d.setDate(d.getDate() + dias)
-  return d.toLocaleDateString('en-CA')
+  const d = new Date(`${iso}T12:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + dias)
+  return d.toISOString().slice(0, 10)
 }
-export const ddmm = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })
-export const diaHora = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }) : ''
+export const ddmm = (iso: string) => diaMes(iso)
+export const diaHora = (iso: string | null | undefined) => (iso ? dataHora(iso) : '')
 /** "A90 — Dengue" → "A90". */
 export const codigoCid = (t: string) => t.trim().split(/\s|—/)[0].toUpperCase()
 
@@ -191,8 +192,8 @@ export const SECOES: { titulo: string; campos: Campo[] }[] = [
 
 const dataOk = (s: string) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false
-  const d = new Date(`${s}T12:00:00`)
-  return !Number.isNaN(d.getTime()) && d.toLocaleDateString('en-CA') === s && s <= hojeSP() && s >= '1900-01-01'
+  const d = new Date(`${s}T12:00:00Z`)
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s && s <= hojeSP() && s >= '1900-01-01'
 }
 
 /** "Falta para registrar" — as mesmas regras de private.ficha_sinan_pendencias. */

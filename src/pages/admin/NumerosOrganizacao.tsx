@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
 
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { supabase } from '@/lib/supabase'
 
 // Fase 6: números da organização por unidade, em agregado (painel_organizacao).
@@ -43,57 +45,57 @@ export function NumerosOrganizacao() {
     <Card>
       <CardHeader className="flex-row flex-wrap items-start justify-between gap-3 space-y-0">
         <div>
-          <CardTitle className="text-base">Movimento por unidade</CardTitle>
+          <CardTitle className="text-corpo">Movimento por unidade</CardTitle>
           <CardDescription>Só agregado. Contagens de 1 a 4 aparecem como “&lt; 5” para não identificar ninguém, e a taxa some junto.</CardDescription>
         </div>
-        <div className="flex gap-1 text-sm">
+        <div className="flex gap-1 text-apoio">
           {[7, 30, 90].map((d) => (
-            <button key={d} type="button" onClick={() => setDias(d)}
-              className={`rounded-md border px-2.5 py-1 ${d === dias ? 'border-acao text-acao' : 'border-fio text-tinta-apoio'}`}>
+            <Button key={d} type="button" variant="outline" size="sm" aria-pressed={d === dias} onClick={() => setDias(d)}
+              className={d === dias ? 'border-acao text-acao' : undefined}>
               {d} dias
-            </button>
+            </Button>
           ))}
         </div>
       </CardHeader>
       <CardContent className="overflow-x-auto">
         {isLoading && <Spinner />}
-        {error && <p className="text-sm text-critico">{(error as Error).message}</p>}
-        {data && data.length === 0 && <p className="text-sm text-tinta-sussurro">Nenhuma unidade.</p>}
+        {error && <p className="text-apoio text-critico">{(error as Error).message}</p>}
+        {data && data.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhuma unidade.</p>}
         {data && data.length > 0 && (
-          <table className="w-full min-w-[760px] text-sm">
-            <thead className="text-left text-xs text-tinta-sussurro">
-              <tr>
-                <th className="py-1.5 font-medium">Unidade</th>
-                <th className="font-medium">Leitos ocupados</th>
-                <th className="font-medium">Ocupação</th>
-                <th className="font-medium">Ocupação média (censo)</th>
-                <th className="font-medium">Na porta agora</th>
-                <th className="font-medium">Internados</th>
-                <th className="font-medium">Chegadas</th>
-                <th className="font-medium">Encerrados</th>
-                <th className="font-medium">Óbitos</th>
-                <th className="font-medium">Evasões</th>
-                <th className="font-medium">Em expediente</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[760px] text-apoio">
+            <TableHeader className="text-left text-rotulo text-tinta-sussurro">
+              <TableRow>
+                <TableHead className="py-1.5 font-medium">Unidade</TableHead>
+                <TableHead className="font-medium">Leitos ocupados</TableHead>
+                <TableHead className="font-medium">Ocupação</TableHead>
+                <TableHead className="font-medium">Ocupação média (censo)</TableHead>
+                <TableHead className="font-medium">Na porta agora</TableHead>
+                <TableHead className="font-medium">Internados</TableHead>
+                <TableHead className="font-medium">Chegadas</TableHead>
+                <TableHead className="font-medium">Encerrados</TableHead>
+                <TableHead className="font-medium">Óbitos</TableHead>
+                <TableHead className="font-medium">Evasões</TableHead>
+                <TableHead className="font-medium">Em expediente</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {data.map((u) => (
-                <tr key={u.unidade_id} className="border-t tabular">
-                  <td className="py-2 font-sans">{u.unidade_nome}</td>
-                  <td>{n(u.leitos_ocupados)} de {n(u.leitos)}</td>
-                  <td>{pct(u.taxa_ocupacao)}</td>
-                  <td>{pct(u.taxa_ocupacao_media_censo)}</td>
-                  <td>{n(u.porta_agora)}</td>
-                  <td>{n(u.internados_agora)}</td>
-                  <td>{n(u.chegadas_periodo)}</td>
-                  <td>{n(u.encerrados_periodo)}</td>
-                  <td>{n(u.obitos_periodo)}</td>
-                  <td>{n(u.evasoes_periodo)}</td>
-                  <td>{u.profissionais_em_expediente ?? 0}</td>
-                </tr>
+                <TableRow key={u.unidade_id} className="border-t tabular">
+                  <TableCell className="py-2 font-sans">{u.unidade_nome}</TableCell>
+                  <TableCell>{n(u.leitos_ocupados)} de {n(u.leitos)}</TableCell>
+                  <TableCell>{pct(u.taxa_ocupacao)}</TableCell>
+                  <TableCell>{pct(u.taxa_ocupacao_media_censo)}</TableCell>
+                  <TableCell>{n(u.porta_agora)}</TableCell>
+                  <TableCell>{n(u.internados_agora)}</TableCell>
+                  <TableCell>{n(u.chegadas_periodo)}</TableCell>
+                  <TableCell>{n(u.encerrados_periodo)}</TableCell>
+                  <TableCell>{n(u.obitos_periodo)}</TableCell>
+                  <TableCell>{n(u.evasoes_periodo)}</TableCell>
+                  <TableCell>{u.profissionais_em_expediente ?? 0}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>

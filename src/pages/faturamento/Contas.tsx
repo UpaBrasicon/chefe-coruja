@@ -17,10 +17,12 @@ import { Link } from 'react-router-dom'
 import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import {
@@ -41,7 +43,6 @@ const MINIMO_MOTIVO = 10
 const VARIANTE: Record<EtapaConta, 'info' | 'warning' | 'secondary' | 'outline'> = {
   aberta: 'info', em_conferencia: 'warning', fechada: 'secondary', faturada: 'outline',
 }
-const selectCls = 'h-9 rounded-controle border border-fio bg-campo px-2 text-apoio'
 
 export default function Contas() {
   const { unidadeAtiva } = useUnidade()
@@ -95,39 +96,39 @@ export default function Contas() {
           texto="As contas abrem sozinhas com o atendimento na porta e com a internação." />
       ) : (
         <div className="overflow-x-auto rounded-container border border-fio bg-superficie">
-          <table className="w-full min-w-[720px] text-apoio">
-            <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
-              <tr>
-                <th className="px-3 py-2 font-medium">Conta</th><th className="px-3 py-2 font-medium">Paciente</th>
-                <th className="px-3 py-2 font-medium">Tipo</th><th className="px-3 py-2 font-medium">Atendimento</th>
-                <th className="px-3 py-2 font-medium">Pagador</th><th className="px-3 py-2 font-medium">Etapa</th>
-                <th className="px-3 py-2 font-medium">Pendências</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[720px] text-apoio">
+            <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
+              <TableRow>
+                <TableHead className="px-3 py-2 font-medium">Conta</TableHead><TableHead className="px-3 py-2 font-medium">Paciente</TableHead>
+                <TableHead className="px-3 py-2 font-medium">Tipo</TableHead><TableHead className="px-3 py-2 font-medium">Atendimento</TableHead>
+                <TableHead className="px-3 py-2 font-medium">Pagador</TableHead><TableHead className="px-3 py-2 font-medium">Etapa</TableHead>
+                <TableHead className="px-3 py-2 font-medium">Pendências</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {contas.map((c) => (
-                <tr key={c.id} className="cursor-pointer border-b border-trilha last:border-0 hover:bg-trilha/60" onClick={() => setAberta(c.id)}>
-                  <td className="whitespace-nowrap px-3 py-2 font-medium text-tinta">
+                <TableRow key={c.id} className="cursor-pointer border-b border-trilha last:border-0 hover:bg-trilha/60" onClick={() => setAberta(c.id)}>
+                  <TableCell className="whitespace-nowrap px-3 py-2 font-medium text-tinta">
                     {c.numero}
                     {(c.origem || c.derivadas.length > 0) && <Link2 className="ml-1 inline size-3.5 text-tinta-sussurro" aria-label="conta ligada" />}
-                  </td>
-                  <td className="px-3 py-2">{c.paciente.nome}<span className="text-tinta-sussurro"> · {c.paciente.prontuario ?? '—'}</span></td>
-                  <td className="px-3 py-2">{TIPO[c.tipo]}</td>
-                  <td className="px-3 py-2 text-tinta-apoio">
+                  </TableCell>
+                  <TableCell className="px-3 py-2">{c.paciente.nome}<span className="text-tinta-sussurro"> · {c.paciente.prontuario ?? '—'}</span></TableCell>
+                  <TableCell className="px-3 py-2">{TIPO[c.tipo]}</TableCell>
+                  <TableCell className="px-3 py-2 text-tinta-apoio">
                     {c.atendimento?.inicio ? fmtDataHora(c.atendimento.inicio) : '—'}
                     {c.atendimento_terminou ? (c.atendimento?.fim ? ` até ${fmtDataHora(c.atendimento.fim)}` : '') : ' · em andamento'}
-                  </td>
-                  <td className="px-3 py-2">{PAGADOR[c.pagador]}</td>
-                  <td className="px-3 py-2"><Badge variant={VARIANTE[c.status]}>{ETAPA[c.status]}</Badge></td>
-                  <td className="whitespace-nowrap px-3 py-2">
+                  </TableCell>
+                  <TableCell className="px-3 py-2">{PAGADOR[c.pagador]}</TableCell>
+                  <TableCell className="px-3 py-2"><Badge variant={VARIANTE[c.status]}>{ETAPA[c.status]}</Badge></TableCell>
+                  <TableCell className="whitespace-nowrap px-3 py-2">
                     {(c.pendencias?.bloqueantes ?? 0) > 0 && <Badge variant="destructive">{c.pendencias!.bloqueantes} bloqueante(s)</Badge>}
                     {(c.pendencias?.avisos ?? 0) > 0 && <span className="ml-1 text-rotulo text-atencao">{c.pendencias!.avisos} aviso(s)</span>}
                     {!(c.pendencias?.bloqueantes || c.pendencias?.avisos) && <span className="text-tinta-sussurro">—</span>}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
       {aberta && <DetalheConta id={aberta} onTrocar={setAberta} onFechar={() => setAberta(null)} />}
@@ -189,13 +190,13 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
               </span>
             </div>
             {(c.origem || c.derivadas.length > 0) && (
-              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-fio px-3 py-2">
+              <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio px-3 py-2">
                 <Link2 className="size-4 text-tinta-sussurro" aria-hidden />
                 {c.origem && (
-                  <span>Veio da porta: <button type="button" className="font-medium text-acao underline" onClick={() => onTrocar(c.origem!.id)}>{c.origem.numero}</button> ({ETAPA[c.origem.status]})</span>
+                  <span>Veio da porta: <Button type="button" variant="link" className="min-h-0 p-0 align-baseline font-medium underline" onClick={() => onTrocar(c.origem!.id)}>{c.origem.numero}</Button> ({ETAPA[c.origem.status]})</span>
                 )}
                 {c.derivadas.map((d) => (
-                  <span key={d.id}>Internação: <button type="button" className="font-medium text-acao underline" onClick={() => onTrocar(d.id)}>{d.numero}</button> ({ETAPA[d.status]})</span>
+                  <span key={d.id}>Internação: <Button type="button" variant="link" className="min-h-0 p-0 align-baseline font-medium underline" onClick={() => onTrocar(d.id)}>{d.numero}</Button> ({ETAPA[d.status]})</span>
                 ))}
               </div>
             )}
@@ -220,7 +221,7 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
             )}
             {acoes.find((a) => a.bloqueio) && <p className="text-rotulo text-tinta-sussurro">{acoes.find((a) => a.bloqueio)!.bloqueio}{c.atendimento_terminou ? '' : ' A conta fecha depois.'}</p>}
             {acao && (
-              <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-3">
+              <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-3">
                 <Label htmlFor="conta-motivo">{acao.rotulo}: motivo</Label>
                 <Textarea id="conta-motivo" rows={2} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
                 <div className="flex justify-end gap-2">
@@ -233,10 +234,10 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
               <div className="flex flex-wrap items-end gap-2">
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="conta-pagador">Trocar pagador</Label>
-                  <select id="conta-pagador" className={selectCls} value={pagador} onChange={(e) => { setPagador(e.target.value as Pagador | ''); setMotivo('') }}>
+                  <CampoSelecao id="conta-pagador" value={pagador} onChange={(e) => { setPagador(e.target.value as Pagador | ''); setMotivo('') }}>
                     <option value="">—</option>
                     {(['sus', 'convenio', 'particular'] as const).filter((p) => p !== c.pagador).map((p) => <option key={p} value={p}>{PAGADOR[p]}</option>)}
-                  </select>
+                  </CampoSelecao>
                 </div>
                 {pagador && (
                   <>
@@ -296,16 +297,16 @@ function ItensConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer: boo
         Procedimentos
       </TituloSecao>
       {c.itens.length === 0 ? <p className="text-tinta-sussurro">Nenhum procedimento ainda.</p> : (
-        <div className="overflow-x-auto rounded-lg border border-fio">
-          <table className="w-full min-w-[520px] text-apoio">
-            <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
-              <tr><th className="px-2 py-1.5 font-medium">Procedimento</th><th className="px-2 py-1.5 font-medium">Qtd.</th>
-                <th className="px-2 py-1.5 font-medium">Quem fez</th><th className="px-2 py-1.5 text-right font-medium">Referência</th><th /></tr>
-            </thead>
-            <tbody>
+        <div className="overflow-x-auto rounded-controle border border-fio">
+          <Table variante="referencia" className="w-full min-w-[520px] text-apoio">
+            <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
+              <TableRow><TableHead className="px-2 py-1.5 font-medium">Procedimento</TableHead><TableHead className="px-2 py-1.5 font-medium">Qtd.</TableHead>
+                <TableHead className="px-2 py-1.5 font-medium">Quem fez</TableHead><TableHead className="px-2 py-1.5 text-right font-medium">Referência</TableHead><TableHead /></TableRow>
+            </TableHeader>
+            <TableBody>
               {c.itens.map((i) => (
-                <tr key={i.origem + i.origem_id + (i.procedimento ?? '')} className="border-b border-trilha align-top last:border-0">
-                  <td className="px-2 py-1.5">
+                <TableRow key={i.origem + i.origem_id + (i.procedimento ?? '')} className="border-b border-trilha align-top last:border-0">
+                  <TableCell className="px-2 py-1.5">
                     <span className="font-medium text-tinta">{i.procedimento ?? '—'}</span> {i.nome ?? ''}
                     <span className="block text-rotulo text-tinta-sussurro">
                       {ORIGEM_ITEM[i.origem]}{i.aih ? ` · AIH ${i.aih.numero ?? i.aih.status}` : ''}{i.em ? ` · ${fmtDataHora(i.em)}` : ''}
@@ -313,32 +314,32 @@ function ItensConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer: boo
                     {[...(i.criticas ?? []), ...(i.avisos ?? [])].map((x, k) => (
                       <span key={k} className="block text-rotulo text-atencao">{x.texto}</span>
                     ))}
-                  </td>
-                  <td className="px-2 py-1.5">{i.quantidade}</td>
-                  <td className="px-2 py-1.5">{i.profissional ?? '—'}{i.cbo ? ` · CBO ${i.cbo}` : ''}</td>
-                  <td className="whitespace-nowrap px-2 py-1.5 text-right">{reais(i.valor_total)}</td>
-                  <td className="px-2 py-1.5 text-right">
+                  </TableCell>
+                  <TableCell className="px-2 py-1.5">{i.quantidade}</TableCell>
+                  <TableCell className="px-2 py-1.5">{i.profissional ?? '—'}{i.cbo ? ` · CBO ${i.cbo}` : ''}</TableCell>
+                  <TableCell className="whitespace-nowrap px-2 py-1.5 text-right">{reais(i.valor_total)}</TableCell>
+                  <TableCell className="px-2 py-1.5 text-right">
                     {podeMexer && i.retiravel && (
                       <Button size="xs" variant="ghost" onClick={() => { setRetirando(i); setMotivo('') }}>Retirar</Button>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-            <tfoot>
-              <tr className="border-t border-fio">
-                <td colSpan={3} className="px-2 py-1.5 text-rotulo text-tinta-sussurro">
+            </TableBody>
+            <TableFooter className="border-t-0 bg-transparent font-normal">
+              <TableRow className="border-t border-fio">
+                <TableCell colSpan={3} className="px-2 py-1.5 text-rotulo text-tinta-sussurro">
                   Valor de referência do SIGTAP ({c.tipo === 'ambulatorial' ? 'SA' : 'SH + SP'}); o SUS paga por custeio ou pacote.
                   {c.itens_com_aviso > 0 ? ` ${c.itens_com_aviso} item(ns) com aviso.` : ''}
-                </td>
-                <td className="whitespace-nowrap px-2 py-1.5 text-right font-semibold text-tinta">{reais(c.total_referencia)}</td><td />
-              </tr>
-            </tfoot>
-          </table>
+                </TableCell>
+                <TableCell className="whitespace-nowrap px-2 py-1.5 text-right font-semibold text-tinta">{reais(c.total_referencia)}</TableCell><TableCell />
+              </TableRow>
+            </TableFooter>
+          </Table>
         </div>
       )}
       {retirando && (
-        <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-3">
+        <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-3">
           <Label htmlFor="item-motivo">Retirar {retirando.procedimento}: motivo</Label>
           <Textarea id="item-motivo" rows={2} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
           {retirar.error && <p role="alert" className="text-critico">{(retirar.error as Error).message}</p>}
@@ -388,7 +389,7 @@ function PendenciasConta({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void 
             {pend.length - bloqueantes > 0 ? ` e ${pend.length - bloqueantes} aviso(s)` : ''}.
             {aberta && bloqueantes > 0 && c.bloqueantes_sem_liberacao === 0 ? ' As bloqueantes estão liberadas pelo gestor.' : ''}
           </p>
-          <div className="flex flex-col divide-y divide-trilha rounded-lg border border-fio">
+          <div className="flex flex-col divide-y divide-trilha rounded-controle border border-fio">
             {grupos.map((g) => (
               <div key={g} className="flex flex-col gap-1 px-3 py-2">
                 <span className="text-rotulo font-medium text-tinta-sussurro">{GRUPO_PENDENCIA[g]}</span>
@@ -416,7 +417,7 @@ function PendenciasConta({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void 
       )}
       {c.pode_liberar && c.status === 'em_conferencia' && c.bloqueantes_sem_liberacao > 0 && (
         liberando ? (
-          <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-3">
+          <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-3">
             <Label htmlFor="liberar-motivo">Liberar o fechamento com {c.bloqueantes_sem_liberacao} pendência(s) bloqueante(s): justificativa</Label>
             <Textarea id="liberar-motivo" rows={2} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
             {liberar.error && <p role="alert" className="text-critico">{(liberar.error as Error).message}</p>}
@@ -459,7 +460,7 @@ function DocumentosSusConta({ c }: { c: ContaDetalhe }) {
         <p className="text-tinta-sussurro">Nenhuma AIH ou APAC ligada a esta conta.</p>
       )}
       {!vazio && (
-        <ul className="flex flex-col divide-y divide-trilha rounded-lg border border-fio">
+        <ul className="flex flex-col divide-y divide-trilha rounded-controle border border-fio">
           {docs.aihs.map((a) => (
             <li key={a.id} className={`flex flex-col gap-0.5 px-3 py-2${a.vigente ? '' : ' text-tinta-sussurro'}`}>
               <span className="flex flex-wrap items-center gap-1.5">
@@ -534,16 +535,16 @@ function MedicamentosConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMex
         Medicamentos
       </TituloSecao>
       {meds.length === 0 ? <p className="text-tinta-sussurro">Nenhum medicamento dispensado ou administrado nesta conta.</p> : (
-        <div className="overflow-x-auto rounded-lg border border-fio">
-          <table className="w-full min-w-[520px] text-apoio">
-            <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
-              <tr><th className="px-2 py-1.5 font-medium">Medicamento</th><th className="px-2 py-1.5 font-medium">Dispensado</th>
-                <th className="px-2 py-1.5 font-medium">Administrado</th><th /></tr>
-            </thead>
-            <tbody>
+        <div className="overflow-x-auto rounded-controle border border-fio">
+          <Table variante="referencia" className="w-full min-w-[520px] text-apoio">
+            <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
+              <TableRow><TableHead className="px-2 py-1.5 font-medium">Medicamento</TableHead><TableHead className="px-2 py-1.5 font-medium">Dispensado</TableHead>
+                <TableHead className="px-2 py-1.5 font-medium">Administrado</TableHead><TableHead /></TableRow>
+            </TableHeader>
+            <TableBody>
               {meds.map((m) => (
-                <tr key={m.item_id} className={`border-b border-trilha align-top last:border-0${m.fora_da_conta ? ' text-tinta-sussurro' : ''}`}>
-                  <td className="px-2 py-1.5">
+                <TableRow key={m.item_id} className={`border-b border-trilha align-top last:border-0${m.fora_da_conta ? ' text-tinta-sussurro' : ''}`}>
+                  <TableCell className="px-2 py-1.5">
                     <span className={m.fora_da_conta ? 'line-through' : 'font-medium text-tinta'}>{m.medicamento}</span>
                     {m.fora_da_conta && <Badge variant="outline" className="ml-1.5">fora da conta</Badge>}
                     <span className="block text-rotulo text-tinta-sussurro">{m.prescricao}</span>
@@ -551,36 +552,36 @@ function MedicamentosConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMex
                       <span className="block text-rotulo text-tinta-sussurro">“{m.fora_motivo}”{m.fora_por ? ` · ${m.fora_por}` : ''}</span>
                     )}
                     {m.aviso && !m.fora_da_conta && <span className="block text-rotulo text-atencao">{m.aviso}</span>}
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-1.5">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap px-2 py-1.5">
                     {m.liquido} {rotuloUnidade(m.unidade_consumo)}
                     {m.devolvido > 0 && <span className="block text-rotulo text-tinta-sussurro">{m.dispensado} {m.dispensado === 1 ? 'saiu' : 'saíram'}, {m.devolvido} {m.devolvido === 1 ? 'voltou' : 'voltaram'}</span>}
                     {m.sem_farmaceutico && <span className="block text-rotulo text-tinta-sussurro">sem farmacêutico no turno</span>}
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-1.5">{m.administrado === 0 ? 'nenhuma vez' : m.administrado === 1 ? '1 vez' : `${m.administrado} vezes`}</td>
-                  <td className="px-2 py-1.5 text-right">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap px-2 py-1.5">{m.administrado === 0 ? 'nenhuma vez' : m.administrado === 1 ? '1 vez' : `${m.administrado} vezes`}</TableCell>
+                  <TableCell className="px-2 py-1.5 text-right">
                     {podeMexer && (
                       <Button size="xs" variant="ghost" onClick={() => { setAjuste({ m, fora: !m.fora_da_conta }); setMotivo('') }}>
                         {m.fora_da_conta ? 'Voltar à conta' : 'Fora da conta'}
                       </Button>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-            <tfoot>
-              <tr className="border-t border-fio">
-                <td colSpan={4} className="px-2 py-1.5 text-rotulo text-tinta-sussurro">
+            </TableBody>
+            <TableFooter className="border-t-0 bg-transparent font-normal">
+              <TableRow className="border-t border-fio">
+                <TableCell colSpan={4} className="px-2 py-1.5 text-rotulo text-tinta-sussurro">
                   Quantidade em unidade de consumo, já sem o que voltou à farmácia. Sem valor: entra no custeio ou no pacote.
                   {c.medicamentos_com_aviso > 0 ? ` ${c.medicamentos_com_aviso} medicamento(s) com aviso; o aviso não impede o fechamento.` : ''}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
         </div>
       )}
       {ajuste && (
-        <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-3">
+        <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-3">
           <Label htmlFor="med-motivo">{ajuste.fora ? 'Tirar da conta' : 'Voltar à conta'} {ajuste.m.medicamento}: motivo</Label>
           <Textarea id="med-motivo" rows={2} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
           {ajustar.error && <p role="alert" className="text-critico">{(ajustar.error as Error).message}</p>}
@@ -632,14 +633,14 @@ function LancarProcedimento({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => vo
   })
   if (!aberto) return <Button size="sm" variant="outline" className="self-start" onClick={() => setAberto(true)}>Lançar procedimento</Button>
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-fio p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
       <span className="text-rotulo text-tinta-sussurro">
         {c.tipo === 'ambulatorial'
           ? 'Na conta da porta, o lançamento é o mesmo do BPA: só códigos da lista da unidade.'
           : 'Na internação: procedimentos especiais ou secundários que a AIH aceita à parte (UTI, OPME e outros).'}
       </span>
       {codigo ? (
-        <div className="flex items-center justify-between rounded-md border border-fio px-2 py-1">
+        <div className="flex items-center justify-between rounded-controle border border-fio px-2 py-1">
           <span><span className="font-medium">{codigoSigtapNaTela(codigo.codigo)}</span> · {codigo.nome}</span>
           <Button size="xs" variant="ghost" onClick={() => setCodigo(null)}>Trocar</Button>
         </div>
@@ -647,7 +648,7 @@ function LancarProcedimento({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => vo
         <div className="flex flex-col gap-1">
           <Input className="h-8" aria-label="Procedimento SIGTAP" placeholder="Código ou nome no SIGTAP" value={termo} onChange={(e) => setTermo(e.target.value)} />
           {(busca.data ?? []).length > 0 && (
-            <div className="flex max-h-40 flex-col overflow-y-auto rounded-md border border-fio">
+            <div className="flex max-h-40 flex-col overflow-y-auto rounded-controle border border-fio">
               {(busca.data ?? []).map((p) => (
                 <Button key={p.codigo} type="button" variant="ghost" size="sm" className="justify-start" onClick={() => setCodigo(p)}>
                   {codigoSigtapNaTela(p.codigo)} · {p.nome}
@@ -664,10 +665,10 @@ function LancarProcedimento({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => vo
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="lanc-prof">Quem fez</Label>
-          <select id="lanc-prof" className={selectCls} value={profissional} onChange={(e) => setProfissional(e.target.value)}>
+          <CampoSelecao id="lanc-prof" value={profissional} onChange={(e) => setProfissional(e.target.value)}>
             <option value="">Escolha…</option>
             {(profissionais.data ?? []).map((p) => <option key={p.id} value={p.id}>{p.nome}{p.cbo ? ` · CBO ${p.cbo}` : ''}</option>)}
-          </select>
+          </CampoSelecao>
         </div>
       </div>
       {lancar.error && <p role="alert" className="text-critico">{(lancar.error as Error).message}</p>}

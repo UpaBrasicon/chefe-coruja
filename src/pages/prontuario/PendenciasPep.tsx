@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom'
 
 import { hora, invalidarDocumentos, rotuloDocumento, emitirRascunho, diaHora } from '@/components/documento/documentos'
 import { rotaDoRascunho, usePendenciasPep, type RascunhoPep } from '@/components/documento/pendenciasPep'
-import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
+import { TituloPagina, TituloSecao, Trilha } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
@@ -35,7 +35,7 @@ function Quadro({ icone, titulo, resumo, children }: { icone: React.ReactNode; t
   return (
     <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
       <div className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-3.5">
-        <h2 className="flex items-center gap-2 text-corpo font-semibold text-tinta">{icone}{titulo}</h2>
+        <TituloSecao className="mb-0"><span className="flex items-center gap-2">{icone}{titulo}</span></TituloSecao>
         {resumo && <span className="text-apoio text-tinta-sussurro">{resumo}</span>}
       </div>
       {children}

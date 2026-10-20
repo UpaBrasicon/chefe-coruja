@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
+import { TituloPagina } from '@/components/monitor/Pagina'
+import { dataHora, dataPura } from '@/lib/formato'
 
 type Incidente = {
   id: string
@@ -56,9 +58,9 @@ const METRICA_LABEL: Record<string, string> = {
 }
 
 const SEVERIDADE_COR: Record<string, string> = {
-  critico: 'bg-critico/[0.12] text-critico',
-  atencao: 'bg-atencao/[0.12] text-atencao',
-  informativo: 'bg-suprimento/[0.12] text-suprimento',
+  critico: 'bg-critico/10 text-critico',
+  atencao: 'bg-atencao/10 text-atencao',
+  informativo: 'bg-suprimento/10 text-suprimento',
 }
 
 export function GaviaoPainel() {
@@ -82,7 +84,7 @@ export function GaviaoPainel() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-4 text-sm text-critico">
+      <div className="rounded-controle border border-critico/30 bg-alerta-critico p-4 text-apoio text-critico">
         Falha ao carregar o painel do Gavião: {(error as Error).message}
       </div>
     )
@@ -93,20 +95,18 @@ export function GaviaoPainel() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
-          <ShieldCheck className="size-5" /> Gavião — Sentinela
-        </h1>
-        <p className="text-sm text-tinta-sussurro">
-          Fiscal de segurança e integridade da plataforma. Dados que o Gavião considera pertinentes.
-        </p>
-      </div>
+      <TituloPagina
+        icone={ShieldCheck}
+        titulo="Gavião — Sentinela"
+        descricao="Fiscal de segurança e integridade da plataforma. Dados que o Gavião considera pertinentes."
+        className="mb-0"
+      />
 
       {/* Resumo */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
+            <CardTitle className="flex items-center gap-2 text-apoio">
               <AlertTriangle className="size-4 text-critico" /> Incidentes abertos
             </CardTitle>
           </CardHeader>
@@ -116,7 +116,7 @@ export function GaviaoPainel() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
+            <CardTitle className="flex items-center gap-2 text-apoio">
               <Activity className="size-4 text-atencao" /> Alertas de escala ativos
             </CardTitle>
           </CardHeader>
@@ -126,13 +126,13 @@ export function GaviaoPainel() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
+            <CardTitle className="flex items-center gap-2 text-apoio">
               <CheckCircle2 className="size-4 text-conforme" /> Última verificação
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm font-medium">
-              {data?.resumo.gerado_em ? new Date(data.resumo.gerado_em).toLocaleString('pt-BR') : '—'}
+            <div className="text-apoio font-medium">
+              {data?.resumo.gerado_em ? dataHora(data.resumo.gerado_em) : '—'}
             </div>
           </CardContent>
         </Card>
@@ -141,49 +141,49 @@ export function GaviaoPainel() {
       {/* Relatório semanal */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <CalendarDays className="size-4" /> Relatório semanal do Gavião
           </CardTitle>
           <CardDescription>
             {data?.relatorio
-              ? `Semana de ${new Date(data.relatorio.periodo_inicio).toLocaleDateString('pt-BR')} a ${new Date(data.relatorio.periodo_fim).toLocaleDateString('pt-BR')}`
+              ? `Semana de ${dataPura(data.relatorio.periodo_inicio)} a ${dataPura(data.relatorio.periodo_fim)}`
               : 'Ainda não há relatório gerado (o job roda às segundas 08h15).'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {data?.relatorio ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-lg border p-3">
-                <div className="text-xs text-tinta-sussurro">Incidentes</div>
+              <div className="rounded-controle border p-3">
+                <div className="text-rotulo text-tinta-sussurro">Incidentes</div>
                 <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{data.relatorio.resumo.total_incidentes}</div>
-                <div className="mt-1 flex gap-1 text-[11px]">
+                <div className="mt-1 flex gap-1 text-rotulo">
                   <Badge className={SEVERIDADE_COR.critico}>C {data.relatorio.resumo.incidentes_por_severidade.critico}</Badge>
                   <Badge className={SEVERIDADE_COR.atencao}>A {data.relatorio.resumo.incidentes_por_severidade.atencao}</Badge>
                   <Badge className={SEVERIDADE_COR.informativo}>I {data.relatorio.resumo.incidentes_por_severidade.informativo}</Badge>
                 </div>
               </div>
-              <div className="rounded-lg border p-3">
-                <div className="text-xs text-tinta-sussurro">Por patrulha</div>
-                <div className="text-sm font-medium">
+              <div className="rounded-controle border p-3">
+                <div className="text-rotulo text-tinta-sussurro">Por patrulha</div>
+                <div className="text-apoio font-medium">
                   dados {data.relatorio.resumo.incidentes_por_patrulha.dados} · conteúdo {data.relatorio.resumo.incidentes_por_patrulha.conteudo} · hermes {data.relatorio.resumo.incidentes_por_patrulha.hermes}
                 </div>
               </div>
-              <div className="rounded-lg border p-3">
-                <div className="text-xs text-tinta-sussurro">Alertas de escala</div>
+              <div className="rounded-controle border p-3">
+                <div className="text-rotulo text-tinta-sussurro">Alertas de escala</div>
                 <div className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{data.relatorio.resumo.total_alertas}</div>
-                <div className="text-[11px] text-tinta-sussurro">
+                <div className="text-rotulo text-tinta-sussurro">
                   {data.relatorio.resumo.alertas_por_status.novo} novos · {data.relatorio.resumo.alertas_por_status.visto} vistos
                 </div>
               </div>
-              <div className="rounded-lg border p-3">
-                <div className="text-xs text-tinta-sussurro">Gerado em</div>
-                <div className="text-sm font-medium">
-                  {new Date(data.relatorio.gerado_em).toLocaleString('pt-BR')}
+              <div className="rounded-controle border p-3">
+                <div className="text-rotulo text-tinta-sussurro">Gerado em</div>
+                <div className="text-apoio font-medium">
+                  {dataHora(data.relatorio.gerado_em)}
                 </div>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-tinta-sussurro">Nenhum relatório semanal disponível ainda.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhum relatório semanal disponível ainda.</p>
           )}
         </CardContent>
       </Card>
@@ -192,16 +192,16 @@ export function GaviaoPainel() {
       {incidentes.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Incidentes de segurança (Cérbero)</CardTitle>
+            <CardTitle className="text-corpo">Incidentes de segurança (Cérbero)</CardTitle>
             <CardDescription>Visível apenas ao super_admin.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {incidentes.map((i) => (
-              <div key={i.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
+              <div key={i.id} className="flex items-start justify-between gap-3 rounded-controle border p-3">
                 <div>
-                  <div className="text-sm font-medium">{i.titulo}</div>
-                  <div className="text-xs text-tinta-sussurro">
-                    {i.patrulha} · {new Date(i.detectado_em).toLocaleString('pt-BR')}
+                  <div className="text-apoio font-medium">{i.titulo}</div>
+                  <div className="text-rotulo text-tinta-sussurro">
+                    {i.patrulha} · {dataHora(i.detectado_em)}
                   </div>
                 </div>
                 <Badge className={SEVERIDADE_COR[i.severidade] ?? ''}>{i.severidade}</Badge>
@@ -214,20 +214,20 @@ export function GaviaoPainel() {
       {/* Alertas do Sentinela */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Alertas de escala (Sentinela)</CardTitle>
+          <CardTitle className="text-corpo">Alertas de escala (Sentinela)</CardTitle>
           <CardDescription>Médicos fora do padrão estatístico da unidade (IQR, mínimo 8 plantões).</CardDescription>
         </CardHeader>
         <CardContent>
           {alertas.length === 0 ? (
-            <p className="text-sm text-tinta-sussurro">Nenhum alerta ativo no momento.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhum alerta ativo no momento.</p>
           ) : (
             <div className="space-y-2">
               {alertas.map((a) => (
-                <div key={a.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
+                <div key={a.id} className="flex items-start justify-between gap-3 rounded-controle border p-3">
                   <div>
-                    <div className="text-sm font-medium">{METRICA_LABEL[a.metrica] ?? a.metrica}</div>
-                    <div className="text-xs text-tinta-sussurro">
-                      {a.valor} (mediana da unidade: {a.mediana_unidade}) · {new Date(a.criado_em).toLocaleString('pt-BR')}
+                    <div className="text-apoio font-medium">{METRICA_LABEL[a.metrica] ?? a.metrica}</div>
+                    <div className="text-rotulo text-tinta-sussurro">
+                      {a.valor} (mediana da unidade: {a.mediana_unidade}) · {dataHora(a.criado_em)}
                     </div>
                   </div>
                   <Badge variant="outline">{a.status}</Badge>

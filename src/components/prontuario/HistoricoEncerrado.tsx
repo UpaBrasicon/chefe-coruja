@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import type { CorRisco } from '@/domain/risco'
+import { data as dataFmt, hora } from '@/lib/formato'
 import { motivoValido, rotuloDesfechoFinal, type HistoricoEncerrado as Dados } from '@/lib/historico'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -19,8 +20,7 @@ import { cn } from '@/lib/utils'
 // abre com motivo escrito, só leitura, por 12 horas; quem, quando e o motivo
 // ficam no registro de acesso (migration 20261030000002).
 
-const dataCurta = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'
+const dataCurta = (iso: string | null) => (iso ? dataFmt(iso) : '—')
 
 export function HistoricoEncerrado({ pacienteId, className }: { pacienteId: string; className?: string }) {
   const [pedindo, setPedindo] = React.useState(false)
@@ -72,7 +72,7 @@ export function HistoricoEncerrado({ pacienteId, className }: { pacienteId: stri
         </h3>
         {d.atendimentos.length > 0 && (liberado ? (
           <Button size="sm" variant="outline" onClick={abrirLeitura}>
-            <ExternalLink /> Ver detalhe · liberado até {new Date(d.detalhe_liberado_ate!).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })}
+            <ExternalLink /> Ver detalhe · liberado até {hora(d.detalhe_liberado_ate!)}
           </Button>
         ) : d.pode_abrir_detalhe ? (
           <Button size="sm" variant="outline" onClick={() => { setPedindo(true); setTentou(false); abrir.reset() }}>
