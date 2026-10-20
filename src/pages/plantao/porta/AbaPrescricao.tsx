@@ -1,4 +1,4 @@
-// Aba "Prescrição" (protótipo, "Prescrição do Pronto Socorro"): dose única ou
+// Aba "Prescrição" (protótipo, "Prescrição do Pronto-Socorro"): dose única ou
 // para fazer aqui; vai para a checagem da enfermagem. Situação de cada item
 // vem da checagem (quem checa é a enfermagem, não o médico). Nada se apaga:
 // suspender pede motivo. Dose sempre escrita pelo médico.
@@ -95,7 +95,7 @@ export function AbaPrescricao({ pacienteId, nome, itens, pediatrico, aoMudar }: 
       <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
         <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-4 py-3">
           <Pill className="size-4 text-acao" aria-hidden />
-          <span className="text-controle font-semibold text-tinta">Prescrição do Pronto Socorro</span>
+          <span className="text-controle font-semibold text-tinta">Prescrição do Pronto-Socorro</span>
           <span className="text-apoio text-tinta-sussurro">Dose única ou para fazer aqui. Vai para a checagem da enfermagem.</span>
         </div>
         <div className="px-4 pt-3"><ResumoAlergias pacienteId={pacienteId} nome={nome} /></div>

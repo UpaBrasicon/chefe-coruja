@@ -61,3 +61,8 @@ export function dataPorExtenso(v: Instante) {
   const t = fmtPorExtenso.format(comoData(v))
   return t.charAt(0).toUpperCase() + t.slice(1)
 }
+
+const fmtIso = new Intl.DateTimeFormat('en-CA', { timeZone: FUSO, year: 'numeric', month: '2-digit', day: '2-digit' })
+
+/** "2026-10-19": a data em Brasília no formato do campo date e do banco. */
+export const dataIso = (v: Instante = Date.now()) => fmtIso.format(comoData(v))

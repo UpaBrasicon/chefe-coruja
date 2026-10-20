@@ -18,6 +18,8 @@ import { useEscalaSetores } from '@/hooks/useEscalaSetores'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 import { usePacienteDaUrl } from '@/hooks/usePacienteDaUrl'
 import type { PacProto } from './identificacao'
+import { Aviso } from '@/components/ui/aviso'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 
 /**
  * O paciente escolhido na ferramenta (guardado no aparelho, 12 h, como os
@@ -130,12 +132,12 @@ export function SeletorPaciente({ pacienteId, onEscolher, pac, unidadeId, perfil
     <section aria-label="Cadastro do paciente" className="flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px] shadow-repouso">
       <h3 className="text-corpo font-semibold text-tinta">{cadastro === 'editar' ? 'Completar cadastro' : 'Novo paciente'}</h3>
       {duplicata && (
-        <div role="alert" className="flex flex-wrap items-center gap-2.5 rounded-container border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-2.5">
-          <TriangleAlert className="size-[15px] text-atencao" aria-hidden />
-          <span className="min-w-0 flex-[1_1_240px] text-apoio text-atencao">{duplicata.texto}</span>
+        <Aviso tom="atencao" anunciar acao={<>
           <Button variant="outline" onClick={() => void salvar({ usarId: duplicata.id })}>Usar o cadastro existente</Button>
           {duplicata.tipo === 'provavel' && <Button variant="outline" onClick={() => void salvar({ outraPessoa: true })}>É outra pessoa</Button>}
-        </div>
+        </>}>
+          {duplicata.texto}
+        </Aviso>
       )}
       <CamposCadastro prefixo="doc" valores={form} onChange={(k, v) => { setErro(null); setForm((f) => ({ ...f, [k]: v })) }} />
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -182,20 +184,20 @@ export function SeletorPaciente({ pacienteId, onEscolher, pac, unidadeId, perfil
         </div>
         {achados.isFetching && <Spinner />}
         {(achados.data ?? []).map((p) => (
-          <button key={p.id} type="button" onClick={() => { onEscolher(p.id); setBusca(''); setTermo('') }}
-            className="flex w-full flex-wrap items-baseline gap-x-2.5 gap-y-0.5 rounded-controle border border-fio px-3 py-2 text-left hover:border-acao hover:bg-alerta-marca">
+          <BotaoLinha key={p.id} onClick={() => { onEscolher(p.id); setBusca(''); setTermo('') }}
+            className="w-full flex-row flex-wrap items-baseline gap-x-2.5 gap-y-0.5 rounded-controle px-3 py-2">
             <span className="text-controle font-medium text-tinta">{p.nome_social ? `${p.nome_social} (${p.nome})` : p.nome}</span>
             <span className="text-apoio text-tinta-sussurro">
               {[p.data_nascimento ? p.data_nascimento.split('-').reverse().join('/') : '', p.prontuario ? `Pront. ${p.prontuario}` : '',
                 p.cpf ? `CPF ${formatarCpf(p.cpf)}` : '', p.cns ? `CNS ${formatarCns(p.cns)}` : ''].filter(Boolean).join(' · ')}
             </span>
-          </button>
+          </BotaoLinha>
         ))}
         {termo.length >= 3 && achados.isSuccess && !achados.data.length && <p className="text-apoio text-tinta-sussurro">Nenhum paciente encontrado.</p>}
         {cadastro === 'fechado' && (
-          <button type="button" className="self-start text-apoio font-medium text-acao hover:underline" onClick={() => abrirCadastro('novo')}>
-            <Plus className="mr-1 inline size-3.5" />Novo paciente
-          </button>
+          <Button variant="link" size="sm" className="self-start px-0" onClick={() => abrirCadastro('novo')}>
+            <Plus aria-hidden />Novo paciente
+          </Button>
         )}
         <p className="text-apoio text-tinta-sussurro">Escolha ou cadastre o paciente: a identificação do documento sai do cadastro.</p>
       </div>
