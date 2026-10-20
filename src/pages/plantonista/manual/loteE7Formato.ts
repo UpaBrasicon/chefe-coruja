@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { numero } from '@/lib/formato'
 
 // Formatação das telas do lote E7 (manual do HCFMUSP, adulto).

@@ -8,7 +8,7 @@ import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Label } from '@/components/ui/label'
 
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 

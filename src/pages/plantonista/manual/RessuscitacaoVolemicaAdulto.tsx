@@ -10,7 +10,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
-import { CampoPeso } from './PecasLoteC'
+import { CampoPeso } from './PecasLoteC'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const traco = (x: number | null | undefined, sufixo: string, casas = 0) => (x === null || x === undefined ? '—' : `${br(x, casas)} ${sufixo}`)

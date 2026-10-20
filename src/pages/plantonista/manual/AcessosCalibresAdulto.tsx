@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Erratas, Escolhas } from './PecasLoteE7'
-import { br } from './loteE7Formato'
+import { br } from './loteE7Formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 function TabelaCalibres({ itens, comFrench }: { itens: Calibre[]; comFrench?: boolean }) {

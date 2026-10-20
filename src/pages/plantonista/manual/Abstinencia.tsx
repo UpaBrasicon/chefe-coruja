@@ -8,7 +8,7 @@ import type { Respostas } from '@/clinico/escore'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 
-import { Bloco, LinhaManual } from './PecasLoteC'
+import { Bloco, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { Chip } from '@/components/monitor/Pagina'
 

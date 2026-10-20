@@ -4,7 +4,7 @@ import { HNF_EV, NOMOGRAMA_TTPA, ajustarHnf, fichaHnfAdulto, inicioHnf, mlHDeUIH
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 

@@ -8,7 +8,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Escolhas, ListaLivro } from './PecasLoteE7'
-import { br } from './loteE7Formato'
+import { br } from './loteE7Formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Antibiótico da PAC por grupo (Tabela 10 do cap. 33 do manual do HCFMUSP). */

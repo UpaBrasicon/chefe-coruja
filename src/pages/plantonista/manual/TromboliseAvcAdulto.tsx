@@ -10,7 +10,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Chip } from '@/components/monitor/Pagina'

@@ -9,7 +9,7 @@ import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { Chip } from '@/components/monitor/Pagina'
 
