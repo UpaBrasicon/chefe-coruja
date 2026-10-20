@@ -248,7 +248,7 @@ export default function PlantonistaHome() {
               aria-keyshortcuts="/"
               autoComplete="off"
               maxLength={800}
-              className="h-11 w-full rounded-container border border-fio bg-superficie pr-3 pl-10 text-corpo text-tinta shadow-repouso outline-none placeholder:text-tinta-sussurro focus-visible:border-acao"
+              className="h-11 w-full rounded-container border border-fio bg-superficie pr-3 pl-10 text-corpo text-tinta shadow-repouso outline-none placeholder:text-tinta-sussurro focus-visible:border-acao focus-visible:shadow-anel-campo"
             />
           </div>
           {consulta.trim() && (

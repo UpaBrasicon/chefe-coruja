@@ -148,6 +148,8 @@
 
     /* ── Sombra: espessador de borda e halos tingidos da ação ─── */
     --shadow-repouso: 0 1px 2px rgba(15, 23, 42, 0.04);
+    /* anel do campo em foco: 1px cheio (3:1 contra o fundo) e o halo suave por fora */
+    --shadow-anel-campo: 0 0 0 1px var(--cc-acao), 0 0 0 4px color-mix(in oklab, var(--cc-acao) 25%, transparent);
     --shadow-halo: 0 6px 16px color-mix(in oklab, var(--cc-acao) 12%, transparent);
     --shadow-halo-ferramenta: 0 8px 22px color-mix(in oklab, var(--cc-acao) 13%, transparent);
     --shadow-popover: 0 12px 32px rgba(15, 23, 42, 0.14);
@@ -229,22 +231,27 @@
      * Os três conflitos de 01-tokens.md §4 estão resolvidos aqui:
      * um verde só (#15803D), um vermelho só (#B91C1C), e o âmbar
      * #F59E0B (2,1:1) saiu — o âmbar do sistema é o da observação.
+     *
+     * Parte 4.17 (verificação no navegador, 20/10/2026): o verde de estado
+     * passou a #147638 e o sussurro a #58677C, para fechar 4,5:1 também sobre
+     * os fundos suaves (selo verde, faixa de aviso). O verde do Manchester
+     * (mts-verde) é cor do protocolo e não muda.
      */
     /* Cores do tema claro (os tokens --color-* do @theme leem daqui). */
     --cc-acao: #155E75;
     --cc-acao-pressionada: #164E63;
     --cc-marca: #0D9488;
-    --cc-leitos: #15803D;
+    --cc-leitos: #147638;
     --cc-observacao: #B45309;
     --cc-turno: #475569;
     --cc-suprimento: #1D4ED8;
     --cc-ok: #1E293B;
     --cc-atencao: #92400E;
     --cc-critico: #B91C1C;
-    --cc-conforme: #15803D;
+    --cc-conforme: #147638;
     --cc-tinta: #1E293B;
     --cc-tinta-apoio: #475569;
-    --cc-tinta-sussurro: #64748B;
+    --cc-tinta-sussurro: #58677C;
     --cc-grafite: #334155;
     --cc-superficie: #FFFFFF;
     --cc-campo: #F8FAFC;
@@ -267,7 +274,7 @@
     --cc-secao-terapia-intensiva: #4F46E5;
     --cc-secao-endocrinologia: #86198F;
     --cc-secao-toxicologia: #9A3412;
-    --cc-secao-protocolos: #15803D;
+    --cc-secao-protocolos: #147638;
     --cc-secao-ventilacao: #0E7490;
     --cc-secao-farmacia: #7C3AED;
     --cc-secao-games: #B91C1C;
@@ -275,7 +282,7 @@
     --cc-alerta-critico: #B91C1C14;
     --cc-alerta-observacao: #B4530914;
     --cc-alerta-marca: #0D948814;
-    --cc-alerta-conforme: #15803D14;
+    --cc-alerta-conforme: #14763814;
     --cc-nota: #F59E0B1F;
     --cc-desfazer-regua: #99D6CE;
     --cc-veu: #0B3B34;
@@ -367,14 +374,14 @@
     --cc-leitos: #4ADE80;
     --cc-observacao: #FB923C;
     --cc-turno: #94A3B8;
-    --cc-suprimento: #60A5FA;
+    --cc-suprimento: #7AB4FB;
     --cc-ok: #E2E8F0;
-    --cc-atencao: #FBBF24;
-    --cc-critico: #F87171;
+    --cc-atencao: #FCD34D;
+    --cc-critico: #FC8F8F;
     --cc-conforme: #4ADE80;
     --cc-tinta: #E2E8F0;
     --cc-tinta-apoio: #CBD5E1;
-    --cc-tinta-sussurro: #94A3B8;
+    --cc-tinta-sussurro: #A8B5C7;
     --cc-grafite: #CBD5E1;
     --cc-superficie: #1E293B;
     --cc-campo: #0F172A;
@@ -400,8 +407,8 @@
     --cc-secao-ventilacao: #22D3EE;
     --cc-secao-farmacia: #C4B5FD;
     --cc-secao-games: #F87171;
-    --cc-alerta-atencao: #FBBF2424;
-    --cc-alerta-critico: #F8717124;
+    --cc-alerta-atencao: #FCD34D24;
+    --cc-alerta-critico: #FC8F8F24;
     --cc-alerta-observacao: #FB923C24;
     --cc-alerta-marca: #2DD4BF24;
     --cc-alerta-conforme: #4ADE8024;
@@ -441,13 +448,13 @@
         outline: 2px solid var(--color-acao);
         outline-offset: 2px;
     }
-    /* Campos: anel suave em vez de outline. */
+    /* Campos: anel em box-shadow em vez de outline. */
     input:focus-visible,
     textarea:focus-visible,
     select:focus-visible,
     [contenteditable]:focus-visible {
         outline: none;
-        box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-acao) 35%, transparent);
+        box-shadow: var(--shadow-anel-campo);
     }
 
     ::selection {
