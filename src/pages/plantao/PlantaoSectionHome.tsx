@@ -8,6 +8,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { ToolCard } from '@/components/plantonista/cards'
 import { TituloPagina, Trilha, Vazio } from '@/components/monitor/Pagina'
 import { Spinner } from '@/components/ui/spinner'
+import { rotaDoLeito } from '@/components/internacao/rotas'
 
 /**
  * Página de uma seção do Plantão. Com várias ferramentas, lista; com uma só,
@@ -24,9 +25,9 @@ export default function PlantaoSectionHome() {
     return <Vazio icone={FolderSearch} titulo="Seção não encontrada" texto="O endereço não corresponde a nenhuma seção do Plantão." />
   }
 
-  // Link antigo `/plantao/internacao?paciente=X` apontava para o formulário.
+  // Link antigo `/plantao/internacao?paciente=X` (era o formulário): leito aberto do paciente.
   if (secao.slug === 'internacao' && searchParams.get('paciente')) {
-    return <Navigate to={`/plantao/internacao/formulario?${searchParams.toString()}`} replace />
+    return <Navigate to={rotaDoLeito(searchParams.get('paciente'))} replace />
   }
 
   const trilha = <Trilha niveis={[{ rotulo: 'Plantão', to: '/plantao' }, { rotulo: secao.label }]} />

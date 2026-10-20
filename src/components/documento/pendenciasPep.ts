@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
+import { ABA_DO_DOCUMENTO, rotaDoLeito } from '@/components/internacao/rotas'
 
 // public.pendencias_pep (migration 20261005000003): o que o plantonista tem
 // em aberto no PEP da unidade.
@@ -40,4 +41,6 @@ export const ROTA_DO_TIPO: Record<string, string> = {
   encaminhamento: '/plantao/atendimento-porta/encaminhamento',
   pedido_exames: '/plantao/atendimento-porta/pedido-exames',
 }
-export const rotaDoRascunho = (tipo: string) => ROTA_DO_TIPO[tipo] ?? '/plantao/internacao/formulario'
+/** Rascunho de leito abre no caderno do leito; o da porta, na ferramenta da porta. */
+export const rotaDoRascunho = (r: Pick<RascunhoPep, 'tipo' | 'paciente_id' | 'internacao_id'>) =>
+  r.internacao_id || !ROTA_DO_TIPO[r.tipo] ? rotaDoLeito(r.paciente_id, ABA_DO_DOCUMENTO[r.tipo]) : ROTA_DO_TIPO[r.tipo]

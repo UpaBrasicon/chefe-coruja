@@ -84,7 +84,7 @@ const CHAVES_DO_LEITO = [
   'ocupacao-setores', 'pendencias-observacao', 'alertas-sepse',
 ]
 
-export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simples', acoesTopo }: {
+export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simples', acoesTopo, abaInicial }: {
   pacienteId: string
   pacienteNome: string
   ehGestor: boolean
@@ -92,6 +92,8 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
   modo?: 'simples' | 'caderno'
   /** Botões do painel ao lado das abas (ex.: transferir de setor). */
   acoesTopo?: React.ReactNode
+  /** Aba do caderno que abre primeiro (endereço do leito com ?aba=). */
+  abaInicial?: string
 }) {
   const { perfil } = useAuth()
   const eu = perfil?.id
@@ -257,7 +259,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
       </div>
     )
   }
-  return <Caderno p={p} cabecalho={cabecalho} avisos={avisos} acoesTopo={acoesTopo} />
+  return <Caderno p={p} cabecalho={cabecalho} avisos={avisos} acoesTopo={acoesTopo} abaInicial={abaInicial} />
 }
 
 type PartesLeito = {
@@ -324,7 +326,8 @@ function AltaEDocumentos({ p }: { p: PartesLeito }) {
   )
 }
 
-function Caderno({ p, cabecalho, avisos, acoesTopo }: {
+function Caderno({ p, cabecalho, avisos, acoesTopo, abaInicial }: {
+  abaInicial?: string
   p: PartesLeito
   cabecalho: (onClassificacao?: () => void) => React.ReactNode
   avisos: React.ReactNode
@@ -332,7 +335,7 @@ function Caderno({ p, cabecalho, avisos, acoesTopo }: {
 }) {
   const { i, ativa, ehGestor, pacienteId } = p
   const { unidadeAtiva } = useUnidade()
-  const [aba, setAba] = React.useState<IdAba>('resumo')
+  const [aba, setAba] = React.useState<IdAba>(() => (ABAS.some(([id]) => id === abaInicial) ? abaInicial as IdAba : 'resumo'))
 
   const diagnosticos = useDiagnosticos(i.id)
   const vigentes = (diagnosticos.data ?? []).filter((d) => !d.encerrado_em && d.tipo === 'primario')

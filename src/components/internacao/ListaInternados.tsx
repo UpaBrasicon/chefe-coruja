@@ -25,6 +25,7 @@ import { Spinner } from '@/components/ui/spinner'
 
 import { LeitoAberto } from './LeitoAberto'
 import { ATIVO, diaHora, hora, msg, ROTULO_ALTA, rpc, tempoDesde } from './caderno/comum'
+import { useSearchParams } from 'react-router-dom'
 
 export type PacienteDaLista = {
   id: string
@@ -66,7 +67,9 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
 }) {
   const [filtro, setFiltro] = React.useState<Filtro>('Todos')
   const [setor, setSetor] = React.useState<string | null>(null)
-  const [aberto, setAberto] = React.useState<string | null>(null)
+  // ?paciente=X abre o leito dele; ?aba=Y abre o caderno nessa aba (rotaDoLeito)
+  const [params] = useSearchParams()
+  const [aberto, setAberto] = React.useState<string | null>(() => params.get('paciente'))
   const [prancheta, setPrancheta] = React.useState<PacienteDaLista | null>(null)
   const [agora, setAgora] = React.useState(() => Date.now())
   React.useEffect(() => {
@@ -239,7 +242,7 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
                 </div>
                 {eAberto && (
                   <div className="animate-cc-abre-leito px-5 pt-0.5 pb-5">
-                    <LeitoAberto modo="caderno" pacienteId={p.id} pacienteNome={p.nome} ehGestor={ehGestor}
+                    <LeitoAberto modo="caderno" abaInicial={p.id === params.get('paciente') ? params.get('aba') ?? undefined : undefined} pacienteId={p.id} pacienteNome={p.nome} ehGestor={ehGestor}
                       acoesTopo={
                         <Button size="xs" variant="outline" onClick={() => onTransferir(p)}>
                           <ArrowRightLeft /> Transferir de setor

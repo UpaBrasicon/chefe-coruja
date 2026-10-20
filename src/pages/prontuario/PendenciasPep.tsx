@@ -131,7 +131,7 @@ export default function PendenciasPep() {
                     )}
                   </span>
                 </label>
-                <Button size="sm" variant="outline" render={<Link to={rotaDoRascunho(r.tipo)} />}>
+                <Button size="sm" variant="outline" render={<Link to={rotaDoRascunho(r)} />}>
                   <ArrowRight /> Abrir
                 </Button>
               </Linha>
