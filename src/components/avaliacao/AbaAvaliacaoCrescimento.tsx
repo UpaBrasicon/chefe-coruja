@@ -44,16 +44,16 @@ export type AbaAvaliacaoCrescimentoProps = { pacienteId: string; episodioId?: st
 
 // pílulas cheias do protótipo (pill): verde, âmbar, laranja, vermelho
 const PILULA: Record<Tom, string> = {
-  conforme: 'bg-conforme text-white',
-  atencao: 'bg-observacao text-white',
-  alerta: 'bg-mts-laranja text-white',
-  critico: 'bg-critico text-white',
+  conforme: 'bg-conforme text-sobre-acao',
+  atencao: 'bg-observacao text-sobre-acao',
+  alerta: 'bg-mts-laranja text-mts-texto',
+  critico: 'bg-critico text-sobre-acao',
 }
 const Pilula = ({ className, children }: { className: string; children: React.ReactNode }) => (
   <span className={cn('rounded-capsula px-[9px] py-[3px] text-rotulo font-semibold whitespace-nowrap', className)}>{children}</span>
 )
 const Cartao = ({ children }: { children: React.ReactNode }) => (
-  <section className="flex flex-col gap-2.5 rounded-menu border border-fio bg-superficie p-4 text-controle">{children}</section>
+  <section className="flex flex-col gap-2.5 rounded-container border border-fio bg-superficie p-4 text-controle">{children}</section>
 )
 const Aviso = ({ erro, aviso }: { erro: string | null; aviso: string | null }) => (
   <>

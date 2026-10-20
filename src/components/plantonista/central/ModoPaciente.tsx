@@ -1,10 +1,12 @@
 import { useId } from 'react'
-import { Check, RefreshCw, TriangleAlert } from 'lucide-react'
+import { RefreshCw, TriangleAlert } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
 import { IDADE_ADULTO_ANOS } from '@/domain/idade'
 import { rotuloIdadeDigitada, type UnidadeIdade } from '@/domain/pacienteCentral'
+import { Button } from '@/components/ui/button'
+import { CaixaMarcar } from '@/components/ui/caixa-marcar'
 import { Input } from '@/components/ui/input'
 
 // "Adulto ou pediátrico?" (P/index.html 1377–1417, valsModo): o paciente vem
@@ -15,19 +17,20 @@ const UNIDADES: UnidadeIdade[] = ['dias', 'meses', 'anos']
 
 function BotaoModo({ ativo, pedi, onClick, children }: { ativo: boolean; pedi?: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="outline"
+      size="bloco"
       aria-pressed={ativo}
       onClick={onClick}
       className={cn(
-        'flex min-h-11 min-w-0 flex-1 items-center justify-center gap-[7px] rounded-bloco border px-3 text-controle font-semibold whitespace-nowrap transition-colors',
-        ativo
-          ? pedi ? 'border-pediatria bg-pediatria text-white' : 'border-acao bg-acao text-sobre-acao'
-          : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+        'min-w-0 flex-1 rounded-container px-3 py-0 font-semibold',
+        ativo && (pedi
+          ? 'border-pediatria bg-pediatria text-sobre-acao hover:border-pediatria hover:text-sobre-acao'
+          : 'border-acao bg-acao text-sobre-acao hover:text-sobre-acao'),
       )}
     >
       {children}
-    </button>
+    </Button>
   )
 }
 
@@ -66,26 +69,26 @@ export function ModoPaciente() {
         <span
           className={cn(
             'flex items-center gap-[7px] rounded-capsula border px-3 py-[5px] text-apoio font-semibold whitespace-nowrap',
-            pedi ? 'border-pediatria/20 bg-pediatria/[0.08] text-pediatria' : 'border-acao/20 bg-alerta-marca text-acao',
+            pedi ? 'border-pediatria/20 bg-pediatria/10 text-pediatria' : 'border-acao/20 bg-alerta-marca text-acao',
           )}
         >
           {pedi ? 'Pediátrico' : 'Adulto'}
         </span>
         <span className="text-apoio text-tinta-sussurro">escolhido à mão nesta sessão</span>
-        <button
-          type="button"
+        <Button
+          variant="link"
           onClick={() => definirModo(null)}
-          className="flex min-h-11 items-center gap-1.5 px-1 text-apoio text-acao hover:text-acao-pressionada"
+          className="min-h-11 gap-1.5 px-1 py-0 hover:no-underline"
         >
           <RefreshCw className="size-3.5" aria-hidden />
           Trocar de paciente
-        </button>
+        </Button>
       </div>
 
       <div
         className={cn(
-          'flex flex-col gap-[13px] rounded-menu border px-[15px] py-[13px]',
-          pedi ? 'border-pediatria/15 bg-pediatria/[0.06]' : 'border-acao/15 bg-alerta-marca',
+          'flex flex-col gap-[13px] rounded-container border px-[15px] py-[13px]',
+          pedi ? 'border-pediatria/15 bg-pediatria/10' : 'border-acao/15 bg-alerta-marca',
         )}
       >
         <span className={cn('rotulo font-semibold uppercase', pedi ? 'text-pediatria' : 'text-acao')}>
@@ -95,18 +98,20 @@ export function ModoPaciente() {
         {pedi && (
           <div role="group" aria-label="Unidade da idade" className="flex flex-wrap gap-[7px]">
             {UNIDADES.map((u) => (
-              <button
+              <Button
                 key={u}
-                type="button"
+                variant="outline"
                 aria-pressed={p.unidadeIdade === u}
                 onClick={() => alterarPaciente({ unidadeIdade: u })}
                 className={cn(
-                  'min-h-9 rounded-capsula border px-[13px] text-apoio whitespace-nowrap',
-                  p.unidadeIdade === u ? 'border-pediatria bg-pediatria font-semibold text-white' : 'border-pediatria/25 bg-superficie text-pediatria',
+                  'min-h-9 rounded-capsula px-[13px] py-0',
+                  p.unidadeIdade === u
+                    ? 'border-pediatria bg-pediatria font-semibold text-sobre-acao hover:border-pediatria hover:text-sobre-acao'
+                    : 'border-pediatria/25 text-pediatria hover:border-pediatria hover:text-pediatria',
                 )}
               >
                 {u}
-              </button>
+              </Button>
             ))}
           </div>
         )}
@@ -122,6 +127,7 @@ export function ModoPaciente() {
                 onChange={(e) => alterarPaciente({ idade: e.target.value })}
                 placeholder="4"
                 aria-invalid={p.idade.trim() !== '' && leitura.idade === null}
+                // padrao-ok: 16 px no campo evita o zoom automático do iOS ao digitar
                 className={cn('min-h-11 bg-superficie text-[16px]', campo)}
               />
             </div>
@@ -135,6 +141,7 @@ export function ModoPaciente() {
               onChange={(e) => alterarPaciente({ peso: e.target.value })}
               placeholder={pedi ? '16' : '70'}
               aria-invalid={pesoInvalido}
+              // padrao-ok: 16 px no campo evita o zoom automático do iOS ao digitar
               className={cn('min-h-11 bg-superficie text-[16px]', campo)}
             />
           </div>
@@ -143,7 +150,7 @@ export function ModoPaciente() {
 
         {pedi && (
           <div className="flex flex-col gap-px">
-            <span className={cn('text-[20px] font-semibold tracking-[-0.02em]', leitura.idade === null ? 'text-tinta-sussurro' : leitura.idadeForaDaPediatria ? 'text-critico' : 'text-pediatria')}>
+            <span className={cn('text-dialogo font-semibold tracking-[-0.02em]', leitura.idade === null ? 'text-tinta-sussurro' : leitura.idadeForaDaPediatria ? 'text-critico' : 'text-pediatria')}>
               {leitura.idade === null ? '—' : leitura.idadeForaDaPediatria ? 'Não é pediatria' : `Pediátrico · ${rotuloIdadeDigitada(leitura.idade, p.unidadeIdade)}`}
             </span>
             <span className="text-apoio text-pediatria">
@@ -153,20 +160,16 @@ export function ModoPaciente() {
         )}
 
         {!pedi && (
-          <button
-            type="button"
-            aria-pressed={p.gestante}
-            onClick={() => alterarPaciente({ gestante: !p.gestante })}
+          <CaixaMarcar
+            marcado={p.gestante}
+            onChange={(gestante) => alterarPaciente({ gestante })}
             className={cn(
-              'flex min-h-11 items-center gap-2.5 self-start rounded-controle border px-3.5 text-controle text-grafite',
-              p.gestante ? 'border-acao bg-acao/[0.05]' : 'border-fio-forte bg-superficie',
+              'min-h-11 w-auto items-center gap-2.5 self-start rounded-controle border px-3.5 text-controle text-grafite',
+              p.gestante ? 'border-acao bg-acao/5' : 'border-fio-forte bg-superficie',
             )}
           >
-            <span className={cn('grid size-[18px] place-items-center rounded-micro border', p.gestante ? 'border-acao bg-acao text-sobre-acao' : 'border-fio-forte bg-superficie text-transparent')}>
-              <Check className="size-3" aria-hidden />
-            </span>
             Gestante
-          </button>
+          </CaixaMarcar>
         )}
         {!pedi && p.gestante && (
           <span className="flex items-start gap-[7px] rounded-controle bg-alerta-atencao px-[11px] py-2 text-apoio leading-[1.45] text-atencao">

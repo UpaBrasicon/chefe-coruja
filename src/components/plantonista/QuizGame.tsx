@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -57,9 +58,9 @@ export function QuizGame({
       <ToolLayout title={title} description={description}>
         <Card className="border-acao">
           <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-base">
+            <CardTitle className="flex items-center gap-3 text-corpo">
               Resultado
-              <Badge className="text-lg">{acertos} / {questoes.length}</Badge>
+              <Badge className="text-secao">{acertos} / {questoes.length}</Badge>
               <Badge variant={acertos >= questoes.length * 0.7 ? 'success' : acertos >= questoes.length * 0.4 ? 'warning' : 'destructive'}>
                 {acertos >= questoes.length * 0.7 ? 'Excelente!' : acertos >= questoes.length * 0.4 ? 'Continue treinando' : 'Revise o conteúdo'}
               </Badge>
@@ -67,9 +68,9 @@ export function QuizGame({
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {questoes.map((quest, i) => (
-              <div key={i} className={cn('rounded-lg border px-3 py-2 text-sm', respostas[i] === quest.correta ? 'border-conforme/30 bg-conforme/[0.08]' : 'border-critico/30 bg-critico/[0.08]')}>
+              <div key={i} className={cn('rounded-controle border px-3 py-2 text-apoio', respostas[i] === quest.correta ? 'border-conforme/30 bg-alerta-conforme' : 'border-critico/30 bg-alerta-critico')}>
                 <p className="font-medium">{quest.pergunta}</p>
-                <p className="text-xs text-tinta-sussurro">
+                <p className="text-rotulo text-tinta-sussurro">
                   {respostas[i] === quest.correta ? '✓ Correto' : `✗ Sua resposta: ${quest.opcoes[respostas[i]]}`} · Resposta: {quest.opcoes[quest.correta]}
                 </p>
               </div>
@@ -93,27 +94,25 @@ export function QuizGame({
 
       <Card>
         <CardContent className="flex flex-col gap-3 pt-6">
-          <p className="text-base font-medium">{q.pergunta}</p>
+          <p className="text-corpo font-medium">{q.pergunta}</p>
           <div className="flex flex-col gap-2">
             {q.opcoes.map((opcao, i) => (
-              <button
+              <BotaoLinha
                 key={i}
-                type="button"
                 onClick={() => escolher(i)}
                 className={cn(
-                  'rounded-lg border px-3 py-2 text-left text-sm transition-colors',
-                  resposta === undefined && 'hover:bg-trilha/50',
-                  resposta !== undefined && i === q.correta && 'border-conforme/30 bg-conforme/[0.08]',
-                  resposta === i && i !== q.correta && 'border-critico/30 bg-critico/[0.08]',
-                  resposta !== undefined && i !== q.correta && i !== resposta && 'opacity-60'
+                  'w-full rounded-controle px-3 py-2 text-apoio',
+                  resposta !== undefined && i === q.correta && 'border-conforme/30 bg-alerta-conforme hover:border-conforme/30 hover:bg-alerta-conforme',
+                  resposta === i && i !== q.correta && 'border-critico/30 bg-alerta-critico hover:border-critico/30 hover:bg-alerta-critico',
+                  resposta !== undefined && i !== q.correta && i !== resposta && 'opacity-60 hover:border-fio hover:bg-superficie'
                 )}
               >
                 {opcao}
-              </button>
+              </BotaoLinha>
             ))}
           </div>
           {resposta !== undefined && (
-            <p className="rounded-lg border bg-trilha/40 px-3 py-2 text-sm text-tinta-sussurro">
+            <p className="rounded-controle border bg-trilha/40 px-3 py-2 text-apoio text-tinta-sussurro">
               {q.explicacao}
             </p>
           )}

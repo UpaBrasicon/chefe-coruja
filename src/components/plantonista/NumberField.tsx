@@ -36,7 +36,7 @@ export function NumberField({
   return (
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={id}>
-        {label} {unit && <span className="text-xs text-tinta-sussurro">({unit})</span>}
+        {label} {unit && <span className="text-rotulo text-tinta-sussurro">({unit})</span>}
       </Label>
       <Input
         id={id}
@@ -57,7 +57,7 @@ export function NumberField({
         }}
       />
       {normalMin !== undefined && normalMax !== undefined && (
-        <p className={`text-xs ${fora ? 'text-atencao' : 'text-tinta-sussurro'}`}>
+        <p className={`text-rotulo ${fora ? 'text-atencao' : 'text-tinta-sussurro'}`}>
           {normalLabel ?? 'Faixa normal'}: {normalMin} – {normalMax}
           {fora && ' ⚠ fora do intervalo'}
         </p>

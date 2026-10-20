@@ -10,7 +10,7 @@ import { LINHAS_Z, defIndicador, linhaZ, type Indicador, type Intervalo, type Se
 
 export type PontoPaciente = { meses: number; valor: number; texto: string }
 
-const COR_Z: Record<number, string> = { [-3]: '#111827', [-2]: '#B91C1C', 0: '#15803D', 2: '#B91C1C', 3: '#111827' }
+const COR_Z: Record<number, string> = { [-3]: 'var(--color-tinta)', [-2]: 'var(--color-critico)', 0: 'var(--color-conforme)', 2: 'var(--color-critico)', 3: 'var(--color-tinta)' }
 const rotuloZ = (z: number) => (z > 0 ? `+${z}` : z < 0 ? `−${-z}` : '0')
 const chaveZ = (z: number) => `z${z < 0 ? 'm' : 'p'}${Math.abs(z)}`
 
@@ -55,13 +55,13 @@ export function CurvaCrescimento({ indicador, sexo, intervalo, pontos, ligar }: 
       aria-label={`Curva ${def.rotulo}, ${sexo === 'M' ? 'meninos' : 'meninas'}, ${pontos.length} aferições do paciente`}>
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={dados} margin={{ top: 8, right: 34, bottom: 4, left: 0 }}>
-          <CartesianGrid stroke="#F1F5F9" vertical={false} />
+          <CartesianGrid stroke="var(--color-trilha)" vertical={false} />
           <XAxis dataKey="meses" type="number" domain={[x0, x1]} ticks={ticksX} tickLine={false}
-            tick={{ fontSize: 11, fill: '#64748B' }} tickFormatter={(m: number) => (m === 0 ? 'Nasc.' : `${m / 12} a`)} />
-          <YAxis domain={[ymin, ymax]} tickLine={false} width={44} tick={{ fontSize: 11, fill: '#64748B' }}
-            label={{ value: def.unidade, angle: -90, position: 'insideLeft', fontSize: 11, fill: '#64748B' }} />
+            tick={{ fontSize: 11, fill: 'var(--color-tinta-sussurro)' }} tickFormatter={(m: number) => (m === 0 ? 'Nasc.' : `${m / 12} a`)} />
+          <YAxis domain={[ymin, ymax]} tickLine={false} width={44} tick={{ fontSize: 11, fill: 'var(--color-tinta-sussurro)' }}
+            label={{ value: def.unidade, angle: -90, position: 'insideLeft', fontSize: 11, fill: 'var(--color-tinta-sussurro)' }} />
           <Tooltip
-            contentStyle={{ fontSize: 12, borderRadius: 8, borderColor: '#E2E8F0' }}
+            contentStyle={{ fontSize: 12, borderRadius: 8, borderColor: 'var(--color-fio)' }}
             labelFormatter={(m) => { const n = Number(m); const a = Math.floor(n / 12); const r = Math.floor(n % 12); return `${a} a ${r} m` }}
             formatter={(v, nome, item) => {
               const p = item?.payload as Linha | undefined
@@ -78,9 +78,9 @@ export function CurvaCrescimento({ indicador, sexo, intervalo, pontos, ligar }: 
                 return <text x={Number(props.x) + 4} y={Number(props.y) + 3} fontSize={10} fill={COR_Z[z]}>{rotuloZ(z)}</text>
               }} />
           ))}
-          <Line dataKey="pac" name="Paciente" stroke={ligar ? '#111827' : 'transparent'} strokeWidth={1.2} strokeDasharray="3 3"
+          <Line dataKey="pac" name="Paciente" stroke={ligar ? 'var(--color-tinta)' : 'transparent'} strokeWidth={1.2} strokeDasharray="3 3"
             connectNulls isAnimationActive={false}
-            dot={{ r: 4, fill: '#111827', stroke: '#FFFFFF', strokeWidth: 1.5 }} activeDot={{ r: 5, fill: '#111827' }} />
+            dot={{ r: 4, fill: 'var(--color-tinta)', stroke: 'var(--color-superficie)', strokeWidth: 1.5 }} activeDot={{ r: 5, fill: 'var(--color-tinta)' }} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>

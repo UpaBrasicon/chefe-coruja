@@ -1,16 +1,16 @@
 {
   "_leia": "Base da catraca do padrão do frontend (scripts/padrao-frontend.mjs). Só desce: depois de corrigir, rode `node scripts/padrao-frontend.mjs --atualizar` e comite junto.",
   "totais": {
-    "cor-crua": 90,
-    "cor-arbitraria": 154,
-    "cor-hex": 69,
-    "texto-escala": 1067,
-    "canto": 364,
-    "botao-solto": 146,
+    "cor-crua": 76,
+    "cor-arbitraria": 128,
+    "cor-hex": 55,
+    "texto-escala": 1034,
+    "canto": 336,
+    "botao-solto": 126,
     "select-solto": 68,
     "tabela-solta": 57,
-    "titulo-solto": 64,
-    "data-local": 219,
+    "titulo-solto": 58,
+    "data-local": 211,
     "importacao-cruzada": 0,
     "emoji": 1,
     "pronto-socorro": 0
@@ -71,16 +71,6 @@
       "canto": 3,
       "select-solto": 2,
       "texto-escala": 12
-    },
-    "src/components/avaliacao/AbaAvaliacaoCrescimento.tsx": {
-      "canto": 1,
-      "cor-crua": 4
-    },
-    "src/components/avaliacao/CurvaCrescimento.tsx": {
-      "cor-hex": 14
-    },
-    "src/components/avaliacao/useAvaliacao.ts": {
-      "data-local": 4
     },
     "src/components/chat/ChatDrawer.tsx": {
       "botao-solto": 1
@@ -146,68 +136,6 @@
       "texto-escala": 2
     },
     "src/components/perfil/CampoCns.tsx": {
-      "texto-escala": 3
-    },
-    "src/components/plantonista/DaUnidade.tsx": {
-      "botao-solto": 2,
-      "canto": 1,
-      "titulo-solto": 1
-    },
-    "src/components/plantonista/EscoreTela.tsx": {
-      "botao-solto": 2,
-      "canto": 2,
-      "texto-escala": 10
-    },
-    "src/components/plantonista/NotificacoesTurnoBanner.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "cor-crua": 1,
-      "texto-escala": 1
-    },
-    "src/components/plantonista/NumberField.tsx": {
-      "texto-escala": 2
-    },
-    "src/components/plantonista/QuizGame.tsx": {
-      "botao-solto": 1,
-      "canto": 3,
-      "cor-arbitraria": 4,
-      "texto-escala": 7
-    },
-    "src/components/plantonista/RespostaIa.tsx": {
-      "botao-solto": 5,
-      "canto": 7,
-      "texto-escala": 2
-    },
-    "src/components/plantonista/SinoAvisos.tsx": {
-      "canto": 3,
-      "cor-arbitraria": 1,
-      "cor-crua": 1,
-      "data-local": 1,
-      "texto-escala": 6
-    },
-    "src/components/plantonista/ToolLayout.tsx": {
-      "cor-arbitraria": 3,
-      "data-local": 1,
-      "titulo-solto": 2
-    },
-    "src/components/plantonista/cards.tsx": {
-      "botao-solto": 1,
-      "canto": 1
-    },
-    "src/components/plantonista/central/CartaoTurno.tsx": {
-      "canto": 1,
-      "cor-crua": 6,
-      "data-local": 2
-    },
-    "src/components/plantonista/central/ModoNaFerramenta.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1
-    },
-    "src/components/plantonista/central/ModoPaciente.tsx": {
-      "botao-solto": 4,
-      "canto": 3,
-      "cor-arbitraria": 3,
-      "cor-crua": 2,
       "texto-escala": 3
     },
     "src/components/prontuario/GavetaEpisodios.tsx": {
@@ -283,10 +211,6 @@
       "texto-escala": 2,
       "titulo-solto": 4
     },
-    "src/components/terminologia/BuscaTerminologia.tsx": {
-      "canto": 1,
-      "texto-escala": 2
-    },
     "src/components/termo/AbaTermoConsentimento.tsx": {
       "botao-solto": 1,
       "cor-crua": 1,
@@ -316,9 +240,6 @@
     },
     "src/components/ui/table.tsx": {
       "cor-arbitraria": 1
-    },
-    "src/content/coresSecao.ts": {
-      "cor-arbitraria": 13
     },
     "src/contexts/AvisosFlutuantesContext.tsx": {
       "botao-solto": 1,
@@ -741,15 +662,6 @@
       "botao-solto": 1,
       "cor-arbitraria": 1,
       "data-local": 1
-    },
-    "src/pages/plantonista/PlantonistaHome.tsx": {
-      "botao-solto": 5,
-      "canto": 2,
-      "titulo-solto": 2
-    },
-    "src/pages/plantonista/SectionHome.tsx": {
-      "canto": 1,
-      "titulo-solto": 1
     },
     "src/pages/plantonista/calculadoras/AcessoVenoso.tsx": {
       "botao-solto": 1,

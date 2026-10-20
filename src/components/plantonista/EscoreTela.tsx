@@ -5,13 +5,14 @@ import { numero, type Escore, type Respostas } from '@/clinico/escore'
 import { SemReferenciaPediatrica } from '@/components/plantonista/SemReferenciaPediatrica'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
 const botao = (ativo: boolean) =>
-  cn('rounded-lg border px-3 py-2 text-left text-sm transition-colors', ativo ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')
+  cn('rounded-controle px-3 py-2 text-apoio', ativo && 'border-acao bg-acao/5 ring-1 ring-acao hover:bg-acao/5')
 
 /** Tela única dos escores do pacote src/clinico. */
 export function EscoreTela({ escore }: { escore: Escore }) {
@@ -26,12 +27,12 @@ export function EscoreTela({ escore }: { escore: Escore }) {
       <Card>
         <CardContent className="flex flex-col gap-5 pt-6">
           <div className="flex flex-col gap-2">
-            <Label className="text-sm font-semibold">Paciente</Label>
+            <Label className="text-apoio font-semibold">Paciente</Label>
             <div className="flex flex-wrap gap-2">
               {([['adulto', 'Adulto (14 anos ou mais)'], ['crianca', 'Criança (menos de 14 anos)']] as const).map(([v, rotulo]) => (
-                <button key={v} type="button" aria-pressed={paciente === v} onClick={() => setPaciente(v)} className={botao(paciente === v)}>
+                <BotaoLinha key={v} aria-pressed={paciente === v} onClick={() => setPaciente(v)} className={botao(paciente === v)}>
                   {rotulo}
-                </button>
+                </BotaoLinha>
               ))}
             </div>
           </div>
@@ -39,7 +40,7 @@ export function EscoreTela({ escore }: { escore: Escore }) {
           {escore.itens.map((item) =>
             item.tipo === 'numero' ? (
               <div key={item.id} className="flex flex-col gap-1.5">
-                <Label htmlFor={`esc-${item.id}`} className="text-sm font-semibold">
+                <Label htmlFor={`esc-${item.id}`} className="text-apoio font-semibold">
                   {item.rotulo}
                   {item.unidade && <span className="ml-1 font-normal text-tinta-sussurro">({item.unidade})</span>}
                   {item.opcional && <span className="ml-1 font-normal text-tinta-sussurro">— opcional</span>}
@@ -65,24 +66,23 @@ export function EscoreTela({ escore }: { escore: Escore }) {
               </div>
             ) : item.tipo === 'escolha' ? (
               <div key={item.id} className="flex flex-col gap-2">
-                <Label className="text-sm font-semibold">{item.rotulo}</Label>
+                <Label className="text-apoio font-semibold">{item.rotulo}</Label>
                 {item.ajuda && <p className="text-apoio text-tinta-sussurro">{item.ajuda}</p>}
                 <div className="grid gap-2 sm:grid-cols-2">
                   {item.opcoes.map((o, idx) => (
-                    <button
+                    <BotaoLinha
                       key={o.rotulo}
-                      type="button"
                       aria-pressed={r[item.id] === idx}
                       onClick={() => setR((x) => ({ ...x, [item.id]: idx }))}
                       className={botao(r[item.id] === idx)}
                     >
                       {o.rotulo}
-                    </button>
+                    </BotaoLinha>
                   ))}
                 </div>
               </div>
             ) : (
-              <label key={item.id} className="flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm hover:bg-trilha/50">
+              <label key={item.id} className="flex cursor-pointer items-center gap-2 rounded-controle border px-2.5 py-1.5 text-apoio hover:bg-trilha/50">
                 <input
                   type="checkbox"
                   className="size-4"
@@ -102,21 +102,21 @@ export function EscoreTela({ escore }: { escore: Escore }) {
 
       {!semRefPedi && !semRefAdulto && !res && (
         <Card>
-          <CardContent className="pt-6 text-sm text-tinta-sussurro">Responda todos os itens obrigatórios para ver o resultado.</CardContent>
+          <CardContent className="pt-6 text-apoio text-tinta-sussurro">Responda todos os itens obrigatórios para ver o resultado.</CardContent>
         </Card>
       )}
 
       {res && (
         <Card className={res.estado === 2 ? 'border-critico/30' : res.estado === 1 ? 'border-atencao/30' : 'border-acao'}>
           <CardHeader>
-            <CardTitle className="flex flex-wrap items-center gap-3 text-base">
+            <CardTitle className="flex flex-wrap items-center gap-3 text-corpo">
               {res.rotulo}
-              <Badge className="text-lg">{res.valor}</Badge>
-              {res.unidade && <span className="text-sm font-normal text-tinta-sussurro">{res.unidade}</span>}
+              <Badge className="text-secao">{res.valor}</Badge>
+              {res.unidade && <span className="text-apoio font-normal text-tinta-sussurro">{res.unidade}</span>}
             </CardTitle>
             <CardDescription>{res.nota}</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3 text-sm">
+          <CardContent className="flex flex-col gap-3 text-apoio">
             <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
               {res.derivados.map(([k, v]) => (
                 <div key={k} className="contents">
