@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Campo } from '@/components/documentos/ui'
+import { TituloCartao } from '@/components/monitor/Pagina'
 
 // Propaganda do painel da TV (P/Painel de Chamada.dc.html: artes 16:9 em
 // rodízio, com o rótulo "Informe da Prefeitura" e o tempo de cada uma). No
@@ -119,8 +120,8 @@ export function PropagandaPainel({ unidadeId }: { unidadeId: string }) {
   return (
     <section className={cn(cartao, 'mt-[18px]')} aria-labelledby="propaganda-titulo">
       <div className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-[13px]">
-        <Megaphone className="size-4 text-marca" aria-hidden />
-        <h2 id="propaganda-titulo" className="text-corpo font-semibold text-tinta">Propaganda na TV</h2>
+        <Megaphone className="size-4 text-acao" aria-hidden />
+        <TituloCartao id="propaganda-titulo" className="mb-0">Propaganda na TV</TituloCartao>
         <span className="ml-auto text-apoio text-tinta-sussurro">
           {data ? `${ativos} ${ativos === 1 ? 'arte no ar' : 'artes no ar'} · ${data.segundos} s cada` : ''}
         </span>
@@ -158,7 +159,7 @@ export function PropagandaPainel({ unidadeId }: { unidadeId: string }) {
             <ul className="flex flex-col divide-y divide-trilha rounded-container border border-fio">
               {data.itens.map((i, k) => (
                 <li key={i.id} className="flex flex-wrap items-center gap-3 px-3 py-2.5">
-                  <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-[8px] border border-fio bg-trilha">
+                  <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-controle border border-fio bg-trilha">
                     <img src={urlArte(i.caminho)} alt={i.titulo} className="size-full object-cover" />
                   </div>
                   <div className="flex min-w-0 flex-[1_1_180px] flex-col gap-0.5">

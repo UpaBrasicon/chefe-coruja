@@ -7,7 +7,7 @@ import { diferenciador, type PacienteDaFila } from '@/domain/homonimos'
 export function SeloHomonimo({ paciente }: { paciente: PacienteDaFila }) {
   const dif = diferenciador(paciente)
   return (
-    <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 self-start rounded-capsula bg-[#FEF3C7] px-2.5 py-1 text-rotulo text-atencao">
+    <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 self-start rounded-capsula bg-alerta-atencao px-2.5 py-1 text-rotulo text-atencao">
       <span className="inline-flex items-center gap-1 font-semibold">
         <Users className="size-3.5" aria-hidden /> Mesmo nome e nascimento
       </span>

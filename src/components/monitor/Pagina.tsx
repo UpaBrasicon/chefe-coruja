@@ -51,18 +51,26 @@ export function TituloSecao({ children, extra, className }: { children: ReactNod
 }
 
 /**
- * Chip de filtro: cápsula. Ativo troca fundo para `acao` e o peso de 400 para
- * 500 — a troca de peso é parte do estado, não enfeite.
+ * Chip: cápsula. `filtro` (padrão) liga com o fundo cheio da ação; `opcao`
+ * (escolha num formulário, como o motivo da evasão) liga com o fundo suave e
+ * tem 36 px de alvo. Ativo troca o peso de 400 para 500 — a troca de peso é
+ * parte do estado, não enfeite. Com `radio`, vira role="radio" dentro de um
+ * radiogroup; sem, é um botão que liga e desliga (aria-pressed).
  */
-export function Chip({ ativo, children, onClick, contagem }: { ativo: boolean; children: ReactNode; onClick: () => void; contagem?: number }) {
+export function Chip({ ativo, children, onClick, contagem, variante = 'filtro', radio = false }: {
+  ativo: boolean; children: ReactNode; onClick: () => void; contagem?: number; variante?: 'filtro' | 'opcao'; radio?: boolean
+}) {
   return (
     <button
       type="button"
-      aria-pressed={ativo}
+      {...(radio ? { role: 'radio', 'aria-checked': ativo } : { 'aria-pressed': ativo })}
       onClick={onClick}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-capsula border px-[13px] py-[5px] text-apoio transition-colors',
-        ativo ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+        'inline-flex items-center gap-1.5 rounded-capsula border px-[13px] text-apoio whitespace-nowrap transition-colors',
+        variante === 'opcao' ? 'min-h-9' : 'py-[5px]',
+        ativo
+          ? variante === 'opcao' ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-acao bg-acao font-medium text-sobre-acao'
+          : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
       )}
     >
       {children}
@@ -91,10 +99,10 @@ export function Vazio({ icone: Icone, titulo, texto }: { icone: LucideIcon; titu
 }
 
 /** Título de cartão (14px/600), menor que o de seção (guia do padrão, 4.1). */
-export function TituloCartao({ children, extra, className }: { children: ReactNode; extra?: ReactNode; className?: string }) {
+export function TituloCartao({ children, extra, className, id }: { children: ReactNode; extra?: ReactNode; className?: string; id?: string }) {
   return (
     <div className={cn('mb-2 flex items-baseline justify-between gap-3', className)}>
-      <h3 className="text-controle leading-[1.3] font-semibold text-tinta">{children}</h3>
+      <h3 id={id} className="text-controle leading-[1.3] font-semibold text-tinta">{children}</h3>
       {extra && <span className="text-rotulo text-tinta-sussurro">{extra}</span>}
     </div>
   )
