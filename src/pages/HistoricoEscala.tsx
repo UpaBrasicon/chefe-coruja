@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { ChevronRight, History } from 'lucide-react'
+import { History } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { dataHora } from '@/lib/formato'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -64,19 +65,13 @@ export default function HistoricoEscala({ embutido = false }: { embutido?: boole
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       {!embutido && (
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
-            <Link to="/" className="transition-colors hover:text-tinta">
-              Início
-            </Link>
-            <ChevronRight className="size-3.5" />
-            <span className="font-medium text-tinta">Histórico da Escala</span>
-          </div>
-          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Histórico da Escala</h1>
-          <p className="text-sm text-tinta-sussurro">
-            Auditoria completa das alterações e, em destaque, os <strong>erros de passagem</strong> — para
-            entender o que ocorreu em cada movimentação de plantão.
-          </p>
+        <div className="flex flex-col">
+          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Histórico da escala' }]} />
+          <TituloPagina icone={History} titulo="Histórico da escala" className="mb-0"
+            descricao={<>
+              Auditoria completa das alterações e, em destaque, os <strong>erros de passagem</strong> — para
+              entender o que ocorreu em cada movimentação de plantão.
+            </>} />
         </div>
       )}
 
@@ -103,7 +98,7 @@ export default function HistoricoEscala({ embutido = false }: { embutido?: boole
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <History className="size-4 text-tinta-sussurro" />
             {linhas.length} registro(s)
           </CardTitle>
@@ -115,25 +110,25 @@ export default function HistoricoEscala({ embutido = false }: { embutido?: boole
               <Spinner />
             </div>
           ) : linhas.length === 0 ? (
-            <p className="text-sm text-tinta-sussurro">Nenhum registro encontrado.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhum registro encontrado.</p>
           ) : (
             linhas.map((h) => {
               const meta = ACAO_LABEL[h.acao] ?? { label: h.acao, variant: 'secondary' as const }
               return (
                 <div
                   key={h.id}
-                  className={`rounded-lg border p-2.5 text-sm ${h.acao === 'erro_passagem' ? 'border-critico/30 bg-critico/[0.08]' : ''}`}
+                  className={`rounded-controle border p-2.5 text-apoio ${h.acao === 'erro_passagem' ? 'border-critico/30 bg-alerta-critico' : ''}`}
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={meta.variant}>{meta.label}</Badge>
-                    <span className="text-xs text-tinta-sussurro">
-                      {new Date(h.created_at).toLocaleString('pt-BR')}
+                    <span className="text-rotulo text-tinta-sussurro">
+                      {dataHora(h.created_at)}
                     </span>
-                    <span className="ml-auto text-xs text-tinta-sussurro">
+                    <span className="ml-auto text-rotulo text-tinta-sussurro">
                       por {h.perfis?.nome_completo ?? 'sistema'}
                     </span>
                   </div>
-                  {h.detalhe && <div className="mt-1.5 text-xs">{h.detalhe}</div>}
+                  {h.detalhe && <div className="mt-1.5 text-rotulo">{h.detalhe}</div>}
                 </div>
               )
             })
