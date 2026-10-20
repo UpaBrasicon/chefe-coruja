@@ -192,7 +192,7 @@ export default function ModelosTermoUnidade() {
             </Button>
           )}
           <Button size="sm" onClick={() => void gravar()} disabled={!pronto || salvar.isPending || !unidadeId}>
-            {salvar.isPending && <Spinner className="size-3.5 text-white" />}
+            {salvar.isPending && <Spinner className="size-3.5 text-sobre-acao" />}
             {r.modeloId ? 'Salvar versão nova' : 'Adicionar modelo'}
           </Button>
         </div>

@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { abrirProntuario } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import type { Json, Tables } from '@/types/database'
+import { dataHora } from '@/lib/formato'
 
 export type Assinante = 'paciente' | 'responsavel' | 'ninguem_presente'
 /** Quem assina o termo (decisão do RT 02/10/2026, Código Civil arts. 3º, 4º e 1.690):
@@ -110,7 +111,7 @@ export const normalizar = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, 
 
 export const quando = (iso: string | null | undefined) =>
   iso
-    ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
+    ? dataHora(iso)
     : ''
 
 export const mensagemErro = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))

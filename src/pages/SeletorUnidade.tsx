@@ -20,7 +20,7 @@ export function SeletorUnidade() {
       <div className="w-full max-w-md">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Escolha a unidade</CardTitle>
+            <CardTitle>Escolha a unidade</CardTitle>
             <CardDescription>Selecione a unidade em que deseja trabalhar agora.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
@@ -31,7 +31,7 @@ export function SeletorUnidade() {
                 className="h-auto flex-col items-start gap-1 p-4"
                 onClick={() => escolher(u)}
               >
-                <span className="text-sm font-medium">{u.unidade.nome}</span>
+                <span className="text-apoio font-medium">{u.unidade.nome}</span>
                 <Badge variant="secondary">{PAPEL_LABEL[u.papel]}</Badge>
               </Button>
             ))}

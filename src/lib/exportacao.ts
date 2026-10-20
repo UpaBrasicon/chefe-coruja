@@ -135,6 +135,7 @@ export function dataParaCsv(v: ValorCsv, fuso: string): ValorCsv {
   if (!ISO_DATA_HORA.test(v)) return v
   const t = new Date(v)
   if (Number.isNaN(t.getTime())) return v
+  // padrao-ok: CSV no fuso pedido pela exportação (o do aparelho), não só no de Brasília
   return t.toLocaleString('pt-BR', { timeZone: fuso, day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(',', '')
 }

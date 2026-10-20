@@ -3,6 +3,8 @@ import { Copy, LifeBuoy, ShieldOff } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { data as dataBr, hora } from '@/lib/formato'
+import { TituloSecao } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -56,7 +58,7 @@ export function UsarCodigoRecuperacao({ onPronto }: { onPronto: () => void }) {
     }
     setCodigo('')
     if (r.motivo === 'bloqueado') {
-      const ate = r.bloqueado_ate ? new Date(r.bloqueado_ate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : null
+      const ate = r.bloqueado_ate ? hora(r.bloqueado_ate) : null
       setErro(`Muitas tentativas erradas. Tente de novo ${ate ? `depois das ${ate}` : 'em 15 minutos'} ou peça ao gestor da sua unidade para zerar o segundo fator.`)
     } else if (r.motivo === 'invalido') {
       setErro(`Código não confere ou já foi usado. ${r.restantes ?? 0} tentativa(s) antes do bloqueio.`)
@@ -82,7 +84,7 @@ export function UsarCodigoRecuperacao({ onPronto }: { onPronto: () => void }) {
           value={codigo}
           onChange={(e) => { setCodigo(e.target.value.toUpperCase()); if (erro) setErro(null) }}
           aria-invalid={!!erro}
-          className="min-h-[54px] rounded-controle border border-fio bg-campo text-center text-[22px] font-semibold tracking-[0.2em] text-tinta outline-none focus-visible:border-acao"
+          className="min-h-[54px] rounded-controle border border-fio bg-campo text-center text-dialogo font-semibold tracking-[0.2em] text-tinta outline-none focus-visible:border-acao"
         />
         {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
       </div>
@@ -139,7 +141,7 @@ export function SecaoCodigosRecuperacao() {
     <section aria-label="Códigos de recuperação" className="rounded-cartao border border-fio bg-superficie p-5 shadow-repouso">
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <LifeBuoy className="size-4 text-tinta-apoio" aria-hidden />
-        <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">Códigos de recuperação</h2>
+        <TituloSecao className="mb-0">Códigos de recuperação</TituloSecao>
         {!isLoading && data && (data.restantes > 0
           ? <Badge variant="success">{data.restantes} disponíveis</Badge>
           : <Badge variant="secondary">Nenhum</Badge>)}
@@ -172,7 +174,7 @@ export function SecaoCodigosRecuperacao() {
           </Button>
           {data?.geradosEm && (
             <p className="mt-2 text-rotulo text-tinta-sussurro">
-              Gerados em {data.geradosEm.toLocaleDateString('pt-BR')}.
+              Gerados em {dataBr(data.geradosEm)}.
             </p>
           )}
         </div>

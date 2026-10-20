@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
@@ -103,47 +104,47 @@ function Solicitante({ unidadeId }: { unidadeId: string }) {
       <TelemedicinaDePlantao unidadeId={unidadeId} />
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Nova teleinterconsulta</CardTitle>
+          <CardTitle className="text-corpo">Nova teleinterconsulta</CardTitle>
           <CardDescription>Só aparecem os pacientes dos setores do seu plantão. A solicitação entra no prontuário como documento numerado.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">
           <div className="grid gap-1.5">
             <Label htmlFor="pac">Paciente</Label>
-            <select id="pac" className="h-9 rounded-controle border border-fio bg-campo px-2 text-corpo" value={paciente} onChange={(e) => setPaciente(e.target.value)}>
+            <CampoSelecao id="pac" className="text-corpo" value={paciente} onChange={(e) => setPaciente(e.target.value)}>
               <option value="">{pacientes.isLoading ? 'Carregando…' : 'Escolha o paciente'}</option>
               {(pacientes.data ?? []).map((p) => (
                 <option key={p.id} value={p.id}>{p.nome}{p.data_nascimento ? ` · nasc. ${fmtData(p.data_nascimento)}` : ''}</option>
               ))}
-            </select>
+            </CampoSelecao>
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="perg">Pergunta ao teleconsultor</Label>
             <Textarea id="perg" rows={3} value={pergunta} onChange={(e) => setPergunta(e.target.value)} placeholder="O que você precisa decidir, com o contexto que o teleconsultor não vê." />
           </div>
           <fieldset className="grid gap-1.5">
-            <legend className="mb-1 text-sm font-medium">Consentimento (Res. CFM 2.314/2022, art. 15)</legend>
+            <legend className="mb-1 text-apoio font-medium">Consentimento (Res. CFM 2.314/2022, art. 15)</legend>
             <div className="flex flex-wrap gap-2">
               {CONSENTIMENTO.map((c) => (
                 <Button key={c.valor} type="button" size="sm" variant={consentimento === c.valor ? 'default' : 'outline'} onClick={() => setConsentimento(c.valor)}>{c.rotulo}</Button>
               ))}
             </div>
           </fieldset>
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-apoio">
             <input type="checkbox" checked={urgente} onChange={(e) => setUrgente(e.target.checked)} /> Urgente
           </label>
           <div className="flex items-center gap-2">
             <Button onClick={() => solicitar.mutate()} disabled={!pode || solicitar.isPending}><Send className="size-4" />Solicitar</Button>
-            {solicitar.error && <span className="text-sm text-critico">{(solicitar.error as Error).message}</span>}
+            {solicitar.error && <span className="text-apoio text-critico">{(solicitar.error as Error).message}</span>}
           </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Minhas teleinterconsultas (7 dias)</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-corpo">Minhas teleinterconsultas (7 dias)</CardTitle></CardHeader>
         <CardContent>
           {teles.isLoading && <Spinner />}
-          {teles.error && <p className="text-sm text-critico">{(teles.error as Error).message}</p>}
-          {!teles.isLoading && minhas.length === 0 && <p className="text-sm text-tinta-sussurro">Nenhuma.</p>}
+          {teles.error && <p className="text-apoio text-critico">{(teles.error as Error).message}</p>}
+          {!teles.isLoading && minhas.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhuma.</p>}
           <ul className="flex flex-col gap-3">
             {minhas.map((t) => (
               <Cartao key={t.id} t={t}>

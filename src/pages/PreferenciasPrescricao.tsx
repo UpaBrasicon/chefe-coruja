@@ -17,7 +17,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, SlidersHorizontal, Star } from 'lucide-react'
 import * as React from 'react'
 
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -88,7 +89,7 @@ export default function PreferenciasPrescricao() {
       <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
         <div className="flex items-center gap-2.5 border-b border-trilha px-5 py-3.5">
           <Star className="size-4 text-atencao" aria-hidden />
-          <h2 className="text-corpo font-semibold tracking-[-0.01em] text-tinta">Favoritos de prescrição</h2>
+          <TituloSecao className="mb-0">Favoritos de prescrição</TituloSecao>
           {favoritos.data && <span className="ml-auto text-apoio text-tinta-sussurro">{total}</span>}
         </div>
 
@@ -204,15 +205,15 @@ function NovoFavorito({ aoSalvar }: { aoSalvar: () => void }) {
           {resultados.error && <p className="text-apoio text-critico">{msg(resultados.error)}</p>}
           <div className="max-h-48 overflow-y-auto">
             {(resultados.data ?? []).map((m) => (
-              <button
+              <BotaoLinha
                 key={m.id}
-                type="button"
+                variante="linha"
                 onClick={() => setMed(m)}
-                className="flex w-full gap-2 border-b border-trilha px-2 py-1.5 text-left text-apoio last:border-0 hover:bg-campo"
+                className="gap-2 px-2 py-1.5 text-apoio hover:bg-campo"
               >
                 <span className="font-medium text-tinta">{m.principio_ativo}</span>
                 <span className="text-tinta-apoio">{[m.concentracao, m.apresentacao].filter(Boolean).join(' · ')}</span>
-              </button>
+              </BotaoLinha>
             ))}
             {resultados.data?.length === 0 && <p className="px-2 py-1 text-apoio text-tinta-sussurro">Nada no cadastro com esse nome.</p>}
           </div>

@@ -2,7 +2,6 @@ import {
   AlertTriangle,
   Camera,
   Check,
-  ChevronRight,
   HeartPulse,
   Loader2,
   MapPin,
@@ -12,11 +11,11 @@ import {
   User,
   UserRound,
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { SecaoSegundoFator } from '@/components/seguranca/SegundoFator'
 import { ConectarTelegram } from '@/components/seguranca/ConectarTelegram'
 import { CampoCbo } from '@/components/perfil/CampoCbo'
@@ -190,30 +189,26 @@ export default function Perfil() {
   }
 
   const inputClass =
-    'w-full rounded-lg border border-fio bg-campo px-3 py-2 text-sm placeholder:text-tinta-sussurro focus-visible:border-acao focus-visible:ring-3 focus-visible:ring-acao/50'
+    'w-full rounded-controle border border-fio bg-campo px-3 py-2 text-apoio placeholder:text-tinta-sussurro focus-visible:border-acao focus-visible:ring-3 focus-visible:ring-acao/50'
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
-          <Link to="/" className="transition-colors hover:text-tinta">
-            Início
-          </Link>
-          <ChevronRight className="size-3.5" />
-          <span className="font-medium text-tinta">Meu Perfil</span>
-        </div>
-        <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Meu Perfil</h1>
-        <p className="text-sm text-tinta-sussurro">
-          Foto, dados profissionais e de segurança. A foto aparece ao lado do seu nome no sistema.
-        </p>
+      <div>
+        <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Meu perfil' }]} />
+        <TituloPagina
+          icone={UserRound}
+          titulo="Meu perfil"
+          descricao="Foto, dados profissionais e de segurança. A foto aparece ao lado do seu nome no sistema."
+          className="mb-0"
+        />
       </div>
 
       {salvo && (
-        <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">
+        <div className="rounded-controle border border-conforme/30 bg-alerta-conforme p-3 text-apoio text-conforme">
           ✓ Perfil salvo com sucesso.
         </div>
       )}
-      {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
+      {erro && <div className="rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</div>}
 
       {/* Foto + identificação */}
       <SecaoSegundoFator />
@@ -221,21 +216,21 @@ export default function Perfil() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <User className="size-4 text-tinta-sussurro" /> Foto e identificação
           </CardTitle>
           <CardDescription>Seus dados básicos e a foto exibida ao lado do nome.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex size-20 items-center justify-center overflow-hidden rounded-full border bg-trilha">
+            <div className="flex size-20 items-center justify-center overflow-hidden rounded-capsula border bg-trilha">
               {foto ? (
                 <img src={foto} alt="Foto de perfil" className="h-full w-full object-cover" />
               ) : (
                 <User className="size-8 text-tinta-sussurro" />
               )}
             </div>
-            <label className="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-fio bg-campo px-2.5 text-sm font-medium text-tinta transition-colors hover:bg-trilha">
+            <label className="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-controle border border-fio bg-campo px-2.5 text-apoio font-medium text-tinta transition-colors hover:bg-trilha">
               <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && fazerUpload(e.target.files[0])} />
               <Camera /> {foto ? 'Trocar foto' : 'Enviar foto'}
             </label>
@@ -286,7 +281,7 @@ export default function Perfil() {
       {/* Contato de emergência */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <UserRound className="size-4 text-tinta-sussurro" /> Contato de emergência
           </CardTitle>
           <CardDescription>
@@ -323,7 +318,7 @@ export default function Perfil() {
       {/* Profissional */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <Stethoscope className="size-4 text-tinta-sussurro" /> Dados profissionais
           </CardTitle>
           <CardDescription>Formação, especialidades e certificações — ajudam o gestor a alocar o setor certo.</CardDescription>
@@ -345,11 +340,11 @@ export default function Perfil() {
             <Label>Especialidades</Label>
             <div className="flex flex-wrap gap-1.5">
               {dados.especialidades.map((esp) => (
-                <span key={esp} className="inline-flex items-center gap-1 rounded-full bg-acao/10 px-2.5 py-1 text-xs font-medium text-acao">
+                <span key={esp} className="inline-flex items-center gap-1 rounded-capsula bg-acao/10 px-2.5 py-1 text-rotulo font-medium text-acao">
                   {esp}
-                  <button type="button" aria-label={`Remover ${esp}`} onClick={() => mudar('especialidades', dados.especialidades.filter((x) => x !== esp))}>
+                  <Button type="button" variant="ghost" size="icon-xs" className="size-4 text-acao" aria-label={`Remover ${esp}`} onClick={() => mudar('especialidades', dados.especialidades.filter((x) => x !== esp))}>
                     <Trash2 className="size-3" />
-                  </button>
+                  </Button>
                 </span>
               ))}
             </div>
@@ -406,7 +401,7 @@ export default function Perfil() {
       {/* Segurança */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <HeartPulse className="size-4 text-tinta-sussurro" /> Segurança assistencial
           </CardTitle>
           <CardDescription>
@@ -458,7 +453,7 @@ export default function Perfil() {
           </div>
 
           {dados.alergias_medicamentosas || dados.restricoes_trabalho ? (
-            <p className="flex items-center gap-1.5 rounded-lg border border-atencao/30 bg-atencao/[0.08] p-2.5 text-xs text-atencao">
+            <p className="flex items-center gap-1.5 rounded-controle border border-atencao/30 bg-alerta-atencao p-2.5 text-rotulo text-atencao">
               <AlertTriangle className="size-3.5" /> Estas informações ficam visíveis à gestão para sua segurança no plantão.
             </p>
           ) : null}
@@ -468,7 +463,7 @@ export default function Perfil() {
       {/* Escala */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <MapPin className="size-4 text-tinta-sussurro" /> Preferências de escala
           </CardTitle>
           <CardDescription>Ajuda o gestor a montar a escala com mais aderência.</CardDescription>
@@ -509,11 +504,11 @@ export default function Perfil() {
             <Label>Setores de preferência</Label>
             <div className="flex flex-wrap gap-1.5">
               {dados.setores_preferidos.map((s) => (
-                <span key={s} className="inline-flex items-center gap-1 rounded-full bg-acao/10 px-2.5 py-1 text-xs font-medium text-acao">
+                <span key={s} className="inline-flex items-center gap-1 rounded-capsula bg-acao/10 px-2.5 py-1 text-rotulo font-medium text-acao">
                   {s}
-                  <button type="button" aria-label={`Remover ${s}`} onClick={() => mudar('setores_preferidos', dados.setores_preferidos.filter((x) => x !== s))}>
+                  <Button type="button" variant="ghost" size="icon-xs" className="size-4 text-acao" aria-label={`Remover ${s}`} onClick={() => mudar('setores_preferidos', dados.setores_preferidos.filter((x) => x !== s))}>
                     <Trash2 className="size-3" />
-                  </button>
+                  </Button>
                 </span>
               ))}
             </div>

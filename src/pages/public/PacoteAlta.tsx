@@ -30,13 +30,14 @@ const RECUSA: Record<string, string> = {
 
 function Topo({ unidade }: { unidade: string }) {
   return (
-    <header className="bg-acao-pressionada px-5 pb-[26px] pt-[22px] text-white print:hidden">
+    <header className="bg-veu px-5 pb-[26px] pt-[22px] text-sobre-veu print:hidden">
       <div className="mx-auto max-w-[620px]">
-        <span className="flex items-center gap-[9px] text-sm font-medium opacity-90">
+        <span className="flex items-center gap-[9px] text-apoio font-medium opacity-90">
           <Bird className="size-[18px]" />{unidade}
         </span>
+        {/* padrao-ok: título da tela de marca (página pública, 26 px do desenho da alta) */}
         <h1 className="mb-1.5 mt-3.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.02em] max-[420px]:text-[23px]">Seus documentos de alta</h1>
-        <p className="text-[15px] text-[#CFE7E3]">Guarde este link. Cada abertura pede o código de 6 dígitos impresso na sua orientação de alta.</p>
+        <p className="text-corpo text-marca-texto-claro">Guarde este link. Cada abertura pede o código de 6 dígitos impresso na sua orientação de alta.</p>
       </div>
     </header>
   )
@@ -45,11 +46,12 @@ function Topo({ unidade }: { unidade: string }) {
 function Caixa({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <section className="mx-auto max-w-[620px] px-5 pb-[60px] pt-5" aria-labelledby="portao-titulo">
-      <div className="rounded-2xl border border-fio bg-superficie px-5 py-[22px] max-[420px]:px-4">
-        <span className="grid size-11 place-items-center rounded-[13px] bg-alerta-marca text-acao" aria-hidden="true">
+      <div className="rounded-cartao border border-fio bg-superficie px-5 py-[22px] max-[420px]:px-4">
+        <span className="grid size-11 place-items-center rounded-container bg-alerta-marca text-acao" aria-hidden="true">
           <ShieldCheck className="size-[22px]" />
         </span>
-        <h2 id="portao-titulo" className="mb-1.5 mt-3.5 text-[21px] leading-[1.2] font-semibold tracking-[-0.02em]">{titulo}</h2>
+        {/* padrao-ok: título da tela de marca (página pública sem login, fora da casca do app) */}
+        <h2 id="portao-titulo" className="mb-1.5 mt-3.5 text-dialogo leading-[1.2] font-semibold tracking-[-0.02em]">{titulo}</h2>
         {children}
       </div>
     </section>
@@ -154,7 +156,7 @@ function VisaoPaciente({ token }: { token: string }) {
       {recusa ? (
         <Caixa titulo="Este link não abre mais">
           <p className="text-pretty text-critico" role="alert">{recusa}</p>
-          <div className="mt-[18px] border-t border-trilha pt-4 text-sm text-tinta-apoio">
+          <div className="mt-[18px] border-t border-trilha pt-4 text-apoio text-tinta-apoio">
             <p className="text-pretty"><b className="font-semibold text-tinta">Os documentos impressos</b> entregues na alta continuam valendo.</p>
           </div>
         </Caixa>
@@ -166,7 +168,7 @@ function VisaoPaciente({ token }: { token: string }) {
             O código de 6 dígitos está impresso na <b className="font-semibold text-tinta">sua orientação de alta</b>, logo abaixo deste link.
           </p>
           <form className="flex flex-col gap-2" noValidate onSubmit={(e) => { e.preventDefault(); void conferir(codigo) }}>
-            <label htmlFor="codigo" className="text-sm font-medium text-tinta-apoio">Código de 6 dígitos</label>
+            <label htmlFor="codigo" className="text-apoio font-medium text-tinta-apoio">Código de 6 dígitos</label>
             <input
               id="codigo"
               ref={campo}
@@ -183,16 +185,16 @@ function VisaoPaciente({ token }: { token: string }) {
                 if (r && r.situacao !== 'codigo_errado' && c.length < 6) setResposta(null)
                 if (c.length === 6) void conferir(c)
               }}
-              className="min-h-14 w-full rounded-xl border border-fio bg-campo px-2.5 py-3 text-center indent-[0.28em] text-[27px] font-semibold tracking-[0.28em] tabular-nums text-tinta outline-none focus:border-marca focus:ring-[3px] focus:ring-marca/15 disabled:bg-trilha disabled:text-tinta-sussurro max-[420px]:text-2xl"
+              className="min-h-14 w-full rounded-container border border-fio bg-campo px-2.5 py-3 text-center indent-[0.28em] text-numeral-compacto font-semibold tracking-[0.28em] tabular-nums text-tinta outline-none focus:border-marca focus:ring-[3px] focus:ring-marca/15 disabled:bg-trilha disabled:text-tinta-sussurro max-[420px]:text-titulo"
             />
-            {erro && <p id="portao-erro" className="mt-0.5 text-pretty text-sm text-critico" role="alert">{erro}</p>}
+            {erro && <p id="portao-erro" className="mt-0.5 text-pretty text-apoio text-critico" role="alert">{erro}</p>}
             <Button type="submit" size="bloco" className="mt-1" disabled={enviando}>
               {enviando ? <Spinner /> : null}Ver meus documentos
             </Button>
           </form>
-          <div className="mt-[18px] border-t border-trilha pt-4 text-sm text-tinta-apoio">
+          <div className="mt-[18px] border-t border-trilha pt-4 text-apoio text-tinta-apoio">
             <p className="text-pretty"><b className="font-semibold text-tinta">Sem celular à mão?</b> Os documentos impressos foram entregues na alta.</p>
-            <p className="mt-3 text-pretty text-[13px] text-tinta-sussurro">
+            <p className="mt-3 text-pretty text-apoio text-tinta-sussurro">
               O código é pedido a cada abertura: quem tiver só o link não abre sem ele. Três códigos errados bloqueiam o link.
             </p>
           </div>
@@ -213,7 +215,7 @@ export default function PacoteAlta() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-campo text-base leading-[1.55] text-tinta print:bg-white">
+    <div className="min-h-screen bg-campo text-corpo leading-[1.55] text-tinta print:bg-transparent">
       {token === 'equipe' ? <VisaoEquipe pacote={busca.get('pacote') ?? ''} /> : <VisaoPaciente token={token} />}
     </div>
   )

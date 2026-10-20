@@ -12,7 +12,7 @@ export function LinkReceita() {
     <div className="flex min-h-screen items-center justify-center bg-campo p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2">
             {eEmissao ? <FileSignature className="size-5 text-acao" /> : <ScanLine className="size-5 text-acao" />}
             {eEmissao ? 'Assinatura de receita' : 'Consulta de receita'}
           </CardTitle>
@@ -20,16 +20,16 @@ export function LinkReceita() {
             Deep link público {eEmissao ? 'de emissão/assinatura' : 'de consulta'} da receita.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 text-sm text-tinta-sussurro">
+        <CardContent className="flex flex-col gap-3 text-apoio text-tinta-sussurro">
           <p>
-            Token: <code className="rounded bg-trilha px-1.5 py-0.5 text-xs">{token ?? '—'}</code>
+            Token: <code className="rounded-controle bg-trilha px-1.5 py-0.5 text-rotulo">{token ?? '—'}</code>
           </p>
           <p>
             Este link será resolvido por uma <strong>Edge Function</strong> que valida o token e
             redireciona para a assinatura ICP-Brasil (emissão) ou para o portal do paciente /
             farmácia (consulta), conforme a configuração de integrações.
           </p>
-          <p className="text-xs">
+          <p className="text-rotulo">
             Pendência técnica: criar a Edge Function <code>resolve-receita</code> e ligar o fluxo de
             assinatura (VIDaaS) e validação. Veja o fluxograma de pendências.
           </p>

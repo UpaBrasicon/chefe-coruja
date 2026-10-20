@@ -2,6 +2,8 @@
 // evasão (decisão do RT, 07/10/2026) e os rótulos do indicador. O motivo vai
 // para os detalhes do desfecho (motivo_evasao); a justificativa escrita continua.
 
+import { numeroAte } from './formato.ts'
+
 export const MOTIVOS_EVASAO = [
   { valor: 'demora', rotulo: 'Demora no atendimento' },
   { valor: 'melhorou', rotulo: 'Melhorou' },
@@ -27,7 +29,7 @@ export const rotuloMomento = (v: string) => MOMENTOS_EVASAO.find((m) => m.valor 
 /** Taxa em % com uma casa ("—" sem chegadas): 3 de 40 → "7,5%". */
 export function taxa(n: number, chegadas: number): string {
   if (!chegadas) return '—'
-  return `${((n / chegadas) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
+  return `${numeroAte((n / chegadas) * 100, 1)}%`
 }
 
 export type IndicadorEvasao = {

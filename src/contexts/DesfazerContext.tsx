@@ -2,6 +2,8 @@
 import { Undo2 } from 'lucide-react'
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 
+import { Button } from '@/components/ui/button'
+
 // A régua de desfazer (03-estado-e-transicoes.md §2): toda ação consequente
 // mostra por 8 segundos o que foi feito e um botão Desfazer (Ctrl+Z).
 // Regra do handoff: não invente um desfazer que não desfaz — quem chama
@@ -78,7 +80,7 @@ export function DesfazerProvider({ children }: { children: ReactNode }) {
         {acao && (
           <div
             key={acao.id}
-            className="pointer-events-auto relative flex w-full max-w-[460px] items-center gap-3.5 overflow-hidden rounded-container bg-tinta py-3 pr-3.5 pl-4 text-controle text-white shadow-desfazer animate-in fade-in slide-in-from-bottom-2 duration-200"
+            className="pointer-events-auto relative flex w-full max-w-[460px] items-center gap-3.5 overflow-hidden rounded-container bg-tinta py-3 pr-3.5 pl-4 text-controle text-superficie shadow-desfazer animate-in fade-in slide-in-from-bottom-2 duration-200"
           >
             <Undo2 className="size-4 shrink-0 text-desfazer-regua" aria-hidden />
             <span className="min-w-0 flex-1 leading-[1.4]">
@@ -86,15 +88,16 @@ export function DesfazerProvider({ children }: { children: ReactNode }) {
               {acao.desfeito && ' — desfeito'}
             </span>
             {!acao.desfeito && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={() => void executar()}
                 disabled={desfazendo}
-                className="ml-1.5 flex items-center gap-2 px-0.5 py-1 font-semibold whitespace-nowrap text-white hover:text-desfazer-regua disabled:opacity-60"
+                className="ml-1.5 min-h-0 gap-2 px-0.5 py-1 text-controle font-semibold text-superficie hover:text-desfazer-regua disabled:opacity-60"
               >
                 Desfazer
                 <kbd className="cc-tecla hidden border-grafite! bg-grafite! text-fio-forte! sm:inline-flex">ctrl Z</kbd>
-              </button>
+              </Button>
             )}
             {/* a régua: esvazia em 8 s — ela É a janela, não um enfeite */}
             {!acao.desfeito && (

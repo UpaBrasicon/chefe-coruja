@@ -49,7 +49,7 @@ export function CampoCbo({ inicial }: { inicial: string | null }) {
       <Input id="perf-cbo" value={termo} onChange={(e) => setTermo(e.target.value)}
         placeholder={atual ? 'Trocar: digite o código ou a ocupação (ex.: médico clínico)' : 'Digite o código ou a ocupação (ex.: 225125 ou médico clínico)'} />
       {(busca.data ?? []).length > 0 && (
-        <div className="flex max-h-48 flex-col overflow-y-auto rounded-md border border-fio">
+        <div className="flex max-h-48 flex-col overflow-y-auto rounded-controle border border-fio">
           {(busca.data ?? []).map((c) => (
             <Button key={c.codigo} type="button" variant="ghost" size="sm" className="justify-start" onClick={() => void escolher(c.codigo)}>
               {c.codigo} · {c.titulo}
@@ -58,9 +58,9 @@ export function CampoCbo({ inicial }: { inicial: string | null }) {
         </div>
       )}
       {termo.trim().length >= 2 && busca.data && busca.data.length === 0 && (
-        <span className="text-xs text-tinta-sussurro">Nada encontrado na lista oficial do CBO.</span>
+        <span className="text-rotulo text-tinta-sussurro">Nada encontrado na lista oficial do CBO.</span>
       )}
-      {erro && <span role="alert" className="text-xs text-critico">{erro}</span>}
+      {erro && <span role="alert" className="text-rotulo text-critico">{erro}</span>}
     </div>
   )
 }

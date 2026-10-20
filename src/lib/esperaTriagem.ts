@@ -1,6 +1,8 @@
 // Indicador chegada → triagem (Fase 1, tarefa 3): o formato devolvido por
 // indicador_espera_triagem(), o período escolhido e os minutos por extenso.
 
+import { numeroAte } from './formato.ts'
+
 export type Periodo = 'hoje' | '7d' | '30d' | 'intervalo'
 
 export type EsperaTriagem = {
@@ -29,7 +31,7 @@ export function periodoDe(p: Periodo, hoje: string, de: string, ate: string): { 
 /** 4,5 → "4,5 min"; 75 → "1 h 15 min"; null → "—". */
 export function minutos(v: number | null | undefined): string {
   if (v == null) return '—'
-  if (v < 60) return `${v.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min`
+  if (v < 60) return `${numeroAte(v, 1)} min`
   const h = Math.floor(v / 60)
   const m = Math.round(v % 60)
   return m ? `${h} h ${m} min` : `${h} h`

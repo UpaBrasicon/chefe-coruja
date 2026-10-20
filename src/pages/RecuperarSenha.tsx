@@ -4,13 +4,14 @@ import { ArrowLeft, ArrowRight, MailCheck } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
 import { conferirSenha } from '@/lib/senha'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { ConfereSenha, RegrasSenha } from '@/components/seguranca/RegrasSenha'
 import { ConfirmarSegundoFator } from '@/components/seguranca/SegundoFator'
 import { useTurnstile } from '@/components/seguranca/Turnstile'
-import { LadoMarca, MarcaCompacta } from '@/components/entrada/LadoMarca'
+import { LadoMarca, MarcaCompacta, TituloEntrada } from '@/components/entrada/LadoMarca'
 import '@/components/entrada/entrada.css'
 
 // Recuperação de senha, nas duas pontas:
@@ -29,9 +30,7 @@ type Modo = 'pedir' | 'enviado' | 'conferindo' | 'trocar' | 'codigo' | 'expirado
 
 const MARCA_RECUPERACAO = 'supabase_recovery'
 const CAMPO = 'min-h-11 bg-superficie px-[13px] py-[11px] text-corpo md:text-corpo'
-const BOTAO =
-  'mt-1.5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-controle bg-acao-pressionada px-[18px] text-corpo font-medium text-white hover:bg-[#0B3D3A] hover:text-white disabled:opacity-60'
-const TITULO = 'mb-1.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.026em] text-acao-pressionada'
+const BOTAO = 'mt-1.5 gap-2 px-[18px] text-corpo'
 const SUB = 'mb-[22px] text-corpo text-pretty text-tinta-apoio'
 
 function marcaRecuperacao(): boolean {
@@ -196,7 +195,7 @@ export default function RecuperarSenha() {
 
           {modo === 'pedir' && (
             <section aria-labelledby="titulo-pedir">
-              <h2 id="titulo-pedir" className={TITULO}>Esqueci a senha</h2>
+              <TituloEntrada id="titulo-pedir">Esqueci a senha</TituloEntrada>
               <p className={SUB}>Informe o e-mail da sua conta. Enviamos um link para você escolher uma senha nova.</p>
               <form onSubmit={pedir} noValidate className="flex flex-col gap-3.5">
                 <div className="flex flex-col gap-1.5">
@@ -205,10 +204,10 @@ export default function RecuperarSenha() {
                 </div>
                 {turnstile.widget}
                 {erro && <p role="alert" className="text-controle text-critico">{erro}</p>}
-                <button type="submit" disabled={ocupado} className={BOTAO}>
+                <Button type="submit" size="bloco" disabled={ocupado} className={BOTAO}>
                   {ocupado ? 'Enviando…' : 'Enviar o link'}
                   <ArrowRight className="size-4" aria-hidden />
-                </button>
+                </Button>
               </form>
               <p className="mt-[22px] text-apoio text-pretty text-tinta-sussurro">
                 A senha é pessoal: nem a coordenação nem a administração a veem ou trocam por você.
@@ -221,15 +220,15 @@ export default function RecuperarSenha() {
               <span className="mb-4 grid size-[42px] place-items-center rounded-controle bg-alerta-marca text-acao" aria-hidden>
                 <MailCheck className="size-5" />
               </span>
-              <h2 id="titulo-enviado" className={TITULO}>Confira o seu e-mail</h2>
+              <TituloEntrada id="titulo-enviado">Confira o seu e-mail</TituloEntrada>
               <p className={SUB}>
                 Se houver conta com esse e-mail, enviamos o link para trocar a senha. Ele vale por 1 hora e só pode ser usado uma vez.
               </p>
               <p className="text-apoio text-pretty text-tinta-sussurro">
                 Não chegou em alguns minutos? Veja a caixa de spam ou{' '}
-                <button type="button" onClick={() => { setErro(null); setModo('pedir') }} className="font-medium text-acao hover:text-acao-pressionada">
+                <Button variant="link" onClick={() => { setErro(null); setModo('pedir') }} className="min-h-0 p-0 align-baseline font-medium">
                   peça de novo
-                </button>
+                </Button>
                 .
               </p>
             </section>
@@ -243,18 +242,18 @@ export default function RecuperarSenha() {
 
           {modo === 'expirado' && (
             <section aria-labelledby="titulo-expirado">
-              <h2 id="titulo-expirado" className={TITULO}>O link não vale mais</h2>
+              <TituloEntrada id="titulo-expirado">O link não vale mais</TituloEntrada>
               <p className={SUB}>O link de troca de senha expirou ou já foi usado. Peça um novo; ele chega em poucos minutos.</p>
-              <button type="button" onClick={() => { window.history.replaceState(null, '', '/recuperar-senha'); setModo('pedir') }} className={BOTAO}>
+              <Button size="bloco" onClick={() => { window.history.replaceState(null, '', '/recuperar-senha'); setModo('pedir') }} className={BOTAO}>
                 Pedir um link novo
                 <ArrowRight className="size-4" aria-hidden />
-              </button>
+              </Button>
             </section>
           )}
 
           {modo === 'trocar' && (
             <section aria-labelledby="titulo-trocar">
-              <h2 id="titulo-trocar" className={TITULO}>Escolha a senha nova</h2>
+              <TituloEntrada id="titulo-trocar">Escolha a senha nova</TituloEntrada>
               <p className={SUB}>
                 {emailConta ? <>Para a conta <b className="font-semibold text-tinta">{emailConta}</b>. </> : null}
                 Ao salvar, as sessões abertas em outros aparelhos são encerradas.
@@ -273,17 +272,17 @@ export default function RecuperarSenha() {
                   <ConfereSenha confirmacao={confirmacao} conferem={conferencia.conferem} />
                 </div>
                 {erro && <p role="alert" className="text-controle text-critico">{erro}</p>}
-                <button type="submit" disabled={!conferencia.valida || ocupado} className={BOTAO}>
+                <Button type="submit" size="bloco" disabled={!conferencia.valida || ocupado} className={BOTAO}>
                   {ocupado ? 'Salvando…' : 'Salvar a senha nova'}
                   <ArrowRight className="size-4" aria-hidden />
-                </button>
+                </Button>
               </form>
             </section>
           )}
 
           {modo === 'codigo' && fatorId && (
             <section aria-labelledby="titulo-codigo-rec">
-              <h2 id="titulo-codigo-rec" className={TITULO}>Confirme que é você</h2>
+              <TituloEntrada id="titulo-codigo-rec">Confirme que é você</TituloEntrada>
               <p className={SUB}>A sua conta tem segundo fator. Para trocar a senha, digite o código do aplicativo autenticador.</p>
               <ConfirmarSegundoFator fatorId={fatorId} onPronto={() => { setModo('trocar'); void gravarSenha() }} rotulo="Confirmar e salvar" />
             </section>

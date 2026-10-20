@@ -80,7 +80,7 @@ export function FormularioCheckin({
 
   return (
     <div className="flex flex-col gap-3">
-      {erro && <div role="alert" className="rounded-controle border border-critico/30 bg-critico/[0.08] p-3 text-apoio text-critico">{erro}</div>}
+      {erro && <div role="alert" className="rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</div>}
       {comObservacao && (
         <Textarea
           placeholder="Observação (opcional)"
@@ -90,7 +90,7 @@ export function FormularioCheckin({
         />
       )}
       {recusa && recusas < 2 && (
-        <div role="alert" className="rounded-controle bg-atencao/[0.08] p-3 text-apoio text-atencao">
+        <div role="alert" className="rounded-controle bg-alerta-atencao p-3 text-apoio text-atencao">
           <p className="font-medium">Check-in não registrado: {recusa}</p>
           <p className="mt-0.5 text-tinta-apoio">Confira se você já está na unidade e tente de novo, de preferência perto de uma janela ou em área aberta.</p>
         </div>

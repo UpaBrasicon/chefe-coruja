@@ -83,3 +83,8 @@ const fmtCarimbo = new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, day: '2-di
 
 /** "19/10/2026, 19:43:12": carimbo com segundos (registro de emissão e de impressão na folha). */
 export const dataHoraCarimbo = (v: Instante) => fmtCarimbo.format(comoData(v))
+
+const fmtMesAno = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC', month: 'long', year: 'numeric' })
+
+/** "outubro de 2026" (mês é 1–12). */
+export const mesAno = (ano: number, mes: number) => fmtMesAno.format(new Date(Date.UTC(ano, mes - 1, 15)))

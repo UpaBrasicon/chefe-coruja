@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { cifrar, decifrar, estaCifrado, temChave } from '@/lib/cofreLocal'
+import { hora } from './formato.ts'
 
 /** TTL de rascunhos clínicos no navegador (LGPD — computador compartilhado de UPA). */
 const TTL_RASCUNHO_MS = 12 * 60 * 60 * 1000 // 12 horas
@@ -172,7 +173,7 @@ export function useRascunho<T>(
     timer.current = setTimeout(() => {
       try {
         salvarEnvelope(chave, dados)
-        setSalvoEm(new Date().toLocaleTimeString('pt-BR'))
+        setSalvoEm(hora(new Date()))
       } catch {
         // armazenamento indisponível — ignora silenciosamente
       }
