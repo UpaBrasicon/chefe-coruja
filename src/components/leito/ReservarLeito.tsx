@@ -2,6 +2,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { dataPura } from '@/lib/formato'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -100,10 +102,10 @@ export function ReservarLeito({ aberto, onFechar, leitoId, identificador, unidad
               <ul className="flex flex-col">
                 {(achados.data ?? []).map((a) => (
                   <li key={a.id}>
-                    <button type="button" onClick={() => setPaciente(a)} className="w-full rounded-controle px-2 py-1.5 text-left text-apoio hover:bg-campo">
+                    <BotaoLinha variante="linha" onClick={() => setPaciente(a)} className="block rounded-controle border-0 px-2 py-1.5 text-apoio hover:bg-campo">
                       {a.nome_social || a.nome}
-                      {a.data_nascimento && <span className="text-tinta-sussurro"> · {new Date(a.data_nascimento + 'T12:00').toLocaleDateString('pt-BR')}</span>}
-                    </button>
+                      {a.data_nascimento && <span className="text-tinta-sussurro"> · {dataPura(a.data_nascimento)}</span>}
+                    </BotaoLinha>
                   </li>
                 ))}
               </ul>

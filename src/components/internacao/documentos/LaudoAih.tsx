@@ -28,6 +28,7 @@ import { SeletorPaciente } from '@/components/documentos/SeletorPaciente'
 import { AnexosLaudo, Aviso, Bloco, BotaoAnexar, Campo, Cartao, Leitura, Pilulas, Rodape, Texto } from '@/components/documentos/ui'
 import { useLeituraLaudo } from '@/components/documentos/useLeituraLaudo'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
+import { data as dataBr } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
 import {
@@ -38,7 +39,7 @@ type Conferencia = { avisos: { campo: string; texto: string }[]; criticas?: Crit
 
 const carregar = (chave: string): FormAih => ({ ...AIH_VAZIO, ...(carregarEnvelope<Partial<FormAih>>(chave)?.dados ?? {}) })
 
-const hojeBr = () => new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+const hojeBr = () => dataBr(new Date())
 
 export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = false, onEscolherPaciente }: {
   pacienteId: string | null | undefined
@@ -144,9 +145,10 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
   async function reimprimir(id: string) {
     const janela = window.open('', '_blank')
     if (!janela) return setErro('O navegador bloqueou a janela de impressão.')
-    janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>')
+    janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     const r = await folhaDoDocumentoEmitido(id, 'Laudo de internação (AIH) · reimpressão')
     janela.document.open()
+    // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     janela.document.write('erro' in r ? `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">A folha não pôde ser montada${r.erro ? `: ${r.erro}` : ''}.</p>` : r.html)
     janela.document.close()
     if (!('erro' in r)) {
@@ -275,7 +277,7 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
               onDigitar={(v) => set({ procDesc: v, procCod: '', cienteSigtap: false })}
               onEscolher={(codigo, nome) => set({ procDesc: nome, procCod: codigo, cienteSigtap: false })} />
             {bloqueantes.length > 0 && (
-              <div role="alert" className="flex basis-full flex-col gap-2 rounded-container border border-critico/30 bg-critico/[0.06] px-3.5 py-3">
+              <div role="alert" className="flex basis-full flex-col gap-2 rounded-container border border-critico/30 bg-alerta-critico px-3.5 py-3">
                 <span className="text-apoio font-medium text-critico">Impede emitir o laudo (crítica bloqueante da unidade):</span>
                 {bloqueantes.map((a, k) => (
                   <span key={k} className="flex items-start gap-2 text-apoio text-pretty text-critico">
@@ -285,7 +287,7 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
               </div>
             )}
             {avisos.length > 0 && (
-              <div className="flex basis-full flex-col gap-2 rounded-container border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-3">
+              <div className="flex basis-full flex-col gap-2 rounded-container border border-atencao/30 bg-alerta-atencao px-3.5 py-3">
                 {avisos.map((a, k) => (
                   <span key={k} className="flex items-start gap-2 text-apoio text-pretty text-atencao">
                     <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden /> Campo {a.campo}: {a.texto}

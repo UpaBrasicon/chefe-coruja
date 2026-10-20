@@ -1,16 +1,16 @@
 {
   "_leia": "Base da catraca do padrão do frontend (scripts/padrao-frontend.mjs). Só desce: depois de corrigir, rode `node scripts/padrao-frontend.mjs --atualizar` e comite junto.",
   "totais": {
-    "cor-crua": 104,
-    "cor-arbitraria": 196,
-    "cor-hex": 89,
-    "texto-escala": 1220,
-    "canto": 443,
-    "botao-solto": 192,
-    "select-solto": 81,
+    "cor-crua": 92,
+    "cor-arbitraria": 166,
+    "cor-hex": 79,
+    "texto-escala": 1111,
+    "canto": 381,
+    "botao-solto": 156,
+    "select-solto": 72,
     "tabela-solta": 60,
-    "titulo-solto": 67,
-    "data-local": 249,
+    "titulo-solto": 66,
+    "data-local": 230,
     "importacao-cruzada": 0,
     "emoji": 1,
     "pronto-socorro": 0
@@ -110,10 +110,6 @@
       "data-local": 1,
       "texto-escala": 10
     },
-    "src/components/clinico/PilulaRisco.tsx": {
-      "cor-crua": 4,
-      "texto-escala": 1
-    },
     "src/components/clinico/ResultadoExame.tsx": {
       "botao-solto": 1,
       "canto": 4,
@@ -135,130 +131,8 @@
       "texto-escala": 2,
       "titulo-solto": 1
     },
-    "src/components/evolucao/AbaEvolucao.tsx": {
-      "botao-solto": 1
-    },
-    "src/components/evolucao/EvolucaoMedica.tsx": {
-      "botao-solto": 2,
-      "canto": 1,
-      "cor-arbitraria": 1
-    },
-    "src/components/evolucao/Historico.tsx": {
-      "botao-solto": 3,
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "select-solto": 1,
-      "texto-escala": 2
-    },
-    "src/components/evolucao/ResumoClinico.tsx": {
-      "canto": 4
-    },
-    "src/components/evolucao/dados.ts": {
-      "data-local": 4
-    },
-    "src/components/evolucao/pecas.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "cor-arbitraria": 2
-    },
     "src/components/icones/Proprios.tsx": {
       "texto-escala": 1
-    },
-    "src/components/internacao/LeitoAberto.tsx": {
-      "botao-solto": 1,
-      "canto": 2,
-      "cor-arbitraria": 2,
-      "texto-escala": 3
-    },
-    "src/components/internacao/ListaInternados.tsx": {
-      "botao-solto": 2,
-      "canto": 4,
-      "data-local": 1,
-      "texto-escala": 1
-    },
-    "src/components/internacao/PassagensDoPlantao.tsx": {
-      "botao-solto": 1,
-      "canto": 2,
-      "cor-arbitraria": 1,
-      "data-local": 1,
-      "texto-escala": 3
-    },
-    "src/components/internacao/caderno/Acuidade.tsx": {
-      "botao-solto": 3,
-      "canto": 4,
-      "cor-arbitraria": 2,
-      "texto-escala": 8
-    },
-    "src/components/internacao/caderno/Alta.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "cor-hex": 4,
-      "texto-escala": 1
-    },
-    "src/components/internacao/caderno/Classificacao.tsx": {
-      "canto": 1
-    },
-    "src/components/internacao/caderno/Diagnostico.tsx": {
-      "botao-solto": 2,
-      "canto": 8,
-      "cor-arbitraria": 2
-    },
-    "src/components/internacao/caderno/Documentos.tsx": {
-      "canto": 3,
-      "select-solto": 1
-    },
-    "src/components/internacao/caderno/Passagem.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "texto-escala": 1
-    },
-    "src/components/internacao/caderno/Pendencias.tsx": {
-      "botao-solto": 2,
-      "canto": 3,
-      "cor-arbitraria": 2,
-      "texto-escala": 1
-    },
-    "src/components/internacao/caderno/Sepse.tsx": {
-      "canto": 2,
-      "cor-arbitraria": 3,
-      "data-local": 1,
-      "texto-escala": 8
-    },
-    "src/components/internacao/caderno/Trilha.tsx": {
-      "botao-solto": 1,
-      "canto": 2,
-      "cor-arbitraria": 1,
-      "texto-escala": 1
-    },
-    "src/components/internacao/caderno/caixas.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "texto-escala": 1
-    },
-    "src/components/internacao/caderno/comum.ts": {
-      "data-local": 2
-    },
-    "src/components/internacao/documentos/ExamesTab.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "texto-escala": 6
-    },
-    "src/components/internacao/documentos/FichaAdmissao.tsx": {
-      "botao-solto": 1,
-      "cor-hex": 4,
-      "data-local": 1
-    },
-    "src/components/internacao/documentos/LaudoAih.tsx": {
-      "cor-arbitraria": 3,
-      "cor-hex": 2,
-      "data-local": 1
-    },
-    "src/components/internacao/documentos/PrescricaoTab.tsx": {
-      "texto-escala": 1
-    },
-    "src/components/leito/ReservarLeito.tsx": {
-      "botao-solto": 1,
-      "data-local": 1
     },
     "src/components/monitor/Parametros.tsx": {
       "canto": 1,
@@ -285,44 +159,6 @@
     },
     "src/components/observacao/modelo.ts": {
       "data-local": 1
-    },
-    "src/components/paciente/AlergiasEventos.tsx": {
-      "botao-solto": 5,
-      "canto": 4,
-      "cor-crua": 2,
-      "data-local": 1,
-      "texto-escala": 2
-    },
-    "src/components/paciente/CabecalhoPaciente.tsx": {
-      "botao-solto": 1,
-      "cor-crua": 4,
-      "data-local": 2,
-      "texto-escala": 3
-    },
-    "src/components/paciente/CadastroRn.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "data-local": 1,
-      "select-solto": 2,
-      "texto-escala": 8
-    },
-    "src/components/paciente/CamposCadastro.tsx": {
-      "botao-solto": 1,
-      "select-solto": 2
-    },
-    "src/components/paciente/EnderecoSus.tsx": {
-      "texto-escala": 6
-    },
-    "src/components/paciente/Isolamento.tsx": {
-      "botao-solto": 2,
-      "canto": 1,
-      "cor-crua": 1,
-      "data-local": 1
-    },
-    "src/components/paciente/ProcedimentosRealizados.tsx": {
-      "canto": 2,
-      "select-solto": 1,
-      "texto-escala": 9
     },
     "src/components/parecer/AbaParecer.tsx": {
       "cor-arbitraria": 1
@@ -395,21 +231,6 @@
       "cor-arbitraria": 3,
       "cor-crua": 2,
       "texto-escala": 3
-    },
-    "src/components/prescricao/AlterarItem.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "select-solto": 1,
-      "texto-escala": 4
-    },
-    "src/components/prescricao/PrescricaoEstruturada.tsx": {
-      "botao-solto": 3,
-      "canto": 8,
-      "cor-arbitraria": 4,
-      "cor-crua": 1,
-      "data-local": 1,
-      "select-solto": 1,
-      "texto-escala": 25
     },
     "src/components/prontuario/GavetaEpisodios.tsx": {
       "data-local": 1
@@ -623,13 +444,6 @@
       "cor-arbitraria": 1,
       "data-local": 1,
       "texto-escala": 8,
-      "titulo-solto": 1
-    },
-    "src/pages/InternacaoPainel.tsx": {
-      "canto": 3,
-      "cor-arbitraria": 3,
-      "data-local": 1,
-      "texto-escala": 14,
       "titulo-solto": 1
     },
     "src/pages/Login.tsx": {

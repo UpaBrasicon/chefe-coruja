@@ -66,7 +66,7 @@ export function ResumoClinico({ pacienteId, internacaoId }: { pacienteId: string
         {r.antibioticos.map((ab) => {
           const m = ab.movimento ? MOV[ab.movimento] : null
           return (
-            <div key={ab.item_id} className={cn('flex flex-col gap-1 rounded-bloco border border-fio bg-superficie px-[13px] py-[11px]', !ab.em_curso && 'opacity-70')}>
+            <div key={ab.item_id} className={cn('flex flex-col gap-1 rounded-container border border-fio bg-superficie px-[13px] py-[11px]', !ab.em_curso && 'opacity-70')}>
               <div className="flex flex-wrap items-center gap-[9px]">
                 <span className="text-controle font-medium text-tinta">{ab.nome}</span>
                 {m && <span className={cn('inline-flex items-center gap-[5px] rounded-capsula px-[9px] py-[3px] text-rotulo font-semibold whitespace-nowrap', m.classe)}><m.Icone className="size-3" aria-hidden />{m.rotulo}</span>}
@@ -118,7 +118,7 @@ export function ResumoClinico({ pacienteId, internacaoId }: { pacienteId: string
         <RotuloSecao>Condutas</RotuloSecao>
         {r.condutas.map((c, k) => (
           <div key={`${c.quando}-${k}`} className="grid grid-cols-[8px_minmax(0,1fr)] gap-[11px]">
-            <span className={cn('mt-1.5 size-2 rounded-full', k === 0 ? 'bg-acao' : 'bg-fio-forte')} />
+            <span className={cn('mt-1.5 size-2 rounded-capsula', k === 0 ? 'bg-acao' : 'bg-fio-forte')} />
             <div className="flex min-w-0 flex-col gap-0.5">
               <span className={cn('text-controle leading-[1.5] text-pretty whitespace-pre-wrap', k === 0 ? 'text-tinta' : 'text-tinta-apoio')}>{c.texto}</span>
               <span className="tabular text-rotulo text-tinta-sussurro">{diaHora(c.quando)} · {c.quem ?? '—'}</span>
@@ -133,7 +133,7 @@ export function ResumoClinico({ pacienteId, internacaoId }: { pacienteId: string
 
 function Casca({ children, contexto }: { children: React.ReactNode; contexto?: string }) {
   return (
-    <section aria-label="Resumo evoluções" className="overflow-hidden rounded-menu border border-fio bg-campo">
+    <section aria-label="Resumo evoluções" className="overflow-hidden rounded-container border border-fio bg-campo">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-fio px-4 py-3">
         <span className="flex items-center gap-2 text-apoio font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">
           <Activity className="size-[15px] text-acao" aria-hidden /> Resumo evoluções
@@ -179,7 +179,7 @@ function EditarResumo({ r, internacaoId, pacienteId, aoFechar }: { r: ResumoClin
         const v = atb[a.item_id] ?? { movimento: '', motivo: '' }
         const setV = (p: Partial<typeof v>) => setAtb((x) => ({ ...x, [a.item_id]: { ...v, ...p } }))
         return (
-          <div key={a.item_id} className="flex flex-col gap-1.5 rounded-bloco border border-fio bg-superficie p-3">
+          <div key={a.item_id} className="flex flex-col gap-1.5 rounded-container border border-fio bg-superficie p-3">
             <span className="text-controle font-medium text-tinta">{a.nome} <span className="font-normal text-tinta-sussurro">· D{a.dia}</span></span>
             <div className="flex flex-wrap gap-1.5">
               {(Object.keys(MOV) as Movimento[]).map((m) => (

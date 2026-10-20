@@ -2,13 +2,14 @@
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 /** Seção simples: rótulo em versalete e o conteúdo. */
 export function Secao({ titulo, children, acao }: { titulo: string; children: React.ReactNode; acao?: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <div className="text-xs font-semibold tracking-wide text-tinta-sussurro uppercase">{titulo}</div>
+        <div className="text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">{titulo}</div>
         {acao}
       </div>
       {children}
@@ -18,7 +19,7 @@ export function Secao({ titulo, children, acao }: { titulo: string; children: Re
 
 /** Caixa do protótipo: fundo de campo, fio, cantos de 14px, sem estourar. */
 export function Caixa({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn('overflow-hidden rounded-[14px] border border-fio bg-campo', className)}>{children}</div>
+  return <div className={cn('overflow-hidden rounded-container border border-fio bg-campo', className)}>{children}</div>
 }
 
 /** Faixa de cabeçalho da caixa (ícone + rótulo em versalete + resumo + ação). */
@@ -41,22 +42,21 @@ export function Chip({ ativo, forte = false, children, onClick, disabled, role, 
   ativo: boolean; forte?: boolean; children: React.ReactNode; onClick: () => void; disabled?: boolean
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'children'>) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="outline"
+      size="sm"
       role={role}
       disabled={disabled}
       onClick={onClick}
       {...resto}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-capsula border px-3 py-[5px] text-apoio whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-        ativo
-          ? forte
-            ? 'border-acao bg-acao font-medium text-sobre-acao'
-            : 'border-acao/35 bg-acao/10 font-medium text-acao'
-          : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+        'min-h-0 gap-1.5 rounded-capsula px-3 py-[5px] disabled:opacity-50',
+        ativo && (forte
+          ? 'border-acao bg-acao font-medium text-sobre-acao hover:text-sobre-acao'
+          : 'border-acao/35 bg-acao/10 font-medium text-acao'),
       )}
     >
       {children}
-    </button>
+    </Button>
   )
 }

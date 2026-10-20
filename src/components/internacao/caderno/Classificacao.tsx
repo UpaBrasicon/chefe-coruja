@@ -53,7 +53,7 @@ export function AbaClassificacao({ internacaoId, prontuarioAberto }: { internaca
   const atual = lista[0]
 
   return (
-    <section className="overflow-hidden rounded-[14px] border border-fio bg-superficie">
+    <section className="overflow-hidden rounded-container border border-fio bg-superficie">
       {atual ? (
         <div className="flex flex-wrap items-center gap-3 border-b border-trilha px-4 py-3.5">
           <PilulaRisco cor={atual.cor} />

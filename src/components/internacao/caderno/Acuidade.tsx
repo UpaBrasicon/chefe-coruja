@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { gravarRegistros, novoItem } from '@/lib/offline/sincronizar'
 import { FONTE_QSOFA, qsofa } from '@/clinico/qsofa'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -103,14 +104,14 @@ export function BlocoAcuidade({ a, carregando, pacienteId, internacaoId, podeLan
     <Caixa>
       <div className="flex flex-wrap items-center gap-4 border-b border-fio bg-superficie px-4 py-3.5">
         <div className="flex flex-col gap-1">
-          <span className="text-[12px] font-semibold tracking-[0.07em] text-tinta-sussurro uppercase">
+          <span className="text-rotulo font-semibold tracking-[0.07em] text-tinta-sussurro uppercase">
             {a.escala}{a.grupo ? ` · ${a.grupo}` : ''}
           </span>
           {semAfericao ? (
             <span className="text-apoio text-tinta-sussurro">sem aferição em 24 h</span>
           ) : (
             <div className="flex items-baseline gap-2.5">
-              <span className={cn('text-[30px] leading-[0.9] font-semibold tracking-[-0.02em] tabular-nums', BANDA_TEXTO[banda])}>
+              <span className={cn('text-numeral-ok leading-[0.9] font-semibold tracking-[-0.02em] tabular-nums', BANDA_TEXTO[banda])}>
                 {a.total}{a.parcial ? '*' : ''}
               </span>
               <span className={cn('text-apoio font-medium', BANDA_TEXTO[banda])}>
@@ -121,38 +122,37 @@ export function BlocoAcuidade({ a, carregando, pacienteId, internacaoId, podeLan
         </div>
 
         {geo ? (
-          <button type="button" onClick={() => setMotivoAberto((x) => !x)}
+          <BotaoLinha onClick={() => setMotivoAberto((x) => !x)}
             aria-label={`Tendência do ${a.escala} em ${janela}: ${rumo}. Abre o motivo do alerta.`}
-            className="-ml-1 flex shrink-0 flex-col items-start gap-0.5 rounded-[9px] px-1.5 py-1 hover:bg-acao/[0.06]">
+            className="-ml-1 shrink-0 rounded-controle border-0 bg-transparent px-1.5 py-1">
             <svg viewBox="0 0 104 30" width="104" height="30" aria-hidden className="block">
               <polyline points={geo.pontos} fill="none" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className={BANDA_TRACO[banda]} />
               <circle cx={geo.fimX.toFixed(1)} cy={geo.fimY.toFixed(1)} r="2.7" className={BANDA_PONTO[banda]} />
             </svg>
-            <span className="text-[12px] whitespace-nowrap text-tinta-sussurro">{janela} · {rumo}</span>
-          </button>
+            <span className="text-rotulo whitespace-nowrap text-tinta-sussurro">{janela} · {rumo}</span>
+          </BotaoLinha>
         ) : !semAfericao && !serie.isLoading ? (
-          <span className="shrink-0 text-[12px] whitespace-nowrap text-tinta-sussurro">Aferição única · sem tendência ainda</span>
+          <span className="shrink-0 text-rotulo whitespace-nowrap text-tinta-sussurro">Aferição única · sem tendência ainda</span>
         ) : null}
 
         <span className="min-w-0 flex-[1_1_200px] text-apoio text-pretty text-tinta-sussurro">
           {semAfericao ? 'Lance os sinais vitais para o escore.' : `Aferido às ${hora(a.aferido_em)}`}
         </span>
         {!semAfericao && (
-          <button type="button" onClick={() => setMotivoAberto((x) => !x)} aria-expanded={motivoAberto}
-            className="flex items-center gap-1.5 rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio font-medium whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao">
+          <Button variant="outline" size="sm" onClick={() => setMotivoAberto((x) => !x)} aria-expanded={motivoAberto}
+            className="gap-1.5 rounded-controle px-[11px] font-medium">
             <Activity className="size-3.5" aria-hidden /> Motivo do alerta
-          </button>
+          </Button>
         )}
         {podeLancar && !lancando && (
-          <button type="button" onClick={() => setLancando(true)}
-            className="flex items-center gap-1.5 rounded-[9px] bg-acao px-3 py-[7px] text-apoio font-medium whitespace-nowrap text-sobre-acao hover:bg-acao-pressionada">
+          <Button onClick={() => setLancando(true)} className="gap-1.5 px-3">
             <Thermometer className="size-3.5" aria-hidden /> Lançar vitais
-          </button>
+          </Button>
         )}
       </div>
 
       {a.parcial && !semAfericao && (
-        <div className="flex items-start gap-2 border-b border-fio bg-atencao/[0.04] px-4 py-[11px]">
+        <div className="flex items-start gap-2 border-b border-fio bg-alerta-atencao px-4 py-[11px]">
           <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-atencao" aria-hidden />
           <span className="text-apoio leading-[1.45] text-pretty text-atencao">
             Escore parcial: {(a.faltando ?? []).join(', ').toLowerCase()} sem medida. O asterisco no numeral marca isso.
@@ -274,11 +274,11 @@ const EXAMES = [
 function CampoNumero({ nome, rotulo, unidade, valor, mudar }: { nome: string; rotulo: string; unidade: string; valor: string; mudar: (v: string) => void }) {
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={`v-${nome}`} className="text-[12px] font-medium text-tinta-sussurro">{rotulo}</label>
-      <div className="flex items-center gap-1.5 rounded-[9px] border border-fio bg-campo px-2.5 py-[7px] focus-within:border-acao">
+      <label htmlFor={`v-${nome}`} className="text-rotulo font-medium text-tinta-sussurro">{rotulo}</label>
+      <div className="flex items-center gap-1.5 rounded-controle border border-fio bg-campo px-2.5 py-[7px] focus-within:border-acao">
         <input id={`v-${nome}`} inputMode="decimal" value={valor} onChange={(e) => mudar(e.target.value)}
           className="w-full min-w-0 flex-1 border-0 bg-transparent text-corpo text-tinta tabular-nums outline-none" />
-        {unidade && <span className="text-[12px] whitespace-nowrap text-tinta-sussurro">{unidade}</span>}
+        {unidade && <span className="text-rotulo whitespace-nowrap text-tinta-sussurro">{unidade}</span>}
       </div>
     </div>
   )
@@ -353,7 +353,7 @@ export function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, a
         if (!c) return null
         return (
           <div key={nome} className="flex flex-wrap items-center gap-1.5" role="radiogroup" aria-label={rotulo}>
-            <span className="mr-1 text-[12px] font-medium text-tinta-sussurro">{rotulo}</span>
+            <span className="mr-1 text-rotulo font-medium text-tinta-sussurro">{rotulo}</span>
             {c.opcoes.map((o) => (
               <Chip key={o.id} role="radio" aria-checked={v[nome] === o.id} ativo={v[nome] === o.id}
                 onClick={() => set(nome)(v[nome] === o.id ? '' : o.id)}>
@@ -368,7 +368,7 @@ export function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, a
           <p className="text-apoio text-pretty text-pediatria">
             Vasoativas: adrenalina, noradrenalina, dopamina, dobutamina, milrinona ou vasopressina, em qualquer dose (Phoenix).
           </p>
-          <div className="text-[12px] font-semibold tracking-wide text-tinta-sussurro uppercase">Exames (Phoenix e PELOD-2)</div>
+          <div className="text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">Exames (Phoenix e PELOD-2)</div>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
             {EXAMES.map(([nome, rotulo, unidade]) => (
               <CampoNumero key={nome} nome={nome} rotulo={rotulo} unidade={unidade} valor={v[nome] ?? ''} mudar={set(nome)} />

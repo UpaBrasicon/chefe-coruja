@@ -10,6 +10,7 @@ import { ArrowRightLeft } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { dataHora } from '@/lib/formato'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,8 +28,7 @@ type Linha = {
   pacientes: { nome: string } | null
 }
 
-const hora = (iso: string) =>
-  new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })
+const hora = (iso: string) => dataHora(iso)
 
 export function PassagensDoPlantao({ pacienteId }: { pacienteId?: string } = {}) {
   const { perfil } = useAuth()
@@ -89,10 +89,10 @@ export function PassagensDoPlantao({ pacienteId }: { pacienteId?: string } = {})
           </div>
         ))}
         {enviadas.map((p) => (
-          <button key={p.id} type="button" onClick={() => void chamar('retirar_passagem', { p_passagem: p.id })}
-            className="self-start text-apoio text-tinta-apoio underline hover:text-acao">
+          <Button key={p.id} variant="link" onClick={() => void chamar('retirar_passagem', { p_passagem: p.id })}
+            className="min-h-0 self-start px-0 py-0 text-tinta-apoio underline hover:text-acao">
             Retirar da passagem (quem passou)
-          </button>
+          </Button>
         ))}
       </div>
     )
@@ -101,20 +101,20 @@ export function PassagensDoPlantao({ pacienteId }: { pacienteId?: string } = {})
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle className="flex items-center gap-2 text-corpo">
           <ArrowRightLeft className="size-4 text-tinta-sussurro" /> Passagem de plantão
         </CardTitle>
         <CardDescription>
           Paciente a paciente, com aceite. Enquanto uma passagem sua aguarda aceite, o check-out fica bloqueado.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 text-sm">
+      <CardContent className="flex flex-col gap-3 text-apoio">
         {erro && <p className="text-critico">{erro}</p>}
         {recebidas.map((p) => (
-          <div key={p.id} className="flex flex-col gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.06] p-3">
+          <div key={p.id} className="flex flex-col gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao p-3">
             <div className="font-medium text-tinta">{paciente(p)} · {p.setores?.nome}</div>
             <p className="whitespace-pre-wrap">{p.resumo}</p>
-            <div className="text-xs text-tinta-sussurro">enviada em {hora(p.enviada_em)}</div>
+            <div className="text-rotulo text-tinta-sussurro">enviada em {hora(p.enviada_em)}</div>
             {recusando === p.id ? (
               <div className="flex flex-col gap-2">
                 <Textarea placeholder="Por que recusa (mínimo de 15 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
@@ -135,7 +135,7 @@ export function PassagensDoPlantao({ pacienteId }: { pacienteId?: string } = {})
           </div>
         ))}
         {enviadas.map((p) => (
-          <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-fio p-3">
+          <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-controle border border-fio p-3">
             <span className="flex-1">
               <span className="font-medium text-tinta">{paciente(p)}</span> — enviada em {hora(p.enviada_em)}, aguardando aceite
             </span>

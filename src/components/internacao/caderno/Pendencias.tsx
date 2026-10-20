@@ -56,10 +56,9 @@ export function BlocoPendencias({ internacaoId, ativa, lista, eu, acao }: {
         resumo={resumo}
         resumoClasse={nVencidas ? 'text-critico' : undefined}
         acao={ativa && !aberto ? (
-          <button type="button" onClick={() => setAberto(true)}
-            className="flex items-center gap-1.5 rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio font-medium whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao">
+          <Button variant="outline" size="sm" onClick={() => setAberto(true)} className="gap-1.5 rounded-controle px-[11px] font-medium">
             <ClipboardPlus className="size-3.5" aria-hidden /> Nova pendência
-          </button>
+          </Button>
         ) : undefined}
       />
 
@@ -67,8 +66,8 @@ export function BlocoPendencias({ internacaoId, ativa, lista, eu, acao }: {
         const v = vencida(p)
         return (
           <div key={p.id} className="flex flex-wrap items-start gap-[11px] border-b border-fio bg-superficie px-4 py-3">
-            <span className={cn('rounded-capsula px-2 py-[3px] text-[12px] font-semibold tracking-[0.04em] whitespace-nowrap uppercase',
-              v ? 'bg-critico/[0.08] text-critico' : p.tipo === 'observacao' ? 'bg-atencao/[0.08] text-atencao' : 'bg-trilha text-tinta-apoio')}>
+            <span className={cn('rounded-capsula px-2 py-[3px] text-rotulo font-semibold tracking-[0.04em] whitespace-nowrap uppercase',
+              v ? 'bg-alerta-critico text-critico' : p.tipo === 'observacao' ? 'bg-alerta-atencao text-atencao' : 'bg-trilha text-tinta-apoio')}>
               {TIPO_PENDENCIA[p.tipo] ?? p.tipo}
             </span>
             <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
@@ -82,10 +81,10 @@ export function BlocoPendencias({ internacaoId, ativa, lista, eu, acao }: {
               {p.prazo ? `${v ? 'vencida desde' : 'até'} ${hora(p.prazo)}` : 'sem prazo'}
             </span>
             {ativa && p.tipo !== 'observacao' && (
-              <button type="button" onClick={() => void acao(() => rpc('concluir_pendencia', { p_pendencia: p.id })).then((r) => r !== null && setDesfazer(p.id))}
-                className="flex items-center gap-1.5 rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio font-medium whitespace-nowrap text-tinta-apoio hover:border-conforme hover:text-conforme">
+              <Button variant="outline" size="sm" onClick={() => void acao(() => rpc('concluir_pendencia', { p_pendencia: p.id })).then((r) => r !== null && setDesfazer(p.id))}
+                className="gap-1.5 rounded-controle px-[11px] font-medium hover:border-conforme hover:text-conforme">
                 <Check className="size-3.5" aria-hidden /> Concluir
-              </button>
+              </Button>
             )}
           </div>
         )
@@ -116,7 +115,7 @@ export function BlocoPendencias({ internacaoId, ativa, lista, eu, acao }: {
           </div>
           <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="O que precisa ser feito neste leito"
             aria-label="Descrição da pendência"
-            className="w-full rounded-[10px] border border-fio bg-campo px-3 py-2.5 text-corpo text-tinta outline-none focus:border-acao" />
+            className="w-full rounded-controle border border-fio bg-campo px-3 py-2.5 text-corpo text-tinta outline-none focus:border-acao" />
           <div className="flex flex-wrap gap-[7px]" role="radiogroup" aria-label="Prazo">
             {PRAZOS.map(([k, r]) => (
               <Chip key={k} role="radio" aria-checked={prazo === k} ativo={prazo === k} onClick={() => setPrazo(k)}>{r}</Chip>
