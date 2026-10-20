@@ -70,14 +70,14 @@ function SemLiberacaoLista({ unidadeId, podeLiberar }: { unidadeId: string; pode
       ) : (lista.data ?? []).length === 0 ? (
         <Vazio icone={ShieldAlert} titulo="Nada para conferir" texto="Quando a enfermagem administrar alta vigilância sem a liberação da farmácia, com justificativa, aparece aqui." />
       ) : (lista.data ?? []).map((a) => (
-        <div key={a.id} className="flex flex-col gap-1.5 rounded-lg border border-atencao/40 bg-superficie px-4 py-3 text-apoio">
+        <div key={a.id} className="flex flex-col gap-1.5 rounded-controle border border-atencao/40 bg-superficie px-4 py-3 text-apoio">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className="font-medium text-tinta">{a.paciente}</span>
             <span className="text-tinta-sussurro">{a.local ?? '—'}</span>
             {a.horario && <Badge variant="outline">horário {a.horario}</Badge>}
           </div>
           <span className="text-tinta">{a.descricao} · {a.dose ?? '—'} · {a.via ?? '—'} · {a.posologia ?? '—'}</span>
-          <span className="text-xs text-tinta-apoio">
+          <span className="text-rotulo text-tinta-apoio">
             Administrado por {a.administrado_por ?? '—'}, {fmtDataHora(a.administrado_em)}. Justificativa: “{a.justificativa ?? '—'}”
           </span>
           {podeLiberar && (
@@ -142,13 +142,13 @@ function LinhaItem({ i, unidadeId, podeAjustar, aoMudar }: { i: ItemAltaVigilanc
   })
 
   return (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-fio bg-superficie px-4 py-2.5 text-apoio">
+    <div className="flex flex-col gap-1.5 rounded-controle border border-fio bg-superficie px-4 py-2.5 text-apoio">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="font-medium text-tinta">{i.principio_ativo}</span>
         <span className="text-tinta-apoio">{i.apresentacao}{i.concentracao ? ` · ${i.concentracao}` : ''}</span>
         <Badge variant={i.exige ? 'destructive' : 'outline'} className="ml-auto">{i.exige ? 'exige liberação da farmácia' : 'não exige'}</Badge>
       </div>
-      <span className="text-xs text-tinta-sussurro">
+      <span className="text-rotulo text-tinta-sussurro">
         {origemAltaVigilancia(i)}
         {i.ajuste && ` — “${i.ajuste.motivo}” (${i.ajuste.por ?? '—'}, ${fmtDataHora(i.ajuste.em)})`}
       </span>
@@ -160,7 +160,7 @@ function LinhaItem({ i, unidadeId, podeAjustar, aoMudar }: { i: ItemAltaVigilanc
           <Input className="h-8 max-w-md" placeholder="Motivo (mínimo de 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
           <Button size="xs" disabled={motivo.trim().length < 10 || ajustar.isPending} onClick={() => ajustar.mutate()}>Confirmar</Button>
           <Button size="xs" variant="ghost" onClick={() => setAbrindo(false)}>Voltar</Button>
-          {ajustar.error && <span role="alert" className="text-xs text-critico">{(ajustar.error as Error).message}</span>}
+          {ajustar.error && <span role="alert" className="text-rotulo text-critico">{(ajustar.error as Error).message}</span>}
         </div>
       )}
     </div>

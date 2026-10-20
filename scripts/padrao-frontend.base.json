@@ -2,15 +2,15 @@
   "_leia": "Base da catraca do padrão do frontend (scripts/padrao-frontend.mjs). Só desce: depois de corrigir, rode `node scripts/padrao-frontend.mjs --atualizar` e comite junto.",
   "totais": {
     "cor-crua": 90,
-    "cor-arbitraria": 163,
+    "cor-arbitraria": 154,
     "cor-hex": 69,
-    "texto-escala": 1089,
-    "canto": 375,
-    "botao-solto": 154,
-    "select-solto": 72,
-    "tabela-solta": 59,
-    "titulo-solto": 65,
-    "data-local": 225,
+    "texto-escala": 1067,
+    "canto": 364,
+    "botao-solto": 146,
+    "select-solto": 68,
+    "tabela-solta": 57,
+    "titulo-solto": 64,
+    "data-local": 219,
     "importacao-cruzada": 0,
     "emoji": 1,
     "pronto-socorro": 0
@@ -543,48 +543,6 @@
       "data-local": 1,
       "texto-escala": 1
     },
-    "src/pages/farmacia/AltaVigilancia.tsx": {
-      "canto": 2,
-      "texto-escala": 3
-    },
-    "src/pages/farmacia/Diluicoes.tsx": {
-      "botao-solto": 2,
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "data-local": 1,
-      "select-solto": 2,
-      "texto-escala": 10
-    },
-    "src/pages/farmacia/Dispensacao.tsx": {
-      "botao-solto": 1,
-      "canto": 3,
-      "cor-arbitraria": 1,
-      "tabela-solta": 1,
-      "texto-escala": 1
-    },
-    "src/pages/farmacia/EnviarArquivo.tsx": {
-      "botao-solto": 1,
-      "data-local": 1
-    },
-    "src/pages/farmacia/Farmacia.tsx": {
-      "botao-solto": 2,
-      "data-local": 2
-    },
-    "src/pages/farmacia/Interacoes.tsx": {
-      "canto": 4,
-      "cor-arbitraria": 2,
-      "select-solto": 1,
-      "texto-escala": 5
-    },
-    "src/pages/farmacia/PainelFarmacia.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "texto-escala": 3
-    },
-    "src/pages/farmacia/UnidadeConsumo.tsx": {
-      "select-solto": 1,
-      "tabela-solta": 1
-    },
     "src/pages/faturamento/Bpa.tsx": {
       "botao-solto": 1,
       "canto": 6,
@@ -665,12 +623,6 @@
       "data-local": 3,
       "select-solto": 3,
       "texto-escala": 9
-    },
-    "src/pages/gestor/FarmaciaGestor.tsx": {
-      "botao-solto": 1,
-      "cor-arbitraria": 5,
-      "data-local": 2,
-      "titulo-solto": 1
     },
     "src/pages/gestor/FerramentasUnidade.tsx": {
       "canto": 1,
