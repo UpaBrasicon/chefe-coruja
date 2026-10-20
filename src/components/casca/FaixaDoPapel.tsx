@@ -7,6 +7,7 @@ import { formatarDuracao, nivelDoTurno } from '@/domain/plantao'
 import { FaixaParametros, Parametro, type Nivel } from '@/components/monitor/Parametros'
 import { LIMITES_PADRAO } from '@/lib/limitesUnidade'
 import type { Papel } from '@/types/database'
+import { data, hora } from '@/lib/formato'
 
 // Faixa de parâmetros dos papéis que a mantêm (P/index.html 32208–32218 e
 // 33383–33430): farmacêutico, administrador e telemedicina, só na página
@@ -184,8 +185,7 @@ function FaixaTelemedicina({ unidadeId }: { unidadeId: string }) {
   const urgentes = abertas.filter((t) => t.urgencia === 'urgente').length
   const maisAntiga = d && abertas.length ? Math.max(...abertas.map((t) => minutosDesde(t.criada_em, d.agora))) : null
   const comigo = teles.filter((t) => t.status === 'em_atendimento' && t.minha).length
-  const hojeBr = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-  const respondidas = d ? teles.filter((t) => t.status === 'respondida' && t.minha && t.respondida_em && hojeBr(t.respondida_em) === hojeBr(d.agora.toISOString())).length : 0
+  const respondidas = d ? teles.filter((t) => t.status === 'respondida' && t.minha && t.respondida_em && data(t.respondida_em) === data(d.agora)).length : 0
   const fim = d?.plantao ? new Date(d.plantao.fim) : null
   const restante = d && fim ? Math.max(0, Math.round((fim.getTime() - d.agora.getTime()) / 60_000)) : null
   const duracao = d?.plantao ? Math.round((Date.parse(d.plantao.fim) - Date.parse(d.plantao.inicio)) / 60_000) : null
@@ -205,7 +205,7 @@ function FaixaTelemedicina({ unidadeId }: { unidadeId: string }) {
       <Parametro
         grandeza="turno" icone={Clock} rotulo="Tempo restante do plantão"
         valor={restante === null ? '—' : formatarDuracao(restante)}
-        estado={d?.plantao ? `Relógio do servidor · até ${fim!.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}` : 'Sem plantão remoto na escala agora'}
+        estado={d?.plantao ? `Relógio do servidor · até ${hora(fim!)}` : 'Sem plantão remoto na escala agora'}
         nivel={restante === null ? 'ok' : nivelDoTurno(restante)}
         pct={restante !== null && duracao ? 1 - restante / duracao : undefined}
       />

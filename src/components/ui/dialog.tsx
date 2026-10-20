@@ -26,7 +26,7 @@ function DialogOverlay({ className, ...props }: React.ComponentProps<typeof Dial
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-[rgba(15,23,42,0.42)] duration-150 data-open:animate-cc-scrim data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 isolate z-50 bg-veu-dialogo duration-150 data-open:animate-cc-scrim data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}

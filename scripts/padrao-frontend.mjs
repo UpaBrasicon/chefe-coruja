@@ -45,6 +45,9 @@ export const REGRAS = {
 // Onde a peça de base pode usar o elemento nativo (guia 3.1, 3.2, 3.3 e 4.1).
 const BASE_DE_COMPONENTES = ['src/components/ui/', 'src/components/monitor/', 'src/components/TabsPagina.tsx']
 const ELEMENTOS = { button: 'botao-solto', select: 'select-solto', table: 'tabela-solta', h1: 'titulo-solto', h2: 'titulo-solto' }
+// A casca (lateral, topo, menus) é peça de base para o <button>: os botões são a
+// própria navegação (decisão do RT "2a" na parte 4.3).
+const BASE_DO_BOTAO = [...BASE_DE_COMPONENTES, 'src/components/casca/', 'src/components/AppShell.tsx']
 
 // Roteadores: montam as rotas e as ferramentas sob demanda, por isso importam telas.
 const ROTEADORES = ['src/App.tsx', 'src/main.tsx', 'src/content/registry.tsx', 'src/content/plantaoRegistry.tsx']
@@ -210,7 +213,8 @@ export function analisar(arquivo, texto) {
       case ts.SyntaxKind.JsxOpeningElement:
       case ts.SyntaxKind.JsxSelfClosingElement: {
         const nome = no.tagName.getText(sf)
-        if (ELEMENTOS[nome] && !naBase) anotar(ELEMENTOS[nome], no.getStart(sf), `<${nome}>`)
+        const base = nome === 'button' ? dentro(arquivo, BASE_DO_BOTAO) : naBase
+        if (ELEMENTOS[nome] && !base) anotar(ELEMENTOS[nome], no.getStart(sf), `<${nome}>`)
         break
       }
       case ts.SyntaxKind.ImportDeclaration:

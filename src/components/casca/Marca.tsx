@@ -9,8 +9,8 @@ export function Marca({ papel, tamanho = 34, className }: { papel?: string; tama
     <span className={cn('flex min-w-0 items-center gap-2.5', className)}>
       <span
         className={cn(
-          'grid shrink-0 place-items-center bg-marca text-white',
-          tamanho === 34 ? 'size-[34px] rounded-controle' : 'size-[30px] rounded-controle-sm',
+          'grid shrink-0 place-items-center bg-marca text-white', // padrao-ok: coruja branca sobre o quadrado da marca (identidade)
+          tamanho === 34 ? 'size-[34px] rounded-controle' : 'size-[30px] rounded-controle',
         )}
         aria-hidden
       >

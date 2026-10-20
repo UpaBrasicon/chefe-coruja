@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { useAvisosFlutuantes } from '@/contexts/AvisosFlutuantesContext'
 import type { StatusPlantao } from '@/hooks/usePlantao'
+import { hora } from '@/lib/formato'
 
 // Fim do plantão (decisão do RT 03/10/2026). A partir do fim do turno há 20 min
 // de tolerância para terminar o que está em curso — essa tolerância é do
@@ -46,7 +47,7 @@ export function useSessaoPosPlantao(status: StatusPlantao, entraPorEscala: boole
       const agora = Date.now()
       const fimTurno = fimTolerancia - 20 * 60_000
       if (agora < fimTurno) return
-      const fechaEm = new Date(fimTolerancia).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
+      const fechaEm = hora(fimTolerancia)
       if (!avisouFim.current) {
         avisouFim.current = true
         avisar({
@@ -61,7 +62,7 @@ export function useSessaoPosPlantao(status: StatusPlantao, entraPorEscala: boole
         avisouQuase.current = true
         avisar({
           tag: 'Sessão',
-          cor: '#B45309',
+          cor: 'var(--color-observacao)',
           icone: Clock,
           quando: 'agora',
           titulo: 'A sessão fecha em instantes',

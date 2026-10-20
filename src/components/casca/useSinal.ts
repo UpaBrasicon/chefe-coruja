@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
+import { hora } from '@/lib/formato'
 
 // O sinal da rede (P/index.html ~33512, fita cinza sob a topbar). Um monitor
 // que mostra número sem dizer de quando ele é está mentindo: no hospital o
@@ -16,7 +17,7 @@ export type Sinal =
   | { estado: 'sem-sinal'; desde: Date; ultimaLeitura: Date | null; tentativa: string | null }
   | { estado: 'dado-velho'; idadeMin: number }
 
-export const hm = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
+export const hm = (d: Date) => hora(d)
 
 const LEITURA_MIN_MS = 15_000
 

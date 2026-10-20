@@ -22,7 +22,7 @@ function Pilula({ rotulo, titulo, icone: Icone, onClick, ativo }: { rotulo: stri
       aria-label={titulo}
       aria-pressed={ativo}
       className={cn(
-        'flex h-8 items-center gap-1.5 rounded-capsula border px-[11px] text-apoio whitespace-nowrap transition-colors hover:border-[#94A3B8]',
+        'flex h-8 items-center gap-1.5 rounded-capsula border px-[11px] text-apoio whitespace-nowrap transition-colors hover:border-fio-forte',
         ativo ? 'border-acao/35 bg-acao/10 text-acao' : 'border-fio bg-superficie text-tinta-sussurro',
       )}
     >
@@ -125,7 +125,7 @@ export function TopoEstreito({
           title={plantao.rotulo}
           className={cn(
             'flex h-[38px] items-center gap-1.5 rounded-capsula border px-3 text-apoio font-medium tabular',
-            plantao.em ? 'border-conforme/30 bg-conforme/[0.06] text-conforme' : 'border-fio bg-campo text-tinta-sussurro',
+            plantao.em ? 'border-conforme/30 bg-alerta-conforme text-conforme' : 'border-fio bg-campo text-tinta-sussurro',
           )}
         >
           <span className={cn('size-2 rounded-capsula', plantao.em ? 'bg-conforme' : 'bg-fio-forte')} aria-hidden />
@@ -155,7 +155,7 @@ export function TopoEstreito({
               <Icone className="size-[17px]" aria-hidden />
               <span className="flex max-w-full min-w-0 items-center gap-[5px]">
                 <span className="truncate">{a.rotulo}</span>
-                {!!nota && <span className="rounded-capsula bg-[#F59E0B24] px-[5px] text-[11px] font-semibold text-atencao">{nota}</span>}
+                {!!nota && <span className="rounded-capsula bg-nota px-[5px] text-rotulo font-semibold text-atencao">{nota}</span>}
               </span>
             </NavLink>
           )
@@ -191,7 +191,7 @@ export function FitaDoSinal({ sinal, onTentar }: { sinal: Sinal; onTentar: () =>
         type="button"
         onClick={onTentar}
         disabled={sinal.estado === 'atualizando'}
-        className="ml-auto flex items-center gap-[5px] rounded-[8px] border border-fio bg-superficie px-2.5 py-1 text-rotulo font-medium whitespace-nowrap text-tinta-apoio hover:border-[#94A3B8] hover:text-tinta disabled:opacity-45"
+        className="ml-auto flex items-center gap-[5px] rounded-controle border border-fio bg-superficie px-2.5 py-1 text-rotulo font-medium whitespace-nowrap text-tinta-apoio hover:border-fio-forte hover:text-tinta disabled:opacity-45"
       >
         <Repeat className="size-3" aria-hidden />
         {cfg.acao}
