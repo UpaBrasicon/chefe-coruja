@@ -42,7 +42,7 @@ export default function LiberacaoRede() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base"><Network className="size-4" aria-hidden /> Acesso dos papéis de rede</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-corpo"><Network className="size-4" aria-hidden /> Acesso dos papéis de rede</CardTitle>
         <CardDescription>
           Secretaria (só números), Regulação regional (pedidos de regulação, só leitura, com acesso registrado) e Faturamento da secretaria
           (produção e arquivos fechados). Você decide se esta unidade entra; pode retirar quando quiser.

@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileText, Loader2, Paperclip } from 'lucide-react'
 import * as React from 'react'
 
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { fmtDataHora } from '@/lib/datas'
@@ -89,7 +90,7 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
   if (lista.error) return <p className="text-rotulo text-critico">{(lista.error as Error).message}</p>
   const l = lista.data!
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-fio bg-superficie p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3">
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos ({total})</span>
         {l.retirados > 0 && <span className="text-rotulo text-tinta-sussurro">{l.retirados} retirado(s), guardado(s)</span>}
@@ -112,9 +113,9 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
         <ul className="flex flex-col gap-1">
           {l.anexos.map((a) => (
             <li key={a.id} className="flex flex-wrap items-center gap-2">
-              <button type="button" className="text-acao underline-offset-2 hover:underline" onClick={() => void abrir(a)}>
-                {a.tipo === 'documento' ? '📄 ' : ''}{a.nome}
-              </button>
+              <Button variant="link" className="h-auto min-h-0 p-0 text-corpo underline-offset-2" onClick={() => void abrir(a)}>
+                {a.tipo === 'documento' && <FileText className="size-3.5" aria-hidden />}{a.nome}
+              </Button>
               <span className="text-rotulo text-tinta-sussurro">{kb(a.tamanho)} · {a.enviado_por ?? '—'} · {fmtDataHora(a.enviado_em)}</span>
               {l.pode_anexar && retirando !== a.id && (
                 <Button size="xs" variant="ghost" className="ml-auto" onClick={() => { setRetirando(a.id); setMotivo('') }}>Retirar</Button>
@@ -131,7 +132,7 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
         </ul>
       )}
       {aberto && (
-        <div className="rounded-md border border-fio bg-campo p-3">
+        <div className="rounded-controle border border-fio bg-campo p-3">
           <div className="mb-1 flex items-center gap-2">
             <span className="font-medium text-tinta">{aberto.nome}</span>
             <span className="text-rotulo text-tinta-sussurro">{aberto.autor ?? '—'} · {fmtDataHora(aberto.emitido_em)}</span>
@@ -164,14 +165,14 @@ function EscolherDocumento({ solicitacaoId, aoFim }: { solicitacaoId: string; ao
   })
   if (docs.isLoading) return <Loader2 className="size-4 animate-spin" aria-label="Carregando documentos" />
   return (
-    <div className="flex flex-col gap-1 rounded-md border border-fio p-2">
+    <div className="flex flex-col gap-1 rounded-controle border border-fio p-2">
       {(docs.data ?? []).length === 0 ? <span className="text-rotulo text-tinta-sussurro">Nenhum documento emitido no prontuário deste paciente.</span> : (
         docs.data!.map((d) => (
-          <button key={d.id} type="button" className="flex flex-wrap items-center gap-2 rounded px-2 py-1 text-left hover:bg-campo"
+          <BotaoLinha key={d.id} variante="linha" className="flex-wrap items-center gap-2 rounded-controle border-0 px-2 py-1 hover:bg-campo"
             onClick={() => anexar.mutate(d.id)} disabled={anexar.isPending}>
             <span className="font-medium text-tinta">{d.tipo.replace(/_/g, ' ')}{d.numero ? ` nº ${d.numero}` : ''}</span>
             <span className="text-rotulo text-tinta-sussurro">versão {d.versao} · {d.autor ?? '—'} · {fmtDataHora(d.emitido_em)}</span>
-          </button>
+          </BotaoLinha>
         ))
       )}
       {anexar.error && <p role="alert" className="text-rotulo text-critico">{(anexar.error as Error).message}</p>}

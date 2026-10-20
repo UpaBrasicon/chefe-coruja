@@ -31,9 +31,9 @@ import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Abas } from '@/components/monitor/Pagina'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 
 type Aba = StatusApac | 'todas' | 'arquivo'
-const selectCls = 'h-9 rounded-controle border border-fio bg-campo px-2 text-apoio'
 
 export default function Apac() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
@@ -94,7 +94,7 @@ function CartaoApac({ a, unidade, regulador, faturamento }: { a: Apac; unidade: 
       <CardContent className="flex flex-col gap-2 pt-4 text-apoio">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium text-tinta">{a.paciente}</span>
-          <span className="text-xs text-tinta-sussurro">{a.nascimento ? `nasc. ${fmtData(a.nascimento)}` : ''} {a.sexo ?? ''}</span>
+          <span className="text-rotulo text-tinta-sussurro">{a.nascimento ? `nasc. ${fmtData(a.nascimento)}` : ''} {a.sexo ?? ''}</span>
           <Badge variant={a.status === 'autorizada' ? 'success' : a.status === 'solicitada' ? 'info' : 'secondary'} className="ml-auto">{STATUS_APAC[a.status]}</Badge>
         </div>
         <span>Procedimento: {codigoSigtapNaTela(a.procedimento)} · {a.procedimento_nome ?? '—'}</span>
@@ -104,8 +104,8 @@ function CartaoApac({ a, unidade, regulador, faturamento }: { a: Apac; unidade: 
         </span>
         {a.justificativa?.justificativa && <span className="text-tinta-apoio">Justificativa: {a.justificativa.justificativa}</span>}
         {a.justificativa?.exames && <span className="text-tinta-apoio">Exames: {a.justificativa.exames}</span>}
-        {a.criticas.filter((c) => !c.bloqueante).map((c, i) => <span key={i} className="text-xs text-atencao">Aviso: {c.texto}</span>)}
-        <span className="text-xs text-tinta-sussurro">
+        {a.criticas.filter((c) => !c.bloqueante).map((c, i) => <span key={i} className="text-rotulo text-atencao">Aviso: {c.texto}</span>)}
+        <span className="text-rotulo text-tinta-sussurro">
           Solicitada por {a.solicitada_por ?? '—'}, {fmtDataHora(a.solicitada_em)}
           {a.decidida_em && <> · decidida por {a.decidida_por ?? '—'}, {fmtDataHora(a.decidida_em)}</>}
         </span>
@@ -132,7 +132,7 @@ function CartaoApac({ a, unidade, regulador, faturamento }: { a: Apac; unidade: 
         {(acao === 'rejeitar' || acao === 'cancelar') && <ComMotivo a={a} tipo={acao} fechar={() => setAcao(null)} aoMudar={invalidar} />}
         {acao === 'execucao' && <Execucao a={a} unidade={unidade} fechar={() => setAcao(null)} aoMudar={invalidar} />}
         {hist && (eventos.isLoading ? <Spinner /> : (
-          <ul className="flex flex-col gap-0.5 text-xs text-tinta-apoio">
+          <ul className="flex flex-col gap-0.5 text-rotulo text-tinta-apoio">
             {(eventos.data ?? []).map((ev, i) => (
               <li key={i}>{EVENTO_APAC[ev.evento] ?? ev.evento} · {ev.por ?? '—'}, {fmtDataHora(ev.em)}{ev.motivo ? ` — “${ev.motivo}”` : ''}</li>
             ))}
@@ -158,18 +158,18 @@ function Autorizar({ a, fechar, aoMudar }: { a: Apac; fechar: () => void; aoMuda
     onSuccess: () => { fechar(); aoMudar() },
   })
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-fio p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
       <div className="grid gap-2 sm:grid-cols-3">
         <div className="flex flex-col gap-1">
-          <Label htmlFor={`apac-num-${a.id}`} className="text-xs">Número da APAC (13 dígitos)</Label>
+          <Label htmlFor={`apac-num-${a.id}`} className="text-rotulo">Número da APAC (13 dígitos)</Label>
           <Input id={`apac-num-${a.id}`} className="h-8" inputMode="numeric" value={numero} onChange={(e) => setNumero(e.target.value)} />
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor={`apac-ini-${a.id}`} className="text-xs">Validade: início</Label>
+          <Label htmlFor={`apac-ini-${a.id}`} className="text-rotulo">Validade: início</Label>
           <Input id={`apac-ini-${a.id}`} className="h-8" type="date" value={ini} onChange={(e) => setIni(e.target.value)} />
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor={`apac-fim-${a.id}`} className="text-xs">Validade: fim</Label>
+          <Label htmlFor={`apac-fim-${a.id}`} className="text-rotulo">Validade: fim</Label>
           <Input id={`apac-fim-${a.id}`} className="h-8" type="date" value={fim} onChange={(e) => setFim(e.target.value)} />
         </div>
       </div>
@@ -195,13 +195,13 @@ function ComMotivo({ a, tipo, fechar, aoMudar }: { a: Apac; tipo: 'rejeitar' | '
     onSuccess: () => { fechar(); aoMudar() },
   })
   return (
-    <div className="flex flex-wrap gap-2 rounded-md border border-fio p-3">
+    <div className="flex flex-wrap gap-2 rounded-controle border border-fio p-3">
       <Input className="h-8 flex-1" placeholder="Motivo (mínimo de 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
       <Button size="sm" variant="destructive" disabled={motivo.trim().length < 10 || m.isPending} onClick={() => m.mutate()}>
         {tipo === 'rejeitar' ? 'Rejeitar' : 'Cancelar APAC'}
       </Button>
       <Button size="sm" variant="ghost" onClick={fechar}>Voltar</Button>
-      {m.error && <span role="alert" className="basis-full text-xs text-critico">{(m.error as Error).message}</span>}
+      {m.error && <span role="alert" className="basis-full text-rotulo text-critico">{(m.error as Error).message}</span>}
     </div>
   )
 }
@@ -236,36 +236,36 @@ function Execucao({ a, unidade, fechar, aoMudar }: { a: Apac; unidade: string; f
   const ok = comp && /^\d{2}$/.test(tipoAt) && /^\d{2}$/.test(motivo) && exec
     && procs.every((p) => /^\d{10}$/.test(p.procedimento.replace(/\D/g, '')) && Number(p.quantidade) >= 1)
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-fio p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
       <div className="grid gap-2 sm:grid-cols-4">
         <div className="flex flex-col gap-1">
-          <Label htmlFor={`ex-comp-${a.id}`} className="text-xs">Competência</Label>
-          <select id={`ex-comp-${a.id}`} className={selectCls} value={comp} onChange={(e) => setComp(e.target.value)}>
+          <Label htmlFor={`ex-comp-${a.id}`} className="text-rotulo">Competência</Label>
+          <CampoSelecao id={`ex-comp-${a.id}`} value={comp} onChange={(e) => setComp(e.target.value)}>
             {comps.map((c) => <option key={c} value={c}>{competenciaNaTela(c)}</option>)}
-          </select>
+          </CampoSelecao>
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor={`ex-tipo-${a.id}`} className="text-xs">Tipo de atendimento (código)</Label>
+          <Label htmlFor={`ex-tipo-${a.id}`} className="text-rotulo">Tipo de atendimento (código)</Label>
           <Input id={`ex-tipo-${a.id}`} className="h-8" maxLength={2} inputMode="numeric" placeholder="2 dígitos" value={tipoAt} onChange={(e) => setTipoAt(e.target.value)} />
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor={`ex-mot-${a.id}`} className="text-xs">Motivo de saída (Port. SAS 719/2007)</Label>
+          <Label htmlFor={`ex-mot-${a.id}`} className="text-rotulo">Motivo de saída (Port. SAS 719/2007)</Label>
           <Input id={`ex-mot-${a.id}`} className="h-8" maxLength={2} inputMode="numeric" placeholder="2 dígitos" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor={`ex-data-${a.id}`} className="text-xs">Data da alta/óbito/transferência</Label>
+          <Label htmlFor={`ex-data-${a.id}`} className="text-rotulo">Data da alta/óbito/transferência</Label>
           <Input id={`ex-data-${a.id}`} className="h-8" type="date" value={data} onChange={(e) => setData(e.target.value)} />
         </div>
       </div>
       <div className="flex flex-col gap-1">
-        <Label htmlFor={`ex-prof-${a.id}`} className="text-xs">Executante</Label>
-        <select id={`ex-prof-${a.id}`} className={selectCls} value={exec} onChange={(e) => setExec(e.target.value)}>
+        <Label htmlFor={`ex-prof-${a.id}`} className="text-rotulo">Executante</Label>
+        <CampoSelecao id={`ex-prof-${a.id}`} value={exec} onChange={(e) => setExec(e.target.value)}>
           <option value="">Escolha…</option>
           {(profissionais.data ?? []).map((p) => <option key={p.id} value={p.id}>{p.nome}{p.cbo ? ` · CBO ${p.cbo}` : ' · sem CBO'}{p.cns_ok ? '' : ' · sem CNS'}</option>)}
-        </select>
+        </CampoSelecao>
       </div>
       <div className="flex flex-col gap-1">
-        <span className="text-xs text-tinta-apoio">Procedimentos (o principal é obrigatório; secundários de APAC no SIGTAP)</span>
+        <span className="text-rotulo text-tinta-apoio">Procedimentos (o principal é obrigatório; secundários de APAC no SIGTAP)</span>
         {procs.map((p, i) => (
           <div key={i} className="flex flex-wrap gap-2">
             <Input className="h-8 w-40" placeholder="Código SIGTAP" disabled={i === 0} value={i === 0 ? codigoSigtapNaTela(p.procedimento) : p.procedimento}
@@ -297,7 +297,7 @@ function LinhaExecucao({ e, podeCancelar, aoMudar }: { e: Apac['execucoes'][numb
     onSuccess: () => { setAbrindo(false); aoMudar() },
   })
   return (
-    <li className="flex flex-col gap-1 rounded-md border border-fio px-2.5 py-1.5 text-xs">
+    <li className="flex flex-col gap-1 rounded-controle border border-fio px-2.5 py-1.5 text-rotulo">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-tinta">Execução {competenciaNaTela(e.competencia)}</span>
         <span className="text-tinta-sussurro">
@@ -395,7 +395,7 @@ function AbaArquivo({ unidade }: { unidade: string }) {
       {conf.isLoading ? <Spinner /> : conf.error ? <MensagemErro texto={(conf.error as Error).message} /> : c && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Competência {competenciaNaTela(comp)}</CardTitle>
+            <CardTitle className="text-corpo">Competência {competenciaNaTela(comp)}</CardTitle>
             <CardDescription>
               Entram as APAC autorizadas com execução registrada nesta competência. APAC com falta de cadastro fica fora até corrigir.
             </CardDescription>
@@ -404,9 +404,9 @@ function AbaArquivo({ unidade }: { unidade: string }) {
             {bloqueios.map((g) => <span key={g.codigo} className="text-critico">Impede o fechamento: {g.texto}</span>)}
             <span>{c.linhas.length} APAC com execução · {prontas} prontas · {c.linhas.length - prontas} com crítica</span>
             {c.linhas.filter((l) => l.criticas.length > 0).map((l) => (
-              <div key={l.execucao_id} className="flex flex-col rounded-md border border-fio px-2.5 py-1.5">
+              <div key={l.execucao_id} className="flex flex-col rounded-controle border border-fio px-2.5 py-1.5">
                 <span className="text-tinta">{l.paciente} · APAC {l.numero}</span>
-                {l.criticas.map((k) => <span key={k.codigo} className="text-xs text-critico">{k.texto}</span>)}
+                {l.criticas.map((k) => <span key={k.codigo} className="text-rotulo text-critico">{k.texto}</span>)}
               </div>
             ))}
             {c.fechamento && (
@@ -437,10 +437,10 @@ function AbaArquivo({ unidade }: { unidade: string }) {
         <div className="flex flex-col gap-1.5">
           <span className="text-apoio font-medium text-tinta">Histórico</span>
           {(hist.data ?? []).map((f) => (
-            <div key={f.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-fio px-3 py-2 text-apoio">
+            <div key={f.id} className="flex flex-wrap items-center gap-2 rounded-controle border border-fio px-3 py-2 text-apoio">
               <span className="font-medium text-tinta">{competenciaNaTela(f.competencia)}</span>
               <Badge variant={f.situacao === 'fechada' ? 'success' : 'secondary'}>{f.situacao}</Badge>
-              <span className="text-xs text-tinta-sussurro">
+              <span className="text-rotulo text-tinta-sussurro">
                 {f.apacs} APAC · controle {f.controle} · {f.excluidas} fora por crítica · fechada por {f.fechado_por ?? '—'} em {fmtDataHora(f.fechado_em)}
                 {f.reaberto_em && <> · reaberta: “{f.motivo_reabertura}”</>}
               </span>

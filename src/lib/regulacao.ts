@@ -5,6 +5,8 @@
 // novo (migration 20261107000001_regulacao_solicitacao.sql). Todo pedido
 // guarda os campos do MIRA (Portaria GM/MS 9.262/2025).
 
+import { hora as horaBr } from './formato.ts'
+
 export type TipoSolicitacao = 'consulta' | 'exame' | 'leito' | 'transferencia'
 export type Carater = 'eletivo' | 'urgencia'
 export type Prioridade = 'emergencia' | 'urgencia' | 'prioritaria' | 'eletiva' | 'nao_classificada'
@@ -322,7 +324,7 @@ export type AlertaSla = { texto: string; tom: 'critico' | 'atencao' | 'neutro' }
 export function alertasSla(sla: Sla | null | undefined, agoraMs: number): AlertaSla[] {
   if (!sla) return []
   const a: AlertaSla[] = []
-  const hora = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  const hora = (iso: string) => horaBr(iso)
   const fila = sla.fila
   if (fila.prazo_min != null) {
     const usado = `${formatarEspera(fila.central_seg)} de ${formatarEspera(fila.prazo_min * 60)}`

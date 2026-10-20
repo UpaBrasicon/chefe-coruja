@@ -14,6 +14,7 @@ import * as React from 'react'
 
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -61,7 +62,7 @@ export function HistoricoRegulacao({ pacienteId }: { pacienteId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base"><Waypoints className="size-4" aria-hidden /> Regulações</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-corpo"><Waypoints className="size-4" aria-hidden /> Regulações</CardTitle>
         <CardDescription>Pedidos à central de regulação, desta e das outras unidades da rede. Abrir um pedido fica registrado no acesso ao prontuário.</CardDescription>
       </CardHeader>
       <CardContent className="text-apoio">
@@ -70,7 +71,7 @@ export function HistoricoRegulacao({ pacienteId }: { pacienteId: string }) {
           <ul className="flex flex-col divide-y divide-fio">
             {lista.data!.map((r) => (
               <li key={r.id} className="py-2">
-                <button type="button" className="flex w-full flex-wrap items-center gap-2 text-left" onClick={() => setAberta(aberta === r.id ? null : r.id)}>
+                <BotaoLinha variante="linha" aria-expanded={aberta === r.id} className="flex-wrap items-center gap-2 border-0 p-0 hover:bg-transparent" onClick={() => setAberta(aberta === r.id ? null : r.id)}>
                   <span className="text-tinta-sussurro">{fmtDataHora(r.criada_em)}</span>
                   <Badge variant={TOM[PRIORIDADES[r.prioridade].tom]}>{PRIORIDADES[r.prioridade].rotulo}</Badge>
                   <span className="font-medium text-tinta">{resumoPedido(r)}</span>
@@ -79,7 +80,7 @@ export function HistoricoRegulacao({ pacienteId }: { pacienteId: string }) {
                   {r.destino && <span className="text-tinta-apoio">→ {r.destino}</span>}
                   <Badge variant="info" className="ml-auto">{STATUS[r.status]}</Badge>
                   <span className="text-tinta-sussurro">nº {r.numero}</span>
-                </button>
+                </BotaoLinha>
                 {aberta === r.id && <Detalhe pacienteId={pacienteId} id={r.id} />}
               </li>
             ))}
@@ -109,7 +110,7 @@ function Detalhe({ pacienteId, id }: { pacienteId: string; id: string }) {
   if (d.error || !d.data) return <p className="text-critico">{d.error ? (d.error as Error).message : 'Não encontrado.'}</p>
   const s = d.data
   return (
-    <dl className="mt-2 flex flex-col gap-1 rounded-md border border-fio bg-campo p-3 text-tinta">
+    <dl className="mt-2 flex flex-col gap-1 rounded-controle border border-fio bg-campo p-3 text-tinta">
       {s.outra_unidade && <p className="text-rotulo text-tinta-sussurro">Pedido de outra unidade da rede; o acesso ficou registrado nela.</p>}
       <Linha rotulo="CID" valor={`${s.cid} ${s.cid_descricao ?? ''}`} />
       {s.tipo_leito && <Linha rotulo="Leito" valor={TIPOS_LEITO[s.tipo_leito] + (s.internacao_psiquiatrica ? ` · ${INTERNACAO_PSIQUIATRICA[s.internacao_psiquiatrica]}` : '')} />}
