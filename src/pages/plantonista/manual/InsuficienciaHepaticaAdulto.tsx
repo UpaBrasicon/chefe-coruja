@@ -84,7 +84,7 @@ export function InsuficienciaHepaticaAdulto() {
             <Marca rotulo="Bilirrubina > 17,5 mg/dL" marcado={k.bt} onChange={marca('bt')} />
           </div>
         )}
-        <p className="rounded-lg border p-3">
+        <p className="rounded-controle border p-3">
           {kings.preenchido ? <Badge variant="warning" className="mr-2">critério da Tabela 5 preenchido</Badge> : <Badge variant="outline" className="mr-2">não preenchido</Badge>}
           {kings.motivo}
         </p>

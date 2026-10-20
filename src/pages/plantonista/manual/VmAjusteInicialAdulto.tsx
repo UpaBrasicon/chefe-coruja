@@ -52,7 +52,7 @@ export function VmAjusteInicialAdulto() {
         <Escolha label="Modo" value={modo} onChange={setModo} opcoes={(['pcv', 'vcv', 'psv'] as Modo[]).map((m) => ({ value: m, label: NOME_MODO[m] }))} />
         <dl className="grid gap-2 sm:grid-cols-2">
           {TABELA2.map((l) => (
-            <div key={l.parametro} className="rounded-lg border px-3 py-2">
+            <div key={l.parametro} className="rounded-controle border px-3 py-2">
               <dt className="text-tinta-sussurro">{l.parametro}</dt>
               <dd>{l.modos[modo]}</dd>
             </div>

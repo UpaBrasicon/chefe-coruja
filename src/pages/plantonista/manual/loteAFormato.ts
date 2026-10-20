@@ -1,7 +1,8 @@
+import { numero } from '@/lib/formato'
 // Formatação comum das telas do lote A (eletrólitos e acidobase).
 
 export const br = (x: number | null | undefined, casas = 1) =>
-  x === null || x === undefined || !Number.isFinite(x) ? '—' : (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+  x === null || x === undefined || !Number.isFinite(x) ? '—' : numero(Math.round(x * 10 ** casas) / 10 ** casas)
 
 export const faixaBr = (f: [number, number] | null | undefined, casas = 1) =>
   !f ? '—' : f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`

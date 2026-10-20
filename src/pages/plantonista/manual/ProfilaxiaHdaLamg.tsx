@@ -7,11 +7,12 @@ import {
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 
-import { Bloco, LinhaManual } from './PecasLoteC'
+import { Bloco, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
 
 function Marca({ rotulo, marcado, onChange }: { rotulo: string; marcado: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm hover:bg-trilha/50">
+    <label className="flex cursor-pointer items-center gap-2 rounded-controle border px-2.5 py-1.5 text-apoio hover:bg-trilha/50">
       <input type="checkbox" className="size-4" checked={marcado} onChange={(e) => onChange(e.target.checked)} />
       {rotulo}
     </label>
@@ -42,16 +43,16 @@ export function ProfilaxiaHdaLamg() {
 
       <Bloco titulo="IBP na dupla antiagregação plaquetária" descricao={`${IBP_DUPLA_ANTIAGREGACAO.texto}: ${IBP_DUPLA_ANTIAGREGACAO.droga} (${IBP_DUPLA_ANTIAGREGACAO.pagina}).`}>
         <Marca rotulo="Em uso de dupla antiagregação plaquetária" marcado={dupla} onChange={setDupla} />
-        <p className="pt-1 text-sm font-semibold">Qualquer um destes</p>
+        <p className="pt-1 text-apoio font-semibold">Qualquer um destes</p>
         <div className="grid gap-1.5 sm:grid-cols-2">
           {CRITERIOS_ISOLADOS.map((c) => <Marca key={c.id} rotulo={c.rotulo} marcado={isolados.includes(c.id)} onChange={(v) => setIsolados((x) => alternar(x, c.id, v))} />)}
         </div>
-        <p className="pt-1 text-sm font-semibold">Dois dos seguintes</p>
+        <p className="pt-1 text-apoio font-semibold">Dois dos seguintes</p>
         <div className="grid gap-1.5 sm:grid-cols-2">
           {CRITERIOS_PAREADOS.map((c) => <Marca key={c.id} rotulo={c.rotulo} marcado={pareados.includes(c.id)} onChange={(v) => setPareados((x) => alternar(x, c.id, v))} />)}
           <Marca rotulo="Uso de álcool (ver errata)" marcado={alcool} onChange={setAlcool} />
         </div>
-        <div className="rounded-lg border p-3 text-sm">
+        <div className="rounded-controle border p-3 text-apoio">
           {r.semDuplaAntiagregacao ? (
             <p className="text-tinta-sussurro">O critério da p. 208 vale para quem usa dupla antiagregação.</p>
           ) : r.criterioPresente ? (
@@ -60,18 +61,18 @@ export function ProfilaxiaHdaLamg() {
             <p className="text-tinta-sussurro">Nenhum critério da p. 208 marcado{r.alcoolAmbiguo ? ' (o álcool não é somado; ver errata)' : ''}.</p>
           )}
         </div>
-        <p className="text-sm text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_ALCOOL}</p>
-        <p className="text-sm text-tinta-sussurro">{NOTA_IAM_SUPRA}</p>
+        <p className="text-apoio text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_ALCOOL}</p>
+        <p className="text-apoio text-tinta-sussurro">{NOTA_IAM_SUPRA}</p>
       </Bloco>
 
       <Bloco titulo="REVISE (NEJM 2024) e SCCM/ASHP 2024 — ao lado do manual" descricao="Ensaio e diretriz conferidos pelos resumos. O manual continua sendo a base do critério mostrado acima.">
-        <LinhaManual nome="REVISE" texto={`${REVISE.droga}. ${REVISE.texto}`} pagina="NEJM 2024;391:9–20" conta={<>sangramento importante <strong>{REVISE.sangramentoPct[0].toLocaleString('pt-BR')}% × {REVISE.sangramentoPct[1].toLocaleString('pt-BR')}%</strong> · morte em 90 d {REVISE.mortalidade90Pct[0].toLocaleString('pt-BR')}% × {REVISE.mortalidade90Pct[1].toLocaleString('pt-BR')}%</>} />
-        <ul className="list-disc pl-5 text-sm">{SCCM_ASHP_ITENS.map((i) => <li key={i}>{i} <span className="text-tinta-sussurro">(SCCM/ASHP 2024)</span></li>)}</ul>
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_ULCERA_2024.map((d) => <li key={d}>{d}</li>)}</ul>
+        <LinhaManual nome="REVISE" texto={`${REVISE.droga}. ${REVISE.texto}`} pagina="NEJM 2024;391:9–20" conta={<>sangramento importante <strong>{numero(REVISE.sangramentoPct[0])}% × {numero(REVISE.sangramentoPct[1])}%</strong> · morte em 90 d {numero(REVISE.mortalidade90Pct[0])}% × {numero(REVISE.mortalidade90Pct[1])}%</>} />
+        <ul className="list-disc pl-5 text-apoio">{SCCM_ASHP_ITENS.map((i) => <li key={i}>{i} <span className="text-tinta-sussurro">(SCCM/ASHP 2024)</span></li>)}</ul>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_ULCERA_2024.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="O que o manual não traz">
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">
           {FORA_DO_LIVRO_ULCERA.map((x) => <li key={x}>{x}</li>)}
         </ul>
       </Bloco>

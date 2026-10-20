@@ -8,7 +8,8 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Escolhas, ListaLivro } from './PecasLoteE7'
-import { br } from './loteE7Formato'
+import { br } from './loteE7Formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Antibiótico da PAC por grupo (Tabela 10 do cap. 33 do manual do HCFMUSP). */
 export function PacAntibioticoAdulto() {
@@ -26,7 +27,7 @@ export function PacAntibioticoAdulto() {
       <Bloco titulo="Grupo de risco — Tabela 10 (p. 463–464)" descricao="O livro liga baixo risco a PORT I-II, intermediário a PORT III e alto a PORT IV-V (Tabela 5, p. 457).">
         <Escolhas valor={grupo} opcoes={PAC_ANTIBIOTICOS.map((x) => [x.grupo, x.nome] as const)} onChange={setGrupo} />
         {g.opcoes.map((o, i) => <LinhaManual key={o} nome={`Opção ${i + 1}`} texto={o} pagina="p. 463" />)}
-        <p className="text-sm text-tinta-sussurro">{NOTA_CLARITROMICINA}</p>
+        <p className="text-apoio text-tinta-sussurro">{NOTA_CLARITROMICINA}</p>
         <ListaLivro itens={DURACAO_PAC.map((d) => ({ texto: `${d.grupo}: ${d.texto}`, pagina: d.pagina }))} />
       </Bloco>
 
@@ -35,7 +36,7 @@ export function PacAntibioticoAdulto() {
       </Bloco>
 
       <Bloco titulo="Fatores de risco para Pseudomonas — Tabela 8 (p. 461–462)">
-        <ul className="list-disc pl-5 text-sm">{FATORES_PSEUDOMONAS.map((f) => <li key={f}>{f}</li>)}</ul>
+        <ul className="list-disc pl-5 text-apoio">{FATORES_PSEUDOMONAS.map((f) => <li key={f}>{f}</li>)}</ul>
       </Bloco>
 
       <CampoPeso id="pac-peso" peso={peso} onChange={setPeso} />
@@ -50,27 +51,27 @@ export function PacAntibioticoAdulto() {
 
       <Bloco titulo="ATS 2026 × manual do HC" descricao="Diretriz da PAC (Am J Respir Crit Care Med 2026;212:24–44; on-line em nov/2025), lida pela página do periódico e pelo comunicado da ATS. Esquemas antimicrobianos não foram revisados por ela.">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">ATS 2026</th><th className="pr-3 pb-2">Força</th><th className="pb-2">Manual do HC</th></tr></thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ATS 2026</TableHead><TableHead className="pr-3 pb-2">Força</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>
               {DIRETRIZ_PAC_2026.map((d) => (
-                <tr key={d.tema} className="border-t">
-                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
-                  <td className="pr-3 py-2">{d.ats}</td>
-                  <td className="pr-3 py-2 text-tinta-sussurro">{d.forca}</td>
-                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
-                </tr>
+                <TableRow key={d.tema} className="border-t">
+                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                  <TableCell className="pr-3 py-2">{d.ats}</TableCell>
+                  <TableCell className="pr-3 py-2 text-tinta-sussurro">{d.forca}</TableCell>
+                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
-        <p role="note" className="rounded-md border border-atencao/40 bg-atencao/[0.08] px-3 py-2 text-sm text-atencao">{EVIDENCIA_CORTICOIDE_PAC}</p>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{EVIDENCIA_CORTICOIDE_PAC}</p>
       </Bloco>
 
       <Bloco titulo="Procalcitonina e alta (p. 452, 464–465)">
         <ListaLivro itens={PROCALCITONINA_PAC} />
-        <p className="text-sm font-medium">Sinais vitais estáveis por 24 horas e demais critérios de alta</p>
-        <ul className="list-disc pl-5 text-sm">{CRITERIOS_ALTA_PAC.map((c) => <li key={c}>{c}</li>)}</ul>
+        <p className="text-apoio font-medium">Sinais vitais estáveis por 24 horas e demais critérios de alta</p>
+        <ul className="list-disc pl-5 text-apoio">{CRITERIOS_ALTA_PAC.map((c) => <li key={c}>{c}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

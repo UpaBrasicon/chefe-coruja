@@ -49,14 +49,14 @@ export function MarcaPassoProvisorioAdulto() {
         <div className="grid gap-3 md:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <NumberField id="mp-sens" label="Limiar de sensibilidade" unit="mV" value={limiarSens} onChange={setLimiarSens} min={0} step={0.1} />
-            <p className="text-sm tabular-nums">{sens !== null ? <>Programar <strong>{br(sens, 2)} mV</strong> (50% do limiar)</> : '—'}</p>
+            <p className="text-apoio tabular-nums">{sens !== null ? <>Programar <strong>{br(sens, 2)} mV</strong> (50% do limiar)</> : '—'}</p>
           </div>
           <div className="flex flex-col gap-1.5">
             <NumberField id="mp-cmd" label="Limiar de comando" unit="V ou mA" value={limiarCmd} onChange={setLimiarCmd} min={0} step={0.1} />
-            <p className="text-sm tabular-nums">{saida !== null ? <>Programar <strong>{br(saida, 1)}</strong> (2 × limiar + 1, na unidade do gerador)</> : '—'}</p>
+            <p className="text-apoio tabular-nums">{saida !== null ? <>Programar <strong>{br(saida, 1)}</strong> (2 × limiar + 1, na unidade do gerador)</> : '—'}</p>
           </div>
         </div>
-        <p className="text-sm text-tinta-sussurro">
+        <p className="text-apoio text-tinta-sussurro">
           Sensibilidade: frequência programada abaixo da intrínseca; começar no menor valor numérico (p. ex., 2 mV) e subir até o gerador assumir. Comando: frequência acima da do paciente; começar em 10 V ou 20 mA e descer até perder a captura. Transporte: saída máxima de 10 V ou 20 mA. Testar o limiar de comando 1 a 2 vezes ao dia (p. 1456–1457).
         </p>
       </Bloco>

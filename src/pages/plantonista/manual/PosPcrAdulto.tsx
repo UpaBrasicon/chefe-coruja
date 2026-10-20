@@ -79,7 +79,7 @@ export function PosPcrAdulto() {
           <Resultado rotulo={`No alvo de ${br(REAQUECIMENTO.alvoCh, 2)} °C/h`} valor={reaq ? `${br(reaq.horasNoAlvo)} h` : '—'} />
           <Resultado rotulo={`Mínimo sem passar de ${br(REAQUECIMENTO.maximoCh)} °C/h`} valor={reaq ? `${br(reaq.horasMinimas)} h` : '—'} />
         </div>
-        <p className="text-sm text-tinta-sussurro">
+        <p className="text-apoio text-tinta-sussurro">
           Reaquecimento após {REAQUECIMENTO.aposHorasHT} h de HT ({REAQUECIMENTO.pagina}). O livro não fixa a temperatura final no texto; 36 °C aparece na Tabela 3 (sangramento maior, p. 111).
           Livro: CT por pelo menos 24 h, idealmente 48 h após o RCE (p. 109). ERC-ESICM 2025: prevenção de febre por 36–72 h.
         </p>
@@ -115,7 +115,7 @@ export function PosPcrAdulto() {
             {j.atingida ? 'Na janela' : 'Fora da janela'}: {j.janela.texto} ({j.janela.pagina})
           </p>
         ))}
-        {PROGNOSTICO_TEXTO.map((t) => <p key={t} className="text-sm">{t}</p>)}
+        {PROGNOSTICO_TEXTO.map((t) => <p key={t} className="text-apoio">{t}</p>)}
         {MONITORIZACAO.map((m) => <Trecho key={m.texto} texto={m.texto} pagina={m.pagina} />)}
       </Bloco>
     </ToolLayout>

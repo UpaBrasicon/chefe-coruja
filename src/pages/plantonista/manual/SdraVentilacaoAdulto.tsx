@@ -8,7 +8,8 @@ import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Alertas, Bloco, Escolha, Resultado } from './LoteAPecas'
-import { br, faixaBr, informado } from './loteAFormato'
+import { br, faixaBr, informado } from './loteAFormato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const colunaTexto = (c: ColunaPeep) => `FiO2 ${faixaBr(c.fio2, 1)} → PEEP ${faixaBr(c.peep, 0)}`
 
@@ -17,12 +18,12 @@ function TabelaPeep({ id, destaque }: { id: TabelaPeepId; destaque: ColunaPeep[]
   return (
     <div className="overflow-x-auto">
       <p className="font-medium">{t.nome} <span className="text-tinta-sussurro">({t.pagina})</span></p>
-      <table className="text-xs tabular-nums">
-        <tbody>
-          <tr><th className="pr-2 text-left">FiO2</th>{t.colunas.map((c, i) => <td key={i} className={`border px-1.5 py-1 ${destaque.includes(c) ? 'bg-acao/15 font-semibold' : ''}`}>{faixaBr(c.fio2, 1).replace('–', '↔')}</td>)}</tr>
-          <tr><th className="pr-2 text-left">PEEP</th>{t.colunas.map((c, i) => <td key={i} className={`border px-1.5 py-1 ${destaque.includes(c) ? 'bg-acao/15 font-semibold' : ''}`}>{faixaBr(c.peep, 0).replace('–', '↔')}</td>)}</tr>
-        </tbody>
-      </table>
+      <Table variante="referencia" className="text-rotulo tabular-nums">
+        <TableBody>
+          <TableRow><TableHead className="pr-2 text-left">FiO2</TableHead>{t.colunas.map((c, i) => <TableCell key={i} className={`border px-1.5 py-1 ${destaque.includes(c) ? 'bg-acao/15 font-semibold' : ''}`}>{faixaBr(c.fio2, 1).replace('–', '↔')}</TableCell>)}</TableRow>
+          <TableRow><TableHead className="pr-2 text-left">PEEP</TableHead>{t.colunas.map((c, i) => <TableCell key={i} className={`border px-1.5 py-1 ${destaque.includes(c) ? 'bg-acao/15 font-semibold' : ''}`}>{faixaBr(c.peep, 0).replace('–', '↔')}</TableCell>)}</TableRow>
+        </TableBody>
+      </Table>
     </div>
   )
 }
@@ -81,7 +82,7 @@ export function SdraVentilacaoAdulto() {
           <Escolha label="Suporte respiratório" value={suporte} onChange={setSuporte} opcoes={[
             { value: 'vmi', label: 'Ventilação invasiva' }, { value: 'vni', label: 'VNI/CPAP ≥ 5 cmH2O' }, { value: 'cnaf30', label: 'CNAF ≥ 30 L/min' }, { value: 'o2', label: 'O2 convencional' }, { value: 'nenhum', label: 'Nenhum' },
           ]} />
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-4" checked={limitado} onChange={(e) => setLimitado(e.target.checked)} /> Recursos limitados (sem PEEP/fluxo exigidos)</label>
+          <label className="flex items-center gap-2 text-apoio"><input type="checkbox" className="size-4" checked={limitado} onChange={(e) => setLimitado(e.target.checked)} /> Recursos limitados (sem PEEP/fluxo exigidos)</label>
         </div>
         {sf !== null && <Resultado rotulo="S/F" valor={`${br(sf, 0)}`} />}
         {g24 ? (
@@ -136,19 +137,19 @@ export function SdraVentilacaoAdulto() {
 
       <Bloco titulo="ATS 2024, ESICM 2023 e definição global 2024 × manual do HC" descricao="Textos integrais lidos. Onde a ATS e a ESICM divergem (bloqueio neuromuscular), as duas aparecem.">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">Diretriz</th><th className="pr-3 pb-2">Força · fonte</th><th className="pb-2">Manual do HC</th></tr></thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Força · fonte</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>
               {DIRETRIZ_SDRA_2024.map((d) => (
-                <tr key={d.tema} className="border-t">
-                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
-                  <td className="pr-3 py-2">{d.diretriz}</td>
-                  <td className="pr-3 py-2 text-tinta-sussurro">{d.forca} · {d.fonte}</td>
-                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
-                </tr>
+                <TableRow key={d.tema} className="border-t">
+                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                  <TableCell className="pr-3 py-2">{d.diretriz}</TableCell>
+                  <TableCell className="pr-3 py-2 text-tinta-sussurro">{d.forca} · {d.fonte}</TableCell>
+                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </Bloco>
     </ToolLayout>

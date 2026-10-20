@@ -4,9 +4,11 @@ import { HNF_EV, NOMOGRAMA_TTPA, ajustarHnf, fichaHnfAdulto, inicioHnf, mlHDeUIH
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const comMl = (uiH: number, conc: number) => {
   const ml = mlHDeUIH(uiH, conc)
   return ml === null ? '' : ` = ${br(ml)} mL/h`
@@ -30,7 +32,7 @@ export function HeparinaNaoFracionadaAdulto() {
       <CampoPeso id="hnf-peso" peso={peso} onChange={setPeso}>
         <NumberField id="hnf-conc" label="Concentração do seu preparo (opcional)" unit="UI/mL" value={conc} onChange={setConc} min={0} />
       </CampoPeso>
-      <p className="text-sm text-tinta-sussurro">
+      <p className="text-apoio text-tinta-sussurro">
         O manual não traz diluição da heparina EV. O mL/h só aparece com a concentração do preparo informada acima.
       </p>
 
@@ -50,7 +52,7 @@ export function HeparinaNaoFracionadaAdulto() {
           <NumberField id="hnf-atual" label="Infusão atual" unit="UI/kg/h" value={atual} onChange={setAtual} min={0} step={0.5} />
         </div>
         {aj ? (
-          <div className="rounded-lg border px-3 py-2 text-sm tabular-nums">
+          <div className="rounded-controle border px-3 py-2 text-apoio tabular-nums">
             <p>Linha da tabela: <strong>{aj.linha.faixa}</strong></p>
             {aj.novoBolusUI !== null && <p>Novo bolus: <strong>{br(aj.novoBolusUI, 0)} UI</strong> ({aj.linha.novoBolusUIKg} UI/kg)</p>}
             {aj.linha.pararMin > 0 && <p>Parar a infusão por 1 hora.</p>}
@@ -59,20 +61,20 @@ export function HeparinaNaoFracionadaAdulto() {
               {' → '}<strong>{br(aj.novaInfusaoUIKgH)} UI/kg/h = {br(aj.novaInfusaoUIH, 0)} UI/h</strong>{comMl(aj.novaInfusaoUIH, conc)}
             </p>
           </div>
-        ) : <p className="text-sm text-tinta-sussurro">Informe peso e TTPA.</p>}
-        <table className="w-full text-sm">
-          <thead><tr className="text-left text-tinta-sussurro"><th>TTPA</th><th>Novo bolus</th><th>Ajustar infusão</th></tr></thead>
-          <tbody>
+        ) : <p className="text-apoio text-tinta-sussurro">Informe peso e TTPA.</p>}
+        <Table variante="referencia" className="w-full text-apoio">
+          <TableHeader><TableRow className="text-left text-tinta-sussurro"><TableHead>TTPA</TableHead><TableHead>Novo bolus</TableHead><TableHead>Ajustar infusão</TableHead></TableRow></TableHeader>
+          <TableBody>
             {NOMOGRAMA_TTPA.map((l) => (
-              <tr key={l.faixa} className={aj?.linha === l ? 'font-semibold' : undefined}>
-                <td>{l.faixa}</td>
-                <td>{l.novoBolusUIKg ? `${l.novoBolusUIKg} UI/kg` : l.pararMin ? 'Parar infusão por 1 hora' : '—'}</td>
-                <td>{l.deltaUIKgH === 0 ? 'Manter' : `${l.deltaUIKgH > 0 ? 'Aumentar' : 'Diminuir'} ${Math.abs(l.deltaUIKgH)} UI/kg/h`}</td>
-              </tr>
+              <TableRow key={l.faixa} className={aj?.linha === l ? 'font-semibold' : undefined}>
+                <TableCell>{l.faixa}</TableCell>
+                <TableCell>{l.novoBolusUIKg ? `${l.novoBolusUIKg} UI/kg` : l.pararMin ? 'Parar infusão por 1 hora' : '—'}</TableCell>
+                <TableCell>{l.deltaUIKgH === 0 ? 'Manter' : `${l.deltaUIKgH > 0 ? 'Aumentar' : 'Diminuir'} ${Math.abs(l.deltaUIKgH)} UI/kg/h`}</TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-        <p className="text-sm text-tinta-sussurro">
+          </TableBody>
+        </Table>
+        <p className="text-apoio text-tinta-sussurro">
           TTPA fracionado entre duas faixas (p. ex. 45,5 s) é lido pela faixa seguinte (46–70 s). O manual não traz o intervalo de coleta do TTPA nem dose máxima de bolus.
         </p>
       </Bloco>

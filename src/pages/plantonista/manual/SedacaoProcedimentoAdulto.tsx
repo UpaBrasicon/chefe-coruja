@@ -6,9 +6,10 @@ import {
 } from '@/clinico/adulto/sedacaoProcedimento'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
 
 function Droga({ d, peso, virgemOpioide }: { d: DrogaSap; peso: number; virgemOpioide: boolean }) {
@@ -37,12 +38,12 @@ export function SedacaoProcedimentoAdulto() {
       ficha={fichaSedacaoProcedimentoAdulto}
     >
       <CampoPeso id="sap-peso" peso={peso} onChange={setPeso}>
-        <label className="flex items-center gap-2 self-end text-sm">
+        <label className="flex items-center gap-2 self-end text-apoio">
           <input type="checkbox" className="size-4" checked={virgem} onChange={(e) => setVirgem(e.target.checked)} />
           Virgem de opioide (teto de 4 mg da morfina)
         </label>
       </CampoPeso>
-      <p className="text-sm text-tinta-sussurro">{RISCO_AUMENTADO_SAP} Em obesos, o livro manda usar o peso ideal no bolus de propofol e quetamina, sem dar a fórmula: informe o peso que será usado.</p>
+      <p className="text-apoio text-tinta-sussurro">{RISCO_AUMENTADO_SAP} Em obesos, o livro manda usar o peso ideal no bolus de propofol e quetamina, sem dar a fórmula: informe o peso que será usado.</p>
 
       <Bloco titulo="Drogas (Tabela 2, p. 161–166)" descricao="Doses do livro; o volume sai da concentração da apresentação citada.">
         {DROGAS_SAP.map((d) => <Droga key={d.id} d={d} peso={peso} virgemOpioide={virgem} />)}
@@ -62,20 +63,20 @@ export function SedacaoProcedimentoAdulto() {
       </Bloco>
 
       <Bloco titulo="Níveis de sedoanalgesia (Tabela 1, p. 156–158)" descricao="A sedação é contínua, sem marcos definitivos entre os níveis.">
-        <ul className="grid gap-1 text-sm md:grid-cols-2">
+        <ul className="grid gap-1 text-apoio md:grid-cols-2">
           {NIVEIS_SEDACAO.map((n) => (
-            <li key={n.nivel} className="rounded-lg border px-3 py-2"><span className="font-medium">{n.nivel}</span><br />{n.clinica}<br /><span className="text-tinta-sussurro">{n.via}</span></li>
+            <li key={n.nivel} className="rounded-controle border px-3 py-2"><span className="font-medium">{n.nivel}</span><br />{n.clinica}<br /><span className="text-tinta-sussurro">{n.via}</span></li>
           ))}
         </ul>
       </Bloco>
 
       <Bloco titulo="ASA, jejum e alta">
-        <ul className="flex flex-col gap-1 text-sm">
+        <ul className="flex flex-col gap-1 text-apoio">
           {ASA_SAP.map((a) => <li key={a.classe}><span className="font-medium">{a.classe}:</span> {a.texto} <span className="text-tinta-sussurro">({a.pagina})</span></li>)}
           <li><span className="font-medium">Jejum:</span> {JEJUM_SAP.texto} <span className="text-tinta-sussurro">({JEJUM_SAP.pagina})</span></li>
         </ul>
-        <p className="text-sm font-medium">Critérios de alta ({ALTA_SAP.pagina})</p>
-        <ul className="list-disc pl-5 text-sm">
+        <p className="text-apoio font-medium">Critérios de alta ({ALTA_SAP.pagina})</p>
+        <ul className="list-disc pl-5 text-apoio">
           {ALTA_SAP.criterios.map((c) => <li key={c}>{c}</li>)}
         </ul>
       </Bloco>

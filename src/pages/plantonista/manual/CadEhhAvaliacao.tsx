@@ -10,24 +10,25 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+import { Label } from '@/components/ui/label'
+import { numero } from '@/lib/formato'
 
-const br = (x: number | null | undefined, casas = 1) => (x === null || x === undefined ? '—' : (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR'))
+const br = (x: number | null | undefined, casas = 1) => (x === null || x === undefined ? '—' : numero(Math.round(x * 10 ** casas) / 10 ** casas))
 const sn = (b: boolean | null) => (b === null ? 'não informado' : b ? 'sim' : 'não')
 
 function Item({ rotulo, valor, detalhe }: { rotulo: string; valor: string; detalhe?: string }) {
   return (
-    <div className="rounded-lg border px-3 py-2">
-      <div className="text-xs text-tinta-sussurro">{rotulo}</div>
-      <div className="text-base font-semibold tabular-nums">{valor}</div>
-      {detalhe && <div className="text-xs text-tinta-sussurro">{detalhe}</div>}
+    <div className="rounded-controle border px-3 py-2">
+      <div className="text-rotulo text-tinta-sussurro">{rotulo}</div>
+      <div className="text-corpo font-semibold tabular-nums">{valor}</div>
+      {detalhe && <div className="text-rotulo text-tinta-sussurro">{detalhe}</div>}
     </div>
   )
 }
 
 function Errata({ children }: { children: string }) {
   return (
-    <p className="text-xs text-tinta-sussurro">
+    <p className="text-rotulo text-tinta-sussurro">
       <Badge variant="outline" className="mr-1">errata</Badge>
       {children}
     </p>
@@ -87,18 +88,18 @@ export function CadEhhAvaliacao() {
             </div>
           </div>
           <NumberField id="cad-bhb" label="β-hidroxibutirato (consenso 2024)" unit="mmol/L" value={bhb} onChange={setBhb} step={0.1} />
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-4" checked={dmPrevio} onChange={(e) => setDmPrevio(e.target.checked)} /> Diabetes prévio (consenso 2024)</label>
+          <label className="flex items-center gap-2 text-apoio"><input type="checkbox" className="size-4" checked={dmPrevio} onChange={(e) => setDmPrevio(e.target.checked)} /> Diabetes prévio (consenso 2024)</label>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Consenso ADA/EASD 2024 — critérios, gravidade e resolução</CardTitle>
+          <CardTitle className="text-corpo">Consenso ADA/EASD 2024 — critérios, gravidade e resolução</CardTitle>
           <CardDescription>Umpierrez et al., Diabetes Care 2024;47:1257–1275 (Fig. 2, p. 1262; Tabela 2, p. 1263; Fig. 4, p. 1264). Mudanças em relação ao manual: glicose ≥ 200 OU diabetes prévio; BHB ≥ 3,0; pH &lt; 7,3 e/ou HCO₃ &lt; 18; o ânion-gap sai; EHH com osmolalidade efetiva &gt; 300 pelo sódio MEDIDO e sem exigir alteração do sensório.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 text-sm">
+        <CardContent className="flex flex-col gap-3 text-apoio">
           <div className="grid gap-2 sm:grid-cols-2">
-            <div className="rounded-lg border p-3">
+            <div className="rounded-controle border p-3">
               <div className="font-medium">CAD (Fig. 2A)</div>
               {cad2024 ? (
                 <ul className="mt-1 text-tinta-sussurro">
@@ -109,7 +110,7 @@ export function CadEhhAvaliacao() {
                 </ul>
               ) : <p className="text-tinta-sussurro">Informe glicemia, pH e bicarbonato.</p>}
             </div>
-            <div className="rounded-lg border p-3">
+            <div className="rounded-controle border p-3">
               <div className="font-medium">EHH (Fig. 2B) — os quatro juntos</div>
               {ehh2024 ? (
                 <ul className="mt-1 text-tinta-sussurro">
@@ -151,10 +152,10 @@ export function CadEhhAvaliacao() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Fórmulas</CardTitle>
+          <CardTitle className="text-corpo">Fórmulas</CardTitle>
           <CardDescription>Sódio corrigido e osmolaridade efetiva (p. 869; regra de 1,6 mEq/L nas p. 883/886/896); ânion-gap = Na − (HCO3 + Cl) (cap. 69, p. 935).</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 text-sm">
+        <CardContent className="flex flex-col gap-3 text-apoio">
           <div className="grid gap-2 sm:grid-cols-3">
             <Item rotulo="Sódio corrigido" valor={`${br(naCorr)} mEq/L`} detalhe="Na + 1,6 × (glicemia − 100)/100" />
             <Item rotulo="Osmolaridade efetiva" valor={`${br(osm)} mOsm`} detalhe="2 × Na corrigido + glicemia/18" />
@@ -167,11 +168,11 @@ export function CadEhhAvaliacao() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Critérios diagnósticos (p. 864)</CardTitle>
+          <CardTitle className="text-corpo">Critérios diagnósticos (p. 864)</CardTitle>
           <CardDescription>O manual traz: CAD = glicemia &gt; 250, pH &lt; 7,3 e cetonemia; EHH = glicemia &gt; 600, osmolaridade &gt; 320 e pH &gt; 7,3. Podem coexistir (CAD com hiperosmolaridade).</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
-          <div className="rounded-lg border p-3">
+        <CardContent className="grid gap-2 text-apoio sm:grid-cols-2">
+          <div className="rounded-controle border p-3">
             <div className="font-medium">CAD</div>
             {cad ? (
               <ul className="mt-1 text-tinta-sussurro">
@@ -182,7 +183,7 @@ export function CadEhhAvaliacao() {
               </ul>
             ) : <p className="text-tinta-sussurro">Informe glicemia e pH.</p>}
           </div>
-          <div className="rounded-lg border p-3">
+          <div className="rounded-controle border p-3">
             <div className="font-medium">EHH</div>
             {ehh ? (
               <ul className="mt-1 text-tinta-sussurro">
@@ -198,10 +199,10 @@ export function CadEhhAvaliacao() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Gravidade da CAD — Tabela 1 (p. 864–865)</CardTitle>
+          <CardTitle className="text-corpo">Gravidade da CAD — Tabela 1 (p. 864–865)</CardTitle>
           <CardDescription>Cada parâmetro é mostrado separado; o manual não diz como combinar quando discordam. Leve: pH 7,25–7,30, HCO3 15–18; moderada: pH 7,00–7,24, HCO3 10–14,9; grave: pH &lt; 7,00, HCO3 &lt; 10.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
+        <CardContent className="grid gap-2 text-apoio sm:grid-cols-2">
           <Item rotulo="Pelo pH" valor={gPh ?? '—'} detalhe={gPh ? `AG ${TABELA_GRAVIDADE[gPh].anionGap}; consciência: ${TABELA_GRAVIDADE[gPh].consciencia}` : 'pH > 7,30 ou não informado'} />
           <Item rotulo="Pelo bicarbonato" valor={gBic ?? '—'} detalhe={gBic ? `AG ${TABELA_GRAVIDADE[gBic].anionGap}; consciência: ${TABELA_GRAVIDADE[gBic].consciencia}` : 'HCO3 > 18 ou não informado'} />
         </CardContent>
@@ -209,10 +210,10 @@ export function CadEhhAvaliacao() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Critérios para desligar a bomba (p. 871–873)</CardTitle>
+          <CardTitle className="text-corpo">Critérios para desligar a bomba (p. 871–873)</CardTitle>
           <CardDescription>O manual traz: pelo menos 2 de 3 — pH &gt; 7,3; ânion-gap ≤ 12; bicarbonato ≥ 15. Desligar ≥ 1 h após a primeira insulina regular SC (p. 874).</CardDescription>
         </CardHeader>
-        <CardContent className="text-sm">
+        <CardContent className="text-apoio">
           {res ? (
             <p>
               pH &gt; 7,3: {sn(res.ph)} · AG ≤ 12: {sn(res.anionGap)} · HCO3 ≥ 15: {sn(res.bicarbonato)} —{' '}

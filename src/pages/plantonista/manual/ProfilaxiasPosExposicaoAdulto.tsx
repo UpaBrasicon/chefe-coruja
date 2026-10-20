@@ -10,9 +10,11 @@ import {
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Escolha } from './LoteAPecas'
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { numero } from '@/lib/formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-const br = (x: number, casas = 1) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const simNao = (b: boolean) => (b ? 'sim' : 'não')
 
 /** Tétano: profilaxia por ferimento × histórico vacinal (Anexo 7) e tratamento do tétano acidental (cap. 93). */
@@ -46,20 +48,20 @@ export function TetanoProfilaxiaAdulto() {
           errata={TABELA5_TETANO.errata}
         />
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <Table variante="referencia" className="w-full text-left text-apoio">
             <caption className="pb-1 text-left text-tinta-sussurro">Tabela 5 do cap. 93 ({TABELA5_TETANO.pagina}), para comparação</caption>
-            <thead>
-              <tr><th className="pr-2">Ferimento</th>{TABELA5_TETANO.colunas.map((c) => <th key={c} className="pr-2">{c}</th>)}</tr>
-            </thead>
-            <tbody>
+            <TableHeader>
+              <TableRow><TableHead className="pr-2">Ferimento</TableHead>{TABELA5_TETANO.colunas.map((c) => <TableHead key={c} className="pr-2">{c}</TableHead>)}</TableRow>
+            </TableHeader>
+            <TableBody>
               {TABELA5_TETANO.linhas.map((l) => (
-                <tr key={l.ferimento} className="border-t align-top">
-                  <td className="pr-2 font-medium">{l.ferimento}</td>
-                  {l.celulas.map((c, i) => <td key={i} className="pr-2">{c}</td>)}
-                </tr>
+                <TableRow key={l.ferimento} className="border-t align-top">
+                  <TableCell className="pr-2 font-medium">{l.ferimento}</TableCell>
+                  {l.celulas.map((c, i) => <TableCell key={i} className="pr-2">{c}</TableCell>)}
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </Bloco>
 
@@ -80,23 +82,23 @@ export function TetanoProfilaxiaAdulto() {
       <Bloco titulo="Guia de Vigilância em Saúde 2024 — profilaxia (Quadro 4, p. 335)" descricao="Fonte do Ministério da Saúde ao lado do Anexo 7 do manual; as quatro linhas coincidem, e o GVS acrescenta a nota d e as situações especiais.">
         <Escolha label="História de vacinação contra tétano" value={historicoGvs} onChange={setHistoricoGvs} opcoes={[...HISTORICO_TETANO, { value: 'mais10Especial' as const, label: '3 doses ou mais; última há 10 anos ou mais, em situações especiais' }]} />
         <Escolha label="Ferimento" value={ferimentoGvs} onChange={setFerimentoGvs} opcoes={FERIMENTO_GVS} />
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-4" checked={vulneravel} onChange={(e) => setVulneravel(e.target.checked)} /> Imunodeprimido, desnutrido grave ou idoso (nota d)</label>
+        <label className="flex items-center gap-2 text-apoio"><input type="checkbox" className="size-4" checked={vulneravel} onChange={(e) => setVulneravel(e.target.checked)} /> Imunodeprimido, desnutrido grave ou idoso (nota d)</label>
         <LinhaManual
           nome="O que o Quadro 4 traz para essa combinação"
           texto={`vacina: ${simNao(g.vacina)}${g.reforco ? ' (um reforço)' : ''}; SAT ou IGHAT: ${simNao(g.imunoglobulina)}. ${g.notas.join(' ')}`}
           pagina={g.pagina}
           conta={<><strong>Vacina: {simNao(g.vacina)}</strong> · <strong>SAT/IGHAT: {simNao(g.imunoglobulina)}</strong></>}
         />
-        <p className="text-sm text-tinta-sussurro">{gvs.desbridamento.texto} ({gvs.desbridamento.pagina}).</p>
+        <p className="text-apoio text-tinta-sussurro">{gvs.desbridamento.texto} ({gvs.desbridamento.pagina}).</p>
       </Bloco>
 
       <Bloco titulo="Guia de Vigilância em Saúde 2024 — tratamento (Quadros 1–3, p. 328 e 331)">
-        <LinhaManual nome="IGHAT" texto={gvs.ighat.texto} pagina={gvs.ighat.pagina} conta={<><strong>{gvs.ighat.terapeuticaUi} UI</strong> (terapêutica; até {gvs.ighat.terapeuticaMaxUi.toLocaleString('pt-BR')}) · profilática {gvs.ighat.profilaticaUi} UI</>} />
-        <LinhaManual nome="SAT" texto={gvs.sat.texto} pagina={gvs.sat.pagina} conta={<><strong>{gvs.sat.terapeuticaUi.toLocaleString('pt-BR')} UI</strong> (terapêutico) · profilático {gvs.sat.profilaticaUi.toLocaleString('pt-BR')} UI</>} />
+        <LinhaManual nome="IGHAT" texto={gvs.ighat.texto} pagina={gvs.ighat.pagina} conta={<><strong>{gvs.ighat.terapeuticaUi} UI</strong> (terapêutica; até {numero(gvs.ighat.terapeuticaMaxUi)}) · profilática {gvs.ighat.profilaticaUi} UI</>} />
+        <LinhaManual nome="SAT" texto={gvs.sat.texto} pagina={gvs.sat.pagina} conta={<><strong>{numero(gvs.sat.terapeuticaUi)} UI</strong> (terapêutico) · profilático {numero(gvs.sat.profilaticaUi)} UI</>} />
         <LinhaManual nome="Antibiótico" texto={gvs.antibiotico.texto} pagina={gvs.antibiotico.pagina} conta={<>penicilina <strong>2.000.000 UI</strong> 4/4 h · ou metronidazol <strong>{gvs.antibiotico.metronidazolMg} mg</strong> 8/8 h · 7–10 dias</>} />
         <LinhaManual nome="Sedativos (Quadro 1, como impresso)" texto={gvs.sedativos.texto} pagina={gvs.sedativos.pagina} errata={gvs.sedativos.errata} />
         <LinhaManual nome="Medidas gerais" texto={gvs.medidasGerais.texto} pagina={gvs.medidasGerais.pagina} errata={gvs.medidasGerais.errata} />
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_TETANO_GVS.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TETANO_GVS.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
@@ -125,11 +127,11 @@ export function RaivaPosExposicaoAdulto() {
           nome="Soro antirrábico (SAR) 40 UI/kg"
           texto={`Frasco VINRAB 1000 UI em 5 mL (200 UI/mL); IM em duas massas se o restante não couber na lesão; nunca no mesmo grupo muscular da vacina (${SORO_RAIVA.pagina})`}
           pagina="NT 8/2022, item 2.2; NT 35/2026, itens 3.2 e 4.4"
-          conta={soro ? <><strong>{soro.sarUi.toLocaleString('pt-BR')} UI</strong> = {soro.sarMlVinrab.toLocaleString('pt-BR')} mL de VINRAB ({soro.frascosVinrab} frasco{soro.frascosVinrab > 1 ? 's' : ''})</> : 'informe o peso'}
+          conta={soro ? <><strong>{numero(soro.sarUi)} UI</strong> = {numero(soro.sarMlVinrab)} mL de VINRAB ({soro.frascosVinrab} frasco{soro.frascosVinrab > 1 ? 's' : ''})</> : 'informe o peso'}
         />
-        <LinhaManual nome="Imunoglobulina humana (IGHAR) 20 UI/kg" texto="Preferida em quem já reagiu a soro heterólogo; mesma regra de infiltração" pagina="NT 8/2022, item 2.2" conta={soro ? <strong>{soro.igharUi.toLocaleString('pt-BR')} UI</strong> : 'informe o peso'} />
+        <LinhaManual nome="Imunoglobulina humana (IGHAR) 20 UI/kg" texto="Preferida em quem já reagiu a soro heterólogo; mesma regra de infiltração" pagina="NT 8/2022, item 2.2" conta={soro ? <strong>{numero(soro.igharUi)} UI</strong> : 'informe o peso'} />
         {PROTOCOLO_RAIVA_2022.map((i) => <LinhaManual key={i.tema} nome={i.tema} texto={i.ms} pagina={i.pagina} />)}
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_RAIVA_2022.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_RAIVA_2022.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Exposição (Anexo 4, p. 1497)">
@@ -138,7 +140,7 @@ export function RaivaPosExposicaoAdulto() {
         {contato === 'direto' && (
           <>
             <Escolha label="Acidente" value={acidente} onChange={setAcidente} opcoes={[{ value: 'leve', label: 'Leve' }, { value: 'grave', label: 'Grave' }]} />
-            <p className="text-sm text-tinta-sussurro">Leve: {ACIDENTE_RAIVA.leve}. Grave: {ACIDENTE_RAIVA.grave}.</p>
+            <p className="text-apoio text-tinta-sussurro">Leve: {ACIDENTE_RAIVA.leve}. Grave: {ACIDENTE_RAIVA.grave}.</p>
             <Escolha label="Animal" value={animal} onChange={setAnimal} opcoes={ANIMAL_RAIVA} />
             {precisaArea && (
               <Escolha label="Área de raiva controlada, animal só doméstico ou que só sai acompanhado, sem contato com outros animais?" value={area} onChange={setArea}
@@ -153,7 +155,7 @@ export function RaivaPosExposicaoAdulto() {
           conta={r ? <strong>{r.texto}</strong> : undefined}
           nota={RAIVA.nota}
         />
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">
           <li>Vacina (4 doses): {RAIVA.vacina4}.</li>
           <li>Vacina (2 doses): {RAIVA.vacina2}.</li>
           {r?.observar10Dias && <li>Observação: {RAIVA.observacao}.</li>}

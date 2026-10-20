@@ -2,15 +2,15 @@
   "_leia": "Base da catraca do padrão do frontend (scripts/padrao-frontend.mjs). Só desce: depois de corrigir, rode `node scripts/padrao-frontend.mjs --atualizar` e comite junto.",
   "totais": {
     "cor-crua": 76,
-    "cor-arbitraria": 128,
+    "cor-arbitraria": 122,
     "cor-hex": 55,
-    "texto-escala": 1034,
-    "canto": 336,
-    "botao-solto": 126,
-    "select-solto": 68,
-    "tabela-solta": 57,
+    "texto-escala": 787,
+    "canto": 292,
+    "botao-solto": 120,
+    "select-solto": 67,
+    "tabela-solta": 35,
     "titulo-solto": 58,
-    "data-local": 211,
+    "data-local": 167,
     "importacao-cruzada": 0,
     "emoji": 1,
     "pronto-socorro": 0
@@ -237,9 +237,6 @@
     },
     "src/components/ui/select.tsx": {
       "canto": 2
-    },
-    "src/components/ui/table.tsx": {
-      "cor-arbitraria": 1
     },
     "src/contexts/AvisosFlutuantesContext.tsx": {
       "botao-solto": 1,
@@ -685,246 +682,6 @@
       "data-local": 3,
       "tabela-solta": 2,
       "texto-escala": 31
-    },
-    "src/pages/plantonista/manual/Abstinencia.tsx": {
-      "botao-solto": 1,
-      "canto": 3,
-      "data-local": 1,
-      "texto-escala": 11
-    },
-    "src/pages/plantonista/manual/AcessosCalibresAdulto.tsx": {
-      "tabela-solta": 1,
-      "texto-escala": 5
-    },
-    "src/pages/plantonista/manual/AcidoBase.tsx": {
-      "tabela-solta": 1,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/manual/AgitacaoDeliriumAdulto.tsx": {
-      "data-local": 1,
-      "tabela-solta": 1,
-      "texto-escala": 7
-    },
-    "src/pages/plantonista/manual/AnafilaxiaAdulto.tsx": {
-      "data-local": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/manual/AnimaisPeconhentosAdulto.tsx": {
-      "canto": 1,
-      "data-local": 1,
-      "tabela-solta": 1,
-      "texto-escala": 4
-    },
-    "src/pages/plantonista/manual/AnticoagulacaoPlenaAdulto.tsx": {
-      "canto": 1,
-      "data-local": 4,
-      "select-solto": 1,
-      "texto-escala": 5
-    },
-    "src/pages/plantonista/manual/AsciteHepatorrenalAdulto.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "tabela-solta": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/manual/AsmaExacerbacaoAdulto.tsx": {
-      "canto": 1,
-      "tabela-solta": 2,
-      "texto-escala": 3
-    },
-    "src/pages/plantonista/manual/BradicardiaAdulto.tsx": {
-      "data-local": 1,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/manual/CadEhhAvaliacao.tsx": {
-      "canto": 5,
-      "data-local": 1,
-      "texto-escala": 15
-    },
-    "src/pages/plantonista/manual/CadEhhTratamento.tsx": {
-      "data-local": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/manual/DorAnalgesiaAdulto.tsx": {
-      "canto": 1,
-      "data-local": 1,
-      "texto-escala": 4
-    },
-    "src/pages/plantonista/manual/EmergenciaHipertensivaAdulto.tsx": {
-      "data-local": 1,
-      "tabela-solta": 1,
-      "texto-escala": 7
-    },
-    "src/pages/plantonista/manual/EstadoDeMalAdulto.tsx": {
-      "canto": 1,
-      "data-local": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/manual/FibrilacaoAtrialAdulto.tsx": {
-      "tabela-solta": 1,
-      "texto-escala": 7
-    },
-    "src/pages/plantonista/manual/FibrinoliticosAdulto.tsx": {
-      "data-local": 2,
-      "tabela-solta": 1,
-      "texto-escala": 3
-    },
-    "src/pages/plantonista/manual/GuillainBarreAdulto.tsx": {
-      "texto-escala": 4
-    },
-    "src/pages/plantonista/manual/HeparinaNaoFracionadaAdulto.tsx": {
-      "canto": 1,
-      "data-local": 1,
-      "tabela-solta": 1,
-      "texto-escala": 5
-    },
-    "src/pages/plantonista/manual/HipernatremiaManual.tsx": {
-      "canto": 1,
-      "data-local": 3,
-      "texto-escala": 7
-    },
-    "src/pages/plantonista/manual/HipoglicemiaAdulto.tsx": {
-      "texto-escala": 5
-    },
-    "src/pages/plantonista/manual/HiponatremiaManual.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "data-local": 1,
-      "texto-escala": 8
-    },
-    "src/pages/plantonista/manual/HipotermiaAdulto.tsx": {
-      "canto": 1,
-      "tabela-solta": 1,
-      "texto-escala": 6
-    },
-    "src/pages/plantonista/manual/HsaAdulto.tsx": {
-      "tabela-solta": 1,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/manual/InsuficienciaCardiacaAgudaAdulto.tsx": {
-      "tabela-solta": 1,
-      "texto-escala": 9
-    },
-    "src/pages/plantonista/manual/InsuficienciaHepaticaAdulto.tsx": {
-      "canto": 1
-    },
-    "src/pages/plantonista/manual/IntoxicacoesAntidotosAdulto.tsx": {
-      "canto": 2,
-      "cor-arbitraria": 1,
-      "data-local": 1,
-      "texto-escala": 11
-    },
-    "src/pages/plantonista/manual/LiseTumoralAdulto.tsx": {
-      "canto": 1,
-      "texto-escala": 3
-    },
-    "src/pages/plantonista/manual/LoteAPecas.tsx": {
-      "texto-escala": 3
-    },
-    "src/pages/plantonista/manual/MarcaPassoProvisorioAdulto.tsx": {
-      "texto-escala": 3
-    },
-    "src/pages/plantonista/manual/NeutropeniaFebrilAdulto.tsx": {
-      "texto-escala": 3
-    },
-    "src/pages/plantonista/manual/OxigenacaoIrpaAdulto.tsx": {
-      "canto": 1
-    },
-    "src/pages/plantonista/manual/PacAntibioticoAdulto.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "tabela-solta": 1,
-      "texto-escala": 6
-    },
-    "src/pages/plantonista/manual/PcrAdulto.tsx": {
-      "data-local": 1
-    },
-    "src/pages/plantonista/manual/PecasLoteC.tsx": {
-      "canto": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/manual/PecasLoteE6.tsx": {
-      "canto": 2,
-      "texto-escala": 4
-    },
-    "src/pages/plantonista/manual/PecasLoteE7.tsx": {
-      "botao-solto": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/manual/PosPcrAdulto.tsx": {
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/manual/ProfilaxiaHdaLamg.tsx": {
-      "canto": 2,
-      "data-local": 4,
-      "texto-escala": 9
-    },
-    "src/pages/plantonista/manual/ProfilaxiaTEV.tsx": {
-      "canto": 1,
-      "data-local": 1,
-      "texto-escala": 3
-    },
-    "src/pages/plantonista/manual/ProfilaxiasPosExposicaoAdulto.tsx": {
-      "data-local": 7,
-      "tabela-solta": 1,
-      "texto-escala": 7
-    },
-    "src/pages/plantonista/manual/RessuscitacaoVolemicaAdulto.tsx": {
-      "tabela-solta": 2,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/manual/ReversaoAnticoagulacaoAdulto.tsx": {
-      "botao-solto": 2,
-      "canto": 3,
-      "data-local": 1,
-      "texto-escala": 13
-    },
-    "src/pages/plantonista/manual/SdraVentilacaoAdulto.tsx": {
-      "tabela-solta": 2,
-      "texto-escala": 3
-    },
-    "src/pages/plantonista/manual/SedacaoProcedimentoAdulto.tsx": {
-      "canto": 1,
-      "data-local": 1,
-      "texto-escala": 6
-    },
-    "src/pages/plantonista/manual/SindromeAorticaAdulto.tsx": {
-      "data-local": 2,
-      "tabela-solta": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/manual/SintomasPaliativosAdulto.tsx": {
-      "data-local": 1,
-      "texto-escala": 6
-    },
-    "src/pages/plantonista/manual/TaquiarritmiasAdulto.tsx": {
-      "data-local": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/manual/TransfusaoAdulto.tsx": {
-      "canto": 5
-    },
-    "src/pages/plantonista/manual/TraumaInicialAdulto.tsx": {
-      "texto-escala": 10
-    },
-    "src/pages/plantonista/manual/TromboliseAvcAdulto.tsx": {
-      "botao-solto": 2,
-      "canto": 3,
-      "cor-arbitraria": 1,
-      "data-local": 1,
-      "tabela-solta": 1,
-      "texto-escala": 19
-    },
-    "src/pages/plantonista/manual/VmAjusteInicialAdulto.tsx": {
-      "canto": 1
-    },
-    "src/pages/plantonista/manual/loteAFormato.ts": {
-      "data-local": 1
-    },
-    "src/pages/plantonista/manual/loteE7Formato.ts": {
-      "canto": 1,
-      "data-local": 1,
-      "texto-escala": 1
     },
     "src/pages/plantonista/pediatria/AcidoBasePed.tsx": {
       "canto": 1,

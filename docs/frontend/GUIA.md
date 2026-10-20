@@ -277,6 +277,7 @@ Exames, Faturamento e Unidade — numa tarefa própria da parte 4.
 | `Abas` (cápsula, tablist; contagem opcional por aba) | `src/components/monitor/Pagina.tsx` | 4.2 |
 | Texto sobre as cores da classificação (`text-mts-texto`; no amarelo, `text-mts-amarelo-texto`) | `src/index.css`, igual nos dois temas | 1.1 (parte 4.6) |
 | `Chip` (`variante`: filtro ou opcao; `radio` para radiogroup; `tom` critico; `titulo`, `desabilitado`) | `src/components/monitor/Pagina.tsx` | 3.1 |
+| Tabela de referência das ferramentas (`<Table variante="referencia">`: só estrutura, o desenho vem do className) | `src/components/ui/table.tsx` | 3.3 (parte 4.10b) |
 | `BotaoLinha` (cartão, linha ou tracejado clicável) e `OpcaoLista` (opção de lista suspensa) | `src/components/ui/botao-linha.tsx` | 3.1 (parte 4.5) |
 | `CaixaMarcar` (caixa de marcar com texto; `bloqueado` mostra X) | `src/components/ui/caixa-marcar.tsx` | 3.1 (parte 4.5) |
 | Tokens do painel da TV (`tv-fundo`, `tv-faixa`, `tv-borda`, `tv-chamada`, `tv-trilho`, `tv-destaque`, `tv-apoio`, `tv-texto`, `tv-texto-forte`, `tv-claro`, `tv-alerta`) | `src/index.css`, iguais nos dois temas | 4.6 (parte 4.4, "1a") |

@@ -10,7 +10,8 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 
 const pede = 'informe o peso'
@@ -62,14 +63,14 @@ export function InsuficienciaCardiacaAgudaAdulto() {
         <LinhaManual nome={`Perfil ${PERFIS[perfil].nome}`} texto={PERFIS[perfil].texto} pagina={PERFIS[perfil].pagina} />
         {faixas && (
           <>
-            <p className="text-sm">Figura 1 (p. 302): {faixas.join(' e ')}{faixas.length > 1 && <span className="text-atencao"> — 140 mmHg está nas duas colunas da figura</span>}</p>
+            <p className="text-apoio">Figura 1 (p. 302): {faixas.join(' e ')}{faixas.length > 1 && <span className="text-atencao"> — 140 mmHg está nas duas colunas da figura</span>}</p>
             {FIGURA1_COLUNAS.filter((c) => faixas.includes(c.pas)).map((c) => (
               <LinhaManual key={c.pas + c.perfil} nome={`${c.pas} · ${c.perfil}`} texto={c.itens} pagina="Figura 1, p. 302" />
             ))}
           </>
         )}
-        {cfe && <p className="text-sm">FE {br(fe, 0)}%: {cfe.rotulos.join(' e ') || '—'} {cfe.nota && <span className="text-tinta-sussurro">({cfe.nota})</span>} (p. 286)</p>}
-        <p className="text-sm text-tinta-sussurro">{BETABLOQUEADOR_ICA.texto} ({BETABLOQUEADOR_ICA.pagina})</p>
+        {cfe && <p className="text-apoio">FE {br(fe, 0)}%: {cfe.rotulos.join(' e ') || '—'} {cfe.nota && <span className="text-tinta-sussurro">({cfe.nota})</span>} (p. 286)</p>}
+        <p className="text-apoio text-tinta-sussurro">{BETABLOQUEADOR_ICA.texto} ({BETABLOQUEADOR_ICA.pagina})</p>
       </Bloco>
 
       <Bloco titulo="Furosemida EV (p. 296, 298)">
@@ -81,7 +82,7 @@ export function InsuficienciaCardiacaAgudaAdulto() {
           errata={FUROSEMIDA_ICA.errata}
         />
         {furo?.acimaDe240 && <p className="text-atencao">A dose dobrada passa de 240 mg, o máximo diário da p. 296.</p>}
-        <p className="text-sm text-tinta-sussurro">O capítulo não traz dose de furosemida conforme o uso prévio de diurético.</p>
+        <p className="text-apoio text-tinta-sussurro">O capítulo não traz dose de furosemida conforme o uso prévio de diurético.</p>
         <div className="grid gap-4 sm:grid-cols-3">
           <NumberField id="ic-nau" label="Na urinário em 2 h" unit="mEq/L" value={naU} onChange={setNaU} step={1} />
           <NumberField id="ic-v6" label="Diurese em 6 h" unit="mL" value={vol6} onChange={setVol6} step={10} />
@@ -121,7 +122,7 @@ export function InsuficienciaCardiacaAgudaAdulto() {
         </div>
         {bnp > 0 && <p>{leituraBnp(bnp)}</p>}
         {nt > 0 && <p>{leituraNtProBnp(nt, idade) ?? 'informe a idade'}</p>}
-        <p className="text-sm text-tinta-sussurro">BNP: FA e insuficiência renal aumentam; obesidade diminui (p. 295). MR-proANP: &lt; {MR_PROANP_CORTE} pg/mL improvável; ≥ {MR_PROANP_CORTE} provável (p. 294).</p>
+        <p className="text-apoio text-tinta-sussurro">BNP: FA e insuficiência renal aumentam; obesidade diminui (p. 295). MR-proANP: &lt; {MR_PROANP_CORTE} pg/mL improvável; ≥ {MR_PROANP_CORTE} provável (p. 294).</p>
         {CORTES_IC.map((c) => <Trecho key={c.texto} texto={c.texto} pagina={c.pagina} />)}
       </Bloco>
 
@@ -132,18 +133,18 @@ export function InsuficienciaCardiacaAgudaAdulto() {
           <NumberField id="ic-fc" label="FC" unit="bpm" value={fc} onChange={setFc} step={1} />
         </div>
         {uti.length > 0 ? <ul className="list-disc pl-5 text-atencao">{uti.map((u) => <li key={u}>{u}</li>)}</ul> : <p className="text-tinta-sussurro">Nenhum critério numérico atingido com os valores informados.</p>}
-        <p className="text-sm text-tinta-sussurro">O livro também lista necessidade de intubação, uso de musculatura acessória, hipoperfusão/baixo débito e arritmias graves.</p>
+        <p className="text-apoio text-tinta-sussurro">O livro também lista necessidade de intubação, uso de musculatura acessória, hipoperfusão/baixo débito e arritmias graves.</p>
       </Bloco>
       <Bloco titulo="ESC 2021 e ensaios recentes — ao lado do manual" descricao="ESC 2021 lida pela página do periódico (classes não conferidas); ADVOR, CLOROTIC e DAPA ACT pelos resumos.">
-        {sao2 > 0 && <p className="text-sm">{sao2 < 90 ? 'SpO2 informada abaixo de 90%: a ESC 2021 indica oxigênio.' : 'SpO2 informada ≥ 90%: a ESC 2021 não indica oxigênio de rotina (o manual mira > 95%).'}</p>}
+        {sao2 > 0 && <p className="text-apoio">{sao2 < 90 ? 'SpO2 informada abaixo de 90%: a ESC 2021 indica oxigênio.' : 'SpO2 informada ≥ 90%: a ESC 2021 não indica oxigênio de rotina (o manual mira > 95%).'}</p>}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">ESC 2021</th><th className="pr-3 pb-2">Manual do HC</th></tr></thead>
-            <tbody>{DIRETRIZ_ICA_2021.map((d) => <tr key={d.tema} className="border-t"><td className="pr-3 py-2 font-medium">{d.tema}</td><td className="pr-3 py-2">{d.esc}</td><td className="pr-3 py-2 text-tinta-sussurro">{d.livro}</td></tr>)}</tbody>
-          </table>
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ESC 2021</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_ICA_2021.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.esc}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
         </div>
         {ENSAIOS_ICA.map((e) => <LinhaManual key={e.ensaio} nome={e.ensaio} texto={e.texto} pagina="resumo" />)}
-        <ul className="list-disc pl-5 text-sm text-tinta-sussurro">{DIFERENCAS_ICA_2021.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_ICA_2021.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

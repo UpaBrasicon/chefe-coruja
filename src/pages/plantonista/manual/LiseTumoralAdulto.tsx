@@ -32,11 +32,11 @@ export function LiseTumoralAdulto() {
       <CampoPeso id="slt-peso" peso={peso} onChange={setPeso}>
         <NumberField id="slt-sc" label="Superfície corporal" unit="m²" value={sc} onChange={setSc} min={0} step={0.01} />
       </CampoPeso>
-      <p className="text-sm text-tinta-sussurro">O livro não traz fórmula de superfície corporal: informe a SC já calculada.</p>
+      <p className="text-apoio text-tinta-sussurro">O livro não traz fórmula de superfície corporal: informe a SC já calculada.</p>
 
       <Bloco titulo="Risco — Tabela 2 (p. 1100–1102)">
         {RISCO_SLT.map((r) => (
-          <div key={r.neoplasia} className="rounded-lg border px-3 py-2 text-sm">
+          <div key={r.neoplasia} className="rounded-controle border px-3 py-2 text-apoio">
             <span className="font-medium">{r.neoplasia}</span>
             <p><span className="text-tinta-sussurro">Baixo:</span> {r.baixo}</p>
             <p><span className="text-tinta-sussurro">Moderado:</span> {r.moderado}</p>
@@ -94,7 +94,7 @@ export function LiseTumoralAdulto() {
         <div className="grid gap-3 md:grid-cols-3">
           <NumberField id="slt-ca" label="Cálcio" unit="mg/dL" value={ca} onChange={setCa} min={0} step={0.1} />
           <NumberField id="slt-p" label="Fósforo" unit="mg/dL" value={p} onChange={setP} min={0} step={0.1} />
-          <p className="self-end text-sm tabular-nums">
+          <p className="self-end text-apoio tabular-nums">
             {cap ? <><strong>{br(cap.produto)} mg²/dL²</strong>{cap.acimaDoCorte ? ' — ≥ 70, entre as indicações de hemodiálise do livro' : ' — abaixo de 70'}</> : 'informe cálcio e fósforo'}
           </p>
         </div>
