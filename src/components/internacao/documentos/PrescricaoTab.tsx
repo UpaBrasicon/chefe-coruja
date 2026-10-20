@@ -1,7 +1,7 @@
 // Aba Prescrição da internação (Fase 4.4): a prescrição estruturada do banco.
 // O catálogo antigo, com doses escritas no código, saiu (decisão de 27/09/2026).
 import { PrescricaoEstruturada } from '@/components/prescricao/PrescricaoEstruturada'
-import type { DadosPaciente } from './rascunho'
+import type { DadosPaciente } from '@/lib/rascunhoInternacao'
 
 export function PrescricaoTab({ dados, pacienteId }: { dados: DadosPaciente; pacienteId?: string | null }) {
   if (!pacienteId) {

@@ -22,7 +22,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
-import { Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 
 type Recurso = 'pacientes' | 'atendimentos' | 'leitos' | 'producao' | 'laboratorio'
 const RECURSOS: Record<Recurso, string> = {
@@ -74,7 +74,7 @@ export default function Integracoes() {
         </p>
       )}
       {ehSuperAdmin && <NovaChave unidades={unidades.data ?? []} />}
-      {lista.isLoading ? <Spinner /> : lista.error ? <Erro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
+      {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
         <Vazio icone={KeyRound} titulo="Nenhuma chave" texto="Nenhum integrador tem chave para as suas unidades." />
       ) : (
         <div className="flex flex-col gap-3">{(lista.data ?? []).map((c) => <CartaoChave key={c.id} c={c} />)}</div>
@@ -169,7 +169,7 @@ function NovaChave({ unidades }: { unidades: { id: string; nome: string }[] }) {
         </div>
         <Button size="sm" className="self-start" disabled={nome.trim().length < 3 || sel.length === 0 || rec.length === 0 || criar.isPending}
           onClick={() => criar.mutate()}>Criar chave</Button>
-        {criar.error && <Erro texto={(criar.error as Error).message} />}
+        {criar.error && <MensagemErro texto={(criar.error as Error).message} />}
       </CardContent>
     </Card>
   )

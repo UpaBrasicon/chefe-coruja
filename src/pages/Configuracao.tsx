@@ -15,7 +15,7 @@ import { DetalhesAdmissao } from '@/pages/gestor/DetalhesAdmissao'
 import { GradeAprazamento } from '@/pages/gestor/GradeAprazamento'
 import { CnesUnidade } from '@/pages/gestor/CnesUnidade'
 import { CriticasAih } from '@/pages/gestor/CriticasAih'
-import { chaveLimites, useLimitesUnidade, type LimitesUnidade } from '@/pages/gestor/limites'
+import { chaveLimites, useLimitesUnidade, type LimitesUnidade } from '@/lib/limitesUnidade'
 
 type UnidadeConfig = {
   id: string

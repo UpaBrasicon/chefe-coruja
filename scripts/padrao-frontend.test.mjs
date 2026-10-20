@@ -65,6 +65,12 @@ test('importação cruzada', () => {
   assert.deepEqual(regras('src/pages/Indicadores.tsx', "import { P } from '@/pages/Pessoas'"), [])
   assert.deepEqual(regras('src/App.tsx', "const L = lazy(() => import('@/pages/Login'))"), [])
   assert.deepEqual(regras('src/lib/x.ts', "const L = () => import('@/pages/Login')"), ['importacao-cruzada'])
+  // tela que agrupa telas monta a tela inteira; peça com outro nome continua barrada
+  assert.deepEqual(regras('src/pages/grupos/UnidadeGrupo.tsx', "import MapaLeitos from '@/pages/gestor/MapaLeitos'"), [])
+  assert.deepEqual(regras('src/pages/Indicadores.tsx', "import { EsperaMedico } from '@/pages/gestor/EsperaMedico'"), [])
+  assert.deepEqual(regras('src/pages/Indicadores.tsx', "import { limites } from '@/pages/gestor/limites'"), ['importacao-cruzada'])
+  assert.deepEqual(regras('src/pages/gestor/X.tsx', "import { Painel, Filtro } from '@/pages/farmacia/PainelFarmacia'"), ['importacao-cruzada'])
+  assert.deepEqual(regras('src/components/AppShell.tsx', "import { ForaDoExpediente } from '@/pages/plantonista/ForaDoExpediente'"), ['importacao-cruzada'])
 })
 
 test('padrao-ok com motivo vira exceção; sem motivo é inválido', () => {

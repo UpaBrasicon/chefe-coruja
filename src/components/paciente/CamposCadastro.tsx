@@ -9,7 +9,7 @@ import { ehPediatrico, idadeEm } from '@/domain/idade'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-import { hojeSP, idadeLegivel, type Cadastro, type CampoCadastro } from './cadastroForm'
+import { hojeSP, idadeLegivel, type Cadastro, type CampoCadastro } from '@/lib/cadastroPaciente'
 
 // Campos do cadastro do paciente no desenho do protótipo (rec-cadastro e o
 // cadastro completo da porta): rótulo 13/500 em cima, campo em fundo `campo`,

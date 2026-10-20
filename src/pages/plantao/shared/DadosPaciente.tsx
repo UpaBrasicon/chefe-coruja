@@ -16,9 +16,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Spinner } from '@/components/ui/spinner'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import type { CorRisco } from '@/domain/risco'
-import { Campo, CamposCadastro } from '@/pages/recepcao/CamposCadastro'
-import { CADASTRO_VAZIO, errosCadastro, hojeSP, idadeLegivel, normalizarCadastro, type Cadastro, type CampoCadastro } from '@/pages/recepcao/cadastroForm'
-import { DIETAS, hojeLocal, idadeTexto, type DadosPaciente } from './rascunho'
+import { Campo, CamposCadastro } from '@/components/paciente/CamposCadastro'
+import { CADASTRO_VAZIO, errosCadastro, hojeSP, idadeLegivel, normalizarCadastro, type Cadastro, type CampoCadastro } from '@/lib/cadastroPaciente'
+import { DIETAS, hojeLocal, idadeTexto, type DadosPaciente } from '@/lib/rascunho'
 
 function normalizarNome(texto: string) {
   return texto

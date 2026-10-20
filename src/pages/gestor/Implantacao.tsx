@@ -26,7 +26,7 @@ import {
   type Item, type TipoUnidade,
 } from '@/lib/implantacao'
 import { supabase } from '@/lib/supabase'
-import { Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 
 type Painel = {
   sou_implantador: boolean
@@ -86,7 +86,7 @@ export default function Implantacao() {
           </select>
         </div>
       )}
-      {!unidadeId ? null : painel.isLoading ? <Spinner /> : painel.error ? <Erro texto={(painel.error as Error).message} /> : !imp ? (
+      {!unidadeId ? null : painel.isLoading ? <Spinner /> : painel.error ? <MensagemErro texto={(painel.error as Error).message} /> : !imp ? (
         p?.sou_implantador ? <AbrirImplantacao unidadeId={unidadeId} /> : (
           <Vazio icone={Rocket} titulo="Sem implantação aberta" texto="A implantação é aberta pela equipe Chefe Coruja, com a data da virada." />
         )
@@ -139,7 +139,7 @@ function AbrirImplantacao({ unidadeId }: { unidadeId: string }) {
             <Input id="imp-d0" type="date" className="h-8" value={d0} onChange={(e) => setD0(e.target.value)} />
           </div>
         </div>
-        <Erro texto={abrir.error ? (abrir.error as Error).message : null} />
+        <MensagemErro texto={abrir.error ? (abrir.error as Error).message : null} />
         <div><Button onClick={() => abrir.mutate()} disabled={!d0 || abrir.isPending}>{abrir.isPending ? <Spinner /> : <Rocket className="size-4" />} Abrir</Button></div>
       </CardContent>
     </Card>
@@ -183,7 +183,7 @@ function Cabecalho({ p, unidadeId }: { p: Required<Painel>; unidadeId: string })
               </div>
               <Button size="sm" onClick={() => mudarD0.mutate()} disabled={motivo.trim().length < 10 || mudarD0.isPending}>Salvar</Button>
               <Button size="sm" variant="ghost" onClick={() => setMudar(false)}>Voltar</Button>
-              <Erro texto={mudarD0.error ? (mudarD0.error as Error).message : null} />
+              <MensagemErro texto={mudarD0.error ? (mudarD0.error as Error).message : null} />
             </div>
           ) : (
             <div><Button size="xs" variant="outline" onClick={() => setMudar(true)}>Mudar a data da virada</Button></div>
@@ -263,7 +263,7 @@ function LinhaItem({ it, d0, encerrada, unidadeId }: { it: Item; d0: string; enc
           <Button size="sm" onClick={() => marcar.mutate(true)} disabled={marcar.isPending}>Confirmar</Button>
         </div>
       )}
-      <Erro texto={marcar.error ? (marcar.error as Error).message : null} />
+      <MensagemErro texto={marcar.error ? (marcar.error as Error).message : null} />
     </li>
   )
 }
@@ -333,7 +333,7 @@ function Treinamento({ p, unidadeId }: { p: Required<Painel>; unidadeId: string 
             ))}
           </ul>
         )}
-        <Erro texto={(treinar.error ?? desfazer.error) ? ((treinar.error ?? desfazer.error) as Error).message : null} />
+        <MensagemErro texto={(treinar.error ?? desfazer.error) ? ((treinar.error ?? desfazer.error) as Error).message : null} />
       </CardContent>
     </Card>
   )
@@ -396,7 +396,7 @@ function Aceites({ p, unidadeId }: { p: Required<Painel>; unidadeId: string }) {
           )
         )}
         {etapa && jaAceitei && <p className="text-tinta-apoio">Seu aceite está registrado. Falta o do {meuLado === 'implantador' ? 'gestor' : 'implantador'}.</p>}
-        <Erro texto={aceitar.error ? (aceitar.error as Error).message : null} />
+        <MensagemErro texto={aceitar.error ? (aceitar.error as Error).message : null} />
       </CardContent>
     </Card>
   )

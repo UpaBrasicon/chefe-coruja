@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Input } from '@/components/ui/input'
 import { useDocumentos, type DocumentoClinico } from '@/hooks/useDocumentos'
 import { AbaEvolucao } from '@/components/evolucao/AbaEvolucao'
-import type { DadosPaciente, Evolucao } from './rascunho'
+import type { DadosPaciente, Evolucao } from '@/lib/rascunhoInternacao'
 
 function fmtData(iso: string) {
   if (!iso) return ''

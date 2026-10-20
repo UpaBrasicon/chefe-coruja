@@ -25,7 +25,8 @@ import { porPaciente, type Dispensacao, type ItemParaDispensar } from '@/lib/dis
 import { normalizarMedicamento } from '@/lib/search'
 import { supabase } from '@/lib/supabase'
 import { rotuloUnidade } from '@/lib/unidadeConsumo'
-import { Abas, Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { Abas } from '@/components/monitor/Pagina'
 
 type Aba = 'prescricoes' | 'avulsa' | 'registro'
 const MINIMO = 10
@@ -68,7 +69,7 @@ function Prescricoes({ unidade }: { unidade: string }) {
   return (
     <div className="flex flex-col gap-3">
       <Input className="max-w-md" aria-label="Buscar paciente ou medicamento" placeholder="Buscar paciente ou medicamento" value={termo} onChange={(e) => setTermo(e.target.value)} />
-      <Erro texto={lista.error ? (lista.error as Error).message : null} />
+      <MensagemErro texto={lista.error ? (lista.error as Error).message : null} />
       {lista.isLoading ? <Spinner /> : grupos.length === 0 ? (
         <Vazio icone={PackageOpen} titulo="Nenhum medicamento prescrito" texto="Itens de medicamento das prescrições vigentes aparecem aqui." />
       ) : grupos.map((g) => (
@@ -237,7 +238,7 @@ function Registro({ unidade, podeAgir }: { unidade: string; podeAgir: boolean })
   const d = lista.data
   return (
     <div className="flex flex-col gap-3 text-apoio">
-      <Erro texto={(lista.error ?? conferir.error ?? devolver.error) ? ((lista.error ?? conferir.error ?? devolver.error) as Error).message : null} />
+      <MensagemErro texto={(lista.error ?? conferir.error ?? devolver.error) ? ((lista.error ?? conferir.error ?? devolver.error) as Error).message : null} />
       {(d?.estoque_negativo.length ?? 0) > 0 && (
         <div role="alert" className="rounded-lg border border-atencao/30 bg-atencao/[0.06] px-3 py-2">
           <span className="font-medium text-tinta">Saldo negativo: confira o estoque destes medicamentos.</span>

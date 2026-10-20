@@ -20,7 +20,7 @@ import { SeletorPaciente, usePacienteDoDocumento } from '@/components/documentos
 import { textoVitaisTriagem, useTriagemRecente } from '@/components/documentos/triagem'
 import { AnexosLaudo, Bloco, BotaoAnexar, Campo, Cartao, Leitura, Pendencias, Pilulas, Rodape, Texto } from '@/components/documentos/ui'
 import { useLeituraLaudo } from '@/components/documentos/useLeituraLaudo'
-import { carregarEnvelope, useRascunho } from '../shared/rascunho'
+import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 
 type Prioridade = (typeof PRIORIDADES_ENC)[number]
 

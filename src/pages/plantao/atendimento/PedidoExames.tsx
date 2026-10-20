@@ -25,7 +25,7 @@ import { SeletorPaciente, usePacienteDoDocumento } from '@/components/documentos
 import { BuscaCid } from '@/components/documentos/busca'
 import { Aviso, Bloco, Campo, Cartao, Chip, Pilulas, Texto } from '@/components/documentos/ui'
 import { cn } from '@/lib/utils'
-import { carregarEnvelope, useRascunho } from '../shared/rascunho'
+import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 
 const CARATERES = ['Urgência', 'Rotina'] as const
 type Carater = (typeof CARATERES)[number]

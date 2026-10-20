@@ -116,14 +116,32 @@ function alvoDoImport(arquivo, especificador) {
   return null
 }
 
-function quebraImportacao(arquivo, especificador) {
+function quebraImportacao(arquivo, especificador, telaInteira = false) {
   const alvo = alvoDoImport(arquivo, especificador)
   if (!alvo || !alvo.startsWith('src/pages/')) return false
   const origem = areaDaTela(arquivo)
   // Fora de src/pages, só os roteadores e a entrada importam telas.
   if (origem === null) return !ROTEADORES.includes(arquivo) && !arquivo.startsWith('src/routes/')
+  // Tela que agrupa telas (abas de grupos/, Indicadores, Configuração) monta a
+  // tela inteira; isso não é peça emprestada.
+  if (telaInteira) return false
   const destino = alvo.split('/').length > 3 ? alvo.split('/')[2] : '(raiz)'
   return destino !== origem
+}
+
+/**
+ * O import traz só a tela inteira: o default, ou o nome igual ao do arquivo
+ * (`import { EscalaMes } from '@/pages/gestor/EscalaMes'`). Peça, hook ou
+ * constante com outro nome não conta.
+ */
+function importaTelaInteira(no) {
+  const clausula = no.importClause
+  if (!clausula || clausula.isTypeOnly) return false
+  const arquivo = no.moduleSpecifier.text.split('/').pop()
+  if (!/^[A-Z]/.test(arquivo)) return false
+  const nomes = clausula.namedBindings
+  if (nomes && !ts.isNamedImports(nomes)) return false
+  return (nomes?.elements ?? []).every((e) => (e.propertyName ?? e.name).text === arquivo)
 }
 
 /** Comentários `padrao-ok` por linha (1-based): { motivo } ou { invalido: true }. */
@@ -198,14 +216,15 @@ export function analisar(arquivo, texto) {
       case ts.SyntaxKind.ImportDeclaration:
       case ts.SyntaxKind.ExportDeclaration: {
         const esp = no.moduleSpecifier
-        if (esp && ts.isStringLiteral(esp) && quebraImportacao(arquivo, esp.text)) anotar('importacao-cruzada', no.getStart(sf), esp.text)
+        const inteira = ts.isImportDeclaration(no) && importaTelaInteira(no)
+        if (esp && ts.isStringLiteral(esp) && quebraImportacao(arquivo, esp.text, inteira)) anotar('importacao-cruzada', no.getStart(sf), esp.text)
         break
       }
       case ts.SyntaxKind.CallExpression: {
         const alvo = no.expression
         if (alvo.kind === ts.SyntaxKind.ImportKeyword) {
           const esp = no.arguments[0]
-          if (esp && ts.isStringLiteral(esp) && quebraImportacao(arquivo, esp.text)) anotar('importacao-cruzada', no.getStart(sf), esp.text)
+          if (esp && ts.isStringLiteral(esp) && quebraImportacao(arquivo, esp.text, true)) anotar('importacao-cruzada', no.getStart(sf), esp.text)
         } else if (ts.isPropertyAccessExpression(alvo)) {
           const nome = alvo.name.text
           if (FORMATADORES.has(nome)) anotar('data-local', alvo.name.getStart(sf), nome)

@@ -21,4 +21,16 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  // Guia do padrão do frontend, 4.5: componente, hook, contexto e lib não
+  // importam tela. A regra entrou no ESLint quando a contagem zerou (parte 4.2);
+  // a de tela importando peça de outra área fica na catraca
+  // (scripts/padrao-frontend.mjs).
+  {
+    files: ['src/components/**/*.{ts,tsx}', 'src/lib/**/*.{ts,tsx}', 'src/hooks/**/*.{ts,tsx}', 'src/contexts/**/*.{ts,tsx}', 'src/clinico/**/*.{ts,tsx}', 'src/domain/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{ group: ['@/pages/*', '**/pages/*'], message: 'Componente não importa tela (guia do padrão, 4.5). Mova a peça para src/components, src/lib ou src/hooks.' }],
+      }],
+    },
+  },
 ])

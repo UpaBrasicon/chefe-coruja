@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
 import type { MinhaNotificacao, Papel } from '@/types/database'
-import { avaliarUnidade, type ChamadoTecnico, type UnidadeRede } from '@/pages/admin/dadosAdmin'
+import { avaliarUnidade, type ChamadoTecnico, type UnidadeRede } from '@/lib/dadosAdmin'
 
 import type { ChaveNota } from './navegacao'
 

@@ -27,11 +27,11 @@ import { useIdentificacao } from '@/components/documentos/identificacao'
 import { SeletorPaciente } from '@/components/documentos/SeletorPaciente'
 import { useTriagemRecente, vitaisDaTriagem } from '@/components/documentos/triagem'
 import { Bloco, Campo, Cartao, Chip, Leitura, Pilulas, Rodape, Texto } from '@/components/documentos/ui'
-import { carregarEnvelope, useRascunho } from '@/pages/plantao/shared/rascunho'
+import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 
 import {
   ADM_VAZIO, admTemAlgo, fichaAdm, pendenciasAdm, textoAdm, type DetalheAdm, type FormAdm, type Sepse, type Spo2Cond,
-} from './documentosInternacao'
+} from '@/components/internacao/documentos/documentosInternacao'
 
 type ConfigDetalhes = { esquemas: { id: string; nome: string; itens: string[]; ativo: boolean }[]; obrigatorios: string[] }
 

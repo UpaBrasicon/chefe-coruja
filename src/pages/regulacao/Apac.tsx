@@ -29,7 +29,8 @@ import {
 import { codigoSigtapNaTela, competenciasNaJanela, type ProfissionalParaFaturar } from '@/lib/bpa'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
-import { Abas, Erro } from '@/pages/farmacia/Farmacia'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { Abas } from '@/components/monitor/Pagina'
 
 type Aba = StatusApac | 'todas' | 'arquivo'
 const selectCls = 'h-9 rounded-controle border border-fio bg-campo px-2 text-apoio'
@@ -60,7 +61,7 @@ export default function Apac() {
           : 'Registre a execução de cada competência e gere o arquivo do APAC Magnético. Quem autoriza é o médico regulador.'} />
       <Abas abas={abas} valor={aba} onChange={setAba} rotulo="APAC" />
       {!unidade ? <Spinner /> : aba === 'arquivo' ? <AbaArquivo unidade={unidade} /> : lista.isLoading ? <Spinner />
-        : lista.error ? <Erro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
+        : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
           <Vazio icone={FileCheck} titulo="Nenhuma APAC aqui" texto="Quando o médico solicitar uma APAC, ela aparece em Solicitadas." />
         ) : (
           <div className="flex flex-col gap-3">
@@ -177,7 +178,7 @@ function Autorizar({ a, fechar, aoMudar }: { a: Apac; fechar: () => void; aoMuda
         <Button size="sm" disabled={!numeroApacValido(numero) || !ini || !fim || fim < ini || m.isPending} onClick={() => m.mutate()}>Autorizar APAC</Button>
         <Button size="sm" variant="ghost" onClick={fechar}>Voltar</Button>
       </div>
-      {m.error && <Erro texto={(m.error as Error).message} />}
+      {m.error && <MensagemErro texto={(m.error as Error).message} />}
     </div>
   )
 }
@@ -280,7 +281,7 @@ function Execucao({ a, unidade, fechar, aoMudar }: { a: Apac; unidade: string; f
         <Button size="sm" disabled={!ok || m.isPending} onClick={() => m.mutate()}>Registrar execução</Button>
         <Button size="sm" variant="ghost" onClick={fechar}>Voltar</Button>
       </div>
-      {m.error && <Erro texto={(m.error as Error).message} />}
+      {m.error && <MensagemErro texto={(m.error as Error).message} />}
     </div>
   )
 }
@@ -391,7 +392,7 @@ function AbaArquivo({ unidade }: { unidade: string }) {
         <Input className="h-8 w-28" placeholder="MM/AAAA" value={outra} onChange={(e) => setOutra(e.target.value)} aria-label="Outra competência" />
         <Button size="sm" variant="ghost" disabled={!lida || lida > atual} onClick={() => { setComp(lida!); setOutra('') }}>Abrir</Button>
       </div>
-      {conf.isLoading ? <Spinner /> : conf.error ? <Erro texto={(conf.error as Error).message} /> : c && (
+      {conf.isLoading ? <Spinner /> : conf.error ? <MensagemErro texto={(conf.error as Error).message} /> : c && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Competência {competenciaNaTela(comp)}</CardTitle>
@@ -428,7 +429,7 @@ function AbaArquivo({ unidade }: { unidade: string }) {
                 Fechar {competenciaNaTela(comp)} e gerar o arquivo ({prontas} APAC)
               </Button>
             )}
-            {[fechar.error, reabrir.error, download.error].filter(Boolean).map((e, i) => <Erro key={i} texto={(e as Error).message} />)}
+            {[fechar.error, reabrir.error, download.error].filter(Boolean).map((e, i) => <MensagemErro key={i} texto={(e as Error).message} />)}
           </CardContent>
         </Card>
       )}

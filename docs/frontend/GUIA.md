@@ -257,3 +257,28 @@ Exames, Faturamento e Unidade — numa tarefa própria da parte 4.
 - **Verificação no navegador** ("5a") — contraste, foco e transbordo com
   `scripts/verificacao-telas.mjs` — entra no fim da parte 4, quando os tokens
   já forem variáveis com os dois temas.
+
+## 8. Peças de base (parte 4.2, decisões "1a 2a 3a", 19/10/2026)
+
+| Peça | Onde mora | Guia |
+|---|---|---|
+| `Aviso` (`tom`: atencao, critico, conforme, informacao, marca) | `src/components/ui/aviso.tsx` | 2.1 |
+| `MensagemErro` (`formato`: linha ou caixa; `texto`, ou `erro` + `acao`) | `src/components/ui/mensagem-erro.tsx`; classificação em `src/lib/erros.ts` | 2.2 |
+| `Vazio` (bloco) e `VazioLinha` | `src/components/monitor/Pagina.tsx` | 2.3 |
+| `Carregando` (spinner com o nome do que carrega) | `src/components/ui/spinner.tsx` | 2.3 |
+| `CampoSelecao` | `src/components/ui/campo-selecao.tsx` | 3.2 |
+| `TituloPagina`, `TituloSecao`, `TituloCartao` | `src/components/monitor/Pagina.tsx` | 4.1 |
+| `Abas` (cápsula, tablist) | `src/components/monitor/Pagina.tsx` | 4.2 |
+| Espaçamento `justo`, `proximo`, `base`, `secao`, `pagina` (`p-base`, `gap-justo`…) | `src/index.css` (`--spacing-*`) | 4.3 |
+| Hora, data, data e hora, tempo decorrido, moeda e número | `src/lib/formato.ts` (`datas.ts` reexporta os nomes antigos) | 4.4 |
+
+- **Erro do servidor** ("3a"): a recusa de uma regra do banco (`RAISE EXCEPTION`,
+  código P0001) aparece como veio, sem o prefixo de código. Rede, permissão e
+  erro técnico mostram "Não foi possível <ação>. Tente de novo." e o detalhe vai
+  para o registro de erros do admin.
+- **Importação entre telas** (4.5): uma tela que agrupa telas (as abas de
+  `pages/grupos/`, Indicadores, Configuração) pode montar outra tela inteira — o
+  import traz só a tela (o default, ou o nome igual ao do arquivo). Peça, hook
+  ou constante de outra área não: moram em `src/components`, `src/hooks` ou
+  `src/lib`. Com a contagem em zero, "componente não importa tela" entrou no
+  ESLint como erro.
