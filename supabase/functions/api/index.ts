@@ -20,7 +20,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { chaveSecreta } from '../_shared/chaves.ts'
 import { relatarErro } from '../_shared/sentry.ts'
 import { caminhoDaApi, chaveDoCabecalho, interpretar, ipDeOrigem, problema, type CodigoErro } from './contrato.ts'
-import { bundlePedidos, caminhoLaudoLab, capacidade, conteudoCanonico, lerDiagnosticReport, lerSpecimen, operationOutcome, paramsPedidos, rotaFhir } from './fhir.ts'
+import { bundlePedidos, caminhoLaudoLab, capacidade, conteudoCanonico, lerDiagnosticReport, lerImagingStudy, lerSpecimen, operationOutcome, paramsPedidos, rotaFhir } from './fhir.ts'
 
 type Limite = { limite: number; restante: number; reinicio: number }
 type RespostaBanco = { status: number; corpo?: unknown; codigo?: CodigoErro; detalhe?: string; limite?: Limite }
@@ -72,11 +72,13 @@ Deno.serve(async (req) => {
   }
 })
 
-// ── porta FHIR R4 do laboratório (Fase 5C, tarefa 1, etapa 1.3) ──────────────
-// O LIS busca os pedidos (GET /fhir/ServiceRequest) e devolve a coleta
-// (POST /fhir/Specimen) e o laudo (POST /fhir/DiagnosticReport, com os
-// analitos e o PDF). A tradução do FHIR fica em fhir.ts; as regras e o
-// registro de cada chamada, em public.api_v1_laboratorio. O PDF sobe para a
+// ── porta FHIR R4 do laboratório e da imagem (Fase 5C, etapas 1.3 e 2.2) ─────
+// O LIS e o RIS buscam os pedidos (GET /fhir/ServiceRequest; o recurso da
+// chave decide quais). O LIS devolve a coleta (POST /fhir/Specimen); o RIS, o
+// exame feito com o link do visualizador (POST /fhir/ImagingStudy). Os dois
+// mandam o laudo (POST /fhir/DiagnosticReport, com os itens e o PDF). A
+// tradução do FHIR fica em fhir.ts; as regras e o registro de cada chamada, em
+// public.api_v1_fhir. O PDF sobe para a
 // área privada `exames` antes da gravação e sai de lá se ela for recusada.
 
 const CORPO_MAX = 15 * 1024 * 1024
@@ -126,12 +128,16 @@ async function portaFhir(req: Request, url: URL, requisicao: string): Promise<Re
         const s = lerSpecimen(corpo)
         if ('erro' in s) return fhirErro(s.erro.status, s.erro.detalhe, requisicao)
         dados = s
+      } else if (rota.acao === 'estudo') {
+        const s = lerImagingStudy(corpo)
+        if ('erro' in s) return fhirErro(s.erro.status, s.erro.detalhe, requisicao)
+        dados = s
       } else {
         const l = lerDiagnosticReport(corpo)
         if ('erro' in l) return fhirErro(l.erro.status, l.erro.detalhe, requisicao)
         let pdfHash: string | null = null
         // o PDF só sobe se a chave vale para este pedido (a gravação confere tudo de novo e registra)
-        const pode = l.pdf ? await banco.rpc('api_laboratorio_pode_anexar', { p_chave: chave, p_exame: l.exame_id }) : null
+        const pode = l.pdf ? await banco.rpc('api_fhir_pode_anexar', { p_chave: chave, p_exame: l.exame_id }) : null
         if (pode?.error) throw new Error(pode.error.message)
         if (l.pdf && pode?.data === true) {
           const bytes = Uint8Array.from(atob(l.pdf.base64), (c) => c.charCodeAt(0))
@@ -145,7 +151,7 @@ async function portaFhir(req: Request, url: URL, requisicao: string): Promise<Re
                   pdf_caminho: pdfCaminho, pdf_nome: l.pdf?.nome ?? null, conteudo_hash: await sha256(conteudoCanonico(l, pdfHash)) }
       }
     }
-    const { data, error } = await banco.rpc('api_v1_laboratorio', { p_chave: chave, p_ip: ip, p_requisicao: requisicao, p_acao: rota.acao, p_dados: dados })
+    const { data, error } = await banco.rpc('api_v1_fhir', { p_chave: chave, p_ip: ip, p_requisicao: requisicao, p_acao: rota.acao, p_dados: dados })
     if (error) throw new Error(error.message)
     const r = data as RespostaBanco
     const corpo = r.corpo as Record<string, unknown> | undefined
@@ -156,6 +162,7 @@ async function portaFhir(req: Request, url: URL, requisicao: string): Promise<Re
       return fhirResponder(200, bundlePedidos((corpo?.pedidos as unknown[]) ?? [], base, url.searchParams, (corpo?.proximo_cursor as string) ?? null), requisicao, r.limite)
     }
     const msg = rota.acao === 'coleta' ? `Coleta registrada (situação: ${corpo?.situacao}).`
+      : rota.acao === 'estudo' ? `Exame de imagem registrado (situação: ${corpo?.situacao}).`
       : corpo?.repetido ? `Laudo já recebido (versão ${corpo?.versao}); nada mudou.`
       : `Laudo recebido (situação: ${corpo?.situacao}${corpo?.versao ? `, versão ${corpo.versao}` : ''}).`
     return fhirResponder(200, operationOutcome(200, msg, requisicao), requisicao, r.limite)

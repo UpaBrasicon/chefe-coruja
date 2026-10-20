@@ -110,7 +110,7 @@ export type ExamePS = {
   // Fase 5C, etapa 1.1: código do catálogo (null = texto livre), urgência e observação
   procedimento?: string | null; urgencia?: 'rotina' | 'urgente'; observacao?: string | null
   // etapa 1.2: coleta, crítico (só do laboratório), origem e "novo" até alguém abrir
-  coletado_em?: string | null; critico?: boolean; origem?: 'manual' | 'laboratorio' | null; novo?: boolean
+  coletado_em?: string | null; critico?: boolean; origem?: 'manual' | 'laboratorio' | 'imagem' | null; novo?: boolean
   // 5C-2, etapa 2.1: imagem e métodos gráficos
   tipo?: 'laboratorio' | 'imagem' | null; realizado_em?: string | null; imagem_url?: string | null
 }

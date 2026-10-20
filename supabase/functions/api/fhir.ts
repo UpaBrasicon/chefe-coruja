@@ -1,26 +1,29 @@
 // Porta FHIR R4 para o laboratório (Fase 5C, tarefa 1, etapa 1.3; decisões do
-// RT de 19/10/2026). Regras puras, sem Deno nem rede, para testar no Node
-// (fhir.test.ts): rota → ação, leitura do Specimen (coleta) e do
-// DiagnosticReport (situação, analitos e laudo em PDF), montagem do Bundle de
-// pedidos e do OperationOutcome de erro. As regras de negócio ficam no banco
-// (public.api_v1_laboratorio); o contrato está em docs/api/openapi.yaml.
+// RT de 19/10/2026) e para a imagem (tarefa 2, etapa 2.2; decisões de
+// 20/10/2026). Regras puras, sem Deno nem rede, para testar no Node
+// (fhir.test.ts): rota → ação, leitura do Specimen (coleta), do ImagingStudy
+// (exame de imagem feito e link do visualizador) e do DiagnosticReport
+// (situação, analitos e laudo em PDF), montagem do Bundle de pedidos e do
+// OperationOutcome de erro. As regras de negócio ficam no banco
+// (public.api_v1_fhir); o contrato está em docs/api/openapi.yaml.
 //
 // O sistema guarda o resultado como o laboratório mandou: o valor vai em
 // texto, a faixa e a marca (interpretation) também; crítico é só a marca de
 // crítico do próprio laboratório (HH, LL ou AA, da tabela HL7 v3
 // ObservationInterpretation).
 
-export type AcaoFhir = 'pedidos' | 'coleta' | 'laudo' | 'metadata'
+export type AcaoFhir = 'pedidos' | 'coleta' | 'estudo' | 'laudo' | 'metadata'
 type Recusa = { erro: { status: number; detalhe: string } }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 export const PDF_MAX_BYTES = 10 * 1024 * 1024
 const CRITICOS = ['HH', 'LL', 'AA']
+const STATUS_ESTUDO = ['registered', 'available', 'cancelled']
 const STATUS_LAUDO = ['registered', 'partial', 'preliminary', 'final', 'amended', 'corrected', 'appended', 'cancelled']
 
 const recusa = (status: number, detalhe: string): Recusa => ({ erro: { status, detalhe } })
 
-/** /fhir/<recurso> + método → ação da porta do laboratório. */
+/** /fhir/<recurso> + método → ação da porta do laboratório e da imagem. */
 export function rotaFhir(caminho: string, metodo: string): { acao: AcaoFhir } | Recusa {
   const seg = caminho.split('/').filter(Boolean)
   if (seg[0] !== 'fhir' || seg.length !== 2) return recusa(404, 'Recurso FHIR inexistente.')
@@ -28,6 +31,7 @@ export function rotaFhir(caminho: string, metodo: string): { acao: AcaoFhir } | 
   if (r === 'metadata') return metodo === 'GET' ? { acao: 'metadata' } : recusa(405, 'Use GET em metadata.')
   if (r === 'ServiceRequest') return metodo === 'GET' ? { acao: 'pedidos' } : recusa(405, 'ServiceRequest: só GET (busca dos pedidos).')
   if (r === 'Specimen') return metodo === 'POST' ? { acao: 'coleta' } : recusa(405, 'Specimen: só POST (coleta).')
+  if (r === 'ImagingStudy') return metodo === 'POST' ? { acao: 'estudo' } : recusa(405, 'ImagingStudy: só POST (exame feito).')
   if (r === 'DiagnosticReport') return metodo === 'POST' ? { acao: 'laudo' } : recusa(405, 'DiagnosticReport: só POST (laudo).')
   return recusa(404, 'Recurso FHIR inexistente.')
 }
@@ -71,6 +75,33 @@ export function lerSpecimen(corpo: unknown): { exame_id: string; coletado_em: st
     return recusa(400, 'collection.collectedDateTime em ISO 8601 com hora.')
   }
   return { exame_id: exame, coletado_em: quando }
+}
+
+export type Estudo = { exame_id: string; status: string; iniciado_em: string | null; link: string | null; identificador: string | null }
+
+/**
+ * ImagingStudy do RIS → exame de imagem feito. O link do visualizador do PACS
+ * vem num Endpoint contido (endpoint[0] → #id, address); o banco confere se é
+ * https de um domínio cadastrado pela unidade.
+ */
+export function lerImagingStudy(corpo: unknown): Estudo | Recusa {
+  const s = obj(corpo)
+  if (!s || s.resourceType !== 'ImagingStudy') return recusa(400, 'Mande um recurso ImagingStudy.')
+  const exame = idDoPedido(obj(lista(s.basedOn)[0])?.reference)
+  if (!exame) return recusa(400, 'ImagingStudy.basedOn[0].reference deve ser ServiceRequest/<id do pedido>.')
+  const status = texto(s.status)
+  if (!status || !STATUS_ESTUDO.includes(status)) return recusa(400, `status do ImagingStudy: ${STATUS_ESTUDO.join(', ')}.`)
+  const quando = texto(s.started)
+  if (quando && (Number.isNaN(Date.parse(quando)) || !/\d{4}-\d{2}-\d{2}T/.test(quando))) return recusa(400, 'started em ISO 8601 com hora.')
+  let link: string | null = null
+  const ref = texto(obj(lista(s.endpoint)[0])?.reference)
+  if (ref) {
+    const ep = ref.startsWith('#') ? lista(s.contained).map(obj).find((c) => c?.resourceType === 'Endpoint' && c.id === ref.slice(1)) : undefined
+    if (!ep) return recusa(400, 'endpoint[] deve apontar para um Endpoint contido (#id).')
+    link = texto(ep.address)
+    if (!link || link.length > 2000) return recusa(400, 'Endpoint.address com o link do visualizador (até 2000 letras).')
+  }
+  return { exame_id: exame, status, iniciado_em: quando, link, identificador: texto(obj(lista(s.identifier)[0])?.value) }
 }
 
 export type ItemLaudo = {
@@ -187,15 +218,16 @@ export function operationOutcome(status: number, detalhe: string, requisicao: st
 /** O que a porta oferece (GET /fhir/metadata, sem chave). */
 export function capacidade(base: string) {
   return {
-    resourceType: 'CapabilityStatement', status: 'active', date: '2026-10-19', kind: 'instance', fhirVersion: '4.0.1',
-    format: ['application/fhir+json'], implementation: { description: 'Chefe Coruja — porta do laboratório (LIS)', url: `${base}/fhir` },
+    resourceType: 'CapabilityStatement', status: 'active', date: '2026-10-20', kind: 'instance', fhirVersion: '4.0.1',
+    format: ['application/fhir+json'], implementation: { description: 'Chefe Coruja — porta do laboratório (LIS) e da imagem (RIS/PACS)', url: `${base}/fhir` },
     rest: [{
       mode: 'server',
-      security: { description: 'Authorization: Bearer <chave da unidade com o recurso laboratorio>' },
+      security: { description: 'Authorization: Bearer <chave da unidade com o recurso laboratorio e/ou imagem>' },
       resource: [
         { type: 'ServiceRequest', interaction: [{ code: 'search-type' }],
           searchParam: [{ name: 'unidade_id', type: 'token' }, { name: 'authored', type: 'date' }, { name: '_count', type: 'number' }] },
         { type: 'Specimen', interaction: [{ code: 'create' }] },
+        { type: 'ImagingStudy', interaction: [{ code: 'create' }] },
         { type: 'DiagnosticReport', interaction: [{ code: 'create' }] },
       ],
     }],

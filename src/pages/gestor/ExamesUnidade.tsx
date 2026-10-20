@@ -12,7 +12,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { TestTube } from 'lucide-react'
 import * as React from 'react'
 
-import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { TituloCartao, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -180,6 +180,74 @@ export default function ExamesUnidade() {
           </div>
         </div>
       )}
+
+      {unidadeId && <DominiosImagem unidadeId={unidadeId} pode={pode} />}
     </div>
+  )
+}
+
+// Fase 5C-2, etapa 2.2 (decisão 4a de 20/10/2026): o link da imagem, vindo do
+// RIS ou digitado na tela, só vale em https e de um domínio cadastrado aqui.
+// Migration 20261211000001_api_imagem.sql.
+type DominioImagem = { dominio: string; criado_em: string; criado_por: string | null }
+
+function DominiosImagem({ unidadeId, pode }: { unidadeId: string; pode: boolean }) {
+  const qc = useQueryClient()
+  const [novo, setNovo] = React.useState('')
+  const lista = useQuery({
+    queryKey: ['dominios-imagem', unidadeId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('dominios_imagem', { p_unidade: unidadeId })
+      if (error) throw error
+      return (data ?? []) as unknown as DominioImagem[]
+    },
+  })
+  const recarregar = () => { void qc.invalidateQueries({ queryKey: ['dominios-imagem', unidadeId] }) }
+  const incluir = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('definir_dominio_imagem', { p_unidade: unidadeId, p_dominio: novo.trim() })
+      if (error) throw error
+    },
+    onSuccess: () => { setNovo(''); recarregar() },
+  })
+  const retirar = useMutation({
+    mutationFn: async (dominio: string) => {
+      const { error } = await supabase.rpc('retirar_dominio_imagem', { p_unidade: unidadeId, p_dominio: dominio })
+      if (error) throw error
+    },
+    onSuccess: recarregar,
+  })
+  const dominios = lista.data ?? []
+
+  return (
+    <section aria-labelledby="dominios-imagem" className="flex flex-col gap-2 rounded-container border border-fio bg-superficie p-3">
+      <TituloCartao id="dominios-imagem" className="mb-0">Visualizador de imagem (PACS)</TituloCartao>
+      <p className="text-apoio text-tinta-sussurro">
+        Endereços aceitos para o link da imagem, do RIS ou digitado na tela. Só https; vale o domínio e os subdomínios dele.
+        Sem domínio cadastrado, nenhum link de imagem é aceito.
+      </p>
+      <MensagemErro texto={(lista.error ?? incluir.error ?? retirar.error) ? ((lista.error ?? incluir.error ?? retirar.error) as Error).message : null} />
+      {lista.isLoading ? <Spinner /> : dominios.length === 0 ? (
+        <span className="text-apoio text-tinta-sussurro">Nenhum domínio cadastrado.</span>
+      ) : (
+        <ul className="flex flex-col divide-y divide-trilha rounded-controle border border-fio">
+          {dominios.map((d) => (
+            <li key={d.dominio} className="flex items-center justify-between gap-2 px-3 py-1.5 text-apoio">
+              <span className="font-medium text-tinta">{d.dominio}</span>
+              {pode && <Button size="xs" variant="ghost" disabled={retirar.isPending} onClick={() => retirar.mutate(d.dominio)}>Retirar</Button>}
+            </li>
+          ))}
+        </ul>
+      )}
+      {pode && (
+        <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); if (novo.trim()) incluir.mutate() }}>
+          <div className="flex flex-1 flex-col gap-1">
+            <Label htmlFor="dominio-imagem">Incluir domínio</Label>
+            <Input id="dominio-imagem" className="h-9 min-w-48" placeholder="pacs.hospital.com.br" value={novo} onChange={(e) => setNovo(e.target.value)} />
+          </div>
+          <Button type="submit" size="sm" disabled={!novo.trim() || incluir.isPending}>Incluir</Button>
+        </form>
+      )}
+    </section>
   )
 }
