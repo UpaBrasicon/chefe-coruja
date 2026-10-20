@@ -10,6 +10,7 @@ import { PACIENTE_VAZIO, br, faixaBr, idadePediatrica } from './formatoIcr'
 import { Bloco, CampoPaciente, LinhaLivro, Opcoes, Pendencia } from './PecasIcr'
 import { LinhaReferencia } from './PecasP2'
 import { LinhaDoseLivro, TabelaLivro } from './PecasP4'
+import { numero } from '@/lib/formato'
 
 type Tema = 'oma' | 'faringite' | 'sinusite' | 'crupe'
 
@@ -42,7 +43,7 @@ export function ViasAereasSuperioresPed() {
           {tema === 'faringite' && benz !== null && (
             <LinhaLivro
               nome="Penicilina G benzatina IM"
-              conta={<strong>{benz === 'indefinido' ? 'exatamente 27 kg: o livro não define' : `${benz.toLocaleString('pt-BR')} U`}</strong>}
+              conta={<strong>{benz === 'indefinido' ? 'exatamente 27 kg: o livro não define' : `${numero(benz)} U`}</strong>}
               texto="< 27 kg: 600.000 U; > 27 kg: 1.200.000 U, dose única"
               pagina="p. 289 (Tabela 3)"
             />

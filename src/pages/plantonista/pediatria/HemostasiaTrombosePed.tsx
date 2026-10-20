@@ -12,6 +12,7 @@ import { PACIENTE_VAZIO, br, faixaBr, idadePediatrica, podeCalcular } from './fo
 import { Bloco, CampoPaciente, Nota, Opcoes, Pendencia } from './PecasIcr'
 import { LinhaDoseLivro, TabelaLivro } from './PecasP4'
 import { LinhaFaixa, ListaLivro } from './PecasP5'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Hemofilia, von Willebrand, PTI e anticoagulação — caps. 64 e 65 do livro do ICr. */
 export function HemostasiaTrombosePed() {
@@ -135,14 +136,14 @@ export function HemostasiaTrombosePed() {
 
       <Bloco titulo="TEV pediátrico — ASH/ISTH 2025, ao lado do cap. 65" descricao="Blood Adv 2025;9:2587–2636, conferida pelo resumo oficial das mudanças. As doses pediátricas de DOAC não constam do resumo e não são calculadas.">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Rec.</th><th className="pr-3 pb-2">População</th><th className="pr-3 pb-2">ASH/ISTH 2025</th><th className="pb-2">Mudança</th></tr></thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Rec.</TableHead><TableHead className="pr-3 pb-2">População</TableHead><TableHead className="pr-3 pb-2">ASH/ISTH 2025</TableHead><TableHead className="pb-2">Mudança</TableHead></TableRow></TableHeader>
+            <TableBody>
               {ASH_ISTH_ITENS.map((i) => (
-                <tr key={i.numero} className="border-t"><td className="pr-3 py-2 font-medium whitespace-nowrap">{i.numero}</td><td className="pr-3 py-2">{i.populacao}</td><td className="pr-3 py-2">{i.texto}</td><td className="py-2 text-tinta-sussurro">{i.mudanca}</td></tr>
+                <TableRow key={i.numero} className="border-t"><TableCell className="pr-3 py-2 font-medium whitespace-nowrap">{i.numero}</TableCell><TableCell className="pr-3 py-2">{i.populacao}</TableCell><TableCell className="pr-3 py-2">{i.texto}</TableCell><TableCell className="py-2 text-tinta-sussurro">{i.mudanca}</TableCell></TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
         <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_TEV_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>

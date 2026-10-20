@@ -8,6 +8,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { PACIENTE_VAZIO, br, faixaBr, podeCalcular } from './formatoIcr'
 import { Bloco, CampoPaciente, Errata, LinhaLivro, Nota, Pendencia } from './PecasIcr'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Fluidoterapia de manutenção pediátrica — cap. 77 do Pronto-Socorro ICr-HCFMUSP. */
 export function FluidoterapiaManutencaoPed() {
@@ -63,7 +64,7 @@ export function FluidoterapiaManutencaoPed() {
         {SOLUCOES_PADRAO.map((s) => {
           const c = composicao(s)
           return (
-            <div key={s.id} className="rounded-lg border px-3 py-2 tabular-nums">
+            <div key={s.id} className="rounded-controle border px-3 py-2 tabular-nums">
               <div className="font-medium">{s.nome}</div>
               <div className="text-tinta-sussurro">
                 SG 5% {s.sg5Ml} mL + NaCl 20% {s.nacl20Ml} mL + KCl 19,1% {s.kcl191Ml} mL ({br(c.volumeMl, 0)} mL)
@@ -82,28 +83,28 @@ export function FluidoterapiaManutencaoPed() {
 
       <Bloco titulo="Principais soluções (Tabela 1, p. 840)" descricao="Isotônica: Na próximo do plasma (131 a 154 mEq/L); hipotônica: < 130 mEq/L (p. 838).">
         <div className="overflow-x-auto">
-          <table className="w-full text-left tabular-nums">
-            <thead>
-              <tr className="text-tinta-sussurro">
-                <th className="py-1 pr-3 font-medium">Solução</th>
-                <th className="py-1 pr-3 font-medium">Na</th>
-                <th className="py-1 pr-3 font-medium">K</th>
-                <th className="py-1 pr-3 font-medium">Cl</th>
-                <th className="py-1 font-medium">Osm</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table variante="referencia" className="w-full text-left tabular-nums">
+            <TableHeader>
+              <TableRow className="text-tinta-sussurro">
+                <TableHead className="py-1 pr-3 font-medium">Solução</TableHead>
+                <TableHead className="py-1 pr-3 font-medium">Na</TableHead>
+                <TableHead className="py-1 pr-3 font-medium">K</TableHead>
+                <TableHead className="py-1 pr-3 font-medium">Cl</TableHead>
+                <TableHead className="py-1 font-medium">Osm</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {TABELA_SOLUCOES.map((s) => (
-                <tr key={s.nome} className="border-t">
-                  <td className="py-1 pr-3">{s.nome}</td>
-                  <td className="py-1 pr-3">{s.na}</td>
-                  <td className="py-1 pr-3">{s.k ?? '—'}</td>
-                  <td className="py-1 pr-3">{s.cl}</td>
-                  <td className="py-1">{s.osm}</td>
-                </tr>
+                <TableRow key={s.nome} className="border-t">
+                  <TableCell className="py-1 pr-3">{s.nome}</TableCell>
+                  <TableCell className="py-1 pr-3">{s.na}</TableCell>
+                  <TableCell className="py-1 pr-3">{s.k ?? '—'}</TableCell>
+                  <TableCell className="py-1 pr-3">{s.cl}</TableCell>
+                  <TableCell className="py-1">{s.osm}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
         <Nota>Eletrólitos em mEq/L; osmolaridade em mOsm/L. O acompanhamento (diurese, balanço hídrico, peso, eletrólitos e função renal) segue o livro (p. 841).</Nota>
       </Bloco>

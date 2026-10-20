@@ -18,11 +18,13 @@ import { NEONATO_FORA } from '@/clinico/pediatria/bolus'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { numero } from '@/lib/formato'
 
-const br = (x: number | null, casas = 2) => (x === null ? '—' : (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR'))
+const br = (x: number | null, casas = 2) => (x === null ? '—' : numero(Math.round(x * 10 ** casas) / 10 ** casas))
 const lerNumero = (v: string) => (v.trim() === '' ? Number.NaN : Number(v.replace(',', '.')))
 
 /** Infusões contínuas pediátricas: peso + concentração informada → mL/h e o inverso (fonte em src/clinico/pediatria/infusoes.ts). */
@@ -68,36 +70,35 @@ export function InfusoesPediatricas() {
           <NumberField id="inf-ped-anos" label="Idade (opcional)" unit="anos completos" value={anos} onChange={setAnos} min={0} step={1} />
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="inf-ped-droga">Medicamento</Label>
-            <select
+            <CampoSelecao
               id="inf-ped-droga"
               value={i.id}
               onChange={(e) => trocar(e.target.value)}
-              className="h-9 rounded-md border border-fio bg-transparent px-2 text-sm"
             >
               {(Object.keys(GRUPOS_INFUSAO) as GrupoInfusao[]).map((g) => (
                 <optgroup key={g} label={GRUPOS_INFUSAO[g]}>
                   {INFUSOES_PED.filter((x) => x.grupo === g).map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}
                 </optgroup>
               ))}
-            </select>
+            </CampoSelecao>
           </div>
-          <p className="text-sm text-tinta-sussurro md:col-span-3">{NEONATO_FORA} Pediatria: de 1 dia de vida até antes dos 14 anos.</p>
+          <p className="text-apoio text-tinta-sussurro md:col-span-3">{NEONATO_FORA} Pediatria: de 1 dia de vida até antes dos 14 anos.</p>
         </CardContent>
       </Card>
 
       {adulto ? (
         <Card>
-          <CardContent className="pt-6 text-sm text-atencao">A partir de 14 anos completos o paciente é adulto; esta ferramenta é pediátrica.</CardContent>
+          <CardContent className="pt-6 text-apoio text-atencao">A partir de 14 anos completos o paciente é adulto; esta ferramenta é pediátrica.</CardContent>
         </Card>
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{i.nome}</CardTitle>
+            <CardTitle className="text-corpo">{i.nome}</CardTitle>
             <CardDescription>
               {i.semCalculo ? 'Sem cálculo — ver aviso.' : <>Faixa do livro {br(i.faixa[0], 3)}–{br(i.faixa[1], 3)} {u}{i.maximo !== undefined && ` · máximo ${br(i.maximo, 3)} ${u}`}{i.tetoAbsoluto !== undefined && ` · teto ${br(i.tetoAbsoluto)} ${i.numerador === 'mcg' ? 'µg' : i.numerador}/${i.tempo}`}</>}
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3 text-sm">
+          <CardContent className="flex flex-col gap-3 text-apoio">
             <p className="text-tinta-sussurro">Texto do livro: “{i.textoLivro}” ({i.paginaTexto ?? i.pagina}).</p>
             {i.semCalculo ? (
               <p className="text-atencao">{i.semCalculo}</p>

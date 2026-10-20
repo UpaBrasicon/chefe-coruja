@@ -5,6 +5,7 @@ import { LIVRO_ICR } from './pediatria/fonteIcr.ts'
 import { textoDoseLivro, type DoseLivro } from './pediatria/fonteP4.ts'
 import { DOSES_TABELA8 } from './pediatria/injuriaRenalPed.ts'
 import { DOSES_SLT } from './pediatria/oncologiaPed.ts'
+import { numero as numeroBr } from '../lib/formato.ts'
 
 // Hiperpotassemia: gravidade pelo nível, indicação de cálcio pelo ECG e a
 // conduta em três tempos (estabilizar, deslocar, remover). Portada da versão
@@ -185,7 +186,7 @@ const faixaTexto = (f: [number, number]) => (f[0] === f[1] ? `${f[0]}` : `${f[0]
 /** Linha do apêndice (bolus.ts) como texto, só com os campos do próprio registro. */
 export function textoBolus(b: Bolus): string {
   const partes = [`${faixaTexto(b.faixa)} ${b.unidade}${b.porKg ? '/kg' : ''}`]
-  if (b.maximo !== undefined) partes.push(`máx. ${b.maximo.toLocaleString('pt-BR')} ${b.unidade}`)
+  if (b.maximo !== undefined) partes.push(`máx. ${numeroBr(b.maximo)} ${b.unidade}`)
   if (b.condicao) partes.push(b.condicao.texto)
   partes.push(b.via)
   return `${b.nome}: ${partes.join(' · ')} (${b.pagina})${b.errata ? `. Errata: ${b.errata}` : ''}`
@@ -266,7 +267,7 @@ export function avaliarHiperpotassemiaPed(e: EntradaHiperKPed): ResultadoHiperKP
   const calcula = e.neonato === false
   const acimaDoLimiar = k > LIMIARES_K.hipercalemia
   const risco = k >= LIMIARES_K.hipercalemiaGrave
-  const n = (x: number) => x.toLocaleString('pt-BR')
+  const n = (x: number) => numeroBr(x)
   const leitura = acimaDoLimiar
     ? `Hipercalemia pelo livro: acima de ${n(LIMIARES_K.hipercalemia)} mEq/L (p. 546).`
     : `Não passa de ${n(LIMIARES_K.hipercalemia)} mEq/L, o limiar do livro (p. 546).`

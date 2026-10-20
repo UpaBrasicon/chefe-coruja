@@ -1,5 +1,6 @@
 import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto, pagina } from './fonte.ts'
+import { numero as numeroBr } from '../../lib/formato.ts'
 
 // Tétano e profilaxias pós-exposição — Manual de Medicina de Emergência do
 // HCFMUSP (3ª ed., 2022): cap. 93 Tétano acidental (p. 1249–1256), Anexo 4
@@ -324,7 +325,7 @@ export type CondutaHbv = { itens: string[]; dosesHbig: 0 | 1 | 2; hbigSeAntiHbsB
 const iniciar = `Iniciar esquema vacinal: ${HBV.esquema}. Realizar ${HBV.antiHbs}.`
 const completar = `Completar esquema vacinal: ${HBV.esquema}. Realizar ${HBV.antiHbs}.`
 const repetir = `Repetir esquema vacinal (2º esquema: mais 3 doses em 0, 1 e 6 meses). Realizar ${HBV.antiHbs}.`
-const umaHbig = `1 dose de HBIG ${HBV.hbig.mlKg.toLocaleString('pt-BR')} mL/kg ${HBV.hbig.via}, ${HBV.hbig.prazo}.`
+const umaHbig = `1 dose de HBIG ${numeroBr(HBV.hbig.mlKg)} mL/kg ${HBV.hbig.via}, ${HBV.hbig.prazo}.`
 const nada = 'Nenhuma medida específica.'
 
 export function profilaxiaHepatiteB(fonte: FonteHbv, situacao: SituacaoProfissional): CondutaHbv {

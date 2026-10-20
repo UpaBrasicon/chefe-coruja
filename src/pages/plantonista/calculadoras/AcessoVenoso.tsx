@@ -1,32 +1,24 @@
 import { useState } from 'react'
 
 import { fichaAcessoVenoso, recomendarAcesso, type EntradaAcesso } from '@/clinico/acessoVenoso'
+import { Chip } from '@/components/monitor/Pagina'
 import { SemReferenciaPediatrica } from '@/components/plantonista/SemReferenciaPediatrica'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
 
 type Opcao = { valor: string; label: string }
 
 function Grupo({ titulo, opcoes, valor, set }: { titulo: string; opcoes: Opcao[]; valor: string; set: (v: string) => void }) {
   return (
     <div className="flex flex-col gap-2">
-      <Label className="text-sm font-semibold">{titulo}</Label>
-      <div className="grid gap-2 sm:grid-cols-2">
+      <Label className="text-apoio font-semibold">{titulo}</Label>
+      <div role="radiogroup" aria-label={titulo} className="flex flex-wrap gap-2">
         {opcoes.map((o) => (
-          <button
-            key={o.valor}
-            type="button"
-            onClick={() => set(o.valor)}
-            className={cn(
-              'rounded-lg border px-3 py-2 text-left text-sm transition-colors',
-              valor === o.valor ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50'
-            )}
-          >
+          <Chip key={o.valor} variante="opcao" radio ativo={valor === o.valor} onClick={() => set(o.valor)}>
             {o.label}
-          </button>
+          </Chip>
         ))}
       </div>
     </div>
@@ -93,7 +85,7 @@ export function AcessoVenoso() {
 
         {!completo && !crianca && (
           <Card>
-            <CardContent className="pt-6 text-sm text-tinta-sussurro">
+            <CardContent className="pt-6 text-apoio text-tinta-sussurro">
               Responda todas as etapas para gerar a recomendação.
             </CardContent>
           </Card>
@@ -102,13 +94,13 @@ export function AcessoVenoso() {
         {resultado && (
           <Card className="border-acao">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-corpo">
                 Dispositivo recomendado
-                <Badge className="text-base">{resultado.dispositivo}</Badge>
+                <Badge className="text-corpo">{resultado.dispositivo}</Badge>
               </CardTitle>
               <CardDescription>{resultado.motivo}</CardDescription>
             </CardHeader>
-            <CardContent className="text-sm text-tinta-sussurro">
+            <CardContent className="text-apoio text-tinta-sussurro">
               Considerar ultrassom para guiar punção quando a rede venosa estiver comprometida.
             </CardContent>
           </Card>

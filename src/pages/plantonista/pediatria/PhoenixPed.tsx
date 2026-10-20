@@ -45,14 +45,14 @@ export function PhoenixCalculo() {
         <NumberField id="phx-fib" label="Fibrinogênio" unit="mg/dL" value={fib} onChange={setFib} min={0} />
         <NumberField id="phx-gcs" label="Glasgow" value={gcs} onChange={setGcs} min={0} max={15} />
       </div>
-      <div className="flex flex-wrap gap-4 text-sm">
+      <div className="flex flex-wrap gap-4 text-apoio">
         <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={rn} onChange={(e) => setRn(e.target.checked)} /> Menos de 1 mês de vida</label>
         <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={suporte} onChange={(e) => setSuporte(e.target.checked)} /> Algum suporte respiratório</label>
         <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={vmi} onChange={(e) => setVmi(e.target.checked)} /> Ventilação mecânica invasiva</label>
         <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={pupilas} onChange={(e) => setPupilas(e.target.checked)} /> Pupilas fixas bilaterais</label>
       </div>
       {ph ? (
-        <div className="rounded-lg border px-3 py-2 text-sm">
+        <div className="rounded-controle border px-3 py-2 text-apoio">
           <p>
             Phoenix <strong className="tabular-nums">{ph.total}</strong> (respiratório {ph.respiratorio} · cardiovascular {ph.cardiovascular} · coagulação {ph.coagulacao} · neurológico {ph.neurologico}) —{' '}
             <strong>{ph.choqueSeptico ? 'choque séptico' : ph.sepse ? 'sepse' : 'abaixo de 2 pontos'}</strong>, se houver infecção suspeita.

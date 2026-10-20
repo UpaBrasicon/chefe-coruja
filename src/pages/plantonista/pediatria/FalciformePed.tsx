@@ -11,6 +11,7 @@ import { PACIENTE_VAZIO, br, faixaBr, idadePediatrica } from './formatoIcr'
 import { Bloco, CampoPaciente, LinhaLivro, Nota, Pendencia } from './PecasIcr'
 import { LinhaReferencia } from './PecasP2'
 import { LinhaDoseLivro } from './PecasP4'
+import { numero } from '@/lib/formato'
 
 /** Doença falciforme — crise álgica e complicações agudas (cap. 63 do livro do ICr). */
 export function FalciformePed() {
@@ -94,7 +95,7 @@ export function FalciformePed() {
           <LinhaLivro nome="Hidroxiureia (ambulatório, para conferência)" conta={<>inicial <strong>{br(hu.inicial, 0)} mg/dia</strong> · +{br(hu.incremento, 0)} mg/dia a cada {PCDT_FALCIFORME.hidroxiureia.aCadaSemanas} semanas · máximo {br(hu.maximo, 0)} mg/dia{hu.comprimido100 && ' · comprimido de 100 mg (≤ 25 kg)'}</>} texto={`${PCDT_FALCIFORME.hidroxiureia.criterios}. Exclusão: ${PCDT_FALCIFORME.hidroxiureia.exclusao}.`} pagina={PCDT_FALCIFORME.hidroxiureia.pagina} />
         )}
         {calc && penV && benz && (
-          <LinhaLivro nome="Profilaxia com penicilina (3 meses a 5 anos)" conta={<>penicilina V <strong>{br(penV.mg, 0)} mg 12/12 h</strong> ({penV.criterio}) · ou benzatina <strong>{benz.ui.toLocaleString('pt-BR')} UI</strong> {PCDT_FALCIFORME.profilaxia.benzatinaIntervalo} ({benz.criterio})</>} texto={`Alergia à penicilina: ${PCDT_FALCIFORME.profilaxia.alergia}.`} pagina={PCDT_FALCIFORME.profilaxia.pagina} />
+          <LinhaLivro nome="Profilaxia com penicilina (3 meses a 5 anos)" conta={<>penicilina V <strong>{br(penV.mg, 0)} mg 12/12 h</strong> ({penV.criterio}) · ou benzatina <strong>{numero(benz.ui)} UI</strong> {PCDT_FALCIFORME.profilaxia.benzatinaIntervalo} ({benz.criterio})</>} texto={`Alergia à penicilina: ${PCDT_FALCIFORME.profilaxia.alergia}.`} pagina={PCDT_FALCIFORME.profilaxia.pagina} />
         )}
         <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_PCDT_FALCIFORME.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>

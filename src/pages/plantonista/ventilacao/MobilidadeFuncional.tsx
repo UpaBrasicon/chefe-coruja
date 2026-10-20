@@ -11,7 +11,7 @@ export function MobilidadeFuncional() {
     >
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Níveis de mobilidade (0 a 7)</CardTitle>
+          <CardTitle className="text-corpo">Níveis de mobilidade (0 a 7)</CardTitle>
           <CardDescription>Progredir conforme estabilidade clínica.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
@@ -25,9 +25,9 @@ export function MobilidadeFuncional() {
             ['6 — Deambulação com auxílio', 'Caminhar com ajuda de 1–2 pessoas.'],
             ['7 — Deambulação independente', 'Caminhar sem auxílio.'],
           ].map(([nivel, texto]) => (
-            <div key={nivel} className="rounded-lg border px-3 py-2">
+            <div key={nivel} className="rounded-controle border px-3 py-2">
               <Badge variant="secondary" className="mb-1">{nivel}</Badge>
-              <p className="text-sm text-tinta-sussurro">{texto}</p>
+              <p className="text-apoio text-tinta-sussurro">{texto}</p>
             </div>
           ))}
         </CardContent>
@@ -35,9 +35,9 @@ export function MobilidadeFuncional() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Critérios de segurança para mobilização</CardTitle>
+          <CardTitle className="text-corpo">Critérios de segurança para mobilização</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-1 text-sm text-tinta-sussurro">
+        <CardContent className="flex flex-col gap-1 text-apoio text-tinta-sussurro">
           <p>• Sem sedação profunda (RASS ≥ -2).</p>
           <p>• PAS ≥ 90 mmHg sem vasopressores em dose crescente.</p>
           <p>• Sem arritmias instáveis · Sem disritmia nova.</p>

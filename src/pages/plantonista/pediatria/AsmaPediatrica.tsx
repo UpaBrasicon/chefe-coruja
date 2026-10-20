@@ -7,6 +7,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { num, pesoValido } from './formatoP2'
 import { AvisoRn, Bloco, CampoPesoRn, LinhaDose, LinhaReferencia, PesoInvalido } from './PecasP2'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Crise asmática na criança (livro do ICr, cap. 8). */
 export function AsmaPediatrica() {
@@ -32,7 +33,7 @@ export function AsmaPediatrica() {
             />
           ))}
           {ipra && (
-            <div className="rounded-lg border px-3 py-2 text-sm">
+            <div className="rounded-controle border px-3 py-2 text-apoio">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="font-medium">Ipratrópio em nebulização (250 µg/mL)</span>
                 <strong className="tabular-nums">{ipra.mcg} µg · {ipra.gotas} gotas</strong>
@@ -51,21 +52,21 @@ export function AsmaPediatrica() {
       <Bloco titulo="Classificação da crise (Tabela 1, p. 114) — referência">
         <p className="text-tinta-sussurro">A presença de vários parâmetros, mas não necessariamente todos, indica a classificação geral. A tela não classifica.</p>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left text-xs">
-            <thead className="text-tinta-sussurro">
-              <tr>{['Parâmetro', 'Leve a moderada', 'Grave', 'Muito grave (insuficiência respiratória)'].map((h) => <th key={h} className="px-1.5 py-1 font-medium">{h}</th>)}</tr>
-            </thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[560px] text-left text-rotulo">
+            <TableHeader className="text-tinta-sussurro">
+              <TableRow>{['Parâmetro', 'Leve a moderada', 'Grave', 'Muito grave (insuficiência respiratória)'].map((h) => <TableHead key={h} className="px-1.5 py-1 font-medium">{h}</TableHead>)}</TableRow>
+            </TableHeader>
+            <TableBody>
               {CLASSIFICACAO_ASMA.map((l) => (
-                <tr key={l.parametro} className="border-t">
-                  <td className="px-1.5 py-1 font-medium">{l.parametro}</td>
-                  <td className="px-1.5 py-1">{l.leveModerada}</td>
-                  <td className="px-1.5 py-1">{l.grave}</td>
-                  <td className="px-1.5 py-1">{l.muitoGrave}</td>
-                </tr>
+                <TableRow key={l.parametro} className="border-t">
+                  <TableCell className="px-1.5 py-1 font-medium">{l.parametro}</TableCell>
+                  <TableCell className="px-1.5 py-1">{l.leveModerada}</TableCell>
+                  <TableCell className="px-1.5 py-1">{l.grave}</TableCell>
+                  <TableCell className="px-1.5 py-1">{l.muitoGrave}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
         <p className="text-tinta-sussurro">FR normal: &lt; 2 meses, &lt; 60; 2 a 11 meses, &lt; 50; 1 a 5 anos, &lt; 40; 6 a 8 anos, &lt; 30; acima de 8 anos, igual ao adulto.</p>
         <p className="text-rotulo text-tinta-sussurro">Livro ICr, cap. 8, p. 114.</p>

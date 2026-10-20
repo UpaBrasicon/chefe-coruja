@@ -12,10 +12,11 @@ import { cn } from '@/lib/utils'
 
 import { num, pesoValido } from './formatoP2'
 import { Bloco, CampoPesoRn, LinhaDose, LinhaReferencia } from './PecasP2'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 function LinhaTubo({ rotulo, t }: { rotulo: string; t: Tubo }) {
   return (
-    <div className="rounded-lg border px-3 py-2">
+    <div className="rounded-controle border px-3 py-2">
       <p className="font-medium">{rotulo}: <span className="tabular-nums">{num(t.calculadoMm, 2)} mm</span> pela fórmula</p>
       <p className="text-tinta-sussurro">
         Tubos vizinhos: {t.vizinhosMm.map((d) => `${num(d, 1)} mm (profundidade ${num(profundidadeCm(d)!, 1)} cm no lábio superior)`).join(' · ')}
@@ -71,18 +72,18 @@ export function ViaAereaPediatrica() {
       <Bloco titulo="Equipamento por idade e peso (cap. 13, Tabelas 2 e 3)">
         {temIdade && !eq && <p className="text-atencao">A tabela do livro vai até 8–10 anos; acima disso não há linha.</p>}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-xs">
-            <thead className="text-tinta-sussurro">
-              <tr>{['Idade e peso', 'Máscara O₂', 'Guedel', 'Laringoscópio', 'Tubo', 'Manguito', 'Jelco', 'Sonda gástrica', 'Dreno de tórax', 'Foley', 'Colar'].map((h) => <th key={h} className="px-1.5 py-1 font-medium">{h}</th>)}</tr>
-            </thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[720px] text-left text-rotulo">
+            <TableHeader className="text-tinta-sussurro">
+              <TableRow>{['Idade e peso', 'Máscara O₂', 'Guedel', 'Laringoscópio', 'Tubo', 'Manguito', 'Jelco', 'Sonda gástrica', 'Dreno de tórax', 'Foley', 'Colar'].map((h) => <TableHead key={h} className="px-1.5 py-1 font-medium">{h}</TableHead>)}</TableRow>
+            </TableHeader>
+            <TableBody>
               {EQUIPAMENTO.map((l) => (
-                <tr key={l.rotulo} className={cn('border-t', eq === l && 'bg-acao/5 font-medium')}>
-                  {[l.rotulo, l.mascaraO2, l.guedel, l.laringoscopio, l.tubo, l.manguito, l.jelco, l.sondaGastrica, l.drenoTorax, l.foley, l.colarCervical].map((v, i) => <td key={i} className="px-1.5 py-1">{v}</td>)}
-                </tr>
+                <TableRow key={l.rotulo} className={cn('border-t', eq === l && 'bg-acao/5 font-medium')}>
+                  {[l.rotulo, l.mascaraO2, l.guedel, l.laringoscopio, l.tubo, l.manguito, l.jelco, l.sondaGastrica, l.drenoTorax, l.foley, l.colarCervical].map((v, i) => <TableCell key={i} className="px-1.5 py-1">{v}</TableCell>)}
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
         <p className="text-rotulo text-tinta-sussurro">Livro ICr, cap. 13, p. 150–151.</p>
       </Bloco>

@@ -102,8 +102,8 @@ export function DisturbiosSodioPed() {
             const porL = variacaoNaPorLitro(naRef, s.naMeqL, p.peso)
             const litros = porL !== null && variacao !== 0 ? litrosParaVariacao(variacao, porL) : null
             return (
-              <div key={s.id} className="rounded-lg border px-3 py-2 tabular-nums">
-                <span className="font-medium">{s.nome}</span> <span className="text-xs text-tinta-sussurro">(Na {s.naMeqL} mEq/L — {s.pagina})</span>
+              <div key={s.id} className="rounded-controle border px-3 py-2 tabular-nums">
+                <span className="font-medium">{s.nome}</span> <span className="text-rotulo text-tinta-sussurro">(Na {s.naMeqL} mEq/L — {s.pagina})</span>
                 <div>
                   1 L muda o Na em <strong>{porL === null ? '—' : `${porL > 0 ? '+' : ''}${br(porL)} mEq/L`}</strong>
                   {litros !== null && <> · para {variacao > 0 ? '+' : ''}{br(variacao)} mEq/L: <strong>{br(litros * 1000, 0)} mL</strong></>}

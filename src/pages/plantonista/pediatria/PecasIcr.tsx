@@ -44,7 +44,7 @@ export function CampoPaciente({ id, p, onChange, semIdade, children }: { id: str
         <Opcoes label="Recém-nascido?" valor={p.rn} opcoes={[[false, 'Não'], [true, 'Sim']]} onChange={(rn) => onChange({ ...p, rn })} />
         {children}
         {foraDaPediatria && (
-          <p className="text-sm text-atencao sm:col-span-2 md:col-span-4">A partir dos 14 anos completos é adulto: esta ferramenta é pediátrica.</p>
+          <p className="text-apoio text-atencao sm:col-span-2 md:col-span-4">A partir dos 14 anos completos é adulto: esta ferramenta é pediátrica.</p>
         )}
       </CardContent>
     </Card>
@@ -56,10 +56,10 @@ export function Bloco({ titulo, descricao, children }: { titulo: string; descric
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{titulo}</CardTitle>
+        <CardTitle className="text-corpo">{titulo}</CardTitle>
         {descricao && <CardDescription>{descricao}</CardDescription>}
       </CardHeader>
-      <CardContent className="flex flex-col gap-2 text-sm">{children}</CardContent>
+      <CardContent className="flex flex-col gap-2 text-apoio">{children}</CardContent>
     </Card>
   )
 }
@@ -67,7 +67,7 @@ export function Bloco({ titulo, descricao, children }: { titulo: string; descric
 /** Uma linha: o que o livro traz, a conta para o peso (quando há) e a página. */
 export function LinhaLivro({ nome, texto, conta, pagina, errata, nota }: { nome: string; texto: ReactNode; conta?: ReactNode; pagina: string; errata?: string; nota?: string }) {
   return (
-    <div className="rounded-lg border px-3 py-2 text-sm">
+    <div className="rounded-controle border px-3 py-2 text-apoio">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">{nome}</span>
         {conta && <span className="tabular-nums">{conta}</span>}
@@ -83,7 +83,7 @@ export function LinhaLivro({ nome, texto, conta, pagina, errata, nota }: { nome:
 
 export function Errata({ texto }: { texto: string }) {
   return (
-    <p className="text-sm text-atencao">
+    <p className="text-apoio text-atencao">
       <Badge variant="warning" className="mr-1">
         errata
       </Badge>
@@ -93,7 +93,7 @@ export function Errata({ texto }: { texto: string }) {
 }
 
 export function Nota({ children }: { children: ReactNode }) {
-  return <p className="text-xs text-tinta-sussurro">{children}</p>
+  return <p className="text-rotulo text-tinta-sussurro">{children}</p>
 }
 
 /** Recém-nascido sem valor neonatal explícito no capítulo, ou peso não informado. */
@@ -101,13 +101,13 @@ export function Pendencia({ p, precisaPeso = true }: { p: Paciente; precisaPeso?
   if (p.rn)
     return (
       <Card>
-        <CardContent className="pt-6 text-sm text-atencao">{SEM_VALOR_NEONATAL}</CardContent>
+        <CardContent className="pt-6 text-apoio text-atencao">{SEM_VALOR_NEONATAL}</CardContent>
       </Card>
     )
   if (precisaPeso && !(p.peso > 0))
     return (
       <Card>
-        <CardContent className="pt-6 text-sm text-tinta-sussurro">Informe o peso para calcular.</CardContent>
+        <CardContent className="pt-6 text-apoio text-tinta-sussurro">Informe o peso para calcular.</CardContent>
       </Card>
     )
   return null

@@ -5,6 +5,7 @@ import {
   AVISO_ELETRICA, COLUNAS_LB, ERRATA_LUND_BROWDER, GRANDE_QUEIMADO_PCT, MAO_ESPALMADA_PCT, NOTA_MANUTENCAO, PRE_HOSPITALAR_ML_KG_H, REGIOES_LB, colunaPorIdade, diureseAlvo,
   fichaQueimaduraPed, manutencao24hMl, parkland, somaManutencao, superficieQueimada, totalCorpo, valorRegiao,
 } from '@/clinico/pediatria/queimadura'
+import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
@@ -58,20 +59,15 @@ export function QueimaduraPed() {
             </p>
             <div className="grid gap-2 md:grid-cols-2">
               {REGIOES_LB.map((r) => (
-                <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-1.5">
+                <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-controle border px-3 py-1.5">
                   <span>
-                    {r.nome} {r.face !== 'única' && <span className="text-tinta-sussurro">({r.face})</span>} <span className="text-xs text-tinta-sussurro">{br(valorRegiao(r, coluna), 2)}%</span>
+                    {r.nome} {r.face !== 'única' && <span className="text-tinta-sussurro">({r.face})</span>} <span className="text-rotulo text-tinta-sussurro">{br(valorRegiao(r, coluna), 2)}%</span>
                   </span>
-                  <div className="flex gap-1">
+                  <div role="radiogroup" aria-label={`Fração queimada: ${r.nome}${r.face !== 'única' ? ` (${r.face})` : ''}`} className="flex gap-1">
                     {FRACOES.map(([v, t]) => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setFracoes({ ...fracoes, [r.id]: v })}
-                        className={`rounded border px-2 py-0.5 text-xs ${(fracoes[r.id] ?? 0) === v ? 'bg-acao text-white' : ''}`}
-                      >
+                      <Chip key={t} variante="opcao" radio ativo={(fracoes[r.id] ?? 0) === v} onClick={() => setFracoes({ ...fracoes, [r.id]: v })}>
                         {t}
-                      </button>
+                      </Chip>
                     ))}
                   </div>
                 </div>

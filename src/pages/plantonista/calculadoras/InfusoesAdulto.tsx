@@ -3,12 +3,16 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { INFUSOES_ADULTO, NOTAS_PADIS_2025, concentracao, doseAdulto, fichaInfusoesAdulto, unidadeDose, velocidadeAdulto, type InfusaoAdulto } from '@/clinico/adulto/infusoes'
+import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { numero } from '@/lib/formato'
 
 // Porta única das infusões contínuas do adulto (onda 9; protótipo: tela
 // "Infusões — adulto" de 09/09). Peso primeiro, busca, classes recolhidas com
@@ -33,7 +37,7 @@ const ATALHOS = [
   { rotulo: 'Heparina — ajuste pelo TTPa', texto: 'Nomograma da Tabela 7 do manual HC', to: '/plantonista/calculadoras/heparinizacao-ajuste' },
 ]
 
-const br = (x: number | null, casas = 1) => (x === null || !Number.isFinite(x) ? '—' : (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR'))
+const br = (x: number | null, casas = 1) => (x === null || !Number.isFinite(x) ? '—' : numero(Math.round(x * 10 ** casas) / 10 ** casas))
 const lerNumero = (v: string) => (v.trim() === '' ? Number.NaN : Number(v.replace(',', '.')))
 const semAcento = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
@@ -84,13 +88,13 @@ function Droga({ i, peso }: { i: InfusaoAdulto; peso: number }) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Diluição">
-          <button type="button" aria-pressed={!servico} onClick={() => setServico(false)} className={cn('min-h-11 flex-1 rounded-controle border px-3 font-medium', !servico ? 'border-acao bg-acao text-sobre-acao' : 'border-fio text-tinta-apoio')}>
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Diluição">
+          <Chip variante="opcao" radio ativo={!servico} onClick={() => setServico(false)}>
             Padrão HC ({br(concentracao(i), 2)} {unConc})
-          </button>
-          <button type="button" aria-pressed={servico} onClick={() => setServico(true)} className={cn('min-h-11 flex-1 rounded-controle border px-3 font-medium', servico ? 'border-acao bg-acao text-sobre-acao' : 'border-fio text-tinta-apoio')}>
+          </Chip>
+          <Chip variante="opcao" radio ativo={servico} onClick={() => setServico(true)}>
             Diluição do serviço
-          </button>
+          </Chip>
         </div>
         {servico && (
           <div className="grid gap-3 sm:grid-cols-2">
@@ -118,14 +122,14 @@ function Droga({ i, peso }: { i: InfusaoAdulto; peso: number }) {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex flex-col items-center gap-1 rounded-cartao border border-acao/30 bg-acao/[0.04] px-4 py-3">
+        <div className="flex flex-col items-center gap-1 rounded-cartao border border-acao/30 bg-alerta-marca px-4 py-3">
           <span className="rotulo text-acao">Velocidade</span>
-          <span className="text-[30px] leading-none font-semibold tabular-nums text-acao">{semPeso ? '—' : br(vel)}</span>
+          <span className="text-numeral-ok leading-none font-semibold tabular-nums text-acao">{semPeso ? '—' : br(vel)}</span>
           <span className="text-apoio text-tinta-sussurro">mL/h</span>
         </div>
         <div className={cn('flex flex-col items-center gap-1 rounded-cartao border px-4 py-3', acimaTeto ? 'border-critico/40' : 'border-fio')}>
           <span className={cn('rotulo', corTexto)}>Dose</span>
-          <span className={cn('text-[30px] leading-none font-semibold tabular-nums', corTexto)}>{Number.isFinite(dose) ? br(dose, 3) : '—'}</span>
+          <span className={cn('text-numeral-ok leading-none font-semibold tabular-nums', corTexto)}>{Number.isFinite(dose) ? br(dose, 3) : '—'}</span>
           <span className="text-apoio text-tinta-sussurro">{u}</span>
         </div>
       </div>
@@ -190,15 +194,15 @@ export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
           return (
             <section key={c.id} className={cn('overflow-hidden rounded-container border bg-card', c.abertaAgora ? 'border-acao' : 'border-fio')}>
               <div className="flex items-center gap-2 pr-3">
-                <button type="button" aria-expanded={c.abertaAgora} onClick={() => { setAberta(aberta === c.id ? null : c.id); setDroga(null) }} className="flex min-h-14 flex-1 items-center gap-3 px-4 py-3 text-left">
+                <BotaoLinha variante="linha" aria-expanded={c.abertaAgora} onClick={() => { setAberta(aberta === c.id ? null : c.id); setDroga(null) }} className="min-h-14 flex-1 items-center gap-3 border-b-0 px-4">
                   <span className="grid size-8 shrink-0 place-items-center rounded-controle bg-trilha text-acao"><Icone className="size-4" aria-hidden /></span>
-                  <span className="flex-1 text-[16px] font-semibold tracking-[-0.01em] text-tinta">{c.rotulo}</span>
+                  <span className="flex-1 text-corpo font-semibold tracking-[-0.01em] text-tinta">{c.rotulo}</span>
                   <span className={cn('rounded-capsula px-2 py-0.5 text-rotulo font-semibold', c.id === 'anticoag' ? 'bg-atencao/10 text-atencao' : 'bg-acao/10 text-acao')}>{c.n}</span>
-                </button>
+                </BotaoLinha>
                 {c.abertaAgora && (
-                  <button type="button" onClick={() => { setAberta(null); setDroga(null); setBusca('') }} className="inline-flex min-h-10 items-center gap-1.5 rounded-controle border border-fio px-3 text-apoio text-tinta-apoio">
+                  <Button variant="outline" onClick={() => { setAberta(null); setDroga(null); setBusca('') }} className="min-h-10 gap-1.5 px-3">
                     <X className="size-4" aria-hidden /> Fechar
-                  </button>
+                  </Button>
                 )}
               </div>
               {c.abertaAgora && c.id === 'anticoag' && (
@@ -214,12 +218,12 @@ export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
               {c.abertaAgora && c.drogas.map((i) => {
                 const sel = droga === i.id || (termo !== '' && c.drogas.length === 1)
                 return (
-                  <div key={i.id}>
-                    <button type="button" aria-expanded={sel} onClick={() => setDroga(droga === i.id ? null : i.id)} className={cn('flex min-h-13 w-full items-center gap-2.5 border-t border-fio px-4 py-3 text-left', sel && 'bg-trilha/40')}>
-                      <span className={cn('flex-1 text-[15px] text-tinta', sel ? 'font-semibold' : 'font-medium')}>{i.nome}</span>
+                  <div key={i.id} className="border-t border-fio">
+                    <BotaoLinha variante="linha" aria-expanded={sel} onClick={() => setDroga(droga === i.id ? null : i.id)} className={cn('min-h-13 items-center gap-2.5 border-b-0 px-4', sel && 'bg-trilha/40')}>
+                      <span className={cn('flex-1 text-corpo text-tinta', sel ? 'font-semibold' : 'font-medium')}>{i.nome}</span>
                       <span className="text-apoio text-tinta-sussurro tabular-nums">{unidadeDose(i)}</span>
                       <ChevronRight className={cn('size-4 text-tinta-sussurro transition-transform', sel && 'rotate-90')} aria-hidden />
-                    </button>
+                    </BotaoLinha>
                     {sel && <Droga i={i} peso={peso} />}
                   </div>
                 )

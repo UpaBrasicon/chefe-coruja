@@ -12,6 +12,7 @@ import { PACIENTE_VAZIO, br, faixaBr, idadePediatrica, podeCalcular } from './fo
 import { Bloco, CampoPaciente, Errata, Nota, Opcoes, Pendencia } from './PecasIcr'
 import { LinhaDoseLivro, Marcadores, TabelaLivro } from './PecasP4'
 import { CampoSC, LinhaFaixa, ListaLivro, ListaQuadro } from './PecasP5'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const VARIACAO_25 = [
   { id: 'acidoUrico', texto: 'Ácido úrico: aumento de 25% do basal' },
@@ -151,14 +152,14 @@ export function EmergenciasOncologicasPed() {
 
       <Bloco titulo="Neutropenia febril — IPFNG 2023 (J Clin Oncol 2023;41:1774–1785)" descricao="Diretriz internacional pediátrica lida no texto, ao lado do cap. 66. Forte/condicional conforme GRADE.">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Rec.</th><th className="pr-3 pb-2">IPFNG 2023</th><th className="pb-2">Força</th></tr></thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Rec.</TableHead><TableHead className="pr-3 pb-2">IPFNG 2023</TableHead><TableHead className="pb-2">Força</TableHead></TableRow></TableHeader>
+            <TableBody>
               {IPFNG_ITENS.map((i) => (
-                <tr key={i.codigo} className="border-t"><td className="pr-3 py-2 font-medium whitespace-nowrap">{i.codigo}</td><td className="pr-3 py-2">{i.texto}</td><td className="py-2 text-tinta-sussurro">{i.forca}</td></tr>
+                <TableRow key={i.codigo} className="border-t"><TableCell className="pr-3 py-2 font-medium whitespace-nowrap">{i.codigo}</TableCell><TableCell className="pr-3 py-2">{i.texto}</TableCell><TableCell className="py-2 text-tinta-sussurro">{i.forca}</TableCell></TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
         <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_NF_2023.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>

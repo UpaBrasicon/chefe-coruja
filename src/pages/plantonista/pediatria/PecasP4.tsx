@@ -7,6 +7,8 @@ import { Card, CardContent } from '@/components/ui/card'
 
 import { faixaBr } from './formatoIcr'
 import { Errata } from './PecasIcr'
+import { numero } from '@/lib/formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 // Peças visuais do lote P4 (livro do ICr). Só componentes.
 
@@ -22,7 +24,7 @@ export function LinhaDoseLivro({ d, peso, rn = false, extra }: { d: DoseLivro; p
   const r = bloqueadaRn ? null : calcularDoseLivro(d, peso)
   const fmt = (f: [number, number]) => faixaBr(f, casas(d.unidade, f[1]))
   return (
-    <div className={`rounded-lg border px-3 py-2 text-sm ${bloqueadaRn ? 'opacity-70' : ''}`}>
+    <div className={`rounded-controle border px-3 py-2 text-apoio ${bloqueadaRn ? 'opacity-70' : ''}`}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">
           {d.nome}
@@ -59,7 +61,7 @@ export function LinhaBolusApendice({ b, peso, idadeMeses }: { b: Bolus; peso: nu
   const r = calcularBolus(b, peso, idadeMeses)
   if (r?.aplica === 'nao') return null
   return (
-    <div className="rounded-lg border px-3 py-2 text-sm">
+    <div className="rounded-controle border px-3 py-2 text-apoio">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">
           {b.nome}
@@ -74,7 +76,7 @@ export function LinhaBolusApendice({ b, peso, idadeMeses }: { b: Bolus; peso: nu
       </div>
       <p className="mt-1 text-tinta-sussurro">
         {b.porKg ? `${faixaBr(b.faixa, 3)} ${b.unidade}/kg` : `${faixaBr(b.faixa, 3)} ${b.unidade}`}
-        {b.maximo !== undefined && ` · máximo ${b.maximo.toLocaleString('pt-BR')} ${b.unidade}`}
+        {b.maximo !== undefined && ` · máximo ${numero(b.maximo)} ${b.unidade}`}
         {b.apresentacao && ` · ${b.apresentacao}`} · {b.via}
       </p>
       {r?.aplica === 'indefinido' && <p className="text-tinta-sussurro">Depende da idade: informe a idade para conferir a condição do livro.</p>}
@@ -90,28 +92,28 @@ export function LinhaBolusApendice({ b, peso, idadeMeses }: { b: Bolus; peso: nu
 export function TabelaLivro({ cabecalho, linhas, largura = 520 }: { cabecalho: string[]; linhas: ReactNode[][]; largura?: number }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-xs" style={{ minWidth: largura }}>
-        <thead className="text-tinta-sussurro">
-          <tr>
+      <Table variante="referencia" className="w-full text-left text-rotulo" style={{ minWidth: largura }}>
+        <TableHeader className="text-tinta-sussurro">
+          <TableRow>
             {cabecalho.map((h) => (
-              <th key={h} className="px-1.5 py-1 font-medium">
+              <TableHead key={h} className="px-1.5 py-1 font-medium">
                 {h}
-              </th>
+              </TableHead>
             ))}
-          </tr>
-        </thead>
-        <tbody>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {linhas.map((l, i) => (
-            <tr key={i} className="border-t align-top">
+            <TableRow key={i} className="border-t align-top">
               {l.map((c, j) => (
-                <td key={j} className={`px-1.5 py-1 ${j === 0 ? 'font-medium' : ''}`}>
+                <TableCell key={j} className={`px-1.5 py-1 ${j === 0 ? 'font-medium' : ''}`}>
                   {c}
-                </td>
+                </TableCell>
               ))}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }
@@ -121,7 +123,7 @@ export function Marcadores({ itens, marcados, onChange }: { itens: { id: string;
   return (
     <div className="flex flex-col gap-1.5">
       {itens.map((c) => (
-        <label key={c.id} className="flex cursor-pointer items-start gap-2 rounded-md border px-3 py-2 text-sm hover:bg-trilha/50">
+        <label key={c.id} className="flex cursor-pointer items-start gap-2 rounded-controle border px-3 py-2 text-apoio hover:bg-trilha/50">
           <input
             type="checkbox"
             className="mt-0.5 size-4"
@@ -144,7 +146,7 @@ export function Marcadores({ itens, marcados, onChange }: { itens: { id: string;
 export function Aviso({ children }: { children: ReactNode }) {
   return (
     <Card>
-      <CardContent className="pt-6 text-sm text-tinta-sussurro">{children}</CardContent>
+      <CardContent className="pt-6 text-apoio text-tinta-sussurro">{children}</CardContent>
     </Card>
   )
 }
