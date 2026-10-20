@@ -939,6 +939,7 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 **Pausa da 5C em 19/10/2026 (decisão do RT, "1b"):** a 5C para na tarefa 2. A etapa 2.1 (imagem e
 métodos gráficos no sistema) está em produção desde 19/10/2026; a 2.2
 (porta FHIR da imagem e simulador) volta depois da trilha "Padrão do frontend", abaixo.
+**Retomada em 20/10/2026:** a trilha do padrão foi encerrada; a 5C volta pela etapa 2.2.
 
 ---
 
@@ -959,6 +960,14 @@ virar regra na CI ("3a").
 **Andamento (19/10/2026):** partes 1 (levantamento, PR #143), 2 (guia, PR #144) e 3 (catraca na
 CI, PR #145) concluídas. Parte 4.1 (cores como variáveis, tema escuro pronto e escondido, ação em
 petróleo; PR #146) em produção. Seguem as peças únicas e as telas, na ordem do guia (seção 6).
+
+**Encerramento (20/10/2026):** parte 4 concluída em produção, de 4.1 a 4.17 (PRs #146 a #165),
+com a S1 encaixada. A catraca da CI saiu de 3.222 divergências para zero; o que fica fora do guia
+leva `padrao-ok` com o motivo (85 casos, quase todos folha impressa e grade de calendário). Na 4.17
+o tema escuro foi liberado ("1a": automático como padrão, escolha gravada no perfil) e a
+verificação no navegador (`scripts/verificacao-telas.mjs --tema claro|escuro`, seis papéis,
+1280 e 390 px) terminou sem achados nos dois temas, com as correções de contraste no mesmo PR
+("2a"). Fica como regra: PR novo não aumenta a base do padrão.
 
 **Correção de segurança encaixada pelo RT ("2a", 19/10/2026), logo depois da 4.1:**
 
