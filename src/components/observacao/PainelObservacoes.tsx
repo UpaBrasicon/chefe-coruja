@@ -9,15 +9,17 @@ import { useQuery } from '@tanstack/react-query'
 import { getPainelInternacao, corDoFlag, type PainelInternacao } from '@/lib/observacao'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { VazioLinha } from '@/components/monitor/Pagina'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { hora } from '@/lib/formato'
 
 type Props = {
   internacaoId: string
   className?: string
 }
 
-function formatarHora(iso: string): string {
-  return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-}
+const formatarHora = (iso: string) => hora(iso)
 
 function formatarValor(p: PainelInternacao['itens'][number]['ultimo']): string {
   if (!p) return '—'
@@ -33,38 +35,38 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
     queryFn: () => getPainelInternacao(internacaoId),
   })
 
-  if (isError) return <p className="text-sm text-critico">Erro ao carregar observações.</p>
+  if (isError) return <MensagemErro formato="linha" texto="Não foi possível carregar as observações. Tente de novo." />
   if (isFetching && !painel) return <Skeleton className="h-40 w-full" />
 
   const itens = painel?.itens ?? []
   if (itens.length === 0) {
-    return <p className="text-sm text-tinta-sussurro">Sem observações registradas nesta internação.</p>
+    return <VazioLinha>Nenhuma observação registrada nesta internação.</VazioLinha>
   }
 
   return (
-    <div className={cn('overflow-x-auto rounded-lg border', className)}>
-      <table className="w-full min-w-[560px] text-sm">
-        <thead>
-          <tr className="border-b bg-trilha/50 text-left text-xs uppercase tracking-wide text-tinta-sussurro">
-            <th className="px-3 py-2 font-medium">Conceito</th>
-            <th className="px-3 py-2 text-right font-medium">Último</th>
-            <th className="px-3 py-2 text-right font-medium">Hora</th>
-            <th className="px-3 py-2 text-right font-medium">Δ</th>
-            <th className="px-3 py-2 text-right font-medium">Referência</th>
-          </tr>
-        </thead>
-        <tbody>
+    <div className={cn('overflow-x-auto rounded-controle border', className)}>
+      <Table className="min-w-[560px] text-apoio">
+        <TableHeader>
+          <TableRow className="text-left text-rotulo uppercase tracking-wide text-tinta-sussurro">
+            <TableHead className="h-auto px-3 py-2 font-medium">Conceito</TableHead>
+            <TableHead className="h-auto px-3 py-2 text-right font-medium">Último</TableHead>
+            <TableHead className="h-auto px-3 py-2 text-right font-medium">Hora</TableHead>
+            <TableHead className="h-auto px-3 py-2 text-right font-medium">Δ</TableHead>
+            <TableHead className="h-auto px-3 py-2 text-right font-medium">Referência</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {itens.map((item) => (
-            <tr key={item.conceito_id} className="border-b last:border-0">
-              <td className="px-3 py-1.5">
+            <TableRow key={item.conceito_id}>
+              <TableCell className="px-3 py-1.5">
                 <span className="font-medium capitalize">{item.nome.replace(/-/g, ' ')}</span>
-                {item.unidade && <span className="ml-1 text-xs text-tinta-sussurro">{item.unidade}</span>}
-              </td>
-              <td className="px-3 py-1.5 text-right">
+                {item.unidade && <span className="ml-1 text-rotulo text-tinta-sussurro">{item.unidade}</span>}
+              </TableCell>
+              <TableCell className="px-3 py-1.5 text-right">
                 {item.ultimo ? (
                   <span
                     className={cn(
-                      'inline-block min-w-14 rounded-md px-2 py-0.5 text-right font-mono text-xs font-semibold',
+                      'inline-block min-w-14 rounded-controle px-2 py-0.5 text-right font-mono text-rotulo font-semibold',
                       corDoFlag(item.ultimo.flag)
                     )}
                   >
@@ -73,11 +75,11 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
                 ) : (
                   <span className="text-tinta-sussurro">—</span>
                 )}
-              </td>
-              <td className="px-3 py-1.5 text-right font-mono text-xs text-tinta-sussurro">
+              </TableCell>
+              <TableCell className="px-3 py-1.5 text-right font-mono text-rotulo text-tinta-sussurro">
                 {item.ultimo ? formatarHora(item.ultimo.aferido_em) : '—'}
-              </td>
-              <td className="px-3 py-1.5 text-right font-mono text-xs">
+              </TableCell>
+              <TableCell className="px-3 py-1.5 text-right font-mono text-rotulo">
                 {item.delta != null ? (
                   // Subir ou descer não é, por si, alteração: o Δ sai neutro.
                   <span className="text-tinta-apoio">
@@ -87,16 +89,16 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
                 ) : (
                   <span className="text-tinta-sussurro">—</span>
                 )}
-              </td>
-              <td className="px-3 py-1.5 text-right font-mono text-xs text-tinta-sussurro">
+              </TableCell>
+              <TableCell className="px-3 py-1.5 text-right font-mono text-rotulo text-tinta-sussurro">
                 {item.ref_min != null || item.ref_max != null
                   ? `${item.ref_min ?? '…'} – ${item.ref_max ?? '…'}`
                   : '—'}
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }

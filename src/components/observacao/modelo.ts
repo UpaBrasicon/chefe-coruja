@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from '@/lib/supabase'
 import type { Database } from '@/types/database'
+import { hora } from '@/lib/formato'
 
 type LinhaBanco = Database['public']['Functions']['painel_observacao']['Returns'][number]
 
@@ -74,9 +75,7 @@ export const RELATO_DESFECHO: Partial<Record<Desfecho, string>> = {
 
 export const LIMITE_MIN = 6 * 60
 
-const fuso = 'America/Sao_Paulo'
-export const hhmm = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: fuso }) : '—'
+export const hhmm = (iso: string | null | undefined) => (iso ? hora(iso) : '—')
 
 /** "4h 05min", "35min". */
 export function duracao(min: number) {
