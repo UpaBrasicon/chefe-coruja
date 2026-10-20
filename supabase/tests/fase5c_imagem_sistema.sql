@@ -56,6 +56,8 @@ ON CONFLICT (codigo) DO NOTHING;
 INSERT INTO public.api_chaves (nome, ambiente, prefixo, hash, unidades, recursos, criada_por, expira_em) VALUES
   ('LIS de teste', 'test', 'cc_test_abababab', private.api_hash('cc_test_' || repeat('ab', 24)), ARRAY['21000000-0000-4000-8000-000000000001']::uuid[],
    ARRAY['laboratorio'], '10000000-0000-4000-8000-000000000001', now() + interval '1 month');
+-- desde a 2.2, o link só vale de domínio cadastrado pela unidade
+INSERT INTO public.imagem_dominios (unidade_id, dominio) VALUES ('21000000-0000-4000-8000-000000000001', 'pacs.exemplo');
 CREATE FUNCTION pg_temp.ex(p text) RETURNS uuid LANGUAGE sql AS $$
   SELECT id FROM public.exames_pedidos WHERE episodio_id = (SELECT valor::uuid FROM t WHERE nome = 'a') AND exame = p $$;
 GRANT EXECUTE ON FUNCTION pg_temp.ex(text) TO authenticated;
@@ -91,7 +93,7 @@ SELECT pg_temp.falha(format('SELECT public.marcar_exame_coletado(%L)', pg_temp.e
 SELECT pg_temp.falha(format('SELECT public.marcar_exame_realizado(%L)', pg_temp.ex('Hemograma')),
   'Só exame de imagem ou método gráfico', 'laboratório não é realizado');
 SELECT pg_temp.falha(format('SELECT public.marcar_exame_realizado(%L, %L)', pg_temp.ex('RX de tórax'), 'http://pacs.local/x'),
-  'O link da imagem precisa começar com https://', 'link só https');
+  'O link da imagem precisa ser https://', 'link só https');
 SELECT public.marcar_exame_realizado(pg_temp.ex('RX de tórax'), 'https://pacs.exemplo/estudo/123');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 DO $$

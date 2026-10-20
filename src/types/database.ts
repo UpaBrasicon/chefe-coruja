@@ -10346,6 +10346,18 @@ export type Database = {
         Args: { p_exame: string; p_url: string }
         Returns: undefined
       }
+      dominios_imagem: {
+        Args: { p_unidade: string }
+        Returns: Json
+      }
+      definir_dominio_imagem: {
+        Args: { p_dominio: string; p_unidade: string }
+        Returns: undefined
+      }
+      retirar_dominio_imagem: {
+        Args: { p_dominio: string; p_unidade: string }
+        Returns: undefined
+      }
       exame_detalhe: {
         Args: { p_exame: string }
         Returns: Json
