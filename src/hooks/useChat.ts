@@ -3,6 +3,7 @@ import { useEffect, useMemo } from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { dataIso } from '@/lib/formato'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Hook do chat — conversas, mensagens, realtime e envio com optimistic update.
@@ -216,12 +217,7 @@ export const FUSO_BRASILIA = 'America/Sao_Paulo'
 
 /** 00:00 de hoje no fuso de Brasília (UTC−3, sem horário de verão desde 2019). */
 export function inicioDoDiaBrasilia(agora = new Date()) {
-  const ymd = new Intl.DateTimeFormat('en-CA', {
-    timeZone: FUSO_BRASILIA,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(agora)
+  const ymd = dataIso(agora)
   return new Date(`${ymd}T00:00:00-03:00`)
 }
 

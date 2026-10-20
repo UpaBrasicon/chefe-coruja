@@ -2,13 +2,13 @@
 // que segue o sistema do aparelho. A escolha é da pessoa e fica no perfil
 // (perfis.tema); o aparelho guarda uma cópia para abrir já no tema certo.
 //
-// Decisão do RT "3a" (19/10/2026): o escuro fica pronto no código, mas a chave
-// só aparece no fim da parte 4, quando as telas estiverem corrigidas. Até lá
-// TEMA_ESCURO_LIBERADO é false e a tela fica sempre clara.
+// Decisão do RT "3a" (19/10/2026): o escuro ficou escondido até o fim da parte 4.
+// Parte 4.17 (decisão "1a", 20/10/2026): liberado, com o automático como padrão.
+// Desligar TEMA_ESCURO_LIBERADO volta a tela inteira para o claro.
 
 export type Tema = 'claro' | 'escuro' | 'automatico'
 
-export const TEMA_ESCURO_LIBERADO = false
+export const TEMA_ESCURO_LIBERADO = true
 
 export const TEMAS: { valor: Tema; rotulo: string }[] = [
   { valor: 'claro', rotulo: 'Claro' },

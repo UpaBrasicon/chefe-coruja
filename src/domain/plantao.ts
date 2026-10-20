@@ -1,6 +1,8 @@
 // Turno e janela de observação — cálculo puro; a hora entra por parâmetro e
 // vem sempre do servidor (ADR 0003: nenhuma regra usa o relógio do aparelho).
 
+import { hora } from '../lib/formato.ts'
+
 export type Nivel = 'ok' | 'atencao' | 'critico'
 
 /** Turnos como o banco atual os declara (private.turno_atual), hora de Brasília. */
@@ -13,11 +15,7 @@ export type Turno = keyof typeof TURNOS
 
 /** Minutos desde a meia-noite em America/Sao_Paulo para um instante. */
 export function minutosEmBrasilia(instante: Date): number {
-  const partes = new Intl.DateTimeFormat('pt-BR', {
-    timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-  }).formatToParts(instante)
-  const h = Number(partes.find((p) => p.type === 'hour')?.value)
-  const m = Number(partes.find((p) => p.type === 'minute')?.value)
+  const [h, m] = hora(instante).split(':').map(Number)
   return h * 60 + m
 }
 

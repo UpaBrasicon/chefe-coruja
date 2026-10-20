@@ -3,6 +3,7 @@ import { MessageCircle } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { data as dataBr } from '@/lib/formato'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -45,7 +46,7 @@ export function ConectarTelegram() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle className="flex items-center gap-2 text-corpo">
           <MessageCircle className="size-4" /> Assistente no Telegram
         </CardTitle>
         <CardDescription>
@@ -53,11 +54,11 @@ export function ConectarTelegram() {
           Telegram à sua conta. Ela nunca recebe dado de paciente.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 text-sm">
+      <CardContent className="flex flex-col gap-3 text-apoio">
         {conectado ? (
           <>
             <p className="text-conforme">
-              Telegram conectado desde {new Date(vinculo.data!.criado_em).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}.
+              Telegram conectado desde {dataBr(vinculo.data!.criado_em)}.
             </p>
             <Button variant="outline" className="self-start" disabled={desfazer.isPending} onClick={() => desfazer.mutate()}>
               Desconectar
@@ -66,8 +67,8 @@ export function ConectarTelegram() {
         ) : codigo ? (
           <>
             <p className="text-tinta-apoio">Mande este código à Corujinha no Telegram. Vale por 10 minutos e uma vez só:</p>
-            <p className="font-mono text-[30px] font-semibold tracking-[0.2em] text-tinta tabular-nums">{codigo.valor}</p>
-            <p className="text-xs text-tinta-sussurro">Esta página confirma sozinha quando a conexão acontecer.</p>
+            <p className="font-mono text-numeral-ok font-semibold tracking-[0.2em] text-tinta tabular-nums">{codigo.valor}</p>
+            <p className="text-rotulo text-tinta-sussurro">Esta página confirma sozinha quando a conexão acontecer.</p>
           </>
         ) : (
           <Button className="self-start" disabled={gerar.isPending} onClick={() => gerar.mutate()}>

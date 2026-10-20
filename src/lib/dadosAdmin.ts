@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
+import { numeroAte } from './formato.ts'
 
 // Dados das telas do administrador (Rede, Plataformas, Pendências técnicas,
 // Servidores; migration 20261008000001). Tudo vem do banco: nada de unidade,
@@ -182,7 +183,7 @@ export function bytes(n: number): string {
   let v = n / 1024
   let i = 0
   while (v >= 1024 && i < u.length - 1) { v /= 1024; i++ }
-  return `${v.toLocaleString('pt-BR', { maximumFractionDigits: v < 10 ? 1 : 0 })} ${u[i]}`
+  return `${numeroAte(v, v < 10 ? 1 : 0)} ${u[i]}`
 }
 
 /** Selo de situação (mesma gramática dos selos do protótipo: verde, âmbar, vermelho). */

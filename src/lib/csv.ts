@@ -8,6 +8,8 @@
 // - Cabeçalho com o contexto (unidade, filtros aplicados, quando foi gerado)
 //   antes da tabela, separado por uma linha em branco.
 
+import { numeroAte } from './formato.ts'
+
 export type ValorCsv = string | number | boolean | null | undefined
 
 export type OpcoesCsv = {
@@ -20,7 +22,8 @@ const FORMULA = /^[=+\-@\t\r]/
 
 function texto(v: ValorCsv): string {
   if (v == null) return ''
-  if (typeof v === 'number') return Number.isFinite(v) ? v.toLocaleString('pt-BR', { useGrouping: false, maximumFractionDigits: 6 }) : ''
+  // sem separador de milhar (o ponto confunde o Excel): tira o "." do numeroAte
+  if (typeof v === 'number') return Number.isFinite(v) ? numeroAte(v, 6).replaceAll('.', '') : ''
   if (typeof v === 'boolean') return v ? 'sim' : 'não'
   return v
 }

@@ -15,7 +15,9 @@ import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Chip } from '@/components/monitor/Pagina'
+import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
@@ -89,7 +91,7 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
   }
 
   return (
-    <section className="flex flex-col gap-2.5 rounded-menu border border-fio bg-superficie p-4 text-controle">
+    <section className="flex flex-col gap-2.5 rounded-container border border-fio bg-superficie p-4 text-controle">
       <h3 className="flex items-center gap-2 text-corpo font-semibold text-tinta">
         <ArrowRightLeft className="size-4 text-acao" aria-hidden /> Encaminhar paciente (dentro da unidade)
       </h3>
@@ -113,11 +115,10 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
             <div className="relative z-30 h-0">
               <div role="listbox" className="absolute inset-x-0 top-1 max-h-60 overflow-y-auto rounded-controle border border-fio bg-superficie shadow-lg">
                 {sugestoes.map((s) => (
-                  <button key={s} type="button" role="option" aria-selected={false}
-                    onMouseDown={(ev) => ev.preventDefault()} onClick={() => setF({ ...f, esp: s, espOk: true })}
-                    className="block w-full border-b border-trilha px-3 py-2 text-left text-controle text-tinta last:border-0 hover:bg-campo">
+                  <OpcaoLista key={s} onClick={() => setF({ ...f, esp: s, espOk: true })}
+                    className="block text-controle text-tinta hover:bg-campo">
                     {s}
-                  </button>
+                  </OpcaoLista>
                 ))}
               </div>
             </div>
@@ -125,11 +126,11 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
         </div>
         <div className="flex min-w-0 flex-[1_1_200px] flex-col gap-1">
           <label htmlFor="enc-med" className="text-apoio font-medium text-grafite">Médico (opcional)</label>
-          <select id="enc-med" value={f.medico} onChange={(e) => setF({ ...f, medico: e.target.value })}
-            className="min-h-9 w-full rounded-controle border border-fio bg-campo px-[11px] py-[7px] text-controle text-tinta outline-none focus-visible:border-acao">
+          <CampoSelecao id="enc-med" value={f.medico} onChange={(e) => setF({ ...f, medico: e.target.value })}
+            className="w-full px-[11px] text-controle outline-none focus-visible:border-acao">
             <option value="">Qualquer médico do plantão</option>
             {(medicos.data ?? []).map((m) => <option key={m.id} value={m.id}>{m.nome}{m.registro ? ` · ${m.registro}` : ''}</option>)}
-          </select>
+          </CampoSelecao>
         </div>
       </div>
 

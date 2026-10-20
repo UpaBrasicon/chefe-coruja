@@ -13,6 +13,7 @@ import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { dataHora } from '@/lib/formato'
 
 type Exame = {
   id: string; exame: string; situacao: string; resultado: string | null; motivo_cancelamento: string | null; pedido_em: string
@@ -23,7 +24,7 @@ type Exame = {
 }
 type Agravo = { id: string; agravo: string; cid: string | null; situacao: string; numero_sinan: string | null; motivo_descarte: string | null }
 
-const hora = (iso: string) => new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })
+const hora = dataHora
 
 export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; medico: boolean }) {
   const qc = useQueryClient()
@@ -58,10 +59,10 @@ export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; med
   const resolvidos = (exames.data ?? []).filter((e) => !PENDENTE.includes(e.situacao as SituacaoExame))
 
   return (
-    <div className="flex flex-col gap-4 text-sm">
-      {erro && <p className="rounded-lg border border-critico/30 bg-critico/[0.08] p-2 text-critico">{erro}</p>}
+    <div className="flex flex-col gap-4 text-apoio">
+      {erro && <p className="rounded-controle border border-critico/30 bg-alerta-critico p-2 text-critico">{erro}</p>}
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-tinta-sussurro uppercase">
+        <div className="flex items-center gap-1.5 text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">
           <FlaskConical className="size-3.5" /> Exames pedidos
         </div>
         {pendentes.length === 0 && <p className="text-tinta-sussurro">Nenhum exame aguardando resultado. (Os exames entram quando o pedido é impresso.)</p>}
@@ -69,7 +70,7 @@ export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; med
         {/* resultado novo (ainda não aberto) fica fora do recolhido */}
         {resolvidos.filter((e) => e.situacao === 'resultado' && !e.resultado_visto_em).map((e) => <LinhaResolvido key={e.id} e={e} aoMudar={recarregar} />)}
         {resolvidos.some((e) => e.situacao !== 'resultado' || e.resultado_visto_em) && (
-          <details className="text-xs text-tinta-sussurro">
+          <details className="text-rotulo text-tinta-sussurro">
             <summary className="cursor-pointer">Resolvidos ({resolvidos.filter((e) => e.situacao !== 'resultado' || e.resultado_visto_em).length})</summary>
             <div className="mt-1 flex flex-col gap-1">
               {resolvidos.filter((e) => e.situacao !== 'resultado' || e.resultado_visto_em).map((e) => <LinhaResolvido key={e.id} e={e} aoMudar={recarregar} />)}
@@ -78,13 +79,13 @@ export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; med
         )}
       </div>
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-tinta-sussurro uppercase">
+        <div className="flex items-center gap-1.5 text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">
           <Megaphone className="size-3.5" /> Agravos de notificação
         </div>
         {(agravos.data ?? []).map((a) => <LinhaAgravo key={a.id} a={a}
           aoResolver={(notificado, numero, motivo) => rpc('resolver_agravo', { p_agravo: a.id, p_notificado: notificado, p_numero_sinan: numero, p_motivo_descarte: motivo })} />)}
         {medico && <MarcarAgravo aoMarcar={(agravo, cid) => rpc('marcar_agravo', { p_paciente: pacienteId, p_agravo: agravo, p_cid: cid || undefined })} />}
-        <p className="text-xs text-tinta-sussurro">Agravo suspeito impede a alta até a notificação ser registrada (o envio ao SINAN é fora do sistema) ou a suspeita ser descartada com motivo.</p>
+        <p className="text-rotulo text-tinta-sussurro">Agravo suspeito impede a alta até a notificação ser registrada (o envio ao SINAN é fora do sistema) ou a suspeita ser descartada com motivo.</p>
       </div>
     </div>
   )
@@ -94,13 +95,13 @@ function LinhaExame({ e, aoResolver, aoMudar }: { e: Exame; aoResolver: (resulta
   const [texto, setTexto] = React.useState('')
   const [aberto, setAberto] = React.useState(false)
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-atencao/30 bg-atencao/[0.05] px-3 py-2">
+    <div className="flex flex-col gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2">
     <div className="flex flex-wrap items-center gap-2">
       <span className="font-medium">{e.exame}</span>
-      <span className="text-xs text-tinta-apoio">{SITUACAO_EXAME[e.situacao as SituacaoExame]}</span>
+      <span className="text-rotulo text-tinta-apoio">{SITUACAO_EXAME[e.situacao as SituacaoExame]}</span>
       {e.urgencia === 'urgente' && <Badge variant="destructive">urgente</Badge>}
-      {!e.procedimento && <span className="text-xs text-tinta-sussurro" title="Não vai ao laboratório integrado">sem código</span>}
-      <span className="text-xs text-tinta-sussurro">pedido {hora(e.pedido_em)}</span>
+      {!e.procedimento && <span className="text-rotulo text-tinta-sussurro" title="Não vai ao laboratório integrado">sem código</span>}
+      <span className="text-rotulo text-tinta-sussurro">pedido {hora(e.pedido_em)}</span>
       <Input className="h-8 min-w-48 flex-1" placeholder="Resultado, ou motivo do cancelamento" value={texto} onChange={(ev) => setTexto(ev.target.value)} />
       <Button size="xs" disabled={!texto.trim()} onClick={() => void aoResolver(texto).then((ok) => ok && setTexto(''))}>Registrar resultado</Button>
       <Button size="xs" variant="outline" disabled={texto.trim().length < 10} onClick={() => void aoResolver(undefined, texto).then((ok) => ok && setTexto(''))}>Cancelar</Button>
@@ -116,7 +117,7 @@ function LinhaResolvido({ e, aoMudar }: { e: Exame; aoMudar: () => void }) {
   const [aberto, setAberto] = React.useState(false)
   const novo = e.situacao === 'resultado' && !e.resultado_visto_em
   return (
-    <div className={`flex flex-col gap-1 ${novo ? 'rounded-lg border border-acao/30 px-3 py-2' : ''}`}>
+    <div className={`flex flex-col gap-1 ${novo ? 'rounded-controle border border-acao/30 px-3 py-2' : ''}`}>
       <div className="flex flex-wrap items-center gap-1.5">
         <span className={novo ? 'font-medium text-tinta' : ''}>{e.exame}: {e.situacao === 'resultado' ? e.resultado : `cancelado — ${e.motivo_cancelamento}`} · pedido {hora(e.pedido_em)}</span>
         {novo && <Badge variant={e.critico ? 'destructive' : 'info'}>{e.critico ? 'crítico · novo' : 'novo'}</Badge>}
@@ -132,19 +133,19 @@ function LinhaAgravo({ a, aoResolver }: { a: Agravo; aoResolver: (notificado: bo
   const [texto, setTexto] = React.useState('')
   if (a.situacao !== 'suspeito') {
     return (
-      <p className="text-xs text-tinta-sussurro">
+      <p className="text-rotulo text-tinta-sussurro">
         {a.agravo}{a.cid ? ` (${a.cid})` : ''}: {a.situacao === 'notificado' ? `notificado${a.numero_sinan ? ` · SINAN ${a.numero_sinan}` : ''}` : `descartado — ${a.motivo_descarte}`}
       </p>
     )
   }
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-critico/30 bg-critico/[0.05] px-3 py-2">
+    <div className="flex flex-wrap items-center gap-2 rounded-controle border border-critico/30 bg-alerta-critico px-3 py-2">
       <Badge variant="destructive">suspeito</Badge>
       <span className="font-medium">{a.agravo}{a.cid ? ` (${a.cid})` : ''}</span>
       <Input className="h-8 min-w-48 flex-1" placeholder="Nº da notificação (opcional) ou motivo do descarte" value={texto} onChange={(ev) => setTexto(ev.target.value)} />
       <Button size="xs" onClick={() => void aoResolver(true, texto || undefined)}>Notificação registrada</Button>
       <Button size="xs" variant="outline" disabled={texto.trim().length < 10} onClick={() => void aoResolver(false, undefined, texto)}>Descartar</Button>
-      <Link to={`/notificacao-compulsoria?ficha=${a.id}`} className="text-xs text-acao hover:underline">Ficha SINAN</Link>
+      <Link to={`/notificacao-compulsoria?ficha=${a.id}`} className="text-rotulo text-acao hover:underline">Ficha SINAN</Link>
     </div>
   )
 }

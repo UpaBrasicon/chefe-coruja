@@ -6,8 +6,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 
+import { TituloSecao } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { fmtData, fmtDataHora } from '@/lib/datas'
+import { hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -40,7 +43,7 @@ export const STATUS: Record<Tele['status'], { rotulo: string; variante: 'warning
 }
 
 export const hhmm = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }) : '—'
+  iso ? hora(iso) : '—'
 
 /** "há 12 min", "há 2 h". */
 export function ha(iso: string | null | undefined) {
@@ -82,7 +85,7 @@ export function Cartao({ t, children }: { t: Tele; children?: React.ReactNode })
       </div>
       <p className="mt-2 rounded-controle bg-trilha/60 px-3 py-2 text-apoio text-tinta"><span className="font-medium">Pergunta: </span>{t.pergunta}</p>
       {t.resposta && (
-        <div className="mt-2 rounded-controle border border-conforme/30 bg-conforme/[0.05] px-3 py-2 text-apoio">
+        <div className="mt-2 rounded-controle border border-conforme/30 bg-alerta-conforme px-3 py-2 text-apoio">
           <div className="text-rotulo text-tinta-sussurro">
             Parecer em {t.respondida_em ? fmtDataHora(t.respondida_em) : ''}{t.documento_resposta_numero ? ` · documento nº ${t.documento_resposta_numero}` : ''}
           </div>
@@ -130,7 +133,7 @@ export function useSituacaoTele(unidadeId?: string) {
 }
 
 export function PontoSituacao({ estado }: { estado: Situacao['estado'] }) {
-  return <span aria-hidden className={cn('size-[7px] shrink-0 rounded-full', PONTO[estado])} />
+  return <span aria-hidden className={cn('size-[7px] shrink-0 rounded-capsula', PONTO[estado])} />
 }
 
 /** O seletor de disponibilidade e a situação do plantão remoto. */
@@ -150,13 +153,13 @@ export function TopoTele({ unidadeId }: { unidadeId: string }) {
       <span className="text-rotulo text-tinta-sussurro">
         {d.de_plantao ? `De plantão até ${hhmm(d.plantao_fim)}${d.setor ? ` · ${d.setor}` : ''}` : 'Fora da escala agora'}
       </span>
-      <button type="button" onClick={() => void alternar()} disabled={d.estado === 'em_consulta'}
+      <Button type="button" variant="outline" size="sm" onClick={() => void alternar()} disabled={d.estado === 'em_consulta'}
         title={d.estado === 'em_consulta' ? 'Em consulta enquanto houver teleinterconsulta aceita sem parecer' : 'Alternar disponibilidade'}
-        className={cn('inline-flex items-center gap-[7px] rounded-capsula border py-1 pr-[11px] pl-[9px] text-apoio font-medium whitespace-nowrap', COR_SITUACAO[d.estado],
+        className={cn('min-h-0 gap-[7px] rounded-capsula py-1 pr-[11px] pl-[9px] font-medium disabled:opacity-100', COR_SITUACAO[d.estado],
           d.estado !== 'em_consulta' && 'cursor-pointer hover:opacity-85')}>
         <PontoSituacao estado={d.estado} />
         {ROTULO_SITUACAO[d.estado]}
-      </button>
+      </Button>
       {erro && <span role="alert" className="basis-full text-right text-rotulo text-critico">{erro}</span>}
     </div>
   )
@@ -165,10 +168,7 @@ export function TopoTele({ unidadeId }: { unidadeId: string }) {
 export function Secao({ titulo, extra, children }: { titulo: string; extra?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-2.5">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-rotulo font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">{titulo}</h2>
-        {extra && <span className="text-rotulo text-tinta-sussurro">{extra}</span>}
-      </div>
+      <TituloSecao className="mb-0 flex-wrap gap-2" extra={extra}>{titulo}</TituloSecao>
       {children}
     </section>
   )

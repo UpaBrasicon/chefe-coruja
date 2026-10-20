@@ -34,9 +34,9 @@ export function CampoCns({ inicial }: { inicial: string | null }) {
           aria-invalid={invalido || undefined} onChange={(e) => setValor(e.target.value)} />
         <Button type="button" variant="outline" disabled={!mudou || invalido || salvando} onClick={() => void salvar()}>Salvar</Button>
       </div>
-      {invalido && <span className="text-xs text-atencao">O número não confere: são 15 dígitos com o dígito verificador do Ministério da Saúde.</span>}
-      {!atual && !invalido && <span className="text-xs text-tinta-sussurro">Sem o CNS, o que você fizer não entra no BPA.</span>}
-      {erro && <span role="alert" className="text-xs text-critico">{erro}</span>}
+      {invalido && <span className="text-rotulo text-atencao">O número não confere: são 15 dígitos com o dígito verificador do Ministério da Saúde.</span>}
+      {!atual && !invalido && <span className="text-rotulo text-tinta-sussurro">Sem o CNS, o que você fizer não entra no BPA.</span>}
+      {erro && <span role="alert" className="text-rotulo text-critico">{erro}</span>}
     </div>
   )
 }

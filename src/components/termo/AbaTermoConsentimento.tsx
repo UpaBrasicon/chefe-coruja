@@ -19,7 +19,9 @@ import { ChevronDown, ChevronUp, FilePen, FileX, Printer, ShieldCheck } from 'lu
 import * as React from 'react'
 
 import { imprimirDocumento } from '@/lib/prontuario'
+import { data as dataBr } from '@/lib/formato'
 import { cn } from '@/lib/utils'
+import { Chip } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -64,11 +66,9 @@ const cheio = (s: string, min = 1) => s.trim().length >= min
 
 function Opcao({ ativa, onClick, children, disabled }: { ativa: boolean; onClick: () => void; children: React.ReactNode; disabled?: boolean }) {
   return (
-    <button type="button" onClick={onClick} disabled={disabled} aria-pressed={ativa}
-      className={cn('rounded-capsula border px-3 py-1 text-apoio transition-colors disabled:opacity-45',
-        ativa ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+    <Chip variante="opcao" ativo={ativa} onClick={onClick} desabilitado={disabled}>
       {children}
-    </button>
+    </Chip>
   )
 }
 
@@ -101,7 +101,7 @@ function valoresCampos(p: PainelTermos, procedimento: string) {
     medico: p.medico?.nome ?? '',
     crm,
     unidade: p.unidade ?? '',
-    data: new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+    data: dataBr(new Date()),
     // {responsavel} e {vinculo} ficam para o servidor: dependem de quem assina
   }
 }
@@ -361,7 +361,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
                 {f.retifica ? 'Desistir da retificação' : 'Limpar'}
               </Button>
               <Button size="sm" onClick={() => void gerar()} disabled={faltas.length > 0 || emitir.isPending}>
-                {emitir.isPending ? <Spinner className="size-3.5 text-white" /> : <FilePen />}
+                {emitir.isPending ? <Spinner className="size-3.5 text-sobre-acao" /> : <FilePen />}
                 {f.retifica ? 'Salvar retificação' : 'Gerar termo'}
               </Button>
             </div>

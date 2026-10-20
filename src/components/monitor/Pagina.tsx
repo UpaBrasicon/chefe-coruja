@@ -70,7 +70,7 @@ export function Chip({ ativo, children, onClick, contagem, variante = 'filtro', 
       title={titulo}
       disabled={desabilitado}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-capsula border px-[13px] text-apoio whitespace-nowrap transition-colors disabled:cursor-not-allowed',
+        'inline-flex max-w-full items-center gap-1.5 rounded-capsula border px-[13px] text-left text-apoio transition-colors disabled:cursor-not-allowed',
         variante === 'opcao' ? 'min-h-9' : 'py-[5px]',
         ativo
           ? tom === 'critico' ? 'border-critico bg-critico font-medium text-sobre-acao'

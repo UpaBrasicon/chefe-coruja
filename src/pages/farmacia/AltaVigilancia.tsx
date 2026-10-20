@@ -112,7 +112,7 @@ function ListaUnidade({ unidadeId, podeAjustar }: { unidadeId: string; podeAjust
         aplicada por regra ao cadastro. Vias epidural/intratecal e antineoplásicos dependem da marcação da farmácia.
       </p>
       <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); setTermo(busca.trim()) }}>
-        <Input className="max-w-sm" placeholder="Buscar no cadastro para marcar ou desmarcar" value={busca} onChange={(e) => setBusca(e.target.value)} />
+        <Input className="max-w-sm" aria-label="Buscar medicamento no cadastro" placeholder="Buscar no cadastro para marcar ou desmarcar" value={busca} onChange={(e) => setBusca(e.target.value)} />
         <Button type="submit" variant="outline"><Search /> Buscar</Button>
         {termo && <Button type="button" variant="ghost" onClick={() => { setBusca(''); setTermo('') }}>Ver a lista</Button>}
       </form>

@@ -18,7 +18,7 @@ export function AguardandoLiberacao() {
     <div className="flex min-h-screen items-center justify-center bg-campo p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2">
             <Clock className="size-5 text-acao" />
             Aguardando liberação
           </CardTitle>
@@ -28,7 +28,7 @@ export function AguardandoLiberacao() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <p className="text-sm text-tinta-sussurro">
+          <p className="text-apoio text-tinta-sussurro">
             Um administrador da sua organização precisa atribuir seu papel (administrador, gestor ou
             plantonista) por unidade. Assim que o vínculo for criado, o acesso é liberado
             automaticamente.

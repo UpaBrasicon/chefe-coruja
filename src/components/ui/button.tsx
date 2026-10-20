@@ -29,15 +29,15 @@ const buttonVariants = cva(
       },
       size: {
         default: "min-h-8 px-3.5 py-[7px]",
-        xs: "min-h-6 gap-1 rounded-controle-sm px-2 text-rotulo [&_svg:not([class*='size-'])]:size-3",
-        sm: "min-h-[30px] gap-1 rounded-controle-sm px-2.5 [&_svg:not([class*='size-'])]:size-3.5",
+        xs: "min-h-6 gap-1 rounded-controle px-2 text-rotulo [&_svg:not([class*='size-'])]:size-3",
+        sm: "min-h-[30px] gap-1 rounded-controle px-2.5 [&_svg:not([class*='size-'])]:size-3.5",
         lg: "min-h-9 px-[15px] py-2",
         // Botão-bloco (29/08): alvo de 44px, texto de controle — ações de
         // plantão no celular e ações únicas de diálogo.
         bloco: "min-h-11 w-full px-4 py-2.5 text-controle",
         icon: "size-8",
-        "icon-xs": "size-6 rounded-controle-sm [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-[30px] rounded-controle-sm",
+        "icon-xs": "size-6 rounded-controle [&_svg:not([class*='size-'])]:size-3",
+        "icon-sm": "size-[30px] rounded-controle",
         "icon-lg": "size-9",
       },
     },

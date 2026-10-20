@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { ChevronRight, Droplets, Loader2, Pill, ShieldAlert } from 'lucide-react'
+import { Droplets, Loader2, Pill, ShieldAlert } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { dataPura } from '@/lib/formato'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
@@ -94,27 +96,27 @@ export default function ReferenciaDiluicao({ embutido = false }: { embutido?: bo
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       {!embutido && (
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
-            <Link to="/" className="transition-colors hover:text-tinta">
-              Início
-            </Link>
-            <ChevronRight className="size-3.5" />
-            <span className="font-medium text-tinta">Referência de Diluição</span>
-          </div>
-          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Referência de Diluição</h1>
-          <p className="text-sm text-tinta-sussurro">
-            API interna <code className="rounded bg-trilha px-1">diluicao_publicada</code> — retorna apenas
-            registros <strong>publicados</strong> (revisados por farmacêutico). Registros em rascunho não são
-            exibidos.
-          </p>
+        <div>
+          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Referência de diluição' }]} />
+          <TituloPagina
+            icone={Droplets}
+            titulo="Referência de diluição"
+            className="mb-0"
+            descricao={
+              <>
+                API interna <code className="rounded-controle bg-trilha px-1">diluicao_publicada</code> — retorna apenas
+                registros <strong>publicados</strong> (revisados por farmacêutico). Registros em rascunho não são
+                exibidos.
+              </>
+            }
+          />
         </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-corpo">
               <Pill className="size-4 text-tinta-sussurro" />
               Medicamentos ({medicamentos?.length ?? '…'})
             </CardTitle>
@@ -132,27 +134,26 @@ export default function ReferenciaDiluicao({ embutido = false }: { embutido?: bo
                   <Spinner />
                 </div>
               ) : (medicamentos ?? []).length === 0 ? (
-                <p className="text-sm text-tinta-sussurro">Nenhum medicamento encontrado.</p>
+                <p className="text-apoio text-tinta-sussurro">Nenhum medicamento encontrado.</p>
               ) : (
                 (medicamentos ?? []).map((m) => (
-                  <button
+                  <BotaoLinha
                     key={m.id}
-                    type="button"
                     onClick={() => setSel(m)}
-                    className={`flex flex-col gap-0.5 rounded-lg border px-3 py-2 text-left transition-colors hover:bg-trilha ${
-                      sel?.id === m.id ? 'border-acao bg-acao/5' : ''
+                    className={`items-stretch rounded-controle px-3 py-2 hover:border-fio hover:bg-trilha ${
+                      sel?.id === m.id ? 'border-acao bg-acao/5 hover:border-acao' : ''
                     }`}
                   >
-                    <span className="flex items-center gap-2 text-sm font-medium">
+                    <span className="flex items-center gap-2 text-apoio font-medium">
                       {m.principio_ativo}
                       {m.alta_vigilancia && <ShieldAlert className="size-3.5 text-atencao" />}
                     </span>
-                    <span className="text-[11px] text-tinta-sussurro">
+                    <span className="text-rotulo text-tinta-sussurro">
                       {m.concentracao ?? '—'}
                       {m.apresentacao ? ` · ${m.apresentacao}` : ''}
                       {m.rxcui ? ` · rxcui ${m.rxcui}` : ''}
                     </span>
-                  </button>
+                  </BotaoLinha>
                 ))
               )}
             </div>
@@ -161,7 +162,7 @@ export default function ReferenciaDiluicao({ embutido = false }: { embutido?: bo
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-corpo">
               <Droplets className="size-4 text-tinta-sussurro" />
               {sel ? sel.principio_ativo : 'Diluição publicada'}
             </CardTitle>
@@ -173,25 +174,25 @@ export default function ReferenciaDiluicao({ embutido = false }: { embutido?: bo
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {!sel ? (
-              <p className="text-sm text-tinta-sussurro">Nenhum medicamento selecionado.</p>
+              <p className="text-apoio text-tinta-sussurro">Nenhum medicamento selecionado.</p>
             ) : buscandoDil ? (
               <div className="flex h-24 items-center justify-center">
                 <Loader2 className="animate-spin" />
               </div>
             ) : (diluicoes ?? []).length === 0 ? (
-              <div className="rounded-lg border border-dashed p-4 text-sm text-tinta-sussurro">
+              <div className="rounded-controle border border-dashed p-4 text-apoio text-tinta-sussurro">
                 Nenhuma diluição <strong>publicada</strong> para este medicamento. Registros em rascunho
                 aguardam revisão do farmacêutico.
               </div>
             ) : (
               (diluicoes ?? []).map((d) => (
-                <div key={d.id} className="rounded-lg border p-3">
-                  <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                <div key={d.id} className="rounded-controle border p-3">
+                  <div className="flex flex-wrap items-center gap-2 text-apoio font-semibold">
                     {VIA_LABEL[d.via] ?? d.via}
                     <Badge variant="success">Publicado</Badge>
                     {d.alta_vigilancia && <Badge variant="warning">Alta vigilância</Badge>}
                   </div>
-                  <dl className="mt-2 grid gap-1.5 text-sm">
+                  <dl className="mt-2 grid gap-1.5 text-apoio">
                     {d.reconstituicao_diluente && (
                       <div className="flex gap-2"><dt className="w-40 shrink-0 text-tinta-sussurro">Reconstituição</dt><dd>{d.reconstituicao_diluente}{d.reconstituicao_volume_ml ? ` · ${d.reconstituicao_volume_ml} mL` : ''}</dd></div>
                     )}
@@ -226,9 +227,9 @@ export default function ReferenciaDiluicao({ embutido = false }: { embutido?: bo
                       <div className="flex gap-2"><dt className="w-40 shrink-0 text-tinta-sussurro">Observações</dt><dd>{d.observacoes}</dd></div>
                     )}
                   </dl>
-                  <p className="mt-2 text-[11px] text-tinta-sussurro">
+                  <p className="mt-2 text-rotulo text-tinta-sussurro">
                     Fonte: {d.fonte}{d.revisor_crf ? ` · revisado por ${d.revisor_crf}` : ''}
-                    {d.data_revisao ? ` em ${new Date(d.data_revisao + 'T12:00:00').toLocaleDateString('pt-BR')}` : ''}
+                    {d.data_revisao ? ` em ${dataPura(d.data_revisao)}` : ''}
                   </p>
                 </div>
               ))

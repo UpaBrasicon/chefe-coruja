@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { dataHoraCarimbo } from './formato.ts'
 import { contextoDoBanco, folhaDoRegistro, lerConteudo, montarFolha, montarRelatorio, type TipoFolha, type TipoRelatorio } from '@/lib/folhas'
 
 // Consulta e impressão são registradas pelo SERVIDOR (migration 0012). O banco
@@ -158,9 +159,11 @@ export async function folhaDoDocumentoEmitido(documentoId: string, tipoImpressao
 export async function imprimirDocumento(documentoId: string, tipoImpressao: string): Promise<boolean> {
   const janela = window.open('', '_blank')
   if (!janela) return false
+  // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
   janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>')
   const r = await folhaDoDocumentoEmitido(documentoId, tipoImpressao)
   if ('erro' in r) {
+    // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
     escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">A folha não pôde ser montada${r.erro ? `: ${r.erro}` : ''}. Nada foi impresso.</p>`)
     return false
   }
@@ -218,12 +221,14 @@ async function imprimirFolhaRelatorio(
 ): Promise<boolean> {
   const janela = window.open('', '_blank')
   if (!janela) return false
+  // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
   janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>')
   const r = await supabase.functions.invoke('folha', { body: corpo })
   let html: string | null = !r.error && typeof r.data === 'string' && r.data.startsWith('<!doctype html>') ? r.data : null
   if (!html) {
     const { data, error } = await rpc()
     if (error || !data) {
+      // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
       escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">Não foi possível imprimir${error ? `: ${error.message}` : ''}. Nada foi impresso.</p>`)
       return false
     }
@@ -256,10 +261,12 @@ export async function abrirImpressao(opcoes: {
   const janela = window.open('', '_blank')
   if (!janela) return null
   janela.document.write(
+    // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
     '<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>'
   )
 
   const recusar = (motivo: string) => {
+    // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
     escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${motivo}</p>`)
     return null
   }
@@ -308,8 +315,9 @@ export async function abrirImpressao(opcoes: {
   if (error || !registro) {
     return recusar(`Não foi possível registrar a impressão${error ? `: ${error.message}` : ''}. Nada foi impresso.`)
   }
-  const emitido = new Date(registro.emitido_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+  const emitido = dataHoraCarimbo(registro.emitido_em)
   const rodape =
+    // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
     `<div style="position:fixed;left:0;right:0;bottom:6mm;text-align:center;font:9px system-ui,sans-serif;color:#64748B">` +
     `Impressão ${registro.protocolo} registrada no Chefe Coruja em ${emitido}</div>`
   janela.document.open()

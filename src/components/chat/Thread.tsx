@@ -1,6 +1,7 @@
 import { Loader2 } from 'lucide-react'
 import * as React from 'react'
 
+import { Button } from '@/components/ui/button'
 import { GavetaPe } from '@/components/ui/gaveta'
 import { horaBr, quandoBr } from '@/components/chat/formato'
 import { useCortePlantao, useEnviarMensagem, useMarcarLida, useMensagens, type MensagemChat } from '@/hooks/useChat'
@@ -17,7 +18,7 @@ function Balao({ m, minha }: { m: MensagemChat; minha: boolean }) {
   return (
     <div
       className={cn(
-        'flex max-w-[84%] flex-col gap-[3px] rounded-[14px] border px-[13px] py-2.5',
+        'flex max-w-[84%] flex-col gap-[3px] rounded-container border px-[13px] py-2.5',
         minha ? 'self-end border-acao/20 bg-acao/10' : 'self-start border-fio bg-campo',
         m.id.startsWith('temp-') && 'opacity-70',
       )}
@@ -141,14 +142,16 @@ export function Thread({ conversaId, perfilId }: { conversaId: string; perfilId?
         ) : (
           <>
             {temAntes && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={alternarAntes}
                 aria-expanded={verAntes}
-                className="cursor-pointer self-center rounded-capsula border border-fio bg-superficie px-[13px] py-[5px] text-apoio text-tinta-apoio hover:border-acao hover:text-acao focus-visible:border-acao focus-visible:outline-none"
+                className="self-center rounded-capsula px-[13px] focus-visible:border-acao"
               >
                 {verAntes ? 'Ocultar plantão anterior' : 'Ver plantão anterior'}
-              </button>
+              </Button>
             )}
 
             {verAntes && (
@@ -207,14 +210,10 @@ export function Thread({ conversaId, perfilId }: { conversaId: string; perfilId?
             aria-label="Escrever mensagem"
             className="field-sizing-content max-h-32 min-w-0 flex-1 resize-none rounded-controle border border-fio bg-campo px-3 py-2.5 text-corpo leading-[1.35] text-tinta outline-none placeholder:text-tinta-sussurro focus:border-acao"
           />
-          <button
-            type="submit"
-            disabled={!podeEnviar}
-            className="flex shrink-0 items-center gap-1.5 rounded-controle border-0 bg-acao px-3.5 py-[9px] text-apoio font-semibold text-sobre-acao hover:bg-acao-pressionada disabled:cursor-not-allowed disabled:bg-[#94A3B8] disabled:hover:bg-[#94A3B8]"
-          >
+          <Button type="submit" disabled={!podeEnviar} className="gap-1.5 py-[9px] font-semibold">
             {enviar.isPending && <Loader2 className="size-3.5 animate-spin" aria-hidden />}
             Enviar
-          </button>
+          </Button>
         </form>
         <span className="leading-[1.45] text-pretty">
           Assunto de paciente não vai aqui: registre como pendência no leito, onde fica com prazo e com quem assume.

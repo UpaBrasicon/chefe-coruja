@@ -1243,7 +1243,7 @@ export default function Escala({
                         <span
                           className={`flex h-6 w-6 items-center justify-center rounded-capsula text-apoio font-semibold ${
                             plantoes.length
-                              ? 'bg-superficie/25 text-sobre-acao'
+                              ? 'bg-tinta/15 text-sobre-acao'
                               : eHoje
                                 ? 'bg-acao text-sobre-acao'
                                 : fimSemana
@@ -1257,7 +1257,7 @@ export default function Escala({
                           <span
                             key={t}
                             className={`truncate rounded-capsula px-1.5 py-0.5 text-rotulo leading-none font-semibold ${
-                              plantoes.length ? 'bg-superficie/25 text-sobre-acao' : 'bg-trilha text-tinta-apoio'
+                              plantoes.length ? 'bg-tinta/15 text-sobre-acao' : 'bg-trilha text-tinta-apoio'
                             }`}
                           >
                             {TURNO_LABEL[t]}
@@ -1828,7 +1828,7 @@ export default function Escala({
                                   onClick={() => abrirCelulaFixa(s.id, i)}
                                   className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle p-1 text-left transition-colors hover:bg-acao/5"
                                 >
-                                  {fixas.length === 0 && <span className="text-rotulo text-tinta-sussurro/50">+ adicionar</span>}
+                                  {fixas.length === 0 && <span className="text-rotulo text-tinta-sussurro">+ adicionar</span>}
                                   {fixas.map((f) => (
                                     <span key={f.id} className="group flex items-center gap-1">
                                       <span className="block flex-1 rounded-controle bg-trilha px-1.5 py-0.5 text-rotulo leading-tight">
@@ -1929,7 +1929,7 @@ export default function Escala({
                                 className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle p-1 text-left transition-colors hover:bg-acao/5"
                               >
                                 {plantoes.length === 0 && (
-                                  <span className="text-rotulo text-tinta-sussurro/50">+ adicionar</span>
+                                  <span className="text-rotulo text-tinta-sussurro">+ adicionar</span>
                                 )}
                                 {plantoes.map((p) => (
                                   <span key={p.id} className="block">

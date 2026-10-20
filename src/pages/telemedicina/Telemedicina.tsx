@@ -10,13 +10,14 @@ import { Activity, BookOpen, CalendarClock, FileText, History, Lock, Receipt, Se
 import * as React from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { Chip, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
+import { dataIso, diaMes, mesAno, moeda, numero, semanaCurta } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -32,11 +33,10 @@ const TELAS = {
 } as const
 type Tela = keyof typeof TELAS
 
-const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+const brl = moeda
 const TURNO: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
-const diaSemana = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', { weekday: 'short', timeZone: 'America/Sao_Paulo' }).replace('.', '')
-const diaMes = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })
-const isoDia = (d: Date) => d.toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+const diaSemana = (iso: string) => semanaCurta(iso)
+const isoDia = (d: Date) => dataIso(d)
 
 export default function Telemedicina() {
   const { tela } = useParams<{ tela: string }>()
@@ -194,14 +194,14 @@ function Extrato() {
   const emCurso = linhas.find((l) => l.situacao === 'em_curso')
   const pareceres = linhas.reduce((s, l) => s + Number(l.pareceres || 0), 0)
   const horasFechadas = linhas.filter((l) => l.situacao === 'fechado').reduce((s, l) => s + Number(l.horas || 0), 0)
-  const nomeMes = new Date(Date.UTC(ano, m - 1, 15)).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+  const nomeMes = mesAno(ano, m)
   const trocar = (delta: number) => { const d = new Date(Date.UTC(ano, m - 1 + delta, 15)); setMes(d.toISOString().slice(0, 7)) }
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3">
         <span className="grid size-[34px] place-items-center rounded-controle bg-acao/10 text-acao" aria-hidden><Receipt className="size-4" /></span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-secao font-semibold text-tinta">Extrato · {nomeMes}</h2>
+          <TituloSecao className="mb-0">Extrato · {nomeMes}</TituloSecao>
           <p className="text-apoio text-tinta-sussurro">Plantão conta pelo valor da unidade para o setor e o turno escalados; o parecer respondido aparece no plantão em que foi escrito</p>
         </div>
         <div className="flex gap-1.5">
@@ -215,13 +215,13 @@ function Extrato() {
       )}
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          ['Fechado até agora', brl(soma(['fechado'])), `${horasFechadas.toLocaleString('pt-BR')} h de plantão encerradas`],
+          ['Fechado até agora', brl(soma(['fechado'])), `${numero(horasFechadas)} h de plantão encerradas`],
           ['Plantão em curso', emCurso ? brl(Number(emCurso.valor)) : '—', emCurso ? `${emCurso.unidade} · até ${hhmm(emCurso.fim)}` : 'nenhum agora'],
           ['Previsto no mês', brl(soma(['fechado', 'em_curso', 'previsto'])), 'pela escala do mês'],
         ].map(([rot, v, sub]) => (
           <div key={rot} className="flex flex-col gap-1 rounded-cartao border border-fio bg-superficie px-4 py-3.5 shadow-repouso">
             <span className="text-rotulo font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">{rot}</span>
-            <span className="text-[26px] leading-none font-semibold tracking-[-0.03em] tabular-nums text-tinta">{v}</span>
+            <span className="text-numeral-compacto leading-none font-semibold tracking-[-0.03em] tabular-nums text-tinta">{v}</span>
             <span className="text-rotulo text-tinta-sussurro">{sub}</span>
           </div>
         ))}
@@ -235,7 +235,7 @@ function Extrato() {
             <div className="flex min-w-[200px] flex-1 flex-col gap-0.5">
               <span className="text-apoio text-tinta">{capital(diaSemana(l.inicio))} {hhmm(l.inicio)}–{hhmm(l.fim)} <span className="text-tinta-sussurro">· {l.unidade} · {l.setor}</span></span>
               <span className="text-rotulo text-tinta-sussurro">
-                {Number(l.horas).toLocaleString('pt-BR')} h escaladas · {l.pareceres} {Number(l.pareceres) === 1 ? 'parecer respondido' : 'pareceres respondidos'}
+                {numero(Number(l.horas))} h escaladas · {l.pareceres} {Number(l.pareceres) === 1 ? 'parecer respondido' : 'pareceres respondidos'}
                 {l.checkin_em ? ` · check-in ${hhmm(l.checkin_em)}` : l.situacao !== 'previsto' ? ' · sem check-in' : ''}{l.checkout_em ? ` · check-out ${hhmm(l.checkout_em)}` : ''}
               </span>
             </div>
@@ -271,7 +271,7 @@ function Telemonitoramento({ unidadeId }: { unidadeId: string }) {
   const depois = (q.data ?? []).filter((c) => !c.agora)
   const Linha = ({ c }: { c: NonNullable<typeof q.data>[number] }) => (
     <li className={cn('flex flex-wrap items-center gap-3 border-b border-trilha px-5 py-3 last:border-0', c.minha && 'bg-alerta-marca/40')}>
-      <span aria-hidden className={cn('size-2 shrink-0 rounded-full', c.agora ? 'bg-acao' : 'bg-fio')} />
+      <span aria-hidden className={cn('size-2 shrink-0 rounded-capsula', c.agora ? 'bg-acao' : 'bg-fio')} />
       <div className="flex min-w-[200px] flex-1 flex-col gap-0.5">
         <span className="text-apoio font-medium text-tinta">{c.setor}</span>
         <span className="text-rotulo text-tinta-sussurro">{c.minha ? 'Minha escala' : `Coberto por ${c.medico}`} · {capital(diaSemana(c.inicio))} {diaMes(c.inicio)} {hhmm(c.inicio)}–{hhmm(c.fim)}</span>
@@ -386,10 +386,9 @@ function Historico() {
     <div className="flex flex-col gap-5">
       <div role="group" aria-label="Período" className="flex flex-wrap gap-1.5">
         {[7, 30, 90].map((n) => (
-          <button key={n} type="button" aria-pressed={dias === n} onClick={() => setDias(n)}
-            className={cn('rounded-capsula border px-[13px] py-[5px] text-apoio', dias === n ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+          <Chip key={n} ativo={dias === n} onClick={() => setDias(n)}>
             {n} dias
-          </button>
+          </Chip>
         ))}
       </div>
       <Erro e={q.error} />
@@ -415,7 +414,7 @@ function Historico() {
                   {aberto === c.id && (
                     <div className="mt-2.5 flex flex-col gap-2 text-apoio">
                       <p className="rounded-controle bg-trilha/60 px-3 py-2 text-tinta"><span className="font-medium">Pergunta: </span>{c.pergunta}</p>
-                      {c.resposta && <p className="rounded-controle border border-conforme/30 bg-conforme/[0.05] px-3 py-2 whitespace-pre-wrap text-tinta"><span className="font-medium">Parecer: </span>{c.resposta}</p>}
+                      {c.resposta && <p className="rounded-controle border border-conforme/30 bg-alerta-conforme px-3 py-2 whitespace-pre-wrap text-tinta"><span className="font-medium">Parecer: </span>{c.resposta}</p>}
                     </div>
                   )}
                 </li>
