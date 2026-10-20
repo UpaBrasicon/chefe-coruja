@@ -12,6 +12,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Chip } from '@/components/monitor/Pagina'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 
 // Chamada e saída da fila (Fase 2.3). Três chamadas sem resposta geram um
 // aviso; tirar da fila é sempre decisão de quem chamou, com justificativa.
@@ -53,9 +56,10 @@ export function BotaoChamar({
 
   return (
     <div className="flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
-      <select
+      <CampoSelecao
         aria-label="Sala"
-        className="h-8 rounded-controle border border-fio bg-superficie px-2 text-xs"
+        tamanho="compacto"
+        className="bg-superficie text-rotulo"
         value={sala?.id ?? ''}
         onChange={(e) => {
           setSalaId(e.target.value)
@@ -67,11 +71,11 @@ export function BotaoChamar({
         }}
       >
         {doTipo.map((s) => <option key={s.id} value={s.id}>{s.nome}</option>)}
-      </select>
+      </CampoSelecao>
       <Button size="sm" variant="outline" disabled={chamar.isPending || !sala} onClick={() => chamar.mutate()}>
         <Megaphone /> {chamadas > 0 ? `Chamar de novo · ${chamadas} ${chamadas === 1 ? 'chamada' : 'chamadas'}` : 'Chamar'}
       </Button>
-      {chamar.error && <span className="text-xs text-critico">{(chamar.error as Error).message}</span>}
+      <MensagemErro formato="linha" erro={chamar.error} acao="chamar o paciente" className="mt-0" />
     </div>
   )
 }
@@ -114,7 +118,7 @@ export function RetirarDaFila({ episodioId, aviso }: { episodioId: string; aviso
   return (
     <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
       {aviso && !aberto && (
-        <p role="status" className="text-xs text-atencao">
+        <p role="status" className="text-rotulo text-atencao">
           Chamado 3 vezes sem resposta. Mantenha na fila ou registre a evasão.
         </p>
       )}
@@ -133,7 +137,7 @@ export function RetirarDaFila({ episodioId, aviso }: { episodioId: string; aviso
           </div>
           {motivo === 'evasao' && <SeletorMotivoEvasao valor={motivoEvasao} onChange={setMotivoEvasao} />}
           <Input aria-label="Justificativa" placeholder="Justificativa (mínimo de 15 letras)" value={just} onChange={(e) => setJust(e.target.value)} />
-          {retirar.error && <span className="text-xs text-critico">{(retirar.error as Error).message}</span>}
+          <MensagemErro formato="linha" erro={retirar.error} acao="retirar o paciente da fila" className="mt-0" />
           <div className="flex gap-2">
             <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Manter na fila</Button>
             <Button size="sm" variant="destructive" disabled={just.trim().length < 15 || faltaMotivo || retirar.isPending} onClick={() => retirar.mutate({ motivo, just, motivoEvasao })}>
@@ -196,19 +200,9 @@ export function ExcluirDaFila({ episodioId, nome }: { episodioId: string; nome: 
           <span className="text-apoio font-medium text-grafite">Motivo</span>
           <div role="radiogroup" aria-label="Motivo" className="flex flex-wrap gap-[7px]">
             {MOTIVOS.map((m) => (
-              <button
-                key={m.valor}
-                type="button"
-                role="radio"
-                aria-checked={motivo === m.valor}
-                onClick={() => setMotivo(m.valor)}
-                className={cn(
-                  'min-h-9 rounded-capsula border px-[13px] text-apoio whitespace-nowrap transition-colors',
-                  motivo === m.valor ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao',
-                )}
-              >
+              <Chip key={m.valor} variante="opcao" radio ativo={motivo === m.valor} onClick={() => setMotivo(m.valor)}>
                 {m.rotulo}
-              </button>
+              </Chip>
             ))}
           </div>
         </div>
@@ -230,7 +224,7 @@ export function ExcluirDaFila({ episodioId, nome }: { episodioId: string; nome: 
           <Button type="button" variant="outline" className="min-h-9" onClick={() => abrir(false)}>Cancelar</Button>
           <Button
             type="button"
-            className="min-h-9 bg-critico hover:bg-[#991B1B]"
+            className="min-h-9 bg-critico text-sobre-acao hover:bg-critico/85"
             disabled={retirar.isPending}
             onClick={() => {
               setTentou(true)

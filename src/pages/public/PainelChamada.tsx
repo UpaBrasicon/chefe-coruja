@@ -3,6 +3,7 @@ import * as React from 'react'
 import { useParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { hora } from '@/lib/formato'
 
 // Painel de chamada da TV (Fase 2.3; porte, onda 8: P/Painel de Chamada.dc.html).
 // Abre SEM login, pelo link da porta que a Recepção gera. Mostra só nome
@@ -22,10 +23,6 @@ type Painel = {
 }
 
 const DESTAQUE_MS = 9000
-const FUNDO = '#0B1F1D'
-
-const hora = (iso: string | number | Date) =>
-  new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
 
 let ctxAudio: AudioContext | null = null
 function audio() {
@@ -151,17 +148,18 @@ export default function PainelChamada() {
   }
 
   const cabecalho = (
-    <header className="flex items-center justify-between gap-6 border-b border-[#134E4A] px-[2.4vw] py-[1.8vh]">
+    <header className="flex items-center justify-between gap-6 border-b border-tv-borda px-[2.4vw] py-[1.8vh]">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="grid size-[4.4vh] shrink-0 place-items-center rounded-[1vh] bg-white/10"><Bird className="size-[2.4vh]" aria-hidden /></span>
+        <span className="grid size-[4.4vh] shrink-0 place-items-center rounded-[1vh] bg-tv-claro/10"><Bird className="size-[2.4vh]" aria-hidden /></span>
         <div className="min-w-0 leading-tight">
           <div className="truncate text-[2.4vh] font-semibold tracking-[-0.01em]">{painel?.unidade ?? 'Chefe Coruja'}</div>
-          <div className="truncate text-[1.8vh] text-[#99F6E4]">{painel?.porta ?? 'Painel de chamada'}</div>
+          <div className="truncate text-[1.8vh] text-tv-apoio">{painel?.porta ?? 'Painel de chamada'}</div>
         </div>
       </div>
       <div className="flex items-center gap-5">
         {!som && (
-          <button type="button" onClick={ativarSom} className="flex items-center gap-2 rounded-full bg-[#F8FAFC] px-[2.2vh] py-[1vh] text-[1.8vh] font-semibold text-[#0B1F1D]">
+          // padrao-ok: botão do painel da TV, medidas em vh pela altura da tela
+          <button type="button" onClick={ativarSom} className="flex items-center gap-2 rounded-capsula bg-tv-claro px-[2.2vh] py-[1vh] text-[1.8vh] font-semibold text-tv-fundo">
             <Volume2 className="size-[2vh]" aria-hidden /> Ativar som
           </button>
         )}
@@ -171,47 +169,47 @@ export default function PainelChamada() {
   )
 
   const blocoAtual = (
-    <div className="flex flex-col gap-[1.6vh] border-b border-[#0F766E] bg-[#134E4A] px-[2vw] py-[2.8vh]" aria-live="polite">
-      <span className="text-[2vh] font-semibold tracking-[0.08em] text-[#99F6E4] uppercase">{rotuloAtual}</span>
+    <div className="flex flex-col gap-[1.6vh] border-b border-tv-chamada bg-tv-borda px-[2vw] py-[2.8vh]" aria-live="polite">
+      <span className="text-[2vh] font-semibold tracking-[0.08em] text-tv-apoio uppercase">{rotuloAtual}</span>
       {atual ? (
         <div className="flex flex-col gap-[1.4vh]">
           <span className="text-[5.2vh] leading-[1.05] font-bold tracking-[-0.015em] text-balance">{atual.nome}</span>
-          <span className="text-[4.6vh] leading-none font-bold text-[#5EEAD4]">{atual.sala}</span>
-          {atual.quem && <span className="text-[2.2vh] text-[#CCFBF1]">{atual.quem}</span>}
+          <span className="text-[4.6vh] leading-none font-bold text-tv-destaque">{atual.sala}</span>
+          {atual.quem && <span className="text-[2.2vh] text-tv-texto">{atual.quem}</span>}
         </div>
       ) : (
-        <span className="text-[3vh] text-pretty text-[#CCFBF1]">Aguarde ser chamado pelo nome.</span>
+        <span className="text-[3vh] text-pretty text-tv-texto">Aguarde ser chamado pelo nome.</span>
       )}
     </div>
   )
 
   const listaAnteriores = (
     <div className="flex min-h-0 flex-col gap-[0.4vh] overflow-hidden px-[2vw] py-[2.2vh]">
-      <span className="mb-[0.6vh] text-[1.8vh] font-semibold tracking-[0.08em] text-[#99F6E4] uppercase">Últimas chamadas</span>
+      <span className="mb-[0.6vh] text-[1.8vh] font-semibold tracking-[0.08em] text-tv-apoio uppercase">Últimas chamadas</span>
       {anteriores.slice(0, 5).map((c) => (
-        <div key={c.id} className="flex flex-col gap-[0.4vh] border-b border-[#134E4A] py-[1.3vh]">
+        <div key={c.id} className="flex flex-col gap-[0.4vh] border-b border-tv-borda py-[1.3vh]">
           <span className="text-[2.8vh] leading-[1.15] font-semibold text-balance">{c.nome}</span>
-          <span className="text-[2.1vh] font-semibold text-[#5EEAD4]">
-            {c.sala} <span className="font-normal text-[#99F6E4]">· {hora(c.em)}</span>
+          <span className="text-[2.1vh] font-semibold text-tv-destaque">
+            {c.sala} <span className="font-normal text-tv-apoio">· {hora(c.em)}</span>
           </span>
         </div>
       ))}
-      {anteriores.length === 0 && <span className="py-[1.3vh] text-[2.1vh] text-[#99F6E4]/80">Nenhuma chamada anterior.</span>}
+      {anteriores.length === 0 && <span className="py-[1.3vh] text-[2.1vh] text-tv-apoio/80">Nenhuma chamada anterior.</span>}
     </div>
   )
 
   return (
-    <div className="relative grid h-dvh grid-rows-[auto_minmax(0,1fr)] overflow-hidden text-[#F8FAFC]" style={{ background: FUNDO }}>
+    <div className="relative grid h-dvh grid-rows-[auto_minmax(0,1fr)] overflow-hidden bg-tv-fundo text-tv-claro">
       {cabecalho}
 
       {erro ? (
         <main className="grid place-items-center px-8 text-center">
-          <p className="text-[3vh] text-amber-200">{erro}</p>
+          <p className="text-[3vh] text-tv-alerta">{erro}</p>
         </main>
       ) : nArtes > 0 ? (
         <main className="grid min-h-0 grid-cols-[minmax(0,1.85fr)_minmax(0,1fr)]">
           <section className="flex min-h-0 min-w-0 flex-col gap-[1.2vh] py-[2.4vh] pr-[1.6vw] pl-[2.4vw]" aria-label="Informes da unidade">
-            <div className="relative min-h-0 flex-1 overflow-hidden rounded-[1.2vh] bg-[#0F2E2B]">
+            <div className="relative min-h-0 flex-1 overflow-hidden rounded-[1.2vh] bg-tv-faixa">
               {artes.map((a, i) => (
                 <img
                   key={a.id}
@@ -224,25 +222,25 @@ export default function PainelChamada() {
               ))}
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[1.7vh] font-semibold tracking-[0.08em] text-[#99F6E4] uppercase">{painel?.propaganda?.rotulo}</span>
+              <span className="text-[1.7vh] font-semibold tracking-[0.08em] text-tv-apoio uppercase">{painel?.propaganda?.rotulo}</span>
               {nArtes > 1 && (
                 <div className="flex gap-[0.8vh]">
                   {artes.map((a, i) => (
+                    // padrao-ok: marcador das artes do painel da TV, medidas em vh
                     <button
                       key={a.id}
                       type="button"
                       title={`Mostrar ${a.titulo}`}
                       aria-label={`Mostrar ${a.titulo}`}
                       onClick={() => { fixoAte.current = Date.now() + 60_000; setArte(i) }}
-                      className="size-[1.6vh] rounded-full"
-                      style={{ background: i === arteAtual ? '#5EEAD4' : '#1F5F59' }}
+                      className={i === arteAtual ? 'size-[1.6vh] rounded-capsula bg-tv-destaque' : 'size-[1.6vh] rounded-capsula bg-tv-trilho'}
                     />
                   ))}
                 </div>
               )}
             </div>
           </section>
-          <aside className="flex min-h-0 min-w-0 flex-col border-l border-[#134E4A]">
+          <aside className="flex min-h-0 min-w-0 flex-col border-l border-tv-borda">
             {blocoAtual}
             {listaAnteriores}
           </aside>
@@ -251,17 +249,17 @@ export default function PainelChamada() {
         // sem propaganda cadastrada: as chamadas ocupam a tela
         <main className="grid min-h-0 grid-cols-1 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="flex min-h-0 flex-col justify-center">{blocoAtual}</div>
-          <aside className="flex min-h-0 min-w-0 flex-col border-l border-[#134E4A]">{listaAnteriores}</aside>
+          <aside className="flex min-h-0 min-w-0 flex-col border-l border-tv-borda">{listaAnteriores}</aside>
         </main>
       )}
 
       {destaque && atual && !erro && (
-        <div className="absolute inset-0 z-10 flex flex-col justify-center gap-[4vh] bg-[#0F766E] px-[6vw] py-[6vh]" role="alert">
-          <span className="text-[3.2vh] font-semibold tracking-[0.1em] text-[#CCFBF1] uppercase">{rotuloAtual}</span>
+        <div className="absolute inset-0 z-10 flex flex-col justify-center gap-[4vh] bg-tv-chamada px-[6vw] py-[6vh]" role="alert">
+          <span className="text-[3.2vh] font-semibold tracking-[0.1em] text-tv-texto uppercase">{rotuloAtual}</span>
           <span className="text-[11vh] leading-none font-bold tracking-[-0.02em] text-balance">{atual.nome}</span>
           <div className="flex flex-wrap items-baseline gap-[3vw]">
-            <span className="rounded-[1.4vh] px-[2.6vh] py-[1.4vh] text-[9vh] leading-none font-bold text-white" style={{ background: FUNDO }}>{atual.sala}</span>
-            {atual.quem && <span className="text-[3.4vh] text-[#F0FDFA]">{atual.quem}</span>}
+            <span className="rounded-[1.4vh] px-[2.6vh] py-[1.4vh] text-[9vh] leading-none font-bold text-tv-claro bg-tv-fundo">{atual.sala}</span>
+            {atual.quem && <span className="text-[3.4vh] text-tv-texto-forte">{atual.quem}</span>}
           </div>
         </div>
       )}

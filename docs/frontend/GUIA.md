@@ -273,6 +273,8 @@ Exames, Faturamento e Unidade — numa tarefa própria da parte 4.
 | `CampoSelecao` | `src/components/ui/campo-selecao.tsx` | 3.2 |
 | `TituloPagina`, `TituloSecao`, `TituloCartao` | `src/components/monitor/Pagina.tsx` | 4.1 |
 | `Abas` (cápsula, tablist) | `src/components/monitor/Pagina.tsx` | 4.2 |
+| `Chip` (`variante`: filtro ou opcao; `radio` para radiogroup) | `src/components/monitor/Pagina.tsx` | 3.1 |
+| Tokens do painel da TV (`tv-fundo`, `tv-faixa`, `tv-borda`, `tv-chamada`, `tv-trilho`, `tv-destaque`, `tv-apoio`, `tv-texto`, `tv-texto-forte`, `tv-claro`, `tv-alerta`) | `src/index.css`, iguais nos dois temas | 4.6 (parte 4.4, "1a") |
 | Espaçamento `justo`, `proximo`, `base`, `secao`, `pagina` (`p-base`, `gap-justo`…) | `src/index.css` (`--spacing-*`) | 4.3 |
 | Hora, data, data e hora, tempo decorrido, moeda e número | `src/lib/formato.ts` (`datas.ts` reexporta os nomes antigos) | 4.4 |
 
@@ -280,6 +282,8 @@ Exames, Faturamento e Unidade — numa tarefa própria da parte 4.
   código P0001) aparece como veio, sem o prefixo de código. Rede, permissão e
   erro técnico mostram "Não foi possível <ação>. Tente de novo." e o detalhe vai
   para o registro de erros do admin.
+- **Painel da TV** (parte 4.4, "2a"): escala pela altura da tela; texto e canto
+  em `vh` são exceção declarada. Canto fixo usa os nomes do projeto.
 - **Importação entre telas** (4.5): uma tela que agrupa telas (as abas de
   `pages/grupos/`, Indicadores, Configuração) pode montar outra tela inteira — o
   import traz só a tela (o default, ou o nome igual ao do arquivo). Peça, hook

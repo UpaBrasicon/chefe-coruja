@@ -59,6 +59,8 @@ const EXCECOES = {
   'cor-hex': ['src/lib/folhas.ts'],
   'data-local': ['src/lib/formato.ts'],
 }
+// O painel da TV escala pela altura da tela: canto em vh também é exceção (RT "2a", parte 4.4).
+const CANTO_EM_VH = ['src/pages/public/PainelChamada.tsx']
 
 const PALETA = 'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose'
 const PREFIXO_COR = '(?:text|bg|border(?:-[xytrblse])?|ring(?:-offset)?|outline|fill|stroke|from|via|to|divide|decoration|accent|caret|placeholder|shadow)'
@@ -188,6 +190,7 @@ export function analisar(arquivo, texto) {
     for (const m of bruto.matchAll(/\S+/g)) {
       const pedaco = m[0].replace(/^[`'"}]+/, '').replace(/[`'",;$]+$/, '').replace(/\$\{$/, '')
       const regra = regraDaClasse(pedaco)
+      if (regra === 'canto' && /vh]$/.test(pedaco) && dentro(arquivo, CANTO_EM_VH)) continue
       if (regra) anotar(regra, inicio + m.index, pedaco)
     }
     // Hex e rgb fora de classe: tira antes os valores arbitrários de classe (`-[#fff]`).

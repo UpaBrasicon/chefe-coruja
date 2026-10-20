@@ -35,6 +35,18 @@
     --color-marca-escura: var(--cc-marca-escura);
     --color-marca-clara: var(--cc-marca-clara);
     --color-marca-texto-claro: var(--cc-marca-texto-claro);
+    /* Painel de chamada da TV: família própria, igual nos dois temas (guia 4.6, parte 4.4). */
+    --color-tv-fundo: var(--cc-tv-fundo);
+    --color-tv-faixa: var(--cc-tv-faixa);
+    --color-tv-borda: var(--cc-tv-borda);
+    --color-tv-chamada: var(--cc-tv-chamada);
+    --color-tv-trilho: var(--cc-tv-trilho);
+    --color-tv-destaque: var(--cc-tv-destaque);
+    --color-tv-apoio: var(--cc-tv-apoio);
+    --color-tv-texto: var(--cc-tv-texto);
+    --color-tv-texto-forte: var(--cc-tv-texto-forte);
+    --color-tv-claro: var(--cc-tv-claro);
+    --color-tv-alerta: var(--cc-tv-alerta);
 
     /* ── As quatro grandezas (rótulo e barra) ─────────────────── */
     --color-leitos: var(--cc-leitos);
@@ -268,6 +280,17 @@
     --cc-marca-escura: #0B3D3A;
     --cc-marca-clara: #5EEAD4;
     --cc-marca-texto-claro: #B7DED8;
+    --cc-tv-fundo: #0B1F1D;
+    --cc-tv-faixa: #0F2E2B;
+    --cc-tv-borda: #134E4A;
+    --cc-tv-chamada: #0F766E;
+    --cc-tv-trilho: #1F5F59;
+    --cc-tv-destaque: #5EEAD4;
+    --cc-tv-apoio: #99F6E4;
+    --cc-tv-texto: #CCFBF1;
+    --cc-tv-texto-forte: #F0FDFA;
+    --cc-tv-claro: #F8FAFC;
+    --cc-tv-alerta: #FDE68A;
 
     --cor-primaria: var(--cc-acao);
     --cor-primaria-hover: var(--cc-acao-pressionada);

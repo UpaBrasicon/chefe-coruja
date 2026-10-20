@@ -24,6 +24,9 @@ import { ExcluirDaFila } from '@/components/porta/Chamada'
 import { Campo, CamposCadastro } from '@/components/paciente/CamposCadastro'
 import { PropagandaPainel } from './PropagandaPainel'
 import { CADASTRO_VAZIO, errosCadastro, hojeSP, IDENTIDADE, normalizarCadastro, type Cadastro, type CampoCadastro } from '@/lib/cadastroPaciente'
+import { Aviso } from '@/components/ui/aviso'
+import { TituloCartao } from '@/components/monitor/Pagina'
+import { diaMes, hora } from '@/lib/formato'
 
 // Recepção (protótipo: rec-cadastro, rec-fila-enf, rec-fila-med, rec-painel).
 // Procurar antes de cadastrar, abrir a ficha — que abre o episódio — e
@@ -72,7 +75,7 @@ const ABAS: { aba: Aba; rotulo: string; icone: LucideIcon; titulo: string; descr
   { aba: 'triagem', rotulo: 'Fila da triagem', icone: Hourglass, titulo: 'Fila da triagem',
     descricao: 'Fichas aguardando a enfermagem, com prioridade legal primeiro e depois por ordem de chegada. Você acompanha; quem chama é a triagem.' },
   { aba: 'medica', rotulo: 'Fila médica', icone: Stethoscope, titulo: 'Fila médica',
-    descricao: 'Pacientes triados aguardando o Pronto Socorro, pela cor da classificação e pelo tempo de espera. Quem chama é o médico.' },
+    descricao: 'Pacientes triados aguardando o Pronto-Socorro, pela cor da classificação e pelo tempo de espera. Quem chama é o médico.' },
   { aba: 'painel', rotulo: 'Painel de chamada', icone: Monitor, titulo: 'Painel de chamada',
     descricao: 'Abre em outra janela para espelhar na televisão da sala de espera. Mostra o nome do paciente e a sala de quem chamou, com aviso sonoro e voz.' },
 ]
@@ -94,16 +97,14 @@ function Contadores({ itens }: { itens: { rotulo: string; valor: number | string
       {itens.map((c, i) => (
         <div key={c.rotulo} className={cn('flex min-w-[140px] flex-1 flex-col gap-0.5 px-5 py-3', i > 0 && 'border-l border-trilha')}>
           <span className="text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">{c.rotulo}</span>
-          <span className="text-[22px] leading-[1.2] font-semibold tracking-[-0.02em] tabular-nums text-tinta">{c.valor}</span>
+          <span className="text-titulo leading-[1.2] font-semibold tracking-[-0.02em] tabular-nums text-tinta">{c.valor}</span>
         </div>
       ))}
     </div>
   )
 }
 
-const hora = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
-const diaHora = (iso: string) =>
-  `${new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit' })} ${hora(iso)}`
+const diaHora = (iso: string) => `${diaMes(iso)} ${hora(iso)}`
 const ETAPA_ABERTA = (a: Aberto) =>
   a.etapa === 'triagem' ? 'fila da triagem'
   : a.etapa === 'atendimento' ? (a.em_atendimento ? 'em atendimento médico' : 'fila médica')
@@ -527,14 +528,12 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
 
       {modo !== 'nenhum' && (
         <section className={cn(cartao, 'flex flex-col gap-3.5 px-5 py-[18px]')} aria-label="Ficha">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-corpo font-semibold text-tinta">
-              {modo === 'existente' ? `Ficha de ${existente ? nomeExibicao(existente.nome, existente.nome_social) : ''}` : 'Novo cadastro'}
-            </h2>
-            <button type="button" onClick={limpar} aria-label="Fechar" className="text-tinta-sussurro hover:text-acao">
-              <X className="size-4" />
-            </button>
-          </div>
+          <TituloCartao
+            className="mb-0 items-center"
+            extra={<Button variant="ghost" size="icon-sm" onClick={limpar} aria-label="Fechar"><X aria-hidden /></Button>}
+          >
+            {modo === 'existente' ? `Ficha de ${existente ? nomeExibicao(existente.nome, existente.nome_social) : ''}` : 'Novo cadastro'}
+          </TituloCartao>
           {modo === 'existente' && (
             <p className="-mt-2 text-apoio text-tinta-sussurro">
               Prontuário {existente?.prontuario ?? '—'}. Preencha só o que mudou ou faltava (telefone, endereço, responsável, raça/cor).
@@ -547,14 +546,20 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
           )}
 
           {duplicata && (
-            <div role="alert" className="flex flex-wrap items-center gap-2.5 rounded-container border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-2.5">
-              <TriangleAlert className="size-[15px] text-atencao" aria-hidden />
-              <span className="min-w-0 flex-[1_1_240px] text-apoio text-pretty text-atencao">{duplicata.texto}</span>
-              <Button variant="outline" onClick={() => registrar.mutate({ pacienteId: duplicata.id })}>Usar o cadastro existente</Button>
-              {duplicata.tipo === 'provavel' && (
-                <Button variant="outline" onClick={() => registrar.mutate({ outraPessoa: true })}>É outra pessoa</Button>
-              )}
-            </div>
+            <Aviso
+              tom="atencao"
+              anunciar
+              acao={
+                <>
+                  <Button variant="outline" onClick={() => registrar.mutate({ pacienteId: duplicata.id })}>Usar o cadastro existente</Button>
+                  {duplicata.tipo === 'provavel' && (
+                    <Button variant="outline" onClick={() => registrar.mutate({ outraPessoa: true })}>É outra pessoa</Button>
+                  )}
+                </>
+              }
+            >
+              {duplicata.texto}
+            </Aviso>
           )}
 
           {temAberto && (
@@ -594,18 +599,14 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
               {PRIORIDADES_INFORMADAS.map((p) => {
                 const on = prioridades.includes(p)
                 return (
-                  <button
+                  <Chip
                     key={p}
-                    type="button"
-                    aria-pressed={on}
+                    variante="opcao"
+                    ativo={on}
                     onClick={() => setPrioridades((l) => (l.includes(p) ? l.filter((x) => x !== p) : [...l, p]))}
-                    className={cn(
-                      'rounded-capsula border px-[13px] py-1.5 text-apoio transition-colors',
-                      on ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
-                    )}
                   >
                     {PRIORIDADE_ROTULO[p]}
-                  </button>
+                  </Chip>
                 )
               })}
             </div>
@@ -623,7 +624,7 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
       )}
 
       {aviso && (
-        <div role="status" className="mt-3.5 flex items-center gap-2.5 rounded-container border border-acao/20 bg-acao/[0.06] px-[15px] py-3">
+        <div role="status" className="mt-3.5 flex items-center gap-2.5 rounded-container border border-acao/20 bg-alerta-marca px-[15px] py-3">
           <Check className="size-4 text-acao" aria-hidden />
           <span className="text-controle text-acao">{aviso}</span>
         </div>
@@ -672,10 +673,10 @@ function LinhaFila({ e, agora, hoje }: { e: NaFila; agora: number; hoje: string 
     estiloStatus = 'bg-acao/10 text-acao'
   } else if (e.chamadas > 0) {
     status = `Chamado${e.chamadas > 1 ? ` ${e.chamadas}ª vez` : ''}${e.ultima_sala ? ` · ${e.ultima_sala}` : ''}${e.ultimo_chamador ? ` · ${e.ultimo_chamador}` : ''}`
-    estiloStatus = 'bg-[#FEF3C7] text-atencao'
+    estiloStatus = 'bg-alerta-atencao text-atencao'
     if (e.chamadas >= 3) {
       status += ' · sem resposta após 3 chamadas'
-      estiloStatus = 'bg-[#FEF2F2] text-critico whitespace-normal'
+      estiloStatus = 'bg-alerta-critico text-critico whitespace-normal'
     }
   }
 
@@ -752,7 +753,7 @@ function PainelChamada({ porta, chamadas, carregando, erro }: {
             <span className="min-w-12 text-apoio tabular-nums text-tinta-sussurro">{hora(c.criado_em)}</span>
             <span className="min-w-0 flex-[1_1_200px] text-corpo font-medium text-tinta">{c.nome}</span>
             <span className="text-controle font-semibold text-acao">{c.sala}</span>
-            {c.numero > 1 && <span className={cn(pilula, 'bg-[#FEF3C7] text-atencao')}>{c.numero}ª chamada</span>}
+            {c.numero > 1 && <span className={cn(pilula, 'bg-alerta-atencao text-atencao')}>{c.numero}ª chamada</span>}
             <span className="text-apoio text-tinta-sussurro">{c.quem ?? '—'}</span>
           </div>
         ))}
