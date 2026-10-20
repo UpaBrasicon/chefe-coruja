@@ -25,7 +25,7 @@ export function Gaveta({
   return (
     <DialogPrimitive.Root open={aberta} onOpenChange={onAbertaChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Backdrop className="fixed inset-0 z-[45] bg-[rgba(15,23,42,0.42)] data-open:animate-cc-scrim data-closed:animate-out data-closed:fade-out-0" />
+        <DialogPrimitive.Backdrop className="fixed inset-0 z-[45] bg-veu-dialogo data-open:animate-cc-scrim data-closed:animate-out data-closed:fade-out-0" />
         <DialogPrimitive.Popup
           aria-label={rotulo}
           className={cn(

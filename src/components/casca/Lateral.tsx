@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 
 import { Marca } from './Marca'
 import type { ChaveNota, ItemNav } from './navegacao'
+import { diaMes as fmtData } from '@/lib/formato'
 
 // A lateral da casca (P/index.html 895–973): recolhida em 68px de ícones,
 // abre por cima do conteúdo ao passar o mouse ou com foco (CSS .cc-recolhe
@@ -41,7 +42,6 @@ function ItemLateral({ item, nota }: { item: ItemNav; nota?: number }) {
 }
 
 const INTERVALO_AVISO_MS = 6000
-const fmtData = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })
 
 /** "Da unidade": o carrossel de avisos do gestor, com pausa (WCAG 2.2.2). */
 function DaUnidadeLateral({ unidadeId, ehGestor }: { unidadeId?: string; ehGestor: boolean }) {

@@ -36,16 +36,17 @@ export class ErroBoundary extends React.Component<Props, State> {
 
     return (
       <div className="mx-auto flex w-full max-w-lg flex-col items-center gap-4 py-16 text-center">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-critico/10 text-critico">
+        <span className="flex size-12 items-center justify-center rounded-cartao bg-critico/10 text-critico">
           <TriangleAlert className="size-6" />
         </span>
         <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-semibold tracking-tight">Algo quebrou nesta tela</h1>
-          <p className="text-sm text-tinta-sussurro">
+          {/* padrao-ok: tela de falha fora do layout da página */}
+          <h1 className="text-dialogo font-semibold tracking-tight">Algo quebrou nesta tela</h1>
+          <p className="text-apoio text-tinta-sussurro">
             O restante do sistema continua funcionando. Tente novamente ou volte para a tela anterior.
           </p>
         </div>
-        <pre className="max-h-40 w-full overflow-auto rounded-lg border bg-trilha/50 p-3 text-left text-xs text-tinta-sussurro">
+        <pre className="max-h-40 w-full overflow-auto rounded-controle border bg-trilha/50 p-3 text-left text-rotulo text-tinta-sussurro">
           {this.state.erro.message}
         </pre>
         <div className="flex gap-2">

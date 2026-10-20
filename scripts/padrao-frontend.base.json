@@ -1,19 +1,19 @@
 {
   "_leia": "Base da catraca do padrão do frontend (scripts/padrao-frontend.mjs). Só desce: depois de corrigir, rode `node scripts/padrao-frontend.mjs --atualizar` e comite junto.",
   "totais": {
-    "cor-crua": 120,
-    "cor-arbitraria": 268,
-    "cor-hex": 124,
-    "texto-escala": 1281,
-    "canto": 485,
-    "botao-solto": 256,
+    "cor-crua": 118,
+    "cor-arbitraria": 256,
+    "cor-hex": 123,
+    "texto-escala": 1274,
+    "canto": 474,
+    "botao-solto": 233,
     "select-solto": 88,
     "tabela-solta": 61,
-    "titulo-solto": 85,
-    "data-local": 293,
+    "titulo-solto": 80,
+    "data-local": 281,
     "importacao-cruzada": 0,
     "emoji": 17,
-    "pronto-socorro": 12
+    "pronto-socorro": 10
   },
   "arquivos": {
     "src/clinico/adulto/acidobase.ts": {
@@ -52,22 +52,6 @@
     "src/clinico/pediatria/fonteP4.ts": {
       "data-local": 2
     },
-    "src/components/AppShell.tsx": {
-      "botao-solto": 1,
-      "cor-arbitraria": 1,
-      "data-local": 2
-    },
-    "src/components/ErroBoundary.tsx": {
-      "canto": 2,
-      "texto-escala": 3,
-      "titulo-solto": 1
-    },
-    "src/components/GateCheckIn.tsx": {
-      "botao-solto": 3,
-      "cor-crua": 1,
-      "data-local": 1,
-      "titulo-solto": 1
-    },
     "src/components/admin/ui.tsx": {
       "botao-solto": 1,
       "texto-escala": 1
@@ -97,58 +81,6 @@
     },
     "src/components/avaliacao/useAvaliacao.ts": {
       "data-local": 4
-    },
-    "src/components/casca/Bloqueio.tsx": {
-      "botao-solto": 2,
-      "canto": 1,
-      "titulo-solto": 1
-    },
-    "src/components/casca/FaixaDoPapel.tsx": {
-      "data-local": 2
-    },
-    "src/components/casca/ForaDoExpediente.tsx": {
-      "botao-solto": 2,
-      "data-local": 4,
-      "titulo-solto": 1
-    },
-    "src/components/casca/Lateral.tsx": {
-      "botao-solto": 3,
-      "data-local": 1
-    },
-    "src/components/casca/Marca.tsx": {
-      "canto": 1,
-      "cor-crua": 1
-    },
-    "src/components/casca/MenuUsuario.tsx": {
-      "botao-solto": 6,
-      "canto": 5,
-      "cor-arbitraria": 1,
-      "texto-escala": 1
-    },
-    "src/components/casca/Paleta.tsx": {
-      "texto-escala": 2
-    },
-    "src/components/casca/Saida.tsx": {
-      "botao-solto": 2,
-      "canto": 1,
-      "cor-arbitraria": 4,
-      "titulo-solto": 1
-    },
-    "src/components/casca/Topo.tsx": {
-      "botao-solto": 4,
-      "canto": 1,
-      "cor-arbitraria": 4,
-      "texto-escala": 1
-    },
-    "src/components/casca/navegacao.ts": {
-      "pronto-socorro": 2
-    },
-    "src/components/casca/useSessaoPosPlantao.ts": {
-      "cor-hex": 1,
-      "data-local": 1
-    },
-    "src/components/casca/useSinal.ts": {
-      "data-local": 1
     },
     "src/components/chat/ChatDrawer.tsx": {
       "botao-solto": 1
@@ -619,12 +551,6 @@
     },
     "src/components/ui/command.tsx": {
       "texto-escala": 1
-    },
-    "src/components/ui/dialog.tsx": {
-      "cor-arbitraria": 1
-    },
-    "src/components/ui/gaveta.tsx": {
-      "cor-arbitraria": 1
     },
     "src/components/ui/input-group.tsx": {
       "canto": 3,

@@ -94,6 +94,9 @@
     --color-nota: var(--cc-nota);
     --color-desfazer-regua: var(--cc-desfazer-regua);
     --color-veu: var(--cc-veu);
+    /* Véu atrás de diálogo e o da sessão encerrada (tela cheia). */
+    --color-veu-dialogo: var(--cc-veu-dialogo);
+    --color-veu-sessao: var(--cc-veu-sessao);
 
     /* ── Escala tipográfica: 12·13·14·15·17·20·24 e 25·30·36·42 ──
        14 é o tamanho de controle (campo, item de menu) e 20 o do título de
@@ -259,6 +262,8 @@
     --cc-nota: #F59E0B1F;
     --cc-desfazer-regua: #99D6CE;
     --cc-veu: #0B3B34;
+    --cc-veu-dialogo: rgba(15, 23, 42, 0.42);
+    --cc-veu-sessao: #0B1220EB;
     --cc-sobre-acao: #FFFFFF;
     --cc-marca-escura: #0B3D3A;
     --cc-marca-clara: #5EEAD4;
@@ -374,6 +379,8 @@
     --cc-nota: #F59E0B2E;
     --cc-desfazer-regua: #22D3EE;
     --cc-veu: #0B3B34;
+    --cc-veu-dialogo: rgba(2, 6, 23, 0.6);
+    --cc-veu-sessao: #020617EB;
 
     color-scheme: dark;
 }

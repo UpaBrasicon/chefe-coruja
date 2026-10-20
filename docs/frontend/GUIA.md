@@ -113,7 +113,8 @@ estilo Tailwind-50, como `#FEF2F2`) e as variações de opacidade
 ### 3.1 Botões — "4a"
 
 `<button>` solto só dentro dos componentes de base (`src/components/ui` e as peças
-como `Chip` e abas). No resto: `Button`, `Chip`, ou `Button size="icon"` com
+como `Chip` e abas) e na casca (`src/components/casca` e `AppShell`), onde os
+botões são a própria navegação (parte 4.3, "2a"). No resto: `Button`, `Chip`, ou `Button size="icon"` com
 `aria-label`. A cor de ação é o petróleo (seção 1.1).
 
 ### 3.2 Seleção — "5a"
@@ -178,14 +179,17 @@ como exceção declarada. Nenhum hex solto nelas.
 Maiúscula só no começo da frase em título, menu, aba e botão ("Minha agenda",
 "Revisão clínica"). Siglas seguem em maiúscula (CID, SIGTAP, AIH, APAC, BPA, NIR,
 PS). Nomes próprios do produto ficam como estão: "Chefe Coruja", "Olho de
-Gavião", "Central do Plantonista", "Corujinha". Nome próprio novo entra nesta
-lista por decisão do RT.
+Gavião", "Central do Plantonista", "Central do Farmacêutico" (parte 4.3, "3a"),
+"Corujinha". Nome próprio novo entra nesta lista por decisão do RT.
 
 ### 5.2 Mesmo destino, mesmo nome — "2a"
 
 Um item de menu que leva à mesma tela tem o mesmo nome para todo papel
 ("Notificação compulsória"). O nome só muda quando a ação muda de fato (por
-exemplo, a retirada sem farmacêutico é outra ação na mesma tela).
+exemplo, a retirada sem farmacêutico é outra ação na mesma tela). Na parte 4.3
+("1a") o menu ficou: Notificação compulsória, BPA, Contas do atendimento, AIH,
+APAC, Pendências do NIR, Rede e Telemedicina para todos os papéis; na barra do
+celular, os curtos Central, Prontuários e Agenda.
 
 ### 5.3 Pronto-Socorro — "3a"
 

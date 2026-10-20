@@ -79,10 +79,11 @@ export function TelaBloqueada({
       aria-labelledby="cc-bloqueio-titulo"
       className="fixed inset-0 z-[1000] grid place-items-center bg-campo p-6"
     >
-      <form onSubmit={enviar} className="flex w-full max-w-[380px] flex-col gap-3.5 rounded-[18px] border border-fio bg-superficie px-7 pt-7 pb-6 shadow-dialogo">
+      <form onSubmit={enviar} className="flex w-full max-w-[380px] flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-7 pt-7 pb-6 shadow-dialogo">
         <div className="grid size-11 place-items-center rounded-container bg-acao/10 text-acao">
           <Lock className="size-[22px]" aria-hidden />
         </div>
+        {/* padrao-ok: título da tela bloqueada (tela cheia, não é página) */}
         <h2 id="cc-bloqueio-titulo" className="m-0 text-dialogo font-semibold tracking-[-0.02em] text-tinta">
           Tela bloqueada
         </h2>

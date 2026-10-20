@@ -39,7 +39,7 @@ export function DialogoSaida({
   return (
     <DialogPrimitive.Root open={aberto} onOpenChange={onAbertoChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Backdrop className="fixed inset-0 z-40 bg-[rgba(15,23,42,0.42)] data-open:animate-cc-scrim" />
+        <DialogPrimitive.Backdrop className="fixed inset-0 z-40 bg-veu-dialogo data-open:animate-cc-scrim" />
         <DialogPrimitive.Popup className="fixed top-1/2 left-1/2 z-40 flex max-h-[calc(100dvh-48px)] w-[calc(100%-48px)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 flex-col gap-3.5 overflow-y-auto rounded-cartao bg-superficie px-[22px] pt-[22px] pb-[18px] shadow-dialogo outline-none data-open:animate-cc-dlg">
           <div className="flex flex-col gap-1.5">
             <DialogPrimitive.Title className="text-secao font-semibold tracking-[-0.01em] text-tinta">{titulo}</DialogPrimitive.Title>
@@ -60,13 +60,13 @@ export function DialogoSaida({
             </ul>
           )}
           <div className="mt-0.5 flex flex-wrap justify-end gap-2">
-            <DialogPrimitive.Close className="rounded-controle border border-fio bg-superficie px-3.5 py-[9px] text-apoio font-medium text-tinta-apoio hover:border-[#94A3B8] hover:text-tinta">
+            <DialogPrimitive.Close className="rounded-controle border border-fio bg-superficie px-3.5 py-[9px] text-apoio font-medium text-tinta-apoio hover:border-fio-forte hover:text-tinta">
               {emPlantao ? 'Continuar no plantão' : 'Cancelar'}
             </DialogPrimitive.Close>
             <button
               type="button"
               onClick={onConfirmar}
-              className="flex items-center gap-[7px] rounded-controle bg-acao px-4 py-[9px] text-apoio font-semibold text-sobre-acao hover:bg-[#0B5D57]"
+              className="flex items-center gap-[7px] rounded-controle bg-acao px-4 py-[9px] text-apoio font-semibold text-sobre-acao hover:bg-acao-pressionada"
             >
               <LogOut className="size-3.5" aria-hidden />
               {emPlantao ? 'Sair mesmo assim' : 'Sair'}
@@ -86,11 +86,12 @@ export function VeuSaida() {
 /** Sessão encerrada por ociosidade depois do plantão (P/index.html 883–893). */
 export function SessaoEncerrada({ texto, onReentrar }: { texto: string; onReentrar: () => void }) {
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="cc-sessao-titulo" className="fixed inset-0 z-[1000] grid place-items-center bg-[#0B1220EB] p-6">
-      <div className="flex w-full max-w-[420px] flex-col gap-3.5 rounded-[18px] bg-superficie px-7 pt-7 pb-6 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+    <div role="dialog" aria-modal="true" aria-labelledby="cc-sessao-titulo" className="fixed inset-0 z-[1000] grid place-items-center bg-veu-sessao p-6">
+      <div className="flex w-full max-w-[420px] flex-col gap-3.5 rounded-cartao bg-superficie px-7 pt-7 pb-6 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
         <div className="grid size-11 place-items-center rounded-container bg-acao/10 text-acao">
           <Clock className="size-[22px]" aria-hidden />
         </div>
+        {/* padrao-ok: título da sessão encerrada (tela cheia, não é página) */}
         <h2 id="cc-sessao-titulo" className="m-0 text-dialogo font-semibold tracking-[-0.02em] text-tinta">
           Sessão encerrada
         </h2>

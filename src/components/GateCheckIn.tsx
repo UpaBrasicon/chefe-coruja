@@ -4,6 +4,8 @@ import { Clock, LogOut, MapPin, X } from 'lucide-react'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { FormularioCheckin } from '@/components/checkin/FormularioCheckin'
 import type { SituacaoCheckin } from '@/hooks/usePlantao'
+import { Button } from '@/components/ui/button'
+import { hora } from '@/lib/formato'
 
 /**
  * A tela de check-in da casca (ADR 0003; regra de 30/09/2026).
@@ -21,8 +23,6 @@ import type { SituacaoCheckin } from '@/hooks/usePlantao'
  */
 
 const TURNO: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
-const FUSO = 'America/Sao_Paulo'
-const hora = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: FUSO })
 
 /** Hora do servidor (ms), andando no aparelho pelo desvio da última leitura. */
 function useAgoraServidor(situacao: SituacaoCheckin | null, passoMs = 15_000) {
@@ -71,7 +71,7 @@ export function GateCheckIn({
       className={
         bloqueado
           ? 'flex min-h-dvh items-center justify-center bg-campo p-4'
-          : 'fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm'
+          : 'fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-veu-dialogo p-4 backdrop-blur-sm'
       }
       role={bloqueado ? undefined : 'dialog'}
       aria-modal={bloqueado ? undefined : true}
@@ -83,16 +83,12 @@ export function GateCheckIn({
             <MapPin className="size-[21px]" />
           </span>
           {!bloqueado && onFechar && (
-            <button
-              type="button"
-              onClick={onFechar}
-              aria-label="Fechar"
-              className="grid size-8 place-items-center rounded-controle text-tinta-sussurro hover:bg-campo hover:text-tinta"
-            >
-              <X className="size-4" aria-hidden />
-            </button>
+            <Button variant="ghost" size="icon" onClick={onFechar} aria-label="Fechar">
+              <X aria-hidden />
+            </Button>
           )}
         </div>
+        {/* padrao-ok: título do portão de check-in (tela cheia, não é página) */}
         <h1 id="checkin-titulo" className="mt-4 text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">
           {bloqueado ? 'Faça o check-in para entrar' : 'Check-in do plantão'}
         </h1>
@@ -142,14 +138,10 @@ export function GateCheckIn({
         </p>
 
         {bloqueado && (
-          <button
-            type="button"
-            onClick={onSair}
-            className="mt-5 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-controle border border-fio bg-superficie text-controle font-medium text-tinta-apoio hover:border-acao hover:text-acao"
-          >
+          <Button variant="outline" size="bloco" onClick={onSair} className="mt-5">
             <LogOut className="size-4" aria-hidden />
             Sair
-          </button>
+          </Button>
         )}
       </section>
     </div>
@@ -194,13 +186,9 @@ export function AvisoCheckinPendente({
           </span>
         )}
       </span>
-      <button
-        type="button"
-        onClick={onAbrir}
-        className="shrink-0 rounded-controle bg-acao px-3 py-1 text-rotulo font-medium text-sobre-acao hover:bg-acao-pressionada"
-      >
+      <Button size="xs" onClick={onAbrir} className="shrink-0">
         Fazer check-in
-      </button>
+      </Button>
     </div>
   )
 }
