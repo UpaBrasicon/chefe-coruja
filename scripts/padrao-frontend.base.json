@@ -1,16 +1,16 @@
 {
   "_leia": "Base da catraca do padrão do frontend (scripts/padrao-frontend.mjs). Só desce: depois de corrigir, rode `node scripts/padrao-frontend.mjs --atualizar` e comite junto.",
   "totais": {
-    "cor-crua": 37,
-    "cor-arbitraria": 78,
-    "cor-hex": 55,
-    "texto-escala": 273,
-    "canto": 118,
-    "botao-solto": 57,
-    "select-solto": 14,
-    "tabela-solta": 8,
-    "titulo-solto": 42,
-    "data-local": 72,
+    "cor-crua": 36,
+    "cor-arbitraria": 67,
+    "cor-hex": 42,
+    "texto-escala": 124,
+    "canto": 63,
+    "botao-solto": 37,
+    "select-solto": 4,
+    "tabela-solta": 1,
+    "titulo-solto": 35,
+    "data-local": 46,
     "importacao-cruzada": 0,
     "emoji": 0,
     "pronto-socorro": 0
@@ -22,22 +22,6 @@
     "src/components/admin/ui.tsx": {
       "botao-solto": 1,
       "texto-escala": 1
-    },
-    "src/components/alta/DocumentosAlta.tsx": {
-      "canto": 9,
-      "cor-arbitraria": 1,
-      "cor-hex": 1,
-      "data-local": 1,
-      "tabela-solta": 1,
-      "texto-escala": 25
-    },
-    "src/components/alta/lerPacote.ts": {
-      "data-local": 3
-    },
-    "src/components/apac/SolicitarApac.tsx": {
-      "canto": 3,
-      "select-solto": 2,
-      "texto-escala": 12
     },
     "src/components/chat/ChatDrawer.tsx": {
       "botao-solto": 1
@@ -95,31 +79,12 @@
       "canto": 1,
       "cor-arbitraria": 1
     },
-    "src/components/parecer/AbaParecer.tsx": {
-      "cor-arbitraria": 1
-    },
     "src/components/perfil/CampoCbo.tsx": {
       "canto": 1,
       "texto-escala": 2
     },
     "src/components/perfil/CampoCns.tsx": {
       "texto-escala": 3
-    },
-    "src/components/prontuario/GavetaEpisodios.tsx": {
-      "data-local": 1
-    },
-    "src/components/prontuario/HistoricoEncerrado.tsx": {
-      "data-local": 2
-    },
-    "src/components/prontuario/Intercorrencias.tsx": {
-      "botao-solto": 2,
-      "canto": 1,
-      "select-solto": 1
-    },
-    "src/components/prontuario/ReentradaContingencia.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "cor-arbitraria": 1
     },
     "src/components/seguranca/CodigosRecuperacao.tsx": {
       "data-local": 2,
@@ -291,104 +256,9 @@
     "src/pages/SeletorUnidade.tsx": {
       "texto-escala": 2
     },
-    "src/pages/admin/ErrosEAlertas.tsx": {
-      "botao-solto": 3,
-      "canto": 1,
-      "data-local": 1
-    },
-    "src/pages/admin/GaviaoPainel.tsx": {
-      "canto": 7,
-      "cor-arbitraria": 4,
-      "data-local": 6,
-      "texto-escala": 24,
-      "titulo-solto": 1
-    },
-    "src/pages/admin/Integracoes.tsx": {
-      "canto": 1,
-      "select-solto": 1,
-      "texto-escala": 15
-    },
-    "src/pages/admin/NumerosOrganizacao.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "tabela-solta": 1,
-      "texto-escala": 6
-    },
-    "src/pages/admin/PendenciasTecnicas.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "data-local": 1
-    },
-    "src/pages/admin/Plataformas.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "titulo-solto": 1
-    },
-    "src/pages/admin/Servidores.tsx": {
-      "data-local": 1,
-      "texto-escala": 1
-    },
-    "src/pages/faturamento/Bpa.tsx": {
-      "botao-solto": 1,
-      "canto": 6,
-      "select-solto": 2,
-      "texto-escala": 32
-    },
-    "src/pages/faturamento/Contas.tsx": {
-      "botao-solto": 2,
-      "canto": 12,
-      "select-solto": 2,
-      "tabela-solta": 3
-    },
-    "src/pages/faturamento/Glosas.tsx": {
-      "botao-solto": 1,
-      "canto": 3,
-      "select-solto": 2,
-      "tabela-solta": 1
-    },
     "src/pages/landing/Landing.tsx": {
       "cor-hex": 35,
       "titulo-solto": 9
-    },
-    "src/pages/notificacao/FichaSinan.tsx": {
-      "botao-solto": 1,
-      "cor-arbitraria": 1,
-      "data-local": 2,
-      "titulo-solto": 3
-    },
-    "src/pages/notificacao/NotificacaoCompulsoria.tsx": {
-      "botao-solto": 2,
-      "cor-arbitraria": 1,
-      "titulo-solto": 1
-    },
-    "src/pages/notificacao/dados.ts": {
-      "data-local": 5
-    },
-    "src/pages/parecer/Pareceres.tsx": {
-      "botao-solto": 1,
-      "cor-arbitraria": 1,
-      "data-local": 1
-    },
-    "src/pages/prontuario/ImpressaoProntuario.tsx": {
-      "botao-solto": 3,
-      "canto": 2,
-      "cor-crua": 1,
-      "cor-hex": 12,
-      "data-local": 2,
-      "texto-escala": 1
-    },
-    "src/pages/prontuario/PedidosProntuario.tsx": {
-      "canto": 2,
-      "texto-escala": 13
-    },
-    "src/pages/prontuario/PendenciasPep.tsx": {
-      "titulo-solto": 1
-    },
-    "src/pages/prontuario/ProntuarioLeitura.tsx": {
-      "canto": 4,
-      "cor-arbitraria": 1,
-      "tabela-solta": 1,
-      "texto-escala": 20
     },
     "src/pages/public/LinkReceita.tsx": {
       "canto": 1,

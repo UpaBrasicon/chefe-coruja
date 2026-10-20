@@ -183,7 +183,7 @@ export function AbaParecer({ pacienteId, episodioId, internacaoId }: AbaParecerP
             <span className="text-apoio leading-normal text-pretty text-tinta-apoio">{p.pergunta}</span>
             <span className="text-rotulo text-tinta-sussurro">{meta(p)}</span>
             {p.status === 'realizado' && p.resposta && (
-              <div className="rounded-controle border border-conforme/30 bg-conforme/[0.05] p-2">
+              <div className="rounded-controle border border-conforme/30 bg-alerta-conforme p-2">
                 <p className="text-apoio leading-normal whitespace-pre-wrap text-conforme">Parecer: {p.resposta}</p>
                 {p.documento_resposta_numero && <p className="mt-1 text-rotulo text-tinta-sussurro">Documento nº {p.documento_resposta_numero}</p>}
               </div>

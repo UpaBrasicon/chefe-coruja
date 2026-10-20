@@ -8,7 +8,9 @@ import * as React from 'react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Spinner } from '@/components/ui/spinner'
-import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { Button } from '@/components/ui/button'
+import { Chip, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { diaMesHora } from '@/lib/formato'
 import type { Database } from '@/types/database'
 
 import { haQuanto, selo } from '@/lib/dadosAdmin'
@@ -33,8 +35,7 @@ const TIPO_ERRO: Record<string, string> = {
   rede: 'Falha de rede',
 }
 
-const quando = (iso: string) =>
-  new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+const quando = (iso: string) => diaMesHora(iso)
 
 function useErros(dias: number, incluirResolvidos: boolean) {
   return useQuery({
@@ -86,15 +87,17 @@ function ErroItem({ erro }: { erro: ErroGrupo }) {
         </div>
         {erroAcao && <span role="alert" className="text-apoio text-critico">{erroAcao}</span>}
       </div>
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="sm"
         onClick={() => { setErroAcao(null); resolver.mutate() }}
         disabled={resolver.isPending}
-        className="flex items-center gap-1.5 self-center rounded-[9px] border border-fio bg-superficie px-3 py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao disabled:opacity-60"
+        className="gap-1.5 self-center"
       >
         {resolver.isPending ? <Spinner className="size-4" /> : erro.resolvido ? <RotateCcw className="size-4" /> : <CircleCheck className="size-4" />}
         {erro.resolvido ? 'Reabrir' : 'Marcar resolvido'}
-      </button>
+      </Button>
     </div>
   )
 }
@@ -115,18 +118,9 @@ function BlocoErros() {
           <div role="group" aria-label="Período" className="flex items-center gap-1.5 text-apoio text-tinta-sussurro">
             <CalendarClock className="size-4" aria-hidden />
             {([7, 30] as const).map((d) => (
-              <button
-                key={d}
-                type="button"
-                aria-pressed={dias === d}
-                onClick={() => setDias(d)}
-                className={cn(
-                  'rounded-capsula border px-[11px] py-1 transition-colors',
-                  dias === d ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
-                )}
-              >
+              <Chip key={d} ativo={dias === d} onClick={() => setDias(d)}>
                 {d} dias
-              </button>
+              </Chip>
             ))}
           </div>
           <label className="ml-auto flex items-center gap-2 text-apoio text-tinta-apoio">
@@ -289,14 +283,16 @@ function LinhaChecagem({ checagem }: { checagem: Checagem }) {
         {ok ? (
           <span className={cn(selo, 'ml-auto text-conforme bg-conforme/10')}>ok</span>
         ) : (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="xs"
             onClick={() => setAberto((a) => !a)}
             aria-expanded={aberto}
-            className={cn(selo, 'ml-auto text-critico bg-critico/10 hover:brightness-95')}
+            className={cn(selo, 'ml-auto min-h-0 text-critico bg-critico/10 hover:text-critico hover:brightness-95 aria-expanded:text-critico')}
           >
             {n} {n === 1 ? checagem.singular : checagem.plural}
-          </button>
+          </Button>
         )}
       </div>
       {!ok && aberto && (

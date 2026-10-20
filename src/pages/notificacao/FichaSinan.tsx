@@ -8,9 +8,10 @@ import { AlertTriangle, Check, ChevronLeft, FolderOpen, Save } from 'lucide-reac
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
+import { data, dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import { Chip } from '@/components/monitor/Pagina'
+import { Chip, TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
@@ -38,9 +39,9 @@ export function FichaSinan({ agravoId, onVoltar }: { agravoId: string; onVoltar:
 
 function Voltar({ onClick }: { onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="flex items-center gap-1.5 self-start text-apoio text-tinta-apoio hover:text-acao">
+    <Button variant="ghost" size="sm" onClick={onClick} className="self-start gap-1.5 px-0 text-tinta-apoio">
       <ChevronLeft className="size-3.5" aria-hidden /> Voltar aos casos
-    </button>
+    </Button>
   )
 }
 
@@ -56,7 +57,7 @@ function Formulario({ d, onVoltar }: { d: FichaAberta; onVoltar: () => void }) {
   const registrada = d.situacao === 'notificado'
   const pend = pendenciasFicha(f)
   const avisos = avisosFicha(f)
-  const hoje = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+  const hoje = data(new Date())
 
   const recarregar = () => {
     void qc.invalidateQueries({ queryKey: ['notificacao-ficha', d.id] })
@@ -111,7 +112,7 @@ function Formulario({ d, onVoltar }: { d: FichaAberta; onVoltar: () => void }) {
       </div>
 
       {d.imediata && aberta && (
-        <div role="alert" className="flex items-start gap-2.5 rounded-controle border border-critico/30 bg-critico/[0.06] px-3.5 py-3">
+        <div role="alert" className="flex items-start gap-2.5 rounded-controle border border-critico/30 bg-alerta-critico px-3.5 py-3">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-critico" aria-hidden />
           <span className="text-controle leading-[1.5] text-pretty text-critico">
             Notificação imediata: comunicar {d.destino || 'a vigilância epidemiológica'} em até 24 horas da suspeita, por telefone ou meio
@@ -127,7 +128,7 @@ function Formulario({ d, onVoltar }: { d: FichaAberta; onVoltar: () => void }) {
 
       {SECOES.map((s, i) => (
         <section key={s.titulo} className={caixa} aria-label={s.titulo}>
-          <h2 className="text-corpo font-semibold text-tinta">{s.titulo}</h2>
+          <TituloSecao className="mb-0">{s.titulo}</TituloSecao>
           <div className="flex flex-wrap gap-3">
             {i === 0 && fixos.map((x) => (
               <div key={x.rotulo} className="flex min-w-0 flex-col gap-1" style={{ flex: `${x.largura} 1 ${x.largura * 60}px` }}>
@@ -144,7 +145,7 @@ function Formulario({ d, onVoltar }: { d: FichaAberta; onVoltar: () => void }) {
       ))}
 
       <section className={caixa} aria-label="Notificação no SINAN">
-        <h2 className="text-corpo font-semibold text-tinta">Notificação no SINAN</h2>
+        <TituloSecao className="mb-0">Notificação no SINAN</TituloSecao>
         <label className="flex max-w-sm flex-col gap-1">
           <span className={rotuloCampo}>Nº da notificação no SINAN (se já digitada)</span>
           <Input value={numero} inputMode="numeric" disabled={!aberta} onChange={(e) => setNumero(e.target.value.replace(/\D/g, '').slice(0, 20))} />
@@ -152,7 +153,7 @@ function Formulario({ d, onVoltar }: { d: FichaAberta; onVoltar: () => void }) {
       </section>
 
       <section className={caixa} aria-label="Notificador">
-        <h2 className="text-corpo font-semibold text-tinta">Notificador</h2>
+        <TituloSecao className="mb-0">Notificador</TituloSecao>
         <span className="text-controle text-tinta">
           {registrada ? `${d.registrado_por ?? '—'} · registrada ${diaHora(d.registrado_em)}` : notificador}
         </span>
@@ -232,7 +233,7 @@ function CampoFicha({ c, valor, mudar, somenteLeitura }: { c: Campo; valor: stri
         <>
           <label htmlFor={id} className={rotuloCampo}>{c.num && <b className="text-acao">{c.num}</b>} {c.rotulo}</label>
           <Input id={id} type={c.tipo === 'data' ? 'date' : 'text'} value={valor} disabled={somenteLeitura}
-            max={c.tipo === 'data' ? new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }) : undefined}
+            max={c.tipo === 'data' ? dataIso() : undefined}
             onChange={(e) => mudar(e.target.value)} />
         </>
       )}

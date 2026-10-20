@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
 import { TituloPagina } from '@/components/monitor/Pagina'
+import { diaMesHora } from '@/lib/formato'
 import { Campo, Pilulas, Texto } from '@/components/documentos/ui'
 
 import {
@@ -34,8 +35,7 @@ const SELO_SEVERIDADE: Record<Severidade, string> = {
   baixa: 'text-tinta-apoio bg-trilha',
 }
 const MARCA_SEVERIDADE: Record<Severidade, string> = { alta: 'bg-critico', media: 'bg-atencao', baixa: 'bg-fio-forte' }
-const quando = (iso: string) =>
-  new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+const quando = (iso: string) => diaMesHora(iso)
 
 export default function PendenciasTecnicas() {
   const [params, setParams] = useSearchParams()
@@ -97,13 +97,9 @@ export default function PendenciasTecnicas() {
                 <span>{SITUACAO[c.situacao]}</span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setAberto(c)}
-              className="self-center rounded-[9px] border border-fio bg-superficie px-3 py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao"
-            >
+            <Button type="button" variant="outline" size="sm" onClick={() => setAberto(c)} className="self-center">
               Abrir chamado
-            </button>
+            </Button>
           </div>
         ))}
         {chamados.data && visiveis.length === 0 && (

@@ -58,3 +58,9 @@ test('formato: número com até N casas', async () => {
   assert.equal(numeroAte(1234.56, 1), '1.234,6')
   assert.equal(numeroAte(2, 1), '2')
 })
+
+test('formato: carimbo com segundos', async () => {
+  const { dataHoraCarimbo } = await import('./formato.ts')
+  assert.equal(dataHoraCarimbo('2026-10-19T22:43:12Z'), '19/10/2026, 19:43:12')
+  assert.equal(dataHoraCarimbo('2026-10-19T22:43:12Z'), new Date('2026-10-19T22:43:12Z').toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }))
+})

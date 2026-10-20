@@ -111,7 +111,7 @@ export default function PedidosProntuario() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">1. Identificar o paciente</CardTitle>
+          <CardTitle className="text-corpo">1. Identificar o paciente</CardTitle>
           <CardDescription>Use o número do prontuário, o CPF ou o CNS exatos. Sem documento, informe o nome e a data de nascimento.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -138,15 +138,15 @@ export default function PedidosProntuario() {
               <Search className="size-4" /> Buscar
             </Button>
           </form>
-          {busca.error && <p className="mt-3 text-sm text-critico">{(busca.error as Error).message}</p>}
-          {busca.data && busca.data.length === 0 && <p className="mt-3 text-sm text-tinta-sussurro">Nenhum paciente com essa identificação nesta unidade.</p>}
+          {busca.error && <p className="mt-3 text-apoio text-critico">{(busca.error as Error).message}</p>}
+          {busca.data && busca.data.length === 0 && <p className="mt-3 text-apoio text-tinta-sussurro">Nenhum paciente com essa identificação nesta unidade.</p>}
           {busca.data && busca.data.length > 0 && (
-            <ul className="mt-4 divide-y rounded-lg border">
+            <ul className="mt-4 divide-y rounded-controle border">
               {busca.data.map((a) => (
                 <li key={a.paciente_id} className="flex flex-wrap items-center justify-between gap-2 p-3">
                   <div>
                     <div className="font-medium">{a.nome}</div>
-                    <div className="text-xs text-tinta-sussurro">
+                    <div className="text-rotulo text-tinta-sussurro">
                       {a.data_nascimento ? 'nasc. ' + fmtData(a.data_nascimento) : 'sem data de nascimento'}
                       {a.prontuario ? ' · prontuário ' + a.prontuario : ''}
                       {a.ultimo_encerramento ? ' · último atendimento encerrado em ' + fmtDataHora(a.ultimo_encerramento) : ''}
@@ -169,7 +169,7 @@ export default function PedidosProntuario() {
       {escolhido && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">2. Motivo do pedido — {escolhido.nome}</CardTitle>
+            <CardTitle className="text-corpo">2. Motivo do pedido — {escolhido.nome}</CardTitle>
             <CardDescription>O gestor lê o motivo para decidir. O pedido e a decisão ficam na trilha de auditoria da unidade.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3">
@@ -177,23 +177,23 @@ export default function PedidosProntuario() {
             <div className="flex items-center gap-2">
               <Button onClick={() => pedir.mutate()} disabled={motivo.trim().length < 10 || pedir.isPending}>Enviar ao gestor</Button>
               <Button variant="ghost" onClick={() => setEscolhido(null)}>Cancelar</Button>
-              {motivo.trim().length < 10 && <span className="text-xs text-tinta-sussurro">Pelo menos 10 caracteres.</span>}
+              {motivo.trim().length < 10 && <span className="text-rotulo text-tinta-sussurro">Pelo menos 10 caracteres.</span>}
             </div>
-            {pedir.error && <p className="text-sm text-critico">{(pedir.error as Error).message}</p>}
+            {pedir.error && <p className="text-apoio text-critico">{(pedir.error as Error).message}</p>}
           </CardContent>
         </Card>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Meus pedidos (últimos 30 dias)</CardTitle>
+          <CardTitle className="text-corpo">Meus pedidos (últimos 30 dias)</CardTitle>
         </CardHeader>
         <CardContent>
           {meus.isLoading && <Spinner />}
-          {meus.error && <p className="text-sm text-critico">{(meus.error as Error).message}</p>}
-          {meus.data && meus.data.length === 0 && <p className="text-sm text-tinta-sussurro">Nenhum pedido.</p>}
+          {meus.error && <p className="text-apoio text-critico">{(meus.error as Error).message}</p>}
+          {meus.data && meus.data.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum pedido.</p>}
           {meus.data && meus.data.length > 0 && (
-            <ul className="divide-y rounded-lg border">
+            <ul className="divide-y rounded-controle border">
               {meus.data.map((p) => (
                 <li key={p.id} className="flex flex-wrap items-start justify-between gap-2 p-3">
                   <div className="min-w-0 flex-1">
@@ -201,12 +201,12 @@ export default function PedidosProntuario() {
                       <span className="font-medium">{p.paciente_nome}</span>
                       <StatusPedido status={p.status} vigente={p.status === 'aprovado' ? p.vigente : undefined} />
                     </div>
-                    <div className="mt-0.5 text-xs text-tinta-sussurro">
+                    <div className="mt-0.5 text-rotulo text-tinta-sussurro">
                       Pedido em {fmtDataHora(p.criado_em)}
                       {p.status === 'aprovado' && p.valido_ate ? ' · vale até ' + fmtDataHora(p.valido_ate) : ''}
                     </div>
-                    <p className="mt-1 text-sm">{p.motivo}</p>
-                    {p.status === 'recusado' && p.motivo_decisao && <p className="mt-1 text-sm text-critico">Motivo da recusa: {p.motivo_decisao}</p>}
+                    <p className="mt-1 text-apoio">{p.motivo}</p>
+                    {p.status === 'recusado' && p.motivo_decisao && <p className="mt-1 text-apoio text-critico">Motivo da recusa: {p.motivo_decisao}</p>}
                   </div>
                   {p.vigente && <Button size="sm" render={<Link to={`/prontuarios/${p.paciente_id}`} />}>Ler prontuário</Button>}
                   {p.status === 'pendente' && (

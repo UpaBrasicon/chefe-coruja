@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileWarning } from 'lucide-react'
 import * as React from 'react'
 
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
@@ -57,7 +58,7 @@ export function ReentradaContingencia({ unidadeId, episodioId, chegadaEm }: { un
   return (
     <div className="flex flex-col gap-1.5">
       {(marcas.data ?? []).map((m) => (
-        <div key={m.id} role="note" className="flex items-start gap-2 rounded-container border border-atencao/30 bg-atencao/[0.06] px-3 py-2 text-apoio text-atencao">
+        <div key={m.id} role="note" className="flex items-start gap-2 rounded-container border border-atencao/30 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">
           <FileWarning className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>
             <strong className="font-semibold">Reentrada de contingência</strong> ({fmtDataHora(m.inicio)} a {fmtDataHora(m.fim)}): {m.descricao}
@@ -82,10 +83,10 @@ export function ReentradaContingencia({ unidadeId, episodioId, chegadaEm }: { un
           </DialogHeader>
           <div role="radiogroup" aria-label="Contingência" className="flex flex-col gap-1.5">
             {cabem.map((c) => (
-              <button key={c.id} type="button" role="radio" aria-checked={contingencia === c.id} onClick={() => setContingencia(c.id)}
-                className={cn('rounded-lg border px-3 py-2 text-left text-apoio', contingencia === c.id ? 'border-acao ring-1 ring-acao' : 'border-fio')}>
+              <BotaoLinha key={c.id} variante="cartao" role="radio" aria-checked={contingencia === c.id} onClick={() => setContingencia(c.id)}
+                className={cn('text-apoio', contingencia === c.id && 'border-acao ring-1 ring-acao')}>
                 {fmtDataHora(c.inicio)} a {fmtDataHora(c.fim)} · “{c.motivo}”
-              </button>
+              </BotaoLinha>
             ))}
           </div>
           <div className="flex flex-col gap-1.5">
