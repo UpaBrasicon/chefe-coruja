@@ -76,6 +76,32 @@ copia tudo para o VPS (precisa da chave SSH do usuário). Os `.py` entram na
 imagem da API (`COPY` no Dockerfile): depois de mudar `app/*.py`, rode
 `docker compose build api` antes de `docker compose run`/`up`.
 
+## Homologação da biblioteca
+
+`npm run biblioteca:homolog` publica o código da branch no container
+`biblioteca-api-homolog` (porta 8711, `https://biblioteca.chefecoruja.com.br/homolog/`).
+A homologação lê a coleção `biblioteca_homolog` (cópia da coleção da produção,
+feita na primeira vez por snapshot do Qdrant) e o corpus de
+`/srv/biblioteca/corpus-homolog`. Com `-- --ingerir`, o corpus da branch é
+reingerido só nessa cópia; com `-- --avaliar`, as evals (`perguntas-r2.yaml`,
+`perguntas.yaml`, `perguntas-falhas.yaml`) rodam contra a homologação. A
+produção só muda com `npm run biblioteca:sync -- --ingerir` depois do "ok produção".
+
+## Busca da pergunta que descreve o paciente (Portão 2, tarefa 1b)
+
+* **Reescrita (R2-12):** antes da busca, o modelo escreve os termos que o
+  manual usaria para a pergunta ("criança ingeriu anlodipino" → "intoxicação
+  exógena, criança, bloqueador de canal de cálcio"). A busca usa a pergunta e
+  os termos, fundidos. Sem resposta do modelo em `REESCRITA_TIMEOUT_S` (8 s), a
+  busca segue só com a pergunta. `REESCRITA=0` desliga.
+* **Armadilhas (`app/armadilhas.py`):** dose letal, dado pessoal de paciente
+  ou familiar e assinar ou autorizar no lugar do médico têm resposta fixa e
+  não passam pela busca.
+* **Ferramentas (R2-15):** só aparecem quando a busca acha material, acima de
+  `FERRAMENTA_MIN_SCORE` (0,55).
+* **Corpus:** cada seção leva o comentário do código (texto com unidade e
+  página) e o bloco da ficha; CAD e EHH pediátricos são arquivos separados.
+
 ## Entrada dos livros em `fontes.yaml` (para o usuário acrescentar)
 
 ```yaml

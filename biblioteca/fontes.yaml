@@ -70,6 +70,33 @@
   licenca: "institucional"
   tenant_id: global
 
+# As três pastas abaixo já estavam ingeridas na coleção (ingest-revisao.log),
+# mas não constavam aqui: o mapa de público as tratava como "desconhecidas" e
+# o orfaos.py as listou como órfãs em 16/10/2026 (947 trechos, nenhum apagado
+# na produção). Dados copiados do que está gravado nos trechos. Sem `publico`
+# no cabeçalho da ficha, vale adulto (como antes).
+- pasta: referencias
+  titulo: "Fichas de referência (direitos reservados)"
+  editor: "Chefe Coruja"
+  ano: 2026
+  licenca: "institucional"
+  nota: "Só citação e resumo escrito pela equipe; o texto das obras não é reproduzido."
+  tenant_id: global
+
+- pasta: abertas-cc-by
+  titulo: "Artigos abertos CC BY 4.0"
+  editor: "Vários (citação e licença em cada arquivo)"
+  ano: 2026
+  licenca: "creative-commons-by-4.0"
+  tenant_id: global
+
+- pasta: abertas-cc-by-nc
+  titulo: "Artigos abertos CC BY-NC 4.0"
+  editor: "Vários (citação e licença em cada arquivo)"
+  ano: 2026
+  licenca: "creative-commons-by-nc-4.0"
+  tenant_id: global
+
 - arquivo: manual_hcfmusp_3ed_2022.pdf
   publico: adulto
   titulo: "Manual de Medicina de Emergência — HCFMUSP, 3ª ed."

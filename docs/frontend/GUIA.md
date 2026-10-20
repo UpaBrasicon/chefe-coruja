@@ -41,11 +41,17 @@ passa de 4,5:1 também sobre a faixa (`#273449`). Os valores moram em
 | Cartão | `superficie` | `#1E293B` | — |
 | Faixa e hover | `trilha` | `#273449` | — |
 | Borda / borda forte | `fio` / `fio-forte` | `#334155` / `#64748B` | borda forte 3,8 / 3,1 |
-| Texto / apoio / sussurro | `tinta` / `tinta-apoio` / `tinta-sussurro` | `#E2E8F0` / `#CBD5E1` / `#94A3B8` | 14,5 / 12,0 / 7,0 sobre o fundo |
+| Texto / apoio / sussurro | `tinta` / `tinta-apoio` / `tinta-sussurro` | `#E2E8F0` / `#CBD5E1` / `#A8B5C7` | 14,5 / 12,0 / 8,6 sobre o fundo |
 | Ação / pressionada | `acao` / `acao-pressionada` | `#67E8F9` / `#22D3EE` | 12,3 / 9,9 |
 | Texto sobre a ação | `sobre-acao` | `#0F172A` | 12,3 |
-| Crítico / atenção / conforme | `critico` / `atencao` / `conforme` | `#F87171` / `#FBBF24` / `#4ADE80` | 6,5 / 10,7 / 10,3 |
-| Observação / suprimento / pediatria | `observacao` / `suprimento` / `pediatria` | `#FB923C` / `#60A5FA` / `#C4B5FD` | 7,9 / 7,0 / 9,7 |
+| Crítico / atenção / conforme | `critico` / `atencao` / `conforme` | `#FC8F8F` / `#FCD34D` / `#4ADE80` | 8,0 / 12,4 / 10,3 |
+| Observação / suprimento / pediatria | `observacao` / `suprimento` / `pediatria` | `#FB923C` / `#7AB4FB` / `#C4B5FD` | 7,9 / 8,3 / 9,7 |
+
+Ajuste da parte 4.17 (verificação no navegador, 20/10/2026): sussurro, crítico,
+atenção e suprimento do escuro clarearam para passar de 4,5:1 também sobre os fundos
+suaves (selo, faixa de aviso). No claro, o sussurro foi a `#58677C` (5,8:1 sobre
+branco) e o verde de estado (`conforme`, `leitos`) a `#147638` (5,7:1), pelo
+mesmo motivo. O anel de foco dos campos ganhou 1 px cheio da cor de ação.
 
 A classificação de risco (`mts-*`) e a marca têm o mesmo valor nos dois temas.
 A folha impressa não lê estes tokens e sai sempre clara.
@@ -113,7 +119,8 @@ estilo Tailwind-50, como `#FEF2F2`) e as variações de opacidade
 ### 3.1 Botões — "4a"
 
 `<button>` solto só dentro dos componentes de base (`src/components/ui` e as peças
-como `Chip` e abas). No resto: `Button`, `Chip`, ou `Button size="icon"` com
+como `Chip` e abas) e na casca (`src/components/casca` e `AppShell`), onde os
+botões são a própria navegação (parte 4.3, "2a"). No resto: `Button`, `Chip`, ou `Button size="icon"` com
 `aria-label`. A cor de ação é o petróleo (seção 1.1).
 
 ### 3.2 Seleção — "5a"
@@ -178,14 +185,17 @@ como exceção declarada. Nenhum hex solto nelas.
 Maiúscula só no começo da frase em título, menu, aba e botão ("Minha agenda",
 "Revisão clínica"). Siglas seguem em maiúscula (CID, SIGTAP, AIH, APAC, BPA, NIR,
 PS). Nomes próprios do produto ficam como estão: "Chefe Coruja", "Olho de
-Gavião", "Central do Plantonista", "Corujinha". Nome próprio novo entra nesta
-lista por decisão do RT.
+Gavião", "Central do Plantonista", "Central do Farmacêutico" (parte 4.3, "3a"),
+"Corujinha". Nome próprio novo entra nesta lista por decisão do RT.
 
 ### 5.2 Mesmo destino, mesmo nome — "2a"
 
 Um item de menu que leva à mesma tela tem o mesmo nome para todo papel
 ("Notificação compulsória"). O nome só muda quando a ação muda de fato (por
-exemplo, a retirada sem farmacêutico é outra ação na mesma tela).
+exemplo, a retirada sem farmacêutico é outra ação na mesma tela). Na parte 4.3
+("1a") o menu ficou: Notificação compulsória, BPA, Contas do atendimento, AIH,
+APAC, Pendências do NIR, Rede e Telemedicina para todos os papéis; na barra do
+celular, os curtos Central, Prontuários e Agenda.
 
 ### 5.3 Pronto-Socorro — "3a"
 
@@ -195,7 +205,9 @@ Escreve-se "Pronto-Socorro", com hífen.
 
 - Emoji fica proibido na tela e na folha impressa; no lugar, ícone (lucide).
 - O formulário de internação legado (`/plantao/internacao/formulario`) é
-  retirado, como a auditoria de 03/10/2026 sugeria.
+  retirado, como a auditoria de 03/10/2026 sugeria. Feito na parte 4.7a: o endereço antigo, a
+  busca rápida e as pendências do PEP levam ao leito aberto do paciente
+  (`/plantao/internacao/pacientes?paciente=…&aba=…`, `src/components/internacao/rotas.ts`).
 
 ### 5.5 Gráficos — "5a"
 
@@ -205,7 +217,11 @@ funcionam nos dois temas.
 ### 5.6 Menu do gestor — "6a"
 
 O menu do gestor (30 itens) é agrupado por área — Porta, Leitos, Farmácia,
-Exames, Faturamento e Unidade — numa tarefa própria da parte 4.
+Exames, Faturamento e Unidade — numa tarefa própria da parte 4. Feito na parte 4.11
+("1a 2a 3a"): título de grupo sempre aberto na lateral (recolhida, só o fio) e
+na gaveta "Mais" do celular; o Painel fica no topo; Regulação entra em Leitos e
+os itens técnicos (integrações, exportar, implantação) em Unidade.
+O grupo é o campo `grupo` do item em `src/components/casca/navegacao.ts`.
 
 ## 6. Como o guia entra no código (partes 3 e 4)
 
@@ -257,3 +273,36 @@ Exames, Faturamento e Unidade — numa tarefa própria da parte 4.
 - **Verificação no navegador** ("5a") — contraste, foco e transbordo com
   `scripts/verificacao-telas.mjs` — entra no fim da parte 4, quando os tokens
   já forem variáveis com os dois temas.
+
+## 8. Peças de base (parte 4.2, decisões "1a 2a 3a", 19/10/2026)
+
+| Peça | Onde mora | Guia |
+|---|---|---|
+| `Aviso` (`tom`: atencao, critico, conforme, informacao, marca) | `src/components/ui/aviso.tsx` | 2.1 |
+| `MensagemErro` (`formato`: linha ou caixa; `texto`, ou `erro` + `acao`) | `src/components/ui/mensagem-erro.tsx`; classificação em `src/lib/erros.ts` | 2.2 |
+| `Vazio` (bloco) e `VazioLinha` | `src/components/monitor/Pagina.tsx` | 2.3 |
+| `Carregando` (spinner com o nome do que carrega) | `src/components/ui/spinner.tsx` | 2.3 |
+| `CampoSelecao` | `src/components/ui/campo-selecao.tsx` | 3.2 |
+| `TituloPagina`, `TituloSecao`, `TituloCartao` | `src/components/monitor/Pagina.tsx` | 4.1 |
+| `Abas` (cápsula, tablist; contagem opcional por aba) | `src/components/monitor/Pagina.tsx` | 4.2 |
+| Texto sobre as cores da classificação (`text-mts-texto`; no amarelo, `text-mts-amarelo-texto`) | `src/index.css`, igual nos dois temas | 1.1 (parte 4.6) |
+| `Chip` (`variante`: filtro ou opcao; `radio` para radiogroup; `tom` critico; `titulo`, `desabilitado`) | `src/components/monitor/Pagina.tsx` | 3.1 |
+| Tabela de referência das ferramentas (`<Table variante="referencia">`: só estrutura, o desenho vem do className) | `src/components/ui/table.tsx` | 3.3 (parte 4.10b) |
+| `BotaoLinha` (cartão, linha ou tracejado clicável) e `OpcaoLista` (opção de lista suspensa) | `src/components/ui/botao-linha.tsx` | 3.1 (parte 4.5) |
+| `CaixaMarcar` (caixa de marcar com texto; `bloqueado` mostra X) | `src/components/ui/caixa-marcar.tsx` | 3.1 (parte 4.5) |
+| Tokens do painel da TV (`tv-fundo`, `tv-faixa`, `tv-borda`, `tv-chamada`, `tv-trilho`, `tv-destaque`, `tv-apoio`, `tv-texto`, `tv-texto-forte`, `tv-claro`, `tv-alerta`) | `src/index.css`, iguais nos dois temas | 4.6 (parte 4.4, "1a") |
+| Espaçamento `justo`, `proximo`, `base`, `secao`, `pagina` (`p-base`, `gap-justo`…) | `src/index.css` (`--spacing-*`) | 4.3 |
+| Hora, data, data e hora, tempo decorrido, moeda e número | `src/lib/formato.ts` (`datas.ts` reexporta os nomes antigos) | 4.4 |
+
+- **Erro do servidor** ("3a"): a recusa de uma regra do banco (`RAISE EXCEPTION`,
+  código P0001) aparece como veio, sem o prefixo de código. Rede, permissão e
+  erro técnico mostram "Não foi possível <ação>. Tente de novo." e o detalhe vai
+  para o registro de erros do admin.
+- **Painel da TV** (parte 4.4, "2a"): escala pela altura da tela; texto e canto
+  em `vh` são exceção declarada. Canto fixo usa os nomes do projeto.
+- **Importação entre telas** (4.5): uma tela que agrupa telas (as abas de
+  `pages/grupos/`, Indicadores, Configuração) pode montar outra tela inteira — o
+  import traz só a tela (o default, ou o nome igual ao do arquivo). Peça, hook
+  ou constante de outra área não: moram em `src/components`, `src/hooks` ou
+  `src/lib`. Com a contagem em zero, "componente não importa tela" entrou no
+  ESLint como erro.

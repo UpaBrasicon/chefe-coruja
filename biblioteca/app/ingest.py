@@ -24,7 +24,8 @@ from qdrant_client import QdrantClient, models
 BASE = Path(os.environ.get("BIBLIOTECA_DIR", "/srv/biblioteca"))
 RAW = BASE / "raw"
 LICENCAS_CONHECIDAS = ("acesso-aberto-governo", "creative-commons-", "licenciado-", "institucional", "sem-licenca")
-COL, DIM = "biblioteca", 1024
+# a homologação ingere numa cópia da coleção (BIBLIOTECA_COLECAO=biblioteca_homolog)
+COL, DIM = os.environ.get("BIBLIOTECA_COLECAO", "biblioteca"), 1024
 MAX_PALAVRAS, OVERLAP = 380, 60
 MIN_PALAVRAS = 25
 
@@ -82,15 +83,32 @@ def apagar_fonte(fonte_id: str):
         must=[models.FieldCondition(key="fonte_id", match=models.MatchValue(value=fonte_id))])))
 
 
+def secao_do_livro(capitulo: str, titulo: str) -> str:
+    """Capítulo + último título visto. A página sem título herda os da página
+    anterior: no ICr a insulina do EHH (p. 523) fica sob "TRATAMENTO DO EHH",
+    impresso na p. 522; sem isso o trecho ia sem seção e a IA o tomava como da
+    cetoacidose (R2-14, avaliação de 15/10/2026)."""
+    if capitulo and titulo and titulo != capitulo:
+        return f"{capitulo} — {titulo}"
+    return capitulo or titulo
+
+
 def chunks_pdf(caminho: Path):
     import pymupdf4llm
     paginas = pymupdf4llm.to_markdown(str(caminho), page_chunks=True, show_progress=False)
+    capitulo, titulo = "", ""
     for pg in paginas:
         n_pag = pg["metadata"]["page"]
         for secao, bloco in chunks_da_pagina(pg["text"]):
+            if secao:
+                # título que começa por número é o do capítulo ("52 Cetoacidose diabética…")
+                if re.match(r"^\d{1,3}\s+\S", secao):
+                    capitulo, titulo = secao, ""
+                else:
+                    titulo = secao
             for trecho in janelas(bloco):
                 if len(trecho.split()) >= MIN_PALAVRAS:
-                    yield {"texto": trecho, "secao": secao, "pagina": n_pag}
+                    yield {"texto": trecho, "secao": secao_do_livro(capitulo, titulo), "pagina": n_pag}
 
 
 def chunks_md(caminho: Path, ref: str):
@@ -101,7 +119,10 @@ def chunks_md(caminho: Path, ref: str):
         secao_atual = secao or secao_atual
         for trecho in janelas(bloco):
             if len(trecho.split()) >= 12:
-                yield {"texto": trecho, "secao": secao_atual, "pagina": None, "ref": ref}
+                # o texto leva o título da ficha e da seção: sem ele, "ANTIDOTOS_APENDICE"
+                # não ligava à pergunta de intoxicação exógena (avaliação de 15/10/2026)
+                texto = f"{secao_atual}\n{trecho}" if secao_atual else trecho
+                yield {"texto": texto, "secao": secao_atual, "pagina": None, "ref": ref}
 
 
 def gravar(fonte: dict, fonte_id: str, lote: list[dict]) -> int:
@@ -160,7 +181,10 @@ def ingerir_pasta_md(fonte: dict):
         print(f"AVISO: nenhum .md em {pasta}", file=sys.stderr)
         return
     total = 0
-    for arq in arquivos:
+    for i, arq in enumerate(arquivos, 1):
+        # progresso: sem ele a ingestão longa parecia travada (14/10/2026)
+        if i % 20 == 0:
+            print(f"{fonte['pasta']}: {i}/{len(arquivos)} arquivos, {total} chunks", flush=True)
         meta = cabecalho_md(arq.read_text(encoding="utf-8"))
         f = {**fonte,
              "titulo": f"{fonte['titulo']} — {meta.get('titulo') or arq.stem}",

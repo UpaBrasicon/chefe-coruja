@@ -26,16 +26,42 @@ MSG_SEM_PEDIATRIA = "Não há referência pediátrica no material para esta perg
 _PALAVRAS_PED = re.compile(
     r"\b(crianca|criancas|pediatri\w*|rn|rns|recem[- ]?nascid\w*|neonat\w*|lactente\w*|bebe|bebes|"
     r"menin[oa]s?|infantil|escolar|pre[- ]?escolar|adolescente\w*|puerici\w*)\b")
-# idade em dias/semanas/meses de vida ("RN de 10 dias", "lactente de 8 meses", "3 meses de idade")
+# doença própria da criança: sem idade nem adulto declarado, a pergunta é de
+# pediatria (avaliação de 14/10/2026: "invaginação intestinal sinais" ia como
+# adulto e a busca tirava o livro do ICr, onde o assunto está)
+_DOENCA_PED = re.compile(
+    r"\b(bronquiolite\w*|kawasaki|invaginac\w*|intussuscep\w*|crupe|laringotraque\w*|"
+    r"estenose\s+hipertrofica\s+(?:de|do)\s+piloro)\b")
+# idade em dias/semanas/meses só quando é idade de quem é atendido: "3 meses de
+# idade", "10 dias de vida", "paciente de 8 meses". "Tosse de 3 semanas",
+# "febre de 5 dias" e "gestante de 36 semanas" são tempo, não idade (o "RN de
+# 10 dias" e o "lactente de 8 meses" já entram pela palavra).
 _IDADE_CURTA = re.compile(
-    r"\b(?:de|com)\s+\d{1,3}\s*(?:dias?|semanas?|meses|mes)\b(?!\s+de\s+(?:evolucao|historia|febre|tosse|sintoma))"
-    r"|\b\d{1,3}\s*(?:dias?|semanas?|meses|mes)\s+de\s+(?:vida|idade)\b")
+    r"\b\d{1,3}\s*(?:dias?|semanas?|meses|mes)\s+de\s+(?:vida|idade)\b"
+    r"|\b(?:paciente|pcte|pct)\s+(?:de|com)\s+\d{1,3}\s*(?:dias?|semanas?|meses|mes)\b")
 # idade em anos de quem é atendido; "há 10 anos" (tempo decorrido) não conta
 _IDADE_ANOS = re.compile(r"(?<!ha )(?<!desde )\b(\d{1,3})\s*anos?\b(?!\s+(?:atras|antes))")
 
 
 def _plano(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn").lower()
+
+
+_ADULTO_DECLARADO = re.compile(r"\b(adult\w*|gestante\w*|gravida\w*|puerper\w*|idos[oa]s?|homem|mulher|senhora?)\b")
+
+
+def publico_com_termos(q: str, termos: str | None, modo: str | None = None) -> str:
+    """Como publico_da_pergunta, mas a pergunta sem idade nem adulto declarado
+    vai para a pediatria quando os termos da reescrita falam de criança
+    (doença própria da criança: bronquiolite, invaginação, Kawasaki)."""
+    base = publico_da_pergunta(q, modo)
+    # o modo adulto escolhido na tela também vale sobre a reescrita
+    if base == PED or not termos or modo == ADULTO:
+        return base
+    t = _plano(q)
+    if _IDADE_ANOS.search(t) or _ADULTO_DECLARADO.search(t):
+        return base
+    return PED if publico_da_pergunta(termos) == PED else base
 
 
 def publico_da_pergunta(q: str, modo: str | None = None) -> str:
@@ -52,6 +78,8 @@ def publico_da_pergunta(q: str, modo: str | None = None) -> str:
         if not re.search(r"\b(rn|recem[- ]?nascid\w*|neonat\w*|lactente\w*)\b", t):
             return ADULTO
     if _IDADE_CURTA.search(t) or _PALAVRAS_PED.search(t):
+        return PED
+    if _DOENCA_PED.search(t) and not _ADULTO_DECLARADO.search(t):
         return PED
     return ADULTO
 

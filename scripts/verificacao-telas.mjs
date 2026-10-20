@@ -22,7 +22,8 @@
 //
 // Opções: --url (padrão http://localhost:5199), --papeis (padrão: os seis),
 // --larguras (padrão 1280,390), --max-telas N por papel, --capturas <pasta>,
-// --json <arquivo>, --estrito (sai com 1 se achar algo), --sem-check-in. Navegador: EDGE_BIN ou
+// --json <arquivo>, --tema claro|escuro (o sistema do navegador; o perfil de
+// teste fica no automático), --estrito (sai com 1 se achar algo), --sem-check-in. Navegador: EDGE_BIN ou
 // CHROME_BIN; sem eles, o Edge do Windows.
 //
 // Só lê, com uma exceção: o papel de plantão com a tolerância vencida só vê a
@@ -43,6 +44,7 @@ const LARGURAS = opc('larguras', '1280,390').split(',').map(Number)
 const MAX_TELAS = Number(opc('max-telas', '40'))
 const CAPTURAS = opc('capturas', null)
 const JSON_SAIDA = opc('json', null)
+const TEMA = opc('tema', 'claro') === 'escuro' ? 'dark' : 'light'
 const ESTRITO = args.includes('--estrito')
 const SEM_CHECKIN = args.includes('--sem-check-in')
 const SENHA = process.env.SENHA_TESTE || 'coruja-teste-local'
@@ -107,7 +109,7 @@ const CONTRASTE = `(() => { ${COR}
     const grande = tam >= 24 || (tam >= 18.66 && peso >= 700)
     const precisa = grande ? 3 : 4.5
     total++
-    if (k < precisa - 0.05) falhas.push({ r: +k.toFixed(2), precisa, tam, peso, fg: cs.color, bg: rgb(bg), t: txt.slice(0, 40) })
+    if (k < precisa - 0.05) falhas.push({ r: +k.toFixed(2), precisa, tam, peso, fg: cs.color, bg: rgb(bg), t: txt.slice(0, 40), cls: String(el.className?.baseVal ?? el.className ?? '').slice(0, 120) })
   }
   return { total, indeterminados, falhas }
 })()`
@@ -178,7 +180,8 @@ const STICKY = `(async () => {
       a = a.parentElement
     }
     if (dentro) return
-    const noLugar = r.top >= topoVista - 2 && r.top < window.innerHeight
+    // preso no topo da área rolada, ou parado onde estava (faixa presa acima da área)
+    const noLugar = r.top >= Math.min(topoVista, antes[i]) - 2 && r.top < window.innerHeight
     if (!noLugar) falhas.push({ el: nome(el), antes: Math.round(antes[i]), depois: Math.round(r.top) })
   })
   if (usaMain) main.scrollTop = 0; else window.scrollTo(0, 0)
@@ -249,8 +252,15 @@ async function entrar(page, papel) {
   await page.goto(`${BASE}/login`)
   await page.locator('#email').fill(`${papel}@teste.local`)
   await page.locator('#senha').fill(SENHA)
-  await page.locator('form button[type="submit"]').click()
-  await page.waitForURL((u) => !u.pathname.startsWith('/login'), { timeout: 20000 })
+  // com o Turnstile ligado, o envio só vale depois que a verificação termina:
+  // a tela avisa e o script tenta de novo
+  for (let tentativa = 0; ; tentativa++) {
+    await page.locator('form button[type="submit"]').click()
+    const saiu = await page.waitForURL((u) => !u.pathname.startsWith('/login'), { timeout: 5000 }).then(() => true, () => false)
+    if (saiu) break
+    if (tentativa >= 4) throw new Error('o login não saiu da tela de entrada')
+    await pausa(1500)
+  }
   await assentar(page)
   if (new URL(page.url()).pathname.startsWith('/seletor')) {
     await page.locator('main button, button').filter({ hasNotText: /sair/i }).first().click()
@@ -264,17 +274,18 @@ async function entrar(page, papel) {
 // telas; sem GPS da unidade, vai pela justificativa. --sem-check-in desliga.
 async function fazerCheckin(page) {
   // o botão da tela de check-in (a faixa "Fazer check-in" do topo não bloqueia)
-  const botao = page.getByRole('button', { name: /Fazer check-in agora/ })
+  // sem GPS a tela troca o botão por "Tentar de novo" e, na segunda falha, pede justificativa
+  const botao = page.getByRole('button', { name: /Fazer check-in agora|Tentar de novo/ })
   const justificar = page.getByRole('button', { name: /Registrar com justificativa/ })
   // a casca ou a tela de check-in: o que aparecer primeiro
   await page.waitForSelector('aside.cc-side a[href], main a[href], button:has-text("Fazer check-in agora")', { timeout: 15000 }).catch(() => {})
   if (!(await botao.first().isVisible().catch(() => false))) return true
-  for (let tentativa = 0; tentativa < 4; tentativa++) {
+  for (let tentativa = 0; tentativa < 5; tentativa++) {
     if (await justificar.isVisible().catch(() => false)) {
-      await page.locator('textarea').last().fill('Verificação automática de telas (scripts/verificacao-telas.mjs), banco local.')
-      await justificar.click()
+      await page.getByLabel('Justificativa do check-in').fill('Verificação automática de telas (scripts/verificacao-telas.mjs), banco local.')
+      await justificar.click({ timeout: 5000 }).catch(() => {})
     } else if (await botao.first().isEnabled().catch(() => false)) {
-      await botao.first().click()
+      await botao.first().click({ timeout: 5000 }).catch(() => {})
     }
     // espera o check-in responder (a casca abre) ou a tela pedir justificativa
     await page.waitForSelector('aside.cc-side a[href], button:has-text("Registrar com justificativa")', { timeout: 12000 }).catch(() => {})
@@ -326,12 +337,12 @@ async function main() {
   }
   if (CAPTURAS) fs.mkdirSync(CAPTURAS, { recursive: true })
   const browser = await chromium.launch({ executablePath: NAVEGADOR, headless: true })
-  const resultado = { base: BASE, quando: new Date().toISOString(), papeis: {} }
+  const resultado = { base: BASE, tema: TEMA, quando: new Date().toISOString(), papeis: {} }
   const contraste = new Map() // fg|bg → grupo
   let achados = 0
 
   for (const papel of PAPEIS) {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce', locale: 'pt-BR' })
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce', colorScheme: TEMA, locale: 'pt-BR' })
     const page = await ctx.newPage()
     const rp = { telas: [], erro: null }
     resultado.papeis[papel] = rp
@@ -371,7 +382,7 @@ async function main() {
               reg.foco = await percorrerFoco(page)
               reg.semantica = await page.evaluate(SEMANTICA)
             }
-            if (CAPTURAS) await page.screenshot({ path: path.join(CAPTURAS, `${papel}${tela.replace(/[/?=&]+/g, '_')}-${largura}.png`), fullPage: true }).catch(() => {})
+            if (CAPTURAS) await page.screenshot({ path: path.join(CAPTURAS, `${papel}${tela.replace(/[/?=&]+/g, '_')}-${largura}-${TEMA}.png`), fullPage: true }).catch(() => {})
             break
           } catch (e) {
             reg.erro = e.message.split('\n')[0]
@@ -416,7 +427,7 @@ async function main() {
   if (!grupos.length) console.log('  nenhum texto abaixo do mínimo')
   for (const g of grupos) {
     const telas = [...g.telas]
-    console.log(`  ${g.r}:1 (precisa ${g.precisa})  ${g.fg} sobre ${g.bg}  ×${g.n}  ${g.tam}px/${g.peso}  ex.: "${g.t}"  em ${telas.slice(0, 4).join(', ')}${telas.length > 4 ? ` +${telas.length - 4}` : ''}`)
+    console.log(`  ${g.r}:1 (precisa ${g.precisa})  ${g.fg} sobre ${g.bg}  ×${g.n}  ${g.tam}px/${g.peso}  ex.: "${g.t}"${g.cls ? `  [${g.cls}]` : ''}  em ${telas.slice(0, 4).join(', ')}${telas.length > 4 ? ` +${telas.length - 4}` : ''}`)
   }
   resultado.contraste = grupos.map((g) => ({ ...g, telas: [...g.telas] }))
   if (JSON_SAIDA) {

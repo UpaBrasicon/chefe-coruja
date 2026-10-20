@@ -4,22 +4,111 @@
 // Também copia fontes.yaml (campo `publico`) e ferramentas.json (campo
 // `publico`) e reindexa as ferramentas: os campos novos são ignorados pela
 // API de produção.
-// Uso: npm run biblioteca:homolog
+//
+// Portão 2, tarefa 1b: a homologação tem coleção de trechos própria
+// (biblioteca_homolog, copiada da coleção da produção na primeira vez) e
+// corpus próprio (/srv/biblioteca/corpus-homolog). A produção não muda.
+//
+// Uso: npm run biblioteca:homolog                  (código + corpus no VPS)
+//      npm run biblioteca:homolog -- --ingerir     (e reingere o corpus na coleção da homologação)
+//      npm run biblioteca:homolog -- --ingerir-pdf=ps_pediatria_icr_4ed_2023.pdf  (reingere um livro, só na homologação)
+//      npm run biblioteca:homolog -- --avaliar     (e roda as evals contra a homologação; --avaliar-r2 só as da Rodada 2)
+//      npm run biblioteca:homolog -- --orfaos      (lista trechos órfãos; --limpar-orfaos apaga, só na homologação)
+//      npm run biblioteca:homolog -- --acompanhar  (só acompanha o log do trabalho em andamento no servidor)
 import { execFileSync } from 'node:child_process'
+import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 const raiz = join(import.meta.dirname, '..')
 const VPS = process.env.BIBLIOTECA_VPS ?? 'root@179.199.128.141'
 const run = (cmd, args) => execFileSync(cmd, args, { cwd: raiz, stdio: 'inherit' })
+// mantém a conexão viva e percebe quando ela cai
+const SSH = ['-o', 'ServerAliveInterval=20', '-o', 'ServerAliveCountMax=6']
+const ingerir = process.argv.includes('--ingerir')
+// --ingerir-pdf=arquivo.pdf: reingere um livro de fontes.yaml só na coleção da homologação
+const pdfs = process.argv.filter((a) => a.startsWith('--ingerir-pdf=')).map((a) => a.slice('--ingerir-pdf='.length)).filter((a) => /^[\w.-]+\.pdf$/.test(a))
+const avaliar = process.argv.includes('--avaliar') || process.argv.includes('--avaliar-r2')
+const listas = process.argv.includes('--avaliar-r2') ? ['perguntas-r2.yaml'] : ['perguntas-r2.yaml', 'perguntas.yaml', 'perguntas-falhas.yaml']
+// trechos de fichas renomeadas ou apagadas (sem público conhecido): listar ou apagar só na coleção da homologação
+const orfaos = process.argv.includes('--limpar-orfaos') ? ' --apagar' : process.argv.includes('--orfaos') ? '' : null
+const COMPOSE = 'docker compose -f docker-compose.yml -f docker-compose.homolog.yml'
+const QD = 'http://127.0.0.1:6333/collections'
+
+// O trabalho longo (reindexar, reingerir, avaliar) roda no servidor, em
+// segundo plano, gravando /srv/biblioteca/homolog-job.log; o terminal só
+// acompanha o log. Em 14/10/2026 a conexão SSH caiu três vezes no meio da
+// ingestão (sem saída por minutos): o servidor matava o comando e o terminal
+// ficava preso. Se cair de novo: npm run biblioteca:homolog -- --acompanhar
+const JOB = '/srv/biblioteca/homolog-job'
+const acompanhar = () => run('ssh', [...SSH, VPS,
+  `test -f ${JOB}.log || { echo "nenhum trabalho registrado"; exit 0; }; `
+  + `tail -n +1 -F --pid=$(cat ${JOB}.pid) ${JOB}.log 2>/dev/null; echo "(fim do log)"`])
+
+const rodando = () => {
+  try {
+    execFileSync('ssh', [...SSH, VPS, `test -f ${JOB}.pid && kill -0 $(cat ${JOB}.pid)`], { stdio: 'ignore' })
+    return true
+  } catch {
+    return false
+  }
+}
+// trabalho em andamento: só acompanha (não mexe no corpus que ele está lendo)
+if (process.argv.includes('--acompanhar') || rodando()) {
+  if (!process.argv.includes('--acompanhar')) console.log('já há um trabalho rodando no servidor; acompanhando o log')
+  acompanhar()
+  process.exit(0)
+}
+
 
 run('node', ['--experimental-strip-types', 'scripts/ferramentas-json.mjs'])
-run('ssh', [VPS, 'mkdir -p /srv/biblioteca/app-homolog'])
-run('scp', ['-q', 'biblioteca/ferramentas.json', 'biblioteca/fontes.yaml', 'biblioteca/docker-compose.homolog.yml', `${VPS}:/srv/biblioteca/`])
-run('scp', ['-q', 'biblioteca/app/main.py', 'biblioteca/app/pii.py', 'biblioteca/app/publico.py', 'biblioteca/app/siglas.py',
-  'biblioteca/app/ingest.py', 'biblioteca/app/index_tools.py', 'biblioteca/app/Dockerfile', 'biblioteca/app/requirements.txt',
-  `${VPS}:/srv/biblioteca/app-homolog/`])
-run('ssh', [VPS, 'chown -R hermes:hermes /srv/biblioteca && cd /srv/biblioteca'
-  + ' && docker compose -f docker-compose.yml -f docker-compose.homolog.yml up -d --build api-homolog'
-  + ' && docker compose run --rm -T api python index_tools.py'
-  + ' && sleep 5 && curl -s -o /dev/null -w "homolog health: %{http_code}\n" http://127.0.0.1:8711/health'])
+run('node', ['--experimental-strip-types', 'scripts/corpus-central.mjs'])
+run('ssh', [...SSH, VPS, 'mkdir -p /srv/biblioteca/app-homolog /srv/biblioteca/evals /srv/biblioteca/corpus-homolog'
+  // esvazia sem apagar a pasta: o container de pé guarda a pasta montada; apagar
+  // e recriar deixava o container lendo a pasta antiga, vazia (avaliação de 14/10/2026)
+  + ' && find /srv/biblioteca/corpus-homolog -mindepth 1 -delete'])
+run('scp', [...SSH, '-q', 'biblioteca/ferramentas.json', 'biblioteca/fontes.yaml', 'biblioteca/vocabulario-clinico.txt', 'biblioteca/docker-compose.homolog.yml', `${VPS}:/srv/biblioteca/`])
+run('scp', [...SSH, '-q', 'biblioteca/app/main.py', 'biblioteca/app/pii.py', 'biblioteca/app/publico.py', 'biblioteca/app/siglas.py',
+  'biblioteca/app/armadilhas.py', 'biblioteca/app/orfaos.py', 'biblioteca/app/ingest.py', 'biblioteca/app/index_tools.py', 'biblioteca/app/Dockerfile',
+  'biblioteca/app/requirements.txt', `${VPS}:/srv/biblioteca/app-homolog/`])
+const fichas = readdirSync(join(raiz, 'biblioteca/corpus')).filter((f) => f.endsWith('.md')).map((f) => `biblioteca/corpus/${f}`)
+run('scp', [...SSH, '-q', ...fichas, `${VPS}:/srv/biblioteca/corpus-homolog/`])
+run('scp', [...SSH, '-q', 'biblioteca/evals/run.py', 'biblioteca/evals/perguntas.yaml', 'biblioteca/evals/perguntas-falhas.yaml',
+  'biblioteca/evals/perguntas-r2.yaml', `${VPS}:/srv/biblioteca/evals/`])
+
+// cópia da coleção da produção, só se a da homologação ainda não existe
+// (snapshot é leitura na coleção da produção; o arquivo é apagado em seguida)
+const copiarColecao = `if ! curl -sf ${QD}/biblioteca_homolog > /dev/null; then`
+  + ` N=$(curl -sf -X POST '${QD}/biblioteca/snapshots?wait=true' | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4)`
+  + ` && curl -sf -X PUT '${QD}/biblioteca_homolog/snapshots/recover?wait=true' -H 'Content-Type: application/json'`
+  + ` -d "{\\"location\\":\\"file:///qdrant/snapshots/biblioteca/$N\\"}" > /dev/null`
+  + ` && curl -sf -X DELETE "${QD}/biblioteca/snapshots/$N" > /dev/null`
+  + ' && echo "coleção biblioteca_homolog copiada da produção ($N)";'
+  + ' fi'
+
+
+run('ssh', [...SSH, VPS, 'chown -R hermes:hermes /srv/biblioteca && cd /srv/biblioteca'
+  + ` && ${copiarColecao}`
+  + ` && ${COMPOSE} up -d --build api-homolog`
+  // reinicia mesmo sem código novo, para o container reler o corpus e o mapa de público
+  + ' && docker restart biblioteca-api-homolog > /dev/null'
+  + ` && echo "corpus da homologação no container: $(docker exec biblioteca-api-homolog sh -c 'ls /srv/biblioteca/corpus/*.md | wc -l') fichas"`])
+
+const passos = [
+  'set -u',
+  'echo "== início $(date -u +%FT%TZ)"',
+  'sleep 5',
+  'timeout 600 docker exec biblioteca-api-homolog python -u index_tools.py || { echo "FALHOU: index_tools"; exit 1; }',
+  ...(ingerir ? [`test "$(docker exec biblioteca-api-homolog sh -c 'ls /srv/biblioteca/corpus/*.md 2>/dev/null | wc -l')" -gt 0 || { echo "FALHOU: o container não vê o corpus"; exit 1; }`] : []),
+  ...(ingerir ? ['timeout 5400 docker exec biblioteca-api-homolog python -u ingest.py corpus || { echo "FALHOU: ingestão"; exit 1; }'] : []),
+  ...pdfs.map((f) => `timeout 14400 docker exec biblioteca-api-homolog python -u ingest.py ${f} || { echo "FALHOU: ingestão de ${f}"; exit 1; }`),
+  ...(orfaos !== null ? [`timeout 600 docker exec biblioteca-api-homolog python -u orfaos.py${orfaos} || { echo "FALHOU: órfãos"; exit 1; }`] : []),
+  'curl -s -w "\nhomolog health: %{http_code}\n" http://127.0.0.1:8711/health',
+  ...(avaliar ? listas.map((arq) => 'timeout 3600 docker exec -e BIBLIOTECA_URL=http://127.0.0.1:8710'
+    + ` -e EVALS_ARQUIVO=/srv/biblioteca/evals/${arq} biblioteca-api-homolog python -u /srv/biblioteca/evals/run.py`
+    + ` || echo "evals ${arq}: REPROVADO (ver a lista de falhas acima)"`) : []),
+  'echo "== FIM $(date -u +%FT%TZ)"',
+]
+execFileSync('ssh', [...SSH, VPS, `cat > ${JOB}.sh`], { cwd: raiz, input: passos.join('\n') + '\n', stdio: ['pipe', 'inherit', 'inherit'] })
+run('ssh', [...SSH, VPS, `cd /srv/biblioteca && (setsid nohup bash ${JOB}.sh > ${JOB}.log 2>&1 < /dev/null & echo $! > ${JOB}.pid)`])
+acompanhar()
 console.log('biblioteca de homologação publicada')

@@ -1,0 +1,120 @@
+# Vocabulário clínico que o filtro de nomes (app/pii.py) NÃO trata como nome
+# de pessoa (decisão do RT em 15/10/2026). O NER marcava palavras médicas raras
+# como nome ("hantavirose", "anafilaxa", "news") e a pergunta chegava à busca
+# como "[PESSOA] conduta". Somam-se a esta lista as palavras das fichas da
+# Central (corpus/), de ferramentas.json e das siglas. Uma palavra por linha;
+# nome comum de gente (lista NOMES_COMUNS em pii.py) nunca entra.
+#
+# Doenças e agravos do Guia de Vigilância em Saúde
+hantavirose
+hantavírus
+leptospirose
+leishmaniose
+esquistossomose
+malária
+febre amarela
+febre maculosa
+riquetsiose
+raiva
+tétano
+botulismo
+cólera
+febre tifoide
+sarampo
+rubéola
+varicela
+caxumba
+coqueluche
+difteria
+poliomielite
+meningite
+meningococcemia
+doença meningocócica
+tuberculose
+hanseníase
+sífilis
+toxoplasmose
+influenza
+covid
+chikungunya
+zika
+dengue
+oropouche
+mayaro
+doença de chagas
+esporotricose
+criptococose
+histoplasmose
+paracoccidioidomicose
+peste
+tracoma
+filariose
+oncocercose
+escabiose
+pediculose
+acidente ofídico
+escorpionismo
+araneísmo
+lonomia
+loxoscelismo
+foneutrismo
+latrodectismo
+# Escores e regras de decisão (vários são epônimos)
+news
+news2
+qsofa
+sofa
+heart
+timi
+grace
+curb
+psi
+port
+perc
+years
+hestia
+pesi
+wells
+glasgow
+ranson
+bisap
+alvarado
+centor
+mcisaac
+ottawa
+nexus
+pecarn
+szpilman
+parkland
+apgar
+silverman
+downes
+westley
+pews
+phoenix
+kdigo
+cha2ds2
+has-bled
+abcd2
+nihss
+hunt-hess
+fisher
+wfns
+child-pugh
+meld
+maddrey
+rockall
+blatchford
+aims65
+oakland
+duke
+burch-wartofsky
+mcmahon
+cam-icu
+richmond
+rass
+# Termos que o NER confundiu nas avaliações
+anafilaxia
+anafilática
+adrenalina
+síndrome cardiopulmonar
