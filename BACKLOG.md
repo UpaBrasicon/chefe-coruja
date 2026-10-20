@@ -948,6 +948,10 @@ pelo DiagnosticReport; o link do PACS só vale em https e de domínio cadastrado
 tela); a enfermagem segue marcando realizado onde não há RIS; o simulador ganhou `--modo imagem`. A
 função antiga da porta do laboratório saiu (contração). Próxima: **tarefa 3, ERP/financeiro**.
 
+**Pausa da 5C em 20/10/2026 (pedido do RT):** a tarefa 3 (ERP/financeiro) para antes do código, para a
+trilha "Revisão visual", abaixo. As cinco perguntas da tarefa 3 (como chega ao ERP, o que vai, formato,
+conciliação, conta reaberta) ficam feitas e sem resposta; voltam na retomada.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
@@ -983,6 +987,20 @@ verificação no navegador (`scripts/verificacao-telas.mjs --tema claro|escuro`,
 | S1 | P0 | Trava das colunas do próprio perfil | A pessoa só altera pela API foto, tipo sanguíneo, dados pessoais e tema; CBO e CNS pelas funções com validação; nome, CPF, nascimento, conselho, registro, CRM, e-mail e `ativo` travados ("1a"). Registro digitado errado na ativação: pendência, correção pontual a pedido do RT ("2a") | Teste de banco recusa a troca de CRM, registro e `ativo` pela API; as telas de perfil e de tema seguem gravando |
 
 ---
+
+## Trilha — Revisão visual (pedido do RT em 20/10/2026)
+
+**Pedido do RT:** varrer o site com referências do Refero (MCP) e tirar a cara genérica de "feito por IA".
+Decisões "1c 2a 3a 4a": site público e app, começando pela landing; mantém o que a trilha do padrão
+fixou (cores em petróleo, marca teal, coruja, tema escuro, tokens e catraca da CI) e muda composição,
+tipografia, layout e imagens; para cada parte, 2 ou 3 direções com imagens, baseadas em referências do
+Refero, e o RT escolhe antes da aplicação; uma parte por branch e PR, com a 5C pausada.
+
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P1 | Landing (piloto) | Levantar referências no Refero; 2 ou 3 direções com imagens; aplicar a escolhida | RT escolhe a direção; landing publicada na homologação sem regra nova na catraca |
+| 2 | P1 | Telas de entrada | Login, cadastro, recuperar senha, aguardando liberação, seletor de unidade, páginas públicas (pacote de alta, receita) | Mesma direção da landing, nos dois temas |
+| 3 | P2 | App por papel | Na ordem do guia do padrão (seção 6); direções só onde o padrão não fixou | Telas sem divergência do guia e aprovadas pelo RT |
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
