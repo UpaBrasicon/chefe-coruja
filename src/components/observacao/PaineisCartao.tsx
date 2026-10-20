@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 
 import { DESFECHOS, RELATO_DESFECHO, hhmm, rpc, type Acao, type Desfecho, type LinhaObservacao } from './modelo'
+import { Chip } from '@/components/monitor/Pagina'
 
 export function Painel({ titulo, children, erro }: { titulo?: React.ReactNode; children: React.ReactNode; erro?: string | null }) {
   return (
@@ -33,11 +34,9 @@ export function Painel({ titulo, children, erro }: { titulo?: React.ReactNode; c
 /** Opção em cápsula, como os chips do protótipo. */
 export function Opcao({ ativa, onClick, children }: { ativa: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" aria-pressed={ativa} onClick={onClick}
-      className={cn('rounded-capsula border px-[11px] py-[5px] text-left text-apoio transition-colors',
-        ativa ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+    <Chip ativo={ativa} onClick={onClick}>
       {children}
-    </button>
+    </Chip>
   )
 }
 

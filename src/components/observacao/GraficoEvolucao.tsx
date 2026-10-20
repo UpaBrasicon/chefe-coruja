@@ -18,6 +18,8 @@ import {
 
 import type { SerieObservacao } from '@/lib/observacao'
 import { cn } from '@/lib/utils'
+import { VazioLinha } from '@/components/monitor/Pagina'
+import { diaMes } from '@/lib/formato'
 
 type Props = {
   series: SerieObservacao[]
@@ -31,10 +33,11 @@ type DadoGrafico = {
   [conceito: string]: string | number | null
 }
 
-const CORES = ['#0d9488', '#2563eb', '#d97706', '#7c3aed', '#dc2626', '#059669']
+// Cores das séries pelos tokens (guia 5.5): funcionam nos dois temas.
+const CORES = ['var(--color-acao)', 'var(--color-suprimento)', 'var(--color-observacao)', 'var(--color-pediatria)', 'var(--color-critico)', 'var(--color-conforme)']
 
 function diaInternacao(aferidoEm: string, dataAdmissao?: string): string {
-  if (!dataAdmissao) return new Date(aferidoEm).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+  if (!dataAdmissao) return diaMes(aferidoEm)
   const inicio = new Date(dataAdmissao).getTime()
   const d = Math.floor((new Date(aferidoEm).getTime() - inicio) / 86_400_000) + 1
   return d >= 1 ? `D+${d}` : 'Adm'
@@ -42,7 +45,7 @@ function diaInternacao(aferidoEm: string, dataAdmissao?: string): string {
 
 export function GraficoEvolucao({ series, dataAdmissao, className }: Props) {
   if (series.length === 0) {
-    return <p className="text-sm text-tinta-sussurro">Sem observações para exibir.</p>
+    return <VazioLinha>Nenhuma observação para exibir.</VazioLinha>
   }
 
   // mescla pontos por rótulo de tempo (dia de internação ou data/hora)
@@ -88,9 +91,9 @@ export function GraficoEvolucao({ series, dataAdmissao, className }: Props) {
             <ReferenceArea
               y1={ref.ref_min ?? undefined}
               y2={ref.ref_max ?? undefined}
-              fill="rgba(13,148,136,0.08)"
+              fill="color-mix(in oklab, var(--color-acao) 8%, transparent)"
               strokeDasharray="4 4"
-              label={{ value: 'Referência', position: 'insideTopRight', fontSize: 10, fill: '#0d9488' }}
+              label={{ value: 'Referência', position: 'insideTopRight', fontSize: 10, fill: 'var(--color-acao)' }}
             />
           )}
           {series.map((s, i) => (
@@ -114,8 +117,8 @@ export function GraficoEvolucao({ series, dataAdmissao, className }: Props) {
                   x={diaInternacao(p.aferido_em, dataAdmissao)}
                   y={p.valor_num as number}
                   r={5}
-                  fill="#dc2626"
-                  stroke="#fff"
+                  fill="var(--color-critico)"
+                  stroke="var(--color-superficie)"
                   strokeWidth={1.5}
                 />
               ))

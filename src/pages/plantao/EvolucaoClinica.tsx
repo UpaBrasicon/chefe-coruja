@@ -6,9 +6,9 @@
 // Acessível de /plantao/evolucao (seção direta) ou ?paciente=ID (vindo do painel).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, ChevronRight, Plus, Trash2 } from 'lucide-react'
+import { Activity, Plus, Trash2 } from 'lucide-react'
 import * as React from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -24,6 +24,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Spinner } from '@/components/ui/spinner'
 import { GraficoEvolucao } from '@/components/observacao/GraficoEvolucao'
 import { PainelObservacoes } from '@/components/observacao/PainelObservacoes'
+import { Chip, TituloPagina, Trilha } from '@/components/monitor/Pagina'
+import { Aviso } from '@/components/ui/aviso'
+import { data } from '@/lib/formato'
 
 type Paciente = { id: string; nome: string; cpf: string | null }
 
@@ -145,26 +148,17 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
       {!embutido && (
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
-            <Link to="/" className="transition-colors hover:text-tinta">Início</Link>
-            <ChevronRight className="size-3.5" />
-            <span className="font-medium text-tinta">Evolução Clínica</span>
-          </div>
-          <h1 className="flex items-center gap-2 text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">
-            <Activity className="size-5 text-tinta-sussurro" />
-            Evolução Clínica
-          </h1>
-          <p className="text-sm text-tinta-sussurro">
-            Gráficos de sinais vitais e laboratório por internação — sem migration por exame.
-          </p>
+        <div className="flex flex-col">
+          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Evolução clínica' }]} />
+          <TituloPagina icone={Activity} titulo="Evolução clínica" className="mb-0"
+            descricao="Gráficos de sinais vitais e de laboratório da internação." />
         </div>
       )}
 
       {/* Seleção de paciente */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Paciente</CardTitle>
+          <CardTitle className="text-corpo">Paciente</CardTitle>
           <CardDescription>Selecione o paciente internado para ver a evolução.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
@@ -193,18 +187,16 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
             </SelectContent>
           </Select>
           {internacao && (
-            <p className="text-xs text-tinta-sussurro">
+            <p className="text-rotulo text-tinta-sussurro">
               Internação ativa · admissão{' '}
-              {new Date(internacao.data_admissao).toLocaleDateString('pt-BR')}
+              {data(internacao.data_admissao)}
             </p>
           )}
         </CardContent>
       </Card>
 
       {!internacao && pacienteId && (
-        <div className="rounded-lg border border-atencao/30 bg-atencao/[0.08] px-4 py-3 text-sm text-atencao">
-          Nenhuma internação ativa para este paciente.
-        </div>
+        <Aviso tom="atencao">Nenhuma internação ativa para este paciente.</Aviso>
       )}
 
       {internacao && (
@@ -212,7 +204,7 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
           {/* Seletor de conceitos do gráfico */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Gráfico de evolução</CardTitle>
+              <CardTitle className="text-corpo">Gráfico de evolução</CardTitle>
               <CardDescription>
                 Selecione os conceitos sobrepostos (ex.: creatinina + ureia).
               </CardDescription>
@@ -220,19 +212,10 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
             <CardContent className="flex flex-col gap-3">
               <div className="flex flex-wrap gap-2">
                 {conceitosNomes.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => alternarConceito(c.nome)}
-                    className={
-                      conceitosSel.includes(c.nome)
-                        ? 'rounded-lg border border-acao bg-acao/10 px-2.5 py-1 text-xs font-medium text-acao'
-                        : 'rounded-lg border border-fio bg-campo px-2.5 py-1 text-xs font-medium text-tinta-sussurro transition-colors hover:border-acao/40'
-                    }
-                  >
+                  <Chip key={c.id} variante="opcao" ativo={conceitosSel.includes(c.nome)} onClick={() => alternarConceito(c.nome)}>
                     {c.nome.replace(/-/g, ' ')}
                     {c.unidade_padrao ? ` (${c.unidade_padrao})` : ''}
-                  </button>
+                  </Chip>
                 ))}
               </div>
               <div className="flex gap-2">
@@ -267,7 +250,7 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
           {/* Registro rápido de sinais vitais */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Registrar sinais vitais</CardTitle>
+              <CardTitle className="text-corpo">Registrar sinais vitais</CardTitle>
               <CardDescription>Preencha os valores e salve (flag calculada no banco).</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
@@ -287,10 +270,10 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
                 ))}
               </div>
               {registrar.isError && (
-                <p className="text-sm text-critico">{(registrar.error as Error).message}</p>
+                <p className="text-apoio text-critico">{(registrar.error as Error).message}</p>
               )}
               {registrar.isSuccess && (
-                <p className="text-sm text-conforme">
+                <p className="text-apoio text-conforme">
                   {registrar.data?.naFila
                     ? 'Sem conexão: sinais vitais guardados neste aparelho. Serão enviados quando a conexão voltar.'
                     : 'Sinais vitais registrados.'}
@@ -313,7 +296,7 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
           {/* Flowsheet */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Flowsheet (últimos valores)</CardTitle>
+              <CardTitle className="text-corpo">Flowsheet (últimos valores)</CardTitle>
               <CardDescription>Último valor por conceito, flag e delta.</CardDescription>
             </CardHeader>
             <CardContent>
