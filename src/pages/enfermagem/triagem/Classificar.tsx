@@ -25,6 +25,8 @@ import { BlocoGestacao } from './Gestacao'
 import { HistoricoClassificacoes } from './Historico'
 import { ReferenciaSinal } from './ReferenciaSinal'
 import { dataSP, ehFeminino, esperaMin, hora, nomeDe, type Fluxograma, type NaFila } from './comum'
+import { TituloCartao } from '@/components/monitor/Pagina'
+import { BotaoLinha, OpcaoLista } from '@/components/ui/botao-linha'
 
 // Classificação inicial pela enfermagem (porte do protótipo, Etapa 3) e,
 // com corAtual, a reclassificação enquanto o paciente espera o médico
@@ -39,18 +41,18 @@ type ModoO2 = 'ar_ambiente' | 'o2_suplementar'
 
 // botões de prioridade: contorno da cor; marcado, fundo da cor
 const COR_BOTAO: Record<CorRisco, string> = {
-  vermelho: 'border-mts-vermelho data-[on=true]:bg-mts-vermelho data-[on=true]:text-white',
-  laranja: 'border-mts-laranja data-[on=true]:bg-mts-laranja data-[on=true]:text-white',
+  vermelho: 'border-mts-vermelho data-[on=true]:bg-mts-vermelho data-[on=true]:text-mts-texto',
+  laranja: 'border-mts-laranja data-[on=true]:bg-mts-laranja data-[on=true]:text-mts-texto',
   amarelo: 'border-mts-amarelo data-[on=true]:bg-mts-amarelo data-[on=true]:text-mts-amarelo-texto',
-  verde: 'border-mts-verde data-[on=true]:bg-mts-verde data-[on=true]:text-white',
-  azul: 'border-mts-azul data-[on=true]:bg-mts-azul data-[on=true]:text-white',
+  verde: 'border-mts-verde data-[on=true]:bg-mts-verde data-[on=true]:text-mts-texto',
+  azul: 'border-mts-azul data-[on=true]:bg-mts-azul data-[on=true]:text-mts-texto',
 }
 const COR_CABECALHO: Record<CorRisco, string> = {
-  vermelho: 'bg-mts-vermelho text-white',
-  laranja: 'bg-mts-laranja text-white',
+  vermelho: 'bg-mts-vermelho text-mts-texto',
+  laranja: 'bg-mts-laranja text-mts-texto',
   amarelo: 'bg-mts-amarelo text-mts-amarelo-texto',
-  verde: 'bg-mts-verde text-white',
-  azul: 'bg-mts-azul text-white',
+  verde: 'bg-mts-verde text-mts-texto',
+  azul: 'bg-mts-azul text-mts-texto',
 }
 const AVDI = [['A', 'A · alerta'], ['V', 'V · responde à voz'], ['D', 'D · responde à dor'], ['I', 'I · irresponsivo']] as const
 
@@ -239,13 +241,14 @@ export function Classificar({ ep, onFim, corAtual = null }: {
       </Secao>
 
       <Secao>
-        <h2 className="text-corpo font-semibold text-tinta">{reclass ? 'Reclassificação na espera · enfermagem' : 'Classificação inicial · enfermagem'}</h2>
+        <TituloCartao className="mb-0">{reclass ? 'Reclassificação na espera · enfermagem' : 'Classificação inicial · enfermagem'}</TituloCartao>
 
         {/* prioridade: nunca pré-selecionada */}
         <div className="flex flex-col gap-2">
           <Rotulo>Prioridade *</Rotulo>
           <div className="flex flex-wrap gap-[7px]" role="radiogroup" aria-label="Prioridade">
             {CORES_RISCO.map((c) => (
+              // padrao-ok: escolha da cor da classificação, com as cores do protocolo; o Chip não tem esses tons
               <button
                 key={c}
                 type="button"
@@ -309,18 +312,15 @@ export function Classificar({ ep, onFim, corAtual = null }: {
               {listaAberta && (!fluxo || normalizar(busca) !== normalizar(fluxo.nome)) && (
                 <div role="listbox" className="absolute top-[calc(100%+4px)] right-0 left-0 z-20 max-h-[340px] overflow-y-auto rounded-container border border-fio bg-superficie shadow-popover">
                   {encontrados.map((f) => (
-                    <button
+                    <OpcaoLista
                       key={f.id}
-                      type="button"
-                      role="option"
                       aria-selected={f.id === fluxoId}
-                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => { if (f.id !== fluxoId) setDisc(''); setFluxoId(f.id); setBusca(f.nome); setListaAberta(false) }}
                       className="flex w-full flex-col items-start gap-0.5 border-b border-trilha px-3.5 py-[9px] text-left last:border-b-0 hover:bg-campo"
                     >
                       <span className="text-controle font-medium text-tinta">{f.nome}</span>
                       {f.inclui && <span className="text-rotulo text-pretty text-tinta-sussurro">Inclui: {f.inclui}</span>}
-                    </button>
+                    </OpcaoLista>
                   ))}
                   {encontrados.length === 0 && <div className="px-3.5 py-[11px] text-apoio text-tinta-sussurro">Nenhum fluxograma com esse termo.</div>}
                 </div>
@@ -345,13 +345,14 @@ export function Classificar({ ep, onFim, corAtual = null }: {
                   {fluxo.discriminadores[c]!.map(([texto, exp]) => {
                     const on = disc.trim() === texto
                     return (
-                      <button
+                      <BotaoLinha
                         key={texto}
-                        type="button"
+                        variante="linha"
                         aria-pressed={on}
                         onClick={() => setDisc(texto)}
-                        className={cn('flex w-full items-start gap-[11px] border-b border-trilha px-3.5 py-2.5 text-left last:border-b-0', on ? 'bg-acao/10' : 'bg-superficie hover:bg-campo')}
+                        className={cn('py-2.5', on ? 'bg-acao/10' : 'bg-superficie hover:bg-campo')}
                       >
+                        {/* padrao-ok: marca de 18 px; o canto de controle a deixaria redonda */}
                         <span className={cn('mt-px grid size-[18px] shrink-0 place-items-center rounded-micro border', on ? 'border-acao bg-acao text-sobre-acao' : 'border-fio-forte bg-superficie text-transparent')}>
                           <Check className="size-3" aria-hidden />
                         </span>
@@ -359,7 +360,7 @@ export function Classificar({ ep, onFim, corAtual = null }: {
                           <span className="text-controle font-medium text-tinta">{texto}</span>
                           {exp && <span className="text-apoio leading-[1.45] text-pretty text-tinta-apoio">{exp.charAt(0).toUpperCase() + exp.slice(1)}</span>}
                         </span>
-                      </button>
+                      </BotaoLinha>
                     )
                   })}
                 </div>
@@ -378,12 +379,12 @@ export function Classificar({ ep, onFim, corAtual = null }: {
               {sugAberta && sugestoes.length > 0 && (
                 <div role="listbox" className="absolute top-full right-0 left-0 z-30 mt-1 max-h-[280px] overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
                   {sugestoes.map((s) => (
-                    <button key={s.texto} type="button" role="option" aria-selected={false} onMouseDown={(e) => e.preventDefault()}
+                    <OpcaoLista key={s.texto}
                       onClick={() => { setDisc(s.texto); setSugAberta(false) }}
-                      className="flex w-full items-baseline gap-2.5 border-b border-trilha px-3 py-2 text-left last:border-b-0 hover:bg-campo">
+                      className="items-baseline gap-2.5 hover:bg-campo">
                       <span className="text-controle text-tinta">{s.texto}</span>
                       <span className="text-rotulo text-tinta-sussurro">{rotuloCor(s.cor)}</span>
-                    </button>
+                    </OpcaoLista>
                   ))}
                 </div>
               )}
@@ -471,7 +472,7 @@ export function Classificar({ ep, onFim, corAtual = null }: {
             )}
           </div>
           {lembrete && (
-            <div className="flex items-start gap-2 rounded-controle border border-[#FDE68A] bg-[#FFFBEB] px-3 py-[9px] text-apoio text-pretty text-atencao" role="note">
+            <div className="flex items-start gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-[9px] text-apoio text-pretty text-atencao" role="note">
               <AlertTriangle className="mt-0.5 size-[15px] shrink-0" aria-hidden />
               <span>{lembrete}</span>
             </div>

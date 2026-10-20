@@ -76,6 +76,8 @@
     --color-mts-laranja: var(--cc-mts-laranja);
     --color-mts-amarelo: var(--cc-mts-amarelo);
     --color-mts-amarelo-texto: var(--cc-mts-amarelo-texto);
+    /* Texto sobre vermelho, laranja, verde e azul da classificação. */
+    --color-mts-texto: var(--cc-mts-texto);
     --color-mts-verde: var(--cc-mts-verde);
     --color-mts-azul: var(--cc-mts-azul);
 
@@ -251,6 +253,7 @@
     --cc-mts-laranja: #C2410C;
     --cc-mts-amarelo: #FACC15;
     --cc-mts-amarelo-texto: #422006;
+    --cc-mts-texto: #FFFFFF;
     --cc-mts-verde: #15803D;
     --cc-mts-azul: #1D4ED8;
     --cc-pediatria: #6D28D9;

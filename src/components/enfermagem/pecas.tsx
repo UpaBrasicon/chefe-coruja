@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 export const Cartao = ({ titulo, extra, children, className }: {
   titulo?: React.ReactNode; extra?: React.ReactNode; children: React.ReactNode; className?: string
 }) => (
-  <section className={cn('flex flex-col gap-2.5 rounded-menu border border-fio bg-superficie p-4 text-controle shadow-[0_1px_2px_rgba(15,23,42,0.04)]', className)}>
+  <section className={cn('flex flex-col gap-2.5 rounded-container border border-fio bg-superficie p-4 text-controle shadow-[0_1px_2px_rgba(15,23,42,0.04)]', className)}>
     {(titulo || extra) && (
       <div className="flex flex-wrap items-baseline gap-2.5">
         {titulo && <h3 className="m-0 min-w-0 flex-[1_1_220px] text-corpo font-semibold text-tinta">{titulo}</h3>}

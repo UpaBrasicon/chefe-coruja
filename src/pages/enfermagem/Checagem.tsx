@@ -28,6 +28,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 
 import { AlergiaNaTela } from './AlergiaNaTela'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { dataHora } from '@/lib/formato'
+import { cn } from '@/lib/utils'
 
 type Linha = {
   paciente_id: string; paciente_nome: string; local: string | null; item_id: string; tipo: string; descricao: string
@@ -42,7 +46,7 @@ const SITUACAO: Record<string, { rotulo: string; variante: 'success' | 'warning'
   nao_feito: { rotulo: 'não feito', variante: 'warning' },
   recusado: { rotulo: 'recusado', variante: 'destructive' },
 }
-const hora = (iso: string) => new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })
+const hora = (iso: string) => dataHora(iso)
 
 export default function Checagem() {
   const { papelAtivo } = useUnidade()
@@ -102,7 +106,7 @@ export default function Checagem() {
     <>
       <TituloPagina icone={ClipboardCheck} titulo="Checagem"
         descricao="Itens prescritos dos pacientes do seu plantão. Não feito e recusado pedem motivo; corrigir é checar de novo." />
-      {erro && <p className="mb-3 rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</p>}
+      <MensagemErro texto={erro} className="mb-3" />
       {pacientes.size === 0 && !fila.isLoading && (
         <Vazio icone={ClipboardCheck} titulo="Nenhum item para checar" texto="Pacientes dos setores da sua escala com prescrição ativa aparecem aqui." />
       )}
@@ -110,11 +114,11 @@ export default function Checagem() {
         {[...pacientes.entries()].map(([id, itens]) => (
           <Card key={id}>
             <CardHeader>
-              <CardTitle className="text-base">{itens[0].paciente_nome} <span className="text-sm font-normal text-tinta-sussurro">· {itens[0].local ?? '—'}</span></CardTitle>
+              <CardTitle className="text-corpo">{itens[0].paciente_nome} <span className="text-apoio font-normal text-tinta-sussurro">· {itens[0].local ?? '—'}</span></CardTitle>
               {/* alergia de cada paciente junto dos itens a administrar (R4) */}
               <AlergiaNaTela pacienteId={id} />
             </CardHeader>
-            <CardContent className="flex flex-col gap-2 text-sm">
+            <CardContent className="flex flex-col gap-2 text-apoio">
               {itens.map((l) => <ItemChecagem key={l.item_id} l={l} liberacao={liberacao.data?.get(l.item_id)} apraz={apraz.data?.get(l.item_id)} alteracao={alteracoes.data?.get(l.item_id)} souEnfermeiro={papelAtivo === 'enfermeiro'} aoMudar={recarregar} aoErro={setErro} />)}
             </CardContent>
           </Card>
@@ -156,7 +160,7 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
   }
 
   return (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-fio px-3 py-2">
+    <div className="flex flex-col gap-1.5 rounded-controle border border-fio px-3 py-2">
       <div className="flex flex-wrap items-baseline gap-2">
         <span className="font-medium text-tinta">{l.descricao}</span>
         {l.tipo === 'medicamento' && <span>{l.dose} · {l.via} · {l.posologia}{l.se_necessario ? ' · se necessário' : ''}</span>}
@@ -165,13 +169,13 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
         {st && <Badge variant={st.variante} className="ml-auto">{st.rotulo}{l.ultima_horario ? ` ${l.ultima_horario}` : ''}</Badge>}
       </div>
       {alteracao && (
-        <p role="note" className="rounded-md border border-atencao/40 bg-atencao/[0.08] px-2.5 py-1.5 text-xs text-atencao">
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-2.5 py-1.5 text-rotulo text-atencao">
           <strong>Prescrição alterada</strong> (versão {alteracao.versao}) por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}:{' '}
           {resumoMudanca(alteracao.anterior, { dose: l.dose, via: l.via, posologia: l.posologia, se_necessario: l.se_necessario }) || 'observação'}
           {alteracao.motivo ? ` — “${alteracao.motivo}”` : ''}
         </p>
       )}
-      {l.diluicao_texto && <p className="text-xs text-tinta-apoio">Diluição: {l.diluicao_texto}</p>}
+      {l.diluicao_texto && <p className="text-rotulo text-tinta-apoio">Diluição: {l.diluicao_texto}</p>}
       {aprazado && (
         <div className="flex flex-wrap gap-1.5" aria-label="Situação por horário (últimas 24 horas)">
           {l.horarios!.map((h) => {
@@ -186,7 +190,7 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
         </div>
       )}
       {podeAprazar && sugestao && (
-        <div className="flex flex-wrap items-center gap-2 text-xs text-tinta-apoio">
+        <div className="flex flex-wrap items-center gap-2 text-rotulo text-tinta-apoio">
           <span>
             Sugestão ({sugestao.intervalo_h}/{sugestao.intervalo_h} h, {sugestao.origem}): <span className="font-medium text-tinta">{sugestao.horarios.join(', ')}</span>
             {sugestao.primeira && <> · prescrito às {sugestao.prescrito_as}, 1ª dose da grade às {sugestao.primeira}</>}
@@ -197,26 +201,26 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
         </div>
       )}
       {podeAprazar && ajustando && (
-        <Input className="h-8 max-w-md text-xs" placeholder="Motivo do ajuste (opcional; fica registrado)" value={motivoAjuste}
+        <Input className="h-8 max-w-md text-rotulo" placeholder="Motivo do ajuste (opcional; fica registrado)" value={motivoAjuste}
           onChange={(e) => setMotivoAjuste(e.target.value)} />
       )}
       {apraz?.ultimo && (
-        <p className="text-xs text-tinta-sussurro">
+        <p className="text-rotulo text-tinta-sussurro">
           Aprazado por {apraz.ultimo.por ?? '—'}, {hora(apraz.ultimo.em)}
           {apraz.ultimo.ajustado && apraz.ultimo.sugeridos ? ` · ajustado da sugestão (${apraz.ultimo.sugeridos.join(', ')})` : ''}
           {apraz.ultimo.motivo ? `: “${apraz.ultimo.motivo}”` : ''}
         </p>
       )}
       {liberacao && !unicaFeita && (
-        <p className={`rounded-md border px-2.5 py-1.5 text-xs ${lib === 'liberado' ? 'border-conforme/30 bg-conforme/[0.06] text-conforme'
-          : lib === 'devolvido' ? 'border-critico/30 bg-critico/[0.05] text-critico' : 'border-atencao/40 bg-atencao/[0.08] text-atencao'}`}>
+        <p className={`rounded-controle border px-2.5 py-1.5 text-rotulo ${lib === 'liberado' ? 'border-conforme/30 bg-alerta-conforme text-conforme'
+          : lib === 'devolvido' ? 'border-critico/30 bg-alerta-critico text-critico' : 'border-atencao/40 bg-alerta-atencao text-atencao'}`}>
           {lib === 'liberado' && <>Liberado pela farmácia: {liberacao.por ?? '—'}, {liberacao.em ? hora(liberacao.em) : '—'}.</>}
           {lib === 'devolvido' && <>Devolvido pela farmácia: {liberacao.motivo ?? 'sem motivo'}. Sem liberação, o “feito” pede justificativa.</>}
           {lib === 'aguardando' && <>Aguardando a liberação da farmácia. Sem farmacêutico de plantão, registre como feito com justificativa: o farmacêutico confere depois.</>}
         </p>
       )}
-      {unicaFeita && <p className="text-xs text-conforme">Dose única (Agora) já registrada como feita. Nova dose precisa de nova prescrição.</p>}
-      {l.ultima_em && <p className="text-xs text-tinta-sussurro">Última checagem: {hora(l.ultima_em)} · {l.ultima_por}</p>}
+      {unicaFeita && <p className="text-rotulo text-conforme">Dose única (Agora) já registrada como feita. Nova dose precisa de nova prescrição.</p>}
+      {l.ultima_em && <p className="text-rotulo text-tinta-sussurro">Última checagem: {hora(l.ultima_em)} · {l.ultima_por}</p>}
       {!unicaFeita && <div className="flex flex-wrap items-center gap-2">
         {podeAprazar ? (
           <>
@@ -230,13 +234,13 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
               aoErro(null); setMotivoAjuste(''); aoMudar()
             }}>Aprazar</Button>
           </>
-        ) : l.horarios?.length ? <span className="text-xs text-tinta-apoio">Aprazado: {l.horarios.join(', ')}</span> : null}
+        ) : l.horarios?.length ? <span className="text-rotulo text-tinta-apoio">Aprazado: {l.horarios.join(', ')}</span> : null}
         {l.horarios?.length ? (
-          <select className={`h-8 rounded-controle border bg-campo px-2 text-xs ${faltaHorario ? 'border-atencao' : 'border-fio'}`} value={horario} onChange={(e) => setHorario(e.target.value)}
+          <CampoSelecao tamanho="compacto" className={cn('text-rotulo', faltaHorario && 'border-atencao')} value={horario} onChange={(e) => setHorario(e.target.value)}
             aria-label="Horário da checagem">
             <option value="">{aprazado ? 'qual horário? *' : 'horário…'}</option>
             {l.horarios.map((h) => <option key={h}>{h}</option>)}
-          </select>
+          </CampoSelecao>
         ) : null}
         <Button size="xs" title={feitoPedeJustificativa ? 'Alta vigilância sem liberação da farmácia: pede justificativa' : undefined}
           onClick={() => (feitoPedeJustificativa ? setPedindo('feito') : void checar('feito'))}>Feito</Button>

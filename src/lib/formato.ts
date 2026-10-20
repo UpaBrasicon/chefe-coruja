@@ -66,3 +66,12 @@ const fmtIso = new Intl.DateTimeFormat('en-CA', { timeZone: FUSO, year: 'numeric
 
 /** "2026-10-19": a data em Brasília no formato do campo date e do banco. */
 export const dataIso = (v: Instante = Date.now()) => fmtIso.format(comoData(v))
+
+const fmtDiaMesHora = new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+const fmtInput = new Intl.DateTimeFormat('sv-SE', { timeZone: FUSO, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+
+/** "19/10, 19:43" */
+export const diaMesHora = (v: Instante) => fmtDiaMesHora.format(comoData(v))
+
+/** "2026-10-19T19:43": valor de <input type="datetime-local"> no fuso de Brasília. */
+export const dataHoraInput = (v: Instante = Date.now()) => fmtInput.format(comoData(v)).replace(' ', 'T')

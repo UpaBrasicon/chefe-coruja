@@ -272,7 +272,8 @@ Exames, Faturamento e Unidade — numa tarefa própria da parte 4.
 | `Carregando` (spinner com o nome do que carrega) | `src/components/ui/spinner.tsx` | 2.3 |
 | `CampoSelecao` | `src/components/ui/campo-selecao.tsx` | 3.2 |
 | `TituloPagina`, `TituloSecao`, `TituloCartao` | `src/components/monitor/Pagina.tsx` | 4.1 |
-| `Abas` (cápsula, tablist) | `src/components/monitor/Pagina.tsx` | 4.2 |
+| `Abas` (cápsula, tablist; contagem opcional por aba) | `src/components/monitor/Pagina.tsx` | 4.2 |
+| Texto sobre as cores da classificação (`text-mts-texto`; no amarelo, `text-mts-amarelo-texto`) | `src/index.css`, igual nos dois temas | 1.1 (parte 4.6) |
 | `Chip` (`variante`: filtro ou opcao; `radio` para radiogroup; `tom` critico; `titulo`, `desabilitado`) | `src/components/monitor/Pagina.tsx` | 3.1 |
 | `BotaoLinha` (cartão, linha ou tracejado clicável) e `OpcaoLista` (opção de lista suspensa) | `src/components/ui/botao-linha.tsx` | 3.1 (parte 4.5) |
 | `CaixaMarcar` (caixa de marcar com texto; `bloqueado` mostra X) | `src/components/ui/caixa-marcar.tsx` | 3.1 (parte 4.5) |

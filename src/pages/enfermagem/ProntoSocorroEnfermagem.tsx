@@ -82,12 +82,12 @@ export default function ProntoSocorroEnfermagem() {
 
   return (
     <>
-      <TituloPagina icone={Stethoscope} titulo="Pronto Socorro"
+      <TituloPagina icone={Stethoscope} titulo="Pronto-Socorro"
         descricao={`Triados e em observação dos setores da sua escala. Em Cuidados ficam SAE, aprazamento e checagem, sinais vitais e anotação.${papelAtivo === 'tecnico_enfermagem' ? ' Como técnico, você checa, afere e registra; a SAE é do enfermeiro.' : ''}`} />
       {erro && <p className="mb-3 text-apoio text-critico">{msgErro(erro)}</p>}
       {!carregando && !erro && meusSetores.length === 0 ? (
         <Vazio icone={Stethoscope} titulo="Você não está na escala agora"
-          texto="O Pronto Socorro da enfermagem mostra os pacientes dos setores em que você está de plantão neste momento." />
+          texto="O Pronto-Socorro da enfermagem mostra os pacientes dos setores em que você está de plantão neste momento." />
       ) : (
         <div className="flex flex-col gap-3">
           {temInternacao && (
@@ -95,7 +95,7 @@ export default function ProntoSocorroEnfermagem() {
               <Users className="size-4" aria-hidden /> Sua escala também tem setor de internação: os internados estão na Internação da enfermagem.
             </Link>
           )}
-          <Bloco titulo="Triados no Pronto Socorro">
+          <Bloco titulo="Triados no Pronto-Socorro">
             {carregando && <div className="px-5 py-4"><Spinner /></div>}
             {!carregando && lista.length === 0 && <p className="px-5 py-[18px] text-controle text-tinta-sussurro">Nenhum paciente triado agora.</p>}
             {lista.map((e) => {
@@ -125,7 +125,7 @@ export default function ProntoSocorroEnfermagem() {
                     {aguardando ? `espera ${duracao(e.classificado_em, agora)}` : `em atendimento há ${duracao(e.atendimento_iniciado_em, agora)}`}
                   </span>
                   <BotaoCuidados onClick={() => setCuidando({
-                    pacienteId: e.paciente_id, episodioId: e.id, nome, local: 'Pronto Socorro', setorId: e.setor_id,
+                    pacienteId: e.paciente_id, episodioId: e.id, nome, local: 'Pronto-Socorro', setorId: e.setor_id,
                     contexto: e.queixa, desde: e.classificado_em, rotuloDesde: 'triado há', cor: e.cor_atual,
                   })} />
                 </div>

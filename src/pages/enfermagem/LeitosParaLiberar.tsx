@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 
 import { Bloco } from './Pecas'
 import { msgErro } from './useEnfermagem'
+import { dataHora, hora } from '@/lib/formato'
 
 const ROTULO: Record<string, string> = { livre: 'Livre', reservado: 'Reservado', higienizacao: 'Em higienização', bloqueado: 'Bloqueado' }
 
@@ -47,12 +48,12 @@ export function LeitosParaLiberar({ unidadeId, setores }: { unidadeId: string | 
             {l.status === 'reservado' ? (
               <span className="text-apoio text-tinta-sussurro">
                 {[l.reserva_paciente ? `para ${l.reserva_paciente}` : l.reserva_motivo,
-                  l.reserva_expira_em && `até ${new Date(l.reserva_expira_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`]
+                  l.reserva_expira_em && `até ${hora(l.reserva_expira_em)}`]
                   .filter(Boolean).join(' · ')}
               </span>
             ) : (l.motivo || l.desde) && l.status !== 'livre' && (
               <span className="text-apoio text-tinta-sussurro">
-                {[rotuloMotivoBloqueio(l.motivo), l.desde && `desde ${new Date(l.desde).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`]
+                {[rotuloMotivoBloqueio(l.motivo), l.desde && `desde ${dataHora(l.desde)}`]
                   .filter(Boolean).join(' · ')}
               </span>
             )}
