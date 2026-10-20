@@ -17,6 +17,8 @@ import { usePacienteCentral } from '@/lib/pacienteCentral'
 import { cn } from '@/lib/utils'
 import { Canal, Canais } from '@/components/monitor/Canais'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { BotaoLinha } from '@/components/ui/botao-linha'
+import { Button } from '@/components/ui/button'
 import { RespostaIa } from '@/components/plantonista/RespostaIa'
 import { CartaoTurno } from '@/components/plantonista/central/CartaoTurno'
 import { ModoPaciente } from '@/components/plantonista/central/ModoPaciente'
@@ -92,20 +94,24 @@ function CartaoFerramenta({ f, favorito, onFavoritar, destacado, aviso }: { f: F
   const navigate = useNavigate()
   return (
     <div className={cn('group relative rounded-container border border-fio bg-superficie shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-halo', destacado && 'border-acao ring-2 ring-acao/30')}>
-      <button type="button" onClick={() => navigate(`/plantonista/${f.secao}/${f.slug}`)} className="block w-full px-4 py-3 pr-10 text-left">
+      <BotaoLinha
+        onClick={() => navigate(`/plantonista/${f.secao}/${f.slug}`)}
+        className="w-full items-stretch gap-0 border-0 bg-transparent px-4 py-3 pr-10 hover:bg-transparent"
+      >
         <span className="rotulo block text-tinta-sussurro">{f.secaoLabel}{aviso ? ` · ${aviso}` : ''}</span>
         <span className="mt-1 block text-corpo font-semibold tracking-[-0.01em] text-tinta">{f.label}</span>
         <span className="mt-0.5 line-clamp-2 block text-apoio text-tinta-sussurro">{f.description}</span>
-      </button>
-      <button
-        type="button"
+      </BotaoLinha>
+      <Button
+        variant="ghost"
+        size="icon-xs"
         onClick={onFavoritar}
         aria-pressed={favorito}
         aria-label={favorito ? `Tirar ${f.label} dos favoritos` : `Favoritar ${f.label}`}
-        className="absolute top-2.5 right-2.5 rounded-controle-sm p-1 text-tinta-sussurro hover:text-acao"
+        className="absolute top-2.5 right-2.5"
       >
         <Star className={cn('size-4', favorito && 'fill-acao text-acao')} />
-      </button>
+      </Button>
     </div>
   )
 }
@@ -114,15 +120,14 @@ function CartaoFerramenta({ f, favorito, onFavoritar, destacado, aviso }: { f: F
 function Atalho({ f, vezes, favorito }: { f: Ferramenta; vezes: number; favorito?: boolean }) {
   const navigate = useNavigate()
   return (
-    <button
-      type="button"
+    <BotaoLinha
       onClick={() => navigate(`/plantonista/${f.secao}/${f.slug}`)}
-      className="flex items-center gap-[9px] rounded-container border border-fio bg-superficie px-5 py-[13px] text-left shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-halo"
+      className="flex-row items-center gap-[9px] px-5 py-[13px] shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-fio hover:bg-superficie hover:shadow-halo"
     >
       {favorito ? <Star className="size-4 shrink-0 fill-acao text-acao" aria-hidden /> : <History className={cn('size-4 shrink-0', coresDaSecao(f.secao).texto)} aria-hidden />}
       <span className="min-w-0 flex-1 text-apoio font-medium text-tinta">{f.label}</span>
       {vezes > 0 && <span className="text-rotulo text-tinta-sussurro tabular" title={`Aberta ${vezes} ${vezes === 1 ? 'vez' : 'vezes'} por você`}>{vezes}×</span>}
-    </button>
+    </BotaoLinha>
   )
 }
 
@@ -248,15 +253,15 @@ export default function PlantonistaHome() {
           </div>
           {consulta.trim() && (
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-              <button
-                type="button"
+              <Button
+                variant="outline"
                 onClick={perguntar}
                 disabled={!perguntavel || !unidadeId || ia.status === 'loading' || ia.status === 'streaming'}
-                className="inline-flex items-center gap-1.5 rounded-container border border-fio bg-superficie px-3 py-1.5 text-apoio font-medium text-tinta shadow-repouso hover:border-acao disabled:opacity-50"
+                className="gap-1.5 rounded-container px-3 py-1.5 text-left font-medium whitespace-normal text-tinta shadow-repouso hover:text-tinta"
               >
                 <Sparkles className="size-4 text-acao" aria-hidden />
                 Perguntar à IA: “{consulta.trim()}”
-              </button>
+              </Button>
               <span className="text-apoio text-tinta-sussurro">Não digite nome, CPF ou dados identificáveis do paciente. Enter pergunta; ↑↓ escolhem uma ferramenta.</span>
             </div>
           )}
@@ -306,10 +311,12 @@ export default function PlantonistaHome() {
           <>
             {favoritosCards.length > 0 && (
               <section className="mb-[26px]">
-                <h2 className="rotulo mb-2.5 flex items-center gap-1.5 font-semibold text-tinta-sussurro uppercase">
-                  <Star className="size-[13px] fill-acao text-acao" aria-hidden />
-                  Favoritos
-                </h2>
+                <TituloSecao className="mb-2.5">
+                  <span className="flex items-center gap-1.5">
+                    <Star className="size-4 fill-acao text-acao" aria-hidden />
+                    Favoritos
+                  </span>
+                </TituloSecao>
                 <div className="grid grid-cols-[repeat(auto-fill,minmax(258px,1fr))] gap-3.5">
                   {favoritosCards.map((f) => <Atalho key={f.chave} f={f} vezes={usos[f.chave] ?? 0} favorito />)}
                 </div>
@@ -317,10 +324,12 @@ export default function PlantonistaHome() {
             )}
             {maisUsados.length >= 2 && (
               <section className="mb-[26px]">
-                <h2 className="rotulo mb-2.5 flex items-center gap-1.5 font-semibold text-tinta-sussurro uppercase">
-                  <History className="size-[13px]" aria-hidden />
-                  Mais usados por você
-                </h2>
+                <TituloSecao className="mb-2.5">
+                  <span className="flex items-center gap-1.5">
+                    <History className="size-4 text-tinta-sussurro" aria-hidden />
+                    Mais usados por você
+                  </span>
+                </TituloSecao>
                 <div className="grid grid-cols-[repeat(auto-fill,minmax(258px,1fr))] gap-3.5">
                   {maisUsados.map((f) => <Atalho key={f.chave} f={f} vezes={usos[f.chave] ?? 0} />)}
                 </div>
@@ -336,6 +345,7 @@ export default function PlantonistaHome() {
                   const inerte = faltaPaciente || m.n === 0
                   const Icone = s.icon
                   return (
+                    // padrao-ok: bloco da seção no celular, pintado na matiz da própria seção; nenhuma peça tem os tons de seção
                     <button
                       key={s.slug}
                       type="button"
@@ -346,7 +356,7 @@ export default function PlantonistaHome() {
                         inerte ? 'cursor-not-allowed border-fio bg-trilha opacity-70' : cn(c.bloco, 'hover:brightness-[0.97] active:brightness-[0.94]'),
                       )}
                     >
-                      <span className={cn('grid size-9 place-items-center rounded-bloco', inerte ? 'bg-fio text-tinta-sussurro' : c.icone)}>
+                      <span className={cn('grid size-9 place-items-center rounded-container', inerte ? 'bg-fio text-tinta-sussurro' : c.icone)}>
                         <Icone className="size-[19px]" aria-hidden />
                       </span>
                       <span className={cn('text-corpo leading-[1.25] font-semibold tracking-[-0.01em]', inerte ? 'text-tinta-sussurro' : c.texto)}>{s.label}</span>

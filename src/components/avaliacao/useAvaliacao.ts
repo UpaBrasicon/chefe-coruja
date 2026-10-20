@@ -6,6 +6,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { EscalaAvaliacao, Respostas } from '@/clinico/crescimento/escalasAvaliacao'
+import { data as formatarData, dataHora, dataIso, numero } from '@/lib/formato'
 import { abrirProntuario } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 
@@ -27,12 +28,12 @@ export type Grandeza = 'peso' | 'estatura' | 'perimetro-cefalico'
 export type MedidaObs = { id: string; grandeza: Grandeza; aferidoEm: string; valor: number }
 
 export const quando = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : ''
-export const dia = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-export const hojeSP = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+  iso ? dataHora(iso) : ''
+export const dia = (iso: string) => formatarData(iso)
+export const hojeSP = () => dataIso()
 export const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
 export const num = (s: string) => { const n = Number(s.replace(',', '.').trim()); return s.trim() && Number.isFinite(n) ? n : null }
-export const br = (n: number, casas = 1) => n.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas })
+export const br = (n: number, casas = 1) => numero(n, casas)
 
 /** Nascimento e sexo do cadastro: a curva e a escolha da escala dependem deles. */
 export function usePacienteCurva(pacienteId: string) {

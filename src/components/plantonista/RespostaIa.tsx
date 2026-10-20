@@ -2,6 +2,8 @@ import { Fragment, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BookOpen, ExternalLink, Sparkles, ThumbsDown, ThumbsUp, X } from 'lucide-react'
 
+import { BotaoLinha } from '@/components/ui/botao-linha'
+import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { fontesCitadas, SEM_PEDIATRIA, semResposta } from '@/lib/respostaIa'
 import type { Fonte, StatusIa, ToolHit } from '@/lib/useClinicalAsk'
@@ -42,17 +44,18 @@ function Texto({ texto, fontes }: { texto: string; fontes: Fonte[] }) {
   const chip = (n: number, k: string) => {
     const existe = fontes.some((f) => f.n === n)
     return (
-      <button
+      <Button
         key={k}
-        type="button"
+        variant="ghost"
+        size="xs"
         disabled={!existe}
         onClick={() => document.getElementById(`fonte-ia-${n}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-        className={cn('mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 align-baseline text-[11px] font-semibold tabular-nums',
-          existe ? 'bg-acao/15 text-acao hover:bg-acao/25' : 'bg-alerta/20 text-alerta')}
+        className={cn('mx-0.5 h-5 min-h-5 min-w-5 rounded-capsula px-1.5 align-baseline font-semibold tabular-nums disabled:opacity-100',
+          existe ? 'bg-acao/15 text-acao hover:bg-acao/25 hover:text-acao' : 'bg-alerta/20 text-alerta')}
         aria-label={`Fonte ${n}`}
       >
         {n}
-      </button>
+      </Button>
     )
   }
   const linhas = texto.replace(/\r/g, '').split('\n')
@@ -96,14 +99,14 @@ function Feedback({ requestId }: { requestId: string }) {
   return (
     <div className="flex items-center gap-2 text-apoio text-tinta-sussurro">
       <span>{enviado === null ? 'Esta resposta ajudou?' : 'Obrigado pelo retorno.'}</span>
-      <button type="button" onClick={() => enviar(true)} aria-pressed={enviado === true} aria-label="Resposta útil"
-        className={cn('rounded-controle-sm p-1 hover:text-acao', enviado === true && 'text-acao')}>
+      <Button variant="ghost" size="icon-xs" onClick={() => enviar(true)} aria-pressed={enviado === true} aria-label="Resposta útil"
+        className={cn(enviado === true && 'text-acao')}>
         <ThumbsUp className="size-4" />
-      </button>
-      <button type="button" onClick={() => enviar(false)} aria-pressed={enviado === false} aria-label="Resposta não ajudou"
-        className={cn('rounded-controle-sm p-1 hover:text-acao', enviado === false && 'text-acao')}>
+      </Button>
+      <Button variant="ghost" size="icon-xs" onClick={() => enviar(false)} aria-pressed={enviado === false} aria-label="Resposta não ajudou"
+        className={cn(enviado === false && 'text-acao')}>
         <ThumbsDown className="size-4" />
-      </button>
+      </Button>
       {erro && <span className="text-alerta">Não foi possível registrar.</span>}
     </div>
   )
@@ -117,12 +120,12 @@ function CartoesFerramentas({ ferramentas }: { ferramentas: ToolHit[] }) {
       <p className="rotulo mb-1.5 text-tinta-sussurro">Ferramentas da Central para o cálculo</p>
       <div className="flex flex-wrap gap-2">
         {ferramentas.map((t) => (
-          <button key={t.id} type="button" onClick={() => navigate(t.rota)}
-            className="flex items-center gap-2 rounded-container border border-fio bg-superficie px-3 py-1.5 text-apoio text-tinta shadow-repouso hover:border-acao">
+          <BotaoLinha key={t.id} onClick={() => navigate(t.rota)}
+            className="flex-row items-center gap-2 px-3 py-1.5 text-apoio text-tinta shadow-repouso">
             <span className="font-medium">{t.nome}</span>
             <span className="text-tinta-sussurro">{t.categoria}</span>
             <span className="text-acao">Abrir</span>
-          </button>
+          </BotaoLinha>
         ))}
       </div>
     </div>
@@ -150,13 +153,13 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
           <p className="truncate text-corpo font-semibold text-tinta">“{pergunta}”</p>
           {publico === 'pediatrico' && <p className="text-apoio text-tinta-sussurro">Pergunta de criança: só fontes pediátricas.</p>}
         </div>
-        <button type="button" onClick={onFechar} aria-label="Fechar resposta" className="rounded-controle-sm p-1 text-tinta-sussurro hover:text-acao">
+        <Button variant="ghost" size="icon-xs" onClick={onFechar} aria-label="Fechar resposta">
           <X className="size-4" />
-        </button>
+        </Button>
       </header>
 
       <div className="space-y-4 px-4 py-3">
-        {alerta && <p className="rounded-controle-sm border border-alerta/40 bg-alerta/10 px-3 py-2 text-apoio text-tinta">{alerta}</p>}
+        {alerta && <p className="rounded-controle border border-alerta/40 bg-alerta/10 px-3 py-2 text-apoio text-tinta">{alerta}</p>}
         {aviso && <p className={cn('text-corpo', status === 'loading' ? 'animate-pulse text-tinta-sussurro' : 'text-tinta')}>{aviso}</p>}
         {(status === 'streaming' || status === 'done') && (curto ? <p className="text-corpo text-tinta">{curto}</p> : <Texto texto={texto} fontes={fontes} />)}
         {status === 'streaming' && <span className="inline-block h-4 w-1.5 animate-pulse bg-acao align-middle" aria-hidden />}
@@ -168,8 +171,8 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
             <p className="rotulo mb-1.5 flex items-center gap-1.5 text-tinta-sussurro"><BookOpen className="size-3.5" aria-hidden /> Fontes</p>
             <ol className="space-y-1.5">
               {fontes.map((f) => (
-                <li key={f.n} id={`fonte-ia-${f.n}`} className="flex gap-2 rounded-controle-sm px-2 py-1 text-apoio text-tinta target:bg-acao/10">
-                  <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-acao/15 px-1.5 text-[11px] font-semibold text-acao tabular-nums">{f.n}</span>
+                <li key={f.n} id={`fonte-ia-${f.n}`} className="flex gap-2 rounded-controle px-2 py-1 text-apoio text-tinta target:bg-acao/10">
+                  <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-capsula bg-acao/15 px-1.5 text-rotulo font-semibold text-acao tabular-nums">{f.n}</span>
                   <span className="min-w-0">
                     <span className="font-medium">{f.titulo}</span>
                     <span className="text-tinta-sussurro"> · {f.editor}, {f.ano}{f.secao ? ` · ${f.secao}` : ''}{f.pagina ? ` · p. ${f.pagina}` : ''}</span>

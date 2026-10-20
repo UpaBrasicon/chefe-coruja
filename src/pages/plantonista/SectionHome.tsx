@@ -8,7 +8,7 @@ import { chaveFerramenta, useFavoritos } from '@/lib/useFavoritos'
 import { publicoDaFerramenta, valeEmAdulto, valeEmCrianca } from '@/content/publicoFerramentas'
 import { usePacienteCentral } from '@/lib/pacienteCentral'
 import { ToolCard } from '@/components/plantonista/cards'
-import { TituloPagina, Trilha, Vazio } from '@/components/monitor/Pagina'
+import { TituloPagina, TituloSecao, Trilha, Vazio } from '@/components/monitor/Pagina'
 import { Input } from '@/components/ui/input'
 
 const semAcento = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
@@ -78,7 +78,7 @@ export default function SectionHome() {
               {!filtro && (
                 <nav aria-label="Grupos da seção" className="flex flex-wrap gap-2">
                   {grupos.map((g) => (
-                    <a key={g.rotulo} href={`#${idGrupo(g.rotulo)}`} className="rounded-full border px-3 py-1 text-apoio text-tinta-apoio hover:bg-trilha/50">
+                    <a key={g.rotulo} href={`#${idGrupo(g.rotulo)}`} className="rounded-capsula border px-3 py-1 text-apoio text-tinta-apoio hover:bg-trilha/50">
                       {g.rotulo} <span className="tabular-nums text-tinta-sussurro">{g.tools.length}</span>
                     </a>
                   ))}
@@ -89,7 +89,7 @@ export default function SectionHome() {
           {grupos.length === 0 && <Vazio icone={FolderSearch} titulo="Nada encontrado" texto="Nenhuma ferramenta desta seção corresponde ao filtro." />}
           {grupos.map((g) => (
             <section key={g.rotulo || 'todas'} id={g.rotulo ? idGrupo(g.rotulo) : undefined} className="mb-6 scroll-mt-20">
-              {g.rotulo && <h2 className="rotulo mb-2 text-tinta-apoio">{g.rotulo}</h2>}
+              {g.rotulo && <TituloSecao className="mb-2">{g.rotulo}</TituloSecao>}
               <div className="grid gap-3 sm:grid-cols-2">{g.tools.map(cartao)}</div>
             </section>
           ))}

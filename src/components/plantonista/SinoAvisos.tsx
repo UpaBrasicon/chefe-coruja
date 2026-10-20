@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Bell } from 'lucide-react'
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 
+import { diaMesHora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -9,7 +10,7 @@ import type { MinhaNotificacao } from '@/types/database'
 
 function fmtHora(iso: string) {
   try {
-    return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+    return diaMesHora(iso)
   } catch {
     return ''
   }
@@ -37,7 +38,7 @@ export function SinoAvisos({ unidadeId, habilitado }: { unidadeId?: string; habi
           <Button variant="ghost" size="sm" className="relative" aria-label="Avisos">
             <Bell />
             {pendentes > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-critico px-1.5 text-[10px] font-semibold text-white">
+              <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-capsula bg-critico px-1.5 text-rotulo font-semibold text-sobre-acao">
                 {pendentes}
               </span>
             )}
@@ -46,10 +47,10 @@ export function SinoAvisos({ unidadeId, habilitado }: { unidadeId?: string; habi
       />
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Positioner side="bottom" align="end" sideOffset={6} className="z-50">
-          <PopoverPrimitive.Popup className="w-80 rounded-xl border bg-superficie p-3 text-tinta shadow-lg">
+          <PopoverPrimitive.Popup className="w-80 rounded-container border bg-superficie p-3 text-tinta shadow-lg">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-semibold">Últimos avisos</span>
-              <span className="text-xs text-tinta-sussurro">{lista.length} de {(notificacoes ?? []).length}</span>
+              <span className="text-apoio font-semibold">Últimos avisos</span>
+              <span className="text-rotulo text-tinta-sussurro">{lista.length} de {(notificacoes ?? []).length}</span>
             </div>
             <div className="max-h-72 overflow-y-auto pr-1">
               {isLoading ? (
@@ -57,12 +58,12 @@ export function SinoAvisos({ unidadeId, habilitado }: { unidadeId?: string; habi
                   <Spinner />
                 </div>
               ) : lista.length === 0 ? (
-                <p className="py-6 text-center text-sm text-tinta-sussurro">Nenhum aviso no momento.</p>
+                <p className="py-6 text-center text-apoio text-tinta-sussurro">Nenhum aviso no momento.</p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {lista.map((n) => (
-                    <div key={n.id} className={`rounded-lg border p-2 text-sm ${n.lida ? 'bg-campo' : 'bg-atencao/[0.08]'}`}>
-                      <div className="text-xs font-semibold text-tinta-sussurro">{fmtHora(n.created_at)}</div>
+                    <div key={n.id} className={`rounded-controle border p-2 text-apoio ${n.lida ? 'bg-campo' : 'bg-alerta-atencao'}`}>
+                      <div className="text-rotulo font-semibold text-tinta-sussurro">{fmtHora(n.created_at)}</div>
                       <div className="mt-0.5 leading-snug">{n.mensagem}</div>
                     </div>
                   ))}

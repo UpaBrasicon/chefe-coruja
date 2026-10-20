@@ -1,9 +1,13 @@
-import { BadgeCheck, Building2, CircleSlash, Clock, TriangleAlert } from 'lucide-react'
+import { BadgeCheck, Building2, Calculator, CircleSlash, Clock, TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useParams } from 'react-router-dom'
 
 import { textoFontes, type Ficha } from '@/clinico/ficha'
+import { TituloCartao, TituloPagina } from '@/components/monitor/Pagina'
+import { acharSecao } from '@/content/registry'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useSituacaoFerramenta, type SituacaoFerramenta } from '@/hooks/useFerramentaClinica'
+import { data } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
 // Casco visual das ferramentas clínicas (design_handoff/telas/20). A ressalva
@@ -36,12 +40,12 @@ export function ToolLayout({
   const suspensa = !!situacao?.unidade?.oculta
   const fonte = ficha ? textoFontes(ficha) : referencia
   const revisado = ficha ? ficha.revisadoEm : revisadoEm
+  // O azulejo do título leva o ícone da seção da Central em que a ferramenta está.
+  const { section } = useParams()
+  const icone = acharSecao(section ?? '')?.icon ?? Calculator
   return (
     <div className={cn('flex flex-col gap-[22px]', className)}>
-      <header>
-        <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">{title}</h1>
-        {description && <p className="mt-1.5 max-w-2xl text-corpo text-tinta-sussurro">{description}</p>}
-      </header>
+      <TituloPagina icone={icone} titulo={title} descricao={description} className="mb-0" />
       {ficha && situacao && <FaixaSituacao situacao={situacao} versao={ficha.versao} />}
       {semFonte && (
         <div role="note" className="flex gap-2.5 rounded-container border border-fio bg-superficie px-4 py-3 text-apoio text-tinta-apoio">
@@ -57,13 +61,13 @@ export function ToolLayout({
       ) : (
         children
       )}
-      <div role="note" className="flex gap-2.5 rounded-container bg-atencao/[0.08] px-4 py-3 text-apoio text-atencao">
+      <div role="note" className="flex gap-2.5 rounded-container bg-alerta-atencao px-4 py-3 text-apoio text-atencao">
         <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
         <p>Apoio à decisão clínica: confira antes de prescrever. Não substitui o julgamento do profissional responsável.</p>
       </div>
       {(fonte || revisado) && (
         <section aria-label="Fonte" className="rounded-container border border-fio bg-superficie px-4 py-3">
-          <h2 className="rotulo text-tinta-apoio">Fonte</h2>
+          <TituloCartao className="mb-0">Fonte</TituloCartao>
           {fonte && <p className="mt-1 text-apoio text-tinta">{fonte}</p>}
           {revisado && <p className="mt-0.5 text-rotulo text-tinta-sussurro">Revisado em {revisado}</p>}
           {ficha && <p className="mt-0.5 text-rotulo text-tinta-sussurro">Versão da regra: {ficha.versao}</p>}
@@ -73,7 +77,7 @@ export function ToolLayout({
   )
 }
 
-const dataBr = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('pt-BR') : '')
+const dataBr = (iso: string | null) => (iso ? data(iso) : '')
 
 // Camada base (aprovação do responsável técnico) e camada da unidade, sempre
 // visíveis: quem usa a ferramenta sabe se a regra já foi aprovada e o que a
@@ -89,7 +93,7 @@ function FaixaSituacao({ situacao, versao }: { situacao: SituacaoFerramenta; ver
           {situacao.decisao_registro ? ` (${situacao.decisao_registro})` : ''} em {dataBr(situacao.decidida_em)}.
         </p>
       ) : s === 'reprovada' ? (
-        <div role="alert" className="flex gap-2.5 rounded-container bg-critico/[0.08] px-4 py-3 text-apoio text-critico">
+        <div role="alert" className="flex gap-2.5 rounded-container bg-alerta-critico px-4 py-3 text-apoio text-critico">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
           <p>
             Versão {versao} reprovada pelo responsável técnico{situacao.decisao_registro ? ` (${situacao.decisao_registro})` : ''}:{' '}
@@ -97,7 +101,7 @@ function FaixaSituacao({ situacao, versao }: { situacao: SituacaoFerramenta; ver
           </p>
         </div>
       ) : (
-        <div role="note" className="flex gap-2.5 rounded-container bg-atencao/[0.08] px-4 py-3 text-apoio text-atencao">
+        <div role="note" className="flex gap-2.5 rounded-container bg-alerta-atencao px-4 py-3 text-apoio text-atencao">
           <Clock className="mt-0.5 size-4 shrink-0" aria-hidden />
           <p>
             {s === 'substituida'

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ChevronRight, Star, type LucideIcon } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 // Cartões de destino no Monitor de Cabeceira: plano em repouso, halo teal e
@@ -68,15 +69,16 @@ export function ToolCard({
         </div>
       </Link>
       {onFavoritar && (
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon-xs"
           aria-pressed={favorito}
           aria-label={favorito ? `Tirar ${label} dos favoritos` : `Favoritar ${label}`}
-          className="absolute top-2.5 right-2.5 rounded-controle-sm p-1 text-tinta-sussurro hover:text-acao"
+          className="absolute top-2.5 right-2.5"
           onClick={onFavoritar}
         >
           <Star className={cn('size-4', favorito && 'fill-acao text-acao')} />
-        </button>
+        </Button>
       )}
     </div>
   )

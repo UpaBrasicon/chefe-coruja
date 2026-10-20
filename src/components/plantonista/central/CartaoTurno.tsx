@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, Clock, LogOut, MapPin, ShieldCheck, Stethoscope, TriangleAlert, Users } from 'lucide-react'
 
+import { diaMes, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useFaixaPlantonista } from '@/hooks/useFaixaPlantonista'
@@ -19,14 +20,14 @@ import { ALVO_MIN, NIVEL_RISCO, rotuloCor, type CorRisco } from '@/domain/risco'
 const TURNO: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
 
 const COR_PILULA: Record<CorRisco, string> = {
-  vermelho: 'bg-mts-vermelho text-white',
-  laranja: 'bg-mts-laranja text-white',
+  vermelho: 'bg-mts-vermelho text-mts-texto',
+  laranja: 'bg-mts-laranja text-mts-texto',
   amarelo: 'bg-mts-amarelo text-mts-amarelo-texto',
-  verde: 'bg-mts-verde text-white',
-  azul: 'bg-mts-azul text-white',
+  verde: 'bg-mts-verde text-mts-texto',
+  azul: 'bg-mts-azul text-mts-texto',
 }
 
-const hhmm = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
+const hhmm = (d: Date) => hora(d)
 
 type Presenca = { id: string; checkin_em: string | null; checkout_em: string | null; checkin_dentro: boolean | null; checkin_justificativa: string | null }
 type Plantao = { setor_nome: string; turno: string; inicio: string; fim: string; unidade_id: string }
@@ -147,7 +148,7 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
           <Link
             to="/plantao/check-in"
             className={cn(
-              'ml-auto inline-flex items-center gap-1.5 rounded-controle-sm border bg-superficie px-[11px] py-[5px] text-apoio whitespace-nowrap',
+              'ml-auto inline-flex items-center gap-1.5 rounded-controle border bg-superficie px-[11px] py-[5px] text-apoio whitespace-nowrap',
               posPlantao ? 'border-atencao/40 text-atencao hover:border-atencao' : 'border-fio text-tinta-apoio hover:border-acao hover:text-acao',
             )}
           >
@@ -159,7 +160,7 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
           <>
             <span className="h-3.5 w-px bg-fio" aria-hidden />
             <span className="text-apoio text-tinta-apoio">
-              Próximo: {new Date(d.proximo.inicio).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })} {hhmm(new Date(d.proximo.inicio))} · {d.proximo.setor_nome} · {d.proximo.rotulo?.trim() || TURNO[d.proximo.turno] || d.proximo.turno}
+              Próximo: {diaMes(d.proximo.inicio)} {hhmm(new Date(d.proximo.inicio))} · {d.proximo.setor_nome} · {d.proximo.rotulo?.trim() || TURNO[d.proximo.turno] || d.proximo.turno}
             </span>
           </>
         )}
@@ -225,7 +226,7 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
             to="/plantao/observacao"
             className={cn(
               'inline-flex items-center gap-1.5 rounded-controle border px-3.5 py-[7px] text-apoio whitespace-nowrap',
-              nivelObs === 'critico' ? 'border-critico bg-critico font-medium text-white hover:text-white' : nivelObs === 'atencao' ? 'border-atencao/40 bg-alerta-atencao font-medium text-atencao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+              nivelObs === 'critico' ? 'border-critico bg-critico font-medium text-sobre-acao hover:text-sobre-acao' : nivelObs === 'atencao' ? 'border-atencao/40 bg-alerta-atencao font-medium text-atencao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
             )}
             title={obsMin === null ? 'Ninguém em observação no seu acesso' : `Maior permanência em observação: ${formatarDuracao(obsMin)} (janela de ${JANELA_OBSERVACAO_MIN / 60} h)`}
           >
