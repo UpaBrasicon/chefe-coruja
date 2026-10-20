@@ -7,6 +7,7 @@ import type * as React from 'react'
 import { cn } from '@/lib/utils'
 
 import { PILULA } from './useEnfermagem'
+import { Button } from '@/components/ui/button'
 
 export function Bloco({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
@@ -19,10 +20,9 @@ export function Bloco({ titulo, children }: { titulo: string; children: React.Re
 
 export function BotaoCuidados({ onClick }: { onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-controle border border-fio bg-superficie px-3 py-[7px] text-apoio whitespace-nowrap text-tinta-apoio transition-colors hover:border-acao hover:text-acao">
+    <Button variant="outline" onClick={onClick}>
       <ClipboardList className="size-3.5" aria-hidden /> Cuidados
-    </button>
+    </Button>
   )
 }
 

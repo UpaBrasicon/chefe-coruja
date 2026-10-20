@@ -11,6 +11,7 @@ import * as React from 'react'
 import type { ItemSae } from '@/clinico/enfermagem/sae'
 import { abrirProntuario } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
+import { dataHoraInput, dataIso, diaMesHora, hora as horaFmt } from '@/lib/formato'
 
 // Lista do protótipo (DISPOSITIVOS_ENF), sem "Curativo", que tem aba própria.
 // A mesma lista está na CHECK de dispositivos_enfermagem.
@@ -105,12 +106,10 @@ export function useExecutar(recarregar: () => void) {
 }
 
 // ── datas (fuso da unidade) ─────────────────────────────────────────────────
-const FUSO = 'America/Sao_Paulo'
-export const quando = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: FUSO }) : ''
-export const hora = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: FUSO })
+export const quando = (iso: string | null | undefined) => (iso ? diaMesHora(iso) : '')
+export const hora = (d: Date) => horaFmt(d)
 /** 'AAAA-MM-DD' → 'DD/MM/AAAA' */
 export const dataBr = (s: string | null | undefined) => (s ? s.split('-').reverse().join('/') : '')
-export const hojeSP = () => new Date().toLocaleDateString('sv-SE', { timeZone: FUSO })
+export const hojeSP = () => dataIso()
 /** Valor de <input type="datetime-local"> para agora, no fuso da unidade. */
-export const agoraLocal = () => new Date().toLocaleString('sv-SE', { timeZone: FUSO }).slice(0, 16).replace(' ', 'T')
+export const agoraLocal = () => dataHoraInput()

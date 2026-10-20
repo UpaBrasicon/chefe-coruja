@@ -1,4 +1,5 @@
 import type { CorRisco } from '@/domain/risco'
+import { dataIso, diaMesHora, hora as horaFmt } from '@/lib/formato'
 
 // Tipos e utilitários da triagem (fila + classificação).
 
@@ -27,11 +28,9 @@ export type Fluxograma = {
   discriminadores: Partial<Record<CorRisco, [string, string][]>>
 }
 
-const FUSO = 'America/Sao_Paulo'
-export const dataSP = (d: Date | string = new Date()) => new Date(d).toLocaleDateString('en-CA', { timeZone: FUSO })
-export const hora = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { timeZone: FUSO, hour: '2-digit', minute: '2-digit' })
-export const quando = (iso: string) =>
-  new Date(iso).toLocaleString('pt-BR', { timeZone: FUSO, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+export const dataSP = (d: Date | string = new Date()) => dataIso(d)
+export const hora = (iso: string) => horaFmt(iso)
+export const quando = (iso: string) => diaMesHora(iso)
 
 export const nomeDe = (ep: NaFila) => ep.paciente?.nome_social || ep.paciente?.nome || 'Paciente'
 export const ehFeminino = (ep: NaFila) => /^f/i.test(ep.paciente?.sexo ?? '')

@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { rotuloIdade } from '@/domain/idade'
 import type { Database } from '@/types/database'
+import { dataIso, diaMesHora, hora as horaFmt } from '@/lib/formato'
 
 type Fn = Database['public']['Functions']
 export type LeitoEnfermagem = Fn['enfermagem_leitos']['Returns'][number]
@@ -20,7 +21,7 @@ export type PassagemEnfermagem = Omit<Fn['passagens_enfermagem_do_plantao']['Ret
   }[]
 }
 
-const hoje = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+const hoje = () => dataIso()
 export const idadeDe = (nasc: string | null | undefined) => (nasc ? rotuloIdade(nasc, hoje()) : '')
 /** Adulto (14 anos completos ou mais, CLAUDE.md)? Sem data de nascimento: não se sabe (null). */
 export function ehAdulto(nasc: string | null | undefined): boolean | null {
@@ -30,10 +31,8 @@ export function ehAdulto(nasc: string | null | undefined): boolean | null {
   const anos = ha - a - (hm < m || (hm === m && hd < d) ? 1 : 0)
   return anos >= 14
 }
-export const hora = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }) : '—'
-export const quando = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'
+export const hora = (iso: string | null | undefined) => (iso ? horaFmt(iso) : '—')
+export const quando = (iso: string | null | undefined) => (iso ? diaMesHora(iso) : '—')
 export const msgErro = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
 
 /** Pílula de estado (cápsula de 12px, 600). */

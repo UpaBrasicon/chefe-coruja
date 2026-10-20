@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 
 import { dataBr, msg, quando } from './dadosCuidados'
 import { Aviso, Cartao } from './pecas'
+import { dataIso } from '@/lib/formato'
 
 // Fugulin, 12 áreas (Fase 2, tarefa 5; migration 20261031000006). Enfermeiro
 // de plantão, uma vez por dia, na internação; corrigir no mesmo dia é
@@ -44,7 +45,7 @@ export function CartaoFugulin({ internacaoId }: { internacaoId: string }) {
   })
   const vigentes = (hist.data ?? []).filter((r) => !r.retificada)
   // hoje = o dia do registro vigente mais novo é o de hoje (o servidor decide o dia; aqui só a tela)
-  const hoje = vigentes.find((r) => r.dia === new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })) ?? null
+  const hoje = vigentes.find((r) => r.dia === dataIso()) ?? null
   const total = totalFugulin(resp)
   const cat = total !== null ? categoriaFugulin(total) : null
   const respondidas = AREAS_FUGULIN.filter((a) => resp[a.id]).length

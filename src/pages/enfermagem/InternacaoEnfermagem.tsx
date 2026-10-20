@@ -85,7 +85,7 @@ export default function InternacaoEnfermagem() {
           {carregando && <div className="flex justify-center py-6"><Spinner /></div>}
           {!carregando && porSetor.size === 0 && (
             <Vazio icone={Users} titulo="Nenhum paciente internado nos setores da sua escala"
-              texto="Quem está na observação aparece no Pronto Socorro da enfermagem." />
+              texto="Quem está na observação aparece no Pronto-Socorro da enfermagem." />
           )}
           {[...porSetor.entries()].map(([nomeSetor, lista]) => (
             <Bloco key={nomeSetor} titulo={nomeSetor}>
