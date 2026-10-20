@@ -41,11 +41,17 @@ passa de 4,5:1 também sobre a faixa (`#273449`). Os valores moram em
 | Cartão | `superficie` | `#1E293B` | — |
 | Faixa e hover | `trilha` | `#273449` | — |
 | Borda / borda forte | `fio` / `fio-forte` | `#334155` / `#64748B` | borda forte 3,8 / 3,1 |
-| Texto / apoio / sussurro | `tinta` / `tinta-apoio` / `tinta-sussurro` | `#E2E8F0` / `#CBD5E1` / `#94A3B8` | 14,5 / 12,0 / 7,0 sobre o fundo |
+| Texto / apoio / sussurro | `tinta` / `tinta-apoio` / `tinta-sussurro` | `#E2E8F0` / `#CBD5E1` / `#A8B5C7` | 14,5 / 12,0 / 8,6 sobre o fundo |
 | Ação / pressionada | `acao` / `acao-pressionada` | `#67E8F9` / `#22D3EE` | 12,3 / 9,9 |
 | Texto sobre a ação | `sobre-acao` | `#0F172A` | 12,3 |
-| Crítico / atenção / conforme | `critico` / `atencao` / `conforme` | `#F87171` / `#FBBF24` / `#4ADE80` | 6,5 / 10,7 / 10,3 |
-| Observação / suprimento / pediatria | `observacao` / `suprimento` / `pediatria` | `#FB923C` / `#60A5FA` / `#C4B5FD` | 7,9 / 7,0 / 9,7 |
+| Crítico / atenção / conforme | `critico` / `atencao` / `conforme` | `#FC8F8F` / `#FCD34D` / `#4ADE80` | 8,0 / 12,4 / 10,3 |
+| Observação / suprimento / pediatria | `observacao` / `suprimento` / `pediatria` | `#FB923C` / `#7AB4FB` / `#C4B5FD` | 7,9 / 8,3 / 9,7 |
+
+Ajuste da parte 4.17 (verificação no navegador, 20/10/2026): sussurro, crítico,
+atenção e suprimento do escuro clarearam para passar de 4,5:1 também sobre os fundos
+suaves (selo, faixa de aviso). No claro, o sussurro foi a `#58677C` (5,8:1 sobre
+branco) e o verde de estado (`conforme`, `leitos`) a `#147638` (5,7:1), pelo
+mesmo motivo. O anel de foco dos campos ganhou 1 px cheio da cor de ação.
 
 A classificação de risco (`mts-*`) e a marca têm o mesmo valor nos dois temas.
 A folha impressa não lê estes tokens e sai sempre clara.
