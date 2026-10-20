@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { fmtDataHora } from '@/lib/datas'
 import { caminhoLaudo, erroLaudo, PENDENTE, SITUACAO_EXAME, type ExameDetalhe, type VersaoResultado } from '@/lib/exames'
@@ -89,7 +90,7 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
   const pendente = PENDENTE.includes(d.situacao)
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-fio bg-superficie p-3 text-apoio">
+    <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3 text-apoio">
       <span className="text-rotulo text-tinta-sussurro">
         {SITUACAO_EXAME[d.situacao]} · pedido {fmtDataHora(d.pedido_em)}{d.pedido_por ? ` por ${d.pedido_por}` : ''}
         {d.coletado_em ? ` · coletado ${fmtDataHora(d.coletado_em)}${d.coletado_por ? ` por ${d.coletado_por}` : ''}` : ''}
@@ -114,9 +115,9 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
       )}
 
       {antigas.length > 0 && (
-        <button type="button" className="self-start text-rotulo text-acao underline" onClick={() => setHistorico(!historico)}>
+        <Button type="button" variant="link" size="xs" className="min-h-0 self-start px-0 underline" onClick={() => setHistorico(!historico)}>
           {historico ? 'Esconder versões anteriores' : `Versões anteriores (${antigas.length})`}
-        </button>
+        </Button>
       )}
       {historico && antigas.map((v) => <Versao key={v.id} v={v} />)}
 
@@ -132,7 +133,7 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
         )}
       </div>
       {editandoLink && (
-        <div className="flex flex-wrap items-end gap-2 rounded-md border border-fio p-2.5">
+        <div className="flex flex-wrap items-end gap-2 rounded-controle border border-fio p-2.5">
           <label className="flex min-w-56 flex-1 flex-col gap-1 text-rotulo text-tinta-apoio">
             Link da imagem no visualizador do PACS (https://){d.situacao === 'pedido' ? ' — opcional' : ''}
             <input className="h-8 rounded-controle border border-fio bg-campo px-2 text-apoio" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://" />
@@ -163,7 +164,7 @@ function Versao({ v }: { v: VersaoResultado }) {
     window.open(url.data.signedUrl, '_blank', 'noopener')
   }
   return (
-    <div className={`flex flex-col gap-1.5 rounded-md border px-2.5 py-2 ${v.critico ? 'border-critico/50 bg-critico/[0.04]' : 'border-trilha'}${v.vigente ? '' : ' opacity-75'}`}>
+    <div className={`flex flex-col gap-1.5 rounded-controle border px-2.5 py-2 ${v.critico ? 'border-critico/50 bg-alerta-critico' : 'border-trilha'}${v.vigente ? '' : ' opacity-75'}`}>
       <span className="flex flex-wrap items-center gap-1.5 text-rotulo text-tinta-sussurro">
         <span className="font-medium text-tinta">Versão {v.versao}</span>
         <Badge variant={v.origem === 'laboratorio' ? 'info' : 'secondary'}>{v.origem === 'laboratorio' ? 'laboratório' : 'manual'}</Badge>
@@ -172,24 +173,22 @@ function Versao({ v }: { v: VersaoResultado }) {
         <span>liberado {fmtDataHora(v.liberado_em)}{v.registrado_por ? ` · ${v.registrado_por}` : ''}</span>
       </span>
       {v.itens.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[420px] text-apoio">
-            <thead className="text-left text-rotulo text-tinta-sussurro">
-              <tr><th className="py-1 pr-2 font-medium">Analito</th><th className="py-1 pr-2 font-medium">Resultado</th>
-                <th className="py-1 pr-2 font-medium">Referência</th><th className="py-1 font-medium">Marca</th></tr>
-            </thead>
-            <tbody>
-              {v.itens.map((i, k) => (
-                <tr key={k} className={`border-t border-trilha ${i.critico ? 'font-semibold text-critico' : ''}`}>
-                  <td className="py-1 pr-2">{i.analito}</td>
-                  <td className="py-1 pr-2 whitespace-nowrap">{i.valor ?? '—'}{i.unidade ? ` ${i.unidade}` : ''}</td>
-                  <td className="py-1 pr-2 text-tinta-apoio">{i.referencia ?? '—'}</td>
-                  <td className="py-1">{i.marca ?? ''}{i.critico ? ' · crítico' : ''}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table variante="referencia" className="w-full min-w-[420px] text-apoio">
+          <TableHeader className="text-left text-rotulo text-tinta-sussurro">
+            <TableRow><TableHead className="py-1 pr-2 font-medium">Analito</TableHead><TableHead className="py-1 pr-2 font-medium">Resultado</TableHead>
+              <TableHead className="py-1 pr-2 font-medium">Referência</TableHead><TableHead className="py-1 font-medium">Marca</TableHead></TableRow>
+          </TableHeader>
+          <TableBody>
+            {v.itens.map((i, k) => (
+              <TableRow key={k} className={`border-t border-trilha ${i.critico ? 'font-semibold text-critico' : ''}`}>
+                <TableCell className="py-1 pr-2">{i.analito}</TableCell>
+                <TableCell className="py-1 pr-2 whitespace-nowrap">{i.valor ?? '—'}{i.unidade ? ` ${i.unidade}` : ''}</TableCell>
+                <TableCell className="py-1 pr-2 text-tinta-apoio">{i.referencia ?? '—'}</TableCell>
+                <TableCell className="py-1">{i.marca ?? ''}{i.critico ? ' · crítico' : ''}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
       {v.texto && <p className="whitespace-pre-wrap text-tinta">{v.texto}</p>}
       {v.tem_pdf && (
@@ -237,7 +236,7 @@ function RegistrarResultado({ exameId, retificar, aceitaFoto, aoFechar, aoGravar
   }
   const pronto = (texto.trim().length > 0 || !!arquivo) && (!retificar || motivo.trim().length >= MINIMO_MOTIVO)
   return (
-    <div className="flex flex-col gap-1.5 rounded-md border border-fio p-2.5">
+    <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-2.5">
       <Label htmlFor={`res-texto-${exameId}`}>{retificar ? 'Retificar o resultado (fica como versão nova)' : 'Resultado (manual)'}</Label>
       <Textarea id={`res-texto-${exameId}`} rows={3} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Como veio do laboratório" />
       <label className="flex flex-wrap items-center gap-2 text-rotulo text-tinta-apoio">

@@ -9,6 +9,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { dataPura, hora } from '@/lib/formato'
 import { PAPEL_LABEL, UFS } from '@/lib/constants'
 import {
   AVISOS, CONSELHOS, TERMO_USO_VERSAO, conselhoDoPapel, cpfValido, exigeRegistro, formatarDiaHora,
@@ -19,6 +20,10 @@ import type { Database, Papel } from '@/types/database'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { useTurnstile } from '@/components/seguranca/Turnstile'
 import { Input } from '@/components/ui/input'
+import { Aviso } from '@/components/ui/aviso'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { TituloEntrada } from '@/components/entrada/LadoMarca'
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
@@ -49,7 +54,7 @@ type Recado = { tipo: 'erro' | 'prazo' | 'ok'; titulo: string; texto: string; pe
 const MARCA_ENTRADA = 'cc-entrou'
 
 function agora() {
-  return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(new Date())
+  return hora(new Date())
 }
 
 // ── peças visuais ───────────────────────────────────────────────────────────
@@ -59,22 +64,22 @@ function Passo({ n, titulo, texto, atual, feito }: { n: number; titulo: string; 
     <li
       className={cn(
         'grid grid-cols-[28px_minmax(0,1fr)] items-start gap-[13px] rounded-container border px-3.5 py-3 transition-colors duration-200',
-        atual ? 'border-[#5EEAD433] bg-white/[0.08]' : 'border-transparent',
+        atual ? 'border-marca-clara/20 bg-sobre-veu/8' : 'border-transparent',
       )}
       aria-current={atual ? 'step' : undefined}
     >
       <span
         aria-hidden
         className={cn(
-          'grid size-7 place-items-center rounded-controle-sm text-apoio font-semibold',
-          feito ? 'bg-leitos text-white' : atual ? 'bg-[#5EEAD4] text-[#0B3D3A]' : 'bg-white/[0.12] text-[#B7DED8]',
+          'grid size-7 place-items-center rounded-controle text-apoio font-semibold',
+          feito ? 'bg-leitos text-sobre-acao' : atual ? 'bg-marca-clara text-marca-escura' : 'bg-sobre-veu/12 text-marca-texto-claro',
         )}
       >
         {feito ? <Check className="size-3.5" /> : n}
       </span>
       <span>
-        <b className="block text-corpo font-semibold tracking-[-0.01em] text-white">{titulo}</b>
-        <span className="text-apoio leading-normal text-[#B7DED8]">{texto}</span>
+        <b className="block text-corpo font-semibold tracking-[-0.01em] text-sobre-veu">{titulo}</b>
+        <span className="text-apoio leading-normal text-marca-texto-claro">{texto}</span>
       </span>
     </li>
   )
@@ -92,32 +97,21 @@ function Campo({ id, rotulo, ajuda, children, className }: { id?: string; rotulo
 
 const campoCls = 'min-h-11 bg-superficie px-[13px] text-corpo md:text-corpo'
 const codigoCls = 'tabular font-medium tracking-[0.14em] uppercase'
-const selectCls =
-  'min-h-11 w-full rounded-controle border border-fio bg-superficie px-2.5 text-corpo text-tinta outline-none focus-visible:border-marca'
+const selectCls = 'min-h-11 w-full bg-superficie px-2.5 text-corpo outline-none focus-visible:border-marca'
+
+const TOM_RECADO = { erro: 'critico', prazo: 'atencao', ok: 'marca' } as const
 
 function RecadoCaixa({ recado, onPedirNovo, pedindo }: { recado: Recado; onPedirNovo: () => void; pedindo: boolean }) {
   const Icone = recado.tipo === 'erro' ? AlertTriangle : recado.tipo === 'prazo' ? Clock : Check
   return (
-    <div
-      role="alert"
-      className={cn(
-        'mt-3.5 grid animate-cc-sobe grid-cols-[20px_minmax(0,1fr)] items-start gap-[11px] rounded-container border px-[15px] py-[13px] text-apoio leading-normal',
-        recado.tipo === 'erro' && 'border-[#FECACA] bg-[#FEF2F2] text-[#7F1D1D]',
-        recado.tipo === 'prazo' && 'border-[#FDE68A] bg-[#FFFBEB] text-[#7C2D12]',
-        recado.tipo === 'ok' && 'border-[#B7DED8] bg-[#ECF7F5] text-[#14453F]',
+    <Aviso tom={TOM_RECADO[recado.tipo]} icone={Icone} anunciar titulo={recado.titulo} className="mt-3.5 animate-cc-sobe leading-normal">
+      <span>{recado.texto}</span>
+      {recado.pedirNovo && (
+        <Button type="button" variant="outline" className="mt-2.5 flex min-h-10 self-start px-3.5" disabled={pedindo} onClick={onPedirNovo}>
+          {pedindo ? 'Pedindo…' : 'Pedir novo convite'}
+        </Button>
       )}
-    >
-      <Icone className="mt-px size-[18px]" aria-hidden />
-      <span>
-        <b className="mb-0.5 block text-controle font-semibold">{recado.titulo}</b>
-        {recado.texto}
-        {recado.pedirNovo && (
-          <Button type="button" variant="outline" className="mt-2.5 flex min-h-10 px-3.5" disabled={pedindo} onClick={onPedirNovo}>
-            {pedindo ? 'Pedindo…' : 'Pedir novo convite'}
-          </Button>
-        )}
-      </span>
-    </div>
+    </Aviso>
   )
 }
 
@@ -145,16 +139,16 @@ function CartaoVinculo({ vinculo }: { vinculo: Vinculo }) {
       ['Contrato', `${vinculo.codigo} · ${d.organizacao}`],
       ['Escopo', d.unidades === 1 ? '1 unidade' : `${d.unidades} unidades`],
       ['Papel', PAPEL_LABEL[d.papel]],
-      ['Vigência', d.vigente_ate ? `até ${new Date(`${d.vigente_ate}T12:00:00`).toLocaleDateString('pt-BR')}` : 'sem prazo'],
+      ['Vigência', d.vigente_ate ? `até ${dataPura(d.vigente_ate)}` : 'sem prazo'],
       ['Responsável', 'Administração da rede'],
     ]
     nota =
       'A conta nasce agora; o vínculo com as unidades é liberado pela administração da rede. Gestão não vê nome de paciente fora da própria unidade, e a administração da rede não vê em nenhuma.'
   }
   return (
-    <div className="mt-[18px] rounded-menu border border-[#B7DED8] bg-[#ECF7F5] px-[17px] py-4">
+    <div className="mt-[18px] rounded-container border border-acao/30 bg-alerta-marca px-[17px] py-4">
       <div className="mb-3 flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-capsula bg-leitos px-[9px] py-1 text-rotulo font-medium text-white">
+        <span className="inline-flex items-center gap-1.5 rounded-capsula bg-leitos px-[9px] py-1 text-rotulo font-medium text-sobre-acao">
           <Check className="size-3" aria-hidden />
           {vinculo.tipo === 'convite' ? 'Convite conferido' : 'Contrato conferido'}
         </span>
@@ -175,7 +169,7 @@ function CartaoVinculo({ vinculo }: { vinculo: Vinculo }) {
 function Regra({ ok, children }: { ok: boolean; children: React.ReactNode }) {
   const Icone = ok ? Check : X
   return (
-    <li className={cn('grid grid-cols-[15px_minmax(0,1fr)] items-center gap-2 text-rotulo', ok ? 'text-[#14532D]' : 'text-tinta-sussurro')}>
+    <li className={cn('grid grid-cols-[15px_minmax(0,1fr)] items-center gap-2 text-rotulo', ok ? 'text-conforme' : 'text-tinta-sussurro')}>
       <Icone className="size-[13px]" aria-hidden />
       {children}
       <span className="sr-only">{ok ? '(cumprida)' : '(pendente)'}</span>
@@ -194,7 +188,7 @@ function Chave({ ligado, onChange, rotulo }: { ligado: boolean; onChange: (v: bo
         className="peer absolute inset-0 z-10 m-0 size-full cursor-pointer opacity-0"
       />
       <span className="pointer-events-none block h-6 w-[42px] rounded-capsula bg-fio-forte transition-colors duration-200 peer-checked:bg-acao peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-marca" />
-      <span className="pointer-events-none absolute top-[3px] left-[3px] size-[18px] rounded-full bg-white shadow-[0_1px_2px_rgba(15,23,42,0.25)] transition-transform duration-200 peer-checked:translate-x-[18px]" />
+      <span className="pointer-events-none absolute top-[3px] left-[3px] size-[18px] rounded-capsula bg-superficie shadow-[0_1px_2px_rgba(15,23,42,0.25)] transition-transform duration-200 peer-checked:translate-x-[18px]" />
     </span>
   )
 }
@@ -212,19 +206,19 @@ function Abas<T extends string>({ valor, opcoes, onChange, rotulo }: { valor: T;
   return (
     <div role="tablist" aria-label={rotulo} className="grid grid-cols-2 gap-1 rounded-container bg-trilha p-1">
       {opcoes.map(([v, texto]) => (
-        <button
+        <Button
           key={v}
-          type="button"
+          variant="ghost"
           role="tab"
           aria-selected={valor === v}
           onClick={() => onChange(v)}
           className={cn(
-            'rounded-controle-sm px-3 py-[9px] text-controle font-medium transition-colors',
-            valor === v ? 'bg-superficie text-acao-pressionada shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-tinta-apoio hover:text-acao',
+            'min-h-0 px-3 py-[9px] text-controle font-medium',
+            valor === v ? 'bg-superficie text-acao-pressionada shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:text-acao-pressionada' : 'text-tinta-apoio hover:text-acao',
           )}
         >
           {texto}
-        </button>
+        </Button>
       ))}
     </div>
   )
@@ -590,21 +584,22 @@ export function Cadastro() {
   return (
     <div className="grid min-h-dvh bg-campo lg:grid-cols-[46%_minmax(0,1fr)]">
       {/* ── coluna verde: onde a pessoa está ── */}
-      <aside className="relative flex flex-col justify-between gap-10 overflow-hidden bg-acao-pressionada px-5 pt-7 pb-8 text-white sm:px-7 lg:px-12 lg:pt-9 lg:pb-10">
+      <aside className="relative flex flex-col justify-between gap-10 overflow-hidden bg-veu px-5 pt-7 pb-8 text-sobre-veu sm:px-7 lg:px-12 lg:pt-9 lg:pb-10">
         <span aria-hidden className="pointer-events-none absolute -top-[50px] -right-[180px] h-[92px] w-[620px] -rotate-[38deg] rounded-capsula bg-marca opacity-90" />
-        <span aria-hidden className="pointer-events-none absolute top-40 -right-[90px] h-[92px] w-[480px] -rotate-[38deg] rounded-capsula bg-[#5EEAD426]" />
-        <span aria-hidden className="pointer-events-none absolute -bottom-[120px] -left-[110px] size-[300px] rounded-full bg-[#5EEAD414]" />
+        <span aria-hidden className="pointer-events-none absolute top-40 -right-[90px] h-[92px] w-[480px] -rotate-[38deg] rounded-capsula bg-marca-clara/15" />
+        <span aria-hidden className="pointer-events-none absolute -bottom-[120px] -left-[110px] size-[300px] rounded-capsula bg-marca-clara/8" />
 
-        <Link to="/" className="relative z-10 flex items-center gap-2.5 text-white">
-          <span className="grid size-8 place-items-center rounded-controle bg-white/[0.12]"><Bird className="size-[18px]" aria-hidden /></span>
+        <Link to="/" className="relative z-10 flex items-center gap-2.5 text-sobre-veu hover:text-sobre-veu">
+          <span className="grid size-8 place-items-center rounded-controle bg-sobre-veu/12"><Bird className="size-[18px]" aria-hidden /></span>
           <span className="text-secao font-semibold tracking-[-0.02em]">Chefe Coruja</span>
         </Link>
 
         <div className="relative z-10">
-          <h1 className="mb-3.5 max-w-[16ch] text-[30px] leading-[1.06] font-semibold tracking-[-0.032em] lg:text-[40px]">
-            O vínculo vem <span className="text-[#5EEAD4]">antes do primeiro leito</span>
+          {/* padrao-ok: título da tela de marca (40 px do desenho da entrada, fora da escala de tela) */}
+          <h1 className="mb-3.5 max-w-[16ch] text-numeral-ok leading-[1.06] font-semibold tracking-[-0.032em] lg:text-[40px]">
+            O vínculo vem <span className="text-marca-clara">antes do primeiro leito</span>
           </h1>
-          <p className="max-w-[40ch] text-base text-[#B7DED8]">
+          <p className="max-w-[40ch] text-corpo text-marca-texto-claro">
             Enquanto a unidade não confirma quem você é e em que papel entra, a plataforma não mostra paciente.
           </p>
           <ol className="mt-[34px] flex flex-col gap-2.5">
@@ -613,7 +608,7 @@ export function Cadastro() {
           </ol>
         </div>
 
-        <span className="relative z-10 text-apoio text-[#8FC4BD]">Sem convite ou contrato não há conta.</span>
+        <span className="relative z-10 text-apoio text-marca-texto-claro/80">Sem convite ou contrato não há conta.</span>
       </aside>
 
       {/* ── coluna do formulário ── */}
@@ -627,9 +622,9 @@ export function Cadastro() {
           {etapa === 1 && (
             <section>
               <p className="rotulo mb-2">Passo 1 de 2 · obrigatório</p>
-              <h2 className="mb-1.5 text-[26px] leading-tight font-semibold tracking-[-0.026em] text-acao-pressionada">
+              <TituloEntrada className="leading-tight">
                 {logado ? 'Aceitar um convite' : 'Confirmar o vínculo'}
-              </h2>
+              </TituloEntrada>
               <p className="mb-[22px] text-corpo text-tinta-apoio">
                 {logado
                   ? `Você já tem conta, ${perfil?.nome_completo.split(' ')[0]}. O convite acrescenta um vínculo a ela.`
@@ -668,7 +663,7 @@ export function Cadastro() {
                       onChange={(e) => { setCodigo(mascaraConvite(e.target.value)); setCodigoInvalido(false) }}
                     />
                   </Campo>
-                  <Button type="submit" size="bloco" className="mt-1.5 bg-acao-pressionada hover:bg-[#0B3D3A]" disabled={conferindo}>
+                  <Button type="submit" size="bloco" className="mt-1.5" disabled={conferindo}>
                     {conferindo ? 'Conferindo…' : 'Conferir convite'}
                   </Button>
                 </form>
@@ -686,7 +681,7 @@ export function Cadastro() {
                     <Input id="ct-num" className={cn(campoCls, codigoCls)} placeholder="CT-2026-000" maxLength={11} aria-describedby="ct-ajuda"
                       value={ctNum} aria-invalid={ctInvalido} onChange={(e) => { setCtNum(mascaraContrato(e.target.value)); setCtInvalido(false) }} />
                   </Campo>
-                  <Button type="submit" size="bloco" className="mt-1.5 bg-acao-pressionada hover:bg-[#0B3D3A]" disabled={conferindo}>
+                  <Button type="submit" size="bloco" className="mt-1.5" disabled={conferindo}>
                     {conferindo ? 'Conferindo…' : 'Conferir contrato'}
                   </Button>
                 </form>
@@ -742,14 +737,14 @@ export function Cadastro() {
                         ajuda={<span className="text-rotulo text-tinta-sussurro">A coordenação confere o registro no conselho antes do primeiro plantão.</span>}
                       >
                         <div className="grid grid-cols-[96px_minmax(0,1fr)_84px] gap-3">
-                          <select aria-label="Conselho" className={selectCls} value={conselho} onChange={(e) => setConselho(e.target.value as Conselho)}>
+                          <CampoSelecao aria-label="Conselho" className={selectCls} value={conselho} onChange={(e) => setConselho(e.target.value as Conselho)}>
                             {CONSELHOS.map((c) => <option key={c}>{c}</option>)}
-                          </select>
+                          </CampoSelecao>
                           <Input id="id-registro" inputMode="numeric" placeholder="Número" aria-label="Número do registro" className={cn(campoCls, 'tabular')}
                             value={registro} onChange={(e) => setRegistro(e.target.value.replace(/[^0-9A-Za-z.-]/g, '').slice(0, 15))} />
-                          <select aria-label="UF do registro" className={selectCls} value={uf} onChange={(e) => setUf(e.target.value)}>
+                          <CampoSelecao aria-label="UF do registro" className={selectCls} value={uf} onChange={(e) => setUf(e.target.value)}>
                             {UFS.map((u) => <option key={u}>{u}</option>)}
-                          </select>
+                          </CampoSelecao>
                         </div>
                       </Campo>
                     )}
@@ -784,23 +779,21 @@ export function Cadastro() {
                       <input id="id-termo" type="checkbox" className="mt-0.5 size-4 accent-marca" checked={termo} onChange={(e) => setTermo(e.target.checked)} />
                       <span>
                         Li e aceito o{' '}
-                        <button type="button" className="font-medium text-acao hover:text-acao-pressionada" onClick={() => setTermoAberto(true)}>
+                        <Button variant="link" className="min-h-0 p-0 align-baseline font-medium" onClick={() => setTermoAberto(true)}>
                           termo de uso e sigilo
-                        </button>
+                        </Button>
                         . Entendo que o que eu vejo de paciente não sai da unidade, que meus acessos ficam registrados com data e hora, e que meus dados são tratados para registro de plantão e auditoria, conforme a LGPD.
                       </span>
                     </label>
 
-                    {erroEnvio && (
-                      <p role="alert" className="rounded-controle border border-[#FECACA] bg-[#FEF2F2] px-3 py-2.5 text-apoio text-[#7F1D1D]">{erroEnvio}</p>
-                    )}
+                    <MensagemErro texto={erroEnvio} />
 
                     <Button
                       type="submit"
                       size="bloco"
                       aria-disabled={!pronto}
                       disabled={enviando}
-                      className="mt-1.5 bg-acao-pressionada hover:bg-[#0B3D3A] aria-disabled:bg-fio-forte aria-disabled:text-tinta-apoio aria-disabled:hover:bg-fio-forte"
+                      className="mt-1.5 aria-disabled:bg-fio-forte aria-disabled:text-tinta-apoio aria-disabled:hover:bg-fio-forte"
                     >
                       {enviando ? 'Aceitando…' : logado ? 'Aceitar convite' : 'Continuar para os avisos'}
                       {!enviando && <ArrowRight className="size-4" aria-hidden />}
@@ -822,9 +815,9 @@ export function Cadastro() {
           {etapa === 2 && (
             <section className="animate-cc-sobe">
               <p className="rotulo mb-2">Passo 2 de 2 · pode ficar para depois</p>
-              <h2 ref={refTitulo2} tabIndex={-1} className="mb-1.5 text-[26px] leading-tight font-semibold tracking-[-0.026em] text-acao-pressionada outline-none">
+              <TituloEntrada ref={refTitulo2} tabIndex={-1} className="leading-tight outline-none">
                 O que vira aviso
-              </h2>
+              </TituloEntrada>
               <p className="mb-[22px] text-corpo text-tinta-apoio">
                 {logado
                   ? `Vínculo concluído às ${concluidoEm}. `
@@ -841,7 +834,7 @@ export function Cadastro() {
                       key={a.chave}
                       className="grid cursor-pointer grid-cols-[30px_minmax(0,1fr)_auto] items-center gap-3 rounded-container border border-fio bg-superficie px-[13px] py-[11px] transition-colors hover:border-fio-forte"
                     >
-                      <span aria-hidden className={cn('grid size-[30px] place-items-center rounded-controle-sm text-white', a.cor)}>
+                      <span aria-hidden className={cn('grid size-[30px] place-items-center rounded-controle text-sobre-acao', a.cor)}>
                         <Icone className="size-[15px]" />
                       </span>
                       <span>
@@ -874,12 +867,12 @@ export function Cadastro() {
 
               {!logado && turnstile.widget}
               {erroAvisos && (
-                <div role="alert" className="mb-3 rounded-controle border border-[#FECACA] bg-[#FEF2F2] px-3 py-2.5 text-apoio text-[#7F1D1D]">
+                <div role="alert" className="mb-3 rounded-controle border border-critico/30 bg-alerta-critico px-3 py-2.5 text-apoio text-critico">
                   {erroAvisos}
                   {!logado && (
-                    <button type="button" onClick={voltarAoPasso1} className="mt-1.5 block font-medium text-acao hover:text-acao-pressionada">
+                    <Button variant="link" onClick={voltarAoPasso1} className="mt-1.5 flex min-h-0 w-fit p-0 font-medium">
                       Voltar ao passo 1 e corrigir
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -888,7 +881,7 @@ export function Cadastro() {
                 <Button type="button" variant="outline" size="bloco" onClick={() => (logado ? entrar() : void criarConta(false))} disabled={salvandoAvisos}>
                   Configurar depois
                 </Button>
-                <Button type="button" size="bloco" className="bg-acao-pressionada hover:bg-[#0B3D3A]" onClick={() => void (logado ? salvarAvisosLogado() : criarConta(true))} disabled={salvandoAvisos}>
+                <Button type="button" size="bloco" onClick={() => void (logado ? salvarAvisosLogado() : criarConta(true))} disabled={salvandoAvisos}>
                   {salvandoAvisos ? 'Concluindo…' : logado ? 'Entrar no plantão' : 'Concluir acesso'}
                   {!salvandoAvisos && <ArrowRight className="size-4" aria-hidden />}
                 </Button>
@@ -905,12 +898,12 @@ export function Cadastro() {
               <span className="mb-4 grid size-11 place-items-center rounded-controle bg-marca/10 text-acao" aria-hidden>
                 <MailCheck className="size-5" />
               </span>
-              <h2 className="mb-1.5 text-[26px] leading-tight font-semibold tracking-[-0.026em] text-acao-pressionada">Falta confirmar o e-mail</h2>
+              <TituloEntrada className="leading-tight">Falta confirmar o e-mail</TituloEntrada>
               <p className="mb-[22px] text-corpo text-tinta-apoio">
                 Mandamos um link para <b className="font-medium text-tinta">{email.trim().toLowerCase()}</b>. Depois de confirmar, entre com esse e-mail e a senha que você criou.
                 {vinculo?.tipo === 'contrato' && ' O vínculo com as unidades aguarda a administração da rede.'}
               </p>
-              <Link to="/login" className={cn(buttonVariants({ size: 'bloco' }), 'bg-acao-pressionada hover:bg-[#0B3D3A]')}>
+              <Link to="/login" className={cn(buttonVariants({ size: 'bloco' }), 'hover:text-sobre-acao')}>
                 Ir para o Entrar
                 <ArrowRight className="size-4" aria-hidden />
               </Link>

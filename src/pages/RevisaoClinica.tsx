@@ -7,7 +7,8 @@ import { ROTA_DA_FICHA } from '@/clinico/indice'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { data as dataBr } from '@/lib/formato'
+import { Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -74,7 +75,7 @@ function FilaRT() {
   return (
     <div className="flex flex-col gap-3">
       {aviso && (
-        <p role="status" className={aviso.ok ? 'rounded-lg border border-fio bg-superficie p-3 text-sm text-tinta' : 'rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico'}>
+        <p role="status" className={aviso.ok ? 'rounded-controle border border-fio bg-superficie p-3 text-apoio text-tinta' : 'rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico'}>
           {aviso.texto}
         </p>
       )}
@@ -86,7 +87,7 @@ function FilaRT() {
         return (
           <Card key={chave}>
             <CardHeader>
-              <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+              <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
                 {v.titulo}
                 <Badge variant="secondary">versão {v.versao}</Badge>
                 <Badge variant="outline">{PUBLICO[v.publico] ?? v.publico}</Badge>
@@ -142,7 +143,7 @@ function grupoDe(l: LinhaPanorama): Grupo {
   if (l.status_ultima === 'reprovada') return 'correcao'
   return 'conferida'
 }
-const data = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '')
+const data = (iso: string | null) => (iso ? dataBr(iso) : '')
 const semAcento = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 function Panorama() {
@@ -175,11 +176,9 @@ function Panorama() {
             <Input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Ferramenta, escore, questão…" className="pl-8" />
           </span>
         </label>
-        <button type="button" aria-pressed={soPendentes} onClick={() => setSoPendentes((v) => !v)}
-          className={cn('flex items-center gap-1.5 rounded-capsula border px-[13px] py-1.5 text-apoio',
-            soPendentes ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+        <Chip ativo={soPendentes} onClick={() => setSoPendentes((v) => !v)}>
           <AlertTriangle className="size-3.5" aria-hidden /> Só pendentes
-        </button>
+        </Chip>
       </div>
       <div className="flex flex-wrap gap-x-4 gap-y-1 border-b border-trilha bg-campo px-5 py-2.5 text-apoio text-tinta-sussurro">
         <span>{conta('conferida')} conferidas · {conta('aguardando')} aguardando · {conta('correcao')} com correção{conta('sem_versao') ? ` · ${conta('sem_versao')} sem versão` : ''}</span>
@@ -208,9 +207,9 @@ function Panorama() {
 
 function LinhaRevisao({ l, grupo }: { l: LinhaPanorama; grupo: Grupo }) {
   const selo = {
-    conferida: ['Conferida', 'bg-conforme/[0.08] text-conforme'],
+    conferida: ['Conferida', 'bg-alerta-conforme text-conforme'],
     aguardando: ['Aguardando', 'bg-alerta-atencao text-atencao'],
-    correcao: ['Correção apontada', 'bg-critico/[0.08] text-critico'],
+    correcao: ['Correção apontada', 'bg-alerta-critico text-critico'],
     sem_versao: ['Sem versão', 'bg-trilha text-tinta-sussurro'],
   }[grupo]
   const rota = ROTA_DA_FICHA[l.ferramenta_id]

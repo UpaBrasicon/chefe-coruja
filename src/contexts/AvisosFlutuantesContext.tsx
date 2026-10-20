@@ -3,6 +3,8 @@ import type { LucideIcon } from 'lucide-react'
 import { ChevronRight, Megaphone } from 'lucide-react'
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 
+import { Button } from '@/components/ui/button'
+
 // A pilha de avisos (P/index.html .cc-toast-*): entra sob a topbar, do lado
 // do sino, empilha do mais novo para o mais antigo e se recolhe sozinha.
 // Nada aqui bloqueia a tela — é sinal, não interrupção. Cada item entra com
@@ -79,7 +81,7 @@ export function AvisosFlutuantesProvider({ children }: { children: ReactNode }) 
                 (t.saindo ? 'animate-cc-toast-sai' : 'animate-cc-toast')
               }
             >
-              <span className="grid size-7 shrink-0 place-items-center rounded-controle-sm" style={{ color: cor, background: `color-mix(in oklab, ${cor} 8%, transparent)` }}>
+              <span className="grid size-7 shrink-0 place-items-center rounded-controle" style={{ color: cor, background: `color-mix(in oklab, ${cor} 8%, transparent)` }}>
                 <Icone className="size-[15px]" aria-hidden />
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
@@ -92,14 +94,16 @@ export function AvisosFlutuantesProvider({ children }: { children: ReactNode }) 
                 <span className="text-apoio leading-[1.35] font-semibold tracking-[-0.005em] text-tinta">{t.titulo}</span>
                 {t.texto && <span className="text-rotulo leading-[1.4] text-tinta-sussurro">{t.texto}</span>}
               </div>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-xs"
                 onClick={() => fechar(t.id)}
                 aria-label="Dispensar aviso"
-                className="-mt-0.5 -mr-[3px] grid size-4 shrink-0 place-items-center text-tinta-sussurro hover:text-acao"
+                className="-mt-0.5 -mr-[3px] size-4"
               >
                 <ChevronRight className="size-[13px]" aria-hidden />
-              </button>
+              </Button>
             </div>
           )
         })}

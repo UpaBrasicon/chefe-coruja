@@ -7,6 +7,8 @@ import { lerTentativasSegundoFator, MAX_TENTATIVAS_SEGUNDO_FATOR, useSegundoFato
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
+import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { data as dataBr, dataHoraCarimbo, hora } from '@/lib/formato'
 import { SecaoCodigosRecuperacao, UsarCodigoRecuperacao } from '@/components/seguranca/CodigosRecuperacao'
 
 // Segundo fator: código por EMAIL (padrão) + dispositivo confiável, e TOTP de
@@ -60,7 +62,7 @@ function CampoCodigo({ valor, onChange, erro }: { valor: string; onChange: (v: s
         value={valor}
         onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
         aria-invalid={!!erro}
-        className="min-h-[54px] rounded-controle border border-fio bg-campo text-center text-[24px] font-semibold tracking-[0.3em] text-tinta tabular outline-none focus-visible:border-acao"
+        className="min-h-[54px] rounded-controle border border-fio bg-campo text-center text-titulo font-semibold tracking-[0.3em] text-tinta tabular outline-none focus-visible:border-acao"
       />
       {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
     </div>
@@ -82,7 +84,7 @@ export function CadastroSegundoFator({ onPronto }: { onPronto: () => void }) {
     for (const f of fatores?.all ?? []) {
       if (f.factor_type === 'totp' && f.status !== 'verified') await supabase.auth.mfa.unenroll({ factorId: f.id })
     }
-    const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: `Autenticador ${new Date().toLocaleDateString('pt-BR')}` })
+    const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: `Autenticador ${dataBr(new Date())}` })
     setOcupado(false)
     if (error || !data) {
       setErro(error?.message ?? 'Não foi possível iniciar o cadastro.')
@@ -129,6 +131,7 @@ export function CadastroSegundoFator({ onPronto }: { onPronto: () => void }) {
         <li>Digite o código de 6 dígitos que o aplicativo mostrar.</li>
       </ol>
       <div className="flex flex-wrap items-center gap-4">
+        {/* padrao-ok: o QR code precisa de fundo branco nos dois temas para a câmera ler */}
         <img src={cadastro.qr} alt="QR code para o aplicativo autenticador" className="size-44 rounded-controle border border-fio bg-white p-2" />
         <div className="min-w-0 flex-1">
           <p className="rotulo text-tinta-sussurro">Chave para digitar à mão</p>
@@ -145,7 +148,7 @@ export function CadastroSegundoFator({ onPronto }: { onPronto: () => void }) {
   )
 }
 
-const horaCurta = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+const horaCurta = (d: Date) => hora(d)
 
 function falta(ms: number) {
   const s = Math.max(0, Math.ceil(ms / 1000))
@@ -271,7 +274,7 @@ export function ConfirmarSegundoFator({
           }}
           aria-invalid={!!erro}
           aria-describedby="codigo-2fa-ajuda"
-          className="min-h-[54px] rounded-controle border border-fio bg-campo text-center indent-[0.26em] text-[26px] font-semibold tracking-[0.26em] text-tinta tabular outline-none focus-visible:border-acao disabled:bg-trilha disabled:text-tinta-sussurro"
+          className="min-h-[54px] rounded-controle border border-fio bg-campo text-center indent-[0.26em] text-numeral-compacto font-semibold tracking-[0.26em] text-tinta tabular outline-none focus-visible:border-acao disabled:bg-trilha disabled:text-tinta-sussurro"
         />
         <span id="codigo-2fa-ajuda" className="text-rotulo text-tinta-sussurro">
           {bloqueado && bloqueadoAte
@@ -280,14 +283,10 @@ export function ConfirmarSegundoFator({
         </span>
         {erro && <p role="alert" className="mt-1 text-controle text-pretty text-critico">{erro}</p>}
       </div>
-      <button
-        type="submit"
-        disabled={ocupado || bloqueado}
-        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-controle bg-acao-pressionada text-corpo font-medium text-sobre-acao hover:bg-acao disabled:opacity-60"
-      >
+      <Button type="submit" size="bloco" className="gap-2 bg-acao-pressionada text-corpo hover:bg-acao disabled:opacity-60" disabled={ocupado || bloqueado}>
         {ocupado ? <Spinner /> : <ShieldCheck className="size-4" aria-hidden />}
         {ocupado ? 'Conferindo…' : rotulo}
-      </button>
+      </Button>
     </form>
   )
 }
@@ -397,22 +396,19 @@ export function ConfirmarSegundoFatorEmail({ onPronto, permitirConfiar = true }:
         }}
         erro={erro}
       />
-      <button
-        type="submit"
-        disabled={ocupado || codigo.length !== 6}
-        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-controle bg-acao-pressionada text-corpo font-medium text-sobre-acao hover:bg-acao disabled:opacity-60"
-      >
+      <Button type="submit" size="bloco" className="gap-2 bg-acao-pressionada text-corpo hover:bg-acao disabled:opacity-60" disabled={ocupado || codigo.length !== 6}>
         {ocupado ? <Spinner /> : <ShieldCheck className="size-4" aria-hidden />}
         {ocupado ? 'Conferindo…' : 'Confirmar'}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => void enviar()}
         disabled={ocupado || faltaReenvio > 0}
-        className="text-apoio text-tinta-sussurro hover:text-acao disabled:opacity-60"
+        className="disabled:opacity-60"
       >
         {faltaReenvio > 0 ? `Reenviar código em ${faltaReenvio}s` : 'Reenviar código'}
-      </button>
+      </Button>
     </form>
   )
 }
@@ -459,19 +455,16 @@ export function PortaoSegundoFator({ fatorId, onSair }: { fatorId: string | null
   return (
     <div className="flex min-h-dvh items-center justify-center bg-campo p-4">
       <section className="w-full max-w-[460px] rounded-cartao border border-fio bg-superficie p-6 shadow-repouso">
-        <span className="grid size-[42px] place-items-center rounded-controle bg-acao/10 text-acao" aria-hidden>
-          <ShieldCheck className="size-5" />
-        </span>
-        <h1 className="mt-4 text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">
-          Confirme que é você
-        </h1>
-        <p className="mt-1.5 mb-5 text-apoio text-tinta-sussurro">
-          {metodo === 'email'
+        <TituloPagina
+          icone={ShieldCheck}
+          titulo="Confirme que é você"
+          className="mb-5"
+          descricao={metodo === 'email'
             ? 'Este é um login novo neste dispositivo. Confirme com o código enviado ao seu email.'
             : metodo === 'totp'
               ? 'Digite o código do seu aplicativo autenticador.'
               : 'Sem email e sem autenticador: use um código de recuperação.'}
-        </p>
+        />
         {metodo === 'email'
           ? <ConfirmarSegundoFatorEmail onPronto={pronto} />
           : metodo === 'totp'
@@ -479,27 +472,27 @@ export function PortaoSegundoFator({ fatorId, onSair }: { fatorId: string | null
             : <UsarCodigoRecuperacao onPronto={pronto} />}
         <div className="mt-4 flex flex-col items-start gap-2">
           {fatorId && metodo !== 'totp' && (
-            <button type="button" onClick={() => setMetodo('totp')} className="text-apoio text-tinta-sussurro hover:text-acao">
+            <Button type="button" variant="ghost" onClick={() => setMetodo('totp')} className="min-h-0 p-0">
               Estou sem e-mail: quero ir pelo autenticador
-            </button>
+            </Button>
           )}
           {metodo !== 'recuperacao' && (
-            <button type="button" onClick={() => setMetodo('recuperacao')} className="text-apoio text-tinta-sussurro hover:text-acao">
+            <Button type="button" variant="ghost" onClick={() => setMetodo('recuperacao')} className="min-h-0 p-0">
               Usar um código de recuperação
-            </button>
+            </Button>
           )}
           {metodo !== 'email' && (
-            <button type="button" onClick={() => setMetodo('email')} className="text-apoio text-tinta-sussurro hover:text-acao">
+            <Button type="button" variant="ghost" onClick={() => setMetodo('email')} className="min-h-0 p-0">
               Voltar ao código por e-mail
-            </button>
+            </Button>
           )}
         </div>
         <p className="mt-3 text-rotulo text-tinta-sussurro">
           Perdeu tudo? O gestor da sua unidade pode zerar o seu segundo fator.
         </p>
-        <button type="button" onClick={onSair} className="mt-5 flex items-center gap-1.5 text-apoio text-tinta-sussurro hover:text-acao">
+        <Button type="button" variant="ghost" onClick={onSair} className="mt-5 min-h-0 gap-1.5 p-0">
           <LogOut className="size-4" aria-hidden /> Sair
-        </button>
+        </Button>
       </section>
     </div>
   )
@@ -539,7 +532,7 @@ function DispositivosConfiaveis() {
       {erroRemover && <p role="alert" className="mb-2 text-apoio text-critico">{erroRemover}</p>}
       <div className="mb-3 flex items-center gap-2">
         <Laptop className="size-4 text-tinta-apoio" aria-hidden />
-        <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">Dispositivos confiáveis</h2>
+        <TituloSecao className="mb-0">Dispositivos confiáveis</TituloSecao>
       </div>
       <p className="mb-3 text-apoio text-tinta-apoio">
         Aparelhos onde você marcou “confiar neste dispositivo” não pedem o código por 30 dias. Perdeu um aparelho? Remova-o aqui para cortar o acesso na hora.
@@ -555,8 +548,8 @@ function DispositivosConfiaveis() {
               <div className="min-w-0">
                 <p className="truncate text-apoio font-medium text-tinta">{d.rotulo || 'Dispositivo'}</p>
                 <p className="text-rotulo text-tinta-sussurro">
-                  Confiado em {new Date(d.criado_em).toLocaleDateString('pt-BR')}
-                  {d.ultimo_uso && ` · último uso ${new Date(d.ultimo_uso).toLocaleDateString('pt-BR')}`}
+                  Confiado em {dataBr(d.criado_em)}
+                  {d.ultimo_uso && ` · último uso ${dataBr(d.ultimo_uso)}`}
                 </p>
               </div>
               <Button variant="destructive" size="sm" onClick={() => void remover(d.id)} disabled={removendo === d.id}>
@@ -593,7 +586,7 @@ export function SecaoSegundoFator() {
       <section aria-label="Segundo fator" className="rounded-cartao border border-fio bg-superficie p-5 shadow-repouso">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <ShieldCheck className="size-4 text-tinta-apoio" aria-hidden />
-          <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">Segundo fator</h2>
+          <TituloSecao className="mb-0">Segundo fator</TituloSecao>
           {data?.exigido && <Badge variant="secondary">Exigido pela plataforma</Badge>}
         </div>
         <div className="flex items-start gap-2 text-apoio text-tinta-apoio">
@@ -607,7 +600,7 @@ export function SecaoSegundoFator() {
       <section aria-label="Aplicativo autenticador" className="rounded-cartao border border-fio bg-superficie p-5 shadow-repouso">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <KeyRound className="size-4 text-tinta-apoio" aria-hidden />
-          <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">Aplicativo autenticador</h2>
+          <TituloSecao className="mb-0">Aplicativo autenticador</TituloSecao>
           {data?.fatorId ? <Badge variant="success">Ativo</Badge> : <Badge variant="secondary">Opcional</Badge>}
         </div>
         {isLoading ? (
@@ -616,7 +609,7 @@ export function SecaoSegundoFator() {
           <div className="flex flex-col gap-2 text-apoio text-tinta-apoio">
             <p>
               Alternativa ao email: use o código do aplicativo autenticador.
-              {data.verificadoEm && ` Última confirmação: ${data.verificadoEm.toLocaleString('pt-BR')}.`}
+              {data.verificadoEm && ` Última confirmação: ${dataHoraCarimbo(data.verificadoEm)}.`}
             </p>
             {erro && <p role="alert" className="text-critico">{erro}</p>}
             <div>

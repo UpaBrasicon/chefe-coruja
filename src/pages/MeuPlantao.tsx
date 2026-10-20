@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, LogOut, MapPin, Navigation } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { dataHoraCarimbo, hora } from '@/lib/formato'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { obterPosicao } from '@/lib/geolocalizacao'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -137,29 +138,25 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       {!embutido && (
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
-            <Link to="/" className="transition-colors hover:text-tinta">
-              Início
-            </Link>
-            <span className="text-tinta-sussurro">/</span>
-            <span className="font-medium text-tinta">Meu Plantão</span>
-          </div>
-          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Meu Plantão</h1>
-          <p className="text-sm text-tinta-sussurro">
-            Registre sua entrada (check-in) e saída (check-out) com geolocalização.
-          </p>
+        <div>
+          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Meu plantão' }]} />
+          <TituloPagina
+            icone={MapPin}
+            titulo="Meu plantão"
+            descricao="Registre sua entrada (check-in) e saída (check-out) com geolocalização."
+            className="mb-0"
+          />
         </div>
       )}
 
-      {erro && <div className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</div>}
-      {sucesso && <div className="rounded-lg border border-conforme/30 bg-conforme/[0.08] p-3 text-sm text-conforme">{sucesso}</div>}
+      {erro && <div className="rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</div>}
+      {sucesso && <div className="rounded-controle border border-conforme/30 bg-alerta-conforme p-3 text-apoio text-conforme">{sucesso}</div>}
 
       <PassagensDoPlantao />
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <MapPin className="size-4 text-tinta-sussurro" />
             {unidade?.nome ?? 'Unidade'}
           </CardTitle>
@@ -180,11 +177,11 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
               </Badge>
             )}
           </div>
-          {geoMsg && <p className="text-xs text-tinta-sussurro">{geoMsg}</p>}
+          {geoMsg && <p className="text-rotulo text-tinta-sussurro">{geoMsg}</p>}
 
           {ativoHoje ? (
-            <div className="flex flex-col gap-3 rounded-lg border border-atencao/30 bg-atencao/[0.08] p-4">
-              <div className="flex items-center gap-2 text-sm font-medium">
+            <div className="flex flex-col gap-3 rounded-controle border border-atencao/30 bg-alerta-atencao p-4">
+              <div className="flex items-center gap-2 text-apoio font-medium">
                 <Badge variant="warning">Em expediente</Badge>
                 <span>
                   {dataCivil(ativoHoje.data)} · {TURNO_LABEL[ativoHoje.turno] ?? ativoHoje.turno}
@@ -192,8 +189,8 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
                 {ativoHoje.checkin_dentro === true && <Badge variant="success">Dentro do raio</Badge>}
                 {ativoHoje.checkin_dentro === false && <Badge variant="destructive">Fora do raio</Badge>}
               </div>
-              <div className="text-xs text-tinta-sussurro">
-                Check-in: {ativoHoje.checkin_em ? new Date(ativoHoje.checkin_em).toLocaleString('pt-BR') : '-'}
+              <div className="text-rotulo text-tinta-sussurro">
+                Check-in: {ativoHoje.checkin_em ? dataHoraCarimbo(ativoHoje.checkin_em) : '-'}
               </div>
               <AvisoRascunhosCheckout unidadeId={unidadeId} />
               <div>
@@ -217,7 +214,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Registros recentes</CardTitle>
+          <CardTitle className="text-corpo">Registros recentes</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -225,20 +222,20 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
               <Spinner />
             </div>
           ) : (presencas ?? []).length === 0 ? (
-            <p className="text-sm text-tinta-sussurro">Nenhum registro de presença ainda.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhum registro de presença ainda.</p>
           ) : (
             <div className="flex flex-col gap-2">
               {(presencas ?? []).map((p) => (
-                <div key={p.id} className="flex items-center justify-between rounded-lg border p-2.5 text-sm">
+                <div key={p.id} className="flex items-center justify-between rounded-controle border p-2.5 text-apoio">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">
                       {dataCivil(p.data)} · {TURNO_LABEL[p.turno] ?? p.turno}
                     </span>
                     {p.checkin_dentro === false && <Badge variant="destructive">Fora do raio</Badge>}
                   </div>
-                  <div className="text-xs text-tinta-sussurro">
-                    {p.checkin_em ? new Date(p.checkin_em).toLocaleTimeString('pt-BR') : '-'} →{' '}
-                    {p.checkout_em ? new Date(p.checkout_em).toLocaleTimeString('pt-BR') : 'em andamento'}
+                  <div className="text-rotulo text-tinta-sussurro">
+                    {p.checkin_em ? hora(p.checkin_em) : '-'} →{' '}
+                    {p.checkout_em ? hora(p.checkout_em) : 'em andamento'}
                   </div>
                 </div>
               ))}

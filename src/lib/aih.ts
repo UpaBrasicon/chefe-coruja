@@ -2,6 +2,8 @@
 // solicitada → aprovada | rejeitada → cancelada. O servidor confere tudo de
 // novo (migration 20261102000002_aih_ciclo.sql).
 
+import { dataIso } from './formato.ts'
+
 export type StatusAih = 'solicitada' | 'aprovada' | 'rejeitada' | 'cancelada'
 
 /** aihs_da_unidade: a fila do regulador (e a leitura do gestor). */
@@ -104,6 +106,5 @@ export function competenciaForaDoPrazo(competencia: string | null, competenciaDa
 /** Competência (AAAAMM) de uma data, no fuso de Brasília. */
 export function competenciaDaData(iso: string | null): string | null {
   if (!iso) return null
-  const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit' }).format(new Date(iso))
-  return p.replace('-', '')
+  return dataIso(iso).slice(0, 7).replace('-', '')
 }

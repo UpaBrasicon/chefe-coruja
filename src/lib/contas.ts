@@ -2,6 +2,7 @@
 // tela oferece em cada etapa. Quem decide é o servidor (public.mudar_etapa_conta);
 // aqui só se escolhe o que mostrar.
 
+import { moeda } from './formato.ts'
 import type { Glosa, Glosavel } from './glosas.ts'
 
 export type EtapaConta = 'aberta' | 'em_conferencia' | 'fechada' | 'faturada'
@@ -108,7 +109,7 @@ export const ORIGEM_ITEM: Record<ItemConta['origem'], string> = {
 
 /** Real com vírgula, para o valor de referência do SIGTAP. */
 export const reais = (v: number | null | undefined) =>
-  v == null ? '—' : v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  v == null ? '—' : moeda(v)
 
 export const ETAPA: Record<EtapaConta, string> = {
   aberta: 'aberta', em_conferencia: 'em conferência', fechada: 'fechada', faturada: 'faturada',

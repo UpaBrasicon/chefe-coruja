@@ -88,7 +88,7 @@ export default function Contingencia() {
         ) : (lista.data ?? []).length === 0 ? (
           <Vazio icone={FileWarning} titulo="Nenhuma contingência registrada" />
         ) : (lista.data ?? []).map((c) => (
-          <div key={c.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-fio bg-superficie px-4 py-2.5 text-apoio">
+          <div key={c.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-controle border border-fio bg-superficie px-4 py-2.5 text-apoio">
             <span className="font-medium text-tinta">{fmtDataHora(c.inicio)} a {fmtDataHora(c.fim)}</span>
             <span className="text-tinta-apoio">{duracaoContingencia(c.inicio, c.fim)}</span>
             <span className="text-tinta-apoio">“{c.motivo}”</span>

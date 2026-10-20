@@ -7,6 +7,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
+import { dataHora } from '@/lib/formato'
 
 export type EstadoEncaminhamento = 'pendente' | 'aceito' | 'recusado' | 'atendido' | 'cancelado'
 
@@ -60,7 +61,7 @@ export const ROTULO_ESTADO: Record<EstadoEncaminhamento, string> = {
 }
 
 export const quando = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : ''
+  iso ? dataHora(iso) : ''
 export const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
 export const normalizar = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
 

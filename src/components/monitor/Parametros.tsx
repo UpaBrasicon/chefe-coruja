@@ -155,7 +155,7 @@ export function FitaSinal({ texto, acao, onAcao }: { texto: string; acao: string
   return (
     <div role="status" className="flex flex-wrap items-center gap-2.5 border-b border-fio px-5 py-2 text-rotulo leading-[1.35] text-tinta-apoio">
       {texto}
-      <button type="button" onClick={onAcao} className="ml-auto rounded-lg border border-fio bg-superficie px-2.5 py-1 font-medium text-tinta-apoio hover:border-[#94A3B8] hover:text-tinta">
+      <button type="button" onClick={onAcao} className="ml-auto rounded-controle border border-fio bg-superficie px-2.5 py-1 font-medium text-tinta-apoio hover:border-fio-forte hover:text-tinta">
         {acao}
       </button>
     </div>

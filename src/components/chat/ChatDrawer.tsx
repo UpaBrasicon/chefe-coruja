@@ -2,6 +2,7 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import { ChevronLeft, XIcon } from 'lucide-react'
 import * as React from 'react'
 
+import { Button } from '@/components/ui/button'
 import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
 import { ListaConversas } from '@/components/chat/ListaConversas'
 import { Thread } from '@/components/chat/Thread'
@@ -73,14 +74,15 @@ export function ChatDrawer({ aberto, onFechar }: { aberto: boolean; onFechar: ()
       {conversa ? (
         <>
           <div className="flex shrink-0 items-center gap-2.5 border-b border-trilha px-[22px] py-4">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-xs"
               onClick={voltarLista}
               aria-label="Voltar"
-              className="flex shrink-0 p-0.5 text-tinta-sussurro hover:text-acao"
             >
               <ChevronLeft className="size-4" aria-hidden />
-            </button>
+            </Button>
             <div className="flex min-w-0 flex-1 flex-col gap-px">
               <DialogPrimitive.Title className="truncate text-corpo font-semibold text-tinta">{conversa.nome}</DialogPrimitive.Title>
               <span className="truncate text-apoio text-tinta-sussurro">{conversa.sub}</span>

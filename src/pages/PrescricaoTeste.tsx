@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import { ChevronRight, Loader2, Pill, Plus, Search, ShieldAlert, Trash2 } from 'lucide-react'
+import { Loader2, Pill, Plus, Search, ShieldAlert, Trash2 } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -152,30 +153,25 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       {!embutido && (
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-sm text-tinta-sussurro">
-            <Link to="/" className="transition-colors hover:text-tinta">
-              Início
-            </Link>
-            <ChevronRight className="size-3.5" />
-            <span className="font-medium text-tinta">Prescrição Teste</span>
-          </div>
-          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">Consulta de Medicamentos</h1>
-          <p className="text-sm text-tinta-sussurro">
-            Comece a digitar o nome (ou parte) do medicamento para ver as sugestões, incluindo a diluição
-            quando necessária.
-          </p>
+        <div>
+          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Prescrição teste' }]} />
+          <TituloPagina
+            icone={Pill}
+            titulo="Consulta de medicamentos"
+            descricao="Comece a digitar o nome (ou parte) do medicamento para ver as sugestões, incluindo a diluição quando necessária."
+            className="mb-0"
+          />
         </div>
       )}
 
-      <p className="rounded-lg border border-fio bg-trilha/50 p-3 text-sm text-tinta-apoio">
+      <p className="rounded-controle border border-fio bg-trilha/50 p-3 text-apoio text-tinta-apoio">
         Esta tela é só consulta de medicamento e diluição. Para prescrever, abra a prescrição do paciente: lá o sistema
         confere alergia, idade e peso deste atendimento (Portão 2, tarefa 2).
       </p>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <Search className="size-4 text-tinta-sussurro" />
             Buscar medicamento
           </CardTitle>
@@ -183,7 +179,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-tinta-sussurro">Base canônica (com diluição publicada)</span>
+            <span className="text-rotulo font-medium text-tinta-sussurro">Base canônica (com diluição publicada)</span>
             <div className="relative">
               <Input
                 value={busca}
@@ -195,30 +191,30 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                 <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-tinta-sussurro" />
               )}
               {focada && busca.trim().length >= 2 && (resultados ?? []).length > 0 && (
-                <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-lg">
+                <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-controle border bg-superficie shadow-lg">
                   {(resultados ?? []).map((m) => (
-                    <button
+                    <BotaoLinha
                       key={m.id}
-                      type="button"
-                      className="flex w-full flex-col gap-0.5 border-b px-3 py-2 text-left transition-colors last:border-0 hover:bg-trilha"
+                      variante="linha"
+                      className="flex-col gap-0.5 px-3 py-2 hover:bg-trilha"
                       onClick={() => adicionar(m)}
                     >
-                      <span className="flex items-center gap-2 text-sm font-medium">
+                      <span className="flex items-center gap-2 text-apoio font-medium">
                         <Pill className="size-3.5 text-tinta-sussurro" />
                         {m.principio_ativo}
-                        {m.concentracao && <span className="text-xs font-normal text-tinta-sussurro">{m.concentracao}</span>}
+                        {m.concentracao && <span className="text-rotulo font-normal text-tinta-sussurro">{m.concentracao}</span>}
                         {m.alta_vigilancia && <ShieldAlert className="size-3.5 text-atencao" />}
                       </span>
-                      <span className="text-[11px] text-tinta-sussurro">
+                      <span className="text-rotulo text-tinta-sussurro">
                         {m.apresentacao ?? '—'}
                         {m.rxcui ? ` · rxcui ${m.rxcui}` : ''}
                       </span>
-                    </button>
+                    </BotaoLinha>
                   ))}
                 </div>
               )}
               {focada && busca.trim().length >= 2 && (resultados ?? []).length === 0 && !buscando && (
-                <div className="absolute z-20 mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm text-tinta-sussurro shadow-lg">
+                <div className="absolute z-20 mt-1 w-full rounded-controle border bg-superficie px-3 py-2 text-apoio text-tinta-sussurro shadow-lg">
                   Nenhum medicamento encontrado.
                 </div>
               )}
@@ -226,7 +222,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-tinta-sussurro">Tabela CMED (ANVISA — referência de preços/registro)</span>
+            <span className="text-rotulo font-medium text-tinta-sussurro">Tabela CMED (ANVISA — referência de preços/registro)</span>
             <BuscaTerminologia
               tipo="medicamento_cmed"
               onSelecionar={(r) => adicionarDaCmed(r.descricao, r.codigo)}
@@ -238,7 +234,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <Plus className="size-4 text-tinta-sussurro" />
             Itens da prescrição
           </CardTitle>
@@ -250,10 +246,10 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {itens.map((item) => (
-            <div key={item.id} className="rounded-lg border p-3">
+            <div key={item.id} className="rounded-controle border p-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex flex-col">
-                  <span className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                  <span className="flex flex-wrap items-center gap-2 text-apoio font-semibold">
                     {item.medicamento.principio_ativo}
                     {item.medicamento.concentracao && (
                       <span className="font-normal text-tinta-sussurro">{item.medicamento.concentracao}</span>
@@ -261,7 +257,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                     {item.medicamento.alta_vigilancia && <ShieldAlert className="size-3.5 text-atencao" />}
                     {item.diluicaoPublicada && <Badge variant="success">Diluição publicada</Badge>}
                   </span>
-                  <span className="text-xs text-tinta-sussurro">
+                  <span className="text-rotulo text-tinta-sussurro">
                     {item.medicamento.apresentacao ?? '—'}
                     {item.medicamento.rxcui ? ` · rxcui ${item.medicamento.rxcui}` : ''}
                   </span>
@@ -272,7 +268,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
               </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-tinta-sussurro">Dose</label>
+                  <label className="text-rotulo font-medium text-tinta-sussurro">Dose</label>
                   <Input
                     value={item.dose}
                     onChange={(e) => atualizarItem(item.id, 'dose', e.target.value)}
@@ -280,7 +276,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-tinta-sussurro">Posologia</label>
+                  <label className="text-rotulo font-medium text-tinta-sussurro">Posologia</label>
                   <Input
                     value={item.posologia}
                     onChange={(e) => atualizarItem(item.id, 'posologia', e.target.value)}
@@ -289,7 +285,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
                 </div>
               </div>
               <div className="mt-2 flex flex-col gap-1">
-                <label className="text-xs font-medium text-suprimento">
+                <label className="text-rotulo font-medium text-suprimento">
                   {item.diluicaoPublicada ? 'Diluição (publicada pelo farmacêutico)' : 'Diluição (editável)'}
                 </label>
                 <Input

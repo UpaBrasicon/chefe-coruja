@@ -5,10 +5,12 @@ import { ArrowLeft, ArrowRight, Building2, CheckCircle2, Users } from 'lucide-re
 import { useAuth } from '@/contexts/AuthContext'
 import { definirManterConectado, manterConectadoMarcado } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { Aviso } from '@/components/ui/aviso'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useTurnstile } from '@/components/seguranca/Turnstile'
 import { Label } from '@/components/ui/label'
-import { LadoMarca, MarcaCompacta } from '@/components/entrada/LadoMarca'
+import { LadoMarca, MarcaCompacta, TituloEntrada } from '@/components/entrada/LadoMarca'
 import '@/components/entrada/entrada.css'
 
 // Login (login.html do protótipo): abas Entrar e Primeira vez, e o passo do
@@ -167,35 +169,32 @@ export function Login() {
           <MarcaCompacta />
 
           {estado?.aviso && passo === 'entrar' && (
-            <p role="status" className="mb-5 flex items-start gap-2 rounded-container bg-alerta-conforme px-3.5 py-3 text-controle text-[#14532D]">
-              <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden />
-              {estado.aviso}
-            </p>
+            <Aviso tom="conforme" icone={CheckCircle2} className="mb-5">{estado.aviso}</Aviso>
           )}
 
           <div role="tablist" aria-label="Entrar ou ativar convite" className="mb-[26px] grid grid-cols-2 gap-1 rounded-container bg-trilha p-1">
             {(['entrar', 'primeira-vez'] as const).map((p) => (
-              <button
+              <Button
                 key={p}
-                type="button"
+                variant="ghost"
                 role="tab"
                 id={`aba-${p}`}
                 aria-selected={passo === p}
                 aria-controls={`painel-${p}`}
                 onClick={() => mostrar(p)}
                 className={cn(
-                  'rounded-controle-sm px-3 py-[9px] text-corpo font-medium transition-[background,color,box-shadow] duration-150',
-                  passo === p ? 'bg-superficie text-acao-pressionada shadow-[0_1px_2px_rgba(15,23,42,0.08)]' : 'text-tinta-apoio hover:text-acao',
+                  'min-h-0 px-3 py-[9px] text-corpo font-medium transition-[background,color,box-shadow] duration-150',
+                  passo === p ? 'bg-superficie text-acao-pressionada shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:text-acao-pressionada' : 'text-tinta-apoio hover:text-acao',
                 )}
               >
                 {p === 'entrar' ? 'Entrar' : 'Primeira vez'}
-              </button>
+              </Button>
             ))}
           </div>
 
           {passo === 'entrar' && (
             <section id="painel-entrar" role="tabpanel" aria-labelledby="aba-entrar">
-              <h2 className="mb-1.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.026em] text-acao-pressionada">Entrar no plantão</h2>
+              <TituloEntrada>Entrar no plantão</TituloEntrada>
               <p className="mb-[22px] text-corpo text-pretty text-tinta-apoio">Use o e-mail da sua unidade. A senha é pessoal e não é compartilhada entre papéis.</p>
 
               <form onSubmit={onEntrar} noValidate className="flex flex-col gap-3.5">
@@ -221,24 +220,16 @@ export function Login() {
                 </div>
                 {turnstile.widget}
                 {erro && <p role="alert" className="text-controle text-critico">{erro}</p>}
-                <button
-                  type="submit"
-                  disabled={carregando}
-                  className="mt-1.5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-controle bg-acao-pressionada px-[18px] text-corpo font-medium text-white hover:bg-[#0B3D3A] disabled:opacity-60"
-                >
+                <Button type="submit" size="bloco" disabled={carregando} className="mt-1.5 gap-2 px-[18px] text-corpo">
                   {carregando ? 'Entrando…' : 'Entrar'}
                   <ArrowRight className="size-4" aria-hidden />
-                </button>
+                </Button>
               </form>
 
               <Separador />
-              <button
-                type="button"
-                onClick={() => mostrar('primeira-vez')}
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-controle border border-fio bg-superficie px-[18px] text-corpo font-medium text-acao-pressionada hover:border-marca hover:text-acao"
-              >
+              <Button variant="outline" size="bloco" onClick={() => mostrar('primeira-vez')} className="px-[18px] text-corpo font-medium text-acao-pressionada">
                 Ativar um convite
-              </button>
+              </Button>
 
               <p className="mt-[22px] text-apoio text-pretty text-tinta-sussurro">
                 Se o seu nome não estiver na escala de agora, a plataforma avisa o horário do seu próximo plantão em vez de abrir.
@@ -250,20 +241,20 @@ export function Login() {
 
           {passo === 'primeira-vez' && (
             <section id="painel-primeira-vez" role="tabpanel" aria-labelledby="aba-primeira-vez">
-              <h2 className="mb-1.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.026em] text-acao-pressionada">Não existe cadastro próprio</h2>
+              <TituloEntrada>Não existe cadastro próprio</TituloEntrada>
               <p className="mb-[22px] text-corpo text-pretty text-tinta-apoio">
                 A conta nasce de um convite da unidade ou do contrato da rede. Ninguém se cadastra sozinho: a plataforma lê escala e leito, e só a coordenação sabe quem está nelas.
               </p>
               <div className="mb-5 flex flex-col gap-2.5">
                 <div className="grid grid-cols-[34px_minmax(0,1fr)] items-start gap-[13px] rounded-container border border-fio bg-superficie px-[15px] py-[13px]">
-                  <span className="grid size-[34px] place-items-center rounded-[11px] bg-leitos text-white" aria-hidden><Users className="size-[17px]" /></span>
+                  <span className="grid size-[34px] place-items-center rounded-controle bg-leitos text-sobre-acao" aria-hidden><Users className="size-[17px]" /></span>
                   <span>
                     <b className="block text-controle font-semibold text-tinta">Equipe da unidade</b>
                     <span className="text-apoio leading-[1.5] text-pretty text-tinta-apoio">A coordenação avisa quando o acesso estiver pronto. Você ativa com o e-mail corporativo, cria a sua senha, e a coordenação libera o vínculo.</span>
                   </span>
                 </div>
                 <div className="grid grid-cols-[34px_minmax(0,1fr)] items-start gap-[13px] rounded-container border border-fio bg-superficie px-[15px] py-[13px]">
-                  <span className="grid size-[34px] place-items-center rounded-[11px] bg-suprimento text-white" aria-hidden><Building2 className="size-[17px]" /></span>
+                  <span className="grid size-[34px] place-items-center rounded-controle bg-suprimento text-sobre-acao" aria-hidden><Building2 className="size-[17px]" /></span>
                   <span>
                     <b className="block text-controle font-semibold text-tinta">Coordenação e administração</b>
                     <span className="text-apoio leading-[1.5] text-pretty text-tinta-apoio">Entram pelo contrato da rede. É a coordenação que depois libera as equipes.</span>
@@ -272,7 +263,7 @@ export function Login() {
               </div>
               <Link
                 to="/cadastro"
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-controle bg-acao-pressionada px-[18px] text-corpo font-medium text-white hover:bg-[#0B3D3A] hover:text-white"
+                className={cn(buttonVariants({ size: 'bloco' }), 'gap-2 px-[18px] text-corpo hover:text-sobre-acao')}
               >
                 Ir para o primeiro acesso
                 <ArrowRight className="size-4" aria-hidden />
@@ -281,9 +272,9 @@ export function Login() {
                 Sem convite e sem contrato? Fale com a coordenação da sua unidade.
                 <br />
                 Já tem conta?{' '}
-                <button type="button" onClick={() => mostrar('entrar')} className="font-medium text-acao hover:text-acao-pressionada">
+                <Button variant="link" onClick={() => mostrar('entrar')} className="min-h-0 p-0 align-baseline font-medium">
                   Entrar no plantão
-                </button>
+                </Button>
                 .
               </p>
             </section>

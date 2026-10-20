@@ -117,6 +117,7 @@ function partes(v: unknown): { d: number; m: number; a: number; h?: string } | n
   }
   const t = Date.parse(s)
   if (!s || isNaN(t)) return null
+  // padrao-ok: a folha impressa decompõe a data em partes (formatToParts) para montar a grade
   const f = new Intl.DateTimeFormat('pt-BR', {
     timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
   }).formatToParts(new Date(t))

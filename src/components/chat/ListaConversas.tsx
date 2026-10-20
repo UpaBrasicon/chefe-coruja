@@ -2,6 +2,7 @@ import { LifeBuoy, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import type { ContatoChat, ConversaListada } from '@/hooks/useChat'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { quandoLista, rotuloPapel, subDoContato } from '@/components/chat/formato'
 
 // Lista da gaveta de Mensagens (P/index.html, chat.naLista): uma linha por
@@ -44,11 +45,11 @@ function Linha({
   onClick: () => void
 }) {
   return (
-    <button
-      type="button"
+    <BotaoLinha
+      variante="linha"
       onClick={onClick}
       disabled={disabled}
-      className="flex w-full cursor-pointer items-start gap-[11px] border-b border-trilha bg-transparent px-[22px] py-3.5 text-left hover:bg-campo focus-visible:bg-campo focus-visible:outline-none disabled:cursor-wait disabled:opacity-60"
+      className="cursor-pointer bg-transparent px-[22px] py-3.5 hover:bg-campo focus-visible:bg-campo focus-visible:outline-none disabled:cursor-wait disabled:opacity-60"
     >
       {icone && <span className="mt-0.5 flex size-4 shrink-0 text-acao [&>svg]:size-4">{icone}</span>}
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -65,7 +66,7 @@ function Linha({
           <span className="sr-only"> não lida{naoLidas === 1 ? '' : 's'}</span>
         </span>
       )}
-    </button>
+    </BotaoLinha>
   )
 }
 

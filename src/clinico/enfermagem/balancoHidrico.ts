@@ -46,6 +46,7 @@ const r1 = (n: number) => Math.round(n * 10) / 10
 /** Diferença, em ms, entre a hora de parede do fuso e UTC naquele instante. */
 function deslocamento(instante: Date, fuso: string): number {
   const p = Object.fromEntries(
+    // padrao-ok: cálculo do deslocamento de um fuso qualquer (formatToParts), não é texto de tela
     new Intl.DateTimeFormat('en-US', { timeZone: fuso, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
       .formatToParts(instante)
       .filter((x) => x.type !== 'literal')

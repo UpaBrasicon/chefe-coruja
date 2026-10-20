@@ -297,8 +297,8 @@ export const SECOES: SectionDef[] = [
     description: 'Consulta de medicamentos, diluições e compatibilidades.',
     icon: FlaskConical,
     tools: [
-      t('consulta-medicamentos', 'Consulta de Medicamentos', 'Busca por nome com apresentação, dose e diluição.', sobDemanda(() => import('@/pages/plantonista/farmacia/ConsultaMedicamentos'), 'ConsultaMedicamentos'), ['medicamento', 'prescrição', 'droga', 'diluição', 'apresentação', 'CMED', 'farmácia']),
-      t('referencia-diluicao', 'Referência de Diluição', 'Diluições publicadas e revisadas por farmacêutico.', sobDemanda(() => import('@/pages/plantonista/farmacia/ReferenciaDiluicaoTool'), 'ReferenciaDiluicaoTool'), ['diluição', 'reconstituição', 'estabilidade', 'infusão', 'farmácia', 'compatibilidade']),
+      t('consulta-medicamentos', 'Consulta de medicamentos', 'Busca por nome com apresentação, dose e diluição.', sobDemanda(() => import('@/pages/plantonista/farmacia/ConsultaMedicamentos'), 'ConsultaMedicamentos'), ['medicamento', 'prescrição', 'droga', 'diluição', 'apresentação', 'CMED', 'farmácia']),
+      t('referencia-diluicao', 'Referência de diluição', 'Diluições publicadas e revisadas por farmacêutico.', sobDemanda(() => import('@/pages/plantonista/farmacia/ReferenciaDiluicaoTool'), 'ReferenciaDiluicaoTool'), ['diluição', 'reconstituição', 'estabilidade', 'infusão', 'farmácia', 'compatibilidade']),
     ],
   },
   {

@@ -1,5 +1,6 @@
 import { conferirSenha, type RegraSenha } from '@/lib/senha'
 import type { Papel } from '@/types/database'
+import { diaMes, hora } from './formato.ts'
 
 // Primeiro acesso por convite ou contrato (protótipo primeiro-acesso.html).
 // Máscaras, dígito do CPF, regras de senha e as chaves de aviso — as mesmas
@@ -113,19 +114,17 @@ export const AVISOS: { chave: ChaveAviso; titulo: string; texto: string; cor: st
 ]
 
 // ── Datas ───────────────────────────────────────────────────────────────────
-const fmtDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' })
-const fmtHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
 
 /** "25/08, 07:00 às 19:00" */
 export function formatarPlantao(inicio: string | null, fim: string | null): string | null {
   if (!inicio) return null
   const i = new Date(inicio)
-  const base = `${fmtDia.format(i)}, ${fmtHora.format(i)}`
-  return fim ? `${base} às ${fmtHora.format(new Date(fim))}` : base
+  const base = `${diaMes(i)}, ${hora(i)}`
+  return fim ? `${base} às ${hora(fim)}` : base
 }
 
 /** "20/08, 19:00" */
 export function formatarDiaHora(iso: string): string {
   const d = new Date(iso)
-  return `${fmtDia.format(d)}, ${fmtHora.format(d)}`
+  return `${diaMes(d)}, ${hora(d)}`
 }

@@ -1,6 +1,7 @@
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 // Peças das telas do administrador no desenho do protótipo (P/index.html
 // 9391–9408 e 9989–10004): a faixa de métricas num cartão só e as abas
@@ -19,7 +20,7 @@ export function Metricas({ itens, className }: { itens: Metrica[]; className?: s
           <span className={cn('text-rotulo font-semibold tracking-[0.06em] uppercase', m.tom === 'atencao' ? 'text-atencao' : m.tom === 'critico' ? 'text-critico' : 'text-tinta-sussurro')}>
             {m.rotulo}
           </span>
-          <span className={cn('text-[26px] leading-[1.15] font-semibold tracking-[-0.02em] tabular-nums',
+          <span className={cn('text-numeral-compacto leading-[1.15] font-semibold tracking-[-0.02em] tabular-nums',
             m.tom === 'atencao' ? 'text-atencao' : m.tom === 'critico' ? 'text-critico' : 'text-tinta')}>
             {m.valor}
           </span>
@@ -39,20 +40,21 @@ export function Abas<V extends string>({ opcoes, valor, onChange, rotulo }: {
       {opcoes.map((o) => {
         const ativa = o.valor === valor
         return (
-          <button
+          <Button
             key={o.valor}
             type="button"
+            variant="ghost"
             role="tab"
             aria-selected={ativa}
             onClick={() => onChange(o.valor)}
             className={cn(
-              '-mb-px border-b-2 px-[15px] py-[11px] text-apoio whitespace-nowrap transition-colors',
-              ativa ? 'border-acao font-semibold text-acao' : 'border-transparent text-tinta-sussurro hover:text-acao',
+              '-mb-px gap-0 rounded-none border-x-0 border-t-0 border-b-2 px-[15px] py-[11px]',
+              ativa ? 'border-acao font-semibold text-acao' : 'border-transparent',
             )}
           >
             {o.rotulo}
             {o.contagem !== undefined && <span className="ml-1.5 tabular-nums opacity-80">{o.contagem}</span>}
-          </button>
+          </Button>
         )
       })}
     </div>

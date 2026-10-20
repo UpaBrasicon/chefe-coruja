@@ -1,5 +1,6 @@
 import { erroCns, erroCpf, erroNascimento, soDigitos } from '@/lib/documentos'
 import { idadeEm } from '@/domain/idade'
+import { dataIso } from './formato.ts'
 
 // Modelo do formulário de cadastro (Recepção e porta).
 
@@ -14,7 +15,7 @@ export type CampoCadastro = keyof Cadastro
 /** Campos que identificam a pessoa: a Recepção não troca pela ficha de um cadastro existente. */
 export const IDENTIDADE: CampoCadastro[] = ['nome', 'nome_social', 'data_nascimento', 'sexo', 'nome_mae']
 
-export const hojeSP = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+export const hojeSP = () => dataIso()
 
 /** Erros de digitação que impedem gravar (os mesmos que o servidor recusa). */
 export function errosCadastro(c: Partial<Cadastro>, hoje = hojeSP()): Partial<Record<CampoCadastro, string>> {

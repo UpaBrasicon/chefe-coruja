@@ -10,7 +10,7 @@ export function RegrasSenha({ id, regras }: { id?: string; regras: RegraSenha[] 
       {regras.map((r) => {
         const Icone = r.ok ? Check : X
         return (
-          <li key={r.chave} className={cn('grid grid-cols-[15px_minmax(0,1fr)] items-center gap-2 text-rotulo', r.ok ? 'text-[#14532D]' : 'text-tinta-sussurro')}>
+          <li key={r.chave} className={cn('grid grid-cols-[15px_minmax(0,1fr)] items-center gap-2 text-rotulo', r.ok ? 'text-conforme' : 'text-tinta-sussurro')}>
             <Icone className="size-[13px]" aria-hidden />
             <span>
               {r.texto}

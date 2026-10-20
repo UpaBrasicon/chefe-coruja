@@ -112,7 +112,11 @@ export function Quim({ simbolo, className }: { simbolo: 'Na' | 'K' | 'Ca' | 'Mg'
   return (
     <span
       aria-hidden
-      className={cn('inline-flex size-4 items-center justify-center text-[0.78em] leading-none font-semibold tracking-[-0.03em] tabular', className)}
+      className={cn(
+        // padrao-ok: glifo no lugar do ícone, em escala relativa ao texto vizinho (em), como o próprio ícone
+        'inline-flex size-4 items-center justify-center text-[0.78em] leading-none font-semibold tracking-[-0.03em] tabular',
+        className,
+      )}
     >
       {texto}
     </span>

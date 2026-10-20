@@ -26,6 +26,9 @@ import './landing.css'
 // tem sessão segue direto para a sua tela inicial (ver RequireAuth). Porta de
 // landing.html do protótipo, com o texto ajustado ao produto real — os links
 // que abriam o protótipo agora levam ao login.
+// Cores: os tokens de .lp (landing.css), que ficam sempre no claro mesmo com o
+// tema escuro do app; o teal claro e o véu vêm dos tokens do app (iguais nos
+// dois temas). Lavagens são color-mix desses tokens, nunca hex.
 
 type Papel = { nome: string; cor: string; Icone: LucideIcon; texto: string; telas: string }
 
@@ -192,7 +195,7 @@ function useOndaAteLogin() {
       onda.id = ID_ONDA
       onda.setAttribute('aria-hidden', 'true')
       Object.assign(onda.style, {
-        position: 'fixed', zIndex: '90', pointerEvents: 'none', borderRadius: '50%', background: '#0B3B34',
+        position: 'fixed', zIndex: '90', pointerEvents: 'none', borderRadius: '50%', background: 'var(--color-veu)',
         left: `${x}px`, top: `${y}px`, width: `${raio * 2}px`, height: `${raio * 2}px`,
         margin: `${-raio}px 0 0 ${-raio}px`, transform: 'scale(0.02)', opacity: '0.001',
       })
@@ -240,13 +243,13 @@ export default function Landing() {
       <div className="palco">
         <div className="palco-campo" aria-hidden="true">
           <Barra width={760} height={96} right={-180} top={-60} background="var(--marca)" />
-          <Barra width={560} height={96} right={-70} top={170} background="#5EEAD426" />
-          <Barra width={380} height={96} right={-120} top={420} background="#FFFFFF14" />
-          <span className="bolha" style={{ width: 260, height: 260, left: '2%', bottom: -100, background: '#5EEAD414' }} />
+          <Barra width={560} height={96} right={-70} top={170} background="color-mix(in oklab, var(--color-marca-clara) 15%, transparent)" />
+          <Barra width={380} height={96} right={-120} top={420} background="color-mix(in oklab, var(--superficie) 8%, transparent)" />
+          <span className="bolha" style={{ width: 260, height: 260, left: '2%', bottom: -100, background: 'color-mix(in oklab, var(--color-marca-clara) 8%, transparent)' }} />
           <span className="anel" style={{ width: 150, height: 150, left: '12%', top: 118 }} />
-          <span className="bolha" style={{ width: 14, height: 14, left: '34%', top: 330, background: '#5EEAD4A6' }} />
-          <span className="bolha" style={{ width: 9, height: 9, right: '20%', bottom: 74, background: '#5EEAD48C' }} />
-          <span className="bolha" style={{ width: 20, height: 20, right: '8%', top: 90, background: '#5EEAD466' }} />
+          <span className="bolha" style={{ width: 14, height: 14, left: '34%', top: 330, background: 'color-mix(in oklab, var(--color-marca-clara) 65%, transparent)' }} />
+          <span className="bolha" style={{ width: 9, height: 9, right: '20%', bottom: 74, background: 'color-mix(in oklab, var(--color-marca-clara) 55%, transparent)' }} />
+          <span className="bolha" style={{ width: 20, height: 20, right: '8%', top: 90, background: 'color-mix(in oklab, var(--color-marca-clara) 40%, transparent)' }} />
         </div>
         <div className="orbita" aria-hidden="true">
           <span className="disco" style={{ width: 64, height: 64, left: '15%', top: 84, background: 'var(--leitos)' }}><Users size={27} /></span>
@@ -279,6 +282,7 @@ export default function Landing() {
         <div className="env hero">
           <div>
             <span className="kicker"><Stethoscope size={15} />Gestão de plantão hospitalar</span>
+            {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
             <h1>A escala é a <em>porta</em> de entrada.</h1>
             <p className="abertura">
               Quem trabalha na unidade só entra se estiver na escala naquele momento, pelo relógio do servidor. O
@@ -316,7 +320,7 @@ export default function Landing() {
           <div className="faixa">
             <div className="param">
               <span className="param-rot" style={{ color: 'var(--leitos)' }}><Users size={12} />Sob seu cuidado</span>
-              <span className="param-val" style={{ color: '#1E293B', fontSize: 30 }}>8<span className="param-un">pacientes</span></span>
+              <span className="param-val" style={{ color: 'var(--tinta)', fontSize: 30 }}>8<span className="param-un">pacientes</span></span>
               <span className="param-est" style={{ color: 'var(--tinta-media)' }}>Leitos 12 a 24</span>
               <span className="campo"><span className="fill" style={{ width: '61.5%', background: 'var(--leitos)' }} /><span className="lim" style={{ left: '84.6%' }} /></span>
             </div>
@@ -328,7 +332,7 @@ export default function Landing() {
             </div>
             <div className="param">
               <span className="param-rot" style={{ color: 'var(--turno)' }}><Hourglass size={12} />Restam no turno</span>
-              <span className="param-val" style={{ color: '#1E293B', fontSize: 30 }}>4h12</span>
+              <span className="param-val" style={{ color: 'var(--tinta)', fontSize: 30 }}>4h12</span>
               <span className="param-est" style={{ color: 'var(--tinta-media)' }}>Em plantão desde 07:04</span>
               <span className="campo"><span className="fill" style={{ width: '65%', background: 'var(--turno)' }} /></span>
             </div>
@@ -346,6 +350,7 @@ export default function Landing() {
       <main>
         <section className="env" id="mecanismo">
           <span className="rotulo-secao">O sistema visual</span>
+          {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
           <h2>Duas regras carregam a tela inteira</h2>
           <p className="sub">
             Um monitor multiparamétrico em modo diurno — porque a cena é o posto de enfermagem com a luz acesa, não a
@@ -353,15 +358,15 @@ export default function Landing() {
           </p>
           <div className="regras">
             <div className="regra">
-              <span className="regra-marca" style={{ background: '#15803D14' }} />
+              <span className="regra-marca" style={{ background: 'color-mix(in oklab, var(--leitos) 8%, transparent)' }} />
               <h3>A identidade pertence à grandeza</h3>
               <p>Leitos são verdes, observação é âmbar, turno é cinza, suprimento é azul. A cor aparece no rótulo e na barra, sempre a mesma.</p>
               <div className="pastilhas">
                 {[
-                  ['Leitos', 'var(--leitos)', '#15803D14'],
-                  ['Observação', 'var(--observacao)', '#B4530914'],
-                  ['Turno', 'var(--turno)', '#47556914'],
-                  ['Suprimento', 'var(--suprimento)', '#1D4ED814'],
+                  ['Leitos', 'var(--leitos)', 'color-mix(in oklab, var(--leitos) 8%, transparent)'],
+                  ['Observação', 'var(--observacao)', 'color-mix(in oklab, var(--observacao) 8%, transparent)'],
+                  ['Turno', 'var(--turno)', 'color-mix(in oklab, var(--turno) 8%, transparent)'],
+                  ['Suprimento', 'var(--suprimento)', 'color-mix(in oklab, var(--suprimento) 8%, transparent)'],
                 ].map(([nome, cor, fundo]) => (
                   <span key={nome} className="pastilha" style={{ color: cor, background: fundo }}>
                     <i style={{ background: cor }} />
@@ -371,11 +376,11 @@ export default function Landing() {
               </div>
             </div>
             <div className="regra">
-              <span className="regra-marca" style={{ background: '#B91C1C14' }} />
+              <span className="regra-marca" style={{ background: 'color-mix(in oklab, var(--critico) 8%, transparent)' }} />
               <h3>O estado pertence ao numeral</h3>
               <p>O número não usa a cor da grandeza: usa a cor do estado, e cresce com ele. Ler a tela é procurar o numeral maior e mais colorido.</p>
               <div className="amostra">
-                <span style={{ fontSize: 30, color: '#1E293B' }}>8</span>
+                <span style={{ fontSize: 30, color: 'var(--tinta)' }}>8</span>
                 <span style={{ fontSize: 36, color: 'var(--atencao)' }}>18</span>
                 <span style={{ fontSize: 42, color: 'var(--critico)' }}>7h20</span>
                 <small>em ordem · em atenção · em alarme</small>
@@ -386,6 +391,7 @@ export default function Landing() {
 
         <section className="env">
           <span className="rotulo-secao">O que o plantão impõe</span>
+          {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
           <h2>Três fatos operacionais que a tela obedece</h2>
           <div className="fatos">
             <div className="fato">
@@ -411,6 +417,7 @@ export default function Landing() {
 
         <section className="env" id="papeis">
           <span className="rotulo-secao">Quem entra</span>
+          {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
           <h2>Cada papel, o seu produto</h2>
           <p className="sub">
             Um mesmo usuário pode ter papéis diferentes em unidades diferentes; o papel ativo é sempre o da unidade
@@ -436,16 +443,17 @@ export default function Landing() {
           <div className="duo duo-invertido">
             <div>
               <span className="rotulo-secao">Prontuário eletrônico</span>
+              {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
               <h2>O registro acontece dentro do turno</h2>
               <p className="sub">Evolução, prescrição e resultado no mesmo lugar em que o plantão acontece — abertos pelo leito, não por uma busca de paciente.</p>
               <div className="marcadores">
-                <Marcador Icone={ClipboardList} cor="var(--leitos)" fundo="#15803D14" titulo="Abre pelo leito">
+                <Marcador Icone={ClipboardList} cor="var(--leitos)" fundo="color-mix(in oklab, var(--leitos) 8%, transparent)" titulo="Abre pelo leito">
                   12A, 14B, Box 1 — com o que o turno anterior deixou no handoff já em cima.
                 </Marcador>
-                <Marcador Icone={Pill} cor="var(--suprimento)" fundo="#1D4ED814" titulo="Prescrição com o padrão da casa">
+                <Marcador Icone={Pill} cor="var(--suprimento)" fundo="color-mix(in oklab, var(--suprimento) 8%, transparent)" titulo="Prescrição com o padrão da casa">
                   A diluição institucional chega junto da droga. Prescrever fora dela vira pendência para a farmácia conferir.
                 </Marcador>
-                <Marcador Icone={Clock} cor="var(--observacao)" fundo="#B4530914" titulo="Cada registro fica preso ao seu turno">
+                <Marcador Icone={Clock} cor="var(--observacao)" fundo="color-mix(in oklab, var(--observacao) 8%, transparent)" titulo="Cada registro fica preso ao seu turno">
                   Autor, horário e plantão acompanham a evolução. O que ficou pendente é o que vai para o handoff.
                 </Marcador>
               </div>
@@ -453,7 +461,7 @@ export default function Landing() {
             <div className="duo-midia">
               <span className="duo-placa" aria-hidden="true">
                 <Barra width={420} height={72} left={-90} top={-40} background="var(--marca)" />
-                <span className="bolha" style={{ width: 140, height: 140, right: -30, bottom: -50, background: '#5EEAD414' }} />
+                <span className="bolha" style={{ width: 140, height: 140, right: -30, bottom: -50, background: 'color-mix(in oklab, var(--color-marca-clara) 8%, transparent)' }} />
               </span>
               <VideoProntuario />
             </div>
@@ -464,16 +472,17 @@ export default function Landing() {
           <div className="duo">
             <div>
               <span className="rotulo-secao">Segurança</span>
+              {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
               <h2>O sistema sabe quem entrou, de onde e quando</h2>
               <p className="sub">Não é auditoria feita depois. É a mesma regra que abre a porta: se a escala não autoriza, a tela não abre.</p>
               <div className="marcadores">
-                <Marcador Icone={CalendarClock} cor="var(--acao)" fundo="#0D94881A" titulo="O acesso vem da escala">
+                <Marcador Icone={CalendarClock} cor="var(--acao)" fundo="color-mix(in oklab, var(--marca) 10%, transparent)" titulo="O acesso vem da escala">
                   Quem não está escalado naquele momento não entra — e o momento é o do relógio do servidor, não o do aparelho.
                 </Marcador>
-                <Marcador Icone={MapPin} cor="var(--leitos)" fundo="#15803D14" titulo="Presença com hora e lugar">
+                <Marcador Icone={MapPin} cor="var(--leitos)" fundo="color-mix(in oklab, var(--leitos) 8%, transparent)" titulo="Presença com hora e lugar">
                   O check-in exige estar dentro do raio da unidade. Fora dele, só com justificativa, que o gestor vê.
                 </Marcador>
-                <Marcador Icone={ShieldCheck} cor="var(--observacao)" fundo="#B4530914" titulo="Trilha que não se reescreve">
+                <Marcador Icone={ShieldCheck} cor="var(--observacao)" fundo="color-mix(in oklab, var(--observacao) 8%, transparent)" titulo="Trilha que não se reescreve">
                   Toda alteração tem autor e horário, numa auditoria só de inserção, encadeada para que nada seja apagado em silêncio.
                 </Marcador>
               </div>
@@ -481,8 +490,8 @@ export default function Landing() {
             <div className="duo-midia">
               <span className="duo-placa" aria-hidden="true">
                 <Barra width={420} height={72} right={-90} top={-30} background="var(--marca)" />
-                <Barra width={300} height={72} right={-60} bottom={40} background="#5EEAD41F" />
-                <span className="bolha" style={{ width: 140, height: 140, left: -30, bottom: -40, background: '#5EEAD414' }} />
+                <Barra width={300} height={72} right={-60} bottom={40} background="color-mix(in oklab, var(--color-marca-clara) 12%, transparent)" />
+                <span className="bolha" style={{ width: 140, height: 140, left: -30, bottom: -40, background: 'color-mix(in oklab, var(--color-marca-clara) 8%, transparent)' }} />
               </span>
               <img className="cena-foto" src="/landing/seguranca.webp" loading="lazy" alt="Guardião cibernético protegendo o servidor e a rede da unidade" />
               <span className="disco" style={{ width: 52, height: 52, right: -14, top: 44, background: 'var(--tinta-profunda)' }} aria-hidden="true">
@@ -496,25 +505,26 @@ export default function Landing() {
           <div className="duo duo-invertido">
             <div>
               <span className="rotulo-secao">Dados pessoais</span>
+              {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
               <h2>Menos dado em tela é menos risco</h2>
               <p className="sub">A LGPD pede finalidade e mínimo necessário. No plantão isso já era hábito clínico: o paciente é o leito.</p>
               <div className="marcadores">
-                <Marcador Icone={Users} cor="var(--leitos)" fundo="#15803D14" titulo="Leito antes do nome">
+                <Marcador Icone={Users} cor="var(--leitos)" fundo="color-mix(in oklab, var(--leitos) 8%, transparent)" titulo="Leito antes do nome">
                   É como o plantonista fala, e é o quanto a tela precisa mostrar para o cuidado acontecer.
                 </Marcador>
-                <Marcador Icone={Building2} cor="var(--suprimento)" fundo="#1D4ED814" titulo="Administrador não vê paciente">
+                <Marcador Icone={Building2} cor="var(--suprimento)" fundo="color-mix(in oklab, var(--suprimento) 8%, transparent)" titulo="Administrador não vê paciente">
                   As telas de rede mostram ocupação, sincronia de unidade e pendência técnica — nunca identidade.
                 </Marcador>
-                <Marcador Icone={ShieldCheck} cor="var(--acao)" fundo="#0D94881A" titulo="IA sem identidade de paciente">
+                <Marcador Icone={ShieldCheck} cor="var(--acao)" fundo="color-mix(in oklab, var(--marca) 10%, transparent)" titulo="IA sem identidade de paciente">
                   Antes de qualquer consulta a um modelo de IA, o gateway retira os identificadores. Se não conseguir, não envia.
                 </Marcador>
               </div>
             </div>
             <div className="duo-midia">
               <span className="duo-placa" aria-hidden="true" style={{ background: 'var(--lavagem)' }}>
-                <Barra width={420} height={72} left={-90} top={-30} background="#0D948826" />
-                <Barra width={300} height={72} left={-60} bottom={40} background="#0D948814" />
-                <span className="bolha" style={{ width: 140, height: 140, right: -30, bottom: -40, background: '#0D94881A' }} />
+                <Barra width={420} height={72} left={-90} top={-30} background="color-mix(in oklab, var(--marca) 15%, transparent)" />
+                <Barra width={300} height={72} left={-60} bottom={40} background="color-mix(in oklab, var(--marca) 8%, transparent)" />
+                <span className="bolha" style={{ width: 140, height: 140, right: -30, bottom: -40, background: 'color-mix(in oklab, var(--marca) 10%, transparent)' }} />
               </span>
               <img className="cena-foto" src="/landing/lgpd.webp" loading="lazy" alt="Médica segurando o certificado de conformidade com a LGPD" />
               <span className="disco" style={{ width: 52, height: 52, left: -14, top: 44, background: 'var(--leitos)' }} aria-hidden="true">
@@ -526,11 +536,12 @@ export default function Landing() {
 
         <section className="prova" id="prova">
           <span className="formas" aria-hidden="true">
-            <Barra width={520} height={64} right={-140} top={-30} background="#FFFFFF12" />
-            <Barra width={340} height={64} right={-60} bottom={-20} background="#5EEAD41A" />
+            <Barra width={520} height={64} right={-140} top={-30} background="color-mix(in oklab, var(--superficie) 7%, transparent)" />
+            <Barra width={340} height={64} right={-60} bottom={-20} background="color-mix(in oklab, var(--color-marca-clara) 10%, transparent)" />
           </span>
           <div className="env">
             <span className="rotulo-secao">Verificação</span>
+            {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
             <h2>Contado no código, não estimado</h2>
             <p className="sub">
               Os números saem do próprio app e são reprodutíveis: as ferramentas, do registro clínico; as verificações,
@@ -550,11 +561,12 @@ export default function Landing() {
 
         <section className="fecho">
           <span className="formas" aria-hidden="true">
-            <Barra width={420} height={70} right={-80} top={-26} background="#0D948826" />
-            <span className="bolha" style={{ width: 160, height: 160, left: -40, bottom: -60, background: '#0D948814' }} />
+            <Barra width={420} height={70} right={-80} top={-26} background="color-mix(in oklab, var(--marca) 15%, transparent)" />
+            <span className="bolha" style={{ width: 160, height: 160, left: -40, bottom: -60, background: 'color-mix(in oklab, var(--marca) 8%, transparent)' }} />
           </span>
           <div className="env fecho-cartao">
             <div>
+              {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
               <h2>Comece pelo papel que você exerce</h2>
               <p className="sub" style={{ marginTop: 10 }}>
                 O acesso abre no papel que a sua unidade liberou para você; quem tem mais de um troca pelo menu do

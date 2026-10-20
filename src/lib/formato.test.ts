@@ -64,3 +64,9 @@ test('formato: carimbo com segundos', async () => {
   assert.equal(dataHoraCarimbo('2026-10-19T22:43:12Z'), '19/10/2026, 19:43:12')
   assert.equal(dataHoraCarimbo('2026-10-19T22:43:12Z'), new Date('2026-10-19T22:43:12Z').toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }))
 })
+
+test('formato: mês por extenso com o ano', async () => {
+  const { mesAno } = await import('./formato.ts')
+  assert.equal(mesAno(2026, 10), 'outubro de 2026')
+  assert.equal(mesAno(2027, 1), 'janeiro de 2027')
+})
