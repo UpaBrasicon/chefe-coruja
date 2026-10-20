@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
+import { dataIso } from '@/lib/formato'
 import { GRAVIDADES, PAPEL_REGISTRO, type RelatorioIntercorrencias } from '@/lib/intercorrencia'
 import { supabase } from '@/lib/supabase'
 
@@ -16,7 +17,7 @@ import { supabase } from '@/lib/supabase'
 // 20261031000003). Conta a versão vigente de cada registro (a retificada sai);
 // os nomes dos pacientes ficam na trilha de auditoria.
 
-const dia = (d: Date) => d.toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+const dia = (d: Date) => dataIso(d)
 
 export default function IntercorrenciasRelatorio() {
   const unidadeId = useUnidade().unidadeAtiva?.unidade_id
@@ -56,7 +57,7 @@ export default function IntercorrenciasRelatorio() {
             <section className="flex flex-col gap-2">
               <TituloSecao>Por tipo</TituloSecao>
               {r.por_tipo.map((t) => (
-                <div key={t.tipo} className="flex items-center justify-between gap-3 rounded-lg border border-fio bg-superficie px-3 py-2 text-apoio">
+                <div key={t.tipo} className="flex items-center justify-between gap-3 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
                   <span className="text-tinta">{t.tipo}</span>
                   <span className="text-tinta-apoio">{t.total}{t.graves ? <span className="text-critico"> · {t.graves} grave(s)</span> : null}</span>
                 </div>
@@ -65,7 +66,7 @@ export default function IntercorrenciasRelatorio() {
             <section className="flex flex-col gap-2">
               <TituloSecao>Por setor</TituloSecao>
               {r.por_setor.map((s) => (
-                <div key={s.setor} className="flex items-center justify-between gap-3 rounded-lg border border-fio bg-superficie px-3 py-2 text-apoio">
+                <div key={s.setor} className="flex items-center justify-between gap-3 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
                   <span className="text-tinta">{s.setor}</span><span className="text-tinta-apoio">{s.total}</span>
                 </div>
               ))}
@@ -77,7 +78,7 @@ export default function IntercorrenciasRelatorio() {
           <section className="flex flex-col gap-2">
             <TituloSecao>Casos (até 300, do mais novo)</TituloSecao>
             {r.casos.map((c) => (
-              <div key={c.id} className="flex flex-col gap-0.5 rounded-lg border border-fio bg-superficie px-3 py-2 text-apoio">
+              <div key={c.id} className="flex flex-col gap-0.5 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-tinta">{c.paciente}</span>
                   <span className="text-tinta-apoio">{c.tipo_rotulo}</span>

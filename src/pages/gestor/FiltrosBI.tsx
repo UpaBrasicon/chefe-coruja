@@ -3,8 +3,10 @@ import * as React from 'react'
 
 import { Chip, Chips } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import type { Periodo } from '@/lib/esperaTriagem'
+import { dataIso } from '@/lib/formato'
 import type { useFiltrosBI } from './useFiltrosBI'
 
 // Barra única de filtros da tela Indicadores (Fase 1, tarefa 7 do BACKLOG):
@@ -15,11 +17,11 @@ const PERIODOS: { chave: Periodo; rotulo: string }[] = [
   { chave: 'hoje', rotulo: 'Hoje' }, { chave: '7d', rotulo: '7 dias' },
   { chave: '30d', rotulo: '30 dias' }, { chave: 'intervalo', rotulo: 'Intervalo' },
 ]
-const seletor = 'h-9 rounded-controle border border-fio bg-superficie px-2.5 text-apoio text-tinta'
+const seletor = 'bg-superficie px-2.5'
 
 export function BarraFiltrosBI({ ctx }: { ctx: ReturnType<typeof useFiltrosBI> }) {
   const { filtros: f, definir, limpar, opcoes } = ctx
-  const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+  const hoje = dataIso()
   const [copiado, setCopiado] = React.useState(false)
   const algum = f.setor || f.cor || f.turno || f.grupo || f.medico || f.periodo !== '7d'
 
@@ -49,29 +51,29 @@ export function BarraFiltrosBI({ ctx }: { ctx: ReturnType<typeof useFiltrosBI> }
         )}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <select aria-label="Setor de entrada" value={f.setor} onChange={(e) => definir({ setor: e.target.value })} className={seletor}>
+        <CampoSelecao aria-label="Setor de entrada" value={f.setor} onChange={(e) => definir({ setor: e.target.value })} className={seletor}>
           <option value="">Todos os setores</option>
           {opcoes.setores.map((s) => <option key={s.id} value={s.id}>{s.nome}</option>)}
-        </select>
-        <select aria-label="Cor" value={f.cor} onChange={(e) => definir({ cor: e.target.value })} className={seletor}>
+        </CampoSelecao>
+        <CampoSelecao aria-label="Cor" value={f.cor} onChange={(e) => definir({ cor: e.target.value })} className={seletor}>
           <option value="">Todas as cores</option>
           {['vermelho', 'laranja', 'amarelo', 'verde', 'azul'].map((c) => <option key={c} value={c} className="capitalize">{c[0].toUpperCase() + c.slice(1)}</option>)}
-        </select>
-        <select aria-label="Turno" value={f.turno} onChange={(e) => definir({ turno: e.target.value })} className={seletor}>
+        </CampoSelecao>
+        <CampoSelecao aria-label="Turno" value={f.turno} onChange={(e) => definir({ turno: e.target.value })} className={seletor}>
           <option value="">Todos os turnos</option>
           <option value="manha">Manhã (07–13)</option>
           <option value="tarde">Tarde (13–19)</option>
           <option value="noite">Noite (19–07)</option>
-        </select>
-        <select aria-label="Grupo" value={f.grupo} onChange={(e) => definir({ grupo: e.target.value })} className={seletor}>
+        </CampoSelecao>
+        <CampoSelecao aria-label="Grupo" value={f.grupo} onChange={(e) => definir({ grupo: e.target.value })} className={seletor}>
           <option value="">Adulto e pediátrico</option>
           <option value="adulto">Adulto</option>
           <option value="pediatrico">Pediátrico</option>
-        </select>
-        <select aria-label="Médico que atendeu" value={f.medico} onChange={(e) => definir({ medico: e.target.value })} className={seletor}>
+        </CampoSelecao>
+        <CampoSelecao aria-label="Médico que atendeu" value={f.medico} onChange={(e) => definir({ medico: e.target.value })} className={seletor}>
           <option value="">Todos os médicos</option>
           {opcoes.medicos.map((m) => <option key={m.id} value={m.id}>{m.nome}</option>)}
-        </select>
+        </CampoSelecao>
         {algum && <Button variant="ghost" size="sm" onClick={limpar}><X /> Limpar</Button>}
         <Button variant="outline" size="sm" onClick={copiar} className="ml-auto"><Link2 /> {copiado ? 'Link copiado' : 'Copiar link'}</Button>
       </div>

@@ -33,8 +33,8 @@ export function CnesUnidade({ unidadeId, atual }: { unidadeId: string; atual: st
           value={valor} onChange={(e) => setValor(e.target.value)} />
         <Button size="sm" variant="outline" disabled={!pronto || salvando} onClick={() => void salvar()}>Salvar</Button>
       </div>
-      {erro && <span role="alert" className="text-xs text-critico">{erro}</span>}
-      {!atual && !erro && <span className="text-xs text-tinta-sussurro">Sem o CNES, o BPA não fecha.</span>}
+      {erro && <span role="alert" className="text-rotulo text-critico">{erro}</span>}
+      {!atual && !erro && <span className="text-rotulo text-tinta-sussurro">Sem o CNES, o BPA não fecha.</span>}
     </div>
   )
 }

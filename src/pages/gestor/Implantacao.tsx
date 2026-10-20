@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { dataIso } from '@/lib/formato'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
@@ -45,7 +47,7 @@ const SITUACAO = {
   encerrada: { rotulo: 'Implantação encerrada', variante: 'success' },
 } as const
 
-const hoje = () => new Date().toLocaleDateString('sv-SE')
+const hoje = () => dataIso()
 
 export default function Implantacao() {
   const { ehSuperAdmin, unidadeAtiva } = useUnidade()
@@ -78,12 +80,12 @@ export default function Implantacao() {
         descricao="Roteiro da unidade: preparação, virada, operação assistida e encerramento. O que o sistema confere sozinho já aparece marcado." />
       {ehSuperAdmin && (
         <div className="flex max-w-sm flex-col gap-1 text-apoio">
-          <Label htmlFor="imp-unidade" className="text-xs">Unidade</Label>
-          <select id="imp-unidade" className="h-8 rounded-controle border border-fio bg-campo px-2" value={unidadeId}
+          <Label htmlFor="imp-unidade" className="text-rotulo">Unidade</Label>
+          <CampoSelecao id="imp-unidade" tamanho="compacto" value={unidadeId}
             onChange={(e) => setEscolhida(e.target.value)}>
             <option value="">Escolha…</option>
             {(todas.data ?? []).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-          </select>
+          </CampoSelecao>
         </div>
       )}
       {!unidadeId ? null : painel.isLoading ? <Spinner /> : painel.error ? <MensagemErro texto={(painel.error as Error).message} /> : !imp ? (
@@ -121,21 +123,21 @@ function AbrirImplantacao({ unidadeId }: { unidadeId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Abrir a implantação</CardTitle>
+        <CardTitle className="text-corpo">Abrir a implantação</CardTitle>
         <CardDescription>Escolha o tipo da unidade e a data da virada (D0). Os itens e os prazos saem do roteiro.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="flex flex-col gap-1">
-            <Label htmlFor="imp-tipo" className="text-xs">Tipo</Label>
-            <select id="imp-tipo" className="h-8 rounded-controle border border-fio bg-campo px-2" value={tipo}
+            <Label htmlFor="imp-tipo" className="text-rotulo">Tipo</Label>
+            <CampoSelecao id="imp-tipo" tamanho="compacto" value={tipo}
               onChange={(e) => setTipo(e.target.value as TipoUnidade)}>
               {(Object.keys(TIPOS) as TipoUnidade[]).map((k) => <option key={k} value={k}>{TIPOS[k]}</option>)}
               <option value="ambulatorio" disabled>Ambulatório / policlínica (a construir)</option>
-            </select>
+            </CampoSelecao>
           </div>
           <div className="flex flex-col gap-1">
-            <Label htmlFor="imp-d0" className="text-xs">Data da virada (D0)</Label>
+            <Label htmlFor="imp-d0" className="text-rotulo">Data da virada (D0)</Label>
             <Input id="imp-d0" type="date" className="h-8" value={d0} onChange={(e) => setD0(e.target.value)} />
           </div>
         </div>
@@ -174,11 +176,11 @@ function Cabecalho({ p, unidadeId }: { p: Required<Painel>; unidadeId: string })
           mudar ? (
             <div className="flex flex-wrap items-end gap-2">
               <div className="flex flex-col gap-1">
-                <Label htmlFor="imp-novo-d0" className="text-xs">Nova data da virada</Label>
+                <Label htmlFor="imp-novo-d0" className="text-rotulo">Nova data da virada</Label>
                 <Input id="imp-novo-d0" type="date" className="h-8" value={novo} onChange={(e) => setNovo(e.target.value)} />
               </div>
               <div className="flex min-w-60 flex-1 flex-col gap-1">
-                <Label htmlFor="imp-motivo-d0" className="text-xs">Motivo</Label>
+                <Label htmlFor="imp-motivo-d0" className="text-rotulo">Motivo</Label>
                 <Input id="imp-motivo-d0" className="h-8" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
               </div>
               <Button size="sm" onClick={() => mudarD0.mutate()} disabled={motivo.trim().length < 10 || mudarD0.isPending}>Salvar</Button>
@@ -203,7 +205,7 @@ function FaseCard({ fase, p, unidadeId }: { fase: (typeof FASES)[number]; p: Req
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+        <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
           {fase.rotulo} <span className="text-apoio font-normal text-tinta-sussurro">{fase.janela}</span>
           <Badge variant={r.feitos === r.obrigatorios ? 'success' : 'secondary'} className="ml-auto">
             {r.feitos} de {r.obrigatorios} obrigatórios
@@ -257,7 +259,7 @@ function LinhaItem({ it, d0, encerrada, unidadeId }: { it: Item; d0: string; enc
       {aberto && (
         <div className="flex flex-wrap items-end gap-2 pl-6">
           <div className="flex min-w-60 flex-1 flex-col gap-1">
-            <Label htmlFor={`obs-${it.id}`} className="text-xs">Observação (opcional)</Label>
+            <Label htmlFor={`obs-${it.id}`} className="text-rotulo">Observação (opcional)</Label>
             <Input id={`obs-${it.id}`} className="h-8" value={obs} onChange={(e) => setObs(e.target.value)} />
           </div>
           <Button size="sm" onClick={() => marcar.mutate(true)} disabled={marcar.isPending}>Confirmar</Button>
@@ -290,7 +292,7 @@ function Treinamento({ p, unidadeId }: { p: Required<Painel>; unidadeId: string 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+        <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
           Treinamento por papel
           <Badge variant={faltam === 0 && p.pessoas.length > 0 ? 'success' : 'secondary'} className="ml-auto">
             {p.pessoas.length - faltam} de {p.pessoas.length} treinados
@@ -301,7 +303,7 @@ function Treinamento({ p, unidadeId }: { p: Required<Painel>; unidadeId: string 
       <CardContent className="flex flex-col gap-3 text-apoio">
         <div className="flex items-end gap-2">
           <div className="flex flex-col gap-1">
-            <Label htmlFor="imp-data-trein" className="text-xs">Data do treinamento</Label>
+            <Label htmlFor="imp-data-trein" className="text-rotulo">Data do treinamento</Label>
             <Input id="imp-data-trein" type="date" className="h-8" value={data} max={hoje()} onChange={(e) => setData(e.target.value)} />
           </div>
         </div>
@@ -357,7 +359,7 @@ function Aceites({ p, unidadeId }: { p: Required<Painel>; unidadeId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Aceite</CardTitle>
+        <CardTitle className="text-corpo">Aceite</CardTitle>
         <CardDescription>
           A virada põe a unidade "em operação"; o encerramento fecha a implantação. Cada etapa precisa do aceite do implantador e do gestor,
           com os itens obrigatórios cumpridos. O sistema não trava nada.
@@ -383,7 +385,7 @@ function Aceites({ p, unidadeId }: { p: Required<Painel>; unidadeId: string }) {
           ) : (
             <div className="flex flex-col gap-2">
               <div className="flex flex-col gap-1">
-                <Label htmlFor="imp-pend" className="text-xs">Pendências aceitas (itens recomendados em aberto, combinados)</Label>
+                <Label htmlFor="imp-pend" className="text-rotulo">Pendências aceitas (itens recomendados em aberto, combinados)</Label>
                 <Input id="imp-pend" className="h-8" value={pendencias} onChange={(e) => setPendencias(e.target.value)} />
               </div>
               <div>

@@ -5,9 +5,11 @@ import { Link } from 'react-router-dom'
 
 import { itensDeNavegacao } from '@/components/casca/navegacao'
 import { Chip, Chips, TituloPagina } from '@/components/monitor/Pagina'
+import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { useDesfazer } from '@/contexts/DesfazerContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { dataHora, diaMes } from '@/lib/formato'
 import { categoriaCobranca } from '@/lib/nir'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -72,7 +74,7 @@ function haQuanto(iso: string) {
   const h = Math.floor(min / 60)
   if (h < 24) return `há ${h} h`
   if (h < 48) return 'ontem'
-  return new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit' })
+  return diaMes(iso)
 }
 
 export default function Notificacoes() {
@@ -126,10 +128,9 @@ export default function Notificacoes() {
         titulo="Avisos"
         descricao={naoLidos ? `${naoLidos} não ${naoLidos === 1 ? 'lido' : 'lidos'}` : 'Tudo lido'}
         acoes={
-          <button type="button" disabled={!naoLidos || marcar.isPending} onClick={() => marcar.mutate(null)}
-            className="flex items-center gap-[7px] rounded-controle border border-fio bg-superficie px-[13px] py-2 text-apoio text-tinta-apoio hover:border-acao hover:text-acao disabled:opacity-60">
+          <Button variant="outline" disabled={!naoLidos || marcar.isPending} onClick={() => marcar.mutate(null)} className="px-[13px] py-2">
             <ShieldCheck className="size-[15px]" aria-hidden /> Marcar todas como lidas
-          </button>
+          </Button>
         }
       />
       <Chips rotulo="Filtrar avisos">
@@ -147,8 +148,8 @@ export default function Notificacoes() {
           const v = VISUAL[cat]
           const acao = (v.acao ? [v.acao].flat() : []).find((a) => rotas.has(a.to)) ?? null
           return (
-            <div key={n.id} className={cn('flex items-start gap-[13px] border-b border-trilha px-5 py-[15px] last:border-0', !n.lida && 'bg-acao/[0.04]')}>
-              <span className={cn('mt-[7px] size-[7px] shrink-0 rounded-full', n.lida ? 'bg-transparent' : 'bg-acao')} aria-hidden />
+            <div key={n.id} className={cn('flex items-start gap-[13px] border-b border-trilha px-5 py-[15px] last:border-0', !n.lida && 'bg-alerta-marca')}>
+              <span className={cn('mt-[7px] size-[7px] shrink-0 rounded-capsula', n.lida ? 'bg-transparent' : 'bg-acao')} aria-hidden />
               <span className={cn('grid size-[34px] shrink-0 place-items-center rounded-controle', v.cor)} aria-hidden>
                 <v.icone className="size-[17px]" />
               </span>
@@ -163,15 +164,15 @@ export default function Notificacoes() {
                       </Link>
                     )}
                     {!n.lida && (
-                      <button type="button" disabled={marcar.isPending} onClick={() => marcar.mutate([n.id])}
-                        className="text-apoio text-tinta-sussurro hover:text-tinta-apoio">
+                      <Button variant="link" disabled={marcar.isPending} onClick={() => marcar.mutate([n.id])}
+                        className="min-h-0 px-0 py-0 text-tinta-sussurro hover:text-tinta-apoio hover:no-underline">
                         Marcar como lido
-                      </button>
+                      </Button>
                     )}
                   </div>
                 )}
               </div>
-              <span className="shrink-0 text-apoio whitespace-nowrap text-tinta-sussurro" title={new Date(n.created_at).toLocaleString('pt-BR')}>
+              <span className="shrink-0 text-apoio whitespace-nowrap text-tinta-sussurro" title={dataHora(n.created_at)}>
                 {haQuanto(n.created_at)}
               </span>
             </div>

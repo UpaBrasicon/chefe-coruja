@@ -15,9 +15,10 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { dataHora as formatarDataHora } from '@/lib/formato'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { NIVEL_RISCO, type CorRisco } from '@/domain/risco'
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { TituloCartao, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Chip } from '@/components/documentos/ui'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,8 +26,8 @@ import { Spinner } from '@/components/ui/spinner'
 
 const CORES: CorRisco[] = ['vermelho', 'laranja', 'amarelo', 'verde', 'azul']
 const ESTILO_COR: Record<CorRisco, string> = {
-  vermelho: 'bg-mts-vermelho text-white', laranja: 'bg-mts-laranja text-white', amarelo: 'bg-mts-amarelo text-mts-amarelo-texto',
-  verde: 'bg-mts-verde text-white', azul: 'bg-mts-azul text-white',
+  vermelho: 'bg-mts-vermelho text-mts-texto', laranja: 'bg-mts-laranja text-mts-texto', amarelo: 'bg-mts-amarelo text-mts-amarelo-texto',
+  verde: 'bg-mts-verde text-mts-texto', azul: 'bg-mts-azul text-mts-texto',
 }
 type Discriminadores = Partial<Record<CorRisco, [string, string][]>>
 type Fluxo = {
@@ -36,8 +37,7 @@ type Fluxo = {
 type ProtocoloCR = { protocolo: { id: string; codigo: string; fonte: string } | null; fluxogramas: Fluxo[] }
 
 const msg = (e: unknown) => (e instanceof Error ? e.message : (e as { message?: string })?.message ?? 'Não foi possível salvar.')
-const dataHora = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }) : ''
+const dataHora = (iso: string | null) => (iso ? formatarDataHora(iso) : '')
 
 export default function Protocolos() {
   return (
@@ -46,7 +46,7 @@ export default function Protocolos() {
         descricao="O que a instituição oferece com um clique. Publicar um protocolo aqui muda o que o plantonista vê no Receituário — ele escolhe item a item, e nunca recebe o pacote sem ver." />
       <div className="flex flex-col gap-[22px]">
         <Classificacao />
-        <h2 className="mt-2 text-secao font-semibold tracking-[-0.01em] text-tinta">Protocolos de prescrição</h2>
+        <TituloSecao className="mt-2 mb-0">Protocolos de prescrição</TituloSecao>
         <Prescricao />
       </div>
     </div>
@@ -76,7 +76,7 @@ function Classificacao() {
   return (
     <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
       <div className="flex flex-col gap-1 border-b border-trilha px-5 py-4">
-        <h2 className="text-corpo font-semibold text-tinta">Classificação de risco</h2>
+        <TituloCartao className="mb-0">Classificação de risco</TituloCartao>
         <span className="text-apoio text-pretty text-tinta-sussurro">
           {dados.data?.protocolo ? `${dados.data.protocolo.fonte}. ` : ''}O protocolo é apoio ao enfermeiro; a cor é sempre dele. A unidade mantém ou muda cada fluxograma, citando o documento dela.
         </span>
@@ -120,8 +120,8 @@ function Classificacao() {
 
 const ESTADO: Record<Fluxo['estado'], [string, string]> = {
   revisao: ['Em revisão', 'bg-alerta-atencao text-atencao'],
-  mantido: ['Mantido', 'bg-conforme/[0.08] text-conforme'],
-  alterado: ['Alterado', 'bg-mts-azul/[0.08] text-mts-azul'],
+  mantido: ['Mantido', 'bg-alerta-conforme text-conforme'],
+  alterado: ['Alterado', 'bg-mts-azul/10 text-mts-azul'],
 }
 
 function LinhaFluxo({ f, unidadeId, aberto, onAbrir, onMudou }: {
@@ -179,10 +179,10 @@ function EditorFluxo({ f, unidadeId, onMudou }: { f: Fluxo; unidadeId: string; o
               <div key={i} className="flex items-center gap-2">
                 <Input aria-label={`Discriminador ${c} ${i + 1}`} value={d[0]} title={d[1] || undefined}
                   onChange={(e) => setEd((E) => { const x = copia(E); x[c]![i][0] = e.target.value; return x })} />
-                <button type="button" aria-label="Remover discriminador" onClick={() => setEd((E) => { const x = copia(E); x[c]!.splice(i, 1); return x })}
-                  className="grid size-8 shrink-0 place-items-center rounded-controle text-tinta-sussurro hover:bg-critico/[0.08] hover:text-critico">
+                <Button variant="ghost" size="icon" aria-label="Remover discriminador" onClick={() => setEd((E) => { const x = copia(E); x[c]!.splice(i, 1); return x })}
+                  className="hover:bg-alerta-critico hover:text-critico">
                   <X className="size-4" />
-                </button>
+                </Button>
               </div>
             ))}
             <div className="flex items-center gap-2">
@@ -336,8 +336,8 @@ function EditorReceita({ unidadeId, p, onFim, onCancelar }: {
             <Input aria-label="Medicamento" className="flex-[1_1_200px]" value={it.medicamento} onChange={(e) => muda(i, 'medicamento', e.target.value)} placeholder="Medicamento e apresentação" />
             <Input aria-label="Posologia" className="flex-[2_1_260px]" value={it.posologia} onChange={(e) => muda(i, 'posologia', e.target.value)} placeholder="Posologia" />
             <Input aria-label="Quantidade" className="flex-[0_1_140px]" value={it.quantidade} onChange={(e) => muda(i, 'quantidade', e.target.value)} placeholder="Quantidade" />
-            <button type="button" aria-label="Remover item" onClick={() => setItens((L) => L.filter((_, j) => j !== i))}
-              className="grid size-8 place-items-center rounded-controle text-tinta-sussurro hover:bg-critico/[0.08] hover:text-critico"><X className="size-4" /></button>
+            <Button variant="ghost" size="icon" aria-label="Remover item" onClick={() => setItens((L) => L.filter((_, j) => j !== i))}
+              className="hover:bg-alerta-critico hover:text-critico"><X className="size-4" /></Button>
           </div>
         ))}
         <div><Button size="sm" variant="outline" onClick={() => setItens((L) => [...L, { medicamento: '', posologia: '', quantidade: '' }])}><Plus /> Item</Button></div>

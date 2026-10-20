@@ -2,7 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ChevronRight } from 'lucide-react'
 import * as React from 'react'
 
+import { Chip, TituloCartao } from '@/components/monitor/Pagina'
+import { BotaoLinha } from '@/components/ui/botao-linha'
+import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { useDesfazer } from '@/contexts/DesfazerContext'
+import { diaMesHora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -14,8 +19,7 @@ import { chaveMedida, chavePainel, PAINEIS, useDefinirPanorama, usePanorama } fr
 
 const EXEMPLOS = ['Reinternação em 7 dias por setor', 'Tempo até a primeira prescrição', 'Altas assinadas depois das 18h']
 
-const quando = (iso: string) =>
-  new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+const quando = (iso: string) => diaMesHora(iso)
 
 export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
   const qc = useQueryClient()
@@ -71,7 +75,7 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
     <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-trilha px-5 py-[15px]">
         <div className="flex min-w-0 flex-col gap-0.5">
-          <h2 className="text-corpo font-semibold text-tinta">O que aparece no Panorama da unidade</h2>
+          <TituloCartao className="mb-0">O que aparece no Panorama da unidade</TituloCartao>
           <span className="text-apoio text-pretty text-tinta-sussurro">Escolha os painéis do carrossel e as medidas de cada um. Os números são da unidade inteira; por setor fica em Unidade.</span>
         </div>
         <span className="text-apoio text-tinta-sussurro">{ligados} de {PAINEIS.length} painéis</span>
@@ -85,8 +89,8 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
         return (
           <div key={p.chave} className="border-b border-trilha">
             <div className="flex items-center gap-3 px-5 py-3">
-              <button type="button" aria-expanded={estaAberto} onClick={() => setAberto(estaAberto ? null : p.chave)}
-                className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
+              <BotaoLinha variante="linha" aria-expanded={estaAberto} onClick={() => setAberto(estaAberto ? null : p.chave)}
+                className="w-auto min-w-0 flex-1 items-center gap-2.5 border-0 p-0 hover:bg-transparent">
                 <ChevronRight className={cn('size-[15px] shrink-0 text-tinta-sussurro transition-transform', estaAberto && 'rotate-90')} aria-hidden />
                 <span className="flex min-w-0 flex-col">
                   <span className={cn('text-corpo font-medium', ligado ? 'text-tinta' : 'text-tinta-apoio')}>{p.titulo}</span>
@@ -94,11 +98,12 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
                     {ligado ? `${vis} de ${lista.length} medidas` : 'Fora do carrossel'}
                   </span>
                 </span>
-              </button>
+              </BotaoLinha>
+              {/* padrao-ok: interruptor liga/desliga do painel (role=switch); não há peça de interruptor */}
               <button type="button" role="switch" aria-checked={ligado} aria-label={`${ligado ? 'Tirar' : 'Pôr'} o painel ${p.titulo} no carrossel`}
                 onClick={() => alternar(chavePainel(p.chave))}
                 className={cn('relative h-5 w-[34px] shrink-0 rounded-capsula transition-colors', ligado ? 'bg-acao' : 'bg-fio-forte')}>
-                <span className={cn('absolute top-0.5 size-4 rounded-full bg-white transition-[left]', ligado ? 'left-4' : 'left-0.5')} />
+                <span className={cn('absolute top-0.5 size-4 rounded-capsula bg-superficie transition-[left]', ligado ? 'left-4' : 'left-0.5')} />
               </button>
             </div>
             {estaAberto && (
@@ -106,11 +111,9 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
                 {lista.map((m) => {
                   const on = !fora.has(chaveMedida(p.chave, m.chave))
                   return (
-                    <button key={m.chave} type="button" aria-pressed={on} onClick={() => alternar(chaveMedida(p.chave, m.chave))}
-                      className={cn('rounded-capsula border px-[13px] py-[5px] text-apoio whitespace-nowrap transition-colors',
-                        on ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+                    <Chip key={m.chave} ativo={on} onClick={() => alternar(chaveMedida(p.chave, m.chave))}>
                       {m.rotulo}
-                    </button>
+                    </Chip>
                   )
                 })}
               </div>
@@ -125,21 +128,19 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
           <input value={texto} onChange={(e) => setTexto(e.target.value)} maxLength={300} aria-label="O que você quer medir na unidade"
             placeholder="O que você quer medir na unidade"
             className="min-w-[220px] flex-1 rounded-controle border border-fio bg-superficie px-3 py-2 text-controle text-tinta outline-none focus:border-acao" />
-          <select value={painel} onChange={(e) => setPainel(e.target.value)} aria-label="Painel da medida"
-            className="rounded-controle border border-fio bg-superficie px-2.5 py-2 text-controle text-tinta-apoio">
+          <CampoSelecao value={painel} onChange={(e) => setPainel(e.target.value)} aria-label="Painel da medida"
+            className="h-auto bg-superficie px-2.5 py-2 text-controle text-tinta-apoio">
             <option value="">Painel: qualquer</option>
             {PAINEIS.map((p) => <option key={p.chave} value={p.titulo}>{p.titulo}</option>)}
-          </select>
-          <button type="submit" disabled={pedir.isPending || texto.trim().length < 5}
-            className="rounded-controle bg-acao px-3.5 py-2 text-apoio font-medium text-sobre-acao hover:bg-acao-pressionada disabled:opacity-60">
+          </CampoSelecao>
+          <Button type="submit" disabled={pedir.isPending || texto.trim().length < 5}>
             Pedir medida
-          </button>
+          </Button>
         </form>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">Exemplos</span>
           {EXEMPLOS.map((t) => (
-            <button key={t} type="button" onClick={() => setTexto(t)}
-              className="rounded-capsula border border-fio bg-superficie px-3 py-[5px] text-apoio text-tinta-apoio hover:border-acao hover:bg-acao/5 hover:text-acao">{t}</button>
+            <Button key={t} variant="outline" size="sm" onClick={() => setTexto(t)} className="rounded-capsula px-3">{t}</Button>
           ))}
         </div>
         {pedir.error && <p className="text-apoio text-critico">{(pedir.error as Error).message}</p>}
@@ -159,10 +160,9 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
                 </span>
               </div>
               <span className="rounded-capsula bg-atencao/10 px-2 py-[3px] text-rotulo font-semibold tracking-[0.03em] text-atencao uppercase">Em preparo</span>
-              <button type="button" disabled={retirar.isPending} onClick={() => retirar.mutate({ id: m.id, texto: m.texto })}
-                className="rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio text-tinta-apoio hover:border-acao hover:text-acao">
+              <Button variant="outline" disabled={retirar.isPending} onClick={() => retirar.mutate({ id: m.id, texto: m.texto })}>
                 Retirar
-              </button>
+              </Button>
             </div>
           ))}
         </div>

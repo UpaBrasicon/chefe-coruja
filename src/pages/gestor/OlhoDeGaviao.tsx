@@ -5,10 +5,12 @@ import {
 } from 'lucide-react'
 import * as React from 'react'
 
-import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
+import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { useDesfazer } from '@/contexts/DesfazerContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { diaMes, diaMesHora, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { Database } from '@/types/database'
@@ -40,8 +42,8 @@ const ICONE: Record<string, LucideIcon> = {
   'clipboard-list': ClipboardList, 'trending-up': TrendingUp, hourglass: Hourglass, 'calendar-clock': CalendarClock,
 }
 const SEV = {
-  alta: { rotulo: 'Alta', cor: 'text-critico', fundo: 'bg-critico/[0.08]' },
-  media: { rotulo: 'Média', cor: 'text-atencao', fundo: 'bg-atencao/[0.08]' },
+  alta: { rotulo: 'Alta', cor: 'text-critico', fundo: 'bg-alerta-critico' },
+  media: { rotulo: 'Média', cor: 'text-atencao', fundo: 'bg-alerta-atencao' },
   baixa: { rotulo: 'Baixa', cor: 'text-tinta-apoio', fundo: 'bg-trilha' },
 } as const
 const DECISAO: Record<Decisao, { rotulo: string; cor: string; icone: LucideIcon }> = {
@@ -51,9 +53,8 @@ const DECISAO: Record<Decisao, { rotulo: string; cor: string; icone: LucideIcon 
 }
 const FILTROS_REG = ['Todas', 'Tratadas', 'Silenciadas', 'Descartadas'] as const
 
-const quando = (iso: string) =>
-  new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', ' ·')
-const dia = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit' })
+const quando = (iso: string) => diaMesHora(iso).replace(',', ' ·')
+const dia = (iso: string) => diaMes(iso)
 
 function Cartao({ a, pedindo, onPedir, onDecidir, ocupado }: {
   a: Apontamento; pedindo: boolean; onPedir: (v: boolean) => void; onDecidir: (d: Decisao, motivo?: string) => void; ocupado: boolean
@@ -93,28 +94,24 @@ function Cartao({ a, pedindo, onPedir, onDecidir, ocupado }: {
             <span className="text-apoio font-medium text-grafite">Por que não procede?</span>
             <div className="flex flex-wrap gap-[7px]">
               {MOTIVOS.map((m) => (
-                <button key={m} type="button" disabled={ocupado} onClick={() => onDecidir('descartado', m)}
-                  className="rounded-capsula border border-fio bg-superficie px-[13px] py-1.5 text-apoio text-tinta-apoio hover:border-fio-forte hover:text-tinta disabled:opacity-60">
+                <Button key={m} variant="outline" disabled={ocupado} onClick={() => onDecidir('descartado', m)} className="rounded-capsula px-[13px]">
                   {m}
-                </button>
+                </Button>
               ))}
             </div>
-            <button type="button" onClick={() => onPedir(false)} className="self-start text-apoio text-tinta-sussurro hover:text-tinta">Cancelar</button>
+            <Button variant="ghost" onClick={() => onPedir(false)} className="self-start px-0">Cancelar</Button>
           </div>
         ) : (
           <div className="mt-[3px] flex flex-wrap items-center gap-2">
-            <button type="button" disabled={ocupado} onClick={() => onDecidir('tratado')}
-              className="flex items-center gap-1.5 rounded-[9px] bg-acao px-[13px] py-[7px] text-apoio font-medium text-sobre-acao hover:bg-acao-pressionada disabled:opacity-60">
+            <Button disabled={ocupado} onClick={() => onDecidir('tratado')}>
               <ShieldCheck className="size-3.5" aria-hidden /> Tratado
-            </button>
-            <button type="button" disabled={ocupado} onClick={() => onDecidir('silenciado')}
-              className="rounded-[9px] border border-fio bg-superficie px-[13px] py-[7px] text-apoio text-tinta-apoio hover:border-fio-forte disabled:opacity-60">
+            </Button>
+            <Button variant="outline" disabled={ocupado} onClick={() => onDecidir('silenciado')}>
               Silenciar 7 dias
-            </button>
-            <button type="button" disabled={ocupado} onClick={() => onPedir(true)}
-              className="rounded-[9px] border border-fio bg-superficie px-[13px] py-[7px] text-apoio text-tinta-apoio hover:border-fio-forte disabled:opacity-60">
+            </Button>
+            <Button variant="outline" disabled={ocupado} onClick={() => onPedir(true)}>
               Não procede
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -186,7 +183,7 @@ export default function OlhoDeGaviao() {
   const cont = (s: string) => abertos.filter((a) => a.severidade === s).length
   const registro = (reg.data ?? []).filter((r: Registro) =>
     filtro === 'Todas' || (filtro === 'Tratadas' ? r.decisao === 'tratado' : filtro === 'Silenciadas' ? r.decisao === 'silenciado' : r.decisao === 'descartado'))
-  const varredura = ap.data ? new Date(ap.data.em).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }) : ''
+  const varredura = ap.data ? hora(ap.data.em) : ''
 
   return (
     <div className="mx-auto flex w-full max-w-[896px] flex-col">
@@ -196,7 +193,7 @@ export default function OlhoDeGaviao() {
         descricao={`Alertas de escala, carga horária e presença na unidade · varredura às ${varredura} · ${abertos.length === 1 ? '1 apontamento aberto' : `${abertos.length} apontamentos abertos`}`}
         acoes={
           <span className="flex items-center gap-1.5 rounded-capsula bg-acao/10 px-2 py-[3px] text-rotulo font-semibold tracking-[0.04em] text-acao uppercase">
-            <span className="size-1.5 rounded-full bg-acao" aria-hidden /> Varredura ativa
+            <span className="size-1.5 rounded-capsula bg-acao" aria-hidden /> Varredura ativa
           </span>
         }
       />
@@ -225,10 +222,9 @@ export default function OlhoDeGaviao() {
         </div>
       )}
 
-      <div className="mt-9 mb-1 flex flex-wrap items-baseline gap-3">
-        <h2 className="text-[18px] font-semibold tracking-[-0.01em] text-tinta">Registro das decisões</h2>
-        <span className="text-apoio text-tinta-sussurro">{registro.length === 1 ? '1 decisão' : `${registro.length} decisões`}</span>
-      </div>
+      <TituloSecao className="mt-9 mb-1 flex-wrap justify-start" extra={registro.length === 1 ? '1 decisão' : `${registro.length} decisões`}>
+        Registro das decisões
+      </TituloSecao>
       <p className="mb-3.5 text-apoio text-pretty text-tinta-sussurro">Toda decisão sobre um apontamento fica aqui, com autor, hora e motivo. A desfeita continua no registro, marcada.</p>
       <Chips rotulo="Filtrar decisões">
         {FILTROS_REG.map((f) => <Chip key={f} ativo={filtro === f} onClick={() => setFiltro(f)}>{f}</Chip>)}
@@ -242,7 +238,7 @@ export default function OlhoDeGaviao() {
             <div key={r.id} className={cn('grid grid-cols-1 items-start gap-x-3.5 gap-y-1 px-[18px] py-[13px] sm:grid-cols-[132px_1fr_168px]', i > 0 && 'border-t border-trilha', r.desfeita_em && 'opacity-60')}>
               <span className="text-apoio text-tinta-sussurro tabular">{quando(r.criado_em)}</span>
               <div className="flex min-w-0 flex-col gap-[3px]">
-                <span className={cn('text-[14px] leading-[1.35] font-medium text-pretty text-tinta', r.desfeita_em && 'line-through')}>{r.titulo}</span>
+                <span className={cn('text-controle leading-[1.35] font-medium text-pretty text-tinta', r.desfeita_em && 'line-through')}>{r.titulo}</span>
                 {r.motivo && <span className="text-apoio leading-[1.4] text-pretty text-tinta-sussurro">{r.motivo}</span>}
                 <span className="text-apoio text-tinta-sussurro">
                   {r.meu ? 'Você' : r.autor_nome}{r.desfeita_em ? ` · desfeita às ${quando(r.desfeita_em)}` : ''}

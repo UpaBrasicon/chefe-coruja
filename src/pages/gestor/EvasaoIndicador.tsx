@@ -6,10 +6,12 @@ import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { CorRisco } from '@/domain/risco'
 import { baixarCsv, gerarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { MOMENTOS_EVASAO, MOTIVOS_EVASAO, rotuloMomento, rotuloMotivo, taxa, type IndicadorEvasao } from '@/lib/evasao'
 import { descreverFiltros } from '@/lib/filtrosBi'
+import { dataHora, dataIso, diaMesHora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
 import type { ContextoFiltros } from './useFiltrosBI'
@@ -22,13 +24,11 @@ import type { ContextoFiltros } from './useFiltrosBI'
 
 const TURNOS = [['manha', 'Manhã (07–13)'], ['tarde', 'Tarde (13–19)'], ['noite', 'Noite (19–07)']] as const
 const fmtDia = (iso: string) => iso.split('-').reverse().join('/')
-const fmtHora = (iso: string | null) => iso
-  ? new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', ' ·')
-  : '—'
+const fmtHora = (iso: string | null) => iso ? diaMesHora(iso).replace(',', ' ·') : '—'
 
 function Barras({ titulo, itens, total }: { titulo: string; itens: { rotulo: string; n: number }[]; total: number }) {
   return (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-fio px-3 py-2.5">
+    <div className="flex flex-col gap-1.5 rounded-controle border border-fio px-3 py-2.5">
       <span className="text-rotulo font-medium text-tinta-apoio">{titulo}</span>
       {itens.map((i) => (
         <div key={i.rotulo} className="flex items-center gap-2 text-apoio">
@@ -44,7 +44,7 @@ function Barras({ titulo, itens, total }: { titulo: string; itens: { rotulo: str
 }
 
 export function EvasaoIndicador({ unidadeId, nomeUnidade, ctx }: { unidadeId: string; nomeUnidade: string; ctx: ContextoFiltros }) {
-  const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+  const hoje = dataIso()
   const [verCasos, setVerCasos] = React.useState(false)
   const faixa = ctx.faixa
 
@@ -70,7 +70,7 @@ export function EvasaoIndicador({ unidadeId, nomeUnidade, ctx }: { unidadeId: st
         ['Unidade', nomeUnidade], ['Relatório', 'Evasão e alta a pedido'], ['Período', `${fmtDia(data.de)} a ${fmtDia(data.ate)}`], ['Filtros', descreverFiltros(ctx.filtros, ctx.nomes)],
         ['Evasões por momento', MOMENTOS_EVASAO.map((m) => `${m.rotulo} ${data.por_momento[m.valor]}`).join('; ')],
         ['Evasões por motivo', MOTIVOS_EVASAO.map((m) => `${m.rotulo} ${data.por_motivo[m.valor]}`).join('; ')],
-        ['Gerado em', new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })],
+        ['Gerado em', dataHora(new Date())],
       ] },
     ))
   }
@@ -79,7 +79,7 @@ export function EvasaoIndicador({ unidadeId, nomeUnidade, ctx }: { unidadeId: st
     <Card>
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <LogOut className="size-4 text-tinta-sussurro" />
             Evasão e alta a pedido
           </CardTitle>
@@ -96,18 +96,18 @@ export function EvasaoIndicador({ unidadeId, nomeUnidade, ctx }: { unidadeId: st
 
         {data && (
           data.chegadas === 0 ? (
-            <p className="text-sm text-tinta-sussurro">Nenhuma chegada no período.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhuma chegada no período.</p>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                <div className="flex flex-col gap-1 rounded-lg border border-fio px-3 py-2.5">
+                <div className="flex flex-col gap-1 rounded-controle border border-fio px-3 py-2.5">
                   <span className="text-rotulo text-tinta-apoio">Taxa de evasão</span>
-                  <span className={`text-[22px] leading-none font-semibold tabular ${data.evasoes > 0 ? 'text-critico' : 'text-tinta'}`}>{taxa(data.evasoes, data.chegadas)}</span>
+                  <span className={`text-titulo leading-none font-semibold tabular ${data.evasoes > 0 ? 'text-critico' : 'text-tinta'}`}>{taxa(data.evasoes, data.chegadas)}</span>
                   <span className="text-rotulo text-tinta-sussurro">{data.evasoes} de {data.chegadas} chegadas</span>
                 </div>
-                <div className="flex flex-col gap-1 rounded-lg border border-fio px-3 py-2.5">
+                <div className="flex flex-col gap-1 rounded-controle border border-fio px-3 py-2.5">
                   <span className="text-rotulo text-tinta-apoio">Taxa de alta a pedido</span>
-                  <span className="text-[22px] leading-none font-semibold tabular text-tinta">{taxa(data.alta_a_pedido, data.chegadas)}</span>
+                  <span className="text-titulo leading-none font-semibold tabular text-tinta">{taxa(data.alta_a_pedido, data.chegadas)}</span>
                   <span className="text-rotulo text-tinta-sussurro">{data.alta_a_pedido} de {data.chegadas} chegadas</span>
                 </div>
               </div>
@@ -139,33 +139,33 @@ export function EvasaoIndicador({ unidadeId, nomeUnidade, ctx }: { unidadeId: st
                   {verCasos && (
                     <>
                       <span className="text-rotulo text-tinta-sussurro">Acesso registrado na auditoria{data.casos.length >= 300 ? ' · mostrando os 300 mais recentes' : ''}.</span>
-                      <div className="overflow-x-auto rounded-lg border border-fio">
-                        <table className="w-full min-w-[760px] text-apoio">
-                          <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
-                            <tr>
-                              <th className="px-3 py-2 font-medium">Paciente</th>
-                              <th className="px-3 py-2 font-medium">Cor</th>
-                              <th className="px-3 py-2 font-medium">Chegada</th>
-                              <th className="px-3 py-2 font-medium">Saiu</th>
-                              <th className="px-3 py-2 font-medium">Quando</th>
-                              <th className="px-3 py-2 font-medium">Motivo</th>
-                              <th className="px-3 py-2 font-medium">Justificativa</th>
-                            </tr>
-                          </thead>
-                          <tbody>
+                      <div className="overflow-x-auto rounded-controle border border-fio">
+                        <Table variante="referencia" className="w-full min-w-[760px] text-apoio">
+                          <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
+                            <TableRow>
+                              <TableHead className="px-3 py-2 font-medium">Paciente</TableHead>
+                              <TableHead className="px-3 py-2 font-medium">Cor</TableHead>
+                              <TableHead className="px-3 py-2 font-medium">Chegada</TableHead>
+                              <TableHead className="px-3 py-2 font-medium">Saiu</TableHead>
+                              <TableHead className="px-3 py-2 font-medium">Quando</TableHead>
+                              <TableHead className="px-3 py-2 font-medium">Motivo</TableHead>
+                              <TableHead className="px-3 py-2 font-medium">Justificativa</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
                             {data.casos.map((c, i) => (
-                              <tr key={i} className="border-b border-trilha align-top last:border-0">
-                                <td className="px-3 py-1.5 font-medium text-tinta">{c.nome}</td>
-                                <td className="px-3 py-1.5"><PilulaRisco cor={(c.cor as CorRisco | null) ?? null} /></td>
-                                <td className="px-3 py-1.5 tabular text-tinta-apoio">{fmtHora(c.chegada_em)}</td>
-                                <td className="px-3 py-1.5 tabular text-tinta-apoio">{fmtHora(c.saiu_em)}</td>
-                                <td className="px-3 py-1.5 text-tinta-apoio">{rotuloMomento(c.momento)}</td>
-                                <td className="px-3 py-1.5 text-tinta-apoio">{rotuloMotivo(c.motivo)}</td>
-                                <td className="px-3 py-1.5 text-tinta-apoio">{c.justificativa ?? '—'}</td>
-                              </tr>
+                              <TableRow key={i} className="border-b border-trilha align-top last:border-0">
+                                <TableCell className="px-3 py-1.5 font-medium text-tinta">{c.nome}</TableCell>
+                                <TableCell className="px-3 py-1.5"><PilulaRisco cor={(c.cor as CorRisco | null) ?? null} /></TableCell>
+                                <TableCell className="px-3 py-1.5 tabular text-tinta-apoio">{fmtHora(c.chegada_em)}</TableCell>
+                                <TableCell className="px-3 py-1.5 tabular text-tinta-apoio">{fmtHora(c.saiu_em)}</TableCell>
+                                <TableCell className="px-3 py-1.5 text-tinta-apoio">{rotuloMomento(c.momento)}</TableCell>
+                                <TableCell className="px-3 py-1.5 text-tinta-apoio">{rotuloMotivo(c.motivo)}</TableCell>
+                                <TableCell className="px-3 py-1.5 text-tinta-apoio">{c.justificativa ?? '—'}</TableCell>
+                              </TableRow>
                             ))}
-                          </tbody>
-                        </table>
+                          </TableBody>
+                        </Table>
                       </div>
                     </>
                   )}

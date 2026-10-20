@@ -9,9 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { supabase } from '@/lib/supabase'
 import { fmtData, fmtDataHora } from '@/lib/datas'
+import { dataIso } from '@/lib/formato'
 import { StatusPedido } from '@/components/prontuario/StatusPedido'
 
 // Auditoria da unidade (fase 6): pedidos de acesso ao prontuário encerrado,
@@ -52,8 +54,8 @@ type Trilha = { seq: number; criado_em: string; ator_nome: string | null; acao: 
 const TIPO_ACESSO: Record<string, string> = { leitura_prontuario: 'Leitura', leitura_documento: 'Leitura de documento', impressao: 'Impressão', exportacao: 'Exportação' }
 const PAPEL: Record<string, string> = { plantonista: 'plantonista', enfermeiro: 'enfermeiro', tecnico_enfermagem: 'técnico de enfermagem', farmaceutico: 'farmacêutico', telemedicina: 'telemedicina', gestor: 'gestor', recepcao: 'recepção' }
 
-const hoje = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
-const diasAtras = (n: number) => new Date(Date.now() - n * 86_400_000).toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+const hoje = () => dataIso()
+const diasAtras = (n: number) => dataIso(Date.now() - n * 86_400_000)
 const inicioDoDia = (d: string) => new Date(d + 'T00:00:00-03:00').toISOString()
 const fimDoDia = (d: string) => new Date(d + 'T23:59:59.999-03:00').toISOString()
 
@@ -96,7 +98,7 @@ function PedidosAcesso() {
   })
 
   if (isLoading) return <Spinner />
-  if (error) return <p className="text-sm text-critico">{(error as Error).message}</p>
+  if (error) return <p className="text-apoio text-critico">{(error as Error).message}</p>
   const pendentes = (data ?? []).filter((p) => p.status === 'pendente')
   const decididos = (data ?? []).filter((p) => p.status !== 'pendente')
 
@@ -104,22 +106,22 @@ function PedidosAcesso() {
     <div className="flex flex-col gap-4">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Aguardando decisão ({pendentes.length})</CardTitle>
+          <CardTitle className="text-corpo">Aguardando decisão ({pendentes.length})</CardTitle>
           <CardDescription>Aprovado, o acesso vale 24 horas a partir de agora e é só de leitura. Para recusar, escreva o motivo: quem pediu vai lê-lo.</CardDescription>
         </CardHeader>
         <CardContent>
-          {pendentes.length === 0 && <p className="text-sm text-tinta-sussurro">Nenhum pedido pendente.</p>}
+          {pendentes.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum pedido pendente.</p>}
           <ul className="flex flex-col gap-3">
             {pendentes.map((p) => (
-              <li key={p.id} className="rounded-lg border p-3">
-                <div className="flex flex-wrap items-center gap-2 text-sm">
+              <li key={p.id} className="rounded-controle border p-3">
+                <div className="flex flex-wrap items-center gap-2 text-apoio">
                   <span className="font-medium">{p.solicitante_nome}</span>
                   <span className="text-tinta-sussurro">({PAPEL[p.papel] ?? p.papel}) pede o prontuário de</span>
                   <span className="font-medium">{p.paciente_nome}</span>
                   {p.paciente_nascimento && <span className="text-tinta-sussurro">nasc. {fmtData(p.paciente_nascimento)}</span>}
                 </div>
-                <div className="text-xs text-tinta-sussurro">{fmtDataHora(p.criado_em)}</div>
-                <p className="mt-2 rounded bg-trilha/60 p-2 text-sm">{p.motivo}</p>
+                <div className="text-rotulo text-tinta-sussurro">{fmtDataHora(p.criado_em)}</div>
+                <p className="mt-2 rounded-controle bg-trilha/60 p-2 text-apoio">{p.motivo}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <Input className="max-w-sm" placeholder="Motivo (obrigatório para recusar)" value={motivos[p.id] ?? ''}
                     onChange={(e) => setMotivos((m) => ({ ...m, [p.id]: e.target.value }))} />
@@ -130,24 +132,24 @@ function PedidosAcesso() {
               </li>
             ))}
           </ul>
-          {decidir.error && <p className="mt-3 text-sm text-critico">{(decidir.error as Error).message}</p>}
+          {decidir.error && <p className="mt-3 text-apoio text-critico">{(decidir.error as Error).message}</p>}
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Decididos nos últimos 30 dias</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-corpo">Decididos nos últimos 30 dias</CardTitle></CardHeader>
         <CardContent>
-          {decididos.length === 0 ? <p className="text-sm text-tinta-sussurro">Nenhum.</p> : (
-            <ul className="divide-y rounded-lg border">
+          {decididos.length === 0 ? <p className="text-apoio text-tinta-sussurro">Nenhum.</p> : (
+            <ul className="divide-y rounded-controle border">
               {decididos.map((p) => (
-                <li key={p.id} className="p-3 text-sm">
+                <li key={p.id} className="p-3 text-apoio">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">{p.solicitante_nome}</span>
                     <span className="text-tinta-sussurro">→</span>
                     <span>{p.paciente_nome}</span>
                     <StatusPedido status={p.status} vigente={p.status === 'aprovado' ? p.vigente : undefined} />
                   </div>
-                  <div className="text-xs text-tinta-sussurro">
+                  <div className="text-rotulo text-tinta-sussurro">
                     Pedido {fmtDataHora(p.criado_em)}
                     {p.decidido_em ? ` · decidido por ${p.decidido_por_nome ?? '—'} em ${fmtDataHora(p.decidido_em)}` : ''}
                     {p.valido_ate ? ` · vale até ${fmtDataHora(p.valido_ate)}` : ''}
@@ -187,7 +189,7 @@ function AcessosProntuario() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Quem abriu, imprimiu ou exportou prontuário</CardTitle>
+        <CardTitle className="text-corpo">Quem abriu, imprimiu ou exportou prontuário</CardTitle>
         <CardDescription>Registro feito pelo servidor a cada abertura (agrupada em 5 minutos) e a cada impressão. No máximo 1000 linhas por consulta.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -196,32 +198,32 @@ function AcessosProntuario() {
           <div className="grid gap-1.5"><Label htmlFor="filtro">Profissional ou paciente</Label><Input id="filtro" value={filtro} onChange={(e) => setFiltro(e.target.value)} /></div>
         </div>
         {isLoading && <Spinner />}
-        {error && <p className="text-sm text-critico">{(error as Error).message}</p>}
+        {error && <p className="text-apoio text-critico">{(error as Error).message}</p>}
         {data && (
           <div className="overflow-x-auto">
-            <p className="mb-2 text-xs text-tinta-sussurro">{linhas.length} registro{linhas.length === 1 ? '' : 's'}{data.length >= 1000 ? ' · limite atingido, reduza o período' : ''}</p>
-            <table className="w-full min-w-[640px] text-sm">
-              <thead className="text-left text-xs text-tinta-sussurro">
-                <tr><th className="py-1.5 font-medium">Quando</th><th className="font-medium">Profissional</th><th className="font-medium">Paciente</th><th className="font-medium">Tipo</th><th className="font-medium">Origem</th></tr>
-              </thead>
-              <tbody>
+            <p className="mb-2 text-rotulo text-tinta-sussurro">{linhas.length} registro{linhas.length === 1 ? '' : 's'}{data.length >= 1000 ? ' · limite atingido, reduza o período' : ''}</p>
+            <Table variante="referencia" className="w-full min-w-[640px] text-apoio">
+              <TableHeader className="text-left text-rotulo text-tinta-sussurro">
+                <TableRow><TableHead className="py-1.5 font-medium">Quando</TableHead><TableHead className="font-medium">Profissional</TableHead><TableHead className="font-medium">Paciente</TableHead><TableHead className="font-medium">Tipo</TableHead><TableHead className="font-medium">Origem</TableHead></TableRow>
+              </TableHeader>
+              <TableBody>
                 {linhas.map((a) => (
-                  <tr key={a.id} className="border-t">
-                    <td className="py-1.5 pr-2 whitespace-nowrap">{fmtDataHora(a.criado_em)}</td>
-                    <td className="pr-2">{a.profissional_nome}<span className="text-xs text-tinta-sussurro"> · {PAPEL[a.papel ?? ''] ?? a.papel ?? '—'}</span></td>
-                    <td className="pr-2">{a.paciente_nome}</td>
-                    <td className="pr-2">{TIPO_ACESSO[a.tipo_acesso] ?? a.tipo_acesso}{a.documento_tipo ? ` · ${a.documento_tipo.replace(/_/g, ' ')}` : ''}</td>
-                    <td>
+                  <TableRow key={a.id} className="border-t">
+                    <TableCell className="py-1.5 pr-2 whitespace-nowrap">{fmtDataHora(a.criado_em)}</TableCell>
+                    <TableCell className="pr-2">{a.profissional_nome}<span className="text-rotulo text-tinta-sussurro"> · {PAPEL[a.papel ?? ''] ?? a.papel ?? '—'}</span></TableCell>
+                    <TableCell className="pr-2">{a.paciente_nome}</TableCell>
+                    <TableCell className="pr-2">{TIPO_ACESSO[a.tipo_acesso] ?? a.tipo_acesso}{a.documento_tipo ? ` · ${a.documento_tipo.replace(/_/g, ' ')}` : ''}</TableCell>
+                    <TableCell>
                       {a.via_pedido ? <Badge variant="info">pedido aprovado</Badge>
                         : a.motivo ? <Badge variant="outline">motivo de quem cuida</Badge>
-                        : <span className="text-xs text-tinta-sussurro">{a.papel === 'gestor' ? 'gestor (sem pedido)' : 'escala'}</span>}
+                        : <span className="text-rotulo text-tinta-sussurro">{a.papel === 'gestor' ? 'gestor (sem pedido)' : 'escala'}</span>}
                       {/* Fase 1, tarefa 8: histórico encerrado aberto com motivo */}
-                      {a.motivo && <span className="mt-0.5 block text-xs text-pretty text-tinta-apoio">“{a.motivo}”</span>}
-                    </td>
-                  </tr>
+                      {a.motivo && <span className="mt-0.5 block text-rotulo text-pretty text-tinta-apoio">“{a.motivo}”</span>}
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </CardContent>
@@ -268,7 +270,7 @@ function TrilhaUnidade() {
   return (
     <div className="flex flex-col gap-4">
       {i && (
-        <div className={`flex items-center gap-2 rounded-lg border p-3 text-sm ${i.integra ? 'border-conforme/30 bg-conforme/[0.06]' : 'border-critico/40 bg-critico/[0.08] text-critico'}`}>
+        <div className={`flex items-center gap-2 rounded-controle border p-3 text-apoio ${i.integra ? 'border-conforme/30 bg-alerta-conforme' : 'border-critico/40 bg-alerta-critico text-critico'}`}>
           {i.integra ? <ShieldCheck className="size-4 text-conforme" /> : <ShieldAlert className="size-4" />}
           {i.integra
             ? `Cadeia de auditoria íntegra: ${i.registros} registros conferidos em ${fmtDataHora(i.conferido_em)}.`
@@ -278,14 +280,14 @@ function TrilhaUnidade() {
       {cobertura.data && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Cobertura da auditoria clínica</CardTitle>
+            <CardTitle className="text-corpo">Cobertura da auditoria clínica</CardTitle>
             <CardDescription>
               Registros clínicos da unidade desde {fmtDataHora(cobertura.data.desde)} (últimos 30 dias) e quantos ficaram sem a linha correspondente na trilha.
               Sinais vitais não entram: cada aferição já é registro só de inserção, com autor e hora.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+            <div className="grid gap-x-6 gap-y-1 text-apoio sm:grid-cols-2">
               {(cobertura.data.eventos ?? []).map((e) => (
                 <div key={e.evento} className="flex items-center justify-between gap-3 border-b border-trilha py-1">
                   <span className="text-tinta">{e.evento}</span>
@@ -298,37 +300,37 @@ function TrilhaUnidade() {
           </CardContent>
         </Card>
       )}
-      {cobertura.error && <p className="text-sm text-critico">{(cobertura.error as Error).message}</p>}
+      {cobertura.error && <p className="text-apoio text-critico">{(cobertura.error as Error).message}</p>}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Trilha de ações da unidade</CardTitle>
+          <CardTitle className="text-corpo">Trilha de ações da unidade</CardTitle>
           <CardDescription>Só inserção, encadeada por hash. Os detalhes guardam apenas campos de uma lista fechada, sem dado clínico.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <Periodo de={de} ate={ate} setDe={setDe} setAte={setAte} />
           {trilha.isLoading && <Spinner />}
-          {trilha.error && <p className="text-sm text-critico">{(trilha.error as Error).message}</p>}
-          {trilha.data && trilha.data.length === 0 && <p className="text-sm text-tinta-sussurro">Nenhuma ação no período.</p>}
+          {trilha.error && <p className="text-apoio text-critico">{(trilha.error as Error).message}</p>}
+          {trilha.data && trilha.data.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhuma ação no período.</p>}
           {trilha.data && trilha.data.length > 0 && (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-sm">
-                <thead className="text-left text-xs text-tinta-sussurro">
-                  <tr><th className="py-1.5 font-medium">Nº</th><th className="font-medium">Quando</th><th className="font-medium">Quem</th><th className="font-medium">Ação</th><th className="font-medium">Detalhes</th></tr>
-                </thead>
-                <tbody>
+              <Table variante="referencia" className="w-full min-w-[640px] text-apoio">
+                <TableHeader className="text-left text-rotulo text-tinta-sussurro">
+                  <TableRow><TableHead className="py-1.5 font-medium">Nº</TableHead><TableHead className="font-medium">Quando</TableHead><TableHead className="font-medium">Quem</TableHead><TableHead className="font-medium">Ação</TableHead><TableHead className="font-medium">Detalhes</TableHead></TableRow>
+                </TableHeader>
+                <TableBody>
                   {trilha.data.map((t) => (
-                    <tr key={t.seq} className="border-t align-top">
-                      <td className="py-1.5 pr-2 tabular text-tinta-sussurro">{t.seq}</td>
-                      <td className="pr-2 whitespace-nowrap">{fmtDataHora(t.criado_em)}</td>
-                      <td className="pr-2">{t.ator_nome ?? 'sistema'}</td>
-                      <td className="pr-2">{t.acao.replace(/_/g, ' ')}<span className="text-xs text-tinta-sussurro"> · {t.entidade.replace(/_/g, ' ')}</span></td>
-                      <td className="text-xs text-tinta-apoio">
+                    <TableRow key={t.seq} className="border-t align-top">
+                      <TableCell className="py-1.5 pr-2 tabular text-tinta-sussurro">{t.seq}</TableCell>
+                      <TableCell className="pr-2 whitespace-nowrap">{fmtDataHora(t.criado_em)}</TableCell>
+                      <TableCell className="pr-2">{t.ator_nome ?? 'sistema'}</TableCell>
+                      <TableCell className="pr-2">{t.acao.replace(/_/g, ' ')}<span className="text-rotulo text-tinta-sussurro"> · {t.entidade.replace(/_/g, ' ')}</span></TableCell>
+                      <TableCell className="text-rotulo text-tinta-apoio">
                         {t.payload ? Object.entries(t.payload).map(([k, v]) => `${k.replace(/_/g, ' ')}: ${Array.isArray(v) ? v.join(', ') : String(v)}`).join(' · ') : '—'}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>

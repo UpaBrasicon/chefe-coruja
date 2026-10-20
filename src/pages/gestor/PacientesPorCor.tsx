@@ -5,9 +5,11 @@ import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { baixarCsv, gerarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { percentual, type CorAlvo, type PacientesPorCor as Dados } from '@/lib/esperaTriagem'
 import { descreverFiltros } from '@/lib/filtrosBi'
+import { dataHora, dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
 import type { ContextoFiltros } from './useFiltrosBI'
@@ -20,12 +22,12 @@ import type { ContextoFiltros } from './useFiltrosBI'
 const CORES: CorAlvo[] = ['vermelho', 'laranja', 'amarelo', 'verde', 'azul']
 const BARRA: Record<CorAlvo | 'sem_classificacao', string> = {
   vermelho: 'bg-mts-vermelho', laranja: 'bg-mts-laranja', amarelo: 'bg-mts-amarelo', verde: 'bg-mts-verde', azul: 'bg-mts-azul',
-  sem_classificacao: 'bg-[repeating-linear-gradient(45deg,#CBD5E1_0_3px,transparent_3px_6px)]',
+  sem_classificacao: 'bg-[repeating-linear-gradient(45deg,var(--color-fio-forte)_0_3px,transparent_3px_6px)]',
 }
 const fmtDia = (iso: string) => iso.split('-').reverse().join('/')
 
 export function PacientesPorCor({ unidadeId, nomeUnidade, ctx }: { unidadeId: string; nomeUnidade: string; ctx: ContextoFiltros }) {
-  const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+  const hoje = dataIso()
   const faixa = ctx.faixa
 
   const { data, isLoading, error } = useQuery({
@@ -48,7 +50,7 @@ export function PacientesPorCor({ unidadeId, nomeUnidade, ctx }: { unidadeId: st
         ['Unidade', nomeUnidade], ['Relatório', 'Pacientes por classificação de risco (cor final)'],
         ['Período', `${fmtDia(data.de)} a ${fmtDia(data.ate)}`], ['Filtros', descreverFiltros(ctx.filtros, ctx.nomes)],
         ['Reclassificados', `${data.reclassificados.total} (${data.reclassificados.subiram} subiram, ${data.reclassificados.baixaram} baixaram)`],
-        ['Gerado em', new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })],
+        ['Gerado em', dataHora(new Date())],
       ] },
     ))
   }
@@ -59,7 +61,7 @@ export function PacientesPorCor({ unidadeId, nomeUnidade, ctx }: { unidadeId: st
     <Card>
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-corpo">
             <Palette className="size-4 text-tinta-sussurro" />
             Pacientes por classificação de risco
           </CardTitle>
@@ -76,7 +78,7 @@ export function PacientesPorCor({ unidadeId, nomeUnidade, ctx }: { unidadeId: st
 
         {data && (
           data.total === 0 ? (
-            <p className="text-sm text-tinta-sussurro">Nenhuma chegada com esses filtros.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhuma chegada com esses filtros.</p>
           ) : (
             <>
               <div className="flex flex-col gap-2" role="list" aria-label="Pacientes por cor">
@@ -102,27 +104,27 @@ export function PacientesPorCor({ unidadeId, nomeUnidade, ctx }: { unidadeId: st
                 ({data.reclassificados.subiram} subiram de gravidade, {data.reclassificados.baixaram} baixaram)
               </p>
               {data.por_dia.length > 1 && (
-                <div className="overflow-x-auto rounded-lg border border-fio">
-                  <table className="w-full min-w-[600px] text-apoio">
-                    <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
-                      <tr>
-                        <th className="px-3 py-2 font-medium">Dia</th>
-                        <th className="px-3 py-2 text-right font-medium">Total</th>
-                        {CORES.map((c) => <th key={c} className="px-3 py-2 text-right font-medium capitalize">{c}</th>)}
-                        <th className="px-3 py-2 text-right font-medium">Sem class.</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                <div className="overflow-x-auto rounded-controle border border-fio">
+                  <Table variante="referencia" className="w-full min-w-[600px] text-apoio">
+                    <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
+                      <TableRow>
+                        <TableHead className="px-3 py-2 font-medium">Dia</TableHead>
+                        <TableHead className="px-3 py-2 text-right font-medium">Total</TableHead>
+                        {CORES.map((c) => <TableHead key={c} className="px-3 py-2 text-right font-medium capitalize">{c}</TableHead>)}
+                        <TableHead className="px-3 py-2 text-right font-medium">Sem class.</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {data.por_dia.map((d) => (
-                        <tr key={d.dia} className="border-b border-trilha last:border-0 tabular">
-                          <td className="px-3 py-1.5">{fmtDia(d.dia)}</td>
-                          <td className="px-3 py-1.5 text-right font-medium">{d.total}</td>
-                          {CORES.map((c) => <td key={c} className="px-3 py-1.5 text-right">{d[c]}</td>)}
-                          <td className="px-3 py-1.5 text-right">{d.sem_classificacao}</td>
-                        </tr>
+                        <TableRow key={d.dia} className="border-b border-trilha last:border-0 tabular">
+                          <TableCell className="px-3 py-1.5">{fmtDia(d.dia)}</TableCell>
+                          <TableCell className="px-3 py-1.5 text-right font-medium">{d.total}</TableCell>
+                          {CORES.map((c) => <TableCell key={c} className="px-3 py-1.5 text-right">{d[c]}</TableCell>)}
+                          <TableCell className="px-3 py-1.5 text-right">{d.sem_classificacao}</TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </>
