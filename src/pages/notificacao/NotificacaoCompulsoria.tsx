@@ -19,7 +19,8 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useTerminologia } from '@/hooks/useTerminologia'
-import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
+import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
@@ -125,9 +126,10 @@ export default function NotificacaoCompulsoria() {
           {cids.map((c) => (
             <span key={c} className="inline-flex items-center gap-1.5 rounded-capsula border border-acao/40 bg-acao/10 py-1 pr-1.5 pl-[11px] text-apoio font-medium text-acao">
               {c}
-              <button type="button" aria-label={`Excluir ${c}`} onClick={() => setCids((x) => x.filter((y) => y !== c))} className="flex p-0.5">
+              <Button variant="ghost" size="icon-xs" aria-label={`Excluir ${c}`} onClick={() => setCids((x) => x.filter((y) => y !== c))}
+                className="size-auto p-0.5 text-acao hover:text-acao-pressionada">
                 <X className="size-3.5" aria-hidden />
-              </button>
+              </Button>
             </span>
           ))}
         </div>
@@ -148,7 +150,7 @@ export default function NotificacaoCompulsoria() {
         )}
       </div>
 
-      {erro && <p role="alert" className="mb-3 rounded-controle border border-critico/30 bg-critico/[0.06] p-3 text-apoio text-critico">{erro}</p>}
+      {erro && <p role="alert" className="mb-3 rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</p>}
 
       {casos.isLoading ? (
         <div className="flex h-32 items-center justify-center"><Spinner /></div>
@@ -248,11 +250,10 @@ function IncluirCid({ cids, incluir }: { cids: string[]; incluir: (c: string) =>
         {lista.length > 0 && (
           <div role="listbox" className="absolute top-full right-0 left-0 z-30 mt-0.5 max-h-[280px] overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
             {lista.map((r) => (
-              <button key={r.codigo} type="button" role="option" aria-selected={false}
-                onMouseDown={(e) => e.preventDefault()} onClick={() => { setFoco(false); void conferirEIncluir(r.codigo) }}
-                className="block w-full border-b border-trilha px-3 py-2 text-left text-controle text-tinta last:border-b-0 hover:bg-campo">
+              <OpcaoLista key={r.codigo} onClick={() => { setFoco(false); void conferirEIncluir(r.codigo) }}
+                className="block text-controle text-tinta hover:bg-campo">
                 {r.codigo} — {r.descricao}
-              </button>
+              </OpcaoLista>
             ))}
           </div>
         )}
@@ -301,9 +302,9 @@ function AcidenteTrabalho({ unidadeId, aoAbrir, aoErro }: { unidadeId: string | 
 
   return (
     <section className={cn(caixa, 'mt-4 flex flex-col gap-3 p-4 sm:px-5')} aria-label="Abrir notificação de acidente de trabalho">
-      <h2 className="flex items-center gap-2 text-corpo font-semibold text-tinta">
-        <HardHat className="size-4 text-acao" aria-hidden /> Abrir notificação de acidente de trabalho
-      </h2>
+      <TituloSecao className="mb-0">
+        <span className="flex items-center gap-2"><HardHat className="size-4 text-acao" aria-hidden /> Abrir notificação de acidente de trabalho</span>
+      </TituloSecao>
       <span className="text-apoio leading-[1.5] text-pretty text-tinta-sussurro">
         Acidente de trabalho não tem CID próprio no atendimento. Escolha o paciente do plantão e o tipo; a ficha abre em seguida.
       </span>

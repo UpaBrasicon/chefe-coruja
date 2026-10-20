@@ -15,6 +15,7 @@ import * as React from 'react'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -110,14 +111,14 @@ function NovaChave({ unidades }: { unidades: { id: string; nome: string }[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Nova chave</CardTitle>
+        <CardTitle className="text-corpo">Nova chave</CardTitle>
         <CardDescription>Validade de 12 meses. Libere só as unidades e os recursos de que o integrador precisa.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
         {criada && (
-          <div role="status" className="flex flex-col gap-1.5 rounded-md border border-acao/40 bg-campo p-3">
+          <div role="status" className="flex flex-col gap-1.5 rounded-controle border border-acao/40 bg-campo p-3">
             <span className="font-medium text-tinta">Copie a chave agora: ela não aparece de novo.</span>
-            <code className="break-all text-xs">{criada}</code>
+            <code className="break-all text-rotulo">{criada}</code>
             <div className="flex gap-2">
               <Button size="xs" variant="outline" onClick={() => void navigator.clipboard?.writeText(criada)}><Copy className="size-3.5" /> Copiar</Button>
               <Button size="xs" variant="ghost" onClick={() => setCriada(null)}>Já copiei</Button>
@@ -126,19 +127,19 @@ function NovaChave({ unidades }: { unidades: { id: string; nome: string }[] }) {
         )}
         <div className="grid gap-2 sm:grid-cols-3">
           <div className="flex flex-col gap-1 sm:col-span-2">
-            <Label htmlFor="api-nome" className="text-xs">Integrador</Label>
+            <Label htmlFor="api-nome" className="text-rotulo">Integrador</Label>
             <Input id="api-nome" className="h-8" placeholder="ex.: Secretaria Municipal de Saúde — Regulação" value={nome} onChange={(e) => setNome(e.target.value)} />
           </div>
           <div className="flex flex-col gap-1">
-            <Label htmlFor="api-amb" className="text-xs">Ambiente</Label>
-            <select id="api-amb" className="h-8 rounded-controle border border-fio bg-campo px-2" value={ambiente} onChange={(e) => setAmbiente(e.target.value as 'live' | 'test')}>
+            <Label htmlFor="api-amb" className="text-rotulo">Ambiente</Label>
+            <CampoSelecao id="api-amb" tamanho="compacto" value={ambiente} onChange={(e) => setAmbiente(e.target.value as 'live' | 'test')}>
               <option value="live">Produção (cc_live_)</option>
               <option value="test">Homologação (cc_test_)</option>
-            </select>
+            </CampoSelecao>
           </div>
         </div>
         <fieldset className="flex flex-col gap-1">
-          <legend className="text-xs text-tinta-apoio">Unidades</legend>
+          <legend className="text-rotulo text-tinta-apoio">Unidades</legend>
           <div className="flex flex-wrap gap-3">
             {unidades.map((u) => (
               <label key={u.id} className="flex items-center gap-1.5">
@@ -148,7 +149,7 @@ function NovaChave({ unidades }: { unidades: { id: string; nome: string }[] }) {
           </div>
         </fieldset>
         <fieldset className="flex flex-col gap-1">
-          <legend className="text-xs text-tinta-apoio">Recursos</legend>
+          <legend className="text-rotulo text-tinta-apoio">Recursos</legend>
           <div className="flex flex-wrap gap-3">
             {(Object.keys(RECURSOS) as Recurso[]).map((r) => (
               <label key={r} className="flex items-center gap-1.5">
@@ -159,11 +160,11 @@ function NovaChave({ unidades }: { unidades: { id: string; nome: string }[] }) {
         </fieldset>
         <div className="grid gap-2 sm:grid-cols-3">
           <div className="flex flex-col gap-1 sm:col-span-2">
-            <Label htmlFor="api-ips" className="text-xs">IPs de origem (opcional; vazio aceita qualquer IP)</Label>
+            <Label htmlFor="api-ips" className="text-rotulo">IPs de origem (opcional; vazio aceita qualquer IP)</Label>
             <Input id="api-ips" className="h-8" placeholder="ex.: 200.10.20.30, 200.10.21.0/24" value={ips} onChange={(e) => setIps(e.target.value)} />
           </div>
           <div className="flex flex-col gap-1">
-            <Label htmlFor="api-lim" className="text-xs">Consultas por minuto</Label>
+            <Label htmlFor="api-lim" className="text-rotulo">Consultas por minuto</Label>
             <Input id="api-lim" className="h-8" inputMode="numeric" value={limite} onChange={(e) => setLimite(e.target.value)} />
           </div>
         </div>
@@ -211,7 +212,7 @@ function CartaoChave({ c }: { c: Chave }) {
       <CardContent className="flex flex-col gap-1.5 pt-4 text-apoio">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium text-tinta">{c.nome}</span>
-          <code className="text-xs text-tinta-sussurro">{c.prefixo}…</code>
+          <code className="text-rotulo text-tinta-sussurro">{c.prefixo}…</code>
           <Badge variant={c.ambiente === 'live' ? 'info' : 'secondary'}>{c.ambiente === 'live' ? 'produção' : 'homologação'}</Badge>
           <Badge variant={c.revogada_em ? 'destructive' : !ativa ? 'secondary' : c.vence_em_dias <= 30 ? 'warning' : 'success'} className="ml-auto">
             {c.revogada_em ? 'revogada' : !ativa ? 'vencida' : c.vence_em_dias === 1 ? 'vence em 1 dia' : `vence em ${c.vence_em_dias} dias`}
@@ -219,12 +220,12 @@ function CartaoChave({ c }: { c: Chave }) {
         </div>
         <span className="text-tinta-apoio">Unidades: {c.unidades.map((u) => u.nome).join(', ')}</span>
         <span className="text-tinta-apoio">Recursos: {c.recursos.map((r) => RECURSOS[r] ?? r).join(', ')}</span>
-        <span className="text-xs text-tinta-sussurro">
+        <span className="text-rotulo text-tinta-sussurro">
           {c.limite_por_minuto} consultas/min · IPs: {c.ips.length ? c.ips.join(', ') : 'qualquer'} · {c.acessos_24h} consultas nas últimas 24 h
           {c.ultimo_uso_em && <> · último uso {fmtDataHora(c.ultimo_uso_em)}</>}
           {' '}· criada por {c.criada_por ?? '—'} em {fmtDataHora(c.criada_em)}
         </span>
-        {c.revogada_em && <span className="text-xs text-critico">Revogada por {c.revogada_por ?? '—'} em {fmtDataHora(c.revogada_em)}: “{c.motivo_revogacao}”</span>}
+        {c.revogada_em && <span className="text-rotulo text-critico">Revogada por {c.revogada_por ?? '—'} em {fmtDataHora(c.revogada_em)}: “{c.motivo_revogacao}”</span>}
         <div className="flex flex-wrap gap-2">
           <Button size="xs" variant="ghost" onClick={() => setAcao(acao === 'acessos' ? null : 'acessos')}>{acao === 'acessos' ? 'Esconder acessos' : 'Ver acessos'}</Button>
           {ativa && c.pode_editar && <Button size="xs" variant="outline" onClick={() => setAcao('ajustar')}>Ajustar limite e IPs</Button>}
@@ -235,7 +236,7 @@ function CartaoChave({ c }: { c: Chave }) {
             <Input className="h-8 flex-1" placeholder="Motivo (mínimo de 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
             <Button size="xs" variant="destructive" disabled={motivo.trim().length < 10 || revogar.isPending} onClick={() => revogar.mutate()}>Revogar agora</Button>
             <Button size="xs" variant="ghost" onClick={() => setAcao(null)}>Voltar</Button>
-            {revogar.error && <span role="alert" className="basis-full text-xs text-critico">{(revogar.error as Error).message}</span>}
+            {revogar.error && <span role="alert" className="basis-full text-rotulo text-critico">{(revogar.error as Error).message}</span>}
           </div>
         )}
         {acao === 'ajustar' && (
@@ -244,13 +245,13 @@ function CartaoChave({ c }: { c: Chave }) {
             <Input className="h-8 flex-1" aria-label="IPs de origem" placeholder="vazio aceita qualquer IP" value={ips} onChange={(e) => setIps(e.target.value)} />
             <Button size="xs" disabled={ajustar.isPending} onClick={() => ajustar.mutate()}>Salvar</Button>
             <Button size="xs" variant="ghost" onClick={() => setAcao(null)}>Voltar</Button>
-            {ajustar.error && <span role="alert" className="basis-full text-xs text-critico">{(ajustar.error as Error).message}</span>}
+            {ajustar.error && <span role="alert" className="basis-full text-rotulo text-critico">{(ajustar.error as Error).message}</span>}
           </div>
         )}
         {acao === 'acessos' && (acessos.isLoading ? <Spinner /> : (acessos.data ?? []).length === 0 ? (
-          <span className="text-xs text-tinta-sussurro">Nenhuma consulta ainda.</span>
+          <span className="text-rotulo text-tinta-sussurro">Nenhuma consulta ainda.</span>
         ) : (
-          <ul className="flex max-h-64 flex-col gap-0.5 overflow-y-auto text-xs">
+          <ul className="flex max-h-64 flex-col gap-0.5 overflow-y-auto text-rotulo">
             {(acessos.data ?? []).map((a, i) => (
               <li key={i} className={a.status >= 400 ? 'text-atencao' : 'text-tinta-apoio'}>
                 {fmtDataHora(a.em)} · {a.recurso} · {a.status} · {a.unidade ?? '—'} · IP {a.ip ?? '—'} · {a.requisicao ?? ''}

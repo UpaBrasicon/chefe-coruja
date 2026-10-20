@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { TituloPagina } from '@/components/monitor/Pagina'
+import { hora } from '@/lib/formato'
 
 import { bytes, haQuanto, LATENCIA_ALVO_MS, selo, SELO_ESTADO, useLatencia, useServidores, type Estado } from '@/lib/dadosAdmin'
 import { cartao } from '@/components/admin/ui'
@@ -91,7 +92,7 @@ export default function Servidores() {
       <TituloPagina
         icone={Gauge}
         titulo="Servidores"
-        descricao={d ? `Saúde da plataforma medida às ${new Date(d.servidor).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })}` : 'Saúde da plataforma medida agora'}
+        descricao={d ? `Saúde da plataforma medida às ${hora(d.servidor)}` : 'Saúde da plataforma medida agora'}
         acoes={
           <Button variant="outline" onClick={medirDeNovo} disabled={s.isFetching || lat.isFetching}>
             {s.isFetching || lat.isFetching ? <Spinner className="size-4" /> : <RefreshCw />} Medir de novo
@@ -107,7 +108,7 @@ export default function Servidores() {
               <span className="text-corpo font-medium text-tinta">{v.servico}</span>
               <span className="text-apoio text-pretty text-tinta-sussurro">{v.nota}</span>
             </div>
-            <span className={cn('text-[17px] font-semibold tracking-[-0.02em] whitespace-nowrap tabular-nums',
+            <span className={cn('text-secao font-semibold tracking-[-0.02em] whitespace-nowrap tabular-nums',
               v.estado === 2 ? 'text-critico' : v.estado === 1 ? 'text-atencao' : 'text-tinta')}>
               {v.medida}
             </span>

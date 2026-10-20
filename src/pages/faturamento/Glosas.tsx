@@ -17,9 +17,11 @@ import * as React from 'react'
 import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { competenciaNaTela, lerCompetencia } from '@/lib/aih'
@@ -36,7 +38,6 @@ const MINIMO_MOTIVO = 10
 const VARIANTE: Record<EtapaGlosa, 'destructive' | 'warning' | 'success' | 'secondary'> = {
   aberta: 'destructive', em_recurso: 'warning', recuperada: 'success', perdida: 'secondary',
 }
-const selectCls = 'h-9 rounded-controle border border-fio bg-campo px-2 text-apoio'
 
 export default function Glosas() {
   const { unidadeAtiva } = useUnidade()
@@ -82,26 +83,26 @@ export default function Glosas() {
             <section className="flex flex-col gap-2">
               <TituloSecao className="mb-0" extra="clique para filtrar">Por competência da produção</TituloSecao>
               <div className="overflow-x-auto rounded-container border border-fio bg-superficie">
-                <table className="w-full min-w-[560px] text-apoio">
-                  <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
-                    <tr><th className="px-3 py-2 font-medium">Competência</th><th className="px-3 py-2 font-medium">Glosas</th>
-                      <th className="px-3 py-2 text-right font-medium">Glosado</th><th className="px-3 py-2 text-right font-medium">Em andamento</th>
-                      <th className="px-3 py-2 text-right font-medium">Recuperado</th><th className="px-3 py-2 text-right font-medium">Perdido</th></tr>
-                  </thead>
-                  <tbody>
+                <Table variante="referencia" className="w-full min-w-[560px] text-apoio">
+                  <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
+                    <TableRow><TableHead className="px-3 py-2 font-medium">Competência</TableHead><TableHead className="px-3 py-2 font-medium">Glosas</TableHead>
+                      <TableHead className="px-3 py-2 text-right font-medium">Glosado</TableHead><TableHead className="px-3 py-2 text-right font-medium">Em andamento</TableHead>
+                      <TableHead className="px-3 py-2 text-right font-medium">Recuperado</TableHead><TableHead className="px-3 py-2 text-right font-medium">Perdido</TableHead></TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {p.por_competencia.map((k) => (
-                      <tr key={k.competencia} className={`cursor-pointer border-b border-trilha last:border-0 hover:bg-trilha/60${competencia === k.competencia ? ' bg-trilha' : ''}`}
+                      <TableRow key={k.competencia} className={`cursor-pointer border-b border-trilha last:border-0 hover:bg-trilha/60${competencia === k.competencia ? ' bg-trilha' : ''}`}
                         onClick={() => setCompetencia(competencia === k.competencia ? null : k.competencia)}>
-                        <td className="px-3 py-2 font-medium text-tinta">{competenciaNaTela(k.competencia)}</td>
-                        <td className="px-3 py-2">{k.quantidade}</td>
-                        <td className="px-3 py-2 text-right">{reais(k.glosado)}</td>
-                        <td className="px-3 py-2 text-right">{reais(k.em_andamento)}</td>
-                        <td className="px-3 py-2 text-right">{reais(k.recuperado)}</td>
-                        <td className="px-3 py-2 text-right">{reais(k.perdido)}</td>
-                      </tr>
+                        <TableCell className="px-3 py-2 font-medium text-tinta">{competenciaNaTela(k.competencia)}</TableCell>
+                        <TableCell className="px-3 py-2">{k.quantidade}</TableCell>
+                        <TableCell className="px-3 py-2 text-right">{reais(k.glosado)}</TableCell>
+                        <TableCell className="px-3 py-2 text-right">{reais(k.em_andamento)}</TableCell>
+                        <TableCell className="px-3 py-2 text-right">{reais(k.recuperado)}</TableCell>
+                        <TableCell className="px-3 py-2 text-right">{reais(k.perdido)}</TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </section>
           )}
@@ -163,7 +164,7 @@ export function CartaoGlosa({ g, quem, aoMudar, mostrarConta = false }: {
   const acoes = acoesDaGlosa(g, quem)
   const valorInvalido = !!acao?.pedeValor && valor.trim() !== '' && lerValor(valor) === null
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-fio bg-superficie px-3 py-2 text-apoio">
+    <div className="flex flex-col gap-1 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
       <span className="flex flex-wrap items-center gap-1.5">
         <Badge variant={VARIANTE[g.status]}>{ETAPA_GLOSA[g.status]}</Badge>
         <span className="font-medium text-tinta">{g.item_rotulo}</span>
@@ -175,9 +176,9 @@ export function CartaoGlosa({ g, quem, aoMudar, mostrarConta = false }: {
         competência {competenciaNaTela(g.competencia)} · {MOTIVO_GLOSA[g.motivo_codigo]}{g.motivo_texto ? `: “${g.motivo_texto}”` : ''}
         {g.competencia_recurso ? ` · recurso em ${competenciaNaTela(g.competencia_recurso)}` : ''}
       </span>
-      <button type="button" className="self-start text-rotulo text-acao underline" onClick={() => setHistorico(!historico)}>
+      <Button type="button" variant="link" size="xs" className="min-h-0 self-start px-0 underline" onClick={() => setHistorico(!historico)}>
         {historico ? 'Esconder histórico' : `Histórico (${g.eventos.length})`}
-      </button>
+      </Button>
       {historico && (
         <ol className="flex flex-col gap-0.5 text-rotulo text-tinta-apoio">
           {g.eventos.map((e, i) => (
@@ -197,7 +198,7 @@ export function CartaoGlosa({ g, quem, aoMudar, mostrarConta = false }: {
         </div>
       )}
       {acao && (
-        <div className="flex flex-col gap-1.5 rounded-lg border border-fio p-2">
+        <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-2">
           {acao.pedeCompetencia && (
             <div className="flex flex-col gap-1">
               <Label htmlFor={`glosa-comp-${g.id}`}>Competência da reapresentação ou do recurso (MM/AAAA)</Label>
@@ -254,21 +255,21 @@ export function RegistrarGlosa({ contaId, glosaveis, aoMudar }: { contaId: strin
   const pronto = !!item && !!motivoCodigo && lerValor(valor) !== null && !!lerCompetencia(comp)
     && (motivoCodigo !== 'outro' || texto.trim().length >= MINIMO_MOTIVO)
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-fio p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
       <span className="text-rotulo text-tinta-sussurro">A partir do relatório de rejeição do SIA/SIH ou do gestor municipal.</span>
       <div className="flex flex-col gap-1">
         <Label htmlFor="glosa-alvo">O que foi glosado</Label>
-        <select id="glosa-alvo" className={selectCls} value={alvo} onChange={(e) => escolher(e.target.value)}>
+        <CampoSelecao id="glosa-alvo" value={alvo} onChange={(e) => escolher(e.target.value)}>
           {glosaveis.map((x, i) => <option key={`${x.origem}-${x.id}-${i}`} value={String(i)}>{x.rotulo}</option>)}
-        </select>
+        </CampoSelecao>
       </div>
       <div className="flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1">
           <Label htmlFor="glosa-motivo-codigo">Motivo</Label>
-          <select id="glosa-motivo-codigo" className={selectCls} value={motivoCodigo} onChange={(e) => setMotivoCodigo(e.target.value as MotivoGlosa | '')}>
+          <CampoSelecao id="glosa-motivo-codigo" value={motivoCodigo} onChange={(e) => setMotivoCodigo(e.target.value as MotivoGlosa | '')}>
             <option value="">Escolha…</option>
             {(Object.keys(MOTIVO_GLOSA) as MotivoGlosa[]).map((m) => <option key={m} value={m}>{MOTIVO_GLOSA[m]}</option>)}
-          </select>
+          </CampoSelecao>
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="glosa-valor">Valor glosado (R$)</Label>

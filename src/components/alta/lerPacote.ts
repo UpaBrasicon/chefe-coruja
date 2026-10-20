@@ -7,6 +7,7 @@
 // o que não tem forma conhecida cai na lista rótulo: valor. Nada é inventado:
 // campo vazio some, e bloco sem campo nenhum não aparece.
 // ─────────────────────────────────────────────────────────────────────────────
+import { data as dataFmt, diaMes, hora as horaFmt } from '@/lib/formato'
 
 export type DocumentoPacote = {
   tipo: string
@@ -43,13 +44,9 @@ export type ConteudoPacote = {
   exames?: { exame: string; resultado: string; quando: string | null }[]
 }
 
-const FUSO = 'America/Sao_Paulo'
-export const dia = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleDateString('pt-BR', { timeZone: FUSO }) : ''
-export const diaCurto = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: FUSO }) : ''
-export const hora = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: FUSO }) : ''
+export const dia = (iso: string | null | undefined) => (iso ? dataFmt(iso) : '')
+export const diaCurto = (iso: string | null | undefined) => (iso ? diaMes(iso) : '')
+export const hora = (iso: string | null | undefined) => (iso ? horaFmt(iso) : '')
 
 type Obj = Record<string, unknown>
 const texto = (v: unknown) => (typeof v === 'string' || typeof v === 'number' ? String(v).trim() : '')

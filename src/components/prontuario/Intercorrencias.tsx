@@ -3,7 +3,9 @@ import { Siren } from 'lucide-react'
 import * as React from 'react'
 
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -68,9 +70,9 @@ export function Intercorrencias({ pacienteId, episodioId, internacaoId }: { paci
             <span className="text-rotulo text-tinta-sussurro">
               {x.registrado_por ?? '—'} ({PAPEL_REGISTRO[x.papel] ?? x.papel}), {fmtDataHora(x.registrado_em)}
               {anteriores.length > 0 && (
-                <> · <button type="button" className="underline" onClick={() => setVerAnteriores(verAnteriores === x.id ? null : x.id)}>
+                <> · <Button variant="link" size="xs" className="min-h-0 px-0 text-tinta-sussurro underline hover:text-acao" onClick={() => setVerAnteriores(verAnteriores === x.id ? null : x.id)}>
                   {anteriores.length} versão(ões) anterior(es)
-                </button></>
+                </Button></>
               )}
             </span>
             {verAnteriores === x.id && anteriores.map((a) => (
@@ -148,19 +150,19 @@ function FormIntercorrencia({ pacienteId, episodioId, internacaoId, retifica, ao
         </DialogHeader>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="inter-tipo">Tipo</Label>
-          <select id="inter-tipo" className="h-9 rounded-controle border border-fio bg-campo px-2 text-controle" value={tipo} onChange={(e) => setTipo(e.target.value)}>
+          <CampoSelecao id="inter-tipo" className="text-controle" value={tipo} onChange={(e) => setTipo(e.target.value)}>
             <option value="">Escolha…</option>
             {(tipos.data ?? []).map((t) => <option key={t.codigo} value={t.codigo}>{t.rotulo}</option>)}
-          </select>
+          </CampoSelecao>
           {tipo === 'outra' && <Input placeholder="Qual intercorrência?" value={tipoOutro} onChange={(e) => setTipoOutro(e.target.value)} />}
         </div>
         <div role="radiogroup" aria-label="Gravidade" className="grid gap-1.5 sm:grid-cols-3">
           {GRAVIDADES.map((g) => (
-            <button key={g.valor} type="button" role="radio" aria-checked={gravidade === g.valor} onClick={() => setGravidade(g.valor)}
-              className={cn('flex flex-col gap-0.5 rounded-lg border px-3 py-2 text-left', gravidade === g.valor ? 'border-acao ring-1 ring-acao' : 'border-fio')}>
+            <BotaoLinha key={g.valor} variante="cartao" role="radio" aria-checked={gravidade === g.valor} onClick={() => setGravidade(g.valor)}
+              className={cn(gravidade === g.valor && 'border-acao ring-1 ring-acao')}>
               <span className="text-apoio font-medium text-tinta">{g.rotulo}</span>
               <span className="text-rotulo text-tinta-sussurro">{g.ajuda}</span>
-            </button>
+            </BotaoLinha>
           ))}
         </div>
         <div className="flex flex-col gap-1.5">

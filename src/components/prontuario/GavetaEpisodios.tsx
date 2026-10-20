@@ -11,6 +11,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { CORES_RISCO, type CorRisco } from '@/domain/risco'
+import { diaMesHora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
@@ -18,8 +19,7 @@ import { Spinner } from '@/components/ui/spinner'
 
 import { useEpisodiosAnteriores } from './useEpisodiosAnteriores'
 
-const quando = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : ''
+const quando = (iso: string | null | undefined) => (iso ? diaMesHora(iso) : '')
 
 const ETAPA: Record<string, string> = {
   triagem: 'Aguardando triagem',

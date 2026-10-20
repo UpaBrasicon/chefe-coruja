@@ -3,8 +3,9 @@ import * as React from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { TituloCartao, TituloPagina } from '@/components/monitor/Pagina'
 
 import { avaliarUnidade, haQuanto, LATENCIA_ALVO_MS, lugar, selo, SELO_ESTADO, useLatencia, useServidores, useUnidadesRede } from '@/lib/dadosAdmin'
 import { cartao, Metricas } from '@/components/admin/ui'
@@ -71,7 +72,7 @@ export default function Plataformas() {
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-trilha px-5 py-3.5">
           <span className="flex items-center gap-2.5">
             <AlertTriangle className="size-4 text-atencao" aria-hidden />
-            <h2 id="plat-atencao" className="text-corpo font-semibold tracking-[-0.01em] text-tinta">Precisa de atenção</h2>
+            <TituloCartao id="plat-atencao" className="mb-0">Precisa de atenção</TituloCartao>
           </span>
           <span className="text-apoio text-atencao">
             {atencao.length === 0 ? 'Todas as unidades estáveis'
@@ -87,13 +88,14 @@ export default function Plataformas() {
               <span className="text-apoio text-pretty text-tinta-sussurro">{motivos.join(' · ')}</span>
             </div>
             <span className={cn(selo, SELO_ESTADO[estado])}>{ROTULO_ESTADO[estado]}</span>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => abrirChamado(u.unidade_id, motivos[0] ? `${u.nome}: ${motivos[0]}` : u.nome)}
-              className="rounded-[9px] border border-fio bg-superficie px-[11px] py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao"
             >
               Abrir chamado
-            </button>
+            </Button>
           </div>
         ))}
         {unidades.data && atencao.length === 0 && (

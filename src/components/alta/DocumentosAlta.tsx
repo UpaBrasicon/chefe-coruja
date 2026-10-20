@@ -18,6 +18,8 @@ import { flushSync } from 'react-dom'
 
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { dataHoraCarimbo } from '@/lib/formato'
 import {
   assinatura, dia, diaCurto, hora, idade, legivel, lerAtestado, lerEncaminhamento, lerPedidoExames, lerReceita, lerSumario,
   separarOrientacoes, type ConteudoPacote, type DocumentoPacote,
@@ -38,7 +40,7 @@ const LINK: Record<string, string> = {
 
 // Só na impressão: com um documento pedido, os outros saem da folha.
 const CSS_IMPRESSAO = `@media print {
-  body { background: #fff !important; }
+  body { background: #fff !important; } /* padrao-ok: CSS da folha impressa, que não lê os tokens do app */
   body[data-pacote-doc] [data-doc]:not([data-alvo]) { display: none !important; }
 }`
 
@@ -51,15 +53,15 @@ function Assina({ d, feminino, extra }: { d: DocumentoPacote; feminino?: boolean
     ? `${feminino ? 'assinada' : 'assinado'} eletronicamente em ${dia(d.assinado_em)}, às ${hora(d.assinado_em)}`
     : `${feminino ? 'emitida' : 'emitido'} em ${dia(d.emitido_em)}, às ${hora(d.emitido_em)}`
   return (
-    <div className="mt-4 border-t border-trilha pt-3 text-sm text-tinta-sussurro">
-      <b className="block text-[15px] font-medium text-tinta">{a.nome}</b>
+    <div className="mt-4 border-t border-trilha pt-3 text-apoio text-tinta-sussurro">
+      <b className="block text-corpo font-medium text-tinta">{a.nome}</b>
       {[a.crm, extra, quando].filter(Boolean).join(' · ')}
     </div>
   )
 }
 
 const H3 = ({ children }: { children: React.ReactNode }) => (
-  <h3 className="mb-1.5 mt-4 text-[15px] font-semibold first:mt-1.5">{children}</h3>
+  <h3 className="mb-1.5 mt-4 text-corpo font-semibold first:mt-1.5">{children}</h3>
 )
 const P = ({ children }: { children: React.ReactNode }) => (
   <p className="mb-2.5 whitespace-pre-wrap text-pretty text-tinta-apoio last:mb-0">{children}</p>
@@ -85,16 +87,16 @@ function montarDocumentos(p: ConteudoPacote): { docs: Doc[]; diagnostico: string
             </ol>
           )}
           {sinais.length > 0 && (
-            <div className="mt-3.5 rounded-xl border border-critico/20 bg-critico/5 px-[15px] py-[13px]">
-              <b className="flex items-center gap-2 text-[15px] font-semibold text-critico"><AlertTriangle className="size-[17px]" />Volte ao pronto-socorro se</b>
+            <div className="mt-3.5 rounded-container border border-critico/20 bg-critico/5 px-[15px] py-[13px]">
+              <b className="flex items-center gap-2 text-corpo font-semibold text-critico"><AlertTriangle className="size-[17px]" />Volte ao pronto-socorro se</b>
               <ul className="mt-2 list-disc pl-5">
                 {sinais.map((s, k) => <li key={k} className="mb-1 text-critico">{s}</li>)}
               </ul>
             </div>
           )}
           {m && (
-            <div className="mt-4 border-t border-trilha pt-3 text-sm text-tinta-sussurro">
-              <b className="block text-[15px] font-medium text-tinta">{m.nome}</b>
+            <div className="mt-4 border-t border-trilha pt-3 text-apoio text-tinta-sussurro">
+              <b className="block text-corpo font-medium text-tinta">{m.nome}</b>
               {[m.crm, p.gerado_em ? `entregue em ${dia(p.gerado_em)}, às ${hora(p.gerado_em)}` : ''].filter(Boolean).join(' · ')}
             </div>
           )}
@@ -117,10 +119,10 @@ function montarDocumentos(p: ConteudoPacote): { docs: Doc[]; diagnostico: string
           {n > 0 && (
             <ul className="mt-1 flex flex-col gap-2.5">
               {r.itens.map((i, j) => (
-                <li key={j} className="rounded-xl border border-fio px-3.5 py-3 print:border-fio-forte">
+                <li key={j} className="rounded-container border border-fio px-3.5 py-3 print:border-fio-forte">
                   <b className="block font-semibold">{i.nome}</b>
-                  {i.uso && <span className="mt-0.5 block text-[15px] text-tinta-apoio">{i.uso}</span>}
-                  {i.explicacao && <em className="mt-1.5 block text-sm not-italic text-acao">{i.explicacao}</em>}
+                  {i.uso && <span className="mt-0.5 block text-corpo text-tinta-apoio">{i.uso}</span>}
+                  {i.explicacao && <em className="mt-1.5 block text-apoio not-italic text-acao">{i.explicacao}</em>}
                 </li>
               ))}
             </ul>
@@ -233,24 +235,24 @@ function montarDocumentos(p: ConteudoPacote): { docs: Doc[]; diagnostico: string
       id: 'exames', icone: FlaskConical, titulo: 'Exames do período', sub: 'Resultados registrados na internação',
       corpo: (
         <>
-          <table className="mt-1 w-full border-collapse text-[15px]">
-            <thead>
-              <tr>
+          <Table variante="referencia" className="mt-1 w-full border-collapse text-corpo">
+            <TableHeader>
+              <TableRow>
                 {['Exame', 'Resultado', 'Quando'].map((c) => (
-                  <th key={c} className="pb-2 pr-2.5 text-left text-[13px] font-semibold tracking-[0.04em] text-tinta-sussurro uppercase">{c}</th>
+                  <TableHead key={c} className="pb-2 pr-2.5 text-left text-apoio font-semibold tracking-[0.04em] text-tinta-sussurro uppercase">{c}</TableHead>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {exames.map((x, j) => (
-                <tr key={j}>
-                  <td className="border-t border-trilha py-2 pr-2.5 text-tinta">{x.exame}</td>
-                  <td className="border-t border-trilha py-2 pr-2.5 text-tinta-apoio tabular-nums">{x.resultado}</td>
-                  <td className="border-t border-trilha py-2 pr-2.5 whitespace-nowrap text-tinta-apoio tabular-nums">{diaCurto(x.quando)}</td>
-                </tr>
+                <TableRow key={j}>
+                  <TableCell className="border-t border-trilha py-2 pr-2.5 text-tinta">{x.exame}</TableCell>
+                  <TableCell className="border-t border-trilha py-2 pr-2.5 text-tinta-apoio tabular-nums">{x.resultado}</TableCell>
+                  <TableCell className="border-t border-trilha py-2 pr-2.5 whitespace-nowrap text-tinta-apoio tabular-nums">{diaCurto(x.quando)}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
           <p className="mt-3.5 text-pretty text-tinta-apoio">Os resultados completos ficam no seu prontuário na unidade.</p>
         </>
       ),
@@ -266,7 +268,7 @@ function montarDocumentos(p: ConteudoPacote): { docs: Doc[]; diagnostico: string
       sub: [d.numero ? `nº ${d.numero}` : '', dia(d.emitido_em)].filter(Boolean).join(' · '),
       corpo: (
         <>
-          <dl className="flex flex-col gap-1 text-[15px]">
+          <dl className="flex flex-col gap-1 text-corpo">
             {linhas.map((l, j) => (
               <div key={j}>
                 {l.rotulo && <dt className="inline font-medium">{l.rotulo}: </dt>}
@@ -305,7 +307,7 @@ export function DocumentosAlta({ p, equipe = false, pacoteId }: {
       if (error || !registro) {
         return setErroImpressao(`Não foi possível registrar a impressão${error ? `: ${error.message}` : ''}. Nada foi impresso.`)
       }
-      const emitido = new Date(registro.emitido_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+      const emitido = dataHoraCarimbo(registro.emitido_em)
       // o rodapé precisa estar na tela antes de a impressão começar
       flushSync(() => setRodape(`Impressão ${registro.protocolo} registrada no Chefe Coruja em ${emitido}`))
     }
@@ -336,18 +338,18 @@ export function DocumentosAlta({ p, equipe = false, pacoteId }: {
       <style>{CSS_IMPRESSAO}</style>
       <main className="mx-auto max-w-[620px] px-5 pb-14 pt-[18px] print:max-w-none print:p-0">
         {equipe && (
-          <div className="mb-4 flex flex-wrap items-start gap-2.5 rounded-[14px] border border-acao/20 bg-alerta-marca px-[15px] py-[13px] text-sm text-acao-pressionada print:hidden">
+          <div className="mb-4 flex flex-wrap items-start gap-2.5 rounded-container border border-acao/20 bg-alerta-marca px-[15px] py-[13px] text-apoio text-acao-pressionada print:hidden">
             <ShieldCheck className="mt-[3px] size-[17px] shrink-0 text-acao" />
             <span className="min-w-0 flex-[1_1_260px] text-pretty">
               <b>Visão da equipe.</b> O paciente só chega aqui depois de digitar o código impresso na orientação de alta.
               Imprima o pacote para entregar em mão a quem não tem celular.
               {p.situacao_link && LINK[p.situacao_link] && <> {LINK[p.situacao_link]}</>}
             </span>
-            <Button size="lg" className="min-h-11 px-4 text-[15px]" onClick={() => void imprimir(null)}>
+            <Button size="lg" className="min-h-11 px-4 text-corpo" onClick={() => void imprimir(null)}>
               <Printer className="size-4" />Imprimir o pacote inteiro
             </Button>
             {window.history.length > 1 && (
-              <Button variant="outline" size="lg" className="min-h-11 px-4 text-[15px]" onClick={() => window.history.back()}>
+              <Button variant="outline" size="lg" className="min-h-11 px-4 text-corpo" onClick={() => window.history.back()}>
                 Voltar ao leito
               </Button>
             )}
@@ -355,23 +357,25 @@ export function DocumentosAlta({ p, equipe = false, pacoteId }: {
         )}
 
         {equipe && erroImpressao && (
-          <p role="alert" className="mb-4 rounded-[14px] border border-critico/30 bg-critico/[0.06] px-[15px] py-[11px] text-sm text-critico print:hidden">
+          <p role="alert" className="mb-4 rounded-container border border-critico/30 bg-alerta-critico px-[15px] py-[11px] text-apoio text-critico print:hidden">
             {erroImpressao}
           </p>
         )}
         {equipe && rodape && (
+          // padrao-ok: rodapé só da folha impressa, em escala própria
           <div className="fixed inset-x-0 bottom-[6mm] hidden text-center text-[9px] text-tinta-sussurro print:block">{rodape}</div>
         )}
 
+        {/* padrao-ok: cabeçalho só da folha impressa, em escala própria (pt) */}
         <div className="mb-3 hidden text-[11pt] text-tinta-apoio print:block">
           {p.unidade} · documento emitido eletronicamente pelo Chefe Coruja{p.gerado_em ? ` em ${dia(p.gerado_em)}` : ''}.
         </div>
 
-        <section className="mb-[18px] rounded-2xl border border-fio bg-superficie px-[18px] py-4 print:mb-[14pt] print:rounded-none print:border-0 print:border-b print:border-fio-forte print:px-0 print:pt-0">
-          <span className="block text-[19px] font-semibold tracking-[-0.02em]">{nome}</span>
-          {linha && <span className="mt-0.5 block text-[15px] text-tinta-apoio">{linha}</span>}
+        <section className="mb-[18px] rounded-cartao border border-fio bg-superficie px-[18px] py-4 print:mb-[14pt] print:rounded-none print:border-0 print:border-b print:border-fio-forte print:px-0 print:pt-0">
+          <span className="block text-dialogo font-semibold tracking-[-0.02em]">{nome}</span>
+          {linha && <span className="mt-0.5 block text-corpo text-tinta-apoio">{linha}</span>}
           {(p.internado_em || p.alta_em || local.length > 0) && (
-            <div className="mt-2.5 flex flex-wrap gap-x-[18px] gap-y-1 border-t border-trilha pt-3 text-[15px] text-tinta-apoio">
+            <div className="mt-2.5 flex flex-wrap gap-x-[18px] gap-y-1 border-t border-trilha pt-3 text-corpo text-tinta-apoio">
               {p.internado_em && <span>Internado em <b className="font-medium text-tinta">{dia(p.internado_em)}</b></span>}
               {p.alta_em && <span>Alta em <b className="font-medium text-tinta">{dia(p.alta_em)}</b></span>}
               {local.length > 0 && <span>{local.join(' · ')}</span>}
@@ -381,21 +385,21 @@ export function DocumentosAlta({ p, equipe = false, pacoteId }: {
 
         {docs.map((d, k) => (
           <details key={d.id} data-doc={d.id} open={k === 0}
-            className="group mb-3 overflow-hidden rounded-2xl border border-fio bg-superficie print:m-0 print:break-inside-avoid print:rounded-none print:border-0">
+            className="group mb-3 overflow-hidden rounded-cartao border border-fio bg-superficie print:m-0 print:break-inside-avoid print:rounded-none print:border-0">
             <summary className="flex cursor-pointer list-none items-center gap-3 px-[18px] py-[15px] max-[420px]:gap-2.5 max-[420px]:px-[15px] print:px-0 print:pb-2 print:pt-0 [&::-webkit-details-marker]:hidden">
-              <span className="grid size-[38px] shrink-0 place-items-center rounded-[11px] bg-alerta-marca text-acao print:hidden">
+              <span className="grid size-[38px] shrink-0 place-items-center rounded-controle bg-alerta-marca text-acao print:hidden">
                 <d.icone className="size-[19px]" />
               </span>
               <span className="min-w-0 flex-1">
-                <b className="block text-[17px] font-semibold tracking-[-0.01em]">{d.titulo}</b>
-                {d.sub && <span className="block text-sm text-tinta-sussurro">{d.sub}</span>}
+                <b className="block text-secao font-semibold tracking-[-0.01em]">{d.titulo}</b>
+                {d.sub && <span className="block text-apoio text-tinta-sussurro">{d.sub}</span>}
               </span>
               <ChevronRight className="size-[18px] shrink-0 text-tinta-sussurro transition-transform duration-200 group-open:rotate-90 print:hidden" />
             </summary>
             <div className="px-[18px] pb-[18px] pt-0.5 max-[420px]:px-[15px] print:p-0">
               {d.corpo}
               <div className="mt-4 flex flex-wrap gap-2 print:hidden">
-                <Button variant={d.forte ? 'default' : 'outline'} size="lg" className="min-h-11 px-4 text-[15px] max-[420px]:flex-auto"
+                <Button variant={d.forte ? 'default' : 'outline'} size="lg" className="min-h-11 px-4 text-corpo max-[420px]:flex-auto"
                   onClick={() => void imprimir(d.id)}>
                   <Download className="size-4" />Baixar em PDF
                 </Button>
@@ -404,20 +408,20 @@ export function DocumentosAlta({ p, equipe = false, pacoteId }: {
           </details>
         ))}
         {docs.length === 0 && (
-          <p className="rounded-2xl border border-fio bg-superficie px-[18px] py-4 text-tinta-apoio">
+          <p className="rounded-cartao border border-fio bg-superficie px-[18px] py-4 text-tinta-apoio">
             Este pacote não tem documentos. Os papéis entregues na alta continuam valendo.
           </p>
         )}
       </main>
 
       <footer className="mx-auto max-w-[620px] px-5 pb-[60px] print:hidden">
-        <div className="rounded-2xl border border-fio bg-superficie px-[18px] py-4 text-[15px] text-tinta-apoio">
+        <div className="rounded-cartao border border-fio bg-superficie px-[18px] py-4 text-corpo text-tinta-apoio">
           <span>Este link vale até <b className="font-medium text-tinta">{dia(p.expira_em)}</b>, 30 dias depois de gerado. Depois disso, peça um novo na unidade.</span>
           <div className="mt-3 flex gap-2.5 border-t border-trilha pt-3 text-acao-pressionada">
             <ShieldCheck className="mt-[3px] size-[17px] shrink-0" />
             <span>Cada abertura pede o código impresso na sua orientação de alta. Quem tiver só o link não vê os documentos sem esse código.</span>
           </div>
-          <p className="mt-3.5 text-sm text-tinta-sussurro">
+          <p className="mt-3.5 text-apoio text-tinta-sussurro">
             Os documentos com valor legal são as vias entregues na alta. Esta página é uma cópia para consulta.
           </p>
         </div>

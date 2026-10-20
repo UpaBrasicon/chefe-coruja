@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
+import { diaMesHora } from '@/lib/formato'
 import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 
@@ -204,9 +205,9 @@ function ParecerAberto({ p, voltar }: { p: ItemFila; voltar: () => void }) {
 
   return (
     <>
-      <button type="button" onClick={voltar} className="flex items-center gap-1.5 self-start text-apoio text-tinta-apoio hover:text-acao">
+      <Button variant="ghost" size="sm" onClick={voltar} className="self-start gap-1.5 px-0 text-tinta-apoio">
         <ChevronLeft className="size-3.5" />Voltar aos pareceres
-      </button>
+      </Button>
       <div className={`${CARTAO} flex flex-col gap-2.5 px-5 py-4`}>
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="text-secao font-semibold text-tinta">{p.paciente_nome}</span>
@@ -262,7 +263,7 @@ function ParecerAberto({ p, voltar }: { p: ItemFila; voltar: () => void }) {
           </>
         )}
         {p.status === 'realizado' && (
-          <div className="rounded-controle border border-conforme/30 bg-conforme/[0.05] p-2.5">
+          <div className="rounded-controle border border-conforme/30 bg-alerta-conforme p-2.5">
             <p className="text-rotulo text-tinta-sussurro">
               Respondido em {p.respondido_em ? fmtDataHora(p.respondido_em) : ''}
               {p.documento_resposta_numero ? ` · documento nº ${p.documento_resposta_numero}` : ''}
@@ -286,7 +287,7 @@ function Linha({ p, abrir }: { p: ItemFila; abrir: () => void }) {
   return (
     <div className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-3 last:border-b-0">
       <span className="tabular w-[82px] shrink-0 text-apoio font-semibold text-tinta">
-        {new Date(p.solicitado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+        {diaMesHora(p.solicitado_em)}
       </span>
       <div className="flex min-w-0 flex-[1_1_200px] flex-col gap-0.5">
         <span className="text-controle font-medium text-tinta">{p.paciente_nome}</span>
