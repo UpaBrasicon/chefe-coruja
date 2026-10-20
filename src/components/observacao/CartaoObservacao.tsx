@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { faixaEtaria, rotuloIdade } from '@/domain/idade'
 import { SeloAlergia } from '@/components/paciente/AlergiasEventos'
 import { Button } from '@/components/ui/button'
+import { dataIso } from '@/lib/formato'
 
 import {
   ESTADOS, ROTULO_DESFECHO, TOM_BARRA, TOM_TEXTO, hhmm, msgErro, relogioEspera, relogioPermanencia, rpc, textoReavaliacao,
@@ -22,7 +23,7 @@ import {
 } from './PaineisCartao'
 
 type Aberto = '' | 'reav' | 'fim' | 'proto' | 'passar'
-const hoje = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+const hoje = () => dataIso()
 const BANDA = ['bg-conforme/10 text-conforme', 'bg-atencao/10 text-atencao', 'bg-critico/10 text-critico']
 
 /** Acuidade calculada no servidor (NEWS2 no adulto, Bedside PEWS na criança): a mesma chave do leito. */
@@ -124,7 +125,7 @@ export function CartaoObservacao({ linha, agora, eu, unidadeId, podeAgir, ehMedi
             </span>
             {pr && (
               <>
-                <span className="rounded-micro bg-suprimento px-[7px] py-0.5 text-rotulo font-bold text-white" title={pr.nome}>{pr.sigla}</span>
+                <span className="rounded-controle bg-suprimento px-[7px] py-0.5 text-rotulo font-bold text-sobre-acao" title={pr.nome}>{pr.sigla}</span>
                 <span className="text-rotulo text-tinta-apoio">Etapa {pr.etapa_atual + 1} de {pr.etapas.length} · {pr.etapas[pr.etapa_atual]?.texto}</span>
               </>
             )}
