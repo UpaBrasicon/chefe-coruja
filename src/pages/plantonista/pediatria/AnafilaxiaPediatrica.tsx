@@ -40,7 +40,7 @@ export function AnafilaxiaPediatrica() {
           <Bloco key={l} titulo={LINHAS_ANAFILAXIA[l]}>
             {DOSES_ANAFILAXIA.filter((d) => d.linha === l).map((d) => <LinhaDose key={d.id} d={d} peso={peso} />)}
             {l === 'segunda' && fen && (
-              <div className="rounded-lg border px-3 py-2 text-sm">
+              <div className="rounded-controle border px-3 py-2 text-apoio">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-medium">Fenoterol em nebulização (broncoespasmo)</span>
                   <strong className="tabular-nums">{num(fen.gotas, 1)} gotas · {num(fen.mg)} mg</strong>

@@ -8,10 +8,13 @@ import {
 import { ALARMES_LIVRO, ALVO_SAT, PASSOS_VM, QUADROS_VM, checarAjustes, fichaVmPassos, lerAcompanhamento, tabelaPeepSdra, type QuadroVm } from '@/clinico/adulto/vmPassos'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Button } from '@/components/ui/button'
 
 import { Alertas, Escolha, Resultado } from '../manual/LoteAPecas'
 import { br, faixaBr, informado } from '../manual/loteAFormato'
 import { BarraPassos, CartaoPasso, NavPassos, TabelaConferencia } from './Passos'
+import { hora } from '@/lib/formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 type Checagem = { hora: string; cst: number | null; driving: number | null; pplato: number; peep: number }
 
@@ -77,7 +80,7 @@ export function VmCincoPassos() {
   const registrarChecagem = () => {
     if (!(pplato > 0)) return
     const p = peepMedida || peep
-    setHistorico((h) => [{ hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }), cst: mec?.complacencia ?? null, driving: mec?.driving ?? (pplato >= p ? pplato - p : null), pplato, peep: p }, ...h].slice(0, 8))
+    setHistorico((h) => [{ hora: hora(new Date()), cst: mec?.complacencia ?? null, driving: mec?.driving ?? (pplato >= p ? pplato - p : null), pplato, peep: p }, ...h].slice(0, 8))
   }
 
   const ir = (n: number) => setPasso(Math.min(5, Math.max(1, n)))
@@ -187,14 +190,14 @@ export function VmCincoPassos() {
           {mec && <ul className="list-disc pl-5 text-tinta-apoio">{mec.notas.map((n) => <li key={n}>{n}</li>)}</ul>}
           <Alertas itens={[...acompanhamento, ...marcos]} />
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" onClick={registrarChecagem} disabled={!(pplato > 0)} className="rounded-controle border border-acao px-3 py-2 font-medium text-acao disabled:opacity-45">Guardar esta checagem na tela</button>
+            <Button variant="outline" size="lg" onClick={registrarChecagem} disabled={!(pplato > 0)} className="border-acao font-medium text-acao">Guardar esta checagem na tela</Button>
             <span className="text-tinta-sussurro">Fica só nesta tela, para comparar ao longo do plantão; não vai ao prontuário.</span>
           </div>
           {historico.length > 0 && (
-            <table className="w-full max-w-lg text-left text-sm tabular-nums">
-              <thead className="text-tinta-sussurro"><tr><th className="pb-1 font-medium">Hora</th><th className="pb-1 font-medium">Pplatô</th><th className="pb-1 font-medium">PEEP</th><th className="pb-1 font-medium">Driving</th><th className="pb-1 font-medium">Cst</th></tr></thead>
-              <tbody>{historico.map((h, i) => <tr key={i} className="border-t border-fio"><td className="py-1">{h.hora}</td><td>{h.pplato}</td><td>{h.peep}</td><td>{br(h.driving, 0)}</td><td>{br(h.cst, 1)}</td></tr>)}</tbody>
-            </table>
+            <Table variante="referencia" className="w-full max-w-lg text-left text-apoio tabular-nums">
+              <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pb-1 font-medium">Hora</TableHead><TableHead className="pb-1 font-medium">Pplatô</TableHead><TableHead className="pb-1 font-medium">PEEP</TableHead><TableHead className="pb-1 font-medium">Driving</TableHead><TableHead className="pb-1 font-medium">Cst</TableHead></TableRow></TableHeader>
+              <TableBody>{historico.map((h, i) => <TableRow key={i} className="border-t border-fio"><TableCell className="py-1">{h.hora}</TableCell><TableCell>{h.pplato}</TableCell><TableCell>{h.peep}</TableCell><TableCell>{br(h.driving, 0)}</TableCell><TableCell>{br(h.cst, 1)}</TableCell></TableRow>)}</TableBody>
+            </Table>
           )}
           <div className="rounded-controle border border-fio px-3 py-2">
             <p className="font-medium">Instabilização inesperada em VM — DOPE (p. 502)</p>
@@ -231,7 +234,7 @@ export function VmCincoPassos() {
         </CartaoPasso>
       )}
 
-      <details className="rounded-container border border-fio bg-card px-4 py-3 text-sm">
+      <details className="rounded-container border border-fio bg-card px-4 py-3 text-apoio">
         <summary className="cursor-pointer font-medium">Errata e divergências do cap. 37</summary>
         <ul className="mt-2 list-disc pl-5 text-tinta-sussurro">{ERRATA_VM.map((e) => <li key={e}>{e}</li>)}</ul>
       </details>

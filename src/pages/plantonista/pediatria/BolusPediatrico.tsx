@@ -7,8 +7,9 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { numero } from '@/lib/formato'
 
-const num = (x: number, casas = 2) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const num = (x: number, casas = 2) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixaTxt = ([a, b]: [number, number], casas = 2) => (a === b ? num(a, casas) : `${num(a, casas)}–${num(b, casas)}`)
 const porKgTxt = (b: Bolus) => `${faixaTxt(b.faixa, 3)} ${b.unidade}${b.porKg ? '/kg' : ''}`
 
@@ -16,7 +17,7 @@ function Item({ b, peso, idadeMeses }: { b: Bolus; peso: number; idadeMeses?: nu
   const r = calcularBolus(b, peso, idadeMeses)
   const fora = r?.aplica === 'nao'
   return (
-    <div className={`rounded-lg border px-3 py-2 text-sm ${fora ? 'opacity-60' : ''}`}>
+    <div className={`rounded-controle border px-3 py-2 text-apoio ${fora ? 'opacity-60' : ''}`}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">
           {b.nome}
@@ -80,10 +81,10 @@ export function BolusPediatrico() {
           <NumberField id="ped-anos" label="Idade" unit="anos completos" value={anos} onChange={setAnos} min={0} max={13} step={1} />
           <NumberField id="ped-meses" label="e meses" unit="0 a 11" value={meses} onChange={setMeses} min={0} max={11} step={1} />
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="ped-busca" className="text-sm font-medium">Buscar medicamento</label>
+            <label htmlFor="ped-busca" className="text-apoio font-medium">Buscar medicamento</label>
             <Input id="ped-busca" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="ex.: naloxona, crise" />
           </div>
-          <p className="text-sm text-tinta-sussurro md:col-span-4">
+          <p className="text-apoio text-tinta-sussurro md:col-span-4">
             {NEONATO_FORA} A idade é opcional: só muda o que o livro separa por idade (ex.: midazolam, diazepam, naloxona).
             A dose mostrada é a faixa do livro para o peso; a escolha dentro dela é do profissional.
           </p>
@@ -92,20 +93,20 @@ export function BolusPediatrico() {
 
       {adulto && (
         <Card>
-          <CardContent className="pt-6 text-sm text-atencao">A partir de 14 anos completos o paciente é adulto; esta ferramenta é pediátrica.</CardContent>
+          <CardContent className="pt-6 text-apoio text-atencao">A partir de 14 anos completos o paciente é adulto; esta ferramenta é pediátrica.</CardContent>
         </Card>
       )}
 
       {!valido && !adulto && (
         <Card>
-          <CardContent className="pt-6 text-sm text-tinta-sussurro">Informe o peso para calcular (acima de 0 e até 150 kg).</CardContent>
+          <CardContent className="pt-6 text-apoio text-tinta-sussurro">Informe o peso para calcular (acima de 0 e até 150 kg).</CardContent>
         </Card>
       )}
 
       {valido && !adulto && grupos.map(({ g, itens }) => (
         <Card key={g}>
           <CardHeader>
-            <CardTitle className="text-base">{GRUPOS[g]}</CardTitle>
+            <CardTitle className="text-corpo">{GRUPOS[g]}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {itens.map((b) => <Item key={b.id} b={b} peso={peso} idadeMeses={idadeMeses} />)}

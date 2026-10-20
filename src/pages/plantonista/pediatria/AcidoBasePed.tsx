@@ -41,7 +41,7 @@ export function AcidoBasePed() {
           <Opcoes label="Se respiratório" valor={tempo} opcoes={[['aguda', 'Agudo'], ['cronica', 'Crônico']]} onChange={setTempo} />
         </div>
         {leitura && (
-          <div className="rounded-lg border px-3 py-2">
+          <div className="rounded-controle border px-3 py-2">
             <p>
               <strong>{leitura.estado}</strong>
               {leitura.primarios.length > 0 && <> — {leitura.primarios.join(' + ')}</>}
@@ -61,7 +61,7 @@ export function AcidoBasePed() {
         <Nota>{NOTA_TEMPOS}</Nota>
         <Nota>{NOTA_MARGEM}</Nota>
         <Errata texto={ERRATA_ALCALOSE_METABOLICA} />
-        <details className="text-xs text-tinta-sussurro">
+        <details className="text-rotulo text-tinta-sussurro">
           <summary className="cursor-pointer">Valores normais por idade (Tabela 1, p. 562)</summary>
           <ul className="mt-1">
             {NORMAIS_IDADE.map((n) => (

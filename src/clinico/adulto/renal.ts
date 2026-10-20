@@ -1,6 +1,7 @@
 import { completo, escolha, somar, type Escore } from '../escore.ts'
 import { NAHCO3_84_MEQ_POR_ML } from './acidobase.ts'
 import { fichaAdulto } from './fonte.ts'
+import { numero as numeroBr } from '../../lib/formato.ts'
 
 // Lesão renal aguda (cap. 61, p. 824–841) e rabdomiólise (cap. 63,
 // p. 852–862) pelo Manual de Medicina de Emergência do HCFMUSP (3ª ed., 2022).
@@ -16,7 +17,7 @@ export type Faixa = [number, number]
 export type Referencia = { texto: string; pagina: string; errata?: string }
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
-const fmt = (x: number, casas = 2) => (Math.round(x * 10 ** casas) / 10 ** casas).toLocaleString('pt-BR')
+const fmt = (x: number, casas = 2) => numeroBr(Math.round(x * 10 ** casas) / 10 ** casas)
 
 // ── KDIGO (p. 824–825) ──────────────────────────────────────────────────────
 
@@ -264,7 +265,7 @@ export const mcmahon: Escore = {
     const faixa = total < 5 ? '< 5 pontos: risco de óbito ou diálise de 2,3%' : total > 10 ? '> 10 pontos: risco de óbito ou diálise de 61%' : '5 a 10 pontos: o livro não dá o risco desta faixa'
     return {
       rotulo: 'McMahon',
-      valor: total.toLocaleString('pt-BR'),
+      valor: numeroBr(total),
       unidade: 'de 18',
       nota: `${faixa} (p. 857)`,
       estado: total > 10 ? 2 : total >= 5 ? 1 : 0,

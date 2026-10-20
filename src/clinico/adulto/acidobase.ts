@@ -1,4 +1,5 @@
 import { fichaAdulto } from './fonte.ts'
+import { numero as numeroBr } from '../../lib/formato.ts'
 
 // Distúrbios acidobásicos — cap. 69 do Manual de Medicina de Emergência do
 // HCFMUSP (3ª ed., 2022), p. 931–945. Só as fórmulas e cortes que o livro
@@ -141,7 +142,7 @@ export type AnaliseGasometria = {
   observacoes: string[]
 }
 
-const f1 = (x: number) => (Math.round(x * 10) / 10).toLocaleString('pt-BR')
+const f1 = (x: number) => numeroBr(Math.round(x * 10) / 10)
 
 /** Passos 1 e 2 da p. 933–934: acidemia/alcalemia, distúrbio primário (Tab. 1) e compensação esperada. */
 export function analisarGasometria(e: { ph: number; pco2: number; hco3: number; tempoRespiratorio?: Tempo }): AnaliseGasometria | null {

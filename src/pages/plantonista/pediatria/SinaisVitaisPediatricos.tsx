@@ -34,7 +34,7 @@ export function SinaisVitaisPediatricos() {
       </Card>
 
       {informada && !r && (
-        <Card><CardContent className="pt-6 text-sm text-tinta-sussurro">Pediatria vai até antes dos 14 anos.</CardContent></Card>
+        <Card><CardContent className="pt-6 text-apoio text-tinta-sussurro">Pediatria vai até antes dos 14 anos.</CardContent></Card>
       )}
 
       {r && (

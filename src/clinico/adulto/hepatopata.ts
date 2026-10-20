@@ -2,6 +2,7 @@ import type { Ficha, Fonte } from '../ficha.ts'
 import { numero, type Escore } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
 import { nacVO } from './intoxicacoes.ts'
+import { numero as numeroBr } from '../../lib/formato.ts'
 
 // Emergências no hepatopata — caps. 55 a 60 do Manual de Medicina de
 // Emergência do HCFMUSP (3ª ed., 2022), p. 755–822. A ferramenta faz as contas
@@ -254,7 +255,7 @@ export function estadioIcaAki(crBasal: number, crAtual: number, dialise = false)
   return motivos.length ? { estadio: 1, motivos } : { estadio: 0, motivos: ['sem critério de estádio da Tabela 2'] }
 }
 
-const fmt = (x: number) => (Math.round(x * 100) / 100).toLocaleString('pt-BR')
+const fmt = (x: number) => numeroBr(Math.round(x * 100) / 100)
 
 export const NOTA_ICA_AKI = 'O diagnóstico usa "> 50%" e o estádio 1 usa "> 1,5 até 2,0 ×": 1,5 × exato só entra pelo aumento absoluto ≥ 0,3. Na Tabela 2 o aumento ≥ 0,3 conta em 48 h; a ferramenta não pede o tempo e mostra o critério para quem usa conferir. A creatinina basal estimada pelo MDRD (TFG 75 mL/min/1,73 m²) é citada com "usar calculadora fornecida", mas a fórmula não está no livro — não é calculada.'
 
@@ -358,7 +359,7 @@ export const maddrey: Escore = {
     const grave = fd > MADDREY.corte
     return {
       rotulo: 'Função discriminante',
-      valor: (Math.round(fd * 10) / 10).toLocaleString('pt-BR'),
+      valor: numeroBr(Math.round(fd * 10) / 10),
       nota: grave ? `> 32: hepatite alcoólica grave pela definição do livro (p. 817)` : '≤ 32: abaixo do corte de hepatite alcoólica grave do livro',
       estado: grave ? 2 : 0,
       derivados: [['Conta', `4,6 × (${tp} − ${ctl}) + ${bt}`], ['O livro associa ao corte', `${MADDREY.prednisona} (p. 817)`]],

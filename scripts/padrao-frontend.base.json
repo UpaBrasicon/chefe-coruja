@@ -1,56 +1,23 @@
 {
   "_leia": "Base da catraca do padrão do frontend (scripts/padrao-frontend.mjs). Só desce: depois de corrigir, rode `node scripts/padrao-frontend.mjs --atualizar` e comite junto.",
   "totais": {
-    "cor-crua": 76,
-    "cor-arbitraria": 122,
+    "cor-crua": 75,
+    "cor-arbitraria": 119,
     "cor-hex": 55,
-    "texto-escala": 787,
-    "canto": 292,
-    "botao-solto": 120,
-    "select-solto": 67,
-    "tabela-solta": 35,
-    "titulo-solto": 58,
-    "data-local": 167,
+    "texto-escala": 661,
+    "canto": 258,
+    "botao-solto": 107,
+    "select-solto": 66,
+    "tabela-solta": 23,
+    "titulo-solto": 57,
+    "data-local": 135,
     "importacao-cruzada": 0,
     "emoji": 1,
     "pronto-socorro": 0
   },
   "arquivos": {
-    "src/clinico/adulto/acidobase.ts": {
-      "data-local": 1
-    },
-    "src/clinico/adulto/avcTrombolise.ts": {
-      "data-local": 1
-    },
-    "src/clinico/adulto/guillainBarre.ts": {
-      "data-local": 1
-    },
-    "src/clinico/adulto/hepatopata.ts": {
-      "data-local": 2
-    },
-    "src/clinico/adulto/insuficienciaCardiacaAguda.ts": {
-      "data-local": 2
-    },
-    "src/clinico/adulto/isr.ts": {
-      "data-local": 1
-    },
-    "src/clinico/adulto/profilaxiaPosExposicao.ts": {
-      "data-local": 1
-    },
-    "src/clinico/adulto/renal.ts": {
-      "data-local": 2
-    },
-    "src/clinico/adulto/vmPassos.ts": {
-      "data-local": 2
-    },
     "src/clinico/enfermagem/balancoHidrico.ts": {
-      "data-local": 2
-    },
-    "src/clinico/hiperpotassemia.ts": {
-      "data-local": 2
-    },
-    "src/clinico/pediatria/fonteP4.ts": {
-      "data-local": 2
+      "data-local": 1
     },
     "src/components/admin/ui.tsx": {
       "botao-solto": 1,
@@ -659,165 +626,6 @@
       "botao-solto": 1,
       "cor-arbitraria": 1,
       "data-local": 1
-    },
-    "src/pages/plantonista/calculadoras/AcessoVenoso.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "texto-escala": 6
-    },
-    "src/pages/plantonista/calculadoras/InfusoesAdulto.tsx": {
-      "botao-solto": 5,
-      "cor-arbitraria": 1,
-      "data-local": 1,
-      "texto-escala": 4
-    },
-    "src/pages/plantonista/calculadoras/IsrAdulto.tsx": {
-      "canto": 1,
-      "data-local": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/dengue/ClassificacaoDengue.tsx": {
-      "botao-solto": 2,
-      "canto": 3,
-      "data-local": 3,
-      "tabela-solta": 2,
-      "texto-escala": 31
-    },
-    "src/pages/plantonista/pediatria/AcidoBasePed.tsx": {
-      "canto": 1,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/pediatria/AnafilaxiaPediatrica.tsx": {
-      "canto": 1,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/pediatria/AsmaPediatrica.tsx": {
-      "canto": 1,
-      "tabela-solta": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/pediatria/BolusPediatrico.tsx": {
-      "canto": 1,
-      "data-local": 1,
-      "texto-escala": 6
-    },
-    "src/pages/plantonista/pediatria/CadEhhPed.tsx": {
-      "canto": 1
-    },
-    "src/pages/plantonista/pediatria/ChoquePediatrico.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "tabela-solta": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/pediatria/DisturbiosSodioPed.tsx": {
-      "canto": 1,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/pediatria/EmergenciasOncologicasPed.tsx": {
-      "tabela-solta": 1,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/pediatria/FalciformePed.tsx": {
-      "data-local": 1
-    },
-    "src/pages/plantonista/pediatria/FluidoterapiaManutencaoPed.tsx": {
-      "canto": 1,
-      "tabela-solta": 1
-    },
-    "src/pages/plantonista/pediatria/GlomerulopatiasShuPed.tsx": {
-      "canto": 1,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/pediatria/HemostasiaTrombosePed.tsx": {
-      "tabela-solta": 1,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/pediatria/InfeccaoUrinariaPed.tsx": {
-      "canto": 1,
-      "cor-arbitraria": 1,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/pediatria/InfusoesPediatricas.tsx": {
-      "canto": 1,
-      "data-local": 1,
-      "select-solto": 1,
-      "texto-escala": 5
-    },
-    "src/pages/plantonista/pediatria/PecasIcr.tsx": {
-      "canto": 1,
-      "texto-escala": 8
-    },
-    "src/pages/plantonista/pediatria/PecasP2.tsx": {
-      "canto": 3,
-      "texto-escala": 7
-    },
-    "src/pages/plantonista/pediatria/PecasP4.tsx": {
-      "canto": 3,
-      "data-local": 1,
-      "tabela-solta": 1,
-      "texto-escala": 5
-    },
-    "src/pages/plantonista/pediatria/PhoenixPed.tsx": {
-      "canto": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/pediatria/PneumoniaPed.tsx": {
-      "data-local": 1
-    },
-    "src/pages/plantonista/pediatria/QueimaduraPed.tsx": {
-      "botao-solto": 1,
-      "canto": 2,
-      "cor-crua": 1,
-      "texto-escala": 2
-    },
-    "src/pages/plantonista/pediatria/RcpPediatrica.tsx": {
-      "botao-solto": 1,
-      "canto": 1,
-      "tabela-solta": 1,
-      "texto-escala": 4
-    },
-    "src/pages/plantonista/pediatria/SinaisVitaisPediatricos.tsx": {
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/pediatria/ViaAereaPediatrica.tsx": {
-      "canto": 1,
-      "tabela-solta": 1,
-      "texto-escala": 1
-    },
-    "src/pages/plantonista/pediatria/ViasAereasSuperioresPed.tsx": {
-      "data-local": 1
-    },
-    "src/pages/plantonista/pediatria/formatoIcr.ts": {
-      "data-local": 1
-    },
-    "src/pages/plantonista/pediatria/formatoP2.ts": {
-      "data-local": 1
-    },
-    "src/pages/plantonista/protocolos/Decanulacao.tsx": {
-      "canto": 1,
-      "texto-escala": 4
-    },
-    "src/pages/plantonista/protocolos/Hiperpotassemia.tsx": {
-      "botao-solto": 1,
-      "canto": 4,
-      "texto-escala": 18
-    },
-    "src/pages/plantonista/ventilacao/MobilidadeFuncional.tsx": {
-      "canto": 1,
-      "texto-escala": 4
-    },
-    "src/pages/plantonista/ventilacao/Passos.tsx": {
-      "botao-solto": 1,
-      "tabela-solta": 1,
-      "texto-escala": 3,
-      "titulo-solto": 1
-    },
-    "src/pages/plantonista/ventilacao/VmCincoPassos.tsx": {
-      "botao-solto": 1,
-      "data-local": 1,
-      "tabela-solta": 1,
-      "texto-escala": 2
     },
     "src/pages/prontuario/ImpressaoProntuario.tsx": {
       "botao-solto": 3,

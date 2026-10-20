@@ -5,14 +5,16 @@ import {
   cargasPorPeso, fichaRcpPediatrica, metaPadRcp2025, parametrosRcp, type FaixaRcp, type GrupoRcp,
 } from '@/clinico/pediatria/rcp'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
 import { faixaTxt, num, pesoValido } from './formatoP2'
 import { AvisoRn, Bloco, CampoPesoRn, LinhaDose, LinhaReferencia, PesoInvalido } from './PecasP2'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const botao = (ativo: boolean) =>
-  cn('rounded-lg border px-3 py-2 text-left text-sm transition-colors', ativo ? 'border-acao bg-acao/5 ring-1 ring-acao' : 'hover:bg-trilha/50')
+  cn('rounded-controle px-3 py-2 text-apoio', ativo && 'border-acao bg-acao/5 ring-1 ring-acao')
 
 /** RCP pediátrica: parâmetros, cargas de choque e drogas (livro do ICr, caps. 1 e 2). */
 export function RcpPediatrica() {
@@ -30,10 +32,10 @@ export function RcpPediatrica() {
     >
       <Card>
         <CardContent className="flex flex-col gap-2 pt-6">
-          <p className="text-sm font-semibold">Faixa do suporte básico</p>
-          <div className="grid gap-2 sm:grid-cols-3">
+          <p className="text-apoio font-semibold">Faixa do suporte básico</p>
+          <div role="radiogroup" aria-label="Faixa do suporte básico" className="grid gap-2 sm:grid-cols-3">
             {(Object.keys(FAIXAS_RCP) as FaixaRcp[]).map((f) => (
-              <button key={f} type="button" aria-pressed={faixa === f} onClick={() => setFaixa(f)} className={botao(faixa === f)}>{FAIXAS_RCP[f]}</button>
+              <BotaoLinha key={f} role="radio" aria-checked={faixa === f} onClick={() => setFaixa(f)} className={botao(faixa === f)}>{FAIXAS_RCP[f]}</BotaoLinha>
             ))}
           </div>
         </CardContent>
@@ -71,21 +73,21 @@ export function RcpPediatrica() {
         </>
       )}
       <Bloco titulo="AHA/AAP 2025 × livro do ICr">
-        <p className="text-sm text-tinta-sussurro">Destaques oficiais das diretrizes 2025 (p. 11–15); o texto integral do Part 8 não foi aberto. Com linha arterial na RCP, a diretriz mira PAD ≥ {metaPadRcp2025(faixa)} mmHg para a faixa escolhida.</p>
+        <p className="text-apoio text-tinta-sussurro">Destaques oficiais das diretrizes 2025 (p. 11–15); o texto integral do Part 8 não foi aberto. Com linha arterial na RCP, a diretriz mira PAD ≥ {metaPadRcp2025(faixa)} mmHg para a faixa escolhida.</p>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left align-top text-sm">
-            <thead className="text-tinta-sussurro"><tr><th className="pr-3 pb-2">Tema</th><th className="pr-3 pb-2">AHA/AAP 2025</th><th className="pr-3 pb-2">Estado · p.</th><th className="pb-2">Livro do ICr</th></tr></thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA/AAP 2025</TableHead><TableHead className="pr-3 pb-2">Estado · p.</TableHead><TableHead className="pb-2">Livro do ICr</TableHead></TableRow></TableHeader>
+            <TableBody>
               {DIRETRIZ_PALS_2025.map((d) => (
-                <tr key={d.tema} className="border-t">
-                  <td className="pr-3 py-2 font-medium">{d.tema}</td>
-                  <td className="pr-3 py-2">{d.aha}</td>
-                  <td className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.estado} · {d.pagina}</td>
-                  <td className="py-2 text-tinta-sussurro">{d.livro}</td>
-                </tr>
+                <TableRow key={d.tema} className="border-t">
+                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                  <TableCell className="pr-3 py-2">{d.aha}</TableCell>
+                  <TableCell className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.estado} · {d.pagina}</TableCell>
+                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </Bloco>
     </ToolLayout>

@@ -1,6 +1,7 @@
 import type { Ficha } from '../ficha.ts'
 import { LIVRO_PS_PED, fichaPediatrica } from './fonte.ts'
 import type { Faixa } from './fonteP2.ts'
+import { numero as numeroBr } from '../../lib/formato.ts'
 
 // Lote P4 — ferramentas pediátricas do livro Pronto-Socorro ICr-HCFMUSP
 // (4ª ed., 2023). Só entra o que o livro traz para a criança, com página
@@ -100,8 +101,8 @@ export function textoDoseLivro(d: DoseLivro): string {
   if (d.porKgDose) partes.push(`${f(d.porKgDose)} ${d.unidade}/kg/dose`)
   if (d.fixo) partes.push(`${f(d.fixo)} ${d.unidade}`)
   if (d.doses) partes.push(`em ${f(d.doses)} ${d.doses[1] === 1 ? 'dose' : 'doses'}/dia`)
-  if (d.maxDose !== undefined) partes.push(`máx. ${d.maxDose.toLocaleString('pt-BR')} ${d.unidade}/dose`)
-  if (d.maxDia !== undefined) partes.push(`máx. ${d.maxDia.toLocaleString('pt-BR')} ${d.unidade}/dia`)
+  if (d.maxDose !== undefined) partes.push(`máx. ${numeroBr(d.maxDose)} ${d.unidade}/dose`)
+  if (d.maxDia !== undefined) partes.push(`máx. ${numeroBr(d.maxDia)} ${d.unidade}/dia`)
   return partes.join(' · ')
 }
 

@@ -113,7 +113,7 @@ export function GlomerulopatiasShuPed() {
 
       <Bloco titulo="Síndrome nefrótica — KDIGO 2025 e IPNA 2023, ao lado do livro" descricao="Prednisona/prednisolona pela KDIGO 2025 (Practice Point 1.3.1.1, p. S257) com o peso e a superfície corpórea informados; textos lidos no PDF/artigo.">
         {(() => { const k = pediatrico ? prednisolonaKdigo(p.peso, sc) : null; return k ? (
-          <div className="rounded-lg border px-3 py-2 text-sm">
+          <div className="rounded-controle border px-3 py-2 text-apoio">
             <p>Fase diária (4 ou 6 semanas): <strong className="tabular-nums">{k.diariaPorPeso !== null ? `${br(k.diariaPorPeso, 0)} mg/dia (2 mg/kg)` : ''}{k.diariaPorPeso !== null && k.diariaPorSc !== null ? ' · ' : ''}{k.diariaPorSc !== null ? `${br(k.diariaPorSc, 0)} mg/dia (60 mg/m²)` : ''}</strong>{k.noTetoDiaria && ' — no teto de 60 mg'}</p>
             <p>Dias alternados (mais 4 ou 6 semanas): <strong className="tabular-nums">{k.alternadaPorPeso !== null ? `${br(k.alternadaPorPeso, 0)} mg (1,5 mg/kg)` : ''}{k.alternadaPorPeso !== null && k.alternadaPorSc !== null ? ' · ' : ''}{k.alternadaPorSc !== null ? `${br(k.alternadaPorSc, 0)} mg (40 mg/m²)` : ''}</strong>{k.noTetoAlternada && ' — no teto de 40 mg'}</p>
             <p className="text-tinta-sussurro">Recaída: mesma dose diária até 3 dias de remissão, depois alternada por 4 semanas (Practice Points 1.3.3.1–1.3.3.2).</p>

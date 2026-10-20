@@ -1,5 +1,6 @@
 import { completo, escolha, numero, somar, type Escore } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
+import { numero as numeroBr } from '../../lib/formato.ts'
 
 // Paralisias flácidas agudas / síndrome de Guillain-Barré — cap. 44 do Manual
 // de Medicina de Emergência do HCFMUSP (3ª ed., 2022), p. 598–607. Critérios
@@ -119,7 +120,7 @@ export const egos: Escore = {
     const total = somar(egos, r)
     return {
       rotulo: 'EGOS',
-      valor: total.toLocaleString('pt-BR'),
+      valor: numeroBr(total),
       unidade: 'de 1 a 7',
       nota: 'Quanto maior, maior a proporção de pacientes sem marcha independente em 6 meses (Figura 1, p. 607)',
       estado: total >= 5 ? 2 : total >= 4 ? 1 : 0,
