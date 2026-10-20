@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ArrowDown, ArrowUp, ImagePlus, Link2, Pencil, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ImagePlus, Images, Link2, Pencil, Trash2 } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Spinner } from '@/components/ui/spinner'
+import { TituloPagina } from '@/components/monitor/Pagina'
 
 const schema = z.object({
   titulo: z.string().max(80, 'Máximo de 80 caracteres').optional().or(z.literal('')),
@@ -146,51 +147,52 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
 
   if (!unidadeId) return null
 
+  const botaoNovo = (
+    <Button onClick={abrirCriar}>
+      <ImagePlus />
+      Nova imagem
+    </Button>
+  )
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        {embutido ? (
-          <div />
-        ) : (
-          <div>
-            <h1 className="text-xl font-semibold">Imagens da unidade</h1>
-            <p className="text-sm text-tinta-sussurro">
-              {unidadeAtiva?.unidade.nome} — o quadro exibido na Central do Plantonista. As imagens
-              trocam sozinhas e podem ter links.
-            </p>
-          </div>
-        )}
-        <Button onClick={abrirCriar}>
-          <ImagePlus />
-          Nova imagem
-        </Button>
-      </div>
+      {embutido ? (
+        <div className="flex items-center justify-end">{botaoNovo}</div>
+      ) : (
+        <TituloPagina
+          icone={Images}
+          titulo="Imagens da unidade"
+          descricao={<>{unidadeAtiva?.unidade.nome} — o quadro exibido na Central do Plantonista. As imagens trocam sozinhas e podem ter links.</>}
+          acoes={botaoNovo}
+          className="mb-0"
+        />
+      )}
 
-      {erro && <p className="text-sm text-critico">{erro}</p>}
+      {erro && <p className="text-apoio text-critico">{erro}</p>}
 
       {isLoading ? (
         <div className="flex h-40 items-center justify-center"><Spinner /></div>
       ) : (
         <div className="flex flex-col gap-3">
           {(banners ?? []).map((b, index) => (
-            <div key={b.id} className="flex items-center gap-3 rounded-2xl border bg-superficie p-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-              <div className="relative h-16 w-28 shrink-0 overflow-hidden rounded-lg border bg-trilha">
+            <div key={b.id} className="flex items-center gap-3 rounded-cartao border bg-superficie p-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+              <div className="relative h-16 w-28 shrink-0 overflow-hidden rounded-controle border bg-trilha">
                 <img src={b.imagem_url} alt={b.titulo ?? ''} className="h-full w-full object-cover" />
                 {!b.ativo && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-[10px] font-semibold text-white">
-                    OCULTO
+                  <div className="absolute inset-0 flex items-center justify-center bg-veu-dialogo text-rotulo font-semibold text-sobre-veu">
+                    Oculto
                   </div>
                 )}
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="truncate text-sm font-medium">{b.titulo || 'Sem título'}</span>
+                  <span className="truncate text-apoio font-medium">{b.titulo || 'Sem título'}</span>
                   {b.link_url && <Link2 className="size-3.5 shrink-0 text-acao" />}
                   {b.ativo && <Badge variant="success">Ativo</Badge>}
                 </div>
                 {b.descricao && (
-                  <p className="mt-0.5 line-clamp-1 text-xs text-tinta-sussurro">{b.descricao}</p>
+                  <p className="mt-0.5 line-clamp-1 text-rotulo text-tinta-sussurro">{b.descricao}</p>
                 )}
               </div>
 
@@ -220,7 +222,7 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
           ))}
 
           {(banners ?? []).length === 0 && (
-            <p className="py-8 text-center text-sm text-tinta-sussurro">
+            <p className="py-8 text-center text-apoio text-tinta-sussurro">
               Nenhuma imagem no quadro. Clique em "Nova imagem" para começar.
             </p>
           )}
@@ -263,9 +265,9 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
             <div className="flex flex-col gap-2">
               <Label htmlFor="banner-link">Link de redirecionamento</Label>
               <Input id="banner-link" placeholder="https://… (opcional)" {...form.register('link_url')} />
-              <p className="text-xs text-tinta-sussurro">Ao clicar na imagem, abre o link em nova aba.</p>
+              <p className="text-rotulo text-tinta-sussurro">Ao clicar na imagem, abre o link em nova aba.</p>
               {form.formState.errors.link_url && (
-                <p className="text-xs text-critico">{form.formState.errors.link_url.message}</p>
+                <p className="text-rotulo text-critico">{form.formState.errors.link_url.message}</p>
               )}
             </div>
 

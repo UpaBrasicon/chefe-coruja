@@ -3,6 +3,7 @@ import { BarChart3, BedDouble, Download, Hourglass, LineChart, RefreshCw, Repeat
 import * as React from 'react'
 
 import { baixarCsv, gerarCsv, nomeArquivoCsv } from '@/lib/csv'
+import { dataHora, dataIso, numeroAte } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Button } from '@/components/ui/button'
@@ -141,8 +142,8 @@ export default function Indicadores() {
   // Exportação (Fase 0, item 18): só números agregados por setor, sem
   // paciente — não precisa de registro na auditoria (decisão do RT, 07/10/2026).
   const nomeUnidade = unidadeAtiva?.unidade?.nome ?? ''
-  const agora = () => new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-  const hojeArquivo = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+  const agora = () => dataHora(new Date())
+  const hojeArquivo = () => dataIso()
 
   function exportarCenso() {
     const linhas = [...(censo ?? [])]
@@ -213,7 +214,7 @@ export default function Indicadores() {
           grandeza="turno"
           icone={Hourglass}
           rotulo="Média de permanência"
-          valor={ultimoCenso.permanenciaD == null ? '—' : ultimoCenso.permanenciaD.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}
+          valor={ultimoCenso.permanenciaD == null ? '—' : numeroAte(ultimoCenso.permanenciaD, 1)}
           unidade={ultimoCenso.permanenciaD == null ? undefined : 'dias'}
           estado={ultimaData ? `censo de ${fmtDia(ultimaData)} · ${totalUnidade.internados} de ${totalUnidade.leitos} leitos` : 'Nenhum censo gerado ainda'}
           nivel="ok"
@@ -222,7 +223,7 @@ export default function Indicadores() {
           grandeza="turno"
           icone={Repeat}
           rotulo="Giro de leito"
-          valor={ultimoCenso.giro == null ? '—' : ultimoCenso.giro.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}
+          valor={ultimoCenso.giro == null ? '—' : numeroAte(ultimoCenso.giro, 1)}
           estado={ultimaData ? 'saídas por leito, último censo' : 'Nenhum censo gerado ainda'}
           nivel="ok"
         />
@@ -231,7 +232,7 @@ export default function Indicadores() {
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-corpo">
               <BarChart3 className="size-4 text-tinta-sussurro" />
               Censo por setor (últimos 7 dias)
             </CardTitle>
@@ -249,7 +250,7 @@ export default function Indicadores() {
               <Spinner />
             </div>
           ) : agrupado.size === 0 ? (
-            <p className="text-sm text-tinta-sussurro">
+            <p className="text-apoio text-tinta-sussurro">
               Nenhum censo gerado ainda. Clique em &quot;Gerar censo de hoje&quot;.
             </p>
           ) : (
@@ -258,22 +259,22 @@ export default function Indicadores() {
               const series = [...linhas].sort((a, b) => a.data.localeCompare(b.data))
               const ultimo = linhas[0]
               return (
-                <div key={setorId} className="rounded-lg border p-3">
+                <div key={setorId} className="rounded-controle border p-3">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-semibold">{nome}</span>
-                    <span className={`text-sm font-semibold ${corTaxa(ultimo.taxa_ocupacao, limites.ocupacao_pct)}`}>
+                    <span className="text-apoio font-semibold">{nome}</span>
+                    <span className={`text-apoio font-semibold ${corTaxa(ultimo.taxa_ocupacao, limites.ocupacao_pct)}`}>
                       {ultimo.taxa_ocupacao != null ? `${ultimo.taxa_ocupacao}%` : '—'} ocupação
                     </span>
                   </div>
                   <div className="grid grid-cols-7 gap-1.5">
                     {series.map((c) => (
-                      <div key={c.data} className="rounded-lg bg-trilha/50 p-2 text-center">
-                        <div className="text-[10px] font-medium text-tinta-sussurro">{fmtDia(c.data)}</div>
-                        <div className="text-sm font-semibold">{c.internados}</div>
-                        <div className="text-[10px] text-tinta-sussurro">
+                      <div key={c.data} className="rounded-controle bg-trilha/50 p-2 text-center">
+                        <div className="text-rotulo font-medium text-tinta-sussurro">{fmtDia(c.data)}</div>
+                        <div className="text-apoio font-semibold">{c.internados}</div>
+                        <div className="text-rotulo text-tinta-sussurro">
                           {c.permanencia_media_h != null ? `${c.permanencia_media_h}h` : '—'}
                         </div>
-                        <div className="text-[10px] text-tinta-sussurro">giro {c.giro_leito ?? '—'}</div>
+                        <div className="text-rotulo text-tinta-sussurro">giro {c.giro_leito ?? '—'}</div>
                       </div>
                     ))}
                   </div>
@@ -288,7 +289,7 @@ export default function Indicadores() {
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <CardTitle className="text-base">Ocupação ao vivo por setor</CardTitle>
+            <CardTitle className="text-corpo">Ocupação ao vivo por setor</CardTitle>
             <Button variant="outline" size="sm" onClick={exportarOcupacao} disabled={(ocupacao ?? []).length === 0}>
               <Download /> Exportar CSV
             </Button>
@@ -296,7 +297,7 @@ export default function Indicadores() {
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {(ocupacao ?? []).length === 0 ? (
-            <p className="text-sm text-tinta-sussurro">Nenhum setor com ocupação.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhum setor com ocupação.</p>
           ) : (
             (ocupacao ?? []).map((o) => {
               const lotado = o.limite > 0 && o.internados >= o.limite

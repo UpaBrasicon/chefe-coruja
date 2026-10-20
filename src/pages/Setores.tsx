@@ -23,6 +23,8 @@ import {
 import { STATUS_LEITO_LABEL, STATUS_LEITO_VARIANT, TIPO_LEITO_LABEL, TIPO_SETOR_LABEL } from '@/lib/constants'
 import type { TipoLeito, TipoSetor } from '@/types/database'
 import { AcoesLeito } from '@/components/leito/AcoesLeito'
+import { TituloPagina } from '@/components/monitor/Pagina'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -167,54 +169,58 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
     ordemMutation.mutate(novo.map((s) => s.id))
   }
 
+  const botaoNovoSetor = (
+    <Button onClick={() => setDialogSetorAberto(true)}>
+      <Plus />
+      Novo setor
+    </Button>
+  )
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        {embutido ? (
+      {embutido ? (
+        <div className="flex items-center justify-between">
           <div />
-        ) : (
-          <div>
-            <h1 className="text-xl font-semibold">Setores e Leitos</h1>
-            <p className="text-sm text-tinta-sussurro">
-              {unidadeAtiva?.unidade.nome} — gerencie setores e crie leitos em lote.
-            </p>
-          </div>
-        )}
-        <Button onClick={() => setDialogSetorAberto(true)}>
-          <Plus />
-          Novo setor
-        </Button>
-      </div>
+          {botaoNovoSetor}
+        </div>
+      ) : (
+        <TituloPagina
+          icone={BedDouble}
+          titulo="Setores e leitos"
+          descricao={<>{unidadeAtiva?.unidade.nome} — gerencie setores e crie leitos em lote.</>}
+          acoes={botaoNovoSetor}
+          className="mb-0"
+        />
+      )}
 
-      {erro && <p className="text-sm text-critico">{erro}</p>}
+      {erro && <p className="text-apoio text-critico">{erro}</p>}
 
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         {/* Lista de setores */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Setores</CardTitle>
+            <CardTitle className="text-corpo">Setores</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-1">
             {setores.map((s, index) => (
               <div
                 key={s.id}
                 className={cn(
-                  'group flex items-center justify-between gap-1 rounded-lg border px-3 py-2 transition-colors',
+                  'group flex items-center justify-between gap-1 rounded-controle border px-3 py-2 transition-colors',
                   s.id === setorSelecionadoId
                     ? 'border-acao bg-acao/5'
                     : 'hover:bg-trilha/50'
                 )}
               >
-                <button
-                  type="button"
-                  className="flex min-w-0 flex-1 flex-col items-start text-left"
+                <BotaoLinha
+                  className="min-w-0 flex-1 gap-0 rounded-none border-0 bg-transparent p-0 hover:bg-transparent"
                   onClick={() => setSetorSelecionadoId(s.id)}
                 >
-                  <span className="text-sm font-medium">{s.nome}</span>
-                  <span className="text-xs text-tinta-sussurro">
+                  <span className="text-apoio font-medium">{s.nome}</span>
+                  <span className="text-rotulo text-tinta-sussurro">
                     {TIPO_SETOR_LABEL[s.tipo]} · {s.leitos[0]?.count ?? 0} leitos
                   </span>
-                </button>
+                </BotaoLinha>
                 <div className="flex shrink-0 items-center gap-0.5">
                   <Button
                     variant="ghost"
@@ -250,7 +256,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
               </div>
             ))}
             {setores.length === 0 && (
-              <p className="py-6 text-center text-sm text-tinta-sussurro">
+              <p className="py-6 text-center text-apoio text-tinta-sussurro">
                 Nenhum setor criado ainda.
               </p>
             )}
@@ -260,7 +266,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
         {/* Leitos do setor */}
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-corpo">
               <BedDouble className="size-4 text-tinta-sussurro" />
               {setorSelecionado ? setorSelecionado.nome : 'Selecione um setor'}
             </CardTitle>
@@ -273,7 +279,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
           </CardHeader>
           <CardContent>
             {!setorSelecionado && (
-              <p className="py-6 text-center text-sm text-tinta-sussurro">
+              <p className="py-6 text-center text-apoio text-tinta-sussurro">
                 Selecione um setor para ver os leitos.
               </p>
             )}
@@ -289,16 +295,16 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                 {(leitosQuery.data ?? []).map((leito) => (
                   <div
                     key={leito.id}
-                    className="flex flex-col gap-2 rounded-lg border p-3"
+                    className="flex flex-col gap-2 rounded-controle border p-3"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-1">
-                      <span className="text-sm font-semibold">{leito.identificador}</span>
+                      <span className="text-apoio font-semibold">{leito.identificador}</span>
                       <Badge variant={STATUS_LEITO_VARIANT[leito.status]}>
                         {STATUS_LEITO_LABEL[leito.status]}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-tinta-sussurro">
+                      <span className="text-rotulo text-tinta-sussurro">
                         {TIPO_LEITO_LABEL[leito.tipo]}
                       </span>
                       <div className="flex items-center gap-0.5">
@@ -336,7 +342,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                 ))}
 
                 {leitosQuery.data?.length === 0 && (
-                  <p className="col-span-full py-6 text-center text-sm text-tinta-sussurro">
+                  <p className="col-span-full py-6 text-center text-apoio text-tinta-sussurro">
                     Este setor ainda não tem leitos.
                   </p>
                 )}
@@ -365,7 +371,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                 {...setorForm.register('nome')}
               />
               {setorForm.formState.errors.nome && (
-                <p className="text-xs text-critico">
+                <p className="text-rotulo text-critico">
                   {setorForm.formState.errors.nome.message}
                 </p>
               )}
@@ -423,7 +429,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                   {...leitosForm.register('prefixo')}
                 />
                 {leitosForm.formState.errors.prefixo && (
-                  <p className="text-xs text-critico">
+                  <p className="text-rotulo text-critico">
                     {leitosForm.formState.errors.prefixo.message}
                   </p>
                 )}
@@ -438,7 +444,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                   {...leitosForm.register('quantidade')}
                 />
                 {leitosForm.formState.errors.quantidade && (
-                  <p className="text-xs text-critico">
+                  <p className="text-rotulo text-critico">
                     {leitosForm.formState.errors.quantidade.message}
                   </p>
                 )}

@@ -30,7 +30,7 @@ export default function UnidadeGrupo() {
   const abas: AbaDef[] = [
     ...(papeisDaUnidade.includes('gestor')
       ? [{
-          valor: 'setores', rotulo: 'Setores e Leitos',
+          valor: 'setores', rotulo: 'Setores e leitos',
           // ocupação, pacientes por plantonista, vencidas e o mapa de leitos
           // (protótipo, aba Setores) antes do cadastro de setores e leitos
           conteudo: () => <><MapaLeitos /><Setores embutido /></>,

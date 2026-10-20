@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
+import { data as formatarData } from '@/lib/formato'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { PAPEL_LABEL } from '@/lib/constants'
@@ -52,7 +53,7 @@ export default function SegurancaEquipe() {
                   : <Badge variant="secondary">Só email</Badge>}
                 <Badge variant="secondary">{p.codigos_restantes} código(s) de recuperação</Badge>
                 {p.zerado_em && (
-                  <Badge variant="secondary">Zerado em {new Date(p.zerado_em).toLocaleDateString('pt-BR')}</Badge>
+                  <Badge variant="secondary">Zerado em {formatarData(p.zerado_em)}</Badge>
                 )}
               </div>
             </div>

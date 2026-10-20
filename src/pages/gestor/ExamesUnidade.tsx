@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { codigoExameNaTela, loincValido, tipoDoCodigo, type ExameBuscado, type ExameUnidade, type ListaExamesUnidade } from '@/lib/exames'
@@ -92,7 +93,7 @@ export default function ExamesUnidade() {
           <Label htmlFor="exame-busca">Incluir exame do SIGTAP</Label>
           <Input id="exame-busca" className="h-9" placeholder="Nome ou código (ex.: hemograma, radiografia, eletrocardiograma)" value={termo} onChange={(e) => setTermo(e.target.value)} />
           {(busca.data ?? []).length > 0 && (
-            <div className="flex max-h-56 flex-col overflow-y-auto rounded-md border border-fio">
+            <div className="flex max-h-56 flex-col overflow-y-auto rounded-controle border border-fio">
               {(busca.data ?? []).map((x) => (
                 <Button key={x.procedimento} type="button" variant="ghost" size="sm" className="justify-start" disabled={naLista.has(x.procedimento)}
                   onClick={() => setEditando({ procedimento: x.procedimento, nome_sigtap: x.nome, nome_curto: '', loinc: '', botao: false, ordem: '0' })}>
@@ -140,37 +141,37 @@ export default function ExamesUnidade() {
         <Vazio icone={TestTube} titulo="Nenhum exame na lista da unidade" texto="Sem lista, o pedido do atendimento busca no grupo 02.02 do SIGTAP inteiro e mostra os botões padrão." />
       ) : (
         <div className="overflow-x-auto rounded-container border border-fio bg-superficie">
-          <table className="w-full min-w-[640px] text-apoio">
-            <thead className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
-              <tr><th className="px-3 py-2 font-medium">Nome no pedido</th><th className="px-3 py-2 font-medium">SIGTAP</th>
-                <th className="px-3 py-2 font-medium">LOINC</th><th className="px-3 py-2 font-medium">Botão</th><th /></tr>
-            </thead>
-            <tbody>
+          <Table variante="referencia" className="w-full min-w-[640px] text-apoio">
+            <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
+              <TableRow><TableHead className="px-3 py-2 font-medium">Nome no pedido</TableHead><TableHead className="px-3 py-2 font-medium">SIGTAP</TableHead>
+                <TableHead className="px-3 py-2 font-medium">LOINC</TableHead><TableHead className="px-3 py-2 font-medium">Botão</TableHead><TableHead /></TableRow>
+            </TableHeader>
+            <TableBody>
               {exames.map((e) => (
-                <tr key={e.id} className="border-b border-trilha align-top last:border-0">
-                  <td className="px-3 py-2 font-medium text-tinta">{e.nome_curto}
+                <TableRow key={e.id} className="border-b border-trilha align-top last:border-0">
+                  <TableCell className="px-3 py-2 font-medium text-tinta">{e.nome_curto}
                     <Badge variant={tipoDoCodigo(e.procedimento) === 'imagem' ? 'secondary' : 'outline'} className="ml-1.5">{tipoDoCodigo(e.procedimento) === 'imagem' ? 'imagem' : 'laboratório'}</Badge>
-                  </td>
-                  <td className="px-3 py-2">{codigoExameNaTela(e.procedimento)}<span className="block text-rotulo text-tinta-sussurro">{e.nome_sigtap ?? ''}</span></td>
-                  <td className="px-3 py-2">{e.loinc ?? <span className="text-tinta-sussurro">—</span>}</td>
-                  <td className="px-3 py-2">{e.botao ? <Badge variant="info">botão · {e.ordem}</Badge> : <span className="text-tinta-sussurro">—</span>}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-right">
+                  </TableCell>
+                  <TableCell className="px-3 py-2">{codigoExameNaTela(e.procedimento)}<span className="block text-rotulo text-tinta-sussurro">{e.nome_sigtap ?? ''}</span></TableCell>
+                  <TableCell className="px-3 py-2">{e.loinc ?? <span className="text-tinta-sussurro">—</span>}</TableCell>
+                  <TableCell className="px-3 py-2">{e.botao ? <Badge variant="info">botão · {e.ordem}</Badge> : <span className="text-tinta-sussurro">—</span>}</TableCell>
+                  <TableCell className="whitespace-nowrap px-3 py-2 text-right">
                     {pode && (
                       <>
                         <Button size="xs" variant="ghost" onClick={() => abrir(e)}>Editar</Button>
                         <Button size="xs" variant="ghost" onClick={() => { setRetirando(e); setMotivo('') }}>Retirar</Button>
                       </>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
 
       {retirando && (
-        <div className="flex flex-col gap-1.5 rounded-lg border border-fio bg-superficie p-3">
+        <div className="flex flex-col gap-1.5 rounded-controle border border-fio bg-superficie p-3">
           <Label htmlFor="exame-motivo">Retirar {retirando.nome_curto} da lista: motivo</Label>
           <Textarea id="exame-motivo" rows={2} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
           <div className="flex justify-end gap-2">

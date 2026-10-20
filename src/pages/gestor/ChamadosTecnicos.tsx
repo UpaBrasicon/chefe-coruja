@@ -4,6 +4,7 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { diaMesHora } from '@/lib/formato'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -32,8 +33,7 @@ const SELO_SEVERIDADE: Record<Severidade, string> = {
   baixa: 'text-tinta-apoio bg-trilha',
 }
 const MARCA_SEVERIDADE: Record<Severidade, string> = { alta: 'bg-critico', media: 'bg-atencao', baixa: 'bg-fio-forte' }
-const quando = (iso: string) =>
-  new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+const quando = (iso: string) => diaMesHora(iso)
 
 export default function ChamadosTecnicos() {
   const { unidadeAtiva } = useUnidade()
@@ -91,13 +91,9 @@ export default function ChamadosTecnicos() {
                 <span className={c.situacao === 'aguardando_unidade' ? 'font-medium text-atencao' : undefined}>{SITUACAO[c.situacao as Situacao]}</span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setAberto(c)}
-              className="self-center rounded-[9px] border border-fio bg-superficie px-3 py-1.5 text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao"
-            >
+            <Button variant="outline" onClick={() => setAberto(c)} className="self-center">
               Acompanhar
-            </button>
+            </Button>
           </div>
         ))}
         {chamados.data && lista.length === 0 && (

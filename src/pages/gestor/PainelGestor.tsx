@@ -3,10 +3,12 @@ import { ChevronLeft, ChevronRight, CircleDot, LayoutDashboard, MapPin, Search, 
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
-import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { Chip, Chips, TituloCartao, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Parametro } from '@/components/monitor/Parametros'
+import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { hora as formatarHora, numero } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { Database } from '@/types/database'
@@ -35,8 +37,7 @@ const ROTULO_LINK: Record<string, string> = {
   '/observacao': 'Abrir Observação',
 }
 
-const hora = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }) : '—'
+const hora = (iso: string | null) => (iso ? formatarHora(iso) : '—')
 
 // ── Panorama em carrossel ───────────────────────────────────────────────────
 function Panorama({ unidadeId }: { unidadeId: string }) {
@@ -76,20 +77,18 @@ function Panorama({ unidadeId }: { unidadeId: string }) {
         <span className="grid size-[34px] shrink-0 place-items-center rounded-controle bg-acao/10 text-acao" aria-hidden>
           <Icone className="size-[17px]" />
         </span>
-        <h2 className="min-w-0 flex-1 text-corpo font-semibold tracking-[-0.01em] text-tinta">
+        <TituloCartao className="mb-0 min-w-0 flex-1">
           Panorama da unidade
           {atual && <span className="font-normal text-tinta-apoio"> — {atual.titulo}</span>}
-        </h2>
+        </TituloCartao>
         {total > 1 && (
           <div className="flex gap-[7px]">
-            <button type="button" aria-label="Painel anterior" onClick={() => setI((x) => (x - 1 + total) % total)}
-              className="grid size-[30px] place-items-center rounded-[9px] border border-fio bg-superficie text-tinta-sussurro hover:border-acao hover:text-acao">
+            <Button variant="outline" size="icon-sm" aria-label="Painel anterior" onClick={() => setI((x) => (x - 1 + total) % total)}>
               <ChevronLeft className="size-[15px]" />
-            </button>
-            <button type="button" aria-label="Próximo painel" onClick={() => setI((x) => (x + 1) % total)}
-              className="grid size-[30px] place-items-center rounded-[9px] border border-fio bg-superficie text-tinta-sussurro hover:border-acao hover:text-acao">
+            </Button>
+            <Button variant="outline" size="icon-sm" aria-label="Próximo painel" onClick={() => setI((x) => (x + 1) % total)}>
               <ChevronRight className="size-[15px]" />
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -117,6 +116,7 @@ function Panorama({ unidadeId }: { unidadeId: string }) {
           <span className="text-apoio text-tinta-apoio">{atual.nota(data.n)}</span>
           <div className="flex items-center gap-[5px]">
             {lista.map((p, k) => (
+              // padrao-ok: ponto indicador do carrossel (6 px que estica a 18 px); nenhuma peça de botão tem esse desenho
               <button key={p.chave} type="button" aria-label={`Painel ${k + 1} de ${total}: ${p.titulo}`} aria-current={k === i % total}
                 onClick={() => setI(k)}
                 className={cn('h-1.5 rounded-capsula transition-[width] duration-200', k === i % total ? 'w-[18px] bg-acao' : 'w-1.5 bg-fio-forte')} />
@@ -152,23 +152,21 @@ function Pergunta({ unidadeId }: { unidadeId: string }) {
         <input value={texto} onChange={(e) => setTexto(e.target.value)} maxLength={300}
           placeholder="Pergunte sobre a gestão da unidade" aria-label="Pergunte sobre a gestão da unidade"
           className="min-w-0 flex-1 border-0 bg-transparent text-corpo text-tinta outline-none placeholder:text-tinta-sussurro" />
-        <button type="submit" disabled={perguntar.isPending || texto.trim().length < 3}
-          className="rounded-[9px] bg-acao px-[13px] py-[7px] text-apoio font-medium whitespace-nowrap text-sobre-acao hover:bg-acao-pressionada disabled:opacity-60">
+        <Button type="submit" disabled={perguntar.isPending || texto.trim().length < 3}>
           {perguntar.isPending ? 'Consultando…' : 'Perguntar'}
-        </button>
+        </Button>
       </form>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className="mr-0.5 text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">Exemplos</span>
         {PERGUNTAS.map((p) => (
-          <button key={p} type="button" onClick={() => { setTexto(p); enviar(p) }}
-            className="rounded-capsula border border-fio bg-superficie px-3 py-[5px] text-apoio text-tinta-apoio hover:border-acao hover:bg-acao/5 hover:text-acao">
+          <Button key={p} variant="outline" size="sm" onClick={() => { setTexto(p); enviar(p) }} className="rounded-capsula px-3">
             {p}
-          </button>
+          </Button>
         ))}
       </div>
       {perguntar.error && <p className="mt-3 text-apoio text-critico">{(perguntar.error as Error).message}</p>}
       {r && (
-        <div role="status" className={cn('mt-3.5 flex flex-col gap-2 rounded-controle border px-3.5 py-3', r.entendida ? 'border-fio bg-campo' : 'border-[#FDE68A] bg-[#FFFBEB]')}>
+        <div role="status" className={cn('mt-3.5 flex flex-col gap-2 rounded-controle border px-3.5 py-3', r.entendida ? 'border-fio bg-campo' : 'border-atencao/30 bg-alerta-atencao')}>
           <span className="text-corpo font-semibold text-tinta">{r.titulo}</span>
           <p className="text-apoio text-pretty text-tinta-apoio">{r.resposta}</p>
           {r.itens.length > 0 && (
@@ -207,7 +205,7 @@ const TURNO: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 
 
 function local(l: LinhaCheckin) {
   if (!l.realizado) return '—'
-  if (l.dentro === false) return `Fora do raio${l.distancia_m != null ? ` · ${l.distancia_m.toLocaleString('pt-BR')} m` : ''}`
+  if (l.dentro === false) return `Fora do raio${l.distancia_m != null ? ` · ${numero(l.distancia_m)} m` : ''}`
   if (l.dentro === true) return 'Dentro do raio'
   return 'Sem cerca geográfica'
 }
@@ -229,13 +227,13 @@ function AuditoriaCheckin({ unidadeId }: { unidadeId: string }) {
 
   return (
     <section className="mb-[26px]">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3.5">
-        <div className="flex items-center gap-2.5">
+      <TituloSecao className="flex-wrap items-center gap-3.5"
+        extra={data && <span className={cn('text-apoio', div ? 'text-atencao' : 'text-tinta-sussurro')}>{div} de {contaveis.length} com divergência hoje</span>}>
+        <span className="flex items-center gap-2.5">
           <MapPin className="size-[17px] text-acao" aria-hidden />
-          <h2 className="text-secao font-semibold tracking-[-0.01em] text-tinta">Auditoria de check-in</h2>
-        </div>
-        {data && <span className={cn('text-apoio', div ? 'text-atencao' : 'text-tinta-sussurro')}>{div} de {contaveis.length} com divergência hoje</span>}
-      </div>
+          Auditoria de check-in
+        </span>
+      </TituloSecao>
       <Chips rotulo="Filtrar check-ins">
         {FILTROS.map((f) => <Chip key={f} ativo={filtro === f} onClick={() => setFiltro(f)}>{f}</Chip>)}
       </Chips>

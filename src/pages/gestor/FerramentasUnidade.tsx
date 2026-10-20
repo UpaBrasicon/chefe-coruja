@@ -82,7 +82,7 @@ export default function FerramentasUnidade() {
                 <Label htmlFor={`nota-${f.ferramenta_id}`}>Nota da unidade (aparece na ferramenta)</Label>
                 <Textarea id={`nota-${f.ferramenta_id}`} value={nota} onChange={(e) => setNota(e.target.value)} />
               </div>
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex items-center gap-2 text-apoio">
                 <input type="checkbox" className="size-4" checked={oculta} onChange={(e) => setOculta(e.target.checked)} />
                 Suspender o uso desta ferramenta na unidade
               </label>
@@ -90,7 +90,7 @@ export default function FerramentasUnidade() {
                 <Label htmlFor={`motivo-${f.ferramenta_id}`}>Motivo (obrigatório)</Label>
                 <Input id={`motivo-${f.ferramenta_id}`} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
               </div>
-              {erro && <p className="rounded-lg border border-critico/30 bg-critico/[0.08] p-3 text-sm text-critico">{erro}</p>}
+              {erro && <p className="rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</p>}
               <div className="flex gap-2">
                 <Button size="sm" onClick={salvar} disabled={definir.isPending || motivo.trim().length < 10}>
                   Salvar

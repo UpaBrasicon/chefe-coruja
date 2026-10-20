@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BedDouble, Building2, Clock, Hourglass, Repeat, Stethoscope, type LucideIcon } from 'lucide-react'
 
 import type { Grandeza, Nivel } from '@/components/monitor/Parametros'
+import { numeroAte } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
 // Panorama da unidade (P/index.html 20751–20812, PANORAMA): os painéis do
@@ -34,7 +35,7 @@ export type Painel = {
 
 const num = (n: NumerosPanorama, k: string) => n[k] ?? 0
 const pct = (a: number, b: number) => (b > 0 ? a / b : 0)
-const fmt = (v: number, casas = 1) => v.toLocaleString('pt-BR', { maximumFractionDigits: casas })
+const fmt = (v: number, casas = 1) => numeroAte(v, casas)
 const plural = (v: number, um: string, varios: string) => `${v} ${v === 1 ? um : varios}`
 const minutos = (v: number | null) => (v == null ? '—' : v >= 60 ? `${Math.floor(v / 60)} h ${v % 60} min` : `${v} min`)
 
