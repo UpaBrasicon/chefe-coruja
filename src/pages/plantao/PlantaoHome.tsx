@@ -12,26 +12,28 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Canal, Canais } from '@/components/monitor/Canais'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { Button } from '@/components/ui/button'
+import { BotaoLinha } from '@/components/ui/botao-linha'
+import { hora as horaFmt } from '@/lib/formato'
 
 // Plantão (design_handoff/telas/02): sem faixa — ela é só da página inicial.
 // Meu plantão no topo, o resumo que leva aos riscos, e as seções como canais.
 
-const hora = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : null
+const hora = (iso: string | null) => (iso ? horaFmt(iso) : null)
 
 function CartaoResumo({ icone: Icone, rotulo, valor, detalhe, cor, onClick }: {
   icone: typeof BedDouble; rotulo: string; valor: string; detalhe: string; cor: string; onClick: () => void
 }) {
   // Nenhum número de risco sem caminho: o cartão inteiro é o link.
   return (
-    <button type="button" onClick={onClick} className="rounded-container border border-fio bg-superficie px-4 py-3 text-left shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-halo">
+    <BotaoLinha onClick={onClick} className="block px-4 py-3 shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:bg-superficie hover:shadow-halo">
       <span className={cn('rotulo flex items-center gap-1.5', cor)}>
         <Icone className="size-3" aria-hidden />
         {rotulo}
       </span>
       <span className="mt-1.5 block text-numeral-ok leading-none font-semibold tracking-[-0.03em] text-ok tabular">{valor}</span>
       <span className="mt-1 block text-rotulo text-tinta-apoio">{detalhe}</span>
-    </button>
+    </BotaoLinha>
   )
 }
 
@@ -80,9 +82,9 @@ export default function PlantaoHome() {
           {presenca?.checkin_em && presenca.checkin_dentro === false && ' · fora do raio'}
           {' · '}Check-out {hora(presenca?.checkout_em ?? null) ?? '—'}
         </span>
-        <button type="button" onClick={() => navigate('/plantao/check-in')} className="ml-auto text-apoio font-medium text-acao hover:text-acao-pressionada">
+        <Button variant="link" size="sm" onClick={() => navigate('/plantao/check-in')} className="ml-auto px-0 font-medium">
           {emPlantao ? 'Fazer check-out' : 'Fazer check-in'}
-        </button>
+        </Button>
       </section>
 
       <div className="mb-[22px] grid gap-3 sm:grid-cols-2">

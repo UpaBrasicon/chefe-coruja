@@ -13,6 +13,7 @@ import { useQuery, type QueryClient } from '@tanstack/react-query'
 
 import { TIPOS_FOLHA } from '@/lib/folhas'
 import { supabase } from '@/lib/supabase'
+import { dataHora, hora as horaFmt } from '@/lib/formato'
 
 export type EstadoDocumento = 'aberto' | 'emitido' | 'assinado' | 'cancelado' | 'retificado'
 
@@ -79,10 +80,8 @@ export const COR_ESTADO: Record<EstadoDocumento, 'warning' | 'success' | 'destru
   aberto: 'warning', emitido: 'success', assinado: 'success', cancelado: 'destructive', retificado: 'secondary',
 }
 
-export const hora = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'
-export const diaHora = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
+export const hora = (iso: string | null | undefined) => (iso ? horaFmt(iso) : '—')
+export const diaHora = (iso: string | null | undefined) => (iso ? dataHora(iso) : '—')
 
 /** Histórico do episódio aberto (ou do último) do paciente, de todos os profissionais. */
 export function useDocumentosEpisodio(pacienteId: string | null | undefined, sinal?: unknown) {
@@ -130,5 +129,5 @@ export async function emitirRascunho(rascunhoId: string): Promise<{ id: string; 
  * <style> e pôr a classe `cc-rascunho` no <body>.
  */
 export const MARCA_DAGUA_RASCUNHO_CSS =
-  'body.cc-rascunho::after{content:"RASCUNHO – NÃO VÁLIDO";position:fixed;top:45%;left:0;right:0;text-align:center;' +
+  'body.cc-rascunho::after{content:"RASCUNHO – NÃO VÁLIDO";position:fixed;top:45%;left:0;right:0;text-align:center;' + // padrao-ok: CSS da folha impressa, que não lê os tokens do app
   'font:900 30pt system-ui,sans-serif;color:rgba(0,0,0,.1);transform:rotate(-24deg);pointer-events:none;z-index:9999}'

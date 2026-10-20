@@ -35,6 +35,9 @@ import { useIdentificacao } from '@/components/documentos/identificacao'
 import { SeletorPaciente, usePacienteDoDocumento } from '@/components/documentos/SeletorPaciente'
 import { Aviso, Bloco, Chip, Leitura, Pilulas, Rodape, Sugestoes, Texto } from '@/components/documentos/ui'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
+import { TituloCartao, TituloSecao } from '@/components/monitor/Pagina'
+import { BotaoLinha } from '@/components/ui/botao-linha'
+import { CaixaMarcar } from '@/components/ui/caixa-marcar'
 
 type ItemRx = {
   id: string
@@ -317,15 +320,14 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
             <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
               <div className="flex items-center gap-2.5 border-b border-trilha px-5 py-[13px]">
                 <ClipboardPlus className="size-4 text-acao" aria-hidden />
-                <h2 className="text-corpo font-semibold text-tinta">Protocolos da instituição</h2>
+                <TituloCartao className="mb-0">Protocolos da instituição</TituloCartao>
               </div>
               <div className="flex flex-wrap gap-2 px-5 py-3.5">
                 {(protocolos.data ?? []).map((p) => (
-                  <button key={p.id} type="button" onClick={() => setProtoAberto(p)}
-                    className="flex max-w-[260px] flex-col items-start gap-0.5 rounded-container border border-fio bg-superficie px-3.5 py-2.5 text-left hover:border-acao hover:bg-alerta-marca">
+                  <BotaoLinha key={p.id} onClick={() => setProtoAberto(p)} className="max-w-[260px]">
                     <span className="text-controle font-medium text-tinta">{p.nome}</span>
                     <span className="text-apoio text-tinta-sussurro">{[p.indicacao, `${p.itens.length} ${p.itens.length === 1 ? 'item' : 'itens'}`].filter(Boolean).join(' · ')}</span>
-                  </button>
+                  </BotaoLinha>
                 ))}
                 {protocolos.isSuccess && !protocolos.data.length && (
                   <span className="text-apoio text-tinta-sussurro">Nenhum protocolo de receita escrito pelo gestor desta unidade.</span>
@@ -334,7 +336,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
               </div>
               <div className="flex items-center gap-2.5 border-y border-trilha bg-campo px-5 py-[13px]">
                 <Star className="size-[15px] text-atencao" aria-hidden />
-                <h2 className="text-corpo font-semibold text-tinta">Meus favoritos</h2>
+                <TituloCartao className="mb-0">Meus favoritos</TituloCartao>
                 <Link to="/preferencias-prescricao" className="ml-auto text-apoio text-acao hover:underline">Editar</Link>
               </div>
               <div className="flex flex-wrap gap-2 px-5 py-3.5">
@@ -343,6 +345,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
                   const trava = travas[f.medicamento_id]
                   const dentro = !trava && jaTem(nome)
                   return (
+                    // padrao-ok: chip de favorito com três estados (livre, já na receita, travado por alergia); o Chip não tem esses tons
                     <button key={f.id} type="button" disabled={!!trava || dentro} onClick={() => juntar([deFavorito(f)])}
                       title={trava ? `Bloqueado pela alergia a ${trava}` : dentro ? 'Já está na receita' : [f.receita_padrao, f.posologia].filter(Boolean).join(' · ')}
                       className={cn('flex items-center gap-[7px] rounded-capsula border px-[13px] py-1.5 text-apoio whitespace-nowrap',
@@ -367,7 +370,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
           <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
             <div className="flex items-center gap-2.5 border-b border-trilha px-5 py-3.5">
               <Pill className="size-4 text-acao" aria-hidden />
-              <h2 className="text-corpo font-semibold text-tinta">Medicamentos</h2>
+              <TituloCartao className="mb-0">Medicamentos</TituloCartao>
               <span className="ml-auto text-apoio text-tinta-sussurro">{rx.itens.length} {rx.itens.length === 1 ? 'item' : 'itens'}</span>
             </div>
             {rx.itens.map((i, idx) => editando === i.id ? (
@@ -388,10 +391,9 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
                   onSalvar={(n) => { mudar({ itens: [...rx.itens, { ...n, id: crypto.randomUUID() }] }); setEditando(null) }}
                   onCancelar={() => setEditando(null)} />
               ) : (
-                <button type="button" onClick={() => setEditando('novo')}
-                  className="flex w-full items-center gap-[7px] rounded-controle border border-dashed border-[#CBD5E1] bg-campo px-3.5 py-2.5 text-apoio text-tinta-apoio hover:border-acao hover:bg-alerta-marca hover:text-acao">
+                <BotaoLinha variante="tracejado" onClick={() => setEditando('novo')}>
                   <ClipboardPlus className="size-[15px]" aria-hidden /> Adicionar medicamento
-                </button>
+                </BotaoLinha>
               )}
             </div>
             <div className="flex border-t border-trilha px-5 py-3.5">
@@ -534,7 +536,7 @@ function ControleEspecial({ itens, ident }: { itens: ItemRx[]; ident: Identifica
     <section className="flex flex-col gap-4 rounded-cartao border border-fio bg-superficie px-[26px] py-[22px] shadow-repouso">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-0.5">
-          <h2 className="text-secao font-semibold text-tinta">Receita de Controle Especial</h2>
+          <TituloSecao className="mb-0">Receita de controle especial</TituloSecao>
           <span className="text-apoio text-tinta-sussurro">Portaria SVS/MS 344/98 · 1ª via retida na farmácia, 2ª via do paciente</span>
         </div>
         <span className="shrink-0 rounded-capsula bg-alerta-critico px-2.5 py-[3px] text-rotulo font-semibold text-critico">Duas vias</span>
@@ -604,14 +606,8 @@ function DialogoProtocolo({ protocolo, alergias, jaTem, nomePaciente, onFechar, 
             const t = trava(it.medicamento)
             const marcado = !!sel[i] && !t
             return (
-              <button key={i} type="button" disabled={!!t} onClick={() => setSel((s) => ({ ...s, [i]: !s[i] }))}
-                className={cn('flex w-full items-start gap-[11px] border-b border-trilha px-3.5 py-3 text-left last:border-0',
-                  t ? 'cursor-not-allowed bg-alerta-critico/50' : 'hover:bg-alerta-marca')}>
-                <span aria-hidden className={cn('mt-px grid size-[18px] shrink-0 place-items-center rounded-[5px] border text-[12px] font-bold leading-none',
-                  t ? 'border-fio bg-trilha text-tinta-sussurro' : marcado ? 'border-acao bg-acao text-sobre-acao' : 'border-[#CBD5E1] bg-superficie text-transparent')}>
-                  {t ? '×' : marcado ? '✓' : ''}
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <CaixaMarcar key={i} marcado={marcado} bloqueado={!!t} onChange={() => setSel((s) => ({ ...s, [i]: !s[i] }))}
+                className={cn('border-b border-trilha px-3.5 py-3 last:border-0', t ? 'bg-alerta-critico/50' : 'hover:bg-alerta-marca')}>
                   <span className="text-controle font-medium text-tinta">{it.medicamento}{jaTem(it.medicamento) && <span className="font-normal text-conforme"> · já na receita</span>}</span>
                   <span className="text-apoio text-tinta-sussurro">{[it.posologia, it.quantidade].filter(Boolean).join(' · ')}</span>
                   {t && (
@@ -619,8 +615,7 @@ function DialogoProtocolo({ protocolo, alergias, jaTem, nomePaciente, onFechar, 
                       <TriangleAlert className="size-[13px]" aria-hidden /> Bloqueado · alergia a {t}
                     </span>
                   )}
-                </span>
-              </button>
+              </CaixaMarcar>
             )
           })}
         </div>

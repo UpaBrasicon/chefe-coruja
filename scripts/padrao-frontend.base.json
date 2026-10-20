@@ -1,19 +1,19 @@
 {
   "_leia": "Base da catraca do padrão do frontend (scripts/padrao-frontend.mjs). Só desce: depois de corrigir, rode `node scripts/padrao-frontend.mjs --atualizar` e comite junto.",
   "totais": {
-    "cor-crua": 115,
-    "cor-arbitraria": 224,
-    "cor-hex": 120,
-    "texto-escala": 1269,
-    "canto": 464,
-    "botao-solto": 226,
-    "select-solto": 87,
+    "cor-crua": 113,
+    "cor-arbitraria": 211,
+    "cor-hex": 119,
+    "texto-escala": 1268,
+    "canto": 460,
+    "botao-solto": 202,
+    "select-solto": 84,
     "tabela-solta": 61,
-    "titulo-solto": 78,
-    "data-local": 278,
+    "titulo-solto": 73,
+    "data-local": 270,
     "importacao-cruzada": 0,
     "emoji": 17,
-    "pronto-socorro": 9
+    "pronto-socorro": 6
   },
   "arquivos": {
     "src/clinico/adulto/acidobase.ts": {
@@ -119,21 +119,6 @@
       "canto": 4,
       "cor-arbitraria": 1,
       "tabela-solta": 1
-    },
-    "src/components/documento/documentos.ts": {
-      "cor-hex": 1,
-      "data-local": 2
-    },
-    "src/components/documentos/SeletorPaciente.tsx": {
-      "botao-solto": 2,
-      "cor-arbitraria": 2
-    },
-    "src/components/documentos/ui.tsx": {
-      "botao-solto": 5,
-      "canto": 1,
-      "cor-arbitraria": 2,
-      "data-local": 1,
-      "titulo-solto": 1
     },
     "src/components/encaminhamento/AbaEncaminhamentoInterno.tsx": {
       "botao-solto": 1,
@@ -1090,9 +1075,6 @@
       "cor-arbitraria": 1,
       "data-local": 1
     },
-    "src/pages/plantao/AtendimentoPorta.tsx": {
-      "pronto-socorro": 1
-    },
     "src/pages/plantao/EvolucaoClinica.tsx": {
       "botao-solto": 1,
       "canto": 3,
@@ -1105,31 +1087,6 @@
       "emoji": 6,
       "texto-escala": 4,
       "titulo-solto": 1
-    },
-    "src/pages/plantao/PlantaoHome.tsx": {
-      "botao-solto": 2,
-      "data-local": 1
-    },
-    "src/pages/plantao/atendimento/AtestadoMedico.tsx": {
-      "botao-solto": 3,
-      "canto": 1,
-      "cor-arbitraria": 2,
-      "cor-crua": 1,
-      "data-local": 1
-    },
-    "src/pages/plantao/atendimento/Encaminhamento.tsx": {
-      "botao-solto": 1
-    },
-    "src/pages/plantao/atendimento/PedidoExames.tsx": {
-      "cor-arbitraria": 2,
-      "data-local": 1
-    },
-    "src/pages/plantao/atendimento/ReceituarioMedico.tsx": {
-      "botao-solto": 4,
-      "canto": 1,
-      "cor-arbitraria": 2,
-      "texto-escala": 1,
-      "titulo-solto": 4
     },
     "src/pages/plantao/internacao/EvolucaoTab.tsx": {
       "canto": 2,
@@ -1145,32 +1102,6 @@
       "cor-hex": 22,
       "emoji": 8,
       "texto-escala": 5
-    },
-    "src/pages/plantao/porta/AbaAtendimento.tsx": {
-      "botao-solto": 1,
-      "cor-arbitraria": 1
-    },
-    "src/pages/plantao/porta/AbaAtestadoReceita.tsx": {
-      "botao-solto": 2
-    },
-    "src/pages/plantao/porta/AbaDesfecho.tsx": {
-      "botao-solto": 2,
-      "select-solto": 3
-    },
-    "src/pages/plantao/porta/AbaExames.tsx": {
-      "botao-solto": 2,
-      "canto": 1,
-      "cor-crua": 1
-    },
-    "src/pages/plantao/porta/AbaPrescricao.tsx": {
-      "pronto-socorro": 1
-    },
-    "src/pages/plantao/porta/JanelaAtendimento.tsx": {
-      "cor-arbitraria": 2,
-      "pronto-socorro": 1
-    },
-    "src/pages/plantao/porta/comum.ts": {
-      "data-local": 2
     },
     "src/pages/plantao/shared/DadosPaciente.tsx": {
       "botao-solto": 3,

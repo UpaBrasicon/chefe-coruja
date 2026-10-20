@@ -27,6 +27,8 @@ import { idadeLegivel } from '@/lib/cadastroPaciente'
 import { TEXTO_PEDIATRICO, TEXTO_SEM_NASCIMENTO } from '../atendimento/ReceituarioMedico'
 
 import { hoje, hora, msg, type EstadoDocs, type ItemReceita } from './comum'
+import { Chip } from '@/components/monitor/Pagina'
+import { OpcaoLista } from '@/components/ui/botao-linha'
 
 
 type Pref = {
@@ -42,14 +44,6 @@ const NOME_DOC: Record<string, string> = {
 }
 const nomeMed = (m: { principio_ativo: string; apresentacao: string | null } | null) => (m ? [m.principio_ativo, m.apresentacao].filter(Boolean).join(' ') : '')
 
-function Chip({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button type="button" aria-pressed={ativo} onClick={onClick}
-      className={cn('rounded-capsula border px-3 py-1 text-apoio transition-colors', ativo ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
-      {children}
-    </button>
-  )
-}
 function Situacao({ em, rascunho }: { em: string | null; rascunho: string }) {
   return <span className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold', em ? 'bg-alerta-conforme text-conforme' : 'bg-trilha text-tinta-apoio')}>{em ? `Emitido ${hora(em)}` : rascunho}</span>
 }
@@ -329,11 +323,10 @@ function ReceitaAlta({ faixa, estado, setEstado, onEmitir }: { faixa: FaixaEtari
           {!med && (resultados.data ?? []).length > 0 && (
             <div role="listbox" className="absolute top-full right-0 left-0 z-20 mt-1 max-h-56 overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
               {(resultados.data ?? []).map((m) => (
-                <button key={m.id} type="button" role="option" aria-selected={false} onClick={() => setMed(m)}
-                  className="flex w-full gap-2 border-b border-trilha px-3 py-2 text-left text-apoio last:border-0 hover:bg-trilha">
+                <OpcaoLista key={m.id} onClick={() => setMed(m)}>
                   <span className="font-medium text-tinta">{m.principio_ativo}</span>
                   <span className="text-tinta-sussurro">{[m.apresentacao, m.concentracao].filter(Boolean).join(' · ')}</span>
-                </button>
+                </OpcaoLista>
               ))}
             </div>
           )}

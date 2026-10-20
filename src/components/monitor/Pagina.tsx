@@ -57,20 +57,25 @@ export function TituloSecao({ children, extra, className }: { children: ReactNod
  * parte do estado, não enfeite. Com `radio`, vira role="radio" dentro de um
  * radiogroup; sem, é um botão que liga e desliga (aria-pressed).
  */
-export function Chip({ ativo, children, onClick, contagem, variante = 'filtro', radio = false }: {
+export function Chip({ ativo, children, onClick, contagem, variante = 'filtro', radio = false, tom = 'acao', titulo, desabilitado }: {
   ativo: boolean; children: ReactNode; onClick: () => void; contagem?: number; variante?: 'filtro' | 'opcao'; radio?: boolean
+  /** `critico` liga em vermelho (ex.: urgência). */
+  tom?: 'acao' | 'critico'; titulo?: string; desabilitado?: boolean
 }) {
   return (
     <button
       type="button"
       {...(radio ? { role: 'radio', 'aria-checked': ativo } : { 'aria-pressed': ativo })}
       onClick={onClick}
+      title={titulo}
+      disabled={desabilitado}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-capsula border px-[13px] text-apoio whitespace-nowrap transition-colors',
+        'inline-flex items-center gap-1.5 rounded-capsula border px-[13px] text-apoio whitespace-nowrap transition-colors disabled:cursor-not-allowed',
         variante === 'opcao' ? 'min-h-9' : 'py-[5px]',
         ativo
-          ? variante === 'opcao' ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-acao bg-acao font-medium text-sobre-acao'
-          : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
+          ? tom === 'critico' ? 'border-critico bg-critico font-medium text-sobre-acao'
+            : variante === 'opcao' ? 'border-acao bg-acao/10 font-medium text-acao' : 'border-acao bg-acao font-medium text-sobre-acao'
+          : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao disabled:opacity-50',
       )}
     >
       {children}

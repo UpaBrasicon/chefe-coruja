@@ -273,7 +273,9 @@ Exames, Faturamento e Unidade — numa tarefa própria da parte 4.
 | `CampoSelecao` | `src/components/ui/campo-selecao.tsx` | 3.2 |
 | `TituloPagina`, `TituloSecao`, `TituloCartao` | `src/components/monitor/Pagina.tsx` | 4.1 |
 | `Abas` (cápsula, tablist) | `src/components/monitor/Pagina.tsx` | 4.2 |
-| `Chip` (`variante`: filtro ou opcao; `radio` para radiogroup) | `src/components/monitor/Pagina.tsx` | 3.1 |
+| `Chip` (`variante`: filtro ou opcao; `radio` para radiogroup; `tom` critico; `titulo`, `desabilitado`) | `src/components/monitor/Pagina.tsx` | 3.1 |
+| `BotaoLinha` (cartão, linha ou tracejado clicável) e `OpcaoLista` (opção de lista suspensa) | `src/components/ui/botao-linha.tsx` | 3.1 (parte 4.5) |
+| `CaixaMarcar` (caixa de marcar com texto; `bloqueado` mostra X) | `src/components/ui/caixa-marcar.tsx` | 3.1 (parte 4.5) |
 | Tokens do painel da TV (`tv-fundo`, `tv-faixa`, `tv-borda`, `tv-chamada`, `tv-trilho`, `tv-destaque`, `tv-apoio`, `tv-texto`, `tv-texto-forte`, `tv-claro`, `tv-alerta`) | `src/index.css`, iguais nos dois temas | 4.6 (parte 4.4, "1a") |
 | Espaçamento `justo`, `proximo`, `base`, `secao`, `pagina` (`p-base`, `gap-justo`…) | `src/index.css` (`--spacing-*`) | 4.3 |
 | Hora, data, data e hora, tempo decorrido, moeda e número | `src/lib/formato.ts` (`datas.ts` reexporta os nomes antigos) | 4.4 |

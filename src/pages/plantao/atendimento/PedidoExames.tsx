@@ -26,6 +26,7 @@ import { BuscaCid } from '@/components/documentos/busca'
 import { Aviso, Bloco, Campo, Cartao, Chip, Pilulas, Texto } from '@/components/documentos/ui'
 import { cn } from '@/lib/utils'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
+import { hora } from '@/lib/formato'
 
 const CARATERES = ['Urgência', 'Rotina'] as const
 type Carater = (typeof CARATERES)[number]
@@ -293,7 +294,7 @@ export function PedidoExames({ unidadeId, perfilId }: { unidadeId?: string; perf
           </Cartao>
 
           {pendencias.length > 0 && (
-            <div role="status" className="flex flex-col gap-1.5 rounded-container border border-[#FDE68A] bg-[#FFFBEB] px-4 py-3 text-atencao">
+            <div role="status" className="flex flex-col gap-1.5 rounded-container border border-atencao/30 bg-alerta-atencao px-4 py-3 text-atencao">
               <span className="text-apoio font-semibold">Falta preencher</span>
               {pendencias.map((p) => <span key={p} className="text-apoio">· {p}</span>)}
             </div>
@@ -310,7 +311,7 @@ export function PedidoExames({ unidadeId, perfilId }: { unidadeId?: string; perf
               </span>
               <span className="text-rotulo text-tinta-sussurro/80">
                 {servidor.salvoEm
-                  ? `Rascunho salvo no servidor às ${servidor.salvoEm.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+                  ? `Rascunho salvo no servidor às ${hora(servidor.salvoEm)}`
                   : salvoEm ? `Rascunho salvo neste aparelho às ${salvoEm}` : 'O rascunho deste pedido fica salvo neste aparelho, por paciente.'}
               </span>
             </div>

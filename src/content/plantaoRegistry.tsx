@@ -58,13 +58,13 @@ const f = (
 export const SECOES_PLANTAO: SecaoPlantao[] = [
   {
     slug: 'check-in',
-    label: 'Meu Plantão',
+    label: 'Meu plantão',
     description: 'Registre entrada e saída do plantão com geolocalização.',
     icon: MapPin,
     tools: [
       f(
         'check-in',
-        'Check-in / Check-out',
+        'Check-in e check-out',
         'Entrada e saída do plantão com geolocalização.',
         sobDemanda(() => import('@/pages/plantao/secoes/CheckIn'), 'CheckIn')
       ),
@@ -72,19 +72,19 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
   },
   {
     slug: 'atendimento-porta',
-    label: 'Atendimento Porta',
+    label: 'Atendimento na porta',
     description: 'Receituário, atestado, encaminhamento e pedido de exames.',
     icon: DoorOpen,
     tools: [
       f(
         'receituario-medico',
-        'Receituário Médico',
+        'Receituário médico',
         'Prescrição e receita digital.',
         sobDemanda(() => import('@/pages/plantao/atendimento/ReceituarioMedico'), 'ReceituarioMedico')
       ),
       f(
         'atestado-medico',
-        'Atestado Médico',
+        'Atestado médico',
         'Emissão de atestado.',
         sobDemanda(() => import('@/pages/plantao/atendimento/AtestadoMedico'), 'AtestadoMedico')
       ),
@@ -96,7 +96,7 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
       ),
       f(
         'pedido-exames',
-        'Pedido de Exames',
+        'Pedido de exames',
         'Solicitação de exames.',
         sobDemanda(() => import('@/pages/plantao/atendimento/PedidoExames'), 'PedidoExames')
       ),
@@ -110,13 +110,13 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
     tools: [
       f(
         'pacientes',
-        'Pacientes Internados',
+        'Pacientes internados',
         'Enfermarias e sala vermelha — dos setores onde você está na escala.',
         sobDemanda(() => import('@/pages/plantao/secoes/PacientesInternados'), 'PacientesInternados')
       ),
       f(
         'formulario',
-        'Formulário de Internação',
+        'Formulário de internação',
         'Prescrição, evolução/admissão, exames, internação e exportação em PDF.',
         sobDemanda(() => import('@/pages/plantao/secoes/FormularioInternacao'), 'FormularioInternacao')
       ),
@@ -144,7 +144,7 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
     tools: [
       f(
         'pacientes',
-        'Pacientes em Observação',
+        'Pacientes em observação',
         'Permanência máxima de 6 h, com alerta de fim de turno.',
         sobDemanda(() => import('@/pages/plantao/secoes/PacientesObservacao'), 'PacientesObservacao')
       ),
@@ -152,13 +152,13 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
   },
   {
     slug: 'evolucao',
-    label: 'Evolução Clínica',
+    label: 'Evolução clínica',
     description: 'Gráfico de evolução, flowsheet e registro de sinais vitais.',
     icon: Activity,
     tools: [
       f(
         'evolucao',
-        'Evolução Clínica',
+        'Evolução clínica',
         'Gráfico multi-conceito, flowsheet e sinais vitais.',
         sobDemanda(() => import('@/pages/plantao/secoes/EvolucaoTool'), 'EvolucaoTool')
       ),

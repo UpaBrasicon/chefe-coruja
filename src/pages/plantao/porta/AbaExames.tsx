@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 import { hora, type ExamePS } from './comum'
+import { Chip } from '@/components/monitor/Pagina'
 
 type Agravo = { id: string; agravo: string; cid: string | null; situacao: string; numero_sinan: string | null; motivo_descarte: string | null }
 
@@ -130,11 +131,9 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
         <div className="flex flex-wrap items-center gap-2 px-4 pt-3">
           <span className="text-rotulo text-tinta-sussurro">Urgência</span>
           {(['rotina', 'urgente'] as const).map((u) => (
-            <button key={u} type="button" aria-pressed={urgencia === u} onClick={() => setUrgencia(u)}
-              className={cn('rounded-capsula border px-3 py-0.5 text-apoio',
-                urgencia === u ? (u === 'urgente' ? 'border-critico bg-critico font-medium text-white' : 'border-acao bg-acao font-medium text-sobre-acao') : 'border-fio text-tinta-apoio')}>
+            <Chip key={u} ativo={urgencia === u} onClick={() => setUrgencia(u)} tom={u === 'urgente' ? 'critico' : 'acao'}>
               {u}
-            </button>
+            </Chip>
           ))}
           <Input className="h-8 min-w-48 flex-1" aria-label="Observação do pedido (opcional)" placeholder="Observação (opcional)" maxLength={300}
             value={observacao} onChange={(e) => setObservacao(e.target.value)} />
@@ -143,13 +142,11 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
           {botoes.map((b) => {
             const on = jaPedido(b, exames)
             return (
-              <button key={b.rotulo + (b.procedimento ?? '')} type="button" aria-pressed={on} disabled={on || pedindo}
+              <Chip key={b.rotulo + (b.procedimento ?? '')} ativo={on} desabilitado={on || pedindo}
                 onClick={() => void pedir([b.procedimento ? { procedimento: b.procedimento } : { nome: b.rotulo }])}
-                title={on ? 'Já pedido neste atendimento' : `Pedir ${b.rotulo}${b.procedimento ? '' : ' (sem código)'}`}
-                className={cn('rounded-capsula border px-3 py-1 text-apoio transition-colors',
-                  on ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao disabled:opacity-50')}>
+                titulo={on ? 'Já pedido neste atendimento' : `Pedir ${b.rotulo}${b.procedimento ? '' : ' (sem código)'}`}>
                 {b.rotulo}
-              </button>
+              </Chip>
             )
           })}
         </div>
@@ -164,7 +161,7 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
             </Button>
           </div>
           {(busca.data ?? []).length > 0 && (
-            <div className="flex max-h-48 flex-col overflow-y-auto rounded-md border border-fio">
+            <div className="flex max-h-48 flex-col overflow-y-auto rounded-controle border border-fio">
               {(busca.data ?? []).map((x) => (
                 <Button key={x.procedimento} type="button" variant="ghost" size="sm" className="justify-start" disabled={pedindo}
                   onClick={() => void pedir([{ procedimento: x.procedimento }])}>

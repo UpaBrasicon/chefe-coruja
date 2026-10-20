@@ -9,6 +9,10 @@ import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import type { AnexoLaudo } from './leituraLaudo'
+import { Chip as ChipBase, TituloCartao } from '@/components/monitor/Pagina'
+import { OpcaoLista } from '@/components/ui/botao-linha'
+import { hora } from '@/lib/formato'
+import { Button } from '@/components/ui/button'
 
 export function Cartao({ icone, titulo, acoes, children, className, corpo = true }: {
   icone?: React.ReactNode; titulo: React.ReactNode; acoes?: React.ReactNode; children: React.ReactNode; className?: string
@@ -19,7 +23,7 @@ export function Cartao({ icone, titulo, acoes, children, className, corpo = true
     <section className={cn('overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso', className)}>
       <div className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-[13px]">
         {icone && <span className="text-acao [&_svg]:size-4" aria-hidden>{icone}</span>}
-        <h2 className="text-corpo font-semibold text-tinta">{titulo}</h2>
+        <TituloCartao className="mb-0">{titulo}</TituloCartao>
         {acoes && <div className="ml-auto flex flex-wrap items-center gap-1.5">{acoes}</div>}
       </div>
       {corpo ? <div className="flex flex-col gap-[22px] px-5 py-[18px]">{children}</div> : children}
@@ -98,11 +102,9 @@ export function Pilulas<V extends string>({ opcoes, valor, onChange, rotulos, ro
   return (
     <div role="group" aria-label={rotuloAria} className="flex flex-wrap gap-[7px]">
       {opcoes.map((o) => (
-        <button key={o} type="button" aria-pressed={valor === o} onClick={() => onChange(o)}
-          className={cn('rounded-capsula border px-[13px] py-1.5 text-apoio transition-colors',
-            valor === o ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+        <ChipBase key={o} ativo={valor === o} onClick={() => onChange(o)}>
           {rotulos?.[o] ?? o}
-        </button>
+        </ChipBase>
       ))}
     </div>
   )
@@ -111,14 +113,11 @@ export function Pilulas<V extends string>({ opcoes, valor, onChange, rotulos, ro
 export function Chip({ ativo, onClick, children, titulo, tom = 'acao', desabilitado }: {
   ativo?: boolean; onClick: () => void; children: React.ReactNode; titulo?: string; tom?: 'acao' | 'suave'; desabilitado?: boolean
 }) {
+  // Adaptador para o Chip único (monitor/Pagina): `suave` é a variante `opcao`.
   return (
-    <button type="button" aria-pressed={!!ativo} title={titulo} onClick={onClick} disabled={desabilitado}
-      className={cn('flex items-center gap-1.5 rounded-capsula border px-[13px] py-1.5 text-left text-apoio transition-colors disabled:cursor-not-allowed',
-        ativo
-          ? tom === 'acao' ? 'border-acao bg-acao font-medium text-sobre-acao' : 'border-acao bg-alerta-marca font-medium text-acao'
-          : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+    <ChipBase ativo={!!ativo} onClick={onClick} titulo={titulo} desabilitado={desabilitado} variante={tom === 'acao' ? 'filtro' : 'opcao'}>
       {children}
-    </button>
+    </ChipBase>
   )
 }
 
@@ -131,11 +130,10 @@ export function Sugestoes({ itens, aoEscolher }: {
     <div className="relative z-30 h-0">
       <div role="listbox" className="absolute inset-x-0 top-0 flex max-h-[260px] flex-col overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
         {itens.map((s, i) => (
-          <button key={s.chave} type="button" role="option" aria-selected={false} onMouseDown={(e) => e.preventDefault()} onClick={() => aoEscolher(i)}
-            className="flex w-full items-baseline gap-2.5 border-b border-trilha px-3 py-2 text-left text-controle text-tinta last:border-0 hover:bg-alerta-marca">
+          <OpcaoLista key={s.chave} onClick={() => aoEscolher(i)} className="items-baseline gap-2.5 text-controle text-tinta hover:bg-alerta-marca">
             {s.codigo && <span className="shrink-0 font-semibold tabular-nums text-acao">{s.codigo}</span>}
             <span className="min-w-0 flex-1">{s.nome}</span>
-          </button>
+          </OpcaoLista>
         ))}
       </div>
     </div>
@@ -158,18 +156,7 @@ export function Pendencias({ itens, titulo = 'Falta para emitir' }: { itens: str
   )
 }
 
-export function Aviso({ children, tom = 'atencao', acao }: { children: React.ReactNode; tom?: 'atencao' | 'critico' | 'marca'; acao?: React.ReactNode }) {
-  return (
-    <div role="status" className={cn('flex flex-wrap items-start gap-2.5 rounded-container border px-3.5 py-3',
-      tom === 'critico' ? 'border-critico/30 bg-alerta-critico text-critico'
-        : tom === 'marca' ? 'border-acao/30 bg-alerta-marca text-acao'
-        : 'border-[#FDE68A] bg-[#FFFBEB] text-atencao')}>
-      <AlertTriangle className="mt-px size-4 shrink-0" aria-hidden />
-      <span className="min-w-0 flex-[1_1_260px] text-apoio text-pretty">{children}</span>
-      {acao}
-    </div>
-  )
-}
+export { Aviso } from '@/components/ui/aviso'
 
 /** Rodapé de emissão: pendências, mensagem, rascunho salvo e o botão. */
 export function Rodape({ pendencias, tituloPendencias, mensagem, salvoEm, servidorSalvoEm, children }: {
@@ -187,7 +174,7 @@ export function Rodape({ pendencias, tituloPendencias, mensagem, salvoEm, servid
           <span className="flex items-center gap-[7px] text-rotulo text-tinta-sussurro/80">
             <Clock className="size-[13px]" aria-hidden />
             {servidorSalvoEm
-              ? `Rascunho salvo no servidor às ${servidorSalvoEm.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+              ? `Rascunho salvo no servidor às ${hora(servidorSalvoEm)}`
               : salvoEm ? `Rascunho salvo neste aparelho às ${salvoEm}` : 'O rascunho fica salvo neste aparelho, por paciente, e no servidor ao escrever.'}
           </span>
         </div>
@@ -214,17 +201,17 @@ export function AnexosLaudo({ anexos, lendo, arrastando, onArquivos, onRemover, 
       )}
       {lendo && <span className="flex items-center gap-1.5 text-apoio text-tinta-sussurro"><Loader2 className="size-3.5 animate-spin" /> Lendo o laudo no aparelho…</span>}
       {anexos.map((a) => (
-        <span key={a.id} className={cn('flex items-start gap-2 rounded-controle-sm px-2.5 py-1.5 text-apoio',
+        <span key={a.id} className={cn('flex items-start gap-2 rounded-controle px-2.5 py-1.5 text-apoio',
           a.estado === 'ok' ? 'bg-alerta-conforme text-conforme' : a.estado === 'lendo' ? 'bg-trilha text-tinta-apoio' : 'bg-alerta-atencao text-atencao')}>
           {a.estado === 'ok' ? <CheckCircle2 className="mt-px size-[13px] shrink-0" aria-hidden /> : <AlertTriangle className="mt-px size-[13px] shrink-0" aria-hidden />}
           <span className="min-w-0 flex-1 text-pretty">
             <strong className="font-semibold">{a.nome}</strong> · {a.estado === 'ok' ? 'pontos principais no campo, confira'
               : a.estado === 'nome-diferente' ? 'o nome do paciente não aparece neste laudo. Confira antes de usar.' : a.resumo}
             {a.estado === 'nome-diferente' && (
-              <button type="button" className="ml-2 font-medium underline underline-offset-2" onClick={() => onUsar(a.id)}>É deste paciente: usar</button>
+              <Button variant="link" size="xs" className="ml-2 h-auto min-h-0 p-0 text-apoio font-medium text-inherit underline" onClick={() => onUsar(a.id)}>É deste paciente: usar</Button>
             )}
           </span>
-          <button type="button" aria-label={`Remover ${a.nome}`} onClick={() => onRemover(a.id)} className="shrink-0 hover:text-critico"><X className="size-3.5" /></button>
+          <Button variant="ghost" size="icon-xs" aria-label={`Remover ${a.nome}`} onClick={() => onRemover(a.id)} className="shrink-0 text-inherit hover:text-critico"><X /></Button>
         </span>
       ))}
     </div>
