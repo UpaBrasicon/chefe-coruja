@@ -103,7 +103,7 @@ function CartaoAih({ a, regulador }: { a: AihFila; regulador: boolean }) {
   const ativa = a.status === 'solicitada' || a.status === 'aprovada'
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-fio bg-superficie px-4 py-3 text-apoio">
+    <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie px-4 py-3 text-apoio">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span className="font-medium text-tinta">{a.paciente}</span>
         <span className="text-tinta-sussurro">{a.local ?? '—'}</span>
@@ -121,12 +121,12 @@ function CartaoAih({ a, regulador }: { a: AihFila; regulador: boolean }) {
         <span><span className="text-tinta-sussurro">CNS: </span>{a.cns ?? '—'}</span>
         <span><span className="text-tinta-sussurro">Laudo: </span>nº {a.laudo_numero ?? '—'}{a.laudo_versao > 1 ? ` (versão ${a.laudo_versao})` : ''}</span>
       </div>
-      <span className="text-xs text-tinta-sussurro">
+      <span className="text-rotulo text-tinta-sussurro">
         Solicitada por {a.solicitada_por ?? '—'}, {fmtDataHora(a.solicitada_em)}
         {a.decidida_em && <> · {a.status === 'rejeitada' ? 'rejeitada' : 'decidida'} por {a.decidida_por ?? '—'}, {fmtDataHora(a.decidida_em)}</>}
       </span>
       {(a.criticas ?? []).length > 0 && (
-        <div className="flex flex-col gap-0.5 rounded-md border border-atencao/40 bg-atencao/[0.06] px-2.5 py-1.5 text-xs text-atencao">
+        <div className="flex flex-col gap-0.5 rounded-controle border border-atencao/40 bg-alerta-atencao px-2.5 py-1.5 text-rotulo text-atencao">
           <span className="font-medium">Críticas no laudo (avisos aceitos pelo médico){a.sigtap_competencia ? ` · SIGTAP ${competenciaNaTela(a.sigtap_competencia)}` : ''}:</span>
           {(a.criticas ?? []).map((c, i) => <span key={i}>Campo {c.campo}: {c.texto}</span>)}
         </div>
@@ -147,16 +147,16 @@ function CartaoAih({ a, regulador }: { a: AihFila; regulador: boolean }) {
         </div>
       )}
       {acao && (
-        <div className="flex flex-col gap-2 rounded-md border border-fio p-2.5">
+        <div className="flex flex-col gap-2 rounded-controle border border-fio p-2.5">
           {acao === 'aprovar' && (
             <div className="flex flex-wrap gap-2">
               <Input className="h-8 w-56" inputMode="numeric" placeholder="Número da AIH (13 dígitos)" value={numero} onChange={(e) => setNumero(e.target.value)} />
               <Input className="h-8 w-32" placeholder="MM/AAAA" value={competencia} onChange={(e) => setCompetencia(e.target.value)} aria-label="Competência" />
-              <span className="self-center text-xs text-tinta-sussurro">Competência sugerida: {competenciaNaTela(a.competencia_sugerida)} ({a.alta_em ? 'mês da alta' : 'internado: mês corrente'})</span>
+              <span className="self-center text-rotulo text-tinta-sussurro">Competência sugerida: {competenciaNaTela(a.competencia_sugerida)} ({a.alta_em ? 'mês da alta' : 'internado: mês corrente'})</span>
             </div>
           )}
           {(acao === 'aprovar' || acao === 'competencia') && competenciaForaDoPrazo(lerCompetencia(competencia), competenciaDaData(a.alta_em)) && (
-            <span role="alert" className="text-xs text-critico">A competência passa de 3 meses da alta: a AIH pode não ser mais aceita no SUS.</span>
+            <span role="alert" className="text-rotulo text-critico">A competência passa de 3 meses da alta: a AIH pode não ser mais aceita no SUS.</span>
           )}
           {acao === 'competencia' && (
             <Input className="h-8 w-32" placeholder="MM/AAAA" value={competencia} onChange={(e) => setCompetencia(e.target.value)} aria-label="Nova competência" />
@@ -193,7 +193,7 @@ function HistoricoAih({ aih }: { aih: string }) {
   if (eventos.isLoading) return <Spinner />
   if (eventos.error) return <MensagemErro texto={(eventos.error as Error).message} />
   return (
-    <ol className="flex flex-col gap-1 border-l border-fio pl-3 text-xs">
+    <ol className="flex flex-col gap-1 border-l border-fio pl-3 text-rotulo">
       {(eventos.data ?? []).map((e, i) => (
         <li key={i}>
           <span className="font-medium text-tinta">{EVENTO_AIH[e.evento]}</span> · {e.por ?? '—'}, {fmtDataHora(e.em)}

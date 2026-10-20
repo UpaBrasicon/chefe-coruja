@@ -38,6 +38,7 @@ import { PainelSla, PrazosCentral, PrazosDoPedido, SeloSla, type Evolucao } from
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -45,6 +46,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
+import { dataIso } from '@/lib/formato'
 import {
   CARATER, FORMULARIO_VAZIO, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS, TIPOS_LEITO, TRANSPORTES,
   ANEXO_TIPOS, MOTIVOS_NEGACAO, VULNERABILIDADES, caminhoAnexo, dadosParaEnvio, dataHoraLocalParaIso, ehNeonato, emDecisao, faltasFormulario,
@@ -56,6 +58,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 
 type Ref = { id: string; nome: string }
 type Contexto = {
@@ -97,8 +100,7 @@ type Solicitacao = Omit<PedidoDestino, 'destino_tipo' | 'destino_unidade' | 'des
 const TOM: Record<string, 'destructive' | 'warning' | 'info' | 'secondary'> = {
   critico: 'destructive', atencao: 'warning', info: 'info', neutro: 'secondary',
 }
-const SELECT = 'h-8 rounded-controle border border-fio bg-campo px-2'
-const hoje = () => new Date().toLocaleDateString('sv-SE')
+const hoje = () => dataIso()
 
 // RN vinculado à mãe: a regulação o identifica pelo CNS/CPF da mãe (Portão 2, tarefa 5)
 const docMae = (m?: { nome: string; cns: string | null; cpf: string | null } | null) =>
@@ -192,18 +194,18 @@ function Centrais() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Centrais de regulação</CardTitle>
+        <CardTitle className="text-corpo">Centrais de regulação</CardTitle>
         <CardDescription>Uma central por organização. Os médicos reguladores ficam vinculados a ela com o papel "regulador".</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-2 text-apoio">
         {lista.isLoading ? <Spinner /> : (lista.data ?? []).map((o) => (
           <div key={o.organizacao_id} className="flex flex-wrap items-center gap-2">
             <span className="min-w-48 font-medium text-tinta">{o.organizacao}</span>
-            <select aria-label={`Central de ${o.organizacao}`} className={SELECT}
+            <CampoSelecao aria-label={`Central de ${o.organizacao}`} tamanho="compacto"
               value={o.central?.id ?? ''} onChange={(e) => e.target.value && definir.mutate(e.target.value)} disabled={definir.isPending}>
               <option value="">Sem central</option>
               {o.unidades.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-            </select>
+            </CampoSelecao>
           </div>
         ))}
         <MensagemErro texto={(lista.error ?? definir.error) ? ((lista.error ?? definir.error) as Error).message : null} />
@@ -223,7 +225,7 @@ type Vinculos = {
 function Campo({ id, rotulo, children, className }: { id?: string; rotulo: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
     <div className={`flex flex-col gap-1 ${className ?? ''}`}>
-      {id ? <Label htmlFor={id} className="text-xs">{rotulo}</Label> : <span className="text-xs text-tinta-apoio">{rotulo}</span>}
+      {id ? <Label htmlFor={id} className="text-rotulo">{rotulo}</Label> : <span className="text-rotulo text-tinta-apoio">{rotulo}</span>}
       {children}
     </div>
   )
@@ -363,7 +365,7 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Nova solicitação</CardTitle>
+        <CardTitle className="text-corpo">Nova solicitação</CardTitle>
         <CardDescription>Vai para a {ctx.central?.nome}. O autor é quem está logado. Os campos seguem o modelo nacional (MIRA).</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
@@ -379,7 +381,7 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
 
         {/* paciente */}
         {paciente ? (
-          <div className="flex flex-wrap items-center gap-2 rounded-md border border-fio bg-campo px-3 py-2">
+          <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-campo px-3 py-2">
             <span className="font-medium text-tinta">{paciente.nome_social ?? paciente.nome}</span>
             {paciente.data_nascimento && <span className="text-tinta-sussurro">nasc. {fmtData(paciente.data_nascimento)}</span>}
             {paciente.prontuario && <span className="text-tinta-sussurro">pront. {paciente.prontuario}</span>}
@@ -391,12 +393,12 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
             <Input id="reg-paciente" className="h-8" value={termo} onChange={(e) => { setTermo(e.target.value); setEnviada(null) }} />
             {busca.isFetching && <Spinner />}
             {(busca.data ?? []).length > 0 && (
-              <ul className="flex flex-col divide-y divide-fio rounded-md border border-fio">
+              <ul className="flex flex-col divide-y divide-fio rounded-controle border border-fio">
                 {(busca.data ?? []).slice(0, 8).map((p) => (
                   <li key={p.id}>
-                    <button type="button" className="w-full px-3 py-1.5 text-left hover:bg-campo" onClick={() => setPaciente(p)}>
+                    <BotaoLinha variante="linha" className="block border-0 px-3 py-1.5 hover:bg-campo" onClick={() => setPaciente(p)}>
                       {p.nome_social ?? p.nome} {p.data_nascimento && <span className="text-tinta-sussurro">· {fmtData(p.data_nascimento)}</span>}
-                    </button>
+                    </BotaoLinha>
                   </li>
                 ))}
               </ul>
@@ -408,14 +410,14 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
         {paciente && v && (
           <>
             {!v.tem_documento && (
-              <label className="flex items-start gap-2 rounded-md border border-atencao/30 bg-alerta-atencao px-3 py-2 text-atencao">
+              <label className="flex items-start gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-atencao">
                 <input type="checkbox" className="mt-0.5 size-4" checked={naoIdentificado} onChange={(e) => setNaoIdentificado(e.target.checked)} />
                 O paciente está sem CNS e sem CPF válidos. Complete o cadastro, ou marque aqui para enviar como paciente não identificado.
               </label>
             )}
             {(v.episodio || v.internacao) && (
               <fieldset className="flex flex-col gap-1">
-                <legend className="text-xs text-tinta-apoio">Ligar a</legend>
+                <legend className="text-rotulo text-tinta-apoio">Ligar a</legend>
                 {v.internacao && (
                   <label className="flex items-center gap-2"><input type="radio" className="size-4" checked={ligar === 'internacao'} onChange={() => setLigar('internacao')} />
                     Internação aberta{v.internacao.leito ? `, leito ${v.internacao.leito}` : ''} (desde {fmtDataHora(v.internacao.admissao_em)})</label>
@@ -431,9 +433,9 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
 
             {/* o que se pede */}
             <Campo id="reg-tipo" rotulo="Tipo" className="sm:max-w-xs">
-              <select id="reg-tipo" className={SELECT} value={f.tipo} onChange={(e) => set('tipo', e.target.value as TipoSolicitacao)}>
+              <CampoSelecao id="reg-tipo" tamanho="compacto" value={f.tipo} onChange={(e) => set('tipo', e.target.value as TipoSolicitacao)}>
                 {(Object.keys(TIPOS) as TipoSolicitacao[]).map((k) => <option key={k} value={k}>{TIPOS[k]}</option>)}
-              </select>
+              </CampoSelecao>
             </Campo>
             <CampoTerminologia tipo="sigtap_procedimento" escolhido={procRotulo}
               rotulo={<>Procedimento (SIGTAP){f.tipo === 'leito' && ' — o da internação'}</>}
@@ -451,32 +453,32 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
             {leitoOuTransf && (
               <div className="grid gap-3 sm:grid-cols-3">
                 <Campo id="reg-leito" rotulo={f.tipo === 'leito' ? 'Tipo de leito' : 'Leito no destino (se for internar)'}>
-                  <select id="reg-leito" className={SELECT} value={f.tipo_leito} onChange={(e) => set('tipo_leito', e.target.value)}>
+                  <CampoSelecao id="reg-leito" tamanho="compacto" value={f.tipo_leito} onChange={(e) => set('tipo_leito', e.target.value)}>
                     <option value="">{f.tipo === 'leito' ? 'Escolha…' : 'Não se aplica'}</option>
                     {Object.entries(TIPOS_LEITO).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-                  </select>
+                  </CampoSelecao>
                 </Campo>
                 {f.tipo_leito === 'psiquiatrico' && (
                   <Campo id="reg-psiq" rotulo="Internação psiquiátrica">
-                    <select id="reg-psiq" className={SELECT} value={f.internacao_psiquiatrica} onChange={(e) => set('internacao_psiquiatrica', e.target.value)}>
+                    <CampoSelecao id="reg-psiq" tamanho="compacto" value={f.internacao_psiquiatrica} onChange={(e) => set('internacao_psiquiatrica', e.target.value)}>
                       <option value="">Escolha…</option>
                       {Object.entries(INTERNACAO_PSIQUIATRICA).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-                    </select>
+                    </CampoSelecao>
                   </Campo>
                 )}
                 {f.tipo === 'transferencia' && (
                   <Campo id="reg-transp" rotulo="Transporte solicitado (a central define o final)">
-                    <select id="reg-transp" className={SELECT} value={f.transporte} onChange={(e) => set('transporte', e.target.value)}>
+                    <CampoSelecao id="reg-transp" tamanho="compacto" value={f.transporte} onChange={(e) => set('transporte', e.target.value)}>
                       <option value="">Escolha…</option>
                       {Object.entries(TRANSPORTES).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-                    </select>
+                    </CampoSelecao>
                   </Campo>
                 )}
                 {f.tipo === 'transferencia' && neonato && (
                   <Campo id="reg-incub" rotulo="Incubadora">
-                    <select id="reg-incub" className={SELECT} value={f.incubadora} onChange={(e) => set('incubadora', e.target.value as Formulario['incubadora'])}>
+                    <CampoSelecao id="reg-incub" tamanho="compacto" value={f.incubadora} onChange={(e) => set('incubadora', e.target.value as Formulario['incubadora'])}>
                       <option value="">Escolha…</option><option value="sim">Sim</option><option value="nao">Não</option>
-                    </select>
+                    </CampoSelecao>
                   </Campo>
                 )}
               </div>
@@ -485,28 +487,28 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
               <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={f.isolamento} onChange={(e) => set('isolamento', e.target.checked)} />
                 Precisa de isolamento</label>
               {f.isolamento && (
-                <select aria-label="Tipo de isolamento" className={SELECT} value={f.isolamento_tipo} onChange={(e) => set('isolamento_tipo', e.target.value)}>
+                <CampoSelecao aria-label="Tipo de isolamento" tamanho="compacto" value={f.isolamento_tipo} onChange={(e) => set('isolamento_tipo', e.target.value)}>
                   <option value="">Tipo…</option>
                   {Object.entries(ISOLAMENTOS).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-                </select>
+                </CampoSelecao>
               )}
             </div>
 
             {/* destino */}
             <div className="grid gap-3 sm:grid-cols-3">
               <Campo id="reg-destino" rotulo="Destino">
-                <select id="reg-destino" className={SELECT} value={f.destino_tipo} onChange={(e) => set('destino_tipo', e.target.value as DestinoTipo)}>
+                <CampoSelecao id="reg-destino" tamanho="compacto" value={f.destino_tipo} onChange={(e) => set('destino_tipo', e.target.value as DestinoTipo)}>
                   <option value="a_definir">A definir pela regulação</option>
                   <option value="rede">Unidade da rede</option>
                   <option value="externo">Serviço fora da rede</option>
-                </select>
+                </CampoSelecao>
               </Campo>
               {f.destino_tipo === 'rede' && (
                 <Campo id="reg-dest-un" rotulo="Unidade" className="sm:col-span-2">
-                  <select id="reg-dest-un" className={SELECT} value={f.destino_unidade_id} onChange={(e) => set('destino_unidade_id', e.target.value)}>
+                  <CampoSelecao id="reg-dest-un" tamanho="compacto" value={f.destino_unidade_id} onChange={(e) => set('destino_unidade_id', e.target.value)}>
                     <option value="">Escolha…</option>
                     {ctx.unidades_rede.filter((u) => u.id !== unidadeId).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-                  </select>
+                  </CampoSelecao>
                 </Campo>
               )}
               {f.destino_tipo === 'externo' && (
@@ -519,13 +521,13 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
             {/* caráter e prioridade */}
             <div className="grid gap-3 sm:grid-cols-3">
               <Campo id="reg-carater" rotulo="Caráter">
-                <select id="reg-carater" className={SELECT} value={f.carater} onChange={(e) => set('carater', e.target.value as Carater)}>
+                <CampoSelecao id="reg-carater" tamanho="compacto" value={f.carater} onChange={(e) => set('carater', e.target.value as Carater)}>
                   <option value="">Escolha…</option>
                   {(Object.keys(CARATER) as Carater[]).map((k) => <option key={k} value={k}>{CARATER[k]}</option>)}
-                </select>
+                </CampoSelecao>
               </Campo>
               <fieldset className="flex flex-col gap-1 sm:col-span-2">
-                <legend className="text-xs text-tinta-apoio">Prioridade proposta (o regulador da central revisa)</legend>
+                <legend className="text-rotulo text-tinta-apoio">Prioridade proposta (o regulador da central revisa)</legend>
                 <div className="flex flex-wrap gap-3">
                   {(Object.keys(PRIORIDADES) as Prioridade[]).map((k) => (
                     <label key={k} className="flex items-center gap-1.5" title={criterios.data?.[k]?.texto ?? PRIORIDADES[k].descricao}>
@@ -542,7 +544,7 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
 
             {/* vulnerabilidade: selos, sem pontuação; a idade já marca idoso ou criança */}
             <fieldset className="flex flex-col gap-1">
-              <legend className="text-xs text-tinta-apoio">Vulnerabilidade (aparece como selo para o regulador)</legend>
+              <legend className="text-rotulo text-tinta-apoio">Vulnerabilidade (aparece como selo para o regulador)</legend>
               <div className="flex flex-wrap gap-3">
                 {(Object.keys(VULNERABILIDADES) as Vulnerabilidade[]).map((k) => (
                   <label key={k} className="flex items-center gap-1.5">
@@ -573,7 +575,7 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
             </div>
 
             {/* anexos: escolhidos aqui, enviados junto com o pedido */}
-            <div className="flex flex-col gap-2 rounded-md border border-fio p-3">
+            <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos (opcional){totalAnexos > 0 ? ` · ${totalAnexos}` : ''}</span>
                 <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-acao">
@@ -595,7 +597,7 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
               )}
               {(documentos.data ?? []).length > 0 && (
                 <fieldset className="flex flex-col gap-1">
-                  <legend className="flex items-center gap-1.5 text-xs text-tinta-apoio"><FileText className="size-3.5" aria-hidden /> Documentos do prontuário deste paciente</legend>
+                  <legend className="flex items-center gap-1.5 text-rotulo text-tinta-apoio"><FileText className="size-3.5" aria-hidden /> Documentos do prontuário deste paciente</legend>
                   {documentos.data!.map((d) => (
                     <label key={d.id} className="flex flex-wrap items-center gap-2">
                       <input type="checkbox" className="size-4" checked={docsEscolhidos.includes(d.id)}
@@ -611,10 +613,10 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
 
             {(souGestor || souNir) && (
               <Campo id="reg-medico" rotulo={souNir ? 'Médico assistente (obrigatório: o NIR abre em nome dele)' : 'Médico assistente (fica informado)'} className="max-w-sm">
-                <select id="reg-medico" className={SELECT} value={medico} onChange={(e) => setMedico(e.target.value)}>
+                <CampoSelecao id="reg-medico" tamanho="compacto" value={medico} onChange={(e) => setMedico(e.target.value)}>
                   <option value="">{souNir ? 'Escolha…' : 'Não informar'}</option>
                   {v.medicos.map((m) => <option key={m.id} value={m.id}>{m.nome}</option>)}
-                </select>
+                </CampoSelecao>
               </Campo>
             )}
 
@@ -651,7 +653,7 @@ function Lista({ unidadeId, central, podeRegistrarExterno, abrir }: { unidadeId:
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{central ? 'Recebidas' : 'Solicitações da unidade'}</CardTitle>
+        <CardTitle className="text-corpo">{central ? 'Recebidas' : 'Solicitações da unidade'}</CardTitle>
         <CardDescription>Clique num pedido para ver o detalhe, os anexos e o histórico.</CardDescription>
         {central && <CardDescription>As 200 mais recentes. A fila com filtros e a decisão chegam nas próximas tarefas.</CardDescription>}
       </CardHeader>
@@ -662,8 +664,8 @@ function Lista({ unidadeId, central, podeRegistrarExterno, abrir }: { unidadeId:
           <ul className="flex flex-col divide-y divide-fio">
             {(lista.data ?? []).map((s) => (
               <li key={s.id} className="py-2">
-                <button type="button" aria-expanded={aberta === s.id}
-                  className="flex w-full flex-wrap items-center gap-2 rounded-md px-1 py-0.5 text-left hover:bg-campo"
+                <BotaoLinha variante="linha" aria-expanded={aberta === s.id}
+                  className="flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo"
                   onClick={() => setAberta(aberta === s.id ? null : s.id)}>
                   {aberta === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
                   <span className="text-tinta-sussurro">nº {s.numero}</span>
@@ -676,7 +678,7 @@ function Lista({ unidadeId, central, podeRegistrarExterno, abrir }: { unidadeId:
                   <Badge variant={s.status === 'cancelada' ? 'secondary' : 'info'} className="ml-auto">{STATUS[s.status]}</Badge>
                   <span className="text-tinta-sussurro">{fmtDataHora(s.criada_em)}</span>
                   <span className="text-rotulo text-acao">{aberta === s.id ? 'Fechar' : 'Ver detalhes'}</span>
-                </button>
+                </BotaoLinha>
                 {aberta === s.id && <Detalhe id={s.id} unidadeId={unidadeId} central={central} podeRegistrarExterno={podeRegistrarExterno} />}
               </li>
             ))}
@@ -747,7 +749,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
   const cancelavel = !central && s.origem_pode_responder
     && ['rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida', 'aguardando_destino', 'autorizada', 'agendada'].includes(s.status)
   return (
-    <div className="mt-2 flex flex-col gap-2 rounded-md border border-fio bg-campo p-3">
+    <div className="mt-2 flex flex-col gap-2 rounded-controle border border-fio bg-campo p-3">
       <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-2">
         <Linha rotulo="Pedido" valor={resumoPedido(s)} />
         <Linha rotulo="Procedimento (SIGTAP)" valor={`${s.procedimento} ${s.procedimento_nome ?? ''}`} />
@@ -796,10 +798,10 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
       {podeRegistrarExterno && ['enviada', 'em_analise', 'pendencia', 'devolvida'].includes(s.status) && (
         <div className="flex flex-wrap items-end gap-2">
           <Campo id={`prio-${id}`} rotulo="Prioridade do regulador">
-            <select id={`prio-${id}`} className={SELECT} value={novaPrioridade} onChange={(e) => setNovaPrioridade(e.target.value as Prioridade | '')}>
+            <CampoSelecao id={`prio-${id}`} tamanho="compacto" value={novaPrioridade} onChange={(e) => setNovaPrioridade(e.target.value as Prioridade | '')}>
               <option value="">Escolha…</option>
               {(['emergencia', 'urgencia', 'prioritaria', 'eletiva'] as Prioridade[]).map((k) => <option key={k} value={k}>{PRIORIDADES[k].rotulo}</option>)}
-            </select>
+            </CampoSelecao>
           </Campo>
           <Campo id={`prio-mot-${id}`} rotulo="Motivo (fica no histórico e a origem vê)" className="min-w-60 flex-1">
             <Input id={`prio-mot-${id}`} className="h-8" value={motivoPrioridade} onChange={(e) => setMotivoPrioridade(e.target.value)} />
@@ -871,7 +873,7 @@ function Criterios({ unidadeId, editavel }: { unidadeId: string; editavel: boole
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Critérios de prioridade da central</CardTitle>
+        <CardTitle className="text-corpo">Critérios de prioridade da central</CardTitle>
         <CardDescription>O que cabe em cada nível. Aparece para quem solicita e para o regulador; o sistema não sugere nível.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
@@ -880,7 +882,7 @@ function Criterios({ unidadeId, editavel }: { unidadeId: string; editavel: boole
           const valor = rascunho[k] ?? atual?.texto ?? ''
           return (
             <div key={k} className="flex flex-col gap-1">
-              <Label htmlFor={`crit-${k}`} className="text-xs">{PRIORIDADES[k].rotulo}</Label>
+              <Label htmlFor={`crit-${k}`} className="text-rotulo">{PRIORIDADES[k].rotulo}</Label>
               {editavel ? (
                 <div className="flex flex-wrap items-start gap-2">
                   <textarea id={`crit-${k}`} rows={2} className="min-w-60 flex-1 rounded-controle border border-fio bg-campo px-2 py-1.5"
@@ -959,7 +961,7 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+        <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
           Fila da central
           {(Object.keys(PRIORIDADES) as Prioridade[]).filter((p) => resumo[p]).map((p) => (
             <Badge key={p} variant={TOM[PRIORIDADES[p].tom]}>{PRIORIDADES[p].rotulo}: {resumo[p]}</Badge>
@@ -971,37 +973,37 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
         <div className="grid gap-2 sm:grid-cols-4">
-          <select aria-label="Tipo" className={SELECT} value={filtros.tipo ?? ''} onChange={(e) => setF('tipo', e.target.value as TipoSolicitacao | '')}>
+          <CampoSelecao aria-label="Tipo" tamanho="compacto" value={filtros.tipo ?? ''} onChange={(e) => setF('tipo', e.target.value as TipoSolicitacao | '')}>
             <option value="">Todos os tipos</option>
             {(Object.keys(TIPOS) as TipoSolicitacao[]).map((k) => <option key={k} value={k}>{TIPOS[k]}</option>)}
-          </select>
-          <select aria-label="Prioridade" className={SELECT} value={filtros.prioridade ?? ''} onChange={(e) => setF('prioridade', e.target.value as Prioridade | '')}>
+          </CampoSelecao>
+          <CampoSelecao aria-label="Prioridade" tamanho="compacto" value={filtros.prioridade ?? ''} onChange={(e) => setF('prioridade', e.target.value as Prioridade | '')}>
             <option value="">Todas as prioridades</option>
             {(Object.keys(PRIORIDADES) as Prioridade[]).map((k) => <option key={k} value={k}>{PRIORIDADES[k].rotulo}</option>)}
-          </select>
-          <select aria-label="Unidade de origem" className={SELECT} value={filtros.unidade_origem_id ?? ''} onChange={(e) => setF('unidade_origem_id', e.target.value)}>
+          </CampoSelecao>
+          <CampoSelecao aria-label="Unidade de origem" tamanho="compacto" value={filtros.unidade_origem_id ?? ''} onChange={(e) => setF('unidade_origem_id', e.target.value)}>
             <option value="">Todas as unidades</option>
             {(r?.origens ?? []).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-          </select>
-          <select aria-label="Status" className={SELECT} value={filtros.status?.[0] ?? ''}
+          </CampoSelecao>
+          <CampoSelecao aria-label="Status" tamanho="compacto" value={filtros.status?.[0] ?? ''}
             onChange={(e) => setF('status', e.target.value ? [e.target.value as StatusRegulacao] : '')}>
             <option value="">Em aberto (enviada, em análise, pendência)</option>
             {(Object.keys(STATUS) as StatusRegulacao[]).map((k) => <option key={k} value={k}>{STATUS[k]}</option>)}
-          </select>
-          <select aria-label="Caráter" className={SELECT} value={filtros.carater ?? ''} onChange={(e) => setF('carater', e.target.value as Carater | '')}>
+          </CampoSelecao>
+          <CampoSelecao aria-label="Caráter" tamanho="compacto" value={filtros.carater ?? ''} onChange={(e) => setF('carater', e.target.value as Carater | '')}>
             <option value="">Eletivo e urgência</option>
             {(Object.keys(CARATER) as Carater[]).map((k) => <option key={k} value={k}>{CARATER[k]}</option>)}
-          </select>
-          <select aria-label="Tipo de leito" className={SELECT} value={filtros.tipo_leito ?? ''} onChange={(e) => setF('tipo_leito', e.target.value)}>
+          </CampoSelecao>
+          <CampoSelecao aria-label="Tipo de leito" tamanho="compacto" value={filtros.tipo_leito ?? ''} onChange={(e) => setF('tipo_leito', e.target.value)}>
             <option value="">Todos os leitos</option>
             {Object.entries(TIPOS_LEITO).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-          </select>
-          <select aria-label="Isolamento" className={SELECT} value={filtros.isolamento === undefined ? '' : String(filtros.isolamento)}
+          </CampoSelecao>
+          <CampoSelecao aria-label="Isolamento" tamanho="compacto" value={filtros.isolamento === undefined ? '' : String(filtros.isolamento)}
             onChange={(e) => setF('isolamento', e.target.value === '' ? '' : e.target.value === 'true')}>
             <option value="">Com e sem isolamento</option>
             <option value="true">Só com isolamento</option>
             <option value="false">Sem isolamento</option>
-          </select>
+          </CampoSelecao>
           <form className="flex gap-1" onSubmit={(e) => { e.preventDefault(); setF('busca', busca) }}>
             <Input aria-label="Buscar" className="h-8" placeholder="Paciente, nº ou protocolo" value={busca} onChange={(e) => setBusca(e.target.value)} />
             <Button size="sm" variant="outline" type="submit">Buscar</Button>
@@ -1013,9 +1015,9 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
         ) : (
           <ul className="flex flex-col divide-y divide-fio">
             {r!.dados.map((s) => (
-              <li key={s.id} className={`py-2 ${novos.has(s.id) ? 'rounded-md bg-alerta-atencao/40 px-2' : ''}`}>
+              <li key={s.id} className={`py-2 ${novos.has(s.id) ? 'rounded-controle bg-alerta-atencao/40 px-2' : ''}`}>
                 <div className="flex flex-wrap items-center gap-2">
-                  <button type="button" className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-left" onClick={() => setAberta(aberta === s.id ? null : s.id)}>
+                  <BotaoLinha variante="linha" aria-expanded={aberta === s.id} className="w-auto min-w-0 flex-1 flex-wrap items-center gap-2 border-0 p-0 hover:bg-transparent" onClick={() => setAberta(aberta === s.id ? null : s.id)}>
                     <SeloPrioridade s={s} />
                     {novos.has(s.id) && <Badge variant="warning">novo</Badge>}
                     <span className="font-semibold tabular-nums text-tinta">{formatarEspera(s.espera_segundos + decorrido)}</span>
@@ -1025,7 +1027,7 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
                     <SeloSla sla={s.sla} />
                     {(s.vulnerabilidades ?? []).map((v) => <Badge key={v} variant="secondary">{VULNERABILIDADES[v]}</Badge>)}
                     <span className="text-tinta-sussurro">{CARATER[s.carater]} · de {s.origem.nome} · nº {s.numero}</span>
-                  </button>
+                  </BotaoLinha>
                   <Badge variant="info">{STATUS[s.status]}</Badge>
                   {s.assumida_por && !s.assumida_por_mim && <span className="text-tinta-sussurro">com {s.assumida_por}</span>}
                   {souRegulador && !s.assumida_por && (
@@ -1054,7 +1056,7 @@ function BlocosDecisao({ s }: { s: Solicitacao }) {
   return (
     <>
       {s.status === 'autorizada' && (
-        <div className="rounded-md border border-sucesso/30 bg-sucesso/5 px-3 py-2 text-tinta">
+        <div className="rounded-controle border border-sucesso/30 bg-sucesso/5 px-3 py-2 text-tinta">
           <b>Autorizada</b> por {s.autorizada_por ?? '—'}{s.autorizada_em ? ` em ${fmtDataHora(s.autorizada_em)}` : ''}: destino {destino ?? '—'}
           {s.transporte_central && <> · transporte {TRANSPORTES[s.transporte_central] ?? s.transporte_central}</>}
           {s.data_prevista && <> · previsto para {fmtDataHora(s.data_prevista)}</>}
@@ -1062,19 +1064,19 @@ function BlocosDecisao({ s }: { s: Solicitacao }) {
         </div>
       )}
       {s.status === 'negada' && (
-        <div className="rounded-md border border-critico/30 bg-alerta-critico px-3 py-2 text-tinta">
+        <div className="rounded-controle border border-critico/30 bg-alerta-critico px-3 py-2 text-tinta">
           <b>Negada</b> por {s.negada_por ?? '—'}{s.negada_em ? ` em ${fmtDataHora(s.negada_em)}` : ''}: {s.motivo_negacao ? MOTIVOS_NEGACAO[s.motivo_negacao] : ''}
           {s.observacao_decisao && <span className="block text-tinta-apoio">{s.observacao_decisao}</span>}
         </div>
       )}
       {s.motivo_devolucao && (s.status === 'devolvida' || s.reenviada_em) && (
-        <div className="rounded-md border border-atencao/30 bg-alerta-atencao px-3 py-2 text-tinta">
+        <div className="rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-tinta">
           <b>Devolvida</b> por {s.devolvida_por ?? '—'}{s.devolvida_em ? ` em ${fmtDataHora(s.devolvida_em)}` : ''}: {s.motivo_devolucao}
           {s.reenviada_em && <span className="block text-tinta-apoio">Corrigida e reenviada em {fmtDataHora(s.reenviada_em)} (mantém a posição na fila).</span>}
         </div>
       )}
       {s.pendencia_pergunta && (
-        <div className="rounded-md border border-fio bg-superficie px-3 py-2 text-tinta">
+        <div className="rounded-controle border border-fio bg-superficie px-3 py-2 text-tinta">
           <b>Pergunta da central</b> ({s.pendencia_por ?? '—'}{s.pendencia_em ? `, ${fmtDataHora(s.pendencia_em)}` : ''}): {s.pendencia_pergunta}
           {s.pendencia_resposta
             ? <span className="block text-tinta-apoio">Resposta de {s.pendencia_respondida_por ?? '—'}{s.pendencia_respondida_em ? ` (${fmtDataHora(s.pendencia_respondida_em)})` : ''}: {s.pendencia_resposta}</span>
@@ -1122,7 +1124,7 @@ function Reenviar({ s, aoFim }: { s: Solicitacao; aoFim: () => void }) {
     onSuccess: aoFim,
   })
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-atencao/30 p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-atencao/30 p-3">
       <span className="font-medium text-tinta">Corrigir e reenviar</span>
       <CampoTerminologia tipo="cid10" escolhido={cidRotulo} rotulo="CID-10"
         onEscolher={(c, r) => { setCid(c); setCidRotulo(r) }} onLimpar={() => { setCid(''); setCidRotulo('') }} />
@@ -1189,7 +1191,7 @@ function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: str
     ['devolver', 'Devolver à origem', 'outline'], ['negar', 'Negar', 'destructive'],
   ]
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-acao/30 p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-acao/30 p-3">
       <span className="font-medium text-tinta">Decisão da central</span>
       <div className="flex flex-wrap gap-2">
         {BOTOES.filter(([a]) => !(a === 'pendencia' && s.status === 'pendencia')).map(([a, rotulo, variante]) => (
@@ -1199,16 +1201,16 @@ function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: str
       {acao === 'autorizar' && (
         <div className="grid gap-2 sm:grid-cols-3">
           <Campo id={`aut-dt-${s.id}`} rotulo="Destino (obrigatório)">
-            <select id={`aut-dt-${s.id}`} className={SELECT} value={destinoTipo} onChange={(e) => setDestinoTipo(e.target.value as 'rede' | 'externo')}>
+            <CampoSelecao id={`aut-dt-${s.id}`} tamanho="compacto" value={destinoTipo} onChange={(e) => setDestinoTipo(e.target.value as 'rede' | 'externo')}>
               <option value="rede">Unidade da rede</option><option value="externo">Serviço fora da rede</option>
-            </select>
+            </CampoSelecao>
           </Campo>
           {destinoTipo === 'rede' ? (
             <Campo id={`aut-un-${s.id}`} rotulo="Unidade" className="sm:col-span-2">
-              <select id={`aut-un-${s.id}`} className={SELECT} value={destinoUnidade} onChange={(e) => setDestinoUnidade(e.target.value)}>
+              <CampoSelecao id={`aut-un-${s.id}`} tamanho="compacto" value={destinoUnidade} onChange={(e) => setDestinoUnidade(e.target.value)}>
                 <option value="">Escolha…</option>
                 {(ctx.data?.unidades_rede ?? []).filter((u) => u.id !== s.origem.id).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-              </select>
+              </CampoSelecao>
             </Campo>
           ) : (
             <Campo id={`aut-ext-${s.id}`} rotulo="Serviço (nome e município)" className="sm:col-span-2">
@@ -1216,10 +1218,10 @@ function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: str
             </Campo>
           )}
           <Campo id={`aut-tr-${s.id}`} rotulo="Transporte (opcional)">
-            <select id={`aut-tr-${s.id}`} className={SELECT} value={transporte} onChange={(e) => setTransporte(e.target.value)}>
+            <CampoSelecao id={`aut-tr-${s.id}`} tamanho="compacto" value={transporte} onChange={(e) => setTransporte(e.target.value)}>
               <option value="">Não definir agora</option>
               {Object.entries(TRANSPORTES).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-            </select>
+            </CampoSelecao>
           </Campo>
           <Campo id={`aut-dp-${s.id}`} rotulo="Data e hora previstas (opcional)">
             <Input id={`aut-dp-${s.id}`} type="datetime-local" className="h-8" value={dataPrevista} onChange={(e) => setDataPrevista(e.target.value)} />
@@ -1236,10 +1238,10 @@ function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: str
       {acao === 'negar' && (
         <div className="grid gap-2 sm:grid-cols-3">
           <Campo id={`neg-mot-${s.id}`} rotulo="Motivo">
-            <select id={`neg-mot-${s.id}`} className={SELECT} value={motivo} onChange={(e) => setMotivo(e.target.value as MotivoNegacao | '')}>
+            <CampoSelecao id={`neg-mot-${s.id}`} tamanho="compacto" value={motivo} onChange={(e) => setMotivo(e.target.value as MotivoNegacao | '')}>
               <option value="">Escolha…</option>
               {(Object.keys(MOTIVOS_NEGACAO) as MotivoNegacao[]).map((k) => <option key={k} value={k}>{MOTIVOS_NEGACAO[k]}</option>)}
-            </select>
+            </CampoSelecao>
           </Campo>
           <Campo id={`neg-txt-${s.id}`} rotulo="Justificativa (a origem vê)" className="sm:col-span-2">
             <Input id={`neg-txt-${s.id}`} className="h-8" value={texto} onChange={(e) => setTexto(e.target.value)} />

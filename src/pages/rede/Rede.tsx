@@ -23,19 +23,22 @@ import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulaca
 import { MapaVagas } from '@/components/regulacao/MapaVagas'
 import { SeloSla } from '@/components/regulacao/SlaRegulacao'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
+import { dataIso } from '@/lib/formato'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { PRIORIDADES, STATUS, TIPOS, TIPOS_LEITO, type Prioridade, type Sla, type StatusRegulacao, type TipoSolicitacao } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 import type { Papel } from '@/types/database'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 
-const SELECT = 'h-8 rounded-controle border border-fio bg-campo px-2'
 type Ref = { id: string; nome: string }
 type Contexto = { eh_secretaria: boolean; modulo_ativo: boolean; papeis: Papel[]; no_plantao: boolean; unidades: (Ref & { cnes: string | null })[] }
 
@@ -66,7 +69,7 @@ export default function Rede() {
           <>
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Unidades liberadas</CardTitle>
+                <CardTitle className="text-corpo">Unidades liberadas</CardTitle>
                 <CardDescription>Só aparecem as unidades cujo gestor liberou o acesso da rede. Seu papel: {papeis.map((p) => PAPEL_LABEL[p]).join(', ')}.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-1.5 text-apoio">
@@ -116,7 +119,7 @@ function ModuloRede() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Módulo de papéis de rede</CardTitle>
+        <CardTitle className="text-corpo">Módulo de papéis de rede</CardTitle>
         <CardDescription>
           Ligue por organização e aponte a unidade administrativa "Secretaria" (cadastre-a antes, como a central). As pessoas de rede entram por
           convite na Secretaria (Unidade → Convites) e são escaladas nela. O gestor de cada unidade decide se a unidade dele entra.
@@ -126,7 +129,7 @@ function ModuloRede() {
         {modulos.isLoading ? <Spinner /> : (modulos.data ?? []).map((m) => {
           const escolhida = secretaria[m.organizacao.id] ?? m.secretaria?.id ?? ''
           return (
-            <div key={m.organizacao.id} className="flex flex-col gap-2 rounded-md border border-fio p-3">
+            <div key={m.organizacao.id} className="flex flex-col gap-2 rounded-controle border border-fio p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium text-tinta">{m.organizacao.nome}</span>
                 <Badge variant={m.ativo ? 'success' : 'secondary'}>{m.ativo ? 'ligado' : 'desligado'}</Badge>
@@ -134,12 +137,12 @@ function ModuloRede() {
               </div>
               <div className="flex flex-wrap items-end gap-2">
                 <div className="flex flex-col gap-1">
-                  <Label htmlFor={`sec-${m.organizacao.id}`} className="text-xs">Unidade Secretaria</Label>
-                  <select id={`sec-${m.organizacao.id}`} className={SELECT} value={escolhida}
+                  <Label htmlFor={`sec-${m.organizacao.id}`} className="text-rotulo">Unidade Secretaria</Label>
+                  <CampoSelecao id={`sec-${m.organizacao.id}`} tamanho="compacto" value={escolhida}
                     onChange={(e) => setSecretaria((x) => ({ ...x, [m.organizacao.id]: e.target.value }))}>
                     <option value="">Escolha…</option>
                     {m.unidades.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-                  </select>
+                  </CampoSelecao>
                 </div>
                 <Button size="sm" onClick={() => definir.mutate({ org: m.organizacao.id, ativo: true, sec: escolhida || null })}
                   disabled={definir.isPending || !escolhida}>{m.ativo ? 'Salvar' : 'Ligar'}</Button>
@@ -181,33 +184,31 @@ function ResumoRegulacao({ unidadeId }: { unidadeId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Regulação por unidade</CardTitle>
+        <CardTitle className="text-corpo">Regulação por unidade</CardTitle>
         <CardDescription>Pedidos em aberto, atrasados e concluídos nos últimos 30 dias. Só números.</CardDescription>
       </CardHeader>
       <CardContent className="text-apoio">
         {resumo.isLoading ? <Spinner /> : resumo.error ? <p role="alert" className="text-critico">{(resumo.error as Error).message}</p> : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[40rem] text-left">
-              <thead className="text-rotulo text-tinta-sussurro">
-                <tr>
-                  <th className="py-1 font-normal">Unidade</th>
-                  <th className="font-normal">Esperando a central</th><th className="font-normal">Esperando o destino</th>
-                  <th className="font-normal">A caminho</th><th className="font-normal">Atrasados</th><th className="font-normal">Realizados (30 d)</th>
-                  <th className="font-normal">Para aceitar</th><th className="font-normal">Recebidos (30 d)</th>
-                </tr>
-              </thead>
-              <tbody className="tabular-nums">
-                {(resumo.data ?? []).map((r) => (
-                  <tr key={r.unidade.id} className="border-t border-fio">
-                    <td className="py-1 text-tinta">{r.unidade.nome}</td>
-                    <td>{r.como_origem.esperando_central}</td><td>{r.como_origem.aguardando_destino}</td><td>{r.como_origem.a_caminho}</td>
-                    <td className={r.como_origem.atrasados > 0 ? 'font-semibold text-critico' : ''}>{r.como_origem.atrasados}</td>
-                    <td>{r.como_origem.realizados_30d}</td><td>{r.como_destino.aguardando_aceite}</td><td>{r.como_destino.recebidos_30d}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Table variante="referencia" className="w-full min-w-[40rem] text-left">
+            <TableHeader className="text-rotulo text-tinta-sussurro">
+              <TableRow>
+                <TableHead className="py-1 font-normal">Unidade</TableHead>
+                <TableHead className="font-normal">Esperando a central</TableHead><TableHead className="font-normal">Esperando o destino</TableHead>
+                <TableHead className="font-normal">A caminho</TableHead><TableHead className="font-normal">Atrasados</TableHead><TableHead className="font-normal">Realizados (30 d)</TableHead>
+                <TableHead className="font-normal">Para aceitar</TableHead><TableHead className="font-normal">Recebidos (30 d)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="tabular-nums">
+              {(resumo.data ?? []).map((r) => (
+                <TableRow key={r.unidade.id} className="border-t border-fio">
+                  <TableCell className="py-1 text-tinta">{r.unidade.nome}</TableCell>
+                  <TableCell>{r.como_origem.esperando_central}</TableCell><TableCell>{r.como_origem.aguardando_destino}</TableCell><TableCell>{r.como_origem.a_caminho}</TableCell>
+                  <TableCell className={r.como_origem.atrasados > 0 ? 'font-semibold text-critico' : ''}>{r.como_origem.atrasados}</TableCell>
+                  <TableCell>{r.como_origem.realizados_30d}</TableCell><TableCell>{r.como_destino.aguardando_aceite}</TableCell><TableCell>{r.como_destino.recebidos_30d}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>
@@ -240,15 +241,15 @@ function PedidosDaRede({ unidadeId, unidades }: { unidadeId: string; unidades: R
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Pedidos de regulação da rede</CardTitle>
+        <CardTitle className="text-corpo">Pedidos de regulação da rede</CardTitle>
         <CardDescription>Só leitura. Abrir o detalhe fica registrado no acesso ao prontuário do paciente.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
         <div className="flex flex-wrap items-center gap-2">
-          <select aria-label="Unidade" className={SELECT} value={unidade} onChange={(e) => setUnidade(e.target.value)}>
+          <CampoSelecao aria-label="Unidade" tamanho="compacto" value={unidade} onChange={(e) => setUnidade(e.target.value)}>
             <option value="">Todas as unidades liberadas</option>
             {unidades.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-          </select>
+          </CampoSelecao>
           <label className="flex items-center gap-1.5">
             <input type="checkbox" className="size-4" checked={soAbertos} onChange={(e) => setSoAbertos(e.target.checked)} /> Só em andamento
           </label>
@@ -260,8 +261,8 @@ function PedidosDaRede({ unidadeId, unidades }: { unidadeId: string; unidades: R
                 const ef = s.prioridade_regulador ?? s.prioridade
                 return (
                   <li key={s.id} className="py-2">
-                    <button type="button" aria-expanded={aberto === s.id}
-                      className="flex w-full flex-wrap items-center gap-2 rounded-md px-1 py-0.5 text-left hover:bg-campo"
+                    <BotaoLinha variante="linha" aria-expanded={aberto === s.id}
+                      className="flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo"
                       onClick={() => setAberto(aberto === s.id ? null : s.id)}>
                       {aberto === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
                       <Badge variant={PRIORIDADES[ef].tom === 'critico' ? 'destructive' : PRIORIDADES[ef].tom === 'atencao' ? 'warning' : 'secondary'}>{PRIORIDADES[ef].rotulo}</Badge>
@@ -271,7 +272,7 @@ function PedidosDaRede({ unidadeId, unidades }: { unidadeId: string; unidades: R
                       <Badge variant="info">{STATUS[s.status]}</Badge>
                       <SeloSla sla={s.sla} />
                       <span className="ml-auto text-rotulo text-acao">{aberto === s.id ? 'Fechar' : 'Ver detalhes'}</span>
-                    </button>
+                    </BotaoLinha>
                     {aberto === s.id && <DetalheRede unidadeId={unidadeId} id={s.id} />}
                   </li>
                 )
@@ -303,7 +304,7 @@ function DetalheRede({ unidadeId, id }: { unidadeId: string; id: string }) {
   if (d.error || !d.data) return <p role="alert" className="text-critico">{d.error ? (d.error as Error).message : 'Não encontrado.'}</p>
   const s = d.data
   return (
-    <div className="mt-2 flex flex-col gap-2 rounded-md border border-fio bg-campo p-3 text-tinta">
+    <div className="mt-2 flex flex-col gap-2 rounded-controle border border-fio bg-campo p-3 text-tinta">
       <p><span className="text-tinta-sussurro">Procedimento: </span>{s.procedimento} {s.procedimento_nome ?? ''}</p>
       <p><span className="text-tinta-sussurro">CID: </span>{s.cid} {s.cid_descricao ?? ''}</p>
       <p><span className="text-tinta-sussurro">Solicitante: </span>{s.solicitante ?? '—'} · {fmtDataHora(s.criada_em)}</p>
@@ -323,7 +324,7 @@ type FaturamentoUnidade = {
   aih: Record<string, number>; apacs_status: Record<string, number>
 }
 
-const competenciaAtual = () => new Date().toLocaleDateString('sv-SE').slice(0, 7).replace('-', '')
+const competenciaAtual = () => dataIso().slice(0, 7).replace('-', '')
 
 function FaturamentoRede({ unidadeId }: { unidadeId: string }) {
   const [competencia, setCompetencia] = React.useState(competenciaAtual)
@@ -352,47 +353,45 @@ function FaturamentoRede({ unidadeId }: { unidadeId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Produção das unidades liberadas</CardTitle>
+        <CardTitle className="text-corpo">Produção das unidades liberadas</CardTitle>
         <CardDescription>Por competência, só leitura. Baixar o arquivo fechado fica na auditoria.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
         <div className="flex items-end gap-2">
           <div className="flex flex-col gap-1">
-            <Label htmlFor="rede-comp" className="text-xs">Competência (AAAAMM)</Label>
+            <Label htmlFor="rede-comp" className="text-rotulo">Competência (AAAAMM)</Label>
             <Input id="rede-comp" className="h-8 w-32" inputMode="numeric" value={competencia} onChange={(e) => setCompetencia(e.target.value.trim())} />
           </div>
         </div>
         {!valida ? <span className="text-rotulo text-critico">Competência no formato AAAAMM.</span>
           : dados.isLoading ? <Spinner /> : dados.error ? <p role="alert" className="text-critico">{(dados.error as Error).message}</p> : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[44rem] text-left">
-                <thead className="text-rotulo text-tinta-sussurro">
-                  <tr><th className="py-1 font-normal">Unidade</th><th className="font-normal">BPA</th><th className="font-normal">APAC (fechamento)</th>
-                    <th className="font-normal">AIH por situação</th><th className="font-normal">APAC por situação</th></tr>
-                </thead>
-                <tbody>
-                  {(dados.data ?? []).map((u) => (
-                    <tr key={u.unidade.id} className="border-t border-fio align-top">
-                      <td className="py-1 text-tinta">{u.unidade.nome}{u.unidade.cnes ? <span className="block text-rotulo text-tinta-sussurro">CNES {u.unidade.cnes}</span> : null}</td>
-                      <td>
-                        {u.bpa ? <>{u.bpa.situacao} · {u.bpa.linhas ?? 0} linhas
-                          {u.bpa.situacao === 'fechada' && u.bpa.tem_arquivo && (
-                            <Button size="xs" variant="ghost" onClick={() => baixar.mutate({ tipo: 'bpa', id: u.bpa!.id })}><Download className="size-3.5" /> arquivo</Button>
-                          )}</> : <span className="text-tinta-sussurro">sem fechamento</span>}
-                      </td>
-                      <td>
-                        {u.apac ? <>{u.apac.situacao} · {u.apac.apacs ?? 0} APAC
-                          {u.apac.situacao === 'fechada' && u.apac.tem_arquivo && (
-                            <Button size="xs" variant="ghost" onClick={() => baixar.mutate({ tipo: 'apac', id: u.apac!.id })}><Download className="size-3.5" /> arquivo</Button>
-                          )}</> : <span className="text-tinta-sussurro">sem fechamento</span>}
-                      </td>
-                      <td className="text-rotulo">{contagem(u.aih)}</td>
-                      <td className="text-rotulo">{contagem(u.apacs_status)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table variante="referencia" className="w-full min-w-[44rem] text-left">
+              <TableHeader className="text-rotulo text-tinta-sussurro">
+                <TableRow><TableHead className="py-1 font-normal">Unidade</TableHead><TableHead className="font-normal">BPA</TableHead><TableHead className="font-normal">APAC (fechamento)</TableHead>
+                  <TableHead className="font-normal">AIH por situação</TableHead><TableHead className="font-normal">APAC por situação</TableHead></TableRow>
+              </TableHeader>
+              <TableBody>
+                {(dados.data ?? []).map((u) => (
+                  <TableRow key={u.unidade.id} className="border-t border-fio align-top">
+                    <TableCell className="py-1 text-tinta">{u.unidade.nome}{u.unidade.cnes ? <span className="block text-rotulo text-tinta-sussurro">CNES {u.unidade.cnes}</span> : null}</TableCell>
+                    <TableCell>
+                      {u.bpa ? <>{u.bpa.situacao} · {u.bpa.linhas ?? 0} linhas
+                        {u.bpa.situacao === 'fechada' && u.bpa.tem_arquivo && (
+                          <Button size="xs" variant="ghost" onClick={() => baixar.mutate({ tipo: 'bpa', id: u.bpa!.id })}><Download className="size-3.5" /> arquivo</Button>
+                        )}</> : <span className="text-tinta-sussurro">sem fechamento</span>}
+                    </TableCell>
+                    <TableCell>
+                      {u.apac ? <>{u.apac.situacao} · {u.apac.apacs ?? 0} APAC
+                        {u.apac.situacao === 'fechada' && u.apac.tem_arquivo && (
+                          <Button size="xs" variant="ghost" onClick={() => baixar.mutate({ tipo: 'apac', id: u.apac!.id })}><Download className="size-3.5" /> arquivo</Button>
+                        )}</> : <span className="text-tinta-sussurro">sem fechamento</span>}
+                    </TableCell>
+                    <TableCell className="text-rotulo">{contagem(u.aih)}</TableCell>
+                    <TableCell className="text-rotulo">{contagem(u.apacs_status)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         {baixar.error && <p role="alert" className="text-rotulo text-critico">{(baixar.error as Error).message}</p>}
       </CardContent>

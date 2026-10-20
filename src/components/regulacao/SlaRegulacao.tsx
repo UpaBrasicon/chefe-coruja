@@ -17,6 +17,7 @@ import * as React from 'react'
 
 import { Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -29,9 +30,9 @@ import {
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 
 const TOM = { critico: 'destructive', atencao: 'warning', neutro: 'secondary' } as const
-const SELECT = 'h-8 rounded-controle border border-fio bg-campo px-2'
 
 /** Selos dos relógios do pedido. */
 export function SeloSla({ sla }: { sla: Sla | null | undefined }) {
@@ -72,7 +73,7 @@ export function PainelSla({ unidadeId, central, detalhe }: {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+        <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
           <Timer className="size-4" aria-hidden /> Prazos da regulação
           {res && res.fila_atrasada > 0 && <Badge variant="destructive">Fila vencida: {res.fila_atrasada}</Badge>}
           {res && res.pendencia_atrasada > 0 && <Badge variant="destructive">Pendência vencida: {res.pendencia_atrasada}</Badge>}
@@ -89,14 +90,14 @@ export function PainelSla({ unidadeId, central, detalhe }: {
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
         <div className="flex flex-wrap items-center gap-2">
-          <select aria-label="Tipo" className={SELECT} value={filtros.tipo ?? ''} onChange={(e) => setF('tipo', e.target.value as TipoSolicitacao | '')}>
+          <CampoSelecao aria-label="Tipo" tamanho="compacto" value={filtros.tipo ?? ''} onChange={(e) => setF('tipo', e.target.value as TipoSolicitacao | '')}>
             <option value="">Todos os tipos</option>
             {(Object.keys(TIPOS) as TipoSolicitacao[]).map((k) => <option key={k} value={k}>{TIPOS[k]}</option>)}
-          </select>
-          <select aria-label="Prioridade" className={SELECT} value={filtros.prioridade ?? ''} onChange={(e) => setF('prioridade', e.target.value as Prioridade | '')}>
+          </CampoSelecao>
+          <CampoSelecao aria-label="Prioridade" tamanho="compacto" value={filtros.prioridade ?? ''} onChange={(e) => setF('prioridade', e.target.value as Prioridade | '')}>
             <option value="">Todas as prioridades</option>
             {(Object.keys(PRIORIDADES) as Prioridade[]).map((k) => <option key={k} value={k}>{PRIORIDADES[k].rotulo}</option>)}
-          </select>
+          </CampoSelecao>
           <label className="flex items-center gap-1.5">
             <input type="checkbox" className="size-4" checked={!!filtros.so_atrasados} onChange={(e) => setF('so_atrasados', e.target.checked)} />
             Só atrasados
@@ -112,8 +113,8 @@ export function PainelSla({ unidadeId, central, detalhe }: {
               const ef = s.prioridade_regulador ?? s.prioridade
               return (
                 <li key={s.id} className="py-2">
-                  <button type="button" aria-expanded={aberta === s.id}
-                    className="flex w-full flex-wrap items-center gap-2 rounded-md px-1 py-0.5 text-left hover:bg-campo"
+                  <BotaoLinha variante="linha" aria-expanded={aberta === s.id}
+                    className="flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo"
                     onClick={() => setAberta(aberta === s.id ? null : s.id)}>
                     {aberta === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
                     <Badge variant={PRIORIDADES[ef].tom === 'critico' ? 'destructive' : PRIORIDADES[ef].tom === 'atencao' ? 'warning' : PRIORIDADES[ef].tom === 'info' ? 'info' : 'secondary'}>
@@ -125,7 +126,7 @@ export function PainelSla({ unidadeId, central, detalhe }: {
                     <Badge variant="info">{STATUS[s.status]}</Badge>
                     <SeloSla sla={s.sla} />
                     <span className="ml-auto text-rotulo text-acao">{aberta === s.id ? 'Fechar' : 'Ver detalhes'}</span>
-                  </button>
+                  </BotaoLinha>
                   {aberta === s.id && detalhe(s.id)}
                 </li>
               )
@@ -169,14 +170,14 @@ export function PrazosCentral({ unidadeId, editavel }: { unidadeId: string; edit
   const mudar = (x: Partial<FormPrazos>) => setForm({ ...f, ...x })
   const campoHoras = (k: 'evolucao_h' | 'pendencia_h' | 'sem_evolucao_h' | 'destino_h', rotulo: string) => (
     <div className="flex flex-col gap-1">
-      <Label htmlFor={`prazo-${k}`} className="text-xs">{rotulo}</Label>
+      <Label htmlFor={`prazo-${k}`} className="text-rotulo">{rotulo}</Label>
       <Input id={`prazo-${k}`} className="h-8 w-24" inputMode="numeric" disabled={!editavel} value={f[k]} onChange={(e) => mudar({ [k]: e.target.value })} />
     </div>
   )
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Prazos da central</CardTitle>
+        <CardTitle className="text-corpo">Prazos da central</CardTitle>
         <CardDescription>
           Prazo da fila por prioridade, em minutos (vazio = sem prazo; não há regra nacional). Relógios da origem, em horas: partem de
           12 h, 3 h e 72 h (Nota Técnica SES-MG 15/2008; Deliberação CIB-SP 35/2022). Valem para a rede inteira; só alertam.
@@ -186,7 +187,7 @@ export function PrazosCentral({ unidadeId, editavel }: { unidadeId: string; edit
         <div className="flex flex-wrap gap-3">
           {NIVEIS_FILA.map((k) => (
             <div key={k} className="flex flex-col gap-1">
-              <Label htmlFor={`prazo-fila-${k}`} className="text-xs">Fila · {PRIORIDADES[k].rotulo} (min)</Label>
+              <Label htmlFor={`prazo-fila-${k}`} className="text-rotulo">Fila · {PRIORIDADES[k].rotulo} (min)</Label>
               <Input id={`prazo-fila-${k}`} className="h-8 w-28" inputMode="numeric" placeholder="sem prazo" disabled={!editavel}
                 value={f.fila[k]} onChange={(e) => mudar({ fila: { ...f.fila, [k]: e.target.value } })} />
             </div>
@@ -233,7 +234,7 @@ export function PrazosDoPedido({ id, sla, tempos, evolucoes, podeEvoluir, aoFim 
     onSuccess: () => { setTexto(''); setSinais(''); setAbrir(false); aoFim() },
   })
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-fio bg-superficie p-3">
+    <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3">
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex items-center gap-1.5 font-medium text-tinta"><Timer className="size-4" aria-hidden /> Prazos</span>
         <SeloSla sla={sla} />
@@ -246,9 +247,9 @@ export function PrazosDoPedido({ id, sla, tempos, evolucoes, podeEvoluir, aoFim 
       )}
       {abrir && (
         <div className="flex flex-col gap-2">
-          <Label htmlFor={`evol-${id}`} className="text-xs">Evolução do paciente (a central vê; o relógio recomeça)</Label>
+          <Label htmlFor={`evol-${id}`} className="text-rotulo">Evolução do paciente (a central vê; o relógio recomeça)</Label>
           <textarea id={`evol-${id}`} rows={3} className="rounded-controle border border-fio bg-campo px-2 py-1.5" value={texto} onChange={(e) => setTexto(e.target.value)} />
-          <Label htmlFor={`evol-sv-${id}`} className="text-xs">Sinais vitais, com hora (opcional)</Label>
+          <Label htmlFor={`evol-sv-${id}`} className="text-rotulo">Sinais vitais, com hora (opcional)</Label>
           <Input id={`evol-sv-${id}`} className="h-8" value={sinais} onChange={(e) => setSinais(e.target.value)} />
           <div className="flex gap-2">
             <Button size="sm" onClick={() => evoluir.mutate()} disabled={evoluir.isPending || texto.trim().length < 10}>Registrar evolução</Button>

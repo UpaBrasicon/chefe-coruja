@@ -57,7 +57,7 @@ export default function Nir() {
         descricao="AIH, APAC e regulações paradas, com o responsável e o tempo parado. Cobrar avisa o responsável e fica registrado." />
       <Card>
         <CardHeader>
-          <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+          <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
             Pendências
             {r && (Object.keys(GRUPOS_NIR) as GrupoNir[]).map((g) => r.resumo[g] > 0 && <Badge key={g} variant="warning">{GRUPOS_NIR[g]}: {r.resumo[g]}</Badge>)}
           </CardTitle>
