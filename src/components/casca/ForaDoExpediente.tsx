@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { supabase } from '@/lib/supabase'
 import { Spinner } from '@/components/ui/spinner'
+import { dataPorExtenso, dia, hora, semanaCurta } from '@/lib/formato'
 
 // Fora do expediente: quem entra pela escala e não está nela agora não vê o
 // app — vê quando volta. O próximo plantão vem do servidor (relógio dele, não
@@ -14,15 +15,6 @@ import { Spinner } from '@/components/ui/spinner'
 // quando o turno começa (usePlantao).
 
 const TURNO: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
-const FUSO = 'America/Sao_Paulo'
-
-const hora = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: FUSO })
-const diaMes = (d: Date) => d.toLocaleDateString('pt-BR', { day: '2-digit', timeZone: FUSO })
-const semana = (d: Date) => d.toLocaleDateString('pt-BR', { weekday: 'short', timeZone: FUSO }).replace('.', '')
-const dataLonga = (d: Date) => {
-  const t = d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: FUSO })
-  return t.charAt(0).toUpperCase() + t.slice(1)
-}
 
 /** "em 40 min", "em 5 h 20 min", "em 3 dias" — a partir da hora do servidor. */
 function quantoFalta(ms: number) {
@@ -76,6 +68,7 @@ export function ForaDoExpediente() {
         <span className="grid size-[42px] place-items-center rounded-container bg-alerta-marca text-acao" aria-hidden>
           <CalendarClock className="size-[21px]" />
         </span>
+        {/* padrao-ok: título da tela fora do horário (tela cheia, não é página) */}
         <h1 id="fora-titulo" className="mt-4 text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">
           Fora do seu horário
         </h1>
@@ -100,15 +93,15 @@ export function ForaDoExpediente() {
           ) : (
             <div className="flex items-center gap-3.5 px-4 py-3.5">
               <div className="flex size-[52px] shrink-0 flex-col items-center justify-center rounded-container bg-acao text-sobre-acao" aria-hidden>
-                <span className="text-secao leading-none font-semibold tabular">{diaMes(proximo.inicio)}</span>
-                <span className="text-rotulo opacity-80">{semana(proximo.inicio)}</span>
+                <span className="text-secao leading-none font-semibold tabular">{dia(proximo.inicio)}</span>
+                <span className="text-rotulo opacity-80">{semanaCurta(proximo.inicio)}</span>
               </div>
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="text-corpo font-medium text-tinta">
                   {proximo.turno} · {proximo.setor}
                 </span>
                 <span className="text-apoio text-tinta-sussurro tabular">
-                  {dataLonga(proximo.inicio)}, {hora(proximo.inicio)} às {hora(proximo.fim)}
+                  {dataPorExtenso(proximo.inicio)}, {hora(proximo.inicio)} às {hora(proximo.fim)}
                 </span>
                 {outraUnidade && (
                   <span className="flex items-center gap-1 text-apoio text-tinta-apoio">

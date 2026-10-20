@@ -41,3 +41,23 @@ export const moeda = (n: number) => fmtMoeda.format(n)
 export function numero(n: number, casas?: number) {
   return new Intl.NumberFormat('pt-BR', casas === undefined ? {} : { minimumFractionDigits: casas, maximumFractionDigits: casas }).format(n)
 }
+
+const fmtDiaMes = new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, day: '2-digit', month: '2-digit' })
+const fmtDia = new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, day: '2-digit' })
+const fmtSemanaCurta = new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, weekday: 'short' })
+const fmtPorExtenso = new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, weekday: 'long', day: 'numeric', month: 'long' })
+
+/** "19/10" */
+export const diaMes = (v: Instante) => fmtDiaMes.format(comoData(v))
+
+/** "19" */
+export const dia = (v: Instante) => fmtDia.format(comoData(v))
+
+/** "seg" (sem o ponto) */
+export const semanaCurta = (v: Instante) => fmtSemanaCurta.format(comoData(v)).replace('.', '')
+
+/** "Segunda-feira, 19 de outubro" */
+export function dataPorExtenso(v: Instante) {
+  const t = fmtPorExtenso.format(comoData(v))
+  return t.charAt(0).toUpperCase() + t.slice(1)
+}

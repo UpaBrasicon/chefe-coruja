@@ -45,6 +45,7 @@ import { PortaoSegundoFator } from '@/components/seguranca/SegundoFator'
 import { useSegundoFator } from '@/hooks/useSegundoFator'
 import { useChaveRascunho } from '@/hooks/useChaveRascunho'
 import type { Papel } from '@/types/database'
+import { diaMes, hora } from '@/lib/formato'
 
 // A casca do Monitor de Cabeceira (P/index.html 882–1366): lateral recolhida
 // em ícones que abre por cima, topbar imóvel com o contexto do papel, pilha de
@@ -177,7 +178,7 @@ function AvisosDeEntrada({ unidadeId }: { unidadeId?: string }) {
           tag: 'Da unidade',
           titulo: a.titulo ?? 'Aviso da unidade',
           texto: a.descricao ?? undefined,
-          quando: new Date(a.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' }),
+          quando: diaMes(a.created_at),
         })),
     )
   }, [isSuccess, avisos, avisar])
@@ -273,7 +274,7 @@ function Casca() {
       return lista.find((p) => p) ?? null
     },
   })
-  const fimTurno = meuPlantao ? new Date(meuPlantao.fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) : undefined
+  const fimTurno = meuPlantao ? hora(meuPlantao.fim) : undefined
   // a tolerância de 20 min conta do fim do turno (decisão do RT 03/10/2026)
   const sessao = useSessaoPosPlantao(plantaoStatus, entraPorEscala, meuPlantao?.fim ?? null)
 
@@ -432,7 +433,7 @@ function Casca() {
       title="Plantão remoto"
       className={cn(
         'flex h-8 items-center gap-2 rounded-capsula border px-3 text-apoio font-medium whitespace-nowrap',
-        emPlantao ? 'border-conforme/30 bg-conforme/[0.06] text-conforme' : 'border-fio text-tinta-sussurro',
+        emPlantao ? 'border-conforme/30 bg-alerta-conforme text-conforme' : 'border-fio text-tinta-sussurro',
       )}
     >
       <span className={cn('size-2 rounded-capsula', emPlantao ? 'bg-conforme' : 'bg-fio-forte')} aria-hidden />

@@ -76,7 +76,7 @@ export function MenuUsuario({
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Positioner side="bottom" align="end" sideOffset={8} className="z-[80]">
-          <PopoverPrimitive.Popup className="flex w-[300px] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-menu border border-fio bg-superficie text-tinta shadow-popover outline-none data-open:animate-cc-dlg">
+          <PopoverPrimitive.Popup className="flex w-[300px] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-container border border-fio bg-superficie text-tinta shadow-popover outline-none data-open:animate-cc-dlg">
             <div className="flex items-center gap-3 px-4 pt-4 pb-3.5">
               <span className="grid size-10 shrink-0 place-items-center rounded-capsula bg-fio text-controle font-semibold text-tinta-apoio">{ini}</span>
               <div className="flex min-w-0 flex-col gap-0.5">
@@ -101,7 +101,7 @@ export function MenuUsuario({
             )}
             {papeis.length > 1 && (
               <div className="flex flex-col gap-2 border-t border-trilha px-4 py-3">
-                <span className="text-[11px] font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">Trocar perfil</span>
+                <span className="rotulo text-tinta-sussurro">Trocar perfil</span>
                 <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Perfil em uso">
                   {papeis.map((p) => {
                     const on = p === papelAtivo
@@ -152,12 +152,12 @@ export function MenuUsuario({
               </div>
             )}
             <div className="flex flex-col gap-0.5 border-t border-trilha p-1.5">
-              <button type="button" onClick={() => ir('/perfil')} className="flex min-h-11 items-center gap-2.5 rounded-controle-sm px-2.5 py-2.5 text-left text-controle text-tinta hover:bg-trilha">
+              <button type="button" onClick={() => ir('/perfil')} className="flex min-h-11 items-center gap-2.5 rounded-controle px-2.5 py-2.5 text-left text-controle text-tinta hover:bg-trilha">
                 <UserRound className="size-4 text-tinta-sussurro" aria-hidden />
                 Meu perfil
               </button>
               {papelAtivo === 'plantonista' && (
-                <button type="button" onClick={() => ir('/preferencias-prescricao')} className="flex min-h-11 items-center gap-2.5 rounded-controle-sm px-2.5 py-2.5 text-left text-controle text-tinta hover:bg-trilha">
+                <button type="button" onClick={() => ir('/preferencias-prescricao')} className="flex min-h-11 items-center gap-2.5 rounded-controle px-2.5 py-2.5 text-left text-controle text-tinta hover:bg-trilha">
                   <SlidersHorizontal className="size-4 text-tinta-sussurro" aria-hidden />
                   Minhas preferências de prescrição
                 </button>
@@ -168,7 +168,7 @@ export function MenuUsuario({
                   setAberto(false)
                   onBloquear()
                 }}
-                className="flex min-h-11 items-center gap-2.5 rounded-controle-sm px-2.5 py-2.5 text-left text-controle text-tinta hover:bg-trilha"
+                className="flex min-h-11 items-center gap-2.5 rounded-controle px-2.5 py-2.5 text-left text-controle text-tinta hover:bg-trilha"
               >
                 <Lock className="size-4 text-tinta-sussurro" aria-hidden />
                 Bloquear tela
@@ -179,7 +179,7 @@ export function MenuUsuario({
                   setAberto(false)
                   onSair()
                 }}
-                className="flex min-h-11 items-center gap-2.5 rounded-controle-sm px-2.5 py-2.5 text-left text-controle text-critico hover:bg-[#FEF2F2]"
+                className="flex min-h-11 items-center gap-2.5 rounded-controle px-2.5 py-2.5 text-left text-controle text-critico hover:bg-alerta-critico"
               >
                 <LogOut className="size-4" aria-hidden />
                 Sair

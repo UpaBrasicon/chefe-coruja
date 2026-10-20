@@ -37,3 +37,11 @@ test('erros: frase da regra do banco aparece como veio; o resto vira a frase gen
   assert.match(perm.tecnico ?? '', /42501/)
   assert.equal(classificarErro(new TypeError('Failed to fetch'), 'carregar os exames').texto, 'Não foi possível carregar os exames. Tente de novo.')
 })
+
+test('formato: dia, semana e por extenso', async () => {
+  const { diaMes, dia, semanaCurta, dataPorExtenso } = await import('./formato.ts')
+  assert.equal(diaMes('2026-10-19T22:43:00Z'), '19/10')
+  assert.equal(dia('2026-10-19T22:43:00Z'), '19')
+  assert.equal(semanaCurta('2026-10-19T22:43:00Z'), 'seg')
+  assert.equal(dataPorExtenso('2026-10-19T22:43:00Z'), 'Segunda-feira, 19 de outubro')
+})

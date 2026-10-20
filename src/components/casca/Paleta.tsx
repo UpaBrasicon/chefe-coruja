@@ -22,7 +22,7 @@ import { useFontesDoBanco } from './useFontesDoBanco'
 
 const GRUPO_FORA = 'Fora do seu acesso'
 const CLASSE_GRUPO =
-  '[&_[cmdk-group-heading]]:block [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-[9px] [&_[cmdk-group-heading]]:pb-[5px] [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-[0.07em] [&_[cmdk-group-heading]]:text-tinta-sussurro [&_[cmdk-group-heading]]:uppercase'
+  '[&_[cmdk-group-heading]]:block [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-[9px] [&_[cmdk-group-heading]]:pb-[5px] [&_[cmdk-group-heading]]:text-rotulo [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-[0.07em] [&_[cmdk-group-heading]]:text-tinta-sussurro [&_[cmdk-group-heading]]:uppercase'
 const CLASSE_ITEM =
   'group flex cursor-pointer items-center gap-2.5 rounded-controle px-3 py-[9px] text-tinta data-[selected=true]:bg-acao/10 data-[selected=true]:text-acao'
 
@@ -95,6 +95,7 @@ export function Paleta({
               onValueChange={setTermo}
               placeholder={dica}
               aria-label="Buscar"
+              // padrao-ok: 16 px evita o zoom automático do iOS no campo de busca
               className="min-w-0 flex-1 border-0 bg-transparent text-[16px] text-tinta outline-none placeholder:text-tinta-sussurro focus-visible:shadow-none"
             />
             <kbd className="cc-tecla">esc</kbd>

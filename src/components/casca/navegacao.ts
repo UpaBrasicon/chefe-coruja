@@ -48,7 +48,7 @@ export type ItemNav = {
 // Navegação por papel (P/index.html ~32220). Um papel por vez: quem tem mais
 // de um na unidade troca pelo menu do usuário. Só entram destinos que existem
 // no app; os que o protótipo tem e o app ainda não (Histórico, Protocolos e
-// Farmácia do gestor; Pronto Socorro, Notificações e Internação da enfermagem) chegam com as
+// Farmácia do gestor; Pronto-Socorro, Notificações e Internação da enfermagem) chegam com as
 // ondas do porte (produto/docs/PLANO-PORTE-FRONTEND.md).
 const ITEM_PRONTUARIOS: ItemNav = { to: '/prontuarios', rotulo: 'Prontuários', icone: FolderSearch }
 const ITEM_AVISOS: ItemNav = { to: '/notificacoes', rotulo: 'Avisos', icone: Bell, exato: true, nota: 'avisos' }
@@ -63,7 +63,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/pareceres', rotulo: 'Pareceres', icone: MessageSquare, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
     { to: '/plantonista/farmacia', rotulo: 'Farmácia', icone: FlaskConical },
-    { to: '/agenda', rotulo: 'Minha Agenda', curto: 'Agenda', icone: CalendarClock, exato: true },
+    { to: '/agenda', rotulo: 'Minha agenda', curto: 'Agenda', icone: CalendarClock, exato: true },
     ITEM_AVISOS,
     ITEM_PRONTUARIOS,
   ],
@@ -85,7 +85,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/internacao', rotulo: 'Internação', icone: Hospital, exato: true },
     // Fase 3: o gestor acompanha as AIHs; quem decide é o médico regulador
     { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true },
-    { to: '/faturamento', rotulo: 'Faturamento (BPA)', curto: 'BPA', icone: Receipt, exato: true },
+    { to: '/faturamento', rotulo: 'BPA', curto: 'BPA', icone: Receipt, exato: true },
     // Fase 5B, tarefa 1: o gestor acompanha as contas e reabre com motivo
     { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true },
     // Fase 5B, tarefa 6: o gestor acompanha as glosas e marca as perdidas
@@ -95,10 +95,10 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos' },
     { to: '/gestao/protocolos', rotulo: 'Protocolos', icone: ClipboardPlus, exato: true },
     // o gestor acompanha a revisão; quem decide é o responsável técnico
-    { to: '/revisao-clinica', rotulo: 'Revisão Clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true },
+    { to: '/revisao-clinica', rotulo: 'Revisão clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true },
     { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true },
     // Fase 4, tarefa 11: o gestor acompanha o painel do NIR
-    { to: '/nir', rotulo: 'Pendências (NIR)', curto: 'NIR', icone: ClipboardList, exato: true },
+    { to: '/nir', rotulo: 'Pendências do NIR', curto: 'NIR', icone: ClipboardList, exato: true },
     // 30/09/2026: chamado técnico da unidade (a administração da rede atende)
     { to: '/gestao/chamados', rotulo: 'Chamados técnicos', curto: 'Chamados', icone: LifeBuoy, exato: true },
   ],
@@ -106,8 +106,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   // Notificações; a tela inicial dele segue a escala (InicioEnfermagem).
   enfermeiro: [
     { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem' },
-    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto Socorro', curto: 'PS', icone: Stethoscope, exato: true },
-    { to: '/notificacao-compulsoria', rotulo: 'Notificações', icone: Shield, exato: true },
+    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
+    { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
     { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
     // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
@@ -118,7 +118,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_PRONTUARIOS,
   ],
   tecnico_enfermagem: [
-    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto Socorro', curto: 'PS', icone: Stethoscope, exato: true },
+    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
     { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
     // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
@@ -138,14 +138,14 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   // Fase 3, tarefa 1: médico regulador — decide a AIH (aprova com número e
   // competência, ou rejeita com motivo)
   regulador: [
-    { to: '/aih', rotulo: 'Pedidos de AIH', curto: 'AIH', icone: FileText, exato: true },
-    { to: '/apac', rotulo: 'Pedidos de APAC', curto: 'APAC', icone: FileCheck, exato: true },
+    { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true },
+    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
   ],
   // Fase 3, tarefa 3: faturamento (sem escala) — conferência e fechamento do
   // BPA, lançamento de procedimentos e códigos SIGTAP da unidade
   faturamento: [
     { to: '/faturamento', rotulo: 'BPA', icone: Receipt, exato: true },
-    { to: '/faturamento/contas', rotulo: 'Contas', icone: Wallet, exato: true },
+    { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true },
     { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true },
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
   ],
@@ -159,7 +159,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_PRONTUARIOS,
   ],
   telemedicina: [
-    { to: '/teleinterconsulta', rotulo: 'Minha fila', curto: 'Fila', icone: Hourglass, exato: true, nota: 'tele' },
+    { to: '/teleinterconsulta', rotulo: 'Telemedicina', curto: 'Tele', icone: Hourglass, exato: true, nota: 'tele' },
     { to: '/telemedicina/salas', rotulo: 'Salas em andamento', curto: 'Salas', icone: Video, exato: true },
     { to: '/telemedicina/agenda', rotulo: 'Minha agenda', curto: 'Agenda', icone: CalendarClock, exato: true },
     { to: '/telemedicina/telemonitoramento', rotulo: 'Telemonitoramento', curto: 'Monitor', icone: Activity, exato: true },
@@ -176,7 +176,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   faturamento_rede: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }],
   // Fase 4, tarefa 11: NIR — pendências da unidade e a regulação (sem ato médico)
   nir: [
-    { to: '/nir', rotulo: 'Pendências', icone: ClipboardList, exato: true },
+    { to: '/nir', rotulo: 'Pendências do NIR', curto: 'NIR', icone: ClipboardList, exato: true },
     { to: '/regulacao', rotulo: 'Regulação', icone: Waypoints, exato: true },
     ITEM_AVISOS,
   ],
@@ -190,7 +190,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   ],
 }
 
-const ITEM_REVISAO_CLINICA: ItemNav = { to: '/revisao-clinica', rotulo: 'Revisão Clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true, nota: 'revisao' }
+const ITEM_REVISAO_CLINICA: ItemNav = { to: '/revisao-clinica', rotulo: 'Revisão clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true, nota: 'revisao' }
 
 // "Erros e alertas" é do administrador geral (RequireSuperAdmin em App.tsx):
 // o administrador da organização que não é super admin não vê o item
@@ -204,7 +204,7 @@ const ITEM_IMPLANTACAO: ItemNav = { to: '/implantacao', rotulo: 'Implantação',
 // Fase 4, tarefa 1: regulação da rede (origem, central e super admin)
 const ITEM_REGULACAO: ItemNav = { to: '/regulacao', rotulo: 'Regulação', icone: Waypoints, exato: true }
 // Fase 4, tarefa 12: módulo de papéis de rede (o super admin liga por organização)
-const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Papéis de rede', curto: 'Rede', icone: Network, exato: true }
+const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Rede', curto: 'Rede', icone: Network, exato: true }
 
 /**
  * Itens do papel em foco. O responsável técnico (nomeação da rede, não papel
@@ -232,7 +232,7 @@ export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false
  * Barra inferior do celular (correções do portão, tarefa 8): no máximo cinco
  * posições. Com mais itens, quatro fixos e o "Mais", que abre a lista do resto.
  * Os fixos seguem a ordem do menu, salvo o papel que tem os seus (decisão do
- * RT: no enfermeiro, Triagem e Pronto Socorro fazem a mesma função, e
+ * RT: no enfermeiro, Triagem e Pronto-Socorro fazem a mesma função, e
  * Internação e Checagem também — fica um de cada, mais Notificações e Alta
  * vigilância).
  */
@@ -255,10 +255,10 @@ export function dividirBarraCelular(papel: Papel | null, itens: ItemNav[]): { fi
  * largura para o numeral da pendência.
  */
 export const ABAS_ESTREITAS_PLANTONISTA: ItemNav[] = [
-  { to: '/plantonista', rotulo: 'Ferramentas', icone: Stethoscope },
+  { to: '/plantonista', rotulo: 'Central', icone: Stethoscope },
   { to: '/plantao/internacao/pacientes', rotulo: 'Leitos', icone: Users },
-  { to: '/prontuarios', rotulo: 'Prontuário', icone: BookOpen },
-  { to: '/agenda', rotulo: 'Escala', icone: CalendarClock },
+  { to: '/prontuarios', rotulo: 'Prontuários', icone: BookOpen },
+  { to: '/agenda', rotulo: 'Agenda', icone: CalendarClock },
 ]
 
 /** Página inicial do papel: o logotipo leva a ela. */
