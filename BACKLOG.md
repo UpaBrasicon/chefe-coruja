@@ -941,6 +941,13 @@ métodos gráficos no sistema) está em produção desde 19/10/2026; a 2.2
 (porta FHIR da imagem e simulador) volta depois da trilha "Padrão do frontend", abaixo.
 **Retomada em 20/10/2026:** a trilha do padrão foi encerrada; a 5C volta pela etapa 2.2.
 
+**Tarefa 2 (imagem/RIS/PACS) concluída em 20/10/2026.** Etapa 2.2 em produção (PRs #167 e #168),
+com as decisões do RT "1a 2a 3a 4a 5a 6a": o RIS usa a mesma porta FHIR com o recurso `imagem`; o
+ImagingStudy marca o exame como realizado, com o link do visualizador; o laudo de imagem e de ECG chega
+pelo DiagnosticReport; o link do PACS só vale em https e de domínio cadastrado pela unidade (porta e
+tela); a enfermagem segue marcando realizado onde não há RIS; o simulador ganhou `--modo imagem`. A
+função antiga da porta do laboratório saiu (contração). Próxima: **tarefa 3, ERP/financeiro**.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
