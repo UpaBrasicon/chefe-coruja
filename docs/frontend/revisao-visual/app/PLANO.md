@@ -162,6 +162,15 @@ começam no mesmo ponto) e, no celular, fica em cima do texto. Imagens:
 `faixa-sob-titulo-claro-desktop.jpg` e `faixa-sob-titulo-escuro-celular.jpg`,
 tiradas de uma página de teste local com as peças reais e dados fictícios.
 
+**Espaços vazios (pedido do RT, 21/10/2026, com captura da homologação).** Dois
+vãos: (1) páginas com largura própria (`max-w-4xl`, `max-w-5xl`, em 28 telas)
+ficavam presas à esquerda da coluna, com um vão à direita em tela larga; uma
+regra da casca (`.cc-pagina > * { margin-inline: auto }` em `src/index.css`) as
+centraliza, com margens iguais. (2) Na faixa, a coluna do número tinha largura
+fixa e abria um vão entre "3 na fila" e o texto; agora as linhas de ação dividem
+uma grade (subgrid) e a coluna tem a largura do maior número. Imagens:
+`pagina-centralizada-claro-1920.jpg`, `pagina-centralizada-escuro-1366.jpg`.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
