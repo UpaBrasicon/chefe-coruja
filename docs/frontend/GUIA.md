@@ -140,7 +140,8 @@ que vira lista empilhada no celular.
 ### 4.1 Títulos — "1a"
 
 - `TituloPagina` em toda tela com rota, inclusive dentro de abas (`TabsPagina`) e
-  das ferramentas (`ToolLayout`).
+  das ferramentas (`ToolLayout`). Sem o azulejo de ícone ao lado desde a revisão
+  visual 3.1 (nível "mínimo" do RT, 21/10/2026): o título fala sozinho.
 - Dentro da tela: `TituloSecao` para seção e `TituloCartao` (novo, menor) para
   cartão. Nada de `<h1>`/`<h2>` feito à mão fora dessas peças.
 

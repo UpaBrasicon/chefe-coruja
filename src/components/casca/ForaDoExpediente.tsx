@@ -77,7 +77,7 @@ export function ForaDoExpediente() {
         </p>
 
         <div className="mt-5 overflow-hidden rounded-container border border-fio">
-          <div className="border-b border-trilha bg-campo px-4 py-2.5 text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">
+          <div className="border-b border-trilha bg-campo px-4 py-2.5 text-rotulo font-semibold text-tinta-sussurro">
             Próximo plantão
           </div>
           {isLoading ? (

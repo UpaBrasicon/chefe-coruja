@@ -64,12 +64,12 @@ function DaUnidadeLateral({ unidadeId, ehGestor }: { unidadeId?: string; ehGesto
         <Megaphone className="size-3" aria-hidden />
         Da unidade
       </span>
-      <div className="flex min-h-[152px] flex-col overflow-hidden rounded-container border border-fio bg-campo">
-        {a?.imagem_url && <img src={a.imagem_url} alt="" className="h-[74px] w-full border-b border-fio object-cover" />}
-        <div className="flex flex-1 flex-col gap-[7px] p-3" aria-live={pausado ? 'polite' : 'off'}>
+      {/* Sem cartão nem selo "Aviso" (revisão visual 3.1): o rótulo "Da unidade" já diz o que é. */}
+      <div className="flex min-h-[152px] flex-col overflow-hidden">
+        {a?.imagem_url && <img src={a.imagem_url} alt="" className="mb-1 h-[74px] w-full rounded-controle object-cover" />}
+        <div className="flex flex-1 flex-col gap-[7px] px-0.5 py-1" aria-live={pausado ? 'polite' : 'off'}>
           {a ? (
             <>
-              <span className="w-fit rounded-capsula bg-acao/10 px-1.5 py-0.5 text-rotulo font-semibold tracking-[0.05em] text-acao uppercase">Aviso</span>
               {a.titulo && <span className="text-apoio leading-[1.35] font-semibold tracking-[-0.005em] text-tinta">{a.titulo}</span>}
               {a.descricao && <span className="text-rotulo leading-[1.4] text-pretty text-tinta-sussurro">{a.descricao}</span>}
               {ehGestor ? (
@@ -156,7 +156,7 @@ function DaRede() {
         <Building2 className="size-3" aria-hidden />
         Da rede
       </span>
-      <div className="rounded-container border border-fio bg-campo px-3 py-1">
+      <div className="divide-y divide-trilha px-0.5">
         {linhas.map((l) => (
           <div key={l.rotulo} className="flex items-baseline justify-between gap-2.5 py-2">
             <span className="text-apoio text-tinta-apoio">{l.rotulo}</span>
