@@ -96,6 +96,27 @@ e as listras da escala, já aceitas na parte 1. **Sem sessão aqui, não vi** a
 casca, a faixa do farmacêutico, do administrador e da telemedicina, nem as
 grades "Agora" (Indicadores) e o painel do gestor: conferir na homologação.
 
+## Conferência da régua no Refero (21/10/2026)
+
+As opções da faixa da 3.1 foram montadas sem consultar o Refero (desvio da
+decisão da trilha, avisado ao RT). A pedido dele, a régua foi conferida depois
+contra telas reais (`refero_search_screens`: métricas com limite, páginas de
+cota, painéis de monitoramento):
+
+| Referência | O que confirma ou corrige |
+|---|---|
+| Zendesk Status (`7957c520`) | Confirma linhas empilhadas por serviço, com o estado escrito à direita e a legenda uma vez só |
+| Appwrite, uso do plano (`1d33fe84`) | Corrige: o limite vai junto do número ("0 B / 5 GB used"), não solto na barra |
+| Cohere, limite de gasto (`0316cb1c`) | Corrige: textos da escala nas pontas, alinhados, nunca flutuando sobre a marca |
+| Visitors, Web Vitals (`a7582434`) | Confirma: valor compacto com o estado na cor, sem número gigante |
+
+**Ajuste proposto** (branch `feat/visual-3-1b-regua`): o texto do limite sai de
+baixo da marca e vai para o lado do número ("7h20 · limite 6h"); a marca fica sem
+legenda; a coluna do número tem largura fixa, então as escalas de todas as linhas
+começam no mesmo ponto; as linhas ficam da mesma altura. Imagens:
+`regua-ajuste-claro-desktop.jpg`, `regua-ajuste-escuro-desktop.jpg`,
+`regua-ajuste-escuro-celular.jpg` (antes: `regua-landing-*.jpg`).
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base

@@ -10,8 +10,10 @@ import { cn } from '@/lib/utils'
 //   · O estado pertence ao numeral: a cor do número é a do estado.
 // Forma de régua (revisão visual 3.1, opção "B" do RT, 21/10/2026): cada
 // parâmetro é uma linha — rótulo, número, a escala e o estado por extenso. A
-// escala é a leitura: o limite fica desenhado (marca grafite) e escrito embaixo
-// dela; escala sem limite não recebe marca — a ausência é informação. Sem o
+// escala é a leitura: o limite fica desenhado (marca grafite) e escrito junto do
+// número ("7h20 · limite 6h", ajuste de 21/10/2026 a partir das páginas de cota
+// do Refero: Appwrite, Cohere); escala sem limite não recebe marca — a ausência
+// é informação. Sem o
 // número gigante de painel nem o ícone em cada célula. Em célula estreita (as
 // grades do gestor) a linha empilha: rótulo e número, a escala, o estado.
 
@@ -88,6 +90,8 @@ export function Parametro({
       <span className="cc-param-val flex items-baseline justify-end gap-1.5 leading-none font-semibold tabular">
         <span className={cn('text-secao', velho ? 'text-tinta-sussurro' : NUMERAL[nivel])}>{valor}</span>
         {unidade && <span className="text-rotulo font-medium text-tinta-apoio">{unidade}</span>}
+        {/* o limite junto do número ("7h20 · limite 6h"), como nas páginas de cota (Appwrite, Cohere) */}
+        {limiteTexto && <span className="text-rotulo font-medium whitespace-nowrap text-tinta-sussurro">· {limiteTexto}</span>}
       </span>
       {pct !== undefined ? (
         <span className="cc-param-campo relative block" aria-hidden>
@@ -97,17 +101,7 @@ export function Parametro({
             style={{ width: `${limitar(pct) * 100}%` }}
           />
           {limite !== undefined && (
-            <span className="absolute top-0 h-4 w-0.5 bg-grafite" style={{ left: `calc(${limitar(limite) * 100}% - 1px)` }}>
-              {/* o texto do limite fica sob a marca; perto das pontas, alinha para dentro */}
-              {limiteTexto && (
-                <span
-                  className="absolute top-[17px] text-rotulo whitespace-nowrap text-tinta-sussurro"
-                  style={limite > 0.8 ? { right: 0 } : limite < 0.2 ? { left: 0 } : { left: '50%', transform: 'translateX(-50%)' }}
-                >
-                  {limiteTexto}
-                </span>
-              )}
-            </span>
+            <span className="absolute top-0 h-4 w-0.5 bg-grafite" style={{ left: `calc(${limitar(limite) * 100}% - 1px)` }} />
           )}
         </span>
       ) : (
@@ -115,7 +109,6 @@ export function Parametro({
       )}
       <span className={cn('cc-param-est flex min-w-0 flex-wrap items-center gap-x-2 text-apoio leading-[1.35]', velho ? 'text-tinta-sussurro' : ESTADO_TEXTO[nivel])}>
         <span>{estado}</span>
-        {limiteTexto && limite === undefined && <span className="text-tinta-sussurro">{limiteTexto}</span>}
         {velho ? (
           <span className="cc-tend-idade text-rotulo font-medium text-tinta-sussurro tabular">{velho}</span>
         ) : tend && TendIcone ? (
