@@ -1,65 +1,73 @@
-import { Bird, CalendarClock, MapPin, ShieldCheck } from 'lucide-react'
+import { Bird } from 'lucide-react'
 import type { ReactNode, Ref } from 'react'
 import { Link } from 'react-router-dom'
+import '@fontsource-variable/newsreader'
+import '@fontsource-variable/geist-mono'
 
 import { cn } from '@/lib/utils'
+import './entrada.css'
 
-// Coluna verde da entrada (login.html do protótipo, 33–64 e 225–255): mesma
-// paleta e mesmas formas da landing. Some abaixo de lg; lá fica só a marca.
+// Peças das telas de entrada, na direção "Livro da escala" da landing
+// (trilha Revisão visual, parte 2; docs/frontend/revisao-visual/entrada/).
+// A coluna da marca é a folha escura: colunas de 2 h da escala ao fundo,
+// título em serifa e linhas de registro. Some abaixo de lg; lá fica a marca.
 
-function Ponto({ icone: Icone, titulo, texto, cor }: { icone: typeof MapPin; titulo: string; texto: string; cor: string }) {
+/** Linha de registro da coluna escura. `n` é o número do passo, quando a ordem importa. */
+export function LinhaMarca({ n, titulo, texto, atual }: { n?: ReactNode; titulo: string; texto: string; atual?: boolean }) {
   return (
-    <li className="grid grid-cols-[34px_minmax(0,1fr)] items-start gap-[13px]">
-      <span className={cn('grid size-[34px] place-items-center rounded-controle text-sobre-acao', cor)} aria-hidden>
-        <Icone className="size-[17px]" />
-      </span>
-      <span>
-        <b className="block text-corpo font-semibold tracking-[-0.01em] text-sobre-veu">{titulo}</b>
-        <span className="text-controle leading-[1.5] text-marca-texto-claro">{texto}</span>
-      </span>
+    <li className="cc-linha-marca" aria-current={atual ? 'step' : undefined}>
+      {n !== undefined && <span className="cc-linha-marca-n" aria-hidden>{n}</span>}
+      <b className={n === undefined ? 'col-span-2' : undefined}>{titulo}</b>
+      <span className={n === undefined ? 'col-span-2' : undefined}>{texto}</span>
     </li>
   )
 }
 
-export function LadoMarca() {
+/** Coluna da marca: folha escura com marca, título, texto, linhas e rodapé. */
+export function FolhaMarca({ titulo, texto, rodape, className, children }: {
+  titulo: string; texto: string; rodape: string; className?: string; children: ReactNode
+}) {
   return (
-    <aside className="relative hidden flex-col justify-between gap-10 overflow-hidden bg-veu px-12 pt-9 pb-10 text-sobre-veu lg:flex">
-      <span aria-hidden className="cc-barra-1 pointer-events-none absolute -top-[50px] -right-[180px] h-[92px] w-[620px] rounded-capsula bg-marca" />
-      <span aria-hidden className="cc-barra-2 pointer-events-none absolute top-40 -right-[90px] h-[92px] w-[480px] rounded-capsula bg-marca-clara/15" />
-      <span aria-hidden className="cc-bolha-1 pointer-events-none absolute -bottom-[120px] -left-[110px] size-[300px] rounded-capsula bg-marca-clara/8" />
-
-      <Link to="/" className="relative z-[2] flex items-center gap-2.5 text-sobre-veu hover:text-sobre-veu">
-        <span className="grid size-8 place-items-center rounded-controle bg-sobre-veu/12" aria-hidden>
+    <aside className={cn('cc-folha-marca flex-col justify-between gap-10 overflow-hidden px-12 pt-9 pb-10', className)}>
+      <Link to="/" className="flex items-center gap-2.5 text-sobre-veu hover:text-sobre-veu">
+        <span className="grid size-8 place-items-center rounded-controle bg-marca" aria-hidden>
           <Bird className="size-[18px]" />
         </span>
         <span className="text-secao font-semibold tracking-[-0.02em]">Chefe Coruja</span>
       </Link>
 
-      <div className="relative z-[2]">
-        {/* padrao-ok: título da tela de marca (40 px do desenho da entrada, fora da escala de tela) */}
-        <h1 className="mb-3.5 max-w-[15ch] text-[40px] leading-[1.06] font-semibold tracking-[-0.032em] text-sobre-veu">
-          O turno começa <span className="text-marca-clara">quando a escala diz</span>
-        </h1>
-        <p className="max-w-[40ch] text-corpo text-pretty text-marca-texto-claro">
-          A entrada é conferida contra a escala e o relógio do servidor. Fora do seu horário, a plataforma não abre.
-        </p>
-        <ul className="mt-[34px] flex flex-col gap-4">
-          <Ponto icone={CalendarClock} cor="bg-leitos" titulo="Escala antes da senha" texto="O acesso vale para a janela do plantão, não para o dia inteiro." />
-          <Ponto icone={MapPin} cor="bg-suprimento" titulo="Check-in dentro do raio" texto="A presença é confirmada na unidade; o horário fica registrado." />
-          <Ponto icone={ShieldCheck} cor="bg-observacao" titulo="Cada papel vê o seu" texto="Plantonista, enfermagem, farmácia, coordenação e administração têm telas próprias." />
-        </ul>
+      <div>
+        {/* padrao-ok: título da tela de marca (serifa da landing, entrada.css) */}
+        <h1 className="cc-titulo-marca">{titulo}</h1>
+        <p className="cc-texto-marca">{texto}</p>
+        <ol className="cc-linhas-marca">{children}</ol>
       </div>
 
-      <span className="relative z-[2] text-apoio text-marca-texto-claro/80">Cada registro tem autor: quem escreve é quem está no login.</span>
+      <span className="cc-rodape-marca">{rodape}</span>
     </aside>
   )
 }
 
-/** Marca compacta, no lugar da coluna verde, em telas estreitas. */
+export function LadoMarca() {
+  return (
+    <FolhaMarca
+      className="hidden lg:flex"
+      titulo="O turno começa quando a escala diz."
+      texto="A entrada é conferida contra a escala e o relógio do servidor. Fora do seu horário, a plataforma não abre."
+      rodape="Cada registro tem autor: quem escreve é quem está no login."
+    >
+      <LinhaMarca titulo="Escala antes da senha" texto="O acesso vale para a janela do plantão, não para o dia inteiro." />
+      <LinhaMarca titulo="Check-in dentro do raio" texto="A presença é confirmada na unidade; o horário fica registrado." />
+      <LinhaMarca titulo="Cada papel vê o seu" texto="Recepção, enfermagem, plantonista, farmácia, gestão e os demais papéis têm telas próprias." />
+    </FolhaMarca>
+  )
+}
+
+/** Marca compacta, no lugar da coluna escura, em telas estreitas. */
 export function MarcaCompacta() {
   return (
     <Link to="/" className="mb-8 flex items-center gap-2.5 text-tinta hover:text-tinta lg:hidden">
-      <span className="grid size-8 place-items-center rounded-controle bg-veu text-sobre-veu" aria-hidden>
+      <span className="grid size-8 place-items-center rounded-controle bg-marca text-sobre-veu" aria-hidden>
         <Bird className="size-4" />
       </span>
       <span className="text-corpo font-semibold">Chefe Coruja</span>
@@ -69,15 +77,55 @@ export function MarcaCompacta() {
 
 /**
  * Título do formulário nas telas de entrada (login, primeiro acesso, recuperar
- * senha): 26 px na cor da ação, sem o azulejo do TituloPagina.
+ * senha): a serifa da landing, sem o azulejo do TituloPagina.
  */
 export function TituloEntrada({ id, ref, tabIndex, className, children }: {
   id?: string; ref?: Ref<HTMLHeadingElement>; tabIndex?: number; className?: string; children: ReactNode
 }) {
   return (
-    // padrao-ok: título da tela de marca (26 px do desenho da entrada; o TituloPagina tem 24 px e azulejo)
-    <h2 id={id} ref={ref} tabIndex={tabIndex} className={cn('mb-1.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.026em] text-acao-pressionada', className)}>
+    // padrao-ok: título da tela de marca (serifa da landing, entrada.css; o TituloPagina tem 24 px e azulejo)
+    <h2 id={id} ref={ref} tabIndex={tabIndex} className={cn('cc-titulo-entrada', className)}>
       {children}
     </h2>
+  )
+}
+
+/** Linha de registro no fundo claro: título e texto, com fio embaixo. */
+export function LinhaEntrada({ titulo, children }: { titulo: string; children: ReactNode }) {
+  return (
+    <li className="cc-linha">
+      <b>{titulo}</b>
+      <span>{children}</span>
+    </li>
+  )
+}
+
+/**
+ * Página de entrada sem coluna (aguardando liberação, seletor de unidade,
+ * link de receita): topo com a marca e uma ação, título em serifa e o conteúdo.
+ */
+export function PaginaEntrada({ titulo, abertura, acao, children }: {
+  titulo: string; abertura?: ReactNode; acao?: ReactNode; children?: ReactNode
+}) {
+  return (
+    <div className="min-h-dvh bg-campo text-tinta">
+      <header className="cc-topo-entrada">
+        <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between gap-4 px-4 sm:px-10">
+          <Link to="/" className="flex items-center gap-2.5 text-tinta hover:text-tinta">
+            <span className="grid size-[30px] place-items-center rounded-controle bg-marca text-sobre-veu" aria-hidden>
+              <Bird className="size-[17px]" />
+            </span>
+            <span className="text-secao font-semibold tracking-[-0.02em]">Chefe Coruja</span>
+          </Link>
+          {acao}
+        </div>
+      </header>
+      <main className="mx-auto w-full max-w-[560px] px-4 pt-16 pb-20 sm:px-6">
+        {/* padrao-ok: título da tela de marca (serifa da landing, entrada.css) */}
+        <h1 className="cc-titulo-entrada cc-titulo-pagina-entrada">{titulo}</h1>
+        {abertura && <p className="mt-3 mb-8 text-corpo text-pretty text-tinta-apoio">{abertura}</p>}
+        {children}
+      </main>
+    </div>
   )
 }

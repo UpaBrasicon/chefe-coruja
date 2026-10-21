@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import {
-  AlertTriangle, ArrowLeft, ArrowRight, BellRing, Bird, CalendarClock, Check, Clock, MailCheck, Pill,
+  AlertTriangle, ArrowLeft, ArrowRight, BellRing, CalendarClock, Check, Clock, MailCheck, Pill,
   Repeat, ShieldCheck, Users, X, type LucideIcon,
 } from 'lucide-react'
 
@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input'
 import { Aviso } from '@/components/ui/aviso'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
-import { TituloEntrada } from '@/components/entrada/LadoMarca'
+import { FolhaMarca, LinhaMarca, TituloEntrada } from '@/components/entrada/LadoMarca'
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
@@ -58,32 +58,6 @@ function agora() {
 }
 
 // ── peças visuais ───────────────────────────────────────────────────────────
-
-function Passo({ n, titulo, texto, atual, feito }: { n: number; titulo: string; texto: string; atual: boolean; feito: boolean }) {
-  return (
-    <li
-      className={cn(
-        'grid grid-cols-[28px_minmax(0,1fr)] items-start gap-[13px] rounded-container border px-3.5 py-3 transition-colors duration-200',
-        atual ? 'border-marca-clara/20 bg-sobre-veu/8' : 'border-transparent',
-      )}
-      aria-current={atual ? 'step' : undefined}
-    >
-      <span
-        aria-hidden
-        className={cn(
-          'grid size-7 place-items-center rounded-controle text-apoio font-semibold',
-          feito ? 'bg-leitos text-sobre-acao' : atual ? 'bg-marca-clara text-marca-escura' : 'bg-sobre-veu/12 text-marca-texto-claro',
-        )}
-      >
-        {feito ? <Check className="size-3.5" /> : n}
-      </span>
-      <span>
-        <b className="block text-corpo font-semibold tracking-[-0.01em] text-sobre-veu">{titulo}</b>
-        <span className="text-apoio leading-normal text-marca-texto-claro">{texto}</span>
-      </span>
-    </li>
-  )
-}
 
 function Campo({ id, rotulo, ajuda, children, className }: { id?: string; rotulo: string; ajuda?: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
@@ -584,32 +558,15 @@ export function Cadastro() {
   return (
     <div className="grid min-h-dvh bg-campo lg:grid-cols-[46%_minmax(0,1fr)]">
       {/* ── coluna verde: onde a pessoa está ── */}
-      <aside className="relative flex flex-col justify-between gap-10 overflow-hidden bg-veu px-5 pt-7 pb-8 text-sobre-veu sm:px-7 lg:px-12 lg:pt-9 lg:pb-10">
-        <span aria-hidden className="pointer-events-none absolute -top-[50px] -right-[180px] h-[92px] w-[620px] -rotate-[38deg] rounded-capsula bg-marca opacity-90" />
-        <span aria-hidden className="pointer-events-none absolute top-40 -right-[90px] h-[92px] w-[480px] -rotate-[38deg] rounded-capsula bg-marca-clara/15" />
-        <span aria-hidden className="pointer-events-none absolute -bottom-[120px] -left-[110px] size-[300px] rounded-capsula bg-marca-clara/8" />
-
-        <Link to="/" className="relative z-10 flex items-center gap-2.5 text-sobre-veu hover:text-sobre-veu">
-          <span className="grid size-8 place-items-center rounded-controle bg-sobre-veu/12"><Bird className="size-[18px]" aria-hidden /></span>
-          <span className="text-secao font-semibold tracking-[-0.02em]">Chefe Coruja</span>
-        </Link>
-
-        <div className="relative z-10">
-          {/* padrao-ok: título da tela de marca (40 px do desenho da entrada, fora da escala de tela) */}
-          <h1 className="mb-3.5 max-w-[16ch] text-numeral-ok leading-[1.06] font-semibold tracking-[-0.032em] lg:text-[40px]">
-            O vínculo vem <span className="text-marca-clara">antes do primeiro leito</span>
-          </h1>
-          <p className="max-w-[40ch] text-corpo text-marca-texto-claro">
-            Enquanto a unidade não confirma quem você é e em que papel entra, a plataforma não mostra paciente.
-          </p>
-          <ol className="mt-[34px] flex flex-col gap-2.5">
-            <Passo n={1} titulo="Vínculo e senha" texto="Convite, identidade, senha e termo de sigilo. Obrigatório." atual={etapa === 1} feito={passo1Feito} />
-            <Passo n={2} titulo="Seus avisos" texto="O que te interrompe durante o plantão. Pode ficar para depois." atual={etapa === 2} feito={etapa === 'confirmar-email'} />
-          </ol>
-        </div>
-
-        <span className="relative z-10 text-apoio text-marca-texto-claro/80">Sem convite ou contrato não há conta.</span>
-      </aside>
+      <FolhaMarca
+        className="flex px-5 pt-7 pb-8 sm:px-7 lg:px-12 lg:pt-9 lg:pb-10"
+        titulo="O vínculo vem antes do primeiro leito."
+        texto="Enquanto a unidade não confirma quem você é e em que papel entra, a plataforma não mostra paciente."
+        rodape="Sem convite ou contrato não há conta."
+      >
+        <LinhaMarca n={passo1Feito ? <Check className="size-3.5" /> : '1'} titulo="Vínculo e senha" texto="Convite, identidade, senha e termo de sigilo. Obrigatório." atual={etapa === 1} />
+        <LinhaMarca n={etapa === 'confirmar-email' ? <Check className="size-3.5" /> : '2'} titulo="Seus avisos" texto="O que te interrompe durante o plantão. Pode ficar para depois." atual={etapa === 2} />
+      </FolhaMarca>
 
       {/* ── coluna do formulário ── */}
       <main className="flex flex-col px-5 pt-6 pb-10 sm:px-7 lg:px-12 lg:pt-7">
@@ -621,7 +578,6 @@ export function Cadastro() {
         <div className="m-auto w-full max-w-[460px] animate-cc-sobe py-7">
           {etapa === 1 && (
             <section>
-              <p className="rotulo mb-2">Passo 1 de 2 · obrigatório</p>
               <TituloEntrada className="leading-tight">
                 {logado ? 'Aceitar um convite' : 'Confirmar o vínculo'}
               </TituloEntrada>
@@ -814,7 +770,6 @@ export function Cadastro() {
 
           {etapa === 2 && (
             <section className="animate-cc-sobe">
-              <p className="rotulo mb-2">Passo 2 de 2 · pode ficar para depois</p>
               <TituloEntrada ref={refTitulo2} tabIndex={-1} className="leading-tight outline-none">
                 O que vira aviso
               </TituloEntrada>

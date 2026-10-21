@@ -1,40 +1,33 @@
 import { useParams } from 'react-router-dom'
-import { FileSignature, ScanLine } from 'lucide-react'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { LinhaEntrada, PaginaEntrada } from '@/components/entrada/LadoMarca'
 
+// Link público da receita (/r/:tipo/:token). Ainda não abre a receita: falta
+// a função que valida o token e leva à assinatura ICP-Brasil (emissão) ou à
+// consulta (paciente e farmácia). Pendência técnica no fluxograma de
+// pendências (Edge Function resolve-receita). A página diz isso em linguagem
+// de quem recebeu o link, sem mostrar o token.
 export function LinkReceita() {
-  const { tipo, token } = useParams()
-
+  const { tipo } = useParams()
   const eEmissao = tipo === 'emissao'
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-campo p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {eEmissao ? <FileSignature className="size-5 text-acao" /> : <ScanLine className="size-5 text-acao" />}
-            {eEmissao ? 'Assinatura de receita' : 'Consulta de receita'}
-          </CardTitle>
-          <CardDescription>
-            Deep link público {eEmissao ? 'de emissão/assinatura' : 'de consulta'} da receita.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 text-apoio text-tinta-sussurro">
-          <p>
-            Token: <code className="rounded-controle bg-trilha px-1.5 py-0.5 text-rotulo">{token ?? '—'}</code>
-          </p>
-          <p>
-            Este link será resolvido por uma <strong>Edge Function</strong> que valida o token e
-            redireciona para a assinatura ICP-Brasil (emissão) ou para o portal do paciente /
-            farmácia (consulta), conforme a configuração de integrações.
-          </p>
-          <p className="text-rotulo">
-            Pendência técnica: criar a Edge Function <code>resolve-receita</code> e ligar o fluxo de
-            assinatura (VIDaaS) e validação. Veja o fluxograma de pendências.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+    <PaginaEntrada
+      titulo={eEmissao ? 'Assinatura de receita.' : 'Consulta de receita.'}
+      abertura={
+        eEmissao
+          ? 'Este link vai levar à assinatura digital da receita. Essa etapa ainda não está disponível por aqui.'
+          : 'Este link vai mostrar a receita para o paciente e para a farmácia. Essa consulta ainda não está disponível por aqui.'
+      }
+    >
+      <ul className="cc-linhas">
+        <LinhaEntrada titulo="O que vale agora">
+          {eEmissao
+            ? 'A receita segue pelo fluxo atual da unidade.'
+            : 'Use a receita impressa entregue no atendimento.'}
+        </LinhaEntrada>
+        <LinhaEntrada titulo="Dúvidas">Procure a unidade que emitiu a receita.</LinhaEntrada>
+      </ul>
+    </PaginaEntrada>
   )
 }
