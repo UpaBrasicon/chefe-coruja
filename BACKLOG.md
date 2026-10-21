@@ -1018,8 +1018,18 @@ rolagem lateral em 1280 e 390 px, "Entrar" e "Primeiro acesso" levando ao destin
 tem base `master`; PR que depende de outro só abre depois do merge do primeiro.
 
 Pendências: o rodapé não tem política de privacidade (o app não tem a página); o projeto Next.js
-separado em `landing/` (README cita depoimentos, case e preços) fica a avaliar pelo RT. Próxima:
-**parte 2, telas de entrada**.
+separado em `landing/` (README cita depoimentos, case e preços) fica a avaliar pelo RT.
+
+**Parte 2 (telas de entrada) concluída em 21/10/2026, em produção (PR #171).** Mesma direção da landing,
+a pedido do RT. Entrar, Primeiro acesso e Esqueci a senha ganharam a coluna da marca nova (folha escura
+com as colunas da escala, título em serifa, linhas de registro); saíram as barras giradas, a bolha, a
+palavra em cor, os ícones em ladrilho e a etiqueta acima do título. Aguardando liberação, Escolher a
+unidade e Link de receita passaram a uma página de entrada comum; a receita perdeu o jargão de dev e o
+token na tela. Pacote de alta: topo e títulos em serifa, documentos sem mudança. Passou pela homologação
+(conferida pelo RT, inclusive as telas com sessão) antes do merge; produção conferida depois do deploy
+(títulos em Newsreader, coluna nova, sem erro de página, sem rolagem lateral em 1280 e 390 px). Registro
+e imagens em `docs/frontend/revisao-visual/entrada/APLICACAO.md`. Próxima: **parte 3, app por papel**,
+na ordem do guia do padrão (seção 6).
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
