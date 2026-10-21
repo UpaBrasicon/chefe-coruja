@@ -598,15 +598,12 @@
 .cc-param-est { grid-area: est; }
 .cc-param-campo { grid-area: campo; height: 16px; }
 .cc-param-sem-escala { display: none; }
-.cc-param-campo:has(> span + span + span > span) { margin-bottom: 18px; }
 @container (min-width: 620px) {
     .cc-param-corpo {
-        grid-template-columns: minmax(150px, 1.1fr) minmax(88px, auto) minmax(140px, 1.7fr) minmax(0, 1.5fr);
+        grid-template-columns: minmax(150px, 1fr) 12rem minmax(140px, 1.6fr) minmax(0, 1.4fr);
         grid-template-areas: 'rot val campo est';
     }
     .cc-param-sem-escala { display: block; }
-    .cc-param-campo:has(> span + span + span > span) { margin-bottom: 0; margin-top: 0; height: 34px; }
-    .cc-param-campo > span:first-child, .cc-param-campo > span:nth-child(2) { top: 5px; }
 }
 
 /*
