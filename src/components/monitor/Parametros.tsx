@@ -155,9 +155,13 @@ export function ResumoParametros({ children, className }: { children: ReactNode;
   const quietos = itens.filter((p) => peso(p) === 0)
   return (
     <div className={cn('cc-resumo', className)}>
+      {/* As linhas de ação dividem uma grade (subgrid): a coluna do número tem a
+          largura do maior número da faixa, e os textos começam no mesmo ponto. */}
+      {acao.length > 0 && (
+      <div className="sm:grid sm:grid-cols-[max-content_minmax(0,1fr)_auto]">
       {acao.map((p) => (
-        <div key={p.rotulo} className="flex flex-col gap-1 border-b border-trilha px-5 py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-x-proximo">
-          <span className={cn('flex shrink-0 flex-wrap items-baseline gap-x-1.5 text-secao font-semibold tabular sm:w-44', NUMERAL[p.nivel])}>
+        <div key={p.rotulo} className="flex flex-col gap-1 border-b border-trilha px-5 py-3 sm:col-span-3 sm:grid sm:grid-cols-subgrid sm:items-baseline sm:gap-x-proximo">
+          <span className={cn('flex shrink-0 flex-wrap items-baseline gap-x-1.5 text-secao font-semibold tabular sm:max-w-56', NUMERAL[p.nivel])}>
             {p.valor}
             {p.unidade && <span className="text-apoio font-medium">{p.unidade}</span>}
           </span>
@@ -174,6 +178,8 @@ export function ResumoParametros({ children, className }: { children: ReactNode;
           )}
         </div>
       ))}
+      </div>
+      )}
       {quietos.length > 0 && (
         <p className="flex flex-wrap gap-x-secao gap-y-1 bg-campo px-5 py-2.5 text-controle text-tinta-apoio">
           {quietos.map((p) => (

@@ -613,6 +613,10 @@
  * das telas de duas colunas (simulador de VM).
  */
 .cc-coluna { max-width: var(--cc-coluna); }
+/* A página que tem largura própria menor que a coluna (max-w-4xl, max-w-5xl…) fica
+   no centro dela, com margens iguais, em vez de presa à esquerda com um vão à
+   direita em tela larga (revisão visual 3.1, pedido do RT de 21/10/2026). */
+.cc-pagina > * { margin-inline: auto; }
 @media (min-width: 1280px) {
     .cc-coluna { max-width: min(1200px, calc(100vw - var(--cc-lateral) - 96px)); }
 }
