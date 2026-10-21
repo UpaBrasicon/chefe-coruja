@@ -182,6 +182,44 @@ Imagens: `coluna-5pct-claro-1920.jpg`, `coluna-5pct-escuro-1366.jpg`. Risco a
 conferir na homologação: tabelas e listas largas ficam mais compridas em tela
 grande.
 
+## 3.2 · Recepção e painel da TV (21/10/2026)
+
+**Levantamento.** Recepção (`src/pages/recepcao/Recepcao.tsx`, telas Nova ficha,
+Fila da triagem, Fila médica e Painel de chamada): faixa de quatro contadores com
+rótulo em maiúsculas espaçadas e sombra (molde de métrica de painel; guia 5.1);
+linhas da fila com um selo por status ("Aguardando" cinza, "Chamado",
+"Em atendimento"); cartões com sombra; a página tem largura própria de 896 px,
+fora da regra dos 5%. Painel da TV (`src/pages/public/PainelChamada.tsx`): rótulos
+em maiúsculas espaçadas e a coruja num azulejo.
+
+**Referências do Refero** (`refero_search_screens`: fila com espera e status,
+painel de chamada, lista agrupada por status):
+
+| Referência | O que mostra |
+|---|---|
+| Zendesk Talk, fila (`1686eace`) | Faixa "Current queue activity" com seis contadores em caixa normal, sem sombra |
+| Linear, issues agrupadas (`58ac6637`) | Lista agrupada por status, com a contagem no cabeçalho do grupo e o status num ícone pequeno, sem selo |
+| Linear, lista ativa (`ab6ce0f5`) | Status como ícone + texto na linha |
+| Linear SLA e Factory (`cb07661a`, `3125417b`) | Primeiro o que pede ação (a faixa F da 3.1) |
+
+Para o painel da TV o Refero não tem referência (as buscas por quadro de chamada
+e quadro de embarque voltaram telas de compra); por isso a TV recebe só o nível
+mínimo, sem opções.
+
+**Opções da fila** (sobre a fila médica, dados fictícios; `recepcao-hoje|A|B|C-claro|escuro.jpg`):
+
+- **A · contadores enxutos** (Zendesk Talk): os quatro contadores ficam, em caixa
+  normal, sem sombra e mais baixos. As linhas não mudam.
+- **B · fila agrupada** (Linear): sai a faixa de contadores; a lista se agrupa em
+  "Aguardando o médico 4" e "Em atendimento 2", com a maior espera e quem passou do
+  alvo no cabeçalho do grupo; o status vira ponto + texto, sem selo.
+- **C · primeiro o que pede ação** (faixa F da 3.1): no lugar dos contadores, o que
+  passou do alvo da cor e quem foi chamado três vezes sem resposta vêm em linhas
+  com o caminho; as contagens vão para a linha quieta.
+
+Em qualquer opção: a página passa a seguir a coluna (sai o teto de 896 px), os
+cartões perdem a sombra e o painel da TV perde as maiúsculas espaçadas e o azulejo.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
