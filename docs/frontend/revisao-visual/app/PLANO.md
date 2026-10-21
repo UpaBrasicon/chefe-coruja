@@ -272,6 +272,30 @@ status em ponto + texto, sem a segunda pílula); prescrição e exames trocam a
 pílula de situação por ponto + texto; documentos sem sombra e com títulos de
 bloco em caixa normal. A cor da classificação continua no selo com o nome.
 
+**Escolha do RT (21/10/2026): A, mesma composição sem os reflexos.** Aplicada na
+branch `feat/visual-3-3-porta`:
+
+- `JanelaAtendimento.tsx`: sem a sombra de diálogo; "Em atendimento há…" em texto;
+  avisos de pediatria e de paciente sem identificação numa linha colorida, sem
+  caixa, com o texto clínico inteiro; contador das abas em número simples.
+- `FilaPS.tsx`: grupos como na recepção ("Aguardando o médico N" com quantos
+  passaram do alvo da cor, em vermelho quando há; "Em atendimento N"; "Saídas do
+  plantão N"), cabeçalho no fundo do campo e cartões sem sombra. A segunda pílula
+  vira ponto + texto: vazio aguardando, contornado âmbar em reavaliação (vermelho
+  quando atrasada), cheio na cor da ação em atendimento, verde no desfecho,
+  contornado vermelho no excluído.
+- `porta/Estado.tsx` (novo): o ponto + texto, usado pela fila e pelas abas.
+  Prescrição (prescrito, administrado, suspenso, recusado), exames (pedido,
+  coletado, resultado, crítico, cancelado) e documentos (emitido, rascunho) trocam
+  a pílula por ele. Os selos "urgente", "novo" e "crítico" dos exames ficam: são
+  alerta.
+- Documentos (`components/documentos/ui.tsx`, atestado, pedido de exames,
+  receituário): cartões sem sombra e títulos de bloco em caixa normal.
+- Typecheck, lint, catraca e build verdes. A fila foi vista numa página de teste
+  local com o componente real e dados fictícios, nos dois temas
+  (`fila-ps-claro|escuro.jpg`). A janela e os documentos pedem login: conferir na
+  homologação.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base

@@ -11,12 +11,12 @@ import { ResultadoExame } from '@/components/clinico/ResultadoExame'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { botoesDeExame, codigoExameNaTela, jaPedido, type ExameBuscado, type ListaExamesUnidade, type Urgencia } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 import { hora, type ExamePS } from './comum'
+import { Estado, type TomEstado } from './Estado'
 import { Chip } from '@/components/monitor/Pagina'
 
 type Agravo = { id: string; agravo: string; cid: string | null; situacao: string; numero_sinan: string | null; motivo_descarte: string | null }
@@ -32,7 +32,7 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
     if (error) return setErro(error.message)
     setErro(null); setTexto(''); setCancelando(false); aoMudar()
   }
-  const tom = e.situacao === 'resultado' ? (e.critico ? 'bg-alerta-critico text-critico' : 'bg-alerta-conforme text-conforme') : e.situacao === 'cancelado' ? 'bg-trilha text-tinta-sussurro' : 'bg-alerta-atencao text-atencao'
+  const tom: TomEstado = e.situacao === 'resultado' ? (e.critico ? 'vermelho' : 'verde') : e.situacao === 'cancelado' ? 'cinza' : 'ambar'
   const sit = e.situacao === 'resultado' ? `Resultado ${hora(e.resolvido_em)}` : e.situacao === 'cancelado' ? `Cancelado ${hora(e.resolvido_em)}`
     : e.situacao === 'coletado' ? `Coletado ${hora(e.coletado_em ?? e.pedido_em)}` : e.situacao === 'em_analise' ? 'Em análise'
     : e.situacao === 'realizado' ? `Realizado ${hora(e.realizado_em ?? e.pedido_em)}` : `Pedido ${hora(e.pedido_em)}`
@@ -46,7 +46,7 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
           {!e.procedimento && <span className="ml-2 text-rotulo text-tinta-sussurro" title="Não vai ao laboratório integrado">sem código</span>}
           {e.observacao && <span className="block text-rotulo text-tinta-sussurro">Obs.: {e.observacao}</span>}
         </span>
-        <span className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold whitespace-nowrap', tom)}>{sit}</span>
+        <Estado tom={tom}>{sit}</Estado>
         {e.novo && <Badge variant={e.critico ? 'destructive' : 'info'}>{e.critico ? 'crítico · novo' : 'novo'}</Badge>}
         {!e.novo && e.critico && <Badge variant="destructive">crítico</Badge>}
         <Button size="xs" variant="ghost" onClick={() => setAberto(!aberto)}>{aberto ? 'Fechar' : e.situacao === 'resultado' ? 'Ver resultado' : 'Detalhe'}</Button>

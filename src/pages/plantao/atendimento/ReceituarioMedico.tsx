@@ -285,7 +285,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
 
       {pacienteId && (
         <>
-          <section className="flex flex-col gap-4 rounded-cartao border border-fio bg-superficie px-5 py-[18px] shadow-repouso">
+          <section className="flex flex-col gap-4 rounded-cartao border border-fio bg-superficie px-5 py-[18px]">
             <div className="flex flex-wrap items-start gap-4">
               <div className="flex flex-col gap-[5px]">
                 <span className="text-apoio font-medium text-grafite">Tipo de receita</span>
@@ -317,7 +317,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
           {pediatrico ? (
             !ident.carregando && <Aviso>{ident.pediatrico === true ? TEXTO_PEDIATRICO : TEXTO_SEM_NASCIMENTO}</Aviso>
           ) : (
-            <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
+            <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
               <div className="flex items-center gap-2.5 border-b border-trilha px-5 py-[13px]">
                 <ClipboardPlus className="size-4 text-acao" aria-hidden />
                 <TituloCartao className="mb-0">Protocolos da instituição</TituloCartao>
@@ -367,7 +367,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
             </section>
           )}
 
-          <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
+          <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
             <div className="flex items-center gap-2.5 border-b border-trilha px-5 py-3.5">
               <Pill className="size-4 text-acao" aria-hidden />
               <TituloCartao className="mb-0">Medicamentos</TituloCartao>
@@ -533,7 +533,7 @@ function ControleEspecial({ itens, ident }: { itens: ItemRx[]; ident: Identifica
   const u = ident.unidade
   const pac = ident.pac
   return (
-    <section className="flex flex-col gap-4 rounded-cartao border border-fio bg-superficie px-[26px] py-[22px] shadow-repouso">
+    <section className="flex flex-col gap-4 rounded-cartao border border-fio bg-superficie px-[26px] py-[22px]">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-0.5">
           <TituloSecao className="mb-0">Receita de controle especial</TituloSecao>
