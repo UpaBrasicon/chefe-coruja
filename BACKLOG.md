@@ -1069,6 +1069,30 @@ e a Nova ficha fica estreita. TV sem maiúsculas espaçadas e com a coruja no qu
 conferida pelo RT; produção conferida depois do deploy (o deploy de produção levou cerca de 12 minutos para
 entrar depois do merge). Próxima: **3.3, atendimento e documentos da porta**.
 
+**3.3 (atendimento e documentos da porta) em produção desde 21/10/2026 (PR #176).** Referências do Refero:
+página da issue da Linear, registro do Attio e documento do DocuSign. O RT escolheu a **A, mesma composição
+sem os reflexos**: janela de atendimento sem sombra de diálogo, tempo em texto, avisos de pediatria e de
+paciente sem identificação numa linha (texto clínico inteiro), contador das abas em número simples;
+prescrição, exames e documentos com a situação em ponto + texto (`porta/Estado.tsx`); documentos sem sombra
+e com títulos em caixa normal. A pedido do RT, a fila do Pronto-Socorro passou a três abas ("Aguardando
+atendimento", "Em atendimento", "Saídas do plantão"), com quem passou do alvo da cor visível em qualquer
+aba. As abas entraram no `master` antes de o RT conferi-las na homologação (o deploy de lá ainda estava na
+fila); a homologação foi conferida pelo RT depois, e a produção foi conferida pelo pacote publicado.
+
+**3.3, complemento: fila do PS em tabela dentro das abas (21/10/2026, em homologação, branch
+`feat/visual-3-3-tabela`).** O RT pediu uma pesquisa nos sistemas comerciais (Epic, Oracle/Cerner,
+athenaOne, Symphony, MV) e viu seis modelos montados com os componentes reais; escolheu a **tabela densa,
+mantendo as abas**. Entra só o que a fila já lê: cor, paciente (prioridade legal e faixa pela idade embaixo
+do nome), queixa, espera e alvo, situação (quantas vezes foi chamado; reavaliação), desfecho, CID, destino e
+hora, com ordenação pelo título da coluna. Registro e imagens em `docs/frontend/revisao-visual/app/PLANO.md`.
+
+**Itens novos pedidos pelo RT em 21/10/2026** (registrados, sem código ainda):
+
+| Prioridade | Item | Onde entra | O que é |
+|---|---|---|---|
+| P1 | Grade de ações no gestor | Junto da **3.9** (escala e menu do gestor) | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
+| P2 | Fila do PS com dados novos na tabela | A decidir pelo RT | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
