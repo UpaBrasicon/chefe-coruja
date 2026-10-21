@@ -237,6 +237,41 @@ cartões perdem a sombra e o painel da TV perde as maiúsculas espaçadas e o az
 - Typecheck, lint, catraca e build verdes. **Não vi** a fila nem a TV renderizadas
   (pedem login ou link de painel válido): conferir na homologação.
 
+## 3.3 · Atendimento e documentos da porta (21/10/2026)
+
+**Levantamento** (agente de busca): fila do Pronto-Socorro (`porta/FilaPS.tsx`)
+com duas pílulas por linha (cor e estado) e blocos com sombra; janela de
+atendimento (`porta/JanelaAtendimento.tsx`) como cartão com sombra de diálogo,
+cabeçalho empilhado (contexto, pílula "Em atendimento há…", dados do paciente,
+caixas de aviso) e contador em pílula nas abas; abas com pílula de situação em
+cada item de prescrição e de exame; documentos (`plantao/atendimento/*`,
+`components/documentos/ui.tsx`) em cartões com sombra e títulos de bloco em
+maiúsculas espaçadas. Sem ícone em quadrado, sem números gigantes, sem gradiente.
+
+**Referências do Refero:** Linear, página da issue (`1a493a2c`: conteúdo no meio e
+lateral de propriedades com status, pessoa e datas em linhas); Attio, registro
+(`705e033f`: abas por assunto, linha do tempo e detalhes à direita); DocuSign
+(`5a07bc9f`: documento no centro e ações no rodapé).
+
+**Opções da janela de atendimento** (paciente fictícia de 8 anos;
+`porta-hoje|A|B|C-claro|escuro.jpg`):
+
+- **A · mínimo:** mesma composição de hoje, sem a sombra de diálogo, o tempo de
+  atendimento em texto com relógio (sem pílula), o aviso de pediatria numa linha
+  (sem caixa) e o contador das abas em número simples.
+- **B · lateral de propriedades** (Linear): cabeçalho de uma linha (nome, cor com o
+  nome, idade, alergia, queixa, tempo); à direita, um painel "Paciente" com idade,
+  prioridade, alergias, setor, chegada, tempo de atendimento, o aviso de pediatria
+  e os botões Histórico e Prontuário.
+- **C · linha do atendimento** (Attio): o mesmo cabeçalho de uma linha; à direita,
+  o aviso e a linha do tempo do atendimento (ficha, classificação com quem
+  classificou, chamada, início).
+
+Em qualquer opção: a fila do Pronto-Socorro segue a forma da recepção (agrupada,
+status em ponto + texto, sem a segunda pílula); prescrição e exames trocam a
+pílula de situação por ponto + texto; documentos sem sombra e com títulos de
+bloco em caixa normal. A cor da classificação continua no selo com o nome.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
