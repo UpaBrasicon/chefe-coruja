@@ -1031,6 +1031,21 @@ token na tela. Pacote de alta: topo e títulos em serifa, documentos sem mudanç
 e imagens em `docs/frontend/revisao-visual/entrada/APLICACAO.md`. Próxima: **parte 3, app por papel**,
 na ordem do guia do padrão (seção 6).
 
+**Parte 3, plano (21/10/2026).** Decisões do RT: nove subpartes, uma por branch e PR, na ordem do guia
+(3.1 casca e menus, 3.2 recepção e painel da TV, 3.3 atendimento e documentos da porta, 3.4 triagem e
+enfermagem, 3.5 leito aberto, 3.6 observação, 3.7 farmácia, 3.8 Central do Plantonista e ferramentas,
+3.9 escala e menu do gestor). No app vale o **nível mínimo**: só tirar os reflexos genéricos, sem serifa
+(maquetes de quatro níveis em `docs/frontend/revisao-visual/app/`). Plano e registro em
+`docs/frontend/revisao-visual/app/PLANO.md`.
+
+**3.1 (casca e menus) concluída em 21/10/2026, em produção (PR #172).** Título de página sem o azulejo de
+ícone (guia 4.1 atualizado); lateral sem cartão nos avisos "Da unidade" e nos números "Da rede"; a faixa
+de parâmetros virou **régua** (opção B do RT: fio na cor da grandeza, número na cor do estado, escala com
+o limite escrito, estado por extenso, sem ícone nem número gigante; larga em quatro colunas, estreita
+empilhada; deixou de ficar fixa ao rolar), e a landing passou a mostrar a mesma peça; a classe `.rotulo`
+perdeu as maiúsculas espaçadas em todo o app (guia 5.1). Homologação conferida pelo RT antes do merge;
+produção conferida depois do deploy. Próxima: **3.2, recepção e painel da TV**.
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
