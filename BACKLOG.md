@@ -1044,7 +1044,20 @@ de parâmetros virou **régua** (opção B do RT: fio na cor da grandeza, númer
 o limite escrito, estado por extenso, sem ícone nem número gigante; larga em quatro colunas, estreita
 empilhada; deixou de ficar fixa ao rolar), e a landing passou a mostrar a mesma peça; a classe `.rotulo`
 perdeu as maiúsculas espaçadas em todo o app (guia 5.1). Homologação conferida pelo RT antes do merge;
-produção conferida depois do deploy. Próxima: **3.2, recepção e painel da TV**.
+produção conferida depois do deploy.
+
+**3.1, complemento (21/10/2026, em produção, PR #174).** A pedido do RT, a régua foi conferida contra
+telas reais do Refero (as opções A, B e C da faixa tinham sido montadas sem consultá-lo, desvio da decisão
+da trilha) e vieram três formas novas a partir de referências (Fingerprint, Zendesk Talk, Linear e
+Factory). O RT escolheu a **F, "primeiro o que pede ação"**: a peça `ResumoParametros` põe em cima o que
+está em atenção ou crítico, com o número na cor do estado e o caminho para resolver, e o que está em ordem
+numa linha quieta embaixo; vale na faixa do farmacêutico, do administrador e da telemedicina e na landing
+(as grades do gestor seguem com a régua até a 3.9). A faixa passou a entrar logo abaixo do título da
+página, como um bloco da coluna; as páginas com largura própria ficam centralizadas; e, a partir de 1024 px,
+a coluna do app ocupa a tela com 5% de margem de cada lado (formulários estreitos seguem estreitos).
+Homologação conferida pelo RT antes do merge; produção conferida depois do deploy. Registro em
+`docs/frontend/revisao-visual/app/PLANO.md`. Regra que fica: toda direção da trilha nasce de referência do
+Refero, consultada antes de mostrar opções. Próxima: **3.2, recepção e painel da TV**.
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
