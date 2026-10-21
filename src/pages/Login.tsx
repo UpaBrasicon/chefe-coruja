@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate, type Location } from 'react-router-dom'
 import * as React from 'react'
-import { ArrowLeft, ArrowRight, Building2, CheckCircle2, Users } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { definirManterConectado, manterConectadoMarcado } from '@/lib/supabase'
@@ -10,7 +10,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useTurnstile } from '@/components/seguranca/Turnstile'
 import { Label } from '@/components/ui/label'
-import { LadoMarca, MarcaCompacta, TituloEntrada } from '@/components/entrada/LadoMarca'
+import { LadoMarca, LinhaEntrada, MarcaCompacta, TituloEntrada } from '@/components/entrada/LadoMarca'
 import '@/components/entrada/entrada.css'
 
 // Login (login.html do protótipo): abas Entrar e Primeira vez, e o passo do
@@ -245,22 +245,14 @@ export function Login() {
               <p className="mb-[22px] text-corpo text-pretty text-tinta-apoio">
                 A conta nasce de um convite da unidade ou do contrato da rede. Ninguém se cadastra sozinho: a plataforma lê escala e leito, e só a coordenação sabe quem está nelas.
               </p>
-              <div className="mb-5 flex flex-col gap-2.5">
-                <div className="grid grid-cols-[34px_minmax(0,1fr)] items-start gap-[13px] rounded-container border border-fio bg-superficie px-[15px] py-[13px]">
-                  <span className="grid size-[34px] place-items-center rounded-controle bg-leitos text-sobre-acao" aria-hidden><Users className="size-[17px]" /></span>
-                  <span>
-                    <b className="block text-controle font-semibold text-tinta">Equipe da unidade</b>
-                    <span className="text-apoio leading-[1.5] text-pretty text-tinta-apoio">A coordenação avisa quando o acesso estiver pronto. Você ativa com o e-mail corporativo, cria a sua senha, e a coordenação libera o vínculo.</span>
-                  </span>
-                </div>
-                <div className="grid grid-cols-[34px_minmax(0,1fr)] items-start gap-[13px] rounded-container border border-fio bg-superficie px-[15px] py-[13px]">
-                  <span className="grid size-[34px] place-items-center rounded-controle bg-suprimento text-sobre-acao" aria-hidden><Building2 className="size-[17px]" /></span>
-                  <span>
-                    <b className="block text-controle font-semibold text-tinta">Coordenação e administração</b>
-                    <span className="text-apoio leading-[1.5] text-pretty text-tinta-apoio">Entram pelo contrato da rede. É a coordenação que depois libera as equipes.</span>
-                  </span>
-                </div>
-              </div>
+              <ul className="cc-linhas mb-6">
+                <LinhaEntrada titulo="Equipe da unidade">
+                  A coordenação avisa quando o acesso estiver pronto. Você ativa com o e-mail corporativo, cria a sua senha, e a coordenação libera o vínculo.
+                </LinhaEntrada>
+                <LinhaEntrada titulo="Coordenação e administração">
+                  Entram pelo contrato da rede. É a coordenação que depois libera as equipes.
+                </LinhaEntrada>
+              </ul>
               <Link
                 to="/cadastro"
                 className={cn(buttonVariants({ size: 'bloco' }), 'gap-2 px-[18px] text-corpo hover:text-sobre-acao')}
