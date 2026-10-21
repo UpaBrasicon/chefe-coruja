@@ -53,17 +53,71 @@
 .cc-recua { animation: cc-entra-recua 0.3s cubic-bezier(0.5, 0, 0.75, 0) forwards; }
 @keyframes cc-entra-recua { to { opacity: 0; transform: translateY(-10px); } }
 
-/* Formas da coluna da marca. */
-.cc-barra-1 { animation: cc-desliza-barra 1.05s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.cc-barra-2 { animation: cc-desliza-barra 1.05s 0.64s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.cc-bolha-1 { animation: cc-cresce-bolha 1.2s 0.72s cubic-bezier(0.22, 1, 0.36, 1) both; }
-@keyframes cc-desliza-barra {
-  from { opacity: 0; transform: rotate(-38deg) translateX(130px); }
-  to { opacity: 0.9; transform: rotate(-38deg) translateX(0); }
+/* ── Visual da entrada: direção "Livro da escala" da landing (revisão visual,
+   parte 2). A coluna da marca é a folha escura: as colunas de 2 h da escala ao
+   fundo, título em serifa e linhas de registro com fio fino. Só tokens. ── */
+.cc-folha-marca { position: relative; background: var(--cc-veu); color: var(--cc-sobre-veu); }
+.cc-folha-marca::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(to right, color-mix(in oklab, var(--cc-marca-texto-claro) 9%, transparent) 1px, transparent 1px);
+  background-size: calc(100% / 12) 100%;
 }
-@keyframes cc-cresce-bolha {
-  from { opacity: 0; transform: scale(0.82); }
-  to { opacity: 1; transform: scale(1); }
+.cc-folha-marca > * { position: relative; }
+.cc-titulo-marca {
+  margin: 0 0 14px; max-width: 14ch; font-family: 'Newsreader Variable', Georgia, serif; font-weight: 340;
+  font-size: 46px; line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance; color: var(--cc-sobre-veu);
+}
+.cc-texto-marca { margin: 0; max-width: 42ch; font-size: 15px; line-height: 1.55; color: var(--cc-marca-texto-claro); text-wrap: pretty; }
+.cc-linhas-marca { margin: 32px 0 0; padding: 0; list-style: none; border-top: 1px solid color-mix(in oklab, var(--cc-marca-texto-claro) 24%, transparent); }
+.cc-linha-marca {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 4px 12px; padding: 14px 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--cc-marca-texto-claro) 24%, transparent);
+}
+.cc-linha-marca-n { grid-row: span 2; font-family: 'Geist Mono Variable', ui-monospace, monospace; font-size: 13px; color: var(--cc-marca-texto-claro); padding-top: 2px; }
+.cc-linha-marca b { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--cc-sobre-veu); }
+.cc-linha-marca span:last-child { font-size: 13px; line-height: 1.5; color: var(--cc-marca-texto-claro); }
+.cc-linha-marca[aria-current='step'] .cc-linha-marca-n { color: var(--cc-marca-clara); }
+.cc-linha-marca[aria-current='step'] b::after {
+  content: 'agora'; margin-left: 10px; padding: 1px 6px; border-radius: 4px; vertical-align: 2px;
+  font-family: 'Geist Mono Variable', ui-monospace, monospace; font-size: 12px; font-weight: 400;
+  background: var(--cc-marca-clara); color: var(--cc-marca-escura);
+}
+.cc-rodape-marca { font-size: 13px; color: var(--cc-marca-texto-claro); }
+
+/* Título do formulário e das páginas de entrada: a mesma serifa da landing. */
+.cc-titulo-entrada {
+  margin: 0 0 8px; font-family: 'Newsreader Variable', Georgia, serif; font-weight: 340;
+  font-size: 34px; line-height: 1.08; letter-spacing: -0.02em; text-wrap: balance;
+  color: color-mix(in oklab, var(--cc-acao-pressionada) 55%, var(--cc-tinta));
+}
+.cc-titulo-pagina-entrada { font-size: 44px; line-height: 1.02; }
+:root[data-tema="escuro"] .cc-titulo-entrada { color: var(--cc-tinta); }
+
+/* Linhas de registro no fundo claro (painel "Primeira vez", seletor, páginas). */
+.cc-linhas { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--cc-fio); }
+.cc-linha { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 14px 0; border-bottom: 1px solid var(--cc-fio); }
+.cc-linha b { font-size: 15px; font-weight: 600; color: var(--cc-tinta); }
+.cc-linha span { font-size: 13px; line-height: 1.5; color: var(--cc-tinta-apoio); text-wrap: pretty; }
+button.cc-linha, a.cc-linha {
+  width: 100%; grid-template-columns: minmax(0, 1fr) auto; align-items: center; text-align: left;
+  background: none; border-width: 0 0 1px; border-style: solid; border-color: var(--cc-fio); cursor: pointer;
+  color: inherit; font: inherit; transition: background-color 0.15s ease;
+}
+button.cc-linha:hover, a.cc-linha:hover { background: color-mix(in oklab, var(--cc-acao) 6%, transparent); }
+button.cc-linha:focus-visible, a.cc-linha:focus-visible { outline: 2px solid var(--cc-acao); outline-offset: -2px; }
+
+/* Pacote de alta: o título no topo escuro, menor que o da coluna da marca. */
+.cc-titulo-alta { max-width: none; margin: 14px 0 6px; font-size: 34px; line-height: 1.08; }
+
+/* Topo das páginas de entrada sem coluna (aguardando, seletor, receita). */
+.cc-topo-entrada { border-bottom: 1px solid var(--cc-fio); }
+
+@media (max-width: 1023px) {
+  .cc-titulo-marca { font-size: 34px; max-width: 18ch; }
+}
+@media (max-width: 599px) {
+  .cc-titulo-entrada { font-size: 30px; }
+  .cc-titulo-pagina-entrada { font-size: 36px; }
 }
 
 /* "Voltar ao site": a seta gira e o espaço abre ao passar o mouse. */

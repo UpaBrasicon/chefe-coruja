@@ -1,10 +1,9 @@
+import { ArrowRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { useUnidade, type VinculoComUnidade } from '@/contexts/UnidadeContext'
 import { PAPEL_LABEL, ROTA_INICIAL } from '@/lib/constants'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { PaginaEntrada } from '@/components/entrada/LadoMarca'
 
 export function SeletorUnidade() {
   const { unidades, setUnidadeAtivaId } = useUnidade()
@@ -16,28 +15,19 @@ export function SeletorUnidade() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-campo p-4">
-      <div className="w-full max-w-md">
-        <Card>
-          <CardHeader>
-            <CardTitle>Escolha a unidade</CardTitle>
-            <CardDescription>Selecione a unidade em que deseja trabalhar agora.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {unidades.map((u) => (
-              <Button
-                key={u.unidade_id}
-                variant="outline"
-                className="h-auto flex-col items-start gap-1 p-4"
-                onClick={() => escolher(u)}
-              >
-                <span className="text-apoio font-medium">{u.unidade.nome}</span>
-                <Badge variant="secondary">{PAPEL_LABEL[u.papel]}</Badge>
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
+    <PaginaEntrada titulo="Escolha a unidade." abertura="Selecione a unidade em que vai trabalhar agora. Vale o papel que você tem nela.">
+      <div className="cc-linhas">
+        {unidades.map((u) => (
+          // padrao-ok: linha de registro clicável da tela de marca (entrada.css), não um botão de ação
+          <button key={u.unidade_id} type="button" className="cc-linha px-1" onClick={() => escolher(u)}>
+            <span className="flex flex-col gap-0.5">
+              <b>{u.unidade.nome}</b>
+              <span>{PAPEL_LABEL[u.papel]}</span>
+            </span>
+            <ArrowRight className="size-4 text-acao" aria-hidden />
+          </button>
+        ))}
       </div>
-    </div>
+    </PaginaEntrada>
   )
 }

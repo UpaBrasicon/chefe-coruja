@@ -9,11 +9,12 @@
 // o código (quem está na plataforma já se autenticou) e mostra a faixa
 // "Imprimir o pacote inteiro".
 import { useQuery } from '@tanstack/react-query'
-import { Bird, ShieldCheck } from 'lucide-react'
+import { Bird } from 'lucide-react'
 import * as React from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 
 import { DocumentosAlta } from '@/components/alta/DocumentosAlta'
+import { TituloEntrada } from '@/components/entrada/LadoMarca'
 import type { ConteudoPacote } from '@/components/alta/lerPacote'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -30,14 +31,15 @@ const RECUSA: Record<string, string> = {
 
 function Topo({ unidade }: { unidade: string }) {
   return (
-    <header className="bg-veu px-5 pb-[26px] pt-[22px] text-sobre-veu print:hidden">
+    <header className="cc-folha-marca px-5 pb-[26px] pt-[22px] print:hidden">
       <div className="mx-auto max-w-[620px]">
-        <span className="flex items-center gap-[9px] text-apoio font-medium opacity-90">
-          <Bird className="size-[18px]" />{unidade}
+        <span className="flex items-center gap-[9px] text-apoio font-medium">
+          <span className="grid size-7 place-items-center rounded-controle bg-marca" aria-hidden><Bird className="size-4" /></span>
+          {unidade}
         </span>
-        {/* padrao-ok: título da tela de marca (página pública, 26 px do desenho da alta) */}
-        <h1 className="mb-1.5 mt-3.5 text-[26px] leading-[1.15] font-semibold tracking-[-0.02em] max-[420px]:text-[23px]">Seus documentos de alta</h1>
-        <p className="text-corpo text-marca-texto-claro">Guarde este link. Cada abertura pede o código de 6 dígitos impresso na sua orientação de alta.</p>
+        {/* padrao-ok: título da tela de marca (serifa da landing, entrada.css) */}
+        <h1 className="cc-titulo-marca cc-titulo-alta">Seus documentos de alta</h1>
+        <p className="cc-texto-marca">Guarde este link. Cada abertura pede o código de 6 dígitos impresso na sua orientação de alta.</p>
       </div>
     </header>
   )
@@ -47,11 +49,7 @@ function Caixa({ titulo, children }: { titulo: string; children: React.ReactNode
   return (
     <section className="mx-auto max-w-[620px] px-5 pb-[60px] pt-5" aria-labelledby="portao-titulo">
       <div className="rounded-cartao border border-fio bg-superficie px-5 py-[22px] max-[420px]:px-4">
-        <span className="grid size-11 place-items-center rounded-container bg-alerta-marca text-acao" aria-hidden="true">
-          <ShieldCheck className="size-[22px]" />
-        </span>
-        {/* padrao-ok: título da tela de marca (página pública sem login, fora da casca do app) */}
-        <h2 id="portao-titulo" className="mb-1.5 mt-3.5 text-dialogo leading-[1.2] font-semibold tracking-[-0.02em]">{titulo}</h2>
+        <TituloEntrada id="portao-titulo">{titulo}</TituloEntrada>
         {children}
       </div>
     </section>

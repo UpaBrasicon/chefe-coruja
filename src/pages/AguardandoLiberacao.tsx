@@ -1,9 +1,8 @@
-import { Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { LinhaEntrada, PaginaEntrada } from '@/components/entrada/LadoMarca'
 
 export function AguardandoLiberacao() {
   const { signOut, perfil } = useAuth()
@@ -15,29 +14,19 @@ export function AguardandoLiberacao() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-campo p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="size-5 text-acao" />
-            Aguardando liberação
-          </CardTitle>
-          <CardDescription>
-            Olá, {perfil?.nome_completo ?? 'colega'}. Sua conta ainda não está vinculada a nenhuma
-            unidade.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <p className="text-apoio text-tinta-sussurro">
-            Um administrador da sua organização precisa atribuir seu papel (administrador, gestor ou
-            plantonista) por unidade. Assim que o vínculo for criado, o acesso é liberado
-            automaticamente.
-          </p>
-          <Button variant="outline" onClick={handleSair}>
-            Sair
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    <PaginaEntrada
+      titulo="Aguardando liberação."
+      abertura={`Olá, ${perfil?.nome_completo ?? 'colega'}. A sua conta existe, mas ainda não está ligada a nenhuma unidade.`}
+      acao={<Button variant="outline" onClick={handleSair}>Sair</Button>}
+    >
+      <ul className="cc-linhas">
+        <LinhaEntrada titulo="Quem libera">
+          O gestor da sua unidade (ou a administração da rede) define o seu papel em cada unidade.
+        </LinhaEntrada>
+        <LinhaEntrada titulo="Quando abre">
+          Assim que o vínculo é criado, o acesso abre sozinho na próxima entrada. Não é preciso pedir de novo.
+        </LinhaEntrada>
+      </ul>
+    </PaginaEntrada>
   )
 }
