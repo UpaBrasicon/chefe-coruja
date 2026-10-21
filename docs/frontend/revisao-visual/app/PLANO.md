@@ -117,6 +117,21 @@ começam no mesmo ponto; as linhas ficam da mesma altura. Imagens:
 `regua-ajuste-claro-desktop.jpg`, `regua-ajuste-escuro-desktop.jpg`,
 `regua-ajuste-escuro-celular.jpg` (antes: `regua-landing-*.jpg`).
 
+## Outras formas da faixa, a partir do Refero (21/10/2026)
+
+O RT perguntou se havia outras formas de mostrar os parâmetros com base no
+Refero (a régua tinha sido a melhor entre A, B e C, que não vinham dele). Três
+direções novas, cada uma de uma referência real, sobre o nível mínimo
+(`faixa-d|e|f-claro|escuro.jpg`):
+
+| Direção | Referência do Refero | Como fica |
+|---|---|---|
+| **D · faixa de status** | Fingerprint, visão geral (`217e2393`): faixa de status com rótulo pequeno em cima e o estado em ponto colorido ("No issues found") | Uma linha baixa: rótulo, valor e contexto; só o que pede atenção ganha ponto e selo ("2 acima de 6h"). Sem barra. Cabe fixa no topo |
+| **E · tabela de leitura** | Zendesk Talk, fila (`1686eace`): rótulo à esquerda, valor alinhado à direita, em colunas | Duas colunas de linhas: rótulo e valor na mesma linha, o estado por extenso embaixo. Sem barra |
+| **F · primeiro o que pede ação** | Linear, grupos de SLA (`cb07661a`); Factory, "Immediate Action Required" (`3125417b`) | O que passou do limite vem em linhas com o caminho ("Ver observação →"); o que está em ordem vira uma linha quieta embaixo. Sem nada fora do limite, só a linha quieta |
+
+A régua ajustada (limite junto do número, réguas alinhadas) segue como opção.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
