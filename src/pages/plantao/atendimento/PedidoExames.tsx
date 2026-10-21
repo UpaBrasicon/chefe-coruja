@@ -241,7 +241,7 @@ export function PedidoExames({ unidadeId, perfilId }: { unidadeId?: string; perf
               return (
                 <div key={d.destino} className="flex flex-col gap-3">
                   <div className="flex flex-wrap items-baseline gap-2.5 border-b border-fio pb-[7px]">
-                    <span className="flex items-center gap-[7px] text-apoio font-semibold tracking-[0.04em] text-grafite uppercase">
+                    <span className="flex items-center gap-[7px] text-controle font-semibold text-tinta">
                       {ICONE_DESTINO[d.destino]}{d.destino}
                     </span>
                     <span className={cn('text-apoio', qtd ? 'font-medium text-acao' : 'text-tinta-sussurro')}>
@@ -301,7 +301,7 @@ export function PedidoExames({ unidadeId, perfilId }: { unidadeId?: string; perf
           )}
           {avisos.length > 0 && <Aviso>{avisos.join(' ')}</Aviso>}
 
-          <div className="flex flex-wrap items-center gap-3 rounded-cartao border border-fio bg-superficie px-5 py-3.5 shadow-repouso">
+          <div className="flex flex-wrap items-center gap-3 rounded-cartao border border-fio bg-superficie px-5 py-3.5">
             <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-0.5">
               <span className={cn('text-apoio font-medium', n ? 'text-acao' : 'text-tinta-sussurro')}>{resumo}</span>
               <span className="text-apoio text-pretty text-tinta-sussurro">

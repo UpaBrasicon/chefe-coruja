@@ -15,14 +15,15 @@ import { AlterarItem } from '@/components/prescricao/AlterarItem'
 import { NovoItem, type PesoAtual } from '@/components/prescricao/PrescricaoEstruturada'
 
 import { hora, type ItemPS } from './comum'
+import { Estado, type TomEstado } from './Estado'
 
 function Situacao({ i }: { i: ItemPS }) {
-  let tom = 'bg-alerta-atencao text-atencao'
+  let tom: TomEstado = 'ambar'
   let texto = `Prescrito ${hora(i.criado_em)}`
-  if (i.suspenso_em) { tom = 'bg-trilha text-tinta-sussurro'; texto = `Suspenso ${hora(i.suspenso_em)}` }
-  else if (i.checagem?.situacao === 'feito') { tom = 'bg-alerta-conforme text-conforme'; texto = `Administrado ${hora(i.checagem.em)}${i.checagem.por ? ` · ${i.checagem.por}` : ''}` }
-  else if (i.checagem) { tom = 'bg-alerta-critico text-critico'; texto = `${i.checagem.situacao === 'recusado' ? 'Recusado' : 'Não feito'} ${hora(i.checagem.em)}` }
-  return <span className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold whitespace-nowrap', tom)}>{texto}</span>
+  if (i.suspenso_em) { tom = 'cinza'; texto = `Suspenso ${hora(i.suspenso_em)}` }
+  else if (i.checagem?.situacao === 'feito') { tom = 'verde'; texto = `Administrado ${hora(i.checagem.em)}${i.checagem.por ? ` · ${i.checagem.por}` : ''}` }
+  else if (i.checagem) { tom = 'vermelho'; texto = `${i.checagem.situacao === 'recusado' ? 'Recusado' : 'Não feito'} ${hora(i.checagem.em)}` }
+  return <Estado tom={tom}>{texto}</Estado>
 }
 
 function Linha({ i, n, aoMudar }: { i: ItemPS; n: number; aoMudar: () => void }) {

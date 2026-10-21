@@ -27,6 +27,7 @@ import { idadeLegivel } from '@/lib/cadastroPaciente'
 import { TEXTO_PEDIATRICO, TEXTO_SEM_NASCIMENTO } from '../atendimento/ReceituarioMedico'
 
 import { hoje, hora, msg, type EstadoDocs, type ItemReceita } from './comum'
+import { Estado } from './Estado'
 import { Chip } from '@/components/monitor/Pagina'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 
@@ -45,7 +46,7 @@ const NOME_DOC: Record<string, string> = {
 const nomeMed = (m: { principio_ativo: string; apresentacao: string | null } | null) => (m ? [m.principio_ativo, m.apresentacao].filter(Boolean).join(' ') : '')
 
 function Situacao({ em, rascunho }: { em: string | null; rascunho: string }) {
-  return <span className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold', em ? 'bg-alerta-conforme text-conforme' : 'bg-trilha text-tinta-apoio')}>{em ? `Emitido ${hora(em)}` : rascunho}</span>
+  return <Estado tom={em ? 'verde' : 'cinza'}>{em ? `Emitido ${hora(em)}` : rascunho}</Estado>
 }
 
 export function AbaAtestadoReceita({ episodioId, pacienteId, nome, nascimento, faixa, cid, estado, setEstado }: {

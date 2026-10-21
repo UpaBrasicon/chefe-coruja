@@ -238,7 +238,7 @@ export function AtestadoMedico({ unidadeId, perfilId }: { unidadeId?: string; pe
       {erro && <Aviso tom="critico">{erro}</Aviso>}
 
       <div className="grid items-start gap-3.5 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <section aria-label="Atestado" className="flex flex-col gap-4 rounded-cartao border border-fio bg-superficie p-5 shadow-repouso">
+        <section aria-label="Atestado" className="flex flex-col gap-4 rounded-cartao border border-fio bg-superficie p-5">
           <div className="flex flex-col gap-[7px]">
             <span className="text-apoio font-medium text-grafite">Finalidade</span>
             <Pilulas opcoes={TIPOS} valor={f.tipo} rotulos={ROTULO_TIPO} rotuloAria="Finalidade do atestado" onChange={(tipo) => mudar({ tipo })} />
@@ -297,8 +297,8 @@ export function AtestadoMedico({ unidadeId, perfilId }: { unidadeId?: string; pe
           )}
         </section>
 
-        <section aria-label="Pré-visualização do atestado" className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
-          <div className="border-b border-trilha px-[18px] py-3.5 text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">Pré-visualização</div>
+        <section aria-label="Pré-visualização do atestado" className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+          <div className="border-b border-trilha px-[18px] py-3.5 text-apoio font-semibold text-tinta-sussurro">Pré-visualização</div>
           {avisos.length > 0 && (
             <div className="flex flex-col gap-2 px-[18px] pt-3.5">
               {avisos.map((a) => <Aviso key={a}>{a}</Aviso>)}

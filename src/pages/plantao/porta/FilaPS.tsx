@@ -3,7 +3,7 @@
 // reavaliação"); "Saídas do plantão" com os finalizados e excluídos do dia.
 // A cor manda; 80+ e prioridade legal só desempatam dentro da mesma cor.
 import { useQuery } from '@tanstack/react-query'
-import { Check, Clock, LogOut, Stethoscope } from 'lucide-react'
+import { Check, Stethoscope } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -21,6 +21,7 @@ import { EncaminhamentosRecebidos } from '@/components/encaminhamento/Encaminham
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 
 import { hoje, hora, minutos, nomeDe, rotuloDesfecho, useAgora, type EpFila } from './comum'
+import { Estado } from './Estado'
 
 type Saida = {
   id: string; cor_atual: CorRisco | null; queixa: string; desfecho: string | null; desfecho_motivo: string | null
@@ -32,19 +33,17 @@ const MOTIVO_EXCLUSAO: Record<string, string> = { evasao: 'evasão', duplicada: 
 
 const idadeDe = (p: { data_nascimento: string | null } | null) => (p?.data_nascimento ? rotuloIdade(p.data_nascimento, hoje()) : '')
 
-function Pilula({ tom, children }: { tom: 'ambar' | 'verde' | 'teal' | 'cinza' | 'vermelho'; children: React.ReactNode }) {
-  const t = {
-    ambar: 'bg-alerta-atencao text-atencao', verde: 'bg-alerta-conforme text-conforme', teal: 'bg-alerta-marca text-acao',
-    cinza: 'bg-trilha text-tinta-apoio', vermelho: 'bg-alerta-critico text-critico',
-  }[tom]
-  return <span className={cn('inline-flex items-center gap-1 self-start rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold whitespace-nowrap', t)}>{children}</span>
-}
-
-function Bloco({ titulo, resumo, children }: { titulo?: string; resumo?: string; children: React.ReactNode }) {
+// Cabeçalho do grupo como na fila da recepção: título, contagem e uma nota à direita.
+function Bloco({ titulo, n, nota, notaAlerta, children }: {
+  titulo: string; n?: number; nota?: string; notaAlerta?: boolean; children: React.ReactNode
+}) {
   return (
-    <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
-      {titulo && <div className="border-b border-trilha px-5 py-3 text-apoio font-semibold text-tinta">{titulo}</div>}
-      {resumo && <div className="border-b border-trilha px-5 py-3 text-apoio text-tinta-sussurro">{resumo}</div>}
+    <section className="overflow-hidden rounded-cartao border border-fio bg-superficie" aria-label={titulo}>
+      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 border-b border-trilha bg-campo px-5 py-2.5">
+        <span className="text-controle font-semibold text-tinta">{titulo}</span>
+        {n !== undefined && <span className="text-controle font-medium text-tinta-sussurro tabular-nums">{n}</span>}
+        {nota && <span className={cn('ml-auto text-apoio', notaAlerta ? 'font-medium text-critico' : 'text-tinta-sussurro')}>{nota}</span>}
+      </div>
       {children}
     </section>
   )
@@ -103,6 +102,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
 
   const aguardando = (fila.data ?? []).filter((e) => !e.atendimento_iniciado_em)
   const emAtendimento = (fila.data ?? []).filter((e) => e.atendimento_iniciado_em)
+  const acimaDoAlvo = aguardando.filter((e) => Math.round((agora - Date.parse(e.classificado_em)) / 60_000) > ALVO_MIN[e.cor_atual]).length
   const iguais = homonimos(fila.data ?? [])
   const setoresDaFila = [...new Set((fila.data ?? []).map((e) => e.setor_id))]
   const chamadas = useChamadasPorEpisodio(setoresDaFila, 'atendimento')
@@ -126,7 +126,12 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
         </p>
       )}
 
-      <Bloco resumo={`${aguardando.length} ${aguardando.length === 1 ? 'paciente triado' : 'pacientes triados'} · por cor e tempo de espera`}>
+      <Bloco
+        titulo="Aguardando o médico"
+        n={aguardando.length}
+        nota={acimaDoAlvo ? `${acimaDoAlvo} acima do alvo da cor` : 'por cor e tempo de espera'}
+        notaAlerta={acimaDoAlvo > 0}
+      >
         {carregando && <div className="px-5 py-4"><Spinner /></div>}
         {!carregando && aguardando.length === 0 && <p className="px-5 py-5 text-controle text-tinta-sussurro">Nenhum paciente triado aguardando.</p>}
         {aguardando.map((e) => {
@@ -142,7 +147,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                     .filter(Boolean).join(' · ')}
                 </span>
                 {iguais.has(e.id) && <SeloHomonimo paciente={e.paciente} />}
-                <Pilula tom="cinza">Aguardando</Pilula>
+                <Estado tom="cinza">Aguardando</Estado>
               </div>
               <span className={cn('text-apoio whitespace-nowrap tabular-nums', acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>
                 espera {minutos(e.classificado_em, agora)} · alvo {ALVO_MIN[e.cor_atual]} min
@@ -157,7 +162,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
       </Bloco>
 
       {emAtendimento.length > 0 && (
-        <Bloco titulo="Em atendimento">
+        <Bloco titulo="Em atendimento" n={emAtendimento.length}>
           {emAtendimento.map((e) => {
             const reav = !!e.reavaliar_em
             const atrasada = reav && Date.parse(e.reavaliar_em!) < agora
@@ -169,8 +174,8 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                   <span className="text-apoio text-tinta-sussurro [text-wrap:pretty]">{e.queixa}</span>
                   {iguais.has(e.id) && <SeloHomonimo paciente={e.paciente} />}
                   {reav
-                    ? <Pilula tom={atrasada ? 'vermelho' : 'ambar'}><Clock className="size-3" aria-hidden /> Em reavaliação · às {hora(e.reavaliar_em)}{atrasada ? ' · atrasada' : ''}</Pilula>
-                    : <Pilula tom="teal">Em atendimento</Pilula>}
+                    ? <Estado tom={atrasada ? 'vermelho' : 'ambar'}>Em reavaliação · às {hora(e.reavaliar_em)}{atrasada ? ' · atrasada' : ''}</Estado>
+                    : <Estado tom="teal">Em atendimento</Estado>}
                 </div>
                 <span className="text-apoio whitespace-nowrap tabular-nums text-tinta-apoio">há {minutos(e.atendimento_iniciado_em, agora)}</span>
                 <Button size="sm" variant="outline" onClick={() => onAbrir(e)}>{reav ? 'Reavaliar' : 'Abrir atendimento'}</Button>
@@ -181,7 +186,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
       )}
 
       {(saidas.data ?? []).length > 0 && (
-        <Bloco titulo="Saídas do plantão">
+        <Bloco titulo="Saídas do plantão" n={(saidas.data ?? []).length}>
           {(saidas.data ?? []).map((s) => {
             // retirado da fila (recepção/enfermagem): sem médico no desfecho
             const excluido = s.desfecho === 'cancelado' || (s.desfecho === 'evasao' && !s.desfecho_por)
@@ -199,8 +204,8 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                   <span className="text-apoio text-tinta-sussurro [text-wrap:pretty]">{linha}</span>
                 </div>
                 {excluido
-                  ? <Pilula tom="vermelho"><LogOut className="size-3" aria-hidden /> Excluído · {MOTIVO_EXCLUSAO[codigo] ?? codigo}</Pilula>
-                  : <Pilula tom="teal">{rotuloDesfecho(s.desfecho)}</Pilula>}
+                  ? <Estado tom="vermelho">Excluído · {MOTIVO_EXCLUSAO[codigo] ?? codigo}</Estado>
+                  : <Estado tom="verde">{rotuloDesfecho(s.desfecho)}</Estado>}
               </div>
             )
           })}
