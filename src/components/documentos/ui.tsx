@@ -20,7 +20,7 @@ export function Cartao({ icone, titulo, acoes, children, className, corpo = true
   corpo?: boolean
 }) {
   return (
-    <section className={cn('overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso', className)}>
+    <section className={cn('overflow-hidden rounded-cartao border border-fio bg-superficie', className)}>
       <div className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-[13px]">
         {icone && <span className="text-acao [&_svg]:size-4" aria-hidden>{icone}</span>}
         <TituloCartao className="mb-0">{titulo}</TituloCartao>
@@ -38,7 +38,7 @@ export function Bloco({ num, titulo, nota, acao, children }: {
     <div className="flex flex-col gap-2.5">
       <div className="flex flex-wrap items-baseline gap-2">
         {num && <span className="text-rotulo font-bold tabular-nums text-acao">{num}</span>}
-        <h3 className="text-apoio font-semibold tracking-[0.04em] text-grafite uppercase">{titulo}</h3>
+        <h3 className="text-controle font-semibold text-tinta">{titulo}</h3>
         {acao && <div className="ml-auto">{acao}</div>}
       </div>
       {nota && <p className="text-apoio text-pretty text-tinta-sussurro">{nota}</p>}
@@ -144,7 +144,7 @@ export function Pendencias({ itens, titulo = 'Falta para emitir' }: { itens: str
   if (!itens.length) return null
   return (
     <div role="status" className="flex flex-col gap-[7px]">
-      <span className="text-rotulo font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">{titulo}</span>
+      <span className="text-apoio font-semibold text-tinta-sussurro">{titulo}</span>
       <div className="flex flex-col gap-[5px]">
         {itens.map((t) => (
           <span key={t} className="flex items-start gap-[7px] text-apoio text-pretty text-atencao">
@@ -163,7 +163,7 @@ export function Rodape({ pendencias, tituloPendencias, mensagem, salvoEm, servid
   pendencias: string[]; tituloPendencias?: string; mensagem: string; salvoEm: string | null; servidorSalvoEm?: Date | null; children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-3.5 shadow-repouso">
+    <div className="flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-3.5">
       <Pendencias itens={pendencias} titulo={tituloPendencias} />
       <div className="flex flex-wrap items-center justify-between gap-3.5">
         <div className="flex min-w-0 flex-col gap-[3px]">
