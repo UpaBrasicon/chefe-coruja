@@ -220,6 +220,23 @@ mínimo, sem opções.
 Em qualquer opção: a página passa a seguir a coluna (sai o teto de 896 px), os
 cartões perdem a sombra e o painel da TV perde as maiúsculas espaçadas e o azulejo.
 
+**Escolha do RT (21/10/2026): B, fila agrupada.** Aplicada na branch
+`feat/visual-3-2-recepcao`:
+
+- `Recepcao.tsx`: sai a faixa de contadores; `ListaFila` recebe grupos. Fila da
+  triagem: "Aguardando triagem N", com a maior espera. Fila médica: "Aguardando o
+  médico N", com a maior espera e quantos passaram do alvo da cor (em vermelho
+  quando há), e "Em atendimento N". Grupo vazio não aparece.
+- Status de cada paciente em ponto + texto: ponto vazio aguardando, contornado em
+  âmbar chamado, em vermelho chamado três vezes sem resposta, cheio na cor da ação
+  em atendimento. A cor da classificação segue no selo com o nome (regra clínica).
+- Cartões sem sombra; a página segue a coluna (5% de margem) e o formulário da
+  Nova ficha fica em até 896 px.
+- Painel da TV: sem maiúsculas espaçadas nos rótulos ("Chamando agora", "Últimas
+  chamadas") e a coruja no quadrado teal da marca.
+- Typecheck, lint, catraca e build verdes. **Não vi** a fila nem a TV renderizadas
+  (pedem login ou link de painel válido): conferir na homologação.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base

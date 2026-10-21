@@ -91,17 +91,13 @@ function maiorEspera(itens: NaFila[], agora: number): string {
   return min < 60 ? `${min} min` : `${Math.floor(min / 60)}h${String(min % 60).padStart(2, '0')}`
 }
 
-function Contadores({ itens }: { itens: { rotulo: string; valor: number | string }[] }) {
-  return (
-    <div className="mb-3.5 flex flex-wrap overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
-      {itens.map((c, i) => (
-        <div key={c.rotulo} className={cn('flex min-w-[140px] flex-1 flex-col gap-0.5 px-5 py-3', i > 0 && 'border-l border-trilha')}>
-          <span className="text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">{c.rotulo}</span>
-          <span className="text-titulo leading-[1.2] font-semibold tracking-[-0.02em] tabular-nums text-tinta">{c.valor}</span>
-        </div>
-      ))}
-    </div>
-  )
+/** Quem da fila médica, ainda sem atendimento, já passou do alvo da cor. */
+function acimaDoAlvo(itens: NaFila[], agora: number): number {
+  return itens.filter((e) => {
+    if (e.atendimento_iniciado_em || !e.cor_atual) return false
+    const desde = new Date(e.classificado_em ?? e.chegada_em).getTime()
+    return Math.round((agora - desde) / 60_000) > ALVO_MIN[e.cor_atual]
+  }).length
 }
 
 const diaHora = (iso: string) => `${diaMes(iso)} ${hora(iso)}`
@@ -134,7 +130,7 @@ function useAgora(ms: number) {
 /** Termo que o servidor aceita: 3 letras do nome ou 4 números de documento. */
 const termoValido = (t: string) => t.replace(/[^\p{L}]/gu, '').length >= 3 || soDigitos(t).length >= 4
 
-const cartao = 'rounded-cartao border border-fio bg-superficie shadow-repouso'
+const cartao = 'rounded-cartao border border-fio bg-superficie'
 const pilula = 'inline-flex items-center rounded-capsula px-2.5 py-1 text-rotulo font-semibold whitespace-nowrap'
 
 export default function Recepcao() {
@@ -212,7 +208,7 @@ export default function Recepcao() {
   const atual = ABAS.find((a) => a.aba === aba)!
 
   return (
-    <div className="mx-auto flex w-full max-w-[896px] flex-col">
+    <div className="flex w-full max-w-5xl flex-col">
       <TituloPagina icone={atual.icone} titulo={atual.titulo} descricao={atual.descricao} />
 
       {mostrarAbas && (
@@ -223,17 +219,6 @@ export default function Recepcao() {
             </Chip>
           ))}
         </Chips>
-      )}
-
-      {porta && aba !== 'ficha' && aba !== 'painel' && (
-        <Contadores
-          itens={[
-            { rotulo: 'Aguardando triagem', valor: filaTriagem.length },
-            { rotulo: 'Aguardando o médico', valor: filaMedica.filter((e) => !e.atendimento_iniciado_em).length },
-            { rotulo: 'Em atendimento', valor: filaMedica.filter((e) => e.atendimento_iniciado_em).length },
-            { rotulo: 'Maior espera', valor: maiorEspera(aba === 'triagem' ? filaTriagem : filaMedica, agora) },
-          ]}
-        />
       )}
 
       {portas && portas.length === 0 && (
@@ -252,14 +237,17 @@ export default function Recepcao() {
       {portas && portas.length > 1 && !porta && <p className="text-apoio text-tinta-sussurro">Escolha a porta de entrada.</p>}
 
       {porta && aba === 'ficha' && (
-        <NovaFicha
-          porta={porta}
-          unidadeId={unidadeId!}
-          aoAbrir={() => {
-            void queryClient.invalidateQueries({ queryKey: ['recepcao-fila'] })
-            void queryClient.invalidateQueries({ queryKey: ['nota-fila-triagem'] })
-          }}
-        />
+        // o formulário fica estreito mesmo com a página na largura da coluna
+        <div className="w-full max-w-4xl">
+          <NovaFicha
+            porta={porta}
+            unidadeId={unidadeId!}
+            aoAbrir={() => {
+              void queryClient.invalidateQueries({ queryKey: ['recepcao-fila'] })
+              void queryClient.invalidateQueries({ queryKey: ['nota-fila-triagem'] })
+            }}
+          />
+        </div>
       )}
 
       {porta && aba === 'triagem' && (
@@ -267,8 +255,8 @@ export default function Recepcao() {
           carregando={fila.isLoading}
           erro={fila.error as Error | null}
           vazia="Ninguém aguardando triagem."
-          itens={filaTriagem}
           agora={agora}
+          grupos={[{ titulo: 'Aguardando triagem', itens: filaTriagem, maiorEspera: maiorEspera(filaTriagem, agora) }]}
         />
       )}
 
@@ -277,8 +265,16 @@ export default function Recepcao() {
           carregando={fila.isLoading}
           erro={fila.error as Error | null}
           vazia="Ninguém aguardando atendimento médico."
-          itens={filaMedica}
           agora={agora}
+          grupos={[
+            {
+              titulo: 'Aguardando o médico',
+              itens: filaMedica.filter((e) => !e.atendimento_iniciado_em),
+              maiorEspera: maiorEspera(filaMedica, agora),
+              acimaDoAlvo: acimaDoAlvo(filaMedica, agora),
+            },
+            { titulo: 'Em atendimento', itens: filaMedica.filter((e) => e.atendimento_iniciado_em) },
+          ]}
         />
       )}
 
@@ -644,16 +640,39 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
 
 // ── Filas ────────────────────────────────────────────────────────────────────
 
-function ListaFila({ itens, carregando, erro, vazia, agora }: {
-  itens: NaFila[]; carregando: boolean; erro: Error | null; vazia: string; agora: number
+type GrupoFila = { titulo: string; itens: NaFila[]; maiorEspera?: string; acimaDoAlvo?: number }
+
+// Fila agrupada por status (revisão visual 3.2, opção "B" do RT, 21/10/2026;
+// referência do Refero: lista da Linear agrupada por status). O cabeçalho do
+// grupo leva a contagem, a maior espera e quem passou do alvo da cor, no lugar
+// da antiga faixa de contadores. Grupo vazio não aparece.
+function ListaFila({ grupos, carregando, erro, vazia, agora }: {
+  grupos: GrupoFila[]; carregando: boolean; erro: Error | null; vazia: string; agora: number
 }) {
   const hoje = hojeSP()
+  const visiveis = grupos.filter((g) => g.itens.length > 0)
   return (
     <div className={cn(cartao, 'overflow-hidden')}>
       {carregando && <div className="px-5 py-5"><Spinner /></div>}
       {erro && <p className="px-5 py-4 text-apoio text-critico">{erro.message}</p>}
-      {!carregando && !erro && itens.length === 0 && <p className="px-5 py-[22px] text-controle text-tinta-sussurro">{vazia}</p>}
-      {itens.map((e) => <LinhaFila key={e.episodio_id} e={e} agora={agora} hoje={hoje} />)}
+      {!carregando && !erro && visiveis.length === 0 && <p className="px-5 py-[22px] text-controle text-tinta-sussurro">{vazia}</p>}
+      {visiveis.map((g) => (
+        <section key={g.titulo} aria-label={`${g.titulo}: ${g.itens.length}`}>
+          <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 border-b border-trilha bg-campo px-5 py-2.5">
+            <span className="text-controle font-semibold text-tinta">{g.titulo}</span>
+            <span className="text-controle font-medium text-tinta-sussurro tabular-nums">{g.itens.length}</span>
+            {(g.maiorEspera || g.acimaDoAlvo) && (
+              <span className={cn('ml-auto text-apoio', g.acimaDoAlvo ? 'font-medium text-critico' : 'text-tinta-sussurro')}>
+                {[
+                  g.maiorEspera && g.maiorEspera !== '—' ? `maior espera ${g.maiorEspera}` : '',
+                  g.acimaDoAlvo ? `${g.acimaDoAlvo} acima do alvo` : '',
+                ].filter(Boolean).join(' · ')}
+              </span>
+            )}
+          </div>
+          {g.itens.map((e) => <LinhaFila key={e.episodio_id} e={e} agora={agora} hoje={hoje} />)}
+        </section>
+      ))}
     </div>
   )
 }
@@ -666,17 +685,23 @@ function LinhaFila({ e, agora, hoje }: { e: NaFila; agora: number; hoje: string 
   const alvo = medica && e.cor_atual ? ALVO_MIN[e.cor_atual] : null
   const estourou = alvo !== null && !e.atendimento_iniciado_em && espera > alvo
 
+  // Status em ponto + texto (opção "B"): o ponto vazio é quem aguarda, o
+  // contornado em âmbar foi chamado, o cheio na cor da ação está em atendimento.
   let status = 'Aguardando'
-  let estiloStatus = 'bg-trilha text-tinta-apoio'
+  let textoStatus = 'text-tinta-apoio'
+  let ponto = 'border-fio-forte'
   if (e.atendimento_iniciado_em) {
     status = `Em atendimento${e.medico ? ` · ${e.medico}` : ''}`
-    estiloStatus = 'bg-acao/10 text-acao'
+    textoStatus = 'text-acao'
+    ponto = 'border-acao bg-acao'
   } else if (e.chamadas > 0) {
     status = `Chamado${e.chamadas > 1 ? ` ${e.chamadas}ª vez` : ''}${e.ultima_sala ? ` · ${e.ultima_sala}` : ''}${e.ultimo_chamador ? ` · ${e.ultimo_chamador}` : ''}`
-    estiloStatus = 'bg-alerta-atencao text-atencao'
+    textoStatus = 'text-atencao'
+    ponto = 'border-atencao bg-alerta-atencao'
     if (e.chamadas >= 3) {
       status += ' · sem resposta após 3 chamadas'
-      estiloStatus = 'bg-alerta-critico text-critico whitespace-normal'
+      textoStatus = 'font-medium text-critico'
+      ponto = 'border-critico bg-alerta-critico'
     }
   }
 
@@ -707,7 +732,10 @@ function LinhaFila({ e, agora, hoje }: { e: NaFila; agora: number; hoje: string 
       >
         {espera} min{alvo !== null ? ` · alvo ${alvo ? `${alvo} min` : 'imediato'}` : ''}
       </span>
-      <span className={cn(pilula, estiloStatus)}>{status}</span>
+      <span className={cn('flex min-w-0 items-center gap-[7px] text-apoio', textoStatus)}>
+        <span aria-hidden className={cn('size-2.5 shrink-0 rounded-capsula border-2', ponto)} />
+        {status}
+      </span>
       {!e.atendimento_iniciado_em && <ExcluirDaFila episodioId={e.episodio_id} nome={e.nome_social || e.nome} />}
     </div>
   )
