@@ -156,8 +156,8 @@ export function ResumoParametros({ children, className }: { children: ReactNode;
   return (
     <div className={cn('cc-resumo', className)}>
       {acao.map((p) => (
-        <div key={p.rotulo} className="flex flex-wrap items-baseline gap-x-proximo gap-y-1 border-b border-trilha px-5 py-3 last:border-b-0">
-          <span className={cn('flex shrink-0 items-baseline gap-1.5 text-secao font-semibold tabular sm:min-w-24', NUMERAL[p.nivel])}>
+        <div key={p.rotulo} className="flex flex-col gap-1 border-b border-trilha px-5 py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-x-proximo">
+          <span className={cn('flex shrink-0 flex-wrap items-baseline gap-x-1.5 text-secao font-semibold tabular sm:w-44', NUMERAL[p.nivel])}>
             {p.valor}
             {p.unidade && <span className="text-apoio font-medium">{p.unidade}</span>}
           </span>
@@ -167,7 +167,7 @@ export function ResumoParametros({ children, className }: { children: ReactNode;
             {p.tend && <span className={cn('ml-2 text-rotulo font-medium', TEND_COR[p.tend.sentido])}>{p.tend.texto}</span>}
           </span>
           {p.onClick && (
-            <Button variant="link" onClick={p.onClick} className="h-auto min-h-0 p-0 text-controle font-medium">
+            <Button variant="link" onClick={p.onClick} className="h-auto min-h-0 self-start p-0 text-controle font-medium sm:self-auto">
               {p.acao ?? 'Abrir'}
               <ArrowRight className="size-3.5" aria-hidden />
             </Button>
@@ -192,14 +192,15 @@ export function ResumoParametros({ children, className }: { children: ReactNode;
 }
 
 /**
- * A faixa: o resumo logo abaixo do topo, na mesma coluna do conteúdo. Não fica
- * fixa ao rolar.
+ * A faixa: o resumo logo abaixo do título da página inicial do papel, como um
+ * bloco da coluna do conteúdo (mesma borda e canto das peças da página). Não
+ * fica fixa ao rolar. Quem a posiciona é o TituloPagina (FaixaDaPagina).
  */
 export function FaixaParametros({ children, rotulo = 'Parâmetros do plantão', fita }: { children: ReactNode; rotulo?: string; fita?: ReactNode }) {
   return (
-    <section aria-label={rotulo} className="-mx-4 -mt-5 mb-6 border-b border-fio bg-superficie md:-mx-7 md:-mt-7">
+    <section aria-label={rotulo} className="mb-[22px] overflow-hidden rounded-container border border-fio bg-superficie">
       {fita}
-      <ResumoParametros className="cc-coluna mx-auto">{children}</ResumoParametros>
+      <ResumoParametros>{children}</ResumoParametros>
     </section>
   )
 }
