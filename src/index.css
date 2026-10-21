@@ -467,12 +467,11 @@
     .tabular {
         font-variant-numeric: tabular-nums;
     }
-    /* A Regra do Rótulo Sussurrado. */
+    /* A Regra do Rótulo Sussurrado. Em frase, sem maiúsculas espaçadas (guia 5.1;
+       revisão visual 3.1, decisão do RT de 21/10/2026). */
     .rotulo {
         font-size: var(--text-rotulo);
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
         line-height: 1.25;
     }
     /* Tecla desenhada (paleta, desfazer). */
@@ -574,61 +573,40 @@
 }
 
 /*
- * FAIXA DE PARÂMETROS (P/index.html 113–178, 455–511). Quatro células; entre
- * 900 e 1023 viram 2×2; abaixo de 900 viram carrossel com a primeira ocupando
- * 78% e a próxima espiando. Abaixo de 1024 a célula DEITA: numeral numa
- * coluna, rótulo e estado empilhados ao lado — a banda cai de ~100 para ~72px
- * e continua imóvel.
+ * FAIXA DE PARÂMETROS em régua (revisão visual 3.1, opção "B" do RT,
+ * 21/10/2026). Cada parâmetro é uma linha: rótulo, número, a escala com o
+ * limite escrito e o estado. A linha decide a própria forma pela largura que
+ * tem (container query): larga, quatro colunas; estreita (as grades do
+ * gestor, o celular), empilha rótulo e número, a escala e o estado.
  */
 .cc-faixa {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    display: flex;
+    flex-direction: column;
     width: 100%;
 }
-.cc-faixa > .cc-param {
+.cc-faixa > .cc-param + .cc-param { border-top: 1px solid var(--color-trilha); }
+.cc-param { container-type: inline-size; }
+.cc-param-corpo {
     display: grid;
-    align-content: start;
-    gap: 5px 10px;
+    align-items: center;
+    gap: 6px 18px;
     grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas: 'rot tend' 'val val' 'est est' 'campo campo';
+    grid-template-areas: 'rot val' 'campo campo' 'est est';
 }
-.cc-faixa > .cc-param + .cc-param { border-left: 1px solid var(--color-trilha); }
 .cc-param-rot { grid-area: rot; }
 .cc-param-val { grid-area: val; }
 .cc-param-est { grid-area: est; }
-.cc-param-tend { grid-area: tend; }
-.cc-param-campo { grid-area: campo; }
-@media (max-width: 1023px) {
-    .cc-faixa > .cc-param {
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        grid-template-areas: 'val rot tend' 'val est tend' 'campo campo campo';
-        column-gap: 11px;
-        row-gap: 0;
-        align-content: center;
-        padding: 8px 16px 9px;
+.cc-param-campo { grid-area: campo; height: 16px; }
+.cc-param-sem-escala { display: none; }
+.cc-param-campo:has(> span + span + span > span) { margin-bottom: 18px; }
+@container (min-width: 620px) {
+    .cc-param-corpo {
+        grid-template-columns: minmax(150px, 1.1fr) minmax(88px, auto) minmax(140px, 1.7fr) minmax(0, 1.5fr);
+        grid-template-areas: 'rot val campo est';
     }
-    .cc-faixa .cc-param-rot { min-height: 0; align-self: end; padding-right: 8px; }
-    .cc-faixa .cc-param-val { align-self: center; }
-    .cc-faixa .cc-param-est { align-self: start; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .cc-faixa .cc-param-campo { margin-top: 6px; }
-    .cc-faixa .cc-param-tend { align-self: center; }
-    .cc-faixa .cc-tend-txt { display: none; }
-    .cc-faixa .cc-tend-idade .cc-tend-txt { display: inline; }
-}
-@media (min-width: 900px) and (max-width: 1023px) {
-    .cc-faixa { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .cc-faixa > .cc-param:nth-child(2n + 1) { border-left: 0; }
-    .cc-faixa > .cc-param:nth-child(n + 3) { border-top: 1px solid var(--color-trilha); }
-}
-@media (max-width: 899px) {
-    .cc-faixa {
-        display: flex;
-        overflow-x: auto;
-        scrollbar-width: none;
-        scroll-snap-type: x mandatory;
-    }
-    .cc-faixa::-webkit-scrollbar { display: none; }
-    .cc-faixa > .cc-param { flex: 0 0 78%; scroll-snap-align: start; }
+    .cc-param-sem-escala { display: block; }
+    .cc-param-campo:has(> span + span + span > span) { margin-bottom: 0; margin-top: 0; height: 34px; }
+    .cc-param-campo > span:first-child, .cc-param-campo > span:nth-child(2) { top: 5px; }
 }
 
 /*
@@ -664,10 +642,10 @@
 .cc-den .cc-pagina-cabeca { margin-bottom: 13px !important; }
 .cc-den .cc-top { min-height: 52px !important; padding-top: 4px !important; padding-bottom: 4px !important; }
 .cc-den .cc-side-bloco { display: none !important; }
-.cc-den .cc-param { padding: 9px 15px 11px !important; }
+.cc-den .cc-param { padding-top: 6px !important; padding-bottom: 6px !important; }
 .cc-den .cc-param-est { display: none !important; }
 .cc-den .cc-tend-txt { display: none !important; }
-.cc-den .cc-param-val { font-size: var(--text-numeral-compacto) !important; }
+
 .cc-den .cc-lista-linha { padding-top: 9px !important; padding-bottom: 9px !important; }
 .cc-den .cc-canal { padding-top: 9px !important; padding-bottom: 9px !important; }
 .cc-den .cc-den-apoio { display: none !important; }

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, type MouseEvent, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, Bird, Clock, FlaskConical, Hourglass, Users } from 'lucide-react'
+import { ArrowRight, Bird } from 'lucide-react'
+
+import { Parametro } from '@/components/monitor/Parametros'
 import '@fontsource-variable/newsreader'
 import '@fontsource-variable/geist-mono'
 
@@ -243,38 +245,19 @@ export default function Landing() {
               {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
               <h2>O plantão, como a tela mostra.</h2>
               <p>
-                A cor do rótulo diz o que é a grandeza: leitos, observação, turno, suprimento. O número usa a cor do
-                estado e cresce com ele; ler a tela é procurar o número maior e mais colorido.
+                O fio do rótulo diz o que é a grandeza: leitos, observação, turno, suprimento. O número usa a cor do
+                estado, e a régua mostra onde fica o limite. Ler a tela é procurar o que passou da marca.
               </p>
             </div>
+            {/* A peça do app (monitor/Parametros), não um desenho à parte: a landing mostra a régua como ela é. */}
             <div className="faixa-cartao">
-              <div className="faixa">
-                <div className="param">
-                  <span className="param-rot" style={{ color: 'var(--cc-leitos)' }}><Users size={12} aria-hidden="true" />Sob seu cuidado</span>
-                  <span className="param-val" style={{ fontSize: 30 }}>8<span className="param-un">pacientes</span></span>
-                  <span className="param-est">Leitos 12 a 24</span>
-                  <span className="campo"><span className="fill" style={{ width: '61.5%', background: 'var(--cc-leitos)' }} /><span className="lim" style={{ left: '84.6%' }} /></span>
-                </div>
-                <div className="param">
-                  <span className="param-rot" style={{ color: 'var(--cc-observacao)' }}><Clock size={12} aria-hidden="true" />Maior permanência</span>
-                  <span className="param-val" style={{ color: 'var(--cc-critico)', fontSize: 42 }}>7h20</span>
-                  <span className="param-est" style={{ color: 'var(--cc-critico)' }}>2 pacientes acima do limite de 6h</span>
-                  <span className="campo"><span className="fill" style={{ width: '81.4%', background: 'var(--cc-observacao)' }} /><span className="lim" style={{ left: '66.7%' }} /></span>
-                </div>
-                <div className="param">
-                  <span className="param-rot" style={{ color: 'var(--cc-turno)' }}><Hourglass size={12} aria-hidden="true" />Restam no turno</span>
-                  <span className="param-val" style={{ fontSize: 30 }}>4h28</span>
-                  <span className="param-est">Em plantão desde 07:04</span>
-                  <span className="campo"><span className="fill" style={{ width: '63%', background: 'var(--cc-turno)' }} /></span>
-                </div>
-                <div className="param">
-                  <span className="param-rot" style={{ color: 'var(--cc-suprimento)' }}><FlaskConical size={12} aria-hidden="true" />Da farmácia</span>
-                  <span className="param-val" style={{ color: 'var(--cc-atencao)', fontSize: 36 }}>1<span className="param-un">aviso</span></span>
-                  <span className="param-est" style={{ color: 'var(--cc-atencao)' }}>Falta de noradrenalina 8 mg</span>
-                  <span className="campo"><span className="fill" style={{ width: '25%', background: 'var(--cc-suprimento)' }} /><span className="lim" style={{ left: '10%' }} /></span>
-                </div>
+              <div className="cc-faixa">
+                <Parametro grandeza="leitos" rotulo="Sob seu cuidado" valor={8} unidade="pacientes" estado="Leitos 12 a 24" nivel="ok" pct={8 / 13} limite={1} limiteTexto="13 leitos" />
+                <Parametro grandeza="observacao" rotulo="Maior permanência" valor="7h20" estado="2 pacientes acima do limite" nivel="critico" pct={7.33 / 9} limite={6 / 9} limiteTexto="limite 6h" />
+                <Parametro grandeza="turno" rotulo="Restam no turno" valor="4h28" estado="Em plantão desde 07:04" nivel="ok" pct={7.47 / 12} />
+                <Parametro grandeza="suprimento" rotulo="Da farmácia" valor={1} unidade="aviso" estado="Falta de noradrenalina 8 mg" nivel="atencao" />
               </div>
-              <p className="faixa-nota">A faixa de parâmetros do plantonista, como aparece na tela. Valores ilustrativos.</p>
+              <p className="faixa-nota">A faixa de parâmetros, como aparece nas telas. Valores ilustrativos.</p>
             </div>
           </section>
 

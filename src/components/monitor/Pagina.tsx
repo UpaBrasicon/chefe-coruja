@@ -4,15 +4,16 @@ import { Link } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
 
-/** Título de página: h1 de 24px, sempre ao lado de um azulejo de 42px com o ícone. */
+/**
+ * Título de página: h1 de 24px. O azulejo de 42px com o ícone saiu na revisão
+ * visual (parte 3.1, nível "mínimo" do RT, 21/10/2026); `icone` segue aceito
+ * para não mexer nas telas agora, e sai das chamadas tela a tela (3.2 a 3.9).
+ */
 export function TituloPagina({
-  icone: Icone, titulo, descricao, acoes, className,
-}: { icone: LucideIcon; titulo: string; descricao?: ReactNode; acoes?: ReactNode; className?: string }) {
+  titulo, descricao, acoes, className,
+}: { icone?: LucideIcon; titulo: string; descricao?: ReactNode; acoes?: ReactNode; className?: string }) {
   return (
     <header className={cn('cc-pagina-cabeca mb-[22px] flex flex-wrap items-start gap-3.5', className)}>
-      <span className="grid size-[42px] shrink-0 place-items-center rounded-controle bg-acao/10 text-acao" aria-hidden>
-        <Icone className="size-5" />
-      </span>
       <div className="min-w-0 flex-1">
         <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">{titulo}</h1>
         {descricao && <p className="mt-1 text-apoio text-tinta-sussurro">{descricao}</p>}
