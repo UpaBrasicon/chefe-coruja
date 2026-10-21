@@ -1059,6 +1059,16 @@ Homologação conferida pelo RT antes do merge; produção conferida depois do d
 `docs/frontend/revisao-visual/app/PLANO.md`. Regra que fica: toda direção da trilha nasce de referência do
 Refero, consultada antes de mostrar opções. Próxima: **3.2, recepção e painel da TV**.
 
+**3.2 (recepção e painel da TV) concluída em 21/10/2026, em produção (PR #175).** Referências do Refero:
+fila do Zendesk Talk, lista agrupada da Linear e a faixa F da 3.1; para a TV o Refero não tem referência
+de painel de chamada, então ela recebeu só o nível mínimo. O RT escolheu a **B, fila agrupada**: sai a faixa
+de contadores; a fila se agrupa em "Aguardando triagem", "Aguardando o médico" e "Em atendimento", com
+contagem, maior espera e quem passou do alvo da cor no cabeçalho do grupo; o status de cada paciente vira
+ponto + texto (a cor da classificação segue no selo com o nome). Cartões sem sombra; a página segue a coluna
+e a Nova ficha fica estreita. TV sem maiúsculas espaçadas e com a coruja no quadrado da marca. Homologação
+conferida pelo RT; produção conferida depois do deploy (o deploy de produção levou cerca de 12 minutos para
+entrar depois do merge). Próxima: **3.3, atendimento e documentos da porta**.
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
