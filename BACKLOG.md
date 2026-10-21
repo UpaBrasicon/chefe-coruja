@@ -1002,6 +1002,25 @@ Refero, e o RT escolhe antes da aplicação; uma parte por branch e PR, com a 5C
 | 2 | P1 | Telas de entrada | Login, cadastro, recuperar senha, aguardando liberação, seletor de unidade, páginas públicas (pacote de alta, receita) | Mesma direção da landing, nos dois temas |
 | 3 | P2 | App por papel | Na ordem do guia do padrão (seção 6); direções só onde o padrão não fixou | Telas sem divergência do guia e aprovadas pelo RT |
 
+**Parte 1 (landing) concluída em 20/10/2026, em produção.** Decisões do RT "A com o título de B,
+tirar já, enxugar, fonte da direção": direção "Livro da escala" (escala do dia no herói, seções como
+linhas de registro) com títulos em Newsreader; nove papéis do PRODUCT.md; saíram as formas de enfeite,
+a etiqueta acima do título e as imagens e o vídeo gerados por IA; a landing passou a seguir o tema
+claro/escuro e a ação em petróleo. A imagem do "certificado LGPD" (certificação inexistente, P0 da
+crítica do `impeccable`) saiu antes, no PR #169. Diagnóstico, referências do Refero, crítica, as três
+direções e as imagens em `docs/frontend/revisao-visual/landing/` (`DIRECOES.md`).
+
+**Desvio de processo:** a landing (PR #170) foi para a produção sem passar pela homologação. O PR #170
+tinha como base a branch da correção; o merge dele caiu nessa branch, e o #169 levou as duas mudanças
+juntas ao `master`. A produção foi conferida depois do deploy (página certa nos dois temas, sem
+rolagem lateral em 1280 e 390 px, "Entrar" e "Primeiro acesso" levando ao destino) e o RT manteve
+("ok produção"). A homologação foi alinhada ao `master` em seguida. Regra daqui em diante: PR de tarefa
+tem base `master`; PR que depende de outro só abre depois do merge do primeiro.
+
+Pendências: o rodapé não tem política de privacidade (o app não tem a página); o projeto Next.js
+separado em `landing/` (README cita depoimentos, case e preços) fica a avaliar pelo RT. Próxima:
+**parte 2, telas de entrada**.
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
