@@ -296,6 +296,14 @@ branch `feat/visual-3-3-porta`:
   (`fila-ps-claro|escuro.jpg`). A janela e os documentos pedem login: conferir na
   homologação.
 
+**Ajuste do RT (21/10/2026): a fila em abas**, no lugar dos grupos um em cima do
+outro: "Aguardando atendimento N" (antes "Aguardando o médico"), "Em atendimento
+N" e "Saídas do plantão N". A aba fica na URL (`?fila=`), então o médico volta à
+mesma aba ao fechar o atendimento. Quantos passaram do alvo da cor fica à direita
+das abas, visível em qualquer uma (no celular desce para a linha de baixo). Aba
+vazia diz que está vazia. Vista na página de teste nos dois temas, 1366 e 390 px
+(`fila-ps-abas-claro|escuro.jpg`).
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
