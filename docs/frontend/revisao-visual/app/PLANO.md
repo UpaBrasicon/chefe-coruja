@@ -96,6 +96,92 @@ e as listras da escala, já aceitas na parte 1. **Sem sessão aqui, não vi** a
 casca, a faixa do farmacêutico, do administrador e da telemedicina, nem as
 grades "Agora" (Indicadores) e o painel do gestor: conferir na homologação.
 
+## Conferência da régua no Refero (21/10/2026)
+
+As opções da faixa da 3.1 foram montadas sem consultar o Refero (desvio da
+decisão da trilha, avisado ao RT). A pedido dele, a régua foi conferida depois
+contra telas reais (`refero_search_screens`: métricas com limite, páginas de
+cota, painéis de monitoramento):
+
+| Referência | O que confirma ou corrige |
+|---|---|
+| Zendesk Status (`7957c520`) | Confirma linhas empilhadas por serviço, com o estado escrito à direita e a legenda uma vez só |
+| Appwrite, uso do plano (`1d33fe84`) | Corrige: o limite vai junto do número ("0 B / 5 GB used"), não solto na barra |
+| Cohere, limite de gasto (`0316cb1c`) | Corrige: textos da escala nas pontas, alinhados, nunca flutuando sobre a marca |
+| Visitors, Web Vitals (`a7582434`) | Confirma: valor compacto com o estado na cor, sem número gigante |
+
+**Ajuste proposto** (branch `feat/visual-3-1b-regua`): o texto do limite sai de
+baixo da marca e vai para o lado do número ("7h20 · limite 6h"); a marca fica sem
+legenda; a coluna do número tem largura fixa, então as escalas de todas as linhas
+começam no mesmo ponto; as linhas ficam da mesma altura. Imagens:
+`regua-ajuste-claro-desktop.jpg`, `regua-ajuste-escuro-desktop.jpg`,
+`regua-ajuste-escuro-celular.jpg` (antes: `regua-landing-*.jpg`).
+
+## Outras formas da faixa, a partir do Refero (21/10/2026)
+
+O RT perguntou se havia outras formas de mostrar os parâmetros com base no
+Refero (a régua tinha sido a melhor entre A, B e C, que não vinham dele). Três
+direções novas, cada uma de uma referência real, sobre o nível mínimo
+(`faixa-d|e|f-claro|escuro.jpg`):
+
+| Direção | Referência do Refero | Como fica |
+|---|---|---|
+| **D · faixa de status** | Fingerprint, visão geral (`217e2393`): faixa de status com rótulo pequeno em cima e o estado em ponto colorido ("No issues found") | Uma linha baixa: rótulo, valor e contexto; só o que pede atenção ganha ponto e selo ("2 acima de 6h"). Sem barra. Cabe fixa no topo |
+| **E · tabela de leitura** | Zendesk Talk, fila (`1686eace`): rótulo à esquerda, valor alinhado à direita, em colunas | Duas colunas de linhas: rótulo e valor na mesma linha, o estado por extenso embaixo. Sem barra |
+| **F · primeiro o que pede ação** | Linear, grupos de SLA (`cb07661a`); Factory, "Immediate Action Required" (`3125417b`) | O que passou do limite vem em linhas com o caminho ("Ver observação →"); o que está em ordem vira uma linha quieta embaixo. Sem nada fora do limite, só a linha quieta |
+
+A régua ajustada (limite junto do número, réguas alinhadas) segue como opção.
+
+**Escolha do RT (21/10/2026): F, primeiro o que pede ação.** Aplicada na branch
+`feat/visual-3-1b-regua`:
+
+- Peça nova `ResumoParametros` (`src/components/monitor/Parametros.tsx`): recebe
+  os mesmos `<Parametro>` e os separa pelo nível. Atenção e crítico viram linhas
+  com o número na cor do estado, o rótulo, o que aconteceu (e o limite, se houver)
+  e o caminho quando o parâmetro tem destino (`acao`, por exemplo "Conferir alta
+  vigilância"); o crítico vem antes. O que está em ordem, ou é leitura antiga,
+  vai para uma linha quieta: "Rótulo: **valor** · estado".
+- `FaixaParametros` (faixa do farmacêutico, do administrador e da telemedicina)
+  passa a usar a peça. A landing também.
+- As grades "Agora" (Indicadores) e o painel do gestor seguem com a régua de
+  `Parametro` até a 3.9, quando entram as telas do gestor.
+- Imagens: `faixa-f-aplicada-claro-desktop.jpg`, `faixa-f-aplicada-escuro-desktop.jpg`,
+  `faixa-f-aplicada-escuro-celular.jpg`. Typecheck, lint, build e catraca verdes;
+  detector do `impeccable` na landing sem achado novo.
+- **Sem sessão aqui, não vi** a faixa do farmacêutico, do administrador e da
+  telemedicina: conferir na homologação.
+
+**Faixa sob o título da página (pedido do RT, 21/10/2026).** A faixa saía da casca
+antes da página, colada no topo e acima de "Central do Farmacêutico". Agora a casca
+a põe num contexto (`FaixaDaPagina`, `src/components/monitor/faixaDaPagina.ts`) e o
+`TituloPagina` a desenha logo abaixo do título e da descrição, como um bloco da
+coluna (borda e canto das peças da página), antes das abas. `TabsPagina` zera o
+contexto dentro das abas, para a tela montada numa aba (a Rede do administrador)
+não repetir a faixa. Nas linhas de ação, o número tem coluna fixa (os textos
+começam no mesmo ponto) e, no celular, fica em cima do texto. Imagens:
+`faixa-sob-titulo-claro-desktop.jpg` e `faixa-sob-titulo-escuro-celular.jpg`,
+tiradas de uma página de teste local com as peças reais e dados fictícios.
+
+**Espaços vazios (pedido do RT, 21/10/2026, com captura da homologação).** Dois
+vãos: (1) páginas com largura própria (`max-w-4xl`, `max-w-5xl`, em 28 telas)
+ficavam presas à esquerda da coluna, com um vão à direita em tela larga; uma
+regra da casca (`.cc-pagina > * { margin-inline: auto }` em `src/index.css`) as
+centraliza, com margens iguais. (2) Na faixa, a coluna do número tinha largura
+fixa e abria um vão entre "3 na fila" e o texto; agora as linhas de ação dividem
+uma grade (subgrid) e a coluna tem a largura do maior número. Imagens:
+`pagina-centralizada-claro-1920.jpg`, `pagina-centralizada-escuro-1366.jpg`.
+
+**Coluna com 5% de margem (pedido do RT, 21/10/2026).** A partir de 1024 px a
+coluna do app deixou de ter teto (era 896 px, crescendo até 1200–1560 px): ocupa
+a área ao lado da lateral com 5% de margem de cada lado, no mínimo 28 px. As
+páginas que punham o próprio teto de 896 a 1152 px (`max-w-4xl`, `5xl`, `6xl`,
+29 telas) passam a seguir a coluna. Formulário estreito (`max-w-2xl`, `3xl`, 4
+telas) segue estreito e no centro, porque campo esticado a 90% da tela não se lê.
+Medido numa página de teste: 65 px de cada lado em 1366 e 93 px em 1920, 5,0%.
+Imagens: `coluna-5pct-claro-1920.jpg`, `coluna-5pct-escuro-1366.jpg`. Risco a
+conferir na homologação: tabelas e listas largas ficam mais compridas em tela
+grande.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base

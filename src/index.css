@@ -598,37 +598,29 @@
 .cc-param-est { grid-area: est; }
 .cc-param-campo { grid-area: campo; height: 16px; }
 .cc-param-sem-escala { display: none; }
-.cc-param-campo:has(> span + span + span > span) { margin-bottom: 18px; }
 @container (min-width: 620px) {
     .cc-param-corpo {
-        grid-template-columns: minmax(150px, 1.1fr) minmax(88px, auto) minmax(140px, 1.7fr) minmax(0, 1.5fr);
+        grid-template-columns: minmax(150px, 1fr) 12rem minmax(140px, 1.6fr) minmax(0, 1.4fr);
         grid-template-areas: 'rot val campo est';
     }
     .cc-param-sem-escala { display: block; }
-    .cc-param-campo:has(> span + span + span > span) { margin-bottom: 0; margin-top: 0; height: 34px; }
-    .cc-param-campo > span:first-child, .cc-param-campo > span:nth-child(2) { top: 5px; }
 }
 
 /*
- * LARGURA DA COLUNA (19/09 e 23/09): 896px é o mínimo confortável; a partir
- * de 1280 cresce com a janela até 1200, 1320 em 1680. Com a lateral
- * recolhida o conteúdo ganha a largura que a barra devolveu. `cc-larga` é
- * das telas de duas colunas (simulador de VM).
+ * LARGURA DA COLUNA. Até 1023px a coluna é a tela inteira, com o respiro de
+ * px-4/md:px-7. A partir de 1024px (revisão visual 3.1, pedido do RT de
+ * 21/10/2026) a coluna não tem mais teto: ocupa a área ao lado da lateral com 5%
+ * de margem de cada lado (no mínimo 28px). As páginas que punham o próprio teto
+ * de 896 a 1152px (max-w-4xl, 5xl, 6xl) passam a seguir a coluna; formulário
+ * estreito (max-w-2xl, 3xl) segue estreito e fica no centro.
  */
 .cc-coluna { max-width: var(--cc-coluna); }
-@media (min-width: 1280px) {
-    .cc-coluna { max-width: min(1200px, calc(100vw - var(--cc-lateral) - 96px)); }
-}
-@media (min-width: 1680px) {
-    .cc-coluna { max-width: 1320px; }
-}
+.cc-pagina > * { margin-inline: auto; }
 @media (min-width: 1024px) {
-    .cc-shell:has(.cc-recolhe) .cc-coluna { max-width: min(1440px, calc(100vw - var(--cc-lateral-recolhida) - 64px)); }
+    .cc-coluna { max-width: none; }
+    .cc-pagina.cc-coluna { padding-inline: max(28px, 5%); }
+    .cc-pagina > :is(.max-w-4xl, .max-w-5xl, .max-w-6xl) { max-width: none; }
 }
-@media (min-width: 1800px) {
-    .cc-shell:has(.cc-recolhe) .cc-coluna { max-width: 1560px; }
-}
-.cc-shell.cc-larga .cc-coluna { max-width: 1400px; }
 
 /*
  * MODO COMPACTO. Não é "tudo menor": é menos ar e menos texto de apoio,

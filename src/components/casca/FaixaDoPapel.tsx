@@ -91,14 +91,14 @@ function FaixaFarmaceutico({ unidadeId }: { unidadeId: string }) {
         valor={d ? d.semLiberacao : '—'} unidade="alta vigilância"
         estado={!d ? 'Carregando' : d.semLiberacao ? 'Conferir e liberar o item' : 'Nada para conferir'}
         nivel={d?.semLiberacao ? 'atencao' : 'ok'}
-        onClick={() => navigate('/alta-vigilancia')}
+        onClick={() => navigate('/alta-vigilancia')} acao="Conferir alta vigilância"
       />
       <Parametro
         grandeza="leitos" icone={PackageX} rotulo="Faltas sinalizadas em aberto"
         valor={d ? d.faltasAbertas : '—'} unidade={d?.faltasAbertas === 1 ? 'falta' : 'faltas'}
         estado={!d ? 'Carregando' : d.faltasAbertas ? 'Registradas ou em cotação' : 'Nenhuma em aberto'}
         nivel={d?.faltasAbertas ? 'atencao' : 'ok'}
-        onClick={() => navigate('/farmacia')}
+        onClick={() => navigate('/farmacia')} acao="Ver faltas"
       />
     </FaixaParametros>
   )

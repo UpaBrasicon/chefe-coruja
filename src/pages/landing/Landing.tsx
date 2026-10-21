@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, type MouseEvent, type ReactNode } from 
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, Bird } from 'lucide-react'
 
-import { Parametro } from '@/components/monitor/Parametros'
+import { Parametro, ResumoParametros } from '@/components/monitor/Parametros'
 import '@fontsource-variable/newsreader'
 import '@fontsource-variable/geist-mono'
 
@@ -245,18 +245,18 @@ export default function Landing() {
               {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
               <h2>O plantão, como a tela mostra.</h2>
               <p>
-                O fio do rótulo diz o que é a grandeza: leitos, observação, turno, suprimento. O número usa a cor do
-                estado, e a régua mostra onde fica o limite. Ler a tela é procurar o que passou da marca.
+                Primeiro o que pede ação: o que passou do limite aparece em cima, com o número na cor do estado e o
+                caminho para resolver. O que está em ordem fica numa linha só, embaixo.
               </p>
             </div>
-            {/* A peça do app (monitor/Parametros), não um desenho à parte: a landing mostra a régua como ela é. */}
+            {/* A peça do app (monitor/Parametros), não um desenho à parte: a landing mostra a faixa como ela é. */}
             <div className="faixa-cartao">
-              <div className="cc-faixa">
-                <Parametro grandeza="leitos" rotulo="Sob seu cuidado" valor={8} unidade="pacientes" estado="Leitos 12 a 24" nivel="ok" pct={8 / 13} limite={1} limiteTexto="13 leitos" />
-                <Parametro grandeza="observacao" rotulo="Maior permanência" valor="7h20" estado="2 pacientes acima do limite" nivel="critico" pct={7.33 / 9} limite={6 / 9} limiteTexto="limite 6h" />
-                <Parametro grandeza="turno" rotulo="Restam no turno" valor="4h28" estado="Em plantão desde 07:04" nivel="ok" pct={7.47 / 12} />
-                <Parametro grandeza="suprimento" rotulo="Da farmácia" valor={1} unidade="aviso" estado="Falta de noradrenalina 8 mg" nivel="atencao" />
-              </div>
+              <ResumoParametros>
+                <Parametro grandeza="leitos" rotulo="Sob seu cuidado" valor={8} unidade="pacientes" estado="leitos 12 a 24" nivel="ok" />
+                <Parametro grandeza="observacao" rotulo="Maior permanência acima de 6h" valor="7h20" estado="2 pacientes passaram do limite da observação." nivel="critico" />
+                <Parametro grandeza="turno" rotulo="Restam no turno" valor="4h28" estado="até 19:00" nivel="ok" />
+                <Parametro grandeza="suprimento" rotulo="Da farmácia" valor={1} unidade="aviso" estado="Falta de noradrenalina 8 mg." nivel="atencao" />
+              </ResumoParametros>
               <p className="faixa-nota">A faixa de parâmetros, como aparece nas telas. Valores ilustrativos.</p>
             </div>
           </section>

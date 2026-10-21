@@ -5,6 +5,7 @@ import { type LucideIcon } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Spinner } from '@/components/ui/spinner'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
+import { FaixaDaPagina } from '@/components/monitor/faixaDaPagina'
 
 export type AbaDef = {
   /** Valor na URL (`?aba=`). Mantê-lo estável — vira link compartilhável. */
@@ -87,7 +88,8 @@ export function TabsPagina({
                   </div>
                 }
               >
-                {a.conteudo()}
+                {/* A faixa da página já saiu sob o título acima; a tela da aba não a repete. */}
+                <FaixaDaPagina.Provider value={null}>{a.conteudo()}</FaixaDaPagina.Provider>
               </React.Suspense>
             )}
           </TabsContent>

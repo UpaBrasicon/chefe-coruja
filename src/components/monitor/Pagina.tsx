@@ -1,8 +1,9 @@
 import type { LucideIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useContext, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
+import { FaixaDaPagina } from './faixaDaPagina'
 
 /**
  * Título de página: h1 de 24px. O azulejo de 42px com o ícone saiu na revisão
@@ -12,14 +13,18 @@ import { cn } from '@/lib/utils'
 export function TituloPagina({
   titulo, descricao, acoes, className,
 }: { icone?: LucideIcon; titulo: string; descricao?: ReactNode; acoes?: ReactNode; className?: string }) {
+  const faixa = useContext(FaixaDaPagina)
   return (
-    <header className={cn('cc-pagina-cabeca mb-[22px] flex flex-wrap items-start gap-3.5', className)}>
-      <div className="min-w-0 flex-1">
-        <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">{titulo}</h1>
-        {descricao && <p className="mt-1 text-apoio text-tinta-sussurro">{descricao}</p>}
-      </div>
-      {acoes && <div className="flex flex-wrap items-center gap-2">{acoes}</div>}
-    </header>
+    <>
+      <header className={cn('cc-pagina-cabeca mb-[22px] flex flex-wrap items-start gap-3.5', className)}>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-titulo leading-[1.1] font-semibold tracking-[-0.02em] text-tinta">{titulo}</h1>
+          {descricao && <p className="mt-1 text-apoio text-tinta-sussurro">{descricao}</p>}
+        </div>
+        {acoes && <div className="flex flex-wrap items-center gap-2">{acoes}</div>}
+      </header>
+      {faixa}
+    </>
   )
 }
 
