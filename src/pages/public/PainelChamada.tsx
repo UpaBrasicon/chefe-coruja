@@ -150,7 +150,7 @@ export default function PainelChamada() {
   const cabecalho = (
     <header className="flex items-center justify-between gap-6 border-b border-tv-borda px-[2.4vw] py-[1.8vh]">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="grid size-[4.4vh] shrink-0 place-items-center rounded-[1vh] bg-tv-claro/10"><Bird className="size-[2.4vh]" aria-hidden /></span>
+        <span className="grid size-[4.4vh] shrink-0 place-items-center rounded-[1vh] bg-marca"><Bird className="size-[2.4vh]" aria-hidden /></span>
         <div className="min-w-0 leading-tight">
           <div className="truncate text-[2.4vh] font-semibold tracking-[-0.01em]">{painel?.unidade ?? 'Chefe Coruja'}</div>
           <div className="truncate text-[1.8vh] text-tv-apoio">{painel?.porta ?? 'Painel de chamada'}</div>
@@ -170,7 +170,7 @@ export default function PainelChamada() {
 
   const blocoAtual = (
     <div className="flex flex-col gap-[1.6vh] border-b border-tv-chamada bg-tv-borda px-[2vw] py-[2.8vh]" aria-live="polite">
-      <span className="text-[2vh] font-semibold tracking-[0.08em] text-tv-apoio uppercase">{rotuloAtual}</span>
+      <span className="text-[2vh] font-semibold text-tv-apoio">{rotuloAtual}</span>
       {atual ? (
         <div className="flex flex-col gap-[1.4vh]">
           <span className="text-[5.2vh] leading-[1.05] font-bold tracking-[-0.015em] text-balance">{atual.nome}</span>
@@ -185,7 +185,7 @@ export default function PainelChamada() {
 
   const listaAnteriores = (
     <div className="flex min-h-0 flex-col gap-[0.4vh] overflow-hidden px-[2vw] py-[2.2vh]">
-      <span className="mb-[0.6vh] text-[1.8vh] font-semibold tracking-[0.08em] text-tv-apoio uppercase">Últimas chamadas</span>
+      <span className="mb-[0.6vh] text-[1.8vh] font-semibold text-tv-apoio">Últimas chamadas</span>
       {anteriores.slice(0, 5).map((c) => (
         <div key={c.id} className="flex flex-col gap-[0.4vh] border-b border-tv-borda py-[1.3vh]">
           <span className="text-[2.8vh] leading-[1.15] font-semibold text-balance">{c.nome}</span>
@@ -222,7 +222,7 @@ export default function PainelChamada() {
               ))}
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[1.7vh] font-semibold tracking-[0.08em] text-tv-apoio uppercase">{painel?.propaganda?.rotulo}</span>
+              <span className="text-[1.7vh] font-semibold text-tv-apoio">{painel?.propaganda?.rotulo}</span>
               {nArtes > 1 && (
                 <div className="flex gap-[0.8vh]">
                   {artes.map((a, i) => (
@@ -255,7 +255,7 @@ export default function PainelChamada() {
 
       {destaque && atual && !erro && (
         <div className="absolute inset-0 z-10 flex flex-col justify-center gap-[4vh] bg-tv-chamada px-[6vw] py-[6vh]" role="alert">
-          <span className="text-[3.2vh] font-semibold tracking-[0.1em] text-tv-texto uppercase">{rotuloAtual}</span>
+          <span className="text-[3.2vh] font-semibold text-tv-texto">{rotuloAtual}</span>
           <span className="text-[11vh] leading-none font-bold tracking-[-0.02em] text-balance">{atual.nome}</span>
           <div className="flex flex-wrap items-baseline gap-[3vw]">
             <span className="rounded-[1.4vh] px-[2.6vh] py-[1.4vh] text-[9vh] leading-none font-bold text-tv-claro bg-tv-fundo">{atual.sala}</span>

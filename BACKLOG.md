@@ -941,6 +941,17 @@ métodos gráficos no sistema) está em produção desde 19/10/2026; a 2.2
 (porta FHIR da imagem e simulador) volta depois da trilha "Padrão do frontend", abaixo.
 **Retomada em 20/10/2026:** a trilha do padrão foi encerrada; a 5C volta pela etapa 2.2.
 
+**Tarefa 2 (imagem/RIS/PACS) concluída em 20/10/2026.** Etapa 2.2 em produção (PRs #167 e #168),
+com as decisões do RT "1a 2a 3a 4a 5a 6a": o RIS usa a mesma porta FHIR com o recurso `imagem`; o
+ImagingStudy marca o exame como realizado, com o link do visualizador; o laudo de imagem e de ECG chega
+pelo DiagnosticReport; o link do PACS só vale em https e de domínio cadastrado pela unidade (porta e
+tela); a enfermagem segue marcando realizado onde não há RIS; o simulador ganhou `--modo imagem`. A
+função antiga da porta do laboratório saiu (contração). Próxima: **tarefa 3, ERP/financeiro**.
+
+**Pausa da 5C em 20/10/2026 (pedido do RT):** a tarefa 3 (ERP/financeiro) para antes do código, para a
+trilha "Revisão visual", abaixo. As cinco perguntas da tarefa 3 (como chega ao ERP, o que vai, formato,
+conciliação, conta reaberta) ficam feitas e sem resposta; voltam na retomada.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
@@ -976,6 +987,77 @@ verificação no navegador (`scripts/verificacao-telas.mjs --tema claro|escuro`,
 | S1 | P0 | Trava das colunas do próprio perfil | A pessoa só altera pela API foto, tipo sanguíneo, dados pessoais e tema; CBO e CNS pelas funções com validação; nome, CPF, nascimento, conselho, registro, CRM, e-mail e `ativo` travados ("1a"). Registro digitado errado na ativação: pendência, correção pontual a pedido do RT ("2a") | Teste de banco recusa a troca de CRM, registro e `ativo` pela API; as telas de perfil e de tema seguem gravando |
 
 ---
+
+## Trilha — Revisão visual (pedido do RT em 20/10/2026)
+
+**Pedido do RT:** varrer o site com referências do Refero (MCP) e tirar a cara genérica de "feito por IA".
+Decisões "1c 2a 3a 4a": site público e app, começando pela landing; mantém o que a trilha do padrão
+fixou (cores em petróleo, marca teal, coruja, tema escuro, tokens e catraca da CI) e muda composição,
+tipografia, layout e imagens; para cada parte, 2 ou 3 direções com imagens, baseadas em referências do
+Refero, e o RT escolhe antes da aplicação; uma parte por branch e PR, com a 5C pausada.
+
+| Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
+|---|---|---|---|---|
+| 1 | P1 | Landing (piloto) | Levantar referências no Refero; 2 ou 3 direções com imagens; aplicar a escolhida | RT escolhe a direção; landing publicada na homologação sem regra nova na catraca |
+| 2 | P1 | Telas de entrada | Login, cadastro, recuperar senha, aguardando liberação, seletor de unidade, páginas públicas (pacote de alta, receita) | Mesma direção da landing, nos dois temas |
+| 3 | P2 | App por papel | Na ordem do guia do padrão (seção 6); direções só onde o padrão não fixou | Telas sem divergência do guia e aprovadas pelo RT |
+
+**Parte 1 (landing) concluída em 20/10/2026, em produção.** Decisões do RT "A com o título de B,
+tirar já, enxugar, fonte da direção": direção "Livro da escala" (escala do dia no herói, seções como
+linhas de registro) com títulos em Newsreader; nove papéis do PRODUCT.md; saíram as formas de enfeite,
+a etiqueta acima do título e as imagens e o vídeo gerados por IA; a landing passou a seguir o tema
+claro/escuro e a ação em petróleo. A imagem do "certificado LGPD" (certificação inexistente, P0 da
+crítica do `impeccable`) saiu antes, no PR #169. Diagnóstico, referências do Refero, crítica, as três
+direções e as imagens em `docs/frontend/revisao-visual/landing/` (`DIRECOES.md`).
+
+**Desvio de processo:** a landing (PR #170) foi para a produção sem passar pela homologação. O PR #170
+tinha como base a branch da correção; o merge dele caiu nessa branch, e o #169 levou as duas mudanças
+juntas ao `master`. A produção foi conferida depois do deploy (página certa nos dois temas, sem
+rolagem lateral em 1280 e 390 px, "Entrar" e "Primeiro acesso" levando ao destino) e o RT manteve
+("ok produção"). A homologação foi alinhada ao `master` em seguida. Regra daqui em diante: PR de tarefa
+tem base `master`; PR que depende de outro só abre depois do merge do primeiro.
+
+Pendências: o rodapé não tem política de privacidade (o app não tem a página); o projeto Next.js
+separado em `landing/` (README cita depoimentos, case e preços) fica a avaliar pelo RT.
+
+**Parte 2 (telas de entrada) concluída em 21/10/2026, em produção (PR #171).** Mesma direção da landing,
+a pedido do RT. Entrar, Primeiro acesso e Esqueci a senha ganharam a coluna da marca nova (folha escura
+com as colunas da escala, título em serifa, linhas de registro); saíram as barras giradas, a bolha, a
+palavra em cor, os ícones em ladrilho e a etiqueta acima do título. Aguardando liberação, Escolher a
+unidade e Link de receita passaram a uma página de entrada comum; a receita perdeu o jargão de dev e o
+token na tela. Pacote de alta: topo e títulos em serifa, documentos sem mudança. Passou pela homologação
+(conferida pelo RT, inclusive as telas com sessão) antes do merge; produção conferida depois do deploy
+(títulos em Newsreader, coluna nova, sem erro de página, sem rolagem lateral em 1280 e 390 px). Registro
+e imagens em `docs/frontend/revisao-visual/entrada/APLICACAO.md`. Próxima: **parte 3, app por papel**,
+na ordem do guia do padrão (seção 6).
+
+**Parte 3, plano (21/10/2026).** Decisões do RT: nove subpartes, uma por branch e PR, na ordem do guia
+(3.1 casca e menus, 3.2 recepção e painel da TV, 3.3 atendimento e documentos da porta, 3.4 triagem e
+enfermagem, 3.5 leito aberto, 3.6 observação, 3.7 farmácia, 3.8 Central do Plantonista e ferramentas,
+3.9 escala e menu do gestor). No app vale o **nível mínimo**: só tirar os reflexos genéricos, sem serifa
+(maquetes de quatro níveis em `docs/frontend/revisao-visual/app/`). Plano e registro em
+`docs/frontend/revisao-visual/app/PLANO.md`.
+
+**3.1 (casca e menus) concluída em 21/10/2026, em produção (PR #172).** Título de página sem o azulejo de
+ícone (guia 4.1 atualizado); lateral sem cartão nos avisos "Da unidade" e nos números "Da rede"; a faixa
+de parâmetros virou **régua** (opção B do RT: fio na cor da grandeza, número na cor do estado, escala com
+o limite escrito, estado por extenso, sem ícone nem número gigante; larga em quatro colunas, estreita
+empilhada; deixou de ficar fixa ao rolar), e a landing passou a mostrar a mesma peça; a classe `.rotulo`
+perdeu as maiúsculas espaçadas em todo o app (guia 5.1). Homologação conferida pelo RT antes do merge;
+produção conferida depois do deploy.
+
+**3.1, complemento (21/10/2026, em produção, PR #174).** A pedido do RT, a régua foi conferida contra
+telas reais do Refero (as opções A, B e C da faixa tinham sido montadas sem consultá-lo, desvio da decisão
+da trilha) e vieram três formas novas a partir de referências (Fingerprint, Zendesk Talk, Linear e
+Factory). O RT escolheu a **F, "primeiro o que pede ação"**: a peça `ResumoParametros` põe em cima o que
+está em atenção ou crítico, com o número na cor do estado e o caminho para resolver, e o que está em ordem
+numa linha quieta embaixo; vale na faixa do farmacêutico, do administrador e da telemedicina e na landing
+(as grades do gestor seguem com a régua até a 3.9). A faixa passou a entrar logo abaixo do título da
+página, como um bloco da coluna; as páginas com largura própria ficam centralizadas; e, a partir de 1024 px,
+a coluna do app ocupa a tela com 5% de margem de cada lado (formulários estreitos seguem estreitos).
+Homologação conferida pelo RT antes do merge; produção conferida depois do deploy. Registro em
+`docs/frontend/revisao-visual/app/PLANO.md`. Regra que fica: toda direção da trilha nasce de referência do
+Refero, consultada antes de mostrar opções. Próxima: **3.2, recepção e painel da TV**.
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
