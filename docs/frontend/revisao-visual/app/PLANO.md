@@ -304,6 +304,42 @@ das abas, visível em qualquer uma (no celular desce para a linha de baixo). Aba
 vazia diz que está vazia. Vista na página de teste nos dois temas, 1366 e 390 px
 (`fila-ps-abas-claro|escuro.jpg`).
 
+**Pesquisa nos rivais (21/10/2026), a pedido do RT.** Seis modelos, montados com
+os componentes reais e dados fictícios (`ps-modelo-1..6-claro|escuro.jpg`):
+
+1. abas + pendências na linha (Epic Track Board, athenaOne);
+2. tabela densa (quadros de rastreamento: Epic, athenaOne, Cerner FirstNet);
+3. painel por zona (Cerner ED LaunchPoint);
+4. grade de ações com hora e cor (Symphony, Reino Unido);
+5. resumo por cor no topo (MV Painel; projeto de lei de Serra/ES);
+6. quadro de etapas lado a lado (Refero: Linear, Workflow, Marathon).
+
+Fontes: ajuda do athenaOne (Tracking Board), páginas de suporte Epic das
+universidades de Iowa e Houston Methodist, boletins do Health PEI e da Northern
+Light (FirstNet e LaunchPoint), guia do Symphony da UH Sussex, manuais do MV
+Painel (SES-ES). Nenhum fornecedor publica captura da tela.
+
+**Escolha do RT (21/10/2026): tabela densa, mas dentro das abas** (nada de
+"aguardando" em cima e "em atendimento" embaixo; `ps-tabela-aba0..2-*.jpg`).
+Agora entra só o que a fila já lê; as colunas de dado novo (alergia, sala,
+médico, exames, medicação) vão ao BACKLOG como item próprio. A grade de ações
+(modelo 4) vai para o gestor, junto da 3.9. Aplicado na branch
+`feat/visual-3-3-tabela`:
+
+- Cada aba tem a sua tabela. Aguardando: cor, paciente (com prioridade legal e
+  faixa pela idade embaixo), queixa, espera (vermelha acima do alvo), alvo,
+  situação (aguardando ou chamado N vezes; vermelho a partir de 3) e as ações
+  (sala, chamar, abrir). Em atendimento: cor, paciente, queixa, há quanto tempo,
+  situação (em atendimento ou reavaliação, atrasada em vermelho) e abrir ou
+  reavaliar. Saídas: cor, paciente, desfecho, CID, destino ou motivo, hora.
+- Clique no título ordena (cor, espera, há, hora): maior primeiro, menor
+  primeiro, volta à ordem de sempre (a médica; nas saídas, a mais recente).
+- `BotaoChamar` ganha `semContagem`: na tabela a contagem já está na Situação,
+  então o botão diz só "Chamar de novo". Recepção e triagem não mudam.
+- Vista na página de teste com o componente real nos dois temas, 1366 e 390 px
+  (no celular a tabela rola na horizontal); a ordenação foi conferida clicando
+  em "Espera" (`fila-ps-tabela-*.jpg`).
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base

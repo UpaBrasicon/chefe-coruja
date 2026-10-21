@@ -1,9 +1,11 @@
-// Fila médica do Pronto-Socorro (protótipo, "Pronto Socorro"), em três abas:
-// triados aguardando por cor e espera; "Em atendimento" (com o estado "em
-// reavaliação"); "Saídas do plantão" com os finalizados e excluídos do dia.
-// A cor manda; 80+ e prioridade legal só desempatam dentro da mesma cor.
+// Fila médica do Pronto-Socorro (protótipo, "Pronto Socorro"), em três abas,
+// cada uma com a sua tabela: triados aguardando por cor e espera; "Em
+// atendimento" (com o estado "em reavaliação"); "Saídas do plantão" com os
+// finalizados e excluídos do dia. A cor manda; 80+ e prioridade legal só
+// desempatam dentro da mesma cor.
 import { useQuery } from '@tanstack/react-query'
-import { Check, Stethoscope } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, Stethoscope } from 'lucide-react'
+import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
@@ -11,9 +13,10 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { faixaEtaria, rotuloFaixa, rotuloIdade } from '@/domain/idade'
 import { homonimos } from '@/domain/homonimos'
 import { rotulosPrioridade } from '@/domain/prioridade'
-import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
+import { ALVO_MIN, gravidade, ordemMedica, type CorRisco } from '@/domain/risco'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Spinner } from '@/components/ui/spinner'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
@@ -34,12 +37,11 @@ type Saida = {
 const MOTIVO_EXCLUSAO: Record<string, string> = { evasao: 'evasão', duplicada: 'ficha duplicada', engano: 'engano' }
 
 const idadeDe = (p: { data_nascimento: string | null } | null) => (p?.data_nascimento ? rotuloIdade(p.data_nascimento, hoje()) : '')
-
-function Lista({ children }: { children: React.ReactNode }) {
-  return <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">{children}</section>
-}
+const minDesde = (iso: string | null | undefined, agora: number) => (iso ? Math.max(0, Math.round((agora - Date.parse(iso)) / 60_000)) : 0)
+const quando = (s: Saida) => Date.parse(s.desfecho_em ?? s.encerrado_em ?? '') || 0
 
 const Vazio = ({ children }: { children: React.ReactNode }) => <p className="px-5 py-5 text-controle text-tinta-sussurro">{children}</p>
+const Nada = () => <span className="text-tinta-sussurro">—</span>
 
 // Três abas pedidas pelo RT (21/10/2026), no lugar dos grupos empilhados. A aba
 // fica na URL (?fila=), então volta onde estava ao fechar o atendimento.
@@ -49,6 +51,65 @@ const ABAS = [
   { valor: 'saidas', rotulo: 'Saídas do plantão' },
 ] as const
 type Aba = (typeof ABAS)[number]['valor']
+
+// Ordenar pela coluna (quadro de rastreamento dos rivais, escolha do RT em
+// 21/10/2026). Sem coluna escolhida vale a ordem de sempre (a médica, na fila;
+// a mais recente, nas saídas). Clique: maior primeiro → menor primeiro → volta.
+type Ordem = { col: string | null; desc: boolean }
+function useOrdem() {
+  const [ordem, setOrdem] = React.useState<Ordem>({ col: null, desc: true })
+  const alternar = (col: string) =>
+    setOrdem((o) => (o.col !== col ? { col, desc: true } : o.desc ? { col, desc: false } : { col: null, desc: true }))
+  return [ordem, alternar] as const
+}
+function ordenar<T>(lista: T[], ordem: Ordem, chaves: Record<string, (x: T) => number>): T[] {
+  const chave = ordem.col ? chaves[ordem.col] : undefined
+  if (!chave) return lista
+  // sort estável: empate fica na ordem de sempre
+  return [...lista].sort((a, b) => (ordem.desc ? chave(b) - chave(a) : chave(a) - chave(b)))
+}
+
+function Cabeca({ children, col, ordem, alternar, className }: {
+  children: React.ReactNode; col?: string; ordem?: Ordem; alternar?: (c: string) => void; className?: string
+}) {
+  if (!col || !ordem || !alternar) return <TableHead className={className}>{children}</TableHead>
+  const ativa = ordem.col === col
+  const Icone = !ativa ? ArrowUpDown : ordem.desc ? ArrowDown : ArrowUp
+  return (
+    <TableHead className={className} aria-sort={ativa ? (ordem.desc ? 'descending' : 'ascending') : 'none'}>
+      <Button variant="ghost" size="xs" onClick={() => alternar(col)} className={cn('-mx-2 font-[inherit] text-[length:inherit]', ativa && 'text-tinta')}>
+        {children}<Icone aria-hidden />
+      </Button>
+    </TableHead>
+  )
+}
+
+// Nome e idade; embaixo, quando há, a prioridade legal e a faixa pela idade na
+// chegada (pediatria ou sem data de nascimento; adulto não ganha rótulo).
+function Paciente({ e, iguais }: {
+  e: { id: string; paciente: EpFila['paciente'] | Saida['paciente'] } & Partial<Pick<EpFila, 'chegada_em' | 'prioridades_legais'>>
+  iguais?: Set<string>
+}) {
+  const faixa = e.chegada_em ? faixaEtaria(e.paciente?.data_nascimento, e.chegada_em) : null
+  const prioridade = e.prioridades_legais?.length ? rotulosPrioridade(e.prioridades_legais).join(', ') : ''
+  return (
+    <div className="flex flex-col items-start gap-0.5">
+      <span><span className="font-medium text-tinta">{nomeDe(e)}</span> <span className="text-tinta-sussurro">{idadeDe(e.paciente)}</span></span>
+      {(prioridade || (faixa && rotuloFaixa(faixa))) && (
+        <span className="text-rotulo text-tinta-sussurro">
+          {prioridade && <>Prioridade: {prioridade}</>}
+          {prioridade && faixa && rotuloFaixa(faixa) && ' · '}
+          {faixa && rotuloFaixa(faixa) && <span className={faixa === 'pediatrico' ? 'text-pediatria' : 'text-atencao'}>{rotuloFaixa(faixa)}</span>}
+        </span>
+      )}
+      {iguais?.has(e.id) && <SeloHomonimo paciente={e.paciente as EpFila['paciente']} />}
+    </div>
+  )
+}
+
+const Queixa = ({ texto }: { texto: string }) => (
+  <TableCell className="max-w-[220px] truncate text-tinta-apoio" title={texto}>{texto}</TableCell>
+)
 
 export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: EpFila) => void }) {
   const { unidadeAtiva } = useUnidade()
@@ -61,6 +122,9 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
     else proxima.set('fila', v)
     setBusca(proxima, { replace: true })
   }
+  const [ordemAg, alternarAg] = useOrdem()
+  const [ordemAt, alternarAt] = useOrdem()
+  const [ordemSa, alternarSa] = useOrdem()
 
   const setores = useQuery({
     queryKey: ['setores-na-escala', unidadeAtiva?.unidade_id],
@@ -104,14 +168,13 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
         .or(`desfecho_em.gte.${desde},encerrado_em.gte.${desde}`)
         .limit(200)
       if (error) throw error
-      const quando = (s: Saida) => Date.parse(s.desfecho_em ?? s.encerrado_em ?? '') || 0
       return ((data ?? []) as unknown as Saida[]).sort((a, b) => quando(b) - quando(a))
     },
   })
 
   const aguardando = (fila.data ?? []).filter((e) => !e.atendimento_iniciado_em)
   const emAtendimento = (fila.data ?? []).filter((e) => e.atendimento_iniciado_em)
-  const acimaDoAlvo = aguardando.filter((e) => Math.round((agora - Date.parse(e.classificado_em)) / 60_000) > ALVO_MIN[e.cor_atual]).length
+  const acimaDoAlvo = aguardando.filter((e) => minDesde(e.classificado_em, agora) > ALVO_MIN[e.cor_atual]).length
   const contagem: Record<Aba, number> = { aguardando: aguardando.length, atendimento: emAtendimento.length, saidas: (saidas.data ?? []).length }
   const iguais = homonimos(fila.data ?? [])
   const setoresDaFila = [...new Set((fila.data ?? []).map((e) => e.setor_id))]
@@ -119,6 +182,8 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
 
   const carregando = setores.isLoading || fila.isLoading
   const erro = setores.error ?? fila.error
+  // "cor": mais grave primeiro na ordem decrescente
+  const porCor = (e: { cor_atual: CorRisco | null }) => (e.cor_atual ? -gravidade(e.cor_atual) : -99)
 
   return (
     <div className="flex flex-col gap-3">
@@ -153,88 +218,136 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
         </div>
 
         <TabsContent value="aguardando">
-          <Lista>
+          <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
             {carregando && <div className="px-5 py-4"><Spinner /></div>}
             {!carregando && aguardando.length === 0 && <Vazio>Nenhum paciente triado aguardando.</Vazio>}
-            {aguardando.map((e) => {
-              const min = Math.max(0, Math.round((agora - Date.parse(e.classificado_em)) / 60_000))
-              const acima = min > ALVO_MIN[e.cor_atual]
-              return (
-                <div key={e.id} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-3 last:border-0">
-                  <PilulaRisco cor={e.cor_atual} />
-                  <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
-                    <span className="text-corpo font-medium text-tinta">{nomeDe(e)} <span className="text-apoio font-normal text-tinta-sussurro">{idadeDe(e.paciente)}</span></span>
-                    <span className="text-apoio text-tinta-sussurro [text-wrap:pretty]">
-                      {[e.queixa, e.prioridades_legais.length ? `Prioridade: ${rotulosPrioridade(e.prioridades_legais).join(', ')}` : '', rotuloFaixa(faixaEtaria(e.paciente?.data_nascimento, e.chegada_em))]
-                        .filter(Boolean).join(' · ')}
-                    </span>
-                    {iguais.has(e.id) && <SeloHomonimo paciente={e.paciente} />}
-                    <Estado tom="cinza">Aguardando</Estado>
-                  </div>
-                  <span className={cn('text-apoio whitespace-nowrap tabular-nums', acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>
-                    espera {minutos(e.classificado_em, agora)} · alvo {ALVO_MIN[e.cor_atual]} min
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    <BotaoChamar episodioId={e.id} setorId={e.setor_id} etapa="atendimento" chamadas={chamadas.data?.get(e.id) ?? 0} />
-                    <Button size="sm" onClick={() => onAbrir(e)}><Stethoscope /> Abrir atendimento</Button>
-                  </div>
-                </div>
-              )
-            })}
-          </Lista>
+            {aguardando.length > 0 && (
+              <Table aria-label="Aguardando atendimento">
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <Cabeca col="cor" ordem={ordemAg} alternar={alternarAg}>Cor</Cabeca>
+                    <Cabeca>Paciente</Cabeca>
+                    <Cabeca>Queixa</Cabeca>
+                    <Cabeca col="espera" ordem={ordemAg} alternar={alternarAg}>Espera</Cabeca>
+                    <Cabeca>Alvo</Cabeca>
+                    <Cabeca>Situação</Cabeca>
+                    <Cabeca className="text-right"><span className="sr-only">Ações</span></Cabeca>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ordenar(aguardando, ordemAg, { cor: porCor, espera: (e) => minDesde(e.classificado_em, agora) }).map((e) => {
+                    const acima = minDesde(e.classificado_em, agora) > ALVO_MIN[e.cor_atual]
+                    const n = chamadas.data?.get(e.id) ?? 0
+                    return (
+                      <TableRow key={e.id}>
+                        <TableCell><PilulaRisco cor={e.cor_atual} /></TableCell>
+                        <TableCell><Paciente e={e} iguais={iguais} /></TableCell>
+                        <Queixa texto={e.queixa} />
+                        <TableCell className={cn('tabular-nums', acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>{minutos(e.classificado_em, agora)}</TableCell>
+                        <TableCell className="tabular-nums text-tinta-sussurro">{ALVO_MIN[e.cor_atual]} min</TableCell>
+                        <TableCell>
+                          {n === 0 ? <Estado tom="cinza">Aguardando</Estado>
+                            : <Estado tom={n >= 3 ? 'vermelho' : 'ambar'}>Chamado {n} {n === 1 ? 'vez' : 'vezes'}</Estado>}
+                        </TableCell>
+                        <TableCell>
+                          {/* sala, chamar e abrir numa linha só: a linha da tabela não cresce */}
+                          <div className="flex items-center justify-end gap-2 [&>div]:flex-nowrap">
+                            <BotaoChamar episodioId={e.id} setorId={e.setor_id} etapa="atendimento" chamadas={n} semContagem />
+                            <Button size="sm" onClick={() => onAbrir(e)} aria-label={`Abrir atendimento de ${nomeDe(e)}`}><Stethoscope /> Abrir</Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </section>
         </TabsContent>
 
         <TabsContent value="atendimento">
-          <Lista>
+          <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
             {!carregando && emAtendimento.length === 0 && <Vazio>Nenhum paciente em atendimento.</Vazio>}
-            {emAtendimento.map((e) => {
-              const reav = !!e.reavaliar_em
-              const atrasada = reav && Date.parse(e.reavaliar_em!) < agora
-              return (
-                <div key={e.id} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-3 last:border-0">
-                  <PilulaRisco cor={e.cor_atual} />
-                  <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
-                    <span className="text-corpo font-medium text-tinta">{nomeDe(e)} <span className="text-apoio font-normal text-tinta-sussurro">{idadeDe(e.paciente)}</span></span>
-                    <span className="text-apoio text-tinta-sussurro [text-wrap:pretty]">{e.queixa}</span>
-                    {iguais.has(e.id) && <SeloHomonimo paciente={e.paciente} />}
-                    {reav
-                      ? <Estado tom={atrasada ? 'vermelho' : 'ambar'}>Em reavaliação · às {hora(e.reavaliar_em)}{atrasada ? ' · atrasada' : ''}</Estado>
-                      : <Estado tom="teal">Em atendimento</Estado>}
-                  </div>
-                  <span className="text-apoio whitespace-nowrap tabular-nums text-tinta-apoio">há {minutos(e.atendimento_iniciado_em, agora)}</span>
-                  <Button size="sm" variant="outline" onClick={() => onAbrir(e)}>{reav ? 'Reavaliar' : 'Abrir atendimento'}</Button>
-                </div>
-              )
-            })}
-          </Lista>
+            {emAtendimento.length > 0 && (
+              <Table aria-label="Em atendimento">
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <Cabeca col="cor" ordem={ordemAt} alternar={alternarAt}>Cor</Cabeca>
+                    <Cabeca>Paciente</Cabeca>
+                    <Cabeca>Queixa</Cabeca>
+                    <Cabeca col="ha" ordem={ordemAt} alternar={alternarAt}>Há</Cabeca>
+                    <Cabeca>Situação</Cabeca>
+                    <Cabeca className="text-right"><span className="sr-only">Ações</span></Cabeca>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ordenar(emAtendimento, ordemAt, { cor: porCor, ha: (e) => minDesde(e.atendimento_iniciado_em, agora) }).map((e) => {
+                    const reav = !!e.reavaliar_em
+                    const atrasada = reav && Date.parse(e.reavaliar_em!) < agora
+                    return (
+                      <TableRow key={e.id}>
+                        <TableCell><PilulaRisco cor={e.cor_atual} /></TableCell>
+                        <TableCell><Paciente e={e} iguais={iguais} /></TableCell>
+                        <Queixa texto={e.queixa} />
+                        <TableCell className="tabular-nums text-tinta-apoio">{minutos(e.atendimento_iniciado_em, agora)}</TableCell>
+                        <TableCell>
+                          {reav
+                            ? <Estado tom={atrasada ? 'vermelho' : 'ambar'}>Em reavaliação · às {hora(e.reavaliar_em)}{atrasada ? ' · atrasada' : ''}</Estado>
+                            : <Estado tom="teal">Em atendimento</Estado>}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button size="sm" variant="outline" onClick={() => onAbrir(e)}>{reav ? 'Reavaliar' : 'Abrir atendimento'}</Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </section>
         </TabsContent>
 
         <TabsContent value="saidas">
-          <Lista>
+          <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
             {!saidas.isLoading && (saidas.data ?? []).length === 0 && <Vazio>Nenhuma saída desde a meia-noite.</Vazio>}
-            {(saidas.data ?? []).map((s) => {
-              // retirado da fila (recepção/enfermagem): sem médico no desfecho
-              const excluido = s.desfecho === 'cancelado' || (s.desfecho === 'evasao' && !s.desfecho_por)
-              const [codigo, ...resto] = (s.desfecho_motivo ?? '').split(': ')
-              const d = s.desfecho_detalhes ?? {}
-              const linha = excluido
-                ? [resto.join(': ') || s.desfecho_motivo, `às ${hora(s.encerrado_em)}`].filter(Boolean).join(' · ')
-                : [d.cid_alta ? `CID ${String(d.cid_alta)}` : '', d.destino ? `Destino: ${String(d.destino)}` : '', `às ${hora(s.desfecho_em ?? s.encerrado_em)}`]
-                  .filter(Boolean).join(' · ')
-              return (
-                <div key={s.id} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-2.5 last:border-0">
-                  <PilulaRisco cor={s.cor_atual} />
-                  <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
-                    <span className="text-controle font-medium text-tinta">{nomeDe(s)} <span className="text-apoio font-normal text-tinta-sussurro">{idadeDe(s.paciente)}</span></span>
-                    <span className="text-apoio text-tinta-sussurro [text-wrap:pretty]">{linha}</span>
-                  </div>
-                  {excluido
-                    ? <Estado tom="vermelho">Excluído · {MOTIVO_EXCLUSAO[codigo] ?? codigo}</Estado>
-                    : <Estado tom="verde">{rotuloDesfecho(s.desfecho)}</Estado>}
-                </div>
-              )
-            })}
-          </Lista>
+            {(saidas.data ?? []).length > 0 && (
+              <Table aria-label="Saídas do plantão">
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <Cabeca col="cor" ordem={ordemSa} alternar={alternarSa}>Cor</Cabeca>
+                    <Cabeca>Paciente</Cabeca>
+                    <Cabeca>Desfecho</Cabeca>
+                    <Cabeca>CID</Cabeca>
+                    <Cabeca>Destino ou motivo</Cabeca>
+                    <Cabeca col="hora" ordem={ordemSa} alternar={alternarSa}>Hora</Cabeca>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ordenar(saidas.data ?? [], ordemSa, { cor: porCor, hora: quando }).map((s) => {
+                    // retirado da fila (recepção/enfermagem): sem médico no desfecho
+                    const excluido = s.desfecho === 'cancelado' || (s.desfecho === 'evasao' && !s.desfecho_por)
+                    const [codigo, ...resto] = (s.desfecho_motivo ?? '').split(': ')
+                    const d = s.desfecho_detalhes ?? {}
+                    const destino = excluido ? resto.join(': ') || s.desfecho_motivo : d.destino ? String(d.destino) : ''
+                    return (
+                      <TableRow key={s.id}>
+                        <TableCell><PilulaRisco cor={s.cor_atual} /></TableCell>
+                        <TableCell><Paciente e={s} /></TableCell>
+                        <TableCell>
+                          {excluido
+                            ? <Estado tom="vermelho">Excluído · {MOTIVO_EXCLUSAO[codigo] ?? codigo}</Estado>
+                            : <Estado tom="verde">{rotuloDesfecho(s.desfecho)}</Estado>}
+                        </TableCell>
+                        <TableCell className="tabular-nums text-tinta-apoio">{d.cid_alta ? String(d.cid_alta) : <Nada />}</TableCell>
+                        <TableCell className="max-w-[280px] truncate text-tinta-apoio" title={destino || undefined}>{destino || <Nada />}</TableCell>
+                        <TableCell className="tabular-nums text-tinta-apoio">{hora(s.desfecho_em ?? s.encerrado_em)}</TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </section>
         </TabsContent>
       </Tabs>
     </div>
