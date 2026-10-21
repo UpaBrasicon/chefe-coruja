@@ -26,11 +26,14 @@ export function BotaoChamar({
   setorId,
   etapa,
   chamadas,
+  semContagem = false,
 }: {
   episodioId: string
   setorId: string
   etapa: 'triagem' | 'atendimento'
   chamadas: number
+  /** Onde a contagem já aparece ao lado (coluna Situação da fila do PS): só "Chamar de novo". */
+  semContagem?: boolean
 }) {
   const queryClient = useQueryClient()
   const { data: salas } = useSalas(setorId)
@@ -73,7 +76,7 @@ export function BotaoChamar({
         {doTipo.map((s) => <option key={s.id} value={s.id}>{s.nome}</option>)}
       </CampoSelecao>
       <Button size="sm" variant="outline" disabled={chamar.isPending || !sala} onClick={() => chamar.mutate()}>
-        <Megaphone /> {chamadas > 0 ? `Chamar de novo · ${chamadas} ${chamadas === 1 ? 'chamada' : 'chamadas'}` : 'Chamar'}
+        <Megaphone /> {chamadas === 0 ? 'Chamar' : semContagem ? 'Chamar de novo' : `Chamar de novo · ${chamadas} ${chamadas === 1 ? 'chamada' : 'chamadas'}`}
       </Button>
       <MensagemErro formato="linha" erro={chamar.error} acao="chamar o paciente" className="mt-0" />
     </div>
