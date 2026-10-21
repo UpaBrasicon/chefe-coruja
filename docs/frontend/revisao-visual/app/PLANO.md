@@ -340,6 +340,61 @@ médico, exames, medicação) vão ao BACKLOG como item próprio. A grade de aç
   (no celular a tabela rola na horizontal); a ordenação foi conferida clicando
   em "Espera" (`fila-ps-tabela-*.jpg`).
 
+## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
+
+A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções
+(`/plantonista`, registry em `src/content/registry.tsx`); toda ferramenta passa por
+`ToolLayout`, e os 39 escores por `EscoreTela`. Fotos das telas atuais, sem login,
+com o componente real (`central-hoje-*.jpg`).
+
+**O que dá a cara de IA hoje** (levantamento com arquivo e linha):
+
+- **Escore:** cada pergunta vira dois botões "Não" e "Sim" da largura da tela; o
+  resultado só aparece embaixo de tudo, com o número dentro de uma bolha e o cartão
+  com borda colorida pelo estado.
+- **Calculadora de infusão:** ícone em azulejo no cabeçalho do grupo, contagem em
+  pílula, resultado em duas caixas tintadas com número de 30 px no centro,
+  "ERRATA" em pílula maiúscula.
+- **Conduta:** pilha de cartões com caixas dentro de caixas; o "quando" de cada
+  medida em pílula maiúscula ("AGORA", "15 A 30 MIN"); gravidade em pílula ("GRAVE").
+- **Índice de seção:** 39 cartões iguais em grade de duas colunas, cada um com uma
+  estrela; nada agrupa nem resume.
+- **Geral:** todo `Card` traz sombra (`ui/card.tsx:11`); todo `Badge` é maiúsculo
+  espaçado (`ui/badge.tsx:9`, cerca de 45 usos na Central); "Bloco" e "Linha"
+  copiados em sete arquivos de peças; no celular, a lista de seções vira grade de
+  blocos coloridos com ícone (`PlantonistaHome.tsx:341-369`).
+
+O início da Central já é uma lista (canais) e fica como está, salvo a grade do
+celular.
+
+**Referências do Refero:** calculadora do Wealthsimple (`8a2c763a`) e da Mercury
+(`4bc19a59`): entradas à esquerda e resultado vivo à direita; documentação da
+Anthropic (`ec087562`) e página de remédio da Doctronic (`b80ae175`): leitura com
+títulos, tabelas e "nesta página"; downloads da Teenage Engineering (`945f3e52`) e
+diretório da The Org (`50d03282`): índice denso, uma linha por item.
+
+**Opções** (maquetes com os componentes reais; textos clínicos copiados das telas
+atuais, sem conteúdo novo; `central-A|B|C-*-claro|escuro.jpg`):
+
+- **A · mínimo:** mesma composição. Sim/Não num seletor na linha da pergunta;
+  resultado em frase ("CURB-65: 3 pontos · mortalidade em 30 dias 17%"); conduta
+  com linhas separadas por fio e o "quando" em texto; sem sombra, sem borda
+  colorida, sem pílula maiúscula.
+- **B · calculadora em duas colunas** (Wealthsimple, Mercury): itens com os pontos
+  à esquerda e o resultado fixo à direita, sempre à vista; a infusão aberta à
+  direita, com a velocidade da bomba numa linha de resultado; índice de seção
+  denso e agrupado por sistema, no lugar da grade de cartões.
+- **C · leitura de manual** (Anthropic, Doctronic): a conduta como página de
+  manual, passos como títulos e tabelas (medida, quando, observação), com "Nesta
+  conduta" à direita; os escores agrupados numa lateral e a ferramenta aberta ao
+  lado, sem voltar ao índice.
+
+Em qualquer opção: `Card` e `Badge` da Central sem sombra e sem maiúsculas; a
+grade colorida do celular vira lista; as peças repetidas ("Bloco", "Linha")
+passam a uma só. Nenhuma dose, limiar ou texto clínico muda. Os agrupamentos por
+sistema da opção B são de exemplo: os grupos de verdade saem da classificação
+que o RT aprovar.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
