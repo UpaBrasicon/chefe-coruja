@@ -132,6 +132,25 @@ direções novas, cada uma de uma referência real, sobre o nível mínimo
 
 A régua ajustada (limite junto do número, réguas alinhadas) segue como opção.
 
+**Escolha do RT (21/10/2026): F, primeiro o que pede ação.** Aplicada na branch
+`feat/visual-3-1b-regua`:
+
+- Peça nova `ResumoParametros` (`src/components/monitor/Parametros.tsx`): recebe
+  os mesmos `<Parametro>` e os separa pelo nível. Atenção e crítico viram linhas
+  com o número na cor do estado, o rótulo, o que aconteceu (e o limite, se houver)
+  e o caminho quando o parâmetro tem destino (`acao`, por exemplo "Conferir alta
+  vigilância"); o crítico vem antes. O que está em ordem, ou é leitura antiga,
+  vai para uma linha quieta: "Rótulo: **valor** · estado".
+- `FaixaParametros` (faixa do farmacêutico, do administrador e da telemedicina)
+  passa a usar a peça. A landing também.
+- As grades "Agora" (Indicadores) e o painel do gestor seguem com a régua de
+  `Parametro` até a 3.9, quando entram as telas do gestor.
+- Imagens: `faixa-f-aplicada-claro-desktop.jpg`, `faixa-f-aplicada-escuro-desktop.jpg`,
+  `faixa-f-aplicada-escuro-celular.jpg`. Typecheck, lint, build e catraca verdes;
+  detector do `impeccable` na landing sem achado novo.
+- **Sem sessão aqui, não vi** a faixa do farmacêutico, do administrador e da
+  telemedicina: conferir na homologação.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base

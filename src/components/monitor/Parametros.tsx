@@ -1,7 +1,8 @@
 import type { LucideIcon } from 'lucide-react'
-import { Minus, TrendingDown, TrendingUp } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { ArrowRight, Minus, TrendingDown, TrendingUp } from 'lucide-react'
+import { Children, isValidElement, type ReactElement, type ReactNode } from 'react'
 
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 // Faixa de Parâmetros — componente-assinatura do Monitor de Cabeceira
@@ -13,9 +14,10 @@ import { cn } from '@/lib/utils'
 // escala é a leitura: o limite fica desenhado (marca grafite) e escrito junto do
 // número ("7h20 · limite 6h", ajuste de 21/10/2026 a partir das páginas de cota
 // do Refero: Appwrite, Cohere); escala sem limite não recebe marca — a ausência
-// é informação. Sem o
-// número gigante de painel nem o ícone em cada célula. Em célula estreita (as
-// grades do gestor) a linha empilha: rótulo e número, a escala, o estado.
+// é informação. Sem o número gigante de painel nem o ícone em cada célula. Em
+// célula estreita (as grades do gestor) a linha empilha: rótulo e número, a
+// escala, o estado. Na faixa do topo das telas, os mesmos parâmetros passam
+// pelo `ResumoParametros` (opção "F"): primeiro o que pede ação.
 
 export type Grandeza = 'leitos' | 'observacao' | 'turno' | 'suprimento'
 export type Nivel = 'ok' | 'atencao' | 'critico'
@@ -72,6 +74,8 @@ export type ParametroProps = {
   /** Leitura antiga: perde a cor de grandeza, a barra vira hachura, a tendência sai. */
   velho?: string
   onClick?: () => void
+  /** Texto do caminho na linha de ação da faixa ("Ver observação"); sem ele, "Abrir". */
+  acao?: string
 }
 
 const limitar = (n: number) => Math.max(0, Math.min(1, n))
@@ -135,16 +139,67 @@ export function Parametro({
 }
 
 /**
- * A faixa: as réguas empilhadas logo abaixo do topo, na mesma coluna do
- * conteúdo. Deixou de ser fixa ao rolar: quatro linhas tomariam a tela.
+ * Resumo dos parâmetros, "primeiro o que pede ação" (revisão visual 3.1,
+ * opção "F" do RT, 21/10/2026; referências do Refero: grupos de SLA da Linear
+ * e o "Immediate Action Required" da Factory). Recebe os mesmos `<Parametro>`
+ * e os separa pelo nível: o que está em atenção ou crítico vira uma linha com o
+ * número na cor do estado, o que aconteceu e o caminho; o que está em ordem
+ * vira uma linha quieta embaixo. Sem nada fora do limite, sobra só a linha
+ * quieta. O crítico vem antes da atenção; dentro de cada nível, a ordem é a de
+ * quem chama.
+ */
+export function ResumoParametros({ children, className }: { children: ReactNode; className?: string }) {
+  const itens = Children.toArray(children).filter((c): c is ReactElement<ParametroProps> => isValidElement(c)).map((c) => c.props)
+  const peso = (p: ParametroProps) => (p.velho ? 0 : p.nivel === 'critico' ? 2 : p.nivel === 'atencao' ? 1 : 0)
+  const acao = itens.filter((p) => peso(p) > 0).sort((a, b) => peso(b) - peso(a))
+  const quietos = itens.filter((p) => peso(p) === 0)
+  return (
+    <div className={cn('cc-resumo', className)}>
+      {acao.map((p) => (
+        <div key={p.rotulo} className="flex flex-wrap items-baseline gap-x-proximo gap-y-1 border-b border-trilha px-5 py-3 last:border-b-0">
+          <span className={cn('flex shrink-0 items-baseline gap-1.5 text-secao font-semibold tabular sm:min-w-24', NUMERAL[p.nivel])}>
+            {p.valor}
+            {p.unidade && <span className="text-apoio font-medium">{p.unidade}</span>}
+          </span>
+          <span className="min-w-0 flex-1 text-controle text-pretty text-tinta-apoio">
+            <b className="font-semibold text-tinta">{p.rotulo}.</b> {p.estado}
+            {p.limiteTexto && <span className="text-tinta-sussurro"> · {p.limiteTexto}</span>}
+            {p.tend && <span className={cn('ml-2 text-rotulo font-medium', TEND_COR[p.tend.sentido])}>{p.tend.texto}</span>}
+          </span>
+          {p.onClick && (
+            <Button variant="link" onClick={p.onClick} className="h-auto min-h-0 p-0 text-controle font-medium">
+              {p.acao ?? 'Abrir'}
+              <ArrowRight className="size-3.5" aria-hidden />
+            </Button>
+          )}
+        </div>
+      ))}
+      {quietos.length > 0 && (
+        <p className="flex flex-wrap gap-x-secao gap-y-1 bg-campo px-5 py-2.5 text-controle text-tinta-apoio">
+          {quietos.map((p) => (
+            <span key={p.rotulo}>
+              {p.rotulo}:{' '}
+              <b className={cn('font-semibold tabular', p.velho ? 'text-tinta-sussurro' : 'text-tinta')}>
+                {p.valor}{p.unidade ? ` ${p.unidade}` : ''}
+              </b>
+              <span className="text-tinta-sussurro"> · {p.velho ?? p.estado}</span>
+            </span>
+          ))}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/**
+ * A faixa: o resumo logo abaixo do topo, na mesma coluna do conteúdo. Não fica
+ * fixa ao rolar.
  */
 export function FaixaParametros({ children, rotulo = 'Parâmetros do plantão', fita }: { children: ReactNode; rotulo?: string; fita?: ReactNode }) {
   return (
     <section aria-label={rotulo} className="-mx-4 -mt-5 mb-6 border-b border-fio bg-superficie md:-mx-7 md:-mt-7">
       {fita}
-      <div className="cc-faixa cc-coluna mx-auto">
-        {children}
-      </div>
+      <ResumoParametros className="cc-coluna mx-auto">{children}</ResumoParametros>
     </section>
   )
 }
