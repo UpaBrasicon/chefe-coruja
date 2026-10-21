@@ -151,6 +151,17 @@ A régua ajustada (limite junto do número, réguas alinhadas) segue como opçã
 - **Sem sessão aqui, não vi** a faixa do farmacêutico, do administrador e da
   telemedicina: conferir na homologação.
 
+**Faixa sob o título da página (pedido do RT, 21/10/2026).** A faixa saía da casca
+antes da página, colada no topo e acima de "Central do Farmacêutico". Agora a casca
+a põe num contexto (`FaixaDaPagina`, `src/components/monitor/faixaDaPagina.ts`) e o
+`TituloPagina` a desenha logo abaixo do título e da descrição, como um bloco da
+coluna (borda e canto das peças da página), antes das abas. `TabsPagina` zera o
+contexto dentro das abas, para a tela montada numa aba (a Rede do administrador)
+não repetir a faixa. Nas linhas de ação, o número tem coluna fixa (os textos
+começam no mesmo ponto) e, no celular, fica em cima do texto. Imagens:
+`faixa-sob-titulo-claro-desktop.jpg` e `faixa-sob-titulo-escuro-celular.jpg`,
+tiradas de uma página de teste local com as peças reais e dados fictícios.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base

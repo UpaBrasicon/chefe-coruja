@@ -37,6 +37,7 @@ import { TelaBloqueada } from '@/components/casca/Bloqueio'
 import { useBloqueioOcioso } from '@/components/casca/useBloqueioOcioso'
 import { ContextoTopo, FitaDoSinal, Topo, TopoEstreito } from '@/components/casca/Topo'
 import { FaixaDoPapel } from '@/components/casca/FaixaDoPapel'
+import { FaixaDaPagina } from '@/components/monitor/faixaDaPagina'
 import { useNotasNav } from '@/components/casca/useNotasNav'
 import { usePendenciasSaida } from '@/components/casca/usePendenciasSaida'
 import { useSessaoPosPlantao } from '@/components/casca/useSessaoPosPlantao'
@@ -524,19 +525,24 @@ function Casca() {
               </div>
             ) : (
               <ErroBoundary key={location.pathname}>
-                {/* Faixa de parâmetros: só na página inicial do farmacêutico, do administrador e da telemedicina. */}
-                {(ehAdmin || ehTele || papelAtivo === 'farmaceutico') && location.pathname === inicio && (
-                  <FaixaDoPapel papel={papelAtivo} unidadeId={unidadeId} />
-                )}
-                <React.Suspense
-                  fallback={
-                    <div className="flex h-40 items-center justify-center">
-                      <Spinner />
-                    </div>
-                  }
+                {/* Faixa de parâmetros: só na página inicial do farmacêutico, do
+                    administrador e da telemedicina. Entra logo abaixo do título da
+                    página (TituloPagina lê o contexto), na coluna do conteúdo. */}
+                <FaixaDaPagina.Provider
+                  value={(ehAdmin || ehTele || papelAtivo === 'farmaceutico') && location.pathname === inicio
+                    ? <FaixaDoPapel papel={papelAtivo} unidadeId={unidadeId} />
+                    : null}
                 >
-                  <Outlet />
-                </React.Suspense>
+                  <React.Suspense
+                    fallback={
+                      <div className="flex h-40 items-center justify-center">
+                        <Spinner />
+                      </div>
+                    }
+                  >
+                    <Outlet />
+                  </React.Suspense>
+                </FaixaDaPagina.Provider>
               </ErroBoundary>
             )}
           </div>
