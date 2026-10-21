@@ -171,6 +171,17 @@ fixa e abria um vão entre "3 na fila" e o texto; agora as linhas de ação divi
 uma grade (subgrid) e a coluna tem a largura do maior número. Imagens:
 `pagina-centralizada-claro-1920.jpg`, `pagina-centralizada-escuro-1366.jpg`.
 
+**Coluna com 5% de margem (pedido do RT, 21/10/2026).** A partir de 1024 px a
+coluna do app deixou de ter teto (era 896 px, crescendo até 1200–1560 px): ocupa
+a área ao lado da lateral com 5% de margem de cada lado, no mínimo 28 px. As
+páginas que punham o próprio teto de 896 a 1152 px (`max-w-4xl`, `5xl`, `6xl`,
+29 telas) passam a seguir a coluna. Formulário estreito (`max-w-2xl`, `3xl`, 4
+telas) segue estreito e no centro, porque campo esticado a 90% da tela não se lê.
+Medido numa página de teste: 65 px de cada lado em 1366 e 93 px em 1920, 5,0%.
+Imagens: `coluna-5pct-claro-1920.jpg`, `coluna-5pct-escuro-1366.jpg`. Risco a
+conferir na homologação: tabelas e listas largas ficam mais compridas em tela
+grande.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
