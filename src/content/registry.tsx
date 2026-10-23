@@ -55,18 +55,21 @@ export const SECOES: SectionDef[] = [
     icon: Calculator,
     tools: [
       t('iot', 'Intubação Orotraqueal (sequência rápida)', 'Indução, analgesia e bloqueio por peso (padrão HC).', sobDemanda(() => import('@/pages/plantonista/calculadoras/IsrAdulto'), 'IsrAdulto'), ['intubação', 'sequência rápida', 'sedação', 'anestesia', 'succinilcolina', 'propofol', 'IOT']),
-      t('infusoes-adulto', 'Infusões contínuas — adulto', 'Porta única: vasoativas, sedação, bloqueio neuromuscular e atalhos da heparina, com barra de dose até o teto do manual HC.', sobDemanda(() => import('@/pages/plantonista/calculadoras/InfusoesAdulto'), 'InfusoesAdultoPorta'), ['infusão', 'bomba', 'mL/h', 'noradrenalina', 'sedação', 'fentanil', 'midazolam', 'rocurônio', 'vasoativa', 'DVA', 'diluição']),
-      t('drogas-vasoativas', 'Drogas Vasoativas', 'Preparo padrão HC, mL/h pela dose e dose pela bomba.', sobDemanda(() => import('@/pages/plantonista/calculadoras/InfusoesAdulto'), 'DrogasVasoativas'), ['noradrenalina', 'vasopressor', 'infusão', 'diluição', 'dopamina', 'adrenalina', 'DVA']),
-      t('sedacao-continua', 'Sedação Contínua', 'Propofol, midazolam, dexmedetomidina, quetamina e fentanil.', sobDemanda(() => import('@/pages/plantonista/calculadoras/InfusoesAdulto'), 'SedacaoContinua'), ['fentanil', 'midazolam', 'propofol', 'dexmedetomidina', 'cetamina', 'analgesia']),
-      t('bloqueio-neuromuscular', 'Bloqueio Neuromuscular Contínuo', 'Rocurônio e cisatracúrio (padrão HC).', sobDemanda(() => import('@/pages/plantonista/calculadoras/InfusoesAdulto'), 'BloqueioNeuromuscular'), ['atracúrio', 'rocurônio', 'curarizante', 'paralisia']),
-      t('heparinizacao-venosa', 'Heparina não fracionada EV', '80 UI/kg + 18 UI/kg/h e ajuste pelo TTPa (manual HC).', sobDemanda(() => import('@/pages/plantonista/manual/HeparinaNaoFracionadaAdulto'), 'HeparinaNaoFracionadaAdulto'), ['heparina', 'TTPa', 'anticoagulação', 'TVP', 'TEP']),
+      t('infusoes-adulto', 'Infusões contínuas — adulto', 'Porta única: vasoativas, sedação, bloqueio neuromuscular e atalhos da heparina, com barra de dose até o teto do manual HC.', sobDemanda(() => import('@/pages/plantonista/calculadoras/InfusoesAdulto'), 'InfusoesAdultoPorta'), [
+        'infusão', 'bomba', 'mL/h', 'diluição', 'vasoativa', 'DVA', 'vasopressor', 'noradrenalina', 'adrenalina',
+        'sedação', 'analgesia', 'fentanil', 'midazolam', 'propofol', 'dexmedetomidina', 'cetamina',
+        'bloqueio neuromuscular', 'rocurônio', 'atracúrio', 'curarizante', 'paralisia',
+      ]),
+      // RT, 23/10/2026: saíram "Drogas vasoativas", "Sedação contínua" e "Bloqueio
+      // neuromuscular contínuo" (abriam a porta única já numa classe) e "Heparina —
+      // ajuste pelo TTPa" (abria a mesma tela da heparina). Os endereços antigos
+      // redirecionam (App.tsx); as palavras de busca vieram para a entrada que ficou.
+      t('heparinizacao-venosa', 'Heparina não fracionada EV — dose e ajuste pelo TTPa', '80 UI/kg + 18 UI/kg/h e o nomograma da Tabela 7 (manual HC).', sobDemanda(() => import('@/pages/plantonista/manual/HeparinaNaoFracionadaAdulto'), 'HeparinaNaoFracionadaAdulto'), ['heparina', 'TTPa', 'ajuste', 'nomograma', 'anticoagulação', 'TVP', 'TEP']),
       t('hiponatremia', 'Hiponatremia', 'NaCl 3%: preparo, bolus e limites de correção (manual HC).', sobDemanda(() => import('@/pages/plantonista/manual/HiponatremiaManual'), 'HiponatremiaManual'), ['sódio', 'NaCl 3%', 'hiponatremia', 'eletrólitos']),
       t('hipernatremia', 'Hipernatremia', 'Água livre e Adrogué-Madias (manual HC).', sobDemanda(() => import('@/pages/plantonista/manual/HipernatremiaManual'), 'HipernatremiaManual'), ['sódio', 'água livre', 'hipernatremia', 'eletrólitos']),
       t('hidantalizacao', 'Estado de mal epiléptico', '1ª, 2ª e 3ª linha por peso (manual HC).', sobDemanda(() => import('@/pages/plantonista/manual/EstadoDeMalAdulto'), 'EstadoDeMalAdulto'), ['fenitoína', 'hidantal', 'crise convulsiva', 'epilepsia']),
       t('profilaxia-tev', 'Profilaxia de TEV', 'Doses de profilaxia pelo manual HC (sem escore de risco).', sobDemanda(() => import('@/pages/plantonista/manual/ProfilaxiaTEV'), 'ProfilaxiaTEV'), ['trombose', 'TEV', 'enoxaparina', 'Caprini', 'Pádua', 'TVP']),
-      t('acesso-venoso', 'Escolha de Acesso Venoso', 'Recomendação de dispositivo por perfil e terapia.', sobDemanda(() => import('@/pages/plantonista/calculadoras/AcessoVenoso'), 'AcessoVenoso'), ['PICC', 'CVC', 'cateter', 'acesso venoso', 'periférico', 'central']),
-      t('heparinizacao-ajuste', 'Heparina — ajuste pelo TTPa', 'Nomograma da Tabela 7 do manual HC.', sobDemanda(() => import('@/pages/plantonista/manual/HeparinaNaoFracionadaAdulto'), 'HeparinaNaoFracionadaAdulto'), ['heparina', 'TTPa', 'ajuste', 'anticoagulação']),
-    ],
+      t('acesso-venoso', 'Escolha de Acesso Venoso', 'Recomendação de dispositivo por perfil e terapia.', sobDemanda(() => import('@/pages/plantonista/calculadoras/AcessoVenoso'), 'AcessoVenoso'), ['PICC', 'CVC', 'cateter', 'acesso venoso', 'periférico', 'central']),    ],
   },
   {
     slug: 'pediatria',
@@ -129,8 +132,8 @@ export const SECOES: SectionDef[] = [
   },
   {
     slug: 'emergencias',
-    label: 'Emergências — manual HC',
-    description: 'Doses, reposições e fórmulas do Manual de Medicina de Emergência do HCFMUSP (adulto).',
+    label: 'Condutas e cálculos — adulto', // junta as Calculadoras (SECOES_JUNTAS, abaixo; RT, 23/10/2026)
+    description: 'Condutas, doses, reposições e calculadoras do adulto no plantão, cada uma com a sua fonte.',
     icon: Siren,
     tools: [
       t('hipocalemia-reposicao-potassio', 'Hipocalemia — potássio', 'Classificação, KCl EV e VO, mEq/h e mL/h.', sobDemanda(() => import('@/pages/plantonista/manual/ReposicaoPotassio'), 'ReposicaoPotassio'), ['potássio', 'hipocalemia', 'KCl', 'reposição']),
@@ -337,3 +340,38 @@ export const CHAVES_FERRAMENTAS: string[] = SECOES.flatMap((s) =>
 export function acharSecao(slug: string) {
   return SECOES.find((s) => s.slug === slug)
 }
+
+/**
+ * Seções que aparecem juntas na Central (pedido do RT de 23/10/2026: as
+ * Calculadoras dentro das condutas do adulto). A junção é só de exibição: cada
+ * ferramenta segue no endereço de sempre (/plantonista/calculadoras/iot) e com
+ * a mesma chave de favorito e de uso (calculadoras/iot), que vivem no banco.
+ * Chave: seção absorvida; valor: seção onde ela aparece.
+ */
+export const SECOES_JUNTAS: Record<string, string> = { calculadoras: 'emergencias' }
+
+/** Ferramenta como aparece numa seção exibida: `secao` é a seção de verdade (endereço e favorito). */
+export type ToolExibida = ToolDef & { secao: string }
+export type SecaoExibida = Omit<SectionDef, 'tools'> & { tools: ToolExibida[] }
+
+/** A seção como a Central mostra: a de verdade mais as que ela absorve. */
+export function secaoExibida(slug: string): SecaoExibida | undefined {
+  const base = acharSecao(SECOES_JUNTAS[slug] ?? slug)
+  if (!base) return undefined
+  const absorvidas = SECOES.filter((s) => SECOES_JUNTAS[s.slug] === base.slug)
+  return {
+    ...base,
+    tools: [base, ...absorvidas].flatMap((s) => s.tools.map((t) => ({ ...t, secao: s.slug }))),
+  }
+}
+
+/** As seções da página inicial, já juntas; a seção junta fica no lugar da primeira das duas. */
+export const SECOES_EXIBIDAS: SecaoExibida[] = (() => {
+  const vistas = new Set<string>()
+  return SECOES.flatMap((s) => {
+    const alvo = SECOES_JUNTAS[s.slug] ?? s.slug
+    if (vistas.has(alvo)) return []
+    vistas.add(alvo)
+    return [secaoExibida(alvo)!]
+  })
+})()

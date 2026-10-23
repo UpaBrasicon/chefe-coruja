@@ -14,9 +14,15 @@ function slugsDaSecao(secao: string): string[] {
   return [...registry.slice(a, b).matchAll(/t\('([a-z0-9-]+)'/g)].map((m) => m[1])
 }
 
+// Seções que aparecem juntas (SECOES_JUNTAS no registry): a seção exibida tem
+// também as ferramentas das que ela absorve.
+const juntas = registry.match(/SECOES_JUNTAS: Record<string, string> = \{([^}]*)\}/)?.[1] ?? ''
+const absorvidasDe = (secao: string) =>
+  [...juntas.matchAll(/([a-z-]+): '([a-z-]+)'/g)].filter((m) => m[2] === secao).map((m) => m[1])
+
 for (const [secao, grupos] of Object.entries(GRUPOS_SECAO)) {
   test(`${secao}: toda ferramenta está em exatamente um grupo, e todo slug do grupo existe`, () => {
-    const naSecao = slugsDaSecao(secao)
+    const naSecao = [secao, ...absorvidasDe(secao)].flatMap(slugsDaSecao)
     assert.ok(naSecao.length > 0, 'seção não encontrada no registry')
     const nosGrupos = grupos.flatMap((g) => g.slugs)
     const repetidos = nosGrupos.filter((s, i) => nosGrupos.indexOf(s) !== i)

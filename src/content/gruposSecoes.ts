@@ -18,18 +18,21 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
     { rotulo: 'Trauma', slugs: ['canadian-ct-head', 'iss'] },
     { rotulo: 'Nefrologia', slugs: ['ckd-epi'] },
   ],
+  // Condutas e cálculos — adulto: as ferramentas de emergências e, desde 23/10/2026, as das
+  // Calculadoras (SECOES_JUNTAS no registry; os slugs das duas seções não se repetem).
   emergencias: [
+    { rotulo: 'Infusões e via aérea', slugs: ['iot', 'infusoes-adulto'] },
     { rotulo: 'Parada, ritmo e choque', slugs: ['pcr-adulto', 'pos-pcr-adulto', 'bradicardia-adulto', 'taquiarritmias-adulto', 'fibrilacao-atrial-adulto', 'marca-passo-provisorio-adulto', 'anafilaxia-adulto', 'ressuscitacao-volemica-adulto'] },
     { rotulo: 'Cardiovascular', slugs: ['emergencia-hipertensiva-adulto', 'sindrome-aortica-adulto', 'add-rs-disseccao-aorta', 'insuficiencia-cardiaca-aguda-adulto'] },
     { rotulo: 'Respiratório e ventilação', slugs: ['asma-exacerbacao-adulto', 'dpoc-exacerbacao-adulto', 'oxigenacao-irpa-adulto', 'dispneia-abordagem-adulto', 'vm-ajuste-inicial-adulto', 'vm-obstruido-grave-adulto', 'mecanica-ventilatoria-adulto', 'sdra-ventilacao-adulto', 'desmame-vm-adulto', 'perc', 'hestia', 'smart-cop', 'ats-idsa-pac', 'pac-antibiotico-adulto'] },
-    { rotulo: 'Neurológico', slugs: ['trombolise-avc-adulto', 'rankin-modificada', 'escore-ich', 'hsa-adulto', 'ottawa-hsa', 'hunt-hess', 'wfns-hsa', 'fisher-hsa', 'hints-plus', 'guillain-barre-adulto', 'criterios-vm-sgb', 'gbs-incapacidade', 'egos', 'agitacao-delirium-adulto', 'bars-agitacao'] },
-    { rotulo: 'Anticoagulação e hemoterapia', slugs: ['anticoagulacao-plena-adulto', 'fibrinoliticos-adulto', 'reversao-anticoagulacao-adulto', 'transfusao-hemocomponentes-adulto', 'abc-score-transfusao-macica'] },
-    { rotulo: 'Eletrólitos, ácido-base e endócrino', slugs: ['hipocalemia-reposicao-potassio', 'hipomagnesemia-reposicao-magnesio', 'hipocalcemia-reposicao-calcio', 'hipercalcemia', 'hipofosfatemia-reposicao-fosforo', 'gasometria-acidobase', 'bicarbonato-de-sodio', 'cad-ehh-criterios', 'cad-ehh-tratamento', 'hipoglicemia-adulto', 'crise-tireotoxica-adulto', 'burch-wartofsky', 'estado-mixedematoso-adulto', 'escore-mixedema', 'insuficiencia-adrenal-adulto'] },
+    { rotulo: 'Neurológico', slugs: ['hidantalizacao', 'trombolise-avc-adulto', 'rankin-modificada', 'escore-ich', 'hsa-adulto', 'ottawa-hsa', 'hunt-hess', 'wfns-hsa', 'fisher-hsa', 'hints-plus', 'guillain-barre-adulto', 'criterios-vm-sgb', 'gbs-incapacidade', 'egos', 'agitacao-delirium-adulto', 'bars-agitacao'] },
+    { rotulo: 'Anticoagulação e hemoterapia', slugs: ['heparinizacao-venosa', 'profilaxia-tev', 'anticoagulacao-plena-adulto', 'fibrinoliticos-adulto', 'reversao-anticoagulacao-adulto', 'transfusao-hemocomponentes-adulto', 'abc-score-transfusao-macica'] },
+    { rotulo: 'Eletrólitos, ácido-base e endócrino', slugs: ['hiponatremia', 'hipernatremia', 'hipocalemia-reposicao-potassio', 'hipomagnesemia-reposicao-magnesio', 'hipocalcemia-reposicao-calcio', 'hipercalcemia', 'hipofosfatemia-reposicao-fosforo', 'gasometria-acidobase', 'bicarbonato-de-sodio', 'cad-ehh-criterios', 'cad-ehh-tratamento', 'hipoglicemia-adulto', 'crise-tireotoxica-adulto', 'burch-wartofsky', 'estado-mixedematoso-adulto', 'escore-mixedema', 'insuficiencia-adrenal-adulto'] },
     { rotulo: 'Digestivo, fígado e rim', slugs: ['hemorragia-digestiva-adulto', 'oakland-hdb', 'ascite-pbe-hepatorrenal-adulto', 'encefalopatia-hepatites-graves-adulto', 'maddrey', 'lesao-renal-aguda-adulto', 'rabdomiolise-adulto', 'mcmahon-rabdomiolise'] },
     { rotulo: 'Trauma e ambientais', slugs: ['trauma-inicial-adulto', 'nexus-coluna-cervical', 'regra-canadense-coluna-cervical', 'mgap-trauma', 'triage-rts-trauma', 'szpilman-afogamento', 'hipotermia-adulto'] },
     { rotulo: 'Toxicologia e profilaxias', slugs: ['intoxicacoes-antidotos-adulto', 'animais-peconhentos-adulto', 'tetano-profilaxia-adulto', 'raiva-pos-exposicao-adulto', 'hepatite-b-pos-exposicao-adulto'] },
     { rotulo: 'Hemato-oncologia e pele', slugs: ['mascc', 'neutropenia-febril-adulto', 'cairo-bishop', 'lise-tumoral-adulto', 'falciforme-adulto', 'sindrome-toracica-aguda-adulto', 'regiscar', 'scorten-uti', 'dermatoses-graves-adulto'] },
-    { rotulo: 'Dor, sedação e procedimentos', slugs: ['sedacao-procedimento-adulto', 'dor-analgesia-adulto', 'escala-numerica-dor', 'painad', 'bps-dor', 'sintomas-paliativos-adulto', 'acessos-calibres-adulto'] },
+    { rotulo: 'Dor, sedação e procedimentos', slugs: ['sedacao-procedimento-adulto', 'dor-analgesia-adulto', 'escala-numerica-dor', 'painad', 'bps-dor', 'sintomas-paliativos-adulto', 'acesso-venoso', 'acessos-calibres-adulto'] },
   ],
   pediatria: [
     { rotulo: 'Doses e infusões', slugs: ['bolus', 'infusoes', 'sedacao-procedimento-ped'] },
