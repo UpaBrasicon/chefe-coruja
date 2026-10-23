@@ -4,28 +4,14 @@ import { Link } from 'react-router-dom'
 import {
   EQUIVALENTES_SUPRA, OUTRAS_MEDIDAS, condutaSca, fichaScaInicialAdulto, limiarSupraV2V3, type Dose, type TipoSca,
 } from '@/clinico/adulto/scaInicial'
-import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { numero } from '@/lib/formato'
 
-import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
+import { Bloco, CampoPeso, LinhaManual, Pergunta } from './PecasLoteC'
 
 const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 
-/** Pergunta de escolha única com chips (mesmo controle dos escores). */
-function Pergunta<T extends string | boolean>({ rotulo, valor, opcoes, onChange }: {
-  rotulo: string; valor: T | undefined; opcoes: [T, string][]; onChange: (v: T) => void
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-trilha py-2.5 last:border-0">
-      <span className="text-controle text-tinta">{rotulo}</span>
-      <div role="radiogroup" aria-label={rotulo} className="flex flex-wrap gap-2">
-        {opcoes.map(([v, r]) => <Chip key={String(v)} radio variante="opcao" ativo={valor === v} onClick={() => onChange(v)}>{r}</Chip>)}
-      </div>
-    </div>
-  )
-}
 
 const LinhaDose = ({ d }: { d: Dose }) => (
   <LinhaManual nome={d.droga} texto={d.manutencao ? `ataque ${d.ataque}; manutenção ${d.manutencao}` : d.ataque} pagina={d.pagina} nota={d.nota} />
@@ -33,7 +19,6 @@ const LinhaDose = ({ d }: { d: Dose }) => (
 
 const Ir = ({ para, children }: { para: string; children: ReactNode }) => <Link to={para} className="text-acao hover:underline">{children}</Link>
 
-const NAO_SIM: [boolean, string][] = [[false, 'Não'], [true, 'Sim']]
 
 /** SCA — conduta inicial do adulto (caps. 13 e 14 do manual do HCFMUSP). */
 export function ScaInicialAdulto() {
@@ -75,17 +60,17 @@ export function ScaInicialAdulto() {
               <NumberField id="sca-horas" label="Início dos sintomas" unit="horas" value={horas} onChange={setHoras} min={0} step={0.5} />
               <NumberField id="sca-atraso" label="Tempo previsto até a ICP" unit="min" value={atraso} onChange={setAtraso} min={0} />
             </div>
-            <Pergunta rotulo="Contraindicação ao fibrinolítico (Tabela 1, p. 219–220)" valor={contra} onChange={setContra} opcoes={NAO_SIM} />
-            {horas > 12 && <Pergunta rotulo="Ainda há evidência de isquemia" valor={isquemia} onChange={setIsquemia} opcoes={NAO_SIM} />}
+            <Pergunta rotulo="Contraindicação ao fibrinolítico (Tabela 1, p. 219–220)" valor={contra} onChange={setContra} />
+            {horas > 12 && <Pergunta rotulo="Ainda há evidência de isquemia" valor={isquemia} onChange={setIsquemia} />}
           </>
         )}
         {tipo === 'sem_supra' && (
           <>
-            <Pergunta rotulo="Estratificação invasiva disponível em menos de 6–24 h" valor={precoce} onChange={setPrecoce} opcoes={NAO_SIM} />
+            <Pergunta rotulo="Estratificação invasiva disponível em menos de 6–24 h" valor={precoce} onChange={setPrecoce} />
             {precoce === false && (
               <>
-                <Pergunta rotulo="AVC ou AIT prévio" valor={avc} onChange={setAvc} opcoes={NAO_SIM} />
-                <Pergunta rotulo="Candidato a intervenção coronária em até 6 h" valor={icp6h} onChange={setIcp6h} opcoes={NAO_SIM} />
+                <Pergunta rotulo="AVC ou AIT prévio" valor={avc} onChange={setAvc} />
+                <Pergunta rotulo="Candidato a intervenção coronária em até 6 h" valor={icp6h} onChange={setIcp6h} />
               </>
             )}
           </>

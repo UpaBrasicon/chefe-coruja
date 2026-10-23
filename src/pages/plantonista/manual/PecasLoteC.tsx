@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -65,3 +66,20 @@ export function LinhaManual({
     </div>
   )
 }
+
+const NAO_SIM: [boolean, string][] = [[false, 'Não'], [true, 'Sim']]
+
+/** Pergunta de escolha única com chips (o mesmo controle dos escores); sem `opcoes`, Não/Sim. */
+export function Pergunta<T extends string | boolean>({ rotulo, valor, opcoes, onChange }: {
+  rotulo: string; valor: T | undefined; opcoes?: [T, string][]; onChange: (v: T) => void
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-trilha py-2.5 last:border-0">
+      <span className="text-controle text-tinta">{rotulo}</span>
+      <div role="radiogroup" aria-label={rotulo} className="flex flex-wrap gap-2">
+        {(opcoes ?? (NAO_SIM as [T, string][])).map(([v, r]) => <Chip key={String(v)} radio variante="opcao" ativo={valor === v} onClick={() => onChange(v)}>{r}</Chip>)}
+      </div>
+    </div>
+  )
+}
+
