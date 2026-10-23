@@ -1130,6 +1130,28 @@ criança; ficha nova entra na fila de aprovação do RT (registro da versão no 
 | 3 — Atualizações de diretriz | P2 | lactente febril 8–60 dias com ICr e AAP 2021/PECARN lado a lado (decisão do RT); PCR adulto e RCP pediátrica pela AHA 2025; levetiracetam no estado de mal; Kawasaki AHA 2024; SOFA-2 em paralelo (se SSC/ILAS 2026 ainda não adotam); sPESI; CRB-65; validações do Canadian Syncope; HEART com SBC 2025; magnésio na pré-eclâmpsia; anafilaxia WAO/2023; andexanete como divergência; crise hipertensiva pediátrica com percentil calculado | mudança clínica cita o PMID; o livro do HC continua visível |
 | 4 — Decisões de escopo | — | **Decididas pelo RT em 23/10/2026:** incluir o neonato (a seção Pediatria deixa de ser "sem neonato" para essas duas ferramentas); lactente febril com o ICr e a AAP 2021/PECARN lado a lado, doses só do ICr; criar os grupos "Infectologia" e "Geriatria e fragilidade" nos escores | registrado |
 
+**Lote 1 — em produção em 23/10/2026 (PR #184), parcial.** Entraram oito ferramentas:
+- Cockcroft-Gault (escores, Nefrologia).
+- QTc pelas quatro fórmulas, com os limiares da AHA/ACCF 2010 (Condutas e cálculos — adulto, "Parada, ritmo e choque").
+- Ottawa tornozelo e pé e Ottawa joelho (escores, Trauma).
+- McIsaac (escores, grupo novo Infectologia, vale também na criança).
+- 4AT (escores, grupo novo Geriatria e fragilidade).
+- PECARN coluna cervical e PECARN abdome (Pediatria, "Trauma, toxicologia e acidentes").
+
+Cada regra tem teste em `src/clinico/**` (959 de 959 passando) e cita PMID e DOI. Texto que não foi
+confirmado no texto da fonte ficou de fora: as ajudas do 4AT, a AUC e a prevalência do McIsaac, a
+ponta do maléolo no Ottawa.
+
+Evidência:
+- Homologação conferida pelo RT, depois de recarregar a página (a aba aberta antes do deploy mostrava a versão antiga).
+- Migration `20261213000001_lacunas_lote1_fichas` aplicada na homologação e, com o "ok produção" do RT, na produção. As 8 fichas novas estão na fila de aprovação; as outras 211 do arquivo já existiam.
+- Bundle da produção conferido com as telas novas.
+
+Ficaram pendentes do lote 1, à espera do RT:
+- **RACE:** a pontuação de cada item não foi confirmada no texto da fonte. Precisa da tabela original (Stroke 2014).
+- **Escala Clínica de Fragilidade:** os nomes dos níveis 2 e 8 não foram confirmados palavra por palavra.
+- **Dor na criança:** as fontes divergem de `src/clinico/triagem/dor.ts`. Escala numérica a partir de 6 anos (o app usa 4), FPS-R a partir de 4–5 anos, FLACC validada de 2 meses a 7 anos (o app usa até 3). O RT decide a faixa de cada escala.
+
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
 na criança, risco de suicídio, epistaxe, pneumotórax).
