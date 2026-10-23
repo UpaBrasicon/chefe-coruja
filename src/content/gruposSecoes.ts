@@ -15,14 +15,17 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
     { rotulo: 'Gastroenterologia e hepatologia', slugs: ['glasgow-blatchford', 'aims65', 'rockall', 'child-pugh', 'meld-3', 'bisap', 'ranson', 'alvarado'] },
     { rotulo: 'Terapia intensiva e sepse', slugs: ['sepse-adulto', 'news2', 'cam-icu', 'rass'] },
     { rotulo: 'Hematologia', slugs: ['4t-hit', 'civd-isth'] },
-    { rotulo: 'Trauma', slugs: ['canadian-ct-head', 'iss'] },
-    { rotulo: 'Nefrologia', slugs: ['ckd-epi'] },
+    { rotulo: 'Trauma', slugs: ['canadian-ct-head', 'iss', 'ottawa-tornozelo', 'ottawa-joelho'] },
+    { rotulo: 'Nefrologia', slugs: ['ckd-epi', 'cockcroft-gault'] },
+    // grupos novos por decisão do RT (23/10/2026, lacunas da Central)
+    { rotulo: 'Infectologia', slugs: ['mcisaac'] },
+    { rotulo: 'Geriatria e fragilidade', slugs: ['4at'] },
   ],
   // Condutas e cálculos — adulto: as ferramentas de emergências e, desde 23/10/2026, as das
   // Calculadoras (SECOES_JUNTAS no registry; os slugs das duas seções não se repetem).
   emergencias: [
     { rotulo: 'Infusões e via aérea', slugs: ['iot', 'infusoes-adulto'] },
-    { rotulo: 'Parada, ritmo e choque', slugs: ['pcr-adulto', 'pos-pcr-adulto', 'bradicardia-adulto', 'taquiarritmias-adulto', 'fibrilacao-atrial-adulto', 'marca-passo-provisorio-adulto', 'anafilaxia-adulto', 'ressuscitacao-volemica-adulto'] },
+    { rotulo: 'Parada, ritmo e choque', slugs: ['pcr-adulto', 'pos-pcr-adulto', 'bradicardia-adulto', 'taquiarritmias-adulto', 'fibrilacao-atrial-adulto', 'marca-passo-provisorio-adulto', 'anafilaxia-adulto', 'ressuscitacao-volemica-adulto', 'qtc'] },
     { rotulo: 'Cardiovascular', slugs: ['emergencia-hipertensiva-adulto', 'sindrome-aortica-adulto', 'add-rs-disseccao-aorta', 'insuficiencia-cardiaca-aguda-adulto'] },
     { rotulo: 'Respiratório e ventilação', slugs: ['asma-exacerbacao-adulto', 'dpoc-exacerbacao-adulto', 'oxigenacao-irpa-adulto', 'dispneia-abordagem-adulto', 'vm-ajuste-inicial-adulto', 'vm-obstruido-grave-adulto', 'mecanica-ventilatoria-adulto', 'sdra-ventilacao-adulto', 'desmame-vm-adulto', 'perc', 'hestia', 'smart-cop', 'ats-idsa-pac', 'pac-antibiotico-adulto'] },
     { rotulo: 'Neurológico', slugs: ['hidantalizacao', 'trombolise-avc-adulto', 'rankin-modificada', 'escore-ich', 'hsa-adulto', 'ottawa-hsa', 'hunt-hess', 'wfns-hsa', 'fisher-hsa', 'hints-plus', 'guillain-barre-adulto', 'criterios-vm-sgb', 'gbs-incapacidade', 'egos', 'agitacao-delirium-adulto', 'bars-agitacao'] },
@@ -44,7 +47,7 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
     { rotulo: 'Cardiovascular e renal', slugs: ['insuficiencia-cardiaca-ped', 'crise-hipertensiva-ped', 'kawasaki-ped', 'injuria-renal-ped', 'tfg-schwartz-ped', 'glomerulopatias-shu-ped', 'infeccao-urinaria-ped'] },
     { rotulo: 'Infecções', slugs: ['dengue-ped', 'febre-sem-sinais-ped', 'febre-imunodeprimido-ped', 'choque-toxico-partes-moles-ped', 'artrite-osteomielite-ped'] },
     { rotulo: 'Hemato-oncologia e digestivo', slugs: ['hemocomponentes-ped', 'falciforme-ped', 'hemostasia-trombose-ped', 'emergencias-oncologicas-ped', 'hemorragia-digestiva-hepatica-ped'] },
-    { rotulo: 'Trauma, toxicologia e acidentes', slugs: ['queimadura-ped', 'intoxicacoes-ped', 'escorpiao-aranhas-ped'] },
+    { rotulo: 'Trauma, toxicologia e acidentes', slugs: ['pecarn-coluna-cervical', 'pecarn-abdome', 'queimadura-ped', 'intoxicacoes-ped', 'escorpiao-aranhas-ped'] },
   ],
 }
 

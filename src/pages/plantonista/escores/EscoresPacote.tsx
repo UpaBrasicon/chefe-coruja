@@ -28,6 +28,11 @@ import { sepseAdulto } from '@/clinico/escores/sepseAdulto'
 import { wellsTep } from '@/clinico/escores/wellsTep'
 import { years } from '@/clinico/escores/years'
 import { wellsTvp } from '@/clinico/escores/wellsTvp'
+import { cockcroftGault } from '@/clinico/escores/cockcroftGault'
+import { mcisaac } from '@/clinico/escores/mcisaac'
+import { ottawaJoelho, ottawaTornozelo } from '@/clinico/escores/ottawa'
+import { quatroAt } from '@/clinico/escores/quatroAt'
+import { qtcAdulto } from '@/clinico/adulto/qtc'
 import { EscoreTela } from '@/components/plantonista/EscoreTela'
 
 // Escores do pacote src/clinico (Fase 5.3): a regra e o teste ficam lá; aqui só
@@ -62,3 +67,11 @@ export const SepseAdulto = () => <EscoreTela escore={sepseAdulto} />
 export const WellsTep = () => <EscoreTela escore={wellsTep} />
 export const Years = () => <EscoreTela escore={years} />
 export const News2 = () => <EscoreTela escore={news2} />
+
+// Lacunas da Central, lote 1 (23/10/2026)
+export const CockcroftGault = () => <EscoreTela escore={cockcroftGault} />
+export const OttawaTornozelo = () => <EscoreTela escore={ottawaTornozelo} />
+export const OttawaJoelho = () => <EscoreTela escore={ottawaJoelho} />
+export const McIsaac = () => <EscoreTela escore={mcisaac} />
+export const QuatroAt = () => <EscoreTela escore={quatroAt} />
+export const Qtc = () => <EscoreTela escore={qtcAdulto} />

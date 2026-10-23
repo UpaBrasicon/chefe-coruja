@@ -34,6 +34,10 @@ import { iss } from './iss.ts'
 import { pram } from './pram.ts'
 import { sincopeCanadense } from './sincopeCanadense.ts'
 import { timiIamcsst } from './timiIamcsst.ts'
+import { cockcroftGault } from './cockcroftGault.ts'
+import { mcisaac } from './mcisaac.ts'
+import { ottawaJoelho, ottawaTornozelo } from './ottawa.ts'
+import { quatroAt } from './quatroAt.ts'
 
 /** Todos os escores do pacote, para a Central e para os testes de conjunto. */
 export const ESCORES: Escore[] = [
@@ -72,4 +76,9 @@ export const ESCORES: Escore[] = [
   iss,
   ckdEpi,
   pram,
+  cockcroftGault,
+  ottawaTornozelo,
+  ottawaJoelho,
+  mcisaac,
+  quatroAt,
 ]

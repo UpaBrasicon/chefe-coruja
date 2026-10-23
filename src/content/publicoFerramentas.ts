@@ -26,6 +26,8 @@ const POR_CHAVE: Record<string, PublicoFerramenta> = {
   // Hiperpotassemia: ficha 'ambos'. Adulto pela referência de 2026; criança só
   // pelo livro do ICr-HCFMUSP, cap. 54 (src/clinico/hiperpotassemia.ts, auditoria R2).
   'protocolos/hiperpotassemia': 'ambos',
+  // McIsaac: derivado e validado de 3 anos em diante, com fontes pediátricas na ficha.
+  'escores/mcisaac': 'ambos',
 }
 
 export function publicoDaFerramenta(secao: string, slug: string, declarado?: PublicoFerramenta): PublicoFerramenta {
