@@ -392,6 +392,11 @@ export default function App() {
                       <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin']} />}>
                         <Route path="/plantonista" element={<PlantonistaHome />} />
                         <Route path="/plantonista/:section" element={<SectionHome />} />
+                        {/* Entradas que saíram da Central (RT, 23/10/2026): abriam a mesma tela de outra. */}
+                        <Route path="/plantonista/calculadoras/drogas-vasoativas" element={<Redirecionar para="/plantonista/calculadoras/infusoes-adulto?classe=vasoativo" />} />
+                        <Route path="/plantonista/calculadoras/sedacao-continua" element={<Redirecionar para="/plantonista/calculadoras/infusoes-adulto?classe=sedacao" />} />
+                        <Route path="/plantonista/calculadoras/bloqueio-neuromuscular" element={<Redirecionar para="/plantonista/calculadoras/infusoes-adulto?classe=bloqueio" />} />
+                        <Route path="/plantonista/calculadoras/heparinizacao-ajuste" element={<Redirecionar para="/plantonista/calculadoras/heparinizacao-venosa" />} />
                         <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
                         <Route path="/agenda" element={<AgendaGrupo />} />
 

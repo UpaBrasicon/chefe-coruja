@@ -9,7 +9,7 @@ import { publicoDaFerramenta, semReferenciaPediatrica, valeEmAdulto, valeEmCrian
 test('público: o padrão é adulto, com o selo sem referência pediátrica', () => {
   assert.equal(publicoDaFerramenta('emergencias', 'pcr-adulto'), 'adulto')
   assert.equal(publicoDaFerramenta('escores', 'heart'), 'adulto')
-  assert.equal(semReferenciaPediatrica(publicoDaFerramenta('calculadoras', 'drogas-vasoativas')), true)
+  assert.equal(semReferenciaPediatrica(publicoDaFerramenta('calculadoras', 'infusoes-adulto')), true)
   assert.equal(valeEmCrianca('adulto'), false)
 })
 
