@@ -1152,6 +1152,25 @@ Ficaram pendentes do lote 1, à espera do RT:
 - **Escala Clínica de Fragilidade:** os nomes dos níveis 2 e 8 não foram confirmados palavra por palavra.
 - **Dor na criança:** as fontes divergem de `src/clinico/triagem/dor.ts`. Escala numérica a partir de 6 anos (o app usa 4), FPS-R a partir de 4–5 anos, FLACC validada de 2 meses a 7 anos (o app usa até 3). O RT decide a faixa de cada escala.
 
+**Lote 2 — SCA e Sgarbossa em produção em 23/10/2026 (PR #186).** Primeiro item do lote 2.
+- **SCA — conduta inicial** (Condutas e cálculos — adulto, Cardiovascular): AAS, segundo
+  antiagregante, anticoagulante e reperfusão no IAM com e sem supra. Doses do manual do HC, caps. 13
+  e 14, conferidas no PDF com a página de cada uma. A enoxaparina usa a mesma função da anticoagulação
+  plena. O fibrinolítico só aparece depois de respondida a contraindicação.
+- **Sgarbossa modificado** (escores, Cardiologia): três critérios, basta um, com a razão ST/S
+  (Smith 2012, PMID 22939607; Sgarbossa 1996, PMID 8559200; Meyers 2015, PMID 26678648; marca-passo
+  Dodd 2021, PMID 34172301). Divergência anotada na tela: o manual (p. 213) fala em "acima de 30%";
+  as fontes primárias usam 25%.
+- Não entrou: doses de antiagregante da AHA 2025, porque o texto completo não pôde ser lido nesta
+  rodada. A tela cita só o manual.
+
+Evidência: 976 de 976 testes clínicos; homologação conferida pelo RT; migration
+`20261214000001_lacunas_lote2_sca` aplicada na homologação e, com o "ok produção" do RT, na produção
+(as 2 fichas novas na fila de aprovação); bundle da produção conferido com as duas telas.
+
+Próximos itens do lote 2: ITU do adulto, PEP de HIV, cefaleia, meningite do adulto, cólica renal,
+intermação, queimadura do adulto, icterícia neonatal e reanimação neonatal.
+
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
 na criança, risco de suicídio, epistaxe, pneumotórax).
