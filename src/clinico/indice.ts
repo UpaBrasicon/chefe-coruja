@@ -63,6 +63,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'adulto-insuficiencia-adrenal': '/plantonista/emergencias/insuficiencia-adrenal-adulto',
   'adulto-intoxicacoes-antidotos': '/plantonista/emergencias/intoxicacoes-antidotos-adulto',
   'adulto-isr': '/plantonista/calculadoras/iot',
+  'adulto-itu': '/plantonista/emergencias/itu-adulto',
   'adulto-lesao-renal-aguda': '/plantonista/emergencias/lesao-renal-aguda-adulto',
   'adulto-lise-tumoral': '/plantonista/emergencias/lise-tumoral-adulto',
   'adulto-maddrey': '/plantonista/emergencias/maddrey',
