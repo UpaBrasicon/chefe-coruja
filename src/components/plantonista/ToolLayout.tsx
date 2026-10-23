@@ -1,10 +1,8 @@
-import { BadgeCheck, Building2, Calculator, CircleSlash, Clock, TriangleAlert } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { useParams } from 'react-router-dom'
+import { BadgeCheck, Building2, CircleSlash, Clock, TriangleAlert } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { textoFontes, type Ficha } from '@/clinico/ficha'
-import { TituloCartao, TituloPagina } from '@/components/monitor/Pagina'
-import { acharSecao } from '@/content/registry'
+import { TituloPagina } from '@/components/monitor/Pagina'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useSituacaoFerramenta, type SituacaoFerramenta } from '@/hooks/useFerramentaClinica'
 import { data } from '@/lib/formato'
@@ -40,12 +38,11 @@ export function ToolLayout({
   const suspensa = !!situacao?.unidade?.oculta
   const fonte = ficha ? textoFontes(ficha) : referencia
   const revisado = ficha ? ficha.revisadoEm : revisadoEm
-  // O azulejo do título leva o ícone da seção da Central em que a ferramenta está.
-  const { section } = useParams()
-  const icone = acharSecao(section ?? '')?.icon ?? Calculator
+  const corpo = useRef<HTMLDivElement>(null)
+  const indice = useIndice(corpo)
   return (
     <div className={cn('flex flex-col gap-[22px]', className)}>
-      <TituloPagina icone={icone} titulo={title} descricao={description} className="mb-0" />
+      <TituloPagina titulo={title} descricao={description} className="mb-0" />
       {ficha && situacao && <FaixaSituacao situacao={situacao} versao={ficha.versao} />}
       {semFonte && (
         <div role="note" className="flex gap-2.5 rounded-container border border-fio bg-superficie px-4 py-3 text-apoio text-tinta-apoio">
@@ -59,22 +56,64 @@ export function ToolLayout({
           <p>A gestão desta unidade suspendeu o uso desta ferramenta. A regra da camada base continua registrada.</p>
         </div>
       ) : (
-        children
+        // Leitura de manual (revisão visual 3.8, opção C): com três partes ou
+        // mais, "Nesta página" à direita leva a cada uma (tela larga).
+        <div className={cn('grid items-start gap-x-10', indice.length >= 3 && 'xl:grid-cols-[minmax(0,1fr)_200px]')}>
+          <div ref={corpo} className="cc-leitura flex min-w-0 flex-col gap-[22px]">{children}</div>
+          {indice.length >= 3 && (
+            <nav aria-label="Nesta página" className="sticky top-4 hidden flex-col gap-1.5 border-l border-fio pl-4 xl:flex">
+              <span className="text-rotulo font-semibold text-tinta-apoio">Nesta página</span>
+              {indice.map((s) => (
+                <a key={s.id} href={`#${s.id}`} className="text-apoio text-tinta-sussurro hover:text-acao">{s.texto}</a>
+              ))}
+            </nav>
+          )}
+        </div>
       )}
-      <div role="note" className="flex gap-2.5 rounded-container bg-alerta-atencao px-4 py-3 text-apoio text-atencao">
+      <div role="note" className="flex gap-2.5 border-t border-fio pt-3 text-apoio text-atencao">
         <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
         <p>Apoio à decisão clínica: confira antes de prescrever. Não substitui o julgamento do profissional responsável.</p>
       </div>
       {(fonte || revisado) && (
-        <section aria-label="Fonte" className="rounded-container border border-fio bg-superficie px-4 py-3">
-          <TituloCartao className="mb-0">Fonte</TituloCartao>
-          {fonte && <p className="mt-1 text-apoio text-tinta">{fonte}</p>}
-          {revisado && <p className="mt-0.5 text-rotulo text-tinta-sussurro">Revisado em {revisado}</p>}
-          {ficha && <p className="mt-0.5 text-rotulo text-tinta-sussurro">Versão da regra: {ficha.versao}</p>}
+        <section aria-label="Fonte" className="flex flex-col gap-0.5">
+          <p className="text-apoio text-tinta-apoio"><span className="font-semibold text-tinta">Fonte</span>{fonte && <> · {fonte}</>}</p>
+          {revisado && <p className="text-rotulo text-tinta-sussurro">Revisado em {revisado}</p>}
+          {ficha && <p className="text-rotulo text-tinta-sussurro">Versão da regra: {ficha.versao}</p>}
         </section>
       )}
     </div>
   )
+}
+
+type ItemIndice = { id: string; texto: string }
+const slugDe = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48)
+
+/**
+ * As partes da ferramenta são os títulos dos cartões (CardTitle) ou o que
+ * marcar `data-indice`. Lê do DOM e acompanha as mudanças: o resultado de
+ * uma calculadora só aparece depois que os campos são preenchidos.
+ */
+function useIndice(ref: React.RefObject<HTMLDivElement | null>) {
+  const [itens, setItens] = useState<ItemIndice[]>([])
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const ler = () => {
+      const novos = [...el.querySelectorAll<HTMLElement>('[data-slot="card-title"], [data-indice]')]
+        .map((h, i) => {
+          const texto = (h.dataset.indice || h.textContent || '').trim()
+          if (!h.id) h.id = `parte-${slugDe(texto) || i}`
+          return { id: h.id, texto }
+        })
+        .filter((x) => x.texto)
+      setItens((antes) => (antes.length === novos.length && antes.every((a, i) => a.id === novos[i].id && a.texto === novos[i].texto) ? antes : novos))
+    }
+    ler()
+    const obs = new MutationObserver(ler)
+    obs.observe(el, { childList: true, subtree: true, characterData: true })
+    return () => obs.disconnect()
+  }, [ref])
+  return itens
 }
 
 const dataBr = (iso: string | null) => (iso ? data(iso) : '')

@@ -395,6 +395,39 @@ passam a uma só. Nenhuma dose, limiar ou texto clínico muda. Os agrupamentos p
 sistema da opção B são de exemplo: os grupos de verdade saem da classificação
 que o RT aprovar.
 
+**Escolha do RT (23/10/2026): C, conduta e escores como leitura de manual, com a
+lateral de navegação.** Aplicada na branch `feat/visual-3-8-central`:
+
+- **Lateral da seção** (`LateralSecao.tsx`, novo): dentro de qualquer ferramenta,
+  a partir de 1024 px, as ferramentas da seção ficam à esquerda, nos grupos que
+  a seção já tem (emergências e pediatria) ou na ordem do cadastro, com filtro;
+  a atual em destaque. A troca é sem voltar ao índice. No celular, some.
+- **Nesta página** (`ToolLayout`): com três partes ou mais (títulos dos cartões),
+  à direita, a partir de 1280 px, leva a cada parte; acompanha o resultado que
+  aparece depois de preencher. O aviso de apoio à decisão e a fonte viram texto
+  com fio em cima (mesmo texto, mesmo `role`).
+- **Corpo da ferramenta** (`.cc-leitura` no `index.css`): cartões sem sombra;
+  selos sem maiúsculas e sem fundo, na própria cor; as linhas em caixa dentro dos
+  cartões viram linhas separadas por fio. Avisos tintados e campos não mudam.
+  Vale para as 212 ferramentas sem tocar no conteúdo de cada uma.
+- **Escore** (`EscoreTela`): cada item numa linha, a pergunta à esquerda e as
+  opções em cápsula (`Chip`, radio) à direita (opções longas descem); o resultado
+  em frase ("CURB-65: 3 pontos · mortalidade em 30 dias 17%"), com o número na cor
+  da faixa (antes era a borda do cartão), sem bolha.
+- **Índice da seção** (`SectionHome`): uma linha por ferramenta, nome e para que
+  serve, agrupada quando a seção tem grupos; filtro também nas seções com mais de
+  12 ferramentas (os 39 escores). Sai a grade de cartões.
+- **Infusões**: velocidade e dose em linhas de resultado, sem caixa tintada nem
+  número de 30 px; sai o ícone em quadrado e a contagem em pílula do grupo.
+- **Início da Central**: no celular, a grade de blocos coloridos vira lista;
+  atalhos e busca sem sombra e sem "levantar" ao passar o mouse; "Modo do
+  paciente" sem maiúsculas.
+- Nenhuma dose, limiar, texto clínico ou cálculo mudou: `npm run test:clinico`
+  (929 testes) verde. Typecheck, lint, catraca (uma exceção `padrao-ok` a menos)
+  e build verdes. Visto na página de teste com os componentes reais
+  (`central-C-aplicada-*.jpg`): escore, conduta, índice, infusão, abstinência no
+  escuro e início no celular.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
