@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FolderSearch, Star } from 'lucide-react'
 
-import { acharSecao, CHAVES_FERRAMENTAS, type ToolDef } from '@/content/registry'
+import { CHAVES_FERRAMENTAS, secaoExibida, type ToolExibida } from '@/content/registry'
 import { GRUPOS_SECAO, idGrupo } from '@/content/gruposSecoes'
 import { chaveFerramenta, useFavoritos } from '@/lib/useFavoritos'
 import { publicoDaFerramenta, valeEmAdulto, valeEmCrianca } from '@/content/publicoFerramentas'
@@ -16,7 +16,7 @@ const semAcento = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLo
 
 export default function SectionHome() {
   const { section } = useParams()
-  const secao = acharSecao(section ?? '')
+  const secao = secaoExibida(section ?? '')
   const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   const [filtro, setFiltro] = useState('')
   const { modo } = usePacienteCentral()
@@ -27,11 +27,11 @@ export default function SectionHome() {
     const def = GRUPOS_SECAO[secao.slug]
     const porSlug = new Map(secao.tools.map((t) => [t.slug, t]))
     const base = def
-      ? def.map((g) => ({ rotulo: g.rotulo, tools: g.slugs.map((s) => porSlug.get(s)).filter((t): t is ToolDef => !!t) }))
+      ? def.map((g) => ({ rotulo: g.rotulo, tools: g.slugs.map((s) => porSlug.get(s)).filter((t): t is ToolExibida => !!t) }))
       : [{ rotulo: '', tools: secao.tools }]
     const q = semAcento(filtro.trim())
     if (!q) return base
-    const casa = (t: ToolDef) => semAcento([t.label, t.description, ...(t.tags ?? [])].join(' ')).includes(q)
+    const casa = (t: ToolExibida) => semAcento([t.label, t.description, ...(t.tags ?? [])].join(' ')).includes(q)
     return base.map((g) => ({ ...g, tools: g.tools.filter(casa) })).filter((g) => g.tools.length > 0)
   }, [secao, filtro])
 
@@ -41,22 +41,22 @@ export default function SectionHome() {
 
   const agrupada = !!GRUPOS_SECAO[secao.slug]
   // No modo do paciente, cada cartão diz se a ferramenta calcula para ele.
-  const aviso = (tool: ToolDef) => {
-    const p = publicoDaFerramenta(secao.slug, tool.slug, tool.publico)
+  const aviso = (tool: ToolExibida) => {
+    const p = publicoDaFerramenta(tool.secao, tool.slug, tool.publico)
     if (modo === 'pediatrico' && !valeEmCrianca(p)) return 'Sem referência pediátrica'
     if (modo === 'adulto' && !valeEmAdulto(p)) return 'Só pediátrica'
     return undefined
   }
   // Índice de manual (revisão visual 3.8, opção C): uma linha por ferramenta,
   // nome e para que serve, no lugar da grade de cartões iguais.
-  const linha = (tool: ToolDef) => {
-    const chave = chaveFerramenta(secao.slug, tool.slug)
+  const linha = (tool: ToolExibida) => {
+    const chave = chaveFerramenta(tool.secao, tool.slug)
     const fav = favoritos.includes(chave)
     const a = aviso(tool)
     return (
       <div key={tool.slug} className="flex items-baseline gap-x-4 border-b border-trilha px-5 py-2.5 last:border-0">
         <div className="grid min-w-0 flex-1 gap-x-6 gap-y-0.5 md:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
-          <Link to={`/plantonista/${secao.slug}/${tool.slug}`} className="text-controle font-medium text-acao hover:underline">{tool.label}</Link>
+          <Link to={`/plantonista/${tool.secao}/${tool.slug}`} className="text-controle font-medium text-acao hover:underline">{tool.label}</Link>
           <span className="text-apoio text-tinta-apoio">
             {tool.description}
             {a && <span className="text-atencao"> · {a}</span>}

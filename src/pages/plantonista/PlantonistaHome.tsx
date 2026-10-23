@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Fuse from 'fuse.js'
 import { History, Search, Sparkles, Star, Stethoscope } from 'lucide-react'
 
-import { CHAVES_FERRAMENTAS, SECOES, type SectionDef } from '@/content/registry'
+import { CHAVES_FERRAMENTAS, SECOES, SECOES_EXIBIDAS, SECOES_JUNTAS, secaoExibida, type SecaoExibida } from '@/content/registry'
 import { GRUPOS_SECAO } from '@/content/gruposSecoes'
 import { coresDaSecao } from '@/content/coresSecao'
 import { publicoDaFerramenta, valeEmAdulto, valeEmCrianca } from '@/content/publicoFerramentas'
@@ -47,7 +47,7 @@ const TODAS: Ferramenta[] = SECOES.flatMap((s) =>
     return {
       chave: chaveFerramenta(s.slug, t.slug),
       secao: s.slug,
-      secaoLabel: s.label,
+      secaoLabel: secaoExibida(s.slug)?.label ?? s.label,
       slug: t.slug,
       label: t.label,
       description: t.description,
@@ -213,10 +213,10 @@ export default function PlantonistaHome() {
   // Grade do celular: sem paciente, ou com o peso que falta, os blocos ficam
   // inertes (P/index.html 32366–32395); no pediátrico conta quantas da seção
   // têm referência pediátrica. A lista larga não trava.
-  const secoes = SECOES.filter((s) => s.tools.length)
+  const secoes = SECOES_EXIBIDAS.filter((s) => s.tools.length)
   const faltaPaciente = !paciente.modo || !paciente.leitura.completo
-  const contagemModo = (s: SectionDef) => {
-    const fs = TODAS.filter((f) => f.secao === s.slug)
+  const contagemModo = (s: SecaoExibida) => {
+    const fs = TODAS.filter((f) => f.secao === s.slug || SECOES_JUNTAS[f.secao] === s.slug)
     if (paciente.modo === 'pediatrico') return { n: fs.filter((f) => f.comCrianca).length, texto: `${fs.filter((f) => f.comCrianca).length} de ${fs.length} com referência pediátrica` }
     if (paciente.modo === 'adulto') return { n: fs.filter((f) => f.comAdulto).length, texto: `${fs.filter((f) => f.comAdulto).length} de ${fs.length} para adulto` }
     return { n: fs.length, texto: `${fs.length} ${fs.length === 1 ? 'ferramenta' : 'ferramentas'}` }
@@ -231,7 +231,9 @@ export default function PlantonistaHome() {
           descricao={unidadeAtiva ? `${unidadeAtiva.unidade.nome} · ${TODAS.length} ferramentas clínicas` : undefined}
         />
 
-        <ModoPaciente />
+        {/* Adulto ou pediátrico só no celular (pedido do RT de 23/10/2026): na
+            tela larga cada ferramenta pergunta o paciente na própria tela. */}
+        <div className="lg:hidden"><ModoPaciente /></div>
         <CartaoTurno unidadeId={unidadeId} perfilId={perfil?.id} />
 
         <div className="mb-[22px]">

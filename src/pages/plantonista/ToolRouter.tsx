@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 import { Suspense } from 'react'
 import { FolderSearch, Star } from 'lucide-react'
 
-import { acharSecao, CHAVES_FERRAMENTAS } from '@/content/registry'
+import { acharSecao, CHAVES_FERRAMENTAS, secaoExibida } from '@/content/registry'
 import { publicoDaFerramenta } from '@/content/publicoFerramentas'
 import { chaveFerramenta, useFavoritos, useRegistrarUso } from '@/lib/useFavoritos'
 import { cn } from '@/lib/utils'
@@ -16,6 +16,8 @@ import { useModoNaFerramenta } from '@/lib/pacienteCentral'
 export function ToolRouter() {
   const { section, tool } = useParams()
   const secao = acharSecao(section ?? '')
+  // a seção como a Central mostra (as Calculadoras aparecem dentro das condutas do adulto)
+  const exibida = secaoExibida(section ?? '')
   const def = secao?.tools.find((t) => t.slug === tool)
   const { favoritos, usos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   const chave = secao && def ? chaveFerramenta(secao.slug, def.slug) : null
@@ -35,10 +37,10 @@ export function ToolRouter() {
   return (
     // Leitura de manual (revisão visual 3.8, opção C): a seção à esquerda, a ferramenta ao lado.
     <div className="grid items-start gap-x-8 lg:grid-cols-[232px_minmax(0,1fr)]">
-      <LateralSecao secao={secao} atual={def.slug} />
+      {exibida && <LateralSecao secao={exibida} atual={{ secao: secao.slug, slug: def.slug }} />}
       <div className="min-w-0">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <Trilha niveis={[{ rotulo: 'Central do Plantonista', to: '/plantonista' }, { rotulo: secao.label, to: `/plantonista/${secao.slug}` }, { rotulo: def.label }]} />
+          <Trilha niveis={[{ rotulo: 'Central do Plantonista', to: '/plantonista' }, { rotulo: exibida?.label ?? secao.label, to: `/plantonista/${exibida?.slug ?? secao.slug}` }, { rotulo: def.label }]} />
           <div className="flex flex-wrap items-center gap-2">
             <SeloSemReferenciaPediatrica publico={publico} />
             {vezes > 0 && <span className="text-rotulo text-tinta-sussurro tabular" title="Quantas vezes você abriu esta ferramenta">{vezes}×</span>}

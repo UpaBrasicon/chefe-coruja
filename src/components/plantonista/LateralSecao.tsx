@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { GRUPOS_SECAO } from '@/content/gruposSecoes'
-import type { SectionDef, ToolDef } from '@/content/registry'
+import type { SecaoExibida, ToolExibida } from '@/content/registry'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
@@ -13,17 +13,17 @@ import { cn } from '@/lib/utils'
 
 const semAcento = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
-export function LateralSecao({ secao, atual }: { secao: SectionDef; atual: string }) {
+export function LateralSecao({ secao, atual }: { secao: SecaoExibida; atual: { secao: string; slug: string } }) {
   const [filtro, setFiltro] = useState('')
   const grupos = useMemo(() => {
     const porSlug = new Map(secao.tools.map((t) => [t.slug, t]))
     const def = GRUPOS_SECAO[secao.slug]
     const base = def
-      ? def.map((g) => ({ rotulo: g.rotulo, tools: g.slugs.map((s) => porSlug.get(s)).filter((t): t is ToolDef => !!t) }))
+      ? def.map((g) => ({ rotulo: g.rotulo, tools: g.slugs.map((s) => porSlug.get(s)).filter((t): t is ToolExibida => !!t) }))
       : [{ rotulo: '', tools: secao.tools }]
     const q = semAcento(filtro.trim())
     if (!q) return base
-    const casa = (t: ToolDef) => semAcento([t.label, ...(t.tags ?? [])].join(' ')).includes(q)
+    const casa = (t: ToolExibida) => semAcento([t.label, ...(t.tags ?? [])].join(' ')).includes(q)
     return base.map((g) => ({ ...g, tools: g.tools.filter(casa) })).filter((g) => g.tools.length > 0)
   }, [secao, filtro])
 
@@ -42,12 +42,12 @@ export function LateralSecao({ secao, atual }: { secao: SectionDef; atual: strin
           {g.rotulo && <span className="mb-0.5 text-rotulo font-semibold text-tinta-apoio">{g.rotulo}</span>}
           {g.tools.map((t) => (
             <Link
-              key={t.slug}
-              to={`/plantonista/${secao.slug}/${t.slug}`}
-              aria-current={t.slug === atual ? 'page' : undefined}
+              key={`${t.secao}/${t.slug}`}
+              to={`/plantonista/${t.secao}/${t.slug}`}
+              aria-current={t.slug === atual.slug && t.secao === atual.secao ? 'page' : undefined}
               className={cn(
                 'rounded-controle px-2 py-1 text-apoio leading-[1.35]',
-                t.slug === atual ? 'bg-campo font-medium text-acao' : 'text-tinta-apoio hover:bg-campo hover:text-tinta',
+                t.slug === atual.slug && t.secao === atual.secao ? 'bg-campo font-medium text-acao' : 'text-tinta-apoio hover:bg-campo hover:text-tinta',
               )}
             >
               {t.label}
