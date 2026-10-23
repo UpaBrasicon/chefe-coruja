@@ -1110,6 +1110,30 @@ Central de Plantão (`/plantao`) não entrou nesta rodada. Próxima: junção da
 Emergências e o modo adulto/pediátrico só no celular (pedido do RT de 23/10/2026); depois **3.4, triagem e
 enfermagem**.
 
+## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
+
+**Pedido do RT:** avaliar com o PubMed o que falta em Condutas e cálculos — adulto, Pediatria e
+Escores, e trazer ferramentas novas e melhorias no mesmo molde de frontend (leitura de manual, 3.8
+opção C). Levantamento em `docs/clinico/LACUNAS-CENTRAL-2026-10.md`. Decisão do RT: seguir os
+quatro lotes, na ordem 1 → 2 → 3 → 4, **antes da 3.4** da Revisão visual.
+
+Regras (as mesmas da Revisão PubMed de 09/10/2026): cada lote em branch e PR próprios, com
+homologação antes; toda regra cita a fonte com PMID e DOI; número sem confirmação no texto da fonte
+não entra; dose só de fonte citada, com página ou tabela; nunca dose do adulto convertida para a
+criança; ficha nova entra na fila de aprovação do RT (registro da versão no banco, como no item
+"Registro das versões novas das fichas no banco").
+
+| Lote | Prioridade | Itens | Critério de aceite |
+|---|---|---|---|
+| 1 — Sem dose | P1 | Cockcroft-Gault (ClCr), QTc (Bazett, Fridericia, Framingham, Hodges), regras de Ottawa de tornozelo e pé e de joelho, PECARN coluna cervical (2024), PECARN trauma abdominal (2013, validado em 2024), dor na criança (FLACC, FPS-R e escala numérica, reaproveitando `src/clinico/triagem/dor.ts`) | cada item com teste em `src/clinico/**`, fonte conferida no texto, tela no molde de escore, homologação conferida pelo RT |
+| 2 — Condutas com dose | P1/P2 | SCA inicial com Sgarbossa modificado, ITU do adulto, PEP de HIV (com violência sexual), cefaleia com sinais de alarme, meningite do adulto, cólica renal, intermação, queimadura do adulto | dose transcrita da fonte com página ou tabela; PCDT do MS lido no texto (não indexado) |
+| 3 — Atualizações de diretriz | P2 | PCR adulto e RCP pediátrica pela AHA 2025; levetiracetam no estado de mal; Kawasaki AHA 2024; SOFA-2 em paralelo (se SSC/ILAS 2026 ainda não adotam); sPESI; CRB-65; validações do Canadian Syncope; HEART com SBC 2025; magnésio na pré-eclâmpsia; anafilaxia WAO/2023; andexanete como divergência; crise hipertensiva pediátrica com percentil calculado | mudança clínica cita o PMID; o livro do HC continua visível |
+| 4 — Decisões de escopo | — | incluir neonato (icterícia AAP 2022, reanimação neonatal 2025)? lactente febril pela AAP 2021 ou só pelo ICr? grupos novos nos escores ("Infectologia", "Geriatria e fragilidade") para Centor/McIsaac, 4AT, CFS? | decisão do RT registrada aqui antes de codar o item |
+
+Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
+Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
+na criança, risco de suicídio, epistaxe, pneumotórax).
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
