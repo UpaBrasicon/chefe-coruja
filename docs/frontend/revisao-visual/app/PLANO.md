@@ -428,6 +428,16 @@ lateral de navegação.** Aplicada na branch `feat/visual-3-8-central`:
   (`central-C-aplicada-*.jpg`): escore, conduta, índice, infusão, abstinência no
   escuro e início no celular.
 
+**Ajuste do RT (23/10/2026): escores por especialidade**, na lateral e no índice
+("cardiologia com HAS-BLED, HEART e outros"). Os 39 escores ganharam grupos em
+`src/content/gruposSecoes.ts`: Cardiologia (10: HEART, TIMI, TIMI IAMCSST, GRACE,
+Killip, CHA₂DS₂-VA, HAS-BLED, as duas regras de síncope e Duke), Pneumologia e
+tromboembolismo (8), Neurologia (4), Gastroenterologia e hepatologia (8), Terapia
+intensiva e sepse (4), Hematologia (2), Trauma (2: Canadian CT Head Rule e ISS) e
+Nefrologia (1: CKD-EPI). Os endereços e os favoritos não mudam; o teste
+`gruposSecoes.test.ts` confere que cada escore está em exatamente um grupo
+(`central-escores-*.jpg`).
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
