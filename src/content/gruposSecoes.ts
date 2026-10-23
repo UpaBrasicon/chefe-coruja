@@ -6,6 +6,18 @@
 export type Grupo = { rotulo: string; slugs: string[] }
 
 export const GRUPOS_SECAO: Record<string, Grupo[]> = {
+  // Escores por especialidade (pedido do RT em 23/10/2026: "cardiologia com
+  // HAS-BLED, HEART e outros"). Só agrupa; cada escore segue no mesmo endereço.
+  escores: [
+    { rotulo: 'Cardiologia', slugs: ['heart', 'timi', 'timi-iamcsst', 'grace', 'killip', 'cha2ds2-va', 'has-bled', 'sincope-san-francisco', 'sincope-canadense', 'duke-endocardite'] },
+    { rotulo: 'Pneumologia e tromboembolismo', slugs: ['curb-65', 'psi-port', 'wells-tep', 'genebra-revisado', 'years', 'pesi', 'wells-tvp', 'light'] },
+    { rotulo: 'Neurologia', slugs: ['glasgow', 'four', 'nih-avc', 'abcd2'] },
+    { rotulo: 'Gastroenterologia e hepatologia', slugs: ['glasgow-blatchford', 'aims65', 'rockall', 'child-pugh', 'meld-3', 'bisap', 'ranson', 'alvarado'] },
+    { rotulo: 'Terapia intensiva e sepse', slugs: ['sepse-adulto', 'news2', 'cam-icu', 'rass'] },
+    { rotulo: 'Hematologia', slugs: ['4t-hit', 'civd-isth'] },
+    { rotulo: 'Trauma', slugs: ['canadian-ct-head', 'iss'] },
+    { rotulo: 'Nefrologia', slugs: ['ckd-epi'] },
+  ],
   emergencias: [
     { rotulo: 'Parada, ritmo e choque', slugs: ['pcr-adulto', 'pos-pcr-adulto', 'bradicardia-adulto', 'taquiarritmias-adulto', 'fibrilacao-atrial-adulto', 'marca-passo-provisorio-adulto', 'anafilaxia-adulto', 'ressuscitacao-volemica-adulto'] },
     { rotulo: 'Cardiovascular', slugs: ['emergencia-hipertensiva-adulto', 'sindrome-aortica-adulto', 'add-rs-disseccao-aorta', 'insuficiencia-cardiaca-aguda-adulto'] },
