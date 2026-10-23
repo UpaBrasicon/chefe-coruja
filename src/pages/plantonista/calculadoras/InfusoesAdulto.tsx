@@ -1,6 +1,6 @@
 import { Activity, ChevronRight, Droplet, Moon, Search, X, Zap, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { INFUSOES_ADULTO, NOTAS_PADIS_2025, concentracao, doseAdulto, fichaInfusoesAdulto, unidadeDose, velocidadeAdulto, type InfusaoAdulto } from '@/clinico/adulto/infusoes'
 import { Chip } from '@/components/monitor/Pagina'
@@ -19,8 +19,8 @@ import { numero } from '@/lib/formato'
 // contador, a droga com o preparo do Anexo 1 do manual do HC, a faixa e a
 // barra de dose que muda de cor até o teto. A barra NUNCA passa do máximo do
 // livro: acima do teto não há referência e a tela não calcula velocidade.
-// As três entradas antigas (vasoativas, sedação, bloqueio) abrem esta mesma
-// tela já na classe, para não duplicar regra.
+// Os endereços das três entradas antigas (vasoativas, sedação, bloqueio)
+// redirecionam para esta tela já na classe (?classe=), sem duplicar regra.
 
 type Grupo = InfusaoAdulto['grupo']
 type Classe = Grupo | 'anticoag'
@@ -33,8 +33,7 @@ const CLASSES: { id: Classe; rotulo: string; icone: LucideIcon }[] = [
 ]
 
 const ATALHOS = [
-  { rotulo: 'Heparina não fracionada EV', texto: '80 UI/kg + 18 UI/kg/h (manual HC)', to: '/plantonista/calculadoras/heparinizacao-venosa' },
-  { rotulo: 'Heparina — ajuste pelo TTPa', texto: 'Nomograma da Tabela 7 do manual HC', to: '/plantonista/calculadoras/heparinizacao-ajuste' },
+  { rotulo: 'Heparina não fracionada EV — dose e ajuste pelo TTPa', texto: '80 UI/kg + 18 UI/kg/h e nomograma da Tabela 7 (manual HC)', to: '/plantonista/calculadoras/heparinizacao-venosa' },
 ]
 
 const br = (x: number | null, casas = 1) => (x === null || !Number.isFinite(x) ? '—' : numero(Math.round(x * 10 ** casas) / 10 ** casas))
@@ -242,7 +241,12 @@ export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
   )
 }
 
-export const InfusoesAdultoPorta = () => <InfusoesAdulto />
-export const DrogasVasoativas = () => <InfusoesAdulto grupo="vasoativo" />
-export const SedacaoContinua = () => <InfusoesAdulto grupo="sedacao" />
-export const BloqueioNeuromuscular = () => <InfusoesAdulto grupo="bloqueio" />
+// Porta única (RT, 23/10/2026: saíram as entradas "Drogas vasoativas", "Sedação
+// contínua" e "Bloqueio neuromuscular contínuo", que abriam esta mesma tela). Os
+// endereços antigos redirecionam para cá com ?classe=, que abre a classe.
+const CLASSES_DO_ENDERECO: Grupo[] = ['vasoativo', 'sedacao', 'bloqueio']
+export function InfusoesAdultoPorta() {
+  const [params] = useSearchParams()
+  const classe = params.get('classe') as Grupo | null
+  return <InfusoesAdulto grupo={classe && CLASSES_DO_ENDERECO.includes(classe) ? classe : undefined} />
+}

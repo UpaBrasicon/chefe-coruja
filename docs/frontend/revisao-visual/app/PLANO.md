@@ -455,6 +455,18 @@ Itens repetidos (levantamento com arquivo e linha, para o RT decidir): duas dupl
 entradas de heparina não fracionada, que abrem a mesma tela); os demais pares parecidos são
 complementares (outra indicação ou outra fonte).
 
+**Escolha do RT (23/10/2026):** fica só a **porta única das infusões** (saem "Drogas
+vasoativas", "Sedação contínua" e "Bloqueio neuromuscular contínuo": a mesma tela, a mesma
+regra do Anexo 1 e do PADIS 2025, e a busca já acha pela droga) e **uma entrada só para a
+heparina**, "Heparina não fracionada EV — dose e ajuste pelo TTPa" (a dose 80/18 e o nomograma
+da Tabela 7 já estavam na mesma tela). Os endereços antigos redirecionam: as três classes abrem
+a porta única já na classe (`?classe=`), e o ajuste da heparina abre a heparina. As palavras de
+busca das entradas que saíram foram para a que ficou (sem "dopamina", que a tela não tem).
+Quem tinha uma dessas quatro entradas como favorita perde esse favorito (o RT foi avisado). Os
+pares complementares ficam: heparina EV × anticoagulação plena (60/12 com lítico e TTPa 60–80 ×
+80/18 e 46–70, contextos diferentes), escolha de acesso × calibres e IO, sequência rápida ×
+sedação para procedimento, vasoativas × ressuscitação volêmica.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
