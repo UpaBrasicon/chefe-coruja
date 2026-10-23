@@ -10,6 +10,7 @@ import { Trilha, Vazio } from '@/components/monitor/Pagina'
 import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import { FaixaModo, SeloSemReferenciaPediatrica } from '@/components/plantonista/central/ModoNaFerramenta'
+import { LateralSecao } from '@/components/plantonista/LateralSecao'
 import { useModoNaFerramenta } from '@/lib/pacienteCentral'
 
 export function ToolRouter() {
@@ -32,26 +33,30 @@ export function ToolRouter() {
   const vezes = usos[chave] ?? 0
 
   return (
-    <>
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <Trilha niveis={[{ rotulo: 'Central do Plantonista', to: '/plantonista' }, { rotulo: secao.label, to: `/plantonista/${secao.slug}` }, { rotulo: def.label }]} />
-        <div className="flex flex-wrap items-center gap-2">
-          <SeloSemReferenciaPediatrica publico={publico} />
-          {vezes > 0 && <span className="text-rotulo text-tinta-sussurro tabular" title="Quantas vezes você abriu esta ferramenta">{vezes}×</span>}
-          <Button variant="ghost" size="sm" aria-pressed={ehFavorito} onClick={() => alternarFavorito(chave)}>
-            <Star className={cn(ehFavorito && 'fill-acao text-acao')} />
-            {ehFavorito ? 'Favorita' : 'Favoritar'}
-          </Button>
+    // Leitura de manual (revisão visual 3.8, opção C): a seção à esquerda, a ferramenta ao lado.
+    <div className="grid items-start gap-x-8 lg:grid-cols-[232px_minmax(0,1fr)]">
+      <LateralSecao secao={secao} atual={def.slug} />
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <Trilha niveis={[{ rotulo: 'Central do Plantonista', to: '/plantonista' }, { rotulo: secao.label, to: `/plantonista/${secao.slug}` }, { rotulo: def.label }]} />
+          <div className="flex flex-wrap items-center gap-2">
+            <SeloSemReferenciaPediatrica publico={publico} />
+            {vezes > 0 && <span className="text-rotulo text-tinta-sussurro tabular" title="Quantas vezes você abriu esta ferramenta">{vezes}×</span>}
+            <Button variant="ghost" size="sm" aria-pressed={ehFavorito} onClick={() => alternarFavorito(chave)}>
+              <Star className={cn(ehFavorito && 'fill-acao text-acao')} />
+              {ehFavorito ? 'Favorita' : 'Favoritar'}
+            </Button>
+          </div>
         </div>
+        <FaixaModo publico={publico} />
+        {!suprimir && (
+          <Suspense fallback={<div className="flex h-40 items-center justify-center"><Spinner /></div>}>
+            {/* Estado de resposta por ferramenta: a chave remonta o formulário, e
+                as respostas de um escore não vazam para o próximo (telas/20). */}
+            <Component key={chave} />
+          </Suspense>
+        )}
       </div>
-      <FaixaModo publico={publico} />
-      {!suprimir && (
-        <Suspense fallback={<div className="flex h-40 items-center justify-center"><Spinner /></div>}>
-          {/* Estado de resposta por ferramenta: a chave remonta o formulário, e
-              as respostas de um escore não vazam para o próximo (telas/20). */}
-          <Component key={chave} />
-        </Suspense>
-      )}
-    </>
+    </div>
   )
 }

@@ -120,7 +120,7 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
     : `Check-in ${hhmm(new Date(p.checkin_em))}, ${p.checkin_dentro === false ? (p.checkin_justificativa ? 'fora do raio, com justificativa' : 'fora do raio') : p.checkin_dentro ? 'dentro do raio' : 'sem validação de local'}`
 
   return (
-    <section aria-label="Meu turno" className="mb-5 overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
+    <section aria-label="Meu turno" className="mb-5 overflow-hidden rounded-cartao border border-fio bg-superficie">
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 border-b border-fio px-5 py-3.5">
         <span className="flex items-center gap-[7px] text-corpo font-semibold tracking-[-0.012em] text-tinta">
           <Stethoscope className="size-4 text-acao" aria-hidden />

@@ -91,7 +91,7 @@ export function ModoPaciente() {
           pedi ? 'border-pediatria/15 bg-pediatria/10' : 'border-acao/15 bg-alerta-marca',
         )}
       >
-        <span className={cn('rotulo font-semibold uppercase', pedi ? 'text-pediatria' : 'text-acao')}>
+        <span className={cn('rotulo font-semibold', pedi ? 'text-pediatria' : 'text-acao')}>
           {pedi ? 'Idade e peso' : 'Dados do paciente'}
         </span>
 

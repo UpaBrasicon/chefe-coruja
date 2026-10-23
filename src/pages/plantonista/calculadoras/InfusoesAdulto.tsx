@@ -121,18 +121,17 @@ function Droga({ i, peso }: { i: InfusaoAdulto; peso: number }) {
         <Input id={`${i.id}-dose`} inputMode="decimal" className="max-w-40" value={doseTxt} onChange={(e) => setDoseTxt(e.target.value)} />
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex flex-col items-center gap-1 rounded-cartao border border-acao/30 bg-alerta-marca px-4 py-3">
-          <span className="rotulo text-acao">Velocidade</span>
-          <span className="text-numeral-ok leading-none font-semibold tabular-nums text-acao">{semPeso ? '—' : br(vel)}</span>
-          <span className="text-apoio text-tinta-sussurro">mL/h</span>
+      {/* resultado em linhas (revisão visual 3.8): sem caixa tintada nem número gigante */}
+      <dl className="flex flex-col border-y border-trilha">
+        <div className="flex items-baseline justify-between gap-4 border-b border-trilha py-2">
+          <dt className="text-apoio text-tinta-apoio">Velocidade na bomba</dt>
+          <dd className="text-secao font-semibold tabular-nums text-tinta">{semPeso ? '—' : `${br(vel)} mL/h`}</dd>
         </div>
-        <div className={cn('flex flex-col items-center gap-1 rounded-cartao border px-4 py-3', acimaTeto ? 'border-critico/40' : 'border-fio')}>
-          <span className={cn('rotulo', corTexto)}>Dose</span>
-          <span className={cn('text-numeral-ok leading-none font-semibold tabular-nums', corTexto)}>{Number.isFinite(dose) ? br(dose, 3) : '—'}</span>
-          <span className="text-apoio text-tinta-sussurro">{u}</span>
+        <div className="flex items-baseline justify-between gap-4 py-2">
+          <dt className="text-apoio text-tinta-apoio">Dose</dt>
+          <dd className={cn('text-controle font-medium tabular-nums', corTexto)}>{Number.isFinite(dose) ? `${br(dose, 3)} ${u}` : '—'}</dd>
         </div>
-      </div>
+      </dl>
       <p className={cn('text-apoio', acimaTeto ? 'text-critico' : pct >= 0.85 ? 'text-atencao' : 'text-tinta-sussurro')}>
         {semPeso ? 'Informe o peso: a dose é por kg.'
           : acimaTeto ? `Acima do teto da faixa do livro (${br(max, 3)} ${u}): sem referência, a tela não calcula a velocidade.`
@@ -195,9 +194,9 @@ export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
             <section key={c.id} className={cn('overflow-hidden rounded-container border bg-card', c.abertaAgora ? 'border-acao' : 'border-fio')}>
               <div className="flex items-center gap-2 pr-3">
                 <BotaoLinha variante="linha" aria-expanded={c.abertaAgora} onClick={() => { setAberta(aberta === c.id ? null : c.id); setDroga(null) }} className="min-h-14 flex-1 items-center gap-3 border-b-0 px-4">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-controle bg-trilha text-acao"><Icone className="size-4" aria-hidden /></span>
-                  <span className="flex-1 text-corpo font-semibold tracking-[-0.01em] text-tinta">{c.rotulo}</span>
-                  <span className={cn('rounded-capsula px-2 py-0.5 text-rotulo font-semibold', c.id === 'anticoag' ? 'bg-atencao/10 text-atencao' : 'bg-acao/10 text-acao')}>{c.n}</span>
+                  <Icone className="size-4 shrink-0 text-tinta-sussurro" aria-hidden />
+                  <span className="text-corpo font-semibold tracking-[-0.01em] text-tinta">{c.rotulo}</span>
+                  <span className={cn('flex-1 text-corpo tabular-nums', c.id === 'anticoag' ? 'text-atencao' : 'text-tinta-sussurro')}>{c.n}</span>
                 </BotaoLinha>
                 {c.abertaAgora && (
                   <Button variant="outline" onClick={() => { setAberta(null); setDroga(null); setBusca('') }} className="min-h-10 gap-1.5 px-3">

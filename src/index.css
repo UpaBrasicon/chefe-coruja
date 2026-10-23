@@ -623,6 +623,32 @@
 }
 
 /*
+ * LEITURA DE MANUAL na Central do Plantonista (revisão visual 3.8, opção C, RT
+ * em 23/10/2026). Vale dentro do corpo de toda ferramenta (ToolLayout põe
+ * .cc-leitura): cartão sem sombra, selo sem maiúsculas espaçadas e as linhas
+ * em caixa (rounded-controle + border, dentro de outro cartão) viram linhas
+ * separadas por fio. Avisos tintados (role="note" ou fundo de alerta) e campos
+ * de formulário ficam como estão. Nenhum texto clínico muda: só a moldura.
+ */
+.cc-leitura [data-slot="card"] { box-shadow: none; }
+/* o selo vira texto na própria cor (todas as variantes têm cor de texto; o fundo era a lavagem de 10%) */
+.cc-leitura [data-slot="badge"] {
+    text-transform: none;
+    letter-spacing: normal;
+    background-color: transparent;
+    border-color: transparent;
+    padding-inline: 0;
+    font-weight: 500;
+}
+.cc-leitura :is(div, p, li, label).rounded-controle.border:not([role="note"]):not([class*="bg-alerta"]) {
+    border-width: 0 0 1px;
+    border-color: var(--color-trilha);
+    border-radius: 0;
+    padding-inline: 0;
+    background-color: transparent;
+}
+
+/*
  * MODO COMPACTO. Não é "tudo menor": é menos ar e menos texto de apoio,
  * mantendo os tamanhos de leitura clínica. Sai o que o olho já sabe depois
  * da primeira hora de plantão: a linha de contexto de cada parâmetro, o
