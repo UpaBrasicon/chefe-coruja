@@ -9,7 +9,7 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
   // Escores por especialidade (pedido do RT em 23/10/2026: "cardiologia com
   // HAS-BLED, HEART e outros"). Só agrupa; cada escore segue no mesmo endereço.
   escores: [
-    { rotulo: 'Cardiologia', slugs: ['heart', 'timi', 'timi-iamcsst', 'grace', 'killip', 'cha2ds2-va', 'has-bled', 'sincope-san-francisco', 'sincope-canadense', 'duke-endocardite'] },
+    { rotulo: 'Cardiologia', slugs: ['heart', 'timi', 'timi-iamcsst', 'grace', 'killip', 'cha2ds2-va', 'has-bled', 'sincope-san-francisco', 'sincope-canadense', 'duke-endocardite', 'sgarbossa-modificado'] },
     { rotulo: 'Pneumologia e tromboembolismo', slugs: ['curb-65', 'psi-port', 'wells-tep', 'genebra-revisado', 'years', 'pesi', 'wells-tvp', 'light'] },
     { rotulo: 'Neurologia', slugs: ['glasgow', 'four', 'nih-avc', 'abcd2'] },
     { rotulo: 'Gastroenterologia e hepatologia', slugs: ['glasgow-blatchford', 'aims65', 'rockall', 'child-pugh', 'meld-3', 'bisap', 'ranson', 'alvarado'] },
@@ -26,7 +26,7 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
   emergencias: [
     { rotulo: 'Infusões e via aérea', slugs: ['iot', 'infusoes-adulto'] },
     { rotulo: 'Parada, ritmo e choque', slugs: ['pcr-adulto', 'pos-pcr-adulto', 'bradicardia-adulto', 'taquiarritmias-adulto', 'fibrilacao-atrial-adulto', 'marca-passo-provisorio-adulto', 'anafilaxia-adulto', 'ressuscitacao-volemica-adulto', 'qtc'] },
-    { rotulo: 'Cardiovascular', slugs: ['emergencia-hipertensiva-adulto', 'sindrome-aortica-adulto', 'add-rs-disseccao-aorta', 'insuficiencia-cardiaca-aguda-adulto'] },
+    { rotulo: 'Cardiovascular', slugs: ['sca-inicial-adulto', 'emergencia-hipertensiva-adulto', 'sindrome-aortica-adulto', 'add-rs-disseccao-aorta', 'insuficiencia-cardiaca-aguda-adulto'] },
     { rotulo: 'Respiratório e ventilação', slugs: ['asma-exacerbacao-adulto', 'dpoc-exacerbacao-adulto', 'oxigenacao-irpa-adulto', 'dispneia-abordagem-adulto', 'vm-ajuste-inicial-adulto', 'vm-obstruido-grave-adulto', 'mecanica-ventilatoria-adulto', 'sdra-ventilacao-adulto', 'desmame-vm-adulto', 'perc', 'hestia', 'smart-cop', 'ats-idsa-pac', 'pac-antibiotico-adulto'] },
     { rotulo: 'Neurológico', slugs: ['hidantalizacao', 'trombolise-avc-adulto', 'rankin-modificada', 'escore-ich', 'hsa-adulto', 'ottawa-hsa', 'hunt-hess', 'wfns-hsa', 'fisher-hsa', 'hints-plus', 'guillain-barre-adulto', 'criterios-vm-sgb', 'gbs-incapacidade', 'egos', 'agitacao-delirium-adulto', 'bars-agitacao'] },
     { rotulo: 'Anticoagulação e hemoterapia', slugs: ['heparinizacao-venosa', 'profilaxia-tev', 'anticoagulacao-plena-adulto', 'fibrinoliticos-adulto', 'reversao-anticoagulacao-adulto', 'transfusao-hemocomponentes-adulto', 'abc-score-transfusao-macica'] },

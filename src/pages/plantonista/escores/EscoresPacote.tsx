@@ -33,6 +33,7 @@ import { mcisaac } from '@/clinico/escores/mcisaac'
 import { ottawaJoelho, ottawaTornozelo } from '@/clinico/escores/ottawa'
 import { quatroAt } from '@/clinico/escores/quatroAt'
 import { qtcAdulto } from '@/clinico/adulto/qtc'
+import { sgarbossaModificado } from '@/clinico/escores/sgarbossaModificado'
 import { EscoreTela } from '@/components/plantonista/EscoreTela'
 
 // Escores do pacote src/clinico (Fase 5.3): a regra e o teste ficam lá; aqui só
@@ -75,3 +76,4 @@ export const OttawaJoelho = () => <EscoreTela escore={ottawaJoelho} />
 export const McIsaac = () => <EscoreTela escore={mcisaac} />
 export const QuatroAt = () => <EscoreTela escore={quatroAt} />
 export const Qtc = () => <EscoreTela escore={qtcAdulto} />
+export const SgarbossaModificado = () => <EscoreTela escore={sgarbossaModificado} />
