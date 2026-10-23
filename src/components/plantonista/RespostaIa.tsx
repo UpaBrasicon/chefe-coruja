@@ -121,7 +121,7 @@ function CartoesFerramentas({ ferramentas }: { ferramentas: ToolHit[] }) {
       <div className="flex flex-wrap gap-2">
         {ferramentas.map((t) => (
           <BotaoLinha key={t.id} onClick={() => navigate(t.rota)}
-            className="flex-row items-center gap-2 px-3 py-1.5 text-apoio text-tinta shadow-repouso">
+            className="flex-row items-center gap-2 px-3 py-1.5 text-apoio text-tinta">
             <span className="font-medium">{t.nome}</span>
             <span className="text-tinta-sussurro">{t.categoria}</span>
             <span className="text-acao">Abrir</span>
@@ -146,7 +146,7 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
   }
   const aviso = mensagem[status] ?? null
   return (
-    <section aria-live="polite" aria-label="Resposta da IA" className="mb-[22px] rounded-container border border-fio bg-superficie shadow-repouso">
+    <section aria-live="polite" aria-label="Resposta da IA" className="mb-[22px] rounded-container border border-fio bg-superficie">
       <header className="flex items-start justify-between gap-3 border-b border-fio px-4 py-3">
         <div className="min-w-0">
           <p className="rotulo flex items-center gap-1.5 text-tinta-sussurro"><Sparkles className="size-3.5 text-acao" aria-hidden /> Perguntar à IA</p>

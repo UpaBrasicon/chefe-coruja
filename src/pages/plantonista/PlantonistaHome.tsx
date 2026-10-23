@@ -93,7 +93,7 @@ function buscarLocal(consulta: string): Ferramenta[] {
 function CartaoFerramenta({ f, favorito, onFavoritar, destacado, aviso }: { f: Ferramenta; favorito: boolean; onFavoritar: () => void; destacado?: boolean; aviso?: string }) {
   const navigate = useNavigate()
   return (
-    <div className={cn('group relative rounded-container border border-fio bg-superficie shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-halo', destacado && 'border-acao ring-2 ring-acao/30')}>
+    <div className={cn('group relative rounded-container border border-fio bg-superficie transition-colors hover:border-acao', destacado && 'border-acao ring-2 ring-acao/30')}>
       <BotaoLinha
         onClick={() => navigate(`/plantonista/${f.secao}/${f.slug}`)}
         className="w-full items-stretch gap-0 border-0 bg-transparent px-4 py-3 pr-10 hover:bg-transparent"
@@ -122,7 +122,7 @@ function Atalho({ f, vezes, favorito }: { f: Ferramenta; vezes: number; favorito
   return (
     <BotaoLinha
       onClick={() => navigate(`/plantonista/${f.secao}/${f.slug}`)}
-      className="flex-row items-center gap-[9px] px-5 py-[13px] shadow-repouso transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-fio hover:bg-superficie hover:shadow-halo"
+      className="flex-row items-center gap-[9px] px-5 py-[13px] hover:border-acao hover:bg-superficie"
     >
       {favorito ? <Star className="size-4 shrink-0 fill-acao text-acao" aria-hidden /> : <History className={cn('size-4 shrink-0', coresDaSecao(f.secao).texto)} aria-hidden />}
       <span className="min-w-0 flex-1 text-apoio font-medium text-tinta">{f.label}</span>
@@ -248,7 +248,7 @@ export default function PlantonistaHome() {
               aria-keyshortcuts="/"
               autoComplete="off"
               maxLength={800}
-              className="h-11 w-full rounded-container border border-fio bg-superficie pr-3 pl-10 text-corpo text-tinta shadow-repouso outline-none placeholder:text-tinta-sussurro focus-visible:border-acao focus-visible:shadow-anel-campo"
+              className="h-11 w-full rounded-container border border-fio bg-superficie pr-3 pl-10 text-corpo text-tinta outline-none placeholder:text-tinta-sussurro focus-visible:border-acao focus-visible:shadow-anel-campo"
             />
           </div>
           {consulta.trim() && (
@@ -257,7 +257,7 @@ export default function PlantonistaHome() {
                 variant="outline"
                 onClick={perguntar}
                 disabled={!perguntavel || !unidadeId || ia.status === 'loading' || ia.status === 'streaming'}
-                className="gap-1.5 rounded-container px-3 py-1.5 text-left font-medium whitespace-normal text-tinta shadow-repouso hover:text-tinta"
+                className="gap-1.5 rounded-container px-3 py-1.5 text-left font-medium whitespace-normal text-tinta hover:text-tinta"
               >
                 <Sparkles className="size-4 text-acao" aria-hidden />
                 Perguntar à IA: “{consulta.trim()}”
@@ -337,33 +337,31 @@ export default function PlantonistaHome() {
             )}
             <section>
               <TituloSecao>Seções clínicas</TituloSecao>
-              {/* Celular e tablet: grade de blocos na cor da seção. */}
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:hidden">
+              {/* Celular e tablet: lista, uma linha por seção, o ícone na cor da seção
+                  (revisão visual 3.8: sai a grade de blocos tintados com ícone em quadrado). */}
+              <div className="overflow-hidden rounded-cartao border border-fio bg-superficie lg:hidden">
                 {secoes.map((s) => {
                   const c = coresDaSecao(s.slug)
                   const m = contagemModo(s)
                   const inerte = faltaPaciente || m.n === 0
                   const Icone = s.icon
                   return (
-                    // padrao-ok: bloco da seção no celular, pintado na matiz da própria seção; nenhuma peça tem os tons de seção
-                    <button
+                    <BotaoLinha
                       key={s.slug}
-                      type="button"
+                      variante="linha"
                       disabled={inerte}
                       onClick={() => navigate(`/plantonista/${s.slug}`)}
-                      className={cn(
-                        'flex min-h-24 w-full flex-col items-start gap-2 rounded-cartao border px-[15px] py-3.5 text-left transition-[filter]',
-                        inerte ? 'cursor-not-allowed border-fio bg-trilha opacity-70' : cn(c.bloco, 'hover:brightness-[0.97] active:brightness-[0.94]'),
-                      )}
+                      className={cn('items-center', inerte && 'opacity-60')}
                     >
-                      <span className={cn('grid size-9 place-items-center rounded-container', inerte ? 'bg-fio text-tinta-sussurro' : c.icone)}>
-                        <Icone className="size-[19px]" aria-hidden />
+                      <Icone className={cn('size-[18px] shrink-0', inerte ? 'text-tinta-sussurro' : c.texto)} aria-hidden />
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="text-controle font-medium text-tinta">{s.label}</span>
+                        <span className="text-apoio text-tinta-sussurro">
+                          {!paciente.modo ? 'Escolha adulto ou pediátrico' : !paciente.leitura.completo ? 'Aguardando os dados do paciente' : m.texto}
+                        </span>
                       </span>
-                      <span className={cn('text-corpo leading-[1.25] font-semibold tracking-[-0.01em]', inerte ? 'text-tinta-sussurro' : c.texto)}>{s.label}</span>
-                      <span className="mt-auto text-apoio text-tinta-apoio">
-                        {!paciente.modo ? 'Escolha adulto ou pediátrico' : !paciente.leitura.completo ? 'Aguardando os dados do paciente' : m.texto}
-                      </span>
-                    </button>
+                      <span className="text-apoio tabular-nums text-tinta-sussurro">{s.tools.length}</span>
+                    </BotaoLinha>
                   )
                 })}
               </div>
