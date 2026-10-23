@@ -1093,6 +1093,23 @@ hora, com ordenação pelo título da coluna. Registro e imagens em `docs/fronte
 | P1 | Grade de ações no gestor | Junto da **3.9** (escala e menu do gestor) | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
 | P2 | Fila do PS com dados novos na tabela | A decidir pelo RT | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
 
+**3.8 antecipada (Central do Plantonista, calculadoras, escores e condutas) em produção desde
+23/10/2026 (PR #179 e #180).** A pedido do RT, veio antes da 3.4. Levantamento das 212 ferramentas e
+referências do Refero (calculadoras do Wealthsimple e da Mercury, documentação da Anthropic, página de
+remédio da Doctronic, índices da Teenage Engineering e da The Org); o RT escolheu a **C, leitura de
+manual**: lateral com as ferramentas da seção dentro de cada ferramenta; "Nesta página" quando a
+ferramenta tem três partes ou mais; corpo das ferramentas sem sombra, selos sem maiúsculas e linhas em fio
+(`.cc-leitura`), sem tocar no conteúdo de nenhuma; escore em linhas com o resultado em frase; índice da
+seção em linhas; infusão sem números gigantes; início sem grade colorida no celular. Ajuste do RT: os 39
+escores agrupados por especialidade (cardiologia, pneumologia e tromboembolismo, neurologia,
+gastroenterologia e hepatologia, terapia intensiva e sepse, hematologia, trauma, nefrologia). Os 929 testes
+clínicos ficaram verdes; homologação conferida pelo RT; produção conferida pelo pacote publicado. O PR #180
+saiu à parte porque o #179 foi mesclado antes do commit dos grupos. Registro em
+`docs/frontend/revisao-visual/app/PLANO.md`. Pendências: o CIWA-Ar segue com as opções em caixas; a
+Central de Plantão (`/plantao`) não entrou nesta rodada. Próxima: junção das seções Calculadoras e
+Emergências e o modo adulto/pediátrico só no celular (pedido do RT de 23/10/2026); depois **3.4, triagem e
+enfermagem**.
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
