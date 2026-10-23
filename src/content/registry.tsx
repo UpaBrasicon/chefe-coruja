@@ -129,8 +129,9 @@ export const SECOES: SectionDef[] = [
   },
   {
     slug: 'emergencias',
-    label: 'Emergências — manual HC',
-    description: 'Doses, reposições e fórmulas do Manual de Medicina de Emergência do HCFMUSP (adulto).',
+    // Junta as Calculadoras (SECOES_JUNTAS, abaixo; pedido do RT de 23/10/2026).
+    label: 'Condutas e cálculos — adulto',
+    description: 'Condutas, doses, reposições e calculadoras do adulto no plantão, cada uma com a sua fonte.',
     icon: Siren,
     tools: [
       t('hipocalemia-reposicao-potassio', 'Hipocalemia — potássio', 'Classificação, KCl EV e VO, mEq/h e mL/h.', sobDemanda(() => import('@/pages/plantonista/manual/ReposicaoPotassio'), 'ReposicaoPotassio'), ['potássio', 'hipocalemia', 'KCl', 'reposição']),
@@ -337,3 +338,38 @@ export const CHAVES_FERRAMENTAS: string[] = SECOES.flatMap((s) =>
 export function acharSecao(slug: string) {
   return SECOES.find((s) => s.slug === slug)
 }
+
+/**
+ * Seções que aparecem juntas na Central (pedido do RT de 23/10/2026: as
+ * Calculadoras dentro das condutas do adulto). A junção é só de exibição: cada
+ * ferramenta segue no endereço de sempre (/plantonista/calculadoras/iot) e com
+ * a mesma chave de favorito e de uso (calculadoras/iot), que vivem no banco.
+ * Chave: seção absorvida; valor: seção onde ela aparece.
+ */
+export const SECOES_JUNTAS: Record<string, string> = { calculadoras: 'emergencias' }
+
+/** Ferramenta como aparece numa seção exibida: `secao` é a seção de verdade (endereço e favorito). */
+export type ToolExibida = ToolDef & { secao: string }
+export type SecaoExibida = Omit<SectionDef, 'tools'> & { tools: ToolExibida[] }
+
+/** A seção como a Central mostra: a de verdade mais as que ela absorve. */
+export function secaoExibida(slug: string): SecaoExibida | undefined {
+  const base = acharSecao(SECOES_JUNTAS[slug] ?? slug)
+  if (!base) return undefined
+  const absorvidas = SECOES.filter((s) => SECOES_JUNTAS[s.slug] === base.slug)
+  return {
+    ...base,
+    tools: [base, ...absorvidas].flatMap((s) => s.tools.map((t) => ({ ...t, secao: s.slug }))),
+  }
+}
+
+/** As seções da página inicial, já juntas; a seção junta fica no lugar da primeira das duas. */
+export const SECOES_EXIBIDAS: SecaoExibida[] = (() => {
+  const vistas = new Set<string>()
+  return SECOES.flatMap((s) => {
+    const alvo = SECOES_JUNTAS[s.slug] ?? s.slug
+    if (vistas.has(alvo)) return []
+    vistas.add(alvo)
+    return [secaoExibida(alvo)!]
+  })
+})()

@@ -438,6 +438,23 @@ Nefrologia (1: CKD-EPI). Os endereços e os favoritos não mudam; o teste
 `gruposSecoes.test.ts` confere que cada escore está em exatamente um grupo
 (`central-escores-*.jpg`).
 
+**Junção das seções e modo do paciente (pedido do RT de 23/10/2026).** Calculadoras e
+"Emergências — manual HC" viraram uma seção só, **"Condutas e cálculos — adulto"** (109
+ferramentas), na primeira posição da Central. A junção é só de exibição (`SECOES_JUNTAS` e
+`secaoExibida` no registry): cada calculadora segue no endereço de sempre
+(`/plantonista/calculadoras/...`) e com a mesma chave de favorito e de uso no banco, então
+nenhum favorito se perde e nada muda no banco. As calculadoras entraram nos grupos por assunto
+(um grupo novo, "Infusões e via aérea", e as demais nos grupos de anticoagulação, eletrólitos,
+neurológico e procedimentos); o teste dos grupos passou a contar as duas seções. A trilha, a
+lateral, a busca e a paleta mostram o nome novo. O bloco "Adulto ou pediátrico?" do início só
+aparece no celular; na tela larga cada ferramenta pergunta o paciente na própria tela
+(`central-juncao-*.jpg`).
+
+Itens repetidos (levantamento com arquivo e linha, para o RT decidir): duas duplicatas exatas
+(a porta única das infusões e as três entradas que abrem a mesma tela numa classe; as duas
+entradas de heparina não fracionada, que abrem a mesma tela); os demais pares parecidos são
+complementares (outra indicação ou outra fonte).
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
