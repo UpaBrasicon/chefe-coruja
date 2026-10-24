@@ -80,6 +80,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'adulto-pac-antibiotico': '/plantonista/emergencias/pac-antibiotico-adulto',
   'adulto-painad': '/plantonista/emergencias/painad',
   'adulto-pcr': '/plantonista/emergencias/pcr-adulto',
+  'adulto-pep-hiv': '/plantonista/emergencias/pep-hiv-adulto',
   'adulto-perc': '/plantonista/emergencias/perc',
   'adulto-pesi': '/plantonista/escores/pesi',
   'adulto-pos-pcr': '/plantonista/emergencias/pos-pcr-adulto',
