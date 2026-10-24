@@ -1168,8 +1168,26 @@ Evidência: 976 de 976 testes clínicos; homologação conferida pelo RT; migrat
 `20261214000001_lacunas_lote2_sca` aplicada na homologação e, com o "ok produção" do RT, na produção
 (as 2 fichas novas na fila de aprovação); bundle da produção conferido com as duas telas.
 
-Próximos itens do lote 2: ITU do adulto, PEP de HIV, cefaleia, meningite do adulto, cólica renal,
-intermação, queimadura do adulto, icterícia neonatal e reanimação neonatal.
+**Lote 2 — ITU do adulto em produção em 23/10/2026 (PR #187).**
+- **ITU — cistite, pielonefrite e sonda vesical** (Condutas e cálculos — adulto, "Digestivo,
+  fígado e rim"). Esquemas e doses do manual do HC, cap. 89 (p. 1209–1216), conferidos no PDF
+  com a página de cada um. Aminoglicosídeo calculado pelo peso.
+- Ao lado, a IDSA 2025 de ITU complicada, lida pelos resumos no PubMed: duração (PMID 41419448),
+  troca para via oral (PMID 41414903) e escolha empírica em 4 passos (PMID 41419213). A diretriz
+  não entra com doses.
+- Errata do livro mantida sem completar: norfloxacina "400 mg ao dia 12/12 horas"; SMX-TMP sem
+  intervalo.
+- A pergunta com botões Não/Sim virou peça única em `PecasLoteC`, usada pela SCA e pela ITU.
+
+Evidência: 982 de 982 testes clínicos; homologação conferida pelo RT; migration
+`20261215000001_lacunas_lote2_itu` aplicada na homologação e, com o "ok produção" do RT, na produção
+(ficha nova na fila de aprovação); bundle da produção conferido com a tela.
+
+Decisão a confirmar com o RT: a ITU ficou no grupo "Digestivo, fígado e rim"; o levantamento
+sugeria esse grupo ou um grupo novo "Infecções" nas condutas do adulto.
+
+Próximos itens do lote 2: PEP de HIV, cefaleia, meningite do adulto, cólica renal, intermação,
+queimadura do adulto, icterícia neonatal e reanimação neonatal.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
