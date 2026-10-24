@@ -71,6 +71,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'adulto-marca-passo-provisorio': '/plantonista/emergencias/marca-passo-provisorio-adulto',
   'adulto-mascc': '/plantonista/emergencias/mascc',
   'adulto-mcmahon-rabdomiolise': '/plantonista/emergencias/mcmahon-rabdomiolise',
+  'adulto-meningite': '/plantonista/emergencias/meningite-adulto',
   'adulto-mgap': '/plantonista/emergencias/mgap-trauma',
   'adulto-neutropenia-febril': '/plantonista/emergencias/neutropenia-febril-adulto',
   'adulto-nexus': '/plantonista/emergencias/nexus-coluna-cervical',
