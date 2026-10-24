@@ -30,7 +30,7 @@ export function CefaleiaAdulto() {
       </Bloco>
 
       <div role="status" className={cn('rounded-cartao border px-4 py-3', av.alarmes ? 'border-atencao' : 'border-fio')}>
-        <p className="text-corpo font-semibold text-tinta">{av.alarmes ? `${av.alarmes} sinal${av.alarmes > 1 ? 'is' : ''} de alarme` : 'Nenhum sinal de alarme marcado'}</p>
+        <p className="text-corpo font-semibold text-tinta">{av.alarmes ? `${av.alarmes} ${av.alarmes > 1 ? 'sinais' : 'sinal'} de alarme` : 'Nenhum sinal de alarme marcado'}</p>
         <p className="text-apoio text-tinta-apoio">
           {av.alarmes
             ? 'Com sinal de alarme, o manual orienta investigar causa secundária conforme a Tabela 2 (p. 566–568).'
