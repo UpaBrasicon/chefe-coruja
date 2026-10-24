@@ -1221,8 +1221,22 @@ Evidência: 998 de 998 testes clínicos; homologação conferida pelo RT; migrat
 `20261217000001_lacunas_lote2_cefaleia` aplicada na homologação e, com o "ok produção" do RT, na
 produção (ficha nova na fila de aprovação).
 
-Próximos itens do lote 2: meningite do adulto, cólica renal, intermação, queimadura do adulto,
-icterícia neonatal e reanimação neonatal.
+**Lote 2 — Meningite e encefalite do adulto em produção em 24/10/2026 (PR #195).** Antes dela,
+o PR #194 corrigiu o plural "sinais de alarme" da cefaleia, apontado pelo RT na produção.
+- **Meningite e encefalite — adulto** (Condutas e cálculos — adulto, "Neurológico"), pelo manual do
+  HC, cap. 43 (p. 589–597), lido no PDF com página: suspeita por dois dos quatro sinais clássicos;
+  primeira hora; ceftriaxona com ampicilina no risco de Listeria (acima de 50 anos, imunossupressão,
+  corticoide, gestação); dexametasona 0,15 mg/kg/dose e aciclovir 10 mg/kg/dose pelo peso; Tabela 2
+  por agente e Tabela 1 do LCR.
+- Fora: quimioprofilaxia de contatos (o capítulo não traz; precisaria do Guia de Vigilância do MS),
+  ESCMID 2016 (não lida no texto) e a Figura 2 do manual (imagem, só citada).
+
+Evidência: 1002 de 1002 testes clínicos; homologação conferida pelo RT; migration
+`20261218000001_lacunas_lote2_meningite` aplicada na homologação e, com o "ok produção" do RT, na
+produção (ficha nova na fila de aprovação).
+
+Próximos itens do lote 2: cólica renal, intermação, queimadura do adulto, icterícia neonatal e
+reanimação neonatal.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
