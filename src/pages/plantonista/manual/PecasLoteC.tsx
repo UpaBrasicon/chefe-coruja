@@ -41,6 +41,7 @@ export function LinhaManual({
   pagina,
   errata,
   nota,
+  origem = 'O manual traz',
 }: {
   nome: string
   texto: ReactNode
@@ -48,6 +49,8 @@ export function LinhaManual({
   pagina: string
   errata?: string
   nota?: string
+  /** quem traz a dose: o manual do HC por padrão; outra fonte (PCDT) diz o nome */
+  origem?: string
 }) {
   return (
     <div className="rounded-controle border px-3 py-2 text-apoio">
@@ -55,7 +58,7 @@ export function LinhaManual({
         <span className="font-medium">{nome}</span>
         {conta && <span className="tabular-nums">{conta}</span>}
       </div>
-      <p className="text-tinta-sussurro">O manual traz: {texto} ({pagina})</p>
+      <p className="text-tinta-sussurro">{origem}: {texto} ({pagina})</p>
       {nota && <p className="text-tinta-sussurro">{nota}</p>}
       {errata && (
         <p className="text-atencao">
