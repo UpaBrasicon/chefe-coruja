@@ -1205,8 +1205,24 @@ Evidência: 992 de 992 testes clínicos; homologação conferida pelo RT; migrat
 `20261216000001_lacunas_lote2_pep` aplicada na homologação e, com o "ok produção" do RT, na produção
 (ficha nova na fila de aprovação).
 
-Próximos itens do lote 2: cefaleia, meningite do adulto, cólica renal, intermação, queimadura do
-adulto, icterícia neonatal e reanimação neonatal.
+**Lote 2 — Cefaleia aguda em produção em 24/10/2026 (PR #192).**
+- **Cefaleia aguda — sinais de alarme e tratamento** (Condutas e cálculos — adulto, "Neurológico").
+  Os 15 sinais da SNNOOP10 (Do 2019, PMID 30587518, pelo resumo), cada um ligado à linha da
+  Tabela 2 do manual do HC (cap. 41, p. 566–568) com diferencial e investigação; thunderclap
+  (p. 568–569) com links para Ottawa HSA e HSA; tratamento da crise de tensional, migrânea e salvas
+  (p. 572–574).
+- Dose só onde o capítulo dá: dexametasona 10 mg EV, difenidramina 12,5 mg EV, oxigênio 10 L/min e
+  sumatriptano 6 mg SC. Triptano na migrânea, dipirona, AINE, metoclopramida e clorpromazina ficam
+  sem dose até haver fonte com página.
+- Diferença anotada: idade de início após 65 anos na SNNOOP10 e após 50 no manual.
+- Fora: ACEP 2019 (o resumo traz as perguntas, não as recomendações).
+
+Evidência: 998 de 998 testes clínicos; homologação conferida pelo RT; migration
+`20261217000001_lacunas_lote2_cefaleia` aplicada na homologação e, com o "ok produção" do RT, na
+produção (ficha nova na fila de aprovação).
+
+Próximos itens do lote 2: meningite do adulto, cólica renal, intermação, queimadura do adulto,
+icterícia neonatal e reanimação neonatal.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
