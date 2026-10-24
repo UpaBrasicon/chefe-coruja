@@ -1186,8 +1186,27 @@ Evidência: 982 de 982 testes clínicos; homologação conferida pelo RT; migrat
 Decisão a confirmar com o RT: a ITU ficou no grupo "Digestivo, fígado e rim"; o levantamento
 sugeria esse grupo ou um grupo novo "Infecções" nas condutas do adulto.
 
-Próximos itens do lote 2: PEP de HIV, cefaleia, meningite do adulto, cólica renal, intermação,
-queimadura do adulto, icterícia neonatal e reanimação neonatal.
+**Lote 2 — PEP de HIV, IST e hepatite B em produção em 24/10/2026 (PR #189).**
+- **PEP de HIV, IST e hepatite B** (Condutas e cálculos — adulto, "Toxicologia e profilaxias").
+  Fonte única: PCDT PEP do Ministério da Saúde (Portaria SECTICS/MS nº 14/2024, versão da Conitec de
+  19/03/2025), lido no PDF baixado com autorização do RT, com quadro e página de cada dado.
+- Indicação pelos quatro passos (Quadro 1) e pelo status da fonte; esquema preferencial
+  TDF/3TC + DTG por 28 dias com as trocas do PCDT (sem tenofovir, sem dolutegravir, gestante,
+  indutores com DTG de 12/12 h, aviso de TFG < 50); IGHAHB por peso (0,06 mL/kg, teto de 5 mL);
+  na violência sexual, profilaxia das IST (Quadro 13), levonorgestrel (Quadro 17), cuidados e
+  notificação (Quadros 20–21); seguimento (Quadro 12).
+- Divergências do próprio PCDT, anotadas na tela: oxcarbazepina em dois trechos com condutas
+  diferentes (tratada como impedimento ao DTG); azitromicina do Quadro 13 com apresentação ambígua
+  (vale a dose total de 1 g).
+- Fora: criança e adolescente com menos de 45 kg (quadros próprios do PCDT).
+- `LinhaManual` ganhou `origem` ("O PCDT traz"); o padrão continua "O manual traz".
+
+Evidência: 992 de 992 testes clínicos; homologação conferida pelo RT; migration
+`20261216000001_lacunas_lote2_pep` aplicada na homologação e, com o "ok produção" do RT, na produção
+(ficha nova na fila de aprovação).
+
+Próximos itens do lote 2: cefaleia, meningite do adulto, cólica renal, intermação, queimadura do
+adulto, icterícia neonatal e reanimação neonatal.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
