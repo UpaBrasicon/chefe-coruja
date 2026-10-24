@@ -24,6 +24,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'adulto-cad-ehh-avaliacao': '/plantonista/emergencias/cad-ehh-criterios',
   'adulto-cad-ehh-tratamento': '/plantonista/emergencias/cad-ehh-tratamento',
   'adulto-cairo-bishop': '/plantonista/emergencias/cairo-bishop',
+  'adulto-cefaleia': '/plantonista/emergencias/cefaleia-adulto',
   'adulto-crise-tireotoxica': '/plantonista/emergencias/crise-tireotoxica-adulto',
   'adulto-criterios-vm-sgb': '/plantonista/emergencias/criterios-vm-sgb',
   'adulto-dermatoses-graves': '/plantonista/emergencias/dermatoses-graves-adulto',
