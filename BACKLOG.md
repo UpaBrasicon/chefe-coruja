@@ -1346,7 +1346,28 @@ sinal de menos tipográfico no valor da síncope (quebrava `onda9Ferramentas.tes
 `20261225000001_lacunas_lote3_escores` aplicada na homologação e, com o "ok produção" do RT, na
 produção (quatro versões 2026-10-25.1 na fila de aprovação).
 
-Próximo no lote 3: PCR adulto e RCP pediátrica pela AHA 2025.
+**Lote 3 — PCR adulto e RCP pediátrica pela AHA 2025 em produção em 25/10/2026 (PR #210).**
+- Fonte: texto integral do Part 9 (adulto, Wigginton 2025, S538–S577) e do Part 8 (pediátrico, Lasa
+  2025, S479–S537), lido no site da AHA (cpr.heart.org; as revistas seguem bloqueadas). Doses e
+  cargas conferidas no quadro da Figura 2 de cada algoritmo.
+- **PCR adulto**: bloco "AHA 2025 × manual do HC" com classe e seção em oito temas (carga do choque,
+  adrenalina, antiarrítmico, cálcio/bicarbonato/magnésio fora da rotina, acesso venoso antes do
+  intraósseo, troca de vetor e dupla desfibrilação sem utilidade estabelecida, EtCO2 no término,
+  outros adjuntos). Doses conferem com a Tabela 2 do manual; entra a segunda dose de lidocaína
+  (0,5–0,75 mg/kg), que o manual não traz.
+- **RCP pediátrica**: doses por kg e cargas da Figura 2 conferem com o livro do ICr; epinefrina com
+  teto de 1 mg; nota da amiodarona (até 3 doses, máximo 150 mg nas seguintes); temas novos:
+  epinefrina no ritmo chocável, relação compressão-ventilação pela puberdade, bolsa-valva-máscara
+  fora do hospital, bicarbonato e cálcio, temperatura pós-PCR por 5 dias.
+
+Evidência: 1052 de 1052 testes clínicos; homologação conferida pelo RT; CI verde; migration
+`20261226000001_lacunas_lote3_pcr_aha2025` aplicada na homologação e, com o "ok produção" do RT, na
+produção (duas versões 2026-10-25.1 na fila de aprovação).
+
+Achado fora do item, para decisão do RT: a Figura 8 do Part 9 (bradicardia) traz atropina 1 mg em
+bolo a cada 3–5 min, máximo 3 mg; resolve a nota "não confirmada" da bradicardia do adulto.
+
+Próximo no lote 3: levetiracetam no estado de mal (ESETT).
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
