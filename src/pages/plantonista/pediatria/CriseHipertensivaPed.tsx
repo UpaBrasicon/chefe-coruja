@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   DOSES_CRISE_HA, ERRATAS_CRISE_HA, HIDRALAZINA_IV, INFUSOES_CRISE_HA, REFERENCIAS_CRISE_HA, ROTULO_ESTAGIO, acimaDoP95, classificar13ouMais, classificarMenor13,
-  fichaCriseHipertensivaPed, pamMinima8h,
+  fichaCriseHipertensivaPed, pamMinima8h, percentisAap2017, type SexoPa,
 } from '@/clinico/pediatria/criseHipertensivaPed'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -10,6 +10,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { PACIENTE_VAZIO, br, faixaBr, idadeAnos, idadePediatrica } from './formatoIcr'
 import { Bloco, CampoPaciente, Errata, LinhaLivro, Pendencia } from './PecasIcr'
 import { LinhaBolusApendice, LinhaDoseLivro } from './PecasP4'
+import { Pergunta } from '../manual/PecasLoteC'
 
 /** Crise hipertensiva na criança — cap. 26 do livro do ICr. */
 export function CriseHipertensivaPed() {
@@ -18,11 +19,15 @@ export function CriseHipertensivaPed() {
   const [pad, setPad] = useState(0)
   const [pc, setPc] = useState({ p90s: 0, p95s: 0, p90d: 0, p95d: 0 })
   const [pam, setPam] = useState(0)
+  const [sexo, setSexo] = useState<SexoPa>()
+  const [estatura, setEstatura] = useState(0)
   const idade = idadeAnos(p.anos, p.meses)
   const pediatrico = idadePediatrica(p.anos, p.meses)
   const faixa = idade < 1 || p.rn ? 'lactente' : idade < 13 ? 'crianca' : 'adolescente'
-  const estagio = !pediatrico ? null : faixa === 'crianca' ? classificarMenor13(pas, pad, pc) : faixa === 'adolescente' ? classificar13ouMais(pas, pad) : null
-  const acima = faixa === 'crianca' ? acimaDoP95(pas, pc.p95s) : null
+  const aap = faixa === 'crianca' && sexo && estatura > 0 ? percentisAap2017(sexo, idade, estatura) : null
+  const pcUsado = aap ? { p90s: aap.p90s, p95s: aap.p95s, p90d: aap.p90d, p95d: aap.p95d } : pc
+  const estagio = !pediatrico ? null : faixa === 'crianca' ? classificarMenor13(pas, pad, pcUsado) : faixa === 'adolescente' ? classificar13ouMais(pas, pad) : null
+  const acima = faixa === 'crianca' ? acimaDoP95(pas, pcUsado.p95s) : null
   const pamMin = pamMinima8h(pam)
   const calc = !p.rn && p.peso > 0 && pediatrico
   const idadeMeses = p.anos * 12 + p.meses
@@ -30,7 +35,7 @@ export function CriseHipertensivaPed() {
   return (
     <ToolLayout
       title="Crise hipertensiva — criança"
-      description="Classificação da PA (Tabela 1), meta de redução da PAM e drogas por peso (Tabela 3) — livro do ICr-HCFMUSP. O livro não traz as tabelas de percentis: p90 e p95 são lidos pelo médico nas tabelas da AAP (2017)."
+      description="Classificação da PA (Tabela 1), meta de redução da PAM e drogas por peso (Tabela 3) — livro do ICr-HCFMUSP. O livro remete às tabelas da AAP (2017): com sexo e estatura, a ferramenta busca o p90 e o p95 nas Tabelas 4 e 5."
       ficha={fichaCriseHipertensivaPed}
     >
       <CampoPaciente id="ha" p={p} onChange={setP} />
@@ -43,12 +48,27 @@ export function CriseHipertensivaPed() {
         {faixa === 'crianca' && (
           <>
             <p className="text-tinta-sussurro">1 a &lt; 13 anos: percentis para sexo, idade e altura nas tabelas da AAP (p. 272).</p>
-            <div className="grid gap-3 sm:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Pergunta rotulo="Sexo" valor={sexo} opcoes={[['M', 'Masculino'], ['F', 'Feminino']]} onChange={setSexo} />
+              <NumberField id="ha-estatura" label="Estatura medida" unit="cm" value={estatura} onChange={setEstatura} min={0} step={0.1} />
+            </div>
+            {aap ? (
+              <div className="rounded-cartao border border-fio px-4 py-3 text-apoio">
+                <p>
+                  AAP 2017, Tabela {sexo === 'M' ? '4 (meninos)' : '5 (meninas)'}, {aap.idade} {aap.idade === 1 ? 'ano' : 'anos'}, coluna de estatura p{aap.percentilEstatura} ({br(aap.cmColuna, 1)} cm):
+                  {' '}sistólica p90 <strong>{aap.p90s}</strong>, p95 <strong>{aap.p95s}</strong>, p95 + 12 <strong>{aap.p95s + 12}</strong>; diastólica p90 <strong>{aap.p90d}</strong>, p95 <strong>{aap.p95d}</strong>, p95 + 12 <strong>{aap.p95d + 12}</strong> mmHg.
+                </p>
+                <p className="text-tinta-sussurro">A tabela dá a estatura em cm de cada coluna; a ferramenta usa a coluna mais próxima da estatura medida.{aap.foraDasColunas && ' A estatura informada fica fora das colunas da tabela (abaixo do p5 ou acima do p95) e foi usada a coluna da ponta.'} Os percentis vêm de crianças com IMC abaixo do p85.</p>
+              </div>
+            ) : (
+              <p className="text-tinta-sussurro">Sem sexo e estatura, informe os percentis lidos na tabela:</p>
+            )}
+            {!aap && <div className="grid gap-3 sm:grid-cols-4">
               <NumberField id="ha-p90s" label="p90 sistólica" unit="mmHg" value={pc.p90s} onChange={(x) => setPc({ ...pc, p90s: x })} min={0} />
               <NumberField id="ha-p95s" label="p95 sistólica" unit="mmHg" value={pc.p95s} onChange={(x) => setPc({ ...pc, p95s: x })} min={0} />
               <NumberField id="ha-p90d" label="p90 diastólica" unit="mmHg" value={pc.p90d} onChange={(x) => setPc({ ...pc, p90d: x })} min={0} />
               <NumberField id="ha-p95d" label="p95 diastólica" unit="mmHg" value={pc.p95d} onChange={(x) => setPc({ ...pc, p95d: x })} min={0} />
-            </div>
+            </div>}
           </>
         )}
         {faixa === 'lactente' && <p className="text-tinta-sussurro">A Tabela 1 começa em 1 ano: para menores de 1 ano (e RN) o livro não classifica.</p>}
