@@ -1,5 +1,7 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { BOLUS, type Bolus } from './bolus.ts'
 import { fichaP4, type DoseLivro } from './fonteP4.ts'
+import { PA_AAP_MENINAS, PA_AAP_MENINOS, PERCENTIS_ESTATURA } from './paAap2017.ts'
 
 // Crise hipertensiva — livro do ICr, cap. 26 (p. 271–277). O livro NÃO traz
 // as tabelas de percentis de PA: remete às tabelas da AAP (2017) por sexo,
@@ -8,8 +10,61 @@ import { fichaP4, type DoseLivro } from './fonteP4.ts'
 // cortes são fixos (Tabela 1, p. 272). Abaixo de 1 ano o livro não classifica.
 // A PAM não é calculada por fórmula (o livro não traz uma): o médico informa a
 // PAM do monitor e a tela mostra a redução de até 25% nas primeiras 8 h (p. 275).
+//
+// Versão .1 de 25/10/2026 (lacunas da Central, lote 3): as Tabelas 4 e 5 da AAP
+// 2017 (PDF enviado pelo RT) entram em paAap2017.ts. Com sexo e estatura, a
+// ferramenta busca o p90 e o p95 pela coluna de estatura medida mais próxima
+// (a tabela dá a estatura em cm de cada coluna); os campos manuais continuam.
 
-export const fichaCriseHipertensivaPed = fichaP4('ped-crise-hipertensiva', 'Crise hipertensiva — criança', 'cap. 26, p. 271–277; Apêndice, p. 896, 902')
+export const AAP_PA_2017: Fonte = {
+  citacao: 'Flynn JT, Kaelber DC, Baker-Smith CM, et al. Clinical Practice Guideline for Screening and Management of High Blood Pressure in Children and Adolescents. Pediatrics. 2017;140(3):e20171904. Tabela 3 (categorias, p. 7); Tabelas 4 (meninos, p. 9–11) e 5 (meninas, p. 12–14), lidas no PDF.',
+  url: 'https://doi.org/10.1542/peds.2017-1904',
+  pediatrica: true,
+}
+
+const baseCriseHa = fichaP4('ped-crise-hipertensiva', 'Crise hipertensiva — criança', 'cap. 26, p. 271–277; Apêndice, p. 896, 902')
+
+export const fichaCriseHipertensivaPed: Ficha = {
+  ...baseCriseHa,
+  versao: '2026-10-25.1',
+  fontes: [...baseCriseHa.fontes, AAP_PA_2017],
+  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: percentis das Tabelas 4 e 5 da AAP 2017; livro do ICr mantido como base)',
+}
+
+export type SexoPa = 'M' | 'F'
+
+export type PercentisAap = {
+  idade: number
+  /** coluna usada: percentil de estatura e a estatura da coluna em cm */
+  percentilEstatura: number
+  cmColuna: number
+  /** a estatura informada ficou fora das colunas (abaixo do p5 ou acima do p95) */
+  foraDasColunas: boolean
+  p50s: number; p90s: number; p95s: number
+  p50d: number; p90d: number; p95d: number
+}
+
+/**
+ * Tabelas 4 e 5 da AAP 2017: p50, p90 e p95 de PAS e PAD para sexo, idade em
+ * anos completos (1 a 17) e a coluna de estatura cuja altura em cm é a mais
+ * próxima da medida. O p95 + 12 é p95 + 12 (Tabela 3).
+ */
+export function percentisAap2017(sexo: SexoPa, idadeAnos: number, estaturaCm: number): PercentisAap | null {
+  if (!Number.isFinite(idadeAnos) || !Number.isFinite(estaturaCm) || estaturaCm <= 0) return null
+  const idade = Math.floor(idadeAnos)
+  const linha = (sexo === 'M' ? PA_AAP_MENINOS : PA_AAP_MENINAS)[idade]
+  if (!linha) return null
+  let k = 0
+  for (let i = 1; i < linha.cm.length; i++) if (Math.abs(linha.cm[i] - estaturaCm) < Math.abs(linha.cm[k] - estaturaCm)) k = i
+  return {
+    idade,
+    percentilEstatura: PERCENTIS_ESTATURA[k],
+    cmColuna: linha.cm[k],
+    foraDasColunas: estaturaCm < linha.cm[0] || estaturaCm > linha.cm[linha.cm.length - 1],
+    p50s: linha.p50.pas[k], p90s: linha.p90.pas[k], p95s: linha.p95.pas[k],
+    p50d: linha.p50.pad[k], p90d: linha.p90.pad[k], p95d: linha.p95.pad[k],
+  }
+}
 
 export type Estagio = 'normal' | 'elevada' | 'estagio1' | 'estagio2'
 

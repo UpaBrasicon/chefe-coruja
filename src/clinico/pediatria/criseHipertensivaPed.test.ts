@@ -5,8 +5,9 @@ import assert from 'node:assert/strict'
 import { temReferenciaPediatrica } from '../ficha.ts'
 import { calcularDoseLivro } from './fonteP4.ts'
 import {
-  DOSES_CRISE_HA, HIDRALAZINA_IV, acimaDoP95, classificar13ouMais, classificarMenor13, fichaCriseHipertensivaPed, pamMinima8h,
+  AAP_PA_2017, DOSES_CRISE_HA, HIDRALAZINA_IV, acimaDoP95, classificar13ouMais, classificarMenor13, fichaCriseHipertensivaPed, pamMinima8h, percentisAap2017,
 } from './criseHipertensivaPed.ts'
+import { PA_AAP_MENINAS, PA_AAP_MENINOS } from './paAap2017.ts'
 
 const p = { p90s: 110, p95s: 114, p90d: 70, p95d: 75 }
 
@@ -42,4 +43,39 @@ test('Tabela 3 (p. 276): doses VO por peso; hidralazina IV vem do Apêndice', ()
   assert.ok(vo.errata)
   assert.deepEqual(calcularDoseLivro(DOSES_CRISE_HA.find((x) => x.id === 'isradipina')!, 20)!.porDose, [1, 2])
   assert.deepEqual(calcularDoseLivro(DOSES_CRISE_HA.find((x) => x.id === 'minoxidil')!, 80)!.porDose, [8, 10])
+})
+
+// ── Tabelas 4 e 5 da AAP 2017 (lacunas da Central, lote 3) ──
+
+test('crise HA: ficha .1 com a AAP 2017 depois do livro', () => {
+  assert.equal(fichaCriseHipertensivaPed.versao, '2026-10-25.1')
+  assert.equal(fichaCriseHipertensivaPed.fontes.at(-1), AAP_PA_2017)
+  assert.equal(temReferenciaPediatrica(fichaCriseHipertensivaPed), true)
+})
+test('AAP 2017, Tabela 4: menino de 1 ano com 82,4 cm (coluna p50) — p90 100/53, p95 103/55', () => {
+  const r = percentisAap2017('M', 1, 82.4)!
+  assert.equal(r.percentilEstatura, 50)
+  assert.deepEqual([r.p90s, r.p95s, r.p90d, r.p95d], [100, 103, 53, 55])
+})
+test('AAP 2017, Tabela 5: menina de 17 anos com 174 cm usa a coluna p95 (173,7 cm) — p95 128/82', () => {
+  const r = percentisAap2017('F', 17, 174)!
+  assert.equal(r.percentilEstatura, 95)
+  assert.equal(r.foraDasColunas, true)
+  assert.deepEqual([r.p95s, r.p95d], [128, 82])
+})
+test('AAP 2017: coluna da estatura mais próxima; idade em anos completos; fora de 1–17 não calcula', () => {
+  assert.equal(percentisAap2017('M', 5.9, 112)!.percentilEstatura, 50)
+  assert.equal(percentisAap2017('M', 5.9, 112)!.idade, 5)
+  assert.equal(percentisAap2017('F', 0.5, 70), null)
+  assert.equal(percentisAap2017('F', 18, 160), null)
+  assert.equal(percentisAap2017('F', 8, 0), null)
+})
+test('AAP 2017: p95 + 12 da tabela é sempre p95 + 12 (conferido na geração dos dados)', () => {
+  for (const tab of [PA_AAP_MENINOS, PA_AAP_MENINAS]) {
+    assert.equal(Object.keys(tab).length, 17)
+    for (const l of Object.values(tab)) {
+      assert.equal(l.cm.length, 7)
+      for (const k of [0, 3, 6]) assert.ok(l.p50.pas[k] < l.p90.pas[k] && l.p90.pas[k] < l.p95.pas[k])
+    }
+  }
 })
