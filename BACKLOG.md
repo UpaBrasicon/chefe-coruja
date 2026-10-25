@@ -1367,7 +1367,21 @@ produção (duas versões 2026-10-25.1 na fila de aprovação).
 Achado fora do item, para decisão do RT: a Figura 8 do Part 9 (bradicardia) traz atropina 1 mg em
 bolo a cada 3–5 min, máximo 3 mg; resolve a nota "não confirmada" da bradicardia do adulto.
 
-Próximo no lote 3: levetiracetam no estado de mal (ESETT).
+**Lote 3 — Levetiracetam no estado de mal em produção em 25/10/2026 (PR #212).**
+- Estado de mal epiléptico do adulto: bloco "2ª linha fora do manual" com levetiracetam EV 60 mg/kg,
+  máximo 4500 mg, dose única (AES 2016, Glauser, Figura 1, p. 58, nível U; conferida no PDF),
+  infundido em 10 min como no ESETT (Kapur 2019, texto completo); dose pelo peso e mg/min. Volume não
+  calculado (o 50 mg/mL do ESETT era o frasco do estudo).
+- Resultado do ESETT na tela: resposta em 60 min de 47% (levetiracetam), 45% (fosfenitoína) e 46%
+  (valproato), sem diferença significativa.
+- O cap. 46 do manual do HC não traz o levetiracetam na Tabela 4 e diz (p. 632, 2022) que a forma EV
+  não estava disponível no Brasil; a nota aparece na linha. A Tabela 4 segue igual.
+
+Evidência: 1056 de 1056 testes clínicos; homologação conferida pelo RT; migration
+`20261227000001_lacunas_lote3_levetiracetam` aplicada na homologação e, com o "ok produção" do RT,
+na produção (versão 2026-10-25.1 na fila de aprovação).
+
+Próximo no lote 3: Kawasaki pela AHA 2024.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
