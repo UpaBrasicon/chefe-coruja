@@ -1425,7 +1425,24 @@ Evidência: 1070 de 1070 testes clínicos; homologação conferida pelo RT; migr
 `20261230000001_lacunas_lote3_magnesio` aplicada na homologação e, com o "ok produção" do RT, na
 produção (versão 2026-10-25.1 na fila de aprovação).
 
-Próximo no lote 3: anafilaxia pela WAO 2020 e pelo Practice Parameter 2023.
+**Lote 3 — Anafilaxia pela WAO 2020 e pelo Practice Parameter 2023 em produção em 25/10/2026 (PR #220).**
+- Fontes: WAO 2020 (Cardona et al., texto completo PMC7607509) e Practice Parameter 2023 da
+  AAAAI/ACAAI (Golden et al., Ann Allergy Asthma Immunol 2024;132(2):124–176), lido no PDF da versão
+  aceita (p. 1–53) enviado pelo RT (o site da revista pediu verificação anti-robô). O manual do HC
+  (cap. 11) segue como base.
+- Critérios da WAO 2020 (Tabela 2) em caixas de marcar, com a leitura do critério 1 ou 2; o PP 2023
+  diz que não é preciso preenchê-los antes da adrenalina (rec. 6, p. 7).
+- Adrenalina IM pela WAO: 0,01 mg/kg, máximo 0,5 mg, a cada 5–15 min (o manual: 0,3–0,5 mg a cada
+  5–10 min). Triptase: colher até 2 h (rec. 2, p. 7); limiar 1,2 × basal + 2 ng/mL (p. 3 e 16).
+- Tabela das diretrizes × manual: reação bifásica e observação (Box 1, itens 4–7, p. 9; WAO — bifásica
+  improvável após 1 h sem sintomas se não grave; o manual observa 4 h), persistente e refratária,
+  corticoide sem benefício claro na fase aguda.
+
+Evidência: 1075 de 1075 testes clínicos; homologação conferida pelo RT; CI verde; migration
+`20261231000001_lacunas_lote3_anafilaxia` aplicada na homologação e, com o "ok produção" do RT, na
+produção (versão 2026-10-25.1 na fila de aprovação).
+
+Próximo no lote 3: andexanete como divergência (ANNEXA-I).
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
