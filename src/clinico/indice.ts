@@ -91,6 +91,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'adulto-profilaxia-tev': '/plantonista/calculadoras/profilaxia-tev',
   'adulto-profilaxia-ulcera-estresse': '/plantonista/protocolos/hda-lamg',
   'adulto-qtc': '/plantonista/calculadoras/qtc',
+  'adulto-queimadura': '/plantonista/emergencias/queimadura-adulto',
   'adulto-rabdomiolise': '/plantonista/emergencias/rabdomiolise-adulto',
   'adulto-raiva-pos-exposicao': '/plantonista/emergencias/raiva-pos-exposicao-adulto',
   'adulto-rankin-modificada': '/plantonista/emergencias/rankin-modificada',
