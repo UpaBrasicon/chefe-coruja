@@ -1,4 +1,5 @@
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 import { INFUSOES_ADULTO, concentracao } from './infusoes.ts'
 
 // Estado de mal epiléptico convulsivo do adulto — cap. 46 do Manual de
@@ -7,12 +8,30 @@ import { INFUSOES_ADULTO, concentracao } from './infusoes.ts'
 // que o livro traz; a escolha da droga é do médico (ADR 0007).
 // O mL/h das infusões de 3ª linha usa o preparo padrão do Anexo 1
 // (p. 1482–1485), do mesmo livro; o tiopental não tem preparo lá.
+//
+// Versão .1 de 25/10/2026 (lacunas da Central, lote 3): levetiracetam na 2ª
+// linha pelo ESETT (texto completo) e pela AES 2016 (Figura 1). O cap. 46 não
+// traz o levetiracetam na Tabela 4 e diz, na p. 632, que a forma EV não estava
+// disponível no Brasil; a linha fica separada das do manual.
 
-export const fichaEstadoDeMalAdulto = fichaAdulto(
-  'adulto-estado-de-mal-epileptico',
-  'Estado de mal epiléptico — adulto',
-  'cap. 46 Estado de mal epiléptico, p. 627–631 (Tabelas 3–5); preparo das infusões: Anexo 1, p. 1482–1485',
-)
+const PAG_EME = 'cap. 46 Estado de mal epiléptico, p. 627–632 (Tabelas 3–5); preparo das infusões: Anexo 1, p. 1482–1485'
+
+export const ESETT_2019: Fonte = {
+  citacao: 'Kapur J, Elm J, Chamberlain JM, et al. Randomized Trial of Three Anticonvulsant Medications for Status Epilepticus. N Engl J Med. 2019;381(22):2103–2113. Texto completo (PMC7098487): doses e infusão em 10 min em "Trial treatments"; resposta em 60 min em "Efficacy analysis".',
+  url: 'https://doi.org/10.1056/NEJMoa1905795',
+}
+
+export const AES_2016: Fonte = {
+  citacao: 'Glauser T, Shinnar S, Gloss D, et al. Evidence-Based Guideline: Treatment of Convulsive Status Epilepticus in Children and Adults: Report of the Guideline Committee of the American Epilepsy Society. Epilepsy Curr. 2016;16(1):48–61. Figura 1 (p. 58): segunda terapia de 20 a 40 min.',
+  url: 'https://doi.org/10.5698/1535-7597-16.1.48',
+}
+
+export const fichaEstadoDeMalAdulto: Ficha = {
+  ...fichaAdulto('adulto-estado-de-mal-epileptico', 'Estado de mal epiléptico — adulto', PAG_EME),
+  versao: '2026-10-25.1',
+  fontes: [pagina(PAG_EME), ESETT_2019, AES_2016],
+  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: levetiracetam pelo ESETT e pela AES 2016; manual mantido como base)',
+}
 
 export type Faixa = [number, number]
 
@@ -60,6 +79,35 @@ export const ATAQUE_ESTADO_DE_MAL: DrogaAtaque[] = [
   { id: 'fenobarbital-2', nome: 'Fenobarbital (se nenhum dos anteriores disponível)', linha: 2, mgKg: [15, 20], mgMl: 100, apresentacao: '200 mg/2 mL',
     administracao: '50 a 100 mg/min', velocidades: [{ rotulo: '100 mg/min', mgMin: 100 }, { rotulo: '50 mg/min', mgMin: 50 }], pagina: 'p. 630 (Tabela 4)' },
 ]
+
+/**
+ * Levetiracetam EV na 2ª linha: 60 mg/kg, máximo 4500 mg, dose única (AES 2016,
+ * Figura 1, nível U), infundido em 10 min no ESETT. O volume não é calculado:
+ * a concentração do ESETT (50 mg/mL) era a do frasco do estudo.
+ */
+export const LEVETIRACETAM_EME: DrogaAtaque = {
+  id: 'levetiracetam', nome: 'Levetiracetam', linha: 2, mgKg: [60, 60], maxMg: 4500,
+  apresentacao: 'apresentação EV conforme a disponível na unidade',
+  administracao: 'EV em dose única, infundido em 10 minutos no ESETT',
+  pagina: 'ESETT, Métodos; AES 2016, Figura 1, p. 58',
+  nota: 'O manual do HC (p. 632, 2022) registra que o levetiracetam EV não estava disponível no Brasil; não está na Tabela 4.',
+}
+
+export const LEVETIRACETAM_INFUSAO_MIN = 10
+
+/** O que o ESETT achou (resposta clínica em 60 min, sem outra droga; texto completo). */
+export const RESULTADO_ESETT = {
+  respostaPct: { levetiracetam: 47, fosfenitoina: 45, valproato: 46 },
+  probabilidadeMelhor: { levetiracetam: 0.41, fosfenitoina: 0.24, valproato: 0.35 },
+  doses: 'levetiracetam 60 mg/kg (máx. 4500 mg), fosfenitoína 20 mg EF/kg (máx. 1500 mg EF) e valproato 40 mg/kg (máx. 3000 mg), cada um em 10 min',
+  texto: 'Em crise refratária a benzodiazepínico, as três drogas pararam a crise com melhora da consciência em cerca de metade dos pacientes, sem diferença significativa de eficácia nem de eventos adversos; o estudo parou por futilidade. Hipotensão e intubação foram numericamente mais frequentes com a fosfenitoína, e óbitos com o levetiracetam, sem significância.',
+}
+
+/** mg/min para infundir a dose do levetiracetam em 10 min (ESETT). */
+export function levetiracetamMgMin(pesoKg: number): Faixa | null {
+  const r = calcularAtaque(LEVETIRACETAM_EME, pesoKg)
+  return r ? [r.mg[0] / LEVETIRACETAM_INFUSAO_MIN, r.mg[1] / LEVETIRACETAM_INFUSAO_MIN] : null
+}
 
 export type AtaqueCalculado = {
   mg: Faixa
