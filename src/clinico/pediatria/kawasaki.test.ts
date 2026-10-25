@@ -4,7 +4,9 @@ import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
 import { calcularDoseLivro } from './fonteP4.ts'
-import { DOSES_KAWASAKI, classificarZ, fichaKawasaki, lerCriterios, lerIncompleta, velocidadeIvigMlH } from './kawasaki.ts'
+import {
+  AHA_KAWASAKI_2024, DIFERENCAS_KAWASAKI_2024, DOSES_AHA_2024, DOSES_KAWASAKI, altoRiscoAha2024, classificarZ, fichaKawasaki, lerCriterios, lerIncompleta, velocidadeIvigMlH,
+} from './kawasaki.ts'
 
 const d = (id: string) => DOSES_KAWASAKI.find((x) => x.id === id)!
 
@@ -42,4 +44,39 @@ test('doses (Tabela 1, p. 750–751)', () => {
   assert.deepEqual(calcularDoseLivro(d('metilpred-pulso'), 40)!.porDose, [1000, 1000])
   assert.deepEqual(calcularDoseLivro(d('infliximabe'), 12)!.porDose, [60, 60])
   assert.deepEqual(velocidadeIvigMlH(10), { inicial: 6, maxima: 48 })
+})
+
+// ── AHA 2024 (Jone et al., lacunas da Central, lote 3) ──
+
+const aha = (id: string) => DOSES_AHA_2024.find((x) => x.id === id)!
+
+test('Kawasaki: ficha .1 com a AHA 2024 depois do livro do ICr', () => {
+  assert.equal(fichaKawasaki.versao, '2026-10-25.1')
+  assert.match(fichaKawasaki.fontes[0].citacao, /cap\. 70/)
+  assert.equal(fichaKawasaki.fontes.at(-1), AHA_KAWASAKI_2024)
+  assert.equal(temReferenciaPediatrica(fichaKawasaki), true)
+})
+test('AHA 2024: alto risco com idade < 6 meses ou Z ≥ 2,5 no diagnóstico (p. e482)', () => {
+  assert.equal(altoRiscoAha2024(5, null).altoRisco, true)
+  assert.equal(altoRiscoAha2024(6, 2.4).altoRisco, false)
+  assert.equal(altoRiscoAha2024(24, 2.5).altoRisco, true)
+  assert.equal(altoRiscoAha2024(null, null).altoRisco, false)
+  assert.equal(altoRiscoAha2024(24, 1, true).motivos.length, 1)
+  assert.equal(altoRiscoAha2024(3, 3, true).motivos.length, 3)
+})
+test('AHA 2024, Tabela 3: infliximabe 10 mg/kg (livro 5 mg/kg)', () => {
+  assert.deepEqual(calcularDoseLivro(aha('aha-infliximabe'), 20)!.porDose, [200, 200])
+  assert.deepEqual(calcularDoseLivro(d('infliximabe'), 20)!.porDose, [100, 100])
+})
+test('AHA 2024, Tabela 3: corticoides 2 mg/kg/dia com teto de 60 mg/dia', () => {
+  const pred = calcularDoseLivro(aha('aha-prednisolona'), 15)!
+  assert.deepEqual(pred.dia, [30, 30])
+  assert.deepEqual(pred.porDose, [10, 10])
+  const teto = calcularDoseLivro(aha('aha-metilpred'), 40)!
+  assert.deepEqual(teto.dia, [60, 60])
+  assert.deepEqual(teto.porDose, [30, 30])
+  assert.equal(teto.noMaximo, true)
+})
+test('AHA 2024: cada diferença com o livro cita a página da revista', () => {
+  for (const x of DIFERENCAS_KAWASAKI_2024) assert.match(x.pagina, /e4\d\d/, x.tema)
 })

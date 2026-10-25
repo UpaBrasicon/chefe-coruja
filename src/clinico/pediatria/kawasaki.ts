@@ -1,11 +1,30 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaP4, type DoseLivro } from './fonteP4.ts'
 
 // Doença de Kawasaki — livro do ICr, cap. 70 (p. 746–752). Contagem dos
 // critérios clássicos, algoritmo da AHA para a forma incompleta (Figura 1,
 // p. 748), classificação coronariana por Z-score e doses por peso (Tabela 1,
 // p. 750–751). A contagem mostra o que o livro diz; o diagnóstico é do médico.
+//
+// Versão .1 de 25/10/2026 (lacunas da Central, lote 3): declaração científica
+// da AHA 2024 lida no PDF da revista (página = página da revista, e481–e500).
+// O livro continua a base; a AHA aparece ao lado: alto risco de aneurisma e
+// intensificação inicial, doses da Tabela 3 e diferenças com o livro.
 
-export const fichaKawasaki = fichaP4('ped-kawasaki', 'Doença de Kawasaki — critérios e doses', 'cap. 70, p. 746–752; Apêndice, p. 897, 904')
+export const AHA_KAWASAKI_2024: Fonte = {
+  citacao: 'Jone PN, Tremoulet A, Choueiter N, et al. Update on Diagnosis and Management of Kawasaki Disease: A Scientific Statement From the American Heart Association. Circulation. 2024;150(23):e481–e500. Diagnóstico e alto risco (p. e482), classificação coronariana (Tabela 1, p. e484), seguimento (Tabela 2, p. e486), tratamento (p. e485–e491; Tabela 3, p. e489).',
+  url: 'https://doi.org/10.1161/CIR.0000000000001295',
+  pediatrica: true,
+}
+
+const baseKawasaki = fichaP4('ped-kawasaki', 'Doença de Kawasaki — critérios e doses', 'cap. 70, p. 746–752; Apêndice, p. 897, 904')
+
+export const fichaKawasaki: Ficha = {
+  ...baseKawasaki,
+  versao: '2026-10-25.1',
+  fontes: [...baseKawasaki.fontes, AHA_KAWASAKI_2024],
+  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: AHA 2024 lida no PDF; livro do ICr mantido como base)',
+}
 
 export const CRITERIOS_CLINICOS: { id: string; texto: string }[] = [
   { id: 'exantema', texto: 'Exantema polimorfo' },
@@ -94,6 +113,52 @@ export const DOSES_KAWASAKI: DoseLivro[] = [
     nota: 'A Tabela 1 escreve "de 8/8h" e o texto "de 6/6h ou de 8/8h".' },
   { id: 'infliximabe', nome: 'Infliximabe (refratário, 2ª opção)', unidade: 'mg', porKgDose: [5, 5], doses: [1, 1], via: 'EV, dose única', pagina: 'p. 749; Tabela 1, p. 750' },
 ]
+
+// ── AHA 2024 (Jone et al., Circulation 2024) ────────────────────────────────
+
+export type AltoRiscoAha2024 = { altoRisco: boolean; motivos: string[] }
+
+/**
+ * Alto risco de aneurisma na AHA 2024: idade < 6 meses ou Z ≥ 2,5 da
+ * coronária direita ou da descendente anterior no ecocardiograma do
+ * diagnóstico (Key Point 5, p. e482; p. e489). No choque do Kawasaki a
+ * intensificação "precisa ser considerada" (p. e491). O escore de Son (p. e482)
+ * tem item de raça e não é calculado.
+ */
+export function altoRiscoAha2024(idadeMeses: number | null, zBasal: number | null, choque = false): AltoRiscoAha2024 {
+  const motivos: string[] = []
+  if (idadeMeses !== null && Number.isFinite(idadeMeses) && idadeMeses >= 0 && idadeMeses < 6) motivos.push('idade abaixo de 6 meses')
+  if (zBasal !== null && Number.isFinite(zBasal) && zBasal >= 2.5) motivos.push('Z ≥ 2,5 no ecocardiograma do diagnóstico')
+  if (choque) motivos.push('choque do Kawasaki (p. e491)')
+  return { altoRisco: motivos.length > 0, motivos }
+}
+
+/** Tabela 3 (p. e489): terapia inicial e intensificação no resistente à imunoglobulina ou de alto risco. */
+export const DOSES_AHA_2024: DoseLivro[] = [
+  { id: 'aha-ivig', nome: 'Imunoglobulina EV', unidade: 'g', porKgDose: [2, 2], doses: [1, 1], via: 'EV em 8 a 12 h; mais lenta no choque ou na disfunção miocárdica; na obesidade, considerar a massa magra', pagina: 'Tabela 3, p. e489' },
+  { id: 'aha-aas', nome: 'AAS — fase aguda', unidade: 'mg', porKgDia: [30, 50], doses: [4, 4], via: 'VO de 6/6 h; depois 3–5 mg/kg/dia, 1 vez ao dia, afebril há 48–72 h', pagina: 'Tabela 3, p. e489',
+    nota: 'Dose usada em muitos centros; há estudo prospectivo em andamento para definir a dose (Tabela 3). Não usar com AINE.' },
+  { id: 'aha-prednisolona', nome: 'Prednisolona (esquema RAISE)', unidade: 'mg', porKgDia: [2, 2], doses: [3, 3], maxDia: 60, fonteMaximo: 'AHA 2024, Tabela 3', via: 'EV de 8/8 h por 5 dias internado; depois VO 2 mg/kg/dia de 8/8 h com retirada lenta em 15 dias (máximo 30 mg/dose) após normalizar a PCR', pagina: 'Tabela 3, p. e489' },
+  { id: 'aha-metilpred', nome: 'Metilprednisolona (esquema norte-americano)', unidade: 'mg', porKgDia: [2, 2], doses: [2, 2], maxDia: 60, fonteMaximo: 'AHA 2024, Tabela 3', via: 'EV de 12/12 h por 5 dias internado; depois prednisona VO 2 mg/kg/dia de 12/12 h; com PCR < 1 mg/dL, retirar em 2–4 semanas cortando a dose pela metade a cada 5 dias', pagina: 'Tabela 3, p. e489' },
+  { id: 'aha-infliximabe', nome: 'Infliximabe', unidade: 'mg', porKgDose: [10, 10], doses: [1, 1], via: 'EV em 2 h', pagina: 'Tabela 3, p. e489; KIDCARE, p. e488' },
+]
+
+export type ItemKawasaki2024 = { tema: string; aha: string; pagina: string; livro: string }
+
+export const DIFERENCAS_KAWASAKI_2024: ItemKawasaki2024[] = [
+  { tema: 'Alto risco e intensificação', aha: 'Idade < 6 meses ou Z ≥ 2,5 (coronária direita ou descendente anterior) no diagnóstico são de alto risco e devem ser considerados para intensificar a terapia inicial: imunoglobulina com outro anti-inflamatório (corticoide, infliximabe, entre outros). Faltam ensaios randomizados de eficácia', pagina: 'p. e482, e489–e491', livro: 'Escores asiáticos (Kobayashi, Egami, Sano); corticoide na fase inicial a critério de cada avaliador (p. 749)' },
+  { tema: 'Infliximabe', aha: '10 mg/kg EV em 2 h', pagina: 'Tabela 3, p. e489', livro: '5 mg/kg EV, dose única (Tabela 1, p. 750)' },
+  { tema: 'Corticoide', aha: 'Prednisolona 2 mg/kg/dia de 8/8 h (RAISE) ou metilprednisolona 2 mg/kg/dia de 12/12 h (norte-americano), 5 dias EV, máximo 60 mg/dia, com retirada oral', pagina: 'Tabela 3, p. e489', livro: 'No refratário: pulso de metilprednisolona 30 mg/kg (máx. 1 g) ou 1–2 mg/kg/dia de 6/6 ou 8/8 h (p. 749; Tabela 1, p. 750)' },
+  { tema: 'Resistência à imunoglobulina', aha: 'Febre persistente ou recrudescente ≥ 36 h após o fim da infusão', pagina: 'p. e485, e488', livro: '36 a 48 h após o fim da imunoglobulina (p. 749)' },
+  { tema: 'AAS na fase aguda', aha: 'Doses moderada (30–50) ou alta (80–100 mg/kg/dia) provavelmente não melhoram o desfecho coronariano; a Tabela 3 traz 30–50 mg/kg/dia, com estudo em andamento', pagina: 'p. e487–e488; Tabela 3, p. e489', livro: '30–50 mg/kg/dia; 80–100 têm sido evitados (p. 749)' },
+  { tema: 'Antiagregação e anticoagulação', aha: 'Dupla antiagregação pode ser considerada com Z ≥ 5. Aneurisma gigante: AAS em dose baixa e varfarina, HBPM ou anticoagulante oral direto; anticoagulação pode ser considerada no gigante que regrediu a médio (nível 5.2)', pagina: 'p. e488, e491; Tabela 2, p. e486', livro: 'Médio: AAS + clopidogrel; gigante: anticoagulante + antiagregante (p. 750)' },
+  { tema: 'Diagnóstico', aha: 'Critérios inalterados; com 4 ou mais critérios, diagnóstico no 4º dia de febre, e clínicos experientes podem fazê-lo no 3º. MIS-C entra no diagnóstico diferencial', pagina: 'p. e482', livro: '4º dia com ≥ 4 critérios (p. 747)' },
+  { tema: 'Ecocardiograma', aha: 'Não deve atrasar o tratamento. Repetir antes da alta no alto risco ou na resistência; com Z ≥ 2,5, pelo menos 2 vezes por semana até parar de progredir. Usar a mesma equação de Z ao longo do seguimento', pagina: 'p. e484–e485', livro: '—' },
+  { tema: 'Vacinas e imunoglobulina', aha: 'Vacinas de vírus vivo adiadas por 11 meses após a imunoglobulina; VHS não serve como marcador depois dela', pagina: 'p. e487', livro: '—' },
+]
+
+export const ERRATA_GIGANTE_AHA_2024 =
+  'A AHA 2024 define aneurisma gigante como Z ≥ 10 ou diâmetro "≥ 8 mm" na Tabela 1 (p. e484) e "> 8 mm" na Tabela 2 (p. e486). O livro usa > 8 mm (p. 750), e a ferramenta segue o livro; em exatamente 8 mm as duas tabelas da AHA divergem.'
 
 /** Velocidade da imunoglobulina (Apêndice, p. 904): 0,01 mL/kg/min, dobrando a cada 15–30 min até 0,08 mL/kg/min. Em mL/h. */
 export function velocidadeIvigMlH(pesoKg: number): { inicial: number; maxima: number } | null {

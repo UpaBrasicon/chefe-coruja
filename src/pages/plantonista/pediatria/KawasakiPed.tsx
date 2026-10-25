@@ -1,10 +1,12 @@
 import { useState } from 'react'
 
 import {
-  CRITERIOS_CLINICOS, DOSES_KAWASAKI, ERRATA_Z, LAB_INCOMPLETA, ROTULO_CORONARIA, classificarZ, fichaKawasaki, lerCriterios, lerIncompleta, velocidadeIvigMlH,
+  CRITERIOS_CLINICOS, DIFERENCAS_KAWASAKI_2024, DOSES_AHA_2024, DOSES_KAWASAKI, ERRATA_GIGANTE_AHA_2024, ERRATA_Z, LAB_INCOMPLETA, ROTULO_CORONARIA,
+  altoRiscoAha2024, classificarZ, fichaKawasaki, lerCriterios, lerIncompleta, velocidadeIvigMlH,
 } from '@/clinico/pediatria/kawasaki'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { PACIENTE_VAZIO, br, idadePediatrica } from './formatoIcr'
 import { Bloco, CampoPaciente, Errata, Nota, Pendencia } from './PecasIcr'
@@ -26,12 +28,14 @@ export function KawasakiPed() {
   const [vhs, setVhs] = useState(0)
   const [z, setZ] = useState(0)
   const [mm, setMm] = useState(0)
+  const [choque, setChoque] = useState(false)
   const idadeMeses = p.anos * 12 + p.meses
   const leitura = lerCriterios(dias, crit.size, idadeMeses)
   const incompleta = pcr > 0 || vhs > 0 ? lerIncompleta(pcr, vhs, lab.size) : null
   const coronaria = z !== 0 || mm > 0 ? classificarZ(z, mm > 0 ? mm : undefined) : null
   const calc = !p.rn && p.peso > 0 && idadePediatrica(p.anos, p.meses)
   const vel = calc ? velocidadeIvigMlH(p.peso) : null
+  const risco = altoRiscoAha2024(p.anos > 0 || p.meses > 0 ? idadeMeses : null, z !== 0 ? z : null, choque)
 
   return (
     <ToolLayout
@@ -70,6 +74,20 @@ export function KawasakiPed() {
         </div>
         {coronaria && <p><strong>{ROTULO_CORONARIA[coronaria]}</strong></p>}
         <Errata texto={ERRATA_Z} />
+        <Errata texto={ERRATA_GIGANTE_AHA_2024} />
+      </Bloco>
+
+      <Bloco titulo="Alto risco de aneurisma (AHA 2024, p. e482 e e489)" descricao="Idade abaixo de 6 meses ou Z ≥ 2,5 no ecocardiograma do diagnóstico; o Z usado é o do campo acima.">
+        <label className="flex items-center gap-2 text-apoio">
+          <input type="checkbox" checked={choque} onChange={(e) => setChoque(e.target.checked)} />
+          Choque do Kawasaki (hipotensão, má perfusão, com ou sem disfunção miocárdica)
+        </label>
+        {risco.altoRisco ? (
+          <p><strong>Alto risco pela AHA 2024: {risco.motivos.join('; ')}.</strong> A AHA diz que esses pacientes devem ser considerados para intensificar a terapia inicial (imunoglobulina com outro anti-inflamatório, como corticoide ou infliximabe); faltam ensaios randomizados de eficácia.</p>
+        ) : (
+          <p className="text-tinta-sussurro">Sem critério de alto risco da AHA 2024 com os dados informados.</p>
+        )}
+        <Nota>O escore de Son (p. e482) usa idade, raça, Z e PCR; tem item de raça e não é calculado aqui.</Nota>
       </Bloco>
 
       <Pendencia p={p} />
@@ -92,6 +110,29 @@ export function KawasakiPed() {
           <Nota>Refratário: febre persistente ou recrudescente 36 a 48 h após o fim da imunoglobulina (p. 749).</Nota>
         </Bloco>
       )}
+      {calc && (
+        <Bloco titulo="Doses da AHA 2024 (Tabela 3, p. e489)" descricao="Terapia inicial e intensificação no resistente à imunoglobulina ou de alto risco.">
+          {DOSES_AHA_2024.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} fonte="AHA 2024" origem="A AHA traz" />)}
+        </Bloco>
+      )}
+
+      <Bloco titulo="AHA 2024 × livro do ICr">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA 2024</TableHead><TableHead className="pr-3 pb-2">p.</TableHead><TableHead className="pb-2">Livro do ICr</TableHead></TableRow></TableHeader>
+            <TableBody>
+              {DIFERENCAS_KAWASAKI_2024.map((d) => (
+                <TableRow key={d.tema} className="border-t">
+                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                  <TableCell className="pr-3 py-2">{d.aha}</TableCell>
+                  <TableCell className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.pagina}</TableCell>
+                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </Bloco>
     </ToolLayout>
   )
 }
