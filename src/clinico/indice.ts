@@ -182,6 +182,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'ped-hemostasia-trombose': '/plantonista/pediatria/hemostasia-trombose-ped',
   'ped-hemoterapia': '/plantonista/pediatria/hemocomponentes-ped',
   'ped-hipoglicemia': '/plantonista/pediatria/hipoglicemia-ped',
+  'ped-ictericia-neonatal': '/plantonista/pediatria/ictericia-neonatal',
   'ped-infeccao-urinaria': '/plantonista/pediatria/infeccao-urinaria-ped',
   'ped-infusoes': '/plantonista/pediatria/infusoes',
   'ped-injuria-renal': '/plantonista/pediatria/injuria-renal-ped',
