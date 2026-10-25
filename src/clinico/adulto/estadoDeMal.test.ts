@@ -2,7 +2,10 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
-import { ATAQUE_ESTADO_DE_MAL, TERCEIRA_LINHA, calcularAtaque, calcularTerceiraLinha, fichaEstadoDeMalAdulto } from './estadoDeMal.ts'
+import {
+  AES_2016, ATAQUE_ESTADO_DE_MAL, ESETT_2019, LEVETIRACETAM_EME, RESULTADO_ESETT, TERCEIRA_LINHA,
+  calcularAtaque, calcularTerceiraLinha, fichaEstadoDeMalAdulto, levetiracetamMgMin,
+} from './estadoDeMal.ts'
 
 const at = (id: string) => ATAQUE_ESTADO_DE_MAL.find((x) => x.id === id)!
 const t3 = (id: string) => TERCEIRA_LINHA.find((x) => x.id === id)!
@@ -11,7 +14,7 @@ const r2 = (x: number) => Math.round(x * 100) / 100
 test('estado de mal: ficha adulto, manual do HC, id kebab e sem referência pediátrica', () => {
   assert.equal(fichaEstadoDeMalAdulto.publico, 'adulto')
   assert.match(fichaEstadoDeMalAdulto.id, /^adulto-[a-z0-9-]+$/)
-  assert.match(fichaEstadoDeMalAdulto.fontes[0].citacao, /Manual de Medicina de Emergência.*p\. 627–631/)
+  assert.match(fichaEstadoDeMalAdulto.fontes[0].citacao, /Manual de Medicina de Emergência.*p\. 627–632/)
   assert.equal(temReferenciaPediatrica(fichaEstadoDeMalAdulto), false)
   for (const d of [...ATAQUE_ESTADO_DE_MAL, ...TERCEIRA_LINHA]) assert.match(d.pagina, /^p\. \d+/, d.id)
 })
@@ -67,4 +70,29 @@ test('estado de mal: 3ª linha — bolus e manutenção por peso (Tabela 5, p. 6
   assert.deepEqual([qt.bolusMg[0], qt.bolusAcumuladoMaxMg, qt.manutencaoMgH], [105, 315, [140, 350]])
   const tp = calcularTerceiraLinha(t3('tiopental'), 70)!
   assert.deepEqual([tp.bolusMg, tp.manutencaoMgH, tp.manutencaoMlH], [[210, 350], [210, 490], null])
+})
+
+// ── Levetiracetam pelo ESETT e pela AES 2016 (lacunas da Central, lote 3) ──
+
+test('estado de mal: ficha .1 com ESETT e AES 2016 depois do manual', () => {
+  assert.equal(fichaEstadoDeMalAdulto.versao, '2026-10-25.1')
+  assert.equal(fichaEstadoDeMalAdulto.fontes[1], ESETT_2019)
+  assert.equal(fichaEstadoDeMalAdulto.fontes[2], AES_2016)
+})
+test('estado de mal: levetiracetam 60 mg/kg, teto 4500 mg, sem volume (ESETT; AES 2016, Figura 1)', () => {
+  const r = calcularAtaque(LEVETIRACETAM_EME, 60)!
+  assert.deepEqual(r.mg, [3600, 3600])
+  assert.equal(r.ml, null)
+  const teto = calcularAtaque(LEVETIRACETAM_EME, 90)!
+  assert.deepEqual(teto.mg, [4500, 4500])
+  assert.equal(teto.limitadoAoTeto, true)
+  assert.equal(calcularAtaque(LEVETIRACETAM_EME, 0), null)
+})
+test('estado de mal: levetiracetam em 10 min = mg/min da dose (70 kg: 4200 mg, 420 mg/min)', () => {
+  assert.deepEqual(levetiracetamMgMin(70), [420, 420])
+  assert.deepEqual(levetiracetamMgMin(100), [450, 450])
+})
+test('estado de mal: levetiracetam fica fora da Tabela 4 do manual', () => {
+  assert.equal(ATAQUE_ESTADO_DE_MAL.some((d) => d.id === 'levetiracetam'), false)
+  assert.deepEqual(RESULTADO_ESETT.respostaPct, { levetiracetam: 47, fosfenitoina: 45, valproato: 46 })
 })
