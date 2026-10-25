@@ -1235,8 +1235,23 @@ Evidência: 1002 de 1002 testes clínicos; homologação conferida pelo RT; migr
 `20261218000001_lacunas_lote2_meningite` aplicada na homologação e, com o "ok produção" do RT, na
 produção (ficha nova na fila de aprovação).
 
-Próximos itens do lote 2: cólica renal, intermação, queimadura do adulto, icterícia neonatal e
-reanimação neonatal.
+**Lote 2 — Cólica nefrética em produção em 24/10/2026 (PR #196).**
+- **Cólica nefrética** (Condutas e cálculos — adulto, "Digestivo, fígado e rim"), pelo manual do HC,
+  cap. 62 (p. 842–851), lido no PDF com página: analgesia em degraus (cetorolaco 10 mg EV, dipirona
+  adjuvante sem dose, morfina 2–5 mg EV, quetamina 0,2–0,4 mg/kg pelo peso, ondansetrona 4–8 mg EV);
+  conduta pelo tamanho do cálculo; exames e infecção; internação (Tabela 5).
+- Tansulosina 0,4 mg entre 5 e 10 mm como o livro traz, com a divergência de Meltzer 2018
+  (PMID 29913020): sem benefício abaixo de 9 mm.
+- **Pendente de decisão do RT:** escore STONE (Moore 2014, PMID 24671981). O resumo não traz os
+  pontos de cada item, e um dos cinco itens é a raça ("não negro" pontua). Incluir como publicado ou
+  deixar de fora.
+
+Evidência: 1007 de 1007 testes clínicos; homologação conferida pelo RT; migration
+`20261219000001_lacunas_lote2_colica_renal` aplicada na homologação e, com o "ok produção" do RT,
+na produção (ficha nova na fila de aprovação).
+
+Próximos itens do lote 2: intermação, queimadura do adulto, icterícia neonatal e reanimação
+neonatal.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
