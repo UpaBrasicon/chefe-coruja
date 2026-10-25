@@ -1250,8 +1250,22 @@ Evidência: 1007 de 1007 testes clínicos; homologação conferida pelo RT; migr
 `20261219000001_lacunas_lote2_colica_renal` aplicada na homologação e, com o "ok produção" do RT,
 na produção (ficha nova na fila de aprovação).
 
-Próximos itens do lote 2: intermação, queimadura do adulto, icterícia neonatal e reanimação
-neonatal.
+**Lote 2 — Intermação em produção em 24/10/2026 (PR #199).**
+- **Intermação — resfriamento e meta** (Condutas e cálculos — adulto, "Trauma e ambientais"). O manual
+  do HC não tem capítulo; fonte única é a SCCM 2025 (Crit Care Med 2025;53(2):e490–e500, PMID
+  39982186), lida no texto completo da revista: definição (> 40 °C com alteração do SNC); resfriamento
+  ativo com alvo < 39 °C (Recomendação 1); imersão em água gelada 1–5 °C ou fria 9–12 °C; alvo em até
+  30 min; taxa ≥ 0,155 °C/min (Boas Práticas 1–4); contra dantroleno (Recomendação 2); sem antitérmico
+  (Boa Prática 5).
+- A tela calcula a taxa de resfriamento entre duas medidas, a taxa necessária para fechar os 30 min e
+  quanto falta para o alvo.
+- Fora: WMS 2024 (o site da revista recusou o acesso ao texto).
+
+Evidência: 1013 de 1013 testes clínicos; homologação conferida pelo RT; migration
+`20261220000001_lacunas_lote2_intermacao` aplicada na homologação e, com o "ok produção" do RT, na
+produção (ficha nova na fila de aprovação).
+
+Próximos itens do lote 2: queimadura do adulto, icterícia neonatal e reanimação neonatal.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
