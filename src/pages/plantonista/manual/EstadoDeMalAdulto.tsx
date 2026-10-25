@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
 import {
-  ATAQUE_ESTADO_DE_MAL, DESMAME_ESTADO_DE_MAL, ESTABILIZACAO_ESTADO_DE_MAL, TEMPOS_ESTADO_DE_MAL, TERCEIRA_LINHA,
-  calcularAtaque, calcularTerceiraLinha, fichaEstadoDeMalAdulto, type DrogaAtaque, type Faixa,
+  ATAQUE_ESTADO_DE_MAL, DESMAME_ESTADO_DE_MAL, ESTABILIZACAO_ESTADO_DE_MAL, LEVETIRACETAM_EME, LEVETIRACETAM_INFUSAO_MIN, RESULTADO_ESETT,
+  TEMPOS_ESTADO_DE_MAL, TERCEIRA_LINHA, calcularAtaque, calcularTerceiraLinha, fichaEstadoDeMalAdulto, levetiracetamMgMin,
+  type DrogaAtaque, type Faixa,
 } from '@/clinico/adulto/estadoDeMal'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
@@ -17,7 +18,7 @@ function textoDose(d: DrogaAtaque) {
   return `${dose}; ${d.apresentacao}; ${d.administracao}`
 }
 
-function Ataque({ d, peso }: { d: DrogaAtaque; peso: number }) {
+function Ataque({ d, peso, origem }: { d: DrogaAtaque; peso: number; origem?: string }) {
   const r = calcularAtaque(d, peso)
   const conta = !r ? 'informe o peso' : (
     <>
@@ -27,16 +28,18 @@ function Ataque({ d, peso }: { d: DrogaAtaque; peso: number }) {
       {r.tempos.map((t) => <span key={t.rotulo}> · a {t.rotulo}: ≥ {faixa(t.minutos)} min</span>)}
     </>
   )
-  return <LinhaManual nome={d.nome} texto={textoDose(d)} conta={conta} pagina={d.pagina} errata={d.errata} nota={d.nota} />
+  return <LinhaManual origem={origem} nome={d.nome} texto={textoDose(d)} conta={conta} pagina={d.pagina} errata={d.errata} nota={d.nota} />
 }
 
 /** Estado de mal epiléptico convulsivo do adulto (cap. 46 do manual do HCFMUSP). */
 export function EstadoDeMalAdulto() {
   const [peso, setPeso] = useState(0)
+  const ritmo = levetiracetamMgMin(peso)
+  const esett = RESULTADO_ESETT
   return (
     <ToolLayout
       title="Estado de mal epiléptico — adulto"
-      description="Doses de 1ª, 2ª e 3ª linha do manual do HC por peso, com volume e tempo mínimo de infusão. Adulto (14 anos ou mais)."
+      description="Doses de 1ª, 2ª e 3ª linha do manual do HC por peso, com volume e tempo mínimo de infusão, e o levetiracetam pelo ESETT. Adulto (14 anos ou mais)."
       ficha={fichaEstadoDeMalAdulto}
     >
       <CampoPeso id="eme-peso" peso={peso} onChange={setPeso} />
@@ -55,6 +58,15 @@ export function EstadoDeMalAdulto() {
 
       <Bloco titulo="2ª linha (Tabela 4)" descricao="O tempo mostrado é o mínimo para infundir a dose na velocidade citada.">
         {ATAQUE_ESTADO_DE_MAL.filter((d) => d.linha === 2).map((d) => <Ataque key={d.id} d={d} peso={peso} />)}
+      </Bloco>
+
+      <Bloco titulo="2ª linha fora do manual — levetiracetam" descricao="ESETT (2019) e diretriz da American Epilepsy Society (2016).">
+        <Ataque d={LEVETIRACETAM_EME} peso={peso} origem="O ESETT e a AES trazem" />
+        {ritmo && <p className="text-apoio text-tinta-apoio">Em {LEVETIRACETAM_INFUSAO_MIN} minutos, como no ESETT: {faixa(ritmo, 0)} mg/min.</p>}
+        <p className="text-apoio text-tinta-apoio">
+          ESETT: resposta em 60 min de {esett.respostaPct.levetiracetam}% com levetiracetam, {esett.respostaPct.fosfenitoina}% com fosfenitoína e {esett.respostaPct.valproato}% com valproato. {esett.texto}
+        </p>
+        <p className="text-apoio text-tinta-sussurro">Doses do estudo: {esett.doses}. A AES 2016 põe as três como opções de 2ª linha sem preferência entre elas (nível U).</p>
       </Bloco>
 
       <Bloco titulo="3ª linha — infusão contínua (Tabela 5)" descricao="mL/h no preparo padrão do Anexo 1 do mesmo manual; o tiopental não tem preparo no anexo.">
