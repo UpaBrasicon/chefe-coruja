@@ -1,5 +1,6 @@
 import { completo, escolha, somar, type Escore } from '../escore.ts'
-import { fichaAdulto } from './fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
 
 // Reversão de anticoagulação e hemorragia intraparenquimatosa (HIP) do adulto —
 // Manual de Medicina de Emergência do HCFMUSP (3ª ed., 2022): cap. 39 (p.
@@ -7,16 +8,41 @@ import { fichaAdulto } from './fonte.ts'
 // Varfarina por INR × sangramento, CCP, plasma, vitamina K, crioprecipitado,
 // protamina por tempo desde a heparina, DOAC e o escore ICH. O livro não traz
 // dose de idarucizumabe nem cita andexanete. A decisão é do médico (ADR 0007).
+//
+// Versão .1 de 25/10/2026 (lacunas da Central, lote 3): o andexanete entra como
+// divergência, pelo resumo do ANNEXA-I (PubMed): melhor controle do hematoma e
+// mais trombose. Sem dose: o manual não o cita e a tela só mostra o estudo.
 
 export type Faixa = [number, number]
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
 
-export const fichaReversaoAnticoagulacaoAdulto = fichaAdulto(
-  'adulto-reversao-anticoagulacao',
-  'Reversão de anticoagulação e sangramento — adulto',
-  'cap. 39 Hemorragias intraparenquimatosas, p. 545–549; cap. 79 Distúrbios da hemostasia, p. 1042–1045 (Tabelas 4–6)',
-)
+export const ANNEXA_I: Fonte = {
+  citacao: 'Connolly SJ, Sharma M, Cohen AT, et al. Andexanet for Factor Xa Inhibitor-Associated Acute Intracerebral Hemorrhage. N Engl J Med. 2024;390(19):1745–1755. Resultados conferidos no resumo (PubMed 38749032).',
+  url: 'https://doi.org/10.1056/NEJMoa2313040',
+}
+
+const PAG_REVERSAO = 'cap. 39 Hemorragias intraparenquimatosas, p. 545–549; cap. 79 Distúrbios da hemostasia, p. 1042–1045 (Tabelas 4–6)'
+
+export const fichaReversaoAnticoagulacaoAdulto: Ficha = {
+  ...fichaAdulto('adulto-reversao-anticoagulacao', 'Reversão de anticoagulação e sangramento — adulto', PAG_REVERSAO),
+  versao: '2026-10-25.1',
+  fontes: [pagina(PAG_REVERSAO), ANNEXA_I],
+  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: andexanete como divergência pelo ANNEXA-I; manual mantido como base)',
+}
+
+/**
+ * ANNEXA-I (resumo): HIP aguda com inibidor do fator Xa nas 15 h anteriores,
+ * andexanete × cuidado usual (85,5% com CCP). Mostrado como divergência, sem dose.
+ */
+export const DIVERGENCIA_ANDEXANETE = {
+  populacao: 'Hemorragia intracerebral aguda com inibidor do fator Xa tomado nas 15 horas anteriores; 263 com andexanete × 267 com cuidado usual, em que 85,5% receberam complexo protrombínico',
+  eficacia: { andexanete: '67,0%', usual: '53,1%', texto: 'hematoma crescendo 35% ou menos e NIHSS subindo menos de 7 pontos em 12 h, sem resgate entre 3 e 12 h; diferença ajustada de 13,4 pontos (IC 95% 4,6 a 22,2)' },
+  trombose: { andexanete: '10,3%', usual: '5,6%', texto: 'eventos trombóticos; diferença de 4,6 pontos (IC 95% 0,1 a 9,2)' },
+  avcIsquemico: { andexanete: '6,5%', usual: '1,5%' },
+  semDiferenca: 'Sem diferença apreciável na escala de Rankin modificada nem em morte em 30 dias',
+  conclusao: 'Melhor controle da expansão do hematoma, à custa de mais eventos trombóticos, incluindo AVC isquêmico.',
+}
 
 // ── Varfarina: Tabela 4 (p. 1043) ────────────────────────────────────────────
 
