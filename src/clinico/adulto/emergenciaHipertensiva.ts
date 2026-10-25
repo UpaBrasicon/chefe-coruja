@@ -15,20 +15,84 @@ import type { Faixa } from './pcr.ts'
 // (capítulo 11, PDF lido) ao lado do cap. 19 — alvos por situação, Quadro 11.4
 // das drogas IV (com a errata de unidade do nitroprussiato) e a lista de
 // drogas que a própria diretriz marca como indisponíveis no Brasil.
+//
+// Versão .2 de 25/10/2026 (lacunas da Central, lote 3): sulfato de magnésio na
+// pré-eclâmpsia grave e na eclâmpsia. O manual do HC não traz o esquema; a DBHA
+// 2025 recomenda o magnésio sem dar dose. Os esquemas EV e IM saem do manual da
+// OMS (Box S-4 e S-5, p. S-59 e S-60, PDF lido), que as recomendações da OMS de
+// 2011 indicam para a administração. A ACOG (PB 222) não pôde ser lida (texto
+// fechado).
 
 export const DBHA_2025: Fonte = {
-  citacao: 'Brandão AA, et al. Diretriz Brasileira de Hipertensão Arterial – 2025 (SBC/SBH/SBN). Arq Bras Cardiol. 2025;122(9):e20250624. Capítulo 11, Crise hipertensiva: Figura 11.1 e Quadro 11.4 (p. 101–102), recomendações (p. 104); gestação (hidralazina).',
+  citacao: 'Brandão AA, et al. Diretriz Brasileira de Hipertensão Arterial – 2025 (SBC/SBH/SBN). Arq Bras Cardiol. 2025;122(9):e20250624. Capítulo 11, Crise hipertensiva: Figura 11.1 e Quadro 11.4 (p. 101–102), recomendações (p. 104); gestação (hidralazina; sulfato de magnésio, p. 95 e 98).',
   url: 'https://doi.org/10.36660/abc.20250624',
+}
+
+export const OMS_MCPC_2017: Fonte = {
+  citacao: 'World Health Organization. Managing complications in pregnancy and childbirth: a guide for midwives and doctors. 2ª ed. Genebra: WHO; 2017. ISBN 978-92-4-156549-3. Box S-4, esquemas de sulfato de magnésio (p. S-59); Box S-5, sinais para suspender e antídoto (p. S-60).',
+  url: 'https://iris.who.int/handle/10665/255760',
+}
+
+export const OMS_PE_2011: Fonte = {
+  citacao: 'World Health Organization. WHO recommendations for prevention and treatment of pre-eclampsia and eclampsia. Genebra: WHO; 2011. Recomendações 12 a 15 (sulfato de magnésio).',
+  url: 'https://www.ncbi.nlm.nih.gov/books/NBK140561/',
 }
 
 const PAG_EH = 'cap. 19 Emergências hipertensivas, p. 270–276 (Tabelas 3 e 4, p. 273–275)'
 
 export const fichaEmergenciaHipertensivaAdulto: Ficha = {
   ...fichaAdulto('adulto-emergencia-hipertensiva', 'Emergência hipertensiva — alvos e drogas EV (adulto)', PAG_EH),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_EH), DBHA_2025],
-  revisadoEm: '28/09/2026 (DBHA 2025 lida no texto; manual mantido como base)',
+  versao: '2026-10-25.1',
+  fontes: [pagina(PAG_EH), DBHA_2025, OMS_MCPC_2017, OMS_PE_2011],
+  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: sulfato de magnésio pela OMS; DBHA 2025 e manual mantidos)',
 }
+
+// ── Sulfato de magnésio na pré-eclâmpsia grave e eclâmpsia (OMS) ─────────────
+
+export type DoseMagnesio = { g: number; pct: 20 | 50 }
+
+/** mL de sulfato de magnésio para a dose em gramas na solução a 20% (0,2 g/mL) ou 50% (0,5 g/mL). */
+export function mlSulfatoMagnesio(d: DoseMagnesio): number {
+  return d.g / (d.pct / 100)
+}
+
+/** Box S-4 (p. S-59): esquemas da OMS, doses fixas (não por peso). */
+export const MAGNESIO_PE = {
+  ev: {
+    ataque: { g: 4, pct: 50 } as DoseMagnesio,
+    manutencaoGH: 1,
+    texto: 'EV, de preferência em bomba de infusão: ataque de 4 g de sulfato de magnésio a 50%; manutenção de 1 g/h',
+  },
+  im: {
+    ataqueEv: { g: 4, pct: 20 } as DoseMagnesio,
+    ataqueEvMin: 5,
+    ataqueIm: { g: 10, pct: 50 } as DoseMagnesio,
+    manutencao: { g: 5, pct: 50 } as DoseMagnesio,
+    intervaloH: 4,
+    texto: 'Ataque: 4 g a 20% EV em 5 minutos e, em seguida, 10 g a 50% IM profundo (5 g em cada nádega, com 1 mL de lidocaína a 2% na mesma seringa); manutenção: 5 g a 50% IM a cada 4 horas, alternando as nádegas',
+  },
+  recorrencia: { dose: { g: 2, pct: 50 } as DoseMagnesio, min: 5, aposMin: 15, texto: 'Se a convulsão voltar após 15 minutos: 2 g a 50% EV em 5 minutos (nos dois esquemas)' },
+  duracao: 'Manter por 24 horas após o parto ou a última convulsão, o que vier por último.',
+  pagina: 'OMS, Box S-4, p. S-59',
+  nota: 'O esquema EV não diz em quanto tempo correr o ataque; no esquema IM, os 4 g a 20% vão em 5 minutos. A OMS não dá o preparo da manutenção de 1 g/h, e a ferramenta não calcula mL/h.',
+}
+
+/** Box S-5 (p. S-60): antes de cada nova dose, e o antídoto. */
+export const TOXICIDADE_MAGNESIO = {
+  suspender: [
+    'frequência respiratória abaixo de 16/min',
+    'reflexo patelar ausente',
+    'diurese abaixo de 30 mL/h nas 4 horas anteriores',
+  ],
+  antidoto: { g: 1, ml: 10, pct: 10, min: 3, texto: 'Na parada respiratória: ventilar e dar gluconato de cálcio 1 g (10 mL a 10%) EV lento, em 3 minutos' },
+  pagina: 'OMS, Box S-5, p. S-60',
+}
+
+export const RECOMENDACAO_MAGNESIO = [
+  { fonte: 'DBHA 2025 (p. 95; recomendações, p. 98)', texto: 'Sulfato de magnésio para prevenir eclâmpsia na gestante com hipertensão grave sintomática e para tratar a eclâmpsia', forca: 'forte, evidência moderada' },
+  { fonte: 'OMS 2011, recomendações 12 a 14', texto: 'Sulfato de magnésio, em preferência a outros anticonvulsivantes, na pré-eclâmpsia grave e na eclâmpsia, com o esquema completo (ataque e 24 h de manutenção), EV ou IM', forca: 'forte; evidência alta (12) e moderada (13 e 14)' },
+  { fonte: 'OMS 2011, recomendação 15', texto: 'Onde não for possível o esquema completo: dose de ataque e transferência imediata', forca: 'fraca, evidência muito baixa' },
+]
 
 export const DBHA_2025_ALVOS: { tema: string; dbha: string; forca: string; livro: string }[] = [
   { tema: 'Elevação importante da PA sem lesão de órgão-alvo (antiga "urgência")', dbha: 'Reavaliação ambulatorial em 1 a 7 dias com alvo PAS < 160 e PAD < 100; nifedipina sublingual nunca', forca: 'fraca, evidência baixa', livro: 'captopril 6,25–12,5 mg VO se dificuldade de aderência; nifedipina contraindicada (p. 276)' },
