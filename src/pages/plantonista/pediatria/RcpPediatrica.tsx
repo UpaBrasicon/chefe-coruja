@@ -73,7 +73,7 @@ export function RcpPediatrica() {
         </>
       )}
       <Bloco titulo="AHA/AAP 2025 × livro do ICr">
-        <p className="text-apoio text-tinta-sussurro">Destaques oficiais das diretrizes 2025 (p. 11–15); o texto integral do Part 8 não foi aberto. Com linha arterial na RCP, a diretriz mira PAD ≥ {metaPadRcp2025(faixa)} mmHg para a faixa escolhida.</p>
+        <p className="text-apoio text-tinta-sussurro">Part 8 lido no texto integral publicado pela AHA (recomendações e quadro da Figura 2) e Destaques oficiais das diretrizes 2025 (p. 11–15). Com linha arterial na RCP, a diretriz mira PAD ≥ {metaPadRcp2025(faixa)} mmHg para a faixa escolhida.</p>
         <div className="overflow-x-auto">
           <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
             <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA/AAP 2025</TableHead><TableHead className="pr-3 pb-2">Estado · p.</TableHead><TableHead className="pb-2">Livro do ICr</TableHead></TableRow></TableHeader>

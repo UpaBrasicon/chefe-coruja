@@ -1301,7 +1301,32 @@ Evidência: 1026 de 1026 testes clínicos; conferência na tela contra a tabela 
 16,6 / 22 / 24 mg/dL); homologação conferida pelo RT; migration `20261223000001_lacunas_lote2_ictericia`
 aplicada na homologação e, com o "ok produção" do RT, na produção (ficha nova na fila de aprovação).
 
-Próximo item do lote 2: reanimação neonatal.
+**Lote 2 — Reanimação neonatal em produção em 25/10/2026 (PR #206).**
+- **Reanimação do RN ≥ 34 semanas em sala de parto (SBP 2026)** (Pediatria, "Neonato"). A fonte
+  mudou da AHA/AAP 2025 (o site da revista pediu verificação anti-robô) para as Diretrizes 2026 do
+  Programa de Reanimação Neonatal da SBP (12/06/2026, doi 10.25060/PRN-SBP-2026-1), lidas no PDF
+  oficial: adrenalina diluída a 0,1 mg/mL — 0,2 mL/kg intravascular e 1,0 mL/kg traqueal (Quadro 8,
+  p. 32, conferido nos três pesos impressos) —, SF 10 mL/kg (p. 33), SpO2 alvo (Quadro 2, p. 15),
+  marca da cânula por IG e peso (Quadro 4, p. 23) e a sequência (VPP com ar ambiente, massagem 3:1 com
+  O2 a 100%, adrenalina, expansor, o que não usar).
+- A descrição da seção Pediatria deixou de dizer "sem neonato" e cita as duas ferramentas de neonato.
+
+Evidência: 1032 de 1032 testes clínicos; homologação conferida pelo RT; migration
+`20261224000001_lacunas_lote2_reanimacao_neonatal` aplicada na homologação e, com o "ok produção" do
+RT, na produção (ficha nova na fila de aprovação).
+
+**Lote 2 concluído em 25/10/2026.** Os dez itens estão em produção: SCA inicial e Sgarbossa modificado,
+ITU do adulto, PEP de HIV, cefaleia, meningite e encefalite do adulto, cólica nefrética, intermação,
+queimadura do adulto (com o boneco) e, no neonato, icterícia e reanimação. Pendências abertas, à
+espera do RT:
+- Fichas novas dos lotes 1 e 2 (19) na fila de aprovação da tela de revisão clínica.
+- Lote 1: RACE (tabela original), Escala Clínica de Fragilidade (níveis 2 e 8), dor na criança
+  (faixas de idade).
+- Lote 2: escore STONE (item de raça); grupo da ITU ("Digestivo, fígado e rim" ou um grupo novo
+  "Infecções"); doses de triptano, dipirona, AINE, metoclopramida e clorpromazina na cefaleia (sem
+  fonte com página); quimioprofilaxia de contatos na meningite (precisa do Guia de Vigilância do MS).
+
+Próximo: lote 3 (atualizações de diretriz).
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva

@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react'
 
-import { CHOQUE_PCR, DROGAS_PCR, KCL_ATAQUE_MEQ, calcularPcr, fichaPcrAdulto, type Faixa } from '@/clinico/adulto/pcr'
+import { AHA_2025_PCR, CHOQUE_PCR, DIRETRIZ_ALS_2025, DROGAS_PCR, KCL_ATAQUE_MEQ, calcularPcr, fichaPcrAdulto, lidocainaSegundaDoseMg, type Faixa } from '@/clinico/adulto/pcr'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
@@ -13,6 +14,7 @@ const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(
 export function PcrAdulto() {
   const [peso, setPeso] = useState(0)
   const r = calcularPcr(peso)
+  const lido2 = lidocainaSegundaDoseMg(peso)
   const semPeso = 'informe o peso'
 
   const conta: Record<string, ReactNode> = {
@@ -25,7 +27,7 @@ export function PcrAdulto() {
   return (
     <ToolLayout
       title="PCR — drogas e desfibrilação (adulto)"
-      description="Tabela 2 do manual do HC com as doses por peso calculadas, e a carga do choque. Adulto (14 anos ou mais)."
+      description="Tabela 2 do manual do HC com as doses por peso calculadas, a carga do choque e a AHA 2025 ao lado. Adulto (14 anos ou mais)."
       ficha={fichaPcrAdulto}
     >
       <CampoPeso id="pcr-peso" peso={peso} onChange={setPeso} />
@@ -43,6 +45,31 @@ export function PcrAdulto() {
         {DROGAS_PCR.map((d) => (
           <LinhaManual key={d.id} nome={d.nome} texto={`${d.dose} — ${d.quando}`} conta={conta[d.id]} pagina={d.pagina} errata={d.errata} nota={d.nota} />
         ))}
+      </Bloco>
+
+      <Bloco titulo="AHA 2025 × manual do HC" descricao="Part 9 da AHA 2025, lido no texto integral publicado pela AHA; entre parênteses, a classe da recomendação.">
+        <LinhaManual
+          origem="A AHA traz"
+          nome="Lidocaína — segunda dose"
+          texto={`${faixa(AHA_2025_PCR.lidocainaMgKg.segunda, 2)} mg/kg IV/IO, depois da primeira de ${faixa(AHA_2025_PCR.lidocainaMgKg.primeira)} mg/kg; o manual traz só a primeira`}
+          conta={lido2 ? <strong>{faixa(lido2)} mg</strong> : semPeso}
+          pagina={AHA_2025_PCR.pagina}
+        />
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA 2025</TableHead><TableHead className="pr-3 pb-2">Onde</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>
+              {DIRETRIZ_ALS_2025.map((d) => (
+                <TableRow key={d.tema} className="border-t">
+                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                  <TableCell className="pr-3 py-2">{d.aha}</TableCell>
+                  <TableCell className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.onde}</TableCell>
+                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </Bloco>
     </ToolLayout>
   )
