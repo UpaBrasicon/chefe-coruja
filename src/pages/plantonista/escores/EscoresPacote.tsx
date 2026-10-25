@@ -7,6 +7,7 @@ import { canadianCtHead } from '@/clinico/escores/canadianCtHead'
 import { cha2ds2va } from '@/clinico/escores/cha2ds2va'
 import { childPugh } from '@/clinico/escores/childPugh'
 import { civdIsth } from '@/clinico/escores/civdIsth'
+import { crb65 } from '@/clinico/escores/crb65'
 import { curb65 } from '@/clinico/escores/curb65'
 import { four } from '@/clinico/escores/four'
 import { genebraRevisado } from '@/clinico/escores/genebraRevisado'
@@ -34,6 +35,7 @@ import { ottawaJoelho, ottawaTornozelo } from '@/clinico/escores/ottawa'
 import { quatroAt } from '@/clinico/escores/quatroAt'
 import { qtcAdulto } from '@/clinico/adulto/qtc'
 import { sgarbossaModificado } from '@/clinico/escores/sgarbossaModificado'
+import { spesi } from '@/clinico/escores/spesi'
 import { EscoreTela } from '@/components/plantonista/EscoreTela'
 
 // Escores do pacote src/clinico (Fase 5.3): a regra e o teste ficam lá; aqui só
@@ -77,3 +79,5 @@ export const McIsaac = () => <EscoreTela escore={mcisaac} />
 export const QuatroAt = () => <EscoreTela escore={quatroAt} />
 export const Qtc = () => <EscoreTela escore={qtcAdulto} />
 export const SgarbossaModificado = () => <EscoreTela escore={sgarbossaModificado} />
+export const Spesi = () => <EscoreTela escore={spesi} />
+export const Crb65 = () => <EscoreTela escore={crb65} />

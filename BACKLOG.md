@@ -1285,7 +1285,23 @@ Evidência: 1019 de 1019 testes clínicos; homologação conferida pelo RT (tela
 `20261222000001_queimadura_adulto_boneco` aplicada na homologação e, com o "ok produção" do RT, na
 produção (versão .2 na fila de aprovação).
 
-Próximos itens do lote 2: icterícia neonatal e reanimação neonatal.
+**Lote 2 — Icterícia neonatal em produção em 25/10/2026 (PR #204).**
+- **Icterícia neonatal ≥ 35 semanas — fototerapia (AAP 2022)** (Pediatria, grupo novo "Neonato";
+  inclusão do neonato decidida pelo RT em 23/10/2026). AAP 2022 (Pediatrics 2022;150(3):e2022058859,
+  PMID 35927462), lida no texto completo; limiares hora a hora das Tabelas Suplementares 1 a 4,
+  extraídos do PDF oficial do suplemento, conferidos na imagem da página e gravados em
+  `src/clinico/pediatria/ictericiaLimiares.ts` (arquivo gerado).
+- A tela dá, pela IG, horas de vida e fator de risco de neurotoxicidade (Tabela 2), os limiares de
+  fototerapia (KAS 10), escalonamento de cuidado (exsanguineotransfusão − 2 mg/dL, KAS 17) e
+  exsanguineotransfusão; a faixa da bilirrubina total; a dosagem sérica pela transcutânea (KAS 6) e o
+  nível para suspender a fototerapia (KAS 15). Não calcula abaixo de 35 semanas, na hora 0 nem depois
+  de 14 dias.
+
+Evidência: 1026 de 1026 testes clínicos; conferência na tela contra a tabela (39 semanas, 48 h:
+16,6 / 22 / 24 mg/dL); homologação conferida pelo RT; migration `20261223000001_lacunas_lote2_ictericia`
+aplicada na homologação e, com o "ok produção" do RT, na produção (ficha nova na fila de aprovação).
+
+Próximo item do lote 2: reanimação neonatal.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
