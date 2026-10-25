@@ -1265,7 +1265,27 @@ Evidência: 1013 de 1013 testes clínicos; homologação conferida pelo RT; migr
 `20261220000001_lacunas_lote2_intermacao` aplicada na homologação e, com o "ok produção" do RT, na
 produção (ficha nova na fila de aprovação).
 
-Próximos itens do lote 2: queimadura do adulto, icterícia neonatal e reanimação neonatal.
+**Lote 2 — Queimadura do adulto em produção em 24/10/2026 (PRs #201 e #202).**
+- **Queimadura — superfície queimada e reposição (adulto)** (Condutas e cálculos — adulto, "Trauma
+  e ambientais"). O manual do HC não tem capítulo. Reposição pela ABA 2024 (J Burn Care Res
+  2024;45(3):565–589, PMID 38051821), lida no PDF enviado pelo RT: adultos com ≥ 20% de SCQ; início a
+  2 mL/kg/%SCQ (Questão 3, p. 580–581), Parkland de 4 mL/kg/%SCQ para comparação; vigilância perto
+  de 6 mL/kg/%SCQ ou 250 mL/kg em 24 h (Questão 10, p. 586); albumina e demais pontos.
+- **Boneco de frente e costas** (pedido do RT, PR #202): coluna "Adulto" da Figura 1 (Lund e
+  Browder) do livro do ICr, p. 160, com as mesmas superfícies da tela da criança. Errata por decisão
+  do RT: com A, B e C = 3,5 a coluna soma 95% (as de 0, 1 e 5 anos somam 100%; a diferença está na
+  coxa); os valores impressos foram mantidos.
+- Fora, porque a ABA 2024 não traz: divisão do volume nas primeiras 8 h e meta de diurese como
+  recomendação (0,5 mL/kg/h aparece só como alvo dos estudos). A reposição da criança (Parkland do
+  ICr) não é usada no adulto.
+- Ficha na versão 2026-10-24.2. Na produção, a .1 (migration `20261221000001`) foi marcada como
+  aplicada sem registrar a versão, porque a .2 a substituiu antes de chegar lá.
+
+Evidência: 1019 de 1019 testes clínicos; homologação conferida pelo RT (tela e boneco); migration
+`20261222000001_queimadura_adulto_boneco` aplicada na homologação e, com o "ok produção" do RT, na
+produção (versão .2 na fila de aprovação).
+
+Próximos itens do lote 2: icterícia neonatal e reanimação neonatal.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
