@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaP4, type DoseLivro } from './fonteP4.ts'
 import { positivoP5, type ItemLivro } from './fonteP5.ts'
 
@@ -8,8 +9,32 @@ import { positivoP5, type ItemLivro } from './fonteP5.ts'
 // as doses deles saem da Tabela 2 do Apêndice (p. 898–900), citadas como tal.
 // Ceftriaxona/cefotaxima no neonato: o capítulo não dá dose e o Apêndice não
 // contempla o período neonatal — a ferramenta não calcula para o RN.
+//
+// Versão .1 de 25/10/2026 (lacunas da Central, lote 3; decisão do RT de
+// 23/10/2026): lactente de 8 a 60 dias com o livro e a AAP 2021/PECARN lado a
+// lado. A AAP foi lida no site da revista e o PECARN no resumo do PubMed. As
+// doses continuam só as do livro do ICr.
 
-export const fichaFebreSemSinais = fichaP4('ped-febre-sem-sinais', 'Febre sem sinais localizatórios — criança', 'cap. 45, p. 461–470; Apêndice, p. 898–900')
+export const AAP_FEBRIL_2021: Fonte = {
+  citacao: 'Pantell RH, Roberts KB, Adams WG, et al. Clinical Practice Guideline: Evaluation and Management of Well-Appearing Febrile Infants 8 to 60 Days Old. Pediatrics. 2021;148(2):e2021052228. Elegibilidade e exclusões; marcadores inflamatórios nas notas das Figuras 1 a 3; KAS 1 a 21. Texto lido no site da revista.',
+  url: 'https://doi.org/10.1542/peds.2021-052228',
+  pediatrica: true,
+}
+
+export const PECARN_FEBRIL_2019: Fonte = {
+  citacao: 'Kuppermann N, Dayan PS, Levine DA, et al. A Clinical Prediction Rule to Identify Febrile Infants 60 Days and Younger at Low Risk for Serious Bacterial Infections. JAMA Pediatr. 2019;173(4):342–351. Regra e validação conferidas no resumo (PubMed 30776077).',
+  url: 'https://doi.org/10.1001/jamapediatrics.2018.5501',
+  pediatrica: true,
+}
+
+const baseFssl = fichaP4('ped-febre-sem-sinais', 'Febre sem sinais localizatórios — criança', 'cap. 45, p. 461–470; Apêndice, p. 898–900')
+
+export const fichaFebreSemSinais: Ficha = {
+  ...baseFssl,
+  versao: '2026-10-25.1',
+  fontes: [...baseFssl.fontes, AAP_FEBRIL_2021, PECARN_FEBRIL_2019],
+  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: AAP 2021 e PECARN 2019 ao lado do livro; doses só do ICr)',
+}
 
 export type FaixaFssl = '0-21d' | '22-60d' | '61-90d' | '3-24m' | 'fora'
 
@@ -89,6 +114,103 @@ export function coletaUrina(sexo: 'menina' | 'menino', marcados: Set<string>, id
   const n = CRITERIOS_MENINO.filter((c) => marcados.has(c.id)).length
   return n >= (circuncidado ? 3 : 2) ? 'coletar' : 'nao-indicada'
 }
+
+// ── AAP 2021 e PECARN 2019 (lactente de 8 a 60 dias) ───────────────────────
+
+export type FaixaAap = '8-21' | '22-28' | '29-60'
+
+/** Faixas da AAP 2021 (Figuras 1 a 3). Fora de 8 a 60 dias a diretriz não se aplica. */
+export function faixaAap2021(idadeDias: number): FaixaAap | null {
+  if (!Number.isFinite(idadeDias) || idadeDias < 8 || idadeDias > 60) return null
+  return idadeDias <= 21 ? '8-21' : idadeDias <= 28 ? '22-28' : '29-60'
+}
+
+export type MarcadoresInformados = { temperatura?: number; procalcitonina?: number; pcrMgL?: number; neutrofilos?: number }
+
+export type LeituraMarcadores = {
+  alterados: string[]
+  /** neutrófilos acima de 4.000 e até 5.200: dentro da faixa de corte que a AAP escreve */
+  neutrofilosNaFaixa: boolean
+  algumInformado: boolean
+}
+
+/**
+ * Marcadores inflamatórios da AAP 2021 (notas das Figuras 1 a 3): procalcitonina
+ * > 0,5 ng/mL, PCR > 20 mg/L e neutrófilos "> 4.000 a 5.200/mm³". De 22 a 60
+ * dias, sem procalcitonina, a temperatura > 38,5 °C também conta. Neutrófilos
+ * acima de 5.200 contam como alterados; entre 4.000 e 5.200 ficam marcados à
+ * parte, porque a diretriz dá uma faixa de corte.
+ */
+export function marcadoresAap2021(faixa: FaixaAap, m: MarcadoresInformados): LeituraMarcadores {
+  const ok = (x?: number): x is number => x !== undefined && Number.isFinite(x) && x > 0
+  const alterados: string[] = []
+  if (ok(m.procalcitonina) && m.procalcitonina > 0.5) alterados.push('procalcitonina > 0,5 ng/mL')
+  if (ok(m.pcrMgL) && m.pcrMgL > 20) alterados.push('PCR > 20 mg/L')
+  if (ok(m.neutrofilos) && m.neutrofilos > 5200) alterados.push('neutrófilos > 5.200/mm³')
+  if (faixa !== '8-21' && !ok(m.procalcitonina) && ok(m.temperatura) && m.temperatura > 38.5) alterados.push('temperatura > 38,5 °C (sem procalcitonina)')
+  return {
+    alterados,
+    neutrofilosNaFaixa: ok(m.neutrofilos) && m.neutrofilos > 4000 && m.neutrofilos <= 5200,
+    algumInformado: [m.procalcitonina, m.pcrMgL, m.neutrofilos].some(ok),
+  }
+}
+
+export type LeituraPecarn = 'baixo-risco' | 'nao-baixo-risco'
+
+/**
+ * Regra do PECARN (Kuppermann 2019), lactente de até 60 dias: baixo risco de
+ * infecção bacteriana grave com urina negativa, neutrófilos ≤ 4.090/µL e
+ * procalcitonina ≤ 1,71 ng/mL. Precisa dos três.
+ */
+export function pecarn2019(m: { urinaNegativa?: boolean; neutrofilos?: number; procalcitonina?: number }): LeituraPecarn | null {
+  if (m.urinaNegativa === undefined || !Number.isFinite(m.neutrofilos) || !Number.isFinite(m.procalcitonina)) return null
+  if (m.neutrofilos! < 0 || m.procalcitonina! < 0) return null
+  return m.urinaNegativa && m.neutrofilos! <= 4090 && m.procalcitonina! <= 1.71 ? 'baixo-risco' : 'nao-baixo-risco'
+}
+
+export const PECARN_DESEMPENHO = 'Validação: sensibilidade 97,7%, especificidade 60,0%, valor preditivo negativo 99,6%; nenhuma meningite bacteriana perdida, um bacteriêmico e dois com ITU classificados como baixo risco (resumo de Kuppermann 2019). Os autores pedem nova validação antes do uso clínico.'
+
+export const ELEGIBILIDADE_AAP = 'Lactente em bom estado geral, de 8 a 60 dias, nascido de 37 a < 42 semanas, com temperatura retal ≥ 38,0 °C em casa nas últimas 24 h ou no atendimento. Ficam de fora: prematuros; menores de 2 semanas com febre, infecção ou antibiótico materno no periparto; suspeita alta de herpes (ex.: vesículas); infecção bacteriana focal; bronquiolite clínica.'
+
+export type KasAap = { kas: string; texto: string; grau: string }
+
+/** KAS da AAP 2021 por faixa, resumidos (grau de evidência e força). */
+export const KAS_AAP_2021: Record<FaixaAap, KasAap[]> = {
+  '8-21': [
+    { kas: '1–2', texto: 'Urina por sondagem ou punção suprapúbica (cultura se exame positivo) e hemocultura', grau: 'A, forte' },
+    { kas: '3', texto: 'Pode dosar marcadores inflamatórios', grau: 'B, fraca' },
+    { kas: '4', texto: 'Colher liquor (células, proteína, glicose, Gram e cultura)', grau: 'A, forte' },
+    { kas: '5–6', texto: 'Antibiótico parenteral e observação hospitalar com equipe experiente em neonatos', grau: 'A, forte; B, moderada' },
+    { kas: '7a', texto: 'Suspender o antibiótico e dar alta com culturas negativas por 24–36 h, bebê bem e sem outro motivo de internação', grau: 'B, forte' },
+  ],
+  '22-28': [
+    { kas: '8–10', texto: 'Urina, hemocultura e marcadores inflamatórios', grau: 'A, forte; B, forte' },
+    { kas: '11b', texto: 'Colher liquor se algum marcador obtido estiver alterado', grau: 'B, moderada' },
+    { kas: '11a', texto: 'Pode colher liquor mesmo com marcadores normais, hemocultura e urocultura colhidas e bebê internado', grau: 'C, moderada' },
+    { kas: '12a', texto: 'Antibiótico parenteral internado se o liquor sugerir meningite ou a urina for positiva', grau: 'A, forte' },
+    { kas: '13a', texto: 'Pode ir para casa com urina normal, marcadores normais, liquor normal ou enterovírus positivo, orientação e reavaliação em 24 h garantidas', grau: 'B, moderada' },
+    { kas: '13b', texto: 'Internar se o liquor não foi colhido ou não é interpretável', grau: 'B, fraca' },
+  ],
+  '29-60': [
+    { kas: '15–17', texto: 'Urina (saco coletor ou jato aceitos para triagem; cultura por sondagem se positivo), hemocultura e marcadores inflamatórios', grau: 'A, forte; B, moderada' },
+    { kas: '18a', texto: 'Pode colher liquor se algum marcador estiver alterado', grau: 'C, fraca' },
+    { kas: '18b', texto: 'Não precisa colher liquor se todos os marcadores estiverem normais', grau: 'B, moderada' },
+    { kas: '19c', texto: 'Antibiótico oral se urina positiva, marcadores normais e liquor normal (se colhido)', grau: 'B, forte' },
+    { kas: '19d', texto: 'Sem antibiótico enquanto aguarda culturas se urina negativa e marcadores normais', grau: 'B, moderada' },
+    { kas: '20a–b', texto: 'Internar se o liquor estiver alterado; pode internar se algum marcador estiver alterado', grau: 'A, forte; B, moderada' },
+  ],
+}
+
+export const ERRATA_AAP_LIQUOR =
+  'Na AAP 2021 o título do KAS 11b diz "se mais de 1 marcador obtido estiver alterado" (C, moderada) e o quadro-resumo diz "se algum marcador obtido estiver positivo" (B, moderada). A ferramenta mostra o quadro-resumo e registra a divergência.'
+
+export const DIFERENCAS_ICR_AAP: { tema: string; livro: string; aap: string }[] = [
+  { tema: 'Faixas de idade', livro: '0–21 dias, 22–90 dias (corte em 60 para a ceftriaxona) e 3–24 meses (Figuras 1–3)', aap: '8–21, 22–28 e 29–60 dias; menos de 8 dias e prematuros ficam de fora' },
+  { tema: 'Marcadores', livro: 'PCR > 20 mg/L; neutrófilos > 4.000 abaixo de 90 dias; procalcitonina fora dos fluxogramas (p. 463–464)', aap: 'Procalcitonina > 0,5 ng/mL, PCR > 20 mg/L, neutrófilos > 4.000 a 5.200; temperatura > 38,5 °C conta sem procalcitonina (22–60 dias)' },
+  { tema: 'Liquor', livro: 'Fluxo de sepse com liquor até 21 dias; depois, conforme o hemograma (Figuras 1–2)', aap: '8–21 dias sempre; 22–28 dias se algum marcador alterado; 29–60 dias pode colher se algum marcador alterado' },
+  { tema: 'Antibiótico e internação', livro: 'Até 21 dias: internar e cefalosporina EV; urina alterada < 60 dias: ceftriaxona EV internado (Figuras 1–2)', aap: '29–60 dias com urina positiva e marcadores normais: antibiótico oral; urina negativa e marcadores normais: sem antibiótico enquanto aguarda culturas' },
+  { tema: 'Doses', livro: 'Doses do livro e do Apêndice (decisão do RT: só do ICr)', aap: 'Não entram na ferramenta' },
+]
 
 /** Condições que excluem o protocolo (p. 463). */
 export const EXCLUSOES: string[] = [
