@@ -13,7 +13,7 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
     { rotulo: 'Pneumologia e tromboembolismo', slugs: ['curb-65', 'crb-65', 'psi-port', 'wells-tep', 'genebra-revisado', 'years', 'pesi', 'spesi', 'wells-tvp', 'light'] },
     { rotulo: 'Neurologia', slugs: ['glasgow', 'four', 'nih-avc', 'abcd2'] },
     { rotulo: 'Gastroenterologia e hepatologia', slugs: ['glasgow-blatchford', 'aims65', 'rockall', 'child-pugh', 'meld-3', 'bisap', 'ranson', 'alvarado'] },
-    { rotulo: 'Terapia intensiva e sepse', slugs: ['sepse-adulto', 'news2', 'cam-icu', 'rass'] },
+    { rotulo: 'Terapia intensiva e sepse', slugs: ['sepse-adulto', 'sofa-2', 'news2', 'cam-icu', 'rass'] },
     { rotulo: 'Hematologia', slugs: ['4t-hit', 'civd-isth'] },
     { rotulo: 'Trauma', slugs: ['canadian-ct-head', 'iss', 'ottawa-tornozelo', 'ottawa-joelho'] },
     { rotulo: 'Nefrologia', slugs: ['ckd-epi', 'cockcroft-gault'] },

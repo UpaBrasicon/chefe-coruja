@@ -218,6 +218,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'sepse-adulto': '/plantonista/escores/sepse-adulto',
   'sgarbossa-modificado': '/plantonista/escores/sgarbossa-modificado',
   'sincope-canadense': '/plantonista/escores/sincope-canadense',
+  'sofa-2': '/plantonista/escores/sofa-2',
   'spesi': '/plantonista/escores/spesi',
   'timi-iamcsst': '/plantonista/escores/timi-iamcsst',
   'wells-tep': '/plantonista/escores/wells-tep',
