@@ -8,6 +8,7 @@ import { canadianCtHead } from './canadianCtHead.ts'
 import { cha2ds2va } from './cha2ds2va.ts'
 import { childPugh } from './childPugh.ts'
 import { civdIsth } from './civdIsth.ts'
+import { crb65 } from './crb65.ts'
 import { curb65 } from './curb65.ts'
 import { four } from './four.ts'
 import { genebraRevisado } from './genebraRevisado.ts'
@@ -39,6 +40,7 @@ import { mcisaac } from './mcisaac.ts'
 import { ottawaJoelho, ottawaTornozelo } from './ottawa.ts'
 import { quatroAt } from './quatroAt.ts'
 import { sgarbossaModificado } from './sgarbossaModificado.ts'
+import { spesi } from './spesi.ts'
 
 /** Todos os escores do pacote, para a Central e para os testes de conjunto. */
 export const ESCORES: Escore[] = [
@@ -83,4 +85,6 @@ export const ESCORES: Escore[] = [
   mcisaac,
   quatroAt,
   sgarbossaModificado,
+  spesi,
+  crb65,
 ]

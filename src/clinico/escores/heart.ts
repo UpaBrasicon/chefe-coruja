@@ -10,14 +10,15 @@ export const heart: Escore = {
   ficha: {
     id: 'heart',
     titulo: 'HEART — dor torácica no pronto-socorro',
-    versao: '2026-09-27.1',
+    versao: '2026-10-25.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Six AJ, Backus BE, Kelder JC. Chest pain in the emergency room: value of the HEART score. Neth Heart J. 2008;16(6):191–196.', url: 'https://doi.org/10.1007/BF03086144' },
       { citacao: 'Backus BE, Six AJ, Kelder JC, et al. A prospective validation of the HEART score for chest pain patients at the emergency department. Int J Cardiol. 2013;168(3):2153–2158.', url: 'https://doi.org/10.1016/j.ijcard.2013.01.255' },
       { citacao: 'Byrne RA, Rossello X, Coughlan JJ, et al. 2023 ESC Guidelines for the management of acute coronary syndromes. Eur Heart J. 2023;44(38):3720–3826.', url: 'https://doi.org/10.1093/eurheartj/ehad191' },
+      { citacao: 'de Barros e Silva PGM, Soeiro AM, Ornelas CE, et al. Diretriz Brasileira de Atendimento à Dor Torácica na Unidade de Emergência – 2025. Arq Bras Cardiol. 2025;122(9):e20250620. HEART como escore clínico preferencial (p. 29–30).', url: 'https://doi.org/10.36660/abc.20250620' },
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '25/10/2026 (lacunas da Central, lote 3: diretriz brasileira de dor torácica 2025)',
   },
   descricao: 'Risco de evento cardíaco maior em 6 semanas',
   itens: [
@@ -55,6 +56,7 @@ export const heart: Escore = {
         'A troponina do escore é a da chegada. Uma segunda medida dentro da janela do protocolo pode mudar a pontuação.',
         'HEART baixo não exclui dor torácica de causa não coronariana grave: dissecção, embolia pulmonar e pneumotórax não entram neste escore.',
         'Os percentuais são da coorte de validação holandesa e variam com a prevalência local de doença coronariana.',
+        'A diretriz brasileira de dor torácica de 2025 indica o HEART como escore clínico preferencial (classe I, nível B; p. 29–30).',
       ],
     }
   },

@@ -10,7 +10,7 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
   // HAS-BLED, HEART e outros"). Só agrupa; cada escore segue no mesmo endereço.
   escores: [
     { rotulo: 'Cardiologia', slugs: ['heart', 'timi', 'timi-iamcsst', 'grace', 'killip', 'cha2ds2-va', 'has-bled', 'sincope-san-francisco', 'sincope-canadense', 'duke-endocardite', 'sgarbossa-modificado'] },
-    { rotulo: 'Pneumologia e tromboembolismo', slugs: ['curb-65', 'psi-port', 'wells-tep', 'genebra-revisado', 'years', 'pesi', 'wells-tvp', 'light'] },
+    { rotulo: 'Pneumologia e tromboembolismo', slugs: ['curb-65', 'crb-65', 'psi-port', 'wells-tep', 'genebra-revisado', 'years', 'pesi', 'spesi', 'wells-tvp', 'light'] },
     { rotulo: 'Neurologia', slugs: ['glasgow', 'four', 'nih-avc', 'abcd2'] },
     { rotulo: 'Gastroenterologia e hepatologia', slugs: ['glasgow-blatchford', 'aims65', 'rockall', 'child-pugh', 'meld-3', 'bisap', 'ranson', 'alvarado'] },
     { rotulo: 'Terapia intensiva e sepse', slugs: ['sepse-adulto', 'news2', 'cam-icu', 'rass'] },
