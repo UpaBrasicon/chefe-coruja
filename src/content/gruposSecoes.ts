@@ -43,7 +43,7 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
     { rotulo: 'Triagem e escores', slugs: ['pops', 'pews', 'glasgow-pediatrico', 'pecarn-menor-2-anos', 'pecarn-2-anos-ou-mais', 'phoenix'] },
     { rotulo: 'Respiratório', slugs: ['asma-pediatrica', 'vias-aereas-superiores-ped', 'bronquiolite-ped', 'pneumonia-ped', 'pram'] },
     { rotulo: 'Neurológico', slugs: ['crise-epileptica-pediatrica', 'tce-grave-pediatrico', 'coma-hic-ped', 'meningite-ped'] },
-    { rotulo: 'Neonato', slugs: ['ictericia-neonatal'] },
+    { rotulo: 'Neonato', slugs: ['reanimacao-neonatal', 'ictericia-neonatal'] },
     { rotulo: 'Hidratação, eletrólitos e metabólico', slugs: ['fluidoterapia-manutencao-ped', 'desidratacao-diarreia-ped', 'sodio-ped', 'eletrolitos-ped', 'acidobase-ped', 'cad-ehh-ped', 'hipoglicemia-ped', 'insuficiencia-adrenal-ped'] },
     { rotulo: 'Cardiovascular e renal', slugs: ['insuficiencia-cardiaca-ped', 'crise-hipertensiva-ped', 'kawasaki-ped', 'injuria-renal-ped', 'tfg-schwartz-ped', 'glomerulopatias-shu-ped', 'infeccao-urinaria-ped'] },
     { rotulo: 'Infecções', slugs: ['dengue-ped', 'febre-sem-sinais-ped', 'febre-imunodeprimido-ped', 'choque-toxico-partes-moles-ped', 'artrite-osteomielite-ped'] },

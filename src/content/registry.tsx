@@ -76,7 +76,7 @@ export const SECOES: SectionDef[] = [
   {
     slug: 'pediatria',
     label: 'Pediatria',
-    description: 'PS Pediatria ICr-HCFMUSP: doses, infusões, RCP, via aérea, hidratação e escores (até antes dos 14 anos; sem neonato).',
+    description: 'PS Pediatria ICr-HCFMUSP: doses, infusões, RCP, via aérea, hidratação e escores (até antes dos 14 anos; neonato só na icterícia e na reanimação em sala de parto).',
     icon: Baby,
     tools: [
       t('bolus', 'Doses por peso', 'Apêndice do PS Pediatria ICr: emergência, RCP, sedação e antídotos.', sobDemanda(() => import('@/pages/plantonista/pediatria/BolusPediatrico'), 'BolusPediatrico'), ['pediatria', 'criança', 'dose', 'peso', 'emergência', 'antídoto']),
@@ -105,6 +105,7 @@ export const SECOES: SectionDef[] = [
       t('cad-ehh-ped', 'Cetoacidose diabética e EHH — criança', 'Critérios, gravidade, Quadro 6, fluidos, K, insulina EV/SC, bicarbonato, edema cerebral.', sobDemanda(() => import('@/pages/plantonista/pediatria/CadEhhPed'), 'CadEhhPed'), ['cetoacidose', 'CAD', 'EHH', 'diabetes', 'insulina', 'potássio', 'edema cerebral', 'manitol']),
       t('hipoglicemia-ped', 'Hipoglicemia — glicose e glucagon por peso', 'Glicose VO/EV por idade (texto e Tabela 2), glucagon, VIG → mL/h.', sobDemanda(() => import('@/pages/plantonista/pediatria/HipoglicemiaPed'), 'HipoglicemiaPed'), ['hipoglicemia', 'glicose', 'soro glicosado', 'glucagon', 'VIG', 'TIG']),
       t('acidobase-ped', 'Distúrbios acidobásicos — criança', 'Leitura em 3 etapas, compensação (Tabela 3), ânion-gap, ΔAG/ΔHCO3, bicarbonato 1,4%, HCl.', sobDemanda(() => import('@/pages/plantonista/pediatria/AcidoBasePed'), 'AcidoBasePed'), ['gasometria', 'acidose', 'alcalose', 'ânion-gap', 'compensação', 'bicarbonato', 'delta-delta']),
+      t('reanimacao-neonatal', 'Reanimação do RN ≥ 34 semanas em sala de parto (SBP 2026)', 'Sequência, SpO2 alvo, cânula e doses de adrenalina diluída e de SF por peso.', sobDemanda(() => import('@/pages/plantonista/pediatria/ReanimacaoNeonatal'), 'ReanimacaoNeonatal'), ['reanimação neonatal', 'sala de parto', 'recém-nascido', 'RN', 'VPP', 'adrenalina', 'massagem cardíaca', 'Minuto de Ouro', 'SBP', 'PRN']),
       t('ictericia-neonatal', 'Icterícia neonatal ≥ 35 semanas — fototerapia (AAP 2022)', 'Limiares hora a hora de fototerapia, escalonamento de cuidado e exsanguineotransfusão por IG e fator de risco de neurotoxicidade.', sobDemanda(() => import('@/pages/plantonista/pediatria/IctericiaNeonatal'), 'IctericiaNeonatal'), ['icterícia', 'neonatal', 'recém-nascido', 'bilirrubina', 'hiperbilirrubinemia', 'fototerapia', 'exsanguineotransfusão', 'kernicterus', 'AAP']),
       t('queimadura-ped', 'Queimadura — superfície queimada e Parkland (criança)', 'Lund e Browder por região e idade, Parkland (3 mL/kg/%SCQ) com manutenção e diurese-alvo.', sobDemanda(() => import('@/pages/plantonista/pediatria/QueimaduraPed'), 'QueimaduraPed'), ['queimadura', 'SCQ', 'Lund-Browder', 'Parkland', 'grande queimado', 'reposição volêmica']),
       t('intoxicacoes-ped', 'Intoxicações exógenas — criança', 'Descontaminação, eliminação e antídotos por peso, toxíndromes e tabela de antídotos.', sobDemanda(() => import('@/pages/plantonista/pediatria/IntoxicacoesPed'), 'IntoxicacoesPed'), ['intoxicação', 'envenenamento', 'antídoto', 'carvão ativado', 'toxíndrome', 'acetilcisteína', 'atropina', 'pralidoxima']),
