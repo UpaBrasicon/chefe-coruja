@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  CCP, CRIOPRECIPITADO, DOAC_PAGINA, ERRATA_DOAC, ERRATA_HIP_CIRURGIA, ERRATA_VITAMINA_K, HIP_METAS, PLASMA, PROTAMINA_REVERSAO,
+  CCP, CRIOPRECIPITADO, DIVERGENCIA_ANDEXANETE, DOAC_PAGINA, ERRATA_DOAC, ERRATA_HIP_CIRURGIA, ERRATA_VITAMINA_K, HIP_METAS, PLASMA, PROTAMINA_REVERSAO,
   REVERSAO_DOAC, SANGRAMENTO_MAIOR, TABELA_PROTAMINA, VITAMINA_K, ccpUnidades, conferirPasHip, crioUnidades,
   fichaReversaoAnticoagulacaoAdulto, plasmaMl, protamina, reversaoVarfarina, type Faixa, type Sangramento, type TempoHeparina,
 } from '@/clinico/adulto/reversaoAnticoagulacao'
@@ -103,6 +103,16 @@ export function ReversaoAnticoagulacaoAdulto() {
           </div>
         ))}
         <p className="text-apoio text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_DOAC}</p>
+      </Bloco>
+
+      <Bloco titulo="Andexanete — divergência (ANNEXA-I, 2024)" descricao="O manual não cita o andexanete. A tela mostra o resultado do estudo, sem dose.">
+        <p className="text-apoio text-tinta-apoio">{DIVERGENCIA_ANDEXANETE.populacao}.</p>
+        <ul className="grid gap-1 text-apoio">
+          <li><span className="font-medium">Eficácia hemostática:</span> {DIVERGENCIA_ANDEXANETE.eficacia.andexanete} com andexanete × {DIVERGENCIA_ANDEXANETE.eficacia.usual} com cuidado usual — {DIVERGENCIA_ANDEXANETE.eficacia.texto}.</li>
+          <li><span className="font-medium">Trombose:</span> {DIVERGENCIA_ANDEXANETE.trombose.andexanete} × {DIVERGENCIA_ANDEXANETE.trombose.usual} — {DIVERGENCIA_ANDEXANETE.trombose.texto}; AVC isquêmico {DIVERGENCIA_ANDEXANETE.avcIsquemico.andexanete} × {DIVERGENCIA_ANDEXANETE.avcIsquemico.usual}.</li>
+          <li>{DIVERGENCIA_ANDEXANETE.semDiferenca}.</li>
+        </ul>
+        <p className="text-apoio text-tinta-sussurro">{DIVERGENCIA_ANDEXANETE.conclusao}</p>
       </Bloco>
 
       <Bloco titulo="Hemorragia intraparenquimatosa (cap. 39, p. 543–549)" descricao="O escore ICH está na tela própria.">
