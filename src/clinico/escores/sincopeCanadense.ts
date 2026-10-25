@@ -42,7 +42,7 @@ export const sincopeCanadense: Escore = {
     const [cat, estado] = total <= -2 ? ['muito baixo', 0] : total <= 0 ? ['baixo', 0] : total <= 3 ? ['médio', 1] : total <= 5 ? ['alto', 2] : ['muito alto', 2]
     return {
       rotulo: 'Canadian Syncope Risk Score',
-      valor: String(total).replace('-', '−'),
+      valor: String(total),
       unidade: 'de −3 a 11',
       nota: `risco ${cat} de evento grave em 30 dias`,
       estado: estado as 0 | 1 | 2,
