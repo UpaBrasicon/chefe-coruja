@@ -1381,7 +1381,23 @@ Evidência: 1056 de 1056 testes clínicos; homologação conferida pelo RT; migr
 `20261227000001_lacunas_lote3_levetiracetam` aplicada na homologação e, com o "ok produção" do RT,
 na produção (versão 2026-10-25.1 na fila de aprovação).
 
-Próximo no lote 3: Kawasaki pela AHA 2024.
+**Lote 3 — Kawasaki pela AHA 2024 em produção em 25/10/2026 (PR #213).**
+- Fonte: declaração científica da AHA 2024 (Jone et al., Circulation 2024;150(23):e481–e500), lida
+  no PDF enviado pelo RT (o site da revista pediu verificação anti-robô); página = página da revista.
+  O livro do ICr (cap. 70) segue como base.
+- Alto risco de aneurisma: idade < 6 meses ou Z ≥ 2,5 no diagnóstico (p. e482, e489) e choque do
+  Kawasaki (p. e491); a tela avisa que a AHA considera intensificar a terapia inicial, sem ensaio
+  randomizado de eficácia. Escore de Son não calculado (item de raça, como o STONE).
+- Doses da Tabela 3 (p. e489) por peso: imunoglobulina, AAS, prednisolona (RAISE) e
+  metilprednisolona (norte-americano), máximo 60 mg/dia, e infliximabe 10 mg/kg (o livro traz 5 mg/kg).
+- Tabela "AHA 2024 × livro do ICr" com nove temas; errata do aneurisma gigante (≥ 8 mm na Tabela 1 ×
+  > 8 mm na Tabela 2; a ferramenta segue o livro, > 8 mm).
+
+Evidência: 1061 de 1061 testes clínicos; homologação conferida pelo RT; CI verde; migration
+`20261228000001_lacunas_lote3_kawasaki` aplicada na homologação e, com o "ok produção" do RT, na
+produção (versão 2026-10-25.1 na fila de aprovação).
+
+Próximo no lote 3: SOFA-2 em paralelo.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
 import {
-  ESMOLOL_EH, METAS_EH, addRs, esmololEH, fichaEmergenciaHipertensivaAdulto, fichaSindromeAorticaAdulto, hidralazinaSaldo, linhaDiametro,
+  ESMOLOL_EH, MAGNESIO_PE, METAS_EH, OMS_MCPC_2017, TOXICIDADE_MAGNESIO, addRs, mlSulfatoMagnesio, esmololEH, fichaEmergenciaHipertensivaAdulto, fichaSindromeAorticaAdulto, hidralazinaSaldo, linhaDiametro,
   nitroglicerinaMlH, nitroprussiatoMlH, pamAlvo, regraGeralEH,
 } from './emergenciaHipertensiva.ts'
 
@@ -70,4 +70,30 @@ test('Aorta: Tabela 3 por diâmetro (p. 284)', () => {
   assert.equal(linhaDiametro(3.5), null)
   assert.equal(linhaDiametro(4.2)!.total, '5,3%')
   assert.equal(linhaDiametro(6.5)!.morte, '10,8%')
+})
+
+// ── Sulfato de magnésio na pré-eclâmpsia grave e eclâmpsia (OMS; lote 3) ──
+
+test('magnésio: ficha .1 com o manual da OMS ao lado do manual do HC e da DBHA', () => {
+  assert.equal(fichaEmergenciaHipertensivaAdulto.versao, '2026-10-25.1')
+  assert.ok(fichaEmergenciaHipertensivaAdulto.fontes.includes(OMS_MCPC_2017))
+  assert.match(OMS_MCPC_2017.citacao, /Box S-4.*p\. S-59/)
+})
+test('magnésio: volumes do Box S-4 — 20% = 0,2 g/mL e 50% = 0,5 g/mL', () => {
+  assert.equal(mlSulfatoMagnesio(MAGNESIO_PE.ev.ataque), 8)
+  assert.equal(mlSulfatoMagnesio(MAGNESIO_PE.im.ataqueEv), 20)
+  assert.equal(mlSulfatoMagnesio(MAGNESIO_PE.im.ataqueIm), 20)
+  assert.equal(mlSulfatoMagnesio(MAGNESIO_PE.im.manutencao), 10)
+  assert.equal(mlSulfatoMagnesio(MAGNESIO_PE.recorrencia.dose), 4)
+})
+test('magnésio: doses fixas da OMS (4 g + 1 g/h EV; 4 g EV + 10 g IM e 5 g IM 4/4 h)', () => {
+  assert.equal(MAGNESIO_PE.ev.ataque.g, 4)
+  assert.equal(MAGNESIO_PE.ev.manutencaoGH, 1)
+  assert.equal(MAGNESIO_PE.im.ataqueIm.g, 10)
+  assert.equal(MAGNESIO_PE.im.intervaloH, 4)
+  assert.match(MAGNESIO_PE.duracao, /24 horas após o parto ou a última convulsão/)
+})
+test('magnésio: sinais para suspender e gluconato de cálcio 1 g (Box S-5)', () => {
+  assert.equal(TOXICIDADE_MAGNESIO.suspender.length, 3)
+  assert.equal(TOXICIDADE_MAGNESIO.antidoto.ml, 10)
 })

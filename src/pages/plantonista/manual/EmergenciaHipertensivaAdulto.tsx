@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  DBHA_2025_ALVOS, DIFERENCAS_EH_2025, INDISPONIVEIS_BRASIL_DBHA, METOPROLOL_EH_2025, QUADRO_11_4, esmololDbha2025, CAPTOPRIL_SEM_DOMH, DOMH, ERRATA_EH, ESMOLOL_EH, HIDRALAZINA_EH, METAS_EH, NITROGLICERINA_EH, NITROPRUSSIATO_EH,
+  DBHA_2025_ALVOS, DIFERENCAS_EH_2025, INDISPONIVEIS_BRASIL_DBHA, MAGNESIO_PE, METOPROLOL_EH_2025, QUADRO_11_4, RECOMENDACAO_MAGNESIO, TOXICIDADE_MAGNESIO, esmololDbha2025, mlSulfatoMagnesio, CAPTOPRIL_SEM_DOMH, DOMH, ERRATA_EH, ESMOLOL_EH, HIDRALAZINA_EH, METAS_EH, NITROGLICERINA_EH, NITROPRUSSIATO_EH,
   esmololEH, fichaEmergenciaHipertensivaAdulto, hidralazinaSaldo, nitroglicerinaMlH, nitroprussiatoMlH, pamAlvo, regraGeralEH,
 } from '@/clinico/adulto/emergenciaHipertensiva'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -108,6 +108,35 @@ export function EmergenciaHipertensivaAdulto() {
         <p className="text-apoio text-tinta-sussurro">
           Labetalol, nicardipina e clevidipina não estão na Tabela 3; o livro registra que labetalol e nicardipina EV não estão disponíveis no Brasil (cap. 38, p. 519).
         </p>
+      </Bloco>
+
+      <Bloco titulo="Sulfato de magnésio — pré-eclâmpsia grave e eclâmpsia (OMS)" descricao="O manual do HC não traz o esquema; a DBHA 2025 recomenda o magnésio sem dar dose. Doses fixas, não por peso.">
+        <LinhaManual
+          origem="A OMS traz"
+          nome="Esquema EV"
+          texto={`${MAGNESIO_PE.ev.texto}. ${MAGNESIO_PE.duracao}`}
+          conta={<><strong>{br(mlSulfatoMagnesio(MAGNESIO_PE.ev.ataque), 0)} mL</strong> a 50% no ataque · {MAGNESIO_PE.ev.manutencaoGH} g/h</>}
+          pagina={MAGNESIO_PE.pagina}
+          nota={MAGNESIO_PE.nota}
+        />
+        <LinhaManual
+          origem="A OMS traz"
+          nome="Esquema IM"
+          texto={`${MAGNESIO_PE.im.texto}. ${MAGNESIO_PE.duracao}`}
+          conta={<><strong>{br(mlSulfatoMagnesio(MAGNESIO_PE.im.ataqueEv), 0)} mL</strong> a 20% EV · <strong>{br(mlSulfatoMagnesio(MAGNESIO_PE.im.ataqueIm), 0)} mL</strong> a 50% IM ({br(mlSulfatoMagnesio(MAGNESIO_PE.im.ataqueIm) / 2, 0)} mL em cada nádega) · manutenção {br(mlSulfatoMagnesio(MAGNESIO_PE.im.manutencao), 0)} mL a 50% de {MAGNESIO_PE.im.intervaloH}/{MAGNESIO_PE.im.intervaloH} h</>}
+          pagina={MAGNESIO_PE.pagina}
+        />
+        <LinhaManual
+          origem="A OMS traz"
+          nome="Convulsão recorrente"
+          texto={MAGNESIO_PE.recorrencia.texto}
+          conta={<strong>{br(mlSulfatoMagnesio(MAGNESIO_PE.recorrencia.dose), 0)} mL a 50%</strong>}
+          pagina={MAGNESIO_PE.pagina}
+        />
+        <p className="text-apoio text-tinta-apoio">Antes de cada nova dose, suspender ou adiar se: {TOXICIDADE_MAGNESIO.suspender.join('; ')}. {TOXICIDADE_MAGNESIO.antidoto.texto} ({TOXICIDADE_MAGNESIO.pagina}).</p>
+        <ul className="grid gap-1 text-apoio text-tinta-sussurro">
+          {RECOMENDACAO_MAGNESIO.map((r) => <li key={r.fonte}><span className="font-medium text-tinta">{r.fonte}:</span> {r.texto} ({r.forca}).</li>)}
+        </ul>
       </Bloco>
 
       <Bloco titulo="Errata">

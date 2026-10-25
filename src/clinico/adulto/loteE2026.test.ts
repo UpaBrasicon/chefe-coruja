@@ -25,7 +25,8 @@ test('lote E: fichas cardio na versão .1 de 28/09 com o manual como primeira fo
     [fichaMarcaPassoAdulto, /cardiac pacing/],
   ]
   for (const [f, re] of casos) {
-    assert.equal(f.versao, '2026-09-28.1', f.id)
+    // a emergência hipertensiva ganhou o sulfato de magnésio (OMS) na .1 de 25/10/2026
+    assert.equal(f.versao, f === fichaEmergenciaHipertensivaAdulto ? '2026-10-25.1' : '2026-09-28.1', f.id)
     assert.match(f.fontes[0].citacao, /Manual de Medicina de Emergência/, f.id)
     assert.ok(f.fontes.some((x) => re.test(x.citacao)), f.id)
   }
