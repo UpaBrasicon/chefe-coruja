@@ -35,6 +35,7 @@ import { ottawaJoelho, ottawaTornozelo } from '@/clinico/escores/ottawa'
 import { quatroAt } from '@/clinico/escores/quatroAt'
 import { qtcAdulto } from '@/clinico/adulto/qtc'
 import { sgarbossaModificado } from '@/clinico/escores/sgarbossaModificado'
+import { sofa2 } from '@/clinico/escores/sofa2'
 import { spesi } from '@/clinico/escores/spesi'
 import { EscoreTela } from '@/components/plantonista/EscoreTela'
 
@@ -81,3 +82,4 @@ export const Qtc = () => <EscoreTela escore={qtcAdulto} />
 export const SgarbossaModificado = () => <EscoreTela escore={sgarbossaModificado} />
 export const Spesi = () => <EscoreTela escore={spesi} />
 export const Crb65 = () => <EscoreTela escore={crb65} />
+export const Sofa2 = () => <EscoreTela escore={sofa2} />

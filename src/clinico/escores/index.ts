@@ -40,6 +40,7 @@ import { mcisaac } from './mcisaac.ts'
 import { ottawaJoelho, ottawaTornozelo } from './ottawa.ts'
 import { quatroAt } from './quatroAt.ts'
 import { sgarbossaModificado } from './sgarbossaModificado.ts'
+import { sofa2 } from './sofa2.ts'
 import { spesi } from './spesi.ts'
 
 /** Todos os escores do pacote, para a Central e para os testes de conjunto. */
@@ -87,4 +88,5 @@ export const ESCORES: Escore[] = [
   sgarbossaModificado,
   spesi,
   crb65,
+  sofa2,
 ]
