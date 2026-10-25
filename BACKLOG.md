@@ -1411,7 +1411,21 @@ Evidência: 1066 de 1066 testes clínicos; homologação conferida pelo RT; CI v
 `20261229000001_lacunas_lote3_sofa2` aplicada na homologação e, com o "ok produção" do RT, na
 produção (versão 2026-10-25.1 na fila de aprovação).
 
-Próximo no lote 3: magnésio na pré-eclâmpsia (ACOG).
+**Lote 3 — Sulfato de magnésio na pré-eclâmpsia em produção em 25/10/2026 (PR #218).**
+- Fonte da dose: manual da OMS "Managing complications in pregnancy and childbirth" (2ª ed., 2017),
+  Box S-4 (p. S-59) e Box S-5 (p. S-60), PDF lido; é o documento que as recomendações da OMS de 2011
+  (12 a 15) indicam para a administração. A ACOG PB 222 não pôde ser lida (texto fechado); o manual
+  do HC não traz o esquema; a DBHA 2025 recomenda o magnésio (forte, moderada; p. 95 e 98) sem dose.
+- Emergência hipertensiva ganha o bloco do sulfato de magnésio: esquema EV (4 g a 50% + 1 g/h) e IM
+  (4 g a 20% EV em 5 min + 10 g a 50% IM; 5 g IM de 4/4 h), recorrência (2 g em 5 min), 24 h após o
+  parto ou a última convulsão, com volume em mL; sinais para suspender e gluconato de cálcio 1 g.
+  Doses fixas; o tempo do ataque EV e o preparo da manutenção não estão na fonte e não são calculados.
+
+Evidência: 1070 de 1070 testes clínicos; homologação conferida pelo RT; migration
+`20261230000001_lacunas_lote3_magnesio` aplicada na homologação e, com o "ok produção" do RT, na
+produção (versão 2026-10-25.1 na fila de aprovação).
+
+Próximo no lote 3: anafilaxia pela WAO 2020 e pelo Practice Parameter 2023.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
