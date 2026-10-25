@@ -10,9 +10,14 @@ import { fichaP2, type DosePeso, type Faixa } from './fonteP2.ts'
 // documento oficial "Destaques das Diretrizes 2025" (edição Heart & Stroke,
 // p. 11–15); o texto integral do Part 8 não pôde ser aberto. Doses e cargas
 // continuam as do livro (os destaques não as alteram).
+//
+// Versão .2 de 25/10/2026 (lacunas da Central, lote 3): o Part 8 foi lido no
+// texto integral publicado pela AHA em cpr.heart.org. As doses e cargas do quadro
+// da Figura 2 conferem com o livro; entram o teto de 1 mg da epinefrina e os
+// temas que os Destaques não traziam.
 
 export const AHA_AAP_2025: Fonte = {
-  citacao: 'Lasa JJ, Dhillon GS, Duff JP, et al. Part 8: Pediatric Advanced Life Support: 2025 American Heart Association and American Academy of Pediatrics Guidelines for CPR and ECC. Circulation. 2025;152(16 Suppl 2):S479–S537; e Part 6 (PBLS). Lidos em: American Heart Association. Highlights of the 2025 AHA Guidelines for CPR and ECC, Heart & Stroke edition, p. 11–15.',
+  citacao: 'Lasa JJ, Dhillon GS, Duff JP, Hayes J, Kamath-Rayne BD, Levy A, Mahgoub M, Morgan RW, McCormick T, Roberts JS, Ross CE, Schexnayder SM, Sweberg T, Valdes SO, Topjian AA. Part 8: pediatric advanced life support: 2025 American Heart Association Guidelines for Cardiopulmonary Resuscitation and Emergency Cardiovascular Care. Circulation. 2025;152(suppl 2):S479–S537. Texto integral em cpr.heart.org (recomendações e quadro da Figura 2); Part 6 (PBLS) pelos Destaques oficiais (Highlights of the 2025 AHA Guidelines for CPR and ECC, Heart & Stroke edition, p. 11–15).',
   url: 'https://doi.org/10.1161/CIR.0000000000001368',
   pediatrica: true,
 }
@@ -21,9 +26,9 @@ const baseRcp = fichaP2('ped-rcp-icr', 'RCP pediátrica — parâmetros, choque 
 
 export const fichaRcpPediatrica: Ficha = {
   ...baseRcp,
-  versao: '2026-09-28.1',
+  versao: '2026-10-25.1',
   fontes: [...baseRcp.fontes, AHA_AAP_2025],
-  revisadoEm: '28/09/2026 (AHA/AAP 2025 conferida pelos Destaques oficiais; livro do ICr mantido como base)',
+  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: Part 8 lido no texto integral; livro do ICr mantido como base)',
 }
 
 /** Alvo de pressão diastólica durante a RCP com linha arterial (AHA 2025, novo): ≥ 25 mmHg no lactente; ≥ 30 mmHg a partir de 1 ano. */
@@ -31,7 +36,7 @@ export function metaPadRcp2025(faixa: FaixaRcp): number {
   return faixa === 'lactente' ? 25 : 30
 }
 
-export type ItemPals2025 = { tema: string; aha: string; estado: 'novo' | 'atualizado'; pagina: string; livro: string }
+export type ItemPals2025 = { tema: string; aha: string; estado: 'novo' | 'atualizado' | 'confere'; pagina: string; livro: string }
 
 export const DIRETRIZ_PALS_2025: ItemPals2025[] = [
   { tema: 'Compressão no lactente', aha: 'Comprimir o esterno com a base de 1 mão ou com os 2 polegares e mãos envolvendo o tórax; se não conseguir envolver o tórax, base de 1 mão. A técnica de 2 dedos não é mais recomendada', estado: 'atualizado', pagina: 'p. 11 (PBLS)', livro: '1 socorrista: 2 dedos (ou 2 polegares); 2 ou mais: 2 polegares (p. 26)' },
@@ -44,7 +49,12 @@ export const DIRETRIZ_PALS_2025: ItemPals2025[] = [
   { tema: 'Pós-PCR — pressão', aha: 'Manter PAS e PAM acima do percentil 10 para a idade; hipotensão (< p5) é comum (25–50%) e associada a pior sobrevida', estado: 'atualizado', pagina: 'p. 14', livro: 'PA sistólica acima do percentil 5 (p. 35, 37)' },
   { tema: 'Prognóstico neurológico', aha: 'Usar múltiplas modalidades; reflexo de tosse/vômito ou resposta à dor isolados não são bem estabelecidos; EEG até 72 h pode apoiar o prognóstico junto com outros critérios', estado: 'atualizado', pagina: 'p. 15', livro: '—' },
   { tema: 'Sobrevivência', aha: 'Avaliar necessidades físicas, cognitivas e emocionais no 1º ano após a PCR', estado: 'atualizado', pagina: 'p. 15', livro: '—' },
-  { tema: 'Doses e cargas', aha: 'Os Destaques 2025 não alteram as doses da Tabela 2 nem as cargas de desfibrilação do livro; o texto integral do Part 8 não foi aberto', estado: 'atualizado', pagina: '—', livro: 'Tabela 2 (p. 31–32); 2 → 4 → 4–10 J/kg (p. 35)' },
+  { tema: 'Doses e cargas', aha: 'Epinefrina 0,01 mg/kg IV/IO (0,1 mg/mL), máximo 1 mg; amiodarona 5 mg/kg em bolo (máximo 300 mg), até 3 doses (máximo 150 mg nas seguintes), ou lidocaína 1 mg/kg; choques de 2 J/kg, 4 J/kg e depois 4 J/kg ou mais, até 10 J/kg ou a dose de adulto. Mesmas doses por kg e cargas do livro', estado: 'confere', pagina: 'Part 8, Figura 2', livro: 'Tabela 2 (p. 31–32); 2 → 4 → 4–10 J/kg (p. 35)' },
+  { tema: 'Epinefrina no ritmo chocável', aha: 'Depois de 2 tentativas de desfibrilação, ou antes só quando a desfibrilação rápida não é possível (2b); a cada 3–5 min até o retorno da circulação (2b)', estado: 'novo', pagina: 'Part 8, drogas na PCR', livro: 'repetir a cada 3 a 5 min (p. 31)' },
+  { tema: 'Relação compressão-ventilação', aha: 'Sem via aérea avançada: 15:2 com 2 socorristas antes da puberdade; 30:2 com 2 socorristas a partir do início da puberdade; 30:2 com 1 socorrista em qualquer idade', estado: 'confere', pagina: 'Part 8, Figura 2', livro: '30:2 com 1 socorrista; 15:2 com 2 ou mais; adolescente pelas diretrizes de adulto (p. 25–26)' },
+  { tema: 'Via aérea na PCR fora do hospital', aha: 'Ventilação com bolsa-valva-máscara é razoável em vez de intubação ou dispositivo supraglótico (2a); no hospital, sem via aérea avançada, qualquer das duas pode ser razoável (2b). Com via aérea avançada, 20–30 ventilações/min (2b)', estado: 'novo', pagina: 'Part 8, ventilação na RCP', livro: '1 ventilação a cada 2 a 3 s com via aérea avançada (p. 26)' },
+  { tema: 'Bicarbonato e cálcio', aha: 'Não são de rotina (3: sem benefício), salvo situações especiais: bicarbonato na intoxicação por bloqueador de canal de sódio ou na hipercalemia; cálcio na hipocalcemia, na intoxicação por bloqueador de canal de cálcio ou na hipercalemia', estado: 'confere', pagina: 'Part 8, drogas na PCR', livro: 'Tabela 2 (p. 31–32)' },
+  { tema: 'Temperatura pós-PCR', aha: 'Comatoso: monitorar a temperatura central (1) e evitar acima de 37,5 °C (1). De 24 horas a 18 anos: controle direcionado por 5 dias, 32–34 °C seguido de 36–37,5 °C, ou só 36–37,5 °C (2a)', estado: 'atualizado', pagina: 'Part 8, pós-PCR', livro: 'normotermia 36 a 37,5 °C ou hipotermia leve 32 a 34 °C; evitar febre (p. 35, 37)' },
 ]
 
 // ── Parâmetros do suporte básico (p. 25–31, Tabela 1) ──
@@ -164,9 +174,11 @@ export const GRUPOS_RCP: Record<GrupoRcp, string> = {
 export type DoseRcp = DosePeso & { grupo: GrupoRcp }
 
 export const DROGAS_RCP: DoseRcp[] = [
-  { grupo: 'pcr', id: 'epinefrina-iv', nome: 'Epinefrina IV/IO', unidade: 'mg', porKg: [0.01, 0.01], porMl: 0.1, solucao: '1:10.000 (1 ampola + 9 mL de SF ou AD) — 0,1 mL/kg', via: 'IV/IO; repetir a cada 3 a 5 min', pagina: 'p. 31 (Tabela 2)' },
+  { grupo: 'pcr', id: 'epinefrina-iv', nome: 'Epinefrina IV/IO', unidade: 'mg', porKg: [0.01, 0.01], maximo: 1, porMl: 0.1, solucao: '1:10.000 (1 ampola + 9 mL de SF ou AD) — 0,1 mL/kg', via: 'IV/IO; repetir a cada 3 a 5 min', pagina: 'p. 31 (Tabela 2)',
+    nota: 'Teto de 1 mg pela AHA 2025 (Part 8, Figura 2).' },
   { grupo: 'pcr', id: 'epinefrina-et', nome: 'Epinefrina traqueal', unidade: 'mg', porKg: [0.1, 0.1], porMl: 1, solucao: '1:1.000 — 0,1 mL/kg', via: 'ET, só sem acesso vascular (absorção errática)', pagina: 'p. 31 (Tabela 2)' },
-  { grupo: 'pcr', id: 'amiodarona', nome: 'Amiodarona', unidade: 'mg', porKg: [5, 5], maximo: 300, via: 'IV/IO na FV/TV sem pulso refratária ao choque; máximo diário 15 mg/kg', pagina: 'p. 32 (Tabela 2)' },
+  { grupo: 'pcr', id: 'amiodarona', nome: 'Amiodarona', unidade: 'mg', porKg: [5, 5], maximo: 300, via: 'IV/IO na FV/TV sem pulso refratária ao choque; máximo diário 15 mg/kg', pagina: 'p. 32 (Tabela 2)',
+    nota: 'AHA 2025 (Part 8, Figura 2): até 3 doses, com máximo de 150 mg nas seguintes.' },
   { grupo: 'pcr', id: 'lidocaina-iv', nome: 'Lidocaína IV/IO', unidade: 'mg', porKg: [1, 1], via: 'IV/IO na FV/TV sem pulso refratária ao choque', pagina: 'p. 32 (Tabela 2)' },
   { grupo: 'pcr', id: 'lidocaina-et', nome: 'Lidocaína traqueal', unidade: 'mg', porKg: [2, 3], via: 'ET', pagina: 'p. 32 (Tabela 2)' },
   { grupo: 'pcr', id: 'bicarbonato', nome: 'Bicarbonato de sódio 8,4%', unidade: 'mEq', porKg: [1, 1], porMl: 1, solucao: '8,4%: 1 mL = 1 mEq', via: 'IV/IO; não é de rotina — PCR prolongada, acidose metabólica grave documentada', pagina: 'p. 32 (Tabela 2)' },

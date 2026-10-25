@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
 import {
+  AHA_2025_PCR, AHA_ALS_2025, DIRETRIZ_ALS_2025, lidocainaSegundaDoseMg,
   ADRENALINA_BRADI, BCC_EV, CHOQUE_PCR, DROGAS_PCR, KCL_ATAQUE_MEQ, LIDOCAINA_TV, MAGNESIO_TORSADES,
   adenosina, adrenalinaBradiMlH, adrenalinaUnidadeImpressaUgMin, calcularPcr, dopaminaUgMin, esquemaAmiodarona, esquemaAtropina,
   fichaBradicardiaAdulto, fichaPcrAdulto, fichaTaquiarritmiaAdulto, lidocainaTv,
@@ -86,4 +87,30 @@ test('taquiarritmias: lidocaína 0,7–1,4 mg/kg a 50 mg/min; teto 200–300 mg/
 test('taquiarritmias: verapamil 1 mg/min até 20 mg, diltiazem 2,5 mg/min até 50 mg; magnésio 2 g em 15 min (p. 266)', () => {
   assert.deepEqual(BCC_EV.map((b) => b.minutosAteTotal), [20, 20])
   assert.deepEqual([MAGNESIO_TORSADES.g, MAGNESIO_TORSADES.minutos], [2, 15])
+})
+
+// ── AHA 2025, Part 9 (lacunas da Central, lote 3) ──
+
+test('PCR adulto: ficha nova com o Part 9 da AHA 2025 ao lado do manual', () => {
+  assert.equal(fichaPcrAdulto.versao, '2026-10-25.1')
+  assert.equal(fichaPcrAdulto.fontes.length, 2)
+  assert.match(fichaPcrAdulto.fontes[0].citacao, /p\. 48–51/)
+  assert.equal(fichaPcrAdulto.fontes[1], AHA_ALS_2025)
+  assert.match(AHA_ALS_2025.citacao, /S538–S577/)
+})
+test('PCR adulto: Figura 2 da AHA 2025 confere com a Tabela 2 do manual', () => {
+  assert.equal(AHA_2025_PCR.monofasicoJ, CHOQUE_PCR.monofasicoJ)
+  assert.deepEqual(AHA_2025_PCR.bifasicoJ, [120, 200])
+  assert.deepEqual(AHA_2025_PCR.amiodaronaMg, [300, 150])
+  assert.match(DROGAS_PCR.find((d) => d.id === 'amiodarona')!.dose, /300 mg.*150 mg/)
+  assert.deepEqual(AHA_2025_PCR.lidocainaMgKg.primeira, [1, 1.5])
+})
+test('PCR adulto: segunda dose de lidocaína 0,5–0,75 mg/kg (70 kg = 35–52,5 mg)', () => {
+  assert.deepEqual(lidocainaSegundaDoseMg(70), [35, 52.5])
+  assert.equal(lidocainaSegundaDoseMg(0), null)
+})
+test('PCR adulto: comparação com a AHA 2025 cita a seção em cada tema', () => {
+  assert.ok(DIRETRIZ_ALS_2025.length >= 6)
+  for (const d of DIRETRIZ_ALS_2025) assert.match(d.onde, /seç(ão|ões) \d+/)
+  assert.match(DIRETRIZ_ALS_2025.find((d) => /dupla desfibrilação/.test(d.tema))!.aha, /não está estabelecida/)
 })
