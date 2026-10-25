@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
 import {
-  REVERSAO_DOAC, ccpUnidades, conferirPasHip, crioUnidades, escoreIch, fichaEscoreIch, fichaReversaoAnticoagulacaoAdulto,
+  ANNEXA_I, DIVERGENCIA_ANDEXANETE, REVERSAO_DOAC, ccpUnidades, conferirPasHip, crioUnidades, escoreIch, fichaEscoreIch, fichaReversaoAnticoagulacaoAdulto,
   plasmaMl, protamina, reversaoVarfarina,
 } from './reversaoAnticoagulacao.ts'
 
@@ -72,4 +72,21 @@ test('escore ICH: pontos e mortalidade da Tabela 2 (p. 543–544); 0 e 6 sem lin
   const seis = escoreIch.calcular({ glasgow: 2, volume: 1, ventricular: 1, infratentorial: 1, idade: 1 })!
   assert.equal(seis.valor, '6')
   assert.match(seis.nota, /sem linha/)
+})
+
+// ── Andexanete como divergência (ANNEXA-I; lacunas da Central, lote 3) ──
+
+test('reversão: ficha .1 com o ANNEXA-I depois do manual', () => {
+  assert.equal(fichaReversaoAnticoagulacaoAdulto.versao, '2026-10-25.1')
+  assert.equal(fichaReversaoAnticoagulacaoAdulto.fontes[1], ANNEXA_I)
+  assert.match(ANNEXA_I.citacao, /2024;390\(19\):1745–1755/)
+})
+test('ANNEXA-I: eficácia 67,0% × 53,1%, trombose 10,3% × 5,6%, AVC isquêmico 6,5% × 1,5%', () => {
+  const a = DIVERGENCIA_ANDEXANETE
+  assert.deepEqual([a.eficacia.andexanete, a.eficacia.usual], ['67,0%', '53,1%'])
+  assert.deepEqual([a.trombose.andexanete, a.trombose.usual], ['10,3%', '5,6%'])
+  assert.deepEqual([a.avcIsquemico.andexanete, a.avcIsquemico.usual], ['6,5%', '1,5%'])
+})
+test('ANNEXA-I: divergência sem dose', () => {
+  assert.equal(Object.keys(DIVERGENCIA_ANDEXANETE).some((k) => /dose/i.test(k)), false)
 })
