@@ -63,6 +63,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'adulto-ic-aguda': '/plantonista/emergencias/insuficiencia-cardiaca-aguda-adulto',
   'adulto-infusoes': '/plantonista/calculadoras/infusoes-adulto',
   'adulto-insuficiencia-adrenal': '/plantonista/emergencias/insuficiencia-adrenal-adulto',
+  'adulto-intermacao': '/plantonista/emergencias/intermacao-adulto',
   'adulto-intoxicacoes-antidotos': '/plantonista/emergencias/intoxicacoes-antidotos-adulto',
   'adulto-isr': '/plantonista/calculadoras/iot',
   'adulto-itu': '/plantonista/emergencias/itu-adulto',
