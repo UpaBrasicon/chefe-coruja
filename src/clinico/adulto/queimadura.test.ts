@@ -2,7 +2,16 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { reposicaoQueimado } from './queimadura.ts'
+import { reposicaoQueimado, superficieQueimadaAdulto, totalCorpoAdulto } from './queimadura.ts'
+
+test('queimadura: coluna Adulto da Figura 1 do ICr soma 95% como impressa (errata)', () => {
+  assert.equal(totalCorpoAdulto(), 95)
+})
+test('queimadura: SCQ pelas superfícies — tronco anterior inteiro (13) + metade da coxa direita anterior (3,5 × ½)', () => {
+  assert.equal(superficieQueimadaAdulto({ 'tronco-ant': 1, 'coxa-d-ant': 0.5 }), 14.75)
+  assert.equal(superficieQueimadaAdulto({ inexistente: 1 }), null)
+  assert.equal(superficieQueimadaAdulto({ 'tronco-ant': 2 }), null)
+})
 
 test('queimadura: 70 kg e 30% = 4.200 mL a 2 mL/kg/%SCQ e 8.400 mL no Parkland (ABA 2024)', () => {
   const r = reposicaoQueimado(70, 30)!
