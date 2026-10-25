@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
 import {
-  ADRENALINA_IM, SEGUNDA_LINHA_ANAFILAXIA, bolusEvMl, fichaAnafilaxiaAdulto, icatibantoMaxMg, infusaoPorMlH, infusaoPorMlMin, ugMlInfusao, volumeChoqueMl,
+  ADRENALINA_IM, PP_ANAFILAXIA_2023, SEGUNDA_LINHA_ANAFILAXIA, WAO_2020, adrenalinaImWaoMg, criteriosWao2020, hipotensaoWao, triptaseLimiar, bolusEvMl, fichaAnafilaxiaAdulto, icatibantoMaxMg, infusaoPorMlH, infusaoPorMlMin, ugMlInfusao, volumeChoqueMl,
 } from './anafilaxia.ts'
 
 test('anafilaxia: ficha adulto do cap. 11, sem referência pediátrica', () => {
@@ -43,4 +43,33 @@ test('anafilaxia: segunda linha só com dose de adulto; mg/kg pediátrico fica f
   assert.match(d('glucagon').dose, /1 mg IV a cada 5 minutos.*5 a 15 µg\/min/)
   assert.ok(d('glucagon').nota) // divergência com o cap. 15
   for (const x of SEGUNDA_LINHA_ANAFILAXIA) assert.doesNotMatch(x.dose, /mg\/kg/, x.id)
+})
+
+// ── WAO 2020 e Practice Parameter 2023 (lacunas da Central, lote 3) ──
+
+test('anafilaxia: ficha .1 com WAO 2020 e Practice Parameter 2023 depois do manual', () => {
+  assert.equal(fichaAnafilaxiaAdulto.versao, '2026-10-25.1')
+  assert.deepEqual(fichaAnafilaxiaAdulto.fontes.slice(1), [WAO_2020, PP_ANAFILAXIA_2023])
+})
+test('WAO 2020, Tabela 2: critério 1 (pele + outro) e critério 2 (alérgeno + hipotensão, broncoespasmo ou laringe)', () => {
+  const nada = { pele: false, respiratorio: false, pa: false, gi: false, alergeno: false, hipotensao: false, broncoespasmo: false, laringe: false }
+  assert.deepEqual(criteriosWao2020({ ...nada, pele: true, gi: true }), { provavel: true, criterio: 1 })
+  assert.deepEqual(criteriosWao2020({ ...nada, alergeno: true, laringe: true }), { provavel: true, criterio: 2 })
+  assert.equal(criteriosWao2020({ ...nada, pele: true }).provavel, false)
+  assert.equal(criteriosWao2020({ ...nada, hipotensao: true }).provavel, false)
+})
+test('WAO 2020: hipotensão do adulto (PAS < 90 ou queda > 30%)', () => {
+  assert.equal(hipotensaoWao(88), true)
+  assert.equal(hipotensaoWao(95, 140), true)
+  assert.equal(hipotensaoWao(100, 140), false)
+  assert.equal(hipotensaoWao(0), null)
+})
+test('WAO 2020: adrenalina IM 0,01 mg/kg com teto de 0,5 mg', () => {
+  assert.deepEqual(adrenalinaImWaoMg(40), { mg: 0.4, noMaximo: false })
+  assert.deepEqual(adrenalinaImWaoMg(80), { mg: 0.5, noMaximo: true })
+  assert.equal(adrenalinaImWaoMg(0), null)
+})
+test('PP 2023: limiar de triptase = 1,2 × basal + 2', () => {
+  assert.equal(triptaseLimiar(5), 8)
+  assert.equal(triptaseLimiar(-1), null)
 })
