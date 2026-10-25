@@ -1397,7 +1397,21 @@ Evidência: 1061 de 1061 testes clínicos; homologação conferida pelo RT; CI v
 `20261228000001_lacunas_lote3_kawasaki` aplicada na homologação e, com o "ok produção" do RT, na
 produção (versão 2026-10-25.1 na fila de aprovação).
 
-Próximo no lote 3: SOFA-2 em paralelo.
+**Lote 3 — SOFA-2 em paralelo em produção em 25/10/2026 (PR #216).**
+- Escore novo SOFA-2 (Ranzani et al., JAMA 2025;334(23):2090–2103), grupo "Terapia intensiva e
+  sepse": seis sistemas de 0 a 4 pela Tabela 2 e notas a–q, conferidas no texto completo
+  (PMC12573119); AUROC 0,79 (SOFA-2) × 0,77 (SOFA original).
+- Em paralelo, não no lugar: a SSC 2026 e o protocolo do ILAS (jul/2026) não citam o SOFA-2
+  (conferido nos PDFs), e o Sepsis-3 usa o SOFA original, que segue na ferramenta de sepse do adulto.
+- Faixa de cor neutra (o artigo não define cortes); cuidados: desenvolvido só em UTI, SpO2/FiO2,
+  dopamina, PAM sem vasoativo, ECMO, critério de terapia renal; errata da Tabela 2 (">.02" na célula
+  de 4 pontos do cardiovascular; a ferramenta usa 0,2).
+
+Evidência: 1066 de 1066 testes clínicos; homologação conferida pelo RT; CI verde; migration
+`20261229000001_lacunas_lote3_sofa2` aplicada na homologação e, com o "ok produção" do RT, na
+produção (versão 2026-10-25.1 na fila de aprovação).
+
+Próximo no lote 3: magnésio na pré-eclâmpsia (ACOG).
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
