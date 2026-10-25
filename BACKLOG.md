@@ -1453,7 +1453,20 @@ Evidência: 1078 de 1078 testes clínicos; homologação conferida pelo RT; CI v
 `20270101000001_lacunas_lote3_andexanete` aplicada na homologação e, com o "ok produção" do RT, na
 produção (versão 2026-10-25.1 na fila de aprovação).
 
-Próximo no lote 3: crise hipertensiva pediátrica com percentil calculado.
+**Lote 3 — Crise hipertensiva pediátrica com percentil calculado em produção em 25/10/2026 (PR #224).**
+- Fonte: Flynn et al., Pediatrics 2017;140(3):e20171904 (AAP), lida no PDF enviado pelo RT (o site da
+  revista pediu verificação anti-robô). Tabelas 4 (meninos, p. 9–11) e 5 (meninas, p. 12–14) geradas
+  por script em `paAap2017.ts` (1 a 17 anos; estatura em cm e PAS/PAD p50, p90, p95 por coluna;
+  p95 + 12 conferido na geração; uma linha conferida contra a imagem da página).
+- Com sexo e estatura (1 a < 13 anos), a ferramenta busca p90 e p95 na coluna de estatura mais
+  próxima e classifica pela Tabela 1 do livro do ICr; sem esses dados, continuam os campos manuais.
+  Aviso: os percentis vêm de crianças com IMC abaixo do p85.
+
+Evidência: 1083 de 1083 testes clínicos; homologação conferida pelo RT; CI verde; migration
+`20270102000001_lacunas_lote3_crise_ha_ped` aplicada na homologação e, com o "ok produção" do RT,
+na produção (versão 2026-10-25.1 na fila de aprovação).
+
+Próximo no lote 3: lactente febril de 8 a 60 dias com o livro do ICr e a AAP 2021 lado a lado.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
