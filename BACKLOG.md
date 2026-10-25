@@ -1442,7 +1442,18 @@ Evidência: 1075 de 1075 testes clínicos; homologação conferida pelo RT; CI v
 `20261231000001_lacunas_lote3_anafilaxia` aplicada na homologação e, com o "ok produção" do RT, na
 produção (versão 2026-10-25.1 na fila de aprovação).
 
-Próximo no lote 3: andexanete como divergência (ANNEXA-I).
+**Lote 3 — Andexanete como divergência em produção em 25/10/2026 (PR #222).**
+- Reversão de anticoagulação ganha o bloco "Andexanete — divergência (ANNEXA-I, 2024)", conferido no
+  resumo (Connolly et al., N Engl J Med 2024;390(19):1745–1755; PubMed 38749032): HIP com inibidor do
+  fator Xa nas 15 h anteriores; eficácia hemostática 67,0% × 53,1% (cuidado usual, 85,5% com CCP),
+  trombose 10,3% × 5,6%, AVC isquêmico 6,5% × 1,5%, sem diferença em Rankin e morte em 30 dias.
+- Sem dose: o manual do HC não cita o andexanete; a tela só mostra o estudo.
+
+Evidência: 1078 de 1078 testes clínicos; homologação conferida pelo RT; CI verde; migration
+`20270101000001_lacunas_lote3_andexanete` aplicada na homologação e, com o "ok produção" do RT, na
+produção (versão 2026-10-25.1 na fila de aprovação).
+
+Próximo no lote 3: crise hipertensiva pediátrica com percentil calculado.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
