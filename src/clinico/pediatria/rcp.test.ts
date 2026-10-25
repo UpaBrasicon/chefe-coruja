@@ -65,3 +65,15 @@ test('rcp: máximos — amiodarona 300 mg; adenosina 6 e 12 mg (p. 32, 50)', () 
   assert.deepEqual(calcularDose(d('adenosina-2'), 80)!.dose, [12, 12])
   assert.equal(r2(calcularDose(d('atropina'), 15)!.dose[0]), 0.3)
 })
+
+// ── AHA 2025, Part 8 no texto integral (lacunas da Central, lote 3) ──
+
+test('RCP pediátrica: ficha .2 com o Part 8 completo', () => {
+  assert.equal(fichaRcpPediatrica.versao, '2026-10-25.1')
+  assert.match(fichaRcpPediatrica.fontes[1].citacao, /Topjian AA.*S479–S537/)
+})
+test('RCP pediátrica: epinefrina 0,01 mg/kg com teto de 1 mg (AHA 2025, Figura 2)', () => {
+  const epi = d('epinefrina-iv')
+  assert.equal(calcularDose(epi, 20)!.dose[0], 0.2)
+  assert.equal(calcularDose(epi, 120)!.dose[1], 1)
+})

@@ -11,6 +11,11 @@ import { INFUSOES_ADULTO, concentracao } from './infusoes.ts'
 // Bradicardia, versão .1 de 28/09/2026: ERC/RCUK 2025 (texto aberto lido) ao
 // lado do cap. 15. A dose de atropina de 1 mg da AHA (2020/2025) não pôde ser
 // conferida no texto integral e fica registrada como não confirmada.
+//
+// PCR, versão .1 de 25/10/2026 (lacunas da Central, lote 3): AHA 2025, Part 9,
+// lida no texto integral publicado pela AHA em cpr.heart.org — recomendações
+// com classe e nível e as doses do quadro da Figura 2. A Tabela 2 do manual
+// continua a base da ferramenta; a AHA aparece ao lado.
 
 export type Faixa = [number, number]
 
@@ -29,7 +34,19 @@ export type ItemManual = {
 
 // ── PCR (cap. 2) ─────────────────────────────────────────────────────────────
 
-export const fichaPcrAdulto = fichaAdulto('adulto-pcr', 'Drogas e desfibrilação na PCR — adulto', 'cap. 2 PCR no adulto, p. 48–51 (Tabela 2)')
+export const AHA_ALS_2025: Fonte = {
+  citacao: 'Wigginton JG, Agarwal S, Bartos JA, Coute RA, Drennan IR, Haamid A, Kudenchuk PJ, Link MS, Panchal AR, Pelter MM, Del Rios M, Rodriguez AJ, Perman SM, Sanko S, Kotini-Shah P, Kurz MC. Part 9: advanced life support: 2025 American Heart Association Guidelines for Cardiopulmonary Resuscitation and Emergency Cardiovascular Care. Circulation. 2025;152(suppl 2):S538–S577. Texto integral em cpr.heart.org: desfibrilação (seção 5), troca de vetor e dupla desfibrilação sequencial (seção 7), acesso vascular (seção 9), vasopressores (seção 10), outras drogas (seção 11), adjuntos da RCP (seção 12), término da reanimação (seção 13); doses e cargas no quadro da Figura 2.',
+  url: 'https://doi.org/10.1161/CIR.0000000000001376',
+}
+
+const PAG_PCR = 'cap. 2 PCR no adulto, p. 48–51 (Tabela 2)'
+
+export const fichaPcrAdulto: Ficha = {
+  ...fichaAdulto('adulto-pcr', 'Drogas e desfibrilação na PCR — adulto', PAG_PCR),
+  versao: '2026-10-25.1',
+  fontes: [pagina(PAG_PCR), AHA_ALS_2025],
+  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: AHA 2025 Part 9 lida no texto integral; manual mantido como base)',
+}
 
 export const CHOQUE_PCR = { monofasicoJ: 360, bifasicoJ: 200, pagina: 'p. 48' }
 
@@ -77,6 +94,36 @@ export function calcularPcr(pesoKg: number): PcrPorPeso | null {
 
 /** KCl 19,1%: 2 mEq/min por 10 min (p. 50). */
 export const KCL_ATAQUE_MEQ = 2 * 10
+
+// ── AHA 2025, Part 9 (texto integral) ────────────────────────────────────────
+
+/** Quadro da Figura 2 (Adult Cardiac Arrest Algorithm). */
+export const AHA_2025_PCR = {
+  bifasicoJ: [120, 200] as Faixa,
+  monofasicoJ: 360,
+  adrenalinaMg: 1,
+  amiodaronaMg: [300, 150],
+  lidocainaMgKg: { primeira: [1, 1.5] as Faixa, segunda: [0.5, 0.75] as Faixa },
+  pagina: 'Part 9, Figura 2',
+}
+
+/** Segunda dose de lidocaína da Figura 2 (0,5–0,75 mg/kg); o manual traz só a primeira. */
+export function lidocainaSegundaDoseMg(pesoKg: number): Faixa | null {
+  return valido(pesoKg) ? vezes(AHA_2025_PCR.lidocainaMgKg.segunda, pesoKg) : null
+}
+
+export type ItemAls2025 = { tema: string; aha: string; onde: string; livro: string }
+
+export const DIRETRIZ_ALS_2025: ItemAls2025[] = [
+  { tema: 'Carga do choque', aha: 'Bifásico: a carga do fabricante (por exemplo, 120–200 J no 1º choque); se desconhecida, a máxima disponível. Choques seguintes equivalentes, e cargas maiores podem ser consideradas (2b). Monofásico: 360 J. Choque único em vez de choques empilhados (2a).', onde: 'seção 5; Figura 2', livro: '200 J no bifásico ou a do fabricante; 360 J no monofásico; choque único (p. 48)' },
+  { tema: 'Adrenalina', aha: '1 mg a cada 3–5 min (2a). Ritmo não chocável: o mais cedo possível (2a). Ritmo chocável: depois que as primeiras tentativas de desfibrilação falharem (2a). Vasopressina, sozinha ou com adrenalina, e adrenalina em dose alta não têm benefício (3).', onde: 'seção 10; Figura 2', livro: '1 mg a cada 3–5 min; após o 2º choque em FV/TV; em AESP/assistolia o mais cedo possível (p. 49)' },
+  { tema: 'Antiarrítmico', aha: 'Amiodarona ou lidocaína podem ser consideradas na FV/TV sem pulso que não responde ao choque (2b). Amiodarona 300 mg em bolo, depois 150 mg; lidocaína 1–1,5 mg/kg, depois 0,5–0,75 mg/kg. Betabloqueador, procainamida ou sotalol: benefício incerto (2b).', onde: 'seção 11; Figura 2', livro: 'amiodarona 300 mg, depois 150 mg; lidocaína 1–1,5 mg/kg, sem a segunda dose (p. 49)' },
+  { tema: 'Cálcio, bicarbonato e magnésio', aha: 'Uso de rotina na PCR não é recomendado (3: sem benefício).', onde: 'seção 11', livro: 'indicações específicas: hipercalemia, tricíclicos, acidose grave conhecida, torsades, hipomagnesemia (p. 49–50)' },
+  { tema: 'Acesso vascular', aha: 'Tentar primeiro o acesso venoso (1); intraósseo se o venoso falhar ou não for viável (2a); central, por quem tem treino, se os dois falharem (2b).', onde: 'seção 9', livro: 'IV ou IO (p. 49)' },
+  { tema: 'Troca de vetor e dupla desfibrilação sequencial', aha: 'A utilidade não está estabelecida na FV/TV sem pulso que persiste após 3 ou mais choques consecutivos (2b).', onde: 'seção 7', livro: '—' },
+  { tema: 'EtCO2 e término da reanimação', aha: 'Intubado: EtCO2 que não passa de 10 mmHg após 20 min de suporte avançado pode compor uma decisão multimodal (2b). Não intubado: nenhum valor de EtCO2 deve, sozinho, indicar o fim da reanimação (3: dano). Subida abrupta de EtCO2 pode indicar retorno da circulação (2b).', onde: 'seções 12 e 13', livro: '—' },
+  { tema: 'Outros adjuntos', aha: 'Marca-passo na PCR estabelecida não é recomendado de rotina (3: sem benefício). Ultrassom à beira-leito para causas reversíveis: não bem estabelecido, só sem interromper a RCP (2b). Oxigênio na maior concentração possível durante a RCP (2b).', onde: 'seções 8 e 12', livro: '—' },
+]
 
 // ── Bradiarritmias (cap. 15) ─────────────────────────────────────────────────
 
