@@ -1328,6 +1328,26 @@ espera do RT:
 
 Próximo: lote 3 (atualizações de diretriz).
 
+**Lote 3 — Escores atualizados em produção em 25/10/2026 (PR #208).**
+- **sPESI** (escore novo, "Pneumologia e tromboembolismo"): seis variáveis de 1 ponto (Jiménez 2010,
+  conferidas no texto completo de Bonsu 2026); 0 é baixo risco, mortalidade em 30 dias de 1,0%
+  (derivação) e 1,1% (RIETE); ≥ 1, 10,9% e 8,9% (resumo de Jiménez 2010). O PESI do manual do HC
+  continua na mesma seção.
+- **CRB-65** (escore novo, mesmo grupo): CURB-65 sem a ureia; faixas 0 / 1–2 / 3–4 e mortalidade
+  observada em 30 dias da Tabela 2 de McNally 2010, separada em hospital (2,4 / 13,3 / 34,3%) e
+  comunidade (0,0 / 1,6 / 18,5%), com o aviso de que superestima na comunidade.
+- **Canadian Syncope Risk Score**: validações canadense (2020), internacional (2022) e americana
+  (2026) na ficha e nos cuidados, pelos resumos no PubMed; percentual de evento só nas categorias que
+  o resumo de 2020 traz (muito baixo 0,3%, muito alto 51,3%).
+- **HEART**: diretriz brasileira de dor torácica 2025 (escore clínico preferencial, I B, p. 29–30).
+
+Evidência: 1046 de 1046 testes clínicos; homologação conferida pelo RT; CI verde depois de reverter o
+sinal de menos tipográfico no valor da síncope (quebrava `onda9Ferramentas.test.ts`); migration
+`20261225000001_lacunas_lote3_escores` aplicada na homologação e, com o "ok produção" do RT, na
+produção (quatro versões 2026-10-25.1 na fila de aprovação).
+
+Próximo no lote 3: PCR adulto e RCP pediátrica pela AHA 2025.
+
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
 na criança, risco de suicídio, epistaxe, pneumotórax).
