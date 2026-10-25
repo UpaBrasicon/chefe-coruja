@@ -1,27 +1,66 @@
 import type { Ficha, Fonte } from '../ficha.ts'
+import { LIVRO_ICR } from '../pediatria/fonteIcr.ts'
+import { REGIOES_LB, type Regiao } from '../pediatria/queimadura.ts'
 
 // Queimadura no adulto — reposição do choque do queimado (lacunas da Central,
 // lote 2, 24/10/2026). O manual do HC não tem capítulo; a fonte é a diretriz da
 // American Burn Association de 2024, lida no PDF enviado pelo RT (páginas da
 // revista). Ela vale para adulto com 20% ou mais de SCQ nas primeiras 48 h.
-// O que a diretriz NÃO traz e por isso não entra: estimativa da SCQ (regra dos
-// nove ou Lund-Browder), divisão do volume nas primeiras 8 h e meta de diurese
-// como recomendação (0,5 mL/kg/h aparece só como o alvo usado nos estudos). A
-// tela da criança (ICr) não é convertida para o adulto. Conduta do médico (ADR 0007).
+// O que a diretriz NÃO traz e por isso não entra: divisão do volume nas primeiras
+// 8 h e meta de diurese como recomendação (0,5 mL/kg/h aparece só como o alvo
+// usado nos estudos). Conduta do médico (ADR 0007).
+// SCQ (versão .2, pedido do RT em 24/10/2026): boneco de frente e costas com a
+// coluna "Adulto" da Figura 1 (Lund e Browder) do livro do ICr, p. 160 — as
+// mesmas superfícies da tela da criança. Os valores impressos (A, B e C = 3,5)
+// somam 95%; o RT decidiu usá-los como impressos, com errata na tela. Nada da
+// reposição da criança (Parkland do ICr) é usado no adulto.
 
 export const ABA_2024: Fonte = {
   citacao: 'Cartotto R, Johnson LS, Savetamal A, et al. American Burn Association Clinical Practice Guidelines on Burn Shock Resuscitation. J Burn Care Res. 2024;45(3):565–589 (PMID 38051821): adultos com ≥ 20% de SCQ nas primeiras 48 h (p. 565–566); iniciar com 2 mL/kg/%SCQ (Questão 3, p. 580–581); albumina (resumo, p. 565; Questão 2, p. 580); monitorização seletiva da pressão intra-abdominal e intraocular, Ivy 250 mL/kg e 6 mL/kg/%SCQ em 24 h (Questão 10, p. 586).',
   url: 'https://doi.org/10.1093/jbcr/irad125',
 }
 
+export const LUND_BROWDER_ADULTO_ICR: Fonte = {
+  citacao: `${LIVRO_ICR.citacao} Cap. 14, Figura 1 (esquema de Lund e Browder), p. 160: coluna "Adulto" (A = 3,5; B = 3,5; C = 3,5), com os valores fixos das superfícies.`,
+}
+
 export const fichaQueimaduraAdulto: Ficha = {
   id: 'adulto-queimadura',
-  titulo: 'Queimadura — reposição inicial do choque (adulto)',
-  versao: '2026-10-24.1',
+  titulo: 'Queimadura — superfície queimada e reposição inicial (adulto)',
+  versao: '2026-10-24.2',
   publico: 'adulto',
-  fontes: [ABA_2024],
-  revisadoEm: '24/10/2026 (lacunas da Central, lote 2; recomendações conferidas no PDF da ABA 2024, com página)',
+  fontes: [ABA_2024, LUND_BROWDER_ADULTO_ICR],
+  revisadoEm: '24/10/2026 (lacunas da Central, lote 2; ABA 2024 conferida no PDF; coluna Adulto de Lund e Browder conferida na Figura 1 do ICr, com errata)',
 }
+
+/** Coluna "Adulto" da Figura 1 do ICr (p. 160), como impressa. */
+export const COLUNA_ADULTO_LB = { a: 3.5, b: 3.5, c: 3.5 }
+
+export function valorRegiaoAdulto(r: Regiao): number {
+  if (typeof r.valor === 'number') return r.valor
+  return r.valor === 'A' ? COLUNA_ADULTO_LB.a : r.valor === 'B' ? COLUNA_ADULTO_LB.b : COLUNA_ADULTO_LB.c
+}
+
+/** Soma de todas as superfícies na coluna do adulto (95% com os valores impressos). */
+export function totalCorpoAdulto(): number {
+  return REGIOES_LB.reduce((s, r) => s + valorRegiaoAdulto(r), 0)
+}
+
+/** SCQ (%) = Σ valor da superfície × fração queimada (0 a 1); só queimaduras de 2º e 3º graus. */
+export function superficieQueimadaAdulto(fracoes: Record<string, number>): number | null {
+  let soma = 0
+  for (const [id, f] of Object.entries(fracoes)) {
+    const r = REGIOES_LB.find((x) => x.id === id)
+    if (!r || !Number.isFinite(f) || f < 0 || f > 1) return null
+    soma += valorRegiaoAdulto(r) * f
+  }
+  return soma
+}
+
+export const ERRATA_LUND_BROWDER_ADULTO: string[] = [
+  'Figura 1 (p. 160), coluna Adulto: com A, B e C = 3,5, o corpo soma 95%, enquanto as colunas de 0, 1 e 5 anos somam 100%. A diferença está na coxa (B, quatro superfícies). Os valores impressos são usados por decisão do RT; a SCQ das coxas pode ficar subestimada.',
+  'Mãos: a mesma Figura traz "1" numa das mãos e "1¼" nas outras três faces; a ferramenta usa 1¼ nas quatro, como na tela da criança.',
+]
 
 export const QUEIMADURA = {
   /** a diretriz vale a partir de 20% de SCQ */
