@@ -202,6 +202,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'ped-pram': '/plantonista/pediatria/pram',
   'ped-queimadura': '/plantonista/pediatria/queimadura-ped',
   'ped-rcp-icr': '/plantonista/pediatria/rcp-pediatrica',
+  'ped-reanimacao-neonatal': '/plantonista/pediatria/reanimacao-neonatal',
   'ped-sedacao-procedimento': '/plantonista/pediatria/sedacao-procedimento-ped',
   'ped-sinais-vitais-icr': '/plantonista/pediatria/sinais-vitais-pediatricos',
   'ped-sodio': '/plantonista/pediatria/sodio-ped',
