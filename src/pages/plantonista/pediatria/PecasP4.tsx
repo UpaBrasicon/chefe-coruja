@@ -19,7 +19,7 @@ const casas = (u: DoseLivro['unidade'], x: number) => (u === 'UI' ? 0 : x >= 100
  * o livro escreve, via, página, máximo emprestado do Apêndice, nota e errata.
  * RN sem valor neonatal explícito não calcula.
  */
-export function LinhaDoseLivro({ d, peso, rn = false, extra }: { d: DoseLivro; peso: number; rn?: boolean; extra?: ReactNode }) {
+export function LinhaDoseLivro({ d, peso, rn = false, extra, fonte = 'Livro ICr', origem = 'O livro traz' }: { d: DoseLivro; peso: number; rn?: boolean; extra?: ReactNode; fonte?: string; origem?: string }) {
   const bloqueadaRn = rn && !d.neonatal
   const r = bloqueadaRn ? null : calcularDoseLivro(d, peso)
   const fmt = (f: [number, number]) => faixaBr(f, casas(d.unidade, f[1]))
@@ -43,7 +43,7 @@ export function LinhaDoseLivro({ d, peso, rn = false, extra }: { d: DoseLivro; p
         )}
       </div>
       <p className="mt-1 text-tinta-sussurro">
-        O livro traz: {textoDoseLivro(d)} · {d.via}
+        {origem}: {textoDoseLivro(d)} · {d.via}
       </p>
       {bloqueadaRn && <p className="text-atencao">{SEM_VALOR_NEONATAL_P4}</p>}
       {r?.noMaximo && <p className="text-atencao">Limitado ao máximo{d.fonteMaximo ? ` (${d.fonteMaximo})` : ' do livro'}.</p>}
@@ -51,7 +51,7 @@ export function LinhaDoseLivro({ d, peso, rn = false, extra }: { d: DoseLivro; p
       {extra}
       {d.nota && <p className="text-tinta-sussurro">{d.nota}</p>}
       {d.errata && <Errata texto={d.errata} />}
-      <p className="text-rotulo text-tinta-sussurro">Livro ICr, {d.pagina}.</p>
+      <p className="text-rotulo text-tinta-sussurro">{fonte}, {d.pagina}.</p>
     </div>
   )
 }
