@@ -14,7 +14,7 @@ const evento = (res: ReturnType<typeof sincopeCanadense.calcular>) => res!.deriv
 
 test('síncope canadense: vasovagal com predisposição = −3, muito baixo, 0,3% na validação de 2020', () => {
   const res = sincopeCanadense.calcular(r(0, 'vasovagal'))!
-  assert.equal(res.valor, '−3')
+  assert.equal(res.valor, '-3')
   assert.equal(evento(res), '0,3%')
 })
 test('síncope canadense: cardíaca com troponina, QTc e PAS = 8, muito alto, 51,3%', () => {
