@@ -25,7 +25,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { Bloco, BotaoCuidados, PilulaAtraso } from './Pecas'
 import { LeitosParaLiberar } from './LeitosParaLiberar'
 import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
-import { PILULA, TIPOS_INTERNACAO, atrasadosPorPaciente, duracao, idadeDe, msgErro, useAgora, usePendenciasEnfermagem, useSetoresDaEscala, useTiposDaEscala } from './useEnfermagem'
+import { TIPOS_INTERNACAO, atrasadosPorPaciente, duracao, idadeDe, msgErro, useAgora, usePendenciasEnfermagem, useSetoresDaEscala, useTiposDaEscala } from './useEnfermagem'
+import { Estado } from '@/pages/plantao/porta/Estado'
 
 type Triado = {
   id: string; paciente_id: string; setor_id: string; cor_atual: CorRisco; classificado_em: string; queixa: string
@@ -114,10 +115,10 @@ export default function ProntoSocorroEnfermagem() {
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {aguardando
-                        ? <span className={cn(PILULA, 'bg-trilha text-tinta-apoio')}>Aguardando médico</span>
+                        ? <Estado tom="cinza">Aguardando médico</Estado>
                         : e.reavaliar_em
-                          ? <span className={cn(PILULA, 'bg-alerta-atencao text-atencao')}>Em reavaliação</span>
-                          : <span className={cn(PILULA, 'bg-alerta-marca text-acao')}>Em atendimento</span>}
+                          ? <Estado tom="ambar">Em reavaliação</Estado>
+                          : <Estado tom="teal">Em atendimento</Estado>}
                       <PilulaAtraso n={atrasados.get(e.paciente_id) ?? 0} />
                     </div>
                   </div>
@@ -138,12 +139,12 @@ export default function ProntoSocorroEnfermagem() {
             {!carregando && emObservacao.length === 0 && <p className="px-5 py-[18px] text-controle text-tinta-sussurro">Ninguém em observação nos setores da sua escala.</p>}
             {emObservacao.map((o) => (
               <div key={o.internacao_id} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[13px] last:border-0">
-                <span className={cn(PILULA, 'min-w-[70px] justify-center self-center bg-alerta-atencao text-atencao')}>{o.box ?? o.setor_nome}</span>
+                <span className="min-w-[70px] self-center text-apoio font-semibold text-acao">{o.box ?? o.setor_nome}</span>
                 <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
                   <span className="text-corpo font-medium text-tinta">{o.nome} <span className="text-apoio font-normal text-tinta-sussurro">{idadeDe(o.data_nascimento)}</span></span>
                   <span className="text-apoio text-tinta-sussurro [text-wrap:pretty]">{[o.queixa, o.setor_nome].filter(Boolean).join(' · ')}</span>
                   <div className="flex flex-wrap gap-1.5">
-                    <span className={cn(PILULA, 'bg-alerta-atencao text-atencao')}>Em observação</span>
+                    <Estado tom="ambar">Em observação</Estado>
                     <PilulaAtraso n={atrasados.get(o.paciente_id) ?? 0} />
                   </div>
                 </div>

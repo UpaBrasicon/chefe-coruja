@@ -32,6 +32,7 @@ import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { dataHora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
+import { Estado } from '@/pages/plantao/porta/Estado'
 
 type Linha = {
   paciente_id: string; paciente_nome: string; local: string | null; item_id: string; tipo: string; descricao: string
@@ -41,10 +42,10 @@ type Linha = {
   /** Última checagem de cada horário aprazado nas últimas 24 h (fila_checagem). */
   por_horario: Record<string, { situacao: string; em: string }> | null
 }
-const SITUACAO: Record<string, { rotulo: string; variante: 'success' | 'warning' | 'destructive' }> = {
-  feito: { rotulo: 'feito', variante: 'success' },
-  nao_feito: { rotulo: 'não feito', variante: 'warning' },
-  recusado: { rotulo: 'recusado', variante: 'destructive' },
+const SITUACAO: Record<string, { rotulo: string; tom: 'verde' | 'ambar' | 'vermelho' }> = {
+  feito: { rotulo: 'feito', tom: 'verde' },
+  nao_feito: { rotulo: 'não feito', tom: 'ambar' },
+  recusado: { rotulo: 'recusado', tom: 'vermelho' },
 }
 const hora = (iso: string) => dataHora(iso)
 
@@ -166,7 +167,7 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
         {l.tipo === 'medicamento' && <span>{l.dose} · {l.via} · {l.posologia}{l.se_necessario ? ' · se necessário' : ''}</span>}
         {l.vasoativo && <Badge variant="warning">vasoativo</Badge>}
         {liberacao && <Badge variant="destructive" title={liberacao.regra}><ShieldAlert className="size-3" /> alta vigilância · liberação da farmácia</Badge>}
-        {st && <Badge variant={st.variante} className="ml-auto">{st.rotulo}{l.ultima_horario ? ` ${l.ultima_horario}` : ''}</Badge>}
+        {st && <span className="ml-auto"><Estado tom={st.tom}>{st.rotulo}{l.ultima_horario ? ` ${l.ultima_horario}` : ''}</Estado></span>}
       </div>
       {alteracao && (
         <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-2.5 py-1.5 text-rotulo text-atencao">
@@ -177,14 +178,14 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
       )}
       {l.diluicao_texto && <p className="text-rotulo text-tinta-apoio">Diluição: {l.diluicao_texto}</p>}
       {aprazado && (
-        <div className="flex flex-wrap gap-1.5" aria-label="Situação por horário (últimas 24 horas)">
+        <div className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Situação por horário (últimas 24 horas)">
           {l.horarios!.map((h) => {
             const s = l.por_horario?.[h]
             const sit = s ? SITUACAO[s.situacao] : null
             return (
-              <Badge key={h} variant={sit?.variante ?? 'outline'} title={s ? `Checado ${hora(s.em)}` : 'Sem checagem nas últimas 24 horas'}>
-                {h} · {sit?.rotulo ?? 'a checar'}
-              </Badge>
+              <span key={h} title={s ? `Checado ${hora(s.em)}` : 'Sem checagem nas últimas 24 horas'}>
+                <Estado tom={sit?.tom ?? 'cinza'}>{h} · {sit?.rotulo ?? 'a checar'}</Estado>
+              </span>
             )
           })}
         </div>
