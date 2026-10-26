@@ -1198,6 +1198,14 @@ Dispensação → Faltas → Diluição padrão e Rascunhos → Painel → Alta 
   migration; typecheck, lint, catraca, build e os 1089 testes clínicos verdes; homologação conferida pelo RT;
   produção conferida pelo pacote publicado. O PR esperou a correção do CI do banco (PR #241, fora da rota,
   registrada na Fase 0). Próxima tela: **Diluição padrão e Rascunhos**.
+- **Diluição em produção desde 26/10/2026 (PR #243).** Referências do Refero: tabela do Attio, editor do
+  Hashnode com rascunhos e publicados na lateral e histórico de versões do InVision. O RT escolheu a **B, uma
+  aba só, como biblioteca**: "Diluição padrão" e "Rascunhos" viraram a aba "Diluição", com abas internas
+  "Valendo na unidade", "Rascunhos" e "Substituídas"; lista à esquerda e, à direita, a ficha da linha que vale
+  (valor do modelo riscado quando a unidade mudou, fonte, "por que muda", ajustar e voltar ao modelo) ou o
+  editor (Salvar e Publicar no topo). Ajustar uma linha leva ao rascunho na mesma tela. As chamadas ao
+  servidor são as mesmas. Sem migration; typecheck, lint, catraca, build e os 1089 testes clínicos verdes;
+  homologação conferida pelo RT; produção conferida pelo pacote publicado. Próxima tela: **Painel**.
 
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
