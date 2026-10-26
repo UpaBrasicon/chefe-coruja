@@ -23,12 +23,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Diluicoes from './Diluicoes'
 import { EnviarArquivo } from './EnviarArquivo'
-import { PainelFarmacia } from './PainelFarmacia'
+import { PainelFarmacia, type FaltaPriorizada } from './PainelFarmacia'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Estado } from '@/components/porta/Estado'
 import { tomDaVariante } from '@/components/porta/tomEstado'
 import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 
@@ -448,11 +448,33 @@ function LinhaDiluicao({ l, unidade, aoErro, aoMudar, abrirRascunho }: {
 // ── Faltas ──────────────────────────────────────────────────────────────────
 type Falta = { id: string; situacao: string; observacao: string | null; sinalizada_em: string; medicamento: { principio_ativo: string; apresentacao: string | null } | null
   sinalizante: { nome_completo: string } | null }
-const SIT_FALTA: Record<string, string> = { registrada: 'Registrada', em_cotacao: 'Em cotação', reposta: 'Reposta' }
+
+// Revisão visual 3.7b (opção C do RT com ressalva, 26/10/2026): a lista por
+// situação, cada situação numa aba para não poluir quando houver muitas faltas.
+// As abertas vêm da lista priorizada do painel (alta vigilância, pacientes com o
+// medicamento prescrito, a mais antiga), com a mesma chave de cache; as repostas,
+// das últimas faltas da unidade.
+type AbaFalta = 'registrada' | 'em_cotacao' | 'reposta'
 
 function Faltas({ unidade }: { unidade: string }) {
   const qc = useQueryClient()
   const [erro, setErro] = React.useState<string | null>(null)
+  const [aba, setAba] = React.useState<AbaFalta>('registrada')
+  // "há quanto" anda a cada minuto
+  const [agora, setAgora] = React.useState(() => Date.now())
+  React.useEffect(() => {
+    const t = window.setInterval(() => setAgora(Date.now()), 60_000)
+    return () => window.clearInterval(t)
+  }, [])
+  const abertas = useQuery({
+    queryKey: ['faltas-priorizadas', unidade],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('faltas_priorizadas', { p_unidade: unidade })
+      if (error) throw error
+      return (data ?? []) as unknown as FaltaPriorizada[]
+    },
+  })
   const lista = useQuery({
     queryKey: ['faltas', unidade],
     queryFn: async () => {
@@ -467,29 +489,93 @@ function Faltas({ unidade }: { unidade: string }) {
     const { error } = await supabase.rpc('avancar_falta', { p_falta: id, p_situacao: situacao })
     if (error) return setErro(error.message)
     setErro(null)
-    void qc.invalidateQueries({ queryKey: ['faltas'] })
-    void qc.invalidateQueries({ queryKey: ['farmacia-estoque'] })
+    for (const k of ['faltas', 'faltas-priorizadas', 'farmacia-estoque']) void qc.invalidateQueries({ queryKey: [k] })
   }
-  if (lista.data?.length === 0) return <Vazio icone={AlertTriangle} titulo="Nenhuma falta sinalizada" texto="O plantão sinaliza pela prescrição e você pela Disponibilidade; tudo aparece aqui." />
+  const abertasLista = abertas.data ?? []
+  const porSituacao = (sit: string) => abertasLista.filter((f) => f.situacao === sit)
+  const repostas = (lista.data ?? []).filter((f) => f.situacao === 'reposta')
+  const contagem: Record<AbaFalta, number> = { registrada: porSituacao('registrada').length, em_cotacao: porSituacao('em_cotacao').length, reposta: repostas.length }
+  const maisAntiga = abertasLista.reduce<string | null>((m, f) => (!m || f.sinalizada_em < m ? f.sinalizada_em : m), null)
+  const av = abertasLista.filter((f) => f.alta_vigilancia).length
+  if (abertas.data?.length === 0 && lista.data?.length === 0) {
+    return <Vazio icone={AlertTriangle} titulo="Nenhuma falta sinalizada" texto="O plantão sinaliza pela prescrição e você pela Disponibilidade; tudo aparece aqui." />
+  }
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-apoio text-tinta-sussurro">O que a unidade já sinalizou. A farmácia recebe na hora e o gestor vê no painel.</p>
-      <MensagemErro texto={erro ?? (lista.error ? (lista.error as Error).message : null)} />
-      <ul className="overflow-hidden rounded-cartao border border-fio bg-superficie">
-        {(lista.data ?? []).map((f) => (
-          <li key={f.id} className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-3 last:border-0">
-            <div className="flex min-w-[220px] flex-1 flex-col gap-0.5">
-              <span className="text-corpo font-medium text-tinta">{f.medicamento?.principio_ativo} <span className="font-normal text-tinta-apoio">{f.medicamento?.apresentacao}</span></span>
-              {f.observacao && <span className="text-apoio text-tinta-apoio">{f.observacao}</span>}
-              <span className="text-rotulo text-tinta-sussurro">{f.sinalizante?.nome_completo ?? '—'} · {hora(f.sinalizada_em)}</span>
-            </div>
-            <Estado tom={f.situacao === 'reposta' ? 'verde' : f.situacao === 'em_cotacao' ? 'ambar' : 'vermelho'}>{SIT_FALTA[f.situacao]}</Estado>
-            {f.situacao === 'registrada' && <Button size="xs" variant="outline" onClick={() => void avancar(f.id, 'em_cotacao')}>Em cotação</Button>}
-            {f.situacao !== 'reposta' && <Button size="xs" onClick={() => void avancar(f.id, 'reposta')}>Reposta</Button>}
-          </li>
+      <MensagemErro texto={erro ?? ((abertas.error ?? lista.error) ? ((abertas.error ?? lista.error) as Error).message : null)} />
+      <Tabs value={aba} onValueChange={(v) => setAba(v as AbaFalta)} className="gap-3">
+        <div className="flex flex-wrap items-end gap-x-4 gap-y-1 border-b border-fio">
+          <TabsList aria-label="Faltas por situação" className="w-auto max-w-full flex-[1_0_auto] gap-5 border-b-0">
+            <TabsTrigger value="registrada">Registradas <span className={cn('text-rotulo font-semibold tabular-nums', contagem.registrada ? 'text-critico' : 'text-acao')}>{contagem.registrada}</span></TabsTrigger>
+            <TabsTrigger value="em_cotacao">Em cotação <span className="text-rotulo font-semibold text-acao tabular-nums">{contagem.em_cotacao}</span></TabsTrigger>
+            <TabsTrigger value="reposta">Repostas <span className="text-rotulo font-semibold text-acao tabular-nums">{contagem.reposta}</span></TabsTrigger>
+          </TabsList>
+          {abertasLista.length > 0 && (
+            <span className="pb-2.5 text-apoio text-tinta-sussurro">
+              {maisAntiga && `mais antiga há ${haQuanto(maisAntiga, agora)}`}
+              {av > 0 && <span className="font-medium text-atencao"> · {av} de alta vigilância</span>}
+            </span>
+          )}
+        </div>
+        {(['registrada', 'em_cotacao'] as const).map((sit) => (
+          <TabsContent key={sit} value={sit}>
+            <ListaFaltas vazio={sit === 'registrada' ? 'Nenhuma falta registrada esperando cotação.' : 'Nenhuma falta em cotação.'}>
+              {porSituacao(sit).map((f) => (
+                <LinhaFaltaAberta key={f.id} f={f} agora={agora} avancar={avancar} />
+              ))}
+            </ListaFaltas>
+          </TabsContent>
         ))}
-      </ul>
+        <TabsContent value="reposta">
+          <ListaFaltas vazio="Nenhuma falta reposta entre as últimas sinalizadas.">
+            {repostas.map((f) => (
+              <li key={f.id} className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-trilha px-5 py-2.5 last:border-b-0">
+                <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-0.5">
+                  <span className="flex flex-wrap items-baseline gap-2"><span className="font-medium text-tinta">{f.medicamento?.principio_ativo}</span><span className="text-tinta-apoio">{f.medicamento?.apresentacao}</span></span>
+                  <span className="text-rotulo text-tinta-sussurro">{f.observacao ? `${f.observacao} · ` : ''}sinalizada por {f.sinalizante?.nome_completo ?? '—'}, {hora(f.sinalizada_em)}</span>
+                </div>
+                <Estado tom="verde">Reposta</Estado>
+              </li>
+            ))}
+          </ListaFaltas>
+        </TabsContent>
+      </Tabs>
     </div>
+  )
+}
+
+function ListaFaltas({ vazio, children }: { vazio: string; children: React.ReactNode }) {
+  const itens = React.Children.toArray(children)
+  return (
+    <div className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+      {itens.length === 0 ? <p className="px-5 py-4 text-apoio text-tinta-sussurro">{vazio}</p> : <ul>{itens}</ul>}
+    </div>
+  )
+}
+
+/** Uma falta aberta: o que falta, quem sinalizou, há quanto, quantos pacientes e a próxima etapa. */
+function LinhaFaltaAberta({ f, agora, avancar }: { f: FaltaPriorizada; agora: number; avancar: (id: string, situacao: string) => Promise<void> }) {
+  return (
+    <li className="flex flex-wrap items-center gap-x-5 gap-y-1.5 border-b border-trilha px-5 py-2.5 last:border-b-0">
+      <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-0.5">
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="font-medium text-tinta">{f.principio_ativo}</span>
+          <span className="text-tinta-apoio">{f.apresentacao}</span>
+          {f.alta_vigilancia && <SeloAltaVigilancia />}
+        </span>
+        <span className="text-rotulo text-tinta-sussurro">{f.observacao ? `${f.observacao} · ` : ''}sinalizada por {f.sinalizada_por ?? '—'}</span>
+        {f.retorno && <span className="text-rotulo text-conforme">Retorno ao plantão: “{f.retorno.texto}”</span>}
+      </div>
+      <span className="w-24 text-apoio text-tinta-apoio tabular-nums">há {haQuanto(f.sinalizada_em, agora)}</span>
+      <span className="w-36 text-rotulo text-tinta-apoio">
+        {f.pacientes > 0 ? `${f.pacientes} ${f.pacientes === 1 ? 'paciente' : 'pacientes'} com prescrição` : 'sem paciente com prescrição'}
+        {f.setores.length > 0 && <span className="block text-tinta-sussurro">{f.setores.join(', ')}</span>}
+      </span>
+      <div className="flex gap-2">
+        {f.situacao === 'registrada' && <Button size="xs" variant="outline" onClick={() => void avancar(f.id, 'em_cotacao')}>Em cotação</Button>}
+        <Button size="xs" onClick={() => void avancar(f.id, 'reposta')}>Reposta</Button>
+      </div>
+    </li>
   )
 }
 
@@ -528,10 +614,13 @@ function agrupar(itens: ItemFila[]): GrupoFila[] {
   return [...grupos.values()]
 }
 
-/** "40min", "1h 55min" desde a prescrição. */
+/** "40min", "2h", "1h 55min", "1 dia", "3 dias" desde o instante. */
 function haQuanto(iso: string, agora: number) {
   const m = Math.max(0, Math.round((agora - Date.parse(iso)) / 60_000))
-  return m < 60 ? `${m}min` : `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}min`
+  if (m < 60) return `${m}min`
+  if (m < 24 * 60) return m % 60 === 0 ? `${m / 60}h` : `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}min`
+  const d = Math.floor(m / (24 * 60))
+  return d === 1 ? '1 dia' : `${d} dias`
 }
 
 // Revisão visual 3.7 (opção C do RT, 26/10/2026): a validação como caixa de

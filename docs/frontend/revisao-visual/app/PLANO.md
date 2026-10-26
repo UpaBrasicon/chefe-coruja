@@ -688,6 +688,47 @@ Avulsa e Registro recebem o mesmo mínimo nas três (a tabela do registro já es
   nos dois temas (`disp-A-aplicada-claro|escuro.png`). Dispensar e a retirada pela enfermagem pedem
   login: conferir na homologação.
 
+### Faltas (26/10/2026)
+
+**Hoje** (`farmacia/Farmacia.tsx`, `Faltas`): uma lista única com as últimas 100 faltas, da mais nova para a
+mais antiga, misturando registradas, em cotação e repostas; cada linha com medicamento, observação, quem
+sinalizou e quando (data e hora, sem "há quanto"), a situação e os botões "Em cotação" e "Reposta". O
+painel da Central já tem uma lista priorizada das abertas (`faltas_priorizadas`: alta vigilância primeiro,
+depois quantos pacientes têm o medicamento prescrito, depois a mais antiga, e o retorno ao plantão).
+
+**Referências do Refero:** quadro do Marathon com as ações no cartão (`0ef30cb0`); quadro da Linear por
+situação (`ccd45807`); a fila do PS em abas e tabela, já escolhida na 3.3.
+
+**Opções** (faltas fictícias; `faltas-hoje-claro.png`, `faltas-A|B|C-claro|escuro.png`):
+
+- **A · quadro por situação:** três colunas (Registrada, Em cotação, Reposta nas últimas 72 h); cada falta é
+  um cartão com o medicamento, o selo AV, a observação, quem sinalizou e por onde, há quanto tempo e o botão
+  da próxima etapa. A mais antiga fica em cima.
+- **B · abas e tabela**, como a fila do PS: abas "Abertas N" e "Repostas nas últimas 72 h N"; à direita, a
+  mais antiga e quantas são de alta vigilância; tabela com medicamento, pacientes com prescrição, há quanto
+  tempo e por quem, situação e ações.
+- **C · lista agrupada por situação** (Linear): grupos Registrada e Em cotação abertos e Reposta recolhido;
+  cada linha com medicamento, observação e quem sinalizou, há quanto tempo, pacientes com prescrição e as
+  ações.
+
+B e C usam os dados da lista priorizada do painel (`faltas_priorizadas`), que já traz os pacientes com
+prescrição; nada muda no banco.
+
+**Escolha do RT (26/10/2026): C, com cada situação numa aba** ("para quando for mais medicação não ficar
+poluído"). Aplicada na branch `feat/visual-3-7b-faltas`:
+
+- `Farmacia.tsx`, `Faltas`: abas "Registradas N" (vermelho quando há), "Em cotação N" e "Repostas N"; à
+  direita, a mais antiga das abertas e quantas são de alta vigilância. Registradas e Em cotação vêm da
+  lista priorizada do painel (mesma chave de cache, a mesma ordem: alta vigilância, pacientes com o
+  medicamento prescrito, a mais antiga); cada linha com medicamento, apresentação e selo AV, a observação
+  e quem sinalizou, o retorno ao plantão quando houver, há quanto tempo (anda a cada minuto), quantos
+  pacientes com prescrição e em que setores, e "Em cotação" e "Reposta". Repostas vêm das últimas faltas
+  da unidade, como antes. As chamadas ao servidor são as mesmas.
+- `haQuanto` passou a dizer "2h", "1h 55min", "1 dia", "3 dias" (antes "24h 00min"); vale também para a
+  validação.
+- Visto na página de teste com a Central real, abrindo a aba sozinha, fotografada no Chrome sem janela nos
+  dois temas (`faltas-C-aplicada-*.png`). Avançar a falta pede login: conferir na homologação.
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções
