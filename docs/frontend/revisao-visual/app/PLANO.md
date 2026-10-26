@@ -432,6 +432,11 @@ saiu na página de teste e fica para a aplicação):
 Em qualquer opção, as abas internas seguem o mínimo: situação em ponto + texto,
 sem sombra, sem maiúsculas espaçadas; os alertas acima continuam como estão.
 
+**Escolha do RT (26/10/2026): B, com ressalvas** (`leito-B2-claro.jpg`): as 13 abas
+numa linha só, de ponta a ponta; abaixo dela, o Resumo (NEWS2) e o painel
+"Paciente" começando na mesma altura; "Transferir de setor" no canto superior
+direito, na linha do nome, acima das abas e do painel.
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções
