@@ -149,6 +149,16 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 8. P1 só após os P0 fechados: observabilidade, pipeline de release, localStorage, reserva.
 9. Criar documentos e demo.
 
+**Correção do CI fora da rota (pedido do RT em 26/10/2026, branch `fix/ci-banco-ghcr`).** O job `banco
+(supabase/tests)` falhou duas vezes no PR #239 (só docs) com `toomanyrequests` do ghcr.io ao baixar a imagem
+do Postgres do Supabase ("allowed: 44000/minute", limite do próprio registro). Correção no
+`.github/workflows/ci.yml`: a imagem do Postgres fica no cache do Actions; sem cache, vem do Docker Hub, do
+ECR público ou do ghcr.io (mesmo digest nos três) com o nome que o CLI procura; o `supabase start` tenta até
+4 vezes, com pausas de 30, 60 e 90 s; e a exclusão usa os nomes do CLI 2.102 (`mailpit`, `logflare`,
+`postgres-meta`; os antigos eram ignorados e baixavam três imagens à toa). Tentado no próprio PR e sem
+resolver sozinho: login no ghcr.io, só as novas tentativas e só o ECR ("Data limit exceeded").
+Registro, limites e reversão em `infra/release.md`. Evidência: o job do banco verde no próprio PR da correção.
+
 ---
 
 ## Fase 1 — Produto Demonstrável e Valor Gerencial
