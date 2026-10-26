@@ -9,12 +9,13 @@
 //
 // modo="simples" (o padrão, usado pela observação) é o leito de antes, sem
 // abas: acuidade, vitais, pendências, exames, passagem, alta e pacote.
+//
+// Revisão visual 3.5 (opção B do RT com ressalvas, 26/10/2026): no caderno, o
+// cabeçalho sem cartão com transferir de setor no canto direito; as abas numa
+// linha só, sublinhadas; embaixo, a aba à esquerda e o painel Paciente à direita,
+// começando na mesma altura.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  Activity, ArrowUpRight, BookOpen, ClipboardList, FileText, FlaskConical, LayoutDashboard, MessageSquare, Pill, ShieldCheck,
-  type LucideIcon,
-} from 'lucide-react'
 import * as React from 'react'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
@@ -23,7 +24,6 @@ import { Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
 import { supabase } from '@/lib/supabase'
 import { abrirProntuario } from '@/lib/prontuario'
-import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import type { CorRisco } from '@/domain/risco'
@@ -37,7 +37,7 @@ import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Spinner } from '@/components/ui/spinner'
 
 import { BlocoAcuidade } from './caderno/Acuidade'
@@ -51,6 +51,7 @@ import { AbaDiagnostico } from './caderno/Diagnostico'
 import { useDiagnosticos } from './caderno/diagnosticos'
 import { AbaAdmissao, AbaAih, AbaApac, AbaAtestado, AbaExames, AbaPrescricao } from './caderno/Documentos'
 import { useDocumentosLeito } from './caderno/rascunhoLeito'
+import { PainelPaciente } from './caderno/PainelPaciente'
 import { BlocoPassagem } from './caderno/Passagem'
 import { BlocoPendencias } from './caderno/Pendencias'
 import { BlocoSepse } from './caderno/Sepse'
@@ -61,20 +62,20 @@ export { SepsePorta } from './caderno/Sepse'
 type IdAba = 'resumo' | 'classif' | 'evol' | 'diag' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'atestado' | 'comp' | 'alta'
 
 // LEITO_ABAS do protótipo (index.html ~21611), na mesma ordem.
-const ABAS: [IdAba, string, LucideIcon][] = [
-  ['resumo', 'Resumo', LayoutDashboard],
-  ['classif', 'Classificação', Activity],
-  ['evol', 'Evolução', Activity],
-  ['diag', 'Diagnóstico', ClipboardList],
-  ['admissao', 'Admissão', BookOpen],
-  ['receituario', 'Prescrição', Pill],
-  ['exames', 'Exames', FlaskConical],
-  ['aih', 'AIH', ClipboardList],
-  ['apac', 'APAC', ClipboardList],
-  ['encaminhamento', 'Encaminhamento', ArrowUpRight],
-  ['atestado', 'Atestado', FileText],
-  ['comp', 'Parecer e termos', MessageSquare],
-  ['alta', 'Alta e documentos', ShieldCheck],
+const ABAS: [IdAba, string][] = [
+  ['resumo', 'Resumo'],
+  ['classif', 'Classificação'],
+  ['evol', 'Evolução'],
+  ['diag', 'Diagnóstico'],
+  ['admissao', 'Admissão'],
+  ['receituario', 'Prescrição'],
+  ['exames', 'Exames'],
+  ['aih', 'AIH'],
+  ['apac', 'APAC'],
+  ['encaminhamento', 'Encaminhamento'],
+  ['atestado', 'Atestado'],
+  ['comp', 'Parecer e termos'],
+  ['alta', 'Alta e documentos'],
 ]
 /** O que se lê sem escrever: gestor, e o leito depois da alta. */
 const ABAS_LEITURA: IdAba[] = ['resumo', 'classif', 'diag', 'alta']
@@ -91,7 +92,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
   ehGestor: boolean
   /** "caderno": as 12 abas do protótipo; "simples": o leito sem abas (observação). */
   modo?: 'simples' | 'caderno'
-  /** Botões do painel ao lado das abas (ex.: transferir de setor). */
+  /** Ação no canto direito do cabeçalho do caderno (ex.: transferir de setor). */
   acoesTopo?: React.ReactNode
   /** Aba do caderno que abre primeiro (endereço do leito com ?aba=). */
   abaInicial?: string
@@ -208,7 +209,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
     prontuarioAberto: prontuario.isSuccess, aoGravarVitais, aoErro: setErro,
   }
 
-  const cabecalho = (onClassificacao?: () => void) => (
+  const cabecalho = (onClassificacao?: () => void, compacto = false) => (
     // D4: cabeçalho único — leito/setor, nome, idade, sexo, permanência, alergia em
     // três estados, cor da classificação da porta e acuidade. D5: atendimento
     // anterior sem desfecho, na gaveta lateral.
@@ -236,6 +237,8 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
       onClassificacao={onClassificacao}
       acuidade={ativa}
       episodios
+      compacto={compacto}
+      acao={compacto ? acoesTopo : undefined}
     />
   )
   const avisos = (
@@ -260,7 +263,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
       </div>
     )
   }
-  return <Caderno p={p} cabecalho={cabecalho} avisos={avisos} acoesTopo={acoesTopo} abaInicial={abaInicial} />
+  return <Caderno p={p} cabecalho={cabecalho} avisos={avisos} abaInicial={abaInicial} />
 }
 
 type PartesLeito = {
@@ -327,12 +330,11 @@ function AltaEDocumentos({ p }: { p: PartesLeito }) {
   )
 }
 
-function Caderno({ p, cabecalho, avisos, acoesTopo, abaInicial }: {
+function Caderno({ p, cabecalho, avisos, abaInicial }: {
   abaInicial?: string
   p: PartesLeito
-  cabecalho: (onClassificacao?: () => void) => React.ReactNode
+  cabecalho: (onClassificacao?: () => void, compacto?: boolean) => React.ReactNode
   avisos: React.ReactNode
-  acoesTopo?: React.ReactNode
 }) {
   const { i, ativa, ehGestor, pacienteId } = p
   const { unidadeAtiva } = useUnidade()
@@ -378,25 +380,22 @@ function Caderno({ p, cabecalho, avisos, acoesTopo, abaInicial }: {
   }
 
   return (
-    <div className="flex flex-col gap-4 text-apoio">
-      {cabecalho(() => setAba('classif'))}
+    <div className="flex flex-col gap-3.5 border-t border-fio pt-3.5 text-apoio">
+      {cabecalho(() => setAba('classif'), true)}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div role="tablist" aria-label="Documentos do leito" className="flex flex-1 flex-wrap gap-1.5">
-          {disponiveis.map(([id, rotulo, Icone]) => (
-            <Button key={id} variant="outline" size="sm" role="tab" aria-selected={atual === id} aria-controls={`caderno-${id}`}
-              onClick={() => setAba(id)}
-              className={cn('min-h-0 gap-1.5 rounded-capsula px-3 py-[5px]', atual === id && 'border-acao/35 bg-acao/10 font-medium text-acao')}>
-              <Icone className="size-3.5" aria-hidden /> {rotulo}
-            </Button>
+      {/* abas numa linha só; na tela estreita a linha rola para o lado */}
+      <Tabs value={atual} onValueChange={(v) => setAba(v as IdAba)}>
+        <TabsList aria-label="Documentos do leito" className="gap-3.5">
+          {disponiveis.map(([id, rotulo]) => (
+            <TabsTrigger key={id} value={id} className="shrink-0">{rotulo}</TabsTrigger>
           ))}
-        </div>
-        {acoesTopo}
-      </div>
+        </TabsList>
+      </Tabs>
 
       {avisos}
 
-      <div id={`caderno-${atual}`} role="tabpanel" className="flex flex-col gap-4">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <div id={`caderno-${atual}`} role="tabpanel" className="flex min-w-0 flex-col gap-4">
         {atual === 'resumo' && (
           <>
             <Resumo p={pp} />
@@ -434,6 +433,9 @@ function Caderno({ p, cabecalho, avisos, acoesTopo, abaInicial }: {
             <AltaEDocumentos p={pp} />
           </>
         )}
+      </div>
+      <PainelPaciente i={i} ativa={ativa} acuidade={p.acuidade} diagnostico={textoPrimario} onClassificacao={() => setAba('classif')}
+        acoes={ativa ? <BotaoRnDaMae maeId={pacienteId} maeNome={p.pacienteNome} /> : undefined} />
       </div>
     </div>
   )

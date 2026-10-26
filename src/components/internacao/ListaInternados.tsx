@@ -18,7 +18,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import { rotuloIdade } from '@/domain/idade'
 import { carregarEnvelope, novaChave, salvarEnvelope, useRascunho } from '@/lib/rascunho'
 import { Chip, Chips, Vazio } from '@/components/monitor/Pagina'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { dataIso } from '@/lib/formato'
 import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
@@ -181,7 +180,7 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
           titulo={doSetor.length === 0 ? 'Nenhum paciente internado' : filtro === 'Com pendência' ? 'Nenhum leito com pendência agora' : 'Nenhum leito neste filtro'}
           texto={doSetor.length === 0 ? 'Quando alguém for internado num setor do seu plantão, aparece aqui.' : undefined} />
       ) : (
-        <div className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
+        <div className="overflow-hidden rounded-cartao border border-fio bg-superficie">
           {visiveis.map((p) => {
             const i = internacoes.data?.get(p.id)
             const pend = pendencias.data?.get(p.id) ?? []
@@ -198,7 +197,7 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
             return (
               <div key={p.id} className="border-b border-trilha last:border-b-0">
                 <div className="flex flex-wrap items-center gap-3.5 px-5 py-[13px] hover:bg-campo">
-                  <span className="shrink-0 rounded-capsula bg-acao/10 px-[9px] py-1 text-apoio font-semibold text-acao tabular-nums">
+                  <span className="w-[72px] shrink-0 text-apoio font-semibold text-acao tabular-nums">
                     {leitoDe(p) ?? p.setores?.nome ?? 'sem leito'}
                   </span>
                   <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
@@ -213,9 +212,9 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
                     )}
                     <span className="flex flex-wrap items-center gap-1.5 text-apoio text-tinta-sussurro">
                       {motivo}
-                      {alerta?.nivel === 'choque' && <Badge variant="destructive">Phoenix {alerta.total} · choque séptico?</Badge>}
-                      {alerta?.nivel === 'sepse' && <Badge variant="destructive">Phoenix {alerta.total} · sepse?</Badge>}
-                      {alerta?.nivel === 'rastreio' && <Badge variant="outline">Phoenix {alerta.total}</Badge>}
+                      {alerta?.nivel === 'choque' && <span className="font-semibold text-critico">· Phoenix {alerta.total} · choque séptico?</span>}
+                      {alerta?.nivel === 'sepse' && <span className="font-semibold text-critico">· Phoenix {alerta.total} · sepse?</span>}
+                      {alerta?.nivel === 'rastreio' && <span>· Phoenix {alerta.total}</span>}
                     </span>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-0.5">

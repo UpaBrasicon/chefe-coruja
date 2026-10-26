@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 import { hora, type ExamePS } from './comum'
-import { Estado, type TomEstado } from './Estado'
+import { Estado, type TomEstado } from '@/components/porta/Estado'
 import { Chip } from '@/components/monitor/Pagina'
 
 type Agravo = { id: string; agravo: string; cid: string | null; situacao: string; numero_sinan: string | null; motivo_descarte: string | null }

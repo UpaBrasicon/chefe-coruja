@@ -62,7 +62,7 @@ export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; med
     <div className="flex flex-col gap-4 text-apoio">
       {erro && <p className="rounded-controle border border-critico/30 bg-alerta-critico p-2 text-critico">{erro}</p>}
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-1.5 text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">
+        <div className="flex items-center gap-1.5 text-rotulo font-semibold text-tinta-sussurro">
           <FlaskConical className="size-3.5" /> Exames pedidos
         </div>
         {pendentes.length === 0 && <p className="text-tinta-sussurro">Nenhum exame aguardando resultado. (Os exames entram quando o pedido é impresso.)</p>}
@@ -79,7 +79,7 @@ export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; med
         )}
       </div>
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-1.5 text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">
+        <div className="flex items-center gap-1.5 text-rotulo font-semibold text-tinta-sussurro">
           <Megaphone className="size-3.5" /> Agravos de notificação
         </div>
         {(agravos.data ?? []).map((a) => <LinhaAgravo key={a.id} a={a}
@@ -120,7 +120,7 @@ function LinhaResolvido({ e, aoMudar }: { e: Exame; aoMudar: () => void }) {
     <div className={`flex flex-col gap-1 ${novo ? 'rounded-controle border border-acao/30 px-3 py-2' : ''}`}>
       <div className="flex flex-wrap items-center gap-1.5">
         <span className={novo ? 'font-medium text-tinta' : ''}>{e.exame}: {e.situacao === 'resultado' ? e.resultado : `cancelado — ${e.motivo_cancelamento}`} · pedido {hora(e.pedido_em)}</span>
-        {novo && <Badge variant={e.critico ? 'destructive' : 'info'}>{e.critico ? 'crítico · novo' : 'novo'}</Badge>}
+        {novo && (e.critico ? <Badge variant="destructive">crítico · novo</Badge> : <span className="text-rotulo font-semibold text-acao">novo</span>)}
         {!novo && e.critico && <Badge variant="destructive">crítico</Badge>}
         {e.situacao === 'resultado' && <Button size="xs" variant="ghost" onClick={() => setAberto(!aberto)}>{aberto ? 'Fechar' : 'Ver resultado'}</Button>}
       </div>

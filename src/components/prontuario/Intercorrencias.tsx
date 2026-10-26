@@ -15,6 +15,7 @@ import { fmtDataHora } from '@/lib/datas'
 import { GRAVIDADES, PAPEL_REGISTRO, versoesAnteriores, vigentes, type Gravidade, type Intercorrencia } from '@/lib/intercorrencia'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { Estado } from '@/components/porta/Estado'
 
 // Intercorrência estruturada (Fase 2, tarefa 4 do BACKLOG; migration
 // 20261031000003). Médico, enfermeiro e técnico de enfermagem de plantão
@@ -59,7 +60,9 @@ export function Intercorrencias({ pacienteId, episodioId, internacaoId }: { paci
             <div className="flex flex-wrap items-center gap-2">
               <Siren className="size-4 shrink-0 text-critico" aria-hidden />
               <strong className="font-semibold text-tinta">{x.tipo_rotulo}</strong>
-              <Badge variant={VARIANTE[x.gravidade]}>{x.gravidade}</Badge>
+              {x.gravidade === 'grave'
+                ? <Badge variant={VARIANTE.grave}>grave</Badge>
+                : <Estado tom={x.gravidade === 'moderada' ? 'ambar' : 'cinza'}>{x.gravidade}</Estado>}
               <span className="text-tinta-apoio">{fmtDataHora(x.ocorrida_em)}{x.setor ? ` · ${x.setor}` : ''}</span>
               {podeRegistrar && (
                 <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setForm({ retifica: x })}>Retificar</Button>

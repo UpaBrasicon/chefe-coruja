@@ -390,7 +390,7 @@ Aplicada na branch `feat/visual-3-4-triagem`:
   (`triagem-B-aplicada-claro|escuro.jpg`); no celular a tabela rola na horizontal. As
   telas da enfermagem pedem login: conferir na homologação.
 
-## 3.5 · Leito aberto (25/10/2026, opções; aguarda escolha do RT)
+## 3.5 · Leito aberto (25 e 26/10/2026)
 
 **Levantamento** (agente de busca): pacientes internados em
 `pages/InternacaoPainel.tsx` → `components/internacao/ListaInternados.tsx`; o leito
@@ -436,6 +436,40 @@ sem sombra, sem maiúsculas espaçadas; os alertas acima continuam como estão.
 numa linha só, de ponta a ponta; abaixo dela, o Resumo (NEWS2) e o painel
 "Paciente" começando na mesma altura; "Transferir de setor" no canto superior
 direito, na linha do nome, acima das abas e do painel.
+
+Aplicada na branch `feat/visual-3-5-leito`:
+
+- `LeitoAberto.tsx` (caderno): cabeçalho sem cartão, separado da linha do leito por
+  fio, com "Transferir de setor" no canto direito; as 13 abas na peça de base
+  (`ui/tabs`), sublinhadas, sem ícone, numa linha só (na tela estreita rola para o
+  lado); embaixo, a aba à esquerda e o painel Paciente à direita a partir de 1024 px
+  (no celular o painel vai depois da aba). O modo simples (observação) não mudou:
+  fica para a 3.6.
+- `CabecalhoPaciente.tsx`: modo `compacto` (nome, idade, sexo e permanência numa
+  linha, a ação à direita e embaixo só os alertas: alergia, isolamento e atendimento
+  anterior sem desfecho). O selo da classificação virou `SeloClassificacao`, usado
+  pelo cabeçalho e pelo painel. A porta continua com o cabeçalho de antes.
+- `caderno/PainelPaciente.tsx` (novo): leito e setor, situação em ponto + texto,
+  internação, chegada na unidade, selo da classificação (abre a aba Classificação),
+  acuidade em texto na cor da faixa e diagnóstico; no pé, o recém-nascido da mãe.
+  Alergia e isolamento não se repetem no painel: ficam no cabeçalho, à vista também
+  no celular.
+- `ListaInternados.tsx`: lista sem sombra; leito em texto; alerta Phoenix em texto
+  vermelho (sepse, choque) ou apagado (rastreio).
+- `Estado` mudou para `src/components/porta/Estado.tsx` (componente não importa
+  tela); `porta/tomEstado.ts` traduz a variante antiga do selo para o tom.
+- Abas internas, o mínimo: rótulos sem maiúsculas espaçadas (`caixas.tsx`,
+  acuidade, diagnóstico, trilha, ficha de admissão, laudo da AIH, exames e agravos,
+  resumo clínico e rótulo de seção da evolução, termo, alergias); NEWS2 em 24 px;
+  tipo da pendência, link do pacote de alta, situação do registro da evolução,
+  movimento do antibiótico, status do parecer, do termo, do encaminhamento, da
+  regulação e da AIH em ponto + texto; cartões de exames, passagens e regulação e o
+  histórico na unidade sem sombra. Ficam como alerta: selo de alergia e isolamento,
+  classificação, prioridade do parecer e da regulação, intercorrência grave, exame
+  urgente ou crítico, agravo suspeito e a faixa das escalas de avaliação.
+- Visto na página de teste com o `LeitoAberto` real e dados fictícios a 1280 px nos
+  dois temas e a 375 px (`leito-B-aplicada-claro|escuro.jpg`); as 13 abas cabem
+  numa linha a 1280 px com qualquer aba ativa.
 
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 

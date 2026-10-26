@@ -1,11 +1,10 @@
 // Alta com impeditivos, cancelamento em 24 h e pacote de alta (Fase 3).
 // Toda regra mora no servidor (dar_alta, cancelar_alta, gerar_pacote_alta).
-import { AlertTriangle, DoorOpen, Link2, Printer } from 'lucide-react'
+import { AlertTriangle, DoorOpen, Printer } from 'lucide-react'
 import * as React from 'react'
 
 import { abrirImpressao } from '@/lib/prontuario'
 import { escapeHtml } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 
 import { Secao } from './caixas'
 import { type Acao, diaHora, type Internacao, type Pacote, ROTULO_ALTA, rpc, TIPO_ALTA } from './comum'
+import { Estado } from '@/components/porta/Estado'
 
 // Frases-modelo do protótipo (ESTADO.md, pacote de alta). Nenhuma vem marcada:
 // quem marca é o médico, conforme o caso.
@@ -244,7 +244,7 @@ export function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, aca
     <Secao titulo="Pacote de alta">
       {ativo ? (
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="success"><Link2 className="mr-1 inline size-3" />link ativo</Badge>
+          <Estado tom="verde">link ativo</Estado>
           <span className="text-tinta-sussurro">gerado {diaHora(ativo.criado_em)} · vale até {diaHora(ativo.expira_em)}</span>
           <Button size="xs" variant="ghost" onClick={() => acao(() => rpc('revogar_pacote_alta', { p_pacote: ativo.id }), 'Link revogado.')}>Revogar</Button>
         </div>

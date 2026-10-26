@@ -26,7 +26,7 @@ import { EncaminhamentosRecebidos } from '@/components/encaminhamento/Encaminham
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 
 import { hoje, hora, minutos, nomeDe, rotuloDesfecho, useAgora, type EpFila } from './comum'
-import { Estado } from './Estado'
+import { Estado } from '@/components/porta/Estado'
 
 type Saida = {
   id: string; cor_atual: CorRisco | null; queixa: string; desfecho: string | null; desfecho_motivo: string | null

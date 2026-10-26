@@ -22,7 +22,7 @@ import { Textarea } from '@/components/ui/textarea'
 
 import { PILULA, hora, msgErro, quando, usePendenciasEnfermagem, type PassagemEnfermagem as Passagem } from './useEnfermagem'
 import { TituloCartao } from '@/components/monitor/Pagina'
-import { Estado } from '@/pages/plantao/porta/Estado'
+import { Estado } from '@/components/porta/Estado'
 
 const TURNO: Record<string, string> = { manha: 'manhã', tarde: 'tarde', noite: 'noite', diurno: 'diurno', noturno: 'noturno' }
 type PacienteDoSetor = { paciente_id: string; nome: string; local: string | null }

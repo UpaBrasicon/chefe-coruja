@@ -64,7 +64,7 @@ export function HistoricoEncerrado({ pacienteId, className }: { pacienteId: stri
   const liberado = d.liberado
 
   return (
-    <section aria-label="Histórico na unidade" className={cn('overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso', className)}>
+    <section aria-label="Histórico na unidade" className={cn('overflow-hidden rounded-cartao border border-fio bg-superficie', className)}>
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-trilha px-5 py-3">
         <h3 className="flex items-center gap-2 text-corpo font-semibold text-tinta">
           <History className="size-4 text-tinta-sussurro" aria-hidden /> Histórico na unidade

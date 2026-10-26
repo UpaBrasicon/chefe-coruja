@@ -24,6 +24,7 @@ import {
   type Carater, type MotivoNegacao, type Prioridade, type StatusRegulacao, type TipoSolicitacao, type Vulnerabilidade,
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
+import { Estado } from '@/components/porta/Estado'
 
 type ItemHistorico = {
   id: string; numero: number; criada_em: string; status: StatusRegulacao; tipo: TipoSolicitacao
@@ -60,7 +61,7 @@ export function HistoricoRegulacao({ pacienteId }: { pacienteId: string }) {
   const [aberta, setAberta] = React.useState<string | null>(null)
   if (!pode) return null
   return (
-    <Card>
+    <Card className="shadow-none">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-corpo"><Waypoints className="size-4" aria-hidden /> Regulações</CardTitle>
         <CardDescription>Pedidos à central de regulação, desta e das outras unidades da rede. Abrir um pedido fica registrado no acesso ao prontuário.</CardDescription>
@@ -76,9 +77,9 @@ export function HistoricoRegulacao({ pacienteId }: { pacienteId: string }) {
                   <Badge variant={TOM[PRIORIDADES[r.prioridade].tom]}>{PRIORIDADES[r.prioridade].rotulo}</Badge>
                   <span className="font-medium text-tinta">{resumoPedido(r)}</span>
                   <span className="text-tinta-sussurro">{CARATER[r.carater]} · CID {r.cid}</span>
-                  {r.outra_unidade && <Badge variant="secondary">{r.origem}</Badge>}
+                  {r.outra_unidade && <span className="text-tinta-apoio">{r.origem}</span>}
                   {r.destino && <span className="text-tinta-apoio">→ {r.destino}</span>}
-                  <Badge variant="info" className="ml-auto">{STATUS[r.status]}</Badge>
+                  <span className="ml-auto"><Estado tom="teal">{STATUS[r.status]}</Estado></span>
                   <span className="text-tinta-sussurro">nº {r.numero}</span>
                 </BotaoLinha>
                 {aberta === r.id && <Detalhe pacienteId={pacienteId} id={r.id} />}

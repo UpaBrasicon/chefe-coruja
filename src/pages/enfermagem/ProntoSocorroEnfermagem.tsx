@@ -26,7 +26,7 @@ import { Bloco, BotaoCuidados, PilulaAtraso } from './Pecas'
 import { LeitosParaLiberar } from './LeitosParaLiberar'
 import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
 import { TIPOS_INTERNACAO, atrasadosPorPaciente, duracao, idadeDe, msgErro, useAgora, usePendenciasEnfermagem, useSetoresDaEscala, useTiposDaEscala } from './useEnfermagem'
-import { Estado } from '@/pages/plantao/porta/Estado'
+import { Estado } from '@/components/porta/Estado'
 
 type Triado = {
   id: string; paciente_id: string; setor_id: string; cor_atual: CorRisco; classificado_em: string; queixa: string

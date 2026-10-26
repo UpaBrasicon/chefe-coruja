@@ -8,6 +8,11 @@
 // classificação da porta, o selo de ISOLAMENTO (vermelho quando ativo; marca e
 // retira), o chip de acuidade quando houver e o botão de
 // atendimento anterior sem desfecho (D5; o botão some quando não há). Não gruda: fica no topo do conteúdo (D4).
+//
+// compacto (leito aberto, revisão visual 3.5, opção B do RT): sem cartão; nome,
+// idade, sexo e permanência numa linha, a ação à direita (transferir de setor) e
+// embaixo só os alertas (alergia, isolamento, atendimento anterior sem desfecho).
+// Leito, situação, classificação e acuidade vão para o painel Paciente ao lado.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
@@ -69,12 +74,32 @@ export type CabecalhoPacienteProps = {
   episodios?: boolean
   /** Na porta: o atendimento na tela não conta como anterior. */
   episodioAtualId?: string | null
+  /** Sem cartão e só com os alertas embaixo (leito aberto, 3.5). */
+  compacto?: boolean
+  /** Ação no canto direito da linha do nome (só no compacto). */
+  acao?: React.ReactNode
   className?: string
+}
+
+/** Selo da cor da classificação da porta (Manchester): a cor é da enfermagem. */
+export function SeloClassificacao({ cor, onClick }: { cor: CorRisco; onClick?: () => void }) {
+  return onClick ? (
+    // padrao-ok: a pílula da classificação clicável usa as cores do protocolo; nenhuma peça tem esses tons
+    <button type="button" onClick={onClick} title="Classificação de risco da porta (Manchester). Abrir a classificação."
+      className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold whitespace-nowrap capitalize hover:opacity-90', MTS[cor])}>
+      {cor} · {NIVEL_RISCO[cor]}
+    </button>
+  ) : (
+    <span title="Classificação de risco da porta (Manchester)"
+      className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold whitespace-nowrap capitalize', MTS[cor])}>
+      {cor} · {NIVEL_RISCO[cor]}
+    </span>
+  )
 }
 
 export function CabecalhoPaciente({
   pacienteId, nome, local, setorId, desde, rotuloDesde = 'há', contexto, extra,
-  corClassificacao, onClassificacao, acuidade = false, episodios = false, episodioAtualId, className,
+  corClassificacao, onClassificacao, acuidade = false, episodios = false, episodioAtualId, compacto = false, acao, className,
 }: CabecalhoPacienteProps) {
   const [alergiasAbertas, setAlergiasAbertas] = React.useState(false)
   const [isolamentoAberto, setIsolamentoAberto] = React.useState(false)
@@ -123,6 +148,36 @@ export function CabecalhoPaciente({
   const a = acu.data
   const temAcuidade = acuidade && !!a?.escala && !!a.aferido_em && a.total !== undefined
 
+  const gavetas = (
+    <>
+      <GavetaAlergias pacienteId={pacienteId} nome={nomeVisivel} aberta={alergiasAbertas} onAbertaChange={setAlergiasAbertas} />
+      <GavetaIsolamento pacienteId={pacienteId} nome={nomeVisivel} aberta={isolamentoAberto} onAbertaChange={setIsolamentoAberto} />
+    </>
+  )
+
+  if (compacto) {
+    return (
+      <div className={cn('flex flex-col gap-2', className)}>
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
+          <div className="flex min-w-[200px] flex-1 flex-wrap items-baseline gap-x-3 gap-y-0.5">
+            <span className="text-corpo font-semibold text-tinta">
+              {nomeVisivel}{' '}
+              <span className="text-apoio font-normal text-tinta-sussurro">{[idade, sexo].filter(Boolean).join(' · ') || 'idade não informada'}</span>
+            </span>
+            {desde && <span className="text-apoio text-tinta-sussurro">{rotuloDesde} <span className="tabular-nums">{duracao(desde, agora)}</span></span>}
+          </div>
+          {acao && <div className="flex shrink-0 flex-wrap gap-[7px]">{acao}</div>}
+        </div>
+        <div className="flex flex-wrap items-center gap-2 empty:hidden">
+          <SeloAlergia pacienteId={pacienteId} onClick={() => setAlergiasAbertas(true)} />
+          <SeloIsolamento pacienteId={pacienteId} onClick={() => setIsolamentoAberto(true)} />
+          {episodios && <BotaoEpisodiosAnteriores pacienteId={pacienteId} nome={nomeVisivel} episodioAtualId={episodioAtualId} />}
+        </div>
+        {gavetas}
+      </div>
+    )
+  }
+
   return (
     // Duas linhas (P/index.html 1752–1771): quem é a pessoa, depois os selos.
     <div className={cn('flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-5 py-[15px] shadow-repouso', className)}>
@@ -149,20 +204,7 @@ export function CabecalhoPaciente({
       <SeloAlergia pacienteId={pacienteId} onClick={() => setAlergiasAbertas(true)} />
       <SeloIsolamento pacienteId={pacienteId} onClick={() => setIsolamentoAberto(true)} />
 
-      {corClassificacao && (
-        onClassificacao ? (
-          // padrao-ok: a pílula da classificação clicável usa as cores do protocolo; nenhuma peça tem esses tons
-          <button type="button" onClick={onClassificacao} title="Classificação de risco da porta (Manchester). Abrir a classificação."
-            className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold capitalize hover:opacity-90', MTS[corClassificacao])}>
-            {corClassificacao} · {NIVEL_RISCO[corClassificacao]}
-          </button>
-        ) : (
-          <span title="Classificação de risco da porta (Manchester)"
-            className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold capitalize', MTS[corClassificacao])}>
-            {corClassificacao} · {NIVEL_RISCO[corClassificacao]}
-          </span>
-        )
-      )}
+      {corClassificacao && <SeloClassificacao cor={corClassificacao} onClick={onClassificacao} />}
 
       {temAcuidade && (
         <span title={`Acuidade pelo ${a!.escala}, aferido às ${hora(a!.aferido_em!)}`}
@@ -173,8 +215,7 @@ export function CabecalhoPaciente({
 
       </div>
 
-      <GavetaAlergias pacienteId={pacienteId} nome={nomeVisivel} aberta={alergiasAbertas} onAbertaChange={setAlergiasAbertas} />
-      <GavetaIsolamento pacienteId={pacienteId} nome={nomeVisivel} aberta={isolamentoAberto} onAbertaChange={setIsolamentoAberto} />
+      {gavetas}
     </div>
   )
 }

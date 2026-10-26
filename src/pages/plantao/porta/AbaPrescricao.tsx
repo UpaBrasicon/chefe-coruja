@@ -15,7 +15,7 @@ import { AlterarItem } from '@/components/prescricao/AlterarItem'
 import { NovoItem, type PesoAtual } from '@/components/prescricao/PrescricaoEstruturada'
 
 import { hora, type ItemPS } from './comum'
-import { Estado, type TomEstado } from './Estado'
+import { Estado, type TomEstado } from '@/components/porta/Estado'
 
 function Situacao({ i }: { i: ItemPS }) {
   let tom: TomEstado = 'ambar'

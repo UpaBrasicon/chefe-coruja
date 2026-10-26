@@ -104,14 +104,14 @@ export function BlocoAcuidade({ a, carregando, pacienteId, internacaoId, podeLan
     <Caixa>
       <div className="flex flex-wrap items-center gap-4 border-b border-fio bg-superficie px-4 py-3.5">
         <div className="flex flex-col gap-1">
-          <span className="text-rotulo font-semibold tracking-[0.07em] text-tinta-sussurro uppercase">
+          <span className="text-rotulo font-semibold text-tinta-sussurro">
             {a.escala}{a.grupo ? ` · ${a.grupo}` : ''}
           </span>
           {semAfericao ? (
             <span className="text-apoio text-tinta-sussurro">sem aferição em 24 h</span>
           ) : (
             <div className="flex items-baseline gap-2.5">
-              <span className={cn('text-numeral-ok leading-[0.9] font-semibold tracking-[-0.02em] tabular-nums', BANDA_TEXTO[banda])}>
+              <span className={cn('text-titulo leading-none font-semibold tabular-nums', BANDA_TEXTO[banda])}>
                 {a.total}{a.parcial ? '*' : ''}
               </span>
               <span className={cn('text-apoio font-medium', BANDA_TEXTO[banda])}>
@@ -368,7 +368,7 @@ export function LancarVitais({ pacienteId, internacaoId, pediatrico, perfilId, a
           <p className="text-apoio text-pretty text-pediatria">
             Vasoativas: adrenalina, noradrenalina, dopamina, dobutamina, milrinona ou vasopressina, em qualquer dose (Phoenix).
           </p>
-          <div className="text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">Exames (Phoenix e PELOD-2)</div>
+          <div className="text-rotulo font-semibold text-tinta-sussurro">Exames (Phoenix e PELOD-2)</div>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
             {EXAMES.map(([nome, rotulo, unidade]) => (
               <CampoNumero key={nome} nome={nome} rotulo={rotulo} unidade={unidade} valor={v[nome] ?? ''} mudar={set(nome)} />

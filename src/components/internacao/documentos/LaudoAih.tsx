@@ -16,7 +16,6 @@ import { competenciaNaTela, STATUS_AIH, type AihDoLaudo, type CriticaAih } from 
 import { supabase } from '@/lib/supabase'
 import { abrirImpressao, folhaDoDocumentoEmitido } from '@/lib/prontuario'
 import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { BarraDocumento } from '@/components/documento/BarraDocumento'
 import { diaHora, invalidarDocumentos } from '@/components/documento/documentos'
@@ -34,6 +33,8 @@ import { cn } from '@/lib/utils'
 import {
   AIH_VAZIO, aihTemAlgo, CAUSAS_EXTERNAS, codigoCid, conteudoAih, formDoConteudoAih, pendenciasAih, type CausaExterna, type FormAih,
 } from '@/components/internacao/documentos/documentosInternacao'
+import { Estado } from '@/components/porta/Estado'
+import { tomDaVariante } from '@/components/porta/tomEstado'
 
 type Conferencia = { avisos: { campo: string; texto: string }[]; criticas?: CriticaAih[]; competencia: string | null; nota: string }
 
@@ -239,7 +240,7 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
                     {apoio && (
                       <div className="flex flex-col gap-1.5 rounded-controle border border-fio bg-superficie px-3.5 py-3">
                         <div className="flex flex-wrap items-baseline gap-2.5">
-                          <span className="text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">NEWS2</span>
+                          <span className="text-rotulo font-semibold text-tinta-sussurro">NEWS2</span>
                           <span className={cn('text-titulo font-semibold tabular-nums', ['text-conforme', 'text-atencao', 'text-critico'][apoio.bandaN])}>{apoio.total}</span>
                           <span className="text-corpo text-tinta">{apoio.banda}</span>
                           <span className={cn('text-apoio', apoio.qsofaAlerta ? 'font-medium text-critico' : 'text-tinta-apoio')}>qSOFA {apoio.qsofa}</span>
@@ -375,7 +376,7 @@ function SituacaoAih({ aih }: { aih: AihDoLaudo | undefined }) {
   const st = STATUS_AIH[aih.status]
   return (
     <span className="flex flex-wrap items-center gap-2 text-apoio">
-      <Badge variant={st.variante}>AIH {st.rotulo}</Badge>
+      <Estado tom={tomDaVariante(st.variante)}>AIH {st.rotulo}</Estado>
       {aih.status === 'aprovada' && <span className="text-conforme">nº {aih.numero} · competência {competenciaNaTela(aih.competencia)}</span>}
       {aih.status === 'rejeitada' && <span className="text-critico">{aih.motivo}</span>}
       {aih.status === 'solicitada' && <span className="text-tinta-sussurro">aguardando o médico regulador</span>}
