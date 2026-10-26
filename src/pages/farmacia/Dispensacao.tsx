@@ -7,6 +7,10 @@
 // unidades por vez) e quem dispensa define. Dispensar baixa o estoque; o saldo
 // pode ficar negativo e aparece para a farmácia conferir. Devolução com motivo
 // volta ao estoque. Migration 20261130000001_dispensacao_farmacia.sql.
+//
+// Revisão visual 3.7b (opção A do RT, 26/10/2026): Prescrições como caixa de
+// entrada, igual à validação — à esquerda um paciente por linha, à direita os
+// itens do escolhido, com a quantidade e Dispensar na própria linha.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PackageOpen } from 'lucide-react'
@@ -25,6 +29,7 @@ import { fmtDataHora } from '@/lib/datas'
 import { porPaciente, type Dispensacao, type ItemParaDispensar } from '@/lib/dispensacao'
 import { normalizarMedicamento } from '@/lib/search'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import { rotuloUnidade } from '@/lib/unidadeConsumo'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Estado } from '@/components/porta/Estado'
@@ -72,20 +77,49 @@ function Prescricoes({ unidade }: { unidade: string }) {
     },
   })
   const grupos = porPaciente(lista.data?.itens ?? [])
+  const [escolhido, setEscolhido] = React.useState<string | null>(null)
+  const sel = grupos.find((g) => g.paciente_id === escolhido) ?? grupos[0]
+  const zerado = (i: ItemParaDispensar) => i.saldo_estoque != null && i.saldo_estoque <= 0
   return (
     <div className="flex flex-col gap-3">
-      <Input className="max-w-md" aria-label="Buscar paciente ou medicamento" placeholder="Buscar paciente ou medicamento" value={termo} onChange={(e) => setTermo(e.target.value)} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-apoio text-tinta-sussurro">
+          {grupos.length > 0
+            ? `${(lista.data?.itens ?? []).length} ${(lista.data?.itens ?? []).length === 1 ? 'item' : 'itens'} de ${grupos.length} ${grupos.length === 1 ? 'paciente' : 'pacientes'} nas prescrições vigentes · a quantidade vem sugerida para as próximas 24 h`
+            : 'Itens de medicamento das prescrições vigentes.'}
+        </p>
+        <Input className="h-8 w-64" aria-label="Buscar paciente ou medicamento" placeholder="Buscar paciente ou medicamento" value={termo} onChange={(e) => setTermo(e.target.value)} />
+      </div>
       <MensagemErro texto={lista.error ? (lista.error as Error).message : null} />
-      {lista.isLoading ? <Spinner /> : grupos.length === 0 ? (
+      {lista.isLoading ? <Spinner /> : !sel ? (
         <Vazio icone={PackageOpen} titulo="Nenhum medicamento prescrito" texto="Itens de medicamento das prescrições vigentes aparecem aqui." />
-      ) : grupos.map((g) => (
-        <section key={g.paciente_id} className="rounded-container border border-fio bg-superficie">
-          <div className="border-b border-trilha px-4 py-2 text-controle font-medium text-tinta">
-            {g.paciente}<span className="font-normal text-tinta-sussurro"> · {g.prontuario ?? '—'}{g.setor ? ` · ${g.setor}` : ''}</span>
-          </div>
-          {g.itens.map((i) => <LinhaItem key={i.item_id} i={i} farmaceutico={!!lista.data?.farmaceutico} />)}
-        </section>
-      ))}
+      ) : (
+        <div className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[280px_minmax(0,1fr)]">
+          <ul aria-label="Pacientes com itens a dispensar" className="border-b border-fio md:border-r md:border-b-0">
+            {grupos.map((g) => (
+              <li key={g.paciente_id}>
+                <BotaoLinha variante="linha" aria-current={g.paciente_id === sel.paciente_id ? 'true' : undefined} onClick={() => setEscolhido(g.paciente_id)}
+                  className={cn('flex-col gap-0.5 px-4', g.paciente_id === sel.paciente_id && 'bg-alerta-marca')}>
+                  <span className="text-apoio font-semibold text-tinta">{g.paciente}</span>
+                  <span className="text-rotulo text-tinta-sussurro">{[g.setor, g.prontuario ? `pront. ${g.prontuario}` : null].filter(Boolean).join(' · ') || '—'}</span>
+                  <span className="text-rotulo text-tinta-apoio">{g.itens.length} {g.itens.length === 1 ? 'item' : 'itens'} a dispensar</span>
+                  <span className="flex flex-wrap gap-x-2 text-rotulo font-semibold empty:hidden">
+                    {g.itens.some(zerado) && <span className="text-atencao">estoque zerado</span>}
+                    {g.itens.some((i) => i.validacao === 'devolvido') && <span className="text-critico">devolvido para correção</span>}
+                  </span>
+                </BotaoLinha>
+              </li>
+            ))}
+          </ul>
+          <section aria-label={`Itens de ${sel.paciente}`} className="flex min-w-0 flex-col">
+            <div className="border-b border-fio px-5 py-3.5">
+              <h3 className="text-corpo font-semibold text-tinta">{sel.paciente}</h3>
+              <p className="text-apoio text-tinta-sussurro">{[sel.setor, sel.prontuario ? `prontuário ${sel.prontuario}` : null].filter(Boolean).join(' · ') || '—'}</p>
+            </div>
+            {sel.itens.map((i) => <LinhaItem key={i.item_id} i={i} farmaceutico={!!lista.data?.farmaceutico} />)}
+          </section>
+        </div>
+      )}
     </div>
   )
 }
@@ -109,35 +143,36 @@ function LinhaItem({ i, farmaceutico }: { i: ItemParaDispensar; farmaceutico: bo
     },
   })
   const pronto = Number(qtd) >= 1 && (farmaceutico || just.trim().length >= MINIMO)
+  const zerado = i.saldo_estoque != null && i.saldo_estoque <= 0
   return (
-    <div className="flex flex-col gap-1.5 border-b border-trilha px-4 py-3 text-apoio last:border-0">
-      <div className="flex flex-wrap items-baseline gap-2">
-        <span className="font-medium text-tinta">{i.medicamento}</span>
-        <span className="text-tinta-apoio">{[i.dose, i.via, i.posologia].filter(Boolean).join(' · ')}{i.se_necessario ? ' · se necessário' : ''}</span>
-        {i.validacao === 'confere' && <Estado tom="verde">validado</Estado>}
-        {i.validacao === 'devolvido' && <Estado tom="vermelho">devolvido para correção</Estado>}
-      </div>
-      <span className="text-rotulo text-tinta-sussurro">
-        Dispensado nas últimas 24 h: {i.dispensado_24h} {unidade} · estoque: {i.saldo_estoque ?? '—'}
-      </span>
-      <span className="text-rotulo text-tinta-apoio">
-        Sugestão: {i.sugestao.quantidade != null ? `${i.sugestao.quantidade} ${unidade}` : 'sem sugestão'}
-        {i.sugestao.explicacao ? ` (${i.sugestao.explicacao})` : ''}
-      </span>
-      {i.sugestao.notas.map((n) => <span key={n} className="text-rotulo text-atencao">{n}</span>)}
-      <div className="flex flex-wrap items-end gap-2">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor={`qtd-${i.item_id}`}>Quantidade ({unidade})</Label>
-          <Input id={`qtd-${i.item_id}`} className="h-8 w-24" inputMode="numeric" value={qtd} onChange={(e) => setQtd(e.target.value.replace(/\D/g, ''))} />
+    <div className="flex flex-col gap-2 border-b border-trilha px-5 py-3 text-apoio last:border-b-0">
+      <div className="flex flex-wrap items-start gap-x-5 gap-y-2">
+        <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-1">
+          <span className="flex flex-wrap items-baseline gap-2">
+            <span className="font-semibold text-tinta">{i.medicamento}</span>
+            {i.validacao === 'confere' && <Estado tom="verde">validado</Estado>}
+            {i.validacao === 'devolvido' && <Estado tom="vermelho">devolvido para correção</Estado>}
+          </span>
+          <span className="text-tinta">{[i.dose, i.via, i.posologia].filter(Boolean).join(' · ')}{i.se_necessario ? ' · se necessário' : ''}</span>
+          <span className="text-rotulo text-tinta-sussurro">
+            Sugestão {i.sugestao.quantidade != null ? `${i.sugestao.quantidade} ${unidade}` : 'sem sugestão'}{i.sugestao.explicacao ? ` (${i.sugestao.explicacao})` : ''}
+            {' · '}nas últimas 24 h {i.dispensado_24h} · estoque <span className={cn(zerado && 'font-semibold text-critico')}>{i.saldo_estoque ?? '—'}</span>
+          </span>
+          {i.sugestao.notas.map((n) => <span key={n} className="text-rotulo text-atencao">{n}</span>)}
         </div>
-        {!farmaceutico && (
+        <div className="flex items-center gap-2">
+          <Input id={`qtd-${i.item_id}`} aria-label={`Quantidade de ${i.medicamento} (${unidade})`} className="h-8 w-20 tabular-nums" inputMode="numeric" value={qtd} onChange={(e) => setQtd(e.target.value.replace(/\D/g, ''))} />
+          <span className="text-rotulo text-tinta-sussurro">{unidade}</span>
+          {farmaceutico && <Button size="sm" disabled={!pronto || dispensar.isPending} onClick={() => dispensar.mutate()}>Dispensar</Button>}
+        </div>
+      </div>
+      {!farmaceutico && (
+        <div className="flex flex-wrap items-end gap-2">
           <Textarea aria-label="Justificativa da retirada sem farmacêutico" rows={1} className="min-w-[240px] flex-1"
             placeholder="Por que retira sem farmacêutico (mínimo de 10 letras)" value={just} onChange={(e) => setJust(e.target.value)} />
-        )}
-        <Button size="sm" disabled={!pronto || dispensar.isPending} onClick={() => dispensar.mutate()}>
-          {farmaceutico ? 'Dispensar' : 'Retirar sem farmacêutico'}
-        </Button>
-      </div>
+          <Button size="sm" disabled={!pronto || dispensar.isPending} onClick={() => dispensar.mutate()}>Retirar sem farmacêutico</Button>
+        </div>
+      )}
       {dispensar.error && <p role="alert" className="text-critico">{(dispensar.error as Error).message}</p>}
       {aviso && <p role="status" className="text-conforme">{aviso}</p>}
     </div>
