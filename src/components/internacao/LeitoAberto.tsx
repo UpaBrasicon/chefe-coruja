@@ -36,7 +36,7 @@ import { AbaEvolucao } from '@/components/evolucao/AbaEvolucao'
 import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
-import { Badge } from '@/components/ui/badge'
+import { Estado } from '@/components/porta/Estado'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -226,9 +226,9 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
         : `desde ${diaHora(i.data_admissao)}`}
       extra={
         <>
-          <Badge variant={ativa ? 'info' : 'secondary'}>
+          <Estado tom={i.status === 'em_observacao' ? 'ambar' : ativa ? 'teal' : 'cinza'}>
             {i.status === 'em_observacao' ? 'Em observação' : ativa ? 'Internado' : 'Alta ' + diaHora(i.data_alta)}
-          </Badge>
+          </Estado>
           {/* Portão 2, tarefa 5: recém-nascido cadastrado a partir do leito da mãe */}
           {ativa && <BotaoRnDaMae maeId={pacienteId} maeNome={pacienteNome} />}
         </>
@@ -238,6 +238,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
       acuidade={ativa}
       episodios
       compacto={compacto}
+      semCartao={!compacto}
       acao={compacto ? acoesTopo : undefined}
     />
   )

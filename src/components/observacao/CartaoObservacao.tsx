@@ -1,7 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Um box da observação (protótipo, index.html 3568–3606): box, quem é, queixa,
-// estado, protocolo, reavaliação, espera até o primeiro registro médico,
-// alergia e acuidade; à direita os relógios da permanência; as ações do estado.
+// Um box da observação (protótipo, index.html 3568–3606), uma linha da tabela
+// (revisão visual 3.6, opção B do RT): box; quem é, queixa, alergia e acuidade;
+// situação em ponto + texto com reavaliação, protocolo e espera até o primeiro
+// registro médico; há quanto tempo; o prazo das 6 horas; as ações do estado. Os
+// painéis da linha (reavaliar, desfecho, protocolo, passagem) abrem numa linha
+// de largura inteira logo abaixo.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ClipboardList, Clock } from 'lucide-react'
@@ -12,10 +15,12 @@ import { cn } from '@/lib/utils'
 import { faixaEtaria, rotuloIdade } from '@/domain/idade'
 import { SeloAlergia } from '@/components/paciente/AlergiasEventos'
 import { Button } from '@/components/ui/button'
+import { TableCell, TableRow } from '@/components/ui/table'
+import { Estado } from '@/components/porta/Estado'
 import { dataIso } from '@/lib/formato'
 
 import {
-  ESTADOS, ROTULO_DESFECHO, TOM_BARRA, TOM_TEXTO, hhmm, msgErro, relogioEspera, relogioPermanencia, rpc, textoReavaliacao,
+  ESTADOS, ROTULO_DESFECHO, TOM_TEXTO, hhmm, msgErro, relogioEspera, relogioPermanencia, rpc, textoReavaliacao,
   type Acao, type LinhaObservacao,
 } from './modelo'
 import {
@@ -24,10 +29,10 @@ import {
 
 type Aberto = '' | 'reav' | 'fim' | 'proto' | 'passar'
 const hoje = () => dataIso()
-const BANDA = ['bg-conforme/10 text-conforme', 'bg-atencao/10 text-atencao', 'bg-critico/10 text-critico']
+const BANDA = ['text-conforme', 'text-observacao', 'text-critico']
 
 /** Acuidade calculada no servidor (NEWS2 no adulto, Bedside PEWS na criança): a mesma chave do leito. */
-function ChipAcuidade({ pacienteId }: { pacienteId: string }) {
+function Acuidade({ pacienteId }: { pacienteId: string }) {
   const q = useQuery({
     queryKey: ['acuidade', pacienteId],
     staleTime: 60_000,
@@ -42,15 +47,15 @@ function ChipAcuidade({ pacienteId }: { pacienteId: string }) {
   // sem escala (ex.: sem data de nascimento) o servidor diz o porquê, como no leito (Acuidade.tsx)
   if (!a.escala) {
     return a.motivo
-      ? <span title={a.motivo} className="rounded-capsula bg-alerta-atencao px-2.5 py-[3px] text-rotulo font-semibold text-atencao">{a.motivo}</span>
+      ? <span title={a.motivo} className="text-rotulo font-semibold text-atencao">{a.motivo}</span>
       : null
   }
   if (!a.aferido_em || a.total === undefined) {
-    return <span className="rounded-capsula bg-trilha px-2.5 py-[3px] text-rotulo font-semibold text-tinta-sussurro">{a.escala} · sem aferição</span>
+    return <span className="text-rotulo text-tinta-sussurro">{a.escala} sem aferição</span>
   }
   return (
     <span title={`${a.escala} aferido às ${hhmm(a.aferido_em)}${a.parcial ? ' (parcial: falta vital)' : ''}`}
-      className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold tabular-nums', BANDA[a.banda ?? 0])}>
+      className={cn('text-rotulo font-semibold tabular-nums', BANDA[a.banda ?? 0])}>
       {a.escala} {a.total}{a.parcial ? '*' : ''}
     </span>
   )
@@ -109,75 +114,89 @@ export function CartaoObservacao({ linha, agora, eu, unidadeId, podeAgir, ehMedi
     if (!aguardandoPassagem) acoes.push({ rotulo: ps?.situacao === 'recusada' ? 'Reenviar passagem' : 'Passar plantão', onClick: () => abrir('passar') })
   }
 
+  const painel = aberto || (ps && !fim && (ps.situacao !== 'aceita' || ps.de_perfil === eu || ps.para_perfil === eu)) || (erro && !aberto)
+
   return (
-    <div className="border-b border-trilha last:border-b-0">
-      <div className="flex flex-wrap items-center gap-3.5 px-5 py-[13px] hover:bg-campo">
-        <span className="shrink-0 rounded-capsula bg-trilha px-[9px] py-1 text-apoio font-semibold text-tinta-apoio">{linha.box ?? 'Sem box'}</span>
+    <>
+      <TableRow className={cn('align-top', painel && 'border-b-0')}>
+        <TableCell className="pl-5 font-semibold text-acao">{linha.box ?? 'Sem box'}</TableCell>
 
-        <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
-          <span className="text-corpo font-medium text-tinta">
-            {linha.nome} {idade && <span className="text-apoio font-normal text-tinta-sussurro">{idade}</span>}
-          </span>
-          {linha.queixa && <span className="text-apoio text-tinta-sussurro">{linha.queixa}</span>}
-          <span className="flex flex-wrap items-center gap-[7px]">
-            <span className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold whitespace-nowrap', est.classe)}>
-              {est.rotulo}{fim && linha.desfecho ? ` · ${ROTULO_DESFECHO[linha.desfecho] ?? linha.desfecho} às ${hhmm(linha.finalizado_em)}` : ''}
+        <TableCell className="whitespace-normal">
+          <div className="flex min-w-[200px] flex-col gap-1">
+            <span className="text-corpo font-medium text-tinta">
+              {linha.nome} {idade && <span className="text-apoio font-normal text-tinta-sussurro">{idade}</span>}
             </span>
+            {linha.queixa && <span className="text-apoio text-tinta-sussurro">{linha.queixa}</span>}
+            <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+              <SeloAlergia pacienteId={linha.paciente_id} />
+              {!fim && <Acuidade pacienteId={linha.paciente_id} />}
+            </span>
+          </div>
+        </TableCell>
+
+        <TableCell className="whitespace-normal">
+          <div className="flex min-w-[180px] flex-col items-start gap-0.5">
+            <Estado tom={est.tom}>{est.rotulo}</Estado>
+            {fim && linha.desfecho && <span className="pl-[17px] text-rotulo text-tinta-apoio">{ROTULO_DESFECHO[linha.desfecho] ?? linha.desfecho} às {hhmm(linha.finalizado_em)}</span>}
+            {reav && <span className={cn('pl-[17px] text-rotulo font-semibold', reav.atrasada ? 'text-critico' : 'text-atencao')}>{reav.texto}</span>}
             {pr && (
-              <>
-                <span className="rounded-controle bg-suprimento px-[7px] py-0.5 text-rotulo font-bold text-sobre-acao" title={pr.nome}>{pr.sigla}</span>
-                <span className="text-rotulo text-tinta-apoio">Etapa {pr.etapa_atual + 1} de {pr.etapas.length} · {pr.etapas[pr.etapa_atual]?.texto}</span>
-              </>
+              <span className="pl-[17px] text-rotulo text-tinta-apoio" title={pr.nome}>
+                <span className="font-semibold text-suprimento">{pr.sigla}</span> · Etapa {pr.etapa_atual + 1} de {pr.etapas.length} · {pr.etapas[pr.etapa_atual]?.texto}
+              </span>
             )}
-          </span>
-          {reav && <span className={cn('text-rotulo font-semibold', reav.atrasada ? 'text-critico' : 'text-atencao')}>{reav.texto}</span>}
-          {!fim && (
-            <span className={cn('text-rotulo', espera.aguardando ? 'font-semibold text-observacao' : 'text-tinta-sussurro')}>
-              {espera.texto}{!espera.aguardando && linha.primeiro_atendimento_por ? ` · ${linha.primeiro_atendimento_por}` : ''}
-            </span>
-          )}
-          <span className="mt-0.5 flex flex-wrap items-center gap-2">
-            <SeloAlergia pacienteId={linha.paciente_id} />
-            {!fim && <ChipAcuidade pacienteId={linha.paciente_id} />}
-          </span>
-        </div>
+            {!fim && (
+              <span className={cn('pl-[17px] text-rotulo', espera.aguardando ? 'font-semibold text-observacao' : 'text-tinta-sussurro')}>
+                {espera.texto}{!espera.aguardando && linha.primeiro_atendimento_por ? ` · ${linha.primeiro_atendimento_por}` : ''}
+              </span>
+            )}
+          </div>
+        </TableCell>
 
-        <div className="flex w-[132px] flex-[0_1_auto] flex-col items-end gap-1">
-          <span className={cn('text-apoio tabular-nums', fim ? 'text-tinta-sussurro' : rel.acima ? 'font-semibold text-observacao' : 'text-tinta-apoio')}>{rel.permanencia}</span>
+        <TableCell className="tabular-nums">
+          <span className={cn(fim ? 'text-tinta-sussurro' : rel.acima ? 'font-semibold text-observacao' : 'text-tinta-apoio')}>{rel.permanencia}</span>
+          <div className="text-rotulo text-tinta-sussurro">desde {hhmm(linha.entrada)}</div>
+        </TableCell>
+
+        <TableCell className="tabular-nums">
           {fim ? (
-            <span className="flex items-center gap-1 text-rotulo whitespace-nowrap text-tinta-sussurro"><Clock className="size-3" aria-hidden /> Encerrada às {hhmm(linha.finalizado_em)}</span>
+            <span className="flex items-center gap-1 text-rotulo text-tinta-sussurro"><Clock className="size-3" aria-hidden /> Encerrada às {hhmm(linha.finalizado_em)}</span>
           ) : (
             <>
-              <span className={cn('flex items-center gap-1 text-rotulo font-semibold tabular-nums whitespace-nowrap', TOM_TEXTO[rel.tom])}>
+              <span className={cn('flex items-center gap-1 font-semibold', TOM_TEXTO[rel.tom])}>
                 <Clock className="size-3" aria-hidden /> {rel.contagem}
               </span>
-              <span aria-hidden className="h-1 w-full overflow-hidden rounded-capsula bg-fio">
-                <span className={cn('block h-full rounded-capsula transition-[width] duration-500', TOM_BARRA[rel.tom])} style={{ width: `${rel.pct}%` }} />
-              </span>
+              <div className={cn('text-rotulo', rel.acima ? 'text-observacao' : 'text-tinta-sussurro')}>
+                {rel.acima ? 'Definir conduta ou internar' : `até ${hhmm(linha.prazo)}`}
+              </div>
             </>
           )}
-          <span className={cn('text-right text-apoio', fim ? 'text-tinta-sussurro' : rel.acima ? 'text-observacao' : 'text-tinta-sussurro')}>
-            {fim ? 'Fora da observação' : rel.acima ? 'Definir conduta ou internar' : 'Em acompanhamento'}
-          </span>
-        </div>
+        </TableCell>
 
-        <div className="flex flex-[0_1_auto] flex-wrap gap-[7px]">
-          {acoes.map((a) => (
-            <Button key={a.rotulo} size="sm" variant={a.primaria ? 'default' : 'outline'} onClick={a.onClick}>{a.rotulo}</Button>
-          ))}
-          {!fim && (
-            <Button size="sm" variant="outline" onClick={() => abrirPrancheta(linha)}><ClipboardList /> Prancheta</Button>
-          )}
-        </div>
-      </div>
+        <TableCell className="pr-5">
+          <div className="flex flex-wrap justify-end gap-[7px]">
+            {acoes.map((a) => (
+              <Button key={a.rotulo} size="sm" variant={a.primaria ? 'default' : 'outline'} onClick={a.onClick}>{a.rotulo}</Button>
+            ))}
+            {!fim && (
+              <Button size="sm" variant="outline" onClick={() => abrirPrancheta(linha)}><ClipboardList /> Prancheta</Button>
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
 
-      {erro && !aberto && <p className="mx-5 mb-3 text-apoio text-critico">{erro}</p>}
-      {aberto === 'reav' && <PainelReavaliar linha={linha} acao={acao} fechar={fechar} erro={erro} />}
-      {aberto === 'fim' && <PainelDesfecho linha={linha} unidadeId={unidadeId} acao={acao} fechar={fechar} erro={erro} />}
-      {aberto === 'proto' && !pr && <PainelEscolherProtocolo linha={linha} faixa={faixa} acao={acao} fechar={fechar} erro={erro} />}
-      {aberto === 'proto' && pr && <PainelProtocoloAberto key={pr.id} linha={linha} acao={acao} fechar={fechar} erro={erro} />}
-      {aberto === 'passar' && <PainelPassar linha={linha} acao={acao} fechar={fechar} erro={erro} />}
-      {ps && !fim && (ps.situacao !== 'aceita' || ps.de_perfil === eu || ps.para_perfil === eu) && <BlocoPassagemBox linha={linha} />}
-    </div>
+      {painel && (
+        <TableRow className="hover:bg-transparent">
+          <TableCell colSpan={6} className="px-0 pt-0 pb-0 whitespace-normal">
+            {erro && !aberto && <p className="mx-5 mb-3 text-apoio text-critico">{erro}</p>}
+            {aberto === 'reav' && <PainelReavaliar linha={linha} acao={acao} fechar={fechar} erro={erro} />}
+            {aberto === 'fim' && <PainelDesfecho linha={linha} unidadeId={unidadeId} acao={acao} fechar={fechar} erro={erro} />}
+            {aberto === 'proto' && !pr && <PainelEscolherProtocolo linha={linha} faixa={faixa} acao={acao} fechar={fechar} erro={erro} />}
+            {aberto === 'proto' && pr && <PainelProtocoloAberto key={pr.id} linha={linha} acao={acao} fechar={fechar} erro={erro} />}
+            {aberto === 'passar' && <PainelPassar linha={linha} acao={acao} fechar={fechar} erro={erro} />}
+            {ps && !fim && (ps.situacao !== 'aceita' || ps.de_perfil === eu || ps.para_perfil === eu) && <BlocoPassagemBox linha={linha} />}
+          </TableCell>
+        </TableRow>
+      )}
+    </>
   )
 }

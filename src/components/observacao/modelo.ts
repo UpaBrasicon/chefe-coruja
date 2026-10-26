@@ -7,6 +7,7 @@
 import { supabase } from '@/lib/supabase'
 import type { Database } from '@/types/database'
 import { hora } from '@/lib/formato'
+import type { TomEstado } from '@/components/porta/Estado'
 
 type LinhaBanco = Database['public']['Functions']['painel_observacao']['Returns'][number]
 
@@ -44,13 +45,13 @@ export type LinhaObservacao = Omit<LinhaBanco, 'estado' | 'protocolo' | 'passage
   passagem: PassagemDoBox | null
 }
 
-/** Estados na ordem do protótipo (OBS_ESTADOS), com o tom de cada pílula. */
-export const ESTADOS: { id: EstadoObservacao; rotulo: string; classe: string }[] = [
-  { id: 'nao', rotulo: 'Não atendido', classe: 'bg-trilha text-tinta-apoio' },
-  { id: 'atendimento', rotulo: 'Em atendimento', classe: 'bg-acao/10 text-acao' },
-  { id: 'reavaliacao', rotulo: 'Em reavaliação', classe: 'bg-observacao/10 text-observacao' },
-  { id: 'encaminhado', rotulo: 'Encaminhado', classe: 'bg-suprimento/10 text-suprimento' },
-  { id: 'finalizado', rotulo: 'Finalizado', classe: 'bg-conforme/10 text-conforme' },
+/** Estados na ordem do protótipo (OBS_ESTADOS), com o tom do ponto + texto (revisão visual 3.6). */
+export const ESTADOS: { id: EstadoObservacao; rotulo: string; tom: TomEstado }[] = [
+  { id: 'nao', rotulo: 'Não atendido', tom: 'cinza' },
+  { id: 'atendimento', rotulo: 'Em atendimento', tom: 'teal' },
+  { id: 'reavaliacao', rotulo: 'Em reavaliação', tom: 'ambar' },
+  { id: 'encaminhado', rotulo: 'Encaminhado', tom: 'teal' },
+  { id: 'finalizado', rotulo: 'Finalizado', tom: 'verde' },
 ]
 
 /** Desfechos do protótipo (DESFECHOS_PS sem "Observação"), com o valor da RPC. */
