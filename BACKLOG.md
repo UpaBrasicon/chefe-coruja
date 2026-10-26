@@ -1206,6 +1206,15 @@ Dispensação → Faltas → Diluição padrão e Rascunhos → Painel → Alta 
   editor (Salvar e Publicar no topo). Ajustar uma linha leva ao rascunho na mesma tela. As chamadas ao
   servidor são as mesmas. Sem migration; typecheck, lint, catraca, build e os 1089 testes clínicos verdes;
   homologação conferida pelo RT; produção conferida pelo pacote publicado. Próxima tela: **Painel**.
+- **Painel da farmácia em produção desde 26/10/2026 (PR #245).** Referências do Refero: visão geral do
+  n8n, fila do Zendesk Talk e painel do Aboard. O RT escolheu a **C, fila única do que pede você**: "Pede você agora N" numa
+  lista só, na ordem administradas sem liberação ("Ver" leva à Alta vigilância), validação de alta vigilância
+  sem decisão ("Validar" abre a aba), faltas sem retorno ao plantão ("Responder ao plantão" abre o campo na
+  própria linha) e estoque em falta ou crítico sem falta aberta ("Sinalizar falta"). Embaixo, "Fora da fila"
+  com as faltas já respondidas e os itens sem contagem. O gestor vê a mesma fila ("Pede a farmácia agora"),
+  sem ações. As chamadas ao servidor são as mesmas. Sem migration; typecheck, lint, catraca, build e os 1089
+  testes clínicos verdes; homologação conferida pelo RT; produção conferida pelo pacote publicado. Próxima
+  tela: **Alta vigilância e Interações**.
 
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
