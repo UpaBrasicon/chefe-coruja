@@ -824,6 +824,43 @@ Em todas: o gestor vê o mesmo sem os botões; nenhuma regra nem banco muda (as 
   (`painel-C-aplicada-claro|escuro.png`); responder ao plantão abre e fecha na linha. Enviar retorno,
   sinalizar falta e as listas reais pedem login: conferir na homologação.
 
+### Alta vigilância e Interações (26/10/2026, opções; aguarda escolha do RT)
+
+**Hoje** (`av-hoje-claro|escuro.png`, `interacoes-hoje-claro|escuro.png`): duas telas próprias do menu do
+farmacêutico. **Alta vigilância** (`AltaVigilancia.tsx`) empilha cartões grandes: as administradas sem
+liberação, em borda âmbar, e depois a lista da unidade, um cartão por medicamento com a origem (classe do
+ISMP 2019 ou ajuste da unidade), o "exige liberação" e o botão de marcar ou desmarcar. Com a lista da
+unidade (dezenas de itens), as poucas marcações e desmarcações da própria unidade se perdem no meio.
+**Interações críticas** (`Interacoes.tsx`) mostra os pares em cartões, ativos, propostos e inativos
+misturados, e os grupos de fármacos noutra lista embaixo; para saber por que uma proposta ainda não alerta
+(grupo sem fármaco) é preciso descer até os grupos.
+
+**Referências do Refero:** regras do Risk Manager do Square (`7c3b1f51`: regras ativas em tabela e, embaixo,
+as recomendadas, que ainda não valem); regras do Radar da Stripe (`1d720aab`: uma seção por tipo de regra);
+fluxos do Attio com rascunho e no ar (`431a4944`); a Disponibilidade da 3.7b (tabela e ficha), já
+escolhida.
+
+**Opções** (dados fictícios, valores só de exemplo; `av-A|B|C-claro|escuro.png`,
+`interacoes-A|B|C-claro|escuro.png`). As duas telas seguem a mesma opção:
+
+- **A · seções em tabela** (Square, Stripe): Alta vigilância com as administradas sem liberação numa tabela
+  curta (paciente, item e justificativa, quem e quando, "Conferi: liberar") e a lista da unidade em tabela
+  (medicamento, por que, situação, marcar ou desmarcar), com busca e o filtro "Só ajustes da unidade".
+  Interações com uma tabela por situação: ativas (efeito), propostas (coluna "O que falta": grupo sem
+  fármaco ou "pode ativar"), inativas recolhidas e os grupos em tabela no fim.
+- **B · tabela e ficha** (Disponibilidade, Attio): abas internas, lista à esquerda e ficha à direita. Alta
+  vigilância: "Sem liberação", "Exige liberação" e "Ajustes da unidade"; a ficha mostra por que exige, o
+  motivo, quem e quando, e marcar ou desmarcar. Interações: "Ativas", "Propostas", "Inativas" e "Grupos"; a
+  ficha do par traz efeito, conduta, os fármacos de cada grupo, a fonte, "Ativar" e "Editar".
+- **C · lista agrupada que abre na linha** (Linear): Alta vigilância com as administradas sem liberação numa
+  faixa âmbar em cima e a lista agrupada (ajustes da unidade primeiro, depois cada classe do ISMP,
+  recolhível); a linha escolhida abre embaixo com origem, motivo e marcar ou desmarcar. Interações
+  agrupadas por situação (ativas, propostas, inativas e grupos recolhidos); o par abre na linha com efeito,
+  conduta, fármacos e fonte.
+
+Nenhuma opção muda regra nem banco: marcar ou desmarcar continua pedindo motivo, ativar ou editar um par
+continua pedindo motivo e fonte, e liberar continua sendo só do farmacêutico.
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções
