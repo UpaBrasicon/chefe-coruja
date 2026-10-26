@@ -45,21 +45,25 @@ Se o build de um deploy **falhar**, a Vercel mantém no ar a versão anterior �
 | Typecheck bloqueante | passo `Typecheck` próprio no CI (antes já rodava dentro do build) |
 | Expand/contract | `migrations-destrutivas.mjs` no CI (3 testes); nenhuma migration destrutiva desde `20261025000002` |
 
-## Job do banco no CI: imagem do Postgres pelo ECR (26/10/2026)
+## Job do banco no CI: imagem do Postgres no cache do Actions (26/10/2026)
 
-- **O que cobre:** antes do `supabase start`, o job `banco` baixa `supabase/postgres:17.6.1.131` do registro
-  público da AWS (`public.ecr.aws`) e dá a ela o nome `ghcr.io/supabase/postgres:17.6.1.131`; o CLI acha a
-  imagem já presente e não a pede ao ghcr.io. É a mesma imagem (mesmo digest
-  `sha256:42088c86593e0d4f47b2b2bd3c964cee31a1bbc8e560619fd3e84e5fdd973f6d` nos dois registros, conferido em
-  26/10/2026). Motivo: o ghcr.io barrou só essa imagem com `toomanyrequests` ("allowed: 44000/minute") em
-  todas as tentativas dos PRs #239 e #240, com e sem login e com pausas de até 90 s; as outras imagens
-  baixaram.
-- **Também no passo:** o `supabase start` ainda tenta até 4 vezes (pausas de 30, 60 e 90 s), para as outras
-  imagens que seguem no ghcr.io; e a exclusão usa os nomes do CLI 2.102 (`mailpit`, `logflare`,
+- **O que cobre:** o job `banco` restaura `supabase/postgres:17.6.1.131` do cache do GitHub Actions (chave
+  `supabase-postgres-17.6.1.131`, arquivo `docker save`). Sem cache, tenta Docker Hub, depois
+  `public.ecr.aws`, depois `ghcr.io` (duas vezes cada, 20 s entre elas), dá à imagem o nome
+  `ghcr.io/supabase/postgres:17.6.1.131` que o CLI procura e grava no cache. O CLI acha a imagem já presente
+  e não a pede ao ghcr.io. É a mesma imagem nos três registros (digest
+  `sha256:42088c86593e0d4f47b2b2bd3c964cee31a1bbc8e560619fd3e84e5fdd973f6d`, conferido em 26/10/2026).
+- **Por quê:** em 26/10/2026 os registros públicos barraram os runners do GitHub, que dividem endereços:
+  o ghcr.io recusou a imagem do Postgres com `toomanyrequests` em todas as tentativas (PRs #239, #240 e
+  #241), com e sem login e com pausas de até 90 s; o ECR público recusou com `Data limit exceeded`. Com o
+  cache, depois da primeira vez o job não depende de nenhum registro para essa imagem.
+- **Também no passo:** o `supabase start` ainda tenta até 4 vezes (pausas de 30, 60 e 90 s) para as outras
+  imagens, que seguem no ghcr.io; e a exclusão usa os nomes do CLI 2.102 (`mailpit`, `logflare`,
   `postgres-meta`; os antigos `inbucket`, `analytics` e `meta` eram ignorados e baixavam três imagens à toa).
-- **O que não cobre:** a tag é a do CLI 2.102.0, fixado no workflow; se o CLI for atualizado e a tag mudar,
-  o passo baixa uma imagem que ninguém usa e o CLI volta a pedir a nova ao ghcr.io — atualizar a tag junto
-  com o CLI. Se o ECR também falhar, o job falha.
-- **Chaves envolvidas:** nenhuma (ECR público, sem login).
-- **Como reverter:** apagar o passo "Baixar a imagem do Postgres pelo ECR" e voltar o "Subir Supabase local"
-  a uma linha só, `supabase start -x …`, em `.github/workflows/ci.yml` (PR próprio).
+- **O que não cobre:** o cache de um PR só vale para ele e para o master depois do merge na primeira rodada
+  do master que conseguir baixar; até lá, cada ramo depende de algum registro servir uma vez. O cache sai
+  se ficar 7 dias sem uso. A tag é a do CLI 2.102.0, fixado no workflow: ao atualizar o CLI, atualizar a tag
+  e a chave do cache.
+- **Chaves envolvidas:** nenhuma (registros públicos sem login; o cache usa o token do próprio Actions).
+- **Como reverter:** apagar os passos "Restaurar…", "Obter…" e "Guardar a imagem do Postgres…" e voltar o
+  "Subir Supabase local" a uma linha só, `supabase start -x …`, em `.github/workflows/ci.yml` (PR próprio).
