@@ -1138,6 +1138,17 @@ Registro e imagens em `docs/frontend/revisao-visual/app/PLANO.md`. Pendências: 
 (observação) fica para a 3.6; as escalas de avaliação seguem com a faixa em pílula. Próxima: **3.6,
 observação**.
 
+**3.6 (observação) em produção desde 26/10/2026 (PR #232).** Referências do Refero: lista da Linear com o
+prazo na linha e linha do tempo da Wrike com a linha de "agora". O RT escolheu a **B, abas e tabela, como a
+fila do PS**: abas "Em observação" e "Finalizados no plantão" com contagem; à direita, a maior permanência e
+quantos passaram de 6 horas; cada box numa linha (box, paciente com alergia e acuidade em texto, situação em
+ponto + texto com reavaliação, protocolo e espera, permanência, prazo de 6 h, ações), com os painéis da
+linha abrindo logo abaixo. Saíram a faixa "tudo calmo", os filtros e a barra fina do relógio; o aviso de quem
+passou de 6 horas ficou. A prancheta (modo simples do leito) ficou sem cartão, com a situação em ponto +
+texto. Sem migration. Typecheck, lint, catraca, build e os 1089 testes clínicos verdes; homologação conferida
+pelo RT; produção conferida pelo pacote publicado. Registro e imagens em
+`docs/frontend/revisao-visual/app/PLANO.md`. Próxima: **3.7, farmácia**.
+
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
 **Pedido do RT:** avaliar com o PubMed o que falta em Condutas e cálculos — adulto, Pediatria e
