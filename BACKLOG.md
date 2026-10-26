@@ -1189,6 +1189,15 @@ Dispensação → Faltas → Diluição padrão e Rascunhos → Painel → Alta 
   quantidade com Dispensar à direita; a retirada da enfermagem fica embaixo do item. As chamadas ao servidor
   são as mesmas. Sem migration; typecheck, lint, catraca, build e os 1089 testes clínicos verdes; homologação
   conferida pelo RT; produção conferida pelo pacote publicado. Próxima tela: **Faltas**.
+- **Faltas em produção desde 26/10/2026 (PR #240).** Referências do Refero: quadros do Marathon e da Linear e a
+  fila do PS. O RT escolheu a **C, lista por situação, com cada situação numa aba** ("para quando for mais
+  medicação não ficar poluído"): Registradas, Em cotação e Repostas, com contagem; à direita a mais antiga e
+  quantas são de alta vigilância. As abertas vêm da lista priorizada do painel (`faltas_priorizadas`):
+  pacientes com prescrição e setores, retorno ao plantão, há quanto tempo e as ações. O "há quanto" passou a
+  dizer "2h", "1 dia", "3 dias" (vale também na validação). As chamadas ao servidor são as mesmas. Sem
+  migration; typecheck, lint, catraca, build e os 1089 testes clínicos verdes; homologação conferida pelo RT;
+  produção conferida pelo pacote publicado. O PR esperou a correção do CI do banco (PR #241, fora da rota,
+  registrada na Fase 0). Próxima tela: **Diluição padrão e Rascunhos**.
 
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
