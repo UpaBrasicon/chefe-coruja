@@ -1182,6 +1182,13 @@ Dispensação → Faltas → Diluição padrão e Rascunhos → Painel → Alta 
   escolhido (saldo, limites próprios com voltar ao padrão, quem atualizou, sinalizar falta). As chamadas ao
   servidor são as mesmas. Sem migration; typecheck, lint, catraca, build e os 1089 testes clínicos verdes;
   homologação conferida pelo RT; produção conferida pelo pacote publicado. Próxima tela: **Dispensação**.
+- **Dispensação em produção desde 26/10/2026 (PR #238).** Referências do Refero: pedido de compra do Shopify
+  e as caixas de entrada da validação (Missive, Wrike). O RT escolheu a **A, caixa de entrada por paciente**,
+  igual à validação: à esquerda um paciente por linha (setor, leito, prontuário, quantos itens, estoque
+  zerado, devolvido); à direita os itens do escolhido, com sugestão, últimas 24 h e estoque numa linha e a
+  quantidade com Dispensar à direita; a retirada da enfermagem fica embaixo do item. As chamadas ao servidor
+  são as mesmas. Sem migration; typecheck, lint, catraca, build e os 1089 testes clínicos verdes; homologação
+  conferida pelo RT; produção conferida pelo pacote publicado. Próxima tela: **Faltas**.
 
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
