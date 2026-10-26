@@ -1110,6 +1110,20 @@ Central de Plantão (`/plantao`) não entrou nesta rodada. Próxima: junção da
 Emergências e o modo adulto/pediátrico só no celular (pedido do RT de 23/10/2026); depois **3.4, triagem e
 enfermagem**.
 
+**3.4 (triagem e enfermagem) em produção desde 25/10/2026 (PR #228).** Referências do Refero: lista da
+Linear agrupada por status, com o prazo na linha; listas da Reclaim e da Amie, com o atrasado na linha. O RT
+escolheu a **B, abas e tabela, como a fila do PS**: abas "Aguardando triagem" e "Classificados aguardando o
+médico", com a aba no endereço; à direita, a maior espera na triagem e quantos passaram do alvo da cor;
+fila da triagem em tabela, com a situação da chamada em ponto + texto (vermelha a partir da 3ª chamada sem
+resposta) e a barra da sala sem cartão, acima das abas. Mudança de regra conferida pelo RT: a espera de
+quem aguarda o médico conta da classificação (antes, da ficha) e fica vermelha acima do alvo da cor. O
+mesmo mínimo na enfermagem: situação em ponto + texto no Pronto-Socorro da enfermagem, na passagem, na
+checagem e nos leitos para liberar; sem sombra nos blocos; sem maiúsculas espaçadas. Ficam como alerta a
+pendência da passagem e os selos de vasoativo e de alta vigilância. Sem migration. Typecheck, lint, catraca,
+build e os 1089 testes clínicos verdes; homologação conferida pelo RT; produção conferida pelo pacote
+publicado. Registro e imagens em `docs/frontend/revisao-visual/app/PLANO.md`. Próxima: **3.5, leito
+aberto**.
+
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
 **Pedido do RT:** avaliar com o PubMed o que falta em Condutas e cálculos — adulto, Pediatria e
@@ -1497,7 +1511,7 @@ espera do RT:
 - Fontes enviadas pelo RT em PDF quando o site da revista bloqueou: Kawasaki (AHA 2024), Practice
   Parameter de anafilaxia (2023) e AAP 2017 de hipertensão pediátrica.
 
-Próximo: parte 3.4 da Revisão visual.
+A parte 3.4 da Revisão visual veio em seguida (PR #228, 25/10/2026).
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
