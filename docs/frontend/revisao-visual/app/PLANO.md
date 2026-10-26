@@ -824,7 +824,7 @@ Em todas: o gestor vê o mesmo sem os botões; nenhuma regra nem banco muda (as 
   (`painel-C-aplicada-claro|escuro.png`); responder ao plantão abre e fecha na linha. Enviar retorno,
   sinalizar falta e as listas reais pedem login: conferir na homologação.
 
-### Alta vigilância e Interações (26/10/2026, opções; aguarda escolha do RT)
+### Alta vigilância e Interações (26/10/2026)
 
 **Hoje** (`av-hoje-claro|escuro.png`, `interacoes-hoje-claro|escuro.png`): duas telas próprias do menu do
 farmacêutico. **Alta vigilância** (`AltaVigilancia.tsx`) empilha cartões grandes: as administradas sem
@@ -860,6 +860,25 @@ escolhida.
 
 Nenhuma opção muda regra nem banco: marcar ou desmarcar continua pedindo motivo, ativar ou editar um par
 continua pedindo motivo e fonte, e liberar continua sendo só do farmacêutico.
+
+**Escolha do RT (26/10/2026): B, tabela e ficha.** Aplicada na branch `feat/visual-3-7b-av-interacoes`:
+
+- `AltaVigilancia.tsx`: abas "Sem liberação N" (âmbar quando há; só farmacêutico e gestor; abre nela quando
+  há o que conferir), "Exige liberação N" e "Ajustes da unidade N". À esquerda a tabela (paciente, item e
+  quando; ou medicamento e por que, com "marcado" e "desmarcado pela unidade" em ponto); à direita a ficha:
+  na administração, o item, quem administrou e a justificativa, com "Conferi: liberar o item"; no
+  medicamento, por que exige, a classe do ISMP quando a unidade mudou, o motivo, quem e quando, e marcar ou
+  desmarcar com motivo. Depois de marcar ou desmarcar, a tela vai para "Ajustes da unidade" com o item
+  escolhido. A busca no cadastro fica na aba "Exige liberação". A enfermagem vê só as duas abas da lista.
+- `Interacoes.tsx`: abas "Ativas", "Propostas" (âmbar quando há), "Inativas" e "Grupos". Na proposta, a
+  linha diz qual grupo está sem fármaco; a ficha do par traz efeito, conduta, os fármacos de cada grupo
+  (com "Preencher o grupo", que leva à aba Grupos), a fonte e a última mudança; "Ativar" só abre com os
+  grupos preenchidos e pede o motivo. A ficha do grupo lista os pares que o usam, com atalho para cada um.
+  Novo par, novo grupo e editar abrem no lugar da ficha.
+- As chamadas ao servidor são as mesmas. Visto na página de teste com as telas reais e listas semeadas, nos
+  dois temas (`av-B-aplicada-*.png`, `av-B-aplicada-exige-*.png`, `interacoes-B-aplicada-*.png`): trocar de
+  aba, escolher a linha, "Preencher o grupo", editar o grupo e abrir o motivo do desmarcar funcionaram.
+  Liberar, marcar, desmarcar e salvar pedem login: conferir na homologação.
 
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
