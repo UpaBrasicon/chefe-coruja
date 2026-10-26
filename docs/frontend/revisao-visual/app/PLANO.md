@@ -471,7 +471,7 @@ Aplicada na branch `feat/visual-3-5-leito`:
   dois temas e a 375 px (`leito-B-aplicada-claro|escuro.jpg`); as 13 abas cabem
   numa linha a 1280 px com qualquer aba ativa.
 
-## 3.6 · Observação (26/10/2026, opções; aguarda escolha do RT)
+## 3.6 · Observação (26/10/2026)
 
 **Levantamento** (agente de busca): `pages/plantao/secoes/PacientesObservacao.tsx`
 → `components/observacao/PainelObservacao.tsx` (o mesmo painel no gestor, só
@@ -512,6 +512,35 @@ da acuidade.
 Em qualquer opção: o aviso de quem passou de 6 horas fica em caixa (é alerta); a
 situação da passagem vira ponto + texto; a Prancheta (modo simples do leito) ganha
 o cabeçalho sem cartão e "Em observação" em ponto + texto, como no leito da 3.5.
+
+**Escolha do RT (26/10/2026): B, abas e tabela.** Aplicada na branch
+`feat/visual-3-6-observacao`:
+
+- `PainelObservacao.tsx`: o aviso de quem passou de 6 horas continua em caixa e só
+  aparece quando há alguém; a faixa verde "tudo calmo" e os filtros (prazo e
+  situação) saem. Abas "Em observação N" e "Finalizados no plantão N" (no gestor,
+  "Finalizados em 12 horas"); à direita, a maior permanência e, em vermelho,
+  quantos passaram de 6 horas, à vista nas duas abas. Uma tabela por aba; a linha
+  de quais setores a pessoa vê fica embaixo.
+- `CartaoObservacao.tsx`: cada box é uma linha da tabela — box em texto; paciente,
+  queixa, selo de alergia e acuidade em texto na cor da faixa; situação em ponto +
+  texto com o desfecho, a reavaliação, o protocolo (sigla na cor) e a espera até o
+  primeiro registro médico embaixo; na observação, há quanto tempo e desde que
+  hora; prazo de 6 h com "Faltam" ou "Passou há" na cor do relógio e até que hora
+  (ou "Definir conduta ou internar"); as ações do estado. Os painéis da linha
+  (reavaliar, desfecho, protocolo, passar plantão, passagem) abrem numa linha de
+  largura inteira logo abaixo. A barra fina do relógio sai: o prazo em texto já
+  diz o mesmo.
+- `modelo.ts`: `ESTADOS` guarda o tom do ponto (`TomEstado`) no lugar da classe da
+  pílula. `PaineisCartao.tsx`: situação da passagem em ponto + texto.
+- Prancheta (`LeitoAberto` no modo simples): `CabecalhoPaciente` com `semCartao`
+  (as duas linhas de sempre, sem cartão; leito e acuidade em texto) e a situação
+  (em observação, internado, alta) em ponto + texto. A porta continua com o
+  cabeçalho em cartão.
+- Visto na página de teste com as linhas reais e dados fictícios, a 1366 px nos dois
+  temas (`obs-B-aplicada-claro|escuro.jpg`), com a aba Finalizados e o modo
+  simples do leito. O painel inteiro (unidade, relógio do servidor) e a prancheta
+  no diálogo pedem login: conferir na homologação.
 
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 

@@ -46,6 +46,7 @@ const MTS: Record<CorRisco, string> = {
   azul: 'bg-mts-azul text-mts-texto',
 }
 const BANDA = ['bg-alerta-conforme text-conforme', 'bg-alerta-atencao text-atencao', 'bg-alerta-critico text-critico']
+const BANDA_TEXTO = ['text-conforme', 'text-observacao', 'text-critico']
 type AcuidadeResumo = { escala: 'NEWS2' | 'PEWS' | null; total?: number; banda?: 0 | 1 | 2; parcial?: boolean; aferido_em?: string | null }
 
 export type CabecalhoPacienteProps = {
@@ -76,6 +77,8 @@ export type CabecalhoPacienteProps = {
   episodioAtualId?: string | null
   /** Sem cartão e só com os alertas embaixo (leito aberto, 3.5). */
   compacto?: boolean
+  /** As duas linhas de sempre, sem o cartão (prancheta da observação, 3.6). */
+  semCartao?: boolean
   /** Ação no canto direito da linha do nome (só no compacto). */
   acao?: React.ReactNode
   className?: string
@@ -99,7 +102,7 @@ export function SeloClassificacao({ cor, onClick }: { cor: CorRisco; onClick?: (
 
 export function CabecalhoPaciente({
   pacienteId, nome, local, setorId, desde, rotuloDesde = 'há', contexto, extra,
-  corClassificacao, onClassificacao, acuidade = false, episodios = false, episodioAtualId, compacto = false, acao, className,
+  corClassificacao, onClassificacao, acuidade = false, episodios = false, episodioAtualId, compacto = false, semCartao = false, acao, className,
 }: CabecalhoPacienteProps) {
   const [alergiasAbertas, setAlergiasAbertas] = React.useState(false)
   const [isolamentoAberto, setIsolamentoAberto] = React.useState(false)
@@ -180,7 +183,7 @@ export function CabecalhoPaciente({
 
   return (
     // Duas linhas (P/index.html 1752–1771): quem é a pessoa, depois os selos.
-    <div className={cn('flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-5 py-[15px] shadow-repouso', className)}>
+    <div className={cn('flex flex-col gap-2.5', !semCartao && 'rounded-cartao border border-fio bg-superficie px-5 py-[15px] shadow-repouso', className)}>
       <div className="flex flex-wrap items-start gap-x-3.5 gap-y-2">
       <div className="flex min-w-[180px] flex-1 flex-col gap-0.5">
         <span className="text-corpo font-semibold text-tinta">
@@ -199,7 +202,7 @@ export function CabecalhoPaciente({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-      {onde && <span className="rounded-capsula bg-acao/10 px-[9px] py-1 text-apoio font-semibold text-acao">{onde}</span>}
+      {onde && <span className={cn('text-apoio font-semibold text-acao', !semCartao && 'rounded-capsula bg-acao/10 px-[9px] py-1')}>{onde}</span>}
       {extra}
       <SeloAlergia pacienteId={pacienteId} onClick={() => setAlergiasAbertas(true)} />
       <SeloIsolamento pacienteId={pacienteId} onClick={() => setIsolamentoAberto(true)} />
@@ -208,7 +211,7 @@ export function CabecalhoPaciente({
 
       {temAcuidade && (
         <span title={`Acuidade pelo ${a!.escala}, aferido às ${hora(a!.aferido_em!)}`}
-          className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold tabular-nums', BANDA[a!.banda ?? 0])}>
+          className={cn('text-rotulo font-semibold tabular-nums', semCartao ? BANDA_TEXTO[a!.banda ?? 0] : cn('rounded-capsula px-2.5 py-[3px]', BANDA[a!.banda ?? 0]))}>
           {a!.escala} {a!.total}{a!.parcial ? '*' : ''}
         </span>
       )}

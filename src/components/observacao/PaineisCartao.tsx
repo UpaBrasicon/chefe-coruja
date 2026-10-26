@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea'
 
 import { DESFECHOS, RELATO_DESFECHO, hhmm, rpc, type Acao, type Desfecho, type LinhaObservacao } from './modelo'
 import { Chip } from '@/components/monitor/Pagina'
+import { Estado, type TomEstado } from '@/components/porta/Estado'
 
 export function Painel({ titulo, children, erro }: { titulo?: React.ReactNode; children: React.ReactNode; erro?: string | null }) {
   return (
@@ -271,10 +272,10 @@ export function PainelProtocoloAberto({ linha, acao, fechar, erro }: { linha: Li
 }
 
 // ── passagem de plantão ─────────────────────────────────────────────────────
-const PILULA_PASSAGEM = {
-  aguardando: 'bg-observacao/10 text-observacao',
-  aceita: 'bg-conforme/10 text-conforme',
-  recusada: 'bg-critico/10 text-critico',
+const TOM_PASSAGEM: Record<'aguardando' | 'aceita' | 'recusada', TomEstado> = {
+  aguardando: 'ambar',
+  aceita: 'verde',
+  recusada: 'vermelho',
 }
 
 /** O que o box mostra da passagem: estado, resumo, e a ação de quem recebe ou de quem passou. */
@@ -287,7 +288,7 @@ export function BlocoPassagemBox({ linha }: { linha: LinhaObservacao }) {
     <Painel>
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-apoio font-semibold text-grafite">Passagem de plantão</span>
-        <span className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold', PILULA_PASSAGEM[ps.situacao])}>{rotulo}</span>
+        <Estado tom={TOM_PASSAGEM[ps.situacao]}>{rotulo}</Estado>
       </div>
       <p className="rounded-controle border border-fio bg-superficie px-[11px] py-2 text-controle whitespace-pre-wrap text-tinta">{ps.resumo}</p>
       {ps.situacao === 'aguardando' && <PassagensDoPlantao pacienteId={linha.paciente_id} />}
