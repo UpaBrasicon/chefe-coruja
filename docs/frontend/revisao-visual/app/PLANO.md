@@ -729,6 +729,34 @@ poluído"). Aplicada na branch `feat/visual-3-7b-faltas`:
 - Visto na página de teste com a Central real, abrindo a aba sozinha, fotografada no Chrome sem janela nos
   dois temas (`faltas-C-aplicada-*.png`). Avançar a falta pede login: conferir na homologação.
 
+### Diluição padrão e Rascunhos (26/10/2026, opções; aguarda escolha do RT)
+
+**Hoje:** são duas abas da Central. **Diluição padrão** (`Farmacia.tsx`, `PadraoUnidade` e `LinhaDiluicao`)
+tem o envio do padrão em cartão, filtros e uma pilha de cartões grandes, um por medicamento, cada um com a
+grade de sete campos, a flebite, a fonte, o "por que muda" e os botões "Ajustar esta linha" e "Voltar ao
+modelo". **Rascunhos** (`Diluicoes.tsx`) já é lista e editor lado a lado, mas em dois cartões e com as
+situações (vigentes, rascunhos, substituídas) em botões. Para comparar duas linhas é preciso rolar.
+
+**Referências do Refero:** tabela de registros do Attio (`361d1d78`); editor do Hashnode com rascunhos e
+publicados na lateral (`373e8b1b`); histórico de versões do InVision (`444de771`); a Disponibilidade da
+3.7b (tabela e ficha), já escolhida.
+
+**Opções** (linhas fictícias, valores só de exemplo; `dil-hoje-claro.png`, `dil-A|B|C-claro|escuro.png`):
+
+- **A · tabela de consulta e ficha**, como a Disponibilidade: o envio do padrão numa linha; à esquerda a
+  tabela (medicamento com AV, diluir em com o volume mínimo, tempo, origem); à direita a ficha da linha
+  escolhida com todos os campos, o valor do modelo riscado quando a unidade mudou, a fonte, o "por que muda"
+  e as ações. Rascunhos continua aba à parte, com o mesmo mínimo.
+- **B · uma aba só, como biblioteca** (Hashnode): "Diluição padrão" e "Rascunhos" viram uma aba "Diluição"
+  com abas internas "Valendo na unidade", "Rascunhos" e "Substituídas"; à esquerda a lista, à direita a ficha
+  (valendo, substituída) ou o editor (rascunho), com Salvar e Publicar no topo. Ajustar uma linha leva ao
+  rascunho na mesma tela.
+- **C · tabela larga** (Attio): todos os campos em colunas, o valor do modelo riscado embaixo, flebite e
+  origem; a linha escolhida abre embaixo com fonte, "por que muda" e as ações. Bom para comparar
+  medicamentos; no celular a tabela rola para o lado. Rascunhos continua à parte.
+
+Nenhuma opção muda regra nem banco: publicar continua pedindo CRF e fonte, e publicada não se edita.
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções
