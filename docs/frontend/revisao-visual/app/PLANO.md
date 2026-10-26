@@ -648,6 +648,32 @@ da unidade e o envio da lista viram uma linha só no topo, sem cartões:
   (`estoque-C-aplicada-claro|escuro.jpg`), escolhendo um item com limite próprio. Salvar e sinalizar pedem
   login: conferir na homologação.
 
+### Dispensação (26/10/2026, opções; aguarda escolha do RT)
+
+**Hoje** (`farmacia/Dispensacao.tsx`, aba Prescrições, `LinhaItem`): um bloco por paciente (nome,
+prontuário, setor) com um item por linha — medicamento, dose, validado ou devolvido, o dispensado nas
+últimas 24 h, o estoque, a sugestão com a conta, o aviso quando há, o campo de quantidade e Dispensar.
+Tudo empilhado: com muitos pacientes, a página fica longa e o estoque de cada medicamento se repete em
+cada paciente. Com a farmácia fechada, a mesma tela serve à enfermagem (retirada com justificativa).
+
+**Referências do Refero:** pedido de compra do Shopify (`e58fca53`: tabela de produtos com a quantidade
+recebida editável na linha); caixas de entrada do Missive e da Wrike, as mesmas da validação (3.7 C).
+
+**Opções** (itens fictícios; `disp-hoje-claro.png`, `disp-A|B|C-claro|escuro.png`, fotografadas no Chrome
+sem janela, porque o painel do navegador estava oculto):
+
+- **A · caixa de entrada por paciente**, como a validação: à esquerda um paciente por linha (setor, leito,
+  prontuário, quantos itens, sinais de estoque zerado e devolvido); à direita os itens do escolhido, com
+  sugestão, últimas 24 h e estoque numa linha e a quantidade com Dispensar à direita.
+- **B · tabela agrupada por paciente** (Shopify): uma faixa por paciente e uma linha por item com
+  medicamento (validado, alta vigilância), prescrito, sugestão com a conta, 24 h, estoque (vermelho quando
+  zera), quantidade e Dispensar.
+- **C · lista de separação por medicamento:** uma faixa por medicamento com quantos pacientes, o total
+  sugerido e o estoque ("não cobre o total" em vermelho); embaixo, um paciente por linha com a quantidade e
+  Dispensar. Ajuda a tirar da prateleira de uma vez.
+
+Avulsa e Registro recebem o mesmo mínimo nas três (a tabela do registro já está em linhas em fio).
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções
