@@ -777,6 +777,53 @@ Nenhuma opção muda regra nem banco: publicar continua pedindo CRF e fonte, e p
   temas (`dil-B-aplicada-*.png`). Ajustar, voltar ao modelo, salvar e publicar pedem login: conferir na
   homologação.
 
+### Painel (26/10/2026)
+
+**Hoje** (`painel-hoje-claro|escuro.png`): `PainelFarmacia.tsx`, a primeira aba da Central e também o topo da
+Farmácia do gestor. Para o farmacêutico os números ficam escondidos (`semNumeros`), à espera de uma "faixa do
+topo da Central" que não existe mais; sobra a lista de faltas abertas em cartões grandes, cada um com o campo
+de retorno ao plantão sempre aberto, e o estoque crítico em selos. Depois da 3.7b a aba Faltas já mostra as
+mesmas faltas, por situação; o Painel repete a lista e não diz o que mais pede o farmacêutico (validação de
+alta vigilância, administradas sem liberação). O retorno ao plantão só se envia por aqui.
+
+**Referências do Refero:** visão geral do n8n com a faixa de números em cima e a lista embaixo (`5c904898`);
+fila atual do Zendesk Talk, uma faixa de números da fila (`1686eace`); painel do Aboard com contagem no topo
+e seções empilhadas, cada uma com título e número (`a0a318b7`).
+
+**Opções** (dados fictícios, os mesmos da página de teste; `painel-A|B|C-claro|escuro.png`):
+
+- **A · faixa de números e faltas** (n8n, Zendesk): uma faixa com quatro números que levam à aba certa
+  (validação de alta vigilância, faltas abertas, estoque em falta ou crítico, administradas sem liberação),
+  cada um com uma linha de apoio ("2 de alta vigilância · 3 sem retorno"); embaixo as faltas abertas por
+  prioridade em linhas, com "Responder ao plantão" que abre o campo na própria linha; o estoque numa linha só.
+- **B · seções com contagem** (Aboard): uma frase do que há agora e quatro blocos com título, número e
+  "Abrir ..." para a aba: validação de alta vigilância (com Validar), faltas abertas (com Responder ao
+  plantão), estoque em falta ou crítico e administradas sem liberação, os dois últimos lado a lado.
+- **C · fila única do que pede você** (caixa de entrada): uma lista só, em ordem: administradas sem
+  liberação, validação de alta vigilância, faltas sem retorno ao plantão, estoque crítico sem falta
+  registrada. Cada linha diz o tipo, o quê, de quem, há quanto e a ação (Ver, Validar, Responder ao plantão,
+  Sinalizar falta). O que já está encaminhado fica numa linha embaixo.
+
+Em todas: o gestor vê o mesmo sem os botões; nenhuma regra nem banco muda (as mesmas chamadas:
+`faltas_priorizadas`, `farmacia_estoque`, `fila_validacao`, `administracoes_sem_liberacao`,
+`registrar_retorno_falta`, `avancar_falta`).
+
+**Escolha do RT (26/10/2026): C, fila única do que pede você.** Aplicada na branch `feat/visual-3-7b-painel`:
+
+- `PainelFarmacia.tsx` vira uma fila só, em ordem: administradas sem liberação (Ver, que leva à tela Alta
+  vigilância), validação de alta vigilância ainda sem decisão (Validar, que abre a aba Validação), faltas
+  abertas sem retorno ao plantão (Responder ao plantão, que abre o campo na própria linha) e estoque em falta
+  ou crítico sem falta registrada (Sinalizar falta). Cada linha: tipo em ponto + texto, o medicamento com o
+  selo de alta vigilância, paciente ou setor, quem, há quanto e a ação.
+- Embaixo, "Fora da fila": faltas que já têm retorno ao plantão e itens sem contagem.
+- Os números escondidos do farmacêutico (`semNumeros`) saem: a fila já conta. O gestor vê a mesma fila,
+  "Pede a farmácia agora", sem as ações e sem a validação (que é só do farmacêutico).
+- Mesmas chamadas ao servidor; as chaves de cache são as da Validação, da Disponibilidade e da Alta
+  vigilância, então uma tela não quebra a outra. Estoque que já tem falta aberta não repete na fila.
+- Visto na página de teste com a Central real e linhas semeadas, nos dois temas
+  (`painel-C-aplicada-claro|escuro.png`); responder ao plantão abre e fecha na linha. Enviar retorno,
+  sinalizar falta e as listas reais pedem login: conferir na homologação.
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções

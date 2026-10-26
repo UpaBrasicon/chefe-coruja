@@ -48,7 +48,7 @@ export function Filtro({ ativo, onClick, children }: { ativo: boolean; onClick: 
 
 export default function Farmacia() {
   const [aba, setAba] = React.useState<Aba>('painel')
-  const { unidadeAtiva, papelAtivo } = useUnidade()
+  const { unidadeAtiva } = useUnidade()
   const unidade = unidadeAtiva?.unidade_id
   const aConferir = useFilaValidacao(unidade).data?.length
   return (
@@ -66,7 +66,8 @@ export default function Farmacia() {
         </TabsList>
       </Tabs>
       {/* Fase 2, tarefa 9: painel de críticos e faltas */}
-      {unidade && aba === 'painel' && <PainelFarmacia unidade={unidade} podeAgir irPara={setAba} semNumeros={papelAtivo === 'farmaceutico'} />}
+      {/* revisão visual 3.7b: o painel é a fila única do que pede o farmacêutico (opção C do RT) */}
+      {unidade && aba === 'painel' && <PainelFarmacia unidade={unidade} podeAgir irPara={setAba} />}
       {unidade && aba === 'disponibilidade' && <Disponibilidade unidade={unidade} />}
       {/* revisão visual 3.7b: diluição padrão e rascunhos numa aba só (opção B do RT) */}
       {unidade && aba === 'diluicao' && <Diluicoes unidade={unidade} />}
