@@ -1165,6 +1165,14 @@ do RT, em branch e PR próprios. Ordem combinada, pela frequência de uso: Dispo
 Dispensação → Faltas → Diluição padrão e Rascunhos → Painel → Alta vigilância e Interações. Próxima:
 **3.7b, Disponibilidade**; depois, 3.9 (escala e menu do gestor).
 
+- **Disponibilidade em produção desde 26/10/2026 (PR #236).** Referências do Refero: produtos do Shopify,
+  biblioteca de itens do Square e lista agrupada da Linear. O RT escolheu a **C, tabela e ficha do item**: o
+  padrão da unidade e a última lista enviada numa linha cada no topo, sem cartões; à esquerda a tabela
+  (medicamento, saldo na cor da situação, situação), falta e crítico primeiro; à direita a ficha do item
+  escolhido (saldo, limites próprios com voltar ao padrão, quem atualizou, sinalizar falta). As chamadas ao
+  servidor são as mesmas. Sem migration; typecheck, lint, catraca, build e os 1089 testes clínicos verdes;
+  homologação conferida pelo RT; produção conferida pelo pacote publicado. Próxima tela: **Dispensação**.
+
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
 **Pedido do RT:** avaliar com o PubMed o que falta em Condutas e cálculos — adulto, Pediatria e
