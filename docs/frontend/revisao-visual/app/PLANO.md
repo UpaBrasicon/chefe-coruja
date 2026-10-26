@@ -390,6 +390,48 @@ Aplicada na branch `feat/visual-3-4-triagem`:
   (`triagem-B-aplicada-claro|escuro.jpg`); no celular a tabela rola na horizontal. As
   telas da enfermagem pedem login: conferir na homologação.
 
+## 3.5 · Leito aberto (25/10/2026, opções; aguarda escolha do RT)
+
+**Levantamento** (agente de busca): pacientes internados em
+`pages/InternacaoPainel.tsx` → `components/internacao/ListaInternados.tsx`; o leito
+abre dentro da linha (`LeitoAberto.tsx`, modo caderno) com o cabeçalho único
+(`paciente/CabecalhoPaciente.tsx`) e 13 abas. Reflexos: lista com sombra e, dentro
+dela, o cabeçalho com outra sombra (cartão dentro de cartão); leito em pílula;
+"Internado" em pílula; abas em 13 cápsulas com ícone; rótulos de bloco em
+maiúsculas espaçadas (`caderno/caixas.tsx`, `Acuidade.tsx`, `Trilha.tsx`,
+`Diagnostico.tsx`, `FichaAdmissao.tsx` e outras); NEWS2 em número de 30 px;
+tipo da pendência em pílula maiúscula; situações em pílula ou `Badge` nas abas
+(histórico da evolução, parecer, termo, encaminhamento, AIH, regulação,
+intercorrência); `Card` com sombra em exames, passagens e regulação. Sem
+gradiente e sem ícone em quadrado. `porta/Estado` ainda não é usado na internação.
+Ficam como alerta: alergia, isolamento, selo da classificação (enfermagem),
+Phoenix sepse/choque, pendência vencida, exame urgente ou crítico, agravo
+suspeito, parecer urgente, gravidade alta.
+
+**Referências do Refero:** Linear, página da issue (`1a493a2c`: conteúdo no meio e
+propriedades à direita); Attio, registro (`cacd5be1`: abas no centro e detalhes à
+direita); Hello Ivy, documentação (`e1a53517`: navegação agrupada à esquerda), no
+mesmo molde da 3.8 opção C escolhida pelo RT.
+
+**Opções** (pacientes fictícios; `leito-hoje|A|B|C-claro.jpg`; o tema escuro não
+saiu na página de teste e fica para a aplicação):
+
+- **A · mínimo:** mesma composição; lista sem sombra e leito em texto; cabeçalho
+  sem cartão, separado por fio; "Internado" em ponto + texto; NEWS2 em texto na cor
+  da faixa; abas sublinhadas, sem ícone; blocos do Resumo sem caixa, rótulos em
+  caixa normal, número do NEWS2 em 24 px; tipo da pendência em ponto + texto.
+- **B · lateral de propriedades** (Linear/Attio): o A, com o cabeçalho reduzido a
+  nome, permanência e alergia; à direita, o painel "Paciente" com leito, situação,
+  internação, chegada, classificação, acuidade, alergia, isolamento, diagnóstico,
+  episódios anteriores e transferir.
+- **C · abas agrupadas na lateral** (manual da Central, 3.8 C): o A, com as 13
+  abas numa coluna à esquerda em três grupos — Cuidado (Resumo, Classificação,
+  Evolução, Diagnóstico), Documentos (Admissão, Prescrição, Exames, AIH, APAC,
+  Encaminhamento, Atestado, Parecer e termos) e Saída (Alta e documentos).
+
+Em qualquer opção, as abas internas seguem o mínimo: situação em ponto + texto,
+sem sombra, sem maiúsculas espaçadas; os alertas acima continuam como estão.
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções
