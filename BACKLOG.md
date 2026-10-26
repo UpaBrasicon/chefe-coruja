@@ -151,9 +151,10 @@ Use isso como guia para trabalhar uma fase por vez, sem misturar expansão de pr
 
 **Correção do CI fora da rota (pedido do RT em 26/10/2026, branch `fix/ci-banco-ghcr`).** O job `banco
 (supabase/tests)` falhou duas vezes no PR #239 (só docs) com `toomanyrequests` do ghcr.io ao baixar a imagem
-do Postgres do Supabase. Correção no `.github/workflows/ci.yml`: login no ghcr.io com o token do próprio
-Actions (`packages: read` só no job do banco) e os nomes certos na exclusão do `supabase start` para o CLI
-2.102 (`mailpit`, `logflare`, `postgres-meta`; os antigos eram ignorados e baixavam três imagens à toa).
+do Postgres do Supabase ("allowed: 44000/minute", limite do próprio registro). Correção no
+`.github/workflows/ci.yml`: o `supabase start` tenta até 4 vezes, com pausas de 30, 60 e 90 s (o CLI só
+espera 4 e 8 s), e a exclusão usa os nomes do CLI 2.102 (`mailpit`, `logflare`, `postgres-meta`; os antigos
+eram ignorados e baixavam três imagens à toa). O login no ghcr.io foi testado no próprio PR e não resolveu.
 Registro, limites e reversão em `infra/release.md`. Evidência: o job do banco verde no próprio PR da correção.
 
 ---

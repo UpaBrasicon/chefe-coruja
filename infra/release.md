@@ -45,18 +45,19 @@ Se o build de um deploy **falhar**, a Vercel mantém no ar a versão anterior �
 | Typecheck bloqueante | passo `Typecheck` próprio no CI (antes já rodava dentro do build) |
 | Expand/contract | `migrations-destrutivas.mjs` no CI (3 testes); nenhuma migration destrutiva desde `20261025000002` |
 
-## Job do banco no CI: login no ghcr.io (26/10/2026)
+## Job do banco no CI: novas tentativas no ghcr.io (26/10/2026)
 
-- **O que cobre:** o job `banco (supabase/tests)` entra no ghcr.io antes do `supabase start`, com o token do
-  próprio Actions (`secrets.GITHUB_TOKEN`, permissão `packages: read` só nesse job). As imagens do Supabase
-  vêm do ghcr.io; sem login, o limite de downloads é mais apertado e o PR #239 falhou duas vezes com
-  `toomanyrequests` ao baixar `ghcr.io/supabase/postgres:17.6.1.131`, sem nenhuma mudança de banco.
+- **O que cobre:** o passo "Subir Supabase local" tenta o `supabase start` até 4 vezes, com pausas de 30,
+  60 e 90 s (um aviso no log a cada falha). As imagens do Supabase vêm do ghcr.io, que às vezes recusa o
+  download com `toomanyrequests` ("allowed: 44000/minute", limite do próprio registro): o PR #239 falhou
+  duas vezes assim ao baixar `ghcr.io/supabase/postgres:17.6.1.131`, sem nenhuma mudança de banco. O CLI
+  só espera 4 e 8 s antes de desistir. As camadas baixadas ficam no runner, então a tentativa seguinte é
+  menor. Login no ghcr.io com o token do Actions foi testado e **não** resolveu (mesmo erro), por isso saiu.
 - **Exclusão corrigida:** no CLI 2.102 os serviços se chamam `mailpit`, `logflare` e `postgres-meta`; os
   nomes antigos (`inbucket`, `analytics`, `meta`) eram ignorados com aviso e as três imagens eram baixadas à
   toa. Agora o `-x` usa `studio,imgproxy,mailpit,edge-runtime,logflare,vector,postgres-meta`.
-- **O que não cobre:** o limite continua existindo (agora o da conta logada); uma indisponibilidade do
-  ghcr.io ainda derruba o job — rodar de novo resolve.
-- **Chaves envolvidas:** nenhuma nova; o token é efêmero, gerado pelo GitHub a cada execução.
-- **Como reverter:** apagar o passo "Entrar no ghcr.io" e o bloco `permissions` do job `banco` em
-  `.github/workflows/ci.yml` (PR próprio).
-
+- **O que não cobre:** se o ghcr.io recusar por mais de ~3 minutos seguidos, o job ainda falha — rodar de
+  novo mais tarde.
+- **Chaves envolvidas:** nenhuma.
+- **Como reverter:** voltar o passo "Subir Supabase local" do job `banco` em `.github/workflows/ci.yml` a
+  uma linha só, `supabase start -x …` (PR próprio).

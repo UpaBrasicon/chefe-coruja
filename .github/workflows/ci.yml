@@ -82,10 +82,6 @@ jobs:
     name: banco (supabase/tests)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # packages: read só para baixar as imagens do Supabase do ghcr.io logado.
-    permissions:
-      contents: read
-      packages: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -95,17 +91,24 @@ jobs:
         with:
           # mesma versão do devDependency `supabase` do package.json
           version: 2.102.0
-      - name: Entrar no ghcr.io
-        # As imagens do Supabase vêm do ghcr.io. Sem login o limite de downloads
-        # é mais apertado e o `supabase start` falhou com "toomanyrequests"
-        # (PR #239, 26/10/2026). O token é o do próprio Actions, sem segredo novo.
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
       - name: Subir Supabase local (migrations + seed)
         # Fora o que os testes não usam. Ficam db, auth, rest, kong, storage
         # (migrations mexem em storage.buckets/objects) e realtime. Nomes do
         # CLI 2.102 (mailpit, logflare e postgres-meta no lugar de inbucket,
         # analytics e meta, que o CLI ignorava e baixava assim mesmo).
-        run: supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,postgres-meta
+        # O ghcr.io às vezes recusa o download com "toomanyrequests" (limite do
+        # próprio registro, PR #239, 26/10/2026); o CLI só espera 4 e 8 s, então
+        # tentamos de novo com pausas de 30, 60 e 90 s. As camadas já baixadas
+        # ficam no runner e a tentativa seguinte é menor.
+        run: |
+          for tentativa in 1 2 3 4; do
+            supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,postgres-meta && exit 0
+            [ "$tentativa" = 4 ] && break
+            echo "::warning::supabase start falhou (tentativa $tentativa); nova tentativa em $((tentativa * 30)) s"
+            supabase stop --no-backup || true
+            sleep $((tentativa * 30))
+          done
+          exit 1
       - name: Testes de banco
         # o contêiner é supabase_db_<project_id> = supabase_db_chefe-coruja
         run: npm run test:banco
