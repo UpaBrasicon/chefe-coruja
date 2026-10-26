@@ -13,7 +13,6 @@ import * as React from 'react'
 
 import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
 import { Chip } from '@/components/monitor/Pagina'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
@@ -27,15 +26,16 @@ import {
   useEncaminhamentos, useMedicosParaEncaminhar, usePendenciasEncaminhar, useRecarregarEncaminhamentos,
   type Encaminhamento, type EstadoEncaminhamento,
 } from './useEncaminhamentos'
+import { Estado, type TomEstado } from '@/components/porta/Estado'
 
 export type AbaEncaminhamentoInternoProps = { pacienteId: string; episodioId?: string | null; internacaoId?: string | null }
 
-const PILULA_ESTADO: Record<EstadoEncaminhamento, string> = {
-  pendente: 'bg-pediatria/10 text-pediatria',
-  aceito: 'bg-alerta-marca text-acao',
-  atendido: 'bg-alerta-conforme text-conforme',
-  recusado: 'bg-alerta-critico text-critico',
-  cancelado: 'bg-trilha text-tinta-sussurro line-through',
+const TOM_ESTADO: Record<EstadoEncaminhamento, TomEstado> = {
+  pendente: 'ambar',
+  aceito: 'teal',
+  atendido: 'verde',
+  recusado: 'vermelho',
+  cancelado: 'cinza',
 }
 
 const vazio = { esp: '', espOk: false, medico: '', servico: '', just: '' }
@@ -190,9 +190,7 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
             <span className="min-w-0 flex-[1_1_200px] text-controle font-medium text-tinta">
               {[e.especialidade, e.medico_destino, e.servico].filter(Boolean).join(' · ')}
             </span>
-            <span className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold whitespace-nowrap', PILULA_ESTADO[e.estado])}>
-              {ROTULO_ESTADO[e.estado]}
-            </span>
+            <Estado tom={TOM_ESTADO[e.estado]}>{ROTULO_ESTADO[e.estado]}</Estado>
           </div>
           <span className="text-rotulo text-tinta-sussurro">
             Encaminhado por {e.encaminhado_por ?? '—'} em {quando(e.encaminhado_em)}

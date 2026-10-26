@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 
 import { Caixa, CaixaCabeca, Chip } from './caixas'
 import { type Acao, diaHora, hora, type Pendencia, rpc, TIPO_PENDENCIA } from './comum'
+import { Estado } from '@/components/porta/Estado'
 
 const PRAZOS = [
   ['1h', '1 hora'],
@@ -66,9 +67,8 @@ export function BlocoPendencias({ internacaoId, ativa, lista, eu, acao }: {
         const v = vencida(p)
         return (
           <div key={p.id} className="flex flex-wrap items-start gap-[11px] border-b border-fio bg-superficie px-4 py-3">
-            <span className={cn('rounded-capsula px-2 py-[3px] text-rotulo font-semibold tracking-[0.04em] whitespace-nowrap uppercase',
-              v ? 'bg-alerta-critico text-critico' : p.tipo === 'observacao' ? 'bg-alerta-atencao text-atencao' : 'bg-trilha text-tinta-apoio')}>
-              {TIPO_PENDENCIA[p.tipo] ?? p.tipo}
+            <span className="w-[104px] shrink-0 pt-0.5">
+              <Estado tom={v ? 'vermelho' : p.tipo === 'observacao' ? 'ambar' : 'cinza'}>{TIPO_PENDENCIA[p.tipo] ?? p.tipo}</Estado>
             </span>
             <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
               <span className="text-corpo leading-[1.45] text-pretty text-tinta">{p.descricao}</span>

@@ -99,7 +99,7 @@ export function PassagensDoPlantao({ pacienteId }: { pacienteId?: string } = {})
   }
 
   return (
-    <Card>
+    <Card className="shadow-none">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-corpo">
           <ArrowRightLeft className="size-4 text-tinta-sussurro" /> Passagem de plantão

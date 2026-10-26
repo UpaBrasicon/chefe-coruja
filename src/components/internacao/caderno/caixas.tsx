@@ -4,12 +4,12 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
-/** Seção simples: rótulo em versalete e o conteúdo. */
+/** Seção simples: rótulo e o conteúdo. */
 export function Secao({ titulo, children, acao }: { titulo: string; children: React.ReactNode; acao?: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <div className="text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">{titulo}</div>
+        <div className="text-rotulo font-semibold text-tinta-sussurro">{titulo}</div>
         {acao}
       </div>
       {children}
@@ -22,13 +22,13 @@ export function Caixa({ children, className }: { children: React.ReactNode; clas
   return <div className={cn('overflow-hidden rounded-container border border-fio bg-campo', className)}>{children}</div>
 }
 
-/** Faixa de cabeçalho da caixa (ícone + rótulo em versalete + resumo + ação). */
+/** Faixa de cabeçalho da caixa (ícone + rótulo + resumo + ação). */
 export function CaixaCabeca({ icone, titulo, resumo, resumoClasse, acao }: {
   icone?: React.ReactNode; titulo: string; resumo?: React.ReactNode; resumoClasse?: string; acao?: React.ReactNode
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3 border-b border-fio px-4 py-3">
-      <span className="flex items-center gap-2 text-apoio font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">
+      <span className="flex items-center gap-2 text-apoio font-semibold text-tinta-sussurro">
         {icone}{titulo}
       </span>
       {resumo && <span className={cn('text-apoio text-tinta-sussurro', resumoClasse)}>{resumo}</span>}

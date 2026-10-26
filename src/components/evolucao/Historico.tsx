@@ -22,12 +22,13 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { TIPOS_REGISTRO, chaveDia, diaHora, ehMedico, mensagemErro, rotuloTipo, useHistoricoEvolucoes, type RegistroHistorico, type TipoRegistro } from './dados'
 import { Bloco, Mensagem } from './pecas'
+import { Estado, type TomEstado } from '@/components/porta/Estado'
 
-function status(r: RegistroHistorico): { rotulo: string; classe: string } {
-  if (r.estado === 'cancelado') return { rotulo: 'Cancelado', classe: 'bg-critico/10 text-critico' }
-  if (r.versao > 1) return { rotulo: `Corrigido · v${r.versao}`, classe: 'bg-atencao/10 text-atencao' }
-  if (r.papel === 'complemento') return { rotulo: 'Complemento', classe: 'bg-suprimento/10 text-suprimento' }
-  return { rotulo: 'Registrado', classe: 'bg-conforme/10 text-conforme' }
+function status(r: RegistroHistorico): { rotulo: string; tom: TomEstado } {
+  if (r.estado === 'cancelado') return { rotulo: 'Cancelado', tom: 'vermelho' }
+  if (r.versao > 1) return { rotulo: `Corrigido · v${r.versao}`, tom: 'ambar' }
+  if (r.papel === 'complemento') return { rotulo: 'Complemento', tom: 'teal' }
+  return { rotulo: 'Registrado', tom: 'verde' }
 }
 
 const corTipo = (t: string) => (ehMedico(t) ? 'text-acao' : 'text-tinta-apoio')
@@ -118,7 +119,7 @@ export function Historico({ internacaoId }: { internacaoId: string }) {
                   <span className="tabular text-apoio font-semibold text-tinta">{diaHora(r.registrado_em)}</span>
                   <span className={cn('text-rotulo font-semibold', corTipo(r.tipo))}>{rotuloTipo(r.tipo)}</span>
                   <span className="text-apoio text-tinta-apoio">{r.autor ?? '—'} · {r.especialidade}</span>
-                  <span className={cn('rounded-capsula px-2 py-0.5 text-rotulo font-semibold whitespace-nowrap', s.classe)}>{s.rotulo}</span>
+                  <Estado tom={s.tom}>{s.rotulo}</Estado>
                 </div>
                 <span className="text-controle leading-[1.5] text-pretty whitespace-pre-wrap text-grafite">{r.texto}</span>
                 {r.versao > 1 && r.motivo_correcao && (

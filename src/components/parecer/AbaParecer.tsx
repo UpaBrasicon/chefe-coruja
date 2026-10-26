@@ -17,6 +17,8 @@ import {
   MOTIVO_MIN, PERGUNTA_MIN, PRIORIDADES, STATUS_PARECER, mensagem, prioridade, useEspecialidades,
   type PrioridadeParecer, type StatusParecer,
 } from './comum'
+import { Estado } from '@/components/porta/Estado'
+import { tomDaVariante } from '@/components/porta/tomEstado'
 
 // Aba Parecer do atendimento e do leito (protótipo 8880–8924, parPedirVals):
 // pedir o parecer de uma especialidade, acompanhar Solicitado → Em análise →
@@ -178,7 +180,7 @@ export function AbaParecer({ pacienteId, episodioId, internacaoId }: AbaParecerP
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-controle font-semibold text-tinta">{p.especialidade}{p.prestador ? ` · para ${p.prestador}` : ''}</span>
               <Badge variant={prioridade(p.prioridade).variante}>{prioridade(p.prioridade).rotulo}</Badge>
-              <Badge variant={STATUS_PARECER[p.status].variante}>{STATUS_PARECER[p.status].rotulo}</Badge>
+              <Estado tom={tomDaVariante(STATUS_PARECER[p.status].variante)}>{STATUS_PARECER[p.status].rotulo}</Estado>
             </div>
             <span className="text-apoio leading-normal text-pretty text-tinta-apoio">{p.pergunta}</span>
             <span className="text-rotulo text-tinta-sussurro">{meta(p)}</span>

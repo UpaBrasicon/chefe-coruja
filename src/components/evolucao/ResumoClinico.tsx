@@ -8,7 +8,7 @@
 // alta, movimento/motivo do antibiótico) é gravado em resumos_clinicos — só
 // inserção; o vigente é o mais recente.
 // ─────────────────────────────────────────────────────────────────────────────
-import { Activity, ArrowRight, ArrowUpRight, Pencil, Repeat, TrendingDown } from 'lucide-react'
+import { Activity, ArrowRight, Pencil } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -18,11 +18,12 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { dataCurta, diaHora, mensagemErro, useRecarregarEvolucao, useResumoClinico, type Movimento, type ResumoClinicoDados } from './dados'
 import { CampoTexto, ChipEscolha, Mensagem, RotuloSecao, type Aviso } from './pecas'
+import { Estado, type TomEstado } from '@/components/porta/Estado'
 
-const MOV: Record<Movimento, { rotulo: string; classe: string; Icone: typeof Repeat }> = {
-  escalonado: { rotulo: 'Escalonado', classe: 'bg-critico/10 text-critico', Icone: ArrowUpRight },
-  descalonado: { rotulo: 'Descalonado', classe: 'bg-conforme/10 text-conforme', Icone: TrendingDown },
-  mantido: { rotulo: 'Mantido', classe: 'bg-trilha text-tinta-apoio', Icone: Repeat },
+const MOV: Record<Movimento, { rotulo: string; tom: TomEstado }> = {
+  escalonado: { rotulo: 'Escalonado', tom: 'vermelho' },
+  descalonado: { rotulo: 'Descalonado', tom: 'verde' },
+  mantido: { rotulo: 'Mantido', tom: 'cinza' },
 }
 const NOME_ELETROLITO: Record<string, string> = {
   sodio: 'Sódio', potassio: 'Potássio', magnesio: 'Magnésio', 'calcio-total': 'Cálcio total', cloro: 'Cloro', fosforo: 'Fósforo', bicarbonato: 'Bicarbonato',
@@ -69,8 +70,8 @@ export function ResumoClinico({ pacienteId, internacaoId }: { pacienteId: string
             <div key={ab.item_id} className={cn('flex flex-col gap-1 rounded-container border border-fio bg-superficie px-[13px] py-[11px]', !ab.em_curso && 'opacity-70')}>
               <div className="flex flex-wrap items-center gap-[9px]">
                 <span className="text-controle font-medium text-tinta">{ab.nome}</span>
-                {m && <span className={cn('inline-flex items-center gap-[5px] rounded-capsula px-[9px] py-[3px] text-rotulo font-semibold whitespace-nowrap', m.classe)}><m.Icone className="size-3" aria-hidden />{m.rotulo}</span>}
-                {!ab.em_curso && <span className="rounded-capsula bg-trilha px-[9px] py-[3px] text-rotulo font-semibold text-tinta-apoio">Suspenso {dataCurta(ab.suspenso_em)}</span>}
+                {m && <Estado tom={m.tom}>{m.rotulo}</Estado>}
+                {!ab.em_curso && <Estado tom="cinza">Suspenso {dataCurta(ab.suspenso_em)}</Estado>}
                 <span className="tabular text-rotulo text-tinta-sussurro">D{ab.dia} · início {diaHora(ab.inicio)}</span>
               </div>
               {(ab.motivo || ab.motivo_suspensao) && <span className="text-apoio leading-[1.5] text-pretty text-tinta-apoio">{ab.motivo ?? ab.motivo_suspensao}</span>}
@@ -135,7 +136,7 @@ function Casca({ children, contexto }: { children: React.ReactNode; contexto?: s
   return (
     <section aria-label="Resumo evoluções" className="overflow-hidden rounded-container border border-fio bg-campo">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-fio px-4 py-3">
-        <span className="flex items-center gap-2 text-apoio font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">
+        <span className="flex items-center gap-2 text-apoio font-semibold text-tinta-sussurro">
           <Activity className="size-[15px] text-acao" aria-hidden /> Resumo evoluções
         </span>
         {contexto && <span className="text-apoio text-tinta-apoio">{contexto}</span>}

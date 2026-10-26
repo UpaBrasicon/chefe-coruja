@@ -17,7 +17,7 @@ export function Bloco({ children, className, ...props }: React.ComponentProps<'s
 
 /** Rótulo de seção (12px/600, caixa alta, sussurro). */
 export function RotuloSecao({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <span className={cn('text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase', className)}>{children}</span>
+  return <span className={cn('text-rotulo font-semibold text-tinta-sussurro', className)}>{children}</span>
 }
 
 export function CampoTexto({

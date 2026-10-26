@@ -22,7 +22,6 @@ import { imprimirDocumento } from '@/lib/prontuario'
 import { data as dataBr } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import { Chip } from '@/components/monitor/Pagina'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -33,6 +32,7 @@ import {
   mensagemErro, normalizar, preencherCampos, quando, quemAssina, useCancelarTermo, useEmitirTermo, usePainelTermos,
   type Assinante, type DadosTermo, type PainelTermos, type TermoRegistrado,
 } from './termo'
+import { Estado } from '@/components/porta/Estado'
 
 export type AbaTermoConsentimentoProps = { pacienteId: string; episodioId?: string | null; internacaoId?: string | null }
 
@@ -259,7 +259,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
             <ShieldCheck className="size-[15px] text-acao" aria-hidden />
             Termo de consentimento
           </h3>
-          {f.retifica && <Badge variant="warning">Retificando nº {f.retifica.numero}</Badge>}
+          {f.retifica && <Estado tom="ambar">Retificando nº {f.retifica.numero}</Estado>}
         </div>
 
         {!p.pode_emitir ? (
@@ -444,8 +444,8 @@ function ItemTermo({ t, painel, emEdicao, onRetificar, onCancelar }: {
         <span className={cn('text-corpo font-medium text-tinta', cancelado && 'text-tinta-sussurro line-through decoration-fio-forte')}>
           {c?.procedimento ?? 'Termo de consentimento'}{c?.modelo ? ` · ${c.modelo.titulo}` : ''}
         </span>
-        {cancelado ? <Badge variant="destructive">Cancelado</Badge> : <Badge variant="success">Em vigor</Badge>}
-        {t.versao > 1 && <Badge variant="secondary">Versão {t.versao}</Badge>}
+        {cancelado ? <Estado tom="vermelho">Cancelado</Estado> : <Estado tom="verde">Em vigor</Estado>}
+        {t.versao > 1 && <span className="text-apoio text-tinta-sussurro">versão {t.versao}</span>}
       </div>
       <p className="text-rotulo leading-[1.5] text-tinta-sussurro">
         Nº {t.numero ?? '—'} · registrado em {quando(t.primeira_emissao_em)} por {t.autor ?? '—'}{crm}
@@ -492,7 +492,7 @@ function ItemTermo({ t, painel, emEdicao, onRetificar, onCancelar }: {
           {c.testemunha && <Bloco titulo="Testemunha">{c.testemunha.nome}{c.testemunha.documento ? ` · documento ${c.testemunha.documento}` : ''}</Bloco>}
           {t.versoes.length > 1 && (
             <div>
-              <p className="text-rotulo font-semibold tracking-[0.04em] text-tinta-sussurro uppercase">Versões</p>
+              <p className="text-rotulo font-semibold text-tinta-sussurro">Versões</p>
               <ul className="mt-1 flex flex-col gap-0.5 text-rotulo text-tinta-sussurro">
                 {t.versoes.map((v) => (
                   <li key={v.id}>
@@ -513,7 +513,7 @@ function ItemTermo({ t, painel, emEdicao, onRetificar, onCancelar }: {
 function Bloco({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-rotulo font-semibold tracking-[0.04em] text-tinta-sussurro uppercase">{titulo}</p>
+      <p className="text-rotulo font-semibold text-tinta-sussurro">{titulo}</p>
       <p className="mt-0.5 whitespace-pre-wrap text-tinta [text-wrap:pretty]">{children}</p>
     </div>
   )

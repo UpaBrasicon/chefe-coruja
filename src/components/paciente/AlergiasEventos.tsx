@@ -108,7 +108,7 @@ export function ResumoAlergias({ pacienteId, nome }: { pacienteId: string; nome:
   const [aberta, setAberta] = React.useState(false)
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio p-2">
-      <span className="text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">Alergias</span>
+      <span className="text-rotulo font-semibold text-tinta-sussurro">Alergias</span>
       <SeloAlergia pacienteId={pacienteId} onClick={() => setAberta(true)} />
       <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setAberta(true)}>Alergias e eventos adversos</Button>
       <p className="w-full text-rotulo text-tinta-sussurro">Alergia registrada trava o item do medicamento correspondente. Nada a contorna.</p>

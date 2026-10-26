@@ -48,7 +48,7 @@ function roteiroDe({ aberto, onAlternar, titulo, itens, onUsar }: {
     </Button>
   ), lista: aberto && (
     <div className="flex flex-col gap-1 rounded-controle border border-fio bg-campo px-3.5 py-3">
-      <span className="text-rotulo font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">{titulo}</span>
+      <span className="text-rotulo font-semibold text-tinta-sussurro">{titulo}</span>
       {itens.map((x, i) => <span key={x} className="text-apoio text-pretty text-tinta-apoio">{i + 1}. {x}</span>)}
       <Button size="sm" variant="outline" className="mt-1 self-start" onClick={onUsar}>Escrever o roteiro no campo</Button>
     </div>
