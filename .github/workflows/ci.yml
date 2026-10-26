@@ -91,6 +91,22 @@ jobs:
         with:
           # mesma versão do devDependency `supabase` do package.json
           version: 2.102.0
+      - name: Baixar a imagem do Postgres pelo ECR
+        # O ghcr.io barrou só esta imagem com "toomanyrequests" em todas as
+        # tentativas (PR #239 e #240, 26/10/2026). A mesma imagem, com o mesmo
+        # digest (sha256:42088c86…), está no registro público da AWS; baixamos de
+        # lá e damos o nome que o CLI procura, e ele a acha já presente. A tag é a
+        # do CLI 2.102.0 (fixado acima): se o CLI mudar, a tag deixa de bater e
+        # o CLI volta a baixar do ghcr.io sozinho, sem quebrar.
+        env:
+          IMAGEM: supabase/postgres:17.6.1.131
+        run: |
+          for tentativa in 1 2 3; do
+            docker pull "public.ecr.aws/$IMAGEM" && break
+            [ "$tentativa" = 3 ] && exit 1
+            sleep $((tentativa * 20))
+          done
+          docker tag "public.ecr.aws/$IMAGEM" "ghcr.io/$IMAGEM"
       - name: Subir Supabase local (migrations + seed)
         # Fora o que os testes não usam. Ficam db, auth, rest, kong, storage
         # (migrations mexem em storage.buckets/objects) e realtime. Nomes do

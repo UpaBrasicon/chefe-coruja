@@ -45,19 +45,21 @@ Se o build de um deploy **falhar**, a Vercel mantém no ar a versão anterior �
 | Typecheck bloqueante | passo `Typecheck` próprio no CI (antes já rodava dentro do build) |
 | Expand/contract | `migrations-destrutivas.mjs` no CI (3 testes); nenhuma migration destrutiva desde `20261025000002` |
 
-## Job do banco no CI: novas tentativas no ghcr.io (26/10/2026)
+## Job do banco no CI: imagem do Postgres pelo ECR (26/10/2026)
 
-- **O que cobre:** o passo "Subir Supabase local" tenta o `supabase start` até 4 vezes, com pausas de 30,
-  60 e 90 s (um aviso no log a cada falha). As imagens do Supabase vêm do ghcr.io, que às vezes recusa o
-  download com `toomanyrequests` ("allowed: 44000/minute", limite do próprio registro): o PR #239 falhou
-  duas vezes assim ao baixar `ghcr.io/supabase/postgres:17.6.1.131`, sem nenhuma mudança de banco. O CLI
-  só espera 4 e 8 s antes de desistir. As camadas baixadas ficam no runner, então a tentativa seguinte é
-  menor. Login no ghcr.io com o token do Actions foi testado e **não** resolveu (mesmo erro), por isso saiu.
-- **Exclusão corrigida:** no CLI 2.102 os serviços se chamam `mailpit`, `logflare` e `postgres-meta`; os
-  nomes antigos (`inbucket`, `analytics`, `meta`) eram ignorados com aviso e as três imagens eram baixadas à
-  toa. Agora o `-x` usa `studio,imgproxy,mailpit,edge-runtime,logflare,vector,postgres-meta`.
-- **O que não cobre:** se o ghcr.io recusar por mais de ~3 minutos seguidos, o job ainda falha — rodar de
-  novo mais tarde.
-- **Chaves envolvidas:** nenhuma.
-- **Como reverter:** voltar o passo "Subir Supabase local" do job `banco` em `.github/workflows/ci.yml` a
-  uma linha só, `supabase start -x …` (PR próprio).
+- **O que cobre:** antes do `supabase start`, o job `banco` baixa `supabase/postgres:17.6.1.131` do registro
+  público da AWS (`public.ecr.aws`) e dá a ela o nome `ghcr.io/supabase/postgres:17.6.1.131`; o CLI acha a
+  imagem já presente e não a pede ao ghcr.io. É a mesma imagem (mesmo digest
+  `sha256:42088c86593e0d4f47b2b2bd3c964cee31a1bbc8e560619fd3e84e5fdd973f6d` nos dois registros, conferido em
+  26/10/2026). Motivo: o ghcr.io barrou só essa imagem com `toomanyrequests` ("allowed: 44000/minute") em
+  todas as tentativas dos PRs #239 e #240, com e sem login e com pausas de até 90 s; as outras imagens
+  baixaram.
+- **Também no passo:** o `supabase start` ainda tenta até 4 vezes (pausas de 30, 60 e 90 s), para as outras
+  imagens que seguem no ghcr.io; e a exclusão usa os nomes do CLI 2.102 (`mailpit`, `logflare`,
+  `postgres-meta`; os antigos `inbucket`, `analytics` e `meta` eram ignorados e baixavam três imagens à toa).
+- **O que não cobre:** a tag é a do CLI 2.102.0, fixado no workflow; se o CLI for atualizado e a tag mudar,
+  o passo baixa uma imagem que ninguém usa e o CLI volta a pedir a nova ao ghcr.io — atualizar a tag junto
+  com o CLI. Se o ECR também falhar, o job falha.
+- **Chaves envolvidas:** nenhuma (ECR público, sem login).
+- **Como reverter:** apagar o passo "Baixar a imagem do Postgres pelo ECR" e voltar o "Subir Supabase local"
+  a uma linha só, `supabase start -x …`, em `.github/workflows/ci.yml` (PR próprio).
