@@ -1466,7 +1466,38 @@ Evidência: 1083 de 1083 testes clínicos; homologação conferida pelo RT; CI v
 `20270102000001_lacunas_lote3_crise_ha_ped` aplicada na homologação e, com o "ok produção" do RT,
 na produção (versão 2026-10-25.1 na fila de aprovação).
 
-Próximo no lote 3: lactente febril de 8 a 60 dias com o livro do ICr e a AAP 2021 lado a lado.
+**Lote 3 — Lactente febril com AAP 2021 e PECARN ao lado do ICr em produção em 25/10/2026 (PR #226).**
+- Decisão do RT (23/10/2026): livro do ICr e AAP 2021/PECARN lado a lado, doses só do ICr. AAP 2021
+  (Pantell et al., Pediatrics 2021;148(2):e2021052228) lida no site da revista; PECARN 2019
+  (Kuppermann et al., JAMA Pediatr 2019;173(4):342–351) conferido no resumo.
+- Bloco novo para 8 a 60 dias: elegibilidade e exclusões da AAP; marcadores inflamatórios das notas
+  das Figuras 1 a 3 (procalcitonina > 0,5 ng/mL, PCR > 20 mg/L, neutrófilos "> 4.000 a 5.200" com a
+  faixa marcada à parte, temperatura > 38,5 °C sem procalcitonina de 22 a 60 dias); KAS por faixa
+  (8–21, 22–28, 29–60 dias) com grau; errata do KAS 11b (título "> 1 marcador" × quadro "algum
+  marcador"); tabela ICr × AAP; regra do PECARN (urina negativa, neutrófilos ≤ 4.090, procalcitonina
+  ≤ 1,71) com sensibilidade 97,7% e VPN 99,6% na validação.
+
+Evidência: 1089 de 1089 testes clínicos; homologação conferida pelo RT; CI verde; migration
+`20270103000001_lacunas_lote3_lactente_febril` aplicada na homologação e, com o "ok produção" do RT,
+na produção (versão 2026-10-25.1 na fila de aprovação).
+
+**Lote 3 concluído em 25/10/2026; trilha "Lacunas da Central do Plantonista" concluída** (o lote 4 são
+as decisões de escopo do RT, registradas em 23/10/2026). Os itens do lote 3 estão em produção: escores
+(sPESI, CRB-65, validações do Canadian Syncope, HEART com SBC 2025), PCR adulto e RCP pediátrica pela
+AHA 2025, levetiracetam no estado de mal, Kawasaki pela AHA 2024, SOFA-2 em paralelo, sulfato de
+magnésio na pré-eclâmpsia, anafilaxia pela WAO 2020 e pelo Practice Parameter 2023, andexanete como
+divergência, crise hipertensiva pediátrica com percentil e lactente febril. Pendências abertas, à
+espera do RT:
+- Fichas novas do lote 3 (14 versões 2026-10-25.1) na fila de aprovação da tela de revisão clínica,
+  somadas às 19 dos lotes 1 e 2.
+- Pendências dos lotes 1 e 2 já listadas acima (RACE, Escala Clínica de Fragilidade, dor na criança,
+  STONE, grupo da ITU, doses da cefaleia, quimioprofilaxia na meningite).
+- Achado do lote 3: a Figura 8 do Part 9 da AHA 2025 traz atropina 1 mg a cada 3–5 min, máximo 3 mg,
+  na bradicardia do adulto; resolve a nota "não confirmada" da ferramenta de bradicardia.
+- Fontes enviadas pelo RT em PDF quando o site da revista bloqueou: Kawasaki (AHA 2024), Practice
+  Parameter de anafilaxia (2023) e AAP 2017 de hipertensão pediátrica.
+
+Próximo: parte 3.4 da Revisão visual.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
