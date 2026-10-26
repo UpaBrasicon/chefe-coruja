@@ -688,7 +688,7 @@ Avulsa e Registro recebem o mesmo mínimo nas três (a tabela do registro já es
   nos dois temas (`disp-A-aplicada-claro|escuro.png`). Dispensar e a retirada pela enfermagem pedem
   login: conferir na homologação.
 
-### Faltas (26/10/2026, opções; aguarda escolha do RT)
+### Faltas (26/10/2026)
 
 **Hoje** (`farmacia/Farmacia.tsx`, `Faltas`): uma lista única com as últimas 100 faltas, da mais nova para a
 mais antiga, misturando registradas, em cotação e repostas; cada linha com medicamento, observação, quem
@@ -713,6 +713,21 @@ situação (`ccd45807`); a fila do PS em abas e tabela, já escolhida na 3.3.
 
 B e C usam os dados da lista priorizada do painel (`faltas_priorizadas`), que já traz os pacientes com
 prescrição; nada muda no banco.
+
+**Escolha do RT (26/10/2026): C, com cada situação numa aba** ("para quando for mais medicação não ficar
+poluído"). Aplicada na branch `feat/visual-3-7b-faltas`:
+
+- `Farmacia.tsx`, `Faltas`: abas "Registradas N" (vermelho quando há), "Em cotação N" e "Repostas N"; à
+  direita, a mais antiga das abertas e quantas são de alta vigilância. Registradas e Em cotação vêm da
+  lista priorizada do painel (mesma chave de cache, a mesma ordem: alta vigilância, pacientes com o
+  medicamento prescrito, a mais antiga); cada linha com medicamento, apresentação e selo AV, a observação
+  e quem sinalizou, o retorno ao plantão quando houver, há quanto tempo (anda a cada minuto), quantos
+  pacientes com prescrição e em que setores, e "Em cotação" e "Reposta". Repostas vêm das últimas faltas
+  da unidade, como antes. As chamadas ao servidor são as mesmas.
+- `haQuanto` passou a dizer "2h", "1h 55min", "1 dia", "3 dias" (antes "24h 00min"); vale também para a
+  validação.
+- Visto na página de teste com a Central real, abrindo a aba sozinha, fotografada no Chrome sem janela nos
+  dois temas (`faltas-C-aplicada-*.png`). Avançar a falta pede login: conferir na homologação.
 
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
