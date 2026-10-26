@@ -4,6 +4,10 @@
 // lista; diluição padrão da unidade (ajustar linha, voltar ao modelo, flebite,
 // alta vigilância); rascunhos; faltas; validação. Toda regra é do servidor
 // (migrations 20260929000008 e 20261009000001); aqui só se mostra e se pede.
+//
+// Revisão visual 3.7 (opção C do RT, 26/10/2026): abas sublinhadas, com a
+// contagem da validação; validação como caixa de entrada por paciente; situação
+// em ponto + texto e blocos sem sombra; alta vigilância e falta seguem em selo.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, CheckCircle2, ClipboardPlus, FlaskConical, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react'
@@ -21,7 +25,11 @@ import Diluicoes from './Diluicoes'
 import { EnviarArquivo } from './EnviarArquivo'
 import { PainelFarmacia } from './PainelFarmacia'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
-import { Abas } from '@/components/monitor/Pagina'
+import { Estado } from '@/components/porta/Estado'
+import { tomDaVariante } from '@/components/porta/tomEstado'
+import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 
 const ABAS = [
   ['painel', 'Painel'], ['disponibilidade', 'Disponibilidade'], ['diluicao', 'Diluição padrão'], ['rascunhos', 'Rascunhos'],
@@ -42,11 +50,21 @@ export default function Farmacia() {
   const [rascunho, setRascunho] = React.useState<string | null>(null)
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidade = unidadeAtiva?.unidade_id
+  const aConferir = useFilaValidacao(unidade).data?.length
   return (
     <div className="flex w-full max-w-5xl flex-col">
       <TituloPagina icone={FlaskConical} titulo="Central do Farmacêutico"
         descricao="O que existe na unidade, como se dilui e o que volta para correção" />
-      <Abas abas={ABAS} valor={aba} onChange={setAba} rotulo="Central do Farmacêutico" />
+      <Tabs value={aba} onValueChange={(v) => setAba(v as Aba)} className="mb-[18px]">
+        <TabsList aria-label="Central do Farmacêutico">
+          {ABAS.map(([k, r]) => (
+            <TabsTrigger key={k} value={k}>
+              {r}
+              {k === 'validacao' && !!aConferir && <span className="text-rotulo font-semibold text-acao tabular-nums">{aConferir}</span>}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
       {/* Fase 2, tarefa 9: painel de críticos e faltas */}
       {unidade && aba === 'painel' && <PainelFarmacia unidade={unidade} podeAgir irPara={setAba} semNumeros={papelAtivo === 'farmaceutico'} />}
       {unidade && aba === 'disponibilidade' && <Disponibilidade unidade={unidade} />}
@@ -67,6 +85,12 @@ type Estoque = {
 const SELO: Record<string, { rotulo: string; variante: 'destructive' | 'warning' | 'success' | 'secondary' }> = {
   falta: { rotulo: 'em falta', variante: 'destructive' }, critico: { rotulo: 'crítico', variante: 'warning' },
   ok: { rotulo: 'ok', variante: 'success' }, nao_informado: { rotulo: 'não informado', variante: 'secondary' },
+}
+/** Falta e crítico são alerta (selo); ok e não informado, situação (ponto + texto). */
+function SeloEstoque({ situacao }: { situacao: string }) {
+  const s = SELO[situacao] ?? SELO.nao_informado
+  if (situacao === 'falta' || situacao === 'critico') return <Badge variant={s.variante} className="tracking-normal normal-case">{s.rotulo}</Badge>
+  return <Estado tom={tomDaVariante(s.variante)}>{s.rotulo}</Estado>
 }
 
 function Disponibilidade({ unidade }: { unidade: string }) {
@@ -97,7 +121,7 @@ function Disponibilidade({ unidade }: { unidade: string }) {
         ajuda="Planilha, documento ou PDF da farmácia central (.xlsx, .xls, .csv, .doc, .docx, .pdf). Fica registrado quem enviou e quando; o saldo abaixo é o que você informa." />
       <LimitesPadrao unidade={unidade} aoMudar={recarregar} />
       <MensagemErro texto={erro ?? (lista.error ? (lista.error as Error).message : null)} />
-      <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
+      <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
         <div className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-3">
           <span className="text-apoio text-tinta-sussurro">Saldo da unidade: {informados} de {(lista.data ?? []).length} itens informados. O que está em falta ou crítico vem primeiro.</span>
           <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -138,7 +162,7 @@ function LimitesPadrao({ unidade, aoMudar }: { unidade: string; aoMudar: () => v
   const resumo = p && (p.limite_critico != null || p.limite_falta != null)
     ? `crítico ≤ ${fmt(p.limite_critico)} · em falta ≤ ${fmt(p.limite_falta)}` : 'sem padrão: o item sem limite próprio fica só com o saldo'
   return (
-    <div className="flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-5 py-3.5 shadow-repouso">
+    <div className="flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-5 py-3.5">
       <div className="flex flex-wrap items-center gap-2.5">
         <SlidersHorizontal className="size-4 text-acao" aria-hidden />
         <span className="text-apoio font-semibold text-tinta">Padrão da unidade</span>
@@ -171,7 +195,6 @@ function LinhaEstoque({ d, unidade, aoErro, aoMudar }: { d: Estoque; unidade: st
   const [editando, setEditando] = React.useState(false)
   const [c, setC] = React.useState('')
   const [f, setF] = React.useState('')
-  const s = SELO[d.situacao] ?? SELO.nao_informado
   const chamar = async (p: PromiseLike<{ error: { message: string } | null }>) => {
     const { error } = await p
     if (error) { aoErro(error.message); return false }
@@ -185,7 +208,7 @@ function LinhaEstoque({ d, unidade, aoErro, aoMudar }: { d: Estoque; unidade: st
         <div className="flex min-w-[220px] flex-1 flex-col gap-0.5">
           <span className="flex flex-wrap items-center gap-2 text-corpo font-medium text-tinta">
             {d.principio_ativo}
-            {d.alta_vigilancia && <Badge variant="warning">alta vigilância</Badge>}
+            {d.alta_vigilancia && <SeloAltaVigilancia />}
           </span>
           <span className="text-rotulo text-tinta-sussurro">{d.apresentacao ?? '—'}{d.atualizado_em ? ` · atualizado ${hora(d.atualizado_em)}${d.atualizado_por ? ` por ${d.atualizado_por}` : ''}` : ''}</span>
         </div>
@@ -198,7 +221,7 @@ function LinhaEstoque({ d, unidade, aoErro, aoMudar }: { d: Estoque; unidade: st
           <Button size="xs" variant="outline" disabled={q.trim() === '' || num(q) === d.quantidade}
             onClick={() => void chamar(supabase.rpc('atualizar_estoque', { p_unidade: unidade, p_medicamento: d.medicamento_id, p_quantidade: num(q)! }))}>Salvar</Button>
         </div>
-        <Badge variant={s.variante}>{s.rotulo}</Badge>
+        <SeloEstoque situacao={d.situacao} />
         {d.falta_id ? (
           <span className="inline-flex items-center gap-1 text-rotulo font-medium text-conforme"><ShieldCheck className="size-3.5" aria-hidden />Falta enviada</span>
         ) : (d.situacao === 'falta' || d.situacao === 'critico') ? (
@@ -314,12 +337,12 @@ function LinhaDiluicao({ l, unidade, aoErro, aoMudar, abrirRascunho }: {
   const [motivo, setMotivo] = React.useState('')
   const flebite = l.risco_flebite == null ? 'não informado' : l.risco_flebite ? 'sim' : 'não'
   return (
-    <li className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
+    <li className="overflow-hidden rounded-cartao border border-fio bg-superficie">
       <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-5 py-3">
         <span className="text-corpo font-semibold text-tinta">{l.principio_ativo}</span>
         <span className="text-apoio text-tinta-sussurro">{l.apresentacao} · {l.via}</span>
-        {l.alta_vigilancia && <Badge variant="warning">alta vigilância</Badge>}
-        <Badge variant={l.da_unidade ? 'info' : 'secondary'} className="ml-auto">{l.da_unidade ? `da unidade · v${l.versao}` : `modelo da rede · v${l.versao}`}</Badge>
+        {l.alta_vigilancia && <SeloAltaVigilancia />}
+        <span className="ml-auto"><Estado tom={l.da_unidade ? 'teal' : 'cinza'}>{l.da_unidade ? `da unidade · v${l.versao}` : `modelo da rede · v${l.versao}`}</Estado></span>
       </div>
       <div className="flex flex-col gap-3 px-5 py-3.5">
         <dl className="grid gap-x-5 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -404,7 +427,7 @@ function Faltas({ unidade }: { unidade: string }) {
     <div className="flex flex-col gap-3">
       <p className="text-apoio text-tinta-sussurro">O que a unidade já sinalizou. A farmácia recebe na hora e o gestor vê no painel.</p>
       <MensagemErro texto={erro ?? (lista.error ? (lista.error as Error).message : null)} />
-      <ul className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
+      <ul className="overflow-hidden rounded-cartao border border-fio bg-superficie">
         {(lista.data ?? []).map((f) => (
           <li key={f.id} className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-3 last:border-0">
             <div className="flex min-w-[220px] flex-1 flex-col gap-0.5">
@@ -412,7 +435,7 @@ function Faltas({ unidade }: { unidade: string }) {
               {f.observacao && <span className="text-apoio text-tinta-apoio">{f.observacao}</span>}
               <span className="text-rotulo text-tinta-sussurro">{f.sinalizante?.nome_completo ?? '—'} · {hora(f.sinalizada_em)}</span>
             </div>
-            <Badge variant={f.situacao === 'reposta' ? 'success' : f.situacao === 'em_cotacao' ? 'warning' : 'destructive'}>{SIT_FALTA[f.situacao]}</Badge>
+            <Estado tom={f.situacao === 'reposta' ? 'verde' : f.situacao === 'em_cotacao' ? 'ambar' : 'vermelho'}>{SIT_FALTA[f.situacao]}</Estado>
             {f.situacao === 'registrada' && <Button size="xs" variant="outline" onClick={() => void avancar(f.id, 'em_cotacao')}>Em cotação</Button>}
             {f.situacao !== 'reposta' && <Button size="xs" onClick={() => void avancar(f.id, 'reposta')}>Reposta</Button>}
           </li>
@@ -430,32 +453,110 @@ type ItemFila = {
   alta_vigilancia: boolean; prescrito_por: string | null; prescrito_em: string; ultima_situacao: string | null; ultimo_motivo: string | null
 }
 
-function Validacao({ unidade }: { unidade: string }) {
-  const qc = useQueryClient()
-  const [erro, setErro] = React.useState<string | null>(null)
-  const fila = useQuery({
+/** A fila de validação (a cada 60 s): a aba mostra quantos, a caixa de entrada mostra quais. */
+function useFilaValidacao(unidade: string | undefined) {
+  return useQuery({
     queryKey: ['fila-validacao', unidade],
+    enabled: !!unidade,
     refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('fila_validacao', { p_unidade: unidade })
+      const { data, error } = await supabase.rpc('fila_validacao', { p_unidade: unidade! })
       if (error) throw error
       return (data ?? []) as ItemFila[]
     },
   })
+}
+
+/** Itens da fila juntos por paciente, na ordem em que chegam do servidor. */
+type GrupoFila = { chave: string; local: string | null; paciente: string; itens: ItemFila[] }
+function agrupar(itens: ItemFila[]): GrupoFila[] {
+  const grupos = new Map<string, GrupoFila>()
+  for (const i of itens) {
+    const chave = `${i.local ?? ''}|${i.paciente_nome}`
+    const g = grupos.get(chave) ?? { chave, local: i.local, paciente: i.paciente_nome, itens: [] }
+    g.itens.push(i)
+    grupos.set(chave, g)
+  }
+  return [...grupos.values()]
+}
+
+/** "40min", "1h 55min" desde a prescrição. */
+function haQuanto(iso: string, agora: number) {
+  const m = Math.max(0, Math.round((agora - Date.parse(iso)) / 60_000))
+  return m < 60 ? `${m}min` : `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}min`
+}
+
+// Revisão visual 3.7 (opção C do RT, 26/10/2026): a validação como caixa de
+// entrada. À esquerda, um paciente por linha, com quantos itens, há quanto tempo
+// e os sinais (alta vigilância, fora do padrão, devolvido); à direita, a
+// prescrição do paciente escolhido, com Confere e Devolver em cada item.
+function Validacao({ unidade }: { unidade: string }) {
+  const qc = useQueryClient()
+  const [erro, setErro] = React.useState<string | null>(null)
+  const [escolhido, setEscolhido] = React.useState<string | null>(null)
+  // "há quanto" anda a cada minuto, junto com a fila
+  const [agora, setAgora] = React.useState(() => Date.now())
+  React.useEffect(() => {
+    const t = window.setInterval(() => setAgora(Date.now()), 60_000)
+    return () => window.clearInterval(t)
+  }, [])
+  const fila = useFilaValidacao(unidade)
   if (fila.data?.length === 0) return <Vazio icone={CheckCircle2} titulo="Nada para validar" texto="Itens novos de prescrição aparecem aqui até serem conferidos." />
   const itens = fila.data ?? []
+  const grupos = agrupar(itens)
+  // o paciente escolhido some quando o último item dele é conferido: passa ao próximo
+  const sel = grupos.find((g) => g.chave === escolhido) ?? grupos[0]
+  const fora = itens.filter((i) => i.diluicao_divergente).length
   return (
     <div className="flex flex-col gap-3">
       <p className="text-apoio text-tinta-sussurro">
-        {itens.length} {itens.length === 1 ? 'item a conferir' : 'itens a conferir'}{itens.some((i) => i.diluicao_divergente) ? ` · ${itens.filter((i) => i.diluicao_divergente).length} fora do padrão de diluição` : ''} · o que não confere volta para quem prescreveu, com o motivo.
+        {itens.length} {itens.length === 1 ? 'item' : 'itens'} de {grupos.length} {grupos.length === 1 ? 'paciente' : 'pacientes'}
+        {fora > 0 && <span className="text-atencao"> · {fora} fora do padrão de diluição</span>} · o que não confere volta para quem prescreveu, com o motivo.
       </p>
       <MensagemErro texto={erro ?? (fila.error ? (fila.error as Error).message : null)} />
-      {itens.map((i) => (
-        <LinhaValidacao key={i.item_id} i={i} aoErro={setErro} aoMudar={() => {
-          void qc.invalidateQueries({ queryKey: ['fila-validacao'] })
-          void qc.invalidateQueries({ queryKey: ['nota-fila-validacao'] })
-        }} />
-      ))}
+      {sel && (
+        <div className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[300px_minmax(0,1fr)]">
+          <ul aria-label="Pacientes com itens a conferir" className="border-b border-fio md:border-r md:border-b-0">
+            {grupos.map((g) => {
+              const primeiro = g.itens[0]
+              return (
+                <li key={g.chave}>
+                  <BotaoLinha variante="linha" aria-current={g.chave === sel.chave ? 'true' : undefined} onClick={() => setEscolhido(g.chave)}
+                    className={cn('flex-col gap-0.5 px-4', g.chave === sel.chave && 'bg-alerta-marca')}>
+                    <span className="flex w-full items-baseline justify-between gap-2">
+                      <span className="text-apoio font-semibold text-tinta">{g.local && <span className="text-acao">{g.local} · </span>}{g.paciente}</span>
+                      <span className="shrink-0 text-rotulo text-tinta-sussurro tabular-nums">há {haQuanto(primeiro.prescrito_em, agora)}</span>
+                    </span>
+                    <span className="text-rotulo text-tinta-apoio">
+                      {g.itens.length} {g.itens.length === 1 ? 'item' : 'itens'} · {g.itens.map((i) => i.descricao).join(', ')}
+                    </span>
+                    <span className="flex flex-wrap gap-x-2 text-rotulo font-semibold empty:hidden">
+                      {g.itens.some((i) => i.alta_vigilancia) && <span className="text-atencao">alta vigilância</span>}
+                      {g.itens.some((i) => i.diluicao_divergente) && <span className="text-atencao">fora do padrão</span>}
+                      {g.itens.some((i) => i.ultima_situacao === 'devolvido') && <span className="text-critico">devolvido</span>}
+                    </span>
+                  </BotaoLinha>
+                </li>
+              )
+            })}
+          </ul>
+          <section aria-label={`Prescrição de ${sel.paciente}`} className="flex min-w-0 flex-col">
+            <div className="border-b border-fio px-5 py-3.5">
+              <h3 className="text-corpo font-semibold text-tinta">{sel.local ? `${sel.local} · ` : ''}{sel.paciente}</h3>
+              <p className="text-apoio text-tinta-sussurro">
+                Prescrição de {sel.itens[0].prescrito_por ?? '—'} em {hora(sel.itens[0].prescrito_em)} · há {haQuanto(sel.itens[0].prescrito_em, agora)}
+                {sel.itens[0].peso_kg ? ` · peso de referência ${sel.itens[0].peso_kg} kg` : ''} · {sel.itens.length} {sel.itens.length === 1 ? 'item a conferir' : 'itens a conferir'}
+              </p>
+            </div>
+            {sel.itens.map((i) => (
+              <LinhaValidacao key={i.item_id} i={i} aoErro={setErro} aoMudar={() => {
+                void qc.invalidateQueries({ queryKey: ['fila-validacao'] })
+                void qc.invalidateQueries({ queryKey: ['nota-fila-validacao'] })
+              }} />
+            ))}
+          </section>
+        </div>
+      )}
     </div>
   )
 }
@@ -469,33 +570,36 @@ function LinhaValidacao({ i, aoErro, aoMudar }: { i: ItemFila; aoErro: (m: strin
     aoErro(null); setMotivo(''); setDevolvendo(false); aoMudar()
   }
   return (
-    <div className={cn('flex flex-col gap-2 rounded-cartao border bg-superficie px-5 py-3.5 shadow-repouso',
-      i.alta_vigilancia || i.diluicao_divergente ? 'border-atencao/40' : 'border-fio')}>
-      <div className="flex flex-wrap items-baseline gap-2">
-        <span className="text-corpo font-semibold text-tinta">{i.local ? `${i.local} · ` : ''}{i.descricao}</span>
-        {i.alta_vigilancia && <Badge variant="warning">alta vigilância</Badge>}
-        {i.ultima_situacao === 'devolvido' && <Badge variant="destructive">devolvido</Badge>}
-      </div>
-      <span className="text-apoio text-tinta">{[i.dose, i.via, i.posologia].filter(Boolean).join(' · ')}{i.se_necessario ? ' · se necessário' : ''}</span>
-      <span className="text-rotulo text-tinta-sussurro">{i.paciente_nome} · prescrito por {i.prescrito_por ?? '—'} · {hora(i.prescrito_em)}{i.peso_kg ? ` · peso de referência ${i.peso_kg} kg` : ''}</span>
-      {i.diluicao_texto && (
-        <p className={cn('text-apoio', i.diluicao_divergente ? 'text-atencao' : 'text-tinta-apoio')}>
-          {i.diluicao_divergente ? `Diluição fora do padrão: ${i.diluicao_texto} — ${i.justificativa_divergencia}` : `Diluição padrão v${i.diluicao_versao}: ${i.diluicao_texto}`}
-        </p>
-      )}
-      {i.incompatibilidades?.length ? <p className="text-apoio text-atencao">Incompatibilidades (diluição publicada): {i.incompatibilidades.join(', ')}</p> : null}
-      {i.ultima_situacao === 'devolvido' && <p className="text-apoio text-critico">Devolvido: {i.ultimo_motivo}</p>}
-      <div className="flex flex-wrap items-center gap-2 pt-0.5">
-        <Button size="sm" onClick={() => void validar(true)}><ShieldCheck className="size-3.5" aria-hidden />Confere</Button>
-        {!devolvendo && <Button size="sm" variant="outline" onClick={() => setDevolvendo(true)}>Devolver para correção</Button>}
-        {devolvendo && (
-          <>
-            <Input className="h-8 min-w-56 flex-1" placeholder="Motivo que volta para quem prescreveu (mínimo de 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
-            <Button size="sm" variant="ghost" onClick={() => { setDevolvendo(false); setMotivo('') }}>Cancelar</Button>
-            <Button size="sm" variant="outline" disabled={motivo.trim().length < 10} onClick={() => void validar(false)}>Devolver</Button>
-          </>
+    <div className="flex flex-col gap-2 border-b border-trilha px-5 py-3.5 last:border-b-0">
+      <div className="flex flex-wrap items-start gap-x-5 gap-y-2">
+        <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-1">
+          <span className="flex flex-wrap items-baseline gap-2">
+            <span className="text-corpo font-semibold text-tinta">{i.descricao}</span>
+            {i.alta_vigilancia && <SeloAltaVigilancia />}
+          </span>
+          <span className="text-apoio text-tinta">{[i.dose, i.via, i.posologia].filter(Boolean).join(' · ')}{i.se_necessario ? ' · se necessário' : ''}</span>
+          {i.diluicao_texto && (
+            <span className={cn('text-apoio', i.diluicao_divergente ? 'text-atencao' : 'text-tinta-apoio')}>
+              {i.diluicao_divergente ? `Fora do padrão: ${i.diluicao_texto} — ${i.justificativa_divergencia}` : `Padrão v${i.diluicao_versao}: ${i.diluicao_texto}`}
+            </span>
+          )}
+          {i.incompatibilidades?.length ? <span className="text-apoio text-atencao">Incompatibilidades (diluição publicada): {i.incompatibilidades.join(', ')}</span> : null}
+          {i.ultima_situacao === 'devolvido' && <Estado tom="vermelho">Devolvido: {i.ultimo_motivo}</Estado>}
+        </div>
+        {!devolvendo && (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" onClick={() => void validar(true)}><ShieldCheck className="size-3.5" aria-hidden />Confere</Button>
+            <Button size="sm" variant="outline" onClick={() => setDevolvendo(true)}>Devolver para correção</Button>
+          </div>
         )}
       </div>
+      {devolvendo && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Input className="h-8 min-w-56 flex-1" placeholder="Motivo que volta para quem prescreveu (mínimo de 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+          <Button size="sm" variant="ghost" onClick={() => { setDevolvendo(false); setMotivo('') }}>Cancelar</Button>
+          <Button size="sm" variant="outline" disabled={motivo.trim().length < 10} onClick={() => void validar(false)}>Devolver</Button>
+        </div>
+      )}
     </div>
   )
 }

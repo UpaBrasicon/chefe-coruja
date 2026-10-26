@@ -14,6 +14,8 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
 import { frase, lerPrincipios, type GrupoInteracao, type ListaInteracoes, type ParInteracao } from '@/lib/interacoes'
 import { supabase } from '@/lib/supabase'
+import { Estado } from '@/components/porta/Estado'
+import { tomDaVariante } from '@/components/porta/tomEstado'
 
 // Interações críticas da unidade (Fase 2, tarefa 3; migration 20261031000005).
 // Decisão do RT (09/10/2026), opção C: lista curada pela farmácia, a partir
@@ -122,8 +124,8 @@ function LinhaPar({ p, grupos, unidadeId, podeEditar }: { p: ParInteracao; grupo
     <div className="flex flex-col gap-1 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium text-tinta">{p.grupo_a} × {p.grupo_b}</span>
-        <Badge variant={p.gravidade === 'contraindicada' ? 'destructive' : 'warning'}>{p.gravidade}</Badge>
-        <Badge variant={st.variante}>{st.rotulo}</Badge>
+        <Badge variant={p.gravidade === 'contraindicada' ? 'destructive' : 'warning'} className="tracking-normal normal-case">{p.gravidade}</Badge>
+        <Estado tom={tomDaVariante(st.variante)}>{st.rotulo}</Estado>
         {podeEditar && <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setEditando(true)}>Editar</Button>}
       </div>
       <span className="text-tinta">{frase(p.efeito)}{p.conduta ? ` Conduta: ${frase(p.conduta)}` : ''}</span>
