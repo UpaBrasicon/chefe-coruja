@@ -1,28 +1,30 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Pacientes em Observação (porte do Bloco 3 do protótipo, index.html 3541–3723).
 //
-// Alerta de quem passou de 6 horas ou "tudo calmo" com a maior permanência;
-// filtros por prazo e pelos cinco estados (com contagem); a lista de boxes.
+// Revisão visual 3.6 (opção B do RT, 26/10/2026), como a fila do PS: alerta de
+// quem passou de 6 horas; abas "Em observação" e "Finalizados" com a contagem e,
+// à direita, a maior permanência e quantos passaram do prazo; uma tabela por aba.
 // O estado de cada box vem derivado do banco (painel_observacao); os relógios
 // correm pelo relógio do servidor.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
-import { AlertTriangle, Eye, Shield, ShieldCheck } from 'lucide-react'
+import { AlertTriangle, Eye, Shield } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { LeitoAberto } from '@/components/internacao/LeitoAberto'
-import { Chip, TituloPagina, Trilha } from '@/components/monitor/Pagina'
+import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
 
 import { CartaoObservacao } from './CartaoObservacao'
-import { ESTADOS, duracao, msgErro, relogioPermanencia, type EstadoObservacao, type LinhaObservacao } from './modelo'
+import { duracao, msgErro, relogioPermanencia, type LinhaObservacao } from './modelo'
 
-type FiltroPrazo = 'todos' | 'acima' | 'dentro'
-const FILTROS_PRAZO: [FiltroPrazo, string][] = [['todos', 'Todos'], ['acima', 'Acima de 6h'], ['dentro', 'Dentro do prazo']]
+type Aba = 'ativas' | 'finalizadas'
 
 export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
   const { unidadeAtiva, papelAtivo } = useUnidade()
@@ -30,8 +32,7 @@ export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
   const unidadeId = unidadeAtiva?.unidade_id
   const ehGestor = papelAtivo === 'gestor' || papelAtivo === 'admin'
 
-  const [filtroPrazo, setFiltroPrazo] = React.useState<FiltroPrazo>('todos')
-  const [filtroEstado, setFiltroEstado] = React.useState<EstadoObservacao | ''>('')
+  const [aba, setAba] = React.useState<Aba>('ativas')
   const [prancheta, setPrancheta] = React.useState<LinhaObservacao | null>(null)
 
   const painel = useQuery({
@@ -69,13 +70,34 @@ export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
   const maior = ativas.reduce((m, l) => Math.max(m, relogioPermanencia(l.entrada, l.prazo, agora).decorridoMin), 0)
   const setores = [...new Set(linhas.map((l) => l.setor_nome))].join(', ')
 
-  const visiveis = linhas.filter((l) => {
-    if (filtroEstado && l.estado !== filtroEstado) return false
-    if (filtroPrazo === 'todos') return true
-    if (l.estado === 'finalizado') return false
-    const passou = relogioPermanencia(l.entrada, l.prazo, agora).acima
-    return filtroPrazo === 'acima' ? passou : !passou
-  })
+  const finalizadas = linhas.filter((l) => l.estado === 'finalizado')
+
+  const tabela = (lista: LinhaObservacao[], vazio: string) => (
+    <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+      {lista.length === 0 ? (
+        <p className="px-5 py-5 text-controle text-tinta-sussurro">{vazio}</p>
+      ) : (
+        <Table aria-label="Pacientes em observação">
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="pl-5">Box</TableHead>
+              <TableHead>Paciente</TableHead>
+              <TableHead>Situação</TableHead>
+              <TableHead>Na observação</TableHead>
+              <TableHead>Prazo de 6 h</TableHead>
+              <TableHead className="pr-5 text-right"><span className="sr-only">Ações</span></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {lista.map((l) => (
+              <CartaoObservacao key={l.internacao_id} linha={l} agora={agora} eu={perfil?.id} unidadeId={unidadeId!}
+                podeAgir={!ehGestor} ehMedico={papelAtivo === 'plantonista'} abrirPrancheta={setPrancheta} />
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </section>
+  )
 
   const corpo = !unidadeId ? (
     <p className="text-apoio text-tinta-sussurro">Escolha a unidade.</p>
@@ -84,22 +106,34 @@ export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
   ) : painel.error ? (
     <p className="rounded-container border border-critico/30 bg-alerta-critico px-4 py-3 text-apoio text-critico">{msgErro(painel.error)}</p>
   ) : (
-    <div className="flex flex-col gap-3.5">
-      {acima.length > 0 ? (
+    <div className="flex flex-col gap-3">
+      {acima.length > 0 && (
         <div role="alert" className="flex items-center gap-[9px] rounded-container border border-nota bg-nota/50 px-4 py-3">
           <AlertTriangle className="size-4 shrink-0 text-observacao" aria-hidden />
           <span className="text-apoio text-atencao">
             {acima.length === 1 ? '1 paciente passou' : `${acima.length} pacientes passaram`} de 6 horas em observação
           </span>
         </div>
-      ) : (
-        <div className="flex items-center gap-[9px] rounded-container border border-conforme/25 bg-alerta-conforme px-4 py-3">
-          <ShieldCheck className="size-4 shrink-0 text-conforme" aria-hidden />
-          <span className="text-apoio text-conforme">
-            {ativas.length > 0 ? `Todos dentro do limite de 6 horas · maior permanência de ${duracao(maior)}` : 'Ninguém em observação agora'}
+      )}
+
+      <Tabs value={aba} onValueChange={(v) => setAba(v as Aba)} className="gap-3">
+        <div className="flex flex-wrap items-end gap-x-4 gap-y-1 border-b border-fio">
+          <TabsList aria-label="Observação" className="w-auto max-w-full flex-[1_0_auto] gap-5 border-b-0">
+            <TabsTrigger value="ativas">Em observação <span className="text-rotulo font-semibold text-acao tabular-nums">{ativas.length}</span></TabsTrigger>
+            <TabsTrigger value="finalizadas">
+              {ehGestor ? 'Finalizados em 12 horas' : 'Finalizados no plantão'} <span className="text-rotulo font-semibold text-acao tabular-nums">{finalizadas.length}</span>
+            </TabsTrigger>
+          </TabsList>
+          {/* quem passou do prazo aparece em qualquer aba: não some ao olhar a outra */}
+          <span className="pb-2.5 text-apoio text-tinta-sussurro">
+            {ativas.length > 0 ? `maior permanência ${duracao(maior)}` : 'ninguém em observação agora'}
+            {acima.length > 0 && <span className="font-medium text-critico"> · {acima.length} acima de 6 horas</span>}
           </span>
         </div>
-      )}
+
+        <TabsContent value="ativas">{tabela(ativas, 'Nenhum paciente em observação agora.')}</TabsContent>
+        <TabsContent value="finalizadas">{tabela(finalizadas, ehGestor ? 'Nada terminou nas últimas 12 horas.' : 'Nada terminou neste plantão.')}</TabsContent>
+      </Tabs>
 
       <div className="flex items-center gap-[7px] text-apoio text-tinta-sussurro">
         <Shield className="size-3.5 shrink-0" aria-hidden />
@@ -107,32 +141,6 @@ export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
           {setores ? `Você vê a observação de ${setores}` : 'Você vê a observação dos setores da sua escala agora'}
           {ehGestor ? ' e o que terminou nas últimas 12 horas.' : ' e o que terminou neste plantão. Pacientes de outros setores não aparecem aqui.'}
         </span>
-      </div>
-
-      <div role="group" aria-label="Filtros da observação" className="flex flex-wrap items-center gap-[7px]">
-        {FILTROS_PRAZO.map(([k, r]) => <Chip key={k} ativo={filtroPrazo === k} onClick={() => setFiltroPrazo(k)}>{r}</Chip>)}
-        <span aria-hidden className="mx-1 w-px self-stretch bg-fio" />
-        {ESTADOS.map((e) => (
-          <Chip key={e.id} ativo={filtroEstado === e.id} onClick={() => setFiltroEstado(filtroEstado === e.id ? '' : e.id)}>
-            {e.rotulo} · {linhas.filter((l) => l.estado === e.id).length}
-          </Chip>
-        ))}
-      </div>
-
-      <div className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
-        {visiveis.map((l) => (
-          <CartaoObservacao key={l.internacao_id} linha={l} agora={agora} eu={perfil?.id} unidadeId={unidadeId}
-            podeAgir={!ehGestor} ehMedico={papelAtivo === 'plantonista'} abrirPrancheta={setPrancheta} />
-        ))}
-        {visiveis.length === 0 && (
-          <div className="flex flex-col items-center gap-[5px] px-5 py-10 text-center">
-            <ShieldCheck className="size-[22px] text-conforme" aria-hidden />
-            <span className="text-corpo font-semibold text-tinta">
-              {linhas.length === 0 ? 'Nenhum paciente em observação' : filtroPrazo === 'acima' && !filtroEstado ? 'Ninguém acima de 6 horas agora' : 'Nenhum box neste filtro'}
-            </span>
-            <span className="text-apoio text-tinta-sussurro">Nada a fazer nesta lista neste momento.</span>
-          </div>
-        )}
       </div>
     </div>
   )
