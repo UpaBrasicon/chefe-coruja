@@ -91,10 +91,63 @@ jobs:
         with:
           # mesma versão do devDependency `supabase` do package.json
           version: 2.102.0
+      # Imagem do Postgres do Supabase guardada no cache do Actions. Os registros
+      # públicos barraram os runners do GitHub em 26/10/2026 (PRs #239 a #241):
+      # ghcr.io e Docker Hub com "toomanyrequests", ECR com "Data limit exceeded".
+      # A primeira vez que um registro servir, a imagem fica no cache e o CI
+      # deixa de depender deles. Tag do CLI 2.102.0 (fixado acima): ao atualizar
+      # o CLI, atualizar a tag aqui (senão o CLI volta a pedir ao ghcr.io).
+      - name: Restaurar a imagem do Postgres do cache
+        id: cache-postgres
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/supabase-postgres.tar
+          key: supabase-postgres-17.6.1.131
+      - name: Obter a imagem do Postgres
+        env:
+          IMAGEM: supabase/postgres:17.6.1.131
+        run: |
+          if [ -f /tmp/supabase-postgres.tar ]; then
+            docker load -i /tmp/supabase-postgres.tar
+            exit 0
+          fi
+          # mesma imagem nos três (digest sha256:42088c86… conferido em 26/10/2026)
+          for origem in docker.io public.ecr.aws ghcr.io; do
+            for tentativa in 1 2; do
+              if docker pull "$origem/$IMAGEM"; then
+                [ "$origem" = ghcr.io ] || docker tag "$origem/$IMAGEM" "ghcr.io/$IMAGEM"
+                docker save "ghcr.io/$IMAGEM" -o /tmp/supabase-postgres.tar
+                exit 0
+              fi
+              echo "::warning::$origem recusou a imagem (tentativa $tentativa)"
+              sleep 20
+            done
+          done
+          exit 1
+      - name: Guardar a imagem do Postgres no cache
+        if: steps.cache-postgres.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/supabase-postgres.tar
+          key: supabase-postgres-17.6.1.131
       - name: Subir Supabase local (migrations + seed)
         # Fora o que os testes não usam. Ficam db, auth, rest, kong, storage
-        # (migrations mexem em storage.buckets/objects) e realtime.
-        run: supabase start -x studio,imgproxy,inbucket,edge-runtime,analytics,vector,meta
+        # (migrations mexem em storage.buckets/objects) e realtime. Nomes do
+        # CLI 2.102 (mailpit, logflare e postgres-meta no lugar de inbucket,
+        # analytics e meta, que o CLI ignorava e baixava assim mesmo).
+        # O ghcr.io às vezes recusa o download com "toomanyrequests" (limite do
+        # próprio registro, PR #239, 26/10/2026); o CLI só espera 4 e 8 s, então
+        # tentamos de novo com pausas de 30, 60 e 90 s. As camadas já baixadas
+        # ficam no runner e a tentativa seguinte é menor.
+        run: |
+          for tentativa in 1 2 3 4; do
+            supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,postgres-meta && exit 0
+            [ "$tentativa" = 4 ] && break
+            echo "::warning::supabase start falhou (tentativa $tentativa); nova tentativa em $((tentativa * 30)) s"
+            supabase stop --no-backup || true
+            sleep $((tentativa * 30))
+          done
+          exit 1
       - name: Testes de banco
         # o contêiner é supabase_db_<project_id> = supabase_db_chefe-coruja
         run: npm run test:banco
