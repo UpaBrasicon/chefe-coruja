@@ -603,6 +603,35 @@ branch `feat/visual-3-7-farmacia`:
   a 1100 px nos dois temas (`farm-C-aplicada-claro|escuro.jpg`): escolher outro paciente e abrir a
   devolução funcionaram. As outras abas e telas pedem login: conferir na homologação.
 
+## 3.7b · Outras telas do farmacêutico (pedido do RT em 26/10/2026)
+
+Uma tela por vez, na ordem Disponibilidade → Dispensação → Faltas → Diluição padrão e Rascunhos → Painel →
+Alta vigilância e Interações.
+
+### Disponibilidade (26/10/2026, opções; aguarda escolha do RT)
+
+**Hoje** (`farmacia/Farmacia.tsx`, `Disponibilidade` e `LinhaEstoque`): dois cartões em cima (enviar a lista
+da farmácia central e o padrão da unidade) e uma lista com um bloco por medicamento — nome e apresentação,
+botão de limites, campo de saldo com Salvar, situação e "Sinalizar falta". Falta e crítico vêm primeiro, mas
+tudo fica na mesma lista longa (até 80 itens), e o limite do item abre uma caixa dentro da linha.
+
+**Referências do Refero:** produtos do Shopify (`24ccbcc1`: abas por situação e tabela com o estoque em
+vermelho quando zera); biblioteca de itens do Square (`63ff98b3`: barra de filtros e tabela); lista agrupada
+por situação da Linear (`4a094449`).
+
+**Opções** (estoque fictício; `estoque-hoje-claro.jpg`, `estoque-A|B|C-claro|escuro.jpg`). Em todas, o padrão
+da unidade e o envio da lista viram uma linha só no topo, sem cartões:
+
+- **A · abas e tabela** (Shopify): abas "Precisa de atenção N" (falta e crítico), "Sem saldo informado N" e
+  "Todos N"; tabela com medicamento (selo de alta vigilância), saldo editável, situação, limites (abre a
+  edição), atualizado por quem e quando, e sinalizar falta.
+- **B · lista agrupada por situação** (Linear): grupos "Em falta", "Crítico", "Sem saldo informado" abertos e
+  "Em dia" recolhido; cada linha com saldo editável, limites e sinalizar falta. O que pede ação fica em
+  cima e o que está em dia não ocupa a tela.
+- **C · tabela e ficha do item**: à esquerda, tabela curta (medicamento, saldo na cor da situação,
+  situação); à direita, a ficha do item escolhido com o saldo, os limites próprios (com "voltar ao padrão"),
+  quem atualizou e a falta.
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções
