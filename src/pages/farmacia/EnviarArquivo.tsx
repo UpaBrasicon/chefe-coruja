@@ -70,12 +70,12 @@ export function EnviarArquivo({ unidade, tipo, rotulo, ajuda, icone: Icone, comp
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-apoio">
         {ultimo ? (
           <>
-            <span className="text-tinta-sussurro">Última lista: {ultimo.nome} · recebida {quando(ultimo.enviado_em)}{ultimo.enviado_por ? ` · ${ultimo.enviado_por.nome_completo}` : ''}</span>
+            <span className="text-tinta-sussurro">{tipo === 'lista_medicacoes' ? 'Última lista' : 'Último padrão enviado'}: {ultimo.nome} · recebido {quando(ultimo.enviado_em)}{ultimo.enviado_por ? ` · ${ultimo.enviado_por.nome_completo}` : ''}</span>
             <Button variant="link" size="xs" onClick={() => void baixar(ultimo)} className="h-auto min-h-0 gap-1 px-0">
               <Download className="size-3.5" aria-hidden /> Baixar
             </Button>
           </>
-        ) : <span className="text-tinta-sussurro">Nenhuma lista enviada ainda.</span>}
+        ) : <span className="text-tinta-sussurro">{tipo === 'lista_medicacoes' ? 'Nenhuma lista enviada ainda.' : 'Nenhum padrão enviado ainda.'}</span>}
         <label title={ajuda} className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio bg-superficie px-2.5 py-1 text-rotulo font-medium text-tinta-apoio transition-colors hover:border-acao hover:text-acao has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-acao">
           {campo}
           {enviando ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : <Icone className="size-3.5" aria-hidden />}
