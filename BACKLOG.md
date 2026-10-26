@@ -1124,6 +1124,20 @@ build e os 1089 testes clínicos verdes; homologação conferida pelo RT; produ�
 publicado. Registro e imagens em `docs/frontend/revisao-visual/app/PLANO.md`. Próxima: **3.5, leito
 aberto**.
 
+**3.5 (leito aberto) em produção desde 26/10/2026 (PR #230).** Referências do Refero: página da issue do
+Linear e registro do Attio (propriedades à direita), documentação da Hello Ivy (navegação agrupada). O RT
+escolheu a **B, lateral de propriedades, com ressalvas**: as 13 abas numa linha só, sublinhadas e sem ícone;
+abaixo delas, a aba e o painel "Paciente" começando na mesma altura; "Transferir de setor" no canto superior
+direito, na linha do nome. O cabeçalho do leito perdeu o cartão e ficou com os alertas (alergia, isolamento,
+atendimento anterior sem desfecho); o painel traz leito, situação, internação, chegada, classificação,
+acuidade e diagnóstico. Lista de internados sem sombra, leito em texto. O mesmo mínimo nas abas internas:
+rótulos sem maiúsculas espaçadas, situações em ponto + texto, cartões sem sombra, NEWS2 em 24 px; os
+alertas ficam. O `Estado` passou para `src/components/porta`. Sem migration. Typecheck, lint, catraca, build e
+os 1089 testes clínicos verdes; homologação conferida pelo RT; produção conferida pelo pacote publicado.
+Registro e imagens em `docs/frontend/revisao-visual/app/PLANO.md`. Pendências: o modo simples do leito
+(observação) fica para a 3.6; as escalas de avaliação seguem com a faixa em pílula. Próxima: **3.6,
+observação**.
+
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
 **Pedido do RT:** avaliar com o PubMed o que falta em Condutas e cálculos — adulto, Pediatria e
