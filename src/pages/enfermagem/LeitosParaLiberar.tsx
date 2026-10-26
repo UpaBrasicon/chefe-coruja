@@ -4,13 +4,14 @@ import * as React from 'react'
 import { supabase } from '@/lib/supabase'
 import { AcoesLeito } from '@/components/leito/AcoesLeito'
 import { rotuloMotivoBloqueio } from '@/components/leito/motivos'
-import { Badge } from '@/components/ui/badge'
 
 import { Bloco } from './Pecas'
 import { msgErro } from './useEnfermagem'
 import { dataHora, hora } from '@/lib/formato'
+import { Estado } from '@/pages/plantao/porta/Estado'
 
 const ROTULO: Record<string, string> = { livre: 'Livre', reservado: 'Reservado', higienizacao: 'Em higienização', bloqueado: 'Bloqueado' }
+const TOM: Record<string, 'verde' | 'teal' | 'ambar' | 'vermelho'> = { livre: 'verde', reservado: 'teal', higienizacao: 'ambar', bloqueado: 'vermelho' }
 
 /**
  * Leitos livres, reservados, em higienização e bloqueados dos setores da escala (Fase 0, tarefas 6
@@ -42,7 +43,7 @@ export function LeitosParaLiberar({ unidadeId, setores }: { unidadeId: string | 
           <span className="w-11 shrink-0 text-apoio font-semibold text-acao">{l.identificador}</span>
           <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
             <span className="text-apoio text-tinta">
-              <Badge variant="secondary">{ROTULO[l.status] ?? l.status}</Badge>{' '}
+              <Estado tom={TOM[l.status] ?? 'teal'}>{ROTULO[l.status] ?? l.status}</Estado>{' '}
               <span className="text-tinta-sussurro">{l.setor_nome}</span>
             </span>
             {l.status === 'reservado' ? (

@@ -1,21 +1,25 @@
 import { useQuery } from '@tanstack/react-query'
-import { Check, Printer, Stethoscope } from 'lucide-react'
+import { Check, Printer } from 'lucide-react'
 import * as React from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { imprimirRelatorio } from '@/lib/prontuario'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, rotulosPrioridade } from '@/domain/prioridade'
 import { ordemMedica, rotuloCor, type CorRisco } from '@/domain/risco'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
-import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { TituloPagina } from '@/components/monitor/Pagina'
 import { AlergiaNaTela } from './AlergiaNaTela'
 import { Classificar } from './triagem/Classificar'
 import { EsperaMedico } from './triagem/Espera'
-import { FilaTriagem } from './triagem/Fila'
-import { dataSP, nomeDe, type NaEspera, type NaFila } from './triagem/comum'
+import { BarraSalaTriagem, FilaTriagem } from './triagem/Fila'
+import { useSalaTriagem } from './triagem/useSalaTriagem'
+import { acimaDoAlvo, dataSP, esperaMin, nomeDe, type NaEspera, type NaFila } from './triagem/comum'
 
 // Triagem (Fase 2.2 + porte do protótipo): a fila da porta e a classificação
 // de risco em janela sobre ela. O protocolo da unidade é REFERÊNCIA — a cor é
@@ -24,6 +28,15 @@ import { dataSP, nomeDe, type NaEspera, type NaFila } from './triagem/comum'
 // risco, montada no servidor (folha_relatorio 'classificacao').
 // Abaixo da fila, os classificados que ainda esperam o médico: a enfermagem
 // reclassifica se o quadro mudou na espera (correções do portão, tarefa 2).
+// Revisão visual 3.4 (opção B do RT, 25/10/2026): as duas listas em abas, como a
+// fila do PS; a aba fica na URL (?fila=), e a maior espera da triagem e quem
+// passou do alvo da cor aparecem à direita das abas, em qualquer aba.
+
+const ABAS = [
+  { valor: 'triagem', rotulo: 'Aguardando triagem' },
+  { valor: 'medico', rotulo: 'Classificados aguardando o médico' },
+] as const
+type Aba = (typeof ABAS)[number]['valor']
 
 export default function Triagem() {
   const { unidadeAtiva } = useUnidade()
@@ -73,6 +86,14 @@ export default function Triagem() {
     },
   })
 
+  const [busca, setBusca] = useSearchParams()
+  const aba: Aba = busca.get('fila') === 'medico' ? 'medico' : 'triagem'
+  const trocarAba = (v: Aba) => setBusca((b) => { const n = new URLSearchParams(b); if (v === 'triagem') n.delete('fila'); else n.set('fila', v); return n }, { replace: true })
+  const sala = useSalaTriagem(fila.data ?? [])
+  const contagem: Record<Aba, number> = { triagem: (fila.data ?? []).length, medico: (espera.data ?? []).length }
+  const maiorEspera = Math.max(0, ...(fila.data ?? []).map((e) => esperaMin(e.chegada_em)))
+  const acima = acimaDoAlvo(espera.data ?? [])
+
   const fechar = (msg: string | null) => {
     if (msg && atual) setAviso({ texto: msg, episodioId: atual.id })
     setAtual(null)
@@ -82,7 +103,7 @@ export default function Triagem() {
 
   return (
     <>
-      <TituloPagina icone={Stethoscope} titulo="Triagem" descricao="Fichas da recepção aguardando classificação. O protocolo é referência; a cor é sua." />
+      <TituloPagina titulo="Triagem" descricao="Fichas da recepção aguardando classificação. O protocolo é referência; a cor é sua." />
       {aviso && (
         <div role="status" className="mb-3 flex flex-wrap items-center gap-[9px] rounded-container border border-acao/20 bg-acao/5 px-[15px] py-[11px] text-controle text-acao">
           <Check className="size-[15px]" aria-hidden />
@@ -93,26 +114,48 @@ export default function Triagem() {
           </Button>
         </div>
       )}
-      <FilaTriagem
-        fila={fila.data ?? []}
-        carregando={fila.isLoading}
-        erro={fila.error as Error | null}
-        onTriar={(e) => { setAviso(null); setCorAtual(null); setAtual(e) }}
-      />
-      <TituloSecao className="mt-5 mb-2">Classificados aguardando o médico</TituloSecao>
-      <EsperaMedico
-        lista={espera.data ?? []}
-        carregando={espera.isLoading}
-        erro={espera.error as Error | null}
-        onReclassificar={(e) => { setAviso(null); setCorAtual(e.cor_atual); setAtual(e) }}
-      />
+      <div className="mb-3 empty:hidden"><BarraSalaTriagem sala={sala} /></div>
+      <Tabs value={aba} onValueChange={(v) => trocarAba(v as Aba)} className="gap-3">
+        <div className="flex flex-wrap items-end gap-x-4 gap-y-1 border-b border-fio">
+          <TabsList aria-label="Triagem" className="w-auto max-w-full flex-[1_0_auto] gap-5 border-b-0">
+            {ABAS.map((a) => (
+              <TabsTrigger key={a.valor} value={a.valor}>
+                {a.rotulo}
+                <span className="text-rotulo font-semibold text-acao tabular-nums">{contagem[a.valor]}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {/* o que pede atenção aparece em qualquer aba */}
+          <span className="pb-2.5 text-apoio text-tinta-sussurro">
+            {contagem.triagem > 0 && <>maior espera na triagem {maiorEspera} min · </>}
+            <span className={cn(acima > 0 && 'font-medium text-critico')}>{acima} acima do alvo da cor</span>
+          </span>
+        </div>
+        <TabsContent value="triagem">
+          <FilaTriagem
+            fila={fila.data ?? []}
+            carregando={fila.isLoading}
+            erro={fila.error as Error | null}
+            sala={sala}
+            onTriar={(e) => { setAviso(null); setCorAtual(null); setAtual(e) }}
+          />
+        </TabsContent>
+        <TabsContent value="medico">
+          <EsperaMedico
+            lista={espera.data ?? []}
+            carregando={espera.isLoading}
+            erro={espera.error as Error | null}
+            onReclassificar={(e) => { setAviso(null); setCorAtual(e.cor_atual); setAtual(e) }}
+          />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={!!atual} onOpenChange={(aberto) => { if (!aberto) { setAtual(null); setCorAtual(null) } }} disablePointerDismissal>
         <DialogContent className="top-6 max-h-[calc(100dvh-3rem)] translate-y-0 gap-3.5 bg-campo p-5 sm:max-w-[980px]">
           {atual && (
             <>
               <div className="flex flex-col gap-1 pr-10">
-                <span className="text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">
+                <span className="text-rotulo font-semibold text-tinta-sussurro">
                   {corAtual ? `Reclassificação · hoje ${rotuloCor(corAtual)}` : 'Triagem'}
                 </span>
                 <DialogTitle>

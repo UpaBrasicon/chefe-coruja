@@ -1,4 +1,4 @@
-import type { CorRisco } from '@/domain/risco'
+import { ALVO_MIN, type CorRisco } from '@/domain/risco'
 import { dataIso, diaMesHora, hora as horaFmt } from '@/lib/formato'
 
 // Tipos e utilitários da triagem (fila + classificação).
@@ -56,3 +56,7 @@ export function gravarSala(setor: string, sala: string) {
     // sem armazenamento: vale só enquanto a tela estiver aberta
   }
 }
+
+/** Classificados que passaram do alvo da cor desde a classificação (aba do médico na triagem). */
+export const acimaDoAlvo = (lista: NaEspera[], agora = Date.now()) =>
+  lista.filter((e) => esperaMin(e.classificado_em, agora) > ALVO_MIN[e.cor_atual]).length

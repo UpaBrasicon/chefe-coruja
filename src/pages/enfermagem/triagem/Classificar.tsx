@@ -57,7 +57,7 @@ const COR_CABECALHO: Record<CorRisco, string> = {
 const AVDI = [['A', 'A · alerta'], ['V', 'V · responde à voz'], ['D', 'D · responde à dor'], ['I', 'I · irresponsivo']] as const
 
 const Secao = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <section className={cn('flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px] shadow-repouso', className)}>{children}</section>
+  <section className={cn('flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px]', className)}>{children}</section>
 )
 const Rotulo = ({ children }: { children: React.ReactNode }) => <span className="text-apoio font-medium text-grafite">{children}</span>
 
@@ -339,7 +339,7 @@ export function Classificar({ ep, onFim, corAtual = null }: {
             <div className="overflow-hidden rounded-container border border-fio">
               {CORES_RISCO.filter((c) => fluxo.discriminadores[c]?.length).map((c) => (
                 <div key={c}>
-                  <div className={cn('px-3.5 py-[7px] text-rotulo font-semibold tracking-[0.02em]', COR_CABECALHO[c])}>
+                  <div className={cn('px-3.5 py-[7px] text-rotulo font-semibold', COR_CABECALHO[c])}>
                     {rotuloCor(c)} · {NIVEL_RISCO[c]} · {textoAlvo(c)}
                   </div>
                   {fluxo.discriminadores[c]!.map(([texto, exp]) => {
