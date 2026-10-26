@@ -542,6 +542,67 @@ o cabeçalho sem cartão e "Em observação" em ponto + texto, como no leito da 
   simples do leito. O painel inteiro (unidade, relógio do servidor) e a prancheta
   no diálogo pedem login: conferir na homologação.
 
+## 3.7 · Farmácia (26/10/2026)
+
+**Levantamento** (agente de busca): a "Central do Farmacêutico" (`pages/farmacia/Farmacia.tsx`,
+`/farmacia`) tem seis abas em pílula (`Abas` de `monitor/Pagina`): Painel, Disponibilidade,
+Diluição padrão, Rascunhos, Faltas e Validação. A Validação é o trabalho do dia (`fila_validacao`,
+a cada 60 s): uma pilha de cartões com sombra, um por item, sem agrupar por paciente; a urgência é só
+a borda âmbar (alta vigilância ou diluição fora do padrão) e o tempo é a hora da prescrição, sem
+"há quanto". Fora dela: dispensação (`Dispensacao.tsx`, abas em pílula e um bloco por paciente),
+alta vigilância, interações e unidade de consumo, em cartões de linha. Reflexos: `Badge` (pílula com
+maiúsculas espaçadas) para situação em todas as telas; `shadow-repouso` nos blocos em repouso e em
+cada item da fila; `Card` com sombra nos rascunhos; caixas tintadas dentro de cartões; números em
+blocos no painel (escondidos para o farmacêutico, que os vê na faixa do papel). Sem gradiente, sem
+ícone em quadrado, sem `uppercase` escrito à mão. Ficam como alerta: alta vigilância, interação
+contraindicada ou grave, estoque em falta ou crítico, saldo negativo na dispensação.
+
+**Referências do Refero:** Aboard, aprovação de documentos (`18fe2fd1`: lista de pedidos à esquerda,
+documento e "Aprovar" à direita); Missive e Wrike, caixa de entrada em lista e detalhe
+(`9a9cec0f`, `053b797e`).
+
+**Opções da aba Validação** (prescrições fictícias; `farm-hoje-claro.jpg`,
+`farm-A|B|C-claro|escuro.jpg`):
+
+- **A · mínimo:** abas sublinhadas (`ui/tabs`) com a contagem; a fila numa lista só, sem sombra,
+  linhas em fio; leito na cor da ação; alta vigilância em selo com ícone, sem maiúsculas; diluição
+  padrão ou fora do padrão numa linha; "prescrito por … às 14:20 · há 40min"; devolvido em ponto +
+  texto; Confere e Devolver à direita da linha.
+- **B · tabela agrupada por paciente**, como a fila do PS: uma faixa por paciente (leito, nome,
+  idade, peso, quem prescreveu, quando e há quanto) e uma linha por item com medicamento (selo de
+  alta vigilância), dose, via e frequência, diluição, situação (a conferir, devolvido com o motivo) e
+  as ações; à direita do resumo, o mais antigo e quantos estão fora do padrão.
+- **C · caixa de entrada** (Aboard, Missive): à esquerda, uma linha por paciente com quantos itens,
+  quais, há quanto tempo e os sinais (alta vigilância, fora do padrão, devolvido); à direita, a
+  prescrição do paciente escolhido com Confere e Devolver em cada item.
+
+Em qualquer opção, as outras abas e telas da farmácia recebem o mínimo: abas sublinhadas, `Badge` de
+situação em ponto + texto, blocos sem sombra; os alertas acima continuam em selo.
+
+**Escolha do RT (26/10/2026): C, caixa de entrada**, e o mesmo mínimo nas outras telas. Aplicada na
+branch `feat/visual-3-7-farmacia`:
+
+- `Farmacia.tsx`, aba Validação: a fila juntada por paciente (leito e nome), na ordem do servidor. À
+  esquerda, uma linha por paciente (`BotaoLinha`) com quantos itens, quais, há quanto tempo desde a
+  prescrição (anda a cada minuto) e os sinais em texto (alta vigilância, fora do padrão, devolvido); à
+  direita, a prescrição do escolhido (quem prescreveu, quando, há quanto, peso de referência) e cada
+  item numa linha em fio, com Confere e Devolver; o motivo da devolução abre embaixo do item. Quando o
+  último item do paciente é conferido, a escolha passa ao próximo. No celular, a lista vem em cima e a
+  prescrição embaixo. A consulta da fila (`useFilaValidacao`) serve também à contagem da aba.
+- Abas da Central e da dispensação na peça de base (`ui/tabs`), sublinhadas; a `Abas` em cápsula de
+  `monitor/Pagina` continua nas outras áreas que a usam.
+- `components/farmacia/SeloAltaVigilancia.tsx` (novo): o selo de alta vigilância sem maiúsculas,
+  âmbar nas listas e vermelho no painel de faltas. Falta, estoque crítico e gravidade da interação
+  seguem em selo, sem maiúsculas.
+- Situação em ponto + texto: estoque ok ou não informado, diluição da unidade ou modelo da rede,
+  falta (registrada, em cotação, reposta), rascunho de diluição (vigente, rascunho, substituída),
+  interação, item da dispensação (validado, devolvido), retirada sem farmacêutico a conferir, exige ou
+  não liberação na alta vigilância. Blocos sem sombra (disponibilidade, limites, diluição padrão,
+  faltas, envio de arquivo, rascunhos).
+- Visto na página de teste com a Central real (unidade falsa só na página de teste) e a fila semeada,
+  a 1100 px nos dois temas (`farm-C-aplicada-claro|escuro.jpg`): escolher outro paciente e abrir a
+  devolução funcionaram. As outras abas e telas pedem login: conferir na homologação.
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções

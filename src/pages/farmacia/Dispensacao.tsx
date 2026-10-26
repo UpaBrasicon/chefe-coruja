@@ -13,7 +13,6 @@ import { PackageOpen } from 'lucide-react'
 import * as React from 'react'
 
 import { TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
-import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,7 +27,8 @@ import { normalizarMedicamento } from '@/lib/search'
 import { supabase } from '@/lib/supabase'
 import { rotuloUnidade } from '@/lib/unidadeConsumo'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
-import { Abas } from '@/components/monitor/Pagina'
+import { Estado } from '@/components/porta/Estado'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 type Aba = 'prescricoes' | 'avulsa' | 'registro'
 const MINIMO = 10
@@ -47,7 +47,11 @@ export default function DispensacaoPagina() {
         descricao={farmacia
           ? 'O que sai da farmácia para o paciente, em unidades de consumo. O sistema sugere a quantidade; quem dispensa define. Dispensar baixa o estoque.'
           : 'Farmácia fechada: retire o medicamento do paciente sob seus cuidados com justificativa. O farmacêutico confere depois.'} />
-      <Abas abas={abas} valor={aba} onChange={setAba} rotulo="Dispensação" />
+      <Tabs value={aba} onValueChange={(v) => setAba(v as Aba)} className="mb-[18px]">
+        <TabsList aria-label="Dispensação">
+          {abas.map(([k, r]) => <TabsTrigger key={k} value={k}>{r}</TabsTrigger>)}
+        </TabsList>
+      </Tabs>
       {unidade && aba === 'prescricoes' && <Prescricoes unidade={unidade} />}
       {unidade && aba === 'avulsa' && <Avulsa unidade={unidade} />}
       {unidade && aba === 'registro' && <Registro unidade={unidade} podeAgir={papelAtivo === 'farmaceutico'} />}
@@ -110,8 +114,8 @@ function LinhaItem({ i, farmaceutico }: { i: ItemParaDispensar; farmaceutico: bo
       <div className="flex flex-wrap items-baseline gap-2">
         <span className="font-medium text-tinta">{i.medicamento}</span>
         <span className="text-tinta-apoio">{[i.dose, i.via, i.posologia].filter(Boolean).join(' · ')}{i.se_necessario ? ' · se necessário' : ''}</span>
-        {i.validacao === 'confere' && <Badge variant="secondary">validado</Badge>}
-        {i.validacao === 'devolvido' && <Badge variant="destructive">devolvido para correção</Badge>}
+        {i.validacao === 'confere' && <Estado tom="verde">validado</Estado>}
+        {i.validacao === 'devolvido' && <Estado tom="vermelho">devolvido para correção</Estado>}
       </div>
       <span className="text-rotulo text-tinta-sussurro">
         Dispensado nas últimas 24 h: {i.dispensado_24h} {unidade} · estoque: {i.saldo_estoque ?? '—'}
@@ -270,7 +274,7 @@ function Registro({ unidade, podeAgir }: { unidade: string; podeAgir: boolean })
                     {x.dispensada_por ?? '—'}, {fmtDataHora(x.dispensada_em)}
                     {x.sem_farmaceutico && (
                       <span className="block text-rotulo">
-                        {x.conferida_em ? <span className="text-conforme">sem farmacêutico · conferida por {x.conferida_por}</span> : <Badge variant="warning">sem farmacêutico · a conferir</Badge>}
+                        {x.conferida_em ? <span className="text-conforme">sem farmacêutico · conferida por {x.conferida_por}</span> : <Estado tom="ambar">sem farmacêutico · a conferir</Estado>}
                       </span>
                     )}
                   </TableCell>

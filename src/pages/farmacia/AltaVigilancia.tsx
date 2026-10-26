@@ -3,7 +3,6 @@ import { Search, ShieldAlert } from 'lucide-react'
 import * as React from 'react'
 
 import { TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
@@ -11,6 +10,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
 import { origemAltaVigilancia, type ItemAltaVigilancia, type SemLiberacao } from '@/lib/duplaChecagem'
 import { supabase } from '@/lib/supabase'
+import { Estado } from '@/components/porta/Estado'
 
 // Alta vigilância (Fase 2, tarefa 1, revista pelo RT em 09/10/2026). Duas partes:
 //  • administradas sem liberação — a enfermagem administrou com justificativa,
@@ -74,7 +74,7 @@ function SemLiberacaoLista({ unidadeId, podeLiberar }: { unidadeId: string; pode
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className="font-medium text-tinta">{a.paciente}</span>
             <span className="text-tinta-sussurro">{a.local ?? '—'}</span>
-            {a.horario && <Badge variant="outline">horário {a.horario}</Badge>}
+            {a.horario && <span className="text-tinta-apoio">horário {a.horario}</span>}
           </div>
           <span className="text-tinta">{a.descricao} · {a.dose ?? '—'} · {a.via ?? '—'} · {a.posologia ?? '—'}</span>
           <span className="text-rotulo text-tinta-apoio">
@@ -146,7 +146,7 @@ function LinhaItem({ i, unidadeId, podeAjustar, aoMudar }: { i: ItemAltaVigilanc
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="font-medium text-tinta">{i.principio_ativo}</span>
         <span className="text-tinta-apoio">{i.apresentacao}{i.concentracao ? ` · ${i.concentracao}` : ''}</span>
-        <Badge variant={i.exige ? 'destructive' : 'outline'} className="ml-auto">{i.exige ? 'exige liberação da farmácia' : 'não exige'}</Badge>
+        <span className="ml-auto"><Estado tom={i.exige ? 'vermelho' : 'cinza'}>{i.exige ? 'exige liberação da farmácia' : 'não exige'}</Estado></span>
       </div>
       <span className="text-rotulo text-tinta-sussurro">
         {origemAltaVigilancia(i)}

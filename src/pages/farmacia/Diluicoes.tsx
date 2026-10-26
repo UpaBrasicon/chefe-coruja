@@ -15,7 +15,6 @@ import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
 import { cn } from '@/lib/utils'
 import { TituloPagina } from '@/components/monitor/Pagina'
-import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -24,6 +23,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { data as dataFmt } from '@/lib/formato'
+import { Estado } from '@/components/porta/Estado'
+import { tomDaVariante } from '@/components/porta/tomEstado'
+import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
 
 type Diluicao = {
   id: string; medicamento_id: string | null; principio_ativo: string; apresentacao: string; via: string; status: string; versao: number
@@ -83,7 +85,7 @@ export default function Diluicoes({ embutido = false, selecionadaInicial = null 
       )}
       {erro && <p className="mb-3 rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</p>}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-        <Card>
+        <Card className="shadow-none">
           <CardHeader>
             <div className="flex flex-wrap gap-1.5">
               {ABAS.map(([k, r]) => (
@@ -103,9 +105,9 @@ export default function Diluicoes({ embutido = false, selecionadaInicial = null 
                 className={cn('items-center gap-2 border-fio px-2 py-1.5 hover:bg-trilha', selecionada === d.id && 'bg-trilha')}>
                 <span className="flex-1"><span className="font-medium">{d.principio_ativo}</span> <span className="text-tinta-apoio">· {d.via} · {d.apresentacao}</span></span>
                 <span className="text-rotulo text-tinta-sussurro">v{d.versao}</span>
-                {d.alta_vigilancia && <Badge variant="warning">AV</Badge>}
-                {d.unidade_id && <Badge variant="info">unidade</Badge>}
-                {!d.medicamento_id && <Badge variant="outline">sem cadastro</Badge>}
+                {d.alta_vigilancia && <SeloAltaVigilancia curto />}
+                {d.unidade_id && <span className="text-rotulo text-acao">unidade</span>}
+                {!d.medicamento_id && <span className="text-rotulo text-tinta-sussurro">sem cadastro</span>}
               </BotaoLinha>
             ))}
             {visiveis.length === 0 && <p className="text-tinta-sussurro">Nada nesta lista.</p>}
@@ -129,7 +131,7 @@ function NovaDiluicao({ aoCriar, aoErro }: { aoCriar: (id: string) => void; aoEr
     queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).limit(15)).data ?? [],
   })
   return (
-    <Card>
+    <Card className="shadow-none">
       <CardHeader>
         <CardTitle className="text-corpo">Nova diluição</CardTitle>
         <CardDescription>Escolha uma diluição na lista para revisar, ou crie uma para um medicamento do cadastro.</CardDescription>
@@ -199,10 +201,10 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
   const st = STATUS[d.status] ?? { rotulo: d.status, variante: 'secondary' as const }
 
   return (
-    <Card>
+    <Card className="shadow-none">
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
-          {d.principio_ativo} · {d.via} <Badge variant={st.variante}>{st.rotulo}</Badge> <span className="text-rotulo text-tinta-sussurro">versão {d.versao}</span>
+          {d.principio_ativo} · {d.via} <Estado tom={tomDaVariante(st.variante)}>{st.rotulo}</Estado> <span className="text-rotulo text-tinta-sussurro">versão {d.versao}</span>
         </CardTitle>
         <CardDescription>
           {d.apresentacao}

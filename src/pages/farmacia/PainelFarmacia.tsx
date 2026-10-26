@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
+import { Estado } from '@/components/porta/Estado'
+import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
 
 // Painel da farmácia (Fase 2, tarefa 9; migration 20261031000008). Junta o
 // que é crítico: faltas abertas priorizadas (alta vigilância, pacientes
@@ -94,7 +96,7 @@ export function PainelFarmacia({ unidade, podeAgir, irPara, semNumeros = false }
           <TituloSecao>Estoque crítico ou em falta</TituloSecao>
           <div className="flex flex-wrap gap-1.5">
             {(estoque.data ?? []).map((e) => (
-              <Badge key={e.medicamento_id} variant={e.situacao === 'falta' ? 'destructive' : 'warning'}>
+              <Badge key={e.medicamento_id} variant={e.situacao === 'falta' ? 'destructive' : 'warning'} className="tracking-normal normal-case">
                 {e.alta_vigilancia && <ShieldAlert className="size-3" />} {e.principio_ativo} · {e.quantidade ?? '—'}
               </Badge>
             ))}
@@ -137,8 +139,8 @@ function LinhaFalta({ f, unidade, podeAgir }: { f: FaltaPriorizada; unidade: str
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium text-tinta">{f.principio_ativo}</span>
         <span className="text-tinta-apoio">{f.apresentacao}</span>
-        {f.alta_vigilancia && <Badge variant="destructive"><ShieldAlert className="size-3" /> alta vigilância</Badge>}
-        <Badge variant={f.situacao === 'em_cotacao' ? 'warning' : 'destructive'} className="ml-auto">{SIT[f.situacao] ?? f.situacao}</Badge>
+        {f.alta_vigilancia && <SeloAltaVigilancia critico />}
+        <span className="ml-auto"><Estado tom={f.situacao === 'em_cotacao' ? 'ambar' : 'vermelho'}>{SIT[f.situacao] ?? f.situacao}</Estado></span>
       </div>
       <span className="text-tinta">
         {f.pacientes > 0 ? `${f.pacientes} paciente(s) com o medicamento prescrito agora` : 'Nenhum paciente com o medicamento prescrito agora'}
