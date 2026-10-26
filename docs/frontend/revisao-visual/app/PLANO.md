@@ -729,6 +729,54 @@ poluído"). Aplicada na branch `feat/visual-3-7b-faltas`:
 - Visto na página de teste com a Central real, abrindo a aba sozinha, fotografada no Chrome sem janela nos
   dois temas (`faltas-C-aplicada-*.png`). Avançar a falta pede login: conferir na homologação.
 
+### Diluição padrão e Rascunhos (26/10/2026)
+
+**Hoje:** são duas abas da Central. **Diluição padrão** (`Farmacia.tsx`, `PadraoUnidade` e `LinhaDiluicao`)
+tem o envio do padrão em cartão, filtros e uma pilha de cartões grandes, um por medicamento, cada um com a
+grade de sete campos, a flebite, a fonte, o "por que muda" e os botões "Ajustar esta linha" e "Voltar ao
+modelo". **Rascunhos** (`Diluicoes.tsx`) já é lista e editor lado a lado, mas em dois cartões e com as
+situações (vigentes, rascunhos, substituídas) em botões. Para comparar duas linhas é preciso rolar.
+
+**Referências do Refero:** tabela de registros do Attio (`361d1d78`); editor do Hashnode com rascunhos e
+publicados na lateral (`373e8b1b`); histórico de versões do InVision (`444de771`); a Disponibilidade da
+3.7b (tabela e ficha), já escolhida.
+
+**Opções** (linhas fictícias, valores só de exemplo; `dil-hoje-claro.png`, `dil-A|B|C-claro|escuro.png`):
+
+- **A · tabela de consulta e ficha**, como a Disponibilidade: o envio do padrão numa linha; à esquerda a
+  tabela (medicamento com AV, diluir em com o volume mínimo, tempo, origem); à direita a ficha da linha
+  escolhida com todos os campos, o valor do modelo riscado quando a unidade mudou, a fonte, o "por que muda"
+  e as ações. Rascunhos continua aba à parte, com o mesmo mínimo.
+- **B · uma aba só, como biblioteca** (Hashnode): "Diluição padrão" e "Rascunhos" viram uma aba "Diluição"
+  com abas internas "Valendo na unidade", "Rascunhos" e "Substituídas"; à esquerda a lista, à direita a ficha
+  (valendo, substituída) ou o editor (rascunho), com Salvar e Publicar no topo. Ajustar uma linha leva ao
+  rascunho na mesma tela.
+- **C · tabela larga** (Attio): todos os campos em colunas, o valor do modelo riscado embaixo, flebite e
+  origem; a linha escolhida abre embaixo com fonte, "por que muda" e as ações. Bom para comparar
+  medicamentos; no celular a tabela rola para o lado. Rascunhos continua à parte.
+
+Nenhuma opção muda regra nem banco: publicar continua pedindo CRF e fonte, e publicada não se edita.
+
+**Escolha do RT (26/10/2026): B, uma aba só, como biblioteca.** Aplicada na branch
+`feat/visual-3-7b-diluicao`:
+
+- Central do Farmacêutico: as abas "Diluição padrão" e "Rascunhos" viram **"Diluição"** (a Central passa a
+  ter cinco abas).
+- `Diluicoes.tsx` (a tela inteira): no topo, o último padrão enviado numa linha (`EnviarArquivo` compacto,
+  que agora diz "padrão" ou "lista" conforme o tipo); abas internas "Valendo na unidade N" (o que chega ao
+  prescritor desta unidade, `padrao_diluicao_unidade`), "Rascunhos N" (âmbar quando há) e "Substituídas N";
+  busca, "só da unidade" e "só AV". À esquerda a lista; à direita:
+  - em Valendo, a ficha (`FichaValendo`, no lugar da antiga `LinhaDiluicao` da Central): os campos em
+    linhas, o valor do modelo da rede riscado quando a unidade mudou, a flebite, a fonte, o "por que muda",
+    "Ajustar esta linha" (ou "Continuar o ajuste") e "Voltar ao modelo";
+  - em Rascunhos e Substituídas, o editor de antes, sem cartão, com "Salvar rascunho" e "Publicar aos
+    prescritores" (ou "Criar nova versão") no topo; "Nova diluição" fica no alto da lista de rascunhos.
+- Ajustar uma linha que vale cria o rascunho da unidade e leva a ele na mesma tela (aba Rascunhos, já
+  escolhido). Nenhuma regra mudou: as mesmas chamadas ao servidor.
+- Visto na página de teste com a Central real e linhas semeadas, fotografada no Chrome sem janela nos dois
+  temas (`dil-B-aplicada-*.png`). Ajustar, voltar ao modelo, salvar e publicar pedem login: conferir na
+  homologação.
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções

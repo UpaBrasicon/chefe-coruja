@@ -33,7 +33,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { BotaoLinha } from '@/components/ui/botao-linha'
 
 const ABAS = [
-  ['painel', 'Painel'], ['disponibilidade', 'Disponibilidade'], ['diluicao', 'Diluição padrão'], ['rascunhos', 'Rascunhos'],
+  ['painel', 'Painel'], ['disponibilidade', 'Disponibilidade'], ['diluicao', 'Diluição'],
   ['faltas', 'Faltas'], ['validacao', 'Validação'],
 ] as const
 type Aba = (typeof ABAS)[number][0]
@@ -48,7 +48,6 @@ export function Filtro({ ativo, onClick, children }: { ativo: boolean; onClick: 
 
 export default function Farmacia() {
   const [aba, setAba] = React.useState<Aba>('painel')
-  const [rascunho, setRascunho] = React.useState<string | null>(null)
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidade = unidadeAtiva?.unidade_id
   const aConferir = useFilaValidacao(unidade).data?.length
@@ -69,8 +68,8 @@ export default function Farmacia() {
       {/* Fase 2, tarefa 9: painel de críticos e faltas */}
       {unidade && aba === 'painel' && <PainelFarmacia unidade={unidade} podeAgir irPara={setAba} semNumeros={papelAtivo === 'farmaceutico'} />}
       {unidade && aba === 'disponibilidade' && <Disponibilidade unidade={unidade} />}
-      {unidade && aba === 'diluicao' && <PadraoUnidade unidade={unidade} abrirRascunho={(id) => { setRascunho(id); setAba('rascunhos') }} />}
-      {aba === 'rascunhos' && <Diluicoes embutido selecionadaInicial={rascunho} />}
+      {/* revisão visual 3.7b: diluição padrão e rascunhos numa aba só (opção B do RT) */}
+      {unidade && aba === 'diluicao' && <Diluicoes unidade={unidade} />}
       {unidade && aba === 'faltas' && <Faltas unidade={unidade} />}
       {unidade && aba === 'validacao' && <Validacao unidade={unidade} />}
     </div>
@@ -300,148 +299,6 @@ function FichaEstoque({ d, unidade, aoErro, aoMudar }: { d: Estoque; unidade: st
         </div>
       </div>
     </section>
-  )
-}
-
-// ── Diluição padrão da unidade ──────────────────────────────────────────────
-type Campos = Record<string, unknown>
-type LinhaPadrao = {
-  id: string; medicamento_id: string; principio_ativo: string; apresentacao: string; via: string; versao: number; da_unidade: boolean
-  texto: string; campos: Campos; modelo: { id: string; versao: number; texto: string; campos: Campos } | null
-  alta_vigilancia: boolean; risco_flebite: boolean | null; fonte: string; revisor_crf: string | null; motivo_alteracao: string | null
-  publicado_por: string | null; vigente_desde: string | null; rascunho_id: string | null
-}
-const CAMPOS_PADRAO: [string, string, (v: unknown) => string][] = [
-  ['reconstituicao_diluente', 'Reconstituir com', (v) => String(v)],
-  ['diluicao_solucao', 'Diluir em', (v) => (Array.isArray(v) ? v.join(' ou ') : String(v))],
-  ['diluicao_volume_min_ml', 'Volume mínimo', (v) => `${v} mL`],
-  ['concentracao_maxima', 'Concentração máxima', (v) => String(v)],
-  ['tempo_infusao_min', 'Tempo de infusão', (v) => `${v} min`],
-  ['acesso', 'Acesso', (v) => String(v)],
-  ['estabilidade_ta_h', 'Estabilidade em TA', (v) => `${v} h`],
-]
-const valorCampo = (c: Campos, k: string, f: (v: unknown) => string) => {
-  const v = c[k]
-  return v == null || (Array.isArray(v) && v.length === 0) ? '—' : f(v)
-}
-
-function PadraoUnidade({ unidade, abrirRascunho }: { unidade: string; abrirRascunho: (id: string) => void }) {
-  const qc = useQueryClient()
-  const [busca, setBusca] = React.useState('')
-  const [soUnidade, setSoUnidade] = React.useState(false)
-  const [soAv, setSoAv] = React.useState(false)
-  const [erro, setErro] = React.useState<string | null>(null)
-  const lista = useQuery({
-    queryKey: ['padrao-diluicao-unidade', unidade],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('padrao_diluicao_unidade', { p_unidade: unidade })
-      if (error) throw error
-      return (data ?? []) as unknown as LinhaPadrao[]
-    },
-  })
-  const todas = lista.data ?? []
-  const termo = busca.trim().toLowerCase()
-  const visiveis = todas.filter((l) => (!soUnidade || l.da_unidade) && (!soAv || l.alta_vigilancia)
-    && (l.principio_ativo.toLowerCase().includes(termo) || l.apresentacao.toLowerCase().includes(termo)))
-  const recarregar = () => {
-    void qc.invalidateQueries({ queryKey: ['padrao-diluicao-unidade'] })
-    void qc.invalidateQueries({ queryKey: ['diluicoes-farmacia'] })
-  }
-  return (
-    <div className="flex flex-col gap-4">
-      <EnviarArquivo unidade={unidade} tipo="padrao_diluicao" icone={FlaskConical} rotulo="Enviar padrão da unidade"
-        ajuda="O padrão de diluição da unidade no formato em que a farmácia já mantém. Fica registrado como comprovante; o que chega ao prescritor é o que você publica linha a linha abaixo." />
-      <MensagemErro texto={erro ?? (lista.error ? (lista.error as Error).message : null)} />
-      <div className="flex flex-wrap items-center gap-2">
-        <label className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
-          <Input aria-label="Buscar linha do padrão" className="h-8 w-64 pl-8" placeholder="Princípio ativo ou apresentação…" value={busca} onChange={(e) => setBusca(e.target.value)} />
-        </label>
-        <Filtro ativo={soUnidade} onClick={() => setSoUnidade(!soUnidade)}>Só as ajustadas pela unidade</Filtro>
-        <Filtro ativo={soAv} onClick={() => setSoAv(!soAv)}><AlertTriangle className="size-3.5" aria-hidden /> Só alta vigilância</Filtro>
-        <span className="text-apoio text-tinta-sussurro">{todas.length} linhas valendo · {todas.filter((l) => l.da_unidade).length} ajustadas pela unidade</span>
-      </div>
-      <p className="text-apoio text-pretty text-tinta-sussurro">
-        Base: o modelo da rede publicado pela farmácia, com a fonte de cada linha. Ajustar cria um rascunho da unidade que só chega ao prescritor depois de publicado (CRF, fonte e o que mudou).
-      </p>
-      {lista.isLoading && <p className="text-apoio text-tinta-sussurro">Carregando…</p>}
-      {!lista.isLoading && todas.length === 0 && (
-        <Vazio icone={FlaskConical} titulo="Nenhuma diluição publicada" texto="Publique as linhas na aba Rascunhos; elas aparecem aqui como o padrão que vale para a unidade." />
-      )}
-      {!lista.isLoading && todas.length > 0 && visiveis.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhuma linha do padrão com esse termo.</p>}
-      <ul className="flex flex-col gap-3">
-        {visiveis.map((l) => (
-          <LinhaDiluicao key={l.id} l={l} unidade={unidade} aoErro={setErro} aoMudar={recarregar} abrirRascunho={abrirRascunho} />
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-function LinhaDiluicao({ l, unidade, aoErro, aoMudar, abrirRascunho }: {
-  l: LinhaPadrao; unidade: string; aoErro: (m: string | null) => void; aoMudar: () => void; abrirRascunho: (id: string) => void
-}) {
-  const [voltando, setVoltando] = React.useState(false)
-  const [motivo, setMotivo] = React.useState('')
-  const flebite = l.risco_flebite == null ? 'não informado' : l.risco_flebite ? 'sim' : 'não'
-  return (
-    <li className="overflow-hidden rounded-cartao border border-fio bg-superficie">
-      <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-5 py-3">
-        <span className="text-corpo font-semibold text-tinta">{l.principio_ativo}</span>
-        <span className="text-apoio text-tinta-sussurro">{l.apresentacao} · {l.via}</span>
-        {l.alta_vigilancia && <SeloAltaVigilancia />}
-        <span className="ml-auto"><Estado tom={l.da_unidade ? 'teal' : 'cinza'}>{l.da_unidade ? `da unidade · v${l.versao}` : `modelo da rede · v${l.versao}`}</Estado></span>
-      </div>
-      <div className="flex flex-col gap-3 px-5 py-3.5">
-        <dl className="grid gap-x-5 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
-          {CAMPOS_PADRAO.map(([k, rot, f]) => {
-            const atual = valorCampo(l.campos, k, f)
-            const original = l.modelo ? valorCampo(l.modelo.campos, k, f) : null
-            return (
-              <div key={k} className="flex flex-col gap-0.5">
-                <dt className="text-rotulo font-medium text-grafite">{rot}</dt>
-                <dd className="text-apoio text-tinta">
-                  {atual}
-                  {original != null && original !== atual && <span className="ml-1.5 text-tinta-sussurro line-through" title="Valor do modelo da rede">{original}</span>}
-                </dd>
-              </div>
-            )
-          })}
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-rotulo font-medium text-grafite">Risco de flebite</dt>
-            <dd className={cn('text-apoio', l.risco_flebite ? 'font-medium text-atencao' : 'text-tinta')}>{flebite}</dd>
-          </div>
-        </dl>
-        <p className="text-rotulo text-tinta-sussurro">
-          Fonte: {l.fonte}{l.revisor_crf ? ` · revisado por ${l.revisor_crf}` : ''}{l.publicado_por ? ` · publicado por ${l.publicado_por}` : ''}{l.vigente_desde ? ` em ${hora(l.vigente_desde)}` : ''}
-        </p>
-        {l.da_unidade && l.motivo_alteracao && (
-          <p className="rounded-controle bg-alerta-marca px-3 py-2 text-apoio text-acao">Por que muda: {l.motivo_alteracao}</p>
-        )}
-        <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="outline" onClick={async () => {
-            if (l.rascunho_id) return abrirRascunho(l.rascunho_id)
-            const { data, error } = await supabase.rpc('ajustar_diluicao_unidade', { p_diluicao: l.id, p_unidade: unidade })
-            if (error) return aoErro(error.message)
-            aoErro(null); aoMudar(); abrirRascunho(data)
-          }}><FlaskConical className="size-3.5" aria-hidden />{l.rascunho_id ? 'Continuar o ajuste' : 'Ajustar esta linha'}</Button>
-          {l.da_unidade && l.modelo && !voltando && <Button size="sm" variant="ghost" onClick={() => setVoltando(true)}>Voltar ao modelo</Button>}
-        </div>
-        {voltando && (
-          <div className="flex flex-wrap items-end gap-2.5 rounded-controle bg-trilha/60 px-3.5 py-3">
-            <label className="flex min-w-[260px] flex-1 flex-col gap-1 text-apoio text-grafite">Por que volta ao modelo
-              <Input value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Fica registrado junto da linha encerrada" /></label>
-            <Button size="sm" variant="ghost" onClick={() => { setVoltando(false); setMotivo('') }}>Cancelar</Button>
-            <Button size="sm" disabled={motivo.trim().length < 10} onClick={async () => {
-              const { error } = await supabase.rpc('diluicao_voltar_ao_modelo', { p_diluicao: l.id, p_motivo: motivo.trim() })
-              if (error) return aoErro(error.message)
-              aoErro(null); setVoltando(false); aoMudar()
-            }}>Voltar ao modelo v{l.modelo?.versao}</Button>
-            <span className="basis-full text-rotulo text-tinta-sussurro">A prescrição da unidade volta a receber o modelo da rede a partir de agora. A linha da unidade fica no histórico como substituída.</span>
-          </div>
-        )}
-      </div>
-    </li>
   )
 }
 
