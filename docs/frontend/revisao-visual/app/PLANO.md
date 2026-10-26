@@ -729,7 +729,7 @@ poluído"). Aplicada na branch `feat/visual-3-7b-faltas`:
 - Visto na página de teste com a Central real, abrindo a aba sozinha, fotografada no Chrome sem janela nos
   dois temas (`faltas-C-aplicada-*.png`). Avançar a falta pede login: conferir na homologação.
 
-### Diluição padrão e Rascunhos (26/10/2026, opções; aguarda escolha do RT)
+### Diluição padrão e Rascunhos (26/10/2026)
 
 **Hoje:** são duas abas da Central. **Diluição padrão** (`Farmacia.tsx`, `PadraoUnidade` e `LinhaDiluicao`)
 tem o envio do padrão em cartão, filtros e uma pilha de cartões grandes, um por medicamento, cada um com a
@@ -756,6 +756,26 @@ publicados na lateral (`373e8b1b`); histórico de versões do InVision (`444de77
   medicamentos; no celular a tabela rola para o lado. Rascunhos continua à parte.
 
 Nenhuma opção muda regra nem banco: publicar continua pedindo CRF e fonte, e publicada não se edita.
+
+**Escolha do RT (26/10/2026): B, uma aba só, como biblioteca.** Aplicada na branch
+`feat/visual-3-7b-diluicao`:
+
+- Central do Farmacêutico: as abas "Diluição padrão" e "Rascunhos" viram **"Diluição"** (a Central passa a
+  ter cinco abas).
+- `Diluicoes.tsx` (a tela inteira): no topo, o último padrão enviado numa linha (`EnviarArquivo` compacto,
+  que agora diz "padrão" ou "lista" conforme o tipo); abas internas "Valendo na unidade N" (o que chega ao
+  prescritor desta unidade, `padrao_diluicao_unidade`), "Rascunhos N" (âmbar quando há) e "Substituídas N";
+  busca, "só da unidade" e "só AV". À esquerda a lista; à direita:
+  - em Valendo, a ficha (`FichaValendo`, no lugar da antiga `LinhaDiluicao` da Central): os campos em
+    linhas, o valor do modelo da rede riscado quando a unidade mudou, a flebite, a fonte, o "por que muda",
+    "Ajustar esta linha" (ou "Continuar o ajuste") e "Voltar ao modelo";
+  - em Rascunhos e Substituídas, o editor de antes, sem cartão, com "Salvar rascunho" e "Publicar aos
+    prescritores" (ou "Criar nova versão") no topo; "Nova diluição" fica no alto da lista de rascunhos.
+- Ajustar uma linha que vale cria o rascunho da unidade e leva a ele na mesma tela (aba Rascunhos, já
+  escolhido). Nenhuma regra mudou: as mesmas chamadas ao servidor.
+- Visto na página de teste com a Central real e linhas semeadas, fotografada no Chrome sem janela nos dois
+  temas (`dil-B-aplicada-*.png`). Ajustar, voltar ao modelo, salvar e publicar pedem login: conferir na
+  homologação.
 
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
