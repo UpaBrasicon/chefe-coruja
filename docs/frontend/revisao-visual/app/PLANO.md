@@ -608,7 +608,7 @@ branch `feat/visual-3-7-farmacia`:
 Uma tela por vez, na ordem Disponibilidade → Dispensação → Faltas → Diluição padrão e Rascunhos → Painel →
 Alta vigilância e Interações.
 
-### Disponibilidade (26/10/2026, opções; aguarda escolha do RT)
+### Disponibilidade (26/10/2026)
 
 **Hoje** (`farmacia/Farmacia.tsx`, `Disponibilidade` e `LinhaEstoque`): dois cartões em cima (enviar a lista
 da farmácia central e o padrão da unidade) e uma lista com um bloco por medicamento — nome e apresentação,
@@ -631,6 +631,22 @@ da unidade e o envio da lista viram uma linha só no topo, sem cartões:
 - **C · tabela e ficha do item**: à esquerda, tabela curta (medicamento, saldo na cor da situação,
   situação); à direita, a ficha do item escolhido com o saldo, os limites próprios (com "voltar ao padrão"),
   quem atualizou e a falta.
+
+**Escolha do RT (26/10/2026): C, tabela e ficha do item.** Aplicada na branch
+`feat/visual-3-7b-disponibilidade`:
+
+- `Farmacia.tsx`, `Disponibilidade`: no topo, duas linhas sem cartão — o padrão da unidade (com "Definir
+  padrão", que abre o formulário logo abaixo, marcado por um fio à esquerda) e a última lista enviada
+  (`EnviarArquivo` ganhou o modo `compacto`: nome, quando, quem, Baixar e o botão de enviar à direita).
+  Embaixo, a tabela (medicamento com o selo AV curto, saldo na cor da situação, situação) com filtro e "só
+  alta vigilância"; a linha escolhida fica marcada e cada nome é um `BotaoLinha` (teclado). À direita, a
+  ficha (`FichaEstoque`, no lugar da `LinhaEstoque`): saldo com Salvar e quem atualizou; limites do item
+  com "Voltar ao padrão" quando são próprios e "Salvar limites"; situação com "Sinalizar falta" ou "Falta
+  enviada". Nenhuma regra mudou: as mesmas chamadas ao servidor da linha de antes. No celular a ficha vem
+  antes da tabela.
+- Visto na página de teste com a Central real e o estoque semeado, a 1100 px nos dois temas
+  (`estoque-C-aplicada-claro|escuro.jpg`), escolhendo um item com limite próprio. Salvar e sinalizar pedem
+  login: conferir na homologação.
 
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
