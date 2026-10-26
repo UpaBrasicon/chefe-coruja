@@ -23,7 +23,7 @@ export function BlocoGestacao({ g, hoje, onChange }: { g: Gestacao; hoje: string
   )
 
   return (
-    <section className="flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px] shadow-repouso">
+    <section className="flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px]">
       <div className="flex flex-wrap items-baseline gap-2.5">
         <TituloCartao className="mb-0">Avaliação · dados da gestação</TituloCartao>
         <span className="text-rotulo text-tinta-sussurro">Não entra no protocolo de classificação; vai junto do registro da triagem.</span>

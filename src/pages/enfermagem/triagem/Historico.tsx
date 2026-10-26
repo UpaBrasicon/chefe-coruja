@@ -47,7 +47,7 @@ export function HistoricoClassificacoes({ episodioId }: { episodioId: string }) 
   const lista = hist.data ?? []
 
   return (
-    <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
+    <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
       <div className="flex items-center gap-2.5 border-b border-trilha px-5 py-3.5">
         <History className="size-4 text-acao" aria-hidden />
         <TituloCartao className="mb-0">

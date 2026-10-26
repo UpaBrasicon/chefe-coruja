@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 
 export function Bloco({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
-    <section className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
+    <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
       <div className="border-b border-trilha px-5 py-3 text-apoio font-semibold text-tinta">{titulo}</div>
       {children}
     </section>

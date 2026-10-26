@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea'
 
 import { PILULA, hora, msgErro, quando, usePendenciasEnfermagem, type PassagemEnfermagem as Passagem } from './useEnfermagem'
 import { TituloCartao } from '@/components/monitor/Pagina'
+import { Estado } from '@/pages/plantao/porta/Estado'
 
 const TURNO: Record<string, string> = { manha: 'manhã', tarde: 'tarde', noite: 'noite', diurno: 'diurno', noturno: 'noturno' }
 type PacienteDoSetor = { paciente_id: string; nome: string; local: string | null }
@@ -95,7 +96,7 @@ export function PassagemEnfermagem({ setores }: { setores: { id: string; nome: s
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-cartao border border-fio bg-superficie px-5 py-[18px] shadow-repouso">
+    <section className="flex flex-col gap-3 rounded-cartao border border-fio bg-superficie px-5 py-[18px]">
       <TituloCartao className="mb-0">Passagem de plantão da enfermagem</TituloCartao>
       {setores.length > 1 && (
         <Chips rotulo="Setor da passagem">
@@ -163,8 +164,8 @@ export function PassagemEnfermagem({ setores }: { setores: { id: string; nome: s
             </span>
             <div className="flex flex-wrap gap-1.5">
               {p.recebida_em
-                ? <span className={cn(PILULA, 'bg-alerta-conforme text-conforme')}>Recebida por {p.recebida_por_nome} às {hora(p.recebida_em)}</span>
-                : <span className={cn(PILULA, 'bg-trilha text-tinta-apoio')}>Aguardando quem assume</span>}
+                ? <Estado tom="verde">Recebida por {p.recebida_por_nome} às {hora(p.recebida_em)}</Estado>
+                : <Estado tom="cinza">Aguardando quem assume</Estado>}
               {p.pendencias.length > 0 && (
                 <span className={cn(PILULA, 'bg-alerta-critico text-critico')}>
                   {p.pendencias.length} {p.pendencias.length === 1 ? 'pendência' : 'pendências'} na entrega

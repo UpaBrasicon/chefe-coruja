@@ -340,6 +340,56 @@ médico, exames, medicação) vão ao BACKLOG como item próprio. A grade de aç
   (no celular a tabela rola na horizontal); a ordenação foi conferida clicando
   em "Espera" (`fila-ps-tabela-*.jpg`).
 
+## 3.4 · Triagem e enfermagem (25/10/2026)
+
+**O que estava genérico:** na fila da triagem, cada linha tinha duas pílulas cinzas
+("Sem triagem" e "Aguardando"), e quem tinha sido chamado três vezes sem resposta
+pesava o mesmo que quem nunca foi chamado; a barra da sala e os blocos da fila em
+cartão com sombra; o rótulo acima do nome na janela de classificação em maiúsculas
+espaçadas; na enfermagem do PS e nas telas de leito, passagem e checagem, situação
+em pílula e blocos com sombra.
+
+**Referências do Refero:** lista da Linear agrupada por status, com o prazo na
+linha; listas de tarefas da Reclaim e da Amie, com o atrasado na linha da tarefa.
+A busca por triagem e sinais vitais não trouxe tela clínica de fila; a referência
+de formulário mais próxima (Hers) não entrou nas opções.
+
+**Opções** (componentes reais, pacientes fictícios; `triagem-hoje|A|B-claro|escuro.jpg`):
+
+- **A · mesma composição sem os reflexos:** sala em linha simples, sem a pílula
+  "Sem triagem", situação em ponto + texto, blocos sem sombra; a lista de quem espera
+  o médico continua embaixo.
+- **B · abas e tabela, como a fila do PS:** abas "Aguardando triagem N" e
+  "Classificados aguardando o médico N"; à direita, a maior espera e quantos passaram
+  do alvo da cor; tabela densa com a situação em ponto + texto e as ações na linha.
+
+**Escolha do RT (25/10/2026): B**, e o mesmo mínimo nas telas da enfermagem.
+Aplicada na branch `feat/visual-3-4-triagem`:
+
+- `Triagem.tsx`: abas com contagem e a aba no endereço (`?fila=medico`); à direita,
+  "maior espera na triagem N min · N acima do alvo da cor" (vermelho quando há);
+  título sem ícone; rótulo da janela de classificação em caixa normal.
+- `triagem/useSalaTriagem.ts` (novo): salas, chamadas e a sala escolhida no aparelho,
+  num gancho só, para a barra da sala ficar acima das abas.
+- `triagem/Fila.tsx`: barra da sala sem cartão; tabela com Paciente (prioridade legal
+  e homônimo embaixo), Queixa, Espera (a hora da ficha no título), Situação e as ações
+  Chamar · Triar · Excluir da fila. Situação em ponto + texto: cinza aguardando, âmbar
+  chamado (Nª vez), vermelho a partir da 3ª chamada sem resposta; sala e hora da
+  chamada na linha de baixo.
+- `triagem/Espera.tsx`: tabela com Cor (selo da enfermagem), Paciente, Queixa,
+  Classificado, Espera e Reclassificar. **A espera passou a contar da classificação**
+  (antes, da ficha) e fica vermelha acima do alvo da cor (`acimaDoAlvo` em `comum.ts`).
+- Enfermagem: sem `shadow-repouso` na passagem, nas peças, na classificação, na
+  gestação e no histórico. Situação em `Estado` no Pronto-Socorro da enfermagem
+  (aguardando médico, em reavaliação, em atendimento, em observação; o box em texto),
+  na passagem (recebida, aguardando quem assume), na checagem (feito, não feito,
+  recusado, a checar) e nos leitos para liberar (livre, reservado, em higienização,
+  bloqueado). Ficam como alerta: a pendência da passagem e os selos de vasoativo e de
+  alta vigilância da checagem.
+- Vista na página de teste com os componentes reais, nos dois temas, a 1100 px
+  (`triagem-B-aplicada-claro|escuro.jpg`); no celular a tabela rola na horizontal. As
+  telas da enfermagem pedem login: conferir na homologação.
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções
