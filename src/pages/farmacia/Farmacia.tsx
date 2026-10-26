@@ -29,6 +29,7 @@ import { Estado } from '@/components/porta/Estado'
 import { tomDaVariante } from '@/components/porta/tomEstado'
 import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 
 const ABAS = [
@@ -93,10 +94,15 @@ function SeloEstoque({ situacao }: { situacao: string }) {
   return <Estado tom={tomDaVariante(s.variante)}>{s.rotulo}</Estado>
 }
 
+// Revisão visual 3.7b (opção C do RT, 26/10/2026): o padrão da unidade e a
+// última lista numa linha no topo; à esquerda a tabela curta (falta e crítico
+// primeiro, como o servidor ordena), à direita a ficha do item escolhido com
+// saldo, limites próprios, quem atualizou e a falta. No celular a ficha vem antes.
 function Disponibilidade({ unidade }: { unidade: string }) {
   const qc = useQueryClient()
   const [filtro, setFiltro] = React.useState('')
   const [soAv, setSoAv] = React.useState(false)
+  const [escolhido, setEscolhido] = React.useState<string | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
   const lista = useQuery({
     queryKey: ['farmacia-estoque', unidade],
@@ -112,35 +118,70 @@ function Disponibilidade({ unidade }: { unidade: string }) {
     void qc.invalidateQueries({ queryKey: ['faltas'] })
   }
   const termo = filtro.trim().toLowerCase()
-  const visiveis = (lista.data ?? []).filter((d) => (!soAv || d.alta_vigilancia)
+  const todos = lista.data ?? []
+  const visiveis = todos.filter((d) => (!soAv || d.alta_vigilancia)
     && (d.principio_ativo.toLowerCase().includes(termo) || (d.apresentacao ?? '').toLowerCase().includes(termo)))
-  const informados = (lista.data ?? []).filter((d) => d.quantidade != null).length
+  const informados = todos.filter((d) => d.quantidade != null).length
+  const sel = visiveis.find((d) => d.medicamento_id === escolhido) ?? visiveis[0]
   return (
-    <div className="flex flex-col gap-4">
-      <EnviarArquivo unidade={unidade} tipo="lista_medicacoes" icone={ClipboardPlus} rotulo="Enviar lista de medicações"
-        ajuda="Planilha, documento ou PDF da farmácia central (.xlsx, .xls, .csv, .doc, .docx, .pdf). Fica registrado quem enviou e quando; o saldo abaixo é o que você informa." />
-      <LimitesPadrao unidade={unidade} aoMudar={recarregar} />
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <LimitesPadrao unidade={unidade} aoMudar={recarregar} />
+        <EnviarArquivo compacto unidade={unidade} tipo="lista_medicacoes" icone={ClipboardPlus} rotulo="Enviar lista de medicações"
+          ajuda="Planilha, documento ou PDF da farmácia central (.xlsx, .xls, .csv, .doc, .docx, .pdf). Fica registrado quem enviou e quando; o saldo é o que você informa." />
+      </div>
       <MensagemErro texto={erro ?? (lista.error ? (lista.error as Error).message : null)} />
-      <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
-        <div className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-3">
-          <span className="text-apoio text-tinta-sussurro">Saldo da unidade: {informados} de {(lista.data ?? []).length} itens informados. O que está em falta ou crítico vem primeiro.</span>
-          <div className="ml-auto flex flex-wrap items-center gap-2">
-            <label className="relative">
-              <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
-              <Input aria-label="Filtrar medicamento" className="h-8 w-56 pl-8" placeholder="Filtrar medicamento" value={filtro} onChange={(e) => setFiltro(e.target.value)} />
-            </label>
-            <Filtro ativo={soAv} onClick={() => setSoAv(!soAv)}><AlertTriangle className="size-3.5" aria-hidden /> Só alta vigilância</Filtro>
+      <div className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[minmax(0,1fr)_320px]">
+        <section aria-label="Medicamentos da unidade" className="flex min-w-0 flex-col border-fio md:border-r">
+          <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-4 py-2.5">
+            <span className="text-apoio text-tinta-sussurro">{informados} de {todos.length} com saldo · falta e crítico primeiro</span>
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              <label className="relative">
+                <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
+                <Input aria-label="Filtrar medicamento" className="h-8 w-48 pl-8" placeholder="Filtrar medicamento" value={filtro} onChange={(e) => setFiltro(e.target.value)} />
+              </label>
+              <Filtro ativo={soAv} onClick={() => setSoAv(!soAv)}><AlertTriangle className="size-3.5" aria-hidden /> Só alta vigilância</Filtro>
+            </div>
           </div>
+          {lista.isLoading && <p className="px-4 py-4 text-apoio text-tinta-sussurro">Carregando…</p>}
+          {!lista.isLoading && visiveis.length === 0 && <p className="px-4 py-4 text-apoio text-tinta-sussurro">Nenhum medicamento com esse termo.</p>}
+          {visiveis.length > 0 && (
+            <Table aria-label="Saldo por medicamento">
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="pl-4">Medicamento</TableHead>
+                  <TableHead className="text-right">Saldo</TableHead>
+                  <TableHead className="pr-4">Situação</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visiveis.slice(0, 80).map((d) => (
+                  <TableRow key={d.medicamento_id} aria-selected={d.medicamento_id === sel?.medicamento_id}
+                    className={cn('cursor-pointer', d.medicamento_id === sel?.medicamento_id && 'bg-alerta-marca hover:bg-alerta-marca')}
+                    onClick={() => setEscolhido(d.medicamento_id)}>
+                    <TableCell className="pl-4 whitespace-normal">
+                      <BotaoLinha variante="linha" className="flex-col gap-0.5 border-0 p-0 hover:bg-transparent" onClick={() => setEscolhido(d.medicamento_id)}>
+                        <span className="flex flex-wrap items-center gap-2 font-medium text-tinta">{d.principio_ativo}{d.alta_vigilancia && <SeloAltaVigilancia curto />}</span>
+                        <span className="text-rotulo text-tinta-sussurro">{d.apresentacao ?? '—'}</span>
+                      </BotaoLinha>
+                    </TableCell>
+                    <TableCell className={cn('text-right font-semibold tabular-nums', d.situacao === 'falta' ? 'text-critico' : d.situacao === 'critico' ? 'text-atencao' : 'text-tinta')}>
+                      {fmt(d.quantidade)}
+                    </TableCell>
+                    <TableCell className="pr-4"><SeloEstoque situacao={d.situacao} /></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+          {visiveis.length > 80 && <p className="border-t border-trilha px-4 py-2.5 text-rotulo text-tinta-sussurro">Mostrando 80 de {visiveis.length}. Filtre para achar o item.</p>}
+        </section>
+        <div className="order-first border-b border-fio md:order-none md:border-b-0">
+          {sel
+            ? <FichaEstoque key={sel.medicamento_id} d={sel} unidade={unidade} aoErro={setErro} aoMudar={recarregar} />
+            : <p className="px-5 py-4 text-apoio text-tinta-sussurro">Escolha um medicamento na lista.</p>}
         </div>
-        {lista.isLoading && <p className="px-5 py-4 text-apoio text-tinta-sussurro">Carregando…</p>}
-        {!lista.isLoading && visiveis.length === 0 && <p className="px-5 py-4 text-apoio text-tinta-sussurro">Nenhum medicamento com esse termo.</p>}
-        <ul>
-          {visiveis.slice(0, 80).map((d) => (
-            <LinhaEstoque key={d.medicamento_id} d={d} unidade={unidade} aoErro={setErro} aoMudar={recarregar} />
-          ))}
-        </ul>
-        {visiveis.length > 80 && <p className="border-t border-trilha px-5 py-2.5 text-rotulo text-tinta-sussurro">Mostrando 80 de {visiveis.length}. Filtre para achar o item.</p>}
-      </section>
+      </div>
     </div>
   )
 }
@@ -162,17 +203,16 @@ function LimitesPadrao({ unidade, aoMudar }: { unidade: string; aoMudar: () => v
   const resumo = p && (p.limite_critico != null || p.limite_falta != null)
     ? `crítico ≤ ${fmt(p.limite_critico)} · em falta ≤ ${fmt(p.limite_falta)}` : 'sem padrão: o item sem limite próprio fica só com o saldo'
   return (
-    <div className="flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-5 py-3.5">
-      <div className="flex flex-wrap items-center gap-2.5">
-        <SlidersHorizontal className="size-4 text-acao" aria-hidden />
-        <span className="text-apoio font-semibold text-tinta">Padrão da unidade</span>
-        <span className="text-apoio text-tinta-sussurro">{resumo}</span>
-        <Button size="xs" variant="outline" className="ml-auto" onClick={() => {
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-apoio">
+        <SlidersHorizontal className="size-3.5 text-acao" aria-hidden />
+        <span className="text-tinta-sussurro"><span className="font-medium text-tinta">Padrão da unidade:</span> {resumo}</span>
+        <Button size="xs" variant="ghost" className="text-acao" onClick={() => {
           setC(p?.limite_critico?.toString() ?? ''); setF(p?.limite_falta?.toString() ?? ''); setAbrir(!abrir)
         }}>{abrir ? 'Fechar' : 'Definir padrão'}</Button>
       </div>
       {abrir && (
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-wrap items-end gap-3 border-l-2 border-acao/40 pl-3">
           <label className="flex flex-col gap-1 text-apoio text-grafite">Crítico quando ≤
             <Input className="h-8 w-24" inputMode="decimal" value={c} onChange={(e) => setC(e.target.value)} /></label>
           <label className="flex flex-col gap-1 text-apoio text-grafite">Em falta quando ≤
@@ -190,68 +230,76 @@ function LimitesPadrao({ unidade, aoMudar }: { unidade: string; aoMudar: () => v
   )
 }
 
-function LinhaEstoque({ d, unidade, aoErro, aoMudar }: { d: Estoque; unidade: string; aoErro: (m: string | null) => void; aoMudar: () => void }) {
+/** A ficha do item escolhido: saldo, limites próprios, quem atualizou e a falta. */
+function FichaEstoque({ d, unidade, aoErro, aoMudar }: { d: Estoque; unidade: string; aoErro: (m: string | null) => void; aoMudar: () => void }) {
   const [q, setQ] = React.useState(d.quantidade?.toString() ?? '')
-  const [editando, setEditando] = React.useState(false)
-  const [c, setC] = React.useState('')
-  const [f, setF] = React.useState('')
+  const [c, setC] = React.useState(d.limite_proprio ? d.limite_critico?.toString() ?? '' : '')
+  const [f, setF] = React.useState(d.limite_proprio ? d.limite_falta?.toString() ?? '' : '')
   const chamar = async (p: PromiseLike<{ error: { message: string } | null }>) => {
     const { error } = await p
     if (error) { aoErro(error.message); return false }
     aoErro(null); aoMudar(); return true
   }
-  const limiteResumo = d.limite_critico == null && d.limite_falta == null ? 'sem limite'
-    : `crítico ≤ ${fmt(d.limite_critico)} · falta ≤ ${fmt(d.limite_falta)}${d.limite_proprio ? '' : ' (padrão)'}`
   return (
-    <li className="border-b border-trilha px-5 py-3 last:border-0">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <div className="flex min-w-[220px] flex-1 flex-col gap-0.5">
-          <span className="flex flex-wrap items-center gap-2 text-corpo font-medium text-tinta">
-            {d.principio_ativo}
-            {d.alta_vigilancia && <SeloAltaVigilancia />}
-          </span>
-          <span className="text-rotulo text-tinta-sussurro">{d.apresentacao ?? '—'}{d.atualizado_em ? ` · atualizado ${hora(d.atualizado_em)}${d.atualizado_por ? ` por ${d.atualizado_por}` : ''}` : ''}</span>
-        </div>
-        <Button size="xs" variant="outline" onClick={() => { setC(d.limite_proprio ? d.limite_critico?.toString() ?? '' : ''); setF(d.limite_proprio ? d.limite_falta?.toString() ?? '' : ''); setEditando(!editando) }}
-          className="gap-1.5 rounded-controle px-2.5 py-1">
-          <SlidersHorizontal className="size-3.5" aria-hidden /> {limiteResumo}
-        </Button>
+    <section aria-label={`Ficha de ${d.principio_ativo}`} className="flex flex-col gap-4 px-5 py-4">
+      <div>
+        <h3 className="flex flex-wrap items-center gap-2 text-corpo font-semibold text-tinta">{d.principio_ativo}{d.alta_vigilancia && <SeloAltaVigilancia />}</h3>
+        <p className="text-apoio text-tinta-sussurro">{d.apresentacao ?? '—'}</p>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-rotulo font-semibold text-tinta-sussurro">Saldo</span>
         <div className="flex items-center gap-1.5">
-          <Input aria-label={`Saldo de ${d.principio_ativo}`} className="h-8 w-20 tabular-nums" inputMode="decimal" value={q} onChange={(e) => setQ(e.target.value)} placeholder="saldo" />
+          <Input aria-label={`Saldo de ${d.principio_ativo}`} className="h-8 w-24 tabular-nums" inputMode="decimal" value={q} onChange={(e) => setQ(e.target.value)} placeholder="saldo" />
           <Button size="xs" variant="outline" disabled={q.trim() === '' || num(q) === d.quantidade}
             onClick={() => void chamar(supabase.rpc('atualizar_estoque', { p_unidade: unidade, p_medicamento: d.medicamento_id, p_quantidade: num(q)! }))}>Salvar</Button>
         </div>
-        <SeloEstoque situacao={d.situacao} />
-        {d.falta_id ? (
-          <span className="inline-flex items-center gap-1 text-rotulo font-medium text-conforme"><ShieldCheck className="size-3.5" aria-hidden />Falta enviada</span>
-        ) : (d.situacao === 'falta' || d.situacao === 'critico') ? (
-          <Button size="xs" variant="outline" className="border-critico/40 text-critico hover:bg-alerta-critico"
-            onClick={() => void chamar(supabase.rpc('sinalizar_falta', { p_unidade: unidade, p_medicamento: d.medicamento_id, p_observacao: `Saldo ${fmt(d.quantidade)} na farmácia` }))}>
-            Sinalizar falta
-          </Button>
-        ) : null}
+        <span className="text-rotulo text-tinta-sussurro">
+          {d.atualizado_em ? `Atualizado ${hora(d.atualizado_em)}${d.atualizado_por ? ` por ${d.atualizado_por}` : ''}` : 'Saldo nunca informado'}
+        </span>
       </div>
-      {editando && (
-        <div className="mt-2.5 flex flex-wrap items-end gap-3 rounded-controle bg-trilha/60 px-3.5 py-3">
-          <label className="flex flex-col gap-1 text-apoio text-grafite">Crítico quando ≤
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-rotulo font-semibold text-tinta-sussurro">Limites do item</span>
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="flex flex-col gap-1 text-rotulo text-grafite">Crítico quando ≤
             <Input className="h-8 w-24" inputMode="decimal" value={c} onChange={(e) => setC(e.target.value)} placeholder={d.limite_proprio ? '' : fmt(d.limite_critico)} /></label>
-          <label className="flex flex-col gap-1 text-apoio text-grafite">Em falta quando ≤
+          <label className="flex flex-col gap-1 text-rotulo text-grafite">Em falta quando ≤
             <Input className="h-8 w-24" inputMode="decimal" value={f} onChange={(e) => setF(e.target.value)} placeholder={d.limite_proprio ? '' : fmt(d.limite_falta)} /></label>
-          <span className="min-w-[220px] flex-1 text-rotulo text-pretty text-tinta-sussurro">É este limite que decide o selo, o que chega ao médico como falta e o que o gestor vê no painel.</span>
-          {d.limite_proprio && (
-            <Button size="sm" variant="outline" onClick={async () => {
-              if (await chamar(supabase.rpc('limites_voltar_ao_padrao', { p_unidade: unidade, p_medicamento: d.medicamento_id }))) setEditando(false)
-            }}>Voltar ao padrão</Button>
-          )}
-          <Button size="sm" disabled={(c.trim() === '' && f.trim() === '') || (d.quantidade == null && q.trim() === '')} onClick={async () => {
-            const ok = await chamar(supabase.rpc('atualizar_estoque', { p_unidade: unidade, p_medicamento: d.medicamento_id,
-              p_quantidade: num(q) ?? d.quantidade ?? 0, p_limite_critico: num(c) ?? undefined, p_limite_falta: num(f) ?? undefined }))
-            if (ok) setEditando(false)
-          }}>Salvar limites</Button>
-          {d.quantidade == null && q.trim() === '' && <span className="basis-full text-rotulo text-atencao">Informe o saldo antes de definir o limite do item.</span>}
         </div>
-      )}
-    </li>
+        <span className="text-rotulo text-pretty text-tinta-sussurro">
+          {d.limite_proprio ? 'Limite próprio do item.' : 'Segue o padrão da unidade.'} É este limite que decide a situação, o que chega ao médico como falta e o que o gestor vê no painel.
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {d.limite_proprio && (
+            <Button size="xs" variant="outline" onClick={() => void chamar(supabase.rpc('limites_voltar_ao_padrao', { p_unidade: unidade, p_medicamento: d.medicamento_id }))}>
+              Voltar ao padrão
+            </Button>
+          )}
+          <Button size="xs" disabled={(c.trim() === '' && f.trim() === '') || (d.quantidade == null && q.trim() === '')}
+            onClick={() => void chamar(supabase.rpc('atualizar_estoque', { p_unidade: unidade, p_medicamento: d.medicamento_id,
+              p_quantidade: num(q) ?? d.quantidade ?? 0, p_limite_critico: num(c) ?? undefined, p_limite_falta: num(f) ?? undefined }))}>
+            Salvar limites
+          </Button>
+        </div>
+        {d.quantidade == null && q.trim() === '' && <span className="text-rotulo text-atencao">Informe o saldo antes de definir o limite do item.</span>}
+      </div>
+
+      <div className="flex flex-col gap-1.5 border-t border-fio pt-3">
+        <span className="text-rotulo font-semibold text-tinta-sussurro">Situação</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <SeloEstoque situacao={d.situacao} />
+          {d.falta_id ? (
+            <span className="inline-flex items-center gap-1 text-rotulo font-medium text-conforme"><ShieldCheck className="size-3.5" aria-hidden />Falta enviada</span>
+          ) : (d.situacao === 'falta' || d.situacao === 'critico') ? (
+            <Button size="xs" variant="outline" className="border-critico/40 text-critico hover:bg-alerta-critico"
+              onClick={() => void chamar(supabase.rpc('sinalizar_falta', { p_unidade: unidade, p_medicamento: d.medicamento_id, p_observacao: `Saldo ${fmt(d.quantidade)} na farmácia` }))}>
+              Sinalizar falta
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </section>
   )
 }
 
