@@ -648,7 +648,7 @@ da unidade e o envio da lista viram uma linha só no topo, sem cartões:
   (`estoque-C-aplicada-claro|escuro.jpg`), escolhendo um item com limite próprio. Salvar e sinalizar pedem
   login: conferir na homologação.
 
-### Dispensação (26/10/2026, opções; aguarda escolha do RT)
+### Dispensação (26/10/2026)
 
 **Hoje** (`farmacia/Dispensacao.tsx`, aba Prescrições, `LinhaItem`): um bloco por paciente (nome,
 prontuário, setor) com um item por linha — medicamento, dose, validado ou devolvido, o dispensado nas
@@ -673,6 +673,20 @@ sem janela, porque o painel do navegador estava oculto):
   Dispensar. Ajuda a tirar da prateleira de uma vez.
 
 Avulsa e Registro recebem o mesmo mínimo nas três (a tabela do registro já está em linhas em fio).
+
+**Escolha do RT (26/10/2026): A, caixa de entrada por paciente.** Aplicada na branch
+`feat/visual-3-7b-dispensacao`:
+
+- `Dispensacao.tsx`, aba Prescrições: resumo (quantos itens de quantos pacientes) e a busca numa linha;
+  à esquerda um paciente por linha (`BotaoLinha`) com setor, leito, prontuário, quantos itens e os sinais
+  "estoque zerado" e "devolvido para correção"; à direita os itens do escolhido. Cada item numa linha em
+  fio: medicamento com validado ou devolvido, dose, "sugestão (a conta) · nas últimas 24 h · estoque" (o
+  estoque em vermelho quando zera), as notas da sugestão e, à direita, a quantidade com a unidade e
+  Dispensar. Para a enfermagem (farmácia fechada), a justificativa e "Retirar sem farmacêutico" ficam
+  embaixo do item. Nenhuma regra mudou: as mesmas chamadas ao servidor. Avulsa e Registro não mudaram.
+- Visto na página de teste com a tela real e itens semeados, fotografada no Chrome sem janela a 1100 px
+  nos dois temas (`disp-A-aplicada-claro|escuro.png`). Dispensar e a retirada pela enfermagem pedem
+  login: conferir na homologação.
 
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
