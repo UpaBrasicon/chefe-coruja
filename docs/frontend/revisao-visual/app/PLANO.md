@@ -471,6 +471,48 @@ Aplicada na branch `feat/visual-3-5-leito`:
   dois temas e a 375 px (`leito-B-aplicada-claro|escuro.jpg`); as 13 abas cabem
   numa linha a 1280 px com qualquer aba ativa.
 
+## 3.6 · Observação (26/10/2026, opções; aguarda escolha do RT)
+
+**Levantamento** (agente de busca): `pages/plantao/secoes/PacientesObservacao.tsx`
+→ `components/observacao/PainelObservacao.tsx` (o mesmo painel no gestor, só
+leitura) → uma linha por box em `CartaoObservacao.tsx`, com os painéis da linha em
+`PaineisCartao.tsx` (reavaliar, desfecho, protocolo, passar plantão). A
+"Prancheta" abre o `LeitoAberto` no modo simples num diálogo. O prazo de 6 horas
+vem de `modelo.ts` (`relogioPermanencia`): permanência, "Faltam X" ou "Passou há X"
+(verde, âmbar na última hora, vermelho depois) e uma barra fina. Reflexos: lista
+com sombra; box em pílula; situação em pílula colorida (`ESTADOS.classe`); sigla
+do protocolo em etiqueta cheia; acuidade em pílula; faixa verde "tudo calmo" em
+caixa; situação da passagem em pílula; no modo simples do leito, o cabeçalho em
+cartão com sombra e "Em observação" em `Badge`. Sem maiúsculas espaçadas, sem
+ícone em quadrado, sem gradiente. Ficam como alerta: selo de alergia, o aviso de
+quem passou de 6 horas, o relógio vencido, reavaliação atrasada e a faixa crítica
+da acuidade.
+
+**Referências do Refero:** Linear, lista com o prazo de atendimento na linha
+(`cb07661a`); Wrike, linha do tempo da equipe com a linha vermelha de "agora"
+(`8bb3f47e`).
+
+**Opções** (pacientes fictícios, agora às 15:00; `obs-hoje-claro.jpg`,
+`obs-A|B|C-claro|escuro.jpg`):
+
+- **A · mínimo:** mesma lista e os mesmos filtros; sem sombra; box em texto;
+  situação em ponto + texto numa coluna própria, com a reavaliação e o protocolo
+  embaixo; acuidade em texto na cor da faixa; a faixa verde vira uma linha de texto
+  (quantos passaram, maior permanência, setores); o relógio e a barra ficam.
+- **B · abas e tabela, como a fila do PS:** abas "Em observação N" e "Finalizados no
+  plantão N"; à direita, a maior permanência e quantos passaram de 6 horas; tabela
+  com box, paciente (alertas embaixo), situação, há quanto tempo (desde que hora) e
+  prazo (faltam ou passou, até que hora), ações na linha. Os filtros por situação
+  saem; a aba separa quem está e quem saiu.
+- **C · régua das 6 horas** (Wrike): à esquerda paciente e situação; no meio, um
+  eixo de horas com a janela de 6 horas de cada um, cheia até agora, o que passou
+  do prazo em vermelho e uma linha vermelha de "agora" atravessando a lista; ações
+  à direita. Mostra de relance quem vence primeiro.
+
+Em qualquer opção: o aviso de quem passou de 6 horas fica em caixa (é alerta); a
+situação da passagem vira ponto + texto; a Prancheta (modo simples do leito) ganha
+o cabeçalho sem cartão e "Em observação" em ponto + texto, como no leito da 3.5.
+
 ## 3.8 antecipada · Central do Plantonista: calculadoras, escores e condutas (21/10/2026)
 
 A pedido do RT, a 3.8 vem antes da 3.4. A Central tem 212 ferramentas em 8 seções
