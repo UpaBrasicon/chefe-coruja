@@ -1149,6 +1149,22 @@ texto. Sem migration. Typecheck, lint, catraca, build e os 1089 testes clínicos
 pelo RT; produção conferida pelo pacote publicado. Registro e imagens em
 `docs/frontend/revisao-visual/app/PLANO.md`. Próxima: **3.7, farmácia**.
 
+**3.7 (farmácia) em produção desde 26/10/2026 (PR #234).** Referências do Refero: aprovação de documentos
+da Aboard e caixas de entrada do Missive e da Wrike. O RT escolheu a **C, caixa de entrada** para a
+validação: a fila juntada por paciente, com a lista à esquerda (quantos itens, há quanto tempo, sinais de
+alta vigilância, fora do padrão e devolvido) e a prescrição do escolhido à direita, com Confere e Devolver
+em cada item; a aba mostra quantos faltam. O mesmo mínimo nas outras telas da farmácia: abas sublinhadas
+na Central e na dispensação, situação em ponto + texto, blocos sem sombra; alta vigilância (selo novo, sem
+maiúsculas), falta, estoque crítico e gravidade da interação seguem em selo. Sem migration. Typecheck,
+lint, catraca, build e os 1089 testes clínicos verdes; homologação conferida pelo RT; produção conferida
+pelo pacote publicado. Registro e imagens em `docs/frontend/revisao-visual/app/PLANO.md`.
+
+**3.7b — outras telas do farmacêutico (pedido do RT em 26/10/2026).** Repensar a forma das telas que na
+3.7 só receberam o mínimo, uma por vez, com referências do Refero, 2 ou 3 opções em maquete e a escolha
+do RT, em branch e PR próprios. Ordem combinada, pela frequência de uso: Disponibilidade (estoque) →
+Dispensação → Faltas → Diluição padrão e Rascunhos → Painel → Alta vigilância e Interações. Próxima:
+**3.7b, Disponibilidade**; depois, 3.9 (escala e menu do gestor).
+
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
 **Pedido do RT:** avaliar com o PubMed o que falta em Condutas e cálculos — adulto, Pediatria e
