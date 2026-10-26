@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Chip } from '@/components/monitor/Pagina'
 import { ExcluirDaFila } from '@/components/porta/Chamada'
 import { SeloHomonimo } from '@/components/porta/SeloHomonimo'
-import { Estado } from '@/pages/plantao/porta/Estado'
+import { Estado } from '@/components/porta/Estado'
 import { dataSP, esperaMin, hora, nomeDe, type NaFila } from './comum'
 import type { SalaTriagem, SalaTriagemCtx, UltimaChamada } from './useSalaTriagem'
 
@@ -19,7 +19,7 @@ import type { SalaTriagem, SalaTriagemCtx, UltimaChamada } from './useSalaTriage
 // tabela com paciente, queixa, espera, situação da chamada e Chamar · Triar ·
 // Excluir da fila (com motivo e justificativa). Revisão visual 3.4, opção B do
 // RT (25/10/2026): abas e tabela como a fila do Pronto-Socorro; a situação em
-// ponto + texto (`porta/Estado`), sem pílula nem sombra.
+// ponto + texto (`components/porta/Estado`), sem pílula nem sombra.
 
 function BarraSala({ salas, escolhidas, escolher }: { salas: SalaTriagem[]; escolhidas: Record<string, string>; escolher: (setor: string, sala: string) => void }) {
   const porSetor = [...new Set(salas.map((s) => s.setor_id))]

@@ -5,7 +5,6 @@ import { History } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { ChecklistAdmissao as Checklist, Database } from '@/types/database'
 
@@ -57,21 +56,21 @@ export function TrilhaEpisodio({ pacienteId }: { pacienteId: string }) {
   const lista = eventos.data ?? []
   return (
     <details className="rounded-container border border-fio bg-superficie px-4 py-3">
-      <summary className="flex cursor-pointer items-center gap-2 text-apoio font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">
+      <summary className="flex cursor-pointer items-center gap-2 text-apoio font-semibold text-tinta-sussurro">
         <History className="size-3.5" aria-hidden /> Trilha do episódio · {lista.length} {lista.length === 1 ? 'evento' : 'eventos'}
       </summary>
       <div className="mt-2.5 flex flex-col gap-1.5">
         {lista.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum evento ADT registrado.</p>}
         {lista.map((e) => (
           <div key={e.id} className="flex items-center gap-2 text-apoio">
-            <Badge variant="secondary">#{e.seq}</Badge>
+            <span className="text-tinta-sussurro tabular-nums">#{e.seq}</span>
             <span className="font-medium text-tinta">{TIPO_EVENTO[e.tipo_evento] ?? e.tipo_evento}</span>
             <span className="text-tinta-sussurro">{diaHora(e.created_at)} · {e.perfis?.nome_completo ?? '—'}{e.motivo ? ` · ${e.motivo}` : ''}</span>
           </div>
         ))}
         {(transferencias.data ?? []).length > 0 && (
           <>
-            <span className="mt-1.5 text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">Transferências entre setores</span>
+            <span className="mt-1.5 text-rotulo font-semibold text-tinta-sussurro">Transferências entre setores</span>
             {(transferencias.data ?? []).map((t) => (
               <span key={t.id} className="text-apoio text-tinta-apoio">
                 {diaHora(t.created_at)} · {t.perfis?.nome_completo ?? '—'} · {t.motivo || 'sem motivo'}
@@ -111,7 +110,7 @@ export function ChecklistAdmissao({ pacienteId, unidadeId, prontuarioAberto }: {
   }
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-container border border-fio bg-campo px-4 py-3">
-      <span className="mr-1 text-apoio font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">Checklist de admissão</span>
+      <span className="mr-1 text-apoio font-semibold text-tinta-sussurro">Checklist de admissão</span>
       {ITENS.map(([campo, rotulo]) => {
         const marcado = checklist.data?.[campo] ?? false
         return (

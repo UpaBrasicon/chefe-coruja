@@ -32,7 +32,7 @@ import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { dataHora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
-import { Estado } from '@/pages/plantao/porta/Estado'
+import { Estado } from '@/components/porta/Estado'
 
 type Linha = {
   paciente_id: string; paciente_nome: string; local: string | null; item_id: string; tipo: string; descricao: string

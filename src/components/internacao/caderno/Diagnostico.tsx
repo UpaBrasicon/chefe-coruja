@@ -239,7 +239,7 @@ function IncluirSecundario({ internacaoId, temPrimario, acao }: { internacaoId: 
 function Historico({ linhas }: { linhas: Linha[] }) {
   return (
     <div className="flex min-w-0 flex-col overflow-hidden rounded-container border border-fio bg-superficie">
-      <div className="flex items-center gap-2 border-b border-trilha px-4 py-3 text-apoio font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">
+      <div className="flex items-center gap-2 border-b border-trilha px-4 py-3 text-apoio font-semibold text-tinta-sussurro">
         <History className="size-3.5" aria-hidden /> Histórico
       </div>
       {linhas.length === 0 && <p className="px-4 py-3 text-apoio text-tinta-sussurro">Nada registrado ainda.</p>}

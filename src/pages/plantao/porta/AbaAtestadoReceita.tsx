@@ -27,7 +27,7 @@ import { idadeLegivel } from '@/lib/cadastroPaciente'
 import { TEXTO_PEDIATRICO, TEXTO_SEM_NASCIMENTO } from '../atendimento/ReceituarioMedico'
 
 import { hoje, hora, msg, type EstadoDocs, type ItemReceita } from './comum'
-import { Estado } from './Estado'
+import { Estado } from '@/components/porta/Estado'
 import { Chip } from '@/components/monitor/Pagina'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 

@@ -8,7 +8,7 @@ import { rotuloMotivoBloqueio } from '@/components/leito/motivos'
 import { Bloco } from './Pecas'
 import { msgErro } from './useEnfermagem'
 import { dataHora, hora } from '@/lib/formato'
-import { Estado } from '@/pages/plantao/porta/Estado'
+import { Estado } from '@/components/porta/Estado'
 
 const ROTULO: Record<string, string> = { livre: 'Livre', reservado: 'Reservado', higienizacao: 'Em higienização', bloqueado: 'Bloqueado' }
 const TOM: Record<string, 'verde' | 'teal' | 'ambar' | 'vermelho'> = { livre: 'verde', reservado: 'teal', higienizacao: 'ambar', bloqueado: 'vermelho' }

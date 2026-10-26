@@ -71,7 +71,7 @@ export function ExamesTab({
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card className="h-fit">
+      <Card className="h-fit shadow-none">
         <CardHeader>
           <CardTitle className="text-corpo">Gerador de Exames</CardTitle>
           <CardDescription>Clique nos exames sugeridos ou digite livremente. O texto é salvo automaticamente.</CardDescription>
@@ -111,7 +111,7 @@ export function ExamesTab({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="shadow-none">
         <CardHeader className="flex-row items-center justify-between space-y-0">
           <div>
             <CardTitle className="text-corpo">Texto do Pedido</CardTitle>
