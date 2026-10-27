@@ -3,8 +3,7 @@ import { DoorOpen, Pill, TriangleAlert } from 'lucide-react'
 import * as React from 'react'
 
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
-import { Chip, Chips, TituloSecao, Vazio } from '@/components/monitor/Pagina'
-import { TabsPagina } from '@/components/TabsPagina'
+import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -15,14 +14,11 @@ import { gargalo, tempo, type EtapaChave, type Paciente, type Porta } from '@/li
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
-import { GradeAcoes } from './GradeAcoes'
-
 // Dashboard PS/UPA do gestor (Fase 1, tarefa 2 do BACKLOG): a porta agora,
 // por etapa, com a espera mais antiga de cada uma, quem passou do tempo-alvo
 // da cor e a etapa gargalo. A lista traz nome, setor e leito/poltrona (decisão
 // do RT, 07/10/2026) — o banco registra o acesso na auditoria (migration
-// 20261029000001). Atualiza sozinha a cada 15 segundos. Desde 27/10/2026 a
-// página tem duas abas: "Agora" (esta) e a "Grade de ações" (GradeAcoes).
+// 20261029000001). Atualiza sozinha a cada 15 segundos.
 
 const ETAPAS: { chave: EtapaChave; rotulo: string; desde: string }[] = [
   { chave: 'triagem', rotulo: 'Aguardando triagem', desde: 'desde a chegada' },
@@ -38,7 +34,7 @@ const ROTULO_ETAPA: Record<Paciente['etapa'], string> = {
 const CORES: CorRisco[] = ['vermelho', 'laranja', 'amarelo', 'verde', 'azul']
 const FILTROS = ['Todos', 'Atrasados', 'Medicação pendente'] as const
 
-function Agora() {
+export default function PortaAgora() {
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const [filtro, setFiltro] = React.useState<(typeof FILTROS)[number]>('Todos')
@@ -65,7 +61,11 @@ function Agora() {
 
   return (
     <div className="flex w-full flex-col gap-6">
-      {hora && <p className="text-rotulo text-tinta-sussurro">Atualizado às {hora}, a cada 15 segundos.</p>}
+      <TituloPagina
+        icone={DoorOpen}
+        titulo="Porta"
+        descricao={`O pronto-socorro agora, da chegada à alta${hora ? ` · atualizado às ${hora}, a cada 15 segundos` : ''}.`}
+      />
 
       {isLoading && <div className="flex h-32 items-center justify-center"><Spinner /></div>}
       {error && <p role="alert" className="text-apoio text-critico">Não foi possível carregar a porta agora: {(error as Error).message}</p>}
@@ -185,19 +185,5 @@ function Agora() {
         </>
       )}
     </div>
-  )
-}
-
-export default function PortaAgora() {
-  return (
-    <TabsPagina
-      titulo="Porta"
-      descricao="O pronto-socorro agora, da chegada à alta."
-      icone={DoorOpen}
-      abas={[
-        { valor: 'agora', rotulo: 'Agora', conteudo: () => <Agora /> },
-        { valor: 'grade', rotulo: 'Grade de ações', conteudo: () => <GradeAcoes /> },
-      ]}
-    />
   )
 }
