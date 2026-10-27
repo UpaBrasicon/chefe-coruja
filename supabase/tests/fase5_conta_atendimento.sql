@@ -118,8 +118,10 @@ SELECT pg_temp.falha(format('SELECT public.mudar_etapa_conta(%L, %L)', pg_temp.u
 SELECT public.mudar_etapa_conta(pg_temp.u('a2'), 'aberta', 'glosa do município: refazer o BPA');
 RESET ROLE;
 DO $$ BEGIN
-  IF (SELECT string_agg(evento, ',' ORDER BY em, evento) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2'))
-     NOT LIKE 'aberta,%pagador%' OR (SELECT count(*) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2')) <> 7 THEN  -- 7 com a liberação do gestor (tarefa 5)
+  -- os eventos erp_* (Fase 5C-3) têm teste próprio em fase5c_erp_contas.sql
+  IF (SELECT string_agg(evento, ',' ORDER BY em, evento) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2') AND evento NOT LIKE 'erp\_%')
+     NOT LIKE 'aberta,%pagador%'
+     OR (SELECT count(*) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2') AND evento NOT LIKE 'erp\_%') <> 7 THEN  -- 7 com a liberação do gestor (tarefa 5)
     RAISE EXCEPTION 'FALHOU: histórico da conta: %', (SELECT string_agg(evento, ',' ORDER BY em) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2'));
   END IF;
   IF (SELECT status || '|' || pagador FROM public.contas WHERE id = pg_temp.u('a2')) <> 'aberta|sus' THEN

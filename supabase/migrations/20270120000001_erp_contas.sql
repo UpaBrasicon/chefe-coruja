@@ -155,8 +155,9 @@ BEGIN
      WHERE conta_id = NEW.id AND situacao = 'vigente'
     RETURNING * INTO v;
     IF FOUND THEN
-      INSERT INTO public.conta_eventos (conta_id, evento, motivo, por)
-      VALUES (NEW.id, 'erp_substituida', 'Versão ' || v.versao || ' do ERP substituída: a conta foi reaberta.', NEW.status_por);
+      -- clock_timestamp: o evento do ERP aparece depois do evento da etapa (gravado depois, com now())
+      INSERT INTO public.conta_eventos (conta_id, evento, motivo, por, em)
+      VALUES (NEW.id, 'erp_substituida', 'Versão ' || v.versao || ' do ERP substituída: a conta foi reaberta.', NEW.status_por, clock_timestamp());
       PERFORM private.registrar_auditoria('conta_erp_substituida', 'contas', NEW.id, NEW.unidade_id,
         jsonb_build_object('numero', NEW.numero, 'versao', v.versao));
     END IF;
@@ -167,8 +168,8 @@ BEGIN
     INSERT INTO public.conta_versoes_erp (conta_id, unidade_id, versao, dados, total)
     VALUES (NEW.id, NEW.unidade_id, v_versao, v_dados, (v_dados ->> 'total')::numeric)
     RETURNING * INTO v;
-    INSERT INTO public.conta_eventos (conta_id, evento, motivo, por)
-    VALUES (NEW.id, 'erp_disponivel', 'Versão ' || v.versao || ' disponível para o ERP (total ' || private.erp_reais(v.total) || ').', NEW.status_por);
+    INSERT INTO public.conta_eventos (conta_id, evento, motivo, por, em)
+    VALUES (NEW.id, 'erp_disponivel', 'Versão ' || v.versao || ' disponível para o ERP (total ' || private.erp_reais(v.total) || ').', NEW.status_por, clock_timestamp());
     PERFORM private.registrar_auditoria('conta_erp_disponivel', 'contas', NEW.id, NEW.unidade_id,
       jsonb_build_object('numero', NEW.numero, 'versao', v.versao, 'total', v.total));
   END IF;
