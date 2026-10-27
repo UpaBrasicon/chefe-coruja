@@ -94,3 +94,7 @@ da migration `20261009000001`. As linhas criadas como da unidade continuam da un
    unidade".
 3. Com outro farmacêutico, de outra unidade, a linha não aparece.
 4. Um item cadastrado pela farmácia (ponto 4) também aceita "Nova diluição".
+
+**Teste do RT em 27/10/2026: ok na homologação**, com o formulário de um passo (diluente, volume e tempo de infusão no mesmo formulário).
+
+**Formulário enxuto (pedido do RT no teste de 27/10/2026, PR #283):** saíram concentração máxima, velocidade máxima, concentração após reconstituir e as duas estabilidades; o acesso virou seleção (periférico ou central). Os valores que as linhas já têm continuam no banco e no texto da prescrição. **Teste do RT em 27/10/2026: ok na homologação.**

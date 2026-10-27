@@ -992,6 +992,22 @@ conciliação, conta reaberta) ficam feitas e sem resposta; voltam na retomada.
 **Retomada em 27/10/2026:** a trilha "Revisão visual" acabou com a grade de ações do gestor; a 5C volta
 pela tarefa 3. Diagnóstico e decisões na linha da tarefa 3, acima.
 
+**Tarefa 3, etapa 3.4 (telas), na homologação em 27/10/2026.** Pedido do RT: "criar o ERP usando o
+Refero". Três opções a partir do Refero (Kitchen.co, Mercury, ShareWillow, Aboard, Stripe); **escolha
+do RT: A, lista com filtro e gaveta.**
+- Tela "Envio ao ERP" (`/faturamento/erp`), no menu do faturamento e no grupo Faturamento do gestor.
+- **Aba Contas** (faturamento e gestor): filtro pela situação no ERP, com contagem; tabela das versões;
+  gaveta da conta com o aviso, as versões, os itens, os medicamentos e as glosas.
+- **Aba Plantões do mês** (só o gestor): o mês com setas, a situação, a tabela por profissional com o
+  total, fechar com confirmação, reabrir com motivo e o histórico das versões.
+- As duas abas baixam CSV e JSON com o mesmo conteúdo que o ERP recebe.
+- **Banco:** migration `20270120000004_erp_telas.sql` (`erp_contas_da_unidade` e `erp_baixar`; cada
+  baixa vai para a auditoria). Teste `supabase/tests/fase5c_erp_telas.sql` e rollback passaram na
+  homologação.
+- **Regras da tela** em `src/lib/erp.ts`, com teste.
+- **Conferida na página de teste** nos dois temas e em 390 px: imagens `erp-A-aplicada-*` em
+  `docs/frontend/revisao-visual/app/`.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
@@ -1131,7 +1147,7 @@ hora, com ordenação pelo título da coluna. Registro e imagens em `docs/fronte
 | Prioridade | Item | Onde entra | O que é |
 |---|---|---|---|
 | P1 | Grade de ações no gestor | **Depois da 3.9, como item próprio** (decisão do RT em 27/10/2026: pede consulta nova no banco). **Em produção desde 27/10/2026** (diagnóstico #260, banco #261, tela #264, desenho #265). Diagnóstico em `docs/gestor/GRADE-ACOES-DIAGNOSTICO.md`; decisões D1–D5 aceitas pelo RT (aba em Porta; só triagem e atendimento; "No PS" vermelho pelo alvo da cor antes do médico e pelo alvo de permanência da unidade depois; alvos de classificação, exame, medicação e permanência por unidade, sem valor padrão; chamada repetida com a hora da última e quantas vezes). Banco: `porta_grade`, testada na homologação (`supabase/tests/porta_grade.sql`; 80 pacientes em ~10 ms; rollback testado) e aplicada na produção pelo RT com `producao:push` (conferida de fora: a chamada sem login é recusada por permissão, e não por "função não encontrada"). Tela: aba "Grade de ações" na Porta, desenho B (tabela com faixa, Zendesk Status + Symphony), conferida pelo RT na homologação; produção conferida pelo pacote publicado. **Alvos da grade em produção desde 27/10/2026 (PR #267):** em Unidade › Configurações › Limites da unidade, o gestor define exame, medicação e permanência (em branco = sem alvo; `salvar_alvos_grade`, só o gestor, com segundo fator, auditado); a coluna Classificação usa o alvo chegada → triagem que a unidade já tinha (padrão 10 min; decisão do RT, um alvo só para a mesma coisa). Teste `supabase/tests/alvos_grade.sql` passou na homologação; RT conferiu lá; banco aplicado na produção pelo RT e conferido de fora; tela conferida pelo pacote publicado. **Grade de ações concluída** | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
-| P2 | Fila do PS com dados novos na tabela | A decidir pelo RT | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
+| P2 | Fila do PS com dados novos na tabela | **Decisão do RT em 27/10/2026, depois do diagnóstico (`docs/porta/FILA-PS-DADOS-NOVOS-DIAGNOSTICO.md`, PR #276) e de ver as opções A, B e C:** a fila fica como está, sem as colunas novas (a RPC `fila_ps_detalhes`, PR #278, foi fechada sem merge e removida da homologação). Entram só: o **consultório do plantão**, escolhido uma vez numa barra no topo da fila e guardado no banco (`salas_do_plantao`, vale até o fim do plantão, não depende do aparelho; as linhas ficam só com "Chamar" e "Abrir"), e o **alvo da cor da unidade** na fila do médico, no lugar do alvo fixo de Manchester (achado do diagnóstico). **Em produção desde 27/10/2026 (PR #281):** teste `supabase/tests/salas_do_plantao.sql` passou na homologação; banco aplicado na produção com o "ok produção" do RT e conferido de fora (as duas RPCs respondem "sem permissão" sem login, e não "não encontrada"); tela conferida pelo pacote publicado. **Item concluído** | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
 
 **3.8 antecipada (Central do Plantonista, calculadoras, escores e condutas) em produção desde
 23/10/2026 (PR #179 e #180).** A pedido do RT, veio antes da 3.4. Levantamento das 212 ferramentas e
@@ -1682,8 +1698,15 @@ espera do RT:
   somadas às 19 dos lotes 1 e 2.
 - Pendências dos lotes 1 e 2 já listadas acima (RACE, Escala Clínica de Fragilidade, dor na criança,
   STONE, grupo da ITU, doses da cefaleia, quimioprofilaxia na meningite).
-- Achado do lote 3: a Figura 8 do Part 9 da AHA 2025 traz atropina 1 mg a cada 3–5 min, máximo 3 mg,
-  na bradicardia do adulto; resolve a nota "não confirmada" da ferramenta de bradicardia.
+- ~~Achado do lote 3: a Figura 8 do Part 9 da AHA 2025 traz atropina 1 mg a cada 3–5 min, máximo 3 mg,
+  na bradicardia do adulto; resolve a nota "não confirmada" da ferramenta de bradicardia.~~ **Resolvido
+  em 27/10/2026 (branch `feat/lacunas-atropina-aha2025`):** conferido de novo no texto integral em
+  cpr.heart.org — Figura 8, quadro "Doses/Details": 1ª dose de 1 mg em bolo, repetir a cada 3–5 min, dose
+  total máxima de 3 mg; seção 19, recomendação 2: atropina razoável na bradicardia com comprometimento
+  hemodinâmico (2a, B-NR); o mesmo quadro confere dopamina 5–20 µg/kg/min e adrenalina 2–10 µg/min. A
+  ficha da bradicardia do adulto ganhou a AHA 2025 como terceira fonte, a linha "Atropina (AHA 2025)" ao
+  lado da ERC/RCUK (0,5 mg) e do manual, e perdeu a nota "não confirmado"; versão 2026-10-27.1 na fila de
+  aprovação (migration `20270131000002_lacunas_atropina_aha2025`, na homologação).
 - Fontes enviadas pelo RT em PDF quando o site da revista bloqueou: Kawasaki (AHA 2024), Practice
   Parameter de anafilaxia (2023) e AAP 2017 de hipertensão pediátrica.
 
@@ -1710,11 +1733,13 @@ pelo ETL, e o banco só deixa o super admin inserir (65 medicamentos ativos na h
 | Ordem | Prioridade | Ponto do RT | Diagnóstico | Proposta | Situação |
 |---|---|---|---|---|---|
 | 1 | P1 | 6 — O farmacêutico não precisa da aba Prontuários | O farmacêutico tem o item no menu, as rotas `/prontuarios` e `/prontuarios/:pacienteId`, a tela na paleta de busca e, no banco, `papel_pode_pedir_acesso` com `farmaceutico`. Enfermagem e telemedicina também têm; o gestor decide os pedidos em Auditoria | Tirar o farmacêutico do menu, das duas rotas e de `papel_pode_pedir_acesso`; pedido aprovado antes deixa de abrir leitura; pendentes cancelados com auditoria | Feito: PR #263 (master), migration `20270105000001`; testado pelo RT na homologação em 27/10; em produção (migration conferida em 27/10) |
-| 2 | P1 | 4 — Unidade de consumo não adiciona item novo com apresentação e forma | Não há cadastro de medicamento na tela nem RPC; não há coluna de forma farmacêutica | `cadastrar_medicamento`, `editar_medicamento` e `inativar_medicamento` (farmacêutico ou gestor, com histórico); coluna `forma_farmaceutica`; "Novo medicamento" na tela, com os parecidos antes de gravar | Feito: PR #268, migration `20270106000001` (decisões: item novo só na unidade; forma em campo próprio); testado pelo RT na homologação em 27/10; migration em produção em 27/10 (ok do RT); falta o merge |
-| 3 | P1 | 2 — Diluição não adiciona medicação nem diluição | "Nova diluição" só no topo da aba Rascunhos e só para medicamento do catálogo. **Achado:** a diluição nova nasce como modelo da rede, e qualquer farmacêutico a publica para todas as unidades | Botão visível em todas as abas; diluição nova da unidade por padrão; modelo da rede só para quem o RT decidir; vias IN e VO | Feito: PR #269 (master), migration `20270109000001` (decisão: modelo da rede só do super admin; Nova diluição em um passo, com diluente, volume e tempo); em produção (migration aplicada em 27/10, ok do RT); falta o reteste do formulário |
-| 4 | P1 | 5 — Dispensação avulsa: controle do que sai e do que entra | A saída avulsa baixa o estoque com destino, motivo e auditoria; a devolução volta. A entrada não existe: o saldo é sobrescrito sem motivo, sem histórico e sem auditoria | Tabela `movimentos_estoque` (só inserção); entrada com documento; ajuste de inventário com motivo; extrato por item; filtro por período no Registro | Feito: PR #272, migration `20270110000001` (decisão: lote e validade depois); testado pelo RT na homologação em 27/10; migration em produção em 27/10 (ok do RT); falta o merge |
-| 5 | P2 | 1 — Alta vigilância não adiciona medicação | Adiciona pela busca "Buscar no cadastro", só na aba "Exige liberação"; medicamento fora do catálogo não entra | Botão "Adicionar medicamento" em todas as abas; sem migration | Feito: PR #274, sem migration; testado pelo RT na homologação em 27/10; falta o merge |
-| 6 | P2 | 3 — Quem cadastra o que está em falta? | O médico pela prescrição; o farmacêutico pela Disponibilidade e pelo Painel, só com saldo em falta ou crítico; a aba Faltas não registra | Botão "Registrar falta" na aba Faltas; sem migration | Feito: "Registrar falta" na aba Faltas, só para a farmácia (decisão do RT), sem migration; testado pelo RT na homologação em 27/10; falta o merge |
+| 2 | P1 | 4 — Unidade de consumo não adiciona item novo com apresentação e forma | Não há cadastro de medicamento na tela nem RPC; não há coluna de forma farmacêutica | `cadastrar_medicamento`, `editar_medicamento` e `inativar_medicamento` (farmacêutico ou gestor, com histórico); coluna `forma_farmaceutica`; "Novo medicamento" na tela, com os parecidos antes de gravar | Feito: PR #268, migration `20270106000001` (decisões: item novo só na unidade; forma em campo próprio); testado pelo RT na homologação em 27/10; migration em produção em 27/10 (ok do RT); em produção (merge em 27/10) |
+| 3 | P1 | 2 — Diluição não adiciona medicação nem diluição | "Nova diluição" só no topo da aba Rascunhos e só para medicamento do catálogo. **Achado:** a diluição nova nasce como modelo da rede, e qualquer farmacêutico a publica para todas as unidades | Botão visível em todas as abas; diluição nova da unidade por padrão; modelo da rede só para quem o RT decidir; vias IN e VO | Feito: PR #269 (master), migration `20270109000001` (decisão: modelo da rede só do super admin; Nova diluição em um passo, com diluente, volume e tempo); em produção (migration aplicada em 27/10, ok do RT); reteste do formulário ok em 27/10 |
+| 4 | P1 | 5 — Dispensação avulsa: controle do que sai e do que entra | A saída avulsa baixa o estoque com destino, motivo e auditoria; a devolução volta. A entrada não existe: o saldo é sobrescrito sem motivo, sem histórico e sem auditoria | Tabela `movimentos_estoque` (só inserção); entrada com documento; ajuste de inventário com motivo; extrato por item; filtro por período no Registro | Feito: PR #272, migration `20270110000001` (decisão: lote e validade depois); testado pelo RT na homologação em 27/10; migration em produção em 27/10 (ok do RT); em produção (merge em 27/10) |
+| 5 | P2 | 1 — Alta vigilância não adiciona medicação | Adiciona pela busca "Buscar no cadastro", só na aba "Exige liberação"; medicamento fora do catálogo não entra | Botão "Adicionar medicamento" em todas as abas; sem migration | Feito: PR #274, sem migration; testado pelo RT na homologação em 27/10; em produção (merge em 27/10) |
+| 6 | P2 | 3 — Quem cadastra o que está em falta? | O médico pela prescrição; o farmacêutico pela Disponibilidade e pelo Painel, só com saldo em falta ou crítico; a aba Faltas não registra | Botão "Registrar falta" na aba Faltas; sem migration | Feito: "Registrar falta" na aba Faltas, só para a farmácia (decisão do RT), sem migration; testado pelo RT na homologação em 27/10; em produção (merge em 27/10) |
+
+**Concluída em 27/10/2026:** os seis pontos estão em produção (frontend no master e as migrations `20270105000001`, `20270106000001`, `20270109000001` e `20270110000001` aplicadas com o ok do RT). O reteste do RT do formulário de um passo da Nova diluição (ponto 2) também ficou ok em 27/10. Nada pendente.
 
 Respostas do RT em 27/10/2026, item a item: ponto 6, só o farmacêutico sai (enfermagem e telemedicina
 seguem); ponto 4, o item novo vale só na unidade de quem cadastrou e a forma farmacêutica é campo

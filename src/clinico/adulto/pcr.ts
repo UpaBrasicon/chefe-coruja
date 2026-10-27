@@ -132,19 +132,30 @@ export const ERC_RCUK_2025_ALS: Fonte = {
   url: 'https://www.resus.org.uk/library/2025-resuscitation-guidelines/adult-advanced-life-support-guidelines',
 }
 
+// AHA 2025, Part 9, lida no texto integral em cpr.heart.org em 27/10/2026 (pendência do
+// lote 3): seção 19 e o quadro "Doses/Details" da Figura 8.
+export const AHA_ALS_2025_BRADI: Fonte = {
+  citacao: 'Wigginton JG, et al. Part 9: advanced life support: 2025 American Heart Association Guidelines for Cardiopulmonary Resuscitation and Emergency Cardiovascular Care. Circulation. 2025;152(suppl 2):S538–S577. Seção 19 (Initial Management of Bradycardia), recomendação 2: atropina é razoável na bradicardia aguda com comprometimento hemodinâmico (classe 2a, B-NR); doses no quadro "Doses/Details" da Figura 8 (Adult Bradycardia With a Pulse Algorithm), lidas no texto integral em cpr.heart.org.',
+  url: 'https://doi.org/10.1161/CIR.0000000000001376',
+}
+
 const PAG_BRADI = 'cap. 15 Bradiarritmias, p. 229; preparo da adrenalina: Anexo 1, p. 1487–1488'
 
 export const fichaBradicardiaAdulto: Ficha = {
   ...fichaAdulto('adulto-bradicardia', 'Bradicardia sintomática — adulto', PAG_BRADI),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_BRADI), ERC_RCUK_2025_ALS],
-  revisadoEm: '28/09/2026 (ERC/RCUK 2025 lida no texto aberto; manual mantido como base)',
+  versao: '2026-10-27.1',
+  fontes: [pagina(PAG_BRADI), ERC_RCUK_2025_ALS, AHA_ALS_2025_BRADI],
+  revisadoEm: '27/10/2026 (AHA 2025 lida no texto integral: seção 19 e Figura 8; ERC/RCUK 2025 no texto aberto; manual mantido como base)',
 }
 
-/** ERC/RCUK 2025: atropina 500 µg IV, repetir a cada 3–5 min até 3 mg; segunda linha e marca-passo. */
+/**
+ * ERC/RCUK 2025: atropina 500 µg IV, repetir a cada 3–5 min até 3 mg; segunda linha e marca-passo.
+ * AHA 2025 (Figura 8): 1ª dose de 1 mg em bolo, repetir a cada 3–5 min, total máximo de 3 mg (2a, B-NR).
+ */
 export const BRADI_2025 = {
   atropina: { ug: 500, intervaloMin: [3, 5] as Faixa, maximoMg: 3 },
-  ahaNaoConfirmada: 'A AHA (2020, mantida em 2025) usa atropina 1 mg a cada 3–5 min até 3 mg segundo fontes secundárias; o texto integral não pôde ser aberto — não confirmado.',
+  aha: { mg: 1, intervaloMin: [3, 5] as Faixa, maximoMg: 3, classe: '2a, B-NR', onde: 'seção 19, recomendação 2; Figura 8' },
+  resumo: 'ERC/RCUK 2025 e AHA 2025, lidas no texto: as duas repetem a atropina a cada 3–5 min até 3 mg; a dose de cada bolo difere (ERC 0,5 mg; AHA 1 mg).',
   segundaLinha: [
     { droga: 'Isoprenalina', dose: '5 µg/min como dose inicial' },
     { droga: 'Adrenalina', dose: '2–10 µg/min (confirma a unidade µg/min que o manual imprime errada)' },
@@ -155,7 +166,8 @@ export const BRADI_2025 = {
 }
 
 export const DIFERENCAS_BRADI_2025: string[] = [
-  'Atropina: o manual (p. 229) e a ERC/RCUK 2025 usam 0,5 mg (500 µg) até 3 mg; o intervalo passa de "a cada 3 min" para 3–5 min. A dose de 1 mg da AHA não foi confirmada no texto.',
+  'Atropina: o manual (p. 229) e a ERC/RCUK 2025 usam 0,5 mg (500 µg) até 3 mg; o intervalo passa de "a cada 3 min" para 3–5 min. A AHA 2025 (Figura 8) usa 1 mg em bolo, a cada 3–5 min, até 3 mg (2a, B-NR): no máximo 3 doses, em vez de 6.',
+  'A AHA 2025 (Figura 8) traz dopamina 5–20 µg/kg/min e adrenalina 2–10 µg/min, os mesmos valores do manual com a errata da adrenalina.',
   'Adrenalina 2–10 µg/min e dopamina 5–20 µg/kg/min: a ERC 2025 confirma a adrenalina em µg/min (a errata da ferramenta está certa); a dopamina não aparece no trecho da ERC lido.',
   'A ERC 2025 acrescenta isoprenalina 5 µg/min e aminofilina 100–200 mg (transplante cardíaco ou lesão medular); o manual traz aminofilina 250 mg no BAV pós-IAM.',
 ]

@@ -26,7 +26,7 @@ import {
 } from 'lucide-react'
 import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
-import { FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
+import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
 
 import type { Papel } from '@/types/database'
 
@@ -94,6 +94,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true, grupo: 'Faturamento' },
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true, grupo: 'Faturamento' },
     { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true, grupo: 'Faturamento' },
+    // Fase 5C, tarefa 3: envio ao ERP (contas e plantões do mês)
+    { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true, grupo: 'Faturamento' },
     // ── Unidade
     { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true, grupo: 'Unidade' },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true, grupo: 'Unidade' },
@@ -149,6 +151,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/faturamento', rotulo: 'BPA', icone: Receipt, exato: true },
     { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true },
     { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true },
+    { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true },
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
   ],
   farmaceutico: [

@@ -122,6 +122,9 @@ export const EVENTO: Record<string, string> = {
   lancamento: 'Procedimento lançado', retirada: 'Procedimento retirado',
   medicamento_fora: 'Medicamento fora da conta', medicamento_volta: 'Medicamento voltou à conta',
   liberada: 'Fechamento liberado pelo gestor',
+  // Fase 5C, tarefa 3: versões da conta para o ERP e o retorno dele
+  erp_disponivel: 'Versão para o ERP', erp_substituida: 'Versão do ERP substituída',
+  erp_conciliada: 'ERP: lançamento conciliado', erp_divergente: 'ERP: lançamento divergente', erp_estornada: 'ERP: versão estornada',
 }
 
 export type AcaoConta = { para: EtapaConta; rotulo: string; pedeMotivo: boolean; bloqueio?: string }

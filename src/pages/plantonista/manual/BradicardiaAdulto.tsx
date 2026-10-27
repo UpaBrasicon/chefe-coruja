@@ -48,8 +48,9 @@ export function BradicardiaAdulto() {
         />
         {OUTRAS_BRADI.map((d) => <LinhaManual key={d.id} nome={d.nome} texto={`${d.dose} — ${d.quando}`} pagina={d.pagina} />)}
       </Bloco>
-      <Bloco titulo="ERC/RCUK 2025 — bradicardia, ao lado do manual" descricao={BRADI_2025.ahaNaoConfirmada}>
+      <Bloco titulo="ERC/RCUK 2025 e AHA 2025 — bradicardia, ao lado do manual" descricao={BRADI_2025.resumo}>
         <LinhaManual nome="Atropina (ERC/RCUK 2025)" texto={`${BRADI_2025.atropina.ug} µg IV, repetir a cada ${BRADI_2025.atropina.intervaloMin[0]}–${BRADI_2025.atropina.intervaloMin[1]} min até ${BRADI_2025.atropina.maximoMg} mg`} pagina="RCUK 2025 ALS" conta={<strong>até 6 doses de 0,5 mg</strong>} />
+        <LinhaManual nome="Atropina (AHA 2025)" texto={`${BRADI_2025.aha.mg} mg IV em bolo, repetir a cada ${BRADI_2025.aha.intervaloMin[0]}–${BRADI_2025.aha.intervaloMin[1]} min até ${BRADI_2025.aha.maximoMg} mg (classe ${BRADI_2025.aha.classe})`} pagina={`AHA 2025, ${BRADI_2025.aha.onde}`} conta={<strong>até {BRADI_2025.aha.maximoMg / BRADI_2025.aha.mg} doses de {BRADI_2025.aha.mg} mg</strong>} />
         {BRADI_2025.segundaLinha.map((d) => <LinhaManual key={d.droga} nome={d.droga} texto={d.dose} pagina="RCUK 2025 ALS" />)}
         <LinhaManual nome="Marca-passo" texto={BRADI_2025.marcaPasso} pagina="RCUK 2025 ALS" />
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_BRADI_2025.map((d) => <li key={d}>{d}</li>)}</ul>

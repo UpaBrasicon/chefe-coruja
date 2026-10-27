@@ -62,8 +62,10 @@ Contrato completo em `docs/api/openapi.yaml`, seção "Financeiro (ERP)".
 - Retorno de pagamento do SUS (valor pago, glosa do SIA/SIH): pendência da 5B-6. As glosas vão
   como estão registradas à mão.
 - Convênio e TISS: adiados (5B-7). Hoje só há conta SUS.
-- Tela do faturamento e do gestor (versões, conciliação, baixar CSV/JSON, fechar o mês): etapa 3.4.
-  Até lá, o gestor fecha o mês pela função `fechar_plantoes_erp`.
+- A tela não muda a conta nem lança nada no ERP. A tela "Envio ao ERP" (etapa 3.4,
+  `/faturamento/erp`) só mostra as versões e o retorno, baixa o arquivo e, para o gestor, fecha e
+  reabre o mês dos plantões (migration `20270120000004_erp_telas.sql`; cada baixa vai para a
+  auditoria).
 
 ## Chaves envolvidas (só nomes; valores ficam nos painéis)
 

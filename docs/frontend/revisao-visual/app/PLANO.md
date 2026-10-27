@@ -1235,6 +1235,59 @@ chegou antes):
 - Ainda falta a tela onde a unidade define os alvos novos (classificação, exame, medicação, permanência).
   Até lá, só o alvo da cor e a hora de reavaliação marcam atraso.
 
+## Fase 5C-3.4 — telas do ERP (27/10/2026)
+
+Pedido do RT: "criar o ERP usando o Refero". A tela nova "Envio ao ERP" tem duas abas:
+- **Contas:** faturamento e gestor. Mostra as versões das contas faturadas, o retorno do ERP
+  (conciliada, divergente, estornar no ERP) e os botões de baixar CSV/JSON.
+- **Plantões do mês:** só o gestor. Mostra a prévia do mês por profissional, com fechar e reabrir.
+
+Os dados, as regras e a API já estão em produção (3.1 a 3.3).
+
+**Referências do Refero** (busca de telas, web):
+
+| Referência | Tela (id) | O que vem dela |
+|---|---|---|
+| Kitchen.co, faturas | `fd08777a-90b7-4703-861e-0d9e2c5281bb` | abas de situação com filtro |
+| Mercury, transações | `8fd6e234-8f2c-4e42-89c2-0848e71feb20` | tabela com gaveta de detalhe à direita |
+| ShareWillow, revisão da distribuição | `d9f2ae0e-6322-4866-96ca-a8f8a48a8694` | faixa "revise e confirme" e coluna de resumo ao lado da tabela do mês |
+| Aboard, relatório mensal de horas | `dd8cd46c-9f42-487f-9027-5f8985afda33` | tabela por pessoa no mês |
+| Stripe, histórico de segurança | `4e3c7127-e1de-4c73-afde-17cda3defb5a` | linhas que abrem no lugar, com filtro e exportar |
+
+**Opções** (`erp-A|B|C-contas|plantoes-claro|escuro.png` e `erp-A-gaveta-*.png`; dados fictícios):
+
+- **A · lista com filtro e gaveta** (Kitchen.co e Mercury).
+  - **Contas:** chips de situação no ERP com contagem, tabela das versões e a gaveta da conta à
+    direita (aviso de divergência, versões, itens, medicamentos).
+  - **Plantões:** o mês com setas, a situação, o botão "Fechar setembro" e a tabela por
+    profissional, com total.
+- **B · primeiro o que pede ação** (ShareWillow).
+  - **Contas:** em cima, um aviso por problema ("1 conta divergente", "1 versão substituída para
+    estornar no ERP", cada um com "Ver"); embaixo, só as versões vigentes e uma coluna de resumo
+    (enviado, conciliado, aguardando, divergência).
+  - **Plantões:** a faixa "Setembro acabou: revise e feche", com o que falta conferir e o botão;
+    tabela por profissional e resumo ao lado.
+- **C · registro por versão** (Stripe).
+  - **Contas:** uma linha por versão, que abre no lugar com o retorno do ERP, os itens, os
+    medicamentos e as glosas.
+  - **Plantões:** uma linha por mês (em andamento, pronto para fechar, conciliado), que abre com
+    o aviso, a tabela por profissional e o botão de fechar.
+
+**Escolha do RT (27/10/2026): A, lista com filtro e gaveta.** Aplicada na branch `fase5/erp-telas`:
+
+- **`EnvioErp.tsx`** (`/faturamento/erp`, menu "Envio ao ERP"), com duas abas:
+  - **Contas:** filtros pela situação no ERP com a contagem. "Estornar no ERP" é a versão substituída
+    que o ERP já tinha lançado. A tabela das versões abre a gaveta da conta, com o aviso da situação,
+    as versões, os itens (o que fica fora do arquivo aparece apagado), os medicamentos e as glosas.
+  - **Plantões do mês:** só o gestor. Tem o mês com setas, a situação (aberto, em andamento ou a
+    conciliação da versão vigente), CSV e JSON, fechar com confirmação e reabrir com motivo. A tabela
+    vai por profissional, com a coluna "Atenção" (falta justificada, sem presença, sem saída) e o
+    total; embaixo, o histórico das versões.
+- **`src/lib/erp.ts`:** a situação de cada versão, o resumo por profissional e o arquivo CSV/JSON, com
+  testes em `erp.test.ts`.
+- **Conferida na página de teste** com a tela real e dados fictícios, nos dois temas e em 390 px, sem
+  rolagem lateral (`erp-A-aplicada-*.png`). Mostra a gaveta, a confirmação de fechar e o mês fechado.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base

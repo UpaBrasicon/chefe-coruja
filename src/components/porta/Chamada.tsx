@@ -27,6 +27,7 @@ export function BotaoChamar({
   etapa,
   chamadas,
   semContagem = false,
+  salaFixa,
 }: {
   episodioId: string
   setorId: string
@@ -34,6 +35,11 @@ export function BotaoChamar({
   chamadas: number
   /** Onde a contagem já aparece ao lado (coluna Situação da fila do PS): só "Chamar de novo". */
   semContagem?: boolean
+  /**
+   * Consultório do plantão, escolhido na barra do topo da fila do PS: some o seletor
+   * da linha. `null` = ainda não escolhido (o botão espera a escolha).
+   */
+  salaFixa?: string | null
 }) {
   const queryClient = useQueryClient()
   const { data: salas } = useSalas(setorId)
@@ -45,7 +51,8 @@ export function BotaoChamar({
       return ''
     }
   })
-  const sala = doTipo.find((s) => s.id === salaId) ?? doTipo[0]
+  const fixa = salaFixa !== undefined
+  const sala = fixa ? doTipo.find((s) => s.id === salaFixa) : doTipo.find((s) => s.id === salaId) ?? doTipo[0]
 
   const chamar = useMutation({
     mutationFn: async () => {
@@ -59,7 +66,7 @@ export function BotaoChamar({
 
   return (
     <div className="flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
-      <CampoSelecao
+      {!fixa && <CampoSelecao
         aria-label="Sala"
         tamanho="compacto"
         className="bg-superficie text-rotulo"
@@ -74,8 +81,9 @@ export function BotaoChamar({
         }}
       >
         {doTipo.map((s) => <option key={s.id} value={s.id}>{s.nome}</option>)}
-      </CampoSelecao>
-      <Button size="sm" variant="outline" disabled={chamar.isPending || !sala} onClick={() => chamar.mutate()}>
+      </CampoSelecao>}
+      <Button size="sm" variant="outline" disabled={chamar.isPending || !sala} onClick={() => chamar.mutate()}
+        title={fixa && !sala ? 'Escolha seu consultório no topo da fila' : undefined}>
         <Megaphone /> {chamadas === 0 ? 'Chamar' : semContagem ? 'Chamar de novo' : `Chamar de novo · ${chamadas} ${chamadas === 1 ? 'chamada' : 'chamadas'}`}
       </Button>
       <MensagemErro formato="linha" erro={chamar.error} acao="chamar o paciente" className="mt-0" />
