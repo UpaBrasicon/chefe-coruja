@@ -1257,6 +1257,18 @@ Symphony) fica depois, como item próprio, porque pede consulta nova no banco. R
   Escala e pelo calendário. As chamadas ao servidor são as mesmas. Sem migration; typecheck, lint, catraca,
   build e os 1089 testes clínicos verdes; homologação conferida pelo RT; produção conferida pelo pacote
   publicado. Próxima tela: **menu lateral do gestor**.
+- **Menu lateral do gestor em produção desde 27/10/2026 (PR #257; opções e escolha nos PRs #256 e #258).**
+  Hoje o gestor tinha 30 itens numa lateral recolhida de ícones: numa tela de 900 px os ícones de Unidade
+  nem apareciam, e a lateral recolhida não rola. Referências do Refero: central de administração do
+  Zendesk, Lemni e Linear. O RT escolheu a **B, o trilho das áreas e a coluna da área**: um trilho fixo
+  com o ícone e o nome de cada área (Painel, Porta, Leitos, Farmácia, Exames, Faturamento, Unidade), a área
+  atual marcada e um ponto âmbar quando há pendência; ao lado, a coluna com as telas da área atual e o
+  aviso "Da unidade". Painel e Exames, com uma tela só, não abrem a coluna. Nada depende mais do mouse.
+  Grupos, ordem e nomes do padrão não mudaram; os outros papéis seguem com a lateral recolhida e a barra
+  do celular é a mesma. Sem migration; typecheck, lint, catraca, build e os 1089 testes clínicos verdes;
+  publicado na homologação antes do merge (o RT mesclou sem registrar a conferência na homologação);
+  produção conferida pelo pacote publicado. **3.9 concluída.** Próximo: a **grade de ações do gestor**
+  (P1, modelo Symphony), como item próprio, começando pelo diagnóstico da consulta no banco.
 
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
