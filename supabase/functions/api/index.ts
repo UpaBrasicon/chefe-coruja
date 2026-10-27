@@ -20,6 +20,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { chaveSecreta } from '../_shared/chaves.ts'
 import { relatarErro } from '../_shared/sentry.ts'
 import { caminhoDaApi, chaveDoCabecalho, interpretar, ipDeOrigem, problema, type CodigoErro } from './contrato.ts'
+import { lerRetorno, rotaFinanceiro } from './financeiro.ts'
 import { bundlePedidos, caminhoLaudoLab, capacidade, conteudoCanonico, lerDiagnosticReport, lerImagingStudy, lerSpecimen, operationOutcome, paramsPedidos, rotaFhir } from './fhir.ts'
 
 type Limite = { limite: number; restante: number; reinicio: number }
@@ -48,6 +49,8 @@ Deno.serve(async (req) => {
   const url = new URL(req.url)
   // Fase 5C, etapa 1.3: porta FHIR R4 do laboratório (GET e POST)
   if (caminhoDaApi(url.pathname).startsWith('/fhir')) return portaFhir(req, url, requisicao)
+  // Fase 5C, etapa 3.3: porta do ERP (contas e plantões; GET e POST do retorno)
+  if (caminhoDaApi(url.pathname).startsWith('/financeiro/')) return portaFinanceiro(req, url, requisicao)
   if (req.method !== 'GET') return erro(405, 'requisicao_invalida', 'A API só aceita GET.', requisicao)
 
   const pedido = interpretar(caminhoDaApi(url.pathname), url.searchParams)
@@ -71,6 +74,42 @@ Deno.serve(async (req) => {
     return erro(500, 'erro_interno', undefined, requisicao)
   }
 })
+
+// ── porta do ERP (Fase 5C, tarefa 3, etapa 3.3) ─────────────────────────────
+// O ERP busca as versões das contas faturadas e dos plantões fechados e
+// responde por versão (lançada ou estornada). As regras ficam em
+// public.api_v1_financeiro; aqui só rota, corpo e resposta (financeiro.ts).
+
+async function portaFinanceiro(req: Request, url: URL, requisicao: string): Promise<Response> {
+  const rota = rotaFinanceiro(caminhoDaApi(url.pathname), req.method, url.searchParams)
+  if ('erro' in rota) return erro(rota.erro.status, rota.erro.codigo, rota.erro.detalhe, requisicao)
+  const chave = chaveDoCabecalho(req.headers.get('Authorization'))
+  if (!chave) return erro(401, 'chave_invalida', 'Mande a chave no cabeçalho Authorization: Bearer <chave>.', requisicao)
+  const ip = ipDeOrigem((n) => req.headers.get(n), Deno.env.get('API_BORDA_SEGREDO') || undefined)
+
+  let dados: Record<string, unknown> = rota.dados
+  if (rota.metodo === 'POST') {
+    if (Number(req.headers.get('content-length') ?? '0') > 64 * 1024) return erro(413, 'requisicao_invalida', 'Corpo passa de 64 KB.', requisicao)
+    let corpo: unknown
+    try { corpo = await req.json() } catch { return erro(400, 'requisicao_invalida', 'Corpo não é JSON.', requisicao) }
+    const r = lerRetorno(corpo)
+    if ('erro' in r) return erro(r.erro.status, r.erro.codigo, r.erro.detalhe, requisicao)
+    dados = { ...dados, ...r }
+  }
+  try {
+    const banco = createClient(Deno.env.get('SUPABASE_URL')!, chaveSecreta(), { auth: { persistSession: false } })
+    const { data, error } = await banco.rpc('api_v1_financeiro', {
+      p_chave: chave, p_ip: ip, p_requisicao: requisicao, p_acao: rota.acao, p_dados: dados,
+    })
+    if (error) throw new Error(error.message)
+    const r = data as RespostaBanco
+    if (r.status === 200) return responder(200, r.corpo, requisicao, r.limite)
+    return erro(r.status, r.codigo ?? 'erro_interno', r.detalhe, requisicao, r.limite)
+  } catch (e) {
+    relatarErro('api', `financeiro_${rota.acao}`, e)
+    return erro(500, 'erro_interno', undefined, requisicao)
+  }
+}
 
 // ── porta FHIR R4 do laboratório e da imagem (Fase 5C, etapas 1.3 e 2.2) ─────
 // O LIS e o RIS buscam os pedidos (GET /fhir/ServiceRequest; o recurso da
