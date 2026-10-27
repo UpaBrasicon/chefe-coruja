@@ -1100,7 +1100,7 @@ hora, com ordenação pelo título da coluna. Registro e imagens em `docs/fronte
 
 | Prioridade | Item | Onde entra | O que é |
 |---|---|---|---|
-| P1 | Grade de ações no gestor | Junto da **3.9** (escala e menu do gestor) | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
+| P1 | Grade de ações no gestor | **Depois da 3.9, como item próprio** (decisão do RT em 27/10/2026: pede consulta nova no banco) | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
 | P2 | Fila do PS com dados novos na tabela | A decidir pelo RT | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
 
 **3.8 antecipada (Central do Plantonista, calculadoras, escores e condutas) em produção desde
@@ -1225,6 +1225,22 @@ Dispensação → Faltas → Diluição padrão e Rascunhos → Painel → Alta 
   os pares que o usam. As chamadas ao servidor são as mesmas. Sem migration; typecheck, lint, catraca, build e
   os 1089 testes clínicos verdes; homologação conferida pelo RT; produção conferida pelo pacote publicado.
   **3.7b concluída.** Próxima: **3.9, escala e menu do gestor**.
+
+**3.9 — escala e menu do gestor (27/10/2026).** Ordem combinada com o RT: uma tela por vez, Painel do
+Gestor → Escala (Mensal, Fixa, Presenças, Histórico) → menu lateral do gestor. A grade de ações (P1, modelo
+Symphony) fica depois, como item próprio, porque pede consulta nova no banco. Registro e imagens em
+`docs/frontend/revisao-visual/app/PLANO.md`.
+
+- **Painel do Gestor em produção desde 27/10/2026 (PR #250; opções e escolha no PR #251).** Referências do
+  Refero: início do Shopify, analista do GlossGenius, seções com contagem do Aboard e a peça "primeiro o que
+  pede ação" da 3.1. O RT escolheu a **B, abas por painel**: o panorama deixou de ser carrossel e os painéis
+  viraram abas com a contagem do que pede ação; cada aba usa a peça da 3.1 (`ResumoParametros`), com o
+  caminho de cada medida que pede ação (Farmácia, Internação, Observação, Porta, Indicadores, Escala, ou a
+  auditoria na mesma página); a pergunta sobre a gestão virou uma linha no topo; a auditoria de check-in
+  virou tabela com a situação em ponto e texto e as divergências primeiro; Indicadores deixou de falar em
+  carrossel (a grade "Agora" de Indicadores segue com a régua). As chamadas ao servidor são as mesmas. Sem migration;
+  typecheck, lint, catraca, build e os 1089 testes clínicos verdes; homologação conferida pelo RT; produção
+  conferida pelo pacote publicado. Próxima tela: **Escala**.
 
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
