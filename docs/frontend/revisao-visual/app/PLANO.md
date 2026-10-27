@@ -1180,6 +1180,43 @@ grupo pequenos que recolhem); Lemni (`027f73ab`: a primeira coluna com as áreas
   Farmácia troca a coluna para as telas da Farmácia; clicar em Painel fecha a coluna. A barra de baixo
   do celular não mudou.
 
+## Grade de ações do gestor (P1, 27/10/2026)
+
+Item próprio depois da 3.9 (pedido do RT em 21/10/2026). Diagnóstico em `docs/gestor/GRADE-ACOES-DIAGNOSTICO.md`;
+decisões D1–D5 aceitas pelo RT em 27/10/2026; banco (`porta_grade`) na homologação. Esta parte é só o desenho.
+
+**Hoje** (`grade-hoje-claro|escuro.png`, a tela Porta real com dados fictícios): a Porta mostra o gargalo, seis
+cartões por etapa, os que aguardam o médico por cor e a lista "Pacientes agora" com etapa, cor, setor, leito e
+espera. Para saber se um paciente já foi chamado, tem exame sem resultado, medicação sem checagem ou
+reavaliação vencida, o gestor não tem onde olhar: a lista só diz "medicação sem checagem" ao lado do nome.
+
+**Pedido do RT** (D1): aba "Grade de ações" ao lado da Porta de hoje, que fica como está. Uma linha por
+paciente da triagem e do atendimento (D2), uma coluna por etapa com a hora; preto feito, verde pedido,
+vermelho atrasado; "No PS" vermelho acima do alvo da cor antes do médico e acima do alvo de permanência da
+unidade depois (D3). Atraso só onde a unidade definiu alvo (D4). Chamada repetida com a hora da última e
+"2ª", "3ª" (D5). No tema escuro, o "preto" é a cor do texto (claro).
+
+**Referências do Refero:** métricas do Stellate (`20fd86b0`: tabela densa com a situação de cada linha na
+célula); página de situação do Zendesk (`7957c520`: uma faixa por linha, a cor de cada pedaço diz a
+situação); Linear (`58ac6637`: lista agrupada pela situação, com a contagem no cabeçalho do grupo); e a
+maquete 4 da 3.3 (`ps-modelo-4-*.jpg`, modelo do Symphony), já vista pelo RT.
+
+**Opções** (`grade-A|B|C-claro|escuro.png`, nove pacientes fictícios, alvos de classificação 15 min, exame
+60 min e permanência 4 h; medicação sem alvo). Em todas: a aba "Grade de ações" na Porta, a legenda das
+cores em cima, a cor de risco na pílula de sempre, a hora em cada célula e "falta" onde a etapa não foi feita;
+cada estado tem texto, não só cor; a ordem é a da RPC (quem tem atraso primeiro, depois a cor, depois quem
+chegou antes):
+
+- **A · tabela** (Stellate, maquete 4): a tabela da 3.3 com uma coluna por etapa e o texto colorido pela
+  situação. Filtro "Todos" e "Com atraso". É a mais compacta e a mais próxima do Symphony.
+- **B · tabela com faixa** (Zendesk Status): a A com uma barra fina em cima de cada célula, na cor da
+  situação (cinza feito, verde pedido, vermelho atrasado, apagada sem etapa). De longe, a linha vira uma
+  faixa e o vermelho salta; a hora continua embaixo. Linhas um pouco mais altas.
+- **C · agrupada por onde está parado** (Linear): a mesma tabela dividida em grupos: "Aguardando
+  classificação", "Aguardando chamada", "Chamado, aguardando o médico", "Em atendimento, com pendência" e
+  "Em atendimento, sem pendência", cada um com quantos são e quantos têm atraso. Responde "onde a fila está
+  parada" antes de "quem está atrasado". Sem filtro: os grupos fazem esse papel.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
