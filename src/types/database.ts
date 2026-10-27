@@ -10331,6 +10331,15 @@ export type Database = {
       }
       cadastros_do_paciente: { Args: { p_paciente: string }; Returns: string[] }
       conta_detalhe: { Args: { p_conta: string }; Returns: Json }
+      // Fase 5C, tarefa 3: envio ao ERP (tela; a porta da API é só da Edge Function)
+      erp_baixar: {
+        Args: { p_competencia?: string; p_conjunto: string; p_formato: string; p_unidade: string }
+        Returns: Json
+      }
+      erp_contas_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      fechar_plantoes_erp: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
+      plantoes_erp_previa: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
+      reabrir_plantoes_erp: { Args: { p_competencia: string; p_motivo: string; p_unidade: string }; Returns: Json }
       conferir_dispensacao: { Args: { p_dispensacao: string }; Returns: undefined }
       devolver_dispensacao: {
         Args: { p_dispensacao: string; p_motivo: string; p_quantidade: number }
