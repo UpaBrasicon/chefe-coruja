@@ -1686,7 +1686,7 @@ espera do RT:
   hemodinâmico (2a, B-NR); o mesmo quadro confere dopamina 5–20 µg/kg/min e adrenalina 2–10 µg/min. A
   ficha da bradicardia do adulto ganhou a AHA 2025 como terceira fonte, a linha "Atropina (AHA 2025)" ao
   lado da ERC/RCUK (0,5 mg) e do manual, e perdeu a nota "não confirmado"; versão 2026-10-27.1 na fila de
-  aprovação (migration `20270131000002_lacunas_atropina_aha2025`, na homologação).
+  aprovação (migration `20270131000002_lacunas_atropina_aha2025`). **Em produção desde 27/10/2026 (PR #286):** homologação conferida pelo RT; migration aplicada na produção com o "ok produção" do RT; tela conferida pelo pacote publicado (`BradicardiaAdulto-6D-7mxjt.js`). Falta só a aprovação da versão 2026-10-27.1 na tela de revisão clínica.
 - Fontes enviadas pelo RT em PDF quando o site da revista bloqueou: Kawasaki (AHA 2024), Practice
   Parameter de anafilaxia (2023) e AAP 2017 de hipertensão pediátrica.
 
