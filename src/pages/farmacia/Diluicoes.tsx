@@ -191,7 +191,8 @@ export default function Diluicoes({ unidade, selecionadaInicial = null }: { unid
           {aba === 'valendo' && selLinha && <FichaValendo key={selLinha.id} l={selLinha} unidade={unidade} aoErro={setErro} aoMudar={recarregar} abrirRascunho={abrirRascunho} />}
           {aba !== 'valendo' && selDil && <Editor key={`${selDil.id}:${selDil.status}`} d={selDil} aoErro={setErro}
             aoMudar={(novoId) => { recarregar(); if (novoId) setSelecionada(novoId) }} />}
-          {aba === 'rascunho' && (nova || !selDil) && <NovaDiluicao unidade={unidade} aoCriar={(id) => { recarregar(); setNova(false); setSelecionada(id) }} aoErro={setErro} />}
+          {aba === 'rascunho' && (nova || !selDil) && <NovaDiluicao unidade={unidade} aoCriar={(id) => { recarregar(); setNova(false); setSelecionada(id) }}
+            aoPublicar={() => { recarregar(); setNova(false); setAba('valendo'); setSelecionada(null) }} aoErro={setErro} />}
           {((aba === 'valendo' && !selLinha) || (aba === 'substituido' && !selDil)) && (
             <p className="px-5 py-4 text-apoio text-tinta-sussurro">Escolha uma linha na lista.</p>
           )}
@@ -264,17 +265,36 @@ function FichaValendo({ l, unidade, aoErro, aoMudar, abrirRascunho }: {
   )
 }
 
-function NovaDiluicao({ unidade, aoCriar, aoErro }: { unidade: string; aoCriar: (id: string) => void; aoErro: (m: string | null) => void }) {
+function NovaDiluicao({ unidade, aoCriar, aoPublicar, aoErro }: {
+  unidade: string; aoCriar: (id: string) => void; aoPublicar: () => void; aoErro: (m: string | null) => void
+}) {
   const [busca, setBusca] = React.useState('')
   const [med, setMed] = React.useState<{ id: string; principio_ativo: string; apresentacao: string | null } | null>(null)
   const [via, setVia] = React.useState('EV')
-  const [fonte, setFonte] = React.useState('')
+  const [f, setF] = React.useState<Record<string, string>>({})
+  const [ocupado, setOcupado] = React.useState(false)
   const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
   const r = useQuery({
     queryKey: ['med-farmacia', busca, unidadeBusca],
     enabled: busca.trim().length >= 3 && !med,
     queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').or(filtroDaUnidade(unidadeBusca)).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).limit(15)).data ?? [],
   })
+  // um passo só: cria o rascunho já com os campos; publicar cria e publica
+  async function criar(publicar: boolean) {
+    setOcupado(true)
+    const { data, error } = await supabase.rpc('salvar_diluicao', {
+      p_id: undefined as unknown as string, p_dados: { ...paraDados(f), medicamento_id: med!.id, via, unidade_id: unidade } as never,
+    })
+    if (error) { setOcupado(false); return aoErro(error.message) }
+    if (publicar) {
+      const pub = await supabase.rpc('publicar_diluicao_versao', { p_id: data as string })
+      setOcupado(false)
+      // não publicou (falta campo): fica o rascunho, aberto no editor, com o motivo
+      if (pub.error) { aoCriar(data as string); return aoErro(`Rascunho salvo, mas não publicou: ${pub.error.message}`) }
+      aoErro(null); return aoPublicar()
+    }
+    setOcupado(false); aoErro(null); aoCriar(data as string)
+  }
   return (
     <section aria-label="Nova diluição" className="flex flex-col gap-2 px-5 py-4 text-apoio">
       <div>
@@ -289,34 +309,72 @@ function NovaDiluicao({ unidade, aoCriar, aoErro }: { unidade: string; aoCriar: 
             ))}
           </>
         )}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex flex-col gap-1"><Label htmlFor="nd-via">Via</Label>
-            <CampoSelecao id="nd-via" tamanho="compacto" value={via} onChange={(e) => setVia(e.target.value)}>
-              {['EV', 'IM', 'SC', 'IN', 'VO'].map((v) => <option key={v}>{v}</option>)}
-            </CampoSelecao>
-          </div>
-          <div className="flex flex-col gap-1"><Label htmlFor="nd-fonte">Fonte</Label><Input id="nd-fonte" value={fonte} onChange={(e) => setFonte(e.target.value)} placeholder="manual, versão, página" /></div>
-        </div>
-        <Button size="sm" className="self-start" disabled={!med} onClick={async () => {
-          const { data, error } = await supabase.rpc('salvar_diluicao', { p_id: undefined as unknown as string, p_dados: { medicamento_id: med!.id, via, fonte, unidade_id: unidade } })
-          if (error) return aoErro(error.message)
-          aoErro(null); aoCriar(data as string)
-        }}>Criar rascunho</Button>
+        {med && (
+          <>
+            <div className="flex flex-col gap-1 sm:w-1/2"><Label htmlFor="nd-via">Via</Label>
+              <CampoSelecao id="nd-via" tamanho="compacto" value={via} onChange={(e) => setVia(e.target.value)}>
+                {['EV', 'IM', 'SC', 'IN', 'VO'].map((v) => <option key={v}>{v}</option>)}
+              </CampoSelecao>
+            </div>
+            <CamposDiluicao prefixo="nd" f={f} setF={setF} editavel />
+            <p className="text-rotulo text-tinta-sussurro">
+              Publicar exige fonte e CRF do revisor; na via EV, também volume mínimo e tempo de infusão. Cada valor vem da fonte informada.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" disabled={ocupado} onClick={() => void criar(false)}>Salvar rascunho</Button>
+              <Button size="sm" disabled={ocupado} onClick={() => void criar(true)}>Publicar aos prescritores</Button>
+            </div>
+          </>
+        )}
     </section>
   )
 }
 
+// a ordem do formulário: primeiro em que e quanto diluir, depois reconstituição, estabilidade e fonte
 const CAMPOS: [keyof Diluicao, string, 'texto' | 'numero' | 'lista' | 'bool'][] = [
+  ['diluicao_solucao', 'Diluir em (separe por vírgula: SF 0,9%, SG 5%)', 'lista'], ['diluicao_volume_min_ml', 'Volume mínimo de diluente (mL)', 'numero'],
+  ['tempo_infusao_min', 'Tempo de infusão (min)', 'numero'], ['concentracao_maxima', 'Concentração máxima', 'texto'],
+  ['velocidade_max', 'Velocidade máxima', 'texto'], ['bolus_permitido', 'Bolus permitido', 'bool'],
   ['reconstituicao_diluente', 'Reconstituir com', 'texto'], ['reconstituicao_volume_ml', 'Volume de reconstituição (mL)', 'numero'],
-  ['reconstituicao_concentracao', 'Concentração após reconstituir', 'texto'], ['diluicao_solucao', 'Diluir em (separe por vírgula)', 'lista'],
-  ['diluicao_volume_min_ml', 'Volume mínimo (mL)', 'numero'], ['concentracao_maxima', 'Concentração máxima', 'texto'],
-  ['tempo_infusao_min', 'Tempo de infusão (min)', 'numero'], ['velocidade_max', 'Velocidade máxima', 'texto'],
-  ['bolus_permitido', 'Bolus permitido', 'bool'], ['estabilidade_ta_h', 'Estabilidade em TA (h)', 'numero'],
-  ['estabilidade_refrig_h', 'Estabilidade refrigerado (h)', 'numero'], ['fotossensivel', 'Fotossensível', 'bool'],
-  ['acesso', 'Acesso (periférico/central)', 'texto'],
-  ['risco_flebite', 'Risco de flebite (conforme a fonte)', 'bool'], ['alta_vigilancia', 'Alta vigilância (conforme a fonte)', 'bool'], ['observacoes', 'Observações', 'texto'], ['fonte', 'Fonte', 'texto'],
-  ['revisor_crf', 'Revisor (CRF)', 'texto'],
+  ['reconstituicao_concentracao', 'Concentração após reconstituir', 'texto'], ['acesso', 'Acesso (periférico/central)', 'texto'],
+  ['estabilidade_ta_h', 'Estabilidade em TA (h)', 'numero'], ['estabilidade_refrig_h', 'Estabilidade refrigerado (h)', 'numero'],
+  ['fotossensivel', 'Fotossensível', 'bool'], ['risco_flebite', 'Risco de flebite (conforme a fonte)', 'bool'],
+  ['alta_vigilancia', 'Alta vigilância (conforme a fonte)', 'bool'], ['observacoes', 'Observações', 'texto'],
+  ['fonte', 'Fonte (manual, versão, página)', 'texto'], ['revisor_crf', 'Revisor (CRF)', 'texto'],
 ]
+
+/** Os campos do formulário para o banco (lista separada por vírgula, sim/não). */
+function paraDados(f: Record<string, string>): Record<string, unknown> {
+  const o: Record<string, unknown> = {}
+  for (const [k, , t] of CAMPOS) {
+    const v = f[k] ?? ''
+    o[k] = t === 'lista' ? v.split(',').map((x) => x.trim()).filter(Boolean) : t === 'bool' ? (v === 'sim' ? true : v === 'não' ? false : null) : v
+  }
+  return o
+}
+
+function CamposDiluicao({ prefixo, f, setF, editavel }: {
+  prefixo: string; f: Record<string, string>; setF: (f: Record<string, string>) => void; editavel: boolean
+}) {
+  return (
+    <div className="grid gap-2 sm:grid-cols-2">
+      {CAMPOS.map(([k, r, t]) => (
+        <div key={k} className="flex flex-col gap-1">
+          <Label htmlFor={`${prefixo}-${k}`}>{r}</Label>
+          {t === 'bool' ? (
+            <CampoSelecao id={`${prefixo}-${k}`} tamanho="compacto" disabled={!editavel} value={f[k] ?? ''}
+              onChange={(e) => setF({ ...f, [k]: e.target.value })}>
+              <option value="">—</option><option>sim</option><option>não</option>
+            </CampoSelecao>
+          ) : (
+            <Input id={`${prefixo}-${k}`} disabled={!editavel} value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}
+              inputMode={t === 'numero' ? 'decimal' : undefined} />
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
 
 function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string) => void; aoErro: (m: string | null) => void }) {
   // o modelo da rede (sem unidade) é do super admin: aqui só se lê
@@ -330,11 +388,7 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
   const [motivo, setMotivo] = React.useState(d.motivo_alteracao ?? '')
 
   const dados = () => {
-    const o: Record<string, unknown> = {}
-    for (const [k, , t] of CAMPOS) {
-      const v = f[k] ?? ''
-      o[k] = t === 'lista' ? v.split(',').map((x) => x.trim()).filter(Boolean) : t === 'bool' ? (v === 'sim' ? true : v === 'não' ? false : null) : v
-    }
+    const o = paraDados(f)
     if (d.origem_id) o.motivo_alteracao = motivo
     return o
   }
@@ -381,22 +435,7 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
         {d.unidade_id && <p className="text-acao">Da unidade: publicada, vale só nesta unidade (e, se houver modelo da rede, o substitui nela).</p>}
         {daRede && <p className="text-tinta-apoio">Modelo da rede: só o super admin muda. Para a sua unidade, use "Ajustar esta linha" em Valendo na unidade.</p>}
         {!d.medicamento_id && <p className="text-atencao">Esta diluição não está ligada ao cadastro de medicamentos: não pode ser publicada até ser ligada.</p>}
-        <div className="grid gap-2 sm:grid-cols-2">
-          {CAMPOS.map(([k, r, t]) => (
-            <div key={k} className="flex flex-col gap-1">
-              <Label htmlFor={`dil-${k}`}>{r}</Label>
-              {t === 'bool' ? (
-                <CampoSelecao id={`dil-${k}`} tamanho="compacto" disabled={!editavel} value={f[k] ?? ''}
-                  onChange={(e) => setF({ ...f, [k]: e.target.value })}>
-                  <option value="">—</option><option>sim</option><option>não</option>
-                </CampoSelecao>
-              ) : (
-                <Input id={`dil-${k}`} disabled={!editavel} value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}
-                  inputMode={t === 'numero' ? 'decimal' : undefined} />
-              )}
-            </div>
-          ))}
-        </div>
+        <CamposDiluicao prefixo="dil" f={f} setF={setF} editavel={editavel} />
         {editavel && d.origem_id && (
           <div className="flex flex-col gap-1">
             <Label htmlFor="dil-motivo">O que mudou em relação à versão anterior *</Label>
