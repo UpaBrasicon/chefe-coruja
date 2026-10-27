@@ -1100,7 +1100,7 @@ hora, com ordenação pelo título da coluna. Registro e imagens em `docs/fronte
 
 | Prioridade | Item | Onde entra | O que é |
 |---|---|---|---|
-| P1 | Grade de ações no gestor | Junto da **3.9** (escala e menu do gestor) | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
+| P1 | Grade de ações no gestor | **Depois da 3.9, como item próprio** (decisão do RT em 27/10/2026: pede consulta nova no banco) | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
 | P2 | Fila do PS com dados novos na tabela | A decidir pelo RT | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
 
 **3.8 antecipada (Central do Plantonista, calculadoras, escores e condutas) em produção desde
@@ -1225,6 +1225,38 @@ Dispensação → Faltas → Diluição padrão e Rascunhos → Painel → Alta 
   os pares que o usam. As chamadas ao servidor são as mesmas. Sem migration; typecheck, lint, catraca, build e
   os 1089 testes clínicos verdes; homologação conferida pelo RT; produção conferida pelo pacote publicado.
   **3.7b concluída.** Próxima: **3.9, escala e menu do gestor**.
+
+**3.9 — escala e menu do gestor (27/10/2026).** Ordem combinada com o RT: uma tela por vez, Painel do
+Gestor → Escala (Mensal, Fixa, Presenças, Histórico) → menu lateral do gestor. A grade de ações (P1, modelo
+Symphony) fica depois, como item próprio, porque pede consulta nova no banco. Registro e imagens em
+`docs/frontend/revisao-visual/app/PLANO.md`.
+
+- **Painel do Gestor em produção desde 27/10/2026 (PR #250; opções e escolha no PR #251).** Referências do
+  Refero: início do Shopify, analista do GlossGenius, seções com contagem do Aboard e a peça "primeiro o que
+  pede ação" da 3.1. O RT escolheu a **B, abas por painel**: o panorama deixou de ser carrossel e os painéis
+  viraram abas com a contagem do que pede ação; cada aba usa a peça da 3.1 (`ResumoParametros`), com o
+  caminho de cada medida que pede ação (Farmácia, Internação, Observação, Porta, Indicadores, Escala, ou a
+  auditoria na mesma página); a pergunta sobre a gestão virou uma linha no topo; a auditoria de check-in
+  virou tabela com a situação em ponto e texto e as divergências primeiro; Indicadores deixou de falar em
+  carrossel (a grade "Agora" de Indicadores segue com a régua). As chamadas ao servidor são as mesmas. Sem migration;
+  typecheck, lint, catraca, build e os 1089 testes clínicos verdes; homologação conferida pelo RT; produção
+  conferida pelo pacote publicado. Próxima tela: **Escala**.
+- **Escala do gestor em produção desde 27/10/2026 (PR #253; opções e escolha no PR #254).** Referências do
+  Refero: folgas do Aboard (o mês em grade com as pendências ao lado), Cron (calendário com o dia escolhido
+  na lateral) e recursos do Wrike (a semana em grade, base da opção C). O RT escolheu a
+  **A, o mês com o dia ao lado**: as abas passaram a ser Mensal, Pedidos, Carga horária, Fixa, Presenças e
+  Histórico. Na Mensal, o gestor vê o calendário do mês (cada dia "coberto", "N vagas" ou "sem plantão") com
+  "Publicar escala", e ao lado o dia escolhido, setor por setor e turno por turno, onde escala, remove, marca
+  e retira vaga; em cima, "N pedidos aguardando você" leva à aba Pedidos. Os pedidos (solicitações e
+  candidaturas) viraram uma lista só, com Aprovar e Recusar e os decididos embaixo, em vez de aparecer duas
+  vezes; a carga horária ganhou aba própria com a troca de mês e "Exportar escala (CSV)"; a Fixa ficou sem os
+  alertas e a carga em cima. O admin, que não tem o calendário do gestor, segue escalando na grade da semana.
+  Dois erros corrigidos na mesma tela: o cabeçalho da grade da semana mostrava sempre segunda a domingo, e
+  agora mostra o dia certo de cada data; o campo "rótulo" aparecia na Fixa, que o ignorava, e não aparecia no
+  mês, onde é gravado. As consultas de pedidos passaram para `src/hooks/usePedidosEscala.ts`, usadas pela
+  Escala e pelo calendário. As chamadas ao servidor são as mesmas. Sem migration; typecheck, lint, catraca,
+  build e os 1089 testes clínicos verdes; homologação conferida pelo RT; produção conferida pelo pacote
+  publicado. Próxima tela: **menu lateral do gestor**.
 
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 

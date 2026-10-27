@@ -1,20 +1,21 @@
 import { useQuery } from '@tanstack/react-query'
 import { ArrowUpRight, Building2, LogOut, Megaphone, Pause, Play } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, matchPath, useLocation } from 'react-router-dom'
 
 import { useBanners } from '@/hooks/useBanners'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
 import { Marca } from './Marca'
-import { agruparNavegacao, type ChaveNota, type ItemNav } from './navegacao'
+import { agruparNavegacao, ICONE_GRUPO, type ChaveNota, type ItemNav } from './navegacao'
 import { diaMes as fmtData } from '@/lib/formato'
 
 // A lateral da casca (P/index.html 895–973): recolhida em 68px de ícones,
 // abre por cima do conteúdo ao passar o mouse ou com foco (CSS .cc-recolhe
 // em index.css). Três blocos: a navegação com as notas, os avisos "Da
-// unidade" (ou "Da rede" do administrador) e o Sair no pé.
+// unidade" (ou "Da rede" do administrador) e o Sair no pé. O gestor, com os
+// itens em grupos, tem o trilho das áreas (LateralAreas, abaixo).
 
 function ItemLateral({ item, nota }: { item: ItemNav; nota?: number }) {
   const Icone = item.icone
@@ -168,16 +169,7 @@ function DaRede() {
   )
 }
 
-export function Lateral({
-  itens,
-  notas,
-  papelTexto,
-  inicio,
-  unidadeId,
-  ehGestor,
-  ehAdmin,
-  onSair,
-}: {
+type PropsLateral = {
   itens: ItemNav[]
   notas: Partial<Record<ChaveNota, number>>
   papelTexto: string
@@ -186,7 +178,79 @@ export function Lateral({
   ehGestor: boolean
   ehAdmin: boolean
   onSair: () => void
-}) {
+}
+
+const somaNotas = (itens: ItemNav[], notas: Partial<Record<ChaveNota, number>>) =>
+  itens.reduce((n, i) => n + (i.nota ? notas[i.nota] ?? 0 : 0), 0)
+
+/**
+ * Revisão visual 3.9 (27/10/2026, opção B do RT): com os itens agrupados (o
+ * gestor, 30 itens), a lateral recolhida escondia a área atual. Vira um trilho
+ * fixo com as áreas, sempre à vista, e uma coluna com as telas da área atual
+ * e o aviso "Da unidade". Área de uma tela só (Painel, Exames) não abre coluna.
+ */
+function LateralAreas({ itens, notas, papelTexto, inicio, unidadeId, ehGestor, onSair }: PropsLateral) {
+  const { pathname } = useLocation()
+  const ativo = (i: ItemNav) => !!matchPath({ path: i.to, end: !!i.exato }, pathname)
+  const areas = agruparNavegacao(itens)
+  const atual = areas.find((a) => a.itens.some(ativo))
+
+  return (
+    <div className="sticky top-0 z-40 hidden h-dvh shrink-0 md:flex">
+      <aside className="flex h-full w-[80px] flex-col items-center justify-between overflow-y-auto border-r border-fio bg-superficie py-[18px]">
+        <div className="flex flex-col items-center gap-1">
+          <Link to={inicio} title="Página principal" className="mb-4 text-tinta hover:text-acao">
+            <Marca papel={papelTexto} simbolo />
+          </Link>
+          <nav aria-label="Áreas" className="flex flex-col items-center gap-1">
+            {areas.map((a) => {
+              const rotulo = a.grupo ?? a.itens[0].rotulo
+              const Icone = (a.grupo && ICONE_GRUPO[a.grupo]) || a.itens[0].icone
+              const eh = a === atual
+              const nota = somaNotas(a.itens, notas)
+              return (
+                <Link
+                  key={rotulo}
+                  to={a.itens[0].to}
+                  title={rotulo}
+                  aria-current={eh ? 'location' : undefined}
+                  className={cn(
+                    'relative flex w-[76px] flex-col items-center gap-1 rounded-controle py-2 text-rotulo transition-colors',
+                    eh ? 'bg-acao/10 font-semibold text-acao hover:text-acao' : 'text-tinta-apoio hover:bg-trilha hover:text-tinta-apoio',
+                  )}
+                >
+                  <Icone className="size-[18px]" aria-hidden />
+                  <span className="w-full truncate text-center">{rotulo}</span>
+                  {!!nota && <span className="absolute top-1 right-2.5 size-2 rounded-capsula bg-atencao" aria-label={`${nota} pendente${nota > 1 ? 's' : ''}`} />}
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+        <button type="button" onClick={onSair} title="Sair" aria-label="Sair" className="grid size-9 shrink-0 place-items-center rounded-controle text-tinta-sussurro hover:text-acao">
+          <LogOut className="size-4" aria-hidden />
+        </button>
+      </aside>
+      {atual && atual.itens.length > 1 && (
+        <aside className="flex h-full w-[220px] flex-col justify-between overflow-y-auto border-r border-fio bg-superficie py-[18px]">
+          <div>
+            <span className="block px-[17px] pt-1.5 pb-[18px] text-secao font-semibold text-tinta">{atual.grupo}</span>
+            <nav aria-label={`Telas de ${atual.grupo}`} className="flex flex-col gap-[3px] px-2.5">
+              {atual.itens.map((item) => (
+                <ItemLateral key={item.to} item={item} nota={item.nota ? notas[item.nota] : undefined} />
+              ))}
+            </nav>
+          </div>
+          <DaUnidadeLateral unidadeId={unidadeId} ehGestor={ehGestor} />
+        </aside>
+      )}
+    </div>
+  )
+}
+
+export function Lateral(props: PropsLateral) {
+  const { itens, notas, papelTexto, inicio, unidadeId, ehGestor, ehAdmin, onSair } = props
+  if (itens.some((i) => i.grupo)) return <LateralAreas {...props} />
   return (
     <aside className="cc-side cc-recolhe sticky top-0 hidden h-dvh w-[var(--cc-lateral)] shrink-0 flex-col border-r border-fio bg-superficie md:flex">
       <div className="cc-side-miolo flex h-full flex-col justify-between py-[18px]">
@@ -195,15 +259,8 @@ export function Lateral({
             <Marca papel={papelTexto} />
           </Link>
           <nav aria-label="Navegação principal" className="flex flex-col gap-[3px] px-2.5">
-            {agruparNavegacao(itens).map((bloco, k) => (
-              <div key={bloco.grupo ?? `bloco-${k}`} role={bloco.grupo ? 'group' : undefined} aria-label={bloco.grupo ?? undefined}
-                className={cn('flex flex-col gap-[3px]', bloco.grupo && 'mt-1.5 border-t border-trilha pt-1.5')}>
-                {/* título do grupo; com a lateral recolhida some e fica só o fio */}
-                {bloco.grupo && <span aria-hidden className="cc-some rotulo px-2.5 pt-0.5 pb-0.5 text-tinta-sussurro">{bloco.grupo}</span>}
-                {bloco.itens.map((item) => (
-                  <ItemLateral key={item.to} item={item} nota={item.nota ? notas[item.nota] : undefined} />
-                ))}
-              </div>
+            {itens.map((item) => (
+              <ItemLateral key={item.to} item={item} nota={item.nota ? notas[item.nota] : undefined} />
             ))}
           </nav>
           {ehAdmin ? <DaRede /> : <DaUnidadeLateral unidadeId={unidadeId} ehGestor={ehGestor} />}
