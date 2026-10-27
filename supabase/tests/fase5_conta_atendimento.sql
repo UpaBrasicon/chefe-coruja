@@ -127,8 +127,14 @@ DO $$ BEGIN
   IF (SELECT status || '|' || pagador FROM public.contas WHERE id = pg_temp.u('a2')) <> 'aberta|sus' THEN
     RAISE EXCEPTION 'FALHOU: estado final da conta encerrada';
   END IF;
-  IF (SELECT count(*) FROM public.log_auditoria WHERE entidade_id = pg_temp.u('a2') AND acao LIKE 'conta_%') <> 6 THEN  -- 6 com a liberação do gestor (tarefa 5)
+  IF (SELECT count(*) FROM public.log_auditoria WHERE entidade_id = pg_temp.u('a2') AND acao LIKE 'conta_%' AND acao NOT LIKE 'conta\_erp\_%') <> 6 THEN  -- 6 com a liberação do gestor (tarefa 5)
     RAISE EXCEPTION 'FALHOU: auditoria das mudanças da conta';
+  END IF;
+  -- Fase 5C-3: faturar e reabrir gravam, cada um, um registro do ERP (versão disponível, versão substituída)
+  IF (SELECT string_agg(acao, ',' ORDER BY acao) FROM public.log_auditoria WHERE entidade_id = pg_temp.u('a2') AND acao LIKE 'conta\_erp\_%')
+     IS DISTINCT FROM 'conta_erp_disponivel,conta_erp_substituida' THEN
+    RAISE EXCEPTION 'FALHOU: auditoria do ERP na conta: %',
+      (SELECT string_agg(acao, ',' ORDER BY acao) FROM public.log_auditoria WHERE entidade_id = pg_temp.u('a2') AND acao LIKE 'conta\_erp\_%');
   END IF;
   IF has_table_privilege('authenticated', 'public.contas', 'INSERT') OR has_table_privilege('authenticated', 'public.contas', 'UPDATE') THEN
     RAISE EXCEPTION 'FALHOU: conta gravável por fora das funções';
