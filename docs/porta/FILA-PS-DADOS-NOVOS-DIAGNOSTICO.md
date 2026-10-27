@@ -1,5 +1,10 @@
 # Fila do PS com dados novos — diagnóstico (27/10/2026)
 
+> **Decisão final do RT (27/10/2026), depois das opções de desenho:** a fila fica como está, sem as colunas
+> novas; a RPC `fila_ps_detalhes` (PR #278) foi fechada sem merge e removida da homologação. Entram só o
+> consultório do plantão (escolhido uma vez no topo da fila, guardado no banco) e o alvo da cor da unidade
+> na fila do médico (achado D5 abaixo). O restante deste documento fica como registro do levantamento.
+
 **Tarefa:** fila do PS com dados novos (P2; pedido do RT em 21/10/2026, "Itens novos" do `BACKLOG.md`).
 **Pedido:** colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida,
 feita), como nos quadros de rastreamento dos concorrentes. O backlog já diz: consultas novas, diagnóstico de
