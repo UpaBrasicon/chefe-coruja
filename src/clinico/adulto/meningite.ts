@@ -1,4 +1,4 @@
-import type { Ficha } from '../ficha.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
 
 // Meningite e encefalite do adulto (lacunas da Central, lote 2, 24/10/2026).
@@ -6,15 +6,27 @@ import { fichaAdulto } from './fonte.ts'
 // Neuroinfecção no departamento de emergência (p. 589–597), lido no PDF (página do
 // livro = página do PDF + 1); Tabela 1 (LCR, p. 590) e Tabela 2 (drogas e doses,
 // p. 591–592). A Figura 2 (TC antes do LCR) é imagem e não entra como regra. O
-// capítulo não traz quimioprofilaxia de contatos; a ESCMID 2016 do levantamento não
-// foi lida no texto e fica de fora. A conduta é do médico (ADR 0007).
+// capítulo não traz quimioprofilaxia de contatos: ela vem do Guia de Vigilância em
+// Saúde do MS (6ª ed. revisada, 2024, v. 1), lido no PDF (página impressa = página do
+// PDF − 1): doença meningocócica, p. 116–118 e Quadro 3 (p. 117); Hib, p. 142–143 e
+// Quadro 11 (p. 143). A ESCMID 2016 do levantamento não foi lida no texto e fica de
+// fora. A conduta é do médico (ADR 0007).
 
 const PAG_MENINGITE = 'cap. 43 Neuroinfecção no departamento de emergência, p. 589–597 (Tabelas 1 e 2, p. 590–592)'
 
+const base = fichaAdulto('adulto-meningite', 'Meningite e encefalite — conduta inicial (adulto)', PAG_MENINGITE)
+
+export const GUIA_VIGILANCIA_2024: Fonte = {
+  citacao: 'Brasil. Ministério da Saúde. Secretaria de Vigilância em Saúde e Ambiente. Guia de vigilância em saúde: volume 1. 6. ed. rev. Brasília: Ministério da Saúde, 2024. Doença meningocócica, quimioprofilaxia (p. 116–118, Quadro 3, p. 117); outras meningites, quimioprofilaxia do H. influenzae tipo b (p. 142–143, Quadro 11, p. 143). Lido no PDF.',
+  url: 'https://bvsms.saude.gov.br/bvs/publicacoes/guia_vigilancia_saude_6edrev_v1.pdf',
+  pediatrica: true,
+}
+
 export const fichaMeningiteAdulto: Ficha = {
-  ...fichaAdulto('adulto-meningite', 'Meningite e encefalite — conduta inicial (adulto)', PAG_MENINGITE),
-  versao: '2026-10-24.1',
-  revisadoEm: '24/10/2026 (lacunas da Central, lote 2; doses conferidas no texto do manual, com página)',
+  ...base,
+  versao: '2026-10-27.1',
+  fontes: [...base.fontes, GUIA_VIGILANCIA_2024],
+  revisadoEm: '27/10/2026 (quimioprofilaxia de contatos pelo Guia de Vigilância em Saúde 2024, com página)',
 }
 
 export type Esquema = { quem: string; antibiotico: string; corticoide: string }
@@ -79,4 +91,42 @@ export const PRIMEIRA_HORA: { texto: string; pagina: string }[] = [
   { texto: 'Vancomicina, muito citada nas diretrizes norte-americanas pela resistência do pneumococo à cefalosporina nos Estados Unidos: o uso de rotina não se justifica no Brasil.', pagina: 'p. 593' },
   { texto: 'Antes do LCR, verificar a segurança (hipertensão intracraniana grave ou lesão com efeito de massa); a Figura 2 mostra as duas abordagens de TC antes da punção.', pagina: 'p. 592' },
   { texto: 'Pedir de início: PCR para enterovírus, herpes 1/2 e M. tuberculosis, culturas, pBAAR, hemocultura, sorologias para HIV e sífilis e coagulação.', pagina: 'p. 592–593' },
+]
+
+// ── Quimioprofilaxia de contatos (Guia de Vigilância em Saúde 2024) ──────────
+
+export type LinhaQuimio = { droga: string; idade: string; dose: string; intervalo: string; duracao: string }
+
+/** Quadro 3 (p. 117): doença meningocócica, como o Guia traz. */
+export const QUIMIO_MENINGOCOCO: LinhaQuimio[] = [
+  { droga: 'Rifampicina', idade: '< 1 mês', dose: '5 mg/kg/dose', intervalo: '12 em 12 horas', duracao: '2 dias' },
+  { droga: 'Rifampicina', idade: 'crianças ≥ 1 mês e adultos', dose: '10 mg/kg/dose (máximo de 600 mg)', intervalo: '12 em 12 horas', duracao: '2 dias' },
+  { droga: 'Ceftriaxona', idade: '< 12 anos', dose: '125 mg intramuscular', intervalo: '—', duracao: 'dose única' },
+  { droga: 'Ceftriaxona', idade: '≥ 12 anos', dose: '250 mg intramuscular', intervalo: '—', duracao: 'dose única' },
+  { droga: 'Ciprofloxacino', idade: '> 18 anos', dose: '500 mg via oral', intervalo: '—', duracao: 'dose única' },
+]
+
+/** Quadro 11 (p. 143): H. influenzae, só rifampicina. */
+export const QUIMIO_HIB: LinhaQuimio[] = [
+  { droga: 'Rifampicina', idade: 'adultos', dose: '600 mg/dose', intervalo: '24 em 24 horas', duracao: '4 dias' },
+  { droga: 'Rifampicina', idade: '≥ 1 mês até 10 anos', dose: '20 mg/kg/dose (dose máxima de 600 mg)', intervalo: '24 em 24 horas', duracao: '4 dias' },
+  { droga: 'Rifampicina', idade: '< 1 mês', dose: '10 mg/kg/dose (dose máxima de 600 mg)', intervalo: '24 em 24 horas', duracao: '4 dias' },
+]
+
+/** Rifampicina no meningococo, adulto: 10 mg/kg/dose, máximo de 600 mg (Quadro 3, p. 117). */
+export function rifampicinaMeningococoMg(pesoKg: number): number | null {
+  if (!Number.isFinite(pesoKg) || pesoKg <= 0) return null
+  return Math.min(10 * pesoKg, 600)
+}
+
+/** Quem recebe e quando (p. 116–118 e 142), resumido do texto do Guia. */
+export const INDICACOES_QUIMIO: { texto: string; pagina: string }[] = [
+  { texto: 'Doença meningocócica: contatos próximos de caso suspeito — moradores do mesmo domicílio, quem divide o dormitório (alojamentos, quartéis), comunicantes de creches e escolas e pessoas diretamente expostas às secreções do paciente. Todos, qualquer que seja o estado vacinal.', pagina: 'p. 117–118' },
+  { texto: 'Rifampicina é a escolha, dada a todos os contatos ao mesmo tempo e de preferência até 48 horas da exposição; ceftriaxona e ciprofloxacino são alternativas (Quadro 3).', pagina: 'p. 117' },
+  { texto: 'O próprio paciente recebe o mesmo esquema na alta ou na internação, exceto se foi tratado com ceftriaxona.', pagina: 'p. 117' },
+  { texto: 'Profissional de saúde só quando fez procedimento invasivo (intubação, sonda nasogástrica) sem EPI adequado.', pagina: 'p. 117' },
+  { texto: 'Gestante: a rifampicina tem sido usada (sem evidência de teratogenicidade); o médico avalia risco e benefício.', pagina: 'p. 117, 142' },
+  { texto: 'H. influenzae tipo b: no domicílio, contatos de qualquer idade quando há criança menor de 4 anos não vacinada ou parcialmente vacinada, ou criança imunocomprometida. Em creche, com dois ou mais casos em até 60 dias, todas as crianças e os cuidadores. O doente também, se não recebe cefalosporina de 3ª geração.', pagina: 'p. 142' },
+  { texto: 'Contato domiciliar no Hib: quem mora com o doente ou passou 4 horas ou mais com ele em pelo menos 5 dos 7 dias antes dos sintomas.', pagina: 'p. 142' },
+  { texto: 'Pneumococo e outras etiologias: o Guia indica quimioprofilaxia só para meningococo e Hib.', pagina: 'p. 142' },
 ]
