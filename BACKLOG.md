@@ -983,7 +983,7 @@ Ponta a ponta na homologação com chave temporária (200, 400, 401, 403, 404, 4
 desde 27/10/2026 (PR #279 no master):** o RT aplicou o banco pelo `producao:push` a partir de uma pasta
 limpa do master (`--dry-run` antes, só as três migrations do ERP) e publicou as funções do commit
 `ba78202`; conferido de fora (rotas `/financeiro` respondem 401 sem chave) e pela lista de migrations da
-produção. Falta a 3.4 (telas).
+produção. A 3.4 (telas) está abaixo.
 
 **Pausa da 5C em 20/10/2026 (pedido do RT):** a tarefa 3 (ERP/financeiro) para antes do código, para a
 trilha "Revisão visual", abaixo. As cinco perguntas da tarefa 3 (como chega ao ERP, o que vai, formato,
@@ -1007,6 +1007,19 @@ do RT: A, lista com filtro e gaveta.**
 - **Regras da tela** em `src/lib/erp.ts`, com teste.
 - **Conferida na página de teste** nos dois temas e em 390 px: imagens `erp-A-aplicada-*` em
   `docs/frontend/revisao-visual/app/`.
+
+**3.4 em produção desde 27/10/2026 (PR #287 no master, `be0ec81`).** O RT conferiu na homologação e
+deu o "ok produção". Banco aplicado pelo RT da pasta limpa do master: `--dry-run` antes, só a
+`20270120000004_erp_telas.sql`. Foi com `npx supabase db push --linked --include-all`, porque a
+produção já tem migrations de número maior (`20270131000001` e `20270131000002`). A tela saiu com o
+merge (Vercel): o pacote publicado em www.chefecoruja.com.br tem a rota `/faturamento/erp` e o trecho
+`EnvioErp`. Sem mudança nas Edge Functions.
+
+**Tarefa 3 (ERP/financeiro) concluída em 27/10/2026.** Aceite "Dados financeiros enviados a ERP":
+contas faturadas e plantões fechados saem pela API v1 (recurso `financeiro`) e pela tela, em JSON e
+CSV, com retorno e conciliação por versão. Detalhes, chaves e reversão em `infra/erp-financeiro.md`.
+Fica para depois: envio ativo (tarefa 4, Webhooks), leiaute de ERP específico, valor de medicamento e
+material, convênio/TISS.
 
 ---
 
