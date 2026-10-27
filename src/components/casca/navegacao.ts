@@ -158,7 +158,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true },
     { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true },
     { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
-    ITEM_PRONTUARIOS,
+    // Sem Prontuários (RT, 27/10/2026): o que o farmacêutico precisa do
+    // paciente chega pela validação e pela dispensação.
   ],
   telemedicina: [
     { to: '/teleinterconsulta', rotulo: 'Telemedicina', curto: 'Tele', icone: Hourglass, exato: true, nota: 'tele' },

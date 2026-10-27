@@ -326,11 +326,12 @@ export default function App() {
                         <Route path="/erros-e-alertas" element={<ErrosEAlertas />} />
                       </Route>
 
-                      {/* Fase 6: prontuário fora da escala — pedido ao gestor, 24 h, só leitura */}
-                      <Route element={<RequireRole papeis={['plantonista', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem', 'farmaceutico']} />}>
+                      {/* Fase 6: prontuário fora da escala — pedido ao gestor, 24 h, só leitura.
+                          O farmacêutico não pede (RT, 27/10/2026; migration 20270105000001). */}
+                      <Route element={<RequireRole papeis={['plantonista', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem']} />}>
                         <Route path="/prontuarios" element={<PedidosProntuario />} />
                       </Route>
-                      <Route element={<RequireRole papeis={['plantonista', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem', 'farmaceutico', 'gestor']} />}>
+                      <Route element={<RequireRole papeis={['plantonista', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem', 'gestor']} />}>
                         <Route path="/prontuarios/:pacienteId" element={<ProntuarioLeitura />} />
                       </Route>
 
