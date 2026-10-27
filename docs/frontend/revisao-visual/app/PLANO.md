@@ -1272,6 +1272,13 @@ abas). Em todas: o mesmo texto de alergia, exames e medicação, e o alvo da uni
   alergia, sala, médico, exames, medicação, alvo e "Abrir atendimento". Custo: para ver os dados de cada
   paciente é preciso clicar nele; a fila perde largura para a ficha.
 
+**Decisão do RT (27/10/2026): nenhuma das três.** A fila fica como está, sem as colunas novas. Entram só o
+consultório do plantão (uma barra no topo da fila, no molde da sala da triagem, guardado no banco e preso ao
+plantão; as linhas ficam só com "Chamar" e "Abrir") e o alvo da cor da unidade na fila do médico. Aplicado na
+branch `feat/fila-consultorio-do-plantao` (PR #281); fotos `fila-consultorio-vazio-claro.png` e
+`fila-consultorio-escolhido-claro|escuro.png`: sem consultório escolhido o "Chamar" espera a escolha; com ele,
+cada linha cabe a 1.100 px, e o amarelo usa o alvo de 30 min da unidade (José, há 35 min, fica atrasado).
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
