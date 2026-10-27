@@ -128,6 +128,19 @@ homologação. As regras da Edge Function estão em `supabase/functions/api/fina
   Cada chamada ficou em `api_acessos`. O fluxo com dados (lançar, divergir, estornar) foi
   conferido pelos testes de banco. Na homologação, o RT confere com o simulador.
 
+## Produção (27/10/2026)
+
+- **Banco:** o RT aplicou com `npm run producao:push -- --confirmo-producao`.
+  - Rodou de uma pasta limpa, feita do master (`producao-push`), e não da pasta principal. A
+    principal estava em outra branch, com arquivos não commitados e uma migration só local.
+  - O `--dry-run` antes listou só a `20270120000001`, a `20270120000002` e a `20270120000003`.
+  - A lista de migrations da produção mostra as três nas duas colunas.
+- **Funções:** `node scripts/ambiente/supabase-alvo.mjs functions producao --confirmo-producao`
+  publicou `api`, `clinical-search`, `enviar-codigo-2fa` e `folha` do commit `ba78202`.
+- **Conferido de fora:** `https://api.chefecoruja.com.br/v1/financeiro/contas` e
+  `/financeiro/plantoes` respondem 401 "Chave inválida" sem chave. A versão anterior daria 404.
+- **Ainda não há chave de ERP na produção.** O super admin cria uma quando houver ERP de cliente.
+
 ## Como reverter
 
 1. **Edge Function:** publicar a `api` do commit anterior. A função antiga não tem as rotas

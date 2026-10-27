@@ -979,7 +979,11 @@ por versão (POST; 409 "conflito" para lançar versão substituída ou estornar 
 `supabase/tests/fase5c_api_financeiro_plantoes.sql` e rollback passaram na homologação; regras em
 `supabase/functions/api/financeiro.ts` (teste no CI); OpenAPI e página do integrador; recurso
 "Financeiro (ERP)" na tela de chaves; simulador `scripts/erp-simulador.mjs`; `infra/erp-financeiro.md`.
-Ponta a ponta na homologação com chave temporária (200, 400, 401, 403, 404, 405). Falta a 3.4 (telas).
+Ponta a ponta na homologação com chave temporária (200, 400, 401, 403, 404, 405). **3.1 a 3.3 em produção
+desde 27/10/2026 (PR #279 no master):** o RT aplicou o banco pelo `producao:push` a partir de uma pasta
+limpa do master (`--dry-run` antes, só as três migrations do ERP) e publicou as funções do commit
+`ba78202`; conferido de fora (rotas `/financeiro` respondem 401 sem chave) e pela lista de migrations da
+produção. Falta a 3.4 (telas).
 
 **Pausa da 5C em 20/10/2026 (pedido do RT):** a tarefa 3 (ERP/financeiro) para antes do código, para a
 trilha "Revisão visual", abaixo. As cinco perguntas da tarefa 3 (como chega ao ERP, o que vai, formato,
