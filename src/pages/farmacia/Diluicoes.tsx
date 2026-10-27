@@ -13,6 +13,11 @@
 // edita: mudar é criar uma nova versão, que substitui a anterior a partir de
 // agora — a anterior continua visível como "substituída", e as prescrições
 // feitas sob ela continuam mostrando a versão delas.
+//
+// Ponto 2 das telas do farmacêutico (decisão do RT de 27/10/2026): "Nova
+// diluição" fica no topo, em todas as abas, e a diluição nova é da unidade. O
+// modelo da rede só o super admin cria e muda; aqui ele aparece para leitura e
+// para "Ajustar esta linha". Migration 20270109000001_diluicao_da_unidade.sql.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, FlaskConical, Plus, Search } from 'lucide-react'
@@ -116,8 +121,10 @@ export default function Diluicoes({ unidade, selecionadaInicial = null }: { unid
   const confere = (principio: string, apres: string, av: boolean | null) =>
     (!soAv || !!av) && (principio.toLowerCase().includes(termo) || apres.toLowerCase().includes(termo))
   const linhas = (valendo.data ?? []).filter((l) => (!soUnidade || l.da_unidade) && confere(l.principio_ativo, l.apresentacao, l.alta_vigilancia))
-  const rascunhos = (tabela.data ?? []).filter(ehRascunho)
-  const substituidas = (tabela.data ?? []).filter((d) => d.status === 'substituido')
+  // rascunhos: só os desta unidade (o da rede é do super admin); substituídas: a rede e esta unidade
+  const rascunhos = (tabela.data ?? []).filter((d) => ehRascunho(d) && d.unidade_id === unidade)
+  const substituidas = (tabela.data ?? []).filter((d) => d.status === 'substituido' && (d.unidade_id === null || d.unidade_id === unidade))
+  const abrirNova = () => { setAba('rascunho'); setSelecionada(null); setNova(true); setErro(null) }
   const daAba = (aba === 'rascunho' ? rascunhos : substituidas).filter((d) => confere(d.principio_ativo, d.apresentacao, d.alta_vigilancia))
 
   const selLinha = aba === 'valendo' ? linhas.find((l) => l.id === selecionada) ?? linhas[0] : undefined
@@ -143,18 +150,13 @@ export default function Diluicoes({ unidade, selecionadaInicial = null }: { unid
             </label>
             {aba === 'valendo' && <Chip ativo={soUnidade} onClick={() => setSoUnidade(!soUnidade)}>Só da unidade</Chip>}
             <Chip ativo={soAv} onClick={() => setSoAv(!soAv)}><AlertTriangle className="size-3.5" aria-hidden /> Só AV</Chip>
+            <Button size="sm" onClick={abrirNova}><Plus aria-hidden /> Nova diluição</Button>
           </div>
         </div>
       </Tabs>
 
       <div className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[280px_minmax(0,1fr)]">
         <div className="flex max-h-[70vh] flex-col overflow-y-auto border-b border-fio md:border-r md:border-b-0">
-          {aba === 'rascunho' && (
-            <BotaoLinha variante="linha" aria-current={nova ? 'true' : undefined} onClick={() => { setNova(true); setSelecionada(null) }}
-              className={cn('items-center gap-2 px-4 text-apoio font-medium text-acao', nova && 'bg-alerta-marca')}>
-              <Plus className="size-3.5" aria-hidden /> Nova diluição
-            </BotaoLinha>
-          )}
           {aba === 'valendo' && linhas.map((l) => (
             <BotaoLinha key={l.id} variante="linha" aria-current={l.id === selLinha?.id ? 'true' : undefined} onClick={() => { setSelecionada(l.id); setErro(null) }}
               className={cn('flex-col gap-0.5 px-4', l.id === selLinha?.id && 'bg-alerta-marca')}>
@@ -187,7 +189,7 @@ export default function Diluicoes({ unidade, selecionadaInicial = null }: { unid
           {aba === 'valendo' && selLinha && <FichaValendo key={selLinha.id} l={selLinha} unidade={unidade} aoErro={setErro} aoMudar={recarregar} abrirRascunho={abrirRascunho} />}
           {aba !== 'valendo' && selDil && <Editor key={`${selDil.id}:${selDil.status}`} d={selDil} aoErro={setErro}
             aoMudar={(novoId) => { recarregar(); if (novoId) setSelecionada(novoId) }} />}
-          {aba === 'rascunho' && (nova || !selDil) && <NovaDiluicao aoCriar={(id) => { recarregar(); setNova(false); setSelecionada(id) }} aoErro={setErro} />}
+          {aba === 'rascunho' && (nova || !selDil) && <NovaDiluicao unidade={unidade} aoCriar={(id) => { recarregar(); setNova(false); setSelecionada(id) }} aoErro={setErro} />}
           {((aba === 'valendo' && !selLinha) || (aba === 'substituido' && !selDil)) && (
             <p className="px-5 py-4 text-apoio text-tinta-sussurro">Escolha uma linha na lista.</p>
           )}
@@ -260,7 +262,7 @@ function FichaValendo({ l, unidade, aoErro, aoMudar, abrirRascunho }: {
   )
 }
 
-function NovaDiluicao({ aoCriar, aoErro }: { aoCriar: (id: string) => void; aoErro: (m: string | null) => void }) {
+function NovaDiluicao({ unidade, aoCriar, aoErro }: { unidade: string; aoCriar: (id: string) => void; aoErro: (m: string | null) => void }) {
   const [busca, setBusca] = React.useState('')
   const [med, setMed] = React.useState<{ id: string; principio_ativo: string; apresentacao: string | null } | null>(null)
   const [via, setVia] = React.useState('EV')
@@ -274,7 +276,7 @@ function NovaDiluicao({ aoCriar, aoErro }: { aoCriar: (id: string) => void; aoEr
     <section aria-label="Nova diluição" className="flex flex-col gap-2 px-5 py-4 text-apoio">
       <div>
         <h3 className="text-corpo font-semibold text-tinta">Nova diluição</h3>
-        <p className="text-tinta-sussurro">Escolha um rascunho na lista para revisar, ou crie um para um medicamento do cadastro.</p>
+        <p className="text-tinta-sussurro">Para um medicamento do cadastro. Depois de publicada, vale só nesta unidade. Para mudar uma linha que já vale, use "Ajustar esta linha".</p>
       </div>
         {med ? <p><strong>{med.principio_ativo}</strong> · {med.apresentacao} <Button size="xs" variant="ghost" onClick={() => setMed(null)}>Trocar</Button></p> : (
           <>
@@ -287,13 +289,13 @@ function NovaDiluicao({ aoCriar, aoErro }: { aoCriar: (id: string) => void; aoEr
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col gap-1"><Label htmlFor="nd-via">Via</Label>
             <CampoSelecao id="nd-via" tamanho="compacto" value={via} onChange={(e) => setVia(e.target.value)}>
-              {['EV', 'IM', 'SC'].map((v) => <option key={v}>{v}</option>)}
+              {['EV', 'IM', 'SC', 'IN', 'VO'].map((v) => <option key={v}>{v}</option>)}
             </CampoSelecao>
           </div>
           <div className="flex flex-col gap-1"><Label htmlFor="nd-fonte">Fonte</Label><Input id="nd-fonte" value={fonte} onChange={(e) => setFonte(e.target.value)} placeholder="manual, versão, página" /></div>
         </div>
         <Button size="sm" className="self-start" disabled={!med} onClick={async () => {
-          const { data, error } = await supabase.rpc('salvar_diluicao', { p_id: undefined as unknown as string, p_dados: { medicamento_id: med!.id, via, fonte } })
+          const { data, error } = await supabase.rpc('salvar_diluicao', { p_id: undefined as unknown as string, p_dados: { medicamento_id: med!.id, via, fonte, unidade_id: unidade } })
           if (error) return aoErro(error.message)
           aoErro(null); aoCriar(data as string)
         }}>Criar rascunho</Button>
@@ -314,7 +316,9 @@ const CAMPOS: [keyof Diluicao, string, 'texto' | 'numero' | 'lista' | 'bool'][] 
 ]
 
 function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string) => void; aoErro: (m: string | null) => void }) {
-  const editavel = d.status === 'rascunho' || d.status === 'revisado'
+  // o modelo da rede (sem unidade) é do super admin: aqui só se lê
+  const daRede = d.unidade_id === null
+  const editavel = (d.status === 'rascunho' || d.status === 'revisado') && !daRede
   const inicial = React.useCallback(() => Object.fromEntries(CAMPOS.map(([k, , t]) => {
     const v = d[k]
     return [k, t === 'lista' ? ((v as string[] | null) ?? []).join(', ') : t === 'bool' ? (v === null ? '' : v ? 'sim' : 'não') : v == null ? '' : String(v)]
@@ -362,7 +366,7 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
                 aoErro(null); aoMudar()
               }}>Publicar aos prescritores</Button>
             </>
-          ) : d.status === 'publicado' ? (
+          ) : d.status === 'publicado' && !daRede ? (
             <Button size="sm" variant="outline" onClick={async () => {
               const { data, error } = await supabase.rpc('salvar_diluicao', { p_id: d.id, p_dados: {} })
               if (error) return aoErro(error.message)
@@ -371,7 +375,8 @@ function Editor({ d, aoMudar, aoErro }: { d: Diluicao; aoMudar: (novoId?: string
           ) : null}
         </div>
       </div>
-        {d.unidade_id && <p className="text-acao">Ajuste da unidade: publicado, vale só para esta unidade e substitui nela o modelo da rede.</p>}
+        {d.unidade_id && <p className="text-acao">Da unidade: publicada, vale só nesta unidade (e, se houver modelo da rede, o substitui nela).</p>}
+        {daRede && <p className="text-tinta-apoio">Modelo da rede: só o super admin muda. Para a sua unidade, use "Ajustar esta linha" em Valendo na unidade.</p>}
         {!d.medicamento_id && <p className="text-atencao">Esta diluição não está ligada ao cadastro de medicamentos: não pode ser publicada até ser ligada.</p>}
         <div className="grid gap-2 sm:grid-cols-2">
           {CAMPOS.map(([k, r, t]) => (
