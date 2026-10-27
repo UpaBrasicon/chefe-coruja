@@ -118,15 +118,23 @@ SELECT pg_temp.falha(format('SELECT public.mudar_etapa_conta(%L, %L)', pg_temp.u
 SELECT public.mudar_etapa_conta(pg_temp.u('a2'), 'aberta', 'glosa do município: refazer o BPA');
 RESET ROLE;
 DO $$ BEGIN
-  IF (SELECT string_agg(evento, ',' ORDER BY em, evento) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2'))
-     NOT LIKE 'aberta,%pagador%' OR (SELECT count(*) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2')) <> 7 THEN  -- 7 com a liberação do gestor (tarefa 5)
+  -- os eventos erp_* (Fase 5C-3) têm teste próprio em fase5c_erp_contas.sql
+  IF (SELECT string_agg(evento, ',' ORDER BY em, evento) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2') AND evento NOT LIKE 'erp\_%')
+     NOT LIKE 'aberta,%pagador%'
+     OR (SELECT count(*) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2') AND evento NOT LIKE 'erp\_%') <> 7 THEN  -- 7 com a liberação do gestor (tarefa 5)
     RAISE EXCEPTION 'FALHOU: histórico da conta: %', (SELECT string_agg(evento, ',' ORDER BY em) FROM public.conta_eventos WHERE conta_id = pg_temp.u('a2'));
   END IF;
   IF (SELECT status || '|' || pagador FROM public.contas WHERE id = pg_temp.u('a2')) <> 'aberta|sus' THEN
     RAISE EXCEPTION 'FALHOU: estado final da conta encerrada';
   END IF;
-  IF (SELECT count(*) FROM public.log_auditoria WHERE entidade_id = pg_temp.u('a2') AND acao LIKE 'conta_%') <> 6 THEN  -- 6 com a liberação do gestor (tarefa 5)
+  IF (SELECT count(*) FROM public.log_auditoria WHERE entidade_id = pg_temp.u('a2') AND acao LIKE 'conta_%' AND acao NOT LIKE 'conta\_erp\_%') <> 6 THEN  -- 6 com a liberação do gestor (tarefa 5)
     RAISE EXCEPTION 'FALHOU: auditoria das mudanças da conta';
+  END IF;
+  -- Fase 5C-3: faturar e reabrir gravam, cada um, um registro do ERP (versão disponível, versão substituída)
+  IF (SELECT string_agg(acao, ',' ORDER BY acao) FROM public.log_auditoria WHERE entidade_id = pg_temp.u('a2') AND acao LIKE 'conta\_erp\_%')
+     IS DISTINCT FROM 'conta_erp_disponivel,conta_erp_substituida' THEN
+    RAISE EXCEPTION 'FALHOU: auditoria do ERP na conta: %',
+      (SELECT string_agg(acao, ',' ORDER BY acao) FROM public.log_auditoria WHERE entidade_id = pg_temp.u('a2') AND acao LIKE 'conta\_erp\_%');
   END IF;
   IF has_table_privilege('authenticated', 'public.contas', 'INSERT') OR has_table_privilege('authenticated', 'public.contas', 'UPDATE') THEN
     RAISE EXCEPTION 'FALHOU: conta gravável por fora das funções';
