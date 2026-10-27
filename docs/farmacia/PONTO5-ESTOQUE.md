@@ -100,3 +100,5 @@ Migration `supabase/migrations/20270110000001_movimentos_estoque.sql`.
    avulsa com o destino.
 4. Fazer um "Ajuste de inventário" com o saldo contado e o motivo. O extrato mostra a diferença.
 5. Em Dispensação › Registro, trocar o período para 7 dias ou 30 dias.
+
+**Teste do RT em 27/10/2026: ok na homologação.** Falta o "ok produção".
