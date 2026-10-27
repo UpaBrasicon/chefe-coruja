@@ -1014,7 +1014,7 @@ Presenças, Histórico) → menu lateral do gestor. A grade de ações (P1, mode
 item próprio**: pede consulta nova no banco (a hora de cada etapa por paciente), com diagnóstico, RPC e
 homologação antes do frontend. A 3.9 fica só no visual.
 
-### Painel do Gestor (27/10/2026, opções; aguarda escolha do RT)
+### Painel do Gestor (27/10/2026)
 
 **Hoje** (`gestor-hoje-claro|escuro.png`, página de teste com a tela real e números fictícios):
 `PainelGestor.tsx` tem três blocos. O **Panorama da unidade** é um carrossel que troca de painel a cada 8 s
@@ -1048,6 +1048,23 @@ vira tabela com o estado em ponto e texto, as divergências primeiro:
 Nenhuma opção muda regra nem banco: os números são os de `panorama_gestor`, a pergunta é a mesma
 `perguntar_gestao` e a auditoria é a mesma `auditoria_checkin`. O que o gestor tira do carrossel em
 Indicadores continua valendo (sai da lista).
+
+**Escolha do RT (27/10/2026): B, abas por painel.** Aplicada na branch `feat/visual-3-9-painel`:
+
+- `PainelGestor.tsx`: a pergunta sobre a gestão vira uma linha no topo (o exemplo fica no campo; a resposta
+  aparece embaixo, como antes). O panorama deixa de rodar sozinho: os painéis que o gestor deixou ligados
+  viram abas, cada uma com a contagem do que pede ação em âmbar; a aba mostra a peça `ResumoParametros` só
+  daquele painel, com o caminho de cada medida que pede ação (Abrir Farmácia, Abrir Internação, Abrir
+  Observação, Abrir Porta, Abrir Indicadores, Abrir Escala; "Ver a auditoria" desce até a auditoria na
+  mesma página), e embaixo a nota do painel e "Escolher em Indicadores". Saíram o ícone em quadrado, as
+  setas e os pontos do carrossel.
+- A auditoria de check-in vira tabela (profissional, previsto, realizado com a diferença, situação em ponto
+  e texto, local e justificativa embaixo), com as divergências primeiro; os filtros ficam no cabeçalho.
+- `PanoramaConfig.tsx` (Indicadores) deixa de falar em carrossel: "painéis que viram abas no Painel do
+  Gestor", "Fora do Painel".
+- As chamadas ao servidor são as mesmas. Visto na página de teste com a tela real e números fictícios, nos
+  dois temas (`gestor-B-aplicada-*.png`): trocar de aba e "Ver a auditoria" funcionaram. A pergunta e os
+  números reais pedem login: conferir na homologação.
 
 ## O que o padrão já fixou (não muda nesta parte)
 
