@@ -1066,6 +1066,43 @@ Indicadores continua valendo (sai da lista).
   dois temas (`gestor-B-aplicada-*.png`): trocar de aba e "Ver a auditoria" funcionaram. A pergunta e os
   números reais pedem login: conferir na homologação.
 
+### Escala (27/10/2026, opções; aguarda escolha do RT)
+
+**Hoje** (`escala-hoje-mensal-claro|escuro.png`, `escala-hoje-fixa|presencas|historico-claro.png`, página de
+teste com as telas reais e escala fictícia): `EscalaGrupo` tem quatro abas. A **Mensal** empilha, numa página
+de quase 3.000 px: o calendário do mês (`EscalaMes`: uma barra por setor em cada dia, vagas, Publicar); a
+navegação da semana; o cartão âmbar "Alertas da escala" (contadores em selos maiúsculos, os pedidos
+pendentes e as candidaturas, com Aprovar e Recusar); a "Carga horária" do mês; os chips de turno; a grade da
+semana de um turno por vez (onde se escala); e "Solicitações da escala", que **repete os mesmos pedidos** do
+cartão de alertas. A **Fixa** repete os alertas e a carga antes da grade fixa. Presenças e Histórico são
+listas de cartões com selos em maiúsculas. Títulos com ícone em todos os cartões.
+
+Achados no levantamento (bugs, não estilo): o cabeçalho da grade da semana escreve sempre SEG…DOM, mas a
+semana começa no dia de hoje (na foto, "SEG 27/10" é uma terça); e, no diálogo de escalar, o campo "rótulo"
+só aparece na Fixa, que o ignora, e some na Mensal, que o grava.
+
+**Referências do Refero:** folgas do Aboard (`3255dd44`: o mês em grade, com as pendências numa coluna ao
+lado); Cron (`0e4d878a`: calendário e o dia escolhido detalhado na lateral); recursos do Wrike (`57711471`:
+pessoas por dia numa grade); e as abas por tarefa do Linear e do Attio, já usadas na 3.7b.
+
+**Opções** (escala fictícia; `escala-A|B|C-claro|escuro.png`). Em todas: os pedidos (solicitações e
+candidaturas) aparecem **uma vez só**, numa aba "Pedidos N" com Aprovar e Recusar; a carga horária ganha aba
+própria; os selos viram ponto e texto ou texto simples, sem maiúsculas; os cartões perdem o ícone do título:
+
+- **A · o mês com o dia ao lado** (Cron, Aboard): a aba Mensal mostra o calendário (cada dia diz "coberto" ou
+  "N vagas") e, à direita, o dia escolhido com cada setor e os três turnos (quem está, vaga aberta, sem
+  plantão), com Escalar e Trocar ali mesmo; a grade da semana sai. Em cima, uma linha "N pedidos aguardando
+  você", que leva à aba Pedidos.
+- **B · abas por tarefa** (Linear, Attio): as abas viram Mês (o calendário, as vagas e Publicar), Semana (a
+  grade onde se escala, por turno), Pedidos, Carga horária, Fixa, Presenças e Histórico; cada coisa aparece
+  numa aba só e nenhuma aba passa de uma tela. Na foto, a aba Pedidos.
+- **C · a semana inteira numa grade** (Wrike): a aba Mensal abre na semana, com os setores nas linhas, os
+  dias nas colunas e os três turnos dentro de cada célula (M, T, N), vaga em âmbar e "escalar" onde falta;
+  "Ver o mês" abre o calendário; a linha de pedidos em cima, como na A.
+
+Nenhuma opção muda regra nem banco: as mesmas chamadas ao servidor (escalar, remover, marcar e retirar vaga,
+publicar, gerar o mês da fixa, aprovar e recusar).
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
