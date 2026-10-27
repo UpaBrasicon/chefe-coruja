@@ -1100,7 +1100,7 @@ hora, com ordenação pelo título da coluna. Registro e imagens em `docs/fronte
 
 | Prioridade | Item | Onde entra | O que é |
 |---|---|---|---|
-| P1 | Grade de ações no gestor | **Depois da 3.9, como item próprio** (decisão do RT em 27/10/2026: pede consulta nova no banco) | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
+| P1 | Grade de ações no gestor | **Depois da 3.9, como item próprio** (decisão do RT em 27/10/2026: pede consulta nova no banco). **Em andamento:** diagnóstico em `docs/gestor/GRADE-ACOES-DIAGNOSTICO.md`; decisões D1–D5 aceitas pelo RT em 27/10/2026 (aba em Porta; só triagem e atendimento; "No PS" vermelho pelo alvo da cor antes do médico e pelo alvo de permanência da unidade depois; alvos de classificação, exame, medicação e permanência por unidade, sem valor padrão; chamada repetida com a hora da última e quantas vezes). Banco: `porta_grade` aplicada na homologação em 27/10/2026, teste `supabase/tests/porta_grade.sql` passou lá, 80 pacientes em ~10 ms, rollback (`DROP FUNCTION`) testado. Falta: tela onde a unidade define os alvos novos, desenho da grade (Refero) e frontend | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
 | P2 | Fila do PS com dados novos na tabela | A decidir pelo RT | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
 
 **3.8 antecipada (Central do Plantonista, calculadoras, escores e condutas) em produção desde
@@ -1662,6 +1662,34 @@ A parte 3.4 da Revisão visual veio em seguida (PR #228, 25/10/2026).
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva
 na criança, risco de suicídio, epistaxe, pneumotórax).
+
+## Telas do farmacêutico — pedidos do RT em 27/10/2026
+
+**Pedido do RT:** ao rever as telas do farmacêutico, o RT apontou seis pontos. Diagnóstico de cada um
+(o que existe, o que falta, proposta para banco, RPC e tela, risco) em
+`docs/farmacia/REVISAO-FARMACEUTICO-2026-10.md`.
+
+**Decisão do RT em 27/10/2026:** aprova os seis, na ordem sugerida (6 → 4 → 2 → 5 → 1 → 3), com as
+prioridades do documento, começando pelo ponto 6. Cada item em branch e PR próprios, com homologação
+antes. As perguntas abertas abaixo são respondidas quando o item chegar; no ponto 6 vale a proposta do
+documento (só o farmacêutico sai; enfermagem e telemedicina seguem como estão).
+
+Causa comum dos pontos 1, 2 e 4: a farmácia não tem onde cadastrar medicamento. O catálogo só entra
+pelo ETL, e o banco só deixa o super admin inserir (65 medicamentos ativos na homologação).
+
+| Ordem | Prioridade | Ponto do RT | Diagnóstico | Proposta | Situação |
+|---|---|---|---|---|---|
+| 1 | P1 | 6 — O farmacêutico não precisa da aba Prontuários | O farmacêutico tem o item no menu, as rotas `/prontuarios` e `/prontuarios/:pacienteId`, a tela na paleta de busca e, no banco, `papel_pode_pedir_acesso` com `farmaceutico`. Enfermagem e telemedicina também têm; o gestor decide os pedidos em Auditoria | Tirar o farmacêutico do menu, das duas rotas e de `papel_pode_pedir_acesso`; pedido aprovado antes deixa de abrir leitura; pendentes cancelados com auditoria | Aprovado |
+| 2 | P1 | 4 — Unidade de consumo não adiciona item novo com apresentação e forma | Não há cadastro de medicamento na tela nem RPC; não há coluna de forma farmacêutica | `cadastrar_medicamento`, `editar_medicamento` e `inativar_medicamento` (farmacêutico ou gestor, com histórico); coluna `forma_farmaceutica`; "Novo medicamento" na tela, com os parecidos antes de gravar | Aprovado |
+| 3 | P1 | 2 — Diluição não adiciona medicação nem diluição | "Nova diluição" só no topo da aba Rascunhos e só para medicamento do catálogo. **Achado:** a diluição nova nasce como modelo da rede, e qualquer farmacêutico a publica para todas as unidades | Botão visível em todas as abas; diluição nova da unidade por padrão; modelo da rede só para quem o RT decidir; vias IN e VO | Aprovado |
+| 4 | P1 | 5 — Dispensação avulsa: controle do que sai e do que entra | A saída avulsa baixa o estoque com destino, motivo e auditoria; a devolução volta. A entrada não existe: o saldo é sobrescrito sem motivo, sem histórico e sem auditoria | Tabela `movimentos_estoque` (só inserção); entrada com documento; ajuste de inventário com motivo; extrato por item; filtro por período no Registro | Aprovado |
+| 5 | P2 | 1 — Alta vigilância não adiciona medicação | Adiciona pela busca "Buscar no cadastro", só na aba "Exige liberação"; medicamento fora do catálogo não entra | Botão "Adicionar medicamento" em todas as abas; sem migration | Aprovado |
+| 6 | P2 | 3 — Quem cadastra o que está em falta? | O médico pela prescrição; o farmacêutico pela Disponibilidade e pelo Painel, só com saldo em falta ou crítico; a aba Faltas não registra | Botão "Registrar falta" na aba Faltas; sem migration | Aprovado |
+
+Perguntas abertas ao RT (detalhe no documento): o catálogo continua um só para a rede; forma
+farmacêutica como campo próprio; quem publica o modelo da rede de diluição; botão de falta para a
+enfermagem; lote e validade agora ou depois; a regra do ponto 6 vale também para enfermagem e
+telemedicina.
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.

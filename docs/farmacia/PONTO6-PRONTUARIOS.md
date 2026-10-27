@@ -50,3 +50,5 @@ cancelados ficam cancelados (é registro).
 2. Abrir `/prontuarios` direto no endereço: a tela não abre.
 3. Entrar como plantonista ou enfermeiro: "Prontuários" continua no menu, e o pedido ao gestor
    funciona como antes.
+
+**Teste do RT em 27/10/2026: ok na homologação.** Falta o "ok produção".
