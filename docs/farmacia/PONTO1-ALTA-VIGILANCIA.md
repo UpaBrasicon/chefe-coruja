@@ -36,3 +36,5 @@ Só a tela (`src/pages/farmacia/AltaVigilancia.tsx`). Não houve migration.
    O item aparece em "Ajustes da unidade", com o motivo, quem marcou e quando.
 3. Buscar um medicamento que já exige liberação. A ficha diz por quê, em vez de oferecer a marcação.
 4. Buscar um nome que não existe. A ficha oferece "Cadastrar em Unidade de consumo".
+
+**Teste do RT em 27/10/2026: ok na homologação**, depois de recarregar a página (o print anterior era da versão de antes da publicação).
