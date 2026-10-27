@@ -91,57 +91,91 @@ jobs:
         with:
           # mesma versão do devDependency `supabase` do package.json
           version: 2.102.0
-      # Imagem do Postgres do Supabase guardada no cache do Actions. Os registros
-      # públicos barraram os runners do GitHub em 26/10/2026 (PRs #239 a #241):
-      # ghcr.io e Docker Hub com "toomanyrequests", ECR com "Data limit exceeded".
+      # Imagens do Supabase guardadas no cache do Actions. Os registros públicos
+      # barraram os runners do GitHub em 26/10/2026 (PRs #239 a #241): ghcr.io e
+      # Docker Hub com "toomanyrequests", ECR com "Data limit exceeded"; em
+      # 27/10/2026 (PR #270) o ghcr.io barrou realtime e storage-api.
       # A primeira vez que um registro servir, a imagem fica no cache e o CI
-      # deixa de depender deles. Tag do CLI 2.102.0 (fixado acima): ao atualizar
-      # o CLI, atualizar a tag aqui (senão o CLI volta a pedir ao ghcr.io).
+      # deixa de depender deles. Tags do CLI 2.102.0 (fixado acima; ficam no
+      # pkg/config/templates/Dockerfile do CLI): ao atualizar o CLI, atualizar as
+      # tags e as chaves aqui (senão o CLI volta a pedir as imagens ao ghcr.io).
+      # Postgres e serviços em chaves separadas: o cache do Postgres já existe.
       - name: Restaurar a imagem do Postgres do cache
         id: cache-postgres
         uses: actions/cache/restore@v4
         with:
           path: /tmp/supabase-postgres.tar
           key: supabase-postgres-17.6.1.131
-      - name: Obter a imagem do Postgres
-        env:
-          IMAGEM: supabase/postgres:17.6.1.131
+      - name: Restaurar as imagens do auth e do storage do cache
+        id: cache-servicos
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/supabase-servicos.tar
+          key: supabase-gotrue-v2.189.0-storage-api-v1.60.0
+      - name: Obter as imagens do Supabase
         run: |
-          if [ -f /tmp/supabase-postgres.tar ]; then
-            docker load -i /tmp/supabase-postgres.tar
-            exit 0
-          fi
-          # mesma imagem nos três (digest sha256:42088c86… conferido em 26/10/2026)
-          for origem in docker.io public.ecr.aws ghcr.io; do
-            for tentativa in 1 2; do
-              if docker pull "$origem/$IMAGEM"; then
-                [ "$origem" = ghcr.io ] || docker tag "$origem/$IMAGEM" "ghcr.io/$IMAGEM"
-                docker save "ghcr.io/$IMAGEM" -o /tmp/supabase-postgres.tar
-                exit 0
-              fi
-              echo "::warning::$origem recusou a imagem (tentativa $tentativa)"
-              sleep 20
+          # $1 = arquivo do cache; os demais = imagens. Mesma imagem nos três
+          # registros (digests conferidos: postgres sha256:42088c86… em
+          # 26/10/2026; gotrue sha256:385184459f… e storage-api
+          # sha256:8cbdce289b… em 27/10/2026). O nome final é o do ghcr.io,
+          # que é o que o CLI procura (o setup-cli fixa esse registro).
+          obter() {
+            arquivo=$1
+            shift
+            if [ -f "$arquivo" ]; then
+              docker load -i "$arquivo"
+              return 0
+            fi
+            for imagem in "$@"; do
+              obtida=
+              for origem in docker.io public.ecr.aws ghcr.io; do
+                for tentativa in 1 2; do
+                  if docker pull "$origem/$imagem"; then
+                    [ "$origem" = ghcr.io ] || docker tag "$origem/$imagem" "ghcr.io/$imagem"
+                    obtida=1
+                    break 2
+                  fi
+                  echo "::warning::$origem recusou $imagem (tentativa $tentativa)"
+                  sleep 20
+                done
+              done
+              [ -n "$obtida" ] || return 1
             done
-          done
-          exit 1
+            docker save $(printf 'ghcr.io/%s ' "$@") -o "$arquivo"
+          }
+          obter /tmp/supabase-postgres.tar supabase/postgres:17.6.1.131
+          obter /tmp/supabase-servicos.tar supabase/gotrue:v2.189.0 supabase/storage-api:v1.60.0
       - name: Guardar a imagem do Postgres no cache
         if: steps.cache-postgres.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: /tmp/supabase-postgres.tar
           key: supabase-postgres-17.6.1.131
+      - name: Guardar as imagens do auth e do storage no cache
+        if: steps.cache-servicos.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/supabase-servicos.tar
+          key: supabase-gotrue-v2.189.0-storage-api-v1.60.0
       - name: Subir Supabase local (migrations + seed)
-        # Fora o que os testes não usam. Ficam db, auth, rest, kong, storage
-        # (migrations mexem em storage.buckets/objects) e realtime. Nomes do
-        # CLI 2.102 (mailpit, logflare e postgres-meta no lugar de inbucket,
-        # analytics e meta, que o CLI ignorava e baixava assim mesmo).
-        # O ghcr.io às vezes recusa o download com "toomanyrequests" (limite do
+        # Os testes só usam o contêiner do banco (`docker exec psql`). Antes das
+        # migrations, o CLI roda os jobs de migração do gotrue (schema auth:
+        # auth.sessions, auth.mfa_factors) e do storage-api (storage.buckets e
+        # storage.objects), com as imagens do cache, e só depois sobe os
+        # serviços. Por isso os contêineres de auth, storage, kong e postgrest
+        # ficam de fora no -x. O -x não pula o job do realtime: só a config
+        # desligada pula (SUPABASE_REALTIME_ENABLED). As migrations só usam a
+        # publicação supabase_realtime, que já vem na imagem do Postgres.
+        # Nomes do CLI 2.102 (mailpit, logflare e postgres-meta no lugar de
+        # inbucket, analytics e meta, que o CLI ignorava e baixava assim mesmo).
+        # Sem cache, o ghcr.io pode recusar com "toomanyrequests" (limite do
         # próprio registro, PR #239, 26/10/2026); o CLI só espera 4 e 8 s, então
-        # tentamos de novo com pausas de 30, 60 e 90 s. As camadas já baixadas
-        # ficam no runner e a tentativa seguinte é menor.
+        # tentamos de novo com pausas de 30, 60 e 90 s.
+        env:
+          SUPABASE_REALTIME_ENABLED: 'false'
         run: |
           for tentativa in 1 2 3 4; do
-            supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,postgres-meta && exit 0
+            supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,postgres-meta,gotrue,storage-api,kong,postgrest && exit 0
             [ "$tentativa" = 4 ] && break
             echo "::warning::supabase start falhou (tentativa $tentativa); nova tentativa em $((tentativa * 30)) s"
             supabase stop --no-backup || true

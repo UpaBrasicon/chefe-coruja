@@ -13,9 +13,9 @@ INSERT INTO public.setores (id, unidade_id, nome, tipo, ordem) VALUES
 INSERT INTO public.vinculos (perfil_id, unidade_id, papel) VALUES
   ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-00000000a9a1', 'gestor'),
   ('10000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-00000000a9a1', 'plantonista');
--- alvos da unidade: classificação 20 min, exame 30 min, permanência 40 min; medicação sem alvo
+-- alvos da unidade: chegada → triagem 20 min (a classificação da grade usa este), exame 30 min, permanência 40 min; medicação sem alvo
 INSERT INTO public.configuracoes_unidade (unidade_id, chave, valor) VALUES
-  ('00000000-0000-4000-8000-00000000a9a1', 'alvo_classificacao_min', '20'),
+  ('00000000-0000-4000-8000-00000000a9a1', 'alvo_triagem_min', '20'),
   ('00000000-0000-4000-8000-00000000a9a1', 'alvo_exame_min', '30'),
   ('00000000-0000-4000-8000-00000000a9a1', 'alvo_permanencia_min', '40');
 

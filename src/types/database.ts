@@ -10380,6 +10380,18 @@ export type Database = {
         Args: { p_medicamento: string; p_unidade: string }
         Returns: undefined
       }
+      ajustar_estoque: {
+        Args: { p_medicamento: string; p_motivo: string; p_quantidade: number; p_unidade: string }
+        Returns: Json
+      }
+      extrato_estoque: {
+        Args: { p_dias?: number; p_medicamento: string; p_unidade: string }
+        Returns: Json
+      }
+      registrar_entrada_estoque: {
+        Args: { p_documento: string; p_medicamento: string; p_motivo?: string; p_quantidade: number; p_unidade: string }
+        Returns: Json
+      }
       lancar_procedimento_conta: {
         Args: { p_conta: string; p_procedimento: string; p_profissional?: string; p_quantidade?: number; p_realizado_em?: string }
         Returns: Json
@@ -12858,6 +12870,10 @@ export type Database = {
       }
       salvar_alvo_triagem: {
         Args: { p_minutos: number; p_unidade: string }
+        Returns: Json
+      }
+      salvar_alvos_grade: {
+        Args: { p_alvos: Json; p_unidade: string }
         Returns: Json
       }
       salvar_alvos_medico: {

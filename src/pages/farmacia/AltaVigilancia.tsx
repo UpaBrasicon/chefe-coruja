@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Search, ShieldAlert } from 'lucide-react'
+import { Plus, Search, ShieldAlert } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -25,6 +26,9 @@ import { Estado } from '@/components/porta/Estado'
 // A liberação do dia a dia é a validação do item (Central do Farmacêutico ›
 // Validação). Migrations 20261031000001 e 20261101000002.
 // Revisão visual 3.7b (26/10/2026, opção B do RT): tabela e ficha, como a Disponibilidade.
+// Ponto 1 das telas do farmacêutico (RT, 27/10/2026): "Adicionar medicamento" no topo,
+// em todas as abas, para o farmacêutico e o gestor: busca no cadastro e marca na unidade
+// com motivo (a mesma definir_alta_vigilancia de hoje). Sem migration.
 
 type Aba = 'sem' | 'exige' | 'ajustes'
 
@@ -51,6 +55,7 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
   const [escolhido, setEscolhido] = React.useState<string | null>(null)
   const [busca, setBusca] = React.useState('')
   const [termo, setTermo] = React.useState('')
+  const [adicionando, setAdicionando] = React.useState(false)
 
   const sem = useQuery({
     queryKey: ['sem-liberacao', unidadeId],
@@ -74,7 +79,8 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
   const exige = (lista.data ?? []).filter((i) => i.exige)
   const ajustes = (lista.data ?? []).filter((i) => i.ajuste)
   const abaAtual: Aba = aba ?? (veSemLiberacao && semLib.length > 0 ? 'sem' : 'exige')
-  const trocarAba = (a: Aba) => { setAba(a); setEscolhido(null) }
+  const trocarAba = (a: Aba) => { setAba(a); setEscolhido(null); setAdicionando(false) }
+  const escolher = (id: string) => { setEscolhido(id); setAdicionando(false) }
   const itens = abaAtual === 'ajustes' ? ajustes : termo ? achados.data ?? [] : exige
   const carregando = abaAtual === 'sem' ? sem.isLoading : termo && abaAtual === 'exige' ? achados.isLoading : lista.isLoading
   const erro = (abaAtual === 'sem' ? sem.error : (achados.error ?? lista.error)) as Error | null
@@ -83,11 +89,12 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
   const selItem = abaAtual !== 'sem' ? itens.find((i) => i.id === escolhido) ?? itens[0] : undefined
   const aoAjustar = (id: string) => {
     void qc.invalidateQueries({ queryKey: ['alta-vigilancia', unidadeId] })
-    setAba('ajustes'); setEscolhido(id)
+    setAba('ajustes'); setEscolhido(id); setAdicionando(false)
   }
 
   return (
     <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-2">
       <Tabs value={abaAtual} onValueChange={(v) => trocarAba(v as Aba)}>
         <TabsList aria-label="Alta vigilância" className="gap-5">
           {veSemLiberacao && (
@@ -97,6 +104,12 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
           <TabsTrigger value="ajustes">Ajustes da unidade <span className="text-rotulo font-semibold text-acao tabular-nums">{ajustes.length}</span></TabsTrigger>
         </TabsList>
       </Tabs>
+        {podeAjustar && (
+          <Button size="sm" className="mb-1.5" onClick={() => { if (abaAtual === 'sem') setAba('exige'); setEscolhido(null); setAdicionando(true) }}>
+            <Plus aria-hidden /> Adicionar medicamento
+          </Button>
+        )}
+      </div>
       <MensagemErro texto={erro ? erro.message : null} />
 
       {abaAtual === 'sem' && !carregando && semLib.length === 0 ? (
@@ -128,10 +141,10 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
                 </TableRow></TableHeader>
                 <TableBody>
                   {semLib.map((a) => (
-                    <TableRow key={a.id} aria-selected={a.id === selSem?.id} onClick={() => setEscolhido(a.id)}
+                    <TableRow key={a.id} aria-selected={a.id === selSem?.id} onClick={() => escolher(a.id)}
                       className={cn('cursor-pointer', a.id === selSem?.id && 'bg-alerta-marca hover:bg-alerta-marca')}>
                       <TableCell className="pl-4 whitespace-normal">
-                        <BotaoLinha variante="linha" className="flex-col gap-0.5 border-0 p-0 hover:bg-transparent" onClick={() => setEscolhido(a.id)}>
+                        <BotaoLinha variante="linha" className="flex-col gap-0.5 border-0 p-0 hover:bg-transparent" onClick={() => escolher(a.id)}>
                           <span className="font-medium text-tinta">{a.paciente}</span>
                           <span className="text-rotulo text-tinta-sussurro">{a.local ?? '—'}</span>
                         </BotaoLinha>
@@ -155,10 +168,10 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
                 </TableRow></TableHeader>
                 <TableBody>
                   {itens.map((i) => (
-                    <TableRow key={i.id} aria-selected={i.id === selItem?.id} onClick={() => setEscolhido(i.id)}
+                    <TableRow key={i.id} aria-selected={i.id === selItem?.id} onClick={() => escolher(i.id)}
                       className={cn('cursor-pointer', i.id === selItem?.id && 'bg-alerta-marca hover:bg-alerta-marca')}>
                       <TableCell className="pl-4 whitespace-normal">
-                        <BotaoLinha variante="linha" className="flex-col gap-0.5 border-0 p-0 hover:bg-transparent" onClick={() => setEscolhido(i.id)}>
+                        <BotaoLinha variante="linha" className="flex-col gap-0.5 border-0 p-0 hover:bg-transparent" onClick={() => escolher(i.id)}>
                           <span className="font-medium text-tinta">{i.principio_ativo}</span>
                           <span className="text-rotulo text-tinta-sussurro">{apresentacao(i)}</span>
                         </BotaoLinha>
@@ -171,9 +184,10 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
             )}
           </section>
           <div className="order-first min-w-0 border-b border-fio md:order-none md:border-b-0">
-            {selSem && <FichaSemLiberacao key={selSem.id} a={selSem} unidadeId={unidadeId} podeLiberar={podeLiberar} />}
-            {selItem && <FichaItem key={`${selItem.id}:${selItem.exige}`} i={selItem} unidadeId={unidadeId} podeAjustar={podeAjustar} aoMudar={() => aoAjustar(selItem.id)} />}
-            {!selSem && !selItem && !carregando && <p className="px-5 py-4 text-apoio text-tinta-sussurro">Escolha um item na lista.</p>}
+            {adicionando && <FichaAdicionar unidadeId={unidadeId} aoMarcar={aoAjustar} fechar={() => setAdicionando(false)} />}
+            {!adicionando && selSem && <FichaSemLiberacao key={selSem.id} a={selSem} unidadeId={unidadeId} podeLiberar={podeLiberar} />}
+            {!adicionando && selItem && <FichaItem key={`${selItem.id}:${selItem.exige}`} i={selItem} unidadeId={unidadeId} podeAjustar={podeAjustar} aoMudar={() => aoAjustar(selItem.id)} />}
+            {!adicionando && !selSem && !selItem && !carregando && <p className="px-5 py-4 text-apoio text-tinta-sussurro">Escolha um item na lista.</p>}
           </div>
         </div>
       )}
@@ -280,6 +294,93 @@ function FichaItem({ i, unidadeId, podeAjustar, aoMudar }: { i: ItemAltaVigilanc
             <Button size="sm" variant="ghost" onClick={() => setAbrindo(false)}>Voltar</Button>
           </div>
           <MensagemErro texto={ajustar.error ? (ajustar.error as Error).message : null} />
+        </div>
+      )}
+    </section>
+  )
+}
+
+/**
+ * Adicionar medicamento à lista da unidade: busca no cadastro, mostra se já
+ * exige liberação e marca na unidade com motivo. O que não está no cadastro se
+ * cadastra em Unidade de consumo (ponto 4).
+ */
+function FichaAdicionar({ unidadeId, aoMarcar, fechar }: { unidadeId: string; aoMarcar: (id: string) => void; fechar: () => void }) {
+  const [busca, setBusca] = React.useState('')
+  const [termo, setTermo] = React.useState('')
+  const [escolhido, setEscolhido] = React.useState<ItemAltaVigilancia | null>(null)
+  const [motivo, setMotivo] = React.useState('')
+  React.useEffect(() => {
+    const t = setTimeout(() => setTermo(busca.trim()), 300)
+    return () => clearTimeout(t)
+  }, [busca])
+  const achados = useQuery({
+    queryKey: ['alta-vigilancia', unidadeId, termo],
+    enabled: termo.length >= 3,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('alta_vigilancia_da_unidade', { p_unidade: unidadeId, p_busca: termo })
+      if (error) throw error
+      return (data ?? []) as unknown as ItemAltaVigilancia[]
+    },
+  })
+  const marcar = useMutation({
+    mutationFn: async (i: ItemAltaVigilancia) => {
+      const { error } = await supabase.rpc('definir_alta_vigilancia', { p_unidade: unidadeId, p_medicamento: i.id, p_exige: true, p_motivo: motivo.trim() })
+      if (error) throw error
+      return i.id
+    },
+    onSuccess: (id) => aoMarcar(id),
+  })
+  const lista = achados.data ?? []
+  return (
+    <section aria-label="Adicionar medicamento" className="flex flex-col gap-3 px-5 py-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-corpo font-semibold text-tinta">Adicionar medicamento</h3>
+          <p className="text-apoio text-tinta-sussurro">Passa a exigir a liberação da farmácia nesta unidade.</p>
+        </div>
+        <Button size="xs" variant="ghost" onClick={fechar}>Fechar</Button>
+      </div>
+      {escolhido ? (
+        <div className="flex flex-col gap-2">
+          <p className="text-apoio">
+            <span className="font-medium text-tinta">{escolhido.principio_ativo}</span>{' '}
+            <span className="text-tinta-sussurro">{apresentacao(escolhido)}</span>{' '}
+            <Button size="xs" variant="ghost" onClick={() => { setEscolhido(null); setMotivo('') }}>Trocar</Button>
+          </p>
+          {escolhido.exige ? (
+            <p className="text-apoio text-tinta-apoio">Já exige liberação nesta unidade: {origemAltaVigilancia(escolhido)}.</p>
+          ) : (
+            <>
+              <Input aria-label="Motivo" placeholder="Motivo (mínimo de 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+              <div><Button size="sm" disabled={motivo.trim().length < 10 || marcar.isPending} onClick={() => marcar.mutate(escolhido)}>Marcar na unidade</Button></div>
+              <span className="text-rotulo text-tinta-sussurro">Fica no histórico, em Ajustes da unidade, com quem marcou e quando.</span>
+            </>
+          )}
+          <MensagemErro texto={marcar.error ? (marcar.error as Error).message : null} />
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1.5">
+          <label className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
+            <Input aria-label="Buscar no cadastro" className="h-8 pl-8" placeholder="Medicamento do cadastro (3 letras ou mais)" value={busca} onChange={(e) => setBusca(e.target.value)} />
+          </label>
+          <MensagemErro texto={achados.error ? (achados.error as Error).message : null} />
+          {termo.length >= 3 && !achados.isLoading && lista.length === 0 && (
+            <p className="text-apoio text-tinta-sussurro">
+              Nada no cadastro com esse nome. <Link to="/unidade-consumo" className="text-acao underline-offset-2 hover:underline">Cadastrar em Unidade de consumo</Link>
+            </p>
+          )}
+          <ul>
+            {lista.map((i) => (
+              <li key={i.id}>
+                <BotaoLinha variante="linha" className="flex-col gap-0.5 px-0" onClick={() => setEscolhido(i)}>
+                  <span className="font-medium text-tinta">{i.principio_ativo}</span>
+                  <span className="text-rotulo text-tinta-sussurro">{apresentacao(i)}{i.exige ? ' · já exige liberação' : ''}</span>
+                </BotaoLinha>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </section>

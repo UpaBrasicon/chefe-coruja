@@ -13,6 +13,8 @@ export type LimitesUnidade = {
   checkin_tolerancia_min: number
   alvo_triagem_min: number
   alvos_medico: Record<'vermelho' | 'laranja' | 'amarelo' | 'verde' | 'azul', number>
+  /** Grade de ações (migration 20270108000001): nulo = sem alvo, a coluna nunca atrasa. */
+  alvos_grade: { exame: number | null; medicacao: number | null; permanencia: number | null }
   atualizado_em: string | null
 }
 
@@ -24,6 +26,7 @@ export const LIMITES_PADRAO: LimitesUnidade = {
   checkin_tolerancia_min: 30,
   alvo_triagem_min: 10,
   alvos_medico: { vermelho: 0, laranja: 10, amarelo: 60, verde: 120, azul: 240 },
+  alvos_grade: { exame: null, medicacao: null, permanencia: null },
   atualizado_em: null,
 }
 

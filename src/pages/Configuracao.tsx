@@ -385,6 +385,9 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
   // alvos da classificação ao médico, por cor (Fase 1, tarefa 4; migration 20261029000003)
   const [alvosMedico, setAlvosMedico] = React.useState<Record<string, string>>(
     Object.fromEntries(Object.entries(inicial.alvos_medico).map(([c, v]) => [c, String(v)])))
+  // alvos da grade de ações (migration 20270108000001): vazio = sem alvo
+  const [alvosGrade, setAlvosGrade] = React.useState<Record<string, string>>(
+    Object.fromEntries(Object.entries(inicial.alvos_grade).map(([k, v]) => [k, v == null ? '' : String(v)])))
   const [salvando, setSalvando] = React.useState(false)
   const [msg, setMsg] = React.useState<string | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
@@ -408,12 +411,17 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
       p_unidade: unidadeId,
       p_alvos: Object.fromEntries(Object.entries(alvosMedico).map(([c, v]) => [c, Number(v)])),
     })
+    const grade = error || alvo?.error || alvos?.error ? null : await supabase.rpc('salvar_alvos_grade', {
+      p_unidade: unidadeId,
+      p_alvos: Object.fromEntries(Object.entries(alvosGrade).map(([k, v]) => [k, v.trim() === '' ? null : Number(v)])),
+    })
     setSalvando(false)
-    if (error || alvo?.error || alvos?.error) {
-      setErro((error ?? alvo?.error ?? alvos?.error)!.message)
+    if (error || alvo?.error || alvos?.error || grade?.error) {
+      setErro((error ?? alvo?.error ?? alvos?.error ?? grade?.error)!.message)
       return
     }
     setMsg('Limites salvos.')
+    void queryClient.invalidateQueries({ queryKey: ['porta-grade', unidadeId] })
     void queryClient.invalidateQueries({ queryKey: ['espera-triagem', unidadeId] })
     void queryClient.invalidateQueries({ queryKey: ['espera-medico', unidadeId] })
     void queryClient.invalidateQueries({ queryKey: ['porta-agora', unidadeId] })
@@ -478,6 +486,17 @@ function FormLimites({ inicial, unidadeId, podeEditar }: { inicial: LimitesUnida
                   onChange={(e) => setAlvosMedico((a) => ({ ...a, [c]: e.target.value }))} className="w-24" />
               </div>
             ))}
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
+          <span className="text-apoio font-medium text-tinta">Alvos da grade de ações</span>
+          <span className="text-rotulo text-tinta-sussurro">
+            Em minutos. Deixe em branco para não ter alvo: a coluna mostra feito ou pedido e nunca fica vermelha. A classificação usa o alvo chegada → triagem, acima.
+          </span>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {campo('alvo-grade-exame', 'Exame', alvosGrade.exame ?? '', (v) => setAlvosGrade((a) => ({ ...a, exame: v })), 1, 1440, 'minutos', 'Do pedido ao resultado.')}
+            {campo('alvo-grade-medicacao', 'Medicação', alvosGrade.medicacao ?? '', (v) => setAlvosGrade((a) => ({ ...a, medicacao: v })), 1, 1440, 'minutos', 'Da prescrição à checagem.')}
+            {campo('alvo-grade-permanencia', 'Permanência no PS', alvosGrade.permanencia ?? '', (v) => setAlvosGrade((a) => ({ ...a, permanencia: v })), 1, 1440, 'minutos', 'Tempo total no PS, depois do médico.')}
           </div>
         </div>
         {erro && <p className="text-apoio text-critico">{erro}</p>}

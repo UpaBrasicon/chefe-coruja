@@ -158,6 +158,10 @@ ECR público ou do ghcr.io (mesmo digest nos três) com o nome que o CLI procura
 `postgres-meta`; os antigos eram ignorados e baixavam três imagens à toa). Tentado no próprio PR e sem
 resolver sozinho: login no ghcr.io, só as novas tentativas e só o ECR ("Data limit exceeded").
 Registro, limites e reversão em `infra/release.md`. Evidência: o job do banco verde no próprio PR da correção.
+Em 27/10/2026 (PR #270, branch `fix/ci-banco-servicos-cache`) o ghcr.io barrou `realtime` e `storage-api`:
+as imagens do gotrue e do storage-api (jobs de migração dos schemas `auth` e `storage`) entram no cache, o
+realtime sai pela config (`SUPABASE_REALTIME_ENABLED=false`) e os contêineres de auth, storage, kong e
+postgrest saem no `-x`, porque os testes só usam o banco.
 
 ---
 
@@ -933,7 +937,7 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 |---|---|---|---|---|
 | 1 | P1 | Integração laboratório/LIS | **Decisões do RT em 18/10/2026 ("1a 2a 3a 4a 5a 6a"):** sem LIS de cliente definido, porta genérica FHIR R4 pela API, com chave por unidade e escopo de exames (adaptador por LIS real depois); catálogo com código (grupo 02.02 do SIGTAP, LOINC quando houver); resultado estruturado como o laboratório mandar (analito, valor, unidade, faixa e marca do laboratório) mais o laudo em PDF, sem interpretação do sistema; situação vinda do LIS (pedido, coletado, em análise, liberado, cancelado com motivo); o registro à mão continua, marcado "manual"; resultado liberado avisa a equipe, crítico só quando o laboratório marcar, retificação vira versão nova com a anterior no histórico. **Etapas, cada uma em PR próprio ("0a"):** 1.1 catálogo de exames; 1.2 resultado e situação; 1.3 porta FHIR na API. **1.1 feita em 19/10/2026 (PR #137, produção no mesmo dia):** lista de exames da unidade pelo gestor sobre o grupo 02.02 (nome curto, LOINC preenchido pela implantação, marca de botão); sem lista, busca no grupo inteiro; botões do pedido rápido vêm da lista; texto livre continua "sem código"; pedido com urgência (rotina ou urgente) e observação; kits ficam para depois. Subtarefas originais: Definir padrão (preferir HL7 v2 ou FHIR, conforme o LIS do cliente); pedido; resultado; status; anexos; auditoria | Exame solicitado retorna resultado no prontuário |
 | 2 | P1 | Integração imagem/RIS/PACS | Pedido; laudo; link/imagem; status | Médico acessa laudo/imagem pelo PEP |
-| 3 | P2 | ERP/financeiro | Exportar conta/produção; conciliar retorno; logs | Dados financeiros enviados a ERP |
+| 3 | P2 | ERP/financeiro | **Decisões do RT em 27/10/2026 ("1a 2a 3a 4a 5a"):** o ERP busca pela API v1, com o recurso novo `financeiro` na chave da unidade, e a tela do faturamento baixa o mesmo conteúdo; vai a conta faturada (cabeçalho, itens guardados no fechamento, total e glosas), do paciente só o prontuário; JSON no contrato da API v1 e CSV com os mesmos campos; o ERP responde por versão ("lancada" com id, data e valor → conciliada ou divergente; nada muda a conta); cada faturamento gera uma versão, reabrir a conta a substitui, o ERP estorna e o faturamento seguinte gera a próxima. **Ajuste do RT no mesmo dia: "o ERP entra tudo: remédio, procedimento, plantões"** — a versão leva também o consumo de medicamentos (sem valor, como na 5B-3); os plantões entram em etapa própria. Telas a partir de referências do Refero. **Etapas, cada uma em PR próprio:** 3.1 banco da conta para o ERP; 3.2 porta na API (Edge Function, OpenAPI, chave com `financeiro`, simulador, `infra/erp-financeiro.md`); 3.3 plantões para o ERP; 3.4 tela do faturamento (versões, conciliação, baixar CSV/JSON). **3.1 na homologação em 27/10/2026:** migration `20270120000001_erp_contas.sql` (tabela `conta_versoes_erp`, gatilhos na conta e na glosa, porta `api_v1_financeiro` só para a Edge Function); teste `supabase/tests/fase5c_erp_contas.sql` e rollback passaram na homologação. O total da versão soma só o que vai ao SUS (a linha do BPA com destino "fora" fica de fora do total e aparece marcada). Subtarefas originais: Exportar conta/produção; conciliar retorno; logs | Dados financeiros enviados a ERP |
 | 4 | P2 | Webhooks | Eventos: paciente criado, atendimento aberto, alta, internação, prescrição, regulação; assinatura HMAC; retry com backoff; idempotência no receptor | Terceiro recebe eventos com segurança |
 | 5 | P2 | e-SUS/RNDS | Implementar conforme credenciais e escopo | Integração validada em ambiente oficial |
 | 5a | P2 | Envio da regulação à RNDS (MIRA) | Exigido pela Portaria GM/MS 9.262/2025 para sistema próprio. Montar o registro MIRA a partir das solicitações de regulação (os campos já são guardados desde a Fase 4, tarefa 1), enviar à RNDS e reenviar ao mudar o status. Decisão do RT de 11/10/2026 | Solicitações de regulação aceitas no ambiente de homologação da RNDS |
@@ -958,9 +962,23 @@ pelo DiagnosticReport; o link do PACS só vale em https e de domínio cadastrado
 tela); a enfermagem segue marcando realizado onde não há RIS; o simulador ganhou `--modo imagem`. A
 função antiga da porta do laboratório saiu (contração). Próxima: **tarefa 3, ERP/financeiro**.
 
+**Tarefa 3, plantões para o ERP (decisões do RT em 27/10/2026, "1a 2a 3a"):** vai o plantão realizado
+com o valor da tabela de remuneração da unidade (setor e turno antes do genérico; parte de plantão
+fracionado proporcional às horas do turno, como na tela de vagas); falta justificada e plantão sem
+presença vão na lista com valor zero; do profissional, nome, CPF, conselho, registro com UF e CBO; o
+gestor fecha o mês depois de acabar, e a correção reabre com motivo e gera a versão seguinte. Ordem
+das etapas ajustada: plantões no banco antes da porta da API, para a porta sair de uma vez com contas
+e plantões (3.1 contas, 3.2 plantões, 3.3 porta, 3.4 telas). **Banco dos plantões na homologação em
+27/10/2026:** migration `20270120000002_erp_plantoes.sql` (`plantao_versoes_erp`,
+`plantoes_erp_previa`, `fechar_plantoes_erp`, `reabrir_plantoes_erp`, só o gestor, com segundo
+fator); teste `supabase/tests/fase5c_erp_plantoes.sql` e rollback passaram na homologação.
+
 **Pausa da 5C em 20/10/2026 (pedido do RT):** a tarefa 3 (ERP/financeiro) para antes do código, para a
 trilha "Revisão visual", abaixo. As cinco perguntas da tarefa 3 (como chega ao ERP, o que vai, formato,
 conciliação, conta reaberta) ficam feitas e sem resposta; voltam na retomada.
+
+**Retomada em 27/10/2026:** a trilha "Revisão visual" acabou com a grade de ações do gestor; a 5C volta
+pela tarefa 3. Diagnóstico e decisões na linha da tarefa 3, acima.
 
 ---
 
@@ -1100,7 +1118,7 @@ hora, com ordenação pelo título da coluna. Registro e imagens em `docs/fronte
 
 | Prioridade | Item | Onde entra | O que é |
 |---|---|---|---|
-| P1 | Grade de ações no gestor | **Depois da 3.9, como item próprio** (decisão do RT em 27/10/2026: pede consulta nova no banco). **Em andamento:** diagnóstico em `docs/gestor/GRADE-ACOES-DIAGNOSTICO.md`; decisões D1–D5 aceitas pelo RT em 27/10/2026 (aba em Porta; só triagem e atendimento; "No PS" vermelho pelo alvo da cor antes do médico e pelo alvo de permanência da unidade depois; alvos de classificação, exame, medicação e permanência por unidade, sem valor padrão; chamada repetida com a hora da última e quantas vezes). Banco: `porta_grade` aplicada na homologação em 27/10/2026, teste `supabase/tests/porta_grade.sql` passou lá, 80 pacientes em ~10 ms, rollback (`DROP FUNCTION`) testado. Falta: tela onde a unidade define os alvos novos, desenho da grade (Refero) e frontend | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
+| P1 | Grade de ações no gestor | **Depois da 3.9, como item próprio** (decisão do RT em 27/10/2026: pede consulta nova no banco). **Em produção desde 27/10/2026** (diagnóstico #260, banco #261, tela #264, desenho #265). Diagnóstico em `docs/gestor/GRADE-ACOES-DIAGNOSTICO.md`; decisões D1–D5 aceitas pelo RT (aba em Porta; só triagem e atendimento; "No PS" vermelho pelo alvo da cor antes do médico e pelo alvo de permanência da unidade depois; alvos de classificação, exame, medicação e permanência por unidade, sem valor padrão; chamada repetida com a hora da última e quantas vezes). Banco: `porta_grade`, testada na homologação (`supabase/tests/porta_grade.sql`; 80 pacientes em ~10 ms; rollback testado) e aplicada na produção pelo RT com `producao:push` (conferida de fora: a chamada sem login é recusada por permissão, e não por "função não encontrada"). Tela: aba "Grade de ações" na Porta, desenho B (tabela com faixa, Zendesk Status + Symphony), conferida pelo RT na homologação; produção conferida pelo pacote publicado. **Alvos da grade em produção desde 27/10/2026 (PR #267):** em Unidade › Configurações › Limites da unidade, o gestor define exame, medicação e permanência (em branco = sem alvo; `salvar_alvos_grade`, só o gestor, com segundo fator, auditado); a coluna Classificação usa o alvo chegada → triagem que a unidade já tinha (padrão 10 min; decisão do RT, um alvo só para a mesma coisa). Teste `supabase/tests/alvos_grade.sql` passou na homologação; RT conferiu lá; banco aplicado na produção pelo RT e conferido de fora; tela conferida pelo pacote publicado. **Grade de ações concluída** | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
 | P2 | Fila do PS com dados novos na tabela | A decidir pelo RT | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
 
 **3.8 antecipada (Central do Plantonista, calculadoras, escores e condutas) em produção desde
@@ -1679,17 +1697,21 @@ pelo ETL, e o banco só deixa o super admin inserir (65 medicamentos ativos na h
 
 | Ordem | Prioridade | Ponto do RT | Diagnóstico | Proposta | Situação |
 |---|---|---|---|---|---|
-| 1 | P1 | 6 — O farmacêutico não precisa da aba Prontuários | O farmacêutico tem o item no menu, as rotas `/prontuarios` e `/prontuarios/:pacienteId`, a tela na paleta de busca e, no banco, `papel_pode_pedir_acesso` com `farmaceutico`. Enfermagem e telemedicina também têm; o gestor decide os pedidos em Auditoria | Tirar o farmacêutico do menu, das duas rotas e de `papel_pode_pedir_acesso`; pedido aprovado antes deixa de abrir leitura; pendentes cancelados com auditoria | Aprovado |
-| 2 | P1 | 4 — Unidade de consumo não adiciona item novo com apresentação e forma | Não há cadastro de medicamento na tela nem RPC; não há coluna de forma farmacêutica | `cadastrar_medicamento`, `editar_medicamento` e `inativar_medicamento` (farmacêutico ou gestor, com histórico); coluna `forma_farmaceutica`; "Novo medicamento" na tela, com os parecidos antes de gravar | Aprovado |
-| 3 | P1 | 2 — Diluição não adiciona medicação nem diluição | "Nova diluição" só no topo da aba Rascunhos e só para medicamento do catálogo. **Achado:** a diluição nova nasce como modelo da rede, e qualquer farmacêutico a publica para todas as unidades | Botão visível em todas as abas; diluição nova da unidade por padrão; modelo da rede só para quem o RT decidir; vias IN e VO | Aprovado |
-| 4 | P1 | 5 — Dispensação avulsa: controle do que sai e do que entra | A saída avulsa baixa o estoque com destino, motivo e auditoria; a devolução volta. A entrada não existe: o saldo é sobrescrito sem motivo, sem histórico e sem auditoria | Tabela `movimentos_estoque` (só inserção); entrada com documento; ajuste de inventário com motivo; extrato por item; filtro por período no Registro | Aprovado |
-| 5 | P2 | 1 — Alta vigilância não adiciona medicação | Adiciona pela busca "Buscar no cadastro", só na aba "Exige liberação"; medicamento fora do catálogo não entra | Botão "Adicionar medicamento" em todas as abas; sem migration | Aprovado |
-| 6 | P2 | 3 — Quem cadastra o que está em falta? | O médico pela prescrição; o farmacêutico pela Disponibilidade e pelo Painel, só com saldo em falta ou crítico; a aba Faltas não registra | Botão "Registrar falta" na aba Faltas; sem migration | Aprovado |
+| 1 | P1 | 6 — O farmacêutico não precisa da aba Prontuários | O farmacêutico tem o item no menu, as rotas `/prontuarios` e `/prontuarios/:pacienteId`, a tela na paleta de busca e, no banco, `papel_pode_pedir_acesso` com `farmaceutico`. Enfermagem e telemedicina também têm; o gestor decide os pedidos em Auditoria | Tirar o farmacêutico do menu, das duas rotas e de `papel_pode_pedir_acesso`; pedido aprovado antes deixa de abrir leitura; pendentes cancelados com auditoria | Feito: PR #263 (master), migration `20270105000001`; testado pelo RT na homologação em 27/10; falta o "ok produção" da migration (o menu já saiu em produção) |
+| 2 | P1 | 4 — Unidade de consumo não adiciona item novo com apresentação e forma | Não há cadastro de medicamento na tela nem RPC; não há coluna de forma farmacêutica | `cadastrar_medicamento`, `editar_medicamento` e `inativar_medicamento` (farmacêutico ou gestor, com histórico); coluna `forma_farmaceutica`; "Novo medicamento" na tela, com os parecidos antes de gravar | Feito: PR #268, migration `20270106000001` (decisões: item novo só na unidade; forma em campo próprio); testado pelo RT na homologação em 27/10; falta o merge e o "ok produção" |
+| 3 | P1 | 2 — Diluição não adiciona medicação nem diluição | "Nova diluição" só no topo da aba Rascunhos e só para medicamento do catálogo. **Achado:** a diluição nova nasce como modelo da rede, e qualquer farmacêutico a publica para todas as unidades | Botão visível em todas as abas; diluição nova da unidade por padrão; modelo da rede só para quem o RT decidir; vias IN e VO | Feito: PR #269 (master), migration `20270109000001` (decisão: modelo da rede só do super admin; Nova diluição em um passo, com diluente, volume e tempo); falta o reteste do formulário e o "ok produção" |
+| 4 | P1 | 5 — Dispensação avulsa: controle do que sai e do que entra | A saída avulsa baixa o estoque com destino, motivo e auditoria; a devolução volta. A entrada não existe: o saldo é sobrescrito sem motivo, sem histórico e sem auditoria | Tabela `movimentos_estoque` (só inserção); entrada com documento; ajuste de inventário com motivo; extrato por item; filtro por período no Registro | Feito: PR #272, migration `20270110000001` (decisão: lote e validade depois); testado pelo RT na homologação em 27/10; falta o merge e o "ok produção" |
+| 5 | P2 | 1 — Alta vigilância não adiciona medicação | Adiciona pela busca "Buscar no cadastro", só na aba "Exige liberação"; medicamento fora do catálogo não entra | Botão "Adicionar medicamento" em todas as abas; sem migration | Feito: PR #274, sem migration; testado pelo RT na homologação em 27/10; falta o merge |
+| 6 | P2 | 3 — Quem cadastra o que está em falta? | O médico pela prescrição; o farmacêutico pela Disponibilidade e pelo Painel, só com saldo em falta ou crítico; a aba Faltas não registra | Botão "Registrar falta" na aba Faltas; sem migration | Feito: "Registrar falta" na aba Faltas, só para a farmácia (decisão do RT), sem migration; falta o teste do RT na homologação e o merge |
 
-Perguntas abertas ao RT (detalhe no documento): o catálogo continua um só para a rede; forma
-farmacêutica como campo próprio; quem publica o modelo da rede de diluição; botão de falta para a
-enfermagem; lote e validade agora ou depois; a regra do ponto 6 vale também para enfermagem e
-telemedicina.
+Respostas do RT em 27/10/2026, item a item: ponto 6, só o farmacêutico sai (enfermagem e telemedicina
+seguem); ponto 4, o item novo vale só na unidade de quem cadastrou e a forma farmacêutica é campo
+próprio; ponto 2, o modelo da rede de diluição é só do super admin; ponto 5, lote e validade ficam
+para depois; ponto 3, só a farmácia registra falta (a enfermagem não ganha botão). Registro e
+evidência de cada ponto em `docs/farmacia/PONTO<n>-*.md`.
+
+Para depois (decisão do RT em 27/10/2026): **lote e validade no estoque** (entrada com lote e
+validade, saldo por lote, aviso do que vence e escolha do lote na dispensação), como item próprio.
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.

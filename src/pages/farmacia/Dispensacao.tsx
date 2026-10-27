@@ -16,7 +16,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PackageOpen } from 'lucide-react'
 import * as React from 'react'
 
-import { TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
+import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
 import { porPaciente, type Dispensacao, type ItemParaDispensar } from '@/lib/dispensacao'
+import { PERIODOS_REGISTRO } from '@/lib/movimentosEstoque'
 import { normalizarMedicamento } from '@/lib/search'
 import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
 import { supabase } from '@/lib/supabase'
@@ -257,10 +258,12 @@ function Registro({ unidade, podeAgir }: { unidade: string; podeAgir: boolean })
   const [devolvendo, setDevolvendo] = React.useState<Dispensacao | null>(null)
   const [qtd, setQtd] = React.useState('1')
   const [motivo, setMotivo] = React.useState('')
+  // ponto 5 (RT, 27/10/2026): o Registro olha mais que 72 h
+  const [horas, setHoras] = React.useState<number>(72)
   const lista = useQuery({
-    queryKey: ['dispensacoes', unidade],
+    queryKey: ['dispensacoes', unidade, horas],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('dispensacoes_da_unidade', { p_unidade: unidade })
+      const { data, error } = await supabase.rpc('dispensacoes_da_unidade', { p_unidade: unidade, p_horas: horas })
       if (error) throw error
       return data as unknown as { dispensacoes: Dispensacao[]; a_conferir: number; estoque_negativo: { medicamento: string; saldo: number }[] }
     },
@@ -287,8 +290,11 @@ function Registro({ unidade, podeAgir }: { unidade: string; podeAgir: boolean })
           <ul className="list-disc pl-5 text-tinta-apoio">{d!.estoque_negativo.map((e) => <li key={e.medicamento}>{e.medicamento}: {e.saldo}</li>)}</ul>
         </div>
       )}
-      <TituloSecao extra={d && d.a_conferir > 0 ? `${d.a_conferir} retirada(s) sem farmacêutico a conferir` : 'últimas 72 h'}>Dispensações</TituloSecao>
-      {lista.isLoading ? <Spinner /> : (d?.dispensacoes ?? []).length === 0 ? <p className="text-tinta-sussurro">Nenhuma dispensação nas últimas 72 h.</p> : (
+      <TituloSecao extra={d && d.a_conferir > 0 ? `${d.a_conferir} retirada(s) sem farmacêutico a conferir` : `últimas ${PERIODOS_REGISTRO.find(([h]) => h === horas)?.[1] ?? `${horas} h`}`}>Dispensações</TituloSecao>
+      <Chips rotulo="Período">
+        {PERIODOS_REGISTRO.map(([h, rotulo]) => <Chip key={h} ativo={horas === h} onClick={() => setHoras(h)}>{rotulo}</Chip>)}
+      </Chips>
+      {lista.isLoading ? <Spinner /> : (d?.dispensacoes ?? []).length === 0 ? <p className="text-tinta-sussurro">Nenhuma dispensação nas últimas {PERIODOS_REGISTRO.find(([h]) => h === horas)?.[1] ?? `${horas} h`}.</p> : (
         <div className="overflow-x-auto rounded-container border border-fio bg-superficie">
           <Table className="min-w-[640px] text-apoio">
             <TableHeader className="bg-transparent">
