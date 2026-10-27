@@ -972,6 +972,14 @@ e plantões (3.1 contas, 3.2 plantões, 3.3 porta, 3.4 telas). **Banco dos plant
 27/10/2026:** migration `20270120000002_erp_plantoes.sql` (`plantao_versoes_erp`,
 `plantoes_erp_previa`, `fechar_plantoes_erp`, `reabrir_plantoes_erp`, só o gestor, com segundo
 fator); teste `supabase/tests/fase5c_erp_plantoes.sql` e rollback passaram na homologação.
+**3.1 e 3.2 no master em 27/10/2026 (PRs #270 e #271).** **3.3, porta da API, na homologação em
+27/10/2026:** rotas `/financeiro/contas` e `/financeiro/plantoes` na Edge Function `api`, com o retorno
+por versão (POST; 409 "conflito" para lançar versão substituída ou estornar a vigente); migration
+`20270120000003_api_financeiro_plantoes.sql` (ações `plantoes` e `plantoes_retorno`); teste
+`supabase/tests/fase5c_api_financeiro_plantoes.sql` e rollback passaram na homologação; regras em
+`supabase/functions/api/financeiro.ts` (teste no CI); OpenAPI e página do integrador; recurso
+"Financeiro (ERP)" na tela de chaves; simulador `scripts/erp-simulador.mjs`; `infra/erp-financeiro.md`.
+Ponta a ponta na homologação com chave temporária (200, 400, 401, 403, 404, 405). Falta a 3.4 (telas).
 
 **Pausa da 5C em 20/10/2026 (pedido do RT):** a tarefa 3 (ERP/financeiro) para antes do código, para a
 trilha "Revisão visual", abaixo. As cinco perguntas da tarefa 3 (como chega ao ERP, o que vai, formato,
