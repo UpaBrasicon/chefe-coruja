@@ -54,7 +54,7 @@ jobs:
           REDOCLY_TELEMETRY: 'off'
       # Fase 3, tarefa 7: rotas, parâmetros e erros da Edge Function `api`
       - name: Edge Function da API (regras)
-        run: node --experimental-strip-types --test supabase/functions/api/contrato.test.ts supabase/functions/api/fhir.test.ts
+        run: node --experimental-strip-types --test supabase/functions/api/contrato.test.ts supabase/functions/api/fhir.test.ts supabase/functions/api/financeiro.test.ts
       - name: Testes clínicos
         run: npm run test:clinico
       - name: Gateway (cópia da desidentificação)
