@@ -84,9 +84,10 @@ Contrato completo em `docs/api/openapi.yaml`, seção "Financeiro (ERP)".
 | `20270120000001_erp_contas.sql` | `conta_versoes_erp`, gatilhos na conta e na glosa, `api_v1_financeiro` (contas), recurso `financeiro` na chave |
 | `20270120000002_erp_plantoes.sql` | `plantao_versoes_erp`, `plantoes_erp_previa`, `fechar_plantoes_erp`, `reabrir_plantoes_erp` (gestor, segundo fator) |
 | `20270120000003_api_financeiro_plantoes.sql` | ações `plantoes` e `plantoes_retorno` na porta |
+| `20270120000004_erp_telas.sql` | `erp_contas_da_unidade` e `erp_baixar` para a tela (cada baixa vai para a auditoria) |
 
-Testes: `supabase/tests/fase5c_erp_contas.sql`, `fase5c_erp_plantoes.sql` e
-`fase5c_api_financeiro_plantoes.sql`. Eles não dependem da semente local e rodam também na
+Testes: `supabase/tests/fase5c_erp_contas.sql`, `fase5c_erp_plantoes.sql`,
+`fase5c_api_financeiro_plantoes.sql` e `fase5c_erp_telas.sql`. Eles não dependem da semente local e rodam também na
 homologação. As regras da Edge Function estão em `supabase/functions/api/financeiro.test.ts`, no CI.
 
 ## Teste na homologação
@@ -130,12 +131,33 @@ homologação. As regras da Edge Function estão em `supabase/functions/api/fina
   Cada chamada ficou em `api_acessos`. O fluxo com dados (lançar, divergir, estornar) foi
   conferido pelos testes de banco. Na homologação, o RT confere com o simulador.
 
+## Produção (27/10/2026)
+
+- **Banco:** o RT aplicou com `npm run producao:push -- --confirmo-producao`.
+  - Rodou de uma pasta limpa, feita do master (`producao-push`), e não da pasta principal. A
+    principal estava em outra branch, com arquivos não commitados e uma migration só local.
+  - O `--dry-run` antes listou só a `20270120000001`, a `20270120000002` e a `20270120000003`.
+  - A lista de migrations da produção mostra as três nas duas colunas.
+- **Funções:** `node scripts/ambiente/supabase-alvo.mjs functions producao --confirmo-producao`
+  publicou `api`, `clinical-search`, `enviar-codigo-2fa` e `folha` do commit `ba78202`.
+- **Conferido de fora:** `https://api.chefecoruja.com.br/v1/financeiro/contas` e
+  `/financeiro/plantoes` respondem 401 "Chave inválida" sem chave. A versão anterior daria 404.
+- **Ainda não há chave de ERP na produção.** O super admin cria uma quando houver ERP de cliente.
+- **3.4, telas (PR #287, `be0ec81`):** o RT aplicou a `20270120000004_erp_telas.sql` com
+  `npx supabase db push --linked --include-all`, da mesma pasta, depois do `--dry-run` (só ela na
+  lista). O `--include-all` é necessário porque a produção já tem migrations de número maior
+  (`20270131000001` e `20270131000002`), e o `producao:push` não passa essa opção. A tela saiu com
+  o merge: o pacote de www.chefecoruja.com.br tem a rota `/faturamento/erp`. Sem mudança nas
+  funções.
+
 ## Como reverter
 
 1. **Edge Function:** publicar a `api` do commit anterior. A função antiga não tem as rotas
    `/financeiro`, e o ERP passa a receber 404.
 2. **Chaves:** revogar as chaves com o recurso `financeiro` (Administração › Integrações).
 3. **Banco**, na ordem inversa, com o rollback escrito no cabeçalho de cada migration:
+   - a `20270120000004` tira as funções da tela (`erp_baixar` e `erp_contas_da_unidade`); a tela
+     sai junto, revertendo o PR #287;
    - a `20270120000003` volta a porta da 3.1;
    - a `20270120000002` tira os plantões;
    - a `20270120000001` tira as versões das contas e o recurso.
