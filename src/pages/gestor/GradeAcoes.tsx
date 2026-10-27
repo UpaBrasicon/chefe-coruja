@@ -67,7 +67,7 @@ export function GradeAcoes() {
         </span>
         <span className="text-rotulo text-tinta-sussurro">
           No PS em vermelho: acima do alvo da cor antes do médico{permanencia ? `; acima de ${tempo(permanencia)} depois` : ''}
-          {' · '}Acesso registrado na auditoria
+          {' · '}Alvos em Unidade › Configurações · Acesso registrado na auditoria
         </span>
       </div>
       <Chips rotulo="Filtrar pacientes">
