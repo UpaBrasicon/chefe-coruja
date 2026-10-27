@@ -13,17 +13,20 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { faixaEtaria, rotuloFaixa, rotuloIdade } from '@/domain/idade'
 import { homonimos } from '@/domain/homonimos'
 import { rotulosPrioridade } from '@/domain/prioridade'
-import { ALVO_MIN, gravidade, ordemMedica, type CorRisco } from '@/domain/risco'
+import { gravidade, ordemMedica, type CorRisco } from '@/domain/risco'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Spinner } from '@/components/ui/spinner'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
+import { BarraConsultorio } from '@/components/porta/BarraConsultorio'
 import { BotaoChamar } from '@/components/porta/Chamada'
 import { SeloHomonimo } from '@/components/porta/SeloHomonimo'
 import { EncaminhamentosRecebidos } from '@/components/encaminhamento/EncaminhamentosRecebidos'
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
+import { useConsultorioDoPlantao } from '@/hooks/useConsultorioDoPlantao'
+import { useLimitesUnidade } from '@/lib/limitesUnidade'
 
 import { hoje, hora, minutos, nomeDe, rotuloDesfecho, useAgora, type EpFila } from './comum'
 import { Estado } from '@/components/porta/Estado'
@@ -137,6 +140,11 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
     },
   })
   const meusSetores = setores.data ?? []
+  // consultório do plantão (escolhido uma vez, no topo) e o alvo da cor da unidade, não o
+  // fixo de Manchester (decisões do RT em 27/10/2026, P2 "fila do PS")
+  const consultorio = useConsultorioDoPlantao(meusSetores.length > 0)
+  const { limites } = useLimitesUnidade(unidadeAtiva?.unidade_id)
+  const alvoDe = (cor: CorRisco) => limites.alvos_medico[cor]
 
   const fila = useQuery({
     queryKey: ['fila-medica', unidadeAtiva?.unidade_id, meusSetores],
@@ -174,7 +182,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
 
   const aguardando = (fila.data ?? []).filter((e) => !e.atendimento_iniciado_em)
   const emAtendimento = (fila.data ?? []).filter((e) => e.atendimento_iniciado_em)
-  const acimaDoAlvo = aguardando.filter((e) => minDesde(e.classificado_em, agora) > ALVO_MIN[e.cor_atual]).length
+  const acimaDoAlvo = aguardando.filter((e) => minDesde(e.classificado_em, agora) > alvoDe(e.cor_atual)).length
   const contagem: Record<Aba, number> = { aguardando: aguardando.length, atendimento: emAtendimento.length, saidas: (saidas.data ?? []).length }
   const iguais = homonimos(fila.data ?? [])
   const setoresDaFila = [...new Set((fila.data ?? []).map((e) => e.setor_id))]
@@ -200,6 +208,8 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
           Você não está na escala de nenhuma porta agora: a fila aparece para quem está de plantão.
         </p>
       )}
+
+      <BarraConsultorio setores={meusSetores} consultorio={consultorio} />
 
       <Tabs value={aba} onValueChange={(v) => trocarAba(v as Aba)} className="gap-3">
         <div className="flex flex-wrap items-end gap-x-4 gap-y-1 border-b border-fio">
@@ -236,7 +246,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                 </TableHeader>
                 <TableBody>
                   {ordenar(aguardando, ordemAg, { cor: porCor, espera: (e) => minDesde(e.classificado_em, agora) }).map((e) => {
-                    const acima = minDesde(e.classificado_em, agora) > ALVO_MIN[e.cor_atual]
+                    const acima = minDesde(e.classificado_em, agora) > alvoDe(e.cor_atual)
                     const n = chamadas.data?.get(e.id) ?? 0
                     return (
                       <TableRow key={e.id}>
@@ -244,15 +254,15 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                         <TableCell><Paciente e={e} iguais={iguais} /></TableCell>
                         <Queixa texto={e.queixa} />
                         <TableCell className={cn('tabular-nums', acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>{minutos(e.classificado_em, agora)}</TableCell>
-                        <TableCell className="tabular-nums text-tinta-sussurro">{ALVO_MIN[e.cor_atual]} min</TableCell>
+                        <TableCell className="tabular-nums text-tinta-sussurro">{alvoDe(e.cor_atual)} min</TableCell>
                         <TableCell>
                           {n === 0 ? <Estado tom="cinza">Aguardando</Estado>
                             : <Estado tom={n >= 3 ? 'vermelho' : 'ambar'}>Chamado {n} {n === 1 ? 'vez' : 'vezes'}</Estado>}
                         </TableCell>
                         <TableCell>
-                          {/* sala, chamar e abrir numa linha só: a linha da tabela não cresce */}
+                          {/* chamar e abrir numa linha só (o consultório vem da barra do topo) */}
                           <div className="flex items-center justify-end gap-2 [&>div]:flex-nowrap">
-                            <BotaoChamar episodioId={e.id} setorId={e.setor_id} etapa="atendimento" chamadas={n} semContagem />
+                            <BotaoChamar episodioId={e.id} setorId={e.setor_id} etapa="atendimento" chamadas={n} semContagem salaFixa={consultorio.salas[e.setor_id] ?? null} />
                             <Button size="sm" onClick={() => onAbrir(e)} aria-label={`Abrir atendimento de ${nomeDe(e)}`}><Stethoscope /> Abrir</Button>
                           </div>
                         </TableCell>
