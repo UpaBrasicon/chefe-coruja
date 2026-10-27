@@ -1217,6 +1217,24 @@ chegou antes):
   "Em atendimento, sem pendência", cada um com quantos são e quantos têm atraso. Responde "onde a fila está
   parada" antes de "quem está atrasado". Sem filtro: os grupos fazem esse papel.
 
+**Escolha do RT (27/10/2026): B, a tabela com faixa.** Aplicada na branch `feat/grade-acoes-tela`:
+
+- `PortaAgora.tsx`: a Porta passou a ter duas abas (`TabsPagina`, `?aba=`): "Agora", a tela de sempre (o
+  "atualizado às" saiu do subtítulo e foi para a primeira linha da aba), e "Grade de ações".
+- `GradeAcoes.tsx`: lê `porta_grade` a cada 15 segundos, como a Porta. Legenda das cores, a regra do "No PS"
+  (com o alvo de permanência da unidade, quando há) e "Acesso registrado na auditoria"; filtro "Todos" e
+  "Com atraso"; tabela da 3.3 com a faixa em cima de cada célula. Cada estado também vai em texto para leitor
+  de tela ("pedido", "atrasado"). Uma atualização que falha não apaga a grade: fica a última, com o aviso
+  e a hora dela.
+- `src/lib/portaGrade.ts`: o tipo devolvido por `porta_grade` e o texto e a situação de cada célula
+  (chamada repetida "· 3ª", exames "N de M", "1 pendente"/"2 pendentes", reavaliação prevista antes da
+  feita, desfecho com o rótulo e a hora), com 10 testes em `portaGrade.test.ts`.
+- Visto na página de teste com a Porta real e dados fictícios, nos dois temas
+  (`grade-B-aplicada-claro|escuro.png`, `grade-B-aplicada-agora-claro.png`): as duas abas, o filtro "Com
+  atraso" (5 de 9) e o aviso de falha mantendo a grade.
+- Ainda falta a tela onde a unidade define os alvos novos (classificação, exame, medicação, permanência).
+  Até lá, só o alvo da cor e a hora de reavaliação marcam atraso.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
