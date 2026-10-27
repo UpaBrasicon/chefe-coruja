@@ -7,13 +7,15 @@ export type Recurso = 'unidades' | 'paciente_busca' | 'paciente' | 'atendimentos
   | 'leitos' | 'aih' | 'apac' | 'fechamentos'
 
 export type CodigoErro = 'requisicao_invalida' | 'chave_invalida' | 'fora_do_escopo' | 'nao_encontrado'
-  | 'limite_excedido' | 'erro_interno' | 'indisponivel'
+  | 'conflito' | 'limite_excedido' | 'erro_interno' | 'indisponivel'
 
 const TITULO: Record<CodigoErro, string> = {
   requisicao_invalida: 'Requisição inválida',
   chave_invalida: 'Chave inválida',
   fora_do_escopo: 'Fora do escopo da chave',
   nao_encontrado: 'Não encontrado',
+  // Fase 5C-3: retorno do ERP para versão que não aceita aquela ação
+  conflito: 'Conflito com a situação da versão',
   limite_excedido: 'Limite de consultas excedido',
   erro_interno: 'Erro interno',
   indisponivel: 'Indisponível',

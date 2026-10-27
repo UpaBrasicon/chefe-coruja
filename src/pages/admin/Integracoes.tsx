@@ -25,13 +25,15 @@ import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 
-type Recurso = 'pacientes' | 'atendimentos' | 'leitos' | 'producao' | 'laboratorio' | 'imagem'
+type Recurso = 'pacientes' | 'atendimentos' | 'leitos' | 'producao' | 'laboratorio' | 'imagem' | 'financeiro'
 const RECURSOS: Record<Recurso, string> = {
   pacientes: 'Pacientes', atendimentos: 'Atendimentos', leitos: 'Leitos', producao: 'Produção SUS (AIH, APAC, fechamentos)',
   // Fase 5C, etapa 1.3: chave do LIS (lê pedidos de exame, grava coleta e laudo pela porta FHIR)
   laboratorio: 'Laboratório (LIS): pedidos de exame, coleta e laudo — FHIR',
   // Fase 5C, etapa 2.2: chave do RIS (lê pedidos de imagem e ECG, grava exame feito, link do PACS e laudo)
   imagem: 'Imagem (RIS/PACS): pedidos de imagem e ECG, exame feito, link e laudo — FHIR',
+  // Fase 5C, etapa 3.3: chave do ERP (lê contas faturadas e plantões fechados, devolve o lançamento)
+  financeiro: 'Financeiro (ERP): contas faturadas e plantões do mês, com o retorno do lançamento',
 }
 
 type Chave = {
