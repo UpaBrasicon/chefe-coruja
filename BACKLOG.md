@@ -1215,6 +1215,16 @@ Dispensação → Faltas → Diluição padrão e Rascunhos → Painel → Alta 
   sem ações. As chamadas ao servidor são as mesmas. Sem migration; typecheck, lint, catraca, build e os 1089
   testes clínicos verdes; homologação conferida pelo RT; produção conferida pelo pacote publicado. Próxima
   tela: **Alta vigilância e Interações**.
+- **Alta vigilância e Interações em produção desde 26/10/2026 (PR #248; opções e escolha no PR #247).**
+  Referências do Refero: regras do Risk Manager do Square, regras do Radar da Stripe e fluxos do Attio. O RT
+  escolheu a **B, tabela e ficha**, nas duas telas. Alta vigilância: abas "Sem liberação" (farmacêutico e
+  gestor), "Exige liberação" e "Ajustes da unidade"; a ficha mostra o item administrado e a justificativa com
+  "Conferi: liberar o item", ou por que o medicamento exige, o motivo, quem e quando, e marcar ou desmarcar.
+  Interações críticas: abas "Ativas", "Propostas", "Inativas" e "Grupos"; a ficha do par mostra os fármacos de
+  cada grupo e leva ao grupo sem fármaco, "Ativar" só abre com os grupos preenchidos, e a ficha do grupo lista
+  os pares que o usam. As chamadas ao servidor são as mesmas. Sem migration; typecheck, lint, catraca, build e
+  os 1089 testes clínicos verdes; homologação conferida pelo RT; produção conferida pelo pacote publicado.
+  **3.7b concluída.** Próxima: **3.9, escala e menu do gestor**.
 
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
