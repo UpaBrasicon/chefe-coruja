@@ -19,7 +19,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { chaveSecreta } from '../_shared/chaves.ts'
 import { relatarErro } from '../_shared/sentry.ts'
-import { caminhoDaApi, chaveDoCabecalho, interpretar, ipDeOrigem, problema, type CodigoErro } from './contrato.ts'
+import { caminhoDaApi, chaveDoCabecalho, interpretar, ipDeOrigem, PORTA_LEITURA, problema, type CodigoErro } from './contrato.ts'
 import { lerRetorno, rotaFinanceiro } from './financeiro.ts'
 import { bundlePedidos, caminhoLaudoLab, capacidade, conteudoCanonico, lerDiagnosticReport, lerImagingStudy, lerSpecimen, operationOutcome, paramsPedidos, rotaFhir } from './fhir.ts'
 
@@ -62,7 +62,8 @@ Deno.serve(async (req) => {
   const ip = ipDeOrigem((n) => req.headers.get(n), Deno.env.get('API_BORDA_SEGREDO') || undefined)
   try {
     const banco = createClient(Deno.env.get('SUPABASE_URL')!, chaveSecreta(), { auth: { persistSession: false } })
-    const { data, error } = await banco.rpc('api_v1', {
+    const porta = PORTA_LEITURA.includes(pedido.recurso) ? 'api_v1_leitura' : 'api_v1'
+    const { data, error } = await banco.rpc(porta, {
       p_chave: chave, p_ip: ip, p_requisicao: requisicao, p_recurso: pedido.recurso, p_params: pedido.params,
     })
     if (error) throw new Error(error.message)

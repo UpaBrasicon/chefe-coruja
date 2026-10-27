@@ -448,3 +448,8 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # não pelo login do Supabase (a função confere a chave em public.api_v1).
 [functions.api]
 verify_jwt = false
+
+# Fase 5C, tarefa 4: motor dos webhooks de saída — quem chama é o pg_cron, com o
+# segredo próprio (x-motor-segredo), não um login.
+[functions.webhooks]
+verify_jwt = false

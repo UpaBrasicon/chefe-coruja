@@ -1049,6 +1049,33 @@ simulador de receptor); 4.3 tela (a partir do Refero), OpenAPI e `infra/webhooks
 - Teste `supabase/tests/fase5c_webhooks.sql` e rollback passaram na homologação, numa transação
   desfeita.
 
+**4.2 na homologação em 27/10/2026.** Pergunta ao RT: a API v1 não tinha rota para ler prescrição nem
+regulação. Resposta: "Sim: inclua na 4.2 as rotas de leitura de prescrição e regulação na API v1".
+- **Motor:** Edge Function `webhooks`, chamada pelo `pg_cron` a cada minuto pelo `pg_net`. Só é chamada
+  quando há entrega na hora e quando o Vault tem o par `webhooks_motor_url`/`webhooks_motor_segredo`.
+  A função confere o segredo no Vault.
+- **Envio:** assinatura Standard Webhooks, conferida com o vetor oficial no teste. 10 s de limite e
+  sem seguir redirecionamento.
+- **Tentativas:** 5 s, 5 min, 30 min, 2 h, 5 h e 10 h, até 24 h do evento ou do reenvio. Depois disso
+  a entrega fica "falhou".
+- **Manutenção:** o destino sem sucesso há 3 dias é desligado sozinho, e o gestor recebe aviso. Os
+  eventos com mais de 90 dias saem.
+- **API:** `GET /prescricoes/{id}` e `GET /regulacao/{id}`, com os recursos novos "Prescrições" e
+  "Regulação" na chave. Só campos estruturados, sem texto livre clínico. OpenAPI com as duas rotas e
+  a seção `webhooks`; página do integrador atualizada.
+- **Migrations:** `20270201000002_webhooks_motor.sql` e `20270201000003_api_prescricao_regulacao.sql`.
+  O teste `supabase/tests/fase5c_webhooks_motor.sql` e os rollbacks passaram na homologação, numa
+  transação desfeita. O teste da assinatura (`supabase/functions/webhooks/assinatura.test.ts`) e o das
+  rotas rodam no CI.
+- **Ponta a ponta na homologação**, com um receptor de teste (`scripts/webhooks/receptor-teste.ts`,
+  só homologação):
+  - o destino certo recebeu os dois eventos, com a assinatura conferida (204);
+  - o destino com o segredo errado levou 401 e teve nova tentativa com o mesmo `webhook-id`;
+  - o motor chamado sem segredo dá 401;
+  - as rotas novas dão 404 para id inexistente.
+
+  Os dados temporários foram apagados depois. Evidência em `infra/webhooks.md`.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
