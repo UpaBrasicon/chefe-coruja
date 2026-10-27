@@ -31,3 +31,9 @@ for (const [secao, grupos] of Object.entries(GRUPOS_SECAO)) {
     assert.deepEqual(nosGrupos.filter((s) => !naSecao.includes(s)), [], 'slug de grupo que não existe na seção')
   })
 }
+
+test('emergencias: ITU do adulto no grupo Infecções (decisão do RT, 27/10/2026)', () => {
+  const grupo = (rotulo: string) => GRUPOS_SECAO.emergencias.find((g) => g.rotulo === rotulo)
+  assert.deepEqual(grupo('Infecções')?.slugs, ['itu-adulto'])
+  assert.ok(!grupo('Digestivo, fígado e rim')?.slugs.includes('itu-adulto'))
+})
