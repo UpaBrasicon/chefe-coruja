@@ -1241,6 +1241,22 @@ Symphony) fica depois, como item próprio, porque pede consulta nova no banco. R
   carrossel (a grade "Agora" de Indicadores segue com a régua). As chamadas ao servidor são as mesmas. Sem migration;
   typecheck, lint, catraca, build e os 1089 testes clínicos verdes; homologação conferida pelo RT; produção
   conferida pelo pacote publicado. Próxima tela: **Escala**.
+- **Escala do gestor em produção desde 27/10/2026 (PR #253; opções e escolha no PR #254).** Referências do
+  Refero: folgas do Aboard (o mês em grade com as pendências ao lado), Cron (calendário com o dia escolhido
+  na lateral) e recursos do Wrike (a semana em grade, base da opção C). O RT escolheu a
+  **A, o mês com o dia ao lado**: as abas passaram a ser Mensal, Pedidos, Carga horária, Fixa, Presenças e
+  Histórico. Na Mensal, o gestor vê o calendário do mês (cada dia "coberto", "N vagas" ou "sem plantão") com
+  "Publicar escala", e ao lado o dia escolhido, setor por setor e turno por turno, onde escala, remove, marca
+  e retira vaga; em cima, "N pedidos aguardando você" leva à aba Pedidos. Os pedidos (solicitações e
+  candidaturas) viraram uma lista só, com Aprovar e Recusar e os decididos embaixo, em vez de aparecer duas
+  vezes; a carga horária ganhou aba própria com a troca de mês e "Exportar escala (CSV)"; a Fixa ficou sem os
+  alertas e a carga em cima. O admin, que não tem o calendário do gestor, segue escalando na grade da semana.
+  Dois erros corrigidos na mesma tela: o cabeçalho da grade da semana mostrava sempre segunda a domingo, e
+  agora mostra o dia certo de cada data; o campo "rótulo" aparecia na Fixa, que o ignorava, e não aparecia no
+  mês, onde é gravado. As consultas de pedidos passaram para `src/hooks/usePedidosEscala.ts`, usadas pela
+  Escala e pelo calendário. As chamadas ao servidor são as mesmas. Sem migration; typecheck, lint, catraca,
+  build e os 1089 testes clínicos verdes; homologação conferida pelo RT; produção conferida pelo pacote
+  publicado. Próxima tela: **menu lateral do gestor**.
 
 ## Trilha — Lacunas da Central do Plantonista (pedido do RT em 23/10/2026)
 
