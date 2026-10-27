@@ -1161,6 +1161,25 @@ grupo pequenos que recolhem); Lemni (`027f73ab`: a primeira coluna com as áreas
   recolhe o grupo que o gestor não usa (na foto, Faturamento), e o aparelho lembra. A lista rola sozinha
   até a página atual. Mesmo densa, a lista inteira passa da altura da tela e rola.
 
+**Escolha do RT (27/10/2026): B, o trilho das áreas e a coluna da área.** Aplicada na branch
+`feat/visual-3-9-menu`:
+
+- `Lateral.tsx`: quando os itens vêm em grupos (o gestor), a lateral vira `LateralAreas`. O trilho fixo
+  (80 px) traz a coruja, uma linha por área com o ícone e o nome (Painel, Porta, Leitos, Farmácia,
+  Exames, Faturamento, Unidade), a área da página atual em petróleo, um ponto âmbar quando a área tem
+  pendência (a nota de pedidos da Auditoria acende Unidade) e o Sair no pé. Clicar na área abre a
+  primeira tela dela. A coluna da área (220 px) tem o nome da área, as telas com o ícone e a nota, como
+  na lateral de hoje, e o aviso "Da unidade" no pé. Painel e Exames, com uma tela só, não abrem a coluna.
+  O trilho e a coluna não dependem do mouse. Os outros papéis, sem grupos, seguem com a lateral
+  recolhida de sempre; o código dos títulos de grupo, que só o gestor usava, saiu dela.
+- `navegacao.ts`: `ICONE_GRUPO`, o ícone de cada grupo no trilho. Grupos, ordem e nomes não mudaram.
+- `Marca.tsx`: `simbolo` mostra só a coruja (o nome fica para leitor de tela), para o trilho.
+- No trilho, o nome da área ocupa 76 px: "Faturamento" coube depois de alargar o trilho de 76 para 80 px.
+- Visto na página de teste com a lateral, o topo e a Escala reais, nos dois temas
+  (`menu-B-aplicada-claro|escuro.png`): a área Unidade marcada com a Escala ativa na coluna; clicar em
+  Farmácia troca a coluna para as telas da Farmácia; clicar em Painel fecha a coluna. A barra de baixo
+  do celular não mudou.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
