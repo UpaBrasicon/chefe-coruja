@@ -958,6 +958,17 @@ pelo DiagnosticReport; o link do PACS só vale em https e de domínio cadastrado
 tela); a enfermagem segue marcando realizado onde não há RIS; o simulador ganhou `--modo imagem`. A
 função antiga da porta do laboratório saiu (contração). Próxima: **tarefa 3, ERP/financeiro**.
 
+**Tarefa 3, plantões para o ERP (decisões do RT em 27/10/2026, "1a 2a 3a"):** vai o plantão realizado
+com o valor da tabela de remuneração da unidade (setor e turno antes do genérico; parte de plantão
+fracionado proporcional às horas do turno, como na tela de vagas); falta justificada e plantão sem
+presença vão na lista com valor zero; do profissional, nome, CPF, conselho, registro com UF e CBO; o
+gestor fecha o mês depois de acabar, e a correção reabre com motivo e gera a versão seguinte. Ordem
+das etapas ajustada: plantões no banco antes da porta da API, para a porta sair de uma vez com contas
+e plantões (3.1 contas, 3.2 plantões, 3.3 porta, 3.4 telas). **Banco dos plantões na homologação em
+27/10/2026:** migration `20270120000002_erp_plantoes.sql` (`plantao_versoes_erp`,
+`plantoes_erp_previa`, `fechar_plantoes_erp`, `reabrir_plantoes_erp`, só o gestor, com segundo
+fator); teste `supabase/tests/fase5c_erp_plantoes.sql` e rollback passaram na homologação.
+
 **Pausa da 5C em 20/10/2026 (pedido do RT):** a tarefa 3 (ERP/financeiro) para antes do código, para a
 trilha "Revisão visual", abaixo. As cinco perguntas da tarefa 3 (como chega ao ERP, o que vai, formato,
 conciliação, conta reaberta) ficam feitas e sem resposta; voltam na retomada.
