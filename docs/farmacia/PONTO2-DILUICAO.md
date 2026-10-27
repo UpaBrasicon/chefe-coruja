@@ -34,6 +34,11 @@ Tela `src/pages/farmacia/Diluicoes.tsx`.
 
 - **"Nova diluição":** virou botão no topo e aparece em todas as abas. A diluição nova vale só nesta
   unidade e aceita as vias EV, IM, SC, IN e VO.
+- **Um passo só** (pergunta do RT no teste de 27/10/2026: "vai diluir em que? qual quantidade?"): a
+  "Nova diluição" já mostra todos os campos, com "Diluir em", "Volume mínimo de diluente" e "Tempo de
+  infusão" no topo, e tem "Salvar rascunho" e "Publicar aos prescritores". Antes, esses campos só
+  apareciam depois de criar o rascunho. Se faltar campo para publicar, o rascunho fica salvo e a tela
+  diz o que falta. O editor usa os mesmos campos, na mesma ordem.
 - **"Rascunhos":** mostra só os desta unidade. "Substituídas" mostra a rede e esta unidade.
 - **Modelo da rede:** abre só para leitura, com a indicação de usar "Ajustar esta linha".
 
