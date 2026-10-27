@@ -1,13 +1,16 @@
-import type { Ficha } from '../ficha.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
 import { idadeEm } from '../../domain/idade.ts'
 
 // Dor na triagem (porte do protótipo, 26/09). A escala muda com a idade:
 // o lactente não relata a dor, então a enfermagem observa o comportamento.
 //   • NIPS: recém-nascido e lactente até 2 meses, 0 a 7, dor com 4 ou mais.
-//   • FLACC: 2 meses a 3 anos, ou criança que não consegue relatar, 0 a 10.
-//   • A partir de 4 anos (e no adulto): autorrelato 0 a 10 — a Escala Visual
+//   • FLACC: 2 meses a 5 anos, ou criança que não consegue relatar, 0 a 10.
+//   • A partir de 6 anos (e no adulto): autorrelato 0 a 10 — a Escala Visual
 //     Analógica que o protocolo da unidade manda usar em adultos e crianças
 //     (Anexo I).
+// Corte dos 6 anos decidido pelo RT em 27/10/2026: a FLACC foi validada de 2
+// meses a 7 anos (Merkel 1997) e nenhuma escala de autorrelato é recomendada
+// antes dos 6 anos (Birnie 2019). Antes o app trocava aos 4.
 // O escore é registro da enfermagem: NÃO muda nem sugere a cor (CLAUDE.md).
 // Os mesmos itens e máximos estão em private.validar_dor_triagem
 // (migration 20261003000004): o servidor recusa o que não bater.
@@ -29,6 +32,13 @@ export type DefinicaoEscalaDor = {
 }
 
 const REVISADO = '29/09/2026 (porte do protótipo)'
+const REVISADO_FAIXA = '27/10/2026 (autorrelato a partir de 6 anos, decisão do RT)'
+
+const BIRNIE_2019: Fonte = {
+  citacao: 'Birnie KA, Hundert AS, Lalloo C, Nguyen C, Stinson JN. Recommendations for selection of self-report pain intensity measures in children and adolescents: a systematic review and quality assessment of measurement properties. Pain. 2019;160(1):5–18 (PMID 30180088): nenhuma escala de autorrelato recomendada antes dos 6 anos.',
+  url: 'https://doi.org/10.1097/j.pain.0000000000001377',
+  pediatrica: true,
+}
 
 export const fichaNips: Ficha = {
   id: 'triagem-dor-nips',
@@ -45,28 +55,30 @@ export const fichaNips: Ficha = {
 export const fichaFlacc: Ficha = {
   id: 'triagem-dor-flacc',
   titulo: 'FLACC — escala comportamental de dor',
-  versao: '2026-09-29.1',
+  versao: '2026-10-27.1',
   publico: 'pediatrico',
   fontes: [
-    { citacao: 'Merkel SI, Voepel-Lewis T, Shayevitz JR, Malviya S. The FLACC: a behavioral scale for scoring postoperative pain in young children. Pediatr Nurs. 1997;23(3):293–297.', pediatrica: true },
+    { citacao: 'Merkel SI, Voepel-Lewis T, Shayevitz JR, Malviya S. The FLACC: a behavioral scale for scoring postoperative pain in young children. Pediatr Nurs. 1997;23(3):293–297 (PMID 9220806): validada em crianças de 2 meses a 7 anos.', pediatrica: true },
     // o protótipo cita só autor e ano da versão portuguesa; conferir a referência completa
     { citacao: 'Versão portuguesa: Batalha et al., 2009.', pediatrica: true },
+    BIRNIE_2019,
   ],
-  revisadoEm: REVISADO,
+  revisadoEm: REVISADO_FAIXA,
 }
 
 export const fichaDorNumerica: Ficha = {
   id: 'triagem-dor-numerica',
   titulo: 'Dor por autorrelato (0 a 10)',
-  versao: '2026-09-29.1',
+  versao: '2026-10-27.1',
   publico: 'ambos',
   fontes: [
     {
       citacao: 'Protocolo de Classificação de Risco · SMS Aparecida de Goiânia · 2025, Anexo I (Avaliação da severidade da dor; manual de Acolhimento e Classificação de Risco, Brasília-DF, 2021)',
       pediatrica: true,
     },
+    BIRNIE_2019,
   ],
-  revisadoEm: REVISADO,
+  revisadoEm: REVISADO_FAIXA,
 }
 
 export const ESCALAS_DOR: Record<EscalaDor, DefinicaoEscalaDor> = {
@@ -89,7 +101,7 @@ export const ESCALAS_DOR: Record<EscalaDor, DefinicaoEscalaDor> = {
   flacc: {
     id: 'flacc',
     nome: 'FLACC',
-    faixa: '2 meses a 3 anos, ou criança que não consegue relatar a dor',
+    faixa: '2 meses a 5 anos, ou criança que não consegue relatar a dor',
     max: 10,
     itens: [
       { id: 'face', rotulo: 'Face', opcoes: [
@@ -124,7 +136,7 @@ export const ESCALAS_DOR: Record<EscalaDor, DefinicaoEscalaDor> = {
   numerica: {
     id: 'numerica',
     nome: 'Numérica 0–10',
-    faixa: 'a partir de 4 anos e adultos, pelo relato do paciente',
+    faixa: 'a partir de 6 anos e adultos, pelo relato do paciente',
     max: 10,
     itens: [],
     // Anexo I: sem dor 0; leve 1–3; moderada 4–6; intensa 7–10. Só o nome da
@@ -140,15 +152,15 @@ export function escalasDoGrupo(publico: 'adulto' | 'pediatrico' | null): EscalaD
 }
 
 /**
- * Escala pela idade: menos de 2 meses → NIPS; de 2 meses a 3 anos (antes de
- * completar 4) → FLACC; 4 anos ou mais → autorrelato. Sem nascimento → numérica.
+ * Escala pela idade: menos de 2 meses → NIPS; de 2 meses a 5 anos (antes de
+ * completar 6) → FLACC; 6 anos ou mais → autorrelato. Sem nascimento → numérica.
  */
 export function escalaPelaIdade(nascimento: string | null, hoje: string): EscalaDor {
   if (!nascimento) return 'numerica'
   const i = idadeEm(nascimento, hoje)
   if (!i) return 'numerica'
   const meses = i.anos * 12 + i.meses
-  return meses < 2 ? 'nips' : meses < 48 ? 'flacc' : 'numerica'
+  return meses < 2 ? 'nips' : meses < 72 ? 'flacc' : 'numerica'
 }
 
 export type ItensDor = Record<string, number>
