@@ -39,3 +39,5 @@ Só a tela (`src/pages/farmacia/Farmacia.tsx`). Não houve migration.
 2. Buscar um item com saldo ok, escrever uma observação e registrar. A falta aparece em "Registradas".
 3. Como médico, escolher esse medicamento na prescrição. Aparece o aviso de falta.
 4. Buscar o mesmo item de novo. A ficha diz que a falta já está aberta.
+
+**Teste do RT em 27/10/2026: ok na homologação.**
