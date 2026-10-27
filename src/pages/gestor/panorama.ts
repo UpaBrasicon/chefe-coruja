@@ -6,8 +6,9 @@ import { numeroAte } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
 // Panorama da unidade (P/index.html 20751–20812, PANORAMA): os painéis do
-// carrossel e as medidas de cada um. Os números vêm de panorama_gestor (a
-// unidade inteira, contada agora); o que o gestor tirou do carrossel fica no
+// Painel do Gestor (abas desde a revisão visual 3.9) e as medidas de cada um.
+// Os números vêm de panorama_gestor (a unidade inteira, contada agora); o que
+// o gestor tirou do Painel fica no
 // banco (definir_panorama). Medida sem dado no banco não entra: vaga negada,
 // transferência recebida e horas extras não têm registro ainda.
 
@@ -164,7 +165,7 @@ export function usePanorama(unidadeId: string | undefined) {
   })
 }
 
-/** Grava o que sai do carrossel. Otimista: a chave muda na hora. */
+/** Grava o que sai do Painel do Gestor. Otimista: a chave muda na hora. */
 export function useDefinirPanorama(unidadeId: string | undefined) {
   const qc = useQueryClient()
   return useMutation({
