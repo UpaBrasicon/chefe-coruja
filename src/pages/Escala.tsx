@@ -32,7 +32,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Abas, Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { dataHora, hora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
-import type { CandidaturaEscala, EscalaFixa, EscalaPlantao, PlantonistaDaUnidade, ResumoCargaPlantonista, SolicitacaoEscala } from '@/types/database'
+import type { EscalaFixa, EscalaPlantao, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
+import { Estado } from '@/components/porta/Estado'
+import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, type SolicitacaoComExtra } from '@/hooks/usePedidosEscala'
 
 const TURNOS = [
   { id: 'manha', label: 'Manhã', horario: '07h–13h' },
@@ -41,7 +43,6 @@ const TURNOS = [
 ] as const
 
 const DIAS_SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
-const DIAS_SEMANA_SEG = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM']
 const TURNO_LABEL: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 
@@ -89,6 +90,8 @@ function fmtMesBR(isoDate: string) {
   return `${MESES[Number(m) - 1]}/${y}`
 }
 
+const contagem = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
+
 function hojeISO() {
   return iso(new Date())
 }
@@ -130,12 +133,6 @@ type EscalaFixaComPerfil = EscalaFixa & {
   perfis: { id: string; nome_completo: string; crm: string | null } | null
 }
 
-type SolicitacaoComExtra = SolicitacaoEscala & {
-  escala_plantao: { setor_id: string; data: string; turno: string } | null
-  solicitante: { nome_completo: string } | null
-  destino: { nome_completo: string } | null
-}
-
 type VagaGeracao = { data: string; turno: string; setor: string | null; profissional: string | null; conflito: string }
 
 export default function Escala({
@@ -147,8 +144,8 @@ export default function Escala({
   embutido?: boolean
   /** Aba do plantonista controlada por fora (`minha` | `geral`). */
   aba?: 'minha' | 'geral'
-  /** Aba do gestor controlada por fora (`fixa` | `mensal`). */
-  abaGestorFixa?: 'fixa' | 'mensal'
+  /** Aba do gestor controlada por fora (`fixa` | `mensal` | `pedidos` | `carga`). */
+  abaGestorFixa?: 'fixa' | 'mensal' | 'pedidos' | 'carga'
 } = {}) {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const { perfil } = useAuth()
@@ -158,7 +155,7 @@ export default function Escala({
   const [turno, setTurno] = React.useState<'manha' | 'tarde' | 'noite'>('manha')
   const [mes, setMes] = React.useState(() => hojeISO().slice(0, 7))
   const [semana, setSemana] = React.useState(() => hojeISO())
-  const [abaGestorLocal, setAbaGestor] = React.useState<'fixa' | 'mensal'>('mensal')
+  const [abaGestorLocal, setAbaGestor] = React.useState<'fixa' | 'mensal' | 'pedidos' | 'carga'>('mensal')
   const [abaPlantonistaLocal, setAbaPlantonista] = React.useState<'minha' | 'geral'>('minha')
   const abaGestor = abaGestorFixa ?? abaGestorLocal
   const abaPlantonista = aba ?? abaPlantonistaLocal
@@ -295,36 +292,10 @@ export default function Escala({
     },
   })
 
-  const { data: solicitacoes, isLoading: carregandoSolic } = useQuery({
-    queryKey: ['solicitacoes-escala', unidadeId],
-    enabled: !!unidadeId && (ehGestor || ehAdmin),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('solicitacoes_escala')
-        .select('*, escala_plantao(setor_id, data, turno), solicitante:perfis!solicitacoes_escala_perfil_id_fkey(nome_completo), destino:perfis!solicitacoes_escala_destino_perfil_id_fkey(nome_completo)')
-        .eq('unidade_id', unidadeId!)
-        .order('created_at', { ascending: false })
-        .limit(100)
-      if (error) throw error
-      return (data ?? []) as unknown as SolicitacaoComExtra[]
-    },
-  })
-
+  // Pedidos da escala: mesma chave e mesmo select da aba Pedidos e do calendário do mês
+  const { data: solicitacoes, isLoading: carregandoSolic } = useSolicitacoesEscala(unidadeId, ehGestor || ehAdmin)
   // Candidaturas a plantões livres (plantonista) — visível também ao gestor
-  const { data: candidaturas, isLoading: carregandoCand } = useQuery({
-    queryKey: ['candidaturas-escala', unidadeId],
-    enabled: !!unidadeId && (ehGestor || ehAdmin || ehPlantonista),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('candidaturas_escala')
-        .select('*, setores(nome), perfis!candidaturas_escala_perfil_id_fkey(id, nome_completo, crm)')
-        .eq('unidade_id', unidadeId!)
-        .order('created_at', { ascending: false })
-        .limit(200)
-      if (error) throw error
-      return (data ?? []) as unknown as (CandidaturaEscala & { setores: { nome: string } | null; perfis: { id: string; nome_completo: string; crm: string | null } | null })[]
-    },
-  })
+  const { data: candidaturas, isLoading: carregandoCand } = useCandidaturasEscala(unidadeId, ehGestor || ehAdmin || ehPlantonista)
 
   // Partes de plantão fracionado (vagas com janela, migration 20261012000001):
   // a candidatura aponta a vaga; aqui mostramos a parte e o horário dela.
@@ -649,6 +620,7 @@ export default function Escala({
   const fixasDoCelula = (setorId: string, diaSemana: number) =>
     (escalaFixa ?? []).filter((f) => f.setor_id === setorId && f.dia_semana === diaSemana && f.turno === turno)
 
+  const pedidos = contarPedidos(solicitacoes, candidaturas)
   const alertas = React.useMemo(() => {
     if (!solicitacoes) return { pendentes: 0, sairam: 0, atestados: 0, faltas: 0, interesses: 0, lista: [] as SolicitacaoComExtra[] }
     const pendentes = solicitacoes.filter((s) => s.status === 'pendente')
@@ -800,7 +772,7 @@ export default function Escala({
 
   return (
     <div className={embutido ? 'flex w-full flex-col gap-6' : 'mx-auto flex w-full max-w-6xl flex-col gap-6'}>
-      <div className="flex flex-col gap-1">
+      {(!embutido || ehPlantonista || abaGestor === 'mensal') && <div className="flex flex-col gap-1">
         {!embutido && (
           <div className="flex items-center gap-1 text-apoio text-tinta-sussurro">
             <Link to="/" className="transition-colors hover:text-tinta">
@@ -812,7 +784,7 @@ export default function Escala({
         )}
         <div className="flex flex-wrap items-center justify-between gap-2">
           {embutido ? <div /> : <TituloPagina icone={CalendarClock} titulo="Escala" className="mb-0" />}
-          {ehPlantonista ? (
+          {abaGestor !== 'mensal' && !ehPlantonista ? null : ehPlantonista ? (
             <div className="flex items-center gap-2 text-apoio text-tinta-sussurro">
               <Button size="xs" variant="outline" onClick={() => mudarMes(-1)}>
                 <ChevronLeft /> Mês
@@ -842,7 +814,7 @@ export default function Escala({
             {ehGestor ? 'Gestor — monte a escala' : ehAdmin ? 'Admin — todas as unidades' : 'Sua escala'}
           </p>
         )}
-      </div>
+      </div>}
 
       {/* Abas do plantonista: Minha Escala / Escala Geral */}
       {ehPlantonista && !aba && (
@@ -1616,179 +1588,147 @@ export default function Escala({
       )
       : (
         <>
-          {/* PAINEL DE ALERTAS (gestor/admin) */}
-          <Card className="border-atencao/30 bg-alerta-atencao">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-corpo">
-                <CalendarClock className="size-4 text-atencao" />
-                Alertas da escala
-              </CardTitle>
-              <CardDescription>
-                Quem saiu do plantão, atestados, faltas e interesses em sair da escala.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              {carregandoSolic ? (
-                <div className="flex h-16 items-center justify-center">
-                  <Spinner />
+          {/* Pedidos (revisão visual 3.9, opção A do RT): solicitações e candidaturas numa lista só */}
+          {abaGestor === 'pedidos' && (
+            <div className="flex flex-col gap-4">
+              <section aria-label="Pedidos aguardando você" className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+                <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-4 py-2.5">
+                  <span className="text-apoio font-semibold text-tinta">Aguardando você</span>
+                  <span className={cn('text-rotulo font-semibold tabular-nums', pedidos.total ? 'text-atencao' : 'text-acao')}>{pedidos.total}</span>
+                  <span className="ml-auto text-rotulo text-tinta-sussurro">Aprovar ou recusar vale na hora e fica no histórico.</span>
                 </div>
-              ) : (
-                <>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="warning" className="px-3 py-1 text-rotulo">
-                      {alertas.pendentes} pendente(s)
-                    </Badge>
-                    <Badge variant="info" className="px-3 py-1 text-rotulo">
-                      {alertas.sairam} saíram do plantão
-                    </Badge>
-                    <Badge variant="destructive" className="px-3 py-1 text-rotulo">
-                      {alertas.atestados} atestado(s)
-                    </Badge>
-                    <Badge variant="destructive" className="px-3 py-1 text-rotulo">
-                      {alertas.faltas} falta(s)
-                    </Badge>
-                    <Badge variant="secondary" className="px-3 py-1 text-rotulo">
-                      {alertas.interesses} interesse(s) em sair
-                    </Badge>
-                  </div>
-                  {alertas.lista.length > 0 && (
-                    <div className="flex flex-col gap-2">
-                      {alertas.lista.map((s) => (
-                        <div key={s.id} className="flex flex-wrap items-center gap-2 rounded-controle border bg-superficie p-2 text-apoio">
-                          <span className="font-medium">{s.solicitante?.nome_completo ?? 'Plantonista'}</span>
-                          <Badge variant="outline">{TIPO_SOLICITACAO_LABEL[s.tipo]}</Badge>
-                          {s.status === 'pendente' && <Badge variant="warning">Pendente</Badge>}
-                          {s.escala_plantao && (
-                            <span className="text-rotulo text-tinta-sussurro">
-                              {fmtDiaBR(s.escala_plantao.data)} · {TURNO_LABEL[s.escala_plantao.turno]}
-                            </span>
-                          )}
-                          {s.tipo === 'falta' && s.tipo_falta && (
-                            <span className="text-rotulo text-tinta-sussurro">· {TIPO_FALTA_LABEL[s.tipo_falta]}</span>
-                          )}
-                          {s.status === 'pendente' && (
-                            <span className="ml-auto flex gap-1.5">
-                              <Button size="xs" onClick={() => decidir.mutate({ id: s.id, status: 'aprovado' })}>
-                                <Check /> Aprovar
-                              </Button>
-                              <Button size="xs" variant="outline" onClick={() => decidir.mutate({ id: s.id, status: 'recusado' })}>
-                                <X /> Recusar
-                              </Button>
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Candidaturas a plantões livres */}
-                  <div className="mt-2 border-t border-atencao/30 pt-3">
-                    <div className="mb-2 flex items-center gap-2 text-rotulo font-semibold uppercase tracking-wide text-atencao">
-                      <CalendarClock className="size-3.5" /> Candidaturas a plantões livres
-                    </div>
-                    {(candidaturas ?? []).filter((c) => c.status === 'pendente').length === 0 ? (
-                      <p className="text-apoio text-tinta-sussurro">Nenhuma candidatura pendente.</p>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        {(candidaturas ?? [])
-                          .filter((c) => c.status === 'pendente')
-                          .map((c) => (
-                            <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-controle border bg-superficie p-2 text-apoio">
-                              <span className="font-medium">{c.perfis?.nome_completo ?? 'Plantonista'}</span>
-                              <Badge variant="outline">{c.setores?.nome ?? 'Setor'}</Badge>
-                              <span className="text-rotulo text-tinta-sussurro">
-                                {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}
-                              </span>
-                              <span className="ml-auto flex gap-1.5">
-                                <Button size="xs" onClick={() => aprovarCandidatura.mutate(c.id)} disabled={aprovarCandidatura.isPending}>
-                                  <Check /> Aprovar
-                                </Button>
-                                <Button size="xs" variant="outline" onClick={() => recusarCandidatura.mutate(c.id)}>
-                                  <X /> Recusar
-                                </Button>
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-                </>
+                {carregandoSolic ? (
+                  <div className="flex h-16 items-center justify-center"><Spinner /></div>
+                ) : pedidos.total === 0 ? (
+                  <p className="px-4 py-4 text-apoio text-tinta-sussurro">Nenhum pedido aguardando.</p>
+                ) : (
+                  <ul className="flex flex-col">
+                    {(solicitacoes ?? []).filter((s) => s.status === 'pendente').map((s) => (
+                      <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-trilha px-4 py-2.5 text-apoio last:border-b-0">
+                        <span className="flex min-w-0 flex-[1_1_280px] flex-col gap-0.5">
+                          <span className="text-tinta"><b className="font-medium">{s.solicitante?.nome_completo ?? 'Plantonista'}</b> · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}</span>
+                          <span className="text-rotulo text-tinta-sussurro">
+                            {s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'Plantão removido'}
+                            {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
+                            {s.tipo_falta && ` · ${TIPO_FALTA_LABEL[s.tipo_falta]}`}
+                            {s.justificativa && ` · ${s.justificativa}`}
+                            {s.anexo_url && <> · <a href={s.anexo_url} target="_blank" rel="noopener noreferrer" className="font-medium text-acao hover:underline">ver anexo</a></>}
+                          </span>
+                        </span>
+                        <span className="flex gap-1.5">
+                          <Button size="xs" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'aprovado' })}>Aprovar</Button>
+                          <Button size="xs" variant="ghost" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'recusado' })}>Recusar</Button>
+                        </span>
+                      </li>
+                    ))}
+                    {(candidaturas ?? []).filter((c) => c.status === 'pendente').map((c) => (
+                      <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-trilha px-4 py-2.5 text-apoio last:border-b-0">
+                        <span className="flex min-w-0 flex-[1_1_280px] flex-col gap-0.5">
+                          <span className="text-tinta"><b className="font-medium">{c.perfis?.nome_completo ?? 'Plantonista'}</b> · candidatura a plantão livre</span>
+                          <span className="text-rotulo text-tinta-sussurro">{c.setores?.nome ?? 'Setor'} · {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}</span>
+                        </span>
+                        <span className="flex gap-1.5">
+                          <Button size="xs" disabled={aprovarCandidatura.isPending} onClick={() => aprovarCandidatura.mutate(c.id)}>Aprovar</Button>
+                          <Button size="xs" variant="ghost" disabled={recusarCandidatura.isPending} onClick={() => recusarCandidatura.mutate(c.id)}>Recusar</Button>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {(solicitacoes ?? []).length > 0 && (
+                  <p className="border-t border-trilha bg-campo px-4 py-2 text-rotulo text-tinta-sussurro">
+                    Nos últimos pedidos: {contagem(alertas.sairam, 'passagem de plantão', 'passagens de plantão')} · {contagem(alertas.atestados, 'atestado', 'atestados')} · {contagem(alertas.faltas, 'falta', 'faltas')} · {contagem(alertas.interesses, 'pedido para sair do fixo', 'pedidos para sair do fixo')}.
+                  </p>
+                )}
+              </section>
+              {(solicitacoes ?? []).some((s) => s.status !== 'pendente') && (
+                <section aria-label="Pedidos decididos" className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+                  <div className="border-b border-trilha px-4 py-2.5 text-apoio font-semibold text-tinta">Decididos</div>
+                  <ul className="flex flex-col">
+                    {(solicitacoes ?? []).filter((s) => s.status !== 'pendente').slice(0, 30).map((s) => (
+                      <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-trilha px-4 py-2 text-apoio last:border-b-0">
+                        <span className="min-w-0 flex-[1_1_280px] text-tinta">
+                          <b className="font-medium">{s.solicitante?.nome_completo ?? 'Plantonista'}</b> · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}
+                          <span className="text-rotulo text-tinta-sussurro">
+                            {' · '}{s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'plantão removido'}
+                            {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
+                          </span>
+                        </span>
+                        <Estado tom={s.status === 'aprovado' ? 'verde' : 'vermelho'}>{s.status === 'aprovado' ? 'aprovado' : 'recusado'}</Estado>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          )}
 
           {/* Abas: Escala Fixa / Mensal */}
           <Abas
             abas={[['fixa', 'Escala fixa'], ['mensal', 'Escala mensal']]}
-            valor={abaGestor}
+            valor={abaGestor === 'fixa' ? 'fixa' : 'mensal'}
             onChange={setAbaGestor}
             rotulo="Tipo de escala"
             className={abaGestorFixa ? 'hidden' : 'mb-0 gap-2'}
           />
 
-          {/* E1: resumo de carga horária + E5: exportar */}
-          <Card>
-            <CardHeader className="flex-row items-center justify-between space-y-0">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-corpo">
-                  <CalendarClock className="size-4 text-tinta-sussurro" />
-                  Carga horária · {fmtMesBR(mesInicio)}
-                </CardTitle>
-                <CardDescription>Diurnos, noturnos e horas totais por plantonista no mês.</CardDescription>
+          {/* Carga horária (aba própria desde a revisão visual 3.9) + exportar a escala do mês */}
+          {abaGestor === 'carga' && (
+            <section aria-label="Carga horária" className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+              <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-4 py-2.5">
+                <Button size="icon-sm" variant="outline" aria-label="Mês anterior" onClick={() => mudarMes(-1)}><ChevronLeft /></Button>
+                <span className="text-apoio font-semibold text-tinta">Carga horária · {fmtMesBR(mesInicio)}</span>
+                <Button size="icon-sm" variant="outline" aria-label="Próximo mês" onClick={() => mudarMes(1)}><ChevronRight /></Button>
+                <Button size="sm" variant="outline" className="ml-auto" onClick={exportarEscalaCSV} disabled={!setores || !escalaMes}>
+                  <Download /> Exportar escala (CSV)
+                </Button>
               </div>
-              <Button size="sm" variant="outline" onClick={exportarEscalaCSV} disabled={!setores || !escalaMes}>
-                <Download /> Exportar escala (CSV)
-              </Button>
-            </CardHeader>
-            <CardContent>
               {carregandoCarga ? (
-                <div className="flex h-24 items-center justify-center">
-                  <Spinner />
-                </div>
+                <div className="flex h-24 items-center justify-center"><Spinner /></div>
               ) : (resumoCarga ?? []).length === 0 ? (
-                <p className="text-apoio text-tinta-sussurro">Nenhum plantão neste mês.</p>
+                <p className="px-4 py-4 text-apoio text-tinta-sussurro">Nenhum plantão neste mês.</p>
               ) : (
-                <Table variante="referencia" className="w-full border-collapse text-apoio">
+                <Table aria-label="Carga horária por plantonista">
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="border-b border-r bg-trilha/50 p-2 text-left text-rotulo font-semibold uppercase text-tinta-sussurro">Plantonista</TableHead>
-                      <TableHead className="border-b border-r bg-suprimento/10 p-2 text-center text-rotulo font-semibold uppercase text-suprimento">Diurnos</TableHead>
-                      <TableHead className="border-b border-r bg-suprimento/10 p-2 text-center text-rotulo font-semibold uppercase text-suprimento">Noturnos</TableHead>
-                      <TableHead className="border-b border-r p-2 text-center text-rotulo font-semibold uppercase text-tinta-sussurro">Horas</TableHead>
-                      <TableHead className="border-b p-2 text-center text-rotulo font-semibold uppercase text-tinta-sussurro">Dias</TableHead>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="pl-4">Plantonista</TableHead>
+                      <TableHead className="text-right">Diurnos</TableHead>
+                      <TableHead className="text-right">Noturnos</TableHead>
+                      <TableHead className="text-right">Horas</TableHead>
+                      <TableHead className="pr-4 text-right">Dias</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {(resumoCarga ?? []).map((r) => (
                       <TableRow key={r.perfil_id}>
-                        <TableCell className="border-b border-r p-2 font-medium">{r.nome}</TableCell>
-                        <TableCell className="border-b border-r p-2 text-center font-semibold text-suprimento">{r.diurnos}</TableCell>
-                        <TableCell className="border-b border-r p-2 text-center font-semibold text-suprimento">{r.noturnos}</TableCell>
-                        <TableCell className="border-b border-r p-2 text-center font-semibold">{r.horas}h</TableCell>
-                        <TableCell className="border-b p-2 text-center">{r.dias}</TableCell>
+                        <TableCell className="pl-4 font-medium text-tinta">{r.nome}</TableCell>
+                        <TableCell className="text-right tabular">{r.diurnos}</TableCell>
+                        <TableCell className="text-right tabular">{r.noturnos}</TableCell>
+                        <TableCell className="text-right font-semibold tabular">{r.horas} h</TableCell>
+                        <TableCell className="pr-4 text-right tabular">{r.dias}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               )}
-            </CardContent>
-          </Card>
+              <p className="border-t border-trilha bg-campo px-4 py-2 text-rotulo text-tinta-sussurro">Diurnos, noturnos e horas por plantonista no mês, contados da escala.</p>
+            </section>
+          )}
 
-          {/* Turnos (gestor/admin) */}
-          <div role="radiogroup" aria-label="Turno" className="flex flex-wrap gap-2">
+          {/* Turnos (gestor/admin): só nas grades */}
+          {(abaGestor === 'fixa' || abaGestor === 'mensal') && <div role="radiogroup" aria-label="Turno" className="flex flex-wrap gap-2">
             {TURNOS.map((t) => (
               <Chip key={t.id} radio ativo={turno === t.id} onClick={() => setTurno(t.id)}>
                 {t.label} <span className="opacity-70">· {t.horario}</span>
               </Chip>
             ))}
-          </div>
+          </div>}
 
           {abaGestor === 'fixa' ? (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-corpo">
-                  <CalendarClock className="size-4 text-tinta-sussurro" />
-                  Escala Fixa · {TURNO_LABEL[turno]}
+                <CardTitle className="text-corpo">
+                  Escala fixa · {TURNO_LABEL[turno]}
                 </CardTitle>
                 <CardDescription>
                   Template que não muda (ex.: 15/15). Clique numa célula para adicionar. Gere o mês
@@ -1804,11 +1744,11 @@ export default function Escala({
                   <Table variante="referencia" className="w-full min-w-[760px] border-collapse text-apoio">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-rotulo font-semibold uppercase tracking-wide text-tinta-sussurro">
+                        <TableHead className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-rotulo font-semibold text-tinta-sussurro">
                           Setor
                         </TableHead>
                         {DIAS_SEMANA.map((d) => (
-                          <TableHead key={d} className="border-b border-r p-2 text-center text-rotulo font-semibold uppercase tracking-wide">
+                          <TableHead key={d} className="border-b border-r p-2 text-center text-rotulo font-semibold">
                             {d}
                           </TableHead>
                         ))}
@@ -1879,7 +1819,7 @@ export default function Escala({
                 </div>
               </CardContent>
             </Card>
-          ) : (
+          ) : abaGestor === 'mensal' ? (
           <>
           {carregandoSetores || carregandoEscala ? (
             <div className="flex h-40 items-center justify-center">
@@ -1888,9 +1828,8 @@ export default function Escala({
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-corpo">
-                  <CalendarClock className="size-4 text-tinta-sussurro" />
-                  {TURNO_LABEL[turno]} · Semana de {fmtDiaBR(dataInicio)}
+                <CardTitle className="text-corpo">
+                  {TURNO_LABEL[turno]} · semana de {fmtDiaBR(dataInicio)}
                 </CardTitle>
                 <CardDescription>Clique em uma célula para adicionar ou remover plantonistas.</CardDescription>
               </CardHeader>
@@ -1898,17 +1837,17 @@ export default function Escala({
                 <Table variante="referencia" className="w-full min-w-[760px] border-collapse text-apoio">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-rotulo font-semibold uppercase tracking-wide text-tinta-sussurro">
+                      <TableHead className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-rotulo font-semibold text-tinta-sussurro">
                         Setor
                       </TableHead>
-                      {dias.map((d, i) => (
+                      {dias.map((d) => (
                         <TableHead
                           key={d}
-                          className={`border-b p-2 text-center text-rotulo font-semibold uppercase tracking-wide ${
-                            i >= 5 ? 'border-r border-r-atencao/30 bg-alerta-atencao text-atencao' : 'border-r'
+                          className={`border-b p-2 text-center text-rotulo font-semibold ${
+                            [0, 6].includes(new Date(d + 'T12:00:00').getDay()) ? 'border-r border-r-atencao/30 bg-alerta-atencao text-atencao' : 'border-r'
                           }`}
                         >
-                          {DIAS_SEMANA_SEG[i]}
+                          {DIAS_SEMANA[new Date(d + 'T12:00:00').getDay()]}
                           <span className="block text-rotulo font-normal text-tinta-sussurro">{fmtDiaBR(d)}</span>
                         </TableHead>
                       ))}
@@ -1989,71 +1928,8 @@ export default function Escala({
             </Card>
           )}
 
-          {/* Gestor: solicitações de escala */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-corpo">
-                <FileText className="size-4 text-tinta-sussurro" />
-                Solicitações da escala
-              </CardTitle>
-              <CardDescription>Pedidos de saída do fixo, passagem de plantão e justificativa de falta.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              {carregandoSolic ? (
-                <div className="flex h-24 items-center justify-center">
-                  <Spinner />
-                </div>
-              ) : (solicitacoes ?? []).length === 0 ? (
-                <p className="text-apoio text-tinta-sussurro">Nenhuma solicitação no momento.</p>
-              ) : (
-                (solicitacoes ?? []).map((s) => (
-                  <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-controle border p-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium">{s.solicitante?.nome_completo ?? 'Plantonista'}</span>
-                        <Badge variant="outline">{TIPO_SOLICITACAO_LABEL[s.tipo]}</Badge>
-                        <Badge
-                          variant={
-                            s.status === 'aprovado' ? 'success' : s.status === 'recusado' ? 'destructive' : 'warning'
-                          }
-                        >
-                          {s.status === 'aprovado' ? 'Aprovado' : s.status === 'recusado' ? 'Recusado' : 'Pendente'}
-                        </Badge>
-                      </div>
-                      <div className="mt-0.5 text-rotulo text-tinta-sussurro">
-                        {s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'Plantão removido'}
-                        {s.tipo === 'passar_plantao' && s.destino && ` → ${s.destino.nome_completo}`}
-                        {s.tipo === 'justificar_falta' && s.tipo_falta && ` · ${TIPO_FALTA_LABEL[s.tipo_falta]}`}
-                        {s.anexo_url && (
-                          <a
-                            href={s.anexo_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="ml-1 font-medium text-acao hover:underline"
-                          >
-                            ver anexo
-                          </a>
-                        )}
-                      </div>
-                      {s.justificativa && <div className="mt-1 text-rotulo">{s.justificativa}</div>}
-                    </div>
-                    {s.status === 'pendente' && (
-                      <div className="flex gap-2">
-                        <Button size="xs" onClick={() => decidir.mutate({ id: s.id, status: 'aprovado' })}>
-                          <Check /> Aprovar
-                        </Button>
-                        <Button size="xs" variant="outline" onClick={() => decidir.mutate({ id: s.id, status: 'recusado' })}>
-                          <X /> Recusar
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
           </>
-          )}
+          ) : null}
         </>
       )}
 
@@ -2092,7 +1968,7 @@ export default function Escala({
               {carregandoPlant && <Spinner />}
             </div>
 
-            {abaGestor === 'fixa' && (
+            {abaGestor !== 'fixa' && (
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="esc-rotulo">Rótulo (opcional)</Label>
                 <Input
