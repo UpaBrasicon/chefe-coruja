@@ -12814,6 +12814,10 @@ export type Database = {
         Args: { p_minutos: number; p_unidade: string }
         Returns: Json
       }
+      salvar_alvos_grade: {
+        Args: { p_alvos: Json; p_unidade: string }
+        Returns: Json
+      }
       salvar_alvos_medico: {
         Args: { p_alvos: Json; p_unidade: string }
         Returns: Json
