@@ -17,6 +17,8 @@ import * as React from 'react'
 import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { cn } from '@/lib/utils'
 import { diaMesHora } from '@/lib/formato'
 import { Chip as ChipBase } from '@/components/monitor/Pagina'
@@ -424,13 +426,14 @@ function NovaAlergia({ pacienteId, ocupado, executar, fechar }: { pacienteId: st
   const doCatalogo = termo.length >= 1 && focado
     ? ALERGENOS.filter((a) => (!f.tipo || a.tipo === f.tipo) && normalizar(a.nome + ' ' + a.sub).includes(termo) && normalizar(a.nome) !== termo).slice(0, 8)
     : []
+  const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
   const doCadastro = useQuery({
-    queryKey: ['alergia-busca-medicamento', termo],
+    queryKey: ['alergia-busca-medicamento', termo, unidadeBusca],
     enabled: focado && termo.length >= 3 && (!f.tipo || f.tipo === 'medicamento') && !f.medicamentoId,
     staleTime: 60_000,
     queryFn: async () => {
       const { data, error } = await supabase.from('medicamento').select('id, principio_ativo')
-        .eq('ativo', true).ilike('principio_ativo_norm', `%${normalizarMedicamento(f.sub.trim())}%`).order('principio_ativo').limit(8)
+        .eq('ativo', true).or(filtroDaUnidade(unidadeBusca)).ilike('principio_ativo_norm', `%${normalizarMedicamento(f.sub.trim())}%`).order('principio_ativo').limit(8)
       if (error) throw error
       // um princípio ativo por nome (o cadastro repete por apresentação)
       const vistos = new Set<string>()

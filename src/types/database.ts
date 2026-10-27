@@ -6071,6 +6071,12 @@ export type Database = {
           unidade_consumo_conferida_em: string | null
           unidade_consumo_conferida_por: string | null
           unidade_consumo_outra: string | null
+          cadastrado_em: string | null
+          cadastrado_na_unidade: string | null
+          cadastrado_por: string | null
+          forma_farmaceutica: string | null
+          forma_farmaceutica_outra: string | null
+          unidades_locais: string[] | null
           concentracao: string | null
           created_at: string
           fonte: string
@@ -6098,6 +6104,12 @@ export type Database = {
           unidade_consumo_conferida_em?: string | null
           unidade_consumo_conferida_por?: string | null
           unidade_consumo_outra?: string | null
+          cadastrado_em?: string | null
+          cadastrado_na_unidade?: string | null
+          cadastrado_por?: string | null
+          forma_farmaceutica?: string | null
+          forma_farmaceutica_outra?: string | null
+          unidades_locais?: string[] | null
           concentracao?: string | null
           created_at?: string
           fonte?: string
@@ -6125,6 +6137,12 @@ export type Database = {
           unidade_consumo_conferida_em?: string | null
           unidade_consumo_conferida_por?: string | null
           unidade_consumo_outra?: string | null
+          cadastrado_em?: string | null
+          cadastrado_na_unidade?: string | null
+          cadastrado_por?: string | null
+          forma_farmaceutica?: string | null
+          forma_farmaceutica_outra?: string | null
+          unidades_locais?: string[] | null
           concentracao?: string | null
           created_at?: string
           fonte?: string
@@ -10333,6 +10351,34 @@ export type Database = {
       medicamentos_unidade_consumo: {
         Args: { p_a_conferir?: boolean; p_busca?: string }
         Returns: Json
+      }
+      cadastrar_medicamento: {
+        Args: { p_dados: Json; p_unidade: string }
+        Returns: Json
+      }
+      corrigir_medicamento: {
+        Args: { p_dados: Json; p_medicamento: string; p_motivo: string }
+        Returns: undefined
+      }
+      definir_forma_farmaceutica: {
+        Args: { p_forma: string; p_medicamento: string; p_outra?: string }
+        Returns: undefined
+      }
+      inativar_medicamento: {
+        Args: { p_medicamento: string; p_motivo: string }
+        Returns: undefined
+      }
+      levar_medicamento_para_rede: {
+        Args: { p_medicamento: string }
+        Returns: undefined
+      }
+      medicamentos_parecidos: {
+        Args: { p_termo: string; p_unidade: string }
+        Returns: Json
+      }
+      usar_medicamento_na_unidade: {
+        Args: { p_medicamento: string; p_unidade: string }
+        Returns: undefined
       }
       ajustar_estoque: {
         Args: { p_medicamento: string; p_motivo: string; p_quantidade: number; p_unidade: string }

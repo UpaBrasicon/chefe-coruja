@@ -25,6 +25,8 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { cn } from '@/lib/utils'
 import { Chip } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
@@ -271,10 +273,11 @@ function NovaDiluicao({ unidade, aoCriar, aoPublicar, aoErro }: {
   const [via, setVia] = React.useState('EV')
   const [f, setF] = React.useState<Record<string, string>>({})
   const [ocupado, setOcupado] = React.useState(false)
+  const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
   const r = useQuery({
-    queryKey: ['med-farmacia', busca],
+    queryKey: ['med-farmacia', busca, unidadeBusca],
     enabled: busca.trim().length >= 3 && !med,
-    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).limit(15)).data ?? [],
+    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').or(filtroDaUnidade(unidadeBusca)).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).limit(15)).data ?? [],
   })
   // um passo só: cria o rascunho já com os campos; publicar cria e publica
   async function criar(publicar: boolean) {

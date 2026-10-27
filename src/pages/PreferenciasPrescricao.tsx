@@ -26,6 +26,8 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { useUnidade } from '@/contexts/UnidadeContext'
 
 type Medicamento = { id: string; principio_ativo: string; apresentacao: string | null; concentracao: string | null }
 type Favorito = {
@@ -145,14 +147,15 @@ function NovoFavorito({ aoSalvar }: { aoSalvar: () => void }) {
   const [med, setMed] = React.useState<Medicamento | null>(null)
   const [f, setF] = React.useState(FORM_VAZIO)
 
+  const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
   const resultados = useQuery({
-    queryKey: ['busca-medicamento', busca],
+    queryKey: ['busca-medicamento', busca, unidadeBusca],
     enabled: busca.trim().length >= 3 && !med,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('medicamento')
         .select('id, principio_ativo, apresentacao, concentracao')
-        .eq('ativo', true)
+        .eq('ativo', true).or(filtroDaUnidade(unidadeBusca))
         .ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`)
         .order('principio_ativo')
         .limit(15)
