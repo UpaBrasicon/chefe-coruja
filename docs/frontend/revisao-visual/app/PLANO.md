@@ -1066,7 +1066,7 @@ Indicadores continua valendo (sai da lista).
   dois temas (`gestor-B-aplicada-*.png`): trocar de aba e "Ver a auditoria" funcionaram. A pergunta e os
   números reais pedem login: conferir na homologação.
 
-### Escala (27/10/2026, opções; aguarda escolha do RT)
+### Escala (27/10/2026)
 
 **Hoje** (`escala-hoje-mensal-claro|escuro.png`, `escala-hoje-fixa|presencas|historico-claro.png`, página de
 teste com as telas reais e escala fictícia): `EscalaGrupo` tem quatro abas. A **Mensal** empilha, numa página
@@ -1102,6 +1102,28 @@ própria; os selos viram ponto e texto ou texto simples, sem maiúsculas; os car
 
 Nenhuma opção muda regra nem banco: as mesmas chamadas ao servidor (escalar, remover, marcar e retirar vaga,
 publicar, gerar o mês da fixa, aprovar e recusar).
+
+**Escolha do RT (27/10/2026): A, o mês com o dia ao lado.** Aplicada na branch `feat/visual-3-9-escala`:
+
+- Abas da Escala: Mensal, Pedidos, Carga horária, Fixa, Presenças e Histórico.
+- **Mensal** (`EscalaMes.tsx`, só o gestor): à esquerda o calendário (cada dia diz "coberto", "N vagas" ou
+  "sem plantão"; hoje marcado), o mês, a versão publicada e "Publicar escala"; à direita o dia escolhido
+  (hoje, sem clique), setor por setor e faixa por faixa, com quem está (6 h ou 12 h, 15/15, rótulo),
+  "Remover", "Escalar" (diálogo com plantonista, rótulo e 15/15), "Marcar vaga" e "Retirar vaga". Em cima,
+  a linha "N pedidos aguardando você", que leva à aba Pedidos. A grade da semana saiu da aba do gestor; o
+  admin, que não tem o calendário do gestor, continua escalando nela.
+- **Pedidos**: solicitações (passar plantão, justificar falta, sair do fixo) e candidaturas a plantão livre
+  numa lista só, "Aguardando você N", com Aprovar e Recusar; embaixo, os decididos com o estado em ponto e
+  texto. Os pedidos deixaram de aparecer duas vezes (cartão de alertas e "Solicitações da escala").
+- **Carga horária**: aba própria, com o mês e "Exportar escala (CSV)"; tabela sem as colunas coloridas.
+- Fixa: sem os alertas e a carga em cima; título e cabeçalhos sem ícone e sem maiúsculas.
+- Os dois bugs do levantamento foram corrigidos: o cabeçalho da grade da semana (admin) escreve o dia da
+  semana de cada data; o rótulo aparece onde é gravado (escalar no mês) e não na fixa.
+- As consultas de pedidos passaram a `src/hooks/usePedidosEscala.ts`, com a mesma chave e o mesmo select
+  na Escala, no calendário e no plantonista. As chamadas ao servidor são as mesmas.
+- Visto na página de teste com as telas reais e escala fictícia, nos dois temas
+  (`escala-A-aplicada-*.png`): escolher o dia, abrir "Escalar" e "Ver os pedidos" funcionaram. Escalar,
+  remover, marcar e retirar vaga, publicar, aprovar e recusar pedem login: conferir na homologação.
 
 ## O que o padrão já fixou (não muda nesta parte)
 
