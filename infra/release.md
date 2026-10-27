@@ -45,25 +45,39 @@ Se o build de um deploy **falhar**, a Vercel mantém no ar a versão anterior �
 | Typecheck bloqueante | passo `Typecheck` próprio no CI (antes já rodava dentro do build) |
 | Expand/contract | `migrations-destrutivas.mjs` no CI (3 testes); nenhuma migration destrutiva desde `20261025000002` |
 
-## Job do banco no CI: imagem do Postgres no cache do Actions (26/10/2026)
+## Job do banco no CI: imagens do Supabase no cache do Actions (26 e 27/10/2026)
 
-- **O que cobre:** o job `banco` restaura `supabase/postgres:17.6.1.131` do cache do GitHub Actions (chave
-  `supabase-postgres-17.6.1.131`, arquivo `docker save`). Sem cache, tenta Docker Hub, depois
-  `public.ecr.aws`, depois `ghcr.io` (duas vezes cada, 20 s entre elas), dá à imagem o nome
-  `ghcr.io/supabase/postgres:17.6.1.131` que o CLI procura e grava no cache. O CLI acha a imagem já presente
-  e não a pede ao ghcr.io. É a mesma imagem nos três registros (digest
-  `sha256:42088c86593e0d4f47b2b2bd3c964cee31a1bbc8e560619fd3e84e5fdd973f6d`, conferido em 26/10/2026).
+- **O que cobre:** o job `banco` restaura do cache do GitHub Actions (arquivos `docker save`) todas as imagens
+  que o `supabase start` usa: `supabase/postgres:17.6.1.131` (chave `supabase-postgres-17.6.1.131`) e
+  `supabase/gotrue:v2.189.0` + `supabase/storage-api:v1.60.0` (chave
+  `supabase-gotrue-v2.189.0-storage-api-v1.60.0`). Sem cache, cada imagem vem do Docker Hub, depois do
+  `public.ecr.aws`, depois do `ghcr.io` (duas vezes cada, 20 s entre elas), ganha o nome `ghcr.io/…` que o
+  CLI procura (o `supabase/setup-cli` fixa esse registro) e vai para o cache. O CLI acha as imagens já
+  presentes e não pede nada ao ghcr.io. São as mesmas imagens nos três registros (digests do índice:
+  postgres `sha256:42088c86593e0d4f47b2b2bd3c964cee31a1bbc8e560619fd3e84e5fdd973f6d`, conferido em
+  26/10/2026; gotrue `sha256:385184459f…` e storage-api `sha256:8cbdce289b…`, conferidos em 27/10/2026).
+- **Serviços que sobem:** só o contêiner do banco. Os testes (`scripts/testes-banco.mjs`) só fazem
+  `docker exec psql` nele. Os schemas `auth` (`auth.sessions`, `auth.mfa_factors`) e `storage`
+  (`storage.buckets`, `storage.objects`), que as migrations usam, vêm dos jobs de migração do gotrue e do
+  storage-api que o CLI roda antes das migrations; por isso essas duas imagens ficam no cache, mas os
+  contêineres `gotrue`, `storage-api`, `kong` e `postgrest` ficam de fora no `-x`. O realtime sai com
+  `SUPABASE_REALTIME_ENABLED=false`: o `-x realtime` não pula o job de migração dele (CLI 2.102,
+  `internal/db/start/start.go`, `initSchema15`). As migrations só usam a publicação `supabase_realtime`, que
+  já vem na imagem do Postgres.
 - **Por quê:** em 26/10/2026 os registros públicos barraram os runners do GitHub, que dividem endereços:
   o ghcr.io recusou a imagem do Postgres com `toomanyrequests` em todas as tentativas (PRs #239, #240 e
-  #241), com e sem login e com pausas de até 90 s; o ECR público recusou com `Data limit exceeded`. Com o
-  cache, depois da primeira vez o job não depende de nenhum registro para essa imagem.
-- **Também no passo:** o `supabase start` ainda tenta até 4 vezes (pausas de 30, 60 e 90 s) para as outras
-  imagens, que seguem no ghcr.io; e a exclusão usa os nomes do CLI 2.102 (`mailpit`, `logflare`,
-  `postgres-meta`; os antigos `inbucket`, `analytics` e `meta` eram ignorados e baixavam três imagens à toa).
+  #241), com e sem login e com pausas de até 90 s; o ECR público recusou com `Data limit exceeded`. Em
+  27/10/2026 o ghcr.io barrou `realtime:v2.100.0` e `storage-api:v1.60.0` nas 4 tentativas do PR #270. Com o
+  cache, depois da primeira vez o job não depende de nenhum registro.
+- **Também no passo:** o `supabase start` ainda tenta até 4 vezes (pausas de 30, 60 e 90 s), para o caso
+  de faltar alguma imagem; e a exclusão usa os nomes do CLI 2.102 (`mailpit`, `logflare`, `postgres-meta`;
+  os antigos `inbucket`, `analytics` e `meta` eram ignorados e baixavam três imagens à toa).
 - **O que não cobre:** o cache de um PR só vale para ele e para o master depois do merge na primeira rodada
   do master que conseguir baixar; até lá, cada ramo depende de algum registro servir uma vez. O cache sai
-  se ficar 7 dias sem uso. A tag é a do CLI 2.102.0, fixado no workflow: ao atualizar o CLI, atualizar a tag
-  e a chave do cache.
+  se ficar 7 dias sem uso. O job não testa realtime, PostgREST nem a API do auth/storage (só o SQL). As
+  tags são as do CLI 2.102.0, fixado no workflow (lista no `pkg/config/templates/Dockerfile` do CLI): ao
+  atualizar o CLI, atualizar as tags e as chaves do cache.
 - **Chaves envolvidas:** nenhuma (registros públicos sem login; o cache usa o token do próprio Actions).
-- **Como reverter:** apagar os passos "Restaurar…", "Obter…" e "Guardar a imagem do Postgres…" e voltar o
-  "Subir Supabase local" a uma linha só, `supabase start -x …`, em `.github/workflows/ci.yml` (PR próprio).
+- **Como reverter:** apagar os passos "Restaurar…", "Obter as imagens do Supabase" e "Guardar…", o `env`
+  `SUPABASE_REALTIME_ENABLED` e os nomes `gotrue,storage-api,kong,postgrest` do `-x`, em
+  `.github/workflows/ci.yml` (PR próprio).
