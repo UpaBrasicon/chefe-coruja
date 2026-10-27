@@ -1273,6 +1273,21 @@ Os dados, as regras e a API já estão em produção (3.1 a 3.3).
   - **Plantões:** uma linha por mês (em andamento, pronto para fechar, conciliado), que abre com
     o aviso, a tabela por profissional e o botão de fechar.
 
+**Escolha do RT (27/10/2026): A, lista com filtro e gaveta.** Aplicada na branch `fase5/erp-telas`:
+
+- **`EnvioErp.tsx`** (`/faturamento/erp`, menu "Envio ao ERP"), com duas abas:
+  - **Contas:** filtros pela situação no ERP com a contagem. "Estornar no ERP" é a versão substituída
+    que o ERP já tinha lançado. A tabela das versões abre a gaveta da conta, com o aviso da situação,
+    as versões, os itens (o que fica fora do arquivo aparece apagado), os medicamentos e as glosas.
+  - **Plantões do mês:** só o gestor. Tem o mês com setas, a situação (aberto, em andamento ou a
+    conciliação da versão vigente), CSV e JSON, fechar com confirmação e reabrir com motivo. A tabela
+    vai por profissional, com a coluna "Atenção" (falta justificada, sem presença, sem saída) e o
+    total; embaixo, o histórico das versões.
+- **`src/lib/erp.ts`:** a situação de cada versão, o resumo por profissional e o arquivo CSV/JSON, com
+  testes em `erp.test.ts`.
+- **Conferida na página de teste** com a tela real e dados fictícios, nos dois temas e em 390 px, sem
+  rolagem lateral (`erp-A-aplicada-*.png`). Mostra a gaveta, a confirmação de fechar e o mês fechado.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base

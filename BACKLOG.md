@@ -988,6 +988,22 @@ conciliação, conta reaberta) ficam feitas e sem resposta; voltam na retomada.
 **Retomada em 27/10/2026:** a trilha "Revisão visual" acabou com a grade de ações do gestor; a 5C volta
 pela tarefa 3. Diagnóstico e decisões na linha da tarefa 3, acima.
 
+**Tarefa 3, etapa 3.4 (telas), na homologação em 27/10/2026.** Pedido do RT: "criar o ERP usando o
+Refero". Três opções a partir do Refero (Kitchen.co, Mercury, ShareWillow, Aboard, Stripe); **escolha
+do RT: A, lista com filtro e gaveta.**
+- Tela "Envio ao ERP" (`/faturamento/erp`), no menu do faturamento e no grupo Faturamento do gestor.
+- **Aba Contas** (faturamento e gestor): filtro pela situação no ERP, com contagem; tabela das versões;
+  gaveta da conta com o aviso, as versões, os itens, os medicamentos e as glosas.
+- **Aba Plantões do mês** (só o gestor): o mês com setas, a situação, a tabela por profissional com o
+  total, fechar com confirmação, reabrir com motivo e o histórico das versões.
+- As duas abas baixam CSV e JSON com o mesmo conteúdo que o ERP recebe.
+- **Banco:** migration `20270120000004_erp_telas.sql` (`erp_contas_da_unidade` e `erp_baixar`; cada
+  baixa vai para a auditoria). Teste `supabase/tests/fase5c_erp_telas.sql` e rollback passaram na
+  homologação.
+- **Regras da tela** em `src/lib/erp.ts`, com teste.
+- **Conferida na página de teste** nos dois temas e em 390 px: imagens `erp-A-aplicada-*` em
+  `docs/frontend/revisao-visual/app/`.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
