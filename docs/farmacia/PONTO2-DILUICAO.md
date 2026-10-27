@@ -94,3 +94,5 @@ da migration `20261009000001`. As linhas criadas como da unidade continuam da un
    unidade".
 3. Com outro farmacêutico, de outra unidade, a linha não aparece.
 4. Um item cadastrado pela farmácia (ponto 4) também aceita "Nova diluição".
+
+**Teste do RT em 27/10/2026: ok na homologação**, com o formulário de um passo (diluente, volume e tempo de infusão no mesmo formulário).
