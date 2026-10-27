@@ -158,6 +158,10 @@ ECR público ou do ghcr.io (mesmo digest nos três) com o nome que o CLI procura
 `postgres-meta`; os antigos eram ignorados e baixavam três imagens à toa). Tentado no próprio PR e sem
 resolver sozinho: login no ghcr.io, só as novas tentativas e só o ECR ("Data limit exceeded").
 Registro, limites e reversão em `infra/release.md`. Evidência: o job do banco verde no próprio PR da correção.
+Em 27/10/2026 (PR #270, branch `fix/ci-banco-servicos-cache`) o ghcr.io barrou `realtime` e `storage-api`:
+as imagens do gotrue e do storage-api (jobs de migração dos schemas `auth` e `storage`) entram no cache, o
+realtime sai pela config (`SUPABASE_REALTIME_ENABLED=false`) e os contêineres de auth, storage, kong e
+postgrest saem no `-x`, porque os testes só usam o banco.
 
 ---
 
