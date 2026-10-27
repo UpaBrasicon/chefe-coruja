@@ -24,7 +24,7 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react'
-import { ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
+import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
 
@@ -249,6 +249,16 @@ export function agruparNavegacao(itens: ItemNav[]): { grupo: string | null; iten
     else blocos.push({ grupo: g, itens: [item] })
   }
   return blocos
+}
+
+/** Ícone de cada grupo no trilho das áreas do gestor (revisão visual 3.9, opção B). */
+export const ICONE_GRUPO: Record<string, LucideIcon> = {
+  Porta: DoorOpen,
+  Leitos: BedDouble,
+  'Farmácia': FlaskConical,
+  Exames: TestTube,
+  Faturamento: Receipt,
+  Unidade: Building2,
 }
 
 /**

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 
 // A marca da casca (P/index.html 898–904): a coruja sobre o quadrado teal da marca,
 // "Chefe Coruja" em 15px/600 e o papel sussurrado embaixo.
-export function Marca({ papel, tamanho = 34, className }: { papel?: string; tamanho?: 30 | 34; className?: string }) {
+export function Marca({ papel, tamanho = 34, simbolo, className }: { papel?: string; tamanho?: 30 | 34; /** só a coruja, sem o nome (trilho do gestor) */ simbolo?: boolean; className?: string }) {
   return (
     <span className={cn('flex min-w-0 items-center gap-2.5', className)}>
       <span
@@ -16,7 +16,7 @@ export function Marca({ papel, tamanho = 34, className }: { papel?: string; tama
       >
         <Bird className={tamanho === 34 ? 'size-[19px]' : 'size-[17px]'} />
       </span>
-      <span className="cc-some flex min-w-0 flex-col leading-[1.2]">
+      <span className={cn('cc-some flex min-w-0 flex-col leading-[1.2]', simbolo && 'sr-only')}>
         <span className="truncate text-corpo font-semibold tracking-[-0.01em] text-tinta">Chefe Coruja</span>
         {papel && <span className="truncate text-rotulo text-tinta-sussurro">{papel}</span>}
       </span>
