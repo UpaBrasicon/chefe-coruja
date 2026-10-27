@@ -12232,6 +12232,7 @@ export type Database = {
         }[]
       }
       porta_agora: { Args: { p_unidade: string }; Returns: Json }
+      porta_grade: { Args: { p_unidade: string }; Returns: Json }
       portao_requisicao: { Args: never; Returns: undefined }
       prescrever: {
         Args: { p_item: Json; p_paciente: string }
