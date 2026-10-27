@@ -1354,6 +1354,24 @@ Ficaram pendentes do lote 1, à espera do RT:
 - **Escala Clínica de Fragilidade:** os nomes dos níveis 2 e 8 não foram confirmados palavra por palavra.
 - **Dor na criança:** as fontes divergem de `src/clinico/triagem/dor.ts`. Escala numérica a partir de 6 anos (o app usa 4), FPS-R a partir de 4–5 anos, FLACC validada de 2 meses a 7 anos (o app usa até 3). O RT decide a faixa de cada escala.
 
+**Decisões do RT sobre as pendências dos lotes 1 e 2 (27/10/2026):**
+- **Dor na criança — resolvida, em homologação** (branch `feat/lacunas-dor-crianca`). FLACC de 2 meses
+  a 5 anos e autorrelato 0–10 a partir de 6 anos, sem escala nova. Fontes: Merkel 1997 (PMID 9220806),
+  FLACC validada de 2 meses a 7 anos; Birnie 2019 (PMID 30180088), nenhuma escala de autorrelato
+  recomendada antes dos 6 anos. Vale na triagem e nas escalas do leito, que usam a mesma faixa.
+  Versões 2026-10-27.1 da FLACC e da numérica na fila de aprovação (migration
+  `20270131000003_lacunas_dor_crianca`).
+- **Escala Clínica de Fragilidade — fora por ora.** Os nomes dos nove níveis foram confirmados
+  (Rockwood e Theou 2020, PMID 32904824, nível 2 "Fit" e nível 8 "Living with Very Severe Frailty").
+  A Dalhousie exige licença para uso comercial, possivelmente paga (página "Permission for Use" do
+  Geriatric Medicine Research). Só volta se o RT pedir a licença no portal da Dalhousie.
+- **RACE — continua bloqueada.** O artigo original (Pérez de la Ossa 2014, DOI
+  10.1161/STROKEAHA.113.003071) não abriu: o site da AHA parou na verificação anti-robô. Os artigos
+  abertos trazem só os máximos de cada item (face 0–2, braço 0–2, perna 0–2, olhar 0–1, afasia ou
+  agnosia 0–2), sem a definição de cada ponto. Volta quando houver o PDF do artigo.
+- **Escore STONE — fora** (item de raça), como o escore de Son no lote 3.
+- **ITU do adulto — grupo novo "Infecções"** nas condutas do adulto (próximo item).
+
 **Lote 2 — SCA e Sgarbossa em produção em 23/10/2026 (PR #186).** Primeiro item do lote 2.
 - **SCA — conduta inicial** (Condutas e cálculos — adulto, Cardiovascular): AAS, segundo
   antiagregante, anticoagulante e reperfusão no IAM com e sem supra. Doses do manual do HC, caps. 13
