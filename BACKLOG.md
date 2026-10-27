@@ -1021,6 +1021,34 @@ CSV, com retorno e conciliação por versão. Detalhes, chaves e reversão em `i
 Fica para depois: envio ativo (tarefa 4, Webhooks), leiaute de ERP específico, valor de medicamento e
 material, convênio/TISS.
 
+**Tarefa 4, Webhooks (decisões do RT em 27/10/2026, "1a 2a 3a 4a 5a"):**
+- quem entrega é uma Edge Function chamada pelo `pg_cron`, sem IP fixo;
+- o evento é enxuto: tipo, ids, unidade e data. Nenhum dado de paciente sai pelo webhook; o receptor
+  busca o detalhe pela API v1, com a chave dele;
+- os seis eventos do backlog: paciente criado, atendimento aberto, alta (fim do atendimento e alta da
+  internação), internação, prescrição assinada e mudança de status da regulação;
+- o super admin cadastra o destino (endereço https, eventos e unidades), ligado a uma chave da API; o
+  gestor da unidade vê e desliga;
+- assinatura no padrão Standard Webhooks (HMAC-SHA256); novas tentativas com espera crescente por até
+  24 h, depois a entrega fica "falhou", com reenvio manual; o destino que falha há 3 dias seguidos é
+  desligado e o gestor recebe aviso.
+
+Etapas, cada uma em PR próprio: 4.1 banco; 4.2 motor de entrega (assinatura, novas tentativas,
+simulador de receptor); 4.3 tela (a partir do Refero), OpenAPI e `infra/webhooks.md` completo.
+
+**4.1 na homologação em 27/10/2026:** migration `20270201000001_webhooks.sql`.
+- Tabelas `webhook_destinos` (o segredo fica no Vault), `webhook_eventos` e `webhook_entregas` (uma
+  por destino). As três ficam fechadas para o REST; o acesso é só pelas funções.
+- Gatilhos nas cinco tabelas de origem. Eles nunca derrubam o fluxo clínico: sem destino ativo não
+  gravam nada, e qualquer erro vira aviso no log.
+- Funções: `webhook_criar_destino` e `webhook_girar_segredo` (super admin; o segredo aparece uma vez
+  só), `webhook_desligar_destino` (gestor, com motivo), `webhook_religar_destino` (super admin),
+  `webhook_reenviar`, `webhook_destinos_lista` e `webhook_entregas_do_destino`. Todas exigem o segundo
+  fator, e as que mudam algo vão para a auditoria.
+- O endereço só aceita https com nome público (sem IP, localhost ou rede interna).
+- Teste `supabase/tests/fase5c_webhooks.sql` e rollback passaram na homologação, numa transação
+  desfeita.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
