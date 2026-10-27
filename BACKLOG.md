@@ -1466,8 +1466,13 @@ o PR #194 corrigiu o plural "sinais de alarme" da cefaleia, apontado pelo RT na 
   primeira hora; ceftriaxona com ampicilina no risco de Listeria (acima de 50 anos, imunossupressão,
   corticoide, gestação); dexametasona 0,15 mg/kg/dose e aciclovir 10 mg/kg/dose pelo peso; Tabela 2
   por agente e Tabela 1 do LCR.
-- Fora: quimioprofilaxia de contatos (o capítulo não traz; precisaria do Guia de Vigilância do MS),
-  ESCMID 2016 (não lida no texto) e a Figura 2 do manual (imagem, só citada).
+- Fora: ESCMID 2016 (não lida no texto) e a Figura 2 do manual (imagem, só citada).
+- **Quimioprofilaxia de contatos — resolvida em 27/10/2026, em homologação** (branch
+  `feat/lacunas-quimioprofilaxia-meningite`). Fonte: Guia de Vigilância em Saúde do MS, v. 1, 6ª ed.
+  revisada (2024), lido no PDF: quem recebe (p. 116–118 e 142), Quadro 3 do meningococo (p. 117) e
+  Quadro 11 do Hib (p. 143), como o Guia traz, com as linhas da criança para os contatos; rifampicina
+  do próprio paciente na alta pelo peso (10 mg/kg/dose, máximo 600 mg). Versão 2026-10-27.1 da ficha
+  na fila de aprovação (migration `20270131000004_lacunas_quimioprofilaxia_meningite`).
 
 Evidência: 1002 de 1002 testes clínicos; homologação conferida pelo RT; migration
 `20261218000001_lacunas_lote2_meningite` aplicada na homologação e, com o "ok produção" do RT, na
