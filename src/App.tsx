@@ -78,6 +78,7 @@ const AihUnidade = lazy(() => import('@/pages/regulacao/Aih'))
 const FaturamentoBpa = lazy(() => import('@/pages/faturamento/Bpa'))
 const FaturamentoContas = lazy(() => import('@/pages/faturamento/Contas'))
 const FaturamentoGlosas = lazy(() => import('@/pages/faturamento/Glosas'))
+const FaturamentoEnvioErp = lazy(() => import('@/pages/faturamento/EnvioErp'))
 const ApacUnidade = lazy(() => import('@/pages/regulacao/Apac'))
 const Integracoes = lazy(() => import('@/pages/admin/Integracoes'))
 const ExportarDados = lazy(() => import('@/pages/gestor/ExportarDados'))
@@ -262,6 +263,8 @@ export default function App() {
                         <Route path="/faturamento/contas" element={<FaturamentoContas />} />
                         {/* Fase 5B, tarefa 6: glosas */}
                         <Route path="/faturamento/glosas" element={<FaturamentoGlosas />} />
+                        {/* Fase 5C, tarefa 3: envio ao ERP (contas; plantões do mês só o gestor) */}
+                        <Route path="/faturamento/erp" element={<FaturamentoEnvioErp />} />
                       </Route>
                       {/* APAC: o regulador autoriza; o faturamento registra a execução e gera o arquivo (Fase 3, tarefa 5) */}
                       <Route element={<RequireRole papeis={['regulador', 'faturamento', 'gestor']} />}>
