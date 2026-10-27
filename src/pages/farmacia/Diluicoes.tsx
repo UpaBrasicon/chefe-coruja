@@ -20,6 +20,8 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { cn } from '@/lib/utils'
 import { Chip } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
@@ -265,10 +267,11 @@ function NovaDiluicao({ aoCriar, aoErro }: { aoCriar: (id: string) => void; aoEr
   const [med, setMed] = React.useState<{ id: string; principio_ativo: string; apresentacao: string | null } | null>(null)
   const [via, setVia] = React.useState('EV')
   const [fonte, setFonte] = React.useState('')
+  const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
   const r = useQuery({
-    queryKey: ['med-farmacia', busca],
+    queryKey: ['med-farmacia', busca, unidadeBusca],
     enabled: busca.trim().length >= 3 && !med,
-    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).limit(15)).data ?? [],
+    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').or(filtroDaUnidade(unidadeBusca)).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).limit(15)).data ?? [],
   })
   return (
     <section aria-label="Nova diluição" className="flex flex-col gap-2 px-5 py-4 text-apoio">

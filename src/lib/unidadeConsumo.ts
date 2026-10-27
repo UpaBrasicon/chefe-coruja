@@ -19,4 +19,8 @@ export type MedicamentoUnidade = {
   id: string; principio_ativo: string; apresentacao: string | null; concentracao: string | null
   unidade_consumo: UnidadeConsumo | null; unidade_consumo_outra: string | null
   conferida_em: string | null; conferida_por: string | null
+  // ponto 4 (27/10/2026): forma e cadastro pela farmácia
+  forma_farmaceutica: string | null; forma_farmaceutica_outra: string | null
+  unidades_locais: string[] | null; cadastrado_na_unidade: string | null; origem: string | null
+  cadastrado_por: string | null; cadastrado_em: string | null
 }

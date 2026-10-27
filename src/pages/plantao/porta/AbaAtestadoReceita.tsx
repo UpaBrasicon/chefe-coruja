@@ -14,6 +14,8 @@ import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { abrirImpressao } from '@/lib/prontuario'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -204,12 +206,13 @@ function ReceitaAlta({ faixa, estado, setEstado, onEmitir }: { faixa: FaixaEtari
       return (data ?? []) as unknown as Pref[]
     },
   })
+  const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
   const resultados = useQuery({
-    queryKey: ['busca-medicamento-receita', busca],
+    queryKey: ['busca-medicamento-receita', busca, unidadeBusca],
     enabled: busca.trim().length >= 3 && !med,
     queryFn: async () => {
       const { data, error } = await supabase.from('medicamento').select('id, principio_ativo, apresentacao, concentracao')
-        .eq('ativo', true).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).order('principio_ativo').limit(8)
+        .eq('ativo', true).or(filtroDaUnidade(unidadeBusca)).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).order('principio_ativo').limit(8)
       if (error) throw error
       return (data ?? []) as Med[]
     },

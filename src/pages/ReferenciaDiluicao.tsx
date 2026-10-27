@@ -4,6 +4,8 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { dataPura } from '@/lib/formato'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
@@ -62,14 +64,15 @@ const VIA_LABEL: Record<string, string> = {
 export default function ReferenciaDiluicao({ embutido = false }: { embutido?: boolean } = {}) {
   const [busca, setBusca] = React.useState('')
 
+  const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
   const { data: medicamentos, isLoading } = useQuery({
-    queryKey: ['medicamento-catalogo', busca],
+    queryKey: ['medicamento-catalogo', busca, unidadeBusca],
     enabled: true,
     queryFn: async () => {
       let query = supabase
         .from('medicamento')
         .select('id, principio_ativo, concentracao, apresentacao, rxcui, alta_vigilancia, anvisa_registro')
-        .eq('ativo', true)
+        .eq('ativo', true).or(filtroDaUnidade(unidadeBusca))
         .order('principio_ativo')
         .limit(200)
       if (busca.trim().length >= 2) {
