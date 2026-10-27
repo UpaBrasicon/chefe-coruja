@@ -1125,6 +1125,42 @@ publicar, gerar o mês da fixa, aprovar e recusar).
   (`escala-A-aplicada-*.png`): escolher o dia, abrir "Escalar" e "Ver os pedidos" funcionaram. Escalar,
   remover, marcar e retirar vaga, publicar, aprovar e recusar pedem login: conferir na homologação.
 
+### Menu lateral do gestor (27/10/2026)
+
+**Hoje** (`menu-hoje-recolhida-claro.png`, `menu-hoje-claro|escuro.png`, `menu-hoje-inteira-claro.png`;
+página de teste com a lateral, o topo e a Escala reais): o gestor tem **30 itens** em seis grupos (Porta,
+Leitos, Farmácia, Exames, Faturamento, Unidade) mais o Painel. A lista mede cerca de 1.510 px de altura, e
+o aviso "Da unidade" e o Sair ficam abaixo dela. Recolhida (68 px), a lateral mostra 30 ícones separados
+só por fios, sem o nome do grupo, e numa tela de 900 px de altura **os ícones de Unidade não aparecem**:
+quem está na Escala não vê no menu onde está, e a lateral recolhida não rola (só rola aberta, com o
+mouse em cima). Aberta, o gestor rola a lista para achar Escala, Auditoria ou Chamados.
+
+Os grupos e os nomes dos itens são do padrão (parte 4.11) e não mudam: as opções mudam só como a lista
+aparece. A barra de baixo do celular segue como está.
+
+**Referências do Refero:** central de administração do Zendesk (`0e460ced`: um ícone por área, a área
+abre e fecha, os itens sem ícone por baixo); Linear (`c1592a36`: lateral fixa, densa, com títulos de
+grupo pequenos que recolhem); Lemni (`027f73ab`: a primeira coluna com as áreas, a segunda com as telas da
+área escolhida).
+
+**Opções** (`menu-A|B|C-claro|escuro.png`, `menu-A-recolhida-claro.png`), todas com a Escala aberta:
+
+- **A · grupos que abrem e fecham** (Zendesk): a lateral segue recolhida e abre com o mouse, como hoje.
+  Recolhida, mostra **sete ícones**, um por área (Painel e os seis grupos), e o da área atual em petróleo.
+  Aberta, cada área é uma linha com o nome e a seta; a área da página atual vem aberta, com os itens em
+  texto, sem ícone; as outras ficam fechadas e mostram a nota (a contagem em âmbar) quando têm pendência.
+  Exames, que tem um item só, leva direto à tela. O gestor abre outras áreas com um clique, e o
+  aparelho lembra quais deixou abertas. O aviso "Da unidade" e o Sair cabem embaixo.
+- **B · trilho das áreas e a coluna da área** (Lemni): um trilho fixo de 76 px com o ícone e o nome de
+  cada área, sempre à vista, e uma segunda coluna de 220 px com as telas da área atual e o aviso "Da
+  unidade" no pé. Não depende do mouse e a área atual fica marcada. Painel e Exames, com uma tela só,
+  não abrem a segunda coluna. Custo: o conteúdo perde cerca de 230 px de largura em toda tela do gestor,
+  e na foto (1.100 px) o calendário da Escala já aperta.
+- **C · lista inteira, fixa e mais densa** (Linear): a lateral fica aberta (220 px, sem o efeito do
+  mouse), com linhas mais baixas, texto de 13 px e os títulos de grupo pequenos com uma seta; um clique
+  recolhe o grupo que o gestor não usa (na foto, Faturamento), e o aparelho lembra. A lista rola sozinha
+  até a página atual. Mesmo densa, a lista inteira passa da altura da tela e rola.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
