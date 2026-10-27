@@ -1678,8 +1678,15 @@ espera do RT:
   somadas às 19 dos lotes 1 e 2.
 - Pendências dos lotes 1 e 2 já listadas acima (RACE, Escala Clínica de Fragilidade, dor na criança,
   STONE, grupo da ITU, doses da cefaleia, quimioprofilaxia na meningite).
-- Achado do lote 3: a Figura 8 do Part 9 da AHA 2025 traz atropina 1 mg a cada 3–5 min, máximo 3 mg,
-  na bradicardia do adulto; resolve a nota "não confirmada" da ferramenta de bradicardia.
+- ~~Achado do lote 3: a Figura 8 do Part 9 da AHA 2025 traz atropina 1 mg a cada 3–5 min, máximo 3 mg,
+  na bradicardia do adulto; resolve a nota "não confirmada" da ferramenta de bradicardia.~~ **Resolvido
+  em 27/10/2026 (branch `feat/lacunas-atropina-aha2025`):** conferido de novo no texto integral em
+  cpr.heart.org — Figura 8, quadro "Doses/Details": 1ª dose de 1 mg em bolo, repetir a cada 3–5 min, dose
+  total máxima de 3 mg; seção 19, recomendação 2: atropina razoável na bradicardia com comprometimento
+  hemodinâmico (2a, B-NR); o mesmo quadro confere dopamina 5–20 µg/kg/min e adrenalina 2–10 µg/min. A
+  ficha da bradicardia do adulto ganhou a AHA 2025 como terceira fonte, a linha "Atropina (AHA 2025)" ao
+  lado da ERC/RCUK (0,5 mg) e do manual, e perdeu a nota "não confirmado"; versão 2026-10-27.1 na fila de
+  aprovação (migration `20270131000002_lacunas_atropina_aha2025`, na homologação).
 - Fontes enviadas pelo RT em PDF quando o site da revista bloqueou: Kawasaki (AHA 2024), Practice
   Parameter de anafilaxia (2023) e AAP 2017 de hipertensão pediátrica.
 
