@@ -1125,6 +1125,61 @@ publicar, gerar o mês da fixa, aprovar e recusar).
   (`escala-A-aplicada-*.png`): escolher o dia, abrir "Escalar" e "Ver os pedidos" funcionaram. Escalar,
   remover, marcar e retirar vaga, publicar, aprovar e recusar pedem login: conferir na homologação.
 
+### Menu lateral do gestor (27/10/2026)
+
+**Hoje** (`menu-hoje-recolhida-claro.png`, `menu-hoje-claro|escuro.png`, `menu-hoje-inteira-claro.png`;
+página de teste com a lateral, o topo e a Escala reais): o gestor tem **30 itens** em seis grupos (Porta,
+Leitos, Farmácia, Exames, Faturamento, Unidade) mais o Painel. A lista mede cerca de 1.510 px de altura, e
+o aviso "Da unidade" e o Sair ficam abaixo dela. Recolhida (68 px), a lateral mostra 30 ícones separados
+só por fios, sem o nome do grupo, e numa tela de 900 px de altura **os ícones de Unidade não aparecem**:
+quem está na Escala não vê no menu onde está, e a lateral recolhida não rola (só rola aberta, com o
+mouse em cima). Aberta, o gestor rola a lista para achar Escala, Auditoria ou Chamados.
+
+Os grupos e os nomes dos itens são do padrão (parte 4.11) e não mudam: as opções mudam só como a lista
+aparece. A barra de baixo do celular segue como está.
+
+**Referências do Refero:** central de administração do Zendesk (`0e460ced`: um ícone por área, a área
+abre e fecha, os itens sem ícone por baixo); Linear (`c1592a36`: lateral fixa, densa, com títulos de
+grupo pequenos que recolhem); Lemni (`027f73ab`: a primeira coluna com as áreas, a segunda com as telas da
+área escolhida).
+
+**Opções** (`menu-A|B|C-claro|escuro.png`, `menu-A-recolhida-claro.png`), todas com a Escala aberta:
+
+- **A · grupos que abrem e fecham** (Zendesk): a lateral segue recolhida e abre com o mouse, como hoje.
+  Recolhida, mostra **sete ícones**, um por área (Painel e os seis grupos), e o da área atual em petróleo.
+  Aberta, cada área é uma linha com o nome e a seta; a área da página atual vem aberta, com os itens em
+  texto, sem ícone; as outras ficam fechadas e mostram a nota (a contagem em âmbar) quando têm pendência.
+  Exames, que tem um item só, leva direto à tela. O gestor abre outras áreas com um clique, e o
+  aparelho lembra quais deixou abertas. O aviso "Da unidade" e o Sair cabem embaixo.
+- **B · trilho das áreas e a coluna da área** (Lemni): um trilho fixo de 76 px com o ícone e o nome de
+  cada área, sempre à vista, e uma segunda coluna de 220 px com as telas da área atual e o aviso "Da
+  unidade" no pé. Não depende do mouse e a área atual fica marcada. Painel e Exames, com uma tela só,
+  não abrem a segunda coluna. Custo: o conteúdo perde cerca de 230 px de largura em toda tela do gestor,
+  e na foto (1.100 px) o calendário da Escala já aperta.
+- **C · lista inteira, fixa e mais densa** (Linear): a lateral fica aberta (220 px, sem o efeito do
+  mouse), com linhas mais baixas, texto de 13 px e os títulos de grupo pequenos com uma seta; um clique
+  recolhe o grupo que o gestor não usa (na foto, Faturamento), e o aparelho lembra. A lista rola sozinha
+  até a página atual. Mesmo densa, a lista inteira passa da altura da tela e rola.
+
+**Escolha do RT (27/10/2026): B, o trilho das áreas e a coluna da área.** Aplicada na branch
+`feat/visual-3-9-menu`:
+
+- `Lateral.tsx`: quando os itens vêm em grupos (o gestor), a lateral vira `LateralAreas`. O trilho fixo
+  (80 px) traz a coruja, uma linha por área com o ícone e o nome (Painel, Porta, Leitos, Farmácia,
+  Exames, Faturamento, Unidade), a área da página atual em petróleo, um ponto âmbar quando a área tem
+  pendência (a nota de pedidos da Auditoria acende Unidade) e o Sair no pé. Clicar na área abre a
+  primeira tela dela. A coluna da área (220 px) tem o nome da área, as telas com o ícone e a nota, como
+  na lateral de hoje, e o aviso "Da unidade" no pé. Painel e Exames, com uma tela só, não abrem a coluna.
+  O trilho e a coluna não dependem do mouse. Os outros papéis, sem grupos, seguem com a lateral
+  recolhida de sempre; o código dos títulos de grupo, que só o gestor usava, saiu dela.
+- `navegacao.ts`: `ICONE_GRUPO`, o ícone de cada grupo no trilho. Grupos, ordem e nomes não mudaram.
+- `Marca.tsx`: `simbolo` mostra só a coruja (o nome fica para leitor de tela), para o trilho.
+- No trilho, o nome da área ocupa 76 px: "Faturamento" coube depois de alargar o trilho de 76 para 80 px.
+- Visto na página de teste com a lateral, o topo e a Escala reais, nos dois temas
+  (`menu-B-aplicada-claro|escuro.png`): a área Unidade marcada com a Escala ativa na coluna; clicar em
+  Farmácia troca a coluna para as telas da Farmácia; clicar em Painel fecha a coluna. A barra de baixo
+  do celular não mudou.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
