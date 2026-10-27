@@ -1007,6 +1007,48 @@ pares complementares ficam: heparina EV × anticoagulação plena (60/12 com lí
 80/18 e 46–70, contextos diferentes), escolha de acesso × calibres e IO, sequência rápida ×
 sedação para procedimento, vasoativas × ressuscitação volêmica.
 
+## 3.9 · Escala e menu do gestor (27/10/2026)
+
+**Ordem combinada com o RT (27/10/2026):** uma tela por vez, Painel do Gestor → Escala (Mensal, Fixa,
+Presenças, Histórico) → menu lateral do gestor. A grade de ações (P1, modelo Symphony) fica **depois, como
+item próprio**: pede consulta nova no banco (a hora de cada etapa por paciente), com diagnóstico, RPC e
+homologação antes do frontend. A 3.9 fica só no visual.
+
+### Painel do Gestor (27/10/2026, opções; aguarda escolha do RT)
+
+**Hoje** (`gestor-hoje-claro|escuro.png`, página de teste com a tela real e números fictícios):
+`PainelGestor.tsx` tem três blocos. O **Panorama da unidade** é um carrossel que troca de painel a cada 8 s
+(Agora, Permanência e espera, Internações, Giro de leitos, Porta e observação, Equipe em plantão): o gestor
+vê um painel por vez e espera ou clica para achar o resto; o título tem o ícone em quadrado que a 3.1 tirou
+das outras telas, e as medidas usam a régua antiga (a 3.1 deixou o gestor com ela até a 3.9). A **pergunta
+sobre a gestão** ocupa um cartão grande com quatro exemplos em pílula. A **auditoria de check-in** tem
+cabeçalho e selos em maiúsculas espaçadas e linhas altas.
+
+**Referências do Refero:** início do Shopify (`bc973f32`: métricas em cima e o assistente numa coluna à
+direita); analista do GlossGenius (`4064fa00`: números à esquerda, pergunta na lateral); seções com contagem
+do Aboard (`a0a318b7`); e a peça "primeiro o que pede ação" da 3.1 (Fingerprint, Zendesk Talk, Linear), já
+escolhida para as faixas.
+
+**Opções** (números fictícios; `gestor-A|B|C-claro|escuro.png`). Em todas, sai o carrossel, sai o ícone em
+quadrado, as medidas passam à peça da 3.1 (`ResumoParametros`: o que está em atenção ou crítico em cima, com
+o número na cor do estado e o caminho para resolver; o que está em ordem numa linha quieta) e a auditoria
+vira tabela com o estado em ponto e texto, as divergências primeiro:
+
+- **A · primeiro o que pede ação, a unidade inteira:** a pergunta numa linha só no topo; um bloco "Pede você
+  agora N" com as medidas de todos os painéis que pedem ação (a ocupação aparece uma vez), cada uma com o
+  caminho (Abrir Farmácia, Ver a auditoria, Abrir Escala…); embaixo, o que está em ordem, uma linha por
+  painel; depois a auditoria.
+- **B · abas por painel:** a pergunta numa linha; os seis painéis viram abas com a contagem do que pede ação
+  em cada um (nada roda sozinho); a aba mostra a peça da 3.1 só daquele painel e a nota dele; depois a
+  auditoria.
+- **C · resumo à esquerda, pergunta na lateral** (Shopify, GlossGenius): o bloco "Pede você agora" e a
+  auditoria na coluna principal; à direita, "Pergunte à unidade", com a última resposta, o campo, os
+  exemplos em lista e o aviso de que nenhum nome de paciente sai dali. No celular a lateral desce.
+
+Nenhuma opção muda regra nem banco: os números são os de `panorama_gestor`, a pergunta é a mesma
+`perguntar_gestao` e a auditoria é a mesma `auditoria_checkin`. O que o gestor tira do carrossel em
+Indicadores continua valendo (sai da lista).
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
