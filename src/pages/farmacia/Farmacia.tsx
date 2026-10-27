@@ -10,10 +10,11 @@
 // em ponto + texto e blocos sem sombra; alta vigilância e falta seguem em selo.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, CheckCircle2, ClipboardPlus, FlaskConical, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ClipboardPlus, FlaskConical, Plus, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react'
 import * as React from 'react'
 
 import { dataHora, numero } from '@/lib/formato'
+import { normalizarMedicamento } from '@/lib/search'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -318,6 +319,14 @@ function Faltas({ unidade }: { unidade: string }) {
   const qc = useQueryClient()
   const [erro, setErro] = React.useState<string | null>(null)
   const [aba, setAba] = React.useState<AbaFalta>('registrada')
+  // ponto 3 das telas do farmacêutico (RT, 27/10/2026): a farmácia registra a falta aqui
+  const [registrando, setRegistrando] = React.useState(false)
+  const registrar = registrando
+    ? <RegistrarFalta unidade={unidade} fechar={() => setRegistrando(false)} aoRegistrar={() => {
+        setRegistrando(false); setAba('registrada')
+        for (const k of ['faltas', 'faltas-priorizadas', 'farmacia-estoque']) void qc.invalidateQueries({ queryKey: [k] })
+      }} />
+    : <div><Button size="sm" onClick={() => setRegistrando(true)}><Plus aria-hidden /> Registrar falta</Button></div>
   // "há quanto" anda a cada minuto
   const [agora, setAgora] = React.useState(() => Date.now())
   React.useEffect(() => {
@@ -356,10 +365,16 @@ function Faltas({ unidade }: { unidade: string }) {
   const maisAntiga = abertasLista.reduce<string | null>((m, f) => (!m || f.sinalizada_em < m ? f.sinalizada_em : m), null)
   const av = abertasLista.filter((f) => f.alta_vigilancia).length
   if (abertas.data?.length === 0 && lista.data?.length === 0) {
-    return <Vazio icone={AlertTriangle} titulo="Nenhuma falta sinalizada" texto="O plantão sinaliza pela prescrição e você pela Disponibilidade; tudo aparece aqui." />
+    return (
+      <div className="flex flex-col gap-3">
+        {registrar}
+        <Vazio icone={AlertTriangle} titulo="Nenhuma falta sinalizada" texto="O plantão sinaliza pela prescrição; você registra aqui ou pela Disponibilidade. Tudo aparece aqui." />
+      </div>
+    )
   }
   return (
     <div className="flex flex-col gap-3">
+      {registrar}
       <MensagemErro texto={erro ?? ((abertas.error ?? lista.error) ? ((abertas.error ?? lista.error) as Error).message : null)} />
       <Tabs value={aba} onValueChange={(v) => setAba(v as AbaFalta)} className="gap-3">
         <div className="flex flex-wrap items-end gap-x-4 gap-y-1 border-b border-fio">
@@ -399,6 +414,86 @@ function Faltas({ unidade }: { unidade: string }) {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+/**
+ * Registrar falta (ponto 3, RT 27/10/2026): qualquer item do estoque da unidade,
+ * com o saldo que for (o fornecedor avisou, o saldo está defasado, nunca teve
+ * saldo). Usa a mesma sinalizar_falta do plantão; uma falta aberta por item.
+ */
+function RegistrarFalta({ unidade, fechar, aoRegistrar }: { unidade: string; fechar: () => void; aoRegistrar: () => void }) {
+  const [busca, setBusca] = React.useState('')
+  const [escolhido, setEscolhido] = React.useState<Estoque | null>(null)
+  const [obs, setObs] = React.useState('')
+  const [erro, setErro] = React.useState<string | null>(null)
+  const [enviando, setEnviando] = React.useState(false)
+  // a mesma lista da Disponibilidade (já é só da unidade)
+  const estoque = useQuery({
+    queryKey: ['farmacia-estoque', unidade],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('farmacia_estoque', { p_unidade: unidade })
+      if (error) throw error
+      return (data ?? []) as Estoque[]
+    },
+  })
+  const termo = normalizarMedicamento(busca)
+  const achados = termo.length >= 3
+    ? (estoque.data ?? []).filter((e) => normalizarMedicamento(`${e.principio_ativo} ${e.apresentacao ?? ''}`).includes(termo)).slice(0, 12)
+    : []
+  async function enviar() {
+    setEnviando(true)
+    const { error } = await supabase.rpc('sinalizar_falta', { p_unidade: unidade, p_medicamento: escolhido!.medicamento_id, p_observacao: obs.trim() || undefined })
+    setEnviando(false)
+    if (error) return setErro(error.message)
+    aoRegistrar()
+  }
+  return (
+    <section aria-label="Registrar falta" className="flex flex-col gap-2 rounded-cartao border border-fio bg-superficie px-5 py-4 text-apoio">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h3 className="text-corpo font-semibold text-tinta">Registrar falta</h3>
+          <p className="text-tinta-sussurro">Avisa o plantão na prescrição e entra em Registradas.</p>
+        </div>
+        <Button size="xs" variant="ghost" onClick={fechar}>Fechar</Button>
+      </div>
+      {escolhido ? (
+        <>
+          <p>
+            <span className="font-medium text-tinta">{escolhido.principio_ativo}</span>{' '}
+            <span className="text-tinta-sussurro">{escolhido.apresentacao ?? ''} · saldo {fmt(escolhido.quantidade)}</span>{' '}
+            <Button size="xs" variant="ghost" onClick={() => { setEscolhido(null); setErro(null) }}>Trocar</Button>
+          </p>
+          {escolhido.falta_id ? (
+            <p className="text-tinta-apoio">Já tem falta aberta ({escolhido.falta_situacao === 'em_cotacao' ? 'em cotação' : 'registrada'}).</p>
+          ) : (
+            <>
+              <Input aria-label="Observação" placeholder="Observação (opcional): fornecedor sem previsão, saldo defasado…" value={obs} onChange={(e) => setObs(e.target.value)} />
+              <div><Button size="sm" disabled={enviando} onClick={() => void enviar()}>Registrar falta</Button></div>
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          <label className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
+            <Input aria-label="Buscar medicamento" className="h-8 pl-8" placeholder="Medicamento (3 letras ou mais)" value={busca} onChange={(e) => setBusca(e.target.value)} />
+          </label>
+          {termo.length >= 3 && achados.length === 0 && !estoque.isLoading && <p className="text-tinta-sussurro">Nada no cadastro da unidade com esse nome.</p>}
+          <ul>
+            {achados.map((e) => (
+              <li key={e.medicamento_id}>
+                <BotaoLinha variante="linha" className="flex-col gap-0.5 px-0" onClick={() => setEscolhido(e)}>
+                  <span className="flex flex-wrap items-center gap-2 font-medium text-tinta">{e.principio_ativo}{e.alta_vigilancia && <SeloAltaVigilancia curto />}</span>
+                  <span className="text-rotulo text-tinta-sussurro">{e.apresentacao ?? ''} · saldo {fmt(e.quantidade)}{e.falta_id ? ' · falta já aberta' : ''}</span>
+                </BotaoLinha>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      <MensagemErro texto={erro ?? (estoque.error ? (estoque.error as Error).message : null)} />
+    </section>
   )
 }
 
