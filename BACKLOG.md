@@ -1388,7 +1388,9 @@ Ficaram pendentes do lote 1, à espera do RT:
   abertos trazem só os máximos de cada item (face 0–2, braço 0–2, perna 0–2, olhar 0–1, afasia ou
   agnosia 0–2), sem a definição de cada ponto. Volta quando houver o PDF do artigo.
 - **Escore STONE — fora** (item de raça), como o escore de Son no lote 3.
-- **ITU do adulto — grupo novo "Infecções"** nas condutas do adulto (próximo item).
+- **ITU do adulto — grupo novo "Infecções", em produção desde 27/10/2026** (PR #290; homologação
+  conferida pelo RT). Só organiza a página: endereço, favoritos e ficha não mudaram. Meningite e PEP
+  de HIV seguem nos grupos de antes.
 
 **Lote 2 — SCA e Sgarbossa em produção em 23/10/2026 (PR #186).** Primeiro item do lote 2.
 - **SCA — conduta inicial** (Condutas e cálculos — adulto, Cardiovascular): AAS, segundo
@@ -1558,10 +1560,9 @@ ITU do adulto, PEP de HIV, cefaleia, meningite e encefalite do adulto, cólica n
 queimadura do adulto (com o boneco) e, no neonato, icterícia e reanimação. Pendências abertas, à
 espera do RT:
 - Fichas novas dos lotes 1 e 2 (19) na fila de aprovação da tela de revisão clínica.
-- Lote 1: RACE (tabela original), Escala Clínica de Fragilidade (níveis 2 e 8), dor na criança
-  (faixas de idade).
-- Lote 2: escore STONE (item de raça); grupo da ITU ("Digestivo, fígado e rim" ou um grupo novo
-  "Infecções"); doses de triptano, dipirona, AINE, metoclopramida e clorpromazina na cefaleia (sem
+- Lote 1: RACE (tabela original). Fragilidade e dor na criança decididas em 27/10/2026 (ver
+  "Decisões do RT sobre as pendências dos lotes 1 e 2", acima).
+- Lote 2: STONE e grupo da ITU decididos em 27/10/2026 (mesmo bloco); doses de triptano, dipirona, AINE, metoclopramida e clorpromazina na cefaleia (sem
   fonte com página); quimioprofilaxia de contatos na meningite (precisa do Guia de Vigilância do MS).
 
 Próximo: lote 3 (atualizações de diretriz).
@@ -1728,8 +1729,9 @@ divergência, crise hipertensiva pediátrica com percentil e lactente febril. Pe
 espera do RT:
 - Fichas novas do lote 3 (14 versões 2026-10-25.1) na fila de aprovação da tela de revisão clínica,
   somadas às 19 dos lotes 1 e 2.
-- Pendências dos lotes 1 e 2 já listadas acima (RACE, Escala Clínica de Fragilidade, dor na criança,
-  STONE, grupo da ITU, doses da cefaleia, quimioprofilaxia na meningite).
+- Pendências dos lotes 1 e 2 que ainda restam: RACE (sem o artigo original), doses da cefaleia e
+  quimioprofilaxia na meningite. Dor na criança e grupo da ITU em produção; fragilidade e STONE fora
+  (decisões do RT de 27/10/2026).
 - ~~Achado do lote 3: a Figura 8 do Part 9 da AHA 2025 traz atropina 1 mg a cada 3–5 min, máximo 3 mg,
   na bradicardia do adulto; resolve a nota "não confirmada" da ferramenta de bradicardia.~~ **Resolvido
   em 27/10/2026 (branch `feat/lacunas-atropina-aha2025`):** conferido de novo no texto integral em
