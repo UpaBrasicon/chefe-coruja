@@ -2,6 +2,8 @@
 // de 27/10/2026): os tipos de movimento que o banco grava e os rótulos da tela.
 // Migration 20270110000001_movimentos_estoque.sql.
 
+import { numero } from './formato.ts'
+
 export const TIPOS_MOVIMENTO = [
   ['saldo_inicial', 'Saldo inicial'], ['entrada', 'Entrada'], ['saida_prescricao', 'Saída por prescrição'],
   ['saida_avulsa', 'Saída avulsa'], ['devolucao', 'Devolução'], ['ajuste_inventario', 'Ajuste de inventário'],
@@ -14,8 +16,8 @@ export function rotuloMovimento(t: string): string {
 
 /** Quantidade com sinal, como no extrato: "+10", "−3", "0". */
 export function comSinal(q: number): string {
-  if (q > 0) return `+${q.toLocaleString('pt-BR')}`
-  if (q < 0) return `−${Math.abs(q).toLocaleString('pt-BR')}`
+  if (q > 0) return `+${numero(q)}`
+  if (q < 0) return `−${numero(Math.abs(q))}`
   return '0'
 }
 
