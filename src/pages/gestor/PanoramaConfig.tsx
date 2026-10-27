@@ -76,7 +76,7 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-trilha px-5 py-[15px]">
         <div className="flex min-w-0 flex-col gap-0.5">
           <TituloCartao className="mb-0">O que aparece no Panorama da unidade</TituloCartao>
-          <span className="text-apoio text-pretty text-tinta-sussurro">Escolha os painéis do carrossel e as medidas de cada um. Os números são da unidade inteira; por setor fica em Unidade.</span>
+          <span className="text-apoio text-pretty text-tinta-sussurro">Escolha os painéis que viram abas no Painel do Gestor e as medidas de cada um. Os números são da unidade inteira; por setor fica em Unidade.</span>
         </div>
         <span className="text-apoio text-tinta-sussurro">{ligados} de {PAINEIS.length} painéis</span>
       </div>
@@ -95,12 +95,12 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
                 <span className="flex min-w-0 flex-col">
                   <span className={cn('text-corpo font-medium', ligado ? 'text-tinta' : 'text-tinta-apoio')}>{p.titulo}</span>
                   <span className={cn('text-apoio', ligado && !vis ? 'text-atencao' : 'text-tinta-sussurro')}>
-                    {ligado ? `${vis} de ${lista.length} medidas` : 'Fora do carrossel'}
+                    {ligado ? `${vis} de ${lista.length} medidas` : 'Fora do Painel'}
                   </span>
                 </span>
               </BotaoLinha>
               {/* padrao-ok: interruptor liga/desliga do painel (role=switch); não há peça de interruptor */}
-              <button type="button" role="switch" aria-checked={ligado} aria-label={`${ligado ? 'Tirar' : 'Pôr'} o painel ${p.titulo} no carrossel`}
+              <button type="button" role="switch" aria-checked={ligado} aria-label={`${ligado ? 'Tirar' : 'Pôr'} o painel ${p.titulo} no Painel do Gestor`}
                 onClick={() => alternar(chavePainel(p.chave))}
                 className={cn('relative h-5 w-[34px] shrink-0 rounded-capsula transition-colors', ligado ? 'bg-acao' : 'bg-fio-forte')}>
                 <span className={cn('absolute top-0.5 size-4 rounded-capsula bg-superficie transition-[left]', ligado ? 'left-4' : 'left-0.5')} />
@@ -168,7 +168,7 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
         </div>
       )}
       <div className="bg-campo px-5 py-3 text-apoio text-tinta-sussurro">
-        A escolha dos painéis vale para você nesta unidade, em qualquer aparelho. Tirar uma medida do carrossel não apaga o dado — ele continua nesta página.
+        A escolha dos painéis vale para você nesta unidade, em qualquer aparelho. Tirar uma medida do Painel do Gestor não apaga o dado — ele continua nesta página.
       </div>
     </section>
   )

@@ -1,34 +1,33 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, CircleDot, LayoutDashboard, MapPin, Search, TrendingUp } from 'lucide-react'
+import { LayoutDashboard, MapPin, Search, TrendingUp } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
-import { Chip, Chips, TituloCartao, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
-import { Parametro } from '@/components/monitor/Parametros'
+import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { Parametro, ResumoParametros } from '@/components/monitor/Parametros'
+import { Estado, type TomEstado } from '@/components/porta/Estado'
 import { Button } from '@/components/ui/button'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Spinner } from '@/components/ui/spinner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { hora as formatarHora, numero } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { Database } from '@/types/database'
 
-import { chaveMedida, chavePainel, PAINEIS, usePanorama } from './panorama'
+import { chaveMedida, chavePainel, PAINEIS, usePanorama, type Medida } from './panorama'
 
-// Painel do Gestor (P/index.html 6879–7019): o Panorama da unidade em
-// carrossel (os painéis e as medidas que o gestor escolheu em Indicadores), a
-// pergunta sobre a gestão respondida pelo banco da unidade e a auditoria de
-// check-in do dia, previsto × realizado.
+// Painel do Gestor (P/index.html 6879–7019): o Panorama da unidade (os painéis
+// e as medidas que o gestor escolheu em Indicadores), a pergunta sobre a gestão
+// respondida pelo banco da unidade e a auditoria de check-in do dia, previsto ×
+// realizado. Revisão visual 3.9 (27/10/2026, opção B do RT): os painéis viram
+// abas com a contagem do que pede ação (nada roda sozinho) e cada aba usa a peça
+// "primeiro o que pede ação" da 3.1; a auditoria vira tabela.
 
 type LinhaCheckin = Database['public']['Functions']['auditoria_checkin']['Returns'][number]
 type Resposta = { entendida: boolean; tema: string | null; titulo: string; resposta: string; itens: { rotulo: string; valor: string }[]; link: string | null }
-
-const PERGUNTAS = [
-  'Qual foi a taxa de ocupação no último mês?',
-  'Quem está com mais plantões que o limite?',
-  'Onde estão os gargalos de alta?',
-  'Quais medicamentos vão faltar esta semana?',
-]
 
 const ROTULO_LINK: Record<string, string> = {
   '/indicadores': 'Abrir Indicadores',
@@ -37,93 +36,89 @@ const ROTULO_LINK: Record<string, string> = {
   '/observacao': 'Abrir Observação',
 }
 
+// Caminho de cada medida que pede ação: a tela do gestor onde se resolve.
+// "#auditoria" desce até a auditoria de check-in, nesta mesma página.
+const CAMINHO: Record<string, [rotulo: string, destino: string]> = {
+  ocupacao: ['Abrir Internação', '/internacao'],
+  checkin: ['Ver a auditoria', '#auditoria'],
+  fora_raio: ['Ver a auditoria', '#auditoria'],
+  sem_checkin: ['Ver a auditoria', '#auditoria'],
+  estoque: ['Abrir Farmácia', '/gestao/farmacia'],
+  espera: ['Abrir Porta', '/gestao/porta'],
+  reavaliacao: ['Abrir Porta', '/gestao/porta'],
+  obs_prazo: ['Abrir Observação', '/observacao'],
+  evolucoes: ['Abrir Internação', '/internacao'],
+  bloqueados: ['Abrir Internação', '/internacao'],
+  evasoes: ['Abrir Indicadores', '/indicadores'],
+  vagas: ['Abrir Escala', '/escala'],
+  trocas: ['Abrir Escala', '/escala'],
+  solicitacoes: ['Abrir Escala', '/escala'],
+}
+
 const hora = (iso: string | null) => (iso ? formatarHora(iso) : '—')
 
-// ── Panorama em carrossel ───────────────────────────────────────────────────
+// ── Panorama em abas ────────────────────────────────────────────────────────
 function Panorama({ unidadeId }: { unidadeId: string }) {
   const { data, isLoading, error } = usePanorama(unidadeId)
-  const [i, setI] = React.useState(0)
-  const [pausado, setPausado] = React.useState(false)
+  const navigate = useNavigate()
+  const [aba, setAba] = React.useState<string | null>(null)
 
   const fora = React.useMemo(() => new Set(data?.fora ?? []), [data?.fora])
-  const lista = PAINEIS.filter((p) => !fora.has(chavePainel(p.chave)))
-  const total = lista.length
-
-  // 8 s por painel, como no protótipo; para sob o ponteiro ou o foco.
-  React.useEffect(() => {
-    if (pausado || total < 2) return
-    const t = window.setInterval(() => setI((x) => (x + 1) % total), 8000)
-    return () => window.clearInterval(t)
-  }, [pausado, total])
-
-  if (error) return <p className="text-apoio text-critico">Falha ao carregar o panorama: {(error as Error).message}</p>
+  if (error) return <MensagemErro texto={`Falha ao carregar o panorama: ${(error as Error).message}`} />
   if (isLoading || !data) return <div className="flex h-40 items-center justify-center rounded-cartao border border-fio bg-superficie"><Spinner /></div>
 
-  const atual = total ? lista[i % total] : null
-  const medidas = atual ? atual.medidas(data.n).filter((m) => !fora.has(chaveMedida(atual.chave, m.chave))) : []
-  const Icone = atual?.icone ?? LayoutDashboard
+  const paineis = PAINEIS.filter((p) => !fora.has(chavePainel(p.chave))).map((p) => {
+    const medidas = p.medidas(data.n).filter((m) => !fora.has(chaveMedida(p.chave, m.chave)))
+    return { ...p, medidas, pedem: medidas.filter((m) => m.nivel !== 'ok').length }
+  })
+  const atual = paineis.find((p) => p.chave === aba) ?? paineis[0]
+  const ir = (destino: string) => {
+    if (destino.startsWith('#')) document.getElementById(destino.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    else navigate(destino)
+  }
+  const regua = (m: Medida) => {
+    const caminho = m.nivel !== 'ok' ? CAMINHO[m.chave] : undefined
+    return (
+      <Parametro key={m.chave} grandeza={m.grandeza} rotulo={m.rotulo} valor={m.valor} estado={m.estado} nivel={m.nivel}
+        acao={caminho?.[0]} onClick={caminho ? () => ir(caminho[1]) : undefined} />
+    )
+  }
+  const escolher = (
+    <Link to="/indicadores" className="inline-flex items-center gap-1.5 text-apoio font-medium text-acao hover:underline">
+      <TrendingUp className="size-3.5" aria-hidden /> Escolher em Indicadores
+    </Link>
+  )
+
+  if (!atual) {
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-cartao border border-fio bg-superficie px-5 py-4">
+        <span className="text-corpo text-pretty text-tinta-apoio">Nenhum painel escolhido para o Painel do Gestor.</span>
+        {escolher}
+      </div>
+    )
+  }
 
   return (
-    <section
-      aria-roledescription="carrossel"
-      aria-label="Panorama da unidade"
-      onMouseEnter={() => setPausado(true)}
-      onMouseLeave={() => setPausado(false)}
-      onFocus={() => setPausado(true)}
-      onBlur={() => setPausado(false)}
-      className="mb-[22px] overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso"
-    >
-      <div className="flex items-center gap-[11px] border-b border-trilha px-5 py-[15px]">
-        <span className="grid size-[34px] shrink-0 place-items-center rounded-controle bg-acao/10 text-acao" aria-hidden>
-          <Icone className="size-[17px]" />
-        </span>
-        <TituloCartao className="mb-0 min-w-0 flex-1">
-          Panorama da unidade
-          {atual && <span className="font-normal text-tinta-apoio"> — {atual.titulo}</span>}
-        </TituloCartao>
-        {total > 1 && (
-          <div className="flex gap-[7px]">
-            <Button variant="outline" size="icon-sm" aria-label="Painel anterior" onClick={() => setI((x) => (x - 1 + total) % total)}>
-              <ChevronLeft className="size-[15px]" />
-            </Button>
-            <Button variant="outline" size="icon-sm" aria-label="Próximo painel" onClick={() => setI((x) => (x + 1) % total)}>
-              <ChevronRight className="size-[15px]" />
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {!atual || medidas.length === 0 ? (
-        <div className="flex flex-wrap items-center justify-between gap-3.5 p-5">
-          <span className="text-corpo text-pretty text-tinta-apoio">
-            {atual ? 'Este painel está sem medidas escolhidas.' : 'Nenhum painel escolhido para o carrossel.'}
-          </span>
-          <Link to="/indicadores" className="flex items-center gap-[7px] rounded-controle border border-fio bg-superficie px-[13px] py-2 text-apoio font-medium text-tinta-apoio hover:border-acao hover:text-acao">
-            <TrendingUp className="size-[15px]" /> Escolher em Indicadores
-          </Link>
-        </div>
-      ) : (
-        <div aria-live={pausado ? 'polite' : 'off'} className="grid grid-cols-2 lg:grid-cols-4 [&>*]:border-trilha [&>*:nth-child(n+3)]:border-t lg:[&>*:nth-child(n+3)]:border-t-0 lg:[&>*:nth-child(n+5)]:border-t [&>*:nth-child(even)]:border-l lg:[&>*:not(:nth-child(4n+1))]:border-l">
-          {medidas.map((m) => (
-            <Parametro key={m.chave} grandeza={m.grandeza} icone={CircleDot} rotulo={m.rotulo} valor={m.valor}
-              estado={m.estado} nivel={m.nivel} pct={m.pct} limite={m.limite} />
+    <section aria-label="Panorama da unidade" className="flex flex-col gap-2">
+      <Tabs value={atual.chave} onValueChange={(v) => setAba(v as string)}>
+        <TabsList aria-label="Painéis da unidade">
+          {paineis.map((p) => (
+            <TabsTrigger key={p.chave} value={p.chave}>
+              {p.titulo}
+              {p.pedem > 0 && <span className="text-rotulo font-semibold text-atencao tabular-nums" aria-label={`${p.pedem} pedem ação`}>{p.pedem}</span>}
+            </TabsTrigger>
           ))}
+        </TabsList>
+      </Tabs>
+      <div className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+        {atual.medidas.length === 0
+          ? <p className="px-5 py-4 text-apoio text-tinta-apoio">Este painel está sem medidas escolhidas.</p>
+          : <ResumoParametros>{atual.medidas.map(regua)}</ResumoParametros>}
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-trilha px-5 py-2.5">
+          <span className="text-rotulo text-tinta-sussurro">{atual.nota(data.n)}</span>
+          {escolher}
         </div>
-      )}
-
-      {total > 0 && atual && (
-        <div className="flex items-center justify-between gap-3 border-t border-trilha bg-campo px-5 py-3">
-          <span className="text-apoio text-tinta-apoio">{atual.nota(data.n)}</span>
-          <div className="flex items-center gap-[5px]">
-            {lista.map((p, k) => (
-              // padrao-ok: ponto indicador do carrossel (6 px que estica a 18 px); nenhuma peça de botão tem esse desenho
-              <button key={p.chave} type="button" aria-label={`Painel ${k + 1} de ${total}: ${p.titulo}`} aria-current={k === i % total}
-                onClick={() => setI(k)}
-                className={cn('h-1.5 rounded-capsula transition-[width] duration-200', k === i % total ? 'w-[18px] bg-acao' : 'w-1.5 bg-fio-forte')} />
-            ))}
-          </div>
-        </div>
-      )}
+      </div>
     </section>
   )
 }
@@ -145,28 +140,20 @@ function Pergunta({ unidadeId }: { unidadeId: string }) {
   const r = perguntar.data
 
   return (
-    <section className="mb-[26px] rounded-cartao border border-fio bg-superficie px-5 py-4 shadow-repouso">
+    <section aria-label="Pergunta sobre a gestão" className="flex flex-col gap-2">
       <form onSubmit={(e) => { e.preventDefault(); enviar(texto) }}
-        className="flex items-center gap-2.5 rounded-controle border border-fio bg-campo px-3.5 py-[11px] focus-within:border-acao">
-        <Search className="size-[17px] shrink-0 text-tinta-sussurro" aria-hidden />
+        className="flex items-center gap-2.5 rounded-controle border border-fio bg-superficie px-3.5 py-2 focus-within:border-acao">
+        <Search className="size-4 shrink-0 text-tinta-sussurro" aria-hidden />
         <input value={texto} onChange={(e) => setTexto(e.target.value)} maxLength={300}
-          placeholder="Pergunte sobre a gestão da unidade" aria-label="Pergunte sobre a gestão da unidade"
-          className="min-w-0 flex-1 border-0 bg-transparent text-corpo text-tinta outline-none placeholder:text-tinta-sussurro" />
-        <Button type="submit" disabled={perguntar.isPending || texto.trim().length < 3}>
+          placeholder="Pergunte sobre a gestão da unidade (ex.: quem está com mais plantões que o limite?)" aria-label="Pergunte sobre a gestão da unidade"
+          className="min-w-0 flex-1 border-0 bg-transparent text-controle text-tinta outline-none placeholder:text-tinta-sussurro" />
+        <Button type="submit" size="sm" variant="outline" disabled={perguntar.isPending || texto.trim().length < 3}>
           {perguntar.isPending ? 'Consultando…' : 'Perguntar'}
         </Button>
       </form>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="mr-0.5 text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">Exemplos</span>
-        {PERGUNTAS.map((p) => (
-          <Button key={p} variant="outline" size="sm" onClick={() => { setTexto(p); enviar(p) }} className="rounded-capsula px-3">
-            {p}
-          </Button>
-        ))}
-      </div>
-      {perguntar.error && <p className="mt-3 text-apoio text-critico">{(perguntar.error as Error).message}</p>}
+      <MensagemErro texto={perguntar.error ? (perguntar.error as Error).message : null} />
       {r && (
-        <div role="status" className={cn('mt-3.5 flex flex-col gap-2 rounded-controle border px-3.5 py-3', r.entendida ? 'border-fio bg-campo' : 'border-atencao/30 bg-alerta-atencao')}>
+        <div role="status" className={cn('flex flex-col gap-2 rounded-controle border px-3.5 py-3', r.entendida ? 'border-fio bg-superficie' : 'border-atencao/30 bg-alerta-atencao')}>
           <span className="text-corpo font-semibold text-tinta">{r.titulo}</span>
           <p className="text-apoio text-pretty text-tinta-apoio">{r.resposta}</p>
           {r.itens.length > 0 && (
@@ -190,24 +177,24 @@ function Pergunta({ unidadeId }: { unidadeId: string }) {
 }
 
 // ── Auditoria de check-in ───────────────────────────────────────────────────
-const SITUACAO: Record<string, { rotulo: string; tom: 'ok' | 'atencao' | 'neutro' }> = {
-  confere: { rotulo: 'Confere', tom: 'ok' },
-  atraso: { rotulo: 'Atraso', tom: 'atencao' },
-  fora_do_raio: { rotulo: 'Local divergente', tom: 'atencao' },
-  atraso_fora_do_raio: { rotulo: 'Atraso e local divergente', tom: 'atencao' },
-  sem_checkin: { rotulo: 'Sem check-in', tom: 'atencao' },
-  sem_escala: { rotulo: 'Check-in sem plantão na escala', tom: 'atencao' },
-  aguardando: { rotulo: 'Aguardando (na tolerância)', tom: 'neutro' },
-  a_comecar: { rotulo: 'A começar', tom: 'neutro' },
+const SITUACAO: Record<string, { rotulo: string; tom: TomEstado }> = {
+  confere: { rotulo: 'confere', tom: 'verde' },
+  atraso: { rotulo: 'atraso', tom: 'ambar' },
+  fora_do_raio: { rotulo: 'local divergente', tom: 'ambar' },
+  atraso_fora_do_raio: { rotulo: 'atraso e local divergente', tom: 'ambar' },
+  sem_checkin: { rotulo: 'sem check-in', tom: 'vermelho' },
+  sem_escala: { rotulo: 'check-in sem plantão na escala', tom: 'ambar' },
+  aguardando: { rotulo: 'aguardando (na tolerância)', tom: 'cinza' },
+  a_comecar: { rotulo: 'a começar', tom: 'cinza' },
 }
 const FILTROS = ['Todos', 'Divergências', 'Em conformidade'] as const
 const TURNO: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
 
 function local(l: LinhaCheckin) {
-  if (!l.realizado) return '—'
-  if (l.dentro === false) return `Fora do raio${l.distancia_m != null ? ` · ${numero(l.distancia_m)} m` : ''}`
-  if (l.dentro === true) return 'Dentro do raio'
-  return 'Sem cerca geográfica'
+  if (!l.realizado) return null
+  if (l.dentro === false) return `fora do raio${l.distancia_m != null ? ` · ${numero(l.distancia_m)} m` : ''}`
+  if (l.dentro === true) return null
+  return 'sem cerca geográfica'
 }
 
 function AuditoriaCheckin({ unidadeId }: { unidadeId: string }) {
@@ -221,67 +208,65 @@ function AuditoriaCheckin({ unidadeId }: { unidadeId: string }) {
       return data ?? []
     },
   })
-  const linhas = (data ?? []).filter((l) => filtro === 'Todos' || (filtro === 'Divergências' ? l.divergente : l.situacao === 'confere'))
-  const contaveis = (data ?? []).filter((l) => l.situacao !== 'a_comecar')
+  const todas = data ?? []
+  // divergências primeiro, na ordem em que o banco devolve
+  const ordenadas = [...todas.filter((l) => l.divergente), ...todas.filter((l) => !l.divergente)]
+  const linhas = ordenadas.filter((l) => filtro === 'Todos' || (filtro === 'Divergências' ? l.divergente : l.situacao === 'confere'))
+  const contaveis = todas.filter((l) => l.situacao !== 'a_comecar')
   const div = contaveis.filter((l) => l.divergente).length
 
   return (
-    <section className="mb-[26px]">
-      <TituloSecao className="flex-wrap items-center gap-3.5"
-        extra={data && <span className={cn('text-apoio', div ? 'text-atencao' : 'text-tinta-sussurro')}>{div} de {contaveis.length} com divergência hoje</span>}>
-        <span className="flex items-center gap-2.5">
-          <MapPin className="size-[17px] text-acao" aria-hidden />
-          Auditoria de check-in
+    <section id="auditoria" aria-label="Auditoria de check-in" className="scroll-mt-4 overflow-hidden rounded-cartao border border-fio bg-superficie">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-trilha px-4 py-2.5">
+        <span className="flex items-center gap-2 text-apoio font-semibold text-tinta"><MapPin className="size-4 text-tinta-sussurro" aria-hidden /> Auditoria de check-in</span>
+        {data && <span className={cn('text-apoio', div ? 'text-atencao' : 'text-tinta-sussurro')}>{div} de {contaveis.length} com divergência hoje</span>}
+        <span className="ml-auto">
+          <Chips rotulo="Filtrar check-ins">
+            {FILTROS.map((f) => <Chip key={f} ativo={filtro === f} onClick={() => setFiltro(f)}>{f}</Chip>)}
+          </Chips>
         </span>
-      </TituloSecao>
-      <Chips rotulo="Filtrar check-ins">
-        {FILTROS.map((f) => <Chip key={f} ativo={filtro === f} onClick={() => setFiltro(f)}>{f}</Chip>)}
-      </Chips>
+      </div>
       {error ? (
-        <p className="text-apoio text-critico">Falha ao carregar a auditoria: {(error as Error).message}</p>
+        <MensagemErro className="m-4" texto={`Falha ao carregar a auditoria: ${(error as Error).message}`} />
       ) : isLoading ? (
         <div className="flex h-24 items-center justify-center"><Spinner /></div>
       ) : linhas.length === 0 ? (
-        <Vazio icone={MapPin} titulo={data?.length ? 'Nenhum check-in neste filtro' : 'Nenhum plantão na escala de hoje'}
+        <Vazio icone={MapPin} titulo={todas.length ? 'Nenhum check-in neste filtro' : 'Nenhum plantão na escala de hoje'}
           texto="A auditoria compara a escala do dia com o check-in de cada profissional." />
       ) : (
-        <div className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
-          <div className="hidden items-center gap-3 border-b border-fio bg-campo px-5 py-[11px] text-rotulo font-semibold tracking-[0.05em] text-tinta-sussurro uppercase md:flex">
-            <span className="flex-1">Profissional</span>
-            <span className="w-[66px]">Previsto</span>
-            <span className="w-[96px]">Realizado</span>
-            <span className="w-[196px]">Situação</span>
-          </div>
-          {linhas.map((l) => {
-            const s = SITUACAO[l.situacao] ?? { rotulo: l.situacao, tom: 'neutro' as const }
-            return (
-              <div key={`${l.plantao_id ?? 'x'}-${l.presenca_id ?? 'y'}`}
-                className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-trilha px-5 py-[13px] last:border-0 hover:bg-campo">
-                <div className="flex min-w-[180px] flex-1 flex-col gap-0.5">
-                  <span className="text-corpo font-medium text-tinta">{l.nome}</span>
-                  <span className="text-apoio text-tinta-sussurro">{[l.setor, TURNO[l.turno] ?? l.turno].filter(Boolean).join(' · ')}</span>
-                </div>
-                <span className="w-[66px] text-apoio text-tinta-sussurro tabular"><span className="md:hidden">Previsto </span>{hora(l.previsto)}</span>
-                <div className="flex w-[96px] flex-col gap-px">
-                  <span className={cn('text-corpo font-semibold tabular', l.realizado ? 'text-tinta' : 'text-tinta-sussurro')}>{hora(l.realizado)}</span>
-                  {l.diferenca_min != null && (
-                    <span className={cn('text-apoio tabular', l.situacao === 'confere' ? 'text-tinta-apoio' : 'text-atencao')}>
-                      {l.diferenca_min > 0 ? '+' : l.diferenca_min < 0 ? '−' : ''}{Math.abs(l.diferenca_min)} min
-                    </span>
-                  )}
-                </div>
-                <div className="flex w-[196px] flex-col items-start gap-1">
-                  <span className={cn('rounded-capsula px-2 py-[3px] text-rotulo leading-[1.3] font-semibold tracking-[0.03em] uppercase',
-                    s.tom === 'ok' ? 'bg-conforme/10 text-conforme' : s.tom === 'atencao' ? 'bg-atencao/10 text-atencao' : 'bg-trilha text-tinta-sussurro')}>
-                    {s.rotulo}
-                  </span>
-                  <span className={cn('text-apoio', l.dentro === false ? 'text-atencao' : 'text-tinta-apoio')}>{local(l)}</span>
-                  {l.justificativa && <span className="text-rotulo text-pretty text-tinta-sussurro">“{l.justificativa}”</span>}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+        <Table aria-label="Check-ins de hoje">
+          <TableHeader><TableRow className="hover:bg-transparent">
+            <TableHead className="pl-4">Profissional</TableHead><TableHead>Previsto</TableHead><TableHead>Realizado</TableHead><TableHead className="pr-4">Situação</TableHead>
+          </TableRow></TableHeader>
+          <TableBody>
+            {linhas.map((l) => {
+              const s = SITUACAO[l.situacao] ?? { rotulo: l.situacao, tom: 'cinza' as const }
+              const onde = local(l)
+              return (
+                <TableRow key={`${l.plantao_id ?? 'x'}-${l.presenca_id ?? 'y'}`}>
+                  <TableCell className="pl-4 whitespace-normal">
+                    <span className="font-medium text-tinta">{l.nome}</span>
+                    <span className="block text-rotulo text-tinta-sussurro">{[l.setor, TURNO[l.turno] ?? l.turno].filter(Boolean).join(' · ')}</span>
+                  </TableCell>
+                  <TableCell className="text-tinta-apoio tabular">{hora(l.previsto)}</TableCell>
+                  <TableCell className="tabular">
+                    <span className={cn('font-medium', l.realizado ? 'text-tinta' : 'text-tinta-sussurro')}>{hora(l.realizado)}</span>
+                    {l.diferenca_min != null && (
+                      <span className={cn('ml-1.5 text-rotulo', l.situacao === 'confere' ? 'text-tinta-sussurro' : 'text-atencao')}>
+                        {l.diferenca_min > 0 ? '+' : l.diferenca_min < 0 ? '−' : ''}{Math.abs(l.diferenca_min)} min
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="pr-4 whitespace-normal">
+                    <Estado tom={s.tom}>{s.rotulo}</Estado>
+                    {onde && <span className={cn('block text-rotulo', l.dentro === false ? 'text-atencao' : 'text-tinta-sussurro')}>{onde}</span>}
+                    {l.justificativa && <span className="block text-rotulo text-pretty text-tinta-sussurro">“{l.justificativa}”</span>}
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
       )}
     </section>
   )
@@ -293,10 +278,10 @@ export default function PainelGestor() {
   if (!unidadeId) return <div className="flex h-40 items-center justify-center"><Spinner /></div>
 
   return (
-    <div className="mx-auto flex w-full max-w-[896px] flex-col">
+    <div className="mx-auto flex w-full max-w-[896px] flex-col gap-5">
       <TituloPagina icone={LayoutDashboard} titulo="Painel do Gestor" descricao={unidadeAtiva?.unidade?.nome} />
-      <Panorama unidadeId={unidadeId} />
       <Pergunta unidadeId={unidadeId} />
+      <Panorama unidadeId={unidadeId} />
       <AuditoriaCheckin unidadeId={unidadeId} />
     </div>
   )
