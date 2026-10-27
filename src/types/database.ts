@@ -10352,6 +10352,18 @@ export type Database = {
         Args: { p_a_conferir?: boolean; p_busca?: string }
         Returns: Json
       }
+      ajustar_estoque: {
+        Args: { p_medicamento: string; p_motivo: string; p_quantidade: number; p_unidade: string }
+        Returns: Json
+      }
+      extrato_estoque: {
+        Args: { p_dias?: number; p_medicamento: string; p_unidade: string }
+        Returns: Json
+      }
+      registrar_entrada_estoque: {
+        Args: { p_documento: string; p_medicamento: string; p_motivo?: string; p_quantidade: number; p_unidade: string }
+        Returns: Json
+      }
       cadastrar_medicamento: {
         Args: { p_dados: Json; p_unidade: string }
         Returns: Json
