@@ -1855,6 +1855,26 @@ evidência de cada ponto em `docs/farmacia/PONTO<n>-*.md`.
 Para depois (decisão do RT em 27/10/2026): **lote e validade no estoque** (entrada com lote e
 validade, saldo por lote, aviso do que vence e escolha do lote na dispensação), como item próprio.
 
+## Aba Escala para todos os papéis — pedido do RT em 27/10/2026
+
+**Pedido do RT:** uma aba "Escala" para todos os papéis da unidade, menos gestor e administrador.
+Diagnóstico, proposta e respostas do RT em `docs/escala/ABA-ESCALA-PAPEIS-DIAGNOSTICO.md` (PR #300).
+
+**Decisão do RT em 27/10/2026:** entra agora, na ordem E0 → E4. Cada um vê a própria escala e a da
+equipe inteira da sua categoria; a aba abre fora do plantão; trocas, passagens, faltas, vagas e
+candidatura valem para todas as categorias, menos gestor e administrador, sempre dentro da mesma
+categoria; cada plantão passa a ter categoria; farmacêutico e faturamento passam a entrar pela
+escala; a "Minha agenda" da telemedicina vira a aba Escala comum. Cada entrega em branch e PR
+próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero e passam pelo RT.
+
+| Ordem | Entrega | O quê | Situação |
+|---|---|---|---|
+| 1 | E0 | Corrigir a "Escala da unidade" e a troca do plantonista: hoje leem a tabela direto e a RLS só devolve os próprios plantões (colegas aparecem como "livre"). Leitura passa por RPC | Em andamento |
+| 2 | E1 | Categoria do plantão (`papel` em `escala_plantao`, `escala_fixa`, `escala_vagas`), preenchimento, gatilho e trava de categoria em troca e passagem | A fazer |
+| 3 | E2 | Gestor escala todas as categorias (seletor, cobertura por categoria); ERP leva só o plantão médico | A fazer |
+| 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | A fazer |
+| 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | A fazer |
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.

@@ -4,14 +4,14 @@
 administrador, no mesmo molde das revisões do farmacêutico e do plantonista. Esta etapa é só o
 diagnóstico, a proposta e as perguntas. **Nenhum código antes do "sim" do RT.**
 
-**Situação no backlog.** O pedido não está no `BACKLOG.md`. Pela regra do projeto, ele fica
-registrado aqui e só vira código depois que o RT decidir incluí-lo, com prioridade e fase
-(pergunta 1, no fim).
+**Situação no backlog.** O RT respondeu às dez perguntas em 27/10/2026 e mandou começar agora.
+O pedido entrou no `BACKLOG.md` ("Aba Escala para todos os papéis"). As respostas e o que mudou na
+proposta estão na seção 8, no fim.
 
 **Como foi levantado.** Leitura do código no master (`19a3354`) e consultas só de leitura na
 homologação (`kswurfyxxvfydpjfrivy`): políticas de RLS, definição das funções e contagens sem nome.
-A produção não foi lida: a leitura foi bloqueada nesta sessão. As contagens da produção ficam como
-pendência (pergunta 9).
+A produção foi lida depois, com a autorização do RT (pergunta 9), só com contagens sem nome
+(seção 8).
 
 ---
 
@@ -292,3 +292,41 @@ Toda opção visual da E2 e da E3 nasce de telas reais do Refero, mostradas ao R
 9. **Produção.** Autoriza uma consulta só de leitura, sem nomes (contagem de plantões por categoria
    e de pessoas com dois papéis), para medir o preenchimento da categoria?
 10. **Telemedicina.** A "Minha agenda" dela vira a aba Escala comum, ou fica como está?
+
+---
+
+## 8. Decisões do RT (27/10/2026)
+
+| # | Pergunta | Resposta do RT | O que muda na proposta |
+|---|---|---|---|
+| 1 | Backlog | Sim, agora | Entra no `BACKLOG.md` como trilha própria, executada já, na ordem E0 → E4 |
+| 2 | O que cada um vê | A própria escala e a escala da equipe inteira da sua categoria (farmacêutico vê os farmacêuticos, enfermeiro os enfermeiros, e assim por diante) | Opção (c). `escala_da_unidade` devolve só a categoria de quem chama, decidida no servidor (o app não escolhe a categoria). Quem tem dois papéis na unidade vê as duas categorias |
+| 3 | Fora do plantão | Sim, a aba Escala abre | A casca deixa passar só a rota da Escala para quem está fora do plantão; nada clínico |
+| 4 | Trocas, passagens e faltas | Para todos, só dentro da mesma categoria | Trava de categoria no banco (E1) e telas para todos (E4) |
+| 5 | Vagas e candidatura | Para todas as categorias, menos administrador e gestor | **Muda a sugestão.** A vaga ganha categoria (E1) e `candidatar_vaga` passa a aceitar quem tem o papel da vaga (E4) |
+| 6 | Categoria do plantão | Sim; quem tem dois papéis é escalado escolhendo a categoria | Coluna `papel` em `escala_plantao`, `escala_fixa` e `escala_vagas` (E1); seletor de categoria na tela do gestor (E2) |
+| 7 | Farmacêutico e faturamento | Passam a entrar pela escala | `farmaceutico` e `faturamento` entram em `PAPEIS_POR_ESCALA` (E3). Só liga depois que o gestor conseguir escalá-los pela tela (E2), senão eles perdem o acesso |
+| 8 | Defeito do plantonista | Corrigir primeiro | E0 começa já, em branch própria |
+| 9 | Consulta à produção | Autorizada, só leitura e sem nomes | Feita; resultado abaixo |
+| 10 | Agenda da telemedicina | Vira a aba Escala comum | Na E3, `/telemedicina/agenda` dá lugar à aba Escala; `tele_minha_escala` passa a chamar `minha_escala` |
+
+### Produção (consulta só de leitura, sem nomes, 27/10/2026)
+
+- `escala_plantao` ativa: 701 plantões. 700 são de uma pessoa **sem vínculo ativo** (15/08 a
+  30/09/2026, dados do início do projeto); 1 é do super admin de teste, que tem vínculo com todos os
+  papéis.
+- Vínculos ativos: um por papel (admin, gestor, plantonista, enfermeiro, técnico, recepção,
+  telemedicina, farmacêutico), todos da mesma pessoa de teste. Uma pessoa com mais de um papel
+  escalável na mesma unidade.
+- Conclusão: **a produção ainda não tem escala real.** O preenchimento da categoria (E1) não tem
+  risco de errar plantão de ninguém. Os 700 plantões sem vínculo ficam com categoria vazia; a decisão
+  de apagá-los ou não é do RT, fora desta trilha.
+
+### E0 — como fica com a resposta 2
+
+Antes da E1 não há coluna de categoria. Na E0, `escala_da_unidade` considera "plantonista" quem tem
+vínculo ativo de plantonista na unidade. Na E1, o filtro passa a ser a coluna `papel` do plantão,
+sem mudar a assinatura da função nem a tela.
+
+Toda opção visual da E2 e da E3 continua nascendo de telas reais do Refero, mostradas ao RT antes de
+aplicar. A E0 não muda a tela: só a fonte dos dados.
