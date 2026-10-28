@@ -13,8 +13,9 @@ Fontes do diagnóstico:
 - migrations em `supabase/migrations/`;
 - homologação (`kswurfyxxvfydpjfrivy`), só metadados e números: colunas, a tabela
   `clinical_search_logs` (tempo e situação de cada pergunta, sem o texto) e os logs das Edge
-  Functions. Nenhum dado de paciente. **Nada da produção** (a leitura do banco da produção não foi
-  autorizada nesta sessão);
+  Functions. Nenhum dado de paciente;
+- produção, só para o ponto 1 e com o ok do RT em 27/10: os tempos do `clinical_search_logs`
+  (sem o texto) e os tempos do log da biblioteca e do Ollama no VPS;
 - tempo de resposta do endereço público da biblioteca de homologação (`/homolog/health`);
 - PubMed, para o ponto 15.
 
@@ -29,7 +30,7 @@ nova) ou **nova** (funcionalidade ou regra nova).
 
 | Ponto | O que o RT pediu | Diagnóstico em uma linha | Tipo | Prioridade sugerida |
 |---|---|---|---|---|
-| 1 | "Perguntar à IA" lento (mais de 30 s) | A pergunta passa por 3 etapas em série no VPS (reescrita pela IA, busca, resposta pela IA), mais a checagem do Supabase. **Achado:** na homologação, a pergunta de hoje (27/10, 21h49) parou em 68 s com erro 500 — o desenho bate com o modelo de busca do VPS sem responder (limite de 60 s) | bug | P1 |
+| 1 | "Perguntar à IA" lento (mais de 30 s) | **Medido:** o modelo de busca do VPS sai da memória depois de 24 h sem pergunta, e voltar leva de 41 a 60 s ou mais; acima de 60 s a pergunta dá erro 500 (6 vezes na produção, 1 hoje na homologação). Depois vêm cerca de 10 s da reescrita pela IA | bug | P1 |
 | 2 | Tirar "Ventilação mecânica — ajuste inicial" | É uma cópia: o mesmo conteúdo aparece em Emergências ("… ajuste inicial (adulto)") e em Ventilação Mecânica | ajuste | P2 |
 | 3 | Check-in duplicado | O check-in já abre sozinho pela casca e pela faixa "Meu plantão"; o cartão "Meu plantão" em "Seções do plantão" repete | ajuste | P2 |
 | 4 | Trocar "Atendimento na porta" por "Atendimento" | O cartão leva a 4 formulários soltos; o atendimento de verdade é a fila do PS (`/atendimento`) | ajuste | P2 |
@@ -72,58 +73,68 @@ nova) ou **nova** (funcionalidade ou regra nova).
 | g. Busca no Qdrant: ferramentas, trechos e palavras-chave | `main.py:159-185` | 30 s |
 | h. Resposta escrita pela IA, que aparece aos poucos na tela | `main.py:456-470` | até 3.000 "pedaços de texto" (`LLM_MAX_TOKENS`) |
 
-**O que foi medido.**
+**O que foi medido (27/10/2026, com o ok do RT para ler só os tempos, sem o texto das perguntas).**
 
 - Rede: do computador até o VPS da biblioteca, 0,1 s por pedido (3 medições no `/homolog/health`). A
   rede não é o problema.
-- Homologação, últimos 30 dias (`clinical_search_logs.latency_ms`, que mede da entrada na função até
-  o VPS começar a responder, ou seja, as etapas b a g, sem a h):
-  - 31 perguntas com resposta (13 a 16/10): metade em menos de 1,0 s; 9 em cada 10 em menos de 3,4 s;
-    a pior, 62 s.
-  - Hoje, 27/10 às 21h49 (horário de Brasília): uma pergunta de 11 letras parou em **67,9 s com erro
-    500** do VPS.
-- A etapa h (o texto da resposta) não fica gravada em lugar nenhum do Supabase. O VPS grava o tempo de
-  cada etapa no próprio log (`main.py:499-501`: `ms_reescrita`, `ms_busca`, `ms_1o_trecho`, `ms`), mas
-  esse log está no VPS e não foi lido.
+- `clinical_search_logs.latency_ms` mede da entrada na Edge Function até o VPS começar a responder
+  (etapas b a g, sem a h):
 
-**Causa provável, em ordem.**
+  | Ambiente | Perguntas "ask" | Com resposta | Metade abaixo de | 9 em 10 abaixo de | Erro por tempo |
+  |---|---|---|---|---|---|
+  | Produção, 28/09 a 14/10 (nenhuma pergunta depois de 14/10) | 32 | 25 | 1,2 s | 42,7 s | 6 com erro 500 entre 60,7 e 62,1 s |
+  | Homologação, 13/10 a 27/10 | 34 | 31 | 1,0 s | 3,4 s | 1 com erro 500 em 67,9 s (27/10, 21h49) |
 
-1. **O modelo de busca do VPS (etapa f) travado ou frio.** 67,9 s ≈ 8 s da reescrita + 60 s do limite
-   da busca, e o erro 500 é o que a API devolve quando a busca estoura o tempo. O modelo é carregado
-   na subida da API (`main.py:282-285`) e fica na memória por um tempo; depois disso, a 1ª pergunta
-   espera a carga. O contêiner do Ollama tem limite de 3,5 GB e divide o VPS com o Hermes.
-2. **Duas chamadas à IA externa em série** (e + h). A reescrita pode levar até 8 s antes de a busca
-   começar; a resposta é longa e só termina quando a IA para de escrever.
-3. **A etapa c cresce com a unidade.** Na homologação a maior unidade tem 159 pacientes; na produção
-   todo paciente cadastrado continua "ativo", e cada pergunta lê e compara todos os nomes.
+  Na produção, a busca sem IA ("search", as sugestões enquanto se digita) teve 9 erros 503 entre 45,2 e
+  46,3 s: é o limite de 45 s da Edge Function (`index.ts:131`) estourando pelo mesmo motivo.
+- Log da biblioteca no VPS (contêineres reiniciados em 23/10, 19h35 UTC; só tempos):
+  - **Modelo de busca (Ollama, bge-m3):** em 7 dias houve 3 cargas do modelo e 3 pedidos de busca. Os
+    três demoraram **41,2 s, 43,8 s e 60 s** (o de 60 s foi cortado). Agora o modelo não está na
+    memória (`ollama ps` vazio). O Ollama está com `OLLAMA_KEEP_ALIVE=30m` e o VPS tem 2 processadores.
+  - **Pergunta de hoje com erro 500:** às 00h48 UTC (21h48 de Brasília) o Ollama começou a carregar o
+    modelo; a API estourou o limite de 60 s em `embed` (`main.py:79`, chamado de `buscar`, `main.py:158`):
+    `httpx.ReadTimeout: timed out`.
+  - **Pergunta de hoje que respondeu (homologação):** reescrita 9,9 s; busca até 20,9 s; 1º trecho da
+    resposta em 21,7 s; fim em 22,9 s.
+  - Na produção, o log desde 23/10 só tem pedidos do Hermes (`/v1/deid`); nenhuma pergunta do app.
+- Memória do VPS: 5,5 GB livres de 7,9 GB; o Ollama usa 153 MB agora (modelo fora), com limite de 3,4 GB.
+  Há espaço para deixar o modelo sempre carregado.
 
-**O que falta para fechar a medição (antes de propor código).**
+**Causa (confirmada pelos tempos).**
 
-- Ler o log da biblioteca no VPS das últimas perguntas lentas: só os tempos (`ms_*`), sem o texto. É
-  produção (VPS): **precisa do ok do RT**, ou o RT roda e cola o resultado:
-  `docker logs biblioteca-api --since 48h 2>&1 | grep '"ms"'` (e o mesmo para `biblioteca-api-homolog`).
-- Ler os tempos do `clinical_search_logs` da produção (só números, sem texto): também precisa do ok.
-- O RT diz em qual ambiente viu os 30 s (produção ou homologação) e se a resposta começou a aparecer
-  aos poucos ou só no fim.
+1. **O modelo de busca sai da memória quando ninguém pergunta, e voltar leva de 41 a 60 s ou mais.**
+   A API pede ao Ollama que guarde o modelo por 24 h depois de cada busca (`main.py:80`; a variável
+   `OLLAMA_KEEP_ALIVE` não está definida nos contêineres da API). Passado um dia sem pergunta, o
+   modelo sai, e a 1ª pergunta seguinte espera a carga. Com 2 processadores, a carga
+   passa do limite de 60 s da busca e a pergunta termina em erro; quando fica abaixo, a resposta demora
+   40 s ou mais. Como o app é pouco usado hoje, quase toda pergunta pega o modelo frio. Homologação e
+   produção usam **o mesmo** Ollama.
+2. **A reescrita pela IA (DeepSeek) leva cerca de 10 s**, em série, antes de a busca começar (o limite
+   do código é 8 s, `main.py:54`, e passou um pouco).
+3. **Busca com o modelo carregado: cerca de 11 s** na pergunta de hoje, logo depois da carga. Precisa de
+   nova medida com o modelo quente.
+4. A etapa c (nomes da unidade) não apareceu como problema nos números; fica como risco quando a
+   unidade crescer.
 
-**Proposta (depois da medição; cada uma só se o número mostrar que vale).**
+**Proposta.**
 
-- Medição permanente: a Edge Function grava o tempo de cada etapa (b, c, VPS) no `clinical_search_logs`
-  (colunas novas, expand); a tela manda o tempo até o 1º trecho e até o fim. Sem texto da pergunta.
-- Etapa f: manter o modelo de busca sempre carregado (aviso a cada poucos minutos pelo cron do VPS) e
-  baixar o limite de 60 s para 10 s; estourou, a busca segue só por palavras e a tela diz "busca
-  parcial", em vez de erro depois de 68 s.
-- Etapa e: pular a reescrita quando a pergunta já usa termos do manual, ou fazê-la ao mesmo tempo que a
-  1ª busca.
-- Etapa c: guardar a lista de nomes da unidade por alguns minutos na função, em vez de ler tudo a cada
-  pergunta.
-- Etapa h: resposta mais curta (limite menor de texto) e a tela mostrando a etapa ("buscando no
-  material", "escrevendo a resposta").
-- Banco: só as colunas de tempo (expand, sem tocar no que existe). RPC: nenhuma. Tela: o texto da
-  etapa. Testes: os da biblioteca (`test_velocidade.py`) com o novo limite e a busca parcial.
+- **Primeiro (só configuração do VPS, sem código do app):** deixar o modelo sempre na memória
+  (`OLLAMA_KEEP_ALIVE=-1` no `biblioteca/docker-compose.yml` e `keep_alive: -1` em `main.py:80`) e um
+  aviso a cada 10 minutos pelo cron do VPS, que recarrega o modelo se o Ollama reiniciar. Atenção:
+  homologação e produção dividem o Ollama, então isso vale para as duas ao mesmo tempo; precisa do "ok
+  produção". Reverter: voltar o `30m` e tirar o cron.
+- Depois, medir de novo com o modelo quente. Só se ainda passar de 10 s:
+  - reescrita ao mesmo tempo que a 1ª busca, ou limite de 4 s para ela;
+  - limite da busca de 60 s para 15 s; estourou, a busca segue só por palavras e a tela diz "busca
+    parcial", em vez de erro;
+  - a tela mostra a etapa ("buscando no material", "escrevendo a resposta").
+- Medição permanente: a Edge Function grava o tempo de cada etapa no `clinical_search_logs` (colunas
+  novas, expand). Sem texto da pergunta.
+- Testes: os da biblioteca (`test_velocidade.py`) e as avaliações da homologação.
 
-**Risco.** Mudar a busca pode mudar a resposta. Toda mudança na biblioteca passa pelas avaliações da
-homologação (`npm run biblioteca:homolog -- --avaliar`) antes da produção, como no Portão 2.
+**Risco.** Manter o modelo carregado ocupa cerca de 1 a 2 GB de memória o tempo todo; há folga. Mudar a
+reescrita ou a busca pode mudar a resposta: passa pelas avaliações da homologação
+(`npm run biblioteca:homolog -- --avaliar`) antes da produção, como no Portão 2.
 
 **Relação com o backlog.** A "Trilha Paralela — Hermes / Evidências" trata da busca, mas não tem item de
 velocidade. É bug de produção se a medição confirmar o erro de 68 s também lá.
@@ -538,7 +549,7 @@ Cada item em branch e PR próprios, homologação antes, produção só com "ok 
 
 | Ordem | Pontos | Por quê |
 |---|---|---|
-| 1 | 1 — medir a IA | Sem código: ler os tempos do VPS e da produção (precisa do ok do RT). Achado de erro 500 de hoje |
+| 1 | 1 — modelo de busca sempre carregado | Medido em 27/10 (ok do RT). Só configuração do VPS; vale para homologação e produção juntas, precisa do "ok produção" |
 | 2 | 11 — busca e peso da prescrição | Atrasa a prescrição; o peso do leito não grava |
 | 3 | 9 — evolução médica | O médico não sabe por que não consegue evoluir |
 | 4 | 12 — exames separados | Regra clínica nova, no banco |
@@ -548,13 +559,12 @@ Cada item em branch e PR próprios, homologação antes, produção só com "ok 
 | 8 | 13 — encaminhamento para fora | Reaproveita o formulário da porta |
 | 9 | 15 — parecer, termos e cuidados paliativos | Depende das fontes completas |
 | 10 | 10 — modelo da admissão | Depende da escolha do modelo |
-| — | 1 — correções da IA | Depois da medição, conforme o número |
+| — | 1 — reescrita e limite da busca | Depois de medir de novo com o modelo quente |
 
 ## Perguntas ao RT
 
 1. Quais pontos entram no backlog, com qual prioridade e em qual fase? Vale a ordem acima?
-2. Ponto 1: autoriza ler os tempos (só números) do log da biblioteca no VPS e do `clinical_search_logs`
-   da produção? Em que ambiente viu os 30 s? A resposta começou a aparecer aos poucos?
+2. Ponto 1: aprova deixar o modelo de busca sempre carregado no VPS (homologação e produção juntas)?
 3. Ponto 2: tirar só a cópia da seção Ventilação Mecânica?
 4. Ponto 5: onde fica a "Impressão de prontuário"?
 5. Ponto 6: o que é o "histórico na unidade"?

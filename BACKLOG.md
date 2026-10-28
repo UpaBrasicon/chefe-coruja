@@ -1861,6 +1861,12 @@ validade, saldo por lote, aviso do que vence e escolha do lote na dispensação)
 pontos. Diagnóstico de cada um (onde está, o que acontece, causa, proposta para banco, RPC e tela,
 risco, tipo) em `docs/plantonista/REVISAO-PLANTONISTA-2026-10.md`.
 
+**Ponto 1 medido em 27/10/2026 (ok do RT para ler só os tempos da produção e do VPS).** O modelo de
+busca do VPS (Ollama, bge-m3) sai da memória depois de 24 h sem pergunta, e a recarga leva de 41 a 60 s
+ou mais com 2 processadores. Acima de 60 s a busca estoura e a pergunta dá erro 500: 6 vezes na produção
+(28/09 a 08/10) e 1 na homologação em 27/10. Depois vêm cerca de 10 s da reescrita pela IA. Proposta:
+deixar o modelo sempre carregado (só configuração do VPS, vale para homologação e produção juntas).
+
 **Situação: registrado, aguardando a decisão do RT.** Nenhum ponto vira código antes de o RT dizer quais
 entram, com qual prioridade e em qual fase. Achados do diagnóstico que pedem atenção: na homologação, uma
 pergunta ao "Perguntar à IA" parou em 68 s com erro 500 em 27/10 (ponto 1); o campo "Peso (kg)" da
@@ -1869,7 +1875,7 @@ motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT p
 
 | Ordem sugerida | Prioridade sugerida | Pontos | Tipo |
 |---|---|---|---|
-| 1 | P1 | 1 — medir a lentidão do "Perguntar à IA" (sem código; precisa do ok para ler os tempos do VPS e da produção) | bug |
+| 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS (medido em 27/10); depois, medir de novo e só então mexer na reescrita e no limite da busca | bug |
 | 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito | bug + ajuste |
 | 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução | bug + ajuste |
 | 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG | nova (regra) |
