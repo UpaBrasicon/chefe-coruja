@@ -32,7 +32,9 @@ CREATE INDEX IF NOT EXISTS medicamento_sinonimo_principio ON public.medicamento_
 ALTER TABLE public.medicamento_sinonimo ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS medicamento_sinonimo_select ON public.medicamento_sinonimo;
 CREATE POLICY medicamento_sinonimo_select ON public.medicamento_sinonimo FOR SELECT TO authenticated USING (true);
-REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.medicamento_sinonimo FROM PUBLIC, anon, authenticated;
+-- só leitura pela API: nenhum outro privilégio na tabela
+REVOKE ALL ON public.medicamento_sinonimo FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON public.medicamento_sinonimo TO authenticated;
 
 -- "0,9 %" e "0,9%" são a mesma concentração
 CREATE OR REPLACE FUNCTION private.norm_concentracao(t text)
