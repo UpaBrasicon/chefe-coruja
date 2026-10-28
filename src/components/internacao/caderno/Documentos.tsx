@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Spinner } from '@/components/ui/spinner'
-import { ExamesTab } from '@/components/internacao/documentos/ExamesTab'
+import { PedidoExamesLeito } from '@/components/internacao/documentos/PedidoExamesLeito'
 import { FichaAdmissao } from '@/components/internacao/documentos/FichaAdmissao'
 import { LaudoAih } from '@/components/internacao/documentos/LaudoAih'
 import { SolicitarApac } from '@/components/apac/SolicitarApac'
@@ -69,10 +69,11 @@ export function AbaPrescricao({ doc }: { doc: Doc }) {
   )
 }
 
-export function AbaExames({ doc, pacienteId, medico }: { doc: Doc; pacienteId: string; medico: boolean }) {
+export function AbaExames({ internacaoId, pacienteId, medico }: { internacaoId: string; pacienteId: string; medico: boolean }) {
   return (
     <div className="flex flex-col gap-4">
-      <ExamesTab dados={doc.dadosPaciente} exames={doc.dados.exames} onChange={(p) => doc.atualizar({ exames: { ...doc.dados.exames, ...p } })} />
+      {/* ponto 12: um pedido por grupo (laboratório, imagem, ECG), ligado à internação */}
+      {medico && <PedidoExamesLeito internacaoId={internacaoId} />}
       <div id="caderno-agravos">
         <Secao titulo="Exames pedidos e agravos de notificação">
           <ExamesEAgravos pacienteId={pacienteId} medico={medico} />

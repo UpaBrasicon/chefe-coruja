@@ -1,7 +1,7 @@
 // node --experimental-strip-types --test src/lib/exames.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { botoesDeExame, caminhoLaudo, tipoDoCodigo, codigoExameNaTela, erroLaudo, EXAMES_LIVRES_LAB, jaPedido, LAUDO_MAX_BYTES, loincValido, type ExameUnidade } from './exames.ts'
+import { botoesDeExame, botoesDoGrupo, caminhoLaudo, grupoDoCodigo, tipoDoCodigo, codigoExameNaTela, erroLaudo, EXAMES_LIVRES_LAB, jaPedido, LAUDO_MAX_BYTES, loincValido, type ExameUnidade } from './exames.ts'
 
 const ex = (p: Partial<ExameUnidade>): ExameUnidade => ({
   id: 'x', procedimento: '0202990001', nome_curto: 'Hemograma', nome_sigtap: null, loinc: null, botao: true, ordem: 0,
@@ -49,4 +49,23 @@ test('5C-2: com exame de imagem na lista, RX e ECG em texto livre saem dos botõ
   assert.equal(erroLaudo({ name: 'ecg.jpg', type: 'image/jpeg', size: 10 }, true), null)
   assert.equal(erroLaudo({ name: 'ecg.jpg', type: 'image/jpeg', size: 10 }), 'O laudo precisa ser PDF.')
   assert.equal(caminhoLaudo('ex-1', 'traçado.PNG', 5), 'ex-1/5-tracado.PNG')
+})
+
+// ponto 12: laboratório, imagem e ECG em pedidos separados
+test('grupo pelo código SIGTAP: 02.02, 02.04-02.07 e 02.11', () => {
+  assert.equal(grupoDoCodigo('0202010473'), 'laboratorio')
+  assert.equal(grupoDoCodigo('0204030170'), 'imagem')
+  assert.equal(grupoDoCodigo('0205020046'), 'imagem')
+  assert.equal(grupoDoCodigo('0211020036'), 'grafico')
+  assert.equal(grupoDoCodigo('0301010072'), null)
+  assert.equal(grupoDoCodigo(null), null)
+})
+
+test('botões por grupo: os da lista da unidade; sem lista no grupo, texto livre', () => {
+  const lista = [ex({ procedimento: '0202990001', nome_curto: 'Hemograma' }), ex({ procedimento: '0211020036', nome_curto: 'ECG' }),
+    ex({ procedimento: '0202990002', nome_curto: 'Glicemia', botao: false })]
+  assert.deepEqual(botoesDoGrupo(lista, 'laboratorio'), [{ rotulo: 'Hemograma', procedimento: '0202990001' }])
+  assert.deepEqual(botoesDoGrupo(lista, 'grafico'), [{ rotulo: 'ECG', procedimento: '0211020036' }])
+  assert.deepEqual(botoesDoGrupo(lista, 'imagem'), [{ rotulo: 'Radiografia de tórax', procedimento: null }])
+  assert.equal(botoesDoGrupo(undefined, 'laboratorio').length, EXAMES_LIVRES_LAB.length)
 })

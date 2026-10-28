@@ -422,7 +422,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
           </>
         )}
         {atual === 'receituario' && <AbaPrescricao doc={doc} />}
-        {atual === 'exames' && <AbaExames doc={doc} pacienteId={pacienteId} medico={!ehGestor} />}
+        {atual === 'exames' && <AbaExames internacaoId={i.id} pacienteId={pacienteId} medico={!ehGestor} />}
         {atual === 'aih' && <AbaAih doc={doc} internacaoId={i.id} />}
         {atual === 'apac' && <AbaApac doc={doc} internacaoId={i.id} />}
         {atual === 'encaminhamento' && <AbaEncaminhamentoInterno pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}

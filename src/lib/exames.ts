@@ -39,6 +39,29 @@ export function botoesDeExame(lista: ExameUnidade[] | undefined): BotaoExame[] {
 export const tipoDoCodigo = (codigo: string | null | undefined): TipoExame | null =>
   !codigo ? null : codigo.startsWith('0202') ? 'laboratorio' : 'imagem'
 
+// ── Ponto 12 do plantonista: laboratório, imagem e ECG em pedidos separados ──
+export type GrupoExame = 'laboratorio' | 'imagem' | 'grafico'
+export const GRUPOS_EXAME: { id: GrupoExame; rotulo: string; livres: string[] }[] = [
+  { id: 'laboratorio', rotulo: 'Laboratório', livres: EXAMES_LIVRES_LAB },
+  { id: 'imagem', rotulo: 'Imagem', livres: ['Radiografia de tórax'] },
+  { id: 'grafico', rotulo: 'ECG', livres: ['ECG'] },
+]
+
+/** O grupo pelo código SIGTAP (o mesmo de private.grupo_do_procedimento): 02.02, 02.11 e 02.04 a 02.07. */
+export function grupoDoCodigo(codigo: string | null | undefined): GrupoExame | null {
+  if (!codigo) return null
+  const g = codigo.slice(0, 4)
+  return g === '0202' ? 'laboratorio' : g === '0211' ? 'grafico' : ['0204', '0205', '0206', '0207'].includes(g) ? 'imagem' : null
+}
+
+/** Botões de um grupo: os marcados da lista da unidade; sem lista no grupo, os de texto livre. */
+export function botoesDoGrupo(lista: ExameUnidade[] | undefined, grupo: GrupoExame): BotaoExame[] {
+  const doGrupo = (lista ?? []).filter((e) => grupoDoCodigo(e.procedimento) === grupo)
+  if (doGrupo.length === 0) return (GRUPOS_EXAME.find((g) => g.id === grupo)?.livres ?? []).map((rotulo) => ({ rotulo, procedimento: null }))
+  return doGrupo.filter((e) => e.botao).sort((a, b) => a.ordem - b.ordem || a.nome_curto.localeCompare(b.nome_curto))
+    .map((e) => ({ rotulo: e.nome_curto, procedimento: e.procedimento }))
+}
+
 /** O exame do botão já está pedido (e não cancelado) neste atendimento? Pelo código, senão pelo nome. */
 export function jaPedido(b: BotaoExame, pedidos: { exame: string; procedimento?: string | null; situacao: string }[]): boolean {
   return pedidos.some((x) => x.situacao !== 'cancelado'
