@@ -1,66 +1,44 @@
-import { useQuery } from '@tanstack/react-query'
-import { CalendarClock, LogOut, MapPin, UserCog } from 'lucide-react'
+import * as React from 'react'
+import { ArrowLeft, CalendarClock, CalendarDays, LogOut, UserCog } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { PAPEIS_POR_ESCALA, PAPEL_LABEL, ROTA_INICIAL } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { supabase } from '@/lib/supabase'
-import { Spinner } from '@/components/ui/spinner'
-import { dataPorExtenso, dia, hora, semanaCurta } from '@/lib/formato'
+import { ProximoPlantao } from '@/components/casca/ProximoPlantao'
+import { Button } from '@/components/ui/button'
+import { EscalaEquipe } from '@/components/escala/EscalaEquipe'
 
 // Fora do expediente: quem entra pela escala e não está nela agora não vê o
 // app — vê quando volta. O próximo plantão vem do servidor (relógio dele, não
 // do aparelho); a casca reconfere a escala a cada minuto e libera sozinha
-// quando o turno começa (usePlantao).
-
-const TURNO: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
-
-/** "em 40 min", "em 5 h 20 min", "em 3 dias" — a partir da hora do servidor. */
-function quantoFalta(ms: number) {
-  const min = Math.max(1, Math.round(ms / 60_000))
-  if (min < 60) return `em ${min} min`
-  const h = Math.floor(min / 60)
-  if (h < 24) return `em ${h} h${min % 60 ? ` ${min % 60} min` : ''}`
-  const dias = Math.round(h / 24)
-  return dias === 1 ? 'em 1 dia' : `em ${dias} dias`
-}
-
-function useProximoPlantao() {
-  return useQuery({
-    queryKey: ['meu-proximo-plantao'],
-    refetchInterval: 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('meu_proximo_plantao')
-      if (error) throw error
-      const p = data?.[0]
-      if (!p) return null
-      return {
-        unidadeId: p.unidade_id,
-        unidade: p.unidade_nome,
-        setor: p.setor_nome,
-        turno: p.rotulo?.trim() || TURNO[p.turno] || p.turno,
-        inicio: new Date(p.inicio),
-        fim: new Date(p.fim),
-        agoraServidor: new Date(p.agora),
-      }
-    },
-  })
-}
+// quando o turno começa (usePlantao). Fora do plantão abre só a Escala (aba
+// Escala, E3; resposta 3 do RT em 27/10/2026), nada clínico.
 
 export function ForaDoExpediente() {
   const { signOut } = useAuth()
   const { unidadeAtiva, papeisDaUnidade, setPapelAtivo } = useUnidade()
   const navigate = useNavigate()
   const outrosPapeis = papeisDaUnidade.filter((p) => !PAPEIS_POR_ESCALA.includes(p))
-  const { data: proximo, isLoading, isError } = useProximoPlantao()
+  const [verEscala, setVerEscala] = React.useState(false)
 
   async function handleSair() {
     await signOut()
     navigate('/login', { replace: true })
   }
 
-  const outraUnidade = proximo && proximo.unidadeId !== unidadeAtiva?.unidade_id
+  if (verEscala) {
+    return (
+      <div className="min-h-dvh bg-campo p-4">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3">
+          <Button variant="ghost" size="sm" className="w-fit" onClick={() => setVerEscala(false)}>
+            <ArrowLeft /> Voltar
+          </Button>
+          <EscalaEquipe />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-campo p-4">
@@ -76,46 +54,11 @@ export function ForaDoExpediente() {
           Você não está na escala deste momento{unidadeAtiva ? ` em ${unidadeAtiva.unidade.nome}` : ''}. A plataforma abre sozinha quando o seu plantão começar, pelo relógio do servidor.
         </p>
 
-        <div className="mt-5 overflow-hidden rounded-container border border-fio">
-          <div className="border-b border-trilha bg-campo px-4 py-2.5 text-rotulo font-semibold text-tinta-sussurro">
-            Próximo plantão
-          </div>
-          {isLoading ? (
-            <div className="flex justify-center px-4 py-5">
-              <Spinner rotulo="Lendo a escala" />
-            </div>
-          ) : isError ? (
-            <p className="px-4 py-4 text-apoio text-tinta-sussurro">Não foi possível ler a escala agora. A tela tenta de novo em um minuto.</p>
-          ) : !proximo ? (
-            <p className="px-4 py-4 text-apoio text-pretty text-tinta-sussurro">
-              Nenhum plantão futuro no seu nome. Se isso não confere, fale com a coordenação da unidade.
-            </p>
-          ) : (
-            <div className="flex items-center gap-3.5 px-4 py-3.5">
-              <div className="flex size-[52px] shrink-0 flex-col items-center justify-center rounded-container bg-acao text-sobre-acao" aria-hidden>
-                <span className="text-secao leading-none font-semibold tabular">{dia(proximo.inicio)}</span>
-                <span className="text-rotulo opacity-80">{semanaCurta(proximo.inicio)}</span>
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="text-corpo font-medium text-tinta">
-                  {proximo.turno} · {proximo.setor}
-                </span>
-                <span className="text-apoio text-tinta-sussurro tabular">
-                  {dataPorExtenso(proximo.inicio)}, {hora(proximo.inicio)} às {hora(proximo.fim)}
-                </span>
-                {outraUnidade && (
-                  <span className="flex items-center gap-1 text-apoio text-tinta-apoio">
-                    <MapPin className="size-3.5 shrink-0" aria-hidden />
-                    {proximo.unidade}
-                  </span>
-                )}
-              </div>
-              <span className="shrink-0 rounded-capsula bg-alerta-marca px-2.5 py-1 text-rotulo font-medium text-acao">
-                {quantoFalta(proximo.inicio.getTime() - proximo.agoraServidor.getTime())}
-              </span>
-            </div>
-          )}
-        </div>
+        <ProximoPlantao className="mt-5" />
+
+        <Button variant="outline" className="mt-4 w-full" onClick={() => setVerEscala(true)}>
+          <CalendarDays /> Ver minha escala
+        </Button>
 
         <p className="mt-4 text-apoio text-pretty text-tinta-sussurro">
           Não é preciso sair e entrar de novo: esta tela confere a escala a cada minuto. Troca ou plantão extra passam pela coordenação.
