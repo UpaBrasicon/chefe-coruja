@@ -1898,6 +1898,28 @@ motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT p
 | 9 | P2 | 15 — Parecer, Termo de consentimento e Cuidados paliativos (com escalas do PubMed) | ajuste + nova |
 | 10 | P2 | 10 — modelo da admissão (sugestão: uma admissão, com reavaliação do quadro) | nova |
 
+## Aba Escala para todos os papéis — pedido do RT em 27/10/2026
+
+**Pedido do RT:** uma aba "Escala" para todos os papéis da unidade, menos gestor e administrador.
+Diagnóstico, proposta e respostas do RT em `docs/escala/ABA-ESCALA-PAPEIS-DIAGNOSTICO.md` (PR #300).
+
+**Decisão do RT em 27/10/2026:** entra agora, na ordem E0 → E4. Cada um vê a própria escala e a da
+equipe inteira da sua categoria; a aba abre fora do plantão; trocas, passagens, faltas, vagas e
+candidatura valem para todas as categorias, menos gestor e administrador, sempre dentro da mesma
+categoria; cada plantão passa a ter categoria; farmacêutico e faturamento passam a entrar pela
+escala; a "Minha agenda" da telemedicina vira a aba Escala comum. Cada entrega em branch e PR
+próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero e passam pelo RT.
+
+| Ordem | Entrega | O quê | Situação |
+|---|---|---|---|
+| 1 | E0 | Corrigir a "Escala da unidade" e a troca do plantonista: hoje leem a tabela direto e a RLS só devolve os próprios plantões (colegas aparecem como "livre"). Leitura passa por RPC | PR #302, migration `20270202000001`; na homologação em 27/10 (10 de 10 testes; plantonista passa de 0 a 24 plantões de colegas no mês); falta o teste do RT e o "ok produção" |
+| 2 | E1 | Categoria do plantão (`papel` em `escala_plantao`, `escala_fixa`, `escala_vagas`), preenchimento, gatilho e trava de categoria em troca e passagem | A fazer |
+| 3 | E2 | Gestor escala todas as categorias (seletor, cobertura por categoria); ERP leva só o plantão médico | A fazer |
+| 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | A fazer |
+| 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | A fazer |
+
+Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda > **Todas as unidades** pedia a escala até o dia 31 de qualquer mês e dava erro nos meses de 30 dias e em fevereiro (o banco recusa 2026-11-31). PR #305, sem migration; na homologação em 28/10; mesclado no master pelo RT em 28/10 (produção pelo merge).
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
