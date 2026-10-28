@@ -1092,8 +1092,8 @@ A, lista com gaveta.**
 conferiu na homologação e seguiu os comandos da produção.
 - **Banco:** o RT aplicou da pasta limpa do master (`7cc28bc`) as três migrations
   `20270201000001..03`, com `--dry-run` antes, que listou só as três. A
-  `20270202000001_escala_da_unidade.sql` (#302, de outra tarefa) foi tirada da pasta para o push, mas
-  a versão dela também aparece na produção: a origem está sendo conferida com a sessão da escala.
+  `20270202000001_escala_da_unidade.sql` (#302, de outra tarefa) foi tirada da pasta para o push. Ela
+  entrou na produção à parte, pela sessão da escala, com o "ok produção" dela (PR #306).
 - **Funções:** todas as Edge Functions foram publicadas pela trava de alvo, com a versão `7cc28bc`. A
   `webhooks` e a `api` são as que mudaram.
 - **Vault:** o par `webhooks_motor_url` e `webhooks_motor_segredo` foi criado. O segredo foi gerado

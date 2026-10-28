@@ -171,8 +171,8 @@ Com o "ok produção" do RT, depois da 4.3 no master (PR #304):
 1. **Banco:** o RT rodou `npx supabase db push --linked` da pasta `producao-push`, no master `7cc28bc`,
    com `--dry-run` antes. O dry-run listou só as três `20270201*`. A
    `20270202000001_escala_da_unidade.sql`, de outra tarefa, foi tirada da pasta para o push e voltou
-   depois com `git checkout`. A versão dela também aparece na produção; a origem está sendo conferida
-   com a sessão da escala.
+   depois com `git checkout`. Ela entrou na produção à parte, aplicada pelo SQL pela sessão da escala,
+   com o "ok produção" dela (PR #306).
 2. **Funções:** `node scripts/ambiente/supabase-alvo.mjs functions producao --confirmo-producao`, que
    publicou api, clinical-search, enviar-codigo-2fa, folha e webhooks com a versão `7cc28bc`.
 3. **Vault:** o par do motor foi criado pelo SQL, com o segredo gerado no próprio banco
