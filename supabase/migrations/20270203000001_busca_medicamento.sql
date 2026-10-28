@@ -68,7 +68,7 @@ BEGIN
                (SELECT s.termo FROM unnest(sin.termos, sin.normas) AS s(termo, norma)
                  WHERE EXISTS (SELECT 1 FROM unnest(v_palavras) p
                                 WHERE length(p) >= 2 AND p !~ '^[0-9]+$'
-                                  AND s.norma LIKE '%' || p || '%' AND m.principio_ativo_norm NOT LIKE '%' || p || '%')
+                                  AND ' ' || s.norma LIKE '% ' || p || '%' AND m.principio_ativo_norm NOT LIKE '%' || p || '%')
                  ORDER BY length(s.termo) LIMIT 1) AS casou_por,
                CASE WHEN m.principio_ativo_norm LIKE v_palavras[1] || '%' THEN 0
                     WHEN EXISTS (SELECT 1 FROM unnest(sin.normas) n WHERE n LIKE v_palavras[1] || '%') THEN 1
@@ -82,11 +82,14 @@ BEGIN
                     OR private.norm_concentracao(s.concentracao) = private.norm_concentracao(m.concentracao))) sin
          WHERE m.ativo
            AND (m.unidades_locais IS NULL OR (p_unidade IS NOT NULL AND p_unidade = ANY (m.unidades_locais)))
+           -- no nome, na apresentação e na concentração vale qualquer pedaço
+           -- ("dip" acha dipirona); no sinônimo, só o começo de uma palavra:
+           -- "epinefrina" não pode achar a noradrenalina por "norepinefrina"
            AND NOT EXISTS (
              SELECT 1 FROM unnest(v_palavras) p
               WHERE (m.principio_ativo_norm || ' ' || coalesce(private.norm_medicamento(m.apresentacao), '') || ' '
-                     || coalesce(private.norm_medicamento(m.concentracao), '') || ' ' || array_to_string(sin.normas, ' '))
-                    NOT LIKE '%' || p || '%')
+                     || coalesce(private.norm_medicamento(m.concentracao), '')) NOT LIKE '%' || p || '%'
+                AND ' ' || array_to_string(sin.normas, ' ') NOT LIKE '% ' || p || '%')
          ORDER BY ordem, m.principio_ativo, m.apresentacao
          LIMIT 20) x), '[]'::jsonb);
 END $$;

@@ -1888,7 +1888,7 @@ motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT p
 | Ordem sugerida | Prioridade sugerida | Pontos | Tipo |
 |---|---|---|---|
 | 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS (medido em 27/10); depois, medir de novo e só então mexer na reescrita e no limite da busca | bug |
-| 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito. **Aprovado pelo RT em 28/10/2026 (P1, opção A); na homologação desde 28/10/2026 (PR #308, migration 20270203000001)**; falta a conferência do RT e a lista de sinônimos (`docs/plantonista/PONTO-11-SINONIMOS.md`) | bug + ajuste |
+| 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito. **Aprovado pelo RT em 28/10/2026 (P1, opção A); na homologação desde 28/10/2026 (PR #308, migration 20270203000001)**; sinônimos gravados na homologação (migration 20270203000002: lista A aprovada pelo RT e 21 nomes comerciais conferidos na Anvisa); falta a conferência do RT na tela | bug + ajuste |
 | 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução | bug + ajuste |
 | 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG | nova (regra) |
 | 5 | P1 | 14 + 16 — atestado, receita para casa e orientações dentro de Alta e documentos | nova |

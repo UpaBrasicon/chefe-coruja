@@ -1,7 +1,12 @@
 # Ponto 11 — lista de sinônimos para a busca de medicamento
 
-**Situação: proposta, aguardando a aprovação do RT.** Nada desta lista está
-gravado no banco. Ela entra numa migration própria só depois do "aprovo".
+**Situação (28/10/2026).**
+
+- O RT aprovou a lista A como está.
+- Da lista B, o RT mandou gravar só os nomes que passassem na Anvisa.
+- Gravado na homologação pela migration
+  `20270203000002_sinonimos_medicamento`: 45 termos da lista A e 21 da lista B.
+- Na produção, falta o "ok produção".
 
 ## Como a lista funciona
 
@@ -65,10 +70,23 @@ gravado no banco. Ela entra numa migration própria só depois do "aprovo".
 
 ## B. Nomes comerciais (só quando o produto tem um único princípio ativo)
 
-**Ainda não conferi nenhum destes no registro da Anvisa.** A lista vem do uso
-clínico corrente. Antes de gravar, cada nome precisa ser conferido na
-consulta de registros da Anvisa: o produto tem só este princípio ativo e
-continua registrado. O nome que não passar fica de fora.
+**Conferência na Anvisa (28/10/2026).**
+
+- **Fonte.** A consulta pública da Anvisa bloqueia acesso automático. Por isso
+  usei os dados abertos de medicamentos registrados, da própria Anvisa
+  (`dados.anvisa.gov.br`, arquivo `DADOS_ABERTOS_MEDICAMENTOS.csv`, atualizado
+  em 13/10/2026).
+- **Regra para passar.** O nome tem registro ativo, e todos os registros
+  ativos têm um único princípio ativo, o do cadastro.
+- **Registro.** O número do registro fica gravado na coluna `fonte`.
+
+**Passaram 21 nomes.** Ficaram de fora 5:
+
+- **Zofran e Solu-Cortef:** sem registro ativo.
+- **Vancocina:** sem registro.
+- **Rocefin:** o registro ativo inclui cloridrato de lidocaína junto com a
+  ceftriaxona.
+- **Tazocin:** é a combinação piperacilina + tazobactam.
 
 | Medicamento do cadastro | Nome comercial |
 |---|---|
@@ -102,7 +120,12 @@ continua registrado. O nome que não passar fica de fora.
 Ficaram de fora os nomes comerciais de combinações (por exemplo Clavulin),
 conforme a decisão do RT.
 
-## Perguntas ao RT
+## Ajuste feito ao gravar
 
-1. Aprova a lista A como está, ou tira ou acrescenta algum termo?
-2. Na lista B, confiro cada nome na Anvisa e gravo só os que passarem?
+No primeiro teste, "epinefrina" também trazia a Noradrenalina, porque
+"norepinefrina" contém "epinefrina". Adrenalina e noradrenalina são um par de
+nomes parecidos conhecido.
+
+- Agora o sinônimo só acha pelo **começo de uma palavra**: "epinefrina" acha só
+  a Adrenalina, e "norepinefrina" acha só a Noradrenalina.
+- No nome do cadastro continua valendo qualquer pedaço: "dip" acha a dipirona.
