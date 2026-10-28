@@ -10501,6 +10501,10 @@ export type Database = {
         Args: { p_motivo: string; p_procedimento: string; p_unidade: string }
         Returns: Json
       }
+      pedir_exames_internacao: {
+        Args: { p_grupo: string; p_internacao: string; p_itens: Json; p_observacao?: string; p_urgencia?: string }
+        Returns: Json
+      }
       pedir_exames: {
         Args: { p_episodio: string; p_itens: Json; p_observacao?: string; p_urgencia?: string }
         Returns: number
