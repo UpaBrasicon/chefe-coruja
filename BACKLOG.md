@@ -1855,6 +1855,31 @@ evidência de cada ponto em `docs/farmacia/PONTO<n>-*.md`.
 Para depois (decisão do RT em 27/10/2026): **lote e validade no estoque** (entrada com lote e
 validade, saldo por lote, aviso do que vence e escolha do lote na dispensação), como item próprio.
 
+## Telas do plantonista — pedidos do RT em 27/10/2026
+
+**Pedido do RT:** ao rever as telas do plantonista (Central, Plantão e Internação), o RT apontou 16
+pontos. Diagnóstico de cada um (onde está, o que acontece, causa, proposta para banco, RPC e tela,
+risco, tipo) em `docs/plantonista/REVISAO-PLANTONISTA-2026-10.md`.
+
+**Situação: registrado, aguardando a decisão do RT.** Nenhum ponto vira código antes de o RT dizer quais
+entram, com qual prioridade e em qual fase. Achados do diagnóstico que pedem atenção: na homologação, uma
+pergunta ao "Perguntar à IA" parou em 68 s com erro 500 em 27/10 (ponto 1); o campo "Peso (kg)" da
+prescrição do leito não grava peso (ponto 11); a "Evolução médica" esconde o formulário sem dizer o
+motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT pediu para tirar (ponto 5).
+
+| Ordem sugerida | Prioridade sugerida | Pontos | Tipo |
+|---|---|---|---|
+| 1 | P1 | 1 — medir a lentidão do "Perguntar à IA" (sem código; precisa do ok para ler os tempos do VPS e da produção) | bug |
+| 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito | bug + ajuste |
+| 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução | bug + ajuste |
+| 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG | nova (regra) |
+| 5 | P1 | 14 + 16 — atestado, receita para casa e orientações dentro de Alta e documentos | nova |
+| 6 | P2 | 2, 3, 4, 5 — navegação do plantão (VM duplicada, check-in duplicado, Atendimento, Internação direto na lista) | ajuste |
+| 7 | P2 | 6, 7, 8 — Resumo do leito em abas, botões juntos, sem aba Classificação | ajuste |
+| 8 | P2 | 13 — encaminhamento para outra unidade | nova |
+| 9 | P2 | 15 — Parecer, Termo de consentimento e Cuidados paliativos (com escalas do PubMed) | ajuste + nova |
+| 10 | P2 | 10 — modelo da admissão (sugestão: uma admissão, com reavaliação do quadro) | nova |
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
