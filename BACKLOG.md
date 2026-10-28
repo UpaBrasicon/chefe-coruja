@@ -1076,6 +1076,39 @@ regulação. Resposta: "Sim: inclua na 4.2 as rotas de leitura de prescrição e
 
   Os dados temporários foram apagados depois. Evidência em `infra/webhooks.md`.
 
+**4.1 e 4.2 no master em 27/10/2026 (PRs #295 e #297).** **4.3, tela, na homologação em 27/10/2026.**
+Três opções a partir do Refero (Lemon Squeezy, fal, Cal.com, Stripe, Zendesk, Enode); **escolha do RT:
+A, lista com gaveta.**
+- Integrações (`/integracoes`) ganhou as abas "Chaves da API" e "Webhooks".
+- **Lista:** os destinos, com os eventos, as unidades, as últimas 24 h e a situação.
+- **Gaveta:** o aviso da situação, os dados do destino, as entregas com "Reenviar", "Desligar" com
+  motivo, e "Religar" e "Trocar segredo" só para o super admin.
+- **Novo destino:** o diálogo é só do super admin, e o segredo aparece uma vez.
+- Sem banco novo: a tela usa as funções da 4.1.
+- **Regras** em `src/lib/webhooks.ts`, com teste. Conferida na página de teste nos dois temas, em
+  390 px e com o papel de gestor (`wh-A-aplicada-*` em `docs/frontend/revisao-visual/app/`).
+
+**4.3 no master em 28/10/2026 (PR #304, `0bc4b5c`). Tarefa 4 em produção desde 28/10/2026.** O RT
+conferiu na homologação e seguiu os comandos da produção.
+- **Banco:** o RT aplicou da pasta limpa do master (`7cc28bc`) as três migrations
+  `20270201000001..03`, com `--dry-run` antes, que listou só as três. A
+  `20270202000001_escala_da_unidade.sql` (#302, de outra tarefa) foi tirada da pasta para o push. Ela
+  entrou na produção à parte, pela sessão da escala, com o "ok produção" dela (PR #306).
+- **Funções:** todas as Edge Functions foram publicadas pela trava de alvo, com a versão `7cc28bc`. A
+  `webhooks` e a `api` são as que mudaram.
+- **Vault:** o par `webhooks_motor_url` e `webhooks_motor_segredo` foi criado. O segredo foi gerado
+  dentro do banco, e ninguém o viu.
+- **Conferido na produção:** as três versões estão registradas e os dois cron estão agendados, com o
+  motor já rodando com sucesso. Os cinco gatilhos `trg_webhook` existem. Ainda não há destino nem
+  entrega. O motor sem segredo ou com segredo errado dá 401, e `/prescricoes/{id}` sem chave dá 401.
+- A tela saiu com o merge (Vercel).
+
+**Tarefa 4 (Webhooks) concluída em 28/10/2026.** Aceite "Terceiro recebe eventos com segurança": os
+seis eventos saem assinados (Standard Webhooks), com novas tentativas por até 24 h, desligamento
+automático com aviso e reenvio manual. O receptor busca o detalhe pela API v1. Detalhes, chaves e
+reversão em `infra/webhooks.md`. Fica para depois: período com dois segredos na troca, IP fixo de
+saída e resolução de DNS antes do envio.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
@@ -1882,7 +1915,7 @@ motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT p
 | Ordem sugerida | Prioridade sugerida | Pontos | Tipo |
 |---|---|---|---|
 | 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS. **Aplicado em 27/10/2026 (PR #301); falta conferir pelo app** | bug |
-| 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito | bug + ajuste |
+| 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (P1, opção A). PR #308: o merge publicou a tela (e0f688f). Com o "ok produção" do RT, as migrations 20270203000001 (busca e o que falta para prescrever) e 20270203000002 (sinônimos: lista A aprovada pelo RT e 21 nomes comerciais conferidos na Anvisa) foram aplicadas na produção. Plano e listas em `docs/plantonista/PONTO-11-PRESCRICAO.md` e `PONTO-11-SINONIMOS.md` | bug + ajuste |
 | 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução | bug + ajuste |
 | 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG | nova (regra) |
 | 5 | P1 | 14 + 16 — atestado, receita para casa e orientações dentro de Alta e documentos | nova |
@@ -1891,6 +1924,28 @@ motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT p
 | 8 | P2 | 13 — encaminhamento para outra unidade | nova |
 | 9 | P2 | 15 — Parecer, Termo de consentimento e Cuidados paliativos (com escalas do PubMed) | ajuste + nova |
 | 10 | P2 | 10 — modelo da admissão (sugestão: uma admissão, com reavaliação do quadro) | nova |
+
+## Aba Escala para todos os papéis — pedido do RT em 27/10/2026
+
+**Pedido do RT:** uma aba "Escala" para todos os papéis da unidade, menos gestor e administrador.
+Diagnóstico, proposta e respostas do RT em `docs/escala/ABA-ESCALA-PAPEIS-DIAGNOSTICO.md` (PR #300).
+
+**Decisão do RT em 27/10/2026:** entra agora, na ordem E0 → E4. Cada um vê a própria escala e a da
+equipe inteira da sua categoria; a aba abre fora do plantão; trocas, passagens, faltas, vagas e
+candidatura valem para todas as categorias, menos gestor e administrador, sempre dentro da mesma
+categoria; cada plantão passa a ter categoria; farmacêutico e faturamento passam a entrar pela
+escala; a "Minha agenda" da telemedicina vira a aba Escala comum. Cada entrega em branch e PR
+próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero e passam pelo RT.
+
+| Ordem | Entrega | O quê | Situação |
+|---|---|---|---|
+| 1 | E0 | Corrigir a "Escala da unidade" e a troca do plantonista: hoje leem a tabela direto e a RLS só devolve os próprios plantões (colegas aparecem como "livre"). Leitura passa por RPC | Feito: PR #302 (master), migration `20270202000001`; na homologação em 27/10 (10 de 10 testes; plantonista passa de 0 a 24 plantões de colegas no mês); migration aplicada na produção em 28/10 (ok do RT), versão registrada; frontend em produção pelo merge |
+| 2 | E1 | Categoria do plantão (`papel` em `escala_plantao`, `escala_fixa`, `escala_vagas`), preenchimento, gatilho e trava de categoria em troca e passagem | Feito: PR #310 (master), migration `20270202000002`; na homologação em 28/10 (16 de 16 testes; 387 plantões com categoria e 71 sem, de uma pessoa com dois papéis); migration aplicada na produção em 28/10 (ok do RT), versão registrada (lá os 701 plantões ficam sem categoria: 700 de pessoa sem vínculo e 1 do super admin de teste) |
+| 3 | E2 | Gestor escala todas as categorias (seletor, cobertura por categoria); ERP leva só o plantão médico | A fazer |
+| 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | A fazer |
+| 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | A fazer |
+
+Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda > **Todas as unidades** pedia a escala até o dia 31 de qualquer mês e dava erro nos meses de 30 dias e em fevereiro (o banco recusa 2026-11-31). PR #305, sem migration; na homologação em 28/10; mesclado no master pelo RT em 28/10 (produção pelo merge).
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
