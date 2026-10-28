@@ -1141,7 +1141,10 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
 - Teste `supabase/tests/fase5c_rnds_regulacao.sql` e rollback passaram na homologação, numa transação
   desfeita; o teste do documento (`scripts/interop/tests/regulacao.test.ts`) roda no CI. Conversões
   e pontos a conferir em `docs/rnds/MIRA.md`.
-- No master em 28/10/2026 (#313). A migration vai à produção só com o "ok produção" do RT.
+- No master em 28/10/2026 (#313). **A migration não está na produção:** o RT decidiu esperar
+  (28/10/2026) e só a E2 da escala foi aplicada nesse dia. Ela pede um "ok produção" próprio, depois
+  que o RT conferir a 5.1 e a 5.2 na homologação. Quando for, o push usa `db push --include-all`,
+  porque a `20270202000003` (E2) entrou na produção fora da ordem dos números.
 
 **5.2, correções do RAC e do Sumário de Alta (decisões do RT em 28/10/2026, "todas a"):**
 - o validador oficial, que só tem tela, roda sem ela: uma classe Java pequena chama o motor dele
@@ -1153,7 +1156,7 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
 - a prescrição fica fora do SA, se o perfil permitir; o documento de prescrição (RPM) vai ao backlog;
 - frequência cardíaca e temperatura, fora da lista `BRTipoObservacao-1.0`, ficam fora do documento.
 
-**5.2 pronta em 28/10/2026 (branch `fase5/rnds-rac-sa`):**
+**5.2 no master em 28/10/2026 (#316, branch `fase5/rnds-rac-sa`):**
 - os quatro documentos de teste (RAC com alta e com evasão; SA com alta e com transferência) passam
   no validador oficial sem erro; antes eram 37 a 46 erros por documento. Relatório em
   `docs/rnds/evidencia/5.2-validador.txt`;
@@ -1997,7 +2000,7 @@ próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero 
 |---|---|---|---|
 | 1 | E0 | Corrigir a "Escala da unidade" e a troca do plantonista: hoje leem a tabela direto e a RLS só devolve os próprios plantões (colegas aparecem como "livre"). Leitura passa por RPC | Feito: PR #302 (master), migration `20270202000001`; na homologação em 27/10 (10 de 10 testes; plantonista passa de 0 a 24 plantões de colegas no mês); migration aplicada na produção em 28/10 (ok do RT), versão registrada; frontend em produção pelo merge |
 | 2 | E1 | Categoria do plantão (`papel` em `escala_plantao`, `escala_fixa`, `escala_vagas`), preenchimento, gatilho e trava de categoria em troca e passagem | Feito: PR #310 (master), migration `20270202000002`; na homologação em 28/10 (16 de 16 testes; 387 plantões com categoria e 71 sem, de uma pessoa com dois papéis); migration aplicada na produção em 28/10 (ok do RT), versão registrada (lá os 701 plantões ficam sem categoria: 700 de pessoa sem vínculo e 1 do super admin de teste) |
-| 3 | E2 | Gestor escala todas as categorias (seletor, cobertura por categoria); ERP leva só o plantão médico | PR #315; opção B escolhida pelo RT em 28/10 (todas juntas, sigla da categoria ao lado do nome; ERP só plantonista); migration `20270202000003`; na homologação em 28/10 (14 de 14 testes); falta o teste do RT e o "ok produção" |
+| 3 | E2 | Gestor escala todas as categorias (seletor, cobertura por categoria); ERP leva só o plantão médico | Feito: PR #315 (master), opção B escolhida pelo RT em 28/10 (todas juntas, sigla da categoria ao lado do nome; ERP só plantonista); migration `20270202000003`; na homologação em 28/10 (14 de 14 testes, CI verde); migration aplicada na produção em 28/10 (ok do RT), versão registrada uma vez; frontend em produção pelo merge |
 | 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | A fazer |
 | 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | A fazer |
 
