@@ -1288,6 +1288,67 @@ Os dados, as regras e a API já estão em produção (3.1 a 3.3).
 - **Conferida na página de teste** com a tela real e dados fictícios, nos dois temas e em 390 px, sem
   rolagem lateral (`erp-A-aplicada-*.png`). Mostra a gaveta, a confirmação de fechar e o mês fechado.
 
+## Fase 5C-4.3 — tela dos webhooks (27/10/2026)
+
+A tela fica em Integrações (`/integracoes`), ao lado das chaves da API. O super admin cadastra o
+destino; o gestor da unidade vê, desliga e reenvia. O banco, o envio e a API já estão no master
+(4.1 e 4.2, PRs #295 e #297).
+
+**Referências do Refero** (busca de telas, web):
+
+| Referência | Tela (id) | O que vem dela |
+|---|---|---|
+| Lemon Squeezy, webhooks | `93431736-e58f-4308-9eab-040095bc0c40` | lista de destinos (endereço e quantos eventos) dentro das configurações |
+| fal, histórico de requisições | `3471468c-e203-4b57-997b-f962de757646` | inspetor à direita com o resultado do webhook |
+| Cal.com, criar webhook | `476006bd-428f-4f94-af6a-e6ffb90d8016` | diálogo com endereço, eventos e segredo |
+| Stripe, Developers › eventos | `2c78596b-cd33-4f68-aa5b-1be5bfb5a00e` | entregas como registro próprio, com filtro pela situação |
+| Zendesk, status | `7957c520-682f-4b22-ba1d-d86b77ed661c` | saúde de cada serviço em barras no tempo |
+| Enode, detalhe do webhook | `c11a3f63-ddbb-4567-965f-3ff68cc9e525` | o corpo enviado num diálogo, para conferir |
+
+**Opções** (`wh-A|B|C-*-claro|escuro.png`; dados fictícios). Nas três opções:
+- as abas são "Chaves da API" e "Webhooks";
+- o "Novo destino" é o diálogo de `wh-A-novo` (nome, endereço, chave, unidades da chave e eventos);
+- depois de criar, o segredo aparece uma vez só, com "Copiar" (`wh-A-segredo`).
+
+- **A · lista com gaveta** (Lemon Squeezy, fal, Cal.com).
+  - **Lista:** tabela dos destinos com os eventos, as unidades, as últimas 24 h (entregues, na fila,
+    falharam) e a situação (ligado, falhando, desligado).
+  - **Gaveta:** a linha abre a gaveta com:
+    - o aviso de falha;
+    - a chave, as unidades, os eventos e o segredo (só a data da troca);
+    - as entregas recentes, com "Reenviar";
+    - "Desligar" e "Trocar segredo".
+- **B · entregas como registro** (Stripe).
+  - **Aba Webhooks:** um cartão por destino, com as ações nele.
+  - **Aba Entregas:** a terceira aba junta as entregas de todos os destinos, com o aviso do que
+    falhou ("Reenviar os 2"), os filtros pela situação e pelo destino e "Reenviar" em cada linha.
+- **C · saúde por destino** (Zendesk e Enode).
+  - **Linha do destino:** cada destino mostra as últimas 24 h em barras, uma por hora (verde
+    entregou, vermelho falhou).
+  - **Linha aberta:** mostra as entregas.
+  - **Entrega:** o clique abre o aviso enviado (cabeçalhos e corpo, sem o segredo), com "Reenviar
+    agora".
+
+**Escolha do RT (27/10/2026): A, lista com gaveta.** Aplicada na branch `fase5/webhooks-tela`:
+
+- **`Integracoes.tsx`** virou página com abas: "Chaves da API" (o que já havia) e "Webhooks"
+  (`WebhooksAba.tsx`).
+- **Lista:** a tabela dos destinos, com os eventos, as unidades, as últimas 24 h e a situação
+  (ligado, falhando, chave vencida, desligado).
+- **Gaveta:**
+  - um aviso pela situação;
+  - a chave, as unidades, os eventos, a data do segredo e o cadastro;
+  - as entregas recentes, com a próxima tentativa ou "Reenviar";
+  - "Desligar" com motivo (gestor e super admin);
+  - "Religar" e "Trocar segredo" (só o super admin; o segredo novo aparece uma vez).
+- **Novo destino** (só o super admin): o diálogo confere o endereço com a mesma regra do banco, mostra
+  as unidades da chave escolhida e, no fim, o segredo com "Copiar".
+- **`src/lib/webhooks.ts`:** a situação, o resumo das 24 h, a resposta de cada entrega e o endereço,
+  com testes em `webhooks.test.ts`.
+- **Conferida na página de teste** com a tela real e dados fictícios: dois temas, o diálogo com um
+  endereço recusado, o gestor (sem "Novo destino" nem "Trocar segredo") e 390 px sem rolagem lateral
+  (`wh-A-aplicada-*.png`).
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base

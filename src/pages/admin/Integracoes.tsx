@@ -7,12 +7,15 @@
 // • Gestor: vê as chaves que acessam a unidade dele, os acessos, e revoga.
 // • Vencimento em 12 meses; aviso 30 dias antes, aqui.
 // Migration 20261104000002_api_integradores.sql.
+//
+// Fase 5C, tarefa 4, etapa 4.3: a página ganhou a aba Webhooks (WebhooksAba.tsx).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Copy, KeyRound } from 'lucide-react'
 import * as React from 'react'
 
-import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { Vazio } from '@/components/monitor/Pagina'
+import { TabsPagina } from '@/components/TabsPagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -24,6 +27,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { WebhooksAba } from './WebhooksAba'
 
 type Recurso = 'pacientes' | 'atendimentos' | 'leitos' | 'producao' | 'laboratorio' | 'imagem' | 'financeiro'
   | 'prescricoes' | 'regulacao'
@@ -51,6 +55,19 @@ type Acesso = { recurso: string; unidade: string | null; status: number; ip: str
 
 export default function Integracoes() {
   const { ehSuperAdmin } = useUnidade()
+  return (
+    <TabsPagina icone={KeyRound} titulo="Integrações" largura="max-w-5xl"
+      descricao={ehSuperAdmin ? 'Chaves da API para os sistemas parceiros e os webhooks que avisam esses sistemas. Chave e segredo aparecem uma única vez, na criação.'
+        : 'Chaves e webhooks dos sistemas parceiros que acessam a sua unidade. Você pode revogar uma chave ou desligar um webhook a qualquer hora.'}
+      abas={[
+        { valor: 'chaves', rotulo: 'Chaves da API', conteudo: () => <ChavesAba /> },
+        { valor: 'webhooks', rotulo: 'Webhooks', conteudo: () => <WebhooksAba /> },
+      ]} />
+  )
+}
+
+function ChavesAba() {
+  const { ehSuperAdmin } = useUnidade()
   // o super admin escolhe entre todas as unidades ativas da plataforma
   const unidades = useQuery({
     queryKey: ['api-unidades-ativas'],
@@ -72,10 +89,7 @@ export default function Integracoes() {
   const ativas = (lista.data ?? []).filter((c) => !c.revogada_em)
   const vencendo = ativas.filter((c) => !c.vencida && c.vence_em_dias <= 30)
   return (
-    <div className="flex w-full max-w-5xl flex-col gap-4">
-      <TituloPagina icone={KeyRound} titulo="Integrações (API)"
-        descricao={ehSuperAdmin ? 'Chaves dos integradores externos: unidades, recursos, limite e IPs. A chave aparece uma única vez, na criação.'
-          : 'Chaves de integradores que acessam a sua unidade. Você pode revogar uma chave a qualquer hora.'} />
+    <div className="flex flex-col gap-4">
       {vencendo.length > 0 && (
         <p role="alert" className="rounded-container border border-atencao/30 bg-alerta-atencao px-3.5 py-2.5 text-apoio text-atencao">
           {vencendo.length === 1 ? '1 chave vence' : `${vencendo.length} chaves vencem`} em até 30 dias: {vencendo.map((c) => `${c.nome} (${c.vence_em_dias === 1 ? '1 dia' : `${c.vence_em_dias} dias`})`).join(', ')}.
