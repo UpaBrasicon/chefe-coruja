@@ -79,7 +79,7 @@ Está no cabeçalho da migration e foi testado na homologação.
 
 # O serviço de envio (5C-5.3b)
 
-O código está em `services/rnds-envio/`. O serviço roda no VPS (5.3c), num contêiner próprio, separado do Hermes.
+O código está em `services/rnds-envio/`. O serviço roda no VPS (5.3c), num contêiner próprio, separado do Hermes. A instalação, as chaves e a reversão estão em `infra/rnds-envio.md`.
 
 | Arquivo | O que faz |
 |---|---|
