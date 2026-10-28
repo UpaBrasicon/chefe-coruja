@@ -9,6 +9,10 @@
 // continua o de sempre (ADR 0003). Dados de escala_mes_gestor; escalar por
 // adicionar_plantao_escala; marcar/retirar vaga e publicar pelas RPCs da
 // migration 20261007000003.
+// Aba Escala, E2 (28/10/2026, opção B do RT): todas as categorias juntas. Cada
+// nome leva a sigla da categoria, a vaga diz de qual categoria é e o filtro
+// "Categorias" recorta o mês e o dia. Escalar e marcar vaga pedem a categoria
+// (profissionais_da_unidade; migration 20270202000003).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
@@ -16,6 +20,7 @@ import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { PAPEL_LABEL } from '@/lib/constants'
 import { dataHora, dataIso, dataPorExtenso } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -28,17 +33,20 @@ import { Label } from '@/components/ui/label'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
-import type { PlantonistaDaUnidade } from '@/types/database'
+import type { Papel } from '@/types/database'
 
 import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala } from '@/hooks/usePedidosEscala'
 
-type Escalado = { plantao_id: string; perfil_id: string; nome: string; turno: string; duracao_min: number; quinzenal: boolean; rotulo: string | null }
+type Escalado = { plantao_id: string; perfil_id: string; nome: string; turno: string; duracao_min: number; quinzenal: boolean; rotulo: string | null; papel: Papel | null }
+// o que falta na faixa, categoria por categoria: vaga marcada (vaga_id) ou prevista pela fixa
+type Aberta = { papel: Papel | null; vaga_id: string | null; obs: string | null }
 type Faixa = {
   data: string; setor_id: string; turno: 'manha' | 'tarde' | 'noite'; escalados: Escalado[]; previsto: boolean
-  vaga_id: string | null; vaga_obs: string | null; situacao: 'coberto' | 'vaga' | 'sem_plantao'
+  vaga_id: string | null; vaga_obs: string | null; abertas: Aberta[]; situacao: 'coberto' | 'vaga' | 'sem_plantao'
 }
 type Publicacao = { versao: number; publicada_em: string; publicada_por: string | null; plantoes: number; vagas: number; alteracoes_depois: number }
-type Mes = { setores: { id: string; nome: string; tipo: string }[]; faixas: Faixa[]; publicacao: Publicacao | null }
+type Mes = { setores: { id: string; nome: string; tipo: string }[]; categorias: Papel[]; faixas: Faixa[]; publicacao: Publicacao | null }
+type Profissional = { perfil_id: string; nome_completo: string; crm: string | null; papel: Papel }
 
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
 const SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
@@ -48,6 +56,12 @@ const hojeSP = () => dataIso()
 const quando = (iso: string) => dataHora(iso)
 const ORDEM_FAIXA: Faixa['turno'][] = ['manha', 'tarde', 'noite']
 const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
+const SIGLA: Partial<Record<Papel, string>> = {
+  plantonista: 'Méd', telemedicina: 'Tele', enfermeiro: 'Enf', tecnico_enfermagem: 'Téc', recepcao: 'Rec', farmaceutico: 'Farm',
+  regulador: 'Reg', faturamento: 'Fat', nir: 'NIR', secretaria: 'Sec', regulacao_regional: 'RegR', faturamento_rede: 'FatR',
+}
+const sigla = (p: Papel | null) => (p ? SIGLA[p] ?? PAPEL_LABEL[p] : 'sem categoria')
+const categoriaMinuscula = (p: Papel | null) => (p ? PAPEL_LABEL[p].toLowerCase() : 'sem categoria')
 
 export function EscalaMes() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
@@ -63,6 +77,10 @@ export function EscalaMes() {
   const [erro, setErro] = React.useState<string | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
   const [escalar, setEscalar] = React.useState<Faixa | null>(null)
+  // a mesma janela escala ou marca vaga; as duas pedem a categoria
+  const [modo, setModo] = React.useState<'escalar' | 'vaga'>('escalar')
+  const [categoria, setCategoria] = React.useState<Papel | ''>('')
+  const [filtro, setFiltro] = React.useState<Papel | 'todas'>('todas')
   const [perfilId, setPerfilId] = React.useState('')
   const [rotulo, setRotulo] = React.useState('')
   const [quinzenal, setQuinzenal] = React.useState(false)
@@ -80,13 +98,13 @@ export function EscalaMes() {
       return data as unknown as Mes
     },
   })
-  const plantonistas = useQuery({
-    queryKey: ['escala-plantonistas', unidadeId],
-    enabled: !!unidadeId && ehGestor && !!escalar,
+  const profissionais = useQuery({
+    queryKey: ['escala-profissionais', unidadeId],
+    enabled: !!unidadeId && ehGestor && !!escalar && modo === 'escalar',
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('plantonistas_da_unidade', { p_unidade: unidadeId! })
+      const { data, error } = await supabase.rpc('profissionais_da_unidade', { p_unidade: unidadeId! })
       if (error) throw error
-      return (data ?? []) as PlantonistaDaUnidade[]
+      return (data ?? []) as Profissional[]
     },
   })
   const solicitacoes = useSolicitacoesEscala(unidadeId, ehGestor)
@@ -109,10 +127,14 @@ export function EscalaMes() {
 
   const m = dados.data
   const setores = m?.setores ?? []
+  const categorias = m?.categorias ?? []
+  // o filtro recorta quem aparece e o que falta; "todas" mostra a unidade inteira
+  const daCategoria = (p: Papel | null) => filtro === 'todas' || p === filtro
+  const faixas = (m?.faixas ?? []).map((f) => ({ ...f, escalados: f.escalados.filter((e) => daCategoria(e.papel)), abertas: f.abertas.filter((a) => daCategoria(a.papel)) }))
   const porDia = new Map<string, Faixa[]>()
-  for (const f of m?.faixas ?? []) porDia.set(f.data, [...(porDia.get(f.data) ?? []), f])
-  const vagasMes = (m?.faixas ?? []).filter((f) => f.situacao === 'vaga').length
-  const plantoesMes = new Set((m?.faixas ?? []).flatMap((f) => f.escalados.map((e) => e.plantao_id))).size
+  for (const f of faixas) porDia.set(f.data, [...(porDia.get(f.data) ?? []), f])
+  const vagasMes = faixas.reduce((n, f) => n + f.abertas.length, 0)
+  const plantoesMes = new Set(faixas.flatMap((f) => f.escalados.map((e) => e.plantao_id))).size
   const primeiro = new Date(ano, mesNum - 1, 1).getDay()
   const diasNoMes = new Date(ano, mesNum, 0).getDate()
   const celulas: (string | null)[] = [...Array(primeiro).fill(null),
@@ -123,7 +145,7 @@ export function EscalaMes() {
   // o dia escolhido: o clicado; sem clique, hoje (se o mês é o de hoje) ou o dia 1
   const diaSel = dia ?? (hoje.startsWith(mes) ? hoje : `${mes}-01`)
   const doDia = porDia.get(diaSel) ?? []
-  const vagasDia = doDia.filter((f) => f.situacao === 'vaga').length
+  const vagasDia = doDia.reduce((n, f) => n + f.abertas.length, 0)
   const plantoesDia = new Set(doDia.flatMap((f) => f.escalados.map((e) => e.plantao_id))).size
 
   async function publicar() {
@@ -134,10 +156,13 @@ export function EscalaMes() {
     setAviso(`Escala de ${MESES[mesNum - 1]} publicada (versão ${data}). Quem está escalado no mês foi avisado.`)
     recarregar()
   }
-  async function marcarVaga(f: Faixa) {
-    setErro(null)
-    const { error } = await supabase.rpc('marcar_vaga_escala', { p_setor: f.setor_id, p_data: f.data, p_turno: f.turno })
+  async function confirmarVaga() {
+    if (!escalar || !categoria) return
+    setErro(null); setSalvando(true)
+    const { error } = await supabase.rpc('marcar_vaga_escala', { p_setor: escalar.setor_id, p_data: escalar.data, p_turno: escalar.turno, p_papel: categoria })
+    setSalvando(false)
     if (error) return setErro(error.message)
+    setEscalar(null)
     recarregar()
   }
   async function retirarVaga(id: string) {
@@ -152,15 +177,17 @@ export function EscalaMes() {
     if (error) return setErro(error.message)
     recarregar()
   }
-  function abrirEscalar(f: Faixa) {
-    setErro(null); setPerfilId(''); setRotulo(''); setQuinzenal(false); setEscalar(f)
+  // a categoria já vem escolhida: a do filtro, ou a da primeira vaga da faixa
+  function abrirJanela(f: Faixa, qual: 'escalar' | 'vaga') {
+    const sugerida = filtro !== 'todas' ? filtro : f.abertas.find((a) => a.papel)?.papel ?? ''
+    setErro(null); setPerfilId(''); setRotulo(''); setQuinzenal(false); setCategoria(sugerida); setModo(qual); setEscalar(f)
   }
   async function confirmarEscalar() {
-    if (!escalar || !perfilId) return
+    if (!escalar || !perfilId || !categoria) return
     setErro(null); setSalvando(true)
     const { error } = await supabase.rpc('adicionar_plantao_escala', {
       p_unidade: unidadeId!, p_setor: escalar.setor_id, p_perfil: perfilId, p_data: escalar.data, p_turno: escalar.turno,
-      p_rotulo: rotulo.trim() || undefined, p_quinzenal: quinzenal,
+      p_rotulo: rotulo.trim() || undefined, p_quinzenal: quinzenal, p_papel: categoria,
     })
     setSalvando(false)
     if (error) return setErro(error.message)
@@ -168,6 +195,7 @@ export function EscalaMes() {
     recarregar()
   }
   const nomeSetor = (id: string) => setores.find((s) => s.id === id)?.nome ?? 'Setor'
+  const daJanela = (profissionais.data ?? []).filter((p) => p.papel === categoria)
 
   return (
     <div className="mb-2 flex flex-col gap-3">
@@ -200,6 +228,18 @@ export function EscalaMes() {
               : 'Ainda não publicada'}
             {m ? ` · ${plural(plantoesMes, 'plantão', 'plantões')} · ${plural(vagasMes, 'vaga aberta', 'vagas abertas')}` : ''}
           </p>
+          {categorias.length > 1 && (
+            <div className="flex items-center justify-end gap-2 border-b border-trilha px-4 py-1.5">
+              <Label htmlFor="mes-filtro" className="text-rotulo font-normal text-tinta-sussurro">Categorias</Label>
+              <Select value={filtro} onValueChange={(v) => setFiltro((v ?? 'todas') as Papel | 'todas')}>
+                <SelectTrigger id="mes-filtro" className="w-auto min-w-[180px]"><SelectValue>{filtro === 'todas' ? 'Todas' : PAPEL_LABEL[filtro]}</SelectValue></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas</SelectItem>
+                  {categorias.map((c) => <SelectItem key={c} value={c}>{PAPEL_LABEL[c]}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           {aviso && <p role="status" className="border-b border-trilha bg-alerta-conforme px-4 py-2 text-apoio text-conforme">{aviso}</p>}
           {erro && !publicando && !escalar && <MensagemErro className="m-3" texto={erro} />}
           {dados.isLoading && <div className="flex justify-center py-8"><Spinner /></div>}
@@ -211,19 +251,22 @@ export function EscalaMes() {
               {celulas.map((d, i) => {
                 if (!d) return <span key={i} className="bg-superficie" />
                 const fs = porDia.get(d) ?? []
-                const vagas = fs.filter((f) => f.situacao === 'vaga').length
+                const abertas = fs.flatMap((f) => f.abertas)
+                const vagas = abertas.length
+                const siglas = [...new Set(abertas.map((a) => sigla(a.papel)))].join(' · ')
                 const pessoas = new Set(fs.flatMap((f) => f.escalados.map((e) => e.plantao_id))).size
                 return (
                   <BotaoLinha key={d} variante="linha" onClick={() => setDia(d)} aria-pressed={d === diaSel}
-                    aria-label={`${Number(d.slice(8))} de ${MESES[mesNum - 1]}: ${vagas ? plural(vagas, 'vaga aberta', 'vagas abertas') : pessoas ? 'coberto' : 'sem plantão'}`}
+                    aria-label={`${Number(d.slice(8))} de ${MESES[mesNum - 1]}: ${vagas ? `${plural(vagas, 'vaga aberta', 'vagas abertas')} (${siglas})` : pessoas ? 'coberto' : 'sem plantão'}`}
                     className={cn('min-h-[72px] flex-col items-stretch gap-1 rounded-none border-0 bg-superficie px-2 py-1.5',
                       d === diaSel && 'bg-alerta-marca ring-2 ring-acao ring-inset hover:bg-alerta-marca', d < hoje && d !== diaSel && 'text-tinta-sussurro')}>
                     <span className="flex items-center justify-between text-apoio tabular-nums">
                       <span className={cn(d === hoje ? 'font-semibold text-tinta' : 'text-tinta')}>{Number(d.slice(8))}</span>
                       {d === hoje && <span className="text-rotulo text-acao">hoje</span>}
                     </span>
-                    <span className={cn('mt-auto text-rotulo', vagas ? 'text-atencao' : 'text-tinta-sussurro')}>
+                    <span className={cn('mt-auto flex min-w-0 flex-col text-rotulo', vagas ? 'text-atencao' : 'text-tinta-sussurro')}>
                       {vagas ? plural(vagas, 'vaga', 'vagas') : pessoas ? 'coberto' : 'sem plantão'}
+                      {vagas > 0 && <span className="truncate text-tinta-sussurro">{siglas}</span>}
                     </span>
                   </BotaoLinha>
                 )
@@ -252,6 +295,7 @@ export function EscalaMes() {
                         {f.escalados.map((e) => (
                           <span key={e.plantao_id} className="flex items-baseline gap-1.5">
                             <span className="min-w-0 truncate text-tinta">{e.nome}</span>
+                            {e.papel && <span title={PAPEL_LABEL[e.papel]} className="shrink-0 rounded-controle bg-campo px-1.5 text-rotulo text-tinta-sussurro">{sigla(e.papel)}</span>}
                             <span className="shrink-0 text-rotulo text-tinta-sussurro">
                               {e.duracao_min === 720 ? '12 h' : '6 h'}{e.quinzenal ? ' · 15/15' : ''}{e.rotulo ? ` · ${e.rotulo}` : ''}
                             </span>
@@ -259,21 +303,23 @@ export function EscalaMes() {
                               className="ml-auto h-auto min-h-0 shrink-0 p-0 text-rotulo text-tinta-sussurro hover:text-critico">Remover</Button>
                           </span>
                         ))}
-                        {f.situacao === 'vaga' && (
-                          <span className="flex flex-wrap items-baseline gap-x-1.5">
+                        {f.abertas.map((a, k) => (
+                          <span key={a.vaga_id ?? `prevista-${a.papel}-${k}`} className="flex flex-wrap items-baseline gap-x-1.5">
                             <Estado tom="ambar">vaga aberta</Estado>
-                            <span className="text-rotulo text-tinta-sussurro">{f.vaga_id ? `marcada${f.vaga_obs ? `: ${f.vaga_obs}` : ''}` : 'prevista pela fixa'}</span>
+                            <span className="text-rotulo text-tinta-sussurro">
+                              {categoriaMinuscula(a.papel)} · {a.vaga_id ? `marcada${a.obs ? `: ${a.obs}` : ''}` : 'prevista pela fixa'}
+                            </span>
+                            {a.vaga_id && (
+                              <Button variant="link" onClick={() => void retirarVaga(a.vaga_id!)} className="ml-auto h-auto min-h-0 p-0 text-rotulo text-tinta-sussurro hover:text-critico">Retirar vaga</Button>
+                            )}
                           </span>
-                        )}
-                        {f.situacao === 'sem_plantao' && <span className="text-tinta-sussurro">sem plantão</span>}
-                        {f.situacao === 'coberto' && f.vaga_id && <span className="text-rotulo text-conforme">vaga marcada, já coberta</span>}
+                        ))}
+                        {f.escalados.length === 0 && f.abertas.length === 0 && <span className="text-tinta-sussurro">sem plantão</span>}
                         <span className="flex flex-wrap gap-x-3 text-rotulo">
-                          <Button variant="link" onClick={() => abrirEscalar(f)} className="h-auto min-h-0 p-0 text-rotulo">Escalar</Button>
-                          {f.vaga_id ? (
-                            <Button variant="link" onClick={() => void retirarVaga(f.vaga_id!)} className="h-auto min-h-0 p-0 text-rotulo text-tinta-sussurro hover:text-critico">Retirar vaga</Button>
-                          ) : f.situacao === 'sem_plantao' && diaSel >= hoje ? (
-                            <Button variant="link" onClick={() => void marcarVaga(f)} className="h-auto min-h-0 p-0 text-rotulo">Marcar vaga</Button>
-                          ) : null}
+                          <Button variant="link" onClick={() => abrirJanela(f, 'escalar')} className="h-auto min-h-0 p-0 text-rotulo">Escalar</Button>
+                          {diaSel >= hoje && (
+                            <Button variant="link" onClick={() => abrirJanela(f, 'vaga')} className="h-auto min-h-0 p-0 text-rotulo">Marcar vaga</Button>
+                          )}
                         </span>
                       </div>
                     </div>
@@ -282,7 +328,7 @@ export function EscalaMes() {
               )
             })}
             <p className="mt-auto border-t border-trilha bg-campo px-4 py-2 text-rotulo text-pretty text-tinta-sussurro">
-              Marcar vaga avisa os plantonistas da unidade; a vaga coberta deixa de contar. Trocas, passagens e candidaturas chegam em Pedidos.
+              Marcar vaga avisa quem tem a categoria da vaga; ela deixa de contar quando alguém dessa categoria é escalado. Trocas, passagens e candidaturas chegam em Pedidos.
             </p>
           </aside>
         )}
@@ -291,37 +337,60 @@ export function EscalaMes() {
       <Dialog open={!!escalar} onOpenChange={(v) => { if (!v) setEscalar(null) }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Escalar plantonista</DialogTitle>
+            <DialogTitle>{modo === 'vaga' ? 'Marcar vaga' : 'Escalar'}</DialogTitle>
             <DialogDescription>
               {escalar && `${nomeSetor(escalar.setor_id)} · ${dataPorExtenso(`${escalar.data}T12:00:00Z`)} · ${FAIXA[escalar.turno][0]} (${FAIXA[escalar.turno][1]})`}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label>Plantonista</Label>
-              <Select value={perfilId || null} onValueChange={(v) => setPerfilId(v ?? '')}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <Label>Categoria</Label>
+              <Select value={categoria || null} onValueChange={(v) => { setCategoria((v ?? '') as Papel | ''); setPerfilId('') }}>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Selecione">{categoria ? PAPEL_LABEL[categoria] : undefined}</SelectValue></SelectTrigger>
                 <SelectContent>
-                  {(plantonistas.data ?? []).map((p) => (
-                    <SelectItem key={p.perfil_id} value={p.perfil_id}>{p.nome_completo}{p.crm ? ` · CRM ${p.crm}` : ''}</SelectItem>
-                  ))}
+                  {categorias.map((c) => <SelectItem key={c} value={c}>{PAPEL_LABEL[c]}</SelectItem>)}
                 </SelectContent>
               </Select>
-              {plantonistas.isLoading && <Spinner />}
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="mes-rotulo">Rótulo (opcional)</Label>
-              <Input id="mes-rotulo" value={rotulo} onChange={(e) => setRotulo(e.target.value)} placeholder='Ex.: "cobertura", "coordenação"' />
-            </div>
-            <label className="flex cursor-pointer items-center gap-2 text-apoio font-medium">
-              <input type="checkbox" className="size-4 accent-primary" checked={quinzenal} onChange={(e) => setQuinzenal(e.target.checked)} />
-              Escala quinzenal (15/15)
-            </label>
+            {modo === 'escalar' && (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <Label>Profissional</Label>
+                  <Select value={perfilId || null} onValueChange={(v) => setPerfilId(v ?? '')} disabled={!categoria}>
+                    <SelectTrigger className="w-full"><SelectValue placeholder={categoria ? 'Selecione' : 'Escolha a categoria'} /></SelectTrigger>
+                    <SelectContent>
+                      {daJanela.map((p) => (
+                        <SelectItem key={p.perfil_id} value={p.perfil_id}>{p.nome_completo}{p.crm ? ` · CRM ${p.crm}` : ''}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {profissionais.isLoading && <Spinner />}
+                  {categoria && !profissionais.isLoading && daJanela.length === 0 && (
+                    <span className="text-rotulo text-tinta-sussurro">Ninguém com vínculo de {PAPEL_LABEL[categoria].toLowerCase()} nesta unidade.</span>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="mes-rotulo">Rótulo (opcional)</Label>
+                  <Input id="mes-rotulo" value={rotulo} onChange={(e) => setRotulo(e.target.value)} placeholder='Ex.: "cobertura", "coordenação"' />
+                </div>
+                <label className="flex cursor-pointer items-center gap-2 text-apoio font-medium">
+                  <input type="checkbox" className="size-4 accent-primary" checked={quinzenal} onChange={(e) => setQuinzenal(e.target.checked)} />
+                  Escala quinzenal (15/15)
+                </label>
+              </>
+            )}
+            {modo === 'vaga' && categoria && (
+              <p className="text-apoio text-tinta-sussurro">Quem tem vínculo de {PAPEL_LABEL[categoria].toLowerCase()} na unidade recebe o aviso da vaga.</p>
+            )}
             <MensagemErro texto={escalar ? erro : null} />
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setEscalar(null)}>Cancelar</Button>
-            <Button onClick={() => void confirmarEscalar()} disabled={!perfilId || salvando}>{salvando ? <Spinner /> : null} Escalar</Button>
+            {modo === 'vaga' ? (
+              <Button onClick={() => void confirmarVaga()} disabled={!categoria || salvando}>{salvando ? <Spinner /> : null} Marcar vaga</Button>
+            ) : (
+              <Button onClick={() => void confirmarEscalar()} disabled={!perfilId || !categoria || salvando}>{salvando ? <Spinner /> : null} Escalar</Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
