@@ -37,3 +37,17 @@ Nenhuma opção muda banco: são as mesmas RPCs da E4.
 ## Pergunta ao RT
 
 Qual opção: A, B ou C?
+
+## Decisão do RT (28/10/2026) e o que foi aplicado
+
+**Opção A.** Sem migration.
+
+- `src/components/escala/EscalaEquipe.tsx`: o cartão "Próximo plantão" ganha Trocar, Passar e Justificar
+  falta (o meu próximo plantão nesta unidade, dos próximos 60 dias); ao lado, "Vagas abertas da sua
+  categoria" com a data e "Candidatar-me"; no dia que já passou, a explicação e "Ir para o próximo
+  plantão".
+- `src/components/escala/PedidosEscala.tsx`: as ações viraram `AcoesDoPlantao`, usadas no cartão e no
+  painel do dia.
+- `src/components/casca/ProximoPlantao.tsx`: espaço opcional embaixo do cartão para as ações (a tela "Fora
+  do seu horário" não usa).
+- Imagens da tela real com dados fictícios: `maquetes/e4b-A-aplicada-claro|escuro|celular.jpg`.
