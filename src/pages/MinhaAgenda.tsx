@@ -42,7 +42,9 @@ export default function MinhaAgenda({ embutido = false }: { embutido?: boolean }
     enabled: !!perfil,
     queryFn: async () => {
       const inicio = `${mes}-01`
-      const fim = `${mes}-31`
+      // último dia de verdade: o banco recusa 31 em mês de 30 dias e em fevereiro
+      const [a, m] = mes.split('-').map(Number)
+      const fim = `${mes}-${String(new Date(a, m, 0).getDate()).padStart(2, '0')}`
       const { data, error } = await supabase
         .from('escala_plantao')
         .select('id, data, turno, setor_id, unidade_id, setores(nome), unidades(nome)')
