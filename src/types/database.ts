@@ -3866,6 +3866,7 @@ export type Database = {
           criado_por: string | null
           dia_semana: number
           id: string
+          papel: Database["public"]["Enums"]["papel"] | null
           perfil_id: string
           quinzenal: boolean
           setor_id: string
@@ -3879,6 +3880,7 @@ export type Database = {
           criado_por?: string | null
           dia_semana: number
           id?: string
+          papel?: Database["public"]["Enums"]["papel"] | null
           perfil_id: string
           quinzenal?: boolean
           setor_id: string
@@ -3892,6 +3894,7 @@ export type Database = {
           criado_por?: string | null
           dia_semana?: number
           id?: string
+          papel?: Database["public"]["Enums"]["papel"] | null
           perfil_id?: string
           quinzenal?: boolean
           setor_id?: string
@@ -3941,6 +3944,7 @@ export type Database = {
           id: string
           inicio: string
           observacao: string | null
+          papel: Database["public"]["Enums"]["papel"] | null
           perfil_id: string
           plantao_origem_id: string | null
           quinzenal: boolean
@@ -3960,6 +3964,7 @@ export type Database = {
           id?: string
           inicio: string
           observacao?: string | null
+          papel?: Database["public"]["Enums"]["papel"] | null
           perfil_id: string
           plantao_origem_id?: string | null
           quinzenal?: boolean
@@ -3979,6 +3984,7 @@ export type Database = {
           id?: string
           inicio?: string
           observacao?: string | null
+          papel?: Database["public"]["Enums"]["papel"] | null
           perfil_id?: string
           plantao_origem_id?: string | null
           quinzenal?: boolean
@@ -4088,6 +4094,7 @@ export type Database = {
           id: string
           inicio: string | null
           observacao: string | null
+          papel: Database["public"]["Enums"]["papel"] | null
           parte: number | null
           partes: number | null
           plantao_origem_id: string | null
@@ -4105,6 +4112,7 @@ export type Database = {
           id?: string
           inicio?: string | null
           observacao?: string | null
+          papel?: Database["public"]["Enums"]["papel"] | null
           parte?: number | null
           partes?: number | null
           plantao_origem_id?: string | null
@@ -4122,6 +4130,7 @@ export type Database = {
           id?: string
           inicio?: string | null
           observacao?: string | null
+          papel?: Database["public"]["Enums"]["papel"] | null
           parte?: number | null
           partes?: number | null
           plantao_origem_id?: string | null
@@ -11237,6 +11246,7 @@ export type Database = {
           nome_completo: string | null
           observacao: string | null
           perfil_id: string
+          papel: Database["public"]["Enums"]["papel"] | null
           plantao_origem_id: string | null
           quinzenal: boolean
           rotulo: string | null
