@@ -125,7 +125,7 @@ const PADROES_RUIDO: RegExp[] = [
   /^Load failed$/i, // recurso cancelado (navegação/offline)
   /Non-Error promise rejection/i,
   // Chunk antigo some depois de um deploy — é o caso do 'vite:preloadError',
-  // tratado com recarga única em main.tsx; não é defeito.
+  // tratado com recarga em main.tsx; não é defeito.
   /Failed to fetch dynamically imported module/i,
   /error loading dynamically imported module/i,
   /Importing a module script failed/i,
