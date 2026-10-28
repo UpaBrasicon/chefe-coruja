@@ -9963,6 +9963,7 @@ export type Database = {
       adicionar_plantao_escala: {
         Args: {
           p_data: string
+          p_papel?: Database["public"]["Enums"]["papel"]
           p_perfil: string
           p_quinzenal?: boolean
           p_rotulo?: string
@@ -10161,6 +10162,15 @@ export type Database = {
       fechar_competencia_bpa: { Args: { p_competencia: string; p_processamento?: string; p_unidade: string }; Returns: string }
       procedimentos_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       procedimentos_registraveis: { Args: { p_unidade: string }; Returns: Json }
+      profissionais_da_unidade: {
+        Args: { p_unidade: string }
+        Returns: {
+          crm: string | null
+          nome_completo: string
+          papel: Database["public"]["Enums"]["papel"]
+          perfil_id: string
+        }[]
+      }
       profissionais_para_faturar: { Args: { p_unidade: string }; Returns: Json }
       reabrir_competencia_bpa: { Args: { p_fechamento: string; p_motivo: string }; Returns: undefined }
       registrar_procedimento: {
@@ -11940,6 +11950,7 @@ export type Database = {
         Args: {
           p_data: string
           p_observacao?: string
+          p_papel?: Database["public"]["Enums"]["papel"]
           p_setor: string
           p_turno: string
         }
