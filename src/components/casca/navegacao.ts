@@ -54,6 +54,8 @@ export type ItemNav = {
 // ondas do porte (produto/docs/PLANO-PORTE-FRONTEND.md).
 const ITEM_PRONTUARIOS: ItemNav = { to: '/prontuarios', rotulo: 'Prontuários', icone: FolderSearch }
 const ITEM_AVISOS: ItemNav = { to: '/notificacoes', rotulo: 'Avisos', icone: Bell, exato: true, nota: 'avisos' }
+// Aba Escala (E3): a escala de quem não é plantonista, gestor nem administrador
+const ITEM_ESCALA: ItemNav = { to: '/minha-escala', rotulo: 'Escala', icone: CalendarClock, exato: true }
 
 const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
@@ -120,6 +122,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     ITEM_AVISOS,
     ITEM_PRONTUARIOS,
+    ITEM_ESCALA,
   ],
   tecnico_enfermagem: [
     { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
@@ -129,6 +132,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true },
     ITEM_AVISOS,
     ITEM_PRONTUARIOS,
+    ITEM_ESCALA,
   ],
   // Recepção (P/index.html 32220–32224): as quatro telas na lateral, com a
   // contagem das duas filas.
@@ -138,12 +142,14 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/recepcao/fila-medica', rotulo: 'Fila médica', curto: 'Médica', icone: Stethoscope, exato: true, nota: 'fila_medica' },
     { to: '/recepcao/painel', rotulo: 'Painel de chamada', curto: 'Painel', icone: Monitor, exato: true },
     { to: '/cadastros-duplicados', rotulo: 'Cadastros duplicados', curto: 'Duplicados', icone: GitMerge, exato: true },
+    ITEM_ESCALA,
   ],
   // Fase 3, tarefa 1: médico regulador — decide a AIH (aprova com número e
   // competência, ou rejeita com motivo)
   regulador: [
     { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true },
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
+    ITEM_ESCALA,
   ],
   // Fase 3, tarefa 3: faturamento (sem escala) — conferência e fechamento do
   // BPA, lançamento de procedimentos e códigos SIGTAP da unidade
@@ -153,6 +159,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true },
     { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true },
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
+    ITEM_ESCALA,
   ],
   farmaceutico: [
     { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia' },
@@ -161,13 +168,15 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true },
     { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true },
     { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
+    ITEM_ESCALA,
     // Sem Prontuários (RT, 27/10/2026): o que o farmacêutico precisa do
     // paciente chega pela validação e pela dispensação.
   ],
   telemedicina: [
     { to: '/teleinterconsulta', rotulo: 'Telemedicina', curto: 'Tele', icone: Hourglass, exato: true, nota: 'tele' },
     { to: '/telemedicina/salas', rotulo: 'Salas em andamento', curto: 'Salas', icone: Video, exato: true },
-    { to: '/telemedicina/agenda', rotulo: 'Minha agenda', curto: 'Agenda', icone: CalendarClock, exato: true },
+    // E3 da aba Escala (RT, 27/10/2026): a "Minha agenda" vira a Escala comum, com o extrato numa aba
+    ITEM_ESCALA,
     { to: '/telemedicina/telemonitoramento', rotulo: 'Telemonitoramento', curto: 'Monitor', icone: Activity, exato: true },
     { to: '/telemedicina/assinaturas', rotulo: 'Assinaturas pendentes', curto: 'Assinar', icone: FileText, exato: true },
     { to: '/telemedicina/historico', rotulo: 'Histórico e auditoria', curto: 'Histórico', icone: History, exato: true },
@@ -177,14 +186,15 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   // Administrador (P/index.html 32242–32246): Rede, Plataformas, Pendências e
   // Servidores; Escala e Olho de Gavião continuam do app.
   // Fase 4, tarefa 12: papéis de rede (Secretaria), escalados na unidade Secretaria
-  secretaria: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS],
-  regulacao_regional: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS],
-  faturamento_rede: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }],
+  secretaria: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS, ITEM_ESCALA],
+  regulacao_regional: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS, ITEM_ESCALA],
+  faturamento_rede: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_ESCALA],
   // Fase 4, tarefa 11: NIR — pendências da unidade e a regulação (sem ato médico)
   nir: [
     { to: '/nir', rotulo: 'Pendências do NIR', curto: 'NIR', icone: ClipboardList, exato: true },
     { to: '/regulacao', rotulo: 'Regulação', icone: Waypoints, exato: true },
     ITEM_AVISOS,
+    ITEM_ESCALA,
   ],
   admin: [
     { to: '/painel', rotulo: 'Rede', icone: Building2, exato: true },

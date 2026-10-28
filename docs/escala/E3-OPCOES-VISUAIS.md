@@ -56,3 +56,24 @@ a E4).
 1. **Qual opção:** A, B ou C?
 2. **Farmacêutico e faturamento:** ligo a entrada pela escala já na E3, ou primeiro o gestor escala os dois
    e eu ligo depois, para ninguém perder o acesso no meio do caminho? Sugestão: depois, num passo próprio.
+
+## Decisão do RT (28/10/2026) e o que foi aplicado
+
+**Opção A**, o mês com o dia ao lado. Farmacêutico e faturamento: sem resposta nesta rodada; vale a
+sugestão (a entrada pela escala liga depois, num passo próprio, quando o gestor tiver escalado os dois).
+Até lá eles já têm a aba Escala, sem bloqueio fora do plantão.
+
+- Sem migration: a tela lê `escala_da_unidade` (equipe da categoria desde a E1), os setores e
+  `meu_proximo_plantao`.
+- `src/components/escala/EscalaEquipe.tsx`: o próximo plantão no alto; o mês com os meus plantões na
+  célula (faixa e setor; no celular, só a letra); ao lado, o dia escolhido com a equipe da categoria,
+  setor por setor, horário e "você" no meu nome.
+- `src/pages/EscalaEquipe.tsx`: rota `/minha-escala`. Na telemedicina, duas abas, Escala e Extrato (o
+  extrato que estava na "Minha agenda"); `/telemedicina/agenda` leva para lá.
+- Menu (`navegacao.ts`): item "Escala" para enfermeiro, técnico, recepção, regulador, farmacêutico,
+  faturamento, NIR, telemedicina (no lugar de "Minha agenda") e papéis de rede. Plantonista, gestor e
+  administrador não mudam.
+- Fora do plantão: a tela "Fora do seu horário" ganha "Ver minha escala", que abre só a escala, com
+  "Voltar" (nada clínico). O cartão do próximo plantão passou para `ProximoPlantao.tsx`, usado nas duas.
+- Imagens da tela real com dados fictícios: `maquetes/e3-A-aplicada-claro|escuro|celular|tele.jpg`,
+  `e3-fora-do-plantao.jpg` e `e3-fora-do-plantao-escala.jpg`.

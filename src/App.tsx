@@ -91,6 +91,7 @@ const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnico
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
 const Teleinterconsulta = lazy(() => import('@/pages/telemedicina/Teleinterconsulta'))
 const Telemedicina = lazy(() => import('@/pages/telemedicina/Telemedicina'))
+const EscalaEquipe = lazy(() => import('@/pages/EscalaEquipe'))
 const Pareceres = lazy(() => import('@/pages/parecer/Pareceres'))
 const MeuPlantao = lazy(() => import('@/pages/MeuPlantao'))
 const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome'))
@@ -344,7 +345,15 @@ export default function App() {
                       </Route>
                       {/* Onda 8: as outras telas do médico de telemedicina */}
                       <Route element={<RequireRole papeis={['telemedicina']} />}>
+                        <Route path="/telemedicina/agenda" element={<Redirecionar para="/minha-escala" />} />
                         <Route path="/telemedicina/:tela" element={<Telemedicina />} />
+                      </Route>
+
+                      {/* Aba Escala (E3, opção A do RT em 28/10/2026): a escala de quem não é
+                          plantonista, gestor nem administrador, só de leitura */}
+                      <Route element={<RequireRole papeis={['enfermeiro', 'tecnico_enfermagem', 'recepcao', 'regulador', 'farmaceutico',
+                        'faturamento', 'telemedicina', 'nir', 'secretaria', 'regulacao_regional', 'faturamento_rede']} />}>
+                        <Route path="/minha-escala" element={<EscalaEquipe />} />
                       </Route>
 
                       {/* Porte, onda 4: parecer médico — fila do especialista (o banco confere a especialidade) */}
