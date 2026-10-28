@@ -1088,6 +1088,27 @@ A, lista com gaveta.**
 - **Regras** em `src/lib/webhooks.ts`, com teste. Conferida na página de teste nos dois temas, em
   390 px e com o papel de gestor (`wh-A-aplicada-*` em `docs/frontend/revisao-visual/app/`).
 
+**4.3 no master em 28/10/2026 (PR #304, `0bc4b5c`). Tarefa 4 em produção desde 28/10/2026.** O RT
+conferiu na homologação e seguiu os comandos da produção.
+- **Banco:** o RT aplicou da pasta limpa do master (`7cc28bc`) as três migrations
+  `20270201000001..03`, com `--dry-run` antes, que listou só as três. A
+  `20270202000001_escala_da_unidade.sql` (#302, de outra tarefa) foi tirada da pasta para o push, mas
+  a versão dela também aparece na produção: a origem está sendo conferida com a sessão da escala.
+- **Funções:** todas as Edge Functions foram publicadas pela trava de alvo, com a versão `7cc28bc`. A
+  `webhooks` e a `api` são as que mudaram.
+- **Vault:** o par `webhooks_motor_url` e `webhooks_motor_segredo` foi criado. O segredo foi gerado
+  dentro do banco, e ninguém o viu.
+- **Conferido na produção:** as três versões estão registradas e os dois cron estão agendados, com o
+  motor já rodando com sucesso. Os cinco gatilhos `trg_webhook` existem. Ainda não há destino nem
+  entrega. O motor sem segredo ou com segredo errado dá 401, e `/prescricoes/{id}` sem chave dá 401.
+- A tela saiu com o merge (Vercel).
+
+**Tarefa 4 (Webhooks) concluída em 28/10/2026.** Aceite "Terceiro recebe eventos com segurança": os
+seis eventos saem assinados (Standard Webhooks), com novas tentativas por até 24 h, desligamento
+automático com aviso e reenvio manual. O receptor busca o detalhe pela API v1. Detalhes, chaves e
+reversão em `infra/webhooks.md`. Fica para depois: período com dois segredos na troca, IP fixo de
+saída e resolução de DNS antes do envio.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)

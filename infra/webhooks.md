@@ -165,6 +165,31 @@ de publicar está no cabeçalho do arquivo. O segredo do destino de teste vai na
   Depois do teste, os destinos, as entregas e os eventos temporários foram apagados, e a chave foi
   revogada. O par do motor ficou no Vault da homologação.
 
+## Produção (28/10/2026)
+
+Com o "ok produção" do RT, depois da 4.3 no master (PR #304):
+1. **Banco:** o RT rodou `npx supabase db push --linked` da pasta `producao-push`, no master `7cc28bc`,
+   com `--dry-run` antes. O dry-run listou só as três `20270201*`. A
+   `20270202000001_escala_da_unidade.sql`, de outra tarefa, foi tirada da pasta para o push e voltou
+   depois com `git checkout`. A versão dela também aparece na produção; a origem está sendo conferida
+   com a sessão da escala.
+2. **Funções:** `node scripts/ambiente/supabase-alvo.mjs functions producao --confirmo-producao`, que
+   publicou api, clinical-search, enviar-codigo-2fa, folha e webhooks com a versão `7cc28bc`.
+3. **Vault:** o par do motor foi criado pelo SQL, com o segredo gerado no próprio banco
+   (`encode(extensions.gen_random_bytes(32), 'hex')`, 64 caracteres). Ninguém leu o valor.
+
+Conferido na produção, só nos metadados:
+
+| Item | Resultado |
+|---|---|
+| Versões `20270201000001`, `..02` e `..03` em `schema_migrations` | registradas |
+| Cron `webhooks-motor` (`* * * * *`) e `webhooks-manutencao` (`*/15 * * * *`) | agendados; a última volta do motor deu `succeeded` |
+| Gatilhos `trg_webhook` | 5 |
+| `webhooks_motor_url` e `webhooks_motor_segredo` no Vault | criados (62 e 64 caracteres) |
+| Destinos e entregas | 0 (nada sai até o super admin cadastrar um destino) |
+| `POST /webhooks` sem segredo ou com segredo errado | 401 |
+| `GET /prescricoes/{id}` sem chave | 401 |
+
 ## Como reverter
 
 1. **Cron:** tirar os dois cron (rollback da `20270201000002`). Nada mais sai.
