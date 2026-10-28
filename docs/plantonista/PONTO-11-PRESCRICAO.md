@@ -3,6 +3,12 @@
 Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 `BACKLOG.md`. Pedido do RT em 28/10/2026: "Comece pelo ponto 11".
 
+**Situação: em produção desde 28/10/2026.**
+
+- O PR #308 foi juntado ao master, e a tela foi publicada (e0f688f).
+- Com o "ok produção" do RT, as migrations `20270203000001_busca_medicamento`
+  e `20270203000002_sinonimos_medicamento` foram aplicadas na produção.
+
 **Decisões do RT (28/10/2026).** Plano aprovado, com a opção A de tela.
 
 1. O clique no remédio: (b) ou (c). O RT confirma depois.
