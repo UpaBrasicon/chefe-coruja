@@ -29,6 +29,8 @@ export type EntidadeProfissional = {
   uf_crm: string | null
   /** código CBO (terminologia.cbo), 6 dígitos; null = lacuna, e o documento fica retido */
   cbo_codigo: string | null
+  /** CNS, que vai no header Authorization do envio (não entra no documento) */
+  cns?: string | null
 }
 
 /** Estabelecimento (public.unidades) — CNES via terminologia */

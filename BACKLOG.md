@@ -1168,6 +1168,33 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
 - sem banco e sem tela. RAC e SA continuam fora do processador até a carga do serviço de envio (5.3).
   Regras e números em `docs/rnds/VALIDADOR.md`.
 
+**5.3, serviço de envio (decisões do RT em 28/10/2026, "todas a"):**
+- três PRs: 5.3a banco; 5.3b serviço e simulador; 5.3c no VPS;
+- a carga fica em funções no banco, testadas na homologação; o serviço só as chama, com a chave de
+  serviço, sem ler tabela;
+- o financiamento é um padrão por unidade, numa configuração da RNDS que o gestor define (a tela
+  é a 5.4);
+- procedência: "informação ausente" (99, código oficial) na porta; internação vinda de outra
+  unidade é demanda referenciada (12). O campo de procedência na recepção vai ao backlog;
+- o MIRA é assinado por quem mudou o status (regra I5);
+- medidas do RAC: a última PAS, PAD, peso e estatura do episódio, com o LOINC da lista oficial
+  ligado no banco;
+- serviço no VPS em contêiner e usuário próprios, segredos à parte, atualizado do master com o
+  mesmo teste de saúde e volta do Hermes, apontando só para a homologação e o simulador.
+
+**5.3a na homologação em 28/10/2026:** migration `20270205000001_rnds_envio_banco.sql`.
+- Fila: status novo `retido` (falta dado; o motivo fica no item, que volta a ser tentado de hora em
+  hora), quem assina, próxima tentativa, trava do lote, o Bundle enviado e a resposta da RNDS.
+- `rnds_config_unidade`: ambiente, identificador do solicitante, financiamento e envio ligado.
+  Nasce desligada; sem ela ligada, nada da unidade sai.
+- As três funções do serviço: `rnds_pegar_lote`, `rnds_dados_documento` (a carga do RAC, do SA e
+  do MIRA) e `rnds_registrar_resultado` (enviado, retido, nova tentativa até 30 vezes, erro
+  definitivo, credencial recusada, que pausa a unidade).
+- Conferência noturna às 01:00 de Brasília: o que mudou no dia anterior e não entrou na fila entra.
+- Teste `supabase/tests/fase5c_rnds_envio.sql`, o da 5.1 e o rollback passaram na homologação. RAC
+  e SA montados da carga da homologação passam no validador oficial sem erro
+  (`docs/rnds/evidencia/5.3a-carga-homolog.txt`). Regras em `docs/rnds/ENVIO.md`.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)

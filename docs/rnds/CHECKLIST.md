@@ -49,7 +49,7 @@ para a versão anterior na hora de pedir.
 | # | Item | Situação |
 |---|---|---|
 | I1 | **IP fixo de saída:** VPS `179.199.128.141` | IPv4 de datacenter da Hostinger (bloco `179.199.128.0/19`, LACNIC/RDAP, consultado em 10/10/2026). Fica fixo enquanto o VPS existir. Recriar ou migrar o VPS pode trocar o IP, e a faixa só se altera com a credencial **já em produção**. O RT confere no painel da Hostinger que o IP é dedicado. Declarar inicial = final = `179.199.128.141` (início igual ao fim é inferência: o manual não proíbe nem confirma) |
-| I2 | **Serviço de envio no VPS:** lê `interop_outbox`, pede o token com TLS mútuo e o certificado da unidade, envia o Bundle e grava `id_rnds`, `enviado_em`, `tentativas` e `ultimo_erro` | a construir; não é desta tarefa |
+| I2 | **Serviço de envio no VPS:** lê `interop_outbox`, pede o token com TLS mútuo e o certificado da unidade, envia o Bundle e grava `id_rnds`, `enviado_em`, `tentativas` e `ultimo_erro` | 5C-5.3: o banco (fila, carga e conferência noturna) está pronto na 5.3a (`ENVIO.md`); o serviço é a 5.3b e o VPS, a 5.3c |
 | I3 | **Cofre de certificados no VPS:** um `.pfx` por unidade, cifrado, fora do repositório e do Supabase. Senha em segredo do serviço. Aviso de vencimento ao gestor | a construir |
 | I4 | **Endereços:** Auth homologação `ehr-auth-hmg.saude.gov.br`; EHR homologação `ehr-services-hmg.saude.gov.br` (com hífen desde 09/07/2024; o manual RAC e o guia ainda trazem o antigo); Auth produção `ehr-auth.saude.gov.br`; EHR produção `{uf}-ehr-services.saude.gov.br`, pela UF do CNES | configurar no serviço de envio |
 | I5 | **Header `Authorization`:** CNS do profissional logado (`usuario()`), nunca fixo no código. O header pede CNS; dentro do documento vai o CPF | regra |
