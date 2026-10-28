@@ -32,7 +32,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Abas, Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { dataHora, hora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
-import type { EscalaFixa, EscalaPlantao, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
+import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
+import { PAPEL_LABEL } from '@/lib/constants'
 import { Estado } from '@/components/porta/Estado'
 import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, type SolicitacaoComExtra } from '@/hooks/usePedidosEscala'
 
@@ -175,6 +176,8 @@ export default function Escala({
   const [celula, setCelula] = React.useState<{ setor_id: string; data: string } | null>(null)
   const [celulaFixa, setCelulaFixa] = React.useState<{ setor_id: string; dia_semana: number } | null>(null)
   const [plantonistaId, setPlantonistaId] = React.useState('')
+  // E2 da aba Escala: o gestor escolhe pessoa e categoria juntas (quem tem dois papéis aparece duas vezes)
+  const [papelEscolhido, setPapelEscolhido] = React.useState<Papel | null>(null)
   const [rotulo, setRotulo] = React.useState('')
   const [quinzenal, setQuinzenal] = React.useState(false)
 
@@ -244,6 +247,16 @@ export default function Escala({
       const { data, error } = await supabase.rpc('plantonistas_da_unidade', { p_unidade: unidadeId! })
       if (error) throw error
       return (data ?? []) as PlantonistaDaUnidade[]
+    },
+  })
+
+  const { data: profissionais, isLoading: carregandoProf } = useQuery({
+    queryKey: ['escala-profissionais', unidadeId],
+    enabled: !!unidadeId && ehGestor,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('profissionais_da_unidade', { p_unidade: unidadeId! })
+      if (error) throw error
+      return (data ?? []) as { perfil_id: string; nome_completo: string; crm: string | null; papel: Papel }[]
     },
   })
 
@@ -395,6 +408,7 @@ export default function Escala({
         dia_semana: celulaFixa.dia_semana,
         turno,
         quinzenal,
+        papel: papelEscolhido,
       })
       if (error) throw error
     },
@@ -402,6 +416,7 @@ export default function Escala({
       void queryClient.invalidateQueries({ queryKey: ['escala-fixa'] })
       setDialogAberto(false)
       setPlantonistaId('')
+      setPapelEscolhido(null)
       setQuinzenal(false)
     },
   })
@@ -461,6 +476,7 @@ export default function Escala({
         p_turno: turno,
         p_rotulo: rotulo || undefined,
         p_quinzenal: quinzenal,
+        p_papel: papelEscolhido ?? undefined,
       })
       if (error) throw error
     },
@@ -468,6 +484,7 @@ export default function Escala({
       invalidar()
       setDialogAberto(false)
       setPlantonistaId('')
+      setPapelEscolhido(null)
       setRotulo('')
       setQuinzenal(false)
     },
@@ -489,6 +506,7 @@ export default function Escala({
   function abrirCelula(setor_id: string, data: string) {
     setCelula({ setor_id, data })
     setPlantonistaId('')
+    setPapelEscolhido(null)
     setRotulo('')
     setQuinzenal(false)
     setDialogAberto(true)
@@ -593,6 +611,7 @@ export default function Escala({
   function abrirCelulaFixa(setor_id: string, dia_semana: number) {
     setCelulaFixa({ setor_id, dia_semana })
     setPlantonistaId('')
+    setPapelEscolhido(null)
     setQuinzenal(false)
     setDialogAberto(true)
   }
@@ -1931,21 +1950,43 @@ export default function Escala({
 
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label>Plantonista</Label>
-              <Select value={plantonistaId || null} onValueChange={(v) => setPlantonistaId(v ?? '')}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(plantonistas ?? []).map((p) => (
-                    <SelectItem key={p.perfil_id} value={p.perfil_id}>
-                      {p.nome_completo}
-                      {p.crm ? ` · CRM ${p.crm}` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {carregandoPlant && <Spinner />}
+              <Label>{ehGestor ? 'Profissional e categoria' : 'Plantonista'}</Label>
+              {ehGestor ? (
+                <Select
+                  value={plantonistaId && papelEscolhido ? `${plantonistaId}|${papelEscolhido}` : null}
+                  onValueChange={(v) => {
+                    const [id, papel] = (v ?? '').split('|')
+                    setPlantonistaId(id ?? '')
+                    setPapelEscolhido((papel || null) as Papel | null)
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(profissionais ?? []).map((p) => (
+                      <SelectItem key={`${p.perfil_id}|${p.papel}`} value={`${p.perfil_id}|${p.papel}`}>
+                        {p.nome_completo} · {PAPEL_LABEL[p.papel]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Select value={plantonistaId || null} onValueChange={(v) => setPlantonistaId(v ?? '')}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(plantonistas ?? []).map((p) => (
+                      <SelectItem key={p.perfil_id} value={p.perfil_id}>
+                        {p.nome_completo}
+                        {p.crm ? ` · CRM ${p.crm}` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {(ehGestor ? carregandoProf : carregandoPlant) && <Spinner />}
             </div>
 
             {abaGestor !== 'fixa' && (

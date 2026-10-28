@@ -54,3 +54,20 @@ escolhida (resposta 6 do RT).
 2. **ERP:** "plantão médico" é só plantonista, ou plantonista e telemedicina?
 3. **Só na opção C:** quais categorias aparecem em cada faixa do dia? Sugestão: médico, enfermeiro e
    técnico em todo setor assistencial; as outras em "Outras categorias".
+
+## Decisão do RT (28/10/2026) e o que foi aplicado
+
+**Opção B.** ERP: só o plantão de plantonista (telemedicina e as outras categorias ficam fora do envio).
+A pergunta 3 caiu com a escolha da B.
+
+- Migration `20270202000003_escala_gestor_categorias.sql`: `profissionais_da_unidade`;
+  `adicionar_plantao_escala` e `marcar_vaga_escala` com `p_papel`; `escala_faixas`, `escala_mes_gestor`
+  e `publicar_escala` contam o que falta por categoria (`abertas`); `vagas_abertas` por categoria;
+  `gerar_escala_mensal_detalhada` leva a categoria da fixa; `plantoes_erp_linhas` só com plantonista.
+- Tela (`src/pages/gestor/EscalaMes.tsx`): sigla da categoria ao lado do nome; a célula do dia diz
+  quantas vagas e de quais categorias; filtro "Categorias"; "Escalar" pede categoria e depois a pessoa;
+  "Marcar vaga" pede a categoria (vale também em faixa que já tem outra categoria escalada).
+- Escala fixa (`src/pages/Escala.tsx`, aba Fixa do gestor): a lista traz pessoa e categoria juntas; quem
+  tem dois papéis aparece duas vezes.
+- Imagens da tela real com dados fictícios: `maquetes/e2-B-aplicada-claro|escuro.jpg`,
+  `e2-B-aplicada-escalar-claro.jpg` e `e2-B-aplicada-filtro-claro.jpg`.
