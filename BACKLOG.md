@@ -1220,6 +1220,15 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
 - `e2e-homolog.sql` cria a "Rede RNDS E2E (teste)" na homologação e põe RAC, SA e MIRA na fila;
   conferido numa transação desfeita. O teste ponta a ponta roda no VPS depois do merge, com a chave
   da homologação posta pelo RT. Passo a passo, chaves e reversão em `infra/rnds-envio.md`.
+- No master em 28/10/2026 (#331). **Instalada no VPS no mesmo dia** (por SSH, com a chave da
+  homologação posta pelo RT): os dois contêineres saudáveis, sem porta no host, cron às 04:10.
+
+**5.3 concluída em 28/10/2026.** Teste ponta a ponta no VPS: RAC, SA e MIRA da "Rede RNDS E2E
+(teste)" saíram da fila da homologação, passaram pelo serviço e voltaram do simulador com 201 e o
+`id_rnds` gravado, com o Bundle e a resposta no item. Antes do certificado de teste, os três ficaram
+retidos com o motivo, como esperado. As outras unidades da homologação, sem configuração, não
+enviaram nada. Evidência em `docs/rnds/evidencia/5.3c-e2e-vps.txt`. Próxima: 5.4 (cofre de
+certificados, aviso de vencimento, bloqueio por CBO e painel, com telas do Refero).
 
 ---
 
