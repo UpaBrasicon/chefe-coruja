@@ -24,6 +24,8 @@ import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { abrirImpressao } from '@/lib/prontuario'
 import { cn } from '@/lib/utils'
 import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
@@ -473,12 +475,13 @@ function EditorItem({ pacienteId, inicial, modoControle, alergias, onSalvar, onC
   const [foco, setFoco] = React.useState(false)
   const termo = medicamento.trim()
 
+  const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
   const busca = useQuery({
-    queryKey: ['busca-medicamento-receita', termo],
+    queryKey: ['busca-medicamento-receita', termo, unidadeBusca],
     enabled: foco && !medId && termo.length >= 3,
     queryFn: async () => {
       const { data, error } = await supabase.from('medicamento').select('id, principio_ativo, apresentacao, concentracao')
-        .eq('ativo', true).ilike('principio_ativo_norm', `%${normalizarMedicamento(termo)}%`).order('principio_ativo').limit(8)
+        .eq('ativo', true).or(filtroDaUnidade(unidadeBusca)).ilike('principio_ativo_norm', `%${normalizarMedicamento(termo)}%`).order('principio_ativo').limit(8)
       if (error) throw error
       return (data ?? []) as Med[]
     },

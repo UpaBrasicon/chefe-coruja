@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
+import { useFaltaParaPrescrever } from '@/components/prescricao/pesoAtendimento'
 import { RASCUNHO_INICIAL, type DadosPaciente, type Evolucao, type Exames } from '@/lib/rascunhoInternacao'
 import { carregarEnvelope, hojeLocal, idadeTexto, useRascunho } from '@/lib/rascunho'
 
@@ -52,6 +53,9 @@ export function useDocumentosLeito({ pacienteId, unidadeId, perfilId, leito, set
     },
   })
   const alergias = useAlergias(pacienteId)
+  // ponto 11: as folhas usam o peso gravado deste atendimento, o mesmo que a
+  // prescrição exige; o "peso" do rascunho não é mais lido (era só deste navegador)
+  const pesoGravado = useFaltaParaPrescrever(pacienteId).data?.peso
   const p = paciente.data
   const nascimento = p?.data_nascimento ? p.data_nascimento.slice(0, 10).split('-').reverse().join('/') : ''
   const hoje = hojeLocal()
@@ -63,7 +67,7 @@ export function useDocumentosLeito({ pacienteId, unidadeId, perfilId, leito, set
     nascimento,
     dataAtual: hoje,
     idade: idadeTexto(nascimento, hoje),
-    peso: r.dados.peso,
+    peso: pesoGravado ? String(pesoGravado.valor).replace('.', ',') : '',
     alergias: alergiaTexto,
     dieta: r.dados.dieta,
     leito,

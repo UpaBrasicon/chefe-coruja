@@ -4,6 +4,8 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
@@ -56,15 +58,16 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
     return () => clearTimeout(t)
   }, [busca])
 
+  const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
   const { data: resultados, isFetching: buscando } = useQuery({
-    queryKey: ['buscar-medicamentos-canonico', buscaDeb],
+    queryKey: ['buscar-medicamentos-canonico', buscaDeb, unidadeBusca],
     enabled: buscaDeb.trim().length >= 2,
     queryFn: async () => {
       const termo = buscaDeb.trim()
       const { data, error } = await supabase
         .from('medicamento')
         .select('id, principio_ativo, concentracao, apresentacao, rxcui, alta_vigilancia')
-        .eq('ativo', true)
+        .eq('ativo', true).or(filtroDaUnidade(unidadeBusca))
         .ilike('principio_ativo_norm', `%${normalizarMedicamento(termo)}%`)
         .order('principio_ativo')
         .limit(12)

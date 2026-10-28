@@ -3866,6 +3866,7 @@ export type Database = {
           criado_por: string | null
           dia_semana: number
           id: string
+          papel: Database["public"]["Enums"]["papel"] | null
           perfil_id: string
           quinzenal: boolean
           setor_id: string
@@ -3879,6 +3880,7 @@ export type Database = {
           criado_por?: string | null
           dia_semana: number
           id?: string
+          papel?: Database["public"]["Enums"]["papel"] | null
           perfil_id: string
           quinzenal?: boolean
           setor_id: string
@@ -3892,6 +3894,7 @@ export type Database = {
           criado_por?: string | null
           dia_semana?: number
           id?: string
+          papel?: Database["public"]["Enums"]["papel"] | null
           perfil_id?: string
           quinzenal?: boolean
           setor_id?: string
@@ -3941,6 +3944,7 @@ export type Database = {
           id: string
           inicio: string
           observacao: string | null
+          papel: Database["public"]["Enums"]["papel"] | null
           perfil_id: string
           plantao_origem_id: string | null
           quinzenal: boolean
@@ -3960,6 +3964,7 @@ export type Database = {
           id?: string
           inicio: string
           observacao?: string | null
+          papel?: Database["public"]["Enums"]["papel"] | null
           perfil_id: string
           plantao_origem_id?: string | null
           quinzenal?: boolean
@@ -3979,6 +3984,7 @@ export type Database = {
           id?: string
           inicio?: string
           observacao?: string | null
+          papel?: Database["public"]["Enums"]["papel"] | null
           perfil_id?: string
           plantao_origem_id?: string | null
           quinzenal?: boolean
@@ -4088,6 +4094,7 @@ export type Database = {
           id: string
           inicio: string | null
           observacao: string | null
+          papel: Database["public"]["Enums"]["papel"] | null
           parte: number | null
           partes: number | null
           plantao_origem_id: string | null
@@ -4105,6 +4112,7 @@ export type Database = {
           id?: string
           inicio?: string | null
           observacao?: string | null
+          papel?: Database["public"]["Enums"]["papel"] | null
           parte?: number | null
           partes?: number | null
           plantao_origem_id?: string | null
@@ -4122,6 +4130,7 @@ export type Database = {
           id?: string
           inicio?: string | null
           observacao?: string | null
+          papel?: Database["public"]["Enums"]["papel"] | null
           parte?: number | null
           partes?: number | null
           plantao_origem_id?: string | null
@@ -6071,6 +6080,12 @@ export type Database = {
           unidade_consumo_conferida_em: string | null
           unidade_consumo_conferida_por: string | null
           unidade_consumo_outra: string | null
+          cadastrado_em: string | null
+          cadastrado_na_unidade: string | null
+          cadastrado_por: string | null
+          forma_farmaceutica: string | null
+          forma_farmaceutica_outra: string | null
+          unidades_locais: string[] | null
           concentracao: string | null
           created_at: string
           fonte: string
@@ -6098,6 +6113,12 @@ export type Database = {
           unidade_consumo_conferida_em?: string | null
           unidade_consumo_conferida_por?: string | null
           unidade_consumo_outra?: string | null
+          cadastrado_em?: string | null
+          cadastrado_na_unidade?: string | null
+          cadastrado_por?: string | null
+          forma_farmaceutica?: string | null
+          forma_farmaceutica_outra?: string | null
+          unidades_locais?: string[] | null
           concentracao?: string | null
           created_at?: string
           fonte?: string
@@ -6125,6 +6146,12 @@ export type Database = {
           unidade_consumo_conferida_em?: string | null
           unidade_consumo_conferida_por?: string | null
           unidade_consumo_outra?: string | null
+          cadastrado_em?: string | null
+          cadastrado_na_unidade?: string | null
+          cadastrado_por?: string | null
+          forma_farmaceutica?: string | null
+          forma_farmaceutica_outra?: string | null
+          unidades_locais?: string[] | null
           concentracao?: string | null
           created_at?: string
           fonte?: string
@@ -10001,6 +10028,8 @@ export type Database = {
       criticas_aih_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       definir_critica_aih: { Args: { p_bloqueante: boolean; p_critica: string; p_motivo: string; p_unidade: string }; Returns: undefined }
       definir_meu_cbo: { Args: { p_cbo: string }; Returns: Json }
+      definir_sala_do_plantao: { Args: { p_sala: string; p_setor: string }; Returns: Json }
+      minhas_salas_do_plantao: { Args: never; Returns: Json }
       arquivo_bpa: { Args: { p_fechamento: string }; Returns: Json }
       associar_procedimento_bpa: { Args: { p_procedimento: string; p_unidade: string; p_uso: string }; Returns: string }
       atendimentos_para_faturar: { Args: { p_busca?: string; p_competencia: string; p_unidade: string }; Returns: Json }
@@ -10311,6 +10340,22 @@ export type Database = {
       }
       cadastros_do_paciente: { Args: { p_paciente: string }; Returns: string[] }
       conta_detalhe: { Args: { p_conta: string }; Returns: Json }
+      // Fase 5C, tarefa 3: envio ao ERP (tela; a porta da API é só da Edge Function)
+      erp_baixar: {
+        Args: { p_competencia?: string; p_conjunto: string; p_formato: string; p_unidade: string }
+        Returns: Json
+      }
+      erp_contas_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      fechar_plantoes_erp: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
+      plantoes_erp_previa: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
+      reabrir_plantoes_erp: { Args: { p_competencia: string; p_motivo: string; p_unidade: string }; Returns: Json }
+      webhook_criar_destino: { Args: { p_chave: string; p_eventos: string[]; p_nome: string; p_unidades: string[]; p_url: string }; Returns: Json }
+      webhook_desligar_destino: { Args: { p_destino: string; p_motivo: string }; Returns: undefined }
+      webhook_destinos_lista: { Args: never; Returns: Json }
+      webhook_entregas_do_destino: { Args: { p_destino: string; p_situacao?: string }; Returns: Json }
+      webhook_girar_segredo: { Args: { p_destino: string }; Returns: Json }
+      webhook_reenviar: { Args: { p_entrega: string }; Returns: undefined }
+      webhook_religar_destino: { Args: { p_destino: string }; Returns: undefined }
       conferir_dispensacao: { Args: { p_dispensacao: string }; Returns: undefined }
       devolver_dispensacao: {
         Args: { p_dispensacao: string; p_motivo: string; p_quantidade: number }
@@ -10333,6 +10378,42 @@ export type Database = {
       medicamentos_unidade_consumo: {
         Args: { p_a_conferir?: boolean; p_busca?: string }
         Returns: Json
+      }
+      cadastrar_medicamento: {
+        Args: { p_dados: Json; p_unidade: string }
+        Returns: Json
+      }
+      corrigir_medicamento: {
+        Args: { p_dados: Json; p_medicamento: string; p_motivo: string }
+        Returns: undefined
+      }
+      definir_forma_farmaceutica: {
+        Args: { p_forma: string; p_medicamento: string; p_outra?: string }
+        Returns: undefined
+      }
+      inativar_medicamento: {
+        Args: { p_medicamento: string; p_motivo: string }
+        Returns: undefined
+      }
+      levar_medicamento_para_rede: {
+        Args: { p_medicamento: string }
+        Returns: undefined
+      }
+      medicamentos_parecidos: {
+        Args: { p_termo: string; p_unidade: string }
+        Returns: Json
+      }
+      buscar_medicamento: {
+        Args: { p_termo: string; p_unidade: string | null }
+        Returns: Json
+      }
+      o_que_falta_para_prescrever: {
+        Args: { p_paciente: string }
+        Returns: Json
+      }
+      usar_medicamento_na_unidade: {
+        Args: { p_medicamento: string; p_unidade: string }
+        Returns: undefined
       }
       ajustar_estoque: {
         Args: { p_medicamento: string; p_motivo: string; p_quantidade: number; p_unidade: string }
@@ -11159,6 +11240,27 @@ export type Database = {
           resolvido: boolean
           tipo: string
           ultima_em: string
+        }[]
+      }
+      escala_da_unidade: {
+        Args: { p_ate: string; p_de: string; p_unidade: string }
+        Returns: {
+          crm: string | null
+          data: string
+          duracao_min: number
+          fracionado: boolean
+          id: string
+          inicio: string
+          nome_completo: string | null
+          observacao: string | null
+          perfil_id: string
+          papel: Database["public"]["Enums"]["papel"] | null
+          plantao_origem_id: string | null
+          quinzenal: boolean
+          rotulo: string | null
+          setor_id: string
+          turno: string
+          unidade_id: string
         }[]
       }
       escala_mes_gestor: {

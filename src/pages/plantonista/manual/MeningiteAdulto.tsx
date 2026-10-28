@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
 import {
-  PRIMEIRA_HORA, SINAIS_CLASSICOS, TABELA1_LCR, TABELA2_MENINGITE, dosesPorPeso, fichaMeningiteAdulto, riscoListeria, suspeitaMeningite,
+  INDICACOES_QUIMIO, PRIMEIRA_HORA, QUIMIO_HIB, QUIMIO_MENINGOCOCO, SINAIS_CLASSICOS, TABELA1_LCR, TABELA2_MENINGITE, dosesPorPeso,
+  fichaMeningiteAdulto, rifampicinaMeningococoMg, riscoListeria, suspeitaMeningite, type LinhaQuimio,
 } from '@/clinico/adulto/meningite'
 import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -13,6 +14,17 @@ import { Bloco, CampoPeso, LinhaManual, Pergunta } from './PecasLoteC'
 
 const br = (x: number) => numero(Math.round(x * 10) / 10)
 
+function TabelaQuimio({ linhas }: { linhas: LinhaQuimio[] }) {
+  return (
+    <div className="overflow-x-auto">
+      <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+        <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Droga</TableHead><TableHead className="pr-3 pb-2">Idade</TableHead><TableHead className="pr-3 pb-2">Dose</TableHead><TableHead className="pr-3 pb-2">Intervalo</TableHead><TableHead className="pr-3 pb-2">Duração</TableHead></TableRow></TableHeader>
+        <TableBody>{linhas.map((l) => <TableRow key={l.droga + l.idade} className="border-t"><TableCell className="pr-3 py-2 font-medium">{l.droga}</TableCell><TableCell className="pr-3 py-2">{l.idade}</TableCell><TableCell className="pr-3 py-2">{l.dose}</TableCell><TableCell className="pr-3 py-2">{l.intervalo}</TableCell><TableCell className="pr-3 py-2">{l.duracao}</TableCell></TableRow>)}</TableBody>
+      </Table>
+    </div>
+  )
+}
+
 /** Meningite e encefalite do adulto (cap. 43 do manual do HCFMUSP). */
 export function MeningiteAdulto() {
   const [peso, setPeso] = useState(0)
@@ -22,13 +34,14 @@ export function MeningiteAdulto() {
   const [corticoide, setCorticoide] = useState<boolean>()
   const [gestante, setGestante] = useState<boolean>()
   const doses = dosesPorPeso(peso)
+  const rifampicina = rifampicinaMeningococoMg(peso)
   const listeria = riscoListeria({ idadeAnos: idade > 0 ? idade : undefined, imunossuprimido: imuno, corticoide, gestante })
   const alternar = (s: string) => setSinais((m) => (m.includes(s) ? m.filter((x) => x !== s) : [...m, s]))
 
   return (
     <ToolLayout
       title="Meningite e encefalite — adulto"
-      description="Suspeita clínica, primeira hora, esquema empírico com ampicilina quando há risco de Listeria, dexametasona e aciclovir por peso, e padrões do LCR. Adulto (14 anos ou mais)."
+      description="Suspeita clínica, primeira hora, esquema empírico com ampicilina quando há risco de Listeria, dexametasona e aciclovir por peso, padrões do LCR e quimioprofilaxia de contatos. Adulto (14 anos ou mais)."
       ficha={fichaMeningiteAdulto}
     >
       <CampoPeso id="men-peso" peso={peso} onChange={setPeso}>
@@ -94,7 +107,24 @@ export function MeningiteAdulto() {
         <p className="text-apoio text-tinta-sussurro">* Como alternativa, glicorraquia menor que 2/3 da sérica.</p>
       </Bloco>
 
-      <p className="text-apoio text-tinta-sussurro">O capítulo não traz quimioprofilaxia de contatos; a meningite da criança tem tela própria na Pediatria.</p>
+      <Bloco titulo="Quimioprofilaxia de contatos (Guia de Vigilância em Saúde, MS, 2024)" descricao="O capítulo do manual não traz quimioprofilaxia; o que segue é do Guia de Vigilância em Saúde, v. 1, 6ª ed. revisada. Notificar o caso à vigilância.">
+        {INDICACOES_QUIMIO.map((p) => <p key={p.texto} className="text-apoio text-tinta-apoio">{p.texto} ({p.pagina})</p>)}
+        <LinhaManual
+          nome="Rifampicina — meningococo, este paciente na alta"
+          texto="10 mg/kg/dose (máximo de 600 mg) de 12 em 12 horas por 2 dias; não precisa se foi tratado com ceftriaxona"
+          conta={rifampicina ? <strong>{br(rifampicina)} mg 12/12 h por 2 dias</strong> : 'informe o peso'}
+          pagina="Quadro 3, p. 117"
+          origem="O Guia de Vigilância traz"
+        />
+      </Bloco>
+
+      <Bloco titulo="Doença meningocócica (Quadro 3, p. 117)" descricao="Como o Guia traz, com as linhas da criança para os contatos; a meningite da criança tem tela própria na Pediatria.">
+        <TabelaQuimio linhas={QUIMIO_MENINGOCOCO} />
+      </Bloco>
+
+      <Bloco titulo="Haemophilus influenzae (Quadro 11, p. 143)">
+        <TabelaQuimio linhas={QUIMIO_HIB} />
+      </Bloco>
     </ToolLayout>
   )
 }

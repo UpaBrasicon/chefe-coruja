@@ -7,7 +7,7 @@ import { DIRETRIZ_SCA_2025, alteplaseIam2025, enoxaparinaLitico2025, fichaAntico
 import { DBHA_2025_ALVOS, INDISPONIVEIS_BRASIL_DBHA, QUADRO_11_4, esmololDbha2025, fichaEmergenciaHipertensivaAdulto } from './emergenciaHipertensiva.ts'
 import { DOSES_FA_2024, TEXTO_JANELA_2024, fichaFibrilacaoAtrialAdulto, janelaFa2024 } from './fibrilacaoAtrial.ts'
 import { DIRETRIZ_ICA_2021, ENSAIOS_ICA, fichaIcAgudaAdulto } from './insuficienciaCardiacaAguda.ts'
-import { BRADI_2025, fichaBradicardiaAdulto } from './pcr.ts'
+import { BRADI_2025, DIFERENCAS_BRADI_2025, fichaBradicardiaAdulto } from './pcr.ts'
 import { ESC_2021_MP, fichaMarcaPassoAdulto } from './procedimentos.ts'
 
 // Lote E (cardiologia), 28/09/2026: AHA/ACC 2025 + ESC 2023 + SBC 2025 (SCA),
@@ -25,8 +25,10 @@ test('lote E: fichas cardio na versão .1 de 28/09 com o manual como primeira fo
     [fichaMarcaPassoAdulto, /cardiac pacing/],
   ]
   for (const [f, re] of casos) {
-    // a emergência hipertensiva ganhou o sulfato de magnésio (OMS) na .1 de 25/10/2026
-    assert.equal(f.versao, f === fichaEmergenciaHipertensivaAdulto ? '2026-10-25.1' : '2026-09-28.1', f.id)
+    // a emergência hipertensiva ganhou o sulfato de magnésio (OMS) na .1 de 25/10/2026;
+    // a bradicardia ganhou a atropina da AHA 2025 (Figura 8) na .1 de 27/10/2026
+    const versao = f === fichaEmergenciaHipertensivaAdulto ? '2026-10-25.1' : f === fichaBradicardiaAdulto ? '2026-10-27.1' : '2026-09-28.1'
+    assert.equal(f.versao, versao, f.id)
     assert.match(f.fontes[0].citacao, /Manual de Medicina de Emergência/, f.id)
     assert.ok(f.fontes.some((x) => re.test(x.citacao)), f.id)
   }
@@ -90,9 +92,10 @@ test('DBHA 2025: SCA PAD 70–80; eclâmpsia até 15 mg; nitroprussiato com erra
   assert.ok(INDISPONIVEIS_BRASIL_DBHA.includes('labetalol'))
 })
 
-test('ERC/RCUK 2025: atropina 500 µg a cada 3–5 min até 3 mg; AHA 1 mg marcada como não confirmada; ESC 2021 marca-passo I C / IIa C', () => {
+test('ERC/RCUK 2025: atropina 500 µg a cada 3–5 min até 3 mg; AHA 2025 1 mg a cada 3–5 min até 3 mg (Figura 8, 2a B-NR); ESC 2021 marca-passo I C / IIa C', () => {
   assert.equal(BRADI_2025.atropina.ug, 500)
   assert.deepEqual(BRADI_2025.atropina.intervaloMin, [3, 5])
-  assert.match(BRADI_2025.ahaNaoConfirmada, /não confirmado/)
+  assert.deepEqual(BRADI_2025.aha, { mg: 1, intervaloMin: [3, 5], maximoMg: 3, classe: '2a, B-NR', onde: 'seção 19, recomendação 2; Figura 8' })
+  assert.doesNotMatch(JSON.stringify(BRADI_2025) + DIFERENCAS_BRADI_2025.join(' '), /não confirmad/)
   assert.deepEqual(ESC_2021_MP.map((m) => m.classe).slice(0, 2), ['I C', 'IIa C'])
 })

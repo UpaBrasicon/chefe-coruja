@@ -20,6 +20,16 @@ test('a Nova diluição já pede em que diluir e quanto, no mesmo passo', () => 
   assert.match(campos, /'tempo_infusao_min'/)
 })
 
+// pedido do RT de 27/10/2026: formulário enxuto e acesso por seleção
+test('o formulário não pede mais os campos que o RT tirou; acesso é seleção', () => {
+  const campos = tela.slice(tela.indexOf('const CAMPOS:'), tela.indexOf('function paraDados'))
+  for (const k of ['concentracao_maxima', 'velocidade_max', 'reconstituicao_concentracao', 'estabilidade_ta_h', 'estabilidade_refrig_h']) {
+    assert.doesNotMatch(campos, new RegExp(`'${k}'`), `${k} ainda está no formulário`)
+  }
+  assert.match(campos, /\['acesso', 'Acesso', 'acesso'\]/)
+  assert.match(tela, /const ACESSOS = \[\['periférico', 'Periférico'\], \['central', 'Central'\]\]/)
+})
+
 test('a Nova diluição oferece as cinco vias que a tabela aceita', () => {
   assert.match(tela, /\['EV', 'IM', 'SC', 'IN', 'VO'\]/)
 })

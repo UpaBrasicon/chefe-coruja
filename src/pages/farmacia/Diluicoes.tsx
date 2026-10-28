@@ -25,6 +25,8 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
+import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { cn } from '@/lib/utils'
 import { Chip } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
@@ -65,9 +67,13 @@ const CAMPOS_PADRAO: [string, string, (v: unknown) => string][] = [
   ['diluicao_volume_min_ml', 'Volume mínimo', (v) => `${v} mL`],
   ['concentracao_maxima', 'Concentração máxima', (v) => String(v)],
   ['tempo_infusao_min', 'Tempo de infusão', (v) => `${v} min`],
-  ['acesso', 'Acesso', (v) => String(v)],
+  ['acesso', 'Acesso', (v) => ACESSOS.find(([k]) => k === v)?.[1] ?? String(v)],
   ['estabilidade_ta_h', 'Estabilidade em TA', (v) => `${v} h`],
 ]
+// campos que saíram do formulário (RT, 27/10/2026): na ficha, só aparecem se a linha tiver o valor
+const SO_SE_PREENCHIDO = new Set(['concentracao_maxima', 'estabilidade_ta_h'])
+// o valor vai como está para o texto da prescrição ("acesso periférico")
+const ACESSOS = [['periférico', 'Periférico'], ['central', 'Central']] as const
 const valorCampo = (c: Campos, k: string, f: (v: unknown) => string) => {
   const v = c[k]
   return v == null || (Array.isArray(v) && v.length === 0) ? '—' : f(v)
@@ -218,6 +224,7 @@ function FichaValendo({ l, unidade, aoErro, aoMudar, abrirRascunho }: {
         {CAMPOS_PADRAO.map(([k, rot, f]) => {
           const atual = valorCampo(l.campos, k, f)
           const original = l.modelo ? valorCampo(l.modelo.campos, k, f) : null
+          if (SO_SE_PREENCHIDO.has(k) && atual === '—' && (original == null || original === '—')) return null
           return (
             <div key={k} className="grid grid-cols-[150px_minmax(0,1fr)] gap-2 border-b border-trilha py-1.5">
               <dt className="text-tinta-sussurro">{rot}</dt>
@@ -271,10 +278,11 @@ function NovaDiluicao({ unidade, aoCriar, aoPublicar, aoErro }: {
   const [via, setVia] = React.useState('EV')
   const [f, setF] = React.useState<Record<string, string>>({})
   const [ocupado, setOcupado] = React.useState(false)
+  const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
   const r = useQuery({
-    queryKey: ['med-farmacia', busca],
+    queryKey: ['med-farmacia', busca, unidadeBusca],
     enabled: busca.trim().length >= 3 && !med,
-    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).limit(15)).data ?? [],
+    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').or(filtroDaUnidade(unidadeBusca)).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).limit(15)).data ?? [],
   })
   // um passo só: cria o rascunho já com os campos; publicar cria e publica
   async function criar(publicar: boolean) {
@@ -327,14 +335,15 @@ function NovaDiluicao({ unidade, aoCriar, aoPublicar, aoErro }: {
   )
 }
 
-// a ordem do formulário: primeiro em que e quanto diluir, depois reconstituição, estabilidade e fonte
-const CAMPOS: [keyof Diluicao, string, 'texto' | 'numero' | 'lista' | 'bool'][] = [
+// a ordem do formulário: primeiro em que e quanto diluir, depois reconstituição, acesso e fonte.
+// Enxuto a pedido do RT (27/10/2026): saíram concentração máxima, velocidade máxima,
+// concentração após reconstituir e as duas estabilidades. Saíram só do formulário: o
+// salvar manda só estes campos, e o valor que uma linha já tem nos outros fica como está.
+const CAMPOS: [keyof Diluicao, string, 'texto' | 'numero' | 'lista' | 'bool' | 'acesso'][] = [
   ['diluicao_solucao', 'Diluir em (separe por vírgula: SF 0,9%, SG 5%)', 'lista'], ['diluicao_volume_min_ml', 'Volume mínimo de diluente (mL)', 'numero'],
-  ['tempo_infusao_min', 'Tempo de infusão (min)', 'numero'], ['concentracao_maxima', 'Concentração máxima', 'texto'],
-  ['velocidade_max', 'Velocidade máxima', 'texto'], ['bolus_permitido', 'Bolus permitido', 'bool'],
+  ['tempo_infusao_min', 'Tempo de infusão (min)', 'numero'], ['bolus_permitido', 'Bolus permitido', 'bool'],
   ['reconstituicao_diluente', 'Reconstituir com', 'texto'], ['reconstituicao_volume_ml', 'Volume de reconstituição (mL)', 'numero'],
-  ['reconstituicao_concentracao', 'Concentração após reconstituir', 'texto'], ['acesso', 'Acesso (periférico/central)', 'texto'],
-  ['estabilidade_ta_h', 'Estabilidade em TA (h)', 'numero'], ['estabilidade_refrig_h', 'Estabilidade refrigerado (h)', 'numero'],
+  ['acesso', 'Acesso', 'acesso'],
   ['fotossensivel', 'Fotossensível', 'bool'], ['risco_flebite', 'Risco de flebite (conforme a fonte)', 'bool'],
   ['alta_vigilancia', 'Alta vigilância (conforme a fonte)', 'bool'], ['observacoes', 'Observações', 'texto'],
   ['fonte', 'Fonte (manual, versão, página)', 'texto'], ['revisor_crf', 'Revisor (CRF)', 'texto'],
@@ -362,6 +371,14 @@ function CamposDiluicao({ prefixo, f, setF, editavel }: {
             <CampoSelecao id={`${prefixo}-${k}`} tamanho="compacto" disabled={!editavel} value={f[k] ?? ''}
               onChange={(e) => setF({ ...f, [k]: e.target.value })}>
               <option value="">—</option><option>sim</option><option>não</option>
+            </CampoSelecao>
+          ) : t === 'acesso' ? (
+            <CampoSelecao id={`${prefixo}-${k}`} tamanho="compacto" disabled={!editavel} value={f[k] ?? ''}
+              onChange={(e) => setF({ ...f, [k]: e.target.value })}>
+              <option value="">—</option>
+              {ACESSOS.map(([v, r]) => <option key={v} value={v}>{r}</option>)}
+              {/* valor antigo escrito à mão: continua aparecendo até a farmácia escolher */}
+              {f[k] && !ACESSOS.some(([v]) => v === f[k]) && <option value={f[k]}>{f[k]}</option>}
             </CampoSelecao>
           ) : (
             <Input id={`${prefixo}-${k}`} disabled={!editavel} value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}

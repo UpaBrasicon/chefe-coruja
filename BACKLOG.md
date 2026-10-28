@@ -972,6 +972,18 @@ e plantões (3.1 contas, 3.2 plantões, 3.3 porta, 3.4 telas). **Banco dos plant
 27/10/2026:** migration `20270120000002_erp_plantoes.sql` (`plantao_versoes_erp`,
 `plantoes_erp_previa`, `fechar_plantoes_erp`, `reabrir_plantoes_erp`, só o gestor, com segundo
 fator); teste `supabase/tests/fase5c_erp_plantoes.sql` e rollback passaram na homologação.
+**3.1 e 3.2 no master em 27/10/2026 (PRs #270 e #271).** **3.3, porta da API, na homologação em
+27/10/2026:** rotas `/financeiro/contas` e `/financeiro/plantoes` na Edge Function `api`, com o retorno
+por versão (POST; 409 "conflito" para lançar versão substituída ou estornar a vigente); migration
+`20270120000003_api_financeiro_plantoes.sql` (ações `plantoes` e `plantoes_retorno`); teste
+`supabase/tests/fase5c_api_financeiro_plantoes.sql` e rollback passaram na homologação; regras em
+`supabase/functions/api/financeiro.ts` (teste no CI); OpenAPI e página do integrador; recurso
+"Financeiro (ERP)" na tela de chaves; simulador `scripts/erp-simulador.mjs`; `infra/erp-financeiro.md`.
+Ponta a ponta na homologação com chave temporária (200, 400, 401, 403, 404, 405). **3.1 a 3.3 em produção
+desde 27/10/2026 (PR #279 no master):** o RT aplicou o banco pelo `producao:push` a partir de uma pasta
+limpa do master (`--dry-run` antes, só as três migrations do ERP) e publicou as funções do commit
+`ba78202`; conferido de fora (rotas `/financeiro` respondem 401 sem chave) e pela lista de migrations da
+produção. A 3.4 (telas) está abaixo.
 
 **Pausa da 5C em 20/10/2026 (pedido do RT):** a tarefa 3 (ERP/financeiro) para antes do código, para a
 trilha "Revisão visual", abaixo. As cinco perguntas da tarefa 3 (como chega ao ERP, o que vai, formato,
@@ -979,6 +991,123 @@ conciliação, conta reaberta) ficam feitas e sem resposta; voltam na retomada.
 
 **Retomada em 27/10/2026:** a trilha "Revisão visual" acabou com a grade de ações do gestor; a 5C volta
 pela tarefa 3. Diagnóstico e decisões na linha da tarefa 3, acima.
+
+**Tarefa 3, etapa 3.4 (telas), na homologação em 27/10/2026.** Pedido do RT: "criar o ERP usando o
+Refero". Três opções a partir do Refero (Kitchen.co, Mercury, ShareWillow, Aboard, Stripe); **escolha
+do RT: A, lista com filtro e gaveta.**
+- Tela "Envio ao ERP" (`/faturamento/erp`), no menu do faturamento e no grupo Faturamento do gestor.
+- **Aba Contas** (faturamento e gestor): filtro pela situação no ERP, com contagem; tabela das versões;
+  gaveta da conta com o aviso, as versões, os itens, os medicamentos e as glosas.
+- **Aba Plantões do mês** (só o gestor): o mês com setas, a situação, a tabela por profissional com o
+  total, fechar com confirmação, reabrir com motivo e o histórico das versões.
+- As duas abas baixam CSV e JSON com o mesmo conteúdo que o ERP recebe.
+- **Banco:** migration `20270120000004_erp_telas.sql` (`erp_contas_da_unidade` e `erp_baixar`; cada
+  baixa vai para a auditoria). Teste `supabase/tests/fase5c_erp_telas.sql` e rollback passaram na
+  homologação.
+- **Regras da tela** em `src/lib/erp.ts`, com teste.
+- **Conferida na página de teste** nos dois temas e em 390 px: imagens `erp-A-aplicada-*` em
+  `docs/frontend/revisao-visual/app/`.
+
+**3.4 em produção desde 27/10/2026 (PR #287 no master, `be0ec81`).** O RT conferiu na homologação e
+deu o "ok produção". Banco aplicado pelo RT da pasta limpa do master: `--dry-run` antes, só a
+`20270120000004_erp_telas.sql`. Foi com `npx supabase db push --linked --include-all`, porque a
+produção já tem migrations de número maior (`20270131000001` e `20270131000002`). A tela saiu com o
+merge (Vercel): o pacote publicado em www.chefecoruja.com.br tem a rota `/faturamento/erp` e o trecho
+`EnvioErp`. Sem mudança nas Edge Functions.
+
+**Tarefa 3 (ERP/financeiro) concluída em 27/10/2026.** Aceite "Dados financeiros enviados a ERP":
+contas faturadas e plantões fechados saem pela API v1 (recurso `financeiro`) e pela tela, em JSON e
+CSV, com retorno e conciliação por versão. Detalhes, chaves e reversão em `infra/erp-financeiro.md`.
+Fica para depois: envio ativo (tarefa 4, Webhooks), leiaute de ERP específico, valor de medicamento e
+material, convênio/TISS.
+
+**Tarefa 4, Webhooks (decisões do RT em 27/10/2026, "1a 2a 3a 4a 5a"):**
+- quem entrega é uma Edge Function chamada pelo `pg_cron`, sem IP fixo;
+- o evento é enxuto: tipo, ids, unidade e data. Nenhum dado de paciente sai pelo webhook; o receptor
+  busca o detalhe pela API v1, com a chave dele;
+- os seis eventos do backlog: paciente criado, atendimento aberto, alta (fim do atendimento e alta da
+  internação), internação, prescrição assinada e mudança de status da regulação;
+- o super admin cadastra o destino (endereço https, eventos e unidades), ligado a uma chave da API; o
+  gestor da unidade vê e desliga;
+- assinatura no padrão Standard Webhooks (HMAC-SHA256); novas tentativas com espera crescente por até
+  24 h, depois a entrega fica "falhou", com reenvio manual; o destino que falha há 3 dias seguidos é
+  desligado e o gestor recebe aviso.
+
+Etapas, cada uma em PR próprio: 4.1 banco; 4.2 motor de entrega (assinatura, novas tentativas,
+simulador de receptor); 4.3 tela (a partir do Refero), OpenAPI e `infra/webhooks.md` completo.
+
+**4.1 na homologação em 27/10/2026:** migration `20270201000001_webhooks.sql`.
+- Tabelas `webhook_destinos` (o segredo fica no Vault), `webhook_eventos` e `webhook_entregas` (uma
+  por destino). As três ficam fechadas para o REST; o acesso é só pelas funções.
+- Gatilhos nas cinco tabelas de origem. Eles nunca derrubam o fluxo clínico: sem destino ativo não
+  gravam nada, e qualquer erro vira aviso no log.
+- Funções: `webhook_criar_destino` e `webhook_girar_segredo` (super admin; o segredo aparece uma vez
+  só), `webhook_desligar_destino` (gestor, com motivo), `webhook_religar_destino` (super admin),
+  `webhook_reenviar`, `webhook_destinos_lista` e `webhook_entregas_do_destino`. Todas exigem o segundo
+  fator, e as que mudam algo vão para a auditoria.
+- O endereço só aceita https com nome público (sem IP, localhost ou rede interna).
+- Teste `supabase/tests/fase5c_webhooks.sql` e rollback passaram na homologação, numa transação
+  desfeita.
+
+**4.2 na homologação em 27/10/2026.** Pergunta ao RT: a API v1 não tinha rota para ler prescrição nem
+regulação. Resposta: "Sim: inclua na 4.2 as rotas de leitura de prescrição e regulação na API v1".
+- **Motor:** Edge Function `webhooks`, chamada pelo `pg_cron` a cada minuto pelo `pg_net`. Só é chamada
+  quando há entrega na hora e quando o Vault tem o par `webhooks_motor_url`/`webhooks_motor_segredo`.
+  A função confere o segredo no Vault.
+- **Envio:** assinatura Standard Webhooks, conferida com o vetor oficial no teste. 10 s de limite e
+  sem seguir redirecionamento.
+- **Tentativas:** 5 s, 5 min, 30 min, 2 h, 5 h e 10 h, até 24 h do evento ou do reenvio. Depois disso
+  a entrega fica "falhou".
+- **Manutenção:** o destino sem sucesso há 3 dias é desligado sozinho, e o gestor recebe aviso. Os
+  eventos com mais de 90 dias saem.
+- **API:** `GET /prescricoes/{id}` e `GET /regulacao/{id}`, com os recursos novos "Prescrições" e
+  "Regulação" na chave. Só campos estruturados, sem texto livre clínico. OpenAPI com as duas rotas e
+  a seção `webhooks`; página do integrador atualizada.
+- **Migrations:** `20270201000002_webhooks_motor.sql` e `20270201000003_api_prescricao_regulacao.sql`.
+  O teste `supabase/tests/fase5c_webhooks_motor.sql` e os rollbacks passaram na homologação, numa
+  transação desfeita. O teste da assinatura (`supabase/functions/webhooks/assinatura.test.ts`) e o das
+  rotas rodam no CI.
+- **Ponta a ponta na homologação**, com um receptor de teste (`scripts/webhooks/receptor-teste.ts`,
+  só homologação):
+  - o destino certo recebeu os dois eventos, com a assinatura conferida (204);
+  - o destino com o segredo errado levou 401 e teve nova tentativa com o mesmo `webhook-id`;
+  - o motor chamado sem segredo dá 401;
+  - as rotas novas dão 404 para id inexistente.
+
+  Os dados temporários foram apagados depois. Evidência em `infra/webhooks.md`.
+
+**4.1 e 4.2 no master em 27/10/2026 (PRs #295 e #297).** **4.3, tela, na homologação em 27/10/2026.**
+Três opções a partir do Refero (Lemon Squeezy, fal, Cal.com, Stripe, Zendesk, Enode); **escolha do RT:
+A, lista com gaveta.**
+- Integrações (`/integracoes`) ganhou as abas "Chaves da API" e "Webhooks".
+- **Lista:** os destinos, com os eventos, as unidades, as últimas 24 h e a situação.
+- **Gaveta:** o aviso da situação, os dados do destino, as entregas com "Reenviar", "Desligar" com
+  motivo, e "Religar" e "Trocar segredo" só para o super admin.
+- **Novo destino:** o diálogo é só do super admin, e o segredo aparece uma vez.
+- Sem banco novo: a tela usa as funções da 4.1.
+- **Regras** em `src/lib/webhooks.ts`, com teste. Conferida na página de teste nos dois temas, em
+  390 px e com o papel de gestor (`wh-A-aplicada-*` em `docs/frontend/revisao-visual/app/`).
+
+**4.3 no master em 28/10/2026 (PR #304, `0bc4b5c`). Tarefa 4 em produção desde 28/10/2026.** O RT
+conferiu na homologação e seguiu os comandos da produção.
+- **Banco:** o RT aplicou da pasta limpa do master (`7cc28bc`) as três migrations
+  `20270201000001..03`, com `--dry-run` antes, que listou só as três. A
+  `20270202000001_escala_da_unidade.sql` (#302, de outra tarefa) foi tirada da pasta para o push. Ela
+  entrou na produção à parte, pela sessão da escala, com o "ok produção" dela (PR #306).
+- **Funções:** todas as Edge Functions foram publicadas pela trava de alvo, com a versão `7cc28bc`. A
+  `webhooks` e a `api` são as que mudaram.
+- **Vault:** o par `webhooks_motor_url` e `webhooks_motor_segredo` foi criado. O segredo foi gerado
+  dentro do banco, e ninguém o viu.
+- **Conferido na produção:** as três versões estão registradas e os dois cron estão agendados, com o
+  motor já rodando com sucesso. Os cinco gatilhos `trg_webhook` existem. Ainda não há destino nem
+  entrega. O motor sem segredo ou com segredo errado dá 401, e `/prescricoes/{id}` sem chave dá 401.
+- A tela saiu com o merge (Vercel).
+
+**Tarefa 4 (Webhooks) concluída em 28/10/2026.** Aceite "Terceiro recebe eventos com segurança": os
+seis eventos saem assinados (Standard Webhooks), com novas tentativas por até 24 h, desligamento
+automático com aviso e reenvio manual. O receptor busca o detalhe pela API v1. Detalhes, chaves e
+reversão em `infra/webhooks.md`. Fica para depois: período com dois segredos na troca, IP fixo de
+saída e resolução de DNS antes do envio.
 
 ---
 
@@ -1119,7 +1248,7 @@ hora, com ordenação pelo título da coluna. Registro e imagens em `docs/fronte
 | Prioridade | Item | Onde entra | O que é |
 |---|---|---|---|
 | P1 | Grade de ações no gestor | **Depois da 3.9, como item próprio** (decisão do RT em 27/10/2026: pede consulta nova no banco). **Em produção desde 27/10/2026** (diagnóstico #260, banco #261, tela #264, desenho #265). Diagnóstico em `docs/gestor/GRADE-ACOES-DIAGNOSTICO.md`; decisões D1–D5 aceitas pelo RT (aba em Porta; só triagem e atendimento; "No PS" vermelho pelo alvo da cor antes do médico e pelo alvo de permanência da unidade depois; alvos de classificação, exame, medicação e permanência por unidade, sem valor padrão; chamada repetida com a hora da última e quantas vezes). Banco: `porta_grade`, testada na homologação (`supabase/tests/porta_grade.sql`; 80 pacientes em ~10 ms; rollback testado) e aplicada na produção pelo RT com `producao:push` (conferida de fora: a chamada sem login é recusada por permissão, e não por "função não encontrada"). Tela: aba "Grade de ações" na Porta, desenho B (tabela com faixa, Zendesk Status + Symphony), conferida pelo RT na homologação; produção conferida pelo pacote publicado. **Alvos da grade em produção desde 27/10/2026 (PR #267):** em Unidade › Configurações › Limites da unidade, o gestor define exame, medicação e permanência (em branco = sem alvo; `salvar_alvos_grade`, só o gestor, com segundo fator, auditado); a coluna Classificação usa o alvo chegada → triagem que a unidade já tinha (padrão 10 min; decisão do RT, um alvo só para a mesma coisa). Teste `supabase/tests/alvos_grade.sql` passou na homologação; RT conferiu lá; banco aplicado na produção pelo RT e conferido de fora; tela conferida pelo pacote publicado. **Grade de ações concluída** | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
-| P2 | Fila do PS com dados novos na tabela | A decidir pelo RT | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
+| P2 | Fila do PS com dados novos na tabela | **Decisão do RT em 27/10/2026, depois do diagnóstico (`docs/porta/FILA-PS-DADOS-NOVOS-DIAGNOSTICO.md`, PR #276) e de ver as opções A, B e C:** a fila fica como está, sem as colunas novas (a RPC `fila_ps_detalhes`, PR #278, foi fechada sem merge e removida da homologação). Entram só: o **consultório do plantão**, escolhido uma vez numa barra no topo da fila e guardado no banco (`salas_do_plantao`, vale até o fim do plantão, não depende do aparelho; as linhas ficam só com "Chamar" e "Abrir"), e o **alvo da cor da unidade** na fila do médico, no lugar do alvo fixo de Manchester (achado do diagnóstico). **Em produção desde 27/10/2026 (PR #281):** teste `supabase/tests/salas_do_plantao.sql` passou na homologação; banco aplicado na produção com o "ok produção" do RT e conferido de fora (as duas RPCs respondem "sem permissão" sem login, e não "não encontrada"); tela conferida pelo pacote publicado. **Item concluído** | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
 
 **3.8 antecipada (Central do Plantonista, calculadoras, escores e condutas) em produção desde
 23/10/2026 (PR #179 e #180).** A pedido do RT, veio antes da 3.4. Levantamento das 212 ferramentas e
@@ -1330,6 +1459,27 @@ Ficaram pendentes do lote 1, à espera do RT:
 - **Escala Clínica de Fragilidade:** os nomes dos níveis 2 e 8 não foram confirmados palavra por palavra.
 - **Dor na criança:** as fontes divergem de `src/clinico/triagem/dor.ts`. Escala numérica a partir de 6 anos (o app usa 4), FPS-R a partir de 4–5 anos, FLACC validada de 2 meses a 7 anos (o app usa até 3). O RT decide a faixa de cada escala.
 
+**Decisões do RT sobre as pendências dos lotes 1 e 2 (27/10/2026):**
+- **Dor na criança — em produção desde 27/10/2026** (PR #289; homologação conferida pelo RT). FLACC de 2 meses
+  a 5 anos e autorrelato 0–10 a partir de 6 anos, sem escala nova. Fontes: Merkel 1997 (PMID 9220806),
+  FLACC validada de 2 meses a 7 anos; Birnie 2019 (PMID 30180088), nenhuma escala de autorrelato
+  recomendada antes dos 6 anos. Vale na triagem e nas escalas do leito, que usam a mesma faixa.
+  Migration `20270131000003_lacunas_dor_crianca` aplicada na homologação e, com o "ok produção" do
+  RT, na produção. Falta aprovar as versões 2026-10-27.1 da FLACC e da numérica na tela de revisão
+  clínica.
+- **Escala Clínica de Fragilidade — fora por ora.** Os nomes dos nove níveis foram confirmados
+  (Rockwood e Theou 2020, PMID 32904824, nível 2 "Fit" e nível 8 "Living with Very Severe Frailty").
+  A Dalhousie exige licença para uso comercial, possivelmente paga (página "Permission for Use" do
+  Geriatric Medicine Research). Só volta se o RT pedir a licença no portal da Dalhousie.
+- **RACE — continua bloqueada.** O artigo original (Pérez de la Ossa 2014, DOI
+  10.1161/STROKEAHA.113.003071) não abriu: o site da AHA parou na verificação anti-robô. Os artigos
+  abertos trazem só os máximos de cada item (face 0–2, braço 0–2, perna 0–2, olhar 0–1, afasia ou
+  agnosia 0–2), sem a definição de cada ponto. Volta quando houver o PDF do artigo.
+- **Escore STONE — fora** (item de raça), como o escore de Son no lote 3.
+- **ITU do adulto — grupo novo "Infecções", em produção desde 27/10/2026** (PR #290; homologação
+  conferida pelo RT). Só organiza a página: endereço, favoritos e ficha não mudaram. Meningite e PEP
+  de HIV seguem nos grupos de antes.
+
 **Lote 2 — SCA e Sgarbossa em produção em 23/10/2026 (PR #186).** Primeiro item do lote 2.
 - **SCA — conduta inicial** (Condutas e cálculos — adulto, Cardiovascular): AAS, segundo
   antiagregante, anticoagulante e reperfusão no IAM com e sem supra. Doses do manual do HC, caps. 13
@@ -1392,6 +1542,16 @@ Evidência: 992 de 992 testes clínicos; homologação conferida pelo RT; migrat
 - Dose só onde o capítulo dá: dexametasona 10 mg EV, difenidramina 12,5 mg EV, oxigênio 10 L/min e
   sumatriptano 6 mg SC. Triptano na migrânea, dipirona, AINE, metoclopramida e clorpromazina ficam
   sem dose até haver fonte com página.
+- **Doses da migrânea — em produção desde 27/10/2026** (PR #296; decisão do RT; homologação
+  conferida pelo RT). As diretrizes novas (AHS 2025, IHS 2025) pararam na
+  verificação anti-robô das editoras; a fonte aberta com dose e página é o consenso da Sociedade
+  Brasileira de Cefaleia (Arq Neuropsiquiatr 2000;58(2-A):371–389, PDF do SciELO): Tabelas 1 a 3 da
+  crise fraca, moderada e forte (p. 377–378) e o esquema da emergência (p. 376), como o consenso traz,
+  com o ano em destaque na tela. Clorpromazina 0,1–0,7 mg/kg pelo peso. Ao lado, os níveis de
+  recomendação da AHS 2025 para o PS (PMID 41321235), só pelo resumo e sem dose. Ficam sem dose:
+  metoclopramida parenteral (o consenso só traz 20 mg VO) e cetoprofeno (não aparece). Migration
+  `20270131000005_lacunas_cefaleia_doses` aplicada na homologação e, com o "ok produção" do RT, na
+  produção. Falta aprovar a versão 2026-10-27.1 da ficha na revisão clínica.
 - Diferença anotada: idade de início após 65 anos na SNNOOP10 e após 50 no manual.
 - Fora: ACEP 2019 (o resumo traz as perguntas, não as recomendações).
 
@@ -1406,8 +1566,14 @@ o PR #194 corrigiu o plural "sinais de alarme" da cefaleia, apontado pelo RT na 
   primeira hora; ceftriaxona com ampicilina no risco de Listeria (acima de 50 anos, imunossupressão,
   corticoide, gestação); dexametasona 0,15 mg/kg/dose e aciclovir 10 mg/kg/dose pelo peso; Tabela 2
   por agente e Tabela 1 do LCR.
-- Fora: quimioprofilaxia de contatos (o capítulo não traz; precisaria do Guia de Vigilância do MS),
-  ESCMID 2016 (não lida no texto) e a Figura 2 do manual (imagem, só citada).
+- Fora: ESCMID 2016 (não lida no texto) e a Figura 2 do manual (imagem, só citada).
+- **Quimioprofilaxia de contatos — em produção desde 27/10/2026** (PR #293; homologação conferida
+  pelo RT). Fonte: Guia de Vigilância em Saúde do MS, v. 1, 6ª ed.
+  revisada (2024), lido no PDF: quem recebe (p. 116–118 e 142), Quadro 3 do meningococo (p. 117) e
+  Quadro 11 do Hib (p. 143), como o Guia traz, com as linhas da criança para os contatos; rifampicina
+  do próprio paciente na alta pelo peso (10 mg/kg/dose, máximo 600 mg). Migration
+  `20270131000004_lacunas_quimioprofilaxia_meningite` aplicada na homologação e, com o "ok produção"
+  do RT, na produção. Falta aprovar a versão 2026-10-27.1 da ficha na revisão clínica.
 
 Evidência: 1002 de 1002 testes clínicos; homologação conferida pelo RT; migration
 `20261218000001_lacunas_lote2_meningite` aplicada na homologação e, com o "ok produção" do RT, na
@@ -1498,11 +1664,9 @@ ITU do adulto, PEP de HIV, cefaleia, meningite e encefalite do adulto, cólica n
 queimadura do adulto (com o boneco) e, no neonato, icterícia e reanimação. Pendências abertas, à
 espera do RT:
 - Fichas novas dos lotes 1 e 2 (19) na fila de aprovação da tela de revisão clínica.
-- Lote 1: RACE (tabela original), Escala Clínica de Fragilidade (níveis 2 e 8), dor na criança
-  (faixas de idade).
-- Lote 2: escore STONE (item de raça); grupo da ITU ("Digestivo, fígado e rim" ou um grupo novo
-  "Infecções"); doses de triptano, dipirona, AINE, metoclopramida e clorpromazina na cefaleia (sem
-  fonte com página); quimioprofilaxia de contatos na meningite (precisa do Guia de Vigilância do MS).
+- Lote 1: RACE (tabela original). Fragilidade e dor na criança decididas em 27/10/2026 (ver
+  "Decisões do RT sobre as pendências dos lotes 1 e 2", acima).
+- Lote 2: STONE e grupo da ITU decididos em 27/10/2026 (mesmo bloco); doses da cefaleia pelo consenso da SBCe 2000 em produção (PR #296). Quimioprofilaxia de contatos na meningite em produção (PR #293).
 
 Próximo: lote 3 (atualizações de diretriz).
 
@@ -1668,10 +1832,19 @@ divergência, crise hipertensiva pediátrica com percentil e lactente febril. Pe
 espera do RT:
 - Fichas novas do lote 3 (14 versões 2026-10-25.1) na fila de aprovação da tela de revisão clínica,
   somadas às 19 dos lotes 1 e 2.
-- Pendências dos lotes 1 e 2 já listadas acima (RACE, Escala Clínica de Fragilidade, dor na criança,
-  STONE, grupo da ITU, doses da cefaleia, quimioprofilaxia na meningite).
-- Achado do lote 3: a Figura 8 do Part 9 da AHA 2025 traz atropina 1 mg a cada 3–5 min, máximo 3 mg,
-  na bradicardia do adulto; resolve a nota "não confirmada" da ferramenta de bradicardia.
+- Pendências dos lotes 1 e 2 que ainda restam: RACE (sem o artigo original). Doses da cefaleia em
+  produção (consenso da SBCe 2000, PR #296).
+  Dor na criança, grupo da ITU e quimioprofilaxia na meningite em produção; fragilidade e STONE fora
+  (decisões do RT de 27/10/2026).
+- ~~Achado do lote 3: a Figura 8 do Part 9 da AHA 2025 traz atropina 1 mg a cada 3–5 min, máximo 3 mg,
+  na bradicardia do adulto; resolve a nota "não confirmada" da ferramenta de bradicardia.~~ **Resolvido
+  em 27/10/2026 (branch `feat/lacunas-atropina-aha2025`):** conferido de novo no texto integral em
+  cpr.heart.org — Figura 8, quadro "Doses/Details": 1ª dose de 1 mg em bolo, repetir a cada 3–5 min, dose
+  total máxima de 3 mg; seção 19, recomendação 2: atropina razoável na bradicardia com comprometimento
+  hemodinâmico (2a, B-NR); o mesmo quadro confere dopamina 5–20 µg/kg/min e adrenalina 2–10 µg/min. A
+  ficha da bradicardia do adulto ganhou a AHA 2025 como terceira fonte, a linha "Atropina (AHA 2025)" ao
+  lado da ERC/RCUK (0,5 mg) e do manual, e perdeu a nota "não confirmado"; versão 2026-10-27.1 na fila de
+  aprovação (migration `20270131000002_lacunas_atropina_aha2025`). **Em produção desde 27/10/2026 (PR #286):** homologação conferida pelo RT; migration aplicada na produção com o "ok produção" do RT; tela conferida pelo pacote publicado (`BradicardiaAdulto-6D-7mxjt.js`). Falta só a aprovação da versão 2026-10-27.1 na tela de revisão clínica.
 - Fontes enviadas pelo RT em PDF quando o site da revista bloqueou: Kawasaki (AHA 2024), Practice
   Parameter de anafilaxia (2023) e AAP 2017 de hipertensão pediátrica.
 
@@ -1697,12 +1870,14 @@ pelo ETL, e o banco só deixa o super admin inserir (65 medicamentos ativos na h
 
 | Ordem | Prioridade | Ponto do RT | Diagnóstico | Proposta | Situação |
 |---|---|---|---|---|---|
-| 1 | P1 | 6 — O farmacêutico não precisa da aba Prontuários | O farmacêutico tem o item no menu, as rotas `/prontuarios` e `/prontuarios/:pacienteId`, a tela na paleta de busca e, no banco, `papel_pode_pedir_acesso` com `farmaceutico`. Enfermagem e telemedicina também têm; o gestor decide os pedidos em Auditoria | Tirar o farmacêutico do menu, das duas rotas e de `papel_pode_pedir_acesso`; pedido aprovado antes deixa de abrir leitura; pendentes cancelados com auditoria | Feito: PR #263 (master), migration `20270105000001`; testado pelo RT na homologação em 27/10; falta o "ok produção" da migration (o menu já saiu em produção) |
-| 2 | P1 | 4 — Unidade de consumo não adiciona item novo com apresentação e forma | Não há cadastro de medicamento na tela nem RPC; não há coluna de forma farmacêutica | `cadastrar_medicamento`, `editar_medicamento` e `inativar_medicamento` (farmacêutico ou gestor, com histórico); coluna `forma_farmaceutica`; "Novo medicamento" na tela, com os parecidos antes de gravar | Feito: PR #268, migration `20270106000001` (decisões: item novo só na unidade; forma em campo próprio); testado pelo RT na homologação em 27/10; falta o merge e o "ok produção" |
-| 3 | P1 | 2 — Diluição não adiciona medicação nem diluição | "Nova diluição" só no topo da aba Rascunhos e só para medicamento do catálogo. **Achado:** a diluição nova nasce como modelo da rede, e qualquer farmacêutico a publica para todas as unidades | Botão visível em todas as abas; diluição nova da unidade por padrão; modelo da rede só para quem o RT decidir; vias IN e VO | Feito: PR #269 (master), migration `20270109000001` (decisão: modelo da rede só do super admin; Nova diluição em um passo, com diluente, volume e tempo); falta o reteste do formulário e o "ok produção" |
-| 4 | P1 | 5 — Dispensação avulsa: controle do que sai e do que entra | A saída avulsa baixa o estoque com destino, motivo e auditoria; a devolução volta. A entrada não existe: o saldo é sobrescrito sem motivo, sem histórico e sem auditoria | Tabela `movimentos_estoque` (só inserção); entrada com documento; ajuste de inventário com motivo; extrato por item; filtro por período no Registro | Feito: PR #272, migration `20270110000001` (decisão: lote e validade depois); testado pelo RT na homologação em 27/10; falta o merge e o "ok produção" |
-| 5 | P2 | 1 — Alta vigilância não adiciona medicação | Adiciona pela busca "Buscar no cadastro", só na aba "Exige liberação"; medicamento fora do catálogo não entra | Botão "Adicionar medicamento" em todas as abas; sem migration | Feito: PR #274, sem migration; testado pelo RT na homologação em 27/10; falta o merge |
-| 6 | P2 | 3 — Quem cadastra o que está em falta? | O médico pela prescrição; o farmacêutico pela Disponibilidade e pelo Painel, só com saldo em falta ou crítico; a aba Faltas não registra | Botão "Registrar falta" na aba Faltas; sem migration | Feito: "Registrar falta" na aba Faltas, só para a farmácia (decisão do RT), sem migration; falta o teste do RT na homologação e o merge |
+| 1 | P1 | 6 — O farmacêutico não precisa da aba Prontuários | O farmacêutico tem o item no menu, as rotas `/prontuarios` e `/prontuarios/:pacienteId`, a tela na paleta de busca e, no banco, `papel_pode_pedir_acesso` com `farmaceutico`. Enfermagem e telemedicina também têm; o gestor decide os pedidos em Auditoria | Tirar o farmacêutico do menu, das duas rotas e de `papel_pode_pedir_acesso`; pedido aprovado antes deixa de abrir leitura; pendentes cancelados com auditoria | Feito: PR #263 (master), migration `20270105000001`; testado pelo RT na homologação em 27/10; em produção (migration conferida em 27/10) |
+| 2 | P1 | 4 — Unidade de consumo não adiciona item novo com apresentação e forma | Não há cadastro de medicamento na tela nem RPC; não há coluna de forma farmacêutica | `cadastrar_medicamento`, `editar_medicamento` e `inativar_medicamento` (farmacêutico ou gestor, com histórico); coluna `forma_farmaceutica`; "Novo medicamento" na tela, com os parecidos antes de gravar | Feito: PR #268, migration `20270106000001` (decisões: item novo só na unidade; forma em campo próprio); testado pelo RT na homologação em 27/10; migration em produção em 27/10 (ok do RT); em produção (merge em 27/10) |
+| 3 | P1 | 2 — Diluição não adiciona medicação nem diluição | "Nova diluição" só no topo da aba Rascunhos e só para medicamento do catálogo. **Achado:** a diluição nova nasce como modelo da rede, e qualquer farmacêutico a publica para todas as unidades | Botão visível em todas as abas; diluição nova da unidade por padrão; modelo da rede só para quem o RT decidir; vias IN e VO | Feito: PR #269 (master), migration `20270109000001` (decisão: modelo da rede só do super admin; Nova diluição em um passo, com diluente, volume e tempo); em produção (migration aplicada em 27/10, ok do RT); reteste do formulário ok em 27/10 |
+| 4 | P1 | 5 — Dispensação avulsa: controle do que sai e do que entra | A saída avulsa baixa o estoque com destino, motivo e auditoria; a devolução volta. A entrada não existe: o saldo é sobrescrito sem motivo, sem histórico e sem auditoria | Tabela `movimentos_estoque` (só inserção); entrada com documento; ajuste de inventário com motivo; extrato por item; filtro por período no Registro | Feito: PR #272, migration `20270110000001` (decisão: lote e validade depois); testado pelo RT na homologação em 27/10; migration em produção em 27/10 (ok do RT); em produção (merge em 27/10) |
+| 5 | P2 | 1 — Alta vigilância não adiciona medicação | Adiciona pela busca "Buscar no cadastro", só na aba "Exige liberação"; medicamento fora do catálogo não entra | Botão "Adicionar medicamento" em todas as abas; sem migration | Feito: PR #274, sem migration; testado pelo RT na homologação em 27/10; em produção (merge em 27/10) |
+| 6 | P2 | 3 — Quem cadastra o que está em falta? | O médico pela prescrição; o farmacêutico pela Disponibilidade e pelo Painel, só com saldo em falta ou crítico; a aba Faltas não registra | Botão "Registrar falta" na aba Faltas; sem migration | Feito: "Registrar falta" na aba Faltas, só para a farmácia (decisão do RT), sem migration; testado pelo RT na homologação em 27/10; em produção (merge em 27/10) |
+
+**Concluída em 27/10/2026:** os seis pontos estão em produção (frontend no master e as migrations `20270105000001`, `20270106000001`, `20270109000001` e `20270110000001` aplicadas com o ok do RT). O reteste do RT do formulário de um passo da Nova diluição (ponto 2) também ficou ok em 27/10. Nada pendente.
 
 Respostas do RT em 27/10/2026, item a item: ponto 6, só o farmacêutico sai (enfermagem e telemedicina
 seguem); ponto 4, o item novo vale só na unidade de quem cadastrou e a forma farmacêutica é campo
@@ -1712,6 +1887,59 @@ evidência de cada ponto em `docs/farmacia/PONTO<n>-*.md`.
 
 Para depois (decisão do RT em 27/10/2026): **lote e validade no estoque** (entrada com lote e
 validade, saldo por lote, aviso do que vence e escolha do lote na dispensação), como item próprio.
+
+## Telas do plantonista — pedidos do RT em 27/10/2026
+
+**Pedido do RT:** ao rever as telas do plantonista (Central, Plantão e Internação), o RT apontou 16
+pontos. Diagnóstico de cada um (onde está, o que acontece, causa, proposta para banco, RPC e tela,
+risco, tipo) em `docs/plantonista/REVISAO-PLANTONISTA-2026-10.md`.
+
+**Ponto 1 medido em 27/10/2026 (ok do RT para ler só os tempos da produção e do VPS).** O modelo de
+busca do VPS (Ollama, bge-m3) sai da memória depois de 24 h sem pergunta, e a recarga leva de 41 a 60 s
+ou mais com 2 processadores. Acima de 60 s a busca estoura e a pergunta dá erro 500: 6 vezes na produção
+(28/09 a 08/10) e 1 na homologação em 27/10. Depois vêm cerca de 10 s da reescrita pela IA. Proposta:
+deixar o modelo sempre carregado (só configuração do VPS, vale para homologação e produção juntas).
+
+**Situação: registrado, aguardando a decisão do RT.** Nenhum ponto vira código antes de o RT dizer quais
+entram, com qual prioridade e em qual fase. Achados do diagnóstico que pedem atenção: na homologação, uma
+pergunta ao "Perguntar à IA" parou em 68 s com erro 500 em 27/10 (ponto 1); o campo "Peso (kg)" da
+prescrição do leito não grava peso (ponto 11); a "Evolução médica" esconde o formulário sem dizer o
+motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT pediu para tirar (ponto 5).
+
+| Ordem sugerida | Prioridade sugerida | Pontos | Tipo |
+|---|---|---|---|
+| 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS (medido em 27/10); depois, medir de novo e só então mexer na reescrita e no limite da busca | bug |
+| 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (P1, opção A). PR #308: o merge publicou a tela (e0f688f). Com o "ok produção" do RT, as migrations 20270203000001 (busca e o que falta para prescrever) e 20270203000002 (sinônimos: lista A aprovada pelo RT e 21 nomes comerciais conferidos na Anvisa) foram aplicadas na produção. Plano e listas em `docs/plantonista/PONTO-11-PRESCRICAO.md` e `PONTO-11-SINONIMOS.md` | bug + ajuste |
+| 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução | bug + ajuste |
+| 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG | nova (regra) |
+| 5 | P1 | 14 + 16 — atestado, receita para casa e orientações dentro de Alta e documentos | nova |
+| 6 | P2 | 2, 3, 4, 5 — navegação do plantão (VM duplicada, check-in duplicado, Atendimento, Internação direto na lista) | ajuste |
+| 7 | P2 | 6, 7, 8 — Resumo do leito em abas, botões juntos, sem aba Classificação | ajuste |
+| 8 | P2 | 13 — encaminhamento para outra unidade | nova |
+| 9 | P2 | 15 — Parecer, Termo de consentimento e Cuidados paliativos (com escalas do PubMed) | ajuste + nova |
+| 10 | P2 | 10 — modelo da admissão (sugestão: uma admissão, com reavaliação do quadro) | nova |
+
+## Aba Escala para todos os papéis — pedido do RT em 27/10/2026
+
+**Pedido do RT:** uma aba "Escala" para todos os papéis da unidade, menos gestor e administrador.
+Diagnóstico, proposta e respostas do RT em `docs/escala/ABA-ESCALA-PAPEIS-DIAGNOSTICO.md` (PR #300).
+
+**Decisão do RT em 27/10/2026:** entra agora, na ordem E0 → E4. Cada um vê a própria escala e a da
+equipe inteira da sua categoria; a aba abre fora do plantão; trocas, passagens, faltas, vagas e
+candidatura valem para todas as categorias, menos gestor e administrador, sempre dentro da mesma
+categoria; cada plantão passa a ter categoria; farmacêutico e faturamento passam a entrar pela
+escala; a "Minha agenda" da telemedicina vira a aba Escala comum. Cada entrega em branch e PR
+próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero e passam pelo RT.
+
+| Ordem | Entrega | O quê | Situação |
+|---|---|---|---|
+| 1 | E0 | Corrigir a "Escala da unidade" e a troca do plantonista: hoje leem a tabela direto e a RLS só devolve os próprios plantões (colegas aparecem como "livre"). Leitura passa por RPC | Feito: PR #302 (master), migration `20270202000001`; na homologação em 27/10 (10 de 10 testes; plantonista passa de 0 a 24 plantões de colegas no mês); migration aplicada na produção em 28/10 (ok do RT), versão registrada; frontend em produção pelo merge |
+| 2 | E1 | Categoria do plantão (`papel` em `escala_plantao`, `escala_fixa`, `escala_vagas`), preenchimento, gatilho e trava de categoria em troca e passagem | Feito: PR #310 (master), migration `20270202000002`; na homologação em 28/10 (16 de 16 testes; 387 plantões com categoria e 71 sem, de uma pessoa com dois papéis); migration aplicada na produção em 28/10 (ok do RT), versão registrada (lá os 701 plantões ficam sem categoria: 700 de pessoa sem vínculo e 1 do super admin de teste) |
+| 3 | E2 | Gestor escala todas as categorias (seletor, cobertura por categoria); ERP leva só o plantão médico | A fazer |
+| 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | A fazer |
+| 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | A fazer |
+
+Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda > **Todas as unidades** pedia a escala até o dia 31 de qualquer mês e dava erro nos meses de 30 dias e em fevereiro (o banco recusa 2026-11-31). PR #305, sem migration; na homologação em 28/10; mesclado no master pelo RT em 28/10 (produção pelo merge).
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.

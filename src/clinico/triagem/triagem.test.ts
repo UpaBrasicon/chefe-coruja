@@ -9,13 +9,22 @@ import { ANEXO_III_ADULTO, ANEXO_IV_PEDIATRIA, fichaAnexosSinaisVitais, referenc
 import { buscarFluxogramas, termosDaBusca } from './buscaFluxograma.ts'
 
 // ---- dor ----
-test('dor: escala pela idade — NIPS até 2 meses, FLACC até antes dos 4 anos, depois autorrelato', () => {
+test('dor: escala pela idade — NIPS até 2 meses, FLACC até antes dos 6 anos, depois autorrelato (RT, 27/10/2026)', () => {
   assert.equal(escalaPelaIdade('2026-09-28', '2026-09-29'), 'nips') // 1 dia
   assert.equal(escalaPelaIdade('2026-07-30', '2026-09-29'), 'nips') // 1 mês e 30 dias
   assert.equal(escalaPelaIdade('2026-07-29', '2026-09-29'), 'flacc') // 2 meses
-  assert.equal(escalaPelaIdade('2022-09-30', '2026-09-29'), 'flacc') // 3a 11m 29d
-  assert.equal(escalaPelaIdade('2022-09-29', '2026-09-29'), 'numerica') // 4 anos
+  assert.equal(escalaPelaIdade('2022-09-29', '2026-09-29'), 'flacc') // 4 anos
+  assert.equal(escalaPelaIdade('2020-09-30', '2026-09-29'), 'flacc') // 5a 11m 29d
+  assert.equal(escalaPelaIdade('2020-09-29', '2026-09-29'), 'numerica') // 6 anos
   assert.equal(escalaPelaIdade(null, '2026-09-29'), 'numerica')
+})
+test('dor: faixas citam Merkel 1997 (FLACC, 2 meses a 7 anos) e Birnie 2019 (autorrelato a partir de 6 anos)', () => {
+  assert.match(ESCALAS_DOR.flacc.faixa, /2 meses a 5 anos/)
+  assert.match(ESCALAS_DOR.numerica.faixa, /a partir de 6 anos/)
+  assert.ok(ESCALAS_DOR.numerica.ficha.fontes.some((f) => /Birnie/.test(f.citacao)))
+  assert.ok(ESCALAS_DOR.flacc.ficha.fontes.some((f) => /Birnie/.test(f.citacao)))
+  assert.equal(ESCALAS_DOR.flacc.ficha.versao, '2026-10-27.1')
+  assert.equal(ESCALAS_DOR.numerica.ficha.versao, '2026-10-27.1')
 })
 test('dor: NIPS e FLACC só aparecem no grupo pediátrico', () => {
   assert.deepEqual(escalasDoGrupo('adulto'), ['numerica'])

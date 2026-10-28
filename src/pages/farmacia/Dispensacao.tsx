@@ -29,6 +29,7 @@ import { fmtDataHora } from '@/lib/datas'
 import { porPaciente, type Dispensacao, type ItemParaDispensar } from '@/lib/dispensacao'
 import { PERIODOS_REGISTRO } from '@/lib/movimentosEstoque'
 import { normalizarMedicamento } from '@/lib/search'
+import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { rotuloUnidade } from '@/lib/unidadeConsumo'
@@ -189,11 +190,11 @@ function Avulsa({ unidade }: { unidade: string }) {
   const [motivo, setMotivo] = React.useState('')
   const [aviso, setAviso] = React.useState<string | null>(null)
   const resultados = useQuery({
-    queryKey: ['busca-medicamento-avulsa', busca],
+    queryKey: ['busca-medicamento-avulsa', busca, unidade],
     enabled: busca.trim().length >= 3 && !med,
     queryFn: async () => {
       const { data, error } = await supabase.from('medicamento').select('id, principio_ativo, apresentacao, unidade_consumo, unidade_consumo_outra')
-        .eq('ativo', true).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).order('principio_ativo').limit(15)
+        .eq('ativo', true).or(filtroDaUnidade(unidade)).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).order('principio_ativo').limit(15)
       if (error) throw error
       return data ?? []
     },

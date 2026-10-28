@@ -5,15 +5,19 @@
 
 export type Recurso = 'unidades' | 'paciente_busca' | 'paciente' | 'atendimentos' | 'atendimento'
   | 'leitos' | 'aih' | 'apac' | 'fechamentos'
+  // Fase 5C-4.2: leitura por id do que o webhook avisa (porta public.api_v1_leitura)
+  | 'prescricao' | 'regulacao'
 
 export type CodigoErro = 'requisicao_invalida' | 'chave_invalida' | 'fora_do_escopo' | 'nao_encontrado'
-  | 'limite_excedido' | 'erro_interno' | 'indisponivel'
+  | 'conflito' | 'limite_excedido' | 'erro_interno' | 'indisponivel'
 
 const TITULO: Record<CodigoErro, string> = {
   requisicao_invalida: 'Requisição inválida',
   chave_invalida: 'Chave inválida',
   fora_do_escopo: 'Fora do escopo da chave',
   nao_encontrado: 'Não encontrado',
+  // Fase 5C-3: retorno do ERP para versão que não aceita aquela ação
+  conflito: 'Conflito com a situação da versão',
   limite_excedido: 'Limite de consultas excedido',
   erro_interno: 'Erro interno',
   indisponivel: 'Indisponível',
@@ -109,6 +113,10 @@ export function interpretar(caminho: string, query: URLSearchParams): Pedido | R
     recurso = 'atendimento'
     if (!UUID.test(seg[1])) return { erro: { status: 404, codigo: 'nao_encontrado', detalhe: 'Não encontrado.' } }
     p.id = seg[1]
+  } else if ((seg[0] === 'prescricoes' || seg[0] === 'regulacao') && seg.length === 2) {
+    recurso = seg[0] === 'prescricoes' ? 'prescricao' : 'regulacao'
+    if (!UUID.test(seg[1])) return { erro: { status: 404, codigo: 'nao_encontrado', detalhe: 'Não encontrado.' } }
+    p.id = seg[1]
   } else if (seg.length === 1 && seg[0] === 'leitos') {
     recurso = 'leitos'
     erro = unidade() ?? pega('status', umDe(STATUS_LEITO), 'status de leito fora da lista.') ?? paginacao()
@@ -128,6 +136,9 @@ export function interpretar(caminho: string, query: URLSearchParams): Pedido | R
   if (erro) return erro
   return { recurso, params: p }
 }
+
+/** Recursos lidos pela porta public.api_v1_leitura (os outros vão para public.api_v1). */
+export const PORTA_LEITURA: Recurso[] = ['prescricao', 'regulacao']
 
 /** Chave do cabeçalho Authorization: Bearer <chave>. */
 export function chaveDoCabecalho(auth: string | null): string | null {
