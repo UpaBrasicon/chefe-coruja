@@ -57,3 +57,20 @@ usam a mesma janela, com o colega de destino ou o atestado.
 1. **Qual opção:** A, B ou C?
 2. **Sair do fixo e fracionar plantão:** o plantonista tem os dois. Entram para as outras categorias nesta
    etapa? Sugestão: não; só troca, passagem, falta e vaga, como o RT pediu.
+
+## Decisão do RT (28/10/2026) e o que foi aplicado
+
+**Opção A**, ações no painel do dia; **a passagem é uma janela (popup)**, pedido do RT (troca e falta
+também). Sair do fixo e fracionar: sem resposta nesta rodada; vale a sugestão (ficam de fora).
+
+- Migration `20270202000004_escala_pedidos_categorias.sql`: `colegas_da_categoria` (destino da passagem,
+  só nome e categoria); `candidatar_vaga` aceita quem tem o papel da vaga (sem categoria, só plantonista);
+  `aprovar_candidatura` grava a categoria da vaga no plantão e "já preenchido" passa a ser por alguém da
+  mesma categoria.
+- `src/components/escala/PedidosEscala.tsx`: "Seu plantão" com Trocar, Passar e Justificar falta, cada um
+  numa janela; "Vaga da sua categoria" com "Candidatar-me"; "Seus pedidos" com o estado. Plantão que já
+  terminou só aceita justificar falta; plantão com pedido pendente mostra o aviso no lugar dos botões.
+- `src/hooks/usePedidosDaEquipe.ts`: os meus pedidos (solicitações e trocas) e as vagas da categoria.
+- No mês: a vaga em âmbar e a ampulheta no plantão com pedido pendente.
+- Imagens da tela real com dados fictícios: `maquetes/e4-A-aplicada-claro|escuro|celular.jpg`,
+  `e4-A-aplicada-passar.jpg` e `e4-A-aplicada-trocar.jpg`.

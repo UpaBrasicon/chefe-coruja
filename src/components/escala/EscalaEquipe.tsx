@@ -6,9 +6,12 @@
 // 2 do RT: a própria escala e a da equipe inteira da categoria). Dos colegas,
 // só nome, setor e horário. Abre também fora do plantão (ForaDoExpediente).
 // Dados de escala_da_unidade (migrations 20270202000001 e 20270202000002).
+// E4 (opção A do RT em 28/10/2026): no dia em que trabalho, "Seu plantão" com
+// Trocar, Passar e Justificar falta; a vaga da categoria em âmbar no mês, com
+// "Candidatar-me" no dia; o plantão com pedido pendente leva a ampulheta.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Hourglass } from 'lucide-react'
 import * as React from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
@@ -18,17 +21,15 @@ import { dataIso, dataPorExtenso, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { ProximoPlantao } from '@/components/casca/ProximoPlantao'
+import { SeuPlantao, SeusPedidos, VagasDoDia } from '@/components/escala/PedidosEscala'
+import { type PlantaoEquipe, usePedidosDaEquipe } from '@/hooks/usePedidosDaEquipe'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Spinner } from '@/components/ui/spinner'
-import type { Papel } from '@/types/database'
 
-type Plantao = {
-  id: string; setor_id: string; perfil_id: string; papel: Papel | null; data: string; turno: string
-  inicio: string; duracao_min: number; nome_completo: string | null
-}
+type Plantao = PlantaoEquipe
 
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
 const SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
@@ -67,6 +68,9 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
       return data ?? []
     },
   })
+
+  const pedidos = usePedidosDaEquipe(unidadeId)
+  const vagasNoDia = (d: string) => pedidos.vagas.filter((v) => v.data === d)
 
   // a minha categoria na unidade (todo papel menos gestor e administrador)
   const categorias = papeisDaUnidade.filter((p) => p !== 'gestor' && p !== 'admin')
@@ -121,12 +125,20 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
                       <span className={cn(d === hoje ? 'font-semibold text-tinta' : 'text-tinta')}>{Number(d.slice(8))}</span>
                       {d === hoje && <span className="hidden text-rotulo text-acao sm:inline">hoje</span>}
                     </span>
-                    {meusDia.map((p) => (
-                      <span key={p.id} className="mt-auto truncate rounded-controle bg-acao/10 px-1.5 text-rotulo font-medium text-acao">
-                        <span className="sm:hidden">{faixa(p)[0]}</span>
-                        <span className="hidden sm:inline">{faixa(p)} · {nomeSetor(p.setor_id)}</span>
-                      </span>
-                    ))}
+                    <span className="mt-auto flex min-w-0 flex-col gap-0.5">
+                      {meusDia.map((p) => (
+                        <span key={p.id} className="flex min-w-0 items-center gap-1 rounded-controle bg-acao/10 px-1.5 text-rotulo font-medium text-acao">
+                          {pedidos.pendentes.has(p.id) && <Hourglass className="size-3 shrink-0" aria-label="pedido aguardando" />}
+                          <span className="sm:hidden">{faixa(p)[0]}</span>
+                          <span className="hidden truncate sm:inline">{faixa(p)} · {nomeSetor(p.setor_id)}</span>
+                        </span>
+                      ))}
+                      {vagasNoDia(d).length > 0 && (
+                        <span className="truncate rounded-controle bg-alerta-atencao px-1.5 text-rotulo font-medium text-atencao">
+                          vaga<span className="hidden sm:inline"> · {vagasNoDia(d)[0].setor_nome}</span>
+                        </span>
+                      )}
+                    </span>
                   </BotaoLinha>
                 )
               })}
@@ -140,6 +152,11 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
               <span className="text-apoio font-semibold text-tinta">{dataPorExtenso(`${diaSel}T12:00:00Z`)}</span>
               <span className="block text-rotulo text-tinta-sussurro">{equipe} · {plural(doDia.length, 'plantão', 'plantões')}</span>
             </div>
+            {unidadeId && (
+              <SeuPlantao unidadeId={unidadeId} meusDoDia={(meuNoDia.get(diaSel) ?? [])} equipe={plantoes}
+                faixa={faixa} horario={horario} nomeSetor={nomeSetor} pendentes={pedidos.pendentes} />
+            )}
+            <VagasDoDia vagas={vagasNoDia(diaSel)} />
             {doDia.length === 0 && <p className="px-4 py-3 text-apoio text-tinta-sussurro">Ninguém da equipe neste dia.</p>}
             {setoresDoDia.map((s) => (
               <div key={s} className="flex flex-col gap-1.5 border-b border-trilha px-4 py-2.5 last:border-b-0">
@@ -156,8 +173,9 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
                 ))}
               </div>
             ))}
+            <SeusPedidos minhas={pedidos.minhas} trocas={pedidos.trocas} plantoes={plantoes} />
             <p className="mt-auto border-t border-trilha bg-campo px-4 py-2 text-rotulo text-pretty text-tinta-sussurro">
-              Só a escala da sua categoria. Troca, passagem e falta continuam com a coordenação.
+              Vagas da sua categoria em âmbar no mês. Troca e passagem só dentro da categoria; a coordenação aprova.
             </p>
           </aside>
         )}
