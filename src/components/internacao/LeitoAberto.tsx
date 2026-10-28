@@ -3,8 +3,9 @@
 //
 // Cabeçalho único do paciente no topo e as 12 abas do protótipo (LEITO_ABAS):
 // Resumo (acuidade com tendência e motivo do alerta, pendências, passagem),
-// Classificação, Evolução, Diagnóstico, Admissão, Prescrição, Exames, AIH,
-// Encaminhamento, Atestado, Parecer e termos, Alta e documentos. As peças
+// Classificação, Evolução (com o Diagnóstico dentro, ponto 9), Admissão,
+// Prescrição, Exames, AIH, Encaminhamento, Atestado, Parecer e termos, Alta e
+// documentos. As peças
 // moram em ./caderno; toda regra mora no servidor, aqui só se mostra e se pede.
 //
 // modo="simples" (o padrão, usado pela observação) é o leito de antes, sem
@@ -47,7 +48,6 @@ import { AbaClassificacao } from './caderno/Classificacao'
 import {
   type Acao, type Acuidade, ATIVO, diaHora, type Internacao, msg, type Pacote, type Passagem, type Pendencia,
 } from './caderno/comum'
-import { AbaDiagnostico } from './caderno/Diagnostico'
 import { useDiagnosticos } from './caderno/diagnosticos'
 import { AbaAdmissao, AbaAih, AbaApac, AbaAtestado, AbaExames, AbaPrescricao } from './caderno/Documentos'
 import { useDocumentosLeito } from './caderno/rascunhoLeito'
@@ -59,14 +59,13 @@ import { ChecklistAdmissao, TrilhaEpisodio } from './caderno/Trilha'
 
 export { SepsePorta } from './caderno/Sepse'
 
-type IdAba = 'resumo' | 'classif' | 'evol' | 'diag' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'atestado' | 'comp' | 'alta'
+type IdAba = 'resumo' | 'classif' | 'evol' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'atestado' | 'comp' | 'alta'
 
 // LEITO_ABAS do protótipo (index.html ~21611), na mesma ordem.
 const ABAS: [IdAba, string][] = [
   ['resumo', 'Resumo'],
   ['classif', 'Classificação'],
   ['evol', 'Evolução'],
-  ['diag', 'Diagnóstico'],
   ['admissao', 'Admissão'],
   ['receituario', 'Prescrição'],
   ['exames', 'Exames'],
@@ -77,8 +76,11 @@ const ABAS: [IdAba, string][] = [
   ['comp', 'Parecer e termos'],
   ['alta', 'Alta e documentos'],
 ]
-/** O que se lê sem escrever: gestor, e o leito depois da alta. */
-const ABAS_LEITURA: IdAba[] = ['resumo', 'classif', 'diag', 'alta']
+/**
+ * O que se lê sem escrever: gestor, e o leito depois da alta. O Diagnóstico
+ * agora mora dentro de Evolução (ponto 9), que entra aqui em leitura.
+ */
+const ABAS_LEITURA: IdAba[] = ['resumo', 'classif', 'evol', 'alta']
 
 const CHAVES_DO_LEITO = [
   'leito-aberto', 'acuidade', 'tendencia-acuidade', 'vitais-qsofa', 'pendencias', 'passagens', 'impeditivos', 'pacotes-alta',
@@ -339,7 +341,9 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
 }) {
   const { i, ativa, ehGestor, pacienteId } = p
   const { unidadeAtiva } = useUnidade()
-  const [aba, setAba] = React.useState<IdAba>(() => (ABAS.some(([id]) => id === abaInicial) ? abaInicial as IdAba : 'resumo'))
+  // link antigo para a aba Diagnóstico abre Evolução › Diagnóstico (ponto 9)
+  const [aba, setAba] = React.useState<IdAba>(() => (abaInicial === 'diag' ? 'evol'
+    : ABAS.some(([id]) => id === abaInicial) ? abaInicial as IdAba : 'resumo'))
 
   const diagnosticos = useDiagnosticos(i.id)
   const vigentes = (diagnosticos.data ?? []).filter((d) => !d.encerrado_em && d.tipo === 'primario')
@@ -404,8 +408,11 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
           </>
         )}
         {atual === 'classif' && <AbaClassificacao internacaoId={i.id} prontuarioAberto={p.prontuarioAberto} />}
-        {atual === 'evol' && <AbaEvolucao pacienteId={pacienteId} internacaoId={i.id} />}
-        {atual === 'diag' && <AbaDiagnostico internacaoId={i.id} podeEditar={escreve} acao={p.acao} onAbrirNotificacao={irNotificacao} />}
+        {atual === 'evol' && (
+          <AbaEvolucao pacienteId={pacienteId} internacaoId={i.id} somenteLeitura={!escreve}
+            subInicial={abaInicial === 'diag' ? 'diagnostico' : undefined}
+            diagnostico={{ podeEditar: escreve, acao: p.acao, onAbrirNotificacao: irNotificacao }} />
+        )}
         {atual === 'admissao' && (
           <>
             <ChecklistAdmissao pacienteId={pacienteId} unidadeId={unidadeAtiva?.unidade_id} prontuarioAberto={p.prontuarioAberto} />
