@@ -1194,6 +1194,20 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
 - Teste `supabase/tests/fase5c_rnds_envio.sql`, o da 5.1 e o rollback passaram na homologação. RAC
   e SA montados da carga da homologação passam no validador oficial sem erro
   (`docs/rnds/evidencia/5.3a-carga-homolog.txt`). Regras em `docs/rnds/ENVIO.md`.
+- No master em 28/10/2026 (#325). A migration vai à produção junto com a da 5.1, só com o "ok produção".
+
+**5.3b pronta em 28/10/2026 (branch `fase5/rnds-envio-servico`):** o serviço de envio
+(`services/rnds-envio/`) e o simulador da RNDS.
+- O token sai com TLS mútuo (GET, ou POST se a RNDS responder 405) e é reaproveitado por 30 min.
+  Um 401 no envio pede token novo uma vez. A resposta vira o resultado da fila: 201 enviado; 422
+  erro com a mensagem da RNDS; 5xx, 429 e falta de resposta, nova tentativa; credencial recusada
+  pausa a unidade.
+- Antes de sair, fica retido: produção desligada nesta etapa, unidade sem identificador do
+  solicitante, profissional sem CNS, documento retido pelo mapper e unidade sem certificado.
+- O simulador gera a própria CA de teste e confere token, CNS, tipo, hora, identificador e
+  substituição. Os 18 testes rodam contra ele no CI, com TLS mútuo de verdade.
+- Sem banco e sem tela. O teste ponta a ponta (fila da homologação → simulador) entra na 5.3c, no
+  VPS. Regras em `docs/rnds/ENVIO.md`.
 
 ---
 
