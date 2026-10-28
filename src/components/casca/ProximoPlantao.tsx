@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import type * as React from 'react'
 import { MapPin } from 'lucide-react'
 
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -44,7 +45,8 @@ function useProximoPlantao() {
   })
 }
 
-export function ProximoPlantao({ className }: { className?: string }) {
+/** `rodape` recebe o início do próximo plantão e devolve o que vai embaixo (as ações, na aba Escala). */
+export function ProximoPlantao({ className, rodape }: { className?: string; rodape?: (inicio: Date) => React.ReactNode }) {
   const { unidadeAtiva } = useUnidade()
   const { data: proximo, isLoading, isError } = useProximoPlantao()
   const outraUnidade = proximo && proximo.unidadeId !== unidadeAtiva?.unidade_id
@@ -88,6 +90,7 @@ export function ProximoPlantao({ className }: { className?: string }) {
           </span>
         </div>
       )}
+      {proximo && rodape && <div className="px-4 pb-3.5 empty:hidden">{rodape(proximo.inicio)}</div>}
     </div>
   )
 }

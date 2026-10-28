@@ -9,6 +9,9 @@
 // E4 (opção A do RT em 28/10/2026): no dia em que trabalho, "Seu plantão" com
 // Trocar, Passar e Justificar falta; a vaga da categoria em âmbar no mês, com
 // "Candidatar-me" no dia; o plantão com pedido pendente leva a ampulheta.
+// Ajuste da E4 (opção A do RT em 28/10/2026): as ações do próximo plantão no
+// cartão do alto, as vagas abertas da categoria ao lado e, no dia que já passou,
+// a explicação com o atalho para o próximo plantão.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, Hourglass } from 'lucide-react'
@@ -21,7 +24,7 @@ import { dataIso, dataPorExtenso, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { ProximoPlantao } from '@/components/casca/ProximoPlantao'
-import { SeuPlantao, SeusPedidos, VagasDoDia } from '@/components/escala/PedidosEscala'
+import { AcoesDoPlantao, SeuPlantao, SeusPedidos, VagasDoDia } from '@/components/escala/PedidosEscala'
 import { type PlantaoEquipe, usePedidosDaEquipe } from '@/hooks/usePedidosDaEquipe'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -45,6 +48,8 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
   const hoje = dataIso()
   const [mes, setMes] = React.useState(() => hoje.slice(0, 7))
   const [dia, setDia] = React.useState<string | null>(null)
+  // a hora em que a tela abriu (o próximo plantão é o primeiro que ainda não terminou)
+  const [agora] = React.useState(() => Date.now())
   const [ano, mesNum] = mes.split('-').map(Number)
   const diasNoMes = new Date(ano, mesNum, 0).getDate()
   const de = `${mes}-01`
@@ -69,6 +74,17 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
     },
   })
 
+  // os próximos 60 dias, para achar o meu próximo plantão nesta unidade e os plantões de colegas para a troca
+  const ateProximos = new Date(new Date(`${hoje}T12:00:00Z`).getTime() + 60 * 86_400_000).toISOString().slice(0, 10)
+  const proximos = useQuery({
+    queryKey: ['escala-equipe', unidadeId, hoje, ateProximos],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('escala_da_unidade', { p_unidade: unidadeId!, p_de: hoje, p_ate: ateProximos })
+      if (error) throw error
+      return (data ?? []) as Plantao[]
+    },
+  })
   const pedidos = usePedidosDaEquipe(unidadeId)
   const vagasNoDia = (d: string) => pedidos.vagas.filter((v) => v.data === d)
 
@@ -88,6 +104,14 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
   const nomeSetor = (id: string) => setores.data?.find((s) => s.id === id)?.nome ?? 'Setor'
   const setoresDoDia = [...new Set(doDia.map((p) => p.setor_id))]
     .sort((a, b) => (setores.data ?? []).findIndex((s) => s.id === a) - (setores.data ?? []).findIndex((s) => s.id === b))
+  // o meu próximo plantão nesta unidade (o que ainda não terminou)
+  const meuProximo = (proximos.data ?? [])
+    .filter((p) => p.perfil_id === perfil?.id && new Date(p.inicio).getTime() + p.duracao_min * 60_000 > agora)
+    .sort((a, b) => a.inicio.localeCompare(b.inicio))[0]
+  const irParaProximo = meuProximo
+    ? { rotulo: `Ir para o próximo plantão (${meuProximo.data.slice(8, 10)}/${meuProximo.data.slice(5, 7)})`, ir: () => { setMes(meuProximo.data.slice(0, 7)); setDia(meuProximo.data) } }
+    : undefined
+  const vagasAbertas = [...pedidos.vagas].sort((a, b) => a.inicio.localeCompare(b.inicio))
   const mudarMes = (n: number) => {
     const d = new Date(ano, mesNum - 1 + n, 1)
     setMes(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
@@ -97,7 +121,17 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
   return (
     <div className="flex flex-col gap-3">
       {titulo && <TituloPagina titulo="Escala" descricao={`Seus plantões e os da sua categoria na unidade (${equipe}).`} />}
-      <ProximoPlantao />
+      <div className={cn('grid gap-3', vagasAbertas.length > 0 && 'md:grid-cols-[minmax(0,1fr)_340px]')}>
+        <ProximoPlantao rodape={(inicio) => unidadeId && meuProximo && new Date(meuProximo.inicio).getTime() === inicio.getTime() ? (
+          <AcoesDoPlantao unidadeId={unidadeId} plantao={meuProximo} equipe={proximos.data ?? []} faixa={faixa} nomeSetor={nomeSetor}
+            pendente={pedidos.pendentes.has(meuProximo.id)} />
+        ) : null} />
+        {vagasAbertas.length > 0 && (
+          <div className="overflow-hidden rounded-container border border-fio bg-superficie [&>div]:border-b-0">
+            <VagasDoDia vagas={vagasAbertas} titulo={`Vagas abertas da sua categoria (${vagasAbertas.length})`} comData />
+          </div>
+        )}
+      </div>
       <section aria-label="Escala do mês" className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col border-fio md:border-r">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-trilha px-4 py-2.5">
@@ -154,7 +188,8 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
             </div>
             {unidadeId && (
               <SeuPlantao unidadeId={unidadeId} meusDoDia={(meuNoDia.get(diaSel) ?? [])} equipe={plantoes}
-                faixa={faixa} horario={horario} nomeSetor={nomeSetor} pendentes={pedidos.pendentes} />
+                faixa={faixa} horario={horario} nomeSetor={nomeSetor} pendentes={pedidos.pendentes}
+                irParaProximo={meuProximo && meuProximo.data !== diaSel ? irParaProximo : undefined} />
             )}
             <VagasDoDia vagas={vagasNoDia(diaSel)} />
             {doDia.length === 0 && <p className="px-4 py-3 text-apoio text-tinta-sussurro">Ninguém da equipe neste dia.</p>}
