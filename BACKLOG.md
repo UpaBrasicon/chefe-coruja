@@ -1900,6 +1900,12 @@ ou mais com 2 processadores. Acima de 60 s a busca estoura e a pergunta dá erro
 (28/09 a 08/10) e 1 na homologação em 27/10. Depois vêm cerca de 10 s da reescrita pela IA. Proposta:
 deixar o modelo sempre carregado (só configuração do VPS, vale para homologação e produção juntas).
 
+**Ponto 1 aplicado em 27/10/2026, com "ok produção" do RT (PR #301).** O modelo de busca fica sempre
+carregado, e um aviso no cron a cada 10 min o recarrega depois de um restart. Medido direto no VPS,
+depois da mudança: pergunta completa em 4,3–6,0 s na homologação e 6,6 s na produção (antes: 22,9 s, e
+erros 500 em ~61 s). Como reverter: `infra/biblioteca-ollama-quente.md`. Falta conferir pela tela do app
+e pelo `clinical_search_logs` nos próximos dias; só se ainda passar de 10 s mexer na reescrita.
+
 **Situação: registrado, aguardando a decisão do RT.** Nenhum ponto vira código antes de o RT dizer quais
 entram, com qual prioridade e em qual fase. Achados do diagnóstico que pedem atenção: na homologação, uma
 pergunta ao "Perguntar à IA" parou em 68 s com erro 500 em 27/10 (ponto 1); o campo "Peso (kg)" da
@@ -1908,7 +1914,7 @@ motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT p
 
 | Ordem sugerida | Prioridade sugerida | Pontos | Tipo |
 |---|---|---|---|
-| 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS (medido em 27/10); depois, medir de novo e só então mexer na reescrita e no limite da busca | bug |
+| 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS. **Aplicado em 27/10/2026 (PR #301); falta conferir pelo app** | bug |
 | 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (P1, opção A). PR #308: o merge publicou a tela (e0f688f). Com o "ok produção" do RT, as migrations 20270203000001 (busca e o que falta para prescrever) e 20270203000002 (sinônimos: lista A aprovada pelo RT e 21 nomes comerciais conferidos na Anvisa) foram aplicadas na produção. Plano e listas em `docs/plantonista/PONTO-11-PRESCRICAO.md` e `PONTO-11-SINONIMOS.md` | bug + ajuste |
 | 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução | bug + ajuste |
 | 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG | nova (regra) |

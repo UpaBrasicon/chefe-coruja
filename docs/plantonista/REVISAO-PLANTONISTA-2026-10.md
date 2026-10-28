@@ -53,6 +53,11 @@ nova) ou **nova** (funcionalidade ou regra nova).
 
 ### Ponto 1 — "Perguntar à IA" está lento (mais de 30 s)
 
+> **Aplicado em 27/10/2026, com "ok produção" do RT (PR #301).** O modelo de busca fica sempre
+> carregado. Depois da mudança, a pergunta completa levou 4,3–6,0 s na homologação e 6,6 s na
+> produção. Medição e reversão em `infra/biblioteca-ollama-quente.md`. O diagnóstico abaixo é o de antes
+> da mudança.
+
 **Onde está.**
 
 - Tela: `src/pages/plantonista/PlantonistaHome.tsx:265` (botão) e `src/components/plantonista/RespostaIa.tsx`.
