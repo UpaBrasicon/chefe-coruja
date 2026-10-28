@@ -8,6 +8,14 @@ Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 - **Pergunta 2, quem evolui:** opção B.
 - **Pergunta 5, tela:** opção A, o Diagnóstico como sub-aba.
 
+**Situação: em produção desde 28/10/2026.**
+
+- O PR #319 foi juntado ao master, e a tela está no ar.
+- Com o "ok produção" do RT, a migration `20270203000003_evolucao_motivo` foi aplicada na produção.
+- Na homologação, ela está desde o mesmo dia.
+
+Antes:
+
 **Situação: na homologação desde 28/10/2026** (branch `fix/evolucao-motivo`,
 migration `20270203000003_evolucao_motivo`). Rollback testado na homologação
 e desfeito; depois, migration aplicada e versão registrada.
