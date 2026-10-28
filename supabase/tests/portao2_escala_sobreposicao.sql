@@ -39,7 +39,7 @@ SELECT public.adicionar_plantao_escala('21000000-0000-4000-8000-000000000001', '
   '10000000-0000-4000-8000-000000000002', pg_temp.dia(), 'manha');
 SELECT pg_temp.falha(format('SELECT public.adicionar_plantao_escala(%L, %L, %L, %L::date, %L)',
   '21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000002', pg_temp.dia(), 'manha'),
-  'Conflito: este plantonista já está escalado em outro setor', 'tela da escala: mesmo horário em outro setor é recusado');
+  'Conflito: este profissional já está escalado em outro setor', 'tela da escala: mesmo horário em outro setor é recusado');
 -- por fora da tela (inserção direta) o gatilho recusa, dizendo com qual plantão
 SELECT pg_temp.falha(format($q$INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno)
   VALUES ('21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', %L, 'manha')$q$, pg_temp.dia()),
@@ -54,7 +54,7 @@ SELECT public.adicionar_plantao_escala('21000000-0000-4000-8000-000000000001', '
   '10000000-0000-4000-8000-000000000004', pg_temp.dia(), 'noite');
 SELECT pg_temp.falha(format('SELECT public.adicionar_plantao_escala(%L, %L, %L, %L::date, %L)',
   '21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000004', pg_temp.dia(), 'noite'),
-  'Conflito: este plantonista', 'enfermagem também não fica em dois setores no mesmo horário (tela)');
+  'Conflito: este profissional', 'enfermagem também não fica em dois setores no mesmo horário (tela)');
 SELECT pg_temp.falha(format($q$INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno)
   VALUES ('21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000004', %L, 'noite')$q$, pg_temp.dia()),
   'Escala sobreposta: Enfermeira de Teste', 'enfermagem também não fica em dois setores no mesmo horário (gatilho)');

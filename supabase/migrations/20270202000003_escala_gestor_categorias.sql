@@ -172,7 +172,9 @@ AS $function$
          ) a), '[]'::jsonb)
     FROM base b
 $function$;
-REVOKE ALL ON FUNCTION private.escala_faixas(uuid, date, date) FROM PUBLIC, anon, authenticated;
+-- a mesma permissão da versão anterior (20261012000001): testes e telas leem como authenticated
+REVOKE ALL ON FUNCTION private.escala_faixas(uuid, date, date) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.escala_faixas(uuid, date, date) TO authenticated;
 
 -- ── Escala do mês do gestor ────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.escala_mes_gestor(p_unidade uuid, p_ano integer, p_mes integer)
