@@ -3,8 +3,23 @@
 Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 `BACKLOG.md`. O RT pediu em 28/10/2026: "Começar ponto 12".
 
-**Nada foi mudado no código nem no banco.** Este documento é o plano. A
-implementação começa quando o RT responder às perguntas do fim.
+**Decisões do RT (28/10/2026): "Aprovo 3 e tela A".**
+
+- **Pergunta 1:** três pedidos (laboratório; imagem; ECG).
+- **Pergunta 2:** opção A, as seções lado a lado.
+- **Pergunta 5:** o texto livre fica no grupo da seção onde foi escrito.
+
+**Situação: na homologação desde 28/10/2026.**
+
+- Branch `fix/exames-por-grupo`, PR #330.
+- Migration `20270203000004_exames_por_grupo`:
+  - o rollback foi testado na homologação e desfeito;
+  - depois, a migration foi aplicada e a versão registrada.
+
+**Ainda em aberto, não feito:**
+
+- **Pergunta 3:** a mesma regra no pedido rápido da porta.
+- **Pergunta 4:** a folha impressa por pedido no leito. O pedido fica no sistema, como na porta.
 
 ```
 Vamos trabalhar a tarefa: ponto 12, exame laboratorial em pedido separado de imagem e ECG.
