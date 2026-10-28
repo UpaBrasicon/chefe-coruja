@@ -10,8 +10,11 @@
 //   RNDS_CA_EXTRA                             opcional: arquivo da CA do simulador
 //   RNDS_PERMITIR_PRODUCAO=sim                nesta etapa fica sem (decisão do RT)
 //   RNDS_INTERVALO_S (60), RNDS_LOTE (20)
+//   RNDS_SAUDE_PORTA (8080)                  GET /saude, para o teste de saúde do
+//                                            contêiner e da atualização (5.3c)
 // ─────────────────────────────────────────────────────────────────────────────
 import { readFileSync } from 'node:fs'
+import { createServer } from 'node:http'
 import { setTimeout as esperar } from 'node:timers/promises'
 import { certificadosEmPasta } from './certificados.ts'
 import { processarLote } from './ciclo.ts'
@@ -41,7 +44,19 @@ const deps = {
 }
 
 let parar = false
-for (const sinal of ['SIGTERM', 'SIGINT'] as const) process.on(sinal, () => { parar = true })
+const acordar = new AbortController()
+for (const sinal of ['SIGTERM', 'SIGINT'] as const) process.on(sinal, () => { parar = true; acordar.abort() })
+
+// Saudável depois de um ciclo que falou com a fila, e enquanto os ciclos
+// seguirem falando: sem ciclo bom há três intervalos (banco fora, chave
+// errada), responde 503.
+let ultimoCicloBom = 0
+const saude = createServer((req, res) => {
+  const ok = ultimoCicloBom > 0 && Date.now() - ultimoCicloBom < 3 * intervaloMs + 60_000
+  res.writeHead(req.url === '/saude' ? (ok ? 200 : 503) : 404, { 'content-type': 'application/json' })
+  res.end(JSON.stringify({ status: ok ? 'ok' : 'sem ciclo', ultimo_ciclo: ultimoCicloBom ? new Date(ultimoCicloBom).toISOString() : null }))
+})
+saude.listen(Number(process.env.RNDS_SAUDE_PORTA ?? 8080), '127.0.0.1')
 
 log({ evento: 'inicio', simulador: Boolean(process.env.RNDS_AUTH_URL), producao: deps.permitirProducao })
 while (!parar) {
@@ -52,9 +67,11 @@ while (!parar) {
       r = await processarLote(deps, lote)
       if (Object.values(r).some((n) => n > 0)) log({ evento: 'lote', ...r })
     } while (!parar && Object.values(r).reduce((a, b) => a + b, 0) >= lote)
+    ultimoCicloBom = Date.now()
   } catch (e) {
     log({ evento: 'falha', erro: (e as Error).message })
   }
-  if (!parar) await esperar(intervaloMs)
+  if (!parar) await esperar(intervaloMs, undefined, { signal: acordar.signal }).catch(() => {})
 }
+saude.close()
 log({ evento: 'fim' })
