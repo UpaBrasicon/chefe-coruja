@@ -16,15 +16,13 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { dataHora } from '@/lib/formato'
-import { normalizarMedicamento } from '@/lib/search'
-import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { faltaNoItem, trechosAchados, type MedicamentoAchado } from '@/lib/buscaMedicamento'
 import { abrirImpressao } from '@/lib/prontuario'
-import { gravarRegistros, novoItem } from '@/lib/offline/sincronizar'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { BotaoLinha } from '@/components/ui/botao-linha'
+import { OpcaoLista } from '@/components/ui/botao-linha'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Chip } from '@/components/monitor/Pagina'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -33,6 +31,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
 import { AlterarItem } from '@/components/prescricao/AlterarItem'
+import { METODOS_PESO, gravarPeso, textoDoPeso, useFaltaParaPrescrever, type MetodoPeso } from '@/components/prescricao/pesoAtendimento'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
 import { frase, interacoesDoErro, semPontoFinal, type InteracaoJustificada, type InteracaoNaPrescricao } from '@/lib/interacoes'
 import { resumoMudanca, type Alteracao } from '@/lib/alteracaoPrescricao'
@@ -49,13 +48,6 @@ type Diluicao = { id: string; versao: number; texto: string; fonte: string; revi
 export type PacientePrescricao = { nome: string; dataAtual?: string; leito?: string; diagnostico?: string }
 export type PesoAtual = { valor_num: number; aferido_em: string; metodo: string | null }
 
-// como o peso foi obtido (observacao.metodo); nulo = aferido
-const METODOS_PESO = [
-  { v: 'aferido', rotulo: 'Aferido' }, { v: 'estimado', rotulo: 'Estimado' }, { v: 'referido', rotulo: 'Referido pelo paciente' },
-] as const
-type MetodoPeso = (typeof METODOS_PESO)[number]['v']
-const rotuloMetodoPeso = (m: string | null) => (m && m !== 'aferido' ? METODOS_PESO.find((x) => x.v === m)?.rotulo.toLowerCase() ?? m : null)
-
 const VIAS = ['VO', 'EV', 'IM', 'SC', 'SL', 'INAL', 'TÓPICA', 'RETAL', 'SNE', 'OCULAR']
 const VIAS_COM_DILUICAO = ['EV', 'IM', 'SC']
 // Cuidados sem dose (o catálogo antigo, sem as doses — decisão de 27/09/2026)
@@ -69,7 +61,7 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
   const { perfil } = useAuth()
   const [erro, setErro] = React.useState<string | null>(null)
   const recarregar = () => {
-    for (const k of ['prescricao-vigente', 'alergias', 'peso-atual']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
+    for (const k of ['prescricao-vigente', 'alergias', 'peso-atual', 'falta-prescrever']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
     void qc.invalidateQueries({ queryKey: ['alteracoes-itens'] })
   }
 
@@ -241,6 +233,49 @@ function ChipPorta({ ativo, onClick, children }: { ativo: boolean; onClick: () =
   return <Chip ativo={ativo} onClick={onClick}>{children}</Chip>
 }
 
+/** Texto do resultado com as letras achadas em destaque. */
+function Achado({ texto, termo }: { texto: string; termo: string }) {
+  return <>{trechosAchados(texto, termo).map((p, i) => (p.achou ? <b key={i} className="font-semibold text-tinta">{p.t}</b> : p.t))}</>
+}
+
+/**
+ * Campo do peso deste atendimento, com o modo de obtenção. Usado no "Novo
+ * item" e no topo da aba Prescrição do leito (ponto 11: o campo de lá era só
+ * rascunho do navegador e não gravava).
+ */
+export function CampoPeso({ pacienteId, motivo, aoGravar, aoErro, id = 'peso-novo' }: {
+  pacienteId: string; motivo?: string; aoGravar: () => void; aoErro: (m: string | null) => void; id?: string
+}) {
+  const { perfil } = useAuth()
+  const qc = useQueryClient()
+  const [valor, setValor] = React.useState('')
+  const [metodo, setMetodo] = React.useState<MetodoPeso>('aferido')
+  const [gravando, setGravando] = React.useState(false)
+  async function registrar() {
+    setGravando(true)
+    const erro = await gravarPeso(perfil?.id, pacienteId, valor, metodo)
+    setGravando(false)
+    if (erro) return aoErro(erro)
+    setValor(''); setMetodo('aferido'); aoErro(null)
+    for (const k of ['falta-prescrever', 'peso-atual']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
+    aoGravar()
+  }
+  return (
+    <div className="flex flex-wrap items-end gap-2">
+      {motivo && <span className="w-full text-rotulo text-atencao">{motivo}</span>}
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={id}>Peso deste atendimento (kg)</Label>
+        <Input id={id} className="h-8 w-28" inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void registrar() } }} />
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Como o peso foi obtido">
+        {METODOS_PESO.map((m) => <ChipPorta key={m.v} ativo={metodo === m.v} onClick={() => setMetodo(m.v)}>{m.rotulo}</ChipPorta>)}
+      </div>
+      <Button size="sm" disabled={gravando || !valor.trim()} onClick={() => void registrar()}>Registrar peso</Button>
+    </div>
+  )
+}
+
 export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, pediatrico = false }: {
   pacienteId: string; peso?: PesoAtual | null; aoMudar: () => void; aoErro: (m: string | null) => void
   /** Modo do Pronto-Socorro: chips de via e de "quando" (Agora / Se necessário). */
@@ -248,7 +283,6 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   /** Criança: mostra o campo do peso desde o início. */
   pediatrico?: boolean
 }) {
-  const { perfil } = useAuth()
   const qc = useQueryClient()
   const [tipo, setTipo] = React.useState<'medicamento' | 'cuidado'>('medicamento')
   const [busca, setBusca] = React.useState('')
@@ -257,28 +291,50 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   const [divergir, setDivergir] = React.useState(false)
   const [dilTexto, setDilTexto] = React.useState('')
   const [justificativa, setJustificativa] = React.useState('')
-  const [novoPeso, setNovoPeso] = React.useState('')
   const [pedePeso, setPedePeso] = React.useState(false)
-  const [metodoPeso, setMetodoPeso] = React.useState<MetodoPeso>('aferido')
   const [pedeIdade, setPedeIdade] = React.useState(false)
   const [anos, setAnos] = React.useState('')
   const [faltaAvisada, setFaltaAvisada] = React.useState(false)
   // Fase 2, tarefa 3: interação crítica trava o item até o médico justificar
   const [interacao, setInteracao] = React.useState<{ item: Record<string, unknown>; lista: InteracaoNaPrescricao[] } | null>(null)
   const [justInteracao, setJustInteracao] = React.useState('')
+  // erro do servidor dentro do cartão, junto do botão (ponto 11): no topo da
+  // página ele ficava longe de quem apertou "Prescrever"
+  const [erroItem, setErroItem] = React.useState<string | null>(null)
+  const avisar = (m: string | null) => { setErroItem(m); aoErro(null) }
+  const [opcaoAtiva, setOpcaoAtiva] = React.useState(0)
+  const doseRef = React.useRef<HTMLInputElement>(null)
   const { unidadeAtiva } = useUnidade()
 
+  // ponto 11: busca do servidor — sinônimo (AAS, SF 0,9%), várias palavras em
+  // qualquer ordem, apresentação; o filtro da unidade fica dentro da RPC
+  const termo = busca.trim()
   const resultados = useQuery({
-    queryKey: ['busca-medicamento', busca, unidadeAtiva?.unidade_id],
-    enabled: busca.trim().length >= 3 && !med,
+    queryKey: ['busca-medicamento', termo, unidadeAtiva?.unidade_id],
+    enabled: termo.length >= 2 && !med,
     queryFn: async () => {
-      const { data, error } = await supabase.from('medicamento')
-        .select('id, principio_ativo, apresentacao, concentracao, alta_vigilancia')
-        .eq('ativo', true).or(filtroDaUnidade(unidadeAtiva?.unidade_id)).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).order('principio_ativo').limit(15)
+      const { data, error } = await supabase.rpc('buscar_medicamento', { p_unidade: unidadeAtiva?.unidade_id ?? null, p_termo: termo })
       if (error) throw error
-      return (data ?? []) as Medicamento[]
+      return (data ?? []) as unknown as MedicamentoAchado[]
     },
   })
+  const achados = resultados.data ?? []
+  // peso e idade que o servidor vai exigir, perguntados antes do item
+  const faltaServidor = useFaltaParaPrescrever(pacienteId)
+  const faltaPaciente = faltaServidor.data?.falta ?? []
+  const faltaItem = faltaNoItem({ med: !!med, dose: f.dose, via: f.via, posologia: f.posologia, porta }, faltaPaciente)
+  const textoPeso = faltaServidor.data ? textoDoPeso(faltaServidor.data)
+    : peso ? `Último peso: ${peso.valor_num} kg (${hora(peso.aferido_em)})` : null
+  function escolher(m: MedicamentoAchado) {
+    setMed(m); setOpcaoAtiva(0)
+    requestAnimationFrame(() => doseRef.current?.focus())
+  }
+  function teclaNaBusca(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (achados.length === 0) return
+    if (e.key === 'ArrowDown') { e.preventDefault(); setOpcaoAtiva((i) => (i + 1) % achados.length) }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setOpcaoAtiva((i) => (i - 1 + achados.length) % achados.length) }
+    else if (e.key === 'Enter') { e.preventDefault(); escolher(achados[Math.min(opcaoAtiva, achados.length - 1)]) }
+  }
   // Fase 2, tarefa 9: medicamento em falta na farmácia e o retorno dela
   const falta = useQuery({
     queryKey: ['falta-medicamento', unidadeAtiva?.unidade_id, med?.id],
@@ -320,29 +376,18 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
       if (/peso deste atendimento/.test(error.message)) setPedePeso(true)
       if (/data de nascimento ou idade estimada/.test(error.message)) setPedeIdade(true)
       const lista = interacoesDoErro(error)
-      if (lista) { setInteracao({ item, lista }); return aoErro(null) }
-      return aoErro(error.message)
+      if (lista) { setInteracao({ item, lista }); return avisar(null) }
+      return avisar(error.message)
     }
-    aoErro(null); limpar(); setInteracao(null); setJustInteracao(''); aoMudar()
-  }
-  async function registrarPeso() {
-    const n = Number(novoPeso.replace(',', '.'))
-    if (!perfil || !(n > 0)) return
-    const { data: c } = await supabase.from('conceito').select('id').eq('nome', 'peso').is('unidade_id', null).single()
-    if (!c) return aoErro('Conceito de peso não encontrado.')
-    const r = await gravarRegistros(perfil.id, [novoItem('observacao', {
-      paciente_id: pacienteId, conceito_id: c.id, valor_num: n, origem: 'manual', metodo: metodoPeso,
-    })])
-    if (r.recusados.length) return aoErro(r.recusados[0])
-    setPedePeso(false); setNovoPeso(''); setMetodoPeso('aferido'); aoErro(null); aoMudar()
+    avisar(null); limpar(); setInteracao(null); setJustInteracao(''); aoMudar()
   }
   async function registrarIdade() {
     const n = Number(anos.replace(',', '.'))
     if (anos.trim() === '' || !(n >= 0)) return
     const { error } = await supabase.rpc('registrar_idade_estimada', { p_paciente: pacienteId, p_anos: n })
-    if (error) return aoErro(error.message)
-    setPedeIdade(false); setAnos(''); aoErro(null); aoMudar()
-    for (const k of ['idade-paciente', 'cabecalho-paciente']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
+    if (error) return avisar(error.message)
+    setPedeIdade(false); setAnos(''); avisar(null); aoMudar()
+    for (const k of ['idade-paciente', 'cabecalho-paciente', 'falta-prescrever']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
   }
 
   return (
@@ -358,15 +403,13 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               {t === 'medicamento' ? 'Medicamento' : 'Cuidado'}
             </Button>
           ))}
-          {peso && (
-            <span className="ml-auto self-center text-rotulo text-tinta-sussurro">
-              Último peso: {peso.valor_num} kg{rotuloMetodoPeso(peso.metodo) ? `, ${rotuloMetodoPeso(peso.metodo)}` : ''} ({hora(peso.aferido_em)})
-            </span>
-          )}
+          {/* ponto 11: o peso que o servidor aceita (deste atendimento); o "último peso" de qualquer época confundia */}
+          {textoPeso && <span className="ml-auto self-center text-rotulo text-tinta-sussurro">{textoPeso}</span>}
         </div>
 
-        {tipo === 'medicamento' && (pedeIdade || semIdade) && (
+        {tipo === 'medicamento' && (pedeIdade || semIdade || faltaPaciente.includes('idade')) && (
           <div className="flex flex-wrap items-end gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao p-2">
+            <span className="w-full text-rotulo text-atencao">Para prescrever medicamento, registre a idade.</span>
             <div className="flex flex-col gap-1">
               <Label htmlFor="idade-estimada">Sem data de nascimento: idade estimada (anos)</Label>
               <Input id="idade-estimada" className="h-8 w-28" inputMode="decimal" value={anos} onChange={(e) => setAnos(e.target.value)} />
@@ -376,16 +419,11 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
           </div>
         )}
 
-        {tipo === 'medicamento' && (pedePeso || pediatrico) && (
-          <div className="flex flex-wrap items-end gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao p-2">
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="peso-novo">Peso deste atendimento (kg)</Label>
-              <Input id="peso-novo" className="h-8 w-28" inputMode="decimal" value={novoPeso} onChange={(e) => setNovoPeso(e.target.value)} />
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Como o peso foi obtido">
-              {METODOS_PESO.map((m) => <ChipPorta key={m.v} ativo={metodoPeso === m.v} onClick={() => setMetodoPeso(m.v)}>{m.rotulo}</ChipPorta>)}
-            </div>
-            <Button size="sm" onClick={() => void registrarPeso()}>Registrar peso</Button>
+        {tipo === 'medicamento' && (pedePeso || pediatrico || faltaPaciente.includes('peso')) && (
+          <div className="rounded-controle border border-atencao/30 bg-alerta-atencao p-2">
+            <CampoPeso pacienteId={pacienteId} aoErro={avisar}
+              motivo={faltaPaciente.includes('peso') ? 'Para prescrever medicamento, registre o peso deste atendimento.' : undefined}
+              aoGravar={() => { setPedePeso(false); aoMudar() }} />
           </div>
         )}
 
@@ -410,7 +448,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 <Button size="xs" variant="ghost" className="ml-auto" onClick={async () => {
                   if (!unidadeAtiva) return
                   const { error } = await supabase.rpc('sinalizar_falta', { p_unidade: unidadeAtiva.unidade_id, p_medicamento: med.id })
-                  aoErro(error ? error.message : null)
+                  avisar(error ? error.message : null)
                   if (!error) setFaltaAvisada(true)
                 }}>{faltaAvisada ? 'Falta sinalizada' : 'Sinalizar falta'}</Button>
                 <Button size="xs" variant="ghost" onClick={() => { setMed(null); setFaltaAvisada(false) }}>Trocar</Button>
@@ -422,25 +460,44 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 )}
               </div>
             ) : (
+              // ponto 11 (opção A do RT): lista logo abaixo do campo, com teclado
+              // (↑ ↓ Enter), o texto achado destacado e o sinônimo que achou o item
               <div className="flex flex-col gap-1">
-                <Input placeholder="Buscar medicamento do cadastro (3 letras ou mais)" value={busca} onChange={(e) => setBusca(e.target.value)} />
-                <div className="max-h-48 overflow-y-auto">
-                  {(resultados.data ?? []).map((m) => (
-                    <BotaoLinha key={m.id} variante="linha" onClick={() => setMed(m)}
-                      className="gap-2 border-fio px-2 py-1 text-rotulo hover:bg-trilha">
-                      <span className="font-medium">{m.principio_ativo}</span>
-                      <span className="text-tinta-apoio">{[m.apresentacao, m.concentracao].filter(Boolean).join(' · ')}</span>
-                    </BotaoLinha>
-                  ))}
-                  {resultados.data?.length === 0 && <p className="px-2 py-1 text-rotulo text-tinta-sussurro">Nada no cadastro com esse nome.</p>}
-                </div>
+                <Input placeholder="Buscar medicamento: nome, sigla ou apresentação (ex.: AAS, SF 0,9%, dipirona gotas)"
+                  aria-label="Buscar medicamento" role="combobox" aria-expanded={achados.length > 0} aria-controls="lista-medicamentos"
+                  value={busca} onChange={(e) => { setBusca(e.target.value); setOpcaoAtiva(0) }} onKeyDown={teclaNaBusca} />
+                {termo.length >= 2 && (
+                  <div id="lista-medicamentos" role="listbox" aria-label="Medicamentos do cadastro"
+                    className="max-h-56 overflow-y-auto rounded-controle border border-fio bg-superficie">
+                    {resultados.isFetching && achados.length === 0 && <p className="px-3 py-2 text-rotulo text-tinta-sussurro">Buscando…</p>}
+                    {resultados.isError && (
+                      <p className="px-3 py-2 text-rotulo text-critico">Não foi possível buscar. Tente de novo.</p>
+                    )}
+                    {achados.map((m, i) => (
+                      <OpcaoLista key={m.id} aria-selected={i === opcaoAtiva} onClick={() => escolher(m)} onMouseEnter={() => setOpcaoAtiva(i)}
+                        className={`flex-col items-start gap-0.5 ${i === opcaoAtiva ? 'bg-trilha' : ''}`}>
+                        <span className="text-tinta">
+                          {m.casou_por && <span className="text-tinta-apoio">{m.casou_por} = </span>}
+                          <Achado texto={m.principio_ativo} termo={termo} />
+                          {m.alta_vigilancia && <Badge variant="warning" className="ml-2">alta vigilância</Badge>}
+                        </span>
+                        <span className="text-rotulo text-tinta-apoio">
+                          <Achado texto={[m.apresentacao, m.concentracao].filter(Boolean).join(' · ')} termo={termo} />
+                        </span>
+                      </OpcaoLista>
+                    ))}
+                    {resultados.isSuccess && achados.length === 0 && (
+                      <p className="px-3 py-2 text-rotulo text-tinta-sussurro">Nada no cadastro com esse nome. Peça o cadastro ao farmacêutico.</p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
             {porta ? (
               <>
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="item-dose">Dose e diluição *</Label>
-                  <Input id="item-dose" value={f.dose} onChange={(e) => setF({ ...f, dose: e.target.value })} placeholder="escrita pelo médico" />
+                  <Input id="item-dose" ref={doseRef} value={f.dose} onChange={(e) => setF({ ...f, dose: e.target.value })} placeholder="escrita pelo médico" />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <span className="text-apoio font-medium text-tinta-apoio">Via e quando *</span>
@@ -458,7 +515,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
             <div className="grid gap-2 sm:grid-cols-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-dose">Dose *</Label>
-                <Input id="item-dose" value={f.dose} onChange={(e) => setF({ ...f, dose: e.target.value })} placeholder="escrita pelo médico" />
+                <Input id="item-dose" ref={doseRef} value={f.dose} onChange={(e) => setF({ ...f, dose: e.target.value })} placeholder="escrita pelo médico" />
               </div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-via">Via *</Label>
@@ -509,6 +566,9 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               })}>
               Prescrever
             </Button>
+            {/* ponto 11: o botão diz o que falta, e o erro do servidor aparece aqui, não no topo da página */}
+            {faltaItem.length > 0 && <p className="text-rotulo text-tinta-apoio">Falta: {faltaItem.join(', ')}.</p>}
+            {erroItem && <p role="alert" className="rounded-controle border border-critico/30 bg-alerta-critico p-2 text-apoio text-critico">{erroItem}</p>}
             {interacao && (
               <div role="alert" className="flex flex-col gap-2 rounded-controle border border-critico/40 bg-alerta-critico p-3 text-apoio">
                 <strong className="text-critico">Interação crítica com a prescrição vigente</strong>

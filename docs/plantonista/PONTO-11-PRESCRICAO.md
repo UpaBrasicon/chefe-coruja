@@ -3,8 +3,22 @@
 Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 `BACKLOG.md`. Pedido do RT em 28/10/2026: "Comece pelo ponto 11".
 
-**Nada foi alterado no código nem no banco.** Este documento é o plano. A
-implementação começa quando o RT responder às perguntas do fim.
+**Decisões do RT (28/10/2026).** Plano aprovado, com a opção A de tela.
+
+1. O clique no remédio: (b) ou (c). O RT confirma depois.
+2. Tela: opção A.
+3. Sinônimos: DCB, sim. Nome comercial, só quando o produto tem um único
+   princípio ativo. O RT pediu a lista antes de gravar: está em
+   `PONTO-11-SINONIMOS.md`.
+4. `pg_trgm`, para aceitar erro de digitação: fica para depois.
+5. O "Peso (kg)" do topo da aba do leito passa a gravar o peso de verdade.
+6. Prioridade P1, em "Telas do plantonista".
+
+**Ajuste depois da aprovação.** O cadastro tem cloreto de sódio a 0,9 % e a
+20 %, e glicose a 5 % e a 50 %. Por isso "SF" e "SG" não podem valer para o
+princípio ativo inteiro. A tabela de sinônimos ganha a coluna opcional
+`concentracao`: quando ela está preenchida, o termo só acha a apresentação
+daquela concentração.
 
 ```
 Vamos trabalhar a tarefa: ponto 11, busca de medicamento e peso na prescrição do leito.
@@ -108,13 +122,15 @@ Migration `<data>_busca_medicamento.sql`:
 ```sql
 -- expand: sinônimos por princípio ativo (vale para todas as apresentações)
 CREATE TABLE IF NOT EXISTS public.medicamento_sinonimo (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   principio_ativo_norm text NOT NULL,
+  concentracao text,                   -- nulo = todas; preenchida = só esta (SF 0,9%)
   termo text NOT NULL,                 -- como aparece na tela ("AAS")
   termo_norm text NOT NULL,            -- private.norm_medicamento(termo)
   tipo text NOT NULL CHECK (tipo IN ('sigla', 'sinonimo', 'comercial')),
   fonte text NOT NULL,                 -- de onde veio (ex.: DCB)
-  criado_por uuid, criado_em timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (principio_ativo_norm, termo_norm)
+  criado_em timestamptz NOT NULL DEFAULT now(),
+  UNIQUE NULLS NOT DISTINCT (principio_ativo_norm, concentracao, termo_norm)
 );
 ALTER TABLE public.medicamento_sinonimo ENABLE ROW LEVEL SECURITY;
 -- leitura para quem está logado; escrita só pela RPC (nesta tarefa, só a carga inicial)
