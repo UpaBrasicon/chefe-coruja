@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import { iniciarTema } from '@/lib/tema'
+import { deveRecarregar } from '@/lib/recargaDeploy'
 
 // Tema (guia do padrão, 1.4): pinta antes do React, com a cópia do aparelho.
 iniciarTema()
@@ -63,12 +64,13 @@ window.addEventListener('unhandledrejection', (event) => {
 })
 
 // Depois de um deploy, uma aba aberta pode pedir um pedaço do código (chunk)
-// que não existe mais. Recarrega uma vez para pegar o index.html novo —
-// sem a marca na sessão, um erro de verdade viraria laço de recarga.
+// que não existe mais. Recarrega para pegar o index.html novo, a cada versão
+// nova; a hora da última recarga na sessão evita o laço (lib/recargaDeploy).
 window.addEventListener('vite:preloadError', (event) => {
   try {
-    if (sessionStorage.getItem('cc-recarregou-deploy')) return
-    sessionStorage.setItem('cc-recarregou-deploy', '1')
+    const agora = Date.now()
+    if (!deveRecarregar(sessionStorage.getItem('cc-recarregou-deploy'), agora)) return
+    sessionStorage.setItem('cc-recarregou-deploy', String(agora))
   } catch {
     return
   }
