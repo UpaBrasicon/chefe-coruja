@@ -1,0 +1,167 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Aba Escala dos papéis que não são plantonista, gestor nem administrador
+// (entrega E3, opção A do RT em 28/10/2026): o mês com o dia ao lado, só de
+// leitura, no mesmo desenho da Escala do gestor. No mês, os dias em que eu
+// trabalho; ao lado, o dia escolhido com a equipe da minha categoria (resposta
+// 2 do RT: a própria escala e a da equipe inteira da categoria). Dos colegas,
+// só nome, setor e horário. Abre também fora do plantão (ForaDoExpediente).
+// Dados de escala_da_unidade (migrations 20270202000001 e 20270202000002).
+// ─────────────────────────────────────────────────────────────────────────────
+import { useQuery } from '@tanstack/react-query'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import * as React from 'react'
+
+import { useAuth } from '@/contexts/AuthContext'
+import { useUnidade } from '@/contexts/UnidadeContext'
+import { PAPEL_LABEL } from '@/lib/constants'
+import { dataIso, dataPorExtenso, hora } from '@/lib/formato'
+import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
+import { ProximoPlantao } from '@/components/casca/ProximoPlantao'
+import { TituloPagina } from '@/components/monitor/Pagina'
+import { Button } from '@/components/ui/button'
+import { BotaoLinha } from '@/components/ui/botao-linha'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { Spinner } from '@/components/ui/spinner'
+import type { Papel } from '@/types/database'
+
+type Plantao = {
+  id: string; setor_id: string; perfil_id: string; papel: Papel | null; data: string; turno: string
+  inicio: string; duracao_min: number; nome_completo: string | null
+}
+
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+const SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
+const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
+// a faixa do plantão: o diurno de 12 h é "Dia"
+const faixa = (p: Plantao) => (p.turno === 'noite' ? 'Noite' : p.duracao_min >= 720 ? 'Dia' : p.turno === 'tarde' ? 'Tarde' : 'Manhã')
+const horario = (p: Plantao) => `${hora(p.inicio)}–${hora(new Date(new Date(p.inicio).getTime() + p.duracao_min * 60_000))}`
+
+export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
+  const { unidadeAtiva, papeisDaUnidade } = useUnidade()
+  const { perfil } = useAuth()
+  const unidadeId = unidadeAtiva?.unidade_id
+  const hoje = dataIso()
+  const [mes, setMes] = React.useState(() => hoje.slice(0, 7))
+  const [dia, setDia] = React.useState<string | null>(null)
+  const [ano, mesNum] = mes.split('-').map(Number)
+  const diasNoMes = new Date(ano, mesNum, 0).getDate()
+  const de = `${mes}-01`
+  const ate = `${mes}-${String(diasNoMes).padStart(2, '0')}`
+
+  const escala = useQuery({
+    queryKey: ['escala-equipe', unidadeId, de, ate],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('escala_da_unidade', { p_unidade: unidadeId!, p_de: de, p_ate: ate })
+      if (error) throw error
+      return (data ?? []) as Plantao[]
+    },
+  })
+  const setores = useQuery({
+    queryKey: ['escala-setores', unidadeId],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('setores').select('id, nome').eq('unidade_id', unidadeId!).eq('ativo', true).order('ordem', { ascending: true })
+      if (error) throw error
+      return data ?? []
+    },
+  })
+
+  // a minha categoria na unidade (todo papel menos gestor e administrador)
+  const categorias = papeisDaUnidade.filter((p) => p !== 'gestor' && p !== 'admin')
+  const equipe = categorias.length ? categorias.map((p) => PAPEL_LABEL[p]).join(' e ') : 'Sua categoria'
+  const plantoes = escala.data ?? []
+  const meus = plantoes.filter((p) => p.perfil_id === perfil?.id)
+  const meuNoDia = new Map<string, Plantao[]>()
+  for (const p of meus) meuNoDia.set(p.data, [...(meuNoDia.get(p.data) ?? []), p])
+  const primeiro = new Date(ano, mesNum - 1, 1).getDay()
+  const celulas: (string | null)[] = [...Array(primeiro).fill(null),
+    ...Array.from({ length: diasNoMes }, (_, i) => `${mes}-${String(i + 1).padStart(2, '0')}`)]
+  while (celulas.length % 7) celulas.push(null)
+  const diaSel = dia ?? (hoje.startsWith(mes) ? hoje : de)
+  const doDia = plantoes.filter((p) => p.data === diaSel).sort((a, b) => a.inicio.localeCompare(b.inicio))
+  const nomeSetor = (id: string) => setores.data?.find((s) => s.id === id)?.nome ?? 'Setor'
+  const setoresDoDia = [...new Set(doDia.map((p) => p.setor_id))]
+    .sort((a, b) => (setores.data ?? []).findIndex((s) => s.id === a) - (setores.data ?? []).findIndex((s) => s.id === b))
+  const mudarMes = (n: number) => {
+    const d = new Date(ano, mesNum - 1 + n, 1)
+    setMes(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
+    setDia(null)
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {titulo && <TituloPagina titulo="Escala" descricao={`Seus plantões e os da sua categoria na unidade (${equipe}).`} />}
+      <ProximoPlantao />
+      <section aria-label="Escala do mês" className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="flex min-w-0 flex-col border-fio md:border-r">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-trilha px-4 py-2.5">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon-sm" aria-label="Mês anterior" onClick={() => mudarMes(-1)}><ChevronLeft /></Button>
+              <span className="min-w-[140px] text-center text-apoio font-semibold text-tinta">{MESES[mesNum - 1][0].toUpperCase() + MESES[mesNum - 1].slice(1)} de {ano}</span>
+              <Button variant="outline" size="icon-sm" aria-label="Próximo mês" onClick={() => mudarMes(1)}><ChevronRight /></Button>
+            </div>
+            {escala.data && <span className="text-rotulo text-tinta-sussurro">{plural(meus.length, 'plantão seu', 'plantões seus')} no mês</span>}
+          </div>
+          {escala.isLoading && <div className="flex justify-center py-8"><Spinner /></div>}
+          {escala.error && <MensagemErro className="m-3" texto={(escala.error as Error).message} />}
+          {escala.data && (
+            <div className="grid grid-cols-7 gap-px bg-trilha" role="grid" aria-label={`Dias de ${MESES[mesNum - 1]}`}>
+              {SEMANA.map((s) => <span key={s} role="columnheader" className="bg-superficie py-1.5 text-center text-rotulo text-tinta-sussurro">{s}</span>)}
+              {celulas.map((d, i) => {
+                if (!d) return <span key={i} className="bg-superficie" />
+                const meusDia = meuNoDia.get(d) ?? []
+                return (
+                  <BotaoLinha key={d} variante="linha" onClick={() => setDia(d)} aria-pressed={d === diaSel}
+                    aria-label={`${Number(d.slice(8))} de ${MESES[mesNum - 1]}: ${meusDia.length ? meusDia.map((p) => `${faixa(p)} no ${nomeSetor(p.setor_id)}`).join(', ') : 'sem plantão seu'}`}
+                    className={cn('min-h-[68px] flex-col items-stretch gap-1 rounded-none border-0 bg-superficie px-1.5 py-1.5 sm:px-2',
+                      d === diaSel && 'bg-alerta-marca ring-2 ring-acao ring-inset hover:bg-alerta-marca', d < hoje && d !== diaSel && 'text-tinta-sussurro')}>
+                    <span className="flex items-center justify-between text-apoio tabular-nums">
+                      <span className={cn(d === hoje ? 'font-semibold text-tinta' : 'text-tinta')}>{Number(d.slice(8))}</span>
+                      {d === hoje && <span className="hidden text-rotulo text-acao sm:inline">hoje</span>}
+                    </span>
+                    {meusDia.map((p) => (
+                      <span key={p.id} className="mt-auto truncate rounded-controle bg-acao/10 px-1.5 text-rotulo font-medium text-acao">
+                        <span className="sm:hidden">{faixa(p)[0]}</span>
+                        <span className="hidden sm:inline">{faixa(p)} · {nomeSetor(p.setor_id)}</span>
+                      </span>
+                    ))}
+                  </BotaoLinha>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {escala.data && (
+          <aside aria-label={`Equipe de ${dataPorExtenso(`${diaSel}T12:00:00Z`)}`} className="flex flex-col border-t border-fio md:border-t-0">
+            <div className="border-b border-trilha px-4 py-2.5">
+              <span className="text-apoio font-semibold text-tinta">{dataPorExtenso(`${diaSel}T12:00:00Z`)}</span>
+              <span className="block text-rotulo text-tinta-sussurro">{equipe} · {plural(doDia.length, 'plantão', 'plantões')}</span>
+            </div>
+            {doDia.length === 0 && <p className="px-4 py-3 text-apoio text-tinta-sussurro">Ninguém da equipe neste dia.</p>}
+            {setoresDoDia.map((s) => (
+              <div key={s} className="flex flex-col gap-1.5 border-b border-trilha px-4 py-2.5 last:border-b-0">
+                <span className="text-rotulo font-semibold text-tinta-sussurro">{nomeSetor(s)}</span>
+                {doDia.filter((p) => p.setor_id === s).map((p) => (
+                  <span key={p.id} className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-baseline gap-x-2 text-apoio">
+                    <span className="text-tinta-sussurro">{faixa(p)}</span>
+                    <span className={cn('truncate text-tinta', p.perfil_id === perfil?.id && 'font-semibold')}>
+                      {p.nome_completo ?? 'Profissional'}
+                      {p.perfil_id === perfil?.id && <span className="ml-1.5 text-rotulo font-normal text-acao">você</span>}
+                    </span>
+                    <span className="text-rotulo tabular-nums text-tinta-sussurro">{horario(p)}</span>
+                  </span>
+                ))}
+              </div>
+            ))}
+            <p className="mt-auto border-t border-trilha bg-campo px-4 py-2 text-rotulo text-pretty text-tinta-sussurro">
+              Só a escala da sua categoria. Troca, passagem e falta continuam com a coordenação.
+            </p>
+          </aside>
+        )}
+      </section>
+    </div>
+  )
+}

@@ -175,7 +175,7 @@ function Agenda() {
   )
 }
 
-function Extrato() {
+export function Extrato() {
   const hoje = new Date()
   const [mes, setMes] = React.useState(() => isoDia(hoje).slice(0, 7))
   const [ano, m] = mes.split('-').map(Number)
