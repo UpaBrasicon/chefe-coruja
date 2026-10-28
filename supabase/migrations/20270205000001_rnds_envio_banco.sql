@@ -45,6 +45,7 @@
 --   ALTER TABLE public.interop_outbox DROP CONSTRAINT interop_outbox_status_check;
 --   ALTER TABLE public.interop_outbox ADD CONSTRAINT interop_outbox_status_check
 --     CHECK (status IN ('pendente', 'enviado', 'erro', 'descartado'));
+--   Os quatro códigos LOINC inseridos ficam (são códigos oficiais da tabela de referência).
 --   As colunas novas da fila ficam (nulas, sem uso; o contract fica para depois)
 --   e as versões novas do enfileiramento também: só citam 'retido' em listas e
 --   gravam profissional_id, então funcionam sem o resto.
@@ -91,6 +92,12 @@ REVOKE ALL ON public.rnds_config_unidade FROM anon, authenticated;
 GRANT SELECT ON public.rnds_config_unidade TO authenticated;
 
 -- ── 3. LOINC das medidas que a RNDS aceita ──────────────────────────────────
+-- Base sem a tabela LOINC carregada (local, CI) recebe só estes quatro códigos;
+-- onde ela está carregada, nada muda.
+INSERT INTO terminologia.loinc (codigo, nome_longo) VALUES
+  ('8480-6', 'Systolic blood pressure'), ('8462-4', 'Diastolic blood pressure'),
+  ('29463-7', 'Body weight'), ('8302-2', 'Body height')
+ON CONFLICT (codigo) DO NOTHING;
 UPDATE public.conceito c SET loinc_codigo = v.loinc
   FROM (VALUES ('pressao-arterial-sistolica', '8480-6'), ('pressao-arterial-diastolica', '8462-4'),
                ('peso', '29463-7'), ('estatura', '8302-2')) AS v(nome, loinc)

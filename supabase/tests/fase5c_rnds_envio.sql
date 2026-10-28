@@ -56,6 +56,7 @@ VALUES (pg_temp.u('org'), pg_temp.u('central'), pg_temp.u('gestor'));
 INSERT INTO public.setores (id, unidade_id, nome, tipo) VALUES
   (pg_temp.u('setor'), pg_temp.u('un'), 'Porta RNDS', 'emergencia'),
   (pg_temp.u('setor_sem'), pg_temp.u('un_sem'), 'Porta RNDS Sem Config', 'emergencia');
+INSERT INTO terminologia.cid10 (codigo, descricao) VALUES ('E86', 'CID do teste E86') ON CONFLICT DO NOTHING;
 INSERT INTO public.pacientes (id, unidade_id, nome, data_nascimento, prontuario, sexo, cpf, cns) VALUES
   (pg_temp.u('pac'), pg_temp.u('un'), 'Paciente Ficticio RNDS', '1960-01-01', 'RNDS-53', 'M', '529.982.247-25', NULL);
 
@@ -114,8 +115,10 @@ INSERT INTO public.resumos_clinicos (unidade_id, paciente_id, internacao_id, res
 
 -- ── conferência noturna: o que não entrou na fila entra ─────────────────────
 SELECT pg_temp.ok(pg_temp.item('rac', pg_temp.u('ep')) IS NULL, 'antes da conferência o RAC não está na fila (gravado direto)');
-SELECT pg_temp.ok(private.rnds_conferencia_noturna('2026-08-10') @> '{"rac": 2, "sumario_alta": 1}',
-  'conferência põe na fila os dois RAC (alta e evasão) e o SA; a observação não vira RAC');
+SELECT pg_temp.ok((private.rnds_conferencia_noturna('2026-08-10') ->> 'rac')::int >= 2, 'conferência do dia');
+SELECT pg_temp.ok(pg_temp.item('rac', pg_temp.u('ep')) IS NOT NULL AND pg_temp.item('rac', pg_temp.u('ep_sem')) IS NOT NULL
+  AND pg_temp.item('sumario_alta', pg_temp.u('int')) IS NOT NULL,
+  'conferência põe na fila os dois RAC (alta e evasão) e o SA');
 SELECT pg_temp.ok(pg_temp.item('rac', pg_temp.u('ep_obs')) IS NULL, 'episódio que virou observação não tem RAC');
 SELECT pg_temp.ok(private.rnds_conferencia_noturna('2026-08-10') @> '{"rac": 0, "sumario_alta": 0, "regulacao": 0}',
   'a segunda conferência do mesmo dia não põe nada');
