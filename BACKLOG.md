@@ -1509,15 +1509,16 @@ Evidência: 992 de 992 testes clínicos; homologação conferida pelo RT; migrat
 - Dose só onde o capítulo dá: dexametasona 10 mg EV, difenidramina 12,5 mg EV, oxigênio 10 L/min e
   sumatriptano 6 mg SC. Triptano na migrânea, dipirona, AINE, metoclopramida e clorpromazina ficam
   sem dose até haver fonte com página.
-- **Doses da migrânea — resolvidas em 27/10/2026, em homologação** (branch
-  `feat/lacunas-cefaleia-doses`; decisão do RT). As diretrizes novas (AHS 2025, IHS 2025) pararam na
+- **Doses da migrânea — em produção desde 27/10/2026** (PR #296; decisão do RT; homologação
+  conferida pelo RT). As diretrizes novas (AHS 2025, IHS 2025) pararam na
   verificação anti-robô das editoras; a fonte aberta com dose e página é o consenso da Sociedade
   Brasileira de Cefaleia (Arq Neuropsiquiatr 2000;58(2-A):371–389, PDF do SciELO): Tabelas 1 a 3 da
   crise fraca, moderada e forte (p. 377–378) e o esquema da emergência (p. 376), como o consenso traz,
   com o ano em destaque na tela. Clorpromazina 0,1–0,7 mg/kg pelo peso. Ao lado, os níveis de
   recomendação da AHS 2025 para o PS (PMID 41321235), só pelo resumo e sem dose. Ficam sem dose:
-  metoclopramida parenteral (o consenso só traz 20 mg VO) e cetoprofeno (não aparece). Versão
-  2026-10-27.1 da ficha na fila de aprovação (migration `20270131000005_lacunas_cefaleia_doses`).
+  metoclopramida parenteral (o consenso só traz 20 mg VO) e cetoprofeno (não aparece). Migration
+  `20270131000005_lacunas_cefaleia_doses` aplicada na homologação e, com o "ok produção" do RT, na
+  produção. Falta aprovar a versão 2026-10-27.1 da ficha na revisão clínica.
 - Diferença anotada: idade de início após 65 anos na SNNOOP10 e após 50 no manual.
 - Fora: ACEP 2019 (o resumo traz as perguntas, não as recomendações).
 
@@ -1632,7 +1633,7 @@ espera do RT:
 - Fichas novas dos lotes 1 e 2 (19) na fila de aprovação da tela de revisão clínica.
 - Lote 1: RACE (tabela original). Fragilidade e dor na criança decididas em 27/10/2026 (ver
   "Decisões do RT sobre as pendências dos lotes 1 e 2", acima).
-- Lote 2: STONE e grupo da ITU decididos em 27/10/2026 (mesmo bloco); doses da cefaleia pelo consenso da SBCe 2000 (em homologação). Quimioprofilaxia de contatos na meningite em produção (PR #293).
+- Lote 2: STONE e grupo da ITU decididos em 27/10/2026 (mesmo bloco); doses da cefaleia pelo consenso da SBCe 2000 em produção (PR #296). Quimioprofilaxia de contatos na meningite em produção (PR #293).
 
 Próximo: lote 3 (atualizações de diretriz).
 
@@ -1799,7 +1800,7 @@ espera do RT:
 - Fichas novas do lote 3 (14 versões 2026-10-25.1) na fila de aprovação da tela de revisão clínica,
   somadas às 19 dos lotes 1 e 2.
 - Pendências dos lotes 1 e 2 que ainda restam: RACE (sem o artigo original). Doses da cefaleia em
-  homologação (consenso da SBCe 2000).
+  produção (consenso da SBCe 2000, PR #296).
   Dor na criança, grupo da ITU e quimioprofilaxia na meningite em produção; fragilidade e STONE fora
   (decisões do RT de 27/10/2026).
 - ~~Achado do lote 3: a Figura 8 do Part 9 da AHA 2025 traz atropina 1 mg a cada 3–5 min, máximo 3 mg,
