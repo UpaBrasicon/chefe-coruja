@@ -8,7 +8,8 @@
 --  * pela tabela (RLS), o plantonista só vê o próprio plantão (o defeito);
 --  * pela RPC, vê os próprios e os dos outros plantonistas da unidade, sem a
 --    observação dos colegas, e nenhum plantão de outra categoria;
---  * o enfermeiro, até a E3, vê só os próprios;
+--  * o enfermeiro vê a equipe de enfermagem, sem os plantonistas (desde a E1,
+--    20270202000002: a equipe é a da categoria de cada um);
 --  * o gestor vê a escala inteira, com a observação;
 --  * sem vínculo com a unidade: acesso negado; período acima de 62 dias: recusado.
 -- ════════════════════════════════════════════════════════════════════════════
@@ -106,11 +107,11 @@ SELECT pg_temp.ok((SELECT r.obs = 'obs de medA'
                     WHERE r.perfil_id = pg_temp.id('medA')),
   'do próprio plantão sai a observação');
 
--- ── 3. o enfermeiro, até a E3, vê só os próprios ───────────────────────────
+-- ── 3. o enfermeiro vê a equipe de enfermagem (E1) ─────────────────────────
 SELECT pg_temp.como('enf');
-SELECT pg_temp.ok((SELECT array_agg(r.perfil_id) = ARRAY[pg_temp.id('enf')]
+SELECT pg_temp.ok((SELECT array_agg(r.perfil_id ORDER BY r.perfil_id) = ARRAY[pg_temp.id('enf'), pg_temp.id('enf2')]
                      FROM pg_temp.pela_rpc() AS r(perfil_id uuid, nome text, crm text, obs text)),
-  'o enfermeiro vê só o próprio plantão');
+  'o enfermeiro vê o próprio plantão e o do colega enfermeiro, nenhum de plantonista');
 
 -- ── 4. o gestor vê a escala inteira, com a observação ──────────────────────
 SELECT pg_temp.como('gest');
