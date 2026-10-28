@@ -1141,7 +1141,10 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
 - Teste `supabase/tests/fase5c_rnds_regulacao.sql` e rollback passaram na homologação, numa transação
   desfeita; o teste do documento (`scripts/interop/tests/regulacao.test.ts`) roda no CI. Conversões
   e pontos a conferir em `docs/rnds/MIRA.md`.
-- No master em 28/10/2026 (#313). A migration vai à produção só com o "ok produção" do RT.
+- No master em 28/10/2026 (#313). **A migration não está na produção:** o RT decidiu esperar
+  (28/10/2026) e só a E2 da escala foi aplicada nesse dia. Ela pede um "ok produção" próprio, depois
+  que o RT conferir a 5.1 e a 5.2 na homologação. Quando for, o push usa `db push --include-all`,
+  porque a `20270202000003` (E2) entrou na produção fora da ordem dos números.
 
 **5.2, correções do RAC e do Sumário de Alta (decisões do RT em 28/10/2026, "todas a"):**
 - o validador oficial, que só tem tela, roda sem ela: uma classe Java pequena chama o motor dele
@@ -1153,7 +1156,7 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
 - a prescrição fica fora do SA, se o perfil permitir; o documento de prescrição (RPM) vai ao backlog;
 - frequência cardíaca e temperatura, fora da lista `BRTipoObservacao-1.0`, ficam fora do documento.
 
-**5.2 pronta em 28/10/2026 (branch `fase5/rnds-rac-sa`):**
+**5.2 no master em 28/10/2026 (#316, branch `fase5/rnds-rac-sa`):**
 - os quatro documentos de teste (RAC com alta e com evasão; SA com alta e com transferência) passam
   no validador oficial sem erro; antes eram 37 a 46 erros por documento. Relatório em
   `docs/rnds/evidencia/5.2-validador.txt`;
