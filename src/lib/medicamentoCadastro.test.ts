@@ -35,7 +35,10 @@ test('as buscas no cadastro usam o filtro da unidade', () => {
     const src = readFileSync(t, 'utf8')
     const buscas = src.split(".from('medicamento')").length - 1
     const filtros = src.split('filtroDaUnidade(').length - 1
-    assert.ok(buscas > 0, `${t}: sem busca no cadastro`)
+    // a RPC buscar_medicamento (ponto 11) filtra pela unidade no servidor e
+    // exige a unidade ativa como argumento
+    const rpc = src.split("rpc('buscar_medicamento', { p_unidade: unidadeAtiva?.unidade_id").length - 1
+    assert.ok(buscas + rpc > 0, `${t}: sem busca no cadastro`)
     assert.ok(filtros >= buscas, `${t}: ${buscas} busca(s) e ${filtros} filtro(s) da unidade`)
   }
 })

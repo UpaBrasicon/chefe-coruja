@@ -10394,6 +10394,14 @@ export type Database = {
         Args: { p_termo: string; p_unidade: string }
         Returns: Json
       }
+      buscar_medicamento: {
+        Args: { p_termo: string; p_unidade: string | null }
+        Returns: Json
+      }
+      o_que_falta_para_prescrever: {
+        Args: { p_paciente: string }
+        Returns: Json
+      }
       usar_medicamento_na_unidade: {
         Args: { p_medicamento: string; p_unidade: string }
         Returns: undefined
