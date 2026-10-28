@@ -1076,6 +1076,18 @@ regulação. Resposta: "Sim: inclua na 4.2 as rotas de leitura de prescrição e
 
   Os dados temporários foram apagados depois. Evidência em `infra/webhooks.md`.
 
+**4.1 e 4.2 no master em 27/10/2026 (PRs #295 e #297).** **4.3, tela, na homologação em 27/10/2026.**
+Três opções a partir do Refero (Lemon Squeezy, fal, Cal.com, Stripe, Zendesk, Enode); **escolha do RT:
+A, lista com gaveta.**
+- Integrações (`/integracoes`) ganhou as abas "Chaves da API" e "Webhooks".
+- **Lista:** os destinos, com os eventos, as unidades, as últimas 24 h e a situação.
+- **Gaveta:** o aviso da situação, os dados do destino, as entregas com "Reenviar", "Desligar" com
+  motivo, e "Religar" e "Trocar segredo" só para o super admin.
+- **Novo destino:** o diálogo é só do super admin, e o segredo aparece uma vez.
+- Sem banco novo: a tela usa as funções da 4.1.
+- **Regras** em `src/lib/webhooks.ts`, com teste. Conferida na página de teste nos dois temas, em
+  390 px e com o papel de gestor (`wh-A-aplicada-*` em `docs/frontend/revisao-visual/app/`).
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)

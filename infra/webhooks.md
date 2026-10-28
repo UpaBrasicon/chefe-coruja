@@ -69,9 +69,18 @@ Decisão do RT: "inclua na 4.2 as rotas de leitura de prescrição e regulação
 - As tabelas ficam fechadas para o REST; o acesso é só pelas funções.
 - O envio é assinado e repetido até 24 h, com desligamento automático e aviso.
 
+## Tela (4.3)
+
+Administração › Integrações (`/integracoes`), aba "Webhooks" (opção A do RT, lista com gaveta):
+- **Super admin:** cadastra o destino (o segredo aparece uma vez, com "Copiar"), troca o segredo,
+  desliga e religa.
+- **Gestor:** vê os destinos das unidades dele e as entregas, desliga com motivo e reenvia.
+- **Situação do destino:** ligado, falhando (desde quando), chave vencida (a chave da API venceu ou
+  foi revogada) ou desligado (à mão ou sozinho, com o motivo).
+- **Entregas:** as 200 mais recentes do destino, com a resposta do receptor e a próxima tentativa.
+
 ## O que não cobre
 
-- **Tela:** vem na 4.3. Até lá, as funções podem ser chamadas pelo SQL na homologação.
 - **IP fixo de saída:** a Edge Function não tem IP fixo. O receptor confere a assinatura, não o IP.
 - **Endereço que resolve para rede interna:** o motor recusa IP e nomes internos no texto do
   endereço, mas não resolve o DNS antes de chamar. Só o super admin cadastra destino.
