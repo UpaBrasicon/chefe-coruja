@@ -128,6 +128,17 @@ type PlantaoComPerfil = EscalaPlantao & {
   perfis: { id: string; nome_completo: string; crm: string | null } | null
 }
 
+// A escala é lida pela RPC: a RLS da tabela só devolve ao plantonista os próprios
+// plantões, e os dos colegas apareciam como "livre" (aba Escala, entrega E0).
+async function lerEscalaDaUnidade(unidadeId: string, de: string, ate: string): Promise<PlantaoComPerfil[]> {
+  const { data, error } = await supabase.rpc('escala_da_unidade', { p_unidade: unidadeId, p_de: de, p_ate: ate })
+  if (error) throw error
+  return (data ?? []).map(({ nome_completo, crm, ...p }) => ({
+    ...p,
+    perfis: nome_completo == null ? null : { id: p.perfil_id, nome_completo, crm },
+  })) as unknown as PlantaoComPerfil[]
+}
+
 type EscalaFixaComPerfil = EscalaFixa & {
   setores: { nome: string } | null
   perfis: { id: string; nome_completo: string; crm: string | null } | null
@@ -216,34 +227,14 @@ export default function Escala({
   const { data: escala, isLoading: carregandoEscala } = useQuery({
     queryKey: ['escala-plantao', unidadeId, dataInicio, dataFim],
     enabled: !!unidadeId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('escala_plantao')
-        .select('id, setor_id, perfil_id, data, turno, rotulo, observacao, quinzenal, perfis!escala_plantao_perfil_id_fkey(id, nome_completo, crm)')
-        .eq('unidade_id', unidadeId!)
-        .eq('ativo', true)
-        .gte('data', dataInicio)
-        .lte('data', dataFim)
-      if (error) throw error
-      return (data ?? []) as PlantaoComPerfil[]
-    },
+    queryFn: () => lerEscalaDaUnidade(unidadeId!, dataInicio, dataFim),
   })
 
   // Escala do mês inteiro (contador + calendário do plantonista)
   const { data: escalaMes, isLoading: carregandoMes } = useQuery({
     queryKey: ['escala-plantao-mes', unidadeId, mesInicio, mesFim],
     enabled: !!unidadeId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('escala_plantao')
-        .select('id, setor_id, perfil_id, data, turno, quinzenal, perfis!escala_plantao_perfil_id_fkey(id, nome_completo, crm)')
-        .eq('unidade_id', unidadeId!)
-        .eq('ativo', true)
-        .gte('data', mesInicio)
-        .lte('data', mesFim)
-      if (error) throw error
-      return (data ?? []) as PlantaoComPerfil[]
-    },
+    queryFn: () => lerEscalaDaUnidade(unidadeId!, mesInicio, mesFim),
   })
 
   const { data: plantonistas, isLoading: carregandoPlant } = useQuery({
@@ -260,19 +251,8 @@ export default function Escala({
   const { data: plantoesDeOutros, isLoading: carregandoOutros } = useQuery({
     queryKey: ['escala-plantao-outros', unidadeId, mesInicio, mesFim],
     enabled: !!unidadeId && !!diaSelecionado,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('escala_plantao')
-        .select('id, setor_id, perfil_id, data, turno, rotulo, perfis!escala_plantao_perfil_id_fkey(id, nome_completo, crm)')
-        .eq('unidade_id', unidadeId!)
-        .eq('ativo', true)
-        .not('perfil_id', 'is', null)
-        .neq('perfil_id', perfil?.id ?? '')
-        .gte('data', mesInicio)
-        .lte('data', mesFim)
-      if (error) throw error
-      return (data ?? []) as unknown as PlantaoComPerfil[]
-    },
+    queryFn: async () =>
+      (await lerEscalaDaUnidade(unidadeId!, mesInicio, mesFim)).filter((p) => p.perfil_id !== perfil?.id),
   })
 
   // Minhas solicitações de troca (status)

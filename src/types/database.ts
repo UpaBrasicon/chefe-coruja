@@ -11225,6 +11225,26 @@ export type Database = {
           ultima_em: string
         }[]
       }
+      escala_da_unidade: {
+        Args: { p_ate: string; p_de: string; p_unidade: string }
+        Returns: {
+          crm: string | null
+          data: string
+          duracao_min: number
+          fracionado: boolean
+          id: string
+          inicio: string
+          nome_completo: string | null
+          observacao: string | null
+          perfil_id: string
+          plantao_origem_id: string | null
+          quinzenal: boolean
+          rotulo: string | null
+          setor_id: string
+          turno: string
+          unidade_id: string
+        }[]
+      }
       escala_mes_gestor: {
         Args: { p_ano: number; p_mes: number; p_unidade: string }
         Returns: Json
