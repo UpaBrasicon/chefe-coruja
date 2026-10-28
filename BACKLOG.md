@@ -1869,7 +1869,7 @@ próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero 
 
 | Ordem | Entrega | O quê | Situação |
 |---|---|---|---|
-| 1 | E0 | Corrigir a "Escala da unidade" e a troca do plantonista: hoje leem a tabela direto e a RLS só devolve os próprios plantões (colegas aparecem como "livre"). Leitura passa por RPC | Em andamento |
+| 1 | E0 | Corrigir a "Escala da unidade" e a troca do plantonista: hoje leem a tabela direto e a RLS só devolve os próprios plantões (colegas aparecem como "livre"). Leitura passa por RPC | PR #302, migration `20270202000001`; na homologação em 27/10 (10 de 10 testes; plantonista passa de 0 a 24 plantões de colegas no mês); falta o teste do RT e o "ok produção" |
 | 2 | E1 | Categoria do plantão (`papel` em `escala_plantao`, `escala_fixa`, `escala_vagas`), preenchimento, gatilho e trava de categoria em troca e passagem | A fazer |
 | 3 | E2 | Gestor escala todas as categorias (seletor, cobertura por categoria); ERP leva só o plantão médico | A fazer |
 | 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | A fazer |
