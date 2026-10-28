@@ -2033,6 +2033,8 @@ próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero 
 
 Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda > **Todas as unidades** pedia a escala até o dia 31 de qualquer mês e dava erro nos meses de 30 dias e em fevereiro (o banco recusa 2026-11-31). PR #305, sem migration; na homologação em 28/10; mesclado no master pelo RT em 28/10 (produção pelo merge).
 
+Achado da E4, corrigido à parte (pedido do RT em 28/10/2026): depois de um deploy, o app recarregava sozinho só uma vez por sessão; com duas publicações seguidas a aba ficava quebrada (na homologação, as telas do enfermeiro, menos a Triagem, até recarregar à mão). Agora recarrega a cada versão nova, com trava de 30 s contra laço (`src/lib/recargaDeploy.ts`). Branch `fix/recarregar-a-cada-versao`, sem migration; na homologação em 28/10; falta o merge.
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
