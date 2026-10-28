@@ -1875,6 +1875,8 @@ próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero 
 | 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | A fazer |
 | 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | A fazer |
 
+Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda > **Todas as unidades** pedia a escala até o dia 31 de qualquer mês e dava erro nos meses de 30 dias e em fevereiro (o banco recusa 2026-11-31). PR #305, sem migration; na homologação em 28/10; falta o teste do RT e o merge.
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
