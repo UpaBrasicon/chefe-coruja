@@ -1109,6 +1109,39 @@ automático com aviso e reenvio manual. O receptor busca o detalhe pela API v1. 
 reversão em `infra/webhooks.md`. Fica para depois: período com dois segredos na troca, IP fixo de
 saída e resolução de DNS antes do envio.
 
+**Tarefa 5, e-SUS/RNDS com a 5a, MIRA (decisões do RT em 28/10/2026, "1a 2a 3a 4a 5a 6a 7a"):**
+- tudo é construído até a porta (documentos, MIRA, serviço de envio contra um simulador), enquanto o
+  gestor de uma unidade-piloto pede a credencial de homologação; a etapa oficial fica por último;
+- ordem: o MIRA primeiro (obrigação da Portaria GM/MS 6.656/2025, envio diário), depois as correções
+  do RAC e do Sumário de Alta;
+- a tarefa fica só com a RNDS; o e-SUS APS vai para a 5A (UBS);
+- o envio sai do VPS, num serviço próprio, separado do Hermes;
+- o validador oficial roda num contêiner local sem rede, só com documentos de teste;
+- cada mudança de status entra na fila na hora, com uma conferência noturna do dia anterior;
+- "em trânsito" vai como agendado, e "realizada" vai como atendido, com a data.
+
+Depois da leitura dos perfis ("8a 9a"): a modalidade é convertida só no documento (leito e
+transferência, 04; consulta e exame, 09), e "aguardando destino" vai como pendente. O modelo oficial
+do MIRA (RIRA) não está na parte pública do Portal de Serviços; por decisão do RT, a base é o
+projeto da RNDS no Simplifier (`BRRegulacaoAssistencial` 1.0), conferido contra o oficial antes da
+homologação.
+
+Etapas, cada uma em PR próprio: 5.1 MIRA (fila e documento); 5.2 correções do RAC e do Sumário de
+Alta, com o validador; 5.3 serviço de envio no VPS, contra o simulador; 5.4 cofre de certificados,
+aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, quando houver credencial.
+
+**5.1 na homologação em 28/10/2026:** migration `20270204000001_rnds_regulacao.sql`.
+- Cada mudança do status MIRA de uma solicitação grava um item `regulacao` na `interop_outbox`, com o
+  retrato dos dados naquele momento. Mudança que não troca o status MIRA não grava nada; o item ainda
+  pendente é descartado quando chega um status mais novo.
+- Paciente não identificado, ou sem CPF e sem CNS, fica fora da fila até ser identificado.
+- O documento (`src/interop/fhir/regulacao.ts`) sai do retrato: Composition, agendamento,
+  requisição e CID. A hora do envio, o identificador na RNDS e a substituição do documento anterior
+  ficam para o envio (5.3). Nada sai da fila.
+- Teste `supabase/tests/fase5c_rnds_regulacao.sql` e rollback passaram na homologação, numa transação
+  desfeita; o teste do documento (`scripts/interop/tests/regulacao.test.ts`) roda no CI. Conversões
+  e pontos a conferir em `docs/rnds/MIRA.md`.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
