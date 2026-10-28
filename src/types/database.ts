@@ -10340,6 +10340,13 @@ export type Database = {
       fechar_plantoes_erp: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
       plantoes_erp_previa: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
       reabrir_plantoes_erp: { Args: { p_competencia: string; p_motivo: string; p_unidade: string }; Returns: Json }
+      webhook_criar_destino: { Args: { p_chave: string; p_eventos: string[]; p_nome: string; p_unidades: string[]; p_url: string }; Returns: Json }
+      webhook_desligar_destino: { Args: { p_destino: string; p_motivo: string }; Returns: undefined }
+      webhook_destinos_lista: { Args: never; Returns: Json }
+      webhook_entregas_do_destino: { Args: { p_destino: string; p_situacao?: string }; Returns: Json }
+      webhook_girar_segredo: { Args: { p_destino: string }; Returns: Json }
+      webhook_reenviar: { Args: { p_entrega: string }; Returns: undefined }
+      webhook_religar_destino: { Args: { p_destino: string }; Returns: undefined }
       conferir_dispensacao: { Args: { p_dispensacao: string }; Returns: undefined }
       devolver_dispensacao: {
         Args: { p_dispensacao: string; p_motivo: string; p_quantidade: number }
