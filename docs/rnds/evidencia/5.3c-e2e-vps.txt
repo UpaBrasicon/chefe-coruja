@@ -1,0 +1,37 @@
+# 5.3c — teste ponta a ponta no VPS (28/10/2026)
+# fila da HOMOLOGAÇÃO → serviço rnds-envio no VPS 179.199.128.141 → simulador da RNDS
+# (master ec866b7, #331). Nada foi enviado à RNDS de verdade.
+
+## Instalação (root, por SSH)
+- instalar-rnds.sh: usuário rnds, /home/rnds/deploy (.env.rnds root 600; certificados uid 1000, 700),
+  cron "10 4 * * * /home/rnds/deploy/atualizar-rnds.sh" (as linhas do backup, do Hermes e do Ollama ficaram iguais).
+- Chave: secret key (sb_secret_) da homologação, posta pelo RT no .env.rnds.
+- atualizar-rnds.sh --forcar:
+    2026-10-28T22:41:09Z ok: 6abc414aef70272fc08a112bfb1a916f1b88ed06 saudável
+    rnds-envio Up (healthy) · rnds-simulador Up (healthy)
+- Contêineres: sistema de arquivos só leitura, no-new-privileges, usuário node, nenhuma porta no host
+  (ss -tlnp sem 8443/8080).
+
+## Dados de teste (homologação)
+- services/rnds-envio/deploy/e2e-homolog.sql: "Rede RNDS E2E (teste)", unidade 00000000-0000-4000-8000-00000000e502,
+  envio ligado só nela; RAC, SA e MIRA na fila pela conferência noturna.
+
+## Log do serviço (só id do item, tipo e resultado)
+{"evento":"inicio","simulador":true,"producao":false}
+regulacao  retido: unidade sem certificado da RNDS      (antes de copiar o certificado de teste: esperado)
+rac        retido: unidade sem certificado da RNDS
+sumario_alta retido: unidade sem certificado da RNDS
+-- certificado de teste do simulador copiado para certificados/<unidade>.pfx; itens liberados
+regulacao  enviado
+rac        enviado
+sumario_alta enviado
+{"evento":"lote","enviado":3,"retido":0,"reenviar":0,"erro":0,"credencial":0}
+
+## Gravado na fila da homologação
+tipo          status   id_rnds  tentativas  http  bundle    identifier                                                  recursos
+regulacao     enviado  36 car.  1           201   document  http://www.saude.gov.br/fhir/r4/NamingSystem/BRRNDS-99999   4
+rac           enviado  36 car.  1           201   document  …/BRRNDS-99999                                              6
+sumario_alta  enviado  36 car.  1           201   document  …/BRRNDS-99999                                              5
+
+## As outras unidades da homologação (sem configuração RNDS) ficaram como estavam
+rac pendente 17 · sumario_alta pendente 18 · sumario_alta descartado 1
