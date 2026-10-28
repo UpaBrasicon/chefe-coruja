@@ -55,6 +55,10 @@ Além das do guia (`BIBLIOTECA_API_KEY`, `QDRANT_URL`, `OLLAMA_URL`,
   o `deepseek-v4-flash` é modelo com raciocínio: com 900 tokens ele gastava
   tudo pensando e devolvia resposta vazia (13 das 56 evals). Com o raciocínio
   desligado a resposta vem direta e mais rápida.
+- `OLLAMA_KEEP_ALIVE=-1m` — o `bge-m3` nunca sai da memória. Recarregá-lo
+  levava 41–60+ s e estourava o limite da busca. Junto com o cron
+  `ollama-quente.sh` (a cada 10 min), que recarrega o modelo depois de um
+  restart. Ver `infra/biblioteca-ollama-quente.md`.
 
 ## Operação
 

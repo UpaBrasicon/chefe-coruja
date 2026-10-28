@@ -1076,6 +1076,18 @@ regulação. Resposta: "Sim: inclua na 4.2 as rotas de leitura de prescrição e
 
   Os dados temporários foram apagados depois. Evidência em `infra/webhooks.md`.
 
+**4.1 e 4.2 no master em 27/10/2026 (PRs #295 e #297).** **4.3, tela, na homologação em 27/10/2026.**
+Três opções a partir do Refero (Lemon Squeezy, fal, Cal.com, Stripe, Zendesk, Enode); **escolha do RT:
+A, lista com gaveta.**
+- Integrações (`/integracoes`) ganhou as abas "Chaves da API" e "Webhooks".
+- **Lista:** os destinos, com os eventos, as unidades, as últimas 24 h e a situação.
+- **Gaveta:** o aviso da situação, os dados do destino, as entregas com "Reenviar", "Desligar" com
+  motivo, e "Religar" e "Trocar segredo" só para o super admin.
+- **Novo destino:** o diálogo é só do super admin, e o segredo aparece uma vez.
+- Sem banco novo: a tela usa as funções da 4.1.
+- **Regras** em `src/lib/webhooks.ts`, com teste. Conferida na página de teste nos dois temas, em
+  390 px e com o papel de gestor (`wh-A-aplicada-*` em `docs/frontend/revisao-visual/app/`).
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
@@ -1855,6 +1867,37 @@ evidência de cada ponto em `docs/farmacia/PONTO<n>-*.md`.
 Para depois (decisão do RT em 27/10/2026): **lote e validade no estoque** (entrada com lote e
 validade, saldo por lote, aviso do que vence e escolha do lote na dispensação), como item próprio.
 
+## Telas do plantonista — pedidos do RT em 27/10/2026
+
+**Pedido do RT:** ao rever as telas do plantonista (Central, Plantão e Internação), o RT apontou 16
+pontos. Diagnóstico de cada um (onde está, o que acontece, causa, proposta para banco, RPC e tela,
+risco, tipo) em `docs/plantonista/REVISAO-PLANTONISTA-2026-10.md`.
+
+**Ponto 1 medido em 27/10/2026 (ok do RT para ler só os tempos da produção e do VPS).** O modelo de
+busca do VPS (Ollama, bge-m3) sai da memória depois de 24 h sem pergunta, e a recarga leva de 41 a 60 s
+ou mais com 2 processadores. Acima de 60 s a busca estoura e a pergunta dá erro 500: 6 vezes na produção
+(28/09 a 08/10) e 1 na homologação em 27/10. Depois vêm cerca de 10 s da reescrita pela IA. Proposta:
+deixar o modelo sempre carregado (só configuração do VPS, vale para homologação e produção juntas).
+
+**Situação: registrado, aguardando a decisão do RT.** Nenhum ponto vira código antes de o RT dizer quais
+entram, com qual prioridade e em qual fase. Achados do diagnóstico que pedem atenção: na homologação, uma
+pergunta ao "Perguntar à IA" parou em 68 s com erro 500 em 27/10 (ponto 1); o campo "Peso (kg)" da
+prescrição do leito não grava peso (ponto 11); a "Evolução médica" esconde o formulário sem dizer o
+motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT pediu para tirar (ponto 5).
+
+| Ordem sugerida | Prioridade sugerida | Pontos | Tipo |
+|---|---|---|---|
+| 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS (medido em 27/10); depois, medir de novo e só então mexer na reescrita e no limite da busca | bug |
+| 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito | bug + ajuste |
+| 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução | bug + ajuste |
+| 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG | nova (regra) |
+| 5 | P1 | 14 + 16 — atestado, receita para casa e orientações dentro de Alta e documentos | nova |
+| 6 | P2 | 2, 3, 4, 5 — navegação do plantão (VM duplicada, check-in duplicado, Atendimento, Internação direto na lista) | ajuste |
+| 7 | P2 | 6, 7, 8 — Resumo do leito em abas, botões juntos, sem aba Classificação | ajuste |
+| 8 | P2 | 13 — encaminhamento para outra unidade | nova |
+| 9 | P2 | 15 — Parecer, Termo de consentimento e Cuidados paliativos (com escalas do PubMed) | ajuste + nova |
+| 10 | P2 | 10 — modelo da admissão (sugestão: uma admissão, com reavaliação do quadro) | nova |
+
 ## Aba Escala para todos os papéis — pedido do RT em 27/10/2026
 
 **Pedido do RT:** uma aba "Escala" para todos os papéis da unidade, menos gestor e administrador.
@@ -1875,7 +1918,7 @@ próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero 
 | 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | A fazer |
 | 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | A fazer |
 
-Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda > **Todas as unidades** pedia a escala até o dia 31 de qualquer mês e dava erro nos meses de 30 dias e em fevereiro (o banco recusa 2026-11-31). PR #305, sem migration; na homologação em 28/10; falta o teste do RT e o merge.
+Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda > **Todas as unidades** pedia a escala até o dia 31 de qualquer mês e dava erro nos meses de 30 dias e em fevereiro (o banco recusa 2026-11-31). PR #305, sem migration; na homologação em 28/10; mesclado no master pelo RT em 28/10 (produção pelo merge).
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
