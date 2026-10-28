@@ -16,10 +16,12 @@ import { ClipboardCheck, FileText, Plus, ShieldAlert, Stethoscope, X } from 'luc
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { useTerminologia } from '@/hooks/useTerminologia'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { FormularioCheckin } from '@/components/checkin/FormularioCheckin'
 import { useAlergias, ativas, negaVigente } from '@/components/paciente/useAlergias'
 import { Button } from '@/components/ui/button'
+import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
@@ -28,7 +30,6 @@ import {
   useContextoEvolucao, useMotivoEvolucao, useRecarregarEvolucao, type ContextoEvolucao, type DadosEstruturados, type FormEvolucao,
 } from './dados'
 import { FONTE_LNNC as LNNC_FONTE, useNotificacaoCompulsoria } from '@/components/internacao/caderno/notificacao'
-import { type DiagnosticoLinha, useDiagnosticos } from '@/components/internacao/caderno/diagnosticos'
 import { carregarEnvelope, salvarEnvelope } from '@/lib/rascunho'
 import { Bloco, CampoTexto, ChipEscolha, Mensagem, RotuloSecao, Selo, type Aviso } from './pecas'
 
@@ -51,15 +52,11 @@ function gravarRascunho(internacaoId: string, f: FormEvolucao | null) {
   }
 }
 
-export function EvolucaoMedica({ pacienteId, internacaoId, onMudarDiagnostico }: {
-  pacienteId: string; internacaoId: string
-  /** Abre a subaba Diagnóstico (o diagnóstico mora lá; ponto 9). */
-  onMudarDiagnostico?: () => void
-}) {
+export function EvolucaoMedica({ pacienteId, internacaoId }: { pacienteId: string; internacaoId: string }) {
   const ctx = useContextoEvolucao(internacaoId)
   if (ctx.isLoading) return <Bloco><span className="flex items-center gap-2 text-apoio text-tinta-sussurro"><Spinner /> Carregando a evolução…</span></Bloco>
   if (ctx.error || !ctx.data) return <Bloco><Mensagem aviso={{ erro: true, texto: 'Não foi possível abrir a evolução: ' + mensagemErro(ctx.error) }} /></Bloco>
-  return <Formulario key={internacaoId} ctx={ctx.data} pacienteId={pacienteId} internacaoId={internacaoId} onMudarDiagnostico={onMudarDiagnostico} />
+  return <Formulario key={internacaoId} ctx={ctx.data} pacienteId={pacienteId} internacaoId={internacaoId} />
 }
 
 /**
@@ -91,9 +88,7 @@ function PorQueNaoEvoluo({ internacaoId, aoMudar }: { internacaoId: string; aoMu
   )
 }
 
-function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
-  ctx: ContextoEvolucao; pacienteId: string; internacaoId: string; onMudarDiagnostico?: () => void
-}) {
+function Formulario({ ctx, pacienteId, internacaoId }: { ctx: ContextoEvolucao; pacienteId: string; internacaoId: string }) {
   const jaTem = ctx.minha_do_dia
   const recarregar = useRecarregarEvolucao(internacaoId, pacienteId)
   const alergiasQ = useAlergias(pacienteId)
@@ -123,15 +118,7 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
 
   const avisos = avisosEvolucao(f)
   // LNNC do banco (notificacao_compulsoria_dos_cids): só sugere, o médico marca
-  // ponto 9 (RT, 28/10/2026): o diagnóstico tem um lugar só, a subaba
-  // Diagnóstico; a evolução grava o retrato do primário vigente
-  const diagnosticos = useDiagnosticos(internacaoId)
-  const vigentes = (diagnosticos.data ?? []).filter((d) => !d.encerrado_em)
-  const primario = vigentes.find((d) => d.tipo === 'primario')
-  const cidAtual: FormEvolucao['cid'] = primario
-    ? { codigo: primario.cid, descricao: primario.descricao ?? '', estado: primario.status }
-    : { codigo: '', descricao: '', estado: 'hipotese' }
-  const lnnc = useNotificacaoCompulsoria(cidAtual.codigo ? [cidAtual.codigo] : [])
+  const lnnc = useNotificacaoCompulsoria(f.cid.codigo.trim() ? [f.cid.codigo.trim()] : [])
   const itemLnnc = lnnc.data?.itens[0]
   const notificavel = itemLnnc ? { nome: itemLnnc.agravo, imediata: itemLnnc.imediata } : null
   const sv = ctx.sv_enfermagem
@@ -150,7 +137,7 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
   async function registrar() {
     setSalvando(true)
     setAviso(null)
-    const estruturado = paraEstruturado({ ...f, cid: cidAtual }, ctx, alergias)
+    const estruturado = paraEstruturado(f, ctx, alergias)
     const { error } = modo === 'corrigir' && jaTem
       ? await supabase.rpc('corrigir_evolucao', {
           p_documento: jaTem.documento_id, p_conteudo: '', p_justificativa: justificativa, p_estruturado: estruturado,
@@ -182,7 +169,7 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
 
   async function marcarAgravo() {
     if (!notificavel) return
-    const { error } = await supabase.rpc('marcar_agravo', { p_paciente: pacienteId, p_agravo: notificavel.nome, p_cid: cidAtual.codigo })
+    const { error } = await supabase.rpc('marcar_agravo', { p_paciente: pacienteId, p_agravo: notificavel.nome, p_cid: f.cid.codigo.trim() })
     setAviso(error ? { erro: true, texto: error.message } : { erro: false, texto: 'Agravo marcado como suspeito: a notificação aparece em Exames e agravos e impede a alta até ser registrada ou descartada.' })
   }
 
@@ -334,7 +321,7 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
             </div>
           )}
 
-          <DiagnosticoVigente vigentes={vigentes} carregando={diagnosticos.isLoading} onMudar={onMudarDiagnostico} />
+          <CampoCid valor={f.cid} onValor={(cid) => set({ cid })} />
 
           {notificavel && (
             <div className="flex flex-wrap items-start gap-2 text-apoio leading-[1.45] text-atencao">
@@ -372,27 +359,41 @@ function diaDeUso(inicio: string, hoje: string): string {
   return n >= 1 ? String(n) : '?'
 }
 
-/**
- * O diagnóstico vigente, só para leitura (ponto 9): ele se registra e se muda
- * na subaba Diagnóstico, com histórico; a evolução grava o retrato do primário.
- */
-function DiagnosticoVigente({ vigentes, carregando, onMudar }: { vigentes: DiagnosticoLinha[]; carregando: boolean; onMudar?: () => void }) {
-  const primario = vigentes.find((d) => d.tipo === 'primario')
-  const secundarios = vigentes.filter((d) => d.tipo === 'secundario')
-  const linha = (d: DiagnosticoLinha) => `${d.cid}${d.descricao ? ' — ' + d.descricao : ''} (${d.status === 'confirmado' ? 'confirmado' : 'hipótese'})`
+/** CID-10 principal com sugestões da terminologia e o estado (hipótese × confirmado). */
+function CampoCid({ valor, onValor }: { valor: FormEvolucao['cid']; onValor: (v: FormEvolucao['cid']) => void }) {
+  const texto = valor.codigo ? `${valor.codigo}${valor.descricao ? ' — ' + valor.descricao : ''}` : ''
+  const [termo, setTermo] = React.useState(texto)
+  const [aberto, setAberto] = React.useState(false)
+  const busca = useTerminologia('cid10', aberto ? termo : '', 8)
+  const sugestoes = aberto ? busca.data ?? [] : []
   return (
-    <div className="flex flex-wrap items-start gap-3 rounded-controle border border-fio bg-campo px-3 py-2.5">
-      <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-1">
-        <span className="text-apoio font-medium text-grafite">Diagnóstico · CID-10</span>
-        {carregando ? <span className="text-apoio text-tinta-sussurro">Carregando…</span>
-          : primario ? (
-            <>
-              <span className="text-controle text-tinta">{linha(primario)}</span>
-              {secundarios.map((d) => <span key={d.id} className="text-apoio text-tinta-apoio">Secundário: {linha(d)}</span>)}
-            </>
-          ) : <span className="text-apoio text-atencao">Sem diagnóstico registrado. Registre na subaba Diagnóstico.</span>}
+    <div className="flex flex-wrap items-end gap-3">
+      <div className="relative flex flex-[1_1_220px] flex-col gap-[5px]">
+        <label htmlFor="evol-cid" className="text-apoio font-medium text-grafite">Diagnóstico principal · CID-10</label>
+        <Input id="evol-cid" value={termo} placeholder="Ex.: J44.1 — DPOC com exacerbação aguda" autoComplete="off"
+          onChange={(e) => {
+            const t = e.target.value
+            setTermo(t)
+            setAberto(true)
+            const m = /^\s*([A-Za-z]\d{2}(?:\.\d{1,2})?)\s*(?:[—-]\s*(.*))?$/.exec(t)
+            onValor({ ...valor, codigo: m ? m[1].toUpperCase() : t.trim(), descricao: m?.[2]?.trim() ?? '' })
+          }}
+          onBlur={() => setTimeout(() => setAberto(false), 150)} />
+        {sugestoes.length > 0 && (
+          <div role="listbox" className="absolute top-full right-0 left-0 z-30 mt-1 max-h-[280px] overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
+            {sugestoes.map((s) => (
+              <OpcaoLista key={s.codigo} className="items-baseline gap-2.5 hover:bg-campo"
+                onClick={() => { onValor({ ...valor, codigo: s.codigo, descricao: s.descricao }); setTermo(`${s.codigo} — ${s.descricao}`); setAberto(false) }}>
+                <span className="text-controle text-tinta">{s.codigo} — {s.descricao}</span>
+              </OpcaoLista>
+            ))}
+          </div>
+        )}
       </div>
-      {onMudar && <Button variant="outline" size="sm" onClick={onMudar}>{primario ? 'Mudar diagnóstico' : 'Registrar diagnóstico'}</Button>}
+      <div className="flex gap-1.5">
+        <ChipEscolha ativo={valor.estado === 'hipotese'} onClick={() => onValor({ ...valor, estado: 'hipotese' })}>Hipótese</ChipEscolha>
+        <ChipEscolha ativo={valor.estado === 'confirmado'} onClick={() => onValor({ ...valor, estado: 'confirmado' })}>Confirmado</ChipEscolha>
+      </div>
     </div>
   )
 }

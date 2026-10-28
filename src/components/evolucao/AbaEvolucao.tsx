@@ -56,7 +56,7 @@ export function AbaEvolucao({ pacienteId, internacaoId, diagnostico, somenteLeit
       <div className="flex flex-wrap items-start gap-3.5">
         <div role="tabpanel" className="flex min-w-0 flex-[3_1_520px] flex-col gap-3.5">
           {sub === 'resumo' && <ResumoClinico pacienteId={pacienteId} internacaoId={internacaoId} />}
-          {sub === 'medica' && <EvolucaoMedica pacienteId={pacienteId} internacaoId={internacaoId} onMudarDiagnostico={() => setSub('diagnostico')} />}
+          {sub === 'medica' && <EvolucaoMedica pacienteId={pacienteId} internacaoId={internacaoId} />}
           {sub === 'diagnostico' && (
             <AbaDiagnostico internacaoId={internacaoId} podeEditar={diagnostico.podeEditar} acao={diagnostico.acao}
               onAbrirNotificacao={diagnostico.onAbrirNotificacao} />

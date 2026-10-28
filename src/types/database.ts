@@ -10731,6 +10731,14 @@ export type Database = {
           restantes: number
         }[]
       }
+      colegas_da_categoria: {
+        Args: { p_unidade: string }
+        Returns: {
+          nome_completo: string
+          papel: Database["public"]["Enums"]["papel"]
+          perfil_id: string
+        }[]
+      }
       colegas_para_passagem: {
         Args: { p_internacao: string }
         Returns: {
