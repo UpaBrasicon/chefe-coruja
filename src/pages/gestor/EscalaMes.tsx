@@ -295,7 +295,7 @@ export function EscalaMes() {
                         {f.escalados.map((e) => (
                           <span key={e.plantao_id} className="flex items-baseline gap-1.5">
                             <span className="min-w-0 truncate text-tinta">{e.nome}</span>
-                            {e.papel && <span title={PAPEL_LABEL[e.papel]} className="shrink-0 rounded-campo bg-campo px-1.5 text-rotulo text-tinta-sussurro">{sigla(e.papel)}</span>}
+                            {e.papel && <span title={PAPEL_LABEL[e.papel]} className="shrink-0 rounded-controle bg-campo px-1.5 text-rotulo text-tinta-sussurro">{sigla(e.papel)}</span>}
                             <span className="shrink-0 text-rotulo text-tinta-sussurro">
                               {e.duracao_min === 720 ? '12 h' : '6 h'}{e.quinzenal ? ' · 15/15' : ''}{e.rotulo ? ` · ${e.rotulo}` : ''}
                             </span>
