@@ -206,6 +206,24 @@ export function useHistoricoEvolucoes(internacaoId: string) {
     queryFn: async () => (await rpcJson<RegistroHistorico[]>('historico_evolucoes', internacaoId)) ?? [] })
 }
 
+/** Por que não posso evoluir (ponto 9): o motivo para a tela dizer o que fazer. */
+export type MotivoEvolucao = {
+  pode: boolean
+  motivo: 'encerrada' | 'papel' | 'checkin_pendente' | 'outro_setor' | 'sem_plantao' | null
+  setor_paciente: string | null
+  meus_setores_agora: string[]
+}
+export function useMotivoEvolucao(internacaoId: string, ligado: boolean) {
+  return useQuery({
+    queryKey: ['evolucao-motivo', internacaoId], enabled: !!internacaoId && ligado, staleTime: 15_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('por_que_nao_evoluo', { p_internacao: internacaoId })
+      if (error) throw error
+      return data as unknown as MotivoEvolucao
+    },
+  })
+}
+
 /** Recarrega tudo o que depende de uma evolução nova (inclusive a lista antiga de documentos). */
 export function useRecarregarEvolucao(internacaoId: string, pacienteId: string) {
   const qc = useQueryClient()

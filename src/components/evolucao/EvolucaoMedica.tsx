@@ -11,11 +11,14 @@
 // à evolução do dia). O texto do documento é montado pelo servidor a partir do
 // JSON, então o que se lê no histórico é sempre o que foi preenchido.
 // ─────────────────────────────────────────────────────────────────────────────
+import { useQueryClient } from '@tanstack/react-query'
 import { ClipboardCheck, FileText, Plus, ShieldAlert, Stethoscope, X } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { useTerminologia } from '@/hooks/useTerminologia'
+import { useUnidade } from '@/contexts/UnidadeContext'
+import { FormularioCheckin } from '@/components/checkin/FormularioCheckin'
 import { useAlergias, ativas, negaVigente } from '@/components/paciente/useAlergias'
 import { Button } from '@/components/ui/button'
 import { OpcaoLista } from '@/components/ui/botao-linha'
@@ -24,7 +27,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import {
   CAMPOS_EF, CAMPOS_SV, FORM_VAZIO, avisosEvolucao, dataLonga, deEstruturado, diaHora, herdarDaUltima, mensagemErro, paraEstruturado,
-  useContextoEvolucao, useRecarregarEvolucao, type ContextoEvolucao, type DadosEstruturados, type FormEvolucao,
+  useContextoEvolucao, useMotivoEvolucao, useRecarregarEvolucao, type ContextoEvolucao, type DadosEstruturados, type FormEvolucao,
 } from './dados'
 import { FONTE_LNNC as LNNC_FONTE, useNotificacaoCompulsoria } from '@/components/internacao/caderno/notificacao'
 import { carregarEnvelope, salvarEnvelope } from '@/lib/rascunho'
@@ -54,6 +57,35 @@ export function EvolucaoMedica({ pacienteId, internacaoId }: { pacienteId: strin
   if (ctx.isLoading) return <Bloco><span className="flex items-center gap-2 text-apoio text-tinta-sussurro"><Spinner /> Carregando a evolução…</span></Bloco>
   if (ctx.error || !ctx.data) return <Bloco><Mensagem aviso={{ erro: true, texto: 'Não foi possível abrir a evolução: ' + mensagemErro(ctx.error) }} /></Bloco>
   return <Formulario key={internacaoId} ctx={ctx.data} pacienteId={pacienteId} internacaoId={internacaoId} />
+}
+
+/**
+ * Ponto 9: em vez da frase genérica, o motivo de não poder evoluir e, quando
+ * existe, o que fazer (por_que_nao_evoluo). A regra é do servidor.
+ */
+function PorQueNaoEvoluo({ internacaoId, aoMudar }: { internacaoId: string; aoMudar: () => void }) {
+  const { unidadeAtiva } = useUnidade()
+  const qc = useQueryClient()
+  const m = useMotivoEvolucao(internacaoId, true).data
+  const setores = m?.meus_setores_agora.join(', ')
+  const texto = !m ? 'A evolução médica é registrada pelo médico de plantão no setor do paciente.'
+    : m.motivo === 'checkin_pendente' ? 'Seu check-in deste plantão não foi feito. Faça o check-in para evoluir.'
+    : m.motivo === 'outro_setor' ? `Você está de plantão em ${setores}; este paciente está em ${m.setor_paciente ?? 'outro setor'}. A evolução é do médico de plantão no setor do paciente.`
+    : m.motivo === 'sem_plantao' ? 'Você não tem plantão agora nesta unidade. A evolução é do médico de plantão no setor do paciente.'
+    : m.motivo === 'papel' ? 'Seu papel nesta unidade não registra evolução médica.'
+    : 'A evolução médica é registrada pelo médico de plantão no setor do paciente.'
+  return (
+    <div role="status" className="flex flex-col gap-2 rounded-controle border border-fio bg-campo px-3 py-2.5">
+      <span className="flex items-center gap-2 text-controle font-medium text-tinta">
+        <ShieldAlert className="size-4 text-atencao" aria-hidden /> Você não pode registrar a evolução agora
+      </span>
+      <span className="text-apoio text-tinta-apoio">{texto} As evoluções ficam para leitura no histórico.</span>
+      {m?.motivo === 'checkin_pendente' && (
+        <FormularioCheckin unidadeId={unidadeAtiva?.unidade_id} comObservacao={false} rotulo="Fazer check-in"
+          onFeito={() => { void qc.invalidateQueries({ queryKey: ['evolucao-motivo', internacaoId] }); aoMudar() }} />
+      )}
+    </div>
+  )
 }
 
 function Formulario({ ctx, pacienteId, internacaoId }: { ctx: ContextoEvolucao; pacienteId: string; internacaoId: string }) {
@@ -151,11 +183,7 @@ function Formulario({ ctx, pacienteId, internacaoId }: { ctx: ContextoEvolucao; 
       </div>
 
       {!ctx.ativa && <Mensagem aviso={{ erro: true, texto: 'Internação encerrada: a evolução fica só para leitura no histórico.' }} />}
-      {ctx.ativa && !ctx.pode_registrar && (
-        <p className="rounded-controle border border-fio bg-campo px-3 py-2 text-apoio text-tinta-apoio">
-          A evolução médica é registrada pelo médico de plantão no setor do paciente. Você lê as evoluções no histórico.
-        </p>
-      )}
+      {ctx.ativa && !ctx.pode_registrar && <PorQueNaoEvoluo internacaoId={internacaoId} aoMudar={recarregar} />}
 
       {jaTem && ctx.pode_registrar && modo === 'nova' && (
         <div className="flex flex-col gap-2 rounded-container border border-acao/30 bg-alerta-marca px-3.5 py-3">
