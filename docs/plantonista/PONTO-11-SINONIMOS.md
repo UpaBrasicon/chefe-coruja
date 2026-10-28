@@ -6,7 +6,8 @@
 - Da lista B, o RT mandou gravar só os nomes que passassem na Anvisa.
 - Gravado na homologação pela migration
   `20270203000002_sinonimos_medicamento`: 45 termos da lista A e 21 da lista B.
-- Na produção, falta o "ok produção".
+- Na produção desde 28/10/2026, com o "ok produção" do RT. A mesma migration
+  foi aplicada depois do merge do PR #308.
 
 ## Como a lista funciona
 

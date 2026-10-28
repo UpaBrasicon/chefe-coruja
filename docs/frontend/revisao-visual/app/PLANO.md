@@ -1235,6 +1235,50 @@ chegou antes):
 - Ainda falta a tela onde a unidade define os alvos novos (classificação, exame, medicação, permanência).
   Até lá, só o alvo da cor e a hora de reavaliação marcam atraso.
 
+## Fila do PS com dados novos (P2, 27/10/2026)
+
+Pedido do RT em 21/10/2026. Diagnóstico em `docs/porta/FILA-PS-DADOS-NOVOS-DIAGNOSTICO.md`; decisões D1–D5
+aceitas pelo RT em 27/10/2026; banco (`fila_ps_detalhes`) na homologação. Esta parte é só o desenho.
+
+**Hoje** (`fila-hoje-aguardando-claro|escuro.png`, `fila-hoje-atendimento-claro.png`, a fila real com dados
+fictícios): três abas em tabela. Aguardando tem cor, paciente, queixa, espera, alvo, situação e as ações
+(sala, chamar, abrir); Em atendimento tem cor, paciente, queixa, há quanto tempo e situação. Para saber da
+alergia, da sala, do médico, dos exames ou da medicação, o médico abre o atendimento. Na foto, o amarelo
+mostra o alvo fixo de 60 min, enquanto a unidade fictícia usa 30: José, há 35 min, não aparece atrasado (o
+achado D5).
+
+**Pedido** (D1–D5): Aguardando ganha alergia e sala; Em atendimento ganha alergia, médico, exames e
+medicação. Alergia: "Nega alergia", "Desconhece", as substâncias (até duas, "+N") com a grave em vermelho e
+um sinal, ou "Alergia não perguntada" em âmbar. Medicação de colega só em contagem ("2 pendentes", "checada
+14:54"). Exames "N de M prontos". O alvo da cor passa a ser o da unidade.
+
+**Referências do Refero:** Attio (`4230ed22`: tabela larga, um dado por coluna, com ponto e texto na
+situação); Lemni (`fc91cfac`: na lista, o título com uma segunda linha de dados embaixo); Wrike
+(`3d3e2910`: tabela com a ficha do item escolhido ao lado).
+
+**Opções** (`fila-A|B|C-claro|escuro.png`; as duas abas uma embaixo da outra só para a foto; na tela continuam
+abas). Em todas: o mesmo texto de alergia, exames e medicação, e o alvo da unidade:
+
+- **A · uma coluna para cada dado** (Attio): Aguardando com Alergia e Sala em colunas próprias (9 colunas);
+  Em atendimento com Alergia, Médico, Exames e Medicação (10 colunas). Tudo lido na horizontal, ordenável
+  por coluna. Custo: a 1.100 px a tabela já passa da largura, e a situação e as ações saem da tela (rola de
+  lado).
+- **B · embaixo do nome e uma coluna "Andamento"** (Lemni): a alergia e a sala (ou o médico) numa segunda
+  linha sob o nome do paciente, onde o olho já está; em Em atendimento, uma coluna "Andamento" com "Exames: 1
+  de 4 prontos" e "Medicação: 2 pendentes". As abas ficam com 7 colunas, como hoje, e cabem a 1.100 px.
+  Linhas um pouco mais altas.
+- **C · a fila de hoje e a ficha ao lado** (Wrike): a tabela fica enxuta, só com um sinal de alergia ao lado
+  do nome (vermelho na grave, âmbar no "não perguntado"), e a linha escolhida abre uma ficha à direita com
+  alergia, sala, médico, exames, medicação, alvo e "Abrir atendimento". Custo: para ver os dados de cada
+  paciente é preciso clicar nele; a fila perde largura para a ficha.
+
+**Decisão do RT (27/10/2026): nenhuma das três.** A fila fica como está, sem as colunas novas. Entram só o
+consultório do plantão (uma barra no topo da fila, no molde da sala da triagem, guardado no banco e preso ao
+plantão; as linhas ficam só com "Chamar" e "Abrir") e o alvo da cor da unidade na fila do médico. Aplicado na
+branch `feat/fila-consultorio-do-plantao` (PR #281); fotos `fila-consultorio-vazio-claro.png` e
+`fila-consultorio-escolhido-claro|escuro.png`: sem consultório escolhido o "Chamar" espera a escolha; com ele,
+cada linha cabe a 1.100 px, e o amarelo usa o alvo de 30 min da unidade (José, há 35 min, fica atrasado).
+
 ## Fase 5C-3.4 — telas do ERP (27/10/2026)
 
 Pedido do RT: "criar o ERP usando o Refero". A tela nova "Envio ao ERP" tem duas abas:

@@ -12,7 +12,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { createClient } from '@supabase/supabase-js'
 import {
+  montarBundleRegulacao,
   montarBundleSumarioAlta,
+  type DadosMira,
   type EntidadeCondicao,
   type EntidadeEncontro,
   type EntidadeEstabelecimento,
@@ -161,6 +163,20 @@ async function main() {
     // errado: pula e avisa. TODO: carregarEntidadesDoEpisodio + montarBundleRAC.
     if (item.tipo_documento === 'rac') {
       console.log(`  ${rotulo}: RAC ainda sem carga a partir do episódio — pulado`)
+      continue
+    }
+    // 5C-5.1: a regulação guarda o retrato MIRA (payload.mira), que é a fonte.
+    // O Bundle sai na hora do envio (5.3), com a hora e o documento anterior;
+    // aqui só se confere que ele monta. O payload não muda.
+    if (item.tipo_documento === 'regulacao') {
+      try {
+        const mira = (item.payload as { mira?: DadosMira } | null)?.mira
+        if (!mira) throw new Error('item de regulação sem o retrato MIRA')
+        const bundle = montarBundleRegulacao(mira, { agora: new Date().toISOString() })
+        console.log(`  ${rotulo}: MIRA ${mira.status} monta (${(bundle.entry ?? []).length} recursos)`)
+      } catch (err) {
+        console.error(`  ${rotulo}: ERRO ao montar o MIRA: ${(err as Error).message}`)
+      }
       continue
     }
     try {

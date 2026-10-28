@@ -9,3 +9,4 @@
 export * from './tipos.ts'
 export * from './codificacao.ts'
 export * from './mappers.ts'
+export * from './regulacao.ts'

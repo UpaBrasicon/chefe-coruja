@@ -1109,6 +1109,39 @@ automático com aviso e reenvio manual. O receptor busca o detalhe pela API v1. 
 reversão em `infra/webhooks.md`. Fica para depois: período com dois segredos na troca, IP fixo de
 saída e resolução de DNS antes do envio.
 
+**Tarefa 5, e-SUS/RNDS com a 5a, MIRA (decisões do RT em 28/10/2026, "1a 2a 3a 4a 5a 6a 7a"):**
+- tudo é construído até a porta (documentos, MIRA, serviço de envio contra um simulador), enquanto o
+  gestor de uma unidade-piloto pede a credencial de homologação; a etapa oficial fica por último;
+- ordem: o MIRA primeiro (obrigação da Portaria GM/MS 6.656/2025, envio diário), depois as correções
+  do RAC e do Sumário de Alta;
+- a tarefa fica só com a RNDS; o e-SUS APS vai para a 5A (UBS);
+- o envio sai do VPS, num serviço próprio, separado do Hermes;
+- o validador oficial roda num contêiner local sem rede, só com documentos de teste;
+- cada mudança de status entra na fila na hora, com uma conferência noturna do dia anterior;
+- "em trânsito" vai como agendado, e "realizada" vai como atendido, com a data.
+
+Depois da leitura dos perfis ("8a 9a"): a modalidade é convertida só no documento (leito e
+transferência, 04; consulta e exame, 09), e "aguardando destino" vai como pendente. O modelo oficial
+do MIRA (RIRA) não está na parte pública do Portal de Serviços; por decisão do RT, a base é o
+projeto da RNDS no Simplifier (`BRRegulacaoAssistencial` 1.0), conferido contra o oficial antes da
+homologação.
+
+Etapas, cada uma em PR próprio: 5.1 MIRA (fila e documento); 5.2 correções do RAC e do Sumário de
+Alta, com o validador; 5.3 serviço de envio no VPS, contra o simulador; 5.4 cofre de certificados,
+aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, quando houver credencial.
+
+**5.1 na homologação em 28/10/2026:** migration `20270204000001_rnds_regulacao.sql`.
+- Cada mudança do status MIRA de uma solicitação grava um item `regulacao` na `interop_outbox`, com o
+  retrato dos dados naquele momento. Mudança que não troca o status MIRA não grava nada; o item ainda
+  pendente é descartado quando chega um status mais novo.
+- Paciente não identificado, ou sem CPF e sem CNS, fica fora da fila até ser identificado.
+- O documento (`src/interop/fhir/regulacao.ts`) sai do retrato: Composition, agendamento,
+  requisição e CID. A hora do envio, o identificador na RNDS e a substituição do documento anterior
+  ficam para o envio (5.3). Nada sai da fila.
+- Teste `supabase/tests/fase5c_rnds_regulacao.sql` e rollback passaram na homologação, numa transação
+  desfeita; o teste do documento (`scripts/interop/tests/regulacao.test.ts`) roda no CI. Conversões
+  e pontos a conferir em `docs/rnds/MIRA.md`.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
@@ -1900,6 +1933,12 @@ ou mais com 2 processadores. Acima de 60 s a busca estoura e a pergunta dá erro
 (28/09 a 08/10) e 1 na homologação em 27/10. Depois vêm cerca de 10 s da reescrita pela IA. Proposta:
 deixar o modelo sempre carregado (só configuração do VPS, vale para homologação e produção juntas).
 
+**Ponto 1 aplicado em 27/10/2026, com "ok produção" do RT (PR #301).** O modelo de busca fica sempre
+carregado, e um aviso no cron a cada 10 min o recarrega depois de um restart. Medido direto no VPS,
+depois da mudança: pergunta completa em 4,3–6,0 s na homologação e 6,6 s na produção (antes: 22,9 s, e
+erros 500 em ~61 s). Como reverter: `infra/biblioteca-ollama-quente.md`. Falta conferir pela tela do app
+e pelo `clinical_search_logs` nos próximos dias; só se ainda passar de 10 s mexer na reescrita.
+
 **Situação: registrado, aguardando a decisão do RT.** Nenhum ponto vira código antes de o RT dizer quais
 entram, com qual prioridade e em qual fase. Achados do diagnóstico que pedem atenção: na homologação, uma
 pergunta ao "Perguntar à IA" parou em 68 s com erro 500 em 27/10 (ponto 1); o campo "Peso (kg)" da
@@ -1908,8 +1947,8 @@ motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT p
 
 | Ordem sugerida | Prioridade sugerida | Pontos | Tipo |
 |---|---|---|---|
-| 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS (medido em 27/10); depois, medir de novo e só então mexer na reescrita e no limite da busca | bug |
-| 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito. **Aprovado pelo RT em 28/10/2026 (P1, opção A); na homologação desde 28/10/2026 (PR #308, migration 20270203000001)**; sinônimos gravados na homologação (migration 20270203000002: lista A aprovada pelo RT e 21 nomes comerciais conferidos na Anvisa); falta a conferência do RT na tela | bug + ajuste |
+| 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS. **Aplicado em 27/10/2026 (PR #301); falta conferir pelo app** | bug |
+| 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (P1, opção A). PR #308: o merge publicou a tela (e0f688f). Com o "ok produção" do RT, as migrations 20270203000001 (busca e o que falta para prescrever) e 20270203000002 (sinônimos: lista A aprovada pelo RT e 21 nomes comerciais conferidos na Anvisa) foram aplicadas na produção. Plano e listas em `docs/plantonista/PONTO-11-PRESCRICAO.md` e `PONTO-11-SINONIMOS.md` | bug + ajuste |
 | 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução | bug + ajuste |
 | 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG | nova (regra) |
 | 5 | P1 | 14 + 16 — atestado, receita para casa e orientações dentro de Alta e documentos | nova |
@@ -1934,7 +1973,7 @@ próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero 
 | Ordem | Entrega | O quê | Situação |
 |---|---|---|---|
 | 1 | E0 | Corrigir a "Escala da unidade" e a troca do plantonista: hoje leem a tabela direto e a RLS só devolve os próprios plantões (colegas aparecem como "livre"). Leitura passa por RPC | Feito: PR #302 (master), migration `20270202000001`; na homologação em 27/10 (10 de 10 testes; plantonista passa de 0 a 24 plantões de colegas no mês); migration aplicada na produção em 28/10 (ok do RT), versão registrada; frontend em produção pelo merge |
-| 2 | E1 | Categoria do plantão (`papel` em `escala_plantao`, `escala_fixa`, `escala_vagas`), preenchimento, gatilho e trava de categoria em troca e passagem | PR #310, migration `20270202000002`; na homologação em 28/10 (16 de 16 testes; preenchimento: 387 plantões com categoria e 71 sem, todos de uma pessoa com dois papéis); falta o teste do RT e o "ok produção" |
+| 2 | E1 | Categoria do plantão (`papel` em `escala_plantao`, `escala_fixa`, `escala_vagas`), preenchimento, gatilho e trava de categoria em troca e passagem | Feito: PR #310 (master), migration `20270202000002`; na homologação em 28/10 (16 de 16 testes; 387 plantões com categoria e 71 sem, de uma pessoa com dois papéis); migration aplicada na produção em 28/10 (ok do RT), versão registrada (lá os 701 plantões ficam sem categoria: 700 de pessoa sem vínculo e 1 do super admin de teste) |
 | 3 | E2 | Gestor escala todas as categorias (seletor, cobertura por categoria); ERP leva só o plantão médico | A fazer |
 | 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | A fazer |
 | 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | A fazer |
