@@ -1,8 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Tipos de domínio consumidos pelos mappers FHIR (FASE 4A)
+// Tipos de domínio consumidos pelos mappers FHIR (FASE 4A; revistos na 5C-5.2)
 //
 // Os mappers são PUROS: recebem estas entidades já carregadas (a carga fica em
-// outra camada, fora do mapper) e devolvem recursos FHIR R4.
+// outra camada, fora do mapper) e devolvem recursos FHIR R4. Os códigos das
+// terminologias da RNDS (modalidade, caráter, procedência, desfecho,
+// financiamento) chegam prontos: quem carrega decide, o mapper só vira FHIR.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Paciente (public.pacientes) — sem PII em log. */
@@ -12,6 +14,8 @@ export type EntidadePaciente = {
   data_nascimento: string | null
   sexo: string | null
   cpf: string | null
+  /** CNS, usado só na falta do CPF */
+  cns: string | null
   telefone: string | null
   prontuario: string | null
 }
@@ -23,7 +27,7 @@ export type EntidadeProfissional = {
   cpf: string | null
   crm: string | null
   uf_crm: string | null
-  /** código CBO (terminologia.cbo) quando conhecido; null = lacuna */
+  /** código CBO (terminologia.cbo), 6 dígitos; null = lacuna, e o documento fica retido */
   cbo_codigo: string | null
 }
 
@@ -37,7 +41,7 @@ export type EntidadeEstabelecimento = {
   organizacao_id: string
 }
 
-/** Encontro (public.internacoes) — episódio de internação/atendimento */
+/** Encontro (public.internacoes, ou o episódio da porta) */
 export type EntidadeEncontro = {
   id: string
   paciente_id: string
@@ -54,6 +58,21 @@ export type EntidadeEncontro = {
   motivo_alta: string | null
 }
 
+/**
+ * Caracterização do contato na RNDS (BRContatoAssistencial-1.0). Códigos dos
+ * CodeSystems da RNDS, decididos por quem carrega.
+ */
+export type ContatoRnds = {
+  /** BRModalidadeAssistencial (06 = urgência e emergência) */
+  modalidade: string
+  /** BRCaraterAtendimento (01 eletivo, 02 urgência) */
+  carater: string
+  /** BRProcedencia (09 demanda espontânea, 12 demanda referenciada) */
+  procedencia: string
+  /** BRMotivoDesfecho (01 alta clínica, 04 evasão, 09 transferência…) */
+  desfecho: string
+}
+
 /** Condição (diagnóstico) — CID-10 vindo de terminologia.cid10 */
 export type EntidadeCondicao = {
   id: string
@@ -64,6 +83,16 @@ export type EntidadeCondicao = {
   categoria: string | null // ex.: 'principal' | 'secundaria'
   verificado: boolean
   data: string | null
+}
+
+/** Procedimento SIGTAP registrado no atendimento */
+export type EntidadeProcedimento = {
+  id: string
+  codigo_sigtap: string
+  realizado_em: string
+  quantidade: number
+  /** BRFinanciamento (01 SUS federal, 07 SUS municipal…) */
+  financiamento: string
 }
 
 /** Observação (public.observacao + conceito) — LOINC quando existir */
@@ -85,28 +114,16 @@ export type EntidadeObservacao = {
   registrado_por: string | null
 }
 
-/** Medicação (public.prescricoes + prescricao_itens) */
-export type EntidadeMedicacao = {
-  id: string
-  prescricao_id: string
-  paciente_id: string
-  medico_id: string
-  descricao: string
-  dose: string | null
-  posologia: string | null
-  status_prescricao: string
-  prescrito_em: string
-}
-
-/** Dados agregados do atendimento para montar o Bundle RAC */
+/** Dados agregados do atendimento da porta para montar o Bundle RAC */
 export type EntidadeAtendimentoRAC = {
   paciente: EntidadePaciente
   estabelecimento: EntidadeEstabelecimento
   encontro: EntidadeEncontro
+  contato: ContatoRnds
   profissional: EntidadeProfissional
   condicoes: EntidadeCondicao[]
+  procedimentos: EntidadeProcedimento[]
   observacoes: EntidadeObservacao[]
-  medicacoes: EntidadeMedicacao[]
 }
 
 /** Dados agregados para o Bundle de Sumário de Alta */
@@ -114,10 +131,22 @@ export type EntidadeSumarioAlta = {
   paciente: EntidadePaciente
   estabelecimento: EntidadeEstabelecimento
   encontro: EntidadeEncontro
+  contato: ContatoRnds
   profissional: EntidadeProfissional
   condicoes: EntidadeCondicao[]
-  observacoes: EntidadeObservacao[]
-  medicacoes: EntidadeMedicacao[]
-  motivo_alta: string | null
-  orientacoes: string | null // ex.: de documentos_clinicos (sumario_alta)
+  procedimentos: EntidadeProcedimento[]
+  /** texto do resumo da evolução clínica (obrigatório no SA) */
+  resumo_evolucao: string | null
+}
+
+/** O que só o envio sabe (5.3): a hora, a credencial e o documento anterior. */
+export type EnvioRnds = {
+  /** hora do envio (Bundle.timestamp e Composition.date) */
+  agora: string
+  /** identificador do solicitante dado pela RNDS na credencial; sem ele, o Bundle sai sem identifier */
+  identificadorSolicitante?: string | null
+  /** id RNDS do último documento enviado: o novo o substitui */
+  idRndsAnterior?: string | null
+  /** gera os urn:uuid das entradas (o teste passa um determinístico) */
+  uuid?: () => string
 }

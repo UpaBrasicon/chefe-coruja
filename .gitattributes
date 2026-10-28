@@ -1,0 +1,2 @@
+# os snapshots FHIR são comparados byte a byte; no Windows o checkout os trazia em CRLF
+scripts/interop/__snapshots__/*.json text eol=lf

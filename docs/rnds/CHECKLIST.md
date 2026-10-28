@@ -54,8 +54,8 @@ para a versão anterior na hora de pedir.
 | I4 | **Endereços:** Auth homologação `ehr-auth-hmg.saude.gov.br`; EHR homologação `ehr-services-hmg.saude.gov.br` (com hífen desde 09/07/2024; o manual RAC e o guia ainda trazem o antigo); Auth produção `ehr-auth.saude.gov.br`; EHR produção `{uf}-ehr-services.saude.gov.br`, pela UF do CNES | configurar no serviço de envio |
 | I5 | **Header `Authorization`:** CNS do profissional logado (`usuario()`), nunca fixo no código. O header pede CNS; dentro do documento vai o CPF | regra |
 | I6 | **Bloqueio do profissional sem CBO no CNES:** não enfileirar em nome dele e avisar o gestor | a construir com o envio |
-| I7 | **Corrigir os documentos gerados** (`src/interop/fhir/`): há divergências com os exemplos e o validador oficiais (seção 7) | a construir antes da homologação |
-| I8 | **Validador local:** baixado (seção 6). Não foi executado | rodar só com o ok do RT |
+| I7 | **Corrigir os documentos gerados** (`src/interop/fhir/`): havia divergências com os exemplos e o validador oficiais (seção 7) | feito na 5C-5.2 (28/10/2026): RAC e SA passam no validador oficial sem erro |
+| I8 | **Validador local:** baixado (seção 6) | roda desde a 5C-5.2, num contêiner sem rede, só com documentos de teste (`VALIDADOR.md`) |
 | I9 | **Modelos RIA e REL:** o código atual só monta RAC e SA | a construir quando houver unidade que vacina ou laboratório no escopo do REL |
 
 ## 4. Dados que o formulário de credencial pede
@@ -95,8 +95,7 @@ Regras da faixa de IP (p. 18–19):
 - **Validador local:** `rnds-oficial/validador/SOA-RNDS_ValidadorLocal_Aplicativo.zip` (65,7 MB).
   - É um aplicativo Java, sem assinatura conferível, montado em 2020 sobre o HAPI FHIR 5.1.0.
   - As definições por modelo estão em `sa/definicoes-validador-sa.zip` e `ria/definicoes-validador-ria.zip`.
-  - Não foi executado. Rodar só com o ok do RT, numa máquina separada, sem dado real.
-  - O `npm run fhir:validar` espera o JAR em `tools/rnds/validador-rnds.jar` (ver `VALIDADOR.md`).
+  - Roda desde a 5C-5.2 (decisão do RT): num contêiner sem rede, só com documentos de teste, pelo `npm run fhir:validar` (ver `VALIDADOR.md`).
 - **Evidência** (manual de apoio, p. 30–33; manual RAC §4.2): um único arquivo **PDF ou PNG de até 10 MB**, com três prints:
   - o validador local sem erro;
   - o header da resposta 201;
@@ -107,7 +106,8 @@ Regras da faixa de IP (p. 18–19):
 ## 7. Divergências entre o código atual e o oficial
 
 Detalhe em `rnds-manuais-oficiais.md`, seção 6. Resumo do que precisa mudar
-antes da homologação (item I7):
+antes da homologação (item I7). **Corrigido na 5C-5.2**, com o validador oficial; o que vale
+hoje está em `VALIDADOR.md`. A lista fica como registro:
 
 1. **Bundle:**
    - falta `fullUrl` em `urn:uuid`, e as referências são relativas;

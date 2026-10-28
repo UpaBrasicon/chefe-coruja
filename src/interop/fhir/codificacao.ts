@@ -1,73 +1,53 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Codificações FHIR (FASE 4A)
+// Codificações FHIR da RNDS (FASE 4A; revistas na 5C-5.2)
 //
-// System URIs oficiais usados na RNDS/FHIR R4:
-//   Condition.coding  → urn:oid:2.16.840.1.113883.3.7200.99.11  (CID-10) — TODO: confirmar no IG oficial
-//   Procedure.coding  → SIGTAP
-//   Practitioner      → CBO
-//   Organization      → CNES
-//
-// REGRA: não inventar system/URIs. Onde o IG oficial ainda não foi lido
-// (docs/rnds/ vazio), marcamos TODO em vez de chutar o OID da RNDS.
+// Systems conferidos no validador local oficial (definições de 07/2026,
+// produto/docs/pesquisa/rnds-oficial/sa/definicoes-validador-sa.zip). Os
+// perfis proíbem `display` nas codificações (max 0): só system e code.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Coding } from '@medplum/fhirtypes'
 
-/** CID-10 — código da terminologia.cid10. System: TODO confirmar no IG (RNDS usa OID CID-10). */
-export function codificarCid10(codigo: string, descricao: string | null): Coding {
-  return {
-    system: 'http://www.saude.gov.br/fhir/r4/CodeSystem/BRCID10', // RNDS (perfis RNDS em rascunho (2023, Simplifier); conferir no manual do portfólio DATASUS — produto/docs/pesquisa/rnds-rac-sumario-alta.md)
-    code: codigo,
-    display: descricao ?? codigo,
-  }
+export const RNDS = 'http://www.saude.gov.br/fhir/r4'
+const CS = `${RNDS}/CodeSystem`
+
+/** Código de um CodeSystem da RNDS (BRModalidadeAssistencial, BRProcedencia…). */
+export function codificarRnds(codeSystem: string, codigo: string): Coding {
+  return { system: `${CS}/${codeSystem}`, code: codigo }
 }
 
-/** SIGTAP — procedimento da terminologia.sigtap_procedimento. */
-export function codificarSigtap(codigo: string, nome: string | null): Coding {
-  return {
-    system: 'http://www.saude.gov.br/fhir/r4/CodeSystem/BRTabelaSUS', // RNDS (perfis RNDS em rascunho (2023, Simplifier); conferir no manual do portfólio DATASUS — produto/docs/pesquisa/rnds-rac-sumario-alta.md)
-    code: codigo,
-    display: nome ?? codigo,
-  }
+/** CID-10 — sem o ponto (I21.9 vai como I219), como no BRCID10. */
+export function codificarCid10(codigo: string): Coding {
+  return codificarRnds('BRCID10', codigo.replace('.', '').toUpperCase())
 }
 
-/** CBO — ocupação do profissional (terminologia.cbo). */
-export function codificarCbo(codigo: string, titulo: string | null): Coding {
-  return {
-    system: 'http://www.saude.gov.br/fhir/r4/CodeSystem/BRCBO', // RNDS (perfis RNDS em rascunho (2023, Simplifier); conferir no manual do portfólio DATASUS — produto/docs/pesquisa/rnds-rac-sumario-alta.md)
-    code: codigo,
-    display: titulo ?? codigo,
-  }
+/** SIGTAP — procedimento da terminologia.sigtap_procedimento (10 dígitos). */
+export function codificarSigtap(codigo: string): Coding {
+  return codificarRnds('BRTabelaSUS', codigo)
 }
 
-/** CNES — estabelecimento (unidades.cnes). */
-export function codificarCnes(cnes: string, nome: string | null): Coding {
-  return {
-    system: 'http://www.saude.gov.br/fhir/r4/CodeSystem/cnes', // TODO: confirmar no IG oficial
-    code: cnes,
-    display: nome ?? cnes,
-  }
+/** CBO — ocupação do profissional (6 dígitos). */
+export function codificarCbo(codigo: string): Coding {
+  return codificarRnds('BRCBO', codigo)
 }
 
-/** LOINC — observação. `loinc` null = lacuna registrada (não inventar). */
-export function codificarLoinc(loinc: string | null, nomeConceito: string): {
-  coding: Coding[]
-  lacunaLoinc: boolean
-} {
-  if (!loinc) {
-    return {
-      coding: [],
-      lacunaLoinc: true, // TODO: registrar lacuna (conceito sem LOINC) — ver RESTRICOES/planilha de lacunas
-    }
-  }
-  return {
-    coding: [
-      {
-        system: 'http://loinc.org',
-        code: loinc,
-        display: nomeConceito,
-      },
-    ],
-    lacunaLoinc: false,
-  }
+/**
+ * LOINC das medidas que a RNDS aceita (ValueSet BRTipoObservacao-1.0, binding
+ * required). Frequência cardíaca, temperatura, SpO2 e frequência respiratória
+ * não estão nele: ficam fora do documento (decisão do RT, 5C-5.2).
+ */
+export const LOINC_ACEITOS = new Set([
+  '8665-2', '56832-9', '11996-6', '63895-7', '29463-7', '8480-6', '8462-4',
+  '8280-0', '9843-4', '8302-2', '11885-1', '11612-9', '48767-8',
+])
+
+/** LOINC no system que a RNDS usa (https://loinc.org/, não http://loinc.org). */
+export function codificarLoinc(loinc: string): Coding {
+  return { system: 'https://loinc.org/', code: loinc }
+}
+
+/** Unidade UCUM no system dos exemplos oficiais. */
+export function unidadeUcum(unidade: string): { system: string; code: string } {
+  const ucum: Record<string, string> = { mmHg: 'mm[Hg]', 'mm Hg': 'mm[Hg]' }
+  return { system: 'https://www.hl7.org/fhir/valueset-ucum-common.html', code: ucum[unidade] ?? unidade }
 }

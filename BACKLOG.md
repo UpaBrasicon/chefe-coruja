@@ -1141,6 +1141,29 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
 - Teste `supabase/tests/fase5c_rnds_regulacao.sql` e rollback passaram na homologação, numa transação
   desfeita; o teste do documento (`scripts/interop/tests/regulacao.test.ts`) roda no CI. Conversões
   e pontos a conferir em `docs/rnds/MIRA.md`.
+- No master em 28/10/2026 (#313). A migration vai à produção só com o "ok produção" do RT.
+
+**5.2, correções do RAC e do Sumário de Alta (decisões do RT em 28/10/2026, "todas a"):**
+- o validador oficial, que só tem tela, roda sem ela: uma classe Java pequena chama o motor dele
+  direto, num contêiner sem rede (`eclipse-temurin:17-jre`, fixada por digest);
+- a 5.2 corrige só o documento, com fixtures; a carga do RAC a partir do episódio entra no serviço
+  de envio (5.3), junto da carga do SA;
+- o procedimento obrigatório vem do SIGTAP registrado no atendimento; sem ele, o documento fica
+  retido com o motivo, sem código inventado;
+- a prescrição fica fora do SA, se o perfil permitir; o documento de prescrição (RPM) vai ao backlog;
+- frequência cardíaca e temperatura, fora da lista `BRTipoObservacao-1.0`, ficam fora do documento.
+
+**5.2 pronta em 28/10/2026 (branch `fase5/rnds-rac-sa`):**
+- os quatro documentos de teste (RAC com alta e com evasão; SA com alta e com transferência) passam
+  no validador oficial sem erro; antes eram 37 a 46 erros por documento. Relatório em
+  `docs/rnds/evidencia/5.2-validador.txt`;
+- o validador roda pelo `npm run fhir:validar`, sem rede, conferindo o SHA-256 dos arquivos oficiais;
+- o que falta para um documento válido o deixa retido com o motivo, sem nada inventado: procedimento
+  SIGTAP, CBO, CPF/CNS, diagnóstico (RAC), data de fim ou resumo da evolução (SA);
+- as seções vão sem título, porque o validador recusa os títulos fixos do perfil SA (a base os
+  proíbe), como nos exemplos oficiais;
+- sem banco e sem tela. RAC e SA continuam fora do processador até a carga do serviço de envio (5.3).
+  Regras e números em `docs/rnds/VALIDADOR.md`.
 
 ---
 
