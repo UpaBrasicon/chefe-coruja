@@ -3,8 +3,41 @@
 Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 `BACKLOG.md`. O RT pediu em 28/10/2026: "Comece pelo ponto 9".
 
-**Ainda não mudei código nem banco.** Este documento é o plano. A
-implementação começa quando o RT responder às perguntas do fim.
+**Decisões do RT (28/10/2026): "Aprovo B e sub-aba".**
+
+- **Pergunta 2, quem evolui:** opção B.
+- **Pergunta 5, tela:** opção A, o Diagnóstico como sub-aba.
+
+**Situação: na homologação desde 28/10/2026** (branch `fix/evolucao-motivo`,
+migration `20270203000003_evolucao_motivo`). Rollback testado na homologação
+e desfeito; depois, migration aplicada e versão registrada.
+
+**Ajuste ao implementar.**
+
+- A regra B **não** mexe em `private.cuido_da_internacao`. Essa regra é
+  usada em cerca de 13 lugares: alta, documentos, passagem, enfermagem e
+  outros. Por isso, a nova `private.evoluo_internacao` vale só para a
+  evolução médica (tipo `evolucao`), em `contexto_evolucao` e
+  `registrar_evolucao`.
+- A evolução de enfermagem e os outros registros seguem só o setor da
+  internação. O teste de banco prova isso.
+- **Motivos que chegam à tela.** Quem não lê a internação nem chega à aba
+  Evolução: o servidor nega a leitura, e a tela de check-in bloqueia o app
+  depois da tolerância. Na prática, a tela mostra:
+  - `sem_plantao`: gestor ou admin sem plantão;
+  - `papel`: recepção, enfermagem e telemedicina;
+  - `encerrada`.
+
+  `checkin_pendente` e `outro_setor` ficam na RPC para os casos de borda.
+
+**Ainda sem resposta:**
+
+- **Pergunta 1,** o e-mail do usuário de teste, para eu dar escala a ele.
+- **Pergunta 3,** o gestor ver a Evolução em leitura. Fiz assim, porque
+  senão o gestor perderia o Diagnóstico, que antes era aba própria. Ele vê
+  as sub-abas Resumo, Diagnóstico e Histórico, sem a Evolução médica.
+- **Pergunta 4,** tirar o campo de CID de dentro da evolução. **Não fiz:**
+  espera a resposta.
 
 ```
 Vamos trabalhar a tarefa: ponto 9, Evolução médica não cria e Diagnóstico dentro de Evolução.
