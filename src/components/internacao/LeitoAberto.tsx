@@ -359,8 +359,10 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
   const disponiveis = ABAS.filter(([id]) => escreve || ABAS_LEITURA.includes(id))
   const atual: IdAba = disponiveis.some(([id]) => id === aba) ? aba : 'resumo'
   // CID da alta (decisão do usuário, 29/09/2026): o quadro muda ao longo da
-  // internação, então vale o CID da evolução médica mais recente; sem ela, o
-  // diagnóstico primário vigente; sem ele, o CID da admissão.
+  // internação. Desde o ponto 9 (RT, 28/10/2026) o diagnóstico muda só na
+  // subaba Diagnóstico, e a evolução grava o retrato dele: vale o primário
+  // vigente; sem ele, o CID da evolução mais recente (evoluções de antes);
+  // sem ela, o CID da admissão.
   const cidUltimaEvolucao = useQuery({
     queryKey: ['cid-ultima-evolucao', i.id],
     queryFn: async () => {
@@ -377,7 +379,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
       return cid || null
     },
   }).data
-  const pp: PartesLeito = { ...p, cidSugerido: cidUltimaEvolucao ?? primario?.cid ?? i.cid_principal }
+  const pp: PartesLeito = { ...p, cidSugerido: primario?.cid ?? cidUltimaEvolucao ?? i.cid_principal }
 
   const irNotificacao = () => {
     setAba('exames')

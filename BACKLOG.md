@@ -1168,6 +1168,33 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
 - sem banco e sem tela. RAC e SA continuam fora do processador até a carga do serviço de envio (5.3).
   Regras e números em `docs/rnds/VALIDADOR.md`.
 
+**5.3, serviço de envio (decisões do RT em 28/10/2026, "todas a"):**
+- três PRs: 5.3a banco; 5.3b serviço e simulador; 5.3c no VPS;
+- a carga fica em funções no banco, testadas na homologação; o serviço só as chama, com a chave de
+  serviço, sem ler tabela;
+- o financiamento é um padrão por unidade, numa configuração da RNDS que o gestor define (a tela
+  é a 5.4);
+- procedência: "informação ausente" (99, código oficial) na porta; internação vinda de outra
+  unidade é demanda referenciada (12). O campo de procedência na recepção vai ao backlog;
+- o MIRA é assinado por quem mudou o status (regra I5);
+- medidas do RAC: a última PAS, PAD, peso e estatura do episódio, com o LOINC da lista oficial
+  ligado no banco;
+- serviço no VPS em contêiner e usuário próprios, segredos à parte, atualizado do master com o
+  mesmo teste de saúde e volta do Hermes, apontando só para a homologação e o simulador.
+
+**5.3a na homologação em 28/10/2026:** migration `20270205000001_rnds_envio_banco.sql`.
+- Fila: status novo `retido` (falta dado; o motivo fica no item, que volta a ser tentado de hora em
+  hora), quem assina, próxima tentativa, trava do lote, o Bundle enviado e a resposta da RNDS.
+- `rnds_config_unidade`: ambiente, identificador do solicitante, financiamento e envio ligado.
+  Nasce desligada; sem ela ligada, nada da unidade sai.
+- As três funções do serviço: `rnds_pegar_lote`, `rnds_dados_documento` (a carga do RAC, do SA e
+  do MIRA) e `rnds_registrar_resultado` (enviado, retido, nova tentativa até 30 vezes, erro
+  definitivo, credencial recusada, que pausa a unidade).
+- Conferência noturna às 01:00 de Brasília: o que mudou no dia anterior e não entrou na fila entra.
+- Teste `supabase/tests/fase5c_rnds_envio.sql`, o da 5.1 e o rollback passaram na homologação. RAC
+  e SA montados da carga da homologação passam no validador oficial sem erro
+  (`docs/rnds/evidencia/5.3a-carga-homolog.txt`). Regras em `docs/rnds/ENVIO.md`.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
@@ -1975,7 +2002,7 @@ motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT p
 |---|---|---|---|
 | 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS. **Aplicado em 27/10/2026 (PR #301); falta conferir pelo app** | bug |
 | 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (P1, opção A). PR #308: o merge publicou a tela (e0f688f). Com o "ok produção" do RT, as migrations 20270203000001 (busca e o que falta para prescrever) e 20270203000002 (sinônimos: lista A aprovada pelo RT e 21 nomes comerciais conferidos na Anvisa) foram aplicadas na produção. Plano e listas em `docs/plantonista/PONTO-11-PRESCRICAO.md` e `PONTO-11-SINONIMOS.md` | bug + ajuste |
-| 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução. **Aprovado pelo RT em 28/10/2026 (regra B e sub-aba). Na homologação desde 28/10/2026 (branch fix/evolucao-motivo, migration 20270203000003).** A tela diz o motivo de não poder evoluir; a evolução médica vale também para o plantão no setor do cadastro do paciente; Diagnóstico virou sub-aba de Evolução. Falta: conferência do RT, o e-mail do usuário de teste para a escala e a resposta sobre tirar o CID da evolução. Plano em `docs/plantonista/PONTO-09-EVOLUCAO.md` | bug + ajuste |
+| 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (regra B e sub-aba). PR #319 juntado ao master (tela no ar); com o "ok produção" do RT, a migration 20270203000003 (motivo de não poder evoluir; a evolução médica vale também para o plantão no setor do cadastro do paciente) foi aplicada na produção. O campo de CID saiu da evolução (resposta do RT em 28/10/2026, PR #323, só tela, em produção): a evolução mostra o diagnóstico vigente e grava o retrato dele. **Ponto 9 concluído.** Plano em `docs/plantonista/PONTO-09-EVOLUCAO.md` | bug + ajuste |
 | 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG | nova (regra) |
 | 5 | P1 | 14 + 16 — atestado, receita para casa e orientações dentro de Alta e documentos | nova |
 | 6 | P2 | 2, 3, 4, 5 — navegação do plantão (VM duplicada, check-in duplicado, Atendimento, Internação direto na lista) | ajuste |
@@ -2001,7 +2028,7 @@ próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero 
 | 1 | E0 | Corrigir a "Escala da unidade" e a troca do plantonista: hoje leem a tabela direto e a RLS só devolve os próprios plantões (colegas aparecem como "livre"). Leitura passa por RPC | Feito: PR #302 (master), migration `20270202000001`; na homologação em 27/10 (10 de 10 testes; plantonista passa de 0 a 24 plantões de colegas no mês); migration aplicada na produção em 28/10 (ok do RT), versão registrada; frontend em produção pelo merge |
 | 2 | E1 | Categoria do plantão (`papel` em `escala_plantao`, `escala_fixa`, `escala_vagas`), preenchimento, gatilho e trava de categoria em troca e passagem | Feito: PR #310 (master), migration `20270202000002`; na homologação em 28/10 (16 de 16 testes; 387 plantões com categoria e 71 sem, de uma pessoa com dois papéis); migration aplicada na produção em 28/10 (ok do RT), versão registrada (lá os 701 plantões ficam sem categoria: 700 de pessoa sem vínculo e 1 do super admin de teste) |
 | 3 | E2 | Gestor escala todas as categorias (seletor, cobertura por categoria); ERP leva só o plantão médico | Feito: PR #315 (master), opção B escolhida pelo RT em 28/10 (todas juntas, sigla da categoria ao lado do nome; ERP só plantonista); migration `20270202000003`; na homologação em 28/10 (14 de 14 testes, CI verde); migration aplicada na produção em 28/10 (ok do RT), versão registrada uma vez; frontend em produção pelo merge |
-| 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | PR #320; opção A escolhida pelo RT em 28/10 (o mês com o dia ao lado, só leitura); sem migration; na homologação em 28/10; farmacêutico e faturamento entram pela escala depois, num passo próprio; falta o teste do RT e o merge |
+| 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | Feito: PR #320 (master), opção A escolhida pelo RT em 28/10 (o mês com o dia ao lado, só leitura); sem migration; na homologação em 28/10 (CI verde); em produção pelo merge do RT em 28/10. Pendente, em passo próprio: farmacêutico e faturamento entrarem pela escala, depois que o gestor escalar os dois |
 | 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | PR #327; opção A escolhida pelo RT em 28/10 (ações no painel do dia; passagem, troca e falta em janela); migration `20270202000004`; na homologação em 28/10 (11 de 11 testes); sair do fixo e fracionar ficam de fora; falta o teste do RT e o "ok produção" |
 
 Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda > **Todas as unidades** pedia a escala até o dia 31 de qualquer mês e dava erro nos meses de 30 dias e em fevereiro (o banco recusa 2026-11-31). PR #305, sem migration; na homologação em 28/10; mesclado no master pelo RT em 28/10 (produção pelo merge).

@@ -8,6 +8,14 @@ Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 - **Pergunta 2, quem evolui:** opção B.
 - **Pergunta 5, tela:** opção A, o Diagnóstico como sub-aba.
 
+**Situação: em produção desde 28/10/2026.**
+
+- O PR #319 foi juntado ao master, e a tela está no ar.
+- Com o "ok produção" do RT, a migration `20270203000003_evolucao_motivo` foi aplicada na produção.
+- Na homologação, ela está desde o mesmo dia.
+
+Antes:
+
 **Situação: na homologação desde 28/10/2026** (branch `fix/evolucao-motivo`,
 migration `20270203000003_evolucao_motivo`). Rollback testado na homologação
 e desfeito; depois, migration aplicada e versão registrada.
@@ -36,8 +44,16 @@ e desfeito; depois, migration aplicada e versão registrada.
 - **Pergunta 3,** o gestor ver a Evolução em leitura. Fiz assim, porque
   senão o gestor perderia o Diagnóstico, que antes era aba própria. Ele vê
   as sub-abas Resumo, Diagnóstico e Histórico, sem a Evolução médica.
-- **Pergunta 4,** tirar o campo de CID de dentro da evolução. **Não fiz:**
-  espera a resposta.
+- **Pergunta 4,** tirar o campo de CID de dentro da evolução. O RT respondeu
+  "Sim, tirar o CID" em 28/10/2026, e foi feito no branch
+  `fix/evolucao-cid-diagnostico`, só tela:
+  - A Evolução médica mostra o diagnóstico em vigor, primário e
+    secundários, com hipótese ou confirmado, e o botão "Mudar diagnóstico",
+    que abre a sub-aba Diagnóstico.
+  - A evolução grava o retrato do primário em vigor.
+  - O aviso de notificação compulsória usa o primário.
+  - A sugestão de CID da alta passa a vir primeiro do primário em vigor e,
+    sem ele, do CID da evolução mais recente.
 
 ```
 Vamos trabalhar a tarefa: ponto 9, Evolução médica não cria e Diagnóstico dentro de Evolução.

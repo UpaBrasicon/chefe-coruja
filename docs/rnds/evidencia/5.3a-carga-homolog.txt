@@ -1,0 +1,44 @@
+# 5.3a — carga da homologação no validador oficial (28/10/2026, branch fase5/rnds-envio-banco)
+#
+# 1. Na homologação, numa transação desfeita no fim: os dados de teste de
+#    supabase/tests/fase5c_rnds_envio.sql (paciente, médico com CPF, CNS e CBO,
+#    atendimento da porta com alta, observação vinda de outra unidade com alta,
+#    solicitação de regulação) e public.rnds_dados_documento() de cada item da fila.
+# 2. Os documentos montados com src/interop/fhir (montarBundleRAC e
+#    montarBundleSumarioAlta), com a hora do envio e o identificador do solicitante
+#    da configuração da unidade.
+# 3. npm run fhir:validar: validador local oficial, definições do SA de 07/2026,
+#    contêiner eclipse-temurin:17-jre (sha256:4faa9eaf…) com --network none.
+#    Só o resumo de cada arquivo.
+#
+# O MIRA não passa por aqui: as definições oficiais baixadas não trazem o perfil
+# BRRegulacaoAssistencial (ver docs/rnds/MIRA.md). O documento do MIRA montou
+# (4 recursos) a partir da mesma carga.
+#
+# Testes na homologação (28/10/2026), com a migration 20270205000001 aplicada:
+#   supabase/tests/fase5c_rnds_envio.sql     passou
+#   supabase/tests/fase5c_rnds_regulacao.sql passou (a 5.1 segue igual)
+#   rollback do cabeçalho                     passou, numa transação desfeita
+
+=== /v/entrada/homolog-rac.json
+-----------------------------------
+       >>> RESUMO GERAL <<<
+          Δ 00:00:26.712
+-----------------------------------
+>>> Validação sem falhas ----------
+-----------------------------------
+         total itens: 1
+         itens falha: 0
+       itens sucesso: 1
+-----------------------------------
+=== /v/entrada/homolog-sa.json
+-----------------------------------
+       >>> RESUMO GERAL <<<
+          Δ 00:00:22.632
+-----------------------------------
+>>> Validação sem falhas ----------
+-----------------------------------
+         total itens: 1
+         itens falha: 0
+       itens sucesso: 1
+-----------------------------------
