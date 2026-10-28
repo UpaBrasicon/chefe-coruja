@@ -56,3 +56,11 @@ test('erro no formato RFC 9457', () => {
     type: 'https://api.chefecoruja.com.br/erros/fora-do-escopo', title: 'Fora do escopo da chave', status: 403, detail: 'x', codigo: 'fora_do_escopo', requisicao: 'r1',
   })
 })
+
+test('leitura de prescrição e regulação (Fase 5C-4.2)', () => {
+  assert.deepEqual(interpretar(`/prescricoes/${U}`, q('')), { recurso: 'prescricao', params: { id: U } })
+  assert.deepEqual(interpretar(`/regulacao/${U}`, q('')), { recurso: 'regulacao', params: { id: U } })
+  assert.equal((interpretar('/prescricoes/abc', q('')) as { erro: { status: number } }).erro.status, 404)
+  assert.equal((interpretar('/prescricoes', q('')) as { erro: { status: number } }).erro.status, 404)
+  assert.equal((interpretar(`/regulacao/${U}/eventos`, q('')) as { erro: { status: number } }).erro.status, 404)
+})

@@ -26,6 +26,7 @@ import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 
 type Recurso = 'pacientes' | 'atendimentos' | 'leitos' | 'producao' | 'laboratorio' | 'imagem' | 'financeiro'
+  | 'prescricoes' | 'regulacao'
 const RECURSOS: Record<Recurso, string> = {
   pacientes: 'Pacientes', atendimentos: 'Atendimentos', leitos: 'Leitos', producao: 'Produção SUS (AIH, APAC, fechamentos)',
   // Fase 5C, etapa 1.3: chave do LIS (lê pedidos de exame, grava coleta e laudo pela porta FHIR)
@@ -34,6 +35,9 @@ const RECURSOS: Record<Recurso, string> = {
   imagem: 'Imagem (RIS/PACS): pedidos de imagem e ECG, exame feito, link e laudo — FHIR',
   // Fase 5C, etapa 3.3: chave do ERP (lê contas faturadas e plantões fechados, devolve o lançamento)
   financeiro: 'Financeiro (ERP): contas faturadas e plantões do mês, com o retorno do lançamento',
+  // Fase 5C, etapa 4.2: leitura por id do que o webhook avisa
+  prescricoes: 'Prescrições: a prescrição assinada, com os itens vigentes',
+  regulacao: 'Regulação: a solicitação, para a unidade de origem ou a de destino',
 }
 
 type Chave = {
