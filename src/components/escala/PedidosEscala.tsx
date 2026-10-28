@@ -7,7 +7,7 @@
 // aprova é a coordenação, na aba Pedidos do gestor.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeftRight, FileText, Send } from 'lucide-react'
+import { ArrowLeftRight, FileText, Info, Send } from 'lucide-react'
 import * as React from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
@@ -30,15 +30,57 @@ const ROTULO_ESTADO: Record<string, string> = { pendente: 'aguardando', aprovado
 
 type Janela = { tipo: 'trocar' | 'passar' | 'falta'; plantao: PlantaoEquipe }
 
-export function SeuPlantao({ unidadeId, meusDoDia, equipe, faixa, horario, nomeSetor, pendentes }: {
-  unidadeId: string; meusDoDia: PlantaoEquipe[]; equipe: PlantaoEquipe[]
-  faixa: (p: PlantaoEquipe) => string; horario: (p: PlantaoEquipe) => string; nomeSetor: (id: string) => string
-  pendentes: Set<string>
+/**
+ * Trocar, Passar e Justificar falta de um plantão meu, cada um numa janela. No
+ * plantão que já passou, só a falta, com a explicação e o atalho para o próximo
+ * (ajuste da E4, opção A do RT em 28/10/2026: as ações à vista).
+ */
+export function AcoesDoPlantao({ unidadeId, plantao: p, equipe, faixa, nomeSetor, pendente, irParaProximo }: {
+  unidadeId: string; plantao: PlantaoEquipe; equipe: PlantaoEquipe[]
+  faixa: (p: PlantaoEquipe) => string; nomeSetor: (id: string) => string
+  pendente: boolean; irParaProximo?: { rotulo: string; ir: () => void }
 }) {
   const [janela, setJanela] = React.useState<Janela | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
   // a hora em que a tela abriu: plantão que já terminou só aceita justificar falta
   const [agora] = React.useState(() => Date.now())
+  const abrir = (tipo: Janela['tipo']) => { setAviso(null); setJanela({ tipo, plantao: p }) }
+  const passou = new Date(p.inicio).getTime() + p.duracao_min * 60_000 <= agora
+  return (
+    <div className="flex flex-col gap-2">
+      {pendente ? (
+        <span className="text-rotulo text-atencao">Há um pedido deste plantão esperando a coordenação.</span>
+      ) : passou ? (
+        <>
+          <span className="flex items-start gap-1.5 text-rotulo text-pretty text-tinta-sussurro">
+            <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+            Este plantão já passou: só dá para justificar falta. Trocar e passar valem para os próximos.
+          </span>
+          <Button size="sm" variant="outline" className="w-fit" onClick={() => abrir('falta')}><FileText /> Justificar falta</Button>
+          {irParaProximo && (
+            <Button variant="link" className="h-auto min-h-0 w-fit p-0 text-rotulo" onClick={irParaProximo.ir}>{irParaProximo.rotulo} →</Button>
+          )}
+        </>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={() => abrir('trocar')}><ArrowLeftRight /> Trocar</Button>
+          <Button size="sm" variant="outline" onClick={() => abrir('passar')}><Send /> Passar</Button>
+          <Button size="sm" variant="outline" onClick={() => abrir('falta')}><FileText /> Justificar falta</Button>
+        </div>
+      )}
+      {aviso && <p role="status" className="text-rotulo text-conforme">{aviso}</p>}
+      {/* a chave remonta a janela a cada pedido, com o formulário limpo */}
+      <JanelaPedido key={janela ? `${janela.tipo}-${janela.plantao.id}` : 'fechada'} unidadeId={unidadeId} janela={janela} equipe={equipe} faixa={faixa} nomeSetor={nomeSetor}
+        onFechar={() => setJanela(null)} onFeito={(t) => { setJanela(null); setAviso(t) }} />
+    </div>
+  )
+}
+
+export function SeuPlantao({ unidadeId, meusDoDia, equipe, faixa, horario, nomeSetor, pendentes, irParaProximo }: {
+  unidadeId: string; meusDoDia: PlantaoEquipe[]; equipe: PlantaoEquipe[]
+  faixa: (p: PlantaoEquipe) => string; horario: (p: PlantaoEquipe) => string; nomeSetor: (id: string) => string
+  pendentes: Set<string>; irParaProximo?: { rotulo: string; ir: () => void }
+}) {
   if (meusDoDia.length === 0) return null
   return (
     <div className="flex flex-col gap-2 border-b border-trilha bg-alerta-marca/40 px-4 py-3">
@@ -48,23 +90,10 @@ export function SeuPlantao({ unidadeId, meusDoDia, equipe, faixa, horario, nomeS
           <span className="text-corpo font-medium text-tinta">
             {faixa(p)} · {nomeSetor(p.setor_id)} <span className="text-apoio font-normal text-tinta-sussurro tabular-nums">{horario(p)}</span>
           </span>
-          {pendentes.has(p.id) ? (
-            <span className="text-rotulo text-atencao">Há um pedido deste plantão esperando a coordenação.</span>
-          ) : new Date(p.inicio).getTime() + p.duracao_min * 60_000 > agora ? (
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => { setAviso(null); setJanela({ tipo: 'trocar', plantao: p }) }}><ArrowLeftRight /> Trocar</Button>
-              <Button size="sm" variant="outline" onClick={() => { setAviso(null); setJanela({ tipo: 'passar', plantao: p }) }}><Send /> Passar</Button>
-              <Button size="sm" variant="outline" onClick={() => { setAviso(null); setJanela({ tipo: 'falta', plantao: p }) }}><FileText /> Justificar falta</Button>
-            </div>
-          ) : (
-            <Button size="sm" variant="outline" className="w-fit" onClick={() => { setAviso(null); setJanela({ tipo: 'falta', plantao: p }) }}><FileText /> Justificar falta</Button>
-          )}
+          <AcoesDoPlantao unidadeId={unidadeId} plantao={p} equipe={equipe} faixa={faixa} nomeSetor={nomeSetor}
+            pendente={pendentes.has(p.id)} irParaProximo={irParaProximo} />
         </div>
       ))}
-      {aviso && <p role="status" className="text-rotulo text-conforme">{aviso}</p>}
-      {/* a chave remonta a janela a cada pedido, com o formulário limpo */}
-      <JanelaPedido key={janela ? `${janela.tipo}-${janela.plantao.id}` : 'fechada'} unidadeId={unidadeId} janela={janela} equipe={equipe} faixa={faixa} nomeSetor={nomeSetor}
-        onFechar={() => setJanela(null)} onFeito={(t) => { setJanela(null); setAviso(t) }} />
     </div>
   )
 }
@@ -215,7 +244,7 @@ function JanelaPedido({ unidadeId, janela, equipe, faixa, nomeSetor, onFechar, o
   )
 }
 
-export function VagasDoDia({ vagas }: { vagas: VagaAberta[] }) {
+export function VagasDoDia({ vagas, titulo = 'Vaga da sua categoria', comData = false }: { vagas: VagaAberta[]; titulo?: string; comData?: boolean }) {
   const qc = useQueryClient()
   const [erro, setErro] = React.useState<string | null>(null)
   const [enviando, setEnviando] = React.useState<string | null>(null)
@@ -229,11 +258,11 @@ export function VagasDoDia({ vagas }: { vagas: VagaAberta[] }) {
   }
   return (
     <div className="flex flex-col gap-2 border-b border-trilha px-4 py-2.5">
-      <span className="text-rotulo font-semibold text-tinta-sussurro">Vaga da sua categoria</span>
+      <span className="text-rotulo font-semibold text-tinta-sussurro">{titulo}</span>
       {vagas.map((v) => (
         <span key={v.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 text-apoio">
           <span className="flex flex-col">
-            <span className="text-tinta">{v.setor_nome}</span>
+            <span className="text-tinta">{comData ? `${dataPorExtenso(`${v.data}T12:00:00Z`)} · ` : ''}{v.setor_nome}</span>
             <span className="text-rotulo text-tinta-sussurro tabular-nums">{hora(v.inicio)}–{hora(v.fim)}{v.parte ? ` · parte ${v.parte} de ${v.partes}` : ''}</span>
           </span>
           {v.minha_candidatura ? (
