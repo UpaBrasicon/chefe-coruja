@@ -49,7 +49,8 @@ export function gerarCertificadosDeTeste(pasta: string): CertificadosDeTeste {
       ossl('req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', p(`${ca}.key`), '-out', p(`${ca}.crt`),
         '-days', '365', '-subj', subj(`RNDS simulador ${ca} (teste)`))
     }
-    writeFileSync(p('servidor.ext'), 'subjectAltName=DNS:localhost,IP:127.0.0.1\nextendedKeyUsage=serverAuth\n')
+    // "simulador" é o nome do contêiner no compose do VPS (5.3c)
+    writeFileSync(p('servidor.ext'), 'subjectAltName=DNS:localhost,DNS:simulador,IP:127.0.0.1\nextendedKeyUsage=serverAuth\n')
     writeFileSync(p('cliente.ext'), 'extendedKeyUsage=clientAuth\n')
     const emitir = (nome: string, ca: string, ext: string, cn: string) => {
       ossl('req', '-newkey', 'rsa:2048', '-nodes', '-keyout', p(`${nome}.key`), '-out', p(`${nome}.csr`), '-subj', subj(cn))

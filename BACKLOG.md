@@ -1208,6 +1208,18 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
   substituição. Os 18 testes rodam contra ele no CI, com TLS mútuo de verdade.
 - Sem banco e sem tela. O teste ponta a ponta (fila da homologação → simulador) entra na 5.3c, no
   VPS. Regras em `docs/rnds/ENVIO.md`.
+- No master em 28/10/2026 (#328).
+
+**5.3c pronta em 28/10/2026 (branch `fase5/rnds-envio-vps`):** a subida no VPS, separada do Hermes.
+- Imagem `services/rnds-envio/Dockerfile` (Node 24, só a dependência de execução) e compose com o
+  envio e o simulador: nenhuma porta publicada, sistema de arquivos só leitura, usuário `node`,
+  ligados à homologação e ao simulador.
+- `instalar-rnds.sh` (usuário `rnds`, pastas, `.env.rnds` em branco, cron às 04:10) e
+  `atualizar-rnds.sh` (sobe só quando muda o serviço ou os documentos; teste de saúde pelo ciclo
+  com a fila; volta à imagem anterior se falhar), sem mexer no clone do Hermes.
+- `e2e-homolog.sql` cria a "Rede RNDS E2E (teste)" na homologação e põe RAC, SA e MIRA na fila;
+  conferido numa transação desfeita. O teste ponta a ponta roda no VPS depois do merge, com a chave
+  da homologação posta pelo RT. Passo a passo, chaves e reversão em `infra/rnds-envio.md`.
 
 ---
 
