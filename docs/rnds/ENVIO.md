@@ -74,3 +74,69 @@ Item com erro não volta. O resultado de cada dia fica em `private.rnds_conferen
 Está no cabeçalho da migration e foi testado na homologação.
 - **Sai:** as funções, a configuração, a conferência e o LOINC das quatro medidas. O que estava retido volta a pendente.
 - **Fica:** as colunas novas da fila (nulas, sem uso) e o enfileiramento novo, que funciona sem o resto.
+
+---
+
+# O serviço de envio (5C-5.3b)
+
+O código está em `services/rnds-envio/`. O serviço roda no VPS (5.3c), num contêiner próprio, separado do Hermes.
+
+| Arquivo | O que faz |
+|---|---|
+| `src/ciclo.ts` | Um lote, item a item: carga → o que o envio exige → documento → envio → resultado. |
+| `src/cliente-rnds.ts` | Pede o token com TLS mútuo, envia o Bundle e converte a resposta num resultado da fila. |
+| `src/fila-supabase.ts` | As três funções da 5.3a, com a chave de serviço. |
+| `src/certificados.ts` | O `.pfx` e a senha de cada unidade, numa pasta do servidor, até o cofre da 5.4. |
+| `src/main.ts` | O laço: um lote a cada `RNDS_INTERVALO_S` segundos (60), seguindo enquanto o lote vier cheio. |
+| `simulador/simulador.ts` | O simulador da RNDS, com a CA de teste. |
+
+## O que fica retido antes de sair
+
+Nada disto chega à RNDS. O item volta a ser tentado de hora em hora.
+- A carga retida (`retido:` do banco).
+- Produção desligada. Nesta etapa o serviço só envia à homologação e ao simulador; a produção pede `RNDS_PERMITIR_PRODUCAO=sim`.
+- A unidade sem o identificador do solicitante ou, na produção, sem UF.
+- O profissional sem CNS, que vai no header `Authorization`.
+- O documento retido pelo mapper: sem procedimento, sem CBO e os outros casos da 5.2.
+- A unidade sem certificado.
+
+## A resposta da RNDS
+
+| Resposta | Resultado na fila |
+|---|---|
+| 201 com `Location` | `enviado`, com o id da RNDS |
+| 201 sem `Location` | `erro`: sem o id não há como substituir, e reenviar duplicaria |
+| 401 no envio | pede um token novo e tenta uma vez; se repetir, `credencial` |
+| 401/403 no EHR Auth, TLS recusado, ERR881–884, ERR930–932, ERR989 | `credencial`: a unidade pausa |
+| 429, 5xx, sem resposta | `reenviar` |
+| 422 e os outros 4xx | `erro`, com a mensagem do `OperationOutcome` (ex.: ERR906) |
+
+- **Token:** o serviço tenta GET e, se a RNDS responder 405, POST, porque os manuais divergem no método.
+- **Validade do token:** 30 minutos, com 1 minuto de folga. O token fica guardado por unidade e ambiente.
+- **Log:** só o id do item, o tipo e o resultado. Os números de CPF e CNS saem do motivo.
+
+## O simulador
+
+```bash
+npm run rnds:simulador -- --porta 8443 --certs <pasta>
+```
+
+- **Certificados:** na primeira vez, gera na pasta, com o openssl, a CA de teste, o certificado do servidor e um `unidade.pfx` (senha `teste-simulador`).
+- **EHR Auth:** só aceita certificado de cliente assinado por essa CA. Sem ele, responde 401 ERR882.
+- **Envio:** confere token, CNS, tipo `document`, `timestamp` próximo da hora atual, `identifier` BRRNDS e a substituição de um id conhecido. Responde 201 com o id no `Location`.
+- **Cenários para os testes:** profissional sem CBO (422 ERR906), respostas forçadas (500, 429, 401) e token vencido.
+- **Para apontar o serviço ao simulador:** `RNDS_AUTH_URL`, `RNDS_EHR_URL` e `RNDS_CA_EXTRA` (a `ca.crt` da pasta).
+
+O simulador não é a RNDS: confere só o que os manuais descrevem. A prova contra a RNDS é a 5.5.
+
+## Testes
+
+`services/rnds-envio/tests/envio.test.ts` roda no `npm run test:interop` (CI). São 18 casos contra o simulador, com TLS mútuo de verdade:
+- RAC, SA e MIRA enviados com um token só;
+- os headers;
+- a substituição;
+- o token vencido;
+- ERR906, 500, 429 e 401 repetido;
+- o certificado de outra cadeia;
+- a RNDS fora do ar;
+- cada retenção.
