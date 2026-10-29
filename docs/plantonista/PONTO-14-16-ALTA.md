@@ -3,8 +3,19 @@
 Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 `BACKLOG.md`. O RT pediu em 28/10/2026: "Começar 14 e 16".
 
-**Ainda não mudei código nem banco.** Este documento é o plano. A
-implementação começa quando o RT responder às perguntas do fim.
+**Decisões do RT (28/10/2026): "Aprovo".** O RT aprovou o plano com as recomendações:
+
+- **Pergunta 1:** o sumário de alta fica para uma tarefa própria.
+- **Pergunta 2:** "Trazer da prescrição" traz só o medicamento; a dose fica em branco (opção a).
+- **Pergunta 3:** a alta não exige receita nem atestado; só mostra o que foi feito.
+- **Pergunta 4:** opção A, os passos numa página só.
+
+**Situação: na homologação desde 29/10/2026** (branch `fix/alta-documentos`). Não há migration.
+
+**Feito como planejado:**
+
+- As peças de receita e de atestado da porta foram para `src/components/documentos` (`AtestadoReceita.tsx` e `emissaoAtestadoReceita.ts`). A porta usa as mesmas peças.
+- Os tipos e os textos comuns foram para `src/lib/documentosAlta.ts`, porque um componente não importa uma tela (guia, 4.5).
 
 ```
 Vamos trabalhar a tarefa: pontos 14 e 16, atestado, receita para casa e orientações dentro de Alta e documentos.
