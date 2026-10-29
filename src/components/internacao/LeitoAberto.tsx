@@ -49,7 +49,9 @@ import {
   type Acao, type Acuidade, ATIVO, diaHora, type Internacao, msg, type Pacote, type Passagem, type Pendencia,
 } from './caderno/comum'
 import { useDiagnosticos } from './caderno/diagnosticos'
-import { AbaAdmissao, AbaAih, AbaApac, AbaAtestado, AbaExames, AbaPrescricao } from './caderno/Documentos'
+import { AbaAdmissao, AbaAih, AbaApac, AbaExames, AbaPrescricao } from './caderno/Documentos'
+import { PassosAlta } from './caderno/PassosAlta'
+import { DOCS_INICIAL, type EstadoDocs } from '@/lib/documentosAlta'
 import { useDocumentosLeito } from './caderno/rascunhoLeito'
 import { PainelPaciente } from './caderno/PainelPaciente'
 import { BlocoPassagem } from './caderno/Passagem'
@@ -59,7 +61,7 @@ import { ChecklistAdmissao, TrilhaEpisodio } from './caderno/Trilha'
 
 export { SepsePorta } from './caderno/Sepse'
 
-type IdAba = 'resumo' | 'classif' | 'evol' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'atestado' | 'comp' | 'alta'
+type IdAba = 'resumo' | 'classif' | 'evol' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'comp' | 'alta'
 
 // LEITO_ABAS do protótipo (index.html ~21611), na mesma ordem.
 const ABAS: [IdAba, string][] = [
@@ -72,7 +74,6 @@ const ABAS: [IdAba, string][] = [
   ['aih', 'AIH'],
   ['apac', 'APAC'],
   ['encaminhamento', 'Encaminhamento'],
-  ['atestado', 'Atestado'],
   ['comp', 'Parecer e termos'],
   ['alta', 'Alta e documentos'],
 ]
@@ -342,7 +343,9 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
   const { i, ativa, ehGestor, pacienteId } = p
   const { unidadeAtiva } = useUnidade()
   // link antigo para a aba Diagnóstico abre Evolução › Diagnóstico (ponto 9)
-  const [aba, setAba] = React.useState<IdAba>(() => (abaInicial === 'diag' ? 'evol'
+  // receita e atestado em curso na Alta e documentos: ficam enquanto o leito está aberto
+  const [docsAlta, setDocsAlta] = React.useState<EstadoDocs>(DOCS_INICIAL)
+  const [aba, setAba] = React.useState<IdAba>(() => (abaInicial === 'diag' ? 'evol' : abaInicial === 'atestado' ? 'alta'
     : ABAS.some(([id]) => id === abaInicial) ? abaInicial as IdAba : 'resumo'))
 
   const diagnosticos = useDiagnosticos(i.id)
@@ -426,7 +429,6 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
         {atual === 'aih' && <AbaAih doc={doc} internacaoId={i.id} />}
         {atual === 'apac' && <AbaApac doc={doc} internacaoId={i.id} />}
         {atual === 'encaminhamento' && <AbaEncaminhamentoInterno pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
-        {atual === 'atestado' && <AbaAtestado pacienteId={pacienteId} podeEmitir={escreve} />}
         {atual === 'comp' && (
           <>
             <AbaParecer pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />
@@ -435,13 +437,11 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
             <AbaAvaliacaoCrescimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />
           </>
         )}
+        {/* pontos 14 e 16: receita para casa, atestado, orientações e alta, em passos */}
         {atual === 'alta' && (
-          <>
-            {ativa && p.impeditivos.length === 0 && !ehGestor && (
-              <p className="text-apoio text-tinta-sussurro">Sem impeditivos: a alta pode ser dada.</p>
-            )}
-            <AltaEDocumentos p={pp} />
-          </>
+          <PassosAlta i={i} pacienteId={pacienteId} pacienteNome={p.pacienteNome} ativa={ativa} altaRecente={pp.altaRecente} ehGestor={ehGestor}
+            eu={p.eu ?? null} acao={p.acao} impeditivos={p.impeditivos} pacotes={p.pacotes} cidSugerido={pp.cidSugerido ?? null}
+            leito={i.leito?.identificador ?? ''} diagnostico={textoPrimario} estado={docsAlta} setEstado={setDocsAlta} />
         )}
       </div>
       <PainelPaciente i={i} ativa={ativa} acuidade={p.acuidade} diagnostico={textoPrimario} onClassificacao={() => setAba('classif')}

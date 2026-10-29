@@ -1,16 +1,11 @@
 // Abas de documento do caderno (Admissão, Prescrição, Exames, AIH, Atestado):
 // os mesmos documentos do formulário de internação, já com o paciente do leito
 // (fixo). Admissão e AIH no desenho do protótipo, com a identificação do cadastro.
-import { ExternalLink, FileText } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 
-import { useDocumentos } from '@/hooks/useDocumentos'
 import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
-import { Spinner } from '@/components/ui/spinner'
 import { PedidoExamesLeito } from '@/components/internacao/documentos/PedidoExamesLeito'
 import { FichaAdmissao } from '@/components/internacao/documentos/FichaAdmissao'
 import { LaudoAih } from '@/components/internacao/documentos/LaudoAih'
@@ -21,7 +16,6 @@ import { textoDoPeso, useFaltaParaPrescrever } from '@/components/prescricao/pes
 import { DIETAS } from '@/lib/rascunho'
 
 import { Secao } from './caixas'
-import { diaHora } from './comum'
 import type { useDocumentosLeito } from './rascunhoLeito'
 
 type Doc = ReturnType<typeof useDocumentosLeito>
@@ -94,32 +88,3 @@ export function AbaApac({ doc, internacaoId }: { doc: Doc; internacaoId?: string
 }
 
 /** Atestado: os emitidos para o paciente e o emissor da porta, já com ele. */
-export function AbaAtestado({ pacienteId, podeEmitir }: { pacienteId: string; podeEmitir: boolean }) {
-  const docs = useDocumentos(pacienteId)
-  const atestados = (docs.data ?? []).filter((d) => d.tipo_documento === 'atestado' && d.estado !== 'rascunho')
-  return (
-    <div className="flex flex-col gap-3 rounded-container border border-fio bg-superficie p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="flex items-center gap-2 text-corpo font-semibold text-tinta">
-          <FileText className="size-[15px] text-acao" aria-hidden /> Atestados
-        </span>
-        {podeEmitir && (
-          <Button size="sm" className="ml-auto" render={<Link to={`/plantao/atendimento-porta/atestado-medico?paciente=${pacienteId}`} />}>
-            <ExternalLink /> Emitir atestado
-          </Button>
-        )}
-      </div>
-      {docs.isLoading ? <Spinner /> : atestados.length === 0 ? (
-        <p className="text-apoio text-tinta-sussurro">Nenhum atestado emitido para este paciente.</p>
-      ) : (
-        atestados.map((d) => (
-          <div key={d.id} className="flex flex-wrap items-center gap-2 border-t border-trilha pt-2 text-apoio">
-            <span className="text-tinta">Atestado · versão {d.versao}</span>
-            <span className="text-tinta-sussurro">{diaHora(d.created_at)} · {d.estado}</span>
-          </div>
-        ))
-      )}
-      <p className="text-apoio text-tinta-sussurro">O emissor abre com este paciente; a folha sai do servidor e fica no prontuário.</p>
-    </div>
-  )
-}
