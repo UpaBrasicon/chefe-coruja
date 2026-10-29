@@ -5,10 +5,14 @@
 import { FileWarning } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
+import { useUnidade } from '@/contexts/UnidadeContext'
+
 import { usePendenciasPep } from './pendenciasPep'
 
 export function AvisoRascunhosCheckout({ unidadeId }: { unidadeId: string | null | undefined }) {
   const q = usePendenciasPep(unidadeId)
+  // a tela de pendências é do plantonista: para o gestor, o aviso fica só em texto (ponto 5)
+  const { papelAtivo } = useUnidade()
   const n = q.data?.rascunhos.length ?? 0
   if (!n) return null
   return (
@@ -18,9 +22,9 @@ export function AvisoRascunhosCheckout({ unidadeId }: { unidadeId: string | null
         {n === 1 ? 'Você tem 1 documento em rascunho, ainda não emitido.' : `Você tem ${n} documentos em rascunho, ainda não emitidos.`}{' '}
         Rascunho não emitido não entra no prontuário e o próximo plantonista não o vê. Isto é só um aviso: dá para sair assim mesmo. Emita ou descarte antes.
       </span>
-      <Link to="/pendencias-pep" className="font-medium whitespace-nowrap text-acao underline-offset-4 hover:underline">
+      {papelAtivo === 'plantonista' && <Link to="/pendencias-pep" className="font-medium whitespace-nowrap text-acao underline-offset-4 hover:underline">
         Ver pendências do PEP
-      </Link>
+      </Link>}
     </div>
   )
 }

@@ -426,14 +426,14 @@ encontrava. Dentro dele, ganharam busca, tags, favoritos e breadcrumb sem códig
 
 `infection-pneumonia` · `minigame-emergencia`
 
-### 7.7 Ventilação Mecânica (`ventilacao-mecanica`, `Wind`) — 5
+### 7.7 Ventilação Mecânica (`ventilacao-mecanica`, `Wind`) — 4
 
 `predicao-falencia-vni` · `recrutabilidade-pulmonar` · `manobra-recrutamento` ·
-`suporte-ventilatorio` · `mobilidade-funcional`
+`mobilidade-funcional`
 
 ### 7.8 Central de Plantão — registry próprio
 
-Fonte: `src/content/plantaoRegistry.tsx` — **5 seções, 9 ferramentas**, mesmo padrão
+Fonte: `src/content/plantaoRegistry.tsx` — **6 seções (2 sem cartão: check-in e os formulários da porta), 9 ferramentas**, mesmo padrão
 declarativo do registry clínico, com carregamento sob demanda.
 
 URL: `/plantao/{secao}` e `/plantao/{secao}/{tool}`
