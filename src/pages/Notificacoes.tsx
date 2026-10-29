@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BedDouble, Bell, CalendarClock, Clock, FileCheck, FileText, FlaskConical, MessageSquare, Pill, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
+import { BedDouble, Bell, CalendarClock, Clock, FileCheck, FileText, FlaskConical, MessageSquare, Pill, Send, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -19,7 +19,7 @@ import type { MinhaNotificacao } from '@/types/database'
 // por aviso e "Marcar todas como lidas", com desfazer que volta no servidor
 // (marcar_avisos_lidos / reabrir_avisos). A categoria sai do tipo do aviso.
 
-type Categoria = 'Turno' | 'Observação' | 'Triagem' | 'Farmácia' | 'Leitos' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'AIH' | 'APAC' | 'Exames' | 'Outros'
+type Categoria = 'Turno' | 'Observação' | 'Triagem' | 'Farmácia' | 'Leitos' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'AIH' | 'APAC' | 'Exames' | 'RNDS' | 'Outros'
 
 function categoria(tipo: string): Categoria {
   if (/^(noite|manha|tarde|turno)_/.test(tipo)) return 'Turno'
@@ -35,6 +35,8 @@ function categoria(tipo: string): Categoria {
   if (tipo.startsWith('reg_')) return 'Regulação'
   // resultado de exame liberado ou crítico (Fase 5C, etapa 1.2)
   if (tipo.startsWith('exame_')) return 'Exames'
+  // certificado, credencial e bloqueio da RNDS (Fase 5C, etapa 5.4)
+  if (tipo.startsWith('rnds_')) return 'RNDS'
   // cobranças do NIR (Fase 4, tarefa 11): a categoria é o assunto
   const nir = categoriaCobranca(tipo)
   if (nir) return nir
@@ -61,11 +63,12 @@ const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: Acao | 
   APAC: { icone: FileCheck, cor: 'text-acao bg-acao/10', acao: { to: '/apac', rotulo: 'Abrir APAC' } },
   Exames: { icone: FlaskConical, cor: 'text-critico bg-critico/10', acao: [
     { to: '/atendimento', rotulo: 'Abrir atendimento' }, { to: '/plantao/internacao/pacientes', rotulo: 'Abrir leitos' }, { to: '/enfermagem/internacao', rotulo: 'Abrir internação' }] },
+  RNDS: { icone: Send, cor: 'text-atencao bg-atencao/10', acao: { to: '/integracoes?aba=rnds', rotulo: 'Abrir RNDS' } },
   Outros: { icone: Bell, cor: 'text-tinta-apoio bg-trilha' },
 }
 const FILTROS = ['Todos', 'Não lidos', 'Turno', 'Observação', 'Escala', 'Candidatura', 'Regulação', 'AIH', 'APAC', 'Exames'] as const
 // categorias que só aparecem no filtro quando há aviso delas
-const FILTROS_SE_HOUVER = ['Triagem', 'Farmácia', 'Leitos', 'Mensagem', 'Outros'] as const
+const FILTROS_SE_HOUVER = ['Triagem', 'Farmácia', 'Leitos', 'Mensagem', 'RNDS', 'Outros'] as const
 
 function haQuanto(iso: string) {
   const min = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
@@ -146,7 +149,7 @@ export default function Notificacoes() {
         ) : lista.map((n) => {
           const cat = categoria(n.tipo)
           const v = VISUAL[cat]
-          const acao = (v.acao ? [v.acao].flat() : []).find((a) => rotas.has(a.to)) ?? null
+          const acao = (v.acao ? [v.acao].flat() : []).find((a) => rotas.has(a.to.split('?')[0])) ?? null
           return (
             <div key={n.id} className={cn('flex items-start gap-[13px] border-b border-trilha px-5 py-[15px] last:border-0', !n.lida && 'bg-alerta-marca')}>
               <span className={cn('mt-[7px] size-[7px] shrink-0 rounded-capsula', n.lida ? 'bg-transparent' : 'bg-acao')} aria-hidden />
