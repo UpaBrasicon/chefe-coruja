@@ -9,7 +9,7 @@
 // Acima, as altas que você deu nas últimas 24 horas, com o cancelamento.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, ArrowRightLeft, ChevronRight, ClipboardList, Copy, Hospital, Shield } from 'lucide-react'
+import { AlertTriangle, ChevronRight, ClipboardList, Copy, Hospital, Shield } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -241,11 +241,7 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
                 {eAberto && (
                   <div className="animate-cc-abre-leito px-5 pt-0.5 pb-5">
                     <LeitoAberto modo="caderno" abaInicial={p.id === params.get('paciente') ? params.get('aba') ?? undefined : undefined} pacienteId={p.id} pacienteNome={p.nome} ehGestor={ehGestor}
-                      acoesTopo={
-                        <Button size="xs" variant="outline" onClick={() => onTransferir(p)}>
-                          <ArrowRightLeft /> Transferir de setor
-                        </Button>
-                      } />
+                      onTransferir={() => onTransferir(p)} />
                   </div>
                 )}
               </div>
