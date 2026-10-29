@@ -716,7 +716,8 @@ export default function Escala({
       })
       if (error) throw error
       invalidar()
-      setMensagem(data ? 'Plantão passado com sucesso.' : 'Solicitação de passagem registrada.')
+      // passar_plantao devolve o id do plantão quando passa na hora e o do pedido quando espera o gestor
+      setMensagem(data === escalaId ? 'Plantão passado com sucesso.' : 'Passagem pedida. O plantão continua com você até o gestor aprovar.')
       setJustificativa('')
       setDestinoId('')
     } catch (e) {
@@ -1596,6 +1597,9 @@ export default function Escala({
                   <span className={cn('text-rotulo font-semibold tabular-nums', pedidos.total ? 'text-atencao' : 'text-acao')}>{pedidos.total}</span>
                   <span className="ml-auto text-rotulo text-tinta-sussurro">Aprovar ou recusar vale na hora e fica no histórico.</span>
                 </div>
+                {decidir.error && (
+                  <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{decidir.error.message}</p>
+                )}
                 {carregandoSolic ? (
                   <div className="flex h-16 items-center justify-center"><Spinner /></div>
                 ) : pedidos.total === 0 ? (
