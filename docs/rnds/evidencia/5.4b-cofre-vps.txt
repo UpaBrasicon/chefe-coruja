@@ -1,0 +1,41 @@
+# 5.4b — o serviço abre o cofre, teste ponta a ponta no VPS (29/10/2026, 01:13–01:23 UTC)
+# fila da HOMOLOGAÇÃO → serviço rnds-envio no VPS 179.199.128.141 → simulador da RNDS
+# (branch fase5/rnds-cofre-servico, antes do merge). Nada foi enviado à RNDS de verdade.
+
+## Banco (homologação)
+- Migration 20270207000001_rnds_cofre_leitura.sql aplicada e registrada em schema_migrations.
+- supabase/tests/fase5c_rnds_cofre_leitura.sql: passou. Controle negativo (condição invertida): "FALHOU", como esperado.
+- Rollback (DROP FUNCTION em BEGIN…ROLLBACK): a função sai (restam 0).
+
+## Chave do cofre no VPS
+- /home/rnds/deploy/cofre/chave.pem: RSA 3072, gerada no VPS com openssl genpkey; pasta 700 e arquivo 400, uid 1000.
+  Montada só para leitura em /cofre. A chave nunca saiu do VPS.
+- Ao subir, o serviço publicou a chave pública na homologação:
+    {"evento":"inicio","simulador":true,"producao":false,"cofre":true}
+    {"evento":"chave_publicada","chave":"tWudSFYLbhVnxf3We6KsuCYrU6qRSxWVVsE3NFmuMdc"}
+  O id é a impressão RFC 7638 e confere com rnds_chaves_publicas (ativa).
+- Backup: /home/hermes/backup.sh passou a levar /home/rnds/deploy/.env.rnds e cofre/chave.pem
+  (cópia anterior em backup.sh.antes-rnds-cofre). sh -n ok; a chave copiada abre com openssl pkey.
+
+## Teste ponta a ponta (services/rnds-envio/deploy/e2e-cofre-homolog.sql)
+- Credencial "Credencial E2E (teste)" (…e511) ligada à UPA RNDS E2E (…e502).
+- O certificado da pasta da unidade foi posto de lado durante o teste, para provar que o envio usa o cofre.
+  Voltou ao lugar no fim, como reserva.
+- O .pfx do simulador foi cifrado no VPS com simulador/cifrar.ts (o mesmo código do navegador, src/interop/rnds/cofre.ts).
+  O cifrado foi gravado na credencial como rnds_enviar_certificado faz (situação "aguardando").
+
+1. Senha errada:
+   {"evento":"certificado_lido","credencial":"…e511","situacao":"senha_incorreta"}
+   credencial: situacao senha_incorreta, erro "a senha não abre o certificado", sem titular
+   RAC novo da unidade: retido "retido: o certificado da RNDS não abre com a senha enviada; envie de novo em Integrações > RNDS"
+   (nada chegou ao simulador)
+2. Senha certa, sem documento novo na fila (lido pelo rnds_certificados_aguardando):
+   {"evento":"certificado_lido","credencial":"…e511","situacao":"valido"}
+   credencial: situacao valido, titular "UPA de teste (simulador RNDS)", valido_ate 2027-10-28, impressão 4B:EE:AF:3E…
+3. O RAC retido tentou de novo (proxima_tentativa_em = now(), como o rnds_reenviar):
+   {"item":"a2a72804-…","tipo":"rac","resultado":"enviado"}
+   fila: status enviado, tem_id_rnds true, enviado_em 2026-10-29 01:22:29 UTC
+
+## Estado no fim
+- rnds-envio e rnds-simulador: healthy.
+- As outras unidades da homologação não têm credencial nem envio ligado e não enviaram nada.

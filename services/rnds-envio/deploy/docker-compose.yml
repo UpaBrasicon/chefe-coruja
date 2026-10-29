@@ -1,0 +1,74 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# RNDS no VPS (Fase 5C, tarefa 5, etapa 5.3c): o serviço de envio e o
+# simulador, separados do Hermes. Instalação e reversão em infra/rnds-envio.md.
+#
+# Na pasta /home/rnds/deploy do VPS:
+#   app/           o código (services/rnds-envio e src/interop/fhir), copiado
+#                  do master pelo atualizar-rnds.sh
+#   .env.rnds      SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY da HOMOLOGAÇÃO (600)
+#   certificados/  <unidade_id>.pfx e .senha (só leitura para o serviço): a
+#                  reserva, para unidade sem certificado no cofre
+#   cofre/         chave.pem, a chave privada do cofre (5.4b; 400, só leitura)
+#
+# Nesta etapa o envio vai só ao simulador: RNDS_AUTH_URL e RNDS_EHR_URL
+# apontam para ele, e a produção da RNDS fica desligada no código.
+# Nenhuma porta é publicada no host.
+# ─────────────────────────────────────────────────────────────────────────────
+name: rnds
+
+x-base: &base
+  build:
+    context: ./app
+    dockerfile: services/rnds-envio/Dockerfile
+  image: rnds-envio:latest
+  restart: unless-stopped
+  read_only: true
+  tmpfs: ["/tmp"]
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: ["ALL"]
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "5" }
+
+services:
+  simulador:
+    <<: *base
+    container_name: rnds-simulador
+    command: ["node", "services/rnds-envio/simulador/simulador.ts", "--porta", "8443", "--host", "0.0.0.0", "--certs", "/certs-sim"]
+    volumes:
+      - sim-certs:/certs-sim
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(8443,'127.0.0.1').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  envio:
+    <<: *base
+    container_name: rnds-envio
+    env_file:
+      - .env.rnds
+    environment:
+      RNDS_AUTH_URL: https://simulador:8443
+      RNDS_EHR_URL: https://simulador:8443
+      RNDS_CA_EXTRA: /certs-sim/ca.crt
+      RNDS_CERTIFICADOS_DIR: /certificados
+      RNDS_CHAVE_COFRE: /cofre/chave.pem
+      RNDS_PERMITIR_PRODUCAO: "nao"
+    volumes:
+      - sim-certs:/certs-sim:ro
+      - ./certificados:/certificados:ro
+      - ./cofre:/cofre:ro
+    depends_on:
+      simulador:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/saude').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  sim-certs:

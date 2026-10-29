@@ -1168,6 +1168,102 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
 - sem banco e sem tela. RAC e SA continuam fora do processador até a carga do serviço de envio (5.3).
   Regras e números em `docs/rnds/VALIDADOR.md`.
 
+**5.3, serviço de envio (decisões do RT em 28/10/2026, "todas a"):**
+- três PRs: 5.3a banco; 5.3b serviço e simulador; 5.3c no VPS;
+- a carga fica em funções no banco, testadas na homologação; o serviço só as chama, com a chave de
+  serviço, sem ler tabela;
+- o financiamento é um padrão por unidade, numa configuração da RNDS que o gestor define (a tela
+  é a 5.4);
+- procedência: "informação ausente" (99, código oficial) na porta; internação vinda de outra
+  unidade é demanda referenciada (12). O campo de procedência na recepção vai ao backlog;
+- o MIRA é assinado por quem mudou o status (regra I5);
+- medidas do RAC: a última PAS, PAD, peso e estatura do episódio, com o LOINC da lista oficial
+  ligado no banco;
+- serviço no VPS em contêiner e usuário próprios, segredos à parte, atualizado do master com o
+  mesmo teste de saúde e volta do Hermes, apontando só para a homologação e o simulador.
+
+**5.3a na homologação em 28/10/2026:** migration `20270205000001_rnds_envio_banco.sql`.
+- Fila: status novo `retido` (falta dado; o motivo fica no item, que volta a ser tentado de hora em
+  hora), quem assina, próxima tentativa, trava do lote, o Bundle enviado e a resposta da RNDS.
+- `rnds_config_unidade`: ambiente, identificador do solicitante, financiamento e envio ligado.
+  Nasce desligada; sem ela ligada, nada da unidade sai.
+- As três funções do serviço: `rnds_pegar_lote`, `rnds_dados_documento` (a carga do RAC, do SA e
+  do MIRA) e `rnds_registrar_resultado` (enviado, retido, nova tentativa até 30 vezes, erro
+  definitivo, credencial recusada, que pausa a unidade).
+- Conferência noturna às 01:00 de Brasília: o que mudou no dia anterior e não entrou na fila entra.
+- Teste `supabase/tests/fase5c_rnds_envio.sql`, o da 5.1 e o rollback passaram na homologação. RAC
+  e SA montados da carga da homologação passam no validador oficial sem erro
+  (`docs/rnds/evidencia/5.3a-carga-homolog.txt`). Regras em `docs/rnds/ENVIO.md`.
+- No master em 28/10/2026 (#325). A migration vai à produção junto com a da 5.1, só com o "ok produção".
+
+**5.3b pronta em 28/10/2026 (branch `fase5/rnds-envio-servico`):** o serviço de envio
+(`services/rnds-envio/`) e o simulador da RNDS.
+- O token sai com TLS mútuo (GET, ou POST se a RNDS responder 405) e é reaproveitado por 30 min.
+  Um 401 no envio pede token novo uma vez. A resposta vira o resultado da fila: 201 enviado; 422
+  erro com a mensagem da RNDS; 5xx, 429 e falta de resposta, nova tentativa; credencial recusada
+  pausa a unidade.
+- Antes de sair, fica retido: produção desligada nesta etapa, unidade sem identificador do
+  solicitante, profissional sem CNS, documento retido pelo mapper e unidade sem certificado.
+- O simulador gera a própria CA de teste e confere token, CNS, tipo, hora, identificador e
+  substituição. Os 18 testes rodam contra ele no CI, com TLS mútuo de verdade.
+- Sem banco e sem tela. O teste ponta a ponta (fila da homologação → simulador) entra na 5.3c, no
+  VPS. Regras em `docs/rnds/ENVIO.md`.
+- No master em 28/10/2026 (#328).
+
+**5.3c pronta em 28/10/2026 (branch `fase5/rnds-envio-vps`):** a subida no VPS, separada do Hermes.
+- Imagem `services/rnds-envio/Dockerfile` (Node 24, só a dependência de execução) e compose com o
+  envio e o simulador: nenhuma porta publicada, sistema de arquivos só leitura, usuário `node`,
+  ligados à homologação e ao simulador.
+- `instalar-rnds.sh` (usuário `rnds`, pastas, `.env.rnds` em branco, cron às 04:10) e
+  `atualizar-rnds.sh` (sobe só quando muda o serviço ou os documentos; teste de saúde pelo ciclo
+  com a fila; volta à imagem anterior se falhar), sem mexer no clone do Hermes.
+- `e2e-homolog.sql` cria a "Rede RNDS E2E (teste)" na homologação e põe RAC, SA e MIRA na fila;
+  conferido numa transação desfeita. O teste ponta a ponta roda no VPS depois do merge, com a chave
+  da homologação posta pelo RT. Passo a passo, chaves e reversão em `infra/rnds-envio.md`.
+- No master em 28/10/2026 (#331). **Instalada no VPS no mesmo dia** (por SSH, com a chave da
+  homologação posta pelo RT): os dois contêineres saudáveis, sem porta no host, cron às 04:10.
+
+**5.3 concluída em 28/10/2026.** Teste ponta a ponta no VPS: RAC, SA e MIRA da "Rede RNDS E2E
+(teste)" saíram da fila da homologação, passaram pelo serviço e voltaram do simulador com 201 e o
+`id_rnds` gravado, com o Bundle e a resposta no item. Antes do certificado de teste, os três ficaram
+retidos com o motivo, como esperado. As outras unidades da homologação, sem configuração, não
+enviaram nada. Evidência em `docs/rnds/evidencia/5.3c-e2e-vps.txt`. Próxima: 5.4 (cofre de
+certificados, aviso de vencimento, bloqueio por CBO e painel, com telas do Refero).
+
+**5.4, cofre, vencimento, CBO e painel (decisões do RT em 28/10/2026, "todas a"):**
+- o certificado chega pela tela, cifrado no navegador com a chave pública do serviço no VPS; o banco
+  guarda só o cifrado, e a chave privada existe só no VPS;
+- uma credencial (certificado, identificador e ambiente) cobre a unidade principal e as filhas da
+  mesma UF, como no DATASUS;
+- aviso no sino aos gestores a 30, 15, 7 e 1 dia do vencimento; vencido, o envio pausa sozinho;
+- ERR906/ERR879 bloqueia o profissional; os documentos dele ficam retidos até o gestor desbloquear;
+- painel numa aba "RNDS" em Integrações;
+- o gestor configura, envia o certificado e cuida da fila; passar para a produção, só o super admin;
+- três PRs: 5.4a banco; 5.4b serviço; 5.4c tela (opções do Refero antes).
+
+**5.4a na homologação em 28/10/2026:** migration `20270206000001_rnds_cofre_banco.sql`.
+- `rnds_credenciais` (cofre cifrado; titular, documento e validade lidos pelo serviço),
+  `rnds_chaves_publicas` (a chave do serviço; só uma ativa) e `rnds_bloqueios`.
+- A carga leva a credencial e retém o profissional bloqueado; o resultado ERR906/ERR879 bloqueia
+  (ERR906 em todas as unidades da credencial) e a recusa da credencial avisa os gestores.
+- Avisos de vencimento às 08:00; vencido pausa as unidades da credencial.
+- Funções do painel, com 2FA e auditoria: painel, fila, reenviar, configuração, retomar,
+  credencial, ambiente (só super admin), enviar certificado e desbloquear. Funções do serviço:
+  publicar a chave, buscar o cifrado e gravar o que leu.
+- Teste `supabase/tests/fase5c_rnds_cofre.sql`, os da 5.3a e da 5.1 e o rollback passaram na
+  homologação. O serviço no VPS seguiu saudável com a migration aplicada.
+
+**5.4b no VPS e na homologação em 29/10/2026:** o serviço abre o cofre.
+- Chave RSA 3072 gerada no VPS, montada só para leitura e incluída no backup; a pública é publicada
+  ao subir. O formato do cofre (`src/interop/rnds/cofre.ts`, WebCrypto) é o mesmo para a tela da 5.4c.
+- O serviço lê o .pfx com o openssl (com `-legacy` para os A1 com RC2), grava titular, CNPJ/CPF,
+  validade e impressão, e retém o documento quando o certificado não presta ou venceu.
+- Migration `20270207000001_rnds_cofre_leitura.sql`: o certificado que acabou de chegar é lido no
+  ciclo seguinte, mesmo com o envio desligado.
+- Ponta a ponta no VPS: senha errada retida com o motivo; senha certa lida como válida e o RAC
+  enviado com o certificado do cofre. Evidência em `docs/rnds/evidencia/5.4b-cofre-vps.txt`.
+  Próxima: 5.4c, a tela (opções do Refero antes).
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
@@ -1975,7 +2071,7 @@ motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT p
 |---|---|---|---|
 | 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS. **Aplicado em 27/10/2026 (PR #301); falta conferir pelo app** | bug |
 | 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (P1, opção A). PR #308: o merge publicou a tela (e0f688f). Com o "ok produção" do RT, as migrations 20270203000001 (busca e o que falta para prescrever) e 20270203000002 (sinônimos: lista A aprovada pelo RT e 21 nomes comerciais conferidos na Anvisa) foram aplicadas na produção. Plano e listas em `docs/plantonista/PONTO-11-PRESCRICAO.md` e `PONTO-11-SINONIMOS.md` | bug + ajuste |
-| 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (regra B e sub-aba). PR #319 juntado ao master (tela no ar); com o "ok produção" do RT, a migration 20270203000003 (motivo de não poder evoluir; a evolução médica vale também para o plantão no setor do cadastro do paciente) foi aplicada na produção. Pendente: a resposta do RT sobre tirar o campo de CID de dentro da evolução. Plano em `docs/plantonista/PONTO-09-EVOLUCAO.md` | bug + ajuste |
+| 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (regra B e sub-aba). PR #319 juntado ao master (tela no ar); com o "ok produção" do RT, a migration 20270203000003 (motivo de não poder evoluir; a evolução médica vale também para o plantão no setor do cadastro do paciente) foi aplicada na produção. O campo de CID saiu da evolução (resposta do RT em 28/10/2026, PR #323, só tela, em produção): a evolução mostra o diagnóstico vigente e grava o retrato dele. **Ponto 9 concluído.** Plano em `docs/plantonista/PONTO-09-EVOLUCAO.md` | bug + ajuste |
 | 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG. **Aprovado pelo RT em 28/10/2026 (três pedidos, tela A). Na homologação desde 28/10/2026 (PR #330, migration 20270203000004).** No leito, laboratório, imagem e ECG saem em pedidos separados, pelo catálogo, ligados à internação. Em aberto: a regra na porta e a folha impressa por pedido no leito. Plano em `docs/plantonista/PONTO-12-EXAMES.md` | nova (regra) |
 | 5 | P1 | 14 + 16 — atestado, receita para casa e orientações dentro de Alta e documentos | nova |
 | 6 | P2 | 2, 3, 4, 5 — navegação do plantão (VM duplicada, check-in duplicado, Atendimento, Internação direto na lista) | ajuste |
@@ -2001,10 +2097,14 @@ próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero 
 | 1 | E0 | Corrigir a "Escala da unidade" e a troca do plantonista: hoje leem a tabela direto e a RLS só devolve os próprios plantões (colegas aparecem como "livre"). Leitura passa por RPC | Feito: PR #302 (master), migration `20270202000001`; na homologação em 27/10 (10 de 10 testes; plantonista passa de 0 a 24 plantões de colegas no mês); migration aplicada na produção em 28/10 (ok do RT), versão registrada; frontend em produção pelo merge |
 | 2 | E1 | Categoria do plantão (`papel` em `escala_plantao`, `escala_fixa`, `escala_vagas`), preenchimento, gatilho e trava de categoria em troca e passagem | Feito: PR #310 (master), migration `20270202000002`; na homologação em 28/10 (16 de 16 testes; 387 plantões com categoria e 71 sem, de uma pessoa com dois papéis); migration aplicada na produção em 28/10 (ok do RT), versão registrada (lá os 701 plantões ficam sem categoria: 700 de pessoa sem vínculo e 1 do super admin de teste) |
 | 3 | E2 | Gestor escala todas as categorias (seletor, cobertura por categoria); ERP leva só o plantão médico | Feito: PR #315 (master), opção B escolhida pelo RT em 28/10 (todas juntas, sigla da categoria ao lado do nome; ERP só plantonista); migration `20270202000003`; na homologação em 28/10 (14 de 14 testes, CI verde); migration aplicada na produção em 28/10 (ok do RT), versão registrada uma vez; frontend em produção pelo merge |
-| 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | PR #320; opção A escolhida pelo RT em 28/10 (o mês com o dia ao lado, só leitura); sem migration; na homologação em 28/10; farmacêutico e faturamento entram pela escala depois, num passo próprio; falta o teste do RT e o merge |
-| 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | A fazer |
+| 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | Feito: PR #320 (master), opção A escolhida pelo RT em 28/10 (o mês com o dia ao lado, só leitura); sem migration; na homologação em 28/10 (CI verde); em produção pelo merge do RT em 28/10. Pendente, em passo próprio: farmacêutico e faturamento entrarem pela escala, depois que o gestor escalar os dois |
+| 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | Feito: PR #327 (master), opção A escolhida pelo RT em 28/10 (ações no painel do dia; passagem, troca e falta em janela); migration `20270202000004`; na homologação em 28/10 (11 de 11 testes, CI verde); migration aplicada na produção em 28/10 (ok do RT), versão registrada; frontend em produção pelo merge; sair do fixo e fracionar ficam de fora |
 
 Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda > **Todas as unidades** pedia a escala até o dia 31 de qualquer mês e dava erro nos meses de 30 dias e em fevereiro (o banco recusa 2026-11-31). PR #305, sem migration; na homologação em 28/10; mesclado no master pelo RT em 28/10 (produção pelo merge).
+
+Achado da E4, corrigido à parte (pedido do RT em 28/10/2026): depois de um deploy, o app recarregava sozinho só uma vez por sessão; com duas publicações seguidas a aba ficava quebrada (na homologação, as telas do enfermeiro, menos a Triagem, até recarregar à mão). Agora recarrega a cada versão nova, com trava de 30 s contra laço (`src/lib/recargaDeploy.ts`). PR #329, sem migration; na homologação em 28/10; em produção pelo merge do RT em 28/10.
+
+Ajuste da E4 (pedido do RT em 28/10/2026: "só tem justificar falta"): no dia passado só cabe justificar falta, e Trocar, Passar e Candidatar-me ficavam escondidos em dias futuros. Opção A: as ações do próximo plantão no cartão do alto, as vagas abertas da categoria ao lado e, no dia passado, a explicação com o atalho para o próximo (`docs/escala/E4-AJUSTE-ACOES-A-VISTA.md`). Sem migration; na homologação e em produção em 28/10/2026 (#333).
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.

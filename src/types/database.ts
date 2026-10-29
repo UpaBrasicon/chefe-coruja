@@ -10501,6 +10501,10 @@ export type Database = {
         Args: { p_motivo: string; p_procedimento: string; p_unidade: string }
         Returns: Json
       }
+      pedir_exames_internacao: {
+        Args: { p_grupo: string; p_internacao: string; p_itens: Json; p_observacao?: string; p_urgencia?: string }
+        Returns: Json
+      }
       pedir_exames: {
         Args: { p_episodio: string; p_itens: Json; p_observacao?: string; p_urgencia?: string }
         Returns: number
@@ -10729,6 +10733,14 @@ export type Database = {
         Returns: {
           gerados_em: string
           restantes: number
+        }[]
+      }
+      colegas_da_categoria: {
+        Args: { p_unidade: string }
+        Returns: {
+          nome_completo: string
+          papel: Database["public"]["Enums"]["papel"]
+          perfil_id: string
         }[]
       }
       colegas_para_passagem: {
