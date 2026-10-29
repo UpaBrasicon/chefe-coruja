@@ -10,7 +10,7 @@ Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 - **Pergunta 3:** Pendências e alertas fica só como destino do aviso do check-out.
 - **Pergunta 4:** o aviso de rascunhos do gestor fica só em texto.
 
-**Situação: na homologação desde 29/10/2026** (branch `fix/navegacao-plantao`). É só tela, sem banco.
+**Situação: em produção desde 29/10/2026.** O RT conferiu na homologação, e o PR #344 foi juntado ao master. É só tela, sem banco.
 
 **Diferenças do plano:**
 
