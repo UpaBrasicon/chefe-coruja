@@ -1230,6 +1230,29 @@ retidos com o motivo, como esperado. As outras unidades da homologação, sem co
 enviaram nada. Evidência em `docs/rnds/evidencia/5.3c-e2e-vps.txt`. Próxima: 5.4 (cofre de
 certificados, aviso de vencimento, bloqueio por CBO e painel, com telas do Refero).
 
+**5.4, cofre, vencimento, CBO e painel (decisões do RT em 28/10/2026, "todas a"):**
+- o certificado chega pela tela, cifrado no navegador com a chave pública do serviço no VPS; o banco
+  guarda só o cifrado, e a chave privada existe só no VPS;
+- uma credencial (certificado, identificador e ambiente) cobre a unidade principal e as filhas da
+  mesma UF, como no DATASUS;
+- aviso no sino aos gestores a 30, 15, 7 e 1 dia do vencimento; vencido, o envio pausa sozinho;
+- ERR906/ERR879 bloqueia o profissional; os documentos dele ficam retidos até o gestor desbloquear;
+- painel numa aba "RNDS" em Integrações;
+- o gestor configura, envia o certificado e cuida da fila; passar para a produção, só o super admin;
+- três PRs: 5.4a banco; 5.4b serviço; 5.4c tela (opções do Refero antes).
+
+**5.4a na homologação em 28/10/2026:** migration `20270206000001_rnds_cofre_banco.sql`.
+- `rnds_credenciais` (cofre cifrado; titular, documento e validade lidos pelo serviço),
+  `rnds_chaves_publicas` (a chave do serviço; só uma ativa) e `rnds_bloqueios`.
+- A carga leva a credencial e retém o profissional bloqueado; o resultado ERR906/ERR879 bloqueia
+  (ERR906 em todas as unidades da credencial) e a recusa da credencial avisa os gestores.
+- Avisos de vencimento às 08:00; vencido pausa as unidades da credencial.
+- Funções do painel, com 2FA e auditoria: painel, fila, reenviar, configuração, retomar,
+  credencial, ambiente (só super admin), enviar certificado e desbloquear. Funções do serviço:
+  publicar a chave, buscar o cifrado e gravar o que leu.
+- Teste `supabase/tests/fase5c_rnds_cofre.sql`, os da 5.3a e da 5.1 e o rollback passaram na
+  homologação. O serviço no VPS seguiu saudável com a migration aplicada.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
