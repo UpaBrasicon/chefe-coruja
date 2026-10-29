@@ -99,6 +99,7 @@ O serviço (`services/rnds-envio`, 5.3b) e o simulador da RNDS sobem no VPS `179
 | Log da atualização | `/home/rnds/logs/atualizar.log` |
 | Parar o envio | `docker compose -f /home/rnds/deploy/docker-compose.yml --project-directory /home/rnds/deploy stop envio` |
 | Desligar uma unidade | `UPDATE rnds_config_unidade SET envio_ligado = false WHERE unidade_id = …` (na homologação) |
+| Quem vai ao simulador | `RNDS_SIMULADOR_UNIDADES` no `docker-compose.yml` (5.5a): hoje só a UPA RNDS E2E. As outras unidades com credencial vão à homologação oficial da RNDS |
 
 ## Como reverter
 
