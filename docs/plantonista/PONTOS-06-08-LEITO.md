@@ -3,8 +3,9 @@
 Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 `BACKLOG.md`. O RT pediu em 29/10/2026: "Começar 6 a 8".
 
-**Nada de código ou banco foi mudado.** Este documento é o plano. A
-implementação começa quando o RT responder às perguntas do fim.
+**Estado (29/10/2026):** o RT aprovou o plano como recomendado (seção 14).
+A implementação está no PR #346 (branch `fix/leito-resumo-abas`), publicada
+na homologação e aguardando a conferência do RT. Não há banco: o merge publica.
 
 ```
 Vamos trabalhar a tarefa: pontos 6 a 8, Resumo do leito em abas, os três botões juntos e sem a aba Classificação.
@@ -184,3 +185,31 @@ juntas no topo.
 3. **Passar o paciente numa janela,** como a intercorrência, em vez de abrir
    o formulário no meio do Resumo?
 4. **Tela:** opção A (sub-abas no topo) ou B (gravidade fixa ao lado)?
+
+## 14. Respostas do RT (29/10/2026) e implementação
+
+O RT respondeu "Aprovo" ao plano como recomendado:
+
+1. Histórico na unidade: (c), a trilha desta internação e os atendimentos
+   anteriores do paciente.
+2. O gestor também perde a aba Classificação; a cor abre a janela para ele.
+3. A passagem abre numa janela.
+4. Opção A: sub-abas no topo do Resumo.
+
+Implementação (PR #346):
+
+- `src/lib/acoesLeito.ts` (com teste): quais botões o cabeçalho mostra, a
+  sub-aba inicial, a contagem de pendências e o endereço antigo `?aba=classif`.
+- `LeitoAberto.tsx`: `ResumoEmAbas`; os três botões no cabeçalho; as janelas
+  de classificação, passagem e intercorrência. A prop `acoesTopo` virou
+  `onTransferir`.
+- `caderno/Passagem.tsx`: `DialogoPassagem`; o bloco do Resumo fica só com a
+  situação (`semBotao`). O modo simples (observação) segue com o botão.
+- `Intercorrencias.tsx`: `semBotao` e `DialogoIntercorrencia` exportada.
+- `caderno/Classificacao.tsx`: `DialogoClassificacao`.
+- Com passagem aguardando aceite, o botão de passar fica desligado, com o
+  motivo no título.
+- Internação encerrada abre o Resumo em Histórico na unidade.
+
+Checagens: `tsc -b`, eslint e `padrao-frontend --ci` ok; `src/lib` 194/194;
+`test:clinico` 1102/1102.
