@@ -158,6 +158,11 @@ Seguir o validador e confirmar por chamado.
 5. RAC: qual perfil de profissional vale, `BRProfissional-1.0` com CPF ou `BRLotacaoProfissional-1.0` com CNS e CNES? E o token é GET ou POST?
 6. Prazo de análise para RAC e SA.
 
+**5C-5.5a (29/10/2026):**
+- O formulário do item E5 está em `FORMULARIO-CREDENCIAL.md`.
+- O chamado do item E8 está em `CHAMADO-DATASUS.md`.
+- A evidência da seção 6 sai pelo `npm run rnds:evidencia`.
+
 ## 9. Ordem de execução quando as credenciais chegarem
 
 1. O gestor junta E1 a E4 e o Chefe Coruja preenche a parte técnica (seção 4).

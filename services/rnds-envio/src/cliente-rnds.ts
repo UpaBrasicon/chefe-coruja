@@ -25,8 +25,11 @@ export type Resultado =
   | { resultado: 'enviado'; idRnds: string; resposta: RespostaGravada }
   | { resultado: 'reenviar' | 'erro' | 'credencial'; erro: string; resposta?: RespostaGravada }
 
-/** O que fica gravado no item da fila (sem o token nem o corpo inteiro de erro HTML). */
-export type RespostaGravada = { status: number; location?: string; corpo?: unknown }
+/**
+ * O que fica gravado no item da fila (sem o token nem o corpo inteiro de erro HTML).
+ * Os headers da resposta entram na evidência da homologação (5.5).
+ */
+export type RespostaGravada = { status: number; location?: string; headers?: Record<string, string>; corpo?: unknown }
 
 type Resposta = { status: number; headers: IncomingHttpHeaders; corpo: string }
 
@@ -196,7 +199,9 @@ function gravavel(r: Resposta): RespostaGravada {
     corpo = r.corpo.slice(0, 500)
   }
   const location = r.headers.location ?? r.headers['content-location']
-  return { status: r.status, ...(location ? { location: String(location) } : {}), ...(corpo !== undefined ? { corpo } : {}) }
+  const headers: Record<string, string> = {}
+  for (const [k, v] of Object.entries(r.headers)) if (v !== undefined && k !== 'set-cookie') headers[k] = String(v)
+  return { status: r.status, ...(location ? { location: String(location) } : {}), headers, ...(corpo !== undefined ? { corpo } : {}) }
 }
 
 /** As mensagens do OperationOutcome, ex.: "(EHR-ERR906) Profissional … não autorizado". */

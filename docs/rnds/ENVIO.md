@@ -271,3 +271,41 @@ Escolhas do RT de 29/10/2026 ("todas a"): desenho A, com o estado no topo. Refer
 - **A produção** só passa depois de o super admin digitar o nome da credencial.
 - **O sino** ganha a categoria "RNDS": os avisos `rnds_…` levam à aba (`/integracoes?aba=rnds`).
 - **O financiamento** lista os códigos 01 a 08 de `BRFinanciamento`. Só 01 (SUS federal) e 07 (SUS municipal) têm o nome conferido. Os outros aparecem só pelo código, até a conferência com a tabela oficial.
+
+---
+
+# Homologação oficial: o que fica pronto antes da credencial (5C-5.5a)
+
+Decisões do RT de 29/10/2026 ("todas a"). A credencial é pedida pelo gestor, com RAC e Sumário de Alta na primeira leva.
+
+## Simulador só para a unidade de teste
+
+`RNDS_SIMULADOR_UNIDADES` lista as unidades que vão ao simulador. As outras vão aos endereços oficiais da RNDS, pelo ambiente da credencial.
+- No VPS, a lista tem só a "UPA RNDS E2E (teste)".
+- Sem a lista, todas as unidades vão ao simulador. É o lado seguro: nada chega à RNDS de verdade.
+- A produção da RNDS segue desligada no código (`RNDS_PERMITIR_PRODUCAO`).
+
+## A resposta guarda os headers
+
+O item enviado guarda o status, o `Location` e os headers da resposta da RNDS (menos `set-cookie`). Os headers entram na evidência.
+
+## Evidência para a produção
+
+`npm run rnds:evidencia -- --item <uuid> [--saida <pasta>]` monta o PDF que o DATASUS pede, até 10 MB, a partir de um item já enviado:
+1. o validador local oficial sem erro: o `fhir:validar` roda no Bundle gravado, e só o resultado entra, sem a carga das definições;
+2. o status e os headers da resposta 201;
+3. o Bundle enviado.
+
+Detalhes:
+- Lê o item pelo projeto ligado (`npm run db:alvo`).
+- Recusa o item se a resposta não for 201 ou se o validador apontar erro.
+- Precisa de Docker, JDK e Edge ou Chrome.
+- O Bundle leva os dados do paciente do teste: só pacientes fictícios.
+
+## Formulário da credencial e chamado ao DATASUS
+
+- `FORMULARIO-CREDENCIAL.md`: os campos que o gestor copia no Portal de Serviços. Os números da unidade saem de `volumes-unidade.sql`, que devolve só contagens.
+- `CHAMADO-DATASUS.md`: o texto do chamado no WEB Atendimento. Traz as perguntas da seção 8 do `CHECKLIST.md` e mais três:
+  - CPF de teste;
+  - portfólio do MIRA;
+  - quem envia o MIRA.

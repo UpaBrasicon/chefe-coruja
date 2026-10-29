@@ -1281,6 +1281,31 @@ certificados, aviso de vencimento, bloqueio por CBO e painel, com telas do Refer
 - Nenhuma credencial e nenhuma unidade com o envio ligado.
 - O serviço no VPS segue ligado só à homologação; até a 5.5, os itens da produção ficam pendentes na fila.
 
+**5.4 concluída em 29/10/2026:** banco, serviço e aba RNDS em produção (#335, #336, #338).
+
+**5.5, homologação oficial (decisões do RT em 29/10/2026, "todas a"):**
+- uma unidade piloto real, indicada pelo RT;
+- primeira leva com RAC e Sumário de Alta; o MIRA espera a resposta do chamado;
+- os testes na homologação oficial usam pacientes fictícios da nossa homologação;
+- a evidência é montada pelo sistema a partir do item enviado;
+- os campos técnicos do formulário são preparados por nós, e o gestor só copia;
+- o chamado ao DATASUS é redigido por nós e aberto pelo RT;
+- a produção da RNDS, depois da aprovação, faz parte da 5.5 (5.5c);
+- o simulador fica só para a unidade de teste.
+
+Partes: 5.5a, o que fica pronto antes da credencial; 5.5b, os testes na homologação oficial, a evidência e o
+pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
+
+**5.5a em 29/10/2026:**
+- O simulador recebe só a unidade de teste (`RNDS_SIMULADOR_UNIDADES`).
+- A resposta da RNDS guarda os headers.
+- `npm run rnds:evidencia` monta o PDF da evidência (validador, resposta 201 e Bundle). Testado com o RAC da
+  unidade de teste: 5 páginas, 54 KB.
+- `docs/rnds/FORMULARIO-CREDENCIAL.md` traz os campos do formulário; os números da unidade saem de
+  `volumes-unidade.sql`.
+- `docs/rnds/CHAMADO-DATASUS.md` traz o texto do chamado.
+- Falta o RT indicar a unidade piloto.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)

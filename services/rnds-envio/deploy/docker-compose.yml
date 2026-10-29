@@ -10,8 +10,9 @@
 #                  reserva, para unidade sem certificado no cofre
 #   cofre/         chave.pem, a chave privada do cofre (5.4b; 400, só leitura)
 #
-# Nesta etapa o envio vai só ao simulador: RNDS_AUTH_URL e RNDS_EHR_URL
-# apontam para ele, e a produção da RNDS fica desligada no código.
+# O simulador recebe só a unidade de teste (RNDS_SIMULADOR_UNIDADES); as
+# outras unidades com credencial vão à homologação oficial da RNDS (5.5). A
+# produção da RNDS segue desligada no código.
 # Nenhuma porta é publicada no host.
 # ─────────────────────────────────────────────────────────────────────────────
 name: rnds
@@ -52,6 +53,8 @@ services:
     environment:
       RNDS_AUTH_URL: https://simulador:8443
       RNDS_EHR_URL: https://simulador:8443
+      # só a unidade de teste vai ao simulador; as outras, à RNDS (5.5, decisão h)
+      RNDS_SIMULADOR_UNIDADES: 00000000-0000-4000-8000-00000000e502
       RNDS_CA_EXTRA: /certs-sim/ca.crt
       RNDS_CERTIFICADOS_DIR: /certificados
       RNDS_CHAVE_COFRE: /cofre/chave.pem

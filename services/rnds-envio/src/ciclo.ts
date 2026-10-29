@@ -72,6 +72,11 @@ export type Dependencias = {
   rnds: Pick<ClienteRnds, 'enviar'>
   /** aponta para o simulador; sem ele, os endereços oficiais */
   sobrepor?: Partial<Enderecos>
+  /**
+   * Só estas unidades vão ao simulador (5.5). Sem a lista, o simulador vale para
+   * todas: é o lado seguro, porque nada chega à RNDS de verdade.
+   */
+  unidadesSimulador?: ReadonlySet<string>
   /** nesta etapa o envio à produção fica desligado (decisão do RT, 5.3) */
   permitirProducao?: boolean
   agora?: () => Date
@@ -111,7 +116,8 @@ async function processarItem(d: Dependencias, item: ItemLote): Promise<Registro>
   }
   if (!envio.identificador_solicitante) return { resultado: 'retido', erro: 'retido: unidade sem o identificador do solicitante da RNDS' }
   if (!envio.profissional_cns) return { resultado: 'retido', erro: 'retido: profissional sem CNS (é quem assina o envio)' }
-  const end = enderecos(ambiente, envio.uf, d.sobrepor)
+  const simulador = d.sobrepor && (!d.unidadesSimulador || d.unidadesSimulador.has(item.unidade_id))
+  const end = enderecos(ambiente, envio.uf, simulador ? d.sobrepor : undefined)
   if (!end.ehr) return { resultado: 'retido', erro: 'retido: unidade sem UF (endereço da RNDS na produção)' }
 
   let bundle: Bundle

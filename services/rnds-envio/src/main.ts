@@ -9,6 +9,8 @@
 //                                            sem ela, só a pasta
 //   RNDS_CERTIFICADOS_DIR                     <unidade_id>.pfx e .senha (a reserva)
 //   RNDS_AUTH_URL, RNDS_EHR_URL               opcionais: o simulador
+//   RNDS_SIMULADOR_UNIDADES                   ids separados por vírgula: só elas vão ao
+//                                            simulador (5.5); vazio, todas vão
 //   RNDS_CA_EXTRA                             opcional: arquivo da CA do simulador
 //   RNDS_PERMITIR_PRODUCAO=sim                nesta etapa fica sem (decisão do RT)
 //   RNDS_INTERVALO_S (60), RNDS_LOTE (20)
@@ -50,6 +52,9 @@ const deps = {
     ...(process.env.RNDS_AUTH_URL ? { auth: process.env.RNDS_AUTH_URL } : {}),
     ...(process.env.RNDS_EHR_URL ? { ehr: process.env.RNDS_EHR_URL } : {}),
   },
+  unidadesSimulador: process.env.RNDS_SIMULADOR_UNIDADES
+    ? new Set(process.env.RNDS_SIMULADOR_UNIDADES.split(',').map((u) => u.trim()).filter(Boolean))
+    : undefined,
   permitirProducao: process.env.RNDS_PERMITIR_PRODUCAO === 'sim',
   log,
 }
@@ -69,7 +74,10 @@ const saude = createServer((req, res) => {
 })
 saude.listen(Number(process.env.RNDS_SAUDE_PORTA ?? 8080), '127.0.0.1')
 
-log({ evento: 'inicio', simulador: Boolean(process.env.RNDS_AUTH_URL), producao: deps.permitirProducao, cofre: Boolean(cofre) })
+log({
+  evento: 'inicio', simulador: Boolean(process.env.RNDS_AUTH_URL), unidades_no_simulador: deps.unidadesSimulador?.size ?? 'todas',
+  producao: deps.permitirProducao, cofre: Boolean(cofre),
+})
 while (!parar) {
   try {
     if (cofre) {

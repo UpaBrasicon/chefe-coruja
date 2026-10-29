@@ -34,6 +34,7 @@
     "rnds:envio": "node services/rnds-envio/src/main.ts",
     "rnds:simulador": "node services/rnds-envio/simulador/simulador.ts",
     "fhir:validar": "node scripts/interop/validar-fhir.ts",
+    "rnds:evidencia": "node scripts/interop/evidencia-rnds.ts",
     "outbox:processar": "node scripts/interop/processar-outbox.ts",
     "import:cid10": "node scripts/terminologia/importar-cid10.ts",
     "baixar:sigtap": "node scripts/terminologia/baixar-sigtap.ts",

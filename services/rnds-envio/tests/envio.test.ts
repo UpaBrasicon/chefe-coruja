@@ -218,6 +218,36 @@ describe('retenção antes do envio: o que falta não sai', () => {
   })
 })
 
+describe('simulador só para a unidade de teste (5.5)', () => {
+  function capturar() {
+    const enderecosUsados: string[] = []
+    const rnds = { enviar: async (p: { enderecos: { ehr: string } }) => { enderecosUsados.push(p.enderecos.ehr); return { resultado: 'reenviar' as const, erro: 'teste' } } }
+    return { enderecosUsados, rnds }
+  }
+  it('unidade da lista vai ao simulador', async () => {
+    const { enderecosUsados, rnds } = capturar()
+    await processarLote({ ...deps(filaDeTeste({ x: documento('rac') }).fila), rnds, unidadesSimulador: new Set([UNIDADE]) })
+    assert.deepEqual(enderecosUsados, [base])
+  })
+  it('unidade fora da lista vai à homologação oficial', async () => {
+    const { enderecosUsados, rnds } = capturar()
+    await processarLote({ ...deps(filaDeTeste({ x: documento('rac') }).fila), rnds, unidadesSimulador: new Set(['outra']) })
+    assert.deepEqual(enderecosUsados, ['https://ehr-services-hmg.saude.gov.br'])
+  })
+  it('sem a lista, todas vão ao simulador', async () => {
+    const { enderecosUsados, rnds } = capturar()
+    await processarLote({ ...deps(filaDeTeste({ x: documento('rac') }).fila), rnds })
+    assert.deepEqual(enderecosUsados, [base])
+  })
+  it('a resposta gravada leva os headers, para a evidência', async () => {
+    const { fila, registros } = filaDeTeste({ x: documento('rac') })
+    await processarLote(deps(fila))
+    const r = registros.get('x')!.resposta as { headers: Record<string, string> }
+    assert.ok(r.headers.location.endsWith(registros.get('x')!.idRnds!), 'o Location com o id da RNDS')
+    assert.ok(r.headers['content-type'])
+  })
+})
+
 describe('endereços', () => {
   it('homologação, produção pela UF e simulador', () => {
     assert.deepEqual(enderecos('homologacao', 'GO'), { auth: 'https://ehr-auth-hmg.saude.gov.br', ehr: 'https://ehr-services-hmg.saude.gov.br' })
