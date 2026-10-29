@@ -10366,6 +10366,17 @@ export type Database = {
       webhook_girar_segredo: { Args: { p_destino: string }; Returns: Json }
       webhook_reenviar: { Args: { p_entrega: string }; Returns: undefined }
       webhook_religar_destino: { Args: { p_destino: string }; Returns: undefined }
+      // Fase 5C, tarefa 5, etapa 5.4 (migration 20270206000001): a aba RNDS em Integrações
+      rnds_painel: { Args: { p_unidade: string }; Returns: Json }
+      rnds_itens: { Args: { p_unidade: string; p_status?: string | null; p_limite?: number }; Returns: Json }
+      rnds_reenviar: { Args: { p_item: string }; Returns: string }
+      rnds_salvar_config: { Args: { p_unidade: string; p_financiamento: string | null; p_envio_ligado: boolean }; Returns: undefined }
+      rnds_retomar: { Args: { p_unidade: string }; Returns: undefined }
+      rnds_salvar_credencial: { Args: { p_credencial: string | null; p_nome: string; p_unidade_principal: string; p_identificador: string | null; p_unidades: string[] }; Returns: string }
+      rnds_definir_ambiente: { Args: { p_credencial: string; p_ambiente: string }; Returns: undefined }
+      rnds_enviar_certificado: { Args: { p_credencial: string; p_cifrado: Json }; Returns: undefined }
+      rnds_desbloquear: { Args: { p_bloqueio: string }; Returns: number }
+      rnds_chave_publica: { Args: never; Returns: Json }
       conferir_dispensacao: { Args: { p_dispensacao: string }; Returns: undefined }
       devolver_dispensacao: {
         Args: { p_dispensacao: string; p_motivo: string; p_quantidade: number }
