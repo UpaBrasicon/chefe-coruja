@@ -87,7 +87,10 @@ DECLARE a uuid; b uuid;
 BEGIN
   SELECT id INTO a FROM public.escala_plantao WHERE perfil_id = '10000000-0000-4000-8000-000000000002' AND data = pg_temp.dia() AND turno = 'manha';
   SELECT id INTO b FROM public.escala_plantao WHERE perfil_id = '10000000-0000-4000-8000-000000000006' AND data = pg_temp.dia() AND turno = 'manha';
-  PERFORM private.aplicar_troca(jsonb_populate_record(NULL::public.trocas_plantao, jsonb_build_object('plantao_a_id', a, 'plantao_b_id', b)));
+  -- C1 (20270208000001): a troca leva os donos de agora dos dois plantões
+  PERFORM private.aplicar_troca(jsonb_populate_record(NULL::public.trocas_plantao, jsonb_build_object(
+    'plantao_a_id', a, 'perfil_a_id', '10000000-0000-4000-8000-000000000002',
+    'plantao_b_id', b, 'perfil_b_id', '10000000-0000-4000-8000-000000000006')));
   IF (SELECT perfil_id FROM public.escala_plantao WHERE id = a) <> '10000000-0000-4000-8000-000000000006'
      OR (SELECT perfil_id FROM public.escala_plantao WHERE id = b) <> '10000000-0000-4000-8000-000000000002' THEN
     RAISE EXCEPTION 'FALHOU: troca no mesmo horário não aplicou';

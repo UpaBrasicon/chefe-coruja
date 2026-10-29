@@ -1,9 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // LeitoAberto — o CADERNO DO LEITO (protótipo, index.html 2640–3142).
 //
-// Cabeçalho único do paciente no topo e as 12 abas do protótipo (LEITO_ABAS):
-// Resumo (acuidade com tendência e motivo do alerta, pendências, passagem),
-// Classificação, Evolução (com o Diagnóstico dentro, ponto 9), Admissão,
+// Cabeçalho único do paciente no topo e as abas do protótipo (LEITO_ABAS):
+// Resumo (em sub-abas, ponto 6), Evolução (com o Diagnóstico dentro, ponto 9), Admissão,
 // Prescrição, Exames, AIH, Encaminhamento, Atestado, Parecer e termos, Alta e
 // documentos. As peças
 // moram em ./caderno; toda regra mora no servidor, aqui só se mostra e se pede.
@@ -15,18 +14,25 @@
 // cabeçalho sem cartão com transferir de setor no canto direito; as abas numa
 // linha só, sublinhadas; embaixo, a aba à esquerda e o painel Paciente à direita,
 // começando na mesma altura.
+//
+// Pontos 6 a 8 do plantonista (RT, 29/10/2026): o Resumo em quatro sub-abas
+// (Agora, Pendências, Histórico na unidade, Regulações); transferir, passar e
+// registrar intercorrência juntos no cabeçalho, só para quem cuida da
+// internação ativa; a aba Classificação saiu — a cor abre o histórico numa janela.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Printer } from 'lucide-react'
+import { Activity, ArrowRightLeft, Handshake, History, ListTodo, Printer, Siren, Waypoints } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
-import { Intercorrencias } from '@/components/prontuario/Intercorrencias'
+import { DialogoIntercorrencia, Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
 import { supabase } from '@/lib/supabase'
 import { abrirProntuario } from '@/lib/prontuario'
+import { abaDoEndereco, type AcaoLeito, acoesDoLeito, rotuloPendencias, type SubResumo, subResumoInicial } from '@/lib/acoesLeito'
+import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import type { CorRisco } from '@/domain/risco'
@@ -47,7 +53,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { BlocoAcuidade } from './caderno/Acuidade'
 import { BlocoAlta, BlocoPacote, CancelarAlta } from './caderno/Alta'
 import { Secao } from './caderno/caixas'
-import { AbaClassificacao } from './caderno/Classificacao'
+import { DialogoClassificacao } from './caderno/Classificacao'
 import {
   type Acao, type Acuidade, ATIVO, diaHora, type Internacao, msg, type Pacote, type Passagem, type Pendencia,
 } from './caderno/comum'
@@ -57,19 +63,18 @@ import { PassosAlta } from './caderno/PassosAlta'
 import { DOCS_INICIAL, type EstadoDocs } from '@/lib/documentosAlta'
 import { useDocumentosLeito } from './caderno/rascunhoLeito'
 import { PainelPaciente } from './caderno/PainelPaciente'
-import { BlocoPassagem } from './caderno/Passagem'
+import { BlocoPassagem, DialogoPassagem } from './caderno/Passagem'
 import { BlocoPendencias } from './caderno/Pendencias'
 import { BlocoSepse } from './caderno/Sepse'
 import { ChecklistAdmissao, TrilhaEpisodio } from './caderno/Trilha'
 
 export { SepsePorta } from './caderno/Sepse'
 
-type IdAba = 'resumo' | 'classif' | 'evol' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'comp' | 'alta'
+type IdAba = 'resumo' | 'evol' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'comp' | 'alta'
 
 // LEITO_ABAS do protótipo (index.html ~21611), na mesma ordem.
 const ABAS: [IdAba, string][] = [
   ['resumo', 'Resumo'],
-  ['classif', 'Classificação'],
   ['evol', 'Evolução'],
   ['admissao', 'Admissão'],
   ['receituario', 'Prescrição'],
@@ -82,9 +87,10 @@ const ABAS: [IdAba, string][] = [
 ]
 /**
  * O que se lê sem escrever: gestor, e o leito depois da alta. O Diagnóstico
- * agora mora dentro de Evolução (ponto 9), que entra aqui em leitura.
+ * agora mora dentro de Evolução (ponto 9), que entra aqui em leitura. A
+ * Classificação deixou de ser aba (ponto 8): a cor do cabeçalho abre a janela.
  */
-const ABAS_LEITURA: IdAba[] = ['resumo', 'classif', 'evol', 'alta']
+const ABAS_LEITURA: IdAba[] = ['resumo', 'evol', 'alta']
 
 const CHAVES_DO_LEITO = [
   'leito-aberto', 'acuidade', 'tendencia-acuidade', 'vitais-qsofa', 'pendencias', 'passagens', 'impeditivos', 'pacotes-alta',
@@ -92,14 +98,14 @@ const CHAVES_DO_LEITO = [
   'ocupacao-setores', 'pendencias-observacao', 'alertas-sepse',
 ]
 
-export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simples', acoesTopo, abaInicial }: {
+export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simples', onTransferir, abaInicial }: {
   pacienteId: string
   pacienteNome: string
   ehGestor: boolean
   /** "caderno": as 12 abas do protótipo; "simples": o leito sem abas (observação). */
   modo?: 'simples' | 'caderno'
-  /** Ação no canto direito do cabeçalho do caderno (ex.: transferir de setor). */
-  acoesTopo?: React.ReactNode
+  /** Transferir de setor (a lista de internados sabe); o botão fica no cabeçalho do caderno. */
+  onTransferir?: () => void
   /** Aba do caderno que abre primeiro (endereço do leito com ?aba=). */
   abaInicial?: string
 }) {
@@ -215,7 +221,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
     prontuarioAberto: prontuario.isSuccess, aoGravarVitais, aoErro: setErro,
   }
 
-  const cabecalho = (onClassificacao?: () => void, compacto = false) => (
+  const cabecalho = (onClassificacao?: () => void, compacto = false, acoes?: React.ReactNode) => (
     // D4: cabeçalho único — leito/setor, nome, idade, sexo, permanência, alergia em
     // três estados, cor da classificação da porta e acuidade. D5: atendimento
     // anterior sem desfecho, na gaveta lateral.
@@ -251,7 +257,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
       episodios
       compacto={compacto}
       semCartao={!compacto}
-      acao={compacto ? acoesTopo : undefined}
+      acao={compacto ? acoes : undefined}
     />
   )
   const avisos = (
@@ -276,7 +282,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
       </div>
     )
   }
-  return <Caderno p={p} cabecalho={cabecalho} avisos={avisos} abaInicial={abaInicial} />
+  return <Caderno p={p} cabecalho={cabecalho} avisos={avisos} abaInicial={abaInicial} onTransferir={onTransferir} />
 }
 
 type PartesLeito = {
@@ -328,6 +334,73 @@ function Resumo({ p }: { p: PartesLeito }) {
   )
 }
 
+const SUBS_RESUMO: { id: SubResumo; Icone: typeof Activity }[] = [
+  { id: 'agora', Icone: Activity },
+  { id: 'pendencias', Icone: ListTodo },
+  { id: 'historico', Icone: History },
+  { id: 'regulacoes', Icone: Waypoints },
+]
+
+/**
+ * Aba Resumo do caderno em sub-abas (ponto 6, opção A do RT): Agora (o que muda
+ * no plantão), Pendências, Histórico na unidade (a trilha desta internação e os
+ * atendimentos anteriores) e Regulações. O modo simples segue com o Resumo inteiro.
+ */
+function ResumoEmAbas({ p }: { p: PartesLeito }) {
+  const { i, ativa, ehGestor } = p
+  const unidadeResumo = useUnidade().unidadeAtiva?.unidade_id
+  const [sub, setSub] = React.useState<SubResumo>(() => subResumoInicial(ativa))
+  const rotulo: Record<SubResumo, string> = {
+    agora: 'Agora', pendencias: rotuloPendencias(p.pendencias), historico: 'Histórico na unidade', regulacoes: 'Regulações',
+  }
+  return (
+    <div className="flex flex-col">
+      <div role="tablist" aria-label="Resumo" className="mb-3.5 flex flex-wrap gap-1.5">
+        {SUBS_RESUMO.map(({ id, Icone }) => (
+          // a mesma subaba da Evolução: o Button no papel de aba
+          <Button key={id} role="tab" aria-selected={sub === id} onClick={() => setSub(id)}
+            variant={sub === id ? 'default' : 'outline'}
+            className={cn('min-h-10 px-3.5 py-2 text-controle', sub === id && 'border-acao')}>
+            <Icone className="size-[15px]" aria-hidden /> {rotulo[id]}
+          </Button>
+        ))}
+      </div>
+      <div role="tabpanel" className="flex min-w-0 flex-col gap-4">
+        {sub === 'agora' && (
+          <>
+            {!ativa && <p className="text-apoio text-tinta-sussurro">Internação encerrada: aqui ficam só as intercorrências registradas.</p>}
+            {ativa && (
+              <BlocoAcuidade a={p.acuidade} carregando={p.acuidadeCarregando} pacienteId={p.pacienteId} internacaoId={i.id}
+                podeLancar={!ehGestor} prontuarioAberto={p.prontuarioAberto} perfilId={p.eu} aoGravar={p.aoGravarVitais} aoErro={p.aoErro} />
+            )}
+            {ativa && p.acuidade?.escala === 'PEWS' && (
+              <BlocoSepse a={p.acuidade} pacienteId={p.pacienteId} podeMarcar={!ehGestor} acao={p.acao} />
+            )}
+            {ativa && !ehGestor && <BlocoPassagem i={i} lista={p.passagens} eu={p.eu} acao={p.acao} semBotao />}
+            {ativa && <PassagensDoPlantao pacienteId={p.pacienteId} />}
+            {/* Fase 1, tarefa 12: reentrada de contingência do atendimento que gerou a internação */}
+            {unidadeResumo && i.episodio_id && <ReentradaContingencia unidadeId={unidadeResumo} episodioId={i.episodio_id} chegadaEm={i.data_admissao} />}
+            {/* registrar é pelo cabeçalho (ponto 7); aqui a lista e o Retificar */}
+            <Intercorrencias pacienteId={p.pacienteId} internacaoId={ativa ? i.id : null} episodioId={ativa ? i.episodio_id : null} semBotao />
+          </>
+        )}
+        {sub === 'pendencias' && <BlocoPendencias internacaoId={i.id} ativa={ativa} lista={p.pendencias} eu={p.eu} acao={p.acao} />}
+        {sub === 'historico' && (
+          <>
+            <TrilhaEpisodio pacienteId={p.pacienteId} />
+            {/* Fase 1, tarefa 8: atendimentos encerrados do paciente, para quem cuida */}
+            {ativa && <HistoricoEncerrado pacienteId={p.pacienteId} />}
+          </>
+        )}
+        {/* Fase 4, tarefa 5: regulações do paciente na rede (médico e gestor) */}
+        {sub === 'regulacoes' && <HistoricoRegulacao pacienteId={p.pacienteId} />}
+      </div>
+    </div>
+  )
+}
+
+const ICONE_ACAO: Record<AcaoLeito, typeof Activity> = { transferir: ArrowRightLeft, passar: Handshake, intercorrencia: Siren }
+
 /** Aba Alta e documentos (e o fim do modo simples). */
 function AltaEDocumentos({ p }: { p: PartesLeito }) {
   const { i, ativa, altaRecente, ehGestor } = p
@@ -343,19 +416,22 @@ function AltaEDocumentos({ p }: { p: PartesLeito }) {
   )
 }
 
-function Caderno({ p, cabecalho, avisos, abaInicial }: {
+function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir }: {
   abaInicial?: string
   p: PartesLeito
-  cabecalho: (onClassificacao?: () => void, compacto?: boolean) => React.ReactNode
+  cabecalho: (onClassificacao?: () => void, compacto?: boolean, acoes?: React.ReactNode) => React.ReactNode
   avisos: React.ReactNode
+  onTransferir?: () => void
 }) {
   const { i, ativa, ehGestor, pacienteId } = p
   const { unidadeAtiva } = useUnidade()
   // link antigo para a aba Diagnóstico abre Evolução › Diagnóstico (ponto 9)
   // receita e atestado em curso na Alta e documentos: ficam enquanto o leito está aberto
   const [docsAlta, setDocsAlta] = React.useState<EstadoDocs>(DOCS_INICIAL)
-  const [aba, setAba] = React.useState<IdAba>(() => (abaInicial === 'diag' ? 'evol' : abaInicial === 'atestado' ? 'alta'
-    : ABAS.some(([id]) => id === abaInicial) ? abaInicial as IdAba : 'resumo'))
+  // link antigo para a aba Classificação abre o Resumo com a janela (ponto 8)
+  const endereco = abaDoEndereco(abaInicial)
+  const [aba, setAba] = React.useState<IdAba>(() => (ABAS.some(([id]) => id === endereco.aba) ? endereco.aba as IdAba : 'resumo'))
+  const [janela, setJanela] = React.useState<'classificacao' | 'passar' | 'intercorrencia' | null>(endereco.classificacao ? 'classificacao' : null)
 
   const diagnosticos = useDiagnosticos(i.id)
   const vigentes = (diagnosticos.data ?? []).filter((d) => !d.encerrado_em && d.tipo === 'primario')
@@ -393,6 +469,17 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
   }).data
   const pp: PartesLeito = { ...p, cidSugerido: primario?.cid ?? cidUltimaEvolucao ?? i.cid_principal }
 
+  // ponto 7: transferir, passar e intercorrência juntos no cabeçalho
+  const acoesTopo = acoesDoLeito({ ativa, ehGestor, podeTransferir: !!onTransferir, passagens: p.passagens }).map((a) => {
+    const Icone = ICONE_ACAO[a.id]
+    return (
+      <Button key={a.id} size="xs" variant="outline" disabled={!!a.bloqueio} title={a.bloqueio ?? undefined}
+        onClick={() => (a.id === 'transferir' ? onTransferir?.() : setJanela(a.id))}>
+        <Icone /> {a.rotulo}
+      </Button>
+    )
+  })
+
   const irNotificacao = () => {
     setAba('exames')
     window.setTimeout(() => document.getElementById('caderno-agravos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
@@ -400,7 +487,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
 
   return (
     <div className="flex flex-col gap-3.5 border-t border-fio pt-3.5 text-apoio">
-      {cabecalho(() => setAba('classif'), true)}
+      {cabecalho(() => setJanela('classificacao'), true, acoesTopo.length > 0 ? acoesTopo : undefined)}
 
       {/* abas numa linha só; na tela estreita a linha rola para o lado */}
       <Tabs value={atual} onValueChange={(v) => setAba(v as IdAba)}>
@@ -415,13 +502,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
       <div id={`caderno-${atual}`} role="tabpanel" className="flex min-w-0 flex-col gap-4">
-        {atual === 'resumo' && (
-          <>
-            <Resumo p={pp} />
-            <TrilhaEpisodio pacienteId={pacienteId} />
-          </>
-        )}
-        {atual === 'classif' && <AbaClassificacao internacaoId={i.id} prontuarioAberto={p.prontuarioAberto} />}
+        {atual === 'resumo' && <ResumoEmAbas p={pp} />}
         {atual === 'evol' && (
           <AbaEvolucao pacienteId={pacienteId} internacaoId={i.id} somenteLeitura={!escreve}
             subInicial={abaInicial === 'diag' ? 'diagnostico' : undefined}
@@ -453,9 +534,17 @@ function Caderno({ p, cabecalho, avisos, abaInicial }: {
             leito={i.leito?.identificador ?? ''} diagnostico={textoPrimario} estado={docsAlta} setEstado={setDocsAlta} />
         )}
       </div>
-      <PainelPaciente i={i} ativa={ativa} acuidade={p.acuidade} diagnostico={textoPrimario} onClassificacao={() => setAba('classif')}
+      <PainelPaciente i={i} ativa={ativa} acuidade={p.acuidade} diagnostico={textoPrimario} onClassificacao={() => setJanela('classificacao')}
         acoes={ativa ? <BotaoRnDaMae maeId={pacienteId} maeNome={p.pacienteNome} /> : undefined} />
       </div>
+
+      {janela === 'classificacao' && (
+        <DialogoClassificacao internacaoId={i.id} prontuarioAberto={p.prontuarioAberto} aoFechar={() => setJanela(null)} />
+      )}
+      {janela === 'passar' && <DialogoPassagem i={i} acao={p.acao} aoFechar={() => setJanela(null)} />}
+      {janela === 'intercorrencia' && (
+        <DialogoIntercorrencia pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} retifica={null} aoFechar={() => setJanela(null)} />
+      )}
     </div>
   )
 }

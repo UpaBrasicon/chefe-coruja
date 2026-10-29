@@ -1,8 +1,9 @@
-// Aba Classificação do leito (protótipo, index.html 3120–3142): a
+// Classificação do leito (protótipo, index.html 3120–3142): a
 // classificação de risco da porta que originou a internação, a vigente no
 // topo e o histórico (quem classificou, vitais crus, motivo da reclassificação).
 // Lida por classificacoes_do_leito: no leito vale quem pode atuar no paciente,
-// não o setor da porta.
+// não o setor da porta. Era aba do caderno; desde o ponto 8 do plantonista
+// (RT 29/10/2026) abre numa janela, ao clicar na cor do cabeçalho.
 import { useQuery } from '@tanstack/react-query'
 import { Activity } from 'lucide-react'
 
@@ -11,6 +12,7 @@ import { NIVEL_RISCO, textoAlvo, type CorRisco } from '@/domain/risco'
 import { textoVitais } from '@/domain/vitais'
 import { ESCALAS_DOR, type EscalaDor } from '@/clinico/triagem/dor'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
 
 import { diaHora } from './comum'
@@ -36,6 +38,21 @@ type Linha = {
 }
 
 const PAPEL: Record<string, string> = { enfermeiro: 'Enfermagem', plantonista: 'Médico' }
+
+/** O histórico da classificação numa janela (a cor do cabeçalho e do painel abre). */
+export function DialogoClassificacao({ internacaoId, prontuarioAberto, aoFechar }: { internacaoId: string; prontuarioAberto: boolean; aoFechar: () => void }) {
+  return (
+    <Dialog open onOpenChange={(v) => { if (!v) aoFechar() }}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[680px]">
+        <DialogHeader>
+          <DialogTitle className="text-dialogo">Classificação de risco</DialogTitle>
+          <DialogDescription className="text-controle">A vigente da porta no topo; embaixo, o histórico com quem classificou e os sinais vitais.</DialogDescription>
+        </DialogHeader>
+        <AbaClassificacao internacaoId={internacaoId} prontuarioAberto={prontuarioAberto} />
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 export function AbaClassificacao({ internacaoId, prontuarioAberto }: { internacaoId: string; prontuarioAberto: boolean }) {
   const hist = useQuery({
