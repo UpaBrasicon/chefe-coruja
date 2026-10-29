@@ -3,8 +3,19 @@
 Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 `BACKLOG.md`. O RT pediu em 29/10/2026: "Começar 2 a 5".
 
-**Ainda não mudei código nem banco.** Este documento é o plano. A
-implementação começa quando o RT responder às perguntas do fim.
+**Decisões do RT (29/10/2026): "Aprovo".** O RT aprovou as recomendações:
+
+- **Pergunta 1:** sai só a cópia de Ventilação Mecânica.
+- **Pergunta 2:** "Imprimir prontuário" fica no cabeçalho do leito e em Prontuários (opção A).
+- **Pergunta 3:** Pendências e alertas fica só como destino do aviso do check-out.
+- **Pergunta 4:** o aviso de rascunhos do gestor fica só em texto.
+
+**Situação: na homologação desde 29/10/2026** (branch `fix/navegacao-plantao`). É só tela, sem banco.
+
+**Diferenças do plano:**
+
+- **Biblioteca da IA:** do `ferramentas.json` saiu **só** a entrada `suporte-ventilatorio`. O arquivo do repositório estava desatualizado: regenerá-lo traria 22 ferramentas de outras sessões. **A reindexação ficou para depois.** A coleção `ferramentas` do Qdrant é a mesma da homologação e da produção, então reindexar mexe na produção. Até lá, se a IA sugerir a rota antiga, ela redireciona para a de Emergências.
+- **Achado:** duas outras telas aparecem em duas entradas da Central: `DenguePed` e `SdraVentilacaoAdulto`. Ficaram como estão, listadas no teste `src/content/duplicadas.test.ts`, para o RT decidir.
 
 ```
 Vamos trabalhar a tarefa: pontos 2 a 5, navegação do plantão (VM duplicada, check-in duplicado, Atendimento, Internação direto na lista).
