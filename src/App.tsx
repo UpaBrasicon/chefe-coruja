@@ -410,6 +410,7 @@ export default function App() {
                         <Route path="/plantonista/calculadoras/sedacao-continua" element={<Redirecionar para="/plantonista/calculadoras/infusoes-adulto?classe=sedacao" />} />
                         <Route path="/plantonista/calculadoras/bloqueio-neuromuscular" element={<Redirecionar para="/plantonista/calculadoras/infusoes-adulto?classe=bloqueio" />} />
                         <Route path="/plantonista/calculadoras/heparinizacao-ajuste" element={<Redirecionar para="/plantonista/calculadoras/heparinizacao-venosa" />} />
+                        <Route path="/plantonista/ventilacao-mecanica/suporte-ventilatorio" element={<Redirecionar para="/plantonista/emergencias/vm-ajuste-inicial-adulto" />} />
                         <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
                         <Route path="/agenda" element={<AgendaGrupo />} />
 

@@ -3798,23 +3798,6 @@
   "publico": "adulto"
  },
  {
-  "id": "suporte-ventilatorio",
-  "nome": "Ventilação mecânica — ajuste inicial",
-  "tipo": "calculadora",
-  "secao": "Ventilação Mecânica",
-  "categoria": "Ventilação Mecânica",
-  "sinonimos": [
-   "ventilação mecânica",
-   "VM",
-   "volume corrente",
-   "P/F",
-   "proteção pulmonar"
-  ],
-  "descricao": "Parâmetros iniciais por modo e relação I:E (manual HC, cap. 37).",
-  "rota": "/plantonista/ventilacao-mecanica/suporte-ventilatorio",
-  "publico": "adulto"
- },
- {
   "id": "mobilidade-funcional",
   "nome": "Mobilidade Funcional",
   "tipo": "calculadora",

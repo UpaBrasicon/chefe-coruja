@@ -9,6 +9,9 @@ import { Activity, DoorOpen, Eye, Hospital, MapPin, type LucideIcon } from 'luci
  * Regra de navegação: **seção com uma única ferramenta é a própria ferramenta**.
  * `/plantao/evolucao` renderiza a evolução direto, sem página intermediária de
  * um card só — e o `?paciente=` da URL sobrevive.
+ *
+ * Seção `semCartao` (pontos 3 e 4 do plantonista, RT 29/10/2026) continua com
+ * rota (outros lugares levam a ela), mas não aparece como cartão no Plantão.
  */
 
 /** Props injetadas pelo router em toda ferramenta de plantão. */
@@ -30,6 +33,8 @@ export type SecaoPlantao = {
   description: string
   icon: LucideIcon
   tools: FerramentaPlantao[]
+  /** Rota viva, sem cartão na página do Plantão. */
+  semCartao?: boolean
 }
 
 function sobDemanda(
@@ -61,6 +66,8 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
     label: 'Meu plantão',
     description: 'Registre entrada e saída do plantão com geolocalização.',
     icon: MapPin,
+    // ponto 3: o check-in já está na faixa do topo e na tela de bloqueio
+    semCartao: true,
     tools: [
       f(
         'check-in',
@@ -71,10 +78,19 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
     ],
   },
   {
+    slug: 'atendimento',
+    label: 'Atendimento',
+    description: 'Fila do pronto-socorro e atendimento do paciente.',
+    icon: DoorOpen,
+    tools: [f('fila', 'Atendimento', 'Fila do pronto-socorro e atendimento do paciente.', irPara('/atendimento'))],
+  },
+  {
+    // ponto 4: os formulários soltos ficam com rota (pendências e porta levam a eles), sem cartão
     slug: 'atendimento-porta',
     label: 'Atendimento na porta',
     description: 'Receituário, atestado, encaminhamento e pedido de exames.',
     icon: DoorOpen,
+    semCartao: true,
     tools: [
       f(
         'receituario-medico',
@@ -103,6 +119,8 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
     ],
   },
   {
+    // ponto 5: só a lista (seção direta). Pendências e impressão de prontuário
+    // têm rota própria; a impressão abre pelo leito e por Prontuários.
     slug: 'internacao',
     label: 'Internação',
     description: 'Pacientes internados: o leito aberto tem o caderno com evolução, prescrição e documentos.',
@@ -113,20 +131,6 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
         'Pacientes internados',
         'Enfermarias e sala vermelha — dos setores onde você está na escala.',
         sobDemanda(() => import('@/pages/plantao/secoes/PacientesInternados'), 'PacientesInternados')
-      ),
-      // protótipo PLANTAO_SECOES: as duas telas do PEP moram na Internação;
-      // aqui são rotas próprias, e o cartão leva a elas
-      f(
-        'pendencias',
-        'Pendências e alertas',
-        'Rascunhos a emitir, impeditivas de alta e combinados nos leitos.',
-        irPara('/pendencias-pep')
-      ),
-      f(
-        'impressao-prontuario',
-        'Impressão de prontuário',
-        'Selecionar documentos, anexos e declaração de recebimento.',
-        irPara('/impressao-prontuario')
       ),
     ],
   },
