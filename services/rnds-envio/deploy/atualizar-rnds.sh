@@ -8,13 +8,13 @@
 # Lê o clone /opt/chefe-coruja (o mesmo do Hermes) SEM mexer no HEAD dele:
 # só `git fetch` e `git archive origin/master`. O update-hermes.sh compara o
 # HEAD com o origin/master e continua vendo a novidade.
-# Só sobe quando muda algo em services/rnds-envio ou src/interop/fhir.
+# Só sobe quando muda algo em services/rnds-envio, src/interop/fhir ou src/interop/rnds.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
 CLONE=/opt/chefe-coruja
 DEPLOY=/home/rnds/deploy
-CAMINHOS=(services/rnds-envio src/interop/fhir)
+CAMINHOS=(services/rnds-envio src/interop/fhir src/interop/rnds)
 COMPOSE=(docker compose -f "$DEPLOY/docker-compose.yml" --project-directory "$DEPLOY")
 agora() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
