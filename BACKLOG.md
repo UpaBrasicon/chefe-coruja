@@ -1253,6 +1253,17 @@ certificados, aviso de vencimento, bloqueio por CBO e painel, com telas do Refer
 - Teste `supabase/tests/fase5c_rnds_cofre.sql`, os da 5.3a e da 5.1 e o rollback passaram na
   homologação. O serviço no VPS seguiu saudável com a migration aplicada.
 
+**5.4b no VPS e na homologação em 29/10/2026:** o serviço abre o cofre.
+- Chave RSA 3072 gerada no VPS, montada só para leitura e incluída no backup; a pública é publicada
+  ao subir. O formato do cofre (`src/interop/rnds/cofre.ts`, WebCrypto) é o mesmo para a tela da 5.4c.
+- O serviço lê o .pfx com o openssl (com `-legacy` para os A1 com RC2), grava titular, CNPJ/CPF,
+  validade e impressão, e retém o documento quando o certificado não presta ou venceu.
+- Migration `20270207000001_rnds_cofre_leitura.sql`: o certificado que acabou de chegar é lido no
+  ciclo seguinte, mesmo com o envio desligado.
+- Ponta a ponta no VPS: senha errada retida com o motivo; senha certa lida como válida e o RAC
+  enviado com o certificado do cofre. Evidência em `docs/rnds/evidencia/5.4b-cofre-vps.txt`.
+  Próxima: 5.4c, a tela (opções do Refero antes).
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)

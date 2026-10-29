@@ -86,7 +86,7 @@ O código está em `services/rnds-envio/`. O serviço roda no VPS (5.3c), num co
 | `src/ciclo.ts` | Um lote, item a item: carga → o que o envio exige → documento → envio → resultado. |
 | `src/cliente-rnds.ts` | Pede o token com TLS mútuo, envia o Bundle e converte a resposta num resultado da fila. |
 | `src/fila-supabase.ts` | As três funções da 5.3a, com a chave de serviço. |
-| `src/certificados.ts` | O `.pfx` e a senha de cada unidade, numa pasta do servidor, até o cofre da 5.4. |
+| `src/certificados.ts` | O `.pfx` e a senha de cada unidade, numa pasta do servidor. Desde a 5.4b é só a reserva do cofre. |
 | `src/main.ts` | O laço: um lote a cada `RNDS_INTERVALO_S` segundos (60), seguindo enquanto o lote vier cheio. |
 | `simulador/simulador.ts` | O simulador da RNDS, com a CA de teste. |
 
@@ -198,3 +198,56 @@ Todas pedem 2FA e ficam na auditoria. Só o gestor das próprias unidades ou o s
 | `rnds_enviar_certificado` | recebe o certificado cifrado |
 | `rnds_desbloquear` | tira o bloqueio |
 | `rnds_chave_publica` | a chave ativa, para o navegador cifrar |
+
+---
+
+# O serviço abre o cofre (5C-5.4b)
+
+## Formato do cofre
+
+`src/interop/rnds/cofre.ts` define o formato e é o mesmo código dos dois lados. Usa só a WebCrypto, que existe no navegador e no Node 24.
+
+- O conteúdo cifrado é `{"pfx": base64, "senha": "..."}`. Uma chave AES-256-GCM nova a cada envio o cifra.
+- A chave AES vai cifrada com RSA-OAEP-256 e a chave pública do serviço.
+- O dado adicional do GCM é `rnds-cofre:1:<credencial_id>`. O cifrado de uma credencial copiado para outra não abre.
+- O `chave_id` é a impressão da chave pública (RFC 7638), calculada igual no navegador e no serviço.
+
+## O que o serviço faz
+
+`services/rnds-envio/src/cofre.ts`:
+1. **Ao subir:** lê a chave privada (`RNDS_CHAVE_COFRE`) e publica a pública (`rnds_registrar_chave_publica`). Sem o arquivo, o serviço não sobe.
+2. **A cada ciclo:** lê os certificados que acabaram de chegar (`rnds_certificados_aguardando`, migration `20270207000001`). Assim o painel mostra se o certificado abriu, mesmo com o envio desligado.
+3. **A cada documento:** busca o certificado da unidade (`rnds_certificado_da_unidade`). O certificado aberto fica na memória até o cifrado mudar.
+4. **A leitura do .pfx:** o `openssl` lê o arquivo. Se o .pfx usa cifras antigas (RC2, comum nos A1 emitidos há anos), tenta de novo com `-legacy`. O serviço grava o que leu (`rnds_registrar_certificado`):
+   - o titular e o CNPJ ou CPF, tirados do CN no padrão da ICP-Brasil ("NOME:CNPJ");
+   - a validade;
+   - a impressão SHA-256;
+   - a situação.
+5. **O TLS mútuo** usa a chave e a cadeia em PEM, não o `.pfx`, porque o Node não abre `.pfx` com cifra antiga.
+
+O `.pfx` aberto e a senha ficam só na memória do serviço. A senha passa ao `openssl` por uma variável só daquele processo. Nada vai ao disco nem ao log.
+
+| O que o serviço encontra | Situação gravada | O documento |
+|---|---|---|
+| abriu e está na validade | `valido` | sai |
+| a senha não abre o .pfx | `senha_incorreta` | retido, com o motivo |
+| não é um .pfx, não tem chave ou ainda não vale | `invalido` | retido |
+| o cifrado não abre com a chave do serviço | `invalido` | retido |
+| cifrado com outra chave do serviço | `chave_trocada` | retido |
+| venceu (na leitura ou com o serviço rodando) | `vencido`: o banco pausa as unidades | retido |
+
+Unidade sem certificado no cofre usa a pasta (`RNDS_CERTIFICADOS_DIR`), que fica para o simulador e o teste ponta a ponta.
+
+## Testes
+
+`services/rnds-envio/tests/cofre.test.ts`, no `npm run test:interop`, roda contra o simulador:
+- a cifra e a abertura, inclusive com outra credencial e outra chave;
+- a leitura de um A1 no padrão ICP-Brasil e de um com RC2;
+- a senha errada, o arquivo que não é .pfx e o vencido;
+- o envio com o certificado do cofre;
+- a chave trocada;
+- o vencimento com o serviço rodando;
+- o certificado novo;
+- a reserva da pasta.
+
+O teste ponta a ponta no VPS está em `evidencia/5.4b-cofre-vps.txt`.
