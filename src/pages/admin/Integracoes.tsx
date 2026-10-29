@@ -9,6 +9,7 @@
 // Migration 20261104000002_api_integradores.sql.
 //
 // Fase 5C, tarefa 4, etapa 4.3: a página ganhou a aba Webhooks (WebhooksAba.tsx).
+// Fase 5C, tarefa 5, etapa 5.4c: e a aba RNDS (RndsAba.tsx).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Copy, KeyRound } from 'lucide-react'
@@ -27,6 +28,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { RndsAba } from './RndsAba'
 import { WebhooksAba } from './WebhooksAba'
 
 type Recurso = 'pacientes' | 'atendimentos' | 'leitos' | 'producao' | 'laboratorio' | 'imagem' | 'financeiro'
@@ -57,11 +59,12 @@ export default function Integracoes() {
   const { ehSuperAdmin } = useUnidade()
   return (
     <TabsPagina icone={KeyRound} titulo="Integrações" largura="max-w-5xl"
-      descricao={ehSuperAdmin ? 'Chaves da API para os sistemas parceiros e os webhooks que avisam esses sistemas. Chave e segredo aparecem uma única vez, na criação.'
-        : 'Chaves e webhooks dos sistemas parceiros que acessam a sua unidade. Você pode revogar uma chave ou desligar um webhook a qualquer hora.'}
+      descricao={ehSuperAdmin ? 'Chaves da API para os sistemas parceiros, os webhooks que avisam esses sistemas e o envio à RNDS. Chave e segredo aparecem uma única vez, na criação.'
+        : 'Chaves e webhooks dos sistemas parceiros que acessam a sua unidade, e o envio à RNDS. Você pode revogar uma chave ou desligar um webhook a qualquer hora.'}
       abas={[
         { valor: 'chaves', rotulo: 'Chaves da API', conteudo: () => <ChavesAba /> },
         { valor: 'webhooks', rotulo: 'Webhooks', conteudo: () => <WebhooksAba /> },
+        { valor: 'rnds', rotulo: 'RNDS', conteudo: () => <RndsAba /> },
       ]} />
   )
 }

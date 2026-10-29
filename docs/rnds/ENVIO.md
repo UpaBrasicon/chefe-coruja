@@ -251,3 +251,23 @@ Unidade sem certificado no cofre usa a pasta (`RNDS_CERTIFICADOS_DIR`), que fica
 - a reserva da pasta.
 
 O teste ponta a ponta no VPS está em `evidencia/5.4b-cofre-vps.txt`.
+
+---
+
+# A aba RNDS em Integrações (5C-5.4c)
+
+Escolhas do RT de 29/10/2026 ("todas a"): desenho A, com o estado no topo. Referências do Refero em `docs/frontend/revisao-visual/app/PLANO.md`.
+
+| Parte | O que mostra |
+|---|---|
+| Faixa do topo | Só o que pede ação, do mais grave ao mais leve, cada um com o botão: envio pausado ("Retomar o envio"), certificado vencido, com a senha errada, ilegível ou com a chave trocada ("Enviar certificado"), vencimento em até 30 dias, profissionais bloqueados ("Ver bloqueios"), envio desligado e unidade sem credencial ("Montar credencial"). |
+| Números | Validade do certificado, na fila, retidos, com erro e enviados. |
+| Credencial | Nome, ambiente, identificador, unidades com o CNES, situação do certificado, titular, CNPJ/CPF e validade. Botões "Editar", "Enviar certificado" e, só para o super admin, "Passar para a produção". |
+| Envio desta unidade | Financiamento e envio ligado. |
+| Profissionais bloqueados | Código, mensagem da RNDS e "Tirar o bloqueio". |
+| Fila | Os 50 mais recentes, com filtro por situação; "Reenviar" no erro e "Tentar agora" no retido. |
+
+- **O certificado** é cifrado no navegador (`src/interop/rnds/cofre.ts`) antes de sair do computador. A tela pede o `.pfx` (ou `.p12`, até 100 KB) e a senha.
+- **A produção** só passa depois de o super admin digitar o nome da credencial.
+- **O sino** ganha a categoria "RNDS": os avisos `rnds_…` levam à aba (`/integracoes?aba=rnds`).
+- **O financiamento** lista os códigos 01 a 08 de `BRFinanciamento`. Só 01 (SUS federal) e 07 (SUS municipal) têm o nome conferido. Os outros aparecem só pelo código, até a conferência com a tabela oficial.

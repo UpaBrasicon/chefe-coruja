@@ -1264,6 +1264,16 @@ certificados, aviso de vencimento, bloqueio por CBO e painel, com telas do Refer
   enviado com o certificado do cofre. Evidência em `docs/rnds/evidencia/5.4b-cofre-vps.txt`.
   Próxima: 5.4c, a tela (opções do Refero antes).
 
+**5.4c, a aba RNDS em Integrações (escolhas do RT em 29/10/2026, "todas a"):**
+- Desenho A (estado no topo), com o certificado num diálogo que cifra no navegador.
+- A fila mostra os últimos 50, com filtro.
+- A produção é confirmada digitando o nome da credencial.
+- O sino ganha a categoria "RNDS".
+- Sem migration: usa as funções da 5.4a. Tela em `src/pages/admin/RndsAba.tsx`, regras em `src/lib/rnds.ts`.
+- Conferida na página de teste (dois temas, cinco cenários, diálogos, 390 px). A cifra feita no navegador abriu
+  no Node com a chave privada.
+- Pendente: os nomes de 02 a 06 e 08 da tabela `BRFinanciamento`, que aparecem só pelo código.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)

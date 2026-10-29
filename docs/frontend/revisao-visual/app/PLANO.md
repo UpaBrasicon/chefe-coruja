@@ -1393,6 +1393,33 @@ destino; o gestor da unidade vê, desliga e reenvia. O banco, o envio e a API j�
   endereço recusado, o gestor (sem "Novo destino" nem "Trocar segredo") e 390 px sem rolagem lateral
   (`wh-A-aplicada-*.png`).
 
+## Fase 5C-5.4c — aba RNDS em Integrações (29/10/2026)
+
+Opções mostradas ao RT com telas do Refero. Escolha: "todas a".
+
+| Referência | Tela | O que serviu |
+|---|---|---|
+| Lovable, domínio | `5b07549e-4869-4520-b1df-e55db3247885` | faixa do que pede ação no topo, linha de números e seções empilhadas (opção A) |
+| Linear, lista com SLA | `cb07661a-3372-4bf9-80ce-4b308e947548` | opção B, fila agrupada pelo que pede ação (não escolhida) |
+| Dub, configuração de SSO | `7ae28be7-f1a8-4209-91b5-3e6744342542` | opção C, cartões de configuração (não escolhida) |
+| Appwrite, enviar arquivo | `02cac7d9-3f77-4f4f-b211-a836245d36d3` | diálogo com área de soltar o arquivo e aviso de segurança |
+| Fibery, registro de atividade | `2cec7602-2f2f-4abe-afc4-cdb4a03b094f` | fila em tabela com filtro |
+| Enode, regenerar segredo | `850a9864-9559-4998-8ec0-145da0e55768` | confirmar a produção digitando o nome |
+
+- **Escolhas do RT:**
+  - a) desenho A, estado no topo;
+  - b) certificado num diálogo;
+  - c) fila com os últimos 50 e filtro por situação;
+  - d) produção confirmada digitando o nome da credencial;
+  - e) categoria "RNDS" no sino, que leva à aba.
+- **Tela:** `src/pages/admin/RndsAba.tsx`. As regras ficam em `src/lib/rnds.ts`, com testes em `rnds.test.ts`.
+- **Conferida na página de teste** com a tela real e dados fictícios (`rnds-*.png`):
+  - os dois temas;
+  - os cenários tudo certo, pausado e vencido com bloqueio, vence em 7 dias e sem credencial;
+  - os diálogos do certificado, da credencial e da produção;
+  - o gestor não vê a troca de ambiente;
+  - 390 px sem rolagem lateral.
+
 ## O que o padrão já fixou (não muda nesta parte)
 
 Cores e tokens nos dois temas, ação em petróleo, marca teal, peças de base
