@@ -2093,7 +2093,7 @@ Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda 
 
 Achado da E4, corrigido à parte (pedido do RT em 28/10/2026): depois de um deploy, o app recarregava sozinho só uma vez por sessão; com duas publicações seguidas a aba ficava quebrada (na homologação, as telas do enfermeiro, menos a Triagem, até recarregar à mão). Agora recarrega a cada versão nova, com trava de 30 s contra laço (`src/lib/recargaDeploy.ts`). PR #329, sem migration; na homologação em 28/10; em produção pelo merge do RT em 28/10.
 
-Ajuste da E4 (pedido do RT em 28/10/2026: "só tem justificar falta"): no dia passado só cabe justificar falta, e Trocar, Passar e Candidatar-me ficavam escondidos em dias futuros. Opção A: as ações do próximo plantão no cartão do alto, as vagas abertas da categoria ao lado e, no dia passado, a explicação com o atalho para o próximo (`docs/escala/E4-AJUSTE-ACOES-A-VISTA.md`). Sem migration; na homologação em 28/10; falta o merge.
+Ajuste da E4 (pedido do RT em 28/10/2026: "só tem justificar falta"): no dia passado só cabe justificar falta, e Trocar, Passar e Candidatar-me ficavam escondidos em dias futuros. Opção A: as ações do próximo plantão no cartão do alto, as vagas abertas da categoria ao lado e, no dia passado, a explicação com o atalho para o próximo (`docs/escala/E4-AJUSTE-ACOES-A-VISTA.md`). Sem migration; na homologação e em produção em 28/10/2026 (#333).
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
