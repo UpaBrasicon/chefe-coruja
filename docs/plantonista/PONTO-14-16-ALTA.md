@@ -10,7 +10,7 @@ Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 - **Pergunta 3:** a alta não exige receita nem atestado; só mostra o que foi feito.
 - **Pergunta 4:** opção A, os passos numa página só.
 
-**Situação: na homologação desde 29/10/2026** (branch `fix/alta-documentos`). Não há migration.
+**Situação: em produção desde 29/10/2026.** O RT conferiu na homologação, e o PR #341 foi juntado ao master. Não há migration.
 
 **Feito como planejado:**
 
