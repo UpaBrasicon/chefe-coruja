@@ -17,7 +17,8 @@ import { rootCertificates } from 'node:tls'
 import type { IncomingHttpHeaders } from 'node:http'
 
 export type Ambiente = 'homologacao' | 'producao'
-export type Certificado = { pfx: Buffer; senha: string }
+/** O .pfx com a senha (a pasta) ou a chave e a cadeia em PEM (o cofre, lidas pelo openssl). */
+export type Certificado = { pfx: Buffer; senha: string } | { chave: string; cadeia: string }
 export type Enderecos = { auth: string; ehr: string }
 
 export type Resultado =
@@ -141,7 +142,11 @@ export class ClienteRnds {
       const req = request(url, {
         method: metodo,
         headers: { Accept: 'application/json', ...o.headers, ...(o.corpo ? { 'Content-Length': Buffer.byteLength(o.corpo) } : {}) },
-        ...(o.certificado ? { pfx: o.certificado.pfx, passphrase: o.certificado.senha } : {}),
+        ...(o.certificado
+          ? 'pfx' in o.certificado
+            ? { pfx: o.certificado.pfx, passphrase: o.certificado.senha }
+            : { key: o.certificado.chave, cert: o.certificado.cadeia }
+          : {}),
         ...(this.ca ? { ca: this.ca } : {}),
         timeout: this.timeoutMs,
       }, (res) => {

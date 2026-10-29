@@ -2,7 +2,7 @@
 # Serviço de envio à RNDS e simulador (Fase 5C, tarefa 5, etapa 5.3c).
 # Contexto do build: a raiz do repositório (o serviço usa src/interop/fhir).
 # O Node 24 roda o TypeScript direto; só a dependência de execução entra.
-# O openssl é do simulador, que gera a própria CA de teste.
+# O openssl gera a CA de teste do simulador e lê o .pfx que sai do cofre (5.4b).
 # ─────────────────────────────────────────────────────────────────────────────
 FROM node:24-alpine
 RUN apk add --no-cache openssl
@@ -11,6 +11,7 @@ ENV NODE_ENV=production
 COPY services/rnds-envio/package.json services/rnds-envio/package-lock.json ./services/rnds-envio/
 RUN cd services/rnds-envio && npm ci --omit=dev --ignore-scripts --no-audit --no-fund
 COPY src/interop/fhir ./src/interop/fhir
+COPY src/interop/rnds ./src/interop/rnds
 COPY services/rnds-envio/src ./services/rnds-envio/src
 COPY services/rnds-envio/simulador ./services/rnds-envio/simulador
 # o volume da CA de teste nasce com o dono certo

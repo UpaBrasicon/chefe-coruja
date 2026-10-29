@@ -6,6 +6,9 @@
 #   - usuário rnds (grupo docker), sem senha e sem login por senha
 #   - /home/rnds/deploy: atualizar-rnds.sh, .env.rnds (600, preencher à mão),
 #     certificados/ (do usuário do contêiner, uid 1000, 700)
+#   - /home/rnds/deploy/cofre/chave.pem: a chave privada do cofre (5.4b), RSA
+#     3072, gerada aqui uma vez e nunca substituída por este script: chave nova
+#     obriga os gestores a enviar de novo todos os certificados
 #   - /home/rnds/logs
 #   - cron do root às 04:10 (depois do update-hermes.sh, às 04:00)
 #
@@ -25,6 +28,13 @@ mkdir -p "$DEPLOY/certificados" /home/rnds/logs
 chown -R rnds:rnds /home/rnds
 # o contêiner roda como o usuário node (uid 1000) e só lê
 chown 1000:1000 "$DEPLOY/certificados" && chmod 700 "$DEPLOY/certificados"
+
+mkdir -p "$DEPLOY/cofre"
+if [ ! -f "$DEPLOY/cofre/chave.pem" ]; then
+  ( umask 077 && openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out "$DEPLOY/cofre/chave.pem" 2>/dev/null )
+  echo "chave do cofre gerada em $DEPLOY/cofre/chave.pem (entra no backup do VPS)"
+fi
+chown -R 1000:1000 "$DEPLOY/cofre" && chmod 700 "$DEPLOY/cofre" && chmod 400 "$DEPLOY/cofre/chave.pem"
 
 git -C "$CLONE" fetch --quiet origin master
 git -C "$CLONE" show origin/master:services/rnds-envio/deploy/atualizar-rnds.sh > "$DEPLOY/atualizar-rnds.sh"

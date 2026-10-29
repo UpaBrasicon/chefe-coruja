@@ -1,4 +1,6 @@
-// Certificados A1 por unidade, numa pasta do servidor (até o cofre da 5.4):
+// Certificados A1 por unidade, numa pasta do servidor. Desde a 5.4b o
+// certificado vem do cofre (cofre.ts); a pasta fica para o simulador e o teste
+// ponta a ponta, e vale só para a unidade sem certificado no cofre:
 //   <pasta>/<unidade_id>.pfx    o certificado
 //   <pasta>/<unidade_id>.senha  a senha, numa linha
 // A pasta fica fora do repositório e do Supabase, só com leitura para o serviço.

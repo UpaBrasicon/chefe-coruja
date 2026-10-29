@@ -4,8 +4,10 @@
 // A cada RNDS_INTERVALO_S segundos: um lote da fila, até esvaziar.
 //
 // Ambiente:
-//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   a fila (só as três funções)
-//   RNDS_CERTIFICADOS_DIR                     <unidade_id>.pfx e .senha
+//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   a fila e o cofre (só as funções)
+//   RNDS_CHAVE_COFRE                          a chave privada do cofre (PEM, 5.4b);
+//                                            sem ela, só a pasta
+//   RNDS_CERTIFICADOS_DIR                     <unidade_id>.pfx e .senha (a reserva)
 //   RNDS_AUTH_URL, RNDS_EHR_URL               opcionais: o simulador
 //   RNDS_CA_EXTRA                             opcional: arquivo da CA do simulador
 //   RNDS_PERMITIR_PRODUCAO=sim                nesta etapa fica sem (decisão do RT)
@@ -19,7 +21,8 @@ import { setTimeout as esperar } from 'node:timers/promises'
 import { certificadosEmPasta } from './certificados.ts'
 import { processarLote } from './ciclo.ts'
 import { ClienteRnds } from './cliente-rnds.ts'
-import { filaSupabase } from './fila-supabase.ts'
+import { carregarChave, CofreDeCertificados } from './cofre.ts'
+import { clienteSupabase, cofreSupabase, filaSupabase } from './fila-supabase.ts'
 
 function exigir(nome: string): string {
   const v = process.env[nome]
@@ -31,9 +34,17 @@ const intervaloMs = Number(process.env.RNDS_INTERVALO_S ?? 60) * 1000
 const lote = Number(process.env.RNDS_LOTE ?? 20)
 const log = (linha: Record<string, unknown>) => console.log(JSON.stringify({ em: new Date().toISOString(), ...linha }))
 
+const db = clienteSupabase(exigir('SUPABASE_URL'), exigir('SUPABASE_SERVICE_ROLE_KEY'))
+const pasta = certificadosEmPasta(exigir('RNDS_CERTIFICADOS_DIR'))
+// sem o arquivo da chave o serviço não sobe: o teste de saúde falha e a
+// atualização volta à versão anterior
+const cofre = process.env.RNDS_CHAVE_COFRE
+  ? new CofreDeCertificados({ banco: cofreSupabase(db), chave: await carregarChave(readFileSync(process.env.RNDS_CHAVE_COFRE, 'utf8')), reserva: pasta, log })
+  : null
+
 const deps = {
-  fila: filaSupabase(exigir('SUPABASE_URL'), exigir('SUPABASE_SERVICE_ROLE_KEY')),
-  certificados: certificadosEmPasta(exigir('RNDS_CERTIFICADOS_DIR')),
+  fila: filaSupabase(db),
+  certificados: cofre ?? pasta,
   rnds: new ClienteRnds({ caExtra: process.env.RNDS_CA_EXTRA ? readFileSync(process.env.RNDS_CA_EXTRA, 'utf8') : undefined }),
   sobrepor: {
     ...(process.env.RNDS_AUTH_URL ? { auth: process.env.RNDS_AUTH_URL } : {}),
@@ -58,9 +69,13 @@ const saude = createServer((req, res) => {
 })
 saude.listen(Number(process.env.RNDS_SAUDE_PORTA ?? 8080), '127.0.0.1')
 
-log({ evento: 'inicio', simulador: Boolean(process.env.RNDS_AUTH_URL), producao: deps.permitirProducao })
+log({ evento: 'inicio', simulador: Boolean(process.env.RNDS_AUTH_URL), producao: deps.permitirProducao, cofre: Boolean(cofre) })
 while (!parar) {
   try {
+    if (cofre) {
+      await cofre.publicarChave()
+      await cofre.lerAguardando()
+    }
     // lote cheio: pode haver mais; segue sem esperar
     let r
     do {

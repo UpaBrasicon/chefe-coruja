@@ -6,7 +6,8 @@
 // Ordem por item:
 //   1. carga (public.rnds_dados_documento); "retido: …" da carga fica retido;
 //   2. o que o envio exige: produção liberada, identificador do solicitante,
-//      CNS de quem assina, certificado da unidade; faltando, fica retido;
+//      CNS de quem assina, certificado da unidade (o cofre, 5.4b); faltando,
+//      fica retido;
 //   3. o documento (src/interop/fhir); "retido: …" do mapper fica retido;
 //   4. o envio e o resultado (cliente-rnds.ts).
 // Nenhum log leva dado do paciente: só o id do item, o tipo e o resultado.
@@ -31,6 +32,8 @@ export type DocumentoCarregado = {
   tipo: ItemLote['tipo_documento']
   dados: unknown
   envio: {
+    /** a credencial da unidade (5.4a); o token é dela */
+    credencial_id?: string | null
     ambiente: Ambiente | null
     uf: string | null
     identificador_solicitante: string | null
@@ -55,9 +58,12 @@ export interface Fila {
   registrar(item: string, r: Registro): Promise<void>
 }
 
-/** De onde vem o certificado A1 da unidade (o cofre é a 5.4). */
+/** O certificado, o motivo de não haver um que preste (vencido, senha errada) ou nada. */
+export type CertificadoObtido = Certificado | { retido: string } | null
+
+/** De onde vem o certificado A1 da unidade: o cofre (cofre.ts) ou a pasta. */
 export interface Certificados {
-  obter(unidade: string): Promise<Certificado | null>
+  obter(unidade: string): Promise<CertificadoObtido>
 }
 
 export type Dependencias = {
@@ -122,9 +128,11 @@ async function processarItem(d: Dependencias, item: ItemLote): Promise<Registro>
 
   const certificado = await d.certificados.obter(item.unidade_id)
   if (!certificado) return { resultado: 'retido', erro: 'retido: unidade sem certificado da RNDS' }
+  if ('retido' in certificado) return { resultado: 'retido', erro: certificado.retido }
 
   const r: Resultado = await d.rnds.enviar({
-    chaveToken: `${item.unidade_id}:${ambiente}`,
+    // o token é do certificado: as unidades da mesma credencial o dividem
+    chaveToken: `${envio.credencial_id ?? item.unidade_id}:${ambiente}`,
     enderecos: end,
     certificado,
     cns: envio.profissional_cns,

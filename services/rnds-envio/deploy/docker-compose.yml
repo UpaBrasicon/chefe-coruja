@@ -6,7 +6,9 @@
 #   app/           o código (services/rnds-envio e src/interop/fhir), copiado
 #                  do master pelo atualizar-rnds.sh
 #   .env.rnds      SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY da HOMOLOGAÇÃO (600)
-#   certificados/  <unidade_id>.pfx e .senha (só leitura para o serviço)
+#   certificados/  <unidade_id>.pfx e .senha (só leitura para o serviço): a
+#                  reserva, para unidade sem certificado no cofre
+#   cofre/         chave.pem, a chave privada do cofre (5.4b; 400, só leitura)
 #
 # Nesta etapa o envio vai só ao simulador: RNDS_AUTH_URL e RNDS_EHR_URL
 # apontam para ele, e a produção da RNDS fica desligada no código.
@@ -52,10 +54,12 @@ services:
       RNDS_EHR_URL: https://simulador:8443
       RNDS_CA_EXTRA: /certs-sim/ca.crt
       RNDS_CERTIFICADOS_DIR: /certificados
+      RNDS_CHAVE_COFRE: /cofre/chave.pem
       RNDS_PERMITIR_PRODUCAO: "nao"
     volumes:
       - sim-certs:/certs-sim:ro
       - ./certificados:/certificados:ro
+      - ./cofre:/cofre:ro
     depends_on:
       simulador:
         condition: service_healthy
