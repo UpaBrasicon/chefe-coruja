@@ -33,7 +33,8 @@ function agoraLocal(): string {
   return d.toISOString().slice(0, 16)
 }
 
-export function Intercorrencias({ pacienteId, episodioId, internacaoId }: { pacienteId: string; episodioId?: string | null; internacaoId?: string | null }) {
+/** Com `semBotao` (caderno do leito, ponto 7), o registro novo abre pelo cabeçalho; a lista e o Retificar ficam. */
+export function Intercorrencias({ pacienteId, episodioId, internacaoId, semBotao = false }: { pacienteId: string; episodioId?: string | null; internacaoId?: string | null; semBotao?: boolean }) {
   const { papelAtivo } = useUnidade()
   const podeRegistrar = !!papelAtivo && PODE_REGISTRAR.includes(papelAtivo) && (!!episodioId || !!internacaoId)
   const [form, setForm] = React.useState<{ retifica: Intercorrencia | null } | null>(null)
@@ -49,7 +50,7 @@ export function Intercorrencias({ pacienteId, episodioId, internacaoId }: { paci
   })
   const todas = lista.data ?? []
   const atuais = vigentes(todas)
-  if (atuais.length === 0 && !podeRegistrar) return null
+  if (atuais.length === 0 && (!podeRegistrar || semBotao)) return null
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -86,18 +87,19 @@ export function Intercorrencias({ pacienteId, episodioId, internacaoId }: { paci
           </div>
         )
       })}
-      {podeRegistrar && (
+      {podeRegistrar && !semBotao && (
         <div><Button size="sm" variant="outline" onClick={() => setForm({ retifica: null })}><Siren /> Registrar intercorrência</Button></div>
       )}
       {form && (
-        <FormIntercorrencia key={form.retifica?.id ?? 'nova'} pacienteId={pacienteId} episodioId={episodioId ?? null} internacaoId={internacaoId ?? null}
+        <DialogoIntercorrencia key={form.retifica?.id ?? 'nova'} pacienteId={pacienteId} episodioId={episodioId ?? null} internacaoId={internacaoId ?? null}
           retifica={form.retifica} aoFechar={() => setForm(null)} />
       )}
     </div>
   )
 }
 
-function FormIntercorrencia({ pacienteId, episodioId, internacaoId, retifica, aoFechar }: {
+/** A janela de registrar (ou retificar) intercorrência. */
+export function DialogoIntercorrencia({ pacienteId, episodioId, internacaoId, retifica, aoFechar }: {
   pacienteId: string; episodioId: string | null; internacaoId: string | null; retifica: Intercorrencia | null; aoFechar: () => void
 }) {
   const qc = useQueryClient()
