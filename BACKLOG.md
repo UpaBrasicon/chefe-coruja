@@ -1274,6 +1274,13 @@ certificados, aviso de vencimento, bloqueio por CBO e painel, com telas do Refer
   no Node com a chave privada.
 - Pendente: os nomes de 02 a 06 e 08 da tabela `BRFinanciamento`, que aparecem só pelo código.
 
+**Banco da RNDS na produção em 29/10/2026** ("ok produção" do RT): as migrations `20270204000001`, `20270205000001`,
+`20270206000001` e `20270207000001`, em ordem, cada uma numa transação, com a versão registrada.
+- Conferido: 17 funções públicas e 15 privadas, as quatro tabelas com RLS e os crons `rnds-conferencia-noturna` e
+  `rnds-avisos-certificado`, iguais aos da homologação.
+- Nenhuma credencial e nenhuma unidade com o envio ligado.
+- O serviço no VPS segue ligado só à homologação; até a 5.5, os itens da produção ficam pendentes na fila.
+
 ---
 
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
