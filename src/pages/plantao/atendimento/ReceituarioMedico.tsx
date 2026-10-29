@@ -57,11 +57,9 @@ export type RascunhoReceita = { receita: Rx }
 
 type Identificacao = ReturnType<typeof useIdentificacao>
 
-export const TEXTO_PEDIATRICO =
-  'Paciente pediátrico. Os protocolos e favoritos desta unidade têm dose e apresentação de adulto e não são oferecidos. Sem referência pediátrica cadastrada, prescreva item a item pela busca, por peso aferido.'
-
-export const TEXTO_SEM_NASCIMENTO =
-  'Sem data de nascimento no cadastro: o paciente não é tratado como adulto. Os protocolos e favoritos desta unidade têm dose e apresentação de adulto e não são oferecidos. Sem referência pediátrica cadastrada, prescreva item a item pela busca, por peso aferido. Cadastre a data de nascimento.'
+// os textos moram em lib (comuns com a porta e o leito); continuam saindo daqui
+import { TEXTO_PEDIATRICO, TEXTO_SEM_NASCIMENTO } from '@/lib/documentosAlta'
+export { TEXTO_PEDIATRICO, TEXTO_SEM_NASCIMENTO }
 
 /** Lê a receita do rascunho local, do conteúdo copiado ou de documento antigo ({tipo, itens, obs}). */
 function normalizar(r: unknown): Rx {

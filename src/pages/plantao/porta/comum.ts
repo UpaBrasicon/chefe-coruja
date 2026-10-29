@@ -90,12 +90,8 @@ export const SOAP_VAZIO: Soap = { s: '', o: '', a: '', cid: '', p: '' }
 export const soapVazio = (x: Soap) => !Object.values(x).some((v) => v.trim())
 
 // ── atestado e receita de alta (estado da janela, entre as abas) ────────────
-export type ItemReceita = { id: string; medicamento_id: string | null; medicamento: string; posologia: string; quantidade: string }
-export type EstadoDocs = {
-  atTipo: 'afastamento' | 'comparecimento'; atDias: string; atCid: boolean; atEmitidoEm: string | null
-  receita: ItemReceita[]; rxEmitidaEm: string | null
-}
-export const DOCS_INICIAL: EstadoDocs = { atTipo: 'afastamento', atDias: '', atCid: false, atEmitidoEm: null, receita: [], rxEmitidaEm: null }
+// atestado e receita: comuns com o leito (pontos 14 e 16), moram em lib
+export { DOCS_INICIAL, type EstadoDocs, type ItemReceita } from '@/lib/documentosAlta'
 
 // ── painel do atendimento (servidor) ────────────────────────────────────────
 export type ItemPS = {
