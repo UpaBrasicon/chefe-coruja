@@ -79,7 +79,7 @@ Está no cabeçalho da migration e foi testado na homologação.
 
 # O serviço de envio (5C-5.3b)
 
-O código está em `services/rnds-envio/`. O serviço roda no VPS (5.3c), num contêiner próprio, separado do Hermes.
+O código está em `services/rnds-envio/`. O serviço roda no VPS (5.3c), num contêiner próprio, separado do Hermes. A instalação, as chaves e a reversão estão em `infra/rnds-envio.md`.
 
 | Arquivo | O que faz |
 |---|---|
@@ -140,3 +140,61 @@ O simulador não é a RNDS: confere só o que os manuais descrevem. A prova cont
 - o certificado de outra cadeia;
 - a RNDS fora do ar;
 - cada retenção.
+
+---
+
+# Cofre, vencimento, bloqueio e painel — o banco (5C-5.4a)
+
+Migration `20270206000001_rnds_cofre_banco.sql`.
+
+## Credencial
+
+`rnds_credenciais` segue o modelo do DATASUS: um certificado A1, um identificador do solicitante e um ambiente, cobrindo a unidade principal e as filhas da mesma UF.
+- Cada unidade aponta a credencial em `rnds_config_unidade.credencial_id`.
+- A credencial nasce na homologação. Passar para a produção é só com o super admin (`rnds_definir_ambiente`).
+- A carga usa o ambiente e o identificador da credencial. Os da configuração antiga ficam só como reserva.
+
+## Cofre
+
+O certificado nunca fica legível fora do VPS.
+1. O serviço no VPS publica a chave pública (`rnds_registrar_chave_publica`). A chave privada fica só no VPS.
+2. O navegador cifra o `.pfx` e a senha (RSA-OAEP-256 + AES-256-GCM) e manda só o cifrado (`rnds_enviar_certificado`): `{versao: 1, chave_id, chave, iv, dados}`, em base64.
+3. O serviço busca o cifrado (`rnds_certificado_da_unidade`) e o abre. Depois grava o que leu (`rnds_registrar_certificado`): titular, CNPJ/CPF, validade, impressão digital e situação.
+
+| Situação | O que acontece |
+|---|---|
+| `aguardando` | o certificado acabou de chegar e espera a leitura do serviço |
+| `valido` | segue enviando |
+| `senha_incorreta` | aviso aos gestores |
+| `invalido` | aviso aos gestores |
+| `vencido` | as unidades da credencial pausam, com aviso |
+| `chave_trocada` | o serviço trocou de chave; o gestor envia o certificado de novo |
+
+## Avisos (sino, tipos `rnds_…`)
+
+- Certificado a 30, 15, 7 e 1 dia do vencimento: cron `rnds-avisos-certificado`, às 08:00 de Brasília.
+- Certificado vencido, com senha errada, ilegível ou com a chave trocada.
+- Profissional bloqueado.
+- Credencial recusada pela RNDS: a unidade pausa.
+
+## Bloqueio por CBO
+
+- A recusa ERR906 ou ERR879 bloqueia o CNS do profissional. A ERR906 vale para todas as unidades da credencial; a ERR879, só para a unidade.
+- Os documentos seguintes dele ficam retidos ("profissional bloqueado pela RNDS").
+- O gestor desbloqueia no painel depois de acertar o CNES. O documento que causou o bloqueio volta à fila e os retidos tentam na hora.
+
+## Funções do painel
+
+Todas pedem 2FA e ficam na auditoria. Só o gestor das próprias unidades ou o super admin usa.
+
+| Função | O que faz |
+|---|---|
+| `rnds_painel` | configuração, credencial (sem o cifrado), contagem da fila e bloqueios |
+| `rnds_itens` | a fila da unidade, filtrável por situação |
+| `rnds_reenviar` | erro volta à fila; retido tenta agora |
+| `rnds_salvar_config` | financiamento e envio ligado (exige credencial e financiamento) |
+| `rnds_retomar` | tira a pausa |
+| `rnds_salvar_credencial` | a principal e as filhas: mesma UF, todas do gestor |
+| `rnds_enviar_certificado` | recebe o certificado cifrado |
+| `rnds_desbloquear` | tira o bloqueio |
+| `rnds_chave_publica` | a chave ativa, para o navegador cifrar |

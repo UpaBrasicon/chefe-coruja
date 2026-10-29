@@ -1208,6 +1208,50 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
   substituição. Os 18 testes rodam contra ele no CI, com TLS mútuo de verdade.
 - Sem banco e sem tela. O teste ponta a ponta (fila da homologação → simulador) entra na 5.3c, no
   VPS. Regras em `docs/rnds/ENVIO.md`.
+- No master em 28/10/2026 (#328).
+
+**5.3c pronta em 28/10/2026 (branch `fase5/rnds-envio-vps`):** a subida no VPS, separada do Hermes.
+- Imagem `services/rnds-envio/Dockerfile` (Node 24, só a dependência de execução) e compose com o
+  envio e o simulador: nenhuma porta publicada, sistema de arquivos só leitura, usuário `node`,
+  ligados à homologação e ao simulador.
+- `instalar-rnds.sh` (usuário `rnds`, pastas, `.env.rnds` em branco, cron às 04:10) e
+  `atualizar-rnds.sh` (sobe só quando muda o serviço ou os documentos; teste de saúde pelo ciclo
+  com a fila; volta à imagem anterior se falhar), sem mexer no clone do Hermes.
+- `e2e-homolog.sql` cria a "Rede RNDS E2E (teste)" na homologação e põe RAC, SA e MIRA na fila;
+  conferido numa transação desfeita. O teste ponta a ponta roda no VPS depois do merge, com a chave
+  da homologação posta pelo RT. Passo a passo, chaves e reversão em `infra/rnds-envio.md`.
+- No master em 28/10/2026 (#331). **Instalada no VPS no mesmo dia** (por SSH, com a chave da
+  homologação posta pelo RT): os dois contêineres saudáveis, sem porta no host, cron às 04:10.
+
+**5.3 concluída em 28/10/2026.** Teste ponta a ponta no VPS: RAC, SA e MIRA da "Rede RNDS E2E
+(teste)" saíram da fila da homologação, passaram pelo serviço e voltaram do simulador com 201 e o
+`id_rnds` gravado, com o Bundle e a resposta no item. Antes do certificado de teste, os três ficaram
+retidos com o motivo, como esperado. As outras unidades da homologação, sem configuração, não
+enviaram nada. Evidência em `docs/rnds/evidencia/5.3c-e2e-vps.txt`. Próxima: 5.4 (cofre de
+certificados, aviso de vencimento, bloqueio por CBO e painel, com telas do Refero).
+
+**5.4, cofre, vencimento, CBO e painel (decisões do RT em 28/10/2026, "todas a"):**
+- o certificado chega pela tela, cifrado no navegador com a chave pública do serviço no VPS; o banco
+  guarda só o cifrado, e a chave privada existe só no VPS;
+- uma credencial (certificado, identificador e ambiente) cobre a unidade principal e as filhas da
+  mesma UF, como no DATASUS;
+- aviso no sino aos gestores a 30, 15, 7 e 1 dia do vencimento; vencido, o envio pausa sozinho;
+- ERR906/ERR879 bloqueia o profissional; os documentos dele ficam retidos até o gestor desbloquear;
+- painel numa aba "RNDS" em Integrações;
+- o gestor configura, envia o certificado e cuida da fila; passar para a produção, só o super admin;
+- três PRs: 5.4a banco; 5.4b serviço; 5.4c tela (opções do Refero antes).
+
+**5.4a na homologação em 28/10/2026:** migration `20270206000001_rnds_cofre_banco.sql`.
+- `rnds_credenciais` (cofre cifrado; titular, documento e validade lidos pelo serviço),
+  `rnds_chaves_publicas` (a chave do serviço; só uma ativa) e `rnds_bloqueios`.
+- A carga leva a credencial e retém o profissional bloqueado; o resultado ERR906/ERR879 bloqueia
+  (ERR906 em todas as unidades da credencial) e a recusa da credencial avisa os gestores.
+- Avisos de vencimento às 08:00; vencido pausa as unidades da credencial.
+- Funções do painel, com 2FA e auditoria: painel, fila, reenviar, configuração, retomar,
+  credencial, ambiente (só super admin), enviar certificado e desbloquear. Funções do serviço:
+  publicar a chave, buscar o cifrado e gravar o que leu.
+- Teste `supabase/tests/fase5c_rnds_cofre.sql`, os da 5.3a e da 5.1 e o rollback passaram na
+  homologação. O serviço no VPS seguiu saudável com a migration aplicada.
 
 ---
 
@@ -2048,6 +2092,8 @@ próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero 
 Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda > **Todas as unidades** pedia a escala até o dia 31 de qualquer mês e dava erro nos meses de 30 dias e em fevereiro (o banco recusa 2026-11-31). PR #305, sem migration; na homologação em 28/10; mesclado no master pelo RT em 28/10 (produção pelo merge).
 
 Achado da E4, corrigido à parte (pedido do RT em 28/10/2026): depois de um deploy, o app recarregava sozinho só uma vez por sessão; com duas publicações seguidas a aba ficava quebrada (na homologação, as telas do enfermeiro, menos a Triagem, até recarregar à mão). Agora recarrega a cada versão nova, com trava de 30 s contra laço (`src/lib/recargaDeploy.ts`). PR #329, sem migration; na homologação em 28/10; em produção pelo merge do RT em 28/10.
+
+Ajuste da E4 (pedido do RT em 28/10/2026: "só tem justificar falta"): no dia passado só cabe justificar falta, e Trocar, Passar e Candidatar-me ficavam escondidos em dias futuros. Opção A: as ações do próximo plantão no cartão do alto, as vagas abertas da categoria ao lado e, no dia passado, a explicação com o atalho para o próximo (`docs/escala/E4-AJUSTE-ACOES-A-VISTA.md`). Sem migration; na homologação em 28/10; falta o merge.
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
