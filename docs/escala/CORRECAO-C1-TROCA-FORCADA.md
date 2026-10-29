@@ -90,5 +90,8 @@ a correção não muda tela.
 
 ## 7. Produção
 
-Nada aplicado. Ordem: "ok produção" do RT → migration na produção pelo SQL, versão registrada →
-merge do PR (o merge não muda tela; a ordem vale por regra).
+Migration `20270208000001` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 29/10/2026, com o "ok produção"
+do RT, pelo SQL e com a versão registrada em `supabase_migrations.schema_migrations`. Conferido depois:
+políticas `hermes_job_select` e `trocas_select`; `authenticated` só com SELECT em `trocas_plantao`;
+`aplicar_troca` com a conferência dos donos, corpo igual ao da homologação (md5 84e1c932…), ACL padrão.
+Falta o merge do PR (não muda tela).
