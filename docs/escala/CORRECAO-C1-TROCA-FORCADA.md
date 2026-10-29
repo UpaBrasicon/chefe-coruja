@@ -55,16 +55,18 @@ desfeita (o Docker local não subiu nesta máquina; o CI roda a suíte inteira n
 | Com a migration | **11 de 11** |
 | Suíte da escala com a migration (`escala_categoria`, `escala_gestor_categorias`, `escala_pedidos_categorias`, `fase0_rpcs`, `fase5c_erp_plantoes`, `porte_correcoes_nomes`, `porte_correcoes_pentest`, `fase5c_webhooks`, `fase5c_rnds_cofre`) | todos passam |
 | Testes que dependem do seed local (`porte_redteam_v3_v4`, `portao2_escala_sobreposicao`, `porte_limites_chamados_fracionar` e outros) | não rodam na homologação nem sem a migration (mesmo erro de chave estrangeira do seed); ficam com o CI |
+| CI, 1ª rodada | `portao2_escala_sobreposicao` falhou: chamava `private.aplicar_troca` com uma troca sem `perfil_a_id`/`perfil_b_id` e a 1ª versão da migration tirava o EXECUTE da função. Corrigido: a migration não mexe mais no ACL da função, e o teste passa os donos de agora (a troca sem donos agora é recusada, como deve) |
 
 **Rollback testado** na homologação (transação desfeita): migration + rollback devolvem as mesmas
-políticas, os mesmos grants e o mesmo corpo de `aplicar_troca` (o ACL da função fica explícito, com o
-mesmo efeito do padrão).
+políticas, os mesmos grants e o mesmo corpo de `aplicar_troca`.
 
 ## 5. Homologação (`kswurfyxxvfydpjfrivy`)
 
 Migration aplicada pelo SQL em 29/10/2026 e versão `20270208000001` registrada em
 `supabase_migrations.schema_migrations`. Conferido: políticas `hermes_job_select` e `trocas_select`;
-`authenticated` só com SELECT; `aplicar_troca` com a conferência.
+`authenticated` só com SELECT; `aplicar_troca` com a conferência. A 1ª versão aplicada tirava o
+EXECUTE de `aplicar_troca`; devolvido na homologação com `GRANT EXECUTE … TO PUBLIC` (mesmo efeito do
+ACL padrão), para bater com a migration final.
 
 Fluxo do relatório repetido como as contas E2E (UPA E2E 24h, Pronto Socorro), cada passo como o
 próprio usuário (JWT simulado, RLS valendo), em transação desfeita:

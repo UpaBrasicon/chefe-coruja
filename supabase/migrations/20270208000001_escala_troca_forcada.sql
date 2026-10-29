@@ -29,9 +29,7 @@
 --   CREATE POLICY "trocas_update" ON public.trocas_plantao FOR UPDATE TO authenticated
 --     USING (perfil_b_id = private.meu_perfil_id() OR private.eh_super_admin()
 --            OR private.papel_na_unidade(unidade_id) = 'gestor');
---   e reaplicar private.aplicar_troca de 20261123000001_escala_sem_sobreposicao.sql
---   e GRANT EXECUTE ON FUNCTION private.aplicar_troca(public.trocas_plantao) TO PUBLIC
---   (o mesmo efeito do ACL padrão que ela tinha).
+--   e reaplicar private.aplicar_troca de 20261123000001_escala_sem_sobreposicao.sql.
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- ── 1. escrita só pelas RPCs ───────────────────────────────────────────────
@@ -76,4 +74,3 @@ BEGIN
   UPDATE public.escala_plantao SET perfil_id = v_a.perfil_id, updated_at = now() WHERE id = v_b.id;
   SET CONSTRAINTS public.trg_escala_sem_sobreposicao IMMEDIATE;
 END; $function$;
-REVOKE ALL ON FUNCTION private.aplicar_troca(public.trocas_plantao) FROM PUBLIC, anon, authenticated;
