@@ -17,7 +17,9 @@
 // começando na mesma altura.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Printer } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
@@ -38,6 +40,7 @@ import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 import { Estado } from '@/components/porta/Estado'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -234,6 +237,12 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
           </Estado>
           {/* Portão 2, tarefa 5: recém-nascido cadastrado a partir do leito da mãe */}
           {ativa && <BotaoRnDaMae maeId={pacienteId} maeNome={pacienteNome} />}
+          {/* ponto 5: a impressão de prontuário abre daqui, com o paciente escolhido */}
+          {!ehGestor && (
+            <Button size="sm" variant="outline" render={<Link to={`/impressao-prontuario?paciente=${pacienteId}`} />}>
+              <Printer /> Imprimir prontuário
+            </Button>
+          )}
         </>
       }
       corClassificacao={(i.episodio?.cor_atual as CorRisco | null | undefined) ?? null}

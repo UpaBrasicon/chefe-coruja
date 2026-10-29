@@ -108,7 +108,7 @@ export default function PlantaoHome() {
 
       <TituloSecao>Seções do plantão</TituloSecao>
       <Canais rotulo="Seções do plantão">
-        {SECOES_PLANTAO.map((s) => (
+        {SECOES_PLANTAO.filter((s) => !s.semCartao).map((s) => (
           <Canal
             key={s.slug}
             icone={s.icon}

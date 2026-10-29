@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { BookOpen } from 'lucide-react'
+import { BookOpen, Printer } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
@@ -14,6 +14,7 @@ import { abrirProntuario } from '@/lib/prontuario'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
+import { useUnidade } from '@/contexts/UnidadeContext'
 
 // Leitura do prontuário (fase 6). Serve a quem tem pedido aprovado e vigente
 // e a quem já tem acesso pela escala. Só leitura: não há botão de escrever,
@@ -30,6 +31,7 @@ const ROTULO_DOC: Record<string, string> = {
 const ETAPA: Record<string, string> = { triagem: 'Triagem', atendimento: 'Atendimento', observacao: 'Observação', internacao: 'Internação', encerrado: 'Encerrado' }
 
 export default function ProntuarioLeitura() {
+  const { papelAtivo } = useUnidade()
   const { pacienteId } = useParams<{ pacienteId: string }>()
 
   const q = useQuery({
@@ -82,6 +84,10 @@ export default function ProntuarioLeitura() {
           paciente.prontuario ? 'prontuário ' + paciente.prontuario : null,
           'somente leitura · este acesso fica registrado',
         ].filter(Boolean).join(' · ')}
+        // ponto 5: a impressão é do plantonista (rota dele), com o paciente escolhido
+        acoes={papelAtivo === 'plantonista' ? (
+          <Button variant="outline" render={<Link to={`/impressao-prontuario?paciente=${paciente.id}`} />}><Printer /> Imprimir prontuário</Button>
+        ) : undefined}
       />
 
       <AlergiasLeitura pacienteId={paciente.id} />
