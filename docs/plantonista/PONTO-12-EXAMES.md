@@ -9,6 +9,14 @@ Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 - **Pergunta 2:** opção A, as seções lado a lado.
 - **Pergunta 5:** o texto livre fica no grupo da seção onde foi escrito.
 
+**Situação: em produção desde 28/10/2026.**
+
+- O PR #330 foi juntado ao master, e a tela está no ar.
+- O RT deu o "ok produção". A migration `20270203000004` foi aplicada na produção depois do merge e conferida: a função, a coluna, o gatilho e as permissões estão lá.
+- **Atenção:** entre o merge e a aplicação, pedir exame no leito em produção dava erro, porque a função ainda não existia.
+
+Antes:
+
 **Situação: na homologação desde 28/10/2026.**
 
 - Branch `fix/exames-por-grupo`, PR #330.
