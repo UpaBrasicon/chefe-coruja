@@ -25,6 +25,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { ProximoPlantao } from '@/components/casca/ProximoPlantao'
 import { AcoesDoPlantao, SeuPlantao, SeusPedidos, VagasDoDia } from '@/components/escala/PedidosEscala'
+import { PedidosParaVoce } from '@/components/escala/PedidosParaVoce'
 import { type PlantaoEquipe, usePedidosDaEquipe } from '@/hooks/usePedidosDaEquipe'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -37,6 +38,47 @@ type Plantao = PlantaoEquipe
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
 const SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
 const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
+
+/**
+ * M11 (teste ponta a ponta da escala): a telemedicina trabalha em várias unidades,
+ * e o mês acima é o da unidade ativa. Aqui, os próximos plantões dela em todas as
+ * unidades, como na antiga "Minha agenda" (decisão 10 do RT: a agenda virou a aba
+ * Escala comum). Lê tele_minha_escala, que já atende todas as unidades.
+ */
+function TeleTodasUnidades({ de, ate }: { de: string; ate: string }) {
+  const lista = useQuery({
+    queryKey: ['tele-minha-escala', de, ate],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('tele_minha_escala', { p_de: de, p_ate: ate })
+      if (error) throw error
+      return data ?? []
+    },
+  })
+  // a hora em que a tela abriu, como no resto da aba
+  const [agora] = React.useState(() => Date.now())
+  const proximos = (lista.data ?? []).filter((p) => new Date(p.fim).getTime() > agora)
+  return (
+    <section aria-label="Seus plantões em todas as unidades" className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+      <div className="flex items-center gap-2 border-b border-trilha px-4 py-2.5">
+        <span className="text-apoio font-semibold text-tinta">Seus plantões em todas as unidades</span>
+        <span className="ml-auto text-rotulo text-tinta-sussurro">próximos 60 dias</span>
+      </div>
+      {lista.isLoading && <div className="flex justify-center py-4"><Spinner /></div>}
+      {lista.error && <MensagemErro className="m-3" texto={(lista.error as Error).message} />}
+      {lista.data && proximos.length === 0 && <p className="px-4 py-3 text-apoio text-tinta-sussurro">Nenhum plantão nos próximos 60 dias.</p>}
+      <ul className="flex flex-col">
+        {proximos.map((p) => (
+          <li key={p.escala_id} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 border-b border-trilha px-4 py-2 text-apoio last:border-b-0">
+            <span className="truncate text-tinta">{dataPorExtenso(`${p.data}T12:00:00Z`)} · {p.unidade} · {p.setor}</span>
+            <span className="text-rotulo tabular-nums text-tinta-sussurro">
+              {p.agora ? <span className="font-semibold text-acao">agora · </span> : null}{hora(p.inicio)}–{hora(p.fim)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
 // a faixa do plantão: o diurno de 12 h é "Dia"
 const faixa = (p: Plantao) => (p.turno === 'noite' ? 'Noite' : p.duracao_min >= 720 ? 'Dia' : p.turno === 'tarde' ? 'Tarde' : 'Manhã')
 const horario = (p: Plantao) => `${hora(p.inicio)}–${hora(new Date(new Date(p.inicio).getTime() + p.duracao_min * 60_000))}`
@@ -132,6 +174,7 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
           </div>
         )}
       </div>
+      <PedidosParaVoce unidadeId={unidadeId} />
       <section aria-label="Escala do mês" className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col border-fio md:border-r">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-trilha px-4 py-2.5">
@@ -210,11 +253,12 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
             ))}
             <SeusPedidos minhas={pedidos.minhas} trocas={pedidos.trocas} plantoes={plantoes} />
             <p className="mt-auto border-t border-trilha bg-campo px-4 py-2 text-rotulo text-pretty text-tinta-sussurro">
-              Vagas da sua categoria em âmbar no mês. Troca e passagem só dentro da categoria; a coordenação aprova.
+              Vagas da sua categoria em âmbar no mês. Troca e passagem só dentro da categoria; o colega aceita e a coordenação aprova.
             </p>
           </aside>
         )}
       </section>
+      {categorias.includes('telemedicina') && <TeleTodasUnidades de={hoje} ate={ateProximos} />}
     </div>
   )
 }
