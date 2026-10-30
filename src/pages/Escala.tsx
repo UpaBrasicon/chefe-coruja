@@ -30,6 +30,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Abas, Chip, TituloPagina } from '@/components/monitor/Pagina'
+import { BUCKET_JUSTIFICATIVA, caminhoDoAnexo, caminhoNovoAnexo } from '@/lib/anexoJustificativa'
 import { dataHora, hora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
@@ -501,6 +502,17 @@ export default function Escala({
     onSuccess: invalidar,
   })
 
+  // atestado da justificativa: bucket privado, abre com URL assinada (A5)
+  const [erroAnexo, setErroAnexo] = React.useState<string | null>(null)
+  async function abrirAnexo(anexo: string) {
+    setErroAnexo(null)
+    const caminho = caminhoDoAnexo(anexo)
+    if (!caminho) return setErroAnexo('Não foi possível achar o arquivo do anexo.')
+    const { data, error } = await supabase.storage.from(BUCKET_JUSTIFICATIVA).createSignedUrl(caminho, 120)
+    if (error) return setErroAnexo('Não foi possível abrir o anexo: ' + error.message)
+    window.open(data.signedUrl, '_blank', 'noopener')
+  }
+
   const [dialogAberto, setDialogAberto] = React.useState(false)
 
   function abrirCelula(setor_id: string, data: string) {
@@ -665,12 +677,12 @@ export default function Escala({
     const escalaId = escalaDaAcao(diaSelecionado)
     if (!escalaId) return
 
+    // o bucket é privado: grava o caminho; o gestor abre com URL assinada (A5)
     let anexoUrl: string | null = null
     if (anexo) {
       setAnexando(true)
-      const nomeSeguro = anexo.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-      const caminho = `${unidadeId}/justificativas/${crypto.randomUUID()}-${nomeSeguro}`
-      const { error: upErr } = await supabase.storage.from('atendimento').upload(caminho, anexo, {
+      const caminho = caminhoNovoAnexo(unidadeId, anexo.name, crypto.randomUUID())
+      const { error: upErr } = await supabase.storage.from(BUCKET_JUSTIFICATIVA).upload(caminho, anexo, {
         cacheControl: '3600',
         upsert: false,
       })
@@ -679,8 +691,7 @@ export default function Escala({
         setErroAcao('Falha ao enviar o anexo: ' + upErr.message)
         return
       }
-      const { data } = supabase.storage.from('atendimento').getPublicUrl(caminho)
-      anexoUrl = data.publicUrl
+      anexoUrl = caminho
     }
 
     const { error } = await supabase.from('solicitacoes_escala').insert({
@@ -1600,6 +1611,9 @@ export default function Escala({
                 {decidir.error && (
                   <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{decidir.error.message}</p>
                 )}
+                {erroAnexo && (
+                  <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{erroAnexo}</p>
+                )}
                 {carregandoSolic ? (
                   <div className="flex h-16 items-center justify-center"><Spinner /></div>
                 ) : pedidos.total === 0 ? (
@@ -1615,7 +1629,7 @@ export default function Escala({
                             {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
                             {s.tipo_falta && ` · ${TIPO_FALTA_LABEL[s.tipo_falta]}`}
                             {s.justificativa && ` · ${s.justificativa}`}
-                            {s.anexo_url && <> · <a href={s.anexo_url} target="_blank" rel="noopener noreferrer" className="font-medium text-acao hover:underline">ver anexo</a></>}
+                            {s.anexo_url && <> · <Button type="button" variant="link" size="xs" className="h-auto min-h-0 p-0 align-baseline text-rotulo font-medium" onClick={() => void abrirAnexo(s.anexo_url!)}>ver anexo</Button></>}
                           </span>
                         </span>
                         <span className="flex gap-1.5">
