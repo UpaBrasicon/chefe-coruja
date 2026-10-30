@@ -558,6 +558,11 @@ export default function Escala({
     () => (escalaMes ?? []).filter((e) => e.perfil_id === perfil?.id),
     [escalaMes, perfil?.id]
   )
+  // B10: na troca, só plantões que ainda não terminaram (a hora em que a tela abriu)
+  const [abertaEm] = React.useState(() => Date.now())
+  const naoTerminou = (p: { inicio: string; duracao_min: number }) => new Date(p.inicio).getTime() + p.duracao_min * 60_000 > abertaEm
+  const meusPlantoesTroca = meusPlantoes.filter(naoTerminou)
+  const outrosPlantoesTroca = (plantoesDeOutros ?? []).filter(naoTerminou)
 
   const resumo = React.useMemo(() => {
     const porDia = new Map<string, Set<string>>()
@@ -1026,12 +1031,12 @@ export default function Escala({
                     <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
                       <div className="flex flex-col gap-1.5">
                         <Label>Meu plantão (que quero trocar)</Label>
-                        <Select items={Object.fromEntries(meusPlantoes.map((p) => [p.id, `${fmtDiaBR(p.data)} · ${TURNO_LABEL[p.turno] ?? p.turno}`]))} value={meuPlantaoTroca || null} onValueChange={(v) => setMeuPlantaoTroca(v ?? '')}>
+                        <Select items={Object.fromEntries(meusPlantoesTroca.map((p) => [p.id, `${fmtDiaBR(p.data)} · ${TURNO_LABEL[p.turno] ?? p.turno}`]))} value={meuPlantaoTroca || null} onValueChange={(v) => setMeuPlantaoTroca(v ?? '')}>
                           <SelectTrigger className="w-full bg-superficie">
                             <SelectValue placeholder="Selecione um dos meus plantões" />
                           </SelectTrigger>
                           <SelectContent>
-                            {meusPlantoes.map((p) => (
+                            {meusPlantoesTroca.map((p) => (
                               <SelectItem key={p.id} value={p.id}>
                                 {fmtDiaBR(p.data)} · {TURNO_LABEL[p.turno] ?? p.turno}
                               </SelectItem>
@@ -1041,12 +1046,12 @@ export default function Escala({
                       </div>
                       <div className="mt-3 flex flex-col gap-1.5">
                         <Label>Plantão de outro plantonista (que quero assumir)</Label>
-                        <Select items={Object.fromEntries((plantoesDeOutros ?? []).map((p) => [p.id, `${fmtDiaBR(p.data)} · ${TURNO_LABEL[p.turno] ?? p.turno} · ${p.perfis?.nome_completo ?? '?'}`]))} value={outroPlantaoTroca || null} onValueChange={(v) => setOutroPlantaoTroca(v ?? '')}>
+                        <Select items={Object.fromEntries(outrosPlantoesTroca.map((p) => [p.id, `${fmtDiaBR(p.data)} · ${TURNO_LABEL[p.turno] ?? p.turno} · ${p.perfis?.nome_completo ?? '?'}`]))} value={outroPlantaoTroca || null} onValueChange={(v) => setOutroPlantaoTroca(v ?? '')}>
                           <SelectTrigger className="w-full bg-superficie">
                             <SelectValue placeholder="Selecione o plantão do outro" />
                           </SelectTrigger>
                           <SelectContent>
-                            {(plantoesDeOutros ?? []).map((p) => (
+                            {outrosPlantoesTroca.map((p) => (
                               <SelectItem key={p.id} value={p.id}>
                                 {fmtDiaBR(p.data)} · {TURNO_LABEL[p.turno] ?? p.turno} ·{' '}
                                 {p.perfis?.nome_completo ?? '?'}
