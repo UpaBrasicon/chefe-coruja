@@ -31,6 +31,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Abas, Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { BUCKET_JUSTIFICATIVA, caminhoDoAnexo, caminhoNovoAnexo } from '@/lib/anexoJustificativa'
+import { PedidosParaVoce } from '@/components/escala/PedidosParaVoce'
 import { dataHora, hora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
@@ -276,13 +277,13 @@ export default function Escala({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('trocas_plantao')
-        .select('id, status, mensagem, erro, created_at, plantao_a_id, plantao_b_id, perfil_b_id')
+        .select('id, status, mensagem, erro, created_at, plantao_a_id, plantao_b_id, perfil_b_id, aceito_em')
         .or(`perfil_a_id.eq.${perfil!.id},perfil_b_id.eq.${perfil!.id}`)
         .eq('unidade_id', unidadeId!)
         .order('created_at', { ascending: false })
         .limit(30)
       if (error) throw error
-      return (data ?? []) as { id: string; status: string; mensagem: string | null; erro: string | null; created_at: string; plantao_a_id: string; plantao_b_id: string; perfil_b_id: string }[]
+      return (data ?? []) as { id: string; status: string; mensagem: string | null; erro: string | null; created_at: string; plantao_a_id: string; plantao_b_id: string; perfil_b_id: string; aceito_em: string | null }[]
     },
   })
 
@@ -654,7 +655,8 @@ export default function Escala({
     const pendentes = solicitacoes.filter((s) => s.status === 'pendente')
     const sairam = solicitacoes.filter((s) => s.tipo === 'passar_plantao')
     const atestados = solicitacoes.filter((s) => s.tipo === 'justificar_falta' && s.tipo_falta === 'atestado_medico')
-    const faltas = solicitacoes.filter((s) => s.tipo === 'falta')
+    // B8: "faltas" são as justificativas que não são atestado (o tipo 'falta' não é criado por nenhuma tela)
+    const faltas = solicitacoes.filter((s) => s.tipo === 'justificar_falta' && s.tipo_falta !== 'atestado_medico')
     const interesses = solicitacoes.filter((s) => s.tipo === 'sair_fixo')
     return {
       pendentes: pendentes.length,
@@ -662,7 +664,7 @@ export default function Escala({
       atestados: atestados.length,
       faltas: faltas.length,
       interesses: interesses.length,
-      lista: solicitacoes.filter((s) => s.status === 'pendente' || s.tipo === 'falta').slice(0, 20),
+      lista: solicitacoes.filter((s) => s.status === 'pendente').slice(0, 20),
     }
   }, [solicitacoes])
 
@@ -745,7 +747,7 @@ export default function Escala({
       if (error) throw error
       invalidar()
       // passar_plantao devolve o id do plantão quando passa na hora e o do pedido quando espera o gestor
-      setMensagem(data === escalaId ? 'Plantão passado com sucesso.' : 'Passagem pedida. O plantão continua com você até o gestor aprovar.')
+      setMensagem(data === escalaId ? 'Plantão passado com sucesso.' : 'Passagem pedida. O colega precisa aceitar e a coordenação aprovar; até lá o plantão continua com você.')
       setJustificativa('')
       setDestinoId('')
     } catch (e) {
@@ -766,7 +768,7 @@ export default function Escala({
       if (error) throw error
       invalidar()
       void refetchTrocas()
-      setMensagem('Troca solicitada. Se a aprovação automática estiver habilitada, foi aplicada na hora.')
+      setMensagem('Troca pedida. O colega precisa aceitar e a coordenação aprovar.')
       setMeuPlantaoTroca('')
       setOutroPlantaoTroca('')
       setJustificativa('')
@@ -1141,8 +1143,8 @@ export default function Escala({
                         />
                       </div>
                       <p className="mt-2 text-rotulo text-tinta-sussurro">
-                        A passagem pode ser aplicada na hora ou depender de aprovação do gestor (conforme
-                        configuração da unidade). A pessoa que recebe o plantão será notificada.
+                        A pessoa que recebe é avisada e precisa aceitar; depois a coordenação aprova (na
+                        unidade sem aprovação do gestor, o aceite já vale). Até lá o plantão continua com você.
                       </p>
                       {erroAcao && <p className="mt-2 text-apoio text-critico">{erroAcao}</p>}
                       {mensagem && <p className="mt-2 text-apoio text-conforme">{mensagem}</p>}
@@ -1271,6 +1273,9 @@ export default function Escala({
             </CardContent>
           </Card>
 
+          {/* A4: passagens e trocas que pedem o meu aceite */}
+          <PedidosParaVoce unidadeId={unidadeId} />
+
           {/* TROCAS BILATERAIS */}
           {(minhasTrocas ?? []).length > 0 && (
             <Card>
@@ -1305,24 +1310,25 @@ export default function Escala({
                     {t.status === 'erro' && t.erro && (
                       <span className="text-rotulo text-critico">{t.erro}</span>
                     )}
-                    {/* A2: quem aprova a troca é o gestor, na aba Pedidos; o colega pode recusar */}
+                    {/* A2/A4: o colega aceita (em Pedidos para você), depois o gestor aprova; quem pediu cancela */}
                     {t.status === 'pendente' && t.perfil_b_id !== perfil?.id && (
-                      <span className="text-rotulo text-tinta-sussurro">Aguardando a coordenação</span>
-                    )}
-                    {t.status === 'pendente' && t.perfil_b_id === perfil?.id && (
                       <div className="flex items-center gap-2">
-                        <span className="text-rotulo text-tinta-sussurro">A coordenação decide.</span>
+                        <span className="text-rotulo text-tinta-sussurro">{t.aceito_em ? 'Aceita pelo colega; falta a coordenação' : 'Esperando o colega aceitar'}</span>
                         <Button
                           size="xs"
                           variant="ghost"
                           onClick={async () => {
-                            await supabase.rpc('recusar_troca', { p_troca: t.id })
+                            const { error } = await supabase.rpc('cancelar_troca', { p_troca: t.id })
+                            setErroAcao(error ? error.message : null)
                             void refetchTrocas()
                           }}
                         >
-                          <X /> Recusar
+                          <X /> Cancelar
                         </Button>
                       </div>
+                    )}
+                    {t.status === 'pendente' && t.perfil_b_id === perfil?.id && (
+                      <span className="text-rotulo text-tinta-sussurro">{t.aceito_em ? 'Você aceitou; a coordenação decide.' : 'Responda em Pedidos para você.'}</span>
                     )}
                   </div>
                 ))}
@@ -1482,6 +1488,10 @@ export default function Escala({
                       </div>
                     ))}
                   </div>
+                  {/* M10: o erro da candidatura aparece (antes falhava calado) */}
+                  {candidatar.error && (
+                    <p role="alert" className="mt-2 text-apoio text-critico">{candidatar.error.message}</p>
+                  )}
 
                   {/* Minhas candidaturas */}
                   <div className="mt-4 flex flex-col gap-2">
@@ -1622,6 +1632,10 @@ export default function Escala({
                 {decidir.error && (
                   <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{decidir.error.message}</p>
                 )}
+                {/* M10: erro de aprovar ou recusar candidatura visível */}
+                {(aprovarCandidatura.error ?? recusarCandidatura.error) && (
+                  <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{(aprovarCandidatura.error ?? recusarCandidatura.error)?.message}</p>
+                )}
                 {decidirTroca.error && (
                   <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{decidirTroca.error.message}</p>
                 )}
@@ -1637,7 +1651,7 @@ export default function Escala({
                     {(solicitacoes ?? []).filter((s) => s.status === 'pendente').map((s) => (
                       <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-trilha px-4 py-2.5 text-apoio last:border-b-0">
                         <span className="flex min-w-0 flex-[1_1_280px] flex-col gap-0.5">
-                          <span className="text-tinta"><b className="font-medium">{s.solicitante?.nome_completo ?? 'Plantonista'}</b> · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}</span>
+                          <span className="text-tinta"><b className="font-medium">{s.solicitante?.nome_completo ?? 'Profissional'}</b>{s.escala_plantao?.papel && <span className="text-tinta-sussurro"> ({PAPEL_LABEL[s.escala_plantao.papel]})</span>} · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}</span>
                           <span className="text-rotulo text-tinta-sussurro">
                             {s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'Plantão removido'}
                             {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
@@ -1646,10 +1660,15 @@ export default function Escala({
                             {s.anexo_url && <> · <Button type="button" variant="link" size="xs" className="h-auto min-h-0 p-0 align-baseline text-rotulo font-medium" onClick={() => void abrirAnexo(s.anexo_url!)}>ver anexo</Button></>}
                           </span>
                         </span>
-                        <span className="flex gap-1.5">
-                          <Button size="xs" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'aprovado' })}>Aprovar</Button>
-                          <Button size="xs" variant="ghost" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'recusado' })}>Recusar</Button>
-                        </span>
+                        {/* A4: a passagem só chega ao gestor depois do aceite do colega */}
+                        {s.tipo === 'passar_plantao' && !s.aceito_em ? (
+                          <span className="text-rotulo text-tinta-sussurro">Esperando o colega aceitar</span>
+                        ) : (
+                          <span className="flex gap-1.5">
+                            <Button size="xs" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'aprovado' })}>Aprovar</Button>
+                            <Button size="xs" variant="ghost" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'recusado' })}>Recusar</Button>
+                          </span>
+                        )}
                       </li>
                     ))}
                     {/* A2: a troca só entra na escala com o gestor */}
@@ -1664,10 +1683,14 @@ export default function Escala({
                             {t.mensagem && ` · ${t.mensagem}`}
                           </span>
                         </span>
-                        <span className="flex gap-1.5">
-                          <Button size="xs" disabled={decidirTroca.isPending} onClick={() => decidirTroca.mutate({ id: t.id, aprovar: true })}>Aprovar</Button>
-                          <Button size="xs" variant="ghost" disabled={decidirTroca.isPending} onClick={() => decidirTroca.mutate({ id: t.id, aprovar: false })}>Recusar</Button>
-                        </span>
+                        {!t.aceito_em ? (
+                          <span className="text-rotulo text-tinta-sussurro">Esperando o colega aceitar</span>
+                        ) : (
+                          <span className="flex gap-1.5">
+                            <Button size="xs" disabled={decidirTroca.isPending} onClick={() => decidirTroca.mutate({ id: t.id, aprovar: true })}>Aprovar</Button>
+                            <Button size="xs" variant="ghost" disabled={decidirTroca.isPending} onClick={() => decidirTroca.mutate({ id: t.id, aprovar: false })}>Recusar</Button>
+                          </span>
+                        )}
                       </li>
                     ))}
                     {(candidaturas ?? []).filter((c) => c.status === 'pendente').map((c) => (
@@ -1697,7 +1720,7 @@ export default function Escala({
                     {(solicitacoes ?? []).filter((s) => s.status !== 'pendente').slice(0, 30).map((s) => (
                       <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-trilha px-4 py-2 text-apoio last:border-b-0">
                         <span className="min-w-0 flex-[1_1_280px] text-tinta">
-                          <b className="font-medium">{s.solicitante?.nome_completo ?? 'Plantonista'}</b> · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}
+                          <b className="font-medium">{s.solicitante?.nome_completo ?? 'Profissional'}</b>{s.escala_plantao?.papel && <span className="text-tinta-sussurro"> ({PAPEL_LABEL[s.escala_plantao.papel]})</span>} · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}
                           <span className="text-rotulo text-tinta-sussurro">
                             {' · '}{s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'plantão removido'}
                             {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
@@ -2061,6 +2084,10 @@ export default function Escala({
               Escala quinzenal (15/15)
             </label>
           </div>
+          {/* M10: o erro de escalar aparece (antes o clique não fazia nada) */}
+          {(abaGestor === 'fixa' ? adicionarFixa.error : adicionar.error) && (
+            <p role="alert" className="text-apoio text-critico">{(abaGestor === 'fixa' ? adicionarFixa.error : adicionar.error)?.message}</p>
+          )}
 
           <DialogFooter>
             <Button variant="ghost" onClick={() => setDialogAberto(false)}>
