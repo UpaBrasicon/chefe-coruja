@@ -12,6 +12,7 @@ import * as React from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { type PlantaoEquipe, type Troca, type VagaAberta, usePedidosDaEquipe } from '@/hooks/usePedidosDaEquipe'
+import { BUCKET_JUSTIFICATIVA, caminhoNovoAnexo } from '@/lib/anexoJustificativa'
 import { dataPorExtenso, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { Estado, type TomEstado } from '@/components/porta/Estado'
@@ -143,13 +144,13 @@ function JanelaPedido({ unidadeId, janela, equipe, faixa, nomeSetor, onFechar, o
         if (error) throw error
         onFeito(data === p.id ? 'Plantão passado.' : 'Passagem pedida. A coordenação decide e você recebe o aviso.')
       } else {
+        // o bucket é privado: grava o caminho; o gestor abre com URL assinada (A5)
         let anexoUrl: string | null = null
         if (anexo) {
-          const nomeSeguro = anexo.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-          const caminho = `${unidadeId}/justificativas/${crypto.randomUUID()}-${nomeSeguro}`
-          const { error: upErr } = await supabase.storage.from('atendimento').upload(caminho, anexo, { cacheControl: '3600', upsert: false })
+          const caminho = caminhoNovoAnexo(unidadeId, anexo.name, crypto.randomUUID())
+          const { error: upErr } = await supabase.storage.from(BUCKET_JUSTIFICATIVA).upload(caminho, anexo, { cacheControl: '3600', upsert: false })
           if (upErr) throw new Error('Falha ao enviar o anexo: ' + upErr.message)
-          anexoUrl = supabase.storage.from('atendimento').getPublicUrl(caminho).data.publicUrl
+          anexoUrl = caminho
         }
         const { error } = await supabase.from('solicitacoes_escala').insert({
           unidade_id: unidadeId, escala_plantao_id: p.id, perfil_id: perfil.id, tipo: 'justificar_falta',
