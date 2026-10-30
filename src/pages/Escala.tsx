@@ -649,7 +649,8 @@ export default function Escala({
     const pendentes = solicitacoes.filter((s) => s.status === 'pendente')
     const sairam = solicitacoes.filter((s) => s.tipo === 'passar_plantao')
     const atestados = solicitacoes.filter((s) => s.tipo === 'justificar_falta' && s.tipo_falta === 'atestado_medico')
-    const faltas = solicitacoes.filter((s) => s.tipo === 'falta')
+    // B8: "faltas" são as justificativas que não são atestado (o tipo 'falta' não é criado por nenhuma tela)
+    const faltas = solicitacoes.filter((s) => s.tipo === 'justificar_falta' && s.tipo_falta !== 'atestado_medico')
     const interesses = solicitacoes.filter((s) => s.tipo === 'sair_fixo')
     return {
       pendentes: pendentes.length,
@@ -657,7 +658,7 @@ export default function Escala({
       atestados: atestados.length,
       faltas: faltas.length,
       interesses: interesses.length,
-      lista: solicitacoes.filter((s) => s.status === 'pendente' || s.tipo === 'falta').slice(0, 20),
+      lista: solicitacoes.filter((s) => s.status === 'pendente').slice(0, 20),
     }
   }, [solicitacoes])
 
@@ -1644,7 +1645,7 @@ export default function Escala({
                     {(solicitacoes ?? []).filter((s) => s.status === 'pendente').map((s) => (
                       <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-trilha px-4 py-2.5 text-apoio last:border-b-0">
                         <span className="flex min-w-0 flex-[1_1_280px] flex-col gap-0.5">
-                          <span className="text-tinta"><b className="font-medium">{s.solicitante?.nome_completo ?? 'Plantonista'}</b> · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}</span>
+                          <span className="text-tinta"><b className="font-medium">{s.solicitante?.nome_completo ?? 'Profissional'}</b>{s.escala_plantao?.papel && <span className="text-tinta-sussurro"> ({PAPEL_LABEL[s.escala_plantao.papel]})</span>} · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}</span>
                           <span className="text-rotulo text-tinta-sussurro">
                             {s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'Plantão removido'}
                             {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
@@ -1713,7 +1714,7 @@ export default function Escala({
                     {(solicitacoes ?? []).filter((s) => s.status !== 'pendente').slice(0, 30).map((s) => (
                       <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-trilha px-4 py-2 text-apoio last:border-b-0">
                         <span className="min-w-0 flex-[1_1_280px] text-tinta">
-                          <b className="font-medium">{s.solicitante?.nome_completo ?? 'Plantonista'}</b> · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}
+                          <b className="font-medium">{s.solicitante?.nome_completo ?? 'Profissional'}</b>{s.escala_plantao?.papel && <span className="text-tinta-sussurro"> ({PAPEL_LABEL[s.escala_plantao.papel]})</span>} · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}
                           <span className="text-rotulo text-tinta-sussurro">
                             {' · '}{s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'plantão removido'}
                             {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
