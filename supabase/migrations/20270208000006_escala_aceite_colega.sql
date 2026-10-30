@@ -50,13 +50,17 @@ ALTER TABLE public.solicitacoes_escala ADD CONSTRAINT solicitacoes_escala_status
 REVOKE UPDATE ON public.solicitacoes_escala FROM anon, authenticated;
 GRANT UPDATE (status, decidido_por) ON public.solicitacoes_escala TO authenticated;
 
--- inserção direta (justificar falta, sair do fixo) nasce pendente, sem aceite
+-- inserção direta pela API (justificar falta, sair do fixo) nasce pendente, sem
+-- aceite nem decisão. Sem SECURITY DEFINER: current_user é quem insere; as RPCs
+-- (SECURITY DEFINER) e as cargas do servidor não passam por aqui.
 CREATE OR REPLACE FUNCTION private.solicitacao_insercao()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $function$
+RETURNS trigger LANGUAGE plpgsql SET search_path = '' AS $function$
 BEGIN
-  NEW.status := 'pendente';
-  NEW.aceito_em := NULL;
-  NEW.decidido_por := NULL;
+  IF current_user IN ('authenticated', 'anon') THEN
+    NEW.status := 'pendente';
+    NEW.aceito_em := NULL;
+    NEW.decidido_por := NULL;
+  END IF;
   RETURN NEW;
 END;
 $function$;

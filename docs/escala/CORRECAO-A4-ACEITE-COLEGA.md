@@ -36,7 +36,7 @@ aprovação do gestor, aplicado na hora). Na troca, depois do A2, o colega só r
   `aprovar_troca` (exige o aceite; avisa os dois), `recusar_troca` (avisa), `private.passagem_aprovada`
   (exige o aceite).
 - Gatilhos: `trg_passagem_avisos` (avisos da decisão da passagem) e `trg_solicitacao_insercao`
-  (inserção direta nasce pendente, sem aceite nem decisão).
+  (inserção direta pela API nasce pendente, sem aceite nem decisão; cargas do servidor não passam por ele).
 - O UPDATE direto de `solicitacoes_escala` fica só em `status` e `decidido_por` (o que a tela do gestor
   grava): o gestor não marca o aceite por update.
 - Idempotente (aplicada duas vezes seguidas na homologação, sem erro). Rollback no cabeçalho,
@@ -61,9 +61,10 @@ aprovação do gestor, aplicado na hora). Na troca, depois do A2, o colega só r
 | Teste | Resultado |
 |---|---|
 | `supabase/tests/escala_aceite_colega.sql` sem a migration | **falha**: `A4: a passagem nasce esperando o colega, que é avisado` |
-| Com a migration | **20 de 20** |
+| Com a migration | **21 de 21** (inclui a inserção direta forjando aceite e aprovação, que nasce pendente) |
 | `escala_passagem_aprovada` (C2), `escala_troca_gestor` (A2), `escala_troca_forcada` (C1), `porte_redteam_v3_v4` (V4) | ajustados ao aceite (o colega aceita antes do gestor; na unidade sem aprovação, o aceite aplica) |
 | `escala_categoria`, `escala_pedidos_categorias`, `escala_atestado_falta`, `fase0_rpcs`, `escala_da_unidade` com a migration | passam |
+| `fase5c_erp_plantoes` | passa (o CI pegou a 1ª versão do gatilho de inserção, que forçava "pendente" também na carga de teste feita como postgres; agora só vale para `authenticated`/`anon`) |
 | `tsc`, `eslint`, guia do frontend | limpos |
 
 ## Homologação
