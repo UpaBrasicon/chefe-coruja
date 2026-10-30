@@ -35,7 +35,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Spinner } from '@/components/ui/spinner'
 import type { Papel } from '@/types/database'
 
-import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala } from '@/hooks/usePedidosEscala'
+import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, useTrocasEscala } from '@/hooks/usePedidosEscala'
 
 type Escalado = { plantao_id: string; perfil_id: string; nome: string; turno: string; duracao_min: number; quinzenal: boolean; rotulo: string | null; papel: Papel | null }
 // o que falta na faixa, categoria por categoria: vaga marcada (vaga_id) ou prevista pela fixa
@@ -109,9 +109,10 @@ export function EscalaMes() {
   })
   const solicitacoes = useSolicitacoesEscala(unidadeId, ehGestor)
   const candidaturas = useCandidaturasEscala(unidadeId, ehGestor)
+  const trocas = useTrocasEscala(unidadeId, ehGestor)
   if (!ehGestor) return null
 
-  const pedidos = contarPedidos(solicitacoes.data, candidaturas.data)
+  const pedidos = contarPedidos(solicitacoes.data, candidaturas.data, trocas.data)
   const recarregar = () => {
     void qc.invalidateQueries({ queryKey: ['escala-plantao-mes'] })
     void qc.invalidateQueries({ queryKey: ['escala-plantao'] })
@@ -203,7 +204,7 @@ export function EscalaMes() {
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-controle border border-atencao/40 bg-superficie px-4 py-2 text-apoio">
           <span className="font-medium text-atencao">{plural(pedidos.total, 'pedido aguardando você', 'pedidos aguardando você')}</span>
           <span className="text-tinta-sussurro">
-            {[pedidos.escala ? plural(pedidos.escala, 'da escala', 'da escala') : '', pedidos.candidaturas ? plural(pedidos.candidaturas, 'candidatura', 'candidaturas') : ''].filter(Boolean).join(', ')}
+            {[pedidos.escala ? plural(pedidos.escala, 'da escala', 'da escala') : '', pedidos.candidaturas ? plural(pedidos.candidaturas, 'candidatura', 'candidaturas') : '', pedidos.trocas ? plural(pedidos.trocas, 'troca', 'trocas') : ''].filter(Boolean).join(', ')}
           </span>
           <Button variant="link" onClick={verPedidos} className="ml-auto h-auto min-h-0 p-0 text-apoio font-medium">Ver os pedidos</Button>
         </div>

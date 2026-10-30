@@ -36,7 +36,7 @@ import { cn } from '@/lib/utils'
 import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { Estado } from '@/components/porta/Estado'
-import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, type SolicitacaoComExtra } from '@/hooks/usePedidosEscala'
+import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, useTrocasEscala, type SolicitacaoComExtra } from '@/hooks/usePedidosEscala'
 
 const TURNOS = [
   { id: 'manha', label: 'Manhã', horario: '07h–13h' },
@@ -276,13 +276,13 @@ export default function Escala({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('trocas_plantao')
-        .select('id, status, mensagem, erro, created_at, plantao_a_id, plantao_b_id')
+        .select('id, status, mensagem, erro, created_at, plantao_a_id, plantao_b_id, perfil_b_id')
         .or(`perfil_a_id.eq.${perfil!.id},perfil_b_id.eq.${perfil!.id}`)
         .eq('unidade_id', unidadeId!)
         .order('created_at', { ascending: false })
         .limit(30)
       if (error) throw error
-      return (data ?? []) as { id: string; status: string; mensagem: string | null; erro: string | null; created_at: string; plantao_a_id: string; plantao_b_id: string }[]
+      return (data ?? []) as { id: string; status: string; mensagem: string | null; erro: string | null; created_at: string; plantao_a_id: string; plantao_b_id: string; perfil_b_id: string }[]
     },
   })
 
@@ -290,6 +290,8 @@ export default function Escala({
   const { data: solicitacoes, isLoading: carregandoSolic } = useSolicitacoesEscala(unidadeId, ehGestor || ehAdmin)
   // Candidaturas a plantões livres (plantonista) — visível também ao gestor
   const { data: candidaturas, isLoading: carregandoCand } = useCandidaturasEscala(unidadeId, ehGestor || ehAdmin || ehPlantonista)
+  // Trocas para o gestor decidir (A2)
+  const { data: trocas } = useTrocasEscala(unidadeId, ehGestor || ehAdmin)
 
   // Partes de plantão fracionado (vagas com janela, migration 20261012000001):
   // a candidatura aponta a vaga; aqui mostramos a parte e o horário dela.
@@ -502,6 +504,21 @@ export default function Escala({
     onSuccess: invalidar,
   })
 
+  // A2: o gestor aprova (aplica na escala) ou recusa a troca
+  const decidirTroca = useMutation({
+    mutationFn: async ({ id, aprovar }: { id: string; aprovar: boolean }) => {
+      const { error } = aprovar
+        ? await supabase.rpc('aprovar_troca', { p_troca: id })
+        : await supabase.rpc('recusar_troca', { p_troca: id })
+      if (error) throw error
+    },
+    onSettled: () => {
+      invalidar()
+      void queryClient.invalidateQueries({ queryKey: ['trocas-escala'] })
+      void refetchTrocas()
+    },
+  })
+
   // atestado da justificativa: bucket privado, abre com URL assinada (A5)
   const [erroAnexo, setErroAnexo] = React.useState<string | null>(null)
   async function abrirAnexo(anexo: string) {
@@ -631,7 +648,7 @@ export default function Escala({
   const fixasDoCelula = (setorId: string, diaSemana: number) =>
     (escalaFixa ?? []).filter((f) => f.setor_id === setorId && f.dia_semana === diaSemana && f.turno === turno)
 
-  const pedidos = contarPedidos(solicitacoes, candidaturas)
+  const pedidos = contarPedidos(solicitacoes, candidaturas, trocas)
   const alertas = React.useMemo(() => {
     if (!solicitacoes) return { pendentes: 0, sairam: 0, atestados: 0, faltas: 0, interesses: 0, lista: [] as SolicitacaoComExtra[] }
     const pendentes = solicitacoes.filter((s) => s.status === 'pendente')
@@ -1288,19 +1305,13 @@ export default function Escala({
                     {t.status === 'erro' && t.erro && (
                       <span className="text-rotulo text-critico">{t.erro}</span>
                     )}
-                    {t.status === 'pendente' && (
+                    {/* A2: quem aprova a troca é o gestor, na aba Pedidos; o colega pode recusar */}
+                    {t.status === 'pendente' && t.perfil_b_id !== perfil?.id && (
+                      <span className="text-rotulo text-tinta-sussurro">Aguardando a coordenação</span>
+                    )}
+                    {t.status === 'pendente' && t.perfil_b_id === perfil?.id && (
                       <div className="flex items-center gap-2">
-                        <Button
-                          size="xs"
-                          variant="outline"
-                          onClick={async () => {
-                            await supabase.rpc('aprovar_troca', { p_troca: t.id })
-                            void refetchTrocas()
-                            invalidar()
-                          }}
-                        >
-                          <Check /> Aprovar
-                        </Button>
+                        <span className="text-rotulo text-tinta-sussurro">A coordenação decide.</span>
                         <Button
                           size="xs"
                           variant="ghost"
@@ -1611,6 +1622,9 @@ export default function Escala({
                 {decidir.error && (
                   <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{decidir.error.message}</p>
                 )}
+                {decidirTroca.error && (
+                  <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{decidirTroca.error.message}</p>
+                )}
                 {erroAnexo && (
                   <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{erroAnexo}</p>
                 )}
@@ -1635,6 +1649,24 @@ export default function Escala({
                         <span className="flex gap-1.5">
                           <Button size="xs" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'aprovado' })}>Aprovar</Button>
                           <Button size="xs" variant="ghost" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'recusado' })}>Recusar</Button>
+                        </span>
+                      </li>
+                    ))}
+                    {/* A2: a troca só entra na escala com o gestor */}
+                    {(trocas ?? []).filter((t) => t.status === 'pendente').map((t) => (
+                      <li key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-trilha px-4 py-2.5 text-apoio last:border-b-0">
+                        <span className="flex min-w-0 flex-[1_1_280px] flex-col gap-0.5">
+                          <span className="text-tinta"><b className="font-medium">{t.pedinte?.nome_completo ?? 'Profissional'}</b> · troca com <b className="font-medium">{t.colega?.nome_completo ?? 'colega'}</b></span>
+                          <span className="text-rotulo text-tinta-sussurro">
+                            {t.plantao_a ? `${fmtDiaBR(t.plantao_a.data)} · ${TURNO_LABEL[t.plantao_a.turno]}` : 'Plantão removido'}
+                            {' ⇄ '}
+                            {t.plantao_b ? `${fmtDiaBR(t.plantao_b.data)} · ${TURNO_LABEL[t.plantao_b.turno]}` : 'Plantão removido'}
+                            {t.mensagem && ` · ${t.mensagem}`}
+                          </span>
+                        </span>
+                        <span className="flex gap-1.5">
+                          <Button size="xs" disabled={decidirTroca.isPending} onClick={() => decidirTroca.mutate({ id: t.id, aprovar: true })}>Aprovar</Button>
+                          <Button size="xs" variant="ghost" disabled={decidirTroca.isPending} onClick={() => decidirTroca.mutate({ id: t.id, aprovar: false })}>Recusar</Button>
                         </span>
                       </li>
                     ))}
