@@ -3,8 +3,8 @@
 // 28/10/2026): no dia escolhido, "Seu plantão" com Trocar, Passar e Justificar
 // falta, cada um numa janela (a passagem em janela, pedido do RT); a vaga da
 // categoria com "Candidatar-me"; e "Seus pedidos" com o estado de cada um.
-// Troca e passagem só dentro da categoria (trava no banco desde a E1); quem
-// aprova é a coordenação, na aba Pedidos do gestor.
+// Troca e passagem só dentro da categoria (trava no banco desde a E1); o
+// colega aceita (Pedidos para você, A4) e a coordenação aprova, na aba Pedidos do gestor.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeftRight, FileText, Info, Send } from 'lucide-react'
@@ -26,8 +26,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 
 const ddmm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`
-const TOM: Record<string, TomEstado> = { pendente: 'ambar', aprovado: 'verde', recusado: 'vermelho', cancelado: 'cinza', erro: 'vermelho' }
-const ROTULO_ESTADO: Record<string, string> = { pendente: 'aguardando', aprovado: 'aprovado', recusado: 'recusado', cancelado: 'cancelado', erro: 'não aplicado' }
+const TOM: Record<string, TomEstado> = { pendente: 'ambar', aprovado: 'verde', recusado: 'vermelho', cancelado: 'cinza', cancelada: 'cinza', erro: 'vermelho' }
+const ROTULO_ESTADO: Record<string, string> = { pendente: 'aguardando', aprovado: 'aprovado', recusado: 'recusado', cancelado: 'cancelado', cancelada: 'cancelada', erro: 'não aplicado' }
 
 type Janela = { tipo: 'trocar' | 'passar' | 'falta'; plantao: PlantaoEquipe }
 
@@ -50,7 +50,7 @@ export function AcoesDoPlantao({ unidadeId, plantao: p, equipe, faixa, nomeSetor
   return (
     <div className="flex flex-col gap-2">
       {pendente ? (
-        <span className="text-rotulo text-atencao">Há um pedido deste plantão esperando a coordenação.</span>
+        <span className="text-rotulo text-atencao">Há um pedido deste plantão em andamento (o colega ou a coordenação ainda vão responder).</span>
       ) : passou ? (
         <>
           <span className="flex items-start gap-1.5 text-rotulo text-pretty text-tinta-sussurro">
@@ -138,11 +138,11 @@ function JanelaPedido({ unidadeId, janela, equipe, faixa, nomeSetor, onFechar, o
       if (janela!.tipo === 'trocar') {
         const { error } = await supabase.rpc('solicitar_troca', { p_plantao_a: p.id, p_plantao_b: outro, p_mensagem: texto.trim() || undefined })
         if (error) throw error
-        onFeito('Troca pedida. A coordenação decide e você recebe o aviso.')
+        onFeito('Troca pedida. O colega precisa aceitar; depois a coordenação decide. Você recebe os avisos.')
       } else if (janela!.tipo === 'passar') {
         const { data, error } = await supabase.rpc('passar_plantao', { p_escala: p.id, p_destino: destino, p_justificativa: texto.trim() || undefined })
         if (error) throw error
-        onFeito(data === p.id ? 'Plantão passado.' : 'Passagem pedida. A coordenação decide e você recebe o aviso.')
+        onFeito(data === p.id ? 'Plantão passado.' : 'Passagem pedida. O colega precisa aceitar; depois a coordenação decide. Você recebe os avisos.')
       } else {
         // o bucket é privado: grava o caminho; o gestor abre com URL assinada (A5)
         let anexoUrl: string | null = null
@@ -192,7 +192,7 @@ function JanelaPedido({ unidadeId, janela, equipe, faixa, nomeSetor, onFechar, o
               </Select>
               {escolhido && (
                 <p className="rounded-controle bg-campo px-3 py-2 text-apoio text-tinta">
-                  Se a coordenação aprovar, você fica com o plantão de {ddmm(escolhido.data)} e {escolhido.nome_completo ?? 'o colega'} com o de {ddmm(p!.data)}.
+                  Se o colega aceitar e a coordenação aprovar, você fica com o plantão de {ddmm(escolhido.data)} e {escolhido.nome_completo ?? 'o colega'} com o de {ddmm(p!.data)}.
                 </p>
               )}
             </div>
@@ -231,7 +231,7 @@ function JanelaPedido({ unidadeId, janela, equipe, faixa, nomeSetor, onFechar, o
             <Label htmlFor="pedido-texto">{janela?.tipo === 'falta' ? 'Justificativa' : 'Mensagem'} (opcional)</Label>
             <Textarea id="pedido-texto" value={texto} onChange={(e) => setTexto(e.target.value)} rows={3} />
           </div>
-          <p className="text-rotulo text-tinta-sussurro">O pedido vai para a coordenação da unidade, que aprova ou recusa. Você recebe o aviso.</p>
+          <p className="text-rotulo text-tinta-sussurro">{janela?.tipo === 'falta' ? 'O pedido vai para a coordenação da unidade, que aprova ou recusa. Você recebe o aviso.' : 'O colega recebe o aviso e aceita ou recusa; aceito, a coordenação aprova ou recusa. Até lá o plantão continua com você.'}</p>
           <MensagemErro texto={erro} />
         </div>
         <DialogFooter>
@@ -283,29 +283,58 @@ export function VagasDoDia({ vagas, titulo = 'Vaga da sua categoria', comData = 
 export function SeusPedidos({ minhas, trocas, plantoes }: {
   minhas: ReturnType<typeof usePedidosDaEquipe>['minhas']; trocas: Troca[]; plantoes: PlantaoEquipe[]
 }) {
+  const { perfil } = useAuth()
+  const qc = useQueryClient()
+  const [cancelando, setCancelando] = React.useState<string | null>(null)
+  const [erro, setErro] = React.useState<string | null>(null)
   const dataDe = (id: string) => plantoes.find((x) => x.id === id)?.data
+  // A4: passagem e troca esperam o colega e depois a coordenação; quem pediu cancela enquanto pendente
   const itens = [
     ...minhas.map((s) => ({
-      id: s.id, status: s.status, quando: s.created_at,
+      id: s.id, troca: false, status: s.status, quando: s.created_at,
+      espera: s.tipo === 'passar_plantao' && !s.aceito_em ? 'aguardando o colega' : 'aguardando a coordenação',
       texto: s.tipo === 'passar_plantao'
         ? `Passagem${s.escala_plantao ? ` de ${ddmm(s.escala_plantao.data)}` : ''}${s.destino ? ` para ${s.destino.nome_completo}` : ''}`
         : s.tipo === 'justificar_falta' ? `Falta${s.escala_plantao ? ` de ${ddmm(s.escala_plantao.data)}` : ''}` : `Saída do fixo`,
     })),
-    ...trocas.map((t) => {
+    // só as trocas que eu pedi; as que pedem o meu aceite ficam em Pedidos para você
+    ...trocas.filter((t) => t.perfil_a_id === perfil?.id).map((t) => {
       const d = dataDe(t.plantao_a_id)
-      return { id: t.id, status: t.status, quando: t.created_at, texto: `Troca${d ? ` do plantão de ${ddmm(d)}` : ''}` }
+      return {
+        id: t.id, troca: true, status: t.status, quando: t.created_at,
+        espera: t.aceito_em ? 'aguardando a coordenação' : 'aguardando o colega',
+        texto: `Troca${d ? ` do plantão de ${ddmm(d)}` : ''}`,
+      }
     }),
   ].sort((a, b) => b.quando.localeCompare(a.quando)).slice(0, 5)
+
+  async function cancelar(i: (typeof itens)[number]) {
+    setCancelando(i.id); setErro(null)
+    const { error } = i.troca
+      ? await supabase.rpc('cancelar_troca', { p_troca: i.id })
+      : await supabase.rpc('cancelar_pedido_escala', { p_solicitacao: i.id })
+    setCancelando(null)
+    if (error) return setErro(error.message)
+    void qc.invalidateQueries({ queryKey: ['solicitacoes-escala'] })
+    void qc.invalidateQueries({ queryKey: ['trocas-equipe'] })
+  }
+
   if (itens.length === 0) return null
   return (
     <div className="flex flex-col gap-1.5 px-4 py-2.5">
       <span className="text-rotulo font-semibold text-tinta-sussurro">Seus pedidos</span>
       {itens.map((i) => (
         <span key={i.id} className="flex flex-wrap items-baseline gap-x-2 text-apoio">
-          <Estado tom={TOM[i.status] ?? 'cinza'}>{ROTULO_ESTADO[i.status] ?? i.status}</Estado>
+          <Estado tom={TOM[i.status] ?? 'cinza'}>{i.status === 'pendente' ? i.espera : ROTULO_ESTADO[i.status] ?? i.status}</Estado>
           <span className="text-tinta">{i.texto}</span>
+          {i.status === 'pendente' && (
+            <Button variant="link" size="xs" className="h-auto min-h-0 p-0 text-rotulo" disabled={cancelando === i.id} onClick={() => void cancelar(i)}>
+              Cancelar
+            </Button>
+          )}
         </span>
       ))}
+      <MensagemErro texto={erro} />
     </div>
   )
 }

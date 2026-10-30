@@ -101,6 +101,8 @@ SELECT pg_temp.falha(format('SELECT public.aprovar_troca(%L)', pg_temp.id('t1'))
 SELECT pg_temp.ok(pg_temp.dono('p1') = pg_temp.id('med') AND pg_temp.dono('p2') = pg_temp.id('med2')
                   AND (SELECT status FROM public.trocas_plantao WHERE id = pg_temp.id('t1')) = 'pendente',
   'A2: a troca continua pendente e os plantões com os donos de antes');
+-- o colega aceita (20270208000006, A4); quem aplica é o gestor
+SELECT public.aceitar_troca(pg_temp.id('t1'));
 SELECT pg_temp.como('gest');
 SELECT public.aprovar_troca(pg_temp.id('t1'));
 SELECT pg_temp.ok(pg_temp.dono('p1') = pg_temp.id('med2') AND pg_temp.dono('p2') = pg_temp.id('med'),
@@ -118,11 +120,13 @@ SELECT public.recusar_troca(pg_temp.id('t2'), 'não posso');
 SELECT pg_temp.ok((SELECT status FROM public.trocas_plantao WHERE id = pg_temp.id('t2')) = 'recusado'
                   AND pg_temp.dono('p3') = pg_temp.id('med'), 'o colega recusa e nada muda na escala');
 
--- ── 4. unidade sem aprovação: entra na hora ───────────────────────────────
+-- ── 4. unidade sem aprovação: entra com o aceite do colega (A4) ───────────
 SELECT pg_temp.como('med');
 INSERT INTO t SELECT 't3', public.solicitar_troca(pg_temp.id('q1'), pg_temp.id('q2'), NULL)::text;
+SELECT pg_temp.como('med2');
+SELECT public.aceitar_troca(pg_temp.id('t3'));
 SELECT pg_temp.ok(pg_temp.dono('q1') = pg_temp.id('med2') AND pg_temp.dono('q2') = pg_temp.id('med'),
-  'unidade sem aprovação: a troca entra na hora, como antes');
+  'unidade sem aprovação: a troca entra com o aceite do colega');
 
 RESET ROLE;
 SELECT count(*) AS testes FROM resultado;

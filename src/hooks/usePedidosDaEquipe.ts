@@ -13,7 +13,7 @@ export type PlantaoEquipe = {
   inicio: string; duracao_min: number; nome_completo: string | null
 }
 export type VagaAberta = Database['public']['Functions']['vagas_abertas']['Returns'][number]
-export type Troca = { id: string; status: string; plantao_a_id: string; plantao_b_id: string; perfil_a_id: string; created_at: string }
+export type Troca = { id: string; status: string; plantao_a_id: string; plantao_b_id: string; perfil_a_id: string; perfil_b_id: string; aceito_em: string | null; created_at: string }
 
 /** Pedidos e vagas da unidade que a aba Escala precisa: os meus pedidos e as vagas da minha categoria. */
 export function usePedidosDaEquipe(unidadeId: string | undefined) {
@@ -25,7 +25,7 @@ export function usePedidosDaEquipe(unidadeId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('trocas_plantao')
-        .select('id, status, plantao_a_id, plantao_b_id, perfil_a_id, created_at')
+        .select('id, status, plantao_a_id, plantao_b_id, perfil_a_id, perfil_b_id, aceito_em, created_at')
         .eq('unidade_id', unidadeId!)
         .or(`perfil_a_id.eq.${perfil!.id},perfil_b_id.eq.${perfil!.id}`)
         .order('created_at', { ascending: false })
