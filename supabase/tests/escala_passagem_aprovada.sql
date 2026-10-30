@@ -91,6 +91,9 @@ SELECT pg_temp.como('med');
 INSERT INTO t SELECT 'sP', public.passar_plantao(pg_temp.id('pP'), pg_temp.id('med2'), 'consulta')::text;
 SELECT pg_temp.ok(pg_temp.id('sP') <> pg_temp.id('pP') AND pg_temp.dono('pP') = pg_temp.id('med'),
   'pedir a passagem cria o pedido e o plantão fica com quem pediu');
+-- o colega aceita antes (20270208000006, A4)
+SELECT pg_temp.como('med2');
+SELECT public.aceitar_passagem(pg_temp.id('sP'));
 SELECT pg_temp.como('gest');
 -- o que a tela do gestor faz (Escala.tsx, mutação decidir)
 UPDATE public.solicitacoes_escala SET status = 'aprovado', decidido_por = pg_temp.id('gest') WHERE id = pg_temp.id('sP');
@@ -108,6 +111,8 @@ RESET ROLE;
 UPDATE public.escala_plantao SET ativo = false WHERE id = pg_temp.id('pX');
 SET LOCAL ROLE authenticated;
 INSERT INTO t SELECT 'sQ', public.passar_plantao(pg_temp.id('pQ'), pg_temp.id('med3'), NULL)::text;
+SELECT pg_temp.como('med3');
+SELECT public.aceitar_passagem(pg_temp.id('sQ'));
 RESET ROLE;
 UPDATE public.escala_plantao SET ativo = true WHERE id = pg_temp.id('pX');
 SET LOCAL ROLE authenticated;
@@ -120,6 +125,8 @@ SELECT pg_temp.ok((SELECT status FROM public.solicitacoes_escala WHERE id = pg_t
 -- ── 3. o plantão mudou de dono depois do pedido ───────────────────────────
 SELECT pg_temp.como('med');
 INSERT INTO t SELECT 'sR', public.passar_plantao(pg_temp.id('pR'), pg_temp.id('med2'), NULL)::text;
+SELECT pg_temp.como('med2');
+SELECT public.aceitar_passagem(pg_temp.id('sR'));
 RESET ROLE;
 UPDATE public.escala_plantao SET perfil_id = pg_temp.id('med3') WHERE id = pg_temp.id('pR');
 SET LOCAL ROLE authenticated;
