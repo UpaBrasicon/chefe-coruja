@@ -71,6 +71,8 @@ BEGIN
   SELECT id INTO v_shift FROM public.escala_plantao
    WHERE perfil_id='10000000-0000-4000-8000-000000000002'
      AND unidade_id='21000000-0000-4000-8000-000000000001' AND ativo
+     -- M3 (20270208000009): plantão que já terminou não se passa
+     AND inicio + make_interval(mins => duracao_min) > now()
    ORDER BY data, turno LIMIT 1;
   IF v_shift IS NULL THEN RAISE EXCEPTION 'setup: nenhum plantão do seed para o teste V4'; END IF;
   SELECT perfil_id INTO v_antes FROM public.escala_plantao WHERE id=v_shift;
@@ -92,6 +94,8 @@ BEGIN
   SELECT id INTO v_shift FROM public.escala_plantao
    WHERE perfil_id='10000000-0000-4000-8000-000000000002'
      AND unidade_id='21000000-0000-4000-8000-000000000001' AND ativo
+     -- M3 (20270208000009): plantão que já terminou não se passa
+     AND inicio + make_interval(mins => duracao_min) > now()
    ORDER BY data, turno OFFSET 1 LIMIT 1;
   IF v_shift IS NULL THEN RAISE EXCEPTION 'setup: segundo plantão não encontrado'; END IF;
   v_solic := public.passar_plantao(v_shift,'10000000-0000-4000-8000-0000000000bb','t2');
