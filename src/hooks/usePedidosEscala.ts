@@ -61,6 +61,7 @@ export type TrocaComExtra = {
   status: string
   mensagem: string | null
   created_at: string
+  aceito_em: string | null
   plantao_a: PlantaoDaTroca
   plantao_b: PlantaoDaTroca
   pedinte: { nome_completo: string } | null
@@ -75,7 +76,7 @@ export function useTrocasEscala(unidadeId: string | undefined, habilitado: boole
     queryFn: async () => {
       const { data, error } = await supabase
         .from('trocas_plantao')
-        .select('id, status, mensagem, created_at, plantao_a:escala_plantao!trocas_plantao_plantao_a_id_fkey(setor_id, data, turno), plantao_b:escala_plantao!trocas_plantao_plantao_b_id_fkey(setor_id, data, turno), pedinte:perfis!trocas_plantao_perfil_a_id_fkey(nome_completo), colega:perfis!trocas_plantao_perfil_b_id_fkey(nome_completo)')
+        .select('id, status, mensagem, created_at, aceito_em, plantao_a:escala_plantao!trocas_plantao_plantao_a_id_fkey(setor_id, data, turno), plantao_b:escala_plantao!trocas_plantao_plantao_b_id_fkey(setor_id, data, turno), pedinte:perfis!trocas_plantao_perfil_a_id_fkey(nome_completo), colega:perfis!trocas_plantao_perfil_b_id_fkey(nome_completo)')
         .eq('unidade_id', unidadeId!)
         .order('created_at', { ascending: false })
         .limit(100)
@@ -85,10 +86,10 @@ export function useTrocasEscala(unidadeId: string | undefined, habilitado: boole
   })
 }
 
-/** Quantos pedidos esperam a decisão do gestor. */
+/** Quantos pedidos esperam a decisão do gestor (A4: passagem e troca só depois do aceite do colega). */
 export function contarPedidos(solicitacoes: SolicitacaoComExtra[] | undefined, candidaturas: CandidaturaComExtra[] | undefined, trocas?: TrocaComExtra[]) {
-  const escala = (solicitacoes ?? []).filter((s) => s.status === 'pendente').length
+  const escala = (solicitacoes ?? []).filter((s) => s.status === 'pendente' && (s.tipo !== 'passar_plantao' || !!s.aceito_em)).length
   const cand = (candidaturas ?? []).filter((c) => c.status === 'pendente').length
-  const troc = (trocas ?? []).filter((t) => t.status === 'pendente').length
+  const troc = (trocas ?? []).filter((t) => t.status === 'pendente' && !!t.aceito_em).length
   return { escala, candidaturas: cand, trocas: troc, total: escala + cand + troc }
 }

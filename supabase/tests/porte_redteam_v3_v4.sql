@@ -82,23 +82,30 @@ BEGIN
   RAISE NOTICE 'OK  V4: sem config, passagem exige aprovação (não aplica automaticamente)';
 END $$;
 
--- opt-out explícito valor=false ainda aplica
+-- opt-out explícito valor=false: sem o gestor, mas com o aceite do colega
+-- (20270208000006, A4: o plantão não é empurrado sem o colega aceitar)
 INSERT INTO public.configuracoes_unidade (unidade_id, chave, valor)
 VALUES ('21000000-0000-4000-8000-000000000001','escala_passagem_exige_aprovacao','false');
 DO $$
-DECLARE v_depois uuid; v_shift uuid;
+DECLARE v_depois uuid; v_shift uuid; v_solic uuid;
 BEGIN
   SELECT id INTO v_shift FROM public.escala_plantao
    WHERE perfil_id='10000000-0000-4000-8000-000000000002'
      AND unidade_id='21000000-0000-4000-8000-000000000001' AND ativo
    ORDER BY data, turno OFFSET 1 LIMIT 1;
   IF v_shift IS NULL THEN RAISE EXCEPTION 'setup: segundo plantão não encontrado'; END IF;
-  PERFORM public.passar_plantao(v_shift,'10000000-0000-4000-8000-0000000000bb','t2');
+  v_solic := public.passar_plantao(v_shift,'10000000-0000-4000-8000-0000000000bb','t2');
+  IF (SELECT perfil_id FROM public.escala_plantao WHERE id=v_shift) <> '10000000-0000-4000-8000-000000000002' THEN
+    RAISE EXCEPTION 'FALHOU V4: opt-out aplicou antes do aceite do colega';
+  END IF;
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('sub','10000000-0000-4000-8000-0000000000bb','role','authenticated')::text, true);
+  PERFORM public.aceitar_passagem(v_solic);
   SELECT perfil_id INTO v_depois FROM public.escala_plantao WHERE id=v_shift;
   IF v_depois <> '10000000-0000-4000-8000-0000000000bb' THEN
-    RAISE EXCEPTION 'FALHOU V4: opt-out explícito (false) deveria aplicar';
+    RAISE EXCEPTION 'FALHOU V4: opt-out explícito (false) deveria aplicar com o aceite';
   END IF;
-  RAISE NOTICE 'OK  V4: opt-out explícito (valor=false) aplica a passagem';
+  RAISE NOTICE 'OK  V4: opt-out explícito (valor=false) aplica a passagem com o aceite do colega';
 END $$;
 
 ROLLBACK;
