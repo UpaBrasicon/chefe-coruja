@@ -313,14 +313,8 @@ export default function Escala({
   const candidatar = useMutation({
     mutationFn: async (cel: { setor_id: string; data: string; turno: string }) => {
       if (!unidadeId || !perfil) return
-      const { error } = await supabase.from('candidaturas_escala').insert({
-        unidade_id: unidadeId,
-        setor_id: cel.setor_id,
-        data: cel.data,
-        turno: cel.turno,
-        perfil_id: perfil.id,
-        criado_por: perfil.id,
-      })
+      // M8: pela RPC, com as conferências de data, conflito e faixa livre
+      const { error } = await supabase.rpc('candidatar_faixa', { p_setor: cel.setor_id, p_data: cel.data, p_turno: cel.turno })
       if (error) throw error
     },
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['candidaturas-escala'] }),
