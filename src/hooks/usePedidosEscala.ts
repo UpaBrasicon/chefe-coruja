@@ -54,9 +54,41 @@ export function useCandidaturasEscala(unidadeId: string | undefined, habilitado:
   })
 }
 
+type PlantaoDaTroca = { setor_id: string; data: string; turno: string } | null
+
+export type TrocaComExtra = {
+  id: string
+  status: string
+  mensagem: string | null
+  created_at: string
+  plantao_a: PlantaoDaTroca
+  plantao_b: PlantaoDaTroca
+  pedinte: { nome_completo: string } | null
+  colega: { nome_completo: string } | null
+}
+
+/** Trocas da unidade para o gestor decidir (A2: a troca só entra na escala com o gestor). */
+export function useTrocasEscala(unidadeId: string | undefined, habilitado: boolean) {
+  return useQuery({
+    queryKey: ['trocas-escala', unidadeId],
+    enabled: !!unidadeId && habilitado,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('trocas_plantao')
+        .select('id, status, mensagem, created_at, plantao_a:escala_plantao!trocas_plantao_plantao_a_id_fkey(setor_id, data, turno), plantao_b:escala_plantao!trocas_plantao_plantao_b_id_fkey(setor_id, data, turno), pedinte:perfis!trocas_plantao_perfil_a_id_fkey(nome_completo), colega:perfis!trocas_plantao_perfil_b_id_fkey(nome_completo)')
+        .eq('unidade_id', unidadeId!)
+        .order('created_at', { ascending: false })
+        .limit(100)
+      if (error) throw error
+      return (data ?? []) as unknown as TrocaComExtra[]
+    },
+  })
+}
+
 /** Quantos pedidos esperam a decisão do gestor. */
-export function contarPedidos(solicitacoes: SolicitacaoComExtra[] | undefined, candidaturas: CandidaturaComExtra[] | undefined) {
+export function contarPedidos(solicitacoes: SolicitacaoComExtra[] | undefined, candidaturas: CandidaturaComExtra[] | undefined, trocas?: TrocaComExtra[]) {
   const escala = (solicitacoes ?? []).filter((s) => s.status === 'pendente').length
   const cand = (candidaturas ?? []).filter((c) => c.status === 'pendente').length
-  return { escala, candidaturas: cand, total: escala + cand }
+  const troc = (trocas ?? []).filter((t) => t.status === 'pendente').length
+  return { escala, candidaturas: cand, trocas: troc, total: escala + cand + troc }
 }
