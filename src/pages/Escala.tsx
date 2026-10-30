@@ -1745,10 +1745,11 @@ export default function Escala({
               ) : (resumoCarga ?? []).length === 0 ? (
                 <p className="px-4 py-4 text-apoio text-tinta-sussurro">Nenhum plantão neste mês.</p>
               ) : (
-                <Table aria-label="Carga horária por plantonista">
+                <Table aria-label="Carga horária por profissional">
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
-                      <TableHead className="pl-4">Plantonista</TableHead>
+                      <TableHead className="pl-4">Profissional</TableHead>
+                      <TableHead>Categoria</TableHead>
                       <TableHead className="text-right">Diurnos</TableHead>
                       <TableHead className="text-right">Noturnos</TableHead>
                       <TableHead className="text-right">Horas</TableHead>
@@ -1759,6 +1760,8 @@ export default function Escala({
                     {(resumoCarga ?? []).map((r) => (
                       <TableRow key={r.perfil_id}>
                         <TableCell className="pl-4 font-medium text-tinta">{r.nome}</TableCell>
+                        {/* M13: a categoria de cada um (antes todos sob "Plantonista") */}
+                        <TableCell className="text-tinta-sussurro">{(r.categorias ?? '').split(', ').filter(Boolean).map((c) => PAPEL_LABEL[c as Papel] ?? c).join(', ')}</TableCell>
                         <TableCell className="text-right tabular">{r.diurnos}</TableCell>
                         <TableCell className="text-right tabular">{r.noturnos}</TableCell>
                         <TableCell className="text-right font-semibold tabular">{r.horas} h</TableCell>
@@ -1768,7 +1771,7 @@ export default function Escala({
                   </TableBody>
                 </Table>
               )}
-              <p className="border-t border-trilha bg-campo px-4 py-2 text-rotulo text-tinta-sussurro">Diurnos, noturnos e horas por plantonista no mês, contados da escala.</p>
+              <p className="border-t border-trilha bg-campo px-4 py-2 text-rotulo text-tinta-sussurro">Diurnos, noturnos e horas por profissional no mês, contados da escala; as horas são as dos plantões (manhã e tarde, 6 h; noite, 12 h).</p>
             </section>
           )}
 

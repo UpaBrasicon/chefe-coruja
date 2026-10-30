@@ -12870,6 +12870,7 @@ export type Database = {
       resumo_carga_plantonistas: {
         Args: { p_fim: string; p_inicio: string; p_unidade: string }
         Returns: {
+          categorias: string | null
           dias: number
           diurnos: number
           horas: number
