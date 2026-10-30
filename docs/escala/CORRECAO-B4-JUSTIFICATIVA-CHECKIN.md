@@ -37,4 +37,4 @@ enfermeira E2E, escalada agora, faz check-in sem GPS com "Trânsito" → aceito 
 
 ## Produção
 
-Nada aplicado. Ordem: "ok produção" do RT → migration pelo SQL, versão registrada → merge (sem tela).
+Migration `20270208000012` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 30/10/2026, com o "ok produção" do RT, pela sessão principal; versão registrada e conferida (gatilhos e grants: RPCs com execute para `authenticated`, não para `anon`). PR #367 mesclado em 30/10/2026, com o arquivo da migration idêntico ao aplicado. Concluído.

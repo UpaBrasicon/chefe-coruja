@@ -38,4 +38,4 @@ troca de 10/11 com 09/11 → criada.
 
 ## Produção
 
-Nada aplicado. Ordem: "ok produção" do RT → migration pelo SQL, versão registrada → merge (publica a tela).
+Migration `20270208000013` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 30/10/2026, com o "ok produção" do RT, pela sessão principal; versão registrada e conferida (gatilhos e grants: RPCs com execute para `authenticated`, não para `anon`). PR #368 mesclado em 30/10/2026 (publica a tela), com o arquivo da migration idêntico ao aplicado. Concluído.
