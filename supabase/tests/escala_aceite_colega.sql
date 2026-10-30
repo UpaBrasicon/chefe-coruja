@@ -177,6 +177,17 @@ SELECT pg_temp.como('med2');
 SELECT pg_temp.ok(public.aceitar_troca(pg_temp.id('t3')) = 'aplicada' AND pg_temp.dono('q2') = pg_temp.id('med2') AND pg_temp.dono('q3') = pg_temp.id('med'),
   'sem aprovação: o aceite do colega aplica a troca');
 
+-- ── 5. a inserção direta pela API não traz aceite nem decisão ─────────────
+SELECT pg_temp.como('med');
+WITH x AS (
+  INSERT INTO public.solicitacoes_escala (unidade_id, escala_plantao_id, perfil_id, tipo, status, destino_perfil_id, aceito_em, decidido_por, criado_por)
+  VALUES (pg_temp.id('uni'), pg_temp.id('p3'), pg_temp.id('med'), 'passar_plantao', 'aprovado', pg_temp.id('med3'), now(), pg_temp.id('med'), pg_temp.id('med'))
+  RETURNING id)
+INSERT INTO t SELECT 's6', id::text FROM x;
+SELECT pg_temp.ok(pg_temp.status_s('s6') = 'pendente'
+                  AND (SELECT aceito_em IS NULL AND decidido_por IS NULL FROM public.solicitacoes_escala WHERE id = pg_temp.id('s6')),
+  'A4: inserção direta forjando aceite e aprovação nasce pendente, sem aceite');
+
 RESET ROLE;
 SELECT count(*) AS testes FROM resultado;
 ROLLBACK;
