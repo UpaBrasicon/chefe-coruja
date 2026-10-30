@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
-import type { CandidaturaEscala, SolicitacaoEscala } from '@/types/database'
+import type { CandidaturaEscala, Papel, SolicitacaoEscala } from '@/types/database'
 
 // Pedidos da escala (revisão visual 3.9): solicitações (sair do fixo, passar
 // plantão, justificar falta) e candidaturas a plantões livres. As mesmas
@@ -10,7 +10,7 @@ import type { CandidaturaEscala, SolicitacaoEscala } from '@/types/database'
 // moram aqui, com a mesma chave e o mesmo select em todos os lugares.
 
 export type SolicitacaoComExtra = SolicitacaoEscala & {
-  escala_plantao: { setor_id: string; data: string; turno: string } | null
+  escala_plantao: { setor_id: string; data: string; turno: string; papel: Papel | null } | null
   solicitante: { nome_completo: string } | null
   destino: { nome_completo: string } | null
 }
@@ -27,7 +27,7 @@ export function useSolicitacoesEscala(unidadeId: string | undefined, habilitado:
     queryFn: async () => {
       const { data, error } = await supabase
         .from('solicitacoes_escala')
-        .select('*, escala_plantao(setor_id, data, turno), solicitante:perfis!solicitacoes_escala_perfil_id_fkey(nome_completo), destino:perfis!solicitacoes_escala_destino_perfil_id_fkey(nome_completo)')
+        .select('*, escala_plantao(setor_id, data, turno, papel), solicitante:perfis!solicitacoes_escala_perfil_id_fkey(nome_completo), destino:perfis!solicitacoes_escala_destino_perfil_id_fkey(nome_completo)')
         .eq('unidade_id', unidadeId!)
         .order('created_at', { ascending: false })
         .limit(100)
