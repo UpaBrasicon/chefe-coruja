@@ -3,9 +3,9 @@
 Plano da tarefa, no formato do "Plano de Trabalho — comando por tarefa" do
 `BACKLOG.md`. O RT pediu em 29/10/2026: "Começar 6 a 8".
 
-**Estado (29/10/2026):** o RT aprovou o plano como recomendado (seção 14).
-A implementação está no PR #346 (branch `fix/leito-resumo-abas`), publicada
-na homologação e aguardando a conferência do RT. Não há banco: o merge publica.
+**Estado (30/10/2026): em produção.** O RT aprovou o plano como recomendado
+(seção 14). A implementação (PR #346) foi juntada ao master em 29/10/2026 e
+publicada pela Vercel; o RT conferiu em 30/10/2026. Não há banco.
 
 ```
 Vamos trabalhar a tarefa: pontos 6 a 8, Resumo do leito em abas, os três botões juntos e sem a aba Classificação.
@@ -213,3 +213,9 @@ Implementação (PR #346):
 
 Checagens: `tsc -b`, eslint e `padrao-frontend --ci` ok; `src/lib` 194/194;
 `test:clinico` 1102/1102.
+
+## 15. Produção
+
+- 29/10/2026: PR #346 juntado ao master; a Vercel publicou (status
+  `chefe-coruja: success`). Sem migration.
+- 30/10/2026: o RT respondeu "Conferido".
