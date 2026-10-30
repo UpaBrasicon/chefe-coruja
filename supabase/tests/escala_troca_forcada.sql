@@ -102,8 +102,9 @@ WITH x AS (
 INSERT INTO t SELECT 'forjada', id::text FROM x;
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('med');
+-- desde a 20270208000005 (A2), o colega nem aprova: para no "só o gestor"
 SELECT pg_temp.falha(format('SELECT public.aprovar_troca(%L)', pg_temp.id('forjada')),
-  'A troca não confere com a escala', 'C1: troca gravada fora da RPC (dono falso) não se aplica com aprovar_troca');
+  'Só o gestor da unidade aprova a troca', 'C1: troca gravada fora da RPC (dono falso) não se aplica com aprovar_troca');
 SELECT pg_temp.como('gest');
 SELECT pg_temp.falha(format('SELECT public.aprovar_troca(%L)', pg_temp.id('forjada')),
   'A troca não confere com a escala', 'C1: nem o gestor aplica a troca com dono falso');
@@ -116,7 +117,7 @@ INSERT INTO t SELECT 'troca', public.solicitar_troca(pg_temp.id('pMed'), pg_temp
 SELECT pg_temp.ok((SELECT status FROM public.trocas_plantao WHERE id = pg_temp.id('troca')) = 'pendente',
   'pedir a troca pela RPC continua valendo (pendente)');
 SELECT pg_temp.falha(format('SELECT public.aprovar_troca(%L)', pg_temp.id('troca')),
-  'Acesso negado', 'quem pediu não aprova a própria troca');
+  'Só o gestor da unidade aprova a troca', 'quem pediu não aprova a própria troca');
 
 -- quem recebe não reescreve a troca (apontar outro plantão, reabrir)
 SELECT pg_temp.como('med2');
