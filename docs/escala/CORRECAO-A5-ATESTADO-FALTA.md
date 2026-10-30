@@ -67,4 +67,4 @@ A tela da homologação fica atrás do login do Vercel; a URL assinada não foi 
 
 ## Produção
 
-Nada aplicado. Ordem: "ok produção" do RT → migration pelo SQL, versão registrada → merge (publica a tela).
+Migration `20270208000004` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 29/10/2026, com o "ok produção" do RT, pela sessão principal; versão registrada e conferida. Conferido: `atendimento_justificativa_upload`, `atendimento_justificativa_read` e `atendimento_justificativa_sigilo` (restritiva). PR #351 mesclado (tela). Concluído.
