@@ -101,4 +101,4 @@ Migration `20270208000002` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 29
 do RT, pelo SQL e com a versão registrada em `supabase_migrations.schema_migrations`. Conferido depois:
 gatilho `trg_passagem_aprovada` em `solicitacoes_escala`; `private.passagem_aprovada` igual à da
 homologação (md5 069a931a…). A tela de hoje já aplica a passagem ao aprovar.
-Falta o merge do PR (publica a tela pela Vercel).
+PR #349 mesclado pelo RT em 29/10/2026. Concluído.

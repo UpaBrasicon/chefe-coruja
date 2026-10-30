@@ -94,4 +94,4 @@ Migration `20270208000001` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 29
 do RT, pelo SQL e com a versão registrada em `supabase_migrations.schema_migrations`. Conferido depois:
 políticas `hermes_job_select` e `trocas_select`; `authenticated` só com SELECT em `trocas_plantao`;
 `aplicar_troca` com a conferência dos donos, corpo igual ao da homologação (md5 84e1c932…), ACL padrão.
-Falta o merge do PR (não muda tela).
+PR #348 mesclado pelo RT em 29/10/2026. Concluído.
