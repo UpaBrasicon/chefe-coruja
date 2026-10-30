@@ -5,7 +5,10 @@
 -- a enfermeira, o técnico e os outros ("Esta vaga é de plantonista").
 --
 -- Correção: vagas_abertas usa a mesma regra (sem categoria = plantonista).
--- Corpo de 20270202000003; muda só o filtro da categoria. Mesma assinatura e
+-- B2 (baixo, mesma função): a lista não mostra a vaga numa faixa em que a
+-- pessoa já está escalada, em qualquer setor (a candidatura recusaria com
+-- "Você já tem plantão nesse horário").
+-- Corpo de 20270202000003; mudam só os filtros da categoria e do horário. Mesma assinatura e
 -- mesmo retorno (CREATE OR REPLACE, as permissões ficam). Idempotente.
 -- Teste: supabase/tests/escala_vaga_sem_categoria.sql
 --
@@ -44,6 +47,10 @@ AS $function$
                   WHERE vi.perfil_id = private.meu_perfil_id() AND vi.unidade_id = v.unidade_id
                     AND vi.ativo AND vi.papel = coalesce(v.papel, 'plantonista'))
      AND j.fim > now()
+     -- B2: não mostra a vaga numa faixa em que eu já estou escalado (a candidatura recusaria)
+     AND NOT EXISTS (SELECT 1 FROM public.escala_plantao me
+                      WHERE me.perfil_id = private.meu_perfil_id() AND me.ativo
+                        AND me.inicio < j.fim AND me.inicio + make_interval(mins => me.duracao_min) > j.ini)
      -- a faixa marcada que já tem alguém da categoria escalado não é mais vaga
      AND (v.plantao_origem_id IS NOT NULL
           OR NOT EXISTS (SELECT 1 FROM public.escala_plantao e
