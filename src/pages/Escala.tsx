@@ -31,6 +31,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Abas, Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { BUCKET_JUSTIFICATIVA, caminhoDoAnexo, caminhoNovoAnexo } from '@/lib/anexoJustificativa'
+import { PedidosParaVoce } from '@/components/escala/PedidosParaVoce'
 import { dataHora, hora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
@@ -276,13 +277,13 @@ export default function Escala({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('trocas_plantao')
-        .select('id, status, mensagem, erro, created_at, plantao_a_id, plantao_b_id, perfil_b_id')
+        .select('id, status, mensagem, erro, created_at, plantao_a_id, plantao_b_id, perfil_b_id, aceito_em')
         .or(`perfil_a_id.eq.${perfil!.id},perfil_b_id.eq.${perfil!.id}`)
         .eq('unidade_id', unidadeId!)
         .order('created_at', { ascending: false })
         .limit(30)
       if (error) throw error
-      return (data ?? []) as { id: string; status: string; mensagem: string | null; erro: string | null; created_at: string; plantao_a_id: string; plantao_b_id: string; perfil_b_id: string }[]
+      return (data ?? []) as { id: string; status: string; mensagem: string | null; erro: string | null; created_at: string; plantao_a_id: string; plantao_b_id: string; perfil_b_id: string; aceito_em: string | null }[]
     },
   })
 
@@ -313,14 +314,8 @@ export default function Escala({
   const candidatar = useMutation({
     mutationFn: async (cel: { setor_id: string; data: string; turno: string }) => {
       if (!unidadeId || !perfil) return
-      const { error } = await supabase.from('candidaturas_escala').insert({
-        unidade_id: unidadeId,
-        setor_id: cel.setor_id,
-        data: cel.data,
-        turno: cel.turno,
-        perfil_id: perfil.id,
-        criado_por: perfil.id,
-      })
+      // M8: pela RPC, com as conferências de data, conflito e faixa livre
+      const { error } = await supabase.rpc('candidatar_faixa', { p_setor: cel.setor_id, p_data: cel.data, p_turno: cel.turno })
       if (error) throw error
     },
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['candidaturas-escala'] }),
@@ -746,7 +741,7 @@ export default function Escala({
       if (error) throw error
       invalidar()
       // passar_plantao devolve o id do plantão quando passa na hora e o do pedido quando espera o gestor
-      setMensagem(data === escalaId ? 'Plantão passado com sucesso.' : 'Passagem pedida. O plantão continua com você até o gestor aprovar.')
+      setMensagem(data === escalaId ? 'Plantão passado com sucesso.' : 'Passagem pedida. O colega precisa aceitar e a coordenação aprovar; até lá o plantão continua com você.')
       setJustificativa('')
       setDestinoId('')
     } catch (e) {
@@ -767,7 +762,7 @@ export default function Escala({
       if (error) throw error
       invalidar()
       void refetchTrocas()
-      setMensagem('Troca solicitada. Se a aprovação automática estiver habilitada, foi aplicada na hora.')
+      setMensagem('Troca pedida. O colega precisa aceitar e a coordenação aprovar.')
       setMeuPlantaoTroca('')
       setOutroPlantaoTroca('')
       setJustificativa('')
@@ -1142,8 +1137,8 @@ export default function Escala({
                         />
                       </div>
                       <p className="mt-2 text-rotulo text-tinta-sussurro">
-                        A passagem pode ser aplicada na hora ou depender de aprovação do gestor (conforme
-                        configuração da unidade). A pessoa que recebe o plantão será notificada.
+                        A pessoa que recebe é avisada e precisa aceitar; depois a coordenação aprova (na
+                        unidade sem aprovação do gestor, o aceite já vale). Até lá o plantão continua com você.
                       </p>
                       {erroAcao && <p className="mt-2 text-apoio text-critico">{erroAcao}</p>}
                       {mensagem && <p className="mt-2 text-apoio text-conforme">{mensagem}</p>}
@@ -1272,6 +1267,9 @@ export default function Escala({
             </CardContent>
           </Card>
 
+          {/* A4: passagens e trocas que pedem o meu aceite */}
+          <PedidosParaVoce unidadeId={unidadeId} />
+
           {/* TROCAS BILATERAIS */}
           {(minhasTrocas ?? []).length > 0 && (
             <Card>
@@ -1306,24 +1304,25 @@ export default function Escala({
                     {t.status === 'erro' && t.erro && (
                       <span className="text-rotulo text-critico">{t.erro}</span>
                     )}
-                    {/* A2: quem aprova a troca é o gestor, na aba Pedidos; o colega pode recusar */}
+                    {/* A2/A4: o colega aceita (em Pedidos para você), depois o gestor aprova; quem pediu cancela */}
                     {t.status === 'pendente' && t.perfil_b_id !== perfil?.id && (
-                      <span className="text-rotulo text-tinta-sussurro">Aguardando a coordenação</span>
-                    )}
-                    {t.status === 'pendente' && t.perfil_b_id === perfil?.id && (
                       <div className="flex items-center gap-2">
-                        <span className="text-rotulo text-tinta-sussurro">A coordenação decide.</span>
+                        <span className="text-rotulo text-tinta-sussurro">{t.aceito_em ? 'Aceita pelo colega; falta a coordenação' : 'Esperando o colega aceitar'}</span>
                         <Button
                           size="xs"
                           variant="ghost"
                           onClick={async () => {
-                            await supabase.rpc('recusar_troca', { p_troca: t.id })
+                            const { error } = await supabase.rpc('cancelar_troca', { p_troca: t.id })
+                            setErroAcao(error ? error.message : null)
                             void refetchTrocas()
                           }}
                         >
-                          <X /> Recusar
+                          <X /> Cancelar
                         </Button>
                       </div>
+                    )}
+                    {t.status === 'pendente' && t.perfil_b_id === perfil?.id && (
+                      <span className="text-rotulo text-tinta-sussurro">{t.aceito_em ? 'Você aceitou; a coordenação decide.' : 'Responda em Pedidos para você.'}</span>
                     )}
                   </div>
                 ))}
@@ -1655,10 +1654,15 @@ export default function Escala({
                             {s.anexo_url && <> · <Button type="button" variant="link" size="xs" className="h-auto min-h-0 p-0 align-baseline text-rotulo font-medium" onClick={() => void abrirAnexo(s.anexo_url!)}>ver anexo</Button></>}
                           </span>
                         </span>
-                        <span className="flex gap-1.5">
-                          <Button size="xs" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'aprovado' })}>Aprovar</Button>
-                          <Button size="xs" variant="ghost" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'recusado' })}>Recusar</Button>
-                        </span>
+                        {/* A4: a passagem só chega ao gestor depois do aceite do colega */}
+                        {s.tipo === 'passar_plantao' && !s.aceito_em ? (
+                          <span className="text-rotulo text-tinta-sussurro">Esperando o colega aceitar</span>
+                        ) : (
+                          <span className="flex gap-1.5">
+                            <Button size="xs" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'aprovado' })}>Aprovar</Button>
+                            <Button size="xs" variant="ghost" disabled={decidir.isPending} onClick={() => decidir.mutate({ id: s.id, status: 'recusado' })}>Recusar</Button>
+                          </span>
+                        )}
                       </li>
                     ))}
                     {/* A2: a troca só entra na escala com o gestor */}
@@ -1673,10 +1677,14 @@ export default function Escala({
                             {t.mensagem && ` · ${t.mensagem}`}
                           </span>
                         </span>
-                        <span className="flex gap-1.5">
-                          <Button size="xs" disabled={decidirTroca.isPending} onClick={() => decidirTroca.mutate({ id: t.id, aprovar: true })}>Aprovar</Button>
-                          <Button size="xs" variant="ghost" disabled={decidirTroca.isPending} onClick={() => decidirTroca.mutate({ id: t.id, aprovar: false })}>Recusar</Button>
-                        </span>
+                        {!t.aceito_em ? (
+                          <span className="text-rotulo text-tinta-sussurro">Esperando o colega aceitar</span>
+                        ) : (
+                          <span className="flex gap-1.5">
+                            <Button size="xs" disabled={decidirTroca.isPending} onClick={() => decidirTroca.mutate({ id: t.id, aprovar: true })}>Aprovar</Button>
+                            <Button size="xs" variant="ghost" disabled={decidirTroca.isPending} onClick={() => decidirTroca.mutate({ id: t.id, aprovar: false })}>Recusar</Button>
+                          </span>
+                        )}
                       </li>
                     ))}
                     {(candidaturas ?? []).filter((c) => c.status === 'pendente').map((c) => (
@@ -1746,10 +1754,11 @@ export default function Escala({
               ) : (resumoCarga ?? []).length === 0 ? (
                 <p className="px-4 py-4 text-apoio text-tinta-sussurro">Nenhum plantão neste mês.</p>
               ) : (
-                <Table aria-label="Carga horária por plantonista">
+                <Table aria-label="Carga horária por profissional">
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
-                      <TableHead className="pl-4">Plantonista</TableHead>
+                      <TableHead className="pl-4">Profissional</TableHead>
+                      <TableHead>Categoria</TableHead>
                       <TableHead className="text-right">Diurnos</TableHead>
                       <TableHead className="text-right">Noturnos</TableHead>
                       <TableHead className="text-right">Horas</TableHead>
@@ -1760,6 +1769,8 @@ export default function Escala({
                     {(resumoCarga ?? []).map((r) => (
                       <TableRow key={r.perfil_id}>
                         <TableCell className="pl-4 font-medium text-tinta">{r.nome}</TableCell>
+                        {/* M13: a categoria de cada um (antes todos sob "Plantonista") */}
+                        <TableCell className="text-tinta-sussurro">{(r.categorias ?? '').split(', ').filter(Boolean).map((c) => PAPEL_LABEL[c as Papel] ?? c).join(', ')}</TableCell>
                         <TableCell className="text-right tabular">{r.diurnos}</TableCell>
                         <TableCell className="text-right tabular">{r.noturnos}</TableCell>
                         <TableCell className="text-right font-semibold tabular">{r.horas} h</TableCell>
@@ -1769,7 +1780,7 @@ export default function Escala({
                   </TableBody>
                 </Table>
               )}
-              <p className="border-t border-trilha bg-campo px-4 py-2 text-rotulo text-tinta-sussurro">Diurnos, noturnos e horas por plantonista no mês, contados da escala.</p>
+              <p className="border-t border-trilha bg-campo px-4 py-2 text-rotulo text-tinta-sussurro">Diurnos, noturnos e horas por profissional no mês, contados da escala; as horas são as dos plantões (manhã e tarde, 6 h; noite, 12 h).</p>
             </section>
           )}
 
