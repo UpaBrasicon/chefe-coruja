@@ -10624,6 +10624,10 @@ export type Database = {
         Returns: undefined
       }
       cancelar_unificacao: { Args: { p_pedido: string }; Returns: undefined }
+      candidatar_faixa: {
+        Args: { p_data: string; p_setor: string; p_turno: string }
+        Returns: string
+      }
       candidatar_vaga: { Args: { p_vaga: string }; Returns: string }
       candidatos_duplicados: { Args: { p_unidade: string }; Returns: Json }
       censo_recente: {
