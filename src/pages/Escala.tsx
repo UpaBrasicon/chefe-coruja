@@ -1629,7 +1629,7 @@ export default function Escala({
                             {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
                             {s.tipo_falta && ` · ${TIPO_FALTA_LABEL[s.tipo_falta]}`}
                             {s.justificativa && ` · ${s.justificativa}`}
-                            {s.anexo_url && <> · <button type="button" onClick={() => void abrirAnexo(s.anexo_url!)} className="font-medium text-acao hover:underline">ver anexo</button></>}
+                            {s.anexo_url && <> · <Button type="button" variant="link" size="xs" className="h-auto min-h-0 p-0 align-baseline text-rotulo font-medium" onClick={() => void abrirAnexo(s.anexo_url!)}>ver anexo</Button></>}
                           </span>
                         </span>
                         <span className="flex gap-1.5">
