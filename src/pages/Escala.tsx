@@ -1487,6 +1487,10 @@ export default function Escala({
                       </div>
                     ))}
                   </div>
+                  {/* M10: o erro da candidatura aparece (antes falhava calado) */}
+                  {candidatar.error && (
+                    <p role="alert" className="mt-2 text-apoio text-critico">{candidatar.error.message}</p>
+                  )}
 
                   {/* Minhas candidaturas */}
                   <div className="mt-4 flex flex-col gap-2">
@@ -1626,6 +1630,10 @@ export default function Escala({
                 </div>
                 {decidir.error && (
                   <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{decidir.error.message}</p>
+                )}
+                {/* M10: erro de aprovar ou recusar candidatura visível */}
+                {(aprovarCandidatura.error ?? recusarCandidatura.error) && (
+                  <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{(aprovarCandidatura.error ?? recusarCandidatura.error)?.message}</p>
                 )}
                 {decidirTroca.error && (
                   <p role="alert" className="border-b border-trilha px-4 py-2 text-apoio text-critico">{decidirTroca.error.message}</p>
@@ -2075,6 +2083,10 @@ export default function Escala({
               Escala quinzenal (15/15)
             </label>
           </div>
+          {/* M10: o erro de escalar aparece (antes o clique não fazia nada) */}
+          {(abaGestor === 'fixa' ? adicionarFixa.error : adicionar.error) && (
+            <p role="alert" className="text-apoio text-critico">{(abaGestor === 'fixa' ? adicionarFixa.error : adicionar.error)?.message}</p>
+          )}
 
           <DialogFooter>
             <Button variant="ghost" onClick={() => setDialogAberto(false)}>
