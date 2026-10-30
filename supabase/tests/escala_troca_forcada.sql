@@ -96,8 +96,9 @@ SELECT pg_temp.falha(format(
 -- ── 2. a troca forjada não se aplica ───────────────────────────────────────
 RESET ROLE;
 WITH x AS (
-  INSERT INTO public.trocas_plantao (unidade_id, plantao_a_id, perfil_a_id, plantao_b_id, perfil_b_id, criado_por)
-  VALUES (pg_temp.id('uni'), pg_temp.id('pMed2'), pg_temp.id('med'), pg_temp.id('pMed'), pg_temp.id('med'), pg_temp.id('med'))
+  -- forjada já "aceita" (20270208000006), para chegar à conferência dos donos
+  INSERT INTO public.trocas_plantao (unidade_id, plantao_a_id, perfil_a_id, plantao_b_id, perfil_b_id, criado_por, aceito_em)
+  VALUES (pg_temp.id('uni'), pg_temp.id('pMed2'), pg_temp.id('med'), pg_temp.id('pMed'), pg_temp.id('med'), pg_temp.id('med'), now())
   RETURNING id)
 INSERT INTO t SELECT 'forjada', id::text FROM x;
 SET LOCAL ROLE authenticated;
@@ -126,6 +127,8 @@ SELECT pg_temp.falha(format('UPDATE public.trocas_plantao SET plantao_a_id = %L 
 SELECT pg_temp.falha(format('UPDATE public.trocas_plantao SET status = %L WHERE id = %L', 'aprovado', pg_temp.id('troca')),
   'permission denied', 'quem recebe não aprova por update direto (sem aplicar)');
 
+-- o colega aceita (20270208000006) e o gestor aprova
+SELECT public.aceitar_troca(pg_temp.id('troca'));
 SELECT pg_temp.como('gest');
 SELECT public.aprovar_troca(pg_temp.id('troca'));
 SELECT pg_temp.ok(pg_temp.dono('pMed') = pg_temp.id('med2') AND pg_temp.dono('pMed2') = pg_temp.id('med'),
@@ -134,6 +137,8 @@ SELECT pg_temp.ok(pg_temp.dono('pMed') = pg_temp.id('med2') AND pg_temp.dono('pM
 -- ── 4. o plantão mudou de dono depois do pedido: a troca não se aplica ────
 SELECT pg_temp.como('med2');
 INSERT INTO t SELECT 'troca2', public.solicitar_troca(pg_temp.id('pOut'), pg_temp.id('pMed2'), NULL)::text;
+SELECT pg_temp.como('med');
+SELECT public.aceitar_troca(pg_temp.id('troca2'));
 RESET ROLE;
 UPDATE public.escala_plantao SET perfil_id = pg_temp.id('med3') WHERE id = pg_temp.id('pOut');
 SET LOCAL ROLE authenticated;

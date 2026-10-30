@@ -9043,6 +9043,7 @@ export type Database = {
       }
       solicitacoes_escala: {
         Row: {
+          aceito_em: string | null
           anexo_url: string | null
           created_at: string
           criado_por: string | null
@@ -9059,6 +9060,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          aceito_em?: string | null
           anexo_url?: string | null
           created_at?: string
           criado_por?: string | null
@@ -9075,6 +9077,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          aceito_em?: string | null
           anexo_url?: string | null
           created_at?: string
           criado_por?: string | null
@@ -9565,6 +9568,7 @@ export type Database = {
       }
       trocas_plantao: {
         Row: {
+          aceito_em: string | null
           created_at: string
           criado_por: string | null
           decidido_por: string | null
@@ -9580,6 +9584,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          aceito_em?: string | null
           created_at?: string
           criado_por?: string | null
           decidido_por?: string | null
@@ -9595,6 +9600,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          aceito_em?: string | null
           created_at?: string
           criado_por?: string | null
           decidido_por?: string | null
@@ -10215,6 +10221,24 @@ export type Database = {
         Returns: undefined
       }
       aprovar_candidatura: { Args: { p_candidatura: string }; Returns: string }
+      aceitar_passagem: { Args: { p_solicitacao: string }; Returns: string }
+      aceitar_troca: { Args: { p_troca: string }; Returns: string }
+      cancelar_pedido_escala: { Args: { p_solicitacao: string }; Returns: undefined }
+      cancelar_troca: { Args: { p_troca: string }; Returns: undefined }
+      pedidos_para_mim: {
+        Args: { p_unidade: string }
+        Returns: {
+          created_at: string
+          de_nome: string
+          entrego: string | null
+          id: string
+          mensagem: string | null
+          recebo: string
+          recebo_data: string
+          tipo: string
+        }[]
+      }
+      recusar_passagem: { Args: { p_motivo?: string; p_solicitacao: string }; Returns: undefined }
       aprovar_troca: { Args: { p_troca: string }; Returns: undefined }
       atendimento_aberto_do_paciente: {
         Args: { p_paciente: string }
@@ -10600,6 +10624,10 @@ export type Database = {
         Returns: undefined
       }
       cancelar_unificacao: { Args: { p_pedido: string }; Returns: undefined }
+      candidatar_faixa: {
+        Args: { p_data: string; p_setor: string; p_turno: string }
+        Returns: string
+      }
       candidatar_vaga: { Args: { p_vaga: string }; Returns: string }
       candidatos_duplicados: { Args: { p_unidade: string }; Returns: Json }
       censo_recente: {
