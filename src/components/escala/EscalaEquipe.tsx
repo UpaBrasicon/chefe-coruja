@@ -25,6 +25,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { ProximoPlantao } from '@/components/casca/ProximoPlantao'
 import { AcoesDoPlantao, SeuPlantao, SeusPedidos, VagasDoDia } from '@/components/escala/PedidosEscala'
+import { PedidosParaVoce } from '@/components/escala/PedidosParaVoce'
 import { type PlantaoEquipe, usePedidosDaEquipe } from '@/hooks/usePedidosDaEquipe'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -132,6 +133,7 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
           </div>
         )}
       </div>
+      <PedidosParaVoce unidadeId={unidadeId} />
       <section aria-label="Escala do mês" className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col border-fio md:border-r">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-trilha px-4 py-2.5">
@@ -210,7 +212,7 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
             ))}
             <SeusPedidos minhas={pedidos.minhas} trocas={pedidos.trocas} plantoes={plantoes} />
             <p className="mt-auto border-t border-trilha bg-campo px-4 py-2 text-rotulo text-pretty text-tinta-sussurro">
-              Vagas da sua categoria em âmbar no mês. Troca e passagem só dentro da categoria; a coordenação aprova.
+              Vagas da sua categoria em âmbar no mês. Troca e passagem só dentro da categoria; o colega aceita e a coordenação aprova.
             </p>
           </aside>
         )}
