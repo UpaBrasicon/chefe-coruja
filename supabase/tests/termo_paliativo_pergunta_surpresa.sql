@@ -50,13 +50,14 @@ SELECT public.definir_categoria_modelo_termo(pg_temp.u('m1'), 'cuidados_paliativ
 INSERT INTO t SELECT 'm1v2', public.salvar_modelo_termo('21000000-0000-4000-8000-000000000001', 'Cuidados paliativos — teste', 'Plano de cuidados paliativos',
   'Plano de cuidados de {paciente} ({idade}), decidido com o paciente ou o responsável, com os limites de tratamento combinados.', NULL, pg_temp.u('m1'));
 RESET ROLE;
+INSERT INTO t SELECT 'raiz', raiz_id::text FROM public.termos_modelos WHERE id = pg_temp.u('m1');
 DO $$
 BEGIN
-  IF (SELECT string_agg(versao || ':' || categoria, ',' ORDER BY versao) FROM public.termos_modelos WHERE raiz_id = pg_temp.u('m1'))
-     <> '1:cuidados_paliativos,2:cuidados_paliativos' THEN
-    RAISE EXCEPTION 'FALHOU: categoria das versões — %', (SELECT string_agg(versao || ':' || categoria, ',' ORDER BY versao) FROM public.termos_modelos WHERE raiz_id = pg_temp.u('m1'));
+  IF (SELECT string_agg(versao || ':' || categoria, ',' ORDER BY versao) FROM public.termos_modelos WHERE raiz_id = pg_temp.u('raiz'))
+     IS DISTINCT FROM '1:cuidados_paliativos,2:cuidados_paliativos' THEN
+    RAISE EXCEPTION 'FALHOU: categoria das versões — %', (SELECT string_agg(versao || ':' || categoria, ',' ORDER BY versao) FROM public.termos_modelos WHERE raiz_id = pg_temp.u('raiz'));
   END IF;
-  IF EXISTS (SELECT 1 FROM public.termos_modelos WHERE raiz_id <> pg_temp.u('m1') AND categoria <> 'consentimento') THEN
+  IF EXISTS (SELECT 1 FROM public.termos_modelos WHERE raiz_id <> pg_temp.u('raiz') AND categoria <> 'consentimento') THEN
     RAISE EXCEPTION 'FALHOU: modelo de antes saiu do consentimento';
   END IF;
   RAISE NOTICE 'OK  categoria vale para todas as versões, e a versão nova herda';
@@ -81,13 +82,13 @@ SELECT pg_temp.falha(format($q$SELECT public.registrar_avaliacao(%L, 'pergunta_s
 SELECT pg_temp.falha(format($q$SELECT public.registrar_avaliacao(%L, 'pergunta_surpresa', '{"surpreso":2}')$q$, pg_temp.u('pad')),
   'Resposta fora das opções', 'resposta fora das opções é recusada');
 SELECT pg_temp.falha(format($q$SELECT public.registrar_avaliacao(%L, 'braden', '{"percepcao":1,"umidade":1,"atividade":1,"mobilidade":1,"nutricao":1,"friccao":1}')$q$, pg_temp.u('pcr')),
-  'Braden é do adulto', 'Braden na criança continua recusada');
+  'Braden e Morse são escalas do adulto', 'Braden na criança continua recusada');
 RESET ROLE;
 DO $$
 DECLARE a public.avaliacoes_escala;
 BEGIN
   SELECT * INTO a FROM public.avaliacoes_escala WHERE id = pg_temp.u('av');
-  IF a.escala <> 'pergunta_surpresa' OR a.total <> 1 OR a.interpretacao NOT LIKE 'Positiva%' OR a.versao <> '2026-10-31.1' THEN
+  IF a.escala IS DISTINCT FROM 'pergunta_surpresa' OR a.total IS DISTINCT FROM 1 OR a.interpretacao NOT LIKE 'Positiva%' OR a.versao <> '2026-10-31.1' THEN
     RAISE EXCEPTION 'FALHOU: pergunta surpresa gravada — % % % %', a.escala, a.total, a.interpretacao, a.versao;
   END IF;
   RAISE NOTICE 'OK  pergunta surpresa positiva gravada no adulto, com a versão';
