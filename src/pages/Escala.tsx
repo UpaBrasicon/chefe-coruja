@@ -1002,6 +1002,9 @@ export default function Escala({
                         <strong>pelo menos 15 dias de antecedência</strong>. Faltam{' '}
                         <strong>{Math.max(0, diasPara(diaSelecionado))} dia(s)</strong> para este plantão.
                       </div>
+                      <p className="mt-2 text-apoio text-pretty text-tinta-sussurro">
+                        Vale para plantão da escala fixa. Aprovado, você sai da fixa nos próximos meses; os plantões já gerados ficam até a coordenação decidir cada um.
+                      </p>
                       <div className="mt-3 flex flex-col gap-1.5">
                         <Label htmlFor="sair-just">Justificativa (opcional)</Label>
                         <Textarea
@@ -1656,6 +1659,8 @@ export default function Escala({
                             {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
                             {s.tipo_falta && ` · ${TIPO_FALTA_LABEL[s.tipo_falta]}`}
                             {s.justificativa && ` · ${s.justificativa}`}
+                            {/* M2 (RT, 31/10/2026): aprovar a saída do fixo encerra a linha da fixa */}
+                            {s.tipo === 'sair_fixo' && ' · aprovar encerra a linha da fixa nos próximos meses; os plantões já gerados ficam'}
                             {s.anexo_url && <> · <Button type="button" variant="link" size="xs" className="h-auto min-h-0 p-0 align-baseline text-rotulo font-medium" onClick={() => void abrirAnexo(s.anexo_url!)}>ver anexo</Button></>}
                           </span>
                         </span>
