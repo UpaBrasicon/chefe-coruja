@@ -16,18 +16,3 @@ export function destinoEscala(papelAtivo: Papel | null): string | null {
   if (papelAtivo === 'plantonista') return '/agenda?aba=escala'
   return '/minha-escala'
 }
-
-/**
- * Abas "Minha escala" e "Escala da unidade" de `/agenda` (o menu só leva o
- * plantonista até lá). Outro papel ativo vai para a escala do papel dele.
- *
- * Teste em produção de 31/10/2026, achado 2: `Escala.tsx` trata como gestor
- * todo papel que não é `plantonista`, e a telemedicina via a grade de montagem
- * do gestor ao abrir `/agenda?aba=escala` pelo endereço.
- *
- * `null` = fica na Agenda.
- */
-export function destinoAgendaEscala(papelAtivo: Papel | null): string | null {
-  if (papelAtivo === 'plantonista') return null
-  return destinoEscala(papelAtivo) ?? '/escala'
-}

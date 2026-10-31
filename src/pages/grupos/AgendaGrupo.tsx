@@ -1,26 +1,16 @@
 import { lazy } from 'react'
-import { Navigate } from 'react-router-dom'
 import { CalendarClock } from 'lucide-react'
 
 import { TabsPagina, type AbaDef } from '@/components/TabsPagina'
-import { useUnidade } from '@/contexts/UnidadeContext'
-import { destinoAgendaEscala } from '@/lib/rotaEscala'
 
 const Escala = lazy(() => import('@/pages/Escala'))
 const MinhaAgenda = lazy(() => import('@/pages/MinhaAgenda'))
 const Vagas = lazy(() => import('@/pages/Vagas'))
 const Extrato = lazy(() => import('@/pages/Extrato'))
 
-/** A escala do plantonista; outro papel ativo vai para a escala dele (ver `destinoAgendaEscala`). */
-function EscalaDoPlantonista({ aba }: { aba: 'minha' | 'geral' }) {
-  const { papelAtivo } = useUnidade()
-  const destino = destinoAgendaEscala(papelAtivo)
-  return destino ? <Navigate to={destino} replace /> : <Escala embutido aba={aba} />
-}
-
 const ABAS: AbaDef[] = [
-  { valor: 'escala', rotulo: 'Minha escala', conteudo: () => <EscalaDoPlantonista aba="minha" /> },
-  { valor: 'geral', rotulo: 'Escala da unidade', conteudo: () => <EscalaDoPlantonista aba="geral" /> },
+  { valor: 'escala', rotulo: 'Minha escala', conteudo: () => <Escala embutido aba="minha" /> },
+  { valor: 'geral', rotulo: 'Escala da unidade', conteudo: () => <Escala embutido aba="geral" /> },
   { valor: 'todas-unidades', rotulo: 'Todas as unidades', conteudo: () => <MinhaAgenda embutido /> },
   { valor: 'vagas', rotulo: 'Vagas', conteudo: () => <Vagas embutido /> },
   { valor: 'extrato', rotulo: 'Extrato', conteudo: () => <Extrato embutido /> },
