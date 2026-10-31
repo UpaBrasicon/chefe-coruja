@@ -9,6 +9,7 @@ import { RequireRole } from '@/routes/RequireRole'
 import { RequireSuperAdmin } from '@/routes/RequireSuperAdmin'
 import { RedirectHome } from '@/routes/RedirectHome'
 import { Redirecionar } from '@/routes/Redirecionar'
+import { destinoEscala } from '@/lib/rotaEscala'
 import { AppShell } from '@/components/AppShell'
 import { ErroBoundary } from '@/components/ErroBoundary'
 import { ErroForcado } from '@/components/ErroForcado'
@@ -142,6 +143,13 @@ function PorPapel({ plantonista, gestao }: { plantonista: ReactNode; gestao: Rea
   const { papeisDaUnidade } = useUnidade()
   const ehGestao = papeisDaUnidade.includes('gestor') || papeisDaUnidade.includes('admin')
   return <>{ehGestao ? gestao : plantonista}</>
+}
+
+/** `/escala` pelo papel ativo, não pela lista de papéis (ver `destinoEscala`). */
+function RotaEscala() {
+  const { papelAtivo } = useUnidade()
+  const destino = destinoEscala(papelAtivo)
+  return destino ? <Redirecionar para={destino} /> : <EscalaGrupo />
 }
 
 /**
@@ -414,15 +422,7 @@ export default function App() {
                         <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
                         <Route path="/agenda" element={<AgendaGrupo />} />
 
-                        <Route
-                          path="/escala"
-                          element={
-                            <PorPapel
-                              plantonista={<Redirecionar para="/agenda?aba=escala" />}
-                              gestao={<EscalaGrupo />}
-                            />
-                          }
-                        />
+                        <Route path="/escala" element={<RotaEscala />} />
                         <Route
                           path="/internacao"
                           element={
