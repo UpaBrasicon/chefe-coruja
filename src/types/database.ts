@@ -9423,6 +9423,7 @@ export type Database = {
           ativo: boolean
           ativo_alterado_em: string | null
           ativo_alterado_por: string | null
+          categoria: string
           criado_em: string
           criado_por: string
           declaracao: string | null
@@ -9439,6 +9440,7 @@ export type Database = {
           ativo?: boolean
           ativo_alterado_em?: string | null
           ativo_alterado_por?: string | null
+          categoria?: string
           criado_em?: string
           criado_por: string
           declaracao?: string | null
@@ -9455,6 +9457,7 @@ export type Database = {
           ativo?: boolean
           ativo_alterado_em?: string | null
           ativo_alterado_por?: string | null
+          categoria?: string
           criado_em?: string
           criado_por?: string
           declaracao?: string | null
@@ -12539,6 +12542,10 @@ export type Database = {
         Returns: string
       }
       reavaliacoes_do_quadro: { Args: { p_internacao: string }; Returns: Json }
+      definir_categoria_modelo_termo: {
+        Args: { p_categoria: string; p_modelo: string }
+        Returns: undefined
+      }
       registrar_afericao_crescimento: {
         Args: {
           p_data: string

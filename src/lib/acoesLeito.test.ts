@@ -39,4 +39,5 @@ test('endereço antigo da aba Classificação abre o Resumo com a janela', () =>
   assert.deepEqual(abaDoEndereco('diag'), { aba: 'evol', classificacao: false })
   assert.deepEqual(abaDoEndereco('atestado'), { aba: 'alta', classificacao: false })
   assert.deepEqual(abaDoEndereco('exames'), { aba: 'exames', classificacao: false })
+  assert.deepEqual(abaDoEndereco('comp'), { aba: 'parecer', classificacao: false })
 })

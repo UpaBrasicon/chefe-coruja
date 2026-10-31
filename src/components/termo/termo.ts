@@ -15,8 +15,12 @@ export type Assinante = 'paciente' | 'responsavel' | 'ninguem_presente'
  *  representado < 16 (assina o responsável), assistido 16–17 (paciente com o responsável), capaz ≥ 18. */
 export type FaixaAssinatura = 'representado' | 'assistido' | 'capaz'
 
+/** Ponto 15: consentimento (TCLE) ou cuidados paliativos; a categoria vem do modelo. */
+export type CategoriaTermo = 'consentimento' | 'cuidados_paliativos'
+
 export type ModeloTermo = {
   id: string
+  categoria?: CategoriaTermo
   titulo: string
   procedimento: string
   texto: string
@@ -52,6 +56,8 @@ export type VersaoTermo = {
 
 export type TermoRegistrado = {
   id: string
+  /** categoria do modelo usado (sem modelo, consentimento) */
+  categoria?: CategoriaTermo
   raiz_id: string
   versao: number
   numero: string | null
@@ -231,6 +237,18 @@ export function useSalvarModeloTermo(unidadeId: string | undefined) {
       })
       if (error) throw error
       return data as string
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['termos-modelos', unidadeId] }),
+  })
+}
+
+/** Gestor: o modelo (todas as versões) é de consentimento ou de cuidados paliativos. */
+export function useDefinirCategoriaModeloTermo(unidadeId: string | undefined) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ modeloId, categoria }: { modeloId: string; categoria: CategoriaTermo }) => {
+      const { error } = await supabase.rpc('definir_categoria_modelo_termo', { p_modelo: modeloId, p_categoria: categoria })
+      if (error) throw error
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['termos-modelos', unidadeId] }),
   })
