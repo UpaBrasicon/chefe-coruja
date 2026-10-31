@@ -11,6 +11,9 @@ export const ABA_DO_DOCUMENTO: Record<string, string> = {
   receita: 'receituario',
   atestado: 'atestado',
   encaminhamento: 'encaminhamento',
+  // ponto 15: cada um na sua aba
+  termo_consentimento: 'termo',
+  parecer: 'parecer',
 }
 
 export function rotaDoLeito(pacienteId?: string | null, aba?: string) {

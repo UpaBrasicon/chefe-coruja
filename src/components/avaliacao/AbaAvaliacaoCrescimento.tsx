@@ -1,6 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Avaliação e curva de crescimento (protótipo, etapa 9 — manual 3.11 e 3.12).
 //
+// Ponto 15 do plantonista (RT, 31/10/2026): fica na aba "Escalas" do leito. A
+// pergunta surpresa (cuidados paliativos) mora na aba própria e não entra aqui.
+//
 // Avaliação: escolhe a escala, responde as perguntas, "Calcular e salvar"
 // exige todas; o resultado é a soma e a leitura é a faixa da própria escala
 // (o servidor refaz as duas). Pediatria: NIPS e FLACC; adulto: Braden e Morse.
@@ -107,7 +110,8 @@ function SecaoAvaliacao({ pacienteId, episodioId, internacaoId, publico }: AbaAv
   const def = escala ? ESCALAS_AVALIACAO[escala] : null
   const total = escala ? totalAvaliacao(escala, resp) : null
   const fx = escala && total !== null ? faixaDe(escala, total) : null
-  const hist = q.data ?? []
+  // só as escalas desta aba (a pergunta surpresa fica em Cuidados paliativos)
+  const hist = (q.data ?? []).filter((a) => a.escala in ESCALAS_AVALIACAO)
   const noHist = Array.from(new Set(hist.map((a) => a.escala)))
   const visiveis = hist.filter((a) => !filtro || a.escala === filtro)
 
@@ -179,7 +183,7 @@ function SecaoAvaliacao({ pacienteId, episodioId, internacaoId, publico }: AbaAv
         {/* folha de avaliações (montarAvalHtml do protótipo): as que estão na lista */}
         {visiveis.length > 0 && (
           <Button size="sm" variant="outline" className="ml-auto"
-            onClick={() => void imprimirRelatorio({ tipo: 'avaliacao', pacienteId, internacaoId, ids: filtro ? visiveis.map((a) => a.id) : null })}>
+            onClick={() => void imprimirRelatorio({ tipo: 'avaliacao', pacienteId, internacaoId, ids: visiveis.map((a) => a.id) })}>
             <Printer /> Imprimir
           </Button>
         )}

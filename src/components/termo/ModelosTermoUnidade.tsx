@@ -7,6 +7,10 @@
 // Editar cria VERSÃO NOVA (a anterior fica no histórico e os termos já
 // gerados continuam apontando para ela); desativar tira o modelo da escolha
 // do médico sem apagar nada. Só o gestor escreve (o banco confere).
+//
+// Ponto 15 do plantonista (RT, 31/10/2026): cada modelo é de consentimento ou
+// de cuidados paliativos (vale para todas as versões); o paliativo aparece na
+// aba Cuidados paliativos do leito.
 // ─────────────────────────────────────────────────────────────────────────────
 import { FileSignature, History, Pencil, Power, PowerOff } from 'lucide-react'
 import * as React from 'react'
@@ -21,12 +25,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Chip, Chips, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 
 import {
-  CAMPOS_TERMO, mensagemErro, quando, useAtivarModeloTermo, useModelosTermoUnidade, useSalvarModeloTermo,
-  type ModeloTermoLinha,
+  CAMPOS_TERMO, mensagemErro, quando, useAtivarModeloTermo, useDefinirCategoriaModeloTermo, useModelosTermoUnidade, useSalvarModeloTermo,
+  type CategoriaTermo, type ModeloTermoLinha,
 } from './termo'
 
-type Rascunho = { modeloId: string | null; titulo: string; procedimento: string; texto: string; declaracao: string }
-const VAZIO: Rascunho = { modeloId: null, titulo: '', procedimento: '', texto: '', declaracao: '' }
+type Rascunho = { modeloId: string | null; titulo: string; procedimento: string; texto: string; declaracao: string; categoria: CategoriaTermo }
+const VAZIO: Rascunho = { modeloId: null, titulo: '', procedimento: '', texto: '', declaracao: '', categoria: 'consentimento' }
+const ehPaliativo = (m: ModeloTermoLinha) => m.categoria === 'cuidados_paliativos'
 
 type Grupo = { atual: ModeloTermoLinha; anteriores: ModeloTermoLinha[] }
 
@@ -48,6 +53,7 @@ export default function ModelosTermoUnidade() {
   const modelos = useModelosTermoUnidade(unidadeId)
   const salvar = useSalvarModeloTermo(unidadeId)
   const ativar = useAtivarModeloTermo(unidadeId)
+  const categoria = useDefinirCategoriaModeloTermo(unidadeId)
   const [r, setR] = React.useState<Rascunho>(VAZIO)
   const [erro, setErro] = React.useState<string | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
@@ -62,7 +68,7 @@ export default function ModelosTermoUnidade() {
   const pronto = r.titulo.trim().length >= 3 && r.procedimento.trim().length >= 3 && r.texto.trim().length >= 20
 
   function editar(m: ModeloTermoLinha) {
-    setR({ modeloId: m.id, titulo: m.titulo, procedimento: m.procedimento, texto: m.texto, declaracao: m.declaracao ?? '' })
+    setR({ modeloId: m.id, titulo: m.titulo, procedimento: m.procedimento, texto: m.texto, declaracao: m.declaracao ?? '', categoria: ehPaliativo(m) ? 'cuidados_paliativos' : 'consentimento' })
     setErro(null)
     setAviso(null)
     formulario.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -74,10 +80,24 @@ export default function ModelosTermoUnidade() {
     setAviso(null)
     try {
       const id = await salvar.mutateAsync(r)
+      // a versão nova herda a categoria; no modelo novo, a escolhida no formulário
+      if (!r.modeloId && r.categoria !== 'consentimento') await categoria.mutateAsync({ modeloId: id, categoria: r.categoria })
       setAviso(r.modeloId
         ? id === r.modeloId ? 'Nada mudou no modelo: nenhuma versão nova.' : `“${r.titulo.trim()}” salvo como versão nova. A anterior fica no histórico.`
         : `Modelo “${r.titulo.trim()}” cadastrado.`)
       setR(VAZIO)
+    } catch (e) {
+      setErro(mensagemErro(e))
+    }
+  }
+
+  async function trocarCategoria(m: ModeloTermoLinha) {
+    setErro(null)
+    setAviso(null)
+    const nova: CategoriaTermo = ehPaliativo(m) ? 'consentimento' : 'cuidados_paliativos'
+    try {
+      await categoria.mutateAsync({ modeloId: m.id, categoria: nova })
+      setAviso(`“${m.titulo}” agora é ${nova === 'cuidados_paliativos' ? 'de cuidados paliativos' : 'de consentimento'}.`)
     } catch (e) {
       setErro(mensagemErro(e))
     }
@@ -129,6 +149,7 @@ export default function ModelosTermoUnidade() {
                 <span className={cn('text-corpo font-medium text-tinta', !m.ativo && 'text-tinta-sussurro')}>{m.titulo}</span>
                 <span className="text-apoio text-tinta-sussurro">{m.procedimento}</span>
                 {!m.ativo && <Badge variant="secondary">Desativado</Badge>}
+                {ehPaliativo(m) && <Badge variant="info">Cuidados paliativos</Badge>}
                 <Badge variant="outline">Versão {m.versao}</Badge>
               </div>
               <p className="line-clamp-2 text-rotulo text-tinta-sussurro">{m.texto}</p>
@@ -140,6 +161,9 @@ export default function ModelosTermoUnidade() {
                 <Button variant={m.ativo ? 'destructive' : 'outline'} size="xs" onClick={() => void alternar(m)} disabled={ativar.isPending}>
                   {m.ativo ? <PowerOff /> : <Power />}
                   {m.ativo ? 'Desativar' : 'Reativar'}
+                </Button>
+                <Button variant="outline" size="xs" onClick={() => void trocarCategoria(m)} disabled={categoria.isPending}>
+                  {ehPaliativo(m) ? 'Passar para consentimento' : 'Passar para cuidados paliativos'}
                 </Button>
                 {anteriores.length > 0 && (
                   <Button variant="ghost" size="xs" onClick={() => setHistorico((h) => (h === m.raiz_id ? null : m.raiz_id))}
@@ -169,6 +193,12 @@ export default function ModelosTermoUnidade() {
         <p className="text-corpo font-semibold text-tinta">
           {editando ? `Editar “${editando.titulo}” (salva como versão ${editando.versao + 1})` : 'Novo modelo'}
         </p>
+        {!editando && (
+          <Chips rotulo="Categoria do modelo">
+            <Chip ativo={r.categoria === 'consentimento'} onClick={() => setR((x) => ({ ...x, categoria: 'consentimento' }))}>Consentimento</Chip>
+            <Chip ativo={r.categoria === 'cuidados_paliativos'} onClick={() => setR((x) => ({ ...x, categoria: 'cuidados_paliativos' }))}>Cuidados paliativos</Chip>
+          </Chips>
+        )}
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           <Input value={r.titulo} onChange={(e) => setR((x) => ({ ...x, titulo: e.target.value }))} placeholder="Nome do modelo" aria-label="Nome do modelo" maxLength={120} />
           <Input value={r.procedimento} onChange={(e) => setR((x) => ({ ...x, procedimento: e.target.value }))} placeholder="Procedimento" aria-label="Procedimento" maxLength={200} />
