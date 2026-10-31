@@ -36,6 +36,7 @@ import { dataHora, hora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
 import { PAPEL_LABEL } from '@/lib/constants'
+import { ehRetroativo } from '@/lib/retroativo'
 import { Estado } from '@/components/porta/Estado'
 import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, useTrocasEscala, type SolicitacaoComExtra } from '@/hooks/usePedidosEscala'
 
@@ -2085,6 +2086,9 @@ export default function Escala({
               />
               Escala quinzenal (15/15)
             </label>
+            {abaGestor !== 'fixa' && celula && ehRetroativo(celula.data, turno, abertaEm) && (
+              <p role="status" className="text-apoio text-pretty text-atencao">Este plantão já começou: fica como acerto retroativo no histórico da escala.</p>
+            )}
           </div>
           {/* M10: o erro de escalar aparece (antes o clique não fazia nada) */}
           {(abaGestor === 'fixa' ? adicionarFixa.error : adicionar.error) && (
