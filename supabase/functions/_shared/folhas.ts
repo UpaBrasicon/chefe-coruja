@@ -30,13 +30,13 @@ export type TipoFolha =
   | 'atestado' | 'receita' | 'encaminhamento' | 'pedido_exames' | 'prescricao' | 'laudo_aih'
   | 'termo_consentimento' | 'admissao_anamnese' | 'sumario_alta' | 'sumario_obito' | 'parecer'
   | 'evolucao' | 'evolucao_enfermagem' | 'anotacao_enfermagem' | 'evolucao_fisioterapia'
-  | 'evolucao_nutricao' | 'evolucao_outros' | 'boletim_emergencia' | 'teleinterconsulta'
+  | 'evolucao_nutricao' | 'evolucao_outros' | 'boletim_emergencia' | 'teleinterconsulta' | 'reavaliacao_quadro'
 
 export const TIPOS_FOLHA: TipoFolha[] = [
   'atestado', 'receita', 'encaminhamento', 'pedido_exames', 'prescricao', 'laudo_aih',
   'termo_consentimento', 'admissao_anamnese', 'sumario_alta', 'sumario_obito', 'parecer',
   'evolucao', 'evolucao_enfermagem', 'anotacao_enfermagem', 'evolucao_fisioterapia',
-  'evolucao_nutricao', 'evolucao_outros', 'boletim_emergencia', 'teleinterconsulta',
+  'evolucao_nutricao', 'evolucao_outros', 'boletim_emergencia', 'teleinterconsulta', 'reavaliacao_quadro',
 ]
 
 /** Relatórios de várias linhas (RPC folha_relatorio), não documentos. */
@@ -778,7 +778,7 @@ const TITULO_DOC: Record<string, string> = {
   evolucao_outros: 'Evolução multiprofissional', sumario_alta: 'Sumário de alta', sumario_obito: 'Sumário de óbito', parecer: 'Parecer médico',
   boletim_emergencia: 'Boletim de emergência', teleinterconsulta: 'Teleinterconsulta', termo_consentimento: 'Termo de consentimento',
   atestado: 'Atestado', receita: 'Receituário', encaminhamento: 'Encaminhamento', pedido_exames: 'Solicitação de exames',
-  prescricao: 'Prescrição médica', laudo_aih: 'Laudo para solicitação de AIH',
+  prescricao: 'Prescrição médica', laudo_aih: 'Laudo para solicitação de AIH', reavaliacao_quadro: 'Reavaliação do quadro',
 }
 const ENFERMAGEM = new Set(['evolucao_enfermagem', 'anotacao_enfermagem'])
 
