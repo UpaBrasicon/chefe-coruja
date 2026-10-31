@@ -61,9 +61,50 @@ usuário com id de teste (`00000000-0000-4000-8000-%`), e o gatilho
 `trg_escala_sem_sobreposicao` (que os testes desligam dentro da transação) ativo.
 A CLI voltou a apontar para a homologação.
 
-## O que não foi coberto
+## 4. Telas da escala com o RT logado, papel por papel
 
-- As telas com usuário logado (Escala, Pedidos para você, Pedidos do gestor,
-  Carga horária): na produção não se entra com senha nem se cria pedido de
-  verdade. Se o RT quiser, entra com a conta dele no navegador do app e a sessão
-  só lê as telas.
+O RT entrou com a conta dele no Chrome (o navegador do app não passa no
+Turnstile). A sessão trocou o papel ativo pelo menu do usuário e leu só as
+telas da escala. Não clicou em Aprovar, Recusar, Escalar, Marcar vaga, Passar,
+Trocar nem Candidatar, e não leu tela de paciente. No fim, o papel ativo voltou
+para Plantonista.
+
+| Papel ativo | Tela | Resultado |
+|---|---|---|
+| Gestor | `/escala`: Mensal, Pedidos, Carga horária | Carregam. Mensal: out/2026 "ainda não publicada", 0 plantões, 558 vagas previstas pela fixa, todas sem categoria. Pedidos: 2 candidaturas. Carga: "Nenhum plantão neste mês", texto novo do M13 (manhã e tarde 6 h, noite 12 h). |
+| Plantonista | `/agenda`: Minha escala, Vagas | Carregam. 0 plantões; Vagas: 0 disponíveis (nenhuma vaga marcada). |
+| Telemedicina | `/minha-escala` | Carrega, com "Seus plantões em todas as unidades" (M11). |
+| Enfermeiro, Técnico de Enfermagem, Farmacêutico, Recepção | `/minha-escala` | Carregam. |
+| Administrador | `/escala`: Pedidos, Carga horária | Carregam, iguais às do gestor. |
+
+O console só mostrou o erro de uma extensão do Chrome ("Could not establish
+connection. Receiving end does not exist."), que não é do app.
+
+### Achados (registrados; nenhum foi corrigido)
+
+1. **Médio — abas do gestor com o conteúdo do plantonista.** Para quem tem o
+   papel de gestor na unidade mas está com o papel ativo de Plantonista, `/escala`
+   abre as abas do gestor (Mensal, Pedidos, Carga horária, Fixa…), mas Pedidos e
+   Carga horária mostram "Minha escala / Escala geral" do plantonista. Causa: a
+   rota escolhe pela lista de papéis da unidade (`PorPapel`, `papeisDaUnidade`),
+   e `Escala.tsx` escolhe pelo papel ativo (`ehPlantonista = papelAtivo ===
+   'plantonista'`).
+2. **Baixo — grade de montagem fora do papel.** Com o papel ativo de
+   Telemedicina, `/agenda?aba=escala` (aberto pelo endereço; o menu da
+   telemedicina leva a `/minha-escala`) mostra a grade semanal do gestor, com
+   "+ adicionar". `Escala.tsx` trata como gestor todo papel que não é
+   `plantonista`.
+3. **Baixo — "sua categoria" com todos os papéis.** Em `/minha-escala`, o
+   subtítulo e o dia dizem "Plantonista e Telemedicina e Enfermeiro e Técnico de
+   Enfermagem e Farmacêutico e Recepção": a categoria é a lista de todos os
+   papéis do usuário, não a do papel ativo.
+4. **Dado — candidaturas vencidas de conta de teste.** A aba Pedidos da UPA
+   Centro tem 2 candidaturas de "Plantonista Teste" para 16/08 (Observação manhã,
+   Emergência tarde), pendentes há dois meses. Cabe ao RT recusar pela tela e
+   decidir se a conta de teste fica na produção; candidatura de data passada não
+   vence sozinha.
+5. **Observação — escala da produção vazia.** A UPA Centro não tem escala
+   publicada em out/2026: 0 plantões e 558 vagas previstas pela fixa, todas sem
+   categoria. Por isso o plantonista vê 0 vagas e a carga horária está vazia, e o
+   fluxo novo (aceite, aprovação, candidatura) ainda não foi exercido por
+   usuários reais.
