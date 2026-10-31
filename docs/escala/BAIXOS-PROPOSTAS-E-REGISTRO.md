@@ -19,7 +19,7 @@ resto foi corrigido em PR próprio.
 | B9 | Resolvido pelo **A4** (#357): `aprovar_troca` não grava mais "erro" para desfazer em seguida (a troca vai por `efetivar_troca`), e a troca não se aplica mais na hora em `solicitar_troca`. O texto de erro da tela segue para trocas antigas. |
 | B10 | Corrigido e **em produção**: #368 (migration `20270208000013`, 30/10/2026). |
 | B11 | **Proposta** abaixo (mexe no portão do check-in). |
-| B12 | Parte resolvida: plantão **encerrado** não se passa (M3, #360) nem se troca (B10, #368). O "agora" da tela que congela é igual em toda a aba (hora em que abriu) e não deixa passar nada que o banco recuse. Fica a **proposta** sobre plantão **já iniciado**. |
+| B12 | Parte resolvida: plantão **encerrado** não se passa (M3, #360) nem se troca (B10, #368). O "agora" da tela que congela é igual em toda a aba (hora em que abriu) e não deixa passar nada que o banco recuse. O plantão **já iniciado**: decisão do RT em 31/10 ("Passa sim, troca não"), corrigido no PR da migration `20270208000014`. |
 
 ---
 

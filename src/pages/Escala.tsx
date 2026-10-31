@@ -553,11 +553,11 @@ export default function Escala({
     () => (escalaMes ?? []).filter((e) => e.perfil_id === perfil?.id),
     [escalaMes, perfil?.id]
   )
-  // B10: na troca, só plantões que ainda não terminaram (a hora em que a tela abriu)
+  // B10 e B12: na troca, só plantões que ainda não começaram (a hora em que a tela abriu)
   const [abertaEm] = React.useState(() => Date.now())
-  const naoTerminou = (p: { inicio: string; duracao_min: number }) => new Date(p.inicio).getTime() + p.duracao_min * 60_000 > abertaEm
-  const meusPlantoesTroca = meusPlantoes.filter(naoTerminou)
-  const outrosPlantoesTroca = (plantoesDeOutros ?? []).filter(naoTerminou)
+  const naoComecou = (p: { inicio: string }) => new Date(p.inicio).getTime() > abertaEm
+  const meusPlantoesTroca = meusPlantoes.filter(naoComecou)
+  const outrosPlantoesTroca = (plantoesDeOutros ?? []).filter(naoComecou)
 
   const resumo = React.useMemo(() => {
     const porDia = new Map<string, Set<string>>()
