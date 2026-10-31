@@ -2120,7 +2120,7 @@ motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT p
 | 7 | P2 | 6, 7, 8 — Resumo do leito em abas, botões juntos, sem aba Classificação. **Plano em `docs/plantonista/PONTOS-06-08-LEITO.md`, aprovado pelo RT em 29/10/2026 como recomendado; implementado no PR #346, publicado na homologação e juntado ao master em 29/10/2026 (em produção, só tela, sem migration); conferido pelo RT em 30/10/2026.** Só tela, sem banco. Achado: "Transferir de setor" aparece também para o gestor e para internação encerrada | ajuste |
 | 8 | P2 | 13 — encaminhamento para outra unidade | nova |
 | 9 | P2 | 15 — Parecer, Termo de consentimento e Cuidados paliativos (com escalas do PubMed) | ajuste + nova |
-| 10 | P2 | 10 — modelo da admissão (sugestão: uma admissão, com reavaliação do quadro) | nova |
+| 10 | P2 | 10 — modelo da admissão. **Modelo B decidido pelo RT em 31/10/2026 (uma admissão + reavaliação do quadro). Migration 20270203000005 aplicada na homologação (versão registrada, rollback testado); tela no PR do branch `fase-plantonista/admissao-reavaliacao`; produção aguarda o "ok produção".** Trava de uma admissão no banco, "Corrigir" que leva a ficha (a anterior fica guardada) e documento "Reavaliação do quadro" ligado à admissão. Plano em `docs/plantonista/PONTO-10-ADMISSAO.md` | nova |
 
 ## Aba Escala para todos os papéis — pedido do RT em 27/10/2026
 
