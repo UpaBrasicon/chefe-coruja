@@ -18,7 +18,7 @@ resto foi corrigido em PR próprio.
 | B8 | Corrigido e **em produção**: #366 (só tela). |
 | B9 | Resolvido pelo **A4** (#357): `aprovar_troca` não grava mais "erro" para desfazer em seguida (a troca vai por `efetivar_troca`), e a troca não se aplica mais na hora em `solicitar_troca`. O texto de erro da tela segue para trocas antigas. |
 | B10 | Corrigido e **em produção**: #368 (migration `20270208000013`, 30/10/2026). |
-| B11 | **Proposta** abaixo (mexe no portão do check-in). |
+| B11 | Decisão do RT em 31/10 ("Libera só a aba Escala"), corrigido no PR `fix/escala-b11-portao-aba-escala` (só tela). |
 | B12 | Parte resolvida: plantão **encerrado** não se passa (M3, #360) nem se troca (B10, #368). O "agora" da tela que congela é igual em toda a aba (hora em que abriu) e não deixa passar nada que o banco recuse. Fica a **proposta** sobre plantão **já iniciado**. |
 
 ---
