@@ -36,6 +36,8 @@ import { Spinner } from '@/components/ui/spinner'
 import type { Papel } from '@/types/database'
 
 import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, useTrocasEscala } from '@/hooks/usePedidosEscala'
+import { SemCategoria } from '@/components/escala/SemCategoria'
+import { agruparSemCategoria } from '@/lib/semCategoria'
 
 type Escalado = { plantao_id: string; perfil_id: string; nome: string; turno: string; duracao_min: number; quinzenal: boolean; rotulo: string | null; papel: Papel | null }
 // o que falta na faixa, categoria por categoria: vaga marcada (vaga_id) ou prevista pela fixa
@@ -209,6 +211,8 @@ export function EscalaMes() {
           <Button variant="link" onClick={verPedidos} className="ml-auto h-auto min-h-0 p-0 text-apoio font-medium">Ver os pedidos</Button>
         </div>
       )}
+      {/* M7: plantões do mês sem categoria, com o atalho para definir */}
+      {unidadeId && <SemCategoria unidadeId={unidadeId} grupos={agruparSemCategoria(m?.faixas ?? [])} onFeito={recarregar} />}
 
       <section aria-label="Escala do mês" className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[minmax(0,1fr)_340px]">
         <div className="flex min-w-0 flex-col border-fio md:border-r">
