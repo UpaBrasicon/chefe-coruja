@@ -61,3 +61,14 @@ Hoje o plantão em curso pode ser passado e trocado (quem sai no meio do plantã
 - **A (recomendada):** manter: passar o plantão em curso é o caso de quem precisa sair; a troca de
   plantão em curso fica bloqueada (não faz sentido trocar o que já começou).
 - **B:** bloquear passagem e troca de plantão iniciado; quem precisa sair fala com a coordenação.
+
+---
+
+## Decisões do RT (31/10/2026)
+
+| Item | Opção escolhida | O que acontece |
+|---|---|---|
+| B3 | **A, "Aceita como retroativo"** | PR próprio: dia passado só pelo gestor, com aviso na tela e o histórico marcando "retroativo". |
+| B5 | **A, "Completar a lista"** | PR próprio: a ordem do papel mais forte ganha os papéis que faltam, depois da recepção, com teste de cada par afetado. |
+| B11 | **A, "Libera só a aba Escala"** | PR próprio: quem perdeu a tolerância do check-in abre só a aba Escala; o resto segue bloqueado. |
+| B12 | **A, "Passa sim, troca não"** | PR próprio: o plantão em curso continua podendo ser passado; a troca de plantão já iniciado fica bloqueada. |
