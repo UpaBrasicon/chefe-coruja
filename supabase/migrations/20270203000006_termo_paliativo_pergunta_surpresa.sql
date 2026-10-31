@@ -221,8 +221,9 @@ BEGIN
     RAISE EXCEPTION 'NIPS e FLACC são escalas da pediatria (até 13 anos, 11 meses e 29 dias, com a data de nascimento no cadastro).';
   END IF;
   IF d ->> 'publico' = 'adulto' AND v_ped IS TRUE THEN
-    RAISE EXCEPTION '% é do adulto: na criança não se usa (nada se converte do adulto).',
-      CASE p_escala WHEN 'pergunta_surpresa' THEN 'A pergunta surpresa' WHEN 'braden' THEN 'Braden' ELSE 'Morse' END;
+    RAISE EXCEPTION '%', CASE WHEN p_escala = 'pergunta_surpresa'
+      THEN 'A pergunta surpresa é do adulto: na criança não se usa (nada se converte do adulto).'
+      ELSE 'Braden e Morse são escalas do adulto: na criança não se usam (nada se converte do adulto).' END;
   END IF;
   -- a pergunta surpresa só vale com a idade conhecida (a fonte é de adultos)
   IF p_escala = 'pergunta_surpresa' AND v_ped IS NULL THEN
