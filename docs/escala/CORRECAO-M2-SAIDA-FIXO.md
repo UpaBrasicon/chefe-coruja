@@ -32,7 +32,7 @@ Aprovar a saída do fixo só mudava o status: a fixa continuava gerando o mês. 
 
 ## Testes
 
-`supabase/tests/escala_saida_fixo.sql` (9 testes), na homologação, em transação desfeita:
+`supabase/tests/escala_saida_fixo.sql` (8 testes), na homologação, em transação desfeita:
 
 | Situação | Sem a migration | Com a migration |
 |---|---|---|
