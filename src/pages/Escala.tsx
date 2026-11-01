@@ -36,6 +36,7 @@ import { dataHora, hora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
 import { PAPEL_LABEL } from '@/lib/constants'
+import { ehRetroativo } from '@/lib/retroativo'
 import { Estado } from '@/components/porta/Estado'
 import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, useTrocasEscala, type SolicitacaoComExtra } from '@/hooks/usePedidosEscala'
 
@@ -553,11 +554,11 @@ export default function Escala({
     () => (escalaMes ?? []).filter((e) => e.perfil_id === perfil?.id),
     [escalaMes, perfil?.id]
   )
-  // B10: na troca, só plantões que ainda não terminaram (a hora em que a tela abriu)
+  // B10 e B12: na troca, só plantões que ainda não começaram (a hora em que a tela abriu)
   const [abertaEm] = React.useState(() => Date.now())
-  const naoTerminou = (p: { inicio: string; duracao_min: number }) => new Date(p.inicio).getTime() + p.duracao_min * 60_000 > abertaEm
-  const meusPlantoesTroca = meusPlantoes.filter(naoTerminou)
-  const outrosPlantoesTroca = (plantoesDeOutros ?? []).filter(naoTerminou)
+  const naoComecou = (p: { inicio: string }) => new Date(p.inicio).getTime() > abertaEm
+  const meusPlantoesTroca = meusPlantoes.filter(naoComecou)
+  const outrosPlantoesTroca = (plantoesDeOutros ?? []).filter(naoComecou)
 
   const resumo = React.useMemo(() => {
     const porDia = new Map<string, Set<string>>()
@@ -2090,6 +2091,9 @@ export default function Escala({
               />
               Escala quinzenal (15/15)
             </label>
+            {abaGestor !== 'fixa' && celula && ehRetroativo(celula.data, turno, abertaEm) && (
+              <p role="status" className="text-apoio text-pretty text-atencao">Este plantão já começou: fica como acerto retroativo no histórico da escala.</p>
+            )}
           </div>
           {/* M10: o erro de escalar aparece (antes o clique não fazia nada) */}
           {(abaGestor === 'fixa' ? adicionarFixa.error : adicionar.error) && (

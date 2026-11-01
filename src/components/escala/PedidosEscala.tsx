@@ -47,6 +47,8 @@ export function AcoesDoPlantao({ unidadeId, plantao: p, equipe, faixa, nomeSetor
   const [agora] = React.useState(() => Date.now())
   const abrir = (tipo: Janela['tipo']) => { setAviso(null); setJanela({ tipo, plantao: p }) }
   const passou = new Date(p.inicio).getTime() + p.duracao_min * 60_000 <= agora
+  // B12 (RT, 31/10/2026): o plantão em curso se passa, mas não se troca
+  const comecou = new Date(p.inicio).getTime() <= agora
   return (
     <div className="flex flex-col gap-2">
       {pendente ? (
@@ -61,6 +63,17 @@ export function AcoesDoPlantao({ unidadeId, plantao: p, equipe, faixa, nomeSetor
           {irParaProximo && (
             <Button variant="link" className="h-auto min-h-0 w-fit p-0 text-rotulo" onClick={irParaProximo.ir}>{irParaProximo.rotulo} →</Button>
           )}
+        </>
+      ) : comecou ? (
+        <>
+          <span className="flex items-start gap-1.5 text-rotulo text-pretty text-tinta-sussurro">
+            <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+            Plantão em curso: dá para passar, mas não para trocar.
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => abrir('passar')}><Send /> Passar</Button>
+            <Button size="sm" variant="outline" onClick={() => abrir('falta')}><FileText /> Justificar falta</Button>
+          </div>
         </>
       ) : (
         <div className="flex flex-wrap gap-2">

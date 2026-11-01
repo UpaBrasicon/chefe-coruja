@@ -1,8 +1,9 @@
 import * as React from 'react'
-import { Clock, LogOut, MapPin, X } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Clock, LogOut, MapPin, X } from 'lucide-react'
 
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { FormularioCheckin } from '@/components/checkin/FormularioCheckin'
+import { EscalaEquipe } from '@/components/escala/EscalaEquipe'
 import type { SituacaoCheckin } from '@/hooks/usePlantao'
 import { Button } from '@/components/ui/button'
 import { hora } from '@/lib/formato'
@@ -20,6 +21,10 @@ import { hora } from '@/lib/formato'
  *
  * Tudo pelo relógio do servidor: a hora vem de situacao_checkin e anda aqui
  * pelo desvio medido na resposta.
+ *
+ * B11 (RT, 31/10/2026, "Libera só a aba Escala"): com a porta fechada, abre só a
+ * escala (sem nada clínico), para justificar a falta ou ver os próximos plantões,
+ * como no "Fora do seu horário".
  */
 
 const TURNO: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
@@ -65,6 +70,23 @@ export function GateCheckIn({
   const prazo = p ? new Date(p.prazo) : null
   const atraso = agora !== null && inicio ? agora - inicio.getTime() : null
   const falta = agora !== null && prazo ? prazo.getTime() - agora : null
+  const [verEscala, setVerEscala] = React.useState(false)
+
+  if (bloqueado && verEscala) {
+    return (
+      <div className="min-h-dvh bg-campo p-4">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3">
+          <Button variant="ghost" size="sm" className="w-fit" onClick={() => setVerEscala(false)}>
+            <ArrowLeft /> Voltar ao check-in
+          </Button>
+          <p className="text-apoio text-pretty text-tinta-sussurro">
+            Só a escala abre até o check-in: justifique a falta ou veja os próximos plantões. O resto continua fechado.
+          </p>
+          <EscalaEquipe />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -138,10 +160,16 @@ export function GateCheckIn({
         </p>
 
         {bloqueado && (
-          <Button variant="outline" size="bloco" onClick={onSair} className="mt-5">
-            <LogOut className="size-4" aria-hidden />
-            Sair
-          </Button>
+          <>
+            <Button variant="outline" size="bloco" onClick={() => setVerEscala(true)} className="mt-5">
+              <CalendarDays className="size-4" aria-hidden />
+              Ver minha escala (justificar falta)
+            </Button>
+            <Button variant="outline" size="bloco" onClick={onSair} className="mt-2">
+              <LogOut className="size-4" aria-hidden />
+              Sair
+            </Button>
+          </>
         )}
       </section>
     </div>
