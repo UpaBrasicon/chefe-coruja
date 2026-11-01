@@ -26,7 +26,7 @@
 -- e DROP FUNCTION private.criticas_lancamento_aih(text, integer, text, uuid, date).
 -- ════════════════════════════════════════════════════════════════════════════
 
-CREATE OR REPLACE FUNCTION pg_temp.trocar(p_f regprocedure, p_antigo text, p_novo text)
+CREATE OR REPLACE FUNCTION pg_temp.vd10_trocar(p_f regprocedure, p_antigo text, p_novo text)
 RETURNS void LANGUAGE plpgsql AS $$
 DECLARE
   def text := replace(pg_get_functiondef(p_f), chr(13), '');
@@ -39,17 +39,17 @@ BEGIN
 END $$;
 
 -- 1. competência da APAC sem validade_inicio
-SELECT pg_temp.trocar('public.rede_faturamento(uuid, text)',
+SELECT pg_temp.vd10_trocar('public.rede_faturamento(uuid, text)',
   'coalesce(ap.validade_inicio, ap.solicitada_em::date)',
   'coalesce(ap.validade_inicio, (ap.solicitada_em AT TIME ZONE ''America/Sao_Paulo'')::date)');
 
 -- 2. idade na crítica da AIH
-SELECT pg_temp.trocar('private.criticas_aih(uuid, uuid, jsonb, uuid)',
+SELECT pg_temp.vd10_trocar('private.criticas_aih(uuid, uuid, jsonb, uuid)',
   'age(current_date, pa.data_nascimento)',
   'age(private.data_atual(), pa.data_nascimento)');
 
 -- 3. responsável no arquivo da APAC
-SELECT pg_temp.trocar('private.apac_arquivo(uuid, text)',
+SELECT pg_temp.vd10_trocar('private.apac_arquivo(uuid, text)',
   'age(current_date, pa.data_nascimento)',
   'age(coalesce(a.validade_inicio, private.data_atual()), pa.data_nascimento)');
 
@@ -70,12 +70,12 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION private.criticas_lancamento_aih(text, integer, text, uuid, date) FROM PUBLIC, anon, authenticated;
 
-SELECT pg_temp.trocar('private.criticas_lancamento_aih(text, integer, text, uuid)',
+SELECT pg_temp.vd10_trocar('private.criticas_lancamento_aih(text, integer, text, uuid)',
   'age(pa.data_nascimento)',
   'age(private.data_atual(), pa.data_nascimento)');
 
-SELECT pg_temp.trocar('private.conta_itens(public.contas)',
+SELECT pg_temp.vd10_trocar('private.conta_itens(public.contas)',
   'private.criticas_lancamento_aih(l.procedimento, l.quantidade, l.cbo, c.paciente_id)',
   'private.criticas_lancamento_aih(l.procedimento, l.quantidade, l.cbo, c.paciente_id, (l.realizado_em AT TIME ZONE ''America/Sao_Paulo'')::date)');
 
-DROP FUNCTION pg_temp.trocar(regprocedure, text, text);
+DROP FUNCTION pg_temp.vd10_trocar(regprocedure, text, text);
