@@ -13,6 +13,10 @@
 BEGIN;
 
 -- ── 1. Fugulin: recusado na véspera dos 14 anos, aceito no aniversário ──────
+-- Relógio da unidade fixado em 30/12/2026 só nesta transação: o defeito depende
+-- do mês do nascimento, então o teste não pode depender do dia em que roda.
+CREATE OR REPLACE FUNCTION private.data_atual()
+RETURNS date LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$ SELECT date '2026-12-30' $$;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
 DELETE FROM public.escala_plantao WHERE perfil_id = '10000000-0000-4000-8000-000000000004';
 ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_janela;
@@ -28,16 +32,17 @@ ON CONFLICT DO NOTHING;
 
 CREATE TEMP TABLE t (nome text PRIMARY KEY, valor text) ON COMMIT DROP;
 GRANT ALL ON t TO authenticated;
--- duas internações ativas da Clínica Médica: uma faz 14 anos amanhã, outra hoje
+-- duas internações ativas da Clínica Médica: uma faz 14 anos amanhã (nascida em
+-- 31/12/2012), outra hoje (30/12/2012)
 INSERT INTO t SELECT 'vespera', i.id::text FROM public.internacoes i
  WHERE i.setor_atual_id = '22000000-0000-4000-8000-000000000001' AND i.status IN ('admitido', 'em_observacao', 'internado')
  ORDER BY i.id LIMIT 1;
 INSERT INTO t SELECT 'aniversario', i.id::text FROM public.internacoes i
  WHERE i.setor_atual_id = '22000000-0000-4000-8000-000000000001' AND i.status IN ('admitido', 'em_observacao', 'internado')
  ORDER BY i.id OFFSET 1 LIMIT 1;
-UPDATE public.pacientes SET data_nascimento = (private.data_atual() - interval '14 years' + interval '1 day')::date
+UPDATE public.pacientes SET data_nascimento = '2012-12-31'
  WHERE id = (SELECT paciente_id FROM public.internacoes WHERE id = (SELECT valor::uuid FROM t WHERE nome = 'vespera'));
-UPDATE public.pacientes SET data_nascimento = (private.data_atual() - interval '14 years')::date
+UPDATE public.pacientes SET data_nascimento = '2012-12-30'
  WHERE id = (SELECT paciente_id FROM public.internacoes WHERE id = (SELECT valor::uuid FROM t WHERE nome = 'aniversario'));
 CREATE FUNCTION pg_temp.u(p text) RETURNS uuid LANGUAGE sql AS $$ SELECT valor::uuid FROM t WHERE nome = p $$;
 GRANT EXECUTE ON FUNCTION pg_temp.u(text) TO authenticated;
@@ -83,7 +88,7 @@ BEGIN
       ('2012-12-31'::date, '2026-12-30'::date, true,  'véspera dos 14 anos, nascido em 31/12'),
       ('2012-12-31',       '2026-12-31',       false, 'aniversário de 14 anos: adulto'),
       ('2012-10-31',       '2026-10-30',       true,  'véspera, nascido no dia 31 de mês de 31 dias'),
-      ('2012-11-02',       '2026-11-01',       true,  'véspera, mês anterior de 31 dias'),
+      ('2012-11-02',       '2026-11-01',       true,  'véspera, nascido em mês de 30 dias'),
       ('2012-03-01',       '2026-02-28',       true,  'véspera, nascido em 01/03'),
       ('2012-03-01',       '2026-03-01',       false, 'aniversário em 01/03'),
       ('2012-02-29',       '2026-02-28',       true,  'nascido em 29/02, ainda não completou'),
