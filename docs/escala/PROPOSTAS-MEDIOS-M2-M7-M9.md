@@ -60,3 +60,14 @@ O gestor que também é plantonista (ou de outra categoria) aprova a própria pa
 
 Cada decisão vira um PR próprio, com teste primeiro, migration expand/contract e homologação, como os
 outros itens da trilha.
+
+---
+
+## Decisões do RT (31/10/2026)
+
+| Item | Opção escolhida | O que acontece |
+|---|---|---|
+| M2 — falta justificada aprovada | **B, "Só registra"** | Nada muda no código: a aprovação só muda o status; o plantão continua com a pessoa, marcado como falta justificada (o ERP conta certo), e o gestor abre a vaga à mão se quiser cobrir. Decisão registrada; sem PR. |
+| M2 — saída do fixo aprovada | **A, "Encerra a fixa"** | PR próprio: a aprovação encerra a linha da fixa para os meses ainda não gerados; o pedido só vale para plantão que veio da fixa. |
+| M7 | **A, "Categoria em comum"** | PR próprio: troca e passagem de plantão sem categoria só com quem tem categoria em comum com o dono, mais o aviso "N plantões sem categoria" e o atalho no mês do gestor. |
+| M9 | **A, "Pode, com 2º fator"** | PR próprio: o gestor aprova o próprio pedido com 2º fator, e o registro diz "aprovou o próprio pedido". |
