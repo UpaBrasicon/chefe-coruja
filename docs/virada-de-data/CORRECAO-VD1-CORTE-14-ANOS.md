@@ -64,7 +64,14 @@ Sem tela: nada a ver no navegador.
 
 ## Produção
 
-Aguarda o "ok produção" do RT, porque a migration precisa entrar antes do merge.
+Migration `20270209000001` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 01/11/2026, com o "ok produção" do RT. Conferido depois de aplicar:
+- versão registrada;
+- véspera dá `true` e aniversário dá `false`;
+- as três RPCs usam `private.pediatrico_em`;
+- nenhuma função compara mais `age()` com 14 anos;
+- grants iguais aos de antes: `authenticated` executa as RPCs, `anon` não, e ninguém executa o helper direto.
+
+PR #392 mesclado em seguida. Concluído.
 
 ## Riscos
 
