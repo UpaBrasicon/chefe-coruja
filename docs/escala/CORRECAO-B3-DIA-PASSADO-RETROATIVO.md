@@ -40,4 +40,4 @@ A tela da homologação fica atrás do login do Vercel; a tela não foi aberta n
 
 ## Produção
 
-Nada aplicado. Ordem: "ok produção" do RT → migration pelo SQL, versão registrada → merge (publica a tela).
+Migration `20270208000015` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 01/11/2026, com o "ok produção" do RT, pela sessão principal; versão registrada e grants conferidos com a homologação. PR #378 mesclado em 01/11/2026 (publica a tela). Concluído.

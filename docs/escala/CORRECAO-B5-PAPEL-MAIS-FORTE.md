@@ -45,4 +45,4 @@ desfeita, na UPA E2E: hoje (recepção) → `recepcao`; com faturamento, NIR e r
 
 ## Produção
 
-Nada aplicado. Ordem: "ok produção" do RT → migration pelo SQL, versão registrada → merge (sem tela).
+Migration `20270208000019` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 01/11/2026, com o "ok produção" do RT, pela sessão principal; versão registrada e grants conferidos com a homologação. PR #386 mesclado em 01/11/2026. Concluído.
