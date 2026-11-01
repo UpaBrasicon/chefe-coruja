@@ -35,9 +35,11 @@ INSERT INTO t VALUES ('org', '00000000-0000-4000-8000-0000000e5e01'), ('un', '00
   ('sa', '00000000-0000-4000-8000-0000000e5e03'), ('sb', '00000000-0000-4000-8000-0000000e5e04'),
   ('gestor', '00000000-0000-4000-8000-0000000e5e11'), ('p1', '00000000-0000-4000-8000-0000000e5e12'),
   ('p2', '00000000-0000-4000-8000-0000000e5e13'),
-  ('comp', to_char(now() - interval '1 month', 'YYYYMM')), ('atual', to_char(now() AT TIME ZONE 'America/Sao_Paulo', 'YYYYMM')),
-  ('vazio', to_char(now() - interval '3 months', 'YYYYMM')),
-  ('dia', (date_trunc('month', now() - interval '1 month'))::date::text);
+  -- meses no horário de Brasília, como nas funções: em UTC, das 21h às 24h do
+  -- último dia o "mês passado" seria o mês corrente
+  ('comp', to_char((now() AT TIME ZONE 'America/Sao_Paulo') - interval '1 month', 'YYYYMM')), ('atual', to_char(now() AT TIME ZONE 'America/Sao_Paulo', 'YYYYMM')),
+  ('vazio', to_char((now() AT TIME ZONE 'America/Sao_Paulo') - interval '3 months', 'YYYYMM')),
+  ('dia', (date_trunc('month', (now() AT TIME ZONE 'America/Sao_Paulo') - interval '1 month'))::date::text);
 INSERT INTO auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 SELECT pg_temp.u(k), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
        'erp.' || k || '.ficticio@exemplo.invalid', '{"origem": "admin"}', jsonb_build_object('nome_completo', 'Ficticio ' || k), now(), now()
@@ -72,7 +74,7 @@ INSERT INTO public.escala_plantao (id, unidade_id, setor_id, perfil_id, data, tu
   ('00000000-0000-4000-8000-0000000e5e25', pg_temp.u('un'), pg_temp.u('sb'), pg_temp.u('p2'), pg_temp.v('dia')::date + 12, 'tarde',
    (pg_temp.v('dia')::date + 12 + time '13:00') AT TIME ZONE 'America/Sao_Paulo', 360, false),
   ('00000000-0000-4000-8000-0000000e5e26', pg_temp.u('un'), pg_temp.u('sb'), pg_temp.u('p2'), (now() AT TIME ZONE 'America/Sao_Paulo')::date, 'tarde',
-   date_trunc('day', now()) + interval '13 hours', 360, false);
+   ((now() AT TIME ZONE 'America/Sao_Paulo')::date + time '13:00') AT TIME ZONE 'America/Sao_Paulo', 360, false);
 ALTER TABLE public.escala_plantao ENABLE TRIGGER trg_escala_janela;
 INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em, checkout_em)
 SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio + interval '5 minutes',
