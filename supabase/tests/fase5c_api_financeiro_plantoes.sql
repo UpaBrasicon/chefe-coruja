@@ -19,7 +19,9 @@ GRANT EXECUTE ON FUNCTION pg_temp.como(uuid) TO authenticated;
 INSERT INTO t VALUES ('org', '00000000-0000-4000-8000-0000000e5f01'), ('un', '00000000-0000-4000-8000-0000000e5f02'),
   ('un2', '00000000-0000-4000-8000-0000000e5f05'), ('setor', '00000000-0000-4000-8000-0000000e5f03'),
   ('gestor', '00000000-0000-4000-8000-0000000e5f11'), ('p1', '00000000-0000-4000-8000-0000000e5f12'),
-  ('comp', to_char(now() - interval '1 month', 'YYYYMM')), ('dia', (date_trunc('month', now() - interval '1 month'))::date::text);
+  -- mês passado no horário de Brasília, como nas funções (em UTC falha das 21h às 24h do último dia)
+  ('comp', to_char((now() AT TIME ZONE 'America/Sao_Paulo') - interval '1 month', 'YYYYMM')),
+  ('dia', (date_trunc('month', (now() AT TIME ZONE 'America/Sao_Paulo') - interval '1 month'))::date::text);
 INSERT INTO auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 SELECT pg_temp.u(k), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
        'erp.api.' || k || '.ficticio@exemplo.invalid', '{"origem": "admin"}', jsonb_build_object('nome_completo', 'Ficticio ' || k), now(), now()

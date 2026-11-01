@@ -40,7 +40,7 @@ import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
 import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
 import { BotaoRnDaMae } from '@/components/paciente/CadastroRn'
 import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCrescimento'
-import { AbaEncaminhamentoInterno } from '@/components/encaminhamento/AbaEncaminhamentoInterno'
+import { AbaEncaminhamento } from '@/components/encaminhamento/AbaEncaminhamento'
 import { AbaEvolucao } from '@/components/evolucao/AbaEvolucao'
 import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
@@ -518,7 +518,8 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir }: {
         {atual === 'exames' && <AbaExames internacaoId={i.id} pacienteId={pacienteId} medico={!ehGestor} />}
         {atual === 'aih' && <AbaAih doc={doc} internacaoId={i.id} />}
         {atual === 'apac' && <AbaApac doc={doc} internacaoId={i.id} />}
-        {atual === 'encaminhamento' && <AbaEncaminhamentoInterno pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
+        {/* ponto 13: dentro da unidade ou para outra unidade (SMS003a ligado à internação) */}
+        {atual === 'encaminhamento' && <AbaEncaminhamento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} leito={i.leito?.identificador ?? ''} />}
         {atual === 'comp' && (
           <>
             <AbaParecer pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />

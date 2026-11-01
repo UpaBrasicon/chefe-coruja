@@ -34,6 +34,7 @@ import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import type { Papel } from '@/types/database'
+import { ehRetroativo } from '@/lib/retroativo'
 
 import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, useTrocasEscala } from '@/hooks/usePedidosEscala'
 import { SemCategoria } from '@/components/escala/SemCategoria'
@@ -87,6 +88,8 @@ export function EscalaMes() {
   const [rotulo, setRotulo] = React.useState('')
   const [quinzenal, setQuinzenal] = React.useState(false)
   const [salvando, setSalvando] = React.useState(false)
+  // B3: a hora em que a tela abriu, para avisar do acerto retroativo
+  const [abertaEm] = React.useState(() => Date.now())
   const [ano, mesNum] = mes.split('-').map(Number)
 
   const dados = useQuery({
@@ -382,6 +385,9 @@ export function EscalaMes() {
                   <input type="checkbox" className="size-4 accent-primary" checked={quinzenal} onChange={(e) => setQuinzenal(e.target.checked)} />
                   Escala quinzenal (15/15)
                 </label>
+                {escalar && ehRetroativo(escalar.data, escalar.turno, abertaEm) && (
+                  <p role="status" className="text-apoio text-pretty text-atencao">Este plantão já começou: fica como acerto retroativo no histórico da escala.</p>
+                )}
               </>
             )}
             {modo === 'vaga' && categoria && (
