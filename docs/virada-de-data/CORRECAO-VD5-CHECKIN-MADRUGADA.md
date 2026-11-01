@@ -55,7 +55,13 @@ Aplicada pelo SQL em 01/11/2026, com a versão `20270209000004` registrada. O te
 
 ## Produção
 
-Aguarda o "ok produção" do RT. A migration entra antes do merge.
+Migration `20270209000004` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 01/11/2026, com o "ok produção" do RT e depois do CI verde. Conferido depois de aplicar:
+- versão registrada;
+- `data_do_turno` dá 31/10 para 01/11 às 3h30 e 01/11 para 01/11 às 23h59;
+- `registrar_checkin` usa a função nova, com md5 `38c077a7…` igual ao da homologação;
+- ACL igual, e ninguém executa o helper direto.
+
+PR #396 mesclado em seguida. Concluído.
 
 ## Riscos
 
