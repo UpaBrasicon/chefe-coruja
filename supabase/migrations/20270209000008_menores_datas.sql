@@ -25,7 +25,7 @@
 -- Rollback: as mesmas trocas invertidas.
 -- ════════════════════════════════════════════════════════════════════════════
 
-CREATE OR REPLACE FUNCTION pg_temp.trocar(p_f regprocedure, p_antigo text, p_novo text)
+CREATE OR REPLACE FUNCTION pg_temp.vd11_trocar(p_f regprocedure, p_antigo text, p_novo text)
 RETURNS void LANGUAGE plpgsql AS $$
 DECLARE
   def text := replace(pg_get_functiondef(p_f), chr(13), '');
@@ -38,30 +38,30 @@ BEGIN
 END $$;
 
 -- 1 e 2. dia de Brasília
-SELECT pg_temp.trocar('public.implantacao_treinar(uuid, uuid, text, date, text)', 'current_date', 'private.data_atual()');
-SELECT pg_temp.trocar('private.aplicar_primeiro_acesso(uuid, text, jsonb)', 'current_date', 'private.data_atual()');
+SELECT pg_temp.vd11_trocar('public.implantacao_treinar(uuid, uuid, text, date, text)', 'current_date', 'private.data_atual()');
+SELECT pg_temp.vd11_trocar('private.aplicar_primeiro_acesso(uuid, text, jsonb)', 'current_date', 'private.data_atual()');
 
 -- 3. idade na alta
-SELECT pg_temp.trocar('private.conteudo_pacote_alta(uuid)',
+SELECT pg_temp.vd11_trocar('private.conteudo_pacote_alta(uuid)',
   'coalesce(i.data_alta, now())::date',
   '(coalesce(i.data_alta, now()) AT TIME ZONE ''America/Sao_Paulo'')::date');
 
 -- 4. baldes e janela da busca
-SELECT pg_temp.trocar('public.resumo_busca_ia(uuid, integer)',
+SELECT pg_temp.vd11_trocar('public.resumo_busca_ia(uuid, integer)',
   'SELECT l.created_at::date AS dia,',
   'SELECT (l.created_at AT TIME ZONE ''America/Sao_Paulo'')::date AS dia,');
-SELECT pg_temp.trocar('public.resumo_busca_ia(uuid, integer)',
+SELECT pg_temp.vd11_trocar('public.resumo_busca_ia(uuid, integer)',
   'AND l.created_at >= now() - make_interval(days => greatest(p_dias, 1))',
   'AND l.created_at >= ((private.data_atual() - greatest(p_dias, 1) + 1)::text || '' 00:00:00-03'')::timestamptz');
 
 -- 5. janela e dia padrão do censo
-SELECT pg_temp.trocar('public.censo_recente(uuid, integer)', 'current_date', 'private.data_atual()');
-SELECT pg_temp.trocar('public.gerar_censo_todas_unidades(date)', 'current_date', 'private.data_atual()');
+SELECT pg_temp.vd11_trocar('public.censo_recente(uuid, integer)', 'current_date', 'private.data_atual()');
+SELECT pg_temp.vd11_trocar('public.gerar_censo_todas_unidades(date)', 'current_date', 'private.data_atual()');
 
 -- 6. fim do dia do censo: meia-noite seguinte, exclusiva
-SELECT pg_temp.trocar('private.gerar_censo_diario(uuid, date)',
+SELECT pg_temp.vd11_trocar('private.gerar_censo_diario(uuid, date)',
   'v_dia_fim timestamptz := (p_data::text || '' 23:59:59-03'')::timestamptz;',
   'v_dia_fim timestamptz := ((p_data + 1)::text || '' 00:00:00-03'')::timestamptz;');
-SELECT pg_temp.trocar('private.gerar_censo_diario(uuid, date)', '<= v_dia_fim', '< v_dia_fim');
+SELECT pg_temp.vd11_trocar('private.gerar_censo_diario(uuid, date)', '<= v_dia_fim', '< v_dia_fim');
 
-DROP FUNCTION pg_temp.trocar(regprocedure, text, text);
+DROP FUNCTION pg_temp.vd11_trocar(regprocedure, text, text);
