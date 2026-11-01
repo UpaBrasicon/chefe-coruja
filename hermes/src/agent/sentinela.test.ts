@@ -1,7 +1,7 @@
 // Testes unitários da lógica pura do Sentinela (IQR, mínimo 8, detecção).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { calcularLimiteOutlier, detectarOutliers, type MetricasMedico } from './sentinela.ts'
+import { calcularLimiteOutlier, detectarOutliers, fimDoDiaDoPlantao, type MetricasMedico } from './sentinela.ts'
 
 test('calcularLimiteOutlier — mediana e Q3+1.5*IQR corretos', () => {
   // 1,2,3,4,5 → Q1=2, Q2=3, Q3=4, IQR=2, limite=4+3=7
@@ -56,4 +56,9 @@ test('detectarOutliers — sem outliers não gera alertas', () => {
   ]
   const alertas = detectarOutliers(metricas, '30d')
   assert.equal(alertas.length, 0, 'sem outlier não deve gerar alerta')
+})
+
+// VD11: o fim do dia do plantão é 23:59:59 em Brasília, não no fuso do contêiner
+test('fimDoDiaDoPlantao — 23:59:59 de Brasília', () => {
+  assert.equal(fimDoDiaDoPlantao('2026-11-01'), Date.parse('2026-11-02T02:59:59Z'))
 })

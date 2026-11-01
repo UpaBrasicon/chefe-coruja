@@ -46,6 +46,12 @@ function quartil(sorted: number[], q: number): number {
   return v0 + (v1 - v0) * resto
 }
 
+/** Fim do dia do plantão (23:59:59 em Brasília), em ms. Sem o fuso, o contêiner
+ * (UTC) lia 23:59:59 UTC = 20:59:59 em Brasília (VD11, lote "Virada de data"). */
+export function fimDoDiaDoPlantao(dataPlantao: string): number {
+  return new Date(`${dataPlantao}T23:59:59-03:00`).getTime()
+}
+
 export function calcularLimiteOutlier(valores: number[]): { mediana: number; limite: number } {
   if (valores.length < 2) return { mediana: valores[0] ?? 0, limite: Infinity }
   const sorted = [...valores].sort((a, b) => a - b)
@@ -125,7 +131,7 @@ export async function calcularMetricasUnidade(
     const cancelamentoTardio = repasses.filter((r) => {
       const dataPlantao = (r.escala_plantao as { data?: string } | null)?.data
       if (!dataPlantao) return false
-      const plantaoTs = new Date(`${dataPlantao}T23:59:59`).getTime()
+      const plantaoTs = fimDoDiaDoPlantao(dataPlantao)
       const criadoTs = new Date(r.created_at).getTime()
       return plantaoTs - criadoTs < 48 * 3_600_000
     }).length
