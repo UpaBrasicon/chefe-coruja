@@ -51,6 +51,7 @@ export const ROTULO_DOCUMENTO: Record<string, string> = {
   receita: 'Receita', encaminhamento: 'Encaminhamento', pedido_exames: 'Pedido de exames', laudo_aih: 'Laudo de AIH',
   parecer: 'Parecer', evolucao_enfermagem: 'Evolução de enfermagem', anotacao_enfermagem: 'Anotação de enfermagem',
   evolucao_fisioterapia: 'Evolução de fisioterapia', evolucao_nutricao: 'Evolução de nutrição', evolucao_outros: 'Evolução multiprofissional',
+  reavaliacao_quadro: 'Reavaliação do quadro',
 }
 
 export const rotuloDocumento = (tipo: string) => ROTULO_DOCUMENTO[tipo] ?? tipo.replace(/_/g, ' ')
