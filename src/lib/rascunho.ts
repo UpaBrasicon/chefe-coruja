@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { cifrar, decifrar, estaCifrado, temChave } from '@/lib/cofreLocal'
+import { cifrar, decifrar, estaCifrado, temChave } from './cofreLocal.ts'
 import { hora } from './formato.ts'
 
 /** TTL de rascunhos clínicos no navegador (LGPD — computador compartilhado de UPA). */
@@ -43,7 +43,10 @@ export function idadeTexto(nascimento: string, dataAtual: string) {
   const partes = nascimento.split('/')
   if (partes.length !== 3) return ''
   const dn = new Date(Number(partes[2]), Number(partes[1]) - 1, Number(partes[0]))
-  const da = new Date(dataAtual)
+  // "AAAA-MM-DD" lido como dia local: new Date('AAAA-MM-DD') é meia-noite UTC,
+  // 21h da véspera em Brasília (VD8)
+  const [ya, ma, dd] = dataAtual.slice(0, 10).split('-').map(Number)
+  const da = new Date(ya, ma - 1, dd)
   if (isNaN(dn.getTime()) || isNaN(da.getTime())) return ''
   let anos = da.getFullYear() - dn.getFullYear()
   let meses = da.getMonth() - dn.getMonth()
