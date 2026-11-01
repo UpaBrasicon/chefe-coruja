@@ -34,8 +34,11 @@ import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import type { Papel } from '@/types/database'
+import { ehRetroativo } from '@/lib/retroativo'
 
 import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, useTrocasEscala } from '@/hooks/usePedidosEscala'
+import { SemCategoria } from '@/components/escala/SemCategoria'
+import { agruparSemCategoria } from '@/lib/semCategoria'
 
 type Escalado = { plantao_id: string; perfil_id: string; nome: string; turno: string; duracao_min: number; quinzenal: boolean; rotulo: string | null; papel: Papel | null }
 // o que falta na faixa, categoria por categoria: vaga marcada (vaga_id) ou prevista pela fixa
@@ -85,6 +88,8 @@ export function EscalaMes() {
   const [rotulo, setRotulo] = React.useState('')
   const [quinzenal, setQuinzenal] = React.useState(false)
   const [salvando, setSalvando] = React.useState(false)
+  // B3: a hora em que a tela abriu, para avisar do acerto retroativo
+  const [abertaEm] = React.useState(() => Date.now())
   const [ano, mesNum] = mes.split('-').map(Number)
 
   const dados = useQuery({
@@ -209,6 +214,8 @@ export function EscalaMes() {
           <Button variant="link" onClick={verPedidos} className="ml-auto h-auto min-h-0 p-0 text-apoio font-medium">Ver os pedidos</Button>
         </div>
       )}
+      {/* M7: plantões do mês sem categoria, com o atalho para definir */}
+      {unidadeId && <SemCategoria unidadeId={unidadeId} grupos={agruparSemCategoria(m?.faixas ?? [])} onFeito={recarregar} />}
 
       <section aria-label="Escala do mês" className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[minmax(0,1fr)_340px]">
         <div className="flex min-w-0 flex-col border-fio md:border-r">
@@ -378,6 +385,9 @@ export function EscalaMes() {
                   <input type="checkbox" className="size-4 accent-primary" checked={quinzenal} onChange={(e) => setQuinzenal(e.target.checked)} />
                   Escala quinzenal (15/15)
                 </label>
+                {escalar && ehRetroativo(escalar.data, escalar.turno, abertaEm) && (
+                  <p role="status" className="text-apoio text-pretty text-atencao">Este plantão já começou: fica como acerto retroativo no histórico da escala.</p>
+                )}
               </>
             )}
             {modo === 'vaga' && categoria && (

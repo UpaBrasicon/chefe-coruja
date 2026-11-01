@@ -240,6 +240,21 @@ export function pendenciasAdm({ a, pacienteId, internacaoId, jaRegistrada, detal
   return p
 }
 
+/** A ficha gravada (admissao_ficha) de volta ao formulário, para corrigir a admissão (ponto 10). */
+export function formDaFicha(fr: Record<string, unknown>): FormAdm {
+  const s = (k: string) => (typeof fr[k] === 'string' ? (fr[k] as string) : '')
+  const cid = s('cid')
+  return {
+    procedencia: s('procedencia'), acompanhante: s('acompanhante'), comorb: s('comorb'), meds: s('meds'),
+    subjetivo: s('subjetivo'), objetivo: s('objetivo'), pa: s('pa'), fc: s('fc'), fr: s('fr'), tax: s('tax'), spo2: s('spo2'),
+    spo2Cond: s('spo2Cond') === 'ar' || s('spo2Cond') === 'o2' ? (s('spo2Cond') as Spo2Cond) : '',
+    o2L: s('o2L'), hgt: s('hgt'), peso: s('peso'), glasgow: s('glasgow'),
+    cid, cidOk: cid.includes(' — '), plano: s('plano'),
+    sepse: s('sepse') === 'acionado' || s('sepse') === 'nao_acionado' ? (s('sepse') as Sepse) : '',
+    detalhes: Array.isArray(fr.detalhes) ? (fr.detalhes as DetalheAdm[]) : [],
+  }
+}
+
 /** A ficha estruturada (p_ficha de registrar_admissao): o que folhas.ts (admissao) lê. */
 export function fichaAdm({ a, setor, regulacao, pacienteAntigo, pac, agora }: {
   a: FormAdm; setor: string; regulacao: string; pacienteAntigo: PacienteAntigo; pac: PacProto | null; agora: Date
