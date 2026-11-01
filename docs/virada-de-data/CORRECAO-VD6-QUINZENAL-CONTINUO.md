@@ -76,7 +76,13 @@ Aplicada pelo SQL em 01/11/2026, com a versão `20270209000005` registrada. As s
 
 ## Produção
 
-Aguarda o "ok produção" do RT.
+Migration `20270209000005` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 01/11/2026, com o "ok produção" do RT e depois do CI verde. Conferido depois de aplicar:
+- versão registrada;
+- `gerar_escala_mensal_detalhada` usa a função nova, com md5 `6791e7af…` igual ao da homologação;
+- `semana_quinzenal` dá trabalho em 29/10/2031, folga em 05/11 e trabalho em 12/11;
+- ACL igual, e ninguém executa o helper direto.
+
+PR #397 mesclado em seguida. Concluído.
 
 ## Riscos
 
