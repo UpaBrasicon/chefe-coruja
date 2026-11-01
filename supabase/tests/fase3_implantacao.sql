@@ -119,6 +119,17 @@ SELECT pg_temp.falha(format('SELECT public.implantacao_treinar(%L, %L, %L)', pg_
   'Esta pessoa não tem esse papel na unidade', 'treinamento só no papel que a pessoa tem');
 SELECT pg_temp.falha(format('SELECT public.implantacao_treinar(%L, %L, %L, current_date + 1)', pg_temp.v('imp'), '10000000-0000-4000-8000-000000000005', 'recepcao'),
   'O treinamento não pode ter data futura', 'sem data futura');
+-- VD11 (lote "Virada de data"): o futuro é pelo dia de Brasília, não o UTC
+RESET ROLE;
+CREATE OR REPLACE FUNCTION private.data_atual() RETURNS date LANGUAGE sql STABLE SET search_path = ''
+AS $$ SELECT date '2001-01-01' $$;
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.falha(format('SELECT public.implantacao_treinar(%L, %L, %L, %L::date)', pg_temp.v('imp'), '10000000-0000-4000-8000-000000000005', 'recepcao', '2001-01-02'),
+  'O treinamento não pode ter data futura', 'amanhã em Brasília é futuro');
+RESET ROLE;
+CREATE OR REPLACE FUNCTION private.data_atual() RETURNS date LANGUAGE sql STABLE SET search_path = ''
+AS $$ SELECT (now() AT TIME ZONE 'America/Sao_Paulo')::date $$;
+SET LOCAL ROLE authenticated;
 SELECT public.implantacao_treinar(pg_temp.v('imp')::uuid, p::uuid, papel)
   FROM (VALUES ('10000000-0000-4000-8000-000000000001', 'gestor'), ('10000000-0000-4000-8000-000000000004', 'enfermeiro'),
                ('10000000-0000-4000-8000-000000000005', 'recepcao'), ('10000000-0000-4000-8000-000000000002', 'plantonista')) x(p, papel);
