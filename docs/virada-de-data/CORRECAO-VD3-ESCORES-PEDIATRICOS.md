@@ -51,7 +51,12 @@ Aplicada pelo SQL em 01/11/2026, com a versão `20270209000002` registrada. O te
 
 ## Produção
 
-Aguarda o "ok produção" do RT. A migration entra antes do merge.
+Migration `20270209000002` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 01/11/2026, com o "ok produção" do RT e depois do CI verde. Conferido depois de aplicar:
+- versão registrada;
+- nenhuma das cinco funções usa `current_date`, e todas usam `private.data_atual()`;
+- grants iguais aos da homologação.
+
+PR #394 mesclado em seguida. Concluído.
 
 ## Riscos
 
