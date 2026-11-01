@@ -34,4 +34,4 @@ A tela da homologação fica atrás do login do Vercel; a tela não foi aberta n
 
 ## Produção
 
-Sem migration: vai à produção no merge.
+Sem migration. PR #379 mesclado em 31/10/2026 (publica a tela). Concluído.
