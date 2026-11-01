@@ -2194,6 +2194,33 @@ Ajuste da E4 (pedido do RT em 28/10/2026: "só tem justificar falta"): no dia pa
 
 **Correção do bug baixo B11 (teste ponta a ponta de 29/10/2026; decisão do RT em 31/10/2026, "Libera só a aba Escala"): portão do check-in.** Quem passava da tolerância via só o portão e não justificava a falta. Agora o portão fechado ganha "Ver minha escala (justificar falta)", que abre só a escala (a mesma do "Fora do seu horário"), com "Voltar ao check-in"; o resto segue fechado. Só tela, sem migration; guarda de banco `escala_portao_checkin.sql` (4 de 4: com o portão fechado, a escala abre, a falta é justificada e o paciente segue fora). Branch `fix/escala-b11-portao-aba-escala`; na homologação em 31/10 (002 E2E). Evidência em `docs/escala/CORRECAO-B11-PORTAO-ABA-ESCALA.md`.
 
+## Virada de data (meia-noite, fim de mês, fim de ano) — pedido do RT em 01/11/2026
+
+**Origem:** em 31/10/2026, às 22h de Brasília, o CI do banco falhou em três testes do ERP de plantões porque calculavam o mês em UTC (correção no PR #388). O RT pediu para procurar bugs da mesma família. Varredura só de leitura em `supabase/migrations`, `supabase/tests`, `src/`, `supabase/functions/` e `hermes/`; os itens marcados "conferido" foram checados na produção (esquema e cálculo, sem dado de paciente).
+
+**Causa comum:** o banco da produção roda em **UTC** (`SHOW TimeZone` = UTC, conferido em 01/11/2026). Das 21h às 24h de Brasília, `current_date` já é o dia seguinte. `private.data_atual()` já devolve o dia de Brasília e é a troca padrão. No frontend, `new Date().toISOString().slice(0, 10)` e `new Date('AAAA-MM-DD')` têm o mesmo efeito; `dataIso`/`hojeLocal` de `src/lib/formato.ts` já fazem certo.
+
+**Decisão do RT em 01/11/2026:** registrar como lote; os clínicos são **P0**. Cada item em branch e PR próprios, teste que falha antes e passa depois (com relógio simulado na janela de falha), homologação antes da produção.
+
+| Item | Prioridade | O que acontece | Onde |
+|---|---|---|---|
+| VD1 — Corte de 14 anos na véspera do aniversário | **P0** (clínico, conferido) | `age(dia, nascimento) < interval '14 years'` dá falso no dia anterior aos 14 anos para quem nasceu do dia 2 em diante de mês de 31 dias: `age` devolve `13 years 11 mons 30 days`, que o Postgres compara como igual a 14 anos. A criança entra como adulto: protocolo de classificação adulto, NIPS/FLACC recusadas, Fugulin aceito. Correção: `nascimento > dia - interval '14 years'`, como `prescrever` já faz. | `classificar_risco`, `registrar_avaliacao`, `registrar_fugulin` |
+| VD2 — Idade do atendimento pela data UTC da chegada | **P0** (clínico, conferido no código) | A tela do médico e a fila do PS calculam a faixa etária com `chegada_em.slice(0, 10)` (data UTC). Chegada das 21h às 24h na véspera dos 14 anos: atendimento como adulto, sem as salvaguardas pediátricas, enquanto a classificação (que usa `dataSP`) diz pediátrico. Correção: `dataIso(chegada_em)`. | `src/pages/plantao/porta/JanelaAtendimento.tsx:168`, `src/pages/plantao/porta/FilaPS.tsx:96` |
+| VD3 — Escores pediátricos com `current_date` | **P0** (clínico) | NEWS2 × PEWS, faixa de idade do Phoenix/PELOD-2 e alerta de sepse viram 3 horas antes (21h) na véspera do aniversário de 14 anos ou do aniversário mensal. `pelod2_rotina` não é afetada (cron às 10h UTC). | `calcular_acuidade`, `acuidade`, `observacao_dispara_pelod2`, `alertas_sepse` |
+| VD4 — Neonato no pedido de regulação | **P0** (clínico) | `current_date - 28` em UTC: das 21h às 24h, um recém-nascido de 27 dias passa por não-neonato e a exigência de incubadora não é pedida. | `regulacao_solicitar` |
+| VD5 — Check-in sem escala de madrugada | P1 | Entre 00h e 06h59, sem escala, o check-in grava (hoje, `noite`), mas a noite começou ontem. O check-in real das 19h faz upsert na mesma linha e a presença da madrugada se perde. | `registrar_checkin` |
+| VD6 — Fixo quinzenal reinicia a cada mês | P1 | A paridade da semana é `(dia - 1) / 7` do mês: quem cai na semana dos dias 29–31 pega também a semana 0 do mês seguinte (duas semanas seguidas). | `gerar_escala_mensal_detalhada` |
+| VD7 — Início da validade da APAC | P1 | O formulário já vem com a data UTC: depois das 21h é amanhã; no dia 31, mês seguinte (perde a competência atual); em 31/12, ano seguinte. | `src/pages/regulacao/Apac.tsx:148` |
+| VD8 — Idade no caderno do leito | P1 | `new Date('AAAA-MM-DD')` é meia-noite UTC (21h da véspera em Brasília): a idade mostrada fica um dia atrás **o dia todo**; no aniversário aparece a idade anterior. A folha impressa recalcula certo. | `src/lib/rascunho.ts:46` |
+| VD9 — Avisos com `current_date` | P2 | `notificacoes_plantonista.data` é a chave de um aviso por dia: os avisos de prazo da regulação e do NIR repetem às 21h e saem com a data de amanhã. Também no chat, webhooks e RNDS. | `regulacao_sla_avisar`, `regulacao_avisar*`, `nir_cobrar`, `enviar_mensagem`, `webhook_manutencao`, `rnds_avisar` |
+| VD10 — Faturamento e críticas | P2 | APAC pedida das 21h às 24h do último dia cai na competência seguinte quando não tem `validade_inicio` (`rede_faturamento`); críticas da AIH e responsável adulto da APAC usam a idade de hoje, não a da internação ou do procedimento. | `rede_faturamento`, `criticas_aih`, `criticas_lancamento_aih`, `apac_arquivo` |
+| VD11 — Menores | P3 | `implantacao_treinar` aceita amanhã; idade mínima de 16 anos no primeiro acesso; idade na alta (`pacote_alta_paciente`); baldes diários de logs da busca e janelas de relatório; censo diário perde a alta do último segundo (`23:59:59-03`); "último atendimento" em cadastros duplicados; nome do CSV de auditoria; cancelamento tardio do Hermes (`sentinela.ts:128`, sem fuso); "D+N" da evolução por blocos de 24 h. | vários |
+| VD12 — Testes frágeis | P2 | `fase5_conta_documentos_sus.sql` e `fase5_conta_glosas.sql` montam a competência em UTC: passam hoje, quebram se vier uma guarda de competência futura. Os três testes do ERP de plantões estão no PR #388. | `supabase/tests` |
+
+**Conferido sem bug:** calendários da escala, contas de competência no frontend (`somarMeses`, `competenciasDaValidade`, `competenciaDaData`), datas das folhas impressas, 29 de fevereiro em `idadeEm`, cron do censo, `data_atual`, `competencia_limites`/`competencia_de`/`competencia_sugerida`.
+
+**Pergunta de desenho, não verificada:** o BI põe o turno `noite` pelo dia da chegada (`filtros_bi`), então o plantão de 19h às 7h aparece partido em duas datas.
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
