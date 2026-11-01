@@ -72,6 +72,9 @@ INSERT INTO public.vinculos (perfil_id, unidade_id, papel) VALUES
 INSERT INTO public.escala_plantao (id, unidade_id, setor_id, perfil_id, data, turno) VALUES
   (pg_temp.id('pE'),  pg_temp.id('uni'), pg_temp.id('setor'), pg_temp.id('enf'), private.data_atual() + 2, 'noite'),
   (pg_temp.id('pE2'), pg_temp.id('uni'), pg_temp.id('setor'), pg_temp.id('enf'), private.data_atual() + 5, 'noite');
+-- o pE2 veio da fixa (a saída do fixo só vale para plantão da fixa, M2)
+INSERT INTO public.escala_fixa (unidade_id, setor_id, perfil_id, dia_semana, turno, papel)
+VALUES (pg_temp.id('uni'), pg_temp.id('setor'), pg_temp.id('enf'), extract(dow FROM private.data_atual() + 5)::int, 'noite', 'enfermeiro');
 INSERT INTO public.escala_vagas (id, unidade_id, setor_id, data, turno, aberta_por, papel) VALUES
   (pg_temp.id('v1'), pg_temp.id('uni'), pg_temp.id('setor'), private.data_atual() + 3, 'manha', pg_temp.id('gest'), 'plantonista'),
   (pg_temp.id('v2'), pg_temp.id('uni'), pg_temp.id('setor'), private.data_atual() + 4, 'tarde', pg_temp.id('gest'), 'plantonista');
