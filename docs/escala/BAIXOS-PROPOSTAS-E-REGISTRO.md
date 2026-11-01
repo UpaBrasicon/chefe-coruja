@@ -12,7 +12,7 @@ resto foi corrigido em PR próprio.
 | B2 | Corrigido junto com o **M1** (#358, mesma função `vagas_abertas`): a vaga numa faixa em que eu já estou escalado não aparece. **Em produção** (30/10/2026). |
 | B3 | Decisão do RT em 31/10 ("Aceita como retroativo"), corrigido no PR da migration `20270208000015`. |
 | B4 | Corrigido e **em produção**: #367 (migration `20270208000012`, 30/10/2026). |
-| B5 | **Proposta** abaixo (mexe em autorização). |
+| B5 | Decisão do RT em 31/10 ("Completar a lista"), corrigido no PR da migration `20270208000019`. |
 | B6 | Resolvido pelo **A4** (#357): rótulo "cancelada" da troca. Em produção (30/10/2026). |
 | B7 | Resolvido pelo **A4** (#357): "Seus pedidos" mostra só as trocas que eu pedi. |
 | B8 | Corrigido e **em produção**: #366 (só tela). |
