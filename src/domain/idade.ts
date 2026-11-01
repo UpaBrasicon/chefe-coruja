@@ -8,15 +8,23 @@
 // PEWS, e 13a 11m 29d na triagem); um deles deixava quem tem 14 anos no modo
 // pediátrico. Aqui só existe este.
 
+import { dataIso } from '../lib/formato.ts'
+
 export const IDADE_ADULTO_ANOS = 14
 
 export type Idade = { anos: number; meses: number; dias: number; totalDias: number }
 
-/** Data de calendário (sem hora) a partir de 'AAAA-MM-DD' ou Date. */
+/**
+ * Data de calendário (sem hora) a partir de 'AAAA-MM-DD', de um instante do
+ * banco ('2026-11-02T00:30:00+00:00') ou de Date. O instante conta o dia de
+ * Brasília: cortar o texto daria o dia em UTC, que das 21h às 24h já é amanhã
+ * (VD2 do lote "Virada de data").
+ */
 function comoData(d: string | Date): { a: number; m: number; d: number } {
   if (typeof d === 'string') {
-    const [a, m, dia] = d.slice(0, 10).split('-').map(Number)
-    return { a, m, d: dia }
+    const dia = d.length > 10 && !Number.isNaN(Date.parse(d)) ? dataIso(d) : d
+    const [a, m, dd] = dia.slice(0, 10).split('-').map(Number)
+    return { a, m, d: dd }
   }
   return { a: d.getFullYear(), m: d.getMonth() + 1, d: d.getDate() }
 }

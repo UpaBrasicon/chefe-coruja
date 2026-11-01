@@ -22,6 +22,22 @@ test('pediatria: nascido em 29/02 completa 14 anos em 01/03 do ano não bissexto
   assert.equal(ehPediatrico('2012-02-29', '2026-03-01'), false)
 })
 
+// VD1/VD2 (lote "Virada de data", 01/11/2026): a chegada vem do banco como
+// instante em UTC; o dia que conta é o de Brasília.
+test('pediatria: chegada às 21h30 da véspera dos 14 anos ainda é pediátrica', () => {
+  // 02/11 00:30 UTC = 01/11 21:30 em Brasília (véspera)
+  assert.equal(ehPediatrico('2012-11-02', '2026-11-02T00:30:00+00:00'), true)
+  assert.equal(faixaEtaria('2012-11-02', '2026-11-02T00:30:00.000Z'), 'pediatrico')
+  // 02/11 03:00 UTC = 02/11 00:00 em Brasília (aniversário)
+  assert.equal(ehPediatrico('2012-11-02', '2026-11-02T03:00:00+00:00'), false)
+})
+
+test('idade: instante do banco conta o dia de Brasília', () => {
+  // nascido ontem à noite (Brasília); 01/11 22:00 em Brasília = 02/11 01:00 UTC
+  assert.equal(rotuloIdade('2026-10-31', '2026-11-02T01:00:00+00:00'), '1d')
+  assert.equal(idadeEm('2026-10-31', 'não é data'), null)
+})
+
 test('idade: nascimento no futuro é inválido, não "zero"', () => {
   assert.equal(idadeEm('2026-10-01', '2026-09-26'), null)
   assert.equal(ehPediatrico('2026-10-01', '2026-09-26'), null)
