@@ -10035,6 +10035,7 @@ export type Database = {
       criticas_aih_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       definir_critica_aih: { Args: { p_bloqueante: boolean; p_critica: string; p_motivo: string; p_unidade: string }; Returns: undefined }
       definir_meu_cbo: { Args: { p_cbo: string }; Returns: Json }
+      definir_categoria_plantoes: { Args: { p_papel: Database['public']['Enums']['papel']; p_plantoes: string[] }; Returns: number }
       definir_sala_do_plantao: { Args: { p_sala: string; p_setor: string }; Returns: Json }
       minhas_salas_do_plantao: { Args: never; Returns: Json }
       arquivo_bpa: { Args: { p_fechamento: string }; Returns: Json }
@@ -12529,6 +12530,15 @@ export type Database = {
         Args: { p_conteudo: string; p_ficha: Json; p_internacao: string }
         Returns: string
       }
+      corrigir_admissao: {
+        Args: { p_conteudo: string; p_documento: string; p_ficha: Json; p_justificativa: string }
+        Returns: string
+      }
+      registrar_reavaliacao_quadro: {
+        Args: { p_conteudo: string; p_dados: Json; p_internacao: string }
+        Returns: string
+      }
+      reavaliacoes_do_quadro: { Args: { p_internacao: string }; Returns: Json }
       registrar_afericao_crescimento: {
         Args: {
           p_data: string

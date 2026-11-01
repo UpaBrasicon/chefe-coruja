@@ -36,6 +36,7 @@ import { dataHora, hora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
 import { PAPEL_LABEL } from '@/lib/constants'
+import { ehRetroativo } from '@/lib/retroativo'
 import { Estado } from '@/components/porta/Estado'
 import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, useTrocasEscala, type SolicitacaoComExtra } from '@/hooks/usePedidosEscala'
 
@@ -553,11 +554,11 @@ export default function Escala({
     () => (escalaMes ?? []).filter((e) => e.perfil_id === perfil?.id),
     [escalaMes, perfil?.id]
   )
-  // B10: na troca, só plantões que ainda não terminaram (a hora em que a tela abriu)
+  // B10 e B12: na troca, só plantões que ainda não começaram (a hora em que a tela abriu)
   const [abertaEm] = React.useState(() => Date.now())
-  const naoTerminou = (p: { inicio: string; duracao_min: number }) => new Date(p.inicio).getTime() + p.duracao_min * 60_000 > abertaEm
-  const meusPlantoesTroca = meusPlantoes.filter(naoTerminou)
-  const outrosPlantoesTroca = (plantoesDeOutros ?? []).filter(naoTerminou)
+  const naoComecou = (p: { inicio: string }) => new Date(p.inicio).getTime() > abertaEm
+  const meusPlantoesTroca = meusPlantoes.filter(naoComecou)
+  const outrosPlantoesTroca = (plantoesDeOutros ?? []).filter(naoComecou)
 
   const resumo = React.useMemo(() => {
     const porDia = new Map<string, Set<string>>()
@@ -1002,6 +1003,9 @@ export default function Escala({
                         <strong>pelo menos 15 dias de antecedência</strong>. Faltam{' '}
                         <strong>{Math.max(0, diasPara(diaSelecionado))} dia(s)</strong> para este plantão.
                       </div>
+                      <p className="mt-2 text-apoio text-pretty text-tinta-sussurro">
+                        Vale para plantão da escala fixa. Aprovado, você sai da fixa nos próximos meses; os plantões já gerados ficam até a coordenação decidir cada um.
+                      </p>
                       <div className="mt-3 flex flex-col gap-1.5">
                         <Label htmlFor="sair-just">Justificativa (opcional)</Label>
                         <Textarea
@@ -1656,6 +1660,8 @@ export default function Escala({
                             {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
                             {s.tipo_falta && ` · ${TIPO_FALTA_LABEL[s.tipo_falta]}`}
                             {s.justificativa && ` · ${s.justificativa}`}
+                            {/* M2 (RT, 31/10/2026): aprovar a saída do fixo encerra a linha da fixa */}
+                            {s.tipo === 'sair_fixo' && ' · aprovar encerra a linha da fixa nos próximos meses; os plantões já gerados ficam'}
                             {s.anexo_url && <> · <Button type="button" variant="link" size="xs" className="h-auto min-h-0 p-0 align-baseline text-rotulo font-medium" onClick={() => void abrirAnexo(s.anexo_url!)}>ver anexo</Button></>}
                           </span>
                         </span>
@@ -2085,6 +2091,9 @@ export default function Escala({
               />
               Escala quinzenal (15/15)
             </label>
+            {abaGestor !== 'fixa' && celula && ehRetroativo(celula.data, turno, abertaEm) && (
+              <p role="status" className="text-apoio text-pretty text-atencao">Este plantão já começou: fica como acerto retroativo no histórico da escala.</p>
+            )}
           </div>
           {/* M10: o erro de escalar aparece (antes o clique não fazia nada) */}
           {(abaGestor === 'fixa' ? adicionarFixa.error : adicionar.error) && (
