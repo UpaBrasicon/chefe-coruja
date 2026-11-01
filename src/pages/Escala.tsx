@@ -1662,6 +1662,8 @@ export default function Escala({
                             {s.justificativa && ` · ${s.justificativa}`}
                             {/* M2 (RT, 31/10/2026): aprovar a saída do fixo encerra a linha da fixa */}
                             {s.tipo === 'sair_fixo' && ' · aprovar encerra a linha da fixa nos próximos meses; os plantões já gerados ficam'}
+                            {/* M9 (RT, 31/10/2026): o próprio pedido se aprova com o 2º fator, e fica registrado */}
+                            {s.tipo === 'passar_plantao' && perfil && (s.perfil_id === perfil.id || s.destino_perfil_id === perfil.id) && ' · pedido seu: aprovar pede o 2º fator e fica registrado'}
                             {s.anexo_url && <> · <Button type="button" variant="link" size="xs" className="h-auto min-h-0 p-0 align-baseline text-rotulo font-medium" onClick={() => void abrirAnexo(s.anexo_url!)}>ver anexo</Button></>}
                           </span>
                         </span>
@@ -1686,6 +1688,7 @@ export default function Escala({
                             {' ⇄ '}
                             {t.plantao_b ? `${fmtDiaBR(t.plantao_b.data)} · ${TURNO_LABEL[t.plantao_b.turno]}` : 'Plantão removido'}
                             {t.mensagem && ` · ${t.mensagem}`}
+                            {perfil && (t.perfil_a_id === perfil.id || t.perfil_b_id === perfil.id) && ' · pedido seu: aprovar pede o 2º fator e fica registrado'}
                           </span>
                         </span>
                         {!t.aceito_em ? (
