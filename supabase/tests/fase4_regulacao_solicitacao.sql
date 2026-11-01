@@ -248,12 +248,12 @@ SELECT pg_temp.ok((SELECT count(*) FROM public.log_auditoria WHERE acao LIKE 're
 CREATE OR REPLACE FUNCTION private.data_atual()
 RETURNS date LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$ SELECT date '2000-01-28' $$;
 UPDATE public.pacientes SET data_nascimento = '2000-01-01' WHERE id = '23000000-0000-4000-8000-000000000973';
-SELECT pg_temp.ok(NOT EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'regulacao_solicitar' AND prosrc ~* '\mcurrent_date\M'),
-  'regulacao_solicitar não usa current_date');
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.falha($$SELECT pg_temp.solicitar('23000000-0000-4000-8000-000000000973', '{"tipo": "transferencia", "transporte": "ambulancia_avancada", "tipo_leito": "uti_neonatal"}')$$,
   'Recém-nascido: informe se a transferência precisa de incubadora', 'RN de 27 dias no dia da unidade pede incubadora');
 RESET ROLE;
+SELECT pg_temp.ok(NOT EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'regulacao_solicitar' AND prosrc ~* '\mcurrent_date\M'),
+  'regulacao_solicitar não usa current_date');
 
 ROLLBACK;
