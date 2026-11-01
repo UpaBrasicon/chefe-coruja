@@ -12530,6 +12530,15 @@ export type Database = {
         Args: { p_conteudo: string; p_ficha: Json; p_internacao: string }
         Returns: string
       }
+      corrigir_admissao: {
+        Args: { p_conteudo: string; p_documento: string; p_ficha: Json; p_justificativa: string }
+        Returns: string
+      }
+      registrar_reavaliacao_quadro: {
+        Args: { p_conteudo: string; p_dados: Json; p_internacao: string }
+        Returns: string
+      }
+      reavaliacoes_do_quadro: { Args: { p_internacao: string }; Returns: Json }
       registrar_afericao_crescimento: {
         Args: {
           p_data: string

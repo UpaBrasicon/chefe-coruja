@@ -9,8 +9,13 @@
 // Registro: registrar_admissao grava o texto legível no prontuário e a ficha
 // estruturada em admissao_fichas; a folha sai do servidor (folha_documento
 // junta a ficha ao documento). Uma admissão por internação.
+//
+// Ponto 10 do plantonista (modelo B do RT, 31/10/2026): a admissão é única
+// (trava no banco). Erro de registro: "Corrigir" reabre a ficha preenchida e
+// grava com justificativa (corrigir_admissao: só o autor; a versão anterior
+// fica guardada). Mudança importante do quadro: "Reavaliação do quadro".
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { BookOpen, CheckCircle2, Printer, X } from 'lucide-react'
+import { BookOpen, CheckCircle2, PencilLine, Printer, X } from 'lucide-react'
 import * as React from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
@@ -29,10 +34,12 @@ import { useTriagemRecente, vitaisDaTriagem } from '@/components/documentos/tria
 import { Bloco, Campo, Cartao, Chip, Leitura, Pilulas, Rodape, Texto } from '@/components/documentos/ui'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 import { dataHora } from '@/lib/formato'
+import { admissaoVigente, JUSTIFICATIVA_CORRECAO_ADMISSAO } from '@/lib/admissaoReavaliacao'
 
 import {
-  ADM_VAZIO, admTemAlgo, fichaAdm, pendenciasAdm, textoAdm, type DetalheAdm, type FormAdm, type Sepse, type Spo2Cond,
+  ADM_VAZIO, admTemAlgo, fichaAdm, formDaFicha, pendenciasAdm, textoAdm, type DetalheAdm, type FormAdm, type Sepse, type Spo2Cond,
 } from '@/components/internacao/documentos/documentosInternacao'
+import { ReavaliacoesQuadro } from './ReavaliacaoQuadro'
 
 type ConfigDetalhes = { esquemas: { id: string; nome: string; itens: string[]; ativo: boolean }[]; obrigatorios: string[] }
 
@@ -73,6 +80,9 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
   const [esquemaSel, setEsquemaSel] = React.useState('')
   const [registrando, setRegistrando] = React.useState(false)
   const [erro, setErro] = React.useState<string | null>(null)
+  // corrigir a admissão registrada (ponto 10): a ficha volta ao formulário
+  const [corrigindo, setCorrigindo] = React.useState(false)
+  const [justificativa, setJustificativa] = React.useState('')
 
   // a triagem e a ficha só voltam com o prontuário aberto (consulta registrada)
   const aberto = useQuery({
@@ -112,7 +122,7 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
   const detalhesObrigatorio = !!internacao.data?.setorId && esquemas.length > 0 && (config.data?.obrigatorios ?? []).includes(internacao.data.setorId)
 
   const lista = docs.data ?? []
-  const registrada = internacaoId ? lista.find((d) => d.tipo === 'admissao_anamnese' && d.internacao_id === internacaoId) ?? null : null
+  const registrada = admissaoVigente(lista, internacaoId)
   const ficha = useQuery({
     queryKey: ['admissao-ficha', internacaoId],
     enabled: !!registrada && !!aberto.data,
@@ -131,7 +141,7 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
   const a: FormAdm = { ...daTriagem, ...(Object.fromEntries(Object.entries(form).filter(([, v]) => v !== undefined)) as FormAdm) }
   const v = (k: keyof FormAdm) => (typeof a[k] === 'string' ? (a[k] as string) : '')
 
-  const pendencias = pendenciasAdm({ a, pacienteId, internacaoId, jaRegistrada: !!registrada, detalhesObrigatorio, setor })
+  const pendencias = pendenciasAdm({ a, pacienteId, internacaoId, jaRegistrada: !!registrada && !corrigindo, detalhesObrigatorio, setor })
 
   async function registrar() {
     if (!internacaoId || !pacienteId || pendencias.length) return
@@ -152,6 +162,55 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
       void qc.invalidateQueries({ queryKey: ['admissao-ficha', internacaoId] })
       const r = await folhaDoDocumentoEmitido(data as string, 'Ficha de admissão médica')
       if ('erro' in r) return falha(`A admissão foi registrada, mas a folha não pôde ser montada${r.erro ? `: ${r.erro}` : ''}. Reimprima por aqui.`)
+      escrever(r.html)
+      janela.focus()
+      setTimeout(() => janela.print(), 300)
+    } finally {
+      setRegistrando(false)
+    }
+  }
+
+  function comecarCorrecao() {
+    if (!ficha.data) return
+    limpar()
+    set(formDaFicha(ficha.data))
+    setJustificativa('')
+    setErro(null)
+    setCorrigindo(true)
+  }
+  function cancelarCorrecao() {
+    limpar()
+    setCorrigindo(false)
+    setErro(null)
+  }
+
+  async function corrigir() {
+    if (!registrada || !ficha.data || pendencias.length || justificativa.trim().length < JUSTIFICATIVA_CORRECAO_ADMISSAO) return
+    setErro(null)
+    const janela = window.open('', '_blank')
+    if (!janela) return setErro('O navegador bloqueou a janela de impressão. Libere pop-ups e tente de novo.')
+    const escrever = (html: string) => { janela.document.open(); janela.document.write(html); janela.document.close() }
+    const falha = (m: string) => { escrever(`<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${m}</p>`); setErro(m) } // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
+    escrever('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Gravando a correção…</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
+    setRegistrando(true)
+    try {
+      const f = fichaAdm({ a, setor, regulacao, pacienteAntigo: ident.pacienteAntigo({ diagnostico: v('cid') }), pac: ident.pac, agora: new Date() })
+      // a data e a hora da admissão não mudam com a correção
+      const original = ficha.data
+      if (typeof original.data === 'string') f.data = original.data
+      const dataAtual = (original.paciente as { dataAtual?: unknown } | undefined)?.dataAtual
+      if (typeof dataAtual === 'string') f.paciente = { ...f.paciente, dataAtual }
+      const { data, error } = await supabase.rpc('corrigir_admissao', {
+        p_documento: registrada.id, p_conteudo: textoAdm(f), p_ficha: f as unknown as Json, p_justificativa: justificativa.trim(),
+      })
+      if (error) return falha(`Não foi possível corrigir a admissão: ${error.message}. Nada foi impresso.`)
+      limpar()
+      setCorrigindo(false)
+      invalidarDocumentos(qc)
+      void qc.invalidateQueries({ queryKey: ['documentos-clinicos', pacienteId] })
+      void qc.invalidateQueries({ queryKey: ['admissao-ficha', internacaoId] })
+      const r = await folhaDoDocumentoEmitido(data as string, 'Ficha de admissão médica · corrigida')
+      if ('erro' in r) return falha(`A correção foi gravada, mas a folha não pôde ser montada${r.erro ? `: ${r.erro}` : ''}. Reimprima por aqui.`)
       escrever(r.html)
       janela.focus()
       setTimeout(() => janela.print(), 300)
@@ -206,12 +265,19 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
       <SeletorPaciente pacienteId={pacienteId} onEscolher={(id) => onEscolherPaciente?.(id)} pac={pac} unidadeId={unidadeId} perfilId={perfil?.id}
         fixo={fixo || !onEscolherPaciente} />
 
-      {pacienteId && registrada && (
+      {pacienteId && registrada && !corrigindo && (
         <Cartao icone={<CheckCircle2 />} titulo="Admissão registrada" acoes={
-          <Button size="sm" variant="outline" onClick={() => void reimprimir(registrada.id)}><Printer /> Reimprimir</Button>
+          <>
+            {registrada.meu && registrada.estado === 'ativo' && fr && (
+              <Button size="sm" variant="outline" onClick={comecarCorrecao}><PencilLine /> Corrigir</Button>
+            )}
+            <Button size="sm" variant="outline" onClick={() => void reimprimir(registrada.id)}><Printer /> Reimprimir</Button>
+          </>
         }>
           <p className="text-apoio text-tinta-sussurro">
-            Registrada em {diaHora(registrada.criado_em)} por {registrada.autor ?? '—'}. Uma admissão por internação; ela fica no prontuário e sai na folha como foi registrada.
+            Registrada em {diaHora(registrada.criado_em)} por {registrada.autor ?? '—'}
+            {registrada.versao > 1 ? ` · corrigida (versão ${registrada.versao}${registrada.motivo_retificacao ? `: ${registrada.motivo_retificacao}` : ''})` : ''}.
+            {' '}Uma admissão por internação: erro de registro se corrige (quem registrou, com justificativa); mudança do quadro vai na reavaliação.
           </p>
           {fr ? (
             <div className="flex flex-wrap gap-3">
@@ -228,15 +294,21 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
         </Cartao>
       )}
 
-      {pacienteId && !registrada && (
-        <Cartao icone={<BookOpen />} titulo={<>Ficha de admissão médica <span className="ml-1.5 text-apoio font-normal text-tinta-sussurro">Anamnese, exame físico e plano inicial</span></>}
-          acoes={admTemAlgo(form) ? <Button size="sm" variant="ghost" onClick={limpar}>Limpar</Button> : undefined}>
+      {pacienteId && registrada && !corrigindo && internacaoId && registrada.estado !== 'cancelado' && (
+        <ReavaliacoesQuadro internacaoId={internacaoId} pacienteId={pacienteId} prontuarioAberto={!!aberto.data} admissaoEm={diaHora(registrada.criado_em)} />
+      )}
+
+      {pacienteId && (!registrada || corrigindo) && (
+        <Cartao icone={corrigindo ? <PencilLine /> : <BookOpen />} titulo={corrigindo
+          ? <>Corrigir a admissão <span className="ml-1.5 text-apoio font-normal text-tinta-sussurro">A versão anterior fica guardada no prontuário</span></>
+          : <>Ficha de admissão médica <span className="ml-1.5 text-apoio font-normal text-tinta-sussurro">Anamnese, exame físico e plano inicial</span></>}
+          acoes={!corrigindo && admTemAlgo(form) ? <Button size="sm" variant="ghost" onClick={limpar}>Limpar</Button> : undefined}>
           <Bloco titulo="Identificação" nota="Nome, nascimento, prontuário e CNS vêm do cadastro. O setor é o da internação.">
             <Leitura rotulo="Paciente" valor={ident.cab.nome} largura="cheio" />
             <Leitura rotulo="Nascimento / idade" valor={nasc} />
             <Leitura rotulo="Prontuário" valor={pac?.prontuario} />
             <Leitura rotulo="Setor de destino" valor={setor} />
-            <Leitura rotulo="Data / hora da admissão" valor={agora} />
+            <Leitura rotulo="Data / hora da admissão" valor={corrigindo && registrada ? diaHora(registrada.criado_em) : agora} />
             <BuscaLista id="adm-procedencia" rotulo="Procedência" largura="medio" opcoes={PROCEDENCIAS} valor={v('procedencia')}
               dica="Clique para ver as procedências ou digite" onDigitar={(x) => set({ procedencia: x })} onEscolher={(x) => set({ procedencia: x })} />
             <Texto id="adm-acompanhante" rotulo="Acompanhante" dica="Quem veio com o paciente e o vínculo" valor={v('acompanhante')}
@@ -318,6 +390,19 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
           mensagem={pendencias.length ? 'Confira as pendências antes de registrar.' : 'A folha sai em A4, com identificação, anamnese, exame físico e plano.'}>
           {null}
         </Rodape>
+      )}
+      {pacienteId && corrigindo && (
+        <Cartao icone={<PencilLine />} titulo="Justificativa da correção">
+          <Texto id="adm-justificativa" rotulo="Por que a admissão está sendo corrigida" longo linhas={2}
+            dica={`Ex.: hipótese registrada errada (mínimo de ${JUSTIFICATIVA_CORRECAO_ADMISSAO} letras)`} valor={justificativa} onChange={setJustificativa} />
+          {pendencias.length > 0 && <p className="text-apoio text-tinta-sussurro">Falta preencher: {pendencias.join(', ')}.</p>}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={cancelarCorrecao}>Cancelar</Button>
+            <Button disabled={registrando || pendencias.length > 0 || justificativa.trim().length < JUSTIFICATIVA_CORRECAO_ADMISSAO} onClick={() => void corrigir()}>
+              <Printer /> {registrando ? 'Gravando…' : 'Gravar correção e imprimir'}
+            </Button>
+          </div>
+        </Cartao>
       )}
       {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
 
