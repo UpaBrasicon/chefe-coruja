@@ -19,6 +19,7 @@ import * as React from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { categoriaDaTela, daCategoria } from '@/lib/categoriaEscala'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { dataIso, dataPorExtenso, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
@@ -84,7 +85,7 @@ const faixa = (p: Plantao) => (p.turno === 'noite' ? 'Noite' : p.duracao_min >= 
 const horario = (p: Plantao) => `${hora(p.inicio)}–${hora(new Date(new Date(p.inicio).getTime() + p.duracao_min * 60_000))}`
 
 export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
-  const { unidadeAtiva, papeisDaUnidade } = useUnidade()
+  const { unidadeAtiva, papeisDaUnidade, papelAtivo } = useUnidade()
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
   const hoje = dataIso()
@@ -130,9 +131,9 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
   const pedidos = usePedidosDaEquipe(unidadeId)
   const vagasNoDia = (d: string) => pedidos.vagas.filter((v) => v.data === d)
 
-  // a minha categoria na unidade (todo papel menos gestor e administrador)
-  const categorias = papeisDaUnidade.filter((p) => p !== 'gestor' && p !== 'admin')
-  const equipe = categorias.length ? categorias.map((p) => PAPEL_LABEL[p]).join(' e ') : 'Sua categoria'
+  // a minha categoria na tela: o papel ativo (achado 3 do teste em produção)
+  const categoria = categoriaDaTela(papelAtivo, papeisDaUnidade)
+  const equipe = categoria ? PAPEL_LABEL[categoria] : 'Sua categoria'
   const plantoes = escala.data ?? []
   const meus = plantoes.filter((p) => p.perfil_id === perfil?.id)
   const meuNoDia = new Map<string, Plantao[]>()
@@ -142,7 +143,7 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
     ...Array.from({ length: diasNoMes }, (_, i) => `${mes}-${String(i + 1).padStart(2, '0')}`)]
   while (celulas.length % 7) celulas.push(null)
   const diaSel = dia ?? (hoje.startsWith(mes) ? hoje : de)
-  const doDia = plantoes.filter((p) => p.data === diaSel).sort((a, b) => a.inicio.localeCompare(b.inicio))
+  const doDia = plantoes.filter((p) => p.data === diaSel && (p.perfil_id === perfil?.id || daCategoria(p.papel, categoria))).sort((a, b) => a.inicio.localeCompare(b.inicio))
   const nomeSetor = (id: string) => setores.data?.find((s) => s.id === id)?.nome ?? 'Setor'
   const setoresDoDia = [...new Set(doDia.map((p) => p.setor_id))]
     .sort((a, b) => (setores.data ?? []).findIndex((s) => s.id === a) - (setores.data ?? []).findIndex((s) => s.id === b))
@@ -258,7 +259,7 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
           </aside>
         )}
       </section>
-      {categorias.includes('telemedicina') && <TeleTodasUnidades de={hoje} ate={ateProximos} />}
+      {categoria === 'telemedicina' && <TeleTodasUnidades de={hoje} ate={ateProximos} />}
     </div>
   )
 }
