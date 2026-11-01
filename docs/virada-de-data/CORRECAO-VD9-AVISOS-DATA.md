@@ -51,7 +51,9 @@ Aplicada pelo SQL em 01/11/2026, com a versão `20270209000006` registrada. A se
 
 ## Produção
 
-Aguarda o "ok produção" do RT.
+Migration `20270209000006` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 01/11/2026, com o "ok produção" do RT e depois do CI verde. Conferido depois de aplicar: versão registrada; as dez funções com md5 igual ao da homologação e sem `current_date`; ACL igual.
+
+PR mesclado em seguida. Concluído.
 
 ## Riscos
 
