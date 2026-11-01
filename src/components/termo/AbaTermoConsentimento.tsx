@@ -11,6 +11,10 @@
 // e cancelar pede justificativa. Toda regra é do servidor
 // (20261004000004_termo_consentimento.sql).
 //
+// Ponto 15 do plantonista (RT, 31/10/2026): a mesma peça serve ao termo de
+// cuidados paliativos (`categoria`), com os modelos dessa categoria. No
+// paliativo, o termo sai só de um modelo da unidade.
+//
 // A folha do TCLE sai montada no servidor (lib/prontuario › imprimirDocumento),
 // ao gerar e em cada termo da lista. A assinatura digital do médico e do
 // paciente/responsável espera a etapa 4.8 (ICP-Brasil).
@@ -30,11 +34,11 @@ import { Textarea } from '@/components/ui/textarea'
 
 import {
   mensagemErro, normalizar, preencherCampos, quando, quemAssina, useCancelarTermo, useEmitirTermo, usePainelTermos,
-  type Assinante, type DadosTermo, type PainelTermos, type TermoRegistrado,
+  type Assinante, type CategoriaTermo, type DadosTermo, type PainelTermos, type TermoRegistrado,
 } from './termo'
 import { Estado } from '@/components/porta/Estado'
 
-export type AbaTermoConsentimentoProps = { pacienteId: string; episodioId?: string | null; internacaoId?: string | null }
+export type AbaTermoConsentimentoProps = { pacienteId: string; episodioId?: string | null; internacaoId?: string | null; categoria?: CategoriaTermo }
 
 type Formulario = {
   busca: string
@@ -106,7 +110,9 @@ function valoresCampos(p: PainelTermos, procedimento: string) {
   }
 }
 
-export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: AbaTermoConsentimentoProps) {
+export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId, categoria = 'consentimento' }: AbaTermoConsentimentoProps) {
+  const paliativo = categoria === 'cuidados_paliativos'
+  const nomeTermo = paliativo ? 'termo de cuidados paliativos' : 'termo de consentimento'
   const painel = usePainelTermos(pacienteId, episodioId, internacaoId)
   const emitir = useEmitirTermo(pacienteId, episodioId, internacaoId)
   const cancelar = useCancelarTermo(pacienteId)
@@ -126,7 +132,9 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
   if (painel.error || !painel.data) {
     return <Aviso tom="critico">Não foi possível carregar os termos de consentimento: {mensagemErro(painel.error)}</Aviso>
   }
-  const p = painel.data
+  const dados = painel.data
+  const daCategoria = (c?: CategoriaTermo) => (c ?? 'consentimento') === categoria
+  const p: PainelTermos = { ...dados, modelos: dados.modelos.filter((m) => daCategoria(m.categoria)), termos: dados.termos.filter((x) => daCategoria(x.categoria)) }
   // quem assina (decisão do RT 02/10/2026): < 16 o responsável; 16–17 o paciente
   // assistido pelo responsável; ≥ 18 o paciente. Sem nascimento, o termo não sai.
   const menor = p.paciente.faixa === 'representado'
@@ -151,6 +159,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
   if (semResponsavel && !cheio(f.ausencia, 10)) faltas.push('por que não há responsável presente')
   if (f.testNome.trim() && !cheio(f.testNome, 3)) faltas.push('nome da testemunha')
   if (f.retifica && !cheio(f.motivoRetificacao, 10)) faltas.push('motivo da retificação')
+  if (paliativo && !f.modeloId) faltas.push('modelo de cuidados paliativos da unidade')
 
   const busca = normalizar(f.busca)
   const modelos = p.modelos.filter((m) => !busca || normalizar(`${m.titulo} ${m.procedimento}`).includes(busca))
@@ -257,7 +266,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
         <div className="flex flex-wrap items-center gap-2.5">
           <h3 className="flex items-center gap-2 text-corpo font-semibold text-tinta">
             <ShieldCheck className="size-[15px] text-acao" aria-hidden />
-            Termo de consentimento
+            {paliativo ? 'Termo de cuidados paliativos' : 'Termo de consentimento'}
           </h3>
           {f.retifica && <Estado tom="ambar">Retificando nº {f.retifica.numero}</Estado>}
         </div>
@@ -266,6 +275,11 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
           <p className="text-apoio text-tinta-sussurro [text-wrap:pretty]">
             O termo é gerado pelo médico de plantão no setor do paciente. Aqui você vê os termos já registrados.
           </p>
+        ) : paliativo && p.modelos.length === 0 && !f.retifica ? (
+          <Aviso>
+            A unidade ainda não cadastrou modelo de termo de cuidados paliativos (Unidade › Termos de consentimento, categoria
+            "Cuidados paliativos"). O termo paliativo sai só do modelo da unidade, com o que o médico e o paciente ou o responsável decidiram.
+          </Aviso>
         ) : (
           <>
             {p.modelos.length === 0 ? (
@@ -371,7 +385,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
           <div role="status" className="flex flex-wrap items-center gap-2 rounded-controle bg-alerta-conforme px-3 py-2 text-apoio text-conforme">
             <span className="flex-[1_1_220px]">{aviso}</span>
             {gerado && (
-              <Button variant="outline" size="xs" onClick={() => void imprimirDocumento(gerado, 'Termo de consentimento')}>
+              <Button variant="outline" size="xs" onClick={() => void imprimirDocumento(gerado, paliativo ? 'Termo de cuidados paliativos' : 'Termo de consentimento')}>
                 <Printer /> Imprimir para as assinaturas
               </Button>
             )}
@@ -386,7 +400,7 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId }: 
         </div>
         {p.termos.length === 0 ? (
           <p className="rounded-container border border-dashed border-fio bg-superficie px-4 py-6 text-center text-apoio text-tinta-sussurro">
-            Nenhum termo de consentimento registrado.
+            Nenhum {nomeTermo} registrado.
           </p>
         ) : (
           <ul className="flex flex-col gap-2">

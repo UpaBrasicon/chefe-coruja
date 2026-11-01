@@ -44,6 +44,7 @@ import { AbaEncaminhamento } from '@/components/encaminhamento/AbaEncaminhamento
 import { AbaEvolucao } from '@/components/evolucao/AbaEvolucao'
 import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
+import { AbaCuidadosPaliativos } from '@/components/paliativo/AbaCuidadosPaliativos'
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 import { Estado } from '@/components/porta/Estado'
 import { Button } from '@/components/ui/button'
@@ -70,7 +71,7 @@ import { ChecklistAdmissao, TrilhaEpisodio } from './caderno/Trilha'
 
 export { SepsePorta } from './caderno/Sepse'
 
-type IdAba = 'resumo' | 'evol' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'comp' | 'alta'
+type IdAba = 'resumo' | 'evol' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'parecer' | 'termo' | 'paliativos' | 'escalas' | 'alta'
 
 // LEITO_ABAS do protótipo (index.html ~21611), na mesma ordem.
 const ABAS: [IdAba, string][] = [
@@ -82,7 +83,11 @@ const ABAS: [IdAba, string][] = [
   ['aih', 'AIH'],
   ['apac', 'APAC'],
   ['encaminhamento', 'Encaminhamento'],
-  ['comp', 'Parecer e termos'],
+  // ponto 15: Parecer, Termo de consentimento, Cuidados paliativos e Escalas (antes, "Parecer e termos")
+  ['parecer', 'Parecer'],
+  ['termo', 'Termo de consentimento'],
+  ['paliativos', 'Cuidados paliativos'],
+  ['escalas', 'Escalas'],
   ['alta', 'Alta e documentos'],
 ]
 /**
@@ -520,14 +525,11 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir }: {
         {atual === 'apac' && <AbaApac doc={doc} internacaoId={i.id} />}
         {/* ponto 13: dentro da unidade ou para outra unidade (SMS003a ligado à internação) */}
         {atual === 'encaminhamento' && <AbaEncaminhamento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} leito={i.leito?.identificador ?? ''} />}
-        {atual === 'comp' && (
-          <>
-            <AbaParecer pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />
-            <AbaTermoConsentimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />
-            {/* a própria aba escolhe as escalas pela idade (NIPS/FLACC ou Braden/Morse; sem nascimento, avisa) */}
-            <AbaAvaliacaoCrescimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />
-          </>
-        )}
+        {atual === 'parecer' && <AbaParecer pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
+        {atual === 'termo' && <AbaTermoConsentimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
+        {atual === 'paliativos' && <AbaCuidadosPaliativos pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} podeRegistrar={escreve} />}
+        {/* a própria aba escolhe as escalas pela idade (NIPS/FLACC ou Braden/Morse; sem nascimento, avisa) */}
+        {atual === 'escalas' && <AbaAvaliacaoCrescimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
         {/* pontos 14 e 16: receita para casa, atestado, orientações e alta, em passos */}
         {atual === 'alta' && (
           <PassosAlta i={i} pacienteId={pacienteId} pacienteNome={p.pacienteNome} ativa={ativa} altaRecente={pp.altaRecente} ehGestor={ehGestor}

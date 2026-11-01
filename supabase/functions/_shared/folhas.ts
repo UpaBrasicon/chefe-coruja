@@ -935,6 +935,7 @@ function relAlergias(d: Json, ctx: ContextoFolha): string {
 const ESCALA: Record<string, { nome: string; fonte: string; itens: Record<string, string> }> = {
   nips: { nome: 'NIPS', fonte: 'Neonatal Infant Pain Scale (Lawrence et al., 1993)', itens: { face: 'Expressão facial', choro: 'Choro', resp: 'Padrão respiratório', bracos: 'Braços', pernas: 'Pernas', alerta: 'Estado de alerta' } },
   flacc: { nome: 'FLACC', fonte: 'Face, Legs, Activity, Cry, Consolability (Merkel et al., 1997)', itens: { face: 'Face', pernas: 'Pernas', atividade: 'Atividade', choro: 'Choro', consolo: 'Consolabilidade' } },
+  pergunta_surpresa: { nome: 'Pergunta surpresa', fonte: 'Downar J et al., CMAJ 2017 (PMID 28385893)', itens: { surpreso: 'Ficaria surpreso se o paciente morresse em 12 meses? (0 = sim; 1 = não)' } },
   braden: { nome: 'Braden', fonte: 'Escala de Braden (Bergstrom et al., 1987)', itens: { percepcao: 'Percepção sensorial', umidade: 'Umidade', atividade: 'Atividade', mobilidade: 'Mobilidade', nutricao: 'Nutrição', friccao: 'Fricção e cisalhamento' } },
   morse: { nome: 'Morse', fonte: 'Morse Fall Scale (Morse, 1989)', itens: { quedas: 'Histórico de quedas', diagnostico: 'Diagnóstico secundário', auxilio: 'Auxílio na deambulação', terapia_ev: 'Terapia endovenosa', marcha: 'Marcha', estado_mental: 'Estado mental' } },
 }

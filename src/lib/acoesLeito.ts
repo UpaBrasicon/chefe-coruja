@@ -50,5 +50,7 @@ export function abaDoEndereco(abaInicial: string | undefined): { aba: string | u
   if (abaInicial === 'classif') return { aba: 'resumo', classificacao: true }
   if (abaInicial === 'diag') return { aba: 'evol', classificacao: false }
   if (abaInicial === 'atestado') return { aba: 'alta', classificacao: false }
+  // ponto 15: "Parecer e termos" virou quatro abas; o endereço antigo abre o Parecer
+  if (abaInicial === 'comp') return { aba: 'parecer', classificacao: false }
   return { aba: abaInicial, classificacao: false }
 }
