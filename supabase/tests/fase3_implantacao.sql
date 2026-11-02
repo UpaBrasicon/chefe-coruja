@@ -119,7 +119,7 @@ SELECT pg_temp.ok((pg_temp.item('P08')->>'ok')::boolean, 'escala de D0 a D+6 com
 SELECT pg_temp.ok(pg_temp.item('P15')->>'detalhe' = '0 de 4 vínculo(s) treinado(s)', 'ninguém treinado ainda');
 SELECT pg_temp.falha(format('SELECT public.implantacao_treinar(%L, %L, %L)', pg_temp.v('imp'), '10000000-0000-4000-8000-000000000005', 'enfermeiro'),
   'Esta pessoa não tem esse papel na unidade', 'treinamento só no papel que a pessoa tem');
-SELECT pg_temp.falha(format('SELECT public.implantacao_treinar(%L, %L, %L, (now() AT TIME ZONE 'America/Sao_Paulo')::date + 1)', pg_temp.v('imp'), '10000000-0000-4000-8000-000000000005', 'recepcao'),
+SELECT pg_temp.falha(format('SELECT public.implantacao_treinar(%L, %L, %L, (now() AT TIME ZONE ''America/Sao_Paulo'')::date + 1)', pg_temp.v('imp'), '10000000-0000-4000-8000-000000000005', 'recepcao'),
   'O treinamento não pode ter data futura', 'sem data futura');
 -- VD11 (lote "Virada de data"): o futuro é pelo dia de Brasília, não o UTC
 RESET ROLE;
@@ -168,7 +168,7 @@ SELECT pg_temp.falha(format('SELECT public.implantacao_aceitar(%L, %L)', pg_temp
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000003');
 SELECT pg_temp.ok((public.implantacao_aceitar(pg_temp.v('imp')::uuid, 'virada')->>'situacao') = 'em_operacao',
   'com o aceite do implantador, a unidade fica em operação');
-SELECT pg_temp.falha(format('SELECT public.implantacao_mudar_d0(%L, (now() AT TIME ZONE 'America/Sao_Paulo')::date + 3, %L)', pg_temp.v('imp'), 'Mudança de data qualquer'),
+SELECT pg_temp.falha(format('SELECT public.implantacao_mudar_d0(%L, (now() AT TIME ZONE ''America/Sao_Paulo'')::date + 3, %L)', pg_temp.v('imp'), 'Mudança de data qualquer'),
   'A virada já aconteceu', 'D0 não muda depois da virada');
 
 -- ── 6. encerramento ─────────────────────────────────────────────────────────
