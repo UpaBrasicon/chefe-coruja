@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { cifrar, decifrar, estaCifrado, temChave } from './cofreLocal.ts'
-import { hora } from './formato.ts'
+import { dataIso, hora } from './formato.ts'
 
 /** TTL de rascunhos clínicos no navegador (LGPD — computador compartilhado de UPA). */
 const TTL_RASCUNHO_MS = 12 * 60 * 60 * 1000 // 12 horas
@@ -24,12 +24,9 @@ export type DadosPaciente = {
 
 export const DIETAS = ['Dieta livre', 'Dieta branda', 'Dieta líquida', 'Dieta zero (jejum)', 'Dieta para diabético', 'Dieta hipossódica', 'Outra']
 
+// o dia de Brasília, não o do relógio do aparelho
 export function hojeLocal() {
-  const d = new Date()
-  const yyyy = d.getFullYear()
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
+  return dataIso()
 }
 
 export function fmtData(iso: string) {
