@@ -181,6 +181,16 @@ Cadastrar ao vivo uma UBS na rede da secretaria e entrar como gestor dela. O sis
   - sem erro de tipos e de lint.
 - **Navegador:** não abri o menu, porque as telas ficam atrás do login. O teste cobre o menu de cada papel.
 
+### Produção
+
+As migrations `20270210000001` e `20270210000002` foram aplicadas na produção (`saqjrjtrkzkswsxxvdxn`) em 02/11/2026, com o "ok produção" do RT e depois do CI verde. Conferido depois de aplicar:
+- as duas versões estão registradas;
+- o enum tem `ubs`;
+- a tabela tem os grants `DELETE,SELECT` e as colunas o md5 `28bba808…`, os mesmos da homologação;
+- o md5, o ACL e o dono das duas RPCs são iguais aos da homologação.
+
+O PR #409 foi mesclado em seguida. Falta a tela "Unidades" do Admin.
+
 ## Decisões do RT
 
 | # | Pergunta | Opções | Recomendação |
