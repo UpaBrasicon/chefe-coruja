@@ -143,6 +143,54 @@ O CNES continua em `definir_cnes_unidade`. O município e a UF entram na criaç�
 
 Cadastrar ao vivo uma UBS na rede da secretaria e entrar como gestor dela. O sistema mostra só o que cabe numa UBS, sem porta nem leito. Esse é o primeiro passo para a secretaria ter UPA, hospital e UBS no mesmo sistema, que é o argumento contra os sistemas que só cobrem a atenção primária ou só o hospital.
 
+## Implementação (02/11/2026)
+
+### Banco
+
+- **`20270210000001_tipo_unidade_ubs.sql`:** o valor `ubs` no enum.
+- **`20270210000002_unidade_cadastro.sql`:**
+  - `admin_criar_unidade` e `admin_editar_unidade`, como na seção 4;
+  - o `authenticated` perde o INSERT e o UPDATE da tabela e fica só com o UPDATE de `canal_comunicacao`, `whatsapp_numero`, `latitude`, `longitude`, `raio_metros` e `updated_at`.
+- **Diferenças do diagnóstico:**
+  - Também sai o INSERT direto. A criação passa só pela RPC, com auditoria. Nenhuma tela inseria unidade.
+  - A auditoria guarda o nome, o tipo, o tipo anterior, a situação e a lista dos campos alterados. O filtro `private.payload_auditoria` não deixa passar o município nem a UF.
+
+### Tela
+
+- **`navegacao.ts`:** `itensDeNavegacao` recebe o tipo da unidade. Numa UBS saem as rotas da lista da D3, mais `/enfermagem`, a entrada da enfermagem que leva ao Pronto-Socorro ou à Internação.
+- **Itens que ficam:** o NIR fica com Regulação, Avisos e Escala. A Regulação continua no gestor, porque o encaminhamento da UBS (tarefa 5) passa por ela.
+- **Tela inicial:** `inicioDoPapel`, as abas estreitas do plantonista e o `RedirectHome` seguem o tipo. Numa UBS, a tela inicial de porta ou de leito dá lugar ao primeiro item do menu.
+- **Avisos:** a tela de Avisos usa o mesmo menu.
+- **Rótulo:** "UBS" em `TIPO_UNIDADE_LABEL`. Os tipos de `database.ts` ganham o valor e as duas RPCs.
+- **Ainda falta:** a tela "Unidades" do Admin (D2). Ela entra num passo próprio, com as opções do Refero antes.
+
+### Evidências
+
+- **Homologação:**
+  - as duas migrations foram aplicadas duas vezes, sem erro, e as versões estão registradas;
+  - antes delas, o teste `supabase/tests/5a_tipo_ubs.sql` falhava (a RPC não existia);
+  - depois, ele passa inteiro.
+- **Rollback testado na homologação:**
+  - as duas RPCs foram removidas, o GRANT voltou e o `CHECK (tipo <> 'ubs')` entrou;
+  - os grants por coluna voltaram ao md5 de antes (`32b8437c…`);
+  - o teste voltou a falhar;
+  - depois, o CHECK foi retirado e a migration reaplicada. O estado ficou igual ao de depois: grants `DELETE,SELECT` na tabela e md5 `28bba808…` nas colunas.
+- **Tela:**
+  - `src/lib/menuUbs.test.ts` passa 5 de 5 e falha sem a correção;
+  - `src/lib` passa inteiro (232), e os testes clínicos também (1105);
+  - sem erro de tipos e de lint.
+- **Navegador:** não abri o menu, porque as telas ficam atrás do login. O teste cobre o menu de cada papel.
+
+### Produção
+
+As migrations `20270210000001` e `20270210000002` foram aplicadas na produção (`saqjrjtrkzkswsxxvdxn`) em 02/11/2026, com o "ok produção" do RT e depois do CI verde. Conferido depois de aplicar:
+- as duas versões estão registradas;
+- o enum tem `ubs`;
+- a tabela tem os grants `DELETE,SELECT` e as colunas o md5 `28bba808…`, os mesmos da homologação;
+- o md5, o ACL e o dono das duas RPCs são iguais aos da homologação.
+
+O PR #409 foi mesclado em seguida. Falta a tela "Unidades" do Admin.
+
 ## Decisões do RT
 
 | # | Pergunta | Opções | Recomendação |

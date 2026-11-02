@@ -10052,6 +10052,28 @@ export type Database = {
       definir_bpa_config: { Args: { p_dados: Json; p_unidade: string }; Returns: undefined }
       definir_meu_cns: { Args: { p_cns: string }; Returns: string }
       definir_cnes_unidade: { Args: { p_cnes: string; p_unidade: string }; Returns: string }
+      admin_criar_unidade: {
+        Args: {
+          p_cnes?: string
+          p_municipio?: string
+          p_nome: string
+          p_organizacao: string
+          p_tipo: Database["public"]["Enums"]["tipo_unidade"]
+          p_uf?: string
+        }
+        Returns: string
+      }
+      admin_editar_unidade: {
+        Args: {
+          p_ativo: boolean
+          p_municipio?: string
+          p_nome: string
+          p_tipo: Database["public"]["Enums"]["tipo_unidade"]
+          p_uf?: string
+          p_unidade: string
+        }
+        Returns: undefined
+      }
       marcar_sempre_bpa_c: { Args: { p_id: string; p_sempre: boolean }; Returns: undefined }
       apac_conferencia: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
       apac_fechamentos_da_unidade: { Args: { p_unidade: string }; Returns: Json }
@@ -13462,7 +13484,7 @@ export type Database = {
         | "isolamento"
         | "uti"
         | "outro"
-      tipo_unidade: "hospital" | "upa" | "clinica"
+      tipo_unidade: "hospital" | "upa" | "clinica" | "ubs"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -13834,7 +13856,7 @@ export const Constants = {
         "uti",
         "outro",
       ],
-      tipo_unidade: ["hospital", "upa", "clinica"],
+      tipo_unidade: ["hospital", "upa", "clinica", "ubs"],
     },
   },
   terminologia: {
