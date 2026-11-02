@@ -189,7 +189,28 @@ As migrations `20270210000001` e `20270210000002` foram aplicadas na produção 
 - a tabela tem os grants `DELETE,SELECT` e as colunas o md5 `28bba808…`, os mesmos da homologação;
 - o md5, o ACL e o dono das duas RPCs são iguais aos da homologação.
 
-O PR #409 foi mesclado em seguida. Falta a tela "Unidades" do Admin.
+O PR #409 foi mesclado em seguida.
+
+### Tela "Unidades" do Admin (opção A do RT, 02/11/2026)
+
+O RT escolheu a opção A entre as três do Refero: Square, locais (botão no topo da lista) e Homerun, novo local (janela com o rótulo à esquerda e o campo à direita).
+
+- Admin › Rede › Unidades ganha o botão "Nova unidade". O nome de cada unidade abre a mesma janela para editar (`src/pages/admin/JanelaUnidade.tsx`).
+- **Campos:**
+  - organização, só quando o administrador enxerga mais de uma;
+  - nome;
+  - tipo, com o aviso do menu quando é UBS;
+  - CNES, só no cadastro: depois quem preenche é o gestor, em Configuração;
+  - município e UF;
+  - situação, só na edição.
+- **Unidades inativas:** como a lista da rede só traz as ativas, elas aparecem num cartão próprio, com o botão "Editar" para reativar.
+- **Linha de cada unidade:** passa a começar pelo tipo (UPA, UBS…).
+- **Testes:** `src/lib/telaUnidades.test.ts`, 3 de 3. O `src/lib` passa inteiro (235). Sem erro de tipos e de lint.
+- **Conferido numa página de teste local**, com dados falsos:
+  - a lista com o botão e as inativas;
+  - a janela nova com a organização;
+  - a janela de edição de uma UBS, com o aviso do tipo.
+- Na homologação, a tela fica atrás do login. As RPCs já têm o teste do banco.
 
 ## Decisões do RT
 
