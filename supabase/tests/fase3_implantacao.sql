@@ -66,7 +66,9 @@ SELECT pg_temp.falha($$SELECT public.implantacao_abrir('21000000-0000-4000-8000-
   'Ambulatório: o módulo ainda está a construir', 'ambulatório a construir');
 SELECT pg_temp.falha($$SELECT public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'upa', NULL)$$,
   'Informe a data da virada', 'D0 obrigatório');
-INSERT INTO t SELECT 'imp', public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'upa', current_date)::text;
+-- D0 = hoje em Brasília (VD15): com current_date, das 21h às 24h o D0 era
+-- amanhã e o atendimento de agora ficava antes do D0
+INSERT INTO t SELECT 'imp', public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'upa', (now() AT TIME ZONE 'America/Sao_Paulo')::date)::text;
 SELECT pg_temp.falha($$SELECT public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'upa', current_date)$$,
   'Esta unidade já tem uma implantação aberta', 'uma implantação aberta por unidade');
 
