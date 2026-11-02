@@ -100,6 +100,8 @@ As telas voltam com o `git revert` do commit.
   - idade na aferição das 22h;
   - telas sem `new Date()` para o dia de hoje.
 
+- **`supabase/tests/fase3_implantacao.sql`:** abria a implantação com `D0 = current_date`, o dia UTC, e contava os prazos e a escala da primeira semana a partir dele. Com a correção, o CI das 22h05 de Brasília falhou no V04: o D0 era 02/11 e o atendimento das 22h05 de 01/11 ficou antes dele. O teste antigo só passava porque o D0 e a contagem erravam o dia juntos. As datas do teste passam ao dia de Brasília.
+
 Evidência:
 - **Sem a correção, falha:**
   - no banco, cada seção falha sozinha na homologação: a definição antiga; o aviso de 02/05 veio junto; o aviso de 30 min foi gravado de novo depois da meia-noite;
